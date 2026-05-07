@@ -1,4 +1,3 @@
-# ContraMamba
 # 🚀 ContraMamba
 ### Contradiction-Aware State Space Model with Corrective Dynamics
 
