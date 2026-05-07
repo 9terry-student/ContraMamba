@@ -13,12 +13,12 @@ ContraMamba는 Mamba 기반의 contradiction-aware SSM architecture로,
 - abstain
 - corrective suppression
 
-까지 가능한 ternary corrective dynamics를 제안한다.
+까지 가능한 corrective memory dynamics를 제안한다.
 
 핵심 목표는:
 
-> "Selective Memory"  
-→ "Corrective Memory Dynamics"
+> Selective Memory  
+→ Corrective Memory Dynamics
 
 로의 확장이다.
 
@@ -26,29 +26,17 @@ ContraMamba는 Mamba 기반의 contradiction-aware SSM architecture로,
 
 # ✨ Core Idea
 
-기존 Mamba gate:
-
-[
-g_t \in [0,1]
-]
-
-는:
+기존 Mamba gate는:
 - 얼마나 기억할지
-만 결정 가능하다.
+만 결정 가능했다.
 
-ContraMamba는 이를:
+ContraMamba는 이를 ternary polarity mechanism으로 확장한다.
 
-[
-g_t \in {-1,0,1}
-]
-
-로 확장한다.
-
-| Gate | 의미 | 역할 |
+| Gate | Meaning | 역할 |
 |---|---|---|
 | +1 | Reinforce | 기존 정보 강화 |
-| 0 | Abstain | 불확실하면 업데이트 보류 |
-| -1 | Corrective Suppression | 충돌 성분 억제 |
+| 0 | Abstain | 불확실하면 업데이트 skip |
+| -1 | Corrective Suppression | contradiction-related update 억제 |
 
 즉:
 - 단순 selective retention이 아니라,
@@ -56,11 +44,11 @@ g_t \in {-1,0,1}
 
 ---
 
-# 🧠 Architecture
+# 🧠 Architecture Overview
 
 ## 1. Expanded Orthogonal Projection
 
-입력을 고차원 overcomplete latent space로 projection하고,
+입력을 higher-dimensional latent space로 projection하고,
 orthogonal regularization을 적용한다.
 
 ### 목적
@@ -76,55 +64,52 @@ orthogonal regularization을 적용한다.
 
 ## 2. Ternary Targeted Gating
 
-기존 sigmoid selective gate를:
-
-[
-g_t \in {-1,0,1}
-]
-
-기반 ternary polarity gate로 확장한다.
+ContraMamba는 기존 sigmoid selective routing을 ternary polarity gating으로 확장한다.
 
 ---
 
-### ✅ (g_t = +1) — Reinforcement
+### +1 — Reinforcement
 
-기존 상태와 일치하는 정보 강화.
+consistent information strengthens memory accumulation.
 
 - evidence accumulation
 - memory reinforcement
 
 ---
 
-### ⚪ (g_t = 0) — Abstention
+### 0 — Abstention
 
-불확실하거나 관련 없는 정보는 skip.
+uncertain or irrelevant updates are skipped.
 
-- no-op transition
-- uncertainty-aware update skipping
-- sparse transition dynamics
+이는:
+- uncertainty-aware transitions
+- sparse updates
+- hallucination mitigation through abstention
+
+을 가능하게 한다.
 
 즉:
 > "모르면 업데이트하지 않는다"
 
-를 state dynamics 수준에서 구현.
+를 state dynamics 수준에서 구현한다.
 
 ---
 
-### ❌ (g_t = -1) — Corrective Suppression
+### -1 — Corrective Suppression
 
-충돌 가능성이 높은 입력에 대해 reverse update 수행.
+contradiction-sensitive updates are reversed before entering the hidden state transition.
 
-- contradiction-aware transition
+이는:
 - corrective residual dynamics
 - latent conflict suppression
+- contradiction-aware memory correction
 
-기존 Mamba가:
-- selective retention
+을 수행한다.
 
-에 집중했다면,
+기존 Mamba가 selective retention에 집중했다면,
 
 ContraMamba는:
-- corrective memory dynamics
+> corrective memory dynamics
 
 를 수행한다.
 
@@ -132,199 +117,129 @@ ContraMamba는:
 
 # ⚡ Destructive Corrective Update
 
-기존 selective scan:
+Original selective scan:
 
-[
-h_t = A h_{t-1} + B_t x_t
-]
+text id="7h4o2m" h_t = A h_(t-1) + B_t x_t 
 
 ContraMamba:
 
-[
-h_t = A h_{t-1} + g_t(B_t x_t)
-]
+text id="8v1k9c" h_t = A h_(t-1) + g_t(B_t x_t) 
 
-특히:
+When the gate becomes -1,
+the update direction is reversed to suppress contradiction-related latent components.
 
-[
-g_t = -1
-]
+이는 단순 sign inversion이라기보다:
 
-일 때,
-입력 업데이트 방향을 반전시켜 contradiction-related latent component를 억제한다.
+- vector subtraction as error correction
+- destructive interference in latent space
+- corrective memory stabilization
 
-이는:
-- sign inversion 자체라기보다,
-- vector subtraction 기반 corrective update
+으로 해석된다.
 
-로 해석된다.
+중요하게도,
+ContraMamba는 symbolic logical reasoning 자체를 주장하지 않는다.
 
----
+대신:
+> contradiction-aware corrective dynamics in representation space
 
-## Geometric Interpretation
-
-ContraMamba의 corrective suppression은:
-
-> "Vector Subtraction as Error Correction"
-
-으로 해석 가능하다.
-
-즉:
-- hidden state 내부의 conflict-related activation을
-- 반대 방향 residual로 상쇄(cancellation)하는 방식.
-
-이는:
-- destructive interference
-- latent energy suppression
-- corrective state stabilization
-
-관점으로 연결 가능하다.
+를 제안한다.
 
 ---
 
 # 🛡️ Abstention-Aware Safety
 
-[
-g_t = 0
-]
+ContraMamba는 uncertainty-aware abstention dynamics를 도입한다.
 
-gate는:
-- sparse computation
-뿐 아니라,
+0 gate를 통해:
+- uncertain updates를 skip하고,
+- ambiguous state를 유지할 수 있다.
 
-- uncertainty preservation
-- overconfident generation suppression
-
-역할도 수행한다.
+Potential benefits:
+- reduced hallucination
+- safer generation
+- trustworthy responses
+- uncertainty-aware reasoning
 
 즉:
 > "모르는 것을 모른다고 할 수 있는 모델"
 
 을 목표로 한다.
 
-이는:
-- hallucination mitigation
-- trustworthy generation
-- AI Safety
-
-와 연결된다.
-
 ---
 
-# ⚙️ Efficient Linear Scaling
+# ⚡ Efficient Linear Scaling
 
 ContraMamba는 기존 SSM selective scan 구조를 유지하므로:
+- linear-time sequence scaling
+- no quadratic attention matrix
 
-[
-O(Ld)
-]
-
-linear scaling characteristic을 유지한다.
+특성을 유지한다.
 
 또한 ternary gating은:
 - lightweight element-wise operation
 - sign-aware routing
-- branch-free implementation
+- hardware-friendly implementation
 
 형태로 구현 가능하다.
 
-따라서:
-- Triton
-- CUDA
-- fused scan kernel
-
-기반 hardware-aware optimization과도 호환 가능하다.
+Compatible with:
+- Triton kernels
+- CUDA fused scan
+- parallel scan algorithms
 
 ---
 
-# 🔬 Training Strategy
+# 🔬 Planned Evaluation
 
-## Stage 1 — Soft Continuous Gating
-
-초기 학습:
-
-[
-g_t = \tanh(W_g x_t)
-]
-
-사용.
-
-목적:
-- stable optimization
-- smooth gradient flow
-
----
-
-## Stage 2 — Hard Ternary Discretization
-
-후반부:
-
-[
-g_t \rightarrow {-1,0,1}
-]
-
-using STE (Straight-Through Estimator).
-
-목표:
-- discrete corrective routing
-- stable training dynamics
-
----
-
-# 📊 Evaluation Plan
-
-## 1. Synthetic Contradiction Task
+## Synthetic Contradiction Tasks
 
 예시:
+- "Paris is capital of France"
+- followed by:
+- "Paris is capital of Germany"
 
-- "Paris is capital of France."
-- 이후:
-  "Paris is capital of Germany."
-
-입력 시:
-- latent trajectory
-- corrective suppression
-- contamination recovery
-
-분석.
+분석:
+- latent trajectory recovery
+- corrective suppression behavior
+- state contamination dynamics
 
 ---
 
-## 2. TruthfulQA
+## TruthfulQA Benchmark
 
 TruthfulQA
 
-측정:
+Evaluate:
 - hallucination reduction
 - abstention behavior
 - uncertainty-aware generation
 
 ---
 
-## 3. Conflict-RAG Evaluation
+## Conflict-RAG Evaluation
 
-충돌 retrieval 상황에서:
+Measure:
 - contradiction robustness
 - false acceptance rate
-- conflict-sensitive suppression
-
-평가.
+- retrieval conflict handling
 
 ---
 
-# 🎯 Core Research Claim
+# 🎯 Research Goal
 
-ContraMamba는:
+ContraMamba는 sequence model이 단순 selective retention을 넘어:
 
-> contradiction-aware ternary state transitions
+- corrective memory dynamics
+- contradiction-sensitive transitions
+- abstention-aware generation
 
-를 통해,
+을 수행할 수 있는지 탐구한다.
 
-- corrective suppression
-- abstention-aware updates
-- conflict-sensitive memory dynamics
+동시에:
+- efficient linear-time computation
+- hardware-aware implementation
 
-를 linear-time state space model 내부에 도입한다.
+을 유지하는 것을 목표로 한다.
 
 ---
 
@@ -333,7 +248,7 @@ ContraMamba는:
 - [x] Research concept formulation
 - [ ] Mamba baseline reproduction
 - [ ] Ternary gate implementation
-- [ ] Synthetic contradiction benchmark
+- [ ] Synthetic contradiction experiments
 - [ ] TruthfulQA evaluation
 - [ ] Conflict-RAG benchmark
-- [ ] Hardware-aware optimizatio
+- [ ] Hardware-aware optimization
