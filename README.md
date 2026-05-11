@@ -73,5 +73,18 @@ e_pos/e_neg는 클수록 해당 공간에 강하게 속함을 의미.
 - [ ] Parseval 정리 기반 Unknown(0) 판단
 - [ ] DCT 행렬로 A 행렬 초기화 및 고정
 - [ ] 직교 subspace 계층 구조 학습
+
+## 한계 및 향후 연구
+
+### 직교 제약의 딜레마
+- Subspace freeze 시 Mamba backbone이 고정된 공간에 맞게 
+  표현을 조정하지 못해 성능 저하
+- Backbone까지 freeze하면 학습 자체가 불가능
+- 완전한 직교성 보장과 학습 자유도 사이의 트레이드오프 존재
+
+### 향후 연구 방향
+- [ ] Backbone과 Subspace를 교대로 학습하는 방식 (alternating training)
+- [ ] 복소수 SSM으로 확장 (S4 계열)
+- [ ] 생성 태스크로 확장 및 역질문 모듈 구현
 - [ ] 생성 태스크로 확장
 - [ ] 삼진논리 기반 S+/S- 직교 subspace 설계
