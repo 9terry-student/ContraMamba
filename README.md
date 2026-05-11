@@ -70,9 +70,15 @@ e_pos/e_neg는 클수록 해당 공간에 강하게 속함을 의미.
 ## 로드맵
 
 - [x] 3값 출력 헤드
-- [ ] Parseval 정리 기반 Unknown(0) 판단
-- [ ] DCT 행렬로 A 행렬 초기화 및 고정
-- [ ] 직교 subspace 계층 구조 학습
+- [x] Parseval 정리 기반 S+/S- 직교 subspace 설계
+- [x] DCT 초기화 + Attention Pooling
+- [x] 비대칭 Gap Loss로 True/False 에너지 분리
+- [x] 개별 Subspace Freeze (S_pos, S_neg 독립 제어)
+- [ ] Confidence threshold 기반 Unknown(0) 판단
+- [ ] 계층적 직교 subspace (과일⊥동물, 사과↔바나나)
+- [ ] 그래프 추론 연동 (0=모름 → 지식 그래프 탐색 → 재판단)
+- [ ] 복소수 SSM으로 확장
+- [ ] 생성 태스크로 확장 및 역질문 모듈 구현
 
 ## 한계 및 향후 연구
 
