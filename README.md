@@ -89,6 +89,14 @@ e_pos/e_neg는 클수록 해당 공간에 강하게 속함을 의미.
 - Backbone까지 freeze하면 학습 자체가 불가능
 - 완전한 직교성 보장과 학습 자유도 사이의 트레이드오프 존재
 
+### 동적 해빙 (Dynamic Unfreezing)
+- 개념: Frozen된 직교 기저를 강한 반증 증거 감지 시 자동으로 해빙
+- 트리거: inference 중 에너지 갭이 강한 음수 (gap < -strong_threshold) 감지
+- 업데이트: 극소량 lr (1e-6)로 미세 조정 후 재동결
+- 철학: 단단한 공리(frozen)도 충분한 반증 앞에서 수정 가능한 말랑말랑한 뇌
+- 관련 분야: Continual Learning, Catastrophic Forgetting 방지
+- 난이도: 높음 (언제/얼마나 unfreeze할지 기준 설계 필요)
+
 ### 향후 연구 방향
 - [ ] Backbone과 Subspace를 교대로 학습하는 방식 (alternating training)
 - [ ] 복소수 SSM으로 확장 (S4 계열)
