@@ -59,8 +59,12 @@ e_pos/e_neg는 클수록 해당 공간에 강하게 속함을 의미.
 | 모델 | Val Accuracy | 비고 |
 |---|---|---|
 | Mamba-130m 베이스라인 | 0.6217 | 질문만 입력 |
-| ContraMamba v1 (epoch 3) | 0.6780 | 질문+지문 입력 |
-| ContraMamba v2 (epoch 11) | 0.6596 | 직교성 강화 |
+| ContraMamba v2 | 0.6780 | 질문+지문, classifier |
+| ContraMamba v3 (threshold=8.5) | 0.7005 | Unknown 제외 정확도 |
+
+### 삼진논리 출력 분포 (threshold=8.5)
+- Known 정확도: 0.7005
+- Unknown 비율: 30.37%
 
 ### 에너지 분리 결과 (v2)
 | 샘플 | S+ 에너지 | S- 에너지 | 갭 |
@@ -71,15 +75,17 @@ e_pos/e_neg는 클수록 해당 공간에 강하게 속함을 의미.
 ## 로드맵
 
 - [x] 3값 출력 헤드
-- [x] Parseval 정리 기반 S+/S- 직교 subspace 설계
+- [x] S+/S- 직교 subspace 설계
 - [x] DCT 초기화 + Attention Pooling
-- [x] 비대칭 Gap Loss로 True/False 에너지 분리
-- [x] 개별 Subspace Freeze (S_pos, S_neg 독립 제어)
-- [ ] Confidence threshold 기반 Unknown(0) 판단
-- [ ] 계층적 직교 subspace (과일⊥동물, 사과↔바나나)
-- [ ] 그래프 추론 연동 (0=모름 → 지식 그래프 탐색 → 재판단)
-- [ ] 복소수 SSM으로 확장
-- [ ] 생성 태스크로 확장 및 역질문 모듈 구현
+- [x] 비대칭 Gap Loss
+- [x] 개별 Subspace Freeze
+- [x] Threshold 기반 Unknown 판단
+- [x] Threshold Loss로 학습
+- [ ] Unknown 샘플 분석
+- [ ] 계층적 직교 subspace
+- [ ] 그래프 추론 연동
+- [ ] 동적 해빙
+- [ ] 생성 태스크 확장
 
 ## 한계 및 향후 연구
 
