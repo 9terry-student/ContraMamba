@@ -88,7 +88,7 @@ e_pos/e_neg는 클수록 해당 공간에 강하게 속함을 의미.
 - [x] 개별 Subspace Freeze
 - [x] Threshold 기반 Unknown 판단
 - [x] Threshold Loss로 학습
-- [ ] Unknown 샘플 분석
+- [x] Unknown 샘플 분석
 - [ ] 계층적 직교 subspace
 - [ ] 그래프 추론 연동
 - [ ] 동적 해빙
