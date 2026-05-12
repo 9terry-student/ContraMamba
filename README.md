@@ -81,18 +81,18 @@ e_pos/e_neg는 클수록 해당 공간에 강하게 속함을 의미.
 
 ## 로드맵
 
-- [x] 3값 출력 헤드
 - [x] S+/S- 직교 subspace 설계
 - [x] DCT 초기화 + Attention Pooling
-- [x] 비대칭 Gap Loss
-- [x] 개별 Subspace Freeze
+- [x] 비대칭 Gap Loss (v1)
+- [x] 개별 Subspace Freeze (v2)
+- [x] 3값 출력 헤드
 - [x] Threshold 기반 Unknown 판단
 - [x] Threshold Loss로 학습
-- [x] Unknown 샘플 분석
-- [ ] 계층적 직교 subspace
-- [ ] 그래프 추론 연동
-- [ ] 동적 해빙
-- [ ] 생성 태스크 확장
+- [x] Unknown 샘플 분석 (v3)
+- [ ] 계층적 직교 subspace (v4)
+- [ ] 그래프 추론 연동 (v5)
+- [ ] 동적 해빙 (v6)
+- [ ] 생성 태스크 확장 (v7)
 
 ## 한계 및 향후 연구
 
