@@ -89,6 +89,14 @@ e_pos/e_neg는 클수록 해당 공간에 강하게 속함을 의미.
 - [x] Threshold 기반 Unknown 판단
 - [x] Threshold Loss로 학습
 - [x] Unknown 샘플 분석 (v3)
+- [ ] Geometric Energy Space 기반 Unknown State Modeling
+  - ignorance (r < r_min): 전체 evidence 부족 상태
+  - ambiguity (r_min ≤ r < r_max, θ ≈ 45°): 약한 evidence conflict 및 결정 경계 모호성
+  - contradiction (r ≥ r_max, θ ≈ 45°): 강한 positive/negative evidence 충돌
+  - true region (θ < 45° - δ): positive evidence 우세
+  - false region (θ > 45° + δ): negative evidence 우세
+  - Unknown을 단일 confidence/energy threshold가 아닌 geometric region partition으로 정의
+  - "Unknown is not a scalar threshold but a geometric region in energy space"
 - [ ] 계층적 직교 subspace (v4)
 - [ ] 그래프 추론 연동 (v5)
 - [ ] 동적 해빙 (v6)
