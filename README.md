@@ -154,18 +154,12 @@ Geometric Classifier
 - W_low가 커지면 DCT 기여를 압도할 수 있음 → W_low norm 모니터링 필수
 - h_high = h - h_low 정의상 직교하지만, energy head가 실제로 exception/anomaly를 학습하는지는 실험으로 확인 필요
 
-### Phase 2: Concept Formation
-- h = h_low + h_high는 decomposition이고, 여기서 concept이 자동으로 나오지 않음
-- concept emergence는 별도의 clustering / routing 메커니즘 필요
-- 계획: z = concat(h_low, h_high) 위에서 prototype learning 또는 graph community detection
-
 ### 동적 해빙 (Dynamic Unfreezing)
 - low component는 slow adaptation (낮은 lr), high component는 fast adaptation
 - 강한 반증 감지 시 low 방향도 미세 조정하는 동적 메커니즘 연구 예정
 - 관련 분야: Continual Learning, Catastrophic Forgetting 방지
 
 ### 향후 연구 방향
-- [ ] Phase 2: concept prototype routing (mixture of experts)
 - [ ] alternating training (backbone ↔ decomposition 교대 학습)
 - [ ] 복소수 SSM으로 확장 (S4 계열)
 - [ ] 생성 태스크 확장 및 역질문 모듈 구현
