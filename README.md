@@ -99,35 +99,61 @@ h̃_i = h_i + λ · GAT(G, h_i)
 ## 아키텍처 (v5)
 
 ```
-Input X = (x₁, …, xₙ)
-        ↓
-Mamba Encoder → H = Mamba(X)
-        ↓
-Attention Pooling → h = Σ αᵢ Hᵢ ∈ ℝᵈ
-        ↓
-Hybrid Frequency Decomposition
-    ├── h_low  = IDCT(DCT(h)[:k]) + W_low @ h
-    └── h_high = h - h_low
-        ↓
-Shared Prototype Manifold
-    ├── P_low, P_high  (view projection)
-    ├── q_low, q_high  (soft routing)
-    └── q_fused = α·q_low + (1-α)·q_high
-        ↓
-Co-Activation GAT → P_new (prototype update)
-        ↓
-Energy Head
-    ├── polarity p = σ(w)
-    ├── ratio   r = Σ qᵢ pᵢ
-    └── confidence c = 1 - H(q)/log(m)
-        ↓
-low_node_emb = (e_pos, e_neg, confidence)
-        ↓
-Graph Memory (FAISS top-K)
-        ↓
-Local GAT → refined geometric state
-        ↓
-Geometric Classifier → True / False / Unknown
+                 ┌─────────────────────┐
+                 │   Raw Semantic h    │
+                 │ (Mamba hidden state)│
+                 └─────────┬───────────┘
+                           │
+                Frequency Decomposition
+                           │
+          ┌────────────────┴────────────────┐
+          │                                 │
+          ▼                                 ▼
+ ┌─────────────────┐              ┌─────────────────┐
+ │      h_low      │              │     h_high      │
+ │ stable semantics│              │ residual/detail │
+ └────────┬────────┘              └────────┬────────┘
+          │                                │
+          │ Prototype Routing              │ Prototype Routing
+          ▼                                ▼
+ ┌─────────────────┐              ┌─────────────────┐
+ │      q_low      │              │     q_high      │
+ │ prototype probs │              │ prototype probs │
+ └────────┬────────┘              └────────┬────────┘
+          │                                │
+          ▼                                ▼
+ ┌─────────────────┐              ┌─────────────────┐
+ │      z_low      │              │     z_high      │
+ │ q_low @ P_low   │              │ q_high @ P_high │
+ └────────┬────────┘              └────────┬────────┘
+          │                                │
+          │ Reconstruction Residual        │
+          ▼                                ▼
+ ┌─────────────────┐              ┌─────────────────┐
+ │ r_low=h_low-z_l │              │r_high=h_high-z_h│
+ │ unexplained low │              │ unexplained high│
+ └────────┬────────┘              └────────┬────────┘
+          │                                │
+          └──────────────┬─────────────────┘
+                         │
+               Memory / Graph Refinement
+                         │
+          ┌──────────────┴──────────────┐
+          ▼                             ▼
+ ┌─────────────────┐          ┌─────────────────┐
+ │ refined_low     │          │ refined_high    │
+ │ semantic anchor │          │ uncertainty cue │
+ └────────┬────────┘          └────────┬────────┘
+          │                             │
+          └──────────────┬──────────────┘
+                         ▼
+               ┌──────────────────┐
+               │ Energy Geometry  │
+               │ ratio / radius   │
+               │ uncertainty type │
+               └────────┬─────────┘
+                        ▼
+                 Final Prediction
 ```
 
 ---
@@ -253,7 +279,6 @@ tqdm
 - [x] Label-aware edge gating
 - [x] Warmup-scheduled proto / GAT 활성화
 - [ ] Dual graph inference 완전 연동 (v5 진행 중)
-- [ ] Prototype 시각화 대시보드 개선
 - [ ] 동적 해빙 (low-rate slow / high-rate fast adaptation)
 - [ ] 복소수 SSM 확장 (S4 계열)
 - [ ] 생성 태스크 확장 및 역질문 모듈
