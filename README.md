@@ -329,7 +329,7 @@ tqdm
 - [x] High branch prototype bank (독립 P_high_bank)
 - [x] Low-High disagreement loss
 - [x] Contrastive separation loss (h_low ⊥ h_high)
-- [ ] Dual graph inference 완전 연동
+- [x] Dual graph inference 완전 연동
 - [ ] 동적 해빙 (low slow / high fast adaptation)
 - [ ] 복소수 SSM 확장 (S4 계열)
 - [ ] 생성 태스크 확장 및 역질문 모듈
