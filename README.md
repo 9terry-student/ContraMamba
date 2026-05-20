@@ -1,7 +1,6 @@
 # ContraMamba
 
 > 환각 감소를 위한 명시적 불확실성 출력 기반 Mamba 분류 모델  
-> **현재 버전: v7** — Single Semantic Manifold + Residual Contradiction
 
 ## 동기
 
