@@ -310,6 +310,7 @@ tqdm
 | v5 | Shared Prototype Manifold + Co-Activation GAT + Graph Memory |
 | v6 | PrototypeController (FiLM + EMA gating) + prototype normalize 안정화 |
 | v7 | **SSM decomp 제거** / h_high = h − stopgrad(z_semantic) 으로 재정의 / Sample-wise EMA Controller / High branch residual contradiction 구조화 |
+| v8 | High prototype bank (P_high_bank) / disagreement loss / contrastive separation loss |
 
 ---
 
