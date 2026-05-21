@@ -1,355 +1,356 @@
-# ContraMamba
+# ContraMamba v10
 
-> 환각 감소를 위한 명시적 불확실성 출력 기반 Mamba 분류 모델  
+> **Mamba 기반 명시적 불확실성 분류 모델**  
+> Semantic manifold / Topology manifold 이중 공간 + episodic memory + FAISS geometric retrieval
+
+-----
 
 ## 동기
 
-기존 LLM은 틀린 답도 확신을 갖고 생성하는 환각 문제가 있음.  
-ContraMamba는 모델이 불확실성을 명시적으로 표현하도록 강제하는
-**3값 출력 헤드**를 도입해 이 문제를 완화하고자 함.
+기존 LLM은 틀린 답도 확신을 갖고 생성하는 **환각(hallucination)** 문제가 있다.  
+ContraMamba는 모델이 불확실성을 **명시적으로 표현**하도록 강제하는 3값 출력 헤드와,  
+의미 공간과 위상 공간을 기하학적으로 분리하는 dual manifold 구조를 통해 이 문제를 완화한다.
 
----
+-----
 
-## 핵심 아이디어
-
-### 1. 3값 출력 {False, Unknown, True}
-
-소프트맥스 확률 대신 세 가지 상태 중 하나를 출력:
-
-| 출력 | 의미 |
-|---|---|
-| `True` (2) | 맞음 — entailment |
-| `Unknown` (1) | 모름 — neutral |
-| `False` (0) | 틀림 — contradiction |
-
----
-
-### 2. Single Shared Semantic Manifold + Residual Contradiction
-
-v7의 핵심 구조 변경. 기존 SSM frequency decomposition(A_log 기반 채널 분리) 대신,
-**prototype routing 결과를 기준으로 두 branch를 의미론적으로 분리**:
+## 핵심 철학 (v10)
 
 ```
-h  (Mamba pooled hidden)
-│
-├─ prototype routing → z_semantic
-│
-├─ low branch:  h_low  = z_semantic + 0.1 · h    ← semantic refinement
-│
-└─ high branch: h_high = h - stopgrad(z_semantic) ← residual contradiction
+LOW  = semantic attractor space   → "무엇을 의미하는가"
+HIGH = orthogonal topology space  → "얼마나 불확실한가"
+FAISS = long-term geometric memory → "과거 기하 압축"
+Episodic = event compression buffer → "충돌·새로움 기록"
+Controller = LOW-space dynamic modulation → "slot EMA로 안정화"
 ```
 
-- `h_low` : prototype manifold 위의 성분 → entailment / contradiction 방향
-- `h_high` : prototype으로 설명되지 않는 잔차 → 모순 / 노이즈 / 미지 신호
-- `h_low + h_high ≈ h` → 정보 손실 없음 (stopgrad로 gradient 분리)
+**핵심 한 줄:**  
+LOW는 *의미 결정*, HIGH는 *존재 불확실성 기하*, MEMORY는 *충돌 기록*, FAISS는 *과거 기하 압축*
 
-**SSMFrequencyDecomposition 제거** — W_refine, W_gate, A_log mask 불필요.
+-----
 
----
+## 3값 출력
 
-### 3. Shared Prototype Manifold
+소프트맥스 확률 대신 세 가지 상태를 기하학적으로 결정:
 
-공유 프로토타입 행렬 `P_shared ∈ ℝ^(n_proto × hidden)`에서 단일 뷰를 투영:
+|출력       |레이블|의미                |
+|---------|---|------------------|
+|`True`   |2  |Entailment — 맞음   |
+|`Unknown`|1  |Neutral — 모름      |
+|`False`  |0  |Contradiction — 틀림|
 
-```
-P_low  = F.normalize(LayerNorm(P_shared @ W_low^T),  dim=1)
-P_high = F.normalize(LayerNorm(P_shared @ W_high^T), dim=1)
+-----
 
-q_low  = softmax(normalize(h_low)  @ P_low^T  / τ)
-q_fused = q_low   (v7: high bank 통합 전 단일 routing)
-
-z_semantic = q_fused @ P_norm
-```
-
-- context-adaptive: `ctx_encoder`로 배치별 P_shared 미세 조정
-- EMA usage tracking으로 prototype collapse 방지
-- dead prototype rescue: 10 step 이상 미사용 prototype 자동 재초기화
-
----
-
-### 4. PrototypeController (FiLM + Sample-wise EMA)
-
-routing 결과를 기반으로 **low branch만** FiLM 교정:
+## 아키텍처 (v10)
 
 ```
-z_cond  = q_ema_i @ P_norm             ← sample-wise EMA q로 conditioning
-γ, β    = FiLM_net(z_cond)             ← scale + shift 분리
-gate    = conf(q) · focus(q)           ← entropy/confidence 곱 게이트
+INPUT: input_ids
+        │
+        ▼
+┌─────────────────────────────┐
+│  Mamba Backbone (130M)      │
+│  + Attention Pooling        │
+│  h ∈ ℝ^hidden              │
+└─────────────┬───────────────┘
+              │
+     ┌────────┴─────────┐
+     ▼                  ▼
+┌──────────────────┐  ┌───────────────────────────────┐
+│  LOW: Semantic   │  │  HIGH: Topology               │
+│  Attractor Space │  │  Orthogonal Residual Space    │
+│                  │  │                               │
+│  P_low routing   │  │  semantic_residual            │
+│  z_semantic      │  │  = h - proj(z_low)            │
+│  h_low = z_sem   │  │                               │
+│       + 0.1·h    │  │  Gram-Schmidt orthogonalize   │
+│                  │  │  h_high_base ⊥ z_low          │
+│  Controller      │  │                               │
+│  (FiLM + EMA)    │  │  P_high routing               │
+│                  │  │  topology_key                 │
+│  Energy Head     │  │  = h_high_base - z_high       │
+│  ratio / r_low   │  │                               │
+└──────────────────┘  │  FAISS retrieval              │
+                      │  r_ctx → HIGH biasing only    │
+                      │                               │
+                      │  epistemic decomposition      │
+                      │  novelty / contradiction /    │
+                      │  ambiguity / ignorance        │
+                      └───────────────┬───────────────┘
+                                      │
+                              ┌───────┴────────┐
+                              ▼                ▼
+                         WRITE (novelty    READ (proto +
+                         or contradiction  FAISS neighbor
+                         triggered)        weighted fusion)
+                              └───────┬────────┘
+                                      ▼
+                           h_high_enriched
+                           = 0.7·h_high + 0.3·f(episodic)
+                                      │
+                                      ▼
+                           h_final = h_low
+                           (HIGH → epistemic gate +
+                            uncertainty modulation +
+                            memory write trigger)
+                                      │
+                                      ▼
+                              CLASSIFICATION
+                           ratio_low, r_low → {True / Unknown / False}
+```
+
+-----
+
+## 모듈 설명
+
+### AttentionPooling
+
+시퀀스 hidden state를 가중 평균으로 단일 벡터로 압축.  
+`w = softmax(Linear(x))`, `h = (x * w).sum(dim=1)`
+
+-----
+
+### SharedPrototypeManifold
+
+두 개의 완전 독립 prototype 공간을 관리:
+
+```
+P_low  ∈ ℝ^(n_proto × hidden)  → semantic attractor manifold
+P_high ∈ ℝ^(n_proto × hidden)  → residual topology manifold (완전 독립)
+```
+
+- **context-adaptive**: `ctx_encoder`로 배치별 P_low 미세 조정 (P_high는 고정)
+- **온도 스케줄**: `τ = max(τ_min, τ_base × decay^progress)` — warmup 이후 점진적 hard routing
+- **EMA usage tracking**: prototype collapse 방지
+- **dead prototype rescue**: 10 step 이상 미사용 prototype 자동 재초기화
+- **velocity loss**: prototype 이동 속도 제한 (안정성 보장)
+
+-----
+
+### Gram-Schmidt Orthogonalization
+
+HIGH path 입력을 LOW semantic manifold와 완전히 분리:
+
+```python
+h_high_base = h - proj(h, z_low)  # semantic 성분 제거
+h_high_base = gram_schmidt_orthogonalize(semantic_residual, z_low_proj)
+```
+
+이후 LayerNorm으로 정규화. **H_high ⊥ z_low 를 수학적으로 보장.**
+
+-----
+
+### PrototypeController
+
+LOW branch만을 대상으로 FiLM 기반 조정:
+
+```
+q_ema (slot EMA)  →  z = q_ema @ P_low_norm
+FiLM: γ, β = film_net(z)
+gate = conf(q) · focus(q)           ← entropy/confidence 곱 게이트
 h_low_hat = h_low + gate · (γ·LN(h_low) + β - h_low)
 ```
 
-- **Sample-wise EMA** (slot_size=512): 배치 평균 대신 샘플별 독립 EMA
-- **Entropy/Confidence gate**: routing이 불확실할 때 교정 억제
-- **FiLM modulation**: residual 덧셈 대신 scale + shift 분리로 방향·크기 독립 조정
-- Mamba layer 중간 삽입 없음 — routing 이후에만 동작
+- **slot_size=512**: 샘플별 독립 EMA (배치 평균 아님)
+- **drift gate**: z와 h_low의 cosine similarity 기반 추가 게이팅
+- r_ctx_high가 있으면 LOW에 HIGH context 역투영 차감 (분리 강제)
 
----
+-----
 
-### 5. Prototype Co-Activation GAT
+### EpisodicMemory
 
-배치 내 샘플들의 공동 활성화로 prototype 전파:
+prototype별 circular buffer (mem_size=50):
 
-```
-A_ij   = softmax(q_fused^(i)^T · q_fused^(j) / √B)
-P_new  = W(A @ P_shared)
-q_fused_refined = softmax(normalize(h_enriched) @ normalize(P_new)^T / τ)
-```
-
----
-
-### 6. Geometric Energy Space
+- **WRITE 조건**: `contradiction_score > threshold` OR `novelty_score > threshold`
+- **저장 대상**: topology_key + h_high + residual_cache (EMA)
+- **READ**: top-3 prototype 가중 앵커 + episode cosine 검색 + cache 혼합
 
 ```
-e_pos, e_neg = EnergyHead(q_fused, h_enriched)
-ratio = e_pos / (e_pos + e_neg)     ← truth polarity
-r     = sqrt(e_pos² + e_neg²)       ← confidence radius
-
-h_high_norm  = ‖h_high‖             ← contradiction intensity
-ratio_high   = sigmoid(h_high_norm - 1.0)
+h_high_enriched = 0.7·h_high + 0.3·fusion_gate([anchor ‖ ep_summary ‖ cache])
 ```
 
-| 영역 | 조건 |
-|---|---|
-| True | `r > r_min` & `ratio > 0.5 + δ` |
-| False | `r > r_min` & `ratio < 0.5 - δ` |
-| ignorance | `r ≤ r_min` |
-| ambiguity | `r_min < r` & `ratio ≈ 0.5` & `r_high < r_max` |
-| contradiction | `r_min < r` & `ratio ≈ 0.5` & `r_high ≥ r_max` |
+-----
 
-**h_high의 역할 변화**: v7부터 `h_high_norm`이 prototype 밖 에너지를 직접 측정.  
-레이블별 타깃:
-- entailment → `h_high_norm` 억제 (prototype에 잘 투영됨)
-- contradiction → `h_high_norm` 증가 (manifold 밖에 위치)
-- neutral → `h_high_norm ≈ 1.0` (중간)
-
----
-
-### 7. Prototype Memory Bank
-
-episodic + semantic cache 이중 메모리:
+### FAISSMemory
 
 ```
-write: q_fused > threshold 인 prototype 슬롯에 z_input 기록 (circular buffer)
-read:  top-3 prototype 기준으로 episodic + semantic 혼합 검색
-       h_enriched = h + fusion_gate(anchor ‖ ep_summary ‖ cache)
+update: topology_key 버퍼에 누적 (max 2000)
+rebuild_index: L2 normalize → IndexFlatIP
+retrieve: top-k cosine neighbor → center + 0.3·spread
 ```
 
----
+**HIGH branch에만 주입** — LOW에는 절대 직접 연결 안 함.
 
-### 8. Graph Memory + Local GAT Refinement
+-----
 
-FAISS index로 훈련 셋에서 top-K cosine neighbor 검색 후 Local GAT로 정제:
-
-```
-h̃_i = clamp(h_i + λ · GAT(G, h_i), min=0)
-```
-
-- Low GAT: q_fused cosine similarity 기반 proto-aware edge
-- High GAT: h_high_norm 기반 contradiction-aware edge
-- label gating으로 동일 레이블 이웃에 더 높은 가중치
-
----
-
-### 9. 왜 Mamba인가?
-
-- 추론 시간 O(n) — Transformer의 O(n²) 대비 효율적
-- SSM 구조가 선형 시불변 필터와 동일한 수학적 구조
-- HiPPO 초기화가 자연스럽게 직교 기저로 시퀀스를 투영
-
----
-
-## 아키텍처 (v7)
+### DualEnergyHead
 
 ```
-                 ┌─────────────────────┐
-                 │   Raw Semantic h    │
-                 │ (Mamba + AttnPool)  │
-                 └─────────┬───────────┘
-                           │
-               Shared Prototype Manifold
-               (P_shared, ctx_encoder)
-                           │
-                    z_semantic = q @ P
-                           │
-          ┌────────────────┴────────────────┐
-          │                                 │
-          ▼                                 ▼
- ┌─────────────────┐              ┌──────────────────────┐
- │     h_low       │              │       h_high         │
- │ z_sem + 0.1·h   │              │  h - stopgrad(z_sem) │
- │ semantic anchor │              │  residual / contrast │
- └────────┬────────┘              └────────┬─────────────┘
-          │                                │
-          ▼                                │
- ┌─────────────────┐                       │
- │PrototypeCtrl    │                       │
- │ FiLM + EMA gate │                       │
- │ (low only)      │                       │
- └────────┬────────┘                       │
-          │                                │
-          └──────────────┬─────────────────┘
-                         │
-              Memory Bank + CoAttn GAT
-                         │
-          ┌──────────────┴──────────────┐
-          ▼                             ▼
- ┌─────────────────┐          ┌─────────────────┐
- │ h_enriched      │          │  h_high_norm    │
- │ semantic anchor │          │ contradiction   │
- │ (memory 보강)   │          │    intensity    │
- └────────┬────────┘          └────────┬────────┘
-          │                             │
-          └──────────────┬──────────────┘
-                         ▼
-               ┌──────────────────┐
-               │  Energy Geometry │
-               │  ratio / radius  │
-               │  uncertainty type│
-               └────────┬─────────┘
-                        ▼
-                 Final Prediction
-            {True / Unknown / False}
+e_pos = softplus(W_pos · h_low)
+e_neg = softplus(W_neg · h_low)
+ratio = e_pos / (e_pos + e_neg)   ← truth polarity  [0, 1]
+r     = sqrt(e_pos² + e_neg²)     ← confidence radius
 ```
 
----
+-----
+
+### Epistemic Score 분해
+
+`q_high`의 entropy와 `h_high`의 norm을 조합해 4가지 불확실성 유형 구분:
+
+|유형               |조건              |의미                  |
+|-----------------|----------------|--------------------|
+|**ignorance**    |norm↓ · entropy↓|정보 자체가 없음           |
+|**ambiguity**    |norm↓ · entropy↑|여러 해석 가능, 확신 낮음     |
+|**contradiction**|norm↑ · entropy↓|강하게 특정 prototype에 쏠림|
+|**novelty**      |norm↑ · entropy↑|고에너지 미지 입력          |
+
+-----
+
+## 기하학적 분류
+
+```
+r_low > r_min  AND  ratio > 0.5 + δ  →  True  (2)
+r_low > r_min  AND  ratio < 0.5 - δ  →  False (0)
+r_low ≤ r_min                        →  ignorance → Unknown (1)
+그 외                                →  epistemic score 최댓값 기반 Unknown 세부 유형
+```
+
+-----
 
 ## Loss 구성
 
 ```
-L_total = L_direction       (pos/neg margin loss)
-        + L_radius          (confidence floor)
-        + L_spread          (pos-neg center 분리)
-        + L_unknown         (neutral → ratio ≈ 0.5 유도)
-        + L_high_supervision(h_high_norm label-aware 타깃)
-        + L_proto           (VQ commit + uniformity + diversity + entropy)
-        + L_velocity        (prototype 이동 속도 제한)
-        + L_routing_consist (두 view KL consistency)
-        + L_load_balance    (prototype 사용 균등화)
-        + L_anticollapse    (low-high cosine 억제)
-        + L_orth            (W_low ⊥ W_high)
-        + L_align           (energy head - prototype 정렬)
-        + L_gat             (graph neighbor contrastive)
+L_total = L_direction          (pos/neg margin: ratio 방향)
+        + L_radius             (confidence floor: r > r_min)
+        + L_spread             (True/False center 분리)
+        + L_collapse           (ratio ≈ 0.5 붕괴 방지)
+        + L_unknown            (Unknown → ratio ≈ 0.5, r ≤ r_min)
+        + L_anticollapse_cos   (h_low ⊥ h_high cosine 억제)
+        + L_anticollapse_r     (r_high / r_low 비율 유지)
+        + L_high_supervision   (h_high norm label-aware 타깃)
+        + L_prototype          (VQ commit + uniformity + diversity + usage entropy)
+        + L_velocity           (prototype 이동 속도 제한)
+        + L_routing_consist    (두 noisy view KL consistency)
+        + L_separation         (epoch≥split: label-aware pull + low↔high push)
 ```
 
----
+-----
 
 ## 학습 스케줄
 
-| Epoch | 활성화 모듈 |
-|---|---|
-| 0–1 | Backbone (Mamba) + AttentionPooling |
-| ≥ 2 | + Local GAT (graph-assisted training) |
-| ≥ 3 | + Prototype Manifold + PrototypeController (FiLM EMA) |
-| ≥ 5 | + High GAT / GAT loss → representation alignment |
+|Epoch            |활성화                                        |
+|-----------------|-------------------------------------------|
+|0 – warmup_epochs|Mamba backbone + AttentionPooling만         |
+|≥ warmup_epochs  |+ Prototype routing + Controller (FiLM EMA)|
+|≥ warmup_epochs+2|+ EpisodicMemory write                     |
+|≥ split_epoch    |+ separation loss (label-aware contrastive)|
 
----
+-----
 
 ## 실험 설정
 
-- **모델**: `state-spaces/mamba-130m-hf`
-- **데이터셋**: SNLI (train 5,000 / val 1,000)
-- **태스크**: 3값 분류 (entailment / neutral / contradiction)
-- **레이블 매핑**: entailment → 2, neutral → 1, contradiction → 0
-- **배치 크기**: 16
-- **시퀀스 길이**: 64 (max_length)
+|항목    |값                                                 |
+|------|--------------------------------------------------|
+|모델    |`state-spaces/mamba-130m-hf`                      |
+|데이터셋  |SNLI (train 5,000 / val 1,000)                    |
+|태스크   |3값 분류 (entailment=2 / neutral=1 / contradiction=0)|
+|배치 크기 |16                                                |
+|시퀀스 길이|64                                                |
 
----
-
-## 결과 (이전 버전, BoolQ 기준)
-
-| 모델 | Val Accuracy | 비고 |
-|---|---|---|
-| Mamba-130m 베이스라인 | 0.6217 | 질문만 입력 |
-| ContraMamba v2 | 0.6780 | 질문+지문, classifier |
-| ContraMamba v3 (threshold=8.5) | 0.7005 | Unknown 제외 정확도 |
-| ContraMamba v4 (geometric) | 0.7209 | Known만 선별, geometric classifier |
-
----
+-----
 
 ## 주요 하이퍼파라미터
 
-| 파라미터 | 기본값 | 설명 |
-|---|---|---|
-| `n_proto` | 16 | prototype 개수 |
-| `proto_tau` | 0.1 | routing softmax 온도 |
-| `warmup_epochs` | 3 | prototype / controller 활성화 시점 |
-| `split_epoch` | 5 | GAT representation alignment 전환 시점 |
-| `ctrl_ema_decay` | 0.95 | sample-wise EMA decay |
-| `ctrl_slot_size` | 512 | EMA 순환 슬롯 수 |
-| `k` (FAISS) | 15 | graph memory neighbor 수 |
-| `delta` | 0.1 | geometric classification margin |
-| `r_min` | 0.5 | confidence 최소 threshold |
-| `mem_size` | 50 | episodic memory 슬롯 수 (proto별) |
-| `gat_alpha` | 0.3→0.1 | GAT residual 강도 (epoch 따라 감소) |
+|파라미터            |기본값 |설명                           |
+|----------------|----|-----------------------------|
+|`n_proto`       |16  |prototype 개수                 |
+|`proto_tau`     |0.1 |routing softmax 초기 온도        |
+|`warmup_epochs` |3   |prototype / controller 활성화 시점|
+|`split_epoch`   |5   |separation loss 활성화 시점       |
+|`ctrl_ema_decay`|0.95|slot EMA decay               |
+|`ctrl_slot_size`|512 |EMA 순환 슬롯 수                  |
+|`faiss_k`       |15  |FAISS top-k neighbor         |
+|`faiss_max_size`|2000|FAISS 버퍼 최대 크기               |
+|`mem_size`      |50  |prototype별 episodic 슬롯 수     |
+|`delta`         |0.1 |기하 분류 margin                 |
+|`r_min`         |0.5 |confidence 최소 threshold      |
 
----
+-----
 
 ## 의존성
 
 ```
 torch
-transformers        # MambaModel, MambaConfig
-torch-geometric     # GATConv, add_self_loops
-faiss-cpu / faiss-gpu
-datasets            # HuggingFace SNLI
+transformers       # MambaModel, MambaConfig
+faiss-cpu          # (GPU 환경: faiss-gpu)
+datasets           # HuggingFace SNLI
 numpy
 matplotlib
 tqdm
 ```
 
----
+-----
+
+## 모니터링 지표
+
+학습 중 확인해야 할 핵심 지표:
+
+|지표                                |정상 범위           |의미                   |
+|----------------------------------|----------------|---------------------|
+|`ratio_low True mean - False mean`|> 0.3 (warmup 후)|LOW branch 방향성       |
+|`routing_agree_rate`              |> 0.7           |prototype 안정성        |
+|`r_high / r_low`                  |≠ 1.0           |HIGH-LOW 분리          |
+|`ctrl_gate`                       |0.1 ~ 0.7       |FiLM 교정 강도           |
+|`ctrl_scale`                      |< 0.5           |FiLM 포화 여부           |
+|`q_entropy`                       |> 0             |prototype collapse 여부|
+
+-----
 
 ## 버전 히스토리
 
-| 버전 | 주요 변경 |
-|---|---|
-| v2 | 3값 출력 헤드 + classifier |
-| v3 | Unknown threshold 기반 선별 |
-| v4 | Geometric Energy Space 도입 |
-| v5 | Shared Prototype Manifold + Co-Activation GAT + Graph Memory |
-| v6 | PrototypeController (FiLM + EMA gating) + prototype normalize 안정화 |
-| v7 | **SSM decomp 제거** / h_high = h − stopgrad(z_semantic) 으로 재정의 / Sample-wise EMA Controller / High branch residual contradiction 구조화 |
-| v8 | High prototype bank (P_high_bank) / disagreement loss / contrastive separation loss |
+|버전 |주요 변경                                                                                                                      |
+|---|---------------------------------------------------------------------------------------------------------------------------|
+|v2 |3값 출력 헤드 + classifier                                                                                                      |
+|v3 |Unknown threshold 기반 선별                                                                                                    |
+|v4 |Geometric Energy Space 도입                                                                                                  |
+|v5 |Shared Prototype Manifold + Co-Activation GAT + Graph Memory                                                               |
+|v6 |PrototypeController (FiLM + EMA gating)                                                                                    |
+|v7 |SSM decomp 제거 / h_high = h − stopgrad(z_semantic)                                                                          |
+|v8 |High prototype bank (P_high_bank) / disagreement loss / contrastive separation                                             |
+|v10|**Gram-Schmidt 직교화** / P_low·P_high 완전 독립 / FAISS HIGH-only injection / epistemic 4분해 / velocity loss / slot EMA drift gate|
 
----
+-----
 
 ## 로드맵
 
-- [x] S⁺/S⁻ 직교 subspace 설계
-- [x] Attention Pooling
-- [x] 3값 출력 헤드 + Geometric Energy Space
+- [x] Geometric Energy Space (ratio / radius)
 - [x] Shared Prototype Manifold + soft routing
-- [x] Co-Activation GAT (prototype propagation)
-- [x] Graph Memory (FAISS) + Local GAT refinement
-- [x] EMA usage tracking + prototype diversity loss
-- [x] Label-aware edge gating
-- [x] PrototypeController — FiLM + sample-wise EMA gate
-- [x] Single semantic manifold + residual contradiction (v7)
-- [x] High branch prototype bank (독립 P_high_bank)
-- [x] Low-High disagreement loss
-- [x] Contrastive separation loss (h_low ⊥ h_high)
-- [x] Dual graph inference 완전 연동
-- [ ] 동적 해빙 (low slow / high fast adaptation)
-- [ ] 복소수 SSM 확장 (S4 계열)
-- [ ] 생성 태스크 확장 및 역질문 모듈
+- [x] PrototypeController (FiLM + sample-wise EMA gate)
+- [x] Dual prototype space (P_low ⊥ P_high)
+- [x] Gram-Schmidt orthogonalization (HIGH ⊥ LOW 수학적 보장)
+- [x] FAISS long-term geometric memory (HIGH only)
+- [x] EpisodicMemory (novelty/contradiction triggered write)
+- [x] Epistemic 4분해 (ignorance / ambiguity / contradiction / novelty)
+- [x] Velocity loss + routing consistency loss
+- [x] Separation loss (label-aware contrastive)
+- [ ] 동적 해빙 (LOW slow / HIGH fast adaptation)
+- [ ] ablation: HIGH 제거 시 성능 하락 측정
+- [ ] 생성 태스크 확장 (역질문 모듈)
 
----
+-----
 
-## 한계 및 향후 연구
+## 한계
 
-**Residual contradiction의 노이즈 혼재**  
-`h_high = h - stopgrad(z_semantic)`는 prototype으로 설명되지 않는 모든 성분을 담으므로
-순수 contradiction 신호와 학습 초기 노이즈가 섞일 수 있음.
-`high_supervision_loss`의 lambda 스케줄로 점진적 분리 유도.
+**Gram-Schmidt 직교화의 완전성**  
+수치적으로 완전한 직교가 보장되지 않을 수 있음. `orthogonality_loss`로 학습 중 보완.
 
 **Prototype collapse**  
-soft routing + EMA usage tracking으로 완화하고 있으나, 초기 학습 단계에서
-특정 prototype으로 쏠리는 현상이 발생할 수 있음. `visualize_usage()`로 per-epoch 확인 권장.
+초기 학습에서 특정 prototype으로 쏠릴 수 있음.  
+`visualize_usage()`로 per-epoch 확인 권장. `dead_counter > 10` 시 자동 rescue.
 
-**Energy head 방향성 검증**  
-`ratio_low True mean > ratio_low False mean` gap이 epoch 진행에 따라
-벌어지지 않으면 EnergyHead polarity 초기화 방향 재검토 필요.
+**h_final = h_low (alpha gate 미연결)**  
+현재 HIGH enrichment가 decision에 직접 반영되지 않음.  
+`alpha gate` 연결이 다음 우선 과제.
 
-**Controller gate 포화**  
-`ctrl_scale`이 너무 커지면 FiLM이 h_low를 과도하게 교정.
-학습 중 `ctrl_gate` / `ctrl_scale` 모니터링 권장.
+**FAISS warm-up 지연**  
+초기 epoch에서 FAISS index가 비어 있어 HIGH retrieval 없이 동작.  
+`topology_key is None` 체크 필요 (훈련 루프).
