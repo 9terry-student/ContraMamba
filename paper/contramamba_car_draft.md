@@ -2,7 +2,7 @@
 
 ## 1. Abstract
 
-Fact-verification systems are commonly evaluated by whether they assign the correct final label, but label correctness does not establish that a decision is internally licensed by the supplied evidence. We study this distinction through controlled fact verification, where targeted interventions alter entities, events, predicates, evidence sufficiency, or polarity while preserving other properties of a claim-evidence pair. We introduce ContraMamba-CAR, a classifier-auditor routing architecture that separates final-label prediction from evidence-entitlement auditing. A classifier proposes `SUPPORT`, `REFUTE`, or `NOT_ENTITLED`; a balanced auditor independently checks frame compatibility, predicate coverage, sufficiency, and polarity consistency; and a conservative router retains an entitled prediction only when the auditor gates pass. On `controlled_v5_v3`, containing 300 pair groups and 3,900 examples, ContraMamba-CAR reaches 0.929 +/- 0.003 accuracy and 0.906 +/- 0.005 macro-F1 across three seeds, with a measured entitled-output gate violation rate of 0.000 +/- 0.000 and output/internal polarity gap of 0.000 +/- 0.000. Performance is stable from routing thresholds 0.3 to 0.7. Self-routing ablations reveal that higher macro-F1 can coexist with weaker intervention consistency. These results support separating prediction and entitlement auditing within this controlled setting; they do not establish general factuality or real-world hallucination reduction.
+Fact-verification systems are commonly evaluated by whether they assign the correct final label, but label correctness does not establish that a decision is internally licensed by the supplied evidence. We study this distinction through controlled fact verification, where targeted interventions alter entities, events, predicates, evidence sufficiency, or polarity while preserving other properties of a claim-evidence pair. We introduce ContraMamba-CAR, a classifier-auditor routing architecture that separates final-label prediction from evidence-entitlement auditing. A classifier proposes `SUPPORT`, `REFUTE`, or `NOT_ENTITLED`; a balanced auditor independently checks frame compatibility, predicate coverage, sufficiency, and polarity consistency; and a conservative router retains an entitled prediction only when the auditor gates pass. On `controlled_v5_v3`, containing 300 pair groups and 3,900 examples, ContraMamba-CAR reaches 0.929 +/- 0.003 accuracy and 0.906 +/- 0.005 macro-F1 across three seeds. Conservative routing enforces zero retained-output gate violations by construction. At the default threshold, this constraint incurs a small empirical cost: 1.333 +/- 1.528 downgraded classifier-entitled predictions on average, a downgrade rate of 0.006 +/- 0.007, and no measured SUPPORT recall drop. Performance is stable from routing thresholds 0.3 to 0.7. These results support separating prediction and entitlement auditing within this controlled setting; they do not establish general factuality or real-world hallucination reduction.
 
 ## 2. Introduction
 
@@ -14,13 +14,13 @@ We call the relevant property **evidence entitlement**. A `SUPPORT` or `REFUTE` 
 
 We introduce **ContraMamba-CAR**, the ContraMamba Classifier-Auditor Router. The architecture assigns final-label prediction and entitlement verification to separately optimized model roles. A label-focused classifier proposes a decision, while a balanced auditor evaluates structured entitlement gates. A conservative router retains an asserted `SUPPORT` or `REFUTE` label only when the auditor passes it; unsupported entitled predictions are downgraded to `NOT_ENTITLED`.
 
-We evaluate this architecture on `controlled_v5_v3`, a deterministic benchmark of 300 pair groups and 3,900 examples, using pair-level splits and three random seeds. At the default threshold of 0.5, ContraMamba-CAR reaches 0.906 +/- 0.005 macro-F1 while producing zero measured entitled-output gate violations and zero measured output/internal polarity gap. These properties remain stable across thresholds from 0.3 to 0.7.
+We evaluate this architecture on `controlled_v5_v3`, a deterministic benchmark of 300 pair groups and 3,900 examples, using pair-level splits and three random seeds. At the default threshold of 0.5, ContraMamba-CAR reaches 0.906 +/- 0.005 macro-F1. The router enforces zero retained-output gate violations; Stage 9A therefore measures pre-router audit failures, downgrades, and SUPPORT recall loss as the empirical cost. Classification and routing behavior remain stable across thresholds from 0.3 to 0.7.
 
 Our contributions are exactly threefold:
 
 - A formulation of controlled fact verification as separating final-label prediction from evidence-entitlement auditing.
 - A classifier-auditor router architecture, ContraMamba-CAR, that combines a final-label classifier with structured entitlement gates.
-- A controlled intervention evaluation showing high macro-F1 with zero measured gate violations and zero output/internal polarity gap, plus ablations showing that single-model self-routing is not the preferred main architecture.
+- A controlled intervention evaluation showing high macro-F1 under an enforced retained-output entitlement constraint, together with downgrade and SUPPORT-recall cost metrics and self-routing ablations.
 
 ## Related Work
 
@@ -122,16 +122,16 @@ The primary threshold is 0.5. We additionally sweep thresholds 0.3, 0.4, 0.6, an
 
 ### 7.1 Main ContraMamba-CAR result
 
-| Dataset/version | System | Threshold | Final accuracy | Macro-F1 | SUPPORT F1 | Gate violation rate | Output/internal polarity gap |
+| Dataset/version | System | Threshold | Final accuracy | Macro-F1 | SUPPORT F1 | Retained-output gate violation rate | Output/internal polarity gap |
 |---|---|---:|---:|---:|---:|---:|---:|
 | `controlled_v5_v2` | `conservative_balanced_router` | 0.5 | 0.912 +/- 0.014 | 0.878 +/- 0.009 | 0.694 +/- 0.017 | 0.000 +/- 0.000 | 0.000 +/- 0.000 |
 | `controlled_v5_v3` | **ContraMamba-CAR** | **0.5** | **0.929 +/- 0.003** | **0.906 +/- 0.005** | **0.765 +/- 0.011** | **0.000 +/- 0.000** | **0.000 +/- 0.000** |
 
-On v3, ContraMamba-CAR reaches 0.929 +/- 0.003 accuracy and 0.906 +/- 0.005 macro-F1. The measured entitled-output gate violation rate and output/internal polarity gap are both 0.000 +/- 0.000. These metrics should be read jointly: classification measures whether the final decision is correct, while the latter diagnostics measure whether retained entitled decisions satisfy the configured internal criteria.
+On v3, ContraMamba-CAR reaches 0.929 +/- 0.003 accuracy and 0.906 +/- 0.005 macro-F1. The retained-output gate violation rate is 0.000 +/- 0.000 because conservative routing removes candidates that fail the audit. It is therefore an enforced post-routing invariant, not an independent measure of unconstrained model faithfulness. The output/internal polarity gap is also 0.000 +/- 0.000 among retained outputs.
 
 ### 7.2 Threshold stability
 
-| Threshold | Final accuracy | Macro-F1 | SUPPORT F1 | Gate violation rate | Output/internal polarity gap |
+| Threshold | Final accuracy | Macro-F1 | SUPPORT F1 | Retained-output gate violation rate | Output/internal polarity gap |
 |---:|---:|---:|---:|---:|---:|
 | 0.3 | 0.929 +/- 0.003 | 0.905 +/- 0.004 | 0.762 +/- 0.011 | 0.000 +/- 0.000 | 0.000 +/- 0.000 |
 | 0.4 | 0.929 +/- 0.003 | 0.905 +/- 0.004 | 0.762 +/- 0.011 | 0.000 +/- 0.000 | 0.000 +/- 0.000 |
@@ -139,13 +139,25 @@ On v3, ContraMamba-CAR reaches 0.929 +/- 0.003 accuracy and 0.906 +/- 0.005 macr
 | 0.6 | 0.929 +/- 0.003 | 0.905 +/- 0.004 | 0.763 +/- 0.011 | 0.000 +/- 0.000 | 0.000 +/- 0.000 |
 | 0.7 | 0.930 +/- 0.002 | 0.906 +/- 0.003 | 0.765 +/- 0.008 | 0.000 +/- 0.000 | 0.000 +/- 0.000 |
 
-Macro-F1 remains between 0.905 and 0.906 across the sweep. Gate violations and the output/internal polarity gap remain zero at every threshold. Threshold 0.5 is therefore an operating point, not a cherry-picked isolated optimum.
+Macro-F1 remains between 0.905 and 0.906 across the sweep. The enforced retained-output violation rate and output/internal polarity gap remain zero at every threshold. Threshold 0.5 is therefore an operating point, not a cherry-picked isolated optimum; the empirical routing cost is reported next.
+
+### 7.3 Cost of conservative routing
+
+| Threshold | Macro-F1 | Downgraded count | Downgrade rate | SUPPORT recall pre | SUPPORT recall post | Recall drop | Precision gain | Pre-router gate-fail rate |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 0.3 | 0.905 +/- 0.004 | 0.667 +/- 0.577 | 0.003 +/- 0.002 | 0.989 +/- 0.011 | 0.989 +/- 0.011 | 0.000 +/- 0.000 | 0.001 +/- 0.002 | 0.003 +/- 0.002 |
+| 0.4 | 0.905 +/- 0.004 | 0.667 +/- 0.577 | 0.003 +/- 0.002 | 0.989 +/- 0.011 | 0.989 +/- 0.011 | 0.000 +/- 0.000 | 0.001 +/- 0.002 | 0.003 +/- 0.002 |
+| **0.5** | **0.906 +/- 0.005** | **1.333 +/- 1.528** | **0.006 +/- 0.007** | **0.989 +/- 0.011** | **0.989 +/- 0.011** | **0.000 +/- 0.000** | **0.004 +/- 0.004** | **0.006 +/- 0.007** |
+| 0.6 | 0.905 +/- 0.004 | 1.667 +/- 2.082 | 0.007 +/- 0.009 | 0.989 +/- 0.011 | 0.985 +/- 0.013 | 0.004 +/- 0.006 | 0.003 +/- 0.003 | 0.007 +/- 0.009 |
+| 0.7 | 0.906 +/- 0.003 | 2.333 +/- 2.082 | 0.010 +/- 0.009 | 0.989 +/- 0.011 | 0.985 +/- 0.013 | 0.004 +/- 0.006 | 0.006 +/- 0.006 | 0.010 +/- 0.009 |
+
+At threshold 0.5, the classifier produces 234.333 +/- 1.155 entitled candidates and the router retains 233.000 +/- 1.000. It downgrades 1.333 +/- 1.528 candidates, including 1.000 +/- 1.000 false supports and 0.333 +/- 0.577 false refutes. SUPPORT recall is unchanged at 0.989 +/- 0.011, while SUPPORT precision increases from 0.619 +/- 0.013 to 0.623 +/- 0.011, a gain of 0.004 +/- 0.004. The pre-router candidate gate-fail count is 1.333 +/- 1.528 (rate 0.006 +/- 0.007), and the post-routing retained violation rate is 0.000 +/- 0.000. No gold-support classifier prediction is downgraded on average (`downgraded_gold_support_count` 0.000 +/- 0.000).
 
 ## 8. Ablations
 
 ### 8.1 Single-model self-routing
 
-| System | Threshold | Macro-F1 | Gate violation rate | Polarity output ok | Output/internal gap | Paraphrase preserved | Predicate disentanglement |
+| System | Threshold | Macro-F1 | Retained-output gate violation rate | Polarity output ok | Output/internal gap | Paraphrase preserved | Predicate disentanglement |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | `raw_classifier_only` | 0.4 | 0.903 +/- 0.005 | 0.131 +/- 0.124 | 0.994 +/- 0.010 | 0.156 +/- 0.241 | 0.983 +/- 0.017 | 0.978 +/- 0.019 |
 | `self_routed_classifier` | 0.4 | **0.912 +/- 0.018** | 0.000 +/- 0.000 | 0.839 +/- 0.251 | 0.000 +/- 0.000 | 0.894 +/- 0.142 | 0.894 +/- 0.142 |
@@ -154,7 +166,7 @@ Macro-F1 remains between 0.905 and 0.906 across the sweep. Gate violations and t
 
 `self_routed_classifier` obtains the highest macro-F1, 0.912 +/- 0.018, but its polarity output consistency, paraphrase preservation, and predicate disentanglement are weaker and more variable than those of ContraMamba-CAR. We therefore treat it as a high-accuracy ablation rather than the main architecture.
 
-`self_routed_balanced` eliminates measured gate violations and preserves polarity flips and paraphrases, but reaches 0.888 +/- 0.008 macro-F1, below CAR's 0.906 +/- 0.005. It is a faithful single-model ablation, not evidence that the classifier-auditor separation should be removed.
+`self_routed_balanced` enforces zero retained-output gate violations and preserves polarity flips and paraphrases, but reaches 0.888 +/- 0.008 macro-F1, below CAR's 0.906 +/- 0.005. It is a faithful single-model ablation, not evidence that the classifier-auditor separation should be removed.
 
 ### 8.2 Fixed hybrid routers
 
@@ -164,9 +176,9 @@ Stage 6C evaluated fixed agreement, override, strict-veto, majority, and cautiou
 
 The results support the paper's central thesis within the controlled benchmark: final-label prediction and evidence-entitlement auditing are related but separable functions. The self-routed classifier illustrates the distinction most directly. It improves macro-F1 while reducing intervention-level consistency, showing that aggregate classification and controlled faithfulness need not move together.
 
-ContraMamba-CAR uses this separation constructively. The classifier contributes final-label strength, while the balanced auditor constrains when a support or refute assertion may survive. The resulting system does not maximize every individual metric, but it provides a stable joint profile: high macro-F1, zero measured gate violations, zero output/internal polarity gap, and strong controlled intervention behavior.
+ContraMamba-CAR uses this separation constructively. The classifier contributes final-label strength, while the balanced auditor constrains when a support or refute assertion may survive. The resulting system provides high macro-F1 and strong controlled intervention behavior under a conservative retained-output constraint.
 
-The zero gate-violation rate must be interpreted carefully. Conservative routing enforces this property by construction for retained entitled outputs. It demonstrates compliance with the specified entitlement rule, not calibrated probability, causal reliance on every gate, or correctness beyond the benchmark. Reporting final-label metrics, entitled-output counts, pairwise intervention checks, and internal diagnostics together is therefore essential.
+The retained-output gate violation rate is an enforced post-routing invariant. The empirical question is the cost of enforcing it. Stage 9A shows a small cost on v3 at threshold 0.5: a 0.006 +/- 0.007 downgrade rate, no measured SUPPORT recall drop, and a 0.004 +/- 0.004 SUPPORT precision gain. These values are specific to the controlled benchmark and should not be generalized without external evaluation. Final-label metrics, pre-router audit failures, downgrade counts, recall and precision changes, pairwise checks, and retained-output diagnostics must be reported jointly.
 
 The current evidence does not require a single-model endpoint. Separate classifier and auditor roles are a legitimate architecture when they encode distinct objectives. Self-routing remains relevant as an efficiency or compression direction, but its desirability depends on whether it can preserve the intervention behavior supplied by the balanced auditor.
 
@@ -178,12 +190,12 @@ The current evidence does not require a single-model endpoint. Separate classifi
 - **No external dataset validation.** Generalization to natural fact-verification benchmarks, domain shift, long evidence, and annotation noise remains untested.
 - **No deployment claim.** The results do not establish real-world hallucination reduction, RAG reliability, or deployed factuality performance.
 - **No impossibility result for single models.** The ablations do not prove that one model cannot learn both label prediction and entitlement auditing.
-- **Rule-dependent faithfulness.** Zero measured gate violations partly follows from the conservative routing rule and the selected gate definitions.
+- **Rule-dependent faithfulness.** Zero retained-output gate violations follow from the conservative routing rule and selected gate definitions. This invariant must be interpreted jointly with pre-router gate failures, downgrade rates, and SUPPORT recall loss.
 - **Frozen encoder.** The main controlled experiments use a frozen Mamba encoder; broader fine-tuning behavior is not evaluated here.
 
 ## 11. Conclusion
 
-We presented ContraMamba-CAR, a classifier-auditor architecture for controlled fact verification. The method separates the task of proposing a final label from the task of determining whether the supplied evidence licenses an asserted support or refute decision. On `controlled_v5_v3`, ContraMamba-CAR reaches 0.906 +/- 0.005 macro-F1 while producing zero measured entitled-output gate violations and zero output/internal polarity gap, with stable behavior across thresholds 0.3-0.7.
+We presented ContraMamba-CAR, a classifier-auditor architecture for controlled fact verification. The method separates the task of proposing a final label from the task of determining whether the supplied evidence licenses an asserted support or refute decision. On `controlled_v5_v3`, ContraMamba-CAR reaches 0.906 +/- 0.005 macro-F1. Conservative routing enforces zero retained-output gate violations; at threshold 0.5, the measured cost is a 0.006 +/- 0.007 downgrade rate with no measured SUPPORT recall drop. Behavior remains stable across thresholds 0.3-0.7.
 
 Single-model ablations reinforce the motivation for this separation: the strongest self-routed classifier improves macro-F1 but weakens controlled intervention consistency, while the balanced self-routed model is more faithful but less accurate. These findings justify ContraMamba-CAR as the main architecture for the present controlled study. Future work must test external datasets, natural evidence perturbations, calibration, and whether more efficient implementations can retain the same entitlement behavior.
 

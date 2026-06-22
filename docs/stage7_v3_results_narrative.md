@@ -16,7 +16,7 @@ The primary configuration is `conservative_balanced_router` at threshold 0.5. An
 
 ## Main result
 
-| Threshold | Accuracy | Macro-F1 | NOT_ENTITLED F1 | REFUTE F1 | SUPPORT F1 | Gate violation rate | Output/internal polarity gap |
+| Threshold | Accuracy | Macro-F1 | NOT_ENTITLED F1 | REFUTE F1 | SUPPORT F1 | Retained-output gate violation rate | Output/internal polarity gap |
 |---:|---:|---:|---:|---:|---:|---:|---:|
 | 0.3 | 0.929 +/- 0.003 | 0.905 +/- 0.004 | 0.951 +/- 0.002 | 1.000 +/- 0.000 | 0.762 +/- 0.011 | 0.000 +/- 0.000 | 0.000 +/- 0.000 |
 | 0.4 | 0.929 +/- 0.003 | 0.905 +/- 0.004 | 0.951 +/- 0.002 | 1.000 +/- 0.000 | 0.762 +/- 0.011 | 0.000 +/- 0.000 | 0.000 +/- 0.000 |
@@ -24,11 +24,23 @@ The primary configuration is `conservative_balanced_router` at threshold 0.5. An
 | 0.6 | 0.929 +/- 0.003 | 0.905 +/- 0.004 | 0.952 +/- 0.002 | 1.000 +/- 0.000 | 0.763 +/- 0.011 | 0.000 +/- 0.000 | 0.000 +/- 0.000 |
 | 0.7 | 0.930 +/- 0.002 | 0.906 +/- 0.003 | 0.952 +/- 0.001 | 1.000 +/- 0.000 | 0.765 +/- 0.008 | 0.000 +/- 0.000 | 0.000 +/- 0.000 |
 
-Macro-F1 remains within 0.905-0.906 across thresholds 0.3-0.7. The measured entitled-output gate violation rate and output/internal polarity gap remain zero throughout the sweep. Threshold 0.5 is therefore a conventional operating point rather than a value selected around an isolated peak.
+Macro-F1 remains within 0.905-0.906 across thresholds 0.3-0.7. Conservative routing enforces zero retained-output gate violations by construction, and the output/internal polarity gap remains zero among retained outputs. Threshold 0.5 is therefore a conventional operating point rather than a value selected around an isolated peak. The empirical cost of this constraint is reported below.
+
+## Cost of conservative routing
+
+| Threshold | Macro-F1 | Downgraded count | Downgrade rate | SUPPORT recall pre | SUPPORT recall post | Recall drop | Precision gain | Pre-router gate-fail rate |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 0.3 | 0.905 +/- 0.004 | 0.667 +/- 0.577 | 0.003 +/- 0.002 | 0.989 +/- 0.011 | 0.989 +/- 0.011 | 0.000 +/- 0.000 | 0.001 +/- 0.002 | 0.003 +/- 0.002 |
+| 0.4 | 0.905 +/- 0.004 | 0.667 +/- 0.577 | 0.003 +/- 0.002 | 0.989 +/- 0.011 | 0.989 +/- 0.011 | 0.000 +/- 0.000 | 0.001 +/- 0.002 | 0.003 +/- 0.002 |
+| **0.5** | **0.906 +/- 0.005** | **1.333 +/- 1.528** | **0.006 +/- 0.007** | **0.989 +/- 0.011** | **0.989 +/- 0.011** | **0.000 +/- 0.000** | **0.004 +/- 0.004** | **0.006 +/- 0.007** |
+| 0.6 | 0.905 +/- 0.004 | 1.667 +/- 2.082 | 0.007 +/- 0.009 | 0.989 +/- 0.011 | 0.985 +/- 0.013 | 0.004 +/- 0.006 | 0.003 +/- 0.003 | 0.007 +/- 0.009 |
+| 0.7 | 0.906 +/- 0.003 | 2.333 +/- 2.082 | 0.010 +/- 0.009 | 0.989 +/- 0.011 | 0.985 +/- 0.013 | 0.004 +/- 0.006 | 0.006 +/- 0.006 | 0.010 +/- 0.009 |
+
+At threshold 0.5, CAR downgrades 1.333 +/- 1.528 of 234.333 +/- 1.155 classifier-entitled candidates on average and retains 233.000 +/- 1.000. The downgrade rate is 0.006 +/- 0.007, with no measured SUPPORT recall drop. SUPPORT precision increases from 0.619 +/- 0.013 to 0.623 +/- 0.011. Routing removes 1.000 +/- 1.000 false supports and 0.333 +/- 0.577 false refutes on average. The pre-router gate-fail count and rate are 1.333 +/- 1.528 and 0.006 +/- 0.007; the post-routing retained violation rate is 0.000 +/- 0.000.
 
 ## Self-routing ablation
 
-| System | Threshold | Accuracy | Macro-F1 | Gate violation rate | Polarity output ok | Output/internal gap | Paraphrase | Predicate disentanglement |
+| System | Threshold | Accuracy | Macro-F1 | Retained-output gate violation rate | Polarity output ok | Output/internal gap | Paraphrase | Predicate disentanglement |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | `raw_classifier_only` | 0.4 | 0.928 +/- 0.004 | 0.903 +/- 0.005 | 0.131 +/- 0.124 | 0.994 +/- 0.010 | 0.156 +/- 0.241 | 0.983 +/- 0.017 | 0.978 +/- 0.019 |
 | `self_routed_classifier` | 0.4 | **0.942 +/- 0.004** | **0.912 +/- 0.018** | 0.000 +/- 0.000 | 0.839 +/- 0.251 | 0.000 +/- 0.000 | 0.894 +/- 0.142 | 0.894 +/- 0.142 |
@@ -37,18 +49,18 @@ Macro-F1 remains within 0.905-0.906 across thresholds 0.3-0.7. The measured enti
 
 `self_routed_classifier` has the highest final-label macro-F1, but its polarity-flip, paraphrase, and predicate consistency are weaker and more variable than ContraMamba-CAR. It is therefore a high-accuracy ablation, not a replacement for the main architecture.
 
-`self_routed_balanced` is the strongest faithful single-model ablation: it eliminates measured gate violations and preserves polarity flips and paraphrases. Its macro-F1, 0.888 +/- 0.008, is lower than CAR's 0.906 +/- 0.005. This result shows that self-routing is feasible, but does not establish single-model compression as the preferred endpoint.
+`self_routed_balanced` is the strongest faithful single-model ablation: its routing rule enforces zero retained-output gate violations and preserves polarity flips and paraphrases. Its macro-F1, 0.888 +/- 0.008, is lower than CAR's 0.906 +/- 0.005. This result shows that self-routing is feasible, but does not establish single-model compression as the preferred endpoint.
 
 ## Interpretation
 
-ContraMamba-CAR provides the strongest balance of final-label performance and intervention-level faithfulness. The classifier contributes label strength, while the balanced auditor verifies entitlement to an asserted support or refute decision. Their separation preserves macro-F1 near the strongest classifier variants while enforcing zero measured gate violations and zero output/internal polarity gap.
+ContraMamba-CAR provides the strongest balance of final-label performance and intervention-level faithfulness. The classifier contributes label strength, while the balanced auditor verifies entitlement to an asserted support or refute decision. Conservative routing enforces the retained-output constraint. Stage 9A shows that its empirical cost is small in v3 at threshold 0.5, but this conclusion is limited to the controlled benchmark.
 
 The ablations sharpen the central finding. Final-label prediction and evidence-entitlement auditing are separable functions: optimizing one does not guarantee the other. A self-routed classifier can improve aggregate macro-F1 while weakening controlled polarity, paraphrase, and predicate behavior. Conversely, a balanced model can be highly intervention-faithful while giving up final-label performance. Fixed hybrid router rules evaluated in Stage 6C did not improve on the conservative balanced-router baseline, so additional router complexity was not needed for the current controlled result.
 
 ## Claims we can make
 
 - In this controlled intervention setting, classifier-only final-label performance and intervention-level faithfulness diverge.
-- ContraMamba-CAR preserves high final-label performance while eliminating measured entitled-output gate violations.
+- ContraMamba-CAR preserves high final-label performance while enforcing zero retained-output gate violations; Stage 9A quantifies the associated downgrades and SUPPORT recall cost.
 - The CAR result is stable across routing thresholds from 0.3 through 0.7.
 - A balanced auditor can enforce evidence-entitlement constraints without requiring the strict model in the main configuration.
 - The more complex fixed hybrid routers tested in Stage 6C were not needed to obtain the main controlled result.
