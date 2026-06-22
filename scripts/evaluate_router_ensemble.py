@@ -27,6 +27,24 @@ AUDITOR_GATES = (
     "predicate_coverage_prob",
     "sufficiency_prob",
 )
+ROUTER_COST_METRIC_NAMES = (
+    "classifier_entitled_count",
+    "routed_entitled_count",
+    "downgraded_count",
+    "downgrade_rate_among_classifier_entitled",
+    "downgraded_gold_support_count",
+    "support_recall_pre_router",
+    "support_recall_post_router",
+    "support_recall_drop",
+    "support_precision_pre_router",
+    "support_precision_post_router",
+    "support_precision_gain",
+    "false_support_removed_count",
+    "false_refute_removed_count",
+    "retained_violation_rate",
+    "pre_router_candidate_gate_fail_rate",
+    "pre_router_candidate_gate_fail_count",
+)
 
 
 def load_prediction_file(path: Path) -> dict[str, Any]:
@@ -260,6 +278,94 @@ def internal_faithfulness_metrics(
     }
 
 
+def router_cost_metrics(
+    records: Sequence[Mapping[str, Any]],
+    classifier_predictions: Mapping[str, str],
+    routed_predictions: Mapping[str, str],
+    auditor_rows: Mapping[str, Sequence[Mapping[str, Any]]],
+    threshold: float = 0.5,
+) -> dict[str, float | int]:
+    """Quantify what conservative routing removes and what it costs."""
+
+    classifier_entitled = 0
+    routed_entitled = 0
+    downgraded = 0
+    downgraded_gold_support = 0
+    false_support_removed = 0
+    false_refute_removed = 0
+    pre_gate_fail = 0
+    retained_violations = 0
+    gold_support_count = 0
+    classifier_support_true = 0
+    routed_support_true = 0
+    classifier_support_count = 0
+    routed_support_count = 0
+
+    for row in records:
+        example_id = str(row["id"])
+        gold = str(row["gold_final_label"])
+        classifier = classifier_predictions[example_id]
+        routed = routed_predictions[example_id]
+        gates_pass = all(
+            auditor_passes(auditor, threshold) for auditor in auditor_rows[example_id]
+        )
+        if gold == "SUPPORT":
+            gold_support_count += 1
+        if classifier == "SUPPORT":
+            classifier_support_count += 1
+            classifier_support_true += int(gold == "SUPPORT")
+        if routed == "SUPPORT":
+            routed_support_count += 1
+            routed_support_true += int(gold == "SUPPORT")
+        if classifier in ENTITLED_LABELS:
+            classifier_entitled += 1
+            pre_gate_fail += int(not gates_pass)
+        if routed in ENTITLED_LABELS:
+            routed_entitled += 1
+            retained_violations += int(not gates_pass)
+        is_downgraded = classifier in ENTITLED_LABELS and routed == "NOT_ENTITLED"
+        downgraded += int(is_downgraded)
+        downgraded_gold_support += int(
+            gold == "SUPPORT" and classifier == "SUPPORT" and is_downgraded
+        )
+        false_support_removed += int(
+            classifier == "SUPPORT" and gold != "SUPPORT" and is_downgraded
+        )
+        false_refute_removed += int(
+            classifier == "REFUTE" and gold != "REFUTE" and is_downgraded
+        )
+
+    def safe_div(numerator: int, denominator: int) -> float:
+        return numerator / denominator if denominator else 0.0
+
+    support_recall_pre = safe_div(classifier_support_true, gold_support_count)
+    support_recall_post = safe_div(routed_support_true, gold_support_count)
+    support_precision_pre = safe_div(classifier_support_true, classifier_support_count)
+    support_precision_post = safe_div(routed_support_true, routed_support_count)
+    return {
+        "classifier_entitled_count": classifier_entitled,
+        "routed_entitled_count": routed_entitled,
+        "downgraded_count": downgraded,
+        "downgrade_rate_among_classifier_entitled": safe_div(
+            downgraded, classifier_entitled
+        ),
+        "downgraded_gold_support_count": downgraded_gold_support,
+        "support_recall_pre_router": support_recall_pre,
+        "support_recall_post_router": support_recall_post,
+        "support_recall_drop": support_recall_pre - support_recall_post,
+        "support_precision_pre_router": support_precision_pre,
+        "support_precision_post_router": support_precision_post,
+        "support_precision_gain": support_precision_post - support_precision_pre,
+        "false_support_removed_count": false_support_removed,
+        "false_refute_removed_count": false_refute_removed,
+        "retained_violation_rate": safe_div(retained_violations, routed_entitled),
+        "pre_router_candidate_gate_fail_rate": safe_div(
+            pre_gate_fail, classifier_entitled
+        ),
+        "pre_router_candidate_gate_fail_count": pre_gate_fail,
+    }
+
+
 def evaluate_router_systems(
     classifier: Mapping[str, Any],
     balanced: Mapping[str, Any],
@@ -269,6 +375,10 @@ def evaluate_router_systems(
     merged = merge_prediction_files(classifier, balanced, strict)
     records = [item["classifier"] for item in merged]
     predictions = build_system_predictions(merged, threshold)
+    classifier_predictions = {
+        str(item["classifier"]["id"]): str(item["classifier"]["pred_final_label"])
+        for item in merged
+    }
     internal_sources = {
         "classifier_only": ("classifier",),
         "balanced_only": ("balanced",),
@@ -277,24 +387,32 @@ def evaluate_router_systems(
         "conservative_strict_router": ("strict",),
         "dual_auditor_router": ("balanced", "strict"),
     }
-    return {
-        system: {
+    results = {}
+    for system, labels in predictions.items():
+        auditor_rows = {
+            str(item["classifier"]["id"]): tuple(
+                item[source] for source in internal_sources[system]
+            )
+            for item in merged
+        }
+        results[system] = {
             **classification_metrics(records, labels),
             "pairwise_checks": pairwise_prediction_checks(records, labels),
             "internal_faithfulness": internal_faithfulness_metrics(
                 records,
                 labels,
-                {
-                    str(item["classifier"]["id"]): tuple(
-                        item[source] for source in internal_sources[system]
-                    )
-                    for item in merged
-                },
+                auditor_rows,
+                threshold,
+            ),
+            "router_cost": router_cost_metrics(
+                records,
+                classifier_predictions,
+                labels,
+                auditor_rows,
                 threshold,
             ),
         }
-        for system, labels in predictions.items()
-    }
+    return results
 
 
 def _format(value: float) -> str:
@@ -315,6 +433,28 @@ def render_markdown(results: Mapping[str, Mapping[str, Any]]) -> str:
             f"| {system} | {_format(metrics['final_accuracy'])} | "
             f"{_format(metrics['final_macro_f1'])} | {_format(f1['NOT_ENTITLED'])} | "
             f"{_format(f1['REFUTE'])} | {_format(f1['SUPPORT'])} | `{distribution}` |"
+        )
+    lines.extend(
+        [
+            "",
+            "## ROUTER_COST_OF_CONSERVATISM_SUMMARY",
+            "",
+            "| system | downgraded | downgrade rate | SUPPORT recall pre | SUPPORT recall post | recall drop | precision gain | false SUPPORT removed | pre-router gate fail rate | retained violation rate |",
+            "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        ]
+    )
+    for system, metrics in results.items():
+        cost = metrics["router_cost"]
+        lines.append(
+            f"| {system} | {cost['downgraded_count']} | "
+            f"{_format(cost['downgrade_rate_among_classifier_entitled'])} | "
+            f"{_format(cost['support_recall_pre_router'])} | "
+            f"{_format(cost['support_recall_post_router'])} | "
+            f"{_format(cost['support_recall_drop'])} | "
+            f"{_format(cost['support_precision_gain'])} | "
+            f"{cost['false_support_removed_count']} | "
+            f"{_format(cost['pre_router_candidate_gate_fail_rate'])} | "
+            f"{_format(cost['retained_violation_rate'])} |"
         )
     lines.extend(
         [
@@ -423,6 +563,10 @@ def write_csv(path: Path, results: Mapping[str, Mapping[str, Any]]) -> None:
                 writer.writerow(
                     {"section": "internal_faithfulness", "system": system, "metric": metric, "value": value}
                 )
+            for metric, value in metrics["router_cost"].items():
+                writer.writerow(
+                    {"section": "router_cost", "system": system, "metric": metric, "value": value}
+                )
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -432,6 +576,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--strict-preds", type=Path, required=True)
     parser.add_argument("--output-md", type=Path, required=True)
     parser.add_argument("--output-csv", type=Path, required=True)
+    parser.add_argument("--threshold", type=float, default=0.5)
     return parser
 
 
@@ -441,6 +586,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         load_prediction_file(args.classifier_preds),
         load_prediction_file(args.balanced_preds),
         load_prediction_file(args.strict_preds),
+        threshold=args.threshold,
     )
     markdown = render_markdown(results)
     args.output_md.parent.mkdir(parents=True, exist_ok=True)

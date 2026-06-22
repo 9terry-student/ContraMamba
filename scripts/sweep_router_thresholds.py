@@ -13,7 +13,11 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.evaluate_router_ensemble import evaluate_router_systems, load_prediction_file
+from scripts.evaluate_router_ensemble import (
+    ROUTER_COST_METRIC_NAMES,
+    evaluate_router_systems,
+    load_prediction_file,
+)
 
 
 ROOT = REPO_ROOT
@@ -44,9 +48,12 @@ METRICS = (
     "entity_frame_lower",
     "event_frame_lower",
 )
+STAGE9_METRICS = METRICS + ROUTER_COST_METRIC_NAMES
 
 
-def flatten_metrics(metrics: Mapping[str, Any]) -> dict[str, float | int]:
+def flatten_metrics(
+    metrics: Mapping[str, Any], include_router_cost: bool = False
+) -> dict[str, float | int]:
     row: dict[str, float | int] = {
         "final_accuracy": metrics["final_accuracy"],
         "final_macro_f1": metrics["final_macro_f1"],
@@ -55,6 +62,7 @@ def flatten_metrics(metrics: Mapping[str, Any]) -> dict[str, float | int]:
             for label in ("NOT_ENTITLED", "REFUTE", "SUPPORT")
         },
         **metrics["internal_faithfulness"],
+        **metrics.get("router_cost", {}),
     }
     row.update(
         {
@@ -62,7 +70,8 @@ def flatten_metrics(metrics: Mapping[str, Any]) -> dict[str, float | int]:
             for name, value in metrics["pairwise_checks"].items()
         }
     )
-    return {name: row[name] for name in METRICS}
+    selected = STAGE9_METRICS if include_router_cost else METRICS
+    return {name: row[name] for name in selected}
 
 
 def sweep_thresholds(
@@ -70,6 +79,7 @@ def sweep_thresholds(
     balanced: Mapping[str, Any],
     strict: Mapping[str, Any],
     thresholds: Sequence[float] = DEFAULT_THRESHOLDS,
+    include_router_cost: bool = False,
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for threshold in thresholds:
@@ -83,27 +93,37 @@ def sweep_thresholds(
                 {
                     "threshold": float(threshold),
                     "system": system,
-                    **flatten_metrics(evaluated[system]),
+                    **flatten_metrics(evaluated[system], include_router_cost),
                 }
             )
     return rows
 
 
-def write_csv(path: Path, rows: Sequence[Mapping[str, Any]]) -> None:
+def write_csv(
+    path: Path,
+    rows: Sequence[Mapping[str, Any]],
+    metrics: Sequence[str] = METRICS,
+) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=("threshold", "system", *METRICS))
+        writer = csv.DictWriter(handle, fieldnames=("threshold", "system", *metrics))
         writer.writeheader()
         writer.writerows(rows)
 
 
-def render_markdown(rows: Sequence[Mapping[str, Any]], seed: int) -> str:
+def render_markdown(
+    rows: Sequence[Mapping[str, Any]],
+    seed: int,
+    include_router_cost: bool = False,
+) -> str:
     lines = [f"# Stage 6A Router Threshold Sweep: Seed {seed}", ""]
     table_groups = (
         ("CLASSIFICATION", METRICS[:5]),
         ("INTERNAL_FAITHFULNESS", METRICS[5:12]),
         ("PAIRWISE_CONSISTENCY", METRICS[12:]),
     )
+    if include_router_cost:
+        table_groups += (("ROUTER_COST_OF_CONSERVATISM", ROUTER_COST_METRIC_NAMES),)
     for title, metrics in table_groups:
         lines.extend(
             [
@@ -133,6 +153,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--thresholds", type=float, nargs="+", default=DEFAULT_THRESHOLDS)
     parser.add_argument("--output-csv", type=Path)
     parser.add_argument("--output-md", type=Path)
+    parser.add_argument("--include-router-cost", action="store_true")
     return parser
 
 
@@ -143,12 +164,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         load_prediction_file(args.balanced_preds),
         load_prediction_file(args.strict_preds),
         args.thresholds,
+        args.include_router_cost,
     )
     output_csv = args.output_csv or ROOT / "results" / f"stage6a_router_threshold_sweep_seed{args.seed}.csv"
     output_md = args.output_md or ROOT / "results" / f"stage6a_router_threshold_sweep_seed{args.seed}.md"
-    write_csv(output_csv, rows)
+    output_metrics = STAGE9_METRICS if args.include_router_cost else METRICS
+    write_csv(output_csv, rows, output_metrics)
     output_md.parent.mkdir(parents=True, exist_ok=True)
-    output_md.write_text(render_markdown(rows, args.seed), encoding="utf-8")
+    output_md.write_text(
+        render_markdown(rows, args.seed, args.include_router_cost), encoding="utf-8"
+    )
     return 0
 
 
