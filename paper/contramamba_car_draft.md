@@ -22,6 +22,30 @@ Our contributions are exactly threefold:
 - A classifier-auditor router architecture, ContraMamba-CAR, that combines a final-label classifier with structured entitlement gates.
 - A controlled intervention evaluation showing high macro-F1 with zero measured gate violations and zero output/internal polarity gap, plus ablations showing that single-model self-routing is not the preferred main architecture.
 
+## Related Work
+
+### Fact verification and NLI-style verification
+
+Fact verification is commonly formulated as claim-evidence classification, often with labels corresponding to support, refutation, or insufficient evidence. NLI-style formulations similarly emphasize the relation between a premise-like evidence passage and a hypothesis-like claim. [TODO: cite FEVER / fact verification benchmark] [TODO: cite VitaminC if used] [TODO: cite NLI-style claim-evidence verification] ContraMamba-CAR retains a three-way final decision but introduces a separate entitlement audit. Its central question is not only whether the final label is correct, but whether an asserted `SUPPORT` or `REFUTE` label satisfies structured evidence conditions.
+
+### Factuality and hallucination detection
+
+Work on factuality and hallucination detection studies whether generated or retrieved content is supported, self-consistent, or verifiable under external evidence. [TODO: cite SelfCheckGPT] [TODO: cite FActScore] [TODO: cite factuality evaluation survey] ContraMamba-CAR is not presented as a deployed hallucination detector. It instead studies a narrower controlled setting in which a candidate verification label is audited against supplied evidence and targeted interventions.
+
+### Uncertainty, abstention, and selective prediction
+
+Selective prediction and abstention methods allow a model to defer when confidence or estimated risk does not meet an operating criterion. [TODO: cite uncertainty / selective prediction] [TODO: cite abstention in NLP] `NOT_ENTITLED` differs from a generic low-confidence output. The ContraMamba-CAR router rejects an unsupported `SUPPORT` or `REFUTE` proposal when frame compatibility, predicate coverage, sufficiency, or polarity/entitlement conditions fail; it does not apply a threshold to one scalar classifier confidence.
+
+### Faithfulness, counterfactual evaluation, and controlled interventions
+
+Counterfactual, contrast-set, and perturbation-based evaluations test whether model behavior changes under targeted semantic modifications while remaining invariant to meaning-preserving transformations. [TODO: cite counterfactual or contrast-set evaluation] [TODO: cite faithfulness evaluation under perturbations] The controlled benchmark used here pairs each source example with interventions designed to isolate frame, predicate, sufficiency, and polarity behavior. Evaluation therefore checks both final outputs and internal gates for the expected invariances and contrasts.
+
+### State-space sequence models
+
+State-space sequence models provide an alternative sequence-processing backbone to attention-only architectures. [TODO: cite Mamba] [TODO: cite state-space sequence models] ContraMamba uses Mamba to encode claim-evidence sequences, but the paper's methodological contribution is not the use of Mamba itself. The proposed contribution is the classifier-auditor formulation and conservative evidence-entitlement routing rule.
+
+**Positioning summary.** ContraMamba-CAR is best understood as a classifier-auditor router for controlled evidence-entitlement verification. It differs from confidence-based abstention by auditing structured evidence conditions, and it differs from factuality detection pipelines by studying whether a candidate label is licensed by the supplied evidence under controlled interventions.
+
 ## 3. Problem Framing: Evidence-Entitlement Verification
 
 Let a verification input be a claim-evidence pair (x = (c, e)). The output space is:
@@ -71,7 +95,7 @@ The auditor is the `v3_no_polarity_flip` balanced configuration. It supplies str
 
 ### 5.4 Conservative routing
 
-The main operating point is (	au = 0.5). The decision rule is:
+The main operating point is tau = 0.5. The decision rule is:
 
 ```text
 if classifier_label == NOT_ENTITLED:
