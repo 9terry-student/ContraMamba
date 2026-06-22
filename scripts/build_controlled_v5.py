@@ -221,6 +221,39 @@ FACT_TEMPLATES = [
     },
 ]
 
+_FACT_FIELDS = (
+    "pair_id", "title", "name", "alternate_title", "alternate_name",
+    "role", "alternate_role", "predicate", "alternate_predicate",
+    "object", "alternate_object", "time", "alternate_time",
+    "location", "alternate_location",
+)
+_ADDITIONAL_FACT_ROWS = [
+    ("library_digitization", "Director", "Hana Sato", "Deputy", "Ken Mori", "librarian", "records officer", "digitized", "displayed", "the Edo manuscripts", "the Meiji maps", "February", "March", "Kyoto", "Osaka"),
+    ("reef_protection", "Dr", "Lina Moreau", "Professor", "Marc Petit", "marine biologist", "port engineer", "protected", "surveyed", "the Blue Reef reserve", "the Coral Bay harbor", "July", "August", "Noumea", "Suva"),
+    ("school_opening", "Principal", "Grace Njeri", "Teacher", "Peter Otieno", "school leader", "district clerk", "opened", "planned", "the Sunrise academy", "the Valley college", "January", "February", "Nairobi", "Mombasa"),
+    ("opera_premiere", "Conductor", "Emil Rossi", "Composer", "Lucia Bianchi", "music director", "stage manager", "premiered", "rehearsed", "the opera Winter Moon", "the ballet Summer Wind", "October", "November", "Milan", "Turin"),
+    ("dam_inspection", "Engineer", "Fatima Zahra", "Inspector", "Youssef Karim", "dam supervisor", "water analyst", "inspected", "designed", "the Atlas dam", "the Rif reservoir", "Tuesday", "Wednesday", "Rabat", "Casablanca"),
+    ("vaccine_delivery", "Dr", "Samuel Boateng", "Nurse", "Akosua Mensah", "health coordinator", "warehouse manager", "delivered", "tested", "the malaria vaccines", "the influenza kits", "April", "May", "Accra", "Kumasi"),
+    ("harbor_upgrade", "Minister", "Aroha Te Rangi", "Mayor", "Wiremu Kingi", "transport minister", "harbor master", "upgraded", "visited", "the eastern harbor", "the northern marina", "June", "July", "Wellington", "Auckland"),
+    ("poetry_prize", "Author", "Leila Farouk", "Editor", "Mona Aziz", "poet", "publisher", "won", "judged", "the Cedar poetry prize", "the Desert fiction prize", "September", "October", "Cairo", "Alexandria"),
+    ("forest_mapping", "Ranger", "Erik Lund", "Geologist", "Nora Berg", "forest ranger", "survey officer", "mapped", "patrolled", "the Pine Valley forest", "the Silver Lake park", "May", "June", "Oslo", "Bergen"),
+    ("market_renovation", "Architect", "Camila Reyes", "Planner", "Tomas Vega", "lead architect", "city surveyor", "renovated", "measured", "the Central Market", "the Riverside Plaza", "March", "April", "Bogota", "Medellin"),
+    ("robotics_championship", "Coach", "Daniel Cho", "Judge", "Min Seo", "team coach", "lab adviser", "won", "hosted", "the national robotics championship", "the regional science fair", "August", "September", "Daejeon", "Incheon"),
+    ("canal_reopening", "Governor", "Elise Dubois", "Senator", "Henri Blanc", "regional governor", "works commissioner", "reopened", "surveyed", "the Heritage Canal", "the Western Aqueduct", "Thursday", "Friday", "Lyon", "Dijon"),
+    ("solar_farm_contract", "Executive", "Ravi Menon", "Director", "Kiran Das", "energy executive", "finance officer", "signed", "reviewed", "the Delta solar contract", "the Hill wind contract", "December", "January", "Chennai", "Pune"),
+    ("glacier_study", "Professor", "Astrid Jensen", "Doctor", "Mikkel Holm", "climate scientist", "field technician", "published", "presented", "the Arctic glacier study", "the Baltic weather survey", "November", "December", "Copenhagen", "Reykjavik"),
+    ("theater_restoration", "Curator", "Nikos Pappas", "Historian", "Eleni Costa", "heritage curator", "building inspector", "restored", "documented", "the Apollo theater", "the Athena gallery", "February", "April", "Athens", "Thessaloniki"),
+    ("ferry_launch", "Captain", "Maeve Kelly", "Engineer", "Sean Byrne", "fleet captain", "port inspector", "launched", "tested", "the Emerald ferry", "the Atlantic tugboat", "Monday", "Tuesday", "Dublin", "Cork"),
+    ("language_program", "Minister", "Tariq Rahman", "Secretary", "Nadia Khan", "education minister", "curriculum adviser", "introduced", "evaluated", "the bilingual language program", "the digital literacy course", "July", "September", "Dhaka", "Chittagong"),
+    ("volcano_observatory", "Dr", "Ana Morales", "Professor", "Luis Herrera", "volcanologist", "civil engineer", "opened", "inspected", "the Sierra observatory", "the Coastal laboratory", "March", "May", "Quito", "Cuenca"),
+    ("jazz_archive", "Archivist", "Malik Johnson", "Producer", "Dana Brooks", "music archivist", "radio producer", "released", "recorded", "the Riverside jazz archive", "the Uptown blues collection", "June", "August", "New Orleans", "Memphis"),
+    ("wetland_restoration", "Biologist", "Sofia Petrov", "Engineer", "Ivan Markov", "wetland biologist", "drainage planner", "restored", "measured", "the Danube wetlands", "the Black Sea marshes", "October", "November", "Sofia", "Varna"),
+]
+FACT_TEMPLATES.extend(
+    dict(zip(_FACT_FIELDS, row, strict=True)) for row in _ADDITIONAL_FACT_ROWS
+)
+SEED_TEMPLATE_COUNT = 10
+
 
 def _statement(fact: dict, *, negative: bool = False, **overrides: str) -> str:
     values = {**fact, **overrides}
@@ -269,10 +302,10 @@ def _record(
     }
 
 
-def build_seed_records() -> list[dict]:
+def _build_records(templates: list[dict]) -> list[dict]:
     records: list[dict] = []
-    for index, fact in enumerate(FACT_TEMPLATES):
-        base_refute = index >= len(FACT_TEMPLATES) // 2
+    for index, fact in enumerate(templates):
+        base_refute = index >= len(templates) // 2
         claim = _statement(fact)
         base_final = "REFUTE" if base_refute else "SUPPORT"
         base_polarity = base_final
@@ -349,6 +382,14 @@ def build_seed_records() -> list[dict]:
         )
     validate_records(records)
     return records
+
+
+def build_seed_records() -> list[dict]:
+    return _build_records(FACT_TEMPLATES[:SEED_TEMPLATE_COUNT])
+
+
+def build_v1_records() -> list[dict]:
+    return _build_records(FACT_TEMPLATES)
 
 
 def validate_record(record: dict, row_number: int | None = None) -> None:
@@ -443,6 +484,9 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", type=Path, help="Validate and split an existing JSONL file")
     parser.add_argument(
+        "--dataset-version", choices=("seed", "v1"), default="seed"
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=ROOT / "data" / "controlled_v5_seed.jsonl",
@@ -453,7 +497,10 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=17)
     args = parser.parse_args()
 
-    records = load_jsonl(args.input) if args.input else build_seed_records()
+    if args.input:
+        records = load_jsonl(args.input)
+    else:
+        records = build_v1_records() if args.dataset_version == "v1" else build_seed_records()
     write_jsonl(records, args.output)
     train, dev = split_by_pair_id(records, args.dev_ratio, args.seed)
     if bool(args.train_output) != bool(args.dev_output):
@@ -476,4 +523,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

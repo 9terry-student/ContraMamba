@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import json
+from pathlib import Path
 
 import pytest
 
@@ -9,6 +11,8 @@ from scripts.build_controlled_v5 import (
     INTERVENTION_TYPES,
     REQUIRED_FIELDS,
     build_seed_records,
+    build_v1_records,
+    load_jsonl,
     split_by_pair_id,
     validate_record,
 )
@@ -39,16 +43,18 @@ def test_final_label_mapping_is_stable() -> None:
 
 
 def test_pair_id_split_has_no_leakage() -> None:
-    records = build_seed_records()
+    records = build_v1_records()
     train, dev = split_by_pair_id(records, dev_ratio=0.2, seed=17)
     train_pairs = {record["pair_id"] for record in train}
     dev_pairs = {record["pair_id"] for record in dev}
 
     assert train_pairs.isdisjoint(dev_pairs)
-    assert len(train_pairs) == 8
-    assert len(dev_pairs) == 2
-    assert len(train) == 104
-    assert len(dev) == 26
+    assert len(train_pairs) == 24
+    assert len(dev_pairs) == 6
+    assert len(train) == 312
+    assert len(dev) == 78
+    assert {record["intervention_type"] for record in train} == INTERVENTION_TYPES
+    assert {record["intervention_type"] for record in dev} == INTERVENTION_TYPES
 
 
 def test_intervention_vocabulary_is_complete() -> None:
@@ -67,7 +73,35 @@ def test_intervention_vocabulary_is_complete() -> None:
         "irrelevant_evidence",
         "polarity_flip",
     }
-    records = build_seed_records()
+    records = build_v1_records()
     assert INTERVENTION_TYPES == expected
     assert {record["intervention_type"] for record in records} == expected
 
+
+def test_controlled_v1_file_has_complete_groups_and_valid_labels() -> None:
+    path = Path(__file__).resolve().parents[1] / "data" / "controlled_v5_v1.jsonl"
+    records = load_jsonl(path)
+    assert len(records) == 390
+    pair_ids = {record["pair_id"] for record in records}
+    assert len(pair_ids) == 30
+    for pair_id in pair_ids:
+        interventions = {
+            record["intervention_type"]
+            for record in records
+            if record["pair_id"] == pair_id
+        }
+        assert interventions == INTERVENTION_TYPES
+    assert {record["final_label"] for record in records} <= set(FINAL_LABEL_TO_ID)
+    assert {record["polarity_label"] for record in records} <= {
+        "NONE", "REFUTE", "SUPPORT"
+    }
+    assert {record["primary_failure_type"] for record in records} <= {
+        "none", "frame", "predicate", "sufficiency", "polarity"
+    }
+
+
+def test_v1_has_no_epistemicbert_human_set_content() -> None:
+    records = build_v1_records()
+    serialized = json.dumps(records).lower()
+    assert "epistemicbert" not in serialized
+    assert "219 human" not in serialized
