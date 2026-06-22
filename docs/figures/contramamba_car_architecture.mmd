@@ -1,0 +1,39 @@
+flowchart LR
+    I["Claim + Evidence"] --> E["Mamba Encoder / sequence representation"]
+
+    E --> C
+    E --> A1
+
+    subgraph CLASSIFIER["A. Final-label classifier: v3_no_intervention"]
+        C["Candidate-label head"] --> CL["Candidate label<br/>SUPPORT / REFUTE / NOT_ENTITLED"]
+    end
+
+    subgraph AUDITOR["B. Evidence-entitlement auditor: v3_no_polarity_flip"]
+        A1["Frame compatibility gate"] --> AG["Gate verification"]
+        A2["Predicate coverage gate"] --> AG
+        A3["Sufficiency gate"] --> AG
+        A4["Polarity consistency / entitlement gate"] --> AG
+        E --> A2
+        E --> A3
+        E --> A4
+    end
+
+    CL --> R["Conservative balanced-auditor router<br/>default threshold tau = 0.5"]
+    AG --> R
+
+    R --> D1["Candidate is NOT_ENTITLED<br/>keep NOT_ENTITLED"]
+    R --> D2["Candidate is SUPPORT or REFUTE<br/>and all auditor gates pass<br/>keep candidate label"]
+    R --> D3["Candidate is SUPPORT or REFUTE<br/>and any auditor gate fails<br/>downgrade to NOT_ENTITLED"]
+
+    D1 --> O["Final decision<br/>SUPPORT / REFUTE / NOT_ENTITLED"]
+    D2 --> O
+    D3 --> O
+
+    N["Prediction and entitlement auditing are separated."] -.-> R
+
+    classDef classifier fill:#dbeafe,stroke:#2563eb,color:#172554;
+    classDef auditor fill:#dcfce7,stroke:#16a34a,color:#052e16;
+    classDef router fill:#fef3c7,stroke:#d97706,color:#451a03;
+    class C,CL classifier;
+    class A1,A2,A3,A4,AG auditor;
+    class R,D1,D2,D3 router;
