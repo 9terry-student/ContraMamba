@@ -19,6 +19,7 @@ from scripts.train_controlled_v5 import (
     intervention_objective,
     pairwise_checks,
     sample_indices,
+    sweep_presets,
 )
 
 
@@ -131,3 +132,17 @@ def test_frozen_encoder_cache_matches_direct_forward() -> None:
     with torch.no_grad():
         cached = model(**inputs)
     assert torch.allclose(direct["logits"], cached["logits"])
+
+
+def test_stage4d_sweep_presets_cover_requested_ablations() -> None:
+    presets = sweep_presets(0.5)
+    assert list(presets) == [
+        "A_stage4c",
+        "B_high_frame",
+        "C_anchor",
+        "D_anchor_reduced_frame",
+    ]
+    assert presets["A_stage4c"]["lambda_frame_anchor"] == 0.0
+    assert presets["B_high_frame"]["lambda_frame_preserve"] > 1.0
+    assert presets["C_anchor"]["lambda_frame_anchor"] > 0.0
+    assert presets["D_anchor_reduced_frame"]["lambda_frame_preserve"] < 1.0

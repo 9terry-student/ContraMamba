@@ -37,10 +37,14 @@ def intervention_pairwise_losses(
     intervention_types: Sequence[str],
     *,
     lambda_frame_preserve: float = 1.0,
+    lambda_frame_anchor: float = 1.0,
     lambda_predicate_contrast: float = 1.0,
+    lambda_predicate_anchor: float = 1.0,
     lambda_sufficiency_contrast: float = 1.0,
     lambda_polarity_flip: float = 1.0,
     lambda_paraphrase_preserve: float = 1.0,
+    lambda_entitlement_preserve: float = 1.0,
+    lambda_logit_preserve: float = 1.0,
     ranking_margin: float = 0.5,
 ) -> dict[str, torch.Tensor]:
     """Compute pairwise losses without exposing intervention metadata to the model."""
@@ -49,10 +53,14 @@ def intervention_pairwise_losses(
         raise ValueError("ranking_margin must be non-negative")
     pairs = _pair_index(pair_ids, intervention_types)
     frame_terms: list[torch.Tensor] = []
+    frame_anchor_terms: list[torch.Tensor] = []
     predicate_terms: list[torch.Tensor] = []
+    predicate_anchor_terms: list[torch.Tensor] = []
     sufficiency_terms: list[torch.Tensor] = []
     polarity_terms: list[torch.Tensor] = []
     paraphrase_terms: list[torch.Tensor] = []
+    entitlement_terms: list[torch.Tensor] = []
+    logit_terms: list[torch.Tensor] = []
 
     for pair_id, variants in pairs.items():
         if "none" not in variants:
@@ -68,6 +76,13 @@ def intervention_pairwise_losses(
                         output["frame_logit"][original],
                     )
                 )
+                for index in (original, changed):
+                    frame_anchor_terms.append(
+                        F.binary_cross_entropy_with_logits(
+                            output["frame_logit"][index],
+                            torch.ones_like(output["frame_logit"][index]),
+                        )
+                    )
 
         if "predicate_swap" in variants:
             changed = variants["predicate_swap"]
@@ -76,6 +91,12 @@ def intervention_pairwise_losses(
                 - output["predicate_coverage_logit"][changed]
             )
             predicate_terms.append(F.relu(ranking_margin - difference))
+            predicate_anchor_terms.append(
+                F.binary_cross_entropy_with_logits(
+                    output["predicate_coverage_logit"][original],
+                    torch.ones_like(output["predicate_coverage_logit"][original]),
+                )
+            )
 
         for intervention in ("evidence_deletion", "evidence_truncation"):
             if intervention in variants:
@@ -88,23 +109,38 @@ def intervention_pairwise_losses(
 
         if "polarity_flip" in variants:
             changed = variants["polarity_flip"]
-            entitlement_preservation = F.mse_loss(
+            entitlement_terms.append(F.mse_loss(
                 output["entitlement_prob"][changed],
                 output["entitlement_prob"][original],
-            )
+            ))
             sign_reversal = (
                 output["polarity_margin"][original]
                 + output["polarity_margin"][changed]
             ).square()
-            polarity_terms.append(entitlement_preservation + sign_reversal)
+            predicate_preservation = F.mse_loss(
+                output["predicate_coverage_logit"][changed],
+                output["predicate_coverage_logit"][original],
+            )
+            sufficiency_preservation = F.mse_loss(
+                output["sufficiency_logit"][changed],
+                output["sufficiency_logit"][original],
+            )
+            polarity_terms.append(
+                sign_reversal + predicate_preservation + sufficiency_preservation
+            )
+            for index in (original, changed):
+                predicate_anchor_terms.append(
+                    F.binary_cross_entropy_with_logits(
+                        output["predicate_coverage_logit"][index],
+                        torch.ones_like(output["predicate_coverage_logit"][index]),
+                    )
+                )
 
         if "paraphrase" in variants:
             changed = variants["paraphrase"]
             scalar_keys = (
-                "frame_logit",
                 "predicate_coverage_logit",
                 "sufficiency_logit",
-                "entitlement_prob",
             )
             scalar_preservation = torch.stack(
                 [
@@ -112,30 +148,52 @@ def intervention_pairwise_losses(
                     for key in scalar_keys
                 ]
             ).mean()
-            logits_preservation = F.mse_loss(
+            paraphrase_terms.append(scalar_preservation)
+            entitlement_terms.append(F.mse_loss(
+                output["entitlement_prob"][changed],
+                output["entitlement_prob"][original],
+            ))
+            logit_terms.append(F.mse_loss(
                 output["logits"][changed], output["logits"][original]
-            )
-            paraphrase_terms.append(scalar_preservation + logits_preservation)
+            ))
+            for index in (original, changed):
+                predicate_anchor_terms.append(
+                    F.binary_cross_entropy_with_logits(
+                        output["predicate_coverage_logit"][index],
+                        torch.ones_like(output["predicate_coverage_logit"][index]),
+                    )
+                )
 
     reference = output["logits"]
     frame_preserve = _mean_or_zero(frame_terms, reference)
+    frame_anchor = _mean_or_zero(frame_anchor_terms, reference)
     predicate_contrast = _mean_or_zero(predicate_terms, reference)
+    predicate_anchor = _mean_or_zero(predicate_anchor_terms, reference)
     sufficiency_contrast = _mean_or_zero(sufficiency_terms, reference)
     polarity_flip = _mean_or_zero(polarity_terms, reference)
     paraphrase_preserve = _mean_or_zero(paraphrase_terms, reference)
+    entitlement_preserve = _mean_or_zero(entitlement_terms, reference)
+    logit_preserve = _mean_or_zero(logit_terms, reference)
     total = (
         lambda_frame_preserve * frame_preserve
+        + lambda_frame_anchor * frame_anchor
         + lambda_predicate_contrast * predicate_contrast
+        + lambda_predicate_anchor * predicate_anchor
         + lambda_sufficiency_contrast * sufficiency_contrast
         + lambda_polarity_flip * polarity_flip
         + lambda_paraphrase_preserve * paraphrase_preserve
+        + lambda_entitlement_preserve * entitlement_preserve
+        + lambda_logit_preserve * logit_preserve
     )
     return {
         "total": total,
         "frame_preserve": frame_preserve,
+        "frame_anchor": frame_anchor,
         "predicate_contrast": predicate_contrast,
+        "predicate_anchor": predicate_anchor,
         "sufficiency_contrast": sufficiency_contrast,
         "polarity_flip": polarity_flip,
         "paraphrase_preserve": paraphrase_preserve,
+        "entitlement_preserve": entitlement_preserve,
+        "logit_preserve": logit_preserve,
     }
-

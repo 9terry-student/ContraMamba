@@ -706,6 +706,140 @@ def format_epoch(
     )
 
 
+def capture_head_state(model: ContraMambaV5) -> dict[str, torch.Tensor]:
+    return {
+        name: value.detach().clone()
+        for name, value in model.state_dict().items()
+        if not name.startswith("mamba.")
+    }
+
+
+def restore_head_state(
+    model: ContraMambaV5, head_state: dict[str, torch.Tensor]
+) -> None:
+    current = model.state_dict()
+    with torch.no_grad():
+        for name, value in head_state.items():
+            current[name].copy_(value)
+
+
+def run_training(
+    model: ContraMambaV5,
+    train_inputs: dict[str, torch.Tensor],
+    dev_inputs: dict[str, torch.Tensor],
+    train_records: list[dict],
+    dev_records: list[dict],
+    train_bundle: dict[str, Any],
+    *,
+    epochs: int,
+    lr: float,
+    head_lr: float | None,
+    encoder_lr: float | None,
+    weighted_label_loss: bool,
+    balanced_sampler: bool,
+    use_intervention_loss: bool,
+    ranking_weight: float,
+    loss_config: dict[str, float],
+    seed: int,
+    run_name: str,
+) -> dict[str, Any]:
+    optimizer = build_optimizer(model, lr, head_lr, encoder_lr)
+    sampling_generator = torch.Generator().manual_seed(seed)
+    for epoch in range(1, epochs + 1):
+        model.train()
+        optimizer.zero_grad()
+        output = model(**model_feature_inputs(train_inputs))
+        indices = sample_indices(
+            train_inputs["final_labels"], balanced_sampler, sampling_generator
+        )
+        losses = controlled_losses(
+            output, train_inputs, indices, weighted_label_loss
+        )
+        if use_intervention_loss:
+            pairwise_losses = intervention_pairwise_losses(
+                output,
+                train_bundle["pair_ids"],
+                train_bundle["intervention_types"],
+                **loss_config,
+            )
+            active_intervention_loss = pairwise_losses["total"]
+        else:
+            active_intervention_loss = (
+                ranking_weight * intervention_objective(output, train_records)
+            )
+        total_loss = losses["total"] + active_intervention_loss
+        total_loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
+        optimizer.step()
+
+        train_output, train_metrics = evaluate(model, train_inputs, train_records)
+        _, dev_metrics = evaluate(model, dev_inputs, dev_records)
+        print(
+            f"run={run_name} "
+            + format_epoch(
+                epoch,
+                total_loss.item(),
+                losses,
+                train_metrics,
+                dev_metrics,
+                active_intervention_loss,
+            )
+        )
+
+    train_output, train_metrics = evaluate(model, train_inputs, train_records)
+    dev_output, dev_metrics = evaluate(model, dev_inputs, dev_records)
+    return {
+        "run_name": run_name,
+        "loss_config": loss_config,
+        "train_metrics": train_metrics,
+        "dev_metrics": dev_metrics,
+        "train_prediction_distribution": final_prediction_distribution(train_output),
+        "dev_prediction_distribution": final_prediction_distribution(dev_output),
+        "train_interventions": intervention_diagnostics(train_records, train_output),
+        "dev_interventions": intervention_diagnostics(dev_records, dev_output),
+        "train_pairwise_checks": pairwise_checks(train_records, train_output),
+        "dev_pairwise_checks": pairwise_checks(dev_records, dev_output),
+    }
+
+
+def sweep_presets(ranking_margin: float) -> dict[str, dict[str, float]]:
+    shared = {
+        "lambda_predicate_contrast": 1.0,
+        "lambda_sufficiency_contrast": 1.0,
+        "lambda_polarity_flip": 1.0,
+        "lambda_paraphrase_preserve": 1.0,
+        "lambda_entitlement_preserve": 1.0,
+        "lambda_logit_preserve": 1.0,
+        "ranking_margin": ranking_margin,
+    }
+    return {
+        "A_stage4c": {
+            **shared,
+            "lambda_frame_preserve": 1.0,
+            "lambda_frame_anchor": 0.0,
+            "lambda_predicate_anchor": 0.0,
+        },
+        "B_high_frame": {
+            **shared,
+            "lambda_frame_preserve": 3.0,
+            "lambda_frame_anchor": 0.0,
+            "lambda_predicate_anchor": 0.0,
+        },
+        "C_anchor": {
+            **shared,
+            "lambda_frame_preserve": 1.0,
+            "lambda_frame_anchor": 1.0,
+            "lambda_predicate_anchor": 1.0,
+        },
+        "D_anchor_reduced_frame": {
+            **shared,
+            "lambda_frame_preserve": 0.25,
+            "lambda_frame_anchor": 1.0,
+            "lambda_predicate_anchor": 1.0,
+        },
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -725,11 +859,16 @@ def main() -> None:
     parser.add_argument("--ranking-weight", type=float, default=2.0)
     parser.add_argument("--use-intervention-loss", action="store_true")
     parser.add_argument("--lambda-frame-preserve", type=float, default=1.0)
+    parser.add_argument("--lambda-frame-anchor", type=float, default=1.0)
     parser.add_argument("--lambda-predicate-contrast", type=float, default=1.0)
+    parser.add_argument("--lambda-predicate-anchor", type=float, default=1.0)
     parser.add_argument("--lambda-sufficiency-contrast", type=float, default=1.0)
     parser.add_argument("--lambda-polarity-flip", type=float, default=1.0)
     parser.add_argument("--lambda-paraphrase-preserve", type=float, default=1.0)
+    parser.add_argument("--lambda-entitlement-preserve", type=float, default=1.0)
+    parser.add_argument("--lambda-logit-preserve", type=float, default=1.0)
     parser.add_argument("--ranking-margin", type=float, default=0.5)
+    parser.add_argument("--loss-sweep", action="store_true")
     parser.add_argument("--dev-ratio", type=float, default=0.2)
     parser.add_argument("--seed", type=int, default=17)
     parser.add_argument("--device", default="cpu")
@@ -783,81 +922,56 @@ def main() -> None:
         print("Caching frozen Mamba token states for train/dev...")
         cache_frozen_encoder_states(model, train_inputs)
         cache_frozen_encoder_states(model, dev_inputs)
-    optimizer = build_optimizer(
-        model,
-        lr=args.lr,
-        head_lr=args.head_lr,
-        encoder_lr=args.encoder_lr,
-    )
-    sampling_generator = torch.Generator().manual_seed(args.seed)
     print(
-        f"controlled Stage 4B | backbone={args.backbone} "
+        f"controlled Stage 4D | backbone={args.backbone} "
         f"train={len(train_records)} ({len(set(train_bundle['pair_ids']))} pairs) "
         f"dev={len(dev_records)} ({len(set(dev_bundle['pair_ids']))} pairs) "
         f"freeze_encoder={args.freeze_encoder} device={device}"
     )
 
-    for epoch in range(1, args.epochs + 1):
-        model.train()
-        optimizer.zero_grad()
-        output = model(**model_feature_inputs(train_inputs))
-        indices = sample_indices(
-            train_inputs["final_labels"],
-            balanced=args.balanced_sampler,
-            generator=sampling_generator,
-        )
-        losses = controlled_losses(
-            output,
+    requested_loss_config = {
+        "lambda_frame_preserve": args.lambda_frame_preserve,
+        "lambda_frame_anchor": args.lambda_frame_anchor,
+        "lambda_predicate_contrast": args.lambda_predicate_contrast,
+        "lambda_predicate_anchor": args.lambda_predicate_anchor,
+        "lambda_sufficiency_contrast": args.lambda_sufficiency_contrast,
+        "lambda_polarity_flip": args.lambda_polarity_flip,
+        "lambda_paraphrase_preserve": args.lambda_paraphrase_preserve,
+        "lambda_entitlement_preserve": args.lambda_entitlement_preserve,
+        "lambda_logit_preserve": args.lambda_logit_preserve,
+        "ranking_margin": args.ranking_margin,
+    }
+    configurations = (
+        sweep_presets(args.ranking_margin)
+        if args.loss_sweep
+        else {"single": requested_loss_config}
+    )
+    initial_head_state = capture_head_state(model)
+    reports: dict[str, dict[str, Any]] = {}
+    for run_name, loss_config in configurations.items():
+        restore_head_state(model, initial_head_state)
+        torch.manual_seed(args.seed)
+        reports[run_name] = run_training(
+            model,
             train_inputs,
-            indices,
+            dev_inputs,
+            train_records,
+            dev_records,
+            train_bundle,
+            epochs=args.epochs,
+            lr=args.lr,
+            head_lr=args.head_lr,
+            encoder_lr=args.encoder_lr,
             weighted_label_loss=args.weighted_label_loss,
-        )
-        if args.use_intervention_loss:
-            pairwise_losses = intervention_pairwise_losses(
-                output,
-                train_bundle["pair_ids"],
-                train_bundle["intervention_types"],
-                lambda_frame_preserve=args.lambda_frame_preserve,
-                lambda_predicate_contrast=args.lambda_predicate_contrast,
-                lambda_sufficiency_contrast=args.lambda_sufficiency_contrast,
-                lambda_polarity_flip=args.lambda_polarity_flip,
-                lambda_paraphrase_preserve=args.lambda_paraphrase_preserve,
-                ranking_margin=args.ranking_margin,
-            )
-            active_intervention_loss = pairwise_losses["total"]
-        else:
-            active_intervention_loss = (
-                args.ranking_weight * intervention_objective(output, train_records)
-            )
-        total_loss = losses["total"] + active_intervention_loss
-        total_loss.backward()
-        torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
-        optimizer.step()
-
-        train_output, train_metrics = evaluate(model, train_inputs, train_records)
-        _, dev_metrics = evaluate(model, dev_inputs, dev_records)
-        print(
-            format_epoch(
-                epoch,
-                total_loss.item(),
-                losses,
-                train_metrics,
-                dev_metrics,
-                active_intervention_loss,
-            )
+            balanced_sampler=args.balanced_sampler,
+            use_intervention_loss=args.use_intervention_loss or args.loss_sweep,
+            ranking_weight=args.ranking_weight,
+            loss_config=loss_config,
+            seed=args.seed,
+            run_name=run_name,
         )
 
-    train_output, train_metrics = evaluate(model, train_inputs, train_records)
-    dev_output, dev_metrics = evaluate(model, dev_inputs, dev_records)
     report = {
-        "train_metrics": train_metrics,
-        "dev_metrics": dev_metrics,
-        "train_prediction_distribution": final_prediction_distribution(train_output),
-        "dev_prediction_distribution": final_prediction_distribution(dev_output),
-        "train_interventions": intervention_diagnostics(train_records, train_output),
-        "dev_interventions": intervention_diagnostics(dev_records, dev_output),
-        "train_pairwise_checks": pairwise_checks(train_records, train_output),
-        "dev_pairwise_checks": pairwise_checks(dev_records, dev_output),
         "configuration": {
             "backbone": args.backbone,
             "model_name": args.model_name if args.backbone == "mamba" else None,
@@ -866,20 +980,19 @@ def main() -> None:
             "weighted_label_loss": args.weighted_label_loss,
             "balanced_sampler": args.balanced_sampler,
             "use_intervention_loss": args.use_intervention_loss,
-            "lambda_frame_preserve": args.lambda_frame_preserve,
-            "lambda_predicate_contrast": args.lambda_predicate_contrast,
-            "lambda_sufficiency_contrast": args.lambda_sufficiency_contrast,
-            "lambda_polarity_flip": args.lambda_polarity_flip,
-            "lambda_paraphrase_preserve": args.lambda_paraphrase_preserve,
-            "ranking_margin": args.ranking_margin,
+            "loss_sweep": args.loss_sweep,
         },
+        "runs": reports,
     }
-    if len(report["dev_prediction_distribution"]) == 1:
-        collapsed_label = next(iter(report["dev_prediction_distribution"]))
-        print(
-            f"WARNING: dev predictions collapsed to the single label {collapsed_label}",
-            file=sys.stderr,
-        )
+    for run_name, run_report in reports.items():
+        distribution = run_report["dev_prediction_distribution"]
+        if len(distribution) == 1:
+            collapsed_label = next(iter(distribution))
+            print(
+                f"WARNING: run {run_name} dev predictions collapsed to "
+                f"the single label {collapsed_label}",
+                file=sys.stderr,
+            )
     print("\nFINAL_REPORT")
     print(json.dumps(report, indent=2, sort_keys=True))
 

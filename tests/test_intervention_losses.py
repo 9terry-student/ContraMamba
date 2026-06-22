@@ -48,16 +48,25 @@ def ideal_output() -> dict[str, torch.Tensor]:
 
 def test_ideal_intervention_relations_have_zero_loss() -> None:
     losses = intervention_pairwise_losses(
-        ideal_output(), PAIR_IDS, INTERVENTIONS, ranking_margin=0.5
+        ideal_output(),
+        PAIR_IDS,
+        INTERVENTIONS,
+        ranking_margin=0.5,
+        lambda_frame_anchor=0.0,
+        lambda_predicate_anchor=0.0,
     )
     assert torch.equal(losses["total"], torch.tensor(0.0))
     assert set(losses) == {
         "total",
         "frame_preserve",
+        "frame_anchor",
         "predicate_contrast",
+        "predicate_anchor",
         "sufficiency_contrast",
         "polarity_flip",
         "paraphrase_preserve",
+        "entitlement_preserve",
+        "logit_preserve",
     }
 
 
@@ -95,3 +104,15 @@ def test_pair_metadata_validation() -> None:
             INTERVENTIONS[1:],
         )
 
+
+def test_frame_anchor_penalizes_jointly_low_preserved_frames() -> None:
+    high = ideal_output()
+    low = ideal_output()
+    low["frame_logit"] = torch.tensor(
+        [-5.0, -5.0, -5.0, -1.0, -1.0, -5.0], requires_grad=True
+    )
+    high_losses = intervention_pairwise_losses(high, PAIR_IDS, INTERVENTIONS)
+    low_losses = intervention_pairwise_losses(low, PAIR_IDS, INTERVENTIONS)
+    assert low_losses["frame_preserve"].item() == 0.0
+    assert low_losses["frame_anchor"] > high_losses["frame_anchor"]
+    assert low_losses["total"] > high_losses["total"]
