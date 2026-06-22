@@ -760,6 +760,7 @@ def run_training(
                 output,
                 train_bundle["pair_ids"],
                 train_bundle["intervention_types"],
+                train_inputs["final_labels"],
                 **loss_config,
             )
             active_intervention_loss = pairwise_losses["total"]

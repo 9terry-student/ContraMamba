@@ -35,6 +35,7 @@ def intervention_pairwise_losses(
     output: dict[str, Any],
     pair_ids: Sequence[str],
     intervention_types: Sequence[str],
+    final_labels: Sequence[int] | torch.Tensor,
     *,
     lambda_frame_preserve: float = 1.0,
     lambda_frame_anchor: float = 1.0,
@@ -55,6 +56,8 @@ def intervention_pairwise_losses(
         raise ValueError("ranking_margin must be non-negative")
     if polarity_margin_min < 0:
         raise ValueError("polarity_margin_min must be non-negative")
+    if len(final_labels) != len(pair_ids):
+        raise ValueError("final_labels and pair_ids must have equal length")
     pairs = _pair_index(pair_ids, intervention_types)
     frame_terms: list[torch.Tensor] = []
     frame_anchor_terms: list[torch.Tensor] = []
@@ -114,6 +117,17 @@ def intervention_pairwise_losses(
 
         if "polarity_flip" in variants:
             changed = variants["polarity_flip"]
+            original_label = int(final_labels[original])
+            changed_label = int(final_labels[changed])
+            direction_by_label = {0: -1.0, 2: 1.0}
+            if original_label not in direction_by_label or changed_label not in direction_by_label:
+                raise ValueError(
+                    "polarity_flip pairs require REFUTE=0 or SUPPORT=2 labels"
+                )
+            original_direction = direction_by_label[original_label]
+            changed_direction = direction_by_label[changed_label]
+            if original_direction == changed_direction:
+                raise ValueError("polarity_flip labels must have opposite directions")
             entitlement_terms.append(F.mse_loss(
                 output["entitlement_prob"][changed],
                 output["entitlement_prob"][original],
@@ -124,11 +138,11 @@ def intervention_pairwise_losses(
             ).square()
             original_magnitude_penalty = F.relu(
                 polarity_margin_min
-                - output["polarity_margin"][original].abs()
+                - original_direction * output["polarity_margin"][original]
             ).square()
             flipped_magnitude_penalty = F.relu(
                 polarity_margin_min
-                - output["polarity_margin"][changed].abs()
+                - changed_direction * output["polarity_margin"][changed]
             ).square()
             polarity_anchor_terms.append(
                 0.5 * (original_magnitude_penalty + flipped_magnitude_penalty)
