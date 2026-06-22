@@ -98,11 +98,41 @@ def export_probe_predictions(
     write_predictions_json(path, metadata, predictions)
 
 
+def export_stage10a_predictions(
+    number_path: Path,
+    matched_controlled_path: Path,
+    probe_records: list[dict],
+    probe_output: dict[str, Any],
+    controlled_records: list[dict],
+    controlled_output: dict[str, Any],
+    metadata: dict[str, Any],
+) -> None:
+    """Export probe and held-out controls evaluated by the same checkpoint."""
+
+    if not any(row["intervention_type"] == "time_swap" for row in controlled_records):
+        raise ValueError("matched controlled export contains no time_swap examples")
+    export_probe_predictions(
+        number_path,
+        probe_records,
+        probe_output,
+        {**metadata, "export_scope": "stage10a_number_swap_probe"},
+    )
+    export_probe_predictions(
+        matched_controlled_path,
+        controlled_records,
+        controlled_output,
+        {**metadata, "export_scope": "held_out_controlled_v5_v3"},
+    )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data", type=Path, default=DEFAULT_DATA)
     parser.add_argument("--probe-data", type=Path, default=DEFAULT_PROBE)
     parser.add_argument("--output-predictions-json", type=Path, required=True)
+    parser.add_argument(
+        "--output-matched-controlled-predictions-json", type=Path, required=True
+    )
     parser.add_argument("--seed", type=int, choices=(1, 2, 3), required=True)
     parser.add_argument("--backbone", choices=("mamba", "dummy"), default="mamba")
     parser.add_argument("--model-name", default="state-spaces/mamba-130m-hf")
@@ -182,6 +212,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         raise RuntimeError("training did not capture a best-epoch state")
     restore_trainable_state(model, best_state)
     probe_output, _ = evaluate(model, probe_inputs, probe_records)
+    matched_controlled_output, _ = evaluate(model, dev_inputs, dev_records)
+    checkpoint_id = (
+        f"v3_no_polarity_flip_seed{args.seed}_best_epoch{report['best_epoch']}"
+    )
     metadata = {
         "data_path": str(args.data),
         "probe_data_path": str(args.probe_data),
@@ -195,16 +229,28 @@ def main(argv: Sequence[str] | None = None) -> int:
         "weighted_label_loss": True,
         "balanced_sampler": True,
         "configuration": "v3_no_polarity_flip",
+        "checkpoint_id": checkpoint_id,
+        "selection_split": "pair_id_held_out_dev",
         "loss_config": BALANCED_NO_POLARITY_FLIP_LOSS,
     }
-    export_probe_predictions(
-        args.output_predictions_json, probe_records, probe_output, metadata
+    export_stage10a_predictions(
+        args.output_predictions_json,
+        args.output_matched_controlled_predictions_json,
+        probe_records,
+        probe_output,
+        dev_records,
+        matched_controlled_output,
+        metadata,
     )
     print(
         json.dumps(
             {
                 "output": str(args.output_predictions_json),
+                "matched_controlled_output": str(
+                    args.output_matched_controlled_predictions_json
+                ),
                 "predictions": len(probe_records),
+                "matched_controlled_predictions": len(dev_records),
                 "best_epoch": report["best_epoch"],
                 "seed": args.seed,
             },

@@ -10,9 +10,11 @@ from scripts.create_number_swap_probe import (
     NUMBER_SWAP_FINAL_LABEL,
     build_number_swap_probe,
 )
+from scripts.build_controlled_v5 import build_seed_records
 from scripts.evaluate_number_swap_probe import main as evaluate_main, write_outputs
 from scripts.train_and_export_stage10a_number_swap import (
     export_probe_predictions,
+    export_stage10a_predictions,
     load_number_swap_probe,
 )
 
@@ -108,7 +110,39 @@ def test_probe_loader_rejects_ontology_changes(tmp_path: Path) -> None:
         raise AssertionError("changed number_swap ontology was accepted")
 
 
-def test_evaluator_compares_exported_number_and_time_predictions(tmp_path: Path) -> None:
+def test_same_checkpoint_export_contains_time_swap_and_matching_schema(
+    tmp_path: Path,
+) -> None:
+    probe_records = build_number_swap_probe(1)
+    controlled_records = build_seed_records()[:13]
+    number_path = tmp_path / "number.json"
+    matched_path = tmp_path / "matched-controlled.json"
+    metadata = {"seed": 1, "checkpoint_id": "same-best-checkpoint"}
+    export_stage10a_predictions(
+        number_path,
+        matched_path,
+        probe_records,
+        _synthetic_output(len(probe_records)),
+        controlled_records,
+        _synthetic_output(len(controlled_records)),
+        metadata,
+    )
+    number_payload = json.loads(number_path.read_text(encoding="utf-8"))
+    matched_payload = json.loads(matched_path.read_text(encoding="utf-8"))
+    assert number_payload["metadata"]["checkpoint_id"] == "same-best-checkpoint"
+    assert matched_payload["metadata"]["checkpoint_id"] == "same-best-checkpoint"
+    assert any(
+        row["intervention_type"] == "time_swap"
+        for row in matched_payload["predictions"]
+    )
+    assert set(number_payload["predictions"][0]) == set(
+        matched_payload["predictions"][0]
+    )
+
+
+def test_evaluator_compares_exported_number_and_matched_time_predictions(
+    tmp_path: Path,
+) -> None:
     number_records = build_number_swap_probe(2)
     number_path = tmp_path / "number.json"
     export_probe_predictions(

@@ -25,11 +25,11 @@ If a future benchmark instead defines numeric mismatch as `REFUTE`, it must be e
 
 ## Reproducible inference pipeline
 
-The archived v3 artifacts do not include model checkpoints, so new number-swap predictions require retraining. `scripts/train_and_export_stage10a_number_swap.py` reproduces the frozen-Mamba `v3_no_polarity_flip` balanced-auditor configuration, selects the best development epoch by macro-F1, restores its trainable state, and exports predictions for all 60 `none` and 60 `number_swap` probe records. The export uses the same schema as the existing v3 prediction files.
+The archived v3 artifacts do not include model checkpoints, so new number-swap predictions require retraining. `scripts/train_and_export_stage10a_number_swap.py` reproduces the frozen-Mamba `v3_no_polarity_flip` balanced-auditor configuration, selects the best development epoch by macro-F1, restores its trainable state, and exports predictions for all 60 `none` and 60 `number_swap` probe records. It also exports the held-out `controlled_v5_v3` development split, including its `time_swap` examples, from that exact restored checkpoint. Both files use the existing v3 prediction schema and carry the same checkpoint identifier.
 
 The script fixes the polarity-flip intervention losses to zero while retaining the other intervention-aware losses, weighted label loss, balanced sampling, a frozen `state-spaces/mamba-130m-hf` encoder, and the established 0.003 head learning rate. The selected preset is written into export metadata.
 
-Once the new predictions exist, `scripts/evaluate_number_swap_probe.py` compares them with the corresponding balanced-auditor v3 predictions and extracts `time_swap` rows from the latter.
+Once the new predictions exist, `scripts/evaluate_number_swap_probe.py` compares the number-swap file with the matched controlled export and extracts `time_swap` rows from the latter. Old v3 prediction files are not used in this comparison.
 
 ### Kaggle commands
 
@@ -42,17 +42,17 @@ python scripts/create_number_swap_probe.py --num-pairs 60 --output data/stage10a
 Train and export each balanced-auditor seed:
 
 ```bash
-python scripts/train_and_export_stage10a_number_swap.py --seed 1 --device cuda --output-predictions-json /kaggle/working/stage10a_number_swap_seed1_preds.json
-python scripts/train_and_export_stage10a_number_swap.py --seed 2 --device cuda --output-predictions-json /kaggle/working/stage10a_number_swap_seed2_preds.json
-python scripts/train_and_export_stage10a_number_swap.py --seed 3 --device cuda --output-predictions-json /kaggle/working/stage10a_number_swap_seed3_preds.json
+python scripts/train_and_export_stage10a_number_swap.py --seed 1 --device cuda --output-predictions-json /kaggle/working/stage10a_number_swap_seed1_preds.json --output-matched-controlled-predictions-json /kaggle/working/stage10a_matched_controlled_seed1_preds.json
+python scripts/train_and_export_stage10a_number_swap.py --seed 2 --device cuda --output-predictions-json /kaggle/working/stage10a_number_swap_seed2_preds.json --output-matched-controlled-predictions-json /kaggle/working/stage10a_matched_controlled_seed2_preds.json
+python scripts/train_and_export_stage10a_number_swap.py --seed 3 --device cuda --output-predictions-json /kaggle/working/stage10a_number_swap_seed3_preds.json --output-matched-controlled-predictions-json /kaggle/working/stage10a_matched_controlled_seed3_preds.json
 ```
 
 Compare number and time swaps for each seed:
 
 ```bash
-python scripts/evaluate_number_swap_probe.py --number-preds /kaggle/working/stage10a_number_swap_seed1_preds.json --time-preds /kaggle/working/v3_no_polarity_flip_seed1_preds.json --output-csv /kaggle/working/stage10a_number_swap_seed1.csv --output-md /kaggle/working/stage10a_number_swap_seed1.md
-python scripts/evaluate_number_swap_probe.py --number-preds /kaggle/working/stage10a_number_swap_seed2_preds.json --time-preds /kaggle/working/v3_no_polarity_flip_seed2_preds.json --output-csv /kaggle/working/stage10a_number_swap_seed2.csv --output-md /kaggle/working/stage10a_number_swap_seed2.md
-python scripts/evaluate_number_swap_probe.py --number-preds /kaggle/working/stage10a_number_swap_seed3_preds.json --time-preds /kaggle/working/v3_no_polarity_flip_seed3_preds.json --output-csv /kaggle/working/stage10a_number_swap_seed3.csv --output-md /kaggle/working/stage10a_number_swap_seed3.md
+python scripts/evaluate_number_swap_probe.py --number-preds /kaggle/working/stage10a_number_swap_seed1_preds.json --time-preds /kaggle/working/stage10a_matched_controlled_seed1_preds.json --output-csv /kaggle/working/stage10a_number_swap_seed1.csv --output-md /kaggle/working/stage10a_number_swap_seed1.md
+python scripts/evaluate_number_swap_probe.py --number-preds /kaggle/working/stage10a_number_swap_seed2_preds.json --time-preds /kaggle/working/stage10a_matched_controlled_seed2_preds.json --output-csv /kaggle/working/stage10a_number_swap_seed2.csv --output-md /kaggle/working/stage10a_number_swap_seed2.md
+python scripts/evaluate_number_swap_probe.py --number-preds /kaggle/working/stage10a_number_swap_seed3_preds.json --time-preds /kaggle/working/stage10a_matched_controlled_seed3_preds.json --output-csv /kaggle/working/stage10a_number_swap_seed3.csv --output-md /kaggle/working/stage10a_number_swap_seed3.md
 ```
 
 ## Claim constraints
