@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import torch
 
@@ -18,8 +19,10 @@ from scripts.train_controlled_v5 import (
     intervention_diagnostics,
     intervention_objective,
     pairwise_checks,
+    run_training,
     sample_indices,
     sweep_presets,
+    write_report_json,
 )
 
 
@@ -146,3 +149,55 @@ def test_stage4d_sweep_presets_cover_requested_ablations() -> None:
     assert presets["B_high_frame"]["lambda_frame_preserve"] > 1.0
     assert presets["C_anchor"]["lambda_frame_anchor"] > 0.0
     assert presets["D_anchor_reduced_frame"]["lambda_frame_preserve"] < 1.0
+
+
+def test_short_dummy_training_tracks_best_epoch(capsys) -> None:
+    records = build_seed_records()[:13]
+    vocab = build_vocab(records)
+    bundle = encode_records(records, vocab)
+    inputs = bundle["model_inputs"]
+    model = build_model(len(vocab), inputs["input_ids"].shape[1], hidden_size=24)
+    report = run_training(
+        model,
+        inputs,
+        inputs,
+        records,
+        records,
+        bundle,
+        epochs=3,
+        lr=1e-3,
+        head_lr=None,
+        encoder_lr=None,
+        weighted_label_loss=False,
+        balanced_sampler=False,
+        use_intervention_loss=False,
+        ranking_weight=1.0,
+        loss_config={},
+        seed=5,
+        run_name="test",
+        select_metric="final_macro_f1",
+    )
+    capsys.readouterr()
+    assert report["final_epoch"] == 3
+    assert 1 <= report["best_epoch"] <= 3
+    assert report["best_dev_metrics"]["final_macro_f1"] >= report["dev_metrics"][
+        "final_macro_f1"
+    ]
+    assert set(report["best_dev_interventions"]) == {
+        record["intervention_type"] for record in records
+    }
+    assert report["best_dev_pairwise_checks"]
+
+
+def test_compact_report_json_export() -> None:
+    path = Path(__file__).parent / ".controlled_report_test.json"
+    report = {
+        "final_epoch": 3,
+        "best_epoch": 2,
+        "best_dev_metrics": {"final_macro_f1": 0.75},
+    }
+    try:
+        write_report_json(report, path)
+        assert json.loads(path.read_text(encoding="utf-8")) == report
+    finally:
+        path.unlink(missing_ok=True)

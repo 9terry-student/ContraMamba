@@ -742,9 +742,17 @@ def run_training(
     loss_config: dict[str, float],
     seed: int,
     run_name: str,
+    select_metric: str = "final_macro_f1",
 ) -> dict[str, Any]:
+    if epochs < 1:
+        raise ValueError("epochs must be at least 1")
     optimizer = build_optimizer(model, lr, head_lr, encoder_lr)
     sampling_generator = torch.Generator().manual_seed(seed)
+    best_epoch = 0
+    best_score = float("-inf")
+    best_dev_metrics: dict[str, Any] | None = None
+    best_dev_interventions: dict[str, Any] | None = None
+    best_dev_pairwise_checks: dict[str, Any] | None = None
     for epoch in range(1, epochs + 1):
         model.train()
         optimizer.zero_grad()
@@ -774,7 +782,20 @@ def run_training(
         optimizer.step()
 
         train_output, train_metrics = evaluate(model, train_inputs, train_records)
-        _, dev_metrics = evaluate(model, dev_inputs, dev_records)
+        dev_output, dev_metrics = evaluate(model, dev_inputs, dev_records)
+        if select_metric not in dev_metrics or not isinstance(
+            dev_metrics[select_metric], (int, float)
+        ):
+            raise ValueError(f"unsupported select_metric: {select_metric!r}")
+        score = float(dev_metrics[select_metric])
+        if score > best_score:
+            best_score = score
+            best_epoch = epoch
+            best_dev_metrics = dev_metrics
+            best_dev_interventions = intervention_diagnostics(
+                dev_records, dev_output
+            )
+            best_dev_pairwise_checks = pairwise_checks(dev_records, dev_output)
         print(
             f"run={run_name} "
             + format_epoch(
@@ -791,6 +812,12 @@ def run_training(
     dev_output, dev_metrics = evaluate(model, dev_inputs, dev_records)
     return {
         "run_name": run_name,
+        "final_epoch": epochs,
+        "best_epoch": best_epoch,
+        "select_metric": select_metric,
+        "best_dev_metrics": best_dev_metrics,
+        "best_dev_interventions": best_dev_interventions,
+        "best_dev_pairwise_checks": best_dev_pairwise_checks,
         "loss_config": loss_config,
         "train_metrics": train_metrics,
         "dev_metrics": dev_metrics,
@@ -801,6 +828,14 @@ def run_training(
         "train_pairwise_checks": pairwise_checks(train_records, train_output),
         "dev_pairwise_checks": pairwise_checks(dev_records, dev_output),
     }
+
+
+def write_report_json(report: dict[str, Any], path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(report, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
 
 
 def sweep_presets(ranking_margin: float) -> dict[str, dict[str, float]]:
@@ -874,6 +909,12 @@ def main() -> None:
     parser.add_argument("--ranking-margin", type=float, default=0.5)
     parser.add_argument("--polarity-margin-min", type=float, default=1.0)
     parser.add_argument("--loss-sweep", action="store_true")
+    parser.add_argument(
+        "--select-metric",
+        choices=("final_macro_f1", "final_accuracy"),
+        default="final_macro_f1",
+    )
+    parser.add_argument("--output-json", type=Path)
     parser.add_argument("--dev-ratio", type=float, default=0.2)
     parser.add_argument("--seed", type=int, default=17)
     parser.add_argument("--device", default="cpu")
@@ -976,6 +1017,7 @@ def main() -> None:
             loss_config=loss_config,
             seed=args.seed,
             run_name=run_name,
+            select_metric=args.select_metric,
         )
 
     report = {
@@ -991,6 +1033,16 @@ def main() -> None:
         },
         "runs": reports,
     }
+    if len(reports) == 1:
+        single = next(iter(reports.values()))
+        for key in (
+            "final_epoch",
+            "best_epoch",
+            "best_dev_metrics",
+            "best_dev_interventions",
+            "best_dev_pairwise_checks",
+        ):
+            report[key] = single[key]
     for run_name, run_report in reports.items():
         distribution = run_report["dev_prediction_distribution"]
         if len(distribution) == 1:
@@ -1002,6 +1054,8 @@ def main() -> None:
             )
     print("\nFINAL_REPORT")
     print(json.dumps(report, indent=2, sort_keys=True))
+    if args.output_json is not None:
+        write_report_json(report, args.output_json)
 
 
 if __name__ == "__main__":
