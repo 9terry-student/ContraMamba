@@ -79,7 +79,7 @@ def sweep_thresholds(
     balanced: Mapping[str, Any],
     strict: Mapping[str, Any],
     thresholds: Sequence[float] = DEFAULT_THRESHOLDS,
-    include_router_cost: bool = False,
+    include_router_cost: bool = True,
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for threshold in thresholds:
@@ -102,7 +102,7 @@ def sweep_thresholds(
 def write_csv(
     path: Path,
     rows: Sequence[Mapping[str, Any]],
-    metrics: Sequence[str] = METRICS,
+    metrics: Sequence[str] = STAGE9_METRICS,
 ) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as handle:
@@ -114,7 +114,7 @@ def write_csv(
 def render_markdown(
     rows: Sequence[Mapping[str, Any]],
     seed: int,
-    include_router_cost: bool = False,
+    include_router_cost: bool = True,
 ) -> str:
     lines = [f"# Stage 6A Router Threshold Sweep: Seed {seed}", ""]
     table_groups = (
@@ -153,7 +153,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--thresholds", type=float, nargs="+", default=DEFAULT_THRESHOLDS)
     parser.add_argument("--output-csv", type=Path)
     parser.add_argument("--output-md", type=Path)
-    parser.add_argument("--include-router-cost", action="store_true")
+    parser.add_argument(
+        "--include-router-cost",
+        action="store_true",
+        default=True,
+        help="Include Stage 9A router cost metrics (enabled by default).",
+    )
     return parser
 
 

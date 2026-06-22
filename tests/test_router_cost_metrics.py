@@ -6,6 +6,8 @@ from pathlib import Path
 import pytest
 
 from scripts.evaluate_router_ensemble import router_cost_metrics
+from scripts.evaluate_router_ensemble import ROUTER_COST_METRIC_NAMES
+from scripts.sweep_router_thresholds import STAGE9_METRICS, flatten_metrics, write_csv
 from scripts.write_stage9a_router_cost_aggregate import main as aggregate_main
 
 
@@ -51,6 +53,7 @@ def test_router_cost_metrics_measure_downgrades_recall_and_precision() -> None:
     }
     metrics = router_cost_metrics(records, classifier, routed, auditors, 0.5)
 
+    assert set(metrics) == set(ROUTER_COST_METRIC_NAMES)
     assert metrics["classifier_entitled_count"] == 4
     assert metrics["routed_entitled_count"] == 2
     assert metrics["downgraded_count"] == 2
@@ -90,6 +93,9 @@ def test_router_cost_metrics_handle_zero_denominators() -> None:
 
 
 def _write_seed(path: Path, downgrade_rate: float) -> None:
+    cost_values = {metric: 0.0 for metric in ROUTER_COST_METRIC_NAMES}
+    cost_values["downgrade_rate_among_classifier_entitled"] = downgrade_rate
+    cost_values["support_recall_drop"] = 0.1
     with path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(
             handle,
@@ -98,9 +104,7 @@ def _write_seed(path: Path, downgrade_rate: float) -> None:
                 "system",
                 "final_accuracy",
                 "final_macro_f1",
-                "downgrade_rate_among_classifier_entitled",
-                "support_recall_drop",
-                "retained_violation_rate",
+                *ROUTER_COST_METRIC_NAMES,
             ),
         )
         writer.writeheader()
@@ -110,9 +114,7 @@ def _write_seed(path: Path, downgrade_rate: float) -> None:
                 "system": "conservative_balanced_router",
                 "final_accuracy": 0.9,
                 "final_macro_f1": 0.85,
-                "downgrade_rate_among_classifier_entitled": downgrade_rate,
-                "support_recall_drop": 0.1,
-                "retained_violation_rate": 0.0,
+                **cost_values,
             }
         )
 
@@ -136,4 +138,50 @@ def test_stage9_aggregate_writes_sample_statistics(tmp_path: Path) -> None:
     )
     assert float(target["mean"]) == pytest.approx(0.3)
     assert float(target["std"]) == pytest.approx(0.2 / 2**0.5)
-    assert "THRESHOLD 0.5" in output_md.read_text(encoding="utf-8")
+    markdown = output_md.read_text(encoding="utf-8")
+    assert "THRESHOLD 0.5" in markdown
+    assert "| --" not in markdown
+
+
+def test_seed_csv_includes_all_numeric_stage9_cost_fields(tmp_path: Path) -> None:
+    cost = {metric: float(index) for index, metric in enumerate(ROUTER_COST_METRIC_NAMES)}
+    metrics = {
+        "final_accuracy": 0.9,
+        "final_macro_f1": 0.8,
+        "per_label_f1": {"NOT_ENTITLED": 0.7, "REFUTE": 0.8, "SUPPORT": 0.9},
+        "internal_faithfulness": {
+            "entitled_output_count": 2,
+            "entitled_output_gate_violation_rate": 0.0,
+            "entitled_output_gate_violations": 0,
+            "polarity_flip_output_ok": 1.0,
+            "polarity_flip_internal_ok": 1.0,
+            "polarity_flip_output_internal_gap": 0.0,
+            "polarity_flip_output_ok_but_internal_bad": 0,
+        },
+        "pairwise_checks": {
+            name: {"pass_rate": 1.0}
+            for name in (
+                "paraphrase_preserved",
+                "predicate_disentangled",
+                "polarity_flip_preserved_and_reversed",
+                "deletion_sufficiency_lower",
+                "truncation_sufficiency_lower",
+                "entity_frame_lower",
+                "event_frame_lower",
+            )
+        },
+        "router_cost": cost,
+    }
+    flattened = flatten_metrics(metrics, include_router_cost=True)
+    assert set(flattened) == set(STAGE9_METRICS)
+    path = tmp_path / "seed.csv"
+    write_csv(
+        path,
+        [{"threshold": 0.5, "system": "conservative_balanced_router", **flattened}],
+    )
+    with path.open(newline="", encoding="utf-8") as handle:
+        row = next(csv.DictReader(handle))
+    for metric in ROUTER_COST_METRIC_NAMES:
+        assert metric in row
+        assert row[metric] != ""
+        assert float(row[metric]) == cost[metric]
