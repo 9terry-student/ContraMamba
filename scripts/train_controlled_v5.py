@@ -767,6 +767,32 @@ def restore_head_state(
             current[name].copy_(value)
 
 
+def capture_trainable_state(model: ContraMambaV5) -> dict[str, torch.Tensor]:
+    """Capture parameters optimized in the current run.
+
+    This is intentionally separate from checkpoint persistence. It lets probe
+    exporters restore the selected best epoch without copying a frozen Mamba
+    encoder on every improvement.
+    """
+
+    return {
+        name: parameter.detach().cpu().clone()
+        for name, parameter in model.named_parameters()
+        if parameter.requires_grad
+    }
+
+
+def restore_trainable_state(
+    model: ContraMambaV5, trainable_state: dict[str, torch.Tensor]
+) -> None:
+    parameters = dict(model.named_parameters())
+    with torch.no_grad():
+        for name, value in trainable_state.items():
+            if name not in parameters:
+                raise ValueError(f"unknown trainable parameter in saved state: {name}")
+            parameters[name].copy_(value.to(parameters[name].device))
+
+
 def run_training(
     model: ContraMambaV5,
     train_inputs: dict[str, torch.Tensor],
@@ -787,6 +813,7 @@ def run_training(
     seed: int,
     run_name: str,
     select_metric: str = "final_macro_f1",
+    capture_best_trainable_state: bool = False,
 ) -> dict[str, Any]:
     if epochs < 1:
         raise ValueError("epochs must be at least 1")
@@ -798,6 +825,7 @@ def run_training(
     best_dev_interventions: dict[str, Any] | None = None
     best_dev_pairwise_checks: dict[str, Any] | None = None
     best_dev_predictions: list[dict] | None = None
+    best_trainable_state: dict[str, torch.Tensor] | None = None
     for epoch in range(1, epochs + 1):
         model.train()
         optimizer.zero_grad()
@@ -842,6 +870,8 @@ def run_training(
             )
             best_dev_pairwise_checks = pairwise_checks(dev_records, dev_output)
             best_dev_predictions = prediction_records(dev_records, dev_output)
+            if capture_best_trainable_state:
+                best_trainable_state = capture_trainable_state(model)
         print(
             f"run={run_name} "
             + format_epoch(
@@ -856,7 +886,7 @@ def run_training(
 
     train_output, train_metrics = evaluate(model, train_inputs, train_records)
     dev_output, dev_metrics = evaluate(model, dev_inputs, dev_records)
-    return {
+    report = {
         "run_name": run_name,
         "final_epoch": epochs,
         "best_epoch": best_epoch,
@@ -875,6 +905,9 @@ def run_training(
         "train_pairwise_checks": pairwise_checks(train_records, train_output),
         "dev_pairwise_checks": pairwise_checks(dev_records, dev_output),
     }
+    if capture_best_trainable_state:
+        report["_best_trainable_state"] = best_trainable_state
+    return report
 
 
 def write_report_json(report: dict[str, Any], path: Path) -> None:
