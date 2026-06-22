@@ -512,6 +512,50 @@ def final_prediction_distribution(output: dict[str, Any]) -> dict[str, int]:
     )
 
 
+def prediction_records(records: list[dict], output: dict[str, Any]) -> list[dict]:
+    probabilities = torch.softmax(output["logits"], dim=-1).detach().cpu()
+    predictions = output["predictions"].detach().cpu()
+    scalar_keys = (
+        "frame_prob",
+        "predicate_coverage_prob",
+        "sufficiency_prob",
+        "entitlement_prob",
+        "polarity_margin",
+    )
+    scalars = {key: output[key].detach().cpu() for key in scalar_keys}
+    exported: list[dict] = []
+    for index, record in enumerate(records):
+        exported.append(
+            {
+                "id": record["id"],
+                "pair_id": record["pair_id"],
+                "intervention_type": record["intervention_type"],
+                "claim": record["claim"],
+                "evidence": record["evidence"],
+                "gold_final_label": record["final_label"],
+                "pred_final_label": ID_TO_FINAL_LABEL[int(predictions[index])],
+                "final_probs": probabilities[index].tolist(),
+                **{key: float(scalars[key][index]) for key in scalar_keys},
+            }
+        )
+    return exported
+
+
+def write_predictions_json(
+    path: Path, metadata: dict[str, Any], predictions: list[dict]
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(
+            {"metadata": metadata, "predictions": predictions},
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def pairwise_checks(records: list[dict], output: dict[str, Any]) -> dict[str, dict[str, Any]]:
     values = {
         key: output[key].detach().cpu()
@@ -753,6 +797,7 @@ def run_training(
     best_dev_metrics: dict[str, Any] | None = None
     best_dev_interventions: dict[str, Any] | None = None
     best_dev_pairwise_checks: dict[str, Any] | None = None
+    best_dev_predictions: list[dict] | None = None
     for epoch in range(1, epochs + 1):
         model.train()
         optimizer.zero_grad()
@@ -796,6 +841,7 @@ def run_training(
                 dev_records, dev_output
             )
             best_dev_pairwise_checks = pairwise_checks(dev_records, dev_output)
+            best_dev_predictions = prediction_records(dev_records, dev_output)
         print(
             f"run={run_name} "
             + format_epoch(
@@ -818,6 +864,7 @@ def run_training(
         "best_dev_metrics": best_dev_metrics,
         "best_dev_interventions": best_dev_interventions,
         "best_dev_pairwise_checks": best_dev_pairwise_checks,
+        "_best_dev_predictions": best_dev_predictions,
         "loss_config": loss_config,
         "train_metrics": train_metrics,
         "dev_metrics": dev_metrics,
@@ -878,7 +925,7 @@ def sweep_presets(ranking_margin: float) -> dict[str, dict[str, float]]:
     }
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--data", type=Path, default=ROOT / "data" / "controlled_v5_seed.jsonl"
@@ -915,10 +962,11 @@ def main() -> None:
         default="final_macro_f1",
     )
     parser.add_argument("--output-json", type=Path)
+    parser.add_argument("--output-predictions-json", type=Path)
     parser.add_argument("--dev-ratio", type=float, default=0.2)
     parser.add_argument("--seed", type=int, default=17)
     parser.add_argument("--device", default="cpu")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -1033,6 +1081,31 @@ def main() -> None:
         },
         "runs": reports,
     }
+    prediction_exports = {
+        name: run_report.pop("_best_dev_predictions")
+        for name, run_report in reports.items()
+    }
+    if args.output_predictions_json is not None:
+        if len(reports) != 1:
+            parser.error("--output-predictions-json requires a single non-sweep run")
+        run_name, run_report = next(iter(reports.items()))
+        metadata = {
+            "data_path": str(args.data),
+            "seed": args.seed,
+            "best_epoch": run_report["best_epoch"],
+            "backbone": args.backbone,
+            "model_name": args.model_name if args.backbone == "mamba" else None,
+            "freeze_encoder": args.freeze_encoder,
+            "weighted_label_loss": args.weighted_label_loss,
+            "balanced_sampler": args.balanced_sampler,
+            "use_intervention_loss": args.use_intervention_loss,
+            "loss_config": run_report["loss_config"],
+        }
+        write_predictions_json(
+            args.output_predictions_json,
+            metadata,
+            prediction_exports[run_name],
+        )
     if len(reports) == 1:
         single = next(iter(reports.values()))
         for key in (
@@ -1056,7 +1129,8 @@ def main() -> None:
     print(json.dumps(report, indent=2, sort_keys=True))
     if args.output_json is not None:
         write_report_json(report, args.output_json)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
