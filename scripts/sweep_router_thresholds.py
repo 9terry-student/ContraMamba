@@ -4,13 +4,19 @@ from __future__ import annotations
 
 import argparse
 import csv
+import sys
 from pathlib import Path
 from typing import Any, Mapping, Sequence
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.evaluate_router_ensemble import evaluate_router_systems, load_prediction_file
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = REPO_ROOT
 DEFAULT_THRESHOLDS = (0.3, 0.4, 0.5, 0.6, 0.7)
 SYSTEMS = (
     "conservative_balanced_router",
