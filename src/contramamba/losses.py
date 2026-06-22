@@ -1,0 +1,141 @@
+"""Intervention-aware losses for controlled ContraMamba-v5 training."""
+
+from __future__ import annotations
+
+from collections import defaultdict
+from collections.abc import Sequence
+from typing import Any
+
+import torch
+from torch.nn import functional as F
+
+
+def _pair_index(
+    pair_ids: Sequence[str], intervention_types: Sequence[str]
+) -> dict[str, dict[str, int]]:
+    if len(pair_ids) != len(intervention_types):
+        raise ValueError("pair_ids and intervention_types must have equal length")
+    result: dict[str, dict[str, int]] = defaultdict(dict)
+    for index, (pair_id, intervention) in enumerate(
+        zip(pair_ids, intervention_types, strict=True)
+    ):
+        if intervention in result[pair_id]:
+            raise ValueError(
+                f"duplicate intervention {intervention!r} for pair_id {pair_id!r}"
+            )
+        result[pair_id][intervention] = index
+    return dict(result)
+
+
+def _mean_or_zero(terms: list[torch.Tensor], reference: torch.Tensor) -> torch.Tensor:
+    return torch.stack(terms).mean() if terms else reference.sum() * 0.0
+
+
+def intervention_pairwise_losses(
+    output: dict[str, Any],
+    pair_ids: Sequence[str],
+    intervention_types: Sequence[str],
+    *,
+    lambda_frame_preserve: float = 1.0,
+    lambda_predicate_contrast: float = 1.0,
+    lambda_sufficiency_contrast: float = 1.0,
+    lambda_polarity_flip: float = 1.0,
+    lambda_paraphrase_preserve: float = 1.0,
+    ranking_margin: float = 0.5,
+) -> dict[str, torch.Tensor]:
+    """Compute pairwise losses without exposing intervention metadata to the model."""
+
+    if ranking_margin < 0:
+        raise ValueError("ranking_margin must be non-negative")
+    pairs = _pair_index(pair_ids, intervention_types)
+    frame_terms: list[torch.Tensor] = []
+    predicate_terms: list[torch.Tensor] = []
+    sufficiency_terms: list[torch.Tensor] = []
+    polarity_terms: list[torch.Tensor] = []
+    paraphrase_terms: list[torch.Tensor] = []
+
+    for pair_id, variants in pairs.items():
+        if "none" not in variants:
+            raise ValueError(f"pair_id {pair_id!r} has no original ('none') record")
+        original = variants["none"]
+
+        for intervention in ("paraphrase", "predicate_swap", "polarity_flip"):
+            if intervention in variants:
+                changed = variants[intervention]
+                frame_terms.append(
+                    F.mse_loss(
+                        output["frame_logit"][changed],
+                        output["frame_logit"][original],
+                    )
+                )
+
+        if "predicate_swap" in variants:
+            changed = variants["predicate_swap"]
+            difference = (
+                output["predicate_coverage_logit"][original]
+                - output["predicate_coverage_logit"][changed]
+            )
+            predicate_terms.append(F.relu(ranking_margin - difference))
+
+        for intervention in ("evidence_deletion", "evidence_truncation"):
+            if intervention in variants:
+                changed = variants[intervention]
+                difference = (
+                    output["sufficiency_logit"][original]
+                    - output["sufficiency_logit"][changed]
+                )
+                sufficiency_terms.append(F.relu(ranking_margin - difference))
+
+        if "polarity_flip" in variants:
+            changed = variants["polarity_flip"]
+            entitlement_preservation = F.mse_loss(
+                output["entitlement_prob"][changed],
+                output["entitlement_prob"][original],
+            )
+            sign_reversal = (
+                output["polarity_margin"][original]
+                + output["polarity_margin"][changed]
+            ).square()
+            polarity_terms.append(entitlement_preservation + sign_reversal)
+
+        if "paraphrase" in variants:
+            changed = variants["paraphrase"]
+            scalar_keys = (
+                "frame_logit",
+                "predicate_coverage_logit",
+                "sufficiency_logit",
+                "entitlement_prob",
+            )
+            scalar_preservation = torch.stack(
+                [
+                    F.mse_loss(output[key][changed], output[key][original])
+                    for key in scalar_keys
+                ]
+            ).mean()
+            logits_preservation = F.mse_loss(
+                output["logits"][changed], output["logits"][original]
+            )
+            paraphrase_terms.append(scalar_preservation + logits_preservation)
+
+    reference = output["logits"]
+    frame_preserve = _mean_or_zero(frame_terms, reference)
+    predicate_contrast = _mean_or_zero(predicate_terms, reference)
+    sufficiency_contrast = _mean_or_zero(sufficiency_terms, reference)
+    polarity_flip = _mean_or_zero(polarity_terms, reference)
+    paraphrase_preserve = _mean_or_zero(paraphrase_terms, reference)
+    total = (
+        lambda_frame_preserve * frame_preserve
+        + lambda_predicate_contrast * predicate_contrast
+        + lambda_sufficiency_contrast * sufficiency_contrast
+        + lambda_polarity_flip * polarity_flip
+        + lambda_paraphrase_preserve * paraphrase_preserve
+    )
+    return {
+        "total": total,
+        "frame_preserve": frame_preserve,
+        "predicate_contrast": predicate_contrast,
+        "sufficiency_contrast": sufficiency_contrast,
+        "polarity_flip": polarity_flip,
+        "paraphrase_preserve": paraphrase_preserve,
+    }
+

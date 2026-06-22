@@ -99,10 +99,18 @@ class ContraMambaV5(nn.Module):
         pair_ids: torch.Tensor | None = None,
         return_token_states: bool = False,
         decision_mode: str | None = None,
+        encoder_hidden_states: torch.Tensor | None = None,
     ) -> dict[str, Any]:
         del intervention_types, pair_ids  # Reserved for paired ranking loss.
-        backbone_outputs = self.mamba(input_ids=input_ids)
-        token_states = backbone_outputs.last_hidden_state
+        if encoder_hidden_states is None:
+            backbone_outputs = self.mamba(input_ids=input_ids)
+            token_states = backbone_outputs.last_hidden_state
+        else:
+            if encoder_hidden_states.shape[:2] != input_ids.shape:
+                raise ValueError(
+                    "encoder_hidden_states must match input_ids batch/sequence dimensions"
+                )
+            token_states = encoder_hidden_states
 
         frame = self.frame_gate(
             token_states, attention_mask, claim_mask, evidence_mask
@@ -193,4 +201,3 @@ class ContraMambaV5(nn.Module):
             "loss": total_loss,
             **losses,
         }
-
