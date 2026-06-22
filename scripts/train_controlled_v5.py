@@ -807,10 +807,12 @@ def sweep_presets(ranking_margin: float) -> dict[str, dict[str, float]]:
         "lambda_predicate_contrast": 1.0,
         "lambda_sufficiency_contrast": 1.0,
         "lambda_polarity_flip": 1.0,
+        "lambda_polarity_margin_anchor": 1.0,
         "lambda_paraphrase_preserve": 1.0,
         "lambda_entitlement_preserve": 1.0,
         "lambda_logit_preserve": 1.0,
         "ranking_margin": ranking_margin,
+        "polarity_margin_min": 1.0,
     }
     return {
         "A_stage4c": {
@@ -864,10 +866,12 @@ def main() -> None:
     parser.add_argument("--lambda-predicate-anchor", type=float, default=1.0)
     parser.add_argument("--lambda-sufficiency-contrast", type=float, default=1.0)
     parser.add_argument("--lambda-polarity-flip", type=float, default=1.0)
+    parser.add_argument("--lambda-polarity-margin-anchor", type=float, default=1.0)
     parser.add_argument("--lambda-paraphrase-preserve", type=float, default=1.0)
     parser.add_argument("--lambda-entitlement-preserve", type=float, default=1.0)
     parser.add_argument("--lambda-logit-preserve", type=float, default=1.0)
     parser.add_argument("--ranking-margin", type=float, default=0.5)
+    parser.add_argument("--polarity-margin-min", type=float, default=1.0)
     parser.add_argument("--loss-sweep", action="store_true")
     parser.add_argument("--dev-ratio", type=float, default=0.2)
     parser.add_argument("--seed", type=int, default=17)
@@ -936,10 +940,12 @@ def main() -> None:
         "lambda_predicate_anchor": args.lambda_predicate_anchor,
         "lambda_sufficiency_contrast": args.lambda_sufficiency_contrast,
         "lambda_polarity_flip": args.lambda_polarity_flip,
+        "lambda_polarity_margin_anchor": args.lambda_polarity_margin_anchor,
         "lambda_paraphrase_preserve": args.lambda_paraphrase_preserve,
         "lambda_entitlement_preserve": args.lambda_entitlement_preserve,
         "lambda_logit_preserve": args.lambda_logit_preserve,
         "ranking_margin": args.ranking_margin,
+        "polarity_margin_min": args.polarity_margin_min,
     }
     configurations = (
         sweep_presets(args.ranking_margin)

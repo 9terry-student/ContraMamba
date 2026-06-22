@@ -64,6 +64,7 @@ def test_ideal_intervention_relations_have_zero_loss() -> None:
         "predicate_anchor",
         "sufficiency_contrast",
         "polarity_flip",
+        "polarity_margin_anchor",
         "paraphrase_preserve",
         "entitlement_preserve",
         "logit_preserve",
@@ -104,6 +105,11 @@ def test_pair_metadata_validation() -> None:
             INTERVENTIONS[1:],
         )
 
+    with pytest.raises(ValueError, match="polarity_margin_min"):
+        intervention_pairwise_losses(
+            ideal_output(), PAIR_IDS, INTERVENTIONS, polarity_margin_min=-0.1
+        )
+
 
 def test_frame_anchor_penalizes_jointly_low_preserved_frames() -> None:
     high = ideal_output()
@@ -116,3 +122,27 @@ def test_frame_anchor_penalizes_jointly_low_preserved_frames() -> None:
     assert low_losses["frame_preserve"].item() == 0.0
     assert low_losses["frame_anchor"] > high_losses["frame_anchor"]
     assert low_losses["total"] > high_losses["total"]
+
+
+def test_zero_symmetric_polarity_margins_are_anchored() -> None:
+    output = ideal_output()
+    output["polarity_margin"] = torch.zeros(6, requires_grad=True)
+    losses = intervention_pairwise_losses(
+        output, PAIR_IDS, INTERVENTIONS, polarity_margin_min=1.0
+    )
+    assert losses["polarity_flip"].item() == 0.0
+    assert losses["polarity_margin_anchor"].item() == pytest.approx(1.0)
+
+
+def test_opposite_nonzero_margins_are_preferred_to_zero() -> None:
+    nonzero = intervention_pairwise_losses(
+        ideal_output(), PAIR_IDS, INTERVENTIONS, polarity_margin_min=1.0
+    )
+    zero_output = ideal_output()
+    zero_output["polarity_margin"] = torch.zeros(6, requires_grad=True)
+    zero = intervention_pairwise_losses(
+        zero_output, PAIR_IDS, INTERVENTIONS, polarity_margin_min=1.0
+    )
+    assert nonzero["polarity_flip"].item() == 0.0
+    assert nonzero["polarity_margin_anchor"].item() == 0.0
+    assert zero["total"] > nonzero["total"]

@@ -42,15 +42,19 @@ def intervention_pairwise_losses(
     lambda_predicate_anchor: float = 1.0,
     lambda_sufficiency_contrast: float = 1.0,
     lambda_polarity_flip: float = 1.0,
+    lambda_polarity_margin_anchor: float = 1.0,
     lambda_paraphrase_preserve: float = 1.0,
     lambda_entitlement_preserve: float = 1.0,
     lambda_logit_preserve: float = 1.0,
     ranking_margin: float = 0.5,
+    polarity_margin_min: float = 1.0,
 ) -> dict[str, torch.Tensor]:
     """Compute pairwise losses without exposing intervention metadata to the model."""
 
     if ranking_margin < 0:
         raise ValueError("ranking_margin must be non-negative")
+    if polarity_margin_min < 0:
+        raise ValueError("polarity_margin_min must be non-negative")
     pairs = _pair_index(pair_ids, intervention_types)
     frame_terms: list[torch.Tensor] = []
     frame_anchor_terms: list[torch.Tensor] = []
@@ -58,6 +62,7 @@ def intervention_pairwise_losses(
     predicate_anchor_terms: list[torch.Tensor] = []
     sufficiency_terms: list[torch.Tensor] = []
     polarity_terms: list[torch.Tensor] = []
+    polarity_anchor_terms: list[torch.Tensor] = []
     paraphrase_terms: list[torch.Tensor] = []
     entitlement_terms: list[torch.Tensor] = []
     logit_terms: list[torch.Tensor] = []
@@ -117,6 +122,17 @@ def intervention_pairwise_losses(
                 output["polarity_margin"][original]
                 + output["polarity_margin"][changed]
             ).square()
+            original_magnitude_penalty = F.relu(
+                polarity_margin_min
+                - output["polarity_margin"][original].abs()
+            ).square()
+            flipped_magnitude_penalty = F.relu(
+                polarity_margin_min
+                - output["polarity_margin"][changed].abs()
+            ).square()
+            polarity_anchor_terms.append(
+                0.5 * (original_magnitude_penalty + flipped_magnitude_penalty)
+            )
             predicate_preservation = F.mse_loss(
                 output["predicate_coverage_logit"][changed],
                 output["predicate_coverage_logit"][original],
@@ -171,6 +187,7 @@ def intervention_pairwise_losses(
     predicate_anchor = _mean_or_zero(predicate_anchor_terms, reference)
     sufficiency_contrast = _mean_or_zero(sufficiency_terms, reference)
     polarity_flip = _mean_or_zero(polarity_terms, reference)
+    polarity_margin_anchor = _mean_or_zero(polarity_anchor_terms, reference)
     paraphrase_preserve = _mean_or_zero(paraphrase_terms, reference)
     entitlement_preserve = _mean_or_zero(entitlement_terms, reference)
     logit_preserve = _mean_or_zero(logit_terms, reference)
@@ -181,6 +198,7 @@ def intervention_pairwise_losses(
         + lambda_predicate_anchor * predicate_anchor
         + lambda_sufficiency_contrast * sufficiency_contrast
         + lambda_polarity_flip * polarity_flip
+        + lambda_polarity_margin_anchor * polarity_margin_anchor
         + lambda_paraphrase_preserve * paraphrase_preserve
         + lambda_entitlement_preserve * entitlement_preserve
         + lambda_logit_preserve * logit_preserve
@@ -193,6 +211,7 @@ def intervention_pairwise_losses(
         "predicate_anchor": predicate_anchor,
         "sufficiency_contrast": sufficiency_contrast,
         "polarity_flip": polarity_flip,
+        "polarity_margin_anchor": polarity_margin_anchor,
         "paraphrase_preserve": paraphrase_preserve,
         "entitlement_preserve": entitlement_preserve,
         "logit_preserve": logit_preserve,
