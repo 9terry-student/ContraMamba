@@ -186,6 +186,7 @@ def internal_faithfulness_metrics(
     records: Sequence[Mapping[str, Any]],
     predictions: Mapping[str, str],
     internal_rows: Mapping[str, Sequence[Mapping[str, Any]]],
+    threshold: float = 0.5,
 ) -> dict[str, Any]:
     """Measure whether final outputs are supported by their internal gates/signs."""
 
@@ -196,7 +197,9 @@ def internal_faithfulness_metrics(
         if predictions[example_id] not in ENTITLED_LABELS:
             continue
         entitled_count += 1
-        if not all(auditor_passes(internal) for internal in internal_rows[example_id]):
+        if not all(
+            auditor_passes(internal, threshold) for internal in internal_rows[example_id]
+        ):
             violations += 1
 
     groups: dict[str, dict[str, Mapping[str, Any]]] = defaultdict(dict)
@@ -231,8 +234,8 @@ def internal_faithfulness_metrics(
         )
         internal_ok = (
             output_ok
-            and all(auditor_passes(row) for row in internal_rows[none_id])
-            and all(auditor_passes(row) for row in internal_rows[flip_id])
+            and all(auditor_passes(row, threshold) for row in internal_rows[none_id])
+            and all(auditor_passes(row, threshold) for row in internal_rows[flip_id])
             and direction_matches(none_id, none_label)
             and direction_matches(flip_id, flip_label)
         )
@@ -261,10 +264,11 @@ def evaluate_router_systems(
     classifier: Mapping[str, Any],
     balanced: Mapping[str, Any],
     strict: Mapping[str, Any],
+    threshold: float = 0.5,
 ) -> dict[str, dict[str, Any]]:
     merged = merge_prediction_files(classifier, balanced, strict)
     records = [item["classifier"] for item in merged]
-    predictions = build_system_predictions(merged)
+    predictions = build_system_predictions(merged, threshold)
     internal_sources = {
         "classifier_only": ("classifier",),
         "balanced_only": ("balanced",),
@@ -286,6 +290,7 @@ def evaluate_router_systems(
                     )
                     for item in merged
                 },
+                threshold,
             ),
         }
         for system, labels in predictions.items()
