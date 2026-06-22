@@ -35,7 +35,7 @@
 
 ## INTERPRETATION
 
-- The conservative balanced-auditor router achieves the best final-label performance among evaluated systems.
-- The classifier-only system remains a strong label predictor, but shows a larger output/internal faithfulness gap.
-- Conservative routers eliminate entitled-output gate violations by construction while preserving competitive macro-F1.
-- Balanced-only has strong output-level pairwise consistency, but lower final-label macro-F1 than the conservative balanced router.
+- conservative_balanced_router achieves the best final-label performance by mean final_macro_f1.
+- classifier_only is a strong label predictor, and its output/internal faithfulness gap is larger than the conservative routers.
+- Conservative routers eliminate entitled-output gate violations when their violation rate is 0: conservative_balanced_router, conservative_strict_router, dual_auditor_router.
+- balanced_only can have strong output-level pairwise consistency while lower final-label macro-F1.
