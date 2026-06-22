@@ -254,6 +254,81 @@ FACT_TEMPLATES.extend(
 )
 SEED_TEMPLATE_COUNT = 10
 
+_GENERATED_NAMES = (
+    "Avery Stone", "Bianca Flores", "Chidi Eze", "Daria Volkova",
+    "Ethan Brooks", "Farah Qureshi", "Gabriel Costa", "Helena Wu",
+    "Ismail Kaya", "Julia Novak", "Kwame Adu", "Lucia Romano",
+)
+_GENERATED_TITLES = (
+    "Director", "Dr", "Professor", "Minister", "Engineer", "Coordinator",
+)
+_GENERATED_ROLES = (
+    "program director", "research lead", "regional coordinator",
+    "operations chief", "project curator", "technical adviser",
+)
+_GENERATED_PREDICATES = (
+    ("approved", "reviewed"),
+    ("launched", "tested"),
+    ("restored", "surveyed"),
+    ("published", "presented"),
+    ("delivered", "inspected"),
+    ("opened", "planned"),
+    ("selected", "evaluated"),
+)
+_GENERATED_TIMES = (
+    "January", "March", "May", "July", "September", "November",
+)
+_GENERATED_LOCATIONS = (
+    "Aurora City", "Beacon Harbor", "Cedar Point", "Delta Bay",
+    "Elm Valley", "Falcon Ridge", "Granite Coast", "Horizon Plains",
+)
+
+
+def _generated_fact_template(index: int) -> dict:
+    offset = index - len(FACT_TEMPLATES)
+    name = _GENERATED_NAMES[offset % len(_GENERATED_NAMES)]
+    alternate_name = _GENERATED_NAMES[(offset + 5) % len(_GENERATED_NAMES)]
+    title = _GENERATED_TITLES[offset % len(_GENERATED_TITLES)]
+    alternate_title = _GENERATED_TITLES[(offset + 2) % len(_GENERATED_TITLES)]
+    role = _GENERATED_ROLES[offset % len(_GENERATED_ROLES)]
+    alternate_role = _GENERATED_ROLES[(offset + 3) % len(_GENERATED_ROLES)]
+    predicate, alternate_predicate = _GENERATED_PREDICATES[
+        offset % len(_GENERATED_PREDICATES)
+    ]
+    time = _GENERATED_TIMES[offset % len(_GENERATED_TIMES)]
+    alternate_time = _GENERATED_TIMES[(offset + 1) % len(_GENERATED_TIMES)]
+    location = _GENERATED_LOCATIONS[offset % len(_GENERATED_LOCATIONS)]
+    alternate_location = _GENERATED_LOCATIONS[
+        (offset + 3) % len(_GENERATED_LOCATIONS)
+    ]
+    number = index + 1
+    return {
+        "pair_id": f"generated_fact_{number:03d}",
+        "title": title,
+        "name": name,
+        "alternate_title": alternate_title,
+        "alternate_name": alternate_name,
+        "role": role,
+        "alternate_role": alternate_role,
+        "predicate": predicate,
+        "alternate_predicate": alternate_predicate,
+        "object": f"the Meridian initiative {number}",
+        "alternate_object": f"the Horizon initiative {number}",
+        "time": time,
+        "alternate_time": alternate_time,
+        "location": location,
+        "alternate_location": alternate_location,
+    }
+
+
+def fact_templates_for_count(num_pairs: int) -> list[dict]:
+    if num_pairs < 2:
+        raise ValueError("num_pairs must be at least 2")
+    templates = list(FACT_TEMPLATES[:num_pairs])
+    while len(templates) < num_pairs:
+        templates.append(_generated_fact_template(len(templates)))
+    return templates
+
 
 def _statement(fact: dict, *, negative: bool = False, **overrides: str) -> str:
     values = {**fact, **overrides}
@@ -385,11 +460,15 @@ def _build_records(templates: list[dict]) -> list[dict]:
 
 
 def build_seed_records() -> list[dict]:
-    return _build_records(FACT_TEMPLATES[:SEED_TEMPLATE_COUNT])
+    return build_controlled_records(SEED_TEMPLATE_COUNT)
 
 
 def build_v1_records() -> list[dict]:
-    return _build_records(FACT_TEMPLATES)
+    return build_controlled_records(30)
+
+
+def build_controlled_records(num_pairs: int) -> list[dict]:
+    return _build_records(fact_templates_for_count(num_pairs))
 
 
 def validate_record(record: dict, row_number: int | None = None) -> None:
@@ -486,6 +565,7 @@ def main() -> None:
     parser.add_argument(
         "--dataset-version", choices=("seed", "v1"), default="seed"
     )
+    parser.add_argument("--num-pairs", type=int)
     parser.add_argument(
         "--output",
         type=Path,
@@ -498,7 +578,11 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.input:
+        if args.num_pairs is not None:
+            parser.error("--num-pairs cannot be combined with --input")
         records = load_jsonl(args.input)
+    elif args.num_pairs is not None:
+        records = build_controlled_records(args.num_pairs)
     else:
         records = build_v1_records() if args.dataset_version == "v1" else build_seed_records()
     write_jsonl(records, args.output)
