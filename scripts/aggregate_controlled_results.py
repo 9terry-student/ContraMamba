@@ -134,6 +134,87 @@ def markdown_table(result: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def parse_group_spec(spec: str) -> tuple[str, list[Path]]:
+    if "=" not in spec:
+        raise ValueError(f"group must use NAME=path1,path2 syntax: {spec!r}")
+    name, raw_paths = spec.split("=", 1)
+    name = name.strip()
+    paths = [Path(value.strip()) for value in raw_paths.split(",") if value.strip()]
+    if not name or not paths:
+        raise ValueError(f"group must have a name and at least one path: {spec!r}")
+    return name, paths
+
+
+def aggregate_groups(specs: Sequence[str]) -> dict[str, Any]:
+    groups: dict[str, Any] = {}
+    for spec in specs:
+        name, paths = parse_group_spec(spec)
+        if name in groups:
+            raise ValueError(f"duplicate group name: {name!r}")
+        groups[name] = aggregate_results(paths)
+    if not groups:
+        raise ValueError("at least one group is required")
+    return {"groups": groups}
+
+
+def _mean_std_cell(group: dict[str, Any], field: str) -> str:
+    values = group["aggregate"][field]
+    return f"{values['mean']:.3f} ± {values['std']:.3f}"
+
+
+def _summary_table(
+    title: str,
+    groups: dict[str, Any],
+    columns: Sequence[tuple[str, str]],
+) -> str:
+    headers = ["config", *[label for label, _ in columns]]
+    lines = [
+        title,
+        "| " + " | ".join(headers) + " |",
+        "| " + " | ".join(["---"] * len(headers)) + " |",
+    ]
+    for name, group in groups.items():
+        cells = [name, *[_mean_std_cell(group, field) for _, field in columns]]
+        lines.append("| " + " | ".join(cells) + " |")
+    return "\n".join(lines)
+
+
+def group_markdown(result: dict[str, Any]) -> str:
+    groups = result["groups"]
+    classification_columns = (
+        ("accuracy", "final_accuracy"),
+        ("macro-F1", "final_macro_f1"),
+        ("frame", "frame_accuracy"),
+        ("predicate", "predicate_accuracy"),
+        ("polarity", "polarity_accuracy_entitled"),
+        ("sufficiency", "sufficiency_accuracy"),
+    )
+    pairwise_columns = (
+        ("paraphrase", "paraphrase_preserved"),
+        ("predicate-pair", "predicate_disentangled"),
+        ("polarity-flip", "polarity_flip_preserved_and_reversed"),
+        ("deletion", "deletion_sufficiency_lower"),
+        ("truncation", "truncation_sufficiency_lower"),
+        ("entity", "entity_frame_lower"),
+        ("event", "event_frame_lower"),
+    )
+    contrast_columns = (
+        ("macro-F1", "final_macro_f1"),
+        ("polarity accuracy", "polarity_accuracy_entitled"),
+        ("polarity-flip", "polarity_flip_preserved_and_reversed"),
+        ("predicate-pair", "predicate_disentangled"),
+    )
+    return "\n\n".join(
+        [
+            _summary_table("CLASSIFICATION_SUMMARY", groups, classification_columns),
+            _summary_table(
+                "PAIRWISE_CONSISTENCY_SUMMARY", groups, pairwise_columns
+            ),
+            _summary_table("KEY_CONTRAST_SUMMARY", groups, contrast_columns),
+        ]
+    )
+
+
 def write_csv(result: dict[str, Any], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     fieldnames = ["filename", "best_epoch", *NUMERIC_FIELDS, "prediction_distribution"]
@@ -155,20 +236,30 @@ def write_json(result: dict[str, Any], path: Path) -> None:
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--inputs", nargs="+", required=True, type=Path)
+    parser.add_argument("--inputs", nargs="+", type=Path)
+    parser.add_argument("--group", action="append", default=[])
     parser.add_argument("--output-csv", type=Path)
     parser.add_argument("--output-json", type=Path)
     args = parser.parse_args(argv)
 
-    result = aggregate_results(args.inputs)
-    print(markdown_table(result))
-    if args.output_csv:
-        write_csv(result, args.output_csv)
-    if args.output_json:
-        write_json(result, args.output_json)
+    if bool(args.inputs) == bool(args.group):
+        parser.error("provide exactly one of --inputs or --group")
+    if args.group:
+        result = aggregate_groups(args.group)
+        print(group_markdown(result))
+        if args.output_csv:
+            parser.error("--output-csv is supported only with --inputs")
+        if args.output_json:
+            write_json(result, args.output_json)
+    else:
+        result = aggregate_results(args.inputs)
+        print(markdown_table(result))
+        if args.output_csv:
+            write_csv(result, args.output_csv)
+        if args.output_json:
+            write_json(result, args.output_json)
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

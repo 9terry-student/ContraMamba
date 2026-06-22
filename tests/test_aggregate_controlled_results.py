@@ -6,7 +6,12 @@ from pathlib import Path
 
 import pytest
 
-from scripts.aggregate_controlled_results import aggregate_results, main
+from scripts.aggregate_controlled_results import (
+    aggregate_groups,
+    aggregate_results,
+    group_markdown,
+    main,
+)
 
 
 CHECK_NAMES = (
@@ -102,3 +107,38 @@ def test_cli_prints_markdown_and_writes_csv_json(capsys) -> None:
         for path in paths_to_clean:
             path.unlink(missing_ok=True)
 
+
+def test_group_comparison_tables_and_statistics(capsys) -> None:
+    directory = Path(__file__).parent
+    full_paths = [directory / ".group_full1.json", directory / ".group_full2.json"]
+    ablation_paths = [directory / ".group_ablate1.json", directory / ".group_ablate2.json"]
+    paths = [*full_paths, *ablation_paths]
+    try:
+        write_synthetic(full_paths[0], synthetic_report(3, 0.7, 0.6))
+        write_synthetic(full_paths[1], synthetic_report(4, 0.8, 0.8))
+        write_synthetic(ablation_paths[0], synthetic_report(5, 0.9, 0.85))
+        write_synthetic(ablation_paths[1], synthetic_report(6, 0.8, 0.75))
+        specs = [
+            f"full4e={full_paths[0]},{full_paths[1]}",
+            f"no_intervention={ablation_paths[0]},{ablation_paths[1]}",
+        ]
+        result = aggregate_groups(specs)
+        assert result["groups"]["full4e"]["aggregate"]["final_macro_f1"][
+            "mean"
+        ] == pytest.approx(0.7)
+        assert result["groups"]["no_intervention"]["aggregate"][
+            "final_accuracy"
+        ]["mean"] == pytest.approx(0.85)
+        markdown = group_markdown(result)
+        assert "CLASSIFICATION_SUMMARY" in markdown
+        assert "PAIRWISE_CONSISTENCY_SUMMARY" in markdown
+        assert "KEY_CONTRAST_SUMMARY" in markdown
+        assert "predicate-pair" in markdown
+
+        assert main(["--group", specs[0], "--group", specs[1]]) == 0
+        stdout = capsys.readouterr().out
+        assert "full4e" in stdout
+        assert "no_intervention" in stdout
+    finally:
+        for path in paths:
+            path.unlink(missing_ok=True)
