@@ -8,6 +8,7 @@ from scripts.build_controlled_v5 import build_controlled_records
 from scripts.evaluate_router_ensemble import (
     build_system_predictions,
     evaluate_router_systems,
+    internal_faithfulness_metrics,
     main as router_main,
     merge_prediction_files,
     pairwise_prediction_checks,
@@ -101,6 +102,34 @@ def test_pairwise_polarity_flip_consistency_uses_final_predictions() -> None:
     }
 
 
+def test_internal_faithfulness_counts_gate_violations_and_output_gap() -> None:
+    payload = _prediction_payload("classifier")
+    rows = payload["predictions"]
+    by_id = {row["id"]: row for row in rows}
+    labels = {row["id"]: row["pred_final_label"] for row in rows}
+
+    # An entitled output with one failed gate is a violation.
+    by_id["pair-1-none"]["entitlement_prob"] = 0.1
+    # The polarity output remains correct, but the flipped REFUTE margin has
+    # the wrong (SUPPORT) sign, so internal faithfulness must fail.
+    by_id["pair-1-polarity_flip"]["polarity_margin"] = 0.2
+    internal_rows = {example_id: (row,) for example_id, row in by_id.items()}
+    diagnostics = internal_faithfulness_metrics(rows, labels, internal_rows)
+
+    assert diagnostics["entitled_output_gate_violations"] >= 1
+    assert diagnostics["polarity_flip_output_ok"] == 1.0
+    assert diagnostics["polarity_flip_internal_ok"] == 0.0
+    assert diagnostics["polarity_flip_output_internal_gap"] == 1.0
+    assert diagnostics["polarity_flip_output_ok_but_internal_bad"] == 1
+
+    # A low-gate NOT_ENTITLED output is intentionally excluded.
+    predicate_id = "pair-1-predicate_swap"
+    labels[predicate_id] = "NOT_ENTITLED"
+    before = diagnostics["entitled_output_gate_violations"]
+    after = internal_faithfulness_metrics(rows, labels, internal_rows)
+    assert after["entitled_output_gate_violations"] == before - 1
+
+
 def test_router_cli_writes_markdown_and_csv() -> None:
     paths = {
         name: TEST_DIR / f"._router_{name}.json"
@@ -132,6 +161,7 @@ def test_router_cli_writes_markdown_and_csv() -> None:
         for section in (
             "ROUTER_CLASSIFICATION_SUMMARY",
             "ROUTER_PAIRWISE_SUMMARY",
+            "ROUTER_INTERNAL_FAITHFULNESS_SUMMARY",
             "ROUTER_KEY_CONTRAST",
             "INTERPRETATION",
         ):
@@ -140,6 +170,16 @@ def test_router_cli_writes_markdown_and_csv() -> None:
             rows = list(csv.DictReader(handle))
         assert rows
         assert set(rows[0]) == {"section", "system", "metric", "value"}
+        internal_metrics = {
+            row["metric"]
+            for row in rows
+            if row["section"] == "internal_faithfulness"
+        }
+        assert {
+            "entitled_output_gate_violation_rate",
+            "polarity_flip_internal_ok",
+            "polarity_flip_output_internal_gap",
+        } <= internal_metrics
         results = evaluate_router_systems(
             _prediction_payload("classifier"),
             _prediction_payload("balanced"),

@@ -925,7 +925,7 @@ def sweep_presets(ranking_margin: float) -> dict[str, dict[str, float]]:
     }
 
 
-def main(argv: list[str] | None = None) -> int:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--data", type=Path, default=ROOT / "data" / "controlled_v5_seed.jsonl"
@@ -966,6 +966,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--dev-ratio", type=float, default=0.2)
     parser.add_argument("--seed", type=int, default=17)
     parser.add_argument("--device", default="cpu")
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = build_parser()
     args = parser.parse_args(argv)
 
     random.seed(args.seed)

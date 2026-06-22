@@ -182,6 +182,81 @@ def pairwise_prediction_checks(
     return results
 
 
+def internal_faithfulness_metrics(
+    records: Sequence[Mapping[str, Any]],
+    predictions: Mapping[str, str],
+    internal_rows: Mapping[str, Sequence[Mapping[str, Any]]],
+) -> dict[str, Any]:
+    """Measure whether final outputs are supported by their internal gates/signs."""
+
+    entitled_count = 0
+    violations = 0
+    for row in records:
+        example_id = str(row["id"])
+        if predictions[example_id] not in ENTITLED_LABELS:
+            continue
+        entitled_count += 1
+        if not all(auditor_passes(internal) for internal in internal_rows[example_id]):
+            violations += 1
+
+    groups: dict[str, dict[str, Mapping[str, Any]]] = defaultdict(dict)
+    for row in records:
+        groups[str(row["pair_id"])][str(row["intervention_type"])] = row
+    output_ok_count = 0
+    internal_ok_count = 0
+    output_ok_internal_bad = 0
+    polarity_pair_count = 0
+
+    def direction_matches(example_id: str, label: str) -> bool:
+        for internal in internal_rows[example_id]:
+            margin = float(internal["polarity_margin"])
+            if label == "SUPPORT" and margin <= 0:
+                return False
+            if label == "REFUTE" and margin >= 0:
+                return False
+        return True
+
+    for values in groups.values():
+        if "none" not in values or "polarity_flip" not in values:
+            continue
+        polarity_pair_count += 1
+        none_id = str(values["none"]["id"])
+        flip_id = str(values["polarity_flip"]["id"])
+        none_label = predictions[none_id]
+        flip_label = predictions[flip_id]
+        output_ok = (
+            none_label in ENTITLED_LABELS
+            and flip_label in ENTITLED_LABELS
+            and none_label != flip_label
+        )
+        internal_ok = (
+            output_ok
+            and all(auditor_passes(row) for row in internal_rows[none_id])
+            and all(auditor_passes(row) for row in internal_rows[flip_id])
+            and direction_matches(none_id, none_label)
+            and direction_matches(flip_id, flip_label)
+        )
+        output_ok_count += int(output_ok)
+        internal_ok_count += int(internal_ok)
+        output_ok_internal_bad += int(output_ok and not internal_ok)
+
+    output_rate = output_ok_count / polarity_pair_count if polarity_pair_count else 0.0
+    internal_rate = (
+        internal_ok_count / polarity_pair_count if polarity_pair_count else 0.0
+    )
+    return {
+        "entitled_output_gate_violation_rate": (
+            violations / entitled_count if entitled_count else 0.0
+        ),
+        "entitled_output_gate_violations": violations,
+        "entitled_output_count": entitled_count,
+        "polarity_flip_output_ok": output_rate,
+        "polarity_flip_internal_ok": internal_rate,
+        "polarity_flip_output_internal_gap": output_rate - internal_rate,
+        "polarity_flip_output_ok_but_internal_bad": output_ok_internal_bad,
+    }
+
+
 def evaluate_router_systems(
     classifier: Mapping[str, Any],
     balanced: Mapping[str, Any],
@@ -190,10 +265,28 @@ def evaluate_router_systems(
     merged = merge_prediction_files(classifier, balanced, strict)
     records = [item["classifier"] for item in merged]
     predictions = build_system_predictions(merged)
+    internal_sources = {
+        "classifier_only": ("classifier",),
+        "balanced_only": ("balanced",),
+        "strict_only": ("strict",),
+        "conservative_balanced_router": ("balanced",),
+        "conservative_strict_router": ("strict",),
+        "dual_auditor_router": ("balanced", "strict"),
+    }
     return {
         system: {
             **classification_metrics(records, labels),
             "pairwise_checks": pairwise_prediction_checks(records, labels),
+            "internal_faithfulness": internal_faithfulness_metrics(
+                records,
+                labels,
+                {
+                    str(item["classifier"]["id"]): tuple(
+                        item[source] for source in internal_sources[system]
+                    )
+                    for item in merged
+                },
+            ),
         }
         for system, labels in predictions.items()
     }
@@ -231,6 +324,26 @@ def render_markdown(results: Mapping[str, Mapping[str, Any]]) -> str:
         checks = metrics["pairwise_checks"]
         values = [checks[name]["pass_rate"] for name in PAIRWISE_CHECKS]
         lines.append(f"| {system} | " + " | ".join(map(_format, values)) + " |")
+    lines.extend(
+        [
+            "",
+            "## ROUTER_INTERNAL_FAITHFULNESS_SUMMARY",
+            "",
+            "| system | entitled gate violation rate | entitled violations/count | polarity output ok | polarity internal ok | output-internal gap | output-ok/internal-bad count |",
+            "|---|---:|---:|---:|---:|---:|---:|",
+        ]
+    )
+    for system, metrics in results.items():
+        faithfulness = metrics["internal_faithfulness"]
+        lines.append(
+            f"| {system} | "
+            f"{_format(faithfulness['entitled_output_gate_violation_rate'])} | "
+            f"{faithfulness['entitled_output_gate_violations']}/{faithfulness['entitled_output_count']} | "
+            f"{_format(faithfulness['polarity_flip_output_ok'])} | "
+            f"{_format(faithfulness['polarity_flip_internal_ok'])} | "
+            f"{_format(faithfulness['polarity_flip_output_internal_gap'])} | "
+            f"{faithfulness['polarity_flip_output_ok_but_internal_bad']} |"
+        )
     lines.extend(
         [
             "",
@@ -300,6 +413,10 @@ def write_csv(path: Path, results: Mapping[str, Mapping[str, Any]]) -> None:
             for metric, value in metrics["pairwise_checks"].items():
                 writer.writerow(
                     {"section": "pairwise", "system": system, "metric": metric, "value": value["pass_rate"]}
+                )
+            for metric, value in metrics["internal_faithfulness"].items():
+                writer.writerow(
+                    {"section": "internal_faithfulness", "system": system, "metric": metric, "value": value}
                 )
 
 

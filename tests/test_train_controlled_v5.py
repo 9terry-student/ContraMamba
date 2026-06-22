@@ -8,6 +8,7 @@ import torch
 from scripts.build_controlled_v5 import build_seed_records, split_by_pair_id
 from scripts.train_controlled_v5 import (
     MODEL_INPUT_KEYS,
+    build_parser,
     build_model,
     build_optimizer,
     build_vocab,
@@ -19,9 +20,11 @@ from scripts.train_controlled_v5 import (
     intervention_diagnostics,
     intervention_objective,
     pairwise_checks,
+    prediction_records,
     run_training,
     sample_indices,
     sweep_presets,
+    write_predictions_json,
     write_report_json,
 )
 
@@ -199,5 +202,63 @@ def test_compact_report_json_export() -> None:
     try:
         write_report_json(report, path)
         assert json.loads(path.read_text(encoding="utf-8")) == report
+    finally:
+        path.unlink(missing_ok=True)
+
+
+def test_prediction_export_argument_and_omitted_default() -> None:
+    parser = build_parser()
+    output = Path("best-dev-predictions.json")
+    assert parser.parse_args([]).output_predictions_json is None
+    assert parser.parse_args(
+        ["--output-predictions-json", str(output)]
+    ).output_predictions_json == output
+
+
+def test_best_dev_prediction_export_helpers() -> None:
+    path = Path(__file__).parent / ".controlled_predictions_test.json"
+    records = build_seed_records()[:2]
+    output = {
+        "logits": torch.tensor([[1.0, 0.0, -1.0], [-1.0, 0.0, 1.0]]),
+        "predictions": torch.tensor([0, 2]),
+        "frame_prob": torch.tensor([0.9, 0.8]),
+        "predicate_coverage_prob": torch.tensor([0.7, 0.6]),
+        "sufficiency_prob": torch.tensor([0.5, 0.4]),
+        "entitlement_prob": torch.tensor([0.315, 0.192]),
+        "polarity_margin": torch.tensor([-1.0, 1.0]),
+    }
+    metadata = {
+        "data_path": "data/controlled_v5_v2.jsonl",
+        "seed": 17,
+        "best_epoch": 4,
+        "backbone": "dummy",
+        "freeze_encoder": True,
+        "use_intervention_loss": True,
+        "weighted_label_loss": False,
+        "balanced_sampler": False,
+    }
+    try:
+        predictions = prediction_records(records, output)
+        write_predictions_json(path, metadata, predictions)
+        exported = json.loads(path.read_text(encoding="utf-8"))
+        assert exported["metadata"] == metadata
+        assert len(exported["predictions"]) == 2
+        expected_fields = {
+            "id",
+            "pair_id",
+            "intervention_type",
+            "claim",
+            "evidence",
+            "gold_final_label",
+            "pred_final_label",
+            "final_probs",
+            "frame_prob",
+            "predicate_coverage_prob",
+            "sufficiency_prob",
+            "entitlement_prob",
+            "polarity_margin",
+        }
+        assert expected_fields == set(exported["predictions"][0])
+        assert exported["metadata"]["best_epoch"] == 4
     finally:
         path.unlink(missing_ok=True)
