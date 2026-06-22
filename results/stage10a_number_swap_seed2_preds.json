@@ -1,0 +1,2315 @@
+{
+  "metadata": {
+    "backbone": "mamba",
+    "balanced_sampler": true,
+    "best_epoch": 95,
+    "checkpoint_id": "v3_no_polarity_flip_seed2_best_epoch95",
+    "configuration": "v3_no_polarity_flip",
+    "data_path": "/kaggle/working/ContraMamba/data/controlled_v5_v3.jsonl",
+    "export_scope": "stage10a_number_swap_probe",
+    "freeze_a_log": true,
+    "freeze_encoder": true,
+    "loss_config": {
+      "lambda_entitlement_preserve": 1.0,
+      "lambda_frame_anchor": 1.0,
+      "lambda_frame_preserve": 1.0,
+      "lambda_logit_preserve": 1.0,
+      "lambda_paraphrase_preserve": 1.0,
+      "lambda_polarity_flip": 0.0,
+      "lambda_polarity_margin_anchor": 0.0,
+      "lambda_predicate_anchor": 1.0,
+      "lambda_predicate_contrast": 1.0,
+      "lambda_sufficiency_contrast": 1.0,
+      "polarity_margin_min": 1.0,
+      "ranking_margin": 0.5
+    },
+    "model_name": "state-spaces/mamba-130m-hf",
+    "probe_data_path": "/kaggle/working/ContraMamba/data/stage10a_number_swap_probe.jsonl",
+    "seed": 2,
+    "selection_split": "pair_id_held_out_dev",
+    "use_intervention_loss": true,
+    "weighted_label_loss": true
+  },
+  "predictions": [
+    {
+      "claim": "Aster Company sold 100 units in April.",
+      "entitlement_prob": 0.025715338066220284,
+      "evidence": "Aster Company sold 100 units in April.",
+      "final_probs": [
+        0.1992526352405548,
+        0.5842127203941345,
+        0.21653464436531067
+      ],
+      "frame_prob": 0.049275774508714676,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_001__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_001",
+      "polarity_margin": 3.234524726867676,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.9590044021606445,
+      "sufficiency_prob": 0.5441744923591614
+    },
+    {
+      "claim": "Aster Company sold 100 units in April.",
+      "entitlement_prob": 0.000295716745313257,
+      "evidence": "Aster Company sold 300 units in April.",
+      "final_probs": [
+        0.19791756570339203,
+        0.6042951941490173,
+        0.19778725504875183
+      ],
+      "frame_prob": 0.10800430178642273,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_001__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_001",
+      "polarity_margin": -2.227130889892578,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.9497469663619995,
+      "sufficiency_prob": 0.002882882719859481
+    },
+    {
+      "claim": "Beacon Labs sold 110 packages in July.",
+      "entitlement_prob": 0.1678423285484314,
+      "evidence": "Beacon Labs sold 110 packages in July.",
+      "final_probs": [
+        0.16284409165382385,
+        0.408113569021225,
+        0.42904239892959595
+      ],
+      "frame_prob": 0.17407166957855225,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_002__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_002",
+      "polarity_margin": 5.771860599517822,
+      "pred_final_label": "SUPPORT",
+      "predicate_coverage_prob": 0.9718153476715088,
+      "sufficiency_prob": 0.9921781420707703
+    },
+    {
+      "claim": "Beacon Labs sold 110 packages in July.",
+      "entitlement_prob": 0.011433118022978306,
+      "evidence": "Beacon Labs sold 310 packages in July.",
+      "final_probs": [
+        0.19867387413978577,
+        0.5983260869979858,
+        0.2030000388622284
+      ],
+      "frame_prob": 0.053254056721925735,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_002__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_002",
+      "polarity_margin": 1.884131908416748,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.7612630724906921,
+      "sufficiency_prob": 0.2820182740688324
+    },
+    {
+      "claim": "Cedar Works sold 120 tickets in May.",
+      "entitlement_prob": 0.005625908263027668,
+      "evidence": "Cedar Works sold 120 tickets in May.",
+      "final_probs": [
+        0.1975673884153366,
+        0.5999804139137268,
+        0.20245224237442017
+      ],
+      "frame_prob": 0.014791812747716904,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_003__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_003",
+      "polarity_margin": 4.341387748718262,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.3832418620586395,
+      "sufficiency_prob": 0.9924263954162598
+    },
+    {
+      "claim": "Cedar Works sold 120 tickets in May.",
+      "entitlement_prob": 0.005099522415548563,
+      "evidence": "Cedar Works sold 320 tickets in May.",
+      "final_probs": [
+        0.19760417938232422,
+        0.6004603505134583,
+        0.20193548500537872
+      ],
+      "frame_prob": 0.014274705201387405,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_003__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_003",
+      "polarity_margin": 4.251832008361816,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.3610624074935913,
+      "sufficiency_prob": 0.9894186854362488
+    },
+    {
+      "claim": "Delta Foods sold 130 devices in August.",
+      "entitlement_prob": 0.01295106764882803,
+      "evidence": "Delta Foods sold 130 devices in August.",
+      "final_probs": [
+        0.19724954664707184,
+        0.5940197706222534,
+        0.20873069763183594
+      ],
+      "frame_prob": 0.026047099381685257,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_004__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_004",
+      "polarity_margin": 4.368380546569824,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.502543032169342,
+      "sufficiency_prob": 0.9894024133682251
+    },
+    {
+      "claim": "Delta Foods sold 130 devices in August.",
+      "entitlement_prob": 0.01814286597073078,
+      "evidence": "Delta Foods sold 330 devices in August.",
+      "final_probs": [
+        0.1970330774784088,
+        0.5898631811141968,
+        0.2131037712097168
+      ],
+      "frame_prob": 0.03725353628396988,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_004__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_004",
+      "polarity_margin": 4.321671009063721,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.4916419982910156,
+      "sufficiency_prob": 0.9905796647071838
+    },
+    {
+      "claim": "Elm Systems sold 140 components in June.",
+      "entitlement_prob": 0.0036654826253652573,
+      "evidence": "Elm Systems sold 140 components in June.",
+      "final_probs": [
+        0.19811291992664337,
+        0.6022585034370422,
+        0.19962862133979797
+      ],
+      "frame_prob": 0.003911816049367189,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_005__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_005",
+      "polarity_margin": 2.0792782306671143,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.9449560046195984,
+      "sufficiency_prob": 0.991610586643219
+    },
+    {
+      "claim": "Elm Systems sold 140 components in June.",
+      "entitlement_prob": 0.000427230290370062,
+      "evidence": "Elm Systems sold 340 components in June.",
+      "final_probs": [
+        0.19789260625839233,
+        0.6043047904968262,
+        0.1978025734424591
+      ],
+      "frame_prob": 0.005589228589087725,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_005__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_005",
+      "polarity_margin": -1.0654722452163696,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.6040372848510742,
+      "sufficiency_prob": 0.12654541432857513
+    },
+    {
+      "claim": "Aster Company shipped 150 units in April.",
+      "entitlement_prob": 8.542797149857506e-05,
+      "evidence": "Aster Company shipped 150 units in April.",
+      "final_probs": [
+        0.19783759117126465,
+        0.6044034361839294,
+        0.19775895774364471
+      ],
+      "frame_prob": 0.07169199734926224,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_006__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_006",
+      "polarity_margin": -4.654993057250977,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.964539647102356,
+      "sufficiency_prob": 0.0012354048667475581
+    },
+    {
+      "claim": "Aster Company shipped 150 units in April.",
+      "entitlement_prob": 4.279919448890723e-05,
+      "evidence": "Aster Company shipped 350 units in April.",
+      "final_probs": [
+        0.19779647886753082,
+        0.6044437885284424,
+        0.197759747505188
+      ],
+      "frame_prob": 0.0453677773475647,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_006__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_006",
+      "polarity_margin": -4.335346221923828,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.9593193531036377,
+      "sufficiency_prob": 0.0009833879303187132
+    },
+    {
+      "claim": "Beacon Labs shipped 160 packages in July.",
+      "entitlement_prob": 0.001909742713905871,
+      "evidence": "Beacon Labs shipped 160 packages in July.",
+      "final_probs": [
+        0.19851168990135193,
+        0.6033287644386292,
+        0.19815953075885773
+      ],
+      "frame_prob": 0.07752016186714172,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_007__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_007",
+      "polarity_margin": -0.9297147989273071,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.892551600933075,
+      "sufficiency_prob": 0.027601128444075584
+    },
+    {
+      "claim": "Beacon Labs shipped 160 packages in July.",
+      "entitlement_prob": 0.0027024142909795046,
+      "evidence": "Beacon Labs shipped 360 packages in July.",
+      "final_probs": [
+        0.1980494260787964,
+        0.6032006144523621,
+        0.19874992966651917
+      ],
+      "frame_prob": 0.0965995043516159,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_007__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_007",
+      "polarity_margin": 1.3065173625946045,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.4749661982059479,
+      "sufficiency_prob": 0.05889986827969551
+    },
+    {
+      "claim": "Cedar Works shipped 170 tickets in May.",
+      "entitlement_prob": 4.670597263611853e-05,
+      "evidence": "Cedar Works shipped 170 tickets in May.",
+      "final_probs": [
+        0.1977670043706894,
+        0.6044632792472839,
+        0.19776973128318787
+      ],
+      "frame_prob": 0.006750988308340311,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_008__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_008",
+      "polarity_margin": 0.2942327558994293,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.32013997435569763,
+      "sufficiency_prob": 0.02161051705479622
+    },
+    {
+      "claim": "Cedar Works shipped 170 tickets in May.",
+      "entitlement_prob": 1.0661066880857106e-05,
+      "evidence": "Cedar Works shipped 370 tickets in May.",
+      "final_probs": [
+        0.1977621465921402,
+        0.6044759750366211,
+        0.1977619081735611
+      ],
+      "frame_prob": 0.005374492146074772,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_008__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_008",
+      "polarity_margin": -0.10701313614845276,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.38646194338798523,
+      "sufficiency_prob": 0.005132825113832951
+    },
+    {
+      "claim": "Delta Foods shipped 180 devices in August.",
+      "entitlement_prob": 0.0012800778495147824,
+      "evidence": "Delta Foods shipped 180 devices in August.",
+      "final_probs": [
+        0.1978132575750351,
+        0.6035628318786621,
+        0.1986239105463028
+      ],
+      "frame_prob": 0.11134142428636551,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_009__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_009",
+      "polarity_margin": 3.1948511600494385,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.8292688131332397,
+      "sufficiency_prob": 0.013863863423466682
+    },
+    {
+      "claim": "Delta Foods shipped 180 devices in August.",
+      "entitlement_prob": 0.00016710067575331777,
+      "evidence": "Delta Foods shipped 380 devices in August.",
+      "final_probs": [
+        0.19782745838165283,
+        0.6043781042098999,
+        0.19779440760612488
+      ],
+      "frame_prob": 0.1528446525335312,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_009__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_009",
+      "polarity_margin": -1.0001957416534424,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.8335975408554077,
+      "sufficiency_prob": 0.0013115097535774112
+    },
+    {
+      "claim": "Elm Systems shipped 190 components in June.",
+      "entitlement_prob": 0.00014299705799203366,
+      "evidence": "Elm Systems shipped 190 components in June.",
+      "final_probs": [
+        0.19783785939216614,
+        0.60439532995224,
+        0.19776684045791626
+      ],
+      "frame_prob": 0.00390113634057343,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_010__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_010",
+      "polarity_margin": -2.5109710693359375,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.8220089673995972,
+      "sufficiency_prob": 0.04459225386381149
+    },
+    {
+      "claim": "Elm Systems shipped 190 components in June.",
+      "entitlement_prob": 4.3592561269178987e-05,
+      "evidence": "Elm Systems shipped 390 components in June.",
+      "final_probs": [
+        0.19778618216514587,
+        0.6044523119926453,
+        0.19776149094104767
+      ],
+      "frame_prob": 0.003513539442792535,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_010__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_010",
+      "polarity_margin": -2.8641343116760254,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.8686699867248535,
+      "sufficiency_prob": 0.014282779768109322
+    },
+    {
+      "claim": "Aster Company produced 200 units in April.",
+      "entitlement_prob": 0.00013913362636230886,
+      "evidence": "Aster Company produced 200 units in April.",
+      "final_probs": [
+        0.19781163334846497,
+        0.6043962240219116,
+        0.19779212772846222
+      ],
+      "frame_prob": 0.062293026596307755,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_011__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_011",
+      "polarity_margin": -0.708793044090271,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.8484990000724792,
+      "sufficiency_prob": 0.002632336225360632
+    },
+    {
+      "claim": "Aster Company produced 200 units in April.",
+      "entitlement_prob": 0.00013196610962040722,
+      "evidence": "Aster Company produced 400 units in April.",
+      "final_probs": [
+        0.19782711565494537,
+        0.6043917536735535,
+        0.19778110086917877
+      ],
+      "frame_prob": 0.07300498336553574,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_011__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_011",
+      "polarity_margin": -1.7619973421096802,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.8780745267868042,
+      "sufficiency_prob": 0.0020586310420185328
+    },
+    {
+      "claim": "Beacon Labs produced 210 packages in July.",
+      "entitlement_prob": 0.004825974814593792,
+      "evidence": "Beacon Labs produced 210 packages in July.",
+      "final_probs": [
+        0.1978457123041153,
+        0.6013600826263428,
+        0.20079423487186432
+      ],
+      "frame_prob": 0.025744903832674026,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_012__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_012",
+      "polarity_margin": 3.06532621383667,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.382935494184494,
+      "sufficiency_prob": 0.4895174503326416
+    },
+    {
+      "claim": "Beacon Labs produced 210 packages in July.",
+      "entitlement_prob": 0.0017938653472810984,
+      "evidence": "Beacon Labs produced 410 packages in July.",
+      "final_probs": [
+        0.1978602409362793,
+        0.6035162806510925,
+        0.1986234486103058
+      ],
+      "frame_prob": 0.02004174143075943,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_012__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_012",
+      "polarity_margin": 2.1461522579193115,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.35532286763191223,
+      "sufficiency_prob": 0.251901775598526
+    },
+    {
+      "claim": "Cedar Works produced 220 tickets in May.",
+      "entitlement_prob": 0.00016771350055933,
+      "evidence": "Cedar Works produced 220 tickets in May.",
+      "final_probs": [
+        0.19776378571987152,
+        0.6043756008148193,
+        0.19786064326763153
+      ],
+      "frame_prob": 0.009556185454130173,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_013__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_013",
+      "polarity_margin": 2.919546604156494,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.017638208344578743,
+      "sufficiency_prob": 0.9950135350227356
+    },
+    {
+      "claim": "Cedar Works produced 220 tickets in May.",
+      "entitlement_prob": 5.14072562509682e-05,
+      "evidence": "Cedar Works produced 420 tickets in May.",
+      "final_probs": [
+        0.19776271283626556,
+        0.6044518947601318,
+        0.1977854073047638
+      ],
+      "frame_prob": 0.007140414789319038,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_013__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_013",
+      "polarity_margin": 2.231250047683716,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.0072624171152710915,
+      "sufficiency_prob": 0.991333544254303
+    },
+    {
+      "claim": "Delta Foods produced 230 devices in August.",
+      "entitlement_prob": 0.004061130806803703,
+      "evidence": "Delta Foods produced 230 devices in August.",
+      "final_probs": [
+        0.19767093658447266,
+        0.6014142036437988,
+        0.20091484487056732
+      ],
+      "frame_prob": 0.0246063694357872,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_014__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_014",
+      "polarity_margin": 4.008130073547363,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.25763586163520813,
+      "sufficiency_prob": 0.6406091451644897
+    },
+    {
+      "claim": "Delta Foods produced 230 devices in August.",
+      "entitlement_prob": 8.718700701138005e-05,
+      "evidence": "Delta Foods produced 430 devices in August.",
+      "final_probs": [
+        0.19776584208011627,
+        0.6044355034828186,
+        0.19779863953590393
+      ],
+      "frame_prob": 0.026691513136029243,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_014__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_014",
+      "polarity_margin": 1.9017894268035889,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.15651361644268036,
+      "sufficiency_prob": 0.020870191976428032
+    },
+    {
+      "claim": "Elm Systems produced 240 components in June.",
+      "entitlement_prob": 0.00021786986326333135,
+      "evidence": "Elm Systems produced 240 components in June.",
+      "final_probs": [
+        0.19778403639793396,
+        0.6044004559516907,
+        0.19781553745269775
+      ],
+      "frame_prob": 0.0029624050948768854,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_015__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_015",
+      "polarity_margin": 0.7309888005256653,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.11760412156581879,
+      "sufficiency_prob": 0.6253601312637329
+    },
+    {
+      "claim": "Elm Systems produced 240 components in June.",
+      "entitlement_prob": 0.00018613306747283787,
+      "evidence": "Elm Systems produced 440 components in June.",
+      "final_probs": [
+        0.1977800726890564,
+        0.6044118404388428,
+        0.19780810177326202
+      ],
+      "frame_prob": 0.0029617471154779196,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_015__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_015",
+      "polarity_margin": 0.761549711227417,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.08562278002500534,
+      "sufficiency_prob": 0.7339833974838257
+    },
+    {
+      "claim": "Aster Company delivered 250 units in April.",
+      "entitlement_prob": 3.8146241422509775e-05,
+      "evidence": "Aster Company delivered 250 units in April.",
+      "final_probs": [
+        0.1977788209915161,
+        0.6044580340385437,
+        0.197763130068779
+      ],
+      "frame_prob": 0.0329899787902832,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_016__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_016",
+      "polarity_margin": -2.0793755054473877,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.9022070169448853,
+      "sufficiency_prob": 0.0012816325761377811
+    },
+    {
+      "claim": "Aster Company delivered 250 units in April.",
+      "entitlement_prob": 2.7918778869207017e-05,
+      "evidence": "Aster Company delivered 450 units in April.",
+      "final_probs": [
+        0.19777056574821472,
+        0.6044662594795227,
+        0.19776320457458496
+      ],
+      "frame_prob": 0.023786578327417374,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_016__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_016",
+      "polarity_margin": -1.3338940143585205,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.8631224632263184,
+      "sufficiency_prob": 0.001359853195026517
+    },
+    {
+      "claim": "Beacon Labs delivered 260 packages in July.",
+      "entitlement_prob": 0.007086468860507011,
+      "evidence": "Beacon Labs delivered 260 packages in July.",
+      "final_probs": [
+        0.19774210453033447,
+        0.5995452404022217,
+        0.20271264016628265
+      ],
+      "frame_prob": 0.03428102284669876,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_017__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_017",
+      "polarity_margin": 3.503243923187256,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.22464337944984436,
+      "sufficiency_prob": 0.920200526714325
+    },
+    {
+      "claim": "Beacon Labs delivered 260 packages in July.",
+      "entitlement_prob": 0.0022484040819108486,
+      "evidence": "Beacon Labs delivered 460 packages in July.",
+      "final_probs": [
+        0.19790953397750854,
+        0.6033587455749512,
+        0.1987316757440567
+      ],
+      "frame_prob": 0.024795813485980034,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_017__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_017",
+      "polarity_margin": 1.8437740802764893,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.19167067110538483,
+      "sufficiency_prob": 0.47308623790740967
+    },
+    {
+      "claim": "Cedar Works delivered 270 tickets in May.",
+      "entitlement_prob": 3.988367097917944e-05,
+      "evidence": "Cedar Works delivered 270 tickets in May.",
+      "final_probs": [
+        0.1977640837430954,
+        0.6044636964797974,
+        0.19777218997478485
+      ],
+      "frame_prob": 0.006028105970472097,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_018__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_018",
+      "polarity_margin": 1.0296876430511475,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.00795340072363615,
+      "sufficiency_prob": 0.8318813443183899
+    },
+    {
+      "claim": "Cedar Works delivered 270 tickets in May.",
+      "entitlement_prob": 4.016252205474302e-05,
+      "evidence": "Cedar Works delivered 470 tickets in May.",
+      "final_probs": [
+        0.19776451587677002,
+        0.6044647097587585,
+        0.19777074456214905
+      ],
+      "frame_prob": 0.0061845965683460236,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_018__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_018",
+      "polarity_margin": 0.7834036350250244,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.010104523971676826,
+      "sufficiency_prob": 0.642678439617157
+    },
+    {
+      "claim": "Delta Foods delivered 280 devices in August.",
+      "entitlement_prob": 0.00018866504251491278,
+      "evidence": "Delta Foods delivered 280 devices in August.",
+      "final_probs": [
+        0.19777560234069824,
+        0.604388952255249,
+        0.19783540070056915
+      ],
+      "frame_prob": 0.06901392340660095,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_019__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_019",
+      "polarity_margin": 1.602745532989502,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.26246243715286255,
+      "sufficiency_prob": 0.010415677912533283
+    },
+    {
+      "claim": "Delta Foods delivered 280 devices in August.",
+      "entitlement_prob": 0.00017649593064561486,
+      "evidence": "Delta Foods delivered 480 devices in August.",
+      "final_probs": [
+        0.19777700304985046,
+        0.6043997406959534,
+        0.19782325625419617
+      ],
+      "frame_prob": 0.07543294131755829,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_019__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_019",
+      "polarity_margin": 1.3249843120574951,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.3041110932826996,
+      "sufficiency_prob": 0.007693808525800705
+    },
+    {
+      "claim": "Elm Systems delivered 290 components in June.",
+      "entitlement_prob": 6.94012560416013e-05,
+      "evidence": "Elm Systems delivered 290 components in June.",
+      "final_probs": [
+        0.19776839017868042,
+        0.6044565439224243,
+        0.19777503609657288
+      ],
+      "frame_prob": 0.0024079116992652416,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_020__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_020",
+      "polarity_margin": 0.4845898747444153,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.040645401924848557,
+      "sufficiency_prob": 0.7091128826141357
+    },
+    {
+      "claim": "Elm Systems delivered 290 components in June.",
+      "entitlement_prob": 4.4113563490100205e-05,
+      "evidence": "Elm Systems delivered 490 components in June.",
+      "final_probs": [
+        0.19776618480682373,
+        0.6044662594795227,
+        0.19776754081249237
+      ],
+      "frame_prob": 0.0024986951611936092,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_020__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_020",
+      "polarity_margin": 0.1567377746105194,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.04015282914042473,
+      "sufficiency_prob": 0.4396860897541046
+    },
+    {
+      "claim": "Aster Company ordered 300 units in April.",
+      "entitlement_prob": 7.072414882713929e-05,
+      "evidence": "Aster Company ordered 300 units in April.",
+      "final_probs": [
+        0.19782200455665588,
+        0.6044182181358337,
+        0.19775980710983276
+      ],
+      "frame_prob": 0.061876192688941956,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_021__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_021",
+      "polarity_margin": -4.445879936218262,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.9550164937973022,
+      "sufficiency_prob": 0.001196832163259387
+    },
+    {
+      "claim": "Aster Company ordered 300 units in April.",
+      "entitlement_prob": 5.63345747650601e-05,
+      "evidence": "Aster Company ordered 500 units in April.",
+      "final_probs": [
+        0.19781401753425598,
+        0.6044278144836426,
+        0.19775813817977905
+      ],
+      "frame_prob": 0.05684724822640419,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_021__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_021",
+      "polarity_margin": -5.015227317810059,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.9711264967918396,
+      "sufficiency_prob": 0.001020445371977985
+    },
+    {
+      "claim": "Beacon Labs ordered 310 packages in July.",
+      "entitlement_prob": 0.00804850272834301,
+      "evidence": "Beacon Labs ordered 310 packages in July.",
+      "final_probs": [
+        0.20077764987945557,
+        0.599107027053833,
+        0.20011527836322784
+      ],
+      "frame_prob": 0.08801960200071335,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_022__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_022",
+      "polarity_margin": -0.4105755090713501,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.9419481754302979,
+      "sufficiency_prob": 0.09707529097795486
+    },
+    {
+      "claim": "Beacon Labs ordered 310 packages in July.",
+      "entitlement_prob": 0.00037516627344302833,
+      "evidence": "Beacon Labs ordered 510 packages in July.",
+      "final_probs": [
+        0.1980864256620407,
+        0.6041626930236816,
+        0.19775085151195526
+      ],
+      "frame_prob": 0.060399893671274185,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_022__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_022",
+      "polarity_margin": -4.519420623779297,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.9668307900428772,
+      "sufficiency_prob": 0.006424467545002699
+    },
+    {
+      "claim": "Cedar Works ordered 320 tickets in May.",
+      "entitlement_prob": 4.769159932038747e-05,
+      "evidence": "Cedar Works ordered 320 tickets in May.",
+      "final_probs": [
+        0.19776886701583862,
+        0.6044634580612183,
+        0.19776767492294312
+      ],
+      "frame_prob": 0.01070606429129839,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_023__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_023",
+      "polarity_margin": -0.12831562757492065,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.528270423412323,
+      "sufficiency_prob": 0.008432487957179546
+    },
+    {
+      "claim": "Cedar Works ordered 320 tickets in May.",
+      "entitlement_prob": 2.8302525606704876e-05,
+      "evidence": "Cedar Works ordered 520 tickets in May.",
+      "final_probs": [
+        0.19776590168476105,
+        0.604469895362854,
+        0.19776420295238495
+      ],
+      "frame_prob": 0.010902692563831806,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_023__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_023",
+      "polarity_margin": -0.30564528703689575,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.5773839950561523,
+      "sufficiency_prob": 0.004496003966778517
+    },
+    {
+      "claim": "Delta Foods ordered 330 devices in August.",
+      "entitlement_prob": 9.426233009435236e-05,
+      "evidence": "Delta Foods ordered 330 devices in August.",
+      "final_probs": [
+        0.1977819800376892,
+        0.6044386625289917,
+        0.19777938723564148
+      ],
+      "frame_prob": 0.03536554425954819,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_024__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_024",
+      "polarity_margin": -0.13925355672836304,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.8294382691383362,
+      "sufficiency_prob": 0.003213466377928853
+    },
+    {
+      "claim": "Delta Foods ordered 330 devices in August.",
+      "entitlement_prob": 5.340814095688984e-05,
+      "evidence": "Delta Foods ordered 530 devices in August.",
+      "final_probs": [
+        0.1977831870317459,
+        0.6044516563415527,
+        0.19776514172554016
+      ],
+      "frame_prob": 0.05289114639163017,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_024__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_024",
+      "polarity_margin": -1.7092472314834595,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.8985423445701599,
+      "sufficiency_prob": 0.001123791909776628
+    },
+    {
+      "claim": "Elm Systems ordered 340 components in June.",
+      "entitlement_prob": 3.0986354886408662e-06,
+      "evidence": "Elm Systems ordered 340 components in June.",
+      "final_probs": [
+        0.19776122272014618,
+        0.6044782400131226,
+        0.19776053726673126
+      ],
+      "frame_prob": 0.003894415218383074,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_025__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_025",
+      "polarity_margin": -1.1166621446609497,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.5925331115722656,
+      "sufficiency_prob": 0.001342813135124743
+    },
+    {
+      "claim": "Elm Systems ordered 340 components in June.",
+      "entitlement_prob": 3.4845218124246458e-06,
+      "evidence": "Elm Systems ordered 540 components in June.",
+      "final_probs": [
+        0.19776123762130737,
+        0.604478120803833,
+        0.19776058197021484
+      ],
+      "frame_prob": 0.003040759591385722,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_025__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_025",
+      "polarity_margin": -0.9291220307350159,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.4382564127445221,
+      "sufficiency_prob": 0.0026147658936679363
+    },
+    {
+      "claim": "Aster Company sold 350 units in April.",
+      "entitlement_prob": 0.001225343206897378,
+      "evidence": "Aster Company sold 350 units in April.",
+      "final_probs": [
+        0.19834022223949432,
+        0.6034056544303894,
+        0.19825410842895508
+      ],
+      "frame_prob": 0.026804175227880478,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_026__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_026",
+      "polarity_margin": -0.3543822765350342,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.9643241167068481,
+      "sufficiency_prob": 0.04740588739514351
+    },
+    {
+      "claim": "Aster Company sold 350 units in April.",
+      "entitlement_prob": 8.746043022256345e-05,
+      "evidence": "Aster Company sold 550 units in April.",
+      "final_probs": [
+        0.19783511757850647,
+        0.6044052839279175,
+        0.19775962829589844
+      ],
+      "frame_prob": 0.0895882397890091,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_026__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_026",
+      "polarity_margin": -4.364604473114014,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.9623980522155762,
+      "sufficiency_prob": 0.0010143921244889498
+    },
+    {
+      "claim": "Beacon Labs sold 360 packages in July.",
+      "entitlement_prob": 0.33248525857925415,
+      "evidence": "Beacon Labs sold 360 packages in July.",
+      "final_probs": [
+        0.09897568821907043,
+        0.20355021953582764,
+        0.6974740624427795
+      ],
+      "frame_prob": 0.34241026639938354,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_027__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_027",
+      "polarity_margin": 5.872714996337891,
+      "pred_final_label": "SUPPORT",
+      "predicate_coverage_prob": 0.9790251851081848,
+      "sufficiency_prob": 0.9918175339698792
+    },
+    {
+      "claim": "Beacon Labs sold 360 packages in July.",
+      "entitlement_prob": 0.03233511745929718,
+      "evidence": "Beacon Labs sold 560 packages in July.",
+      "final_probs": [
+        0.1990828663110733,
+        0.5820512175559998,
+        0.21886590123176575
+      ],
+      "frame_prob": 0.06374135613441467,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_027__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_027",
+      "polarity_margin": 2.9298768043518066,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.902209997177124,
+      "sufficiency_prob": 0.5622707605361938
+    },
+    {
+      "claim": "Cedar Works sold 370 tickets in May.",
+      "entitlement_prob": 0.004574368242174387,
+      "evidence": "Cedar Works sold 370 tickets in May.",
+      "final_probs": [
+        0.19764277338981628,
+        0.600948691368103,
+        0.20140856504440308
+      ],
+      "frame_prob": 0.013357296586036682,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_028__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_028",
+      "polarity_margin": 4.1260762214660645,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.3474682569503784,
+      "sufficiency_prob": 0.9855925440788269
+    },
+    {
+      "claim": "Cedar Works sold 370 tickets in May.",
+      "entitlement_prob": 0.002200385555624962,
+      "evidence": "Cedar Works sold 570 tickets in May.",
+      "final_probs": [
+        0.19774584472179413,
+        0.6029126048088074,
+        0.1993415206670761
+      ],
+      "frame_prob": 0.019236570224165916,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_028__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_028",
+      "polarity_margin": 3.652536153793335,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.11601412296295166,
+      "sufficiency_prob": 0.9859622120857239
+    },
+    {
+      "claim": "Delta Foods sold 380 devices in August.",
+      "entitlement_prob": 0.001985411625355482,
+      "evidence": "Delta Foods sold 380 devices in August.",
+      "final_probs": [
+        0.19777178764343262,
+        0.603091299533844,
+        0.19913694262504578
+      ],
+      "frame_prob": 0.022108644247055054,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_029__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_029",
+      "polarity_margin": 3.4647409915924072,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.7244974970817566,
+      "sufficiency_prob": 0.12395144253969193
+    },
+    {
+      "claim": "Delta Foods sold 380 devices in August.",
+      "entitlement_prob": 0.002900458872318268,
+      "evidence": "Delta Foods sold 580 devices in August.",
+      "final_probs": [
+        0.19774965941905975,
+        0.6024026274681091,
+        0.19984771311283112
+      ],
+      "frame_prob": 0.02824380248785019,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_029__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_029",
+      "polarity_margin": 3.638662815093994,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.6360190510749817,
+      "sufficiency_prob": 0.1614631563425064
+    },
+    {
+      "claim": "Elm Systems sold 390 components in June.",
+      "entitlement_prob": 0.002020143670961261,
+      "evidence": "Elm Systems sold 390 components in June.",
+      "final_probs": [
+        0.19885551929473877,
+        0.6031781435012817,
+        0.19796636700630188
+      ],
+      "frame_prob": 0.0036296264734119177,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_030__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_030",
+      "polarity_margin": -2.2183070182800293,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.9042142629623413,
+      "sufficiency_prob": 0.6155296564102173
+    },
+    {
+      "claim": "Elm Systems sold 390 components in June.",
+      "entitlement_prob": 0.002009077463299036,
+      "evidence": "Elm Systems sold 590 components in June.",
+      "final_probs": [
+        0.19837574660778046,
+        0.6034781336784363,
+        0.19814613461494446
+      ],
+      "frame_prob": 0.004942412953823805,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_030__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_030",
+      "polarity_margin": -0.576388955116272,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.818727970123291,
+      "sufficiency_prob": 0.49649861454963684
+    },
+    {
+      "claim": "Aster Company shipped 400 units in April.",
+      "entitlement_prob": 8.448949665762484e-05,
+      "evidence": "Aster Company shipped 400 units in April.",
+      "final_probs": [
+        0.19783742725849152,
+        0.604404091835022,
+        0.19775842130184174
+      ],
+      "frame_prob": 0.08377773314714432,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_031__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_031",
+      "polarity_margin": -4.728656768798828,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.9670690894126892,
+      "sufficiency_prob": 0.0010428373934701085
+    },
+    {
+      "claim": "Aster Company shipped 400 units in April.",
+      "entitlement_prob": 7.998406363185495e-05,
+      "evidence": "Aster Company shipped 600 units in April.",
+      "final_probs": [
+        0.19783228635787964,
+        0.6044089794158936,
+        0.197758749127388
+      ],
+      "frame_prob": 0.08149351179599762,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_031__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_031",
+      "polarity_margin": -4.648915767669678,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.9656453132629395,
+      "sufficiency_prob": 0.0010163956321775913
+    },
+    {
+      "claim": "Beacon Labs shipped 410 packages in July.",
+      "entitlement_prob": 0.0010370014933869243,
+      "evidence": "Beacon Labs shipped 410 packages in July.",
+      "final_probs": [
+        0.19825130701065063,
+        0.6038548946380615,
+        0.19789376854896545
+      ],
+      "frame_prob": 0.060731373727321625,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_032__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_032",
+      "polarity_margin": -1.7406601905822754,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.9071000218391418,
+      "sufficiency_prob": 0.018823964521288872
+    },
+    {
+      "claim": "Beacon Labs shipped 410 packages in July.",
+      "entitlement_prob": 0.0002525206655263901,
+      "evidence": "Beacon Labs shipped 610 packages in July.",
+      "final_probs": [
+        0.19788433611392975,
+        0.6043341755867004,
+        0.19778147339820862
+      ],
+      "frame_prob": 0.05569247901439667,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_032__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_032",
+      "polarity_margin": -2.059152364730835,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.8898287415504456,
+      "sufficiency_prob": 0.005095583386719227
+    },
+    {
+      "claim": "Cedar Works shipped 420 tickets in May.",
+      "entitlement_prob": 1.9179871742380783e-05,
+      "evidence": "Cedar Works shipped 420 tickets in May.",
+      "final_probs": [
+        0.1977633833885193,
+        0.604473352432251,
+        0.19776324927806854
+      ],
+      "frame_prob": 0.006872683763504028,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_033__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_033",
+      "polarity_margin": -0.03550991415977478,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.2915094792842865,
+      "sufficiency_prob": 0.009573409333825111
+    },
+    {
+      "claim": "Cedar Works shipped 420 tickets in May.",
+      "entitlement_prob": 9.79837841441622e-06,
+      "evidence": "Cedar Works shipped 620 tickets in May.",
+      "final_probs": [
+        0.1977619081735611,
+        0.6044763922691345,
+        0.19776171445846558
+      ],
+      "frame_prob": 0.007063423749059439,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_033__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_033",
+      "polarity_margin": -0.09832364320755005,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.27171745896339417,
+      "sufficiency_prob": 0.005105301272124052
+    },
+    {
+      "claim": "Delta Foods shipped 430 devices in August.",
+      "entitlement_prob": 0.0001495511387474835,
+      "evidence": "Delta Foods shipped 430 devices in August.",
+      "final_probs": [
+        0.19783048331737518,
+        0.6043803095817566,
+        0.1977892369031906
+      ],
+      "frame_prob": 0.1325000673532486,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_034__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_034",
+      "polarity_margin": -1.394848346710205,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.851518452167511,
+      "sufficiency_prob": 0.0013254994992166758
+    },
+    {
+      "claim": "Delta Foods shipped 430 devices in August.",
+      "entitlement_prob": 0.0001278152922168374,
+      "evidence": "Delta Foods shipped 630 devices in August.",
+      "final_probs": [
+        0.19781433045864105,
+        0.604401171207428,
+        0.19778451323509216
+      ],
+      "frame_prob": 0.12936963140964508,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_034__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_034",
+      "polarity_margin": -1.1792092323303223,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.8231866955757141,
+      "sufficiency_prob": 0.0012001958675682545
+    },
+    {
+      "claim": "Elm Systems shipped 440 components in June.",
+      "entitlement_prob": 8.587937918491662e-05,
+      "evidence": "Elm Systems shipped 440 components in June.",
+      "final_probs": [
+        0.197812020778656,
+        0.6044253706932068,
+        0.1977626234292984
+      ],
+      "frame_prob": 0.003626100020483136,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_035__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_035",
+      "polarity_margin": -2.907926082611084,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.8587123155593872,
+      "sufficiency_prob": 0.02758045494556427
+    },
+    {
+      "claim": "Elm Systems shipped 440 components in June.",
+      "entitlement_prob": 5.78292238060385e-05,
+      "evidence": "Elm Systems shipped 640 components in June.",
+      "final_probs": [
+        0.1977940946817398,
+        0.6044437885284424,
+        0.1977621465921402
+      ],
+      "frame_prob": 0.0035198593977838755,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_035__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_035",
+      "polarity_margin": -2.7939858436584473,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.8520641922950745,
+      "sufficiency_prob": 0.019281895831227303
+    },
+    {
+      "claim": "Aster Company produced 450 units in April.",
+      "entitlement_prob": 7.964875840116292e-05,
+      "evidence": "Aster Company produced 450 units in April.",
+      "final_probs": [
+        0.19779908657073975,
+        0.6044301390647888,
+        0.19777072966098785
+      ],
+      "frame_prob": 0.057203564792871475,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_036__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_036",
+      "polarity_margin": -1.8012921810150146,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.8651418089866638,
+      "sufficiency_prob": 0.0016094170277938247
+    },
+    {
+      "claim": "Aster Company produced 450 units in April.",
+      "entitlement_prob": 0.00010711467621149495,
+      "evidence": "Aster Company produced 650 units in April.",
+      "final_probs": [
+        0.19782401621341705,
+        0.6044042110443115,
+        0.197771817445755
+      ],
+      "frame_prob": 0.07185705751180649,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_036__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_036",
+      "polarity_margin": -2.463977336883545,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.8873789310455322,
+      "sufficiency_prob": 0.001679849810898304
+    },
+    {
+      "claim": "Beacon Labs produced 460 packages in July.",
+      "entitlement_prob": 0.0024180670734494925,
+      "evidence": "Beacon Labs produced 460 packages in July.",
+      "final_probs": [
+        0.19786329567432404,
+        0.6030753254890442,
+        0.19906140863895416
+      ],
+      "frame_prob": 0.02799241431057453,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_037__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_037",
+      "polarity_margin": 2.4965972900390625,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.3645038306713104,
+      "sufficiency_prob": 0.23698775470256805
+    },
+    {
+      "claim": "Beacon Labs produced 460 packages in July.",
+      "entitlement_prob": 0.0020416127517819405,
+      "evidence": "Beacon Labs produced 660 packages in July.",
+      "final_probs": [
+        0.19785679876804352,
+        0.6033143997192383,
+        0.19882875680923462
+      ],
+      "frame_prob": 0.02896225079894066,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_037__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_037",
+      "polarity_margin": 2.4002387523651123,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.38493502140045166,
+      "sufficiency_prob": 0.1831275224685669
+    },
+    {
+      "claim": "Cedar Works produced 470 tickets in May.",
+      "entitlement_prob": 6.46613843855448e-05,
+      "evidence": "Cedar Works produced 470 tickets in May.",
+      "final_probs": [
+        0.19776327908039093,
+        0.6044446229934692,
+        0.19779206812381744
+      ],
+      "frame_prob": 0.005849106702953577,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_038__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_038",
+      "polarity_margin": 2.251077890396118,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.011199232190847397,
+      "sufficiency_prob": 0.9871137142181396
+    },
+    {
+      "claim": "Cedar Works produced 470 tickets in May.",
+      "entitlement_prob": 0.00014482640835922211,
+      "evidence": "Cedar Works produced 670 tickets in May.",
+      "final_probs": [
+        0.19777187705039978,
+        0.6044150590896606,
+        0.197813019156456
+      ],
+      "frame_prob": 0.030203858390450478,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_038__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_038",
+      "polarity_margin": 1.436551570892334,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.006308619864284992,
+      "sufficiency_prob": 0.7600654363632202
+    },
+    {
+      "claim": "Delta Foods produced 480 devices in August.",
+      "entitlement_prob": 0.00018817823729477823,
+      "evidence": "Delta Foods produced 480 devices in August.",
+      "final_probs": [
+        0.1977642923593521,
+        0.6043605804443359,
+        0.19787512719631195
+      ],
+      "frame_prob": 0.01921774260699749,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_039__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_039",
+      "polarity_margin": 2.977539300918579,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.2163964807987213,
+      "sufficiency_prob": 0.0452498160302639
+    },
+    {
+      "claim": "Delta Foods produced 480 devices in August.",
+      "entitlement_prob": 8.107885514618829e-05,
+      "evidence": "Delta Foods produced 680 devices in August.",
+      "final_probs": [
+        0.19776420295238495,
+        0.604434072971344,
+        0.19780175387859344
+      ],
+      "frame_prob": 0.025373730808496475,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_039__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_039",
+      "polarity_margin": 2.342332601547241,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.22938576340675354,
+      "sufficiency_prob": 0.01393018290400505
+    },
+    {
+      "claim": "Elm Systems produced 490 components in June.",
+      "entitlement_prob": 8.915907528717071e-05,
+      "evidence": "Elm Systems produced 490 components in June.",
+      "final_probs": [
+        0.19777259230613708,
+        0.6044519543647766,
+        0.1977754831314087
+      ],
+      "frame_prob": 0.0030964789912104607,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_040__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_040",
+      "polarity_margin": 0.16507881879806519,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.1319763958454132,
+      "sufficiency_prob": 0.2181730717420578
+    },
+    {
+      "claim": "Elm Systems produced 490 components in June.",
+      "entitlement_prob": 1.38127725222148e-05,
+      "evidence": "Elm Systems produced 690 components in June.",
+      "final_probs": [
+        0.19776205718517303,
+        0.6044750809669495,
+        0.19776281714439392
+      ],
+      "frame_prob": 0.003252406371757388,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_040__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_040",
+      "polarity_margin": 0.28526678681373596,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.02422511950135231,
+      "sufficiency_prob": 0.1753113865852356
+    },
+    {
+      "claim": "Aster Company delivered 500 units in April.",
+      "entitlement_prob": 4.196153167868033e-05,
+      "evidence": "Aster Company delivered 500 units in April.",
+      "final_probs": [
+        0.19778259098529816,
+        0.6044543981552124,
+        0.19776298105716705
+      ],
+      "frame_prob": 0.033501189202070236,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_041__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_041",
+      "polarity_margin": -2.3642935752868652,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.9175481796264648,
+      "sufficiency_prob": 0.0013650929322466254
+    },
+    {
+      "claim": "Aster Company delivered 500 units in April.",
+      "entitlement_prob": 3.5813736758427694e-05,
+      "evidence": "Aster Company delivered 700 units in April.",
+      "final_probs": [
+        0.19777554273605347,
+        0.6044609546661377,
+        0.19776348769664764
+      ],
+      "frame_prob": 0.03274204954504967,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_041__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_041",
+      "polarity_margin": -1.6988801956176758,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.8905693292617798,
+      "sufficiency_prob": 0.0012282195966690779
+    },
+    {
+      "claim": "Beacon Labs delivered 510 packages in July.",
+      "entitlement_prob": 0.0067719570361077785,
+      "evidence": "Beacon Labs delivered 510 packages in July.",
+      "final_probs": [
+        0.19801147282123566,
+        0.6004651188850403,
+        0.20152339339256287
+      ],
+      "frame_prob": 0.028253357857465744,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_042__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_042",
+      "polarity_margin": 2.596076011657715,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.3876028060913086,
+      "sufficiency_prob": 0.6183825731277466
+    },
+    {
+      "claim": "Beacon Labs delivered 510 packages in July.",
+      "entitlement_prob": 0.009085336700081825,
+      "evidence": "Beacon Labs delivered 710 packages in July.",
+      "final_probs": [
+        0.19816526770591736,
+        0.59909588098526,
+        0.20273885130882263
+      ],
+      "frame_prob": 0.038733985275030136,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_042__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_042",
+      "polarity_margin": 2.5114428997039795,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.5660150647163391,
+      "sufficiency_prob": 0.4144010543823242
+    },
+    {
+      "claim": "Cedar Works delivered 520 tickets in May.",
+      "entitlement_prob": 2.418663279968314e-05,
+      "evidence": "Cedar Works delivered 520 tickets in May.",
+      "final_probs": [
+        0.19776293635368347,
+        0.6044707894325256,
+        0.1977662891149521
+      ],
+      "frame_prob": 0.005950589664280415,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_043__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_043",
+      "polarity_margin": 0.7031809091567993,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.006770799867808819,
+      "sufficiency_prob": 0.6003097891807556
+    },
+    {
+      "claim": "Cedar Works delivered 520 tickets in May.",
+      "entitlement_prob": 2.2563364836969413e-05,
+      "evidence": "Cedar Works delivered 720 tickets in May.",
+      "final_probs": [
+        0.19776251912117004,
+        0.6044707894325256,
+        0.1977667212486267
+      ],
+      "frame_prob": 0.005712002515792847,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_043__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_043",
+      "polarity_margin": 0.9383957386016846,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.004755797795951366,
+      "sufficiency_prob": 0.8306003212928772
+    },
+    {
+      "claim": "Delta Foods delivered 530 devices in August.",
+      "entitlement_prob": 0.00013890033005736768,
+      "evidence": "Delta Foods delivered 530 devices in August.",
+      "final_probs": [
+        0.19777514040470123,
+        0.6044209003448486,
+        0.19780397415161133
+      ],
+      "frame_prob": 0.062203094363212585,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_044__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_044",
+      "polarity_margin": 1.0490773916244507,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.31818777322769165,
+      "sufficiency_prob": 0.00701791001483798
+    },
+    {
+      "claim": "Delta Foods delivered 530 devices in August.",
+      "entitlement_prob": 0.000514709681738168,
+      "evidence": "Delta Foods delivered 730 devices in August.",
+      "final_probs": [
+        0.19778135418891907,
+        0.6041831970214844,
+        0.19803544878959656
+      ],
+      "frame_prob": 0.048957135528326035,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_044__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_044",
+      "polarity_margin": 2.4941675662994385,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.15818792581558228,
+      "sufficiency_prob": 0.06646193563938141
+    },
+    {
+      "claim": "Elm Systems delivered 540 components in June.",
+      "entitlement_prob": 3.9967151678865775e-05,
+      "evidence": "Elm Systems delivered 540 components in June.",
+      "final_probs": [
+        0.19776518642902374,
+        0.6044667959213257,
+        0.19776801764965057
+      ],
+      "frame_prob": 0.002413638634607196,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_045__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_045",
+      "polarity_margin": 0.3584994077682495,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.025414643809199333,
+      "sufficiency_prob": 0.6515487432479858
+    },
+    {
+      "claim": "Elm Systems delivered 540 components in June.",
+      "entitlement_prob": 0.00015843313303776085,
+      "evidence": "Elm Systems delivered 740 components in June.",
+      "final_probs": [
+        0.19777043163776398,
+        0.604403018951416,
+        0.19782654941082
+      ],
+      "frame_prob": 0.003195274854078889,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_045__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_045",
+      "polarity_margin": 1.7909523248672485,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.05290849879384041,
+      "sufficiency_prob": 0.9371570348739624
+    },
+    {
+      "claim": "Aster Company ordered 550 units in April.",
+      "entitlement_prob": 7.710493810009211e-05,
+      "evidence": "Aster Company ordered 550 units in April.",
+      "final_probs": [
+        0.19782842695713043,
+        0.6044123768806458,
+        0.19775916635990143
+      ],
+      "frame_prob": 0.07075688987970352,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_046__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_046",
+      "polarity_margin": -4.5403947830200195,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.9594340324401855,
+      "sufficiency_prob": 0.0011357907205820084
+    },
+    {
+      "claim": "Aster Company ordered 550 units in April.",
+      "entitlement_prob": 4.55978479294572e-05,
+      "evidence": "Aster Company ordered 750 units in April.",
+      "final_probs": [
+        0.19780270755290985,
+        0.6044386625289917,
+        0.19775857031345367
+      ],
+      "frame_prob": 0.0537797212600708,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_046__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_046",
+      "polarity_margin": -4.891928672790527,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.9731440544128418,
+      "sufficiency_prob": 0.00087126181460917
+    },
+    {
+      "claim": "Beacon Labs ordered 560 packages in July.",
+      "entitlement_prob": 0.002961268648505211,
+      "evidence": "Beacon Labs ordered 560 packages in July.",
+      "final_probs": [
+        0.1996484100818634,
+        0.602213978767395,
+        0.19813762605190277
+      ],
+      "frame_prob": 0.09766291826963425,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_047__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_047",
+      "polarity_margin": -2.5651016235351562,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.9536591172218323,
+      "sufficiency_prob": 0.0317947156727314
+    },
+    {
+      "claim": "Beacon Labs ordered 560 packages in July.",
+      "entitlement_prob": 0.0385403148829937,
+      "evidence": "Beacon Labs ordered 760 packages in July.",
+      "final_probs": [
+        0.20018331706523895,
+        0.5780909061431885,
+        0.22172580659389496
+      ],
+      "frame_prob": 0.31125587224960327,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_047__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_047",
+      "polarity_margin": 2.651975393295288,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.8741356730461121,
+      "sufficiency_prob": 0.1416507512331009
+    },
+    {
+      "claim": "Cedar Works ordered 570 tickets in May.",
+      "entitlement_prob": 4.5337881601881236e-05,
+      "evidence": "Cedar Works ordered 570 tickets in May.",
+      "final_probs": [
+        0.19776742160320282,
+        0.6044646501541138,
+        0.19776789844036102
+      ],
+      "frame_prob": 0.009700209833681583,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_048__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_048",
+      "polarity_margin": 0.04910755157470703,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.3864749073982239,
+      "sufficiency_prob": 0.012093689292669296
+    },
+    {
+      "claim": "Cedar Works ordered 570 tickets in May.",
+      "entitlement_prob": 1.1378991985111497e-05,
+      "evidence": "Cedar Works ordered 770 tickets in May.",
+      "final_probs": [
+        0.19776234030723572,
+        0.604475736618042,
+        0.1977619081735611
+      ],
+      "frame_prob": 0.030623823404312134,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_048__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_048",
+      "polarity_margin": -0.18428972363471985,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.2365766018629074,
+      "sufficiency_prob": 0.001570625347085297
+    },
+    {
+      "claim": "Delta Foods ordered 580 devices in August.",
+      "entitlement_prob": 5.1376104238443077e-05,
+      "evidence": "Delta Foods ordered 580 devices in August.",
+      "final_probs": [
+        0.19777695834636688,
+        0.604455828666687,
+        0.1977672576904297
+      ],
+      "frame_prob": 0.03839828819036484,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_049__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_049",
+      "polarity_margin": -0.953840970993042,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.8578643798828125,
+      "sufficiency_prob": 0.0015596627490594983
+    },
+    {
+      "claim": "Delta Foods ordered 580 devices in August.",
+      "entitlement_prob": 4.3953095882898197e-05,
+      "evidence": "Delta Foods ordered 780 devices in August.",
+      "final_probs": [
+        0.19777166843414307,
+        0.6044614911079407,
+        0.19776685535907745
+      ],
+      "frame_prob": 0.03614605590701103,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_049__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_049",
+      "polarity_margin": -0.552425742149353,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.8044639825820923,
+      "sufficiency_prob": 0.0015115480637177825
+    },
+    {
+      "claim": "Elm Systems ordered 590 components in June.",
+      "entitlement_prob": 2.0834575025219237e-06,
+      "evidence": "Elm Systems ordered 590 components in June.",
+      "final_probs": [
+        0.19776079058647156,
+        0.6044787764549255,
+        0.19776049256324768
+      ],
+      "frame_prob": 0.003612417494878173,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_050__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_050",
+      "polarity_margin": -0.7201727628707886,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.37848547101020813,
+      "sufficiency_prob": 0.0015238334890455008
+    },
+    {
+      "claim": "Elm Systems ordered 590 components in June.",
+      "entitlement_prob": 1.5947738347676932e-06,
+      "evidence": "Elm Systems ordered 790 components in June.",
+      "final_probs": [
+        0.197760671377182,
+        0.6044788956642151,
+        0.1977604478597641
+      ],
+      "frame_prob": 0.004258392378687859,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_050__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_050",
+      "polarity_margin": -0.7020419239997864,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.3650163412094116,
+      "sufficiency_prob": 0.0010259852278977633
+    },
+    {
+      "claim": "Aster Company sold 600 units in April.",
+      "entitlement_prob": 0.0012130581308156252,
+      "evidence": "Aster Company sold 600 units in April.",
+      "final_probs": [
+        0.19845399260520935,
+        0.6034486889839172,
+        0.19809725880622864
+      ],
+      "frame_prob": 0.05864021182060242,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_051__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_051",
+      "polarity_margin": -1.483238935470581,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.9676755666732788,
+      "sufficiency_prob": 0.02137747034430504
+    },
+    {
+      "claim": "Aster Company sold 600 units in April.",
+      "entitlement_prob": 0.0003615171881392598,
+      "evidence": "Aster Company sold 800 units in April.",
+      "final_probs": [
+        0.19806905090808868,
+        0.6041600108146667,
+        0.19777093827724457
+      ],
+      "frame_prob": 0.12439405918121338,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_051__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_051",
+      "polarity_margin": -4.166318893432617,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.970834493637085,
+      "sufficiency_prob": 0.0029935333877801895
+    },
+    {
+      "claim": "Beacon Labs sold 610 packages in July.",
+      "entitlement_prob": 0.09592428803443909,
+      "evidence": "Beacon Labs sold 610 packages in July.",
+      "final_probs": [
+        0.18831950426101685,
+        0.5074649453163147,
+        0.30421555042266846
+      ],
+      "frame_prob": 0.11200246214866638,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_052__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_052",
+      "polarity_margin": 4.999741077423096,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.9550737142562866,
+      "sufficiency_prob": 0.8967350125312805
+    },
+    {
+      "claim": "Beacon Labs sold 610 packages in July.",
+      "entitlement_prob": 0.22807344794273376,
+      "evidence": "Beacon Labs sold 810 packages in July.",
+      "final_probs": [
+        0.14016121625900269,
+        0.3246782422065735,
+        0.5351606011390686
+      ],
+      "frame_prob": 0.23527178168296814,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_052__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_052",
+      "polarity_margin": 5.874307632446289,
+      "pred_final_label": "SUPPORT",
+      "predicate_coverage_prob": 0.9783939719200134,
+      "sufficiency_prob": 0.9908117055892944
+    },
+    {
+      "claim": "Cedar Works sold 620 tickets in May.",
+      "entitlement_prob": 0.004463219083845615,
+      "evidence": "Cedar Works sold 620 tickets in May.",
+      "final_probs": [
+        0.1976390928030014,
+        0.6010124683380127,
+        0.2013484388589859
+      ],
+      "frame_prob": 0.017964139580726624,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_053__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_053",
+      "polarity_margin": 4.166156768798828,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.2513035833835602,
+      "sufficiency_prob": 0.9886512756347656
+    },
+    {
+      "claim": "Cedar Works sold 620 tickets in May.",
+      "entitlement_prob": 0.006577367428690195,
+      "evidence": "Cedar Works sold 820 tickets in May.",
+      "final_probs": [
+        0.19751350581645966,
+        0.5991615653038025,
+        0.20332492887973785
+      ],
+      "frame_prob": 0.01846841536462307,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_053__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_053",
+      "polarity_margin": 4.408810138702393,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.35900944471359253,
+      "sufficiency_prob": 0.9920112490653992
+    },
+    {
+      "claim": "Delta Foods sold 630 devices in August.",
+      "entitlement_prob": 0.00018819785327650607,
+      "evidence": "Delta Foods sold 630 devices in August.",
+      "final_probs": [
+        0.19778083264827728,
+        0.6043846607208252,
+        0.19783450663089752
+      ],
+      "frame_prob": 0.029667558148503304,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_054__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_054",
+      "polarity_margin": 1.441523551940918,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.7439385652542114,
+      "sufficiency_prob": 0.008526991121470928
+    },
+    {
+      "claim": "Delta Foods sold 630 devices in August.",
+      "entitlement_prob": 0.004761374555528164,
+      "evidence": "Delta Foods sold 830 devices in August.",
+      "final_probs": [
+        0.19767077267169952,
+        0.6008731126785278,
+        0.20145615935325623
+      ],
+      "frame_prob": 0.012865127995610237,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_054__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_054",
+      "polarity_margin": 3.9838836193084717,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.5780203938484192,
+      "sufficiency_prob": 0.6402875781059265
+    },
+    {
+      "claim": "Elm Systems sold 640 components in June.",
+      "entitlement_prob": 0.0018957691499963403,
+      "evidence": "Elm Systems sold 640 components in June.",
+      "final_probs": [
+        0.19861096143722534,
+        0.6034005284309387,
+        0.19798848032951355
+      ],
+      "frame_prob": 0.004144125618040562,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_055__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_055",
+      "polarity_margin": -1.6558902263641357,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.8563680648803711,
+      "sufficiency_prob": 0.5341854691505432
+    },
+    {
+      "claim": "Elm Systems sold 640 components in June.",
+      "entitlement_prob": 0.0048914095386862755,
+      "evidence": "Elm Systems sold 840 components in June.",
+      "final_probs": [
+        0.19922658801078796,
+        0.6009742021560669,
+        0.19979918003082275
+      ],
+      "frame_prob": 0.00511920964345336,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_055__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_055",
+      "polarity_margin": 0.5867174863815308,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.9693043231964111,
+      "sufficiency_prob": 0.985759437084198
+    },
+    {
+      "claim": "Aster Company shipped 650 units in April.",
+      "entitlement_prob": 0.00010529663268243894,
+      "evidence": "Aster Company shipped 650 units in April.",
+      "final_probs": [
+        0.19785746932029724,
+        0.6043841242790222,
+        0.19775839149951935
+      ],
+      "frame_prob": 0.08915454894304276,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_056__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_056",
+      "polarity_margin": -4.758076190948486,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.963706374168396,
+      "sufficiency_prob": 0.0012255364563316107
+    },
+    {
+      "claim": "Aster Company shipped 650 units in April.",
+      "entitlement_prob": 8.109115879051387e-05,
+      "evidence": "Aster Company shipped 850 units in April.",
+      "final_probs": [
+        0.19783294200897217,
+        0.6044078469276428,
+        0.19775918126106262
+      ],
+      "frame_prob": 0.07061480730772018,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_056__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_056",
+      "polarity_margin": -4.598294734954834,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.962163507938385,
+      "sufficiency_prob": 0.0011935175862163305
+    },
+    {
+      "claim": "Beacon Labs shipped 660 packages in July.",
+      "entitlement_prob": 0.001046404824592173,
+      "evidence": "Beacon Labs shipped 660 packages in July.",
+      "final_probs": [
+        0.1983981728553772,
+        0.6037352681159973,
+        0.1978665590286255
+      ],
+      "frame_prob": 0.08666301518678665,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_057__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_057",
+      "polarity_margin": -2.564164876937866,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.924285352230072,
+      "sufficiency_prob": 0.013063509948551655
+    },
+    {
+      "claim": "Beacon Labs shipped 660 packages in July.",
+      "entitlement_prob": 0.025493277236819267,
+      "evidence": "Beacon Labs shipped 860 packages in July.",
+      "final_probs": [
+        0.20957231521606445,
+        0.5853747129440308,
+        0.2050529569387436
+      ],
+      "frame_prob": 0.41852906346321106,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_057__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_057",
+      "polarity_margin": -0.855146050453186,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.9403313994407654,
+      "sufficiency_prob": 0.06477674096822739
+    },
+    {
+      "claim": "Cedar Works shipped 670 tickets in May.",
+      "entitlement_prob": 0.00018506843480281532,
+      "evidence": "Cedar Works shipped 670 tickets in May.",
+      "final_probs": [
+        0.1977836936712265,
+        0.6044024229049683,
+        0.19781386852264404
+      ],
+      "frame_prob": 0.00998586043715477,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_058__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_058",
+      "polarity_margin": 0.8244423866271973,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.4654873013496399,
+      "sufficiency_prob": 0.0398142971098423
+    },
+    {
+      "claim": "Cedar Works shipped 670 tickets in May.",
+      "entitlement_prob": 0.00034521232009865344,
+      "evidence": "Cedar Works shipped 870 tickets in May.",
+      "final_probs": [
+        0.19779641926288605,
+        0.6043196320533752,
+        0.1978839635848999
+      ],
+      "frame_prob": 0.009053398855030537,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_058__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_058",
+      "polarity_margin": 1.281553030014038,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.4823291003704071,
+      "sufficiency_prob": 0.07905533164739609
+    },
+    {
+      "claim": "Delta Foods shipped 680 devices in August.",
+      "entitlement_prob": 0.00012292696919757873,
+      "evidence": "Delta Foods shipped 680 devices in August.",
+      "final_probs": [
+        0.19779816269874573,
+        0.604411244392395,
+        0.19779059290885925
+      ],
+      "frame_prob": 0.1133735179901123,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_059__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_059",
+      "polarity_margin": -0.31134307384490967,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.7500376105308533,
+      "sufficiency_prob": 0.0014456144999712706
+    },
+    {
+      "claim": "Delta Foods shipped 680 devices in August.",
+      "entitlement_prob": 0.0011967734899371862,
+      "evidence": "Delta Foods shipped 880 devices in August.",
+      "final_probs": [
+        0.19780834019184113,
+        0.603621780872345,
+        0.19856984913349152
+      ],
+      "frame_prob": 0.11159482598304749,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_059__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_059",
+      "polarity_margin": 3.210564136505127,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.7977898120880127,
+      "sufficiency_prob": 0.013442480936646461
+    },
+    {
+      "claim": "Elm Systems shipped 690 components in June.",
+      "entitlement_prob": 0.00012600424815900624,
+      "evidence": "Elm Systems shipped 690 components in June.",
+      "final_probs": [
+        0.19783517718315125,
+        0.6044005751609802,
+        0.19776424765586853
+      ],
+      "frame_prob": 0.0038441396318376064,
+      "gold_final_label": "SUPPORT",
+      "id": "number_probe_060__none",
+      "intervention_type": "none",
+      "pair_id": "number_probe_060",
+      "polarity_margin": -2.8466696739196777,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.8148886561393738,
+      "sufficiency_prob": 0.04022423177957535
+    },
+    {
+      "claim": "Elm Systems shipped 690 components in June.",
+      "entitlement_prob": 0.002350175054743886,
+      "evidence": "Elm Systems shipped 890 components in June.",
+      "final_probs": [
+        0.19934067130088806,
+        0.6027680039405823,
+        0.19789128005504608
+      ],
+      "frame_prob": 0.004287230782210827,
+      "gold_final_label": "NOT_ENTITLED",
+      "id": "number_probe_060__number_swap",
+      "intervention_type": "number_swap",
+      "pair_id": "number_probe_060",
+      "polarity_margin": -3.105078935623169,
+      "pred_final_label": "NOT_ENTITLED",
+      "predicate_coverage_prob": 0.9159556031227112,
+      "sufficiency_prob": 0.5984789729118347
+    }
+  ]
+}

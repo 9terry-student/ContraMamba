@@ -1,0 +1,3 @@
+probe,n,gold_NOT_ENTITLED,gold_SUPPORT,gold_REFUTE,pred_SUPPORT,pred_REFUTE,pred_NOT_ENTITLED,classifier_error,false_entitled,false_entitled_rate,mean_frame_prob,mean_predicate_coverage_prob,mean_sufficiency_prob,mean_entitlement_prob,mean_polarity_margin
+number_swap,60,60,0,0,0,0,60,0,0,0.0,0.01121612909094741,0.5818326872851078,0.004196327786000135,0.00018689311569965265,-0.6632370054721832
+time_swap,60,60,0,0,59,0,1,59,59,0.9833333333333333,0.9053881973028183,0.9815694751838843,0.9912170737981796,0.8826583969096343,5.455243444442749
