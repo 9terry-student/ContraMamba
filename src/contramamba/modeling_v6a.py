@@ -39,6 +39,7 @@ class ContraMambaV6A(nn.Module):
         hidden_size: int | None = None,
         composer_hidden_size: int = 64,
         product_loss_weight: float = 0.25,
+        correction_scale: float = 1.0,
     ) -> None:
         super().__init__()
         if backbone is None:
@@ -65,6 +66,7 @@ class ContraMambaV6A(nn.Module):
 
         self.return_token_diagnostics = return_token_diagnostics
         self.product_loss_weight = product_loss_weight
+        self.correction_scale = correction_scale
         self.frame_gate = FrameGate(
             hidden_size,
             frame_size,
@@ -172,7 +174,9 @@ class ContraMambaV6A(nn.Module):
             sufficiency_prob=sufficiency["sufficiency_prob"],
         )
 
-        calibrated_logits = product["logits"] + composer["composer_correction_logits"]
+        raw_correction_logits = composer["composer_correction_logits"]
+        scaled_correction_logits = self.correction_scale * raw_correction_logits
+        calibrated_logits = product["logits"] + scaled_correction_logits
 
         losses: dict[str, torch.Tensor | None] = {
             "final_loss": None,
@@ -239,6 +243,16 @@ class ContraMambaV6A(nn.Module):
 
         output = {
             **composer,
+            "composer_raw_correction_logits": raw_correction_logits,
+            "composer_correction_logits": scaled_correction_logits,
+            "composer_refute_logit": scaled_correction_logits[..., 0],
+            "composer_not_entitled_logit": scaled_correction_logits[..., 1],
+            "composer_support_logit": scaled_correction_logits[..., 2],
+            "composer_correction_scale": torch.as_tensor(
+                self.correction_scale,
+                device=calibrated_logits.device,
+                dtype=calibrated_logits.dtype,
+            ),
             "composer_logits": calibrated_logits,
             "logits": calibrated_logits,
             "predictions": calibrated_logits.argmax(dim=-1),

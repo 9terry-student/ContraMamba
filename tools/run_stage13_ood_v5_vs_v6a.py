@@ -233,22 +233,44 @@ def v6a_logit_diagnostics(
     index_tensor = torch.tensor(indices, device=output["logits"].device)
     product = output["product_logits"].index_select(0, index_tensor)
     correction = output["composer_correction_logits"].index_select(0, index_tensor)
+    raw_correction = output.get("composer_raw_correction_logits")
+    raw_correction = (
+        raw_correction.index_select(0, index_tensor)
+        if raw_correction is not None
+        else correction
+    )
     calibrated = output["logits"].index_select(0, index_tensor)
     product_norm = product.detach().float().norm().item()
     correction_norm = correction.detach().float().norm().item()
+    raw_correction_norm = raw_correction.detach().float().norm().item()
     ratio = correction_norm / product_norm if product_norm else 0.0
+    raw_ratio = raw_correction_norm / product_norm if product_norm else 0.0
     per_class_mean = correction.detach().float().cpu().mean(dim=0).tolist()
+    raw_per_class_mean = raw_correction.detach().float().cpu().mean(dim=0).tolist()
+    correction_scale = output.get("composer_correction_scale")
+    scale_value = (
+        float(correction_scale.detach().float().cpu().item())
+        if isinstance(correction_scale, torch.Tensor)
+        else None
+    )
     return {
         "subset": subset_name,
         "intervention_type": intervention_type or "__all__",
         "n": len(indices),
+        "correction_scale": scale_value,
         "product_logits": _tensor_stats(product),
+        "composer_raw_correction_logits": _tensor_stats(raw_correction),
         "composer_correction_logits": _tensor_stats(correction),
         "calibrated_logits": _tensor_stats(calibrated),
+        "per_class_mean_raw_correction": {
+            label: float(value)
+            for label, value in zip(LABELS, raw_per_class_mean, strict=True)
+        },
         "per_class_mean_correction": {
             label: float(value)
             for label, value in zip(LABELS, per_class_mean, strict=True)
         },
+        "raw_correction_product_norm_ratio": float(raw_ratio),
         "correction_product_norm_ratio": float(ratio),
     }
 
@@ -370,6 +392,7 @@ def build_stage13_model(
     vocab: Any,
     train_inputs: dict[str, torch.Tensor],
     dev_inputs: dict[str, torch.Tensor],
+    v6a_correction_scale: float,
 ) -> torch.nn.Module:
     if system == "v5":
         if backbone == "mamba":
@@ -383,6 +406,7 @@ def build_stage13_model(
         else:
             max_length = max(train_inputs["input_ids"].shape[1], dev_inputs["input_ids"].shape[1])
             model = v6a.build_model(len(vocab), max_length)
+        model.correction_scale = v6a_correction_scale
     else:
         raise ValueError(f"unknown system: {system}")
     return model
@@ -416,6 +440,7 @@ def train_and_eval_system(
     freeze_a_log: bool,
     output_prefix: Path,
     log_v6a_diagnostics: bool,
+    v6a_correction_scale: float,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     random.seed(seed)
     torch.manual_seed(seed)
@@ -446,6 +471,7 @@ def train_and_eval_system(
         vocab=vocab,
         train_inputs=train_inputs,
         dev_inputs=dev_inputs,
+        v6a_correction_scale=v6a_correction_scale,
     ).to(device)
     cache_if_needed(model, inputs, backbone)
 
@@ -533,6 +559,7 @@ def train_and_eval_system(
         "weighted_label_loss": True,
         "balanced_sampler": True,
         "use_intervention_loss": True,
+        "v6a_correction_scale": v6a_correction_scale if system == "v6a" else None,
         "best_epoch": report["best_epoch"],
         "train_data": "data/controlled_v5_v3.jsonl with time_swap excluded before split",
         "ood_group_field": group_field,
@@ -796,6 +823,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--smoke", action="store_true")
     parser.add_argument("--smoke-pairs", type=int, default=8)
     parser.add_argument("--smoke-ood-pairs", type=int, default=12)
+    parser.add_argument("--v6a-correction-scale", type=float, default=1.0)
     parser.add_argument("--log-v6a-logit-diagnostics", action="store_true")
     parser.add_argument("--output-prefix", type=Path, default=REPO_ROOT / "results" / "stage13_ood")
     return parser.parse_args()
@@ -827,6 +855,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "Stage13 accepted-config defaults: "
         f"lr={args.lr} head_lr={args.head_lr} encoder_lr={args.encoder_lr} "
         f"ranking_weight={args.ranking_weight} max_length={args.max_length} "
+        f"v6a_correction_scale={args.v6a_correction_scale} "
         "weighted_label_loss=True balanced_sampler=True use_intervention_loss=True"
     )
 
@@ -860,6 +889,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 freeze_a_log=args.freeze_a_log,
                 output_prefix=output_prefix,
                 log_v6a_diagnostics=args.log_v6a_logit_diagnostics,
+                v6a_correction_scale=args.v6a_correction_scale,
             )
             all_metrics.append(payload)
             seed_predictions[system] = predictions
