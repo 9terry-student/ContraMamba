@@ -14,6 +14,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+import numpy as np
+
 import torch
 from torch.nn import functional as F
 
@@ -176,7 +178,10 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     random.seed(args.seed)
+    np.random.seed(args.seed)
     torch.manual_seed(args.seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(args.seed)
     torch.set_num_threads(1)
     device = torch.device(args.device)
 
@@ -444,6 +449,12 @@ def main(argv: list[str] | None = None) -> int:
 
     report = {
         "configuration": {
+            "seed": args.seed,
+            "random_seed": args.seed,
+            "numpy_seed": args.seed,
+            "torch_seed": args.seed,
+            "cuda_seed": args.seed if torch.cuda.is_available() else None,
+            "data_seed": args.seed,
             "backbone": args.backbone,
             "model_name": args.model_name if args.backbone == "mamba" else None,
             "freeze_encoder": args.freeze_encoder,
