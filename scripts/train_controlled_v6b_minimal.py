@@ -103,6 +103,101 @@ def extract_flags(
     return temporal_flags, predicate_flags
 
 
+def compute_class_weights_v6b(
+    records: list[dict],
+    mode: str,
+    device: torch.device,
+) -> torch.Tensor | None:
+    if mode == "none":
+        return None
+    n_classes = len(v5.FinalLabel)
+    counts = torch.zeros(n_classes, dtype=torch.float32)
+    for record in records:
+        counts[v5.FINAL_LABEL_TO_ID[record["final_label"]]] += 1.0
+    counts = counts.clamp_min(1.0)
+    if mode == "inverse_freq":
+        weights = 1.0 / counts
+    elif mode == "sqrt_inverse_freq":
+        weights = 1.0 / counts.sqrt()
+    else:
+        raise ValueError(f"unknown class_weighting mode: {mode!r}")
+    weights = weights / weights.mean()
+    return weights.to(device)
+
+
+def evaluate_ood_v6b(
+    model: ContraMambaV6BMinimal,
+    records: list[dict],
+    inputs: dict[str, torch.Tensor],
+    temporal_flags: torch.Tensor,
+    predicate_flags: torch.Tensor,
+) -> tuple[dict[str, Any], list[dict]]:
+    """Evaluate trained model on OOD records using final output logits/predictions."""
+    from collections import defaultdict
+
+    model.eval()
+    with torch.no_grad():
+        output = model(
+            **v5.model_feature_inputs(inputs),
+            temporal_mismatch_flags=temporal_flags,
+            predicate_mismatch_flags=predicate_flags,
+        )
+
+    overall_metrics = v5.compute_metrics(output, inputs)
+    predictions_export = prediction_records_v6b(records, output)
+
+    predictions_cpu = output["predictions"].detach().cpu()
+    labels_cpu = inputs["final_labels"].detach().cpu()
+    not_entitled_id = v5.FINAL_LABEL_TO_ID.get("NOT_ENTITLED")
+
+    groups: dict[str, list[int]] = defaultdict(list)
+    for idx, record in enumerate(records):
+        groups[record.get("stage15_probe_type", "unknown")].append(idx)
+
+    group_metrics: dict[str, dict[str, Any]] = {}
+    for group_name, indices in sorted(groups.items()):
+        g_preds = predictions_cpu[indices]
+        g_labels = labels_cpu[indices]
+        n = len(indices)
+        accuracy = (g_preds == g_labels).float().mean().item()
+        f1_values = []
+        for label in v5.FinalLabel:
+            label_id = int(label)
+            predicted = g_preds == label_id
+            actual = g_labels == label_id
+            tp = (predicted & actual).sum().item()
+            prec_denom = predicted.sum().item()
+            rec_denom = actual.sum().item()
+            prec = tp / prec_denom if prec_denom else 0.0
+            rec = tp / rec_denom if rec_denom else 0.0
+            f1_values.append(2.0 * prec * rec / (prec + rec) if prec + rec else 0.0)
+        macro_f1 = sum(f1_values) / len(f1_values) if f1_values else 0.0
+        pred_dist: dict[str, int] = {}
+        for pred_id in g_preds.tolist():
+            label_name = v5.ID_TO_FINAL_LABEL[pred_id]
+            pred_dist[label_name] = pred_dist.get(label_name, 0) + 1
+        false_entitled_count = 0
+        if not_entitled_id is not None:
+            for pred_id, gold_id in zip(g_preds.tolist(), g_labels.tolist()):
+                if gold_id == not_entitled_id and pred_id != not_entitled_id:
+                    false_entitled_count += 1
+        false_entitled_rate = false_entitled_count / n if n > 0 else 0.0
+        group_metrics[group_name] = {
+            "n": n,
+            "final_accuracy": accuracy,
+            "final_macro_f1": macro_f1,
+            "prediction_distribution": dict(sorted(pred_dist.items())),
+            "false_entitled_count": false_entitled_count,
+            "false_entitled_rate": false_entitled_rate,
+        }
+
+    return {
+        "n_records": len(records),
+        "overall_metrics": overall_metrics,
+        "group_metrics": group_metrics,
+    }, predictions_export
+
+
 def prediction_records_v6b(records: list[dict], output: dict[str, Any]) -> list[dict]:
     """Export predictions with v6b metadata."""
     probabilities = torch.softmax(output["logits"], dim=-1).detach().cpu()
@@ -163,6 +258,36 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Smoke mode: tiny settings, small data",
     )
+    parser.add_argument(
+        "--class-weighting",
+        choices=("none", "inverse_freq", "sqrt_inverse_freq"),
+        default="none",
+        help="Class weighting mode for CE classification loss (none preserves existing behavior)",
+    )
+    parser.add_argument(
+        "--ood-data",
+        type=Path,
+        default=None,
+        help="Optional OOD probe data for post-training evaluation",
+    )
+    parser.add_argument(
+        "--output-ood-json",
+        type=Path,
+        default=None,
+        help="Path to write OOD evaluation summary JSON",
+    )
+    parser.add_argument(
+        "--output-ood-predictions-json",
+        type=Path,
+        default=None,
+        help="Path to write OOD per-example predictions JSON",
+    )
+    parser.add_argument(
+        "--ood-flag-source",
+        choices=("stage15_probe_type", "controlled_heuristic", "none"),
+        default=None,
+        help="Flag source for OOD evaluation; defaults to --flag-source if not set",
+    )
     return parser
 
 
@@ -198,6 +323,11 @@ def main(argv: list[str] | None = None) -> int:
     train_records, dev_records = v5.split_by_pair_id(
         records, dev_ratio=args.dev_ratio, seed=args.seed
     )
+
+    ce_class_weights = compute_class_weights_v6b(train_records, args.class_weighting, device)
+    label_counts: dict[str, int] = {name: 0 for name in v5.ID_TO_FINAL_LABEL.values()}
+    for _record in train_records:
+        label_counts[_record["final_label"]] += 1
 
     if args.backbone == "dummy":
         vocab = v5.build_vocab(records)
@@ -279,6 +409,7 @@ def main(argv: list[str] | None = None) -> int:
         select_metric="final_macro_f1",
         capture_best_trainable_state=False,
         smoke_mode=False,
+        ce_class_weights=None,
     ):
         """Modified run_training that passes flags to v6b model."""
         if epochs < 1:
@@ -308,8 +439,20 @@ def main(argv: list[str] | None = None) -> int:
                 train_inputs["final_labels"], balanced_sampler, sampling_generator
             )
             losses = v5.controlled_losses(
-                output, train_inputs, indices, weighted_label_loss
+                output, train_inputs, indices,
+                False if ce_class_weights is not None else weighted_label_loss,
             )
+            if ce_class_weights is not None:
+                selected_labels = train_inputs["final_labels"].index_select(0, indices)
+                new_label_loss = F.cross_entropy(
+                    output["logits"].index_select(0, indices),
+                    selected_labels,
+                    weight=ce_class_weights,
+                )
+                non_label_total = losses["total"] - losses["label"]
+                losses = dict(losses)
+                losses["label"] = new_label_loss
+                losses["total"] = non_label_total + new_label_loss
 
             if use_intervention_loss:
                 from contramamba import intervention_pairwise_losses
@@ -439,6 +582,7 @@ def main(argv: list[str] | None = None) -> int:
             run_name=run_name,
             select_metric=args.select_metric,
             smoke_mode=args.smoke,
+            ce_class_weights=ce_class_weights,
         )
 
     # Capture learned alphas
@@ -475,6 +619,9 @@ def main(argv: list[str] | None = None) -> int:
             "time_swap_used": False,
             "pairwise_checks_skipped": args.smoke,
             "pairwise_checks_skip_reason": "incomplete smoke subset" if args.smoke else None,
+            "class_weighting": args.class_weighting,
+            "class_weights": ce_class_weights.tolist() if ce_class_weights is not None else None,
+            "class_counts": label_counts,
         },
         "runs": reports,
     }
@@ -531,6 +678,47 @@ def main(argv: list[str] | None = None) -> int:
                 f"WARNING: run {run_name} dev predictions collapsed to "
                 f"the single label {collapsed_label}",
                 file=sys.stderr,
+            )
+
+    if args.ood_data is not None:
+        ood_flag_source = args.ood_flag_source if args.ood_flag_source is not None else args.flag_source
+        print(f"[OOD EVAL] loading {args.ood_data} flag_source={ood_flag_source}")
+        ood_records = v5.load_jsonl(args.ood_data)
+        if args.backbone == "dummy":
+            ood_bundle = v5.encode_records(ood_records, vocab)
+        else:
+            ood_bundle = v5.encode_mamba_records(ood_records, tokenizer, args.max_length)
+        ood_inputs = v5.move_inputs(ood_bundle["model_inputs"], device)
+        ood_seq_len = ood_inputs["input_ids"].shape[1]
+        if ood_seq_len < max_length:
+            for key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
+                ood_inputs[key] = F.pad(ood_inputs[key], (0, max_length - ood_seq_len), value=0)
+        elif ood_seq_len > max_length:
+            for key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
+                ood_inputs[key] = ood_inputs[key][:, :max_length]
+        ood_temporal_flags, ood_predicate_flags = extract_flags(
+            ood_records, ood_flag_source, device
+        )
+        ood_summary, ood_predictions = evaluate_ood_v6b(
+            model, ood_records, ood_inputs, ood_temporal_flags, ood_predicate_flags
+        )
+        ood_summary["train_flag_source"] = args.flag_source
+        ood_summary["ood_flag_source"] = ood_flag_source
+        report["ood_evaluation"] = ood_summary
+        if args.output_ood_json is not None:
+            v5.write_report_json(ood_summary, args.output_ood_json)
+        if args.output_ood_predictions_json is not None:
+            ood_metadata = {
+                "ood_data_path": str(args.ood_data),
+                "seed": args.seed,
+                "backbone": args.backbone,
+                "model_version": "v6b_minimal",
+                "train_flag_source": args.flag_source,
+                "ood_flag_source": ood_flag_source,
+                "final_logits_used": True,
+            }
+            v5.write_predictions_json(
+                args.output_ood_predictions_json, ood_metadata, ood_predictions
             )
 
     print("\nFINAL_REPORT")
