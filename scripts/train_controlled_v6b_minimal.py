@@ -266,6 +266,7 @@ def main(argv: list[str] | None = None) -> int:
         run_name,
         select_metric="final_macro_f1",
         capture_best_trainable_state=False,
+        smoke_mode=False,
     ):
         """Modified run_training that passes flags to v6b model."""
         if epochs < 1:
@@ -347,7 +348,9 @@ def main(argv: list[str] | None = None) -> int:
                 best_dev_interventions = v5.intervention_diagnostics(
                     dev_records, dev_output
                 )
-                best_dev_pairwise_checks = v5.pairwise_checks(dev_records, dev_output)
+                # Skip pairwise checks in smoke mode (may have incomplete variants)
+                if not smoke_mode:
+                    best_dev_pairwise_checks = v5.pairwise_checks(dev_records, dev_output)
                 best_dev_predictions = prediction_records_v6b(dev_records, dev_output)
                 if capture_best_trainable_state:
                     best_trainable_state = v5.capture_trainable_state(model)
@@ -423,6 +426,7 @@ def main(argv: list[str] | None = None) -> int:
             seed=args.seed,
             run_name=run_name,
             select_metric=args.select_metric,
+            smoke_mode=args.smoke,
         )
 
     # Capture learned alphas
@@ -449,6 +453,8 @@ def main(argv: list[str] | None = None) -> int:
             "predicate_flag_count": predicate_flag_count,
             "final_logits_used": True,
             "time_swap_used": False,
+            "pairwise_checks_skipped": args.smoke,
+            "pairwise_checks_skip_reason": "incomplete smoke subset" if args.smoke else None,
         },
         "runs": reports,
     }
