@@ -1,6 +1,7 @@
 """ContraMamba-v5 package."""
 
 from .modeling_v5 import ContraMambaV5
+from .modeling_v6a import ContraMambaV6A
 from .labels import FinalLabel, InterventionType, PolarityLabel, PrimaryFailureType
 from .losses import intervention_pairwise_losses
 from .heads import (
@@ -13,6 +14,7 @@ from .heads import (
 
 __all__ = [
     "ContraMambaV5",
+    "ContraMambaV6A",
     "FrameGate",
     "PredicateCoverageHead",
     "SufficiencyGate",
