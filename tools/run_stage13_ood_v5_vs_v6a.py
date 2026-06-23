@@ -248,16 +248,41 @@ def v6a_logit_diagnostics(
     per_class_mean = correction.detach().float().cpu().mean(dim=0).tolist()
     raw_per_class_mean = raw_correction.detach().float().cpu().mean(dim=0).tolist()
     correction_scale = output.get("composer_correction_scale")
-    scale_value = (
-        float(correction_scale.detach().float().cpu().item())
-        if isinstance(correction_scale, torch.Tensor)
-        else None
-    )
+    selected_scale = None
+    scale_value = None
+    if isinstance(correction_scale, torch.Tensor):
+        scale_tensor = correction_scale.detach().float()
+        selected_scale = (
+            scale_tensor.index_select(0, index_tensor)
+            if scale_tensor.ndim > 0
+            else scale_tensor
+        )
+        scale_value = (
+            float(selected_scale.mean().cpu().item())
+            if selected_scale.ndim > 0
+            else float(selected_scale.cpu().item())
+        )
     alpha_raw = output.get("composer_correction_alpha_raw")
     alpha_raw_value = (
         float(alpha_raw.detach().float().cpu().item())
         if isinstance(alpha_raw, torch.Tensor)
         else None
+    )
+    correction_gate = output.get("composer_correction_gate")
+    selected_gate = (
+        correction_gate.detach().float().index_select(0, index_tensor).cpu()
+        if isinstance(correction_gate, torch.Tensor)
+        else None
+    )
+    gate_stats = (
+        {
+            "correction_gate_mean": float(selected_gate.mean().item()),
+            "correction_gate_std": float(selected_gate.std(unbiased=False).item()),
+            "correction_gate_min": float(selected_gate.min().item()),
+            "correction_gate_max": float(selected_gate.max().item()),
+        }
+        if selected_gate is not None
+        else {}
     )
     return {
         "subset": subset_name,
@@ -279,6 +304,7 @@ def v6a_logit_diagnostics(
         },
         "raw_correction_product_norm_ratio": float(raw_ratio),
         "correction_product_norm_ratio": float(ratio),
+        **gate_stats,
     }
 
 
@@ -307,6 +333,17 @@ def current_v6a_alpha(model: torch.nn.Module) -> float | None:
     if isinstance(value, torch.Tensor):
         return float(value.detach().float().cpu().item())
     return float(value)
+
+
+def output_gate_summary(output: dict[str, Any]) -> str | None:
+    gate = output.get("composer_correction_gate")
+    if not isinstance(gate, torch.Tensor):
+        return None
+    values = gate.detach().float()
+    return (
+        f"v6a_gate_mean={values.mean().item():.6f} "
+        f"v6a_gate_std={values.std(unbiased=False).item():.6f}"
+    )
 
 
 def choose_group_field(records: list[dict[str, Any]]) -> str | None:
@@ -422,6 +459,9 @@ def build_stage13_model(
     v6a_correction_scale: float,
     v6a_learnable_correction_scale: bool,
     v6a_learnable_correction_init: float,
+    v6a_product_gated_correction: bool,
+    v6a_gate_hidden_dim: int,
+    v6a_gate_detach_features: bool,
 ) -> torch.nn.Module:
     if system == "v5":
         if backbone == "mamba":
@@ -438,6 +478,11 @@ def build_stage13_model(
         model.correction_scale = v6a_correction_scale
         if v6a_learnable_correction_scale:
             model.enable_learnable_correction_scale(v6a_learnable_correction_init)
+        if v6a_product_gated_correction:
+            model.enable_product_gated_correction(
+                hidden_dim=v6a_gate_hidden_dim,
+                detach_features=v6a_gate_detach_features,
+            )
     else:
         raise ValueError(f"unknown system: {system}")
     return model
@@ -475,6 +520,9 @@ def train_and_eval_system(
     v6a_correction_l2: float,
     v6a_learnable_correction_scale: bool,
     v6a_learnable_correction_init: float,
+    v6a_product_gated_correction: bool,
+    v6a_gate_hidden_dim: int,
+    v6a_gate_detach_features: bool,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     random.seed(seed)
     torch.manual_seed(seed)
@@ -508,11 +556,18 @@ def train_and_eval_system(
         v6a_correction_scale=v6a_correction_scale,
         v6a_learnable_correction_scale=v6a_learnable_correction_scale,
         v6a_learnable_correction_init=v6a_learnable_correction_init,
+        v6a_product_gated_correction=v6a_product_gated_correction,
+        v6a_gate_hidden_dim=v6a_gate_hidden_dim,
+        v6a_gate_detach_features=v6a_gate_detach_features,
     ).to(device)
     cache_if_needed(model, inputs, backbone)
 
     original_controlled_losses = v5.controlled_losses
-    if system == "v6a" and (v6a_correction_l2 > 0 or v6a_learnable_correction_scale):
+    if system == "v6a" and (
+        v6a_correction_l2 > 0
+        or v6a_learnable_correction_scale
+        or v6a_product_gated_correction
+    ):
         if v6a_correction_l2 > 0:
             print(f"Using v6A correction L2 regularization: lambda={v6a_correction_l2}")
         if v6a_learnable_correction_scale:
@@ -520,6 +575,12 @@ def train_and_eval_system(
                 "Using learnable v6A correction scale: "
                 f"init={v6a_learnable_correction_init} "
                 f"current_alpha={current_v6a_alpha(model):.6f}"
+            )
+        if v6a_product_gated_correction:
+            print(
+                "Using v6A product-gated correction diagnostic: "
+                f"hidden_dim={v6a_gate_hidden_dim} "
+                f"detach_features={v6a_gate_detach_features}"
             )
 
         def controlled_losses_with_v6a_diagnostics(
@@ -547,6 +608,9 @@ def train_and_eval_system(
                 )
             if v6a_learnable_correction_scale:
                 components.append(f"v6a_alpha={current_v6a_alpha(model):.6f}")
+            gate_summary = output_gate_summary(output)
+            if gate_summary is not None:
+                components.append(gate_summary)
             if components:
                 print(" ".join(components))
             return losses
@@ -651,6 +715,13 @@ def train_and_eval_system(
         ),
         "v6a_final_correction_alpha": (
             current_v6a_alpha(model) if system == "v6a" else None
+        ),
+        "v6a_product_gated_correction": (
+            v6a_product_gated_correction if system == "v6a" else None
+        ),
+        "v6a_gate_hidden_dim": v6a_gate_hidden_dim if system == "v6a" else None,
+        "v6a_gate_detach_features": (
+            v6a_gate_detach_features if system == "v6a" else None
         ),
         "best_epoch": report["best_epoch"],
         "train_data": "data/controlled_v5_v3.jsonl with time_swap excluded before split",
@@ -919,6 +990,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--v6a-correction-l2", type=float, default=0.0)
     parser.add_argument("--v6a-learnable-correction-scale", action="store_true")
     parser.add_argument("--v6a-learnable-correction-init", type=float, default=0.1)
+    parser.add_argument("--v6a-product-gated-correction", action="store_true")
+    parser.add_argument("--v6a-gate-hidden-dim", type=int, default=16)
+    parser.add_argument(
+        "--v6a-gate-detach-features",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+    )
     parser.add_argument("--log-v6a-logit-diagnostics", action="store_true")
     parser.add_argument("--output-prefix", type=Path, default=REPO_ROOT / "results" / "stage13_ood")
     return parser.parse_args()
@@ -934,6 +1012,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         raise ValueError(
             "--v6a-correction-scale and --v6a-learnable-correction-scale are mutually exclusive"
         )
+    if args.v6a_product_gated_correction and args.v6a_learnable_correction_scale:
+        raise ValueError(
+            "--v6a-product-gated-correction and --v6a-learnable-correction-scale are mutually exclusive"
+        )
+    if args.v6a_product_gated_correction and args.v6a_correction_scale != 1.0:
+        raise ValueError(
+            "--v6a-product-gated-correction and non-default --v6a-correction-scale are mutually exclusive"
+        )
+    if args.v6a_gate_hidden_dim < 1:
+        raise ValueError("--v6a-gate-hidden-dim must be positive")
     torch.set_num_threads(1)
     device = resolve_device(args.device)
     output_prefix = args.output_prefix
@@ -962,6 +1050,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         f"v6a_correction_l2={args.v6a_correction_l2} "
         f"v6a_learnable_correction_scale={args.v6a_learnable_correction_scale} "
         f"v6a_learnable_correction_init={args.v6a_learnable_correction_init} "
+        f"v6a_product_gated_correction={args.v6a_product_gated_correction} "
+        f"v6a_gate_hidden_dim={args.v6a_gate_hidden_dim} "
+        f"v6a_gate_detach_features={args.v6a_gate_detach_features} "
         "weighted_label_loss=True balanced_sampler=True use_intervention_loss=True"
     )
 
@@ -999,6 +1090,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 v6a_correction_l2=args.v6a_correction_l2,
                 v6a_learnable_correction_scale=args.v6a_learnable_correction_scale,
                 v6a_learnable_correction_init=args.v6a_learnable_correction_init,
+                v6a_product_gated_correction=args.v6a_product_gated_correction,
+                v6a_gate_hidden_dim=args.v6a_gate_hidden_dim,
+                v6a_gate_detach_features=args.v6a_gate_detach_features,
             )
             all_metrics.append(payload)
             seed_predictions[system] = predictions

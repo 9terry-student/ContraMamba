@@ -69,6 +69,8 @@ class ContraMambaV6A(nn.Module):
         self.product_loss_weight = product_loss_weight
         self.correction_scale = correction_scale
         self.correction_alpha_raw: nn.Parameter | None = None
+        self.product_correction_gate: nn.Module | None = None
+        self.product_gate_detach_features = True
         self.frame_gate = FrameGate(
             hidden_size,
             frame_size,
@@ -113,6 +115,53 @@ class ContraMambaV6A(nn.Module):
         if self.correction_alpha_raw is None:
             return self.correction_scale
         return F.softplus(self.correction_alpha_raw)
+
+    def enable_product_gated_correction(
+        self,
+        hidden_dim: int = 16,
+        detach_features: bool = True,
+    ) -> None:
+        if hidden_dim < 1:
+            raise ValueError("hidden_dim must be positive")
+        self.product_gate_detach_features = detach_features
+        self.product_correction_gate = nn.Sequential(
+            nn.Linear(12, hidden_dim),
+            nn.GELU(),
+            nn.Linear(hidden_dim, 1),
+        )
+
+    def product_gate_features(
+        self,
+        *,
+        product_logits: torch.Tensor,
+        entitlement_prob: torch.Tensor,
+        frame_prob: torch.Tensor,
+        predicate_coverage_prob: torch.Tensor,
+        sufficiency_prob: torch.Tensor,
+        polarity_margin: torch.Tensor,
+        polarity_strength: torch.Tensor,
+    ) -> torch.Tensor:
+        product_probs = product_logits.softmax(dim=-1)
+        sorted_probs = product_probs.sort(dim=-1, descending=True).values
+        max_prob = sorted_probs[..., 0]
+        prob_margin = sorted_probs[..., 0] - sorted_probs[..., 1]
+        entropy = -(product_probs * product_probs.clamp_min(1e-8).log()).sum(dim=-1)
+        features = torch.cat(
+            [
+                product_logits,
+                max_prob.unsqueeze(-1),
+                prob_margin.unsqueeze(-1),
+                entropy.unsqueeze(-1),
+                entitlement_prob.unsqueeze(-1),
+                frame_prob.unsqueeze(-1),
+                predicate_coverage_prob.unsqueeze(-1),
+                sufficiency_prob.unsqueeze(-1),
+                polarity_margin.unsqueeze(-1),
+                polarity_strength.unsqueeze(-1),
+            ],
+            dim=-1,
+        )
+        return features.detach() if self.product_gate_detach_features else features
 
     def forward(
         self,
@@ -190,8 +239,26 @@ class ContraMambaV6A(nn.Module):
         )
 
         raw_correction_logits = composer["composer_correction_logits"]
-        correction_scale = self.current_correction_scale()
-        scaled_correction_logits = correction_scale * raw_correction_logits
+        gate_features = None
+        correction_gate = None
+        if self.product_correction_gate is not None:
+            gate_features = self.product_gate_features(
+                product_logits=product["logits"],
+                entitlement_prob=product["entitlement_prob"],
+                frame_prob=frame["frame_prob"],
+                predicate_coverage_prob=predicate["predicate_coverage_prob"],
+                sufficiency_prob=sufficiency["sufficiency_prob"],
+                polarity_margin=polarity["polarity_margin"],
+                polarity_strength=polarity["polarity_strength"],
+            )
+            correction_gate = torch.sigmoid(
+                self.product_correction_gate(gate_features).squeeze(-1)
+            )
+            scaled_correction_logits = correction_gate.unsqueeze(-1) * raw_correction_logits
+            correction_scale = correction_gate
+        else:
+            correction_scale = self.current_correction_scale()
+            scaled_correction_logits = correction_scale * raw_correction_logits
         calibrated_logits = product["logits"] + scaled_correction_logits
 
         losses: dict[str, torch.Tensor | None] = {
@@ -277,6 +344,8 @@ class ContraMambaV6A(nn.Module):
                 )
             ),
             "composer_correction_alpha_raw": self.correction_alpha_raw,
+            "composer_correction_gate": correction_gate,
+            "composer_correction_gate_features": gate_features,
             "composer_logits": calibrated_logits,
             "logits": calibrated_logits,
             "predictions": calibrated_logits.argmax(dim=-1),
