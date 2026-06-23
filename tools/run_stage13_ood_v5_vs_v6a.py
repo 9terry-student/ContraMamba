@@ -151,6 +151,18 @@ def pad_to_shared_length(input_sets: Sequence[dict[str, torch.Tensor]]) -> int:
     return max_length
 
 
+def pad_to_length(inputs: dict[str, torch.Tensor], target_length: int) -> None:
+    current_length = inputs["input_ids"].shape[1]
+    if current_length > target_length:
+        raise ValueError(
+            f"encoded sequence length {current_length} exceeds model positional length {target_length}"
+        )
+    difference = target_length - current_length
+    if difference:
+        for key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
+            inputs[key] = F.pad(inputs[key], (0, difference), value=0)
+
+
 def per_label_metrics(records: list[dict[str, Any]]) -> dict[str, dict[str, float]]:
     result = {}
     for label in LABELS:
@@ -220,17 +232,16 @@ def write_predictions(path: Path, metadata: dict[str, Any], predictions: list[di
     write_json(path, {"metadata": metadata, "predictions": predictions})
 
 
-def prepare_bundles(
+def prepare_train_dev_bundles(
     *,
     records: list[dict[str, Any]],
     train_records: list[dict[str, Any]],
     dev_records: list[dict[str, Any]],
-    ood_records: list[dict[str, Any]],
     backbone: str,
     model_name: str,
     max_length: int,
     device: torch.device,
-) -> tuple[list[dict[str, Any]], list[dict[str, torch.Tensor]], Any]:
+) -> tuple[list[dict[str, Any]], list[dict[str, torch.Tensor]], Any, Any]:
     if backbone == "mamba":
         from transformers import AutoTokenizer
 
@@ -241,18 +252,48 @@ def prepare_bundles(
             tokenizer.pad_token = tokenizer.eos_token
         bundles = [
             v5.encode_mamba_records(rows, tokenizer, max_length)
-            for rows in (train_records, dev_records, ood_records)
+            for rows in (train_records, dev_records)
         ]
         vocab = None
     else:
-        vocab = v5.build_vocab(records + ood_records)
+        # Match scripts/train_controlled_v5.py and scripts/train_controlled_v6a.py:
+        # the controlled training vocabulary is built from clean controlled data
+        # only. OOD probes must not alter embeddings or token ids before training.
+        vocab = v5.build_vocab(records)
         bundles = [
             v5.encode_records(rows, vocab)
-            for rows in (train_records, dev_records, ood_records)
+            for rows in (train_records, dev_records)
         ]
+        tokenizer = None
     inputs = [v5.move_inputs(bundle["model_inputs"], device) for bundle in bundles]
+    # Match the training scripts: pad train/dev to their shared positional range,
+    # not to any OOD probe length.
     pad_to_shared_length(inputs)
-    return bundles, inputs, vocab
+    return bundles, inputs, vocab, tokenizer
+
+
+def prepare_ood_bundle(
+    *,
+    ood_records: list[dict[str, Any]],
+    backbone: str,
+    max_length: int,
+    device: torch.device,
+    vocab: Any,
+    tokenizer: Any,
+    target_length: int | None,
+) -> tuple[dict[str, Any], dict[str, torch.Tensor]]:
+    if backbone == "mamba":
+        if tokenizer is None:
+            raise ValueError("tokenizer is required for Mamba OOD encoding")
+        bundle = v5.encode_mamba_records(ood_records, tokenizer, max_length)
+    else:
+        if vocab is None:
+            raise ValueError("vocab is required for dummy OOD encoding")
+        bundle = v5.encode_records(ood_records, vocab)
+    inputs = v5.move_inputs(bundle["model_inputs"], device)
+    if target_length is not None:
+        pad_to_length(inputs, target_length)
+    return bundle, inputs
 
 
 def build_stage13_model(
@@ -265,19 +306,18 @@ def build_stage13_model(
     vocab: Any,
     train_inputs: dict[str, torch.Tensor],
     dev_inputs: dict[str, torch.Tensor],
-    ood_inputs: dict[str, torch.Tensor],
 ) -> torch.nn.Module:
     if system == "v5":
         if backbone == "mamba":
             model = v5.build_mamba_model(model_name, freeze_encoder, freeze_a_log)
         else:
-            max_length = max(train_inputs["input_ids"].shape[1], dev_inputs["input_ids"].shape[1], ood_inputs["input_ids"].shape[1])
+            max_length = max(train_inputs["input_ids"].shape[1], dev_inputs["input_ids"].shape[1])
             model = v5.build_model(len(vocab), max_length)
     elif system == "v6a":
         if backbone == "mamba":
             model = v6a.build_mamba_model(model_name, freeze_encoder, freeze_a_log)
         else:
-            max_length = max(train_inputs["input_ids"].shape[1], dev_inputs["input_ids"].shape[1], ood_inputs["input_ids"].shape[1])
+            max_length = max(train_inputs["input_ids"].shape[1], dev_inputs["input_ids"].shape[1])
             model = v6a.build_model(len(vocab), max_length)
     else:
         raise ValueError(f"unknown system: {system}")
@@ -307,6 +347,7 @@ def train_and_eval_system(
     lr: float,
     head_lr: float | None,
     encoder_lr: float | None,
+    ranking_weight: float,
     freeze_encoder: bool,
     freeze_a_log: bool,
     output_prefix: Path,
@@ -320,18 +361,17 @@ def train_and_eval_system(
     else:
         v5.prediction_records = original_prediction_records
 
-    bundles, inputs, vocab = prepare_bundles(
+    bundles, inputs, vocab, tokenizer = prepare_train_dev_bundles(
         records=records,
         train_records=train_records,
         dev_records=dev_records,
-        ood_records=ood_records,
         backbone=backbone,
         model_name=model_name,
         max_length=max_length,
         device=device,
     )
-    train_bundle, _dev_bundle, _ood_bundle = bundles
-    train_inputs, dev_inputs, ood_inputs = inputs
+    train_bundle, _dev_bundle = bundles
+    train_inputs, dev_inputs = inputs
     model = build_stage13_model(
         system,
         backbone=backbone,
@@ -341,7 +381,6 @@ def train_and_eval_system(
         vocab=vocab,
         train_inputs=train_inputs,
         dev_inputs=dev_inputs,
-        ood_inputs=ood_inputs,
     ).to(device)
     cache_if_needed(model, inputs, backbone)
 
@@ -359,7 +398,7 @@ def train_and_eval_system(
         weighted_label_loss=True,
         balanced_sampler=True,
         use_intervention_loss=True,
-        ranking_weight=2.0,
+        ranking_weight=ranking_weight,
         loss_config=DEFAULT_LOSS_CONFIG,
         seed=seed,
         run_name=f"stage13_{system}",
@@ -370,6 +409,22 @@ def train_and_eval_system(
     if best_state is None:
         raise RuntimeError(f"{system} seed {seed} did not capture best trainable state")
     v5.restore_trainable_state(model, best_state)
+
+    target_length = (
+        train_inputs["input_ids"].shape[1]
+        if backbone == "dummy"
+        else None
+    )
+    _ood_bundle, ood_inputs = prepare_ood_bundle(
+        ood_records=ood_records,
+        backbone=backbone,
+        max_length=max_length,
+        device=device,
+        vocab=vocab,
+        tokenizer=tokenizer,
+        target_length=target_length,
+    )
+    cache_if_needed(model, [ood_inputs], backbone)
     ood_output, _ = v5.evaluate(model, ood_inputs, ood_records)
     prediction_fn = v6a.prediction_records_v6a if system == "v6a" else original_prediction_records
     ood_predictions = prediction_fn(ood_records, ood_output)
@@ -383,6 +438,14 @@ def train_and_eval_system(
         "backbone": backbone,
         "model_name": model_name if backbone == "mamba" else None,
         "epochs": epochs,
+        "lr": lr,
+        "head_lr": head_lr,
+        "encoder_lr": encoder_lr,
+        "ranking_weight": ranking_weight,
+        "max_length": max_length,
+        "weighted_label_loss": True,
+        "balanced_sampler": True,
+        "use_intervention_loss": True,
         "best_epoch": report["best_epoch"],
         "train_data": "data/controlled_v5_v3.jsonl with time_swap excluded before split",
         "ood_group_field": group_field,
@@ -525,6 +588,22 @@ def aggregate_metric_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return output
 
 
+def clean_dev_advantage_warning(metric_rows: list[dict[str, Any]]) -> str | None:
+    clean_macro: dict[str, list[float]] = defaultdict(list)
+    for row in metric_rows:
+        if row["split"] == "clean_dev" and row["group"] == "__all__":
+            clean_macro[row["system"]].append(float(row["macro_f1"]))
+    if clean_macro.get("v5") and clean_macro.get("v6a"):
+        v5_mean = mean(clean_macro["v5"])
+        v6a_mean = mean(clean_macro["v6a"])
+        if v6a_mean <= v5_mean:
+            return (
+                "Stage13 did not reproduce accepted v6A clean advantage; "
+                "OOD conclusions are invalid."
+            )
+    return None
+
+
 def summarize_transitions(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in rows:
@@ -564,6 +643,7 @@ def write_summary(output_prefix: Path, metrics_payloads: list[dict[str, Any]], t
     metric_rows = flatten_metric_rows(metrics_payloads)
     aggregate_rows = aggregate_metric_rows(metric_rows)
     transition_summary = summarize_transitions(transition_items)
+    reproduction_warning = clean_dev_advantage_warning(metric_rows)
     write_csv(output_prefix.parent / f"{output_prefix.name}_metrics.csv", metric_rows)
     write_csv(output_prefix.parent / f"{output_prefix.name}_aggregate.csv", aggregate_rows)
     write_csv(output_prefix.parent / f"{output_prefix.name}_transitions.csv", transition_items)
@@ -580,11 +660,22 @@ def write_summary(output_prefix: Path, metrics_payloads: list[dict[str, Any]], t
             markdown_table(transition_summary, ["group", "n", "v5_wrong_v6a_correct", "v5_correct_v6a_wrong", "v5_false_entitled_fixed_by_v6a", "new_v6a_false_entitled"]),
             "## Notes",
             "This is an OOD-probe validation report. The default local probe is Stage10A number_swap because no Stage10C surface/temporality file is present in this checkout. Use --ood-data to evaluate a Stage10C file when available.",
+            (
+                "Reproduction check: "
+                + (
+                    reproduction_warning
+                    if reproduction_warning is not None
+                    else "v6A clean-dev macro-F1 exceeds v5 clean-dev macro-F1 in this run."
+                )
+            ),
+            "Number-swap note: Stage13 OOD evidence should not be treated as positive validation unless the clean-dev reproduction check passes. Prior Stage13A runs showed unstable number_swap behavior (20epoch over-entitlement/SUPPORT carryover; 50epoch near NOT_ENTITLED collapse).",
         ]
     )
     summary_path = output_prefix.parent / f"{output_prefix.name}_v5_vs_v6a_summary.md"
     summary_path.write_text(md + "\n", encoding="utf-8")
     print(md)
+    if reproduction_warning is not None:
+        print(f"WARNING: {reproduction_warning}", file=sys.stderr)
 
 
 def parse_args() -> argparse.Namespace:
@@ -595,11 +686,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--seeds", nargs="+", type=int, default=[1, 2, 3])
     parser.add_argument("--backbone", choices=("dummy", "mamba"), default="dummy")
     parser.add_argument("--model-name", default="state-spaces/mamba-130m-hf")
-    parser.add_argument("--max-length", type=int, default=64)
+    parser.add_argument("--max-length", type=int, default=128)
     parser.add_argument("--device", default="cpu")
     parser.add_argument("--lr", type=float, default=0.001)
-    parser.add_argument("--head-lr", type=float, default=0.003)
+    parser.add_argument("--head-lr", type=float, default=None)
     parser.add_argument("--encoder-lr", type=float, default=None)
+    parser.add_argument("--ranking-weight", type=float, default=2.0)
     parser.add_argument("--dev-ratio", type=float, default=0.2)
     parser.add_argument("--freeze-encoder", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--freeze-a-log", action=argparse.BooleanOptionalAction, default=True)
@@ -632,6 +724,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
     print(f"Loaded OOD records: {len(ood_records)} from {args.ood_data}")
     print(f"OOD group field: {choose_group_field(ood_records)}")
+    print(
+        "Stage13 accepted-config defaults: "
+        f"lr={args.lr} head_lr={args.head_lr} encoder_lr={args.encoder_lr} "
+        f"ranking_weight={args.ranking_weight} max_length={args.max_length} "
+        "weighted_label_loss=True balanced_sampler=True use_intervention_loss=True"
+    )
 
     all_metrics: list[dict[str, Any]] = []
     all_transitions: list[dict[str, Any]] = []
@@ -657,6 +755,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 lr=args.lr,
                 head_lr=args.head_lr,
                 encoder_lr=args.encoder_lr,
+                ranking_weight=args.ranking_weight,
                 freeze_encoder=args.freeze_encoder,
                 freeze_a_log=args.freeze_a_log,
                 output_prefix=output_prefix,
