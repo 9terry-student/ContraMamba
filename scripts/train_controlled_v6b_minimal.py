@@ -291,6 +291,16 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def load_ood_jsonl(path: Path) -> list[dict[str, Any]]:
+    records = []
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                records.append(json.loads(line))
+    return records
+
+
 def prediction_distribution_from_records(records: list[dict]) -> dict[str, int]:
     """Compute prediction distribution from exported prediction records."""
     from collections import Counter
@@ -683,7 +693,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.ood_data is not None:
         ood_flag_source = args.ood_flag_source if args.ood_flag_source is not None else args.flag_source
         print(f"[OOD EVAL] loading {args.ood_data} flag_source={ood_flag_source}")
-        ood_records = v5.load_jsonl(args.ood_data)
+        ood_records = load_ood_jsonl(args.ood_data)
         if args.backbone == "dummy":
             ood_bundle = v5.encode_records(ood_records, vocab)
         else:
