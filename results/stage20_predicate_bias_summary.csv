@@ -1,0 +1,4 @@
+seed,detector_mode,selected_alpha,valid_guarded_alpha_found,calibration_pred_base_false_entitled,calibration_pred_adjusted_false_entitled,heldout_pred_base_false_entitled,heldout_pred_adjusted_false_entitled,heldout_controls_preserved,heldout_detector_flagged,heldout_pred_n,heldout_detector_recall
+1,lexical_predicate,1.25,False,29.0,3.0,25.0,1.0,True,48,49,0.9795918367346939
+2,lexical_predicate,1.5,True,44.0,3.0,37.0,1.0,True,48,49,0.9795918367346939
+3,lexical_predicate,0.75,True,24.0,2.0,21.0,1.0,True,48,49,0.9795918367346939
