@@ -83,6 +83,35 @@ def filter_time_swap(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return filtered
 
 
+def resolve_device(device_name: str) -> torch.device:
+    """Resolve a requested device without silently falling back."""
+
+    if device_name == "cuda":
+        if not torch.cuda.is_available():
+            raise RuntimeError(
+                "Stage13 requested --device cuda, but torch.cuda.is_available() is False. "
+                "Install/use a CUDA-enabled runtime or pass --device cpu explicitly."
+            )
+        print(f"CUDA available: {torch.cuda.get_device_name(0)}")
+    return torch.device(device_name)
+
+
+def select_pair_groups(records: list[dict[str, Any]], max_pairs: int) -> list[dict[str, Any]]:
+    """Select complete pair_id groups for smoke mode."""
+
+    selected_pair_ids: list[str] = []
+    seen: set[str] = set()
+    for record in records:
+        pair_id = record["pair_id"]
+        if pair_id not in seen:
+            seen.add(pair_id)
+            selected_pair_ids.append(pair_id)
+        if len(selected_pair_ids) >= max_pairs:
+            break
+    selected = set(selected_pair_ids)
+    return [record for record in records if record["pair_id"] in selected]
+
+
 def load_ood_jsonl(path: Path) -> list[dict[str, Any]]:
     """Load OOD probes without enforcing controlled-v5 intervention vocabulary."""
 
@@ -417,11 +446,29 @@ def flatten_metric_rows(all_metrics: list[dict[str, Any]]) -> list[dict[str, Any
         metadata = payload["metadata"]
         system = metadata["system"]
         seed = metadata["seed"]
+        clean = payload["train_dev_report"]["best_dev_metrics"]
+        rows.append(
+            {
+                "seed": seed,
+                "system": system,
+                "split": "clean_dev",
+                "group": "__all__",
+                "n": "",
+                "accuracy": clean["final_accuracy"],
+                "macro_f1": clean["final_macro_f1"],
+                "false_entitled_count": "",
+                "false_entitled_rate": "",
+                "prediction_distribution": json.dumps(
+                    clean.get("prediction_distribution", {}), sort_keys=True
+                ),
+            }
+        )
         ood = payload["ood_metrics"]
         rows.append(
             {
                 "seed": seed,
                 "system": system,
+                "split": "ood",
                 "group": "__all__",
                 "n": ood["n"],
                 "accuracy": ood["accuracy"],
@@ -436,6 +483,7 @@ def flatten_metric_rows(all_metrics: list[dict[str, Any]]) -> list[dict[str, Any
                 {
                     "seed": seed,
                     "system": system,
+                    "split": "ood",
                     "group": group,
                     "n": metrics["n"],
                     "accuracy": metrics["accuracy"],
@@ -449,16 +497,23 @@ def flatten_metric_rows(all_metrics: list[dict[str, Any]]) -> list[dict[str, Any
 
 
 def aggregate_metric_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    grouped: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+    grouped: dict[tuple[str, str, str], list[dict[str, Any]]] = defaultdict(list)
     for row in rows:
-        grouped[(row["system"], row["group"])].append(row)
+        grouped[(row["system"], row["split"], row["group"])].append(row)
     output = []
-    for (system, group), items in sorted(grouped.items()):
+    for (system, split, group), items in sorted(grouped.items()):
         for metric in ("accuracy", "macro_f1", "false_entitled_count", "false_entitled_rate"):
-            values = [float(row[metric]) for row in items]
+            values = [
+                float(row[metric])
+                for row in items
+                if row[metric] != ""
+            ]
+            if not values:
+                continue
             output.append(
                 {
                     "system": system,
+                    "split": split,
                     "group": group,
                     "metric": metric,
                     "mean": mean(values),
@@ -518,9 +573,9 @@ def write_summary(output_prefix: Path, metrics_payloads: list[dict[str, Any]], t
         [
             "# Stage 13 OOD v5 Clean vs v6A Residual",
             "## Aggregate metrics",
-            markdown_table(aggregate_rows, ["system", "group", "metric", "mean", "std", "formatted"]),
+            markdown_table(aggregate_rows, ["system", "split", "group", "metric", "mean", "std", "formatted"]),
             "## Per-seed/group metrics",
-            markdown_table(metric_rows, ["seed", "system", "group", "n", "accuracy", "macro_f1", "false_entitled_count", "false_entitled_rate", "prediction_distribution"]),
+            markdown_table(metric_rows, ["seed", "system", "split", "group", "n", "accuracy", "macro_f1", "false_entitled_count", "false_entitled_rate", "prediction_distribution"]),
             "## Transition summary",
             markdown_table(transition_summary, ["group", "n", "v5_wrong_v6a_correct", "v5_correct_v6a_wrong", "v5_false_entitled_fixed_by_v6a", "new_v6a_false_entitled"]),
             "## Notes",
@@ -549,6 +604,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--freeze-encoder", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--freeze-a-log", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--smoke", action="store_true")
+    parser.add_argument("--smoke-pairs", type=int, default=8)
+    parser.add_argument("--smoke-ood-pairs", type=int, default=12)
     parser.add_argument("--output-prefix", type=Path, default=REPO_ROOT / "results" / "stage13_ood")
     return parser.parse_args()
 
@@ -556,13 +613,23 @@ def parse_args() -> argparse.Namespace:
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args()
     torch.set_num_threads(1)
-    device = torch.device(args.device)
+    device = resolve_device(args.device)
     output_prefix = args.output_prefix
     if args.smoke:
         output_prefix = output_prefix.parent / "stage13_smoke"
 
     records = filter_time_swap(v5.load_jsonl(args.data))
     ood_records = load_ood_jsonl(args.ood_data)
+    if args.smoke:
+        records = select_pair_groups(records, args.smoke_pairs)
+        ood_records = select_pair_groups(ood_records, args.smoke_ood_pairs)
+        print(
+            "Smoke mode active: "
+            f"controlled_pairs={len(set(row['pair_id'] for row in records))} "
+            f"controlled_rows={len(records)} "
+            f"ood_pairs={len(set(row['pair_id'] for row in ood_records))} "
+            f"ood_rows={len(ood_records)}"
+        )
     print(f"Loaded OOD records: {len(ood_records)} from {args.ood_data}")
     print(f"OOD group field: {choose_group_field(ood_records)}")
 
