@@ -196,6 +196,70 @@ def prediction_metrics(predictions: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def _tensor_stats(tensor: torch.Tensor) -> dict[str, float]:
+    values = tensor.detach().float().cpu()
+    return {
+        "mean": float(values.mean().item()),
+        "std": float(values.std(unbiased=False).item()),
+        "norm": float(values.norm().item()),
+    }
+
+
+def v6a_logit_diagnostics(
+    output: dict[str, Any],
+    records: list[dict[str, Any]],
+    *,
+    subset_name: str,
+    intervention_type: str | None = None,
+) -> dict[str, Any] | None:
+    if not {
+        "product_logits",
+        "composer_correction_logits",
+        "logits",
+    }.issubset(output):
+        return None
+
+    if intervention_type is None:
+        indices = list(range(len(records)))
+    else:
+        indices = [
+            index
+            for index, record in enumerate(records)
+            if record.get("intervention_type") == intervention_type
+        ]
+    if not indices:
+        return None
+
+    index_tensor = torch.tensor(indices, device=output["logits"].device)
+    product = output["product_logits"].index_select(0, index_tensor)
+    correction = output["composer_correction_logits"].index_select(0, index_tensor)
+    calibrated = output["logits"].index_select(0, index_tensor)
+    product_norm = product.detach().float().norm().item()
+    correction_norm = correction.detach().float().norm().item()
+    ratio = correction_norm / product_norm if product_norm else 0.0
+    per_class_mean = correction.detach().float().cpu().mean(dim=0).tolist()
+    return {
+        "subset": subset_name,
+        "intervention_type": intervention_type or "__all__",
+        "n": len(indices),
+        "product_logits": _tensor_stats(product),
+        "composer_correction_logits": _tensor_stats(correction),
+        "calibrated_logits": _tensor_stats(calibrated),
+        "per_class_mean_correction": {
+            label: float(value)
+            for label, value in zip(LABELS, per_class_mean, strict=True)
+        },
+        "correction_product_norm_ratio": float(ratio),
+    }
+
+
+def print_v6a_logit_diagnostics(diagnostics: dict[str, Any]) -> None:
+    print(
+        "V6A_LOGIT_DIAGNOSTICS "
+        + json.dumps(diagnostics, sort_keys=True)
+    )
+
+
 def choose_group_field(records: list[dict[str, Any]]) -> str | None:
     for field in OOD_GROUP_FIELDS:
         if any(field in record for record in records):
@@ -351,6 +415,7 @@ def train_and_eval_system(
     freeze_encoder: bool,
     freeze_a_log: bool,
     output_prefix: Path,
+    log_v6a_diagnostics: bool,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     random.seed(seed)
     torch.manual_seed(seed)
@@ -410,6 +475,18 @@ def train_and_eval_system(
         raise RuntimeError(f"{system} seed {seed} did not capture best trainable state")
     v5.restore_trainable_state(model, best_state)
 
+    logit_diagnostics: list[dict[str, Any]] = []
+    if system == "v6a" and log_v6a_diagnostics:
+        dev_output, _ = v5.evaluate(model, dev_inputs, dev_records)
+        clean_diag = v6a_logit_diagnostics(
+            dev_output,
+            dev_records,
+            subset_name="clean_dev",
+        )
+        if clean_diag is not None:
+            logit_diagnostics.append(clean_diag)
+            print_v6a_logit_diagnostics(clean_diag)
+
     target_length = (
         train_inputs["input_ids"].shape[1]
         if backbone == "dummy"
@@ -426,6 +503,16 @@ def train_and_eval_system(
     )
     cache_if_needed(model, [ood_inputs], backbone)
     ood_output, _ = v5.evaluate(model, ood_inputs, ood_records)
+    if system == "v6a" and log_v6a_diagnostics:
+        number_swap_diag = v6a_logit_diagnostics(
+            ood_output,
+            ood_records,
+            subset_name="ood_number_swap",
+            intervention_type="number_swap",
+        )
+        if number_swap_diag is not None:
+            logit_diagnostics.append(number_swap_diag)
+            print_v6a_logit_diagnostics(number_swap_diag)
     prediction_fn = v6a.prediction_records_v6a if system == "v6a" else original_prediction_records
     ood_predictions = prediction_fn(ood_records, ood_output)
     group_field = choose_group_field(ood_records)
@@ -457,6 +544,8 @@ def train_and_eval_system(
         "ood_metrics": ood_metrics,
         "ood_group_metrics": ood_group_metrics,
     }
+    if logit_diagnostics:
+        metrics_payload["v6a_logit_diagnostics"] = logit_diagnostics
     metrics_path = output_prefix.parent / f"{output_prefix.name}_{system}_seed{seed}.json"
     preds_path = output_prefix.parent / f"{output_prefix.name}_{system}_seed{seed}_preds.json"
     write_json(metrics_path, metrics_payload)
@@ -698,6 +787,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--smoke", action="store_true")
     parser.add_argument("--smoke-pairs", type=int, default=8)
     parser.add_argument("--smoke-ood-pairs", type=int, default=12)
+    parser.add_argument("--log-v6a-logit-diagnostics", action="store_true")
     parser.add_argument("--output-prefix", type=Path, default=REPO_ROOT / "results" / "stage13_ood")
     return parser.parse_args()
 
@@ -759,6 +849,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 freeze_encoder=args.freeze_encoder,
                 freeze_a_log=args.freeze_a_log,
                 output_prefix=output_prefix,
+                log_v6a_diagnostics=args.log_v6a_logit_diagnostics,
             )
             all_metrics.append(payload)
             seed_predictions[system] = predictions
