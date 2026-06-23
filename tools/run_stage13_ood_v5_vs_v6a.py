@@ -282,6 +282,16 @@ def print_v6a_logit_diagnostics(diagnostics: dict[str, Any]) -> None:
     )
 
 
+def v6a_correction_l2_loss(output: dict[str, Any]) -> torch.Tensor:
+    correction = output.get(
+        "composer_raw_correction_logits",
+        output.get("composer_correction_logits"),
+    )
+    if correction is None:
+        raise ValueError("v6A correction L2 requested, but correction logits are absent")
+    return correction.square().sum(dim=-1).mean()
+
+
 def choose_group_field(records: list[dict[str, Any]]) -> str | None:
     for field in OOD_GROUP_FIELDS:
         if any(field in record for record in records):
@@ -441,6 +451,7 @@ def train_and_eval_system(
     output_prefix: Path,
     log_v6a_diagnostics: bool,
     v6a_correction_scale: float,
+    v6a_correction_l2: float,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     random.seed(seed)
     torch.manual_seed(seed)
@@ -475,27 +486,58 @@ def train_and_eval_system(
     ).to(device)
     cache_if_needed(model, inputs, backbone)
 
-    report = v5.run_training(
-        model,
-        train_inputs,
-        dev_inputs,
-        train_records,
-        dev_records,
-        train_bundle,
-        epochs=epochs,
-        lr=lr,
-        head_lr=head_lr,
-        encoder_lr=encoder_lr,
-        weighted_label_loss=True,
-        balanced_sampler=True,
-        use_intervention_loss=True,
-        ranking_weight=ranking_weight,
-        loss_config=DEFAULT_LOSS_CONFIG,
-        seed=seed,
-        run_name=f"stage13_{system}",
-        select_metric="final_macro_f1",
-        capture_best_trainable_state=True,
-    )
+    original_controlled_losses = v5.controlled_losses
+    if system == "v6a" and v6a_correction_l2 > 0:
+        print(f"Using v6A correction L2 regularization: lambda={v6a_correction_l2}")
+
+        def controlled_losses_with_correction_l2(
+            output: dict[str, Any],
+            inputs: dict[str, torch.Tensor],
+            indices: torch.Tensor,
+            weighted_label_loss: bool,
+        ) -> dict[str, torch.Tensor]:
+            losses = original_controlled_losses(
+                output,
+                inputs,
+                indices,
+                weighted_label_loss,
+            )
+            correction_l2 = v6a_correction_l2_loss(output)
+            losses["v6a_correction_l2"] = correction_l2
+            losses["total"] = losses["total"] + v6a_correction_l2 * correction_l2
+            print(
+                "v6a_correction_l2_loss="
+                f"{correction_l2.detach().item():.6f} "
+                "weighted="
+                f"{(v6a_correction_l2 * correction_l2).detach().item():.6f}"
+            )
+            return losses
+
+        v5.controlled_losses = controlled_losses_with_correction_l2
+    try:
+        report = v5.run_training(
+            model,
+            train_inputs,
+            dev_inputs,
+            train_records,
+            dev_records,
+            train_bundle,
+            epochs=epochs,
+            lr=lr,
+            head_lr=head_lr,
+            encoder_lr=encoder_lr,
+            weighted_label_loss=True,
+            balanced_sampler=True,
+            use_intervention_loss=True,
+            ranking_weight=ranking_weight,
+            loss_config=DEFAULT_LOSS_CONFIG,
+            seed=seed,
+            run_name=f"stage13_{system}",
+            select_metric="final_macro_f1",
+            capture_best_trainable_state=True,
+        )
+    finally:
+        v5.controlled_losses = original_controlled_losses
     best_state = report.pop("_best_trainable_state")
     if best_state is None:
         raise RuntimeError(f"{system} seed {seed} did not capture best trainable state")
@@ -560,6 +602,7 @@ def train_and_eval_system(
         "balanced_sampler": True,
         "use_intervention_loss": True,
         "v6a_correction_scale": v6a_correction_scale if system == "v6a" else None,
+        "v6a_correction_l2": v6a_correction_l2 if system == "v6a" else None,
         "best_epoch": report["best_epoch"],
         "train_data": "data/controlled_v5_v3.jsonl with time_swap excluded before split",
         "ood_group_field": group_field,
@@ -824,6 +867,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--smoke-pairs", type=int, default=8)
     parser.add_argument("--smoke-ood-pairs", type=int, default=12)
     parser.add_argument("--v6a-correction-scale", type=float, default=1.0)
+    parser.add_argument("--v6a-correction-l2", type=float, default=0.0)
     parser.add_argument("--log-v6a-logit-diagnostics", action="store_true")
     parser.add_argument("--output-prefix", type=Path, default=REPO_ROOT / "results" / "stage13_ood")
     return parser.parse_args()
@@ -831,6 +875,8 @@ def parse_args() -> argparse.Namespace:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args()
+    if args.v6a_correction_l2 < 0:
+        raise ValueError("--v6a-correction-l2 must be non-negative")
     torch.set_num_threads(1)
     device = resolve_device(args.device)
     output_prefix = args.output_prefix
@@ -856,6 +902,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         f"lr={args.lr} head_lr={args.head_lr} encoder_lr={args.encoder_lr} "
         f"ranking_weight={args.ranking_weight} max_length={args.max_length} "
         f"v6a_correction_scale={args.v6a_correction_scale} "
+        f"v6a_correction_l2={args.v6a_correction_l2} "
         "weighted_label_loss=True balanced_sampler=True use_intervention_loss=True"
     )
 
@@ -890,6 +937,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 output_prefix=output_prefix,
                 log_v6a_diagnostics=args.log_v6a_logit_diagnostics,
                 v6a_correction_scale=args.v6a_correction_scale,
+                v6a_correction_l2=args.v6a_correction_l2,
             )
             all_metrics.append(payload)
             seed_predictions[system] = predictions
