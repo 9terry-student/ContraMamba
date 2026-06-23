@@ -253,11 +253,18 @@ def v6a_logit_diagnostics(
         if isinstance(correction_scale, torch.Tensor)
         else None
     )
+    alpha_raw = output.get("composer_correction_alpha_raw")
+    alpha_raw_value = (
+        float(alpha_raw.detach().float().cpu().item())
+        if isinstance(alpha_raw, torch.Tensor)
+        else None
+    )
     return {
         "subset": subset_name,
         "intervention_type": intervention_type or "__all__",
         "n": len(indices),
         "correction_scale": scale_value,
+        "correction_alpha_raw": alpha_raw_value,
         "product_logits": _tensor_stats(product),
         "composer_raw_correction_logits": _tensor_stats(raw_correction),
         "composer_correction_logits": _tensor_stats(correction),
@@ -290,6 +297,16 @@ def v6a_correction_l2_loss(output: dict[str, Any]) -> torch.Tensor:
     if correction is None:
         raise ValueError("v6A correction L2 requested, but correction logits are absent")
     return correction.square().sum(dim=-1).mean()
+
+
+def current_v6a_alpha(model: torch.nn.Module) -> float | None:
+    scale_fn = getattr(model, "current_correction_scale", None)
+    if scale_fn is None:
+        return None
+    value = scale_fn()
+    if isinstance(value, torch.Tensor):
+        return float(value.detach().float().cpu().item())
+    return float(value)
 
 
 def choose_group_field(records: list[dict[str, Any]]) -> str | None:
@@ -403,6 +420,8 @@ def build_stage13_model(
     train_inputs: dict[str, torch.Tensor],
     dev_inputs: dict[str, torch.Tensor],
     v6a_correction_scale: float,
+    v6a_learnable_correction_scale: bool,
+    v6a_learnable_correction_init: float,
 ) -> torch.nn.Module:
     if system == "v5":
         if backbone == "mamba":
@@ -417,6 +436,8 @@ def build_stage13_model(
             max_length = max(train_inputs["input_ids"].shape[1], dev_inputs["input_ids"].shape[1])
             model = v6a.build_model(len(vocab), max_length)
         model.correction_scale = v6a_correction_scale
+        if v6a_learnable_correction_scale:
+            model.enable_learnable_correction_scale(v6a_learnable_correction_init)
     else:
         raise ValueError(f"unknown system: {system}")
     return model
@@ -452,6 +473,8 @@ def train_and_eval_system(
     log_v6a_diagnostics: bool,
     v6a_correction_scale: float,
     v6a_correction_l2: float,
+    v6a_learnable_correction_scale: bool,
+    v6a_learnable_correction_init: float,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     random.seed(seed)
     torch.manual_seed(seed)
@@ -483,14 +506,23 @@ def train_and_eval_system(
         train_inputs=train_inputs,
         dev_inputs=dev_inputs,
         v6a_correction_scale=v6a_correction_scale,
+        v6a_learnable_correction_scale=v6a_learnable_correction_scale,
+        v6a_learnable_correction_init=v6a_learnable_correction_init,
     ).to(device)
     cache_if_needed(model, inputs, backbone)
 
     original_controlled_losses = v5.controlled_losses
-    if system == "v6a" and v6a_correction_l2 > 0:
-        print(f"Using v6A correction L2 regularization: lambda={v6a_correction_l2}")
+    if system == "v6a" and (v6a_correction_l2 > 0 or v6a_learnable_correction_scale):
+        if v6a_correction_l2 > 0:
+            print(f"Using v6A correction L2 regularization: lambda={v6a_correction_l2}")
+        if v6a_learnable_correction_scale:
+            print(
+                "Using learnable v6A correction scale: "
+                f"init={v6a_learnable_correction_init} "
+                f"current_alpha={current_v6a_alpha(model):.6f}"
+            )
 
-        def controlled_losses_with_correction_l2(
+        def controlled_losses_with_v6a_diagnostics(
             output: dict[str, Any],
             inputs: dict[str, torch.Tensor],
             indices: torch.Tensor,
@@ -502,18 +534,24 @@ def train_and_eval_system(
                 indices,
                 weighted_label_loss,
             )
-            correction_l2 = v6a_correction_l2_loss(output)
-            losses["v6a_correction_l2"] = correction_l2
-            losses["total"] = losses["total"] + v6a_correction_l2 * correction_l2
-            print(
-                "v6a_correction_l2_loss="
-                f"{correction_l2.detach().item():.6f} "
-                "weighted="
-                f"{(v6a_correction_l2 * correction_l2).detach().item():.6f}"
-            )
+            components: list[str] = []
+            if v6a_correction_l2 > 0:
+                correction_l2 = v6a_correction_l2_loss(output)
+                losses["v6a_correction_l2"] = correction_l2
+                losses["total"] = losses["total"] + v6a_correction_l2 * correction_l2
+                components.append(
+                    "v6a_correction_l2_loss="
+                    f"{correction_l2.detach().item():.6f} "
+                    "weighted="
+                    f"{(v6a_correction_l2 * correction_l2).detach().item():.6f}"
+                )
+            if v6a_learnable_correction_scale:
+                components.append(f"v6a_alpha={current_v6a_alpha(model):.6f}")
+            if components:
+                print(" ".join(components))
             return losses
 
-        v5.controlled_losses = controlled_losses_with_correction_l2
+        v5.controlled_losses = controlled_losses_with_v6a_diagnostics
     try:
         report = v5.run_training(
             model,
@@ -603,6 +641,17 @@ def train_and_eval_system(
         "use_intervention_loss": True,
         "v6a_correction_scale": v6a_correction_scale if system == "v6a" else None,
         "v6a_correction_l2": v6a_correction_l2 if system == "v6a" else None,
+        "v6a_learnable_correction_scale": (
+            v6a_learnable_correction_scale if system == "v6a" else None
+        ),
+        "v6a_learnable_correction_init": (
+            v6a_learnable_correction_init
+            if system == "v6a" and v6a_learnable_correction_scale
+            else None
+        ),
+        "v6a_final_correction_alpha": (
+            current_v6a_alpha(model) if system == "v6a" else None
+        ),
         "best_epoch": report["best_epoch"],
         "train_data": "data/controlled_v5_v3.jsonl with time_swap excluded before split",
         "ood_group_field": group_field,
@@ -868,6 +917,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--smoke-ood-pairs", type=int, default=12)
     parser.add_argument("--v6a-correction-scale", type=float, default=1.0)
     parser.add_argument("--v6a-correction-l2", type=float, default=0.0)
+    parser.add_argument("--v6a-learnable-correction-scale", action="store_true")
+    parser.add_argument("--v6a-learnable-correction-init", type=float, default=0.1)
     parser.add_argument("--log-v6a-logit-diagnostics", action="store_true")
     parser.add_argument("--output-prefix", type=Path, default=REPO_ROOT / "results" / "stage13_ood")
     return parser.parse_args()
@@ -877,6 +928,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args()
     if args.v6a_correction_l2 < 0:
         raise ValueError("--v6a-correction-l2 must be non-negative")
+    if args.v6a_learnable_correction_init <= 0:
+        raise ValueError("--v6a-learnable-correction-init must be positive")
+    if args.v6a_learnable_correction_scale and args.v6a_correction_scale != 1.0:
+        raise ValueError(
+            "--v6a-correction-scale and --v6a-learnable-correction-scale are mutually exclusive"
+        )
     torch.set_num_threads(1)
     device = resolve_device(args.device)
     output_prefix = args.output_prefix
@@ -903,6 +960,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         f"ranking_weight={args.ranking_weight} max_length={args.max_length} "
         f"v6a_correction_scale={args.v6a_correction_scale} "
         f"v6a_correction_l2={args.v6a_correction_l2} "
+        f"v6a_learnable_correction_scale={args.v6a_learnable_correction_scale} "
+        f"v6a_learnable_correction_init={args.v6a_learnable_correction_init} "
         "weighted_label_loss=True balanced_sampler=True use_intervention_loss=True"
     )
 
@@ -938,6 +997,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 log_v6a_diagnostics=args.log_v6a_logit_diagnostics,
                 v6a_correction_scale=args.v6a_correction_scale,
                 v6a_correction_l2=args.v6a_correction_l2,
+                v6a_learnable_correction_scale=args.v6a_learnable_correction_scale,
+                v6a_learnable_correction_init=args.v6a_learnable_correction_init,
             )
             all_metrics.append(payload)
             seed_predictions[system] = predictions

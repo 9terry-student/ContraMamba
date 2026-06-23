@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from typing import Any
 
 import torch
@@ -67,6 +68,7 @@ class ContraMambaV6A(nn.Module):
         self.return_token_diagnostics = return_token_diagnostics
         self.product_loss_weight = product_loss_weight
         self.correction_scale = correction_scale
+        self.correction_alpha_raw: nn.Parameter | None = None
         self.frame_gate = FrameGate(
             hidden_size,
             frame_size,
@@ -98,6 +100,19 @@ class ContraMambaV6A(nn.Module):
             hidden_size=composer_hidden_size,
             dropout=dropout,
         )
+
+    def enable_learnable_correction_scale(self, init_alpha: float = 0.1) -> None:
+        if init_alpha <= 0:
+            raise ValueError("init_alpha must be positive")
+        raw_value = math.log(math.expm1(init_alpha))
+        self.correction_alpha_raw = nn.Parameter(
+            torch.tensor(raw_value, dtype=torch.float32)
+        )
+
+    def current_correction_scale(self) -> torch.Tensor | float:
+        if self.correction_alpha_raw is None:
+            return self.correction_scale
+        return F.softplus(self.correction_alpha_raw)
 
     def forward(
         self,
@@ -175,7 +190,8 @@ class ContraMambaV6A(nn.Module):
         )
 
         raw_correction_logits = composer["composer_correction_logits"]
-        scaled_correction_logits = self.correction_scale * raw_correction_logits
+        correction_scale = self.current_correction_scale()
+        scaled_correction_logits = correction_scale * raw_correction_logits
         calibrated_logits = product["logits"] + scaled_correction_logits
 
         losses: dict[str, torch.Tensor | None] = {
@@ -248,11 +264,19 @@ class ContraMambaV6A(nn.Module):
             "composer_refute_logit": scaled_correction_logits[..., 0],
             "composer_not_entitled_logit": scaled_correction_logits[..., 1],
             "composer_support_logit": scaled_correction_logits[..., 2],
-            "composer_correction_scale": torch.as_tensor(
-                self.correction_scale,
-                device=calibrated_logits.device,
-                dtype=calibrated_logits.dtype,
+            "composer_correction_scale": (
+                correction_scale.to(
+                    device=calibrated_logits.device,
+                    dtype=calibrated_logits.dtype,
+                )
+                if isinstance(correction_scale, torch.Tensor)
+                else torch.as_tensor(
+                    correction_scale,
+                    device=calibrated_logits.device,
+                    dtype=calibrated_logits.dtype,
+                )
             ),
+            "composer_correction_alpha_raw": self.correction_alpha_raw,
             "composer_logits": calibrated_logits,
             "logits": calibrated_logits,
             "predictions": calibrated_logits.argmax(dim=-1),
