@@ -346,6 +346,47 @@ def output_gate_summary(output: dict[str, Any]) -> str | None:
     )
 
 
+def v6a_gate_trust_loss(
+    output: dict[str, Any],
+    final_labels: torch.Tensor,
+    indices: torch.Tensor,
+    *,
+    mode: str,
+    margin: float,
+) -> tuple[torch.Tensor, dict[str, float]]:
+    gate = output.get("composer_correction_gate")
+    product_logits = output.get("product_logits")
+    if not isinstance(gate, torch.Tensor):
+        raise ValueError("gate trust loss requested, but composer_correction_gate is absent")
+    if not isinstance(product_logits, torch.Tensor):
+        raise ValueError("gate trust loss requested, but product_logits are absent")
+    if mode not in {"product_correct_margin", "product_correct"}:
+        raise ValueError(f"unsupported gate trust mode: {mode!r}")
+
+    selected_gate = gate.index_select(0, indices).clamp(1e-6, 1.0 - 1e-6)
+    with torch.no_grad():
+        selected_logits = product_logits.detach().index_select(0, indices)
+        selected_labels = final_labels.detach().index_select(0, indices).long()
+        product_probs = selected_logits.softmax(dim=-1)
+        sorted_probs = product_probs.sort(dim=-1, descending=True).values
+        product_margin = sorted_probs[..., 0] - sorted_probs[..., 1]
+        product_pred = selected_logits.argmax(dim=-1)
+        product_correct = product_pred == selected_labels
+        if mode == "product_correct_margin":
+            trusted = product_correct & (product_margin >= margin)
+        else:
+            trusted = product_correct
+        target = (~trusted).float()
+    loss = F.binary_cross_entropy(selected_gate, target)
+    diagnostics = {
+        "gate_trust_loss": float(loss.detach().item()),
+        "gate_target_mean": float(target.detach().float().mean().item()),
+        "gate_mean": float(selected_gate.detach().float().mean().item()),
+        "gate_std": float(selected_gate.detach().float().std(unbiased=False).item()),
+    }
+    return loss, diagnostics
+
+
 def choose_group_field(records: list[dict[str, Any]]) -> str | None:
     for field in OOD_GROUP_FIELDS:
         if any(field in record for record in records):
@@ -523,6 +564,9 @@ def train_and_eval_system(
     v6a_product_gated_correction: bool,
     v6a_gate_hidden_dim: int,
     v6a_gate_detach_features: bool,
+    v6a_gate_trust_loss_weight: float,
+    v6a_gate_trust_margin: float,
+    v6a_gate_trust_mode: str,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     random.seed(seed)
     torch.manual_seed(seed)
@@ -567,6 +611,7 @@ def train_and_eval_system(
         v6a_correction_l2 > 0
         or v6a_learnable_correction_scale
         or v6a_product_gated_correction
+        or v6a_gate_trust_loss_weight > 0
     ):
         if v6a_correction_l2 > 0:
             print(f"Using v6A correction L2 regularization: lambda={v6a_correction_l2}")
@@ -611,6 +656,28 @@ def train_and_eval_system(
             gate_summary = output_gate_summary(output)
             if gate_summary is not None:
                 components.append(gate_summary)
+            if v6a_gate_trust_loss_weight > 0 and v6a_gate_trust_mode != "none":
+                trust_loss, trust_diagnostics = v6a_gate_trust_loss(
+                    output,
+                    inputs["final_labels"],
+                    indices,
+                    mode=v6a_gate_trust_mode,
+                    margin=v6a_gate_trust_margin,
+                )
+                losses["v6a_gate_trust_loss"] = trust_loss
+                losses["total"] = losses["total"] + v6a_gate_trust_loss_weight * trust_loss
+                components.append(
+                    "v6a_gate_trust_loss="
+                    f"{trust_diagnostics['gate_trust_loss']:.6f} "
+                    "weighted="
+                    f"{(v6a_gate_trust_loss_weight * trust_loss).detach().item():.6f} "
+                    "target_mean="
+                    f"{trust_diagnostics['gate_target_mean']:.6f} "
+                    "gate_mean="
+                    f"{trust_diagnostics['gate_mean']:.6f} "
+                    "gate_std="
+                    f"{trust_diagnostics['gate_std']:.6f}"
+                )
             if components:
                 print(" ".join(components))
             return losses
@@ -723,6 +790,13 @@ def train_and_eval_system(
         "v6a_gate_detach_features": (
             v6a_gate_detach_features if system == "v6a" else None
         ),
+        "v6a_gate_trust_loss_weight": (
+            v6a_gate_trust_loss_weight if system == "v6a" else None
+        ),
+        "v6a_gate_trust_margin": (
+            v6a_gate_trust_margin if system == "v6a" else None
+        ),
+        "v6a_gate_trust_mode": v6a_gate_trust_mode if system == "v6a" else None,
         "best_epoch": report["best_epoch"],
         "train_data": "data/controlled_v5_v3.jsonl with time_swap excluded before split",
         "ood_group_field": group_field,
@@ -997,6 +1071,13 @@ def parse_args() -> argparse.Namespace:
         action=argparse.BooleanOptionalAction,
         default=True,
     )
+    parser.add_argument("--v6a-gate-trust-loss-weight", type=float, default=0.0)
+    parser.add_argument("--v6a-gate-trust-margin", type=float, default=0.2)
+    parser.add_argument(
+        "--v6a-gate-trust-mode",
+        choices=("product_correct_margin", "product_correct", "none"),
+        default="none",
+    )
     parser.add_argument("--log-v6a-logit-diagnostics", action="store_true")
     parser.add_argument("--output-prefix", type=Path, default=REPO_ROOT / "results" / "stage13_ood")
     return parser.parse_args()
@@ -1022,6 +1103,18 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
     if args.v6a_gate_hidden_dim < 1:
         raise ValueError("--v6a-gate-hidden-dim must be positive")
+    if args.v6a_gate_trust_loss_weight < 0:
+        raise ValueError("--v6a-gate-trust-loss-weight must be non-negative")
+    if args.v6a_gate_trust_margin < 0:
+        raise ValueError("--v6a-gate-trust-margin must be non-negative")
+    if args.v6a_gate_trust_loss_weight > 0 and not args.v6a_product_gated_correction:
+        raise ValueError(
+            "--v6a-gate-trust-loss-weight > 0 requires --v6a-product-gated-correction"
+        )
+    if args.v6a_gate_trust_loss_weight > 0 and args.v6a_gate_trust_mode == "none":
+        raise ValueError(
+            "--v6a-gate-trust-loss-weight > 0 requires --v6a-gate-trust-mode != none"
+        )
     torch.set_num_threads(1)
     device = resolve_device(args.device)
     output_prefix = args.output_prefix
@@ -1053,6 +1146,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         f"v6a_product_gated_correction={args.v6a_product_gated_correction} "
         f"v6a_gate_hidden_dim={args.v6a_gate_hidden_dim} "
         f"v6a_gate_detach_features={args.v6a_gate_detach_features} "
+        f"v6a_gate_trust_loss_weight={args.v6a_gate_trust_loss_weight} "
+        f"v6a_gate_trust_margin={args.v6a_gate_trust_margin} "
+        f"v6a_gate_trust_mode={args.v6a_gate_trust_mode} "
         "weighted_label_loss=True balanced_sampler=True use_intervention_loss=True"
     )
 
@@ -1093,6 +1189,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 v6a_product_gated_correction=args.v6a_product_gated_correction,
                 v6a_gate_hidden_dim=args.v6a_gate_hidden_dim,
                 v6a_gate_detach_features=args.v6a_gate_detach_features,
+                v6a_gate_trust_loss_weight=args.v6a_gate_trust_loss_weight,
+                v6a_gate_trust_margin=args.v6a_gate_trust_margin,
+                v6a_gate_trust_mode=args.v6a_gate_trust_mode,
             )
             all_metrics.append(payload)
             seed_predictions[system] = predictions
