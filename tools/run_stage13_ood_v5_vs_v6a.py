@@ -693,6 +693,20 @@ def clean_dev_advantage_warning(metric_rows: list[dict[str, Any]]) -> str | None
     return None
 
 
+def reproduction_note(metric_rows: list[dict[str, Any]]) -> str:
+    warning = clean_dev_advantage_warning(metric_rows)
+    if warning is not None:
+        return warning
+    clean_systems = {
+        row["system"]
+        for row in metric_rows
+        if row["split"] == "clean_dev" and row["group"] == "__all__"
+    }
+    if {"v5", "v6a"}.issubset(clean_systems):
+        return "v6A clean-dev macro-F1 exceeds v5 clean-dev macro-F1 in this run."
+    return "single-system run; v5-v6A clean advantage was not evaluated."
+
+
 def summarize_transitions(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in rows:
@@ -733,6 +747,7 @@ def write_summary(output_prefix: Path, metrics_payloads: list[dict[str, Any]], t
     aggregate_rows = aggregate_metric_rows(metric_rows)
     transition_summary = summarize_transitions(transition_items)
     reproduction_warning = clean_dev_advantage_warning(metric_rows)
+    note = reproduction_note(metric_rows)
     write_csv(output_prefix.parent / f"{output_prefix.name}_metrics.csv", metric_rows)
     write_csv(output_prefix.parent / f"{output_prefix.name}_aggregate.csv", aggregate_rows)
     write_csv(output_prefix.parent / f"{output_prefix.name}_transitions.csv", transition_items)
@@ -749,14 +764,7 @@ def write_summary(output_prefix: Path, metrics_payloads: list[dict[str, Any]], t
             markdown_table(transition_summary, ["group", "n", "v5_wrong_v6a_correct", "v5_correct_v6a_wrong", "v5_false_entitled_fixed_by_v6a", "new_v6a_false_entitled"]),
             "## Notes",
             "This is an OOD-probe validation report. The default local probe is Stage10A number_swap because no Stage10C surface/temporality file is present in this checkout. Use --ood-data to evaluate a Stage10C file when available.",
-            (
-                "Reproduction check: "
-                + (
-                    reproduction_warning
-                    if reproduction_warning is not None
-                    else "v6A clean-dev macro-F1 exceeds v5 clean-dev macro-F1 in this run."
-                )
-            ),
+            "Reproduction check: " + note,
             "Number-swap note: Stage13 OOD evidence should not be treated as positive validation unless the clean-dev reproduction check passes. Prior Stage13A runs showed unstable number_swap behavior (20epoch over-entitlement/SUPPORT carryover; 50epoch near NOT_ENTITLED collapse).",
         ]
     )
@@ -773,6 +781,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--ood-data", type=Path, default=REPO_ROOT / "data" / "stage10a_number_swap_probe.jsonl")
     parser.add_argument("--epochs", type=int, default=200)
     parser.add_argument("--seeds", nargs="+", type=int, default=[1, 2, 3])
+    parser.add_argument("--system", choices=("v5", "v6a", "both"), default="both")
     parser.add_argument("--backbone", choices=("dummy", "mamba"), default="dummy")
     parser.add_argument("--model-name", default="state-spaces/mamba-130m-hf")
     parser.add_argument("--max-length", type=int, default=128)
@@ -828,7 +837,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         train_records, dev_records = v5.split_by_pair_id(records, dev_ratio=args.dev_ratio, seed=seed)
         print(f"split seed={seed}: train={len(train_records)} dev={len(dev_records)} ood={len(ood_records)}")
         seed_predictions: dict[str, list[dict[str, Any]]] = {}
-        for system in ("v5", "v6a"):
+        systems = ("v5", "v6a") if args.system == "both" else (args.system,)
+        for system in systems:
             print(f"\n--- training/evaluating {system} seed={seed} ---")
             payload, predictions = train_and_eval_system(
                 system=system,
@@ -853,7 +863,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
             all_metrics.append(payload)
             seed_predictions[system] = predictions
-        all_transitions.extend(transition_rows(seed, seed_predictions["v5"], seed_predictions["v6a"]))
+        if args.system == "both":
+            all_transitions.extend(transition_rows(seed, seed_predictions["v5"], seed_predictions["v6a"]))
 
     write_summary(output_prefix, all_metrics, all_transitions)
     return 0
