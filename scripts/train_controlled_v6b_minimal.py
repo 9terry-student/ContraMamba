@@ -164,6 +164,13 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def prediction_distribution_from_records(records: list[dict]) -> dict[str, int]:
+    """Compute prediction distribution from exported prediction records."""
+    from collections import Counter
+    predictions = [record.get("pred_final_label") for record in records]
+    return dict(sorted(Counter(predictions).items()))
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
@@ -430,8 +437,8 @@ def main(argv: list[str] | None = None) -> int:
         )
 
     # Capture learned alphas
-    alpha_temporal = float(model.alpha_temporal()) if model.alpha_temporal_raw else 0.0
-    alpha_predicate = float(model.alpha_predicate()) if model.alpha_predicate_raw else 0.0
+    alpha_temporal = float(model.alpha_temporal().detach()) if model.alpha_temporal_raw else 0.0
+    alpha_predicate = float(model.alpha_predicate().detach()) if model.alpha_predicate_raw else 0.0
     temporal_flag_count = int(train_temporal_flags.sum().item())
     predicate_flag_count = int(train_predicate_flags.sum().item())
 
@@ -502,7 +509,7 @@ def main(argv: list[str] | None = None) -> int:
             report[key] = single[key]
 
     for run_name, run_report in reports.items():
-        distribution = v5.final_prediction_distribution(prediction_exports[run_name])
+        distribution = prediction_distribution_from_records(prediction_exports[run_name])
         if len(distribution) == 1:
             collapsed_label = next(iter(distribution))
             print(
