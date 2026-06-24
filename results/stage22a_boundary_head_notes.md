@@ -1,4 +1,21 @@
 
+## Stage22-A4a: OOD-aligned frame supervision audit (design phase)
+
+Stage22-A3 established that the `frame_violation_head` fails to generalize to Stage15 OOD frame mismatch. A4a audits whether the controlled training data has enough schema structure to generate train-side OOD-aligned frame mismatch supervision without training on Stage15 records.
+
+Key design conclusions:
+
+- In-domain BCE supervision on `location_swap` / `role_swap` is retained as a diagnostic regularizer only — it is not sufficient as an OOD gating signal.
+- OOD frame mismatch requires **within-pair contrastive supervision**: frame-intervention and preservation variants of the same base pair must both appear as training examples.
+- The primary candidate route is **pair_id-based contrastive supervision** — group controlled records by `pair_id`, identify (frame-intervention, preservation) siblings, and train a margin or BCE loss on same-pair sibling pairs.
+- If explicit slot fields are present, **direct slot-based generation** is preferred: reconstruct a preservation sibling by reinserting `slot_original` into the claim and train on exact within-pair contrast.
+- **Stage22-B positive recovery gate remains rejected** until `frame_violation_prob` ranks OOD frame mismatch groups higher than surface_control / temporal_erased (frame mean > surface mean by ≥ 0.10).
+- See `results/stage22a4_frame_ood_alignment_plan.md` for full design and validation criteria.
+
+Audit script: `scripts/audit_stage22a4_frame_ood_alignment.py` — reads controlled + OOD schema, reports feasible generation routes and leakage risks. Stage15 OOD is schema reference only; no OOD records are proposed for training.
+
+---
+
 ## Stage22-A3 mini diagnostic result
 
 Stage22-A3 added a separate `frame_violation_head` alongside the existing preservation/boundary head and ran a 3-seed mini sweep over six configs.
