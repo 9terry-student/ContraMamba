@@ -1,7 +1,7 @@
-# Stage22-A4b: pair-group contrastive frame dataset — design plan
+# Stage22-A4b/A4b2: pair-group contrastive frame dataset — design plan
 
 **Date:** 2026-06-24
-**Status:** Generator implemented — not yet run or validated
+**Status:** A4b generator implemented; A4b2 suitability refinement applied
 **Depends on:** Stage22-A4a audit (results/stage22a4_frame_ood_alignment_plan.md)
 
 ---
@@ -104,6 +104,10 @@ Each output JSONL record contains:
 | `target` | `"frame_more_violating_than_preservation"` |
 | `preservation_should_be_safe` | `true` — preservation sibling should have low frame_violation_prob |
 | `frame_should_be_blocked` | `true` — frame sibling should have high frame_violation_prob |
+| `preservation_is_non_frame_anchor` | bool — pres side is a valid non-frame anchor (frame_compatible_label check; does NOT require SUPPORT label) |
+| `preservation_is_support_safe_anchor` | bool — pres side passes ALL conservative SUPPORT-safe constraints |
+| `frame_is_frame_violation` | bool — frame side has final_label=NOT_ENTITLED and primary_failure_type=frame (where present) |
+| `contrastive_use_case` | `"support_safe_frame_contrastive"` \| `"frame_violation_contrastive"` \| `"audit_only"` |
 | `source` | `"controlled_pair_group"` |
 | `leakage_note` | `"constructed_from_controlled_data_only"` |
 | `preservation_source_id` | Source record `id` for the preservation sibling |
@@ -118,6 +122,19 @@ Each output JSONL record contains:
 | `frame_predicate_covered_label` | Frame sibling value (optional) |
 | `frame_polarity_label` | Frame sibling value (optional) |
 | `frame_primary_failure_type` | Frame sibling value (optional) |
+
+### A4b2 refinement note
+
+`preservation_intervention_type ∈ {none, paraphrase}` does NOT guarantee
+`preservation_final_label = SUPPORT`. Controlled records with `intervention_type = none`
+may have `polarity_label = REFUTE` or `final_label = REFUTE` (e.g. records where the
+original claim-evidence pair is refuting). These are valid non-frame anchors for
+frame-vs-non-frame contrastive diagnostics but must NOT be used as SUPPORT-positive
+anchors for SUPPORT recovery calibration.
+
+The `contrastive_use_case` field provides a safe downstream filter:
+- Use `frame_violation_contrastive` for frame-vs-non-frame contrastive training.
+- Use `support_safe_frame_contrastive` only for any future SUPPORT recovery gate work.
 
 ---
 

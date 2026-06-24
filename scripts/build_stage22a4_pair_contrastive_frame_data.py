@@ -1,9 +1,27 @@
-"""Stage22-A4b: pair-group contrastive frame dataset generator.
+"""Stage22-A4b2: pair-group contrastive frame dataset generator (refined).
 
 Builds a diagnostic contrastive dataset from controlled training data only.
 Each output record pairs a preservation-side sibling (none / paraphrase) with
 a frame-side sibling (entity_swap / event_swap / location_swap / role_swap /
 title_name_swap) that share the same pair_id.
+
+A4b2 refinement
+---------------
+Adds three explicit boolean qualifiers per output record to distinguish:
+  preservation_is_non_frame_anchor   — true when pres side is a valid non-frame anchor
+  preservation_is_support_safe_anchor — true when pres side is also SUPPORT-safe
+  frame_is_frame_violation            — true when frame side is a valid frame violation
+
+And a categorical field:
+  contrastive_use_case:
+    "support_safe_frame_contrastive" — strictest: frame valid + pres SUPPORT-safe
+    "frame_violation_contrastive"    — frame valid + pres non-frame (may be REFUTE)
+    "audit_only"                     — either side fails suitability check
+
+Key insight: preservation_intervention_type = none/paraphrase does NOT guarantee
+preservation_final_label = SUPPORT. Some preservation anchors have REFUTE labels
+(e.g. polarity_label = REFUTE). These are valid non-frame anchors for frame-vs-
+non-frame contrastive learning but must NOT be used for SUPPORT recovery calibration.
 
 Data-leakage contract
 ---------------------
@@ -61,6 +79,107 @@ _OPTIONAL_LABEL_FIELDS = (
 
 
 # ---------------------------------------------------------------------------
+# A4b2: suitability classifiers
+# ---------------------------------------------------------------------------
+
+def _is_non_frame_anchor(pres: dict[str, Any]) -> bool:
+    """True when the preservation side is a valid non-frame anchor.
+
+    Requires:
+      - intervention_type in PRESERVATION_TYPES (enforced by caller)
+      - frame_compatible_label == 1 if present (indicates frame-compatible slot)
+    Does NOT require final_label == SUPPORT.
+    """
+    fc = pres.get("frame_compatible_label")
+    if fc is not None and int(fc) != 1:
+        return False
+    return True
+
+
+def _is_support_safe_anchor(pres: dict[str, Any]) -> bool:
+    """True when the preservation side is a SUPPORT-safe anchor.
+
+    Conservative: ALL available label constraints must pass.
+    Requires:
+      - intervention_type in PRESERVATION_TYPES (enforced by caller)
+      - final_label == "SUPPORT"
+      - frame_compatible_label == 1 if present
+      - sufficiency_label == 1 if present
+      - predicate_covered_label == 1 if present
+      - polarity_label == "SUPPORT" if present
+    """
+    if pres.get("final_label") != "SUPPORT":
+        return False
+    fc = pres.get("frame_compatible_label")
+    if fc is not None and int(fc) != 1:
+        return False
+    suf = pres.get("sufficiency_label")
+    if suf is not None and int(suf) != 1:
+        return False
+    pred = pres.get("predicate_covered_label")
+    if pred is not None and int(pred) != 1:
+        return False
+    pol = pres.get("polarity_label")
+    if pol is not None and pol != "SUPPORT":
+        return False
+    return True
+
+
+def _support_safe_exclusion_reason(pres: dict[str, Any]) -> str:
+    """Return a human-readable reason why this preservation record is not support-safe."""
+    reasons: list[str] = []
+    if pres.get("final_label") != "SUPPORT":
+        reasons.append(f"final_label={pres.get('final_label')!r}")
+    fc = pres.get("frame_compatible_label")
+    if fc is not None and int(fc) != 1:
+        reasons.append(f"frame_compatible_label={fc}")
+    suf = pres.get("sufficiency_label")
+    if suf is not None and int(suf) != 1:
+        reasons.append(f"sufficiency_label={suf}")
+    pred = pres.get("predicate_covered_label")
+    if pred is not None and int(pred) != 1:
+        reasons.append(f"predicate_covered_label={pred}")
+    pol = pres.get("polarity_label")
+    if pol is not None and pol != "SUPPORT":
+        reasons.append(f"polarity_label={pol!r}")
+    return "; ".join(reasons) if reasons else "unknown"
+
+
+def _is_frame_violation(frame: dict[str, Any]) -> bool:
+    """True when the frame side is a valid frame violation.
+
+    Requires:
+      - intervention_type in FRAME_TYPES (enforced by caller)
+      - final_label == "NOT_ENTITLED" if present
+      - primary_failure_type == "frame" if present
+    """
+    fl = frame.get("final_label")
+    if fl is not None and fl != "NOT_ENTITLED":
+        return False
+    pft = frame.get("primary_failure_type")
+    if pft is not None and pft != "frame":
+        return False
+    return True
+
+
+def _contrastive_use_case(
+    pres_non_frame: bool,
+    pres_support_safe: bool,
+    frame_violation: bool,
+) -> str:
+    """Assign the contrastive use-case category.
+
+    support_safe_frame_contrastive takes precedence over frame_violation_contrastive
+    when both apply (stricter superset).
+    """
+    if frame_violation and pres_support_safe:
+        return "support_safe_frame_contrastive"
+    if frame_violation and pres_non_frame:
+        return "frame_violation_contrastive"
+    return "audit_only"
+
+
+# ---------------------------------------------------------------------------
 # I/O helpers
 # ---------------------------------------------------------------------------
 
@@ -111,6 +230,12 @@ def build_contrastive_record(
         f"__frame_{frame['intervention_type']}"
         f"__{index:04d}"
     )
+    # A4b2: suitability flags
+    pres_non_frame = _is_non_frame_anchor(pres)
+    pres_support_safe = _is_support_safe_anchor(pres)
+    frame_violation = _is_frame_violation(frame)
+    use_case = _contrastive_use_case(pres_non_frame, pres_support_safe, frame_violation)
+
     rec: dict[str, Any] = {
         "contrastive_id": contrastive_id,
         "pair_id": pair_id,
@@ -129,6 +254,11 @@ def build_contrastive_record(
         "target": CONTRASTIVE_TARGET,
         "preservation_should_be_safe": True,
         "frame_should_be_blocked": True,
+        # A4b2: suitability qualifiers
+        "preservation_is_non_frame_anchor": pres_non_frame,
+        "preservation_is_support_safe_anchor": pres_support_safe,
+        "frame_is_frame_violation": frame_violation,
+        "contrastive_use_case": use_case,
         # Provenance
         "source": SOURCE_TAG,
         "leakage_note": LEAKAGE_NOTE,
@@ -177,10 +307,22 @@ def generate_contrastive_pairs(
         "output_pair_count": 0,
         "pairs_by_frame_intervention_type": {},
         "pairs_by_preservation_intervention_type": {},
+        # A4b2 suitability counts
+        "count_frame_is_frame_violation": 0,
+        "count_preservation_is_non_frame_anchor": 0,
+        "count_preservation_is_support_safe_anchor": 0,
+        "count_by_contrastive_use_case": {},
+        "support_safe_by_preservation_intervention_type": {},
+        "support_safe_by_frame_intervention_type": {},
+        "non_support_safe_examples": [],
     }
 
     frame_it_counter: Counter[str] = Counter()
     pres_it_counter: Counter[str] = Counter()
+    use_case_counter: Counter[str] = Counter()
+    safe_pres_counter: Counter[str] = Counter()
+    safe_frame_counter: Counter[str] = Counter()
+    non_safe_examples: list[dict[str, Any]] = []
     output: list[dict[str, Any]] = []
     global_index = 0
 
@@ -217,6 +359,30 @@ def generate_contrastive_pairs(
             output.append(rec)
             frame_it_counter[frame["intervention_type"]] += 1
             pres_it_counter[pres["intervention_type"]] += 1
+
+            # A4b2: accumulate suitability stats
+            if rec["frame_is_frame_violation"]:
+                stats["count_frame_is_frame_violation"] += 1
+            if rec["preservation_is_non_frame_anchor"]:
+                stats["count_preservation_is_non_frame_anchor"] += 1
+            if rec["preservation_is_support_safe_anchor"]:
+                stats["count_preservation_is_support_safe_anchor"] += 1
+                safe_pres_counter[pres["intervention_type"]] += 1
+                safe_frame_counter[frame["intervention_type"]] += 1
+            else:
+                # Collect examples of why the preservation side is not support-safe
+                if len(non_safe_examples) < 10:
+                    non_safe_examples.append({
+                        "contrastive_id": rec["contrastive_id"],
+                        "preservation_intervention_type": pres["intervention_type"],
+                        "preservation_final_label": pres.get("final_label"),
+                        "polarity_label": pres.get("polarity_label"),
+                        "frame_compatible_label": pres.get("frame_compatible_label"),
+                        "sufficiency_label": pres.get("sufficiency_label"),
+                        "predicate_covered_label": pres.get("predicate_covered_label"),
+                        "exclusion_reason": _support_safe_exclusion_reason(pres),
+                    })
+            use_case_counter[rec["contrastive_use_case"]] += 1
             global_index += 1
 
     stats["output_pair_count"] = len(output)
@@ -226,6 +392,16 @@ def generate_contrastive_pairs(
     stats["pairs_by_preservation_intervention_type"] = dict(
         sorted(pres_it_counter.items(), key=lambda x: -x[1])
     )
+    stats["count_by_contrastive_use_case"] = dict(
+        sorted(use_case_counter.items(), key=lambda x: -x[1])
+    )
+    stats["support_safe_by_preservation_intervention_type"] = dict(
+        sorted(safe_pres_counter.items(), key=lambda x: -x[1])
+    )
+    stats["support_safe_by_frame_intervention_type"] = dict(
+        sorted(safe_frame_counter.items(), key=lambda x: -x[1])
+    )
+    stats["non_support_safe_examples"] = non_safe_examples
     return output, stats
 
 
@@ -240,6 +416,14 @@ def build_summary(stats: dict[str, Any]) -> dict[str, Any]:
             "All output records are constructed from controlled training data only. "
             "Stage15 OOD records (data/stage15_slot_sensitivity_probe.jsonl) are NOT "
             "used, referenced, or copied. No OOD group labels are applied to output records."
+        ),
+        "use_case_note": (
+            "frame_violation_contrastive records: suitable for frame-vs-non-frame "
+            "contrastive diagnostics. The preservation anchor may be REFUTE or SUPPORT. "
+            "support_safe_frame_contrastive records: a strict subset where the preservation "
+            "anchor is SUPPORT-safe (final_label=SUPPORT + all available label constraints). "
+            "Only support_safe_frame_contrastive records should be considered for future "
+            "SUPPORT recovery calibration."
         ),
         "recommended_downstream_use": (
             "Diagnostic pairwise ranking loss or auxiliary contrastive evaluator. "
@@ -266,7 +450,7 @@ def render_summary_md(stats: dict[str, Any], args: argparse.Namespace) -> str:
             lines.append("| " + " | ".join(str(c) for c in row) + " |")
         lines.append("")
 
-    h(1, "Stage22-A4b pair-group contrastive frame dataset — generation summary")
+    h(1, "Stage22-A4b2 pair-group contrastive frame dataset — generation summary")
     p(f"**Input:** `{args.controlled_data}`")
     p(f"**Output:** `{args.output_jsonl}`")
     p(
@@ -288,7 +472,47 @@ def render_summary_md(stats: dict[str, Any], args: argparse.Namespace) -> str:
         ],
     )
 
-    h(2, "Output pairs by frame_intervention_type")
+    h(2, "A4b2 suitability counts")
+    table(
+        ["Qualifier", "Count"],
+        [
+            ["frame_is_frame_violation == True", str(stats["count_frame_is_frame_violation"])],
+            ["preservation_is_non_frame_anchor == True", str(stats["count_preservation_is_non_frame_anchor"])],
+            ["preservation_is_support_safe_anchor == True", str(stats["count_preservation_is_support_safe_anchor"])],
+        ],
+    )
+
+    h(2, "Count by contrastive_use_case")
+    cuc = stats.get("count_by_contrastive_use_case", {})
+    if cuc:
+        table(
+            ["contrastive_use_case", "count"],
+            [[k, str(v)] for k, v in sorted(cuc.items(), key=lambda x: -x[1])],
+        )
+    else:
+        p("_No pairs generated._")
+
+    h(2, "Support-safe pairs by preservation_intervention_type")
+    sp = stats.get("support_safe_by_preservation_intervention_type", {})
+    if sp:
+        table(
+            ["preservation_intervention_type", "support-safe count"],
+            [[k, str(v)] for k, v in sp.items()],
+        )
+    else:
+        p("_No support-safe preservation pairs._")
+
+    h(2, "Support-safe pairs by frame_intervention_type")
+    sf = stats.get("support_safe_by_frame_intervention_type", {})
+    if sf:
+        table(
+            ["frame_intervention_type", "support-safe count"],
+            [[k, str(v)] for k, v in sf.items()],
+        )
+    else:
+        p("_No support-safe frame pairs._")
+
+    h(2, "Output pairs by frame_intervention_type (all)")
     fi = stats.get("pairs_by_frame_intervention_type", {})
     if fi:
         table(
@@ -298,13 +522,32 @@ def render_summary_md(stats: dict[str, Any], args: argparse.Namespace) -> str:
     else:
         p("_No pairs generated._")
 
-    h(2, "Output pairs by preservation_intervention_type")
+    h(2, "Output pairs by preservation_intervention_type (all)")
     pi = stats.get("pairs_by_preservation_intervention_type", {})
     if pi:
         table(
             ["preservation_intervention_type", "pair count"],
             [[k, str(v)] for k, v in pi.items()],
         )
+
+    h(2, "Non-support-safe preservation examples (up to 10)")
+    nse = stats.get("non_support_safe_examples", [])
+    if nse:
+        table(
+            ["contrastive_id", "pres_it", "final_label", "polarity", "exclusion_reason"],
+            [
+                [
+                    e["contrastive_id"],
+                    e["preservation_intervention_type"],
+                    str(e.get("preservation_final_label")),
+                    str(e.get("polarity_label")),
+                    e["exclusion_reason"],
+                ]
+                for e in nse
+            ],
+        )
+    else:
+        p("_All preservation anchors passed support-safe check._")
 
     h(2, "Skipped pair_ids")
     skipped = stats.get("skipped_pair_ids", [])
@@ -315,6 +558,17 @@ def render_summary_md(stats: dict[str, Any], args: argparse.Namespace) -> str:
         )
     else:
         p("_No pair_ids skipped — all had both preservation and frame candidates._")
+
+    h(2, "Use-case note")
+    p(
+        "`frame_violation_contrastive` records: the preservation anchor may be REFUTE or SUPPORT. "
+        "Suitable for frame-vs-non-frame contrastive diagnostics only."
+    )
+    p(
+        "`support_safe_frame_contrastive` records: strict subset where preservation anchor has "
+        "`final_label == SUPPORT` and all available label constraints pass. "
+        "Only this subset may be considered for future SUPPORT recovery calibration."
+    )
 
     h(2, "Leakage statement")
     p(
