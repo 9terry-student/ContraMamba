@@ -1,0 +1,26 @@
+group,metric,v5_bestdev,v6b_bestdev,delta_v6b_minus_v5,interpretation
+__overall__,final_accuracy,0.5586,0.6364,+0.0778,v6B improves
+__overall__,final_macro_f1,0.2793,0.3236,+0.0442,similar
+temporal_mismatch,final_accuracy,0.7700,1.0000,+0.2300,v6B improves
+temporal_mismatch,final_macro_f1,0.2874,0.3333,+0.0459,similar
+temporal_mismatch,false_entitled_rate,0.2300,0.0000,-0.2300,v6B reduces false entitlement
+predicate_mismatch,final_accuracy,0.7967,1.0000,+0.2033,v6B improves
+predicate_mismatch,final_macro_f1,0.2944,0.3333,+0.0389,similar
+predicate_mismatch,false_entitled_rate,0.2033,0.0000,-0.2033,v6B reduces false entitlement
+surface_control,final_accuracy,0.1333,0.1700,+0.0367,similar
+surface_control,final_macro_f1,0.0646,0.0796,+0.0150,similar
+surface_control,false_entitled_rate,,0.0000,,n/a
+surface_control,false_not_entitled_rate,0.7967,0.6967,-0.1000,v6B reduces over-rejection
+temporal_erased,final_accuracy,0.0933,0.1133,+0.0200,similar
+temporal_erased,final_macro_f1,0.0486,0.0582,+0.0096,similar
+temporal_erased,false_entitled_rate,,0.0000,,n/a
+temporal_erased,false_not_entitled_rate,0.8300,0.7867,-0.0433,similar
+frame_location_mismatch,final_accuracy,0.7500,0.6667,-0.0833,v6B worsens
+frame_location_mismatch,final_macro_f1,0.2831,0.2610,-0.0220,similar
+frame_location_mismatch,false_entitled_rate,0.2500,0.3333,+0.0833,v6B worsens false entitlement
+frame_role_mismatch,final_accuracy,0.8000,0.6500,-0.1500,v6B worsens
+frame_role_mismatch,final_macro_f1,0.2921,0.2534,-0.0386,similar
+frame_role_mismatch,false_entitled_rate,0.2000,0.3500,+0.1500,v6B worsens false entitlement
+sufficiency_control,final_accuracy,0.9133,0.8900,-0.0233,similar
+sufficiency_control,final_macro_f1,0.3182,0.3138,-0.0043,similar
+sufficiency_control,false_entitled_rate,0.0867,0.1100,+0.0233,similar
