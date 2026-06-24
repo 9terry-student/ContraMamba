@@ -214,6 +214,43 @@ def _apply_ne_shift_and_eval(
     }
 
 
+def _build_gate_mask(
+    gate_name: str,
+    unflagged_mask: torch.Tensor,
+    aux_probs: dict[str, "torch.Tensor | None"],
+    threshold: float,
+) -> torch.Tensor:
+    """Return bool mask for records chosen by a gate (always a subset of unflagged_mask).
+
+    aux_probs must contain the keys the gate needs; raises ValueError if missing.
+    The gate does NOT use gold group labels or stage15_probe_type.
+    """
+    _GATE_REQUIRED: dict[str, list[str]] = {
+        "high_sufficiency": ["sufficiency_prob"],
+        "high_frame": ["frame_prob"],
+        "high_frame_sufficiency": ["frame_prob", "sufficiency_prob"],
+        "high_frame_suff_predicate": [
+            "frame_prob", "sufficiency_prob", "predicate_coverage_prob"
+        ],
+    }
+    if gate_name not in _GATE_REQUIRED:
+        raise ValueError(
+            f"Unknown selective gate {gate_name!r}. "
+            f"Valid gates: {sorted(_GATE_REQUIRED)}"
+        )
+    for req_key in _GATE_REQUIRED[gate_name]:
+        if aux_probs.get(req_key) is None:
+            raise ValueError(
+                f"Gate {gate_name!r} requires model output key {req_key!r} "
+                f"but the model did not return it. "
+                f"Ensure the v6B forward pass produces this auxiliary probability."
+            )
+    mask = unflagged_mask.clone()
+    for req_key in _GATE_REQUIRED[gate_name]:
+        mask = mask & (aux_probs[req_key] >= threshold)
+    return mask
+
+
 def compute_class_weights_v6b(
     records: list[dict],
     mode: str,
@@ -408,6 +445,44 @@ def build_parser() -> argparse.ArgumentParser:
             "the NOT_ENTITLED final logit and recomputes predictions. Eval-only; does not "
             "affect training, losses, or checkpoint selection. "
             "Cannot be combined with --ood-ablation-modes."
+        ),
+    )
+    parser.add_argument(
+        "--ood-selective-ne-shift-sweep",
+        type=str,
+        default=None,
+        help=(
+            "Comma-separated float shift values for selective post-hoc NOT_ENTITLED logit "
+            "calibration. Applies the shift only to unflagged OOD records that also pass "
+            "a preservation-like gate defined by --ood-selective-ne-gates and "
+            "--ood-selective-ne-thresholds. E.g. '0,0.1,0.2,0.25,0.3,0.4'. "
+            "Eval-only; does not affect training. "
+            "Mutually exclusive with --ood-ablation-modes and --ood-unflagged-ne-shift-sweep."
+        ),
+    )
+    parser.add_argument(
+        "--ood-selective-ne-gates",
+        type=str,
+        default=None,
+        help=(
+            "Comma-separated gate names for --ood-selective-ne-shift-sweep. "
+            "Default when sweep is set: 'high_sufficiency,high_frame_sufficiency,"
+            "high_frame_suff_predicate'. "
+            "Valid gates: high_sufficiency, high_frame, high_frame_sufficiency, "
+            "high_frame_suff_predicate. "
+            "Each gate uses model-internal auxiliary probabilities (not gold labels) "
+            "to select unflagged records for the NOT_ENTITLED logit shift."
+        ),
+    )
+    parser.add_argument(
+        "--ood-selective-ne-thresholds",
+        type=str,
+        default=None,
+        help=(
+            "Comma-separated float thresholds for --ood-selective-ne-shift-sweep. "
+            "Default: '0.7'. Applied as a lower bound on each auxiliary probability "
+            "required by the gate (e.g. sufficiency_prob >= threshold). "
+            "Each threshold is swept over all gates and shifts."
         ),
     )
 
@@ -866,13 +941,103 @@ def main(argv: list[str] | None = None) -> int:
             if args.ood_unflagged_ne_shift_sweep is not None
             else None
         )
-        if ablation_modes is not None and ne_shift_vals is not None:
+        selective_shift_vals = (
+            [float(s.strip()) for s in args.ood_selective_ne_shift_sweep.split(",")]
+            if args.ood_selective_ne_shift_sweep is not None
+            else None
+        )
+        _active_sweep_count = sum([
+            ablation_modes is not None,
+            ne_shift_vals is not None,
+            selective_shift_vals is not None,
+        ])
+        if _active_sweep_count > 1:
             raise ValueError(
-                "--ood-ablation-modes and --ood-unflagged-ne-shift-sweep cannot be used "
-                "together; run them as separate invocations"
+                "--ood-ablation-modes, --ood-unflagged-ne-shift-sweep, and "
+                "--ood-selective-ne-shift-sweep are mutually exclusive; "
+                "use at most one per invocation"
             )
 
-        if ne_shift_vals is not None:
+        if selective_shift_vals is not None:
+            # --- Selective gate NE shift sweep branch ---
+            ne_idx = v5.FINAL_LABEL_TO_ID.get("NOT_ENTITLED")
+            if ne_idx is None:
+                raise ValueError(
+                    "NOT_ENTITLED label index not found in FINAL_LABEL_TO_ID; "
+                    "cannot apply selective NE logit shift"
+                )
+            model.eval()
+            with torch.no_grad():
+                ood_output = model(
+                    **v5.model_feature_inputs(ood_inputs),
+                    temporal_mismatch_flags=ood_temporal_flags,
+                    predicate_mismatch_flags=ood_predicate_flags,
+                )
+            logits_cpu = ood_output["logits"].detach().cpu()
+            labels_cpu = ood_inputs["final_labels"].detach().cpu()
+            t_cpu = ood_temporal_flags.detach().cpu()
+            p_cpu = ood_predicate_flags.detach().cpu()
+            unflagged_mask = (t_cpu == 0) & (p_cpu == 0)
+            unflagged_count = int(unflagged_mask.sum().item())
+            temporal_flag_count = int(ood_temporal_flags.sum().item())
+            predicate_flag_count = int(ood_predicate_flags.sum().item())
+            _aux_keys = ("frame_prob", "sufficiency_prob", "predicate_coverage_prob")
+            aux_probs: dict[str, torch.Tensor | None] = {
+                k: ood_output[k].detach().cpu() if k in ood_output else None
+                for k in _aux_keys
+            }
+            gate_names = (
+                [g.strip() for g in args.ood_selective_ne_gates.split(",")]
+                if args.ood_selective_ne_gates is not None
+                else ["high_sufficiency", "high_frame_sufficiency", "high_frame_suff_predicate"]
+            )
+            thresholds = (
+                [float(t_val.strip()) for t_val in args.ood_selective_ne_thresholds.split(",")]
+                if args.ood_selective_ne_thresholds is not None
+                else [0.7]
+            )
+            selective_sweep: dict[str, Any] = {}
+            for gate_name in gate_names:
+                for threshold in thresholds:
+                    gate_mask = _build_gate_mask(
+                        gate_name, unflagged_mask, aux_probs, threshold
+                    )
+                    selected_count = int(gate_mask.sum().item())
+                    selected_rate = (
+                        selected_count / unflagged_count if unflagged_count > 0 else 0.0
+                    )
+                    for shift in selective_shift_vals:
+                        cond_key = (
+                            f"gate={gate_name}|thr={threshold:.2f}|shift={shift:g}"
+                        )
+                        cond_summary = _apply_ne_shift_and_eval(
+                            logits_cpu, labels_cpu, gate_mask, ood_records, ne_idx, shift
+                        )
+                        cond_summary["ood_eval_state"] = ood_eval_state
+                        cond_summary["ood_eval_epoch"] = ood_eval_epoch
+                        cond_summary["ood_flag_source"] = ood_flag_source
+                        cond_summary["train_flag_source"] = args.flag_source
+                        cond_summary["selective_gate"] = gate_name
+                        cond_summary["selective_threshold"] = threshold
+                        cond_summary["unflagged_ne_shift"] = shift
+                        cond_summary["temporal_flag_count"] = temporal_flag_count
+                        cond_summary["predicate_flag_count"] = predicate_flag_count
+                        cond_summary["unflagged_count"] = unflagged_count
+                        cond_summary["selected_count"] = selected_count
+                        cond_summary["selected_rate_among_unflagged"] = selected_rate
+                        selective_sweep[cond_key] = cond_summary
+                        print(
+                            f"[OOD SELECTIVE] {cond_key} "
+                            f"selected={selected_count}/{unflagged_count} "
+                            f"accuracy={cond_summary['overall_metrics']['final_accuracy']:.4f}"
+                        )
+            report["ood_selective_ne_shift_sweep"] = selective_sweep
+            if args.output_ood_json is not None:
+                v5.write_report_json(
+                    {"ood_selective_ne_shift_sweep": selective_sweep}, args.output_ood_json
+                )
+
+        elif ne_shift_vals is not None:
             # --- NE shift sweep branch ---
             ne_idx = v5.FINAL_LABEL_TO_ID.get("NOT_ENTITLED")
             if ne_idx is None:
