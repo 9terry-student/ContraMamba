@@ -122,6 +122,98 @@ def _make_ablation_flags(
     raise ValueError(f"unknown ablation mode: {mode!r}")
 
 
+def _apply_ne_shift_and_eval(
+    logits_cpu: torch.Tensor,
+    labels_cpu: torch.Tensor,
+    unflagged_mask: torch.Tensor,
+    records: list[dict],
+    ne_idx: int,
+    shift: float,
+) -> dict[str, Any]:
+    """Post-hoc NOT_ENTITLED logit shift for unflagged records; recompute predictions/metrics."""
+    from collections import defaultdict
+
+    adjusted = logits_cpu.clone()
+    if shift != 0.0:
+        adjusted[unflagged_mask, ne_idx] -= shift
+    predictions = adjusted.argmax(dim=-1)
+
+    # overall metrics
+    pred_dist_overall: dict[str, int] = {}
+    for pred_id in predictions.tolist():
+        name = v5.ID_TO_FINAL_LABEL[pred_id]
+        pred_dist_overall[name] = pred_dist_overall.get(name, 0) + 1
+    overall_acc = (predictions == labels_cpu).float().mean().item()
+    f1_overall: list[float] = []
+    for label in v5.FinalLabel:
+        lid = int(label)
+        pred = predictions == lid
+        actual = labels_cpu == lid
+        tp = (pred & actual).sum().item()
+        pd = pred.sum().item()
+        rd = actual.sum().item()
+        p = tp / pd if pd else 0.0
+        r = tp / rd if rd else 0.0
+        f1_overall.append(2.0 * p * r / (p + r) if p + r else 0.0)
+    overall_metrics = {
+        "final_accuracy": overall_acc,
+        "final_macro_f1": sum(f1_overall) / len(f1_overall) if f1_overall else 0.0,
+        "prediction_distribution": dict(sorted(pred_dist_overall.items())),
+    }
+
+    # per-group metrics (same grouping key as evaluate_ood_v6b)
+    groups: dict[str, list[int]] = defaultdict(list)
+    for idx, record in enumerate(records):
+        groups[record.get("stage15_probe_type", "unknown")].append(idx)
+
+    group_metrics: dict[str, Any] = {}
+    for group_name, indices in sorted(groups.items()):
+        g_preds = predictions[indices]
+        g_labels = labels_cpu[indices]
+        n = len(indices)
+        acc = (g_preds == g_labels).float().mean().item()
+        f1_vals: list[float] = []
+        for label in v5.FinalLabel:
+            lid = int(label)
+            pred = g_preds == lid
+            actual = g_labels == lid
+            tp = (pred & actual).sum().item()
+            pd = pred.sum().item()
+            rd = actual.sum().item()
+            p = tp / pd if pd else 0.0
+            r = tp / rd if rd else 0.0
+            f1_vals.append(2.0 * p * r / (p + r) if p + r else 0.0)
+        macro_f1 = sum(f1_vals) / len(f1_vals) if f1_vals else 0.0
+        pred_dist: dict[str, int] = {}
+        for pred_id in g_preds.tolist():
+            name = v5.ID_TO_FINAL_LABEL[pred_id]
+            pred_dist[name] = pred_dist.get(name, 0) + 1
+        fe_count = fne_count = gold_entitled = 0
+        for pred_id, gold_id in zip(g_preds.tolist(), g_labels.tolist()):
+            if gold_id == ne_idx and pred_id != ne_idx:
+                fe_count += 1
+            if gold_id != ne_idx:
+                gold_entitled += 1
+                if pred_id == ne_idx:
+                    fne_count += 1
+        group_metrics[group_name] = {
+            "n": n,
+            "final_accuracy": acc,
+            "final_macro_f1": macro_f1,
+            "prediction_distribution": dict(sorted(pred_dist.items())),
+            "false_entitled_count": fe_count,
+            "false_entitled_rate": fe_count / n if n > 0 else 0.0,
+            "false_not_entitled_count": fne_count,
+            "false_not_entitled_rate": fne_count / gold_entitled if gold_entitled > 0 else None,
+        }
+
+    return {
+        "n_records": len(records),
+        "overall_metrics": overall_metrics,
+        "group_metrics": group_metrics,
+    }
+
+
 def compute_class_weights_v6b(
     records: list[dict],
     mode: str,
@@ -303,6 +395,19 @@ def build_parser() -> argparse.ArgumentParser:
             "Valid values: current,no_flags,temporal_only,predicate_only. "
             "When set, report includes an ood_ablation object keyed by mode. "
             "When unset, existing single-mode OOD evaluation is used."
+        ),
+    )
+    parser.add_argument(
+        "--ood-unflagged-ne-shift-sweep",
+        type=str,
+        default=None,
+        help=(
+            "Comma-separated float shift values for post-hoc NOT_ENTITLED logit calibration "
+            "applied to unflagged OOD records (where both temporal_flag==0 and "
+            "predicate_flag==0). E.g. '0,0.25,0.5,0.75,1.0'. Subtracts each shift from "
+            "the NOT_ENTITLED final logit and recomputes predictions. Eval-only; does not "
+            "affect training, losses, or checkpoint selection. "
+            "Cannot be combined with --ood-ablation-modes."
         ),
     )
 
@@ -756,8 +861,68 @@ def main(argv: list[str] | None = None) -> int:
             if args.ood_ablation_modes is not None
             else None
         )
+        ne_shift_vals = (
+            [float(s.strip()) for s in args.ood_unflagged_ne_shift_sweep.split(",")]
+            if args.ood_unflagged_ne_shift_sweep is not None
+            else None
+        )
+        if ablation_modes is not None and ne_shift_vals is not None:
+            raise ValueError(
+                "--ood-ablation-modes and --ood-unflagged-ne-shift-sweep cannot be used "
+                "together; run them as separate invocations"
+            )
 
-        if ablation_modes is not None:
+        if ne_shift_vals is not None:
+            # --- NE shift sweep branch ---
+            ne_idx = v5.FINAL_LABEL_TO_ID.get("NOT_ENTITLED")
+            if ne_idx is None:
+                raise ValueError(
+                    "NOT_ENTITLED label index not found in FINAL_LABEL_TO_ID; "
+                    "cannot apply NE logit shift"
+                )
+            # single forward pass with full OOD flags
+            model.eval()
+            with torch.no_grad():
+                ood_output = model(
+                    **v5.model_feature_inputs(ood_inputs),
+                    temporal_mismatch_flags=ood_temporal_flags,
+                    predicate_mismatch_flags=ood_predicate_flags,
+                )
+            logits_cpu = ood_output["logits"].detach().cpu()
+            labels_cpu = ood_inputs["final_labels"].detach().cpu()
+            t_cpu = ood_temporal_flags.detach().cpu()
+            p_cpu = ood_predicate_flags.detach().cpu()
+            unflagged_mask = (t_cpu == 0) & (p_cpu == 0)
+            unflagged_count = int(unflagged_mask.sum().item())
+            temporal_flag_count = int(ood_temporal_flags.sum().item())
+            predicate_flag_count = int(ood_predicate_flags.sum().item())
+
+            shift_sweep: dict[str, Any] = {}
+            for shift in ne_shift_vals:
+                shift_key = f"{shift:g}"
+                shift_summary = _apply_ne_shift_and_eval(
+                    logits_cpu, labels_cpu, unflagged_mask, ood_records, ne_idx, shift
+                )
+                shift_summary["ood_eval_state"] = ood_eval_state
+                shift_summary["ood_eval_epoch"] = ood_eval_epoch
+                shift_summary["ood_flag_source"] = ood_flag_source
+                shift_summary["train_flag_source"] = args.flag_source
+                shift_summary["unflagged_ne_shift"] = shift
+                shift_summary["temporal_flag_count"] = temporal_flag_count
+                shift_summary["predicate_flag_count"] = predicate_flag_count
+                shift_summary["unflagged_count"] = unflagged_count
+                shift_sweep[shift_key] = shift_summary
+                print(
+                    f"[OOD NE SHIFT] shift={shift_key} unflagged={unflagged_count} "
+                    f"accuracy={shift_summary['overall_metrics']['final_accuracy']:.4f}"
+                )
+            report["ood_unflagged_ne_shift_sweep"] = shift_sweep
+            if args.output_ood_json is not None:
+                v5.write_report_json(
+                    {"ood_unflagged_ne_shift_sweep": shift_sweep}, args.output_ood_json
+                )
+
+        elif ablation_modes is not None:
             # --- ablation branch: evaluate each flag mode, build ood_ablation dict ---
             ood_ablation: dict[str, Any] = {}
             for mode in ablation_modes:
@@ -784,6 +949,7 @@ def main(argv: list[str] | None = None) -> int:
             report["ood_ablation"] = ood_ablation
             if args.output_ood_json is not None:
                 v5.write_report_json({"ood_ablation": ood_ablation}, args.output_ood_json)
+
         else:
             # --- single-mode branch: existing behaviour, unchanged ---
             ood_summary, ood_predictions = evaluate_ood_v6b(
