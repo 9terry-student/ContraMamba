@@ -1,7 +1,7 @@
 # Stage22-A4d: OOD-matched frame-vs-preservation pair dataset — design plan
 
 **Date:** 2026-06-24
-**Status:** Builder implemented; not yet run
+**Status:** Builder implemented and run; A4e OOD results collected; negative transfer result
 **Depends on:** Stage22-A4c pair contrastive loss (train_controlled_v6b_minimal.py)
 **Builder:** `scripts/build_stage22a4d_ood_matched_frame_pairs.py`
 
@@ -305,3 +305,21 @@ the bottleneck.
    - Compare to A4c baseline
 
 4. Accept as precondition for Stage22-B gate only if OOD ranking criterion passes.
+
+---
+
+## Stage22-A4e/A4d execution result (appended)
+
+A4d builder was run and produced 20 pairs (5 pair_ids, surface_like=10, temporal_erased_like=10,
+frame_location_like=10, frame_role_like=10). Stage22-A4e extended the pair-contrastive loader
+to accept A4d schema via `--pair-contrastive-use-case ood_matched`.
+
+**Result:** OOD transfer failed. All tested A4d/A4e configs (`a4d_oodmatched_w0p05`,
+`a4d_oodmatched_w0p2`, `a4d_surface_w0p05`, `a4d_temporal_w0p05`) showed inverted OOD
+ranking: `fv_frame_location` and `fv_frame_role` remained below `fv_surface` and
+`fv_temporal_erased`. Internal pair ranking reached accuracy = 1.0 (`a4d_oodmatched_w0p05`)
+but did not transfer to Stage15 OOD groups.
+
+**Stage22-B gate remains rejected.** See `results/stage22a4_final_synthesis_notes.md`
+for full interpretation and recommended next steps.
+
