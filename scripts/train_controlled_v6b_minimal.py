@@ -39,6 +39,7 @@ from scripts import train_controlled_v5 as v5  # noqa: E402
 def build_model(
     vocab_size: int, max_length: int, hidden_size: int = 48,
     use_boundary_head: bool = False,
+    use_frame_violation_head: bool = False,
 ) -> ContraMambaV6BMinimal:
     backbone = v5.ControlledDummyBackbone(vocab_size, hidden_size, max_length)
     return ContraMambaV6BMinimal(
@@ -54,6 +55,7 @@ def build_model(
         alpha_temporal_init=1.25,
         alpha_predicate_init=1.25,
         use_boundary_head=use_boundary_head,
+        use_frame_violation_head=use_frame_violation_head,
     )
 
 
@@ -62,6 +64,7 @@ def build_mamba_model(
     freeze_encoder: bool,
     freeze_a_log: bool,
     use_boundary_head: bool = False,
+    use_frame_violation_head: bool = False,
 ) -> ContraMambaV6BMinimal:
     model = ContraMambaV6BMinimal(
         model_name=model_name,
@@ -77,6 +80,7 @@ def build_mamba_model(
         alpha_temporal_init=1.25,
         alpha_predicate_init=1.25,
         use_boundary_head=use_boundary_head,
+        use_frame_violation_head=use_frame_violation_head,
     )
     for parameter in model.mamba.parameters():
         parameter.requires_grad = not freeze_encoder
@@ -264,6 +268,22 @@ _BOUNDARY_NEGATIVE: frozenset = frozenset({
     "location_swap", "role_swap", "entity_swap", "event_swap", "title_name_swap",
 })
 
+# Stage22-A3: frame violation label mapping
+# positive/violation=1: frame-slot swaps that produce a structural frame mismatch
+# negative/non-violation=0: preservation controls + sufficiency/polarity types (all non-frame)
+# excluded/masked: predicate_swap (predicate mismatch, not frame), time_swap (absent in
+#   controlled_v5_v3_without_time_swap.jsonl), and any unknown intervention_type
+# Class balance in controlled_v5_v3_without_time_swap.jsonl:
+#   positive: 5 types x 300 = 1500; negative: 6 types x 300 = 1800; ratio neg/pos = 1.2
+_FRAME_VIOLATION_POSITIVE: frozenset = frozenset({
+    "entity_swap", "event_swap", "location_swap", "role_swap", "title_name_swap",
+})
+_FRAME_VIOLATION_NEGATIVE: frozenset = frozenset({
+    "none", "paraphrase",
+    "evidence_deletion", "evidence_truncation", "irrelevant_evidence",
+    "polarity_flip",
+})
+
 
 def encode_boundary_labels(
     records: list[dict],
@@ -297,6 +317,74 @@ def encode_boundary_labels(
         torch.tensor(labels, dtype=torch.float32, device=device),
         torch.tensor(mask, dtype=torch.bool, device=device),
     )
+
+
+def encode_frame_violation_labels(
+    records: list[dict],
+    device: torch.device,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Derive frame violation binary labels from intervention_type.
+
+    Returns (labels, mask) both of shape [B].
+      label=1, mask=1: entity_swap, event_swap, location_swap, role_swap,
+                        title_name_swap  (frame-violation-positive)
+      label=0, mask=1: none, paraphrase, evidence_deletion, evidence_truncation,
+                        irrelevant_evidence, polarity_flip  (non-violation-negative)
+      label=0, mask=0: predicate_swap, time_swap, unknown  (excluded)
+    predicate_swap is excluded because it represents predicate mismatch (not frame).
+    time_swap is excluded because it is absent from the filtered training dataset and
+    would require a separate temporal comparator signal.
+    BCE loss is computed only on mask==1 examples.
+    Does NOT use OOD group names or gold labels at inference.
+    """
+    labels: list[int] = []
+    mask: list[int] = []
+    for r in records:
+        it = r.get("intervention_type", "")
+        if it in _FRAME_VIOLATION_POSITIVE:
+            labels.append(1)
+            mask.append(1)
+        elif it in _FRAME_VIOLATION_NEGATIVE:
+            labels.append(0)
+            mask.append(1)
+        else:
+            labels.append(0)
+            mask.append(0)
+    return (
+        torch.tensor(labels, dtype=torch.float32, device=device),
+        torch.tensor(mask, dtype=torch.bool, device=device),
+    )
+
+
+def compute_frame_violation_metrics(
+    output: dict[str, Any],
+    fv_labels: "torch.Tensor | None",
+    fv_mask: "torch.Tensor | None",
+) -> dict[str, Any]:
+    """Compute frame violation head diagnostic metrics.
+
+    Returns empty dict when the frame violation head is disabled or no valid examples.
+    """
+    if output.get("frame_violation_prob") is None or fv_labels is None or fv_mask is None:
+        return {}
+    probs = output["frame_violation_prob"].detach().cpu()
+    labels = fv_labels.detach().cpu()
+    mask = fv_mask.detach().cpu().bool()
+    valid_count = int(mask.sum().item())
+    if valid_count == 0:
+        return {"fv_valid_count": 0}
+    probs_v = probs[mask]
+    labels_v = labels[mask]
+    preds_v = (probs_v >= 0.5).float()
+    accuracy = (preds_v == labels_v).float().mean().item()
+    pos_rate = labels_v.mean().item()
+    mean_prob = probs_v.mean().item()
+    return {
+        "fv_accuracy": round(accuracy, 4),
+        "fv_pos_rate": round(pos_rate, 4),
+        "fv_valid_count": valid_count,
+        "fv_mean_prob": round(mean_prob, 4),
+    }
 
 
 def compute_boundary_metrics(
@@ -434,6 +522,12 @@ def evaluate_ood_v6b(
             bp_group = bp_cpu[indices]
             group_entry["boundary_prob_mean"] = round(float(bp_group.mean().item()), 4)
             group_entry["boundary_prob_std"] = round(float(bp_group.std().item()), 4)
+        # Stage22-A3: per-group frame_violation_prob diagnostics (absent when head disabled)
+        if output.get("frame_violation_prob") is not None:
+            fv_cpu = output["frame_violation_prob"].detach().cpu()
+            fv_group = fv_cpu[indices]
+            group_entry["frame_violation_prob_mean"] = round(float(fv_group.mean().item()), 4)
+            group_entry["frame_violation_prob_std"] = round(float(fv_group.std().item()), 4)
         group_metrics[group_name] = group_entry
 
     return {
@@ -453,7 +547,8 @@ def prediction_records_v6b(records: list[dict], output: dict[str, Any]) -> list[
         "sufficiency_prob",
         "entitlement_prob",
         "polarity_margin",
-        "boundary_prob",  # Stage22-A: None when boundary head is disabled
+        "boundary_prob",        # Stage22-A:  None when boundary head is disabled
+        "frame_violation_prob", # Stage22-A3: None when frame violation head is disabled
     )
     scalars = {
         key: output[key].detach().cpu()
@@ -480,24 +575,33 @@ def prediction_records_v6b(records: list[dict], output: dict[str, Any]) -> list[
 def intervention_diagnostics_v6b(
     records: list[dict], output: dict[str, Any]
 ) -> dict[str, dict[str, Any]]:
-    """v6b extension of v5.intervention_diagnostics: adds boundary_prob when available.
+    """v6b extension of v5.intervention_diagnostics: adds auxiliary head probs when available.
 
-    Delegates grouping and standard scalar aggregation to v5, then injects
-    boundary_prob_mean per intervention type when the boundary head is active.
-    When the head is disabled (output['boundary_prob'] is None), boundary_prob_mean
-    is omitted entirely from each entry -- no crash, no None placeholder.
+    Delegates grouping and standard scalar aggregation to v5, then injects:
+      - boundary_prob_mean per intervention type (Stage22-A, when head is active)
+      - frame_violation_prob_mean per intervention type (Stage22-A3, when head is active)
+    When a head is disabled, its prob_mean is omitted entirely -- no crash, no None.
     """
+    from collections import defaultdict
     result = v5.intervention_diagnostics(records, output)
-    if output.get("boundary_prob") is not None:
-        from collections import defaultdict
+    has_boundary = output.get("boundary_prob") is not None
+    has_fv = output.get("frame_violation_prob") is not None
+    if has_boundary or has_fv:
         grouped: dict[str, list[int]] = defaultdict(list)
         for idx, record in enumerate(records):
             grouped[record["intervention_type"]].append(idx)
-        bp_cpu = output["boundary_prob"].detach().cpu()
+        bp_cpu = output["boundary_prob"].detach().cpu() if has_boundary else None
+        fv_cpu = output["frame_violation_prob"].detach().cpu() if has_fv else None
         for intervention, indices in grouped.items():
-            if intervention in result:
+            if intervention not in result:
+                continue
+            if bp_cpu is not None:
                 result[intervention]["boundary_prob_mean"] = round(
                     float(bp_cpu[indices].mean().item()), 4
+                )
+            if fv_cpu is not None:
+                result[intervention]["frame_violation_prob_mean"] = round(
+                    float(fv_cpu[indices].mean().item()), 4
                 )
     return result
 
@@ -636,6 +740,43 @@ def build_parser() -> argparse.ArgumentParser:
             "Default 2.5 = 1500/600."
         ),
     )
+    # Stage22-A3: frame violation head
+    parser.add_argument(
+        "--use-frame-violation-loss",
+        action="store_true",
+        default=False,
+        help=(
+            "Enable Stage22-A3 frame violation head. "
+            "Adds a linear head on [frame_pair_repr, predicate_pair_repr, sufficiency_repr] "
+            "trained to distinguish frame-violating interventions (entity_swap, event_swap, "
+            "location_swap, role_swap, title_name_swap; violation=1) from non-violating "
+            "interventions (none, paraphrase, evidence_deletion, evidence_truncation, "
+            "irrelevant_evidence, polarity_flip; violation=0). predicate_swap and time_swap "
+            "are excluded from the BCE loss. "
+            "Does NOT modify output['logits'] or affect predictions."
+        ),
+    )
+    parser.add_argument(
+        "--frame-violation-loss-weight",
+        type=float,
+        default=0.0,
+        help=(
+            "Weight for the frame violation BCE loss added to the total training loss. "
+            "Default 0.0 means the head is built but its loss is not included. "
+            "Requires --use-frame-violation-loss. Suggested starting value: 0.5."
+        ),
+    )
+    parser.add_argument(
+        "--frame-violation-loss-pos-weight",
+        type=float,
+        default=1.2,
+        help=(
+            "Positive class weight for the frame violation BCE loss (pos_weight in "
+            "F.binary_cross_entropy_with_logits). Compensates for class imbalance: "
+            "violation-positive (5 types x 300=1500) vs non-violation-negative "
+            "(6 types x 300=1800). Default 1.2 = 1800/1500."
+        ),
+    )
 
     return parser
 
@@ -708,6 +849,7 @@ def main(argv: list[str] | None = None) -> int:
             freeze_encoder=args.freeze_encoder,
             freeze_a_log=args.freeze_a_log,
             use_boundary_head=args.use_boundary_loss,
+            use_frame_violation_head=args.use_frame_violation_loss,
         )
 
     train_inputs = v5.move_inputs(train_bundle["model_inputs"], device)
@@ -722,7 +864,11 @@ def main(argv: list[str] | None = None) -> int:
                 inputs[key] = F.pad(inputs[key], (0, difference), value=0)
 
     if model is None:
-        model = build_model(len(vocab), max_length, use_boundary_head=args.use_boundary_loss)
+        model = build_model(
+            len(vocab), max_length,
+            use_boundary_head=args.use_boundary_loss,
+            use_frame_violation_head=args.use_frame_violation_loss,
+        )
     model = model.to(device)
 
     if args.backbone == "mamba" and args.freeze_encoder:
@@ -759,6 +905,19 @@ def main(argv: list[str] | None = None) -> int:
             f" train_pos={_train_b_pos_only}"
         )
 
+    # Stage22-A3: frame violation labels derived from intervention_type
+    train_fv_labels, train_fv_mask = encode_frame_violation_labels(train_records, device)
+    dev_fv_labels, dev_fv_mask = encode_frame_violation_labels(dev_records, device)
+    if args.use_frame_violation_loss:
+        _train_fv_valid = int(train_fv_mask.sum().item())
+        _train_fv_pos_only = int((train_fv_labels * train_fv_mask.float()).sum().item())
+        print(
+            f"[fv22a3] enabled weight={args.frame_violation_loss_weight}"
+            f" pos_weight={args.frame_violation_loss_pos_weight}"
+            f" train_valid={_train_fv_valid}"
+            f" train_pos={_train_fv_pos_only}"
+        )
+
     # Wrap v5 training to accept flags
     original_run_training = v5.run_training
 
@@ -791,6 +950,12 @@ def main(argv: list[str] | None = None) -> int:
         dev_boundary_mask=None,
         boundary_loss_weight=0.0,
         boundary_loss_pos_weight=2.5,
+        train_fv_labels=None,
+        train_fv_mask=None,
+        dev_fv_labels=None,
+        dev_fv_mask=None,
+        fv_loss_weight=0.0,
+        fv_loss_pos_weight=1.2,
     ):
         """Modified run_training that passes flags to v6b model."""
         if epochs < 1:
@@ -876,6 +1041,28 @@ def main(argv: list[str] | None = None) -> int:
                     )
                     total_loss = total_loss + boundary_loss_weight * _bdry_loss
 
+            # Stage22-A3: frame violation BCE loss (training signal only; output["logits"] unchanged)
+            _fv_loss = torch.tensor(0.0)
+            if (
+                fv_loss_weight > 0.0
+                and train_fv_labels is not None
+                and train_fv_mask is not None
+                and output.get("frame_violation_logit") is not None
+            ):
+                _active_fv = train_fv_mask.bool()
+                if torch.any(_active_fv):
+                    _fv_pos_w = torch.tensor(
+                        fv_loss_pos_weight,
+                        dtype=torch.float32,
+                        device=output["frame_violation_logit"].device,
+                    )
+                    _fv_loss = F.binary_cross_entropy_with_logits(
+                        output["frame_violation_logit"][_active_fv],
+                        train_fv_labels[_active_fv],
+                        pos_weight=_fv_pos_w,
+                    )
+                    total_loss = total_loss + fv_loss_weight * _fv_loss
+
             total_loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
             optimizer.step()
@@ -899,6 +1086,9 @@ def main(argv: list[str] | None = None) -> int:
             # Stage22-A: boundary head metrics
             _tbm = compute_boundary_metrics(train_output, train_boundary_labels, train_boundary_mask)
             _dbm = compute_boundary_metrics(dev_output, dev_boundary_labels, dev_boundary_mask)
+            # Stage22-A3: frame violation head metrics
+            _tfvm = compute_frame_violation_metrics(train_output, train_fv_labels, train_fv_mask)
+            _dfvm = compute_frame_violation_metrics(dev_output, dev_fv_labels, dev_fv_mask)
 
             if select_metric not in dev_metrics or not isinstance(
                 dev_metrics[select_metric], (int, float)
@@ -940,6 +1130,16 @@ def main(argv: list[str] | None = None) -> int:
                     f" train_mean_prob={_tbm.get('boundary_mean_prob', 0.0):.3f}"
                     f" dev_mean_prob={_dbm.get('boundary_mean_prob', 0.0):.3f}"
                     f" valid={_tbm.get('boundary_valid_count', 0)}"
+                )
+            if _tfvm:
+                _fv_val = float(_fv_loss.item()) if hasattr(_fv_loss, "item") else 0.0
+                print(
+                    f"  [fv22a3] loss={_fv_val:.4f}"
+                    f" train_acc={_tfvm.get('fv_accuracy', 0.0):.3f}"
+                    f" dev_acc={_dfvm.get('fv_accuracy', 0.0):.3f}"
+                    f" train_mean_prob={_tfvm.get('fv_mean_prob', 0.0):.3f}"
+                    f" dev_mean_prob={_dfvm.get('fv_mean_prob', 0.0):.3f}"
+                    f" valid={_tfvm.get('fv_valid_count', 0)}"
                 )
 
         report = {
@@ -1010,6 +1210,12 @@ def main(argv: list[str] | None = None) -> int:
             dev_boundary_mask=dev_boundary_mask if args.use_boundary_loss else None,
             boundary_loss_weight=args.boundary_loss_weight if args.use_boundary_loss else 0.0,
             boundary_loss_pos_weight=args.boundary_loss_pos_weight,
+            train_fv_labels=train_fv_labels if args.use_frame_violation_loss else None,
+            train_fv_mask=train_fv_mask if args.use_frame_violation_loss else None,
+            dev_fv_labels=dev_fv_labels if args.use_frame_violation_loss else None,
+            dev_fv_mask=dev_fv_mask if args.use_frame_violation_loss else None,
+            fv_loss_weight=args.frame_violation_loss_weight if args.use_frame_violation_loss else 0.0,
+            fv_loss_pos_weight=args.frame_violation_loss_pos_weight,
         )
 
     # Capture learned alphas
@@ -1055,6 +1261,16 @@ def main(argv: list[str] | None = None) -> int:
                 "negative": sorted(_BOUNDARY_NEGATIVE),
                 "excluded": "evidence_deletion,evidence_truncation,irrelevant_evidence,"
                             "polarity_flip,predicate_swap,unknown",
+            },
+            "use_frame_violation_head": args.use_frame_violation_loss,
+            "frame_violation_loss_weight": (
+                args.frame_violation_loss_weight if args.use_frame_violation_loss else 0.0
+            ),
+            "frame_violation_loss_pos_weight": args.frame_violation_loss_pos_weight,
+            "frame_violation_label_mapping": {
+                "positive": sorted(_FRAME_VIOLATION_POSITIVE),
+                "negative": sorted(_FRAME_VIOLATION_NEGATIVE),
+                "excluded": "predicate_swap,time_swap,unknown",
             },
             "class_weights": ce_class_weights.tolist() if ce_class_weights is not None else None,
             "class_counts": label_counts,

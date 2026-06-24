@@ -62,6 +62,7 @@ class ContraMambaV6BMinimal(nn.Module):
         alpha_temporal_init: float = 1.25,
         alpha_predicate_init: float = 1.25,
         use_boundary_head: bool = False,
+        use_frame_violation_head: bool = False,
     ) -> None:
         super().__init__()
         if backbone is None:
@@ -124,6 +125,16 @@ class ContraMambaV6BMinimal(nn.Module):
         self.boundary_head: nn.Linear | None = None
         if use_boundary_head:
             self.boundary_head = nn.Linear(
+                frame_size + predicate_size + sufficiency_size, 1
+            )
+
+        # Stage22-A3: frame violation head — distinguishes frame-violating interventions
+        # (entity_swap, event_swap, location_swap, role_swap, title_name_swap; violation=1)
+        # from non-violating interventions (none, paraphrase, sufficiency/polarity types; violation=0).
+        # Same input as boundary_head. Does NOT touch output["logits"] or output["base_logits"].
+        self.frame_violation_head: nn.Linear | None = None
+        if use_frame_violation_head:
+            self.frame_violation_head = nn.Linear(
                 frame_size + predicate_size + sufficiency_size, 1
             )
 
@@ -197,13 +208,12 @@ class ContraMambaV6BMinimal(nn.Module):
             sufficiency_repr=sufficiency["sufficiency_repr"],
         )
 
-        # Stage22-A: preservation boundary head (diagnostic/training signal only)
-        # Output: boundary_logit [B], boundary_prob [B]; None when head is disabled.
+        # Stage22-A / A3: shared slot concatenation for auxiliary diagnostic heads.
+        # Computed once; reused by both boundary_head and frame_violation_head.
         # Does NOT modify final_logits or base_logits.
-        boundary_logit: torch.Tensor | None = None
-        boundary_prob: torch.Tensor | None = None
-        if self.boundary_head is not None:
-            _bdry_input = torch.cat(
+        _aux_input: torch.Tensor | None = None
+        if self.boundary_head is not None or self.frame_violation_head is not None:
+            _aux_input = torch.cat(
                 [
                     frame["frame_pair_repr"],
                     predicate["predicate_pair_repr"],
@@ -211,8 +221,22 @@ class ContraMambaV6BMinimal(nn.Module):
                 ],
                 dim=-1,
             )
-            boundary_logit = self.boundary_head(_bdry_input).squeeze(-1)
+
+        # Stage22-A: preservation boundary head (diagnostic/training signal only)
+        # Output: boundary_logit [B], boundary_prob [B]; None when head is disabled.
+        boundary_logit: torch.Tensor | None = None
+        boundary_prob: torch.Tensor | None = None
+        if self.boundary_head is not None and _aux_input is not None:
+            boundary_logit = self.boundary_head(_aux_input).squeeze(-1)
             boundary_prob = torch.sigmoid(boundary_logit)
+
+        # Stage22-A3: frame violation head (diagnostic/training signal only)
+        # Output: frame_violation_logit [B], frame_violation_prob [B]; None when disabled.
+        frame_violation_logit: torch.Tensor | None = None
+        frame_violation_prob: torch.Tensor | None = None
+        if self.frame_violation_head is not None and _aux_input is not None:
+            frame_violation_logit = self.frame_violation_head(_aux_input).squeeze(-1)
+            frame_violation_prob = torch.sigmoid(frame_violation_logit)
 
         # Base logits (V5 standard)
         decision = self.decision_head(
@@ -311,6 +335,9 @@ class ContraMambaV6BMinimal(nn.Module):
             # Stage22-A: boundary head outputs (None when head is disabled)
             "boundary_logit": boundary_logit,
             "boundary_prob": boundary_prob,
+            # Stage22-A3: frame violation head outputs (None when head is disabled)
+            "frame_violation_logit": frame_violation_logit,
+            "frame_violation_prob": frame_violation_prob,
             **frame,
             **predicate,
             **sufficiency,
