@@ -1,0 +1,83 @@
+Stage22 G2 dev-calibrated selective NE shift
+================================================================================
+
+Interpretation:
+Controlled-dev calibration selected zero shift across all three seeds. G2 therefore does not reproduce the OOD-tuned G1 improvement as a non-leaky deployable fix.
+
+Per-seed rows:
+--------------------------------------------------------------------------------
+seed: 1
+backbone: mamba
+device: cuda
+selected_shift: 0.0
+calibration_source: controlled_dev_only
+stage15_used_for_shift_selection: False
+dev_objective_score: 0.75
+dev_pres_accept_rate: 0.75
+dev_frame_false_entitled_rate: 0.0
+dev_pres_total: 4
+dev_frame_total: 10
+ood_overall_acc: 0.7037037014961243
+ood_macro_f1: 0.3921247132244063
+ood_pred_dist: {'NOT_ENTITLED': 486, 'SUPPORT': 54}
+ood_surface_fne: 0.85
+ood_temporal_erased_fne: 0.68
+ood_frame_loc_fe: 0.15
+ood_frame_role_fe: 0.2
+--------------------------------------------------------------------------------
+seed: 2
+backbone: mamba
+device: cuda
+selected_shift: 0.0
+calibration_source: controlled_dev_only
+stage15_used_for_shift_selection: False
+dev_objective_score: 0.75
+dev_pres_accept_rate: 0.75
+dev_frame_false_entitled_rate: 0.0
+dev_pres_total: 4
+dev_frame_total: 10
+ood_overall_acc: 0.7648147940635681
+ood_macro_f1: 0.4713581690008731
+ood_pred_dist: {'NOT_ENTITLED': 443, 'REFUTE': 2, 'SUPPORT': 95}
+ood_surface_fne: 0.62
+ood_temporal_erased_fne: 0.53
+ood_frame_loc_fe: 0.3
+ood_frame_role_fe: 0.3
+--------------------------------------------------------------------------------
+seed: 3
+backbone: mamba
+device: cuda
+selected_shift: 0.0
+calibration_source: controlled_dev_only
+stage15_used_for_shift_selection: False
+dev_objective_score: 0.75
+dev_pres_accept_rate: 0.75
+dev_frame_false_entitled_rate: 0.0
+dev_pres_total: 4
+dev_frame_total: 10
+ood_overall_acc: 0.6611111164093018
+ood_macro_f1: 0.32194553601484655
+ood_pred_dist: {'NOT_ENTITLED': 517, 'SUPPORT': 23}
+ood_surface_fne: 0.97
+ood_temporal_erased_fne: 0.83
+ood_frame_loc_fe: 0.0
+ood_frame_role_fe: 0.15
+
+Aggregate:
+selected_shift: mean=0.0 sd=0.0 values=[0.0, 0.0, 0.0]
+dev_objective_score: mean=0.75 sd=0.0 values=[0.75, 0.75, 0.75]
+dev_pres_accept_rate: mean=0.75 sd=0.0 values=[0.75, 0.75, 0.75]
+dev_frame_false_entitled_rate: mean=0.0 sd=0.0 values=[0.0, 0.0, 0.0]
+ood_overall_acc: mean=0.709876537322998 sd=0.05212668334321826 values=[0.7037037014961243, 0.7648147940635681, 0.6611111164093018]
+ood_macro_f1: mean=0.395142806080042 sd=0.07475202597467305 values=[0.3921247132244063, 0.4713581690008731, 0.32194553601484655]
+ood_surface_fne: mean=0.8133333333333334 sd=0.17785762095938798 values=[0.85, 0.62, 0.97]
+ood_temporal_erased_fne: mean=0.68 sd=0.14999999999999997 values=[0.68, 0.53, 0.83]
+ood_frame_loc_fe: mean=0.15 sd=0.15 values=[0.15, 0.3, 0.0]
+ood_frame_role_fe: mean=0.21666666666666667 sd=0.07637626158259733 values=[0.2, 0.3, 0.15]
+ood_surface_acc: mean=0.18666666684051356 sd=0.17785761804868244 values=[0.15000000596046448, 0.3799999952316284, 0.029999999329447746]
+ood_temporal_erased_acc: mean=0.31999999781449634 sd=0.14999999850988394 values=[0.3199999928474426, 0.4699999988079071, 0.17000000178813934]
+ood_frame_loc_acc: mean=0.850000003973643 sd=0.15000000596046545 values=[0.8500000238418579, 0.699999988079071, 1.0]
+ood_frame_role_acc: mean=0.7833333412806193 sd=0.0763762797921171 values=[0.800000011920929, 0.699999988079071, 0.8500000238418579]
+ood_predicate_mismatch_acc: mean=1.0 sd=0.0 values=[1.0, 1.0, 1.0]
+ood_temporal_mismatch_acc: mean=1.0 sd=0.0 values=[1.0, 1.0, 1.0]
+ood_sufficiency_control_acc: mean=1.0 sd=0.0 values=[1.0, 1.0, 1.0]

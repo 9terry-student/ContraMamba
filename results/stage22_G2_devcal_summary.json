@@ -1,0 +1,413 @@
+{
+  "created_at_utc": "2026-06-24T09:52:03.962152+00:00",
+  "experiment": "Stage22 G2 dev-calibrated selective NE shift",
+  "interpretation": {
+    "short": "Controlled-dev calibration selected zero shift across all three seeds. G2 therefore does not reproduce the OOD-tuned G1 improvement as a non-leaky deployable fix.",
+    "claim_status": "diagnostic_negative_result",
+    "main_takeaway": "OOD-tuned selective shift exposes a latent preservation/rejection trade-off, but current controlled-dev calibration cannot safely recover it without OOD feedback."
+  },
+  "rows": [
+    {
+      "seed": 1,
+      "main_json": "results/stage22_G2_devcal_ne_shift_seed1.json",
+      "ood_json": "results/stage22_G2_devcal_ne_shift_ood_seed1.json",
+      "backbone": "mamba",
+      "model_name": "state-spaces/mamba-130m-hf",
+      "device": "cuda",
+      "freeze_encoder": true,
+      "freeze_a_log": true,
+      "use_frame_violation_loss": true,
+      "frame_violation_loss_weight": 0.05,
+      "allow_dummy_backbone": false,
+      "selected_shift": 0.0,
+      "calibration_source": "controlled_dev_only",
+      "stage15_used_for_shift_selection": false,
+      "dev_objective_score": 0.75,
+      "dev_pres_accept_rate": 0.75,
+      "dev_frame_false_entitled_rate": 0.0,
+      "dev_pres_total": 4,
+      "dev_frame_total": 10,
+      "dev_selected_count": 14,
+      "dev_selected_rate": 0.5833333333333334,
+      "dev_shift_sweep": {
+        "0": {
+          "frame_false_entitled_rate": 0.0,
+          "frame_total": 10,
+          "objective_score": 0.75,
+          "pres_accept_rate": 0.75,
+          "pres_total": 4,
+          "shift": 0.0
+        },
+        "0.25": {
+          "frame_false_entitled_rate": 0.1,
+          "frame_total": 10,
+          "objective_score": 0.55,
+          "pres_accept_rate": 0.75,
+          "pres_total": 4,
+          "shift": 0.25
+        },
+        "0.5": {
+          "frame_false_entitled_rate": 0.1,
+          "frame_total": 10,
+          "objective_score": 0.55,
+          "pres_accept_rate": 0.75,
+          "pres_total": 4,
+          "shift": 0.5
+        },
+        "0.75": {
+          "frame_false_entitled_rate": 0.2,
+          "frame_total": 10,
+          "objective_score": 0.35,
+          "pres_accept_rate": 0.75,
+          "pres_total": 4,
+          "shift": 0.75
+        },
+        "1": {
+          "frame_false_entitled_rate": 0.3,
+          "frame_total": 10,
+          "objective_score": 0.4,
+          "pres_accept_rate": 1.0,
+          "pres_total": 4,
+          "shift": 1.0
+        }
+      },
+      "ood_overall_acc": 0.7037037014961243,
+      "ood_macro_f1": 0.3921247132244063,
+      "ood_pred_dist": {
+        "NOT_ENTITLED": 486,
+        "SUPPORT": 54
+      },
+      "ood_surface_fne": 0.85,
+      "ood_temporal_erased_fne": 0.68,
+      "ood_frame_loc_fe": 0.15,
+      "ood_frame_role_fe": 0.2,
+      "ood_surface_acc": 0.15000000596046448,
+      "ood_temporal_erased_acc": 0.3199999928474426,
+      "ood_frame_loc_acc": 0.8500000238418579,
+      "ood_frame_role_acc": 0.800000011920929,
+      "ood_predicate_mismatch_acc": 1.0,
+      "ood_temporal_mismatch_acc": 1.0,
+      "ood_sufficiency_control_acc": 1.0
+    },
+    {
+      "seed": 2,
+      "main_json": "results/stage22_G2_devcal_ne_shift_seed2.json",
+      "ood_json": "results/stage22_G2_devcal_ne_shift_ood_seed2.json",
+      "backbone": "mamba",
+      "model_name": "state-spaces/mamba-130m-hf",
+      "device": "cuda",
+      "freeze_encoder": true,
+      "freeze_a_log": true,
+      "use_frame_violation_loss": true,
+      "frame_violation_loss_weight": 0.05,
+      "allow_dummy_backbone": false,
+      "selected_shift": 0.0,
+      "calibration_source": "controlled_dev_only",
+      "stage15_used_for_shift_selection": false,
+      "dev_objective_score": 0.75,
+      "dev_pres_accept_rate": 0.75,
+      "dev_frame_false_entitled_rate": 0.0,
+      "dev_pres_total": 4,
+      "dev_frame_total": 10,
+      "dev_selected_count": 18,
+      "dev_selected_rate": 0.75,
+      "dev_shift_sweep": {
+        "0": {
+          "frame_false_entitled_rate": 0.0,
+          "frame_total": 10,
+          "objective_score": 0.75,
+          "pres_accept_rate": 0.75,
+          "pres_total": 4,
+          "shift": 0.0
+        },
+        "0.25": {
+          "frame_false_entitled_rate": 0.2,
+          "frame_total": 10,
+          "objective_score": 0.35,
+          "pres_accept_rate": 0.75,
+          "pres_total": 4,
+          "shift": 0.25
+        },
+        "0.5": {
+          "frame_false_entitled_rate": 0.3,
+          "frame_total": 10,
+          "objective_score": 0.15000000000000002,
+          "pres_accept_rate": 0.75,
+          "pres_total": 4,
+          "shift": 0.5
+        },
+        "0.75": {
+          "frame_false_entitled_rate": 0.4,
+          "frame_total": 10,
+          "objective_score": -0.050000000000000044,
+          "pres_accept_rate": 0.75,
+          "pres_total": 4,
+          "shift": 0.75
+        },
+        "1": {
+          "frame_false_entitled_rate": 0.6,
+          "frame_total": 10,
+          "objective_score": -0.44999999999999996,
+          "pres_accept_rate": 0.75,
+          "pres_total": 4,
+          "shift": 1.0
+        }
+      },
+      "ood_overall_acc": 0.7648147940635681,
+      "ood_macro_f1": 0.4713581690008731,
+      "ood_pred_dist": {
+        "NOT_ENTITLED": 443,
+        "REFUTE": 2,
+        "SUPPORT": 95
+      },
+      "ood_surface_fne": 0.62,
+      "ood_temporal_erased_fne": 0.53,
+      "ood_frame_loc_fe": 0.3,
+      "ood_frame_role_fe": 0.3,
+      "ood_surface_acc": 0.3799999952316284,
+      "ood_temporal_erased_acc": 0.4699999988079071,
+      "ood_frame_loc_acc": 0.699999988079071,
+      "ood_frame_role_acc": 0.699999988079071,
+      "ood_predicate_mismatch_acc": 1.0,
+      "ood_temporal_mismatch_acc": 1.0,
+      "ood_sufficiency_control_acc": 1.0
+    },
+    {
+      "seed": 3,
+      "main_json": "results/stage22_G2_devcal_ne_shift_seed3.json",
+      "ood_json": "results/stage22_G2_devcal_ne_shift_ood_seed3.json",
+      "backbone": "mamba",
+      "model_name": "state-spaces/mamba-130m-hf",
+      "device": "cuda",
+      "freeze_encoder": true,
+      "freeze_a_log": true,
+      "use_frame_violation_loss": true,
+      "frame_violation_loss_weight": 0.05,
+      "allow_dummy_backbone": false,
+      "selected_shift": 0.0,
+      "calibration_source": "controlled_dev_only",
+      "stage15_used_for_shift_selection": false,
+      "dev_objective_score": 0.75,
+      "dev_pres_accept_rate": 0.75,
+      "dev_frame_false_entitled_rate": 0.0,
+      "dev_pres_total": 4,
+      "dev_frame_total": 10,
+      "dev_selected_count": 18,
+      "dev_selected_rate": 0.75,
+      "dev_shift_sweep": {
+        "0": {
+          "frame_false_entitled_rate": 0.0,
+          "frame_total": 10,
+          "objective_score": 0.75,
+          "pres_accept_rate": 0.75,
+          "pres_total": 4,
+          "shift": 0.0
+        },
+        "0.25": {
+          "frame_false_entitled_rate": 0.1,
+          "frame_total": 10,
+          "objective_score": 0.55,
+          "pres_accept_rate": 0.75,
+          "pres_total": 4,
+          "shift": 0.25
+        },
+        "0.5": {
+          "frame_false_entitled_rate": 0.1,
+          "frame_total": 10,
+          "objective_score": 0.55,
+          "pres_accept_rate": 0.75,
+          "pres_total": 4,
+          "shift": 0.5
+        },
+        "0.75": {
+          "frame_false_entitled_rate": 0.1,
+          "frame_total": 10,
+          "objective_score": 0.55,
+          "pres_accept_rate": 0.75,
+          "pres_total": 4,
+          "shift": 0.75
+        },
+        "1": {
+          "frame_false_entitled_rate": 0.7,
+          "frame_total": 10,
+          "objective_score": -0.6499999999999999,
+          "pres_accept_rate": 0.75,
+          "pres_total": 4,
+          "shift": 1.0
+        }
+      },
+      "ood_overall_acc": 0.6611111164093018,
+      "ood_macro_f1": 0.32194553601484655,
+      "ood_pred_dist": {
+        "NOT_ENTITLED": 517,
+        "SUPPORT": 23
+      },
+      "ood_surface_fne": 0.97,
+      "ood_temporal_erased_fne": 0.83,
+      "ood_frame_loc_fe": 0.0,
+      "ood_frame_role_fe": 0.15,
+      "ood_surface_acc": 0.029999999329447746,
+      "ood_temporal_erased_acc": 0.17000000178813934,
+      "ood_frame_loc_acc": 1.0,
+      "ood_frame_role_acc": 0.8500000238418579,
+      "ood_predicate_mismatch_acc": 1.0,
+      "ood_temporal_mismatch_acc": 1.0,
+      "ood_sufficiency_control_acc": 1.0
+    }
+  ],
+  "aggregate": {
+    "selected_shift": {
+      "mean": 0.0,
+      "sd": 0.0,
+      "values": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "dev_objective_score": {
+      "mean": 0.75,
+      "sd": 0.0,
+      "values": [
+        0.75,
+        0.75,
+        0.75
+      ]
+    },
+    "dev_pres_accept_rate": {
+      "mean": 0.75,
+      "sd": 0.0,
+      "values": [
+        0.75,
+        0.75,
+        0.75
+      ]
+    },
+    "dev_frame_false_entitled_rate": {
+      "mean": 0.0,
+      "sd": 0.0,
+      "values": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "ood_overall_acc": {
+      "mean": 0.709876537322998,
+      "sd": 0.05212668334321826,
+      "values": [
+        0.7037037014961243,
+        0.7648147940635681,
+        0.6611111164093018
+      ]
+    },
+    "ood_macro_f1": {
+      "mean": 0.395142806080042,
+      "sd": 0.07475202597467305,
+      "values": [
+        0.3921247132244063,
+        0.4713581690008731,
+        0.32194553601484655
+      ]
+    },
+    "ood_surface_fne": {
+      "mean": 0.8133333333333334,
+      "sd": 0.17785762095938798,
+      "values": [
+        0.85,
+        0.62,
+        0.97
+      ]
+    },
+    "ood_temporal_erased_fne": {
+      "mean": 0.68,
+      "sd": 0.14999999999999997,
+      "values": [
+        0.68,
+        0.53,
+        0.83
+      ]
+    },
+    "ood_frame_loc_fe": {
+      "mean": 0.15,
+      "sd": 0.15,
+      "values": [
+        0.15,
+        0.3,
+        0.0
+      ]
+    },
+    "ood_frame_role_fe": {
+      "mean": 0.21666666666666667,
+      "sd": 0.07637626158259733,
+      "values": [
+        0.2,
+        0.3,
+        0.15
+      ]
+    },
+    "ood_surface_acc": {
+      "mean": 0.18666666684051356,
+      "sd": 0.17785761804868244,
+      "values": [
+        0.15000000596046448,
+        0.3799999952316284,
+        0.029999999329447746
+      ]
+    },
+    "ood_temporal_erased_acc": {
+      "mean": 0.31999999781449634,
+      "sd": 0.14999999850988394,
+      "values": [
+        0.3199999928474426,
+        0.4699999988079071,
+        0.17000000178813934
+      ]
+    },
+    "ood_frame_loc_acc": {
+      "mean": 0.850000003973643,
+      "sd": 0.15000000596046545,
+      "values": [
+        0.8500000238418579,
+        0.699999988079071,
+        1.0
+      ]
+    },
+    "ood_frame_role_acc": {
+      "mean": 0.7833333412806193,
+      "sd": 0.0763762797921171,
+      "values": [
+        0.800000011920929,
+        0.699999988079071,
+        0.8500000238418579
+      ]
+    },
+    "ood_predicate_mismatch_acc": {
+      "mean": 1.0,
+      "sd": 0.0,
+      "values": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "ood_temporal_mismatch_acc": {
+      "mean": 1.0,
+      "sd": 0.0,
+      "values": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "ood_sufficiency_control_acc": {
+      "mean": 1.0,
+      "sd": 0.0,
+      "values": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    }
+  }
+}
