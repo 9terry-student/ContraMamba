@@ -43,7 +43,7 @@ structurally unaffected.
 
 ### No configuration passed the full G1 safety criterion
 
-No seed data available yet.
+Zero rows passed all five conditions.
 
 The configurations that most effectively reduced `surface_control` and `temporal_erased`
 false-not-entitled rates also caused large false-entitled regressions on
@@ -83,11 +83,22 @@ populations.
 
 Sorted by `surface_control_fne_mean` then `temporal_erased_fne_mean` (lower is better).
 
-_No data (seed JSONs not yet available)._
+| gate | threshold | shift | selected_rate_mean | surface_control_fne_mean | temporal_erased_fne_mean | sufficiency_control_fe_mean | frame_location_mismatch_fe_mean | frame_role_mismatch_fe_mean | temporal_mismatch_fe_mean | predicate_mismatch_fe_mean | passes_g1_gate |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| high_sufficiency | 0.60 | 0.4 | 0.613725 | 0.283333 | 0.573333 | 0.050000 | 0.733333 | 0.766667 | 0.000000 | 0.000000 | False |
+| high_sufficiency | 0.70 | 0.4 | 0.395098 | 0.336667 | 0.580000 | 0.050000 | 0.666667 | 0.683333 | 0.000000 | 0.000000 | False |
+| high_sufficiency | 0.80 | 0.4 | 0.272549 | 0.346667 | 0.630000 | 0.050000 | 0.650000 | 0.650000 | 0.000000 | 0.000000 | False |
+| high_sufficiency | 0.60 | 0.3 | 0.613725 | 0.350000 | 0.626667 | 0.050000 | 0.650000 | 0.683333 | 0.000000 | 0.000000 | False |
+| high_sufficiency | 0.70 | 0.3 | 0.395098 | 0.356667 | 0.630000 | 0.050000 | 0.633333 | 0.683333 | 0.000000 | 0.000000 | False |
+| high_sufficiency | 0.60 | 0.25 | 0.613725 | 0.360000 | 0.650000 | 0.050000 | 0.633333 | 0.650000 | 0.000000 | 0.000000 | False |
+| high_sufficiency | 0.70 | 0.25 | 0.395098 | 0.360000 | 0.653333 | 0.050000 | 0.633333 | 0.650000 | 0.000000 | 0.000000 | False |
+| high_sufficiency | 0.80 | 0.3 | 0.272549 | 0.363333 | 0.663333 | 0.050000 | 0.633333 | 0.650000 | 0.000000 | 0.000000 | False |
+| high_sufficiency | 0.80 | 0.25 | 0.272549 | 0.363333 | 0.676667 | 0.050000 | 0.633333 | 0.650000 | 0.000000 | 0.000000 | False |
+| high_frame | 0.60 | 0.4 | 0.503922 | 0.366667 | 0.566667 | 0.176667 | 0.650000 | 0.650000 | 0.000000 | 0.000000 | False |
 
 ## Top-10 Rows with passes_g1_gate == True
 
-_No data (seed JSONs not yet available)._
+_No rows._
 
 ## Conclusion
 
