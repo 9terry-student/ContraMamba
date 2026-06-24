@@ -253,6 +253,29 @@ separate heads — `frame_location_violation_head` and `frame_role_violation_hea
 
 ---
 
+## Stage22-A4b update (pair-group generator implemented)
+
+The A4a audit confirmed Route 2 (pair_group_based) is feasible: all 10 controlled
+pair_ids contain both preservation and frame sibling records; explicit slot fields
+are absent so Route 1 is not available without additional NER preprocessing.
+
+`scripts/build_stage22a4_pair_contrastive_frame_data.py` implements the generator:
+- Groups controlled records by `pair_id`.
+- Classifies siblings into preservation ({none, paraphrase}) and frame
+  ({entity_swap, event_swap, location_swap, role_swap, title_name_swap}).
+- Constructs Cartesian product (preservation, frame) pairs per pair_id.
+- Outputs a diagnostic contrastive JSONL with `contrastive_id`, `pair_id`,
+  `claim`, `preservation_evidence`, `frame_evidence`, intervention types,
+  labels, `target = "frame_more_violating_than_preservation"`, and explicit
+  `leakage_note = "constructed_from_controlled_data_only"`.
+- Reports generation summary to JSON + Markdown.
+
+This is a diagnostic contrastive dataset. Stage22-B gate remains rejected.
+See `results/stage22a4_pair_contrastive_plan.md` for design, validation criteria,
+and failure modes.
+
+---
+
 ## Core conclusion
 
 1. **In-domain frame intervention supervision** (current `frame_violation_head`
