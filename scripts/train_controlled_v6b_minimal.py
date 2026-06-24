@@ -1815,6 +1815,39 @@ def main(argv: list[str] | None = None) -> int:
             ood_records, ood_flag_source, device
         )
 
+        # Provenance block written to every --output-ood-json file so the backbone
+        # audit script can classify OOD-only JSONs without the main seed JSON.
+        # This is logging only — no model behavior, loss, or logit change.
+        _ood_provenance: dict[str, Any] = {
+            "backbone": args.backbone,
+            "freeze_encoder": getattr(args, "freeze_encoder", None),
+            "model_name": getattr(args, "model_name", None),
+            "seed": args.seed,
+            "data": str(args.data),
+            "ood_data": str(args.ood_data),
+            "ood_flag_source": ood_flag_source,
+            "use_boundary_loss": getattr(args, "use_boundary_loss", False),
+            "boundary_loss_weight": getattr(args, "boundary_loss_weight", 0.0),
+            "use_frame_violation_loss": getattr(args, "use_frame_violation_loss", False),
+            "frame_violation_loss_weight": getattr(args, "frame_violation_loss_weight", 0.0),
+            "use_pair_contrastive_frame_loss": getattr(
+                args, "use_pair_contrastive_frame_loss", False
+            ),
+            "pair_contrastive_frame_data": getattr(
+                args, "pair_contrastive_frame_data", None
+            ),
+            "pair_contrastive_use_case": getattr(
+                args, "pair_contrastive_use_case", None
+            ),
+            "pair_contrastive_valid_count": len(_pc_pair_records),
+            "pair_contrastive_frame_loss_weight": getattr(
+                args, "pair_contrastive_frame_loss_weight", 0.0
+            ),
+            "pair_contrastive_frame_margin": getattr(
+                args, "pair_contrastive_frame_margin", 0.0
+            ),
+        }
+
         ablation_modes = (
             [m.strip() for m in args.ood_ablation_modes.split(",")]
             if args.ood_ablation_modes is not None
@@ -1918,7 +1951,11 @@ def main(argv: list[str] | None = None) -> int:
             report["ood_selective_ne_shift_sweep"] = selective_sweep
             if args.output_ood_json is not None:
                 v5.write_report_json(
-                    {"ood_selective_ne_shift_sweep": selective_sweep}, args.output_ood_json
+                    {
+                        "ood_provenance": _ood_provenance,
+                        "ood_selective_ne_shift_sweep": selective_sweep,
+                    },
+                    args.output_ood_json,
                 )
 
         elif ne_shift_vals is not None:
@@ -1968,7 +2005,11 @@ def main(argv: list[str] | None = None) -> int:
             report["ood_unflagged_ne_shift_sweep"] = shift_sweep
             if args.output_ood_json is not None:
                 v5.write_report_json(
-                    {"ood_unflagged_ne_shift_sweep": shift_sweep}, args.output_ood_json
+                    {
+                        "ood_provenance": _ood_provenance,
+                        "ood_unflagged_ne_shift_sweep": shift_sweep,
+                    },
+                    args.output_ood_json,
                 )
 
         elif ablation_modes is not None:
@@ -1997,7 +2038,13 @@ def main(argv: list[str] | None = None) -> int:
                 )
             report["ood_ablation"] = ood_ablation
             if args.output_ood_json is not None:
-                v5.write_report_json({"ood_ablation": ood_ablation}, args.output_ood_json)
+                v5.write_report_json(
+                    {
+                        "ood_provenance": _ood_provenance,
+                        "ood_ablation": ood_ablation,
+                    },
+                    args.output_ood_json,
+                )
 
         else:
             # --- single-mode branch: existing behaviour, unchanged ---
@@ -2010,7 +2057,10 @@ def main(argv: list[str] | None = None) -> int:
             ood_summary["ood_eval_epoch"] = ood_eval_epoch
             report["ood_evaluation"] = ood_summary
             if args.output_ood_json is not None:
-                v5.write_report_json(ood_summary, args.output_ood_json)
+                v5.write_report_json(
+                    {"ood_provenance": _ood_provenance, **ood_summary},
+                    args.output_ood_json,
+                )
             if args.output_ood_predictions_json is not None:
                 ood_metadata = {
                     "ood_data_path": str(args.ood_data),

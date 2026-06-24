@@ -51,6 +51,8 @@ from typing import Any
 _OOD_METRIC_KEYS = frozenset({
     "ood_metrics", "ood_results", "ood_eval", "stage15_results",
     "group_metrics", "ood_group_metrics",
+    # Keys written by train_controlled_v6b_minimal.py OOD branches
+    "ood_selective_ne_shift_sweep", "ood_unflagged_ne_shift_sweep", "ood_ablation",
 })
 
 _DEV_METRIC_KEYS = frozenset({
@@ -102,7 +104,14 @@ def _flat_search(obj: Any, target_keys: frozenset[str]) -> dict[str, Any]:
 
 
 def _collect_configuration(data: dict[str, Any]) -> dict[str, Any]:
-    """Collect all configuration / loss_config dicts from the JSON, merged."""
+    """Collect all configuration / loss_config / ood_provenance dicts, merged.
+
+    Sources (in priority order, later sources fill missing keys):
+      1. data["configuration"]              -- main seed JSON
+      2. data["runs"][*]["configuration"]   -- per-run configs
+      3. data["runs"][*]["loss_config"]     -- per-run loss configs
+      4. data["ood_provenance"]             -- OOD-only JSON companion (Stage22 A4+)
+    """
     cfg: dict[str, Any] = {}
     # top-level configuration
     top_cfg = data.get("configuration")
@@ -119,6 +128,12 @@ def _collect_configuration(data: dict[str, Any]) -> dict[str, Any]:
                 loss_cfg = run_val.get("loss_config")
                 if isinstance(loss_cfg, dict):
                     cfg.update(loss_cfg)
+    # ood_provenance written by train_controlled_v6b_minimal.py to OOD-only JSONs
+    ood_prov = data.get("ood_provenance")
+    if isinstance(ood_prov, dict):
+        # Only fill keys not already found in configuration/loss_config
+        for k, v in ood_prov.items():
+            cfg.setdefault(k, v)
     return cfg
 
 
