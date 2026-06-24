@@ -244,12 +244,59 @@ validation accuracy and contrastive pair accuracy during training.
 1. Run `scripts/build_stage22a4_pair_contrastive_frame_data.py` and inspect the
    summary — verify pair counts by frame_intervention_type and that no pair_ids
    are skipped.
-2. Design the A4b pairwise training head: a margin ranking loss or binary
-   "frame-side scores higher" cross-entropy loss operating on
-   (frame_evidence, preservation_evidence) pairs from the same pair_id.
-3. Add a `--use-pair-contrastive-loss` CLI arg and corresponding head to the
-   training script (separate PR from model architecture changes).
-4. Run a 3-seed mini diagnostic with the pairwise head and measure:
-   - DEV pair ranking accuracy (frame_violation_prob(frame) > frame_violation_prob(pres))
-   - OOD ranking: frame_location / frame_role mean vs surface_control / temporal_erased mean
-5. Accept as Stage22-B gate precondition only if OOD ranking criterion passes.
+2. ~~Design the A4b pairwise training head~~ — **Done (Stage22-A4c)**: see below.
+3. Run a 3-seed mini diagnostic with the pairwise head and measure:
+   - DEV pair ranking accuracy (`pair_contrastive_frame_accuracy` in training log)
+   - DEV pair mean margin (`pair_contrastive_frame_margin_mean`)
+   - OOD ranking: frame_location / frame_role `frame_violation_prob` mean vs
+     surface_control / temporal_erased mean
+4. Accept as Stage22-B gate precondition only if OOD ranking criterion passes
+   (frame mean > surface mean by ≥ 0.10).
+
+---
+
+## Stage22-A4c update (pair contrastive loss implemented)
+
+The pair contrastive frame ranking loss is now implemented in
+`scripts/train_controlled_v6b_minimal.py`.
+
+### New CLI args
+
+| Arg | Default | Description |
+|---|---|---|
+| `--pair-contrastive-frame-data` | None | Path to pair contrastive JSONL (controlled data only) |
+| `--use-pair-contrastive-frame-loss` | False | Enable the pair contrastive ranking loss |
+| `--pair-contrastive-frame-loss-weight` | 0.0 | Weight added to total training loss |
+| `--pair-contrastive-frame-margin` | 0.2 | Margin δ in relu(δ − (frame_fvl − pres_fvl)).mean() |
+| `--pair-contrastive-use-case` | `frame_violation_contrastive` | Filter by contrastive_use_case |
+
+### Loss definition
+
+For each pair record, two separate forward passes (no flags) produce
+`frame_violation_logit` for the preservation-evidence input and the frame-evidence input.
+
+```
+pc_loss = relu(margin - (frame_fvl - pres_fvl)).mean()
+total_loss += pc_loss_weight * pc_loss
+```
+
+`output["logits"]` and predictions are never touched. The ranking loss supervises
+only `frame_violation_logit` via the `frame_violation_head` parameters.
+
+### Eval metrics (logged every epoch, captured at best dev epoch)
+
+| Metric | Description |
+|---|---|
+| `pair_contrastive_frame_accuracy` | Fraction where frame_fvl > pres_fvl |
+| `pair_contrastive_frame_margin_mean` | Mean(frame_fvl − pres_fvl) |
+| `pair_contrastive_frame_loss` | relu(margin − margin_mean).mean() at eval |
+| `pair_contrastive_frame_mean_pres_fv_prob` | Mean sigmoid(pres_fvl) |
+| `pair_contrastive_frame_mean_frame_fv_prob` | Mean sigmoid(frame_fvl) |
+| `pair_contrastive_frame_valid_count` | Number of pair records used |
+
+### Leakage contract
+
+- Pair contrastive data must have `leakage_note = "constructed_from_controlled_data_only"`.
+- Stage15 OOD records are never loaded in this path.
+- No OOD group names or labels are used in the loss or forward pass.
+- All behavior is disabled by default (requires `--use-pair-contrastive-frame-loss`).

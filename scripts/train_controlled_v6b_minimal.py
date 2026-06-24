@@ -418,6 +418,76 @@ def compute_boundary_metrics(
     }
 
 
+# ---------------------------------------------------------------------------
+# Stage22-A4c: pair-group contrastive frame helpers
+# ---------------------------------------------------------------------------
+
+_PC_USE_CASES = frozenset({
+    "frame_violation_contrastive",
+    "support_safe_frame_contrastive",
+    "all",
+})
+
+
+def load_pair_contrastive_jsonl(
+    path: Path,
+    *,
+    use_case_filter: str = "frame_violation_contrastive",
+) -> list[dict[str, Any]]:
+    """Load pair contrastive JSONL and filter by contrastive_use_case.
+
+    use_case_filter="all" keeps all records regardless of contrastive_use_case.
+    Stage15 OOD records are never loaded here; this file must have been constructed
+    from controlled data only (leakage_note = "constructed_from_controlled_data_only").
+    """
+    records: list[dict[str, Any]] = []
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                records.append(json.loads(line))
+    if use_case_filter == "all":
+        return records
+    return [r for r in records if r.get("contrastive_use_case") == use_case_filter]
+
+
+def compute_pair_contrastive_metrics(
+    pres_output: dict[str, Any],
+    frame_output: dict[str, Any],
+    *,
+    margin: float,
+) -> dict[str, Any]:
+    """Compute pair contrastive ranking metrics for the frame_violation_head.
+
+    Returns empty dict when frame_violation_logit is absent from either output.
+    Does NOT modify logits or predictions; purely diagnostic.
+    """
+    if (
+        pres_output.get("frame_violation_logit") is None
+        or frame_output.get("frame_violation_logit") is None
+    ):
+        return {}
+    pres_logits = pres_output["frame_violation_logit"].detach().cpu().squeeze(-1)
+    frame_logits = frame_output["frame_violation_logit"].detach().cpu().squeeze(-1)
+    n = int(pres_logits.shape[0])
+    if n == 0:
+        return {"pair_contrastive_frame_valid_count": 0}
+    diff = frame_logits - pres_logits
+    accuracy = float((diff > 0).float().mean().item())
+    mean_margin = float(diff.mean().item())
+    ranking_loss = float(F.relu(margin - diff).mean().item())
+    pres_probs = torch.sigmoid(pres_logits)
+    frame_probs = torch.sigmoid(frame_logits)
+    return {
+        "pair_contrastive_frame_valid_count": n,
+        "pair_contrastive_frame_accuracy": round(accuracy, 4),
+        "pair_contrastive_frame_margin_mean": round(mean_margin, 4),
+        "pair_contrastive_frame_loss": round(ranking_loss, 4),
+        "pair_contrastive_frame_mean_pres_fv_prob": round(float(pres_probs.mean().item()), 4),
+        "pair_contrastive_frame_mean_frame_fv_prob": round(float(frame_probs.mean().item()), 4),
+    }
+
+
 def compute_class_weights_v6b(
     records: list[dict],
     mode: str,
@@ -777,6 +847,64 @@ def build_parser() -> argparse.ArgumentParser:
             "(6 types x 300=1800). Default 1.2 = 1800/1500."
         ),
     )
+    # Stage22-A4c: pair-group contrastive frame ranking loss
+    parser.add_argument(
+        "--pair-contrastive-frame-data",
+        type=str,
+        default=None,
+        help=(
+            "Path to Stage22-A4b pair contrastive JSONL "
+            "(e.g. data/stage22a4_pair_contrastive_frame.jsonl). "
+            "Must have been constructed from controlled data only "
+            "(leakage_note = constructed_from_controlled_data_only). "
+            "Stage15 OOD records must NOT be present. "
+            "Required when --use-pair-contrastive-frame-loss is set."
+        ),
+    )
+    parser.add_argument(
+        "--use-pair-contrastive-frame-loss",
+        action="store_true",
+        default=False,
+        help=(
+            "Enable Stage22-A4c pair-group contrastive frame ranking loss. "
+            "Trains the frame_violation_head to score frame_evidence higher than "
+            "preservation_evidence within the same pair_id using a margin ranking loss. "
+            "Requires --use-frame-violation-loss and --pair-contrastive-frame-data. "
+            "Does NOT modify output['logits'] or affect predictions."
+        ),
+    )
+    parser.add_argument(
+        "--pair-contrastive-frame-loss-weight",
+        type=float,
+        default=0.0,
+        help=(
+            "Weight for the pair contrastive frame ranking loss added to total training loss. "
+            "Default 0.0 (disabled). Requires --use-pair-contrastive-frame-loss."
+        ),
+    )
+    parser.add_argument(
+        "--pair-contrastive-frame-margin",
+        type=float,
+        default=0.2,
+        help=(
+            "Margin for the pair contrastive ranking loss: "
+            "relu(margin - (frame_fvl - pres_fvl)).mean(). "
+            "Default 0.2. A positive margin enforces a minimum separation between "
+            "frame_violation_logit(frame_evidence) and frame_violation_logit(pres_evidence)."
+        ),
+    )
+    parser.add_argument(
+        "--pair-contrastive-use-case",
+        choices=("frame_violation_contrastive", "support_safe_frame_contrastive", "all"),
+        default="frame_violation_contrastive",
+        help=(
+            "Filter pair contrastive records by contrastive_use_case field. "
+            "frame_violation_contrastive: frame valid + pres non-frame (may be REFUTE). "
+            "support_safe_frame_contrastive: strict subset where pres is SUPPORT-safe. "
+            "all: use all records regardless of use_case. "
+            "Default: frame_violation_contrastive."
+        ),
+    )
 
     return parser
 
@@ -918,6 +1046,69 @@ def main(argv: list[str] | None = None) -> int:
             f" train_pos={_train_fv_pos_only}"
         )
 
+    # Stage22-A4c: pair contrastive frame data loading and encoding
+    _pc_pair_records: list[dict[str, Any]] = []
+    _pc_pres_inputs: "dict[str, torch.Tensor] | None" = None
+    _pc_frame_inputs: "dict[str, torch.Tensor] | None" = None
+    if (
+        args.use_pair_contrastive_frame_loss
+        and args.pair_contrastive_frame_data is not None
+        and args.use_frame_violation_loss
+    ):
+        _pc_path = Path(args.pair_contrastive_frame_data)
+        if not _pc_path.exists():
+            raise FileNotFoundError(
+                f"--pair-contrastive-frame-data not found: {_pc_path}"
+            )
+        _pc_pair_records = load_pair_contrastive_jsonl(
+            _pc_path, use_case_filter=args.pair_contrastive_use_case
+        )
+        print(
+            f"[pc22a4c] loaded {len(_pc_pair_records)} pair records"
+            f" use_case={args.pair_contrastive_use_case}"
+            f" weight={args.pair_contrastive_frame_loss_weight}"
+            f" margin={args.pair_contrastive_frame_margin}"
+        )
+        if _pc_pair_records:
+            _pc_pres_virtual = [
+                {
+                    "claim": r["claim"],
+                    "evidence": r["preservation_evidence"],
+                    "final_label": r.get("preservation_final_label") or "SUPPORT",
+                }
+                for r in _pc_pair_records
+            ]
+            _pc_frame_virtual = [
+                {
+                    "claim": r["claim"],
+                    "evidence": r["frame_evidence"],
+                    "final_label": r.get("frame_final_label") or "NOT_ENTITLED",
+                }
+                for r in _pc_pair_records
+            ]
+            if args.backbone == "dummy":
+                _pres_bundle = v5.encode_records(_pc_pres_virtual, vocab)
+                _frame_bundle = v5.encode_records(_pc_frame_virtual, vocab)
+            else:
+                _pres_bundle = v5.encode_mamba_records(
+                    _pc_pres_virtual, tokenizer, args.max_length
+                )
+                _frame_bundle = v5.encode_mamba_records(
+                    _pc_frame_virtual, tokenizer, args.max_length
+                )
+            _pc_pres_inputs = v5.move_inputs(_pres_bundle["model_inputs"], device)
+            _pc_frame_inputs = v5.move_inputs(_frame_bundle["model_inputs"], device)
+            # Align sequence length to max_length
+            for _pc_inp in (_pc_pres_inputs, _pc_frame_inputs):
+                _pc_seq = _pc_inp["input_ids"].shape[1]
+                if _pc_seq < max_length:
+                    _diff = max_length - _pc_seq
+                    for _key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
+                        _pc_inp[_key] = F.pad(_pc_inp[_key], (0, _diff), value=0)
+                elif _pc_seq > max_length:
+                    for _key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
+                        _pc_inp[_key] = _pc_inp[_key][:, :max_length]
+
     # Wrap v5 training to accept flags
     original_run_training = v5.run_training
 
@@ -956,6 +1147,12 @@ def main(argv: list[str] | None = None) -> int:
         dev_fv_mask=None,
         fv_loss_weight=0.0,
         fv_loss_pos_weight=1.2,
+        # Stage22-A4c: pair contrastive frame inputs (pre-encoded; None when disabled)
+        pc_pres_inputs=None,
+        pc_frame_inputs=None,
+        pc_loss_weight=0.0,
+        pc_margin=0.2,
+        pc_valid_count=0,
     ):
         """Modified run_training that passes flags to v6b model."""
         if epochs < 1:
@@ -969,6 +1166,7 @@ def main(argv: list[str] | None = None) -> int:
         best_dev_pairwise_checks = None
         best_dev_predictions = None
         best_trainable_state = None
+        best_pc_metrics: dict[str, Any] = {}
         best_state: dict[str, torch.Tensor] | None = None
 
         for epoch in range(1, epochs + 1):
@@ -1063,6 +1261,38 @@ def main(argv: list[str] | None = None) -> int:
                     )
                     total_loss = total_loss + fv_loss_weight * _fv_loss
 
+            # Stage22-A4c: pair contrastive frame ranking loss
+            # Supervises frame_violation_logit only; output["logits"] and predictions unchanged.
+            _pc_loss = torch.tensor(0.0)
+            if (
+                pc_loss_weight > 0.0
+                and pc_pres_inputs is not None
+                and pc_frame_inputs is not None
+                and output.get("frame_violation_logit") is not None
+            ):
+                _pc_n = pc_pres_inputs["input_ids"].shape[0]
+                _pc_zero_t = torch.zeros(_pc_n, dtype=torch.float32, device=device)
+                _pc_zero_p = torch.zeros(_pc_n, dtype=torch.float32, device=device)
+                _pc_pres_out = model(
+                    **v5.model_feature_inputs(pc_pres_inputs),
+                    temporal_mismatch_flags=_pc_zero_t,
+                    predicate_mismatch_flags=_pc_zero_p,
+                )
+                _pc_frame_out = model(
+                    **v5.model_feature_inputs(pc_frame_inputs),
+                    temporal_mismatch_flags=_pc_zero_t,
+                    predicate_mismatch_flags=_pc_zero_p,
+                )
+                if (
+                    _pc_pres_out.get("frame_violation_logit") is not None
+                    and _pc_frame_out.get("frame_violation_logit") is not None
+                ):
+                    _pres_fvl = _pc_pres_out["frame_violation_logit"].squeeze(-1)
+                    _frame_fvl = _pc_frame_out["frame_violation_logit"].squeeze(-1)
+                    _margins = _frame_fvl - _pres_fvl
+                    _pc_loss = F.relu(pc_margin - _margins).mean()
+                    total_loss = total_loss + pc_loss_weight * _pc_loss
+
             total_loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
             optimizer.step()
@@ -1090,6 +1320,30 @@ def main(argv: list[str] | None = None) -> int:
             _tfvm = compute_frame_violation_metrics(train_output, train_fv_labels, train_fv_mask)
             _dfvm = compute_frame_violation_metrics(dev_output, dev_fv_labels, dev_fv_mask)
 
+            # Stage22-A4c: pair contrastive ranking metrics (eval; no_grad already active)
+            _pc_eval_metrics: dict[str, Any] = {}
+            if (
+                pc_pres_inputs is not None
+                and pc_frame_inputs is not None
+                and output.get("frame_violation_logit") is not None
+            ):
+                _pc_n = pc_pres_inputs["input_ids"].shape[0]
+                _pc_zero_t = torch.zeros(_pc_n, dtype=torch.float32, device=device)
+                _pc_zero_p = torch.zeros(_pc_n, dtype=torch.float32, device=device)
+                _pc_pres_eval = model(
+                    **v5.model_feature_inputs(pc_pres_inputs),
+                    temporal_mismatch_flags=_pc_zero_t,
+                    predicate_mismatch_flags=_pc_zero_p,
+                )
+                _pc_frame_eval = model(
+                    **v5.model_feature_inputs(pc_frame_inputs),
+                    temporal_mismatch_flags=_pc_zero_t,
+                    predicate_mismatch_flags=_pc_zero_p,
+                )
+                _pc_eval_metrics = compute_pair_contrastive_metrics(
+                    _pc_pres_eval, _pc_frame_eval, margin=pc_margin
+                )
+
             if select_metric not in dev_metrics or not isinstance(
                 dev_metrics[select_metric], (int, float)
             ):
@@ -1107,6 +1361,7 @@ def main(argv: list[str] | None = None) -> int:
                     best_dev_pairwise_checks = v5.pairwise_checks(dev_records, dev_output)
                 best_dev_predictions = prediction_records_v6b(dev_records, dev_output)
                 best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
+                best_pc_metrics = _pc_eval_metrics
                 if capture_best_trainable_state:
                     best_trainable_state = v5.capture_trainable_state(model)
 
@@ -1141,6 +1396,16 @@ def main(argv: list[str] | None = None) -> int:
                     f" dev_mean_prob={_dfvm.get('fv_mean_prob', 0.0):.3f}"
                     f" valid={_tfvm.get('fv_valid_count', 0)}"
                 )
+            if _pc_eval_metrics:
+                _pc_loss_val = float(_pc_loss.item()) if hasattr(_pc_loss, "item") else 0.0
+                print(
+                    f"  [pc22a4c] loss={_pc_loss_val:.4f}"
+                    f" acc={_pc_eval_metrics.get('pair_contrastive_frame_accuracy', 0.0):.3f}"
+                    f" margin={_pc_eval_metrics.get('pair_contrastive_frame_margin_mean', 0.0):.3f}"
+                    f" pres_prob={_pc_eval_metrics.get('pair_contrastive_frame_mean_pres_fv_prob', 0.0):.3f}"
+                    f" frame_prob={_pc_eval_metrics.get('pair_contrastive_frame_mean_frame_fv_prob', 0.0):.3f}"
+                    f" n={_pc_eval_metrics.get('pair_contrastive_frame_valid_count', 0)}"
+                )
 
         report = {
             "run_name": run_name,
@@ -1152,6 +1417,7 @@ def main(argv: list[str] | None = None) -> int:
             "best_dev_pairwise_checks": best_dev_pairwise_checks,
             "_best_dev_predictions": best_dev_predictions,
             "loss_config": loss_config,
+            "best_pair_contrastive_frame_metrics": best_pc_metrics,
         }
         report["_best_state"] = best_state
         if best_trainable_state is not None:
@@ -1216,6 +1482,14 @@ def main(argv: list[str] | None = None) -> int:
             dev_fv_mask=dev_fv_mask if args.use_frame_violation_loss else None,
             fv_loss_weight=args.frame_violation_loss_weight if args.use_frame_violation_loss else 0.0,
             fv_loss_pos_weight=args.frame_violation_loss_pos_weight,
+            pc_pres_inputs=_pc_pres_inputs if args.use_pair_contrastive_frame_loss else None,
+            pc_frame_inputs=_pc_frame_inputs if args.use_pair_contrastive_frame_loss else None,
+            pc_loss_weight=(
+                args.pair_contrastive_frame_loss_weight
+                if args.use_pair_contrastive_frame_loss else 0.0
+            ),
+            pc_margin=args.pair_contrastive_frame_margin,
+            pc_valid_count=len(_pc_pair_records),
         )
 
     # Capture learned alphas
@@ -1272,6 +1546,19 @@ def main(argv: list[str] | None = None) -> int:
                 "negative": sorted(_FRAME_VIOLATION_NEGATIVE),
                 "excluded": "predicate_swap,time_swap,unknown",
             },
+            "use_pair_contrastive_frame_loss": args.use_pair_contrastive_frame_loss,
+            "pair_contrastive_frame_data": args.pair_contrastive_frame_data,
+            "pair_contrastive_frame_loss_weight": (
+                args.pair_contrastive_frame_loss_weight
+                if args.use_pair_contrastive_frame_loss else 0.0
+            ),
+            "pair_contrastive_frame_margin": args.pair_contrastive_frame_margin,
+            "pair_contrastive_use_case": args.pair_contrastive_use_case,
+            "pair_contrastive_valid_count": len(_pc_pair_records),
+            "pair_contrastive_leakage_constraint": (
+                "pair contrastive data must be constructed from controlled data only; "
+                "Stage15 OOD records are not used for training"
+            ),
             "class_weights": ce_class_weights.tolist() if ce_class_weights is not None else None,
             "class_counts": label_counts,
         },
