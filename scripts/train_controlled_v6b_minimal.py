@@ -477,6 +477,31 @@ def prediction_records_v6b(records: list[dict], output: dict[str, Any]) -> list[
     return exported
 
 
+def intervention_diagnostics_v6b(
+    records: list[dict], output: dict[str, Any]
+) -> dict[str, dict[str, Any]]:
+    """v6b extension of v5.intervention_diagnostics: adds boundary_prob when available.
+
+    Delegates grouping and standard scalar aggregation to v5, then injects
+    boundary_prob_mean per intervention type when the boundary head is active.
+    When the head is disabled (output['boundary_prob'] is None), boundary_prob_mean
+    is omitted entirely from each entry -- no crash, no None placeholder.
+    """
+    result = v5.intervention_diagnostics(records, output)
+    if output.get("boundary_prob") is not None:
+        from collections import defaultdict
+        grouped: dict[str, list[int]] = defaultdict(list)
+        for idx, record in enumerate(records):
+            grouped[record["intervention_type"]].append(idx)
+        bp_cpu = output["boundary_prob"].detach().cpu()
+        for intervention, indices in grouped.items():
+            if intervention in result:
+                result[intervention]["boundary_prob_mean"] = round(
+                    float(bp_cpu[indices].mean().item()), 4
+                )
+    return result
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = v5.build_parser()
     parser.add_argument(
@@ -884,7 +909,7 @@ def main(argv: list[str] | None = None) -> int:
                 best_score = score
                 best_epoch = epoch
                 best_dev_metrics = dev_metrics
-                best_dev_interventions = v5.intervention_diagnostics(
+                best_dev_interventions = intervention_diagnostics_v6b(
                     dev_records, dev_output
                 )
                 # Skip pairwise checks in smoke mode (may have incomplete variants)
