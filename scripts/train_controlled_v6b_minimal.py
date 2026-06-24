@@ -419,14 +419,70 @@ def compute_boundary_metrics(
 
 
 # ---------------------------------------------------------------------------
-# Stage22-A4c: pair-group contrastive frame helpers
+# Stage22-A4c/A4e: pair-group contrastive frame helpers
 # ---------------------------------------------------------------------------
 
-_PC_USE_CASES = frozenset({
+# A4b2 use-case values (filter via contrastive_use_case field)
+_PC_USE_CASES_A4B2 = frozenset({
     "frame_violation_contrastive",
     "support_safe_frame_contrastive",
-    "all",
 })
+# A4d OOD-matched use-case values (filter via target / source / preservation_construction_type)
+_PC_USE_CASES_A4D = frozenset({
+    "ood_matched",
+    "ood_matched_surface",
+    "ood_matched_temporal",
+})
+_PC_USE_CASES = _PC_USE_CASES_A4B2 | _PC_USE_CASES_A4D | frozenset({"all"})
+
+_A4D_TARGET = "frame_more_violating_than_ood_matched_preservation"
+_A4D_SOURCE = "controlled_ood_matched_pair_builder"
+
+
+def _detect_pc_schema(r: dict[str, Any]) -> str:
+    """Return 'a4d' when the record uses A4d OOD-matched schema, else 'a4b2'."""
+    if r.get("source") == _A4D_SOURCE or r.get("target") == _A4D_TARGET:
+        return "a4d"
+    if "preservation_construction_type" in r or "frame_construction_type" in r:
+        return "a4d"
+    return "a4b2"
+
+
+def _normalize_pair_record(r: dict[str, Any]) -> dict[str, Any]:
+    """Return a copy of r with canonical intervention_type fields filled in.
+
+    A4b2 records already have preservation_intervention_type / frame_intervention_type.
+    A4d records store these as preservation_source_intervention_type /
+    frame_source_intervention_type; this function aliases them into the canonical names
+    so that _pair_record_to_virtual_records works for both schemas without modification.
+    """
+    schema = _detect_pc_schema(r)
+    if schema == "a4b2":
+        return r  # already has canonical fields
+    # A4d: alias source_intervention_type → intervention_type
+    out = dict(r)
+    if "preservation_intervention_type" not in out and "preservation_source_intervention_type" in out:
+        out["preservation_intervention_type"] = out["preservation_source_intervention_type"]
+    if "frame_intervention_type" not in out and "frame_source_intervention_type" in out:
+        out["frame_intervention_type"] = out["frame_source_intervention_type"]
+    return out
+
+
+def _pc_filter(r: dict[str, Any], use_case_filter: str) -> bool:
+    """Return True when record r passes the use_case_filter."""
+    if use_case_filter == "all":
+        return True
+    schema = _detect_pc_schema(r)
+    if use_case_filter in _PC_USE_CASES_A4B2:
+        # A4b2 path: match contrastive_use_case field
+        return schema == "a4b2" and r.get("contrastive_use_case") == use_case_filter
+    if use_case_filter == "ood_matched":
+        return schema == "a4d"
+    if use_case_filter == "ood_matched_surface":
+        return schema == "a4d" and r.get("preservation_construction_type") == "surface_like_preservation"
+    if use_case_filter == "ood_matched_temporal":
+        return schema == "a4d" and r.get("preservation_construction_type") == "temporal_erased_like_preservation"
+    return False
 
 
 def load_pair_contrastive_jsonl(
@@ -434,21 +490,26 @@ def load_pair_contrastive_jsonl(
     *,
     use_case_filter: str = "frame_violation_contrastive",
 ) -> list[dict[str, Any]]:
-    """Load pair contrastive JSONL and filter by contrastive_use_case.
+    """Load pair contrastive JSONL, detect schema (A4b2 or A4d), filter, and normalize.
 
-    use_case_filter="all" keeps all records regardless of contrastive_use_case.
-    Stage15 OOD records are never loaded here; this file must have been constructed
-    from controlled data only (leakage_note = "constructed_from_controlled_data_only").
+    Filtering rules:
+      frame_violation_contrastive / support_safe_frame_contrastive
+          → A4b2 records matched by contrastive_use_case field
+      ood_matched        → all A4d records (target or source tag present)
+      ood_matched_surface  → A4d records where preservation_construction_type == surface_like_preservation
+      ood_matched_temporal → A4d records where preservation_construction_type == temporal_erased_like_preservation
+      all                → all records from either schema
+
+    Returns normalized records (preservation_intervention_type and frame_intervention_type
+    always populated). Stage15 OOD records are never loaded here.
     """
-    records: list[dict[str, Any]] = []
+    raw: list[dict[str, Any]] = []
     with open(path, encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if line:
-                records.append(json.loads(line))
-    if use_case_filter == "all":
-        return records
-    return [r for r in records if r.get("contrastive_use_case") == use_case_filter]
+                raw.append(json.loads(line))
+    return [_normalize_pair_record(r) for r in raw if _pc_filter(r, use_case_filter)]
 
 
 def compute_pair_contrastive_metrics(
@@ -517,13 +578,15 @@ def _pair_record_to_virtual_records(
     the pair-contrastive loss reads frame_violation_logit, not these label tensors.
     """
     cid = r.get("contrastive_id", "<unknown>")
-    for req in (*_PC_PRES_REQUIRED, *_PC_FRAME_REQUIRED):
-        if not r.get(req):
-            raise ValueError(
-                f"[pc22a4c] pair record {cid!r} is missing required field {req!r}. "
-                "Ensure the pair contrastive JSONL was generated by "
-                "build_stage22a4_pair_contrastive_frame_data.py."
-            )
+    _schema = _detect_pc_schema(r)
+    missing = [f for f in (*_PC_PRES_REQUIRED, *_PC_FRAME_REQUIRED) if not r.get(f)]
+    if missing:
+        raise ValueError(
+            f"[pc22a4e] pair record {cid!r} (schema={_schema!r}) is missing required "
+            f"field(s): {missing}. "
+            "A4b2 records must have preservation_intervention_type / frame_intervention_type. "
+            "A4d records must be normalized first via load_pair_contrastive_jsonl."
+        )
 
     pres: dict[str, Any] = {
         "id": r.get("preservation_source_id") or f"{cid}__pres",
@@ -963,13 +1026,25 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--pair-contrastive-use-case",
-        choices=("frame_violation_contrastive", "support_safe_frame_contrastive", "all"),
+        choices=(
+            "frame_violation_contrastive",
+            "support_safe_frame_contrastive",
+            "ood_matched",
+            "ood_matched_surface",
+            "ood_matched_temporal",
+            "all",
+        ),
         default="frame_violation_contrastive",
         help=(
-            "Filter pair contrastive records by contrastive_use_case field. "
-            "frame_violation_contrastive: frame valid + pres non-frame (may be REFUTE). "
-            "support_safe_frame_contrastive: strict subset where pres is SUPPORT-safe. "
-            "all: use all records regardless of use_case. "
+            "Filter pair contrastive records by schema and use_case. "
+            "A4b2 schema filters (contrastive_use_case field): "
+            "  frame_violation_contrastive: frame valid + pres non-frame (may be REFUTE); "
+            "  support_safe_frame_contrastive: strict subset where pres is SUPPORT-safe. "
+            "A4d OOD-matched schema filters (target/source/preservation_construction_type): "
+            "  ood_matched: all A4d OOD-matched records; "
+            "  ood_matched_surface: A4d records with surface_like_preservation only; "
+            "  ood_matched_temporal: A4d records with temporal_erased_like_preservation only. "
+            "all: all records from either schema. "
             "Default: frame_violation_contrastive."
         ),
     )
@@ -1114,10 +1189,12 @@ def main(argv: list[str] | None = None) -> int:
             f" train_pos={_train_fv_pos_only}"
         )
 
-    # Stage22-A4c: pair contrastive frame data loading and encoding
+    # Stage22-A4c/A4e: pair contrastive frame data loading and encoding
     _pc_pair_records: list[dict[str, Any]] = []
     _pc_pres_inputs: "dict[str, torch.Tensor] | None" = None
     _pc_frame_inputs: "dict[str, torch.Tensor] | None" = None
+    _pc_pres_type_counts: dict[str, int] = {}
+    _pc_frame_type_counts: dict[str, int] = {}
     if (
         args.use_pair_contrastive_frame_loss
         and args.pair_contrastive_frame_data is not None
@@ -1131,12 +1208,22 @@ def main(argv: list[str] | None = None) -> int:
         _pc_pair_records = load_pair_contrastive_jsonl(
             _pc_path, use_case_filter=args.pair_contrastive_use_case
         )
+        # Count by construction type for A4d records; empty for A4b2
+        from collections import Counter as _Counter
+        _pc_pres_type_counts: dict[str, int] = dict(
+            _Counter(r.get("preservation_construction_type", "a4b2_record") for r in _pc_pair_records)
+        )
+        _pc_frame_type_counts: dict[str, int] = dict(
+            _Counter(r.get("frame_construction_type", "a4b2_record") for r in _pc_pair_records)
+        )
         print(
-            f"[pc22a4c] loaded {len(_pc_pair_records)} pair records"
+            f"[pc22a4e] loaded {len(_pc_pair_records)} pair records"
             f" use_case={args.pair_contrastive_use_case}"
             f" weight={args.pair_contrastive_frame_loss_weight}"
             f" margin={args.pair_contrastive_frame_margin}"
         )
+        if _pc_pres_type_counts:
+            print(f"  [pc22a4e] pres_types={_pc_pres_type_counts} frame_types={_pc_frame_type_counts}")
         if _pc_pair_records:
             _pc_pres_virtual: list[dict[str, Any]] = []
             _pc_frame_virtual: list[dict[str, Any]] = []
@@ -1419,7 +1506,12 @@ def main(argv: list[str] | None = None) -> int:
                     best_dev_pairwise_checks = v5.pairwise_checks(dev_records, dev_output)
                 best_dev_predictions = prediction_records_v6b(dev_records, dev_output)
                 best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
-                best_pc_metrics = _pc_eval_metrics
+                best_pc_metrics = {
+                    **_pc_eval_metrics,
+                    "pair_contrastive_use_case": args.pair_contrastive_use_case,
+                    "count_by_preservation_construction_type": _pc_pres_type_counts,
+                    "count_by_frame_construction_type": _pc_frame_type_counts,
+                }
                 if capture_best_trainable_state:
                     best_trainable_state = v5.capture_trainable_state(model)
 
@@ -1457,13 +1549,19 @@ def main(argv: list[str] | None = None) -> int:
             if _pc_eval_metrics:
                 _pc_loss_val = float(_pc_loss.item()) if hasattr(_pc_loss, "item") else 0.0
                 print(
-                    f"  [pc22a4c] loss={_pc_loss_val:.4f}"
+                    f"  [pc22a4e] loss={_pc_loss_val:.4f}"
                     f" acc={_pc_eval_metrics.get('pair_contrastive_frame_accuracy', 0.0):.3f}"
                     f" margin={_pc_eval_metrics.get('pair_contrastive_frame_margin_mean', 0.0):.3f}"
                     f" pres_prob={_pc_eval_metrics.get('pair_contrastive_frame_mean_pres_fv_prob', 0.0):.3f}"
                     f" frame_prob={_pc_eval_metrics.get('pair_contrastive_frame_mean_frame_fv_prob', 0.0):.3f}"
                     f" n={_pc_eval_metrics.get('pair_contrastive_frame_valid_count', 0)}"
+                    f" use_case={args.pair_contrastive_use_case}"
                 )
+                if _pc_pres_type_counts:
+                    print(
+                        f"  [pc22a4e] pres={_pc_pres_type_counts}"
+                        f" frame={_pc_frame_type_counts}"
+                    )
 
         report = {
             "run_name": run_name,
