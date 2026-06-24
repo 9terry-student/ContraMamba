@@ -275,30 +275,6 @@ def build_parser() -> argparse.ArgumentParser:
         default="none",
         help="Class weighting mode for CE classification loss (none preserves existing behavior)",
     )
-    parser.add_argument(
-        "--ood-data",
-        type=Path,
-        default=None,
-        help="Optional OOD probe data for post-training evaluation",
-    )
-    parser.add_argument(
-        "--output-ood-json",
-        type=Path,
-        default=None,
-        help="Path to write OOD evaluation summary JSON",
-    )
-    parser.add_argument(
-        "--output-ood-predictions-json",
-        type=Path,
-        default=None,
-        help="Path to write OOD per-example predictions JSON",
-    )
-    parser.add_argument(
-        "--ood-flag-source",
-        choices=("stage15_probe_type", "controlled_heuristic", "none"),
-        default=None,
-        help="Flag source for OOD evaluation; defaults to --flag-source if not set",
-    )
     return parser
 
 
