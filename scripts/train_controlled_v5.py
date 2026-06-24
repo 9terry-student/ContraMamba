@@ -999,7 +999,288 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--dev-ratio", type=float, default=0.2)
     parser.add_argument("--seed", type=int, default=17)
     parser.add_argument("--device", default="cpu")
+    parser.add_argument(
+        "--ood-data",
+        type=Path,
+        default=None,
+        help="Optional OOD probe data for post-training evaluation",
+    )
+    parser.add_argument(
+        "--ood-flag-source",
+        choices=("stage15_probe_type", "controlled_heuristic", "none"),
+        default=None,
+        help="Flag source label for OOD evaluation metadata (informational only for v5)",
+    )
+    parser.add_argument(
+        "--output-ood-json",
+        type=Path,
+        default=None,
+        help="Path to write OOD evaluation summary JSON",
+    )
+    parser.add_argument(
+        "--output-ood-predictions-json",
+        type=Path,
+        default=None,
+        help="Path to write OOD per-example predictions JSON",
+    )
     return parser
+
+
+def load_ood_jsonl(path: Path) -> list[dict[str, Any]]:
+    """Read JSONL for OOD evaluation; skips blank lines, no v5 validation."""
+    records = []
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                records.append(json.loads(line))
+    return records
+
+
+def _encode_ood_label_tensors(records: list[dict]) -> dict[str, torch.Tensor]:
+    """Encode label tensors tolerating absent auxiliary labels (Stage15 OOD)."""
+    return {
+        "final_labels": torch.tensor(
+            [FINAL_LABEL_TO_ID[record["final_label"]] for record in records]
+        ),
+        "frame_compatible_labels": torch.tensor(
+            [record.get("frame_compatible_label", 0) for record in records],
+            dtype=torch.float32,
+        ),
+        "predicate_covered_labels": torch.tensor(
+            [record.get("predicate_covered_label", 0) for record in records],
+            dtype=torch.float32,
+        ),
+        "sufficiency_labels": torch.tensor(
+            [record.get("sufficiency_label", 0) for record in records],
+            dtype=torch.float32,
+        ),
+        "polarity_labels": torch.tensor(
+            [
+                POLARITY_LABEL_TO_ID.get(record.get("polarity_label", "SUPPORT"), 0)
+                for record in records
+            ]
+        ),
+    }
+
+
+def encode_ood_records(records: list[dict], vocab: dict[str, int]) -> dict[str, Any]:
+    """Encode OOD records with the dummy vocab; tolerates absent auxiliary labels."""
+    encoded: list[list[int]] = []
+    claim_lengths: list[int] = []
+    evidence_lengths: list[int] = []
+    for record in records:
+        claim_tokens = tokenize(record["claim"])
+        evidence_tokens = tokenize(record["evidence"])
+        claim_ids = [vocab.get(token, vocab["<unk>"]) for token in claim_tokens]
+        evidence_ids = [vocab.get(token, vocab["<unk>"]) for token in evidence_tokens]
+        encoded.append(claim_ids + [vocab["<sep>"]] + evidence_ids)
+        claim_lengths.append(len(claim_ids))
+        evidence_lengths.append(len(evidence_ids))
+
+    max_len = max(map(len, encoded)) if encoded else 1
+    size = len(records)
+    input_ids = torch.zeros(size, max_len, dtype=torch.long)
+    attention_mask = torch.zeros(size, max_len, dtype=torch.bool)
+    claim_mask = torch.zeros_like(attention_mask)
+    evidence_mask = torch.zeros_like(attention_mask)
+    for index, ids in enumerate(encoded):
+        length = len(ids)
+        claim_length = claim_lengths[index]
+        evidence_start = claim_length + 1
+        input_ids[index, :length] = torch.tensor(ids)
+        attention_mask[index, :length] = True
+        claim_mask[index, :claim_length] = True
+        evidence_mask[index, evidence_start : evidence_start + evidence_lengths[index]] = True
+
+    labels = _encode_ood_label_tensors(records)
+    model_inputs = {
+        "input_ids": input_ids,
+        "attention_mask": attention_mask,
+        "claim_mask": claim_mask,
+        "evidence_mask": evidence_mask,
+        **labels,
+    }
+    return {
+        "model_inputs": model_inputs,
+        "pair_ids": [record["pair_id"] for record in records],
+        "intervention_types": [record["intervention_type"] for record in records],
+    }
+
+
+def encode_ood_mamba_records(
+    records: list[dict], tokenizer: Any, max_length: int = 128
+) -> dict[str, Any]:
+    """Encode OOD records with Mamba tokenizer; tolerates absent auxiliary labels."""
+    separator_id = tokenizer.eos_token_id
+    if separator_id is None:
+        separator_id = tokenizer.pad_token_id
+    if separator_id is None:
+        raise ValueError("Mamba tokenizer requires an eos or pad token id")
+
+    encoded: list[list[int]] = []
+    claim_lengths: list[int] = []
+    evidence_lengths: list[int] = []
+    claim_budget = max(1, (max_length - 1) // 2)
+    evidence_budget = max_length - claim_budget - 1
+    for record in records:
+        claim_ids = tokenizer.encode(
+            record["claim"], add_special_tokens=False, truncation=True, max_length=claim_budget
+        )
+        evidence_ids = tokenizer.encode(
+            record["evidence"],
+            add_special_tokens=False,
+            truncation=True,
+            max_length=evidence_budget,
+        )
+        if not claim_ids or not evidence_ids:
+            raise ValueError(f"tokenization produced an empty span for {record['id']}")
+        encoded.append(claim_ids + [separator_id] + evidence_ids)
+        claim_lengths.append(len(claim_ids))
+        evidence_lengths.append(len(evidence_ids))
+
+    pad_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else separator_id
+    input_ids = torch.full((len(records), max_length), fill_value=pad_id, dtype=torch.long)
+    attention_mask = torch.zeros(len(records), max_length, dtype=torch.bool)
+    claim_mask = torch.zeros_like(attention_mask)
+    evidence_mask = torch.zeros_like(attention_mask)
+    for index, ids in enumerate(encoded):
+        length = len(ids)
+        claim_length = claim_lengths[index]
+        evidence_start = claim_length + 1
+        input_ids[index, :length] = torch.tensor(ids)
+        attention_mask[index, :length] = True
+        claim_mask[index, :claim_length] = True
+        evidence_mask[index, evidence_start : evidence_start + evidence_lengths[index]] = True
+
+    labels = _encode_ood_label_tensors(records)
+    model_inputs = {
+        "input_ids": input_ids,
+        "attention_mask": attention_mask,
+        "claim_mask": claim_mask,
+        "evidence_mask": evidence_mask,
+        **labels,
+    }
+    return {
+        "model_inputs": model_inputs,
+        "pair_ids": [record["pair_id"] for record in records],
+        "intervention_types": [record["intervention_type"] for record in records],
+    }
+
+
+def evaluate_ood_v5(
+    model: ContraMambaV5,
+    records: list[dict],
+    inputs: dict[str, torch.Tensor],
+) -> tuple[dict[str, Any], list[dict]]:
+    """Evaluate trained v5 model on OOD records using the standard final prediction path."""
+    model.eval()
+    with torch.no_grad():
+        output = model(**model_feature_inputs(inputs))
+
+    predictions_cpu = output["predictions"].detach().cpu()
+    labels_cpu = inputs["final_labels"].detach().cpu()
+    probabilities = torch.softmax(output["logits"], dim=-1).detach().cpu()
+    not_entitled_id = FINAL_LABEL_TO_ID.get("NOT_ENTITLED")
+
+    # Overall metrics (final label only; auxiliary labels may be absent in OOD data)
+    f1_values_overall: list[float] = []
+    for label in FinalLabel:
+        label_id = int(label)
+        predicted = predictions_cpu == label_id
+        actual = labels_cpu == label_id
+        tp = (predicted & actual).sum().item()
+        prec_d = predicted.sum().item()
+        rec_d = actual.sum().item()
+        prec = tp / prec_d if prec_d else 0.0
+        rec = tp / rec_d if rec_d else 0.0
+        f1_values_overall.append(2.0 * prec * rec / (prec + rec) if prec + rec else 0.0)
+    overall_metrics = {
+        "final_accuracy": (predictions_cpu == labels_cpu).float().mean().item(),
+        "final_macro_f1": sum(f1_values_overall) / len(f1_values_overall) if f1_values_overall else 0.0,
+        "prediction_distribution": final_prediction_distribution(output),
+    }
+
+    # Group by stage15_probe_type if present, otherwise by intervention_type
+    groups: dict[str, list[int]] = defaultdict(list)
+    for idx, record in enumerate(records):
+        group_key = record.get("stage15_probe_type") or record.get("intervention_type", "unknown")
+        groups[group_key].append(idx)
+
+    group_metrics: dict[str, dict[str, Any]] = {}
+    for group_name, indices in sorted(groups.items()):
+        g_preds = predictions_cpu[indices]
+        g_labels = labels_cpu[indices]
+        n = len(indices)
+        accuracy = (g_preds == g_labels).float().mean().item()
+        f1_values: list[float] = []
+        for label in FinalLabel:
+            label_id = int(label)
+            predicted = g_preds == label_id
+            actual = g_labels == label_id
+            tp = (predicted & actual).sum().item()
+            prec_d = predicted.sum().item()
+            rec_d = actual.sum().item()
+            prec = tp / prec_d if prec_d else 0.0
+            rec = tp / rec_d if rec_d else 0.0
+            f1_values.append(2.0 * prec * rec / (prec + rec) if prec + rec else 0.0)
+        pred_dist: dict[str, int] = {}
+        for pred_id in g_preds.tolist():
+            label_name = ID_TO_FINAL_LABEL[pred_id]
+            pred_dist[label_name] = pred_dist.get(label_name, 0) + 1
+
+        false_entitled_count = 0
+        false_not_entitled_count = 0
+        gold_not_entitled_count = 0
+        gold_entitled_count = 0
+        if not_entitled_id is not None:
+            for pred_id, gold_id in zip(g_preds.tolist(), g_labels.tolist()):
+                if gold_id == not_entitled_id:
+                    gold_not_entitled_count += 1
+                    if pred_id != not_entitled_id:
+                        false_entitled_count += 1
+                else:
+                    gold_entitled_count += 1
+                    if pred_id == not_entitled_id:
+                        false_not_entitled_count += 1
+
+        false_entitled_rate = (
+            false_entitled_count / gold_not_entitled_count if gold_not_entitled_count > 0 else None
+        )
+        false_not_entitled_rate = (
+            false_not_entitled_count / gold_entitled_count if gold_entitled_count > 0 else None
+        )
+        group_metrics[group_name] = {
+            "n": n,
+            "final_accuracy": accuracy,
+            "final_macro_f1": sum(f1_values) / len(f1_values) if f1_values else 0.0,
+            "prediction_distribution": dict(sorted(pred_dist.items())),
+            "false_entitled_count": false_entitled_count,
+            "false_entitled_rate": false_entitled_rate,
+            "false_not_entitled_count": false_not_entitled_count,
+            "false_not_entitled_rate": false_not_entitled_rate,
+        }
+
+    exported: list[dict] = []
+    for index, record in enumerate(records):
+        exported.append(
+            {
+                "id": record["id"],
+                "pair_id": record["pair_id"],
+                "claim": record["claim"],
+                "evidence": record["evidence"],
+                "intervention_type": record["intervention_type"],
+                "gold_final_label": record["final_label"],
+                "pred_final_label": ID_TO_FINAL_LABEL[int(predictions_cpu[index])],
+                "final_probs": probabilities[index].tolist(),
+            }
+        )
+
+    return {
+        "n_records": len(records),
+        "overall_metrics": overall_metrics,
+        "group_metrics": group_metrics,
+    }, exported
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -1163,6 +1444,41 @@ def main(argv: list[str] | None = None) -> int:
                 f"the single label {collapsed_label}",
                 file=sys.stderr,
             )
+
+    if args.ood_data is not None:
+        ood_flag_source = args.ood_flag_source
+        print(f"[OOD EVAL] loading {args.ood_data} ood_flag_source={ood_flag_source}")
+        ood_records = load_ood_jsonl(args.ood_data)
+        if args.backbone == "dummy":
+            ood_bundle = encode_ood_records(ood_records, vocab)
+        else:
+            ood_bundle = encode_ood_mamba_records(ood_records, tokenizer, args.max_length)
+        ood_inputs = move_inputs(ood_bundle["model_inputs"], device)
+        ood_seq_len = ood_inputs["input_ids"].shape[1]
+        if ood_seq_len < max_length:
+            for key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
+                ood_inputs[key] = F.pad(ood_inputs[key], (0, max_length - ood_seq_len), value=0)
+        elif ood_seq_len > max_length:
+            for key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
+                ood_inputs[key] = ood_inputs[key][:, :max_length]
+        ood_summary, ood_predictions = evaluate_ood_v5(model, ood_records, ood_inputs)
+        ood_summary["train_flag_source"] = None
+        ood_summary["ood_flag_source"] = ood_flag_source
+        report["ood_evaluation"] = ood_summary
+        if args.output_ood_json is not None:
+            write_report_json(ood_summary, args.output_ood_json)
+        if args.output_ood_predictions_json is not None:
+            ood_metadata = {
+                "ood_data_path": str(args.ood_data),
+                "seed": args.seed,
+                "backbone": args.backbone,
+                "model_version": "v5",
+                "train_flag_source": None,
+                "ood_flag_source": ood_flag_source,
+                "final_logits_used": True,
+            }
+            write_predictions_json(args.output_ood_predictions_json, ood_metadata, ood_predictions)
+
     print("\nFINAL_REPORT")
     print(json.dumps(report, indent=2, sort_keys=True))
     if args.output_json is not None:
