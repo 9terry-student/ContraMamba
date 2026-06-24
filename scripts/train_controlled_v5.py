@@ -826,6 +826,7 @@ def run_training(
     best_dev_pairwise_checks: dict[str, Any] | None = None
     best_dev_predictions: list[dict] | None = None
     best_trainable_state: dict[str, torch.Tensor] | None = None
+    best_state: dict[str, torch.Tensor] | None = None
     for epoch in range(1, epochs + 1):
         model.train()
         optimizer.zero_grad()
@@ -870,6 +871,7 @@ def run_training(
             )
             best_dev_pairwise_checks = pairwise_checks(dev_records, dev_output)
             best_dev_predictions = prediction_records(dev_records, dev_output)
+            best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
             if capture_best_trainable_state:
                 best_trainable_state = capture_trainable_state(model)
         print(
@@ -905,6 +907,7 @@ def run_training(
         "train_pairwise_checks": pairwise_checks(train_records, train_output),
         "dev_pairwise_checks": pairwise_checks(dev_records, dev_output),
     }
+    report["_best_state"] = best_state
     if capture_best_trainable_state:
         report["_best_trainable_state"] = best_trainable_state
     return report
@@ -1404,6 +1407,15 @@ def main(argv: list[str] | None = None) -> int:
         name: run_report.pop("_best_dev_predictions")
         for name, run_report in reports.items()
     }
+    _ood_best_state: dict[str, torch.Tensor] | None = None
+    _ood_best_epoch: int = args.epochs
+    if len(reports) == 1:
+        _single_run = next(iter(reports.values()))
+        _ood_best_state = _single_run.pop("_best_state", None)
+        _ood_best_epoch = _single_run.get("best_epoch", args.epochs)
+    else:
+        for _rpt in reports.values():
+            _rpt.pop("_best_state", None)
     if args.output_predictions_json is not None:
         if len(reports) != 1:
             parser.error("--output-predictions-json requires a single non-sweep run")
@@ -1447,7 +1459,18 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.ood_data is not None:
         ood_flag_source = args.ood_flag_source
-        print(f"[OOD EVAL] loading {args.ood_data} ood_flag_source={ood_flag_source}")
+        if _ood_best_state is not None:
+            model.load_state_dict({k: v.to(device) for k, v in _ood_best_state.items()})
+            model.eval()
+            ood_eval_state = "best_dev"
+            ood_eval_epoch = _ood_best_epoch
+        else:
+            ood_eval_state = "final_epoch_fallback"
+            ood_eval_epoch = args.epochs
+        print(
+            f"[OOD EVAL] loading {args.ood_data} ood_flag_source={ood_flag_source} "
+            f"ood_eval_state={ood_eval_state} epoch={ood_eval_epoch}"
+        )
         ood_records = load_ood_jsonl(args.ood_data)
         if args.backbone == "dummy":
             ood_bundle = encode_ood_records(ood_records, vocab)
@@ -1464,6 +1487,8 @@ def main(argv: list[str] | None = None) -> int:
         ood_summary, ood_predictions = evaluate_ood_v5(model, ood_records, ood_inputs)
         ood_summary["train_flag_source"] = None
         ood_summary["ood_flag_source"] = ood_flag_source
+        ood_summary["ood_eval_state"] = ood_eval_state
+        ood_summary["ood_eval_epoch"] = ood_eval_epoch
         report["ood_evaluation"] = ood_summary
         if args.output_ood_json is not None:
             write_report_json(ood_summary, args.output_ood_json)

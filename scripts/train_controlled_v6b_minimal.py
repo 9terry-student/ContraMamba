@@ -177,11 +177,20 @@ def evaluate_ood_v6b(
             label_name = v5.ID_TO_FINAL_LABEL[pred_id]
             pred_dist[label_name] = pred_dist.get(label_name, 0) + 1
         false_entitled_count = 0
+        false_not_entitled_count = 0
+        gold_entitled_count = 0
         if not_entitled_id is not None:
             for pred_id, gold_id in zip(g_preds.tolist(), g_labels.tolist()):
                 if gold_id == not_entitled_id and pred_id != not_entitled_id:
                     false_entitled_count += 1
+                if gold_id != not_entitled_id:
+                    gold_entitled_count += 1
+                    if pred_id == not_entitled_id:
+                        false_not_entitled_count += 1
         false_entitled_rate = false_entitled_count / n if n > 0 else 0.0
+        false_not_entitled_rate = (
+            false_not_entitled_count / gold_entitled_count if gold_entitled_count > 0 else None
+        )
         group_metrics[group_name] = {
             "n": n,
             "final_accuracy": accuracy,
@@ -189,6 +198,8 @@ def evaluate_ood_v6b(
             "prediction_distribution": dict(sorted(pred_dist.items())),
             "false_entitled_count": false_entitled_count,
             "false_entitled_rate": false_entitled_rate,
+            "false_not_entitled_count": false_not_entitled_count,
+            "false_not_entitled_rate": false_not_entitled_rate,
         }
 
     return {
@@ -433,6 +444,7 @@ def main(argv: list[str] | None = None) -> int:
         best_dev_pairwise_checks = None
         best_dev_predictions = None
         best_trainable_state = None
+        best_state: dict[str, torch.Tensor] | None = None
 
         for epoch in range(1, epochs + 1):
             model.train()
@@ -517,6 +529,7 @@ def main(argv: list[str] | None = None) -> int:
                 if not smoke_mode:
                     best_dev_pairwise_checks = v5.pairwise_checks(dev_records, dev_output)
                 best_dev_predictions = prediction_records_v6b(dev_records, dev_output)
+                best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
                 if capture_best_trainable_state:
                     best_trainable_state = v5.capture_trainable_state(model)
 
@@ -543,6 +556,7 @@ def main(argv: list[str] | None = None) -> int:
             "_best_dev_predictions": best_dev_predictions,
             "loss_config": loss_config,
         }
+        report["_best_state"] = best_state
         if best_trainable_state is not None:
             report["best_trainable_state"] = best_trainable_state
         return report
@@ -640,6 +654,15 @@ def main(argv: list[str] | None = None) -> int:
         name: run_report.pop("_best_dev_predictions")
         for name, run_report in reports.items()
     }
+    _ood_best_state: dict[str, torch.Tensor] | None = None
+    _ood_best_epoch: int = args.epochs
+    if len(reports) == 1:
+        _single_run = next(iter(reports.values()))
+        _ood_best_state = _single_run.pop("_best_state", None)
+        _ood_best_epoch = _single_run.get("best_epoch", args.epochs)
+    else:
+        for _rpt in reports.values():
+            _rpt.pop("_best_state", None)
 
     if args.output_predictions_json is not None:
         if len(reports) != 1:
@@ -692,7 +715,18 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.ood_data is not None:
         ood_flag_source = args.ood_flag_source if args.ood_flag_source is not None else args.flag_source
-        print(f"[OOD EVAL] loading {args.ood_data} flag_source={ood_flag_source}")
+        if _ood_best_state is not None:
+            model.load_state_dict({k: v.to(device) for k, v in _ood_best_state.items()})
+            model.eval()
+            ood_eval_state = "best_dev"
+            ood_eval_epoch = _ood_best_epoch
+        else:
+            ood_eval_state = "final_epoch_fallback"
+            ood_eval_epoch = args.epochs
+        print(
+            f"[OOD EVAL] loading {args.ood_data} flag_source={ood_flag_source} "
+            f"ood_eval_state={ood_eval_state} epoch={ood_eval_epoch}"
+        )
         ood_records = load_ood_jsonl(args.ood_data)
         if args.backbone == "dummy":
             ood_bundle = v5.encode_records(ood_records, vocab)
@@ -714,6 +748,8 @@ def main(argv: list[str] | None = None) -> int:
         )
         ood_summary["train_flag_source"] = args.flag_source
         ood_summary["ood_flag_source"] = ood_flag_source
+        ood_summary["ood_eval_state"] = ood_eval_state
+        ood_summary["ood_eval_epoch"] = ood_eval_epoch
         report["ood_evaluation"] = ood_summary
         if args.output_ood_json is not None:
             v5.write_report_json(ood_summary, args.output_ood_json)
