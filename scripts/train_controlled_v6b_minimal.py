@@ -103,6 +103,25 @@ def extract_flags(
     return temporal_flags, predicate_flags
 
 
+def _make_ablation_flags(
+    mode: str,
+    temporal_flags: torch.Tensor,
+    predicate_flags: torch.Tensor,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Return (temporal, predicate) flag tensors for a given ablation mode."""
+    zeros_t = torch.zeros_like(temporal_flags)
+    zeros_p = torch.zeros_like(predicate_flags)
+    if mode == "current":
+        return temporal_flags, predicate_flags
+    if mode == "no_flags":
+        return zeros_t, zeros_p
+    if mode == "temporal_only":
+        return temporal_flags, zeros_p
+    if mode == "predicate_only":
+        return zeros_t, predicate_flags
+    raise ValueError(f"unknown ablation mode: {mode!r}")
+
+
 def compute_class_weights_v6b(
     records: list[dict],
     mode: str,
@@ -274,6 +293,17 @@ def build_parser() -> argparse.ArgumentParser:
         choices=("none", "inverse_freq", "sqrt_inverse_freq"),
         default="none",
         help="Class weighting mode for CE classification loss (none preserves existing behavior)",
+    )
+    parser.add_argument(
+        "--ood-ablation-modes",
+        type=str,
+        default=None,
+        help=(
+            "Comma-separated OOD ablation modes to evaluate after training. "
+            "Valid values: current,no_flags,temporal_only,predicate_only. "
+            "When set, report includes an ood_ablation object keyed by mode. "
+            "When unset, existing single-mode OOD evaluation is used."
+        ),
     )
 
     return parser
@@ -720,29 +750,65 @@ def main(argv: list[str] | None = None) -> int:
         ood_temporal_flags, ood_predicate_flags = extract_flags(
             ood_records, ood_flag_source, device
         )
-        ood_summary, ood_predictions = evaluate_ood_v6b(
-            model, ood_records, ood_inputs, ood_temporal_flags, ood_predicate_flags
+
+        ablation_modes = (
+            [m.strip() for m in args.ood_ablation_modes.split(",")]
+            if args.ood_ablation_modes is not None
+            else None
         )
-        ood_summary["train_flag_source"] = args.flag_source
-        ood_summary["ood_flag_source"] = ood_flag_source
-        ood_summary["ood_eval_state"] = ood_eval_state
-        ood_summary["ood_eval_epoch"] = ood_eval_epoch
-        report["ood_evaluation"] = ood_summary
-        if args.output_ood_json is not None:
-            v5.write_report_json(ood_summary, args.output_ood_json)
-        if args.output_ood_predictions_json is not None:
-            ood_metadata = {
-                "ood_data_path": str(args.ood_data),
-                "seed": args.seed,
-                "backbone": args.backbone,
-                "model_version": "v6b_minimal",
-                "train_flag_source": args.flag_source,
-                "ood_flag_source": ood_flag_source,
-                "final_logits_used": True,
-            }
-            v5.write_predictions_json(
-                args.output_ood_predictions_json, ood_metadata, ood_predictions
+
+        if ablation_modes is not None:
+            # --- ablation branch: evaluate each flag mode, build ood_ablation dict ---
+            ood_ablation: dict[str, Any] = {}
+            for mode in ablation_modes:
+                abl_temporal, abl_predicate = _make_ablation_flags(
+                    mode, ood_temporal_flags, ood_predicate_flags
+                )
+                abl_summary, _ = evaluate_ood_v6b(
+                    model, ood_records, ood_inputs, abl_temporal, abl_predicate
+                )
+                abl_summary["ood_eval_state"] = ood_eval_state
+                abl_summary["ood_eval_epoch"] = ood_eval_epoch
+                abl_summary["ood_flag_source"] = ood_flag_source
+                abl_summary["train_flag_source"] = args.flag_source
+                abl_summary["ood_ablation_mode"] = mode
+                abl_summary["temporal_flag_count"] = int(abl_temporal.sum().item())
+                abl_summary["predicate_flag_count"] = int(abl_predicate.sum().item())
+                ood_ablation[mode] = abl_summary
+                print(
+                    f"[OOD ABLATION] mode={mode} "
+                    f"temporal_flags={abl_summary['temporal_flag_count']} "
+                    f"predicate_flags={abl_summary['predicate_flag_count']} "
+                    f"accuracy={abl_summary['overall_metrics']['final_accuracy']:.4f}"
+                )
+            report["ood_ablation"] = ood_ablation
+            if args.output_ood_json is not None:
+                v5.write_report_json({"ood_ablation": ood_ablation}, args.output_ood_json)
+        else:
+            # --- single-mode branch: existing behaviour, unchanged ---
+            ood_summary, ood_predictions = evaluate_ood_v6b(
+                model, ood_records, ood_inputs, ood_temporal_flags, ood_predicate_flags
             )
+            ood_summary["train_flag_source"] = args.flag_source
+            ood_summary["ood_flag_source"] = ood_flag_source
+            ood_summary["ood_eval_state"] = ood_eval_state
+            ood_summary["ood_eval_epoch"] = ood_eval_epoch
+            report["ood_evaluation"] = ood_summary
+            if args.output_ood_json is not None:
+                v5.write_report_json(ood_summary, args.output_ood_json)
+            if args.output_ood_predictions_json is not None:
+                ood_metadata = {
+                    "ood_data_path": str(args.ood_data),
+                    "seed": args.seed,
+                    "backbone": args.backbone,
+                    "model_version": "v6b_minimal",
+                    "train_flag_source": args.flag_source,
+                    "ood_flag_source": ood_flag_source,
+                    "final_logits_used": True,
+                }
+                v5.write_predictions_json(
+                    args.output_ood_predictions_json, ood_metadata, ood_predictions
+                )
 
     print("\nFINAL_REPORT")
     print(json.dumps(report, indent=2, sort_keys=True))
