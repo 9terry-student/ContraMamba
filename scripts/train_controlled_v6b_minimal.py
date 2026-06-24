@@ -37,7 +37,8 @@ from scripts import train_controlled_v5 as v5  # noqa: E402
 
 
 def build_model(
-    vocab_size: int, max_length: int, hidden_size: int = 48
+    vocab_size: int, max_length: int, hidden_size: int = 48,
+    use_boundary_head: bool = False,
 ) -> ContraMambaV6BMinimal:
     backbone = v5.ControlledDummyBackbone(vocab_size, hidden_size, max_length)
     return ContraMambaV6BMinimal(
@@ -52,6 +53,7 @@ def build_model(
         use_predicate_comparator=True,
         alpha_temporal_init=1.25,
         alpha_predicate_init=1.25,
+        use_boundary_head=use_boundary_head,
     )
 
 
@@ -59,6 +61,7 @@ def build_mamba_model(
     model_name: str,
     freeze_encoder: bool,
     freeze_a_log: bool,
+    use_boundary_head: bool = False,
 ) -> ContraMambaV6BMinimal:
     model = ContraMambaV6BMinimal(
         model_name=model_name,
@@ -73,6 +76,7 @@ def build_mamba_model(
         use_predicate_comparator=True,
         alpha_temporal_init=1.25,
         alpha_predicate_init=1.25,
+        use_boundary_head=use_boundary_head,
     )
     for parameter in model.mamba.parameters():
         parameter.requires_grad = not freeze_encoder
@@ -251,6 +255,81 @@ def _build_gate_mask(
     return mask
 
 
+# Stage22-A: boundary label mapping
+# preservation-positive: surface-form-preserving interventions (gold = SUPPORT or REFUTE)
+# frame-mismatch-negative: structural frame/slot swaps (gold = NOT_ENTITLED)
+# excluded: sufficiency, polarity, predicate, unknown
+_BOUNDARY_POSITIVE: frozenset = frozenset({"none", "paraphrase"})
+_BOUNDARY_NEGATIVE: frozenset = frozenset({
+    "location_swap", "role_swap", "entity_swap", "event_swap", "title_name_swap",
+})
+
+
+def encode_boundary_labels(
+    records: list[dict],
+    device: torch.device,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Derive preservation boundary binary labels from intervention_type.
+
+    Returns (labels, mask) both of shape [B].
+      label=1, mask=1: none, paraphrase  (preservation-positive)
+      label=0, mask=1: location_swap, role_swap, entity_swap, event_swap,
+                        title_name_swap  (frame-mismatch-negative)
+      label=0, mask=0: evidence_deletion, evidence_truncation, irrelevant_evidence,
+                        polarity_flip, predicate_swap, unknown  (excluded)
+    BCE loss is computed only on mask==1 examples.
+    Does NOT use OOD group names or gold labels at inference.
+    """
+    labels: list[int] = []
+    mask: list[int] = []
+    for r in records:
+        it = r.get("intervention_type", "")
+        if it in _BOUNDARY_POSITIVE:
+            labels.append(1)
+            mask.append(1)
+        elif it in _BOUNDARY_NEGATIVE:
+            labels.append(0)
+            mask.append(1)
+        else:
+            labels.append(0)
+            mask.append(0)
+    return (
+        torch.tensor(labels, dtype=torch.float32, device=device),
+        torch.tensor(mask, dtype=torch.bool, device=device),
+    )
+
+
+def compute_boundary_metrics(
+    output: dict[str, Any],
+    boundary_labels: "torch.Tensor | None",
+    boundary_mask: "torch.Tensor | None",
+) -> dict[str, Any]:
+    """Compute boundary head diagnostic metrics (accuracy, pos rate, valid count, mean prob).
+
+    Returns empty dict when boundary head is disabled or no valid examples exist.
+    """
+    if output.get("boundary_prob") is None or boundary_labels is None or boundary_mask is None:
+        return {}
+    probs = output["boundary_prob"].detach().cpu()
+    labels = boundary_labels.detach().cpu()
+    mask = boundary_mask.detach().cpu().bool()
+    valid_count = int(mask.sum().item())
+    if valid_count == 0:
+        return {"boundary_valid_count": 0}
+    probs_v = probs[mask]
+    labels_v = labels[mask]
+    preds_v = (probs_v >= 0.5).float()
+    accuracy = (preds_v == labels_v).float().mean().item()
+    pos_rate = labels_v.mean().item()
+    mean_prob = probs_v.mean().item()
+    return {
+        "boundary_accuracy": round(accuracy, 4),
+        "boundary_pos_rate": round(pos_rate, 4),
+        "boundary_valid_count": valid_count,
+        "boundary_mean_prob": round(mean_prob, 4),
+    }
+
+
 def compute_class_weights_v6b(
     records: list[dict],
     mode: str,
@@ -339,7 +418,7 @@ def evaluate_ood_v6b(
         false_not_entitled_rate = (
             false_not_entitled_count / gold_entitled_count if gold_entitled_count > 0 else None
         )
-        group_metrics[group_name] = {
+        group_entry: dict[str, Any] = {
             "n": n,
             "final_accuracy": accuracy,
             "final_macro_f1": macro_f1,
@@ -349,6 +428,13 @@ def evaluate_ood_v6b(
             "false_not_entitled_count": false_not_entitled_count,
             "false_not_entitled_rate": false_not_entitled_rate,
         }
+        # Stage22-A: per-group boundary_prob diagnostics (absent when head disabled)
+        if output.get("boundary_prob") is not None:
+            bp_cpu = output["boundary_prob"].detach().cpu()
+            bp_group = bp_cpu[indices]
+            group_entry["boundary_prob_mean"] = round(float(bp_group.mean().item()), 4)
+            group_entry["boundary_prob_std"] = round(float(bp_group.std().item()), 4)
+        group_metrics[group_name] = group_entry
 
     return {
         "n_records": len(records),
@@ -367,8 +453,13 @@ def prediction_records_v6b(records: list[dict], output: dict[str, Any]) -> list[
         "sufficiency_prob",
         "entitlement_prob",
         "polarity_margin",
+        "boundary_prob",  # Stage22-A: None when boundary head is disabled
     )
-    scalars = {key: output[key].detach().cpu() for key in scalar_keys if key in output}
+    scalars = {
+        key: output[key].detach().cpu()
+        for key in scalar_keys
+        if key in output and output[key] is not None
+    }
     exported: list[dict] = []
     for index, record in enumerate(records):
         item = {
@@ -485,6 +576,41 @@ def build_parser() -> argparse.ArgumentParser:
             "Each threshold is swept over all gates and shifts."
         ),
     )
+    # Stage22-A: preservation boundary head
+    parser.add_argument(
+        "--use-boundary-loss",
+        action="store_true",
+        default=False,
+        help=(
+            "Enable Stage22-A preservation boundary head. "
+            "Adds a linear head on [frame_pair_repr, predicate_pair_repr, sufficiency_repr] "
+            "trained to distinguish preservation-like records (none, paraphrase) from "
+            "frame-mismatch records (location_swap, role_swap, entity_swap, event_swap, "
+            "title_name_swap) using BCE loss. "
+            "Does NOT modify output['logits'] or affect predictions."
+        ),
+    )
+    parser.add_argument(
+        "--boundary-loss-weight",
+        type=float,
+        default=0.0,
+        help=(
+            "Weight for the boundary BCE loss added to the total training loss. "
+            "Default 0.0 means the head is built but its loss is not included. "
+            "Requires --use-boundary-loss. Suggested starting value: 0.5."
+        ),
+    )
+    parser.add_argument(
+        "--boundary-loss-pos-weight",
+        type=float,
+        default=2.5,
+        help=(
+            "Positive class weight for the boundary BCE loss (pos_weight in "
+            "F.binary_cross_entropy_with_logits). Compensates for class imbalance: "
+            "preservation-positive (none+paraphrase=600) vs frame-mismatch (5 types x 300=1500). "
+            "Default 2.5 = 1500/600."
+        ),
+    )
 
     return parser
 
@@ -556,6 +682,7 @@ def main(argv: list[str] | None = None) -> int:
             args.model_name,
             freeze_encoder=args.freeze_encoder,
             freeze_a_log=args.freeze_a_log,
+            use_boundary_head=args.use_boundary_loss,
         )
 
     train_inputs = v5.move_inputs(train_bundle["model_inputs"], device)
@@ -570,7 +697,7 @@ def main(argv: list[str] | None = None) -> int:
                 inputs[key] = F.pad(inputs[key], (0, difference), value=0)
 
     if model is None:
-        model = build_model(len(vocab), max_length)
+        model = build_model(len(vocab), max_length, use_boundary_head=args.use_boundary_loss)
     model = model.to(device)
 
     if args.backbone == "mamba" and args.freeze_encoder:
@@ -591,6 +718,21 @@ def main(argv: list[str] | None = None) -> int:
     dev_temporal_flags, dev_predicate_flags = extract_flags(
         dev_records, args.flag_source, device
     )
+
+    # Stage22-A: boundary labels derived from intervention_type (only used when head is active)
+    train_boundary_labels, train_boundary_mask = encode_boundary_labels(train_records, device)
+    dev_boundary_labels, dev_boundary_mask = encode_boundary_labels(dev_records, device)
+    _train_b_pos = int(train_boundary_mask.sum().item())
+    _train_b_valid = int(train_boundary_mask.sum().item())
+    if args.use_boundary_loss:
+        _train_b_valid = int(train_boundary_mask.sum().item())
+        _train_b_pos_only = int((train_boundary_labels * train_boundary_mask.float()).sum().item())
+        print(
+            f"[boundary22a] enabled weight={args.boundary_loss_weight}"
+            f" pos_weight={args.boundary_loss_pos_weight}"
+            f" train_valid={_train_b_valid}"
+            f" train_pos={_train_b_pos_only}"
+        )
 
     # Wrap v5 training to accept flags
     original_run_training = v5.run_training
@@ -618,6 +760,12 @@ def main(argv: list[str] | None = None) -> int:
         capture_best_trainable_state=False,
         smoke_mode=False,
         ce_class_weights=None,
+        train_boundary_labels=None,
+        train_boundary_mask=None,
+        dev_boundary_labels=None,
+        dev_boundary_mask=None,
+        boundary_loss_weight=0.0,
+        boundary_loss_pos_weight=2.5,
     ):
         """Modified run_training that passes flags to v6b model."""
         if epochs < 1:
@@ -680,6 +828,29 @@ def main(argv: list[str] | None = None) -> int:
                     ranking_weight * v5.intervention_objective(output, train_records)
                 )
             total_loss = losses["total"] + active_intervention_loss
+
+            # Stage22-A: boundary head BCE loss (training signal only; output["logits"] unchanged)
+            _bdry_loss = torch.tensor(0.0)
+            if (
+                boundary_loss_weight > 0.0
+                and train_boundary_labels is not None
+                and train_boundary_mask is not None
+                and output.get("boundary_logit") is not None
+            ):
+                _active_b = train_boundary_mask.bool()
+                if torch.any(_active_b):
+                    _pos_w = torch.tensor(
+                        boundary_loss_pos_weight,
+                        dtype=torch.float32,
+                        device=output["boundary_logit"].device,
+                    )
+                    _bdry_loss = F.binary_cross_entropy_with_logits(
+                        output["boundary_logit"][_active_b],
+                        train_boundary_labels[_active_b],
+                        pos_weight=_pos_w,
+                    )
+                    total_loss = total_loss + boundary_loss_weight * _bdry_loss
+
             total_loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
             optimizer.step()
@@ -699,6 +870,10 @@ def main(argv: list[str] | None = None) -> int:
                 )
             train_metrics = v5.compute_metrics(train_output, train_inputs)
             dev_metrics = v5.compute_metrics(dev_output, dev_inputs)
+
+            # Stage22-A: boundary head metrics
+            _tbm = compute_boundary_metrics(train_output, train_boundary_labels, train_boundary_mask)
+            _dbm = compute_boundary_metrics(dev_output, dev_boundary_labels, dev_boundary_mask)
 
             if select_metric not in dev_metrics or not isinstance(
                 dev_metrics[select_metric], (int, float)
@@ -731,6 +906,16 @@ def main(argv: list[str] | None = None) -> int:
                     active_intervention_loss,
                 )
             )
+            if _tbm:
+                _bl_val = float(_bdry_loss.item()) if hasattr(_bdry_loss, "item") else 0.0
+                print(
+                    f"  [boundary22a] loss={_bl_val:.4f}"
+                    f" train_acc={_tbm.get('boundary_accuracy', 0.0):.3f}"
+                    f" dev_acc={_dbm.get('boundary_accuracy', 0.0):.3f}"
+                    f" train_mean_prob={_tbm.get('boundary_mean_prob', 0.0):.3f}"
+                    f" dev_mean_prob={_dbm.get('boundary_mean_prob', 0.0):.3f}"
+                    f" valid={_tbm.get('boundary_valid_count', 0)}"
+                )
 
         report = {
             "run_name": run_name,
@@ -794,6 +979,12 @@ def main(argv: list[str] | None = None) -> int:
             select_metric=args.select_metric,
             smoke_mode=args.smoke,
             ce_class_weights=ce_class_weights,
+            train_boundary_labels=train_boundary_labels if args.use_boundary_loss else None,
+            train_boundary_mask=train_boundary_mask if args.use_boundary_loss else None,
+            dev_boundary_labels=dev_boundary_labels if args.use_boundary_loss else None,
+            dev_boundary_mask=dev_boundary_mask if args.use_boundary_loss else None,
+            boundary_loss_weight=args.boundary_loss_weight if args.use_boundary_loss else 0.0,
+            boundary_loss_pos_weight=args.boundary_loss_pos_weight,
         )
 
     # Capture learned alphas
@@ -831,6 +1022,15 @@ def main(argv: list[str] | None = None) -> int:
             "pairwise_checks_skipped": args.smoke,
             "pairwise_checks_skip_reason": "incomplete smoke subset" if args.smoke else None,
             "class_weighting": args.class_weighting,
+            "use_boundary_head": args.use_boundary_loss,
+            "boundary_loss_weight": args.boundary_loss_weight if args.use_boundary_loss else 0.0,
+            "boundary_loss_pos_weight": args.boundary_loss_pos_weight,
+            "boundary_label_mapping": {
+                "positive": sorted(_BOUNDARY_POSITIVE),
+                "negative": sorted(_BOUNDARY_NEGATIVE),
+                "excluded": "evidence_deletion,evidence_truncation,irrelevant_evidence,"
+                            "polarity_flip,predicate_swap,unknown",
+            },
             "class_weights": ce_class_weights.tolist() if ce_class_weights is not None else None,
             "class_counts": label_counts,
         },

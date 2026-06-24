@@ -61,6 +61,7 @@ class ContraMambaV6BMinimal(nn.Module):
         use_predicate_comparator: bool = False,
         alpha_temporal_init: float = 1.25,
         alpha_predicate_init: float = 1.25,
+        use_boundary_head: bool = False,
     ) -> None:
         super().__init__()
         if backbone is None:
@@ -115,6 +116,16 @@ class ContraMambaV6BMinimal(nn.Module):
         if use_predicate_comparator:
             raw_val = _inverse_softplus(alpha_predicate_init)
             self.alpha_predicate_raw = nn.Parameter(torch.tensor(raw_val, dtype=torch.float32))
+
+        # Stage22-A: preservation boundary head — distinguishes preservation-like records
+        # (none, paraphrase) from frame-mismatch records (location_swap, role_swap, etc.).
+        # Input: concatenated frame_pair_repr + predicate_pair_repr + sufficiency_repr.
+        # Does NOT touch output["logits"] or output["base_logits"].
+        self.boundary_head: nn.Linear | None = None
+        if use_boundary_head:
+            self.boundary_head = nn.Linear(
+                frame_size + predicate_size + sufficiency_size, 1
+            )
 
     def alpha_temporal(self) -> float | torch.Tensor:
         """Return softplus-constrained temporal alpha."""
@@ -185,6 +196,23 @@ class ContraMambaV6BMinimal(nn.Module):
             predicate_pair_repr=predicate["predicate_pair_repr"],
             sufficiency_repr=sufficiency["sufficiency_repr"],
         )
+
+        # Stage22-A: preservation boundary head (diagnostic/training signal only)
+        # Output: boundary_logit [B], boundary_prob [B]; None when head is disabled.
+        # Does NOT modify final_logits or base_logits.
+        boundary_logit: torch.Tensor | None = None
+        boundary_prob: torch.Tensor | None = None
+        if self.boundary_head is not None:
+            _bdry_input = torch.cat(
+                [
+                    frame["frame_pair_repr"],
+                    predicate["predicate_pair_repr"],
+                    sufficiency["sufficiency_repr"],
+                ],
+                dim=-1,
+            )
+            boundary_logit = self.boundary_head(_bdry_input).squeeze(-1)
+            boundary_prob = torch.sigmoid(boundary_logit)
 
         # Base logits (V5 standard)
         decision = self.decision_head(
@@ -280,6 +308,9 @@ class ContraMambaV6BMinimal(nn.Module):
             "temporal_flag_count": temporal_flag_count,
             "predicate_flag_count": predicate_flag_count,
             "final_logits_used": True,  # ← assertion for smoke test
+            # Stage22-A: boundary head outputs (None when head is disabled)
+            "boundary_logit": boundary_logit,
+            "boundary_prob": boundary_prob,
             **frame,
             **predicate,
             **sufficiency,
