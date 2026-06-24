@@ -1,0 +1,1 @@
+seed,mode,group,ood_eval_state,ood_eval_epoch,temporal_flag_count,predicate_flag_count,final_accuracy,final_macro_f1,false_entitled_rate,false_not_entitled_rate,prediction_distribution
