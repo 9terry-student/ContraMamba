@@ -918,6 +918,57 @@ def build_parser() -> argparse.ArgumentParser:
             "Each threshold is swept over all gates and shifts."
         ),
     )
+    # Stage22-G2: dev-calibrated selective NE shift
+    parser.add_argument(
+        "--dev-calibrated-ne-shift-candidates",
+        type=str,
+        default=None,
+        help=(
+            "Comma-separated float shift values for dev-calibrated selective NE logit "
+            "calibration. E.g. '0,0.25,0.5,0.75,1.0'. "
+            "Selects the best shift on controlled dev only via: "
+            "score = pres_accept_rate - frame_penalty * frame_false_entitled_rate. "
+            "The selected shift is then applied to OOD evaluation (if --ood-data is set) "
+            "without inspecting Stage15 OOD labels. "
+            "stage15_used_for_shift_selection is always false. "
+            "When unset, dev calibration is skipped."
+        ),
+    )
+    parser.add_argument(
+        "--dev-calibrated-ne-gate",
+        choices=("high_sufficiency", "high_frame_sufficiency", "high_frame_suff_predicate"),
+        default="high_sufficiency",
+        help=(
+            "Gate used for dev-calibrated selective NE shift. "
+            "Selects unflagged records for the NOT_ENTITLED logit shift using "
+            "model-internal auxiliary probabilities (not gold labels). "
+            "high_sufficiency: sufficiency_prob >= threshold. "
+            "high_frame_sufficiency: frame_prob AND sufficiency_prob >= threshold. "
+            "high_frame_suff_predicate: all three aux probs >= threshold. "
+            "Default: high_sufficiency."
+        ),
+    )
+    parser.add_argument(
+        "--dev-calibrated-ne-threshold",
+        type=float,
+        default=0.6,
+        help=(
+            "Auxiliary probability threshold for dev-calibrated NE gate. "
+            "Lower bound applied to each probability required by the gate. "
+            "Default: 0.6."
+        ),
+    )
+    parser.add_argument(
+        "--dev-calibrated-ne-frame-penalty",
+        type=float,
+        default=2.0,
+        help=(
+            "Frame false-entitlement penalty weight in the dev calibration objective. "
+            "score = pres_accept_rate - frame_penalty * frame_false_entitled_rate. "
+            "Higher values penalize predicting SUPPORT/REFUTE for frame-mismatch records. "
+            "Default: 2.0."
+        ),
+    )
     # Stage22-A: preservation boundary head
     parser.add_argument(
         "--use-boundary-loss",
@@ -1756,6 +1807,10 @@ def main(argv: list[str] | None = None) -> int:
                 "pair contrastive data must be constructed from controlled data only; "
                 "Stage15 OOD records are not used for training"
             ),
+            "dev_calibrated_ne_shift_candidates": args.dev_calibrated_ne_shift_candidates,
+            "dev_calibrated_ne_gate": args.dev_calibrated_ne_gate,
+            "dev_calibrated_ne_threshold": args.dev_calibrated_ne_threshold,
+            "dev_calibrated_ne_frame_penalty": args.dev_calibrated_ne_frame_penalty,
             "class_weights": ce_class_weights.tolist() if ce_class_weights is not None else None,
             "class_counts": label_counts,
         },
@@ -1824,6 +1879,141 @@ def main(argv: list[str] | None = None) -> int:
                 f"the single label {collapsed_label}",
                 file=sys.stderr,
             )
+
+    # ---------------------------------------------------------------------------
+    # Stage22-G2: dev-calibrated selective NE shift
+    # Shift is selected on controlled dev only. Stage15 OOD labels are never
+    # consulted during selection. The selected shift is stored here and
+    # optionally applied to OOD inside the args.ood_data block below.
+    # ---------------------------------------------------------------------------
+    _selected_dev_ne_shift: float | None = None
+    _dev_cal_ne_result: dict[str, Any] | None = None
+
+    if args.dev_calibrated_ne_shift_candidates is not None:
+        _dc_ne_idx = v5.FINAL_LABEL_TO_ID.get("NOT_ENTITLED")
+        if _dc_ne_idx is None:
+            raise ValueError(
+                "NOT_ENTITLED label index not found in FINAL_LABEL_TO_ID; "
+                "cannot apply dev-calibrated NE shift"
+            )
+        # Restore best checkpoint (same logic as OOD block; eval on dev needs best weights)
+        if _ood_best_state is not None:
+            model.load_state_dict({k: v.to(device) for k, v in _ood_best_state.items()})
+        model.eval()
+        with torch.no_grad():
+            _dc_dev_out = model(
+                **v5.model_feature_inputs(dev_inputs),
+                temporal_mismatch_flags=dev_temporal_flags,
+                predicate_mismatch_flags=dev_predicate_flags,
+            )
+        _dc_dev_logits = _dc_dev_out["logits"].detach().cpu()
+        _dc_dev_t = dev_temporal_flags.detach().cpu()
+        _dc_dev_p = dev_predicate_flags.detach().cpu()
+        _dc_unflagged = (_dc_dev_t == 0) & (_dc_dev_p == 0)
+        _dc_unflagged_count = int(_dc_unflagged.sum().item())
+        _dc_dev_aux: dict[str, torch.Tensor | None] = {
+            k: _dc_dev_out[k].detach().cpu() if k in _dc_dev_out else None
+            for k in ("frame_prob", "sufficiency_prob", "predicate_coverage_prob")
+        }
+        _dc_gate_mask = _build_gate_mask(
+            args.dev_calibrated_ne_gate,
+            _dc_unflagged,
+            _dc_dev_aux,
+            args.dev_calibrated_ne_threshold,
+        )
+        _dc_selected_count = int(_dc_gate_mask.sum().item())
+        _dc_selected_rate = (
+            _dc_selected_count / _dc_unflagged_count if _dc_unflagged_count > 0 else 0.0
+        )
+
+        # Calibration record sets — derived from intervention_type, not Stage15 labels
+        _DC_PRES_ITYPES = frozenset({"none", "paraphrase"})
+        _DC_FRAME_ITYPES = frozenset({
+            "entity_swap", "event_swap", "location_swap", "role_swap", "title_name_swap",
+        })
+        _dc_pres_idx = [
+            i for i, r in enumerate(dev_records)
+            if r.get("intervention_type", "") in _DC_PRES_ITYPES
+        ]
+        _dc_frame_idx = [
+            i for i, r in enumerate(dev_records)
+            if r.get("intervention_type", "") in _DC_FRAME_ITYPES
+        ]
+
+        # Sort candidates ascending so lower shift wins ties automatically
+        _dc_candidates = sorted(
+            float(s.strip()) for s in args.dev_calibrated_ne_shift_candidates.split(",")
+        )
+        _dc_sweep: dict[str, Any] = {}
+        _dc_best_shift: float = _dc_candidates[0]
+        _dc_best_score: float = float("-inf")
+        _dc_best_pres_rate: float = 0.0
+
+        for _dc_shift in _dc_candidates:
+            _dc_adj = _dc_dev_logits.clone()
+            if _dc_shift != 0.0:
+                _dc_adj[_dc_gate_mask, _dc_ne_idx] -= _dc_shift
+            _dc_preds = _dc_adj.argmax(dim=-1)
+
+            _dc_pres_total = len(_dc_pres_idx)
+            _dc_pres_accept = sum(
+                1 for i in _dc_pres_idx if _dc_preds[i].item() != _dc_ne_idx
+            )
+            _dc_pres_rate = _dc_pres_accept / _dc_pres_total if _dc_pres_total > 0 else 0.0
+
+            _dc_frame_total = len(_dc_frame_idx)
+            _dc_frame_fe = sum(
+                1 for i in _dc_frame_idx if _dc_preds[i].item() != _dc_ne_idx
+            )
+            _dc_frame_fe_rate = _dc_frame_fe / _dc_frame_total if _dc_frame_total > 0 else 0.0
+
+            _dc_score = (
+                _dc_pres_rate
+                - args.dev_calibrated_ne_frame_penalty * _dc_frame_fe_rate
+            )
+            _dc_sweep[f"{_dc_shift:g}"] = {
+                "shift": _dc_shift,
+                "pres_accept_rate": _dc_pres_rate,
+                "frame_false_entitled_rate": _dc_frame_fe_rate,
+                "pres_total": _dc_pres_total,
+                "frame_total": _dc_frame_total,
+                "objective_score": _dc_score,
+            }
+            # Tie-break: ascending iteration means lower shift wins equal scores;
+            # update on strict improvement in score only
+            if _dc_score > _dc_best_score:
+                _dc_best_score = _dc_score
+                _dc_best_shift = _dc_shift
+                _dc_best_pres_rate = _dc_pres_rate
+
+        _selected_dev_ne_shift = _dc_best_shift
+        _dev_cal_ne_result = {
+            "selected_dev_calibrated_ne_shift": _selected_dev_ne_shift,
+            "dev_calibrated_ne_shift_candidates": args.dev_calibrated_ne_shift_candidates,
+            "dev_calibrated_ne_gate": args.dev_calibrated_ne_gate,
+            "dev_calibrated_ne_threshold": args.dev_calibrated_ne_threshold,
+            "dev_calibrated_ne_frame_penalty": args.dev_calibrated_ne_frame_penalty,
+            "calibration_source": "controlled_dev_only",
+            "stage15_used_for_shift_selection": False,
+            "best_objective_score": _dc_best_score,
+            "selected_count": _dc_selected_count,
+            "selected_rate": _dc_selected_rate,
+            "dev_unflagged_count": _dc_unflagged_count,
+            "dev_pres_record_count": len(_dc_pres_idx),
+            "dev_frame_record_count": len(_dc_frame_idx),
+            "shift_sweep": _dc_sweep,
+        }
+        report["dev_calibrated_ne_shift"] = _selected_dev_ne_shift
+        report["dev_calibrated_ne_shift_sweep"] = _dev_cal_ne_result
+        print(
+            f"[DEV CAL NE SHIFT] gate={args.dev_calibrated_ne_gate} "
+            f"thr={args.dev_calibrated_ne_threshold} "
+            f"penalty={args.dev_calibrated_ne_frame_penalty} "
+            f"selected_shift={_selected_dev_ne_shift:g} "
+            f"score={_dc_best_score:.4f} "
+            f"selected={_dc_selected_count}/{_dc_unflagged_count} "
+            f"pres_n={len(_dc_pres_idx)} frame_n={len(_dc_frame_idx)}"
+        )
 
     if args.ood_data is not None:
         ood_flag_source = args.ood_flag_source if args.ood_flag_source is not None else args.flag_source
@@ -1894,6 +2084,19 @@ def main(argv: list[str] | None = None) -> int:
             ),
             "pair_contrastive_frame_margin": getattr(
                 args, "pair_contrastive_frame_margin", 0.0
+            ),
+            "dev_calibrated_ne_shift_candidates": args.dev_calibrated_ne_shift_candidates,
+            "dev_calibrated_ne_gate": args.dev_calibrated_ne_gate,
+            "dev_calibrated_ne_threshold": args.dev_calibrated_ne_threshold,
+            "dev_calibrated_ne_frame_penalty": args.dev_calibrated_ne_frame_penalty,
+            "selected_dev_calibrated_ne_shift": _selected_dev_ne_shift,
+            "calibration_source": (
+                "controlled_dev_only"
+                if args.dev_calibrated_ne_shift_candidates is not None
+                else None
+            ),
+            "stage15_used_for_shift_selection": (
+                False if args.dev_calibrated_ne_shift_candidates is not None else None
             ),
         }
 
@@ -2123,6 +2326,77 @@ def main(argv: list[str] | None = None) -> int:
                 v5.write_predictions_json(
                     args.output_ood_predictions_json, ood_metadata, ood_predictions
                 )
+
+        # Stage22-G2: apply dev-calibrated shift to OOD (always runs if shift was selected,
+        # independent of which sweep branch above was active; adds ood_dev_calibrated_ne_shift
+        # to the main report — Stage15 OOD labels never used for shift selection)
+        if _selected_dev_ne_shift is not None:
+            _dc_ood_ne_idx = v5.FINAL_LABEL_TO_ID.get("NOT_ENTITLED")
+            if _dc_ood_ne_idx is None:
+                raise ValueError(
+                    "NOT_ENTITLED label index not found; "
+                    "cannot apply dev-calibrated NE shift to OOD"
+                )
+            model.eval()
+            with torch.no_grad():
+                _dc_ood_out = model(
+                    **v5.model_feature_inputs(ood_inputs),
+                    temporal_mismatch_flags=ood_temporal_flags,
+                    predicate_mismatch_flags=ood_predicate_flags,
+                )
+            _dc_ood_logits = _dc_ood_out["logits"].detach().cpu()
+            _dc_ood_labels = ood_inputs["final_labels"].detach().cpu()
+            _dc_ood_t = ood_temporal_flags.detach().cpu()
+            _dc_ood_p = ood_predicate_flags.detach().cpu()
+            _dc_ood_unflagged = (_dc_ood_t == 0) & (_dc_ood_p == 0)
+            _dc_ood_unflagged_count = int(_dc_ood_unflagged.sum().item())
+            _dc_ood_aux: dict[str, torch.Tensor | None] = {
+                k: _dc_ood_out[k].detach().cpu() if k in _dc_ood_out else None
+                for k in ("frame_prob", "sufficiency_prob", "predicate_coverage_prob")
+            }
+            _dc_ood_gate_mask = _build_gate_mask(
+                args.dev_calibrated_ne_gate,
+                _dc_ood_unflagged,
+                _dc_ood_aux,
+                args.dev_calibrated_ne_threshold,
+            )
+            _dc_ood_selected_count = int(_dc_ood_gate_mask.sum().item())
+            _dc_ood_selected_rate = (
+                _dc_ood_selected_count / _dc_ood_unflagged_count
+                if _dc_ood_unflagged_count > 0
+                else 0.0
+            )
+            _dc_ood_eval = _apply_ne_shift_and_eval(
+                _dc_ood_logits,
+                _dc_ood_labels,
+                _dc_ood_gate_mask,
+                ood_records,
+                _dc_ood_ne_idx,
+                _selected_dev_ne_shift,
+            )
+            _dc_ood_eval.update({
+                "ood_eval_state": ood_eval_state,
+                "ood_eval_epoch": ood_eval_epoch,
+                "ood_flag_source": ood_flag_source,
+                "selected_shift": _selected_dev_ne_shift,
+                "gate": args.dev_calibrated_ne_gate,
+                "threshold": args.dev_calibrated_ne_threshold,
+                "dev_objective_score": (
+                    _dev_cal_ne_result["best_objective_score"]
+                    if _dev_cal_ne_result is not None else None
+                ),
+                "selected_count": _dc_ood_selected_count,
+                "selected_rate": _dc_ood_selected_rate,
+                "calibration_source": "controlled_dev_only",
+                "stage15_used_for_shift_selection": False,
+            })
+            report["ood_dev_calibrated_ne_shift"] = _dc_ood_eval
+            print(
+                f"[OOD DEV CAL NE SHIFT] shift={_selected_dev_ne_shift:g} "
+                f"gate={args.dev_calibrated_ne_gate} "
+                f"selected={_dc_ood_selected_count}/{_dc_ood_unflagged_count} "
+                f"accuracy={_dc_ood_eval['overall_metrics']['final_accuracy']:.4f}"
+            )
 
     print("\nFINAL_REPORT")
     print(json.dumps(report, indent=2, sort_keys=True))
