@@ -839,6 +839,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="Smoke mode: tiny settings, small data",
     )
     parser.add_argument(
+        "--allow-dummy-backbone",
+        action="store_true",
+        default=False,
+        help=(
+            "Permit backbone=dummy to run. "
+            "Dummy backbone is for SMOKE / PLUMBING VALIDATION ONLY and produces "
+            "results that are NOT claim-worthy as model performance evidence. "
+            "Use --backbone mamba for any claim-worthy experiment. "
+            "This flag must be passed explicitly to prevent accidental dummy runs."
+        ),
+    )
+    parser.add_argument(
         "--class-weighting",
         choices=("none", "inverse_freq", "sqrt_inverse_freq"),
         default="none",
@@ -1072,6 +1084,28 @@ def prediction_distribution_from_records(records: list[dict]) -> dict[str, int]:
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+
+    # ---------------------------------------------------------------------------
+    # Fail-fast: dummy backbone guard
+    # Dummy backbone is valid ONLY for explicit smoke/plumbing diagnostics.
+    # It has no text comprehension capacity; metrics it produces are not
+    # claim-worthy. Require --allow-dummy-backbone to proceed.
+    # ---------------------------------------------------------------------------
+    if args.backbone == "dummy" and not args.allow_dummy_backbone:
+        raise ValueError(
+            "[DUMMY BACKBONE BLOCKED] backbone=dummy is permitted only for explicit "
+            "smoke/plumbing validation.\n"
+            "  - For a claim-worthy experiment use: --backbone mamba\n"
+            "  - For intentional dummy smoke/plumbing: add --allow-dummy-backbone\n"
+            "Dummy results are NOT model performance evidence and must not be cited "
+            "as such in papers or Kaggle submissions."
+        )
+    if args.backbone == "dummy" and args.allow_dummy_backbone:
+        print(
+            "[DUMMY BACKBONE WARNING] backbone=dummy is active. "
+            "This run is NOT claim-worthy. "
+            "Results are valid for plumbing/smoke validation only."
+        )
 
     random.seed(args.seed)
     np.random.seed(args.seed)
@@ -1666,6 +1700,13 @@ def main(argv: list[str] | None = None) -> int:
             "model_name": args.model_name if args.backbone == "mamba" else None,
             "freeze_encoder": args.freeze_encoder,
             "freeze_a_log": args.freeze_a_log,
+            "device": str(args.device),
+            "allow_dummy_backbone": args.allow_dummy_backbone,
+            "dummy_result_claim_policy": (
+                "smoke_plumbing_only_not_claim_worthy"
+                if args.backbone == "dummy"
+                else "real_backbone_claim_candidate"
+            ),
             "weighted_label_loss": args.weighted_label_loss,
             "balanced_sampler": args.balanced_sampler,
             "use_intervention_loss": args.use_intervention_loss,
@@ -1821,7 +1862,15 @@ def main(argv: list[str] | None = None) -> int:
         _ood_provenance: dict[str, Any] = {
             "backbone": args.backbone,
             "freeze_encoder": getattr(args, "freeze_encoder", None),
+            "freeze_a_log": getattr(args, "freeze_a_log", None),
             "model_name": getattr(args, "model_name", None),
+            "device": str(args.device),
+            "allow_dummy_backbone": args.allow_dummy_backbone,
+            "dummy_result_claim_policy": (
+                "smoke_plumbing_only_not_claim_worthy"
+                if args.backbone == "dummy"
+                else "real_backbone_claim_candidate"
+            ),
             "seed": args.seed,
             "data": str(args.data),
             "ood_data": str(args.ood_data),
