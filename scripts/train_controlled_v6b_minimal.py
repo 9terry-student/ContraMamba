@@ -966,7 +966,35 @@ def build_parser() -> argparse.ArgumentParser:
             "Frame false-entitlement penalty weight in the dev calibration objective. "
             "score = pres_accept_rate - frame_penalty * frame_false_entitled_rate. "
             "Higher values penalize predicting SUPPORT/REFUTE for frame-mismatch records. "
+            "Ignored when --dev-calibrated-ne-frame-penalty-candidates is set. "
             "Default: 2.0."
+        ),
+    )
+    parser.add_argument(
+        "--dev-calibrated-ne-calibration-source",
+        choices=("dev", "train", "train_dev"),
+        default="dev",
+        help=(
+            "Controlled data split used to calibrate the selective NE shift (Stage22-G3). "
+            "dev: use held-out controlled dev records only (G2 behavior, default). "
+            "train: use controlled train records for a larger calibration pool. "
+            "train_dev: concatenate train and dev records for the largest pool. "
+            "Stage15/OOD records are NEVER used regardless of this setting. "
+            "stage15_used_for_shift_selection is always false."
+        ),
+    )
+    parser.add_argument(
+        "--dev-calibrated-ne-frame-penalty-candidates",
+        type=str,
+        default=None,
+        help=(
+            "Comma-separated float penalty candidates for G3 joint (penalty, shift) selection. "
+            "E.g. '0.5,1.0,1.5,2.0'. When set, sweeps all combinations of "
+            "--dev-calibrated-ne-shift-candidates x frame-penalty-candidates and selects "
+            "the best pair by: (1) highest objective score, then tie-breaks: "
+            "(2) lower frame_false_entitled_rate, (3) higher pres_accept_rate, "
+            "(4) lower shift, (5) higher frame_penalty. "
+            "When absent, uses the single --dev-calibrated-ne-frame-penalty (G2 behavior)."
         ),
     )
     # Stage22-A: preservation boundary head
@@ -1811,6 +1839,8 @@ def main(argv: list[str] | None = None) -> int:
             "dev_calibrated_ne_gate": args.dev_calibrated_ne_gate,
             "dev_calibrated_ne_threshold": args.dev_calibrated_ne_threshold,
             "dev_calibrated_ne_frame_penalty": args.dev_calibrated_ne_frame_penalty,
+            "dev_calibrated_ne_calibration_source": args.dev_calibrated_ne_calibration_source,
+            "dev_calibrated_ne_frame_penalty_candidates": args.dev_calibrated_ne_frame_penalty_candidates,
             "class_weights": ce_class_weights.tolist() if ce_class_weights is not None else None,
             "class_counts": label_counts,
         },
@@ -1881,12 +1911,14 @@ def main(argv: list[str] | None = None) -> int:
             )
 
     # ---------------------------------------------------------------------------
-    # Stage22-G2: dev-calibrated selective NE shift
-    # Shift is selected on controlled dev only. Stage15 OOD labels are never
-    # consulted during selection. The selected shift is stored here and
-    # optionally applied to OOD inside the args.ood_data block below.
+    # Stage22-G2/G3: dev-calibrated selective NE shift
+    # Shift (and optionally frame penalty) is selected on controlled data only.
+    # Stage15 OOD labels are NEVER consulted during selection.
+    # G2: source=dev (default) — same pool as before.
+    # G3: source=train or train_dev — larger pool without any OOD records.
     # ---------------------------------------------------------------------------
     _selected_dev_ne_shift: float | None = None
+    _selected_dev_ne_frame_penalty: float | None = None
     _dev_cal_ne_result: dict[str, Any] | None = None
 
     if args.dev_calibrated_ne_shift_candidates is not None:
@@ -1896,29 +1928,69 @@ def main(argv: list[str] | None = None) -> int:
                 "NOT_ENTITLED label index not found in FINAL_LABEL_TO_ID; "
                 "cannot apply dev-calibrated NE shift"
             )
-        # Restore best checkpoint (same logic as OOD block; eval on dev needs best weights)
+        # Restore best checkpoint (eval needs best weights, same as OOD block)
         if _ood_best_state is not None:
             model.load_state_dict({k: v.to(device) for k, v in _ood_best_state.items()})
         model.eval()
-        with torch.no_grad():
-            _dc_dev_out = model(
-                **v5.model_feature_inputs(dev_inputs),
-                temporal_mismatch_flags=dev_temporal_flags,
-                predicate_mismatch_flags=dev_predicate_flags,
+
+        _dc_cal_source = args.dev_calibrated_ne_calibration_source  # "dev", "train", "train_dev"
+        _DC_PRES_ITYPES = frozenset({"none", "paraphrase"})
+        _DC_FRAME_ITYPES = frozenset({
+            "entity_swap", "event_swap", "location_swap", "role_swap", "title_name_swap",
+        })
+        _dc_aux_keys = ("frame_prob", "sufficiency_prob", "predicate_coverage_prob")
+
+        # --- Run model on needed splits; collect (logits, records, flags) per split ---
+        def _dc_run_split(
+            inputs: dict, t_flags: "torch.Tensor", p_flags: "torch.Tensor"
+        ) -> tuple["torch.Tensor", dict[str, "torch.Tensor | None"], "torch.Tensor"]:
+            with torch.no_grad():
+                _out = model(
+                    **v5.model_feature_inputs(inputs),
+                    temporal_mismatch_flags=t_flags,
+                    predicate_mismatch_flags=p_flags,
+                )
+            _logits = _out["logits"].detach().cpu()
+            _aux = {k: _out[k].detach().cpu() if k in _out else None for k in _dc_aux_keys}
+            _t = t_flags.detach().cpu()
+            _p = p_flags.detach().cpu()
+            _unflagged = (_t == 0) & (_p == 0)
+            return _logits, _aux, _unflagged
+
+        if _dc_cal_source == "dev":
+            _dc_logits, _dc_aux, _dc_unflagged = _dc_run_split(
+                dev_inputs, dev_temporal_flags, dev_predicate_flags
             )
-        _dc_dev_logits = _dc_dev_out["logits"].detach().cpu()
-        _dc_dev_t = dev_temporal_flags.detach().cpu()
-        _dc_dev_p = dev_predicate_flags.detach().cpu()
-        _dc_unflagged = (_dc_dev_t == 0) & (_dc_dev_p == 0)
+            _dc_records = dev_records
+        elif _dc_cal_source == "train":
+            _dc_logits, _dc_aux, _dc_unflagged = _dc_run_split(
+                train_inputs, train_temporal_flags, train_predicate_flags
+            )
+            _dc_records = train_records
+        else:  # train_dev
+            _dc_tr_logits, _dc_tr_aux, _dc_tr_unflagged = _dc_run_split(
+                train_inputs, train_temporal_flags, train_predicate_flags
+            )
+            _dc_dv_logits, _dc_dv_aux, _dc_dv_unflagged = _dc_run_split(
+                dev_inputs, dev_temporal_flags, dev_predicate_flags
+            )
+            _dc_logits = torch.cat([_dc_tr_logits, _dc_dv_logits], dim=0)
+            _dc_aux = {
+                k: (
+                    torch.cat([_dc_tr_aux[k], _dc_dv_aux[k]], dim=0)
+                    if _dc_tr_aux[k] is not None and _dc_dv_aux[k] is not None
+                    else None
+                )
+                for k in _dc_aux_keys
+            }
+            _dc_unflagged = torch.cat([_dc_tr_unflagged, _dc_dv_unflagged], dim=0)
+            _dc_records = train_records + dev_records
+
         _dc_unflagged_count = int(_dc_unflagged.sum().item())
-        _dc_dev_aux: dict[str, torch.Tensor | None] = {
-            k: _dc_dev_out[k].detach().cpu() if k in _dc_dev_out else None
-            for k in ("frame_prob", "sufficiency_prob", "predicate_coverage_prob")
-        }
         _dc_gate_mask = _build_gate_mask(
             args.dev_calibrated_ne_gate,
             _dc_unflagged,
-            _dc_dev_aux,
+            _dc_aux,
             args.dev_calibrated_ne_threshold,
         )
         _dc_selected_count = int(_dc_gate_mask.sum().item())
@@ -1926,93 +1998,141 @@ def main(argv: list[str] | None = None) -> int:
             _dc_selected_count / _dc_unflagged_count if _dc_unflagged_count > 0 else 0.0
         )
 
-        # Calibration record sets — derived from intervention_type, not Stage15 labels
-        _DC_PRES_ITYPES = frozenset({"none", "paraphrase"})
-        _DC_FRAME_ITYPES = frozenset({
-            "entity_swap", "event_swap", "location_swap", "role_swap", "title_name_swap",
-        })
+        # Record sets derived from intervention_type only — no Stage15 labels used
         _dc_pres_idx = [
-            i for i, r in enumerate(dev_records)
+            i for i, r in enumerate(_dc_records)
             if r.get("intervention_type", "") in _DC_PRES_ITYPES
         ]
         _dc_frame_idx = [
-            i for i, r in enumerate(dev_records)
+            i for i, r in enumerate(_dc_records)
             if r.get("intervention_type", "") in _DC_FRAME_ITYPES
         ]
 
-        # Sort candidates ascending so lower shift wins ties automatically
-        _dc_candidates = sorted(
+        # Shift and penalty candidates (sorted ascending for tie-break ordering)
+        _dc_shift_cands = sorted(
             float(s.strip()) for s in args.dev_calibrated_ne_shift_candidates.split(",")
         )
+        _dc_penalty_cands: list[float]
+        if args.dev_calibrated_ne_frame_penalty_candidates is not None:
+            _dc_penalty_cands = sorted(
+                float(p.strip())
+                for p in args.dev_calibrated_ne_frame_penalty_candidates.split(",")
+            )
+        else:
+            _dc_penalty_cands = [args.dev_calibrated_ne_frame_penalty]
+
+        # Joint (penalty, shift) sweep — nested dict keyed by penalty then shift
         _dc_sweep: dict[str, Any] = {}
-        _dc_best_shift: float = _dc_candidates[0]
+        # Best-so-far tracking; tie-breaks applied in order:
+        # 1 higher score  2 lower frame_fe_rate  3 higher pres_rate  4 lower shift  5 higher penalty
+        _dc_best_shift: float = _dc_shift_cands[0]
+        _dc_best_penalty: float = _dc_penalty_cands[0]
         _dc_best_score: float = float("-inf")
+        _dc_best_fe_rate: float = 1.0
         _dc_best_pres_rate: float = 0.0
 
-        for _dc_shift in _dc_candidates:
-            _dc_adj = _dc_dev_logits.clone()
-            if _dc_shift != 0.0:
-                _dc_adj[_dc_gate_mask, _dc_ne_idx] -= _dc_shift
-            _dc_preds = _dc_adj.argmax(dim=-1)
+        _dc_pres_total = len(_dc_pres_idx)
+        _dc_frame_total = len(_dc_frame_idx)
 
-            _dc_pres_total = len(_dc_pres_idx)
-            _dc_pres_accept = sum(
-                1 for i in _dc_pres_idx if _dc_preds[i].item() != _dc_ne_idx
-            )
-            _dc_pres_rate = _dc_pres_accept / _dc_pres_total if _dc_pres_total > 0 else 0.0
+        for _dc_penalty in _dc_penalty_cands:
+            _dc_penalty_key = f"penalty={_dc_penalty:g}"
+            _dc_sweep[_dc_penalty_key] = {}
+            for _dc_shift in _dc_shift_cands:
+                _dc_adj = _dc_logits.clone()
+                if _dc_shift != 0.0:
+                    _dc_adj[_dc_gate_mask, _dc_ne_idx] -= _dc_shift
+                _dc_preds = _dc_adj.argmax(dim=-1)
 
-            _dc_frame_total = len(_dc_frame_idx)
-            _dc_frame_fe = sum(
-                1 for i in _dc_frame_idx if _dc_preds[i].item() != _dc_ne_idx
-            )
-            _dc_frame_fe_rate = _dc_frame_fe / _dc_frame_total if _dc_frame_total > 0 else 0.0
+                _dc_pres_accept = sum(
+                    1 for i in _dc_pres_idx if _dc_preds[i].item() != _dc_ne_idx
+                )
+                _dc_pres_rate = (
+                    _dc_pres_accept / _dc_pres_total if _dc_pres_total > 0 else 0.0
+                )
+                _dc_frame_fe = sum(
+                    1 for i in _dc_frame_idx if _dc_preds[i].item() != _dc_ne_idx
+                )
+                _dc_frame_fe_rate = (
+                    _dc_frame_fe / _dc_frame_total if _dc_frame_total > 0 else 0.0
+                )
+                _dc_score = _dc_pres_rate - _dc_penalty * _dc_frame_fe_rate
 
-            _dc_score = (
-                _dc_pres_rate
-                - args.dev_calibrated_ne_frame_penalty * _dc_frame_fe_rate
-            )
-            _dc_sweep[f"{_dc_shift:g}"] = {
-                "shift": _dc_shift,
-                "pres_accept_rate": _dc_pres_rate,
-                "frame_false_entitled_rate": _dc_frame_fe_rate,
-                "pres_total": _dc_pres_total,
-                "frame_total": _dc_frame_total,
-                "objective_score": _dc_score,
-            }
-            # Tie-break: ascending iteration means lower shift wins equal scores;
-            # update on strict improvement in score only
-            if _dc_score > _dc_best_score:
-                _dc_best_score = _dc_score
-                _dc_best_shift = _dc_shift
-                _dc_best_pres_rate = _dc_pres_rate
+                _dc_sweep[_dc_penalty_key][f"shift={_dc_shift:g}"] = {
+                    "shift": _dc_shift,
+                    "frame_penalty": _dc_penalty,
+                    "pres_accept_rate": _dc_pres_rate,
+                    "frame_false_entitled_rate": _dc_frame_fe_rate,
+                    "pres_total": _dc_pres_total,
+                    "frame_total": _dc_frame_total,
+                    "objective_score": _dc_score,
+                }
+
+                # Tie-break order: (1) higher score; (2) lower fe_rate; (3) higher pres_rate;
+                # (4) lower shift (ascending loop handles this); (5) higher penalty (desc loop
+                # would handle — instead we check explicitly).
+                def _dc_beats_best() -> bool:
+                    if _dc_score > _dc_best_score:
+                        return True
+                    if _dc_score < _dc_best_score:
+                        return False
+                    if _dc_frame_fe_rate < _dc_best_fe_rate:
+                        return True
+                    if _dc_frame_fe_rate > _dc_best_fe_rate:
+                        return False
+                    if _dc_pres_rate > _dc_best_pres_rate:
+                        return True
+                    if _dc_pres_rate < _dc_best_pres_rate:
+                        return False
+                    if _dc_shift < _dc_best_shift:
+                        return True
+                    if _dc_shift > _dc_best_shift:
+                        return False
+                    # shift equal: higher penalty wins
+                    return _dc_penalty > _dc_best_penalty
+
+                if _dc_beats_best():
+                    _dc_best_score = _dc_score
+                    _dc_best_fe_rate = _dc_frame_fe_rate
+                    _dc_best_pres_rate = _dc_pres_rate
+                    _dc_best_shift = _dc_shift
+                    _dc_best_penalty = _dc_penalty
 
         _selected_dev_ne_shift = _dc_best_shift
+        _selected_dev_ne_frame_penalty = _dc_best_penalty
+        _dc_cal_source_label = f"controlled_{_dc_cal_source}_only"
         _dev_cal_ne_result = {
             "selected_dev_calibrated_ne_shift": _selected_dev_ne_shift,
+            "selected_dev_calibrated_ne_frame_penalty": _selected_dev_ne_frame_penalty,
             "dev_calibrated_ne_shift_candidates": args.dev_calibrated_ne_shift_candidates,
+            "dev_calibrated_ne_frame_penalty_candidates": (
+                args.dev_calibrated_ne_frame_penalty_candidates
+            ),
             "dev_calibrated_ne_gate": args.dev_calibrated_ne_gate,
             "dev_calibrated_ne_threshold": args.dev_calibrated_ne_threshold,
-            "dev_calibrated_ne_frame_penalty": args.dev_calibrated_ne_frame_penalty,
-            "calibration_source": "controlled_dev_only",
+            "dev_calibrated_ne_calibration_source": _dc_cal_source,
+            "calibration_source": _dc_cal_source_label,
             "stage15_used_for_shift_selection": False,
             "best_objective_score": _dc_best_score,
-            "selected_count": _dc_selected_count,
-            "selected_rate": _dc_selected_rate,
-            "dev_unflagged_count": _dc_unflagged_count,
-            "dev_pres_record_count": len(_dc_pres_idx),
-            "dev_frame_record_count": len(_dc_frame_idx),
+            "calibration_pres_record_count": _dc_pres_total,
+            "calibration_frame_record_count": _dc_frame_total,
+            "calibration_unflagged_count": _dc_unflagged_count,
+            "calibration_selected_count": _dc_selected_count,
+            "calibration_selected_rate": _dc_selected_rate,
             "shift_sweep": _dc_sweep,
         }
         report["dev_calibrated_ne_shift"] = _selected_dev_ne_shift
+        report["dev_calibrated_ne_frame_penalty"] = _selected_dev_ne_frame_penalty
+        report["dev_calibrated_ne_calibration_source"] = _dc_cal_source
         report["dev_calibrated_ne_shift_sweep"] = _dev_cal_ne_result
         print(
-            f"[DEV CAL NE SHIFT] gate={args.dev_calibrated_ne_gate} "
+            f"[DEV CAL NE SHIFT G3] source={_dc_cal_source} "
+            f"gate={args.dev_calibrated_ne_gate} "
             f"thr={args.dev_calibrated_ne_threshold} "
-            f"penalty={args.dev_calibrated_ne_frame_penalty} "
             f"selected_shift={_selected_dev_ne_shift:g} "
+            f"selected_penalty={_selected_dev_ne_frame_penalty:g} "
             f"score={_dc_best_score:.4f} "
             f"selected={_dc_selected_count}/{_dc_unflagged_count} "
-            f"pres_n={len(_dc_pres_idx)} frame_n={len(_dc_frame_idx)}"
+            f"pres_n={_dc_pres_total} frame_n={_dc_frame_total}"
         )
 
     if args.ood_data is not None:
@@ -2086,12 +2206,17 @@ def main(argv: list[str] | None = None) -> int:
                 args, "pair_contrastive_frame_margin", 0.0
             ),
             "dev_calibrated_ne_shift_candidates": args.dev_calibrated_ne_shift_candidates,
+            "dev_calibrated_ne_frame_penalty_candidates": (
+                args.dev_calibrated_ne_frame_penalty_candidates
+            ),
+            "dev_calibrated_ne_calibration_source": args.dev_calibrated_ne_calibration_source,
             "dev_calibrated_ne_gate": args.dev_calibrated_ne_gate,
             "dev_calibrated_ne_threshold": args.dev_calibrated_ne_threshold,
             "dev_calibrated_ne_frame_penalty": args.dev_calibrated_ne_frame_penalty,
             "selected_dev_calibrated_ne_shift": _selected_dev_ne_shift,
+            "selected_dev_calibrated_ne_frame_penalty": _selected_dev_ne_frame_penalty,
             "calibration_source": (
-                "controlled_dev_only"
+                f"controlled_{args.dev_calibrated_ne_calibration_source}_only"
                 if args.dev_calibrated_ne_shift_candidates is not None
                 else None
             ),
@@ -2379,21 +2504,39 @@ def main(argv: list[str] | None = None) -> int:
                 "ood_eval_epoch": ood_eval_epoch,
                 "ood_flag_source": ood_flag_source,
                 "selected_shift": _selected_dev_ne_shift,
+                "selected_frame_penalty": _selected_dev_ne_frame_penalty,
                 "gate": args.dev_calibrated_ne_gate,
                 "threshold": args.dev_calibrated_ne_threshold,
+                "dev_calibrated_ne_calibration_source": args.dev_calibrated_ne_calibration_source,
                 "dev_objective_score": (
                     _dev_cal_ne_result["best_objective_score"]
                     if _dev_cal_ne_result is not None else None
                 ),
+                "calibration_pres_record_count": (
+                    _dev_cal_ne_result["calibration_pres_record_count"]
+                    if _dev_cal_ne_result is not None else None
+                ),
+                "calibration_frame_record_count": (
+                    _dev_cal_ne_result["calibration_frame_record_count"]
+                    if _dev_cal_ne_result is not None else None
+                ),
+                "calibration_unflagged_count": (
+                    _dev_cal_ne_result["calibration_unflagged_count"]
+                    if _dev_cal_ne_result is not None else None
+                ),
                 "selected_count": _dc_ood_selected_count,
                 "selected_rate": _dc_ood_selected_rate,
-                "calibration_source": "controlled_dev_only",
+                "calibration_source": (
+                    f"controlled_{args.dev_calibrated_ne_calibration_source}_only"
+                ),
                 "stage15_used_for_shift_selection": False,
             })
             report["ood_dev_calibrated_ne_shift"] = _dc_ood_eval
             print(
-                f"[OOD DEV CAL NE SHIFT] shift={_selected_dev_ne_shift:g} "
+                f"[OOD DEV CAL NE SHIFT G3] shift={_selected_dev_ne_shift:g} "
+                f"penalty={_selected_dev_ne_frame_penalty:g} "
                 f"gate={args.dev_calibrated_ne_gate} "
+                f"source={args.dev_calibrated_ne_calibration_source} "
                 f"selected={_dc_ood_selected_count}/{_dc_ood_unflagged_count} "
                 f"accuracy={_dc_ood_eval['overall_metrics']['final_accuracy']:.4f}"
             )
