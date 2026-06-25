@@ -2293,10 +2293,27 @@ def main(argv: list[str] | None = None) -> int:
     _td_dev_labels: "torch.Tensor | None" = None
     _td_dev_mask: "torch.Tensor | None" = None
 
-    if args.use_temporal_diagnostic_loss or args.temporal_diagnostic_data is not None:
+    if (
+        args.use_temporal_diagnostic_loss
+        or args.use_temporal_channel_loss
+        or args.use_temporal_adapter_loss
+        or args.temporal_diagnostic_data is not None
+    ):
         if args.temporal_diagnostic_data is None:
+            _td_need = [
+                f
+                for f, v in [
+                    ("--use-temporal-diagnostic-loss", args.use_temporal_diagnostic_loss),
+                    ("--use-temporal-channel-loss", args.use_temporal_channel_loss),
+                    ("--use-temporal-adapter-loss", args.use_temporal_adapter_loss),
+                ]
+                if v
+            ]
             raise ValueError(
-                "--use-temporal-diagnostic-loss requires --temporal-diagnostic-data"
+                f"{', '.join(_td_need)} require --temporal-diagnostic-data. "
+                "Provide the temporal diagnostic JSONL (time_swap records) via "
+                "--temporal-diagnostic-data. Do not use --data; temporal diagnostic "
+                "records must not be merged into the main clean train/eval data."
             )
         _td_path = Path(args.temporal_diagnostic_data)
         if not _td_path.exists():
@@ -2542,6 +2559,12 @@ def main(argv: list[str] | None = None) -> int:
             raise ValueError(
                 "--temporal-channel-loss-weight > 0 requires --use-temporal-channel. "
                 "Enable the TC head with --use-temporal-channel."
+            )
+        if tc_loss_weight > 0.0 and td_train_inputs is None:
+            raise ValueError(
+                "--temporal-channel-loss-weight > 0 requires temporal diagnostic data. "
+                "Pass --temporal-diagnostic-data with the temporal diagnostic JSONL "
+                "(time_swap records). Without it, TC BCE cannot be computed."
             )
         if use_temporal_channel_gated_penalty and (
             not hasattr(model, "preservation_entitlement_head")
@@ -2867,20 +2890,25 @@ def main(argv: list[str] | None = None) -> int:
                         temporal_mismatch_flags=_tc_zero_t,
                         predicate_mismatch_flags=_tc_zero_p,
                     )
-                if _tc_train_out.get("temporal_channel_logit") is not None:
-                    _active_tc = td_train_mask.bool()
-                    if torch.any(_active_tc):
-                        _tc_pos_w = torch.tensor(
-                            tc_loss_pos_weight,
-                            dtype=torch.float32,
-                            device=_tc_train_out["temporal_channel_logit"].device,
-                        )
-                        _tc_loss = F.binary_cross_entropy_with_logits(
-                            _tc_train_out["temporal_channel_logit"][_active_tc],
-                            td_train_labels[_active_tc],
-                            pos_weight=_tc_pos_w,
-                        )
-                        total_loss = total_loss + tc_loss_weight * _tc_loss
+                if _tc_train_out.get("temporal_channel_logit") is None:
+                    raise RuntimeError(
+                        "TC loss enabled (tc_loss_weight > 0) but model forward produced "
+                        "no temporal_channel_logit. Ensure --use-temporal-channel is set "
+                        "and the TC head is instantiated."
+                    )
+                _active_tc = td_train_mask.bool()
+                if torch.any(_active_tc):
+                    _tc_pos_w = torch.tensor(
+                        tc_loss_pos_weight,
+                        dtype=torch.float32,
+                        device=_tc_train_out["temporal_channel_logit"].device,
+                    )
+                    _tc_loss = F.binary_cross_entropy_with_logits(
+                        _tc_train_out["temporal_channel_logit"][_active_tc],
+                        td_train_labels[_active_tc],
+                        pos_weight=_tc_pos_w,
+                    )
+                    total_loss = total_loss + tc_loss_weight * _tc_loss
 
             # Stage22-A4c: pair contrastive frame ranking loss
             # Supervises frame_violation_logit only; output["logits"] and predictions unchanged.
@@ -3810,6 +3838,17 @@ def main(argv: list[str] | None = None) -> int:
                 "temporal_channel_v1 is instantiated but neither tc_loss nor tc_gated_penalty is enabled: "
                 "TC head adds parameters with no training signal and no effect on final logits"
             )
+        if tc_loss_weight > 0.0 and _loss_epoch_avg_raw.get("temporal_channel_loss", 0.0) == 0.0:
+            _audit_warnings.append(
+                "temporal_channel_loss is enabled (weight > 0) but epoch-average raw loss is 0.0: "
+                "TC BCE was not computed. Check that --temporal-diagnostic-data was provided "
+                "and that the TC head produced temporal_channel_logit."
+            )
+        if tc_loss_weight > 0.0 and _loss_epoch_avg_weighted.get("temporal_channel_loss", 0.0) == 0.0:
+            _audit_warnings.append(
+                "temporal_channel_loss weighted average is 0.0 despite weight > 0: "
+                "TC BCE contributed nothing to total_loss this run."
+            )
         if _tc_fallback_used:
             _audit_warnings.append(
                 "td_constrained_selection fallback triggered: "
@@ -3900,6 +3939,13 @@ def main(argv: list[str] | None = None) -> int:
     )
     initial_head_state = v5.capture_head_state(model)
     reports: dict[str, dict[str, Any]] = {}
+    # TD data is shared by temporal_diagnostic_loss, temporal_adapter_loss, and
+    # temporal_channel_loss. Pass it whenever any of those needs it.
+    _td_data_needed = (
+        args.use_temporal_diagnostic_loss
+        or args.use_temporal_channel_loss
+        or args.use_temporal_adapter_loss
+    )
 
     for run_name, loss_config in configurations.items():
         v5.restore_head_state(model, initial_head_state)
@@ -3955,12 +4001,12 @@ def main(argv: list[str] | None = None) -> int:
                 if args.use_preservation_entitlement_loss else 0.0
             ),
             pe_loss_pos_weight=args.preservation_entitlement_loss_pos_weight,
-            td_train_inputs=_td_train_inputs if args.use_temporal_diagnostic_loss else None,
-            td_dev_inputs=_td_dev_inputs if args.use_temporal_diagnostic_loss else None,
-            td_train_labels=_td_train_labels if args.use_temporal_diagnostic_loss else None,
-            td_train_mask=_td_train_mask if args.use_temporal_diagnostic_loss else None,
-            td_dev_labels=_td_dev_labels if args.use_temporal_diagnostic_loss else None,
-            td_dev_mask=_td_dev_mask if args.use_temporal_diagnostic_loss else None,
+            td_train_inputs=_td_train_inputs if _td_data_needed else None,
+            td_dev_inputs=_td_dev_inputs if _td_data_needed else None,
+            td_train_labels=_td_train_labels if _td_data_needed else None,
+            td_train_mask=_td_train_mask if _td_data_needed else None,
+            td_dev_labels=_td_dev_labels if _td_data_needed else None,
+            td_dev_mask=_td_dev_mask if _td_data_needed else None,
             td_loss_weight=(
                 args.temporal_diagnostic_loss_weight
                 if args.use_temporal_diagnostic_loss else 0.0
