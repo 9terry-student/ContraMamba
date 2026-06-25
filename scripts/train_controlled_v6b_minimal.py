@@ -139,6 +139,77 @@ def build_mamba_model(
     return model
 
 
+def build_v7_model(
+    vocab_size: int,
+    max_length: int,
+    hidden_size: int = 48,
+    v7_disable_frame_channel: bool = False,
+    v7_disable_predicate_channel: bool = False,
+    v7_disable_sufficiency_channel: bool = False,
+    v7_disable_temporal_channel: bool = False,
+    v7_flat_arbiter: bool = False,
+    v7_no_entitlement_polarity_conditioning: bool = False,
+    v7_no_aux_losses: bool = False,
+) -> "ContraMambaV7Hierarchical":
+    """Build a ContraMambaV7Hierarchical with dummy backbone for plumbing validation."""
+    from contramamba.modeling_v7_hierarchical import ContraMambaV7Hierarchical
+    backbone = v5.ControlledDummyBackbone(vocab_size, hidden_size, max_length)
+    return ContraMambaV7Hierarchical(
+        backbone=backbone,
+        frame_size=32,
+        predicate_size=32,
+        sufficiency_size=32,
+        polarity_size=24,
+        dropout=0.0,
+        v7_disable_frame_channel=v7_disable_frame_channel,
+        v7_disable_predicate_channel=v7_disable_predicate_channel,
+        v7_disable_sufficiency_channel=v7_disable_sufficiency_channel,
+        v7_disable_temporal_channel=v7_disable_temporal_channel,
+        v7_flat_arbiter=v7_flat_arbiter,
+        v7_no_entitlement_polarity_conditioning=v7_no_entitlement_polarity_conditioning,
+        v7_no_aux_losses=v7_no_aux_losses,
+    )
+
+
+def build_v7_mamba_model(
+    model_name: str,
+    freeze_encoder: bool,
+    freeze_a_log: bool,
+    v7_disable_frame_channel: bool = False,
+    v7_disable_predicate_channel: bool = False,
+    v7_disable_sufficiency_channel: bool = False,
+    v7_disable_temporal_channel: bool = False,
+    v7_flat_arbiter: bool = False,
+    v7_no_entitlement_polarity_conditioning: bool = False,
+    v7_no_aux_losses: bool = False,
+) -> "ContraMambaV7Hierarchical":
+    """Build a ContraMambaV7Hierarchical with real Mamba backbone."""
+    from contramamba.modeling_v7_hierarchical import ContraMambaV7Hierarchical
+    model = ContraMambaV7Hierarchical(
+        model_name=model_name,
+        frame_size=128,
+        predicate_size=128,
+        sufficiency_size=128,
+        polarity_size=64,
+        dropout=0.1,
+        freeze_a_log=freeze_a_log,
+        v7_disable_frame_channel=v7_disable_frame_channel,
+        v7_disable_predicate_channel=v7_disable_predicate_channel,
+        v7_disable_sufficiency_channel=v7_disable_sufficiency_channel,
+        v7_disable_temporal_channel=v7_disable_temporal_channel,
+        v7_flat_arbiter=v7_flat_arbiter,
+        v7_no_entitlement_polarity_conditioning=v7_no_entitlement_polarity_conditioning,
+        v7_no_aux_losses=v7_no_aux_losses,
+    )
+    for parameter in model.mamba.parameters():
+        parameter.requires_grad = not freeze_encoder
+    if freeze_a_log:
+        for name, parameter in model.mamba.named_parameters():
+            if "A_log" in name:
+                parameter.requires_grad = False
+    return model
+
+
 def extract_flags(
     records: list[dict],
     flag_source: str,
@@ -2009,6 +2080,103 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+    # ── Stage26-A: v7 Hierarchical Entitlement architecture ──────────────────────────────────
+    # Default: architecture=v6b_minimal (full backward compatibility; no v6B behavior changes).
+    # Set --architecture v7_hierarchical to use ContraMambaV7Hierarchical instead.
+    # v7 flags below are only consulted when architecture==v7_hierarchical; they have no
+    # effect on v6B runs and do not change any default v6B behavior.
+    parser.add_argument(
+        "--architecture",
+        choices=("v6b_minimal", "v7_hierarchical"),
+        default="v6b_minimal",
+        help=(
+            "Model architecture to use. Default: v6b_minimal (existing v6B behavior, "
+            "fully backward compatible). v7_hierarchical: Stage26-A ContraMambaV7Hierarchical "
+            "(new hierarchical entitlement pipeline; requires explicit selection)."
+        ),
+    )
+    parser.add_argument(
+        "--v7-disable-frame-channel",
+        action="store_true",
+        default=False,
+        help=(
+            "v7 ablation: EntitlementGate sees frame_prob=1.0 (no frame signal). "
+            "FrameGate still runs so downstream heads get frame representations. "
+            "Only valid when --architecture v7_hierarchical."
+        ),
+    )
+    parser.add_argument(
+        "--v7-disable-predicate-channel",
+        action="store_true",
+        default=False,
+        help=(
+            "v7 ablation: EntitlementGate sees predicate_prob=1.0 (no predicate signal). "
+            "Only valid when --architecture v7_hierarchical."
+        ),
+    )
+    parser.add_argument(
+        "--v7-disable-sufficiency-channel",
+        action="store_true",
+        default=False,
+        help=(
+            "v7 ablation: EntitlementGate sees sufficiency_prob=1.0 (no sufficiency signal). "
+            "Only valid when --architecture v7_hierarchical."
+        ),
+    )
+    parser.add_argument(
+        "--v7-disable-temporal-channel",
+        action="store_true",
+        default=False,
+        help=(
+            "v7 ablation: TemporalChannelV2 not instantiated; EntitlementGate uses 3-input "
+            "MLP instead of 4-input. In Stage26-A, temporal channel trains through CE only. "
+            "Only valid when --architecture v7_hierarchical."
+        ),
+    )
+    parser.add_argument(
+        "--v7-flat-arbiter",
+        action="store_true",
+        default=False,
+        help=(
+            "v7 ablation: EntitlementGate uses explicit product formula (v6B-like) instead of "
+            "learned MLP. Only valid when --architecture v7_hierarchical."
+        ),
+    )
+    parser.add_argument(
+        "--v7-no-entitlement-polarity-conditioning",
+        action="store_true",
+        default=False,
+        help=(
+            "v7 ablation: Final composition ignores entitlement_logit; polarity logits alone "
+            "determine SUPPORT/REFUTE; NE uses fixed ne_bias. "
+            "Only valid when --architecture v7_hierarchical."
+        ),
+    )
+    parser.add_argument(
+        "--v7-no-aux-losses",
+        action="store_true",
+        default=False,
+        help=(
+            "v7: Disable all v7 auxiliary losses. Stage26-A no-op (no v7 aux losses exist yet). "
+            "Placeholder for Stage26-B auxiliary loss ablations. "
+            "Only valid when --architecture v7_hierarchical."
+        ),
+    )
+    # v7 auxiliary loss flags — all off by default; no v7 aux losses active in Stage26-A.
+    # These are reserved for Stage26-B when channel-level supervision targets are defined.
+    parser.add_argument("--v7-use-aux-losses", action="store_true", default=False,
+        help="v7: Enable v7 auxiliary channel losses. Default off (Stage26-A).")
+    parser.add_argument("--v7-frame-loss-weight", type=float, default=0.0,
+        help="v7: Frame channel auxiliary BCE loss weight. Default 0.0.")
+    parser.add_argument("--v7-predicate-loss-weight", type=float, default=0.0,
+        help="v7: Predicate channel auxiliary BCE loss weight. Default 0.0.")
+    parser.add_argument("--v7-sufficiency-loss-weight", type=float, default=0.0,
+        help="v7: Sufficiency channel auxiliary BCE loss weight. Default 0.0.")
+    parser.add_argument("--v7-temporal-loss-weight", type=float, default=0.0,
+        help="v7: Temporal channel auxiliary BCE loss weight. Default 0.0.")
+    parser.add_argument("--v7-entitlement-loss-weight", type=float, default=0.0,
+        help="v7: EntitlementGate auxiliary BCE loss weight. Default 0.0.")
+
     # ── Generic preservation-constrained checkpoint selection ─────────────────────────────────
     # Default off. Uses ONLY clean dev pairwise checks — no Stage15/OOD, no temporal diagnostic
     # metrics. Compatible with baseline, TD, TA, PE, and future runs. Cannot be combined with
@@ -2142,31 +2310,45 @@ def main(argv: list[str] | None = None) -> int:
             tokenizer.pad_token = tokenizer.eos_token
         train_bundle = v5.encode_mamba_records(train_records, tokenizer, args.max_length)
         dev_bundle = v5.encode_mamba_records(dev_records, tokenizer, args.max_length)
-        model = build_mamba_model(
-            args.model_name,
-            freeze_encoder=args.freeze_encoder,
-            freeze_a_log=args.freeze_a_log,
-            use_boundary_head=args.use_boundary_loss,
-            use_frame_violation_head=args.use_frame_violation_loss,
-            use_predicate_isolation_head=args.use_predicate_isolation_loss,
-            use_preservation_entitlement_head=args.use_preservation_entitlement_loss,
-            use_temporal_diagnostic_head=args.use_temporal_diagnostic_loss,
-            use_temporal_residual_adapter=args.use_temporal_residual_adapter,
-            temporal_adapter_detach_input=args.temporal_adapter_detach_input,
-            use_temporal_channel=args.use_temporal_channel,
-            temporal_channel_detach_input=args.temporal_channel_detach_input,
-            use_temporal_channel_loss=args.use_temporal_channel_loss,
-            temporal_channel_loss_weight=(
-                args.temporal_channel_loss_weight
-                if args.use_temporal_channel_loss else 0.0
-            ),
-            temporal_channel_loss_pos_weight=args.temporal_channel_loss_pos_weight,
-            use_temporal_channel_gated_penalty=args.use_temporal_channel_gated_penalty,
-            temporal_channel_gated_penalty_scale=(
-                args.temporal_channel_gated_penalty_scale
-                if args.use_temporal_channel_gated_penalty else 0.0
-            ),
-        )
+        if args.architecture == "v7_hierarchical":
+            model = build_v7_mamba_model(
+                args.model_name,
+                freeze_encoder=args.freeze_encoder,
+                freeze_a_log=args.freeze_a_log,
+                v7_disable_frame_channel=args.v7_disable_frame_channel,
+                v7_disable_predicate_channel=args.v7_disable_predicate_channel,
+                v7_disable_sufficiency_channel=args.v7_disable_sufficiency_channel,
+                v7_disable_temporal_channel=args.v7_disable_temporal_channel,
+                v7_flat_arbiter=args.v7_flat_arbiter,
+                v7_no_entitlement_polarity_conditioning=args.v7_no_entitlement_polarity_conditioning,
+                v7_no_aux_losses=args.v7_no_aux_losses,
+            )
+        else:
+            model = build_mamba_model(
+                args.model_name,
+                freeze_encoder=args.freeze_encoder,
+                freeze_a_log=args.freeze_a_log,
+                use_boundary_head=args.use_boundary_loss,
+                use_frame_violation_head=args.use_frame_violation_loss,
+                use_predicate_isolation_head=args.use_predicate_isolation_loss,
+                use_preservation_entitlement_head=args.use_preservation_entitlement_loss,
+                use_temporal_diagnostic_head=args.use_temporal_diagnostic_loss,
+                use_temporal_residual_adapter=args.use_temporal_residual_adapter,
+                temporal_adapter_detach_input=args.temporal_adapter_detach_input,
+                use_temporal_channel=args.use_temporal_channel,
+                temporal_channel_detach_input=args.temporal_channel_detach_input,
+                use_temporal_channel_loss=args.use_temporal_channel_loss,
+                temporal_channel_loss_weight=(
+                    args.temporal_channel_loss_weight
+                    if args.use_temporal_channel_loss else 0.0
+                ),
+                temporal_channel_loss_pos_weight=args.temporal_channel_loss_pos_weight,
+                use_temporal_channel_gated_penalty=args.use_temporal_channel_gated_penalty,
+                temporal_channel_gated_penalty_scale=(
+                    args.temporal_channel_gated_penalty_scale
+                    if args.use_temporal_channel_gated_penalty else 0.0
+                ),
+            )
 
     train_inputs = v5.move_inputs(train_bundle["model_inputs"], device)
     dev_inputs = v5.move_inputs(dev_bundle["model_inputs"], device)
@@ -2180,29 +2362,41 @@ def main(argv: list[str] | None = None) -> int:
                 inputs[key] = F.pad(inputs[key], (0, difference), value=0)
 
     if model is None:
-        model = build_model(
-            len(vocab), max_length,
-            use_boundary_head=args.use_boundary_loss,
-            use_frame_violation_head=args.use_frame_violation_loss,
-            use_predicate_isolation_head=args.use_predicate_isolation_loss,
-            use_preservation_entitlement_head=args.use_preservation_entitlement_loss,
-            use_temporal_diagnostic_head=args.use_temporal_diagnostic_loss,
-            use_temporal_residual_adapter=args.use_temporal_residual_adapter,
-            temporal_adapter_detach_input=args.temporal_adapter_detach_input,
-            use_temporal_channel=args.use_temporal_channel,
-            temporal_channel_detach_input=args.temporal_channel_detach_input,
-            use_temporal_channel_loss=args.use_temporal_channel_loss,
-            temporal_channel_loss_weight=(
-                args.temporal_channel_loss_weight
-                if args.use_temporal_channel_loss else 0.0
-            ),
-            temporal_channel_loss_pos_weight=args.temporal_channel_loss_pos_weight,
-            use_temporal_channel_gated_penalty=args.use_temporal_channel_gated_penalty,
-            temporal_channel_gated_penalty_scale=(
-                args.temporal_channel_gated_penalty_scale
-                if args.use_temporal_channel_gated_penalty else 0.0
-            ),
-        )
+        if args.architecture == "v7_hierarchical":
+            model = build_v7_model(
+                len(vocab), max_length,
+                v7_disable_frame_channel=args.v7_disable_frame_channel,
+                v7_disable_predicate_channel=args.v7_disable_predicate_channel,
+                v7_disable_sufficiency_channel=args.v7_disable_sufficiency_channel,
+                v7_disable_temporal_channel=args.v7_disable_temporal_channel,
+                v7_flat_arbiter=args.v7_flat_arbiter,
+                v7_no_entitlement_polarity_conditioning=args.v7_no_entitlement_polarity_conditioning,
+                v7_no_aux_losses=args.v7_no_aux_losses,
+            )
+        else:
+            model = build_model(
+                len(vocab), max_length,
+                use_boundary_head=args.use_boundary_loss,
+                use_frame_violation_head=args.use_frame_violation_loss,
+                use_predicate_isolation_head=args.use_predicate_isolation_loss,
+                use_preservation_entitlement_head=args.use_preservation_entitlement_loss,
+                use_temporal_diagnostic_head=args.use_temporal_diagnostic_loss,
+                use_temporal_residual_adapter=args.use_temporal_residual_adapter,
+                temporal_adapter_detach_input=args.temporal_adapter_detach_input,
+                use_temporal_channel=args.use_temporal_channel,
+                temporal_channel_detach_input=args.temporal_channel_detach_input,
+                use_temporal_channel_loss=args.use_temporal_channel_loss,
+                temporal_channel_loss_weight=(
+                    args.temporal_channel_loss_weight
+                    if args.use_temporal_channel_loss else 0.0
+                ),
+                temporal_channel_loss_pos_weight=args.temporal_channel_loss_pos_weight,
+                use_temporal_channel_gated_penalty=args.use_temporal_channel_gated_penalty,
+                temporal_channel_gated_penalty_scale=(
+                    args.temporal_channel_gated_penalty_scale
+                    if args.use_temporal_channel_gated_penalty else 0.0
+                ),
+            )
     model = model.to(device)
 
     if args.backbone == "mamba" and args.freeze_encoder:
@@ -2211,7 +2405,7 @@ def main(argv: list[str] | None = None) -> int:
         v5.cache_frozen_encoder_states(model, dev_inputs)
 
     print(
-        f"controlled v6b_minimal | backbone={args.backbone} "
+        f"controlled {args.architecture} | backbone={args.backbone} "
         f"train={len(train_records)} dev={len(dev_records)} "
         f"flag_source={args.flag_source} freeze_encoder={args.freeze_encoder}"
     )
@@ -3624,7 +3818,7 @@ def main(argv: list[str] | None = None) -> int:
                 "gradient_isolated": bool(
                     getattr(model, "temporal_channel_detach_input", True)
                 ),
-                "head_active": model.temporal_channel_v1 is not None,
+                "head_active": getattr(model, "temporal_channel_v1", None) is not None,
                 "input_representation": "cat([claim_frame_state, evidence_frame_state])",
                 "input_representation_note": (
                     "pre-pair-projector slot states from FrameGate — NOT frame_pair_repr. "
@@ -3896,6 +4090,11 @@ def main(argv: list[str] | None = None) -> int:
             "stage15_used_for_temporal_channel_training": False,
             "stage15_used_for_temporal_channel_penalty_selection": False,
             "time_swap_used_in_main_clean_data": False,
+            # Stage26-A: v7 hierarchical architecture provenance (always False in Stage26-A)
+            "stage15_used_for_v7_training": False,
+            "stage15_used_for_v7_selection": False,
+            "stage15_used_for_v7_aux_loss_targets": False,
+            "time_swap_used_in_v7_main_clean_data": False,
         }
 
         report = {
@@ -4054,9 +4253,15 @@ def main(argv: list[str] | None = None) -> int:
             pc_valid_count=len(_pc_pair_records),
         )
 
-    # Capture learned alphas
-    alpha_temporal = float(model.alpha_temporal().detach()) if model.alpha_temporal_raw else 0.0
-    alpha_predicate = float(model.alpha_predicate().detach()) if model.alpha_predicate_raw else 0.0
+    # Capture learned alphas (v6B-specific; v7 has no comparator alphas)
+    alpha_temporal = (
+        float(model.alpha_temporal().detach())
+        if getattr(model, "alpha_temporal_raw", None) is not None else 0.0
+    )
+    alpha_predicate = (
+        float(model.alpha_predicate().detach())
+        if getattr(model, "alpha_predicate_raw", None) is not None else 0.0
+    )
     temporal_flag_count = int(train_temporal_flags.sum().item())
     predicate_flag_count = int(train_predicate_flags.sum().item())
 
@@ -4083,7 +4288,10 @@ def main(argv: list[str] | None = None) -> int:
             "balanced_sampler": args.balanced_sampler,
             "use_intervention_loss": args.use_intervention_loss,
             "loss_sweep": args.loss_sweep,
-            "model_version": "v6b_minimal",
+            "model_version": (
+                "v7_hierarchical" if args.architecture == "v7_hierarchical" else "v6b_minimal"
+            ),
+            "architecture": args.architecture,
             "use_temporal_comparator": args.use_temporal_comparator,
             "use_predicate_comparator": args.use_predicate_comparator,
             "flag_source": args.flag_source,
@@ -4217,6 +4425,28 @@ def main(argv: list[str] | None = None) -> int:
             ),
             "stage15_used_for_temporal_channel_training": False,
             "stage15_used_for_temporal_channel_penalty_selection": False,
+            # Stage26-A: v7 hierarchical architecture fields
+            "architecture": args.architecture,
+            "use_v7_hierarchical": args.architecture == "v7_hierarchical",
+            "v7_disable_frame_channel": getattr(args, "v7_disable_frame_channel", False),
+            "v7_disable_predicate_channel": getattr(args, "v7_disable_predicate_channel", False),
+            "v7_disable_sufficiency_channel": getattr(args, "v7_disable_sufficiency_channel", False),
+            "v7_disable_temporal_channel": getattr(args, "v7_disable_temporal_channel", False),
+            "v7_flat_arbiter": getattr(args, "v7_flat_arbiter", False),
+            "v7_no_entitlement_polarity_conditioning": getattr(
+                args, "v7_no_entitlement_polarity_conditioning", False
+            ),
+            "v7_no_aux_losses": getattr(args, "v7_no_aux_losses", False),
+            "v7_aux_losses_active": False,
+            "v7_final_logit_composition": (
+                "flat"
+                if getattr(args, "v7_no_entitlement_polarity_conditioning", False)
+                else "hierarchical_additive"
+            ) if args.architecture == "v7_hierarchical" else None,
+            "stage15_used_for_v7_training": False,
+            "stage15_used_for_v7_selection": False,
+            "stage15_used_for_v7_aux_loss_targets": False,
+            "time_swap_used_in_v7_main_clean_data": False,
             "use_preservation_constrained_selection": args.use_preservation_constrained_selection,
             "selection_min_paraphrase_preserved": args.selection_min_paraphrase_preserved,
             "selection_min_predicate_disentangled": args.selection_min_predicate_disentangled,
@@ -4288,7 +4518,10 @@ def main(argv: list[str] | None = None) -> int:
             "weighted_label_loss": args.weighted_label_loss,
             "balanced_sampler": args.balanced_sampler,
             "use_intervention_loss": args.use_intervention_loss,
-            "model_version": "v6b_minimal",
+            "model_version": (
+                "v7_hierarchical" if args.architecture == "v7_hierarchical" else "v6b_minimal"
+            ),
+            "architecture": args.architecture,
             "use_temporal_comparator": args.use_temporal_comparator,
             "use_predicate_comparator": args.use_predicate_comparator,
             "flag_source": args.flag_source,
@@ -4382,6 +4615,10 @@ def main(argv: list[str] | None = None) -> int:
             "stage15_used_for_temporal_channel_training",
             "stage15_used_for_temporal_channel_penalty_selection",
             "time_swap_used_in_main_clean_data",
+            "stage15_used_for_v7_training",
+            "stage15_used_for_v7_selection",
+            "stage15_used_for_v7_aux_loss_targets",
+            "time_swap_used_in_v7_main_clean_data",
         ):
             if _audit_key in _single_ledger:
                 report[_audit_key] = _single_ledger[_audit_key]
@@ -4767,6 +5004,23 @@ def main(argv: list[str] | None = None) -> int:
             ),
             "stage15_used_for_temporal_channel_training": False,
             "stage15_used_for_temporal_channel_penalty_selection": False,
+            # Stage26-A: v7 hierarchical architecture fields (OOD-sweep config)
+            "architecture": getattr(args, "architecture", "v6b_minimal"),
+            "use_v7_hierarchical": getattr(args, "architecture", "v6b_minimal") == "v7_hierarchical",
+            "v7_disable_frame_channel": getattr(args, "v7_disable_frame_channel", False),
+            "v7_disable_predicate_channel": getattr(args, "v7_disable_predicate_channel", False),
+            "v7_disable_sufficiency_channel": getattr(args, "v7_disable_sufficiency_channel", False),
+            "v7_disable_temporal_channel": getattr(args, "v7_disable_temporal_channel", False),
+            "v7_flat_arbiter": getattr(args, "v7_flat_arbiter", False),
+            "v7_no_entitlement_polarity_conditioning": getattr(
+                args, "v7_no_entitlement_polarity_conditioning", False
+            ),
+            "v7_no_aux_losses": getattr(args, "v7_no_aux_losses", False),
+            "v7_aux_losses_active": False,
+            "stage15_used_for_v7_training": False,
+            "stage15_used_for_v7_selection": False,
+            "stage15_used_for_v7_aux_loss_targets": False,
+            "time_swap_used_in_v7_main_clean_data": False,
             "use_preservation_constrained_selection": getattr(
                 args, "use_preservation_constrained_selection", False
             ),
@@ -5055,7 +5309,10 @@ def main(argv: list[str] | None = None) -> int:
                     "ood_data_path": str(args.ood_data),
                     "seed": args.seed,
                     "backbone": args.backbone,
-                    "model_version": "v6b_minimal",
+                    "model_version": (
+                        "v7_hierarchical" if args.architecture == "v7_hierarchical" else "v6b_minimal"
+                    ),
+                    "architecture": args.architecture,
                     "train_flag_source": args.flag_source,
                     "ood_flag_source": ood_flag_source,
                     "final_logits_used": True,
