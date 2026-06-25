@@ -41,6 +41,7 @@ def build_model(
     use_boundary_head: bool = False,
     use_frame_violation_head: bool = False,
     use_predicate_isolation_head: bool = False,
+    use_preservation_entitlement_head: bool = False,
 ) -> ContraMambaV6BMinimal:
     backbone = v5.ControlledDummyBackbone(vocab_size, hidden_size, max_length)
     return ContraMambaV6BMinimal(
@@ -58,6 +59,7 @@ def build_model(
         use_boundary_head=use_boundary_head,
         use_frame_violation_head=use_frame_violation_head,
         use_predicate_isolation_head=use_predicate_isolation_head,
+        use_preservation_entitlement_head=use_preservation_entitlement_head,
     )
 
 
@@ -68,6 +70,7 @@ def build_mamba_model(
     use_boundary_head: bool = False,
     use_frame_violation_head: bool = False,
     use_predicate_isolation_head: bool = False,
+    use_preservation_entitlement_head: bool = False,
 ) -> ContraMambaV6BMinimal:
     model = ContraMambaV6BMinimal(
         model_name=model_name,
@@ -85,6 +88,7 @@ def build_mamba_model(
         use_boundary_head=use_boundary_head,
         use_frame_violation_head=use_frame_violation_head,
         use_predicate_isolation_head=use_predicate_isolation_head,
+        use_preservation_entitlement_head=use_preservation_entitlement_head,
     )
     for parameter in model.mamba.parameters():
         parameter.requires_grad = not freeze_encoder
@@ -299,6 +303,26 @@ _FRAME_VIOLATION_NEGATIVE: frozenset = frozenset({
 _PRED_ISOLATION_POSITIVE: frozenset = frozenset({"predicate_swap"})
 _PRED_ISOLATION_NEGATIVE: frozenset = frozenset({"none", "paraphrase"})
 
+# Preservation entitlement label mapping
+# positive/entitled=1: none, paraphrase (preservation-positive; should remain entitled)
+# negative/rejected=0: entity_swap, event_swap, location_swap, role_swap, title_name_swap
+#   (narrow true frame-mismatch rejections — these and only these are valid frame negatives)
+# excluded/masked:
+#   predicate_swap — predicate noncoverage path, kept separate from FrameGate supervision
+#   evidence_deletion, evidence_truncation, irrelevant_evidence — sufficiency failures;
+#     masking avoids conflating frame-rejection with evidence-insufficiency
+#   polarity_flip — polarity failure, not frame/entitlement failure
+# Class balance in controlled_v5_v3_without_time_swap.jsonl:
+#   positive: 600 (none+paraphrase); negative: 1500 (5 frame-swap types x 300)
+#   ratio neg/pos = 2.5
+# Supervision target: sufficiency_repr only (entitlement-level gate output combining
+# frame+predicate info). Distinct from boundary_head (full [frame+pred+suff] concat)
+# and predicate_isolation_head (predicate_pair_repr only).
+_PRES_ENT_POSITIVE: frozenset = frozenset({"none", "paraphrase"})
+_PRES_ENT_NEGATIVE: frozenset = frozenset({
+    "entity_swap", "event_swap", "location_swap", "role_swap", "title_name_swap",
+})
+
 
 def encode_boundary_labels(
     records: list[dict],
@@ -499,6 +523,80 @@ def compute_predicate_isolation_metrics(
         "pi_pos_rate": round(pos_rate, 4),
         "pi_valid_count": valid_count,
         "pi_mean_prob": round(mean_prob, 4),
+    }
+
+
+def encode_preservation_entitlement_labels(
+    records: list[dict],
+    device: torch.device,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Derive preservation entitlement binary labels from intervention_type.
+
+    Returns (labels, mask) both of shape [B].
+      label=1, mask=1: none, paraphrase  (preservation-entitled; should remain entitled)
+      label=0, mask=1: entity_swap, event_swap, location_swap, role_swap,
+                        title_name_swap  (narrow frame-mismatch rejections)
+      label=0, mask=0: predicate_swap, evidence_deletion, evidence_truncation,
+                        irrelevant_evidence, polarity_flip, unknown  (excluded)
+    predicate_swap is excluded to keep predicate-noncoverage on the predicate path.
+    Evidence-sufficiency types (deletion/truncation/irrelevant) are excluded to avoid
+    conflating frame-rejection with evidence-insufficiency in the sufficiency_repr probe.
+    polarity_flip is excluded as a polarity/refutation failure, not a frame rejection.
+    BCE loss is computed only on mask==1 examples.
+    Supervision target: preservation_entitlement_head on sufficiency_repr only.
+    Does NOT use OOD group names or gold labels at inference.
+    """
+    labels: list[int] = []
+    mask: list[int] = []
+    for r in records:
+        it = r.get("intervention_type", "")
+        if it in _PRES_ENT_POSITIVE:
+            labels.append(1)
+            mask.append(1)
+        elif it in _PRES_ENT_NEGATIVE:
+            labels.append(0)
+            mask.append(1)
+        else:
+            labels.append(0)
+            mask.append(0)
+    return (
+        torch.tensor(labels, dtype=torch.float32, device=device),
+        torch.tensor(mask, dtype=torch.bool, device=device),
+    )
+
+
+def compute_preservation_entitlement_metrics(
+    output: dict[str, Any],
+    pe_labels: "torch.Tensor | None",
+    pe_mask: "torch.Tensor | None",
+) -> dict[str, Any]:
+    """Compute preservation entitlement head diagnostic metrics.
+
+    Returns empty dict when the head is disabled or no valid examples exist.
+    """
+    if (
+        output.get("preservation_entitlement_prob") is None
+        or pe_labels is None
+        or pe_mask is None
+    ):
+        return {}
+    probs = output["preservation_entitlement_prob"].detach().cpu()
+    labels = pe_labels.detach().cpu()
+    mask = pe_mask.detach().cpu().bool()
+    valid_count = int(mask.sum().item())
+    if valid_count == 0:
+        return {"pe_valid_count": 0}
+    probs_v = probs[mask]
+    labels_v = labels[mask]
+    preds_v = (probs_v >= 0.5).float()
+    accuracy = (preds_v == labels_v).float().mean().item()
+    pos_rate = labels_v.mean().item()
+    mean_prob = probs_v.mean().item()
+    return {
+        "pe_accuracy": round(accuracy, 4),
+        "pe_pos_rate": round(pos_rate, 4),
+        "pe_valid_count": valid_count,
+        "pe_mean_prob": round(mean_prob, 4),
     }
 
 
@@ -1261,6 +1359,47 @@ def build_parser() -> argparse.ArgumentParser:
             "Default 2.0 = 600/300."
         ),
     )
+    # Preservation entitlement head
+    parser.add_argument(
+        "--use-preservation-entitlement-loss",
+        action="store_true",
+        default=False,
+        help=(
+            "Enable preservation entitlement diagnostic head. "
+            "Adds a linear head on sufficiency_repr only (the entitlement-level gate output "
+            "combining frame+predicate info), trained to distinguish preservation-entitled "
+            "records (none, paraphrase; label=1) from narrow frame-rejection records "
+            "(entity_swap, event_swap, location_swap, role_swap, title_name_swap; label=0). "
+            "Excluded (masked): predicate_swap (predicate path), evidence-sufficiency types "
+            "(evidence_deletion, evidence_truncation, irrelevant_evidence), polarity_flip. "
+            "Probes the sufficiency_repr space specifically for the preservation/rejection "
+            "distinction, distinct from boundary_head (full concat) and "
+            "predicate_isolation_head (predicate_pair_repr). "
+            "Does NOT modify output['logits'] or affect predictions. "
+            "Stage15 OOD records are never used."
+        ),
+    )
+    parser.add_argument(
+        "--preservation-entitlement-loss-weight",
+        type=float,
+        default=0.0,
+        help=(
+            "Weight for the preservation entitlement BCE loss added to the total training loss. "
+            "Default 0.0 means the head is built but its loss is not included. "
+            "Requires --use-preservation-entitlement-loss. Suggested starting value: 0.1."
+        ),
+    )
+    parser.add_argument(
+        "--preservation-entitlement-loss-pos-weight",
+        type=float,
+        default=1.0,
+        help=(
+            "Positive class weight for the preservation entitlement BCE loss (pos_weight in "
+            "F.binary_cross_entropy_with_logits). True class ratio is neg/pos = 2.5 "
+            "(1500 frame-rejection negatives vs 600 preservation-entitled positives); "
+            "default 1.0 is conservative and may need tuning upward."
+        ),
+    )
 
     return parser
 
@@ -1357,6 +1496,7 @@ def main(argv: list[str] | None = None) -> int:
             use_boundary_head=args.use_boundary_loss,
             use_frame_violation_head=args.use_frame_violation_loss,
             use_predicate_isolation_head=args.use_predicate_isolation_loss,
+            use_preservation_entitlement_head=args.use_preservation_entitlement_loss,
         )
 
     train_inputs = v5.move_inputs(train_bundle["model_inputs"], device)
@@ -1376,6 +1516,7 @@ def main(argv: list[str] | None = None) -> int:
             use_boundary_head=args.use_boundary_loss,
             use_frame_violation_head=args.use_frame_violation_loss,
             use_predicate_isolation_head=args.use_predicate_isolation_loss,
+            use_preservation_entitlement_head=args.use_preservation_entitlement_loss,
         )
     model = model.to(device)
 
@@ -1437,6 +1578,23 @@ def main(argv: list[str] | None = None) -> int:
             f" pos_weight={args.predicate_isolation_loss_pos_weight}"
             f" train_valid={_train_pi_valid}"
             f" train_pos={_train_pi_pos_only}"
+        )
+
+    # Preservation entitlement labels derived from intervention_type
+    train_pe_labels, train_pe_mask = encode_preservation_entitlement_labels(
+        train_records, device
+    )
+    dev_pe_labels, dev_pe_mask = encode_preservation_entitlement_labels(dev_records, device)
+    if args.use_preservation_entitlement_loss:
+        _train_pe_valid = int(train_pe_mask.sum().item())
+        _train_pe_pos_only = int(
+            (train_pe_labels * train_pe_mask.float()).sum().item()
+        )
+        print(
+            f"[pe_head] enabled weight={args.preservation_entitlement_loss_weight}"
+            f" pos_weight={args.preservation_entitlement_loss_pos_weight}"
+            f" train_valid={_train_pe_valid}"
+            f" train_pos={_train_pe_pos_only}"
         )
 
     # Stage22-A4c/A4e: pair contrastive frame data loading and encoding
@@ -1554,6 +1712,12 @@ def main(argv: list[str] | None = None) -> int:
         dev_pi_mask=None,
         pi_loss_weight=0.0,
         pi_loss_pos_weight=2.0,
+        train_pe_labels=None,
+        train_pe_mask=None,
+        dev_pe_labels=None,
+        dev_pe_mask=None,
+        pe_loss_weight=0.0,
+        pe_loss_pos_weight=1.0,
     ):
         """Modified run_training that passes flags to v6b model."""
         if epochs < 1:
@@ -1685,6 +1849,29 @@ def main(argv: list[str] | None = None) -> int:
                     )
                     total_loss = total_loss + pi_loss_weight * _pi_loss
 
+            # Preservation entitlement BCE loss (diagnostic only; output["logits"] unchanged)
+            # Supervises preservation_entitlement_logit on sufficiency_repr only.
+            _pe_loss = torch.tensor(0.0)
+            if (
+                pe_loss_weight > 0.0
+                and train_pe_labels is not None
+                and train_pe_mask is not None
+                and output.get("preservation_entitlement_logit") is not None
+            ):
+                _active_pe = train_pe_mask.bool()
+                if torch.any(_active_pe):
+                    _pe_pos_w = torch.tensor(
+                        pe_loss_pos_weight,
+                        dtype=torch.float32,
+                        device=output["preservation_entitlement_logit"].device,
+                    )
+                    _pe_loss = F.binary_cross_entropy_with_logits(
+                        output["preservation_entitlement_logit"][_active_pe],
+                        train_pe_labels[_active_pe],
+                        pos_weight=_pe_pos_w,
+                    )
+                    total_loss = total_loss + pe_loss_weight * _pe_loss
+
             # Stage22-A4c: pair contrastive frame ranking loss
             # Supervises frame_violation_logit only; output["logits"] and predictions unchanged.
             _pc_loss = torch.tensor(0.0)
@@ -1747,6 +1934,13 @@ def main(argv: list[str] | None = None) -> int:
             # Predicate isolation head metrics
             _tpim = compute_predicate_isolation_metrics(train_output, train_pi_labels, train_pi_mask)
             _dpim = compute_predicate_isolation_metrics(dev_output, dev_pi_labels, dev_pi_mask)
+            # Preservation entitlement head metrics
+            _tpem = compute_preservation_entitlement_metrics(
+                train_output, train_pe_labels, train_pe_mask
+            )
+            _dpem = compute_preservation_entitlement_metrics(
+                dev_output, dev_pe_labels, dev_pe_mask
+            )
 
             # Stage22-A4c: pair contrastive ranking metrics (eval; no_grad already active)
             _pc_eval_metrics: dict[str, Any] = {}
@@ -1838,6 +2032,16 @@ def main(argv: list[str] | None = None) -> int:
                     f" train_mean_prob={_tpim.get('pi_mean_prob', 0.0):.3f}"
                     f" dev_mean_prob={_dpim.get('pi_mean_prob', 0.0):.3f}"
                     f" valid={_tpim.get('pi_valid_count', 0)}"
+                )
+            if _tpem:
+                _pe_loss_val = float(_pe_loss.item()) if hasattr(_pe_loss, "item") else 0.0
+                print(
+                    f"  [pe_head] loss={_pe_loss_val:.4f}"
+                    f" train_acc={_tpem.get('pe_accuracy', 0.0):.3f}"
+                    f" dev_acc={_dpem.get('pe_accuracy', 0.0):.3f}"
+                    f" train_mean_prob={_tpem.get('pe_mean_prob', 0.0):.3f}"
+                    f" dev_mean_prob={_dpem.get('pe_mean_prob', 0.0):.3f}"
+                    f" valid={_tpem.get('pe_valid_count', 0)}"
                 )
             if _pc_eval_metrics:
                 _pc_loss_val = float(_pc_loss.item()) if hasattr(_pc_loss, "item") else 0.0
@@ -1940,6 +2144,15 @@ def main(argv: list[str] | None = None) -> int:
                 if args.use_predicate_isolation_loss else 0.0
             ),
             pi_loss_pos_weight=args.predicate_isolation_loss_pos_weight,
+            train_pe_labels=train_pe_labels if args.use_preservation_entitlement_loss else None,
+            train_pe_mask=train_pe_mask if args.use_preservation_entitlement_loss else None,
+            dev_pe_labels=dev_pe_labels if args.use_preservation_entitlement_loss else None,
+            dev_pe_mask=dev_pe_mask if args.use_preservation_entitlement_loss else None,
+            pe_loss_weight=(
+                args.preservation_entitlement_loss_weight
+                if args.use_preservation_entitlement_loss else 0.0
+            ),
+            pe_loss_pos_weight=args.preservation_entitlement_loss_pos_weight,
             pc_pres_inputs=_pc_pres_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_frame_inputs=_pc_frame_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_loss_weight=(
@@ -2036,6 +2249,20 @@ def main(argv: list[str] | None = None) -> int:
                 "excluded": "entity_swap,event_swap,evidence_deletion,evidence_truncation,"
                             "irrelevant_evidence,location_swap,polarity_flip,role_swap,"
                             "title_name_swap,unknown",
+            },
+            "use_preservation_entitlement_head": args.use_preservation_entitlement_loss,
+            "preservation_entitlement_loss_weight": (
+                args.preservation_entitlement_loss_weight
+                if args.use_preservation_entitlement_loss else 0.0
+            ),
+            "preservation_entitlement_loss_pos_weight": (
+                args.preservation_entitlement_loss_pos_weight
+            ),
+            "preservation_entitlement_label_mapping": {
+                "positive": sorted(_PRES_ENT_POSITIVE),
+                "negative": sorted(_PRES_ENT_NEGATIVE),
+                "excluded": "evidence_deletion,evidence_truncation,irrelevant_evidence,"
+                            "polarity_flip,predicate_swap,unknown",
             },
             "dev_calibrated_ne_shift_candidates": args.dev_calibrated_ne_shift_candidates,
             "dev_calibrated_ne_gate": args.dev_calibrated_ne_gate,
@@ -2394,6 +2621,12 @@ def main(argv: list[str] | None = None) -> int:
             "use_predicate_isolation_loss": getattr(args, "use_predicate_isolation_loss", False),
             "predicate_isolation_loss_weight": getattr(
                 args, "predicate_isolation_loss_weight", 0.0
+            ),
+            "use_preservation_entitlement_loss": getattr(
+                args, "use_preservation_entitlement_loss", False
+            ),
+            "preservation_entitlement_loss_weight": getattr(
+                args, "preservation_entitlement_loss_weight", 0.0
             ),
             "use_pair_contrastive_frame_loss": getattr(
                 args, "use_pair_contrastive_frame_loss", False

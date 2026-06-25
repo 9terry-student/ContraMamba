@@ -64,6 +64,7 @@ class ContraMambaV6BMinimal(nn.Module):
         use_boundary_head: bool = False,
         use_frame_violation_head: bool = False,
         use_predicate_isolation_head: bool = False,
+        use_preservation_entitlement_head: bool = False,
     ) -> None:
         super().__init__()
         if backbone is None:
@@ -150,6 +151,21 @@ class ContraMambaV6BMinimal(nn.Module):
         self.predicate_isolation_head: nn.Linear | None = None
         if use_predicate_isolation_head:
             self.predicate_isolation_head = nn.Linear(predicate_size, 1)
+
+        # Preservation entitlement head — linear probe on sufficiency_repr only.
+        # Positive (preservation-entitled=1): none, paraphrase (should remain entitled).
+        # Negative (frame-rejected=0): entity_swap, event_swap, location_swap, role_swap,
+        #   title_name_swap (narrow frame-mismatch rejections).
+        # Excluded (masked): predicate_swap (predicate failure path), evidence_deletion/
+        #   truncation/irrelevant_evidence (sufficiency failure — masked to avoid conflating
+        #   frame-rejection with sufficiency-failure), polarity_flip (polarity path).
+        # Uses sufficiency_repr (entitlement-level gate combining frame+predicate info),
+        # distinct from predicate_isolation_head (predicate_pair_repr only) and
+        # boundary/frame_violation heads (full [frame+predicate+sufficiency] concat).
+        # Does NOT touch output["logits"] or output["base_logits"].
+        self.preservation_entitlement_head: nn.Linear | None = None
+        if use_preservation_entitlement_head:
+            self.preservation_entitlement_head = nn.Linear(sufficiency_size, 1)
 
     def alpha_temporal(self) -> float | torch.Tensor:
         """Return softplus-constrained temporal alpha."""
@@ -262,6 +278,17 @@ class ContraMambaV6BMinimal(nn.Module):
             ).squeeze(-1)
             predicate_noncoverage_prob = torch.sigmoid(predicate_noncoverage_logit)
 
+        # Preservation entitlement head: linear probe on sufficiency_repr.
+        # Positive=none/paraphrase (entitled); negative=frame-swaps (rejected).
+        # None when head is disabled (downstream loss skipped when None).
+        preservation_entitlement_logit: torch.Tensor | None = None
+        preservation_entitlement_prob: torch.Tensor | None = None
+        if self.preservation_entitlement_head is not None:
+            preservation_entitlement_logit = self.preservation_entitlement_head(
+                sufficiency["sufficiency_repr"]
+            ).squeeze(-1)
+            preservation_entitlement_prob = torch.sigmoid(preservation_entitlement_logit)
+
         # Base logits (V5 standard)
         decision = self.decision_head(
             frame_prob=frame["frame_prob"],
@@ -365,6 +392,9 @@ class ContraMambaV6BMinimal(nn.Module):
             # Predicate isolation head outputs (None when head is disabled)
             "predicate_noncoverage_logit": predicate_noncoverage_logit,
             "predicate_noncoverage_prob": predicate_noncoverage_prob,
+            # Preservation entitlement head outputs (None when head is disabled)
+            "preservation_entitlement_logit": preservation_entitlement_logit,
+            "preservation_entitlement_prob": preservation_entitlement_prob,
             **frame,
             **predicate,
             **sufficiency,
