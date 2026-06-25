@@ -68,6 +68,13 @@ class ContraMambaV6BMinimal(nn.Module):
         use_temporal_diagnostic_head: bool = False,
         use_temporal_residual_adapter: bool = False,
         temporal_adapter_detach_input: bool = True,
+        use_temporal_channel: bool = False,
+        temporal_channel_detach_input: bool = True,
+        use_temporal_channel_loss: bool = False,
+        temporal_channel_loss_weight: float = 0.0,
+        temporal_channel_loss_pos_weight: float = 1.0,
+        use_temporal_channel_gated_penalty: bool = False,
+        temporal_channel_gated_penalty_scale: float = 0.0,
     ) -> None:
         super().__init__()
         if backbone is None:
@@ -210,6 +217,48 @@ class ContraMambaV6BMinimal(nn.Module):
                 nn.Linear(_ta_hidden, 1),
             )
 
+        # TemporalChannel V1 — reads cat([claim_frame_state, evidence_frame_state]).
+        # These are the pre-pair-projector pooled slot states from FrameGate's first projection
+        # (Linear(hidden_size, frame_size) + pool), NOT frame_pair_repr (which is post-pair-
+        # projector). This separates the temporal signal channel from the FrameGate composition
+        # path, addressing the Stage23/24 gradient coupling problem.
+        # With detach=True (default), TC BCE loss cannot propagate into FrameGate parameters.
+        # Architecture: Linear(frame_size*2, tc_hidden) → GELU → Linear(tc_hidden, 1)
+        # Optional gated penalty: scale * sigmoid(tc_logit).detach() * (1 - pe_prob).detach()
+        # Requires preservation_entitlement_head when gated penalty is used.
+        self.temporal_channel_v1: nn.Sequential | None = None
+        self.temporal_channel_detach_input: bool = temporal_channel_detach_input
+        if use_temporal_channel:
+            _tc_hidden = max(frame_size // 2, 8)
+            self.temporal_channel_v1 = nn.Sequential(
+                nn.Linear(frame_size * 2, _tc_hidden),
+                nn.GELU(),
+                nn.Linear(_tc_hidden, 1),
+            )
+
+        # Store TC configuration for self-description and audit ledger.
+        # These are the canonical values; the training script reads them via getattr(model, ...).
+        # They do NOT change model forward behavior (which is controlled by explicit forward args);
+        # they exist so the model is self-describing about its intended TC configuration.
+        self.use_temporal_channel: bool = use_temporal_channel
+        self.use_temporal_channel_loss: bool = use_temporal_channel_loss
+        self.temporal_channel_loss_weight: float = temporal_channel_loss_weight
+        self.temporal_channel_loss_pos_weight: float = temporal_channel_loss_pos_weight
+        self.use_temporal_channel_gated_penalty: bool = use_temporal_channel_gated_penalty
+        self.temporal_channel_gated_penalty_scale: float = temporal_channel_gated_penalty_scale
+
+        # Constructor-time validation: catch impossible TC configurations immediately.
+        if use_temporal_channel_loss and not use_temporal_channel:
+            raise ValueError(
+                "use_temporal_channel_loss=True requires use_temporal_channel=True. "
+                "The TC head must be instantiated before its loss can be enabled."
+            )
+        if use_temporal_channel_gated_penalty and not use_temporal_channel:
+            raise ValueError(
+                "use_temporal_channel_gated_penalty=True requires use_temporal_channel=True. "
+                "The gated penalty reads temporal_channel_logit, which requires the TC head."
+            )
+
     def alpha_temporal(self) -> float | torch.Tensor:
         """Return softplus-constrained temporal alpha."""
         if self.alpha_temporal_raw is None:
@@ -242,6 +291,7 @@ class ContraMambaV6BMinimal(nn.Module):
         temporal_mismatch_flags: torch.Tensor | None = None,
         predicate_mismatch_flags: torch.Tensor | None = None,
         temporal_adapter_final_penalty_scale: float = 0.0,
+        temporal_channel_gated_penalty_scale: float = 0.0,
     ) -> dict[str, Any]:
         """Forward pass with optional temporal/predicate logit modulation."""
         del intervention_types, pair_ids
@@ -364,6 +414,19 @@ class ContraMambaV6BMinimal(nn.Module):
             temporal_adapter_logit = self.temporal_residual_adapter(_ta_input).squeeze(-1)
             temporal_adapter_prob = torch.sigmoid(temporal_adapter_logit)
 
+        # TemporalChannel V1: reads cat([claim_frame_state, evidence_frame_state]).
+        # Pre-pair-projector slot states; NOT frame_pair_repr.
+        # With detach=True (default): TC loss cannot propagate into FrameGate parameters.
+        temporal_channel_logit: torch.Tensor | None = None
+        temporal_channel_prob: torch.Tensor | None = None
+        if self.temporal_channel_v1 is not None:
+            _tc_base = torch.cat(
+                [frame["claim_frame_state"], frame["evidence_frame_state"]], dim=-1
+            )
+            _tc_input = _tc_base.detach() if self.temporal_channel_detach_input else _tc_base
+            temporal_channel_logit = self.temporal_channel_v1(_tc_input).squeeze(-1)
+            temporal_channel_prob = torch.sigmoid(temporal_channel_logit)
+
         # Base logits (V5 standard)
         decision = self.decision_head(
             frame_prob=frame["frame_prob"],
@@ -415,6 +478,29 @@ class ContraMambaV6BMinimal(nn.Module):
             final_logits[:, 0] -= _ta_penalty  # SUPPORT
             final_logits[:, 1] += _ta_penalty  # NOT_ENTITLED
             final_logits[:, 2] -= _ta_penalty  # REFUTE
+
+        # TemporalChannel gated penalty: per-example NOT_ENTITLED boost.
+        # Formula: scale * sigmoid(tc_logit).detach() * (1 - pe_prob).detach()
+        # Only fires when TC detects temporal mismatch AND PE signals non-entitlement.
+        # Suppressed on preservation-safe examples (high pe_prob) by the (1-pe_prob) gate.
+        # Requires preservation_entitlement_head to be enabled.
+        # No gradient flows back into TC or PE from this penalty (both logits detached).
+        if temporal_channel_logit is not None and temporal_channel_gated_penalty_scale > 0.0:
+            if preservation_entitlement_prob is None:
+                raise RuntimeError(
+                    "temporal_channel_gated_penalty_scale > 0 requires "
+                    "use_preservation_entitlement_head=True; "
+                    "preservation_entitlement_prob is None in this forward pass"
+                )
+            _tc_boost = (
+                torch.sigmoid(temporal_channel_logit.detach())
+                * (1.0 - preservation_entitlement_prob.detach())
+                * temporal_channel_gated_penalty_scale
+            )
+            final_logits = final_logits.clone()
+            final_logits[:, 0] -= _tc_boost  # SUPPORT
+            final_logits[:, 1] += _tc_boost  # NOT_ENTITLED
+            final_logits[:, 2] -= _tc_boost  # REFUTE
 
         # Compute losses (using final_logits only)
         losses: dict[str, torch.Tensor | None] = {
@@ -492,6 +578,9 @@ class ContraMambaV6BMinimal(nn.Module):
             # Temporal residual adapter outputs (None when adapter is disabled)
             "temporal_adapter_logit": temporal_adapter_logit,
             "temporal_adapter_prob": temporal_adapter_prob,
+            # TemporalChannel V1 outputs (None when channel is disabled)
+            "temporal_channel_logit": temporal_channel_logit,
+            "temporal_channel_prob": temporal_channel_prob,
             **frame,
             **predicate,
             **sufficiency,
