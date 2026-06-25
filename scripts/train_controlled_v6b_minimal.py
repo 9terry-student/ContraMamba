@@ -42,6 +42,7 @@ def build_model(
     use_frame_violation_head: bool = False,
     use_predicate_isolation_head: bool = False,
     use_preservation_entitlement_head: bool = False,
+    use_temporal_diagnostic_head: bool = False,
 ) -> ContraMambaV6BMinimal:
     backbone = v5.ControlledDummyBackbone(vocab_size, hidden_size, max_length)
     return ContraMambaV6BMinimal(
@@ -60,6 +61,7 @@ def build_model(
         use_frame_violation_head=use_frame_violation_head,
         use_predicate_isolation_head=use_predicate_isolation_head,
         use_preservation_entitlement_head=use_preservation_entitlement_head,
+        use_temporal_diagnostic_head=use_temporal_diagnostic_head,
     )
 
 
@@ -71,6 +73,7 @@ def build_mamba_model(
     use_frame_violation_head: bool = False,
     use_predicate_isolation_head: bool = False,
     use_preservation_entitlement_head: bool = False,
+    use_temporal_diagnostic_head: bool = False,
 ) -> ContraMambaV6BMinimal:
     model = ContraMambaV6BMinimal(
         model_name=model_name,
@@ -89,6 +92,7 @@ def build_mamba_model(
         use_frame_violation_head=use_frame_violation_head,
         use_predicate_isolation_head=use_predicate_isolation_head,
         use_preservation_entitlement_head=use_preservation_entitlement_head,
+        use_temporal_diagnostic_head=use_temporal_diagnostic_head,
     )
     for parameter in model.mamba.parameters():
         parameter.requires_grad = not freeze_encoder
@@ -322,6 +326,161 @@ _PRES_ENT_POSITIVE: frozenset = frozenset({"none", "paraphrase"})
 _PRES_ENT_NEGATIVE: frozenset = frozenset({
     "entity_swap", "event_swap", "location_swap", "role_swap", "title_name_swap",
 })
+
+# Temporal diagnostic label mapping
+# Loaded from a SEPARATE temporal diagnostic JSONL built by
+#   scripts/make_temporal_diagnostic_from_controlled.py from controlled_v5_v3.jsonl.
+# positive/temporal_mismatch=1: time_swap records
+#   (primary_failure_type='frame', frame_compatible_label=0)
+# negative/temporal_control=0: none, paraphrase records (temporally safe controls)
+# excluded: all other intervention types are not present in the temporal diagnostic file
+# Supervision target: temporal_diagnostic_head on frame_pair_repr only.
+#   time_swap is a frame-compatibility failure → frame_pair_repr is the most specific
+#   available representation. Distinct from predicate_isolation_head (predicate_pair_repr)
+#   and preservation_entitlement_head (sufficiency_repr).
+# Class balance in temporal diagnostic file (default with paraphrase controls):
+#   positive: 300 time_swap; negative: 600 (none+paraphrase); ratio neg/pos = 2.0
+# Stage15 OOD records must NOT be present in the temporal diagnostic file.
+# This dataset must NOT be mixed into the main clean train/eval classification data.
+_TEMPORAL_DIAG_MISMATCH_ROLE: str = "temporal_mismatch"
+_TEMPORAL_DIAG_CONTROL_ROLE: str = "temporal_control"
+_TEMPORAL_DIAG_ALLOWED_ROLES: frozenset = frozenset({
+    _TEMPORAL_DIAG_MISMATCH_ROLE, _TEMPORAL_DIAG_CONTROL_ROLE
+})
+_TEMPORAL_DIAG_REQUIRED_FIELDS: frozenset = frozenset({
+    "temporal_diagnostic_label",
+    "temporal_diagnostic_role",
+    "source_intervention_type",
+    "diagnostic_dataset",
+    "leakage_note",
+    "usage_note",
+})
+
+
+def load_temporal_diagnostic_jsonl(path: "Path") -> list[dict]:
+    """Load and validate temporal diagnostic JSONL records.
+
+    Validates schema fields, roles, labels, and that the path does not reference Stage15.
+    Raises ValueError or FileNotFoundError on any validation failure.
+    """
+    path_str = str(path).lower()
+    if "stage15" in path_str:
+        raise ValueError(
+            f"[td_head] temporal diagnostic path contains 'stage15': {path}\n"
+            "Stage15 OOD records must not be used for temporal diagnostic training."
+        )
+    records: list[dict] = []
+    with open(path, encoding="utf-8") as fh:
+        for lineno, line in enumerate(fh, start=1):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                r = json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise ValueError(
+                    f"[td_head] Malformed JSON on line {lineno}: {exc}"
+                ) from exc
+            missing = _TEMPORAL_DIAG_REQUIRED_FIELDS - set(r.keys())
+            if missing:
+                raise ValueError(
+                    f"[td_head] Record {lineno} missing required fields: {sorted(missing)}.\n"
+                    "Ensure temporal diagnostic file was built by "
+                    "scripts/make_temporal_diagnostic_from_controlled.py."
+                )
+            role = r.get("temporal_diagnostic_role", "")
+            if role not in _TEMPORAL_DIAG_ALLOWED_ROLES:
+                raise ValueError(
+                    f"[td_head] Record {lineno} has invalid temporal_diagnostic_role: {role!r}. "
+                    f"Expected one of {sorted(_TEMPORAL_DIAG_ALLOWED_ROLES)}."
+                )
+            lbl = r.get("temporal_diagnostic_label")
+            if lbl not in (0, 1):
+                raise ValueError(
+                    f"[td_head] Record {lineno} has invalid temporal_diagnostic_label: {lbl!r}. "
+                    "Expected 0 or 1."
+                )
+            records.append(r)
+    return records
+
+
+def encode_temporal_diagnostic_labels(
+    records: list[dict],
+    device: "torch.device",
+) -> "tuple[torch.Tensor, torch.Tensor]":
+    """Encode temporal diagnostic labels from temporal diagnostic file records.
+
+    Reads temporal_diagnostic_label field directly (0 or 1).
+    All records with a valid label are included (mask=1).
+
+    Returns (labels, mask) both of shape [B].
+      label=1, mask=1: temporal_mismatch (time_swap)
+      label=0, mask=1: temporal_control (none, paraphrase)
+      label=0, mask=0: records missing temporal_diagnostic_label (should not occur in valid files)
+    """
+    labels: list[int] = []
+    mask: list[int] = []
+    for r in records:
+        lbl = r.get("temporal_diagnostic_label")
+        if lbl is not None:
+            labels.append(int(lbl))
+            mask.append(1)
+        else:
+            labels.append(0)
+            mask.append(0)
+    return (
+        torch.tensor(labels, dtype=torch.float32, device=device),
+        torch.tensor(mask, dtype=torch.bool, device=device),
+    )
+
+
+def compute_temporal_diagnostic_metrics(
+    output: dict[str, Any],
+    td_labels: "torch.Tensor | None",
+    td_mask: "torch.Tensor | None",
+) -> dict[str, Any]:
+    """Compute temporal diagnostic head metrics.
+
+    Returns empty dict when the head is disabled or no valid examples.
+    Keys: td_accuracy, td_mismatch_recall, td_control_acceptance, td_valid_count, td_mean_prob.
+    """
+    if (
+        output.get("temporal_diagnostic_prob") is None
+        or td_labels is None
+        or td_mask is None
+    ):
+        return {}
+    probs = output["temporal_diagnostic_prob"].detach().cpu()
+    labels = td_labels.detach().cpu()
+    mask = td_mask.detach().cpu().bool()
+    valid_count = int(mask.sum().item())
+    if valid_count == 0:
+        return {"td_valid_count": 0}
+    probs_v = probs[mask]
+    labels_v = labels[mask]
+    preds_v = (probs_v >= 0.5).float()
+    accuracy = (preds_v == labels_v).float().mean().item()
+    mean_prob = probs_v.mean().item()
+    pos_mask = labels_v == 1
+    neg_mask = labels_v == 0
+    mismatch_recall = (
+        (preds_v[pos_mask] == 1).float().mean().item() if pos_mask.any() else float("nan")
+    )
+    control_acceptance = (
+        (preds_v[neg_mask] == 0).float().mean().item() if neg_mask.any() else float("nan")
+    )
+    return {
+        "td_accuracy": round(accuracy, 4),
+        "td_mismatch_recall": (
+            round(mismatch_recall, 4) if mismatch_recall == mismatch_recall else mismatch_recall
+        ),
+        "td_control_acceptance": (
+            round(control_acceptance, 4)
+            if control_acceptance == control_acceptance else control_acceptance
+        ),
+        "td_valid_count": valid_count,
+        "td_mean_prob": round(mean_prob, 4),
+    }
 
 
 def encode_boundary_labels(
@@ -1400,6 +1559,58 @@ def build_parser() -> argparse.ArgumentParser:
             "default 1.0 is conservative and may need tuning upward."
         ),
     )
+    # Temporal diagnostic head
+    parser.add_argument(
+        "--temporal-diagnostic-data",
+        type=str,
+        default=None,
+        help=(
+            "Path to temporal diagnostic JSONL "
+            "(e.g. data/temporal_diagnostic_v1_from_controlled_v5_v3.jsonl). "
+            "Must be built by scripts/make_temporal_diagnostic_from_controlled.py "
+            "from controlled_v5_v3.jsonl. Stage15 OOD records must NOT be present. "
+            "Must not be the same as the main --data argument. "
+            "Required when --use-temporal-diagnostic-loss is set."
+        ),
+    )
+    parser.add_argument(
+        "--use-temporal-diagnostic-loss",
+        action="store_true",
+        default=False,
+        help=(
+            "Enable temporal diagnostic head. "
+            "Adds a linear head on frame_pair_repr (narrowest frame-level representation; "
+            "time_swap has primary_failure_type='frame' and frame_compatible_label=0), "
+            "trained to distinguish temporal mismatch records (time_swap; label=1) from "
+            "temporal control records (none, paraphrase; label=0) using BCE loss. "
+            "Loaded from a SEPARATE temporal diagnostic JSONL (--temporal-diagnostic-data) "
+            "that must not be mixed into the main clean controlled train/eval classification data. "
+            "Stage15 OOD records must not be present in the temporal diagnostic file. "
+            "Does NOT modify output['logits'] or affect predictions. "
+            "Requires --temporal-diagnostic-data."
+        ),
+    )
+    parser.add_argument(
+        "--temporal-diagnostic-loss-weight",
+        type=float,
+        default=0.0,
+        help=(
+            "Weight for the temporal diagnostic BCE loss added to the total training loss. "
+            "Default 0.0 means the head is built but its loss is not included. "
+            "Requires --use-temporal-diagnostic-loss and --temporal-diagnostic-data."
+        ),
+    )
+    parser.add_argument(
+        "--temporal-diagnostic-loss-pos-weight",
+        type=float,
+        default=2.0,
+        help=(
+            "Positive class weight for the temporal diagnostic BCE loss (pos_weight in "
+            "F.binary_cross_entropy_with_logits). Compensates for class imbalance: "
+            "negative controls (none+paraphrase=600) vs positive (time_swap=300). "
+            "Default 2.0 = 600/300."
+        ),
+    )
 
     return parser
 
@@ -1497,6 +1708,7 @@ def main(argv: list[str] | None = None) -> int:
             use_frame_violation_head=args.use_frame_violation_loss,
             use_predicate_isolation_head=args.use_predicate_isolation_loss,
             use_preservation_entitlement_head=args.use_preservation_entitlement_loss,
+            use_temporal_diagnostic_head=args.use_temporal_diagnostic_loss,
         )
 
     train_inputs = v5.move_inputs(train_bundle["model_inputs"], device)
@@ -1517,6 +1729,7 @@ def main(argv: list[str] | None = None) -> int:
             use_frame_violation_head=args.use_frame_violation_loss,
             use_predicate_isolation_head=args.use_predicate_isolation_loss,
             use_preservation_entitlement_head=args.use_preservation_entitlement_loss,
+            use_temporal_diagnostic_head=args.use_temporal_diagnostic_loss,
         )
     model = model.to(device)
 
@@ -1595,6 +1808,77 @@ def main(argv: list[str] | None = None) -> int:
             f" pos_weight={args.preservation_entitlement_loss_pos_weight}"
             f" train_valid={_train_pe_valid}"
             f" train_pos={_train_pe_pos_only}"
+        )
+
+    # Temporal diagnostic data loading — separate dataset, never mixed into main train/dev.
+    # Records may include time_swap; they must not be part of the main classification CE.
+    _td_train_records: list[dict] = []
+    _td_dev_records: list[dict] = []
+    _td_train_inputs: "dict[str, torch.Tensor] | None" = None
+    _td_dev_inputs: "dict[str, torch.Tensor] | None" = None
+    _td_train_labels: "torch.Tensor | None" = None
+    _td_train_mask: "torch.Tensor | None" = None
+    _td_dev_labels: "torch.Tensor | None" = None
+    _td_dev_mask: "torch.Tensor | None" = None
+
+    if args.use_temporal_diagnostic_loss or args.temporal_diagnostic_data is not None:
+        if args.temporal_diagnostic_data is None:
+            raise ValueError(
+                "--use-temporal-diagnostic-loss requires --temporal-diagnostic-data"
+            )
+        _td_path = Path(args.temporal_diagnostic_data)
+        if not _td_path.exists():
+            raise FileNotFoundError(
+                f"[td_head] --temporal-diagnostic-data not found: {_td_path}"
+            )
+        if _td_path.resolve() == Path(args.data).resolve():
+            raise ValueError(
+                "[td_head] --temporal-diagnostic-data must not be the same as --data.\n"
+                "Temporal diagnostic records (including time_swap) must not be mixed "
+                "into the main clean controlled train/eval classification data."
+            )
+        _td_all_records = load_temporal_diagnostic_jsonl(_td_path)
+        _td_train_records, _td_dev_records = v5.split_by_pair_id(
+            _td_all_records, dev_ratio=args.dev_ratio, seed=args.seed
+        )
+        _td_train_labels, _td_train_mask = encode_temporal_diagnostic_labels(
+            _td_train_records, device
+        )
+        _td_dev_labels, _td_dev_mask = encode_temporal_diagnostic_labels(
+            _td_dev_records, device
+        )
+        if args.backbone == "dummy":
+            _td_train_bundle = v5.encode_records(_td_train_records, vocab)
+            _td_dev_bundle = v5.encode_records(_td_dev_records, vocab)
+        else:
+            _td_train_bundle = v5.encode_mamba_records(
+                _td_train_records, tokenizer, args.max_length
+            )
+            _td_dev_bundle = v5.encode_mamba_records(
+                _td_dev_records, tokenizer, args.max_length
+            )
+        _td_train_inputs = v5.move_inputs(_td_train_bundle["model_inputs"], device)
+        _td_dev_inputs = v5.move_inputs(_td_dev_bundle["model_inputs"], device)
+        for _td_inp in (_td_train_inputs, _td_dev_inputs):
+            _td_seq = _td_inp["input_ids"].shape[1]
+            if _td_seq < max_length:
+                _diff = max_length - _td_seq
+                for _key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
+                    _td_inp[_key] = F.pad(_td_inp[_key], (0, _diff), value=0)
+            elif _td_seq > max_length:
+                for _key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
+                    _td_inp[_key] = _td_inp[_key][:, :max_length]
+        _td_train_pos = int(_td_train_labels.sum().item())
+        _td_train_neg = int(
+            (_td_train_mask.float() - _td_train_labels * _td_train_mask.float()).sum().item()
+        )
+        print(
+            f"[td_head] enabled weight={args.temporal_diagnostic_loss_weight}"
+            f" pos_weight={args.temporal_diagnostic_loss_pos_weight}"
+            f" td_train={len(_td_train_records)}"
+            f" td_dev={len(_td_dev_records)}"
+            f" td_train_pos={_td_train_pos}"
+            f" td_train_neg={_td_train_neg}"
         )
 
     # Stage22-A4c/A4e: pair contrastive frame data loading and encoding
@@ -1718,6 +2002,15 @@ def main(argv: list[str] | None = None) -> int:
         dev_pe_mask=None,
         pe_loss_weight=0.0,
         pe_loss_pos_weight=1.0,
+        # Temporal diagnostic head: separate batch forward pass (time_swap not in main data)
+        td_train_inputs=None,
+        td_dev_inputs=None,
+        td_train_labels=None,
+        td_train_mask=None,
+        td_dev_labels=None,
+        td_dev_mask=None,
+        td_loss_weight=0.0,
+        td_loss_pos_weight=2.0,
     ):
         """Modified run_training that passes flags to v6b model."""
         if epochs < 1:
@@ -1872,6 +2165,40 @@ def main(argv: list[str] | None = None) -> int:
                     )
                     total_loss = total_loss + pe_loss_weight * _pe_loss
 
+            # Temporal diagnostic BCE loss (diagnostic only; output["logits"] unchanged)
+            # Separate forward pass on temporal diagnostic records (which include time_swap).
+            # These records are NOT in the main clean train/eval tensors; no classification
+            # CE is computed on them here. Only temporal_diagnostic_head is supervised.
+            _td_loss = torch.tensor(0.0)
+            if (
+                td_loss_weight > 0.0
+                and td_train_inputs is not None
+                and td_train_labels is not None
+                and td_train_mask is not None
+            ):
+                _td_n = td_train_inputs["input_ids"].shape[0]
+                _td_zero_t = torch.zeros(_td_n, dtype=torch.float32, device=device)
+                _td_zero_p = torch.zeros(_td_n, dtype=torch.float32, device=device)
+                _td_train_out = model(
+                    **v5.model_feature_inputs(td_train_inputs),
+                    temporal_mismatch_flags=_td_zero_t,
+                    predicate_mismatch_flags=_td_zero_p,
+                )
+                if _td_train_out.get("temporal_diagnostic_logit") is not None:
+                    _active_td = td_train_mask.bool()
+                    if torch.any(_active_td):
+                        _td_pos_w = torch.tensor(
+                            td_loss_pos_weight,
+                            dtype=torch.float32,
+                            device=_td_train_out["temporal_diagnostic_logit"].device,
+                        )
+                        _td_loss = F.binary_cross_entropy_with_logits(
+                            _td_train_out["temporal_diagnostic_logit"][_active_td],
+                            td_train_labels[_active_td],
+                            pos_weight=_td_pos_w,
+                        )
+                        total_loss = total_loss + td_loss_weight * _td_loss
+
             # Stage22-A4c: pair contrastive frame ranking loss
             # Supervises frame_violation_logit only; output["logits"] and predictions unchanged.
             _pc_loss = torch.tensor(0.0)
@@ -1921,6 +2248,33 @@ def main(argv: list[str] | None = None) -> int:
                     temporal_mismatch_flags=dev_temporal_flags,
                     predicate_mismatch_flags=dev_predicate_flags,
                 )
+                # Temporal diagnostic eval: separate forward passes on td train/dev records.
+                # Batches are kept separate from main train/dev; no classification CE here.
+                _ttdm: dict[str, Any] = {}
+                _dtdm: dict[str, Any] = {}
+                if td_train_inputs is not None and td_dev_inputs is not None:
+                    _td_et = td_train_inputs["input_ids"].shape[0]
+                    _td_zt = torch.zeros(_td_et, dtype=torch.float32, device=device)
+                    _td_zp = torch.zeros(_td_et, dtype=torch.float32, device=device)
+                    _td_eval_train_out = model(
+                        **v5.model_feature_inputs(td_train_inputs),
+                        temporal_mismatch_flags=_td_zt,
+                        predicate_mismatch_flags=_td_zp,
+                    )
+                    _ttdm = compute_temporal_diagnostic_metrics(
+                        _td_eval_train_out, td_train_labels, td_train_mask
+                    )
+                    _td_ed = td_dev_inputs["input_ids"].shape[0]
+                    _td_ztd = torch.zeros(_td_ed, dtype=torch.float32, device=device)
+                    _td_zpd = torch.zeros(_td_ed, dtype=torch.float32, device=device)
+                    _td_eval_dev_out = model(
+                        **v5.model_feature_inputs(td_dev_inputs),
+                        temporal_mismatch_flags=_td_ztd,
+                        predicate_mismatch_flags=_td_zpd,
+                    )
+                    _dtdm = compute_temporal_diagnostic_metrics(
+                        _td_eval_dev_out, td_dev_labels, td_dev_mask
+                    )
             train_metrics = v5.compute_metrics(train_output, train_inputs)
             dev_metrics = v5.compute_metrics(dev_output, dev_inputs)
 
@@ -2043,6 +2397,18 @@ def main(argv: list[str] | None = None) -> int:
                     f" dev_mean_prob={_dpem.get('pe_mean_prob', 0.0):.3f}"
                     f" valid={_tpem.get('pe_valid_count', 0)}"
                 )
+            if _ttdm:
+                _td_loss_val = float(_td_loss.item()) if hasattr(_td_loss, "item") else 0.0
+                print(
+                    f"  [td_head] loss={_td_loss_val:.4f}"
+                    f" train_acc={_ttdm.get('td_accuracy', 0.0):.3f}"
+                    f" dev_acc={_dtdm.get('td_accuracy', 0.0):.3f}"
+                    f" train_mismatch_recall={_ttdm.get('td_mismatch_recall', 0.0)}"
+                    f" dev_mismatch_recall={_dtdm.get('td_mismatch_recall', 0.0)}"
+                    f" train_ctrl_acc={_ttdm.get('td_control_acceptance', 0.0)}"
+                    f" dev_ctrl_acc={_dtdm.get('td_control_acceptance', 0.0)}"
+                    f" valid={_ttdm.get('td_valid_count', 0)}"
+                )
             if _pc_eval_metrics:
                 _pc_loss_val = float(_pc_loss.item()) if hasattr(_pc_loss, "item") else 0.0
                 print(
@@ -2153,6 +2519,17 @@ def main(argv: list[str] | None = None) -> int:
                 if args.use_preservation_entitlement_loss else 0.0
             ),
             pe_loss_pos_weight=args.preservation_entitlement_loss_pos_weight,
+            td_train_inputs=_td_train_inputs if args.use_temporal_diagnostic_loss else None,
+            td_dev_inputs=_td_dev_inputs if args.use_temporal_diagnostic_loss else None,
+            td_train_labels=_td_train_labels if args.use_temporal_diagnostic_loss else None,
+            td_train_mask=_td_train_mask if args.use_temporal_diagnostic_loss else None,
+            td_dev_labels=_td_dev_labels if args.use_temporal_diagnostic_loss else None,
+            td_dev_mask=_td_dev_mask if args.use_temporal_diagnostic_loss else None,
+            td_loss_weight=(
+                args.temporal_diagnostic_loss_weight
+                if args.use_temporal_diagnostic_loss else 0.0
+            ),
+            td_loss_pos_weight=args.temporal_diagnostic_loss_pos_weight,
             pc_pres_inputs=_pc_pres_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_frame_inputs=_pc_frame_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_loss_weight=(
@@ -2264,6 +2641,26 @@ def main(argv: list[str] | None = None) -> int:
                 "excluded": "evidence_deletion,evidence_truncation,irrelevant_evidence,"
                             "polarity_flip,predicate_swap,unknown",
             },
+            "use_temporal_diagnostic_head": args.use_temporal_diagnostic_loss,
+            "temporal_diagnostic_data": args.temporal_diagnostic_data,
+            "temporal_diagnostic_loss_weight": (
+                args.temporal_diagnostic_loss_weight
+                if args.use_temporal_diagnostic_loss else 0.0
+            ),
+            "temporal_diagnostic_loss_pos_weight": args.temporal_diagnostic_loss_pos_weight,
+            "temporal_diagnostic_label_mapping": {
+                "positive_role": _TEMPORAL_DIAG_MISMATCH_ROLE,
+                "negative_role": _TEMPORAL_DIAG_CONTROL_ROLE,
+                "positive_source_intervention_type": "time_swap",
+                "negative_source_intervention_types": ["none", "paraphrase"],
+                "note": (
+                    "loaded from separate temporal diagnostic file; "
+                    "time_swap is NOT in the main clean train/eval data"
+                ),
+            },
+            "temporal_diagnostic_train_count": len(_td_train_records),
+            "temporal_diagnostic_dev_count": len(_td_dev_records),
+            "stage15_used_for_temporal_diagnostic_training": False,
             "dev_calibrated_ne_shift_candidates": args.dev_calibrated_ne_shift_candidates,
             "dev_calibrated_ne_gate": args.dev_calibrated_ne_gate,
             "dev_calibrated_ne_threshold": args.dev_calibrated_ne_threshold,
@@ -2638,6 +3035,20 @@ def main(argv: list[str] | None = None) -> int:
             "preservation_entitlement_loss_pos_weight": getattr(
                 args, "preservation_entitlement_loss_pos_weight", 1.0
             ),
+            "use_temporal_diagnostic_loss": getattr(
+                args, "use_temporal_diagnostic_loss", False
+            ),
+            "use_temporal_diagnostic_head": getattr(
+                args, "use_temporal_diagnostic_loss", False
+            ),
+            "temporal_diagnostic_data": getattr(args, "temporal_diagnostic_data", None),
+            "temporal_diagnostic_loss_weight": getattr(
+                args, "temporal_diagnostic_loss_weight", 0.0
+            ),
+            "temporal_diagnostic_loss_pos_weight": getattr(
+                args, "temporal_diagnostic_loss_pos_weight", 2.0
+            ),
+            "stage15_used_for_temporal_diagnostic_training": False,
             "use_pair_contrastive_frame_loss": getattr(
                 args, "use_pair_contrastive_frame_loss", False
             ),

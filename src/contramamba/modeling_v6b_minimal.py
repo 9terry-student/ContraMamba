@@ -65,6 +65,7 @@ class ContraMambaV6BMinimal(nn.Module):
         use_frame_violation_head: bool = False,
         use_predicate_isolation_head: bool = False,
         use_preservation_entitlement_head: bool = False,
+        use_temporal_diagnostic_head: bool = False,
     ) -> None:
         super().__init__()
         if backbone is None:
@@ -166,6 +167,23 @@ class ContraMambaV6BMinimal(nn.Module):
         self.preservation_entitlement_head: nn.Linear | None = None
         if use_preservation_entitlement_head:
             self.preservation_entitlement_head = nn.Linear(sufficiency_size, 1)
+
+        # Temporal diagnostic head — linear probe on frame_pair_repr only.
+        # Positive (temporal_mismatch=1): time_swap records from the separate temporal
+        #   diagnostic dataset (primary_failure_type='frame', frame_compatible_label=0).
+        # Negative (temporal_control=0): none, paraphrase records from same dataset.
+        # Input: frame_pair_repr (frame_size) — targets frame-level representation since
+        #   time_swap is a frame-compatibility failure. Narrower than the full
+        #   [frame+predicate+sufficiency] concat used by boundary/frame_violation heads.
+        #   Distinct from predicate_isolation_head (predicate_pair_repr) and
+        #   preservation_entitlement_head (sufficiency_repr).
+        # Loaded from a SEPARATE temporal diagnostic JSONL — records must NOT be mixed
+        #   into the main clean train/eval classification data.
+        # Does NOT touch output["logits"] or output["base_logits"].
+        # Does NOT supervise FrameGate directly; supervises a linear probe on frame_pair_repr.
+        self.temporal_diagnostic_head: nn.Linear | None = None
+        if use_temporal_diagnostic_head:
+            self.temporal_diagnostic_head = nn.Linear(frame_size, 1)
 
     def alpha_temporal(self) -> float | torch.Tensor:
         """Return softplus-constrained temporal alpha."""
@@ -289,6 +307,20 @@ class ContraMambaV6BMinimal(nn.Module):
             ).squeeze(-1)
             preservation_entitlement_prob = torch.sigmoid(preservation_entitlement_logit)
 
+        # Temporal diagnostic head: linear probe on frame_pair_repr for temporal mismatch.
+        # Positive=time_swap (temporal_mismatch=1); negative=none/paraphrase (temporal_control=0).
+        # Loaded from a separate temporal diagnostic file; these records are not in the main
+        # clean train/eval tensors — the head output is present in every forward pass
+        # but the BCE loss is only computed on the separate temporal diagnostic batch.
+        # None when head is disabled (downstream loss skipped when None).
+        temporal_diagnostic_logit: torch.Tensor | None = None
+        temporal_diagnostic_prob: torch.Tensor | None = None
+        if self.temporal_diagnostic_head is not None:
+            temporal_diagnostic_logit = self.temporal_diagnostic_head(
+                frame["frame_pair_repr"]
+            ).squeeze(-1)
+            temporal_diagnostic_prob = torch.sigmoid(temporal_diagnostic_logit)
+
         # Base logits (V5 standard)
         decision = self.decision_head(
             frame_prob=frame["frame_prob"],
@@ -395,6 +427,9 @@ class ContraMambaV6BMinimal(nn.Module):
             # Preservation entitlement head outputs (None when head is disabled)
             "preservation_entitlement_logit": preservation_entitlement_logit,
             "preservation_entitlement_prob": preservation_entitlement_prob,
+            # Temporal diagnostic head outputs (None when head is disabled)
+            "temporal_diagnostic_logit": temporal_diagnostic_logit,
+            "temporal_diagnostic_prob": temporal_diagnostic_prob,
             **frame,
             **predicate,
             **sufficiency,
