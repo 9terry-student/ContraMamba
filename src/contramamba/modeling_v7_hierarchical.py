@@ -356,6 +356,11 @@ class ContraMambaV7Hierarchical(nn.Module):
         v7_flat_arbiter: bool = False,
         v7_no_entitlement_polarity_conditioning: bool = False,
         v7_no_aux_losses: bool = False,
+        # Stage26-G: initialization stabilization
+        # Default -0.5 to reduce early NOT_ENTITLED attractor behavior observed in Stage26-F
+        # diagnostics (entitlement_prob ≈ 0.56 across all gold classes, ne_score dominating).
+        # Does NOT affect v6B. Does NOT affect architecture. Does NOT use OOD or Stage15.
+        v7_initial_ne_bias: float = -0.5,
     ) -> None:
         super().__init__()
 
@@ -416,8 +421,13 @@ class ContraMambaV7Hierarchical(nn.Module):
         )
 
         # Learnable NOT_ENTITLED bias (scalar)
-        # Initialized to 0.0; the model learns to shift NE score as needed.
-        self.ne_bias: nn.Parameter = nn.Parameter(torch.zeros(()))
+        # Stage26-G: initialized to v7_initial_ne_bias (default -0.5) rather than 0.0.
+        # Rationale: Stage26-F diagnostics showed early NE dominance (≈98% NE predictions
+        # at epoch 2) with entitlement_prob uniformly ≈ 0.56 across all gold classes.
+        # A modest negative initialization reduces the early NE attractor without changing
+        # architecture, data, CE target, or selection behavior.
+        self.v7_initial_ne_bias: float = v7_initial_ne_bias
+        self.ne_bias: nn.Parameter = nn.Parameter(torch.tensor(v7_initial_ne_bias))
 
     def forward(
         self,

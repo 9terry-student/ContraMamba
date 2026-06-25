@@ -150,6 +150,7 @@ def build_v7_model(
     v7_flat_arbiter: bool = False,
     v7_no_entitlement_polarity_conditioning: bool = False,
     v7_no_aux_losses: bool = False,
+    v7_initial_ne_bias: float = -0.5,
 ) -> "ContraMambaV7Hierarchical":
     """Build a ContraMambaV7Hierarchical with dummy backbone for plumbing validation."""
     from contramamba.modeling_v7_hierarchical import ContraMambaV7Hierarchical
@@ -168,6 +169,7 @@ def build_v7_model(
         v7_flat_arbiter=v7_flat_arbiter,
         v7_no_entitlement_polarity_conditioning=v7_no_entitlement_polarity_conditioning,
         v7_no_aux_losses=v7_no_aux_losses,
+        v7_initial_ne_bias=v7_initial_ne_bias,
     )
 
 
@@ -182,6 +184,7 @@ def build_v7_mamba_model(
     v7_flat_arbiter: bool = False,
     v7_no_entitlement_polarity_conditioning: bool = False,
     v7_no_aux_losses: bool = False,
+    v7_initial_ne_bias: float = -0.5,
 ) -> "ContraMambaV7Hierarchical":
     """Build a ContraMambaV7Hierarchical with real Mamba backbone."""
     from contramamba.modeling_v7_hierarchical import ContraMambaV7Hierarchical
@@ -200,6 +203,7 @@ def build_v7_mamba_model(
         v7_flat_arbiter=v7_flat_arbiter,
         v7_no_entitlement_polarity_conditioning=v7_no_entitlement_polarity_conditioning,
         v7_no_aux_losses=v7_no_aux_losses,
+        v7_initial_ne_bias=v7_initial_ne_bias,
     )
     for parameter in model.mamba.parameters():
         parameter.requires_grad = not freeze_encoder
@@ -2177,6 +2181,54 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--v7-entitlement-loss-weight", type=float, default=0.0,
         help="v7: EntitlementGate auxiliary BCE loss weight. Default 0.0.")
 
+    # ── Stage26-G: v7 stabilization options ──────────────────────────────────────────────────────
+    # All off by default. Clean-data supervision only. No Stage15. No OOD. No time_swap.
+    parser.add_argument("--v7-use-polarity-margin-loss", action="store_true", default=False,
+        help=(
+            "v7 Stage26-G: Enable polarity margin loss on v7_polarity_support/refute_logit. "
+            "Applied only to gold SUPPORT and REFUTE examples. NOT applied to NOT_ENTITLED. "
+            "Pushes support/refute logit separation by at least --v7-polarity-margin. "
+            "Default off."
+        ),
+    )
+    parser.add_argument("--v7-polarity-margin-loss-weight", type=float, default=0.0,
+        help="v7 Stage26-G: Weight for polarity margin loss. Default 0.0.")
+    parser.add_argument("--v7-polarity-margin", type=float, default=0.5,
+        help="v7 Stage26-G: Polarity margin for margin loss. Default 0.5.")
+    parser.add_argument("--v7-use-entitlement-bce-loss", action="store_true", default=False,
+        help=(
+            "v7 Stage26-G: Enable entitlement BCE auxiliary loss on v7_entitlement_logit. "
+            "Target: entitled=1 for gold SUPPORT and REFUTE, entitled=0 for NOT_ENTITLED. "
+            "Clean-data supervision only. No Stage15. No OOD. Default off."
+        ),
+    )
+    parser.add_argument("--v7-entitlement-bce-loss-weight", type=float, default=0.0,
+        help="v7 Stage26-G: Weight for entitlement BCE loss. Default 0.0.")
+    parser.add_argument("--v7-entitlement-bce-pos-weight", type=float, default=1.0,
+        help=(
+            "v7 Stage26-G: BCE pos_weight for entitlement BCE loss. "
+            "Increase if SUPPORT+REFUTE class is underrepresented. Default 1.0."
+        ),
+    )
+    parser.add_argument("--v7-use-entitled-class-balanced-ce", action="store_true", default=False,
+        help=(
+            "v7 Stage26-G: Enable auxiliary CE over SUPPORT/REFUTE examples using "
+            "v7_polarity_logits (local label: REFUTE=0, SUPPORT=1). "
+            "Intended to stabilize polarity direction. NOT_ENTITLED excluded. "
+            "Does NOT use output['logits']. Default off."
+        ),
+    )
+    parser.add_argument("--v7-entitled-class-balanced-ce-weight", type=float, default=0.0,
+        help="v7 Stage26-G: Weight for entitled class-balanced CE loss. Default 0.0.")
+    parser.add_argument("--v7-initial-ne-bias", type=float, default=-0.5,
+        help=(
+            "v7 Stage26-G: Initial value for the learnable ne_bias parameter in "
+            "ContraMambaV7Hierarchical. Default -0.5 (reduces early NOT_ENTITLED collapse "
+            "observed in Stage26-F: NE dominated 98%% of predictions at epoch 2). "
+            "Use 0.0 to restore Stage26-A behavior."
+        ),
+    )
+
     # ── Generic preservation-constrained checkpoint selection ─────────────────────────────────
     # Default off. Uses ONLY clean dev pairwise checks — no Stage15/OOD, no temporal diagnostic
     # metrics. Compatible with baseline, TD, TA, PE, and future runs. Cannot be combined with
@@ -2425,6 +2477,16 @@ _LIFT_CONFIG_KEYS: tuple[str, ...] = (
     "v7_flat_arbiter",
     "v7_no_entitlement_polarity_conditioning",
     "v7_no_aux_losses",
+    # Stage26-G: v7 stabilization option flags and hyperparameters
+    "v7_use_polarity_margin_loss",
+    "v7_polarity_margin_loss_weight",
+    "v7_polarity_margin",
+    "v7_use_entitlement_bce_loss",
+    "v7_entitlement_bce_loss_weight",
+    "v7_entitlement_bce_pos_weight",
+    "v7_use_entitled_class_balanced_ce",
+    "v7_entitled_class_balanced_ce_weight",
+    "v7_initial_ne_bias",
     # v7 Stage15 / time_swap provenance (also lifted from audit_ledger elsewhere;
     # this covers the configuration copy when the ledger path is absent)
     "stage15_used_for_v7_training",
@@ -2539,6 +2601,7 @@ def main(argv: list[str] | None = None) -> int:
                 v7_flat_arbiter=args.v7_flat_arbiter,
                 v7_no_entitlement_polarity_conditioning=args.v7_no_entitlement_polarity_conditioning,
                 v7_no_aux_losses=args.v7_no_aux_losses,
+                v7_initial_ne_bias=args.v7_initial_ne_bias,
             )
         else:
             model = build_mamba_model(
@@ -2589,6 +2652,7 @@ def main(argv: list[str] | None = None) -> int:
                 v7_flat_arbiter=args.v7_flat_arbiter,
                 v7_no_entitlement_polarity_conditioning=args.v7_no_entitlement_polarity_conditioning,
                 v7_no_aux_losses=args.v7_no_aux_losses,
+                v7_initial_ne_bias=args.v7_initial_ne_bias,
             )
         else:
             model = build_model(
@@ -3373,6 +3437,91 @@ def main(argv: list[str] | None = None) -> int:
                     _pc_loss = F.relu(pc_margin - _margins).mean()
                     total_loss = total_loss + pc_loss_weight * _pc_loss
 
+            # ── Stage26-G: v7 polarity margin auxiliary loss ──────────────────────────────────
+            # Hinge margin loss on v7_polarity_support/refute_logit.
+            # Applied only to gold SUPPORT and REFUTE examples; NOT_ENTITLED excluded.
+            # Does NOT replace CE. CE continues using output["logits"]. No loss_logits.
+            # Clean-data only (main train split). No Stage15. No OOD. No time_swap.
+            _v7_pm_loss = torch.tensor(0.0, device=device)
+            if (
+                args.architecture == "v7_hierarchical"
+                and args.v7_use_polarity_margin_loss
+                and args.v7_polarity_margin_loss_weight > 0.0
+                and not args.v7_no_aux_losses
+            ):
+                _pm_sup_logit = output.get("v7_polarity_support_logit")
+                _pm_ref_logit = output.get("v7_polarity_refute_logit")
+                if _pm_sup_logit is not None and _pm_ref_logit is not None:
+                    _pm_final_labels = train_inputs["final_labels"]
+                    _pm_margin = args.v7_polarity_margin
+                    _pm_parts: list[torch.Tensor] = []
+                    _sup_mask = _pm_final_labels == 2  # SUPPORT
+                    _ref_mask = _pm_final_labels == 0  # REFUTE
+                    if _sup_mask.any():
+                        # Push (support_logit - refute_logit) >= margin for gold SUPPORT
+                        _pm_parts.append(
+                            F.relu(_pm_margin - (_pm_sup_logit[_sup_mask] - _pm_ref_logit[_sup_mask]))
+                        )
+                    if _ref_mask.any():
+                        # Push (refute_logit - support_logit) >= margin for gold REFUTE
+                        _pm_parts.append(
+                            F.relu(_pm_margin - (_pm_ref_logit[_ref_mask] - _pm_sup_logit[_ref_mask]))
+                        )
+                    if _pm_parts:
+                        _v7_pm_loss = torch.cat(_pm_parts).mean()
+                        total_loss = total_loss + args.v7_polarity_margin_loss_weight * _v7_pm_loss
+
+            # ── Stage26-G: v7 entitlement BCE auxiliary loss ──────────────────────────────────
+            # BCE on v7_entitlement_logit with ground-truth entitled target derived from labels:
+            #   entitled=1 for SUPPORT (2) and REFUTE (0) — these require a polarity judgment
+            #   entitled=0 for NOT_ENTITLED (1) — evidence fails to entitle a polarity judgment
+            # Clean-data only (main train split). No Stage15. No OOD. No time_swap.
+            _v7_ent_bce_loss = torch.tensor(0.0, device=device)
+            if (
+                args.architecture == "v7_hierarchical"
+                and args.v7_use_entitlement_bce_loss
+                and args.v7_entitlement_bce_loss_weight > 0.0
+                and not args.v7_no_aux_losses
+            ):
+                _ent_logit = output.get("v7_entitlement_logit")
+                if _ent_logit is not None:
+                    _ent_labels = train_inputs["final_labels"]
+                    # SUPPORT=2 and REFUTE=0 → entitled=1; NOT_ENTITLED=1 → entitled=0
+                    _ent_target = (_ent_labels != 1).float()
+                    _ent_pos_w = torch.tensor(
+                        args.v7_entitlement_bce_pos_weight,
+                        dtype=_ent_logit.dtype,
+                        device=device,
+                    )
+                    _v7_ent_bce_loss = F.binary_cross_entropy_with_logits(
+                        _ent_logit, _ent_target, pos_weight=_ent_pos_w
+                    )
+                    total_loss = total_loss + args.v7_entitlement_bce_loss_weight * _v7_ent_bce_loss
+
+            # ── Stage26-G: v7 entitled class-balanced CE ──────────────────────────────────────
+            # Auxiliary CE over SUPPORT/REFUTE examples only, using v7_polarity_logits [B, 2].
+            # Local labels: REFUTE (gold=0) → local 0; SUPPORT (gold=2) → local 1.
+            # NOT_ENTITLED examples are excluded entirely.
+            # Intended to anchor polarity direction independently of the entitlement gate.
+            # Does NOT use output["logits"]. Does NOT create loss_logits.
+            _v7_ecb_loss = torch.tensor(0.0, device=device)
+            if (
+                args.architecture == "v7_hierarchical"
+                and args.v7_use_entitled_class_balanced_ce
+                and args.v7_entitled_class_balanced_ce_weight > 0.0
+                and not args.v7_no_aux_losses
+            ):
+                _ecb_polarity_logits = output.get("v7_polarity_logits")  # [B, 2]: [refute, support]
+                if _ecb_polarity_logits is not None:
+                    _ecb_labels = train_inputs["final_labels"]
+                    _ecb_mask = _ecb_labels != 1  # True for SUPPORT (2) and REFUTE (0)
+                    if _ecb_mask.any():
+                        _ecb_pol_sub = _ecb_polarity_logits[_ecb_mask]
+                        # REFUTE (gold=0) → local 0; SUPPORT (gold=2) → local 1
+                        _ecb_local_labels = (_ecb_labels[_ecb_mask] == 2).long()
+                        _v7_ecb_loss = F.cross_entropy(_ecb_pol_sub, _ecb_local_labels)
+                        total_loss = total_loss + args.v7_entitled_class_balanced_ce_weight * _v7_ecb_loss
+
             # ── Audit ledger accumulation (reporting only; does not affect gradients) ─────────
             # raw = loss value before weight multiplication; weighted = actual total_loss contribution
             _ep_ce_raw = float(losses["label"].item())
@@ -3389,6 +3538,9 @@ def main(argv: list[str] | None = None) -> int:
             _ep_td_raw = float(_td_loss.item()) if hasattr(_td_loss, "item") else 0.0
             _ep_ta_raw = float(_ta_loss.item()) if hasattr(_ta_loss, "item") else 0.0
             _ep_tc_raw = float(_tc_loss.item()) if hasattr(_tc_loss, "item") else 0.0
+            _ep_v7_pm_raw = float(_v7_pm_loss.item()) if hasattr(_v7_pm_loss, "item") else 0.0
+            _ep_v7_ent_bce_raw = float(_v7_ent_bce_loss.item()) if hasattr(_v7_ent_bce_loss, "item") else 0.0
+            _ep_v7_ecb_raw = float(_v7_ecb_loss.item()) if hasattr(_v7_ecb_loss, "item") else 0.0
             _ep_total = float(total_loss.item())
             # For ranking path: active_intervention_loss = ranking_weight * raw_ranking.
             # Recover raw by dividing. For intervention path: pairwise_losses["total"] is
@@ -3413,6 +3565,10 @@ def main(argv: list[str] | None = None) -> int:
                 "temporal_diagnostic_loss": _ep_td_raw,
                 "temporal_adapter_loss": _ep_ta_raw,
                 "temporal_channel_loss": _ep_tc_raw,
+                # Stage26-G: v7 stabilization losses (0.0 when disabled or architecture=v6b_minimal)
+                "v7_polarity_margin_loss": _ep_v7_pm_raw,
+                "v7_entitlement_bce_loss": _ep_v7_ent_bce_raw,
+                "v7_entitled_class_balanced_ce_loss": _ep_v7_ecb_raw,
                 "total_loss": _ep_total,
             })
             _audit_per_epoch_weighted.append({
@@ -3427,6 +3583,12 @@ def main(argv: list[str] | None = None) -> int:
                 "temporal_diagnostic_loss": td_loss_weight * _ep_td_raw,
                 "temporal_adapter_loss": ta_loss_weight * _ep_ta_raw,
                 "temporal_channel_loss": tc_loss_weight * _ep_tc_raw,
+                # Stage26-G: v7 stabilization losses weighted contributions
+                "v7_polarity_margin_loss": args.v7_polarity_margin_loss_weight * _ep_v7_pm_raw,
+                "v7_entitlement_bce_loss": args.v7_entitlement_bce_loss_weight * _ep_v7_ent_bce_raw,
+                "v7_entitled_class_balanced_ce_loss": (
+                    args.v7_entitled_class_balanced_ce_weight * _ep_v7_ecb_raw
+                ),
                 "total_loss": _ep_total,
             })
             _audit_epoch_count += 1
@@ -4110,6 +4272,79 @@ def main(argv: list[str] | None = None) -> int:
                     if tc_loss_weight > 0.0 else "disabled"
                 ),
             },
+            # Stage26-G: v7 stabilization losses — all off by default, v7_hierarchical only
+            "v7_polarity_margin_loss": {
+                "enabled": (
+                    args.architecture == "v7_hierarchical"
+                    and getattr(args, "v7_use_polarity_margin_loss", False)
+                    and getattr(args, "v7_polarity_margin_loss_weight", 0.0) > 0.0
+                    and not getattr(args, "v7_no_aux_losses", False)
+                ),
+                "weight": getattr(args, "v7_polarity_margin_loss_weight", 0.0),
+                "margin": getattr(args, "v7_polarity_margin", 0.5),
+                "target": "v7_polarity_support_logit vs v7_polarity_refute_logit",
+                "scope": "SUPPORT and REFUTE examples only (NOT_ENTITLED excluded)",
+                "stage15_used_for_selection_or_calibration": False,
+                "ood_used": False,
+                "raw_loss_key": "v7_polarity_margin_loss",
+                "weighted_loss_key": "v7_polarity_margin_loss",
+                "note": (
+                    "Hinge margin on polarity logits: pushes |support_logit - refute_logit| >= margin "
+                    "in the correct direction for gold SUPPORT and REFUTE. NOT_ENTITLED excluded. "
+                    "CE unchanged (still uses output['logits']). No loss_logits. No OOD. No Stage15."
+                    if (
+                        getattr(args, "v7_use_polarity_margin_loss", False)
+                        and getattr(args, "v7_polarity_margin_loss_weight", 0.0) > 0.0
+                    ) else "disabled"
+                ),
+            },
+            "v7_entitlement_bce_loss": {
+                "enabled": (
+                    args.architecture == "v7_hierarchical"
+                    and getattr(args, "v7_use_entitlement_bce_loss", False)
+                    and getattr(args, "v7_entitlement_bce_loss_weight", 0.0) > 0.0
+                    and not getattr(args, "v7_no_aux_losses", False)
+                ),
+                "weight": getattr(args, "v7_entitlement_bce_loss_weight", 0.0),
+                "pos_weight": getattr(args, "v7_entitlement_bce_pos_weight", 1.0),
+                "target": "v7_entitlement_logit",
+                "target_derivation": "entitled=1 for SUPPORT/REFUTE, entitled=0 for NOT_ENTITLED",
+                "stage15_used_for_selection_or_calibration": False,
+                "ood_used": False,
+                "raw_loss_key": "v7_entitlement_bce_loss",
+                "weighted_loss_key": "v7_entitlement_bce_loss",
+                "note": (
+                    "BCE on EntitlementGate output. Target is a hard 0/1 derived from gold labels "
+                    "on clean train data only. No OOD. No Stage15."
+                    if (
+                        getattr(args, "v7_use_entitlement_bce_loss", False)
+                        and getattr(args, "v7_entitlement_bce_loss_weight", 0.0) > 0.0
+                    ) else "disabled"
+                ),
+            },
+            "v7_entitled_class_balanced_ce": {
+                "enabled": (
+                    args.architecture == "v7_hierarchical"
+                    and getattr(args, "v7_use_entitled_class_balanced_ce", False)
+                    and getattr(args, "v7_entitled_class_balanced_ce_weight", 0.0) > 0.0
+                    and not getattr(args, "v7_no_aux_losses", False)
+                ),
+                "weight": getattr(args, "v7_entitled_class_balanced_ce_weight", 0.0),
+                "target": "v7_polarity_logits",
+                "target_derivation": "REFUTE→local_0, SUPPORT→local_1 (NOT_ENTITLED excluded)",
+                "stage15_used_for_selection_or_calibration": False,
+                "ood_used": False,
+                "raw_loss_key": "v7_entitled_class_balanced_ce_loss",
+                "weighted_loss_key": "v7_entitled_class_balanced_ce_loss",
+                "note": (
+                    "Auxiliary CE over v7_polarity_logits on SUPPORT/REFUTE examples only. "
+                    "NOT_ENTITLED excluded. Does NOT use output['logits']. No OOD. No Stage15."
+                    if (
+                        getattr(args, "v7_use_entitled_class_balanced_ce", False)
+                        and getattr(args, "v7_entitled_class_balanced_ce_weight", 0.0) > 0.0
+                    ) else "disabled"
+                ),
+            },
         }
 
         # True post-hoc final-logit modifiers only.
@@ -4781,7 +5016,32 @@ def main(argv: list[str] | None = None) -> int:
                 args, "v7_no_entitlement_polarity_conditioning", False
             ),
             "v7_no_aux_losses": getattr(args, "v7_no_aux_losses", False),
-            "v7_aux_losses_active": False,
+            "v7_aux_losses_active": (
+                args.architecture == "v7_hierarchical"
+                and not getattr(args, "v7_no_aux_losses", False)
+                and (
+                    (getattr(args, "v7_use_polarity_margin_loss", False)
+                     and getattr(args, "v7_polarity_margin_loss_weight", 0.0) > 0.0)
+                    or (getattr(args, "v7_use_entitlement_bce_loss", False)
+                        and getattr(args, "v7_entitlement_bce_loss_weight", 0.0) > 0.0)
+                    or (getattr(args, "v7_use_entitled_class_balanced_ce", False)
+                        and getattr(args, "v7_entitled_class_balanced_ce_weight", 0.0) > 0.0)
+                )
+            ),
+            # Stage26-G: v7 stabilization options
+            "v7_use_polarity_margin_loss": getattr(args, "v7_use_polarity_margin_loss", False),
+            "v7_polarity_margin_loss_weight": getattr(args, "v7_polarity_margin_loss_weight", 0.0),
+            "v7_polarity_margin": getattr(args, "v7_polarity_margin", 0.5),
+            "v7_use_entitlement_bce_loss": getattr(args, "v7_use_entitlement_bce_loss", False),
+            "v7_entitlement_bce_loss_weight": getattr(args, "v7_entitlement_bce_loss_weight", 0.0),
+            "v7_entitlement_bce_pos_weight": getattr(args, "v7_entitlement_bce_pos_weight", 1.0),
+            "v7_use_entitled_class_balanced_ce": getattr(
+                args, "v7_use_entitled_class_balanced_ce", False
+            ),
+            "v7_entitled_class_balanced_ce_weight": getattr(
+                args, "v7_entitled_class_balanced_ce_weight", 0.0
+            ),
+            "v7_initial_ne_bias": getattr(args, "v7_initial_ne_bias", -0.5),
             "v7_final_logit_composition": (
                 "flat"
                 if getattr(args, "v7_no_entitlement_polarity_conditioning", False)
