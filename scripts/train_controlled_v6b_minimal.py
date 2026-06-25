@@ -40,6 +40,7 @@ def build_model(
     vocab_size: int, max_length: int, hidden_size: int = 48,
     use_boundary_head: bool = False,
     use_frame_violation_head: bool = False,
+    use_predicate_isolation_head: bool = False,
 ) -> ContraMambaV6BMinimal:
     backbone = v5.ControlledDummyBackbone(vocab_size, hidden_size, max_length)
     return ContraMambaV6BMinimal(
@@ -56,6 +57,7 @@ def build_model(
         alpha_predicate_init=1.25,
         use_boundary_head=use_boundary_head,
         use_frame_violation_head=use_frame_violation_head,
+        use_predicate_isolation_head=use_predicate_isolation_head,
     )
 
 
@@ -65,6 +67,7 @@ def build_mamba_model(
     freeze_a_log: bool,
     use_boundary_head: bool = False,
     use_frame_violation_head: bool = False,
+    use_predicate_isolation_head: bool = False,
 ) -> ContraMambaV6BMinimal:
     model = ContraMambaV6BMinimal(
         model_name=model_name,
@@ -81,6 +84,7 @@ def build_mamba_model(
         alpha_predicate_init=1.25,
         use_boundary_head=use_boundary_head,
         use_frame_violation_head=use_frame_violation_head,
+        use_predicate_isolation_head=use_predicate_isolation_head,
     )
     for parameter in model.mamba.parameters():
         parameter.requires_grad = not freeze_encoder
@@ -284,6 +288,17 @@ _FRAME_VIOLATION_NEGATIVE: frozenset = frozenset({
     "polarity_flip",
 })
 
+# Predicate isolation label mapping
+# positive/noncoverage=1: predicate_swap (predicate mismatch — not frame, not sufficiency)
+# negative/covered=0: none, paraphrase (predicate coverage present in both)
+# excluded/masked: all frame-swap, evidence, polarity intervention types, and unknown
+# Class balance in controlled_v5_v3_without_time_swap.jsonl:
+#   positive: 300 predicate_swap; negative: 600 (none+paraphrase); ratio neg/pos = 2.0
+# Supervision target: predicate_pair_repr only (NOT frame_pair_repr, NOT sufficiency_repr).
+# This keeps predicate-noncoverage supervision separate from FrameGate.
+_PRED_ISOLATION_POSITIVE: frozenset = frozenset({"predicate_swap"})
+_PRED_ISOLATION_NEGATIVE: frozenset = frozenset({"none", "paraphrase"})
+
 
 def encode_boundary_labels(
     records: list[dict],
@@ -356,6 +371,40 @@ def encode_frame_violation_labels(
     )
 
 
+def encode_predicate_isolation_labels(
+    records: list[dict],
+    device: torch.device,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Derive predicate isolation binary labels from intervention_type.
+
+    Returns (labels, mask) both of shape [B].
+      label=1, mask=1: predicate_swap  (predicate noncoverage)
+      label=0, mask=1: none, paraphrase  (predicate covered)
+      label=0, mask=0: all other intervention types  (excluded)
+    BCE loss is computed only on mask==1 examples.
+    Routes predicate-noncoverage supervision to predicate_pair_repr only;
+    does NOT route predicate_swap into frame violation supervision.
+    Does NOT use OOD group names or gold labels at inference.
+    """
+    labels: list[int] = []
+    mask: list[int] = []
+    for r in records:
+        it = r.get("intervention_type", "")
+        if it in _PRED_ISOLATION_POSITIVE:
+            labels.append(1)
+            mask.append(1)
+        elif it in _PRED_ISOLATION_NEGATIVE:
+            labels.append(0)
+            mask.append(1)
+        else:
+            labels.append(0)
+            mask.append(0)
+    return (
+        torch.tensor(labels, dtype=torch.float32, device=device),
+        torch.tensor(mask, dtype=torch.bool, device=device),
+    )
+
+
 def compute_frame_violation_metrics(
     output: dict[str, Any],
     fv_labels: "torch.Tensor | None",
@@ -415,6 +464,41 @@ def compute_boundary_metrics(
         "boundary_pos_rate": round(pos_rate, 4),
         "boundary_valid_count": valid_count,
         "boundary_mean_prob": round(mean_prob, 4),
+    }
+
+
+def compute_predicate_isolation_metrics(
+    output: dict[str, Any],
+    pi_labels: "torch.Tensor | None",
+    pi_mask: "torch.Tensor | None",
+) -> dict[str, Any]:
+    """Compute predicate isolation head diagnostic metrics.
+
+    Returns empty dict when the head is disabled or no valid examples exist.
+    """
+    if (
+        output.get("predicate_noncoverage_prob") is None
+        or pi_labels is None
+        or pi_mask is None
+    ):
+        return {}
+    probs = output["predicate_noncoverage_prob"].detach().cpu()
+    labels = pi_labels.detach().cpu()
+    mask = pi_mask.detach().cpu().bool()
+    valid_count = int(mask.sum().item())
+    if valid_count == 0:
+        return {"pi_valid_count": 0}
+    probs_v = probs[mask]
+    labels_v = labels[mask]
+    preds_v = (probs_v >= 0.5).float()
+    accuracy = (preds_v == labels_v).float().mean().item()
+    pos_rate = labels_v.mean().item()
+    mean_prob = probs_v.mean().item()
+    return {
+        "pi_accuracy": round(accuracy, 4),
+        "pi_pos_rate": round(pos_rate, 4),
+        "pi_valid_count": valid_count,
+        "pi_mean_prob": round(mean_prob, 4),
     }
 
 
@@ -1139,6 +1223,44 @@ def build_parser() -> argparse.ArgumentParser:
             "Default: frame_violation_contrastive."
         ),
     )
+    # Predicate isolation head
+    parser.add_argument(
+        "--use-predicate-isolation-loss",
+        action="store_true",
+        default=False,
+        help=(
+            "Enable predicate isolation diagnostic head. "
+            "Adds a linear head on predicate_pair_repr only (not frame or sufficiency repr), "
+            "trained to distinguish predicate-noncoverage (predicate_swap; label=1) from "
+            "predicate-covered (none, paraphrase; label=0) using BCE loss. "
+            "All other intervention types are excluded from the loss (masked). "
+            "Keeps predicate-noncoverage supervision separate from FrameGate and from the "
+            "existing V5 predicate_loss (which uses per-record predicate_covered_label). "
+            "Does NOT modify output['logits'] or affect predictions. "
+            "Stage15 OOD records are never used."
+        ),
+    )
+    parser.add_argument(
+        "--predicate-isolation-loss-weight",
+        type=float,
+        default=0.0,
+        help=(
+            "Weight for the predicate isolation BCE loss added to the total training loss. "
+            "Default 0.0 means the head is built but its loss is not included. "
+            "Requires --use-predicate-isolation-loss. Suggested starting value: 0.1."
+        ),
+    )
+    parser.add_argument(
+        "--predicate-isolation-loss-pos-weight",
+        type=float,
+        default=2.0,
+        help=(
+            "Positive class weight for the predicate isolation BCE loss (pos_weight in "
+            "F.binary_cross_entropy_with_logits). Compensates for class imbalance: "
+            "negative (none+paraphrase=600) vs positive (predicate_swap=300). "
+            "Default 2.0 = 600/300."
+        ),
+    )
 
     return parser
 
@@ -1234,6 +1356,7 @@ def main(argv: list[str] | None = None) -> int:
             freeze_a_log=args.freeze_a_log,
             use_boundary_head=args.use_boundary_loss,
             use_frame_violation_head=args.use_frame_violation_loss,
+            use_predicate_isolation_head=args.use_predicate_isolation_loss,
         )
 
     train_inputs = v5.move_inputs(train_bundle["model_inputs"], device)
@@ -1252,6 +1375,7 @@ def main(argv: list[str] | None = None) -> int:
             len(vocab), max_length,
             use_boundary_head=args.use_boundary_loss,
             use_frame_violation_head=args.use_frame_violation_loss,
+            use_predicate_isolation_head=args.use_predicate_isolation_loss,
         )
     model = model.to(device)
 
@@ -1300,6 +1424,19 @@ def main(argv: list[str] | None = None) -> int:
             f" pos_weight={args.frame_violation_loss_pos_weight}"
             f" train_valid={_train_fv_valid}"
             f" train_pos={_train_fv_pos_only}"
+        )
+
+    # Predicate isolation labels derived from intervention_type (only used when head is active)
+    train_pi_labels, train_pi_mask = encode_predicate_isolation_labels(train_records, device)
+    dev_pi_labels, dev_pi_mask = encode_predicate_isolation_labels(dev_records, device)
+    if args.use_predicate_isolation_loss:
+        _train_pi_valid = int(train_pi_mask.sum().item())
+        _train_pi_pos_only = int((train_pi_labels * train_pi_mask.float()).sum().item())
+        print(
+            f"[pi_head] enabled weight={args.predicate_isolation_loss_weight}"
+            f" pos_weight={args.predicate_isolation_loss_pos_weight}"
+            f" train_valid={_train_pi_valid}"
+            f" train_pos={_train_pi_pos_only}"
         )
 
     # Stage22-A4c/A4e: pair contrastive frame data loading and encoding
@@ -1411,6 +1548,12 @@ def main(argv: list[str] | None = None) -> int:
         pc_loss_weight=0.0,
         pc_margin=0.2,
         pc_valid_count=0,
+        train_pi_labels=None,
+        train_pi_mask=None,
+        dev_pi_labels=None,
+        dev_pi_mask=None,
+        pi_loss_weight=0.0,
+        pi_loss_pos_weight=2.0,
     ):
         """Modified run_training that passes flags to v6b model."""
         if epochs < 1:
@@ -1519,6 +1662,29 @@ def main(argv: list[str] | None = None) -> int:
                     )
                     total_loss = total_loss + fv_loss_weight * _fv_loss
 
+            # Predicate isolation BCE loss (diagnostic only; output["logits"] unchanged)
+            # Supervises predicate_noncoverage_logit on predicate_pair_repr only.
+            _pi_loss = torch.tensor(0.0)
+            if (
+                pi_loss_weight > 0.0
+                and train_pi_labels is not None
+                and train_pi_mask is not None
+                and output.get("predicate_noncoverage_logit") is not None
+            ):
+                _active_pi = train_pi_mask.bool()
+                if torch.any(_active_pi):
+                    _pi_pos_w = torch.tensor(
+                        pi_loss_pos_weight,
+                        dtype=torch.float32,
+                        device=output["predicate_noncoverage_logit"].device,
+                    )
+                    _pi_loss = F.binary_cross_entropy_with_logits(
+                        output["predicate_noncoverage_logit"][_active_pi],
+                        train_pi_labels[_active_pi],
+                        pos_weight=_pi_pos_w,
+                    )
+                    total_loss = total_loss + pi_loss_weight * _pi_loss
+
             # Stage22-A4c: pair contrastive frame ranking loss
             # Supervises frame_violation_logit only; output["logits"] and predictions unchanged.
             _pc_loss = torch.tensor(0.0)
@@ -1577,6 +1743,10 @@ def main(argv: list[str] | None = None) -> int:
             # Stage22-A3: frame violation head metrics
             _tfvm = compute_frame_violation_metrics(train_output, train_fv_labels, train_fv_mask)
             _dfvm = compute_frame_violation_metrics(dev_output, dev_fv_labels, dev_fv_mask)
+
+            # Predicate isolation head metrics
+            _tpim = compute_predicate_isolation_metrics(train_output, train_pi_labels, train_pi_mask)
+            _dpim = compute_predicate_isolation_metrics(dev_output, dev_pi_labels, dev_pi_mask)
 
             # Stage22-A4c: pair contrastive ranking metrics (eval; no_grad already active)
             _pc_eval_metrics: dict[str, Any] = {}
@@ -1658,6 +1828,16 @@ def main(argv: list[str] | None = None) -> int:
                     f" train_mean_prob={_tfvm.get('fv_mean_prob', 0.0):.3f}"
                     f" dev_mean_prob={_dfvm.get('fv_mean_prob', 0.0):.3f}"
                     f" valid={_tfvm.get('fv_valid_count', 0)}"
+                )
+            if _tpim:
+                _pi_loss_val = float(_pi_loss.item()) if hasattr(_pi_loss, "item") else 0.0
+                print(
+                    f"  [pi_head] loss={_pi_loss_val:.4f}"
+                    f" train_acc={_tpim.get('pi_accuracy', 0.0):.3f}"
+                    f" dev_acc={_dpim.get('pi_accuracy', 0.0):.3f}"
+                    f" train_mean_prob={_tpim.get('pi_mean_prob', 0.0):.3f}"
+                    f" dev_mean_prob={_dpim.get('pi_mean_prob', 0.0):.3f}"
+                    f" valid={_tpim.get('pi_valid_count', 0)}"
                 )
             if _pc_eval_metrics:
                 _pc_loss_val = float(_pc_loss.item()) if hasattr(_pc_loss, "item") else 0.0
@@ -1751,6 +1931,15 @@ def main(argv: list[str] | None = None) -> int:
             dev_fv_mask=dev_fv_mask if args.use_frame_violation_loss else None,
             fv_loss_weight=args.frame_violation_loss_weight if args.use_frame_violation_loss else 0.0,
             fv_loss_pos_weight=args.frame_violation_loss_pos_weight,
+            train_pi_labels=train_pi_labels if args.use_predicate_isolation_loss else None,
+            train_pi_mask=train_pi_mask if args.use_predicate_isolation_loss else None,
+            dev_pi_labels=dev_pi_labels if args.use_predicate_isolation_loss else None,
+            dev_pi_mask=dev_pi_mask if args.use_predicate_isolation_loss else None,
+            pi_loss_weight=(
+                args.predicate_isolation_loss_weight
+                if args.use_predicate_isolation_loss else 0.0
+            ),
+            pi_loss_pos_weight=args.predicate_isolation_loss_pos_weight,
             pc_pres_inputs=_pc_pres_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_frame_inputs=_pc_frame_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_loss_weight=(
@@ -1835,6 +2024,19 @@ def main(argv: list[str] | None = None) -> int:
                 "pair contrastive data must be constructed from controlled data only; "
                 "Stage15 OOD records are not used for training"
             ),
+            "use_predicate_isolation_head": args.use_predicate_isolation_loss,
+            "predicate_isolation_loss_weight": (
+                args.predicate_isolation_loss_weight
+                if args.use_predicate_isolation_loss else 0.0
+            ),
+            "predicate_isolation_loss_pos_weight": args.predicate_isolation_loss_pos_weight,
+            "predicate_isolation_label_mapping": {
+                "positive": sorted(_PRED_ISOLATION_POSITIVE),
+                "negative": sorted(_PRED_ISOLATION_NEGATIVE),
+                "excluded": "entity_swap,event_swap,evidence_deletion,evidence_truncation,"
+                            "irrelevant_evidence,location_swap,polarity_flip,role_swap,"
+                            "title_name_swap,unknown",
+            },
             "dev_calibrated_ne_shift_candidates": args.dev_calibrated_ne_shift_candidates,
             "dev_calibrated_ne_gate": args.dev_calibrated_ne_gate,
             "dev_calibrated_ne_threshold": args.dev_calibrated_ne_threshold,
@@ -2189,6 +2391,10 @@ def main(argv: list[str] | None = None) -> int:
             "boundary_loss_weight": getattr(args, "boundary_loss_weight", 0.0),
             "use_frame_violation_loss": getattr(args, "use_frame_violation_loss", False),
             "frame_violation_loss_weight": getattr(args, "frame_violation_loss_weight", 0.0),
+            "use_predicate_isolation_loss": getattr(args, "use_predicate_isolation_loss", False),
+            "predicate_isolation_loss_weight": getattr(
+                args, "predicate_isolation_loss_weight", 0.0
+            ),
             "use_pair_contrastive_frame_loss": getattr(
                 args, "use_pair_contrastive_frame_loss", False
             ),

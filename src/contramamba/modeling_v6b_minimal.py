@@ -63,6 +63,7 @@ class ContraMambaV6BMinimal(nn.Module):
         alpha_predicate_init: float = 1.25,
         use_boundary_head: bool = False,
         use_frame_violation_head: bool = False,
+        use_predicate_isolation_head: bool = False,
     ) -> None:
         super().__init__()
         if backbone is None:
@@ -137,6 +138,18 @@ class ContraMambaV6BMinimal(nn.Module):
             self.frame_violation_head = nn.Linear(
                 frame_size + predicate_size + sufficiency_size, 1
             )
+
+        # Predicate isolation head — linear probe on predicate_pair_repr only.
+        # Positive (noncoverage=1): predicate_swap records.
+        # Negative (covered=0): none, paraphrase records.
+        # Excluded (masked): all other intervention types.
+        # Keeps predicate-noncoverage supervision on predicate_pair_repr,
+        # separate from FrameGate and from the existing V5 predicate_loss
+        # (which uses per-record predicate_covered_label fields).
+        # Does NOT touch output["logits"] or output["base_logits"].
+        self.predicate_isolation_head: nn.Linear | None = None
+        if use_predicate_isolation_head:
+            self.predicate_isolation_head = nn.Linear(predicate_size, 1)
 
     def alpha_temporal(self) -> float | torch.Tensor:
         """Return softplus-constrained temporal alpha."""
@@ -238,6 +251,17 @@ class ContraMambaV6BMinimal(nn.Module):
             frame_violation_logit = self.frame_violation_head(_aux_input).squeeze(-1)
             frame_violation_prob = torch.sigmoid(frame_violation_logit)
 
+        # Predicate isolation head: linear probe on predicate_pair_repr for noncoverage.
+        # Positive=predicate_swap (noncoverage); negative=none/paraphrase (covered).
+        # None when head is disabled (safe default: downstream loss is skipped if None).
+        predicate_noncoverage_logit: torch.Tensor | None = None
+        predicate_noncoverage_prob: torch.Tensor | None = None
+        if self.predicate_isolation_head is not None:
+            predicate_noncoverage_logit = self.predicate_isolation_head(
+                predicate["predicate_pair_repr"]
+            ).squeeze(-1)
+            predicate_noncoverage_prob = torch.sigmoid(predicate_noncoverage_logit)
+
         # Base logits (V5 standard)
         decision = self.decision_head(
             frame_prob=frame["frame_prob"],
@@ -338,6 +362,9 @@ class ContraMambaV6BMinimal(nn.Module):
             # Stage22-A3: frame violation head outputs (None when head is disabled)
             "frame_violation_logit": frame_violation_logit,
             "frame_violation_prob": frame_violation_prob,
+            # Predicate isolation head outputs (None when head is disabled)
+            "predicate_noncoverage_logit": predicate_noncoverage_logit,
+            "predicate_noncoverage_prob": predicate_noncoverage_prob,
             **frame,
             **predicate,
             **sufficiency,
