@@ -2892,9 +2892,9 @@ def main(argv: list[str] | None = None) -> int:
                     )
                 if _tc_train_out.get("temporal_channel_logit") is None:
                     raise RuntimeError(
-                        "TC loss enabled (tc_loss_weight > 0) but model forward produced "
-                        "no temporal_channel_logit. Ensure --use-temporal-channel is set "
-                        "and the TC head is instantiated."
+                        "TemporalChannel loss is enabled but model output has no "
+                        "temporal_channel_logit. Check --use-temporal-channel and "
+                        "model.temporal_channel_v1 initialization."
                     )
                 _active_tc = td_train_mask.bool()
                 if torch.any(_active_tc):
