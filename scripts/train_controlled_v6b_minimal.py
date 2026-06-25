@@ -3854,6 +3854,8 @@ def main(argv: list[str] | None = None) -> int:
             "stage15_used_for_loss_selection": False,
             "stage15_used_for_final_logit_modifier_selection": False,
             "stage15_used_for_checkpoint_selection": False,
+            "stage15_used_for_temporal_channel_training": False,
+            "stage15_used_for_temporal_channel_penalty_selection": False,
             "time_swap_used_in_main_clean_data": False,
         }
 
@@ -4168,6 +4170,7 @@ def main(argv: list[str] | None = None) -> int:
                 if args.use_temporal_channel_gated_penalty else 0.0
             ),
             "stage15_used_for_temporal_channel_training": False,
+            "stage15_used_for_temporal_channel_penalty_selection": False,
             "use_preservation_constrained_selection": args.use_preservation_constrained_selection,
             "selection_min_paraphrase_preserved": args.selection_min_paraphrase_preserved,
             "selection_min_predicate_disentangled": args.selection_min_predicate_disentangled,
@@ -4330,6 +4333,8 @@ def main(argv: list[str] | None = None) -> int:
             "stage15_used_for_loss_selection",
             "stage15_used_for_final_logit_modifier_selection",
             "stage15_used_for_checkpoint_selection",
+            "stage15_used_for_temporal_channel_training",
+            "stage15_used_for_temporal_channel_penalty_selection",
             "time_swap_used_in_main_clean_data",
         ):
             if _audit_key in _single_ledger:
@@ -4715,6 +4720,7 @@ def main(argv: list[str] | None = None) -> int:
                 args, "temporal_channel_gated_penalty_scale", 0.0
             ),
             "stage15_used_for_temporal_channel_training": False,
+            "stage15_used_for_temporal_channel_penalty_selection": False,
             "use_preservation_constrained_selection": getattr(
                 args, "use_preservation_constrained_selection", False
             ),
