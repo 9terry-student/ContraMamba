@@ -483,6 +483,77 @@ def compute_temporal_diagnostic_metrics(
     }
 
 
+def compute_td_final_decision_metrics(
+    output: dict[str, Any],
+    td_labels: "torch.Tensor | None",
+    td_mask: "torch.Tensor | None",
+) -> dict[str, Any]:
+    """Compute final classification decision behavior on temporal diagnostic dev records.
+
+    Uses output["logits"] (final calibrated logits) to measure how well the classifier
+    already rejects temporal mismatches and preserves controls, without any new loss.
+
+    Label convention (temporal diagnostic): 1 = temporal_mismatch, 0 = temporal_control.
+    A temporal_mismatch (label=1) is correctly handled if the final prediction is NOT_ENTITLED.
+    A temporal_control (label=0) is correctly handled if the final prediction is NOT NOT_ENTITLED.
+
+    Keys returned:
+      td_final_temporal_rejection_rate  — among label=1 records, frac predicted NOT_ENTITLED
+      td_final_control_preservation_rate — among label=0 records, frac predicted non-NOT_ENTITLED
+      td_final_binary_accuracy           — overall binary accuracy under the above mapping
+      td_final_temporal_count            — number of label=1 records with valid mask
+      td_final_control_count             — number of label=0 records with valid mask
+
+    Returns empty dict when logits are absent or no valid examples.
+    Stage15/OOD data is never passed here; this runs only on --temporal-diagnostic-data.
+    """
+    if (
+        output.get("logits") is None
+        or td_labels is None
+        or td_mask is None
+    ):
+        return {}
+    logits = output["logits"].detach().cpu()
+    labels = td_labels.detach().cpu()
+    mask = td_mask.detach().cpu().bool()
+    valid_count = int(mask.sum().item())
+    if valid_count == 0:
+        return {"td_final_temporal_count": 0, "td_final_control_count": 0}
+    ne_idx: int = v5.FINAL_LABEL_TO_ID.get("NOT_ENTITLED", 1)
+    preds = logits.argmax(dim=-1)
+    labels_v = labels[mask]
+    preds_v = preds[mask]
+    pos_mask = labels_v == 1  # temporal_mismatch
+    neg_mask = labels_v == 0  # temporal_control
+    td_final_temporal_count = int(pos_mask.sum().item())
+    td_final_control_count = int(neg_mask.sum().item())
+    temporal_rejection_rate = (
+        (preds_v[pos_mask] == ne_idx).float().mean().item()
+        if pos_mask.any() else float("nan")
+    )
+    control_preservation_rate = (
+        (preds_v[neg_mask] != ne_idx).float().mean().item()
+        if neg_mask.any() else float("nan")
+    )
+    # Binary accuracy: mismatch correct if NOT_ENTITLED, control correct if not NOT_ENTITLED
+    correct_pos = (preds_v[pos_mask] == ne_idx).float().sum() if pos_mask.any() else torch.tensor(0.0)
+    correct_neg = (preds_v[neg_mask] != ne_idx).float().sum() if neg_mask.any() else torch.tensor(0.0)
+    binary_accuracy = (correct_pos + correct_neg).item() / valid_count
+    return {
+        "td_final_temporal_rejection_rate": (
+            round(temporal_rejection_rate, 4)
+            if temporal_rejection_rate == temporal_rejection_rate else temporal_rejection_rate
+        ),
+        "td_final_control_preservation_rate": (
+            round(control_preservation_rate, 4)
+            if control_preservation_rate == control_preservation_rate else control_preservation_rate
+        ),
+        "td_final_binary_accuracy": round(binary_accuracy, 4),
+        "td_final_temporal_count": td_final_temporal_count,
+        "td_final_control_count": td_final_control_count,
+    }
+
+
 def encode_boundary_labels(
     records: list[dict],
     device: torch.device,
@@ -1653,6 +1724,37 @@ def build_parser() -> argparse.ArgumentParser:
             "eligible under --use-td-constrained-selection. Default 0.80."
         ),
     )
+    parser.add_argument(
+        "--td-selection-use-final-decision",
+        action="store_true",
+        default=False,
+        help=(
+            "Extend --use-td-constrained-selection to also require that the final "
+            "classification decision satisfies temporal rejection and control preservation "
+            "constraints on the TD dev set. Uses output['logits'].argmax() only; adds no loss. "
+            "Requires --use-td-constrained-selection. Default off."
+        ),
+    )
+    parser.add_argument(
+        "--td-selection-min-final-temporal-rejection",
+        type=float,
+        default=0.50,
+        help=(
+            "Minimum td_final_temporal_rejection_rate (frac of temporal_mismatch TD dev records "
+            "predicted NOT_ENTITLED) required when --td-selection-use-final-decision is on. "
+            "Default 0.50."
+        ),
+    )
+    parser.add_argument(
+        "--td-selection-min-final-control-preservation",
+        type=float,
+        default=0.80,
+        help=(
+            "Minimum td_final_control_preservation_rate (frac of temporal_control TD dev records "
+            "predicted non-NOT_ENTITLED) required when --td-selection-use-final-decision is on. "
+            "Default 0.80."
+        ),
+    )
 
     return parser
 
@@ -2066,6 +2168,9 @@ def main(argv: list[str] | None = None) -> int:
         td_sel_min_paraphrase_preserved=0.80,
         td_sel_min_mismatch_recall=0.50,
         td_sel_min_control_acceptance=0.80,
+        use_td_final_decision_selection=False,
+        td_sel_min_final_temporal_rejection=0.50,
+        td_sel_min_final_control_preservation=0.80,
     ):
         """Modified run_training that passes flags to v6b model."""
         if epochs < 1:
@@ -2093,6 +2198,9 @@ def main(argv: list[str] | None = None) -> int:
         _tc_mismatch_recall: float = float("nan")
         _tc_ctrl_acc: float = float("nan")
         _tc_paraphrase_preserved: float = float("nan")
+        _tc_td_final_temporal_rejection: float = float("nan")
+        _tc_td_final_control_preservation: float = float("nan")
+        _tc_td_final_binary_accuracy: float = float("nan")
 
         for epoch in range(1, epochs + 1):
             model.train()
@@ -2342,6 +2450,12 @@ def main(argv: list[str] | None = None) -> int:
                     _dtdm = compute_temporal_diagnostic_metrics(
                         _td_eval_dev_out, td_dev_labels, td_dev_mask
                     )
+                    # Final classification decision behavior on TD dev (no new loss)
+                    _dtd_fdm = compute_td_final_decision_metrics(
+                        _td_eval_dev_out, td_dev_labels, td_dev_mask
+                    )
+                else:
+                    _dtd_fdm: dict[str, Any] = {}
             train_metrics = v5.compute_metrics(train_output, train_inputs)
             dev_metrics = v5.compute_metrics(dev_output, dev_inputs)
 
@@ -2427,6 +2541,27 @@ def main(argv: list[str] | None = None) -> int:
                     and _ep_mr_v >= td_sel_min_mismatch_recall
                     and _ep_ca_v >= td_sel_min_control_acceptance
                 )
+                # Optional final-decision constraints on TD dev
+                if _ep_eligible and use_td_final_decision_selection:
+                    _ep_ftr = _dtd_fdm.get(
+                        "td_final_temporal_rejection_rate", float("nan")
+                    ) if _dtd_fdm else float("nan")
+                    _ep_fcp = _dtd_fdm.get(
+                        "td_final_control_preservation_rate", float("nan")
+                    ) if _dtd_fdm else float("nan")
+                    _ep_ftr_v = _ep_ftr if _ep_ftr == _ep_ftr else 0.0
+                    _ep_fcp_v = _ep_fcp if _ep_fcp == _ep_fcp else 0.0
+                    _ep_eligible = (
+                        _ep_ftr_v >= td_sel_min_final_temporal_rejection
+                        and _ep_fcp_v >= td_sel_min_final_control_preservation
+                    )
+                else:
+                    _ep_ftr = _dtd_fdm.get(
+                        "td_final_temporal_rejection_rate", float("nan")
+                    ) if _dtd_fdm else float("nan")
+                    _ep_fcp = _dtd_fdm.get(
+                        "td_final_control_preservation_rate", float("nan")
+                    ) if _dtd_fdm else float("nan")
                 if _ep_eligible and score > _tc_score:
                     _tc_score = score
                     _tc_epoch = epoch
@@ -2446,6 +2581,11 @@ def main(argv: list[str] | None = None) -> int:
                     _tc_mismatch_recall = _ep_mr
                     _tc_ctrl_acc = _ep_ca
                     _tc_paraphrase_preserved = _ep_pp
+                    _tc_td_final_temporal_rejection = _ep_ftr
+                    _tc_td_final_control_preservation = _ep_fcp
+                    _tc_td_final_binary_accuracy = _dtd_fdm.get(
+                        "td_final_binary_accuracy", float("nan")
+                    ) if _dtd_fdm else float("nan")
 
             print(
                 f"run={run_name} "
@@ -2510,6 +2650,16 @@ def main(argv: list[str] | None = None) -> int:
                     f" dev_ctrl_acc={_dtdm.get('td_control_acceptance', 0.0)}"
                     f" valid={_ttdm.get('td_valid_count', 0)}"
                 )
+                if _dtd_fdm:
+                    print(
+                        f"  [td_final] dev_temporal_reject="
+                        f"{_dtd_fdm.get('td_final_temporal_rejection_rate', float('nan'))}"
+                        f" dev_ctrl_pres="
+                        f"{_dtd_fdm.get('td_final_control_preservation_rate', float('nan'))}"
+                        f" dev_bin_acc={_dtd_fdm.get('td_final_binary_accuracy', 0.0):.3f}"
+                        f" n_temporal={_dtd_fdm.get('td_final_temporal_count', 0)}"
+                        f" n_ctrl={_dtd_fdm.get('td_final_control_count', 0)}"
+                    )
             if _pc_eval_metrics:
                 _pc_loss_val = float(_pc_loss.item()) if hasattr(_pc_loss, "item") else 0.0
                 print(
@@ -2555,14 +2705,29 @@ def main(argv: list[str] | None = None) -> int:
                 # No epoch met all constraints — fall back to unconstrained best
                 _tc_fallback_used = True
                 _tc_reason = "constrained_fallback_no_eligible_epoch"
+                _fd_note = (
+                    f" min_ftr={td_sel_min_final_temporal_rejection}"
+                    f" min_fcp={td_sel_min_final_control_preservation}"
+                    if use_td_final_decision_selection else ""
+                )
                 print(
                     f"  [td_constrained_sel] WARNING: no eligible epoch found "
                     f"(min_pp={td_sel_min_paraphrase_preserved}"
                     f" min_mr={td_sel_min_mismatch_recall}"
-                    f" min_ca={td_sel_min_control_acceptance}); "
+                    f" min_ca={td_sel_min_control_acceptance}{_fd_note}); "
                     f"falling back to unconstrained best epoch={best_epoch}"
                 )
+        _tc_constrained_applied = _tc_used and not _tc_fallback_used
         _tc_selection_info: dict[str, Any] = {
+            "use_td_constrained_selection": use_td_constrained_selection,
+            "td_selection_min_paraphrase_preserved": td_sel_min_paraphrase_preserved,
+            "td_selection_min_mismatch_recall": td_sel_min_mismatch_recall,
+            "td_selection_min_control_acceptance": td_sel_min_control_acceptance,
+            "td_selection_use_final_decision": use_td_final_decision_selection,
+            "td_selection_min_final_temporal_rejection": td_sel_min_final_temporal_rejection,
+            "td_selection_min_final_control_preservation": td_sel_min_final_control_preservation,
+            "td_selection_fallback": "final_macro_f1",
+            "stage15_used_for_td_constrained_selection": False,
             "td_constrained_selection_used": _tc_used,
             "td_constrained_selection_fallback_used": _tc_fallback_used,
             "td_constrained_selection_reason": _tc_reason,
@@ -2570,15 +2735,26 @@ def main(argv: list[str] | None = None) -> int:
                 -1 if not use_td_constrained_selection else (0 if _tc_epoch < 1 else 1)
             ),
             "td_constrained_selection_selected_epoch": best_epoch if _tc_used else None,
-            "td_constrained_selection_best_clean_macro": _tc_score if _tc_used else None,
+            "td_constrained_selection_best_clean_macro": (
+                _tc_score if _tc_constrained_applied else None
+            ),
             "td_constrained_selection_selected_td_mismatch_recall": (
-                _tc_mismatch_recall if _tc_used and not _tc_fallback_used else None
+                _tc_mismatch_recall if _tc_constrained_applied else None
             ),
             "td_constrained_selection_selected_td_control_acceptance": (
-                _tc_ctrl_acc if _tc_used and not _tc_fallback_used else None
+                _tc_ctrl_acc if _tc_constrained_applied else None
             ),
             "td_constrained_selection_selected_paraphrase_preserved": (
-                _tc_paraphrase_preserved if _tc_used and not _tc_fallback_used else None
+                _tc_paraphrase_preserved if _tc_constrained_applied else None
+            ),
+            "td_constrained_selection_selected_td_final_temporal_rejection_rate": (
+                _tc_td_final_temporal_rejection if _tc_constrained_applied else None
+            ),
+            "td_constrained_selection_selected_td_final_control_preservation_rate": (
+                _tc_td_final_control_preservation if _tc_constrained_applied else None
+            ),
+            "td_constrained_selection_selected_td_final_binary_accuracy": (
+                _tc_td_final_binary_accuracy if _tc_constrained_applied else None
             ),
         }
 
@@ -2691,6 +2867,9 @@ def main(argv: list[str] | None = None) -> int:
             td_sel_min_paraphrase_preserved=args.td_selection_min_paraphrase_preserved,
             td_sel_min_mismatch_recall=args.td_selection_min_mismatch_recall,
             td_sel_min_control_acceptance=args.td_selection_min_control_acceptance,
+            use_td_final_decision_selection=args.td_selection_use_final_decision,
+            td_sel_min_final_temporal_rejection=args.td_selection_min_final_temporal_rejection,
+            td_sel_min_final_control_preservation=args.td_selection_min_final_control_preservation,
             pc_pres_inputs=_pc_pres_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_frame_inputs=_pc_frame_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_loss_weight=(
@@ -2826,6 +3005,13 @@ def main(argv: list[str] | None = None) -> int:
             "td_selection_min_paraphrase_preserved": args.td_selection_min_paraphrase_preserved,
             "td_selection_min_mismatch_recall": args.td_selection_min_mismatch_recall,
             "td_selection_min_control_acceptance": args.td_selection_min_control_acceptance,
+            "td_selection_use_final_decision": args.td_selection_use_final_decision,
+            "td_selection_min_final_temporal_rejection": (
+                args.td_selection_min_final_temporal_rejection
+            ),
+            "td_selection_min_final_control_preservation": (
+                args.td_selection_min_final_control_preservation
+            ),
             "td_selection_fallback": "final_macro_f1",
             "stage15_used_for_td_constrained_selection": False,
             "dev_calibrated_ne_shift_candidates": args.dev_calibrated_ne_shift_candidates,
@@ -2890,8 +3076,31 @@ def main(argv: list[str] | None = None) -> int:
             "best_dev_metrics",
             "best_dev_interventions",
             "best_dev_pairwise_checks",
+            # TD constrained selection results — lifted from run report to top level
+            "use_td_constrained_selection",
+            "td_selection_min_paraphrase_preserved",
+            "td_selection_min_mismatch_recall",
+            "td_selection_min_control_acceptance",
+            "td_selection_use_final_decision",
+            "td_selection_min_final_temporal_rejection",
+            "td_selection_min_final_control_preservation",
+            "td_selection_fallback",
+            "stage15_used_for_td_constrained_selection",
+            "td_constrained_selection_used",
+            "td_constrained_selection_fallback_used",
+            "td_constrained_selection_reason",
+            "td_constrained_selection_eligible_epoch_count",
+            "td_constrained_selection_selected_epoch",
+            "td_constrained_selection_best_clean_macro",
+            "td_constrained_selection_selected_td_mismatch_recall",
+            "td_constrained_selection_selected_td_control_acceptance",
+            "td_constrained_selection_selected_paraphrase_preserved",
+            "td_constrained_selection_selected_td_final_temporal_rejection_rate",
+            "td_constrained_selection_selected_td_final_control_preservation_rate",
+            "td_constrained_selection_selected_td_final_binary_accuracy",
         ):
-            report[key] = single[key]
+            if key in single:
+                report[key] = single[key]
 
     for run_name, run_report in reports.items():
         distribution = prediction_distribution_from_records(prediction_exports[run_name])
@@ -3219,12 +3428,17 @@ def main(argv: list[str] | None = None) -> int:
             "use_td_constrained_selection": getattr(
                 args, "use_td_constrained_selection", False
             ),
+            "td_selection_use_final_decision": getattr(
+                args, "td_selection_use_final_decision", False
+            ),
             "td_constrained_selection_used": (
                 next(iter(reports.values()), {}).get("td_constrained_selection_used", False)
                 if len(reports) == 1 else None
             ),
             "td_constrained_selection_fallback_used": (
-                next(iter(reports.values()), {}).get("td_constrained_selection_fallback_used", False)
+                next(iter(reports.values()), {}).get(
+                    "td_constrained_selection_fallback_used", False
+                )
                 if len(reports) == 1 else None
             ),
             "stage15_used_for_td_constrained_selection": False,
