@@ -45,6 +45,8 @@ def build_model(
     use_temporal_diagnostic_head: bool = False,
     use_temporal_residual_adapter: bool = False,
     temporal_adapter_detach_input: bool = True,
+    use_temporal_channel: bool = False,
+    temporal_channel_detach_input: bool = True,
 ) -> ContraMambaV6BMinimal:
     backbone = v5.ControlledDummyBackbone(vocab_size, hidden_size, max_length)
     return ContraMambaV6BMinimal(
@@ -66,6 +68,8 @@ def build_model(
         use_temporal_diagnostic_head=use_temporal_diagnostic_head,
         use_temporal_residual_adapter=use_temporal_residual_adapter,
         temporal_adapter_detach_input=temporal_adapter_detach_input,
+        use_temporal_channel=use_temporal_channel,
+        temporal_channel_detach_input=temporal_channel_detach_input,
     )
 
 
@@ -80,6 +84,8 @@ def build_mamba_model(
     use_temporal_diagnostic_head: bool = False,
     use_temporal_residual_adapter: bool = False,
     temporal_adapter_detach_input: bool = True,
+    use_temporal_channel: bool = False,
+    temporal_channel_detach_input: bool = True,
 ) -> ContraMambaV6BMinimal:
     model = ContraMambaV6BMinimal(
         model_name=model_name,
@@ -101,6 +107,8 @@ def build_mamba_model(
         use_temporal_diagnostic_head=use_temporal_diagnostic_head,
         use_temporal_residual_adapter=use_temporal_residual_adapter,
         temporal_adapter_detach_input=temporal_adapter_detach_input,
+        use_temporal_channel=use_temporal_channel,
+        temporal_channel_detach_input=temporal_channel_detach_input,
     )
     for parameter in model.mamba.parameters():
         parameter.requires_grad = not freeze_encoder
@@ -1895,6 +1903,92 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+    # ── TemporalChannel V1 (v6C Lean) ────────────────────────────────────────────────────────
+    # Default off. Independent temporal channel reading from cat([claim_frame_state,
+    # evidence_frame_state]) — NOT frame_pair_repr — to avoid Stage23 gradient coupling.
+    # Stage15 OOD is eval-only and is NEVER used for TC loss, calibration, or penalty selection.
+    # Gated penalty requires --use-preservation-entitlement-loss (raises clear error otherwise).
+    # Cannot be stacked with --use-temporal-adapter-final-penalty (raises clear error).
+    parser.add_argument(
+        "--use-temporal-channel",
+        action="store_true",
+        default=False,
+        help=(
+            "Enable TemporalChannel V1. Default off. Adds a 2-layer MLP reading "
+            "cat([claim_frame_state, evidence_frame_state]) — pre-pair-projector slot states "
+            "from FrameGate, NOT frame_pair_repr — to produce temporal_channel_logit and "
+            "temporal_channel_prob. With --temporal-channel-detach-input (default), TC loss "
+            "gradients cannot propagate into FrameGate parameters."
+        ),
+    )
+    parser.add_argument(
+        "--temporal-channel-detach-input",
+        action="store_true",
+        default=True,
+        dest="temporal_channel_detach_input",
+        help=(
+            "Detach cat([claim_frame_state, evidence_frame_state]) before TemporalChannel V1 "
+            "(default: true). Prevents TC BCE gradients from propagating into FrameGate. "
+            "Disable with --no-temporal-channel-detach-input for experimentation."
+        ),
+    )
+    parser.add_argument(
+        "--no-temporal-channel-detach-input",
+        action="store_false",
+        dest="temporal_channel_detach_input",
+        help=(
+            "Allow TC gradients to propagate into claim_frame_state / evidence_frame_state / "
+            "FrameGate projection. Risks Stage23-style gradient coupling. Use only for ablation."
+        ),
+    )
+    parser.add_argument(
+        "--use-temporal-channel-loss",
+        action="store_true",
+        default=False,
+        help=(
+            "Supervise TemporalChannel V1 with BCE loss on temporal diagnostic data. "
+            "Requires --use-temporal-channel and temporal diagnostic data. "
+            "Supervises temporal_channel_logit only; does not touch output['logits']. "
+            "Loss scaled by --temporal-channel-loss-weight. Default off."
+        ),
+    )
+    parser.add_argument(
+        "--temporal-channel-loss-weight",
+        type=float,
+        default=0.0,
+        help="Weight for TemporalChannel BCE loss. Applied only when --use-temporal-channel-loss is on. Default 0.0.",
+    )
+    parser.add_argument(
+        "--temporal-channel-loss-pos-weight",
+        type=float,
+        default=1.0,
+        help=(
+            "Positive-class weight for TemporalChannel BCE loss (time_swap examples). "
+            "Default 1.0 (balanced). Increase to weight mismatch recall higher."
+        ),
+    )
+    parser.add_argument(
+        "--use-temporal-channel-gated-penalty",
+        action="store_true",
+        default=False,
+        help=(
+            "Apply a per-example NOT_ENTITLED penalty gated by preservation entitlement. "
+            "Formula: scale * sigmoid(tc_logit).detach() * (1 - pe_prob).detach(). "
+            "Fires only when TC detects temporal mismatch AND PE signals non-entitlement. "
+            "Requires --use-temporal-channel and --use-preservation-entitlement-loss. "
+            "Cannot be combined with --use-temporal-adapter-final-penalty. Default off."
+        ),
+    )
+    parser.add_argument(
+        "--temporal-channel-gated-penalty-scale",
+        type=float,
+        default=0.0,
+        help=(
+            "Scale for gated per-example NOT_ENTITLED boost from TemporalChannel. "
+            "Applied only when --use-temporal-channel-gated-penalty is on. Default 0.0."
+        ),
+    )
+
     # ── Generic preservation-constrained checkpoint selection ─────────────────────────────────
     # Default off. Uses ONLY clean dev pairwise checks — no Stage15/OOD, no temporal diagnostic
     # metrics. Compatible with baseline, TD, TA, PE, and future runs. Cannot be combined with
@@ -2039,6 +2133,8 @@ def main(argv: list[str] | None = None) -> int:
             use_temporal_diagnostic_head=args.use_temporal_diagnostic_loss,
             use_temporal_residual_adapter=args.use_temporal_residual_adapter,
             temporal_adapter_detach_input=args.temporal_adapter_detach_input,
+            use_temporal_channel=args.use_temporal_channel,
+            temporal_channel_detach_input=args.temporal_channel_detach_input,
         )
 
     train_inputs = v5.move_inputs(train_bundle["model_inputs"], device)
@@ -2062,6 +2158,8 @@ def main(argv: list[str] | None = None) -> int:
             use_temporal_diagnostic_head=args.use_temporal_diagnostic_loss,
             use_temporal_residual_adapter=args.use_temporal_residual_adapter,
             temporal_adapter_detach_input=args.temporal_adapter_detach_input,
+            use_temporal_channel=args.use_temporal_channel,
+            temporal_channel_detach_input=args.temporal_channel_detach_input,
         )
     model = model.to(device)
 
@@ -2364,6 +2462,12 @@ def main(argv: list[str] | None = None) -> int:
         ta_loss_weight=0.0,
         ta_loss_pos_weight=2.0,
         ta_final_penalty_scale=0.0,
+        # TemporalChannel V1 (default off; reads cat([claim_frame_state, evidence_frame_state]))
+        use_temporal_channel=False,
+        tc_loss_weight=0.0,
+        tc_loss_pos_weight=1.0,
+        use_temporal_channel_gated_penalty=False,
+        tc_gated_penalty_scale=0.0,
         # Generic preservation-constrained checkpoint selection (default off; clean dev only)
         use_preservation_constrained_selection=False,
         sel_min_paraphrase_preserved=0.70,
@@ -2379,6 +2483,33 @@ def main(argv: list[str] | None = None) -> int:
                 "cannot both be enabled in the same run. Enable only one. "
                 "Both selectors override best_* after training; combining them would create "
                 "ambiguous behavior. Use one or the other."
+            )
+        if use_temporal_channel_gated_penalty and ta_final_penalty_scale > 0.0:
+            raise ValueError(
+                "--use-temporal-channel-gated-penalty and --temporal-adapter-final-penalty-scale "
+                "cannot both be active in the same run. "
+                "Each is a true post-hoc final-logit modifier; stacking two violates the "
+                "active-component policy (at most one final-logit modifier per run)."
+            )
+        if use_temporal_channel_gated_penalty and not use_temporal_channel:
+            raise ValueError(
+                "--use-temporal-channel-gated-penalty requires --use-temporal-channel. "
+                "The gated penalty reads temporal_channel_logit which requires the TC head."
+            )
+        if tc_loss_weight > 0.0 and not use_temporal_channel:
+            raise ValueError(
+                "--temporal-channel-loss-weight > 0 requires --use-temporal-channel. "
+                "Enable the TC head with --use-temporal-channel."
+            )
+        if use_temporal_channel_gated_penalty and (
+            not hasattr(model, "preservation_entitlement_head")
+            or model.preservation_entitlement_head is None
+        ):
+            raise ValueError(
+                "--use-temporal-channel-gated-penalty requires "
+                "--use-preservation-entitlement-loss. "
+                "The gated penalty formula requires preservation_entitlement_prob; "
+                "it cannot fire without the PE head active."
             )
         optimizer = v5.build_optimizer(model, lr, head_lr, encoder_lr)
         sampling_generator = torch.Generator().manual_seed(seed)
@@ -2434,11 +2565,13 @@ def main(argv: list[str] | None = None) -> int:
 
             # CRITICAL: Pass flags to v6b model forward
             _ta_pen = ta_final_penalty_scale if use_temporal_residual_adapter and ta_final_penalty_scale > 0.0 else 0.0
+            _tc_pen = tc_gated_penalty_scale if use_temporal_channel_gated_penalty and tc_gated_penalty_scale > 0.0 else 0.0
             output = model(
                 **v5.model_feature_inputs(train_inputs),
                 temporal_mismatch_flags=train_temporal_flags,
                 predicate_mismatch_flags=train_predicate_flags,
                 temporal_adapter_final_penalty_scale=_ta_pen,
+                temporal_channel_gated_penalty_scale=_tc_pen,
             )
 
             indices = v5.sample_indices(
@@ -2651,6 +2784,62 @@ def main(argv: list[str] | None = None) -> int:
                         )
                         total_loss = total_loss + ta_loss_weight * _ta_loss
 
+            # TemporalChannel V1 BCE loss (diagnostic only; output["logits"] unchanged)
+            # Same temporal diagnostic data as TD/TA above, but supervises temporal_channel_v1
+            # via temporal_channel_logit. The channel reads cat([claim_frame_state,
+            # evidence_frame_state]) (pre-pair-projector; NOT frame_pair_repr), detached by
+            # default. Stage15 / OOD is eval-only and is NEVER used here.
+            # Reuse existing TD-batch forward output if TD or TA block already ran; otherwise
+            # run a fresh pass on the temporal diagnostic batch.
+            _tc_loss = torch.tensor(0.0)
+            _td_ran = (
+                td_loss_weight > 0.0
+                and td_train_inputs is not None
+                and td_train_labels is not None
+                and td_train_mask is not None
+            )
+            _ta_ran = (
+                ta_loss_weight > 0.0
+                and use_temporal_residual_adapter
+                and td_train_inputs is not None
+                and td_train_labels is not None
+                and td_train_mask is not None
+            )
+            if (
+                tc_loss_weight > 0.0
+                and use_temporal_channel
+                and td_train_inputs is not None
+                and td_train_labels is not None
+                and td_train_mask is not None
+            ):
+                if _td_ran:
+                    _tc_train_out = _td_train_out
+                elif _ta_ran:
+                    _tc_train_out = _ta_train_out
+                else:
+                    _tc_n = td_train_inputs["input_ids"].shape[0]
+                    _tc_zero_t = torch.zeros(_tc_n, dtype=torch.float32, device=device)
+                    _tc_zero_p = torch.zeros(_tc_n, dtype=torch.float32, device=device)
+                    _tc_train_out = model(
+                        **v5.model_feature_inputs(td_train_inputs),
+                        temporal_mismatch_flags=_tc_zero_t,
+                        predicate_mismatch_flags=_tc_zero_p,
+                    )
+                if _tc_train_out.get("temporal_channel_logit") is not None:
+                    _active_tc = td_train_mask.bool()
+                    if torch.any(_active_tc):
+                        _tc_pos_w = torch.tensor(
+                            tc_loss_pos_weight,
+                            dtype=torch.float32,
+                            device=_tc_train_out["temporal_channel_logit"].device,
+                        )
+                        _tc_loss = F.binary_cross_entropy_with_logits(
+                            _tc_train_out["temporal_channel_logit"][_active_tc],
+                            td_train_labels[_active_tc],
+                            pos_weight=_tc_pos_w,
+                        )
+                        total_loss = total_loss + tc_loss_weight * _tc_loss
+
             # Stage22-A4c: pair contrastive frame ranking loss
             # Supervises frame_violation_logit only; output["logits"] and predictions unchanged.
             _pc_loss = torch.tensor(0.0)
@@ -2698,6 +2887,7 @@ def main(argv: list[str] | None = None) -> int:
             _ep_pe_raw = float(_pe_loss.item()) if hasattr(_pe_loss, "item") else 0.0
             _ep_td_raw = float(_td_loss.item()) if hasattr(_td_loss, "item") else 0.0
             _ep_ta_raw = float(_ta_loss.item()) if hasattr(_ta_loss, "item") else 0.0
+            _ep_tc_raw = float(_tc_loss.item()) if hasattr(_tc_loss, "item") else 0.0
             _ep_total = float(total_loss.item())
             # For ranking path: active_intervention_loss = ranking_weight * raw_ranking.
             # Recover raw by dividing. For intervention path: pairwise_losses["total"] is
@@ -2721,6 +2911,7 @@ def main(argv: list[str] | None = None) -> int:
                 "preservation_entitlement_loss": _ep_pe_raw,
                 "temporal_diagnostic_loss": _ep_td_raw,
                 "temporal_adapter_loss": _ep_ta_raw,
+                "temporal_channel_loss": _ep_tc_raw,
                 "total_loss": _ep_total,
             })
             _audit_per_epoch_weighted.append({
@@ -2734,6 +2925,7 @@ def main(argv: list[str] | None = None) -> int:
                 "preservation_entitlement_loss": pe_loss_weight * _ep_pe_raw,
                 "temporal_diagnostic_loss": td_loss_weight * _ep_td_raw,
                 "temporal_adapter_loss": ta_loss_weight * _ep_ta_raw,
+                "temporal_channel_loss": tc_loss_weight * _ep_tc_raw,
                 "total_loss": _ep_total,
             })
             _audit_epoch_count += 1
@@ -2751,12 +2943,14 @@ def main(argv: list[str] | None = None) -> int:
                     temporal_mismatch_flags=train_temporal_flags,
                     predicate_mismatch_flags=train_predicate_flags,
                     temporal_adapter_final_penalty_scale=_ta_pen,
+                    temporal_channel_gated_penalty_scale=_tc_pen,
                 )
                 dev_output = model(
                     **dev_inputs,
                     temporal_mismatch_flags=dev_temporal_flags,
                     predicate_mismatch_flags=dev_predicate_flags,
                     temporal_adapter_final_penalty_scale=_ta_pen,
+                    temporal_channel_gated_penalty_scale=_tc_pen,
                 )
                 # Temporal diagnostic eval: separate forward passes on td train/dev records.
                 # Batches are kept separate from main train/dev; no classification CE here.
@@ -3351,6 +3545,28 @@ def main(argv: list[str] | None = None) -> int:
                     if ta_loss_weight > 0.0 else "disabled"
                 ),
             },
+            "temporal_channel_loss": {
+                "enabled": tc_loss_weight > 0.0,
+                "weight": tc_loss_weight,
+                "pos_weight": tc_loss_pos_weight,
+                "target": "temporal_channel_logit",
+                "diagnostic_head_only": True,
+                "gradient_isolated": bool(
+                    getattr(model, "temporal_channel_detach_input", True)
+                ),
+                "input_representation": "cat([claim_frame_state, evidence_frame_state])",
+                "input_representation_note": (
+                    "pre-pair-projector slot states from FrameGate — NOT frame_pair_repr. "
+                    "With detach=True (default), TC loss cannot propagate into FrameGate parameters."
+                ),
+                "raw_loss_key": "temporal_channel_loss",
+                "weighted_loss_key": "temporal_channel_loss",
+                "note": (
+                    f"temporal_channel_detach_input={getattr(model, 'temporal_channel_detach_input', True)}; "
+                    "TC V1 reads cat([claim_frame_state, evidence_frame_state]), pre-pair-projector"
+                    if tc_loss_weight > 0.0 else "disabled"
+                ),
+            },
         }
 
         # True post-hoc final-logit modifiers only.
@@ -3366,6 +3582,23 @@ def main(argv: list[str] | None = None) -> int:
                     "per-example NOT_ENTITLED boost proportional to sigmoid(adapter_logit).detach(). "
                     "Scale is a fixed hyperparameter — not OOD-calibrated. Stage15 never used."
                     if ta_final_penalty_scale > 0.0 else "disabled"
+                ),
+            },
+            "temporal_channel_gated_penalty": {
+                "enabled": use_temporal_channel_gated_penalty and tc_gated_penalty_scale > 0.0,
+                "scale": tc_gated_penalty_scale,
+                "type": "local_example_dependent_gated",
+                "gating_formula": (
+                    "scale * sigmoid(tc_logit).detach() * (1 - pe_prob).detach()"
+                ),
+                "gating_requirement": "preservation_entitlement_head must be active",
+                "stage15_used_for_selection_or_calibration": False,
+                "note": (
+                    "PE-gated NOT_ENTITLED boost. Fires only when TC detects temporal mismatch "
+                    "AND PE signals non-entitlement. Scale is a fixed hyperparameter — not "
+                    "OOD-calibrated. Stage15 never used. Cannot be combined with "
+                    "temporal_adapter_final_penalty in the same run."
+                    if use_temporal_channel_gated_penalty and tc_gated_penalty_scale > 0.0 else "disabled"
                 ),
             },
             "dev_calibrated_ne_shift": {
@@ -3516,6 +3749,20 @@ def main(argv: list[str] | None = None) -> int:
             _audit_warnings.append(
                 "temporal_adapter_final_penalty is enabled but temporal_adapter_loss=0: "
                 "adapter was not trained this run; penalty applies untrained adapter probabilities"
+            )
+        if use_temporal_channel_gated_penalty and tc_gated_penalty_scale > 0.0 and tc_loss_weight <= 0.0:
+            _audit_warnings.append(
+                "temporal_channel_gated_penalty is enabled but temporal_channel_loss=0: "
+                "TC head was not trained this run; gated penalty applies untrained TC probabilities. "
+                "Enable --use-temporal-channel-loss with a nonzero weight to train the head."
+            )
+        if use_temporal_channel and not any([
+            tc_loss_weight > 0.0,
+            use_temporal_channel_gated_penalty and tc_gated_penalty_scale > 0.0,
+        ]):
+            _audit_warnings.append(
+                "temporal_channel_v1 is instantiated but neither tc_loss nor tc_gated_penalty is enabled: "
+                "TC head adds parameters with no training signal and no effect on final logits"
             )
         if _tc_fallback_used:
             _audit_warnings.append(
@@ -3688,6 +3935,17 @@ def main(argv: list[str] | None = None) -> int:
                 args.temporal_adapter_final_penalty_scale
                 if args.use_temporal_adapter_final_penalty else 0.0
             ),
+            use_temporal_channel=args.use_temporal_channel,
+            tc_loss_weight=(
+                args.temporal_channel_loss_weight
+                if args.use_temporal_channel_loss else 0.0
+            ),
+            tc_loss_pos_weight=args.temporal_channel_loss_pos_weight,
+            use_temporal_channel_gated_penalty=args.use_temporal_channel_gated_penalty,
+            tc_gated_penalty_scale=(
+                args.temporal_channel_gated_penalty_scale
+                if args.use_temporal_channel_gated_penalty else 0.0
+            ),
             use_preservation_constrained_selection=args.use_preservation_constrained_selection,
             sel_min_paraphrase_preserved=args.selection_min_paraphrase_preserved,
             sel_min_predicate_disentangled=args.selection_min_predicate_disentangled,
@@ -3850,6 +4108,20 @@ def main(argv: list[str] | None = None) -> int:
                 if args.use_temporal_adapter_final_penalty else 0.0
             ),
             "stage15_used_for_temporal_adapter_training": False,
+            "use_temporal_channel": args.use_temporal_channel,
+            "temporal_channel_detach_input": args.temporal_channel_detach_input,
+            "use_temporal_channel_loss": args.use_temporal_channel_loss,
+            "temporal_channel_loss_weight": (
+                args.temporal_channel_loss_weight
+                if args.use_temporal_channel_loss else 0.0
+            ),
+            "temporal_channel_loss_pos_weight": args.temporal_channel_loss_pos_weight,
+            "use_temporal_channel_gated_penalty": args.use_temporal_channel_gated_penalty,
+            "temporal_channel_gated_penalty_scale": (
+                args.temporal_channel_gated_penalty_scale
+                if args.use_temporal_channel_gated_penalty else 0.0
+            ),
+            "stage15_used_for_temporal_channel_training": False,
             "use_preservation_constrained_selection": args.use_preservation_constrained_selection,
             "selection_min_paraphrase_preserved": args.selection_min_paraphrase_preserved,
             "selection_min_predicate_disentangled": args.selection_min_predicate_disentangled,
@@ -4379,6 +4651,24 @@ def main(argv: list[str] | None = None) -> int:
                 args, "temporal_adapter_final_penalty_scale", 0.0
             ),
             "stage15_used_for_temporal_adapter_training": False,
+            "use_temporal_channel": getattr(args, "use_temporal_channel", False),
+            "temporal_channel_detach_input": getattr(
+                args, "temporal_channel_detach_input", True
+            ),
+            "use_temporal_channel_loss": getattr(args, "use_temporal_channel_loss", False),
+            "temporal_channel_loss_weight": getattr(
+                args, "temporal_channel_loss_weight", 0.0
+            ),
+            "temporal_channel_loss_pos_weight": getattr(
+                args, "temporal_channel_loss_pos_weight", 1.0
+            ),
+            "use_temporal_channel_gated_penalty": getattr(
+                args, "use_temporal_channel_gated_penalty", False
+            ),
+            "temporal_channel_gated_penalty_scale": getattr(
+                args, "temporal_channel_gated_penalty_scale", 0.0
+            ),
+            "stage15_used_for_temporal_channel_training": False,
             "use_preservation_constrained_selection": getattr(
                 args, "use_preservation_constrained_selection", False
             ),
