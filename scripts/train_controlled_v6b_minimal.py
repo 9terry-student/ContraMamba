@@ -47,6 +47,11 @@ def build_model(
     temporal_adapter_detach_input: bool = True,
     use_temporal_channel: bool = False,
     temporal_channel_detach_input: bool = True,
+    use_temporal_channel_loss: bool = False,
+    temporal_channel_loss_weight: float = 0.0,
+    temporal_channel_loss_pos_weight: float = 1.0,
+    use_temporal_channel_gated_penalty: bool = False,
+    temporal_channel_gated_penalty_scale: float = 0.0,
 ) -> ContraMambaV6BMinimal:
     backbone = v5.ControlledDummyBackbone(vocab_size, hidden_size, max_length)
     return ContraMambaV6BMinimal(
@@ -70,6 +75,11 @@ def build_model(
         temporal_adapter_detach_input=temporal_adapter_detach_input,
         use_temporal_channel=use_temporal_channel,
         temporal_channel_detach_input=temporal_channel_detach_input,
+        use_temporal_channel_loss=use_temporal_channel_loss,
+        temporal_channel_loss_weight=temporal_channel_loss_weight,
+        temporal_channel_loss_pos_weight=temporal_channel_loss_pos_weight,
+        use_temporal_channel_gated_penalty=use_temporal_channel_gated_penalty,
+        temporal_channel_gated_penalty_scale=temporal_channel_gated_penalty_scale,
     )
 
 
@@ -86,6 +96,11 @@ def build_mamba_model(
     temporal_adapter_detach_input: bool = True,
     use_temporal_channel: bool = False,
     temporal_channel_detach_input: bool = True,
+    use_temporal_channel_loss: bool = False,
+    temporal_channel_loss_weight: float = 0.0,
+    temporal_channel_loss_pos_weight: float = 1.0,
+    use_temporal_channel_gated_penalty: bool = False,
+    temporal_channel_gated_penalty_scale: float = 0.0,
 ) -> ContraMambaV6BMinimal:
     model = ContraMambaV6BMinimal(
         model_name=model_name,
@@ -109,6 +124,11 @@ def build_mamba_model(
         temporal_adapter_detach_input=temporal_adapter_detach_input,
         use_temporal_channel=use_temporal_channel,
         temporal_channel_detach_input=temporal_channel_detach_input,
+        use_temporal_channel_loss=use_temporal_channel_loss,
+        temporal_channel_loss_weight=temporal_channel_loss_weight,
+        temporal_channel_loss_pos_weight=temporal_channel_loss_pos_weight,
+        use_temporal_channel_gated_penalty=use_temporal_channel_gated_penalty,
+        temporal_channel_gated_penalty_scale=temporal_channel_gated_penalty_scale,
     )
     for parameter in model.mamba.parameters():
         parameter.requires_grad = not freeze_encoder
@@ -2135,6 +2155,17 @@ def main(argv: list[str] | None = None) -> int:
             temporal_adapter_detach_input=args.temporal_adapter_detach_input,
             use_temporal_channel=args.use_temporal_channel,
             temporal_channel_detach_input=args.temporal_channel_detach_input,
+            use_temporal_channel_loss=args.use_temporal_channel_loss,
+            temporal_channel_loss_weight=(
+                args.temporal_channel_loss_weight
+                if args.use_temporal_channel_loss else 0.0
+            ),
+            temporal_channel_loss_pos_weight=args.temporal_channel_loss_pos_weight,
+            use_temporal_channel_gated_penalty=args.use_temporal_channel_gated_penalty,
+            temporal_channel_gated_penalty_scale=(
+                args.temporal_channel_gated_penalty_scale
+                if args.use_temporal_channel_gated_penalty else 0.0
+            ),
         )
 
     train_inputs = v5.move_inputs(train_bundle["model_inputs"], device)
@@ -2160,6 +2191,17 @@ def main(argv: list[str] | None = None) -> int:
             temporal_adapter_detach_input=args.temporal_adapter_detach_input,
             use_temporal_channel=args.use_temporal_channel,
             temporal_channel_detach_input=args.temporal_channel_detach_input,
+            use_temporal_channel_loss=args.use_temporal_channel_loss,
+            temporal_channel_loss_weight=(
+                args.temporal_channel_loss_weight
+                if args.use_temporal_channel_loss else 0.0
+            ),
+            temporal_channel_loss_pos_weight=args.temporal_channel_loss_pos_weight,
+            use_temporal_channel_gated_penalty=args.use_temporal_channel_gated_penalty,
+            temporal_channel_gated_penalty_scale=(
+                args.temporal_channel_gated_penalty_scale
+                if args.use_temporal_channel_gated_penalty else 0.0
+            ),
         )
     model = model.to(device)
 
@@ -3546,14 +3588,15 @@ def main(argv: list[str] | None = None) -> int:
                 ),
             },
             "temporal_channel_loss": {
-                "enabled": tc_loss_weight > 0.0,
-                "weight": tc_loss_weight,
-                "pos_weight": tc_loss_pos_weight,
+                "enabled": getattr(model, "use_temporal_channel_loss", tc_loss_weight > 0.0),
+                "weight": getattr(model, "temporal_channel_loss_weight", tc_loss_weight),
+                "pos_weight": getattr(model, "temporal_channel_loss_pos_weight", tc_loss_pos_weight),
                 "target": "temporal_channel_logit",
                 "diagnostic_head_only": True,
                 "gradient_isolated": bool(
                     getattr(model, "temporal_channel_detach_input", True)
                 ),
+                "head_active": model.temporal_channel_v1 is not None,
                 "input_representation": "cat([claim_frame_state, evidence_frame_state])",
                 "input_representation_note": (
                     "pre-pair-projector slot states from FrameGate — NOT frame_pair_repr. "
@@ -3585,8 +3628,11 @@ def main(argv: list[str] | None = None) -> int:
                 ),
             },
             "temporal_channel_gated_penalty": {
-                "enabled": use_temporal_channel_gated_penalty and tc_gated_penalty_scale > 0.0,
-                "scale": tc_gated_penalty_scale,
+                "enabled": (
+                    getattr(model, "use_temporal_channel_gated_penalty", use_temporal_channel_gated_penalty)
+                    and tc_gated_penalty_scale > 0.0
+                ),
+                "scale": getattr(model, "temporal_channel_gated_penalty_scale", tc_gated_penalty_scale),
                 "type": "local_example_dependent_gated",
                 "gating_formula": (
                     "scale * sigmoid(tc_logit).detach() * (1 - pe_prob).detach()"
