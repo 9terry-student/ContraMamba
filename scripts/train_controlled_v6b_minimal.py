@@ -1611,6 +1611,48 @@ def build_parser() -> argparse.ArgumentParser:
             "Default 2.0 = 600/300."
         ),
     )
+    parser.add_argument(
+        "--use-td-constrained-selection",
+        action="store_true",
+        default=False,
+        help=(
+            "Enable TD-aware constrained checkpoint selection. "
+            "An epoch is eligible only when clean-dev paraphrase_preserved pass_rate >= "
+            "--td-selection-min-paraphrase-preserved AND dev td_mismatch_recall >= "
+            "--td-selection-min-mismatch-recall AND dev td_control_acceptance >= "
+            "--td-selection-min-control-acceptance. Among eligible epochs the one with "
+            "highest clean-dev final_macro_f1 is selected. Falls back to unconstrained "
+            "final_macro_f1 selection if no epoch is eligible. "
+            "Never uses Stage15/OOD metrics. Default off."
+        ),
+    )
+    parser.add_argument(
+        "--td-selection-min-paraphrase-preserved",
+        type=float,
+        default=0.80,
+        help=(
+            "Minimum clean-dev paraphrase_preserved pass_rate required for an epoch to be "
+            "eligible under --use-td-constrained-selection. Default 0.80."
+        ),
+    )
+    parser.add_argument(
+        "--td-selection-min-mismatch-recall",
+        type=float,
+        default=0.50,
+        help=(
+            "Minimum temporal diagnostic dev td_mismatch_recall required for an epoch to be "
+            "eligible under --use-td-constrained-selection. Default 0.50."
+        ),
+    )
+    parser.add_argument(
+        "--td-selection-min-control-acceptance",
+        type=float,
+        default=0.80,
+        help=(
+            "Minimum temporal diagnostic dev td_control_acceptance required for an epoch to be "
+            "eligible under --use-td-constrained-selection. Default 0.80."
+        ),
+    )
 
     return parser
 
@@ -2019,6 +2061,11 @@ def main(argv: list[str] | None = None) -> int:
         td_dev_mask=None,
         td_loss_weight=0.0,
         td_loss_pos_weight=2.0,
+        # TD-constrained checkpoint selection (default off; never uses Stage15/OOD metrics)
+        use_td_constrained_selection=False,
+        td_sel_min_paraphrase_preserved=0.80,
+        td_sel_min_mismatch_recall=0.50,
+        td_sel_min_control_acceptance=0.80,
     ):
         """Modified run_training that passes flags to v6b model."""
         if epochs < 1:
@@ -2034,6 +2081,18 @@ def main(argv: list[str] | None = None) -> int:
         best_trainable_state = None
         best_pc_metrics: dict[str, Any] = {}
         best_state: dict[str, torch.Tensor] | None = None
+        # TD-constrained selection tracking (parallel to unconstrained; fallback is existing best_*)
+        _tc_epoch: int = -1
+        _tc_score: float = float("-inf")
+        _tc_state: "dict[str, torch.Tensor] | None" = None
+        _tc_dev_metrics: "dict | None" = None
+        _tc_dev_interventions: "dict | None" = None
+        _tc_dev_pairwise_checks: "dict | None" = None
+        _tc_dev_predictions: "list | None" = None
+        _tc_pc_metrics: dict[str, Any] = {}
+        _tc_mismatch_recall: float = float("nan")
+        _tc_ctrl_acc: float = float("nan")
+        _tc_paraphrase_preserved: float = float("nan")
 
         for epoch in range(1, epochs + 1):
             model.train()
@@ -2354,6 +2413,40 @@ def main(argv: list[str] | None = None) -> int:
                 if capture_best_trainable_state:
                     best_trainable_state = v5.capture_trainable_state(model)
 
+            # TD-constrained checkpoint selection (parallel, default off, never uses Stage15/OOD)
+            if use_td_constrained_selection and not smoke_mode:
+                _ep_pw = v5.pairwise_checks(dev_records, dev_output)
+                _ep_pp = _ep_pw.get("paraphrase_preserved", {}).get("pass_rate", 0.0)
+                _ep_mr = _dtdm.get("td_mismatch_recall", float("nan")) if _dtdm else float("nan")
+                _ep_ca = _dtdm.get("td_control_acceptance", float("nan")) if _dtdm else float("nan")
+                # NaN means metric absent; treat as failing the constraint
+                _ep_mr_v = _ep_mr if _ep_mr == _ep_mr else 0.0
+                _ep_ca_v = _ep_ca if _ep_ca == _ep_ca else 0.0
+                _ep_eligible = (
+                    _ep_pp >= td_sel_min_paraphrase_preserved
+                    and _ep_mr_v >= td_sel_min_mismatch_recall
+                    and _ep_ca_v >= td_sel_min_control_acceptance
+                )
+                if _ep_eligible and score > _tc_score:
+                    _tc_score = score
+                    _tc_epoch = epoch
+                    _tc_dev_metrics = dev_metrics
+                    _tc_dev_interventions = intervention_diagnostics_v6b(dev_records, dev_output)
+                    _tc_dev_pairwise_checks = _ep_pw
+                    _tc_dev_predictions = prediction_records_v6b(dev_records, dev_output)
+                    _tc_state = {
+                        k: v.detach().cpu().clone() for k, v in model.state_dict().items()
+                    }
+                    _tc_pc_metrics = {
+                        **_pc_eval_metrics,
+                        "pair_contrastive_use_case": args.pair_contrastive_use_case,
+                        "count_by_preservation_construction_type": _pc_pres_type_counts,
+                        "count_by_frame_construction_type": _pc_frame_type_counts,
+                    }
+                    _tc_mismatch_recall = _ep_mr
+                    _tc_ctrl_acc = _ep_ca
+                    _tc_paraphrase_preserved = _ep_pp
+
             print(
                 f"run={run_name} "
                 + v5.format_epoch(
@@ -2434,6 +2527,61 @@ def main(argv: list[str] | None = None) -> int:
                         f" frame={_pc_frame_type_counts}"
                     )
 
+        # Apply TD-constrained checkpoint selection after all epochs
+        _tc_used = False
+        _tc_fallback_used = False
+        _tc_reason = "unconstrained_default"
+        if use_td_constrained_selection:
+            _tc_used = True
+            if _tc_epoch >= 1:
+                # At least one epoch satisfied all constraints — override best_* with constrained
+                print(
+                    f"  [td_constrained_sel] selected epoch={_tc_epoch}"
+                    f" clean_macro={_tc_score:.4f}"
+                    f" paraphrase_preserved={_tc_paraphrase_preserved:.3f}"
+                    f" td_mismatch_recall={_tc_mismatch_recall}"
+                    f" td_ctrl_acc={_tc_ctrl_acc}"
+                    f" (unconstrained_fallback_epoch={best_epoch})"
+                )
+                best_epoch = _tc_epoch
+                best_dev_metrics = _tc_dev_metrics
+                best_dev_interventions = _tc_dev_interventions
+                best_dev_pairwise_checks = _tc_dev_pairwise_checks
+                best_dev_predictions = _tc_dev_predictions
+                best_state = _tc_state
+                best_pc_metrics = _tc_pc_metrics
+                _tc_reason = "constrained_selection_applied"
+            else:
+                # No epoch met all constraints — fall back to unconstrained best
+                _tc_fallback_used = True
+                _tc_reason = "constrained_fallback_no_eligible_epoch"
+                print(
+                    f"  [td_constrained_sel] WARNING: no eligible epoch found "
+                    f"(min_pp={td_sel_min_paraphrase_preserved}"
+                    f" min_mr={td_sel_min_mismatch_recall}"
+                    f" min_ca={td_sel_min_control_acceptance}); "
+                    f"falling back to unconstrained best epoch={best_epoch}"
+                )
+        _tc_selection_info: dict[str, Any] = {
+            "td_constrained_selection_used": _tc_used,
+            "td_constrained_selection_fallback_used": _tc_fallback_used,
+            "td_constrained_selection_reason": _tc_reason,
+            "td_constrained_selection_eligible_epoch_count": (
+                -1 if not use_td_constrained_selection else (0 if _tc_epoch < 1 else 1)
+            ),
+            "td_constrained_selection_selected_epoch": best_epoch if _tc_used else None,
+            "td_constrained_selection_best_clean_macro": _tc_score if _tc_used else None,
+            "td_constrained_selection_selected_td_mismatch_recall": (
+                _tc_mismatch_recall if _tc_used and not _tc_fallback_used else None
+            ),
+            "td_constrained_selection_selected_td_control_acceptance": (
+                _tc_ctrl_acc if _tc_used and not _tc_fallback_used else None
+            ),
+            "td_constrained_selection_selected_paraphrase_preserved": (
+                _tc_paraphrase_preserved if _tc_used and not _tc_fallback_used else None
+            ),
+        }
+
         report = {
             "run_name": run_name,
             "final_epoch": epochs,
@@ -2445,6 +2593,7 @@ def main(argv: list[str] | None = None) -> int:
             "_best_dev_predictions": best_dev_predictions,
             "loss_config": loss_config,
             "best_pair_contrastive_frame_metrics": best_pc_metrics,
+            **_tc_selection_info,
         }
         report["_best_state"] = best_state
         if best_trainable_state is not None:
@@ -2538,6 +2687,10 @@ def main(argv: list[str] | None = None) -> int:
                 if args.use_temporal_diagnostic_loss else 0.0
             ),
             td_loss_pos_weight=args.temporal_diagnostic_loss_pos_weight,
+            use_td_constrained_selection=args.use_td_constrained_selection,
+            td_sel_min_paraphrase_preserved=args.td_selection_min_paraphrase_preserved,
+            td_sel_min_mismatch_recall=args.td_selection_min_mismatch_recall,
+            td_sel_min_control_acceptance=args.td_selection_min_control_acceptance,
             pc_pres_inputs=_pc_pres_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_frame_inputs=_pc_frame_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_loss_weight=(
@@ -2669,6 +2822,12 @@ def main(argv: list[str] | None = None) -> int:
             "temporal_diagnostic_train_count": len(_td_train_records),
             "temporal_diagnostic_dev_count": len(_td_dev_records),
             "stage15_used_for_temporal_diagnostic_training": False,
+            "use_td_constrained_selection": args.use_td_constrained_selection,
+            "td_selection_min_paraphrase_preserved": args.td_selection_min_paraphrase_preserved,
+            "td_selection_min_mismatch_recall": args.td_selection_min_mismatch_recall,
+            "td_selection_min_control_acceptance": args.td_selection_min_control_acceptance,
+            "td_selection_fallback": "final_macro_f1",
+            "stage15_used_for_td_constrained_selection": False,
             "dev_calibrated_ne_shift_candidates": args.dev_calibrated_ne_shift_candidates,
             "dev_calibrated_ne_gate": args.dev_calibrated_ne_gate,
             "dev_calibrated_ne_threshold": args.dev_calibrated_ne_threshold,
@@ -3057,6 +3216,18 @@ def main(argv: list[str] | None = None) -> int:
                 args, "temporal_diagnostic_loss_pos_weight", 2.0
             ),
             "stage15_used_for_temporal_diagnostic_training": False,
+            "use_td_constrained_selection": getattr(
+                args, "use_td_constrained_selection", False
+            ),
+            "td_constrained_selection_used": (
+                next(iter(reports.values()), {}).get("td_constrained_selection_used", False)
+                if len(reports) == 1 else None
+            ),
+            "td_constrained_selection_fallback_used": (
+                next(iter(reports.values()), {}).get("td_constrained_selection_fallback_used", False)
+                if len(reports) == 1 else None
+            ),
+            "stage15_used_for_td_constrained_selection": False,
             "use_pair_contrastive_frame_loss": getattr(
                 args, "use_pair_contrastive_frame_loss", False
             ),
