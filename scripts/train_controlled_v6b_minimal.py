@@ -1868,6 +1868,14 @@ def main(argv: list[str] | None = None) -> int:
             elif _td_seq > max_length:
                 for _key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
                     _td_inp[_key] = _td_inp[_key][:, :max_length]
+        if args.backbone == "mamba" and args.freeze_encoder:
+            print(
+                f"Caching frozen Mamba token states for temporal diagnostic "
+                f"train/dev (td_train={len(_td_train_records)}"
+                f" td_dev={len(_td_dev_records)})..."
+            )
+            v5.cache_frozen_encoder_states(model, _td_train_inputs)
+            v5.cache_frozen_encoder_states(model, _td_dev_inputs)
         _td_train_pos = int(_td_train_labels.sum().item())
         _td_train_neg = int(
             (_td_train_mask.float() - _td_train_labels * _td_train_mask.float()).sum().item()
