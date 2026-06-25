@@ -2242,6 +2242,69 @@ def prediction_distribution_from_records(records: list[dict]) -> dict[str, int]:
     return dict(sorted(Counter(predictions).items()))
 
 
+# ---------------------------------------------------------------------------
+# Stage26-D: report schema aliases
+# ---------------------------------------------------------------------------
+# Root-level aliases make v7 architecture metadata and dev metric scalars
+# directly accessible without navigating nested dicts.  This helper is called
+# once, immediately before the final JSON is printed/written.
+#
+# Rules:
+#   - Only adds a key if it is absent from root (setdefault semantics).
+#   - Works for both v6B and v7 runs.
+#   - Uses .get() throughout so unusual report paths cannot crash.
+# ---------------------------------------------------------------------------
+_LIFT_CONFIG_KEYS: tuple[str, ...] = (
+    # Model version / architecture identity
+    "model_version",
+    "architecture",
+    "use_v7_hierarchical",
+    # v7 composition / output-contract fields
+    "v7_final_logit_composition",
+    "v7_channel_output_keys",
+    "v7_aux_losses_active",
+    # v7 ablation flags
+    "v7_disable_frame_channel",
+    "v7_disable_predicate_channel",
+    "v7_disable_sufficiency_channel",
+    "v7_disable_temporal_channel",
+    "v7_flat_arbiter",
+    "v7_no_entitlement_polarity_conditioning",
+    "v7_no_aux_losses",
+    # v7 Stage15 / time_swap provenance (also lifted from audit_ledger elsewhere;
+    # this covers the configuration copy when the ledger path is absent)
+    "stage15_used_for_v7_training",
+    "stage15_used_for_v7_selection",
+    "stage15_used_for_v7_aux_loss_targets",
+    "time_swap_used_in_v7_main_clean_data",
+)
+
+
+def lift_report_aliases(report: dict[str, Any]) -> None:
+    """Lift v7 architecture metadata and dev metric aliases to report root.
+
+    Mutates `report` in place.  Existing root values are never overwritten.
+    Safe to call on both v6B and v7 reports.
+    """
+    config: dict[str, Any] = report.get("configuration") or {}
+
+    # Lift architecture / v7 fields from configuration to root
+    for key in _LIFT_CONFIG_KEYS:
+        if key not in report and key in config:
+            report[key] = config[key]
+
+    # Lift dev metric scalars as convenient root-level aliases
+    dev_metrics: dict[str, Any] = report.get("best_dev_metrics") or {}
+    if "best_dev_acc" not in report:
+        _acc = dev_metrics.get("final_accuracy")
+        if _acc is not None:
+            report["best_dev_acc"] = _acc
+    if "best_dev_macro_f1" not in report:
+        _mf1 = dev_metrics.get("final_macro_f1")
+        if _mf1 is not None:
+            report["best_dev_macro_f1"] = _mf1
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
@@ -5442,6 +5505,9 @@ def main(argv: list[str] | None = None) -> int:
                 f"selected={_dc_ood_selected_count}/{_dc_ood_unflagged_count} "
                 f"accuracy={_dc_ood_eval['overall_metrics']['final_accuracy']:.4f}"
             )
+
+    # Stage26-D: lift architecture metadata and dev metric aliases to root level.
+    lift_report_aliases(report)
 
     print("\nFINAL_REPORT")
     print(json.dumps(report, indent=2, sort_keys=True))
