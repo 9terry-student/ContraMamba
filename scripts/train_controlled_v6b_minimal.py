@@ -43,6 +43,8 @@ def build_model(
     use_predicate_isolation_head: bool = False,
     use_preservation_entitlement_head: bool = False,
     use_temporal_diagnostic_head: bool = False,
+    use_temporal_residual_adapter: bool = False,
+    temporal_adapter_detach_input: bool = True,
 ) -> ContraMambaV6BMinimal:
     backbone = v5.ControlledDummyBackbone(vocab_size, hidden_size, max_length)
     return ContraMambaV6BMinimal(
@@ -62,6 +64,8 @@ def build_model(
         use_predicate_isolation_head=use_predicate_isolation_head,
         use_preservation_entitlement_head=use_preservation_entitlement_head,
         use_temporal_diagnostic_head=use_temporal_diagnostic_head,
+        use_temporal_residual_adapter=use_temporal_residual_adapter,
+        temporal_adapter_detach_input=temporal_adapter_detach_input,
     )
 
 
@@ -74,6 +78,8 @@ def build_mamba_model(
     use_predicate_isolation_head: bool = False,
     use_preservation_entitlement_head: bool = False,
     use_temporal_diagnostic_head: bool = False,
+    use_temporal_residual_adapter: bool = False,
+    temporal_adapter_detach_input: bool = True,
 ) -> ContraMambaV6BMinimal:
     model = ContraMambaV6BMinimal(
         model_name=model_name,
@@ -93,6 +99,8 @@ def build_mamba_model(
         use_predicate_isolation_head=use_predicate_isolation_head,
         use_preservation_entitlement_head=use_preservation_entitlement_head,
         use_temporal_diagnostic_head=use_temporal_diagnostic_head,
+        use_temporal_residual_adapter=use_temporal_residual_adapter,
+        temporal_adapter_detach_input=temporal_adapter_detach_input,
     )
     for parameter in model.mamba.parameters():
         parameter.requires_grad = not freeze_encoder
@@ -480,6 +488,57 @@ def compute_temporal_diagnostic_metrics(
         ),
         "td_valid_count": valid_count,
         "td_mean_prob": round(mean_prob, 4),
+    }
+
+
+def compute_temporal_adapter_metrics(
+    output: dict[str, Any],
+    td_labels: "torch.Tensor | None",
+    td_mask: "torch.Tensor | None",
+) -> dict[str, Any]:
+    """Compute temporal residual adapter metrics.
+
+    Returns empty dict when adapter is disabled or no valid examples.
+    Keys: ta_accuracy, ta_mismatch_recall, ta_control_acceptance, ta_valid_count, ta_mean_prob.
+    Uses temporal_adapter_prob (output of the 2-layer MLP adapter) — not temporal_diagnostic_prob.
+    Labels: 1=temporal_mismatch (time_swap), 0=temporal_control (none/paraphrase).
+    """
+    if (
+        output.get("temporal_adapter_prob") is None
+        or td_labels is None
+        or td_mask is None
+    ):
+        return {}
+    probs = output["temporal_adapter_prob"].detach().cpu()
+    labels = td_labels.detach().cpu()
+    mask = td_mask.detach().cpu().bool()
+    valid_count = int(mask.sum().item())
+    if valid_count == 0:
+        return {"ta_valid_count": 0}
+    probs_v = probs[mask]
+    labels_v = labels[mask]
+    preds_v = (probs_v >= 0.5).float()
+    accuracy = (preds_v == labels_v).float().mean().item()
+    mean_prob = probs_v.mean().item()
+    pos_mask = labels_v == 1
+    neg_mask = labels_v == 0
+    mismatch_recall = (
+        (preds_v[pos_mask] == 1).float().mean().item() if pos_mask.any() else float("nan")
+    )
+    control_acceptance = (
+        (preds_v[neg_mask] == 0).float().mean().item() if neg_mask.any() else float("nan")
+    )
+    return {
+        "ta_accuracy": round(accuracy, 4),
+        "ta_mismatch_recall": (
+            round(mismatch_recall, 4) if mismatch_recall == mismatch_recall else mismatch_recall
+        ),
+        "ta_control_acceptance": (
+            round(control_acceptance, 4)
+            if control_acceptance == control_acceptance else control_acceptance
+        ),
+        "ta_valid_count": valid_count,
+        "ta_mean_prob": round(mean_prob, 4),
     }
 
 
@@ -1756,6 +1815,86 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+    # ── Temporal residual adapter ──────────────────────────────────────────────────────────────
+    # A 2-layer MLP adapter that absorbs temporal diagnostic supervision without propagating
+    # gradients into the shared frame_pair_repr / FrameGate representation.
+    # Architecture: Linear(frame_size, frame_size//2) → GELU → Linear(frame_size//2, 1)
+    # Default: disabled. When enabled, adapter is trained only via --use-temporal-adapter-loss.
+    # Stage15 OOD is eval-only and is NEVER used for adapter loss, calibration, or selection.
+    parser.add_argument(
+        "--use-temporal-residual-adapter",
+        action="store_true",
+        default=False,
+        help=(
+            "Enable the temporal residual adapter branch. Default off. When enabled, adds a "
+            "2-layer MLP adapter reading frame_pair_repr (detached by default) to produce "
+            "temporal_adapter_logit and temporal_adapter_prob. The adapter absorbs temporal "
+            "diagnostic supervision without coupling gradients into shared FrameGate."
+        ),
+    )
+    parser.add_argument(
+        "--temporal-adapter-detach-input",
+        action="store_true",
+        default=True,
+        dest="temporal_adapter_detach_input",
+        help=(
+            "Detach frame_pair_repr before the temporal residual adapter (default: true). "
+            "This prevents adapter BCE gradients from propagating into FrameGate. "
+            "Disable with --no-temporal-adapter-detach-input for experimentation."
+        ),
+    )
+    parser.add_argument(
+        "--no-temporal-adapter-detach-input",
+        action="store_false",
+        dest="temporal_adapter_detach_input",
+        help="Allow adapter gradients to propagate into frame_pair_repr / FrameGate (stage23 failure mode).",
+    )
+    parser.add_argument(
+        "--use-temporal-adapter-loss",
+        action="store_true",
+        default=False,
+        help=(
+            "Supervise the temporal residual adapter with BCE loss on temporal diagnostic data. "
+            "Requires --use-temporal-residual-adapter and temporal diagnostic data. "
+            "Loss is added to total_loss scaled by --temporal-adapter-loss-weight. Default off."
+        ),
+    )
+    parser.add_argument(
+        "--temporal-adapter-loss-weight",
+        type=float,
+        default=0.0,
+        help="Weight for temporal adapter BCE loss. Applied only when --use-temporal-adapter-loss is on. Default 0.0.",
+    )
+    parser.add_argument(
+        "--temporal-adapter-loss-pos-weight",
+        type=float,
+        default=2.0,
+        help=(
+            "Positive-class weight for temporal adapter BCE loss (time_swap examples). "
+            "Same role as --td-loss-pos-weight but scoped to the adapter. Default 2.0."
+        ),
+    )
+    parser.add_argument(
+        "--use-temporal-adapter-final-penalty",
+        action="store_true",
+        default=False,
+        help=(
+            "Apply a per-example NOT_ENTITLED logit penalty driven by temporal_adapter_prob. "
+            "Penalty = sigmoid(adapter_logit).detach() * --temporal-adapter-final-penalty-scale. "
+            "No gradient flows back into the adapter from this penalty path. NOT OOD calibration. "
+            "Stage15 is never used to set penalty scale. Default off."
+        ),
+    )
+    parser.add_argument(
+        "--temporal-adapter-final-penalty-scale",
+        type=float,
+        default=0.0,
+        help=(
+            "Scale for per-example NOT_ENTITLED penalty from adapter confidence. "
+            "Applied only when --use-temporal-adapter-final-penalty is on. Default 0.0."
+        ),
+    )
+
     return parser
 
 
@@ -1853,6 +1992,8 @@ def main(argv: list[str] | None = None) -> int:
             use_predicate_isolation_head=args.use_predicate_isolation_loss,
             use_preservation_entitlement_head=args.use_preservation_entitlement_loss,
             use_temporal_diagnostic_head=args.use_temporal_diagnostic_loss,
+            use_temporal_residual_adapter=args.use_temporal_residual_adapter,
+            temporal_adapter_detach_input=args.temporal_adapter_detach_input,
         )
 
     train_inputs = v5.move_inputs(train_bundle["model_inputs"], device)
@@ -1874,6 +2015,8 @@ def main(argv: list[str] | None = None) -> int:
             use_predicate_isolation_head=args.use_predicate_isolation_loss,
             use_preservation_entitlement_head=args.use_preservation_entitlement_loss,
             use_temporal_diagnostic_head=args.use_temporal_diagnostic_loss,
+            use_temporal_residual_adapter=args.use_temporal_residual_adapter,
+            temporal_adapter_detach_input=args.temporal_adapter_detach_input,
         )
     model = model.to(device)
 
@@ -2171,6 +2314,11 @@ def main(argv: list[str] | None = None) -> int:
         use_td_final_decision_selection=False,
         td_sel_min_final_temporal_rejection=0.50,
         td_sel_min_final_control_preservation=0.80,
+        # Temporal residual adapter (default off; gradient-isolated from frame_pair_repr by default)
+        use_temporal_residual_adapter=False,
+        ta_loss_weight=0.0,
+        ta_loss_pos_weight=2.0,
+        ta_final_penalty_scale=0.0,
     ):
         """Modified run_training that passes flags to v6b model."""
         if epochs < 1:
@@ -2207,10 +2355,12 @@ def main(argv: list[str] | None = None) -> int:
             optimizer.zero_grad()
 
             # CRITICAL: Pass flags to v6b model forward
+            _ta_pen = ta_final_penalty_scale if use_temporal_residual_adapter and ta_final_penalty_scale > 0.0 else 0.0
             output = model(
                 **v5.model_feature_inputs(train_inputs),
                 temporal_mismatch_flags=train_temporal_flags,
                 predicate_mismatch_flags=train_predicate_flags,
+                temporal_adapter_final_penalty_scale=_ta_pen,
             )
 
             indices = v5.sample_indices(
@@ -2374,6 +2524,55 @@ def main(argv: list[str] | None = None) -> int:
                         )
                         total_loss = total_loss + td_loss_weight * _td_loss
 
+            # Temporal residual adapter BCE loss (diagnostic only; output["logits"] unchanged)
+            # Same temporal diagnostic data as the TD head loss above, but supervises
+            # temporal_residual_adapter via temporal_adapter_logit. The adapter reads
+            # frame_pair_repr (detached by default) so these gradients cannot reach FrameGate.
+            # Stage15 / OOD is eval-only and is NEVER used here.
+            # _td_train_out may already exist (from the TD head loss block above); reuse it if
+            # available rather than running a second forward pass on the same batch.
+            _ta_loss = torch.tensor(0.0)
+            if (
+                ta_loss_weight > 0.0
+                and use_temporal_residual_adapter
+                and td_train_inputs is not None
+                and td_train_labels is not None
+                and td_train_mask is not None
+            ):
+                # Reuse _td_train_out if the TD head block ran a forward pass this step.
+                # Otherwise run a fresh pass (td_loss_weight==0 but adapter loss is enabled).
+                _ta_need_forward = not (
+                    td_loss_weight > 0.0
+                    and td_train_inputs is not None
+                    and td_train_labels is not None
+                    and td_train_mask is not None
+                )
+                if _ta_need_forward:
+                    _ta_n = td_train_inputs["input_ids"].shape[0]
+                    _ta_zero_t = torch.zeros(_ta_n, dtype=torch.float32, device=device)
+                    _ta_zero_p = torch.zeros(_ta_n, dtype=torch.float32, device=device)
+                    _ta_train_out = model(
+                        **v5.model_feature_inputs(td_train_inputs),
+                        temporal_mismatch_flags=_ta_zero_t,
+                        predicate_mismatch_flags=_ta_zero_p,
+                    )
+                else:
+                    _ta_train_out = _td_train_out
+                if _ta_train_out.get("temporal_adapter_logit") is not None:
+                    _active_ta = td_train_mask.bool()
+                    if torch.any(_active_ta):
+                        _ta_pos_w = torch.tensor(
+                            ta_loss_pos_weight,
+                            dtype=torch.float32,
+                            device=_ta_train_out["temporal_adapter_logit"].device,
+                        )
+                        _ta_loss = F.binary_cross_entropy_with_logits(
+                            _ta_train_out["temporal_adapter_logit"][_active_ta],
+                            td_train_labels[_active_ta],
+                            pos_weight=_ta_pos_w,
+                        )
+                        total_loss = total_loss + ta_loss_weight * _ta_loss
+
             # Stage22-A4c: pair contrastive frame ranking loss
             # Supervises frame_violation_logit only; output["logits"] and predictions unchanged.
             _pc_loss = torch.tensor(0.0)
@@ -2417,11 +2616,13 @@ def main(argv: list[str] | None = None) -> int:
                     **train_inputs,
                     temporal_mismatch_flags=train_temporal_flags,
                     predicate_mismatch_flags=train_predicate_flags,
+                    temporal_adapter_final_penalty_scale=_ta_pen,
                 )
                 dev_output = model(
                     **dev_inputs,
                     temporal_mismatch_flags=dev_temporal_flags,
                     predicate_mismatch_flags=dev_predicate_flags,
+                    temporal_adapter_final_penalty_scale=_ta_pen,
                 )
                 # Temporal diagnostic eval: separate forward passes on td train/dev records.
                 # Batches are kept separate from main train/dev; no classification CE here.
@@ -2454,8 +2655,17 @@ def main(argv: list[str] | None = None) -> int:
                     _dtd_fdm = compute_td_final_decision_metrics(
                         _td_eval_dev_out, td_dev_labels, td_dev_mask
                     )
+                    # Temporal residual adapter metrics (reuses same eval forward passes)
+                    _ttatm = compute_temporal_adapter_metrics(
+                        _td_eval_train_out, td_train_labels, td_train_mask
+                    )
+                    _dtatm = compute_temporal_adapter_metrics(
+                        _td_eval_dev_out, td_dev_labels, td_dev_mask
+                    )
                 else:
                     _dtd_fdm: dict[str, Any] = {}
+                    _ttatm: dict[str, Any] = {}
+                    _dtatm: dict[str, Any] = {}
             train_metrics = v5.compute_metrics(train_output, train_inputs)
             dev_metrics = v5.compute_metrics(dev_output, dev_inputs)
 
@@ -2660,6 +2870,20 @@ def main(argv: list[str] | None = None) -> int:
                         f" n_temporal={_dtd_fdm.get('td_final_temporal_count', 0)}"
                         f" n_ctrl={_dtd_fdm.get('td_final_control_count', 0)}"
                     )
+            if _ttatm:
+                _ta_loss_val = float(_ta_loss.item()) if hasattr(_ta_loss, "item") else 0.0
+                print(
+                    f"  [ta_adapter] loss={_ta_loss_val:.4f}"
+                    f" train_acc={_ttatm.get('ta_accuracy', 0.0):.3f}"
+                    f" dev_acc={_dtatm.get('ta_accuracy', 0.0):.3f}"
+                    f" train_mismatch_recall={_ttatm.get('ta_mismatch_recall', float('nan'))}"
+                    f" dev_mismatch_recall={_dtatm.get('ta_mismatch_recall', float('nan'))}"
+                    f" train_ctrl_acc={_ttatm.get('ta_control_acceptance', float('nan'))}"
+                    f" dev_ctrl_acc={_dtatm.get('ta_control_acceptance', float('nan'))}"
+                    f" train_mean_prob={_ttatm.get('ta_mean_prob', 0.0):.3f}"
+                    f" dev_mean_prob={_dtatm.get('ta_mean_prob', 0.0):.3f}"
+                    f" valid={_ttatm.get('ta_valid_count', 0)}"
+                )
             if _pc_eval_metrics:
                 _pc_loss_val = float(_pc_loss.item()) if hasattr(_pc_loss, "item") else 0.0
                 print(
@@ -2870,6 +3094,16 @@ def main(argv: list[str] | None = None) -> int:
             use_td_final_decision_selection=args.td_selection_use_final_decision,
             td_sel_min_final_temporal_rejection=args.td_selection_min_final_temporal_rejection,
             td_sel_min_final_control_preservation=args.td_selection_min_final_control_preservation,
+            use_temporal_residual_adapter=args.use_temporal_residual_adapter,
+            ta_loss_weight=(
+                args.temporal_adapter_loss_weight
+                if args.use_temporal_adapter_loss else 0.0
+            ),
+            ta_loss_pos_weight=args.temporal_adapter_loss_pos_weight,
+            ta_final_penalty_scale=(
+                args.temporal_adapter_final_penalty_scale
+                if args.use_temporal_adapter_final_penalty else 0.0
+            ),
             pc_pres_inputs=_pc_pres_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_frame_inputs=_pc_frame_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_loss_weight=(
@@ -3014,6 +3248,20 @@ def main(argv: list[str] | None = None) -> int:
             ),
             "td_selection_fallback": "final_macro_f1",
             "stage15_used_for_td_constrained_selection": False,
+            "use_temporal_residual_adapter": args.use_temporal_residual_adapter,
+            "temporal_adapter_detach_input": args.temporal_adapter_detach_input,
+            "use_temporal_adapter_loss": args.use_temporal_adapter_loss,
+            "temporal_adapter_loss_weight": (
+                args.temporal_adapter_loss_weight
+                if args.use_temporal_adapter_loss else 0.0
+            ),
+            "temporal_adapter_loss_pos_weight": args.temporal_adapter_loss_pos_weight,
+            "use_temporal_adapter_final_penalty": args.use_temporal_adapter_final_penalty,
+            "temporal_adapter_final_penalty_scale": (
+                args.temporal_adapter_final_penalty_scale
+                if args.use_temporal_adapter_final_penalty else 0.0
+            ),
+            "stage15_used_for_temporal_adapter_training": False,
             "dev_calibrated_ne_shift_candidates": args.dev_calibrated_ne_shift_candidates,
             "dev_calibrated_ne_gate": args.dev_calibrated_ne_gate,
             "dev_calibrated_ne_threshold": args.dev_calibrated_ne_threshold,
@@ -3442,6 +3690,28 @@ def main(argv: list[str] | None = None) -> int:
                 if len(reports) == 1 else None
             ),
             "stage15_used_for_td_constrained_selection": False,
+            "use_temporal_residual_adapter": getattr(
+                args, "use_temporal_residual_adapter", False
+            ),
+            "temporal_adapter_detach_input": getattr(
+                args, "temporal_adapter_detach_input", True
+            ),
+            "use_temporal_adapter_loss": getattr(
+                args, "use_temporal_adapter_loss", False
+            ),
+            "temporal_adapter_loss_weight": getattr(
+                args, "temporal_adapter_loss_weight", 0.0
+            ),
+            "temporal_adapter_loss_pos_weight": getattr(
+                args, "temporal_adapter_loss_pos_weight", 2.0
+            ),
+            "use_temporal_adapter_final_penalty": getattr(
+                args, "use_temporal_adapter_final_penalty", False
+            ),
+            "temporal_adapter_final_penalty_scale": getattr(
+                args, "temporal_adapter_final_penalty_scale", 0.0
+            ),
+            "stage15_used_for_temporal_adapter_training": False,
             "use_pair_contrastive_frame_loss": getattr(
                 args, "use_pair_contrastive_frame_loss", False
             ),

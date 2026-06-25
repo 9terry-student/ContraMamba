@@ -66,6 +66,8 @@ class ContraMambaV6BMinimal(nn.Module):
         use_predicate_isolation_head: bool = False,
         use_preservation_entitlement_head: bool = False,
         use_temporal_diagnostic_head: bool = False,
+        use_temporal_residual_adapter: bool = False,
+        temporal_adapter_detach_input: bool = True,
     ) -> None:
         super().__init__()
         if backbone is None:
@@ -185,6 +187,29 @@ class ContraMambaV6BMinimal(nn.Module):
         if use_temporal_diagnostic_head:
             self.temporal_diagnostic_head = nn.Linear(frame_size, 1)
 
+        # Temporal residual adapter — small 2-layer MLP probing frame_pair_repr for temporal
+        # mismatch, designed to absorb temporal diagnostic supervision without corrupting
+        # the shared FrameGate / frame_pair_repr path.
+        # By default, the input is DETACHED from the computation graph so that the adapter
+        # BCE loss cannot propagate gradients back into frame_pair_repr / FrameGate.
+        # This isolates temporal supervision from the preservation / predicate paths.
+        # Architecture: Linear(frame_size, frame_size // 2) → GELU → Linear(frame_size // 2, 1)
+        # Stage23 showed that routing TD supervision directly through frame_pair_repr
+        # (as temporal_diagnostic_head does) collapses preservation. This adapter uses the
+        # same input representation but blocks the gradient path by default.
+        # Optionally: temporal_adapter_logit (detached) can apply a per-example NOT_ENTITLED
+        # penalty to final_logits (see temporal_adapter_final_penalty_scale in forward).
+        # Does NOT touch output["logits"] or output["base_logits"] unless penalty scale > 0.
+        self.temporal_residual_adapter: nn.Sequential | None = None
+        self.temporal_adapter_detach_input: bool = temporal_adapter_detach_input
+        if use_temporal_residual_adapter:
+            _ta_hidden = max(frame_size // 2, 8)
+            self.temporal_residual_adapter = nn.Sequential(
+                nn.Linear(frame_size, _ta_hidden),
+                nn.GELU(),
+                nn.Linear(_ta_hidden, 1),
+            )
+
     def alpha_temporal(self) -> float | torch.Tensor:
         """Return softplus-constrained temporal alpha."""
         if self.alpha_temporal_raw is None:
@@ -216,6 +241,7 @@ class ContraMambaV6BMinimal(nn.Module):
         encoder_hidden_states: torch.Tensor | None = None,
         temporal_mismatch_flags: torch.Tensor | None = None,
         predicate_mismatch_flags: torch.Tensor | None = None,
+        temporal_adapter_final_penalty_scale: float = 0.0,
     ) -> dict[str, Any]:
         """Forward pass with optional temporal/predicate logit modulation."""
         del intervention_types, pair_ids
@@ -321,6 +347,23 @@ class ContraMambaV6BMinimal(nn.Module):
             ).squeeze(-1)
             temporal_diagnostic_prob = torch.sigmoid(temporal_diagnostic_logit)
 
+        # Temporal residual adapter: small 2-layer MLP on (optionally detached) frame_pair_repr.
+        # Default: input is detached so adapter BCE loss cannot propagate gradients into
+        # FrameGate / frame_pair_repr. This prevents the temporal-rejection / preservation
+        # conflict observed in Stage23 (where temporal_diagnostic_head routed gradients
+        # directly through frame_pair_repr, collapsing preservation and predicate disentanglement).
+        # None when adapter is disabled (downstream loss skipped; no logit penalty applied).
+        temporal_adapter_logit: torch.Tensor | None = None
+        temporal_adapter_prob: torch.Tensor | None = None
+        if self.temporal_residual_adapter is not None:
+            _ta_input = (
+                frame["frame_pair_repr"].detach()
+                if self.temporal_adapter_detach_input
+                else frame["frame_pair_repr"]
+            )
+            temporal_adapter_logit = self.temporal_residual_adapter(_ta_input).squeeze(-1)
+            temporal_adapter_prob = torch.sigmoid(temporal_adapter_logit)
+
         # Base logits (V5 standard)
         decision = self.decision_head(
             frame_prob=frame["frame_prob"],
@@ -356,6 +399,22 @@ class ContraMambaV6BMinimal(nn.Module):
                 final_logits[active, 1] += alpha  # NOT_ENTITLED
                 final_logits[active, 2] -= alpha  # REFUTE
                 predicate_flag_count = int(active.sum().item())
+
+        # Optional temporal adapter per-example NOT_ENTITLED penalty.
+        # Architecture-level penalty driven by adapter temporal mismatch confidence.
+        # NOT OOD calibration. Stage15 is never used to set penalty scale.
+        # Penalty is per-example (proportional to adapter prob), not a global shift.
+        # Gradient does NOT flow to the adapter from this path (logit is detached).
+        # When scale=0.0 (default) or adapter is disabled: final_logits unchanged.
+        if (
+            temporal_adapter_logit is not None
+            and temporal_adapter_final_penalty_scale > 0.0
+        ):
+            _ta_penalty = torch.sigmoid(temporal_adapter_logit.detach()) * temporal_adapter_final_penalty_scale
+            final_logits = final_logits.clone()
+            final_logits[:, 0] -= _ta_penalty  # SUPPORT
+            final_logits[:, 1] += _ta_penalty  # NOT_ENTITLED
+            final_logits[:, 2] -= _ta_penalty  # REFUTE
 
         # Compute losses (using final_logits only)
         losses: dict[str, torch.Tensor | None] = {
@@ -430,6 +489,9 @@ class ContraMambaV6BMinimal(nn.Module):
             # Temporal diagnostic head outputs (None when head is disabled)
             "temporal_diagnostic_logit": temporal_diagnostic_logit,
             "temporal_diagnostic_prob": temporal_diagnostic_prob,
+            # Temporal residual adapter outputs (None when adapter is disabled)
+            "temporal_adapter_logit": temporal_adapter_logit,
+            "temporal_adapter_prob": temporal_adapter_prob,
             **frame,
             **predicate,
             **sufficiency,
