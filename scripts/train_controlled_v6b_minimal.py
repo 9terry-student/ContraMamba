@@ -2243,6 +2243,160 @@ def prediction_distribution_from_records(records: list[dict]) -> dict[str, int]:
 
 
 # ---------------------------------------------------------------------------
+# Stage26-F extended: v7 collapse and logit diagnostic helpers
+# ---------------------------------------------------------------------------
+# These are pure-compute helpers: no training, no optimizer, no loss.
+# All operate on already-computed, detached CPU tensors.
+# ---------------------------------------------------------------------------
+
+_V7_DIAG_CAPTURE_KEYS: tuple[str, ...] = (
+    "logits",
+    "predictions",
+    "v7_entitlement_logit",
+    "v7_entitlement_prob",
+    "v7_polarity_support_logit",
+    "v7_polarity_refute_logit",
+    "v7_temporal_prob",
+    "v7_frame_prob",
+    "v7_predicate_prob",
+    "v7_sufficiency_prob",
+    "v7_final_logit_composition",
+)
+
+
+def _v7_capture_dev_output(out: "dict[str, Any]") -> "dict[str, Any]":
+    """Clone v7-relevant tensors to CPU for post-epoch diagnostics."""
+    captured: dict[str, Any] = {}
+    for k in _V7_DIAG_CAPTURE_KEYS:
+        v = out.get(k)
+        if v is not None:
+            captured[k] = v.detach().cpu().clone() if hasattr(v, "detach") else v
+    return captured
+
+
+def _v7_tensor_stats(t: "torch.Tensor") -> "dict[str, float]":
+    """Return mean/std/min/max for a 1-D or batched tensor."""
+    tf = t.detach().cpu().float()
+    n = tf.numel()
+    return {
+        "mean": float(tf.mean().item()),
+        "std": float(tf.std().item()) if n > 1 else 0.0,
+        "min": float(tf.min().item()),
+        "max": float(tf.max().item()),
+    }
+
+
+def _v7_make_logit_summary(out: "dict[str, Any] | None") -> "dict[str, Any] | None":
+    """Build per-tensor stats for v7 logit/prob keys from a captured output dict.
+
+    Covers: v7_entitlement_logit/prob, v7_polarity_support/refute_logit, v7_temporal_prob,
+    v7_frame/predicate/sufficiency_prob, per-class logits, and derived margins.
+    """
+    if out is None:
+        return None
+    result: dict[str, Any] = {}
+
+    for key in (
+        "v7_entitlement_logit",
+        "v7_entitlement_prob",
+        "v7_polarity_support_logit",
+        "v7_polarity_refute_logit",
+        "v7_temporal_prob",
+        "v7_frame_prob",
+        "v7_predicate_prob",
+        "v7_sufficiency_prob",
+    ):
+        val = out.get(key)
+        if val is not None and hasattr(val, "mean"):
+            result[key] = _v7_tensor_stats(val)
+
+    logits = out.get("logits")
+    if (
+        logits is not None
+        and hasattr(logits, "shape")
+        and len(logits.shape) >= 2
+        and logits.shape[-1] == 3
+    ):
+        result["logits_refute"] = _v7_tensor_stats(logits[:, 0])
+        result["logits_not_entitled"] = _v7_tensor_stats(logits[:, 1])
+        result["logits_support"] = _v7_tensor_stats(logits[:, 2])
+        # Derived margins (class order: REFUTE=0 NE=1 SUPPORT=2)
+        lf = logits.detach().cpu().float()
+        ne, sup, ref = lf[:, 1], lf[:, 2], lf[:, 0]
+        result["ne_minus_support_mean"] = float((ne - sup).mean().item())
+        result["ne_minus_refute_mean"] = float((ne - ref).mean().item())
+        result["support_minus_refute_mean"] = float((sup - ref).mean().item())
+
+    ent = out.get("v7_entitlement_logit")
+    if ent is not None and hasattr(ent, "mean"):
+        ef = ent.detach().cpu().float()
+        result["entitlement_logit_mean"] = float(ef.mean().item())
+        result["entitlement_logit_std"] = float(ef.std().item()) if ef.numel() > 1 else 0.0
+
+    return result
+
+
+def _v7_make_per_gold_summary(
+    out: "dict[str, Any] | None",
+    final_labels: "torch.Tensor | None",
+) -> "dict[str, Any] | None":
+    """Per-gold-label breakdown of v7 channel probs and logits.
+
+    `out` must be a CPU-tensor dict (from _v7_capture_dev_output).
+    `final_labels` may be on any device; moved to CPU here.
+    Label order: REFUTE=0, NOT_ENTITLED=1, SUPPORT=2 (FinalLabel in labels.py).
+    """
+    if out is None or final_labels is None:
+        return None
+    logits = out.get("logits")
+    if logits is None:
+        return None
+
+    labels_cpu = final_labels.detach().cpu()
+    logits_cpu = logits.detach().cpu().float()
+    _LNAMES = ("REFUTE", "NOT_ENTITLED", "SUPPORT")
+
+    result: dict[str, Any] = {}
+    for label_id, label_name in enumerate(_LNAMES):
+        mask = labels_cpu == label_id
+        count = int(mask.sum().item())
+        entry: dict[str, Any] = {"count": count}
+
+        if count > 0:
+            preds = out.get("predictions")
+            if preds is not None and hasattr(preds, "__len__"):
+                preds_cpu = preds.detach().cpu() if hasattr(preds, "detach") else preds
+                dist: dict[str, int] = {}
+                for p_id, p_name in enumerate(_LNAMES):
+                    n = int((preds_cpu[mask] == p_id).sum().item())
+                    if n:
+                        dist[p_name] = n
+                entry["prediction_distribution"] = dist
+
+            for field, key in (
+                ("mean_entitlement_prob", "v7_entitlement_prob"),
+                ("mean_frame_prob", "v7_frame_prob"),
+                ("mean_predicate_prob", "v7_predicate_prob"),
+                ("mean_sufficiency_prob", "v7_sufficiency_prob"),
+                ("mean_temporal_prob", "v7_temporal_prob"),
+                ("mean_polarity_support_logit", "v7_polarity_support_logit"),
+                ("mean_polarity_refute_logit", "v7_polarity_refute_logit"),
+            ):
+                val = out.get(key)
+                if val is not None and hasattr(val, "detach"):
+                    vc = val.detach().cpu().float()
+                    entry[field] = float(vc[mask].mean().item())
+
+            entry["mean_logit_refute"] = float(logits_cpu[mask, 0].mean().item())
+            entry["mean_logit_not_entitled"] = float(logits_cpu[mask, 1].mean().item())
+            entry["mean_logit_support"] = float(logits_cpu[mask, 2].mean().item())
+
+        result[label_name] = entry
+
+    return result
+
+
+# ---------------------------------------------------------------------------
 # Stage26-D: report schema aliases
 # ---------------------------------------------------------------------------
 # Root-level aliases make v7 architecture metadata and dev metric scalars
@@ -2889,6 +3043,18 @@ def main(argv: list[str] | None = None) -> int:
         _audit_per_epoch_weighted: list[dict] = []
         _audit_epoch_count: int = 0
 
+        # ── Stage26-F: v7 epoch diagnostic history ─────────────────────────────────────────────
+        # Per-epoch dev metric snapshots stored for post-hoc diagnosis (e.g. label collapse
+        # trajectory, channel prob trends).  Reporting only; no effect on training or selection.
+        _v7_epoch_history: list[dict[str, Any]] = []
+
+        # Stage26-F extended: captured v7 output tensors for best-epoch logit / per-gold summaries.
+        # Updated inside the epoch loop whenever score > best_score.
+        # Note: if TD/PCS constrained selection overrides best_epoch after the loop, the logit
+        # summary may be from the unconstrained best epoch rather than the checkpointed one.
+        # Collapse / recall fields are always from best_dev_metrics (correctly overridden).
+        _best_dev_output_v7: "dict[str, Any] | None" = None
+
         for epoch in range(1, epochs + 1):
             model.train()
             optimizer.zero_grad()
@@ -3399,6 +3565,9 @@ def main(argv: list[str] | None = None) -> int:
                 }
                 if capture_best_trainable_state:
                     best_trainable_state = v5.capture_trainable_state(model)
+                # Stage26-F extended: snapshot v7 diagnostic tensors from the new best epoch
+                if args.architecture == "v7_hierarchical":
+                    _best_dev_output_v7 = _v7_capture_dev_output(dev_output)
 
             # TD-constrained checkpoint selection (parallel, default off, never uses Stage15/OOD)
             if use_td_constrained_selection and not smoke_mode:
@@ -3493,6 +3662,44 @@ def main(argv: list[str] | None = None) -> int:
                             "count_by_preservation_construction_type": _pc_pres_type_counts,
                             "count_by_frame_construction_type": _pc_frame_type_counts,
                         }
+
+            # ── Stage26-F: record per-epoch dev snapshot ─────────────────────────────────────
+            # All values come from dev_metrics (already computed) and dev_output (already
+            # available in no_grad context).  No new forward passes.  Reporting only.
+            _v7_ep_snap: dict[str, Any] = {
+                "epoch": epoch,
+                "dev_final_accuracy": dev_metrics.get("final_accuracy"),
+                "dev_final_macro_f1": dev_metrics.get("final_macro_f1"),
+                "dev_prediction_distribution": dev_metrics.get("prediction_distribution"),
+                "dev_frame_accuracy": dev_metrics.get("frame_accuracy"),
+                "dev_predicate_accuracy": dev_metrics.get("predicate_accuracy"),
+                "dev_sufficiency_accuracy": dev_metrics.get("sufficiency_accuracy"),
+                "dev_polarity_accuracy_entitled": dev_metrics.get("polarity_accuracy_entitled"),
+            }
+            # v7_logit_summary: lightweight channel prob means from dev_output.
+            # Only present for v7 runs; zero-cost (tensors already computed).
+            if args.architecture == "v7_hierarchical":
+                _v7_ep_snap["v7_logit_summary"] = {
+                    k: float(dev_output[k].mean().item())
+                    for k in (
+                        "v7_frame_prob",
+                        "v7_predicate_prob",
+                        "v7_sufficiency_prob",
+                        "v7_entitlement_prob",
+                    )
+                    if k in dev_output and dev_output[k] is not None
+                }
+                # Temporal prob is optional (None when temporal channel disabled)
+                _v7_tp = dev_output.get("v7_temporal_prob")
+                if _v7_tp is not None:
+                    _v7_ep_snap["v7_logit_summary"]["v7_temporal_prob"] = float(_v7_tp.mean().item())
+                _v7_ep_snap["v7_logit_summary"]["v7_final_logit_composition"] = dev_output.get(
+                    "v7_final_logit_composition"
+                )
+            else:
+                _v7_ep_snap["v7_logit_summary"] = None
+            _v7_epoch_history.append(_v7_ep_snap)
+            # ── end Stage26-F epoch snapshot ──────────────────────────────────────────────────
 
             print(
                 f"run={run_name} "
@@ -4125,6 +4332,68 @@ def main(argv: list[str] | None = None) -> int:
                 "no epoch satisfied preservation constraints; using unconstrained best epoch"
             )
 
+        # ── Stage26-F extended: build v7 collapse and logit diagnostics ──────────────────────
+        # No new forward passes.  All values derived from already-computed variables.
+        # _best_dev_output_v7 : CPU tensors from the unconstrained-best epoch (may differ
+        #                       from checkpointed epoch if TC/PCS selection applied).
+        # dev_output           : last epoch's output (still in scope after the for-loop).
+        # best_dev_metrics     : always reflects the actually selected epoch (after TC/PCS).
+        _v7_ext_diagnostics: dict[str, Any] = {}
+        if args.architecture == "v7_hierarchical":
+            _v7_best_logit_summary = _v7_make_logit_summary(_best_dev_output_v7)
+
+            # Final-epoch logit summary — dev_output is the last iteration's output
+            _v7_final_logit_summary: "dict[str, Any] | None" = None
+            if epochs > 0:
+                _fin_out_v7 = {
+                    k: v.detach().cpu() if hasattr(v, "detach") else v
+                    for k, v in dev_output.items()
+                    if v is not None
+                }
+                _v7_final_logit_summary = _v7_make_logit_summary(_fin_out_v7)
+
+            # Per-gold-label breakdown from best-epoch tensors + ground-truth dev labels
+            _v7_per_gold_summary = _v7_make_per_gold_summary(
+                _best_dev_output_v7,
+                dev_inputs.get("final_labels"),
+            )
+
+            # Collapse / recall fields from best_dev_metrics (correct after TC/PCS overrides)
+            _bm = best_dev_metrics or {}
+            _pred_dist: dict[str, int] = _bm.get("prediction_distribution") or {}
+            _total_preds = sum(_pred_dist.values()) if _pred_dist else 0
+            _per_label: dict[str, Any] = _bm.get("per_label") or {}
+            _maj_class: "str | None" = None
+            if _pred_dist and _total_preds > 0:
+                _maj_class = max(_pred_dist, key=lambda _k: _pred_dist[_k])
+
+            _v7_ext_diagnostics = {
+                "v7_best_dev_logit_summary": _v7_best_logit_summary,
+                "v7_final_epoch_logit_summary": _v7_final_logit_summary,
+                "v7_best_dev_per_gold_label_summary": _v7_per_gold_summary,
+                "v7_predicted_single_class": (
+                    (len(_pred_dist) == 1) if _maj_class is not None else None
+                ),
+                "v7_predicted_majority_class": _maj_class,
+                "v7_predicted_majority_fraction": (
+                    _pred_dist[_maj_class] / _total_preds
+                    if _maj_class is not None else None
+                ),
+                "v7_support_prediction_count": (
+                    _pred_dist.get("SUPPORT", 0) if _pred_dist else None
+                ),
+                "v7_refute_prediction_count": (
+                    _pred_dist.get("REFUTE", 0) if _pred_dist else None
+                ),
+                "v7_ne_prediction_count": (
+                    _pred_dist.get("NOT_ENTITLED", 0) if _pred_dist else None
+                ),
+                "v7_support_recall": _per_label.get("SUPPORT", {}).get("recall"),
+                "v7_refute_recall": _per_label.get("REFUTE", {}).get("recall"),
+                "v7_ne_recall": _per_label.get("NOT_ENTITLED", {}).get("recall"),
+            }
+        # ── end Stage26-F extended ─────────────────────────────────────────────────────────
+
         _run_audit_ledger: dict[str, Any] = {
             "active_training_losses": _active_training_losses,
             "active_final_logit_modifiers": _active_final_logit_modifiers,
@@ -4182,6 +4451,10 @@ def main(argv: list[str] | None = None) -> int:
             **_tc_selection_info,
             **_pcs_selection_info,
             "audit_ledger": _run_audit_ledger,
+            # Stage26-F: per-epoch dev metric history for post-hoc diagnosis
+            "v7_epoch_diagnostic_history": _v7_epoch_history,
+            # Stage26-F extended: v7 logit summaries, per-gold breakdown, collapse/recall fields
+            **_v7_ext_diagnostics,
         }
         report["_best_state"] = best_state
         if best_trainable_state is not None:
@@ -4627,6 +4900,21 @@ def main(argv: list[str] | None = None) -> int:
             "best_dev_metrics",
             "best_dev_interventions",
             "best_dev_pairwise_checks",
+            # Stage26-F: per-epoch diagnostic history lifted to root for single-run reports
+            "v7_epoch_diagnostic_history",
+            # Stage26-F extended: v7 logit summaries, per-gold breakdown, collapse/recall fields
+            "v7_best_dev_logit_summary",
+            "v7_final_epoch_logit_summary",
+            "v7_best_dev_per_gold_label_summary",
+            "v7_predicted_single_class",
+            "v7_predicted_majority_class",
+            "v7_predicted_majority_fraction",
+            "v7_support_prediction_count",
+            "v7_refute_prediction_count",
+            "v7_ne_prediction_count",
+            "v7_support_recall",
+            "v7_refute_recall",
+            "v7_ne_recall",
             # TD constrained selection results — lifted from run report to top level
             "use_td_constrained_selection",
             "td_selection_min_paraphrase_preserved",
