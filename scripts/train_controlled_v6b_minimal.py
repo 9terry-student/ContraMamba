@@ -2422,19 +2422,10 @@ def main(argv: list[str] | None = None) -> int:
         _tc_td_final_binary_accuracy: float = float("nan")
 
         # ── Audit ledger: loss accumulators (reporting only; no effect on training) ──────────────
-        _audit_loss_sums: dict[str, float] = {
-            "total_loss": 0.0,
-            "ce_loss": 0.0,
-            "ranking_loss": 0.0,
-            "intervention_loss": 0.0,
-            "boundary_loss": 0.0,
-            "frame_violation_loss": 0.0,
-            "pair_contrastive_frame_loss": 0.0,
-            "predicate_isolation_loss": 0.0,
-            "preservation_entitlement_loss": 0.0,
-            "temporal_diagnostic_loss": 0.0,
-            "temporal_adapter_loss": 0.0,
-        }
+        # Per-epoch raw (pre-weight) and weighted (actual contribution to total_loss) loss values.
+        # Both lists grow one entry per epoch and are indexed by epoch-1 at ledger build time.
+        _audit_per_epoch_raw: list[dict] = []
+        _audit_per_epoch_weighted: list[dict] = []
         _audit_epoch_count: int = 0
 
         for epoch in range(1, epochs + 1):
@@ -2693,20 +2684,58 @@ def main(argv: list[str] | None = None) -> int:
                     total_loss = total_loss + pc_loss_weight * _pc_loss
 
             # ── Audit ledger accumulation (reporting only; does not affect gradients) ─────────
-            _audit_loss_sums["total_loss"] += float(total_loss.item())
-            _audit_loss_sums["ce_loss"] += float(losses["label"].item())
-            _ai_val = float(active_intervention_loss.item()) if hasattr(active_intervention_loss, "item") else float(active_intervention_loss)
+            # raw = loss value before weight multiplication; weighted = actual total_loss contribution
+            _ep_ce_raw = float(losses["label"].item())
+            _ep_ai_val = (
+                float(active_intervention_loss.item())
+                if hasattr(active_intervention_loss, "item")
+                else float(active_intervention_loss)
+            )
+            _ep_bdry_raw = float(_bdry_loss.item()) if hasattr(_bdry_loss, "item") else 0.0
+            _ep_fv_raw = float(_fv_loss.item()) if hasattr(_fv_loss, "item") else 0.0
+            _ep_pc_raw = float(_pc_loss.item()) if hasattr(_pc_loss, "item") else 0.0
+            _ep_pi_raw = float(_pi_loss.item()) if hasattr(_pi_loss, "item") else 0.0
+            _ep_pe_raw = float(_pe_loss.item()) if hasattr(_pe_loss, "item") else 0.0
+            _ep_td_raw = float(_td_loss.item()) if hasattr(_td_loss, "item") else 0.0
+            _ep_ta_raw = float(_ta_loss.item()) if hasattr(_ta_loss, "item") else 0.0
+            _ep_total = float(total_loss.item())
+            # For ranking path: active_intervention_loss = ranking_weight * raw_ranking.
+            # Recover raw by dividing. For intervention path: pairwise_losses["total"] is
+            # already a weighted composite; report raw == weighted (no scalar unwinding).
             if use_intervention_loss:
-                _audit_loss_sums["intervention_loss"] += _ai_val
+                _ep_ranking_raw, _ep_ranking_w = 0.0, 0.0
+                _ep_intervention_raw = _ep_ai_val
+                _ep_intervention_w = _ep_ai_val
             else:
-                _audit_loss_sums["ranking_loss"] += _ai_val
-            _audit_loss_sums["boundary_loss"] += float(_bdry_loss.item()) if hasattr(_bdry_loss, "item") else 0.0
-            _audit_loss_sums["frame_violation_loss"] += float(_fv_loss.item()) if hasattr(_fv_loss, "item") else 0.0
-            _audit_loss_sums["pair_contrastive_frame_loss"] += float(_pc_loss.item()) if hasattr(_pc_loss, "item") else 0.0
-            _audit_loss_sums["predicate_isolation_loss"] += float(_pi_loss.item()) if hasattr(_pi_loss, "item") else 0.0
-            _audit_loss_sums["preservation_entitlement_loss"] += float(_pe_loss.item()) if hasattr(_pe_loss, "item") else 0.0
-            _audit_loss_sums["temporal_diagnostic_loss"] += float(_td_loss.item()) if hasattr(_td_loss, "item") else 0.0
-            _audit_loss_sums["temporal_adapter_loss"] += float(_ta_loss.item()) if hasattr(_ta_loss, "item") else 0.0
+                _ep_ranking_raw = (_ep_ai_val / ranking_weight) if ranking_weight > 0.0 else 0.0
+                _ep_ranking_w = _ep_ai_val  # = ranking_weight * _ep_ranking_raw
+                _ep_intervention_raw, _ep_intervention_w = 0.0, 0.0
+            _audit_per_epoch_raw.append({
+                "ce_loss": _ep_ce_raw,
+                "ranking_loss": _ep_ranking_raw,
+                "intervention_loss": _ep_intervention_raw,
+                "boundary_loss": _ep_bdry_raw,
+                "frame_violation_loss": _ep_fv_raw,
+                "pair_contrastive_frame_loss": _ep_pc_raw,
+                "predicate_isolation_loss": _ep_pi_raw,
+                "preservation_entitlement_loss": _ep_pe_raw,
+                "temporal_diagnostic_loss": _ep_td_raw,
+                "temporal_adapter_loss": _ep_ta_raw,
+                "total_loss": _ep_total,
+            })
+            _audit_per_epoch_weighted.append({
+                "ce_loss": _ep_ce_raw,  # CE weight = 1.0
+                "ranking_loss": _ep_ranking_w,
+                "intervention_loss": _ep_intervention_w,
+                "boundary_loss": boundary_loss_weight * _ep_bdry_raw,
+                "frame_violation_loss": fv_loss_weight * _ep_fv_raw,
+                "pair_contrastive_frame_loss": pc_loss_weight * _ep_pc_raw,
+                "predicate_isolation_loss": pi_loss_weight * _ep_pi_raw,
+                "preservation_entitlement_loss": pe_loss_weight * _ep_pe_raw,
+                "temporal_diagnostic_loss": td_loss_weight * _ep_td_raw,
+                "temporal_adapter_loss": ta_loss_weight * _ep_ta_raw,
+                "total_loss": _ep_total,
+            })
             _audit_epoch_count += 1
             # ── end audit accumulation ────────────────────────────────────────────────────────
 
@@ -3184,32 +3213,71 @@ def main(argv: list[str] | None = None) -> int:
 
         # ── Build run-level audit ledger (reporting only; no model/loss/logit change) ──────────
         _n = max(_audit_epoch_count, 1)
-        _loss_epoch_avg: dict[str, Any] = {
-            k: round(v / _n, 6) for k, v in _audit_loss_sums.items()
-        }
-        _ce_avg = _loss_epoch_avg["ce_loss"]
-        _aux_avg = round(_loss_epoch_avg["total_loss"] - _ce_avg, 6)
-        _aux_to_ce = round(_aux_avg / _ce_avg, 4) if _ce_avg > 0.0 else None
+
+        def _avg_epoch_dicts(dicts: list[dict]) -> dict[str, float]:
+            if not dicts:
+                return {}
+            keys = list(dicts[0].keys())
+            return {k: round(sum(d[k] for d in dicts) / len(dicts), 6) for k in keys}
+
+        _loss_epoch_avg_raw = _avg_epoch_dicts(_audit_per_epoch_raw)
+        _loss_epoch_avg_weighted = _avg_epoch_dicts(_audit_per_epoch_weighted)
+
+        # selected_epoch_loss: the epoch that was actually checkpointed (best_epoch, post-selector)
+        # final_epoch_loss: the last epoch of training (index -1)
+        _sel_idx = (best_epoch - 1) if 0 <= best_epoch - 1 < len(_audit_per_epoch_raw) else None
+        _fin_idx = len(_audit_per_epoch_raw) - 1 if _audit_per_epoch_raw else None
+        _selected_epoch_raw = _audit_per_epoch_raw[_sel_idx] if _sel_idx is not None else None
+        _selected_epoch_weighted = _audit_per_epoch_weighted[_sel_idx] if _sel_idx is not None else None
+        _final_epoch_raw = _audit_per_epoch_raw[_fin_idx] if _fin_idx is not None else None
+        _final_epoch_weighted = _audit_per_epoch_weighted[_fin_idx] if _fin_idx is not None else None
+
+        # Ratios using weighted values (weighted matches what total_loss actually accumulated)
+        _ce_avg_w = _loss_epoch_avg_weighted.get("ce_loss", 0.0)
+        _total_avg_w = _loss_epoch_avg_weighted.get("total_loss", 0.0)
+        _aux_weighted_sum = round(_total_avg_w - _ce_avg_w, 6)
+        _aux_to_ce_w = round(_aux_weighted_sum / _ce_avg_w, 4) if _ce_avg_w > 0.0 else None
+
+        _ce_avg_r = _loss_epoch_avg_raw.get("ce_loss", 0.0)
+        _total_avg_r = _loss_epoch_avg_raw.get("total_loss", 0.0)
+        _aux_raw_sum = round(_total_avg_r - _ce_avg_r, 6)
+        _aux_to_ce_r = round(_aux_raw_sum / _ce_avg_r, 4) if _ce_avg_r > 0.0 else None
 
         _active_training_losses: dict[str, Any] = {
             "main_ce": {
                 "enabled": True,
+                "weight": 1.0,
                 "target": "output['logits'] (final_logits)",
-                "note": "always active; CE on sampled indices",
+                "diagnostic_head_only": False,
+                "raw_loss_key": "ce_loss",
+                "weighted_loss_key": "ce_loss",
+                "note": "always active; weight=1.0 so raw == weighted",
             },
             "ranking_loss": {
                 "enabled": not use_intervention_loss,
                 "weight": ranking_weight if not use_intervention_loss else 0.0,
-                "target": "output['logits'] (ranking objective)",
+                "target": "output['logits'] (ranking objective via v5.intervention_objective)",
                 "diagnostic_head_only": False,
-                "note": "simple ranking objective; disabled when --use-intervention-loss",
+                "raw_loss_key": "ranking_loss",
+                "weighted_loss_key": "ranking_loss",
+                "note": (
+                    f"ranking_weight={ranking_weight}; weighted_loss = ranking_weight * raw_loss. "
+                    "Baseline is NOT CE-only when this is enabled — ranking loss is active by default."
+                    if not use_intervention_loss else "disabled; use_intervention_loss=True"
+                ),
             },
             "intervention_loss": {
                 "enabled": use_intervention_loss,
                 "weight": 1.0 if use_intervention_loss else 0.0,
-                "target": "output['logits'] (structured pairwise)",
+                "target": "output['logits'] (structured pairwise via intervention_pairwise_losses)",
                 "diagnostic_head_only": False,
-                "note": "structured pairwise loss; enabled with --use-intervention-loss",
+                "raw_loss_key": "intervention_loss",
+                "weighted_loss_key": "intervention_loss",
+                "note": (
+                    "pairwise_losses['total']; internally weighted composite — "
+                    "raw and weighted are identical in the audit (no outer scalar)"
+                    if use_intervention_loss else "disabled; use_intervention_loss=False"
+                ),
             },
             "boundary_loss": {
                 "enabled": boundary_loss_weight > 0.0,
@@ -3217,6 +3285,8 @@ def main(argv: list[str] | None = None) -> int:
                 "pos_weight": boundary_loss_pos_weight,
                 "target": "boundary_logit",
                 "diagnostic_head_only": True,
+                "raw_loss_key": "boundary_loss",
+                "weighted_loss_key": "boundary_loss",
             },
             "frame_violation_loss": {
                 "enabled": fv_loss_weight > 0.0,
@@ -3224,12 +3294,16 @@ def main(argv: list[str] | None = None) -> int:
                 "pos_weight": fv_loss_pos_weight,
                 "target": "frame_violation_logit",
                 "diagnostic_head_only": True,
+                "raw_loss_key": "frame_violation_loss",
+                "weighted_loss_key": "frame_violation_loss",
             },
             "pair_contrastive_frame_loss": {
                 "enabled": pc_loss_weight > 0.0,
                 "weight": pc_loss_weight,
-                "target": "frame_violation_logit (margin ranking)",
+                "target": "frame_violation_logit (margin ranking between pres/frame pairs)",
                 "diagnostic_head_only": True,
+                "raw_loss_key": "pair_contrastive_frame_loss",
+                "weighted_loss_key": "pair_contrastive_frame_loss",
             },
             "predicate_isolation_loss": {
                 "enabled": pi_loss_weight > 0.0,
@@ -3237,6 +3311,8 @@ def main(argv: list[str] | None = None) -> int:
                 "pos_weight": pi_loss_pos_weight,
                 "target": "predicate_noncoverage_logit",
                 "diagnostic_head_only": True,
+                "raw_loss_key": "predicate_isolation_loss",
+                "weighted_loss_key": "predicate_isolation_loss",
             },
             "preservation_entitlement_loss": {
                 "enabled": pe_loss_weight > 0.0,
@@ -3244,6 +3320,8 @@ def main(argv: list[str] | None = None) -> int:
                 "pos_weight": pe_loss_pos_weight,
                 "target": "preservation_entitlement_logit",
                 "diagnostic_head_only": True,
+                "raw_loss_key": "preservation_entitlement_loss",
+                "weighted_loss_key": "preservation_entitlement_loss",
             },
             "temporal_diagnostic_loss": {
                 "enabled": td_loss_weight > 0.0,
@@ -3251,9 +3329,11 @@ def main(argv: list[str] | None = None) -> int:
                 "pos_weight": td_loss_pos_weight,
                 "target": "temporal_diagnostic_logit",
                 "diagnostic_head_only": True,
+                "raw_loss_key": "temporal_diagnostic_loss",
+                "weighted_loss_key": "temporal_diagnostic_loss",
                 "note": (
                     "WARNING: supervised via frame_pair_repr (shared); "
-                    "gradient coupling risk identified in Stage23"
+                    "gradient coupling risk confirmed in Stage23 at weight >= 0.05"
                     if td_loss_weight > 0.0 else "disabled"
                 ),
             },
@@ -3264,71 +3344,92 @@ def main(argv: list[str] | None = None) -> int:
                 "target": "temporal_adapter_logit",
                 "diagnostic_head_only": True,
                 "gradient_isolated": True,
+                "raw_loss_key": "temporal_adapter_loss",
+                "weighted_loss_key": "temporal_adapter_loss",
                 "note": (
-                    "adapter input detached by default; no gradient to frame_pair_repr"
+                    "adapter input is frame_pair_repr.detach(); no gradient to FrameGate"
                     if ta_loss_weight > 0.0 else "disabled"
                 ),
             },
         }
 
+        # True post-hoc final-logit modifiers only.
+        # Comparator alphas are learned architectural parameters inside model.forward() and are
+        # recorded separately under active_architectural_logit_components.
         _active_final_logit_modifiers: dict[str, Any] = {
-            "temporal_comparator_alpha": {
-                "enabled": bool(getattr(model, "use_temporal_comparator", False)),
-                "scope": "local (temporal_mismatch_flags-gated per-example)",
-                "stage15_used": False,
-                "note": "learned scalar; applied to flagged examples only",
-            },
-            "predicate_comparator_alpha": {
-                "enabled": bool(getattr(model, "use_predicate_comparator", False)),
-                "scope": "local (predicate_mismatch_flags-gated per-example)",
-                "stage15_used": False,
-                "note": "learned scalar; applied to flagged examples only",
-            },
             "temporal_adapter_final_penalty": {
                 "enabled": ta_final_penalty_scale > 0.0,
                 "scale": ta_final_penalty_scale,
-                "scope": "local (per-example; proportional to adapter prob)",
-                "stage15_used": False,
+                "type": "local_example_dependent",
+                "stage15_used_for_selection_or_calibration": False,
                 "note": (
-                    "per-example NOT_ENTITLED boost; adapter logit detached from gradient path. "
-                    "NOT OOD calibration. Stage15 never used to set scale."
+                    "per-example NOT_ENTITLED boost proportional to sigmoid(adapter_logit).detach(). "
+                    "Scale is a fixed hyperparameter — not OOD-calibrated. Stage15 never used."
                     if ta_final_penalty_scale > 0.0 else "disabled"
                 ),
             },
             "dev_calibrated_ne_shift": {
                 "enabled": args.dev_calibrated_ne_shift_candidates is not None,
                 "candidates": args.dev_calibrated_ne_shift_candidates,
-                "scope": "global post-hoc shift on NE logit (unflagged records)",
-                "stage15_used": False,
+                "type": "global_shift",
                 "calibration_source": (
                     f"controlled_{args.dev_calibrated_ne_calibration_source}_only"
                     if args.dev_calibrated_ne_shift_candidates is not None else None
                 ),
+                "stage15_used_for_selection_or_calibration": False,
                 "note": (
-                    "post-hoc; selected on controlled dev only — not Stage15. "
-                    "Diagnostic method only; not a final-model component."
+                    "post-hoc global NE logit shift; selected on controlled data only — not Stage15. "
+                    "Diagnostic method; not a validated final-model component."
                     if args.dev_calibrated_ne_shift_candidates is not None else "disabled"
                 ),
             },
             "ood_unflagged_ne_shift": {
                 "enabled": args.ood_unflagged_ne_shift_sweep is not None,
-                "scope": "global post-hoc OOD eval sweep only",
-                "stage15_used": True if args.ood_unflagged_ne_shift_sweep is not None else False,
+                "type": "ood_tuned_eval_only",
+                "stage15_used_for_selection_or_calibration": (
+                    args.ood_unflagged_ne_shift_sweep is not None
+                ),
                 "note": (
-                    "OOD-tuned shift — NOT valid as final-model component. "
-                    "Diagnostic/upper-bound only."
+                    "OOD-tuned global NE shift — Stage15 is consulted to select the shift. "
+                    "NOT a valid final-model component. Diagnostic upper bound only."
                     if args.ood_unflagged_ne_shift_sweep is not None else "disabled"
                 ),
             },
             "ood_selective_ne_shift": {
                 "enabled": args.ood_selective_ne_shift_sweep is not None,
-                "scope": "selective post-hoc OOD eval sweep only",
-                "stage15_used": True if args.ood_selective_ne_shift_sweep is not None else False,
+                "type": "ood_tuned_eval_only",
+                "stage15_used_for_selection_or_calibration": (
+                    args.ood_selective_ne_shift_sweep is not None
+                ),
                 "note": (
-                    "OOD-tuned shift — NOT valid as final-model component. "
-                    "Diagnostic/upper-bound only."
+                    "OOD-tuned selective NE shift — Stage15 is consulted to select the shift. "
+                    "NOT a valid final-model component. Diagnostic upper bound only."
                     if args.ood_selective_ne_shift_sweep is not None else "disabled"
                 ),
+            },
+        }
+
+        # Architectural logit components: learned parameters inside model.forward().
+        # These modify final_logits as part of the model graph — they are trained through
+        # backprop and gated on external flag inputs, NOT post-hoc fixed-scale modifiers.
+        _active_architectural_logit_components: dict[str, Any] = {
+            "temporal_comparator_alpha": {
+                "enabled": bool(getattr(model, "use_temporal_comparator", False)),
+                "type": "learned_gated_scalar",
+                "gating": "temporal_mismatch_flags (per-example; flagged examples only)",
+                "effect": "shifts final_logits[active, NOT_ENTITLED] by +alpha; SUPPORT/REFUTE by -alpha",
+                "trained_via_backprop": True,
+                "stage15_used": False,
+                "note": "learned scalar alpha_temporal(); applies to flagged examples; not a post-hoc modifier",
+            },
+            "predicate_comparator_alpha": {
+                "enabled": bool(getattr(model, "use_predicate_comparator", False)),
+                "type": "learned_gated_scalar",
+                "gating": "predicate_mismatch_flags (per-example; flagged examples only)",
+                "effect": "shifts final_logits[active, NOT_ENTITLED] by +alpha; SUPPORT/REFUTE by -alpha",
+                "trained_via_backprop": True,
+                "stage15_used": False,
+                "note": "learned scalar alpha_predicate(); applies to flagged examples; not a post-hoc modifier",
             },
         }
 
@@ -3366,19 +3467,30 @@ def main(argv: list[str] | None = None) -> int:
             },
         }
 
-        # Audit warnings (reporting only)
+        # Audit warnings (reporting only; using weighted ratios as primary signal)
         _audit_warnings: list[str] = []
-        if _aux_to_ce is not None and _aux_to_ce > 0.5:
+        if _aux_to_ce_w is not None and _aux_to_ce_w > 0.5:
             _audit_warnings.append(
-                f"aux_to_ce_loss_ratio={_aux_to_ce:.3f} > 0.5: "
-                "auxiliary losses dominate CE; verify intended weighting"
+                f"aux_to_ce_loss_ratio_weighted={_aux_to_ce_w:.3f} > 0.5: "
+                "weighted auxiliary losses exceed 50% of CE — total_loss is not CE-dominated"
             )
+        if not use_intervention_loss and ranking_weight > 2.0:
+            _audit_warnings.append(
+                f"ranking_loss enabled with large weight={ranking_weight}: "
+                "baseline is not CE-only; ranking loss contributes substantially to total_loss"
+            )
+        elif not use_intervention_loss and ranking_weight > 0.0:
+            _audit_warnings.append(
+                f"ranking_loss is active (ranking_weight={ranking_weight}): "
+                "baseline is not CE-only; see loss_component_epoch_avg_weighted['ranking_loss']"
+            )
+        # Count only true post-hoc modifiers (not architectural components)
         _active_modifier_count = sum(
             1 for _mod in _active_final_logit_modifiers.values() if _mod.get("enabled")
         )
         if _active_modifier_count > 1:
             _audit_warnings.append(
-                f"{_active_modifier_count} final-logit modifiers enabled simultaneously; "
+                f"{_active_modifier_count} post-hoc final-logit modifiers enabled simultaneously; "
                 "verify priority and interaction: "
                 + ", ".join(
                     k for k, v in _active_final_logit_modifiers.items() if v.get("enabled")
@@ -3392,7 +3504,8 @@ def main(argv: list[str] | None = None) -> int:
         if args.ood_unflagged_ne_shift_sweep is not None or args.ood_selective_ne_shift_sweep is not None:
             _audit_warnings.append(
                 "OOD-tuned NE shift is active during OOD eval: "
-                "this is a diagnostic upper bound, NOT a valid final-model method"
+                "this is a diagnostic upper bound, NOT a valid final-model method. "
+                "Stage15 was used to select or sweep the shift value."
             )
         if td_loss_weight > 0.0:
             _audit_warnings.append(
@@ -3401,8 +3514,8 @@ def main(argv: list[str] | None = None) -> int:
             )
         if ta_final_penalty_scale > 0.0 and ta_loss_weight <= 0.0:
             _audit_warnings.append(
-                "temporal_adapter_final_penalty is enabled but temporal_adapter_loss is disabled: "
-                "adapter was not trained this run; penalty applies untrained adapter probs"
+                "temporal_adapter_final_penalty is enabled but temporal_adapter_loss=0: "
+                "adapter was not trained this run; penalty applies untrained adapter probabilities"
             )
         if _tc_fallback_used:
             _audit_warnings.append(
@@ -3418,11 +3531,31 @@ def main(argv: list[str] | None = None) -> int:
         _run_audit_ledger: dict[str, Any] = {
             "active_training_losses": _active_training_losses,
             "active_final_logit_modifiers": _active_final_logit_modifiers,
+            "active_architectural_logit_components": _active_architectural_logit_components,
             "active_selection_rules": _active_selection_rules,
-            "loss_component_epoch_avg": _loss_epoch_avg,
-            "aux_to_ce_loss_ratio": _aux_to_ce,
+            # Loss component averages — raw (pre-weight) and weighted (contribution to total_loss)
+            "loss_component_epoch_avg_raw": _loss_epoch_avg_raw,
+            "loss_component_epoch_avg_weighted": _loss_epoch_avg_weighted,
+            "loss_component_epoch_avg": _loss_epoch_avg_weighted,   # backward-compat alias
+            "loss_component_epoch_avg_semantics": "weighted",
+            # Selected epoch loss (epoch actually checkpointed, after all selectors ran)
+            "selected_epoch_loss_component_avg_raw": _selected_epoch_raw,
+            "selected_epoch_loss_component_avg_weighted": _selected_epoch_weighted,
+            "selected_epoch_loss_component_avg": _selected_epoch_weighted,
+            # Final epoch loss (last epoch of training)
+            "final_epoch_loss_component_avg_raw": _final_epoch_raw,
+            "final_epoch_loss_component_avg_weighted": _final_epoch_weighted,
+            "final_epoch_loss_component_avg": _final_epoch_weighted,
+            # Ratios — weighted is primary; raw is supplemental
+            "aux_weighted_loss_sum": _aux_weighted_sum,
+            "aux_to_ce_loss_ratio_weighted": _aux_to_ce_w,
+            "aux_raw_loss_sum": _aux_raw_sum,
+            "aux_to_ce_loss_ratio_raw": _aux_to_ce_r,
+            "aux_to_ce_loss_ratio": _aux_to_ce_w,   # backward-compat alias; equals _weighted
             "audit_warnings": _audit_warnings,
             "audit_epoch_count": _audit_epoch_count,
+            "selected_epoch": best_epoch,
+            "final_epoch": epochs,
             # Static provenance
             "stage15_used_for_training": False,
             "stage15_used_for_loss_selection": False,
@@ -3748,6 +3881,14 @@ def main(argv: list[str] | None = None) -> int:
             "stage15_used_for_final_logit_modifier_selection": False,
             "stage15_used_for_checkpoint_selection": False,
             "time_swap_used_in_main_clean_data": False,
+            "loss_component_epoch_avg_semantics": "weighted",
+            "audit_ledger_note": (
+                "active_training_losses, active_final_logit_modifiers, "
+                "active_architectural_logit_components, active_selection_rules, "
+                "loss_component_epoch_avg_raw/weighted, selected/final_epoch_loss_component_avg, "
+                "aux_to_ce_loss_ratio_weighted/raw available in runs[*].audit_ledger and lifted "
+                "to top-level when len(runs)==1"
+            ),
         },
         "runs": reports,
     }
@@ -3848,7 +3989,24 @@ def main(argv: list[str] | None = None) -> int:
         _single_ledger = single.get("audit_ledger", {})
         for _audit_key in (
             "loss_component_epoch_avg",
+            "loss_component_epoch_avg_raw",
+            "loss_component_epoch_avg_weighted",
+            "loss_component_epoch_avg_semantics",
+            "selected_epoch_loss_component_avg",
+            "selected_epoch_loss_component_avg_raw",
+            "selected_epoch_loss_component_avg_weighted",
+            "final_epoch_loss_component_avg",
+            "final_epoch_loss_component_avg_raw",
+            "final_epoch_loss_component_avg_weighted",
+            "aux_weighted_loss_sum",
+            "aux_to_ce_loss_ratio_weighted",
+            "aux_raw_loss_sum",
+            "aux_to_ce_loss_ratio_raw",
             "aux_to_ce_loss_ratio",
+            "active_training_losses",
+            "active_final_logit_modifiers",
+            "active_architectural_logit_components",
+            "active_selection_rules",
             "audit_warnings",
             "stage15_used_for_training",
             "stage15_used_for_loss_selection",
