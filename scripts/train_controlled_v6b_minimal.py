@@ -2619,14 +2619,24 @@ def main(argv: list[str] | None = None) -> int:
             "use_frame_violation_loss": getattr(args, "use_frame_violation_loss", False),
             "frame_violation_loss_weight": getattr(args, "frame_violation_loss_weight", 0.0),
             "use_predicate_isolation_loss": getattr(args, "use_predicate_isolation_loss", False),
+            "use_predicate_isolation_head": getattr(args, "use_predicate_isolation_loss", False),
             "predicate_isolation_loss_weight": getattr(
                 args, "predicate_isolation_loss_weight", 0.0
+            ),
+            "predicate_isolation_loss_pos_weight": getattr(
+                args, "predicate_isolation_loss_pos_weight", 2.0
             ),
             "use_preservation_entitlement_loss": getattr(
                 args, "use_preservation_entitlement_loss", False
             ),
+            "use_preservation_entitlement_head": getattr(
+                args, "use_preservation_entitlement_loss", False
+            ),
             "preservation_entitlement_loss_weight": getattr(
                 args, "preservation_entitlement_loss_weight", 0.0
+            ),
+            "preservation_entitlement_loss_pos_weight": getattr(
+                args, "preservation_entitlement_loss_pos_weight", 1.0
             ),
             "use_pair_contrastive_frame_loss": getattr(
                 args, "use_pair_contrastive_frame_loss", False
