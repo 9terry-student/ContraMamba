@@ -2399,6 +2399,14 @@ def main(argv: list[str] | None = None) -> int:
             )
     model = model.to(device)
 
+    # Stage26-C TODO: add a one-shot contract check for v7 before the training loop.
+    # Call validate_v7_output_contract(output) after the first model forward to catch
+    # missing keys early.  Not wired here to avoid importing v7 code on v6B runs.
+    # Example (in a test or a separate validation script):
+    #   from contramamba.modeling_v7_hierarchical import validate_v7_output_contract
+    #   with torch.no_grad(): out = model(**model_feature_inputs(dev_inputs))
+    #   validate_v7_output_contract(out)
+
     if args.backbone == "mamba" and args.freeze_encoder:
         print("Caching frozen Mamba token states for train/dev...")
         v5.cache_frozen_encoder_states(model, train_inputs)
@@ -4443,6 +4451,19 @@ def main(argv: list[str] | None = None) -> int:
                 if getattr(args, "v7_no_entitlement_polarity_conditioning", False)
                 else "hierarchical_additive"
             ) if args.architecture == "v7_hierarchical" else None,
+            # Stage26-B: emit the v7 output contract key list for traceability.
+            # See V7_REQUIRED_OUTPUT_KEYS in modeling_v7_hierarchical.py for definition.
+            "v7_channel_output_keys": (
+                [
+                    "v7_frame_logit", "v7_frame_prob",
+                    "v7_predicate_logit", "v7_predicate_prob",
+                    "v7_sufficiency_logit", "v7_sufficiency_prob",
+                    "v7_entitlement_logit", "v7_entitlement_prob",
+                    "v7_polarity_support_logit", "v7_polarity_refute_logit",
+                    "v7_temporal_logit", "v7_temporal_prob",
+                ]
+                if args.architecture == "v7_hierarchical" else None
+            ),
             "stage15_used_for_v7_training": False,
             "stage15_used_for_v7_selection": False,
             "stage15_used_for_v7_aux_loss_targets": False,
@@ -5017,6 +5038,18 @@ def main(argv: list[str] | None = None) -> int:
             ),
             "v7_no_aux_losses": getattr(args, "v7_no_aux_losses", False),
             "v7_aux_losses_active": False,
+            # Stage26-B: emit the v7 output contract key list for traceability (OOD-sweep config).
+            "v7_channel_output_keys": (
+                [
+                    "v7_frame_logit", "v7_frame_prob",
+                    "v7_predicate_logit", "v7_predicate_prob",
+                    "v7_sufficiency_logit", "v7_sufficiency_prob",
+                    "v7_entitlement_logit", "v7_entitlement_prob",
+                    "v7_polarity_support_logit", "v7_polarity_refute_logit",
+                    "v7_temporal_logit", "v7_temporal_prob",
+                ]
+                if getattr(args, "architecture", "v6b_minimal") == "v7_hierarchical" else None
+            ),
             "stage15_used_for_v7_training": False,
             "stage15_used_for_v7_selection": False,
             "stage15_used_for_v7_aux_loss_targets": False,

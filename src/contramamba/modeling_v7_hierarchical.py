@@ -42,6 +42,74 @@ from torch.nn import functional as F
 from .heads import FrameGate, PredicateCoverageHead, SufficiencyGate
 
 
+# ---------------------------------------------------------------------------
+# Stage26-B: v7 output contract
+# ---------------------------------------------------------------------------
+# All keys that ContraMambaV7Hierarchical.forward() MUST include on every call.
+# Derived from what v5.controlled_losses, v5.compute_metrics,
+# v5.intervention_diagnostics, v5.intervention_objective, v5.prediction_records,
+# and v5.pairwise_checks actually access at runtime.
+#
+# Intentional exclusions:
+#   v7_temporal_logit / v7_temporal_prob — present only when temporal channel is
+#   active (None otherwise); no v5 utility reads them.
+V7_REQUIRED_OUTPUT_KEYS: tuple[str, ...] = (
+    # ── Core (inviolable) ────────────────────────────────────────────────────
+    # CE loss uses "logits". "base_logits" equals "logits" in Stage26-A/B.
+    "logits",
+    "base_logits",
+    "predictions",
+    # ── v5.controlled_losses ─────────────────────────────────────────────────
+    "frame_logit",
+    "predicate_coverage_logit",
+    "sufficiency_logit",
+    "positive_energy",   # alias for v7_polarity_support_logit
+    "negative_energy",   # alias for v7_polarity_refute_logit
+    # ── v5.compute_metrics / intervention_diagnostics / intervention_objective
+    # ── / prediction_records / pairwise_checks ───────────────────────────────
+    "frame_prob",
+    "predicate_coverage_prob",
+    "sufficiency_prob",
+    "entitlement_prob",
+    "polarity_margin",
+    # ── v7 diagnostic keys (always present when architecture=v7_hierarchical) ─
+    "v7_frame_logit",
+    "v7_frame_prob",
+    "v7_predicate_logit",
+    "v7_predicate_prob",
+    "v7_sufficiency_logit",
+    "v7_sufficiency_prob",
+    "v7_entitlement_logit",
+    "v7_entitlement_prob",
+    "v7_polarity_logits",
+    "v7_channel_output_keys",
+)
+
+
+def validate_v7_output_contract(output: dict[str, Any]) -> None:
+    """Raise KeyError listing all missing keys if the v7 output contract is violated.
+
+    NOT called automatically on every forward pass — use in unit tests or a
+    one-time validation pass (Stage26-C).  Calling this inside the training loop
+    on every step would add overhead and is not needed once the model is verified.
+
+    Usage:
+        from contramamba.modeling_v7_hierarchical import validate_v7_output_contract
+        out = model(**inputs)
+        validate_v7_output_contract(out)   # raises KeyError if contract is broken
+
+    v7_temporal_logit / v7_temporal_prob are excluded from the contract: they are
+    intentionally None when --v7-disable-temporal-channel is active, and no v5
+    utility reads them.
+    """
+    missing = [k for k in V7_REQUIRED_OUTPUT_KEYS if k not in output]
+    if missing:
+        raise KeyError(
+            f"v7 output contract violated — missing keys: {missing}\n"
+            f"Full required set: {list(V7_REQUIRED_OUTPUT_KEYS)}"
+        )
+
+
 class TemporalChannelV2(nn.Module):
     """Temporal invalidity probe for v7 EntitlementGate.
 
@@ -470,7 +538,12 @@ class ContraMambaV7Hierarchical(nn.Module):
         v7_polarity_refute = pol_out["v7_polarity_refute_logit"]
 
         # ── Final logit composition ──────────────────────────────────────────────
-        # Label order: REFUTE=0, NOT_ENTITLED=1, SUPPORT=2
+        # Class order matches FinalLabel in src/contramamba/labels.py:
+        #   dim 0 = REFUTE        (FinalLabel.REFUTE        = 0)
+        #   dim 1 = NOT_ENTITLED  (FinalLabel.NOT_ENTITLED  = 1)
+        #   dim 2 = SUPPORT       (FinalLabel.SUPPORT       = 2)
+        # The stack order [refute_score, ne_score, support_score] MUST NOT be
+        # reordered — CE receives integer labels encoded by FinalLabel directly.
         #
         # Hierarchical (default): entitlement logit gates polarity contribution.
         #   When entitlement is high (positive), polarity can push to SUPPORT/REFUTE.
@@ -489,8 +562,14 @@ class ContraMambaV7Hierarchical(nn.Module):
 
         final_logits = torch.stack([refute_score, ne_score, support_score], dim=-1)
 
-        # base_logits is the same as final_logits in v7 — there is no separate
-        # diagnostic projection. Exposed as required output key.
+        # base_logits semantics in v7 Stage26-A/B:
+        #   output["logits"]      — final logits used by CE loss.  INVIOLABLE.
+        #   output["base_logits"] — compatibility alias only; equals logits here.
+        #   In v7 Stage26-A/B there is no separate base projection, so both tensors
+        #   are identical.  Do NOT treat base_logits as independent model evidence
+        #   in v7 — it carries no additional diagnostic information in this stage.
+        #   A future Stage26-C+ may introduce a separate baseline projection for
+        #   ablation comparison, at which point base_logits would diverge from logits.
         base_logits = final_logits
 
         # ── Compatibility aliases ────────────────────────────────────────────────
