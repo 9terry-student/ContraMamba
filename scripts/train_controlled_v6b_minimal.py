@@ -1895,6 +1895,51 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+    # ── Generic preservation-constrained checkpoint selection ─────────────────────────────────
+    # Default off. Uses ONLY clean dev pairwise checks — no Stage15/OOD, no temporal diagnostic
+    # metrics. Compatible with baseline, TD, TA, PE, and future runs. Cannot be combined with
+    # --use-td-constrained-selection (raises a clear error).
+    parser.add_argument(
+        "--use-preservation-constrained-selection",
+        action="store_true",
+        default=False,
+        help=(
+            "Enable generic preservation-constrained checkpoint selection. Default off. "
+            "Among all epochs, select the one with highest clean-dev final_macro_f1 that also "
+            "satisfies paraphrase-preserved and predicate-disentangled pass-rate thresholds "
+            "(from clean dev pairwise checks only — Stage15/OOD is never consulted). "
+            "Falls back to unconstrained final_macro_f1 if no epoch is eligible. "
+            "Cannot be combined with --use-td-constrained-selection."
+        ),
+    )
+    parser.add_argument(
+        "--selection-min-paraphrase-preserved",
+        type=float,
+        default=0.70,
+        help=(
+            "Minimum clean-dev paraphrase_preserved pass_rate required for an epoch to be "
+            "eligible under --use-preservation-constrained-selection. Default 0.70."
+        ),
+    )
+    parser.add_argument(
+        "--selection-min-predicate-disentangled",
+        type=float,
+        default=0.85,
+        help=(
+            "Minimum clean-dev predicate_disentangled pass_rate required for an epoch to be "
+            "eligible under --use-preservation-constrained-selection. Default 0.85."
+        ),
+    )
+    parser.add_argument(
+        "--selection-fallback",
+        type=str,
+        default="final_macro_f1",
+        help=(
+            "Fallback scoring metric used if no epoch satisfies preservation constraints "
+            "under --use-preservation-constrained-selection. Default 'final_macro_f1'."
+        ),
+    )
+
     return parser
 
 
@@ -2319,10 +2364,22 @@ def main(argv: list[str] | None = None) -> int:
         ta_loss_weight=0.0,
         ta_loss_pos_weight=2.0,
         ta_final_penalty_scale=0.0,
+        # Generic preservation-constrained checkpoint selection (default off; clean dev only)
+        use_preservation_constrained_selection=False,
+        sel_min_paraphrase_preserved=0.70,
+        sel_min_predicate_disentangled=0.85,
+        sel_fallback="final_macro_f1",
     ):
         """Modified run_training that passes flags to v6b model."""
         if epochs < 1:
             raise ValueError("epochs must be at least 1")
+        if use_preservation_constrained_selection and use_td_constrained_selection:
+            raise ValueError(
+                "--use-preservation-constrained-selection and --use-td-constrained-selection "
+                "cannot both be enabled in the same run. Enable only one. "
+                "Both selectors override best_* after training; combining them would create "
+                "ambiguous behavior. Use one or the other."
+            )
         optimizer = v5.build_optimizer(model, lr, head_lr, encoder_lr)
         sampling_generator = torch.Generator().manual_seed(seed)
         best_epoch = 0
@@ -2334,6 +2391,20 @@ def main(argv: list[str] | None = None) -> int:
         best_trainable_state = None
         best_pc_metrics: dict[str, Any] = {}
         best_state: dict[str, torch.Tensor] | None = None
+        # Preservation-constrained selection tracking (parallel; never uses Stage15/OOD)
+        # Only clean dev pairwise checks (paraphrase_preserved, predicate_disentangled).
+        # score = final_macro_f1 among eligible epochs; fallback = unconstrained best_*.
+        _pcs_epoch: int = -1
+        _pcs_score: float = float("-inf")
+        _pcs_state: "dict[str, torch.Tensor] | None" = None
+        _pcs_dev_metrics: "dict | None" = None
+        _pcs_dev_interventions: "dict | None" = None
+        _pcs_dev_pairwise_checks: "dict | None" = None
+        _pcs_dev_predictions: "list | None" = None
+        _pcs_pc_metrics: dict[str, Any] = {}
+        _pcs_paraphrase_preserved: float = float("nan")
+        _pcs_predicate_disentangled: float = float("nan")
+        _pcs_eligible_count: int = 0
         # TD-constrained selection tracking (parallel to unconstrained; fallback is existing best_*)
         _tc_epoch: int = -1
         _tc_score: float = float("-inf")
@@ -2797,6 +2868,40 @@ def main(argv: list[str] | None = None) -> int:
                         "td_final_binary_accuracy", float("nan")
                     ) if _dtd_fdm else float("nan")
 
+            # Generic preservation-constrained checkpoint selection (clean dev only; no Stage15)
+            # Uses paraphrase_preserved and predicate_disentangled pass_rate from clean dev
+            # pairwise checks. Stage15/OOD is never consulted here.
+            if use_preservation_constrained_selection and not smoke_mode:
+                _ep_pcs_pw = v5.pairwise_checks(dev_records, dev_output)
+                _ep_pcs_pp = _ep_pcs_pw.get("paraphrase_preserved", {}).get("pass_rate", 0.0)
+                _ep_pcs_pd = _ep_pcs_pw.get("predicate_disentangled", {}).get("pass_rate", 0.0)
+                _ep_pcs_eligible = (
+                    _ep_pcs_pp >= sel_min_paraphrase_preserved
+                    and _ep_pcs_pd >= sel_min_predicate_disentangled
+                )
+                if _ep_pcs_eligible:
+                    _pcs_eligible_count += 1
+                    if score > _pcs_score:
+                        _pcs_score = score
+                        _pcs_epoch = epoch
+                        _pcs_paraphrase_preserved = _ep_pcs_pp
+                        _pcs_predicate_disentangled = _ep_pcs_pd
+                        _pcs_dev_metrics = dev_metrics
+                        _pcs_dev_interventions = intervention_diagnostics_v6b(
+                            dev_records, dev_output
+                        )
+                        _pcs_dev_pairwise_checks = _ep_pcs_pw
+                        _pcs_dev_predictions = prediction_records_v6b(dev_records, dev_output)
+                        _pcs_state = {
+                            k: v.detach().cpu().clone() for k, v in model.state_dict().items()
+                        }
+                        _pcs_pc_metrics = {
+                            **_pc_eval_metrics,
+                            "pair_contrastive_use_case": args.pair_contrastive_use_case,
+                            "count_by_preservation_construction_type": _pc_pres_type_counts,
+                            "count_by_frame_construction_type": _pc_frame_type_counts,
+                        }
+
             print(
                 f"run={run_name} "
                 + v5.format_epoch(
@@ -2982,6 +3087,67 @@ def main(argv: list[str] | None = None) -> int:
             ),
         }
 
+        # Apply generic preservation-constrained checkpoint selection after all epochs
+        _pcs_used = False
+        _pcs_fallback_used = False
+        _pcs_reason = "unconstrained_default"
+        if use_preservation_constrained_selection:
+            _pcs_used = True
+            if _pcs_epoch >= 1:
+                # At least one epoch satisfied preservation constraints — override best_*
+                print(
+                    f"  [pres_constrained_sel] selected epoch={_pcs_epoch}"
+                    f" clean_macro={_pcs_score:.4f}"
+                    f" paraphrase_preserved={_pcs_paraphrase_preserved:.3f}"
+                    f" predicate_disentangled={_pcs_predicate_disentangled:.3f}"
+                    f" eligible_epochs={_pcs_eligible_count}"
+                    f" (unconstrained_fallback_epoch={best_epoch})"
+                )
+                best_epoch = _pcs_epoch
+                best_dev_metrics = _pcs_dev_metrics
+                best_dev_interventions = _pcs_dev_interventions
+                best_dev_pairwise_checks = _pcs_dev_pairwise_checks
+                best_dev_predictions = _pcs_dev_predictions
+                best_state = _pcs_state
+                best_pc_metrics = _pcs_pc_metrics
+                _pcs_reason = "constrained_selection_applied"
+            else:
+                # No epoch met preservation constraints — fall back to unconstrained best
+                _pcs_fallback_used = True
+                _pcs_reason = "constrained_fallback_no_eligible_epoch"
+                print(
+                    f"  [pres_constrained_sel] WARNING: no eligible epoch found "
+                    f"(min_pp={sel_min_paraphrase_preserved}"
+                    f" min_pd={sel_min_predicate_disentangled}); "
+                    f"falling back to unconstrained best epoch={best_epoch}"
+                )
+        _pcs_applied = _pcs_used and not _pcs_fallback_used
+        _pcs_selection_info: dict[str, Any] = {
+            "use_preservation_constrained_selection": use_preservation_constrained_selection,
+            "selection_min_paraphrase_preserved": sel_min_paraphrase_preserved,
+            "selection_min_predicate_disentangled": sel_min_predicate_disentangled,
+            "selection_fallback": sel_fallback,
+            "stage15_used_for_preservation_constrained_selection": False,
+            "preservation_constrained_selection_used": _pcs_used,
+            "preservation_constrained_selection_fallback_used": _pcs_fallback_used,
+            "preservation_constrained_selection_reason": _pcs_reason,
+            "preservation_constrained_selection_eligible_epoch_count": (
+                -1 if not use_preservation_constrained_selection else _pcs_eligible_count
+            ),
+            "preservation_constrained_selection_selected_epoch": (
+                best_epoch if _pcs_used else None
+            ),
+            "preservation_constrained_selection_selected_clean_macro": (
+                _pcs_score if _pcs_applied else None
+            ),
+            "preservation_constrained_selection_selected_paraphrase_preserved": (
+                _pcs_paraphrase_preserved if _pcs_applied else None
+            ),
+            "preservation_constrained_selection_selected_predicate_disentangled": (
+                _pcs_predicate_disentangled if _pcs_applied else None
+            ),
+        }
+
         report = {
             "run_name": run_name,
             "final_epoch": epochs,
@@ -2994,6 +3160,7 @@ def main(argv: list[str] | None = None) -> int:
             "loss_config": loss_config,
             "best_pair_contrastive_frame_metrics": best_pc_metrics,
             **_tc_selection_info,
+            **_pcs_selection_info,
         }
         report["_best_state"] = best_state
         if best_trainable_state is not None:
@@ -3104,6 +3271,10 @@ def main(argv: list[str] | None = None) -> int:
                 args.temporal_adapter_final_penalty_scale
                 if args.use_temporal_adapter_final_penalty else 0.0
             ),
+            use_preservation_constrained_selection=args.use_preservation_constrained_selection,
+            sel_min_paraphrase_preserved=args.selection_min_paraphrase_preserved,
+            sel_min_predicate_disentangled=args.selection_min_predicate_disentangled,
+            sel_fallback=args.selection_fallback,
             pc_pres_inputs=_pc_pres_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_frame_inputs=_pc_frame_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_loss_weight=(
@@ -3262,6 +3433,23 @@ def main(argv: list[str] | None = None) -> int:
                 if args.use_temporal_adapter_final_penalty else 0.0
             ),
             "stage15_used_for_temporal_adapter_training": False,
+            "use_preservation_constrained_selection": args.use_preservation_constrained_selection,
+            "selection_min_paraphrase_preserved": args.selection_min_paraphrase_preserved,
+            "selection_min_predicate_disentangled": args.selection_min_predicate_disentangled,
+            "selection_fallback": args.selection_fallback,
+            "preservation_constrained_selection_used": (
+                next(iter(reports.values()), {}).get(
+                    "preservation_constrained_selection_used", False
+                )
+                if len(reports) == 1 else None
+            ),
+            "preservation_constrained_selection_fallback_used": (
+                next(iter(reports.values()), {}).get(
+                    "preservation_constrained_selection_fallback_used", False
+                )
+                if len(reports) == 1 else None
+            ),
+            "stage15_used_for_preservation_constrained_selection": False,
             "dev_calibrated_ne_shift_candidates": args.dev_calibrated_ne_shift_candidates,
             "dev_calibrated_ne_gate": args.dev_calibrated_ne_gate,
             "dev_calibrated_ne_threshold": args.dev_calibrated_ne_threshold,
@@ -3346,6 +3534,20 @@ def main(argv: list[str] | None = None) -> int:
             "td_constrained_selection_selected_td_final_temporal_rejection_rate",
             "td_constrained_selection_selected_td_final_control_preservation_rate",
             "td_constrained_selection_selected_td_final_binary_accuracy",
+            # Generic preservation-constrained selection results
+            "use_preservation_constrained_selection",
+            "selection_min_paraphrase_preserved",
+            "selection_min_predicate_disentangled",
+            "selection_fallback",
+            "stage15_used_for_preservation_constrained_selection",
+            "preservation_constrained_selection_used",
+            "preservation_constrained_selection_fallback_used",
+            "preservation_constrained_selection_reason",
+            "preservation_constrained_selection_eligible_epoch_count",
+            "preservation_constrained_selection_selected_epoch",
+            "preservation_constrained_selection_selected_clean_macro",
+            "preservation_constrained_selection_selected_paraphrase_preserved",
+            "preservation_constrained_selection_selected_predicate_disentangled",
         ):
             if key in single:
                 report[key] = single[key]
@@ -3712,6 +3914,29 @@ def main(argv: list[str] | None = None) -> int:
                 args, "temporal_adapter_final_penalty_scale", 0.0
             ),
             "stage15_used_for_temporal_adapter_training": False,
+            "use_preservation_constrained_selection": getattr(
+                args, "use_preservation_constrained_selection", False
+            ),
+            "selection_min_paraphrase_preserved": getattr(
+                args, "selection_min_paraphrase_preserved", 0.70
+            ),
+            "selection_min_predicate_disentangled": getattr(
+                args, "selection_min_predicate_disentangled", 0.85
+            ),
+            "selection_fallback": getattr(args, "selection_fallback", "final_macro_f1"),
+            "preservation_constrained_selection_used": (
+                next(iter(reports.values()), {}).get(
+                    "preservation_constrained_selection_used", False
+                )
+                if len(reports) == 1 else None
+            ),
+            "preservation_constrained_selection_fallback_used": (
+                next(iter(reports.values()), {}).get(
+                    "preservation_constrained_selection_fallback_used", False
+                )
+                if len(reports) == 1 else None
+            ),
+            "stage15_used_for_preservation_constrained_selection": False,
             "use_pair_contrastive_frame_loss": getattr(
                 args, "use_pair_contrastive_frame_loss", False
             ),
