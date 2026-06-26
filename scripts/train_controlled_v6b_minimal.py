@@ -151,6 +151,9 @@ def build_v7_model(
     v7_no_entitlement_polarity_conditioning: bool = False,
     v7_no_aux_losses: bool = False,
     v7_initial_ne_bias: float = -0.5,
+    v7_use_v6b_style_final_decision: bool = False,
+    v7_use_learnable_ne_alpha: bool = False,
+    v7_ne_alpha_init: float = 1.0,
 ) -> "ContraMambaV7Hierarchical":
     """Build a ContraMambaV7Hierarchical with dummy backbone for plumbing validation."""
     from contramamba.modeling_v7_hierarchical import ContraMambaV7Hierarchical
@@ -170,6 +173,9 @@ def build_v7_model(
         v7_no_entitlement_polarity_conditioning=v7_no_entitlement_polarity_conditioning,
         v7_no_aux_losses=v7_no_aux_losses,
         v7_initial_ne_bias=v7_initial_ne_bias,
+        v7_use_v6b_style_final_decision=v7_use_v6b_style_final_decision,
+        v7_use_learnable_ne_alpha=v7_use_learnable_ne_alpha,
+        v7_ne_alpha_init=v7_ne_alpha_init,
     )
 
 
@@ -185,6 +191,9 @@ def build_v7_mamba_model(
     v7_no_entitlement_polarity_conditioning: bool = False,
     v7_no_aux_losses: bool = False,
     v7_initial_ne_bias: float = -0.5,
+    v7_use_v6b_style_final_decision: bool = False,
+    v7_use_learnable_ne_alpha: bool = False,
+    v7_ne_alpha_init: float = 1.0,
 ) -> "ContraMambaV7Hierarchical":
     """Build a ContraMambaV7Hierarchical with real Mamba backbone."""
     from contramamba.modeling_v7_hierarchical import ContraMambaV7Hierarchical
@@ -204,6 +213,9 @@ def build_v7_mamba_model(
         v7_no_entitlement_polarity_conditioning=v7_no_entitlement_polarity_conditioning,
         v7_no_aux_losses=v7_no_aux_losses,
         v7_initial_ne_bias=v7_initial_ne_bias,
+        v7_use_v6b_style_final_decision=v7_use_v6b_style_final_decision,
+        v7_use_learnable_ne_alpha=v7_use_learnable_ne_alpha,
+        v7_ne_alpha_init=v7_ne_alpha_init,
     )
     for parameter in model.mamba.parameters():
         parameter.requires_grad = not freeze_encoder
@@ -2156,6 +2168,33 @@ def build_parser() -> argparse.ArgumentParser:
             "Only valid when --architecture v7_hierarchical."
         ),
     )
+
+    parser.add_argument(
+        "--v7-use-v6b-style-final-decision",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage26-H1: Use v6B-style softplus polarity energy plus multiplicative "
+            "entitlement_prob final decision inside v7. Default off."
+        ),
+    )
+
+    parser.add_argument(
+        "--v7-use-learnable-ne-alpha",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage26-H1: Use learnable alpha for NOT_ENTITLED residual "
+            "ne_bias + alpha * (1 - entitlement_prob). Default off."
+        ),
+    )
+
+    parser.add_argument(
+        "--v7-ne-alpha-init",
+        type=float,
+        default=1.0,
+        help="Stage26-H1: Initial value for learnable NE alpha. Default 1.0.",
+    )
     parser.add_argument(
         "--v7-no-aux-losses",
         action="store_true",
@@ -2313,6 +2352,9 @@ _V7_DIAG_CAPTURE_KEYS: tuple[str, ...] = (
     "v7_predicate_prob",
     "v7_sufficiency_prob",
     "v7_final_logit_composition",
+    "v7_polarity_positive_energy",
+    "v7_polarity_negative_energy",
+    "v7_polarity_energy_margin",
 )
 
 
@@ -2493,6 +2535,9 @@ _LIFT_CONFIG_KEYS: tuple[str, ...] = (
     "stage15_used_for_v7_selection",
     "stage15_used_for_v7_aux_loss_targets",
     "time_swap_used_in_v7_main_clean_data",
+    "v7_use_v6b_style_final_decision",
+    "v7_use_learnable_ne_alpha",
+    "v7_ne_alpha_init",
 )
 
 
@@ -2602,6 +2647,9 @@ def main(argv: list[str] | None = None) -> int:
                 v7_no_entitlement_polarity_conditioning=args.v7_no_entitlement_polarity_conditioning,
                 v7_no_aux_losses=args.v7_no_aux_losses,
                 v7_initial_ne_bias=args.v7_initial_ne_bias,
+                v7_use_v6b_style_final_decision=args.v7_use_v6b_style_final_decision,
+                v7_use_learnable_ne_alpha=args.v7_use_learnable_ne_alpha,
+                v7_ne_alpha_init=args.v7_ne_alpha_init,
             )
         else:
             model = build_mamba_model(

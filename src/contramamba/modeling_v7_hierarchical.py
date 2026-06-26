@@ -361,6 +361,10 @@ class ContraMambaV7Hierarchical(nn.Module):
         # diagnostics (entitlement_prob ≈ 0.56 across all gold classes, ne_score dominating).
         # Does NOT affect v6B. Does NOT affect architecture. Does NOT use OOD or Stage15.
         v7_initial_ne_bias: float = -0.5,
+        # Stage26-H1 optional bridge. Default off; preserves existing v7 behavior.
+        v7_use_v6b_style_final_decision: bool = False,
+        v7_use_learnable_ne_alpha: bool = False,
+        v7_ne_alpha_init: float = 1.0,
     ) -> None:
         super().__init__()
 
@@ -395,6 +399,22 @@ class ContraMambaV7Hierarchical(nn.Module):
         self.v7_flat_arbiter = v7_flat_arbiter
         self.v7_no_entitlement_polarity_conditioning = v7_no_entitlement_polarity_conditioning
         self.v7_no_aux_losses = v7_no_aux_losses
+
+        self.v7_use_v6b_style_final_decision = v7_use_v6b_style_final_decision
+        self.v7_use_learnable_ne_alpha = v7_use_learnable_ne_alpha
+        self.v7_ne_alpha_init = float(v7_ne_alpha_init)
+
+        if self.v7_use_v6b_style_final_decision and self.v7_no_entitlement_polarity_conditioning:
+            raise ValueError(
+                "v7_use_v6b_style_final_decision is incompatible with "
+                "v7_no_entitlement_polarity_conditioning. H1 bridge requires entitlement_prob gating."
+            )
+
+        if self.v7_use_learnable_ne_alpha:
+            _alpha_init = torch.tensor(max(self.v7_ne_alpha_init, 1e-6))
+            self.v7_raw_ne_alpha = nn.Parameter(torch.log(torch.expm1(_alpha_init)))
+        else:
+            self.v7_raw_ne_alpha = None
 
         # Channel heads — reuse existing v5/v6B heads for FrameChannel, PredicateChannel,
         # SufficiencyChannel. TemporalChannel, EntitlementGate, and PolarityChannel are new.
@@ -561,16 +581,59 @@ class ContraMambaV7Hierarchical(nn.Module):
         #
         # Flat (v7_no_entitlement_polarity_conditioning): polarity alone decides
         #   SUPPORT/REFUTE; NE score uses fixed ne_bias. Ablation reference only.
-        if self.v7_no_entitlement_polarity_conditioning:
-            support_score = v7_polarity_support
-            refute_score = v7_polarity_refute
-            ne_score = self.ne_bias.expand(v7_entitlement_logit.shape)
+        if self.v7_use_v6b_style_final_decision:
+            # Stage26-H1 bridge:
+            # Preserve v7 hierarchy, but restore v6B-style decision geometry.
+            # Raw support/refute logits remain available as diagnostics.
+            positive_energy = F.softplus(v7_polarity_support)
+            negative_energy = F.softplus(v7_polarity_refute)
+
+            entitlement_for_decision = v7_entitlement_prob
+
+            support_score = entitlement_for_decision * positive_energy
+            refute_score = entitlement_for_decision * negative_energy
+
+            if self.v7_use_learnable_ne_alpha:
+                if self.v7_raw_ne_alpha is None:
+                    raise RuntimeError("v7_raw_ne_alpha is None while learnable NE alpha is enabled.")
+                v7_ne_alpha = F.softplus(self.v7_raw_ne_alpha)
+                ne_score = self.ne_bias + v7_ne_alpha * (1.0 - entitlement_for_decision)
+                v7_ne_score_mode = "bias_plus_learnable_alpha_times_one_minus_entitlement_prob"
+            else:
+                v7_ne_alpha = None
+                ne_score = self.ne_bias + (1.0 - entitlement_for_decision)
+                v7_ne_score_mode = "bias_plus_one_minus_entitlement_prob"
+
+            v7_final_logit_composition = "v6b_style_softplus_multiplicative"
+            v7_polarity_energy_mode = "softplus_energy"
+            v7_entitlement_decision_signal = "entitlement_prob"
+
         else:
-            support_score = v7_entitlement_logit + v7_polarity_support
-            refute_score = v7_entitlement_logit + v7_polarity_refute
-            ne_score = -v7_entitlement_logit + self.ne_bias
+            # Existing v7 behavior. Keep default semantics unchanged.
+            if self.v7_no_entitlement_polarity_conditioning:
+                support_score = v7_polarity_support
+                refute_score = v7_polarity_refute
+                ne_score = self.ne_bias.expand(v7_entitlement_logit.shape)
+
+                v7_final_logit_composition = "flat"
+                v7_ne_score_mode = "fixed_ne_bias"
+                v7_entitlement_decision_signal = "none"
+            else:
+                support_score = v7_entitlement_logit + v7_polarity_support
+                refute_score = v7_entitlement_logit + v7_polarity_refute
+                ne_score = -v7_entitlement_logit + self.ne_bias
+
+                v7_final_logit_composition = "hierarchical_additive"
+                v7_ne_score_mode = "negative_entitlement_logit_plus_bias"
+                v7_entitlement_decision_signal = "entitlement_logit"
+
+            positive_energy = v7_polarity_support
+            negative_energy = v7_polarity_refute
+            v7_ne_alpha = None
+            v7_polarity_energy_mode = "raw_logits"
 
         final_logits = torch.stack([refute_score, ne_score, support_score], dim=-1)
+        polarity_margin = positive_energy - negative_energy
 
         # base_logits semantics in v7 Stage26-A/B:
         #   output["logits"]      — final logits used by CE loss.  INVIOLABLE.
@@ -588,9 +651,6 @@ class ContraMambaV7Hierarchical(nn.Module):
         #   positive_energy / negative_energy → polarity support/refute logits (aliases)
         #   polarity_margin → support_logit - refute_logit (direction signal)
         #   entitlement_prob → v7_entitlement_prob (gating probability)
-        positive_energy = v7_polarity_support
-        negative_energy = v7_polarity_refute
-        polarity_margin = v7_polarity_support - v7_polarity_refute
 
         return {
             # ── Core output contract (inviolable) ──────────────────────────────
@@ -640,4 +700,13 @@ class ContraMambaV7Hierarchical(nn.Module):
                 if self.v7_no_entitlement_polarity_conditioning
                 else "hierarchical_additive"
             ),
+            "v7_final_logit_composition": v7_final_logit_composition,
+            "v7_polarity_energy_mode": v7_polarity_energy_mode,
+            "v7_entitlement_decision_signal": v7_entitlement_decision_signal,
+            "v7_ne_score_mode": v7_ne_score_mode,
+            "v7_ne_alpha": v7_ne_alpha,
+
+            "v7_polarity_positive_energy": positive_energy,
+            "v7_polarity_negative_energy": negative_energy,
+            "v7_polarity_energy_margin": polarity_margin,
         }
