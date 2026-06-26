@@ -3,3 +3,5 @@
 __pycache__/
 *.py[cod]
 *.egg-info/
+outputs/
+outputs_dummy_legacy_audit_search.txt
