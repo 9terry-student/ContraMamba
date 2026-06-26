@@ -1,0 +1,67 @@
+{
+  "stage": "Stage26 old-head real-Mamba validation",
+  "date": "2026-06-26",
+  "final_decision": {
+    "final_v6b_old_head_config": "frame_preserve_w03",
+    "boundary_w03": "valid secondary signal",
+    "pair_contrastive_support_safe": "component signal KEEP; final config DROP / NOT ROBUST",
+    "next_stage": "Stage27-H2A v7-H1 explicit entitlement decision signal"
+  },
+  "frame_preserve_w03_3seed": {
+    "macro": "0.9785 ± 0.0159",
+    "acc": "0.9856 ± 0.0112",
+    "SUP_p": "0.9293 ± 0.0850",
+    "SUP_r": "0.9667 ± 0.0484",
+    "NE_r": "0.9864 ± 0.0172",
+    "REF_r": "1.0000 ± 0.0000",
+    "loc_SUP_total": 8,
+    "role_SUP_total": 6,
+    "entity_SUP_total": 2,
+    "event_SUP_total": 4,
+    "predicate_SUP_total": 1,
+    "title_SUP_total": 1,
+    "bad_SUP_total": 22,
+    "missing_SUP_total": 0,
+    "decision": "final v6B old-head winner"
+  },
+  "frame_preserve_pair_w01_supportsafe_sample300_3seed": {
+    "macro": "0.9778 ± 0.0142",
+    "acc": "0.9852 ± 0.0095",
+    "SUP_p": "0.9116 ± 0.0490",
+    "SUP_r": "0.9778 ± 0.0294",
+    "NE_r": "0.9840 ± 0.0091",
+    "REF_r": "1.0000 ± 0.0000",
+    "loc_SUP_total": 16,
+    "role_SUP_total": 5,
+    "entity_SUP_total": 1,
+    "event_SUP_total": 3,
+    "predicate_SUP_total": 0,
+    "title_SUP_total": 1,
+    "bad_SUP_total": 26,
+    "missing_SUP_total": 0,
+    "decision": "component signal KEEP; final config DROP / NOT ROBUST"
+  },
+  "head_to_head_delta_pair_minus_baseline": {
+    "macro": -0.0007,
+    "acc": -0.0005,
+    "SUP_p": -0.0177,
+    "SUP_r": 0.0111,
+    "NE_r": -0.0025,
+    "REF_r": 0.0,
+    "loc_SUP": 8,
+    "role_SUP": -1,
+    "entity_SUP": -1,
+    "event_SUP": -1,
+    "predicate_SUP": -1,
+    "title_SUP": 0,
+    "bad_SUP": 4,
+    "missing_SUP": 0
+  },
+  "interpretation": [
+    "Old Stage22 diagnostic heads are real-Mamba-valid in v6b_minimal.",
+    "frame+preserve_w03 is the most robust final v6B old-head configuration.",
+    "support_safe pair contrastive learns a nonzero component signal but is not robust as a directly mixed final training loss.",
+    "The main regression from pair contrastive is increased location-swap false SUPPORT.",
+    "Pair contrastive should be retained as a component-level H2/H3 candidate, not as the current final config."
+  ]
+}
