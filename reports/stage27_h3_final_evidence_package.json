@@ -1,0 +1,475 @@
+{
+  "stage": "Stage27-H3",
+  "objective": "Consolidate Stage27 v7-H1 entitlement decision experiments into a single claim-worthy evidence package. Explain why product_power=0.90 is the final stable configuration, while preserving learned and hybrid gates as diagnostic / negative-but-informative signals.",
+  "final_config": {
+    "architecture": "v7_hierarchical",
+    "v7_use_v6b_style_final_decision": true,
+    "v7_h1_entitlement_decision_signal": "product",
+    "v7_h1_entitlement_product_power": 0.90,
+    "dataset": "data/controlled_v5_v3_without_time_swap.jsonl",
+    "backbone": "Mamba",
+    "freeze_encoder": true,
+    "freeze_a_log": true,
+    "max_length": 64,
+    "caveat": "controlled no-time validation setting only",
+    "aggregate_3seed": {
+      "macro_mean": 0.951136,
+      "macro_std": 0.021341,
+      "acc_mean": 0.968056,
+      "acc_std": 0.013679,
+      "SUP_r_mean": 0.907407,
+      "NE_r_mean": 0.972840,
+      "REF_r_mean": 1.0,
+      "bad_SUP_total": 44,
+      "location_role_SUP_total": 33,
+      "predicate_SUP_total": 3,
+      "missing_SUP_total": 0
+    }
+  },
+  "final_formula": {
+    "positive_energy": "softplus(v7_polarity_support)",
+    "negative_energy": "softplus(v7_polarity_refute)",
+    "entitlement_for_decision": "(frame_prob * predicate_coverage_prob * sufficiency_prob) ** 0.90",
+    "support_score": "entitlement_for_decision * positive_energy",
+    "refute_score": "entitlement_for_decision * negative_energy",
+    "ne_score": "ne_bias + alpha * (1 - entitlement_for_decision)"
+  },
+  "stage_timeline": [
+    {
+      "stage": "H1",
+      "scope": "Learned v7-H1 final-decision path",
+      "outcome": "Solved SUPPORT collapse relative to earlier v7 issues. Revealed frame-mismatch false SUPPORT concentrated in location/role axes."
+    },
+    {
+      "stage": "H2A",
+      "scope": "3-mode decision signal comparison: learned / product / min",
+      "outcome": "Product selected as best aggregate. Learned had high seed variance. Min over-entitled."
+    },
+    {
+      "stage": "H2B",
+      "scope": "Product-power sweep (0.67 to 1.00, 3 seeds)",
+      "outcome": "product_power=0.90 selected as stable tradeoff. Frozen; no further micro-tuning."
+    },
+    {
+      "stage": "H2C",
+      "scope": "Learned gate seed diagnostic",
+      "outcome": "Seed3 competitive; seed1 collapsed on location/role false SUPPORT. Learned preserved as diagnostic branch."
+    },
+    {
+      "stage": "H2D",
+      "scope": "Learned+BCE stabilization screen on seed1",
+      "outcome": "bce_w1p0 partially rescues seed1 (bad_SUP 90->55) but fails 3/4 pre-defined thresholds. Learned not finalized."
+    },
+    {
+      "stage": "H2E",
+      "scope": "Product-learned residual gate (beta sweep + 3seed at beta=0.2)",
+      "outcome": "Beta=0.2 improves seed1 locally; 3seed aggregate macro -0.020 and bad_SUP +33 vs product. Hybrid preserved as negative-but-informative."
+    },
+    {
+      "stage": "H2F",
+      "scope": "Gate-axis decomposition: learned / product / hybrid",
+      "outcome": "location/role is dominant false-SUPPORT axis in all configs. Product remains final. Learned/hybrid preserved for diagnostic use."
+    }
+  ],
+  "h2a_summary": {
+    "method": "3-seed controlled no-time comparison of learned / product / min H1 decision signals",
+    "results": [
+      {
+        "mode": "product",
+        "macro_mean": 0.940351,
+        "macro_std": 0.025612,
+        "acc_mean": 0.957870,
+        "acc_std": 0.018651,
+        "SUP_r_mean": 0.944444,
+        "NE_r_mean": 0.953086,
+        "REF_r_mean": 1.0,
+        "bad_SUP_total": 76,
+        "location_role_SUP_total": 60,
+        "predicate_SUP_total": 7,
+        "missing_SUP_total": 0
+      },
+      {
+        "mode": "min",
+        "macro_mean": 0.928270,
+        "macro_std": 0.020529,
+        "acc_mean": 0.945833,
+        "acc_std": 0.017067,
+        "SUP_r_mean": 0.988889,
+        "NE_r_mean": 0.929630,
+        "REF_r_mean": 1.0,
+        "bad_SUP_total": 114,
+        "location_role_SUP_total": 78,
+        "predicate_SUP_total": 19,
+        "missing_SUP_total": 0
+      },
+      {
+        "mode": "learned",
+        "macro_mean": 0.900660,
+        "macro_std": 0.046553,
+        "acc_mean": 0.922685,
+        "acc_std": 0.045354,
+        "SUP_r_mean": 0.966952,
+        "NE_r_mean": 0.902469,
+        "REF_r_mean": 1.0,
+        "bad_SUP_total": 136,
+        "location_role_SUP_total": 104,
+        "predicate_SUP_total": 8,
+        "missing_SUP_total": 0
+      }
+    ],
+    "decision": "Select product for H2B power sweep.",
+    "interpretation": [
+      "product is best H2A aggregate: highest macro (0.9404), lowest bad_SUP (76).",
+      "min preserves the highest SUPPORT recall but over-entitles on location/role axes.",
+      "learned has the highest seed variance (macro_std=0.0466) and highest false SUPPORT (136).",
+      "All three modes hold missing_SUP=0."
+    ]
+  },
+  "h2b_summary": {
+    "method": "Product-power sweep over [0.67, 0.75, 0.80, 0.85, 0.90, 0.95, 0.97, 1.00], 3-seed controlled no-time",
+    "selected_power": 0.90,
+    "selected_result": {
+      "power": 0.90,
+      "macro_mean": 0.951136,
+      "macro_std": 0.021341,
+      "acc_mean": 0.968056,
+      "acc_std": 0.013679,
+      "SUP_r_mean": 0.907407,
+      "NE_r_mean": 0.972840,
+      "REF_r_mean": 1.0,
+      "bad_SUP_total": 44,
+      "location_role_SUP_total": 33,
+      "predicate_SUP_total": 3,
+      "missing_SUP_total": 0
+    },
+    "interpretation": [
+      "product_power=0.90 is the best stable tradeoff: highest macro, lowest bad_SUP, lowest location_role_SUP.",
+      "Relative to exact product (power=1.0), power=0.90 reduces bad_SUP and location_role_SUP while keeping missing_SUP=0.",
+      "H2B frozen at 0.90. Further micro-tuning on this dev set would constitute overfitting."
+    ]
+  },
+  "h2c_summary": {
+    "method": "Per-seed analysis of learned H1 decision gate from H2A results",
+    "learned_seed_ranking": [
+      {
+        "rank": 1,
+        "seed": 3,
+        "macro": 0.950672,
+        "acc": 0.965278,
+        "SUP_r": 0.977778,
+        "NE_r": 0.957407,
+        "REF_r": 1.0,
+        "bad_SUP": 23,
+        "frame_SUP": 21,
+        "location_role_SUP": 16,
+        "predicate_SUP": 2,
+        "missing_SUP": 0
+      },
+      {
+        "rank": 2,
+        "seed": 2,
+        "macro": 0.892724,
+        "acc": 0.927778,
+        "SUP_r": 0.923077,
+        "NE_r": 0.916667,
+        "REF_r": 1.0,
+        "bad_SUP": 23,
+        "frame_SUP": 20,
+        "location_role_SUP": 17,
+        "predicate_SUP": 3,
+        "missing_SUP": 0
+      },
+      {
+        "rank": 3,
+        "seed": 1,
+        "macro": 0.858586,
+        "acc": 0.875000,
+        "SUP_r": 1.000000,
+        "NE_r": 0.833333,
+        "REF_r": 1.0,
+        "bad_SUP": 90,
+        "frame_SUP": 87,
+        "location_role_SUP": 71,
+        "predicate_SUP": 3,
+        "missing_SUP": 0
+      }
+    ],
+    "macro_spread": 0.092086,
+    "bad_SUP_spread": 67,
+    "interpretation": [
+      "Learned seed3 (macro=0.9507, bad_SUP=23) is directly competitive with product_power=0.90, demonstrating genuine gate capacity.",
+      "Learned seed1 collapses on location/role false SUPPORT (bad_SUP=90, location_role_SUP=71 = 79% of total).",
+      "High macro spread (0.092) and bad_SUP spread (67) confirm seed instability.",
+      "Learned gate should not be discarded; it should be preserved as diagnostic / specialization branch."
+    ],
+    "conclusion": "Stage27-H2C treats learned as an unstable but potentially informative diagnostic branch, while keeping product_power=0.90 as the current final v7-H1 entitlement decision configuration."
+  },
+  "h2d_summary": {
+    "method": "Auxiliary entitlement BCE loss screening on learned seed1 (worst seed). Configurations: BCE weights 0.1/0.3/1.0/1.5/2.0/3.0, pos_weight=2.0, CBCE w0.3, BCE+CBCE combined.",
+    "baseline_seed1": {
+      "macro": 0.858586,
+      "acc": 0.875000,
+      "SUP_r": 1.000000,
+      "NE_r": 0.833333,
+      "REF_r": 1.0,
+      "bad_SUP": 90,
+      "location_role_SUP": 71,
+      "missing_SUP": 0
+    },
+    "best_rescue": {
+      "config": "bce_w1p0",
+      "entitlement_bce_weight": 1.0,
+      "macro": 0.899954,
+      "acc": 0.920833,
+      "SUP_r": 0.977778,
+      "NE_r": 0.898148,
+      "REF_r": 1.0,
+      "bad_SUP": 55,
+      "location_role_SUP": 40,
+      "missing_SUP": 0,
+      "delta_macro": 0.041368,
+      "delta_bad_SUP": -35
+    },
+    "success_thresholds": {
+      "macro_f1_min": 0.92,
+      "bad_SUP_max": 40,
+      "location_role_SUP_max": 30,
+      "missing_SUP_required": 0
+    },
+    "threshold_check": {
+      "macro_f1": {"required": 0.92, "actual": 0.899954, "pass": false},
+      "bad_SUP": {"required": 40, "actual": 55, "pass": false},
+      "location_role_SUP": {"required": 30, "actual": 40, "pass": false},
+      "missing_SUP": {"required": 0, "actual": 0, "pass": true}
+    },
+    "thresholds_passed": 1,
+    "thresholds_failed": 3,
+    "decision": "Do not expand H2D to 3 seeds. Do not select learned+BCE as final. Keep product_power=0.90.",
+    "interpretation": [
+      "H2D partially rescues seed1 but fails 3 of 4 pre-defined thresholds; not sufficient for final use.",
+      "The failure mode is entitlement boundary calibration on location/role, not polarity separation (REF_r=1.0 throughout).",
+      "Auxiliary entitlement supervision has a narrow, non-monotonic effective window (w=1.0 sole improvement).",
+      "H2D motivates using learned only as diagnostic or bounded residual signal, not standalone final decision.",
+      "missing_SUP remained 0 across all H2D configurations."
+    ],
+    "conclusion": "Stage27-H2D finds that entitlement BCE partially rescues learned seed1 but does not stabilize the learned gate enough to replace product_power=0.90."
+  },
+  "h2e_summary": {
+    "method": "product_learned_residual decision signal: entitlement = (product_base + beta * (v7_entitlement_prob - product_base.detach())).clamp(0, 1). Beta sweep {0.0, 0.1, 0.2, 0.3, 0.5} on seed1; best beta=0.2 expanded to 3 seeds.",
+    "formula": "entitlement_for_decision = (product_base + beta * (v7_entitlement_prob - product_base.detach())).clamp(0.0, 1.0)",
+    "gradient_semantics": "product_base is fully differentiable through frame/predicate/sufficiency. detach() used only as residual anchor. v7_entitlement_prob differentiable through EntitlementGate.",
+    "seed1_beta_sweep": [
+      {"beta": 0.2, "macro": 0.945837, "acc": 0.961111, "SUP_r": 0.988889, "NE_r": 0.950000, "REF_r": 1.0, "bad_SUP": 27, "location_role_SUP": 20, "missing_SUP": 0},
+      {"beta": 0.0, "macro": 0.941176, "acc": 0.956944, "SUP_r": 1.000000, "NE_r": 0.942593, "REF_r": 1.0, "bad_SUP": 31, "location_role_SUP": 22, "missing_SUP": 0},
+      {"beta": 0.1, "macro": 0.919101, "acc": 0.943056, "SUP_r": 0.888889, "NE_r": 0.942593, "REF_r": 1.0, "bad_SUP": 31, "location_role_SUP": 22, "missing_SUP": 0},
+      {"beta": 0.3, "macro": 0.901258, "acc": 0.920833, "SUP_r": 1.000000, "NE_r": 0.894444, "REF_r": 1.0, "bad_SUP": 57, "location_role_SUP": 40, "missing_SUP": 0},
+      {"beta": 0.5, "macro": 0.874540, "acc": 0.893056, "SUP_r": 1.000000, "NE_r": 0.857407, "REF_r": 1.0, "bad_SUP": 77, "location_role_SUP": 61, "missing_SUP": 0}
+    ],
+    "beta02_3seed_aggregate": {
+      "macro_mean": 0.9311376765600348,
+      "macro_std": 0.01507309330368878,
+      "acc_mean": 0.9527778029441833,
+      "acc_std": 0.007216871482318781,
+      "SUP_r_mean": 0.9074074074074074,
+      "NE_r_mean": 0.9524691358024692,
+      "REF_r_mean": 1.0,
+      "bad_SUP_total": 77,
+      "bad_SUP_mean": 25.666666666666668,
+      "location_role_SUP_total": 65,
+      "location_role_SUP_mean": 21.666666666666668,
+      "missing_SUP_total": 0
+    },
+    "vs_product_power090": {
+      "macro_delta": -0.019998,
+      "bad_SUP_total_delta": 33,
+      "location_role_SUP_total_delta": 32
+    },
+    "interpretation": [
+      "beta=0.2 improves seed1 locally over beta=0.0 (macro +0.005, bad_SUP -4), confirming learned residual carries local correction signal.",
+      "beta=0.2 worsens the 3-seed aggregate vs product_power=0.90: macro -0.020, bad_SUP +33.",
+      "Naive learned residual injection is unsafe as a default configuration.",
+      "Hybrid gate should be preserved as negative-but-informative: local gain exists per seed but cannot be applied uniformly across seeds."
+    ]
+  },
+  "h2f_summary": {
+    "method": "Axis decomposition comparing learned / product_power=0.90 / hybrid (beta=0.2) across intervention axes: frame, location_role, predicate, evidence_missing, control.",
+    "interpretation_flags": {
+      "learned_has_local_signal": true,
+      "learned_unstable": true,
+      "macro_spread": 0.092086,
+      "bad_SUP_spread": 67,
+      "hybrid_has_local_gain": true,
+      "hybrid_not_final": true,
+      "hard_axis": "location_role"
+    },
+    "aggregate_by_config": [
+      {
+        "config": "learned",
+        "n_runs": 3,
+        "macro_mean": 0.900660,
+        "macro_std": 0.046553,
+        "acc_mean": 0.922685,
+        "SUP_r_mean": 0.966952,
+        "NE_r_mean": 0.902469,
+        "REF_r_mean": 1.0,
+        "bad_SUP_total": 136,
+        "frame_SUP_total": 128,
+        "location_role_SUP_total": 104,
+        "predicate_SUP_total": 8,
+        "missing_SUP_total": 0
+      },
+      {
+        "config": "product",
+        "n_runs": 3,
+        "macro_mean": 0.951136,
+        "macro_std": 0.021341,
+        "acc_mean": 0.968056,
+        "SUP_r_mean": 0.907407,
+        "NE_r_mean": 0.972840,
+        "REF_r_mean": 1.0,
+        "bad_SUP_total": 44,
+        "frame_SUP_total": 41,
+        "location_role_SUP_total": 33,
+        "predicate_SUP_total": 3,
+        "missing_SUP_total": 0
+      },
+      {
+        "config": "hybrid",
+        "n_runs": 3,
+        "macro_mean": 0.931138,
+        "macro_std": 0.015073,
+        "acc_mean": 0.952778,
+        "SUP_r_mean": 0.907407,
+        "NE_r_mean": 0.952469,
+        "REF_r_mean": 1.0,
+        "bad_SUP_total": 77,
+        "frame_SUP_total": 74,
+        "location_role_SUP_total": 65,
+        "predicate_SUP_total": 3,
+        "missing_SUP_total": 0
+      }
+    ],
+    "per_intervention_support_means": {
+      "location_swap":       {"learned": 22.0000, "product": 9.0000,  "hybrid": 14.3333},
+      "role_swap":           {"learned": 12.6667, "product": 2.0000,  "hybrid": 7.3333},
+      "predicate_swap":      {"learned": 2.6667,  "product": 1.0000,  "hybrid": 1.0000},
+      "entity_swap":         {"learned": 2.6667,  "product": 0.6667,  "hybrid": 1.0000},
+      "event_swap":          {"learned": 3.6667,  "product": 1.3333,  "hybrid": 1.6667},
+      "title_name_swap":     {"learned": 1.6667,  "product": 0.6667,  "hybrid": 0.3333},
+      "evidence_deletion":   {"learned": 0.0000,  "product": 0.0000,  "hybrid": 0.0000},
+      "evidence_truncation": {"learned": 0.0000,  "product": 0.0000,  "hybrid": 0.0000},
+      "irrelevant_evidence": {"learned": 0.0000,  "product": 0.0000,  "hybrid": 0.0000}
+    },
+    "product_axis_false_SUP_totals": {
+      "location_role": 33,
+      "predicate": 3,
+      "missing": 0,
+      "other": 8
+    },
+    "paired_delta_highlights": [
+      "Learned seed3 beats product seed3 in macro by +0.014077, but has +22 bad_SUP and +15 location_role_SUP.",
+      "Hybrid seed1 beats product seed1 in macro (+0.005) and reduces bad_SUP by -4, but hybrid seed2/seed3 worsen bad_SUP by +25/+12."
+    ],
+    "interpretation": [
+      "Product remains the final configuration.",
+      "Learned and hybrid should not be discarded: both show local signal (learned_has_local_signal=true, hybrid_has_local_gain=true).",
+      "No clean axis where learned or hybrid consistently beats product enough to justify a new final gate.",
+      "Remaining bottleneck is location/role frame axis: 75% of product bad_SUP, 84% of hybrid bad_SUP.",
+      "Missing-evidence false SUPPORT is fully controlled at zero across all configs and seeds."
+    ]
+  },
+  "supported_claims": [
+    {
+      "id": 1,
+      "claim": "product_power=0.90 is the best stable controlled no-time Stage27 v7-H1 configuration.",
+      "evidence": "H2B 3-seed sweep; macro_mean=0.951136, bad_SUP_total=44, missing_SUP_total=0."
+    },
+    {
+      "id": 2,
+      "claim": "Compositional product entitlement is more reliable than learned entitlement under the current objective and scale.",
+      "evidence": "H2A: product macro_mean=0.940 vs learned 0.901; H2F: product bad_SUP=44 vs learned 136 (3-seed totals)."
+    },
+    {
+      "id": 3,
+      "claim": "The learned entitlement gate contains local discriminative signal but is seed-unstable.",
+      "evidence": "H2C: seed3 macro=0.951 competitive; seed1 bad_SUP=90 collapsed. macro_spread=0.092, bad_SUP_spread=67. H2F: learned_has_local_signal=true, learned_unstable=true."
+    },
+    {
+      "id": 4,
+      "claim": "Naive residual use of learned entitlement (product-learned residual) is unsafe in aggregate despite local per-seed gains.",
+      "evidence": "H2E: beta=0.2 3-seed macro_mean=0.931 (vs product 0.951), bad_SUP_total=77 (vs product 44). hybrid_not_final=true."
+    },
+    {
+      "id": 5,
+      "claim": "Remaining false SUPPORT in all tested configurations is dominated by location/role frame mismatch.",
+      "evidence": "H2F: product location_role_SUP=33/44 (75%); hybrid 65/77 (84%); learned 104/136 (76%). hard_axis=location_role."
+    },
+    {
+      "id": 6,
+      "claim": "Missing-evidence false SUPPORT is controlled at zero in this controlled setting.",
+      "evidence": "H2A-H2F: evidence_deletion, evidence_truncation, irrelevant_evidence all produce 0 false SUPPORT across all configs and seeds."
+    }
+  ],
+  "unsupported_claims": [
+    {
+      "id": 1,
+      "claim": "Generalization beyond the controlled no-time validation setting.",
+      "reason": "All Stage27 results are specific to controlled_v5_v3_without_time_swap.jsonl. No other validation set was evaluated."
+    },
+    {
+      "id": 2,
+      "claim": "Robustness to time_swap / temporal permutation interventions.",
+      "reason": "time_swap was excluded from all Stage27 evaluation following Stage12 analysis identifying it as corrupted or problematic."
+    },
+    {
+      "id": 3,
+      "claim": "Robustness at full-encoder scale or max_length=128.",
+      "reason": "All Stage27 runs used frozen encoder, max_length=64 (T4-safe setting). Unfrozen or longer-context results may differ."
+    },
+    {
+      "id": 4,
+      "claim": "OOD generalization.",
+      "reason": "No OOD evaluation was conducted in H2A-H2F. Stage27 evidence is limited to the controlled no-time setting."
+    },
+    {
+      "id": 5,
+      "claim": "That the learned gate should be discarded entirely.",
+      "reason": "Seed3 results and hybrid_has_local_gain=true demonstrate genuine signal. learned_has_local_signal=true in H2F."
+    },
+    {
+      "id": 6,
+      "claim": "That the hybrid gate should replace product_power=0.90.",
+      "reason": "Hybrid 3-seed aggregate: macro_mean=0.931 < product 0.951; bad_SUP_total=77 > product 44. hybrid_not_final=true."
+    }
+  ],
+  "remaining_failure_mode": {
+    "axis": "location_role",
+    "description": "Location/role frame mismatch is the primary unresolved false-SUPPORT axis. The frame_prob head does not yet fully discriminate entity/role swap from valid frames at max_length=64.",
+    "evidence": {
+      "product_location_role_SUP": 33,
+      "product_bad_SUP": 44,
+      "product_lr_pct": 0.75,
+      "hybrid_location_role_SUP": 65,
+      "hybrid_bad_SUP": 77,
+      "hybrid_lr_pct": 0.84,
+      "learned_location_role_SUP": 104,
+      "learned_bad_SUP": 136,
+      "learned_lr_pct": 0.76
+    },
+    "controlled_axes": {
+      "missing_SUP_total_all_configs": 0,
+      "predicate_SUP_product": 3,
+      "predicate_SUP_hybrid": 3
+    }
+  },
+  "next_stage_recommendation": "Stage28 should investigate location/role frame-boundary specialization: a location/role-specific diagnostic dataset, dedicated frame-boundary module, or auxiliary frame-entitlement supervision with location/role-aware signal. Stage28 must freeze product_power=0.90 as the controlled-setting baseline before any new experiments. A new final configuration must beat product_power=0.90 on all of: macro_mean, bad_SUP_total, location_role_SUP_total, and missing_SUP_total, across at least 3 seeds on the same controlled no-time validation.",
+  "limitations": [
+    "Dataset scope: all results on controlled_v5_v3_without_time_swap.jsonl only. No claim made about OOD or real-world distributions.",
+    "time_swap excluded: temporal robustness of product_power=0.90 is unknown.",
+    "Frozen encoder / max_length=64: T4-safe training constraints limit backbone capacity. Full-encoder results may differ.",
+    "3-seed only: seed variance estimates are based on n=3. Standard deviations with n=3 are noisy.",
+    "Dev-selection risk: product_power and beta were selected on the controlled dev set. Further micro-tuning on the same dev set would constitute overfitting. Stage27 frozen at power=0.90.",
+    "No OOD claim: no OOD evaluation conducted in H2A-H2F."
+  ],
+  "conclusion": "Stage27 selects product_power=0.90 as the stable v7-H1 entitlement decision configuration, while preserving learned and hybrid gates as diagnostic evidence for future location-role frame-boundary specialization."
+}
