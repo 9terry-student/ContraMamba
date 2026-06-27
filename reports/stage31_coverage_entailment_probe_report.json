@@ -1,0 +1,59 @@
+{
+  "stage": "Stage31-A",
+  "probe_name": "Coverage/Entailment Diagnostic Probe",
+  "version": "1.0",
+  "date": "2026-06-27",
+  "total_rows": 200,
+  "examples_per_group": 20,
+  "groups": [
+    "all_to_some_support",
+    "some_to_all_not_entitled",
+    "specific_to_general_support",
+    "general_to_specific_not_entitled",
+    "only_to_base_support",
+    "also_to_only_not_entitled",
+    "whole_to_part_support",
+    "part_to_whole_not_entitled",
+    "none_to_some_refute",
+    "some_to_none_refute"
+  ],
+  "group_counts": {
+    "all_to_some_support": 20,
+    "some_to_all_not_entitled": 20,
+    "specific_to_general_support": 20,
+    "general_to_specific_not_entitled": 20,
+    "only_to_base_support": 20,
+    "also_to_only_not_entitled": 20,
+    "whole_to_part_support": 20,
+    "part_to_whole_not_entitled": 20,
+    "none_to_some_refute": 20,
+    "some_to_none_refute": 20
+  },
+  "label_distribution": {
+    "SUPPORT": 80,
+    "NOT_ENTITLED": 80,
+    "REFUTE": 40
+  },
+  "gold_distribution": {
+    "2": 80,
+    "1": 80,
+    "0": 40
+  },
+  "label_mapping": {
+    "REFUTE": 0,
+    "NOT_ENTITLED": 1,
+    "SUPPORT": 2
+  },
+  "expected_owner": "coverage_entailment",
+  "diagnostic_only": true,
+  "leakage_policy": "This dataset must NOT be used for main training, calibration, or model selection. It is a diagnostic probe only.",
+  "validation_errors": [],
+  "validation_passed": true,
+  "known_limitations": [
+    "Synthetic template sentences; does not reflect natural language diversity.",
+    "Narrow coverage phenomena; no compositional nesting yet.",
+    "No world-knowledge verification; entities are synthetic.",
+    "Claim/evidence length is short and controlled; OOD robustness untested.",
+    "Quantifier scope limited to all/some/no/only/also patterns."
+  ]
+}
