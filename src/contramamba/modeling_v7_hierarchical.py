@@ -448,6 +448,61 @@ class TemporalMismatchMultiHead(nn.Module):
         }
 
 
+class TemporalPreservationSignal(nn.Module):
+    """Stage30-E: narrow temporal preservation signal head for v7.
+
+    Reads concat([frame_pair_repr, predicate_pair_repr, sufficiency_repr]) —
+    the same representation family used by PolarityChannelV7, LocationBoundaryHead,
+    TemporalSafetyHead, and TemporalMismatchMultiHead.
+
+    High temporal_preservation_prob → temporal relationship preserved (none/paraphrase).
+    Low temporal_preservation_prob → temporal structure not preserved (time_swap).
+
+    Convention: preservation-positive = 1 (none, paraphrase)
+                preservation-negative = 0 (time_swap)
+    This matches Stage30-C2 TemporalSafetyHead's safe-label convention (NOT the
+    inverted mismatch-positive convention of Stage30-D TemporalMismatchMultiHead).
+
+    This head is narrow and temporal-specific. It does NOT implement a global
+    preservation head or a full residual vector.
+    """
+
+    def __init__(
+        self,
+        frame_size: int,
+        predicate_size: int,
+        sufficiency_size: int,
+        dropout: float = 0.1,
+    ) -> None:
+        super().__init__()
+        input_dim = frame_size + predicate_size + sufficiency_size
+        hidden = max(input_dim // 4, 16)
+        self.mlp = nn.Sequential(
+            nn.Linear(input_dim, hidden),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden, 1),
+        )
+
+    def forward(
+        self,
+        frame_pair_repr: torch.Tensor,
+        predicate_pair_repr: torch.Tensor,
+        sufficiency_repr: torch.Tensor,
+    ) -> dict[str, torch.Tensor]:
+        features = torch.cat(
+            [frame_pair_repr, predicate_pair_repr, sufficiency_repr], dim=-1
+        )
+        logit = self.mlp(features).squeeze(-1)
+        prob = torch.sigmoid(logit)
+        return {
+            "temporal_preservation_logit": logit,
+            "temporal_preservation_prob": prob,
+            "v7_temporal_preservation_logit": logit,
+            "v7_temporal_preservation_prob": prob,
+        }
+
+
 class ContraMambaV7Hierarchical(nn.Module):
     """Stage26-A: v7 Hierarchical Entitlement architecture.
 
@@ -564,6 +619,15 @@ class ContraMambaV7Hierarchical(nn.Module):
         v7_temporal_mismatch_multihead_cap_gamma: float = 1.0,
         v7_temporal_mismatch_multihead_cap_detach: bool = False,
         v7_temporal_mismatch_multihead_fusion: str = "frame_only",
+        # Stage30-E: temporal residual preservation-aware cap.
+        # Disabled by default; preserves all existing Stage30-D behavior.
+        # Reuses temporal_mismatch_fused_prob from Stage30-D as the risk signal.
+        # Adds a narrow TemporalPreservationSignal head for the preservation signal.
+        # Cannot combine Stage30-E preservation-aware cap with Stage30-D direct cap.
+        v7_use_temporal_preservation_head: bool = False,
+        v7_use_temporal_preservation_aware_cap: bool = False,
+        v7_temporal_preservation_cap_gamma: float = 1.0,
+        v7_temporal_preservation_cap_detach: bool = False,
     ) -> None:
         super().__init__()
 
@@ -744,6 +808,40 @@ class ContraMambaV7Hierarchical(nn.Module):
         self.temporal_mismatch_multihead: TemporalMismatchMultiHead | None = None
         if v7_use_temporal_mismatch_multihead:
             self.temporal_mismatch_multihead = TemporalMismatchMultiHead(
+                frame_size, predicate_size, sufficiency_size, dropout
+            )
+
+        # Stage30-E: temporal residual preservation-aware cap.
+        # Conflict check: Stage30-D direct cap and Stage30-E preservation-aware cap
+        # must not both be active — Stage30-E replaces Stage30-D's capping strategy.
+        if (
+            v7_temporal_mismatch_multihead_cap_mode != "none"
+            and v7_use_temporal_preservation_aware_cap
+        ):
+            raise ValueError(
+                "Stage30-D temporal mismatch multihead direct cap and Stage30-E temporal "
+                "preservation-aware cap cannot both be active simultaneously.\n"
+                f"  v7_temporal_mismatch_multihead_cap_mode="
+                f"{v7_temporal_mismatch_multihead_cap_mode!r}\n"
+                f"  v7_use_temporal_preservation_aware_cap="
+                f"{v7_use_temporal_preservation_aware_cap!r}\n"
+                "Set v7_temporal_mismatch_multihead_cap_mode='none' to use the "
+                "Stage30-E preservation-aware cap, or set "
+                "v7_use_temporal_preservation_aware_cap=False to use the Stage30-D direct cap."
+            )
+        if v7_temporal_preservation_cap_gamma <= 0:
+            raise ValueError(
+                f"v7_temporal_preservation_cap_gamma must be > 0, "
+                f"got {v7_temporal_preservation_cap_gamma!r}."
+            )
+        self.v7_use_temporal_preservation_head = v7_use_temporal_preservation_head
+        self.v7_use_temporal_preservation_aware_cap = v7_use_temporal_preservation_aware_cap
+        self.v7_temporal_preservation_cap_gamma = float(v7_temporal_preservation_cap_gamma)
+        self.v7_temporal_preservation_cap_detach = v7_temporal_preservation_cap_detach
+
+        self.temporal_preservation_signal: TemporalPreservationSignal | None = None
+        if v7_use_temporal_preservation_head:
+            self.temporal_preservation_signal = TemporalPreservationSignal(
                 frame_size, predicate_size, sufficiency_size, dropout
             )
 
@@ -942,6 +1040,27 @@ class ContraMambaV7Hierarchical(nn.Module):
             # safe_factor = complement of mismatch probability
             temporal_mismatch_safe_factor = 1.0 - temporal_mismatch_fused_prob
 
+        # ── Stage30-E: temporal preservation signal head ────────────────────────────────────────
+        # Reads concat([frame_pair_repr, predicate_pair_repr, sufficiency_repr]).
+        # High prob = preserved (none/paraphrase); low prob = not preserved (time_swap).
+        # None when head is disabled (default).
+        temporal_preservation_logit: torch.Tensor | None = None
+        temporal_preservation_prob: torch.Tensor | None = None
+        if self.temporal_preservation_signal is not None:
+            _tpres_out = self.temporal_preservation_signal(
+                frame_pair_repr=frame["frame_pair_repr"],
+                predicate_pair_repr=predicate["predicate_pair_repr"],
+                sufficiency_repr=sufficiency["sufficiency_repr"],
+            )
+            temporal_preservation_logit = _tpres_out["temporal_preservation_logit"]
+            temporal_preservation_prob = _tpres_out["temporal_preservation_prob"]
+
+        # ── Stage30-E cap tracking (initialized before H1/non-H1 branch) ──────────────────────
+        effective_temporal_penalty: torch.Tensor | None = None
+        temporal_preservation_safe_factor: torch.Tensor | None = None
+        entitlement_before_temporal_preservation_cap: torch.Tensor | None = None
+        entitlement_after_temporal_preservation_cap: torch.Tensor | None = None
+
         # ── Stage28-I-A: location boundary cap tracking (initialized before H1/non-H1 branch) ──
         v7_h1_entitlement_before_location_cap: torch.Tensor | None = None
         v7_h1_entitlement_after_location_cap: torch.Tensor | None = None
@@ -1093,6 +1212,38 @@ class ContraMambaV7Hierarchical(nn.Module):
                         entitlement_for_decision * _tmm_safe.clamp_min(1e-8).pow(_tmm_gamma)
                     )
                 v7_h1_entitlement_after_temporal_mismatch_cap = entitlement_for_decision
+
+            # ── Stage30-E: temporal residual preservation-aware cap ───────────────────────
+            # Applied after Stage30-D cap (the two are mutually exclusive at __init__ time,
+            # so at most one is ever active). Requires temporal_mismatch_fused_prob (from
+            # Stage30-D multihead, used as soft risk) and temporal_preservation_prob (from
+            # TemporalPreservationSignal head).
+            # Formula:
+            #   effective_temporal_penalty = temporal_soft_risk * (1 - temporal_preservation)
+            #   safe_factor = (1 - effective_temporal_penalty).clamp(0, 1) ** gamma
+            #   entitlement_after = entitlement_before * safe_factor
+            # Do not let the cap increase entitlement above the pre-cap value.
+            if (
+                self.v7_use_temporal_preservation_aware_cap
+                and temporal_mismatch_fused_prob is not None
+                and temporal_preservation_prob is not None
+            ):
+                entitlement_before_temporal_preservation_cap = entitlement_for_decision
+                _tpres_risk = temporal_mismatch_fused_prob.clamp(0.0, 1.0)
+                _tpres_pres = temporal_preservation_prob.clamp(0.0, 1.0)
+                if self.v7_temporal_preservation_cap_detach:
+                    _tpres_risk = _tpres_risk.detach()
+                    _tpres_pres = _tpres_pres.detach()
+                effective_temporal_penalty = _tpres_risk * (1.0 - _tpres_pres)
+                _tpres_safe = (1.0 - effective_temporal_penalty).clamp(0.0, 1.0)
+                _tpres_gamma = self.v7_temporal_preservation_cap_gamma
+                if _tpres_gamma != 1.0:
+                    _tpres_safe = _tpres_safe.clamp_min(1e-8).pow(_tpres_gamma)
+                temporal_preservation_safe_factor = _tpres_safe
+                entitlement_for_decision = (
+                    entitlement_before_temporal_preservation_cap * _tpres_safe
+                )
+                entitlement_after_temporal_preservation_cap = entitlement_for_decision
 
             support_score = entitlement_for_decision * positive_energy
             refute_score = entitlement_for_decision * negative_energy
@@ -1256,4 +1407,16 @@ class ContraMambaV7Hierarchical(nn.Module):
             "v7_temporal_mismatch_multihead_fusion": self.v7_temporal_mismatch_multihead_fusion,
             "v7_h1_entitlement_before_temporal_mismatch_cap": v7_h1_entitlement_before_temporal_mismatch_cap,
             "v7_h1_entitlement_after_temporal_mismatch_cap": v7_h1_entitlement_after_temporal_mismatch_cap,
+            # Stage30-E: temporal preservation signal head outputs (None when head is disabled).
+            "temporal_preservation_logit": temporal_preservation_logit,
+            "temporal_preservation_prob": temporal_preservation_prob,
+            "v7_temporal_preservation_logit": temporal_preservation_logit,
+            "v7_temporal_preservation_prob": temporal_preservation_prob,
+            # Stage30-E cap diagnostics (None when cap is disabled or H1 is inactive).
+            "v7_use_temporal_preservation_aware_cap": self.v7_use_temporal_preservation_aware_cap,
+            "v7_temporal_preservation_cap_gamma": self.v7_temporal_preservation_cap_gamma,
+            "effective_temporal_penalty": effective_temporal_penalty,
+            "temporal_preservation_safe_factor": temporal_preservation_safe_factor,
+            "entitlement_before_temporal_preservation_cap": entitlement_before_temporal_preservation_cap,
+            "entitlement_after_temporal_preservation_cap": entitlement_after_temporal_preservation_cap,
         }

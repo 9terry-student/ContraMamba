@@ -170,6 +170,10 @@ def build_v7_model(
     v7_temporal_mismatch_multihead_cap_gamma: float = 1.0,
     v7_temporal_mismatch_multihead_cap_detach: bool = False,
     v7_temporal_mismatch_multihead_fusion: str = "frame_only",
+    v7_use_temporal_preservation_head: bool = False,
+    v7_use_temporal_preservation_aware_cap: bool = False,
+    v7_temporal_preservation_cap_gamma: float = 1.0,
+    v7_temporal_preservation_cap_detach: bool = False,
 ) -> "ContraMambaV7Hierarchical":
     """Build a ContraMambaV7Hierarchical with dummy backbone for plumbing validation."""
     from contramamba.modeling_v7_hierarchical import ContraMambaV7Hierarchical
@@ -208,6 +212,10 @@ def build_v7_model(
         v7_temporal_mismatch_multihead_cap_gamma=v7_temporal_mismatch_multihead_cap_gamma,
         v7_temporal_mismatch_multihead_cap_detach=v7_temporal_mismatch_multihead_cap_detach,
         v7_temporal_mismatch_multihead_fusion=v7_temporal_mismatch_multihead_fusion,
+        v7_use_temporal_preservation_head=v7_use_temporal_preservation_head,
+        v7_use_temporal_preservation_aware_cap=v7_use_temporal_preservation_aware_cap,
+        v7_temporal_preservation_cap_gamma=v7_temporal_preservation_cap_gamma,
+        v7_temporal_preservation_cap_detach=v7_temporal_preservation_cap_detach,
     )
 
 
@@ -242,6 +250,10 @@ def build_v7_mamba_model(
     v7_temporal_mismatch_multihead_cap_gamma: float = 1.0,
     v7_temporal_mismatch_multihead_cap_detach: bool = False,
     v7_temporal_mismatch_multihead_fusion: str = "frame_only",
+    v7_use_temporal_preservation_head: bool = False,
+    v7_use_temporal_preservation_aware_cap: bool = False,
+    v7_temporal_preservation_cap_gamma: float = 1.0,
+    v7_temporal_preservation_cap_detach: bool = False,
 ) -> "ContraMambaV7Hierarchical":
     """Build a ContraMambaV7Hierarchical with real Mamba backbone."""
     from contramamba.modeling_v7_hierarchical import ContraMambaV7Hierarchical
@@ -280,6 +292,10 @@ def build_v7_mamba_model(
         v7_temporal_mismatch_multihead_cap_gamma=v7_temporal_mismatch_multihead_cap_gamma,
         v7_temporal_mismatch_multihead_cap_detach=v7_temporal_mismatch_multihead_cap_detach,
         v7_temporal_mismatch_multihead_fusion=v7_temporal_mismatch_multihead_fusion,
+        v7_use_temporal_preservation_head=v7_use_temporal_preservation_head,
+        v7_use_temporal_preservation_aware_cap=v7_use_temporal_preservation_aware_cap,
+        v7_temporal_preservation_cap_gamma=v7_temporal_preservation_cap_gamma,
+        v7_temporal_preservation_cap_detach=v7_temporal_preservation_cap_detach,
     )
     for parameter in model.mamba.parameters():
         parameter.requires_grad = not freeze_encoder
@@ -1597,6 +1613,15 @@ _S28E_V7_SCALAR_KEYS: tuple[str, ...] = (
     "temporal_mismatch_safe_factor",
     "v7_h1_entitlement_before_temporal_mismatch_cap",
     "v7_h1_entitlement_after_temporal_mismatch_cap",
+    # Stage30-E: temporal preservation signal and cap scalars (absent when head/cap is disabled)
+    "temporal_preservation_logit",
+    "temporal_preservation_prob",
+    "v7_temporal_preservation_logit",
+    "v7_temporal_preservation_prob",
+    "effective_temporal_penalty",
+    "temporal_preservation_safe_factor",
+    "entitlement_before_temporal_preservation_cap",
+    "entitlement_after_temporal_preservation_cap",
 )
 
 _S28E_AUX_LABEL_KEYS: tuple[str, ...] = (
@@ -2987,6 +3012,106 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+    # ── Stage30-E: temporal residual preservation-aware cap ──────────────────────────────────
+    # Reuses Stage30-D temporal_mismatch_fused_prob as the soft risk signal.
+    # Adds a narrow TemporalPreservationSignal head for the preservation signal.
+    # Cannot combine Stage30-E preservation-aware cap with Stage30-D direct cap.
+    parser.add_argument(
+        "--v7-use-temporal-preservation-head",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage30-E: Enable narrow TemporalPreservationSignal head for v7_hierarchical. "
+            "Adds a small MLP over [frame_pair_repr, predicate_pair_repr, sufficiency_repr] "
+            "producing temporal_preservation_prob in [0,1]. "
+            "High prob = temporal relationship preserved (none/paraphrase). "
+            "Low prob = not preserved (time_swap). "
+            "Disabled by default; no effect on existing behavior when off. "
+            "Requires --v7-use-temporal-mismatch-multihead for cap to function."
+        ),
+    )
+    parser.add_argument(
+        "--v7-use-temporal-preservation-loss",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage30-E: Enable auxiliary BCE training for the temporal preservation head. "
+            "Target: 1 for none/paraphrase (preserved), 0 for time_swap (not preserved). "
+            "Reads stage30_temporal_safe_label if present (1=safe=preserved, 0=mismatch=not); "
+            "falls back to intervention_type. "
+            "Requires --v7-use-temporal-preservation-head and --v7-temporal-preservation-data. "
+            "Stage15/OOD data must not be present in the data file. Default off."
+        ),
+    )
+    parser.add_argument(
+        "--v7-temporal-preservation-loss-weight",
+        type=float,
+        default=0.0,
+        help="Stage30-E: Weight for temporal preservation BCE loss. Default 0.0.",
+    )
+    parser.add_argument(
+        "--v7-temporal-preservation-loss-pos-weight",
+        type=float,
+        default=None,
+        help=(
+            "Stage30-E: BCE pos_weight for temporal preservation loss "
+            "(positive = none/paraphrase / preserved). "
+            "If omitted, no pos_weight is applied. Default None."
+        ),
+    )
+    parser.add_argument(
+        "--v7-temporal-preservation-data",
+        type=str,
+        default=None,
+        metavar="PATH",
+        help=(
+            "Stage30-E: Path to temporal preservation auxiliary JSONL. "
+            "Same format as Stage30-C2/D temporal diagnostic data. "
+            "none/paraphrase → preserved=1; time_swap → preserved=0. "
+            "Never added to main train/dev; never used for checkpoint selection. "
+            "Required when --v7-use-temporal-preservation-loss is enabled. "
+            "Do not use Stage15 OOD data here."
+        ),
+    )
+    parser.add_argument(
+        "--v7-use-temporal-preservation-aware-cap",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage30-E: Enable preservation-aware temporal residual cap. "
+            "Formula: "
+            "  effective_penalty = temporal_mismatch_fused_prob * (1 - temporal_preservation_prob); "
+            "  safe_factor = (1 - effective_penalty).clamp(0,1) ** gamma; "
+            "  entitlement_after = entitlement_after_location_cap * safe_factor. "
+            "Requires --v7-use-temporal-mismatch-multihead (for risk signal) and "
+            "--v7-use-temporal-preservation-head (for preservation signal). "
+            "Cannot be combined with --v7-temporal-mismatch-multihead-cap-mode != none. "
+            "Applied after Stage28-I location cap; does not apply before it. "
+            "Does not increase entitlement above the pre-cap value. "
+            "Disabled by default."
+        ),
+    )
+    parser.add_argument(
+        "--v7-temporal-preservation-cap-gamma",
+        type=float,
+        default=1.0,
+        help=(
+            "Stage30-E: Gamma exponent for temporal preservation-aware cap safe_factor. "
+            "safe_factor = (1 - effective_penalty).clamp(0,1) ** gamma. "
+            "Must be > 0. Default 1.0 (no additional sharpening)."
+        ),
+    )
+    parser.add_argument(
+        "--v7-temporal-preservation-cap-detach",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage30-E: Detach both temporal_mismatch_fused_prob and "
+            "temporal_preservation_prob before computing effective_penalty. "
+            "Isolates cap effect from BCE/CE gradients. Default off."
+        ),
+    )
+
     parser.add_argument(
         "--v7-no-aux-losses",
         action="store_true",
@@ -3865,6 +3990,18 @@ def main(argv: list[str] | None = None) -> int:
                 v7_temporal_mismatch_multihead_fusion=getattr(
                     args, "v7_temporal_mismatch_multihead_fusion", "frame_only"
                 ),
+                v7_use_temporal_preservation_head=getattr(
+                    args, "v7_use_temporal_preservation_head", False
+                ),
+                v7_use_temporal_preservation_aware_cap=getattr(
+                    args, "v7_use_temporal_preservation_aware_cap", False
+                ),
+                v7_temporal_preservation_cap_gamma=getattr(
+                    args, "v7_temporal_preservation_cap_gamma", 1.0
+                ),
+                v7_temporal_preservation_cap_detach=getattr(
+                    args, "v7_temporal_preservation_cap_detach", False
+                ),
             )
         else:
             model = build_mamba_model(
@@ -3944,6 +4081,18 @@ def main(argv: list[str] | None = None) -> int:
                 ),
                 v7_temporal_mismatch_multihead_fusion=getattr(
                     args, "v7_temporal_mismatch_multihead_fusion", "frame_only"
+                ),
+                v7_use_temporal_preservation_head=getattr(
+                    args, "v7_use_temporal_preservation_head", False
+                ),
+                v7_use_temporal_preservation_aware_cap=getattr(
+                    args, "v7_use_temporal_preservation_aware_cap", False
+                ),
+                v7_temporal_preservation_cap_gamma=getattr(
+                    args, "v7_temporal_preservation_cap_gamma", 1.0
+                ),
+                v7_temporal_preservation_cap_detach=getattr(
+                    args, "v7_temporal_preservation_cap_detach", False
                 ),
             )
         else:
@@ -4331,6 +4480,96 @@ def main(argv: list[str] | None = None) -> int:
                 f" tmm_train_neg={_tmm_train_neg}"
             )
 
+    # Stage30-E: temporal preservation aux data loading — separate from main train/dev.
+    # Reuses encode_temporal_safety_labels: none/paraphrase → label=1, time_swap → label=0.
+    # Same pair_id filtering as Stage30-C2/D to exclude main dev records.
+    # Stage15 OOD records must NOT be present here.
+    _tpres_train_inputs: "dict[str, torch.Tensor] | None" = None
+    _tpres_train_labels: "torch.Tensor | None" = None
+    _tpres_train_mask: "torch.Tensor | None" = None
+    _tpres_meta_records_loaded: int = 0
+    _tpres_meta_records_used: int = 0
+    _tpres_meta_excluded_dev: int = 0
+    _tpres_meta_excluded_missing_pair_id: int = 0
+
+    _tpres_data_needed = (
+        getattr(args, "v7_use_temporal_preservation_loss", False)
+        and getattr(args, "v7_temporal_preservation_data", None) is not None
+    )
+    if _tpres_data_needed:
+        _tpres_path = Path(args.v7_temporal_preservation_data)
+        _tpres_all_records = load_temporal_safety_jsonl(_tpres_path)
+        _tpres_meta_records_loaded = len(_tpres_all_records)
+
+        _tpres_main_train_pair_ids: set = {
+            r["pair_id"] for r in train_records if r.get("pair_id") is not None
+        }
+        _tpres_main_dev_pair_ids: set = {
+            r["pair_id"] for r in dev_records if r.get("pair_id") is not None
+        }
+
+        _tpres_train_records: list[dict] = []
+        for _r in _tpres_all_records:
+            _pid = _r.get("pair_id") or _r.get("source_pair_id")
+            if _pid is None:
+                _tpres_meta_excluded_missing_pair_id += 1
+                continue
+            if _pid in _tpres_main_dev_pair_ids:
+                _tpres_meta_excluded_dev += 1
+                continue
+            if _pid in _tpres_main_train_pair_ids:
+                _tpres_train_records.append(_r)
+
+        _tpres_meta_records_used = len(_tpres_train_records)
+        if _tpres_meta_records_used == 0:
+            print(
+                f"[tpres_head] WARNING: no temporal preservation train records after "
+                f"pair_id filtering "
+                f"(loaded={_tpres_meta_records_loaded} "
+                f"excluded_dev={_tpres_meta_excluded_dev} "
+                f"excluded_missing_pair_id={_tpres_meta_excluded_missing_pair_id}). "
+                "Loss will be zero."
+            )
+        else:
+            # encode_temporal_safety_labels: safe=1 (none/paraphrase) = preserved=1 ✓
+            _tpres_train_labels, _tpres_train_mask = encode_temporal_safety_labels(
+                _tpres_train_records, device
+            )
+            if args.backbone == "dummy":
+                _tpres_train_bundle = v5.encode_records(_tpres_train_records, vocab)
+            else:
+                _tpres_train_bundle = v5.encode_mamba_records(
+                    _tpres_train_records, tokenizer, args.max_length
+                )
+            _tpres_train_inputs = v5.move_inputs(_tpres_train_bundle["model_inputs"], device)
+            _tpres_seq = _tpres_train_inputs["input_ids"].shape[1]
+            if _tpres_seq < max_length:
+                _diff = max_length - _tpres_seq
+                for _key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
+                    _tpres_train_inputs[_key] = F.pad(_tpres_train_inputs[_key], (0, _diff), value=0)
+            elif _tpres_seq > max_length:
+                for _key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
+                    _tpres_train_inputs[_key] = _tpres_train_inputs[_key][:, :max_length]
+            if args.backbone == "mamba" and args.freeze_encoder:
+                v5.cache_frozen_encoder_states(model, _tpres_train_inputs)
+            _tpres_train_pos = int(_tpres_train_labels.sum().item())
+            _tpres_train_neg = int(
+                (
+                    _tpres_train_mask.float()
+                    - _tpres_train_labels * _tpres_train_mask.float()
+                ).sum().item()
+            )
+            print(
+                f"[tpres_head] enabled "
+                f"weight={getattr(args, 'v7_temporal_preservation_loss_weight', 0.0)}"
+                f" loaded={_tpres_meta_records_loaded}"
+                f" used={_tpres_meta_records_used}"
+                f" excluded_dev={_tpres_meta_excluded_dev}"
+                f" excluded_missing_pair_id={_tpres_meta_excluded_missing_pair_id}"
+                f" tpres_train_pos={_tpres_train_pos}"
+                f" tpres_train_neg={_tpres_train_neg}"
+            )
+
     # Stage22-A4c/A4e: pair contrastive frame data loading and encoding
     _pc_pair_records: list[dict[str, Any]] = []
     _pc_pres_inputs: "dict[str, torch.Tensor] | None" = None
@@ -4497,6 +4736,12 @@ def main(argv: list[str] | None = None) -> int:
         tmm_train_mask=None,
         tmm_loss_weight=0.0,
         tmm_loss_pos_weight=None,
+        # Stage30-E: temporal preservation head auxiliary BCE loss (separate dataset; v7 only)
+        tpres_train_inputs=None,
+        tpres_train_labels=None,
+        tpres_train_mask=None,
+        tpres_loss_weight=0.0,
+        tpres_loss_pos_weight=None,
     ):
         """Modified run_training that passes flags to v6b model."""
         if epochs < 1:
@@ -5141,6 +5386,49 @@ def main(argv: list[str] | None = None) -> int:
                         _v7_tmm_loss = sum(_tmm_per_head_losses) / len(_tmm_per_head_losses)
                         total_loss = total_loss + tmm_loss_weight * _v7_tmm_loss
 
+            # ── Stage30-E: v7 temporal preservation head BCE auxiliary loss ────────────────────
+            # Separate forward pass on temporal preservation diagnostic records.
+            # Labels: 1 = preserved (none/paraphrase), 0 = not preserved (time_swap).
+            # Stage15/OOD data must not be in the data file.
+            _v7_tpres_loss = torch.tensor(0.0, device=device)
+            if (
+                args.architecture == "v7_hierarchical"
+                and getattr(args, "v7_use_temporal_preservation_head", False)
+                and getattr(args, "v7_use_temporal_preservation_loss", False)
+                and tpres_loss_weight > 0.0
+                and not args.v7_no_aux_losses
+                and tpres_train_inputs is not None
+                and tpres_train_labels is not None
+                and tpres_train_mask is not None
+            ):
+                _tpres_n = tpres_train_inputs["input_ids"].shape[0]
+                _tpres_zero_t = torch.zeros(_tpres_n, dtype=torch.float32, device=device)
+                _tpres_zero_p = torch.zeros(_tpres_n, dtype=torch.float32, device=device)
+                _tpres_train_out = model(
+                    **v5.model_feature_inputs(tpres_train_inputs),
+                    temporal_mismatch_flags=_tpres_zero_t,
+                    predicate_mismatch_flags=_tpres_zero_p,
+                )
+                _tpres_logit = _tpres_train_out.get("temporal_preservation_logit")
+                if _tpres_logit is not None:
+                    _active_tpres = tpres_train_mask.bool()
+                    if torch.any(_active_tpres):
+                        if tpres_loss_pos_weight is not None:
+                            _tpres_pw = torch.tensor(
+                                tpres_loss_pos_weight, dtype=_tpres_logit.dtype, device=device
+                            )
+                            _v7_tpres_loss = F.binary_cross_entropy_with_logits(
+                                _tpres_logit[_active_tpres],
+                                tpres_train_labels[_active_tpres],
+                                pos_weight=_tpres_pw,
+                            )
+                        else:
+                            _v7_tpres_loss = F.binary_cross_entropy_with_logits(
+                                _tpres_logit[_active_tpres],
+                                tpres_train_labels[_active_tpres],
+                            )
+                        total_loss = total_loss + tpres_loss_weight * _v7_tpres_loss
+
             # ── Audit ledger accumulation (reporting only; does not affect gradients) ─────────
             # raw = loss value before weight multiplication; weighted = actual total_loss contribution
             _ep_ce_raw = float(losses["label"].item())
@@ -5163,6 +5451,7 @@ def main(argv: list[str] | None = None) -> int:
             _ep_v7_lb_raw = float(_v7_lb_loss.item()) if hasattr(_v7_lb_loss, "item") else 0.0
             _ep_v7_ts_raw = float(_v7_ts_loss.item()) if hasattr(_v7_ts_loss, "item") else 0.0
             _ep_v7_tmm_raw = float(_v7_tmm_loss.item()) if hasattr(_v7_tmm_loss, "item") else 0.0
+            _ep_v7_tpres_raw = float(_v7_tpres_loss.item()) if hasattr(_v7_tpres_loss, "item") else 0.0
             _ep_total = float(total_loss.item())
             # For ranking path: active_intervention_loss = ranking_weight * raw_ranking.
             # Recover raw by dividing. For intervention path: pairwise_losses["total"] is
@@ -5197,6 +5486,8 @@ def main(argv: list[str] | None = None) -> int:
                 "v7_temporal_safety_loss": _ep_v7_ts_raw,
                 # Stage30-D: temporal mismatch multihead loss (0.0 when disabled)
                 "v7_temporal_mismatch_multihead_loss": _ep_v7_tmm_raw,
+                # Stage30-E: temporal preservation loss (0.0 when disabled)
+                "v7_temporal_preservation_loss": _ep_v7_tpres_raw,
                 "total_loss": _ep_total,
             })
             _audit_per_epoch_weighted.append({
@@ -5225,6 +5516,8 @@ def main(argv: list[str] | None = None) -> int:
                 "v7_temporal_safety_loss": ts_loss_weight * _ep_v7_ts_raw,
                 # Stage30-D: temporal mismatch multihead loss weighted contribution
                 "v7_temporal_mismatch_multihead_loss": tmm_loss_weight * _ep_v7_tmm_raw,
+                # Stage30-E: temporal preservation loss weighted contribution
+                "v7_temporal_preservation_loss": tpres_loss_weight * _ep_v7_tpres_raw,
                 "total_loss": _ep_total,
             })
             _audit_epoch_count += 1
@@ -6020,6 +6313,40 @@ def main(argv: list[str] | None = None) -> int:
                     ) else "disabled"
                 ),
             },
+            # Stage30-E: temporal preservation head loss
+            "v7_temporal_preservation_loss": {
+                "enabled": (
+                    args.architecture == "v7_hierarchical"
+                    and getattr(args, "v7_use_temporal_preservation_head", False)
+                    and getattr(args, "v7_use_temporal_preservation_loss", False)
+                    and getattr(args, "v7_temporal_preservation_loss_weight", 0.0) > 0.0
+                    and not getattr(args, "v7_no_aux_losses", False)
+                ),
+                "weight": getattr(args, "v7_temporal_preservation_loss_weight", 0.0),
+                "pos_weight": getattr(
+                    args, "v7_temporal_preservation_loss_pos_weight", None
+                ),
+                "target": "temporal_preservation_logit",
+                "target_derivation": (
+                    "preserved=1 (none/paraphrase/stage30_temporal_safe_label=1), "
+                    "not_preserved=0 (time_swap/stage30_temporal_safe_label=0)"
+                ),
+                "stage15_used_for_selection_or_calibration": False,
+                "external_probe_used": False,
+                "ood_used": False,
+                "raw_loss_key": "v7_temporal_preservation_loss",
+                "weighted_loss_key": "v7_temporal_preservation_loss",
+                "note": (
+                    "Stage30-E: BCE on temporal preservation head. "
+                    "Separate aux dataset; pair_id filtered to main train only. "
+                    "No Stage15. No external probe. No OOD."
+                    if (
+                        getattr(args, "v7_use_temporal_preservation_head", False)
+                        and getattr(args, "v7_use_temporal_preservation_loss", False)
+                        and getattr(args, "v7_temporal_preservation_loss_weight", 0.0) > 0.0
+                    ) else "disabled"
+                ),
+            },
         }
 
         # True post-hoc final-logit modifiers only.
@@ -6549,6 +6876,16 @@ def main(argv: list[str] | None = None) -> int:
             tmm_loss_pos_weight=getattr(
                 args, "v7_temporal_mismatch_multihead_loss_pos_weight", None
             ),
+            tpres_train_inputs=_tpres_train_inputs if _tpres_data_needed else None,
+            tpres_train_labels=_tpres_train_labels if _tpres_data_needed else None,
+            tpres_train_mask=_tpres_train_mask if _tpres_data_needed else None,
+            tpres_loss_weight=(
+                getattr(args, "v7_temporal_preservation_loss_weight", 0.0)
+                if getattr(args, "v7_use_temporal_preservation_loss", False) else 0.0
+            ),
+            tpres_loss_pos_weight=getattr(
+                args, "v7_temporal_preservation_loss_pos_weight", None
+            ),
             pc_pres_inputs=_pc_pres_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_frame_inputs=_pc_frame_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_loss_weight=(
@@ -6876,6 +7213,36 @@ def main(argv: list[str] | None = None) -> int:
             ),
             "stage15_used_for_v7_temporal_mismatch_multihead_loss": False,
             "external_probe_used_for_v7_temporal_mismatch_multihead_loss": False,
+            # Stage30-E: temporal preservation head and cap configuration
+            "v7_use_temporal_preservation_head": getattr(
+                args, "v7_use_temporal_preservation_head", False
+            ),
+            "v7_use_temporal_preservation_loss": getattr(
+                args, "v7_use_temporal_preservation_loss", False
+            ),
+            "v7_temporal_preservation_loss_weight": getattr(
+                args, "v7_temporal_preservation_loss_weight", 0.0
+            ),
+            "v7_use_temporal_preservation_aware_cap": getattr(
+                args, "v7_use_temporal_preservation_aware_cap", False
+            ),
+            "v7_temporal_preservation_cap_gamma": getattr(
+                args, "v7_temporal_preservation_cap_gamma", 1.0
+            ),
+            "v7_temporal_preservation_cap_detach": getattr(
+                args, "v7_temporal_preservation_cap_detach", False
+            ),
+            "v7_temporal_preservation_data": getattr(
+                args, "v7_temporal_preservation_data", None
+            ),
+            "v7_temporal_preservation_records_loaded": _tpres_meta_records_loaded,
+            "v7_temporal_preservation_records_used_for_aux_train": _tpres_meta_records_used,
+            "v7_temporal_preservation_records_excluded_main_dev_pair": _tpres_meta_excluded_dev,
+            "v7_temporal_preservation_records_excluded_missing_pair_id": (
+                _tpres_meta_excluded_missing_pair_id
+            ),
+            "stage15_used_for_v7_temporal_preservation_loss": False,
+            "external_probe_used_for_v7_temporal_preservation_loss": False,
             "v7_h1_entitlement_for_decision_source": (
                 _V7_H1_DECISION_SIGNAL_SOURCE.get(
                     getattr(args, "v7_h1_entitlement_decision_signal", "learned"),
