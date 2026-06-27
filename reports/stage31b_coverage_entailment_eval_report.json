@@ -1,0 +1,34 @@
+{
+  "stage": "31b",
+  "title": "Stage31-B Coverage/Entailment Probe Evaluation",
+  "run_name": "stage31b_coverage_entailment_eval",
+  "probe_file": "data/stage31_coverage_entailment_probe.jsonl",
+  "predictions_file": null,
+  "dry_run": true,
+  "row_count": 200,
+  "label_distribution": {
+    "SUPPORT": 80,
+    "NOT_ENTITLED": 80,
+    "REFUTE": 40
+  },
+  "group_counts": {
+    "all_to_some_support": 20,
+    "some_to_all_not_entitled": 20,
+    "specific_to_general_support": 20,
+    "general_to_specific_not_entitled": 20,
+    "only_to_base_support": 20,
+    "also_to_only_not_entitled": 20,
+    "whole_to_part_support": 20,
+    "part_to_whole_not_entitled": 20,
+    "none_to_some_refute": 20,
+    "some_to_none_refute": 20
+  },
+  "metrics": null,
+  "confusion_matrix": null,
+  "group_metrics": null,
+  "failure_modes": null,
+  "diagnostic_column_means": null,
+  "interpretation": "No model predictions were evaluated (dry-run mode). Run with --predictions-file to obtain a Coverage/Entailment diagnostic.",
+  "leakage_policy": "This probe is diagnostic-only. Do not use for training, calibration, or model selection.",
+  "next_step_recommendation": "Run with --predictions-file to determine next steps. If predictions reveal systematic failure, proceed to Stage31-C."
+}
