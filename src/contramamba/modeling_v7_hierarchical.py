@@ -292,6 +292,56 @@ class PolarityChannelV7(nn.Module):
         }
 
 
+class LocationBoundaryHead(nn.Module):
+    """Stage28-I-A: optional independent location-boundary cap/head for v7.
+
+    Reads concat([frame_pair_repr, predicate_pair_repr, sufficiency_repr]) —
+    the same representation family used by PolarityChannelV7.
+
+    High location_boundary_prob → location-compatible / safe (do not suppress).
+    Low location_boundary_prob → potential location mismatch; cap may reduce
+    SUPPORT/REFUTE entitlement when cap mode is active.
+
+    This head does NOT use v7_entitlement_prob, learned residuals, or hybrid mixing.
+    It is bounded via an independent MLP and acts as an optional post-hoc cap only.
+    """
+
+    def __init__(
+        self,
+        frame_size: int,
+        predicate_size: int,
+        sufficiency_size: int,
+        dropout: float = 0.1,
+    ) -> None:
+        super().__init__()
+        input_dim = frame_size + predicate_size + sufficiency_size
+        hidden = max(input_dim // 4, 16)
+        self.mlp = nn.Sequential(
+            nn.Linear(input_dim, hidden),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden, 1),
+        )
+
+    def forward(
+        self,
+        frame_pair_repr: torch.Tensor,
+        predicate_pair_repr: torch.Tensor,
+        sufficiency_repr: torch.Tensor,
+    ) -> dict[str, torch.Tensor]:
+        features = torch.cat(
+            [frame_pair_repr, predicate_pair_repr, sufficiency_repr], dim=-1
+        )
+        logit = self.mlp(features).squeeze(-1)
+        prob = torch.sigmoid(logit)
+        return {
+            "location_boundary_logit": logit,
+            "location_boundary_prob": prob,
+            "v7_location_boundary_logit": logit,
+            "v7_location_boundary_prob": prob,
+        }
+
+
 class ContraMambaV7Hierarchical(nn.Module):
     """Stage26-A: v7 Hierarchical Entitlement architecture.
 
@@ -384,6 +434,13 @@ class ContraMambaV7Hierarchical(nn.Module):
         # entitlement = clamp(product_base + beta * (learned - product_base.detach()), 0, 1)
         # beta=0.0 exactly recovers product_base. Default 0.25.
         v7_h1_hybrid_residual_beta: float = 0.25,
+        # Stage28-I-A: optional independent location-boundary cap/head.
+        # Disabled by default; preserves all existing Stage27/Stage28 behavior.
+        # Only meaningful when v7_use_v6b_style_final_decision=True (H1 path active).
+        v7_use_location_boundary_head: bool = False,
+        v7_location_boundary_cap_mode: str = "none",  # "none" | "hard" | "soft"
+        v7_location_boundary_cap_gamma: float = 1.0,
+        v7_location_boundary_cap_detach: bool = False,
     ) -> None:
         super().__init__()
 
@@ -476,6 +533,29 @@ class ContraMambaV7Hierarchical(nn.Module):
         self.v7_initial_ne_bias: float = v7_initial_ne_bias
         self.ne_bias: nn.Parameter = nn.Parameter(torch.tensor(v7_initial_ne_bias))
 
+        # Stage28-I-A: location boundary head and cap configuration.
+        _valid_cap_modes = ("none", "hard", "soft")
+        if v7_location_boundary_cap_mode not in _valid_cap_modes:
+            raise ValueError(
+                f"v7_location_boundary_cap_mode must be one of {_valid_cap_modes}, "
+                f"got {v7_location_boundary_cap_mode!r}."
+            )
+        if v7_location_boundary_cap_gamma <= 0:
+            raise ValueError(
+                f"v7_location_boundary_cap_gamma must be > 0, "
+                f"got {v7_location_boundary_cap_gamma!r}."
+            )
+        self.v7_use_location_boundary_head = v7_use_location_boundary_head
+        self.v7_location_boundary_cap_mode = v7_location_boundary_cap_mode
+        self.v7_location_boundary_cap_gamma = float(v7_location_boundary_cap_gamma)
+        self.v7_location_boundary_cap_detach = v7_location_boundary_cap_detach
+
+        self.location_boundary_head: LocationBoundaryHead | None = None
+        if v7_use_location_boundary_head:
+            self.location_boundary_head = LocationBoundaryHead(
+                frame_size, predicate_size, sufficiency_size, dropout
+            )
+
     def forward(
         self,
         input_ids: torch.Tensor,
@@ -555,6 +635,22 @@ class ContraMambaV7Hierarchical(nn.Module):
         else:
             _gate_sufficiency_prob = sufficiency["sufficiency_prob"]
 
+        # ── LocationBoundaryHead (Stage28-I-A) ──────────────────────────────────
+        # Reads concat([frame_pair_repr, predicate_pair_repr, sufficiency_repr]).
+        # Produces location_boundary_prob in [0,1]: high = location-safe (no cap),
+        # low = potential location mismatch (cap reduces entitlement_for_decision).
+        # Always None when head is disabled (default); cap is also silently inactive.
+        v7_location_boundary_logit: torch.Tensor | None = None
+        v7_location_boundary_prob: torch.Tensor | None = None
+        if self.location_boundary_head is not None:
+            _lb_out = self.location_boundary_head(
+                frame_pair_repr=frame["frame_pair_repr"],
+                predicate_pair_repr=predicate["predicate_pair_repr"],
+                sufficiency_repr=sufficiency["sufficiency_repr"],
+            )
+            v7_location_boundary_logit = _lb_out["v7_location_boundary_logit"]
+            v7_location_boundary_prob = _lb_out["v7_location_boundary_prob"]
+
         # ── TemporalChannel ─────────────────────────────────────────────────────
         # Reads cat([claim_frame_state, evidence_frame_state]) — pre-pair-projector slot
         # states from FrameGate's project() step. NOT frame_pair_repr (post-projector).
@@ -593,6 +689,11 @@ class ContraMambaV7Hierarchical(nn.Module):
         )
         v7_polarity_support = pol_out["v7_polarity_support_logit"]
         v7_polarity_refute = pol_out["v7_polarity_refute_logit"]
+
+        # ── Stage28-I-A: location boundary cap tracking (initialized before H1/non-H1 branch) ──
+        v7_h1_entitlement_before_location_cap: torch.Tensor | None = None
+        v7_h1_entitlement_after_location_cap: torch.Tensor | None = None
+        v7_location_boundary_prob_for_cap: torch.Tensor | None = None
 
         # ── Final logit composition ──────────────────────────────────────────────
         # Class order matches FinalLabel in src/contramamba/labels.py:
@@ -663,6 +764,29 @@ class ContraMambaV7Hierarchical(nn.Module):
                     "'frame_predicate_product', 'frame_predicate_min', "
                     "'product_learned_residual'."
                 )
+
+            # ── Stage28-I-A: location boundary cap ──────────────────────────────
+            # Applied after the decision signal is selected. Cap mode "none" is
+            # a guaranteed no-op; the branch is skipped entirely.
+            # "hard": entitlement = min(entitlement, location_boundary_prob)
+            # "soft": entitlement = entitlement * location_boundary_prob^gamma
+            if (
+                v7_location_boundary_prob is not None
+                and self.v7_location_boundary_cap_mode != "none"
+            ):
+                v7_h1_entitlement_before_location_cap = entitlement_for_decision
+                _cap_prob = v7_location_boundary_prob
+                if self.v7_location_boundary_cap_detach:
+                    _cap_prob = _cap_prob.detach()
+                v7_location_boundary_prob_for_cap = _cap_prob
+                if self.v7_location_boundary_cap_mode == "hard":
+                    entitlement_for_decision = torch.minimum(entitlement_for_decision, _cap_prob)
+                else:  # soft
+                    _gamma = self.v7_location_boundary_cap_gamma
+                    entitlement_for_decision = (
+                        entitlement_for_decision * _cap_prob.clamp_min(1e-8).pow(_gamma)
+                    )
+                v7_h1_entitlement_after_location_cap = entitlement_for_decision
 
             support_score = entitlement_for_decision * positive_energy
             refute_score = entitlement_for_decision * negative_energy
@@ -777,6 +901,7 @@ class ContraMambaV7Hierarchical(nn.Module):
             # Stage27-H2A: H1-path decision signal diagnostics.
             # v7_h1_entitlement_for_decision is the actual tensor used as
             # entitlement_for_decision in the H1 path (None when H1 is inactive).
+            # When Stage28-I-A cap is active, this is the post-cap value.
             "v7_h1_entitlement_for_decision": (
                 entitlement_for_decision if self.v7_use_v6b_style_final_decision else None
             ),
@@ -787,4 +912,16 @@ class ContraMambaV7Hierarchical(nn.Module):
             "v7_polarity_positive_energy": positive_energy,
             "v7_polarity_negative_energy": negative_energy,
             "v7_polarity_energy_margin": polarity_margin,
+
+            # Stage28-I-A: location boundary head outputs (None when head is disabled).
+            "location_boundary_logit": v7_location_boundary_logit,
+            "location_boundary_prob": v7_location_boundary_prob,
+            "v7_location_boundary_logit": v7_location_boundary_logit,
+            "v7_location_boundary_prob": v7_location_boundary_prob,
+            # Cap tracking (None when cap mode is "none" or H1 is inactive).
+            "v7_location_boundary_cap_mode": self.v7_location_boundary_cap_mode,
+            "v7_location_boundary_cap_gamma": self.v7_location_boundary_cap_gamma,
+            "v7_location_boundary_prob_for_cap": v7_location_boundary_prob_for_cap,
+            "v7_h1_entitlement_before_location_cap": v7_h1_entitlement_before_location_cap,
+            "v7_h1_entitlement_after_location_cap": v7_h1_entitlement_after_location_cap,
         }
