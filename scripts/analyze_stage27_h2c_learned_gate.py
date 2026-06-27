@@ -136,31 +136,70 @@ def _safe_get(d: Any, *keys: str, default: Any = None) -> Any:
 
 
 # ---------------------------------------------------------------------------
+# Intervention resolution helpers
+# ---------------------------------------------------------------------------
+
+def _resolve_best_dev_interventions(data: dict) -> dict:
+    """Find best_dev_interventions from several possible nesting locations.
+
+    Checks, in order:
+      1. data["best_dev_interventions"]
+      2. data["runs"]["single"]["best_dev_interventions"]
+      3. first value under data["runs"] that contains "best_dev_interventions"
+    Returns an empty dict when none of the above succeed.
+    """
+    if isinstance(data.get("best_dev_interventions"), dict):
+        return data["best_dev_interventions"]
+    runs = data.get("runs")
+    if isinstance(runs, dict):
+        single = runs.get("single")
+        if isinstance(single, dict) and isinstance(single.get("best_dev_interventions"), dict):
+            return single["best_dev_interventions"]
+        for v in runs.values():
+            if isinstance(v, dict) and isinstance(v.get("best_dev_interventions"), dict):
+                return v["best_dev_interventions"]
+    return {}
+
+
+def _support_count_from_intervention(block: "dict | None") -> "int | None":
+    """Extract SUPPORT prediction count from one intervention block.
+
+    - Returns 0 when prediction_distribution exists but has no SUPPORT key.
+    - Returns None when the entire block is absent (key missing from interventions).
+    """
+    if block is None:
+        return None
+    pred_dist = block.get("prediction_distribution")
+    if isinstance(pred_dist, dict):
+        sup = pred_dist.get("SUPPORT")
+        return int(sup) if sup is not None else 0
+    # Legacy key paths used by older summary formats
+    for path in (
+        ("support_predictions",),
+        ("SUPPORT_predictions",),
+        ("predictions", "SUPPORT"),
+        ("SUPPORT_count",),
+        ("support_count",),
+    ):
+        val = _safe_get(block, *path)
+        if val is not None:
+            try:
+                return int(val)
+            except (TypeError, ValueError):
+                pass
+    return None
+
+
+# ---------------------------------------------------------------------------
 # Metric extraction
 # ---------------------------------------------------------------------------
 
-def _extract_intervention_support_counts(run: dict) -> dict[str, Any]:
-    """Extract per-intervention SUPPORT prediction counts."""
-    interventions: dict = run.get("best_dev_interventions") or {}
+def _extract_intervention_support_counts(interventions: dict) -> dict[str, Any]:
+    """Extract per-intervention SUPPORT prediction counts from a resolved interventions dict."""
     result: dict[str, Any] = {}
     for key in INTERVENTION_KEYS:
-        block = interventions.get(key) or {}
-        count: "int | None" = None
-        for path in (
-            ("support_predictions",),
-            ("SUPPORT_predictions",),
-            ("predictions", "SUPPORT"),
-            ("SUPPORT_count",),
-            ("support_count",),
-        ):
-            val = _safe_get(block, *path)
-            if val is not None:
-                try:
-                    count = int(val)
-                except (TypeError, ValueError):
-                    pass
-                break
-        result[key] = count
+        block = interventions.get(key) if interventions else None
+        result[key] = _support_count_from_intervention(block)
     return result
 
 
@@ -185,7 +224,7 @@ def _extract_diag_prob_means(run: dict) -> dict[str, "float | None"]:
                     result[k] = float(v)
 
     # 3. best_dev_interventions → control → mean_<key> or <key>.mean
-    interventions: dict = run.get("best_dev_interventions") or {}
+    interventions: dict = _resolve_best_dev_interventions(run)
     control: dict = interventions.get("control") or {}
     for k in DIAG_PROB_KEYS:
         if result[k] is None:
@@ -201,6 +240,21 @@ def _extract_diag_prob_means(run: dict) -> dict[str, "float | None"]:
             v = run.get(f"{k}_mean")
             if isinstance(v, (int, float)):
                 result[k] = float(v)
+
+    # 5. Average the per-intervention diagnostic means across all intervention blocks
+    for k in DIAG_PROB_KEYS:
+        if result[k] is None:
+            gathered: list[float] = []
+            for block in interventions.values():
+                if not isinstance(block, dict):
+                    continue
+                for path in ((f"mean_{k}",), (k, "mean"), (k,)):
+                    v = _safe_get(block, *path)
+                    if isinstance(v, (int, float)):
+                        gathered.append(float(v))
+                        break
+            if gathered:
+                result[k] = round(sum(gathered) / len(gathered), 6)
 
     return result
 
@@ -221,7 +275,8 @@ def _extract_run_metrics(run: dict, path_info: dict) -> dict[str, Any]:
             rec["product_power"] = src.get("v7_h1_entitlement_product_power")
 
     # Intervention SUPPORT counts
-    sup_counts = _extract_intervention_support_counts(run)
+    _interventions = _resolve_best_dev_interventions(run)
+    sup_counts = _extract_intervention_support_counts(_interventions)
     rec["intervention_support_counts"] = sup_counts
 
     def _n(v: Any) -> "int | None":
