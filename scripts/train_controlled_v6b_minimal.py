@@ -165,6 +165,11 @@ def build_v7_model(
     v7_temporal_safety_cap_mode: str = "none",
     v7_temporal_safety_cap_gamma: float = 1.0,
     v7_temporal_safety_cap_detach: bool = False,
+    v7_use_temporal_mismatch_multihead: bool = False,
+    v7_temporal_mismatch_multihead_cap_mode: str = "none",
+    v7_temporal_mismatch_multihead_cap_gamma: float = 1.0,
+    v7_temporal_mismatch_multihead_cap_detach: bool = False,
+    v7_temporal_mismatch_multihead_fusion: str = "frame_only",
 ) -> "ContraMambaV7Hierarchical":
     """Build a ContraMambaV7Hierarchical with dummy backbone for plumbing validation."""
     from contramamba.modeling_v7_hierarchical import ContraMambaV7Hierarchical
@@ -198,6 +203,11 @@ def build_v7_model(
         v7_temporal_safety_cap_mode=v7_temporal_safety_cap_mode,
         v7_temporal_safety_cap_gamma=v7_temporal_safety_cap_gamma,
         v7_temporal_safety_cap_detach=v7_temporal_safety_cap_detach,
+        v7_use_temporal_mismatch_multihead=v7_use_temporal_mismatch_multihead,
+        v7_temporal_mismatch_multihead_cap_mode=v7_temporal_mismatch_multihead_cap_mode,
+        v7_temporal_mismatch_multihead_cap_gamma=v7_temporal_mismatch_multihead_cap_gamma,
+        v7_temporal_mismatch_multihead_cap_detach=v7_temporal_mismatch_multihead_cap_detach,
+        v7_temporal_mismatch_multihead_fusion=v7_temporal_mismatch_multihead_fusion,
     )
 
 
@@ -227,6 +237,11 @@ def build_v7_mamba_model(
     v7_temporal_safety_cap_mode: str = "none",
     v7_temporal_safety_cap_gamma: float = 1.0,
     v7_temporal_safety_cap_detach: bool = False,
+    v7_use_temporal_mismatch_multihead: bool = False,
+    v7_temporal_mismatch_multihead_cap_mode: str = "none",
+    v7_temporal_mismatch_multihead_cap_gamma: float = 1.0,
+    v7_temporal_mismatch_multihead_cap_detach: bool = False,
+    v7_temporal_mismatch_multihead_fusion: str = "frame_only",
 ) -> "ContraMambaV7Hierarchical":
     """Build a ContraMambaV7Hierarchical with real Mamba backbone."""
     from contramamba.modeling_v7_hierarchical import ContraMambaV7Hierarchical
@@ -260,6 +275,11 @@ def build_v7_mamba_model(
         v7_temporal_safety_cap_mode=v7_temporal_safety_cap_mode,
         v7_temporal_safety_cap_gamma=v7_temporal_safety_cap_gamma,
         v7_temporal_safety_cap_detach=v7_temporal_safety_cap_detach,
+        v7_use_temporal_mismatch_multihead=v7_use_temporal_mismatch_multihead,
+        v7_temporal_mismatch_multihead_cap_mode=v7_temporal_mismatch_multihead_cap_mode,
+        v7_temporal_mismatch_multihead_cap_gamma=v7_temporal_mismatch_multihead_cap_gamma,
+        v7_temporal_mismatch_multihead_cap_detach=v7_temporal_mismatch_multihead_cap_detach,
+        v7_temporal_mismatch_multihead_fusion=v7_temporal_mismatch_multihead_fusion,
     )
     for parameter in model.mamba.parameters():
         parameter.requires_grad = not freeze_encoder
@@ -830,6 +850,51 @@ def encode_temporal_safety_labels(
                 mask.append(1)
             elif itype in ("none", "paraphrase"):
                 labels.append(1)
+                mask.append(1)
+            else:
+                labels.append(0)
+                mask.append(0)
+    return (
+        torch.tensor(labels, dtype=torch.float32, device=device),
+        torch.tensor(mask, dtype=torch.bool, device=device),
+    )
+
+
+def encode_temporal_mismatch_multihead_labels(
+    records: list[dict],
+    device: "torch.device",
+) -> "tuple[torch.Tensor, torch.Tensor]":
+    """Encode temporal mismatch labels for Stage30-D multihead BCE loss.
+
+    Convention: temporal mismatch positive = 1, temporal safe/control = 0.
+    This is the INVERSE of encode_temporal_safety_labels (where safe=1).
+
+    Primary: reads `stage30_temporal_safe_label` (1=safe, 0=mismatch) if present.
+        safe_label 0 → mismatch target = 1
+        safe_label 1 → mismatch target = 0
+    Fallback derivation from intervention_type:
+        time_swap          → label=1 (temporal mismatch positive)
+        none, paraphrase   → label=0 (temporal safe/control)
+        all others         → masked (excluded from loss)
+
+    Returns (labels, mask) both of shape [B].
+    Stage15 OOD is never passed here.
+    """
+    labels: list[int] = []
+    mask: list[int] = []
+    for r in records:
+        explicit = r.get("stage30_temporal_safe_label")
+        if explicit is not None:
+            # Invert: safe_label=0 means mismatch → target 1; safe_label=1 means safe → target 0
+            labels.append(1 - int(explicit))
+            mask.append(1)
+        else:
+            itype = r.get("intervention_type", "")
+            if itype == "time_swap":
+                labels.append(1)
+                mask.append(1)
+            elif itype in ("none", "paraphrase"):
+                labels.append(0)
                 mask.append(1)
             else:
                 labels.append(0)
@@ -1521,6 +1586,17 @@ _S28E_V7_SCALAR_KEYS: tuple[str, ...] = (
     "v7_temporal_safety_prob",
     "v7_h1_entitlement_before_temporal_cap",
     "v7_h1_entitlement_after_temporal_cap",
+    # Stage30-D: temporal mismatch multihead scalars (absent when head is disabled)
+    "temporal_frame_mismatch_logit",
+    "temporal_predicate_mismatch_logit",
+    "temporal_sufficiency_mismatch_logit",
+    "temporal_frame_mismatch_prob",
+    "temporal_predicate_mismatch_prob",
+    "temporal_sufficiency_mismatch_prob",
+    "temporal_mismatch_fused_prob",
+    "temporal_mismatch_safe_factor",
+    "v7_h1_entitlement_before_temporal_mismatch_cap",
+    "v7_h1_entitlement_after_temporal_mismatch_cap",
 )
 
 _S28E_AUX_LABEL_KEYS: tuple[str, ...] = (
@@ -2810,6 +2886,107 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+    # ── Stage30-D: representation-decomposed temporal mismatch multihead ──────────────────────
+    parser.add_argument(
+        "--v7-use-temporal-mismatch-multihead",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage30-D: Enable TemporalMismatchMultiHead for v7_hierarchical. "
+            "Three independent heads: frame_head on frame_pair_repr, predicate_head on "
+            "predicate_pair_repr, sufficiency_head on sufficiency_repr. "
+            "Positive=1 means temporal mismatch (opposite of Stage30-C2 convention). "
+            "Cannot combine Stage30-D cap with Stage30-C2 cap. Default off."
+        ),
+    )
+    parser.add_argument(
+        "--v7-use-temporal-mismatch-multihead-loss",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage30-D: Enable auxiliary BCE training for the temporal mismatch multihead. "
+            "Reads stage30_temporal_safe_label (0→mismatch=1, 1→safe=0) or "
+            "falls back to intervention_type (time_swap→1, none/paraphrase→0). "
+            "Requires --v7-use-temporal-mismatch-multihead and "
+            "--v7-temporal-mismatch-multihead-data. Default off."
+        ),
+    )
+    parser.add_argument(
+        "--v7-temporal-mismatch-multihead-loss-weight",
+        type=float,
+        default=0.0,
+        help="Stage30-D: Weight for temporal mismatch multihead BCE loss. Default 0.0.",
+    )
+    parser.add_argument(
+        "--v7-temporal-mismatch-multihead-loss-pos-weight",
+        type=float,
+        default=None,
+        help=(
+            "Stage30-D: BCE pos_weight for temporal mismatch multihead loss "
+            "(positive = time_swap / temporal mismatch). If omitted, no pos_weight. Default None."
+        ),
+    )
+    parser.add_argument(
+        "--v7-temporal-mismatch-multihead-data",
+        type=str,
+        default=None,
+        metavar="PATH",
+        help=(
+            "Stage30-D: Path to temporal mismatch multihead auxiliary JSONL. "
+            "Same format as Stage30-C2 temporal safety data; labels are inverted. "
+            "Never added to main train/dev; never used for checkpoint selection. "
+            "Required when --v7-use-temporal-mismatch-multihead-loss is enabled."
+        ),
+    )
+    parser.add_argument(
+        "--v7-temporal-mismatch-multihead-cap-mode",
+        choices=("none", "hard", "soft"),
+        default="none",
+        help=(
+            "Stage30-D: Final-decision cap mode for the temporal mismatch multihead. "
+            "'none' (default): no cap applied. "
+            "'hard': entitlement = min(entitlement, safe_factor). "
+            "'soft': entitlement = entitlement * safe_factor.clamp_min(1e-8).pow(gamma). "
+            "safe_factor = 1 - fused_mismatch_prob. "
+            "Cannot combine with Stage30-C2 --v7-temporal-safety-cap-mode != none. "
+            "Requires --v7-use-temporal-mismatch-multihead when not 'none'."
+        ),
+    )
+    parser.add_argument(
+        "--v7-temporal-mismatch-multihead-cap-gamma",
+        type=float,
+        default=1.0,
+        help=(
+            "Stage30-D: Gamma exponent for soft temporal mismatch multihead cap. "
+            "Used only when --v7-temporal-mismatch-multihead-cap-mode soft. "
+            "Must be > 0. Default 1.0."
+        ),
+    )
+    parser.add_argument(
+        "--v7-temporal-mismatch-multihead-cap-detach",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage30-D: Detach safe_factor before applying the cap. "
+            "Isolates cap effect from BCE gradients. Default off."
+        ),
+    )
+    parser.add_argument(
+        "--v7-temporal-mismatch-multihead-fusion",
+        choices=("frame_only", "predicate_only", "sufficiency_only", "max", "noisy_or", "mean"),
+        default="frame_only",
+        help=(
+            "Stage30-D: Fusion mode combining per-head mismatch probabilities. "
+            "frame_only (default): fused = p_frame. "
+            "predicate_only: fused = p_predicate. "
+            "sufficiency_only: fused = p_sufficiency. "
+            "max: fused = max(p_f, p_p, p_s). "
+            "mean: fused = (p_f + p_p + p_s) / 3. "
+            "noisy_or: fused = 1 - (1-p_f)(1-p_p)(1-p_s). "
+            "Used for cap and for temporal_mismatch_fused_prob export."
+        ),
+    )
+
     parser.add_argument(
         "--v7-no-aux-losses",
         action="store_true",
@@ -3160,6 +3337,18 @@ def evaluate_external_probe(
         "v7_temporal_safety_cap_mode": getattr(args, "v7_temporal_safety_cap_mode", "none"),
         "v7_temporal_safety_cap_gamma": getattr(args, "v7_temporal_safety_cap_gamma", 1.0),
         "v7_temporal_safety_cap_detach": getattr(args, "v7_temporal_safety_cap_detach", False),
+        "v7_use_temporal_mismatch_multihead": getattr(
+            args, "v7_use_temporal_mismatch_multihead", False
+        ),
+        "v7_use_temporal_mismatch_multihead_loss": getattr(
+            args, "v7_use_temporal_mismatch_multihead_loss", False
+        ),
+        "v7_temporal_mismatch_multihead_cap_mode": getattr(
+            args, "v7_temporal_mismatch_multihead_cap_mode", "none"
+        ),
+        "v7_temporal_mismatch_multihead_fusion": getattr(
+            args, "v7_temporal_mismatch_multihead_fusion", "frame_only"
+        ),
         "v7_h1_entitlement_decision_signal": getattr(
             args, "v7_h1_entitlement_decision_signal", None
         ),
@@ -3524,6 +3713,58 @@ def main(argv: list[str] | None = None) -> int:
                 "into the main clean controlled train/eval classification data."
             )
 
+    # ── Stage30-D: temporal mismatch multihead flag validation ────────────────────────────────
+    _use_tmm = getattr(args, "v7_use_temporal_mismatch_multihead", False)
+    _use_tmm_loss = getattr(args, "v7_use_temporal_mismatch_multihead_loss", False)
+    _tmm_cap_mode = getattr(args, "v7_temporal_mismatch_multihead_cap_mode", "none")
+    _tmm_cap_gamma = getattr(args, "v7_temporal_mismatch_multihead_cap_gamma", 1.0)
+    _tmm_data = getattr(args, "v7_temporal_mismatch_multihead_data", None)
+    if _use_tmm_loss and not _use_tmm:
+        raise ValueError(
+            "--v7-use-temporal-mismatch-multihead-loss requires "
+            "--v7-use-temporal-mismatch-multihead. "
+            "The multihead must be enabled to compute the auxiliary loss."
+        )
+    if _use_tmm_loss and _tmm_data is None:
+        raise ValueError(
+            "--v7-use-temporal-mismatch-multihead-loss requires "
+            "--v7-temporal-mismatch-multihead-data. "
+            "Provide the temporal mismatch auxiliary JSONL via "
+            "--v7-temporal-mismatch-multihead-data."
+        )
+    if _tmm_cap_mode != "none" and not _use_tmm:
+        raise ValueError(
+            f"--v7-temporal-mismatch-multihead-cap-mode {_tmm_cap_mode!r} requires "
+            "--v7-use-temporal-mismatch-multihead. "
+            "The multihead must be enabled to apply the cap."
+        )
+    if _tmm_cap_gamma <= 0:
+        raise ValueError(
+            f"--v7-temporal-mismatch-multihead-cap-gamma must be > 0, "
+            f"got {_tmm_cap_gamma!r}."
+        )
+    if _tmm_cap_mode != "none" and _ts_cap_mode != "none":
+        raise ValueError(
+            "Stage30-C2 temporal safety cap (--v7-temporal-safety-cap-mode) and "
+            "Stage30-D temporal mismatch multihead cap "
+            "(--v7-temporal-mismatch-multihead-cap-mode) cannot both be active.\n"
+            f"  v7_temporal_safety_cap_mode={_ts_cap_mode!r}\n"
+            f"  v7_temporal_mismatch_multihead_cap_mode={_tmm_cap_mode!r}\n"
+            "Set one to 'none'."
+        )
+    if _use_tmm_loss and _tmm_data is not None and not Path(_tmm_data).exists():
+        raise FileNotFoundError(
+            f"[tmm_head] --v7-temporal-mismatch-multihead-data not found: {_tmm_data}"
+        )
+    if _use_tmm_loss and _tmm_data is not None:
+        if Path(_tmm_data).resolve() == Path(args.data).resolve():
+            raise ValueError(
+                "[tmm_head] --v7-temporal-mismatch-multihead-data must not be "
+                "the same as --data.\n"
+                "Temporal mismatch multihead records must not be mixed into the "
+                "main clean controlled train/eval classification data."
+            )
+
     if args.backbone == "dummy" and not args.allow_dummy_backbone:
         raise ValueError(
             "[DUMMY BACKBONE BLOCKED] backbone=dummy is permitted only for explicit "
@@ -3609,6 +3850,21 @@ def main(argv: list[str] | None = None) -> int:
                 v7_temporal_safety_cap_mode=getattr(args, "v7_temporal_safety_cap_mode", "none"),
                 v7_temporal_safety_cap_gamma=getattr(args, "v7_temporal_safety_cap_gamma", 1.0),
                 v7_temporal_safety_cap_detach=getattr(args, "v7_temporal_safety_cap_detach", False),
+                v7_use_temporal_mismatch_multihead=getattr(
+                    args, "v7_use_temporal_mismatch_multihead", False
+                ),
+                v7_temporal_mismatch_multihead_cap_mode=getattr(
+                    args, "v7_temporal_mismatch_multihead_cap_mode", "none"
+                ),
+                v7_temporal_mismatch_multihead_cap_gamma=getattr(
+                    args, "v7_temporal_mismatch_multihead_cap_gamma", 1.0
+                ),
+                v7_temporal_mismatch_multihead_cap_detach=getattr(
+                    args, "v7_temporal_mismatch_multihead_cap_detach", False
+                ),
+                v7_temporal_mismatch_multihead_fusion=getattr(
+                    args, "v7_temporal_mismatch_multihead_fusion", "frame_only"
+                ),
             )
         else:
             model = build_mamba_model(
@@ -3674,6 +3930,21 @@ def main(argv: list[str] | None = None) -> int:
                 v7_temporal_safety_cap_mode=getattr(args, "v7_temporal_safety_cap_mode", "none"),
                 v7_temporal_safety_cap_gamma=getattr(args, "v7_temporal_safety_cap_gamma", 1.0),
                 v7_temporal_safety_cap_detach=getattr(args, "v7_temporal_safety_cap_detach", False),
+                v7_use_temporal_mismatch_multihead=getattr(
+                    args, "v7_use_temporal_mismatch_multihead", False
+                ),
+                v7_temporal_mismatch_multihead_cap_mode=getattr(
+                    args, "v7_temporal_mismatch_multihead_cap_mode", "none"
+                ),
+                v7_temporal_mismatch_multihead_cap_gamma=getattr(
+                    args, "v7_temporal_mismatch_multihead_cap_gamma", 1.0
+                ),
+                v7_temporal_mismatch_multihead_cap_detach=getattr(
+                    args, "v7_temporal_mismatch_multihead_cap_detach", False
+                ),
+                v7_temporal_mismatch_multihead_fusion=getattr(
+                    args, "v7_temporal_mismatch_multihead_fusion", "frame_only"
+                ),
             )
         else:
             model = build_model(
@@ -3975,6 +4246,91 @@ def main(argv: list[str] | None = None) -> int:
                 f" ts_train_neg={_ts_train_neg}"
             )
 
+    # Stage30-D: temporal mismatch multihead aux data loading — separate from main train/dev.
+    # Uses the same pair_id filtering as Stage30-C2 to exclude main dev records.
+    _tmm_train_inputs: "dict[str, torch.Tensor] | None" = None
+    _tmm_train_labels: "torch.Tensor | None" = None
+    _tmm_train_mask: "torch.Tensor | None" = None
+    _tmm_meta_records_loaded: int = 0
+    _tmm_meta_records_used: int = 0
+    _tmm_meta_excluded_dev: int = 0
+    _tmm_meta_excluded_missing_pair_id: int = 0
+
+    _tmm_data_needed = (
+        getattr(args, "v7_use_temporal_mismatch_multihead_loss", False)
+        and getattr(args, "v7_temporal_mismatch_multihead_data", None) is not None
+    )
+    if _tmm_data_needed:
+        _tmm_path = Path(args.v7_temporal_mismatch_multihead_data)
+        _tmm_all_records = load_temporal_safety_jsonl(_tmm_path)
+        _tmm_meta_records_loaded = len(_tmm_all_records)
+
+        _tmm_main_train_pair_ids: set = {
+            r["pair_id"] for r in train_records if r.get("pair_id") is not None
+        }
+        _tmm_main_dev_pair_ids: set = {
+            r["pair_id"] for r in dev_records if r.get("pair_id") is not None
+        }
+
+        _tmm_train_records: list[dict] = []
+        for _r in _tmm_all_records:
+            _pid = _r.get("pair_id") or _r.get("source_pair_id")
+            if _pid is None:
+                _tmm_meta_excluded_missing_pair_id += 1
+                continue
+            if _pid in _tmm_main_dev_pair_ids:
+                _tmm_meta_excluded_dev += 1
+                continue
+            if _pid in _tmm_main_train_pair_ids:
+                _tmm_train_records.append(_r)
+
+        _tmm_meta_records_used = len(_tmm_train_records)
+        if _tmm_meta_records_used == 0:
+            print(
+                f"[tmm_head] WARNING: no temporal mismatch multihead train records after "
+                f"pair_id filtering "
+                f"(loaded={_tmm_meta_records_loaded} "
+                f"excluded_dev={_tmm_meta_excluded_dev} "
+                f"excluded_missing_pair_id={_tmm_meta_excluded_missing_pair_id}). "
+                "Loss will be zero."
+            )
+        else:
+            _tmm_train_labels, _tmm_train_mask = encode_temporal_mismatch_multihead_labels(
+                _tmm_train_records, device
+            )
+            if args.backbone == "dummy":
+                _tmm_train_bundle = v5.encode_records(_tmm_train_records, vocab)
+            else:
+                _tmm_train_bundle = v5.encode_mamba_records(
+                    _tmm_train_records, tokenizer, args.max_length
+                )
+            _tmm_train_inputs = v5.move_inputs(_tmm_train_bundle["model_inputs"], device)
+            _tmm_seq = _tmm_train_inputs["input_ids"].shape[1]
+            if _tmm_seq < max_length:
+                _diff = max_length - _tmm_seq
+                for _key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
+                    _tmm_train_inputs[_key] = F.pad(_tmm_train_inputs[_key], (0, _diff), value=0)
+            elif _tmm_seq > max_length:
+                for _key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
+                    _tmm_train_inputs[_key] = _tmm_train_inputs[_key][:, :max_length]
+            if args.backbone == "mamba" and args.freeze_encoder:
+                v5.cache_frozen_encoder_states(model, _tmm_train_inputs)
+            _tmm_train_pos = int(_tmm_train_labels.sum().item())
+            _tmm_train_neg = int(
+                (_tmm_train_mask.float() - _tmm_train_labels * _tmm_train_mask.float()).sum().item()
+            )
+            print(
+                f"[tmm_head] enabled "
+                f"weight={getattr(args, 'v7_temporal_mismatch_multihead_loss_weight', 0.0)}"
+                f" fusion={getattr(args, 'v7_temporal_mismatch_multihead_fusion', 'frame_only')}"
+                f" loaded={_tmm_meta_records_loaded}"
+                f" used={_tmm_meta_records_used}"
+                f" excluded_dev={_tmm_meta_excluded_dev}"
+                f" excluded_missing_pair_id={_tmm_meta_excluded_missing_pair_id}"
+                f" tmm_train_pos={_tmm_train_pos}"
+                f" tmm_train_neg={_tmm_train_neg}"
+            )
+
     # Stage22-A4c/A4e: pair contrastive frame data loading and encoding
     _pc_pair_records: list[dict[str, Any]] = []
     _pc_pres_inputs: "dict[str, torch.Tensor] | None" = None
@@ -4135,6 +4491,12 @@ def main(argv: list[str] | None = None) -> int:
         ts_train_mask=None,
         ts_loss_weight=0.0,
         ts_loss_pos_weight=None,
+        # Stage30-D: temporal mismatch multihead auxiliary BCE loss (separate dataset; v7 only)
+        tmm_train_inputs=None,
+        tmm_train_labels=None,
+        tmm_train_mask=None,
+        tmm_loss_weight=0.0,
+        tmm_loss_pos_weight=None,
     ):
         """Modified run_training that passes flags to v6b model."""
         if epochs < 1:
@@ -4724,6 +5086,61 @@ def main(argv: list[str] | None = None) -> int:
                             )
                         total_loss = total_loss + ts_loss_weight * _v7_ts_loss
 
+            # ── Stage30-D: v7 temporal mismatch multihead BCE auxiliary loss ──────────────────
+            # Separate forward pass on temporal mismatch diagnostic records.
+            # Records are NOT in the main clean train/dev; no classification CE here.
+            # Stage15/OOD is eval-only and is NEVER used here.
+            # Mean of the three per-head BCE losses for scale stability.
+            _v7_tmm_loss = torch.tensor(0.0, device=device)
+            if (
+                args.architecture == "v7_hierarchical"
+                and getattr(args, "v7_use_temporal_mismatch_multihead", False)
+                and getattr(args, "v7_use_temporal_mismatch_multihead_loss", False)
+                and tmm_loss_weight > 0.0
+                and not args.v7_no_aux_losses
+                and tmm_train_inputs is not None
+                and tmm_train_labels is not None
+                and tmm_train_mask is not None
+            ):
+                _tmm_n = tmm_train_inputs["input_ids"].shape[0]
+                _tmm_zero_t = torch.zeros(_tmm_n, dtype=torch.float32, device=device)
+                _tmm_zero_p = torch.zeros(_tmm_n, dtype=torch.float32, device=device)
+                _tmm_train_out = model(
+                    **v5.model_feature_inputs(tmm_train_inputs),
+                    temporal_mismatch_flags=_tmm_zero_t,
+                    predicate_mismatch_flags=_tmm_zero_p,
+                )
+                _active_tmm = tmm_train_mask.bool()
+                if torch.any(_active_tmm):
+                    _tmm_head_logit_keys = [
+                        "temporal_frame_mismatch_logit",
+                        "temporal_predicate_mismatch_logit",
+                        "temporal_sufficiency_mismatch_logit",
+                    ]
+                    _tmm_per_head_losses: list[torch.Tensor] = []
+                    for _hk in _tmm_head_logit_keys:
+                        _h_logit = _tmm_train_out.get(_hk)
+                        if _h_logit is not None:
+                            if tmm_loss_pos_weight is not None:
+                                _tmm_pw = torch.tensor(
+                                    tmm_loss_pos_weight, dtype=_h_logit.dtype, device=device
+                                )
+                                _h_loss = F.binary_cross_entropy_with_logits(
+                                    _h_logit[_active_tmm],
+                                    tmm_train_labels[_active_tmm],
+                                    pos_weight=_tmm_pw,
+                                )
+                            else:
+                                _h_loss = F.binary_cross_entropy_with_logits(
+                                    _h_logit[_active_tmm],
+                                    tmm_train_labels[_active_tmm],
+                                )
+                            _tmm_per_head_losses.append(_h_loss)
+                    if _tmm_per_head_losses:
+                        # Mean for scale stability (3 heads → 3× scale without mean)
+                        _v7_tmm_loss = sum(_tmm_per_head_losses) / len(_tmm_per_head_losses)
+                        total_loss = total_loss + tmm_loss_weight * _v7_tmm_loss
+
             # ── Audit ledger accumulation (reporting only; does not affect gradients) ─────────
             # raw = loss value before weight multiplication; weighted = actual total_loss contribution
             _ep_ce_raw = float(losses["label"].item())
@@ -4745,6 +5162,7 @@ def main(argv: list[str] | None = None) -> int:
             _ep_v7_ecb_raw = float(_v7_ecb_loss.item()) if hasattr(_v7_ecb_loss, "item") else 0.0
             _ep_v7_lb_raw = float(_v7_lb_loss.item()) if hasattr(_v7_lb_loss, "item") else 0.0
             _ep_v7_ts_raw = float(_v7_ts_loss.item()) if hasattr(_v7_ts_loss, "item") else 0.0
+            _ep_v7_tmm_raw = float(_v7_tmm_loss.item()) if hasattr(_v7_tmm_loss, "item") else 0.0
             _ep_total = float(total_loss.item())
             # For ranking path: active_intervention_loss = ranking_weight * raw_ranking.
             # Recover raw by dividing. For intervention path: pairwise_losses["total"] is
@@ -4777,6 +5195,8 @@ def main(argv: list[str] | None = None) -> int:
                 "v7_location_boundary_loss": _ep_v7_lb_raw,
                 # Stage30-C2: temporal safety loss (0.0 when disabled)
                 "v7_temporal_safety_loss": _ep_v7_ts_raw,
+                # Stage30-D: temporal mismatch multihead loss (0.0 when disabled)
+                "v7_temporal_mismatch_multihead_loss": _ep_v7_tmm_raw,
                 "total_loss": _ep_total,
             })
             _audit_per_epoch_weighted.append({
@@ -4803,6 +5223,8 @@ def main(argv: list[str] | None = None) -> int:
                 ),
                 # Stage30-C2: temporal safety loss weighted contribution
                 "v7_temporal_safety_loss": ts_loss_weight * _ep_v7_ts_raw,
+                # Stage30-D: temporal mismatch multihead loss weighted contribution
+                "v7_temporal_mismatch_multihead_loss": tmm_loss_weight * _ep_v7_tmm_raw,
                 "total_loss": _ep_total,
             })
             _audit_epoch_count += 1
@@ -5559,6 +5981,45 @@ def main(argv: list[str] | None = None) -> int:
                     ) else "disabled"
                 ),
             },
+            # Stage30-D: temporal mismatch multihead loss
+            "v7_temporal_mismatch_multihead_loss": {
+                "enabled": (
+                    args.architecture == "v7_hierarchical"
+                    and getattr(args, "v7_use_temporal_mismatch_multihead", False)
+                    and getattr(args, "v7_use_temporal_mismatch_multihead_loss", False)
+                    and getattr(args, "v7_temporal_mismatch_multihead_loss_weight", 0.0) > 0.0
+                    and not getattr(args, "v7_no_aux_losses", False)
+                ),
+                "weight": getattr(args, "v7_temporal_mismatch_multihead_loss_weight", 0.0),
+                "pos_weight": getattr(
+                    args, "v7_temporal_mismatch_multihead_loss_pos_weight", None
+                ),
+                "target": (
+                    "temporal_frame_mismatch_logit, temporal_predicate_mismatch_logit, "
+                    "temporal_sufficiency_mismatch_logit"
+                ),
+                "target_derivation": (
+                    "temporal_mismatch=1 (time_swap/stage30_temporal_safe_label=0), "
+                    "safe=0 (none/paraphrase/stage30_temporal_safe_label=1)"
+                ),
+                "fusion": getattr(args, "v7_temporal_mismatch_multihead_fusion", "frame_only"),
+                "loss_combination": "mean of 3 per-head BCE losses",
+                "stage15_used_for_selection_or_calibration": False,
+                "external_probe_used": False,
+                "ood_used": False,
+                "raw_loss_key": "v7_temporal_mismatch_multihead_loss",
+                "weighted_loss_key": "v7_temporal_mismatch_multihead_loss",
+                "note": (
+                    "Stage30-D: mean BCE over 3 heads (frame/predicate/sufficiency). "
+                    "Separate aux dataset; pair_id filtered to main train only. "
+                    "No Stage15. No external probe. No OOD."
+                    if (
+                        getattr(args, "v7_use_temporal_mismatch_multihead", False)
+                        and getattr(args, "v7_use_temporal_mismatch_multihead_loss", False)
+                        and getattr(args, "v7_temporal_mismatch_multihead_loss_weight", 0.0) > 0.0
+                    ) else "disabled"
+                ),
+            },
         }
 
         # True post-hoc final-logit modifiers only.
@@ -6078,6 +6539,16 @@ def main(argv: list[str] | None = None) -> int:
                 if getattr(args, "v7_use_temporal_safety_loss", False) else 0.0
             ),
             ts_loss_pos_weight=getattr(args, "v7_temporal_safety_loss_pos_weight", None),
+            tmm_train_inputs=_tmm_train_inputs if _tmm_data_needed else None,
+            tmm_train_labels=_tmm_train_labels if _tmm_data_needed else None,
+            tmm_train_mask=_tmm_train_mask if _tmm_data_needed else None,
+            tmm_loss_weight=(
+                getattr(args, "v7_temporal_mismatch_multihead_loss_weight", 0.0)
+                if getattr(args, "v7_use_temporal_mismatch_multihead_loss", False) else 0.0
+            ),
+            tmm_loss_pos_weight=getattr(
+                args, "v7_temporal_mismatch_multihead_loss_pos_weight", None
+            ),
             pc_pres_inputs=_pc_pres_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_frame_inputs=_pc_frame_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_loss_weight=(
@@ -6288,6 +6759,9 @@ def main(argv: list[str] | None = None) -> int:
                     or (getattr(args, "v7_use_temporal_safety_head", False)
                         and getattr(args, "v7_use_temporal_safety_loss", False)
                         and getattr(args, "v7_temporal_safety_loss_weight", 0.0) > 0.0)
+                    or (getattr(args, "v7_use_temporal_mismatch_multihead", False)
+                        and getattr(args, "v7_use_temporal_mismatch_multihead_loss", False)
+                        and getattr(args, "v7_temporal_mismatch_multihead_loss_weight", 0.0) > 0.0)
                 )
             ),
             # Stage26-G: v7 stabilization options
@@ -6369,6 +6843,39 @@ def main(argv: list[str] | None = None) -> int:
             "v7_temporal_safety_external_probe_used": False,
             "stage15_used_for_v7_temporal_safety_loss": False,
             "ood_used_for_v7_temporal_safety_loss": False,
+            # Stage30-D: temporal mismatch multihead configuration
+            "v7_use_temporal_mismatch_multihead": getattr(
+                args, "v7_use_temporal_mismatch_multihead", False
+            ),
+            "v7_use_temporal_mismatch_multihead_loss": getattr(
+                args, "v7_use_temporal_mismatch_multihead_loss", False
+            ),
+            "v7_temporal_mismatch_multihead_loss_weight": getattr(
+                args, "v7_temporal_mismatch_multihead_loss_weight", 0.0
+            ),
+            "v7_temporal_mismatch_multihead_cap_mode": getattr(
+                args, "v7_temporal_mismatch_multihead_cap_mode", "none"
+            ),
+            "v7_temporal_mismatch_multihead_cap_gamma": getattr(
+                args, "v7_temporal_mismatch_multihead_cap_gamma", 1.0
+            ),
+            "v7_temporal_mismatch_multihead_cap_detach": getattr(
+                args, "v7_temporal_mismatch_multihead_cap_detach", False
+            ),
+            "v7_temporal_mismatch_multihead_fusion": getattr(
+                args, "v7_temporal_mismatch_multihead_fusion", "frame_only"
+            ),
+            "v7_temporal_mismatch_multihead_data": getattr(
+                args, "v7_temporal_mismatch_multihead_data", None
+            ),
+            "v7_temporal_mismatch_multihead_records_loaded": _tmm_meta_records_loaded,
+            "v7_temporal_mismatch_multihead_records_used_for_aux_train": _tmm_meta_records_used,
+            "v7_temporal_mismatch_multihead_records_excluded_main_dev_pair": _tmm_meta_excluded_dev,
+            "v7_temporal_mismatch_multihead_records_excluded_missing_pair_id": (
+                _tmm_meta_excluded_missing_pair_id
+            ),
+            "stage15_used_for_v7_temporal_mismatch_multihead_loss": False,
+            "external_probe_used_for_v7_temporal_mismatch_multihead_loss": False,
             "v7_h1_entitlement_for_decision_source": (
                 _V7_H1_DECISION_SIGNAL_SOURCE.get(
                     getattr(args, "v7_h1_entitlement_decision_signal", "learned"),

@@ -393,6 +393,61 @@ class TemporalSafetyHead(nn.Module):
         }
 
 
+class TemporalMismatchMultiHead(nn.Module):
+    """Stage30-D: representation-decomposed temporal mismatch heads.
+
+    Three independent linear/MLP heads, each reading a single representation:
+        frame_head:       reads frame_pair_repr
+        predicate_head:   reads predicate_pair_repr
+        sufficiency_head: reads sufficiency_repr
+
+    Temporal mismatch positive = 1 (time_swap / stage30_temporal_safe_label=0)
+    Temporal safe / control     = 0 (none, paraphrase / stage30_temporal_safe_label=1)
+
+    This is the INVERSE of TemporalSafetyHead's convention.
+    """
+
+    def __init__(
+        self,
+        frame_size: int,
+        predicate_size: int,
+        sufficiency_size: int,
+        dropout: float = 0.1,
+    ) -> None:
+        super().__init__()
+
+        def _make_mlp(in_dim: int) -> nn.Sequential:
+            hidden = max(in_dim // 4, 16)
+            return nn.Sequential(
+                nn.Linear(in_dim, hidden),
+                nn.GELU(),
+                nn.Dropout(dropout),
+                nn.Linear(hidden, 1),
+            )
+
+        self.frame_head = _make_mlp(frame_size)
+        self.predicate_head = _make_mlp(predicate_size)
+        self.sufficiency_head = _make_mlp(sufficiency_size)
+
+    def forward(
+        self,
+        frame_pair_repr: torch.Tensor,
+        predicate_pair_repr: torch.Tensor,
+        sufficiency_repr: torch.Tensor,
+    ) -> dict[str, torch.Tensor]:
+        frame_logit = self.frame_head(frame_pair_repr).squeeze(-1)
+        predicate_logit = self.predicate_head(predicate_pair_repr).squeeze(-1)
+        sufficiency_logit = self.sufficiency_head(sufficiency_repr).squeeze(-1)
+        return {
+            "temporal_frame_mismatch_logit": frame_logit,
+            "temporal_predicate_mismatch_logit": predicate_logit,
+            "temporal_sufficiency_mismatch_logit": sufficiency_logit,
+            "temporal_frame_mismatch_prob": torch.sigmoid(frame_logit),
+            "temporal_predicate_mismatch_prob": torch.sigmoid(predicate_logit),
+            "temporal_sufficiency_mismatch_prob": torch.sigmoid(sufficiency_logit),
+        }
+
+
 class ContraMambaV7Hierarchical(nn.Module):
     """Stage26-A: v7 Hierarchical Entitlement architecture.
 
@@ -500,6 +555,15 @@ class ContraMambaV7Hierarchical(nn.Module):
         v7_temporal_safety_cap_mode: str = "none",  # "none" | "hard" | "soft"
         v7_temporal_safety_cap_gamma: float = 1.0,
         v7_temporal_safety_cap_detach: bool = False,
+        # Stage30-D: representation-decomposed temporal mismatch multihead.
+        # Disabled by default; separate from Stage30-C2 TemporalSafetyHead.
+        # Cannot combine Stage30-D cap with Stage30-C2 cap in the same run.
+        # Only meaningful when v7_use_v6b_style_final_decision=True (H1 path active).
+        v7_use_temporal_mismatch_multihead: bool = False,
+        v7_temporal_mismatch_multihead_cap_mode: str = "none",  # "none" | "hard" | "soft"
+        v7_temporal_mismatch_multihead_cap_gamma: float = 1.0,
+        v7_temporal_mismatch_multihead_cap_detach: bool = False,
+        v7_temporal_mismatch_multihead_fusion: str = "frame_only",
     ) -> None:
         super().__init__()
 
@@ -635,6 +699,51 @@ class ContraMambaV7Hierarchical(nn.Module):
         self.temporal_safety_head: TemporalSafetyHead | None = None
         if v7_use_temporal_safety_head:
             self.temporal_safety_head = TemporalSafetyHead(
+                frame_size, predicate_size, sufficiency_size, dropout
+            )
+
+        # Stage30-D: temporal mismatch multihead and cap configuration.
+        _valid_tmm_cap_modes = ("none", "hard", "soft")
+        if v7_temporal_mismatch_multihead_cap_mode not in _valid_tmm_cap_modes:
+            raise ValueError(
+                f"v7_temporal_mismatch_multihead_cap_mode must be one of "
+                f"{_valid_tmm_cap_modes}, got {v7_temporal_mismatch_multihead_cap_mode!r}."
+            )
+        if v7_temporal_mismatch_multihead_cap_gamma <= 0:
+            raise ValueError(
+                f"v7_temporal_mismatch_multihead_cap_gamma must be > 0, "
+                f"got {v7_temporal_mismatch_multihead_cap_gamma!r}."
+            )
+        _valid_tmm_fusions = (
+            "frame_only", "predicate_only", "sufficiency_only", "max", "noisy_or", "mean"
+        )
+        if v7_temporal_mismatch_multihead_fusion not in _valid_tmm_fusions:
+            raise ValueError(
+                f"v7_temporal_mismatch_multihead_fusion must be one of "
+                f"{_valid_tmm_fusions}, got {v7_temporal_mismatch_multihead_fusion!r}."
+            )
+        # Conflict check: Stage30-C2 cap and Stage30-D cap cannot both be active.
+        if (
+            v7_temporal_safety_cap_mode != "none"
+            and v7_temporal_mismatch_multihead_cap_mode != "none"
+        ):
+            raise ValueError(
+                "Stage30-C2 temporal safety cap and Stage30-D temporal mismatch multihead cap "
+                "cannot both be active simultaneously.\n"
+                f"  v7_temporal_safety_cap_mode={v7_temporal_safety_cap_mode!r}\n"
+                f"  v7_temporal_mismatch_multihead_cap_mode="
+                f"{v7_temporal_mismatch_multihead_cap_mode!r}\n"
+                "Set one cap mode to 'none' to resolve this conflict."
+            )
+        self.v7_use_temporal_mismatch_multihead = v7_use_temporal_mismatch_multihead
+        self.v7_temporal_mismatch_multihead_cap_mode = v7_temporal_mismatch_multihead_cap_mode
+        self.v7_temporal_mismatch_multihead_cap_gamma = float(v7_temporal_mismatch_multihead_cap_gamma)
+        self.v7_temporal_mismatch_multihead_cap_detach = v7_temporal_mismatch_multihead_cap_detach
+        self.v7_temporal_mismatch_multihead_fusion = v7_temporal_mismatch_multihead_fusion
+
+        self.temporal_mismatch_multihead: TemporalMismatchMultiHead | None = None
+        if v7_use_temporal_mismatch_multihead:
+            self.temporal_mismatch_multihead = TemporalMismatchMultiHead(
                 frame_size, predicate_size, sufficiency_size, dropout
             )
 
@@ -787,6 +896,52 @@ class ContraMambaV7Hierarchical(nn.Module):
             temporal_safety_logit = _ts_out["temporal_safety_logit"]
             temporal_safety_prob = _ts_out["temporal_safety_prob"]
 
+        # ── Stage30-D: temporal mismatch multihead ──────────────────────────────────────────────
+        # Three independent heads reading separate representations.
+        # Fusion mode and cap are applied in the H1 path only.
+        temporal_frame_mismatch_logit: torch.Tensor | None = None
+        temporal_predicate_mismatch_logit: torch.Tensor | None = None
+        temporal_sufficiency_mismatch_logit: torch.Tensor | None = None
+        temporal_frame_mismatch_prob: torch.Tensor | None = None
+        temporal_predicate_mismatch_prob: torch.Tensor | None = None
+        temporal_sufficiency_mismatch_prob: torch.Tensor | None = None
+        temporal_mismatch_fused_prob: torch.Tensor | None = None
+        temporal_mismatch_safe_factor: torch.Tensor | None = None
+        v7_h1_entitlement_before_temporal_mismatch_cap: torch.Tensor | None = None
+        v7_h1_entitlement_after_temporal_mismatch_cap: torch.Tensor | None = None
+
+        if self.temporal_mismatch_multihead is not None:
+            _tmm_out = self.temporal_mismatch_multihead(
+                frame_pair_repr=frame["frame_pair_repr"],
+                predicate_pair_repr=predicate["predicate_pair_repr"],
+                sufficiency_repr=sufficiency["sufficiency_repr"],
+            )
+            temporal_frame_mismatch_logit = _tmm_out["temporal_frame_mismatch_logit"]
+            temporal_predicate_mismatch_logit = _tmm_out["temporal_predicate_mismatch_logit"]
+            temporal_sufficiency_mismatch_logit = _tmm_out["temporal_sufficiency_mismatch_logit"]
+            temporal_frame_mismatch_prob = _tmm_out["temporal_frame_mismatch_prob"]
+            temporal_predicate_mismatch_prob = _tmm_out["temporal_predicate_mismatch_prob"]
+            temporal_sufficiency_mismatch_prob = _tmm_out["temporal_sufficiency_mismatch_prob"]
+            # Fusion: combine per-head mismatch probabilities
+            _p_f = temporal_frame_mismatch_prob
+            _p_p = temporal_predicate_mismatch_prob
+            _p_s = temporal_sufficiency_mismatch_prob
+            _fusion = self.v7_temporal_mismatch_multihead_fusion
+            if _fusion == "frame_only":
+                temporal_mismatch_fused_prob = _p_f
+            elif _fusion == "predicate_only":
+                temporal_mismatch_fused_prob = _p_p
+            elif _fusion == "sufficiency_only":
+                temporal_mismatch_fused_prob = _p_s
+            elif _fusion == "max":
+                temporal_mismatch_fused_prob = torch.maximum(torch.maximum(_p_f, _p_p), _p_s)
+            elif _fusion == "mean":
+                temporal_mismatch_fused_prob = (_p_f + _p_p + _p_s) / 3.0
+            elif _fusion == "noisy_or":
+                temporal_mismatch_fused_prob = 1.0 - (1.0 - _p_f) * (1.0 - _p_p) * (1.0 - _p_s)
+            # safe_factor = complement of mismatch probability
+            temporal_mismatch_safe_factor = 1.0 - temporal_mismatch_fused_prob
+
         # ── Stage28-I-A: location boundary cap tracking (initialized before H1/non-H1 branch) ──
         v7_h1_entitlement_before_location_cap: torch.Tensor | None = None
         v7_h1_entitlement_after_location_cap: torch.Tensor | None = None
@@ -913,6 +1068,31 @@ class ContraMambaV7Hierarchical(nn.Module):
                         entitlement_for_decision * _ts_cap_prob.clamp_min(1e-8).pow(_ts_gamma)
                     )
                 v7_h1_entitlement_after_temporal_cap = entitlement_for_decision
+
+            # ── Stage30-D: temporal mismatch multihead cap ────────────────────────────────
+            # Applied after Stage30-C2 temporal safety cap (the two caps are mutually exclusive
+            # at construction time, so at most one is ever active here).
+            # safe_factor = 1 - fused_mismatch_prob.
+            # "hard": entitlement = min(entitlement, safe_factor)
+            # "soft": entitlement = entitlement * safe_factor.clamp_min(1e-8).pow(gamma)
+            if (
+                temporal_mismatch_safe_factor is not None
+                and self.v7_temporal_mismatch_multihead_cap_mode != "none"
+            ):
+                v7_h1_entitlement_before_temporal_mismatch_cap = entitlement_for_decision
+                _tmm_safe = temporal_mismatch_safe_factor
+                if self.v7_temporal_mismatch_multihead_cap_detach:
+                    _tmm_safe = _tmm_safe.detach()
+                if self.v7_temporal_mismatch_multihead_cap_mode == "hard":
+                    entitlement_for_decision = torch.minimum(
+                        entitlement_for_decision, _tmm_safe
+                    )
+                else:  # soft
+                    _tmm_gamma = self.v7_temporal_mismatch_multihead_cap_gamma
+                    entitlement_for_decision = (
+                        entitlement_for_decision * _tmm_safe.clamp_min(1e-8).pow(_tmm_gamma)
+                    )
+                v7_h1_entitlement_after_temporal_mismatch_cap = entitlement_for_decision
 
             support_score = entitlement_for_decision * positive_energy
             refute_score = entitlement_for_decision * negative_energy
@@ -1061,4 +1241,19 @@ class ContraMambaV7Hierarchical(nn.Module):
             "v7_temporal_safety_prob_for_cap": v7_temporal_safety_prob_for_cap,
             "v7_h1_entitlement_before_temporal_cap": v7_h1_entitlement_before_temporal_cap,
             "v7_h1_entitlement_after_temporal_cap": v7_h1_entitlement_after_temporal_cap,
+            # Stage30-D: temporal mismatch multihead outputs (None when head is disabled).
+            "temporal_frame_mismatch_logit": temporal_frame_mismatch_logit,
+            "temporal_predicate_mismatch_logit": temporal_predicate_mismatch_logit,
+            "temporal_sufficiency_mismatch_logit": temporal_sufficiency_mismatch_logit,
+            "temporal_frame_mismatch_prob": temporal_frame_mismatch_prob,
+            "temporal_predicate_mismatch_prob": temporal_predicate_mismatch_prob,
+            "temporal_sufficiency_mismatch_prob": temporal_sufficiency_mismatch_prob,
+            "temporal_mismatch_fused_prob": temporal_mismatch_fused_prob,
+            "temporal_mismatch_safe_factor": temporal_mismatch_safe_factor,
+            # Stage30-D cap tracking (None when cap mode is "none" or H1 is inactive).
+            "v7_temporal_mismatch_multihead_cap_mode": self.v7_temporal_mismatch_multihead_cap_mode,
+            "v7_temporal_mismatch_multihead_cap_gamma": self.v7_temporal_mismatch_multihead_cap_gamma,
+            "v7_temporal_mismatch_multihead_fusion": self.v7_temporal_mismatch_multihead_fusion,
+            "v7_h1_entitlement_before_temporal_mismatch_cap": v7_h1_entitlement_before_temporal_mismatch_cap,
+            "v7_h1_entitlement_after_temporal_mismatch_cap": v7_h1_entitlement_after_temporal_mismatch_cap,
         }
