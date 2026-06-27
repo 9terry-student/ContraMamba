@@ -161,6 +161,10 @@ def build_v7_model(
     v7_location_boundary_cap_mode: str = "none",
     v7_location_boundary_cap_gamma: float = 1.0,
     v7_location_boundary_cap_detach: bool = False,
+    v7_use_temporal_safety_head: bool = False,
+    v7_temporal_safety_cap_mode: str = "none",
+    v7_temporal_safety_cap_gamma: float = 1.0,
+    v7_temporal_safety_cap_detach: bool = False,
 ) -> "ContraMambaV7Hierarchical":
     """Build a ContraMambaV7Hierarchical with dummy backbone for plumbing validation."""
     from contramamba.modeling_v7_hierarchical import ContraMambaV7Hierarchical
@@ -190,6 +194,10 @@ def build_v7_model(
         v7_location_boundary_cap_mode=v7_location_boundary_cap_mode,
         v7_location_boundary_cap_gamma=v7_location_boundary_cap_gamma,
         v7_location_boundary_cap_detach=v7_location_boundary_cap_detach,
+        v7_use_temporal_safety_head=v7_use_temporal_safety_head,
+        v7_temporal_safety_cap_mode=v7_temporal_safety_cap_mode,
+        v7_temporal_safety_cap_gamma=v7_temporal_safety_cap_gamma,
+        v7_temporal_safety_cap_detach=v7_temporal_safety_cap_detach,
     )
 
 
@@ -215,6 +223,10 @@ def build_v7_mamba_model(
     v7_location_boundary_cap_mode: str = "none",
     v7_location_boundary_cap_gamma: float = 1.0,
     v7_location_boundary_cap_detach: bool = False,
+    v7_use_temporal_safety_head: bool = False,
+    v7_temporal_safety_cap_mode: str = "none",
+    v7_temporal_safety_cap_gamma: float = 1.0,
+    v7_temporal_safety_cap_detach: bool = False,
 ) -> "ContraMambaV7Hierarchical":
     """Build a ContraMambaV7Hierarchical with real Mamba backbone."""
     from contramamba.modeling_v7_hierarchical import ContraMambaV7Hierarchical
@@ -244,6 +256,10 @@ def build_v7_mamba_model(
         v7_location_boundary_cap_mode=v7_location_boundary_cap_mode,
         v7_location_boundary_cap_gamma=v7_location_boundary_cap_gamma,
         v7_location_boundary_cap_detach=v7_location_boundary_cap_detach,
+        v7_use_temporal_safety_head=v7_use_temporal_safety_head,
+        v7_temporal_safety_cap_mode=v7_temporal_safety_cap_mode,
+        v7_temporal_safety_cap_gamma=v7_temporal_safety_cap_gamma,
+        v7_temporal_safety_cap_detach=v7_temporal_safety_cap_detach,
     )
     for parameter in model.mamba.parameters():
         parameter.requires_grad = not freeze_encoder
@@ -754,6 +770,74 @@ def compute_td_final_decision_metrics(
         "td_final_temporal_count": td_final_temporal_count,
         "td_final_control_count": td_final_control_count,
     }
+
+
+def load_temporal_safety_jsonl(path: "Path") -> list[dict]:
+    """Load temporal safety diagnostic JSONL for Stage30-C2 BCE loss.
+
+    Validates that the path does not reference Stage15.
+    Records may include time_swap (label=0), none/paraphrase (label=1).
+    Do NOT mix these into main train/dev classification data.
+    """
+    path_str = str(path).lower()
+    if "stage15" in path_str:
+        raise ValueError(
+            f"[ts_head] temporal safety data path contains 'stage15': {path}\n"
+            "Stage15 OOD records must not be used for temporal safety training."
+        )
+    records: list[dict] = []
+    with open(path, encoding="utf-8") as fh:
+        for lineno, line in enumerate(fh, start=1):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                r = json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise ValueError(
+                    f"[ts_head] Malformed JSON on line {lineno}: {exc}"
+                ) from exc
+            records.append(r)
+    return records
+
+
+def encode_temporal_safety_labels(
+    records: list[dict],
+    device: "torch.device",
+) -> "tuple[torch.Tensor, torch.Tensor]":
+    """Encode temporal safety labels for Stage30-C2 BCE loss.
+
+    Primary: reads `stage30_temporal_safe_label` (1=safe, 0=mismatch) if present.
+    Fallback derivation from intervention_type:
+        time_swap  → label=0 (temporal mismatch; unsafe)
+        none, paraphrase → label=1 (temporally safe)
+        all others → masked (excluded from loss)
+
+    Returns (labels, mask) both of shape [B].
+    Stage15 OOD is never passed here.
+    """
+    labels: list[int] = []
+    mask: list[int] = []
+    for r in records:
+        explicit = r.get("stage30_temporal_safe_label")
+        if explicit is not None:
+            labels.append(int(explicit))
+            mask.append(1)
+        else:
+            itype = r.get("intervention_type", "")
+            if itype == "time_swap":
+                labels.append(0)
+                mask.append(1)
+            elif itype in ("none", "paraphrase"):
+                labels.append(1)
+                mask.append(1)
+            else:
+                labels.append(0)
+                mask.append(0)
+    return (
+        torch.tensor(labels, dtype=torch.float32, device=device),
+        torch.tensor(mask, dtype=torch.bool, device=device),
+    )
 
 
 def encode_boundary_labels(
@@ -1430,6 +1514,13 @@ _S28E_V7_SCALAR_KEYS: tuple[str, ...] = (
     "v7_location_boundary_prob",
     "v7_h1_entitlement_before_location_cap",
     "v7_h1_entitlement_after_location_cap",
+    # Stage30-C2: temporal safety head scalars (absent when head is disabled)
+    "temporal_safety_logit",
+    "temporal_safety_prob",
+    "v7_temporal_safety_logit",
+    "v7_temporal_safety_prob",
+    "v7_h1_entitlement_before_temporal_cap",
+    "v7_h1_entitlement_after_temporal_cap",
 )
 
 _S28E_AUX_LABEL_KEYS: tuple[str, ...] = (
@@ -2632,6 +2723,93 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+    # ── Stage30-C2: independent temporal-safety cap/head ──────────────────────────────────────
+    # All off by default. Preserves all current Stage28-I behavior when disabled.
+    # Only meaningful for --architecture v7_hierarchical with --v7-use-v6b-style-final-decision.
+    parser.add_argument(
+        "--v7-use-temporal-safety-head",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage30-C2: Enable independent temporal-safety head for v7_hierarchical. "
+            "Adds a small MLP over [frame_pair_repr, predicate_pair_repr, sufficiency_repr] "
+            "producing temporal_safety_prob in [0,1]. "
+            "High prob = temporally safe; low prob = temporal mismatch risk. "
+            "Disabled by default; no effect on existing behavior when off."
+        ),
+    )
+    parser.add_argument(
+        "--v7-use-temporal-safety-loss",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage30-C2: Enable auxiliary BCE training for the temporal safety head. "
+            "Target: 0 for time_swap, 1 for none/paraphrase (from --v7-temporal-safety-data). "
+            "Reads stage30_temporal_safe_label if present; falls back to intervention_type. "
+            "Requires --v7-use-temporal-safety-head and --v7-temporal-safety-data. "
+            "Stage15/OOD is not used for this loss. Default off."
+        ),
+    )
+    parser.add_argument(
+        "--v7-temporal-safety-loss-weight",
+        type=float,
+        default=0.0,
+        help="Stage30-C2: Weight for temporal safety BCE loss. Default 0.0.",
+    )
+    parser.add_argument(
+        "--v7-temporal-safety-loss-pos-weight",
+        type=float,
+        default=None,
+        help=(
+            "Stage30-C2: BCE pos_weight for temporal safety loss (positive = time_swap). "
+            "If omitted, no pos_weight is applied. Default None."
+        ),
+    )
+    parser.add_argument(
+        "--v7-temporal-safety-data",
+        type=str,
+        default=None,
+        metavar="PATH",
+        help=(
+            "Stage30-C2: path to temporal safety diagnostic JSONL. "
+            "Must contain none/paraphrase (temporal_safe=1) and time_swap (temporal_safe=0). "
+            "Never added to main train/dev; never used for checkpoint selection. "
+            "Required when --v7-use-temporal-safety-loss is enabled."
+        ),
+    )
+    parser.add_argument(
+        "--v7-temporal-safety-cap-mode",
+        choices=("none", "hard", "soft"),
+        default="none",
+        help=(
+            "Stage30-C2: Final-decision cap mode for the temporal safety head. "
+            "'none' (default): no cap applied; existing behavior is unchanged. "
+            "'hard': entitlement = min(entitlement, temporal_safety_prob). "
+            "'soft': entitlement = entitlement * temporal_safety_prob^gamma. "
+            "Applied after location-boundary cap when both are enabled. "
+            "Requires --v7-use-temporal-safety-head when not 'none'."
+        ),
+    )
+    parser.add_argument(
+        "--v7-temporal-safety-cap-gamma",
+        type=float,
+        default=1.0,
+        help=(
+            "Stage30-C2: Gamma exponent for soft temporal safety cap. "
+            "Used only when --v7-temporal-safety-cap-mode soft. "
+            "Must be > 0. Default 1.0."
+        ),
+    )
+    parser.add_argument(
+        "--v7-temporal-safety-cap-detach",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage30-C2: Detach temporal_safety_prob before applying the cap. "
+            "Isolates cap effect from CE gradients. Default off."
+        ),
+    )
+
     parser.add_argument(
         "--v7-no-aux-losses",
         action="store_true",
@@ -2977,6 +3155,11 @@ def evaluate_external_probe(
         "v7_location_boundary_cap_mode": getattr(args, "v7_location_boundary_cap_mode", "none"),
         "v7_location_boundary_cap_gamma": getattr(args, "v7_location_boundary_cap_gamma", 1.0),
         "v7_location_boundary_cap_detach": getattr(args, "v7_location_boundary_cap_detach", False),
+        "v7_use_temporal_safety_head": getattr(args, "v7_use_temporal_safety_head", False),
+        "v7_use_temporal_safety_loss": getattr(args, "v7_use_temporal_safety_loss", False),
+        "v7_temporal_safety_cap_mode": getattr(args, "v7_temporal_safety_cap_mode", "none"),
+        "v7_temporal_safety_cap_gamma": getattr(args, "v7_temporal_safety_cap_gamma", 1.0),
+        "v7_temporal_safety_cap_detach": getattr(args, "v7_temporal_safety_cap_detach", False),
         "v7_h1_entitlement_decision_signal": getattr(
             args, "v7_h1_entitlement_decision_signal", None
         ),
@@ -3303,6 +3486,44 @@ def main(argv: list[str] | None = None) -> int:
             f"--v7-location-boundary-cap-gamma must be > 0, got {_lb_cap_gamma!r}."
         )
 
+    # ── Stage30-C2: temporal safety flag validation ───────────────────────────────────────────
+    _use_ts_head = getattr(args, "v7_use_temporal_safety_head", False)
+    _use_ts_loss = getattr(args, "v7_use_temporal_safety_loss", False)
+    _ts_cap_mode = getattr(args, "v7_temporal_safety_cap_mode", "none")
+    _ts_cap_gamma = getattr(args, "v7_temporal_safety_cap_gamma", 1.0)
+    _ts_data = getattr(args, "v7_temporal_safety_data", None)
+    if _use_ts_loss and not _use_ts_head:
+        raise ValueError(
+            "--v7-use-temporal-safety-loss requires --v7-use-temporal-safety-head. "
+            "The temporal safety head must be enabled to compute the auxiliary loss."
+        )
+    if _use_ts_loss and _ts_data is None:
+        raise ValueError(
+            "--v7-use-temporal-safety-loss requires --v7-temporal-safety-data. "
+            "Provide the temporal safety diagnostic JSONL via --v7-temporal-safety-data."
+        )
+    if _ts_cap_mode != "none" and not _use_ts_head:
+        raise ValueError(
+            f"--v7-temporal-safety-cap-mode {_ts_cap_mode!r} requires "
+            "--v7-use-temporal-safety-head. "
+            "The temporal safety head must be enabled to apply the cap."
+        )
+    if _ts_cap_gamma <= 0:
+        raise ValueError(
+            f"--v7-temporal-safety-cap-gamma must be > 0, got {_ts_cap_gamma!r}."
+        )
+    if _use_ts_loss and _ts_data is not None and not Path(_ts_data).exists():
+        raise FileNotFoundError(
+            f"[ts_head] --v7-temporal-safety-data not found: {_ts_data}"
+        )
+    if _use_ts_loss and _ts_data is not None:
+        if Path(_ts_data).resolve() == Path(args.data).resolve():
+            raise ValueError(
+                "[ts_head] --v7-temporal-safety-data must not be the same as --data.\n"
+                "Temporal safety records (including time_swap) must not be mixed "
+                "into the main clean controlled train/eval classification data."
+            )
+
     if args.backbone == "dummy" and not args.allow_dummy_backbone:
         raise ValueError(
             "[DUMMY BACKBONE BLOCKED] backbone=dummy is permitted only for explicit "
@@ -3384,6 +3605,10 @@ def main(argv: list[str] | None = None) -> int:
                 v7_location_boundary_cap_mode=getattr(args, "v7_location_boundary_cap_mode", "none"),
                 v7_location_boundary_cap_gamma=getattr(args, "v7_location_boundary_cap_gamma", 1.0),
                 v7_location_boundary_cap_detach=getattr(args, "v7_location_boundary_cap_detach", False),
+                v7_use_temporal_safety_head=getattr(args, "v7_use_temporal_safety_head", False),
+                v7_temporal_safety_cap_mode=getattr(args, "v7_temporal_safety_cap_mode", "none"),
+                v7_temporal_safety_cap_gamma=getattr(args, "v7_temporal_safety_cap_gamma", 1.0),
+                v7_temporal_safety_cap_detach=getattr(args, "v7_temporal_safety_cap_detach", False),
             )
         else:
             model = build_mamba_model(
@@ -3445,6 +3670,10 @@ def main(argv: list[str] | None = None) -> int:
                 v7_location_boundary_cap_mode=getattr(args, "v7_location_boundary_cap_mode", "none"),
                 v7_location_boundary_cap_gamma=getattr(args, "v7_location_boundary_cap_gamma", 1.0),
                 v7_location_boundary_cap_detach=getattr(args, "v7_location_boundary_cap_detach", False),
+                v7_use_temporal_safety_head=getattr(args, "v7_use_temporal_safety_head", False),
+                v7_temporal_safety_cap_mode=getattr(args, "v7_temporal_safety_cap_mode", "none"),
+                v7_temporal_safety_cap_gamma=getattr(args, "v7_temporal_safety_cap_gamma", 1.0),
+                v7_temporal_safety_cap_detach=getattr(args, "v7_temporal_safety_cap_detach", False),
             )
         else:
             model = build_model(
@@ -3653,6 +3882,54 @@ def main(argv: list[str] | None = None) -> int:
             f" td_train_neg={_td_train_neg}"
         )
 
+    # Stage30-C2: temporal safety data loading — separate dataset, never mixed into main train/dev.
+    # Records contain none/paraphrase (temporal_safe=1) and time_swap (temporal_safe=0).
+    # Stage15 OOD records must NOT be present here.
+    _ts_train_inputs: "dict[str, torch.Tensor] | None" = None
+    _ts_train_labels: "torch.Tensor | None" = None
+    _ts_train_mask: "torch.Tensor | None" = None
+
+    _ts_data_needed = (
+        getattr(args, "v7_use_temporal_safety_loss", False)
+        and getattr(args, "v7_temporal_safety_data", None) is not None
+    )
+    if _ts_data_needed:
+        _ts_path = Path(args.v7_temporal_safety_data)
+        _ts_all_records = load_temporal_safety_jsonl(_ts_path)
+        _ts_train_records, _ts_dev_records_unused = v5.split_by_pair_id(
+            _ts_all_records, dev_ratio=0.0, seed=args.seed
+        )
+        _ts_train_labels, _ts_train_mask = encode_temporal_safety_labels(
+            _ts_train_records, device
+        )
+        if args.backbone == "dummy":
+            _ts_train_bundle = v5.encode_records(_ts_train_records, vocab)
+        else:
+            _ts_train_bundle = v5.encode_mamba_records(
+                _ts_train_records, tokenizer, args.max_length
+            )
+        _ts_train_inputs = v5.move_inputs(_ts_train_bundle["model_inputs"], device)
+        _ts_seq = _ts_train_inputs["input_ids"].shape[1]
+        if _ts_seq < max_length:
+            _diff = max_length - _ts_seq
+            for _key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
+                _ts_train_inputs[_key] = F.pad(_ts_train_inputs[_key], (0, _diff), value=0)
+        elif _ts_seq > max_length:
+            for _key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
+                _ts_train_inputs[_key] = _ts_train_inputs[_key][:, :max_length]
+        if args.backbone == "mamba" and args.freeze_encoder:
+            v5.cache_frozen_encoder_states(model, _ts_train_inputs)
+        _ts_train_pos = int(_ts_train_labels.sum().item())
+        _ts_train_neg = int(
+            (_ts_train_mask.float() - _ts_train_labels * _ts_train_mask.float()).sum().item()
+        )
+        print(
+            f"[ts_head] enabled weight={getattr(args, 'v7_temporal_safety_loss_weight', 0.0)}"
+            f" ts_train={len(_ts_train_records)}"
+            f" ts_train_pos={_ts_train_pos}"
+            f" ts_train_neg={_ts_train_neg}"
+        )
+
     # Stage22-A4c/A4e: pair contrastive frame data loading and encoding
     _pc_pair_records: list[dict[str, Any]] = []
     _pc_pres_inputs: "dict[str, torch.Tensor] | None" = None
@@ -3807,6 +4084,12 @@ def main(argv: list[str] | None = None) -> int:
         sel_min_paraphrase_preserved=0.70,
         sel_min_predicate_disentangled=0.85,
         sel_fallback="final_macro_f1",
+        # Stage30-C2: temporal safety auxiliary BCE loss (separate dataset; v7 only)
+        ts_train_inputs=None,
+        ts_train_labels=None,
+        ts_train_mask=None,
+        ts_loss_weight=0.0,
+        ts_loss_pos_weight=None,
     ):
         """Modified run_training that passes flags to v6b model."""
         if epochs < 1:
@@ -4353,6 +4636,49 @@ def main(argv: list[str] | None = None) -> int:
                             + args.v7_location_boundary_loss_weight * _v7_lb_loss
                         )
 
+            # ── Stage30-C2: v7 temporal safety BCE auxiliary loss ─────────────────────────────
+            # Separate forward pass on temporal safety diagnostic records.
+            # Records are NOT in the main clean train/dev; no classification CE here.
+            # Stage15/OOD is eval-only and is NEVER used here.
+            _v7_ts_loss = torch.tensor(0.0, device=device)
+            if (
+                args.architecture == "v7_hierarchical"
+                and getattr(args, "v7_use_temporal_safety_head", False)
+                and getattr(args, "v7_use_temporal_safety_loss", False)
+                and ts_loss_weight > 0.0
+                and not args.v7_no_aux_losses
+                and ts_train_inputs is not None
+                and ts_train_labels is not None
+                and ts_train_mask is not None
+            ):
+                _ts_n = ts_train_inputs["input_ids"].shape[0]
+                _ts_zero_t = torch.zeros(_ts_n, dtype=torch.float32, device=device)
+                _ts_zero_p = torch.zeros(_ts_n, dtype=torch.float32, device=device)
+                _ts_train_out = model(
+                    **v5.model_feature_inputs(ts_train_inputs),
+                    temporal_mismatch_flags=_ts_zero_t,
+                    predicate_mismatch_flags=_ts_zero_p,
+                )
+                _ts_logit = _ts_train_out.get("temporal_safety_logit")
+                if _ts_logit is not None:
+                    _active_ts = ts_train_mask.bool()
+                    if torch.any(_active_ts):
+                        if ts_loss_pos_weight is not None:
+                            _ts_pos_w = torch.tensor(
+                                ts_loss_pos_weight, dtype=_ts_logit.dtype, device=device
+                            )
+                            _v7_ts_loss = F.binary_cross_entropy_with_logits(
+                                _ts_logit[_active_ts],
+                                ts_train_labels[_active_ts],
+                                pos_weight=_ts_pos_w,
+                            )
+                        else:
+                            _v7_ts_loss = F.binary_cross_entropy_with_logits(
+                                _ts_logit[_active_ts],
+                                ts_train_labels[_active_ts],
+                            )
+                        total_loss = total_loss + ts_loss_weight * _v7_ts_loss
+
             # ── Audit ledger accumulation (reporting only; does not affect gradients) ─────────
             # raw = loss value before weight multiplication; weighted = actual total_loss contribution
             _ep_ce_raw = float(losses["label"].item())
@@ -4373,6 +4699,7 @@ def main(argv: list[str] | None = None) -> int:
             _ep_v7_ent_bce_raw = float(_v7_ent_bce_loss.item()) if hasattr(_v7_ent_bce_loss, "item") else 0.0
             _ep_v7_ecb_raw = float(_v7_ecb_loss.item()) if hasattr(_v7_ecb_loss, "item") else 0.0
             _ep_v7_lb_raw = float(_v7_lb_loss.item()) if hasattr(_v7_lb_loss, "item") else 0.0
+            _ep_v7_ts_raw = float(_v7_ts_loss.item()) if hasattr(_v7_ts_loss, "item") else 0.0
             _ep_total = float(total_loss.item())
             # For ranking path: active_intervention_loss = ranking_weight * raw_ranking.
             # Recover raw by dividing. For intervention path: pairwise_losses["total"] is
@@ -4403,6 +4730,8 @@ def main(argv: list[str] | None = None) -> int:
                 "v7_entitled_class_balanced_ce_loss": _ep_v7_ecb_raw,
                 # Stage28-I-A: location boundary loss (0.0 when disabled)
                 "v7_location_boundary_loss": _ep_v7_lb_raw,
+                # Stage30-C2: temporal safety loss (0.0 when disabled)
+                "v7_temporal_safety_loss": _ep_v7_ts_raw,
                 "total_loss": _ep_total,
             })
             _audit_per_epoch_weighted.append({
@@ -4427,6 +4756,8 @@ def main(argv: list[str] | None = None) -> int:
                 "v7_location_boundary_loss": (
                     getattr(args, "v7_location_boundary_loss_weight", 0.0) * _ep_v7_lb_raw
                 ),
+                # Stage30-C2: temporal safety loss weighted contribution
+                "v7_temporal_safety_loss": ts_loss_weight * _ep_v7_ts_raw,
                 "total_loss": _ep_total,
             })
             _audit_epoch_count += 1
@@ -5694,6 +6025,14 @@ def main(argv: list[str] | None = None) -> int:
             sel_min_paraphrase_preserved=args.selection_min_paraphrase_preserved,
             sel_min_predicate_disentangled=args.selection_min_predicate_disentangled,
             sel_fallback=args.selection_fallback,
+            ts_train_inputs=_ts_train_inputs if _ts_data_needed else None,
+            ts_train_labels=_ts_train_labels if _ts_data_needed else None,
+            ts_train_mask=_ts_train_mask if _ts_data_needed else None,
+            ts_loss_weight=(
+                getattr(args, "v7_temporal_safety_loss_weight", 0.0)
+                if getattr(args, "v7_use_temporal_safety_loss", False) else 0.0
+            ),
+            ts_loss_pos_weight=getattr(args, "v7_temporal_safety_loss_pos_weight", None),
             pc_pres_inputs=_pc_pres_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_frame_inputs=_pc_frame_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_loss_weight=(
@@ -5901,6 +6240,9 @@ def main(argv: list[str] | None = None) -> int:
                     or (getattr(args, "v7_use_location_boundary_head", False)
                         and getattr(args, "v7_use_location_boundary_loss", False)
                         and getattr(args, "v7_location_boundary_loss_weight", 0.0) > 0.0)
+                    or (getattr(args, "v7_use_temporal_safety_head", False)
+                        and getattr(args, "v7_use_temporal_safety_loss", False)
+                        and getattr(args, "v7_temporal_safety_loss_weight", 0.0) > 0.0)
                 )
             ),
             # Stage26-G: v7 stabilization options
@@ -5958,6 +6300,24 @@ def main(argv: list[str] | None = None) -> int:
             ),
             "stage15_used_for_v7_location_boundary_loss": False,
             "ood_used_for_v7_location_boundary_loss": False,
+            # Stage30-C2: temporal safety head / cap configuration
+            "v7_use_temporal_safety_head": getattr(args, "v7_use_temporal_safety_head", False),
+            "v7_use_temporal_safety_loss": getattr(args, "v7_use_temporal_safety_loss", False),
+            "v7_temporal_safety_loss_weight": getattr(
+                args, "v7_temporal_safety_loss_weight", 0.0
+            ),
+            "v7_temporal_safety_cap_mode": getattr(
+                args, "v7_temporal_safety_cap_mode", "none"
+            ),
+            "v7_temporal_safety_cap_gamma": getattr(
+                args, "v7_temporal_safety_cap_gamma", 1.0
+            ),
+            "v7_temporal_safety_cap_detach": getattr(
+                args, "v7_temporal_safety_cap_detach", False
+            ),
+            "v7_temporal_safety_data": getattr(args, "v7_temporal_safety_data", None),
+            "stage15_used_for_v7_temporal_safety_loss": False,
+            "ood_used_for_v7_temporal_safety_loss": False,
             "v7_h1_entitlement_for_decision_source": (
                 _V7_H1_DECISION_SIGNAL_SOURCE.get(
                     getattr(args, "v7_h1_entitlement_decision_signal", "learned"),
@@ -6111,6 +6471,25 @@ def main(argv: list[str] | None = None) -> int:
                 ),
                 "v7_location_boundary_cap_detach": getattr(
                     args, "v7_location_boundary_cap_detach", False
+                ),
+                # Stage30-C2: temporal safety head / cap config
+                "v7_use_temporal_safety_head": getattr(
+                    args, "v7_use_temporal_safety_head", False
+                ),
+                "v7_use_temporal_safety_loss": getattr(
+                    args, "v7_use_temporal_safety_loss", False
+                ),
+                "v7_temporal_safety_loss_weight": getattr(
+                    args, "v7_temporal_safety_loss_weight", 0.0
+                ),
+                "v7_temporal_safety_cap_mode": getattr(
+                    args, "v7_temporal_safety_cap_mode", "none"
+                ),
+                "v7_temporal_safety_cap_gamma": getattr(
+                    args, "v7_temporal_safety_cap_gamma", 1.0
+                ),
+                "v7_temporal_safety_cap_detach": getattr(
+                    args, "v7_temporal_safety_cap_detach", False
                 ),
             }
         v5.write_predictions_json(

@@ -342,6 +342,57 @@ class LocationBoundaryHead(nn.Module):
         }
 
 
+class TemporalSafetyHead(nn.Module):
+    """Stage30-C2: optional independent temporal-safety head for v7.
+
+    Reads concat([frame_pair_repr, predicate_pair_repr, sufficiency_repr]) —
+    the same representation family used by PolarityChannelV7 and LocationBoundaryHead.
+
+    High temporal_safety_prob → temporally safe / compatible (no cap needed).
+    Low temporal_safety_prob → temporal mismatch risk; soft/hard cap may reduce
+    H1 entitlement_for_decision when cap mode is active.
+
+    This head does NOT use v7_entitlement_prob or the TemporalChannelV2 path.
+    It is trained via an independent BCE loss on a separate temporal safety
+    diagnostic dataset (none/paraphrase/time_swap only; no Stage15).
+    """
+
+    def __init__(
+        self,
+        frame_size: int,
+        predicate_size: int,
+        sufficiency_size: int,
+        dropout: float = 0.1,
+    ) -> None:
+        super().__init__()
+        input_dim = frame_size + predicate_size + sufficiency_size
+        hidden = max(input_dim // 4, 16)
+        self.mlp = nn.Sequential(
+            nn.Linear(input_dim, hidden),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden, 1),
+        )
+
+    def forward(
+        self,
+        frame_pair_repr: torch.Tensor,
+        predicate_pair_repr: torch.Tensor,
+        sufficiency_repr: torch.Tensor,
+    ) -> dict[str, torch.Tensor]:
+        features = torch.cat(
+            [frame_pair_repr, predicate_pair_repr, sufficiency_repr], dim=-1
+        )
+        logit = self.mlp(features).squeeze(-1)
+        prob = torch.sigmoid(logit)
+        return {
+            "temporal_safety_logit": logit,
+            "temporal_safety_prob": prob,
+            "v7_temporal_safety_logit": logit,
+            "v7_temporal_safety_prob": prob,
+        }
+
+
 class ContraMambaV7Hierarchical(nn.Module):
     """Stage26-A: v7 Hierarchical Entitlement architecture.
 
@@ -441,6 +492,14 @@ class ContraMambaV7Hierarchical(nn.Module):
         v7_location_boundary_cap_mode: str = "none",  # "none" | "hard" | "soft"
         v7_location_boundary_cap_gamma: float = 1.0,
         v7_location_boundary_cap_detach: bool = False,
+        # Stage30-C2: optional independent temporal-safety cap/head.
+        # Disabled by default; preserves all existing Stage28-I behavior.
+        # Applied after location-boundary cap when both are enabled.
+        # Only meaningful when v7_use_v6b_style_final_decision=True (H1 path active).
+        v7_use_temporal_safety_head: bool = False,
+        v7_temporal_safety_cap_mode: str = "none",  # "none" | "hard" | "soft"
+        v7_temporal_safety_cap_gamma: float = 1.0,
+        v7_temporal_safety_cap_detach: bool = False,
     ) -> None:
         super().__init__()
 
@@ -553,6 +612,29 @@ class ContraMambaV7Hierarchical(nn.Module):
         self.location_boundary_head: LocationBoundaryHead | None = None
         if v7_use_location_boundary_head:
             self.location_boundary_head = LocationBoundaryHead(
+                frame_size, predicate_size, sufficiency_size, dropout
+            )
+
+        # Stage30-C2: temporal safety head and cap configuration.
+        _valid_ts_cap_modes = ("none", "hard", "soft")
+        if v7_temporal_safety_cap_mode not in _valid_ts_cap_modes:
+            raise ValueError(
+                f"v7_temporal_safety_cap_mode must be one of {_valid_ts_cap_modes}, "
+                f"got {v7_temporal_safety_cap_mode!r}."
+            )
+        if v7_temporal_safety_cap_gamma <= 0:
+            raise ValueError(
+                f"v7_temporal_safety_cap_gamma must be > 0, "
+                f"got {v7_temporal_safety_cap_gamma!r}."
+            )
+        self.v7_use_temporal_safety_head = v7_use_temporal_safety_head
+        self.v7_temporal_safety_cap_mode = v7_temporal_safety_cap_mode
+        self.v7_temporal_safety_cap_gamma = float(v7_temporal_safety_cap_gamma)
+        self.v7_temporal_safety_cap_detach = v7_temporal_safety_cap_detach
+
+        self.temporal_safety_head: TemporalSafetyHead | None = None
+        if v7_use_temporal_safety_head:
+            self.temporal_safety_head = TemporalSafetyHead(
                 frame_size, predicate_size, sufficiency_size, dropout
             )
 
@@ -690,10 +772,30 @@ class ContraMambaV7Hierarchical(nn.Module):
         v7_polarity_support = pol_out["v7_polarity_support_logit"]
         v7_polarity_refute = pol_out["v7_polarity_refute_logit"]
 
+        # ── TemporalSafetyHead (Stage30-C2) ─────────────────────────────────────────────────
+        # Independent head reading concat([frame_pair_repr, predicate_pair_repr, sufficiency_repr]).
+        # High prob = temporally safe; low prob = temporal mismatch risk.
+        # None when head is disabled (default).
+        temporal_safety_logit: torch.Tensor | None = None
+        temporal_safety_prob: torch.Tensor | None = None
+        if self.temporal_safety_head is not None:
+            _ts_out = self.temporal_safety_head(
+                frame_pair_repr=frame["frame_pair_repr"],
+                predicate_pair_repr=predicate["predicate_pair_repr"],
+                sufficiency_repr=sufficiency["sufficiency_repr"],
+            )
+            temporal_safety_logit = _ts_out["temporal_safety_logit"]
+            temporal_safety_prob = _ts_out["temporal_safety_prob"]
+
         # ── Stage28-I-A: location boundary cap tracking (initialized before H1/non-H1 branch) ──
         v7_h1_entitlement_before_location_cap: torch.Tensor | None = None
         v7_h1_entitlement_after_location_cap: torch.Tensor | None = None
         v7_location_boundary_prob_for_cap: torch.Tensor | None = None
+
+        # ── Stage30-C2: temporal safety cap tracking (initialized before H1/non-H1 branch) ──
+        v7_h1_entitlement_before_temporal_cap: torch.Tensor | None = None
+        v7_h1_entitlement_after_temporal_cap: torch.Tensor | None = None
+        v7_temporal_safety_prob_for_cap: torch.Tensor | None = None
 
         # ── Final logit composition ──────────────────────────────────────────────
         # Class order matches FinalLabel in src/contramamba/labels.py:
@@ -787,6 +889,30 @@ class ContraMambaV7Hierarchical(nn.Module):
                         entitlement_for_decision * _cap_prob.clamp_min(1e-8).pow(_gamma)
                     )
                 v7_h1_entitlement_after_location_cap = entitlement_for_decision
+
+            # ── Stage30-C2: temporal safety cap ────────────────────────────────
+            # Applied after location-boundary cap. Cap mode "none" is a no-op.
+            # "hard": entitlement = min(entitlement, temporal_safety_prob)
+            # "soft": entitlement = entitlement * temporal_safety_prob^gamma
+            if (
+                temporal_safety_prob is not None
+                and self.v7_temporal_safety_cap_mode != "none"
+            ):
+                v7_h1_entitlement_before_temporal_cap = entitlement_for_decision
+                _ts_cap_prob = temporal_safety_prob
+                if self.v7_temporal_safety_cap_detach:
+                    _ts_cap_prob = _ts_cap_prob.detach()
+                v7_temporal_safety_prob_for_cap = _ts_cap_prob
+                if self.v7_temporal_safety_cap_mode == "hard":
+                    entitlement_for_decision = torch.minimum(
+                        entitlement_for_decision, _ts_cap_prob
+                    )
+                else:  # soft
+                    _ts_gamma = self.v7_temporal_safety_cap_gamma
+                    entitlement_for_decision = (
+                        entitlement_for_decision * _ts_cap_prob.clamp_min(1e-8).pow(_ts_gamma)
+                    )
+                v7_h1_entitlement_after_temporal_cap = entitlement_for_decision
 
             support_score = entitlement_for_decision * positive_energy
             refute_score = entitlement_for_decision * negative_energy
@@ -924,4 +1050,15 @@ class ContraMambaV7Hierarchical(nn.Module):
             "v7_location_boundary_prob_for_cap": v7_location_boundary_prob_for_cap,
             "v7_h1_entitlement_before_location_cap": v7_h1_entitlement_before_location_cap,
             "v7_h1_entitlement_after_location_cap": v7_h1_entitlement_after_location_cap,
+            # Stage30-C2: temporal safety head outputs (None when head is disabled).
+            "temporal_safety_logit": temporal_safety_logit,
+            "temporal_safety_prob": temporal_safety_prob,
+            "v7_temporal_safety_logit": temporal_safety_logit,
+            "v7_temporal_safety_prob": temporal_safety_prob,
+            # Temporal safety cap tracking (None when cap mode is "none" or H1 is inactive).
+            "v7_temporal_safety_cap_mode": self.v7_temporal_safety_cap_mode,
+            "v7_temporal_safety_cap_gamma": self.v7_temporal_safety_cap_gamma,
+            "v7_temporal_safety_prob_for_cap": v7_temporal_safety_prob_for_cap,
+            "v7_h1_entitlement_before_temporal_cap": v7_h1_entitlement_before_temporal_cap,
+            "v7_h1_entitlement_after_temporal_cap": v7_h1_entitlement_after_temporal_cap,
         }
