@@ -1,0 +1,168 @@
+{
+  "stage": "29-D",
+  "final_candidate": {
+    "config_name": "stage28i_lb_loss0p50_soft_g1p00_detach",
+    "base_decision": "product_p0p90_H1",
+    "v7_use_location_boundary_head": true,
+    "v7_location_boundary_loss_weight": 0.50,
+    "v7_location_boundary_cap_mode": "soft",
+    "v7_location_boundary_cap_gamma": 1.0,
+    "v7_location_boundary_cap_detach": true,
+    "train_data": "data/controlled_v5_v3_without_time_swap.jsonl",
+    "time_swap_excluded_from_clean_training": true
+  },
+  "eval_protocol": {
+    "external_eval_only": true,
+    "probes_used_for_training": false,
+    "probes_used_for_dev_split": false,
+    "probes_used_for_checkpoint_selection": false,
+    "probes_used_for_calibration": false,
+    "probes_used_for_loss_selection": false,
+    "stage15_used_for_training": false,
+    "stage15_used_for_checkpoint_selection": false,
+    "checkpoint_selection_metric": "controlled_dev_macro_f1",
+    "n_runs": 3
+  },
+  "controlled_dev": {
+    "baseline_product_p0p90_default_off": {
+      "n_runs": 3,
+      "dev_acc_mean": 0.968056,
+      "dev_macro_f1_mean": 0.951136,
+      "pred_SUPPORT_mean": 96.6667,
+      "pred_SUPPORT_min": 66
+    },
+    "stage28i_lb_loss0p50_soft_g1p00_detach": {
+      "n_runs": 3,
+      "dev_acc_mean": 0.989352,
+      "dev_macro_f1_mean": 0.983799,
+      "pred_SUPPORT_mean": 94.6667,
+      "pred_SUPPORT_min": 91
+    },
+    "delta": {
+      "dev_acc_mean": 0.021296,
+      "dev_macro_f1_mean": 0.032663,
+      "pred_SUPPORT_mean": -2.0,
+      "pred_SUPPORT_min": 25
+    }
+  },
+  "external_stage10a_number_swap": {
+    "probe_file": "data/stage10a_number_swap_probe.jsonl",
+    "baseline": {
+      "n_runs": 3,
+      "n_records_mean": 120,
+      "final_accuracy_mean": 0.5,
+      "final_macro_f1_mean": 0.2222,
+      "pred_SUPPORT_mean": 0,
+      "pred_NOT_ENTITLED_mean": 120,
+      "false_SUPPORT_total": 0,
+      "true_SUPPORT_correct_total": 0
+    },
+    "stage28i": {
+      "n_runs": 3,
+      "n_records_mean": 120,
+      "final_accuracy_mean": 0.5,
+      "final_macro_f1_mean": 0.2222,
+      "pred_SUPPORT_mean": 0,
+      "pred_NOT_ENTITLED_mean": 120,
+      "false_SUPPORT_total": 0,
+      "true_SUPPORT_correct_total": 0
+    },
+    "delta": {
+      "final_accuracy_mean": 0.0,
+      "final_macro_f1_mean": 0.0,
+      "false_SUPPORT_total": 0
+    },
+    "interpretation": "Both configs collapse all stage10a number-swap examples to NOT_ENTITLED. Stage28-I does not worsen number-swap. Probe is degenerate for comparing location-boundary configs; serves as a no-false-SUPPORT regression check only."
+  },
+  "external_stage15_slot_sensitivity": {
+    "probe_file": "data/stage15_slot_sensitivity_probe.jsonl",
+    "baseline": {
+      "n_runs": 3,
+      "n_records_mean": 540,
+      "final_accuracy_mean": 0.7531,
+      "final_macro_f1_mean": 0.488667,
+      "pred_SUPPORT_mean": 238.0,
+      "pred_SUPPORT_min": 132,
+      "false_SUPPORT_total": 257,
+      "true_SUPPORT_correct_total": 457
+    },
+    "stage28i": {
+      "n_runs": 3,
+      "n_records_mean": 540,
+      "final_accuracy_mean": 0.745033,
+      "final_macro_f1_mean": 0.4911,
+      "pred_SUPPORT_mean": 248.333,
+      "pred_SUPPORT_min": 226,
+      "false_SUPPORT_total": 279,
+      "true_SUPPORT_correct_total": 466
+    },
+    "delta": {
+      "final_accuracy_mean": -0.008067,
+      "final_macro_f1_mean": 0.002433,
+      "pred_SUPPORT_min": 94,
+      "false_SUPPORT_total": 22,
+      "true_SUPPORT_correct_total": 9
+    },
+    "interpretation": "Total false SUPPORT increases (+22) driven almost entirely by temporal axis (+24). Location axis improves (-2). Predicate and role unchanged. Stage28-I is not a broad OOD or generalization solution."
+  },
+  "stage15_axis_false_support": {
+    "baseline": {
+      "location": 6,
+      "predicate": 2,
+      "role": 3,
+      "temporal": 246,
+      "total": 257
+    },
+    "stage28i": {
+      "location": 4,
+      "predicate": 2,
+      "role": 3,
+      "temporal": 270,
+      "total": 279
+    },
+    "delta": {
+      "location": -2,
+      "predicate": 0,
+      "role": 0,
+      "temporal": 24,
+      "total": 22
+    },
+    "axis_interpretation": {
+      "location": "Improves from 6 to 4. Location-boundary cap provides weak but directionally correct generalization to Stage15 location-swap axis.",
+      "predicate": "Unchanged. Cap has no predicate effect as expected.",
+      "role": "Unchanged. No role-axis effect.",
+      "temporal": "Worsens from 246 to 270 (+24). The total false SUPPORT degradation is driven almost entirely by temporal mismatch."
+    }
+  },
+  "decision": {
+    "freeze_stage28i_as_controlled_location_boundary_improvement": true,
+    "claim_broad_external_generalization": false,
+    "stage30_target": "temporal_false_support",
+    "stage30_immediate_action": "Analyze temporal false-SUPPORT records in Stage15; compare temporal_mismatch vs temporal_erased/surface/sufficiency controls before adding any broad temporal router.",
+    "rationale": "Stage28-I improves controlled no-time dev (+0.033 macro-F1) and weakly reduces location-frame false SUPPORT on Stage15 (-2). It does not provide broad OOD generalization. Temporal false SUPPORT rises from 246 to 270. Freeze Stage28-I as a narrowly scoped location-boundary improvement; address temporal false SUPPORT in Stage30."
+  },
+  "interpretation_flags": {
+    "external_eval_only": true,
+    "time_swap_excluded_from_training": true,
+    "number_swap_all_ne_collapse": true,
+    "temporal_regression_detected": true,
+    "location_external_weak_improvement": true,
+    "stage15_used_for_training": false,
+    "stage15_used_for_checkpoint_selection": false,
+    "broad_ood_generalization_claimed": false
+  },
+  "remaining_risks": [
+    "Temporal generalisation gap: 270 temporal false SUPPORTs on Stage15 remain. No temporal fix in Stage28-I; Stage30 must address this independently.",
+    "Number-swap degenerate: stage10a probe is non-informative until a separate stage targets number-swap coverage.",
+    "External probe scope: only Stage15 and Stage10a evaluated; results should not be extrapolated to unseen intervention distributions.",
+    "n=3 runs: variance not reported; individual-run prediction JSONs should be consulted for per-seed stability.",
+    "time_swap not in training: temporal mismatch generalization cannot be expected without explicit temporal supervision in the training regime."
+  ],
+  "next_recommended_stage": {
+    "stage": "30",
+    "primary_target": "temporal_false_support",
+    "first_action": "Analyze Stage15 temporal false-SUPPORT records; compare temporal_mismatch vs temporal_erased/surface/sufficiency probe sub-types to identify the dominant temporal failure mechanism before designing any intervention.",
+    "do_not_do_immediately": "Do not add a broad temporal router without first diagnosing which temporal sub-type drives the 246-270 false-SUPPORT range. Premature routing risks Stage23-style gradient coupling into the shared frame representation.",
+    "number_swap_note": "Address number-swap collapse in a separate stage after Stage30 temporal analysis is complete."
+  }
+}
