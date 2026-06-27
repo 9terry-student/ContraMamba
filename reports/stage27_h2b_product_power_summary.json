@@ -1,0 +1,119 @@
+{
+  "stage": "Stage27-H2B",
+  "selected_power": 0.90,
+  "selected_signal": "product",
+  "selected_config": {
+    "architecture": "v7_hierarchical",
+    "v7_use_v6b_style_final_decision": true,
+    "v7_h1_entitlement_decision_signal": "product",
+    "v7_h1_entitlement_product_power": 0.90
+  },
+  "results": [
+    {
+      "power": 0.90,
+      "macro_mean": 0.951136,
+      "macro_std": 0.021341,
+      "acc_mean": 0.968056,
+      "acc_std": 0.013679,
+      "SUP_r_mean": 0.907407,
+      "NE_r_mean": 0.972840,
+      "REF_r_mean": 1.0,
+      "bad_SUP_total": 44,
+      "location_role_SUP_total": 33,
+      "predicate_SUP_total": 3,
+      "missing_SUP_total": 0
+    },
+    {
+      "power": 0.97,
+      "macro_mean": 0.949940,
+      "macro_std": 0.033783,
+      "acc_mean": 0.963426,
+      "acc_std": 0.027157,
+      "SUP_r_mean": 0.977778,
+      "NE_r_mean": 0.954938,
+      "REF_r_mean": 1.0,
+      "bad_SUP_total": 73,
+      "location_role_SUP_total": 61,
+      "predicate_SUP_total": 3,
+      "missing_SUP_total": 0
+    },
+    {
+      "power": 1.00,
+      "macro_mean": 0.940351,
+      "macro_std": 0.025612,
+      "acc_mean": 0.957870,
+      "acc_std": 0.018651,
+      "SUP_r_mean": 0.944444,
+      "NE_r_mean": 0.953086,
+      "REF_r_mean": 1.0,
+      "bad_SUP_total": 76,
+      "location_role_SUP_total": 60,
+      "predicate_SUP_total": 7,
+      "missing_SUP_total": 0
+    },
+    {
+      "power": 0.85,
+      "macro_mean": 0.934309,
+      "macro_std": 0.026061,
+      "acc_mean": 0.955093,
+      "acc_std": 0.017366,
+      "SUP_r_mean": 0.900000,
+      "NE_r_mean": 0.956790,
+      "REF_r_mean": 1.0,
+      "bad_SUP_total": 70,
+      "location_role_SUP_total": 57,
+      "predicate_SUP_total": 5,
+      "missing_SUP_total": 0
+    },
+    {
+      "power": 0.75,
+      "macro_mean": 0.922020,
+      "macro_std": 0.009800,
+      "acc_mean": 0.947685,
+      "acc_std": 0.011312,
+      "SUP_r_mean": 0.834229,
+      "NE_r_mean": 0.958025,
+      "REF_r_mean": 1.0,
+      "bad_SUP_total": 68,
+      "location_role_SUP_total": 57,
+      "predicate_SUP_total": 3,
+      "missing_SUP_total": 0
+    },
+    {
+      "power": 0.80,
+      "macro_mean": 0.914655,
+      "macro_std": 0.032622,
+      "acc_mean": 0.932870,
+      "acc_std": 0.028373,
+      "SUP_r_mean": 0.988889,
+      "NE_r_mean": 0.912346,
+      "REF_r_mean": 1.0,
+      "bad_SUP_total": 142,
+      "location_role_SUP_total": 115,
+      "predicate_SUP_total": 14,
+      "missing_SUP_total": 0
+    },
+    {
+      "power": 0.67,
+      "macro_mean": 0.907933,
+      "macro_std": 0.017199,
+      "acc_mean": 0.929167,
+      "acc_std": 0.018789,
+      "SUP_r_mean": 0.948148,
+      "NE_r_mean": 0.914198,
+      "REF_r_mean": 1.0,
+      "bad_SUP_total": 139,
+      "location_role_SUP_total": 112,
+      "predicate_SUP_total": 15,
+      "missing_SUP_total": 0
+    }
+  ],
+  "conclusion": "Stage27-H2B selects product_power=0.90 as the current final v7-H1 entitlement decision configuration.",
+  "remaining_risks": [
+    "Results are based on the controlled no-time validation setting (controlled_v5_v3_without_time_swap.jsonl). Generalization beyond this setting is not established.",
+    "time_swap was excluded because earlier Stage12 analysis identified it as corrupted/problematic. Results do not cover the time_swap evaluation distribution.",
+    "product_power=0.90 was selected on the validation split. Final performance claims require held-out diagnostic or OOD confirmation before generalization can be asserted.",
+    "T4-safe setting used frozen encoder and max_length=64. Claims should be framed as controlled-setting evidence unless full-encoder or larger-context runs confirm the same ordering."
+  ],
+  "next_step": "Run the selected configuration (product signal, product_power=0.90) with the standard multi-seed full evaluation protocol including held-out or OOD diagnostic sets to confirm the validation advantage transfers before reporting as a finalized result."
+}
