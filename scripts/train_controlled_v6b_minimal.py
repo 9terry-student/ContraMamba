@@ -155,6 +155,7 @@ def build_v7_model(
     v7_use_learnable_ne_alpha: bool = False,
     v7_ne_alpha_init: float = 1.0,
     v7_h1_entitlement_decision_signal: str = "learned",
+    v7_h1_entitlement_product_power: float = 1.0,
 ) -> "ContraMambaV7Hierarchical":
     """Build a ContraMambaV7Hierarchical with dummy backbone for plumbing validation."""
     from contramamba.modeling_v7_hierarchical import ContraMambaV7Hierarchical
@@ -178,6 +179,7 @@ def build_v7_model(
         v7_use_learnable_ne_alpha=v7_use_learnable_ne_alpha,
         v7_ne_alpha_init=v7_ne_alpha_init,
         v7_h1_entitlement_decision_signal=v7_h1_entitlement_decision_signal,
+        v7_h1_entitlement_product_power=v7_h1_entitlement_product_power,
     )
 
 
@@ -197,6 +199,7 @@ def build_v7_mamba_model(
     v7_use_learnable_ne_alpha: bool = False,
     v7_ne_alpha_init: float = 1.0,
     v7_h1_entitlement_decision_signal: str = "learned",
+    v7_h1_entitlement_product_power: float = 1.0,
 ) -> "ContraMambaV7Hierarchical":
     """Build a ContraMambaV7Hierarchical with real Mamba backbone."""
     from contramamba.modeling_v7_hierarchical import ContraMambaV7Hierarchical
@@ -220,6 +223,7 @@ def build_v7_mamba_model(
         v7_use_learnable_ne_alpha=v7_use_learnable_ne_alpha,
         v7_ne_alpha_init=v7_ne_alpha_init,
         v7_h1_entitlement_decision_signal=v7_h1_entitlement_decision_signal,
+        v7_h1_entitlement_product_power=v7_h1_entitlement_product_power,
     )
     for parameter in model.mamba.parameters():
         parameter.requires_grad = not freeze_encoder
@@ -2243,6 +2247,18 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--v7-h1-entitlement-product-power",
+        type=float,
+        default=1.0,
+        help=(
+            "Stage27-H2B: Power exponent applied to the 'product' H1 entitlement signal. "
+            "Only consulted when --v7-h1-entitlement-decision-signal product is active. "
+            "Default 1.0 preserves exact H2A product behavior. "
+            "Values < 1.0 soften the product gate (less SUPPORT suppression). "
+            "Values > 1.0 sharpen it."
+        ),
+    )
+    parser.add_argument(
         "--v7-no-aux-losses",
         action="store_true",
         default=False,
@@ -2589,9 +2605,10 @@ _LIFT_CONFIG_KEYS: tuple[str, ...] = (
     "v7_use_v6b_style_final_decision",
     "v7_use_learnable_ne_alpha",
     "v7_ne_alpha_init",
-    # Stage27-H2A: H1-path entitlement decision signal
+    # Stage27-H2A/H2B: H1-path entitlement decision signal and product power
     "v7_h1_entitlement_decision_signal",
     "v7_h1_entitlement_for_decision_source",
+    "v7_h1_entitlement_product_power",
 )
 
 
@@ -2705,6 +2722,7 @@ def main(argv: list[str] | None = None) -> int:
                 v7_use_learnable_ne_alpha=args.v7_use_learnable_ne_alpha,
                 v7_ne_alpha_init=args.v7_ne_alpha_init,
                 v7_h1_entitlement_decision_signal=args.v7_h1_entitlement_decision_signal,
+                v7_h1_entitlement_product_power=args.v7_h1_entitlement_product_power,
             )
         else:
             model = build_mamba_model(
@@ -2760,6 +2778,7 @@ def main(argv: list[str] | None = None) -> int:
                 v7_use_learnable_ne_alpha=args.v7_use_learnable_ne_alpha,
                 v7_ne_alpha_init=args.v7_ne_alpha_init,
                 v7_h1_entitlement_decision_signal=args.v7_h1_entitlement_decision_signal,
+                v7_h1_entitlement_product_power=args.v7_h1_entitlement_product_power,
             )
         else:
             model = build_model(
@@ -5192,6 +5211,9 @@ def main(argv: list[str] | None = None) -> int:
             # Stage27-H2A: H1-path entitlement decision signal
             "v7_h1_entitlement_decision_signal": getattr(
                 args, "v7_h1_entitlement_decision_signal", "learned"
+            ),
+            "v7_h1_entitlement_product_power": getattr(
+                args, "v7_h1_entitlement_product_power", 1.0
             ),
             "v7_h1_entitlement_for_decision_source": (
                 _V7_H1_DECISION_SIGNAL_SOURCE.get(

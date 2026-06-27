@@ -373,6 +373,11 @@ class ContraMambaV7Hierarchical(nn.Module):
         # Valid choices: "learned", "product", "min",
         #                "frame_predicate_product", "frame_predicate_min"
         v7_h1_entitlement_decision_signal: str = "learned",
+        # Stage27-H2B: power relaxation applied only to the "product" decision signal.
+        # Default 1.0 preserves exact H2A product behavior (no-op exponent).
+        # Values in (0, 1) soften the product gate (less suppression of true SUPPORT).
+        # Values > 1 sharpen it further. Only consulted when _eds == "product".
+        v7_h1_entitlement_product_power: float = 1.0,
     ) -> None:
         super().__init__()
 
@@ -412,6 +417,7 @@ class ContraMambaV7Hierarchical(nn.Module):
         self.v7_use_learnable_ne_alpha = v7_use_learnable_ne_alpha
         self.v7_ne_alpha_init = float(v7_ne_alpha_init)
         self.v7_h1_entitlement_decision_signal = v7_h1_entitlement_decision_signal
+        self.v7_h1_entitlement_product_power = float(v7_h1_entitlement_product_power)
 
         if self.v7_use_v6b_style_final_decision and self.v7_no_entitlement_polarity_conditioning:
             raise ValueError(
@@ -609,7 +615,12 @@ class ContraMambaV7Hierarchical(nn.Module):
             if _eds == "learned":
                 entitlement_for_decision = v7_entitlement_prob
             elif _eds == "product":
-                entitlement_for_decision = _fp * _pp * _sp
+                _raw_product = _fp * _pp * _sp
+                _pwr = self.v7_h1_entitlement_product_power
+                if _pwr == 1.0:
+                    entitlement_for_decision = _raw_product
+                else:
+                    entitlement_for_decision = _raw_product.clamp_min(1e-8).pow(_pwr)
             elif _eds == "min":
                 entitlement_for_decision = torch.minimum(
                     torch.minimum(_fp, _pp), _sp
@@ -742,6 +753,7 @@ class ContraMambaV7Hierarchical(nn.Module):
                 entitlement_for_decision if self.v7_use_v6b_style_final_decision else None
             ),
             "v7_h1_entitlement_decision_signal": self.v7_h1_entitlement_decision_signal,
+            "v7_h1_entitlement_product_power": self.v7_h1_entitlement_product_power,
 
             "v7_polarity_positive_energy": positive_energy,
             "v7_polarity_negative_energy": negative_energy,
