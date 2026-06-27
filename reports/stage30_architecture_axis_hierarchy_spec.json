@@ -1,213 +1,364 @@
 {
-  "stage": "Stage30",
-  "architecture_name": "ContraMamba Entitlement-First Verification Architecture",
-  "core_claim": "Judgeability must be resolved before polarity. The architecture separates whether a claim can be evaluated from how it should be evaluated. No polarity signal may rescue a claim blocked by an upstream judgeability axis.",
-  "final_order": [
-    {
-      "position": 1,
-      "id": "hard_core_validity",
-      "name": "Hard Core Validity",
-      "role": "judgeability",
-      "description": "Validates temporal and source-frame integrity. Cannot be overridden by any downstream axis.",
-      "blocks_downstream": true,
-      "overridable": false
+  "stage": "Stage30-ARCH",
+  "title": "Stage30-ARCH: Entitlement-First Architecture Contract",
+  "core_claim": "ContraMamba is an entitlement-first verification architecture. It separates whether a claim is judgeable from how it should be judged. Judgeability must be resolved before polarity. The novelty is not the use of Mamba; the novelty is the separation of entitlement from polarity. ContraMamba targets confident errors caused by entitlement failure: cases where a model predicts SUPPORT/REFUTE despite structurally insufficient or mismatched evidence.",
+
+  "current_proxy_stack": {
+    "description": "The current v7 implementation is a bridge/proxy stack, not the target architecture. It approximates the target axis hierarchy using available heads and caps.",
+    "is_final_architecture": false,
+    "flow": [
+      {
+        "step": 1,
+        "name": "Mamba Encoder",
+        "output": "token_states"
+      },
+      {
+        "step": 2,
+        "name": "v7_hierarchical channel heads",
+        "components": [
+          "FrameGate -> frame_prob",
+          "PredicateCoverageHead -> predicate_coverage_prob",
+          "SufficiencyGate -> sufficiency_prob",
+          "PolarityChannelV7 -> support_energy, refute_energy"
+        ]
+      },
+      {
+        "step": 3,
+        "name": "H1 product entitlement",
+        "formula": "base_entitlement = (frame_prob * predicate_coverage_prob * sufficiency_prob) ** 0.90"
+      },
+      {
+        "step": 4,
+        "name": "Stage28-I location boundary cap",
+        "formula": "entitlement_after_location_cap = base_entitlement * location_boundary_prob ^ gamma"
+      },
+      {
+        "step": 5,
+        "name": "Stage30-D temporal mismatch multihead risk signal",
+        "formula": "temporal_mismatch_fused_prob  (frame/predicate/sufficiency heads fused by fusion mode)"
+      },
+      {
+        "step": 6,
+        "name": "Stage30-E temporal preservation-aware cap",
+        "formulas": [
+          "effective_temporal_penalty = temporal_mismatch_fused_prob * (1 - temporal_preservation_prob)",
+          "entitlement_after_temporal = entitlement_after_location_cap * (1 - effective_temporal_penalty) ^ gamma"
+        ]
+      },
+      {
+        "step": 7,
+        "name": "H1 final composer",
+        "formulas": [
+          "support_score = entitlement * support_energy",
+          "refute_score  = entitlement * refute_energy",
+          "ne_score      = ne_bias + alpha * (1 - entitlement)"
+        ],
+        "bottleneck": true,
+        "bottleneck_note": "H1 composer fails to surface NOT_ENTITLED from lowered entitlement when support_energy is high. This is the structural bottleneck identified in Stage30-E."
+      },
+      {
+        "step": 8,
+        "name": "argmax([refute_score, ne_score, support_score])",
+        "output": "REFUTE / NOT_ENTITLED / SUPPORT"
+      }
+    ],
+    "proxy_mapping": {
+      "FrameGate": "Partial Hard Core Validity (temporal slot matching)",
+      "PredicateCoverageHead": "Partial Coverage/Entailment (predicate scope)",
+      "SufficiencyGate": "Partial Residual Adjudication (sufficiency signal)",
+      "Stage28-I location cap": "Partial Hard Core (location/circumstance validity)",
+      "Stage30-D mismatch risk": "Hard Core temporal validity signal",
+      "Stage30-E preservation cap": "Residual Adjudication (temporal residual, approximate)",
+      "H1 composer ne_score": "Final Composer (current bottleneck)"
     },
-    {
-      "position": 2,
-      "id": "coverage_entailment",
-      "name": "Coverage / Entailment",
-      "role": "judgeability",
-      "description": "Determines whether evidence semantically covers the claim domain. Distinct from temporal frame mismatch.",
-      "blocks_downstream": true,
-      "overridable": false
-    },
-    {
-      "position": 3,
-      "id": "residual_adjudication",
-      "name": "Residual Adjudication",
-      "role": "judgeability",
-      "description": "Handles partially covered, ambiguous, or conflicting evidence. No global preservation rescue. No double penalty.",
-      "blocks_downstream": false,
-      "overridable": false
-    },
-    {
-      "position": 4,
-      "id": "ani_epistemic_diagnosis",
-      "name": "ANI-style Epistemic Diagnosis",
-      "role": "diagnostic",
-      "description": "Measures model uncertainty and epistemic state. Diagnostic readout only — not a primary decision axis.",
-      "blocks_downstream": false,
-      "overridable": false
-    },
-    {
-      "position": 5,
-      "id": "polarity_layer",
-      "name": "Polarity Layer",
-      "role": "polarity",
-      "description": "Determines support or refutation direction, only if upstream judgeability axes passed.",
-      "blocks_downstream": false,
-      "overridable": false
-    },
-    {
-      "position": 6,
-      "id": "final_composer",
-      "name": "Final Composer",
-      "role": "output",
-      "description": "Assembles the final label (Supported / Refuted / NEI) from all upstream signals. Enforces the Single Owner Rule.",
-      "blocks_downstream": false,
-      "overridable": false
+    "not_implemented": [
+      "Clean structural separation between Hard Core and Coverage/Entailment",
+      "all/some, specific/general, part/whole, only/also coverage failure detection",
+      "Full Residual Adjudication with a structured residual vector",
+      "ANI-style epistemic diagnostic readouts",
+      "A robust Final Composer that reliably surfaces NOT_ENTITLED from lowered entitlement"
+    ]
+  },
+
+  "stage30e_diagnostic_conclusion": {
+    "gamma_tested": 2,
+    "time_swap_entitlement_before_cap": 0.928,
+    "time_swap_entitlement_after_cap": 0.283,
+    "time_swap_support_count": 60,
+    "time_swap_ne_count": 0,
+    "time_swap_total": 60,
+    "none_paraphrase_stability": "stable, no regression",
+    "clean_macro_f1": 0.985,
+    "interpretation": {
+      "temporal_head_bottleneck": false,
+      "temporal_preservation_cap_bottleneck": false,
+      "h1_composer_bottleneck": true,
+      "detail": "The temporal mismatch risk head and the temporal preservation-aware cap both worked as designed. Entitlement was reduced from 0.928 to 0.283. However, time_swap predictions remained SUPPORT 60/60, NE 0/60. At entitlement=0.283 with high support_energy, the product entitlement * support_energy still exceeds ne_score = ne_bias + alpha * (1 - entitlement). The H1 final composer is the structural bottleneck.",
+      "correct_response": "Structured architecture reset (Stage31+), not more cap/gamma/boost iteration.",
+      "ne_boost_ablation": "Adding composer-side NE boost is a valid optional stress-test ablation (Stage30-E2) to confirm the bottleneck hypothesis. It is NOT the main architecture path."
     }
-  ],
-  "modules": {
+  },
+
+  "target_architecture": {
+    "description": "The target architecture that ContraMamba is designed toward. Not yet fully implemented.",
+    "is_proxy": false,
+    "flow": [
+      {
+        "step": 1,
+        "name": "Mamba Encoder",
+        "output": "token_states"
+      },
+      {
+        "step": 2,
+        "name": "Structural Entitlement Layer",
+        "axes": [
+          {
+            "position": 1,
+            "id": "hard_core_validity",
+            "name": "Hard Core Validity",
+            "question": "Is this pair even about the same judgeable target, event, or relation?",
+            "role": "judgeability",
+            "blocks_downstream": true,
+            "overridable": false
+          },
+          {
+            "position": 2,
+            "id": "coverage_entailment",
+            "name": "Coverage / Entailment",
+            "question": "Does the evidence cover or entail the claim's required scope, strength, or specificity?",
+            "role": "judgeability",
+            "blocks_downstream": true,
+            "overridable": false
+          },
+          {
+            "position": 3,
+            "id": "residual_adjudication",
+            "name": "Residual Adjudication",
+            "question": "Is this remaining difference a real mismatch, or a harmless/preserved variation?",
+            "role": "judgeability",
+            "blocks_downstream": false,
+            "overridable": false
+          }
+        ]
+      },
+      {
+        "step": 3,
+        "name": "ANI-style Epistemic Diagnosis",
+        "role": "diagnostic_readout_only",
+        "note": "Not a primary decision axis. Diagnostic readout over structural entitlement failures.",
+        "signals": [
+          "novelty-like failure",
+          "ambiguity-like failure",
+          "ignorance-like failure"
+        ]
+      },
+      {
+        "step": 4,
+        "name": "Polarity Layer",
+        "question": "If the claim is judgeable, does the evidence support or refute it?",
+        "role": "polarity",
+        "constraint": "Operates only after Structural Entitlement Layer has passed the claim"
+      },
+      {
+        "step": 5,
+        "name": "Final Composer",
+        "role": "output",
+        "rule": "Single Owner Rule: each final label (SUPPORT/REFUTE/NOT_ENTITLED) has exactly one primary owning axis",
+        "output": "REFUTE / NOT_ENTITLED / SUPPORT"
+      }
+    ]
+  },
+
+  "module_definitions": {
     "hard_core_validity": {
+      "question": "Is this pair even about the same judgeable target, event, or relation?",
+      "covers": [
+        "Different entity or referent (wrong subject)",
+        "Different event (temporal mismatch: claim and evidence about different events)",
+        "Clear role reversal (subject/object swap that changes truth value)",
+        "Clear relation mismatch (developed vs. published, caused vs. correlated)",
+        "Hard circumstance mismatch (location, modality, or condition invalidity)",
+        "Minimum evidence absence (evidence is structurally empty or disconnected)"
+      ],
       "invariants": [
-        "Cannot be overridden by any downstream axis",
-        "Temporal frame mismatch is a Hard Core concern, not a Coverage concern",
-        "If Hard Core fires, Final Composer must emit NEI; polarity is not consulted"
+        "Hard Core failure cannot be rescued by preservation logic, coverage adjustment, or residual adjudication",
+        "Hard Core fires -> Final Composer emits NOT_ENTITLED; polarity is not consulted",
+        "Temporal frame mismatch is a Hard Core concern, not a Coverage/Entailment concern"
       ]
     },
     "coverage_entailment": {
+      "question": "Does the evidence cover or entail the claim's required scope, strength, or specificity?",
+      "examples": [
+        "All -> Some: evidence about all licenses support of some. Valid support.",
+        "Some -> All: evidence about some does not license universal claim. Coverage failure.",
+        "Specific -> General: specific case can support general claim. Valid.",
+        "General -> Specific: general evidence does not license specific claim. May fail.",
+        "Only -> Winner: only participant licenses winner. Valid.",
+        "Also -> Only: also does not license only. Failure."
+      ],
       "invariants": [
-        "Coverage/Entailment is strictly distinct from temporal frame mismatch",
-        "Low coverage triggers NEI before polarity is computed",
-        "Must not be conflated with temporal residual preservation"
+        "Coverage/Entailment is strictly distinct from temporal or source-frame invalidity (Hard Core)",
+        "Do not collapse all/some, part/whole, or specificity cases into frame mismatch",
+        "Low coverage triggers NOT_ENTITLED before polarity is computed"
       ]
     },
     "residual_adjudication": {
+      "question": "Is this remaining difference a real mismatch, or a harmless/preserved variation?",
+      "preserved_variation_examples": [
+        "Temporal expression variation (paraphrase of a time reference)",
+        "Surface paraphrase (different wording, same proposition)",
+        "Location alias or granularity (city vs. metro area when not semantically critical)",
+        "Format shift (numeric vs. written)"
+      ],
+      "real_mismatch_examples": [
+        "Relation nuance change (planned vs. actual)",
+        "Scope ambiguity that changes truth value",
+        "Temporal offset that invalidates the claim window"
+      ],
       "invariants": [
         "No global preservation rescue: cannot rescue claims blocked by Hard Core",
         "No double penalty: claims already penalized by Hard Core receive no additional residual penalty",
-        "Operates only over evidence not resolved by Coverage/Entailment"
+        "Residual Adjudication is NOT direct cap stacking. Stacking caps is a proxy approximation, not structured adjudication.",
+        "Stage30-E temporal preservation-aware cap is a primitive approximation, not the target Residual Adjudication"
       ]
     },
     "ani_epistemic_diagnosis": {
+      "role": "diagnostic_readout_only",
+      "ani_mapping": {
+        "ignorance": "Insufficient evidence, coverage failure, missing scope support. Maps to Coverage/Entailment failure.",
+        "ambiguity": "Unresolved residual, multiple plausible readings, borderline relation or scope. Maps to Residual Adjudication uncertainty.",
+        "novelty": "Claim introduces information not licensed by evidence. Maps to Coverage/Entailment or Hard Core overflow."
+      },
       "invariants": [
         "ANI is a diagnostic readout, not a primary decision axis",
-        "ANI output is available to Final Composer but cannot unilaterally change a verdict",
-        "Used for calibration, confidence scoring, and post-hoc analysis only"
+        "ANI signals cannot unilaterally change a verdict",
+        "ANI is not trained as primary classifier in the target architecture",
+        "ANI informs calibration, confidence scoring, and post-hoc analysis only"
       ]
     },
     "polarity_layer": {
+      "question": "If the claim is judgeable, does the evidence support or refute it?",
       "invariants": [
-        "Only receives claims confirmed judgeable by upstream axes",
-        "Outputs: supports, refutes, or abstains if upstream blocked"
+        "Only operates after the Structural Entitlement Layer has passed the claim",
+        "High support/refute energy must not override low entitlement",
+        "Entitlement gates polarity, not the reverse"
       ]
     },
     "final_composer": {
+      "rule": "Single Owner Rule: each final label (SUPPORT, REFUTE, NOT_ENTITLED) has exactly one primary owning axis",
       "invariants": [
-        "Enforces Single Owner Rule: each label has exactly one owning axis",
         "No two axes may claim the same label for conflicting reasons",
+        "Overlapping ownership is a spec violation",
         "Emits final prediction with attached confidence"
       ]
     }
   },
-  "single_owner_rule": {
-    "definition": "Each verdict outcome (Supported, Refuted, NEI) is owned by exactly one primary axis. Overlapping ownership is a spec violation.",
-    "enforcement": "Final Composer"
-  },
-  "forbidden_behaviors": [
+
+  "architecture_rules": [
     {
-      "id": "no_hard_core_override",
-      "description": "No downstream axis (Coverage/Entailment, ANI, Polarity) may override or reverse a Hard Core block."
+      "id": "entitlement_before_polarity",
+      "rule": "Entitlement before polarity. The model must resolve whether the claim is judgeable before computing polarity. High polarity energy does not override low entitlement."
     },
     {
-      "id": "no_global_preservation_rescue",
-      "description": "Temporal preservation signals cannot rescue claims invalidated by Hard Core. Preservation signals are local to Residual Adjudication and must not propagate upward."
+      "id": "single_owner_rule",
+      "rule": "Single Owner Rule. Each final label has exactly one primary owning axis. Overlapping ownership is a spec violation."
     },
     {
       "id": "no_double_penalty",
-      "description": "If Hard Core fires a penalty for a claim, downstream axes must not apply an independent penalty for the same root cause."
+      "rule": "No double penalty. A claim already penalized by Hard Core must not receive an independent penalty from Residual Adjudication for the same root cause."
     },
     {
-      "id": "coverage_not_frame_mismatch",
-      "description": "Coverage/Entailment must not handle temporal or source-frame invalidity. That is exclusively a Hard Core concern."
+      "id": "no_global_preservation_rescue",
+      "rule": "No global preservation rescue. A temporal preservation signal cannot rescue a claim blocked by Hard Core Validity. Preservation logic is local to Residual Adjudication."
     },
     {
-      "id": "ani_not_decisional",
-      "description": "ANI readout must not serve as a primary decision input. It is diagnostic only."
+      "id": "hard_core_not_rescuable",
+      "rule": "Hard Core failures cannot be rescued. Once Hard Core fires, the final label is NOT_ENTITLED. No downstream signal reverses this."
     },
     {
-      "id": "polarity_before_judgeability",
-      "description": "Polarity must not be computed for claims not confirmed judgeable by upstream axes."
+      "id": "coverage_not_frame",
+      "rule": "Coverage/Entailment is not the same as Frame. Temporal or source-frame invalidity is Hard Core. Coverage addresses semantic scope and logical entailment. Do not conflate."
+    },
+    {
+      "id": "residual_not_cap_stacking",
+      "rule": "Residual Adjudication is not direct cap stacking. Stacking caps (location, temporal, preservation) is a proxy approximation. The target is structured adjudication."
+    },
+    {
+      "id": "ani_diagnostic_not_primary",
+      "rule": "ANI is diagnostic, not the primary decision mechanism. ANI signals cannot unilaterally change a verdict. They inform calibration and confidence."
+    },
+    {
+      "id": "v7_is_proxy",
+      "rule": "Current v7 proxy stack is a bridge, not the target architecture. Stage30-E results confirm H1 composer is the bottleneck. The correct path is architecture reset, not composer patching."
     }
   ],
-  "stage30e_scope": {
-    "description": "Stage30-E is a minimal, targeted implementation scoped exclusively to temporal residual preservation-aware cap logic.",
-    "implements": [
-      {
-        "id": "temporal_preservation_cap",
-        "name": "Temporal residual preservation-aware cap",
-        "description": "Caps the effective temporal mismatch penalty using a temporal preservation probability signal."
-      },
-      {
-        "id": "stage30d_reuse",
-        "name": "Reuse of Stage30-D temporal mismatch risk",
-        "description": "Reads temporal_mismatch_fused_prob from Stage30-D output; does not recompute it."
-      },
-      {
-        "id": "temporal_preservation_signal",
-        "name": "New temporal preservation signal",
-        "description": "Introduces temporal_preservation_prob as a new signal representing how well the preserved temporal context aligns with the claim window."
-      },
-      {
-        "id": "effective_penalty_formula",
-        "name": "Effective penalty formula",
-        "formula": "temporal_mismatch_fused_prob * (1 - temporal_preservation_prob)",
-        "description": "Computes the effective temporal mismatch penalty after preservation discounting."
-      }
-    ],
-    "forbidden_in_stage30e": [
-      {
-        "id": "no_coverage_entailment",
-        "description": "Stage30-E must not implement the Coverage/Entailment axis. Reserved for a future stage."
-      },
-      {
-        "id": "no_ani_readout",
-        "description": "Stage30-E must not implement full ANI-style epistemic readout. Reserved for a future stage."
-      },
-      {
-        "id": "no_full_residual_vector",
-        "description": "Stage30-E must not implement the full residual vector or Residual Adjudication axis. Reserved for a future stage."
-      },
-      {
-        "id": "no_hard_core_refactor",
-        "description": "Stage30-E must not refactor or restructure the Hard Core Validity module. Its structure is fixed in this stage."
-      },
-      {
-        "id": "no_global_preservation_rescue",
-        "description": "Stage30-E must not use preservation signals to rescue claims blocked by Hard Core."
-      },
-      {
-        "id": "no_stage30d_cap_as_final",
-        "description": "Stage30-E must not use Stage30-D cap output directly as a final candidate score. It must apply the effective penalty formula."
-      }
-    ]
-  },
-  "non_goals": [
-    "Full multi-axis fusion (reserved for Stage34+)",
-    "Coverage/Entailment implementation (reserved for Stage31)",
-    "Full residual vector and Residual Adjudication (reserved for Stage32)",
-    "Full ANI-style epistemic readout integration (reserved for Stage33)",
-    "Hard Core structural refactor",
-    "Global preservation rescue mechanism",
-    "Direct Stage30-D cap passthrough as final output"
-  ],
-  "allowed_future_stages": [
+
+  "roadmap": [
+    {
+      "stage": "Stage30-ARCH",
+      "status": "complete",
+      "description": "Freeze architecture contract. Document current proxy stack vs. target architecture. Record Stage30-E diagnostic results and their correct interpretation."
+    },
+    {
+      "stage": "Stage30-E",
+      "status": "complete",
+      "description": "Bridge experiment: temporal residual preservation-aware cap, reusing Stage30-D mismatch risk. Not the final architecture. Result: temporal heads and cap working; H1 composer is the bottleneck."
+    },
+    {
+      "stage": "Stage30-E2",
+      "status": "optional_ablation_only",
+      "description": "Residual-aware NE boost in the H1 composer. Stress-test only: confirm that lowering entitlement to ~0.283 is sufficient to surface NE when the composer is given a stronger NE signal. NOT the main architecture path. Does not address the structural separation problem."
+    },
     {
       "stage": "Stage31",
-      "scope": "Coverage/Entailment axis implementation"
+      "status": "planned",
+      "description": "Coverage/Entailment diagnostic and probe. Focus: all/some, specific/general, part/whole, only/also failure modes. Do not conflate with frame mismatch."
     },
     {
       "stage": "Stage32",
-      "scope": "Full residual vector and Residual Adjudication axis"
+      "status": "planned",
+      "description": "Relation/role/nuance diagnostic. Focus: published/distributed, developed/published, caused/correlated, set-to-replace/replaced."
     },
     {
       "stage": "Stage33",
-      "scope": "ANI-style epistemic readout integration"
+      "status": "planned",
+      "description": "Order/modality/condition diagnostic. Focus: before/after, planned/actual, may/cause, necessary/sufficient, if/only-if."
     },
     {
-      "stage": "Stage34+",
-      "scope": "Final Composer multi-axis fusion and calibration"
+      "stage": "Stage34",
+      "status": "planned",
+      "description": "Axis pruning and owner conflict audit. Audit which axes own which failure modes. Prune overlapping ownership and resolve Single Owner Rule violations. Prepare for Final Composer multi-axis fusion."
+    }
+  ],
+
+  "forbidden_misinterpretations": [
+    {
+      "id": "no_hallucination_solver_claim",
+      "statement": "Do not claim ContraMamba solves all hallucination. ContraMamba targets confident errors caused by entitlement failure. It is not a universal hallucination solver and does not verify world truth without reliable evidence."
+    },
+    {
+      "id": "no_v7_as_final_architecture",
+      "statement": "Do not claim the current v7 proxy stack is the final architecture. It is a bridge/proxy stack. Stage30-E confirmed that the H1 composer is the structural bottleneck."
+    },
+    {
+      "id": "no_stage30e_caps_as_residual_adjudication",
+      "statement": "Do not treat Stage30-E temporal preservation-aware caps as the final Residual Adjudication mechanism. They are a primitive approximation. Residual Adjudication in the target architecture is a structured decision, not direct cap stacking."
+    },
+    {
+      "id": "no_ani_as_primary_heads",
+      "statement": "Do not treat ANI axes (novelty, ambiguity, ignorance) as direct primary decision heads. They are diagnostic readouts over structural entitlement failures, not classifiers."
+    },
+    {
+      "id": "no_time_swap_in_main_data",
+      "statement": "Do not train the final classifier on time_swap examples as part of the main training data. time_swap is diagnostic auxiliary data only."
+    },
+    {
+      "id": "no_stage15_for_training",
+      "statement": "Do not use Stage15 external probes or OOD data for training, calibration, or checkpoint selection. Stage15 is evaluation-only."
+    },
+    {
+      "id": "no_mamba_novelty_claim",
+      "statement": "Do not claim the novelty of ContraMamba is the use of Mamba architecture. The novelty is the separation of judgeability/entitlement from polarity."
     }
   ]
 }
