@@ -2764,6 +2764,49 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+    # Stage29-B: external probe evaluation (eval-only; no effect on training or selection)
+    parser.add_argument(
+        "--external-eval-jsonl",
+        action="append",
+        default=[],
+        dest="external_eval_jsonl",
+        metavar="PATH",
+        help=(
+            "Stage29-B: path to an external probe JSONL to evaluate on the selected best "
+            "checkpoint. May be repeated for multiple probe files. "
+            "External probe records are NEVER added to train or dev; NEVER used for "
+            "checkpoint selection, calibration, or loss computation. "
+            "Example: --external-eval-jsonl data/stage15_slot_sensitivity_probe.jsonl "
+            "--external-eval-jsonl data/stage10a_number_swap_probe.jsonl"
+        ),
+    )
+    parser.add_argument(
+        "--external-eval-name",
+        action="append",
+        default=[],
+        dest="external_eval_name",
+        metavar="NAME",
+        help=(
+            "Stage29-B: human-readable name for the corresponding --external-eval-jsonl file. "
+            "If provided, count must match --external-eval-jsonl count. "
+            "If omitted, names are derived from the file stem. "
+            "Example: --external-eval-name stage15_slot --external-eval-name stage10a_number"
+        ),
+    )
+    parser.add_argument(
+        "--external-output-dir",
+        type=str,
+        default=None,
+        dest="external_output_dir",
+        metavar="DIR",
+        help=(
+            "Stage29-B: directory to write per-probe prediction JSON files. "
+            "One file per --external-eval-jsonl, named "
+            "external_probe_{name}_predictions.json. "
+            "If omitted, prediction records are not written to disk."
+        ),
+    )
+
     return parser
 
 
@@ -2782,6 +2825,192 @@ def prediction_distribution_from_records(records: list[dict]) -> dict[str, int]:
     from collections import Counter
     predictions = [record.get("pred_final_label") for record in records]
     return dict(sorted(Counter(predictions).items()))
+
+
+# ---------------------------------------------------------------------------
+# Stage29-B: external probe evaluation helpers
+# ---------------------------------------------------------------------------
+
+_S29B_PROBE_OPTIONAL_DEFAULTS: dict[str, Any] = {
+    "frame_compatible_label": 0,
+    "predicate_covered_label": 0,
+    "sufficiency_label": 0,
+    "polarity_label": "NONE",
+    "primary_failure_type": "none",
+    "source_intervention_type": "",
+}
+
+
+def load_external_probe_jsonl(path: "Path") -> list[dict]:
+    """Load external probe JSONL records tolerantly (no schema enforcement)."""
+    records: list[dict] = []
+    with open(path, encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if line:
+                records.append(json.loads(line))
+    return records
+
+
+def _patch_probe_record(record: dict) -> dict:
+    """Return a copy of record with conservative defaults for missing optional fields.
+
+    Required for v5.encode_records / v5.encode_mamba_records which expect the full
+    controlled-data schema.  Defaults are used only for tensor construction; they do
+    not affect prediction or metric computation.
+    """
+    out = dict(record)
+    for field, default in _S29B_PROBE_OPTIONAL_DEFAULTS.items():
+        out.setdefault(field, default)
+    return out
+
+
+def evaluate_external_probe(
+    model: "ContraMambaV6BMinimal | Any",
+    probe_records: list[dict],
+    probe_inputs: dict[str, "torch.Tensor"],
+    flag_source: str,
+    device: "torch.device",
+    eval_name: str,
+    eval_path: str,
+    args: "argparse.Namespace",
+) -> "tuple[dict[str, Any], list[dict]]":
+    """Eval-only forward pass on an external probe dataset.
+
+    No training, no checkpoint selection, no calibration.
+    Returns (metrics_dict, prediction_records) using the stage28e_v1 schema.
+
+    Label handling:
+      - Final labels REFUTE / NOT_ENTITLED / SUPPORT are recognised when present.
+      - Per-label F1 is computed over the full known label space (v5.FinalLabel);
+        absent classes contribute 0.0 to their F1 slot but do NOT crash.
+      - Macro F1 averages over the full known label space for consistency.
+    """
+    probe_temporal_flags, probe_predicate_flags = extract_flags(
+        probe_records, flag_source, device
+    )
+
+    model.eval()
+    with torch.no_grad():
+        output = model(
+            **v5.model_feature_inputs(probe_inputs),
+            temporal_mismatch_flags=probe_temporal_flags,
+            predicate_mismatch_flags=probe_predicate_flags,
+        )
+
+    prediction_recs = prediction_records_v6b(probe_records, output)
+
+    predictions_cpu = output["predictions"].detach().cpu()
+    labels_cpu = probe_inputs["final_labels"].detach().cpu()
+    n = len(probe_records)
+
+    # Label counts (from records, not from tensors, to preserve original string values)
+    label_counts: dict[str, int] = {}
+    for r in probe_records:
+        lbl = str(r.get("final_label", "UNKNOWN"))
+        label_counts[lbl] = label_counts.get(lbl, 0) + 1
+
+    # Intervention counts
+    intervention_counts: dict[str, int] = {}
+    for r in probe_records:
+        it = str(r.get("intervention_type", "unknown"))
+        intervention_counts[it] = intervention_counts.get(it, 0) + 1
+
+    # Prediction distribution
+    pred_dist: dict[str, int] = {}
+    for pred_id in predictions_cpu.tolist():
+        name = v5.ID_TO_FINAL_LABEL[pred_id]
+        pred_dist[name] = pred_dist.get(name, 0) + 1
+
+    # Accuracy
+    accuracy = float((predictions_cpu == labels_cpu).float().mean().item())
+
+    # Per-label metrics and macro F1 over known label space (safe for absent labels)
+    f1_vals: list[float] = []
+    per_label: dict[str, Any] = {}
+    for label in v5.FinalLabel:
+        lid = int(label)
+        label_name = v5.ID_TO_FINAL_LABEL[lid]
+        pred = predictions_cpu == lid
+        actual = labels_cpu == lid
+        tp = float((pred & actual).sum().item())
+        pd_ = float(pred.sum().item())
+        rd = float(actual.sum().item())
+        prec = tp / pd_ if pd_ else 0.0
+        rec = tp / rd if rd else 0.0
+        f1 = 2.0 * prec * rec / (prec + rec) if prec + rec else 0.0
+        f1_vals.append(f1)
+        per_label[label_name] = {
+            "precision": round(prec, 4),
+            "recall": round(rec, 4),
+            "f1": round(f1, 4),
+            "support": int(rd),
+            "predicted": int(pd_),
+        }
+    macro_f1 = sum(f1_vals) / len(f1_vals) if f1_vals else 0.0
+
+    # False SUPPORT metrics
+    false_support_total = 0
+    false_support_by_intervention: dict[str, int] = {}
+    false_support_by_axis: dict[str, int] = {}
+    true_support_correct = 0
+
+    for i, r in enumerate(probe_records):
+        pred_id = int(predictions_cpu[i].item())
+        pred_label = v5.ID_TO_FINAL_LABEL[pred_id]
+        gold_label = _s28e_normalize_label(r.get("final_label"))
+        it = str(r.get("intervention_type", "unknown"))
+        axis = _S28E_DIAGNOSTIC_AXIS.get(it)
+
+        if gold_label is not None and gold_label != "SUPPORT" and pred_label == "SUPPORT":
+            false_support_total += 1
+            false_support_by_intervention[it] = false_support_by_intervention.get(it, 0) + 1
+            if axis:
+                false_support_by_axis[axis] = false_support_by_axis.get(axis, 0) + 1
+
+        if gold_label == "SUPPORT" and pred_label == "SUPPORT":
+            true_support_correct += 1
+
+    config_summary = {
+        "v7_use_location_boundary_head": getattr(args, "v7_use_location_boundary_head", False),
+        "v7_use_location_boundary_loss": getattr(args, "v7_use_location_boundary_loss", False),
+        "v7_location_boundary_cap_mode": getattr(args, "v7_location_boundary_cap_mode", "none"),
+        "v7_location_boundary_cap_gamma": getattr(args, "v7_location_boundary_cap_gamma", 1.0),
+        "v7_location_boundary_cap_detach": getattr(args, "v7_location_boundary_cap_detach", False),
+        "v7_h1_entitlement_decision_signal": getattr(
+            args, "v7_h1_entitlement_decision_signal", None
+        ),
+        "v7_use_v6b_style_final_decision": getattr(
+            args, "v7_use_v6b_style_final_decision", False
+        ),
+        "architecture": getattr(args, "architecture", "v6b_minimal"),
+        "flag_source": getattr(args, "flag_source", "controlled_heuristic"),
+    }
+
+    result: dict[str, Any] = {
+        "external_eval_name": eval_name,
+        "external_eval_path": eval_path,
+        "n_records": n,
+        "label_counts": label_counts,
+        "intervention_counts": dict(sorted(intervention_counts.items())),
+        "prediction_distribution": dict(sorted(pred_dist.items())),
+        "final_accuracy": round(accuracy, 4),
+        "final_macro_f1": round(macro_f1, 4),
+        "per_label": per_label,
+        "false_SUPPORT_total": false_support_total,
+        "false_SUPPORT_by_intervention": dict(sorted(false_support_by_intervention.items())),
+        "false_SUPPORT_by_axis": dict(sorted(false_support_by_axis.items())),
+        "true_SUPPORT_correct": true_support_correct,
+        "config_summary": config_summary,
+        # Provenance guards
+        "stage15_used_for_training": False,
+        "stage15_used_for_checkpoint_selection": False,
+        "external_probe_used_for_checkpoint_selection": False,
+        "external_probe_used_for_calibration": False,
+        "external_probe_used_for_training": False,
+    }
+
+    return result, prediction_recs
 
 
 # ---------------------------------------------------------------------------
@@ -6791,6 +7020,128 @@ def main(argv: list[str] | None = None) -> int:
                 f"selected={_dc_ood_selected_count}/{_dc_ood_unflagged_count} "
                 f"accuracy={_dc_ood_eval['overall_metrics']['final_accuracy']:.4f}"
             )
+
+    # ---------------------------------------------------------------------------
+    # Stage29-B: external probe evaluation (eval-only)
+    # Runs AFTER checkpoint selection and best-state loading.
+    # External probe records are NEVER used for training, selection, or calibration.
+    # Only runs when --external-eval-jsonl is provided; default behaviour unchanged.
+    # ---------------------------------------------------------------------------
+    _ext_jsonl_paths: list[str] = getattr(args, "external_eval_jsonl", []) or []
+    if _ext_jsonl_paths:
+        import os as _os
+
+        _ext_names_raw: list[str] = getattr(args, "external_eval_name", []) or []
+        _ext_output_dir: "str | None" = getattr(args, "external_output_dir", None)
+
+        if _ext_names_raw and len(_ext_names_raw) != len(_ext_jsonl_paths):
+            raise ValueError(
+                f"--external-eval-name count ({len(_ext_names_raw)}) must match "
+                f"--external-eval-jsonl count ({len(_ext_jsonl_paths)}). "
+                "Either omit all names (auto-derived from file stem) or provide "
+                "exactly one name per JSONL path."
+            )
+
+        _ext_names: list[str] = (
+            _ext_names_raw
+            if _ext_names_raw
+            else [Path(p).stem for p in _ext_jsonl_paths]
+        )
+
+        # Load best checkpoint (same logic as OOD eval)
+        if _ood_best_state is not None:
+            model.load_state_dict({k: v.to(device) for k, v in _ood_best_state.items()})
+        model.eval()
+        _ext_eval_state = "best_dev" if _ood_best_state is not None else "final_epoch_fallback"
+        _ext_eval_epoch = _ood_best_epoch
+
+        if _ext_output_dir is not None:
+            _os.makedirs(_ext_output_dir, exist_ok=True)
+
+        _external_evals: dict[str, Any] = {}
+
+        for _ext_path_str, _ext_name in zip(_ext_jsonl_paths, _ext_names):
+            _ext_path = Path(_ext_path_str)
+            print(
+                f"[EXTERNAL PROBE S29B] name={_ext_name} path={_ext_path} "
+                f"eval_state={_ext_eval_state} epoch={_ext_eval_epoch}"
+            )
+
+            # Load and patch records (fills in missing optional fields with safe defaults)
+            _ext_records_raw = load_external_probe_jsonl(_ext_path)
+            _ext_records = [_patch_probe_record(r) for r in _ext_records_raw]
+
+            # Encode (reuses same backbone/tokenizer as training)
+            if args.backbone == "dummy":
+                _ext_bundle = v5.encode_records(_ext_records, vocab)
+            else:
+                _ext_bundle = v5.encode_mamba_records(_ext_records, tokenizer, args.max_length)
+            _ext_inputs = v5.move_inputs(_ext_bundle["model_inputs"], device)
+
+            # Align sequence length to training max_length (pad or truncate)
+            _ext_seq = _ext_inputs["input_ids"].shape[1]
+            if _ext_seq < max_length:
+                for _k in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
+                    _ext_inputs[_k] = F.pad(
+                        _ext_inputs[_k], (0, max_length - _ext_seq), value=0
+                    )
+            elif _ext_seq > max_length:
+                for _k in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
+                    _ext_inputs[_k] = _ext_inputs[_k][:, :max_length]
+
+            # Eval-only forward pass — no loss, no gradient
+            _ext_result, _ext_pred_records = evaluate_external_probe(
+                model=model,
+                probe_records=_ext_records,
+                probe_inputs=_ext_inputs,
+                flag_source=args.flag_source,
+                device=device,
+                eval_name=_ext_name,
+                eval_path=str(_ext_path),
+                args=args,
+            )
+            _ext_result["eval_state"] = _ext_eval_state
+            _ext_result["eval_epoch"] = _ext_eval_epoch
+
+            # Write per-probe prediction JSON (optional)
+            _ext_pred_out_path: "str | None" = None
+            if _ext_output_dir is not None:
+                _ext_pred_out_path = str(
+                    Path(_ext_output_dir)
+                    / f"external_probe_{_ext_name}_predictions.json"
+                )
+                _ext_pred_metadata: dict[str, Any] = {
+                    "external_eval_name": _ext_name,
+                    "external_eval_path": str(_ext_path),
+                    "prediction_export_schema_version": "stage28e_v1",
+                    "label_space": {"0": "REFUTE", "1": "NOT_ENTITLED", "2": "SUPPORT"},
+                    "n_records": len(_ext_records),
+                    "eval_state": _ext_eval_state,
+                    "eval_epoch": _ext_eval_epoch,
+                    "stage29b_external_probe": True,
+                    "stage15_used_for_training": False,
+                    "stage15_used_for_checkpoint_selection": False,
+                    "external_probe_used_for_checkpoint_selection": False,
+                    "external_probe_used_for_calibration": False,
+                    "external_probe_used_for_training": False,
+                    "config_summary": _ext_result["config_summary"],
+                }
+                v5.write_predictions_json(
+                    _ext_pred_out_path, _ext_pred_metadata, _ext_pred_records
+                )
+
+            _ext_result["output_predictions_path"] = _ext_pred_out_path
+            _external_evals[_ext_name] = _ext_result
+
+            print(
+                f"[EXTERNAL PROBE S29B] {_ext_name} "
+                f"n={_ext_result['n_records']} "
+                f"acc={_ext_result['final_accuracy']:.4f} "
+                f"macro_f1={_ext_result['final_macro_f1']:.4f} "
+                f"false_SUPPORT={_ext_result['false_SUPPORT_total']}"
+            )
+
+        report["external_evals"] = _external_evals
 
     # Stage26-D: lift architecture metadata and dev metric aliases to root level.
     lift_report_aliases(report)
