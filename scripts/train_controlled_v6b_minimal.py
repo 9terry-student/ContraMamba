@@ -3885,9 +3885,16 @@ def main(argv: list[str] | None = None) -> int:
     # Stage30-C2: temporal safety data loading — separate dataset, never mixed into main train/dev.
     # Records contain none/paraphrase (temporal_safe=1) and time_swap (temporal_safe=0).
     # Stage15 OOD records must NOT be present here.
+    # Filtering uses already-computed main train/dev pair_ids to prevent controlled-dev leakage.
+    # v5.split_by_pair_id is NOT called (it requires 0 < dev_ratio < 1 and is not needed here).
     _ts_train_inputs: "dict[str, torch.Tensor] | None" = None
     _ts_train_labels: "torch.Tensor | None" = None
     _ts_train_mask: "torch.Tensor | None" = None
+    # Provenance counts surfaced in summary JSON.
+    _ts_meta_records_loaded: int = 0
+    _ts_meta_records_used: int = 0
+    _ts_meta_excluded_dev: int = 0
+    _ts_meta_excluded_missing_pair_id: int = 0
 
     _ts_data_needed = (
         getattr(args, "v7_use_temporal_safety_loss", False)
@@ -3896,39 +3903,77 @@ def main(argv: list[str] | None = None) -> int:
     if _ts_data_needed:
         _ts_path = Path(args.v7_temporal_safety_data)
         _ts_all_records = load_temporal_safety_jsonl(_ts_path)
-        _ts_train_records, _ts_dev_records_unused = v5.split_by_pair_id(
-            _ts_all_records, dev_ratio=0.0, seed=args.seed
-        )
-        _ts_train_labels, _ts_train_mask = encode_temporal_safety_labels(
-            _ts_train_records, device
-        )
-        if args.backbone == "dummy":
-            _ts_train_bundle = v5.encode_records(_ts_train_records, vocab)
-        else:
-            _ts_train_bundle = v5.encode_mamba_records(
-                _ts_train_records, tokenizer, args.max_length
+        _ts_meta_records_loaded = len(_ts_all_records)
+
+        # Build pair_id sets from the already-computed main train/dev split.
+        # train_records and dev_records are available at this point (line 3561).
+        _main_train_pair_ids: set = {
+            r["pair_id"] for r in train_records if r.get("pair_id") is not None
+        }
+        _main_dev_pair_ids: set = {
+            r["pair_id"] for r in dev_records if r.get("pair_id") is not None
+        }
+
+        # Filter: include only records whose pair_id maps to main train.
+        # Exclude records in main dev (controlled-dev leakage prevention).
+        # Exclude records with no resolvable pair_id.
+        _ts_train_records: list[dict] = []
+        for _r in _ts_all_records:
+            _pid = _r.get("pair_id") or _r.get("source_pair_id")
+            if _pid is None:
+                _ts_meta_excluded_missing_pair_id += 1
+                continue
+            if _pid in _main_dev_pair_ids:
+                _ts_meta_excluded_dev += 1
+                continue
+            if _pid in _main_train_pair_ids:
+                _ts_train_records.append(_r)
+            # Records whose pair_id is in neither set are silently skipped
+            # (should not occur with controlled-derived data; counted via len difference).
+
+        _ts_meta_records_used = len(_ts_train_records)
+        if _ts_meta_records_used == 0:
+            print(
+                f"[ts_head] WARNING: no temporal safety train records after pair_id filtering "
+                f"(loaded={_ts_meta_records_loaded} "
+                f"excluded_dev={_ts_meta_excluded_dev} "
+                f"excluded_missing_pair_id={_ts_meta_excluded_missing_pair_id}). "
+                "Loss will be zero."
             )
-        _ts_train_inputs = v5.move_inputs(_ts_train_bundle["model_inputs"], device)
-        _ts_seq = _ts_train_inputs["input_ids"].shape[1]
-        if _ts_seq < max_length:
-            _diff = max_length - _ts_seq
-            for _key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
-                _ts_train_inputs[_key] = F.pad(_ts_train_inputs[_key], (0, _diff), value=0)
-        elif _ts_seq > max_length:
-            for _key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
-                _ts_train_inputs[_key] = _ts_train_inputs[_key][:, :max_length]
-        if args.backbone == "mamba" and args.freeze_encoder:
-            v5.cache_frozen_encoder_states(model, _ts_train_inputs)
-        _ts_train_pos = int(_ts_train_labels.sum().item())
-        _ts_train_neg = int(
-            (_ts_train_mask.float() - _ts_train_labels * _ts_train_mask.float()).sum().item()
-        )
-        print(
-            f"[ts_head] enabled weight={getattr(args, 'v7_temporal_safety_loss_weight', 0.0)}"
-            f" ts_train={len(_ts_train_records)}"
-            f" ts_train_pos={_ts_train_pos}"
-            f" ts_train_neg={_ts_train_neg}"
-        )
+        else:
+            _ts_train_labels, _ts_train_mask = encode_temporal_safety_labels(
+                _ts_train_records, device
+            )
+            if args.backbone == "dummy":
+                _ts_train_bundle = v5.encode_records(_ts_train_records, vocab)
+            else:
+                _ts_train_bundle = v5.encode_mamba_records(
+                    _ts_train_records, tokenizer, args.max_length
+                )
+            _ts_train_inputs = v5.move_inputs(_ts_train_bundle["model_inputs"], device)
+            _ts_seq = _ts_train_inputs["input_ids"].shape[1]
+            if _ts_seq < max_length:
+                _diff = max_length - _ts_seq
+                for _key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
+                    _ts_train_inputs[_key] = F.pad(_ts_train_inputs[_key], (0, _diff), value=0)
+            elif _ts_seq > max_length:
+                for _key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
+                    _ts_train_inputs[_key] = _ts_train_inputs[_key][:, :max_length]
+            if args.backbone == "mamba" and args.freeze_encoder:
+                v5.cache_frozen_encoder_states(model, _ts_train_inputs)
+            _ts_train_pos = int(_ts_train_labels.sum().item())
+            _ts_train_neg = int(
+                (_ts_train_mask.float() - _ts_train_labels * _ts_train_mask.float()).sum().item()
+            )
+            print(
+                f"[ts_head] enabled weight={getattr(args, 'v7_temporal_safety_loss_weight', 0.0)}"
+                f" loaded={_ts_meta_records_loaded}"
+                f" used={_ts_meta_records_used}"
+                f" excluded_dev={_ts_meta_excluded_dev}"
+                f" excluded_missing_pair_id={_ts_meta_excluded_missing_pair_id}"
+                f" ts_train_pos={_ts_train_pos}"
+                f" ts_train_neg={_ts_train_neg}"
+            )
 
     # Stage22-A4c/A4e: pair contrastive frame data loading and encoding
     _pc_pair_records: list[dict[str, Any]] = []
@@ -6316,6 +6361,12 @@ def main(argv: list[str] | None = None) -> int:
                 args, "v7_temporal_safety_cap_detach", False
             ),
             "v7_temporal_safety_data": getattr(args, "v7_temporal_safety_data", None),
+            "v7_temporal_safety_records_loaded": _ts_meta_records_loaded,
+            "v7_temporal_safety_records_used_for_aux_train": _ts_meta_records_used,
+            "v7_temporal_safety_records_excluded_main_dev_pair": _ts_meta_excluded_dev,
+            "v7_temporal_safety_records_excluded_missing_pair_id": _ts_meta_excluded_missing_pair_id,
+            "v7_temporal_safety_stage15_used": False,
+            "v7_temporal_safety_external_probe_used": False,
             "stage15_used_for_v7_temporal_safety_loss": False,
             "ood_used_for_v7_temporal_safety_loss": False,
             "v7_h1_entitlement_for_decision_source": (
