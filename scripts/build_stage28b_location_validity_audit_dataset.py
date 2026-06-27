@@ -31,11 +31,18 @@ from typing import Any
 # ---------------------------------------------------------------------------
 
 _ID_KEYS      = ("id", "example_id", "uid", "original_id", "source_id")
-_SRC_ID_KEYS  = ("source_id", "original_id")
+_SRC_ID_KEYS  = ("pair_id", "source_id", "original_id")
 _CLAIM_KEYS   = ("claim", "hypothesis", "sentence2", "text_b")
 _EVID_KEYS    = ("evidence", "premise", "sentence1", "text_a")
-_LABEL_KEYS   = ("label", "gold_label", "target", "y_true")
+_LABEL_KEYS   = ("label", "gold_label", "final_label", "target", "y_true")
 _INTERV_KEYS  = ("intervention", "intervention_type", "perturbation", "probe_type")
+
+# Known intervention suffixes that may be appended to ids with "__" separator
+_KNOWN_SUFFIXES: tuple[str, ...] = (
+    "location_swap", "role_swap", "predicate_swap", "entity_swap", "event_swap",
+    "title_name_swap", "evidence_deletion", "evidence_truncation", "irrelevant_evidence",
+    "none", "paraphrase", "polarity_flip",
+)
 
 _LABEL_NORM: dict[str, str] = {
     "support": "SUPPORT", "supports": "SUPPORT", "2": "SUPPORT",
@@ -165,20 +172,53 @@ def _extract_stable_id(record: dict, fallback_idx: int) -> str:
     return f"__seq_{fallback_idx}__"
 
 
-def _extract_source_id(record: dict, stable_id: str) -> str:
+def _strip_intervention_suffix(stable_id: str) -> "tuple[str, str | None]":
+    """Strip a known __<intervention> suffix from stable_id.
+
+    Returns (base_id, suffix_intervention) or (stable_id, None) if no match.
+    """
+    for suf in _KNOWN_SUFFIXES:
+        candidate = f"__{suf}"
+        if stable_id.endswith(candidate):
+            base = stable_id[: -len(candidate)]
+            if base:
+                return base, suf
+    return stable_id, None
+
+
+def _extract_source_id(
+    record: dict,
+    stable_id: str,
+) -> "tuple[str, bool]":
+    """Return (source_id, derived_from_suffix).
+
+    Priority:
+      1. pair_id / source_id / original_id (top-level)
+      2. metadata.pair_id / metadata.source_id / metadata.original_id
+      3. Strip known __<intervention> suffix from stable_id
+      4. stable_id itself (fallback)
+    """
     for k in _SRC_ID_KEYS:
         v = record.get(k)
         if v is not None:
-            return str(v)
-    v = _safe_get_meta(record, "original_id", "source_id")
+            return str(v), False
+    v = _safe_get_meta(record, "pair_id", "source_id", "original_id")
     if v is not None:
-        return str(v)
-    return stable_id
+        return str(v), False
+    base, suf = _strip_intervention_suffix(stable_id)
+    if suf is not None:
+        return base, True
+    return stable_id, False
 
 
 def _extract_field(record: dict, keys: tuple) -> Any:
     for k in keys:
         v = record.get(k)
+        if v is not None:
+            return v
+    # also check metadata
+    for k in keys:
+        v = _safe_get_meta(record, k)
         if v is not None:
             return v
     return None
@@ -197,12 +237,25 @@ def _normalize_intervention(raw: Any) -> "str | None":
     return _INTERV_NORM.get(s, s)  # keep unknown interventions as-is
 
 
-def _extract_intervention(record: dict) -> Any:
+def _extract_intervention(record: dict, stable_id: str) -> "tuple[Any, bool]":
+    """Return (raw_intervention, derived_from_suffix).
+
+    Priority:
+      1. Known intervention keys at top level
+      2. metadata.intervention / metadata.intervention_type
+      3. Derive from __<suffix> in stable_id
+    """
     for k in _INTERV_KEYS:
         v = record.get(k)
         if v is not None:
-            return v
-    return _safe_get_meta(record, "intervention", "intervention_type")
+            return v, False
+    v = _safe_get_meta(record, "intervention", "intervention_type")
+    if v is not None:
+        return v, False
+    _, suf = _strip_intervention_suffix(stable_id)
+    if suf is not None:
+        return suf, True
+    return None, False
 
 
 def _shallow_copy(record: dict) -> dict:
@@ -258,14 +311,16 @@ def _heuristic_flags(claim: Any, evidence: Any) -> dict[str, "bool | None"]:
             flags["possible_hierarchical_location"] = True
 
     # partial_support_possible:
-    # True if BOTH claim and evidence each contain >= 2 distinct capitalized spans
+    # True only when there is structural evidence of MULTIPLE location-like spans
+    # in BOTH claim and evidence simultaneously (not just any capitalized words).
+    # Synthetic generated facts with many named entities must NOT trigger this.
+    # Require comma-separated capitalized location patterns in both claim AND evidence.
     if cl_text and ev_text:
-        cl_caps = set(_RE_CAP_WORD.findall(cl_text))
-        ev_caps = set(_RE_CAP_WORD.findall(ev_text))
-        if len(cl_caps) >= 2 and len(ev_caps) >= 2:
+        cl_has_multi_loc = bool(_RE_COMMA_CAP_LIST.search(cl_text))
+        ev_has_multi_loc = bool(_RE_COMMA_CAP_LIST.search(ev_text))
+        if cl_has_multi_loc and ev_has_multi_loc:
             flags["partial_support_possible"] = True
-        elif len(cl_caps) == 0 or len(ev_caps) == 0:
-            flags["partial_support_possible"] = False
+        # All other cases: leave null (do not default to False)
 
     # All other flags remain null (require external knowledge or deeper analysis)
     return flags
@@ -276,31 +331,44 @@ def _heuristic_flags(claim: Any, evidence: Any) -> dict[str, "bool | None"]:
 # ---------------------------------------------------------------------------
 
 def _parse_record(raw: dict, idx: int) -> dict[str, Any]:
-    stable_id   = _extract_stable_id(raw, idx)
-    source_id   = _extract_source_id(raw, stable_id)
+    stable_id = _extract_stable_id(raw, idx)
+    source_id, derived_src = _extract_source_id(raw, stable_id)
     original_id = raw.get("original_id") or _safe_get_meta(raw, "original_id")
 
-    raw_intervention = _extract_intervention(raw)
+    raw_intervention, derived_interv = _extract_intervention(raw, stable_id)
     norm_intervention = _normalize_intervention(raw_intervention)
 
-    raw_label   = _extract_field(raw, _LABEL_KEYS)
-    norm_label  = _normalize_label(raw_label)
+    raw_label  = _extract_field(raw, _LABEL_KEYS)
+    norm_label = _normalize_label(raw_label)
+
+    # Diagnostic: did we find pair_id / final_label explicitly?
+    has_pair_id    = any(raw.get(k) is not None for k in ("pair_id",)) or (
+        _safe_get_meta(raw, "pair_id") is not None
+    )
+    has_final_label = raw.get("final_label") is not None or (
+        _safe_get_meta(raw, "final_label") is not None
+    )
 
     claim    = _extract_field(raw, _CLAIM_KEYS)
     evidence = _extract_field(raw, _EVID_KEYS)
 
     return {
-        "stable_id":            stable_id,
-        "source_id":            source_id,
-        "original_id":          original_id,
-        "claim":                claim,
-        "evidence":             evidence,
-        "raw_label":            raw_label,
-        "normalized_label":     norm_label,
-        "raw_intervention":     raw_intervention,
+        "stable_id":              stable_id,
+        "source_id":              source_id,
+        "original_id":            original_id,
+        "claim":                  claim,
+        "evidence":               evidence,
+        "raw_label":              raw_label,
+        "normalized_label":       norm_label,
+        "raw_intervention":       raw_intervention,
         "normalized_intervention": norm_intervention,
-        "metadata":             raw.get("metadata"),
-        "_raw":                 raw,
+        "metadata":               raw.get("metadata"),
+        "_raw":                   raw,
+        # diagnostics (private, not written to output JSONL)
+        "_derived_source_id":     derived_src,
+        "_derived_intervention":  derived_interv,
+        "_has_pair_id":           has_pair_id,
+        "_has_final_label":       has_final_label,
     }
 
 
@@ -495,12 +563,17 @@ def _build_summary(
     # Per-bucket counts
     bucket_counts = {b: len(buckets[b]) for b in BUCKET_ORDER}
 
-    # Per-bucket label distribution
+    # Per-bucket label distribution (use full priority chain)
+    def _bucket_label(p: dict) -> "str | None":
+        for k in _LABEL_KEYS:
+            v = p["_raw"].get(k)
+            if v is not None:
+                return _normalize_label(v)
+        return None
+
     bucket_label_counts: dict[str, Any] = {}
     for b, recs in buckets.items():
-        bucket_label_counts[b] = _count_dict(
-            recs, lambda r: _normalize_label(r["_raw"].get("label") or r["_raw"].get("gold_label"))
-        )
+        bucket_label_counts[b] = _count_dict(recs, _bucket_label)
 
     # Location audit counts
     loc_recs = output_records  # all output records with bucket=location_swap_audit
@@ -518,6 +591,23 @@ def _build_summary(
     n_role_src = len(role_source_ids)
     loc_cov  = round(n_loc_ctrl_match / n_loc_src, 4) if n_loc_src > 0 else 0.0
     role_cov = round(n_role_ctrl_match / n_role_src, 4) if n_role_src > 0 else 0.0
+
+    # New diagnostics: pair_id / final_label / derived fields
+    n_with_pair_id       = sum(1 for p in parsed if p["_has_pair_id"])
+    n_with_final_label   = sum(1 for p in parsed if p["_has_final_label"])
+    n_derived_src        = sum(1 for p in parsed if p["_derived_source_id"])
+    n_derived_interv     = sum(1 for p in parsed if p["_derived_intervention"])
+
+    # sample_source_groups: up to 5 source_ids with their available interventions
+    src_to_intervs: dict[str, list[str]] = defaultdict(list)
+    for p in parsed:
+        ni = p["normalized_intervention"]
+        if ni:
+            src_to_intervs[p["source_id"]].append(ni)
+    sample_src_groups = {
+        src: sorted(set(ivs))
+        for src, ivs in list(src_to_intervs.items())[:5]
+    }
 
     # Recommended next stage
     if n_audit >= 50 and loc_cov >= 0.5:
@@ -578,6 +668,11 @@ def _build_summary(
             "role_control_coverage": role_cov,
         },
         "heuristic_flag_counts": _flag_counts(loc_out),
+        "n_records_with_pair_id": n_with_pair_id,
+        "n_records_with_final_label": n_with_final_label,
+        "n_records_with_derived_source_id_from_suffix": n_derived_src,
+        "n_records_with_derived_intervention_from_suffix": n_derived_interv,
+        "sample_source_groups": sample_src_groups,
         "recommended_next_stage": next_stage,
         "limitations": [
             "Heuristic flags (multiple_locations_in_evidence, possible_hierarchical_location, "
@@ -811,8 +906,14 @@ Flags marked `null` require manual review or external knowledge to determine.
 - If many location_swap records are labeled ambiguous or invalid after audit, future
   clean validation should separate: clean_location_swap, ambiguous_location_swap,
   invalid_location_swap.
-- If location_controls have low coverage, future dataset construction should add
-  paired controls for better before/after analysis.
+- **Control coverage note:** if `location_control_coverage`={_fmt_f(sov.get('location_control_coverage'))}
+  remains at 0 after pair_id and suffix-based source_id extraction, then paired controls
+  are genuinely absent from this dataset or the schema lacks a usable grouping field.
+  In that case, Stage28-C should add paired controls before any specialist modeling.
+  If coverage is high (>= 0.5), Stage28-C can proceed directly to manual location validity audit.
+- **Source-ID extraction diagnostics:** `n_records_with_pair_id`={s.get('n_records_with_pair_id', 0)},
+  `n_records_with_derived_source_id_from_suffix`={s.get('n_records_with_derived_source_id_from_suffix', 0)}.
+  If both are 0, the dataset has no usable pair grouping and control matching is not possible.
 
 ## Recommended Next Stage
 
