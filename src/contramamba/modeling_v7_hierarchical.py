@@ -365,6 +365,14 @@ class ContraMambaV7Hierarchical(nn.Module):
         v7_use_v6b_style_final_decision: bool = False,
         v7_use_learnable_ne_alpha: bool = False,
         v7_ne_alpha_init: float = 1.0,
+        # Stage27-H2A: configurable decision-time entitlement signal for the H1 path.
+        # Only consulted when v7_use_v6b_style_final_decision=True.
+        # "learned" (default) preserves existing H1 behavior: uses v7_entitlement_prob
+        # from the learned EntitlementGate. Other modes replace it with an explicit
+        # compositional signal from the frame/predicate/sufficiency channels.
+        # Valid choices: "learned", "product", "min",
+        #                "frame_predicate_product", "frame_predicate_min"
+        v7_h1_entitlement_decision_signal: str = "learned",
     ) -> None:
         super().__init__()
 
@@ -403,6 +411,7 @@ class ContraMambaV7Hierarchical(nn.Module):
         self.v7_use_v6b_style_final_decision = v7_use_v6b_style_final_decision
         self.v7_use_learnable_ne_alpha = v7_use_learnable_ne_alpha
         self.v7_ne_alpha_init = float(v7_ne_alpha_init)
+        self.v7_h1_entitlement_decision_signal = v7_h1_entitlement_decision_signal
 
         if self.v7_use_v6b_style_final_decision and self.v7_no_entitlement_polarity_conditioning:
             raise ValueError(
@@ -588,7 +597,33 @@ class ContraMambaV7Hierarchical(nn.Module):
             positive_energy = F.softplus(v7_polarity_support)
             negative_energy = F.softplus(v7_polarity_refute)
 
-            entitlement_for_decision = v7_entitlement_prob
+            # Stage27-H2A: select decision-time entitlement signal.
+            # "learned" (default) uses v7_entitlement_prob from the EntitlementGate.
+            # Other modes use explicit compositional signals from the channel probabilities.
+            # All channel probabilities are sigmoid outputs already in [0, 1], so no clamping
+            # is required. The signal is kept attached (no detach) so gradients can flow.
+            _eds = self.v7_h1_entitlement_decision_signal
+            _fp = frame["frame_prob"]
+            _pp = predicate["predicate_coverage_prob"]
+            _sp = sufficiency["sufficiency_prob"]
+            if _eds == "learned":
+                entitlement_for_decision = v7_entitlement_prob
+            elif _eds == "product":
+                entitlement_for_decision = _fp * _pp * _sp
+            elif _eds == "min":
+                entitlement_for_decision = torch.minimum(
+                    torch.minimum(_fp, _pp), _sp
+                )
+            elif _eds == "frame_predicate_product":
+                entitlement_for_decision = _fp * _pp
+            elif _eds == "frame_predicate_min":
+                entitlement_for_decision = torch.minimum(_fp, _pp)
+            else:
+                raise ValueError(
+                    f"Unknown v7_h1_entitlement_decision_signal: {_eds!r}. "
+                    "Valid choices: 'learned', 'product', 'min', "
+                    "'frame_predicate_product', 'frame_predicate_min'."
+                )
 
             support_score = entitlement_for_decision * positive_energy
             refute_score = entitlement_for_decision * negative_energy
@@ -606,7 +641,7 @@ class ContraMambaV7Hierarchical(nn.Module):
 
             v7_final_logit_composition = "v6b_style_softplus_multiplicative"
             v7_polarity_energy_mode = "softplus_energy"
-            v7_entitlement_decision_signal = "entitlement_prob"
+            v7_entitlement_decision_signal = _eds
 
         else:
             # Existing v7 behavior. Keep default semantics unchanged.
@@ -695,16 +730,18 @@ class ContraMambaV7Hierarchical(nn.Module):
                 "v7_entitlement_logit", "v7_entitlement_prob",
                 "v7_polarity_support_logit", "v7_polarity_refute_logit",
             ],
-            "v7_final_logit_composition": (
-                "flat"
-                if self.v7_no_entitlement_polarity_conditioning
-                else "hierarchical_additive"
-            ),
             "v7_final_logit_composition": v7_final_logit_composition,
             "v7_polarity_energy_mode": v7_polarity_energy_mode,
             "v7_entitlement_decision_signal": v7_entitlement_decision_signal,
             "v7_ne_score_mode": v7_ne_score_mode,
             "v7_ne_alpha": v7_ne_alpha,
+            # Stage27-H2A: H1-path decision signal diagnostics.
+            # v7_h1_entitlement_for_decision is the actual tensor used as
+            # entitlement_for_decision in the H1 path (None when H1 is inactive).
+            "v7_h1_entitlement_for_decision": (
+                entitlement_for_decision if self.v7_use_v6b_style_final_decision else None
+            ),
+            "v7_h1_entitlement_decision_signal": self.v7_h1_entitlement_decision_signal,
 
             "v7_polarity_positive_energy": positive_energy,
             "v7_polarity_negative_energy": negative_energy,

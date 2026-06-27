@@ -154,6 +154,7 @@ def build_v7_model(
     v7_use_v6b_style_final_decision: bool = False,
     v7_use_learnable_ne_alpha: bool = False,
     v7_ne_alpha_init: float = 1.0,
+    v7_h1_entitlement_decision_signal: str = "learned",
 ) -> "ContraMambaV7Hierarchical":
     """Build a ContraMambaV7Hierarchical with dummy backbone for plumbing validation."""
     from contramamba.modeling_v7_hierarchical import ContraMambaV7Hierarchical
@@ -176,6 +177,7 @@ def build_v7_model(
         v7_use_v6b_style_final_decision=v7_use_v6b_style_final_decision,
         v7_use_learnable_ne_alpha=v7_use_learnable_ne_alpha,
         v7_ne_alpha_init=v7_ne_alpha_init,
+        v7_h1_entitlement_decision_signal=v7_h1_entitlement_decision_signal,
     )
 
 
@@ -194,6 +196,7 @@ def build_v7_mamba_model(
     v7_use_v6b_style_final_decision: bool = False,
     v7_use_learnable_ne_alpha: bool = False,
     v7_ne_alpha_init: float = 1.0,
+    v7_h1_entitlement_decision_signal: str = "learned",
 ) -> "ContraMambaV7Hierarchical":
     """Build a ContraMambaV7Hierarchical with real Mamba backbone."""
     from contramamba.modeling_v7_hierarchical import ContraMambaV7Hierarchical
@@ -216,6 +219,7 @@ def build_v7_mamba_model(
         v7_use_v6b_style_final_decision=v7_use_v6b_style_final_decision,
         v7_use_learnable_ne_alpha=v7_use_learnable_ne_alpha,
         v7_ne_alpha_init=v7_ne_alpha_init,
+        v7_h1_entitlement_decision_signal=v7_h1_entitlement_decision_signal,
     )
     for parameter in model.mamba.parameters():
         parameter.requires_grad = not freeze_encoder
@@ -1393,6 +1397,35 @@ def intervention_diagnostics_v6b(
     return result
 
 
+# ---------------------------------------------------------------------------
+# Stage27-H2A helpers
+# ---------------------------------------------------------------------------
+
+#: Human-readable formula descriptions for each H1 entitlement decision signal.
+_V7_H1_DECISION_SIGNAL_SOURCE: dict[str, str] = {
+    "learned":               "v7_entitlement_prob (EntitlementGate)",
+    "product":               "frame_prob * predicate_coverage_prob * sufficiency_prob",
+    "min":                   "min(frame_prob, predicate_coverage_prob, sufficiency_prob)",
+    "frame_predicate_product": "frame_prob * predicate_coverage_prob",
+    "frame_predicate_min":   "min(frame_prob, predicate_coverage_prob)",
+}
+
+
+def _resolve_v7_final_logit_composition(args: "argparse.Namespace") -> "str | None":
+    """Return the actual v7 final-logit composition mode string for reporting.
+
+    This fixes the Stage26 reporting bug where H1 runs incorrectly reported
+    'hierarchical_additive' even though v6b_style_softplus_multiplicative was active.
+    """
+    if args.architecture != "v7_hierarchical":
+        return None
+    if getattr(args, "v7_use_v6b_style_final_decision", False):
+        return "v6b_style_softplus_multiplicative"
+    if getattr(args, "v7_no_entitlement_polarity_conditioning", False):
+        return "flat"
+    return "hierarchical_additive"
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = v5.build_parser()
     parser.add_argument(
@@ -2196,6 +2229,20 @@ def build_parser() -> argparse.ArgumentParser:
         help="Stage26-H1: Initial value for learnable NE alpha. Default 1.0.",
     )
     parser.add_argument(
+        "--v7-h1-entitlement-decision-signal",
+        choices=("learned", "product", "min", "frame_predicate_product", "frame_predicate_min"),
+        default="learned",
+        help=(
+            "Stage27-H2A: Decision-time entitlement signal used in the H1 final-decision path "
+            "(--v7-use-v6b-style-final-decision). Only consulted when H1 is active. "
+            "Default 'learned' preserves existing H1 behavior (v7_entitlement_prob). "
+            "'product' = frame_prob * predicate_coverage_prob * sufficiency_prob. "
+            "'min' = min(frame_prob, predicate_coverage_prob, sufficiency_prob). "
+            "'frame_predicate_product' = frame_prob * predicate_coverage_prob. "
+            "'frame_predicate_min' = min(frame_prob, predicate_coverage_prob)."
+        ),
+    )
+    parser.add_argument(
         "--v7-no-aux-losses",
         action="store_true",
         default=False,
@@ -2355,6 +2402,8 @@ _V7_DIAG_CAPTURE_KEYS: tuple[str, ...] = (
     "v7_polarity_positive_energy",
     "v7_polarity_negative_energy",
     "v7_polarity_energy_margin",
+    # Stage27-H2A: actual entitlement_for_decision used in H1 (None when H1 is inactive)
+    "v7_h1_entitlement_for_decision",
 )
 
 
@@ -2399,6 +2448,8 @@ def _v7_make_logit_summary(out: "dict[str, Any] | None") -> "dict[str, Any] | No
         "v7_frame_prob",
         "v7_predicate_prob",
         "v7_sufficiency_prob",
+        # Stage27-H2A: actual H1 decision signal (None when H1 inactive)
+        "v7_h1_entitlement_for_decision",
     ):
         val = out.get(key)
         if val is not None and hasattr(val, "mean"):
@@ -2538,6 +2589,9 @@ _LIFT_CONFIG_KEYS: tuple[str, ...] = (
     "v7_use_v6b_style_final_decision",
     "v7_use_learnable_ne_alpha",
     "v7_ne_alpha_init",
+    # Stage27-H2A: H1-path entitlement decision signal
+    "v7_h1_entitlement_decision_signal",
+    "v7_h1_entitlement_for_decision_source",
 )
 
 
@@ -2650,6 +2704,7 @@ def main(argv: list[str] | None = None) -> int:
                 v7_use_v6b_style_final_decision=args.v7_use_v6b_style_final_decision,
                 v7_use_learnable_ne_alpha=args.v7_use_learnable_ne_alpha,
                 v7_ne_alpha_init=args.v7_ne_alpha_init,
+                v7_h1_entitlement_decision_signal=args.v7_h1_entitlement_decision_signal,
             )
         else:
             model = build_mamba_model(
@@ -2701,6 +2756,7 @@ def main(argv: list[str] | None = None) -> int:
                 v7_no_entitlement_polarity_conditioning=args.v7_no_entitlement_polarity_conditioning,
                 v7_no_aux_losses=args.v7_no_aux_losses,
                 v7_initial_ne_bias=args.v7_initial_ne_bias,
+                v7_h1_entitlement_decision_signal=args.v7_h1_entitlement_decision_signal,
             )
         else:
             model = build_model(
@@ -4650,10 +4706,44 @@ def main(argv: list[str] | None = None) -> int:
             if _pred_dist and _total_preds > 0:
                 _maj_class = max(_pred_dist, key=lambda _k: _pred_dist[_k])
 
+            # Stage27-H2A: H1-path entitlement_for_decision stats (from best-dev epoch)
+            _h1_efd_stats: "dict[str, float] | None" = None
+            if (
+                getattr(args, "v7_use_v6b_style_final_decision", False)
+                and _v7_best_logit_summary is not None
+                and "v7_h1_entitlement_for_decision" in _v7_best_logit_summary
+            ):
+                _h1_efd_stats = _v7_best_logit_summary["v7_h1_entitlement_for_decision"]
+
+            # Component prob means from best-dev logit summary
+            def _logit_mean(key: str) -> "float | None":
+                if _v7_best_logit_summary is None:
+                    return None
+                sub = _v7_best_logit_summary.get(key)
+                return sub["mean"] if isinstance(sub, dict) else None
+
             _v7_ext_diagnostics = {
                 "v7_best_dev_logit_summary": _v7_best_logit_summary,
                 "v7_final_epoch_logit_summary": _v7_final_logit_summary,
                 "v7_best_dev_per_gold_label_summary": _v7_per_gold_summary,
+                # Stage27-H2A: H1 entitlement_for_decision stats (None when H1 inactive)
+                "v7_h1_entitlement_for_decision_mean": (
+                    _h1_efd_stats["mean"] if _h1_efd_stats else None
+                ),
+                "v7_h1_entitlement_for_decision_std": (
+                    _h1_efd_stats["std"] if _h1_efd_stats else None
+                ),
+                "v7_h1_entitlement_for_decision_min": (
+                    _h1_efd_stats["min"] if _h1_efd_stats else None
+                ),
+                "v7_h1_entitlement_for_decision_max": (
+                    _h1_efd_stats["max"] if _h1_efd_stats else None
+                ),
+                # Component probability means (from best-dev epoch; None when not v7)
+                "frame_prob_mean": _logit_mean("v7_frame_prob"),
+                "predicate_coverage_prob_mean": _logit_mean("v7_predicate_prob"),
+                "sufficiency_prob_mean": _logit_mean("v7_sufficiency_prob"),
+                "v7_entitlement_prob_mean": _logit_mean("v7_entitlement_prob"),
                 "v7_predicted_single_class": (
                     (len(_pred_dist) == 1) if _maj_class is not None else None
                 ),
@@ -5090,11 +5180,30 @@ def main(argv: list[str] | None = None) -> int:
                 args, "v7_entitled_class_balanced_ce_weight", 0.0
             ),
             "v7_initial_ne_bias": getattr(args, "v7_initial_ne_bias", -0.5),
-            "v7_final_logit_composition": (
-                "flat"
-                if getattr(args, "v7_no_entitlement_polarity_conditioning", False)
-                else "hierarchical_additive"
-            ) if args.architecture == "v7_hierarchical" else None,
+            # Stage26-H1 / Stage27-H2A: H1 bridge flags
+            "v7_use_v6b_style_final_decision": getattr(
+                args, "v7_use_v6b_style_final_decision", False
+            ),
+            "v7_use_learnable_ne_alpha": getattr(args, "v7_use_learnable_ne_alpha", False),
+            "v7_ne_alpha_init": getattr(args, "v7_ne_alpha_init", 1.0),
+            # Stage27-H2A: H1-path entitlement decision signal
+            "v7_h1_entitlement_decision_signal": getattr(
+                args, "v7_h1_entitlement_decision_signal", "learned"
+            ),
+            "v7_h1_entitlement_for_decision_source": (
+                _V7_H1_DECISION_SIGNAL_SOURCE.get(
+                    getattr(args, "v7_h1_entitlement_decision_signal", "learned"),
+                    "learned",
+                )
+                if (
+                    args.architecture == "v7_hierarchical"
+                    and getattr(args, "v7_use_v6b_style_final_decision", False)
+                )
+                else None
+            ),
+            # Stage27-H2A reporting bug fix: v7_final_logit_composition now correctly
+            # reports "v6b_style_softplus_multiplicative" when H1 is active.
+            "v7_final_logit_composition": _resolve_v7_final_logit_composition(args),
             # Stage26-B: emit the v7 output contract key list for traceability.
             # See V7_REQUIRED_OUTPUT_KEYS in modeling_v7_hierarchical.py for definition.
             "v7_channel_output_keys": (
