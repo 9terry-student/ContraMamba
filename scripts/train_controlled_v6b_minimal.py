@@ -2756,6 +2756,9 @@ def main(argv: list[str] | None = None) -> int:
                 v7_no_entitlement_polarity_conditioning=args.v7_no_entitlement_polarity_conditioning,
                 v7_no_aux_losses=args.v7_no_aux_losses,
                 v7_initial_ne_bias=args.v7_initial_ne_bias,
+                v7_use_v6b_style_final_decision=args.v7_use_v6b_style_final_decision,
+                v7_use_learnable_ne_alpha=args.v7_use_learnable_ne_alpha,
+                v7_ne_alpha_init=args.v7_ne_alpha_init,
                 v7_h1_entitlement_decision_signal=args.v7_h1_entitlement_decision_signal,
             )
         else:
