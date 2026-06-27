@@ -7104,12 +7104,15 @@ def main(argv: list[str] | None = None) -> int:
             _ext_result["eval_epoch"] = _ext_eval_epoch
 
             # Write per-probe prediction JSON (optional)
-            _ext_pred_out_path: "str | None" = None
+            _ext_pred_out_str: "str | None" = None
             if _ext_output_dir is not None:
-                _ext_pred_out_path = str(
+                # Keep as Path for write_predictions_json (which calls path.parent.mkdir)
+                _ext_pred_out_path_obj: Path = (
                     Path(_ext_output_dir)
                     / f"external_probe_{_ext_name}_predictions.json"
                 )
+                # String copy for JSON-serialisable metadata / report
+                _ext_pred_out_str = str(_ext_pred_out_path_obj)
                 _ext_pred_metadata: dict[str, Any] = {
                     "external_eval_name": _ext_name,
                     "external_eval_path": str(_ext_path),
@@ -7127,10 +7130,10 @@ def main(argv: list[str] | None = None) -> int:
                     "config_summary": _ext_result["config_summary"],
                 }
                 v5.write_predictions_json(
-                    _ext_pred_out_path, _ext_pred_metadata, _ext_pred_records
+                    _ext_pred_out_path_obj, _ext_pred_metadata, _ext_pred_records
                 )
 
-            _ext_result["output_predictions_path"] = _ext_pred_out_path
+            _ext_result["output_predictions_path"] = _ext_pred_out_str
             _external_evals[_ext_name] = _ext_result
 
             print(
