@@ -1,0 +1,269 @@
+{
+  "stage": "Stage28-J",
+  "description": "Freeze of Stage28-I final location-boundary cap candidate",
+  "date": "2026-06-27",
+  "dataset": "data/controlled_v5_v3_without_time_swap.jsonl",
+  "architecture": "v7_hierarchical",
+  "backbone": "state-spaces/mamba-130m-hf",
+  "frozen_encoder": true,
+  "frozen_alog": true,
+  "max_length": 64,
+  "selection_metric": "final_macro_f1",
+  "prediction_export_schema": "stage28e_v1",
+  "base_decision": "product_p0p90",
+  "base_product_power": 0.90,
+  "time_swap_excluded": true,
+  "baseline": {
+    "config": "product_p0p90_default_off",
+    "n_runs": 3,
+    "false_SUPPORT_total": 44,
+    "location_false_SUPPORT_total": 27,
+    "role_false_SUPPORT_total": 6,
+    "predicate_false_SUPPORT_total": 3,
+    "other_frame_false_SUPPORT_total": 8,
+    "missing_false_SUPPORT_total": 0,
+    "pred_SUPPORT_mean": 96.6667,
+    "pred_SUPPORT_min": 66,
+    "pred_SUPPORT_max": 121,
+    "true_SUPPORT_correct_total": 246,
+    "true_SUPPORT_correct_min": 65
+  },
+  "stage28ic": {
+    "description": "Initial soft cap result, loss_weight=0.30, gamma=1.0, detach=true",
+    "cap_mode": "soft",
+    "loss_weight": 0.30,
+    "gamma": 1.0,
+    "detach": true,
+    "false_SUPPORT_total": 28,
+    "location_false_SUPPORT_total": 8,
+    "role_false_SUPPORT_total": 7,
+    "predicate_false_SUPPORT_total": 6,
+    "other_frame_false_SUPPORT_total": 7,
+    "missing_false_SUPPORT_total": 0,
+    "true_SUPPORT_correct_total": 265
+  },
+  "gamma_sweep": {
+    "description": "Stage28-I-D gamma sweep, soft cap, loss_weight=0.30, detach=true",
+    "fixed_loss_weight": 0.30,
+    "fixed_detach": true,
+    "cap_mode": "soft",
+    "results": [
+      {
+        "gamma": 0.50,
+        "false_SUPPORT_total": 45,
+        "location_false_SUPPORT_total": 19,
+        "role_false_SUPPORT_total": 10,
+        "predicate_false_SUPPORT_total": 7,
+        "other_frame_false_SUPPORT_total": 9,
+        "missing_false_SUPPORT_total": 0,
+        "true_SUPPORT_correct_total": 267
+      },
+      {
+        "gamma": 0.75,
+        "false_SUPPORT_total": 43,
+        "location_false_SUPPORT_total": 18,
+        "role_false_SUPPORT_total": 9,
+        "predicate_false_SUPPORT_total": 7,
+        "other_frame_false_SUPPORT_total": 9,
+        "missing_false_SUPPORT_total": 0,
+        "true_SUPPORT_correct_total": 265
+      },
+      {
+        "gamma": 1.00,
+        "false_SUPPORT_total": 28,
+        "location_false_SUPPORT_total": 8,
+        "role_false_SUPPORT_total": 7,
+        "predicate_false_SUPPORT_total": 6,
+        "other_frame_false_SUPPORT_total": 7,
+        "missing_false_SUPPORT_total": 0,
+        "true_SUPPORT_correct_total": 265,
+        "selected": true
+      },
+      {
+        "gamma": 1.25,
+        "false_SUPPORT_total": 43,
+        "location_false_SUPPORT_total": 11,
+        "role_false_SUPPORT_total": 8,
+        "predicate_false_SUPPORT_total": 18,
+        "other_frame_false_SUPPORT_total": 6,
+        "missing_false_SUPPORT_total": 0,
+        "true_SUPPORT_correct_total": 266
+      }
+    ],
+    "winner_gamma": 1.0,
+    "rejection_notes": {
+      "gamma_0p50": "Too weak; total false SUPPORT near baseline (45); location false SUPPORT only reduced to 19",
+      "gamma_0p75": "Too weak; total false SUPPORT 43; location false SUPPORT 18",
+      "gamma_1p25": "Over-sharpens sigmoid; predicate false SUPPORT spikes to 18; category shift outweighs location gain"
+    }
+  },
+  "loss_weight_sweep": {
+    "description": "Stage28-I-E loss-weight sweep, soft cap, gamma=1.0, detach=true",
+    "fixed_gamma": 1.0,
+    "fixed_detach": true,
+    "cap_mode": "soft",
+    "results": [
+      {
+        "loss_weight": 0.10,
+        "false_SUPPORT_total": 35,
+        "location_false_SUPPORT_total": 20,
+        "role_false_SUPPORT_total": 5,
+        "predicate_false_SUPPORT_total": 5,
+        "other_frame_false_SUPPORT_total": 5,
+        "missing_false_SUPPORT_total": 0,
+        "pred_SUPPORT_mean": 100.333,
+        "pred_SUPPORT_min": 99,
+        "true_SUPPORT_correct_total": 266
+      },
+      {
+        "loss_weight": 0.20,
+        "false_SUPPORT_total": 22,
+        "location_false_SUPPORT_total": 8,
+        "role_false_SUPPORT_total": 6,
+        "predicate_false_SUPPORT_total": 2,
+        "other_frame_false_SUPPORT_total": 6,
+        "missing_false_SUPPORT_total": 0,
+        "pred_SUPPORT_mean": 95.3333,
+        "pred_SUPPORT_min": 87,
+        "true_SUPPORT_correct_total": 264
+      },
+      {
+        "loss_weight": 0.30,
+        "false_SUPPORT_total": 28,
+        "location_false_SUPPORT_total": 8,
+        "role_false_SUPPORT_total": 7,
+        "predicate_false_SUPPORT_total": 6,
+        "other_frame_false_SUPPORT_total": 7,
+        "missing_false_SUPPORT_total": 0,
+        "pred_SUPPORT_mean": 97.6667,
+        "pred_SUPPORT_min": 92,
+        "true_SUPPORT_correct_total": 265
+      },
+      {
+        "loss_weight": 0.50,
+        "false_SUPPORT_total": 18,
+        "location_false_SUPPORT_total": 4,
+        "role_false_SUPPORT_total": 6,
+        "predicate_false_SUPPORT_total": 2,
+        "other_frame_false_SUPPORT_total": 6,
+        "missing_false_SUPPORT_total": 0,
+        "pred_SUPPORT_mean": 94.6667,
+        "pred_SUPPORT_min": 91,
+        "true_SUPPORT_correct_total": 266,
+        "selected": true
+      }
+    ],
+    "winner_loss_weight": 0.50,
+    "rejection_notes": {
+      "loss_weight_0p10": "Insufficient; location false SUPPORT remains at 20; total false SUPPORT 35",
+      "loss_weight_0p20": "Lower pred SUPPORT min (87) and lower true SUPPORT correct (264) than 0.50 despite lower total false SUPPORT (22)",
+      "loss_weight_0p30": "Stage28-I-C reference; 0.50 dominates on total false SUPPORT (18 vs 28) and location false SUPPORT (4 vs 8)"
+    }
+  },
+  "final_candidate": {
+    "name": "lb_loss0p50_soft_g1p00_detach",
+    "v7_use_location_boundary_head": true,
+    "v7_use_location_boundary_loss": true,
+    "v7_location_boundary_loss_weight": 0.50,
+    "v7_location_boundary_cap_mode": "soft",
+    "v7_location_boundary_cap_gamma": 1.0,
+    "v7_location_boundary_cap_detach": true,
+    "base_decision": "product_p0p90",
+    "false_SUPPORT_total": 18,
+    "location_false_SUPPORT_total": 4,
+    "role_false_SUPPORT_total": 6,
+    "predicate_false_SUPPORT_total": 2,
+    "other_frame_false_SUPPORT_total": 6,
+    "missing_false_SUPPORT_total": 0,
+    "pred_SUPPORT_mean": 94.6667,
+    "pred_SUPPORT_min": 91,
+    "true_SUPPORT_correct_total": 266
+  },
+  "final_deltas_vs_baseline": {
+    "false_SUPPORT_total": {
+      "baseline": 44,
+      "final": 18,
+      "delta": -26
+    },
+    "location_false_SUPPORT_total": {
+      "baseline": 27,
+      "final": 4,
+      "delta": -23
+    },
+    "role_false_SUPPORT_total": {
+      "baseline": 6,
+      "final": 6,
+      "delta": 0
+    },
+    "predicate_false_SUPPORT_total": {
+      "baseline": 3,
+      "final": 2,
+      "delta": -1
+    },
+    "other_frame_false_SUPPORT_total": {
+      "baseline": 8,
+      "final": 6,
+      "delta": -2
+    },
+    "missing_false_SUPPORT_total": {
+      "baseline": 0,
+      "final": 0,
+      "delta": 0
+    },
+    "true_SUPPORT_correct_total": {
+      "baseline": 246,
+      "final": 266,
+      "delta": 20
+    },
+    "pred_SUPPORT_min": {
+      "baseline": 66,
+      "final": 91,
+      "delta": 25
+    }
+  },
+  "decision": {
+    "final_candidate_config": "lb_loss0p50_soft_g1p00_detach",
+    "freeze_stage28i_candidate": true,
+    "hard_cap_rejected": true,
+    "hard_cap_rejection_reason": "Hard cap increased false_SUPPORT_total to 58 in Stage28-I-C, exceeding baseline of 44",
+    "learned_hybrid_mixing_rejected": true,
+    "learned_hybrid_mixing_rejection_reason": "Too few product error rescues and too many newly introduced false SUPPORT errors in other categories",
+    "winner_gamma": 1.0,
+    "winner_loss_weight": 0.50
+  },
+  "interpretation_flags": {
+    "controlled_no_time_only": true,
+    "time_swap_excluded": true,
+    "ood_claim": false,
+    "open_world_claim": false,
+    "not_merely_conservative_suppression": true,
+    "not_merely_conservative_suppression_evidence": {
+      "true_SUPPORT_correct_total_baseline": 246,
+      "true_SUPPORT_correct_total_final": 266,
+      "true_SUPPORT_correct_delta": 20,
+      "pred_SUPPORT_min_baseline": 66,
+      "pred_SUPPORT_min_final": 91,
+      "pred_SUPPORT_min_delta": 25
+    },
+    "cap_is_independent_and_bounded": true,
+    "cap_independence_note": "Location-boundary cap is a detached multiplicative soft probability from a separate head; product H1 decision path gradient is unaffected; cap is bounded in [0,1]",
+    "ranking_loss_active": true
+  },
+  "remaining_risks": [
+    "Controlled synthetic no-time setting only; no OOD, time-swap, or naturalistic evaluation performed",
+    "Frozen encoder (Mamba backbone) and A-log parameters; results not directly transferable to fine-tuned or longer-context variants without re-evaluation",
+    "Ranking loss remains active by default; this is not a CE-only setup; ablating ranking loss would require fresh evaluation",
+    "Location-boundary target supervision uses limited positive/negative mapping; sparse or noisy boundary labels in new data could degrade head quality",
+    "Needs future evaluation outside controlled no-time data before broader claims or additional architectural commitment"
+  ],
+  "next_recommended_stage": {
+    "stage": "Stage29",
+    "recommendation": "Test the frozen Stage28-I final candidate (lb_loss0p50_soft_g1p00_detach) against additional diagnostic data or OOD-style probes to characterize location-boundary cap behavior outside the controlled no-time distribution",
+    "constraints": [
+      "Do not add another router or cap layer unless a specific remaining failure mode demands it",
+      "Treat Stage28-I candidate as frozen and evaluate as-is",
+      "Defer architectural modifications until Stage29 diagnostics reveal a concrete gap"
+    ]
+  },
+  "conclusion": "Stage28-I finalizes an independent detached soft location-boundary cap over the product-p0.90 H1 decision path. With loss_weight=0.50 and gamma=1.0, the cap reduces total false SUPPORT from 44 to 18 across three controlled no-time seeds, reduces location false SUPPORT from 27 to 4, preserves missing-evidence rejection at zero false SUPPORT, and improves true SUPPORT correctness from 246 to 266."
+}
