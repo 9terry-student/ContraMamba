@@ -1,0 +1,91 @@
+{
+  "stage": "Stage27-H2C",
+  "objective": "Diagnose whether learned v7-H1 entitlement gate instability (H2A macro_std=0.0466) is recoverable or fundamental, and compare per-seed learned runs against product_power=0.90 (H2B winner).",
+  "inputs": {
+    "h2a_dir": "results\\h2a",
+    "h2b_dir": "results\\h2b",
+    "output_md": "reports\\stage27_h2c_learned_gate_diagnostic.md",
+    "output_json": "reports\\stage27_h2c_learned_gate_diagnostic.json"
+  },
+  "h2a_reference": {
+    "product": {
+      "macro_mean": 0.940351,
+      "macro_std": 0.025612,
+      "acc_mean": 0.95787,
+      "acc_std": 0.018651,
+      "SUP_r_mean": 0.944444,
+      "NE_r_mean": 0.953086,
+      "bad_SUP_total": 76,
+      "location_role_SUP_total": 60,
+      "missing_SUP_total": 0
+    },
+    "min": {
+      "macro_mean": 0.92827,
+      "macro_std": 0.020529,
+      "acc_mean": 0.945833,
+      "acc_std": 0.017067,
+      "SUP_r_mean": 0.988889,
+      "NE_r_mean": 0.92963,
+      "bad_SUP_total": 114,
+      "location_role_SUP_total": 78,
+      "missing_SUP_total": 0
+    },
+    "learned": {
+      "macro_mean": 0.90066,
+      "macro_std": 0.046553,
+      "acc_mean": 0.922685,
+      "acc_std": 0.045354,
+      "SUP_r_mean": 0.966952,
+      "NE_r_mean": 0.902469,
+      "bad_SUP_total": 136,
+      "location_role_SUP_total": 104,
+      "missing_SUP_total": 0
+    }
+  },
+  "h2b_reference": {
+    "power": 0.9,
+    "macro_mean": 0.951136,
+    "macro_std": 0.021341,
+    "acc_mean": 0.968056,
+    "acc_std": 0.013679,
+    "SUP_r_mean": 0.907407,
+    "NE_r_mean": 0.97284,
+    "bad_SUP_total": 44,
+    "location_role_SUP_total": 33,
+    "missing_SUP_total": 0
+  },
+  "per_run_results": [],
+  "learned_seed_ranking": [],
+  "learned_best_seed": null,
+  "learned_worst_seed": null,
+  "comparison_to_product": {
+    "h2a_product_from_files": {
+      "n_runs": 0,
+      "macro_mean": null,
+      "bad_SUP_mean": null,
+      "location_role_SUP_mean": null
+    },
+    "h2b_product_power_from_files": {
+      "n_runs": 0,
+      "selected_power": 0.9,
+      "macro_mean": null,
+      "bad_SUP_mean": null,
+      "location_role_SUP_mean": null
+    },
+    "learned_best_vs_product_power_first_run": {}
+  },
+  "interpretation": [
+    "No learned runs found in the provided directories. Interpretation is based on H2A aggregate references only.",
+    "H2A aggregate: learned macro_mean=0.9007 (std=0.0466) vs product macro_mean=0.9404 (std=0.0256). High std in learned suggests instability rather than uniform weakness.",
+    "product_power=0.90 remains the current final configuration. Learned gate is treated as an unstable diagnostic branch pending per-seed data."
+  ],
+  "recommendation": "Insufficient per-seed learned data. Keep product_power=0.90 as the current final configuration. Re-run this script after collecting individual seed summaries.",
+  "conclusion": "Stage27-H2C treats learned as an unstable but potentially informative diagnostic branch, while keeping product_power=0.90 as the current final v7-H1 entitlement decision configuration.",
+  "remaining_risks": [
+    "Results are based on the controlled no-time validation setting. Generalization beyond this setting is not established.",
+    "time_swap was excluded because earlier Stage12 analysis identified it as corrupted/problematic. Results do not cover the time_swap distribution.",
+    "Per-seed learned analysis carries high uncertainty with only 3 seeds. A single best seed cannot establish reliable competitiveness.",
+    "Diagnostic probability means may be absent from older summary JSONs; missing fields are reported as null.",
+    "T4-safe frozen-encoder setting (max_length=64). Claims should be framed as controlled-setting evidence unless confirmed by full-encoder runs."
+  ]
+}
