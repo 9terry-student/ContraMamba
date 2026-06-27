@@ -1336,10 +1336,163 @@ def evaluate_ood_v6b(
     }, predictions_export
 
 
+# ---------------------------------------------------------------------------
+# Stage28-E: prediction export helpers
+# ---------------------------------------------------------------------------
+
+_S28E_INTERVENTION_NORMALIZE: dict[str, str] = {
+    "location_swap": "location_swap",
+    "role_swap": "role_swap",
+    "predicate_swap": "predicate_swap",
+    "entity_swap": "entity_swap",
+    "event_swap": "event_swap",
+    "title_name_swap": "title_name_swap",
+    "evidence_deletion": "evidence_deletion",
+    "evidence_truncation": "evidence_truncation",
+    "irrelevant_evidence": "irrelevant_evidence",
+    "none": "none",
+    "paraphrase": "paraphrase",
+    "polarity_flip": "polarity_flip",
+}
+
+_S28E_INTERVENTION_SUFFIXES: tuple[str, ...] = (
+    "__location_swap",
+    "__role_swap",
+    "__predicate_swap",
+    "__entity_swap",
+    "__event_swap",
+    "__title_name_swap",
+    "__evidence_deletion",
+    "__evidence_truncation",
+    "__irrelevant_evidence",
+    "__none",
+    "__paraphrase",
+    "__polarity_flip",
+)
+
+_S28E_DIAGNOSTIC_AXIS: dict[str, str] = {
+    "location_swap": "location",
+    "role_swap": "role",
+    "predicate_swap": "predicate",
+    "evidence_deletion": "missing_evidence",
+    "evidence_truncation": "missing_evidence",
+    "irrelevant_evidence": "missing_evidence",
+    "entity_swap": "other_frame",
+    "event_swap": "other_frame",
+    "title_name_swap": "other_frame",
+    "none": "control",
+    "paraphrase": "control",
+    "polarity_flip": "control",
+}
+
+_S28E_LABEL_NORMALIZE: dict = {
+    "REFUTE": "REFUTE", "REFUTES": "REFUTE", 0: "REFUTE",
+    "NOT_ENTITLED": "NOT_ENTITLED", "NE": "NOT_ENTITLED",
+    "NOT_ENOUGH_INFO": "NOT_ENTITLED", 1: "NOT_ENTITLED",
+    "SUPPORT": "SUPPORT", "SUPPORTS": "SUPPORT", 2: "SUPPORT",
+}
+
+_S28E_LABEL_TO_ID: dict[str, int] = {"REFUTE": 0, "NOT_ENTITLED": 1, "SUPPORT": 2}
+
+_S28E_V7_SCALAR_KEYS: tuple[str, ...] = (
+    "v7_entitlement_logit",
+    "v7_entitlement_prob",
+    "v7_polarity_support_logit",
+    "v7_polarity_refute_logit",
+    "v7_temporal_prob",
+    "v7_frame_prob",
+    "v7_predicate_prob",
+    "v7_sufficiency_prob",
+    "v7_h1_entitlement_for_decision",
+    "v7_polarity_positive_energy",
+    "v7_polarity_negative_energy",
+    "v7_polarity_energy_margin",
+)
+
+_S28E_AUX_LABEL_KEYS: tuple[str, ...] = (
+    "frame_compatible_label",
+    "predicate_covered_label",
+    "sufficiency_label",
+    "polarity_label",
+    "primary_failure_type",
+)
+
+_S28E_RAW_RECORD_KEYS: tuple[str, ...] = (
+    "id", "pair_id", "source_id", "original_id",
+    "claim", "evidence", "final_label",
+    "intervention", "intervention_type", "perturbation",
+    "frame_compatible_label", "predicate_covered_label",
+    "sufficiency_label", "polarity_label", "primary_failure_type",
+)
+
+
+def _s28e_normalize_label(value: Any) -> "str | None":
+    if value is None:
+        return None
+    result = _S28E_LABEL_NORMALIZE.get(value)
+    if result is not None:
+        return result
+    if isinstance(value, str):
+        result = _S28E_LABEL_NORMALIZE.get(value.upper())
+    return result
+
+
+def _s28e_label_to_id(label: "str | None") -> "int | None":
+    if label is None:
+        return None
+    return _S28E_LABEL_TO_ID.get(label)
+
+
+def _s28e_normalize_intervention(record: dict) -> "str | None":
+    for key in ("intervention", "intervention_type", "perturbation", "probe_type"):
+        raw = record.get(key)
+        if raw is not None:
+            mapped = _S28E_INTERVENTION_NORMALIZE.get(str(raw).lower().strip())
+            if mapped:
+                return mapped
+    meta = record.get("metadata") or {}
+    for key in ("intervention", "intervention_type"):
+        raw = meta.get(key)
+        if raw is not None:
+            mapped = _S28E_INTERVENTION_NORMALIZE.get(str(raw).lower().strip())
+            if mapped:
+                return mapped
+    return None
+
+
+def _s28e_derive_source_id(stable_id: str) -> str:
+    for suffix in _S28E_INTERVENTION_SUFFIXES:
+        if stable_id.endswith(suffix):
+            return stable_id[: -len(suffix)]
+    return stable_id
+
+
+def _s28e_safe_float(value: Any) -> "float | None":
+    if value is None:
+        return None
+    try:
+        return float(value.item()) if hasattr(value, "item") else float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _s28e_safe_list_float(value: Any) -> "list[float] | None":
+    if value is None:
+        return None
+    try:
+        seq = value.tolist() if hasattr(value, "tolist") else list(value)
+        return [float(x) for x in seq]
+    except (TypeError, ValueError):
+        return None
+
+
 def prediction_records_v6b(records: list[dict], output: dict[str, Any]) -> list[dict]:
-    """Export predictions with v6b metadata."""
-    probabilities = torch.softmax(output["logits"], dim=-1).detach().cpu()
+    """Export predictions with Stage28-E enriched schema (additive; preserves all legacy fields)."""
+    logits_cpu = output["logits"].detach().cpu()
+    probabilities = torch.softmax(logits_cpu, dim=-1)
     predictions = output["predictions"].detach().cpu()
+
+    # Existing v6b scalar outputs
     scalar_keys = (
         "frame_prob",
         "predicate_coverage_prob",
@@ -1354,18 +1507,126 @@ def prediction_records_v6b(records: list[dict], output: dict[str, Any]) -> list[
         for key in scalar_keys
         if key in output and output[key] is not None
     }
+
+    # Stage28-E: v7 per-example diagnostic scalars (absent on v6b_minimal runs)
+    v7_scalars = {
+        key: output[key].detach().cpu()
+        for key in _S28E_V7_SCALAR_KEYS
+        if key in output and output[key] is not None
+    }
+
     exported: list[dict] = []
     for index, record in enumerate(records):
-        item = {
-            "id": record["id"],
-            "pair_id": record["pair_id"],
-            "intervention_type": record["intervention_type"],
-            "claim": record["claim"],
-            "evidence": record["evidence"],
-            "gold_final_label": record["final_label"],
-            "pred_final_label": v5.ID_TO_FINAL_LABEL[int(predictions[index])],
-            "final_probs": probabilities[index].tolist(),
+        pred_id = int(predictions[index])
+        pred_label = v5.ID_TO_FINAL_LABEL[pred_id]
+
+        # Gold label
+        gold_raw = record.get("final_label")
+        gold_label = _s28e_normalize_label(gold_raw)
+        gold_label_id = _s28e_label_to_id(gold_label)
+
+        # Stable identity
+        stable_id = str(record.get("id", index))
+        source_id_raw = (
+            record.get("pair_id")
+            or record.get("source_id")
+            or record.get("original_id")
+        )
+        if source_id_raw is None:
+            meta = record.get("metadata") or {}
+            source_id_raw = (
+                meta.get("pair_id")
+                or meta.get("source_id")
+                or meta.get("original_id")
+            )
+        source_id = (
+            str(source_id_raw) if source_id_raw is not None
+            else _s28e_derive_source_id(stable_id)
+        )
+        pair_id_val = record.get("pair_id")
+        pair_id = str(pair_id_val) if pair_id_val is not None else source_id
+
+        # Intervention
+        norm_intervention = _s28e_normalize_intervention(record)
+        diagnostic_axis = (
+            _S28E_DIAGNOSTIC_AXIS.get(norm_intervention) if norm_intervention else None
+        )
+
+        # Correctness / false-support flags
+        is_correct: "bool | None" = (
+            (pred_id == gold_label_id) if gold_label_id is not None else None
+        )
+        is_false_support: "bool | None" = (
+            (gold_label != "SUPPORT" and pred_label == "SUPPORT")
+            if gold_label is not None else None
+        )
+        is_location_false_support = (
+            norm_intervention == "location_swap" and pred_label == "SUPPORT"
+        )
+        is_role_false_support = (
+            norm_intervention == "role_swap" and pred_label == "SUPPORT"
+        )
+
+        # Per-class logits and probabilities
+        logits_row = logits_cpu[index]
+        probs_row = probabilities[index]
+        final_logits = _s28e_safe_list_float(logits_row)
+        final_probs_list = _s28e_safe_list_float(probs_row)
+        refute_logit = _s28e_safe_float(logits_row[0])
+        ne_logit = _s28e_safe_float(logits_row[1])
+        support_logit = _s28e_safe_float(logits_row[2])
+        refute_prob = _s28e_safe_float(probs_row[0])
+        ne_prob = _s28e_safe_float(probs_row[1])
+        support_prob = _s28e_safe_float(probs_row[2])
+
+        item: dict[str, Any] = {
+            # ── Stable identity ───────────────────────────────────────────────
+            "stable_id": stable_id,
+            "source_id": source_id,
+            "pair_id": pair_id,
+            "example_index": index,
+            # ── Text ─────────────────────────────────────────────────────────
+            "claim": record.get("claim"),
+            "evidence": record.get("evidence"),
+            # ── Intervention ─────────────────────────────────────────────────
+            "intervention": record.get("intervention_type"),
+            "normalized_intervention": norm_intervention,
+            "diagnostic_axis": diagnostic_axis,
+            # ── Gold labels ───────────────────────────────────────────────────
+            "gold_label_raw": gold_raw,
+            "gold_label": gold_label,
+            "gold_label_id": gold_label_id,
+            # ── Predicted labels ──────────────────────────────────────────────
+            "pred_label_id": pred_id,
+            "pred_label": pred_label,
+            "pred_label_raw": pred_label,
+            "is_correct": is_correct,
+            "is_false_support": is_false_support,
+            "is_location_false_support": is_location_false_support,
+            "is_role_false_support": is_role_false_support,
+            # ── Final logits / probs (order: REFUTE=0, NOT_ENTITLED=1, SUPPORT=2) ──
+            "final_logits": final_logits,
+            "final_probs": final_probs_list,
+            "refute_logit": refute_logit,
+            "ne_logit": ne_logit,
+            "support_logit": support_logit,
+            "refute_prob": refute_prob,
+            "ne_prob": ne_prob,
+            "support_prob": support_prob,
+            # ── Existing v6b diagnostic scalars ──────────────────────────────
             **{key: float(scalars[key][index]) for key in scalar_keys if key in scalars},
+            # ── Gold auxiliary labels (when present in source record) ─────────
+            **{key: record[key] for key in _S28E_AUX_LABEL_KEYS if key in record},
+            # ── V7/H1 diagnostic scalars (absent on v6b_minimal runs) ─────────
+            **{key: float(v7_scalars[key][index]) for key in _S28E_V7_SCALAR_KEYS
+               if key in v7_scalars},
+            # ── Legacy backward-compat fields ─────────────────────────────────
+            "id": record.get("id"),
+            "intervention_type": record.get("intervention_type"),
+            "gold_final_label": gold_raw,
+            "pred_final_label": pred_label,
+            # ── Shallow raw record snapshot ───────────────────────────────────
+            "raw_record": {k: record[k] for k in _S28E_RAW_RECORD_KEYS if k in record},
         }
         exported.append(item)
     return exported
@@ -2397,6 +2658,20 @@ def build_parser() -> argparse.ArgumentParser:
         help=(
             "Fallback scoring metric used if no epoch satisfies preservation constraints "
             "under --use-preservation-constrained-selection. Default 'final_macro_f1'."
+        ),
+    )
+
+    # Stage28-E: prediction export schema version
+    parser.add_argument(
+        "--prediction-export-schema",
+        choices=("legacy", "stage28e_v1"),
+        default="stage28e_v1",
+        help=(
+            "Stage28-E: prediction export schema version. "
+            "'stage28e_v1' (default) writes enriched per-record fields and adds "
+            "label_space/config_summary to export metadata. "
+            "'legacy' omits Stage28-E metadata additions (per-record enrichment is "
+            "always written since it is additive and backward-compatible)."
         ),
     )
 
@@ -5358,6 +5633,29 @@ def main(argv: list[str] | None = None) -> int:
             "alpha_predicate": alpha_predicate,
             "final_logits_used": True,
         }
+        # Stage28-E: enrich metadata when schema is stage28e_v1 (default)
+        _pred_schema = getattr(args, "prediction_export_schema", "stage28e_v1")
+        if _pred_schema == "stage28e_v1":
+            metadata["prediction_export_schema_version"] = "stage28e_v1"
+            metadata["output_source"] = "best_dev"
+            metadata["label_space"] = {"0": "REFUTE", "1": "NOT_ENTITLED", "2": "SUPPORT"}
+            metadata["config_summary"] = {
+                "v7_h1_entitlement_decision_signal": getattr(
+                    args, "v7_h1_entitlement_decision_signal", None
+                ),
+                "v7_h1_entitlement_product_power": getattr(
+                    args, "v7_h1_entitlement_product_power", None
+                ),
+                "v7_h1_hybrid_residual_beta": getattr(
+                    args, "v7_h1_hybrid_residual_beta", None
+                ),
+                "v7_use_v6b_style_final_decision": getattr(
+                    args, "v7_use_v6b_style_final_decision", None
+                ),
+                "freeze_encoder": getattr(args, "freeze_encoder", None),
+                "freeze_a_log": getattr(args, "freeze_a_log", None),
+                "max_length": getattr(args, "max_length", None),
+            }
         v5.write_predictions_json(
             args.output_predictions_json,
             metadata,
