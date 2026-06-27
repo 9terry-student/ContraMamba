@@ -1,0 +1,213 @@
+{
+  "stage": "Stage30",
+  "architecture_name": "ContraMamba Entitlement-First Verification Architecture",
+  "core_claim": "Judgeability must be resolved before polarity. The architecture separates whether a claim can be evaluated from how it should be evaluated. No polarity signal may rescue a claim blocked by an upstream judgeability axis.",
+  "final_order": [
+    {
+      "position": 1,
+      "id": "hard_core_validity",
+      "name": "Hard Core Validity",
+      "role": "judgeability",
+      "description": "Validates temporal and source-frame integrity. Cannot be overridden by any downstream axis.",
+      "blocks_downstream": true,
+      "overridable": false
+    },
+    {
+      "position": 2,
+      "id": "coverage_entailment",
+      "name": "Coverage / Entailment",
+      "role": "judgeability",
+      "description": "Determines whether evidence semantically covers the claim domain. Distinct from temporal frame mismatch.",
+      "blocks_downstream": true,
+      "overridable": false
+    },
+    {
+      "position": 3,
+      "id": "residual_adjudication",
+      "name": "Residual Adjudication",
+      "role": "judgeability",
+      "description": "Handles partially covered, ambiguous, or conflicting evidence. No global preservation rescue. No double penalty.",
+      "blocks_downstream": false,
+      "overridable": false
+    },
+    {
+      "position": 4,
+      "id": "ani_epistemic_diagnosis",
+      "name": "ANI-style Epistemic Diagnosis",
+      "role": "diagnostic",
+      "description": "Measures model uncertainty and epistemic state. Diagnostic readout only — not a primary decision axis.",
+      "blocks_downstream": false,
+      "overridable": false
+    },
+    {
+      "position": 5,
+      "id": "polarity_layer",
+      "name": "Polarity Layer",
+      "role": "polarity",
+      "description": "Determines support or refutation direction, only if upstream judgeability axes passed.",
+      "blocks_downstream": false,
+      "overridable": false
+    },
+    {
+      "position": 6,
+      "id": "final_composer",
+      "name": "Final Composer",
+      "role": "output",
+      "description": "Assembles the final label (Supported / Refuted / NEI) from all upstream signals. Enforces the Single Owner Rule.",
+      "blocks_downstream": false,
+      "overridable": false
+    }
+  ],
+  "modules": {
+    "hard_core_validity": {
+      "invariants": [
+        "Cannot be overridden by any downstream axis",
+        "Temporal frame mismatch is a Hard Core concern, not a Coverage concern",
+        "If Hard Core fires, Final Composer must emit NEI; polarity is not consulted"
+      ]
+    },
+    "coverage_entailment": {
+      "invariants": [
+        "Coverage/Entailment is strictly distinct from temporal frame mismatch",
+        "Low coverage triggers NEI before polarity is computed",
+        "Must not be conflated with temporal residual preservation"
+      ]
+    },
+    "residual_adjudication": {
+      "invariants": [
+        "No global preservation rescue: cannot rescue claims blocked by Hard Core",
+        "No double penalty: claims already penalized by Hard Core receive no additional residual penalty",
+        "Operates only over evidence not resolved by Coverage/Entailment"
+      ]
+    },
+    "ani_epistemic_diagnosis": {
+      "invariants": [
+        "ANI is a diagnostic readout, not a primary decision axis",
+        "ANI output is available to Final Composer but cannot unilaterally change a verdict",
+        "Used for calibration, confidence scoring, and post-hoc analysis only"
+      ]
+    },
+    "polarity_layer": {
+      "invariants": [
+        "Only receives claims confirmed judgeable by upstream axes",
+        "Outputs: supports, refutes, or abstains if upstream blocked"
+      ]
+    },
+    "final_composer": {
+      "invariants": [
+        "Enforces Single Owner Rule: each label has exactly one owning axis",
+        "No two axes may claim the same label for conflicting reasons",
+        "Emits final prediction with attached confidence"
+      ]
+    }
+  },
+  "single_owner_rule": {
+    "definition": "Each verdict outcome (Supported, Refuted, NEI) is owned by exactly one primary axis. Overlapping ownership is a spec violation.",
+    "enforcement": "Final Composer"
+  },
+  "forbidden_behaviors": [
+    {
+      "id": "no_hard_core_override",
+      "description": "No downstream axis (Coverage/Entailment, ANI, Polarity) may override or reverse a Hard Core block."
+    },
+    {
+      "id": "no_global_preservation_rescue",
+      "description": "Temporal preservation signals cannot rescue claims invalidated by Hard Core. Preservation signals are local to Residual Adjudication and must not propagate upward."
+    },
+    {
+      "id": "no_double_penalty",
+      "description": "If Hard Core fires a penalty for a claim, downstream axes must not apply an independent penalty for the same root cause."
+    },
+    {
+      "id": "coverage_not_frame_mismatch",
+      "description": "Coverage/Entailment must not handle temporal or source-frame invalidity. That is exclusively a Hard Core concern."
+    },
+    {
+      "id": "ani_not_decisional",
+      "description": "ANI readout must not serve as a primary decision input. It is diagnostic only."
+    },
+    {
+      "id": "polarity_before_judgeability",
+      "description": "Polarity must not be computed for claims not confirmed judgeable by upstream axes."
+    }
+  ],
+  "stage30e_scope": {
+    "description": "Stage30-E is a minimal, targeted implementation scoped exclusively to temporal residual preservation-aware cap logic.",
+    "implements": [
+      {
+        "id": "temporal_preservation_cap",
+        "name": "Temporal residual preservation-aware cap",
+        "description": "Caps the effective temporal mismatch penalty using a temporal preservation probability signal."
+      },
+      {
+        "id": "stage30d_reuse",
+        "name": "Reuse of Stage30-D temporal mismatch risk",
+        "description": "Reads temporal_mismatch_fused_prob from Stage30-D output; does not recompute it."
+      },
+      {
+        "id": "temporal_preservation_signal",
+        "name": "New temporal preservation signal",
+        "description": "Introduces temporal_preservation_prob as a new signal representing how well the preserved temporal context aligns with the claim window."
+      },
+      {
+        "id": "effective_penalty_formula",
+        "name": "Effective penalty formula",
+        "formula": "temporal_mismatch_fused_prob * (1 - temporal_preservation_prob)",
+        "description": "Computes the effective temporal mismatch penalty after preservation discounting."
+      }
+    ],
+    "forbidden_in_stage30e": [
+      {
+        "id": "no_coverage_entailment",
+        "description": "Stage30-E must not implement the Coverage/Entailment axis. Reserved for a future stage."
+      },
+      {
+        "id": "no_ani_readout",
+        "description": "Stage30-E must not implement full ANI-style epistemic readout. Reserved for a future stage."
+      },
+      {
+        "id": "no_full_residual_vector",
+        "description": "Stage30-E must not implement the full residual vector or Residual Adjudication axis. Reserved for a future stage."
+      },
+      {
+        "id": "no_hard_core_refactor",
+        "description": "Stage30-E must not refactor or restructure the Hard Core Validity module. Its structure is fixed in this stage."
+      },
+      {
+        "id": "no_global_preservation_rescue",
+        "description": "Stage30-E must not use preservation signals to rescue claims blocked by Hard Core."
+      },
+      {
+        "id": "no_stage30d_cap_as_final",
+        "description": "Stage30-E must not use Stage30-D cap output directly as a final candidate score. It must apply the effective penalty formula."
+      }
+    ]
+  },
+  "non_goals": [
+    "Full multi-axis fusion (reserved for Stage34+)",
+    "Coverage/Entailment implementation (reserved for Stage31)",
+    "Full residual vector and Residual Adjudication (reserved for Stage32)",
+    "Full ANI-style epistemic readout integration (reserved for Stage33)",
+    "Hard Core structural refactor",
+    "Global preservation rescue mechanism",
+    "Direct Stage30-D cap passthrough as final output"
+  ],
+  "allowed_future_stages": [
+    {
+      "stage": "Stage31",
+      "scope": "Coverage/Entailment axis implementation"
+    },
+    {
+      "stage": "Stage32",
+      "scope": "Full residual vector and Residual Adjudication axis"
+    },
+    {
+      "stage": "Stage33",
+      "scope": "ANI-style epistemic readout integration"
+    },
+    {
+      "stage": "Stage34+",
+      "scope": "Final Composer multi-axis fusion and calibration"
+    }
+  ]
+}
