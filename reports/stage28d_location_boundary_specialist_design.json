@@ -1,0 +1,290 @@
+{
+  "stage": "Stage28-D",
+  "objective": "Freeze the design rationale for a future location-boundary specialist module. Consolidate evidence from Stage27-H2F, Stage28-A, Stage28-B v2, and Stage28-C-lite. Do not implement the module.",
+  "final_stage27_baseline": {
+    "config": "product_power=0.90",
+    "architecture": "v7_hierarchical",
+    "decision_signal": "product",
+    "entitlement_formula": "(frame_prob * predicate_coverage_prob * sufficiency_prob) ** 0.90",
+    "h1_final_decision": "enabled with --v7-use-v6b-style-final-decision",
+    "dataset": "data/controlled_v5_v3_without_time_swap.jsonl",
+    "scope": "controlled no-time validation",
+    "frozen_encoder": true,
+    "max_length": 64,
+    "notes": "product_power=0.90 is the stable Stage27 baseline; no candidate design in Stage28-D changes default behavior"
+  },
+  "evidence_chain": {
+    "stage27_h2f": {
+      "learned_has_local_signal": true,
+      "learned_unstable": true,
+      "hybrid_has_local_gain": true,
+      "hybrid_not_final": true,
+      "hard_axis": "location_role",
+      "product_false_support_totals": {
+        "location_role": 33,
+        "predicate": 3,
+        "missing": 0,
+        "other": 8
+      },
+      "interpretation": "product remains final; learned/hybrid are diagnostic; missing evidence is controlled; predicate false SUPPORT is small; remaining bottleneck is location/role frame mismatch"
+    },
+    "stage28_a": {
+      "location_role_dominates_product_errors": true,
+      "location_harder_than_role": true,
+      "role_harder_than_location": false,
+      "product_aggregate": {
+        "location_SUPPORT_total": 27,
+        "role_SUPPORT_total": 6,
+        "location_role_SUPPORT_total": 33,
+        "location_role_balance": 4.5
+      },
+      "decision_at_stage28_a": {
+        "whether_to_build_specialist_gate_next": false,
+        "recommended_next_stage": "Stage28-B diagnostic dataset construction"
+      },
+      "interpretation": "location is the dominant sub-axis inside location_role; product false SUPPORT is location-heavy"
+    },
+    "stage28_b_v2": {
+      "total_input_records": 3600,
+      "total_output_records": 1994,
+      "bucket_counts": {
+        "location_swap_audit": 300,
+        "role_swap_reference": 300,
+        "location_controls": 300,
+        "role_controls": 194,
+        "predicate_contrast": 300,
+        "missing_evidence_contrast": 300,
+        "other_frame_contrast": 300
+      },
+      "normalized_label_counts_output": {
+        "NOT_ENTITLED": 1500,
+        "REFUTE": 248,
+        "SUPPORT": 246
+      },
+      "source_id_overlap_stats": {
+        "n_location_sources": 300,
+        "n_role_sources": 300,
+        "n_location_control_matches": 205,
+        "n_role_control_matches": 157,
+        "location_control_coverage": 0.6833,
+        "role_control_coverage": 0.5233
+      },
+      "parsing_diagnostics": {
+        "n_records_with_pair_id": 3600,
+        "n_records_with_final_label": 3600,
+        "n_records_with_derived_source_id_from_suffix": 0,
+        "n_records_with_derived_intervention_from_suffix": 0
+      },
+      "interpretation": "Stage28-B v2 fixed the earlier parser issue; paired source_id grouping works; location_swap has enough coverage to support sanity audit and future diagnostic analysis"
+    },
+    "stage28_c_lite_sanity_audit": {
+      "inspected_location_swap_examples": 20,
+      "clean_invalid_entailment": 20,
+      "ambiguous": 0,
+      "invalid_artifact": 0,
+      "unknown": 0,
+      "clean_rate": 1.0,
+      "interpretation": "inspected cases preserve subject, predicate, object, and time; only location changes; NOT_ENTITLED is valid for inspected examples; location_swap is not time_swap-like corruption based on this sanity sample; larger audit may still be future validation, but immediate removal is not justified"
+    }
+  },
+  "location_validity_sanity_audit": {
+    "source": "Stage28-C-lite",
+    "n_inspected": 20,
+    "clean_rate": 1.0,
+    "findings": {
+      "subject_preserved": true,
+      "predicate_preserved": true,
+      "object_preserved": true,
+      "time_preserved": true,
+      "location_changed": true,
+      "label_NOT_ENTITLED_valid": true
+    },
+    "conclusion": "location_swap is retained as a valid hard frame-boundary diagnostic axis; immediate removal is not justified by available evidence",
+    "caveat": "Only 20 of 300 location_swap examples were manually inspected; full audit of all 300 records has not been completed"
+  },
+  "failure_mode_definition": {
+    "name": "location_false_SUPPORT",
+    "description": "The model produces a SUPPORT decision for a claim where the event location does not match the source document, while subject, predicate, object, and time are preserved",
+    "distinguished_from": [
+      "missing_evidence_failure: source does not mention the relevant fact",
+      "predicate_failure: what happened is described differently",
+      "role_failure: who performed or received the action is different",
+      "time_failure: when the event occurred is different"
+    ],
+    "observed_count_stage27": 27,
+    "axis": "location_role (location sub-axis)"
+  },
+  "design_goals": [
+    "reduce location_swap false SUPPORT at the product axis",
+    "preserve missing evidence rejection (missing SUPPORT must remain 0)",
+    "preserve predicate rejection (predicate SUPPORT must not increase materially)",
+    "avoid increasing false SUPPORT on non-location axes (role, predicate, missing, other)",
+    "keep product_power=0.90 behavior unchanged by default",
+    "make specialist optional and ablatable via explicit flag"
+  ],
+  "non_goals": [
+    "no OOD claim",
+    "no time_swap claim (time_swap already removed)",
+    "no default replacement of product gate",
+    "no learned-only entitlement gate",
+    "no broad geography or world-knowledge module",
+    "no claim that all 300 location_swap examples are clean",
+    "no claim that specialist is validated in any training run"
+  ],
+  "candidate_designs": [
+    {
+      "id": 1,
+      "name": "location_boundary_decision_cap",
+      "type": "bounded cap",
+      "description": "Base product entitlement is preserved; an optional location_boundary_prob signal is used only to cap entitlement downward for location-sensitive examples",
+      "hard_cap_formula": "capped_entitlement = min(base_entitlement, location_boundary_prob)",
+      "soft_cap_formula": "capped_entitlement = base_entitlement * (location_boundary_prob ** gamma)",
+      "pros": [
+        "directly targets location false SUPPORT",
+        "preserves product baseline",
+        "cannot increase entitlement if implemented as cap"
+      ],
+      "cons": [
+        "requires reliable location_boundary_prob signal to be constructed"
+      ],
+      "status": "preferred"
+    },
+    {
+      "id": 2,
+      "name": "factorized_frame_subheads",
+      "type": "architecture extension",
+      "description": "frame_prob factorized into subheads: entity_frame, role_frame, location_frame, event_frame, title_frame; frame_prob becomes a product or min of subhead probabilities",
+      "subheads": ["entity_frame", "role_frame", "location_frame", "event_frame", "title_frame"],
+      "pros": [
+        "architecture-level interpretability"
+      ],
+      "cons": [
+        "larger model patch",
+        "requires additional labeled data"
+      ],
+      "status": "future Stage29 candidate"
+    },
+    {
+      "id": 3,
+      "name": "residual_learned_location_correction",
+      "type": "learned residual",
+      "description": "A learned residual correction applied only for location cases, using the local learned signal observed in H2F",
+      "pros": [
+        "uses observed local learned signal"
+      ],
+      "cons": [
+        "Stage27-H2E showed naive residual can worsen aggregate performance"
+      ],
+      "status": "not preferred unless bounded by cap"
+    },
+    {
+      "id": 4,
+      "name": "dataset_only_split",
+      "type": "data partitioning",
+      "description": "Partition location_swap into clean_location_swap, ambiguous_location_swap, and invalid_location_swap buckets; no model change",
+      "pros": [
+        "safest option; no model change required"
+      ],
+      "cons": [
+        "does not reduce false SUPPORT on its own"
+      ],
+      "status": "required supporting step, not final solution"
+    }
+  ],
+  "preferred_design": {
+    "name": "location_boundary_decision_cap",
+    "type": "bounded cap",
+    "base_entitlement_formula": "(frame_prob * predicate_coverage_prob * sufficiency_prob) ** 0.90",
+    "hard_cap_formula": "capped_entitlement = min(base_entitlement, location_boundary_prob)",
+    "soft_cap_formula": "capped_entitlement = base_entitlement * (location_boundary_prob ** gamma)",
+    "final_decision_style": "product-style; learned-only gate is not used as primary decision",
+    "why_preferred": "Stage27-H2F showed learned and hybrid branches have local signal but are unstable; a bounded cap uses the signal directionally (only to reduce over-entitlement) without allowing learned instability to increase false SUPPORT on other axes; the hard cap has a provable safety property",
+    "activation_policy": "optional flag only; disabled by default; default product_power=0.90 behavior is unchanged",
+    "safety_property": "the cap cannot increase entitlement above base product entitlement"
+  },
+  "required_prediction_export": {
+    "stage": "Stage28-E",
+    "purpose": "Enable per-axis overlap analysis and false-SUPPORT attribution before specialist implementation",
+    "required_fields": [
+      "stable example IDs",
+      "source_id",
+      "pair_id",
+      "normalized gold label",
+      "normalized pred label",
+      "intervention type",
+      "frame_prob",
+      "predicate_coverage_prob",
+      "sufficiency_prob",
+      "entitlement_for_decision",
+      "final logits / scores",
+      "per-axis prediction records (learned and hybrid branches)"
+    ]
+  },
+  "evaluation_plan": {
+    "comparison": "Stage27 product_power=0.90 baseline vs Stage28-F location cap model",
+    "primary_metric": "location_swap SUPPORT count reduction",
+    "secondary_metrics": [
+      "macro-F1",
+      "NE recall",
+      "SUPPORT recall",
+      "role_swap SUPPORT",
+      "predicate_swap SUPPORT",
+      "missing_evidence SUPPORT",
+      "controls SUPPORT/REFUTE preservation"
+    ],
+    "success_criteria": [
+      "location_swap SUPPORT count decreases relative to Stage27 baseline",
+      "missing_evidence SUPPORT remains 0",
+      "predicate_swap SUPPORT does not increase materially",
+      "macro-F1 does not drop materially",
+      "SUPPORT recall does not collapse"
+    ],
+    "evaluation_scope": "controlled no-time diagnostic setting only"
+  },
+  "decision": {
+    "retain_location_swap": true,
+    "remove_location_swap_like_time_swap": false,
+    "implement_specialist_gate_at_stage28_d": false,
+    "design_specialist_gate": true,
+    "preferred_specialist_type": "location_boundary_decision_cap",
+    "default_product_power_changed": false,
+    "stage28_e_deliverable": "prediction export infrastructure",
+    "stage28_f_deliverable": "minimal location-boundary specialist candidate (disabled by default)"
+  },
+  "next_stage_recommendation": {
+    "stage28_e": {
+      "name": "Stage28-E",
+      "objective": "Implement diagnostic prediction export infrastructure",
+      "deliverables": [
+        "stable example IDs in all exported prediction records",
+        "source_id and pair_id linkable to Stage28-B v2 audit buckets",
+        "normalized gold and pred labels in export",
+        "intervention type recorded per example",
+        "all product component probabilities exported (frame_prob, predicate_coverage_prob, sufficiency_prob, entitlement_for_decision)",
+        "per-axis prediction records for learned and hybrid branches"
+      ]
+    },
+    "stage28_f": {
+      "name": "Stage28-F",
+      "objective": "Implement minimal location-boundary specialist candidate",
+      "deliverables": [
+        "optional location_boundary_head or location_frame_head (disabled by default flag)",
+        "trained and evaluated on controlled diagnostic setting only",
+        "compared against frozen Stage27 product_power=0.90 baseline",
+        "no change to default behavior"
+      ]
+    }
+  },
+  "limitations": [
+    "only 20 examples were sanity-audited manually in Stage28-C-lite",
+    "full 80-row (or 300-row) audit was not completed",
+    "controlled no-time setting only; no OOD evidence",
+    "no full-encoder evidence",
+    "max_length=64 may truncate location evidence",
+    "specialist not implemented yet",
+    "location-boundary labels may need explicit construction",
+    "location_boundary_prob signal does not yet exist as a model output",
+    "role_swap false SUPPORT (6 cases) is not addressed by the location-boundary specialist"
+  ],
+  "conclusion": "Stage28-D retains location_swap as a valid hard frame-boundary diagnostic axis and recommends a bounded location-boundary decision cap as the safest next specialist design, while preserving product_power=0.90 as the frozen Stage27 baseline."
+}
