@@ -371,13 +371,19 @@ class ContraMambaV7Hierarchical(nn.Module):
         # from the learned EntitlementGate. Other modes replace it with an explicit
         # compositional signal from the frame/predicate/sufficiency channels.
         # Valid choices: "learned", "product", "min",
-        #                "frame_predicate_product", "frame_predicate_min"
+        #                "frame_predicate_product", "frame_predicate_min",
+        #                "product_learned_residual"
         v7_h1_entitlement_decision_signal: str = "learned",
         # Stage27-H2B: power relaxation applied only to the "product" decision signal.
         # Default 1.0 preserves exact H2A product behavior (no-op exponent).
         # Values in (0, 1) soften the product gate (less suppression of true SUPPORT).
-        # Values > 1 sharpen it further. Only consulted when _eds == "product".
+        # Values > 1 sharpen it further. Only consulted when _eds == "product" or
+        # "product_learned_residual".
         v7_h1_entitlement_product_power: float = 1.0,
+        # Stage27-H2E: residual strength for "product_learned_residual" decision signal.
+        # entitlement = clamp(product_base + beta * (learned - product_base.detach()), 0, 1)
+        # beta=0.0 exactly recovers product_base. Default 0.25.
+        v7_h1_hybrid_residual_beta: float = 0.25,
     ) -> None:
         super().__init__()
 
@@ -418,6 +424,12 @@ class ContraMambaV7Hierarchical(nn.Module):
         self.v7_ne_alpha_init = float(v7_ne_alpha_init)
         self.v7_h1_entitlement_decision_signal = v7_h1_entitlement_decision_signal
         self.v7_h1_entitlement_product_power = float(v7_h1_entitlement_product_power)
+        self.v7_h1_hybrid_residual_beta = float(v7_h1_hybrid_residual_beta)
+        if not (0.0 <= self.v7_h1_hybrid_residual_beta <= 1.0):
+            raise ValueError(
+                f"v7_h1_hybrid_residual_beta must be in [0.0, 1.0], "
+                f"got {self.v7_h1_hybrid_residual_beta!r}."
+            )
 
         if self.v7_use_v6b_style_final_decision and self.v7_no_entitlement_polarity_conditioning:
             raise ValueError(
@@ -629,11 +641,27 @@ class ContraMambaV7Hierarchical(nn.Module):
                 entitlement_for_decision = _fp * _pp
             elif _eds == "frame_predicate_min":
                 entitlement_for_decision = torch.minimum(_fp, _pp)
+            elif _eds == "product_learned_residual":
+                # Stage27-H2E: product base stays differentiable through frame/predicate/
+                # sufficiency paths; learned stays differentiable through EntitlementGate.
+                # Only the subtraction anchor (product_base.detach()) is stopped.
+                _raw_product = _fp * _pp * _sp
+                _pwr = self.v7_h1_entitlement_product_power
+                if _pwr == 1.0:
+                    _product_base = _raw_product
+                else:
+                    _product_base = _raw_product.clamp_min(1e-8).pow(_pwr)
+                _beta = self.v7_h1_hybrid_residual_beta
+                _residual = v7_entitlement_prob - _product_base.detach()
+                entitlement_for_decision = (
+                    _product_base + _beta * _residual
+                ).clamp(0.0, 1.0)
             else:
                 raise ValueError(
                     f"Unknown v7_h1_entitlement_decision_signal: {_eds!r}. "
                     "Valid choices: 'learned', 'product', 'min', "
-                    "'frame_predicate_product', 'frame_predicate_min'."
+                    "'frame_predicate_product', 'frame_predicate_min', "
+                    "'product_learned_residual'."
                 )
 
             support_score = entitlement_for_decision * positive_energy
@@ -754,6 +782,7 @@ class ContraMambaV7Hierarchical(nn.Module):
             ),
             "v7_h1_entitlement_decision_signal": self.v7_h1_entitlement_decision_signal,
             "v7_h1_entitlement_product_power": self.v7_h1_entitlement_product_power,
+            "v7_h1_hybrid_residual_beta": self.v7_h1_hybrid_residual_beta,
 
             "v7_polarity_positive_energy": positive_energy,
             "v7_polarity_negative_energy": negative_energy,
