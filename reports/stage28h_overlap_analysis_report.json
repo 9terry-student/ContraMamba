@@ -1,0 +1,594 @@
+{
+  "stage": "Stage28-H",
+  "objective": "Freeze the conclusion from Stage28-F full enriched prediction export and Stage28-G example-level overlap analysis. Establish that learned-only and product_learned_residual hybrid signals are not reliable correction mechanisms for product false SUPPORT errors. Determine the next implementation direction.",
+  "scope": {
+    "architecture": "v7_hierarchical",
+    "backbone": "mamba",
+    "dataset": "controlled_v5_v3_without_time_swap.jsonl",
+    "schema": "stage28e_v1",
+    "max_length": 64,
+    "freeze_encoder": true,
+    "freeze_a_log": true,
+    "h1_final_decision": "enabled",
+    "output_source": "best_dev",
+    "validation_type": "controlled no-time validation only",
+    "stage_type": "analysis and reporting only"
+  },
+  "input_runs": [
+    {
+      "run_id": "learned_seed1",
+      "seed": 1,
+      "decision_signal": "learned",
+      "product_power": 1.0,
+      "hybrid_beta": 0.25
+    },
+    {
+      "run_id": "learned_seed2",
+      "seed": 2,
+      "decision_signal": "learned",
+      "product_power": 1.0,
+      "hybrid_beta": 0.25
+    },
+    {
+      "run_id": "learned_seed3",
+      "seed": 3,
+      "decision_signal": "learned",
+      "product_power": 1.0,
+      "hybrid_beta": 0.25
+    },
+    {
+      "run_id": "product_p0p90_seed1",
+      "seed": 1,
+      "decision_signal": "product",
+      "product_power": 0.9,
+      "hybrid_beta": 0.25
+    },
+    {
+      "run_id": "product_p0p90_seed2",
+      "seed": 2,
+      "decision_signal": "product",
+      "product_power": 0.9,
+      "hybrid_beta": 0.25
+    },
+    {
+      "run_id": "product_p0p90_seed3",
+      "seed": 3,
+      "decision_signal": "product",
+      "product_power": 0.9,
+      "hybrid_beta": 0.25
+    },
+    {
+      "run_id": "hybrid_beta0p20_seed1",
+      "seed": 1,
+      "decision_signal": "product_learned_residual",
+      "product_power": 0.9,
+      "hybrid_beta": 0.20
+    },
+    {
+      "run_id": "hybrid_beta0p20_seed2",
+      "seed": 2,
+      "decision_signal": "product_learned_residual",
+      "product_power": 0.9,
+      "hybrid_beta": 0.20
+    },
+    {
+      "run_id": "hybrid_beta0p20_seed3",
+      "seed": 3,
+      "decision_signal": "product_learned_residual",
+      "product_power": 0.9,
+      "hybrid_beta": 0.20
+    }
+  ],
+  "stage28f_export_summary": {
+    "learned_seed1": {
+      "seed": 1,
+      "decision_signal": "learned",
+      "product_power": 1.0,
+      "hybrid_beta": 0.25,
+      "n_records": 720,
+      "gold_SUPPORT": 90,
+      "pred_SUPPORT": 180,
+      "pred_NE": 450,
+      "pred_REFUTE": 90,
+      "false_SUPPORT": 90,
+      "location_false_SUPPORT": 41,
+      "role_false_SUPPORT": 30,
+      "predicate_false_SUPPORT": 3,
+      "missing_false_SUPPORT": 0,
+      "schema": "stage28e_v1"
+    },
+    "learned_seed2": {
+      "seed": 2,
+      "decision_signal": "learned",
+      "product_power": 1.0,
+      "hybrid_beta": 0.25,
+      "n_records": 720,
+      "gold_SUPPORT": 91,
+      "pred_SUPPORT": 107,
+      "pred_NE": 499,
+      "pred_REFUTE": 114,
+      "false_SUPPORT": 23,
+      "location_false_SUPPORT": 12,
+      "role_false_SUPPORT": 5,
+      "predicate_false_SUPPORT": 3,
+      "missing_false_SUPPORT": 0,
+      "schema": "stage28e_v1"
+    },
+    "learned_seed3": {
+      "seed": 3,
+      "decision_signal": "learned",
+      "product_power": 1.0,
+      "hybrid_beta": 0.25,
+      "n_records": 720,
+      "gold_SUPPORT": 90,
+      "pred_SUPPORT": 111,
+      "pred_NE": 519,
+      "pred_REFUTE": 90,
+      "false_SUPPORT": 23,
+      "location_false_SUPPORT": 13,
+      "role_false_SUPPORT": 3,
+      "predicate_false_SUPPORT": 2,
+      "missing_false_SUPPORT": 0,
+      "schema": "stage28e_v1"
+    },
+    "product_p0p90_seed1": {
+      "seed": 1,
+      "decision_signal": "product",
+      "product_power": 0.9,
+      "hybrid_beta": 0.25,
+      "n_records": 720,
+      "gold_SUPPORT": 90,
+      "pred_SUPPORT": 121,
+      "pred_NE": 509,
+      "pred_REFUTE": 90,
+      "false_SUPPORT": 31,
+      "location_false_SUPPORT": 19,
+      "role_false_SUPPORT": 3,
+      "predicate_false_SUPPORT": 2,
+      "missing_false_SUPPORT": 0,
+      "schema": "stage28e_v1"
+    },
+    "product_p0p90_seed2": {
+      "seed": 2,
+      "decision_signal": "product",
+      "product_power": 0.9,
+      "hybrid_beta": 0.25,
+      "n_records": 720,
+      "gold_SUPPORT": 91,
+      "pred_SUPPORT": 103,
+      "pred_NE": 528,
+      "pred_REFUTE": 89,
+      "false_SUPPORT": 12,
+      "location_false_SUPPORT": 7,
+      "role_false_SUPPORT": 3,
+      "predicate_false_SUPPORT": 1,
+      "missing_false_SUPPORT": 0,
+      "schema": "stage28e_v1"
+    },
+    "product_p0p90_seed3": {
+      "seed": 3,
+      "decision_signal": "product",
+      "product_power": 0.9,
+      "hybrid_beta": 0.25,
+      "n_records": 720,
+      "gold_SUPPORT": 90,
+      "pred_SUPPORT": 66,
+      "pred_NE": 564,
+      "pred_REFUTE": 90,
+      "false_SUPPORT": 1,
+      "location_false_SUPPORT": 1,
+      "role_false_SUPPORT": 0,
+      "predicate_false_SUPPORT": 0,
+      "missing_false_SUPPORT": 0,
+      "schema": "stage28e_v1"
+    },
+    "hybrid_beta0p20_seed1": {
+      "seed": 1,
+      "decision_signal": "product_learned_residual",
+      "product_power": 0.9,
+      "hybrid_beta": 0.20,
+      "n_records": 720,
+      "gold_SUPPORT": 90,
+      "pred_SUPPORT": 116,
+      "pred_NE": 514,
+      "pred_REFUTE": 90,
+      "false_SUPPORT": 27,
+      "location_false_SUPPORT": 18,
+      "role_false_SUPPORT": 2,
+      "predicate_false_SUPPORT": 2,
+      "missing_false_SUPPORT": 0,
+      "schema": "stage28e_v1"
+    },
+    "hybrid_beta0p20_seed2": {
+      "seed": 2,
+      "decision_signal": "product_learned_residual",
+      "product_power": 0.9,
+      "hybrid_beta": 0.20,
+      "n_records": 720,
+      "gold_SUPPORT": 91,
+      "pred_SUPPORT": 128,
+      "pred_NE": 503,
+      "pred_REFUTE": 89,
+      "false_SUPPORT": 37,
+      "location_false_SUPPORT": 16,
+      "role_false_SUPPORT": 17,
+      "predicate_false_SUPPORT": 1,
+      "missing_false_SUPPORT": 0,
+      "schema": "stage28e_v1"
+    },
+    "hybrid_beta0p20_seed3": {
+      "seed": 3,
+      "decision_signal": "product_learned_residual",
+      "product_power": 0.9,
+      "hybrid_beta": 0.20,
+      "n_records": 720,
+      "gold_SUPPORT": 90,
+      "pred_SUPPORT": 79,
+      "pred_NE": 551,
+      "pred_REFUTE": 90,
+      "false_SUPPORT": 13,
+      "location_false_SUPPORT": 9,
+      "role_false_SUPPORT": 3,
+      "predicate_false_SUPPORT": 0,
+      "missing_false_SUPPORT": 0,
+      "schema": "stage28e_v1"
+    }
+  },
+  "stage28f_aggregate": {
+    "product": {
+      "false_support_total": 44,
+      "location_false_support": 27,
+      "role_false_support": 6,
+      "predicate_false_support": 3,
+      "missing_false_support": 0
+    },
+    "learned": {
+      "false_support_total": 136,
+      "location_false_support": 66,
+      "role_false_support": 38,
+      "predicate_false_support": 8,
+      "missing_false_support": 0
+    },
+    "hybrid_beta0p20": {
+      "false_support_total": 77,
+      "location_false_support": 43,
+      "role_false_support": 22,
+      "predicate_false_support": 3,
+      "missing_false_support": 0
+    }
+  },
+  "stage28g_overlap_method": {
+    "overlap_key": "stable_id/source_id from Stage28-E enriched export",
+    "common_records_per_seed": {
+      "seed1": 720,
+      "seed2": 720,
+      "seed3": 720
+    },
+    "axes_analyzed": [
+      "control",
+      "missing_evidence",
+      "location",
+      "role",
+      "predicate",
+      "other_frame"
+    ],
+    "metrics_per_axis_seed": [
+      "product_false_SUPPORT",
+      "learned_false_SUPPORT",
+      "hybrid_false_SUPPORT",
+      "learned_rescues_product",
+      "hybrid_rescues_product",
+      "learned_introduces_vs_product",
+      "hybrid_introduces_vs_product",
+      "product_learned_overlap",
+      "product_hybrid_overlap",
+      "all_three_overlap"
+    ]
+  },
+  "stage28g_axis_results": {
+    "control": {
+      "seed1": {
+        "product_false_SUPPORT": 0,
+        "learned_false_SUPPORT": 0,
+        "hybrid_false_SUPPORT": 0,
+        "learned_rescues_product": 0,
+        "hybrid_rescues_product": 0,
+        "learned_introduces_vs_product": 0,
+        "hybrid_introduces_vs_product": 0
+      },
+      "seed2": {
+        "product_false_SUPPORT": 0,
+        "learned_false_SUPPORT": 0,
+        "hybrid_false_SUPPORT": 0,
+        "learned_rescues_product": 0,
+        "hybrid_rescues_product": 0,
+        "learned_introduces_vs_product": 0,
+        "hybrid_introduces_vs_product": 0
+      },
+      "seed3": {
+        "product_false_SUPPORT": 0,
+        "learned_false_SUPPORT": 0,
+        "hybrid_false_SUPPORT": 0,
+        "learned_rescues_product": 0,
+        "hybrid_rescues_product": 0,
+        "learned_introduces_vs_product": 0,
+        "hybrid_introduces_vs_product": 0
+      }
+    },
+    "missing_evidence": {
+      "seed1": {
+        "product_false_SUPPORT": 0,
+        "learned_false_SUPPORT": 0,
+        "hybrid_false_SUPPORT": 0,
+        "learned_rescues_product": 0,
+        "hybrid_rescues_product": 0,
+        "learned_introduces_vs_product": 0,
+        "hybrid_introduces_vs_product": 0
+      },
+      "seed2": {
+        "product_false_SUPPORT": 0,
+        "learned_false_SUPPORT": 0,
+        "hybrid_false_SUPPORT": 0,
+        "learned_rescues_product": 0,
+        "hybrid_rescues_product": 0,
+        "learned_introduces_vs_product": 0,
+        "hybrid_introduces_vs_product": 0
+      },
+      "seed3": {
+        "product_false_SUPPORT": 0,
+        "learned_false_SUPPORT": 0,
+        "hybrid_false_SUPPORT": 0,
+        "learned_rescues_product": 0,
+        "hybrid_rescues_product": 0,
+        "learned_introduces_vs_product": 0,
+        "hybrid_introduces_vs_product": 0
+      }
+    },
+    "location": {
+      "seed1": {
+        "n_common": 60,
+        "product_false_SUPPORT": 19,
+        "learned_false_SUPPORT": 41,
+        "hybrid_false_SUPPORT": 18,
+        "learned_rescues_product": 0,
+        "hybrid_rescues_product": 3,
+        "learned_introduces_vs_product": 22,
+        "hybrid_introduces_vs_product": 2,
+        "product_learned_overlap": 19,
+        "product_hybrid_overlap": 16,
+        "all_three_overlap": 16
+      },
+      "seed2": {
+        "n_common": 60,
+        "product_false_SUPPORT": 7,
+        "learned_false_SUPPORT": 12,
+        "hybrid_false_SUPPORT": 16,
+        "learned_rescues_product": 0,
+        "hybrid_rescues_product": 0,
+        "learned_introduces_vs_product": 5,
+        "hybrid_introduces_vs_product": 9,
+        "product_learned_overlap": 7,
+        "product_hybrid_overlap": 7,
+        "all_three_overlap": 7
+      },
+      "seed3": {
+        "n_common": 60,
+        "product_false_SUPPORT": 1,
+        "learned_false_SUPPORT": 13,
+        "hybrid_false_SUPPORT": 9,
+        "learned_rescues_product": 0,
+        "hybrid_rescues_product": 0,
+        "learned_introduces_vs_product": 12,
+        "hybrid_introduces_vs_product": 8,
+        "product_learned_overlap": 1,
+        "product_hybrid_overlap": 1,
+        "all_three_overlap": 1
+      }
+    },
+    "role": {
+      "seed1": {
+        "n_common": 60,
+        "product_false_SUPPORT": 3,
+        "learned_false_SUPPORT": 30,
+        "hybrid_false_SUPPORT": 2,
+        "learned_rescues_product": 0,
+        "hybrid_rescues_product": 1,
+        "learned_introduces_vs_product": 27,
+        "hybrid_introduces_vs_product": 0,
+        "product_learned_overlap": 3,
+        "product_hybrid_overlap": 2,
+        "all_three_overlap": 2
+      },
+      "seed2": {
+        "n_common": 60,
+        "product_false_SUPPORT": 3,
+        "learned_false_SUPPORT": 5,
+        "hybrid_false_SUPPORT": 17,
+        "learned_rescues_product": 2,
+        "hybrid_rescues_product": 0,
+        "learned_introduces_vs_product": 4,
+        "hybrid_introduces_vs_product": 14,
+        "product_learned_overlap": 1,
+        "product_hybrid_overlap": 3,
+        "all_three_overlap": 1
+      },
+      "seed3": {
+        "n_common": 60,
+        "product_false_SUPPORT": 0,
+        "learned_false_SUPPORT": 3,
+        "hybrid_false_SUPPORT": 3,
+        "learned_rescues_product": 0,
+        "hybrid_rescues_product": 0,
+        "learned_introduces_vs_product": 3,
+        "hybrid_introduces_vs_product": 3,
+        "product_learned_overlap": 0,
+        "product_hybrid_overlap": 0,
+        "all_three_overlap": 0
+      }
+    },
+    "predicate": {
+      "seed1": {
+        "n_common": 60,
+        "product_false_SUPPORT": 2,
+        "learned_false_SUPPORT": 3,
+        "hybrid_false_SUPPORT": 2,
+        "learned_rescues_product": 0,
+        "hybrid_rescues_product": 0,
+        "learned_introduces_vs_product": 1,
+        "hybrid_introduces_vs_product": 0,
+        "product_learned_overlap": 2,
+        "product_hybrid_overlap": 2,
+        "all_three_overlap": 2
+      },
+      "seed2": {
+        "n_common": 60,
+        "product_false_SUPPORT": 1,
+        "learned_false_SUPPORT": 3,
+        "hybrid_false_SUPPORT": 1,
+        "learned_rescues_product": 0,
+        "hybrid_rescues_product": 0,
+        "learned_introduces_vs_product": 2,
+        "hybrid_introduces_vs_product": 0,
+        "product_learned_overlap": 1,
+        "product_hybrid_overlap": 1,
+        "all_three_overlap": 1
+      },
+      "seed3": {
+        "n_common": 60,
+        "product_false_SUPPORT": 0,
+        "learned_false_SUPPORT": 2,
+        "hybrid_false_SUPPORT": 0,
+        "learned_rescues_product": 0,
+        "hybrid_rescues_product": 0,
+        "learned_introduces_vs_product": 2,
+        "hybrid_introduces_vs_product": 0,
+        "product_learned_overlap": 0,
+        "product_hybrid_overlap": 0,
+        "all_three_overlap": 0
+      }
+    },
+    "other_frame": {
+      "seed1": {
+        "n_common": 180,
+        "product_false_SUPPORT": 7,
+        "learned_false_SUPPORT": 16,
+        "hybrid_false_SUPPORT": 5,
+        "learned_rescues_product": 0,
+        "hybrid_rescues_product": 2,
+        "learned_introduces_vs_product": 9,
+        "hybrid_introduces_vs_product": 0,
+        "product_learned_overlap": 7,
+        "product_hybrid_overlap": 5,
+        "all_three_overlap": 5
+      },
+      "seed2": {
+        "n_common": 180,
+        "product_false_SUPPORT": 1,
+        "learned_false_SUPPORT": 3,
+        "hybrid_false_SUPPORT": 3,
+        "learned_rescues_product": 0,
+        "hybrid_rescues_product": 0,
+        "learned_introduces_vs_product": 2,
+        "hybrid_introduces_vs_product": 2,
+        "product_learned_overlap": 1,
+        "product_hybrid_overlap": 1,
+        "all_three_overlap": 1
+      },
+      "seed3": {
+        "n_common": 180,
+        "product_false_SUPPORT": 0,
+        "learned_false_SUPPORT": 5,
+        "hybrid_false_SUPPORT": 1,
+        "learned_rescues_product": 0,
+        "hybrid_rescues_product": 0,
+        "learned_introduces_vs_product": 5,
+        "hybrid_introduces_vs_product": 1,
+        "product_learned_overlap": 0,
+        "product_hybrid_overlap": 0,
+        "all_three_overlap": 0
+      }
+    }
+  },
+  "stage28g_aggregate": {
+    "product_false_support_total": 44,
+    "learned_false_support_total": 136,
+    "hybrid_false_support_total": 77,
+    "learned_rescues_product_total": 2,
+    "hybrid_rescues_product_total": 6,
+    "learned_introduces_vs_product_total": 94,
+    "hybrid_introduces_vs_product_total": 39,
+    "location_axis_aggregate": {
+      "product_location_false_support": 27,
+      "learned_location_false_support": 66,
+      "hybrid_location_false_support": 43,
+      "learned_location_rescues": 0,
+      "hybrid_location_rescues": 3,
+      "learned_location_introduces": 39,
+      "hybrid_location_introduces": 19
+    }
+  },
+  "key_findings": [
+    "product_p0p90 has the lowest false SUPPORT count (44 total) across all three configurations and is the most stable decision signal.",
+    "learned-only has severe instability across seeds, especially seed1 (90 false SUPPORT vs. 31 for product), and rescues zero product location false SUPPORT errors.",
+    "hybrid_beta0p20 provides only local rescue (6 total rescues) at the cost of a substantially worse aggregate tradeoff (39 introductions), and degrades seed2 and seed3.",
+    "missing_evidence false SUPPORT is zero for all configurations and all seeds; sufficiency/missing-evidence rejection is already solved.",
+    "location is the dominant unresolved product false SUPPORT axis: 27 of 44 product false SUPPORT errors (61.4%) are location-axis errors.",
+    "learned/hybrid residuals should not be used as the location specialist mechanism; neither signal reliably corrects location false SUPPORT errors and both introduce many new ones."
+  ],
+  "rejected_mechanisms": [
+    {
+      "mechanism": "learned-only decision signal",
+      "reason": "136 total false SUPPORT errors (3.1x product), zero location rescues, 94 new introductions, severe seed instability"
+    },
+    {
+      "mechanism": "product_learned_residual hybrid (beta=0.20)",
+      "reason": "77 total false SUPPORT errors (1.75x product), only 6 rescues against 39 introductions, degrades seed2 and seed3, 19 new location errors against 3 rescues"
+    }
+  ],
+  "retained_baseline": {
+    "signal": "product_p0p90",
+    "decision_signal": "product",
+    "product_power": 0.9,
+    "false_support_total": 44,
+    "location_false_support": 27,
+    "status": "frozen Stage27/Stage28 baseline"
+  },
+  "design_consequence": "The only reliable path to reducing product location false SUPPORT errors is an independent bounded location-boundary specialist that operates on location-axis examples only, applies a hard or soft cap rather than learned signal mixing, and does not modify the product signal for non-location axes. Learned/hybrid residual approaches are excluded by the overlap evidence.",
+  "decision": [
+    "Retain product_p0p90 as the frozen Stage27/Stage28 baseline: lowest aggregate false SUPPORT count (44) and lowest location false SUPPORT count (27).",
+    "Reject learned-only as a final decision signal: 136 total false SUPPORT, zero location rescues, 94 introductions, severe seed instability.",
+    "Reject product_learned_residual hybrid as a specialist mechanism: 77 total false SUPPORT, 6 rescues vs. 39 introductions, degrades seed2 and seed3.",
+    "Preserve missing-evidence/sufficiency behavior: zero missing_false_SUPPORT across all configs and seeds; must not be disturbed by any future stage.",
+    "Move next to Stage28-I independent location-boundary cap/head design or implementation planning.",
+    "Stage28-H is analysis and reporting only: no model improvement claimed from this stage.",
+    "No OOD generalization claimed."
+  ],
+  "next_stage_recommendation": {
+    "stage": "Stage28-I",
+    "title": "Independent Bounded Location-Boundary Cap/Head",
+    "requirements": [
+      "Design a location-boundary specialist that is architecturally independent from the product score computation",
+      "Bound the specialist correction magnitude to prevent signal collapse",
+      "Target the 27 product location false SUPPORT errors across seeds 1-3 as the reduction objective",
+      "Evaluate on controlled_v5_v3_without_time_swap.jsonl (controlled no-time validation)",
+      "Maintain frozen encoder, freeze_a_log, max_length=64 constraints",
+      "Leave the sufficiency/missing-evidence rejection path unchanged",
+      "Do not use learned signal components or hybrid mixing as part of the specialist mechanism"
+    ],
+    "scope": "Design and planning only, consistent with the analysis-only scope established in Stage28-H"
+  },
+  "limitations": [
+    "Controlled no-time validation only: results are on controlled_v5_v3_without_time_swap.jsonl; no OOD claim can be made.",
+    "max_length=64: all results are under this truncation limit; behavior at longer sequence lengths is not measured.",
+    "Frozen encoder: the encoder is frozen throughout Stage28; fine-grained location discrimination may require encoder fine-tuning not tested here.",
+    "No OOD claim: behavior on unseen validation distributions is unknown.",
+    "No full-encoder claim: full encoder fine-tuning results are not available in this stage.",
+    "Stage28-H is analysis-only: no model code, training code, or scripts are modified or executed.",
+    "Location cap/head not implemented yet: Stage28-H establishes the requirement only; Stage28-I will carry the design.",
+    "Examples are synthetic controlled examples: real-world distribution behavior is not measured.",
+    "Stage28-C-lite manually inspected 20 location examples only: the full distribution of location false SUPPORT error types is not characterized.",
+    "300 location_swap examples are not guaranteed to be fully clean: manual audit covered 20 examples; the remainder have not been individually inspected.",
+    "Seed instability is a persistent concern: product_p0p90 itself shows high variance across seeds (false_SUPPORT: 31, 12, 1)."
+  ],
+  "conclusion": "Stage28-G rejects learned and hybrid residuals as reliable correction mechanisms: they rescue too few product false SUPPORT errors while introducing substantially more new false SUPPORT errors. The next specialist should use an independent bounded location-boundary cap, not learned/hybrid residual mixing."
+}
