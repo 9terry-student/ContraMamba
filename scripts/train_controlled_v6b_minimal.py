@@ -157,6 +157,10 @@ def build_v7_model(
     v7_h1_entitlement_decision_signal: str = "learned",
     v7_h1_entitlement_product_power: float = 1.0,
     v7_h1_hybrid_residual_beta: float = 0.25,
+    v7_use_location_boundary_head: bool = False,
+    v7_location_boundary_cap_mode: str = "none",
+    v7_location_boundary_cap_gamma: float = 1.0,
+    v7_location_boundary_cap_detach: bool = False,
 ) -> "ContraMambaV7Hierarchical":
     """Build a ContraMambaV7Hierarchical with dummy backbone for plumbing validation."""
     from contramamba.modeling_v7_hierarchical import ContraMambaV7Hierarchical
@@ -182,6 +186,10 @@ def build_v7_model(
         v7_h1_entitlement_decision_signal=v7_h1_entitlement_decision_signal,
         v7_h1_entitlement_product_power=v7_h1_entitlement_product_power,
         v7_h1_hybrid_residual_beta=v7_h1_hybrid_residual_beta,
+        v7_use_location_boundary_head=v7_use_location_boundary_head,
+        v7_location_boundary_cap_mode=v7_location_boundary_cap_mode,
+        v7_location_boundary_cap_gamma=v7_location_boundary_cap_gamma,
+        v7_location_boundary_cap_detach=v7_location_boundary_cap_detach,
     )
 
 
@@ -203,6 +211,10 @@ def build_v7_mamba_model(
     v7_h1_entitlement_decision_signal: str = "learned",
     v7_h1_entitlement_product_power: float = 1.0,
     v7_h1_hybrid_residual_beta: float = 0.25,
+    v7_use_location_boundary_head: bool = False,
+    v7_location_boundary_cap_mode: str = "none",
+    v7_location_boundary_cap_gamma: float = 1.0,
+    v7_location_boundary_cap_detach: bool = False,
 ) -> "ContraMambaV7Hierarchical":
     """Build a ContraMambaV7Hierarchical with real Mamba backbone."""
     from contramamba.modeling_v7_hierarchical import ContraMambaV7Hierarchical
@@ -228,6 +240,10 @@ def build_v7_mamba_model(
         v7_h1_entitlement_decision_signal=v7_h1_entitlement_decision_signal,
         v7_h1_entitlement_product_power=v7_h1_entitlement_product_power,
         v7_h1_hybrid_residual_beta=v7_h1_hybrid_residual_beta,
+        v7_use_location_boundary_head=v7_use_location_boundary_head,
+        v7_location_boundary_cap_mode=v7_location_boundary_cap_mode,
+        v7_location_boundary_cap_gamma=v7_location_boundary_cap_gamma,
+        v7_location_boundary_cap_detach=v7_location_boundary_cap_detach,
     )
     for parameter in model.mamba.parameters():
         parameter.requires_grad = not freeze_encoder
@@ -1407,6 +1423,13 @@ _S28E_V7_SCALAR_KEYS: tuple[str, ...] = (
     "v7_polarity_positive_energy",
     "v7_polarity_negative_energy",
     "v7_polarity_energy_margin",
+    # Stage28-I-A: location boundary head scalars (absent when head is disabled)
+    "location_boundary_logit",
+    "location_boundary_prob",
+    "v7_location_boundary_logit",
+    "v7_location_boundary_prob",
+    "v7_h1_entitlement_before_location_cap",
+    "v7_h1_entitlement_after_location_cap",
 )
 
 _S28E_AUX_LABEL_KEYS: tuple[str, ...] = (
@@ -2543,6 +2566,72 @@ def build_parser() -> argparse.ArgumentParser:
             "beta=0 recovers pure product. Suggested sweep: 0.1,0.2,0.3,0.5."
         ),
     )
+
+    # ── Stage28-I-A: independent location-boundary cap/head ──────────────────────────────────
+    # All off by default. Preserves all current Stage27/Stage28 behavior when disabled.
+    # Only meaningful for --architecture v7_hierarchical.
+    parser.add_argument(
+        "--v7-use-location-boundary-head",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage28-I-A: Enable independent location-boundary head for v7_hierarchical. "
+            "Adds a small MLP over [frame_pair_repr, predicate_pair_repr, sufficiency_repr] "
+            "producing location_boundary_prob in [0,1]. "
+            "High prob = location-safe; low prob = potential location mismatch. "
+            "Disabled by default; no effect on existing behavior when off."
+        ),
+    )
+    parser.add_argument(
+        "--v7-use-location-boundary-loss",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage28-I-A: Enable auxiliary BCE training for the location boundary head. "
+            "Target: 0 for location_swap, 1 for none/paraphrase/polarity_flip records. "
+            "All other intervention types are excluded from this loss. "
+            "Requires --v7-use-location-boundary-head. "
+            "Stage15/OOD is not used for this loss. Default off."
+        ),
+    )
+    parser.add_argument(
+        "--v7-location-boundary-loss-weight",
+        type=float,
+        default=0.0,
+        help="Stage28-I-A: Weight for location boundary BCE loss. Default 0.0.",
+    )
+    parser.add_argument(
+        "--v7-location-boundary-cap-mode",
+        choices=("none", "hard", "soft"),
+        default="none",
+        help=(
+            "Stage28-I-A: Final-decision cap mode for the location boundary head. "
+            "'none' (default): no cap applied; existing behavior is unchanged. "
+            "'hard': entitlement_for_decision = min(entitlement, location_boundary_prob). "
+            "'soft': entitlement_for_decision = entitlement * location_boundary_prob^gamma. "
+            "Requires --v7-use-location-boundary-head when not 'none'."
+        ),
+    )
+    parser.add_argument(
+        "--v7-location-boundary-cap-gamma",
+        type=float,
+        default=1.0,
+        help=(
+            "Stage28-I-A: Gamma exponent for soft location boundary cap. "
+            "Used only when --v7-location-boundary-cap-mode soft. "
+            "Must be > 0. Default 1.0."
+        ),
+    )
+    parser.add_argument(
+        "--v7-location-boundary-cap-detach",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage28-I-A: Detach location_boundary_prob before applying the cap. "
+            "Isolates cap effect from CE gradients. Default off."
+        ),
+    )
+
     parser.add_argument(
         "--v7-no-aux-losses",
         action="store_true",
@@ -2719,6 +2808,11 @@ _V7_DIAG_CAPTURE_KEYS: tuple[str, ...] = (
     "v7_polarity_energy_margin",
     # Stage27-H2A: actual entitlement_for_decision used in H1 (None when H1 is inactive)
     "v7_h1_entitlement_for_decision",
+    # Stage28-I-A: location boundary head (None when head is disabled)
+    "v7_location_boundary_logit",
+    "v7_location_boundary_prob",
+    "v7_h1_entitlement_before_location_cap",
+    "v7_h1_entitlement_after_location_cap",
 )
 
 
@@ -2765,6 +2859,11 @@ def _v7_make_logit_summary(out: "dict[str, Any] | None") -> "dict[str, Any] | No
         "v7_sufficiency_prob",
         # Stage27-H2A: actual H1 decision signal (None when H1 inactive)
         "v7_h1_entitlement_for_decision",
+        # Stage28-I-A: location boundary head (None when head is disabled)
+        "v7_location_boundary_logit",
+        "v7_location_boundary_prob",
+        "v7_h1_entitlement_before_location_cap",
+        "v7_h1_entitlement_after_location_cap",
     ):
         val = out.get(key)
         if val is not None and hasattr(val, "mean"):
@@ -2909,6 +3008,13 @@ _LIFT_CONFIG_KEYS: tuple[str, ...] = (
     "v7_h1_entitlement_for_decision_source",
     "v7_h1_entitlement_product_power",
     "v7_h1_hybrid_residual_beta",
+    # Stage28-I-A: location boundary head / cap configuration
+    "v7_use_location_boundary_head",
+    "v7_use_location_boundary_loss",
+    "v7_location_boundary_loss_weight",
+    "v7_location_boundary_cap_mode",
+    "v7_location_boundary_cap_gamma",
+    "v7_location_boundary_cap_detach",
 )
 
 
@@ -2947,6 +3053,27 @@ def main(argv: list[str] | None = None) -> int:
     # It has no text comprehension capacity; metrics it produces are not
     # claim-worthy. Require --allow-dummy-backbone to proceed.
     # ---------------------------------------------------------------------------
+    # ── Stage28-I-A: location boundary flag validation ────────────────────────────────────────
+    _use_lb_head = getattr(args, "v7_use_location_boundary_head", False)
+    _use_lb_loss = getattr(args, "v7_use_location_boundary_loss", False)
+    _lb_cap_mode = getattr(args, "v7_location_boundary_cap_mode", "none")
+    _lb_cap_gamma = getattr(args, "v7_location_boundary_cap_gamma", 1.0)
+    if _use_lb_loss and not _use_lb_head:
+        raise ValueError(
+            "--v7-use-location-boundary-loss requires --v7-use-location-boundary-head. "
+            "The location boundary head must be enabled to compute the auxiliary loss."
+        )
+    if _lb_cap_mode != "none" and not _use_lb_head:
+        raise ValueError(
+            f"--v7-location-boundary-cap-mode {_lb_cap_mode!r} requires "
+            "--v7-use-location-boundary-head. "
+            "The location boundary head must be enabled to apply the cap."
+        )
+    if _lb_cap_gamma <= 0:
+        raise ValueError(
+            f"--v7-location-boundary-cap-gamma must be > 0, got {_lb_cap_gamma!r}."
+        )
+
     if args.backbone == "dummy" and not args.allow_dummy_backbone:
         raise ValueError(
             "[DUMMY BACKBONE BLOCKED] backbone=dummy is permitted only for explicit "
@@ -3024,6 +3151,10 @@ def main(argv: list[str] | None = None) -> int:
                 v7_h1_entitlement_decision_signal=args.v7_h1_entitlement_decision_signal,
                 v7_h1_entitlement_product_power=args.v7_h1_entitlement_product_power,
                 v7_h1_hybrid_residual_beta=args.v7_h1_hybrid_residual_beta,
+                v7_use_location_boundary_head=getattr(args, "v7_use_location_boundary_head", False),
+                v7_location_boundary_cap_mode=getattr(args, "v7_location_boundary_cap_mode", "none"),
+                v7_location_boundary_cap_gamma=getattr(args, "v7_location_boundary_cap_gamma", 1.0),
+                v7_location_boundary_cap_detach=getattr(args, "v7_location_boundary_cap_detach", False),
             )
         else:
             model = build_mamba_model(
@@ -3081,6 +3212,10 @@ def main(argv: list[str] | None = None) -> int:
                 v7_h1_entitlement_decision_signal=args.v7_h1_entitlement_decision_signal,
                 v7_h1_entitlement_product_power=args.v7_h1_entitlement_product_power,
                 v7_h1_hybrid_residual_beta=args.v7_h1_hybrid_residual_beta,
+                v7_use_location_boundary_head=getattr(args, "v7_use_location_boundary_head", False),
+                v7_location_boundary_cap_mode=getattr(args, "v7_location_boundary_cap_mode", "none"),
+                v7_location_boundary_cap_gamma=getattr(args, "v7_location_boundary_cap_gamma", 1.0),
+                v7_location_boundary_cap_detach=getattr(args, "v7_location_boundary_cap_detach", False),
             )
         else:
             model = build_model(
@@ -3950,6 +4085,45 @@ def main(argv: list[str] | None = None) -> int:
                         _v7_ecb_loss = F.cross_entropy(_ecb_pol_sub, _ecb_local_labels)
                         total_loss = total_loss + args.v7_entitled_class_balanced_ce_weight * _v7_ecb_loss
 
+            # ── Stage28-I-A: v7 location boundary BCE auxiliary loss ──────────────────────────
+            # Target: 0 for location_swap; 1 for none/paraphrase/polarity_flip.
+            # All other intervention types are excluded from this loss.
+            # Stage15/OOD is not used for this loss or target selection.
+            # Zero masked records → loss is zero; no crash.
+            _v7_lb_loss = torch.tensor(0.0, device=device)
+            if (
+                args.architecture == "v7_hierarchical"
+                and getattr(args, "v7_use_location_boundary_head", False)
+                and getattr(args, "v7_use_location_boundary_loss", False)
+                and getattr(args, "v7_location_boundary_loss_weight", 0.0) > 0.0
+                and not args.v7_no_aux_losses
+            ):
+                _lb_logit = output.get("location_boundary_logit")
+                if _lb_logit is not None:
+                    _lb_indices: list[int] = []
+                    _lb_targets: list[float] = []
+                    for _lb_i, _lb_rec in enumerate(train_records):
+                        _lb_itype = _s28e_normalize_intervention(_lb_rec)
+                        if _lb_itype == "location_swap":
+                            _lb_indices.append(_lb_i)
+                            _lb_targets.append(0.0)
+                        elif _lb_itype in ("none", "paraphrase", "polarity_flip"):
+                            _lb_indices.append(_lb_i)
+                            _lb_targets.append(1.0)
+                    if _lb_indices:
+                        _lb_idx_t = torch.tensor(_lb_indices, dtype=torch.long, device=device)
+                        _lb_tgt_t = torch.tensor(
+                            _lb_targets, dtype=_lb_logit.dtype, device=device
+                        )
+                        _lb_logit_sub = _lb_logit[_lb_idx_t]
+                        _v7_lb_loss = F.binary_cross_entropy_with_logits(
+                            _lb_logit_sub, _lb_tgt_t
+                        )
+                        total_loss = (
+                            total_loss
+                            + args.v7_location_boundary_loss_weight * _v7_lb_loss
+                        )
+
             # ── Audit ledger accumulation (reporting only; does not affect gradients) ─────────
             # raw = loss value before weight multiplication; weighted = actual total_loss contribution
             _ep_ce_raw = float(losses["label"].item())
@@ -3969,6 +4143,7 @@ def main(argv: list[str] | None = None) -> int:
             _ep_v7_pm_raw = float(_v7_pm_loss.item()) if hasattr(_v7_pm_loss, "item") else 0.0
             _ep_v7_ent_bce_raw = float(_v7_ent_bce_loss.item()) if hasattr(_v7_ent_bce_loss, "item") else 0.0
             _ep_v7_ecb_raw = float(_v7_ecb_loss.item()) if hasattr(_v7_ecb_loss, "item") else 0.0
+            _ep_v7_lb_raw = float(_v7_lb_loss.item()) if hasattr(_v7_lb_loss, "item") else 0.0
             _ep_total = float(total_loss.item())
             # For ranking path: active_intervention_loss = ranking_weight * raw_ranking.
             # Recover raw by dividing. For intervention path: pairwise_losses["total"] is
@@ -3997,6 +4172,8 @@ def main(argv: list[str] | None = None) -> int:
                 "v7_polarity_margin_loss": _ep_v7_pm_raw,
                 "v7_entitlement_bce_loss": _ep_v7_ent_bce_raw,
                 "v7_entitled_class_balanced_ce_loss": _ep_v7_ecb_raw,
+                # Stage28-I-A: location boundary loss (0.0 when disabled)
+                "v7_location_boundary_loss": _ep_v7_lb_raw,
                 "total_loss": _ep_total,
             })
             _audit_per_epoch_weighted.append({
@@ -4016,6 +4193,10 @@ def main(argv: list[str] | None = None) -> int:
                 "v7_entitlement_bce_loss": args.v7_entitlement_bce_loss_weight * _ep_v7_ent_bce_raw,
                 "v7_entitled_class_balanced_ce_loss": (
                     args.v7_entitled_class_balanced_ce_weight * _ep_v7_ecb_raw
+                ),
+                # Stage28-I-A: location boundary loss weighted contribution
+                "v7_location_boundary_loss": (
+                    getattr(args, "v7_location_boundary_loss_weight", 0.0) * _ep_v7_lb_raw
                 ),
                 "total_loss": _ep_total,
             })
@@ -5488,6 +5669,9 @@ def main(argv: list[str] | None = None) -> int:
                         and getattr(args, "v7_entitlement_bce_loss_weight", 0.0) > 0.0)
                     or (getattr(args, "v7_use_entitled_class_balanced_ce", False)
                         and getattr(args, "v7_entitled_class_balanced_ce_weight", 0.0) > 0.0)
+                    or (getattr(args, "v7_use_location_boundary_head", False)
+                        and getattr(args, "v7_use_location_boundary_loss", False)
+                        and getattr(args, "v7_location_boundary_loss_weight", 0.0) > 0.0)
                 )
             ),
             # Stage26-G: v7 stabilization options
@@ -5520,6 +5704,31 @@ def main(argv: list[str] | None = None) -> int:
             "v7_h1_hybrid_residual_beta": getattr(
                 args, "v7_h1_hybrid_residual_beta", 0.25
             ),
+            # Stage28-I-A: location boundary head / cap configuration
+            "v7_use_location_boundary_head": getattr(
+                args, "v7_use_location_boundary_head", False
+            ),
+            "v7_use_location_boundary_loss": getattr(
+                args, "v7_use_location_boundary_loss", False
+            ),
+            "v7_location_boundary_loss_weight": getattr(
+                args, "v7_location_boundary_loss_weight", 0.0
+            ),
+            "v7_location_boundary_cap_mode": getattr(
+                args, "v7_location_boundary_cap_mode", "none"
+            ),
+            "v7_location_boundary_cap_gamma": getattr(
+                args, "v7_location_boundary_cap_gamma", 1.0
+            ),
+            "v7_location_boundary_cap_detach": getattr(
+                args, "v7_location_boundary_cap_detach", False
+            ),
+            "v7_location_boundary_target_mapping": (
+                {"location_swap": 0, "none": 1, "paraphrase": 1, "polarity_flip": 1}
+                if getattr(args, "v7_use_location_boundary_loss", False) else None
+            ),
+            "stage15_used_for_v7_location_boundary_loss": False,
+            "ood_used_for_v7_location_boundary_loss": False,
             "v7_h1_entitlement_for_decision_source": (
                 _V7_H1_DECISION_SIGNAL_SOURCE.get(
                     getattr(args, "v7_h1_entitlement_decision_signal", "learned"),
@@ -5655,6 +5864,25 @@ def main(argv: list[str] | None = None) -> int:
                 "freeze_encoder": getattr(args, "freeze_encoder", None),
                 "freeze_a_log": getattr(args, "freeze_a_log", None),
                 "max_length": getattr(args, "max_length", None),
+                # Stage28-I-A: location boundary head / cap config
+                "v7_use_location_boundary_head": getattr(
+                    args, "v7_use_location_boundary_head", False
+                ),
+                "v7_use_location_boundary_loss": getattr(
+                    args, "v7_use_location_boundary_loss", False
+                ),
+                "v7_location_boundary_loss_weight": getattr(
+                    args, "v7_location_boundary_loss_weight", 0.0
+                ),
+                "v7_location_boundary_cap_mode": getattr(
+                    args, "v7_location_boundary_cap_mode", "none"
+                ),
+                "v7_location_boundary_cap_gamma": getattr(
+                    args, "v7_location_boundary_cap_gamma", 1.0
+                ),
+                "v7_location_boundary_cap_detach": getattr(
+                    args, "v7_location_boundary_cap_detach", False
+                ),
             }
         v5.write_predictions_json(
             args.output_predictions_json,
