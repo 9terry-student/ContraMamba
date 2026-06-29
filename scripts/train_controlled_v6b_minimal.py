@@ -2104,6 +2104,90 @@ def build_stage32_coverage_entailment_owner_state(
     }
 
 
+def _stage32_coverage_route_from_label(label: Any) -> str:
+    if label == "ENTAILS_SUPPORT":
+        return "ENTAILMENT_PRESERVE"
+    if label == "OVERCLAIM_NOT_ENTITLED":
+        return "OVERCLAIM_NE"
+    if label == "CONTRADICTS_REFUTE":
+        return "CONTRADICTION_REFUTE"
+    return "RESIDUAL"
+
+
+def build_stage32_coverage_owner_v2_state(
+    coverage_entailment: dict[str, Any],
+    *,
+    enabled: bool,
+    min_confidence: float,
+    min_margin: float,
+    allow_abstain: bool,
+) -> dict[str, Any]:
+    """Build Coverage Owner v2 abstain-aware shadow route fields."""
+    probs = [
+        (
+            "ENTAILS_SUPPORT",
+            coverage_entailment.get("entails_support_prob"),
+        ),
+        (
+            "OVERCLAIM_NOT_ENTITLED",
+            coverage_entailment.get("overclaim_ne_prob"),
+        ),
+        (
+            "CONTRADICTS_REFUTE",
+            coverage_entailment.get("contradicts_refute_prob"),
+        ),
+    ]
+    numeric_probs = [
+        (label, float(prob))
+        for label, prob in probs
+        if prob is not None
+    ]
+    numeric_probs.sort(key=lambda item: item[1], reverse=True)
+    top_label = numeric_probs[0][0] if numeric_probs else coverage_entailment.get("pred_label")
+    top_prob = numeric_probs[0][1] if numeric_probs else coverage_entailment.get("confidence")
+    second_prob = numeric_probs[1][1] if len(numeric_probs) > 1 else None
+    margin = (
+        float(top_prob) - float(second_prob)
+        if top_prob is not None and second_prob is not None
+        else None
+    )
+    original_label = coverage_entailment.get("pred_label")
+    pred_label = original_label
+    route = _stage32_coverage_route_from_label(original_label)
+    reason = "v2_disabled_uses_v1"
+    abstained = False
+
+    if enabled:
+        if allow_abstain and (top_prob is None or float(top_prob) < min_confidence):
+            pred_label = "UNRESOLVED_COVERAGE"
+            route = "RESIDUAL"
+            reason = "low_confidence_abstain"
+            abstained = True
+        elif allow_abstain and (margin is None or float(margin) < min_margin):
+            pred_label = "UNRESOLVED_COVERAGE"
+            route = "RESIDUAL"
+            reason = "low_margin_abstain"
+            abstained = True
+        else:
+            pred_label = original_label if original_label is not None else top_label
+            route = _stage32_coverage_route_from_label(pred_label)
+            reason = "confident_coverage_prediction"
+
+    return {
+        "enabled": bool(enabled),
+        "top_prob": top_prob,
+        "second_prob": second_prob,
+        "margin": margin,
+        "min_confidence": min_confidence,
+        "min_margin": min_margin,
+        "pred_label": pred_label if pred_label is not None else "UNAVAILABLE",
+        "route": route,
+        "reason": reason,
+        "abstained": abstained,
+        "allow_abstain": bool(allow_abstain),
+    }
+
+
 def build_stage32_residual_adjudication_owner_state(
     output: dict[str, Any],
     index: int,
@@ -2178,6 +2262,7 @@ def build_stage32_shadow_composer_state(
     *,
     hard_core: dict[str, Any],
     coverage_entailment: dict[str, Any],
+    coverage_v2: dict[str, Any],
     residual_adjudication: dict[str, Any],
     ani_diagnostic: dict[str, Any],
     polarity: dict[str, Any],
@@ -2192,6 +2277,66 @@ def build_stage32_shadow_composer_state(
         would_block_support = True
         would_route_ne = True
         would_route_refute = False
+    elif coverage_v2.get("enabled"):
+        route = coverage_v2.get("route")
+        pred_label = coverage_v2.get("pred_label")
+        if route == "OVERCLAIM_NE":
+            priority_trace.extend([
+                "hard_core:pass",
+                "coverage_v2:OVERCLAIM_NE",
+                "route:NOT_ENTITLED",
+            ])
+            shadow_label = "NOT_ENTITLED"
+            shadow_reason = "coverage_v2_overclaim"
+            would_block_support = False
+            would_route_ne = True
+            would_route_refute = False
+        elif route == "CONTRADICTION_REFUTE":
+            priority_trace.extend([
+                "hard_core:pass",
+                "coverage_v2:CONTRADICTION_REFUTE",
+                "route:REFUTE",
+            ])
+            shadow_label = "REFUTE"
+            shadow_reason = "coverage_v2_contradiction"
+            would_block_support = False
+            would_route_ne = False
+            would_route_refute = True
+        elif route == "ENTAILMENT_PRESERVE" and polarity["pred_label"] == "SUPPORT":
+            priority_trace.extend([
+                "hard_core:pass",
+                "coverage_v2:ENTAILMENT_PRESERVE",
+                "polarity:SUPPORT",
+                "route:SUPPORT",
+            ])
+            shadow_label = "SUPPORT"
+            shadow_reason = "coverage_v2_entails_support_with_positive_polarity"
+            would_block_support = False
+            would_route_ne = False
+            would_route_refute = False
+        elif route == "ENTAILMENT_PRESERVE":
+            priority_trace.extend([
+                "hard_core:pass",
+                "coverage_v2:ENTAILMENT_PRESERVE",
+                f"polarity:{polarity.get('pred_label')}",
+                "route:NOT_ENTITLED",
+            ])
+            shadow_label = "NOT_ENTITLED"
+            shadow_reason = "coverage_v2_entailment_without_positive_polarity"
+            would_block_support = False
+            would_route_ne = True
+            would_route_refute = False
+        else:
+            priority_trace.extend([
+                "hard_core:pass",
+                f"coverage_v2:{pred_label}",
+                "route:NOT_ENTITLED",
+            ])
+            shadow_label = "NOT_ENTITLED"
+            shadow_reason = "coverage_v2_unresolved_to_residual"
+            would_block_support = False
+            would_route_ne = True
+            would_route_refute = False
     elif coverage_entailment["pred_label"] == "OVERCLAIM_NOT_ENTITLED":
         priority_trace.extend([
             "hard_core:pass",
@@ -2252,16 +2397,32 @@ def build_stage32_shadow_composer_state(
     }
 
 
-def build_stage32_owner_state(output: dict[str, Any], index: int) -> dict[str, Any]:
+def build_stage32_owner_state(
+    output: dict[str, Any],
+    index: int,
+    *,
+    coverage_owner_v2_enabled: bool = False,
+    coverage_owner_v2_min_confidence: float = 0.50,
+    coverage_owner_v2_min_margin: float = 0.05,
+    coverage_owner_v2_allow_abstain: bool = False,
+) -> dict[str, Any]:
     """Build Stage32-B owner-state proxies without changing model outputs."""
     hard_core = build_stage32_hard_core_owner_state(output, index)
     coverage_entailment = build_stage32_coverage_entailment_owner_state(output, index)
+    coverage_v2 = build_stage32_coverage_owner_v2_state(
+        coverage_entailment,
+        enabled=coverage_owner_v2_enabled,
+        min_confidence=coverage_owner_v2_min_confidence,
+        min_margin=coverage_owner_v2_min_margin,
+        allow_abstain=coverage_owner_v2_allow_abstain,
+    )
     residual_adjudication = build_stage32_residual_adjudication_owner_state(output, index)
     ani_diagnostic = build_stage32_ani_diagnostic_state(output, index)
     polarity = build_stage32_polarity_owner_state(output, index, hard_core)
     composer_shadow = build_stage32_shadow_composer_state(
         hard_core=hard_core,
         coverage_entailment=coverage_entailment,
+        coverage_v2=coverage_v2,
         residual_adjudication=residual_adjudication,
         ani_diagnostic=ani_diagnostic,
         polarity=polarity,
@@ -2269,6 +2430,7 @@ def build_stage32_owner_state(output: dict[str, Any], index: int) -> dict[str, A
     return {
         "hard_core": hard_core,
         "coverage_entailment": coverage_entailment,
+        "coverage_v2": coverage_v2,
         "residual_adjudication": residual_adjudication,
         "ani_diagnostic": ani_diagnostic,
         "polarity": polarity,
@@ -2279,6 +2441,7 @@ def build_stage32_owner_state(output: dict[str, Any], index: int) -> dict[str, A
 def flatten_stage32_owner_state(state: dict[str, Any]) -> dict[str, Any]:
     hard_core = state["hard_core"]
     coverage = state["coverage_entailment"]
+    coverage_v2 = state["coverage_v2"]
     residual = state["residual_adjudication"]
     ani = state["ani_diagnostic"]
     polarity = state["polarity"]
@@ -2296,6 +2459,16 @@ def flatten_stage32_owner_state(state: dict[str, Any]) -> dict[str, Any]:
         "stage32_coverage_confidence": coverage["confidence"],
         "stage32_coverage_input_mode": coverage["input_mode"],
         "stage32_coverage_notes": coverage.get("notes"),
+        "stage32_coverage_v2_enabled": coverage_v2["enabled"],
+        "stage32_coverage_v2_top_prob": coverage_v2["top_prob"],
+        "stage32_coverage_v2_second_prob": coverage_v2["second_prob"],
+        "stage32_coverage_v2_margin": coverage_v2["margin"],
+        "stage32_coverage_v2_min_confidence": coverage_v2["min_confidence"],
+        "stage32_coverage_v2_min_margin": coverage_v2["min_margin"],
+        "stage32_coverage_v2_pred_label": coverage_v2["pred_label"],
+        "stage32_coverage_v2_route": coverage_v2["route"],
+        "stage32_coverage_v2_reason": coverage_v2["reason"],
+        "stage32_coverage_v2_abstained": coverage_v2["abstained"],
         "stage32_residual_prob": residual["residual_prob"],
         "stage32_residual_pred_label": residual["pred_label"],
         "stage32_residual_notes": residual.get("notes"),
@@ -2325,6 +2498,10 @@ def prediction_records_v6b(
     *,
     stage32_owner_state_export: bool = False,
     stage32_owner_state_shadow_mode: bool = False,
+    stage32_coverage_owner_v2: bool = False,
+    stage32_coverage_owner_v2_min_confidence: float = 0.50,
+    stage32_coverage_owner_v2_min_margin: float = 0.05,
+    stage32_coverage_owner_v2_allow_abstain: bool = False,
 ) -> list[dict]:
     """Export predictions with Stage28-E enriched schema (additive; preserves all legacy fields)."""
     logits_cpu = output["logits"].detach().cpu()
@@ -2367,7 +2544,14 @@ def prediction_records_v6b(
     exported: list[dict] = []
     for index, record in enumerate(records):
         stage32_owner_state = (
-            build_stage32_owner_state(output, index)
+            build_stage32_owner_state(
+                output,
+                index,
+                coverage_owner_v2_enabled=stage32_coverage_owner_v2,
+                coverage_owner_v2_min_confidence=stage32_coverage_owner_v2_min_confidence,
+                coverage_owner_v2_min_margin=stage32_coverage_owner_v2_min_margin,
+                coverage_owner_v2_allow_abstain=stage32_coverage_owner_v2_allow_abstain,
+            )
             if stage32_owner_state_export
             else None
         )
@@ -3901,6 +4085,38 @@ def build_parser() -> argparse.ArgumentParser:
             "predictions, loss, entitlement, caps, or checkpoint selection."
         ),
     )
+    parser.add_argument(
+        "--stage32-coverage-owner-v2",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage32-D: enable abstain-aware Coverage Owner v2 for Stage32 "
+            "shadow owner-state export/composer fields only. Does not affect final "
+            "logits, final predictions, losses, caps, entitlement, or selection."
+        ),
+    )
+    parser.add_argument(
+        "--stage32-coverage-owner-v2-min-confidence",
+        type=float,
+        default=0.50,
+        help="Stage32-D: minimum top probability for Coverage Owner v2 confidence gating.",
+    )
+    parser.add_argument(
+        "--stage32-coverage-owner-v2-min-margin",
+        type=float,
+        default=0.05,
+        help="Stage32-D: minimum top-minus-second probability margin for Coverage Owner v2.",
+    )
+    parser.add_argument(
+        "--stage32-coverage-owner-v2-allow-abstain",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage32-D: allow low-confidence or low-margin Coverage Owner v2 "
+            "predictions to abstain as UNRESOLVED_COVERAGE/RESIDUAL in the "
+            "shadow composer only."
+        ),
+    )
 
     parser.add_argument(
         "--v7-no-aux-losses",
@@ -4174,6 +4390,16 @@ def evaluate_external_probe(
         stage32_owner_state_export=getattr(args, "stage32_owner_state_export", False),
         stage32_owner_state_shadow_mode=getattr(
             args, "stage32_owner_state_shadow_mode", False
+        ),
+        stage32_coverage_owner_v2=getattr(args, "stage32_coverage_owner_v2", False),
+        stage32_coverage_owner_v2_min_confidence=getattr(
+            args, "stage32_coverage_owner_v2_min_confidence", 0.50
+        ),
+        stage32_coverage_owner_v2_min_margin=getattr(
+            args, "stage32_coverage_owner_v2_min_margin", 0.05
+        ),
+        stage32_coverage_owner_v2_allow_abstain=getattr(
+            args, "stage32_coverage_owner_v2_allow_abstain", False
         ),
     )
 
@@ -4532,6 +4758,10 @@ _LIFT_CONFIG_KEYS: tuple[str, ...] = (
     "stage32_owner_state_shadow_mode",
     "stage32_owner_state_modifies_final_logits",
     "stage32_owner_state_modifies_final_predictions",
+    "stage32_coverage_owner_v2",
+    "stage32_coverage_owner_v2_min_confidence",
+    "stage32_coverage_owner_v2_min_margin",
+    "stage32_coverage_owner_v2_allow_abstain",
     # v7 Stage15 / time_swap provenance (also lifted from audit_ledger elsewhere;
     # this covers the configuration copy when the ledger path is absent)
     "stage15_used_for_v7_training",
@@ -6673,6 +6903,18 @@ def main(argv: list[str] | None = None) -> int:
                     stage32_owner_state_shadow_mode=getattr(
                         args, "stage32_owner_state_shadow_mode", False
                     ),
+                    stage32_coverage_owner_v2=getattr(
+                        args, "stage32_coverage_owner_v2", False
+                    ),
+                    stage32_coverage_owner_v2_min_confidence=getattr(
+                        args, "stage32_coverage_owner_v2_min_confidence", 0.50
+                    ),
+                    stage32_coverage_owner_v2_min_margin=getattr(
+                        args, "stage32_coverage_owner_v2_min_margin", 0.05
+                    ),
+                    stage32_coverage_owner_v2_allow_abstain=getattr(
+                        args, "stage32_coverage_owner_v2_allow_abstain", False
+                    ),
                 )
                 best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
                 best_pc_metrics = {
@@ -6756,6 +6998,18 @@ def main(argv: list[str] | None = None) -> int:
                         stage32_owner_state_shadow_mode=getattr(
                             args, "stage32_owner_state_shadow_mode", False
                         ),
+                        stage32_coverage_owner_v2=getattr(
+                            args, "stage32_coverage_owner_v2", False
+                        ),
+                        stage32_coverage_owner_v2_min_confidence=getattr(
+                            args, "stage32_coverage_owner_v2_min_confidence", 0.50
+                        ),
+                        stage32_coverage_owner_v2_min_margin=getattr(
+                            args, "stage32_coverage_owner_v2_min_margin", 0.05
+                        ),
+                        stage32_coverage_owner_v2_allow_abstain=getattr(
+                            args, "stage32_coverage_owner_v2_allow_abstain", False
+                        ),
                     )
                     _tc_state = {
                         k: v.detach().cpu().clone() for k, v in model.state_dict().items()
@@ -6806,6 +7060,18 @@ def main(argv: list[str] | None = None) -> int:
                             ),
                             stage32_owner_state_shadow_mode=getattr(
                                 args, "stage32_owner_state_shadow_mode", False
+                            ),
+                            stage32_coverage_owner_v2=getattr(
+                                args, "stage32_coverage_owner_v2", False
+                            ),
+                            stage32_coverage_owner_v2_min_confidence=getattr(
+                                args, "stage32_coverage_owner_v2_min_confidence", 0.50
+                            ),
+                            stage32_coverage_owner_v2_min_margin=getattr(
+                                args, "stage32_coverage_owner_v2_min_margin", 0.05
+                            ),
+                            stage32_coverage_owner_v2_allow_abstain=getattr(
+                                args, "stage32_coverage_owner_v2_allow_abstain", False
                             ),
                         )
                         _pcs_state = {
@@ -8400,6 +8666,20 @@ def main(argv: list[str] | None = None) -> int:
             "stage32_owner_state_modifies_final_predictions": False,
             "stage32_owner_state_modifies_loss": False,
             "stage32_owner_state_used_for_checkpoint_selection": False,
+            "stage32_coverage_owner_v2": getattr(
+                args, "stage32_coverage_owner_v2", False
+            ),
+            "stage32_coverage_owner_v2_min_confidence": getattr(
+                args, "stage32_coverage_owner_v2_min_confidence", 0.50
+            ),
+            "stage32_coverage_owner_v2_min_margin": getattr(
+                args, "stage32_coverage_owner_v2_min_margin", 0.05
+            ),
+            "stage32_coverage_owner_v2_allow_abstain": getattr(
+                args, "stage32_coverage_owner_v2_allow_abstain", False
+            ),
+            "stage32_coverage_owner_v2_modifies_final_logits": False,
+            "stage32_coverage_owner_v2_modifies_final_predictions": False,
             "v7_h1_entitlement_for_decision_source": (
                 _V7_H1_DECISION_SIGNAL_SOURCE.get(
                     getattr(args, "v7_h1_entitlement_decision_signal", "learned"),
@@ -8546,6 +8826,18 @@ def main(argv: list[str] | None = None) -> int:
                 ),
                 "stage32_owner_state_modifies_final_logits": False,
                 "stage32_owner_state_modifies_final_predictions": False,
+                "stage32_coverage_owner_v2": getattr(
+                    args, "stage32_coverage_owner_v2", False
+                ),
+                "stage32_coverage_owner_v2_min_confidence": getattr(
+                    args, "stage32_coverage_owner_v2_min_confidence", 0.50
+                ),
+                "stage32_coverage_owner_v2_min_margin": getattr(
+                    args, "stage32_coverage_owner_v2_min_margin", 0.05
+                ),
+                "stage32_coverage_owner_v2_allow_abstain": getattr(
+                    args, "stage32_coverage_owner_v2_allow_abstain", False
+                ),
                 "freeze_encoder": getattr(args, "freeze_encoder", None),
                 "freeze_a_log": getattr(args, "freeze_a_log", None),
                 "max_length": getattr(args, "max_length", None),

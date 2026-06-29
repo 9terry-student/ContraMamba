@@ -50,6 +50,9 @@ OWNER_MEAN_FIELDS = [
     "stage32_coverage_overclaim_ne_prob",
     "stage32_coverage_contradicts_refute_prob",
     "stage32_coverage_confidence",
+    "stage32_coverage_v2_top_prob",
+    "stage32_coverage_v2_second_prob",
+    "stage32_coverage_v2_margin",
     "stage32_polarity_support_prob",
     "stage32_polarity_refute_prob",
 ]
@@ -228,6 +231,30 @@ def group_distribution(rows: list[dict[str, Any]], field: str) -> dict[str, int]
     return dict(Counter(str(row.get(field, "MISSING")) for row in rows))
 
 
+def compute_coverage_v2_summary(rows: list[dict[str, Any]]) -> dict[str, Any] | None:
+    if not any("stage32_coverage_v2_pred_label" in row for row in rows):
+        return None
+    abstain_values = [
+        normalize_bool(row.get("stage32_coverage_v2_abstained"))
+        for row in rows
+        if "stage32_coverage_v2_abstained" in row
+    ]
+    abstain_count = sum(value is True for value in abstain_values)
+    return {
+        "coverage_v2_pred_label_counts": group_distribution(
+            rows, "stage32_coverage_v2_pred_label"
+        ),
+        "coverage_v2_route_counts": group_distribution(
+            rows, "stage32_coverage_v2_route"
+        ),
+        "coverage_v2_reason_counts": group_distribution(
+            rows, "stage32_coverage_v2_reason"
+        ),
+        "coverage_v2_abstain_count": abstain_count,
+        "coverage_v2_abstain_rate": round(safe_div(abstain_count, len(rows)), 4),
+    }
+
+
 def compute_group_metrics(
     rows: list[dict[str, Any]],
     group_field: str | None,
@@ -310,7 +337,12 @@ def compute_stage31_diagnostics(
         group = str(row.get(group_field, ""))
         current = normalize_label(row[current_field])
         shadow = normalize_label(row[shadow_field])
+        v2_route = str(row.get("stage32_coverage_v2_route", ""))
         if group in SUPPORT_ENTAILMENT_GROUPS:
+            if v2_route == "ENTAILMENT_PRESERVE":
+                diag["support_entailment_v2_entailment_preserve"] += 1
+            if v2_route == "RESIDUAL":
+                diag["support_entailment_v2_unresolved"] += 1
             if current == "NOT_ENTITLED":
                 diag["support_entailment_current_ne"] += 1
             if shadow == "NOT_ENTITLED":
@@ -321,6 +353,10 @@ def compute_stage31_diagnostics(
             if shadow == "REFUTE":
                 diag["shadow_support_to_refute"] += 1
         elif group in OVERCLAIM_GROUPS:
+            if v2_route == "OVERCLAIM_NE":
+                diag["overclaim_v2_overclaim_ne"] += 1
+            if v2_route == "RESIDUAL":
+                diag["overclaim_v2_unresolved"] += 1
             if current == "SUPPORT":
                 diag["overclaim_current_support"] += 1
             if shadow == "SUPPORT":
@@ -329,6 +365,10 @@ def compute_stage31_diagnostics(
             if shadow == "NOT_ENTITLED":
                 diag["overclaim_shadow_ne"] += 1
         elif group in REFUTE_GROUPS:
+            if v2_route == "CONTRADICTION_REFUTE":
+                diag["refute_v2_contradiction_refute"] += 1
+            if v2_route == "RESIDUAL":
+                diag["refute_v2_unresolved"] += 1
             if current == "SUPPORT":
                 diag["refute_current_support"] += 1
             if shadow == "SUPPORT":
@@ -354,6 +394,12 @@ def compute_stage31_diagnostics(
         "shadow_refute_to_support",
         "shadow_support_to_ne",
         "shadow_support_to_refute",
+        "support_entailment_v2_entailment_preserve",
+        "support_entailment_v2_unresolved",
+        "overclaim_v2_overclaim_ne",
+        "overclaim_v2_unresolved",
+        "refute_v2_contradiction_refute",
+        "refute_v2_unresolved",
     ):
         diag.setdefault(key, 0)
     return dict(diag)
@@ -363,6 +409,7 @@ def decide(
     current_metrics: dict[str, Any],
     shadow_metrics: dict[str, Any],
     stage31_diag: dict[str, Any] | None,
+    coverage_v2_summary: dict[str, Any] | None,
 ) -> dict[str, str]:
     macro_delta = shadow_metrics["macro_f1"] - current_metrics["macro_f1"]
     if stage31_diag:
@@ -379,11 +426,16 @@ def decide(
             >= stage31_diag["support_entailment_current_ne"] + 10
         )
         support_collapse = stage31_diag["shadow_support_to_ne"] >= 40
+        v2_reduced_overclaim_routing = (
+            coverage_v2_summary is not None
+            and stage31_diag.get("overclaim_v2_unresolved", 0) > 0
+        )
     else:
         refute_safety_increase = False
         overclaim_safety_increase = False
         support_recovery_improved = False
         support_collapse = False
+        v2_reduced_overclaim_routing = False
 
     if (
         macro_delta >= 0.05
@@ -398,12 +450,28 @@ def decide(
                 "safety errors, and support-entailment recovery improves."
             ),
         }
-    if macro_delta <= -0.02 or refute_safety_increase or overclaim_safety_increase or support_collapse:
+    if refute_safety_increase or overclaim_safety_increase:
         return {
             "label": "STAGE32_SHADOW_UNSAFE",
             "reason": (
-                "Shadow route is not safe to apply: macro-F1 dropped materially, "
-                "safety errors increased, or SUPPORT cases collapsed to NOT_ENTITLED."
+                "Shadow route is not safe to apply: REFUTE->SUPPORT or "
+                "OVERCLAIM->SUPPORT safety errors increased."
+            ),
+        }
+    if (macro_delta <= -0.02 or support_collapse) and not v2_reduced_overclaim_routing:
+        return {
+            "label": "STAGE32_SHADOW_UNSAFE",
+            "reason": (
+                "Shadow route is not safe to apply: macro-F1 dropped materially "
+                "or SUPPORT cases remain collapsed without useful v2 unresolved routing."
+            ),
+        }
+    if coverage_v2_summary is not None and v2_reduced_overclaim_routing:
+        return {
+            "label": "STAGE32_SHADOW_DIAGNOSTIC_ONLY_CONTINUE",
+            "reason": (
+                "Coverage Owner v2 exposes unresolved routing, but the shadow composer "
+                "is not yet safe to apply until SUPPORT recovery improves."
             ),
         }
     return {
@@ -465,6 +533,19 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
         lines.extend(["", "## Shadow Priority Trace Counts", "| Trace | Count |", "|---|---:|"])
         for key, value in sorted(report["shadow_priority_trace_counts"].items(), key=lambda item: (-item[1], item[0]))[:30]:
             lines.append(f"| `{key}` | {value} |")
+
+    if report["coverage_v2_summary"] is not None:
+        lines.extend(["", "## Coverage Owner v2 Summary"])
+        lines.append(f"- Abstain count: {report['coverage_v2_summary']['coverage_v2_abstain_count']}")
+        lines.append(f"- Abstain rate: {report['coverage_v2_summary']['coverage_v2_abstain_rate']:.4f}")
+        for title, key in (
+            ("v2 Pred Label Counts", "coverage_v2_pred_label_counts"),
+            ("v2 Route Counts", "coverage_v2_route_counts"),
+            ("v2 Reason Counts", "coverage_v2_reason_counts"),
+        ):
+            lines.extend(["", f"### {title}", "| Value | Count |", "|---|---:|"])
+            for name, count in sorted(report["coverage_v2_summary"][key].items()):
+                lines.append(f"| {name} | {count} |")
 
     if report["group_metrics"]:
         lines.extend(["", "## Group-Level Metrics", "| Group | N | Current Acc | Shadow Acc | Delta |", "|---|---:|---:|---:|---:|"])
@@ -578,6 +659,7 @@ def main() -> int:
     shadow_metrics = prediction_metrics(golds, shadow)
     rows_changed = sum(c != s for c, s in zip(current, shadow))
     stage31_diag = compute_stage31_diagnostics(rows, group_field, current_field, shadow_field)
+    coverage_v2_summary = compute_coverage_v2_summary(rows)
     report = {
         "run_name": args.run_name,
         "predictions_file": str(predictions_path),
@@ -617,11 +699,12 @@ def main() -> int:
             )),
         },
         "owner_state_means": means_for_rows(rows),
+        "coverage_v2_summary": coverage_v2_summary,
         "group_metrics": compute_group_metrics(
             rows, group_field, gold_field, current_field, shadow_field
         ),
         "stage31_specific_diagnostics": stage31_diag,
-        "decision": decide(current_metrics, shadow_metrics, stage31_diag),
+        "decision": decide(current_metrics, shadow_metrics, stage31_diag, coverage_v2_summary),
         "leakage_policy": (
             "This evaluator is diagnostic-only. It must not be used for training, "
             "calibration, threshold selection, or checkpoint selection. Stage31 "

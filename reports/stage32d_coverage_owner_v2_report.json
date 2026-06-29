@@ -1,0 +1,149 @@
+{
+  "stage": "Stage32-D",
+  "artifact": "coverage_owner_v2_shadow_abstain",
+  "purpose": "Introduce shadow-only Coverage Owner v2 with confidence/margin abstain routing.",
+  "stage32c_unsafe_summary": {
+    "stage31_external": {
+      "current_accuracy": 0.36,
+      "current_macro_f1": 0.1818,
+      "shadow_accuracy": 0.35,
+      "shadow_macro_f1": 0.2064,
+      "rows_changed_by_shadow": "29 / 200",
+      "decision": "STAGE32_SHADOW_UNSAFE",
+      "support_entailment_shadow_support": 0,
+      "support_entailment_shadow_ne": 69,
+      "shadow_support_to_refute": 11,
+      "shadow_overclaim_to_support": 0,
+      "shadow_refute_to_support": 0,
+      "dominant_reasons": {
+        "coverage_overclaim": 140,
+        "hard_core_block": 32,
+        "coverage_contradiction": 27,
+        "residual_or_unresolved": 1
+      }
+    },
+    "controlled_dev": {
+      "current_accuracy": 0.5611,
+      "current_macro_f1": 0.3617,
+      "shadow_accuracy": 0.7111,
+      "shadow_macro_f1": 0.2771,
+      "rows_changed_by_shadow": "378 / 720",
+      "decision": "STAGE32_SHADOW_UNSAFE",
+      "shadow_prediction_distribution": {
+        "NOT_ENTITLED": 692,
+        "REFUTE": 28,
+        "SUPPORT": 0
+      },
+      "dominant_reasons": {
+        "coverage_overclaim": 653,
+        "hard_core_block": 39,
+        "coverage_contradiction": 28
+      }
+    }
+  },
+  "cli_flags": {
+    "stage32_coverage_owner_v2": {
+      "flag": "--stage32-coverage-owner-v2",
+      "default": false
+    },
+    "stage32_coverage_owner_v2_min_confidence": {
+      "flag": "--stage32-coverage-owner-v2-min-confidence",
+      "default": 0.5
+    },
+    "stage32_coverage_owner_v2_min_margin": {
+      "flag": "--stage32-coverage-owner-v2-min-margin",
+      "default": 0.05
+    },
+    "stage32_coverage_owner_v2_allow_abstain": {
+      "flag": "--stage32-coverage-owner-v2-allow-abstain",
+      "default": false
+    }
+  },
+  "v2_logic": {
+    "inputs": [
+      "stage32_coverage_entails_support_prob",
+      "stage32_coverage_overclaim_ne_prob",
+      "stage32_coverage_contradicts_refute_prob",
+      "stage32_coverage_confidence",
+      "stage32_coverage_pred_label"
+    ],
+    "computed": [
+      "top_prob",
+      "second_prob",
+      "margin"
+    ],
+    "abstain_rules": [
+      {
+        "condition": "top_prob < min_confidence",
+        "pred_label": "UNRESOLVED_COVERAGE",
+        "route": "RESIDUAL",
+        "reason": "low_confidence_abstain"
+      },
+      {
+        "condition": "margin < min_margin",
+        "pred_label": "UNRESOLVED_COVERAGE",
+        "route": "RESIDUAL",
+        "reason": "low_margin_abstain"
+      },
+      {
+        "condition": "otherwise",
+        "pred_label": "original coverage label",
+        "route": "label-mapped coverage route",
+        "reason": "confident_coverage_prediction"
+      }
+    ]
+  },
+  "export_fields": [
+    "stage32_coverage_v2_enabled",
+    "stage32_coverage_v2_top_prob",
+    "stage32_coverage_v2_second_prob",
+    "stage32_coverage_v2_margin",
+    "stage32_coverage_v2_min_confidence",
+    "stage32_coverage_v2_min_margin",
+    "stage32_coverage_v2_pred_label",
+    "stage32_coverage_v2_route",
+    "stage32_coverage_v2_reason",
+    "stage32_coverage_v2_abstained"
+  ],
+  "shadow_composer_routes": {
+    "OVERCLAIM_NE": "NOT_ENTITLED / coverage_v2_overclaim",
+    "CONTRADICTION_REFUTE": "REFUTE / coverage_v2_contradiction",
+    "ENTAILMENT_PRESERVE_WITH_SUPPORT_POLARITY": "SUPPORT / coverage_v2_entails_support_with_positive_polarity",
+    "ENTAILMENT_PRESERVE_WITHOUT_SUPPORT_POLARITY": "NOT_ENTITLED / coverage_v2_entailment_without_positive_polarity",
+    "RESIDUAL": "NOT_ENTITLED / coverage_v2_unresolved_to_residual"
+  },
+  "evaluator_updates": {
+    "coverage_v2_summary_fields": [
+      "coverage_v2_pred_label_counts",
+      "coverage_v2_route_counts",
+      "coverage_v2_reason_counts",
+      "coverage_v2_abstain_count",
+      "coverage_v2_abstain_rate"
+    ],
+    "stage31_specific_v2_fields": [
+      "support_entailment_v2_entailment_preserve",
+      "support_entailment_v2_unresolved",
+      "overclaim_v2_overclaim_ne",
+      "overclaim_v2_unresolved",
+      "refute_v2_contradiction_refute",
+      "refute_v2_unresolved"
+    ]
+  },
+  "shadow_only_guarantee": {
+    "modifies_final_logits": false,
+    "modifies_final_predictions": false,
+    "modifies_h1_final_decision": false,
+    "modifies_losses": false,
+    "modifies_caps": false,
+    "modifies_entitlement": false,
+    "modifies_training_data_selection": false,
+    "modifies_checkpoint_selection": false
+  },
+  "remaining_risks": [
+    "V2 may reduce blind overclaim routing without recovering SUPPORT.",
+    "Thresholds require diagnostic confidence/margin sweeps.",
+    "The owner is still proxy-backed by the Stage31 coverage head.",
+    "Stage31 remains diagnostic-only and must not be used for training or selection."
+  ],
+  "next_step": "Evaluate Coverage Owner v2 with confidence/margin sweeps."
+}
