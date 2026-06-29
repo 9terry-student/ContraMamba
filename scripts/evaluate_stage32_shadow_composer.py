@@ -190,6 +190,53 @@ def safe_div(num: float, den: float) -> float:
     return num / den if den else 0.0
 
 
+def parse_float_list(raw: str) -> list[float]:
+    values: list[float] = []
+    for part in raw.split(","):
+        part = part.strip()
+        if not part:
+            continue
+        values.append(float(part))
+    if not values:
+        raise ValueError(f"Expected at least one numeric value in {raw!r}")
+    return values
+
+
+def numeric_summary(values: list[float]) -> dict[str, float | None]:
+    if not values:
+        return {
+            "mean": None,
+            "min": None,
+            "max": None,
+            "p10": None,
+            "p25": None,
+            "p50": None,
+            "p75": None,
+            "p90": None,
+        }
+    vals = sorted(values)
+
+    def percentile(pct: float) -> float:
+        if len(vals) == 1:
+            return vals[0]
+        pos = (len(vals) - 1) * pct
+        lo = int(pos)
+        hi = min(lo + 1, len(vals) - 1)
+        frac = pos - lo
+        return vals[lo] * (1.0 - frac) + vals[hi] * frac
+
+    return {
+        "mean": round(sum(vals) / len(vals), 6),
+        "min": round(vals[0], 6),
+        "max": round(vals[-1], 6),
+        "p10": round(percentile(0.10), 6),
+        "p25": round(percentile(0.25), 6),
+        "p50": round(percentile(0.50), 6),
+        "p75": round(percentile(0.75), 6),
+        "p90": round(percentile(0.90), 6),
+    }
+
+
 def macro_f1(golds: list[str], preds: list[str]) -> float:
     scores: list[float] = []
     for label in LABELS:
@@ -232,7 +279,15 @@ def group_distribution(rows: list[dict[str, Any]], field: str) -> dict[str, int]
 
 
 def compute_coverage_v2_summary(rows: list[dict[str, Any]]) -> dict[str, Any] | None:
-    if not any("stage32_coverage_v2_pred_label" in row for row in rows):
+    v2_fields = {
+        "stage32_coverage_v2_pred_label",
+        "stage32_coverage_v2_route",
+        "stage32_coverage_v2_reason",
+        "stage32_coverage_v2_abstained",
+        "stage32_coverage_v2_margin",
+        "stage32_coverage_v2_top_prob",
+    }
+    if not any(any(field in row for field in v2_fields) for row in rows):
         return None
     abstain_values = [
         normalize_bool(row.get("stage32_coverage_v2_abstained"))
@@ -240,6 +295,16 @@ def compute_coverage_v2_summary(rows: list[dict[str, Any]]) -> dict[str, Any] | 
         if "stage32_coverage_v2_abstained" in row
     ]
     abstain_count = sum(value is True for value in abstain_values)
+    margins = [
+        value for value in
+        (safe_float(row.get("stage32_coverage_v2_margin")) for row in rows)
+        if value is not None
+    ]
+    top_probs = [
+        value for value in
+        (safe_float(row.get("stage32_coverage_v2_top_prob")) for row in rows)
+        if value is not None
+    ]
     return {
         "coverage_v2_pred_label_counts": group_distribution(
             rows, "stage32_coverage_v2_pred_label"
@@ -252,6 +317,8 @@ def compute_coverage_v2_summary(rows: list[dict[str, Any]]) -> dict[str, Any] | 
         ),
         "coverage_v2_abstain_count": abstain_count,
         "coverage_v2_abstain_rate": round(safe_div(abstain_count, len(rows)), 4),
+        "coverage_v2_margin_summary": numeric_summary(margins),
+        "coverage_v2_top_prob_summary": numeric_summary(top_probs),
     }
 
 
@@ -326,57 +393,75 @@ def compute_stage31_diagnostics(
     current_field: str,
     shadow_field: str,
 ) -> dict[str, Any] | None:
+    current = [normalize_label(row[current_field]) for row in rows]
+    shadow = [normalize_label(row[shadow_field]) for row in rows]
+    v2_routes = [str(row.get("stage32_coverage_v2_route", "")) for row in rows]
+    return compute_stage31_diagnostics_from_values(
+        rows,
+        group_field,
+        current,
+        shadow,
+        v2_routes,
+    )
+
+
+def compute_stage31_diagnostics_from_values(
+    rows: list[dict[str, Any]],
+    group_field: str | None,
+    current: list[str],
+    shadow: list[str],
+    v2_routes: list[str] | None = None,
+) -> dict[str, Any] | None:
     if group_field is None:
         return None
     groups = {str(row.get(group_field, "")) for row in rows}
     if not groups.intersection(SUPPORT_ENTAILMENT_GROUPS | OVERCLAIM_GROUPS | REFUTE_GROUPS):
         return None
 
+    if v2_routes is None:
+        v2_routes = [""] * len(rows)
     diag = Counter()
-    for row in rows:
+    for row, current_label, shadow_label, v2_route in zip(rows, current, shadow, v2_routes):
         group = str(row.get(group_field, ""))
-        current = normalize_label(row[current_field])
-        shadow = normalize_label(row[shadow_field])
-        v2_route = str(row.get("stage32_coverage_v2_route", ""))
         if group in SUPPORT_ENTAILMENT_GROUPS:
             if v2_route == "ENTAILMENT_PRESERVE":
                 diag["support_entailment_v2_entailment_preserve"] += 1
             if v2_route == "RESIDUAL":
                 diag["support_entailment_v2_unresolved"] += 1
-            if current == "NOT_ENTITLED":
+            if current_label == "NOT_ENTITLED":
                 diag["support_entailment_current_ne"] += 1
-            if shadow == "NOT_ENTITLED":
+            if shadow_label == "NOT_ENTITLED":
                 diag["support_entailment_shadow_ne"] += 1
                 diag["shadow_support_to_ne"] += 1
-            if shadow == "SUPPORT":
+            if shadow_label == "SUPPORT":
                 diag["support_entailment_shadow_support"] += 1
-            if shadow == "REFUTE":
+            if shadow_label == "REFUTE":
                 diag["shadow_support_to_refute"] += 1
         elif group in OVERCLAIM_GROUPS:
             if v2_route == "OVERCLAIM_NE":
                 diag["overclaim_v2_overclaim_ne"] += 1
             if v2_route == "RESIDUAL":
                 diag["overclaim_v2_unresolved"] += 1
-            if current == "SUPPORT":
+            if current_label == "SUPPORT":
                 diag["overclaim_current_support"] += 1
-            if shadow == "SUPPORT":
+            if shadow_label == "SUPPORT":
                 diag["overclaim_shadow_support"] += 1
                 diag["shadow_overclaim_to_support"] += 1
-            if shadow == "NOT_ENTITLED":
+            if shadow_label == "NOT_ENTITLED":
                 diag["overclaim_shadow_ne"] += 1
         elif group in REFUTE_GROUPS:
             if v2_route == "CONTRADICTION_REFUTE":
                 diag["refute_v2_contradiction_refute"] += 1
             if v2_route == "RESIDUAL":
                 diag["refute_v2_unresolved"] += 1
-            if current == "SUPPORT":
+            if current_label == "SUPPORT":
                 diag["refute_current_support"] += 1
-            if shadow == "SUPPORT":
+            if shadow_label == "SUPPORT":
                 diag["refute_shadow_support"] += 1
                 diag["shadow_refute_to_support"] += 1
-            if shadow == "REFUTE":
+            if shadow_label == "REFUTE":
                 diag["refute_shadow_refute"] += 1
-            if shadow == "NOT_ENTITLED":
+            if shadow_label == "NOT_ENTITLED":
                 diag["refute_shadow_ne"] += 1
 
     for key in (
@@ -403,6 +488,183 @@ def compute_stage31_diagnostics(
     ):
         diag.setdefault(key, 0)
     return dict(diag)
+
+
+def coverage_route_from_label(label: str) -> str:
+    if label == "ENTAILS_SUPPORT":
+        return "ENTAILMENT_PRESERVE"
+    if label == "OVERCLAIM_NOT_ENTITLED":
+        return "OVERCLAIM_NE"
+    if label == "CONTRADICTS_REFUTE":
+        return "CONTRADICTION_REFUTE"
+    return "RESIDUAL"
+
+
+def offline_v2_route_for_row(
+    row: dict[str, Any],
+    min_confidence: float,
+    min_margin: float,
+) -> dict[str, Any]:
+    probs = [
+        ("ENTAILS_SUPPORT", safe_float(row.get("stage32_coverage_entails_support_prob"))),
+        ("OVERCLAIM_NOT_ENTITLED", safe_float(row.get("stage32_coverage_overclaim_ne_prob"))),
+        ("CONTRADICTS_REFUTE", safe_float(row.get("stage32_coverage_contradicts_refute_prob"))),
+    ]
+    if any(prob is None for _, prob in probs):
+        return {
+            "pred_label": "UNRESOLVED_COVERAGE",
+            "route": "RESIDUAL",
+            "reason": "missing_coverage_probs",
+            "top_prob": None,
+            "second_prob": None,
+            "margin": None,
+        }
+    sorted_probs = sorted(probs, key=lambda item: item[1] or 0.0, reverse=True)
+    top_label, top_prob = sorted_probs[0]
+    _, second_prob = sorted_probs[1]
+    margin = float(top_prob) - float(second_prob)
+    if float(top_prob) < min_confidence:
+        return {
+            "pred_label": "UNRESOLVED_COVERAGE",
+            "route": "RESIDUAL",
+            "reason": "low_confidence_abstain",
+            "top_prob": float(top_prob),
+            "second_prob": float(second_prob),
+            "margin": margin,
+        }
+    if margin < min_margin:
+        return {
+            "pred_label": "UNRESOLVED_COVERAGE",
+            "route": "RESIDUAL",
+            "reason": "low_margin_abstain",
+            "top_prob": float(top_prob),
+            "second_prob": float(second_prob),
+            "margin": margin,
+        }
+    return {
+        "pred_label": top_label,
+        "route": coverage_route_from_label(top_label),
+        "reason": "confident_coverage_prediction",
+        "top_prob": float(top_prob),
+        "second_prob": float(second_prob),
+        "margin": margin,
+    }
+
+
+def offline_shadow_label(row: dict[str, Any], route: str) -> str:
+    hard_core_pass = normalize_bool(row.get("stage32_hard_core_pass"))
+    polarity = str(row.get("stage32_polarity_pred_label", "NEUTRAL_OR_BLOCKED"))
+    if hard_core_pass is False:
+        return "NOT_ENTITLED"
+    if route == "OVERCLAIM_NE":
+        return "NOT_ENTITLED"
+    if route == "CONTRADICTION_REFUTE":
+        return "REFUTE"
+    if route == "ENTAILMENT_PRESERVE" and polarity == "SUPPORT":
+        return "SUPPORT"
+    if route == "ENTAILMENT_PRESERVE":
+        return "NOT_ENTITLED"
+    return "NOT_ENTITLED"
+
+
+def offline_sweep_decision(
+    row: dict[str, Any],
+    current_macro_f1: float,
+) -> str:
+    safe = row["shadow_overclaim_to_support"] == 0 and row["shadow_refute_to_support"] == 0
+    recovers_support = row["support_entailment_shadow_support"] > 0
+    improves_macro = row["delta_macro_f1"] >= 0.05
+    if not (safe and recovers_support):
+        return "STAGE32_D2_NO_SAFE_SUPPORT_RECOVERY"
+    if improves_macro and row["shadow_macro_f1"] >= current_macro_f1:
+        return "STAGE32_D2_PROMISING_BUT_STILL_SHADOW_ONLY"
+    return "STAGE32_D2_DIAGNOSTIC_THRESHOLD_FOUND_NOT_APPLY"
+
+
+def compute_offline_sweep(
+    rows: list[dict[str, Any]],
+    group_field: str | None,
+    golds: list[str],
+    current: list[str],
+    confidences: list[float],
+    margins: list[float],
+    current_metrics: dict[str, Any],
+) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
+    sweep_rows: list[dict[str, Any]] = []
+    for conf in confidences:
+        for margin_threshold in margins:
+            route_infos = [
+                offline_v2_route_for_row(row, conf, margin_threshold)
+                for row in rows
+            ]
+            routes = [info["route"] for info in route_infos]
+            pred_labels = [info["pred_label"] for info in route_infos]
+            reasons = [info["reason"] for info in route_infos]
+            shadow = [
+                offline_shadow_label(row, route)
+                for row, route in zip(rows, routes)
+            ]
+            shadow_metrics = prediction_metrics(golds, shadow)
+            stage31_diag = compute_stage31_diagnostics_from_values(
+                rows,
+                group_field,
+                current,
+                shadow,
+                routes,
+            ) or {}
+            unresolved_count = sum(route == "RESIDUAL" for route in routes)
+            out = {
+                "min_confidence": conf,
+                "min_margin": margin_threshold,
+                "shadow_accuracy": shadow_metrics["accuracy"],
+                "shadow_macro_f1": shadow_metrics["macro_f1"],
+                "delta_macro_f1": round(
+                    shadow_metrics["macro_f1"] - current_metrics["macro_f1"], 4
+                ),
+                "shadow_prediction_distribution": dict(Counter(shadow)),
+                "route_counts": dict(Counter(routes)),
+                "pred_label_counts": dict(Counter(pred_labels)),
+                "reason_counts": dict(Counter(reasons)),
+                "unresolved_count": unresolved_count,
+                "unresolved_rate": round(safe_div(unresolved_count, len(rows)), 4),
+                "support_entailment_shadow_support": stage31_diag.get(
+                    "support_entailment_shadow_support", 0
+                ),
+                "support_entailment_v2_entailment_preserve": stage31_diag.get(
+                    "support_entailment_v2_entailment_preserve", 0
+                ),
+                "overclaim_v2_overclaim_ne": stage31_diag.get(
+                    "overclaim_v2_overclaim_ne", 0
+                ),
+                "refute_v2_contradiction_refute": stage31_diag.get(
+                    "refute_v2_contradiction_refute", 0
+                ),
+                "shadow_overclaim_to_support": stage31_diag.get(
+                    "shadow_overclaim_to_support", 0
+                ),
+                "shadow_refute_to_support": stage31_diag.get(
+                    "shadow_refute_to_support", 0
+                ),
+                "shadow_support_to_ne": stage31_diag.get("shadow_support_to_ne", 0),
+                "shadow_support_to_refute": stage31_diag.get(
+                    "shadow_support_to_refute", 0
+                ),
+            }
+            out["decision_label"] = offline_sweep_decision(
+                out, current_metrics["macro_f1"]
+            )
+            sweep_rows.append(out)
+    safe_candidates = [
+        row for row in sweep_rows
+        if row["shadow_overclaim_to_support"] == 0
+        and row["shadow_refute_to_support"] == 0
+    ]
+    best = (
+        max(safe_candidates, key=lambda row: row["shadow_macro_f1"])
+        if safe_candidates
+        else None
+    )
+    return sweep_rows, best
 
 
 def decide(
@@ -560,6 +822,45 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
         for key, value in sorted(report["stage31_specific_diagnostics"].items()):
             lines.append(f"| {key} | {value} |")
 
+    if report.get("coverage_v2_offline_sweep"):
+        lines.extend([
+            "",
+            "## Coverage Owner v2 Offline Threshold Sweep",
+            "| Conf | Margin | Safe | Shadow Macro-F1 | Delta Macro-F1 | Support Recovered | Unresolved Rate | Decision |",
+            "|---:|---:|---|---:|---:|---:|---:|---|",
+        ])
+        sorted_sweep = sorted(
+            report["coverage_v2_offline_sweep"],
+            key=lambda row: (
+                not (
+                    row["shadow_overclaim_to_support"] == 0
+                    and row["shadow_refute_to_support"] == 0
+                ),
+                -row["support_entailment_shadow_support"],
+                -row["shadow_macro_f1"],
+            ),
+        )
+        for row in sorted_sweep:
+            safe = (
+                row["shadow_overclaim_to_support"] == 0
+                and row["shadow_refute_to_support"] == 0
+            )
+            lines.append(
+                f"| {row['min_confidence']:.2f} | {row['min_margin']:.2f} | "
+                f"{safe} | {row['shadow_macro_f1']:.4f} | {row['delta_macro_f1']:.4f} | "
+                f"{row['support_entailment_shadow_support']} | {row['unresolved_rate']:.4f} | "
+                f"{row['decision_label']} |"
+            )
+        if report.get("coverage_v2_offline_sweep_best") is not None:
+            best = report["coverage_v2_offline_sweep_best"]
+            lines.extend([
+                "",
+                "Best safe candidate:",
+                f"- min_confidence={best['min_confidence']:.2f}, min_margin={best['min_margin']:.2f}, shadow_macro_f1={best['shadow_macro_f1']:.4f}",
+            ])
+        else:
+            lines.extend(["", "Best safe candidate: none"])
+
     lines.extend([
         "",
         "## Decision",
@@ -596,6 +897,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--gold-field", default=None)
     parser.add_argument("--current-pred-field", default=None)
     parser.add_argument("--shadow-pred-field", default=SHADOW_PRED_FIELD_DEFAULT)
+    parser.add_argument("--coverage-v2-offline-sweep", action="store_true", default=False)
+    parser.add_argument(
+        "--coverage-v2-sweep-confidences",
+        default="0.30,0.35,0.40,0.45,0.50",
+    )
+    parser.add_argument(
+        "--coverage-v2-sweep-margins",
+        default="0.00,0.02,0.05,0.08,0.10",
+    )
     return parser.parse_args()
 
 
@@ -660,6 +970,66 @@ def main() -> int:
     rows_changed = sum(c != s for c, s in zip(current, shadow))
     stage31_diag = compute_stage31_diagnostics(rows, group_field, current_field, shadow_field)
     coverage_v2_summary = compute_coverage_v2_summary(rows)
+    offline_sweep: list[dict[str, Any]] | None = None
+    offline_sweep_best: dict[str, Any] | None = None
+    offline_sweep_decision: dict[str, str] | None = None
+    if args.coverage_v2_offline_sweep:
+        try:
+            sweep_confidences = parse_float_list(args.coverage_v2_sweep_confidences)
+            sweep_margins = parse_float_list(args.coverage_v2_sweep_margins)
+        except ValueError as exc:
+            print(f"ERROR: {exc}", file=sys.stderr)
+            return 1
+        offline_sweep, offline_sweep_best = compute_offline_sweep(
+            rows,
+            group_field,
+            golds,
+            current,
+            sweep_confidences,
+            sweep_margins,
+            current_metrics,
+        )
+        safe_support_candidates = [
+            row for row in offline_sweep
+            if row["support_entailment_shadow_support"] > 0
+            and row["shadow_overclaim_to_support"] == 0
+            and row["shadow_refute_to_support"] == 0
+        ]
+        if not safe_support_candidates:
+            offline_sweep_decision = {
+                "label": "STAGE32_D2_NO_SAFE_SUPPORT_RECOVERY",
+                "reason": (
+                    "No threshold pair recovered SUPPORT while keeping overclaim/refute "
+                    "to SUPPORT safety errors at zero."
+                ),
+            }
+        else:
+            best_support = max(
+                safe_support_candidates,
+                key=lambda row: row["shadow_macro_f1"],
+            )
+            if best_support["delta_macro_f1"] >= 0.05:
+                offline_sweep_decision = {
+                    "label": "STAGE32_D2_PROMISING_BUT_STILL_SHADOW_ONLY",
+                    "reason": (
+                        "At least one threshold pair safely recovers SUPPORT and "
+                        "improves macro-F1 materially, but this remains shadow-only."
+                    ),
+                }
+            else:
+                offline_sweep_decision = {
+                    "label": "STAGE32_D2_DIAGNOSTIC_THRESHOLD_FOUND_NOT_APPLY",
+                    "reason": (
+                        "At least one threshold pair safely recovers SUPPORT, but "
+                        "macro-F1 remains too weak for application."
+                    ),
+                }
+    decision = offline_sweep_decision or decide(
+        current_metrics,
+        shadow_metrics,
+        stage31_diag,
+        coverage_v2_summary,
+    )
     report = {
         "run_name": args.run_name,
         "predictions_file": str(predictions_path),
@@ -700,11 +1070,41 @@ def main() -> int:
         },
         "owner_state_means": means_for_rows(rows),
         "coverage_v2_summary": coverage_v2_summary,
+        "coverage_v2_pred_label_counts": (
+            coverage_v2_summary.get("coverage_v2_pred_label_counts")
+            if coverage_v2_summary else None
+        ),
+        "coverage_v2_route_counts": (
+            coverage_v2_summary.get("coverage_v2_route_counts")
+            if coverage_v2_summary else None
+        ),
+        "coverage_v2_reason_counts": (
+            coverage_v2_summary.get("coverage_v2_reason_counts")
+            if coverage_v2_summary else None
+        ),
+        "coverage_v2_abstain_count": (
+            coverage_v2_summary.get("coverage_v2_abstain_count")
+            if coverage_v2_summary else None
+        ),
+        "coverage_v2_abstain_rate": (
+            coverage_v2_summary.get("coverage_v2_abstain_rate")
+            if coverage_v2_summary else None
+        ),
+        "coverage_v2_margin_summary": (
+            coverage_v2_summary.get("coverage_v2_margin_summary")
+            if coverage_v2_summary else None
+        ),
+        "coverage_v2_top_prob_summary": (
+            coverage_v2_summary.get("coverage_v2_top_prob_summary")
+            if coverage_v2_summary else None
+        ),
         "group_metrics": compute_group_metrics(
             rows, group_field, gold_field, current_field, shadow_field
         ),
         "stage31_specific_diagnostics": stage31_diag,
-        "decision": decide(current_metrics, shadow_metrics, stage31_diag, coverage_v2_summary),
+        "coverage_v2_offline_sweep": offline_sweep,
+        "coverage_v2_offline_sweep_best": offline_sweep_best,
+        "decision": decision,
         "leakage_policy": (
             "This evaluator is diagnostic-only. It must not be used for training, "
             "calibration, threshold selection, or checkpoint selection. Stage31 "

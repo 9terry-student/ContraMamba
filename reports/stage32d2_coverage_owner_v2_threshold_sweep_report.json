@@ -1,0 +1,61 @@
+{
+  "stage": "Stage32-D2",
+  "artifact": "coverage_owner_v2_offline_threshold_sweep",
+  "purpose": "Add offline Coverage Owner v2 confidence/margin sweeps to the Stage32 shadow composer evaluator.",
+  "diagnostics_fix": {
+    "global_v2_diagnostics_emitted_when_fields_exist": true,
+    "fields": [
+      "coverage_v2_pred_label_counts",
+      "coverage_v2_route_counts",
+      "coverage_v2_reason_counts",
+      "coverage_v2_abstain_count",
+      "coverage_v2_abstain_rate",
+      "coverage_v2_margin_summary",
+      "coverage_v2_top_prob_summary"
+    ],
+    "summary_quantiles": [
+      "mean",
+      "min",
+      "max",
+      "p10",
+      "p25",
+      "p50",
+      "p75",
+      "p90"
+    ]
+  },
+  "offline_sweep_cli": {
+    "coverage_v2_offline_sweep": "--coverage-v2-offline-sweep",
+    "coverage_v2_sweep_confidences": {
+      "flag": "--coverage-v2-sweep-confidences",
+      "default": "0.30,0.35,0.40,0.45,0.50"
+    },
+    "coverage_v2_sweep_margins": {
+      "flag": "--coverage-v2-sweep-margins",
+      "default": "0.00,0.02,0.05,0.08,0.10"
+    }
+  },
+  "offline_sweep_inputs": [
+    "stage32_coverage_entails_support_prob",
+    "stage32_coverage_overclaim_ne_prob",
+    "stage32_coverage_contradicts_refute_prob"
+  ],
+  "offline_sweep_outputs": [
+    "coverage_v2_offline_sweep",
+    "coverage_v2_offline_sweep_best"
+  ],
+  "decision_labels": [
+    "STAGE32_D2_NO_SAFE_SUPPORT_RECOVERY",
+    "STAGE32_D2_DIAGNOSTIC_THRESHOLD_FOUND_NOT_APPLY",
+    "STAGE32_D2_PROMISING_BUT_STILL_SHADOW_ONLY"
+  ],
+  "diagnostic_only": true,
+  "must_not_use_for": [
+    "training",
+    "calibration",
+    "threshold selection",
+    "checkpoint selection",
+    "final prediction replacement"
+  ],
+  "remaining_risk": "Offline threshold sweeps can expose routing behavior but do not validate a deployable composer."
+}
