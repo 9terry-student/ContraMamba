@@ -1,0 +1,174 @@
+{
+  "stage": "Stage32-A",
+  "artifact": "owner_state_schema_shadow_mode",
+  "purpose": "Introduce a structured owner-state output schema using proxy-derived fields without changing predictions.",
+  "cli_flags": {
+    "stage32_use_owner_state_schema": {
+      "flag": "--stage32-use-owner-state-schema",
+      "default": false
+    },
+    "stage32_owner_state_export": {
+      "flag": "--stage32-owner-state-export",
+      "default": false
+    },
+    "stage32_owner_state_shadow_mode": {
+      "flag": "--stage32-owner-state-shadow-mode",
+      "default": false
+    }
+  },
+  "owners": {
+    "hard_core": {
+      "fields": [
+        "prob",
+        "pass",
+        "block_reason",
+        "source_fields"
+      ],
+      "proxy_mapping": {
+        "prob": "frame_prob",
+        "pass": "frame_prob >= 0.5",
+        "block_reason": "low_frame_proxy if pass is false else none",
+        "source_fields": [
+          "frame_prob"
+        ]
+      }
+    },
+    "coverage_entailment": {
+      "fields": [
+        "entails_support_prob",
+        "overclaim_ne_prob",
+        "contradicts_refute_prob",
+        "pred_label",
+        "pred_id",
+        "confidence",
+        "input_mode",
+        "source_fields"
+      ],
+      "proxy_mapping": {
+        "available_when": "Stage31 coverage-entailment diagnostic head is enabled",
+        "source_fields": [
+          "coverage_entails_support_prob",
+          "coverage_overclaim_ne_prob",
+          "coverage_contradicts_refute_prob",
+          "coverage_entailment_pred_label",
+          "coverage_entailment_pred_id",
+          "coverage_entailment_confidence",
+          "coverage_entailment_input_mode"
+        ],
+        "fallback_pred_label": "UNAVAILABLE"
+      }
+    },
+    "residual_adjudication": {
+      "fields": [
+        "residual_prob",
+        "ambiguous_prob",
+        "underspecified_prob",
+        "pred_label",
+        "source_fields"
+      ],
+      "proxy_mapping": {
+        "status": "UNIMPLEMENTED_PROXY",
+        "probabilities": null,
+        "source_fields": []
+      }
+    },
+    "ani_diagnostic": {
+      "fields": [
+        "novelty_prob",
+        "ambiguity_prob",
+        "ignorance_prob",
+        "pred_label",
+        "source_fields"
+      ],
+      "proxy_mapping": {
+        "status": "UNIMPLEMENTED_PROXY",
+        "probabilities": null,
+        "source_fields": []
+      }
+    },
+    "polarity": {
+      "fields": [
+        "support_energy",
+        "refute_energy",
+        "support_prob",
+        "refute_prob",
+        "pred_label",
+        "source_fields"
+      ],
+      "proxy_mapping": {
+        "support_energy": "positive_energy",
+        "refute_energy": "negative_energy",
+        "support_refute_probs": "softmax([negative_energy, positive_energy])",
+        "source_fields": [
+          "positive_energy",
+          "negative_energy"
+        ]
+      }
+    },
+    "composer_shadow": {
+      "fields": [
+        "would_block_support",
+        "would_route_ne",
+        "would_route_refute",
+        "shadow_label",
+        "shadow_reason",
+        "note"
+      ],
+      "rules": [
+        "hard_core.pass false -> NOT_ENTITLED / hard_core_block",
+        "coverage pred OVERCLAIM_NOT_ENTITLED -> NOT_ENTITLED / coverage_overclaim",
+        "coverage pred CONTRADICTS_REFUTE -> REFUTE / coverage_contradiction",
+        "coverage pred ENTAILS_SUPPORT and support polarity stronger -> SUPPORT / coverage_entails_support_with_positive_polarity",
+        "otherwise -> NOT_ENTITLED / residual_or_unresolved"
+      ]
+    }
+  },
+  "flattened_export_fields": [
+    "stage32_hard_core_prob",
+    "stage32_hard_core_pass",
+    "stage32_hard_core_block_reason",
+    "stage32_coverage_entails_support_prob",
+    "stage32_coverage_overclaim_ne_prob",
+    "stage32_coverage_contradicts_refute_prob",
+    "stage32_coverage_pred_label",
+    "stage32_coverage_pred_id",
+    "stage32_coverage_confidence",
+    "stage32_coverage_input_mode",
+    "stage32_residual_prob",
+    "stage32_residual_pred_label",
+    "stage32_ani_novelty_prob",
+    "stage32_ani_ambiguity_prob",
+    "stage32_ani_ignorance_prob",
+    "stage32_ani_pred_label",
+    "stage32_polarity_support_energy",
+    "stage32_polarity_refute_energy",
+    "stage32_polarity_support_prob",
+    "stage32_polarity_refute_prob",
+    "stage32_polarity_pred_label",
+    "stage32_shadow_label",
+    "stage32_shadow_reason",
+    "stage32_shadow_would_block_support",
+    "stage32_shadow_would_route_ne",
+    "stage32_shadow_would_route_refute"
+  ],
+  "nested_owner_state_export": false,
+  "shadow_mode_guarantee": {
+    "modifies_final_logits": false,
+    "modifies_final_predictions": false,
+    "modifies_h1_composer": false,
+    "modifies_entitlement": false,
+    "modifies_caps": false,
+    "modifies_losses": false,
+    "modifies_training_data_selection": false,
+    "modifies_checkpoint_selection": false,
+    "export_time_assertion": "When shadow mode and export are both enabled, final logits and predictions are snapshotted and checked after owner-state construction."
+  },
+  "limitations": [
+    "Hard Core is only a frame_prob proxy.",
+    "Coverage/Entailment is only available when the Stage31 diagnostic head is enabled.",
+    "Residual Adjudication and ANI are schema placeholders, not learned owners.",
+    "Polarity uses existing energy proxies and is not a new polarity owner.",
+    "The shadow label is diagnostic only."
+  ],
+  "next_step": "Stage32-B should introduce explicit Hard Core and Coverage/Entailment owner interfaces."
+}

@@ -1998,11 +1998,223 @@ def _s28e_safe_list_float(value: Any) -> "list[float] | None":
         return None
 
 
-def prediction_records_v6b(records: list[dict], output: dict[str, Any]) -> list[dict]:
+def _stage32_output_value(output: dict[str, Any], key: str, index: int) -> Any:
+    value = output.get(key)
+    if value is None:
+        return None
+    if isinstance(value, (str, int, float, bool)):
+        return value
+    if isinstance(value, list):
+        return value[index] if index < len(value) else None
+    try:
+        row_value = value.detach().cpu()[index]
+    except (AttributeError, IndexError, TypeError):
+        return value
+    return _s28e_safe_float(row_value)
+
+
+def _stage32_bool_label(value: bool | None) -> str:
+    if value is True:
+        return "true"
+    if value is False:
+        return "false"
+    return "unavailable"
+
+
+def build_stage32_owner_state(output: dict[str, Any], index: int) -> dict[str, Any]:
+    """Build Stage32-A owner-state proxies without changing model outputs."""
+    hard_core_prob = _stage32_output_value(output, "frame_prob", index)
+    hard_core_pass = (
+        bool(hard_core_prob >= 0.5) if hard_core_prob is not None else None
+    )
+    hard_core = {
+        "prob": hard_core_prob,
+        "pass": hard_core_pass,
+        "block_reason": (
+            "none"
+            if hard_core_pass is True
+            else "low_frame_proxy"
+            if hard_core_pass is False
+            else "unavailable_frame_proxy"
+        ),
+        "source_fields": ["frame_prob"] if hard_core_prob is not None else [],
+    }
+
+    cov_source_fields = [
+        field
+        for field in (
+            "coverage_entails_support_prob",
+            "coverage_overclaim_ne_prob",
+            "coverage_contradicts_refute_prob",
+            "coverage_entailment_pred_label",
+            "coverage_entailment_pred_id",
+            "coverage_entailment_confidence",
+            "coverage_entailment_input_mode",
+        )
+        if output.get(field) is not None
+    ]
+    coverage_pred_label = _stage32_output_value(
+        output, "coverage_entailment_pred_label", index
+    )
+    coverage_pred_id = _stage32_output_value(output, "coverage_entailment_pred_id", index)
+    coverage_entailment = {
+        "entails_support_prob": _stage32_output_value(
+            output, "coverage_entails_support_prob", index
+        ),
+        "overclaim_ne_prob": _stage32_output_value(
+            output, "coverage_overclaim_ne_prob", index
+        ),
+        "contradicts_refute_prob": _stage32_output_value(
+            output, "coverage_contradicts_refute_prob", index
+        ),
+        "pred_label": coverage_pred_label if coverage_pred_label is not None else "UNAVAILABLE",
+        "pred_id": int(coverage_pred_id) if coverage_pred_id is not None else None,
+        "confidence": _stage32_output_value(
+            output, "coverage_entailment_confidence", index
+        ),
+        "input_mode": _stage32_output_value(
+            output, "coverage_entailment_input_mode", index
+        ),
+        "source_fields": cov_source_fields,
+    }
+
+    residual_adjudication = {
+        "residual_prob": None,
+        "ambiguous_prob": None,
+        "underspecified_prob": None,
+        "pred_label": "UNIMPLEMENTED_PROXY",
+        "source_fields": [],
+    }
+    ani_diagnostic = {
+        "novelty_prob": None,
+        "ambiguity_prob": None,
+        "ignorance_prob": None,
+        "pred_label": "UNIMPLEMENTED_PROXY",
+        "source_fields": [],
+    }
+
+    support_energy = _stage32_output_value(output, "positive_energy", index)
+    refute_energy = _stage32_output_value(output, "negative_energy", index)
+    support_prob: float | None = None
+    refute_prob: float | None = None
+    polarity_pred = "NEUTRAL_OR_BLOCKED"
+    if support_energy is not None and refute_energy is not None:
+        energy_t = torch.tensor([refute_energy, support_energy], dtype=torch.float32)
+        probs = torch.softmax(energy_t, dim=-1)
+        refute_prob = float(probs[0].item())
+        support_prob = float(probs[1].item())
+        if hard_core_pass is not False:
+            polarity_pred = "SUPPORT" if support_prob >= refute_prob else "REFUTE"
+    polarity = {
+        "support_energy": support_energy,
+        "refute_energy": refute_energy,
+        "support_prob": support_prob,
+        "refute_prob": refute_prob,
+        "pred_label": polarity_pred,
+        "source_fields": (
+            ["positive_energy", "negative_energy"]
+            if support_energy is not None and refute_energy is not None
+            else []
+        ),
+    }
+
+    if hard_core_pass is False:
+        shadow_label = "NOT_ENTITLED"
+        shadow_reason = "hard_core_block"
+    elif coverage_entailment["pred_label"] == "OVERCLAIM_NOT_ENTITLED":
+        shadow_label = "NOT_ENTITLED"
+        shadow_reason = "coverage_overclaim"
+    elif coverage_entailment["pred_label"] == "CONTRADICTS_REFUTE":
+        shadow_label = "REFUTE"
+        shadow_reason = "coverage_contradiction"
+    elif (
+        coverage_entailment["pred_label"] == "ENTAILS_SUPPORT"
+        and support_prob is not None
+        and refute_prob is not None
+        and support_prob >= refute_prob
+    ):
+        shadow_label = "SUPPORT"
+        shadow_reason = "coverage_entails_support_with_positive_polarity"
+    else:
+        shadow_label = "NOT_ENTITLED"
+        shadow_reason = "residual_or_unresolved"
+    composer_shadow = {
+        "would_block_support": hard_core_pass is False,
+        "would_route_ne": shadow_label == "NOT_ENTITLED",
+        "would_route_refute": shadow_label == "REFUTE",
+        "shadow_label": shadow_label,
+        "shadow_reason": shadow_reason,
+        "note": "Stage32-A shadow only; not used for logits, loss, predictions, or selection.",
+    }
+
+    return {
+        "hard_core": hard_core,
+        "coverage_entailment": coverage_entailment,
+        "residual_adjudication": residual_adjudication,
+        "ani_diagnostic": ani_diagnostic,
+        "polarity": polarity,
+        "composer_shadow": composer_shadow,
+    }
+
+
+def flatten_stage32_owner_state(state: dict[str, Any]) -> dict[str, Any]:
+    hard_core = state["hard_core"]
+    coverage = state["coverage_entailment"]
+    residual = state["residual_adjudication"]
+    ani = state["ani_diagnostic"]
+    polarity = state["polarity"]
+    shadow = state["composer_shadow"]
+    return {
+        "stage32_hard_core_prob": hard_core["prob"],
+        "stage32_hard_core_pass": hard_core["pass"],
+        "stage32_hard_core_block_reason": hard_core["block_reason"],
+        "stage32_coverage_entails_support_prob": coverage["entails_support_prob"],
+        "stage32_coverage_overclaim_ne_prob": coverage["overclaim_ne_prob"],
+        "stage32_coverage_contradicts_refute_prob": coverage["contradicts_refute_prob"],
+        "stage32_coverage_pred_label": coverage["pred_label"],
+        "stage32_coverage_pred_id": coverage["pred_id"],
+        "stage32_coverage_confidence": coverage["confidence"],
+        "stage32_coverage_input_mode": coverage["input_mode"],
+        "stage32_residual_prob": residual["residual_prob"],
+        "stage32_residual_pred_label": residual["pred_label"],
+        "stage32_ani_novelty_prob": ani["novelty_prob"],
+        "stage32_ani_ambiguity_prob": ani["ambiguity_prob"],
+        "stage32_ani_ignorance_prob": ani["ignorance_prob"],
+        "stage32_ani_pred_label": ani["pred_label"],
+        "stage32_polarity_support_energy": polarity["support_energy"],
+        "stage32_polarity_refute_energy": polarity["refute_energy"],
+        "stage32_polarity_support_prob": polarity["support_prob"],
+        "stage32_polarity_refute_prob": polarity["refute_prob"],
+        "stage32_polarity_pred_label": polarity["pred_label"],
+        "stage32_shadow_label": shadow["shadow_label"],
+        "stage32_shadow_reason": shadow["shadow_reason"],
+        "stage32_shadow_would_block_support": shadow["would_block_support"],
+        "stage32_shadow_would_route_ne": shadow["would_route_ne"],
+        "stage32_shadow_would_route_refute": shadow["would_route_refute"],
+    }
+
+
+def prediction_records_v6b(
+    records: list[dict],
+    output: dict[str, Any],
+    *,
+    stage32_owner_state_export: bool = False,
+    stage32_owner_state_shadow_mode: bool = False,
+) -> list[dict]:
     """Export predictions with Stage28-E enriched schema (additive; preserves all legacy fields)."""
     logits_cpu = output["logits"].detach().cpu()
     probabilities = torch.softmax(logits_cpu, dim=-1)
     predictions = output["predictions"].detach().cpu()
+    stage32_shadow_logits_before = (
+        logits_cpu.clone()
+        if stage32_owner_state_shadow_mode and stage32_owner_state_export
+        else None
+    )
+    stage32_shadow_predictions_before = (
+        predictions.clone()
+        if stage32_owner_state_shadow_mode and stage32_owner_state_export
+        else None
+    )
 
     # Existing v6b scalar outputs
     scalar_keys = (
@@ -2029,6 +2241,11 @@ def prediction_records_v6b(records: list[dict], output: dict[str, Any]) -> list[
 
     exported: list[dict] = []
     for index, record in enumerate(records):
+        stage32_owner_state = (
+            build_stage32_owner_state(output, index)
+            if stage32_owner_state_export
+            else None
+        )
         pred_id = int(predictions[index])
         pred_label = v5.ID_TO_FINAL_LABEL[pred_id]
 
@@ -2149,6 +2366,11 @@ def prediction_records_v6b(records: list[dict], output: dict[str, Any]) -> list[
                 else {}
             ),
             # ── Legacy backward-compat fields ─────────────────────────────────
+            **(
+                flatten_stage32_owner_state(stage32_owner_state)
+                if stage32_owner_state is not None
+                else {}
+            ),
             "id": record.get("id"),
             "intervention_type": record.get("intervention_type"),
             "gold_final_label": gold_raw,
@@ -2157,6 +2379,14 @@ def prediction_records_v6b(records: list[dict], output: dict[str, Any]) -> list[
             "raw_record": {k: record[k] for k in _S28E_RAW_RECORD_KEYS if k in record},
         }
         exported.append(item)
+    if stage32_shadow_logits_before is not None and not torch.equal(
+        stage32_shadow_logits_before, output["logits"].detach().cpu()
+    ):
+        raise RuntimeError("Stage32-A owner-state export modified final logits.")
+    if stage32_shadow_predictions_before is not None and not torch.equal(
+        stage32_shadow_predictions_before, output["predictions"].detach().cpu()
+    ):
+        raise RuntimeError("Stage32-A owner-state export modified final predictions.")
     return exported
 
 
@@ -3507,6 +3737,35 @@ def build_parser() -> argparse.ArgumentParser:
             "the coverage-entailment head. Default off."
         ),
     )
+    parser.add_argument(
+        "--stage32-use-owner-state-schema",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage32-A: enable diagnostic owner-state schema construction in "
+            "shadow mode. Does not change logits, predictions, losses, caps, "
+            "entitlement, composer logic, or checkpoint selection."
+        ),
+    )
+    parser.add_argument(
+        "--stage32-owner-state-export",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage32-A: include flattened owner-state proxy fields in prediction "
+            "exports. Export-only; no effect on training or selection."
+        ),
+    )
+    parser.add_argument(
+        "--stage32-owner-state-shadow-mode",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage32-A: mark owner-state schema as shadow-only and enforce the "
+            "contract that Stage32 owner states do not modify final logits, final "
+            "predictions, loss, entitlement, caps, or checkpoint selection."
+        ),
+    )
 
     parser.add_argument(
         "--v7-no-aux-losses",
@@ -3774,7 +4033,14 @@ def evaluate_external_probe(
             predicate_mismatch_flags=probe_predicate_flags,
         )
 
-    prediction_recs = prediction_records_v6b(probe_records, output)
+    prediction_recs = prediction_records_v6b(
+        probe_records,
+        output,
+        stage32_owner_state_export=getattr(args, "stage32_owner_state_export", False),
+        stage32_owner_state_shadow_mode=getattr(
+            args, "stage32_owner_state_shadow_mode", False
+        ),
+    )
 
     predictions_cpu = output["predictions"].detach().cpu()
     labels_cpu = probe_inputs["final_labels"].detach().cpu()
@@ -4125,6 +4391,11 @@ _LIFT_CONFIG_KEYS: tuple[str, ...] = (
     "v7_coverage_entailment_detach_input",
     "stage31_probe_used_for_v7_coverage_entailment_loss",
     "v7_coverage_entailment_modifies_final_predictions",
+    "stage32_use_owner_state_schema",
+    "stage32_owner_state_export",
+    "stage32_owner_state_shadow_mode",
+    "stage32_owner_state_modifies_final_logits",
+    "stage32_owner_state_modifies_final_predictions",
     # v7 Stage15 / time_swap provenance (also lifted from audit_ledger elsewhere;
     # this covers the configuration copy when the ledger path is absent)
     "stage15_used_for_v7_training",
@@ -6257,7 +6528,16 @@ def main(argv: list[str] | None = None) -> int:
                 # Skip pairwise checks in smoke mode (may have incomplete variants)
                 if not smoke_mode:
                     best_dev_pairwise_checks = v5.pairwise_checks(dev_records, dev_output)
-                best_dev_predictions = prediction_records_v6b(dev_records, dev_output)
+                best_dev_predictions = prediction_records_v6b(
+                    dev_records,
+                    dev_output,
+                    stage32_owner_state_export=getattr(
+                        args, "stage32_owner_state_export", False
+                    ),
+                    stage32_owner_state_shadow_mode=getattr(
+                        args, "stage32_owner_state_shadow_mode", False
+                    ),
+                )
                 best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
                 best_pc_metrics = {
                     **_pc_eval_metrics,
@@ -6331,7 +6611,16 @@ def main(argv: list[str] | None = None) -> int:
                     _tc_dev_metrics = dev_metrics
                     _tc_dev_interventions = intervention_diagnostics_v6b(dev_records, dev_output)
                     _tc_dev_pairwise_checks = _ep_pw
-                    _tc_dev_predictions = prediction_records_v6b(dev_records, dev_output)
+                    _tc_dev_predictions = prediction_records_v6b(
+                        dev_records,
+                        dev_output,
+                        stage32_owner_state_export=getattr(
+                            args, "stage32_owner_state_export", False
+                        ),
+                        stage32_owner_state_shadow_mode=getattr(
+                            args, "stage32_owner_state_shadow_mode", False
+                        ),
+                    )
                     _tc_state = {
                         k: v.detach().cpu().clone() for k, v in model.state_dict().items()
                     }
@@ -6373,7 +6662,16 @@ def main(argv: list[str] | None = None) -> int:
                             dev_records, dev_output
                         )
                         _pcs_dev_pairwise_checks = _ep_pcs_pw
-                        _pcs_dev_predictions = prediction_records_v6b(dev_records, dev_output)
+                        _pcs_dev_predictions = prediction_records_v6b(
+                            dev_records,
+                            dev_output,
+                            stage32_owner_state_export=getattr(
+                                args, "stage32_owner_state_export", False
+                            ),
+                            stage32_owner_state_shadow_mode=getattr(
+                                args, "stage32_owner_state_shadow_mode", False
+                            ),
+                        )
                         _pcs_state = {
                             k: v.detach().cpu().clone() for k, v in model.state_dict().items()
                         }
@@ -7947,6 +8245,20 @@ def main(argv: list[str] | None = None) -> int:
             "stage31_probe_used_for_threshold_selection": False,
             "v7_coverage_entailment_modifies_final_logits": False,
             "v7_coverage_entailment_modifies_final_predictions": False,
+            # Stage32-A: owner-state schema is shadow/export-only.
+            "stage32_use_owner_state_schema": getattr(
+                args, "stage32_use_owner_state_schema", False
+            ),
+            "stage32_owner_state_export": getattr(
+                args, "stage32_owner_state_export", False
+            ),
+            "stage32_owner_state_shadow_mode": getattr(
+                args, "stage32_owner_state_shadow_mode", False
+            ),
+            "stage32_owner_state_modifies_final_logits": False,
+            "stage32_owner_state_modifies_final_predictions": False,
+            "stage32_owner_state_modifies_loss": False,
+            "stage32_owner_state_used_for_checkpoint_selection": False,
             "v7_h1_entitlement_for_decision_source": (
                 _V7_H1_DECISION_SIGNAL_SOURCE.get(
                     getattr(args, "v7_h1_entitlement_decision_signal", "learned"),
@@ -8079,6 +8391,17 @@ def main(argv: list[str] | None = None) -> int:
                 "v7_use_v6b_style_final_decision": getattr(
                     args, "v7_use_v6b_style_final_decision", None
                 ),
+                "stage32_use_owner_state_schema": getattr(
+                    args, "stage32_use_owner_state_schema", False
+                ),
+                "stage32_owner_state_export": getattr(
+                    args, "stage32_owner_state_export", False
+                ),
+                "stage32_owner_state_shadow_mode": getattr(
+                    args, "stage32_owner_state_shadow_mode", False
+                ),
+                "stage32_owner_state_modifies_final_logits": False,
+                "stage32_owner_state_modifies_final_predictions": False,
                 "freeze_encoder": getattr(args, "freeze_encoder", None),
                 "freeze_a_log": getattr(args, "freeze_a_log", None),
                 "max_length": getattr(args, "max_length", None),
