@@ -1,135 +1,70 @@
 {
-  "stage": "Stage31-C",
+  "stage": "Stage31-C2",
   "artifact": "coverage_entailment_diagnostic_head",
   "purpose": "Readout-only directional Coverage/Entailment diagnostic owner.",
-  "stage31b_observed_bottleneck": {
-    "total_accuracy": 0.445,
-    "macro_f1": 0.3607,
-    "coverage_failure_predicted_support": 6,
-    "support_entailment_predicted_ne": 61,
-    "refute_case_predicted_support": 5,
-    "refute_case_predicted_ne": 27,
-    "interpretation": "The proxy stack is conservative but under-structured; valid SUPPORT entailment cases are often collapsed into NOT_ENTITLED."
-  },
   "auxiliary_data": {
     "path": "data/stage31c_coverage_entailment_aux.jsonl",
     "separate_from_stage31_eval_probe": true,
+    "default_num_classes": 3,
     "coverage_direction_mapping": {
       "ENTAILS_SUPPORT": 0,
       "OVERCLAIM_NOT_ENTITLED": 1,
-      "CONTRADICTS_REFUTE": 2,
-      "OTHER_RESIDUAL": 3
-    }
+      "CONTRADICTS_REFUTE": 2
+    },
+    "direction_to_final_label": {
+      "ENTAILS_SUPPORT": "SUPPORT",
+      "OVERCLAIM_NOT_ENTITLED": "NOT_ENTITLED",
+      "CONTRADICTS_REFUTE": "REFUTE"
+    },
+    "final_label_mapping": {
+      "REFUTE": 0,
+      "NOT_ENTITLED": 1,
+      "SUPPORT": 2
+    },
+    "expected_counts": {
+      "total_rows": 900,
+      "train": 720,
+      "dev": 180,
+      "per_class": {
+        "ENTAILS_SUPPORT": 300,
+        "OVERCLAIM_NOT_ENTITLED": 300,
+        "CONTRADICTS_REFUTE": 300
+      }
+    },
+    "contains_other_residual_by_default": false
   },
   "head_architecture": {
     "input": "concat([frame_pair_repr, predicate_pair_repr, sufficiency_repr])",
-    "output_classes": 4,
+    "output_classes_arg": "--v7-coverage-entailment-num-classes",
+    "default_output_classes": 3,
+    "legacy_output_classes": 4,
     "loss": "optional cross entropy over coverage_direction_id"
   },
-  "observed_stage31c_head_eval": {
-    "run_name": "stage31c_coverage_entailment_head_eval",
-    "row_count": 200,
-    "metrics": {
-      "total_accuracy": 0.465,
-      "macro_f1": 0.3878,
-      "owner_accuracy": 0.465,
-      "owner_n": 200
-    },
-    "failure_modes": {
-      "coverage_failure_predicted_support": 5,
-      "support_entailment_predicted_ne": 56,
-      "refute_case_predicted_support": 10,
-      "refute_case_predicted_ne": 22,
-      "unexpected_refute_on_support_or_ne": 14
-    },
-    "coverage_direction_alignment_accuracy": 0.445,
-    "coverage_direction_alignment_by_group": {
-      "all_to_some_support": {
-        "correct": 13,
-        "total": 20,
-        "accuracy": 0.65
-      },
-      "also_to_only_not_entitled": {
-        "correct": 6,
-        "total": 20,
-        "accuracy": 0.3
-      },
-      "general_to_specific_not_entitled": {
-        "correct": 9,
-        "total": 20,
-        "accuracy": 0.45
-      },
-      "none_to_some_refute": {
-        "correct": 4,
-        "total": 20,
-        "accuracy": 0.2
-      },
-      "only_to_base_support": {
-        "correct": 13,
-        "total": 20,
-        "accuracy": 0.65
-      },
-      "part_to_whole_not_entitled": {
-        "correct": 13,
-        "total": 20,
-        "accuracy": 0.65
-      },
-      "some_to_all_not_entitled": {
-        "correct": 16,
-        "total": 20,
-        "accuracy": 0.8
-      },
-      "some_to_none_refute": {
-        "correct": 2,
-        "total": 20,
-        "accuracy": 0.1
-      },
-      "specific_to_general_support": {
-        "correct": 6,
-        "total": 20,
-        "accuracy": 0.3
-      },
-      "whole_to_part_support": {
-        "correct": 7,
-        "total": 20,
-        "accuracy": 0.35
-      }
-    },
-    "support_entailment_recovered_by_head": 39,
-    "overclaim_detected_by_head": 44,
-    "refute_detected_by_head": 6,
-    "coverage_direction_confusion": {
-      "ENTAILS_SUPPORT": {
-        "ENTAILS_SUPPORT": 39,
-        "OVERCLAIM_NOT_ENTITLED": 27,
-        "CONTRADICTS_REFUTE": 1,
-        "OTHER_RESIDUAL": 13,
-        "MISSING": 0
-      },
-      "OVERCLAIM_NOT_ENTITLED": {
-        "ENTAILS_SUPPORT": 27,
-        "OVERCLAIM_NOT_ENTITLED": 44,
-        "CONTRADICTS_REFUTE": 3,
-        "OTHER_RESIDUAL": 6,
-        "MISSING": 0
-      },
-      "CONTRADICTS_REFUTE": {
-        "ENTAILS_SUPPORT": 20,
-        "OVERCLAIM_NOT_ENTITLED": 9,
-        "CONTRADICTS_REFUTE": 6,
-        "OTHER_RESIDUAL": 5,
-        "MISSING": 0
-      },
-      "OTHER_RESIDUAL": {
-        "ENTAILS_SUPPORT": 0,
-        "OVERCLAIM_NOT_ENTITLED": 0,
-        "CONTRADICTS_REFUTE": 0,
-        "OTHER_RESIDUAL": 0,
-        "MISSING": 0
-      }
-    },
-    "interpretation": "The diagnostic head does not yet align strongly enough. SUPPORT entailment recovery is weak and refute direction is largely not captured, so the current representations or auxiliary data do not expose stable directional coverage information.",
-    "next_step": "Revise Stage31-C auxiliary coverage data or representation access before composer integration."
+  "exported_columns": {
+    "default_3_class": [
+      "coverage_entails_support_prob",
+      "coverage_overclaim_ne_prob",
+      "coverage_contradicts_refute_prob",
+      "coverage_entailment_pred_id",
+      "coverage_entailment_pred_label",
+      "coverage_entailment_confidence"
+    ],
+    "legacy_4_class_additional": [
+      "coverage_other_residual_prob"
+    ]
+  },
+  "stage31_probe_alignment": {
+    "support_entailment_groups": "ENTAILS_SUPPORT",
+    "not_entitled_overclaim_groups": "OVERCLAIM_NOT_ENTITLED",
+    "refute_groups": "CONTRADICTS_REFUTE",
+    "evaluator_supports_3_class_exports": true,
+    "evaluator_supports_4_class_exports": true,
+    "safety_counters": [
+      "refute_misread_as_entails_support",
+      "overclaim_misread_as_entails_support",
+      "support_misread_as_overclaim_ne",
+      "support_misread_as_contradicts_refute"
+    ]
   },
   "diagnostic_only_constraints": {
     "modifies_output_logits": false,
@@ -138,21 +73,9 @@
     "adds_cap": false,
     "adds_ne_boost": false,
     "used_for_checkpoint_selection": false,
-    "uses_stage31_eval_probe_for_loss": false
-  },
-  "exported_columns": [
-    "coverage_entails_support_prob",
-    "coverage_overclaim_ne_prob",
-    "coverage_contradicts_refute_prob",
-    "coverage_other_residual_prob",
-    "coverage_entailment_pred_id",
-    "coverage_entailment_pred_label",
-    "coverage_entailment_confidence"
-  ],
-  "next_step_decision_rule": {
-    "if_head_aligns_on_stage31_probe": "Proceed to Stage31-D composer integration.",
-    "if_head_does_not_align": "Revise auxiliary coverage data or representation access before integration.",
-    "current_decision": "Revise Stage31-C auxiliary coverage data or representation access before composer integration."
+    "uses_stage31_eval_probe_for_loss": false,
+    "uses_stage31_eval_probe_for_calibration": false,
+    "uses_stage31_eval_probe_for_threshold_selection": false
   },
   "leakage_policy": "Do not use data/stage31_coverage_entailment_probe.jsonl for training, calibration, threshold selection, checkpoint selection, or auxiliary loss construction."
 }

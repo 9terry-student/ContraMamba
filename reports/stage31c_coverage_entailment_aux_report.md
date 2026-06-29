@@ -1,53 +1,50 @@
-# Stage31-C Coverage/Entailment Auxiliary Data Report
+# Stage31-C2 Coverage/Entailment Auxiliary Data Report
 
 ## Purpose
-Build separate auxiliary diagnostic supervision for a readout head that
-distinguishes entailment-preserving SUPPORT, overclaim NOT_ENTITLED,
-contradiction REFUTE, and OTHER_RESIDUAL cases.
+Build separate hard minimal-contrast auxiliary supervision for a readout
+head that distinguishes entailment-preserving SUPPORT, overclaim
+NOT_ENTITLED, and contradiction REFUTE.
 
 This file is not the Stage31 evaluation probe and does not reuse exact
-Stage31-A claim/evidence pairs.
+Stage31 claim/evidence pairs.
 
 ## Counts
-- Total rows: 800
-- Split counts: {'train': 640, 'dev': 160}
-- Class counts: {'ENTAILS_SUPPORT': 200, 'OVERCLAIM_NOT_ENTITLED': 200, 'CONTRADICTS_REFUTE': 200, 'OTHER_RESIDUAL': 200}
+- Total rows: 900
+- Split counts: {'train': 720, 'dev': 180}
+- Class counts: {'ENTAILS_SUPPORT': 300, 'OVERCLAIM_NOT_ENTITLED': 300, 'CONTRADICTS_REFUTE': 300}
+- Split class counts: {'train': {'ENTAILS_SUPPORT': 240, 'OVERCLAIM_NOT_ENTITLED': 240, 'CONTRADICTS_REFUTE': 240}, 'dev': {'ENTAILS_SUPPORT': 60, 'OVERCLAIM_NOT_ENTITLED': 60, 'CONTRADICTS_REFUTE': 60}}
+- Contains OTHER_RESIDUAL: False
 
 ## Coverage Direction Mapping
-| Label | ID |
-|---|---|
-| ENTAILS_SUPPORT | 0 |
-| OVERCLAIM_NOT_ENTITLED | 1 |
-| CONTRADICTS_REFUTE | 2 |
-| OTHER_RESIDUAL | 3 |
+| Label | ID | Final label |
+|---|---:|---|
+| ENTAILS_SUPPORT | 0 | SUPPORT |
+| OVERCLAIM_NOT_ENTITLED | 1 | NOT_ENTITLED |
+| CONTRADICTS_REFUTE | 2 | REFUTE |
 
-## Group Counts
-| Group | Count |
-|---|---|
-| alias_granularity_aux | 50 |
-| all_to_some_aux | 50 |
-| also_to_only_aux | 50 |
-| general_to_specific_aux | 50 |
-| never_to_once_aux | 50 |
-| no_member_to_member_aux | 50 |
-| none_to_some_aux | 50 |
-| only_to_base_aux | 50 |
-| part_to_whole_aux | 50 |
-| relation_paraphrase_aux | 50 |
-| some_to_all_aux | 50 |
-| some_to_none_aux | 50 |
-| specific_to_general_aux | 50 |
-| surface_paraphrase_aux | 50 |
-| underspecified_residual_aux | 50 |
-| whole_to_part_aux | 50 |
+## Contrast Families
+| Family | Rows |
+|---|---:|
+| all_some_none | 75 |
+| specific_general | 75 |
+| whole_part | 75 |
+| only_also_base | 75 |
+| no_member_member | 75 |
+| never_once | 75 |
+| zero_positive_count | 75 |
+| excluded_included | 75 |
+| failed_to_did | 75 |
+| every_some | 75 |
+| participant_scope | 75 |
+| org_member_partwhole | 75 |
 
 ## Schema
-Rows include identity, controlled-style final-label fields,
-`coverage_direction_label`, `coverage_direction_id`, split, owner,
-group, notes, and controlled-style auxiliary compatibility fields.
+Rows include identity, final-label fields, coverage direction fields,
+`contrast_set_id`, `contrast_family`, split, owner, notes, and
+controlled-style auxiliary compatibility fields.
 
 ## Leakage Policy
-Auxiliary diagnostic supervision only. Do not use the Stage31-A/B evaluation probe for this loss. Do not use this auxiliary set for final evaluation, calibration, threshold selection, or checkpoint selection.
+Auxiliary diagnostic supervision only. Do not use data/stage31_coverage_entailment_probe.jsonl for loss, calibration, threshold selection, checkpoint selection, or final evaluation.
 
 ## Validation
 PASSED

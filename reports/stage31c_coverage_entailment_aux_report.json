@@ -1,12 +1,16 @@
 {
-  "stage": "Stage31-C",
+  "stage": "Stage31-C2",
   "artifact": "coverage_entailment_auxiliary_data",
-  "total_rows": 800,
+  "total_rows": 900,
   "coverage_direction_mapping": {
     "ENTAILS_SUPPORT": 0,
     "OVERCLAIM_NOT_ENTITLED": 1,
-    "CONTRADICTS_REFUTE": 2,
-    "OTHER_RESIDUAL": 3
+    "CONTRADICTS_REFUTE": 2
+  },
+  "direction_to_final_label": {
+    "ENTAILS_SUPPORT": "SUPPORT",
+    "OVERCLAIM_NOT_ENTITLED": "NOT_ENTITLED",
+    "CONTRADICTS_REFUTE": "REFUTE"
   },
   "final_label_mapping": {
     "REFUTE": 0,
@@ -14,35 +18,96 @@
     "SUPPORT": 2
   },
   "class_counts": {
-    "ENTAILS_SUPPORT": 200,
-    "OVERCLAIM_NOT_ENTITLED": 200,
-    "CONTRADICTS_REFUTE": 200,
-    "OTHER_RESIDUAL": 200
+    "ENTAILS_SUPPORT": 300,
+    "OVERCLAIM_NOT_ENTITLED": 300,
+    "CONTRADICTS_REFUTE": 300
   },
   "split_counts": {
-    "train": 640,
-    "dev": 160
+    "train": 720,
+    "dev": 180
+  },
+  "split_class_counts": {
+    "train": {
+      "ENTAILS_SUPPORT": 240,
+      "OVERCLAIM_NOT_ENTITLED": 240,
+      "CONTRADICTS_REFUTE": 240
+    },
+    "dev": {
+      "ENTAILS_SUPPORT": 60,
+      "OVERCLAIM_NOT_ENTITLED": 60,
+      "CONTRADICTS_REFUTE": 60
+    }
+  },
+  "contrast_families": [
+    "all_some_none",
+    "specific_general",
+    "whole_part",
+    "only_also_base",
+    "no_member_member",
+    "never_once",
+    "zero_positive_count",
+    "excluded_included",
+    "failed_to_did",
+    "every_some",
+    "participant_scope",
+    "org_member_partwhole"
+  ],
+  "contrast_family_counts": {
+    "all_some_none": 75,
+    "specific_general": 75,
+    "whole_part": 75,
+    "only_also_base": 75,
+    "no_member_member": 75,
+    "never_once": 75,
+    "zero_positive_count": 75,
+    "excluded_included": 75,
+    "failed_to_did": 75,
+    "every_some": 75,
+    "participant_scope": 75,
+    "org_member_partwhole": 75
   },
   "group_counts": {
-    "all_to_some_aux": 50,
-    "specific_to_general_aux": 50,
-    "whole_to_part_aux": 50,
-    "only_to_base_aux": 50,
-    "some_to_all_aux": 50,
-    "general_to_specific_aux": 50,
-    "part_to_whole_aux": 50,
-    "also_to_only_aux": 50,
-    "none_to_some_aux": 50,
-    "some_to_none_aux": 50,
-    "no_member_to_member_aux": 50,
-    "never_to_once_aux": 50,
-    "surface_paraphrase_aux": 50,
-    "alias_granularity_aux": 50,
-    "underspecified_residual_aux": 50,
-    "relation_paraphrase_aux": 50
+    "all_some_none_entails_support": 25,
+    "all_some_none_overclaim_not_entitled": 25,
+    "all_some_none_contradicts_refute": 25,
+    "specific_general_entails_support": 25,
+    "specific_general_overclaim_not_entitled": 25,
+    "specific_general_contradicts_refute": 25,
+    "whole_part_entails_support": 25,
+    "whole_part_overclaim_not_entitled": 25,
+    "whole_part_contradicts_refute": 25,
+    "only_also_base_entails_support": 25,
+    "only_also_base_overclaim_not_entitled": 25,
+    "only_also_base_contradicts_refute": 25,
+    "no_member_member_entails_support": 25,
+    "no_member_member_overclaim_not_entitled": 25,
+    "no_member_member_contradicts_refute": 25,
+    "never_once_entails_support": 25,
+    "never_once_overclaim_not_entitled": 25,
+    "never_once_contradicts_refute": 25,
+    "zero_positive_count_entails_support": 25,
+    "zero_positive_count_overclaim_not_entitled": 25,
+    "zero_positive_count_contradicts_refute": 25,
+    "excluded_included_entails_support": 25,
+    "excluded_included_overclaim_not_entitled": 25,
+    "excluded_included_contradicts_refute": 25,
+    "failed_to_did_entails_support": 25,
+    "failed_to_did_overclaim_not_entitled": 25,
+    "failed_to_did_contradicts_refute": 25,
+    "every_some_entails_support": 25,
+    "every_some_overclaim_not_entitled": 25,
+    "every_some_contradicts_refute": 25,
+    "participant_scope_entails_support": 25,
+    "participant_scope_overclaim_not_entitled": 25,
+    "participant_scope_contradicts_refute": 25,
+    "org_member_partwhole_entails_support": 25,
+    "org_member_partwhole_overclaim_not_entitled": 25,
+    "org_member_partwhole_contradicts_refute": 25
   },
   "schema_fields": [
     "claim",
+    "contrast_family",
+    "contrast_set_id",
     "coverage_direction_id",
     "coverage_direction_label",
     "coverage_relation",
@@ -65,8 +130,10 @@
     "split",
     "sufficiency_label"
   ],
+  "contains_other_residual": false,
+  "hard_minimal_contrast": true,
   "diagnostic_only": true,
-  "leakage_policy": "Auxiliary diagnostic supervision only. Do not use the Stage31-A/B evaluation probe for this loss. Do not use this auxiliary set for final evaluation, calibration, threshold selection, or checkpoint selection.",
+  "leakage_policy": "Auxiliary diagnostic supervision only. Do not use data/stage31_coverage_entailment_probe.jsonl for loss, calibration, threshold selection, checkpoint selection, or final evaluation.",
   "validation_errors": [],
   "validation_passed": true
 }

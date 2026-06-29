@@ -45,27 +45,32 @@ STAGE31C_COVERAGE_LABELS = [
 STAGE31C_COVERAGE_LABEL_TO_ID = {
     label: idx for idx, label in enumerate(STAGE31C_COVERAGE_LABELS)
 }
+STAGE31C_DEFAULT_NUM_CLASSES = 3
 
 
 class Stage31CCoverageEntailmentHead(nn.Module):
-    """Readout-only 4-way directional Coverage/Entailment diagnostic head."""
+    """Readout-only directional Coverage/Entailment diagnostic head."""
 
     def __init__(
         self,
         frame_size: int,
         predicate_size: int,
         sufficiency_size: int,
+        num_classes: int = STAGE31C_DEFAULT_NUM_CLASSES,
         detach_input: bool = False,
     ) -> None:
         super().__init__()
+        if num_classes not in (3, 4):
+            raise ValueError(f"Stage31-C coverage entailment num_classes must be 3 or 4, got {num_classes}")
         input_size = frame_size + predicate_size + sufficiency_size
         hidden = max(input_size // 2, 16)
+        self.num_classes = num_classes
         self.detach_input = detach_input
         self.mlp = nn.Sequential(
             nn.Linear(input_size, hidden),
             nn.GELU(),
             nn.Dropout(0.1),
-            nn.Linear(hidden, len(STAGE31C_COVERAGE_LABELS)),
+            nn.Linear(hidden, num_classes),
         )
 
     def forward(
@@ -91,6 +96,7 @@ def _stage31c_module_output_size(module: nn.Module, classifier_name: str) -> int
 def install_stage31c_coverage_entailment_head(
     model: nn.Module,
     *,
+    num_classes: int = STAGE31C_DEFAULT_NUM_CLASSES,
     detach_input: bool,
 ) -> None:
     """Register and wrap a diagnostic head without changing final logits."""
@@ -105,6 +111,7 @@ def install_stage31c_coverage_entailment_head(
         frame_size=frame_size,
         predicate_size=predicate_size,
         sufficiency_size=sufficiency_size,
+        num_classes=num_classes,
         detach_input=detach_input,
     )
     original_forward = model.forward
@@ -138,14 +145,16 @@ def add_stage31c_coverage_entailment_outputs(
     output["coverage_entails_support_logit"] = logits[:, 0]
     output["coverage_overclaim_ne_logit"] = logits[:, 1]
     output["coverage_contradicts_refute_logit"] = logits[:, 2]
-    output["coverage_other_residual_logit"] = logits[:, 3]
     output["coverage_entails_support_prob"] = probs[:, 0]
     output["coverage_overclaim_ne_prob"] = probs[:, 1]
     output["coverage_contradicts_refute_prob"] = probs[:, 2]
-    output["coverage_other_residual_prob"] = probs[:, 3]
+    if logits.shape[-1] > 3:
+        output["coverage_other_residual_logit"] = logits[:, 3]
+        output["coverage_other_residual_prob"] = probs[:, 3]
     output["coverage_entailment_pred_id"] = pred_id
+    labels = STAGE31C_COVERAGE_LABELS[: int(logits.shape[-1])]
     output["coverage_entailment_pred_label"] = [
-        STAGE31C_COVERAGE_LABELS[int(i)] for i in pred_id.detach().cpu().tolist()
+        labels[int(i)] for i in pred_id.detach().cpu().tolist()
     ]
     output["coverage_entailment_confidence"] = confidence
     return output
@@ -185,18 +194,31 @@ def load_stage31c_coverage_entailment_jsonl(path: Path) -> list[dict]:
 def encode_stage31c_coverage_entailment_labels(
     records: list[dict],
     device: torch.device,
+    num_classes: int = STAGE31C_DEFAULT_NUM_CLASSES,
 ) -> torch.Tensor:
+    labels = [int(r["coverage_direction_id"]) for r in records]
+    invalid = [label for label in labels if label < 0 or label >= num_classes]
+    if invalid:
+        raise ValueError(
+            f"[stage31c] coverage_direction_id values {sorted(set(invalid))} "
+            f"are invalid for --v7-coverage-entailment-num-classes {num_classes}."
+        )
     return torch.tensor(
-        [int(r["coverage_direction_id"]) for r in records],
+        labels,
         dtype=torch.long,
         device=device,
     )
 
 
-def _stage31c_macro_f1(labels: list[int], preds: list[int]) -> tuple[float, dict[str, Any]]:
+def _stage31c_macro_f1(
+    labels: list[int],
+    preds: list[int],
+    num_classes: int,
+) -> tuple[float, dict[str, Any]]:
     per_class: dict[str, Any] = {}
     f1s: list[float] = []
-    for idx, name in enumerate(STAGE31C_COVERAGE_LABELS):
+    active_labels = STAGE31C_COVERAGE_LABELS[:num_classes]
+    for idx, name in enumerate(active_labels):
         tp = sum(g == idx and p == idx for g, p in zip(labels, preds))
         fp = sum(g != idx and p == idx for g, p in zip(labels, preds))
         fn = sum(g == idx and p != idx for g, p in zip(labels, preds))
@@ -228,10 +250,12 @@ def compute_stage31c_coverage_entailment_metrics(
     labels_l = [int(x) for x in labels_t.tolist()]
     preds_l = [int(x) for x in preds_t.tolist()]
     accuracy = sum(g == p for g, p in zip(labels_l, preds_l)) / len(labels_l)
-    macro, per_class = _stage31c_macro_f1(labels_l, preds_l)
+    num_classes = int(logits.shape[-1])
+    active_labels = STAGE31C_COVERAGE_LABELS[:num_classes]
+    macro, per_class = _stage31c_macro_f1(labels_l, preds_l, num_classes)
     confusion = {
-        gold: {pred: 0 for pred in STAGE31C_COVERAGE_LABELS}
-        for gold in STAGE31C_COVERAGE_LABELS
+        gold: {pred: 0 for pred in active_labels}
+        for gold in active_labels
     }
     for gold, pred in zip(labels_l, preds_l):
         confusion[STAGE31C_COVERAGE_LABELS[gold]][STAGE31C_COVERAGE_LABELS[pred]] += 1
@@ -243,14 +267,18 @@ def compute_stage31c_coverage_entailment_metrics(
     }
 
 
-def parse_stage31c_class_weights(raw: str | None, device: torch.device) -> "torch.Tensor | None":
+def parse_stage31c_class_weights(
+    raw: str | None,
+    device: torch.device,
+    num_classes: int = STAGE31C_DEFAULT_NUM_CLASSES,
+) -> "torch.Tensor | None":
     if raw is None:
         return None
     values = [float(part.strip()) for part in raw.split(",") if part.strip()]
-    if len(values) != len(STAGE31C_COVERAGE_LABELS):
+    if len(values) != num_classes:
         raise ValueError(
             "--v7-coverage-entailment-loss-class-weights must contain exactly "
-            f"{len(STAGE31C_COVERAGE_LABELS)} comma-separated values."
+            f"{num_classes} comma-separated values."
         )
     return torch.tensor(values, dtype=torch.float32, device=device)
 
@@ -3361,10 +3389,21 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         default=False,
         help=(
-            "Stage31-C: Enable a readout-only 4-way directional Coverage/Entailment "
+            "Stage31-C: Enable a readout-only directional Coverage/Entailment "
             "diagnostic head over concat([frame_pair_repr, predicate_pair_repr, "
             "sufficiency_repr]). Exports diagnostic probabilities. Does not modify "
             "output['logits'], entitlement, H1 composer, caps, or final predictions."
+        ),
+    )
+    parser.add_argument(
+        "--v7-coverage-entailment-num-classes",
+        type=int,
+        choices=(3, 4),
+        default=3,
+        help=(
+            "Stage31-C2: output dimension for the diagnostic coverage-entailment "
+            "head. Default 3 for ENTAILS_SUPPORT, OVERCLAIM_NOT_ENTITLED, "
+            "CONTRADICTS_REFUTE. Use 4 only for legacy OTHER_RESIDUAL exports."
         ),
     )
     parser.add_argument(
@@ -3382,7 +3421,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--v7-coverage-entailment-loss-weight",
         type=float,
         default=0.0,
-        help="Stage31-C: Weight for auxiliary 4-way coverage-entailment CE loss.",
+        help="Stage31-C: Weight for auxiliary coverage-entailment CE loss.",
     )
     parser.add_argument(
         "--v7-coverage-entailment-data",
@@ -3401,7 +3440,8 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help=(
             "Stage31-C: optional comma-separated CE class weights for "
-            "ENTAILS_SUPPORT,OVERCLAIM_NOT_ENTITLED,CONTRADICTS_REFUTE,OTHER_RESIDUAL."
+            "the active coverage-entailment classes. Default mode expects "
+            "ENTAILS_SUPPORT,OVERCLAIM_NOT_ENTITLED,CONTRADICTS_REFUTE."
         ),
     )
     parser.add_argument(
@@ -4023,6 +4063,7 @@ _LIFT_CONFIG_KEYS: tuple[str, ...] = (
     "v7_entitled_class_balanced_ce_weight",
     "v7_initial_ne_bias",
     "v7_use_coverage_entailment_head",
+    "v7_coverage_entailment_num_classes",
     "v7_use_coverage_entailment_loss",
     "v7_coverage_entailment_loss_weight",
     "v7_coverage_entailment_data",
@@ -4450,6 +4491,7 @@ def main(argv: list[str] | None = None) -> int:
             )
         install_stage31c_coverage_entailment_head(
             model,
+            num_classes=getattr(args, "v7_coverage_entailment_num_classes", 3),
             detach_input=getattr(args, "v7_coverage_entailment_detach_input", False),
         )
 
@@ -4938,14 +4980,19 @@ def main(argv: list[str] | None = None) -> int:
             raise ValueError("[stage31c] no dev records found in coverage-entailment aux file.")
 
         _covent_train_labels = encode_stage31c_coverage_entailment_labels(
-            _covent_train_records, device
+            _covent_train_records,
+            device,
+            getattr(args, "v7_coverage_entailment_num_classes", 3),
         )
         _covent_dev_labels = encode_stage31c_coverage_entailment_labels(
-            _covent_dev_records, device
+            _covent_dev_records,
+            device,
+            getattr(args, "v7_coverage_entailment_num_classes", 3),
         )
         _covent_class_weights = parse_stage31c_class_weights(
             getattr(args, "v7_coverage_entailment_loss_class_weights", None),
             device,
+            getattr(args, "v7_coverage_entailment_num_classes", 3),
         )
 
         if args.backbone == "dummy":
@@ -4978,6 +5025,7 @@ def main(argv: list[str] | None = None) -> int:
             f" loaded={_covent_meta_records_loaded}"
             f" train={_covent_meta_train_records}"
             f" dev={_covent_meta_dev_records}"
+            f" num_classes={getattr(args, 'v7_coverage_entailment_num_classes', 3)}"
             f" detach_input={getattr(args, 'v7_coverage_entailment_detach_input', False)}"
         )
 
@@ -7814,6 +7862,9 @@ def main(argv: list[str] | None = None) -> int:
             ),
             "v7_use_coverage_entailment_loss": getattr(
                 args, "v7_use_coverage_entailment_loss", False
+            ),
+            "v7_coverage_entailment_num_classes": getattr(
+                args, "v7_coverage_entailment_num_classes", 3
             ),
             "v7_coverage_entailment_loss_weight": getattr(
                 args, "v7_coverage_entailment_loss_weight", 0.0

@@ -82,10 +82,13 @@ DIAGNOSTIC_COLUMNS = [
     "coverage_entailment_confidence",
 ]
 
-COVERAGE_DIRECTION_LABELS = [
+COVERAGE_DIRECTION_LABELS_3 = [
     "ENTAILS_SUPPORT",
     "OVERCLAIM_NOT_ENTITLED",
     "CONTRADICTS_REFUTE",
+]
+COVERAGE_DIRECTION_LABELS = [
+    *COVERAGE_DIRECTION_LABELS_3,
     "OTHER_RESIDUAL",
 ]
 
@@ -423,6 +426,12 @@ def evaluate(probe_rows: list[dict], pred_map: dict[str, str],
     support_recovered_by_head = 0
     overclaim_detected_by_head = 0
     refute_detected_by_head = 0
+    safety_counters = {
+        "refute_misread_as_entails_support": 0,
+        "overclaim_misread_as_entails_support": 0,
+        "support_misread_as_overclaim_ne": 0,
+        "support_misread_as_contradicts_refute": 0,
+    }
     if diag_map:
         for row in probe_rows:
             expected_direction = expected_coverage_direction(row)
@@ -442,6 +451,14 @@ def evaluate(probe_rows: list[dict], pred_map: dict[str, str],
                 overclaim_detected_by_head += 1
             if row["group"] in REFUTE_GROUPS and pred_direction == "CONTRADICTS_REFUTE":
                 refute_detected_by_head += 1
+            if expected_direction == "CONTRADICTS_REFUTE" and pred_direction == "ENTAILS_SUPPORT":
+                safety_counters["refute_misread_as_entails_support"] += 1
+            if expected_direction == "OVERCLAIM_NOT_ENTITLED" and pred_direction == "ENTAILS_SUPPORT":
+                safety_counters["overclaim_misread_as_entails_support"] += 1
+            if expected_direction == "ENTAILS_SUPPORT" and pred_direction == "OVERCLAIM_NOT_ENTITLED":
+                safety_counters["support_misread_as_overclaim_ne"] += 1
+            if expected_direction == "ENTAILS_SUPPORT" and pred_direction == "CONTRADICTS_REFUTE":
+                safety_counters["support_misread_as_contradicts_refute"] += 1
 
     direction_total = len(direction_rows)
     direction_correct = sum(1 for _, exp, pred in direction_rows if exp == pred)
@@ -472,6 +489,7 @@ def evaluate(probe_rows: list[dict], pred_map: dict[str, str],
         "support_entailment_recovered_by_head": support_recovered_by_head,
         "overclaim_detected_by_head": overclaim_detected_by_head,
         "refute_detected_by_head": refute_detected_by_head,
+        "coverage_entailment_safety_counters": safety_counters,
     }
 
 
@@ -729,6 +747,12 @@ def write_markdown(
                 f"- **refute_detected_by_head:** "
                 f"{eval_results['refute_detected_by_head']}"
             )
+            safety = eval_results.get("coverage_entailment_safety_counters", {})
+            if safety:
+                lines.append(
+                    "- **safety counters:** "
+                    + ", ".join(f"{k}={v}" for k, v in sorted(safety.items()))
+                )
             lines.append("")
             lines.append("| Group | Correct | Total | Accuracy |")
             lines.append("|---|---|---|---|")
@@ -823,6 +847,9 @@ def write_json(
         ),
         "refute_detected_by_head": (
             eval_results.get("refute_detected_by_head") if eval_results else None
+        ),
+        "coverage_entailment_safety_counters": (
+            eval_results.get("coverage_entailment_safety_counters") if eval_results else None
         ),
         "interpretation": interpretation,
         "observed_stage31b_result": OBSERVED_STAGE31B_RESULT,
