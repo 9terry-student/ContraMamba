@@ -1,0 +1,186 @@
+{
+  "stage": "Stage31",
+  "artifact": "coverage_entailment_synthesis_lock_report",
+  "purpose": "Lock Stage31 Coverage/Entailment diagnostic findings before structural redesign.",
+  "comparative_results": [
+    {
+      "stage": "Stage31-A/B",
+      "variant": "current proxy stack",
+      "total_accuracy": 0.445,
+      "macro_f1": 0.3607,
+      "coverage_direction_alignment_accuracy": null,
+      "support_entailment_predicted_ne": 61,
+      "coverage_failure_predicted_support": 6,
+      "refute_case_predicted_support": 5,
+      "refute_case_predicted_ne": 27,
+      "interpretation": "Conservative but under-structured; suppresses some overclaims but fails to preserve valid SUPPORT under weakening, generalization, and part-inclusion entailment."
+    },
+    {
+      "stage": "Stage31-C",
+      "variant": "4-class diagnostic Coverage/Entailment head",
+      "coverage_direction_alignment_accuracy": 0.445,
+      "support_entailment_recovered_by_head": {
+        "count": 39,
+        "total": 80
+      },
+      "overclaim_detected_by_head": {
+        "count": 44,
+        "total": 80
+      },
+      "refute_detected_by_head": {
+        "count": 6,
+        "total": 40
+      },
+      "contradicts_refute_to_entails_support": {
+        "count": 20,
+        "total": 40
+      },
+      "overclaim_not_entitled_to_entails_support": {
+        "count": 27,
+        "total": 80
+      },
+      "interpretation": "Partial directional signal exists, but the head is unsafe for composer integration."
+    },
+    {
+      "stage": "Stage31-C2",
+      "variant": "3-class hard-contrast auxiliary redesign",
+      "total_accuracy": 0.45,
+      "macro_f1": 0.3535,
+      "coverage_direction_alignment_accuracy": 0.365,
+      "support_entailment_recovered_by_head": {
+        "count": 42,
+        "total": 80
+      },
+      "overclaim_detected_by_head": {
+        "count": 14,
+        "total": 80
+      },
+      "refute_detected_by_head": {
+        "count": 17,
+        "total": 40
+      },
+      "overclaim_misread_as_entails_support": 32,
+      "refute_misread_as_entails_support": 17,
+      "interpretation": "Hard 3-class supervision did not solve the problem; refute improved slightly, but overclaim ownership collapsed."
+    },
+    {
+      "stage": "Stage31-C3",
+      "variant": "raw_pair representation access",
+      "total_accuracy": 0.42,
+      "macro_f1": 0.3096,
+      "coverage_direction_alignment_accuracy": 0.4,
+      "support_entailment_recovered_by_head": {
+        "count": 46,
+        "total": 80
+      },
+      "overclaim_detected_by_head": {
+        "count": 18,
+        "total": 80
+      },
+      "refute_detected_by_head": {
+        "count": 16,
+        "total": 40
+      },
+      "refute_to_entails": 15,
+      "overclaim_to_entails": 34,
+      "support_to_overclaim": 19,
+      "support_to_refute": 15,
+      "interpretation": "Less-compressed pair access does not stabilize the diagnostic head."
+    },
+    {
+      "stage": "Stage31-C3",
+      "variant": "hybrid representation access",
+      "total_accuracy": 0.46,
+      "macro_f1": 0.3743,
+      "coverage_direction_alignment_accuracy": 0.34,
+      "support_entailment_recovered_by_head": {
+        "count": 31,
+        "total": 80
+      },
+      "overclaim_detected_by_head": {
+        "count": 26,
+        "total": 80
+      },
+      "refute_detected_by_head": {
+        "count": 11,
+        "total": 40
+      },
+      "refute_to_entails": 17,
+      "overclaim_to_entails": 23,
+      "support_to_overclaim": 40,
+      "support_to_refute": 9,
+      "interpretation": "Hybrid access improves some final-label metrics but worsens direction alignment; it is still unsafe."
+    }
+  ],
+  "locked_conclusion": "Directional Coverage/Entailment cannot be reliably recovered as a small post-hoc auxiliary neural readout over the current proxy stack.",
+  "decisions": {
+    "stage31d_composer_integration": "DENY",
+    "coverage_entailment_cap_boost_head_wiring": "DENY",
+    "additional_small_head_only_patching": "NOT_RECOMMENDED",
+    "stage32_structural_redesign": "ALLOW"
+  },
+  "architectural_implication": {
+    "coverage_entailment_must_be_first_class_owner": true,
+    "placement": "after Hard Core validity and before Residual Adjudication / ANI diagnostic",
+    "directional_relation_types": [
+      {
+        "relation": "all -> some",
+        "outcome": "SUPPORT"
+      },
+      {
+        "relation": "some -> all",
+        "outcome": "NOT_ENTITLED"
+      },
+      {
+        "relation": "specific -> general",
+        "outcome": "SUPPORT"
+      },
+      {
+        "relation": "general -> specific",
+        "outcome": "NOT_ENTITLED"
+      },
+      {
+        "relation": "whole -> part",
+        "outcome": "SUPPORT"
+      },
+      {
+        "relation": "part -> whole",
+        "outcome": "NOT_ENTITLED"
+      },
+      {
+        "relation": "only -> base",
+        "outcome": "SUPPORT"
+      },
+      {
+        "relation": "also -> only",
+        "outcome": "NOT_ENTITLED"
+      },
+      {
+        "relation": "none -> some",
+        "outcome": "REFUTE"
+      }
+    ],
+    "may_require": [
+      "explicit symbolic/scope features",
+      "structured contrastive operators"
+    ],
+    "not_recommended": "MLP-only post-hoc readout over existing representations"
+  },
+  "leakage_policy": {
+    "stage31_probe_is_diagnostic_only": true,
+    "must_not_use_for": [
+      "training",
+      "fine-tuning",
+      "calibration",
+      "threshold selection",
+      "checkpoint selection",
+      "model selection",
+      "auxiliary loss construction"
+    ]
+  },
+  "remaining_risk": "The Stage31 probe is templated and diagnostic, not a broad benchmark. However, repeated failure across head/input variants is strong enough to justify structural redesign.",
+  "lock": {
+    "stage31d_denied": true,
+    "stage32_next_step": true
+  }
+}
