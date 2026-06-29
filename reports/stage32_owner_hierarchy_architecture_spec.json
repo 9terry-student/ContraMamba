@@ -1,0 +1,254 @@
+{
+  "stage": "Stage32",
+  "decision": {
+    "summary": "Proceed with owner-hierarchy structural redesign after Stage31 Coverage/Entailment diagnostics.",
+    "flat_arbiter_less_not_decision_less": true,
+    "denied_form": "Mamba Encoder -> multiple heads -> learned black-box arbiter -> final label",
+    "approved_form": "Mamba Encoder -> explicit owners -> rule-structured composer -> final label"
+  },
+  "denied_paths": [
+    "more caps",
+    "gamma tuning",
+    "NE boost",
+    "head-only composer wiring",
+    "flat learned arbiter",
+    "learned all-head mixing as primary final decision"
+  ],
+  "approved_path": [
+    "owner hierarchy",
+    "explicit Coverage/Entailment owner",
+    "rule-structured composer",
+    "first-class owner states",
+    "shadow-mode validation before final-decision replacement"
+  ],
+  "stage31_summary": {
+    "conclusion": "Stage31-D composer integration is denied; Coverage/Entailment must be promoted to a first-class owner/layer.",
+    "evidence": [
+      {
+        "stage": "Stage31-B",
+        "variant": "current proxy stack",
+        "total_accuracy": 0.445,
+        "macro_f1": 0.3607,
+        "support_entailment_predicted_ne": 61,
+        "coverage_failure_predicted_support": 6,
+        "refute_case_predicted_support": 5,
+        "refute_case_predicted_ne": 27,
+        "interpretation": "Conservative but under-structured; suppresses many overclaims but fails to preserve valid SUPPORT entailment."
+      },
+      {
+        "stage": "Stage31-C",
+        "variant": "4-class diagnostic head",
+        "alignment": 0.445,
+        "support_entailment_recovered_by_head": "39 / 80",
+        "overclaim_detected_by_head": "44 / 80",
+        "refute_detected_by_head": "6 / 40",
+        "contradicts_refute_to_entails_support": "20 / 40",
+        "overclaim_not_entitled_to_entails_support": "27 / 80",
+        "interpretation": "Partial signal exists but unsafe for composer integration."
+      },
+      {
+        "stage": "Stage31-C2",
+        "variant": "3-class hard contrast",
+        "total_accuracy": 0.45,
+        "macro_f1": 0.3535,
+        "alignment": 0.365,
+        "support_entailment_recovered_by_head": "42 / 80",
+        "overclaim_detected_by_head": "14 / 80",
+        "refute_detected_by_head": "17 / 40",
+        "overclaim_misread_as_entails_support": 32,
+        "refute_misread_as_entails_support": 17,
+        "interpretation": "Hard contrast did not solve the problem; overclaim ownership collapsed."
+      },
+      {
+        "stage": "Stage31-C3",
+        "variant": "raw_pair",
+        "total_accuracy": 0.42,
+        "macro_f1": 0.3096,
+        "alignment": 0.4,
+        "support_recovered": "46 / 80",
+        "overclaim_detected": "18 / 80",
+        "refute_detected": "16 / 40",
+        "refute_to_entails": 15,
+        "overclaim_to_entails": 34,
+        "interpretation": "Raw pair access does not make the neural diagnostic head stable enough."
+      },
+      {
+        "stage": "Stage31-C3",
+        "variant": "hybrid",
+        "total_accuracy": 0.46,
+        "macro_f1": 0.3743,
+        "alignment": 0.34,
+        "support_recovered": "31 / 80",
+        "overclaim_detected": "26 / 80",
+        "refute_detected": "11 / 40",
+        "refute_to_entails": 17,
+        "overclaim_to_entails": 23,
+        "interpretation": "Hybrid access does not make the neural diagnostic head stable enough."
+      }
+    ]
+  },
+  "architecture": {
+    "text_diagram": "Mamba Encoder -> Hard Core Validity Owner -> Coverage / Entailment Owner -> Residual Adjudication Owner -> ANI Diagnostic Readout -> Polarity Owner -> Rule-Structured Composer -> Final Label",
+    "principles": [
+      "Entitlement before polarity",
+      "Single Owner Rule",
+      "Hard Core failures cannot be rescued",
+      "Coverage/Entailment is not Frame",
+      "Residual Adjudication is not cap stacking",
+      "ANI is diagnostic, not primary decision logic",
+      "No flat learned arbiter",
+      "Composer is structured, not black-box",
+      "Coverage/Entailment needs direct structured access",
+      "Stage31 probe remains diagnostic-only"
+    ]
+  },
+  "owners": [
+    {
+      "owner": "Hard Core Validity Owner",
+      "input": "Encoded claim/evidence target, event, relation, entity, location, and temporal anchors",
+      "output": [
+        "hard_core_valid",
+        "hard_core_failure_type",
+        "target_event_anchor_confidence"
+      ],
+      "authority": "Hard failure cannot be rescued by later owners; may block SUPPORT/REFUTE when target identity or event anchor is broken.",
+      "failure_mode_owned": [
+        "wrong person",
+        "wrong organization",
+        "wrong event",
+        "wrong location anchor when location is core",
+        "wrong temporal anchor when time is core"
+      ]
+    },
+    {
+      "owner": "Coverage / Entailment Owner",
+      "input": "Hard-Core-valid pair state plus direct directional scope/coverage features",
+      "output": [
+        "coverage_relation",
+        "coverage_status",
+        "coverage_entitlement_state",
+        "contradiction_license"
+      ],
+      "authority": "Overclaim routes to NOT_ENTITLED unless a stronger contradiction applies; entailment-preserving relation preserves entitlement; contradiction routes toward REFUTE.",
+      "failure_mode_owned": [
+        "all -> some SUPPORT",
+        "some -> all NOT_ENTITLED",
+        "specific -> general SUPPORT",
+        "general -> specific NOT_ENTITLED",
+        "whole -> part SUPPORT",
+        "part -> whole NOT_ENTITLED",
+        "only -> base SUPPORT",
+        "also -> only NOT_ENTITLED",
+        "none -> some REFUTE"
+      ]
+    },
+    {
+      "owner": "Residual Adjudication Owner",
+      "input": "Cases not cleanly resolved by Hard Core or Coverage/Entailment",
+      "output": [
+        "residual_status",
+        "residual_reason",
+        "unresolved_relation_confidence"
+      ],
+      "authority": "Produces residual state for ANI and composer; should not override Hard Core or straightforward Coverage/Entailment.",
+      "failure_mode_owned": [
+        "borderline mismatch",
+        "underspecification",
+        "paraphrase ambiguity",
+        "unresolved relation gaps"
+      ]
+    },
+    {
+      "owner": "ANI Diagnostic Readout",
+      "input": "Owner states from Hard Core, Coverage/Entailment, Residual, and Polarity",
+      "output": [
+        "novelty",
+        "ambiguity",
+        "ignorance"
+      ],
+      "authority": "Diagnostic explanation layer only; not primary final-label controller.",
+      "failure_mode_owned": [
+        "ignorance from insufficient entitlement or missing coverage",
+        "ambiguity from unresolved residual readings",
+        "novelty from information not licensed by evidence"
+      ]
+    },
+    {
+      "owner": "Polarity Owner",
+      "input": "Entitled or contradiction-licensed pair state",
+      "output": [
+        "polarity_state",
+        "support_score",
+        "refute_score",
+        "contradiction_strength"
+      ],
+      "authority": "Decides SUPPORT vs REFUTE only after entitlement is alive or contradiction is explicitly licensed; cannot rescue failed Hard Core or turn overclaim into SUPPORT.",
+      "failure_mode_owned": [
+        "explicit support/refute polarity after ownership routing"
+      ]
+    },
+    {
+      "owner": "Rule-Structured Composer",
+      "input": "All owner states and calibrated owner confidences",
+      "output": [
+        "final_label",
+        "decision_trace",
+        "blocking_owner"
+      ],
+      "authority": "Applies explicit owner priority and authority rules; replaces black-box final MLP arbitration.",
+      "failure_mode_owned": [
+        "final decision ownership",
+        "conflict resolution"
+      ]
+    }
+  ],
+  "composer_rules": [
+    "Hard Core failure blocks unsupported final SUPPORT and cannot be rescued by later owners.",
+    "If Hard Core passes and Coverage/Entailment identifies overclaim, route to NOT_ENTITLED unless a stronger contradiction owner explicitly applies.",
+    "If Hard Core passes and Coverage/Entailment identifies entailment-preserving relation, preserve the SUPPORT entitlement path and prevent unnecessary NOT_ENTITLED collapse.",
+    "If Coverage/Entailment identifies contradiction, route toward REFUTE through polarity/contradiction handling.",
+    "Residual unresolved cases route to NOT_ENTITLED or ANI-informed uncertainty without overriding Hard Core or clear Coverage/Entailment.",
+    "Polarity decides SUPPORT/REFUTE only after entitlement is established or contradiction is explicitly licensed.",
+    "Composer may use calibrated owner confidence, but owner priority and authority must be explicit.",
+    "No black-box final MLP arbiter and no learned all-head mixing as primary final decision."
+  ],
+  "implementation_roadmap": [
+    {
+      "stage": "Stage32-A",
+      "goal": "Introduce owner state dataclass / structured output schema without changing final predictions."
+    },
+    {
+      "stage": "Stage32-B",
+      "goal": "Implement Hard Core + Coverage/Entailment owner interfaces."
+    },
+    {
+      "stage": "Stage32-C",
+      "goal": "Implement rule-structured composer in shadow mode."
+    },
+    {
+      "stage": "Stage32-D",
+      "goal": "Evaluate shadow composer on Stage31 probe and controlled dev."
+    },
+    {
+      "stage": "Stage32-E",
+      "goal": "Only then consider replacing v7 final decision."
+    }
+  ],
+  "leakage_policy": {
+    "stage31_probe_is_diagnostic_only": true,
+    "must_not_use_stage31_probe_for": [
+      "training",
+      "calibration",
+      "threshold selection",
+      "checkpoint selection",
+      "model selection",
+      "auxiliary loss construction"
+    ]
+  },
+  "risks": [
+    "Stage31 probe is templated and diagnostic, not a broad benchmark.",
+    "Explicit owner hierarchy may initially reduce aggregate dev accuracy.",
+    "Symbolic/scope features may be brittle.",
+    "Need to avoid training leakage from Stage31 probe."
+  ]
+}
