@@ -423,6 +423,7 @@ def evaluate(probe_rows: list[dict], pred_map: dict[str, str],
     direction_by_group_counts: dict[str, dict[str, int]] = defaultdict(
         lambda: {"correct": 0, "total": 0}
     )
+    input_mode_counts: Counter[str] = Counter()
     support_recovered_by_head = 0
     overclaim_detected_by_head = 0
     refute_detected_by_head = 0
@@ -440,6 +441,9 @@ def evaluate(probe_rows: list[dict], pred_map: dict[str, str],
             pred_direction = normalize_coverage_direction(diag_map.get(row["id"], {}))
             if pred_direction is None:
                 continue
+            input_mode = diag_map.get(row["id"], {}).get("coverage_entailment_input_mode")
+            if input_mode is not None:
+                input_mode_counts[str(input_mode)] += 1
             direction_rows.append((row, expected_direction, pred_direction))
             direction_confusion[expected_direction][pred_direction] += 1
             direction_by_group_counts[row["group"]]["total"] += 1
@@ -484,12 +488,14 @@ def evaluate(probe_rows: list[dict], pred_map: dict[str, str],
             round(safe_div(direction_correct, direction_total), 4)
             if direction_total else None
         ),
+        "coverage_entailment_input_mode_counts": dict(input_mode_counts),
         "coverage_direction_alignment_by_group": direction_alignment_by_group,
         "coverage_direction_confusion": direction_confusion if direction_total else None,
         "support_entailment_recovered_by_head": support_recovered_by_head,
         "overclaim_detected_by_head": overclaim_detected_by_head,
         "refute_detected_by_head": refute_detected_by_head,
         "coverage_entailment_safety_counters": safety_counters,
+        **safety_counters,
     }
 
 
@@ -735,6 +741,9 @@ def write_markdown(
                 f"- **Coverage direction alignment accuracy:** "
                 f"{eval_results['coverage_direction_alignment_accuracy']:.4f}"
             )
+            input_modes = eval_results.get("coverage_entailment_input_mode_counts", {})
+            if input_modes:
+                lines.append(f"- **coverage_entailment_input_mode:** {input_modes}")
             lines.append(
                 f"- **support_entailment_recovered_by_head:** "
                 f"{eval_results['support_entailment_recovered_by_head']}"
@@ -749,10 +758,11 @@ def write_markdown(
             )
             safety = eval_results.get("coverage_entailment_safety_counters", {})
             if safety:
-                lines.append(
-                    "- **safety counters:** "
-                    + ", ".join(f"{k}={v}" for k, v in sorted(safety.items()))
-                )
+                lines.append("")
+                lines.append("| Safety Counter | Count |")
+                lines.append("|---|---:|")
+                for k, v in sorted(safety.items()):
+                    lines.append(f"| {k} | {v} |")
             lines.append("")
             lines.append("| Group | Correct | Total | Accuracy |")
             lines.append("|---|---|---|---|")
@@ -833,6 +843,9 @@ def write_json(
         "coverage_direction_alignment_accuracy": (
             eval_results.get("coverage_direction_alignment_accuracy") if eval_results else None
         ),
+        "coverage_entailment_input_mode_counts": (
+            eval_results.get("coverage_entailment_input_mode_counts") if eval_results else None
+        ),
         "coverage_direction_alignment_by_group": (
             eval_results.get("coverage_direction_alignment_by_group") if eval_results else None
         ),
@@ -850,6 +863,18 @@ def write_json(
         ),
         "coverage_entailment_safety_counters": (
             eval_results.get("coverage_entailment_safety_counters") if eval_results else None
+        ),
+        "refute_misread_as_entails_support": (
+            eval_results.get("refute_misread_as_entails_support") if eval_results else None
+        ),
+        "overclaim_misread_as_entails_support": (
+            eval_results.get("overclaim_misread_as_entails_support") if eval_results else None
+        ),
+        "support_misread_as_overclaim_ne": (
+            eval_results.get("support_misread_as_overclaim_ne") if eval_results else None
+        ),
+        "support_misread_as_contradicts_refute": (
+            eval_results.get("support_misread_as_contradicts_refute") if eval_results else None
         ),
         "interpretation": interpretation,
         "observed_stage31b_result": OBSERVED_STAGE31B_RESULT,
@@ -1003,6 +1028,10 @@ def main() -> None:
             for col in ("coverage_entailment_pred_id", "coverage_entailment_pred_label"):
                 if col in row:
                     diag_row[col] = row[col]
+            if "coverage_entailment_input_mode" in row:
+                diag_row["coverage_entailment_input_mode"] = row[
+                    "coverage_entailment_input_mode"
+                ]
             if diag_row:
                 diag_map[rid] = diag_row
 

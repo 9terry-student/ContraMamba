@@ -1,10 +1,41 @@
-# Stage31-C2 Coverage/Entailment Diagnostic Head Report
+# Stage31-C3 Coverage/Entailment Diagnostic Head Report
 
 ## Purpose
-Stage31-C2 keeps the Coverage/Entailment owner diagnostic-only. The optional head is a readout signal for three hard minimal-contrast directions: entailment-preserving SUPPORT, overclaim NOT_ENTITLED, and contradiction REFUTE.
+Stage31-C3 adds a representation-access ablation for the Coverage/Entailment diagnostic head. The head remains diagnostic-only and is not allowed to modify final predictions, final logits, entitlement, caps, NE boosting, H1 composer logic, calibration, threshold selection, or checkpoint selection.
 
-## Auxiliary Data
-Stage31-C2 uses `data/stage31c_coverage_entailment_aux.jsonl`, separate from the Stage31 evaluation probe. It provides balanced hard minimal-contrast supervision:
+## Stage31-C2 Failure Summary
+The corrected Stage31-C2 3-class hard-contrast auxiliary data is valid: 900 rows, 300 rows per class, train=720, dev=180, and no `OTHER_RESIDUAL`.
+
+The Stage31-C2 diagnostic evaluation did not pass the safety bar:
+
+| Metric | Value |
+|---|---:|
+| total_accuracy | 0.4500 |
+| macro_f1 | 0.3535 |
+| coverage_direction_alignment_accuracy | 0.3650 |
+| support_entailment_recovered_by_head | 42 / 80 |
+| overclaim_detected_by_head | 14 / 80 |
+| refute_detected_by_head | 17 / 40 |
+| overclaim_misread_as_entails_support | 32 |
+| refute_misread_as_entails_support | 17 |
+
+Interpretation: the current input `frame_pair_repr + predicate_pair_repr + sufficiency_repr` does not expose stable enough directional coverage/scope information for composer integration.
+
+## Stage31-C3 Input Modes
+The optional CLI flag `--v7-coverage-entailment-input-mode` controls the diagnostic head input:
+
+| Mode | Representation |
+|---|---|
+| `current` | Existing C/C2 input: `frame_pair_repr`, `predicate_pair_repr`, `sufficiency_repr` |
+| `raw_pair` | Existing `claim_frame_state`, `evidence_frame_state`, `abs(claim_frame_state - evidence_frame_state)`, `claim_frame_state * evidence_frame_state` |
+| `hybrid` | `raw_pair` concatenated with `current` |
+
+`raw_pair` uses claim/evidence sequence-level states already produced by the model's existing `FrameGate` forward path. It does not run the encoder twice, add a second backbone, or add external models.
+
+## Head Architecture
+The optional head is registered from `scripts/train_controlled_v6b_minimal.py` when `--v7-use-coverage-entailment-head` is enabled.
+
+`--v7-coverage-entailment-num-classes` controls the output dimension. The default remains 3 for:
 
 | Class | ID | Intended final label |
 |---|---:|---|
@@ -12,22 +43,11 @@ Stage31-C2 uses `data/stage31c_coverage_entailment_aux.jsonl`, separate from the
 | OVERCLAIM_NOT_ENTITLED | 1 | NOT_ENTITLED |
 | CONTRADICTS_REFUTE | 2 | REFUTE |
 
-Default aux counts are 900 rows total, 300 rows per class, with train=720 and dev=180. `OTHER_RESIDUAL` is not part of the default Stage31-C2 data.
-
-## Head Architecture
-The optional head is registered from `scripts/train_controlled_v6b_minimal.py` when `--v7-use-coverage-entailment-head` is enabled.
-
-Input:
-`concat([frame_pair_repr, predicate_pair_repr, sufficiency_repr])`
-
-Output:
-`--v7-coverage-entailment-num-classes` controls the output dimension. The default is 3. Legacy 4-class compatibility remains available only when explicitly requested.
-
-Loss:
-optional cross entropy over `coverage_direction_id`, enabled only with `--v7-use-coverage-entailment-loss` and `--v7-coverage-entailment-data`.
+Legacy 4-class compatibility remains available only when explicitly requested.
 
 ## Exported Columns
 Default 3-class exports:
+- `coverage_entailment_input_mode`
 - `coverage_entails_support_prob`
 - `coverage_overclaim_ne_prob`
 - `coverage_contradicts_refute_prob`
@@ -37,16 +57,32 @@ Default 3-class exports:
 
 Legacy 4-class mode additionally exports `coverage_other_residual_prob`.
 
-## Diagnostic-Only Constraints
-Stage31-C2 does not modify `output["logits"]`, H1 final composer, entitlement, caps, NE boosting, calibration, threshold selection, or checkpoint selection. The Stage31 evaluation probe must not be used for this loss.
+## Evaluation Reporting
+The Stage31 evaluator reports `coverage_entailment_input_mode` when present, plus:
+- `coverage_direction_alignment_accuracy`
+- `coverage_direction_alignment_by_group`
+- `coverage_direction_confusion`
+- `support_entailment_recovered_by_head`
+- `overclaim_detected_by_head`
+- `refute_detected_by_head`
+- `refute_misread_as_entails_support`
+- `overclaim_misread_as_entails_support`
+- `support_misread_as_overclaim_ne`
+- `support_misread_as_contradicts_refute`
 
-## Evaluation Alignment
-For Stage31-C2 diagnostic exports, Stage31 probe alignment is interpreted as:
-- SUPPORT entailment groups -> `ENTAILS_SUPPORT`
-- NOT_ENTITLED overclaim groups -> `OVERCLAIM_NOT_ENTITLED`
-- REFUTE groups -> `CONTRADICTS_REFUTE`
+## Decision Rule
+Composer integration is allowed only if all criteria pass:
 
-The evaluator supports both default 3-class exports and legacy 4-class exports, and reports safety counters for refute/overclaim/support direction misreads.
+| Criterion | Required |
+|---|---:|
+| coverage_direction_alignment_accuracy | >= 0.65 |
+| support_entailment_recovered_by_head | >= 60 |
+| overclaim_detected_by_head | >= 60 |
+| refute_detected_by_head | >= 25 |
+| refute_misread_as_entails_support | <= 5 |
+| overclaim_misread_as_entails_support | <= 10 |
+
+Until those criteria pass, Stage31-D composer integration remains denied. Recommended next steps are better representation access or explicit symbolic/scope features.
 
 ## Leakage Policy
-Do not use `data/stage31_coverage_entailment_probe.jsonl` for training, calibration, threshold selection, checkpoint selection, or auxiliary loss construction.
+Do not use `data/stage31_coverage_entailment_probe.jsonl` for training, calibration, threshold selection, checkpoint selection, auxiliary loss construction, or model selection.

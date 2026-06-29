@@ -46,6 +46,7 @@ STAGE31C_COVERAGE_LABEL_TO_ID = {
     label: idx for idx, label in enumerate(STAGE31C_COVERAGE_LABELS)
 }
 STAGE31C_DEFAULT_NUM_CLASSES = 3
+STAGE31C_INPUT_MODES = ("current", "raw_pair", "hybrid")
 
 
 class Stage31CCoverageEntailmentHead(nn.Module):
@@ -57,14 +58,28 @@ class Stage31CCoverageEntailmentHead(nn.Module):
         predicate_size: int,
         sufficiency_size: int,
         num_classes: int = STAGE31C_DEFAULT_NUM_CLASSES,
+        input_mode: str = "current",
         detach_input: bool = False,
     ) -> None:
         super().__init__()
         if num_classes not in (3, 4):
             raise ValueError(f"Stage31-C coverage entailment num_classes must be 3 or 4, got {num_classes}")
-        input_size = frame_size + predicate_size + sufficiency_size
+        if input_mode not in STAGE31C_INPUT_MODES:
+            raise ValueError(
+                f"Stage31-C coverage entailment input_mode must be one of "
+                f"{STAGE31C_INPUT_MODES}, got {input_mode!r}"
+            )
+        current_size = frame_size + predicate_size + sufficiency_size
+        raw_pair_size = frame_size * 4
+        if input_mode == "current":
+            input_size = current_size
+        elif input_mode == "raw_pair":
+            input_size = raw_pair_size
+        else:
+            input_size = raw_pair_size + current_size
         hidden = max(input_size // 2, 16)
         self.num_classes = num_classes
+        self.input_mode = input_mode
         self.detach_input = detach_input
         self.mlp = nn.Sequential(
             nn.Linear(input_size, hidden),
@@ -73,16 +88,39 @@ class Stage31CCoverageEntailmentHead(nn.Module):
             nn.Linear(hidden, num_classes),
         )
 
-    def forward(
-        self,
-        frame_pair_repr: torch.Tensor,
-        predicate_pair_repr: torch.Tensor,
-        sufficiency_repr: torch.Tensor,
-    ) -> torch.Tensor:
-        features = torch.cat(
-            [frame_pair_repr, predicate_pair_repr, sufficiency_repr],
+    def _current_features(self, output: dict[str, Any]) -> torch.Tensor:
+        return torch.cat(
+            [
+                output["frame_pair_repr"],
+                output["predicate_pair_repr"],
+                output["sufficiency_repr"],
+            ],
             dim=-1,
         )
+
+    def _raw_pair_features(self, output: dict[str, Any]) -> torch.Tensor:
+        claim_repr = output["claim_frame_state"]
+        evidence_repr = output["evidence_frame_state"]
+        return torch.cat(
+            [
+                claim_repr,
+                evidence_repr,
+                torch.abs(claim_repr - evidence_repr),
+                claim_repr * evidence_repr,
+            ],
+            dim=-1,
+        )
+
+    def forward(self, output: dict[str, Any]) -> torch.Tensor:
+        if self.input_mode == "current":
+            features = self._current_features(output)
+        elif self.input_mode == "raw_pair":
+            features = self._raw_pair_features(output)
+        else:
+            features = torch.cat(
+                [self._raw_pair_features(output), self._current_features(output)],
+                dim=-1,
+            )
         if self.detach_input:
             features = features.detach()
         return self.mlp(features)
@@ -97,6 +135,7 @@ def install_stage31c_coverage_entailment_head(
     model: nn.Module,
     *,
     num_classes: int = STAGE31C_DEFAULT_NUM_CLASSES,
+    input_mode: str = "current",
     detach_input: bool,
 ) -> None:
     """Register and wrap a diagnostic head without changing final logits."""
@@ -112,6 +151,7 @@ def install_stage31c_coverage_entailment_head(
         predicate_size=predicate_size,
         sufficiency_size=sufficiency_size,
         num_classes=num_classes,
+        input_mode=input_mode,
         detach_input=detach_input,
     )
     original_forward = model.forward
@@ -130,14 +170,13 @@ def add_stage31c_coverage_entailment_outputs(
     head = getattr(model, "stage31c_coverage_entailment_head", None)
     if head is None:
         return output
-    required = ("frame_pair_repr", "predicate_pair_repr", "sufficiency_repr")
+    input_mode = getattr(head, "input_mode", "current")
+    required = ["frame_pair_repr", "predicate_pair_repr", "sufficiency_repr"]
+    if input_mode in ("raw_pair", "hybrid"):
+        required.extend(["claim_frame_state", "evidence_frame_state"])
     if any(output.get(key) is None for key in required):
         return output
-    logits = head(
-        output["frame_pair_repr"],
-        output["predicate_pair_repr"],
-        output["sufficiency_repr"],
-    )
+    logits = head(output)
     probs = torch.softmax(logits, dim=-1)
     pred_id = probs.argmax(dim=-1)
     confidence = probs.max(dim=-1).values
@@ -157,6 +196,7 @@ def add_stage31c_coverage_entailment_outputs(
         labels[int(i)] for i in pred_id.detach().cpu().tolist()
     ]
     output["coverage_entailment_confidence"] = confidence
+    output["coverage_entailment_input_mode"] = input_mode
     return output
 
 
@@ -2100,6 +2140,9 @@ def prediction_records_v6b(records: list[dict], output: dict[str, Any]) -> list[
                     "coverage_entailment_pred_label": output[
                         "coverage_entailment_pred_label"
                     ][index],
+                    "coverage_entailment_input_mode": output.get(
+                        "coverage_entailment_input_mode"
+                    ),
                 }
                 if output.get("coverage_entailment_pred_id") is not None
                 and output.get("coverage_entailment_pred_label") is not None
@@ -3407,6 +3450,17 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--v7-coverage-entailment-input-mode",
+        choices=STAGE31C_INPUT_MODES,
+        default="current",
+        help=(
+            "Stage31-C3: representation access ablation for the diagnostic "
+            "coverage-entailment head. current uses frame/predicate/sufficiency "
+            "pair representations; raw_pair uses claim/evidence frame states plus "
+            "abs-diff and product; hybrid concatenates both."
+        ),
+    )
+    parser.add_argument(
         "--v7-use-coverage-entailment-loss",
         action="store_true",
         default=False,
@@ -3449,8 +3503,8 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         default=False,
         help=(
-            "Stage31-C: detach concat([frame_pair_repr, predicate_pair_repr, "
-            "sufficiency_repr]) before the diagnostic head. Default off."
+            "Stage31-C: detach the selected diagnostic-head representation before "
+            "the coverage-entailment head. Default off."
         ),
     )
 
@@ -4064,6 +4118,7 @@ _LIFT_CONFIG_KEYS: tuple[str, ...] = (
     "v7_initial_ne_bias",
     "v7_use_coverage_entailment_head",
     "v7_coverage_entailment_num_classes",
+    "v7_coverage_entailment_input_mode",
     "v7_use_coverage_entailment_loss",
     "v7_coverage_entailment_loss_weight",
     "v7_coverage_entailment_data",
@@ -4492,6 +4547,7 @@ def main(argv: list[str] | None = None) -> int:
         install_stage31c_coverage_entailment_head(
             model,
             num_classes=getattr(args, "v7_coverage_entailment_num_classes", 3),
+            input_mode=getattr(args, "v7_coverage_entailment_input_mode", "current"),
             detach_input=getattr(args, "v7_coverage_entailment_detach_input", False),
         )
 
@@ -5026,6 +5082,7 @@ def main(argv: list[str] | None = None) -> int:
             f" train={_covent_meta_train_records}"
             f" dev={_covent_meta_dev_records}"
             f" num_classes={getattr(args, 'v7_coverage_entailment_num_classes', 3)}"
+            f" input_mode={getattr(args, 'v7_coverage_entailment_input_mode', 'current')}"
             f" detach_input={getattr(args, 'v7_coverage_entailment_detach_input', False)}"
         )
 
@@ -7865,6 +7922,9 @@ def main(argv: list[str] | None = None) -> int:
             ),
             "v7_coverage_entailment_num_classes": getattr(
                 args, "v7_coverage_entailment_num_classes", 3
+            ),
+            "v7_coverage_entailment_input_mode": getattr(
+                args, "v7_coverage_entailment_input_mode", "current"
             ),
             "v7_coverage_entailment_loss_weight": getattr(
                 args, "v7_coverage_entailment_loss_weight", 0.0
