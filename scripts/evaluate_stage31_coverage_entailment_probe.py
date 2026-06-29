@@ -75,7 +75,26 @@ DIAGNOSTIC_COLUMNS = [
     "temporal_mismatch_fused_prob",
     "temporal_preservation_prob",
     "effective_temporal_penalty",
+    "coverage_entails_support_prob",
+    "coverage_overclaim_ne_prob",
+    "coverage_contradicts_refute_prob",
+    "coverage_other_residual_prob",
+    "coverage_entailment_confidence",
 ]
+
+COVERAGE_DIRECTION_LABELS = [
+    "ENTAILS_SUPPORT",
+    "OVERCLAIM_NOT_ENTITLED",
+    "CONTRADICTS_REFUTE",
+    "OTHER_RESIDUAL",
+]
+
+COVERAGE_DIRECTION_PROB_COLUMNS = {
+    "ENTAILS_SUPPORT": "coverage_entails_support_prob",
+    "OVERCLAIM_NOT_ENTITLED": "coverage_overclaim_ne_prob",
+    "CONTRADICTS_REFUTE": "coverage_contradicts_refute_prob",
+    "OTHER_RESIDUAL": "coverage_other_residual_prob",
+}
 
 OBSERVED_STAGE31B_RESULT = {
     "total_accuracy": 0.445,
@@ -261,6 +280,43 @@ def confusion_matrix(golds: list[str], preds: list[str]) -> dict[str, dict[str, 
     return mat
 
 
+def expected_coverage_direction(row: dict) -> str | None:
+    group = row.get("group")
+    if group in SUPPORT_ENTAILMENT_GROUPS:
+        return "ENTAILS_SUPPORT"
+    if group in COVERAGE_FAILURE_GROUPS:
+        return "OVERCLAIM_NOT_ENTITLED"
+    if group in REFUTE_GROUPS:
+        return "CONTRADICTS_REFUTE"
+    return None
+
+
+def normalize_coverage_direction(row_diag: dict) -> str | None:
+    raw = row_diag.get("coverage_entailment_pred_label")
+    if raw is not None:
+        label = str(raw).strip().upper()
+        if label in COVERAGE_DIRECTION_LABELS:
+            return label
+    raw_id = row_diag.get("coverage_entailment_pred_id")
+    if raw_id is not None:
+        try:
+            idx = int(float(raw_id))
+            if 0 <= idx < len(COVERAGE_DIRECTION_LABELS):
+                return COVERAGE_DIRECTION_LABELS[idx]
+        except (TypeError, ValueError):
+            pass
+    probs: list[tuple[str, float]] = []
+    for label, col in COVERAGE_DIRECTION_PROB_COLUMNS.items():
+        if col in row_diag:
+            try:
+                probs.append((label, float(row_diag[col])))
+            except (TypeError, ValueError):
+                pass
+    if probs:
+        return max(probs, key=lambda item: item[1])[0]
+    return None
+
+
 # ---------------------------------------------------------------------------
 # Core evaluation
 # ---------------------------------------------------------------------------
@@ -355,6 +411,49 @@ def evaluate(probe_rows: list[dict], pred_map: dict[str, str],
                 for col, vals in grp_diag.items() if vals
             }
 
+    # Stage31-C coverage-direction diagnostic alignment.
+    direction_rows = []
+    direction_confusion = {
+        exp: {pred: 0 for pred in COVERAGE_DIRECTION_LABELS + ["MISSING"]}
+        for exp in COVERAGE_DIRECTION_LABELS
+    }
+    direction_by_group_counts: dict[str, dict[str, int]] = defaultdict(
+        lambda: {"correct": 0, "total": 0}
+    )
+    support_recovered_by_head = 0
+    overclaim_detected_by_head = 0
+    refute_detected_by_head = 0
+    if diag_map:
+        for row in probe_rows:
+            expected_direction = expected_coverage_direction(row)
+            if expected_direction is None:
+                continue
+            pred_direction = normalize_coverage_direction(diag_map.get(row["id"], {}))
+            if pred_direction is None:
+                continue
+            direction_rows.append((row, expected_direction, pred_direction))
+            direction_confusion[expected_direction][pred_direction] += 1
+            direction_by_group_counts[row["group"]]["total"] += 1
+            if pred_direction == expected_direction:
+                direction_by_group_counts[row["group"]]["correct"] += 1
+            if row["group"] in SUPPORT_ENTAILMENT_GROUPS and pred_direction == "ENTAILS_SUPPORT":
+                support_recovered_by_head += 1
+            if row["group"] in COVERAGE_FAILURE_GROUPS and pred_direction == "OVERCLAIM_NOT_ENTITLED":
+                overclaim_detected_by_head += 1
+            if row["group"] in REFUTE_GROUPS and pred_direction == "CONTRADICTS_REFUTE":
+                refute_detected_by_head += 1
+
+    direction_total = len(direction_rows)
+    direction_correct = sum(1 for _, exp, pred in direction_rows if exp == pred)
+    direction_alignment_by_group = {
+        grp: {
+            "correct": counts["correct"],
+            "total": counts["total"],
+            "accuracy": round(safe_div(counts["correct"], counts["total"]), 4),
+        }
+        for grp, counts in sorted(direction_by_group_counts.items())
+    }
+
     return {
         "total_accuracy": round(total_acc, 4),
         "macro_f1": round(mf1, 4),
@@ -364,6 +463,15 @@ def evaluate(probe_rows: list[dict], pred_map: dict[str, str],
         "owner_n": len(owner_rows),
         "failure_modes": failure_modes,
         "diagnostic_column_means": diag_means,
+        "coverage_direction_alignment_accuracy": (
+            round(safe_div(direction_correct, direction_total), 4)
+            if direction_total else None
+        ),
+        "coverage_direction_alignment_by_group": direction_alignment_by_group,
+        "coverage_direction_confusion": direction_confusion if direction_total else None,
+        "support_entailment_recovered_by_head": support_recovered_by_head,
+        "overclaim_detected_by_head": overclaim_detected_by_head,
+        "refute_detected_by_head": refute_detected_by_head,
     }
 
 
@@ -419,6 +527,40 @@ def build_interpretation(eval_results: dict | None, dry_run: bool) -> str:
     else:
         lines.append("Refute groups were handled correctly; polarity appears reliable.")
 
+    align_acc = eval_results.get("coverage_direction_alignment_accuracy")
+    if align_acc is not None:
+        support_recovered = eval_results.get("support_entailment_recovered_by_head", 0)
+        support_total = sum(
+            gm["n"] for grp, gm in eval_results["group_metrics"].items()
+            if grp in SUPPORT_ENTAILMENT_GROUPS
+        )
+        final_failing = cov_fail > 0 or sup_ne > 0 or ref_sup > 0 or ref_ne > 0
+        if align_acc >= 0.75 and final_failing:
+            lines.append(
+                "Stage31-C head alignment is materially better than final predictions: "
+                "the directional coverage signal exists but is not yet wired into the final composer."
+            )
+        elif align_acc >= 0.75:
+            lines.append(
+                "Stage31-C head aligns with the expected directional coverage labels. "
+                "If this holds across runs, Stage31-D composer integration is the next step."
+            )
+        else:
+            lines.append(
+                "Stage31-C head alignment is weak: the current representations do not expose "
+                "stable directional coverage information. Revise auxiliary data or representation "
+                "access before composer integration."
+            )
+        if support_total and support_recovered / support_total >= 0.75:
+            lines.append(
+                "The head succeeds on SUPPORT entailment groups; recommend Stage31-D composer integration."
+            )
+        elif support_total:
+            lines.append(
+                "The head still fails on SUPPORT entailment groups; redesign auxiliary coverage data "
+                "before composer integration."
+            )
+
     return " ".join(lines)
 
 
@@ -427,6 +569,25 @@ def next_step_recommendation(eval_results: dict | None, dry_run: bool) -> str:
         return (
             "Run with --predictions-file to determine next steps. "
             "If predictions reveal systematic failure, proceed to Stage31-C."
+        )
+    align_acc = eval_results.get("coverage_direction_alignment_accuracy")
+    if align_acc is not None:
+        support_recovered = eval_results.get("support_entailment_recovered_by_head", 0)
+        support_total = sum(
+            gm["n"] for grp, gm in eval_results["group_metrics"].items()
+            if grp in SUPPORT_ENTAILMENT_GROUPS
+        )
+        support_rate = safe_div(support_recovered, support_total)
+        if align_acc >= 0.75 and support_rate >= 0.75:
+            return (
+                "Stage31-D should integrate the directional Coverage/Entailment signal into "
+                "the composer. The Stage31-C head aligns on the probe, including SUPPORT "
+                "entailment groups."
+            )
+        return (
+            "Revise Stage31-C auxiliary coverage data or representation access before composer "
+            "integration. The diagnostic head does not yet align strongly enough, especially "
+            "on SUPPORT entailment recovery."
         )
     fm = eval_results["failure_modes"]
     strong_failure = (
@@ -550,6 +711,33 @@ def write_markdown(
             lines.append(f"| {k} | {v} |")
         lines.append("")
 
+        if eval_results.get("coverage_direction_alignment_accuracy") is not None:
+            lines.append("## Stage31-C Coverage Direction Alignment")
+            lines.append(
+                f"- **Coverage direction alignment accuracy:** "
+                f"{eval_results['coverage_direction_alignment_accuracy']:.4f}"
+            )
+            lines.append(
+                f"- **support_entailment_recovered_by_head:** "
+                f"{eval_results['support_entailment_recovered_by_head']}"
+            )
+            lines.append(
+                f"- **overclaim_detected_by_head:** "
+                f"{eval_results['overclaim_detected_by_head']}"
+            )
+            lines.append(
+                f"- **refute_detected_by_head:** "
+                f"{eval_results['refute_detected_by_head']}"
+            )
+            lines.append("")
+            lines.append("| Group | Correct | Total | Accuracy |")
+            lines.append("|---|---|---|---|")
+            for grp, gm in eval_results["coverage_direction_alignment_by_group"].items():
+                lines.append(
+                    f"| {grp} | {gm['correct']} | {gm['total']} | {gm['accuracy']:.4f} |"
+                )
+            lines.append("")
+
     lines.append("## Interpretation")
     lines.append(interpretation)
     lines.append("")
@@ -618,6 +806,24 @@ def write_json(
         "group_metrics": eval_results["group_metrics"] if eval_results else None,
         "failure_modes": eval_results["failure_modes"] if eval_results else None,
         "diagnostic_column_means": eval_results.get("diagnostic_column_means") if eval_results else None,
+        "coverage_direction_alignment_accuracy": (
+            eval_results.get("coverage_direction_alignment_accuracy") if eval_results else None
+        ),
+        "coverage_direction_alignment_by_group": (
+            eval_results.get("coverage_direction_alignment_by_group") if eval_results else None
+        ),
+        "coverage_direction_confusion": (
+            eval_results.get("coverage_direction_confusion") if eval_results else None
+        ),
+        "support_entailment_recovered_by_head": (
+            eval_results.get("support_entailment_recovered_by_head") if eval_results else None
+        ),
+        "overclaim_detected_by_head": (
+            eval_results.get("overclaim_detected_by_head") if eval_results else None
+        ),
+        "refute_detected_by_head": (
+            eval_results.get("refute_detected_by_head") if eval_results else None
+        ),
         "interpretation": interpretation,
         "observed_stage31b_result": OBSERVED_STAGE31B_RESULT,
         "leakage_policy": (
@@ -767,6 +973,9 @@ def main() -> None:
             diag_row = {
                 col: row[col] for col in DIAGNOSTIC_COLUMNS if col in row
             }
+            for col in ("coverage_entailment_pred_id", "coverage_entailment_pred_label"):
+                if col in row:
+                    diag_row[col] = row[col]
             if diag_row:
                 diag_map[rid] = diag_row
 

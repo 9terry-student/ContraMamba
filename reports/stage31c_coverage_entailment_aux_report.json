@@ -1,0 +1,72 @@
+{
+  "stage": "Stage31-C",
+  "artifact": "coverage_entailment_auxiliary_data",
+  "total_rows": 800,
+  "coverage_direction_mapping": {
+    "ENTAILS_SUPPORT": 0,
+    "OVERCLAIM_NOT_ENTITLED": 1,
+    "CONTRADICTS_REFUTE": 2,
+    "OTHER_RESIDUAL": 3
+  },
+  "final_label_mapping": {
+    "REFUTE": 0,
+    "NOT_ENTITLED": 1,
+    "SUPPORT": 2
+  },
+  "class_counts": {
+    "ENTAILS_SUPPORT": 200,
+    "OVERCLAIM_NOT_ENTITLED": 200,
+    "CONTRADICTS_REFUTE": 200,
+    "OTHER_RESIDUAL": 200
+  },
+  "split_counts": {
+    "train": 640,
+    "dev": 160
+  },
+  "group_counts": {
+    "all_to_some_aux": 50,
+    "specific_to_general_aux": 50,
+    "whole_to_part_aux": 50,
+    "only_to_base_aux": 50,
+    "some_to_all_aux": 50,
+    "general_to_specific_aux": 50,
+    "part_to_whole_aux": 50,
+    "also_to_only_aux": 50,
+    "none_to_some_aux": 50,
+    "some_to_none_aux": 50,
+    "no_member_to_member_aux": 50,
+    "never_to_once_aux": 50,
+    "surface_paraphrase_aux": 50,
+    "alias_granularity_aux": 50,
+    "underspecified_residual_aux": 50,
+    "relation_paraphrase_aux": 50
+  },
+  "schema_fields": [
+    "claim",
+    "coverage_direction_id",
+    "coverage_direction_label",
+    "coverage_relation",
+    "evidence",
+    "evidence_sufficient_label",
+    "expected_owner",
+    "final_label",
+    "frame_compatible_label",
+    "gold",
+    "group",
+    "id",
+    "intervention_type",
+    "label",
+    "label_id",
+    "notes",
+    "pair_id",
+    "polarity_label",
+    "predicate_covered_label",
+    "probe_type",
+    "split",
+    "sufficiency_label"
+  ],
+  "diagnostic_only": true,
+  "leakage_policy": "Auxiliary diagnostic supervision only. Do not use the Stage31-A/B evaluation probe for this loss. Do not use this auxiliary set for final evaluation, calibration, threshold selection, or checkpoint selection.",
+  "validation_errors": [],
+  "validation_passed": true
+}

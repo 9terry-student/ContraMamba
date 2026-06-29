@@ -1,0 +1,52 @@
+{
+  "stage": "Stage31-C",
+  "artifact": "coverage_entailment_diagnostic_head",
+  "purpose": "Readout-only directional Coverage/Entailment diagnostic owner.",
+  "stage31b_observed_bottleneck": {
+    "total_accuracy": 0.445,
+    "macro_f1": 0.3607,
+    "coverage_failure_predicted_support": 6,
+    "support_entailment_predicted_ne": 61,
+    "refute_case_predicted_support": 5,
+    "refute_case_predicted_ne": 27,
+    "interpretation": "The proxy stack is conservative but under-structured; valid SUPPORT entailment cases are often collapsed into NOT_ENTITLED."
+  },
+  "auxiliary_data": {
+    "path": "data/stage31c_coverage_entailment_aux.jsonl",
+    "separate_from_stage31_eval_probe": true,
+    "coverage_direction_mapping": {
+      "ENTAILS_SUPPORT": 0,
+      "OVERCLAIM_NOT_ENTITLED": 1,
+      "CONTRADICTS_REFUTE": 2,
+      "OTHER_RESIDUAL": 3
+    }
+  },
+  "head_architecture": {
+    "input": "concat([frame_pair_repr, predicate_pair_repr, sufficiency_repr])",
+    "output_classes": 4,
+    "loss": "optional cross entropy over coverage_direction_id"
+  },
+  "diagnostic_only_constraints": {
+    "modifies_output_logits": false,
+    "modifies_h1_final_composer": false,
+    "modifies_entitlement": false,
+    "adds_cap": false,
+    "adds_ne_boost": false,
+    "used_for_checkpoint_selection": false,
+    "uses_stage31_eval_probe_for_loss": false
+  },
+  "exported_columns": [
+    "coverage_entails_support_prob",
+    "coverage_overclaim_ne_prob",
+    "coverage_contradicts_refute_prob",
+    "coverage_other_residual_prob",
+    "coverage_entailment_pred_id",
+    "coverage_entailment_pred_label",
+    "coverage_entailment_confidence"
+  ],
+  "next_step_decision_rule": {
+    "if_head_aligns_on_stage31_probe": "Proceed to Stage31-D composer integration.",
+    "if_head_does_not_align": "Revise auxiliary coverage data or representation access before integration."
+  },
+  "leakage_policy": "Do not use data/stage31_coverage_entailment_probe.jsonl for training, calibration, threshold selection, checkpoint selection, or auxiliary loss construction."
+}

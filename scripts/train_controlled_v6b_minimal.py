@@ -17,6 +17,7 @@ from typing import Any
 import numpy as np
 
 import torch
+from torch import nn
 from torch.nn import functional as F
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -34,6 +35,224 @@ from contramamba.comparator_flags import (  # noqa: E402
 )
 from contramamba.modeling_v6b_minimal import ContraMambaV6BMinimal  # noqa: E402
 from scripts import train_controlled_v5 as v5  # noqa: E402
+
+STAGE31C_COVERAGE_LABELS = [
+    "ENTAILS_SUPPORT",
+    "OVERCLAIM_NOT_ENTITLED",
+    "CONTRADICTS_REFUTE",
+    "OTHER_RESIDUAL",
+]
+STAGE31C_COVERAGE_LABEL_TO_ID = {
+    label: idx for idx, label in enumerate(STAGE31C_COVERAGE_LABELS)
+}
+
+
+class Stage31CCoverageEntailmentHead(nn.Module):
+    """Readout-only 4-way directional Coverage/Entailment diagnostic head."""
+
+    def __init__(
+        self,
+        frame_size: int,
+        predicate_size: int,
+        sufficiency_size: int,
+        detach_input: bool = False,
+    ) -> None:
+        super().__init__()
+        input_size = frame_size + predicate_size + sufficiency_size
+        hidden = max(input_size // 2, 16)
+        self.detach_input = detach_input
+        self.mlp = nn.Sequential(
+            nn.Linear(input_size, hidden),
+            nn.GELU(),
+            nn.Dropout(0.1),
+            nn.Linear(hidden, len(STAGE31C_COVERAGE_LABELS)),
+        )
+
+    def forward(
+        self,
+        frame_pair_repr: torch.Tensor,
+        predicate_pair_repr: torch.Tensor,
+        sufficiency_repr: torch.Tensor,
+    ) -> torch.Tensor:
+        features = torch.cat(
+            [frame_pair_repr, predicate_pair_repr, sufficiency_repr],
+            dim=-1,
+        )
+        if self.detach_input:
+            features = features.detach()
+        return self.mlp(features)
+
+
+def _stage31c_module_output_size(module: nn.Module, classifier_name: str) -> int:
+    classifier = getattr(module, classifier_name)
+    return int(classifier.in_features)
+
+
+def install_stage31c_coverage_entailment_head(
+    model: nn.Module,
+    *,
+    detach_input: bool,
+) -> None:
+    """Register and wrap a diagnostic head without changing final logits."""
+    if getattr(model, "stage31c_coverage_entailment_head", None) is not None:
+        return
+    frame_size = _stage31c_module_output_size(model.frame_gate, "frame_classifier")
+    predicate_size = _stage31c_module_output_size(
+        model.predicate_coverage_head, "coverage_classifier"
+    )
+    sufficiency_size = _stage31c_module_output_size(model.sufficiency_gate, "classifier")
+    model.stage31c_coverage_entailment_head = Stage31CCoverageEntailmentHead(
+        frame_size=frame_size,
+        predicate_size=predicate_size,
+        sufficiency_size=sufficiency_size,
+        detach_input=detach_input,
+    )
+    original_forward = model.forward
+
+    def _forward_with_stage31c(*args: Any, **kwargs: Any) -> dict[str, Any]:
+        output = original_forward(*args, **kwargs)
+        return add_stage31c_coverage_entailment_outputs(model, output)
+
+    model.forward = _forward_with_stage31c  # type: ignore[method-assign]
+
+
+def add_stage31c_coverage_entailment_outputs(
+    model: nn.Module,
+    output: dict[str, Any],
+) -> dict[str, Any]:
+    head = getattr(model, "stage31c_coverage_entailment_head", None)
+    if head is None:
+        return output
+    required = ("frame_pair_repr", "predicate_pair_repr", "sufficiency_repr")
+    if any(output.get(key) is None for key in required):
+        return output
+    logits = head(
+        output["frame_pair_repr"],
+        output["predicate_pair_repr"],
+        output["sufficiency_repr"],
+    )
+    probs = torch.softmax(logits, dim=-1)
+    pred_id = probs.argmax(dim=-1)
+    confidence = probs.max(dim=-1).values
+    output["coverage_entailment_logits"] = logits
+    output["coverage_entails_support_logit"] = logits[:, 0]
+    output["coverage_overclaim_ne_logit"] = logits[:, 1]
+    output["coverage_contradicts_refute_logit"] = logits[:, 2]
+    output["coverage_other_residual_logit"] = logits[:, 3]
+    output["coverage_entails_support_prob"] = probs[:, 0]
+    output["coverage_overclaim_ne_prob"] = probs[:, 1]
+    output["coverage_contradicts_refute_prob"] = probs[:, 2]
+    output["coverage_other_residual_prob"] = probs[:, 3]
+    output["coverage_entailment_pred_id"] = pred_id
+    output["coverage_entailment_pred_label"] = [
+        STAGE31C_COVERAGE_LABELS[int(i)] for i in pred_id.detach().cpu().tolist()
+    ]
+    output["coverage_entailment_confidence"] = confidence
+    return output
+
+
+def load_stage31c_coverage_entailment_jsonl(path: Path) -> list[dict]:
+    if path.name == "stage31_coverage_entailment_probe.jsonl":
+        raise ValueError(
+            "Stage31-C coverage-entailment loss must not use the Stage31-A/B "
+            "evaluation probe. Use data/stage31c_coverage_entailment_aux.jsonl."
+        )
+    records: list[dict] = []
+    with path.open(encoding="utf-8") as fh:
+        for lineno, line in enumerate(fh, start=1):
+            line = line.strip()
+            if not line:
+                continue
+            row = json.loads(line)
+            label = row.get("coverage_direction_label")
+            label_id = row.get("coverage_direction_id")
+            split = row.get("split")
+            if label not in STAGE31C_COVERAGE_LABEL_TO_ID:
+                raise ValueError(
+                    f"[stage31c] row {lineno} invalid coverage_direction_label={label!r}"
+                )
+            if label_id != STAGE31C_COVERAGE_LABEL_TO_ID[label]:
+                raise ValueError(
+                    f"[stage31c] row {lineno} coverage_direction_id={label_id!r} "
+                    f"does not match label {label!r}"
+                )
+            if split not in ("train", "dev"):
+                raise ValueError(f"[stage31c] row {lineno} invalid split={split!r}")
+            records.append(row)
+    return records
+
+
+def encode_stage31c_coverage_entailment_labels(
+    records: list[dict],
+    device: torch.device,
+) -> torch.Tensor:
+    return torch.tensor(
+        [int(r["coverage_direction_id"]) for r in records],
+        dtype=torch.long,
+        device=device,
+    )
+
+
+def _stage31c_macro_f1(labels: list[int], preds: list[int]) -> tuple[float, dict[str, Any]]:
+    per_class: dict[str, Any] = {}
+    f1s: list[float] = []
+    for idx, name in enumerate(STAGE31C_COVERAGE_LABELS):
+        tp = sum(g == idx and p == idx for g, p in zip(labels, preds))
+        fp = sum(g != idx and p == idx for g, p in zip(labels, preds))
+        fn = sum(g == idx and p != idx for g, p in zip(labels, preds))
+        support = sum(g == idx for g in labels)
+        predicted = sum(p == idx for p in preds)
+        prec = tp / (tp + fp) if tp + fp else 0.0
+        rec = tp / (tp + fn) if tp + fn else 0.0
+        f1 = 2 * prec * rec / (prec + rec) if prec + rec else 0.0
+        f1s.append(f1)
+        per_class[name] = {
+            "precision": round(prec, 4),
+            "recall": round(rec, 4),
+            "f1": round(f1, 4),
+            "support": support,
+            "predicted": predicted,
+        }
+    return (sum(f1s) / len(f1s) if f1s else 0.0), per_class
+
+
+def compute_stage31c_coverage_entailment_metrics(
+    output: dict[str, Any],
+    labels: torch.Tensor,
+) -> dict[str, Any]:
+    logits = output.get("coverage_entailment_logits")
+    if logits is None or labels is None or labels.numel() == 0:
+        return {}
+    preds_t = logits.detach().argmax(dim=-1).cpu()
+    labels_t = labels.detach().cpu()
+    labels_l = [int(x) for x in labels_t.tolist()]
+    preds_l = [int(x) for x in preds_t.tolist()]
+    accuracy = sum(g == p for g, p in zip(labels_l, preds_l)) / len(labels_l)
+    macro, per_class = _stage31c_macro_f1(labels_l, preds_l)
+    confusion = {
+        gold: {pred: 0 for pred in STAGE31C_COVERAGE_LABELS}
+        for gold in STAGE31C_COVERAGE_LABELS
+    }
+    for gold, pred in zip(labels_l, preds_l):
+        confusion[STAGE31C_COVERAGE_LABELS[gold]][STAGE31C_COVERAGE_LABELS[pred]] += 1
+    return {
+        "accuracy": round(accuracy, 4),
+        "macro_f1": round(macro, 4),
+        "confusion_matrix": confusion,
+        "per_class": per_class,
+    }
+
+
+def parse_stage31c_class_weights(raw: str | None, device: torch.device) -> "torch.Tensor | None":
+    if raw is None:
+        return None
+    values = [float(part.strip()) for part in raw.split(",") if part.strip()]
+    if len(values) != len(STAGE31C_COVERAGE_LABELS):
+        raise ValueError(
+            "--v7-coverage-entailment-loss-class-weights must contain exactly "
+            f"{len(STAGE31C_COVERAGE_LABELS)} comma-separated values."
+        )
+    return torch.tensor(values, dtype=torch.float32, device=device)
 
 
 def build_model(
@@ -1622,6 +1841,16 @@ _S28E_V7_SCALAR_KEYS: tuple[str, ...] = (
     "temporal_preservation_safe_factor",
     "entitlement_before_temporal_preservation_cap",
     "entitlement_after_temporal_preservation_cap",
+    # Stage31-C: directional Coverage/Entailment diagnostic readout
+    "coverage_entails_support_logit",
+    "coverage_overclaim_ne_logit",
+    "coverage_contradicts_refute_logit",
+    "coverage_other_residual_logit",
+    "coverage_entails_support_prob",
+    "coverage_overclaim_ne_prob",
+    "coverage_contradicts_refute_prob",
+    "coverage_other_residual_prob",
+    "coverage_entailment_confidence",
 )
 
 _S28E_AUX_LABEL_KEYS: tuple[str, ...] = (
@@ -1835,6 +2064,19 @@ def prediction_records_v6b(records: list[dict], output: dict[str, Any]) -> list[
             # ── V7/H1 diagnostic scalars (absent on v6b_minimal runs) ─────────
             **{key: float(v7_scalars[key][index]) for key in _S28E_V7_SCALAR_KEYS
                if key in v7_scalars},
+            **(
+                {
+                    "coverage_entailment_pred_id": int(
+                        output["coverage_entailment_pred_id"].detach().cpu()[index]
+                    ),
+                    "coverage_entailment_pred_label": output[
+                        "coverage_entailment_pred_label"
+                    ][index],
+                }
+                if output.get("coverage_entailment_pred_id") is not None
+                and output.get("coverage_entailment_pred_label") is not None
+                else {}
+            ),
             # ── Legacy backward-compat fields ─────────────────────────────────
             "id": record.get("id"),
             "intervention_type": record.get("intervention_type"),
@@ -3112,6 +3354,66 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+    # Stage31-C: directional Coverage/Entailment diagnostic owner.
+    # Readout-only in this patch: no final-logit edits, no composer wiring, no cap.
+    parser.add_argument(
+        "--v7-use-coverage-entailment-head",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage31-C: Enable a readout-only 4-way directional Coverage/Entailment "
+            "diagnostic head over concat([frame_pair_repr, predicate_pair_repr, "
+            "sufficiency_repr]). Exports diagnostic probabilities. Does not modify "
+            "output['logits'], entitlement, H1 composer, caps, or final predictions."
+        ),
+    )
+    parser.add_argument(
+        "--v7-use-coverage-entailment-loss",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage31-C: Enable auxiliary CE loss for the diagnostic "
+            "Coverage/Entailment head using --v7-coverage-entailment-data only. "
+            "Never uses data/stage31_coverage_entailment_probe.jsonl and never "
+            "mixes auxiliary rows into main final-label batches."
+        ),
+    )
+    parser.add_argument(
+        "--v7-coverage-entailment-loss-weight",
+        type=float,
+        default=0.0,
+        help="Stage31-C: Weight for auxiliary 4-way coverage-entailment CE loss.",
+    )
+    parser.add_argument(
+        "--v7-coverage-entailment-data",
+        type=str,
+        default=None,
+        metavar="PATH",
+        help=(
+            "Stage31-C: Path to data/stage31c_coverage_entailment_aux.jsonl. "
+            "The file's train/dev split is respected. Do not pass the Stage31 "
+            "evaluation probe."
+        ),
+    )
+    parser.add_argument(
+        "--v7-coverage-entailment-loss-class-weights",
+        type=str,
+        default=None,
+        help=(
+            "Stage31-C: optional comma-separated CE class weights for "
+            "ENTAILS_SUPPORT,OVERCLAIM_NOT_ENTITLED,CONTRADICTS_REFUTE,OTHER_RESIDUAL."
+        ),
+    )
+    parser.add_argument(
+        "--v7-coverage-entailment-detach-input",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage31-C: detach concat([frame_pair_repr, predicate_pair_repr, "
+            "sufficiency_repr]) before the diagnostic head. Default off."
+        ),
+    )
+
     parser.add_argument(
         "--v7-no-aux-losses",
         action="store_true",
@@ -3720,6 +4022,13 @@ _LIFT_CONFIG_KEYS: tuple[str, ...] = (
     "v7_use_entitled_class_balanced_ce",
     "v7_entitled_class_balanced_ce_weight",
     "v7_initial_ne_bias",
+    "v7_use_coverage_entailment_head",
+    "v7_use_coverage_entailment_loss",
+    "v7_coverage_entailment_loss_weight",
+    "v7_coverage_entailment_data",
+    "v7_coverage_entailment_detach_input",
+    "stage31_probe_used_for_v7_coverage_entailment_loss",
+    "v7_coverage_entailment_modifies_final_predictions",
     # v7 Stage15 / time_swap provenance (also lifted from audit_ledger elsewhere;
     # this covers the configuration copy when the ledger path is absent)
     "stage15_used_for_v7_training",
@@ -4119,6 +4428,31 @@ def main(argv: list[str] | None = None) -> int:
                     if args.use_temporal_channel_gated_penalty else 0.0
                 ),
             )
+    if getattr(args, "v7_use_coverage_entailment_loss", False):
+        if args.architecture != "v7_hierarchical":
+            raise ValueError(
+                "--v7-use-coverage-entailment-loss requires --architecture v7_hierarchical."
+            )
+        if not getattr(args, "v7_use_coverage_entailment_head", False):
+            raise ValueError(
+                "--v7-use-coverage-entailment-loss requires "
+                "--v7-use-coverage-entailment-head."
+            )
+        if getattr(args, "v7_coverage_entailment_data", None) is None:
+            raise ValueError(
+                "--v7-use-coverage-entailment-loss requires "
+                "--v7-coverage-entailment-data."
+            )
+    if getattr(args, "v7_use_coverage_entailment_head", False):
+        if args.architecture != "v7_hierarchical":
+            raise ValueError(
+                "--v7-use-coverage-entailment-head requires --architecture v7_hierarchical."
+            )
+        install_stage31c_coverage_entailment_head(
+            model,
+            detach_input=getattr(args, "v7_coverage_entailment_detach_input", False),
+        )
+
     model = model.to(device)
 
     # Stage26-C TODO: add a one-shot contract check for v7 before the training loop.
@@ -4570,6 +4904,83 @@ def main(argv: list[str] | None = None) -> int:
                 f" tpres_train_neg={_tpres_train_neg}"
             )
 
+    # Stage31-C: coverage/entailment directional aux data loading.
+    # Separate train/dev split from main controlled data. The Stage31-A/B evaluation
+    # probe is explicitly rejected by load_stage31c_coverage_entailment_jsonl.
+    _covent_train_inputs: "dict[str, torch.Tensor] | None" = None
+    _covent_dev_inputs: "dict[str, torch.Tensor] | None" = None
+    _covent_train_labels: "torch.Tensor | None" = None
+    _covent_dev_labels: "torch.Tensor | None" = None
+    _covent_meta_records_loaded: int = 0
+    _covent_meta_train_records: int = 0
+    _covent_meta_dev_records: int = 0
+    _covent_class_weights: "torch.Tensor | None" = None
+
+    _covent_data_needed = (
+        getattr(args, "v7_use_coverage_entailment_loss", False)
+        and getattr(args, "v7_coverage_entailment_data", None) is not None
+    )
+    if _covent_data_needed:
+        _covent_path = Path(args.v7_coverage_entailment_data)
+        _covent_all_records = load_stage31c_coverage_entailment_jsonl(_covent_path)
+        _covent_train_records = [
+            r for r in _covent_all_records if r.get("split") == "train"
+        ]
+        _covent_dev_records = [
+            r for r in _covent_all_records if r.get("split") == "dev"
+        ]
+        _covent_meta_records_loaded = len(_covent_all_records)
+        _covent_meta_train_records = len(_covent_train_records)
+        _covent_meta_dev_records = len(_covent_dev_records)
+        if not _covent_train_records:
+            raise ValueError("[stage31c] no train records found in coverage-entailment aux file.")
+        if not _covent_dev_records:
+            raise ValueError("[stage31c] no dev records found in coverage-entailment aux file.")
+
+        _covent_train_labels = encode_stage31c_coverage_entailment_labels(
+            _covent_train_records, device
+        )
+        _covent_dev_labels = encode_stage31c_coverage_entailment_labels(
+            _covent_dev_records, device
+        )
+        _covent_class_weights = parse_stage31c_class_weights(
+            getattr(args, "v7_coverage_entailment_loss_class_weights", None),
+            device,
+        )
+
+        if args.backbone == "dummy":
+            _covent_train_bundle = v5.encode_records(_covent_train_records, vocab)
+            _covent_dev_bundle = v5.encode_records(_covent_dev_records, vocab)
+        else:
+            _covent_train_bundle = v5.encode_mamba_records(
+                _covent_train_records, tokenizer, args.max_length
+            )
+            _covent_dev_bundle = v5.encode_mamba_records(
+                _covent_dev_records, tokenizer, args.max_length
+            )
+        _covent_train_inputs = v5.move_inputs(_covent_train_bundle["model_inputs"], device)
+        _covent_dev_inputs = v5.move_inputs(_covent_dev_bundle["model_inputs"], device)
+        for _covent_inputs in (_covent_train_inputs, _covent_dev_inputs):
+            _covent_seq = _covent_inputs["input_ids"].shape[1]
+            if _covent_seq < max_length:
+                _diff = max_length - _covent_seq
+                for _key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
+                    _covent_inputs[_key] = F.pad(_covent_inputs[_key], (0, _diff), value=0)
+            elif _covent_seq > max_length:
+                for _key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
+                    _covent_inputs[_key] = _covent_inputs[_key][:, :max_length]
+        if args.backbone == "mamba" and args.freeze_encoder:
+            v5.cache_frozen_encoder_states(model, _covent_train_inputs)
+            v5.cache_frozen_encoder_states(model, _covent_dev_inputs)
+        print(
+            f"[stage31c_covent] enabled "
+            f"weight={getattr(args, 'v7_coverage_entailment_loss_weight', 0.0)}"
+            f" loaded={_covent_meta_records_loaded}"
+            f" train={_covent_meta_train_records}"
+            f" dev={_covent_meta_dev_records}"
+            f" detach_input={getattr(args, 'v7_coverage_entailment_detach_input', False)}"
+        )
+
     # Stage22-A4c/A4e: pair contrastive frame data loading and encoding
     _pc_pair_records: list[dict[str, Any]] = []
     _pc_pres_inputs: "dict[str, torch.Tensor] | None" = None
@@ -4742,6 +5153,13 @@ def main(argv: list[str] | None = None) -> int:
         tpres_train_mask=None,
         tpres_loss_weight=0.0,
         tpres_loss_pos_weight=None,
+        # Stage31-C: coverage/entailment directional auxiliary CE loss
+        covent_train_inputs=None,
+        covent_dev_inputs=None,
+        covent_train_labels=None,
+        covent_dev_labels=None,
+        covent_loss_weight=0.0,
+        covent_class_weights=None,
     ):
         """Modified run_training that passes flags to v6b model."""
         if epochs < 1:
@@ -4796,6 +5214,7 @@ def main(argv: list[str] | None = None) -> int:
         best_dev_predictions = None
         best_trainable_state = None
         best_pc_metrics: dict[str, Any] = {}
+        best_covent_metrics: dict[str, Any] = {}
         best_state: dict[str, torch.Tensor] | None = None
         # Preservation-constrained selection tracking (parallel; never uses Stage15/OOD)
         # Only clean dev pairwise checks (paraphrase_preserved, predicate_disentangled).
@@ -5429,6 +5848,36 @@ def main(argv: list[str] | None = None) -> int:
                             )
                         total_loss = total_loss + tpres_loss_weight * _v7_tpres_loss
 
+            # Stage31-C: directional Coverage/Entailment diagnostic CE loss.
+            # Separate aux batch; never changes output["logits"] and never uses the
+            # Stage31-A/B evaluation probe.
+            _v7_covent_loss = torch.tensor(0.0, device=device)
+            if (
+                args.architecture == "v7_hierarchical"
+                and getattr(args, "v7_use_coverage_entailment_head", False)
+                and getattr(args, "v7_use_coverage_entailment_loss", False)
+                and covent_loss_weight > 0.0
+                and not args.v7_no_aux_losses
+                and covent_train_inputs is not None
+                and covent_train_labels is not None
+            ):
+                _covent_n = covent_train_inputs["input_ids"].shape[0]
+                _covent_zero_t = torch.zeros(_covent_n, dtype=torch.float32, device=device)
+                _covent_zero_p = torch.zeros(_covent_n, dtype=torch.float32, device=device)
+                _covent_train_out = model(
+                    **v5.model_feature_inputs(covent_train_inputs),
+                    temporal_mismatch_flags=_covent_zero_t,
+                    predicate_mismatch_flags=_covent_zero_p,
+                )
+                _covent_logits = _covent_train_out.get("coverage_entailment_logits")
+                if _covent_logits is not None:
+                    _v7_covent_loss = F.cross_entropy(
+                        _covent_logits,
+                        covent_train_labels,
+                        weight=covent_class_weights,
+                    )
+                    total_loss = total_loss + covent_loss_weight * _v7_covent_loss
+
             # ── Audit ledger accumulation (reporting only; does not affect gradients) ─────────
             # raw = loss value before weight multiplication; weighted = actual total_loss contribution
             _ep_ce_raw = float(losses["label"].item())
@@ -5452,6 +5901,7 @@ def main(argv: list[str] | None = None) -> int:
             _ep_v7_ts_raw = float(_v7_ts_loss.item()) if hasattr(_v7_ts_loss, "item") else 0.0
             _ep_v7_tmm_raw = float(_v7_tmm_loss.item()) if hasattr(_v7_tmm_loss, "item") else 0.0
             _ep_v7_tpres_raw = float(_v7_tpres_loss.item()) if hasattr(_v7_tpres_loss, "item") else 0.0
+            _ep_v7_covent_raw = float(_v7_covent_loss.item()) if hasattr(_v7_covent_loss, "item") else 0.0
             _ep_total = float(total_loss.item())
             # For ranking path: active_intervention_loss = ranking_weight * raw_ranking.
             # Recover raw by dividing. For intervention path: pairwise_losses["total"] is
@@ -5488,6 +5938,8 @@ def main(argv: list[str] | None = None) -> int:
                 "v7_temporal_mismatch_multihead_loss": _ep_v7_tmm_raw,
                 # Stage30-E: temporal preservation loss (0.0 when disabled)
                 "v7_temporal_preservation_loss": _ep_v7_tpres_raw,
+                # Stage31-C: coverage/entailment diagnostic loss (0.0 when disabled)
+                "v7_coverage_entailment_loss": _ep_v7_covent_raw,
                 "total_loss": _ep_total,
             })
             _audit_per_epoch_weighted.append({
@@ -5518,6 +5970,8 @@ def main(argv: list[str] | None = None) -> int:
                 "v7_temporal_mismatch_multihead_loss": tmm_loss_weight * _ep_v7_tmm_raw,
                 # Stage30-E: temporal preservation loss weighted contribution
                 "v7_temporal_preservation_loss": tpres_loss_weight * _ep_v7_tpres_raw,
+                # Stage31-C: coverage/entailment diagnostic loss weighted contribution
+                "v7_coverage_entailment_loss": covent_loss_weight * _ep_v7_covent_raw,
                 "total_loss": _ep_total,
             })
             _audit_epoch_count += 1
@@ -5589,6 +6043,58 @@ def main(argv: list[str] | None = None) -> int:
             train_metrics = v5.compute_metrics(train_output, train_inputs)
             dev_metrics = v5.compute_metrics(dev_output, dev_inputs)
 
+            _covent_train_metrics: dict[str, Any] = {}
+            _covent_dev_metrics: dict[str, Any] = {}
+            if (
+                covent_train_inputs is not None
+                and covent_dev_inputs is not None
+                and covent_train_labels is not None
+                and covent_dev_labels is not None
+            ):
+                with torch.no_grad():
+                    _covent_train_n = covent_train_inputs["input_ids"].shape[0]
+                    _covent_train_zero_t = torch.zeros(
+                        _covent_train_n, dtype=torch.float32, device=device
+                    )
+                    _covent_train_zero_p = torch.zeros(
+                        _covent_train_n, dtype=torch.float32, device=device
+                    )
+                    _covent_train_eval_out = model(
+                        **v5.model_feature_inputs(covent_train_inputs),
+                        temporal_mismatch_flags=_covent_train_zero_t,
+                        predicate_mismatch_flags=_covent_train_zero_p,
+                    )
+                    _covent_dev_n = covent_dev_inputs["input_ids"].shape[0]
+                    _covent_dev_zero_t = torch.zeros(
+                        _covent_dev_n, dtype=torch.float32, device=device
+                    )
+                    _covent_dev_zero_p = torch.zeros(
+                        _covent_dev_n, dtype=torch.float32, device=device
+                    )
+                    _covent_dev_eval_out = model(
+                        **v5.model_feature_inputs(covent_dev_inputs),
+                        temporal_mismatch_flags=_covent_dev_zero_t,
+                        predicate_mismatch_flags=_covent_dev_zero_p,
+                    )
+                _covent_train_metrics = compute_stage31c_coverage_entailment_metrics(
+                    _covent_train_eval_out, covent_train_labels
+                )
+                _covent_dev_metrics = compute_stage31c_coverage_entailment_metrics(
+                    _covent_dev_eval_out, covent_dev_labels
+                )
+                train_metrics["coverage_entailment_aux_train_accuracy"] = (
+                    _covent_train_metrics.get("accuracy")
+                )
+                train_metrics["coverage_entailment_aux_train_macro_f1"] = (
+                    _covent_train_metrics.get("macro_f1")
+                )
+                dev_metrics["coverage_entailment_aux_dev_accuracy"] = (
+                    _covent_dev_metrics.get("accuracy")
+                )
+                dev_metrics["coverage_entailment_aux_dev_macro_f1"] = (
+                    _covent_dev_metrics.get("macro_f1")
+                )
+
             # Stage22-A: boundary head metrics
             _tbm = compute_boundary_metrics(train_output, train_boundary_labels, train_boundary_mask)
             _dbm = compute_boundary_metrics(dev_output, dev_boundary_labels, dev_boundary_mask)
@@ -5653,6 +6159,25 @@ def main(argv: list[str] | None = None) -> int:
                     "pair_contrastive_use_case": args.pair_contrastive_use_case,
                     "count_by_preservation_construction_type": _pc_pres_type_counts,
                     "count_by_frame_construction_type": _pc_frame_type_counts,
+                }
+                best_covent_metrics = {
+                    "coverage_entailment_aux_train_accuracy": (
+                        _covent_train_metrics.get("accuracy")
+                    ),
+                    "coverage_entailment_aux_train_macro_f1": (
+                        _covent_train_metrics.get("macro_f1")
+                    ),
+                    "coverage_entailment_aux_dev_accuracy": (
+                        _covent_dev_metrics.get("accuracy")
+                    ),
+                    "coverage_entailment_aux_dev_macro_f1": (
+                        _covent_dev_metrics.get("macro_f1")
+                    ),
+                    "coverage_direction_confusion_matrix": (
+                        _covent_dev_metrics.get("confusion_matrix")
+                    ),
+                    "coverage_direction_per_class": _covent_dev_metrics.get("per_class"),
+                    "used_for_checkpoint_selection": False,
                 }
                 if capture_best_trainable_state:
                     best_trainable_state = v5.capture_trainable_state(model)
@@ -6347,6 +6872,33 @@ def main(argv: list[str] | None = None) -> int:
                     ) else "disabled"
                 ),
             },
+            "v7_coverage_entailment_loss": {
+                "enabled": (
+                    args.architecture == "v7_hierarchical"
+                    and getattr(args, "v7_use_coverage_entailment_head", False)
+                    and getattr(args, "v7_use_coverage_entailment_loss", False)
+                    and getattr(args, "v7_coverage_entailment_loss_weight", 0.0) > 0.0
+                    and not getattr(args, "v7_no_aux_losses", False)
+                ),
+                "weight": getattr(args, "v7_coverage_entailment_loss_weight", 0.0),
+                "target": "coverage_entailment_logits",
+                "target_derivation": "coverage_direction_id from Stage31-C auxiliary data",
+                "classes": STAGE31C_COVERAGE_LABELS,
+                "stage31_probe_used": False,
+                "used_for_checkpoint_selection": False,
+                "modifies_final_logits": False,
+                "raw_loss_key": "v7_coverage_entailment_loss",
+                "weighted_loss_key": "v7_coverage_entailment_loss",
+                "note": (
+                    "Stage31-C readout-only CE over separate auxiliary data. "
+                    "It does not edit output['logits'], H1 composer, entitlement, caps, or NE."
+                    if (
+                        getattr(args, "v7_use_coverage_entailment_head", False)
+                        and getattr(args, "v7_use_coverage_entailment_loss", False)
+                        and getattr(args, "v7_coverage_entailment_loss_weight", 0.0) > 0.0
+                    ) else "disabled"
+                ),
+            },
         }
 
         # True post-hoc final-logit modifiers only.
@@ -6719,6 +7271,7 @@ def main(argv: list[str] | None = None) -> int:
             "_best_dev_predictions": best_dev_predictions,
             "loss_config": loss_config,
             "best_pair_contrastive_frame_metrics": best_pc_metrics,
+            "best_stage31c_coverage_entailment_metrics": best_covent_metrics,
             **_tc_selection_info,
             **_pcs_selection_info,
             "audit_ledger": _run_audit_ledger,
@@ -6886,6 +7439,15 @@ def main(argv: list[str] | None = None) -> int:
             tpres_loss_pos_weight=getattr(
                 args, "v7_temporal_preservation_loss_pos_weight", None
             ),
+            covent_train_inputs=_covent_train_inputs if _covent_data_needed else None,
+            covent_dev_inputs=_covent_dev_inputs if _covent_data_needed else None,
+            covent_train_labels=_covent_train_labels if _covent_data_needed else None,
+            covent_dev_labels=_covent_dev_labels if _covent_data_needed else None,
+            covent_loss_weight=(
+                getattr(args, "v7_coverage_entailment_loss_weight", 0.0)
+                if getattr(args, "v7_use_coverage_entailment_loss", False) else 0.0
+            ),
+            covent_class_weights=_covent_class_weights,
             pc_pres_inputs=_pc_pres_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_frame_inputs=_pc_frame_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_loss_weight=(
@@ -7099,6 +7661,9 @@ def main(argv: list[str] | None = None) -> int:
                     or (getattr(args, "v7_use_temporal_mismatch_multihead", False)
                         and getattr(args, "v7_use_temporal_mismatch_multihead_loss", False)
                         and getattr(args, "v7_temporal_mismatch_multihead_loss_weight", 0.0) > 0.0)
+                    or (getattr(args, "v7_use_coverage_entailment_head", False)
+                        and getattr(args, "v7_use_coverage_entailment_loss", False)
+                        and getattr(args, "v7_coverage_entailment_loss_weight", 0.0) > 0.0)
                 )
             ),
             # Stage26-G: v7 stabilization options
@@ -7243,6 +7808,34 @@ def main(argv: list[str] | None = None) -> int:
             ),
             "stage15_used_for_v7_temporal_preservation_loss": False,
             "external_probe_used_for_v7_temporal_preservation_loss": False,
+            # Stage31-C: coverage/entailment diagnostic owner configuration
+            "v7_use_coverage_entailment_head": getattr(
+                args, "v7_use_coverage_entailment_head", False
+            ),
+            "v7_use_coverage_entailment_loss": getattr(
+                args, "v7_use_coverage_entailment_loss", False
+            ),
+            "v7_coverage_entailment_loss_weight": getattr(
+                args, "v7_coverage_entailment_loss_weight", 0.0
+            ),
+            "v7_coverage_entailment_data": getattr(
+                args, "v7_coverage_entailment_data", None
+            ),
+            "v7_coverage_entailment_loss_class_weights": getattr(
+                args, "v7_coverage_entailment_loss_class_weights", None
+            ),
+            "v7_coverage_entailment_detach_input": getattr(
+                args, "v7_coverage_entailment_detach_input", False
+            ),
+            "v7_coverage_entailment_records_loaded": _covent_meta_records_loaded,
+            "v7_coverage_entailment_train_records": _covent_meta_train_records,
+            "v7_coverage_entailment_dev_records": _covent_meta_dev_records,
+            "stage31_probe_used_for_v7_coverage_entailment_loss": False,
+            "stage31_probe_used_for_checkpoint_selection": False,
+            "stage31_probe_used_for_calibration": False,
+            "stage31_probe_used_for_threshold_selection": False,
+            "v7_coverage_entailment_modifies_final_logits": False,
+            "v7_coverage_entailment_modifies_final_predictions": False,
             "v7_h1_entitlement_for_decision_source": (
                 _V7_H1_DECISION_SIGNAL_SOURCE.get(
                     getattr(args, "v7_h1_entitlement_decision_signal", "learned"),
