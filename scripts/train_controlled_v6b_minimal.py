@@ -2015,19 +2015,30 @@ def _stage32_output_value(output: dict[str, Any], key: str, index: int) -> Any:
 
 def _stage32_bool_label(value: bool | None) -> str:
     if value is True:
-        return "true"
+        return "pass"
     if value is False:
-        return "false"
+        return "fail"
     return "unavailable"
 
 
-def build_stage32_owner_state(output: dict[str, Any], index: int) -> dict[str, Any]:
-    """Build Stage32-A owner-state proxies without changing model outputs."""
+def build_stage32_hard_core_owner_state(
+    output: dict[str, Any],
+    index: int,
+) -> dict[str, Any]:
+    """Build the Stage32-B Hard Core owner proxy from existing signals."""
     hard_core_prob = _stage32_output_value(output, "frame_prob", index)
     hard_core_pass = (
         bool(hard_core_prob >= 0.5) if hard_core_prob is not None else None
     )
-    hard_core = {
+    source_fields = ["frame_prob"] if hard_core_prob is not None else []
+    for optional_source in (
+        "v7_location_boundary_prob",
+        "v7_temporal_prob",
+        "temporal_mismatch_fused_prob",
+    ):
+        if output.get(optional_source) is not None:
+            source_fields.append(optional_source)
+    return {
         "prob": hard_core_prob,
         "pass": hard_core_pass,
         "block_reason": (
@@ -2037,9 +2048,19 @@ def build_stage32_owner_state(output: dict[str, Any], index: int) -> dict[str, A
             if hard_core_pass is False
             else "unavailable_frame_proxy"
         ),
-        "source_fields": ["frame_prob"] if hard_core_prob is not None else [],
+        "source_fields": source_fields,
+        "notes": (
+            "Proxy-derived Hard Core owner. Uses frame_prob as the validity "
+            "probability; location/temporal fields are annotated only when present."
+        ),
     }
 
+
+def build_stage32_coverage_entailment_owner_state(
+    output: dict[str, Any],
+    index: int,
+) -> dict[str, Any]:
+    """Build the Stage32-B Coverage/Entailment owner proxy."""
     cov_source_fields = [
         field
         for field in (
@@ -2057,7 +2078,7 @@ def build_stage32_owner_state(output: dict[str, Any], index: int) -> dict[str, A
         output, "coverage_entailment_pred_label", index
     )
     coverage_pred_id = _stage32_output_value(output, "coverage_entailment_pred_id", index)
-    coverage_entailment = {
+    return {
         "entails_support_prob": _stage32_output_value(
             output, "coverage_entails_support_prob", index
         ),
@@ -2076,23 +2097,53 @@ def build_stage32_owner_state(output: dict[str, Any], index: int) -> dict[str, A
             output, "coverage_entailment_input_mode", index
         ),
         "source_fields": cov_source_fields,
+        "notes": (
+            "Proxy-derived Coverage/Entailment owner. Populated from the Stage31 "
+            "diagnostic coverage head when enabled; otherwise unavailable."
+        ),
     }
 
-    residual_adjudication = {
+
+def build_stage32_residual_adjudication_owner_state(
+    output: dict[str, Any],
+    index: int,
+) -> dict[str, Any]:
+    """Build the reserved Stage32-B Residual Adjudication owner proxy."""
+    del output, index
+    return {
         "residual_prob": None,
         "ambiguous_prob": None,
         "underspecified_prob": None,
         "pred_label": "UNIMPLEMENTED_PROXY",
         "source_fields": [],
+        "notes": (
+            "Reserved interface only. No stable residual owner exists in Stage32-B."
+        ),
     }
-    ani_diagnostic = {
+
+
+def build_stage32_ani_diagnostic_state(
+    output: dict[str, Any],
+    index: int,
+) -> dict[str, Any]:
+    """Build the reserved Stage32-B ANI diagnostic readout proxy."""
+    del output, index
+    return {
         "novelty_prob": None,
         "ambiguity_prob": None,
         "ignorance_prob": None,
         "pred_label": "UNIMPLEMENTED_PROXY",
         "source_fields": [],
+        "notes": "Reserved diagnostic readout only. No ANI owner is implemented in Stage32-B.",
     }
 
+
+def build_stage32_polarity_owner_state(
+    output: dict[str, Any],
+    index: int,
+    hard_core: dict[str, Any],
+) -> dict[str, Any]:
+    """Build the Stage32-B Polarity owner proxy from existing energies."""
     support_energy = _stage32_output_value(output, "positive_energy", index)
     refute_energy = _stage32_output_value(output, "negative_energy", index)
     support_prob: float | None = None
@@ -2103,9 +2154,9 @@ def build_stage32_owner_state(output: dict[str, Any], index: int) -> dict[str, A
         probs = torch.softmax(energy_t, dim=-1)
         refute_prob = float(probs[0].item())
         support_prob = float(probs[1].item())
-        if hard_core_pass is not False:
+        if hard_core.get("pass") is not False:
             polarity_pred = "SUPPORT" if support_prob >= refute_prob else "REFUTE"
-    polarity = {
+    return {
         "support_energy": support_energy,
         "refute_energy": refute_energy,
         "support_prob": support_prob,
@@ -2116,37 +2167,105 @@ def build_stage32_owner_state(output: dict[str, Any], index: int) -> dict[str, A
             if support_energy is not None and refute_energy is not None
             else []
         ),
+        "notes": (
+            "Proxy-derived Polarity owner. Uses existing positive/negative energies; "
+            "does not change polarity loss or final prediction."
+        ),
     }
 
-    if hard_core_pass is False:
+
+def build_stage32_shadow_composer_state(
+    *,
+    hard_core: dict[str, Any],
+    coverage_entailment: dict[str, Any],
+    residual_adjudication: dict[str, Any],
+    ani_diagnostic: dict[str, Any],
+    polarity: dict[str, Any],
+) -> dict[str, Any]:
+    """Build the Stage32-B shadow composer route without applying it."""
+    del residual_adjudication, ani_diagnostic
+    priority_trace: list[str] = []
+    if hard_core.get("pass") is False:
+        priority_trace.extend(["hard_core:fail", "route:NOT_ENTITLED"])
         shadow_label = "NOT_ENTITLED"
         shadow_reason = "hard_core_block"
+        would_block_support = True
+        would_route_ne = True
+        would_route_refute = False
     elif coverage_entailment["pred_label"] == "OVERCLAIM_NOT_ENTITLED":
+        priority_trace.extend([
+            "hard_core:pass",
+            "coverage:OVERCLAIM_NOT_ENTITLED",
+            "route:NOT_ENTITLED",
+        ])
         shadow_label = "NOT_ENTITLED"
         shadow_reason = "coverage_overclaim"
+        would_block_support = False
+        would_route_ne = True
+        would_route_refute = False
     elif coverage_entailment["pred_label"] == "CONTRADICTS_REFUTE":
+        priority_trace.extend([
+            "hard_core:pass",
+            "coverage:CONTRADICTS_REFUTE",
+            "route:REFUTE",
+        ])
         shadow_label = "REFUTE"
         shadow_reason = "coverage_contradiction"
+        would_block_support = False
+        would_route_ne = False
+        would_route_refute = True
     elif (
         coverage_entailment["pred_label"] == "ENTAILS_SUPPORT"
-        and support_prob is not None
-        and refute_prob is not None
-        and support_prob >= refute_prob
+        and polarity["pred_label"] == "SUPPORT"
     ):
+        priority_trace.extend([
+            "hard_core:pass",
+            "coverage:ENTAILS_SUPPORT",
+            "polarity:SUPPORT",
+            "route:SUPPORT",
+        ])
         shadow_label = "SUPPORT"
         shadow_reason = "coverage_entails_support_with_positive_polarity"
+        would_block_support = False
+        would_route_ne = False
+        would_route_refute = False
     else:
+        priority_trace.extend([
+            "hard_core:" + _stage32_bool_label(hard_core.get("pass")),
+            f"coverage:{coverage_entailment.get('pred_label')}",
+            f"polarity:{polarity.get('pred_label')}",
+            "route:NOT_ENTITLED",
+        ])
         shadow_label = "NOT_ENTITLED"
         shadow_reason = "residual_or_unresolved"
-    composer_shadow = {
-        "would_block_support": hard_core_pass is False,
-        "would_route_ne": shadow_label == "NOT_ENTITLED",
-        "would_route_refute": shadow_label == "REFUTE",
+        would_block_support = False
+        would_route_ne = True
+        would_route_refute = False
+    return {
+        "would_block_support": would_block_support,
+        "would_route_ne": would_route_ne,
+        "would_route_refute": would_route_refute,
         "shadow_label": shadow_label,
         "shadow_reason": shadow_reason,
-        "note": "Stage32-A shadow only; not used for logits, loss, predictions, or selection.",
+        "priority_trace": priority_trace,
+        "note": "Stage32-B shadow only; not used for logits, loss, predictions, or selection.",
     }
 
+
+def build_stage32_owner_state(output: dict[str, Any], index: int) -> dict[str, Any]:
+    """Build Stage32-B owner-state proxies without changing model outputs."""
+    hard_core = build_stage32_hard_core_owner_state(output, index)
+    coverage_entailment = build_stage32_coverage_entailment_owner_state(output, index)
+    residual_adjudication = build_stage32_residual_adjudication_owner_state(output, index)
+    ani_diagnostic = build_stage32_ani_diagnostic_state(output, index)
+    polarity = build_stage32_polarity_owner_state(output, index, hard_core)
+    composer_shadow = build_stage32_shadow_composer_state(
+        hard_core=hard_core,
+        coverage_entailment=coverage_entailment,
+        residual_adjudication=residual_adjudication,
+        ani_diagnostic=ani_diagnostic,
+        polarity=polarity,
+    )
     return {
         "hard_core": hard_core,
         "coverage_entailment": coverage_entailment,
@@ -2168,6 +2287,7 @@ def flatten_stage32_owner_state(state: dict[str, Any]) -> dict[str, Any]:
         "stage32_hard_core_prob": hard_core["prob"],
         "stage32_hard_core_pass": hard_core["pass"],
         "stage32_hard_core_block_reason": hard_core["block_reason"],
+        "stage32_hard_core_notes": hard_core.get("notes"),
         "stage32_coverage_entails_support_prob": coverage["entails_support_prob"],
         "stage32_coverage_overclaim_ne_prob": coverage["overclaim_ne_prob"],
         "stage32_coverage_contradicts_refute_prob": coverage["contradicts_refute_prob"],
@@ -2175,19 +2295,24 @@ def flatten_stage32_owner_state(state: dict[str, Any]) -> dict[str, Any]:
         "stage32_coverage_pred_id": coverage["pred_id"],
         "stage32_coverage_confidence": coverage["confidence"],
         "stage32_coverage_input_mode": coverage["input_mode"],
+        "stage32_coverage_notes": coverage.get("notes"),
         "stage32_residual_prob": residual["residual_prob"],
         "stage32_residual_pred_label": residual["pred_label"],
+        "stage32_residual_notes": residual.get("notes"),
         "stage32_ani_novelty_prob": ani["novelty_prob"],
         "stage32_ani_ambiguity_prob": ani["ambiguity_prob"],
         "stage32_ani_ignorance_prob": ani["ignorance_prob"],
         "stage32_ani_pred_label": ani["pred_label"],
+        "stage32_ani_notes": ani.get("notes"),
         "stage32_polarity_support_energy": polarity["support_energy"],
         "stage32_polarity_refute_energy": polarity["refute_energy"],
         "stage32_polarity_support_prob": polarity["support_prob"],
         "stage32_polarity_refute_prob": polarity["refute_prob"],
         "stage32_polarity_pred_label": polarity["pred_label"],
+        "stage32_polarity_notes": polarity.get("notes"),
         "stage32_shadow_label": shadow["shadow_label"],
         "stage32_shadow_reason": shadow["shadow_reason"],
+        "stage32_shadow_priority_trace": " | ".join(shadow.get("priority_trace", [])),
         "stage32_shadow_would_block_support": shadow["would_block_support"],
         "stage32_shadow_would_route_ne": shadow["would_route_ne"],
         "stage32_shadow_would_route_refute": shadow["would_route_refute"],
@@ -3748,6 +3873,16 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--stage32-use-owner-interfaces",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage32-B: build owner-state fields through explicit owner interface "
+            "functions. Shadow/export-only; does not change final logits, final "
+            "predictions, loss, caps, entitlement, composer logic, or selection."
+        ),
+    )
+    parser.add_argument(
         "--stage32-owner-state-export",
         action="store_true",
         default=False,
@@ -4392,6 +4527,7 @@ _LIFT_CONFIG_KEYS: tuple[str, ...] = (
     "stage31_probe_used_for_v7_coverage_entailment_loss",
     "v7_coverage_entailment_modifies_final_predictions",
     "stage32_use_owner_state_schema",
+    "stage32_use_owner_interfaces",
     "stage32_owner_state_export",
     "stage32_owner_state_shadow_mode",
     "stage32_owner_state_modifies_final_logits",
@@ -7286,7 +7422,9 @@ def main(argv: list[str] | None = None) -> int:
                 "weight": getattr(args, "v7_coverage_entailment_loss_weight", 0.0),
                 "target": "coverage_entailment_logits",
                 "target_derivation": "coverage_direction_id from Stage31-C auxiliary data",
-                "classes": STAGE31C_COVERAGE_LABELS,
+                "classes": STAGE31C_COVERAGE_LABELS[
+                    : getattr(args, "v7_coverage_entailment_num_classes", 3)
+                ],
                 "stage31_probe_used": False,
                 "used_for_checkpoint_selection": False,
                 "modifies_final_logits": False,
@@ -8249,6 +8387,9 @@ def main(argv: list[str] | None = None) -> int:
             "stage32_use_owner_state_schema": getattr(
                 args, "stage32_use_owner_state_schema", False
             ),
+            "stage32_use_owner_interfaces": getattr(
+                args, "stage32_use_owner_interfaces", False
+            ),
             "stage32_owner_state_export": getattr(
                 args, "stage32_owner_state_export", False
             ),
@@ -8393,6 +8534,9 @@ def main(argv: list[str] | None = None) -> int:
                 ),
                 "stage32_use_owner_state_schema": getattr(
                     args, "stage32_use_owner_state_schema", False
+                ),
+                "stage32_use_owner_interfaces": getattr(
+                    args, "stage32_use_owner_interfaces", False
                 ),
                 "stage32_owner_state_export": getattr(
                     args, "stage32_owner_state_export", False
