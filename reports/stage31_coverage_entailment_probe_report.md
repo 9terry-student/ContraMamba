@@ -15,8 +15,9 @@ Mamba Encoder
 → Final Label
 ```
 
-This probe dataset is **diagnostic only**. It must not be used for main
-training, calibration, or model selection.
+This probe dataset is **diagnostic only**. It must not be used for
+training, calibration, threshold selection, checkpoint selection,
+or train/dev split construction.
 
 ---
 
@@ -80,6 +81,37 @@ weaker in exclusivity (`also` vs `only`).
 
 ---
 
+## Stage31-A2 Schema Compatibility
+
+Each row includes both Stage31 diagnostic fields and controlled-style
+compatibility fields for v5/v6 external-eval encoders.
+
+Required identity and label fields:
+
+- `id` and stable unique `pair_id` (same value in this probe)
+- `claim` and `evidence`
+- `label` and `final_label` as string labels
+- `gold` and `label_id` as numeric labels
+- `group`, `coverage_relation`, `expected_owner`,
+  `hard_core_should_pass`, `polarity_should_be`, and `notes`
+
+Controlled-style auxiliary fields:
+
+- `frame_compatible_label = 1`
+- `predicate_covered_label = 1`
+- `sufficiency_label` and `evidence_sufficient_label` are `1` for
+  SUPPORT/REFUTE and `0` for NOT_ENTITLED
+- `polarity_label` is SUPPORT, REFUTE, or NONE
+- `intervention_type = group` and `probe_type = group`
+
+Numeric mapping remains `REFUTE=0`, `NOT_ENTITLED=1`, `SUPPORT=2`.
+
+These compatibility fields exist only so external prediction export can
+read the probe without ad hoc Kaggle-only schema rewrites. They do not
+change Stage31 probe semantics.
+
+---
+
 ## Owner Rule
 
 All rows in this dataset have `expected_owner = coverage_entailment`.
@@ -95,9 +127,11 @@ Residual Adjudication, Polarity, or the Final Composer.
 > **This dataset is diagnostic-only.**
 >
 > It must NOT be used for:
-> - Main classification training
+> - Main classification training or fine-tuning
 > - Calibration
-> - Model or hyperparameter selection
+> - Threshold selection
+> - Checkpoint, model, or hyperparameter selection
+> - Train/dev split construction
 > - OOD evaluation benchmarks
 
 Its sole purpose is to probe whether the Coverage/Entailment component

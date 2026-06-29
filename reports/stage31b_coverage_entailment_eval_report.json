@@ -29,6 +29,15 @@
   "failure_modes": null,
   "diagnostic_column_means": null,
   "interpretation": "No model predictions were evaluated (dry-run mode). Run with --predictions-file to obtain a Coverage/Entailment diagnostic.",
-  "leakage_policy": "This probe is diagnostic-only. Do not use for training, calibration, or model selection.",
+  "observed_stage31b_result": {
+    "total_accuracy": 0.445,
+    "macro_f1": 0.3607,
+    "coverage_failure_predicted_support": 6,
+    "support_entailment_predicted_ne": 61,
+    "refute_case_predicted_support": 5,
+    "refute_case_predicted_ne": 27,
+    "interpretation": "The current proxy stack is conservative but under-structured. It can often suppress over-claims, but it cannot reliably preserve valid SUPPORT under weakening/generalization/part-inclusion entailment."
+  },
+  "leakage_policy": "This probe is diagnostic-only. Do not use for training, calibration, threshold selection, checkpoint selection, or model selection.",
   "next_step_recommendation": "Run with --predictions-file to determine next steps. If predictions reveal systematic failure, proceed to Stage31-C."
 }

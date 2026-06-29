@@ -42,6 +42,12 @@ POLARITY_MAP: dict[str, str] = {
     "REFUTE": "refute",
 }
 
+COMPAT_POLARITY_LABEL: dict[str, str] = {
+    "SUPPORT": "SUPPORT",
+    "NOT_ENTITLED": "NONE",
+    "REFUTE": "REFUTE",
+}
+
 # ---------------------------------------------------------------------------
 # Output paths
 # ---------------------------------------------------------------------------
@@ -69,6 +75,8 @@ def _row(
         "evidence": evidence,
         "label": label,
         "gold": gold,
+        "label_id": gold,
+        "final_label": label,
         "group": group,
         "coverage_relation": coverage_relation,
         "expected_owner": "coverage_entailment",
@@ -708,7 +716,18 @@ def build_dataset() -> list[dict]:
         group_rows = builder()
         group_name = group_rows[0]["group"]
         for idx, row in enumerate(group_rows):
-            row["id"] = f"stage31_{group_name}_{idx:02d}"
+            row_id = f"stage31_{group_name}_{idx:02d}"
+            row["id"] = row_id
+            row["pair_id"] = row_id
+            label = row["label"]
+            is_sufficient = 0 if label == "NOT_ENTITLED" else 1
+            row["frame_compatible_label"] = 1
+            row["predicate_covered_label"] = 1
+            row["sufficiency_label"] = is_sufficient
+            row["evidence_sufficient_label"] = is_sufficient
+            row["polarity_label"] = COMPAT_POLARITY_LABEL[label]
+            row["intervention_type"] = row["group"]
+            row["probe_type"] = row["group"]
         rows.extend(group_rows)
     return rows
 
@@ -718,9 +737,13 @@ def build_dataset() -> list[dict]:
 # ---------------------------------------------------------------------------
 
 REQUIRED_FIELDS = {
-    "id", "claim", "evidence", "label", "gold", "group",
+    "id", "pair_id", "claim", "evidence", "label", "gold", "label_id",
+    "final_label", "group",
     "coverage_relation", "expected_owner", "hard_core_should_pass",
-    "polarity_should_be", "notes",
+    "polarity_should_be", "notes", "frame_compatible_label",
+    "predicate_covered_label", "sufficiency_label",
+    "evidence_sufficient_label", "polarity_label", "intervention_type",
+    "probe_type",
 }
 
 
@@ -732,6 +755,16 @@ def validate(rows: list[dict]) -> list[str]:
     duplicates = [id_ for id_, cnt in Counter(ids).items() if cnt > 1]
     if duplicates:
         errors.append(f"Duplicate IDs: {duplicates}")
+
+    pair_ids = [r["pair_id"] for r in rows]
+    duplicate_pair_ids = [id_ for id_, cnt in Counter(pair_ids).items() if cnt > 1]
+    if duplicate_pair_ids:
+        errors.append(f"Duplicate pair_ids: {duplicate_pair_ids}")
+    for row in rows:
+        if row.get("pair_id") != row.get("id"):
+            errors.append(
+                f"Row {row.get('id', '?')} pair_id must match id for Stage31-A2."
+            )
 
     # Required fields
     for row in rows:
@@ -749,6 +782,16 @@ def validate(rows: list[dict]) -> list[str]:
                 f"Row {row['id']} label/gold mismatch: "
                 f"label={row['label']} gold={row['gold']} expected_gold={expected_gold}"
             )
+        if row.get("label_id") != expected_gold:
+            errors.append(
+                f"Row {row['id']} label/label_id mismatch: "
+                f"label={row['label']} label_id={row.get('label_id')} expected={expected_gold}"
+            )
+        if row.get("final_label") != row["label"]:
+            errors.append(
+                f"Row {row['id']} final_label mismatch: "
+                f"label={row['label']} final_label={row.get('final_label')}"
+            )
 
     # Polarity consistency
     for row in rows:
@@ -758,6 +801,31 @@ def validate(rows: list[dict]) -> list[str]:
                 f"Row {row['id']} polarity mismatch: "
                 f"label={row['label']} polarity_should_be={row['polarity_should_be']}"
             )
+        expected_compat_pol = COMPAT_POLARITY_LABEL.get(row["label"])
+        if expected_compat_pol and row.get("polarity_label") != expected_compat_pol:
+            errors.append(
+                f"Row {row['id']} compatibility polarity mismatch: "
+                f"label={row['label']} polarity_label={row.get('polarity_label')}"
+            )
+
+    # Controlled-style compatibility defaults
+    for row in rows:
+        label = row["label"]
+        expected_sufficient = 0 if label == "NOT_ENTITLED" else 1
+        for field in ("sufficiency_label", "evidence_sufficient_label"):
+            if row.get(field) != expected_sufficient:
+                errors.append(
+                    f"Row {row['id']} {field}={row.get(field)} "
+                    f"expected {expected_sufficient}"
+                )
+        if row.get("frame_compatible_label") != 1:
+            errors.append(f"Row {row['id']} frame_compatible_label must be 1")
+        if row.get("predicate_covered_label") != 1:
+            errors.append(f"Row {row['id']} predicate_covered_label must be 1")
+        if row.get("intervention_type") != row["group"]:
+            errors.append(f"Row {row['id']} intervention_type must equal group")
+        if row.get("probe_type") != row["group"]:
+            errors.append(f"Row {row['id']} probe_type must equal group")
 
     # Group counts
     group_counts = Counter(r["group"] for r in rows)
@@ -807,11 +875,30 @@ def build_json_report(rows: list[dict], errors: list[str]) -> dict:
         "label_distribution": dict(label_dist),
         "gold_distribution": {str(k): v for k, v in gold_dist.items()},
         "label_mapping": {"REFUTE": 0, "NOT_ENTITLED": 1, "SUPPORT": 2},
+        "schema_version": "Stage31-A2",
+        "required_fields": sorted(REQUIRED_FIELDS),
+        "compatibility_fields": [
+            "pair_id",
+            "label_id",
+            "final_label",
+            "frame_compatible_label",
+            "predicate_covered_label",
+            "sufficiency_label",
+            "evidence_sufficient_label",
+            "polarity_label",
+            "intervention_type",
+            "probe_type",
+        ],
+        "external_eval_compatibility": (
+            "Rows include controlled-style id/pair_id/final_label/label_id fields "
+            "for v5/v6 external-eval encoder compatibility."
+        ),
         "expected_owner": "coverage_entailment",
         "diagnostic_only": True,
         "leakage_policy": (
             "This dataset must NOT be used for main training, calibration, "
-            "or model selection. It is a diagnostic probe only."
+            "threshold selection, checkpoint selection, or train/dev split "
+            "construction. It is a diagnostic probe only."
         ),
         "validation_errors": errors,
         "validation_passed": len(errors) == 0,
@@ -846,8 +933,9 @@ def build_md_report(rows: list[dict], report: dict) -> str:
         "→ Final Label",
         "```",
         "",
-        "This probe dataset is **diagnostic only**. It must not be used for main",
-        "training, calibration, or model selection.",
+        "This probe dataset is **diagnostic only**. It must not be used for",
+        "training, calibration, threshold selection, checkpoint selection,",
+        "or train/dev split construction.",
         "",
         "---",
         "",
@@ -911,6 +999,37 @@ def build_md_report(rows: list[dict], report: dict) -> str:
         "",
         "---",
         "",
+        "## Stage31-A2 Schema Compatibility",
+        "",
+        "Each row includes both Stage31 diagnostic fields and controlled-style",
+        "compatibility fields for v5/v6 external-eval encoders.",
+        "",
+        "Required identity and label fields:",
+        "",
+        "- `id` and stable unique `pair_id` (same value in this probe)",
+        "- `claim` and `evidence`",
+        "- `label` and `final_label` as string labels",
+        "- `gold` and `label_id` as numeric labels",
+        "- `group`, `coverage_relation`, `expected_owner`,",
+        "  `hard_core_should_pass`, `polarity_should_be`, and `notes`",
+        "",
+        "Controlled-style auxiliary fields:",
+        "",
+        "- `frame_compatible_label = 1`",
+        "- `predicate_covered_label = 1`",
+        "- `sufficiency_label` and `evidence_sufficient_label` are `1` for",
+        "  SUPPORT/REFUTE and `0` for NOT_ENTITLED",
+        "- `polarity_label` is SUPPORT, REFUTE, or NONE",
+        "- `intervention_type = group` and `probe_type = group`",
+        "",
+        "Numeric mapping remains `REFUTE=0`, `NOT_ENTITLED=1`, `SUPPORT=2`.",
+        "",
+        "These compatibility fields exist only so external prediction export can",
+        "read the probe without ad hoc Kaggle-only schema rewrites. They do not",
+        "change Stage31 probe semantics.",
+        "",
+        "---",
+        "",
         "## Owner Rule",
         "",
         "All rows in this dataset have `expected_owner = coverage_entailment`.",
@@ -926,9 +1045,11 @@ def build_md_report(rows: list[dict], report: dict) -> str:
         "> **This dataset is diagnostic-only.**",
         ">",
         "> It must NOT be used for:",
-        "> - Main classification training",
+        "> - Main classification training or fine-tuning",
         "> - Calibration",
-        "> - Model or hyperparameter selection",
+        "> - Threshold selection",
+        "> - Checkpoint, model, or hyperparameter selection",
+        "> - Train/dev split construction",
         "> - OOD evaluation benchmarks",
         "",
         "Its sole purpose is to probe whether the Coverage/Entailment component",

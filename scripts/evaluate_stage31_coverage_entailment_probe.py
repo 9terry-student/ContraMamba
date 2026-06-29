@@ -23,8 +23,24 @@ LABEL_TO_INT = {"REFUTE": 0, "NOT_ENTITLED": 1, "SUPPORT": 2}
 INT_TO_LABEL = {0: "REFUTE", 1: "NOT_ENTITLED", 2: "SUPPORT"}
 
 PRED_FIELD_CANDIDATES = [
-    "pred_label", "prediction", "pred", "final_pred", "label_pred"
+    "pred_label", "prediction", "pred", "final_pred", "label_pred",
+    "predicted_label", "prediction_label", "pred_final_label",
+    "predicted_final_label", "final_prediction", "final_label_pred",
+    "predicted_final",
 ]
+
+PREDICTION_WRAPPER_KEYS = [
+    "predictions",
+    "records",
+    "examples",
+    "items",
+    "data",
+    "per_example",
+    "per_example_predictions",
+    "external_predictions",
+]
+
+ID_FIELD_CANDIDATES = ["id", "pair_id", "example_id"]
 
 COVERAGE_FAILURE_GROUPS = {
     "some_to_all_not_entitled",
@@ -61,6 +77,20 @@ DIAGNOSTIC_COLUMNS = [
     "effective_temporal_penalty",
 ]
 
+OBSERVED_STAGE31B_RESULT = {
+    "total_accuracy": 0.445,
+    "macro_f1": 0.3607,
+    "coverage_failure_predicted_support": 6,
+    "support_entailment_predicted_ne": 61,
+    "refute_case_predicted_support": 5,
+    "refute_case_predicted_ne": 27,
+    "interpretation": (
+        "The current proxy stack is conservative but under-structured. It can "
+        "often suppress over-claims, but it cannot reliably preserve valid "
+        "SUPPORT under weakening/generalization/part-inclusion entailment."
+    ),
+}
+
 # ---------------------------------------------------------------------------
 # Probe loading
 # ---------------------------------------------------------------------------
@@ -71,11 +101,20 @@ def load_probe(path: Path) -> list[dict]:
         for line in fh:
             line = line.strip()
             if line:
-                rows.append(json.loads(line))
+                row = json.loads(line)
+                if "id" not in row and "pair_id" in row:
+                    row["id"] = row["pair_id"]
+                rows.append(row)
     return rows
 
 
 def validate_probe(rows: list[dict]) -> None:
+    missing = [i for i, row in enumerate(rows) if "id" not in row]
+    if missing:
+        raise ValueError(
+            f"Probe rows must contain 'id' or fallback 'pair_id'. "
+            f"Missing in rows: {missing[:5]}"
+        )
     ids = [r["id"] for r in rows]
     dup = [k for k, v in Counter(ids).items() if v > 1]
     if dup:
@@ -144,9 +183,36 @@ def load_predictions_jsonl(path: Path) -> list[dict]:
 def load_predictions_json(path: Path) -> list[dict]:
     with open(path, encoding="utf-8") as fh:
         data = json.load(fh)
-    if not isinstance(data, list):
-        raise ValueError("JSON prediction file must be a list of objects.")
-    return data
+    return extract_prediction_records(data)
+
+
+def _is_list_of_dicts(value: Any) -> bool:
+    return isinstance(value, list) and all(isinstance(item, dict) for item in value)
+
+
+def extract_prediction_records(data: Any) -> list[dict]:
+    if _is_list_of_dicts(data):
+        return data
+    if isinstance(data, dict):
+        for key in PREDICTION_WRAPPER_KEYS:
+            value = data.get(key)
+            if _is_list_of_dicts(value):
+                return value
+        list_candidates = [
+            value for value in data.values()
+            if _is_list_of_dicts(value)
+        ]
+        if list_candidates:
+            return max(list_candidates, key=len)
+        keys = ", ".join(sorted(str(k) for k in data.keys()))
+        raise ValueError(
+            "JSON prediction wrapper did not contain a list of prediction objects. "
+            f"Checked keys {PREDICTION_WRAPPER_KEYS}. Top-level keys: [{keys}]"
+        )
+    raise ValueError(
+        "JSON prediction file must be a list of objects or an object containing "
+        f"a list of objects under one of {PREDICTION_WRAPPER_KEYS}."
+    )
 
 
 def load_prediction_file(path: Path) -> list[dict]:
@@ -158,6 +224,14 @@ def load_prediction_file(path: Path) -> list[dict]:
     if suffix == ".json":
         return load_predictions_json(path)
     raise ValueError(f"Unsupported prediction file format: {suffix}. Use .csv, .jsonl, or .json.")
+
+
+def prediction_row_id(row: dict) -> Any:
+    for field in ID_FIELD_CANDIDATES:
+        value = row.get(field)
+        if value is not None:
+            return value
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -313,10 +387,10 @@ def build_interpretation(eval_results: dict | None, dry_run: bool) -> str:
 
     if cov_fail > 0:
         lines.append(
-            f"Coverage/Entailment bottleneck detected: {cov_fail} coverage-failure examples "
-            "(gold=NOT_ENTITLED) were predicted SUPPORT. The current proxy stack lacks an "
-            "explicit Coverage/Entailment ownership layer; frame/predicate/polarity signals "
-            "appear compatible and override the quantifier-scope failure."
+            f"Over-entitlement detected: {cov_fail} coverage-failure examples "
+            "(gold=NOT_ENTITLED) were predicted SUPPORT. This points to missing "
+            "coverage-failure ownership: frame/predicate/polarity compatibility can still "
+            "override quantifier-scope, specificity, or inclusion failures."
         )
     else:
         lines.append(
@@ -327,9 +401,9 @@ def build_interpretation(eval_results: dict | None, dry_run: bool) -> str:
     if sup_ne > 0:
         lines.append(
             f"Over-conservatism detected: {sup_ne} support-entailment examples "
-            "(gold=SUPPORT) were predicted NOT_ENTITLED. The model may be confusing "
-            "entailment preservation with mismatch, or the sufficiency/coverage gates "
-            "are penalising weaker quantifier claims too aggressively."
+            "(gold=SUPPORT) were predicted NOT_ENTITLED. This points to missing "
+            "entailment-preservation ownership: valid weakening, generalization, and "
+            "part-inclusion cases are being collapsed into NOT_ENTITLED."
         )
     else:
         lines.append(
@@ -340,7 +414,7 @@ def build_interpretation(eval_results: dict | None, dry_run: bool) -> str:
     if ref_sup > 0 or ref_ne > 0:
         lines.append(
             f"Refute groups show failure: {ref_sup} predicted SUPPORT, {ref_ne} predicted NOT_ENTITLED. "
-            "Polarity detection may be failing separately from coverage scope."
+            "Polarity/refute direction is also failing or being suppressed by entitlement."
         )
     else:
         lines.append("Refute groups were handled correctly; polarity appears reliable.")
@@ -362,9 +436,9 @@ def next_step_recommendation(eval_results: dict | None, dry_run: bool) -> str:
     )
     if strong_failure:
         return (
-            "Stage31-C should implement a Coverage/Entailment head or composer diagnostic to "
-            "explicitly model quantifier-scope entailment direction. The proxy stack does not "
-            "yet provide this ownership."
+            "Stage31-C should add a directional Coverage/Entailment owner that explicitly "
+            "models quantifier-scope, specificity, weakening/generalization, and part/whole "
+            "direction. The observed pattern calls for ownership, not merely another cap."
         )
     return (
         "The current proxy stack handles Coverage/Entailment cases acceptably. "
@@ -479,10 +553,25 @@ def write_markdown(
     lines.append("## Interpretation")
     lines.append(interpretation)
     lines.append("")
+    lines.append("## Observed Stage31-B Diagnostic Pattern")
+    lines.append(
+        f"Current observed result: total_accuracy={OBSERVED_STAGE31B_RESULT['total_accuracy']}, "
+        f"macro_f1={OBSERVED_STAGE31B_RESULT['macro_f1']}, "
+        f"coverage_failure_predicted_support={OBSERVED_STAGE31B_RESULT['coverage_failure_predicted_support']}, "
+        f"support_entailment_predicted_ne={OBSERVED_STAGE31B_RESULT['support_entailment_predicted_ne']}, "
+        f"refute_case_predicted_support={OBSERVED_STAGE31B_RESULT['refute_case_predicted_support']}, "
+        f"refute_case_predicted_ne={OBSERVED_STAGE31B_RESULT['refute_case_predicted_ne']}."
+    )
+    lines.append(OBSERVED_STAGE31B_RESULT["interpretation"])
+    lines.append(
+        "Stage31-C should add a directional Coverage/Entailment owner, not merely another cap."
+    )
+    lines.append("")
     lines.append("## Leakage Policy")
     lines.append(
         "This probe is **diagnostic-only**. It must not be used for training, fine-tuning, "
-        "calibration, threshold selection, or any form of model optimisation."
+        "calibration, threshold selection, checkpoint selection, model selection, "
+        "or any form of model optimisation."
     )
     lines.append("")
     lines.append("## Next-Step Recommendation")
@@ -530,8 +619,10 @@ def write_json(
         "failure_modes": eval_results["failure_modes"] if eval_results else None,
         "diagnostic_column_means": eval_results.get("diagnostic_column_means") if eval_results else None,
         "interpretation": interpretation,
+        "observed_stage31b_result": OBSERVED_STAGE31B_RESULT,
         "leakage_policy": (
-            "This probe is diagnostic-only. Do not use for training, calibration, or model selection."
+            "This probe is diagnostic-only. Do not use for training, calibration, "
+            "threshold selection, checkpoint selection, or model selection."
         ),
         "next_step_recommendation": next_step,
     }
@@ -620,16 +711,21 @@ def main() -> None:
         if not raw_preds:
             print("ERROR: Prediction file is empty.", file=sys.stderr)
             sys.exit(1)
-        columns = list(raw_preds[0].keys())
+        columns = list(dict.fromkeys(col for row in raw_preds for col in row.keys()))
         pred_field = detect_pred_field(columns)
+        if pred_field != "pred_label":
+            for row in raw_preds:
+                if "pred_label" not in row and pred_field in row:
+                    row["pred_label"] = row[pred_field]
         print(f"  Using prediction field: {pred_field!r}")
 
         # check for duplicate prediction IDs
-        pred_ids = [r.get("id") for r in raw_preds]
+        pred_ids = [prediction_row_id(r) for r in raw_preds]
         none_ids = [i for i, v in enumerate(pred_ids) if v is None]
         if none_ids:
             print(
-                f"ERROR: {len(none_ids)} prediction rows are missing an 'id' field.",
+                f"ERROR: {len(none_ids)} prediction rows are missing an ID field. "
+                f"Expected one of {ID_FIELD_CANDIDATES}.",
                 file=sys.stderr,
             )
             sys.exit(1)
@@ -662,9 +758,9 @@ def main() -> None:
         pred_map: dict[str, str] = {}
         diag_map: dict[str, dict] = {}
         for row in raw_preds:
-            rid = row["id"]
+            rid = prediction_row_id(row)
             try:
-                pred_map[rid] = normalize_pred(row[pred_field])
+                pred_map[rid] = normalize_pred(row["pred_label"])
             except ValueError as exc:
                 print(f"ERROR in row id={rid!r}: {exc}", file=sys.stderr)
                 sys.exit(1)
