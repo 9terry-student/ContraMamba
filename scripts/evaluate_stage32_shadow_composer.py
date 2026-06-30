@@ -53,6 +53,7 @@ OWNER_MEAN_FIELDS = [
     "stage32_coverage_v2_top_prob",
     "stage32_coverage_v2_second_prob",
     "stage32_coverage_v2_margin",
+    "stage33_structured_coverage_confidence",
     "stage32_polarity_support_prob",
     "stage32_polarity_refute_prob",
 ]
@@ -322,6 +323,34 @@ def compute_coverage_v2_summary(rows: list[dict[str, Any]]) -> dict[str, Any] | 
     }
 
 
+def compute_stage33_structured_summary(rows: list[dict[str, Any]]) -> dict[str, Any] | None:
+    fields = {
+        "stage33_structured_coverage_label",
+        "stage33_structured_coverage_route",
+        "stage33_structured_coverage_reason",
+        "stage33_structured_coverage_confidence",
+    }
+    if not any(any(field in row for field in fields) for row in rows):
+        return None
+    confidences = [
+        value for value in
+        (safe_float(row.get("stage33_structured_coverage_confidence")) for row in rows)
+        if value is not None
+    ]
+    return {
+        "stage33_structured_coverage_label_counts": group_distribution(
+            rows, "stage33_structured_coverage_label"
+        ),
+        "stage33_structured_coverage_route_counts": group_distribution(
+            rows, "stage33_structured_coverage_route"
+        ),
+        "stage33_structured_coverage_reason_counts": group_distribution(
+            rows, "stage33_structured_coverage_reason"
+        ),
+        "stage33_structured_coverage_confidence_summary": numeric_summary(confidences),
+    }
+
+
 def compute_group_metrics(
     rows: list[dict[str, Any]],
     group_field: str | None,
@@ -396,12 +425,16 @@ def compute_stage31_diagnostics(
     current = [normalize_label(row[current_field]) for row in rows]
     shadow = [normalize_label(row[shadow_field]) for row in rows]
     v2_routes = [str(row.get("stage32_coverage_v2_route", "")) for row in rows]
+    structured_routes = [
+        str(row.get("stage33_structured_coverage_route", "")) for row in rows
+    ]
     return compute_stage31_diagnostics_from_values(
         rows,
         group_field,
         current,
         shadow,
         v2_routes,
+        structured_routes,
     )
 
 
@@ -411,6 +444,7 @@ def compute_stage31_diagnostics_from_values(
     current: list[str],
     shadow: list[str],
     v2_routes: list[str] | None = None,
+    structured_routes: list[str] | None = None,
 ) -> dict[str, Any] | None:
     if group_field is None:
         return None
@@ -420,10 +454,18 @@ def compute_stage31_diagnostics_from_values(
 
     if v2_routes is None:
         v2_routes = [""] * len(rows)
+    if structured_routes is None:
+        structured_routes = [""] * len(rows)
     diag = Counter()
-    for row, current_label, shadow_label, v2_route in zip(rows, current, shadow, v2_routes):
+    for row, current_label, shadow_label, v2_route, structured_route in zip(
+        rows, current, shadow, v2_routes, structured_routes
+    ):
         group = str(row.get(group_field, ""))
         if group in SUPPORT_ENTAILMENT_GROUPS:
+            if structured_route == "ENTAILMENT_PRESERVE":
+                diag["support_entailment_stage33_entailment_preserve"] += 1
+            if structured_route == "RESIDUAL":
+                diag["support_entailment_stage33_unresolved"] += 1
             if v2_route == "ENTAILMENT_PRESERVE":
                 diag["support_entailment_v2_entailment_preserve"] += 1
             if v2_route == "RESIDUAL":
@@ -433,11 +475,18 @@ def compute_stage31_diagnostics_from_values(
             if shadow_label == "NOT_ENTITLED":
                 diag["support_entailment_shadow_ne"] += 1
                 diag["shadow_support_to_ne"] += 1
+                diag["stage33_shadow_support_to_ne"] += 1
             if shadow_label == "SUPPORT":
                 diag["support_entailment_shadow_support"] += 1
+                diag["support_entailment_stage33_shadow_support"] += 1
             if shadow_label == "REFUTE":
                 diag["shadow_support_to_refute"] += 1
+                diag["stage33_shadow_support_to_refute"] += 1
         elif group in OVERCLAIM_GROUPS:
+            if structured_route == "OVERCLAIM_NE":
+                diag["overclaim_stage33_overclaim_ne"] += 1
+            if structured_route == "RESIDUAL":
+                diag["overclaim_stage33_unresolved"] += 1
             if v2_route == "OVERCLAIM_NE":
                 diag["overclaim_v2_overclaim_ne"] += 1
             if v2_route == "RESIDUAL":
@@ -447,9 +496,15 @@ def compute_stage31_diagnostics_from_values(
             if shadow_label == "SUPPORT":
                 diag["overclaim_shadow_support"] += 1
                 diag["shadow_overclaim_to_support"] += 1
+                diag["overclaim_stage33_shadow_support"] += 1
+                diag["stage33_shadow_overclaim_to_support"] += 1
             if shadow_label == "NOT_ENTITLED":
                 diag["overclaim_shadow_ne"] += 1
         elif group in REFUTE_GROUPS:
+            if structured_route == "CONTRADICTION_REFUTE":
+                diag["refute_stage33_contradiction_refute"] += 1
+            if structured_route == "RESIDUAL":
+                diag["refute_stage33_unresolved"] += 1
             if v2_route == "CONTRADICTION_REFUTE":
                 diag["refute_v2_contradiction_refute"] += 1
             if v2_route == "RESIDUAL":
@@ -459,8 +514,10 @@ def compute_stage31_diagnostics_from_values(
             if shadow_label == "SUPPORT":
                 diag["refute_shadow_support"] += 1
                 diag["shadow_refute_to_support"] += 1
+                diag["stage33_shadow_refute_to_support"] += 1
             if shadow_label == "REFUTE":
                 diag["refute_shadow_refute"] += 1
+                diag["refute_stage33_shadow_refute"] += 1
             if shadow_label == "NOT_ENTITLED":
                 diag["refute_shadow_ne"] += 1
 
@@ -485,6 +542,19 @@ def compute_stage31_diagnostics_from_values(
         "overclaim_v2_unresolved",
         "refute_v2_contradiction_refute",
         "refute_v2_unresolved",
+        "support_entailment_stage33_entailment_preserve",
+        "support_entailment_stage33_shadow_support",
+        "support_entailment_stage33_unresolved",
+        "overclaim_stage33_overclaim_ne",
+        "overclaim_stage33_shadow_support",
+        "overclaim_stage33_unresolved",
+        "refute_stage33_contradiction_refute",
+        "refute_stage33_shadow_refute",
+        "refute_stage33_unresolved",
+        "stage33_shadow_overclaim_to_support",
+        "stage33_shadow_refute_to_support",
+        "stage33_shadow_support_to_ne",
+        "stage33_shadow_support_to_refute",
     ):
         diag.setdefault(key, 0)
     return dict(diag)
@@ -672,8 +742,57 @@ def decide(
     shadow_metrics: dict[str, Any],
     stage31_diag: dict[str, Any] | None,
     coverage_v2_summary: dict[str, Any] | None,
+    stage33_summary: dict[str, Any] | None = None,
 ) -> dict[str, str]:
     macro_delta = shadow_metrics["macro_f1"] - current_metrics["macro_f1"]
+    if stage33_summary is not None:
+        if stage31_diag:
+            stage33_overclaim_support = stage31_diag.get(
+                "stage33_shadow_overclaim_to_support", 0
+            )
+            stage33_refute_support = stage31_diag.get(
+                "stage33_shadow_refute_to_support", 0
+            )
+            stage33_support_recovered = stage31_diag.get(
+                "support_entailment_stage33_shadow_support", 0
+            )
+            stage33_support_ne = stage31_diag.get("stage33_shadow_support_to_ne", 0)
+            stage33_support_refute = stage31_diag.get("stage33_shadow_support_to_refute", 0)
+        else:
+            stage33_overclaim_support = 0
+            stage33_refute_support = 0
+            stage33_support_recovered = 0
+            stage33_support_ne = 0
+            stage33_support_refute = 0
+        if stage33_overclaim_support > 0 or stage33_refute_support > 0 or macro_delta <= -0.05:
+            return {
+                "label": "STAGE33_STRUCTURED_OWNER_UNSAFE",
+                "reason": (
+                    "Structured shadow route is unsafe: safety errors appeared or "
+                    "macro-F1 collapsed materially."
+                ),
+            }
+        if (
+            stage33_support_recovered > 0
+            and stage33_overclaim_support == 0
+            and stage33_refute_support == 0
+            and macro_delta > -0.02
+        ):
+            return {
+                "label": "STAGE33_STRUCTURED_OWNER_PROMISING",
+                "reason": (
+                    "Structured owner recovers some SUPPORT without overclaim/refute "
+                    "to SUPPORT safety errors and without material macro-F1 drop."
+                ),
+            }
+        return {
+            "label": "STAGE33_STRUCTURED_OWNER_DIAGNOSTIC_ONLY",
+            "reason": (
+                "Structured routes are interpretable, but SUPPORT recovery is still "
+                f"weak or unresolved collapse remains (support_to_ne={stage33_support_ne}, "
+                f"support_to_refute={stage33_support_refute})."
+            ),
+        }
     if stage31_diag:
         refute_safety_increase = (
             stage31_diag["shadow_refute_to_support"]
@@ -808,6 +927,22 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
             lines.extend(["", f"### {title}", "| Value | Count |", "|---|---:|"])
             for name, count in sorted(report["coverage_v2_summary"][key].items()):
                 lines.append(f"| {name} | {count} |")
+
+    if report["stage33_structured_coverage_summary"] is not None:
+        lines.extend(["", "## Stage33 Structured Coverage Owner Summary"])
+        for title, key in (
+            ("Structured Label Counts", "stage33_structured_coverage_label_counts"),
+            ("Structured Route Counts", "stage33_structured_coverage_route_counts"),
+            ("Structured Reason Counts", "stage33_structured_coverage_reason_counts"),
+        ):
+            lines.extend(["", f"### {title}", "| Value | Count |", "|---|---:|"])
+            for name, count in sorted(report["stage33_structured_coverage_summary"][key].items()):
+                lines.append(f"| {name} | {count} |")
+        lines.extend(["", "Confidence summary:"])
+        for key, value in report["stage33_structured_coverage_summary"][
+            "stage33_structured_coverage_confidence_summary"
+        ].items():
+            lines.append(f"- {key}: {value}")
 
     if report["group_metrics"]:
         lines.extend(["", "## Group-Level Metrics", "| Group | N | Current Acc | Shadow Acc | Delta |", "|---|---:|---:|---:|---:|"])
@@ -970,6 +1105,7 @@ def main() -> int:
     rows_changed = sum(c != s for c, s in zip(current, shadow))
     stage31_diag = compute_stage31_diagnostics(rows, group_field, current_field, shadow_field)
     coverage_v2_summary = compute_coverage_v2_summary(rows)
+    stage33_summary = compute_stage33_structured_summary(rows)
     offline_sweep: list[dict[str, Any]] | None = None
     offline_sweep_best: dict[str, Any] | None = None
     offline_sweep_decision: dict[str, str] | None = None
@@ -1029,6 +1165,7 @@ def main() -> int:
         shadow_metrics,
         stage31_diag,
         coverage_v2_summary,
+        stage33_summary,
     )
     report = {
         "run_name": args.run_name,
@@ -1097,6 +1234,23 @@ def main() -> int:
         "coverage_v2_top_prob_summary": (
             coverage_v2_summary.get("coverage_v2_top_prob_summary")
             if coverage_v2_summary else None
+        ),
+        "stage33_structured_coverage_summary": stage33_summary,
+        "stage33_structured_coverage_label_counts": (
+            stage33_summary.get("stage33_structured_coverage_label_counts")
+            if stage33_summary else None
+        ),
+        "stage33_structured_coverage_route_counts": (
+            stage33_summary.get("stage33_structured_coverage_route_counts")
+            if stage33_summary else None
+        ),
+        "stage33_structured_coverage_reason_counts": (
+            stage33_summary.get("stage33_structured_coverage_reason_counts")
+            if stage33_summary else None
+        ),
+        "stage33_structured_coverage_confidence_summary": (
+            stage33_summary.get("stage33_structured_coverage_confidence_summary")
+            if stage33_summary else None
         ),
         "group_metrics": compute_group_metrics(
             rows, group_field, gold_field, current_field, shadow_field

@@ -1,0 +1,93 @@
+{
+  "stage": "Stage33-A",
+  "artifact": "structured_directional_coverage_owner_v0",
+  "purpose": "Introduce deterministic structured Coverage Owner v0 in shadow mode after Stage32-D2 no-safe-support-recovery.",
+  "stage32d2_conclusion": {
+    "decision": "STAGE32_D2_NO_SAFE_SUPPORT_RECOVERY",
+    "support_entailment_shadow_support": 0,
+    "coverage_v2_route_collapse": "RESIDUAL",
+    "interpretation": "Neural coverage head thresholds cannot safely recover SUPPORT; structured directional rules are needed for shadow diagnostics."
+  },
+  "cli_flags": {
+    "stage33_use_structured_coverage_owner": {
+      "flag": "--stage33-use-structured-coverage-owner",
+      "default": false
+    },
+    "stage33_structured_coverage_owner_export": {
+      "flag": "--stage33-structured-coverage-owner-export",
+      "default": false
+    },
+    "stage33_structured_coverage_owner_shadow_mode": {
+      "flag": "--stage33-structured-coverage-owner-shadow-mode",
+      "default": false
+    },
+    "stage33_structured_coverage_preserve_can_support": {
+      "flag": "--stage33-structured-coverage-preserve-can-support",
+      "default": false
+    }
+  },
+  "labels_and_routes": {
+    "STRUCT_ENTAILMENT_PRESERVE": "ENTAILMENT_PRESERVE",
+    "STRUCT_OVERCLAIM_NE": "OVERCLAIM_NE",
+    "STRUCT_CONTRADICTION_REFUTE": "CONTRADICTION_REFUTE",
+    "STRUCT_UNRESOLVED": "RESIDUAL"
+  },
+  "rules": [
+    "quantifier_all_to_some",
+    "quantifier_some_to_all",
+    "specific_to_general_proxy",
+    "general_to_specific_proxy",
+    "only_to_base",
+    "also_to_only",
+    "none_to_some",
+    "some_to_none",
+    "no_structured_rule_fired"
+  ],
+  "export_fields": [
+    "stage33_structured_coverage_enabled",
+    "stage33_structured_coverage_label",
+    "stage33_structured_coverage_route",
+    "stage33_structured_coverage_reason",
+    "stage33_structured_coverage_confidence",
+    "stage33_structured_coverage_claim_cues",
+    "stage33_structured_coverage_evidence_cues",
+    "stage33_structured_coverage_rule_fired",
+    "stage33_structured_coverage_priority_trace"
+  ],
+  "evaluator_updates": [
+    "stage33_structured_coverage_label_counts",
+    "stage33_structured_coverage_route_counts",
+    "stage33_structured_coverage_reason_counts",
+    "stage33_structured_coverage_confidence_summary",
+    "support_entailment_stage33_entailment_preserve",
+    "support_entailment_stage33_shadow_support",
+    "support_entailment_stage33_unresolved",
+    "overclaim_stage33_overclaim_ne",
+    "overclaim_stage33_shadow_support",
+    "overclaim_stage33_unresolved",
+    "refute_stage33_contradiction_refute",
+    "refute_stage33_shadow_refute",
+    "refute_stage33_unresolved",
+    "stage33_shadow_overclaim_to_support",
+    "stage33_shadow_refute_to_support",
+    "stage33_shadow_support_to_ne",
+    "stage33_shadow_support_to_refute"
+  ],
+  "shadow_only_guarantee": {
+    "modifies_final_logits": false,
+    "modifies_final_predictions": false,
+    "modifies_h1_final_decision": false,
+    "modifies_losses": false,
+    "modifies_caps": false,
+    "modifies_entitlement": false,
+    "modifies_training_data_selection": false,
+    "modifies_checkpoint_selection": false
+  },
+  "limitations": [
+    "Heuristic rules are brittle.",
+    "No external parser is used.",
+    "Lexical containment is only a conservative specificity/generalization proxy.",
+    "Stage31 probe remains diagnostic-only.",
+    "This is not a final architecture replacement."
+  ]
+}

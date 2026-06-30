@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import random
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -2021,6 +2022,163 @@ def _stage32_bool_label(value: bool | None) -> str:
     return "unavailable"
 
 
+_STAGE33_STOPWORDS = {
+    "a", "an", "and", "are", "as", "at", "by", "for", "from", "in", "into",
+    "is", "it", "of", "on", "or", "that", "the", "their", "there", "to",
+    "was", "were", "with",
+}
+
+
+def _stage33_text(record: dict[str, Any], field: str) -> str:
+    raw = record.get(field)
+    if raw is None and isinstance(record.get("raw_record"), dict):
+        raw = record["raw_record"].get(field)
+    return str(raw or "")
+
+
+def _stage33_word_set(text: str) -> set[str]:
+    return {
+        tok for tok in re.findall(r"[a-z0-9']+", text.lower())
+        if tok not in _STAGE33_STOPWORDS
+    }
+
+
+def _stage33_has_phrase(text: str, phrases: tuple[str, ...]) -> bool:
+    lowered = text.lower()
+    return any(
+        re.search(rf"\b{re.escape(phrase)}\b", lowered) is not None
+        for phrase in phrases
+    )
+
+
+def _stage33_extract_cues(text: str) -> dict[str, Any]:
+    lowered = text.lower()
+    tokens = _stage33_word_set(text)
+    cues = {
+        "universal": _stage33_has_phrase(lowered, ("all", "every", "each", "any")),
+        "existential": _stage33_has_phrase(
+            lowered, ("some", "at least one", "one or more")
+        ),
+        "negative": _stage33_has_phrase(
+            lowered, ("no", "none", "never", "not any")
+        ),
+        "exclusive": _stage33_has_phrase(
+            lowered, ("only", "solely", "exclusively", "alone")
+        ),
+        "additive": _stage33_has_phrase(
+            lowered, ("also", "additionally", "as well as", "along with", "including")
+        ),
+        "partwhole": _stage33_has_phrase(
+            lowered,
+            (
+                "part of", "member of", "component of", "located in",
+                "includes", "contains", "consists of",
+            ),
+        ),
+        "token_count": len(tokens),
+        "tokens": tokens,
+    }
+    return cues
+
+
+def _stage33_compact_cues(cues: dict[str, Any]) -> str:
+    names = [
+        name for name in (
+            "universal", "existential", "negative", "exclusive", "additive", "partwhole"
+        )
+        if cues.get(name)
+    ]
+    names.append(f"tokens={cues.get('token_count', 0)}")
+    return ",".join(names)
+
+
+def build_stage33_structured_coverage_owner_state(
+    record: dict[str, Any],
+    *,
+    enabled: bool,
+) -> dict[str, Any]:
+    """Build deterministic Stage33-A structured coverage owner diagnostics."""
+    claim = _stage33_text(record, "claim")
+    evidence = _stage33_text(record, "evidence")
+    claim_cues = _stage33_extract_cues(claim)
+    evidence_cues = _stage33_extract_cues(evidence)
+    label = "STRUCT_UNRESOLVED"
+    route = "RESIDUAL"
+    reason = "disabled" if not enabled else "no_structured_rule_fired"
+    confidence = 0.0
+    rule_fired = False
+
+    claim_tokens = claim_cues["tokens"]
+    evidence_tokens = evidence_cues["tokens"]
+    claim_subset_evidence = bool(claim_tokens) and claim_tokens.issubset(evidence_tokens)
+    evidence_subset_claim = bool(evidence_tokens) and evidence_tokens.issubset(claim_tokens)
+
+    if enabled:
+        if evidence_cues["negative"] and claim_cues["existential"]:
+            label = "STRUCT_CONTRADICTION_REFUTE"
+            route = "CONTRADICTION_REFUTE"
+            reason = "none_to_some"
+            confidence = 1.0
+            rule_fired = True
+        elif evidence_cues["existential"] and claim_cues["negative"]:
+            label = "STRUCT_CONTRADICTION_REFUTE"
+            route = "CONTRADICTION_REFUTE"
+            reason = "some_to_none"
+            confidence = 1.0
+            rule_fired = True
+        elif evidence_cues["universal"] and claim_cues["existential"]:
+            label = "STRUCT_ENTAILMENT_PRESERVE"
+            route = "ENTAILMENT_PRESERVE"
+            reason = "quantifier_all_to_some"
+            confidence = 1.0
+            rule_fired = True
+        elif evidence_cues["existential"] and claim_cues["universal"]:
+            label = "STRUCT_OVERCLAIM_NE"
+            route = "OVERCLAIM_NE"
+            reason = "quantifier_some_to_all"
+            confidence = 1.0
+            rule_fired = True
+        elif evidence_cues["exclusive"] and not claim_cues["exclusive"]:
+            label = "STRUCT_ENTAILMENT_PRESERVE"
+            route = "ENTAILMENT_PRESERVE"
+            reason = "only_to_base"
+            confidence = 1.0
+            rule_fired = True
+        elif evidence_cues["additive"] and claim_cues["exclusive"]:
+            label = "STRUCT_OVERCLAIM_NE"
+            route = "OVERCLAIM_NE"
+            reason = "also_to_only"
+            confidence = 1.0
+            rule_fired = True
+        elif claim_subset_evidence and len(evidence_tokens - claim_tokens) >= 2:
+            label = "STRUCT_ENTAILMENT_PRESERVE"
+            route = "ENTAILMENT_PRESERVE"
+            reason = "specific_to_general_proxy"
+            confidence = 0.75
+            rule_fired = True
+        elif evidence_subset_claim and len(claim_tokens - evidence_tokens) >= 2:
+            label = "STRUCT_OVERCLAIM_NE"
+            route = "OVERCLAIM_NE"
+            reason = "general_to_specific_proxy"
+            confidence = 0.75
+            rule_fired = True
+
+    return {
+        "enabled": bool(enabled),
+        "label": label,
+        "route": route,
+        "reason": reason,
+        "confidence": confidence,
+        "claim_cues": _stage33_compact_cues(claim_cues),
+        "evidence_cues": _stage33_compact_cues(evidence_cues),
+        "rule_fired": rule_fired,
+        "priority_trace": [
+            f"structured:{route}",
+            f"reason:{reason}",
+        ],
+    }
+
+
 def build_stage32_hard_core_owner_state(
     output: dict[str, Any],
     index: int,
@@ -2263,6 +2421,9 @@ def build_stage32_shadow_composer_state(
     hard_core: dict[str, Any],
     coverage_entailment: dict[str, Any],
     coverage_v2: dict[str, Any],
+    structured_coverage: dict[str, Any],
+    structured_shadow_mode: bool,
+    structured_preserve_can_support: bool,
     residual_adjudication: dict[str, Any],
     ani_diagnostic: dict[str, Any],
     polarity: dict[str, Any],
@@ -2277,6 +2438,77 @@ def build_stage32_shadow_composer_state(
         would_block_support = True
         would_route_ne = True
         would_route_refute = False
+    elif structured_shadow_mode and structured_coverage.get("enabled"):
+        route = structured_coverage.get("route")
+        if route == "OVERCLAIM_NE":
+            priority_trace.extend([
+                "hard_core:pass",
+                "stage33_structured:OVERCLAIM_NE",
+                "route:NOT_ENTITLED",
+            ])
+            shadow_label = "NOT_ENTITLED"
+            shadow_reason = "stage33_structured_overclaim"
+            would_block_support = False
+            would_route_ne = True
+            would_route_refute = False
+        elif route == "CONTRADICTION_REFUTE":
+            priority_trace.extend([
+                "hard_core:pass",
+                "stage33_structured:CONTRADICTION_REFUTE",
+                "route:REFUTE",
+            ])
+            shadow_label = "REFUTE"
+            shadow_reason = "stage33_structured_contradiction"
+            would_block_support = False
+            would_route_ne = False
+            would_route_refute = True
+        elif route == "ENTAILMENT_PRESERVE" and polarity["pred_label"] == "SUPPORT":
+            priority_trace.extend([
+                "hard_core:pass",
+                "stage33_structured:ENTAILMENT_PRESERVE",
+                "polarity:SUPPORT",
+                "route:SUPPORT",
+            ])
+            shadow_label = "SUPPORT"
+            shadow_reason = "stage33_structured_entails_support_with_positive_polarity"
+            would_block_support = False
+            would_route_ne = False
+            would_route_refute = False
+        elif route == "ENTAILMENT_PRESERVE" and structured_preserve_can_support:
+            priority_trace.extend([
+                "hard_core:pass",
+                "stage33_structured:ENTAILMENT_PRESERVE",
+                f"polarity:{polarity.get('pred_label')}",
+                "route:SUPPORT",
+            ])
+            shadow_label = "SUPPORT"
+            shadow_reason = "stage33_structured_entails_support_direct_preserve"
+            would_block_support = False
+            would_route_ne = False
+            would_route_refute = False
+        elif route == "ENTAILMENT_PRESERVE":
+            priority_trace.extend([
+                "hard_core:pass",
+                "stage33_structured:ENTAILMENT_PRESERVE",
+                f"polarity:{polarity.get('pred_label')}",
+                "route:NOT_ENTITLED",
+            ])
+            shadow_label = "NOT_ENTITLED"
+            shadow_reason = "stage33_structured_entailment_without_positive_polarity"
+            would_block_support = False
+            would_route_ne = True
+            would_route_refute = False
+        else:
+            priority_trace.extend([
+                "hard_core:pass",
+                "stage33_structured:RESIDUAL",
+                "route:NOT_ENTITLED",
+            ])
+            shadow_label = "NOT_ENTITLED"
+            shadow_reason = "stage33_structured_unresolved_to_residual"
+            would_block_support = False
+            would_route_ne = True
+            would_route_refute = False
     elif coverage_v2.get("enabled"):
         route = coverage_v2.get("route")
         pred_label = coverage_v2.get("pred_label")
@@ -2398,6 +2630,7 @@ def build_stage32_shadow_composer_state(
 
 
 def build_stage32_owner_state(
+    record: dict[str, Any],
     output: dict[str, Any],
     index: int,
     *,
@@ -2405,6 +2638,9 @@ def build_stage32_owner_state(
     coverage_owner_v2_min_confidence: float = 0.50,
     coverage_owner_v2_min_margin: float = 0.05,
     coverage_owner_v2_allow_abstain: bool = False,
+    structured_coverage_enabled: bool = False,
+    structured_coverage_shadow_mode: bool = False,
+    structured_coverage_preserve_can_support: bool = False,
 ) -> dict[str, Any]:
     """Build Stage32-B owner-state proxies without changing model outputs."""
     hard_core = build_stage32_hard_core_owner_state(output, index)
@@ -2416,6 +2652,10 @@ def build_stage32_owner_state(
         min_margin=coverage_owner_v2_min_margin,
         allow_abstain=coverage_owner_v2_allow_abstain,
     )
+    structured_coverage = build_stage33_structured_coverage_owner_state(
+        record,
+        enabled=structured_coverage_enabled,
+    )
     residual_adjudication = build_stage32_residual_adjudication_owner_state(output, index)
     ani_diagnostic = build_stage32_ani_diagnostic_state(output, index)
     polarity = build_stage32_polarity_owner_state(output, index, hard_core)
@@ -2423,6 +2663,9 @@ def build_stage32_owner_state(
         hard_core=hard_core,
         coverage_entailment=coverage_entailment,
         coverage_v2=coverage_v2,
+        structured_coverage=structured_coverage,
+        structured_shadow_mode=structured_coverage_shadow_mode,
+        structured_preserve_can_support=structured_coverage_preserve_can_support,
         residual_adjudication=residual_adjudication,
         ani_diagnostic=ani_diagnostic,
         polarity=polarity,
@@ -2431,6 +2674,7 @@ def build_stage32_owner_state(
         "hard_core": hard_core,
         "coverage_entailment": coverage_entailment,
         "coverage_v2": coverage_v2,
+        "structured_coverage": structured_coverage,
         "residual_adjudication": residual_adjudication,
         "ani_diagnostic": ani_diagnostic,
         "polarity": polarity,
@@ -2442,6 +2686,7 @@ def flatten_stage32_owner_state(state: dict[str, Any]) -> dict[str, Any]:
     hard_core = state["hard_core"]
     coverage = state["coverage_entailment"]
     coverage_v2 = state["coverage_v2"]
+    structured = state["structured_coverage"]
     residual = state["residual_adjudication"]
     ani = state["ani_diagnostic"]
     polarity = state["polarity"]
@@ -2469,6 +2714,17 @@ def flatten_stage32_owner_state(state: dict[str, Any]) -> dict[str, Any]:
         "stage32_coverage_v2_route": coverage_v2["route"],
         "stage32_coverage_v2_reason": coverage_v2["reason"],
         "stage32_coverage_v2_abstained": coverage_v2["abstained"],
+        "stage33_structured_coverage_enabled": structured["enabled"],
+        "stage33_structured_coverage_label": structured["label"],
+        "stage33_structured_coverage_route": structured["route"],
+        "stage33_structured_coverage_reason": structured["reason"],
+        "stage33_structured_coverage_confidence": structured["confidence"],
+        "stage33_structured_coverage_claim_cues": structured["claim_cues"],
+        "stage33_structured_coverage_evidence_cues": structured["evidence_cues"],
+        "stage33_structured_coverage_rule_fired": structured["rule_fired"],
+        "stage33_structured_coverage_priority_trace": " | ".join(
+            structured.get("priority_trace", [])
+        ),
         "stage32_residual_prob": residual["residual_prob"],
         "stage32_residual_pred_label": residual["pred_label"],
         "stage32_residual_notes": residual.get("notes"),
@@ -2502,6 +2758,10 @@ def prediction_records_v6b(
     stage32_coverage_owner_v2_min_confidence: float = 0.50,
     stage32_coverage_owner_v2_min_margin: float = 0.05,
     stage32_coverage_owner_v2_allow_abstain: bool = False,
+    stage33_structured_coverage_owner: bool = False,
+    stage33_structured_coverage_owner_export: bool = False,
+    stage33_structured_coverage_owner_shadow_mode: bool = False,
+    stage33_structured_coverage_preserve_can_support: bool = False,
 ) -> list[dict]:
     """Export predictions with Stage28-E enriched schema (additive; preserves all legacy fields)."""
     logits_cpu = output["logits"].detach().cpu()
@@ -2545,12 +2805,24 @@ def prediction_records_v6b(
     for index, record in enumerate(records):
         stage32_owner_state = (
             build_stage32_owner_state(
+                record,
                 output,
                 index,
                 coverage_owner_v2_enabled=stage32_coverage_owner_v2,
                 coverage_owner_v2_min_confidence=stage32_coverage_owner_v2_min_confidence,
                 coverage_owner_v2_min_margin=stage32_coverage_owner_v2_min_margin,
                 coverage_owner_v2_allow_abstain=stage32_coverage_owner_v2_allow_abstain,
+                structured_coverage_enabled=(
+                    stage33_structured_coverage_owner
+                    and stage33_structured_coverage_owner_export
+                ),
+                structured_coverage_shadow_mode=(
+                    stage33_structured_coverage_owner
+                    and stage33_structured_coverage_owner_shadow_mode
+                ),
+                structured_coverage_preserve_can_support=(
+                    stage33_structured_coverage_preserve_can_support
+                ),
             )
             if stage32_owner_state_export
             else None
@@ -4117,6 +4389,42 @@ def build_parser() -> argparse.ArgumentParser:
             "shadow composer only."
         ),
     )
+    parser.add_argument(
+        "--stage33-use-structured-coverage-owner",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage33-A: compute deterministic structured Coverage Owner v0 "
+            "diagnostics from claim/evidence text. Shadow/export-only."
+        ),
+    )
+    parser.add_argument(
+        "--stage33-structured-coverage-owner-export",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage33-A: include structured coverage owner fields in Stage32 "
+            "owner-state prediction exports."
+        ),
+    )
+    parser.add_argument(
+        "--stage33-structured-coverage-owner-shadow-mode",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage33-A: allow structured coverage route to drive only the exported "
+            "Stage32 shadow label/reason. Does not affect final logits/predictions."
+        ),
+    )
+    parser.add_argument(
+        "--stage33-structured-coverage-preserve-can-support",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage33-A: in shadow mode only, allow structured entailment-preserve "
+            "routes to recover SUPPORT even when polarity proxy is not SUPPORT."
+        ),
+    )
 
     parser.add_argument(
         "--v7-no-aux-losses",
@@ -4400,6 +4708,18 @@ def evaluate_external_probe(
         ),
         stage32_coverage_owner_v2_allow_abstain=getattr(
             args, "stage32_coverage_owner_v2_allow_abstain", False
+        ),
+        stage33_structured_coverage_owner=getattr(
+            args, "stage33_use_structured_coverage_owner", False
+        ),
+        stage33_structured_coverage_owner_export=getattr(
+            args, "stage33_structured_coverage_owner_export", False
+        ),
+        stage33_structured_coverage_owner_shadow_mode=getattr(
+            args, "stage33_structured_coverage_owner_shadow_mode", False
+        ),
+        stage33_structured_coverage_preserve_can_support=getattr(
+            args, "stage33_structured_coverage_preserve_can_support", False
         ),
     )
 
@@ -4762,6 +5082,10 @@ _LIFT_CONFIG_KEYS: tuple[str, ...] = (
     "stage32_coverage_owner_v2_min_confidence",
     "stage32_coverage_owner_v2_min_margin",
     "stage32_coverage_owner_v2_allow_abstain",
+    "stage33_use_structured_coverage_owner",
+    "stage33_structured_coverage_owner_export",
+    "stage33_structured_coverage_owner_shadow_mode",
+    "stage33_structured_coverage_preserve_can_support",
     # v7 Stage15 / time_swap provenance (also lifted from audit_ledger elsewhere;
     # this covers the configuration copy when the ledger path is absent)
     "stage15_used_for_v7_training",
@@ -6915,6 +7239,18 @@ def main(argv: list[str] | None = None) -> int:
                     stage32_coverage_owner_v2_allow_abstain=getattr(
                         args, "stage32_coverage_owner_v2_allow_abstain", False
                     ),
+                    stage33_structured_coverage_owner=getattr(
+                        args, "stage33_use_structured_coverage_owner", False
+                    ),
+                    stage33_structured_coverage_owner_export=getattr(
+                        args, "stage33_structured_coverage_owner_export", False
+                    ),
+                    stage33_structured_coverage_owner_shadow_mode=getattr(
+                        args, "stage33_structured_coverage_owner_shadow_mode", False
+                    ),
+                    stage33_structured_coverage_preserve_can_support=getattr(
+                        args, "stage33_structured_coverage_preserve_can_support", False
+                    ),
                 )
                 best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
                 best_pc_metrics = {
@@ -7010,6 +7346,18 @@ def main(argv: list[str] | None = None) -> int:
                         stage32_coverage_owner_v2_allow_abstain=getattr(
                             args, "stage32_coverage_owner_v2_allow_abstain", False
                         ),
+                        stage33_structured_coverage_owner=getattr(
+                            args, "stage33_use_structured_coverage_owner", False
+                        ),
+                        stage33_structured_coverage_owner_export=getattr(
+                            args, "stage33_structured_coverage_owner_export", False
+                        ),
+                        stage33_structured_coverage_owner_shadow_mode=getattr(
+                            args, "stage33_structured_coverage_owner_shadow_mode", False
+                        ),
+                        stage33_structured_coverage_preserve_can_support=getattr(
+                            args, "stage33_structured_coverage_preserve_can_support", False
+                        ),
                     )
                     _tc_state = {
                         k: v.detach().cpu().clone() for k, v in model.state_dict().items()
@@ -7072,6 +7420,18 @@ def main(argv: list[str] | None = None) -> int:
                             ),
                             stage32_coverage_owner_v2_allow_abstain=getattr(
                                 args, "stage32_coverage_owner_v2_allow_abstain", False
+                            ),
+                            stage33_structured_coverage_owner=getattr(
+                                args, "stage33_use_structured_coverage_owner", False
+                            ),
+                            stage33_structured_coverage_owner_export=getattr(
+                                args, "stage33_structured_coverage_owner_export", False
+                            ),
+                            stage33_structured_coverage_owner_shadow_mode=getattr(
+                                args, "stage33_structured_coverage_owner_shadow_mode", False
+                            ),
+                            stage33_structured_coverage_preserve_can_support=getattr(
+                                args, "stage33_structured_coverage_preserve_can_support", False
                             ),
                         )
                         _pcs_state = {
@@ -8680,6 +9040,20 @@ def main(argv: list[str] | None = None) -> int:
             ),
             "stage32_coverage_owner_v2_modifies_final_logits": False,
             "stage32_coverage_owner_v2_modifies_final_predictions": False,
+            "stage33_use_structured_coverage_owner": getattr(
+                args, "stage33_use_structured_coverage_owner", False
+            ),
+            "stage33_structured_coverage_owner_export": getattr(
+                args, "stage33_structured_coverage_owner_export", False
+            ),
+            "stage33_structured_coverage_owner_shadow_mode": getattr(
+                args, "stage33_structured_coverage_owner_shadow_mode", False
+            ),
+            "stage33_structured_coverage_preserve_can_support": getattr(
+                args, "stage33_structured_coverage_preserve_can_support", False
+            ),
+            "stage33_structured_coverage_modifies_final_logits": False,
+            "stage33_structured_coverage_modifies_final_predictions": False,
             "v7_h1_entitlement_for_decision_source": (
                 _V7_H1_DECISION_SIGNAL_SOURCE.get(
                     getattr(args, "v7_h1_entitlement_decision_signal", "learned"),
@@ -8838,6 +9212,20 @@ def main(argv: list[str] | None = None) -> int:
                 "stage32_coverage_owner_v2_allow_abstain": getattr(
                     args, "stage32_coverage_owner_v2_allow_abstain", False
                 ),
+                "stage33_use_structured_coverage_owner": getattr(
+                    args, "stage33_use_structured_coverage_owner", False
+                ),
+                "stage33_structured_coverage_owner_export": getattr(
+                    args, "stage33_structured_coverage_owner_export", False
+                ),
+                "stage33_structured_coverage_owner_shadow_mode": getattr(
+                    args, "stage33_structured_coverage_owner_shadow_mode", False
+                ),
+                "stage33_structured_coverage_preserve_can_support": getattr(
+                    args, "stage33_structured_coverage_preserve_can_support", False
+                ),
+                "stage33_structured_coverage_modifies_final_logits": False,
+                "stage33_structured_coverage_modifies_final_predictions": False,
                 "freeze_encoder": getattr(args, "freeze_encoder", None),
                 "freeze_a_log": getattr(args, "freeze_a_log", None),
                 "max_length": getattr(args, "max_length", None),
