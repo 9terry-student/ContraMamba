@@ -1,0 +1,70 @@
+{
+  "decision": "STAGE43C0_POST_TRAINING_EXTERNAL_EVAL_HOOK_PLAN_PREPARED",
+  "status": "preparation_only",
+  "scope": "Post-training evaluation hook plan and implementation. No training, local training, mini training, smoke tests, py_compile, help checks, Kaggle commands, evaluation, or external evaluation was run during implementation.",
+  "background": {
+    "stage43b1": {
+      "vitaminc": {
+        "path": "data/stage43b1_vitaminc_validation_sample1000.jsonl",
+        "decision": "STAGE43B1_FACTVER_ACQUISITION_READY",
+        "accepted_rows": 1000,
+        "rejected_rows": 0,
+        "label_counts": {
+          "SUPPORT": 500,
+          "REFUTE": 355,
+          "NOT_ENTITLED": 145
+        },
+        "interpretation": "In-family fact-verification external validation."
+      },
+      "climate_fever": {
+        "path": "data/stage43b1_climate_fever_test_sample1000.jsonl",
+        "decision": "STAGE43B1_FACTVER_ACQUISITION_READY",
+        "accepted_rows": 903,
+        "rejected_rows": 97,
+        "label_counts": {
+          "SUPPORT": 438,
+          "REFUTE": 164,
+          "NOT_ENTITLED": 301
+        },
+        "rejected_reason_counts": {
+          "disputed_label_excluded": 97
+        },
+        "interpretation": "Cross-domain fact-verification external validation."
+      }
+    },
+    "stage43b2": "The standalone evaluator is scaffold-only and does not yet implement real checkpoint inference.",
+    "runtime_checkpoint_status": "Prior checkpoint files are unavailable after runtime reset.",
+    "stage43c0_reason": "Add a post-training hook inside the existing training runner so external evaluation can run after normal clean-dev best-state restoration."
+  },
+  "implementation": {
+    "modified_file": "scripts/train_controlled_v6b_minimal.py",
+    "new_utility": "scripts/stage43_external_factver_eval_utils.py",
+    "hook_timing": "post_training_after_best_state_restore",
+    "runs_by_default": false,
+    "enable_flag": "--enable-stage43-external-eval",
+    "input_flag": "--stage43-external-factver-jsonl",
+    "output_dir_flag": "--stage43-external-output-dir",
+    "run_prefix_flag": "--stage43-external-run-prefix"
+  },
+  "outputs": {
+    "per_dataset_json": "{output_dir}/{run_prefix}_{dataset_stem}_external_factver_report.json",
+    "per_dataset_md": "{output_dir}/{run_prefix}_{dataset_stem}_external_factver_report.md",
+    "per_dataset_predictions": "{output_dir}/{run_prefix}_{dataset_stem}_external_factver_predictions.jsonl",
+    "aggregate_json": "{output_dir}/{run_prefix}_external_factver_aggregate_report.json",
+    "aggregate_md": "{output_dir}/{run_prefix}_external_factver_aggregate_report.md"
+  },
+  "leakage_policy": "External files are never used for training, calibration, checkpoint selection, threshold selection, loss design, model selection, or composer behavior changes.",
+  "cross_domain_policy": "Any failure on Climate-FEVER should be interpreted as a cross-domain limitation, not as a training signal.",
+  "guardrails": [
+    "Do not use Stage43-B1 data in training.",
+    "Do not use Stage43-B1 data in checkpoint selection.",
+    "Do not use Stage43-B1 data in threshold selection.",
+    "Do not use Stage43-B1 data for calibration.",
+    "Do not modify model/composer behavior based on external results.",
+    "Do not silently run external eval by default.",
+    "Do not report heuristic-only results as PASS.",
+    "Do not alter Stage39-C composer behavior.",
+    "Do not treat Stage34/35 synthetic probes as naturalistic external validation."
+  ],
+  "recommendation": "Use Stage43-C0 only as an explicit post-training eval-only hook after normal best-state restoration. Report VitaminC as in-family external fact-verification and Climate-FEVER as cross-domain fact-verification."
+}

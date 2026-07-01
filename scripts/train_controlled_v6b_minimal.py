@@ -36,6 +36,17 @@ from contramamba.comparator_flags import (  # noqa: E402
 )
 from contramamba.modeling_v6b_minimal import ContraMambaV6BMinimal  # noqa: E402
 from scripts import train_controlled_v5 as v5  # noqa: E402
+from scripts.stage43_external_factver_eval_utils import (  # noqa: E402
+    analyze_stage43_predictions,
+    build_aggregate_report,
+    load_stage43_jsonl,
+    render_aggregate_markdown,
+    render_report_markdown,
+    stage43_rows_to_controlled_records,
+    write_json,
+    write_jsonl,
+    write_text,
+)
 
 STAGE31C_COVERAGE_LABELS = [
     "ENTAILS_SUPPORT",
@@ -6774,6 +6785,59 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+
+    # Stage43-C0: post-training external fact-verification evaluation hook.
+    # Explicit opt-in only; runs after normal best-state restoration and never
+    # participates in training, calibration, threshold tuning, or selection.
+    parser.add_argument(
+        "--stage43-external-factver-jsonl",
+        action="append",
+        default=[],
+        dest="stage43_external_factver_jsonl",
+        metavar="PATH",
+        help=(
+            "Stage43-C0: path to an external fact-verification JSONL file "
+            "(e.g. VitaminC or Climate-FEVER acquisition output). May be repeated. "
+            "Only evaluated when --enable-stage43-external-eval is set."
+        ),
+    )
+    parser.add_argument(
+        "--stage43-external-output-dir",
+        type=str,
+        default="reports",
+        help="Stage43-C0: output directory for external fact-verification reports.",
+    )
+    parser.add_argument(
+        "--stage43-external-run-prefix",
+        type=str,
+        default="stage43c0",
+        help="Stage43-C0: prefix for per-dataset and aggregate report files.",
+    )
+    parser.add_argument(
+        "--stage43-external-max-rows",
+        type=int,
+        default=None,
+        help="Stage43-C0: optional maximum rows to read from each external JSONL.",
+    )
+    parser.add_argument(
+        "--stage43-external-batch-size",
+        type=int,
+        default=None,
+        help=(
+            "Stage43-C0: eval batch size for external fact-verification files. "
+            "Defaults to --batch-size when available, otherwise 8."
+        ),
+    )
+    parser.add_argument(
+        "--enable-stage43-external-eval",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage43-C0: explicitly enable post-training external fact-verification "
+            "evaluation. Default off."
+        ),
+    )
+
     return parser
 
 
@@ -7071,6 +7135,194 @@ def evaluate_external_probe(
     }
 
     return result, prediction_recs
+
+
+# ---------------------------------------------------------------------------
+# Stage43-C0: post-training external fact-verification evaluation hook
+# ---------------------------------------------------------------------------
+
+
+def _stage43_factver_eval_args(args: argparse.Namespace) -> argparse.Namespace:
+    """Return an eval-only args clone with Stage39-C composer export enabled.
+
+    This does not mutate the training args and does not alter logits, losses,
+    training data, checkpoint selection, or model weights. It only requests the
+    same export-time Stage39-C safe_structured_v2 diagnostics used by the normal
+    prediction export path.
+    """
+    eval_args = argparse.Namespace(**vars(args))
+    eval_args.stage39_use_final_composer_opt_in = True
+    eval_args.stage39_final_composer_export = True
+    eval_args.stage39_final_composer_policy = "safe_structured_v2"
+    eval_args.stage39_final_composer_output_mode = "export_only"
+    if not getattr(eval_args, "stage39_final_composer_source", None):
+        eval_args.stage39_final_composer_source = "stage37_final_shadow_label"
+    return eval_args
+
+
+def _stage43_slice_inputs(inputs: dict[str, torch.Tensor], start: int, end: int) -> dict[str, torch.Tensor]:
+    return {key: value[start:end] for key, value in inputs.items()}
+
+
+def _stage43_prediction_records_from_model(
+    model: "ContraMambaV6BMinimal | Any",
+    records: list[dict],
+    model_inputs: dict[str, torch.Tensor],
+    flag_source: str,
+    device: torch.device,
+    args: argparse.Namespace,
+    batch_size: int,
+) -> list[dict]:
+    """Eval-only Stage43 forward/export loop over an already-restored model."""
+    eval_args = _stage43_factver_eval_args(args)
+    batch_size = max(1, int(batch_size))
+    exported: list[dict] = []
+    model.eval()
+    with torch.no_grad():
+        for start in range(0, len(records), batch_size):
+            end = min(len(records), start + batch_size)
+            batch_records = records[start:end]
+            batch_inputs = _stage43_slice_inputs(model_inputs, start, end)
+            temporal_flags, predicate_flags = extract_flags(batch_records, flag_source, device)
+            output = model(
+                **v5.model_feature_inputs(batch_inputs),
+                temporal_mismatch_flags=temporal_flags,
+                predicate_mismatch_flags=predicate_flags,
+            )
+            exported.extend(
+                prediction_records_v6b(
+                    batch_records,
+                    output,
+                    stage32_owner_state_export=getattr(eval_args, "stage32_owner_state_export", False),
+                    stage32_owner_state_shadow_mode=getattr(eval_args, "stage32_owner_state_shadow_mode", False),
+                    stage32_coverage_owner_v2=getattr(eval_args, "stage32_coverage_owner_v2", False),
+                    stage32_coverage_owner_v2_min_confidence=getattr(eval_args, "stage32_coverage_owner_v2_min_confidence", 0.50),
+                    stage32_coverage_owner_v2_min_margin=getattr(eval_args, "stage32_coverage_owner_v2_min_margin", 0.05),
+                    stage32_coverage_owner_v2_allow_abstain=getattr(eval_args, "stage32_coverage_owner_v2_allow_abstain", False),
+                    stage33_structured_coverage_owner=getattr(eval_args, "stage33_use_structured_coverage_owner", False),
+                    stage33_structured_coverage_owner_export=getattr(eval_args, "stage33_structured_coverage_owner_export", False),
+                    stage33_structured_coverage_owner_shadow_mode=getattr(eval_args, "stage33_structured_coverage_owner_shadow_mode", False),
+                    stage33_structured_coverage_preserve_can_support=getattr(eval_args, "stage33_structured_coverage_preserve_can_support", False),
+                    stage33_structured_coverage_direct_support_rules=getattr(eval_args, "stage33_structured_coverage_direct_support_rules", _STAGE33_DEFAULT_DIRECT_SUPPORT_RULES),
+                    stage33_structured_coverage_disable_specific_general_direct_support=getattr(eval_args, "stage33_structured_coverage_disable_specific_general_direct_support", False),
+                    stage33_structured_coverage_weak_rules_to_residual=getattr(eval_args, "stage33_structured_coverage_weak_rules_to_residual", ""),
+                    stage33_structured_coverage_conditional_fallback=getattr(eval_args, "stage33_structured_coverage_conditional_fallback", False),
+                    stage33_structured_coverage_fallback_source=getattr(eval_args, "stage33_structured_coverage_fallback_source", "current_final"),
+                    stage33_structured_coverage_enable_whole_part_rules=getattr(eval_args, "stage33_structured_coverage_enable_whole_part_rules", False),
+                    stage33_structured_coverage_whole_part_direct_support=getattr(eval_args, "stage33_structured_coverage_whole_part_direct_support", False),
+                    stage33_structured_coverage_whole_part_lexicon=getattr(eval_args, "stage33_structured_coverage_whole_part_lexicon", ""),
+                    stage33_structured_coverage_whole_part_v2=getattr(eval_args, "stage33_structured_coverage_whole_part_v2", False),
+                    stage33_structured_coverage_whole_part_v2_use_expanded_lexicon=getattr(eval_args, "stage33_structured_coverage_whole_part_v2_use_expanded_lexicon", False),
+                    stage33_structured_coverage_whole_part_v2_direct_support_policy=getattr(eval_args, "stage33_structured_coverage_whole_part_v2_direct_support_policy", "hard_core_required"),
+                    stage33_whole_part_conditional_safe_overrides_hard_core=getattr(eval_args, "stage33_whole_part_conditional_safe_overrides_hard_core", False),
+                    stage36_support_safety_config=_stage36_config_from_args(eval_args),
+                    stage37_safe_support_recovery_config=_stage37_config_from_args(eval_args),
+                    args=eval_args,
+                )
+            )
+    return exported
+
+
+def run_stage43_external_factver_hook(
+    *,
+    model: "ContraMambaV6BMinimal | Any",
+    jsonl_paths: list[str],
+    output_dir: Path,
+    run_prefix: str,
+    max_rows: int | None,
+    batch_size: int,
+    args: argparse.Namespace,
+    vocab: dict[str, int],
+    tokenizer: Any,
+    max_length: int,
+    device: torch.device,
+) -> dict[str, Any]:
+    """Run Stage43-C0 external fact-verification eval after best-state restore."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    dataset_reports: list[dict[str, Any]] = []
+    for jsonl_path_str in jsonl_paths:
+        jsonl_path = Path(jsonl_path_str)
+        dataset_stem = jsonl_path.stem
+        run_name = f"{run_prefix}_{dataset_stem}"
+        report_json = output_dir / f"{run_prefix}_{dataset_stem}_external_factver_report.json"
+        report_md = output_dir / f"{run_prefix}_{dataset_stem}_external_factver_report.md"
+        pred_jsonl = output_dir / f"{run_prefix}_{dataset_stem}_external_factver_predictions.jsonl"
+
+        rows = load_stage43_jsonl(jsonl_path, max_rows=max_rows)
+        records = stage43_rows_to_controlled_records(rows)
+        prediction_rows: list[dict] = []
+        stage43_prediction_error: str | None = None
+        if records:
+            try:
+                if args.backbone == "dummy":
+                    bundle = v5.encode_records(records, vocab)
+                else:
+                    bundle = v5.encode_mamba_records(records, tokenizer, args.max_length)
+                model_inputs = v5.move_inputs(bundle["model_inputs"], device)
+                seq_len = model_inputs["input_ids"].shape[1]
+                if seq_len < max_length:
+                    for key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
+                        model_inputs[key] = F.pad(model_inputs[key], (0, max_length - seq_len), value=0)
+                elif seq_len > max_length:
+                    for key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
+                        model_inputs[key] = model_inputs[key][:, :max_length]
+                prediction_rows = _stage43_prediction_records_from_model(
+                    model=model,
+                    records=records,
+                    model_inputs=model_inputs,
+                    flag_source=args.flag_source,
+                    device=device,
+                    args=args,
+                    batch_size=batch_size,
+                )
+            except Exception as exc:
+                stage43_prediction_error = f"{type(exc).__name__}: {exc}"
+                prediction_rows = []
+
+        report_payload, stage43_predictions = analyze_stage43_predictions(
+            input_jsonl=jsonl_path,
+            run_name=run_name,
+            rows=rows,
+            prediction_rows=prediction_rows,
+            output_predictions_path=str(pred_jsonl),
+        )
+        report_payload["output_report_json"] = str(report_json)
+        report_payload["output_report_md"] = str(report_md)
+        if stage43_prediction_error is not None:
+            report_payload["decision"] = "STAGE43C0_EXTERNAL_FACTVER_INCOMPLETE"
+            report_payload.setdefault("sample_error_rows", []).insert(
+                0,
+                {
+                    "error": "prediction_generation_failed",
+                    "detail": stage43_prediction_error,
+                },
+            )
+            report_payload.setdefault("risks", []).insert(0, stage43_prediction_error)
+            report_payload["recommendation"] = (
+                "Stage43-C0 model predictions could not be produced for this external file; "
+                "treat the dataset evaluation as incomplete."
+            )
+        write_json(report_json, report_payload)
+        write_text(report_md, render_report_markdown(report_payload))
+        write_jsonl(pred_jsonl, stage43_predictions)
+        dataset_reports.append(report_payload)
+        print(
+            f"[STAGE43-C0 EXTERNAL FACTVER] {dataset_stem} "
+            f"decision={report_payload['decision']} rows={report_payload['row_count']} "
+            f"base_f1={report_payload['base_macro_f1']} composed_f1={report_payload['composed_macro_f1']}"
+        )
+
+    aggregate = build_aggregate_report(run_prefix, dataset_reports)
+    aggregate_json = output_dir / f"{run_prefix}_external_factver_aggregate_report.json"
+    aggregate_md = output_dir / f"{run_prefix}_external_factver_aggregate_report.md"
+    aggregate["output_report_json"] = str(aggregate_json)
+    aggregate["output_report_md"] = str(aggregate_md)
+    write_json(aggregate_json, aggregate)
+    write_text(aggregate_md, render_aggregate_markdown(aggregate))
+    return {
+        "stage43_external_factver_reports": dataset_reports,
+        "stage43_external_factver_aggregate": aggregate,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -12949,6 +13201,48 @@ def main(argv: list[str] | None = None) -> int:
             )
 
         report["external_evals"] = _external_evals
+
+
+    # Stage43-C0: external fact-verification evaluation (eval-only)
+    # Runs AFTER normal training, clean-dev checkpoint selection, and best-state
+    # restoration. Never used for training, calibration, threshold selection,
+    # checkpoint selection, loss design, or model/composer behavior changes.
+    _stage43_paths: list[str] = getattr(args, "stage43_external_factver_jsonl", []) or []
+    _stage43_enabled = bool(getattr(args, "enable_stage43_external_eval", False))
+    if _stage43_paths and not _stage43_enabled:
+        report["stage43_external_factver_eval_skipped"] = {
+            "reason": "--stage43-external-factver-jsonl was supplied but --enable-stage43-external-eval was not set",
+            "requested_paths": _stage43_paths,
+            "used_for_training": False,
+            "used_for_checkpoint_selection": False,
+            "used_for_threshold_selection": False,
+        }
+    if _stage43_enabled:
+        if not _stage43_paths:
+            raise ValueError(
+                "--enable-stage43-external-eval requires at least one "
+                "--stage43-external-factver-jsonl path"
+            )
+        if _ood_best_state is not None:
+            model.load_state_dict({k: v.to(device) for k, v in _ood_best_state.items()})
+        model.eval()
+        _stage43_batch_size = getattr(args, "stage43_external_batch_size", None)
+        if _stage43_batch_size is None:
+            _stage43_batch_size = getattr(args, "batch_size", 8)
+        _stage43_hook_result = run_stage43_external_factver_hook(
+            model=model,
+            jsonl_paths=_stage43_paths,
+            output_dir=Path(getattr(args, "stage43_external_output_dir", "reports")),
+            run_prefix=getattr(args, "stage43_external_run_prefix", "stage43c0"),
+            max_rows=getattr(args, "stage43_external_max_rows", None),
+            batch_size=int(_stage43_batch_size),
+            args=args,
+            vocab=vocab,
+            tokenizer=locals().get("tokenizer"),
+            max_length=max_length,
+            device=device,
+        )
+        report["stage43_external_factver_eval"] = _stage43_hook_result
 
     # Stage26-D: lift architecture metadata and dev metric aliases to root level.
     lift_report_aliases(report)
