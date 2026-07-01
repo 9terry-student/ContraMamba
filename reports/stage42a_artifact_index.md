@@ -1,0 +1,20 @@
+# Stage42-A Artifact Index
+
+Index of the final result artifacts for the Stage39–41 structured-coverage final-composer sequence, their role, and citation status.
+
+| Artifact | File Path | Purpose | Evidence Type | Citable in Paper/Report? | Leakage Warning |
+|---|---|---|---|---|---|
+| Stage39-C dev report | `reports/stage39c_safe_structured_v2_dev_report.json` | Source evaluation of `safe_structured_v2` composer on the dev split | source evidence | **not yet — file missing from repository** | If regenerated, dev is the model's own held-out evaluation split; do not reuse for further training/calibration of the composer. |
+| Stage39-C Stage34 report | `reports/stage39c_safe_structured_v2_stage34_report.json` | Source evaluation of `safe_structured_v2` composer on the Stage34 held-out probe | source evidence | **not yet — file missing from repository** | Stage34 is a synthetic/probe diagnostic set; must remain diagnostic-only, not used for training, calibration, threshold selection, checkpoint selection, or loss design. |
+| Stage39-C Stage35 report | `reports/stage39c_safe_structured_v2_stage35_report.json` | Source evaluation of `safe_structured_v2` composer on the Stage35 adversarial probe | source evidence | **not yet — file missing from repository** | Stage35 is a synthetic/probe adversarial set; must remain diagnostic-only, not used for training, calibration, threshold selection, checkpoint selection, or loss design. |
+| Stage40-A integrated audit (JSON) | `reports/stage40a_final_composer_regression_audit.json` | Machine-readable integrated regression audit of the final composer across dev/Stage34/Stage35 | source evidence | **not yet — file missing from repository** | Same as above; audit-only, not a training signal. |
+| Stage40-A integrated audit (Markdown) | `reports/stage40a_final_composer_regression_audit.md` | Human-readable version of the Stage40-A integrated regression audit | source evidence | **not yet — file missing from repository** | Same as above; audit-only, not a training signal. |
+| Stage41-A paper-ready freeze | `reports/stage41a_paper_ready_result_freeze.md` | Consolidated, paper-ready narrative and tables summarizing Stage33–40 results | derived summary | yes, with the explicit qualification that its numbers are not yet independently verified against the (currently missing) Stage39-C/Stage40-A source reports (see [stage42a_paper_claim_consistency_audit.md](stage42a_paper_claim_consistency_audit.md)) | Reporting-only; must not be used for training, calibration, threshold selection, checkpoint selection, or loss design. |
+| Stage41-A final composer table | `reports/stage41a_final_composer_table.md` | Standalone comparison table of `support_only` / `safe_structured` / `safe_structured_v2` / Stage40 audit | derived summary | yes, same qualification as above | Reporting-only; same restriction as above. |
+| Stage42-A consistency audit | `reports/stage42a_paper_claim_consistency_audit.md` / `.json` | Audits Stage41-A numeric claims, allowed/forbidden claims, boundary framing, and table correctness against source reports and reference numbers | derived summary (audit of derived summaries) | yes, as a methodology/QA artifact; not as primary experimental evidence | Reporting/audit-only; must not be used for training, calibration, threshold selection, checkpoint selection, or loss design. Stage41/42 documents are derived summaries, not new experimental evidence. |
+
+## Notes
+
+- "Source evidence" = an artifact produced directly by running an evaluator/composer script against a specific split or probe.
+- "Derived summary" = an artifact that consolidates, restates, or audits source evidence without generating new experimental results.
+- Five of the eight artifacts listed above (all three Stage39-C reports and both Stage40-A audit files) do not currently exist in the repository; only their generating scripts were committed. Regenerating and committing them is required before Stage41-A/Stage42-A can be considered fully source-verified. See [stage42a_paper_claim_consistency_audit.md](stage42a_paper_claim_consistency_audit.md) §8 for details.
