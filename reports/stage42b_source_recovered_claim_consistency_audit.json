@@ -1,0 +1,222 @@
+{
+  "decision": "STAGE42B_SOURCE_RECOVERED_CLAIM_CONSISTENCY_PASS",
+  "source_recovery": {
+    "status": "all_required_source_files_present",
+    "description": "The five source artifacts flagged missing by Stage42-A (dev/Stage34/Stage35 Stage39-C reports plus the Stage40-A JSON/MD audit) have been committed to reports/, along with the previously-missing Stage39-C dev/Stage34/Stage35 .md companions. All eight required source files are now present and were read directly for this audit.",
+    "previously_missing_now_present": [
+      "reports/stage39c_safe_structured_v2_dev_report.json",
+      "reports/stage39c_safe_structured_v2_stage34_report.json",
+      "reports/stage39c_safe_structured_v2_stage35_report.json",
+      "reports/stage40a_final_composer_regression_audit.json",
+      "reports/stage40a_final_composer_regression_audit.md"
+    ]
+  },
+  "checked_files": [
+    "reports/stage41a_paper_ready_result_freeze.md",
+    "reports/stage41a_paper_ready_result_freeze.json",
+    "reports/stage41a_final_composer_table.md",
+    "reports/stage39c_safe_structured_v2_dev_report.json",
+    "reports/stage39c_safe_structured_v2_dev_report.md",
+    "reports/stage39c_safe_structured_v2_stage34_report.json",
+    "reports/stage39c_safe_structured_v2_stage34_report.md",
+    "reports/stage39c_safe_structured_v2_stage35_report.json",
+    "reports/stage39c_safe_structured_v2_stage35_report.md",
+    "reports/stage40a_final_composer_regression_audit.json",
+    "reports/stage40a_final_composer_regression_audit.md",
+    "reports/stage42a_paper_claim_consistency_audit.json",
+    "reports/stage42a_paper_claim_consistency_audit.md"
+  ],
+  "missing_files": [],
+  "numeric_consistency": {
+    "verification_basis": "Stage41-A numbers checked directly against the recovered Stage39-C (dev/Stage34/Stage35) and Stage40-A on-disk source JSON reports. This resolves the source_verified=false gap from Stage42-A.",
+    "dev": {
+      "original_accuracy": {"source": 0.5611, "stage41_md": 0.5611, "stage41_json": 0.5611, "consistent": true},
+      "composed_accuracy": {"source": 0.5611, "stage41_md": 0.5611, "stage41_json": 0.5611, "consistent": true},
+      "original_macro_f1": {"source": 0.3617, "stage41_md": 0.3617, "stage41_json": 0.3617, "consistent": true},
+      "composed_macro_f1": {"source": 0.3617, "stage41_md": 0.3617, "stage41_json": 0.3617, "consistent": true},
+      "changed_rows": {"source": 0, "stage41_md": 0, "stage41_json": 0, "consistent": true},
+      "introduced_unsafe_SUPPORT": {"source": 0, "stage41_md": 0, "stage41_json": 0, "consistent": true},
+      "introduced_REFUTE_to_SUPPORT": {"source": 0, "stage41_md": 0, "stage41_json": 0, "consistent": true},
+      "introduced_SUPPORT_to_REFUTE": {"source": 0, "stage41_md": 0, "stage41_json": 0, "consistent": true},
+      "source_verified": true,
+      "source_file": "reports/stage39c_safe_structured_v2_dev_report.json"
+    },
+    "stage34": {
+      "decision": {"source": "STAGE39C_SAFE_STRUCTURED_V2_PASS", "stage41_md": "STAGE39C_SAFE_STRUCTURED_V2_PASS", "stage41_json": "STAGE39C_SAFE_STRUCTURED_V2_PASS", "consistent": true},
+      "original_accuracy": {"source": 0.45, "stage41_md": 0.45, "stage41_json": 0.45, "consistent": true},
+      "composed_accuracy": {"source": 0.96, "stage41_md": 0.96, "stage41_json": 0.96, "consistent": true},
+      "original_macro_f1": {"source": 0.2069, "stage41_md": 0.2069, "stage41_json": 0.2069, "consistent": true},
+      "composed_macro_f1": {"source": 0.9703, "stage41_md": 0.9703, "stage41_json": 0.9703, "consistent": true},
+      "changed_rows": {"source": 204, "stage41_md": 204, "stage41_json": 204, "consistent": true},
+      "changed_to_SUPPORT": {"source": 164, "stage41_md": 164, "stage41_json": 164, "consistent": true},
+      "changed_to_REFUTE": {"source": 40, "stage41_md": 40, "stage41_json": 40, "consistent": true},
+      "introduced_unsafe_SUPPORT": {"source": 0, "stage41_md": 0, "stage41_json": 0, "consistent": true},
+      "introduced_REFUTE_to_SUPPORT": {"source": 0, "stage41_md": 0, "stage41_json": 0, "consistent": true},
+      "introduced_SUPPORT_to_REFUTE": {"source": 0, "stage41_md": 0, "stage41_json": 0, "consistent": true},
+      "source_verified": true,
+      "source_file": "reports/stage39c_safe_structured_v2_stage34_report.json"
+    },
+    "stage35": {
+      "decision": {"source": "STAGE39C_SAFE_STRUCTURED_V2_PASS", "stage41_md": "STAGE39C_SAFE_STRUCTURED_V2_PASS", "stage41_json": "STAGE39C_SAFE_STRUCTURED_V2_PASS", "consistent": true},
+      "original_accuracy": {"source": 0.5033, "stage41_md": 0.5033, "stage41_json": 0.5033, "consistent": true},
+      "composed_accuracy": {"source": 0.785, "stage41_md": 0.785, "stage41_json": 0.785, "consistent": true},
+      "original_macro_f1": {"source": 0.2832, "stage41_md": 0.2832, "stage41_json": 0.2832, "consistent": true},
+      "composed_macro_f1": {"source": 0.7202, "stage41_md": 0.7202, "stage41_json": 0.7202, "consistent": true},
+      "changed_rows": {"source": 169, "stage41_md": 169, "stage41_json": 169, "consistent": true},
+      "changed_to_SUPPORT": {"source": 150, "stage41_md": 150, "stage41_json": 150, "consistent": true},
+      "changed_to_REFUTE": {"source": 19, "stage41_md": 19, "stage41_json": 19, "consistent": true},
+      "residual_support_to_refute": {"source": 7, "stage41_md": 7, "stage41_json": 7, "consistent": true},
+      "introduced_unsafe_SUPPORT": {"source": 0, "stage41_md": 0, "stage41_json": 0, "consistent": true},
+      "introduced_REFUTE_to_SUPPORT": {"source": 0, "stage41_md": 0, "stage41_json": 0, "consistent": true},
+      "introduced_SUPPORT_to_REFUTE": {"source": 0, "stage41_md": 0, "stage41_json": 0, "consistent": true},
+      "source_verified": true,
+      "source_file": "reports/stage39c_safe_structured_v2_stage35_report.json"
+    },
+    "stage40a": {
+      "decision": {"source": "STAGE40A_FINAL_COMPOSER_REGRESSION_PASS", "stage41_md": "STAGE40A_FINAL_COMPOSER_REGRESSION_PASS", "stage41_json": "STAGE40A_FINAL_COMPOSER_REGRESSION_PASS", "consistent": true},
+      "pass_flags": {
+        "default_off_policy_ok": {"source": true, "stage41_json": true, "consistent": true},
+        "dev_noop_pass": {"source": true, "stage41_json": true, "consistent": true},
+        "integrated_pass": {"source": true, "stage41_json": true, "consistent": true},
+        "introduced_safety_pass": {"source": true, "stage41_json": true, "consistent": true},
+        "stage34_final_composer_pass": {"source": true, "stage41_json": true, "consistent": true},
+        "stage35_final_composer_pass": {"source": true, "stage41_json": true, "consistent": true}
+      },
+      "aggregate_introduced_unsafe_SUPPORT_total": {"source": 0, "stage41_md": 0, "stage41_json": 0, "consistent": true},
+      "aggregate_introduced_refute_to_SUPPORT": {"source": 0, "stage41_md": 0, "stage41_json": 0, "consistent": true},
+      "aggregate_introduced_support_to_REFUTE": {"source": 0, "stage41_md": 0, "stage41_json": 0, "consistent": true},
+      "source_verified": true,
+      "source_files": [
+        "reports/stage40a_final_composer_regression_audit.json",
+        "reports/stage40a_final_composer_regression_audit.md"
+      ]
+    },
+    "dev_residual_support_to_refute_note": {
+      "source": 46,
+      "stage41_md": 46,
+      "consistent": true,
+      "note": "Confirmed against reports/stage39c_safe_structured_v2_dev_report.json safety_counters.support_to_refute = 46. This is a residual (pre-existing) error, not a Stage39-introduced error; introduced_support_to_REFUTE for dev is 0."
+    },
+    "contradictions_found": false
+  },
+  "claim_consistency": {
+    "allowed_claims_present": {
+      "Stage33-F established a structured coverage shadow owner": true,
+      "Stage36/37 separate safety blocking from safe recovery": true,
+      "Stage39-C safe_structured_v2 is safe as an explicit opt-in final-prediction replacement under the evaluated profiles": true,
+      "Stage40-A confirms zero Stage39-C-introduced unsafe SUPPORT / REFUTE-to-SUPPORT / SUPPORT-to-REFUTE errors across dev/Stage34/Stage35": true,
+      "Default behavior remains off": true,
+      "Stage34/35 are diagnostic/probe-style evaluations": true
+    },
+    "forbidden_claims_found": {
+      "production robustness": false,
+      "broad naturalistic NLI robustness": false,
+      "composer should be enabled by default": false,
+      "learned neural understanding of coverage semantics": false,
+      "Stage34/35 as independent real-world benchmarks": false,
+      "zero total model errors": false,
+      "zero residual errors": false,
+      "zero hallucination": false,
+      "general solution to entailment/coverage reasoning": false
+    },
+    "result": "no forbidden claims found; all allowed claims present, now source-verified rather than reference-only"
+  },
+  "boundary_consistency": {
+    "shadow_diagnostic_owner_vs_final_composer": {"clearly_distinguished": true, "evidence": "Executive summary and main result table separate Stage33/36/37/38 (shadow, diagnostic only) from Stage39/40 (final composer)"},
+    "explicit_opt_in_vs_default_off": {"clearly_distinguished": true, "evidence": "Allowed claims and final interpretation both state composer remains disabled by default; confirmed by Stage40-A default_off_policy_check.policy_confirmed=true in the recovered source report"},
+    "residual_vs_introduced_errors": {"clearly_distinguished": true, "evidence": "Limitations and composer-table note separate residual model errors (dev support_to_refute=46, Stage35 support_to_refute=7) from composer-introduced errors (0 in all cases); both figures now confirmed against recovered source reports' safety_counters/residual_errors sections"},
+    "synthetic_probe_vs_naturalistic_validation": {"clearly_distinguished": true, "evidence": "Limitations state Stage34/35 are synthetic/probe-style; final recommendation calls for external/naturalistic validation; Stage40-A recommendation text independently repeats this requirement"},
+    "result": "no boundary violations found"
+  },
+  "table_consistency": {
+    "final_composer_table_has_required_rows": true,
+    "rows_present": ["support_only", "safe_structured", "safe_structured_v2", "Stage40 integrated audit"],
+    "row_values_match_source": true,
+    "residual_vs_introduced_confusion": false,
+    "implies_default_on_behavior": false,
+    "result": "table audit passes; all Stage34/Stage35 macro-F1, changed-row, and introduced-error values in stage41a_final_composer_table.md match the recovered Stage39-C and Stage40-A source reports exactly"
+  },
+  "artifact_index": [
+    {
+      "artifact": "Stage39-C dev report",
+      "file_path": "reports/stage39c_safe_structured_v2_dev_report.json / .md",
+      "purpose": "Source evaluation of safe_structured_v2 composer on the dev split (no-op safety check)",
+      "evidence_type": "source evidence",
+      "citable": true,
+      "citable_note": "now present and read directly for this audit",
+      "leakage_warning": "Dev is the model's own held-out evaluation split; must not be reused for further training/calibration of the composer."
+    },
+    {
+      "artifact": "Stage39-C Stage34 report",
+      "file_path": "reports/stage39c_safe_structured_v2_stage34_report.json / .md",
+      "purpose": "Source evaluation of safe_structured_v2 composer on the Stage34 held-out probe",
+      "evidence_type": "source evidence",
+      "citable": true,
+      "citable_note": "now present and read directly for this audit",
+      "leakage_warning": "Stage34 is a synthetic/probe diagnostic set; must remain diagnostic-only, not used for training, calibration, threshold selection, checkpoint selection, or loss design."
+    },
+    {
+      "artifact": "Stage39-C Stage35 report",
+      "file_path": "reports/stage39c_safe_structured_v2_stage35_report.json / .md",
+      "purpose": "Source evaluation of safe_structured_v2 composer on the Stage35 adversarial probe",
+      "evidence_type": "source evidence",
+      "citable": true,
+      "citable_note": "now present and read directly for this audit",
+      "leakage_warning": "Stage35 is a synthetic/probe adversarial set; must remain diagnostic-only, not used for training, calibration, threshold selection, checkpoint selection, or loss design."
+    },
+    {
+      "artifact": "Stage40-A integrated audit",
+      "file_path": "reports/stage40a_final_composer_regression_audit.json / .md",
+      "purpose": "Integrated regression audit aggregating dev/Stage34/Stage35 Stage39-C reports; confirms zero introduced unsafe transitions and default-off policy",
+      "evidence_type": "source evidence (aggregation of the three Stage39-C reports)",
+      "citable": true,
+      "citable_note": "now present and read directly for this audit",
+      "leakage_warning": "Audit-only, not a training signal; reads existing reports without running training/evaluation/Kaggle."
+    },
+    {
+      "artifact": "Stage41-A paper-ready freeze",
+      "file_path": "reports/stage41a_paper_ready_result_freeze.md / .json",
+      "purpose": "Consolidated, paper-ready narrative and tables summarizing Stage33-40 results",
+      "evidence_type": "derived summary",
+      "citable": true,
+      "citable_note": "citable; numbers now independently source-verified against the recovered Stage39-C/Stage40-A reports (this audit)",
+      "leakage_warning": "Reporting-only; must not be used for training, calibration, threshold selection, checkpoint selection, or loss design."
+    },
+    {
+      "artifact": "Stage41-A final composer table",
+      "file_path": "reports/stage41a_final_composer_table.md",
+      "purpose": "Standalone comparison table of support_only / safe_structured / safe_structured_v2 / Stage40 audit",
+      "evidence_type": "derived summary",
+      "citable": true,
+      "citable_note": "citable; row values source-verified in this audit",
+      "leakage_warning": "Reporting-only; same restriction as above."
+    },
+    {
+      "artifact": "Stage42-A incomplete audit",
+      "file_path": "reports/stage42a_paper_claim_consistency_audit.md / .json",
+      "purpose": "Prior audit attempt that flagged the Stage39-C/Stage40-A source reports as missing and returned an INCOMPLETE decision; documents the completeness gap this Stage42-B audit resolves",
+      "evidence_type": "derived summary (audit of derived summaries; superseded on the completeness question by Stage42-B)",
+      "citable": true,
+      "citable_note": "citable as historical record of the provenance gap; superseded for verification purposes by Stage42-B",
+      "leakage_warning": "Reporting/audit-only; Stage41/42 documents are derived summaries, not new experimental evidence."
+    },
+    {
+      "artifact": "Stage42-B source-recovered consistency audit",
+      "file_path": "reports/stage42b_source_recovered_claim_consistency_audit.md / .json",
+      "purpose": "Re-runs the Stage42-A checklist now that Stage39-C and Stage40-A source reports are committed; independently verifies Stage41-A numbers, claims, boundaries, and table against on-disk source reports",
+      "evidence_type": "derived summary (audit of derived summaries, cross-checked against source evidence)",
+      "citable": true,
+      "citable_note": "citable as the current authoritative consistency audit for Stage41-A claims",
+      "leakage_warning": "Reporting/audit-only; must not be used for training, calibration, threshold selection, checkpoint selection, or loss design."
+    }
+  ],
+  "issues": [],
+  "warnings": [
+    "Stage41-A's dev residual support_to_refute = 46 figure is not part of the task-supplied 'required source values' checklist, but is independently confirmed against reports/stage39c_safe_structured_v2_dev_report.json safety_counters.support_to_refute = 46, matching Stage41-A's limitations-section figure exactly."
+  ],
+  "recommendation": "Stage42-A's incomplete provenance gap has been resolved by committing the Stage39-C and Stage40-A source reports. Stage41-A's frozen result claims are now traceable to committed source artifacts. Proceed to external/naturalistic validation before making broader model-level claims.",
+  "leakage_policy": {
+    "reporting_only": true,
+    "description": "This is reporting/audit only. Do not use Stage34/35 probes or derived reports for training, calibration, threshold selection, checkpoint selection, or loss design. Stage41/42 documents are derived summaries, not new experimental evidence."
+  }
+}
