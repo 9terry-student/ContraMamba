@@ -1,0 +1,470 @@
+{
+  "baseline_comparison": null,
+  "baseline_predictions_file": null,
+  "change_counts": {
+    "NOT_ENTITLED_to_SUPPORT_count": 150,
+    "REFUTE_to_SUPPORT_count": 0,
+    "SUPPORT_to_NOT_ENTITLED_count": 0,
+    "SUPPORT_to_REFUTE_count": 0,
+    "changed_row_count": 169,
+    "changed_row_rate": 0.2817,
+    "changed_to_NOT_ENTITLED_count": 0,
+    "changed_to_REFUTE_count": 19,
+    "changed_to_SUPPORT_count": 150
+  },
+  "composed_metrics": {
+    "accuracy": 0.785,
+    "macro_f1": 0.7202,
+    "n": 600,
+    "per_class": {
+      "NOT_ENTITLED": {
+        "f1": 0.8291,
+        "precision": 0.715,
+        "recall": 0.9867,
+        "support": 300
+      },
+      "REFUTE": {
+        "f1": 0.5814,
+        "precision": 0.6944,
+        "recall": 0.5,
+        "support": 50
+      },
+      "SUPPORT": {
+        "f1": 0.75,
+        "precision": 1.0,
+        "recall": 0.6,
+        "support": 250
+      }
+    },
+    "prediction_counts": {
+      "NOT_ENTITLED": 414,
+      "REFUTE": 36,
+      "SUPPORT": 150
+    }
+  },
+  "decision": {
+    "label": "STAGE39C_SAFE_STRUCTURED_V2_PASS",
+    "reason": "Stage35 composed/exported macro-F1 >=0.70, accuracy >=0.75, >=140 rows recovered to SUPPORT, and Stage39 introduced no unsafe SUPPORT or SUPPORT<->REFUTE transitions."
+  },
+  "delta": {
+    "composed_minus_original_accuracy": 0.2817,
+    "composed_minus_original_macro_f1": 0.437,
+    "exported_minus_original_accuracy": 0.2817,
+    "exported_minus_original_macro_f1": 0.437
+  },
+  "expected_split": "stage35",
+  "exported_metrics": {
+    "accuracy": 0.785,
+    "macro_f1": 0.7202,
+    "n": 600,
+    "per_class": {
+      "NOT_ENTITLED": {
+        "f1": 0.8291,
+        "precision": 0.715,
+        "recall": 0.9867,
+        "support": 300
+      },
+      "REFUTE": {
+        "f1": 0.5814,
+        "precision": 0.6944,
+        "recall": 0.5,
+        "support": 50
+      },
+      "SUPPORT": {
+        "f1": 0.75,
+        "precision": 1.0,
+        "recall": 0.6,
+        "support": 250
+      }
+    },
+    "prediction_counts": {
+      "NOT_ENTITLED": 414,
+      "REFUTE": 36,
+      "SUPPORT": 150
+    }
+  },
+  "first_changed_rows": [
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_verb_diverse_02"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_verb_diverse_03"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_verb_diverse_04"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_verb_diverse_06"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_verb_diverse_08"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_verb_diverse_09"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_verb_diverse_10"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_verb_diverse_12"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_verb_diverse_14"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_verb_diverse_15"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_verb_diverse_16"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_verb_diverse_18"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_verb_diverse_20"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_verb_diverse_21"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_verb_diverse_22"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_verb_diverse_24"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_fronted_modifier_00"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_fronted_modifier_04"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_fronted_modifier_06"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_fronted_modifier_12"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_fronted_modifier_16"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_fronted_modifier_18"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_fronted_modifier_22"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_fronted_modifier_24"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_postnominal_modifier_00"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_postnominal_modifier_02"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_postnominal_modifier_03"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_postnominal_modifier_04"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_postnominal_modifier_06"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage35a_adv_whole_to_part_support_postnominal_modifier_08"
+    }
+  ],
+  "first_introduced_unsafe_rows": [],
+  "first_unsafe_rows": [
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "blocked_by_refute_to_support_guard",
+      "composer_reason": "refute_to_support_guard_active",
+      "gold": "SUPPORT",
+      "group": "adv_whole_to_part_support_verb_diverse",
+      "original_final_label": "REFUTE",
+      "row_id": "stage35a_adv_whole_to_part_support_verb_diverse_00"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "blocked_by_refute_to_support_guard",
+      "composer_reason": "refute_to_support_guard_active",
+      "gold": "SUPPORT",
+      "group": "adv_whole_to_part_support_fronted_modifier",
+      "original_final_label": "REFUTE",
+      "row_id": "stage35a_adv_whole_to_part_support_fronted_modifier_10"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "blocked_by_refute_to_support_guard",
+      "composer_reason": "refute_to_support_guard_active",
+      "gold": "SUPPORT",
+      "group": "adv_whole_to_part_support_sentence_order_flip",
+      "original_final_label": "REFUTE",
+      "row_id": "stage35a_adv_whole_to_part_support_sentence_order_flip_00"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "adv_no_except_subset_support",
+      "original_final_label": "REFUTE",
+      "row_id": "stage35a_adv_no_except_subset_support_20"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "adv_coordination_support",
+      "original_final_label": "REFUTE",
+      "row_id": "stage35a_adv_coordination_support_00"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "adv_coordination_support",
+      "original_final_label": "REFUTE",
+      "row_id": "stage35a_adv_coordination_support_02"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "adv_numeric_subset_support",
+      "original_final_label": "REFUTE",
+      "row_id": "stage35a_adv_numeric_subset_support_10"
+    }
+  ],
+  "introduced_safety_counters": {
+    "introduced_exception_to_SUPPORT_error": 0,
+    "introduced_location_scope_to_SUPPORT_error": 0,
+    "introduced_overclaim_to_SUPPORT": 0,
+    "introduced_refute_to_SUPPORT": 0,
+    "introduced_support_to_REFUTE": 0,
+    "introduced_temporal_scope_to_SUPPORT_error": 0,
+    "introduced_unsafe_SUPPORT_total": 0
+  },
+  "leakage_policy": "Diagnostic-only. Do not use for training, calibration, threshold selection, loss, checkpoint selection, or Kaggle selection.",
+  "original_metrics": {
+    "accuracy": 0.5033,
+    "macro_f1": 0.2832,
+    "n": 600,
+    "per_class": {
+      "NOT_ENTITLED": {
+        "f1": 0.6704,
+        "precision": 0.5077,
+        "recall": 0.9867,
+        "support": 300
+      },
+      "REFUTE": {
+        "f1": 0.1791,
+        "precision": 0.3529,
+        "recall": 0.12,
+        "support": 50
+      },
+      "SUPPORT": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "support": 250
+      }
+    },
+    "prediction_counts": {
+      "NOT_ENTITLED": 583,
+      "REFUTE": 17
+    }
+  },
+  "predictions_file": "outputs/stage39c_safe_structured_v2_stage35_1epoch/external_stage35/external_probe_stage35_adversarial_coverage_predictions.json",
+  "probe_name": "stage35_adversarial_coverage",
+  "recommendation": "The Stage39 opt-in final composer is safe to use as an explicit final-prediction replacement under the evaluated policy/profile. It remains off by default; enabling it in production requires an explicit --stage39-use-final-composer-opt-in (and, to replace predictions, --stage39-final-composer-output-mode replace_pred_final_label) decision outside this script.",
+  "row_count": 600,
+  "run_name": "stage39c_safe_structured_v2_stage35",
+  "safety_counters": {
+    "exception_to_SUPPORT_error": 0,
+    "location_scope_to_SUPPORT_error": 0,
+    "overclaim_to_SUPPORT": 0,
+    "refute_to_SUPPORT": 0,
+    "support_to_refute": 7,
+    "temporal_scope_to_SUPPORT_error": 0
+  },
+  "safety_profile": "stage35",
+  "stage39_behavior_counters": {
+    "stage39_blocked_by_refute_to_support_guard_count": 3,
+    "stage39_blocked_by_stage36_count": 0,
+    "stage39_blocked_by_stage37_from_refute_guard_count": 0,
+    "stage39_changed_count": 169,
+    "stage39_composer_action_counts": {
+      "blocked_by_refute_to_support_guard": 3,
+      "composed_to_refute": 19,
+      "composed_to_support": 150,
+      "no_change": 428
+    },
+    "stage39_composer_reason_counts": {
+      "refute_to_support_guard_active": 3,
+      "safe_structured_v2_high_precision_contradiction": 19,
+      "safe_structured_v2_no_qualifying_transition": 428,
+      "support_only_from_stage37": 150
+    },
+    "stage39_enabled_count": 600,
+    "stage39_missing_source_count": 0,
+    "stage39_not_entitled_composed_count": 0,
+    "stage39_refute_composed_count": 19,
+    "stage39_support_composed_count": 150
+  }
+}

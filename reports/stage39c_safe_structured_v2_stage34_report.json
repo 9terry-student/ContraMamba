@@ -1,0 +1,403 @@
+{
+  "baseline_comparison": null,
+  "baseline_predictions_file": null,
+  "change_counts": {
+    "NOT_ENTITLED_to_SUPPORT_count": 164,
+    "REFUTE_to_SUPPORT_count": 0,
+    "SUPPORT_to_NOT_ENTITLED_count": 0,
+    "SUPPORT_to_REFUTE_count": 0,
+    "changed_row_count": 204,
+    "changed_row_rate": 0.51,
+    "changed_to_NOT_ENTITLED_count": 0,
+    "changed_to_REFUTE_count": 40,
+    "changed_to_SUPPORT_count": 164
+  },
+  "composed_metrics": {
+    "accuracy": 0.96,
+    "macro_f1": 0.9703,
+    "n": 400,
+    "per_class": {
+      "NOT_ENTITLED": {
+        "f1": 0.9574,
+        "precision": 0.9184,
+        "recall": 1.0,
+        "support": 180
+      },
+      "REFUTE": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "support": 40
+      },
+      "SUPPORT": {
+        "f1": 0.9535,
+        "precision": 1.0,
+        "recall": 0.9111,
+        "support": 180
+      }
+    },
+    "prediction_counts": {
+      "NOT_ENTITLED": 196,
+      "REFUTE": 40,
+      "SUPPORT": 164
+    }
+  },
+  "decision": {
+    "label": "STAGE39C_SAFE_STRUCTURED_V2_PASS",
+    "reason": "Stage34 composed/exported macro-F1 and accuracy both meet the >=0.90 target, Stage39 introduced no unsafe SUPPORT or SUPPORT<->REFUTE transitions, and at least one row was changed by composition."
+  },
+  "delta": {
+    "composed_minus_original_accuracy": 0.51,
+    "composed_minus_original_macro_f1": 0.7634,
+    "exported_minus_original_accuracy": 0.51,
+    "exported_minus_original_macro_f1": 0.7634
+  },
+  "expected_split": "stage34",
+  "exported_metrics": {
+    "accuracy": 0.96,
+    "macro_f1": 0.9703,
+    "n": 400,
+    "per_class": {
+      "NOT_ENTITLED": {
+        "f1": 0.9574,
+        "precision": 0.9184,
+        "recall": 1.0,
+        "support": 180
+      },
+      "REFUTE": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "support": 40
+      },
+      "SUPPORT": {
+        "f1": 0.9535,
+        "precision": 1.0,
+        "recall": 0.9111,
+        "support": 180
+      }
+    },
+    "prediction_counts": {
+      "NOT_ENTITLED": 196,
+      "REFUTE": 40,
+      "SUPPORT": 164
+    }
+  },
+  "first_changed_rows": [
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_all_to_some_support_00"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_all_to_some_support_01"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_all_to_some_support_02"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_all_to_some_support_03"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_all_to_some_support_04"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_all_to_some_support_05"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_all_to_some_support_06"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_all_to_some_support_07"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_all_to_some_support_08"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_all_to_some_support_09"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_all_to_some_support_10"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_all_to_some_support_11"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_all_to_some_support_12"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_all_to_some_support_13"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_all_to_some_support_14"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_all_to_some_support_15"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_all_to_some_support_16"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_all_to_some_support_17"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_all_to_some_support_18"
+    },
+    {
+      "composed_final_label": "SUPPORT",
+      "composer_action": "composed_to_support",
+      "composer_reason": "support_only_from_stage37",
+      "gold": "SUPPORT",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_all_to_some_support_19"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "composed_to_refute",
+      "composer_reason": "safe_structured_v2_high_precision_contradiction",
+      "gold": "REFUTE",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_none_to_some_refute_00"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "composed_to_refute",
+      "composer_reason": "safe_structured_v2_high_precision_contradiction",
+      "gold": "REFUTE",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_none_to_some_refute_01"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "composed_to_refute",
+      "composer_reason": "safe_structured_v2_high_precision_contradiction",
+      "gold": "REFUTE",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_none_to_some_refute_02"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "composed_to_refute",
+      "composer_reason": "safe_structured_v2_high_precision_contradiction",
+      "gold": "REFUTE",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_none_to_some_refute_03"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "composed_to_refute",
+      "composer_reason": "safe_structured_v2_high_precision_contradiction",
+      "gold": "REFUTE",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_none_to_some_refute_04"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "composed_to_refute",
+      "composer_reason": "safe_structured_v2_high_precision_contradiction",
+      "gold": "REFUTE",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_none_to_some_refute_05"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "composed_to_refute",
+      "composer_reason": "safe_structured_v2_high_precision_contradiction",
+      "gold": "REFUTE",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_none_to_some_refute_06"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "composed_to_refute",
+      "composer_reason": "safe_structured_v2_high_precision_contradiction",
+      "gold": "REFUTE",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_none_to_some_refute_07"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "composed_to_refute",
+      "composer_reason": "safe_structured_v2_high_precision_contradiction",
+      "gold": "REFUTE",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_none_to_some_refute_08"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "composed_to_refute",
+      "composer_reason": "safe_structured_v2_high_precision_contradiction",
+      "gold": "REFUTE",
+      "original_final_label": "NOT_ENTITLED",
+      "row_id": "stage34a_heldout_none_to_some_refute_09"
+    }
+  ],
+  "first_introduced_unsafe_rows": [],
+  "first_unsafe_rows": [],
+  "introduced_safety_counters": {
+    "introduced_exception_to_SUPPORT_error": 0,
+    "introduced_location_scope_to_SUPPORT_error": 0,
+    "introduced_overclaim_to_SUPPORT": 0,
+    "introduced_refute_to_SUPPORT": 0,
+    "introduced_support_to_REFUTE": 0,
+    "introduced_temporal_scope_to_SUPPORT_error": 0,
+    "introduced_unsafe_SUPPORT_total": 0
+  },
+  "leakage_policy": "Diagnostic-only. Do not use for training, calibration, threshold selection, loss, checkpoint selection, or Kaggle selection.",
+  "original_metrics": {
+    "accuracy": 0.45,
+    "macro_f1": 0.2069,
+    "n": 400,
+    "per_class": {
+      "NOT_ENTITLED": {
+        "f1": 0.6207,
+        "precision": 0.45,
+        "recall": 1.0,
+        "support": 180
+      },
+      "REFUTE": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "support": 40
+      },
+      "SUPPORT": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "support": 180
+      }
+    },
+    "prediction_counts": {
+      "NOT_ENTITLED": 400
+    }
+  },
+  "predictions_file": "outputs/stage39c_safe_structured_v2_stage34_1epoch/external_stage34/external_probe_stage34_heldout_coverage_predictions.json",
+  "probe_name": "stage34_heldout_coverage",
+  "recommendation": "The Stage39 opt-in final composer is safe to use as an explicit final-prediction replacement under the evaluated policy/profile. It remains off by default; enabling it in production requires an explicit --stage39-use-final-composer-opt-in (and, to replace predictions, --stage39-final-composer-output-mode replace_pred_final_label) decision outside this script.",
+  "row_count": 400,
+  "run_name": "stage39c_safe_structured_v2_stage34",
+  "safety_counters": {
+    "exception_to_SUPPORT_error": 0,
+    "location_scope_to_SUPPORT_error": 0,
+    "overclaim_to_SUPPORT": 0,
+    "refute_to_SUPPORT": 0,
+    "support_to_refute": 0,
+    "temporal_scope_to_SUPPORT_error": 0
+  },
+  "safety_profile": "stage34",
+  "stage39_behavior_counters": {
+    "stage39_blocked_by_refute_to_support_guard_count": 0,
+    "stage39_blocked_by_stage36_count": 0,
+    "stage39_blocked_by_stage37_from_refute_guard_count": 0,
+    "stage39_changed_count": 204,
+    "stage39_composer_action_counts": {
+      "composed_to_refute": 40,
+      "composed_to_support": 164,
+      "no_change": 196
+    },
+    "stage39_composer_reason_counts": {
+      "safe_structured_v2_high_precision_contradiction": 40,
+      "safe_structured_v2_no_qualifying_transition": 196,
+      "support_only_from_stage37": 164
+    },
+    "stage39_enabled_count": 400,
+    "stage39_missing_source_count": 0,
+    "stage39_not_entitled_composed_count": 0,
+    "stage39_refute_composed_count": 40,
+    "stage39_support_composed_count": 164
+  }
+}

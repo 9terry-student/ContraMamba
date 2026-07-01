@@ -1,0 +1,428 @@
+{
+  "baseline_comparison": null,
+  "baseline_predictions_file": null,
+  "change_counts": {
+    "NOT_ENTITLED_to_SUPPORT_count": 0,
+    "REFUTE_to_SUPPORT_count": 0,
+    "SUPPORT_to_NOT_ENTITLED_count": 0,
+    "SUPPORT_to_REFUTE_count": 0,
+    "changed_row_count": 0,
+    "changed_row_rate": 0.0,
+    "changed_to_NOT_ENTITLED_count": 0,
+    "changed_to_REFUTE_count": 0,
+    "changed_to_SUPPORT_count": 0
+  },
+  "composed_metrics": {
+    "accuracy": 0.5611,
+    "macro_f1": 0.3617,
+    "n": 720,
+    "per_class": {
+      "NOT_ENTITLED": {
+        "f1": 0.7033,
+        "precision": 0.8649,
+        "recall": 0.5926,
+        "support": 540
+      },
+      "REFUTE": {
+        "f1": 0.3818,
+        "precision": 0.24,
+        "recall": 0.9333,
+        "support": 90
+      },
+      "SUPPORT": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "support": 90
+      }
+    },
+    "prediction_counts": {
+      "NOT_ENTITLED": 370,
+      "REFUTE": 350
+    }
+  },
+  "decision": {
+    "label": "STAGE39A_FINAL_COMPOSER_TOO_WEAK",
+    "reason": "safety_profile=dev: no row's final label was changed by composition, so there is nothing to validate for a production replace_pred_final_label decision yet."
+  },
+  "delta": {
+    "composed_minus_original_accuracy": 0.0,
+    "composed_minus_original_macro_f1": 0.0,
+    "exported_minus_original_accuracy": 0.0,
+    "exported_minus_original_macro_f1": 0.0
+  },
+  "expected_split": "dev",
+  "exported_metrics": {
+    "accuracy": 0.5611,
+    "macro_f1": 0.3617,
+    "n": 720,
+    "per_class": {
+      "NOT_ENTITLED": {
+        "f1": 0.7033,
+        "precision": 0.8649,
+        "recall": 0.5926,
+        "support": 540
+      },
+      "REFUTE": {
+        "f1": 0.3818,
+        "precision": 0.24,
+        "recall": 0.9333,
+        "support": 90
+      },
+      "SUPPORT": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "support": 90
+      }
+    },
+    "prediction_counts": {
+      "NOT_ENTITLED": 370,
+      "REFUTE": 350
+    }
+  },
+  "first_changed_rows": [],
+  "first_introduced_unsafe_rows": [],
+  "first_unsafe_rows": [
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "none",
+      "original_final_label": "REFUTE",
+      "row_id": "library_digitization__none"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "paraphrase",
+      "original_final_label": "REFUTE",
+      "row_id": "library_digitization__paraphrase"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "none",
+      "original_final_label": "REFUTE",
+      "row_id": "glacier_study__none"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "none",
+      "original_final_label": "REFUTE",
+      "row_id": "language_program__none"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "paraphrase",
+      "original_final_label": "REFUTE",
+      "row_id": "language_program__paraphrase"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "paraphrase",
+      "original_final_label": "REFUTE",
+      "row_id": "volcano_observatory__paraphrase"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "none",
+      "original_final_label": "REFUTE",
+      "row_id": "generated_fact_034__none"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "paraphrase",
+      "original_final_label": "REFUTE",
+      "row_id": "generated_fact_034__paraphrase"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "paraphrase",
+      "original_final_label": "REFUTE",
+      "row_id": "generated_fact_051__paraphrase"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "none",
+      "original_final_label": "REFUTE",
+      "row_id": "generated_fact_052__none"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "paraphrase",
+      "original_final_label": "REFUTE",
+      "row_id": "generated_fact_052__paraphrase"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "paraphrase",
+      "original_final_label": "REFUTE",
+      "row_id": "generated_fact_057__paraphrase"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "none",
+      "original_final_label": "REFUTE",
+      "row_id": "generated_fact_058__none"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "paraphrase",
+      "original_final_label": "REFUTE",
+      "row_id": "generated_fact_058__paraphrase"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "none",
+      "original_final_label": "REFUTE",
+      "row_id": "generated_fact_064__none"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "paraphrase",
+      "original_final_label": "REFUTE",
+      "row_id": "generated_fact_064__paraphrase"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "none",
+      "original_final_label": "REFUTE",
+      "row_id": "generated_fact_078__none"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "paraphrase",
+      "original_final_label": "REFUTE",
+      "row_id": "generated_fact_078__paraphrase"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "paraphrase",
+      "original_final_label": "REFUTE",
+      "row_id": "generated_fact_097__paraphrase"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "paraphrase",
+      "original_final_label": "REFUTE",
+      "row_id": "generated_fact_098__paraphrase"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "none",
+      "original_final_label": "REFUTE",
+      "row_id": "generated_fact_108__none"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "paraphrase",
+      "original_final_label": "REFUTE",
+      "row_id": "generated_fact_108__paraphrase"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "none",
+      "original_final_label": "REFUTE",
+      "row_id": "generated_fact_114__none"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "paraphrase",
+      "original_final_label": "REFUTE",
+      "row_id": "generated_fact_114__paraphrase"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "none",
+      "original_final_label": "REFUTE",
+      "row_id": "generated_fact_118__none"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "paraphrase",
+      "original_final_label": "REFUTE",
+      "row_id": "generated_fact_118__paraphrase"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "none",
+      "original_final_label": "REFUTE",
+      "row_id": "generated_fact_124__none"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "paraphrase",
+      "original_final_label": "REFUTE",
+      "row_id": "generated_fact_124__paraphrase"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "none",
+      "original_final_label": "REFUTE",
+      "row_id": "generated_fact_126__none"
+    },
+    {
+      "composed_final_label": "REFUTE",
+      "composer_action": "no_change",
+      "composer_reason": "safe_structured_v2_no_qualifying_transition",
+      "gold": "SUPPORT",
+      "group": "paraphrase",
+      "original_final_label": "REFUTE",
+      "row_id": "generated_fact_126__paraphrase"
+    }
+  ],
+  "introduced_safety_counters": {
+    "introduced_exception_to_SUPPORT_error": 0,
+    "introduced_location_scope_to_SUPPORT_error": 0,
+    "introduced_overclaim_to_SUPPORT": 0,
+    "introduced_refute_to_SUPPORT": 0,
+    "introduced_support_to_REFUTE": 0,
+    "introduced_temporal_scope_to_SUPPORT_error": 0,
+    "introduced_unsafe_SUPPORT_total": 0
+  },
+  "leakage_policy": "Diagnostic-only. Do not use for training, calibration, threshold selection, loss, checkpoint selection, or Kaggle selection.",
+  "original_metrics": {
+    "accuracy": 0.5611,
+    "macro_f1": 0.3617,
+    "n": 720,
+    "per_class": {
+      "NOT_ENTITLED": {
+        "f1": 0.7033,
+        "precision": 0.8649,
+        "recall": 0.5926,
+        "support": 540
+      },
+      "REFUTE": {
+        "f1": 0.3818,
+        "precision": 0.24,
+        "recall": 0.9333,
+        "support": 90
+      },
+      "SUPPORT": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "support": 90
+      }
+    },
+    "prediction_counts": {
+      "NOT_ENTITLED": 370,
+      "REFUTE": 350
+    }
+  },
+  "predictions_file": "outputs/stage39c_safe_structured_v2_stage35_1epoch/dev_predictions.json",
+  "probe_name": "clean_dev",
+  "recommendation": "Composition is safe but did not change any row; there is no benefit yet to justify enabling replace_pred_final_label.",
+  "row_count": 720,
+  "run_name": "stage39c_safe_structured_v2_dev",
+  "safety_counters": {
+    "exception_to_SUPPORT_error": 0,
+    "location_scope_to_SUPPORT_error": 0,
+    "overclaim_to_SUPPORT": 0,
+    "refute_to_SUPPORT": 0,
+    "support_to_refute": 46,
+    "temporal_scope_to_SUPPORT_error": 0
+  },
+  "safety_profile": "dev",
+  "stage39_behavior_counters": {
+    "stage39_blocked_by_refute_to_support_guard_count": 0,
+    "stage39_blocked_by_stage36_count": 0,
+    "stage39_blocked_by_stage37_from_refute_guard_count": 0,
+    "stage39_changed_count": 0,
+    "stage39_composer_action_counts": {
+      "no_change": 720
+    },
+    "stage39_composer_reason_counts": {
+      "safe_structured_v2_no_qualifying_transition": 720
+    },
+    "stage39_enabled_count": 720,
+    "stage39_missing_source_count": 0,
+    "stage39_not_entitled_composed_count": 0,
+    "stage39_refute_composed_count": 0,
+    "stage39_support_composed_count": 0
+  }
+}

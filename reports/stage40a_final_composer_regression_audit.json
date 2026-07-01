@@ -1,0 +1,179 @@
+{
+  "decision": {
+    "label": "STAGE40A_FINAL_COMPOSER_REGRESSION_PASS",
+    "reason": "Dev no-op check passes (or is explicitly allowed), Stage34 and Stage35 final composer checks both pass, and aggregate introduced unsafe SUPPORT / REFUTE<->SUPPORT counters are all zero."
+  },
+  "input_files": {
+    "dev_predictions": null,
+    "dev_report": "reports/stage39c_safe_structured_v2_dev_report.json",
+    "stage34_predictions": null,
+    "stage34_report": "reports/stage39c_safe_structured_v2_stage34_report.json",
+    "stage35_predictions": null,
+    "stage35_report": "reports/stage39c_safe_structured_v2_stage35_report.json"
+  },
+  "key_metrics": {
+    "aggregate_introduced_refute_to_SUPPORT": 0,
+    "aggregate_introduced_support_to_REFUTE": 0,
+    "aggregate_introduced_unsafe_SUPPORT_total": 0,
+    "dev_changed_row_count": 0,
+    "stage34_changed_to_REFUTE_count": 40,
+    "stage34_changed_to_SUPPORT_count": 164,
+    "stage34_composed_accuracy": 0.96,
+    "stage34_composed_macro_f1": 0.9703,
+    "stage35_changed_to_REFUTE_count": 19,
+    "stage35_changed_to_SUPPORT_count": 150,
+    "stage35_composed_accuracy": 0.785,
+    "stage35_composed_macro_f1": 0.7202
+  },
+  "leakage_policy": "Diagnostic/aggregation-only. This audit reads existing Stage39-C reports; it does not run training, evaluation, or Kaggle, and must not be used for training, calibration, threshold selection, checkpoint selection, or loss design.",
+  "missing_inputs": [],
+  "missing_report_keys": {
+    "dev": [],
+    "stage34": [],
+    "stage35": []
+  },
+  "pass_flags": {
+    "default_off_policy_ok": true,
+    "dev_noop_pass": true,
+    "integrated_pass": true,
+    "introduced_safety_pass": true,
+    "stage34_final_composer_pass": true,
+    "stage35_final_composer_pass": true
+  },
+  "recommendation": "Stage39-C safe_structured_v2 is safe as an explicit opt-in final-prediction replacement under the evaluated profiles. It must remain off by default. The probes/reports used here must not be used for training, calibration, threshold selection, checkpoint selection, or loss design. Further external/naturalistic validation is still required before claiming broad production robustness.",
+  "run_name": "stage40a_final_composer_regression_audit",
+  "sections": {
+    "default_off_policy_check": {
+      "note": "This audit only reads Stage39-C evaluator reports; it does not invoke or compare against a default-off run. Default-off behavior must be confirmed at the training-script flag level: Stage39 requires explicit --stage39-use-final-composer-opt-in, and replacing predictions requires --stage39-final-composer-output-mode replace_pred_final_label. The default final composer remains off by design and final logits/loss/training are unchanged by composition.",
+      "policy_confirmed": true,
+      "status": "policy_confirmed"
+    },
+    "dev_noop_check": {
+      "accuracy_equal": true,
+      "changed_row_count": 0,
+      "introduced_refute_to_SUPPORT": 0,
+      "introduced_support_to_REFUTE": 0,
+      "introduced_unsafe_SUPPORT_total": 0,
+      "macro_f1_equal": true,
+      "report_present": true,
+      "result": "pass",
+      "status": "ok"
+    },
+    "introduced_safety_summary": {
+      "all_zero": true,
+      "introduced_exception_to_SUPPORT_error": 0,
+      "introduced_location_scope_to_SUPPORT_error": 0,
+      "introduced_overclaim_to_SUPPORT": 0,
+      "introduced_refute_to_SUPPORT": 0,
+      "introduced_support_to_REFUTE": 0,
+      "introduced_temporal_scope_to_SUPPORT_error": 0,
+      "introduced_unsafe_SUPPORT_total": 0
+    },
+    "metric_summary_table": [
+      {
+        "changed_rows": 0,
+        "changed_to_REFUTE": 0,
+        "changed_to_SUPPORT": 0,
+        "composed_accuracy": 0.5611,
+        "composed_macro_f1": 0.3617,
+        "decision": "STAGE39A_FINAL_COMPOSER_TOO_WEAK",
+        "delta_accuracy": 0.0,
+        "delta_macro_f1": 0.0,
+        "introduced_refute_to_SUPPORT": 0,
+        "introduced_support_to_REFUTE": 0,
+        "introduced_unsafe_SUPPORT_total": 0,
+        "original_accuracy": 0.5611,
+        "original_macro_f1": 0.3617,
+        "split": "dev"
+      },
+      {
+        "changed_rows": 204,
+        "changed_to_REFUTE": 40,
+        "changed_to_SUPPORT": 164,
+        "composed_accuracy": 0.96,
+        "composed_macro_f1": 0.9703,
+        "decision": "STAGE39C_SAFE_STRUCTURED_V2_PASS",
+        "delta_accuracy": 0.51,
+        "delta_macro_f1": 0.7634,
+        "introduced_refute_to_SUPPORT": 0,
+        "introduced_support_to_REFUTE": 0,
+        "introduced_unsafe_SUPPORT_total": 0,
+        "original_accuracy": 0.45,
+        "original_macro_f1": 0.2069,
+        "split": "stage34"
+      },
+      {
+        "changed_rows": 169,
+        "changed_to_REFUTE": 19,
+        "changed_to_SUPPORT": 150,
+        "composed_accuracy": 0.785,
+        "composed_macro_f1": 0.7202,
+        "decision": "STAGE39C_SAFE_STRUCTURED_V2_PASS",
+        "delta_accuracy": 0.2817,
+        "delta_macro_f1": 0.437,
+        "introduced_refute_to_SUPPORT": 0,
+        "introduced_support_to_REFUTE": 0,
+        "introduced_unsafe_SUPPORT_total": 0,
+        "original_accuracy": 0.5033,
+        "original_macro_f1": 0.2832,
+        "split": "stage35"
+      }
+    ],
+    "residual_errors": {
+      "dev": {
+        "exception_to_SUPPORT_error": 0,
+        "location_scope_to_SUPPORT_error": 0,
+        "overclaim_to_SUPPORT": 0,
+        "refute_to_SUPPORT": 0,
+        "support_to_refute": 46,
+        "temporal_scope_to_SUPPORT_error": 0
+      },
+      "note": "Residual safety_counters reflect total (pre-existing + Stage39) errors inherited from the original model; they are informational only and are not treated as Stage39-introduced regressions when the corresponding introduced_* counters are zero.",
+      "stage34": {
+        "exception_to_SUPPORT_error": 0,
+        "location_scope_to_SUPPORT_error": 0,
+        "overclaim_to_SUPPORT": 0,
+        "refute_to_SUPPORT": 0,
+        "support_to_refute": 0,
+        "temporal_scope_to_SUPPORT_error": 0
+      },
+      "stage35": {
+        "exception_to_SUPPORT_error": 0,
+        "location_scope_to_SUPPORT_error": 0,
+        "overclaim_to_SUPPORT": 0,
+        "refute_to_SUPPORT": 0,
+        "support_to_refute": 7,
+        "temporal_scope_to_SUPPORT_error": 0
+      }
+    },
+    "stage34_final_composer_check": {
+      "changed_row_count": 204,
+      "changed_to_REFUTE_count": 40,
+      "changed_to_SUPPORT_count": 164,
+      "composed_accuracy": 0.96,
+      "composed_macro_f1": 0.9703,
+      "decision_label": "STAGE39C_SAFE_STRUCTURED_V2_PASS",
+      "introduced_refute_to_SUPPORT": 0,
+      "introduced_support_to_REFUTE": 0,
+      "introduced_unsafe_SUPPORT_total": 0,
+      "report_present": true,
+      "result": "pass",
+      "status": "ok"
+    },
+    "stage35_adversarial_final_composer_check": {
+      "changed_row_count": 169,
+      "changed_to_REFUTE_count": 19,
+      "changed_to_SUPPORT_count": 150,
+      "composed_accuracy": 0.785,
+      "composed_macro_f1": 0.7202,
+      "decision_label": "STAGE39C_SAFE_STRUCTURED_V2_PASS",
+      "introduced_refute_to_SUPPORT": 0,
+      "introduced_support_to_REFUTE": 0,
+      "introduced_unsafe_SUPPORT_total": 0,
+      "report_present": true,
+      "residual_support_to_refute": 7,
+      "result": "pass",
+      "status": "ok"
+    }
+  }
+}
