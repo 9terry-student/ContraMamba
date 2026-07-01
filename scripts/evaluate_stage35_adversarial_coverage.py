@@ -144,6 +144,27 @@ def get_shadow_label(row: dict[str, Any]) -> str:
     return normalize_label(value)
 
 
+def has_stage36_fields(rows: list[dict[str, Any]]) -> bool:
+    """True when any row carries Stage36-A support-safety blocker diagnostics."""
+    return any(row.get("stage36_support_blocker_fired") is not None for row in rows)
+
+
+def resolve_shadow_label(row: dict[str, Any]) -> str:
+    """Post-Stage36 shadow label: prefers stage36_final_shadow_label when present."""
+    value = row.get("stage36_final_shadow_label")
+    if value not in (None, ""):
+        return normalize_label(value)
+    return get_shadow_label(row)
+
+
+def resolve_shadow_label_original(row: dict[str, Any]) -> str:
+    """Pre-Stage36 shadow label: prefers stage36_original_shadow_label when present."""
+    value = row.get("stage36_original_shadow_label")
+    if value not in (None, ""):
+        return normalize_label(value)
+    return get_shadow_label(row)
+
+
 def get_group(row: dict[str, Any]) -> str:
     value = first_present(row, ("group", "intervention_type", "normalized_intervention", "primary_failure_type"))
     return "UNKNOWN" if value is None else str(value)
@@ -242,7 +263,7 @@ def bucket_metrics(rows: list[dict[str, Any]], bucket_fn) -> dict[str, Any]:
     for bucket, bucket_rows in sorted(buckets.items()):
         golds = [get_gold_label(row) for row in bucket_rows]
         current = [get_current_label(row) for row in bucket_rows]
-        shadow = [get_shadow_label(row) for row in bucket_rows]
+        shadow = [resolve_shadow_label(row) for row in bucket_rows]
         out[bucket] = {
             "n": len(bucket_rows),
             "current_metrics": prediction_metrics(golds, current),
@@ -264,7 +285,7 @@ def is_reverse_overclaim_row(row: dict[str, Any]) -> bool:
 
 def stage35_reverse_overclaim_handling(rows: list[dict[str, Any]]) -> str:
     reverse_rows = [row for row in rows if is_reverse_overclaim_row(row)]
-    if any(get_shadow_label(row) == "SUPPORT" for row in reverse_rows):
+    if any(resolve_shadow_label(row) == "SUPPORT" for row in reverse_rows):
         return "unsafe"
     explicit = [
         row for row in reverse_rows
@@ -274,7 +295,7 @@ def stage35_reverse_overclaim_handling(rows: list[dict[str, Any]]) -> str:
     explicit_ids = {id(row) for row in explicit}
     fallback = [
         row for row in reverse_rows
-        if get_shadow_label(row) == "NOT_ENTITLED" and id(row) not in explicit_ids
+        if resolve_shadow_label(row) == "NOT_ENTITLED" and id(row) not in explicit_ids
     ]
     if explicit and fallback:
         return "mixed"
@@ -306,7 +327,7 @@ def compute_counters(rows: list[dict[str, Any]]) -> dict[str, Any]:
     for row in rows:
         group = get_group(row)
         gold = get_gold_label(row)
-        shadow = get_shadow_label(row)
+        shadow = resolve_shadow_label(row)
         route = str(row.get("stage33_structured_coverage_route", "MISSING"))
         reason = str(row.get("stage33_structured_coverage_reason", "MISSING"))
         action = str(row.get("stage33_conditional_action", "MISSING"))
@@ -494,6 +515,149 @@ def decide(
     }
 
 
+def stage36_blocker_counters(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Stage36-A: top-level counters over rows carrying blocker diagnostics."""
+    fired = 0
+    exception_fired = 0
+    not_all_fired = 0
+    location_fired = 0
+    temporal_fired = 0
+    blocked_to_ne = 0
+    reason_counts: Counter = Counter()
+    for row in rows:
+        if row.get("stage36_support_blocker_fired") is not True:
+            continue
+        fired += 1
+        if row.get("stage36_exception_blocker_fired") is True:
+            exception_fired += 1
+        if row.get("stage36_not_all_blocker_fired") is True:
+            not_all_fired += 1
+        if row.get("stage36_location_scope_blocker_fired") is True:
+            location_fired += 1
+        if row.get("stage36_temporal_scope_blocker_fired") is True:
+            temporal_fired += 1
+        if row.get("stage36_final_shadow_label") == "NOT_ENTITLED":
+            blocked_to_ne += 1
+        for reason in row.get("stage36_support_blocker_reasons") or []:
+            reason_counts[str(reason)] += 1
+    return {
+        "stage36_support_blocker_fired_count": fired,
+        "stage36_exception_blocker_fired_count": exception_fired,
+        "stage36_not_all_blocker_fired_count": not_all_fired,
+        "stage36_location_scope_blocker_fired_count": location_fired,
+        "stage36_temporal_scope_blocker_fired_count": temporal_fired,
+        "stage36_blocked_support_to_ne_count": blocked_to_ne,
+        "stage36_blocker_reason_counts": dict(reason_counts),
+    }
+
+
+def stage36_before_after_diagnostics(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Stage36-A: compare unsafe-error and support-recovery counters before/after blocking."""
+
+    def _compute(shadow_fn) -> tuple[int, int, int, int, int]:
+        overclaim = 0
+        exception_err = 0
+        location_err = 0
+        temporal_err = 0
+        support_shadow_support = 0
+        for row in rows:
+            gold = get_gold_label(row)
+            group = get_group(row)
+            shadow = shadow_fn(row)
+            if gold == "NOT_ENTITLED" and shadow == "SUPPORT":
+                overclaim += 1
+            if group in EXCEPTION_GROUPS and gold != "SUPPORT" and shadow == "SUPPORT":
+                exception_err += 1
+            if group == "adv_location_scope_not_entitled" and shadow == "SUPPORT":
+                location_err += 1
+            if group == "adv_temporal_scope_not_entitled" and shadow == "SUPPORT":
+                temporal_err += 1
+            if gold == "SUPPORT" and shadow == "SUPPORT":
+                support_shadow_support += 1
+        return overclaim, exception_err, location_err, temporal_err, support_shadow_support
+
+    o_overclaim, o_exc, o_loc, o_temp, o_sss = _compute(resolve_shadow_label_original)
+    p_overclaim, p_exc, p_loc, p_temp, p_sss = _compute(resolve_shadow_label)
+    return {
+        "stage36_original_overclaim_to_support": o_overclaim,
+        "stage36_post_overclaim_to_support": p_overclaim,
+        "stage36_original_exception_to_support_error": o_exc,
+        "stage36_post_exception_to_support_error": p_exc,
+        "stage36_original_location_scope_to_support_error": o_loc,
+        "stage36_post_location_scope_to_support_error": p_loc,
+        "stage36_original_temporal_scope_to_support_error": o_temp,
+        "stage36_post_temporal_scope_to_support_error": p_temp,
+        "stage36_original_support_shadow_support": o_sss,
+        "stage36_post_support_shadow_support": p_sss,
+    }
+
+
+def stage36_decide(
+    before_after: dict[str, Any],
+    counters: dict[str, Any],
+) -> dict[str, str]:
+    """Stage36-A decision label. Only called when Stage36 fields are present."""
+    original_scope_errors = (
+        before_after["stage36_original_exception_to_support_error"]
+        + before_after["stage36_original_location_scope_to_support_error"]
+        + before_after["stage36_original_temporal_scope_to_support_error"]
+    )
+    post_scope_errors = (
+        before_after["stage36_post_exception_to_support_error"]
+        + before_after["stage36_post_location_scope_to_support_error"]
+        + before_after["stage36_post_temporal_scope_to_support_error"]
+    )
+    overclaim_reduced = (
+        before_after["stage36_original_overclaim_to_support"] > 0
+        and before_after["stage36_post_overclaim_to_support"]
+        < before_after["stage36_original_overclaim_to_support"]
+    )
+    scope_reduced = original_scope_errors > 0 and post_scope_errors < original_scope_errors
+    refute_to_support_zero = counters.get("adv_refute_to_support", 0) == 0
+    original_support = before_after["stage36_original_support_shadow_support"]
+    post_support = before_after["stage36_post_support_shadow_support"]
+    support_collapsed = original_support > 0 and (post_support / original_support) < 0.35
+    unsafe_remaining = post_scope_errors + before_after["stage36_post_overclaim_to_support"]
+
+    if not refute_to_support_zero:
+        return {
+            "label": "STAGE36A_DIAGNOSTIC_ONLY",
+            "reason": (
+                "REFUTE-to-SUPPORT leakage detected after Stage36; blockers cannot "
+                "be judged safe from this run alone."
+            ),
+        }
+    if unsafe_remaining >= 5:
+        return {
+            "label": "STAGE36A_SAFETY_BLOCKERS_INEFFECTIVE",
+            "reason": (
+                f"Unsafe SUPPORT errors remain high after Stage36 blocking "
+                f"({unsafe_remaining} residual overclaim/scope-to-SUPPORT errors)."
+            ),
+        }
+    if support_collapsed:
+        return {
+            "label": "STAGE36A_SAFETY_BLOCKERS_TOO_CONSERVATIVE",
+            "reason": (
+                "Safety improved but SUPPORT recovery collapsed below a useful "
+                f"level ({post_support}/{original_support} SUPPORT rows retained)."
+            ),
+        }
+    if (overclaim_reduced or scope_reduced) and unsafe_remaining <= 2:
+        return {
+            "label": "STAGE36A_SAFETY_BLOCKERS_EFFECTIVE",
+            "reason": (
+                "Overclaim and/or exception/location/temporal scope SUPPORT errors "
+                "were reduced, REFUTE-to-SUPPORT leakage stayed at zero, and SUPPORT "
+                "recovery was not fully collapsed."
+            ),
+        }
+    return {
+        "label": "STAGE36A_DIAGNOSTIC_ONLY",
+        "reason": "Stage36 blocker impact on this run is mixed or inconclusive.",
+    }
+
+
 def write_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
@@ -571,6 +735,36 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
         lines.extend(["", f"## {title}", "| Value | Count |", "|---|---:|"])
         for name, count in sorted(report[key].items()):
             lines.append(f"| `{name}` | {count} |")
+    if report.get("stage36_fields_present"):
+        lines.extend([
+            "",
+            "## Stage36-A Support Safety Blockers",
+            f"- Decision: `{report['stage36_decision']['label']}`",
+            f"- Decision reason: {report['stage36_decision']['reason']}",
+            "",
+            "| Counter | Value |",
+            "|---|---:|",
+            f"| Blockers fired | {report['stage36_support_blocker_fired_count']} |",
+            f"| Exception blocker fired | {report['stage36_exception_blocker_fired_count']} |",
+            f"| Not-all blocker fired | {report['stage36_not_all_blocker_fired_count']} |",
+            f"| Location scope blocker fired | {report['stage36_location_scope_blocker_fired_count']} |",
+            f"| Temporal scope blocker fired | {report['stage36_temporal_scope_blocker_fired_count']} |",
+            f"| Blocked SUPPORT -> NOT_ENTITLED | {report['stage36_blocked_support_to_ne_count']} |",
+            "",
+            "| Before/After | Original | Post-Stage36 |",
+            "|---|---:|---:|",
+            f"| Overclaim to SUPPORT | {report['stage36_original_overclaim_to_support']} | {report['stage36_post_overclaim_to_support']} |",
+            f"| Exception to SUPPORT error | {report['stage36_original_exception_to_support_error']} | {report['stage36_post_exception_to_support_error']} |",
+            f"| Location scope to SUPPORT error | {report['stage36_original_location_scope_to_support_error']} | {report['stage36_post_location_scope_to_support_error']} |",
+            f"| Temporal scope to SUPPORT error | {report['stage36_original_temporal_scope_to_support_error']} | {report['stage36_post_temporal_scope_to_support_error']} |",
+            f"| SUPPORT rows shadow==SUPPORT | {report['stage36_original_support_shadow_support']} | {report['stage36_post_support_shadow_support']} |",
+            "",
+            "### Blocker Reason Counts",
+            "| Reason | Count |",
+            "|---|---:|",
+        ])
+        for name, count in sorted(report["stage36_blocker_reason_counts"].items()):
+            lines.append(f"| `{name}` | {count} |")
     lines.extend([
         "",
         "## Caution",
@@ -602,7 +796,7 @@ def main() -> int:
     )
     golds = [get_gold_label(row) for row in rows]
     current = [get_current_label(row) for row in rows]
-    shadow = [get_shadow_label(row) for row in rows]
+    shadow = [resolve_shadow_label(row) for row in rows]
     current_metrics = prediction_metrics(golds, current)
     shadow_metrics = prediction_metrics(golds, shadow)
     counters = compute_counters(rows)
@@ -612,6 +806,7 @@ def main() -> int:
     scalar_counters = {
         key: value for key, value in counters.items() if isinstance(value, int)
     }
+    stage36_present = has_stage36_fields(rows)
     report = {
         "run_name": args.run_name,
         "predictions_file": args.predictions_file,
@@ -651,11 +846,18 @@ def main() -> int:
             reverse_handling,
             scope_safety,
         ),
+        "stage36_fields_present": stage36_present,
         "leakage_policy": (
             "Diagnostic-only. Do not use for training, calibration, threshold "
             "selection, loss, or checkpoint selection."
         ),
     }
+    if stage36_present:
+        stage36_counters = stage36_blocker_counters(rows)
+        stage36_before_after = stage36_before_after_diagnostics(rows)
+        report.update(stage36_counters)
+        report.update(stage36_before_after)
+        report["stage36_decision"] = stage36_decide(stage36_before_after, counters)
     write_json(REPO_ROOT / args.output_json, report)
     write_markdown(REPO_ROOT / args.output_md, report)
     print(f"JSON report -> {REPO_ROOT / args.output_json}")

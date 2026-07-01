@@ -3256,6 +3256,297 @@ def build_stage32_owner_state(
     }
 
 
+# ---------------------------------------------------------------------------
+# Stage36-A: conservative support-safety blockers (shadow-only)
+# ---------------------------------------------------------------------------
+# These blockers fire *before* a Stage33 structured owner SUPPORT override is
+# treated as safe. They never touch final logits or final classifier
+# predictions -- they only affect the exported Stage32/Stage33 shadow label
+# when explicitly enabled via --stage36-support-safety-shadow-mode. All
+# heuristics below are intentionally conservative: they only fire on the
+# SUPPORT side of specific, narrow failure modes observed in Stage35-A.
+
+_STAGE36_EXCEPTION_RE = re.compile(
+    r"\ball\s+(?P<whole>.+?)\s+except\s+(?:the\s+)?(?P<excluded>.+?)"
+    r"(?=\s+(?:were|was|is|are|had|have|has)\b|[.,;]|$)"
+)
+
+_STAGE36_NOT_ALL_RE = re.compile(
+    r"\bnot\s+(?:all|every)\s+(?:of\s+the\s+)?(?P<subject>.+?)"
+    r"(?=\s+(?:were|was|is|are|had|have|has)\b|[.,;]|$)"
+)
+
+_STAGE36_SOME_RE = re.compile(
+    r"\b(?:at\s+least\s+)?some\s+(?:of\s+the\s+)?(?P<subject>.+?)"
+    r"(?=\s+(?:were|was|is|are|had|have|has)\b|[.,;]|$)"
+)
+
+_STAGE36_LOCATION_DIRECTIONS = {
+    "east", "west", "north", "south", "eastern", "western", "northern", "southern",
+}
+
+_STAGE36_LOCATION_NOUNS = {
+    "district", "zone", "region", "county", "campus", "depot", "warehouse",
+    "clinic", "platform", "network", "catalog", "archive", "province", "league",
+    "shelter", "plant", "building",
+}
+
+_STAGE36_LOCATION_PHRASES = ("transit plan", "support system")
+
+_STAGE36_WEEKDAYS = {
+    "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
+}
+
+_STAGE36_QUARTERS = {"q1", "q2", "q3", "q4"}
+
+_STAGE36_TEMPORAL_PHRASES = (
+    "last year", "this year", "next year", "today", "yesterday", "tomorrow",
+)
+
+_STAGE36_YEAR_RE = re.compile(r"\b(20[2-3][0-9])\b")
+
+
+def _stage36_find_exception_clause(evidence: str) -> "dict[str, str] | None":
+    normalized = _stage33_normalize_phrase(evidence).rstrip(".")
+    match = _STAGE36_EXCEPTION_RE.search(normalized)
+    if not match:
+        return None
+    return {
+        "whole": match.group("whole").strip(),
+        "excluded": match.group("excluded").strip(),
+    }
+
+
+def _stage36_exception_blocker(claim: str, evidence: str) -> dict[str, Any]:
+    """Block SUPPORT when the claim targets an 'all X except Y' excluded subset."""
+    clause = _stage36_find_exception_clause(evidence)
+    if clause is None:
+        return {"fired": False}
+    excluded_words = _stage33_word_set(clause["excluded"])
+    claim_words = _stage33_word_set(claim)
+    if not excluded_words:
+        return {"fired": False}
+    overlap = excluded_words.intersection(claim_words)
+    ratio = len(overlap) / len(excluded_words)
+    fired = bool(overlap) and ratio >= 0.6
+    return {
+        "fired": fired,
+        "excluded_phrase": clause["excluded"],
+        "overlap": sorted(overlap),
+    }
+
+
+def _stage36_not_all_existential_blocker(claim: str, evidence: str) -> dict[str, Any]:
+    """Block SUPPORT when 'not all/every X' is claimed to entail 'some X'."""
+    evidence_norm = _stage33_normalize_phrase(evidence).rstrip(".")
+    claim_norm = _stage33_normalize_phrase(claim).rstrip(".")
+    evidence_match = _STAGE36_NOT_ALL_RE.search(evidence_norm)
+    claim_match = _STAGE36_SOME_RE.search(claim_norm)
+    if not evidence_match or not claim_match:
+        return {"fired": False}
+    evidence_subject = _stage33_word_set(evidence_match.group("subject"))
+    claim_subject = _stage33_word_set(claim_match.group("subject"))
+    if not evidence_subject or not claim_subject:
+        return {"fired": False}
+    overlap = evidence_subject.intersection(claim_subject)
+    ratio = len(overlap) / len(evidence_subject)
+    fired = bool(overlap) and ratio >= 0.5
+    return {
+        "fired": fired,
+        "evidence_subject": evidence_match.group("subject").strip(),
+        "claim_subject": claim_match.group("subject").strip(),
+    }
+
+
+def _stage36_extract_location_scopes(text: str) -> dict[str, str]:
+    normalized = _stage33_normalize_phrase(text)
+    tokens = normalized.split()
+    scopes: dict[str, str] = {}
+    for i, tok in enumerate(tokens):
+        clean = re.sub(r"[^a-z0-9]", "", tok)
+        if clean not in _STAGE36_LOCATION_NOUNS:
+            continue
+        qualifier = ""
+        if i > 0:
+            prev = re.sub(r"[^a-z0-9]", "", tokens[i - 1])
+            if prev in _STAGE36_LOCATION_DIRECTIONS:
+                qualifier = prev
+            elif prev.isalpha() and len(prev) <= 2:
+                qualifier = prev
+        if not qualifier and i + 1 < len(tokens):
+            nxt = re.sub(r"[^a-z0-9]", "", tokens[i + 1])
+            if nxt.isalpha() and len(nxt) <= 2:
+                qualifier = nxt
+        if qualifier:
+            scopes[clean] = qualifier
+    for phrase in _STAGE36_LOCATION_PHRASES:
+        idx = normalized.find(phrase)
+        if idx < 0:
+            continue
+        preceding = normalized[:idx].split()
+        if preceding and preceding[-1] in _STAGE36_LOCATION_DIRECTIONS:
+            scopes[phrase.replace(" ", "_")] = preceding[-1]
+    return scopes
+
+
+def _stage36_location_scope_blocker(claim: str, evidence: str) -> dict[str, Any]:
+    """Block SUPPORT when claim/evidence location scopes both exist and conflict."""
+    claim_scopes = _stage36_extract_location_scopes(claim)
+    evidence_scopes = _stage36_extract_location_scopes(evidence)
+    conflicts = {}
+    for marker, claim_qualifier in claim_scopes.items():
+        evidence_qualifier = evidence_scopes.get(marker)
+        if evidence_qualifier and evidence_qualifier != claim_qualifier:
+            conflicts[marker] = {
+                "claim": claim_qualifier,
+                "evidence": evidence_qualifier,
+            }
+    return {
+        "fired": bool(conflicts),
+        "claim_values": claim_scopes,
+        "evidence_values": evidence_scopes,
+        "conflicts": conflicts,
+    }
+
+
+def _stage36_extract_temporal_markers(text: str) -> set[str]:
+    normalized = _stage33_normalize_phrase(text)
+    markers: set[str] = set(_STAGE36_YEAR_RE.findall(normalized))
+    tokens = set(re.findall(r"[a-z0-9]+", normalized))
+    markers.update(tokens.intersection(_STAGE36_WEEKDAYS))
+    markers.update(tokens.intersection(_STAGE36_QUARTERS))
+    for phrase in _STAGE36_TEMPORAL_PHRASES:
+        if phrase in normalized:
+            markers.add(phrase)
+    return markers
+
+
+def _stage36_temporal_scope_blocker(claim: str, evidence: str) -> dict[str, Any]:
+    """Block SUPPORT when claim/evidence temporal markers both exist and conflict."""
+    claim_markers = _stage36_extract_temporal_markers(claim)
+    evidence_markers = _stage36_extract_temporal_markers(evidence)
+    fired = (
+        bool(claim_markers)
+        and bool(evidence_markers)
+        and not claim_markers.intersection(evidence_markers)
+    )
+    return {
+        "fired": fired,
+        "claim_values": sorted(claim_markers),
+        "evidence_values": sorted(evidence_markers),
+    }
+
+
+def compute_stage36_support_safety_blocker(
+    claim: str,
+    evidence: str,
+    proposed_shadow_label: str,
+    proposed_reason: str,
+    proposed_route: str,
+    *,
+    enabled: bool,
+    block_exception_scope: bool = False,
+    block_not_all_existential: bool = False,
+    block_location_scope_mismatch: bool = False,
+    block_temporal_scope_mismatch: bool = False,
+    blocker_action: str = "fallback_current_final",
+    current_final_label: str = "NOT_ENTITLED",
+) -> dict[str, Any]:
+    """Stage36-A: conservative safety blockers for structured SUPPORT overrides.
+
+    Only fires when `proposed_shadow_label` is SUPPORT. Never blocks REFUTE or
+    NOT_ENTITLED, and never fires when the proposed label is already the
+    fallback_current_final non-SUPPORT label. Shadow/diagnostic only -- callers
+    are responsible for keeping this out of final logits/predictions.
+    """
+    del proposed_reason, proposed_route  # reserved for future rule-specific gating
+    result: dict[str, Any] = {
+        "stage36_support_blocker_fired": False,
+        "stage36_support_blocker_reasons": [],
+        "stage36_support_blocker_action": blocker_action,
+        "stage36_support_blocker_original_shadow_label": proposed_shadow_label,
+        "stage36_support_blocker_final_shadow_label": proposed_shadow_label,
+        "stage36_exception_blocker_fired": False,
+        "stage36_not_all_blocker_fired": False,
+        "stage36_location_scope_blocker_fired": False,
+        "stage36_temporal_scope_blocker_fired": False,
+        "stage36_scope_claim_values": {},
+        "stage36_scope_evidence_values": {},
+    }
+    if not enabled or proposed_shadow_label != "SUPPORT":
+        return result
+
+    reasons: list[str] = []
+    scope_claim_values: dict[str, Any] = {}
+    scope_evidence_values: dict[str, Any] = {}
+
+    if block_exception_scope:
+        exception_result = _stage36_exception_blocker(claim, evidence)
+        if exception_result.get("fired"):
+            result["stage36_exception_blocker_fired"] = True
+            reasons.append("exception_excluded_subset_block")
+
+    if block_not_all_existential:
+        not_all_result = _stage36_not_all_existential_blocker(claim, evidence)
+        if not_all_result.get("fired"):
+            result["stage36_not_all_blocker_fired"] = True
+            reasons.append("not_all_does_not_entail_some_block")
+
+    if block_location_scope_mismatch:
+        location_result = _stage36_location_scope_blocker(claim, evidence)
+        scope_claim_values["location"] = location_result.get("claim_values", {})
+        scope_evidence_values["location"] = location_result.get("evidence_values", {})
+        if location_result.get("fired"):
+            result["stage36_location_scope_blocker_fired"] = True
+            reasons.append("location_scope_mismatch_block")
+
+    if block_temporal_scope_mismatch:
+        temporal_result = _stage36_temporal_scope_blocker(claim, evidence)
+        scope_claim_values["temporal"] = temporal_result.get("claim_values", [])
+        scope_evidence_values["temporal"] = temporal_result.get("evidence_values", [])
+        if temporal_result.get("fired"):
+            result["stage36_temporal_scope_blocker_fired"] = True
+            reasons.append("temporal_scope_mismatch_block")
+
+    result["stage36_scope_claim_values"] = scope_claim_values
+    result["stage36_scope_evidence_values"] = scope_evidence_values
+    result["stage36_support_blocker_reasons"] = reasons
+    result["stage36_support_blocker_fired"] = bool(reasons)
+
+    if reasons:
+        if blocker_action == "force_not_entitled":
+            final_label = "NOT_ENTITLED"
+        else:
+            final_label = (
+                current_final_label if current_final_label != "SUPPORT" else "NOT_ENTITLED"
+            )
+        result["stage36_support_blocker_final_shadow_label"] = final_label
+
+    return result
+
+
+def _stage36_config_from_args(args: "argparse.Namespace") -> dict[str, Any]:
+    """Build the Stage36-A blocker config dict from CLI args. All defaults off."""
+    return {
+        "enabled": getattr(args, "stage36_use_support_safety_blockers", False),
+        "export": getattr(args, "stage36_support_safety_export", False),
+        "shadow_mode": getattr(args, "stage36_support_safety_shadow_mode", False),
+        "block_exception_scope": getattr(args, "stage36_block_exception_scope", False),
+        "block_not_all_existential": getattr(
+            args, "stage36_block_not_all_existential", False
+        ),
+        "block_location_scope_mismatch": getattr(
+            args, "stage36_block_location_scope_mismatch", False
+        ),
+        "block_temporal_scope_mismatch": getattr(
+            args, "stage36_block_temporal_scope_mismatch", False
+        ),
+        "blocker_action": getattr(
+            args, "stage36_support_blocker_action", "fallback_current_final"
+        ),
+    }
+
+
 def flatten_stage32_owner_state(state: dict[str, Any]) -> dict[str, Any]:
     hard_core = state["hard_core"]
     coverage = state["coverage_entailment"]
@@ -3421,6 +3712,7 @@ def prediction_records_v6b(
     stage33_structured_coverage_whole_part_v2_use_expanded_lexicon: bool = False,
     stage33_structured_coverage_whole_part_v2_direct_support_policy: str = "hard_core_required",
     stage33_whole_part_conditional_safe_overrides_hard_core: bool = False,
+    stage36_support_safety_config: "dict[str, Any] | None" = None,
 ) -> list[dict]:
     """Export predictions with Stage28-E enriched schema (additive; preserves all legacy fields)."""
     logits_cpu = output["logits"].detach().cpu()
@@ -3658,6 +3950,88 @@ def prediction_records_v6b(
         for metadata_key in _S28E_PRESERVED_METADATA_KEYS:
             if metadata_key in record:
                 item[metadata_key] = record[metadata_key]
+
+        # ── Stage36-A: conservative support-safety blockers (shadow-only) ──────
+        if (
+            stage36_support_safety_config is not None
+            and stage36_support_safety_config.get("enabled")
+            and stage32_owner_state is not None
+        ):
+            _stage36_composer = stage32_owner_state["composer_shadow"]
+            _stage36_structured = stage32_owner_state["structured_coverage"]
+            _stage36_result = compute_stage36_support_safety_blocker(
+                claim=str(record.get("claim") or ""),
+                evidence=str(record.get("evidence") or ""),
+                proposed_shadow_label=_stage36_composer["shadow_label"],
+                proposed_reason=_stage36_composer["shadow_reason"],
+                proposed_route=_stage36_structured.get("route", "RESIDUAL"),
+                enabled=True,
+                block_exception_scope=stage36_support_safety_config.get(
+                    "block_exception_scope", False
+                ),
+                block_not_all_existential=stage36_support_safety_config.get(
+                    "block_not_all_existential", False
+                ),
+                block_location_scope_mismatch=stage36_support_safety_config.get(
+                    "block_location_scope_mismatch", False
+                ),
+                block_temporal_scope_mismatch=stage36_support_safety_config.get(
+                    "block_temporal_scope_mismatch", False
+                ),
+                blocker_action=stage36_support_safety_config.get(
+                    "blocker_action", "fallback_current_final"
+                ),
+                current_final_label=pred_label,
+            )
+            if stage36_support_safety_config.get("export"):
+                item["stage36_original_shadow_label"] = _stage36_result[
+                    "stage36_support_blocker_original_shadow_label"
+                ]
+                item["stage36_final_shadow_label"] = _stage36_result[
+                    "stage36_support_blocker_final_shadow_label"
+                ]
+                item["stage36_support_blocker_fired"] = _stage36_result[
+                    "stage36_support_blocker_fired"
+                ]
+                item["stage36_support_blocker_reasons"] = _stage36_result[
+                    "stage36_support_blocker_reasons"
+                ]
+                item["stage36_support_blocker_action"] = _stage36_result[
+                    "stage36_support_blocker_action"
+                ]
+                item["stage36_exception_blocker_fired"] = _stage36_result[
+                    "stage36_exception_blocker_fired"
+                ]
+                item["stage36_not_all_blocker_fired"] = _stage36_result[
+                    "stage36_not_all_blocker_fired"
+                ]
+                item["stage36_location_scope_blocker_fired"] = _stage36_result[
+                    "stage36_location_scope_blocker_fired"
+                ]
+                item["stage36_temporal_scope_blocker_fired"] = _stage36_result[
+                    "stage36_temporal_scope_blocker_fired"
+                ]
+                item["stage36_scope_claim_values"] = _stage36_result[
+                    "stage36_scope_claim_values"
+                ]
+                item["stage36_scope_evidence_values"] = _stage36_result[
+                    "stage36_scope_evidence_values"
+                ]
+            if (
+                stage36_support_safety_config.get("shadow_mode")
+                and _stage36_result["stage36_support_blocker_fired"]
+            ):
+                _stage36_final_label = _stage36_result[
+                    "stage36_support_blocker_final_shadow_label"
+                ]
+                item["stage32_shadow_label"] = _stage36_final_label
+                item["stage32_shadow_reason"] = (
+                    "stage36_support_safety_blocked:"
+                    + ",".join(_stage36_result["stage36_support_blocker_reasons"])
+                )
+                if item.get("stage33_conditional_shadow_label") is not None:
+                    item["stage33_conditional_shadow_label"] = _stage36_final_label
+
         exported.append(item)
     if stage32_shadow_logits_before is not None and not torch.equal(
         stage32_shadow_logits_before, output["logits"].detach().cpu()
@@ -5232,6 +5606,85 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+    # ── Stage36-A: conservative support-safety blockers (shadow-only) ────────
+    # All off by default. When off, behavior is identical to Stage33-F. When on,
+    # blockers only affect exported shadow/diagnostic SUPPORT overrides -- never
+    # final logits or final classifier predictions.
+    parser.add_argument(
+        "--stage36-use-support-safety-blockers",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage36-A: compute deterministic conservative safety blockers that "
+            "fire before Stage33 structured owner SUPPORT overrides are treated "
+            "as safe. Shadow/diagnostic only. Default off (identical to Stage33-F)."
+        ),
+    )
+    parser.add_argument(
+        "--stage36-support-safety-export",
+        action="store_true",
+        default=False,
+        help="Stage36-A: include stage36_* diagnostic fields in prediction exports.",
+    )
+    parser.add_argument(
+        "--stage36-support-safety-shadow-mode",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage36-A: allow a fired support-safety blocker to replace the "
+            "exported Stage32/Stage33 shadow label. Does not affect final "
+            "logits/predictions."
+        ),
+    )
+    parser.add_argument(
+        "--stage36-block-exception-scope",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage36-A: block SUPPORT when evidence has an 'all X except Y' "
+            "exclusion clause and the claim targets the excluded subset Y."
+        ),
+    )
+    parser.add_argument(
+        "--stage36-block-not-all-existential",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage36-A: block SUPPORT when evidence asserts 'not all/every X' and "
+            "the claim asserts 'some X' (not-all does not entail some)."
+        ),
+    )
+    parser.add_argument(
+        "--stage36-block-location-scope-mismatch",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage36-A: block SUPPORT when claim and evidence both carry explicit "
+            "location/scope markers (e.g. east vs west district) that conflict."
+        ),
+    )
+    parser.add_argument(
+        "--stage36-block-temporal-scope-mismatch",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage36-A: block SUPPORT when claim and evidence both carry explicit "
+            "temporal markers (year, weekday, quarter, relative phrase) that "
+            "conflict."
+        ),
+    )
+    parser.add_argument(
+        "--stage36-support-blocker-action",
+        choices=("fallback_current_final", "force_not_entitled"),
+        default="fallback_current_final",
+        help=(
+            "Stage36-A: action to take when a support-safety blocker fires. "
+            "fallback_current_final uses the current final label (or "
+            "NOT_ENTITLED if that is also SUPPORT); force_not_entitled always "
+            "sets NOT_ENTITLED."
+        ),
+    )
+
     parser.add_argument(
         "--v7-no-aux-losses",
         action="store_true",
@@ -5571,6 +6024,7 @@ def evaluate_external_probe(
         stage33_whole_part_conditional_safe_overrides_hard_core=getattr(
             args, "stage33_whole_part_conditional_safe_overrides_hard_core", False
         ),
+        stage36_support_safety_config=_stage36_config_from_args(args),
     )
 
     predictions_cpu = output["predictions"].detach().cpu()
@@ -5948,6 +6402,15 @@ _LIFT_CONFIG_KEYS: tuple[str, ...] = (
     "stage33_structured_coverage_whole_part_v2_use_expanded_lexicon",
     "stage33_structured_coverage_whole_part_v2_direct_support_policy",
     "stage33_whole_part_conditional_safe_overrides_hard_core",
+    # Stage36-A: support-safety blocker flags (shadow-only)
+    "stage36_use_support_safety_blockers",
+    "stage36_support_safety_export",
+    "stage36_support_safety_shadow_mode",
+    "stage36_block_exception_scope",
+    "stage36_block_not_all_existential",
+    "stage36_block_location_scope_mismatch",
+    "stage36_block_temporal_scope_mismatch",
+    "stage36_support_blocker_action",
     # v7 Stage15 / time_swap provenance (also lifted from audit_ledger elsewhere;
     # this covers the configuration copy when the ledger path is absent)
     "stage15_used_for_v7_training",
@@ -8159,6 +8622,7 @@ def main(argv: list[str] | None = None) -> int:
                         "stage33_whole_part_conditional_safe_overrides_hard_core",
                         False,
                     ),
+                    stage36_support_safety_config=_stage36_config_from_args(args),
                 )
                 best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
                 best_pc_metrics = {
@@ -8312,6 +8776,7 @@ def main(argv: list[str] | None = None) -> int:
                             "stage33_whole_part_conditional_safe_overrides_hard_core",
                             False,
                         ),
+                        stage36_support_safety_config=_stage36_config_from_args(args),
                     )
                     _tc_state = {
                         k: v.detach().cpu().clone() for k, v in model.state_dict().items()
@@ -8433,6 +8898,7 @@ def main(argv: list[str] | None = None) -> int:
                                 "stage33_whole_part_conditional_safe_overrides_hard_core",
                                 False,
                             ),
+                            stage36_support_safety_config=_stage36_config_from_args(args),
                         )
                         _pcs_state = {
                             k: v.detach().cpu().clone() for k, v in model.state_dict().items()
@@ -10100,6 +10566,32 @@ def main(argv: list[str] | None = None) -> int:
             ),
             "stage33_structured_coverage_modifies_final_logits": False,
             "stage33_structured_coverage_modifies_final_predictions": False,
+            "stage36_use_support_safety_blockers": getattr(
+                args, "stage36_use_support_safety_blockers", False
+            ),
+            "stage36_support_safety_export": getattr(
+                args, "stage36_support_safety_export", False
+            ),
+            "stage36_support_safety_shadow_mode": getattr(
+                args, "stage36_support_safety_shadow_mode", False
+            ),
+            "stage36_block_exception_scope": getattr(
+                args, "stage36_block_exception_scope", False
+            ),
+            "stage36_block_not_all_existential": getattr(
+                args, "stage36_block_not_all_existential", False
+            ),
+            "stage36_block_location_scope_mismatch": getattr(
+                args, "stage36_block_location_scope_mismatch", False
+            ),
+            "stage36_block_temporal_scope_mismatch": getattr(
+                args, "stage36_block_temporal_scope_mismatch", False
+            ),
+            "stage36_support_blocker_action": getattr(
+                args, "stage36_support_blocker_action", "fallback_current_final"
+            ),
+            "stage36_support_safety_modifies_final_logits": False,
+            "stage36_support_safety_modifies_final_predictions": False,
             "v7_h1_entitlement_for_decision_source": (
                 _V7_H1_DECISION_SIGNAL_SOURCE.get(
                     getattr(args, "v7_h1_entitlement_decision_signal", "learned"),
@@ -10318,6 +10810,32 @@ def main(argv: list[str] | None = None) -> int:
                 ),
                 "stage33_structured_coverage_modifies_final_logits": False,
                 "stage33_structured_coverage_modifies_final_predictions": False,
+                "stage36_use_support_safety_blockers": getattr(
+                    args, "stage36_use_support_safety_blockers", False
+                ),
+                "stage36_support_safety_export": getattr(
+                    args, "stage36_support_safety_export", False
+                ),
+                "stage36_support_safety_shadow_mode": getattr(
+                    args, "stage36_support_safety_shadow_mode", False
+                ),
+                "stage36_block_exception_scope": getattr(
+                    args, "stage36_block_exception_scope", False
+                ),
+                "stage36_block_not_all_existential": getattr(
+                    args, "stage36_block_not_all_existential", False
+                ),
+                "stage36_block_location_scope_mismatch": getattr(
+                    args, "stage36_block_location_scope_mismatch", False
+                ),
+                "stage36_block_temporal_scope_mismatch": getattr(
+                    args, "stage36_block_temporal_scope_mismatch", False
+                ),
+                "stage36_support_blocker_action": getattr(
+                    args, "stage36_support_blocker_action", "fallback_current_final"
+                ),
+                "stage36_support_safety_modifies_final_logits": False,
+                "stage36_support_safety_modifies_final_predictions": False,
                 "freeze_encoder": getattr(args, "freeze_encoder", None),
                 "freeze_a_log": getattr(args, "freeze_a_log", None),
                 "max_length": getattr(args, "max_length", None),

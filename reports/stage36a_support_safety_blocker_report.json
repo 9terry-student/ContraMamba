@@ -1,0 +1,169 @@
+{
+  "stage": "Stage36-A",
+  "title": "Support safety blockers before structured SUPPORT overrides",
+  "status": "implemented_shadow_only_not_yet_kaggle_validated",
+  "files_changed": [
+    "scripts/train_controlled_v6b_minimal.py",
+    "scripts/evaluate_stage35_adversarial_coverage.py"
+  ],
+  "files_not_modified": [
+    "model architecture / Mamba backbone",
+    "final logits",
+    "final classifier predictions",
+    "training data",
+    "Stage31 data",
+    "Stage34 data",
+    "Stage35 data",
+    "checkpoint selection",
+    "loss functions",
+    "dataloaders",
+    "coverage entailment head training",
+    "temporal heads",
+    "location boundary head",
+    "Stage33-F rule extraction (only a call site was added before proposed SUPPORT overrides are exported)"
+  ],
+  "stage35a_baseline": {
+    "decision": "STAGE35A_ADVERSARIAL_UNSAFE",
+    "current_macro_f1": 0.2832,
+    "shadow_macro_f1": 0.5832,
+    "delta_macro_f1": 0.3000,
+    "adv_overclaim_to_support": 58,
+    "adv_exception_to_support_error": 8,
+    "adv_location_scope_to_support_error": 25,
+    "adv_support_to_refute": 4,
+    "adv_support_shadow_support": "91 / 250",
+    "adv_subset_support_recovered": "60 / 175",
+    "adv_numeric_support_recovered": "0 / 25",
+    "adv_pattern_match_count": 85,
+    "adv_no_match_count": 515,
+    "stage35_reverse_overclaim_handling": "unsafe",
+    "stage35_scope_safety": "unsafe"
+  },
+  "failure_modes_addressed": [
+    {
+      "name": "location_scope_mismatch",
+      "example_evidence": "All users in the east district were reached.",
+      "example_claim": "The verified users in the west district were reached.",
+      "gold": "NOT_ENTITLED",
+      "prior_shadow": "SUPPORT",
+      "override_type": "whole_part_direct_support",
+      "blocker_flag": "--stage36-block-location-scope-mismatch",
+      "blocker_reason": "location_scope_mismatch_block"
+    },
+    {
+      "name": "exception_exclusion",
+      "example_evidence": "All permits except the temporary permits were denied.",
+      "example_claim": "The temporary permits were denied.",
+      "gold": "NOT_ENTITLED",
+      "prior_shadow": "SUPPORT",
+      "override_type": "entailment_positive_polarity",
+      "blocker_flag": "--stage36-block-exception-scope",
+      "blocker_reason": "exception_excluded_subset_block"
+    },
+    {
+      "name": "not_all_existential_fallacy",
+      "example_evidence": "Not all permits were recalled.",
+      "example_claim": "Some permits were recalled.",
+      "gold": "NOT_ENTITLED",
+      "prior_shadow": "SUPPORT",
+      "override_type": "high_precision_direct_support",
+      "blocker_flag": "--stage36-block-not-all-existential",
+      "blocker_reason": "not_all_does_not_entail_some_block"
+    }
+  ],
+  "new_flags": {
+    "train_controlled_v6b_minimal.py": [
+      {"flag": "--stage36-use-support-safety-blockers", "default": false, "purpose": "master switch to compute Stage36 blocker diagnostics; identical to Stage33-F when off"},
+      {"flag": "--stage36-support-safety-export", "default": false, "purpose": "include stage36_* diagnostic fields in prediction exports"},
+      {"flag": "--stage36-support-safety-shadow-mode", "default": false, "purpose": "allow a fired blocker to replace the exported shadow label; never touches final logits/predictions"},
+      {"flag": "--stage36-block-exception-scope", "default": false},
+      {"flag": "--stage36-block-not-all-existential", "default": false},
+      {"flag": "--stage36-block-location-scope-mismatch", "default": false},
+      {"flag": "--stage36-block-temporal-scope-mismatch", "default": false},
+      {"flag": "--stage36-support-blocker-action", "default": "fallback_current_final", "choices": ["fallback_current_final", "force_not_entitled"]}
+    ]
+  },
+  "blocker_logic_summary": {
+    "gating": "Only fires when the proposed shadow label is SUPPORT. Never blocks REFUTE or NOT_ENTITLED. Never fires when the proposal is already the non-SUPPORT fallback_current_final label.",
+    "exception_blocker": "Detects 'all X except Y ...' in evidence, extracts Y, and blocks if claim content-word overlap with Y is >= 0.6 of Y's content words. Does not block 'no X except Y' patterns.",
+    "not_all_existential_blocker": "Detects 'not all/every X ...' in evidence and 'some X ...' in claim, blocks if claim subject overlaps >= 0.5 of the evidence subject's content words.",
+    "location_scope_blocker": "Extracts location markers (district/zone/region/campus/warehouse/etc. with an adjacent direction or short identifier qualifier) from claim and evidence. Blocks only when both sides have the same marker with conflicting qualifiers.",
+    "temporal_scope_blocker": "Extracts years (2020-2029), weekdays, quarters (Q1-Q4), and relative phrases (last year/this year/next year/today/yesterday/tomorrow). Blocks only when both sides have non-overlapping temporal markers.",
+    "action_on_fire": "fallback_current_final replaces the shadow label with the current final classifier label (or NOT_ENTITLED if that is also SUPPORT); force_not_entitled always replaces with NOT_ENTITLED."
+  },
+  "integration_point": {
+    "location": "scripts/train_controlled_v6b_minimal.py: prediction_records_v6b(), inside the per-record export loop, immediately after flatten_stage32_owner_state() fields are merged into the exported item and before exported.append(item)",
+    "inputs_used": "record claim/evidence text, the Stage32 composer_shadow proposed shadow_label/shadow_reason, the Stage33 structured_coverage route, and the current final classifier label (pred_label)",
+    "output_written_to": "item dict fields only (stage32_shadow_label / stage33_conditional_shadow_label overwritten only in shadow_mode; stage36_* diagnostic fields added only when export is enabled)",
+    "never_touches": ["output['logits']", "output['predictions']", "final_logits", "final_probs", "pred_label", "pred_final_label"]
+  },
+  "exported_fields": [
+    "stage36_original_shadow_label",
+    "stage36_final_shadow_label",
+    "stage36_support_blocker_fired",
+    "stage36_support_blocker_reasons",
+    "stage36_support_blocker_action",
+    "stage36_exception_blocker_fired",
+    "stage36_not_all_blocker_fired",
+    "stage36_location_scope_blocker_fired",
+    "stage36_temporal_scope_blocker_fired",
+    "stage36_scope_claim_values",
+    "stage36_scope_evidence_values"
+  ],
+  "evaluator_changes": {
+    "file": "scripts/evaluate_stage35_adversarial_coverage.py",
+    "shadow_label_resolution": "resolve_shadow_label() prefers stage36_final_shadow_label when present, else falls back to stage32_shadow_label/stage33_conditional_shadow_label (unchanged legacy behavior). resolve_shadow_label_original() prefers stage36_original_shadow_label for the pre-blocker view.",
+    "new_top_level_counters": [
+      "stage36_support_blocker_fired_count",
+      "stage36_exception_blocker_fired_count",
+      "stage36_not_all_blocker_fired_count",
+      "stage36_location_scope_blocker_fired_count",
+      "stage36_temporal_scope_blocker_fired_count",
+      "stage36_blocked_support_to_ne_count",
+      "stage36_blocker_reason_counts"
+    ],
+    "new_before_after_diagnostics": [
+      "stage36_original_overclaim_to_support",
+      "stage36_post_overclaim_to_support",
+      "stage36_original_exception_to_support_error",
+      "stage36_post_exception_to_support_error",
+      "stage36_original_location_scope_to_support_error",
+      "stage36_post_location_scope_to_support_error",
+      "stage36_original_temporal_scope_to_support_error",
+      "stage36_post_temporal_scope_to_support_error",
+      "stage36_original_support_shadow_support",
+      "stage36_post_support_shadow_support"
+    ],
+    "new_decision_labels": [
+      "STAGE36A_SAFETY_BLOCKERS_EFFECTIVE",
+      "STAGE36A_SAFETY_BLOCKERS_TOO_CONSERVATIVE",
+      "STAGE36A_SAFETY_BLOCKERS_INEFFECTIVE",
+      "STAGE36A_DIAGNOSTIC_ONLY"
+    ],
+    "backward_compatibility": "When no row carries stage36_support_blocker_fired, stage36_fields_present is false, no stage36_* keys are added to the report, and the existing Stage35 'decision' label is computed exactly as before (verified against a synthetic legacy predictions file with no stage36_* fields)."
+  },
+  "verification_performed": {
+    "type": "local unit-level smoke tests only (no Kaggle run, no training run)",
+    "checks": [
+      "py_compile on both modified files",
+      "compute_stage36_support_safety_blocker() tested against the three Stage35-A failure-mode examples plus a non-target-subset exception case and a no-conflict control case; all fired/not-fired as expected",
+      "confirmed blockers never fire on proposed REFUTE labels and never fire when the master enabled flag is off",
+      "ran evaluate_stage35_adversarial_coverage.py end-to-end on a synthetic predictions file with stage36_* fields present: before/after counters and STAGE36A_SAFETY_BLOCKERS_EFFECTIVE decision matched expectations",
+      "ran evaluate_stage35_adversarial_coverage.py end-to-end on a synthetic legacy predictions file with no stage36_* fields: stage36_fields_present is false and no stage36_* keys appear in the report"
+    ]
+  },
+  "guardrails_confirmed": {
+    "stage36_off_by_default": true,
+    "identical_to_stage33f_when_off": true,
+    "no_final_logit_changes": true,
+    "no_final_prediction_changes": true,
+    "no_training_or_kaggle_run_performed": true,
+    "no_git_commands_run": true
+  },
+  "remaining_risks": [
+    "adv_numeric_support_recovered (0/25) is not addressed by Stage36-A and remains unresolved",
+    "passive/coordination SUPPORT recovery is unaffected by these blockers and likely still needs dedicated handling",
+    "heuristic word-overlap thresholds (0.6 for exception, 0.5 for not-all) are conservative but not exhaustive; --stage36-support-safety-shadow-mode may trade some SUPPORT recovery for safety and should be monitored via stage36_original_support_shadow_support vs stage36_post_support_shadow_support",
+    "all Stage35-A baseline numbers in this report are carried over from the previously reported Kaggle run; actual post-Stage36-A numbers require a fresh Kaggle validation run per task instructions"
+  ]
+}
