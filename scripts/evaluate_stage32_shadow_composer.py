@@ -339,6 +339,10 @@ def compute_stage33_structured_summary(
         "stage33_structured_coverage_whole_part_relation",
         "stage33_structured_coverage_whole_part_match",
         "stage33_structured_coverage_whole_part_direct_support_enabled",
+        "stage33_structured_coverage_whole_part_v2_enabled",
+        "stage33_whole_part_direct_support_candidate",
+        "stage33_whole_part_direct_support_allowed",
+        "stage33_whole_part_direct_support_block_reason",
     }
     if not any(any(field in row for field in fields) for row in rows):
         return None
@@ -401,6 +405,23 @@ def compute_stage33_structured_summary(
             )
             for row in rows
         )),
+        "stage33_whole_part_v2_enabled_counts": dict(Counter(
+            normalize_bool(
+                row.get("stage33_structured_coverage_whole_part_v2_enabled")
+            )
+            for row in rows
+        )),
+        "stage33_whole_part_direct_support_candidate_counts": dict(Counter(
+            normalize_bool(row.get("stage33_whole_part_direct_support_candidate"))
+            for row in rows
+        )),
+        "stage33_whole_part_direct_support_allowed_counts": dict(Counter(
+            normalize_bool(row.get("stage33_whole_part_direct_support_allowed"))
+            for row in rows
+        )),
+        "stage33_whole_part_direct_support_block_reason_counts": group_distribution(
+            rows, "stage33_whole_part_direct_support_block_reason"
+        ),
         "stage33_proxy_refute_to_support": proxy_refute_to_support,
         "stage33_proxy_ne_to_support": proxy_ne_to_support,
         "stage33_structured_coverage_confidence_summary": numeric_summary(confidences),
@@ -576,6 +597,7 @@ def compute_stage31_diagnostics_from_values(
     support_by_reason = Counter()
     overclaim_support_by_reason = Counter()
     refute_support_by_reason = Counter()
+    whole_to_part_block_reasons = Counter()
     for row, current_label, shadow_label, v2_route, structured_route, structured_reason in zip(
         rows, current, shadow, v2_routes, structured_routes, structured_reasons
     ):
@@ -584,6 +606,14 @@ def compute_stage31_diagnostics_from_values(
             normalize_bool(row.get("stage33_conditional_fallback_enabled")) is True
         )
         if group in SUPPORT_ENTAILMENT_GROUPS:
+            if group == "whole_to_part_support":
+                if normalize_bool(row.get("stage33_whole_part_direct_support_allowed")) is True:
+                    diag["whole_to_part_direct_support_allowed"] += 1
+                block_reason = str(
+                    row.get("stage33_whole_part_direct_support_block_reason", "")
+                )
+                if block_reason:
+                    whole_to_part_block_reasons[block_reason] += 1
             if structured_route == "ENTAILMENT_PRESERVE":
                 diag["support_entailment_stage33_entailment_preserve"] += 1
                 if group == "whole_to_part_support":
@@ -718,6 +748,7 @@ def compute_stage31_diagnostics_from_values(
         "part_to_whole_stage33_unresolved",
         "whole_part_shadow_overclaim_to_support",
         "whole_part_shadow_refute_to_support",
+        "whole_to_part_direct_support_allowed",
     ):
         diag.setdefault(key, 0)
     result = dict(diag)
@@ -726,6 +757,9 @@ def compute_stage31_diagnostics_from_values(
         overclaim_support_by_reason
     )
     result["stage33_shadow_refute_to_support_by_reason"] = dict(refute_support_by_reason)
+    result["whole_to_part_direct_support_block_reason_counts"] = dict(
+        whole_to_part_block_reasons
+    )
     return result
 
 
@@ -917,10 +951,67 @@ def decide(
     macro_delta = shadow_metrics["macro_f1"] - current_metrics["macro_f1"]
     if stage33_summary is not None:
         whole_part_counts = stage33_summary.get("stage33_whole_part_relation_counts", {})
+        v2_counts = stage33_summary.get("stage33_whole_part_v2_enabled_counts", {})
+        v2_enabled = int(v2_counts.get(True, 0) or 0) > 0
         whole_part_detected = sum(
             count for relation, count in whole_part_counts.items()
             if relation not in {"", "none", "MISSING"}
         )
+        if v2_enabled:
+            whole_to_part_support = (
+                stage31_diag.get("whole_to_part_stage33_shadow_support", 0)
+                if stage31_diag else 0
+            )
+            part_to_whole_ne = (
+                stage31_diag.get("part_to_whole_stage33_shadow_ne", 0)
+                if stage31_diag else 0
+            )
+            overclaim_support = (
+                stage31_diag.get("whole_part_shadow_overclaim_to_support", 0)
+                if stage31_diag else 0
+            )
+            refute_support = (
+                stage31_diag.get("whole_part_shadow_refute_to_support", 0)
+                if stage31_diag else 0
+            )
+            detected_entailment = (
+                stage31_diag.get("whole_to_part_stage33_entailment_preserve", 0)
+                if stage31_diag else 0
+            )
+            if overclaim_support > 0 or refute_support > 0 or macro_delta <= -0.05:
+                return {
+                    "label": "STAGE33E_WHOLE_PART_V2_UNSAFE",
+                    "reason": (
+                        "Whole/part v2 is unsafe: safety errors appeared or "
+                        "macro-F1 dropped materially."
+                    ),
+                }
+            if (
+                whole_to_part_support > 1
+                and part_to_whole_ne > 0
+                and overclaim_support == 0
+                and refute_support == 0
+                and macro_delta > -0.02
+            ):
+                return {
+                    "label": "STAGE33E_WHOLE_PART_V2_PROMISING",
+                    "reason": (
+                        "Whole/part v2 improves whole-to-part SUPPORT recovery over "
+                        "Stage33-D while preserving safety and macro-F1."
+                    ),
+                }
+            if detected_entailment > 3 or whole_to_part_support > 0:
+                return {
+                    "label": "STAGE33E_WHOLE_PART_V2_DIAGNOSTIC_ONLY",
+                    "reason": (
+                        "Whole/part v2 improves detection or partial recovery, but "
+                        "safe SUPPORT recovery is not yet materially better."
+                    ),
+                }
+            return {
+                "label": "STAGE33E_WHOLE_PART_V2_DIAGNOSTIC_ONLY",
+                "reason": "Whole/part v2 is enabled but has not demonstrated recovery.",
+            }
         if whole_part_detected > 0:
             whole_to_part_support = (
                 stage31_diag.get("whole_to_part_stage33_shadow_support", 0)
@@ -1268,6 +1359,19 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
             (
                 "Whole/Part Direct Support Enabled Counts",
                 "stage33_whole_part_direct_support_enabled_counts",
+            ),
+            ("Whole/Part v2 Enabled Counts", "stage33_whole_part_v2_enabled_counts"),
+            (
+                "Whole/Part Direct Support Candidate Counts",
+                "stage33_whole_part_direct_support_candidate_counts",
+            ),
+            (
+                "Whole/Part Direct Support Allowed Counts",
+                "stage33_whole_part_direct_support_allowed_counts",
+            ),
+            (
+                "Whole/Part Direct Support Block Reason Counts",
+                "stage33_whole_part_direct_support_block_reason_counts",
             ),
         ):
             lines.extend(["", f"### {title}", "| Value | Count |", "|---|---:|"])
@@ -1651,6 +1755,24 @@ def main() -> int:
         ),
         "stage33_whole_part_direct_support_enabled_counts": (
             stage33_summary.get("stage33_whole_part_direct_support_enabled_counts")
+            if stage33_summary else None
+        ),
+        "stage33_whole_part_v2_enabled_counts": (
+            stage33_summary.get("stage33_whole_part_v2_enabled_counts")
+            if stage33_summary else None
+        ),
+        "stage33_whole_part_direct_support_candidate_counts": (
+            stage33_summary.get("stage33_whole_part_direct_support_candidate_counts")
+            if stage33_summary else None
+        ),
+        "stage33_whole_part_direct_support_allowed_counts": (
+            stage33_summary.get("stage33_whole_part_direct_support_allowed_counts")
+            if stage33_summary else None
+        ),
+        "stage33_whole_part_direct_support_block_reason_counts": (
+            stage33_summary.get(
+                "stage33_whole_part_direct_support_block_reason_counts"
+            )
             if stage33_summary else None
         ),
         "stage33_conditional_summary": stage33_conditional_summary,

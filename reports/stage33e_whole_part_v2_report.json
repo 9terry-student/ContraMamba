@@ -1,0 +1,65 @@
+{
+  "stage": "Stage33-E",
+  "title": "Whole/part structured coverage v2",
+  "new_cli_flags": [
+    "--stage33-structured-coverage-whole-part-v2",
+    "--stage33-structured-coverage-whole-part-v2-use-expanded-lexicon",
+    "--stage33-structured-coverage-whole-part-v2-direct-support-policy"
+  ],
+  "direct_support_policies": [
+    "off",
+    "hard_core_required",
+    "conditional_safe"
+  ],
+  "expanded_pairs": [
+    ["vehicles", "trucks"],
+    ["members", "senior members"],
+    ["models", "mark ii model"],
+    ["floors", "third floor"],
+    ["performing arts groups", "regional dance troupe"],
+    ["financial records", "expense reports"],
+    ["staff", "contract staff"],
+    ["access roads", "eastern access road"],
+    ["new hires", "new hires in operations"],
+    ["top-ranked competitors", "top-ranked competitor from zone a"],
+    ["subscribers", "premium subscribers"],
+    ["nodes", "gateway nodes"],
+    ["contracts", "service contracts"],
+    ["registered participants", "registered participants from abroad"],
+    ["residents in the zone", "residents in the northern sector of the zone"],
+    ["construction projects", "residential construction projects"],
+    ["persons", "foreign nationals"]
+  ],
+  "exported_fields": [
+    "stage33_structured_coverage_whole_part_v2_enabled",
+    "stage33_structured_coverage_whole_part_v2_expanded_lexicon",
+    "stage33_structured_coverage_whole_part_v2_direct_support_policy",
+    "stage33_whole_part_direct_support_candidate",
+    "stage33_whole_part_direct_support_allowed",
+    "stage33_whole_part_direct_support_block_reason",
+    "stage33_whole_part_hard_core_pass",
+    "stage33_whole_part_original_current_label",
+    "stage33_whole_part_conditional_action"
+  ],
+  "evaluator_diagnostics": [
+    "stage33_whole_part_v2_enabled_counts",
+    "stage33_whole_part_direct_support_candidate_counts",
+    "stage33_whole_part_direct_support_allowed_counts",
+    "stage33_whole_part_direct_support_block_reason_counts",
+    "whole_to_part_direct_support_allowed",
+    "whole_to_part_direct_support_block_reason_counts"
+  ],
+  "decision_labels": [
+    "STAGE33E_WHOLE_PART_V2_PROMISING",
+    "STAGE33E_WHOLE_PART_V2_DIAGNOSTIC_ONLY",
+    "STAGE33E_WHOLE_PART_V2_UNSAFE"
+  ],
+  "shadow_only_guarantee": {
+    "modifies_final_logits": false,
+    "modifies_final_predictions": false,
+    "modifies_h1_final_decision": false,
+    "modifies_checkpoint_selection": false,
+    "modifies_training_data_selection": false,
+    "uses_stage31_probe_for_training_or_selection": false
+  }
+}
