@@ -1,0 +1,76 @@
+{
+  "stage": "Stage33-B",
+  "title": "Structured Coverage Owner precision restrictions",
+  "scope": [
+    "scripts/train_controlled_v6b_minimal.py",
+    "scripts/evaluate_stage32_shadow_composer.py",
+    "reports/stage33b_structured_coverage_precision_report.md",
+    "reports/stage33b_structured_coverage_precision_report.json"
+  ],
+  "stage33a_interpretation": {
+    "stage31_external_preserve": "promising support recovery without overclaim/refute SUPPORT safety errors",
+    "dev_preserve": "unsafe because proxy lexical containment overreached",
+    "main_risk": "specific_to_general_proxy is too broad for direct SUPPORT"
+  },
+  "direct_support_policy": {
+    "requires_preserve_can_support": true,
+    "requires_reason_allowlist": true,
+    "requires_high_precision_strength": true,
+    "requires_hard_core_pass_true": true,
+    "default_direct_support_rules": [
+      "quantifier_all_to_some",
+      "only_to_base"
+    ]
+  },
+  "rule_strengths": {
+    "high_precision": [
+      "quantifier_all_to_some",
+      "quantifier_some_to_all",
+      "only_to_base",
+      "also_to_only",
+      "none_to_some",
+      "some_to_none"
+    ],
+    "proxy": [
+      "specific_to_general_proxy",
+      "general_to_specific_proxy",
+      "whole_to_part_proxy",
+      "part_to_whole_proxy"
+    ],
+    "unresolved": [
+      "no_structured_rule_fired"
+    ]
+  },
+  "new_cli_flags": [
+    "--stage33-structured-coverage-direct-support-rules",
+    "--stage33-structured-coverage-disable-specific-general-direct-support",
+    "--stage33-structured-coverage-weak-rules-to-residual"
+  ],
+  "new_export_fields": [
+    "stage33_structured_coverage_original_reason",
+    "stage33_structured_coverage_rule_strength",
+    "stage33_structured_coverage_direct_support_allowed",
+    "stage33_structured_coverage_direct_support_block_reason"
+  ],
+  "evaluator_diagnostics": [
+    "stage33_structured_coverage_rule_strength_counts",
+    "stage33_structured_coverage_direct_support_allowed_counts",
+    "stage33_structured_coverage_direct_support_block_reason_counts",
+    "support_entailment_shadow_support_by_reason",
+    "stage33_shadow_overclaim_to_support_by_reason",
+    "stage33_shadow_refute_to_support_by_reason"
+  ],
+  "shadow_only_guarantee": {
+    "modifies_final_logits": false,
+    "modifies_final_predictions": false,
+    "modifies_h1_final_decision": false,
+    "modifies_checkpoint_selection": false,
+    "modifies_training_data_selection": false
+  },
+  "known_limitations": [
+    "whole/part cases remain unresolved until Stage33-C",
+    "proxy rules remain diagnostic approximations",
+    "positive-polarity SUPPORT remains a separate shadow path"
+  ],
+  "next_step": "Stage33-C whole/part rule extension"
+}

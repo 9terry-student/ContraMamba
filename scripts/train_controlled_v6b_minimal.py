@@ -2028,6 +2028,23 @@ _STAGE33_STOPWORDS = {
     "was", "were", "with",
 }
 
+_STAGE33_RULE_STRENGTHS = {
+    "quantifier_all_to_some": "high_precision",
+    "quantifier_some_to_all": "high_precision",
+    "only_to_base": "high_precision",
+    "also_to_only": "high_precision",
+    "none_to_some": "high_precision",
+    "some_to_none": "high_precision",
+    "specific_to_general_proxy": "proxy",
+    "general_to_specific_proxy": "proxy",
+    "whole_to_part_proxy": "proxy",
+    "part_to_whole_proxy": "proxy",
+    "no_structured_rule_fired": "unresolved",
+    "disabled": "unresolved",
+}
+
+_STAGE33_DEFAULT_DIRECT_SUPPORT_RULES = "quantifier_all_to_some,only_to_base"
+
 
 def _stage33_text(record: dict[str, Any], field: str) -> str:
     raw = record.get(field)
@@ -2092,12 +2109,27 @@ def _stage33_compact_cues(cues: dict[str, Any]) -> str:
     return ",".join(names)
 
 
+def _stage33_parse_csv_set(value: Any) -> set[str]:
+    if value is None:
+        return set()
+    if isinstance(value, (set, list, tuple)):
+        return {str(item).strip() for item in value if str(item).strip()}
+    return {item.strip() for item in str(value).split(",") if item.strip()}
+
+
+def _stage33_rule_strength(reason: str) -> str:
+    if str(reason).startswith("weak_rule_forced_to_residual:"):
+        reason = str(reason).split(":", 1)[1]
+    return _STAGE33_RULE_STRENGTHS.get(str(reason), "unknown")
+
+
 def build_stage33_structured_coverage_owner_state(
     record: dict[str, Any],
     *,
     enabled: bool,
+    weak_rules_to_residual: set[str] | None = None,
 ) -> dict[str, Any]:
-    """Build deterministic Stage33-A structured coverage owner diagnostics."""
+    """Build deterministic Stage33 structured coverage owner diagnostics."""
     claim = _stage33_text(record, "claim")
     evidence = _stage33_text(record, "evidence")
     claim_cues = _stage33_extract_cues(claim)
@@ -2105,8 +2137,10 @@ def build_stage33_structured_coverage_owner_state(
     label = "STRUCT_UNRESOLVED"
     route = "RESIDUAL"
     reason = "disabled" if not enabled else "no_structured_rule_fired"
+    original_reason = reason
     confidence = 0.0
     rule_fired = False
+    weak_rules_to_residual = weak_rules_to_residual or set()
 
     claim_tokens = claim_cues["tokens"]
     evidence_tokens = evidence_cues["tokens"]
@@ -2163,18 +2197,30 @@ def build_stage33_structured_coverage_owner_state(
             confidence = 0.75
             rule_fired = True
 
+    original_reason = reason
+    if enabled and reason in weak_rules_to_residual:
+        label = "STRUCT_UNRESOLVED"
+        route = "RESIDUAL"
+        reason = f"weak_rule_forced_to_residual:{original_reason}"
+
+    rule_strength = _stage33_rule_strength(original_reason)
     return {
         "enabled": bool(enabled),
         "label": label,
         "route": route,
         "reason": reason,
+        "original_reason": original_reason,
+        "rule_strength": rule_strength,
         "confidence": confidence,
         "claim_cues": _stage33_compact_cues(claim_cues),
         "evidence_cues": _stage33_compact_cues(evidence_cues),
         "rule_fired": rule_fired,
+        "direct_support_allowed": False,
+        "direct_support_block_reason": "not_evaluated",
         "priority_trace": [
             f"structured:{route}",
             f"reason:{reason}",
+            f"strength:{rule_strength}",
         ],
     }
 
@@ -2424,6 +2470,7 @@ def build_stage32_shadow_composer_state(
     structured_coverage: dict[str, Any],
     structured_shadow_mode: bool,
     structured_preserve_can_support: bool,
+    structured_direct_support_rules: set[str],
     residual_adjudication: dict[str, Any],
     ani_diagnostic: dict[str, Any],
     polarity: dict[str, Any],
@@ -2440,6 +2487,8 @@ def build_stage32_shadow_composer_state(
         would_route_refute = False
     elif structured_shadow_mode and structured_coverage.get("enabled"):
         route = structured_coverage.get("route")
+        structured_reason = str(structured_coverage.get("original_reason") or structured_coverage.get("reason"))
+        structured_strength = str(structured_coverage.get("rule_strength", "unknown"))
         if route == "OVERCLAIM_NE":
             priority_trace.extend([
                 "hard_core:pass",
@@ -2463,6 +2512,10 @@ def build_stage32_shadow_composer_state(
             would_route_ne = False
             would_route_refute = True
         elif route == "ENTAILMENT_PRESERVE" and polarity["pred_label"] == "SUPPORT":
+            structured_coverage["direct_support_allowed"] = False
+            structured_coverage["direct_support_block_reason"] = (
+                "not_needed_positive_polarity"
+            )
             priority_trace.extend([
                 "hard_core:pass",
                 "stage33_structured:ENTAILMENT_PRESERVE",
@@ -2475,22 +2528,59 @@ def build_stage32_shadow_composer_state(
             would_route_ne = False
             would_route_refute = False
         elif route == "ENTAILMENT_PRESERVE" and structured_preserve_can_support:
-            priority_trace.extend([
-                "hard_core:pass",
-                "stage33_structured:ENTAILMENT_PRESERVE",
-                f"polarity:{polarity.get('pred_label')}",
-                "route:SUPPORT",
-            ])
-            shadow_label = "SUPPORT"
-            shadow_reason = "stage33_structured_entails_support_direct_preserve"
-            would_block_support = False
-            would_route_ne = False
-            would_route_refute = False
+            direct_support_allowed = (
+                structured_reason in structured_direct_support_rules
+                and structured_strength == "high_precision"
+                and hard_core.get("pass") is True
+            )
+            if direct_support_allowed:
+                block_reason = "allowed"
+            elif hard_core.get("pass") is not True:
+                block_reason = "hard_core_not_true"
+            elif structured_strength != "high_precision":
+                block_reason = f"rule_strength:{structured_strength}"
+            else:
+                block_reason = f"rule_not_allowed:{structured_reason}"
+            structured_coverage["direct_support_allowed"] = direct_support_allowed
+            structured_coverage["direct_support_block_reason"] = block_reason
+            if direct_support_allowed:
+                priority_trace.extend([
+                    "hard_core:pass",
+                    "stage33_structured:ENTAILMENT_PRESERVE",
+                    f"rule:{structured_reason}",
+                    "direct_support:allowed",
+                    f"polarity:{polarity.get('pred_label')}",
+                    "route:SUPPORT",
+                ])
+                shadow_label = "SUPPORT"
+                shadow_reason = "stage33_structured_entails_support_direct_preserve"
+                would_block_support = False
+                would_route_ne = False
+                would_route_refute = False
+            else:
+                priority_trace.extend([
+                    "hard_core:pass",
+                    "stage33_structured:ENTAILMENT_PRESERVE",
+                    f"rule:{structured_reason}",
+                    f"polarity:{polarity.get('pred_label')}",
+                    f"direct_support:blocked:{block_reason}",
+                    "route:NOT_ENTITLED",
+                ])
+                shadow_label = "NOT_ENTITLED"
+                shadow_reason = "stage33_structured_entailment_direct_support_blocked"
+                would_block_support = False
+                would_route_ne = True
+                would_route_refute = False
         elif route == "ENTAILMENT_PRESERVE":
+            structured_coverage["direct_support_allowed"] = False
+            structured_coverage["direct_support_block_reason"] = (
+                "preserve_can_support_disabled"
+            )
             priority_trace.extend([
                 "hard_core:pass",
                 "stage33_structured:ENTAILMENT_PRESERVE",
                 f"polarity:{polarity.get('pred_label')}",
+                "direct_support:blocked:preserve_can_support_disabled",
                 "route:NOT_ENTITLED",
             ])
             shadow_label = "NOT_ENTITLED"
@@ -2641,6 +2731,8 @@ def build_stage32_owner_state(
     structured_coverage_enabled: bool = False,
     structured_coverage_shadow_mode: bool = False,
     structured_coverage_preserve_can_support: bool = False,
+    structured_coverage_direct_support_rules: set[str] | None = None,
+    structured_coverage_weak_rules_to_residual: set[str] | None = None,
 ) -> dict[str, Any]:
     """Build Stage32-B owner-state proxies without changing model outputs."""
     hard_core = build_stage32_hard_core_owner_state(output, index)
@@ -2655,6 +2747,7 @@ def build_stage32_owner_state(
     structured_coverage = build_stage33_structured_coverage_owner_state(
         record,
         enabled=structured_coverage_enabled,
+        weak_rules_to_residual=structured_coverage_weak_rules_to_residual,
     )
     residual_adjudication = build_stage32_residual_adjudication_owner_state(output, index)
     ani_diagnostic = build_stage32_ani_diagnostic_state(output, index)
@@ -2666,6 +2759,10 @@ def build_stage32_owner_state(
         structured_coverage=structured_coverage,
         structured_shadow_mode=structured_coverage_shadow_mode,
         structured_preserve_can_support=structured_coverage_preserve_can_support,
+        structured_direct_support_rules=(
+            structured_coverage_direct_support_rules
+            or _stage33_parse_csv_set(_STAGE33_DEFAULT_DIRECT_SUPPORT_RULES)
+        ),
         residual_adjudication=residual_adjudication,
         ani_diagnostic=ani_diagnostic,
         polarity=polarity,
@@ -2718,7 +2815,15 @@ def flatten_stage32_owner_state(state: dict[str, Any]) -> dict[str, Any]:
         "stage33_structured_coverage_label": structured["label"],
         "stage33_structured_coverage_route": structured["route"],
         "stage33_structured_coverage_reason": structured["reason"],
+        "stage33_structured_coverage_original_reason": structured["original_reason"],
+        "stage33_structured_coverage_rule_strength": structured["rule_strength"],
         "stage33_structured_coverage_confidence": structured["confidence"],
+        "stage33_structured_coverage_direct_support_allowed": structured[
+            "direct_support_allowed"
+        ],
+        "stage33_structured_coverage_direct_support_block_reason": structured[
+            "direct_support_block_reason"
+        ],
         "stage33_structured_coverage_claim_cues": structured["claim_cues"],
         "stage33_structured_coverage_evidence_cues": structured["evidence_cues"],
         "stage33_structured_coverage_rule_fired": structured["rule_fired"],
@@ -2762,6 +2867,9 @@ def prediction_records_v6b(
     stage33_structured_coverage_owner_export: bool = False,
     stage33_structured_coverage_owner_shadow_mode: bool = False,
     stage33_structured_coverage_preserve_can_support: bool = False,
+    stage33_structured_coverage_direct_support_rules: str = _STAGE33_DEFAULT_DIRECT_SUPPORT_RULES,
+    stage33_structured_coverage_disable_specific_general_direct_support: bool = False,
+    stage33_structured_coverage_weak_rules_to_residual: str = "",
 ) -> list[dict]:
     """Export predictions with Stage28-E enriched schema (additive; preserves all legacy fields)."""
     logits_cpu = output["logits"].detach().cpu()
@@ -2776,6 +2884,14 @@ def prediction_records_v6b(
         predictions.clone()
         if stage32_owner_state_shadow_mode and stage32_owner_state_export
         else None
+    )
+    structured_direct_support_rules = _stage33_parse_csv_set(
+        stage33_structured_coverage_direct_support_rules
+    )
+    if stage33_structured_coverage_disable_specific_general_direct_support:
+        structured_direct_support_rules.discard("specific_to_general_proxy")
+    structured_weak_rules_to_residual = _stage33_parse_csv_set(
+        stage33_structured_coverage_weak_rules_to_residual
     )
 
     # Existing v6b scalar outputs
@@ -2823,6 +2939,8 @@ def prediction_records_v6b(
                 structured_coverage_preserve_can_support=(
                     stage33_structured_coverage_preserve_can_support
                 ),
+                structured_coverage_direct_support_rules=structured_direct_support_rules,
+                structured_coverage_weak_rules_to_residual=structured_weak_rules_to_residual,
             )
             if stage32_owner_state_export
             else None
@@ -4425,6 +4543,34 @@ def build_parser() -> argparse.ArgumentParser:
             "routes to recover SUPPORT even when polarity proxy is not SUPPORT."
         ),
     )
+    parser.add_argument(
+        "--stage33-structured-coverage-direct-support-rules",
+        type=str,
+        default=_STAGE33_DEFAULT_DIRECT_SUPPORT_RULES,
+        help=(
+            "Stage33-B: comma-separated structured rule reasons allowed to directly "
+            "recover SUPPORT when preserve-can-support is enabled. Default: "
+            f"{_STAGE33_DEFAULT_DIRECT_SUPPORT_RULES}."
+        ),
+    )
+    parser.add_argument(
+        "--stage33-structured-coverage-disable-specific-general-direct-support",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage33-B: prevent specific_to_general_proxy from directly recovering "
+            "SUPPORT in the structured shadow composer."
+        ),
+    )
+    parser.add_argument(
+        "--stage33-structured-coverage-weak-rules-to-residual",
+        type=str,
+        default="",
+        help=(
+            "Stage33-B: comma-separated structured rule reasons to force to "
+            "STRUCT_UNRESOLVED/RESIDUAL while preserving the original reason field."
+        ),
+    )
 
     parser.add_argument(
         "--v7-no-aux-losses",
@@ -4720,6 +4866,19 @@ def evaluate_external_probe(
         ),
         stage33_structured_coverage_preserve_can_support=getattr(
             args, "stage33_structured_coverage_preserve_can_support", False
+        ),
+        stage33_structured_coverage_direct_support_rules=getattr(
+            args,
+            "stage33_structured_coverage_direct_support_rules",
+            _STAGE33_DEFAULT_DIRECT_SUPPORT_RULES,
+        ),
+        stage33_structured_coverage_disable_specific_general_direct_support=getattr(
+            args,
+            "stage33_structured_coverage_disable_specific_general_direct_support",
+            False,
+        ),
+        stage33_structured_coverage_weak_rules_to_residual=getattr(
+            args, "stage33_structured_coverage_weak_rules_to_residual", ""
         ),
     )
 
@@ -5086,6 +5245,9 @@ _LIFT_CONFIG_KEYS: tuple[str, ...] = (
     "stage33_structured_coverage_owner_export",
     "stage33_structured_coverage_owner_shadow_mode",
     "stage33_structured_coverage_preserve_can_support",
+    "stage33_structured_coverage_direct_support_rules",
+    "stage33_structured_coverage_disable_specific_general_direct_support",
+    "stage33_structured_coverage_weak_rules_to_residual",
     # v7 Stage15 / time_swap provenance (also lifted from audit_ledger elsewhere;
     # this covers the configuration copy when the ledger path is absent)
     "stage15_used_for_v7_training",
@@ -7251,6 +7413,19 @@ def main(argv: list[str] | None = None) -> int:
                     stage33_structured_coverage_preserve_can_support=getattr(
                         args, "stage33_structured_coverage_preserve_can_support", False
                     ),
+                    stage33_structured_coverage_direct_support_rules=getattr(
+                        args,
+                        "stage33_structured_coverage_direct_support_rules",
+                        _STAGE33_DEFAULT_DIRECT_SUPPORT_RULES,
+                    ),
+                    stage33_structured_coverage_disable_specific_general_direct_support=getattr(
+                        args,
+                        "stage33_structured_coverage_disable_specific_general_direct_support",
+                        False,
+                    ),
+                    stage33_structured_coverage_weak_rules_to_residual=getattr(
+                        args, "stage33_structured_coverage_weak_rules_to_residual", ""
+                    ),
                 )
                 best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
                 best_pc_metrics = {
@@ -7358,6 +7533,19 @@ def main(argv: list[str] | None = None) -> int:
                         stage33_structured_coverage_preserve_can_support=getattr(
                             args, "stage33_structured_coverage_preserve_can_support", False
                         ),
+                        stage33_structured_coverage_direct_support_rules=getattr(
+                            args,
+                            "stage33_structured_coverage_direct_support_rules",
+                            _STAGE33_DEFAULT_DIRECT_SUPPORT_RULES,
+                        ),
+                        stage33_structured_coverage_disable_specific_general_direct_support=getattr(
+                            args,
+                            "stage33_structured_coverage_disable_specific_general_direct_support",
+                            False,
+                        ),
+                        stage33_structured_coverage_weak_rules_to_residual=getattr(
+                            args, "stage33_structured_coverage_weak_rules_to_residual", ""
+                        ),
                     )
                     _tc_state = {
                         k: v.detach().cpu().clone() for k, v in model.state_dict().items()
@@ -7432,6 +7620,19 @@ def main(argv: list[str] | None = None) -> int:
                             ),
                             stage33_structured_coverage_preserve_can_support=getattr(
                                 args, "stage33_structured_coverage_preserve_can_support", False
+                            ),
+                            stage33_structured_coverage_direct_support_rules=getattr(
+                                args,
+                                "stage33_structured_coverage_direct_support_rules",
+                                _STAGE33_DEFAULT_DIRECT_SUPPORT_RULES,
+                            ),
+                            stage33_structured_coverage_disable_specific_general_direct_support=getattr(
+                                args,
+                                "stage33_structured_coverage_disable_specific_general_direct_support",
+                                False,
+                            ),
+                            stage33_structured_coverage_weak_rules_to_residual=getattr(
+                                args, "stage33_structured_coverage_weak_rules_to_residual", ""
                             ),
                         )
                         _pcs_state = {
@@ -9052,6 +9253,19 @@ def main(argv: list[str] | None = None) -> int:
             "stage33_structured_coverage_preserve_can_support": getattr(
                 args, "stage33_structured_coverage_preserve_can_support", False
             ),
+            "stage33_structured_coverage_direct_support_rules": getattr(
+                args,
+                "stage33_structured_coverage_direct_support_rules",
+                _STAGE33_DEFAULT_DIRECT_SUPPORT_RULES,
+            ),
+            "stage33_structured_coverage_disable_specific_general_direct_support": getattr(
+                args,
+                "stage33_structured_coverage_disable_specific_general_direct_support",
+                False,
+            ),
+            "stage33_structured_coverage_weak_rules_to_residual": getattr(
+                args, "stage33_structured_coverage_weak_rules_to_residual", ""
+            ),
             "stage33_structured_coverage_modifies_final_logits": False,
             "stage33_structured_coverage_modifies_final_predictions": False,
             "v7_h1_entitlement_for_decision_source": (
@@ -9223,6 +9437,19 @@ def main(argv: list[str] | None = None) -> int:
                 ),
                 "stage33_structured_coverage_preserve_can_support": getattr(
                     args, "stage33_structured_coverage_preserve_can_support", False
+                ),
+                "stage33_structured_coverage_direct_support_rules": getattr(
+                    args,
+                    "stage33_structured_coverage_direct_support_rules",
+                    _STAGE33_DEFAULT_DIRECT_SUPPORT_RULES,
+                ),
+                "stage33_structured_coverage_disable_specific_general_direct_support": getattr(
+                    args,
+                    "stage33_structured_coverage_disable_specific_general_direct_support",
+                    False,
+                ),
+                "stage33_structured_coverage_weak_rules_to_residual": getattr(
+                    args, "stage33_structured_coverage_weak_rules_to_residual", ""
                 ),
                 "stage33_structured_coverage_modifies_final_logits": False,
                 "stage33_structured_coverage_modifies_final_predictions": False,

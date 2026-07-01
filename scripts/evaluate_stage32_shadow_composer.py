@@ -323,12 +323,19 @@ def compute_coverage_v2_summary(rows: list[dict[str, Any]]) -> dict[str, Any] | 
     }
 
 
-def compute_stage33_structured_summary(rows: list[dict[str, Any]]) -> dict[str, Any] | None:
+def compute_stage33_structured_summary(
+    rows: list[dict[str, Any]],
+    gold_field: str | None = None,
+    shadow_field: str | None = None,
+) -> dict[str, Any] | None:
     fields = {
         "stage33_structured_coverage_label",
         "stage33_structured_coverage_route",
         "stage33_structured_coverage_reason",
         "stage33_structured_coverage_confidence",
+        "stage33_structured_coverage_rule_strength",
+        "stage33_structured_coverage_direct_support_allowed",
+        "stage33_structured_coverage_direct_support_block_reason",
     }
     if not any(any(field in row for field in fields) for row in rows):
         return None
@@ -337,6 +344,24 @@ def compute_stage33_structured_summary(rows: list[dict[str, Any]]) -> dict[str, 
         (safe_float(row.get("stage33_structured_coverage_confidence")) for row in rows)
         if value is not None
     ]
+    proxy_refute_to_support = 0
+    proxy_ne_to_support = 0
+    if gold_field is not None and shadow_field is not None:
+        for row in rows:
+            strength = str(row.get("stage33_structured_coverage_rule_strength", ""))
+            reason = str(
+                row.get("stage33_structured_coverage_original_reason")
+                or row.get("stage33_structured_coverage_reason", "")
+            )
+            is_proxy = strength == "proxy" or reason.endswith("_proxy")
+            if not is_proxy:
+                continue
+            gold = normalize_label(row.get(gold_field))
+            shadow = normalize_label(row.get(shadow_field))
+            if gold == "REFUTE" and shadow == "SUPPORT":
+                proxy_refute_to_support += 1
+            if gold == "NOT_ENTITLED" and shadow == "SUPPORT":
+                proxy_ne_to_support += 1
     return {
         "stage33_structured_coverage_label_counts": group_distribution(
             rows, "stage33_structured_coverage_label"
@@ -347,6 +372,20 @@ def compute_stage33_structured_summary(rows: list[dict[str, Any]]) -> dict[str, 
         "stage33_structured_coverage_reason_counts": group_distribution(
             rows, "stage33_structured_coverage_reason"
         ),
+        "stage33_structured_coverage_rule_strength_counts": group_distribution(
+            rows, "stage33_structured_coverage_rule_strength"
+        ),
+        "stage33_structured_coverage_direct_support_allowed_counts": dict(Counter(
+            normalize_bool(row.get("stage33_structured_coverage_direct_support_allowed"))
+            for row in rows
+        )),
+        "stage33_structured_coverage_direct_support_block_reason_counts": (
+            group_distribution(
+                rows, "stage33_structured_coverage_direct_support_block_reason"
+            )
+        ),
+        "stage33_proxy_refute_to_support": proxy_refute_to_support,
+        "stage33_proxy_ne_to_support": proxy_ne_to_support,
         "stage33_structured_coverage_confidence_summary": numeric_summary(confidences),
     }
 
@@ -428,6 +467,13 @@ def compute_stage31_diagnostics(
     structured_routes = [
         str(row.get("stage33_structured_coverage_route", "")) for row in rows
     ]
+    structured_reasons = [
+        str(
+            row.get("stage33_structured_coverage_original_reason")
+            or row.get("stage33_structured_coverage_reason", "")
+        )
+        for row in rows
+    ]
     return compute_stage31_diagnostics_from_values(
         rows,
         group_field,
@@ -435,6 +481,7 @@ def compute_stage31_diagnostics(
         shadow,
         v2_routes,
         structured_routes,
+        structured_reasons,
     )
 
 
@@ -445,6 +492,7 @@ def compute_stage31_diagnostics_from_values(
     shadow: list[str],
     v2_routes: list[str] | None = None,
     structured_routes: list[str] | None = None,
+    structured_reasons: list[str] | None = None,
 ) -> dict[str, Any] | None:
     if group_field is None:
         return None
@@ -456,9 +504,14 @@ def compute_stage31_diagnostics_from_values(
         v2_routes = [""] * len(rows)
     if structured_routes is None:
         structured_routes = [""] * len(rows)
+    if structured_reasons is None:
+        structured_reasons = [""] * len(rows)
     diag = Counter()
-    for row, current_label, shadow_label, v2_route, structured_route in zip(
-        rows, current, shadow, v2_routes, structured_routes
+    support_by_reason = Counter()
+    overclaim_support_by_reason = Counter()
+    refute_support_by_reason = Counter()
+    for row, current_label, shadow_label, v2_route, structured_route, structured_reason in zip(
+        rows, current, shadow, v2_routes, structured_routes, structured_reasons
     ):
         group = str(row.get(group_field, ""))
         if group in SUPPORT_ENTAILMENT_GROUPS:
@@ -479,6 +532,7 @@ def compute_stage31_diagnostics_from_values(
             if shadow_label == "SUPPORT":
                 diag["support_entailment_shadow_support"] += 1
                 diag["support_entailment_stage33_shadow_support"] += 1
+                support_by_reason[structured_reason or "missing"] += 1
             if shadow_label == "REFUTE":
                 diag["shadow_support_to_refute"] += 1
                 diag["stage33_shadow_support_to_refute"] += 1
@@ -498,6 +552,7 @@ def compute_stage31_diagnostics_from_values(
                 diag["shadow_overclaim_to_support"] += 1
                 diag["overclaim_stage33_shadow_support"] += 1
                 diag["stage33_shadow_overclaim_to_support"] += 1
+                overclaim_support_by_reason[structured_reason or "missing"] += 1
             if shadow_label == "NOT_ENTITLED":
                 diag["overclaim_shadow_ne"] += 1
         elif group in REFUTE_GROUPS:
@@ -515,6 +570,7 @@ def compute_stage31_diagnostics_from_values(
                 diag["refute_shadow_support"] += 1
                 diag["shadow_refute_to_support"] += 1
                 diag["stage33_shadow_refute_to_support"] += 1
+                refute_support_by_reason[structured_reason or "missing"] += 1
             if shadow_label == "REFUTE":
                 diag["refute_shadow_refute"] += 1
                 diag["refute_stage33_shadow_refute"] += 1
@@ -557,7 +613,13 @@ def compute_stage31_diagnostics_from_values(
         "stage33_shadow_support_to_refute",
     ):
         diag.setdefault(key, 0)
-    return dict(diag)
+    result = dict(diag)
+    result["support_entailment_shadow_support_by_reason"] = dict(support_by_reason)
+    result["stage33_shadow_overclaim_to_support_by_reason"] = dict(
+        overclaim_support_by_reason
+    )
+    result["stage33_shadow_refute_to_support_by_reason"] = dict(refute_support_by_reason)
+    return result
 
 
 def coverage_route_from_label(label: str) -> str:
@@ -764,18 +826,56 @@ def decide(
             stage33_support_recovered = 0
             stage33_support_ne = 0
             stage33_support_refute = 0
-        if stage33_overclaim_support > 0 or stage33_refute_support > 0 or macro_delta <= -0.05:
+        proxy_refute_to_support = int(
+            stage33_summary.get("stage33_proxy_refute_to_support", 0)
+        )
+        proxy_ne_to_support = int(stage33_summary.get("stage33_proxy_ne_to_support", 0))
+        direct_allowed_counts = stage33_summary.get(
+            "stage33_structured_coverage_direct_support_allowed_counts", {}
+        )
+        proxy_safety_errors = proxy_refute_to_support + proxy_ne_to_support
+        any_direct_support_allowed = int(direct_allowed_counts.get(True, 0) or 0) > 0
+        if (
+            stage33_support_recovered > 0
+            and proxy_safety_errors > 0
+            and (stage33_overclaim_support > 0 or stage33_refute_support > 0)
+        ):
+            return {
+                "label": "STAGE33_STRUCTURED_OWNER_NEEDS_RULE_RESTRICTION",
+                "reason": (
+                    "Structured owner recovers SUPPORT on Stage31-style cases, but "
+                    "proxy rules still convert REFUTE/NOT_ENTITLED rows to SUPPORT."
+                ),
+            }
+        if stage33_overclaim_support > 0 or stage33_refute_support > 0:
             return {
                 "label": "STAGE33_STRUCTURED_OWNER_UNSAFE",
                 "reason": (
-                    "Structured shadow route is unsafe: safety errors appeared or "
-                    "macro-F1 collapsed materially."
+                    "Structured shadow route still has overclaim/refute to SUPPORT "
+                    "safety errors after the available restriction policy."
+                ),
+            }
+        if macro_delta <= -0.05 and any_direct_support_allowed:
+            return {
+                "label": "STAGE33_STRUCTURED_OWNER_NEEDS_RULE_RESTRICTION",
+                "reason": (
+                    "Structured owner recovers SUPPORT but macro-F1 collapses while "
+                    "direct structured SUPPORT overrides are still active."
+                ),
+            }
+        if macro_delta <= -0.05:
+            return {
+                "label": "STAGE33_STRUCTURED_OWNER_UNSAFE",
+                "reason": (
+                    "Structured shadow route materially reduces macro-F1 even after "
+                    "direct-support restriction diagnostics."
                 ),
             }
         if (
             stage33_support_recovered > 0
             and stage33_overclaim_support == 0
             and stage33_refute_support == 0
+            and proxy_refute_to_support == 0
             and macro_delta > -0.02
         ):
             return {
@@ -934,10 +1034,34 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
             ("Structured Label Counts", "stage33_structured_coverage_label_counts"),
             ("Structured Route Counts", "stage33_structured_coverage_route_counts"),
             ("Structured Reason Counts", "stage33_structured_coverage_reason_counts"),
+            (
+                "Structured Rule Strength Counts",
+                "stage33_structured_coverage_rule_strength_counts",
+            ),
+            (
+                "Direct Support Allowed Counts",
+                "stage33_structured_coverage_direct_support_allowed_counts",
+            ),
+            (
+                "Direct Support Block Reason Counts",
+                "stage33_structured_coverage_direct_support_block_reason_counts",
+            ),
         ):
             lines.extend(["", f"### {title}", "| Value | Count |", "|---|---:|"])
             for name, count in sorted(report["stage33_structured_coverage_summary"][key].items()):
                 lines.append(f"| {name} | {count} |")
+        lines.extend([
+            "",
+            "Proxy safety summary:",
+            (
+                "- proxy REFUTE -> SUPPORT: "
+                f"{report['stage33_structured_coverage_summary']['stage33_proxy_refute_to_support']}"
+            ),
+            (
+                "- proxy NOT_ENTITLED -> SUPPORT: "
+                f"{report['stage33_structured_coverage_summary']['stage33_proxy_ne_to_support']}"
+            ),
+        ])
         lines.extend(["", "Confidence summary:"])
         for key, value in report["stage33_structured_coverage_summary"][
             "stage33_structured_coverage_confidence_summary"
@@ -1105,7 +1229,7 @@ def main() -> int:
     rows_changed = sum(c != s for c, s in zip(current, shadow))
     stage31_diag = compute_stage31_diagnostics(rows, group_field, current_field, shadow_field)
     coverage_v2_summary = compute_coverage_v2_summary(rows)
-    stage33_summary = compute_stage33_structured_summary(rows)
+    stage33_summary = compute_stage33_structured_summary(rows, gold_field, shadow_field)
     offline_sweep: list[dict[str, Any]] | None = None
     offline_sweep_best: dict[str, Any] | None = None
     offline_sweep_decision: dict[str, str] | None = None
@@ -1246,6 +1370,22 @@ def main() -> int:
         ),
         "stage33_structured_coverage_reason_counts": (
             stage33_summary.get("stage33_structured_coverage_reason_counts")
+            if stage33_summary else None
+        ),
+        "stage33_structured_coverage_rule_strength_counts": (
+            stage33_summary.get("stage33_structured_coverage_rule_strength_counts")
+            if stage33_summary else None
+        ),
+        "stage33_structured_coverage_direct_support_allowed_counts": (
+            stage33_summary.get(
+                "stage33_structured_coverage_direct_support_allowed_counts"
+            )
+            if stage33_summary else None
+        ),
+        "stage33_structured_coverage_direct_support_block_reason_counts": (
+            stage33_summary.get(
+                "stage33_structured_coverage_direct_support_block_reason_counts"
+            )
             if stage33_summary else None
         ),
         "stage33_structured_coverage_confidence_summary": (
