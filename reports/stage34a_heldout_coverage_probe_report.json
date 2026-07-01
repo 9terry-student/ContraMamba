@@ -1,0 +1,55 @@
+{
+  "stage": "Stage34-A",
+  "title": "Held-out structured coverage generalization audit",
+  "probe_file": "data/stage34a_heldout_coverage_probe.jsonl",
+  "row_count": 400,
+  "groups": [
+    "heldout_all_to_some_support",
+    "heldout_some_to_all_not_entitled",
+    "heldout_none_to_some_refute",
+    "heldout_some_to_none_refute",
+    "heldout_only_to_base_support",
+    "heldout_also_to_only_not_entitled",
+    "heldout_specific_to_general_support",
+    "heldout_general_to_specific_not_entitled",
+    "heldout_whole_to_part_support",
+    "heldout_part_to_whole_not_entitled",
+    "heldout_collection_to_member_support",
+    "heldout_member_to_collection_not_entitled",
+    "heldout_region_to_subregion_support",
+    "heldout_subregion_to_region_not_entitled",
+    "heldout_category_to_subcategory_support",
+    "heldout_subcategory_to_category_not_entitled",
+    "heldout_role_to_specialized_role_support",
+    "heldout_specialized_role_to_role_not_entitled",
+    "heldout_material_to_variant_support",
+    "heldout_variant_to_material_not_entitled"
+  ],
+  "schema": [
+    "id",
+    "pair_id",
+    "claim",
+    "evidence",
+    "final_label",
+    "label",
+    "gold_label",
+    "group",
+    "stage34_family",
+    "stage34_relation",
+    "stage34_expected_route",
+    "stage34_is_heldout"
+  ],
+  "decision_labels": [
+    "STAGE34A_HELDOUT_GENERALIZATION_PROMISING",
+    "STAGE34A_HELDOUT_SYMBOLIC_MEMORIZATION_RISK",
+    "STAGE34A_HELDOUT_UNSAFE",
+    "STAGE34A_HELDOUT_DIAGNOSTIC_ONLY"
+  ],
+  "leakage_policy": {
+    "diagnostic_only": true,
+    "use_for_training": false,
+    "use_for_calibration": false,
+    "use_for_checkpoint_selection": false,
+    "use_for_loss": false
+  }
+}
