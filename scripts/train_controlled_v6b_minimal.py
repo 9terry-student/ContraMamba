@@ -3837,6 +3837,198 @@ def _stage37_config_from_args(args: "argparse.Namespace") -> dict[str, Any]:
     }
 
 
+# ── Stage39-A: opt-in final composer (prediction/export-time only) ──────────
+#
+# Off by default. Reuses the Stage32/Stage33/Stage36/Stage37 shadow labels
+# already computed above; never touches final logits, training, or loss.
+# When `--stage39-use-final-composer-opt-in` is absent, behavior, metrics and
+# exported labels are identical to Stage38/Stage37. Only combining
+# `--stage39-use-final-composer-opt-in` with
+# `--stage39-final-composer-output-mode replace_pred_final_label` may replace
+# the exported final prediction; `export_only` (the default) only exports
+# `stage39_composed_final_label` alongside the unchanged `pred_final_label`.
+_STAGE39_VALID_FINAL_LABELS = frozenset({"SUPPORT", "REFUTE", "NOT_ENTITLED"})
+
+
+def _stage39_is_high_precision_contradiction(row: dict) -> bool:
+    """Stage39-A: safe_structured REFUTE gate -- all three Stage33 fields must agree."""
+    return (
+        str(row.get("stage33_structured_coverage_reason") or "") == "none_to_some"
+        and str(row.get("stage33_structured_coverage_route") or "") == "CONTRADICTION_REFUTE"
+        and str(row.get("stage33_conditional_override_type") or "")
+        == "high_precision_contradiction"
+    )
+
+
+def _stage39_blocked_action_reason(result: dict[str, Any]) -> "tuple[str, str]":
+    if result["stage39_blocked_by_stage36"]:
+        return "blocked_by_stage36", "stage36_support_safety_blocker_fired"
+    if result["stage39_blocked_by_refute_to_support_guard"]:
+        return "blocked_by_refute_to_support_guard", "refute_to_support_guard_active"
+    if result["stage39_blocked_by_stage37_from_refute_guard"]:
+        return (
+            "blocked_by_stage37_from_refute_guard",
+            "stage37_recovered_from_refute_guard_active",
+        )
+    return "no_change", "blocked_unknown"
+
+
+def compute_stage39_final_composer(row: dict, args: "argparse.Namespace") -> dict[str, Any]:
+    """Stage39-A: deterministic opt-in final composer.
+
+    Never trains on, calibrates against, or selects checkpoints from this
+    computation -- prediction/export-time composition only. `row` must carry
+    the current final label (`pred_final_label`), the candidate shadow
+    source labels (`stage37_final_shadow_label`, `stage36_final_shadow_label`,
+    `stage32_shadow_label`), the Stage36 blocker flag
+    (`stage36_support_blocker_fired`), the Stage37 recovery provenance
+    (`stage37_recovered_from_label`), and the Stage33 structured fields used
+    for the safe_structured high-precision-contradiction gate. `row` may also
+    carry a gold label for reporting only -- it is never read here for any
+    decision.
+    """
+    enabled = bool(getattr(args, "stage39_use_final_composer_opt_in", False))
+    policy = getattr(args, "stage39_final_composer_policy", "support_only")
+    output_mode = getattr(args, "stage39_final_composer_output_mode", "export_only")
+    source_name = getattr(
+        args, "stage39_final_composer_source", "stage37_final_shadow_label"
+    )
+    disallow_refute_to_support = bool(
+        getattr(args, "stage39_disallow_refute_to_support", True)
+    )
+    require_stage36_clear = bool(
+        getattr(args, "stage39_require_stage36_safety_clear", True)
+    )
+    require_stage37_not_from_refute = bool(
+        getattr(args, "stage39_require_stage37_not_from_refute", True)
+    )
+
+    original_final_label = str(row.get("pred_final_label") or "")
+
+    result: dict[str, Any] = {
+        "stage39_final_composer_enabled": enabled,
+        "stage39_final_composer_policy": policy,
+        "stage39_final_composer_output_mode": output_mode,
+        "stage39_original_final_label": original_final_label,
+        "stage39_source_shadow_label": None,
+        "stage39_composed_final_label": original_final_label,
+        "stage39_final_label_changed": False,
+        "stage39_composer_action": "disabled",
+        "stage39_composer_reason": "stage39_disabled",
+        "stage39_blocked_by_stage36": False,
+        "stage39_blocked_by_refute_to_support_guard": False,
+        "stage39_blocked_by_stage37_from_refute_guard": False,
+        "stage39_blocked_by_missing_source": False,
+    }
+    if not enabled:
+        return result
+
+    source_lookup = {
+        "stage37_final_shadow_label": row.get("stage37_final_shadow_label"),
+        "stage36_final_shadow_label": row.get("stage36_final_shadow_label"),
+        "stage32_shadow_label": row.get("stage32_shadow_label"),
+    }
+    source_label_raw = source_lookup.get(source_name)
+    source_label = (
+        str(source_label_raw)
+        if source_label_raw is not None
+        and str(source_label_raw) in _STAGE39_VALID_FINAL_LABELS
+        else None
+    )
+    result["stage39_source_shadow_label"] = source_label
+
+    if source_label is None:
+        result["stage39_blocked_by_missing_source"] = True
+        result["stage39_composer_action"] = "blocked_by_missing_source"
+        result["stage39_composer_reason"] = "missing_source_shadow_label"
+        return result
+
+    stage36_blocker_fired = bool(row.get("stage36_support_blocker_fired", False))
+    stage37_recovered_from_refute = (
+        str(row.get("stage37_recovered_from_label") or "") == "REFUTE"
+    )
+
+    def _guard_support_composition() -> bool:
+        allowed = True
+        if original_final_label == "REFUTE" and disallow_refute_to_support:
+            result["stage39_blocked_by_refute_to_support_guard"] = True
+            allowed = False
+        if require_stage36_clear and stage36_blocker_fired:
+            result["stage39_blocked_by_stage36"] = True
+            allowed = False
+        if require_stage37_not_from_refute and stage37_recovered_from_refute:
+            result["stage39_blocked_by_stage37_from_refute_guard"] = True
+            allowed = False
+        return allowed
+
+    candidate_label = original_final_label
+    action = "no_change"
+    reason = "source_matches_original"
+
+    if policy == "support_only":
+        if source_label != "SUPPORT":
+            action, reason = "no_change", "support_only_policy_restricts_to_support"
+        elif original_final_label == "SUPPORT":
+            action, reason = "no_change", "already_support"
+        elif _guard_support_composition():
+            candidate_label = "SUPPORT"
+            action, reason = "composed_to_support", "support_only_from_stage37"
+        else:
+            action, reason = _stage39_blocked_action_reason(result)
+
+    elif policy == "safe_structured":
+        if source_label == "SUPPORT" and original_final_label != "SUPPORT":
+            if _guard_support_composition():
+                candidate_label = "SUPPORT"
+                action, reason = "composed_to_support", "support_only_from_stage37"
+            else:
+                action, reason = _stage39_blocked_action_reason(result)
+        elif source_label == "NOT_ENTITLED" and original_final_label == "SUPPORT":
+            candidate_label = "NOT_ENTITLED"
+            action, reason = (
+                "composed_to_not_entitled",
+                "overclaim_not_entitled_from_stage37_shadow",
+            )
+        elif original_final_label in {
+            "SUPPORT",
+            "NOT_ENTITLED",
+        } and _stage39_is_high_precision_contradiction(row):
+            candidate_label = "REFUTE"
+            action, reason = (
+                "composed_to_refute",
+                "high_precision_contradiction_from_stage33",
+            )
+        else:
+            action, reason = "no_change", "safe_structured_no_qualifying_transition"
+
+    elif policy == "full_shadow":
+        candidate_label = source_label
+        if candidate_label == original_final_label:
+            action, reason = "no_change", "source_matches_original"
+        elif candidate_label == "SUPPORT":
+            if _guard_support_composition():
+                action, reason = "composed_to_support", "full_shadow_support_adoption"
+            else:
+                candidate_label = original_final_label
+                action, reason = _stage39_blocked_action_reason(result)
+        elif candidate_label == "REFUTE":
+            action, reason = "composed_to_refute", "full_shadow_refute_adoption"
+        elif candidate_label == "NOT_ENTITLED":
+            action, reason = (
+                "composed_to_not_entitled",
+                "full_shadow_not_entitled_adoption",
+            )
+        else:
+            candidate_label = original_final_label
+            action, reason = "no_change", "full_shadow_invalid_source_label"
+
+    result["stage39_composed_final_label"] = candidate_label
+    result["stage39_final_label_changed"] = candidate_label != original_final_label
+    result["stage39_composer_action"] = action
+    result["stage39_composer_reason"] = reason
+    return result
+
+
 def flatten_stage32_owner_state(state: dict[str, Any]) -> dict[str, Any]:
     hard_core = state["hard_core"]
     coverage = state["coverage_entailment"]
@@ -4329,6 +4521,7 @@ def prediction_records_v6b(
         # ── Stage37-A: conservative safe SUPPORT recovery (shadow-only) ────────
         # Runs strictly after Stage36's post-blocker shadow label is known and
         # never overrides a fired Stage36 blocker.
+        _stage39_stage37_info: dict[str, Any] = {}
         if (
             stage37_safe_support_recovery_config is not None
             and stage37_safe_support_recovery_config.get("enabled")
@@ -4350,6 +4543,7 @@ def prediction_records_v6b(
                 args=args,
                 stage36_info=_stage37_stage36_info,
             )
+            _stage39_stage37_info = _stage37_result
             if stage37_safe_support_recovery_config.get("export"):
                 item["stage37_original_shadow_label"] = _stage37_result[
                     "stage37_original_shadow_label"
@@ -4405,6 +4599,92 @@ def prediction_records_v6b(
                 )
                 if item.get("stage33_conditional_shadow_label") is not None:
                     item["stage33_conditional_shadow_label"] = _stage37_final_label
+
+        # ── Stage39-A: opt-in final composer (prediction/export-time only) ─────
+        # Runs strictly after Stage37's final shadow label is known. Off by
+        # default: no stage39_* fields are added and pred_final_label is
+        # untouched unless --stage39-use-final-composer-opt-in (and, to
+        # replace the exported final label, --stage39-final-composer-output-
+        # mode replace_pred_final_label) are explicitly set. Never mutates
+        # logits/predictions tensors -- export dict only.
+        _stage39_opt_in_enabled = bool(
+            getattr(args, "stage39_use_final_composer_opt_in", False)
+        ) if args is not None else False
+        _stage39_export_flag = bool(
+            getattr(args, "stage39_final_composer_export", False)
+        ) if args is not None else False
+        if _stage39_opt_in_enabled or _stage39_export_flag:
+            _stage39_row: dict[str, Any] = {
+                "pred_final_label": item.get("pred_final_label"),
+                "stage37_final_shadow_label": _stage39_stage37_info.get(
+                    "stage37_final_shadow_label"
+                ),
+                "stage36_final_shadow_label": _stage37_stage36_info.get(
+                    "stage36_support_blocker_final_shadow_label"
+                ),
+                "stage32_shadow_label": item.get("stage32_shadow_label"),
+                "stage36_support_blocker_fired": _stage37_stage36_info.get(
+                    "stage36_support_blocker_fired", False
+                ),
+                "stage37_recovered_from_label": _stage39_stage37_info.get(
+                    "stage37_recovered_from_label"
+                ),
+                "stage33_structured_coverage_reason": item.get(
+                    "stage33_structured_coverage_reason"
+                ),
+                "stage33_structured_coverage_route": item.get(
+                    "stage33_structured_coverage_route"
+                ),
+                "stage33_conditional_override_type": item.get(
+                    "stage33_conditional_override_type"
+                ),
+                "gold_final_label": item.get("gold_final_label"),
+            }
+            _stage39_result = compute_stage39_final_composer(_stage39_row, args)
+            item["stage39_final_composer_enabled"] = _stage39_result[
+                "stage39_final_composer_enabled"
+            ]
+            item["stage39_final_composer_policy"] = _stage39_result[
+                "stage39_final_composer_policy"
+            ]
+            item["stage39_final_composer_output_mode"] = _stage39_result[
+                "stage39_final_composer_output_mode"
+            ]
+            item["stage39_original_final_label"] = _stage39_result[
+                "stage39_original_final_label"
+            ]
+            item["stage39_original_pred_final_label"] = item["pred_final_label"]
+            item["stage39_source_shadow_label"] = _stage39_result[
+                "stage39_source_shadow_label"
+            ]
+            item["stage39_composed_final_label"] = _stage39_result[
+                "stage39_composed_final_label"
+            ]
+            item["stage39_final_label_changed"] = _stage39_result[
+                "stage39_final_label_changed"
+            ]
+            item["stage39_composer_action"] = _stage39_result["stage39_composer_action"]
+            item["stage39_composer_reason"] = _stage39_result["stage39_composer_reason"]
+            item["stage39_blocked_by_stage36"] = _stage39_result[
+                "stage39_blocked_by_stage36"
+            ]
+            item["stage39_blocked_by_refute_to_support_guard"] = _stage39_result[
+                "stage39_blocked_by_refute_to_support_guard"
+            ]
+            item["stage39_blocked_by_stage37_from_refute_guard"] = _stage39_result[
+                "stage39_blocked_by_stage37_from_refute_guard"
+            ]
+            item["stage39_blocked_by_missing_source"] = _stage39_result[
+                "stage39_blocked_by_missing_source"
+            ]
+            if (
+                _stage39_opt_in_enabled
+                and _stage39_result["stage39_final_composer_output_mode"]
+                == "replace_pred_final_label"
+            ):
+                item["pred_final_label"] = _stage39_result[
+                    "stage39_composed_final_label"
+                ]
 
         exported.append(item)
     if stage32_shadow_logits_before is not None and not torch.equal(
@@ -6128,6 +6408,96 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+    # ── Stage39-A: opt-in final composer validation (prediction/export-time) ─
+    # All off by default. When off, final predictions/metrics/exported labels
+    # are identical to Stage38/Stage37. When on, composes a candidate final
+    # label from a Stage37/Stage36/Stage32 shadow label under deterministic
+    # safety guards. Never touches logits, training, or loss.
+    parser.add_argument(
+        "--stage39-use-final-composer-opt-in",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage39-A: enable deterministic final composer candidate "
+            "generation. Shadow/diagnostic only unless combined with "
+            "--stage39-final-composer-output-mode replace_pred_final_label. "
+            "Default off (identical to Stage38/Stage37)."
+        ),
+    )
+    parser.add_argument(
+        "--stage39-final-composer-export",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage39-A: include stage39_* diagnostic fields in prediction "
+            "exports even if the final prediction is not replaced."
+        ),
+    )
+    parser.add_argument(
+        "--stage39-final-composer-policy",
+        choices=("support_only", "safe_structured", "full_shadow"),
+        default="support_only",
+        help=(
+            "Stage39-A: composition policy. support_only only composes "
+            "SUPPORT from the source shadow label; safe_structured also "
+            "allows high-precision-contradiction REFUTE; full_shadow "
+            "diagnostically adopts the source shadow label outright, still "
+            "subject to hard safety guards."
+        ),
+    )
+    parser.add_argument(
+        "--stage39-final-composer-output-mode",
+        choices=("export_only", "replace_pred_final_label"),
+        default="export_only",
+        help=(
+            "Stage39-A: export_only exports stage39_composed_final_label "
+            "without changing pred_final_label; replace_pred_final_label "
+            "replaces the exported pred_final_label with the composed label "
+            "(only takes effect together with --stage39-use-final-composer-"
+            "opt-in)."
+        ),
+    )
+    parser.add_argument(
+        "--stage39-final-composer-source",
+        choices=(
+            "stage37_final_shadow_label",
+            "stage36_final_shadow_label",
+            "stage32_shadow_label",
+        ),
+        default="stage37_final_shadow_label",
+        help=(
+            "Stage39-A: which shadow label the composer treats as the "
+            "candidate source."
+        ),
+    )
+    parser.add_argument(
+        "--stage39-disallow-refute-to-support",
+        action="store_true",
+        default=True,
+        help=(
+            "Stage39-A: if the current final label is REFUTE and the source "
+            "shadow label is SUPPORT, do not compose to SUPPORT. Default on."
+        ),
+    )
+    parser.add_argument(
+        "--stage39-require-stage36-safety-clear",
+        action="store_true",
+        default=True,
+        help=(
+            "Stage39-A: if a Stage36 support-safety blocker fired on a row, "
+            "do not compose to SUPPORT. Default on."
+        ),
+    )
+    parser.add_argument(
+        "--stage39-require-stage37-not-from-refute",
+        action="store_true",
+        default=True,
+        help=(
+            "Stage39-A: if Stage37 recovered the shadow label from REFUTE, "
+            "do not compose to SUPPORT. Default on."
+        ),
+    )
+
     parser.add_argument(
         "--v7-no-aux-losses",
         action="store_true",
@@ -6864,6 +7234,15 @@ _LIFT_CONFIG_KEYS: tuple[str, ...] = (
     "stage37_recover_coordination_universal_subset",
     "stage37_recover_numeric_universal_subset",
     "stage37_allow_recover_from_refute",
+    # Stage39-A: opt-in final composer flags (prediction/export-time only)
+    "stage39_use_final_composer_opt_in",
+    "stage39_final_composer_export",
+    "stage39_final_composer_policy",
+    "stage39_final_composer_output_mode",
+    "stage39_final_composer_source",
+    "stage39_disallow_refute_to_support",
+    "stage39_require_stage36_safety_clear",
+    "stage39_require_stage37_not_from_refute",
     # v7 Stage15 / time_swap provenance (also lifted from audit_ledger elsewhere;
     # this covers the configuration copy when the ledger path is absent)
     "stage15_used_for_v7_training",
@@ -11074,6 +11453,32 @@ def main(argv: list[str] | None = None) -> int:
             ),
             "stage37_safe_support_recovery_modifies_final_logits": False,
             "stage37_safe_support_recovery_modifies_final_predictions": False,
+            "stage39_use_final_composer_opt_in": getattr(
+                args, "stage39_use_final_composer_opt_in", False
+            ),
+            "stage39_final_composer_export": getattr(
+                args, "stage39_final_composer_export", False
+            ),
+            "stage39_final_composer_policy": getattr(
+                args, "stage39_final_composer_policy", "support_only"
+            ),
+            "stage39_final_composer_output_mode": getattr(
+                args, "stage39_final_composer_output_mode", "export_only"
+            ),
+            "stage39_final_composer_source": getattr(
+                args, "stage39_final_composer_source", "stage37_final_shadow_label"
+            ),
+            "stage39_disallow_refute_to_support": getattr(
+                args, "stage39_disallow_refute_to_support", True
+            ),
+            "stage39_require_stage36_safety_clear": getattr(
+                args, "stage39_require_stage36_safety_clear", True
+            ),
+            "stage39_require_stage37_not_from_refute": getattr(
+                args, "stage39_require_stage37_not_from_refute", True
+            ),
+            "stage39_final_composer_modifies_final_logits": False,
+            "stage39_final_composer_modifies_final_predictions_by_default": False,
             "v7_h1_entitlement_for_decision_source": (
                 _V7_H1_DECISION_SIGNAL_SOURCE.get(
                     getattr(args, "v7_h1_entitlement_decision_signal", "learned"),
@@ -11341,6 +11746,34 @@ def main(argv: list[str] | None = None) -> int:
                 ),
                 "stage37_safe_support_recovery_modifies_final_logits": False,
                 "stage37_safe_support_recovery_modifies_final_predictions": False,
+                "stage39_use_final_composer_opt_in": getattr(
+                    args, "stage39_use_final_composer_opt_in", False
+                ),
+                "stage39_final_composer_export": getattr(
+                    args, "stage39_final_composer_export", False
+                ),
+                "stage39_final_composer_policy": getattr(
+                    args, "stage39_final_composer_policy", "support_only"
+                ),
+                "stage39_final_composer_output_mode": getattr(
+                    args, "stage39_final_composer_output_mode", "export_only"
+                ),
+                "stage39_final_composer_source": getattr(
+                    args,
+                    "stage39_final_composer_source",
+                    "stage37_final_shadow_label",
+                ),
+                "stage39_disallow_refute_to_support": getattr(
+                    args, "stage39_disallow_refute_to_support", True
+                ),
+                "stage39_require_stage36_safety_clear": getattr(
+                    args, "stage39_require_stage36_safety_clear", True
+                ),
+                "stage39_require_stage37_not_from_refute": getattr(
+                    args, "stage39_require_stage37_not_from_refute", True
+                ),
+                "stage39_final_composer_modifies_final_logits": False,
+                "stage39_final_composer_modifies_final_predictions_by_default": False,
                 "freeze_encoder": getattr(args, "freeze_encoder", None),
                 "freeze_a_log": getattr(args, "freeze_a_log", None),
                 "max_length": getattr(args, "max_length", None),
