@@ -1,0 +1,48 @@
+{
+  "decision": "STAGE43B1_FEVER_ACQUISITION_PLAN_PREPARED",
+  "status": "preparation_only",
+  "background": {
+    "stage43a_decision": "STAGE43A_EXTERNAL_VALIDATION_MANIFEST_AMBIGUOUS",
+    "stage43a_candidates_scanned": 34,
+    "stage43a_clearly_adaptable": 0,
+    "stage43a_ambiguous": 10,
+    "stage43a_not_adaptable": 24,
+    "finding": "Stage43-A found no clearly adaptable naturalistic external validation source in the repository and no VitaminC/FEVER/RTE/MNLI/SNLI-style source file.",
+    "stage43b0": "Stage43-B0 created a file-based converter plus schema and intake-plan reports."
+  },
+  "stage43b1": {
+    "script": "scripts/acquire_stage43_fever_external_validation.py",
+    "purpose": "Acquire a user-specified FEVER/VitaminC-style HuggingFace dataset with datasets.load_dataset and convert accepted rows into the Stage43 canonical external validation JSONL schema.",
+    "scope": "Acquisition/preparation only. No model training, model evaluation, external probe evaluation, Kaggle command, smoke test, py_compile, help check, local model execution, or dataset download was run during implementation.",
+    "presets": [
+      "fever_claim_evidence",
+      "vitaminc_claim_evidence",
+      "auto_fever",
+      "manual"
+    ]
+  },
+  "source_priority": {
+    "primary": "FEVER/VitaminC-style fact verification sources",
+    "rationale": "FEVER/VitaminC directly support SUPPORT/REFUTE/NOT_ENTITLED-style fact verification.",
+    "rte": "RTE is not a primary NOT_ENTITLED test because not_entailment conflates contradiction with neutral or insufficient evidence.",
+    "mnli_snli": "MNLI/SNLI can be used later only as auxiliary NLI transfer diagnostics, not as primary fact-verification validation."
+  },
+  "stage43b2_gate": "Stage43-B2 should run external final-composer evaluation only after a valid FEVER/VitaminC acquisition report exists.",
+  "leakage_policy": "Acquired data must not be used for training, calibration, threshold selection, checkpoint selection, loss design, or any other model-selection feedback loop.",
+  "guardrails": [
+    "Do not run the acquisition script during implementation.",
+    "Do not download data during implementation.",
+    "Do not run model training or evaluation.",
+    "Do not create fake examples.",
+    "Do not infer labels from model predictions.",
+    "Do not treat RTE not_entailment as REFUTE.",
+    "Do not treat synthetic Stage34/35 probes as naturalistic external evidence.",
+    "Do not alter existing source reports or previous stage outputs."
+  ],
+  "artifacts": {
+    "acquisition_script": "scripts/acquire_stage43_fever_external_validation.py",
+    "plan_md": "reports/stage43b1_fever_acquisition_plan.md",
+    "plan_json": "reports/stage43b1_fever_acquisition_plan.json"
+  },
+  "recommendation": "Use Stage43-B1 to acquire a genuine FEVER/VitaminC-style external validation JSONL and provenance report, then proceed to Stage43-B2 eval-only work only if the acquisition report is valid."
+}
