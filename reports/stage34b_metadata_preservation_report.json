@@ -1,0 +1,70 @@
+{
+  "stage": "Stage34-B",
+  "title": "Metadata preservation and evaluator fallback diagnostics",
+  "scope": {
+    "modified_train_export": true,
+    "modified_evaluator": true,
+    "model_architecture_changed": false,
+    "final_logits_changed": false,
+    "final_predictions_changed": false,
+    "h1_composer_changed": false,
+    "stage33f_owner_behavior_changed": false,
+    "training_data_changed": false,
+    "checkpoint_selection_changed": false
+  },
+  "preserved_prediction_metadata_fields": [
+    "id",
+    "pair_id",
+    "claim",
+    "evidence",
+    "group",
+    "intervention_type",
+    "normalized_intervention",
+    "primary_failure_type",
+    "failure_type",
+    "source",
+    "split",
+    "stage34_family",
+    "stage34_relation",
+    "stage34_expected_route",
+    "stage34_is_heldout",
+    "final_label",
+    "gold_label",
+    "label"
+  ],
+  "evaluator_fallbacks": {
+    "group": [
+      "group",
+      "intervention_type",
+      "normalized_intervention",
+      "primary_failure_type",
+      "UNKNOWN"
+    ],
+    "stage34_family": "field value, otherwise group-token inference, otherwise unknown_family",
+    "stage34_relation": "field value, otherwise inferred from resolved group suffix, otherwise unknown_relation",
+    "stage34_expected_route": {
+      "*_support": "ENTAILMENT_PRESERVE",
+      "*_not_entitled": "OVERCLAIM_NE",
+      "*_refute": "CONTRADICTION_REFUTE",
+      "fallback": "unknown"
+    }
+  },
+  "metadata_missing_decision": {
+    "label": "STAGE34A_METADATA_MISSING_DIAGNOSTIC_INVALID",
+    "reports_aggregate_shadow_macro_f1": true,
+    "reports_aggregate_delta_macro_f1": true,
+    "claims_group_specific_generalization": false
+  },
+  "diagnostic_only_policy": "Stage34-A held-out predictions and reports must not be used for training, calibration, threshold selection, loss, checkpoint selection, or Kaggle selection.",
+  "validation": {
+    "training_run": false,
+    "evaluation_run": false,
+    "kaggle_run": false,
+    "smoke_tests_run": false,
+    "full_experiments_run": false
+  },
+  "remaining_risks": [
+    "Fallback inference depends on recognizable group names when explicit Stage34 fields are absent.",
+    "Runtime behavior is intentionally left for the user's Kaggle validation."
+  ]
+}

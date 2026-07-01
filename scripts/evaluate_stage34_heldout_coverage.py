@@ -116,6 +116,109 @@ def detect_field(rows: list[dict[str, Any]], candidates: list[str], role: str) -
     raise ValueError(f"Could not detect {role} field; tried {candidates}")
 
 
+def resolve_group(row: dict[str, Any]) -> str:
+    for key in (
+        "group",
+        "intervention_type",
+        "normalized_intervention",
+        "primary_failure_type",
+    ):
+        value = row.get(key)
+        if value not in (None, ""):
+            return str(value)
+    return "UNKNOWN"
+
+
+def infer_stage34_family(group: str) -> str:
+    key = group.lower()
+    if any(token in key for token in (
+        "whole_to_part",
+        "part_to_whole",
+        "collection",
+        "member",
+        "region",
+        "subregion",
+        "category",
+        "subcategory",
+        "role",
+        "specialized_role",
+        "material",
+        "variant",
+    )):
+        return "whole_part_family"
+    if any(token in key for token in (
+        "all_to_some",
+        "some_to_all",
+        "none_to_some",
+        "some_to_none",
+        "only_to_base",
+        "also_to_only",
+    )):
+        return "logical_quantifier_family"
+    if "specific_to_general" in key or "general_to_specific" in key:
+        return "specific_general_family"
+    return "unknown_family"
+
+
+def resolve_stage34_family(row: dict[str, Any], group: str) -> str:
+    value = row.get("stage34_family")
+    if value not in (None, ""):
+        return str(value)
+    return infer_stage34_family(group)
+
+
+def infer_stage34_relation(group: str) -> str:
+    key = group.lower()
+    if key.startswith("heldout_"):
+        key = key[len("heldout_"):]
+    for suffix in ("_support", "_not_entitled", "_refute"):
+        if key.endswith(suffix):
+            return key[: -len(suffix)]
+    return "unknown_relation"
+
+
+def resolve_stage34_relation(row: dict[str, Any], group: str) -> str:
+    value = row.get("stage34_relation")
+    if value not in (None, ""):
+        return str(value)
+    return infer_stage34_relation(group)
+
+
+def infer_expected_route(group: str) -> str:
+    key = group.lower()
+    if key.endswith("_support"):
+        return "ENTAILMENT_PRESERVE"
+    if key.endswith("_refute"):
+        return "CONTRADICTION_REFUTE"
+    if key.endswith("_not_entitled"):
+        return "OVERCLAIM_NE"
+    return "unknown"
+
+
+def resolve_expected_route(row: dict[str, Any], group: str) -> str:
+    value = row.get("stage34_expected_route")
+    if value not in (None, ""):
+        return str(value)
+    return infer_expected_route(group)
+
+
+def metadata_status(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    groups = [resolve_group(row) for row in rows]
+    unknown_count = sum(group == "UNKNOWN" for group in groups)
+    has_any_stage34 = any(
+        row.get("stage34_family") not in (None, "")
+        or row.get("stage34_relation") not in (None, "")
+        or row.get("stage34_expected_route") not in (None, "")
+        or resolve_group(row) != "UNKNOWN"
+        for row in rows
+    )
+    return {
+        "metadata_available": bool(has_any_stage34 and unknown_count < len(rows)),
+        "unknown_group_count": unknown_count,
+        "unknown_group_rate": round(unknown_count / max(1, len(rows)), 4),
+    }
+
+
 def prediction_metrics(golds: list[str], preds: list[str]) -> dict[str, Any]:
     accuracy = sum(g == p for g, p in zip(golds, preds)) / max(1, len(golds))
     per_class: dict[str, dict[str, float]] = {}
@@ -150,7 +253,7 @@ def group_metrics(
 ) -> dict[str, Any]:
     grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in rows:
-        grouped[str(row.get("group", "MISSING"))].append(row)
+        grouped[resolve_group(row)].append(row)
     out: dict[str, Any] = {}
     for group, group_rows in sorted(grouped.items()):
         golds = [normalize_label(row[gold_field]) for row in group_rows]
@@ -178,8 +281,14 @@ def compute_stage34_counters(
     route_counts = Counter()
     reason_counts = Counter()
     match_counts = Counter()
+    family_counts = Counter()
+    relation_counts = Counter()
+    expected_route_counts = Counter()
     for row in rows:
-        group = str(row.get("group", ""))
+        group = resolve_group(row)
+        family = resolve_stage34_family(row, group)
+        relation = resolve_stage34_relation(row, group)
+        expected_route = resolve_expected_route(row, group)
         gold = normalize_label(row[gold_field])
         current = normalize_label(row[current_field])
         shadow = normalize_label(row[shadow_field])
@@ -190,6 +299,9 @@ def compute_stage34_counters(
         reason_counts[reason] += 1
         if match:
             match_counts[match] += 1
+        family_counts[family] += 1
+        relation_counts[relation] += 1
+        expected_route_counts[expected_route] += 1
 
         if gold == "NOT_ENTITLED" and shadow == "SUPPORT":
             counters["heldout_overclaim_to_support"] += 1
@@ -257,11 +369,29 @@ def compute_stage34_counters(
     out["stage33_reason_counts"] = dict(reason_counts)
     out["stage33_whole_part_match_counts"] = dict(match_counts)
     out["stage33_whole_part_direct_support_block_reason_counts"] = dict(block_reasons)
+    out["stage34_family_counts"] = dict(family_counts)
+    out["stage34_relation_counts"] = dict(relation_counts)
+    out["stage34_expected_route_counts"] = dict(expected_route_counts)
     return out
 
 
-def decide(current_metrics: dict[str, Any], shadow_metrics: dict[str, Any], counters: dict[str, Any]) -> dict[str, str]:
+def decide(
+    current_metrics: dict[str, Any],
+    shadow_metrics: dict[str, Any],
+    counters: dict[str, Any],
+    metadata: dict[str, Any],
+) -> dict[str, Any]:
     macro_delta = shadow_metrics["macro_f1"] - current_metrics["macro_f1"]
+    if not metadata["metadata_available"]:
+        return {
+            "label": "STAGE34A_METADATA_MISSING_DIAGNOSTIC_INVALID",
+            "reason": (
+                "Held-out metadata is absent from prediction rows; aggregate metrics "
+                "are available but group-specific generalization cannot be claimed."
+            ),
+            "aggregate_shadow_macro_f1": shadow_metrics["macro_f1"],
+            "aggregate_delta_macro_f1": round(macro_delta, 4),
+        }
     support_gain = (
         counters["heldout_support_shadow_support"]
         - counters["heldout_support_current_support"]
@@ -275,7 +405,12 @@ def decide(current_metrics: dict[str, Any], shadow_metrics: dict[str, Any], coun
             "label": "STAGE34A_HELDOUT_UNSAFE",
             "reason": "Held-out overclaim/refute rows were routed to SUPPORT.",
         }
-    if support_gain >= 20 and macro_delta >= -0.02:
+    if (
+        support_gain >= 20
+        and counters["heldout_whole_to_part_support_recovered"] >= 20
+        and counters["heldout_part_to_whole_ne_preserved"] >= 20
+        and macro_delta >= -0.02
+    ):
         return {
             "label": "STAGE34A_HELDOUT_GENERALIZATION_PROMISING",
             "reason": "Held-out SUPPORT recovery improves without safety errors or collapse.",
@@ -307,6 +442,8 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
         f"- Rows: {report['row_count']}",
         f"- Decision: `{report['decision']['label']}`",
         f"- Decision reason: {report['decision']['reason']}",
+        f"- Metadata available: {report['metadata_status']['metadata_available']}",
+        f"- Unknown group rows: {report['metadata_status']['unknown_group_count']}",
         "",
         "## Metrics",
         f"- Current accuracy: {report['current_metrics']['accuracy']:.4f}",
@@ -330,6 +467,9 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
         ("Stage33 Route Counts", "stage33_route_counts"),
         ("Stage33 Reason Counts", "stage33_reason_counts"),
         ("Whole/Part Match Counts", "stage33_whole_part_match_counts"),
+        ("Stage34 Family Counts", "stage34_family_counts"),
+        ("Stage34 Relation Counts", "stage34_relation_counts"),
+        ("Stage34 Expected Route Counts", "stage34_expected_route_counts"),
     ):
         lines.extend(["", f"## {title}", "| Value | Count |", "|---|---:|"])
         for name, count in sorted(report["stage34_counters"][key].items()):
@@ -367,6 +507,7 @@ def main() -> int:
     current_metrics = prediction_metrics(golds, current)
     shadow_metrics = prediction_metrics(golds, shadow)
     counters = compute_stage34_counters(rows, gold_field, current_field, shadow_field)
+    metadata = metadata_status(rows)
     report = {
         "run_name": args.run_name,
         "predictions_file": args.predictions_file,
@@ -388,7 +529,8 @@ def main() -> int:
         },
         "group_metrics": group_metrics(rows, gold_field, current_field, shadow_field),
         "stage34_counters": counters,
-        "decision": decide(current_metrics, shadow_metrics, counters),
+        "metadata_status": metadata,
+        "decision": decide(current_metrics, shadow_metrics, counters, metadata),
         "leakage_policy": (
             "Diagnostic-only. Do not use for training, calibration, threshold "
             "selection, loss, or checkpoint selection."

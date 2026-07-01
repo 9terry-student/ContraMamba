@@ -1938,6 +1938,27 @@ _S28E_RAW_RECORD_KEYS: tuple[str, ...] = (
     "sufficiency_label", "polarity_label", "primary_failure_type",
 )
 
+_S28E_PRESERVED_METADATA_KEYS: tuple[str, ...] = (
+    "id",
+    "pair_id",
+    "claim",
+    "evidence",
+    "group",
+    "intervention_type",
+    "normalized_intervention",
+    "primary_failure_type",
+    "failure_type",
+    "source",
+    "split",
+    "stage34_family",
+    "stage34_relation",
+    "stage34_expected_route",
+    "stage34_is_heldout",
+    "final_label",
+    "gold_label",
+    "label",
+)
+
 
 def _s28e_normalize_label(value: Any) -> "str | None":
     if value is None:
@@ -3634,6 +3655,9 @@ def prediction_records_v6b(
             # ── Shallow raw record snapshot ───────────────────────────────────
             "raw_record": {k: record[k] for k in _S28E_RAW_RECORD_KEYS if k in record},
         }
+        for metadata_key in _S28E_PRESERVED_METADATA_KEYS:
+            if metadata_key in record:
+                item[metadata_key] = record[metadata_key]
         exported.append(item)
     if stage32_shadow_logits_before is not None and not torch.equal(
         stage32_shadow_logits_before, output["logits"].detach().cpu()
