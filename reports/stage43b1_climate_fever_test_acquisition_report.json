@@ -1,0 +1,626 @@
+{
+  "decision": "STAGE43B1_FACTVER_ACQUISITION_READY",
+  "preset": "climate_fever",
+  "hf_dataset": "climate_fever",
+  "split": "test",
+  "source_dataset": "climate_fever_test_sample1000",
+  "output_jsonl": "data/stage43b1_climate_fever_test_sample1000.jsonl",
+  "rejected_jsonl": "reports/stage43b1_climate_fever_test_rejected.jsonl",
+  "total_rows_seen": 1000,
+  "accepted_rows": 903,
+  "rejected_rows": 97,
+  "accepted_label_counts": {
+    "SUPPORT": 438,
+    "REFUTE": 164,
+    "NOT_ENTITLED": 301
+  },
+  "source_label_counts": {
+    "SUPPORTS": 438,
+    "REFUTES": 164,
+    "DISPUTED": 97,
+    "NOT_ENOUGH_INFO": 301
+  },
+  "rejection_reason_counts": {
+    "disputed_label_excluded": 97
+  },
+  "field_mapping": {
+    "claim_field": "claim",
+    "evidence_field": "evidences",
+    "label_field": "claim_label",
+    "id_field": null,
+    "available_fields": [
+      "claim_id",
+      "claim",
+      "claim_label",
+      "evidences"
+    ]
+  },
+  "label_mapping": {
+    "SUPPORT": [
+      "SUPPORTS",
+      0
+    ],
+    "REFUTE": [
+      "REFUTES",
+      1
+    ],
+    "NOT_ENTITLED": [
+      "NOT_ENOUGH_INFO",
+      "NOT ENOUGH INFO",
+      "NEI",
+      2
+    ],
+    "excluded": {
+      "DISPUTED": "disputed_label_excluded",
+      "3": "disputed_label_excluded"
+    }
+  },
+  "numeric_label_policy": {
+    "classlabel_first": true,
+    "mapping": {
+      "0": "SUPPORT",
+      "1": "REFUTE",
+      "2": "NOT_ENTITLED"
+    },
+    "excluded": {
+      "3": "disputed_label_excluded"
+    },
+    "disputed_policy": "DISPUTED is excluded, never mapped to NOT_ENTITLED."
+  },
+  "evidence_policy": {
+    "preset": "climate_fever",
+    "mode": "first",
+    "join_separator": " ",
+    "max_evidence_chars": 400,
+    "dict_key_preference": [
+      "evidence",
+      "text",
+      "sentence",
+      "content",
+      "passage",
+      "context"
+    ],
+    "empty_after_flattening": "reject"
+  },
+  "sample_accepted_rows": [
+    {
+      "id": "climate_fever_test_sample1000_test_908",
+      "claim": "California legislators have made it illegal for anyone to deny climate change, under threat of jail time.",
+      "evidence": "The Legislature shall make no law which diminishes or ignores the role of English as the common language of California.",
+      "label": "SUPPORT",
+      "source_dataset": "climate_fever_test_sample1000",
+      "source_label": "SUPPORTS",
+      "stage43_split": "external_validation",
+      "metadata": {
+        "row_index": 908,
+        "hf_dataset": "climate_fever",
+        "hf_config": null,
+        "source_split": "test",
+        "preset": "climate_fever",
+        "source_label_raw": 0,
+        "source_label_name": "SUPPORTS",
+        "dropped_disputed": false,
+        "evidence_was_structured": true,
+        "evidence_flatten_strategy": "dict_preferred_evidence",
+        "source_label_resolved_from_classlabel": true
+      }
+    },
+    {
+      "id": "climate_fever_test_sample1000_test_978",
+      "claim": "There are already more American jobs in the solar industry than in coal mining.",
+      "evidence": "Cerrejón directly employs 4,600 workers, with a further 3,800 employed by contractors.",
+      "label": "SUPPORT",
+      "source_dataset": "climate_fever_test_sample1000",
+      "source_label": "SUPPORTS",
+      "stage43_split": "external_validation",
+      "metadata": {
+        "row_index": 978,
+        "hf_dataset": "climate_fever",
+        "hf_config": null,
+        "source_split": "test",
+        "preset": "climate_fever",
+        "source_label_raw": 0,
+        "source_label_name": "SUPPORTS",
+        "dropped_disputed": false,
+        "evidence_was_structured": true,
+        "evidence_flatten_strategy": "dict_preferred_evidence",
+        "source_label_resolved_from_classlabel": true
+      }
+    },
+    {
+      "id": "climate_fever_test_sample1000_test_1065",
+      "claim": "Renewable energy investment kills jobs",
+      "evidence": "It established an alternative and low carbon energy business in 2005, with plans to invest $8 billion over a 10-year period into renewable energy sources including solar, wind, and biofuels, and non-renewable sources including natural gas and hydrogen power.",
+      "label": "REFUTE",
+      "source_dataset": "climate_fever_test_sample1000",
+      "source_label": "REFUTES",
+      "stage43_split": "external_validation",
+      "metadata": {
+        "row_index": 1065,
+        "hf_dataset": "climate_fever",
+        "hf_config": null,
+        "source_split": "test",
+        "preset": "climate_fever",
+        "source_label_raw": 1,
+        "source_label_name": "REFUTES",
+        "dropped_disputed": false,
+        "evidence_was_structured": true,
+        "evidence_flatten_strategy": "dict_preferred_evidence",
+        "source_label_resolved_from_classlabel": true
+      }
+    },
+    {
+      "id": "climate_fever_test_sample1000_test_390",
+      "claim": "The most notorious was 252 million years ago; it began when carbon warmed the planet by five degrees, accelerated when that warming triggered the release of methane in the Arctic, and ended with 97 percent of all life on Earth dead.”",
+      "evidence": "The current Arctic warming is leading to ancient carbon being released from thawing permafrost, leading to methane and carbon dioxide production by micro-organisms.",
+      "label": "SUPPORT",
+      "source_dataset": "climate_fever_test_sample1000",
+      "source_label": "SUPPORTS",
+      "stage43_split": "external_validation",
+      "metadata": {
+        "row_index": 390,
+        "hf_dataset": "climate_fever",
+        "hf_config": null,
+        "source_split": "test",
+        "preset": "climate_fever",
+        "source_label_raw": 0,
+        "source_label_name": "SUPPORTS",
+        "dropped_disputed": false,
+        "evidence_was_structured": true,
+        "evidence_flatten_strategy": "dict_preferred_evidence",
+        "source_label_resolved_from_classlabel": true
+      }
+    },
+    {
+      "id": "climate_fever_test_sample1000_test_332",
+      "claim": "The new research showed that [oxygen isotopes in foraminifera] can change",
+      "evidence": "Such a pattern seems to fit the information on climate change found in oxygen isotope cores.",
+      "label": "SUPPORT",
+      "source_dataset": "climate_fever_test_sample1000",
+      "source_label": "SUPPORTS",
+      "stage43_split": "external_validation",
+      "metadata": {
+        "row_index": 332,
+        "hf_dataset": "climate_fever",
+        "hf_config": null,
+        "source_split": "test",
+        "preset": "climate_fever",
+        "source_label_raw": 0,
+        "source_label_name": "SUPPORTS",
+        "dropped_disputed": false,
+        "evidence_was_structured": true,
+        "evidence_flatten_strategy": "dict_preferred_evidence",
+        "source_label_resolved_from_classlabel": true
+      }
+    }
+  ],
+  "sample_rejected_rows": [
+    {
+      "row_index": 1380,
+      "rejection_reason": "disputed_label_excluded",
+      "source_label_raw": 3,
+      "original_row": {
+        "claim_id": "2798",
+        "claim": "While changes in cloud cover & aerosols lead to more sunlight hitting the surface, this can be compensated by the cooling effect on the atmosphere due to fewer clouds trapping less warmth and fewer absorbing aerosols absorbing less sunlight.",
+        "claim_label": 3,
+        "evidences": [
+          {
+            "evidence_id": "Climate system:107",
+            "evidence_label": 2,
+            "article": "Climate system",
+            "evidence": "Some primarily scatter sunlight and thereby cool the planet, while others absorb sunlight and warm the atmosphere.",
+            "entropy": 0.6931471824645996,
+            "votes": [
+              "SUPPORTS",
+              "NOT_ENOUGH_INFO",
+              null,
+              null,
+              null
+            ]
+          },
+          {
+            "evidence_id": "Global dimming:85",
+            "evidence_label": 2,
+            "article": "Global dimming",
+            "evidence": "The particles reflect and absorb sunlight, less sun rays reach Earth surface layers, thus resulting in cooler water and land surface temperatures, and also less cloud formation, subsequently dampening the development of hurricanes.",
+            "entropy": 0.6931471824645996,
+            "votes": [
+              "NOT_ENOUGH_INFO",
+              "SUPPORTS",
+              null,
+              null,
+              null
+            ]
+          },
+          {
+            "evidence_id": "Global warming:116",
+            "evidence_label": 1,
+            "article": "Global warming",
+            "evidence": "If cloud cover increases, more sunlight will be reflected back into space, cooling the planet.",
+            "entropy": 0.0,
+            "votes": [
+              "REFUTES",
+              "REFUTES",
+              null,
+              null,
+              null
+            ]
+          },
+          {
+            "evidence_id": "Global warming:77",
+            "evidence_label": 2,
+            "article": "Global warming",
+            "evidence": "For instance, the change from a dark forest to grassland makes the surface lighter, causing it to reflect more sunlight.",
+            "entropy": 0.0,
+            "votes": [
+              "NOT_ENOUGH_INFO",
+              "NOT_ENOUGH_INFO",
+              null,
+              null,
+              null
+            ]
+          },
+          {
+            "evidence_id": "Particulates:93",
+            "evidence_label": 0,
+            "article": "Particulates",
+            "evidence": "For instance, if absorbing aerosols are present in a layer aloft in the atmosphere, they can heat surrounding air which inhibits the condensation of water vapour, resulting in less cloud formation.",
+            "entropy": 0.0,
+            "votes": [
+              "SUPPORTS",
+              "SUPPORTS",
+              null,
+              null,
+              null
+            ]
+          }
+        ]
+      },
+      "detected_claim_snippet": "While changes in cloud cover & aerosols lead to more sunlight hitting the surface, this can be compensated by the cooling effect on the atmosphere due to fewer clouds trapping less warmth and fewer ab",
+      "detected_evidence_snippet": "Some primarily scatter sunlight and thereby cool the planet, while others absorb sunlight and warm the atmosphere."
+    },
+    {
+      "row_index": 360,
+      "rejection_reason": "disputed_label_excluded",
+      "source_label_raw": 3,
+      "original_row": {
+        "claim_id": "797",
+        "claim": "Climate Models Have Overestimated Global Warming",
+        "claim_label": 3,
+        "evidences": [
+          {
+            "evidence_id": "Climate:115",
+            "evidence_label": 2,
+            "article": "Climate",
+            "evidence": "These models predict an upward trend in the global mean surface temperature, with the most rapid increase in temperature being projected for the higher latitudes of the Northern Hemisphere.",
+            "entropy": 0.0,
+            "votes": [
+              "NOT_ENOUGH_INFO",
+              "NOT_ENOUGH_INFO",
+              "NOT_ENOUGH_INFO",
+              null,
+              null
+            ]
+          },
+          {
+            "evidence_id": "Global warming:108",
+            "evidence_label": 2,
+            "article": "Global warming",
+            "evidence": "Uncertainty over feedbacks is the major reason why different climate models project different magnitudes of warming for a given amount of emissions.",
+            "entropy": 0.0,
+            "votes": [
+              "NOT_ENOUGH_INFO",
+              "NOT_ENOUGH_INFO",
+              "NOT_ENOUGH_INFO",
+              null,
+              null
+            ]
+          },
+          {
+            "evidence_id": "Global warming:141",
+            "evidence_label": 1,
+            "article": "Global warming",
+            "evidence": "Past models have underestimated the rate of Arctic shrinkage and underestimated the rate of precipitation increase.",
+            "entropy": 0.6365141868591309,
+            "votes": [
+              "REFUTES",
+              "NOT_ENOUGH_INFO",
+              "REFUTES",
+              null,
+              null
+            ]
+          },
+          {
+            "evidence_id": "Global warming:143",
+            "evidence_label": 1,
+            "article": "Global warming",
+            "evidence": "The 2017 United States-published National Climate Assessment notes that \"climate models may still be underestimating or missing relevant feedback processes\".",
+            "entropy": 0.6365141868591309,
+            "votes": [
+              "REFUTES",
+              "NOT_ENOUGH_INFO",
+              "REFUTES",
+              null,
+              null
+            ]
+          },
+          {
+            "evidence_id": "Richard Lindzen:80",
+            "evidence_label": 0,
+            "article": "Richard Lindzen",
+            "evidence": "Lindzen said that predicted warming may be overestimated because of their handling of the climate system's water vapor feedback.",
+            "entropy": 0.0,
+            "votes": [
+              "SUPPORTS",
+              "SUPPORTS",
+              "SUPPORTS",
+              null,
+              null
+            ]
+          }
+        ]
+      },
+      "detected_claim_snippet": "Climate Models Have Overestimated Global Warming",
+      "detected_evidence_snippet": "These models predict an upward trend in the global mean surface temperature, with the most rapid increase in temperature being projected for the higher latitudes of the Northern Hemisphere."
+    },
+    {
+      "row_index": 1438,
+      "rejection_reason": "disputed_label_excluded",
+      "source_label_raw": 3,
+      "original_row": {
+        "claim_id": "2914",
+        "claim": "Whatever is driving increases in winter Arctic temperatures   is not heat coming out of the Arctic Ocean, which is covered with   insulating ice.'",
+        "claim_label": 3,
+        "evidences": [
+          {
+            "evidence_id": "Arctic Ocean:101",
+            "evidence_label": 0,
+            "article": "Arctic Ocean",
+            "evidence": "This insulation keeps the warm Atlantic Water from melting the surface ice.",
+            "entropy": 0.0,
+            "votes": [
+              "SUPPORTS",
+              "SUPPORTS",
+              null,
+              null,
+              null
+            ]
+          },
+          {
+            "evidence_id": "Arctic Ocean:121",
+            "evidence_label": 2,
+            "article": "Arctic Ocean",
+            "evidence": "Much of the Arctic Ocean is covered by sea ice that varies in extent and thickness seasonally.",
+            "entropy": 0.6931471824645996,
+            "votes": [
+              "SUPPORTS",
+              "REFUTES",
+              null,
+              null,
+              null
+            ]
+          },
+          {
+            "evidence_id": "Arctic Ocean:141",
+            "evidence_label": 2,
+            "article": "Arctic Ocean",
+            "evidence": "In the winter the relatively warm ocean water exerts a moderating influence, even when covered by ice.",
+            "entropy": 0.6931471824645996,
+            "votes": [
+              "REFUTES",
+              "SUPPORTS",
+              null,
+              null,
+              null
+            ]
+          },
+          {
+            "evidence_id": "Arctic Ocean:5",
+            "evidence_label": 2,
+            "article": "Arctic Ocean",
+            "evidence": "It is partly covered by sea ice throughout the year and almost completely in winter.",
+            "entropy": 0.6931471824645996,
+            "votes": [
+              "SUPPORTS",
+              "REFUTES",
+              null,
+              null,
+              null
+            ]
+          },
+          {
+            "evidence_id": "Arctic ice pack:6",
+            "evidence_label": 1,
+            "article": "Arctic ice pack",
+            "evidence": "Sea ice has an important effect on the heat balance of the polar oceans, since it insulates the (relatively) warm ocean from the much colder air above, thus reducing heat loss from the oceans.",
+            "entropy": 0.0,
+            "votes": [
+              "REFUTES",
+              "REFUTES",
+              null,
+              null,
+              null
+            ]
+          }
+        ]
+      },
+      "detected_claim_snippet": "Whatever is driving increases in winter Arctic temperatures   is not heat coming out of the Arctic Ocean, which is covered with   insulating ice.'",
+      "detected_evidence_snippet": "This insulation keeps the warm Atlantic Water from melting the surface ice."
+    },
+    {
+      "row_index": 532,
+      "rejection_reason": "disputed_label_excluded",
+      "source_label_raw": 3,
+      "original_row": {
+        "claim_id": "1164",
+        "claim": "Hurricanes, tornadoes, floods, droughts and other natural disasters have yet to show any obvious long-term change.”",
+        "claim_label": 3,
+        "evidences": [
+          {
+            "evidence_id": "Disaster risk reduction:14",
+            "evidence_label": 1,
+            "article": "Disaster risk reduction",
+            "evidence": "Climate change, through rising temperatures, changing rainfall patterns, and changing sea levels, will affect the nature of hydrometeorological disasters, such as droughts, floods, and cyclones.",
+            "entropy": 0.0,
+            "votes": [
+              "REFUTES",
+              "REFUTES",
+              null,
+              null,
+              null
+            ]
+          },
+          {
+            "evidence_id": "Effects of global warming:74",
+            "evidence_label": 0,
+            "article": "Effects of global warming",
+            "evidence": "There may have been changes in other climate extremes (e.g., floods, droughts and tropical cyclones) but these changes are more difficult to identify.",
+            "entropy": 0.0,
+            "votes": [
+              "SUPPORTS",
+              "SUPPORTS",
+              null,
+              null,
+              null
+            ]
+          },
+          {
+            "evidence_id": "Extreme weather:66",
+            "evidence_label": 2,
+            "article": "Extreme weather",
+            "evidence": "Researchers have for the first time attributed recent floods, droughts and heat waves, to human-induced climate change.",
+            "entropy": 0.6931471824645996,
+            "votes": [
+              "REFUTES",
+              "NOT_ENOUGH_INFO",
+              null,
+              null,
+              null
+            ]
+          },
+          {
+            "evidence_id": "Natural disaster:0",
+            "evidence_label": 2,
+            "article": "Natural disaster",
+            "evidence": "A natural disaster is a major adverse event resulting from natural processes of the Earth; examples are floods, hurricanes, tornadoes, volcanic eruptions, earthquakes, tsunamis, storms, and other geologic processes.",
+            "entropy": 0.6931471824645996,
+            "votes": [
+              "SUPPORTS",
+              "NOT_ENOUGH_INFO",
+              null,
+              null,
+              null
+            ]
+          },
+          {
+            "evidence_id": "Severe weather:185",
+            "evidence_label": 2,
+            "article": "Severe weather",
+            "evidence": "Another form of severe weather is drought, which is a prolonged period of persistently dry weather (that is, absence of precipitation).",
+            "entropy": 0.0,
+            "votes": [
+              "NOT_ENOUGH_INFO",
+              "NOT_ENOUGH_INFO",
+              null,
+              null,
+              null
+            ]
+          }
+        ]
+      },
+      "detected_claim_snippet": "Hurricanes, tornadoes, floods, droughts and other natural disasters have yet to show any obvious long-term change.”",
+      "detected_evidence_snippet": "Climate change, through rising temperatures, changing rainfall patterns, and changing sea levels, will affect the nature of hydrometeorological disasters, such as droughts, floods, and cyclones."
+    },
+    {
+      "row_index": 1269,
+      "rejection_reason": "disputed_label_excluded",
+      "source_label_raw": 3,
+      "original_row": {
+        "claim_id": "2562",
+        "claim": "When accelerating ice loss from Greenland and Antarctica are factored into sea level projections, the estimated sea level rise by 2100 is between 75cm to 2 metres.",
+        "claim_label": 3,
+        "evidences": [
+          {
+            "evidence_id": "Sea level rise:123",
+            "evidence_label": 2,
+            "article": "Sea level rise",
+            "evidence": "Estimates on future contribution to sea level rise from Greenland range from 0.3 to 3 metres (1 to 10 ft), for the year 2100.",
+            "entropy": 0.6931471824645996,
+            "votes": [
+              "REFUTES",
+              "SUPPORTS",
+              null,
+              null,
+              null
+            ]
+          },
+          {
+            "evidence_id": "Sea level rise:167",
+            "evidence_label": 1,
+            "article": "Sea level rise",
+            "evidence": "According to the Fourth (2017) National Climate Assessment (NCA) of the United States it is very likely sea level will rise between 30 and 130 cm (1.0–4.3 feet) in 2100 compared to the year 2000.",
+            "entropy": 0.0,
+            "votes": [
+              "REFUTES",
+              "REFUTES",
+              null,
+              null,
+              null
+            ]
+          },
+          {
+            "evidence_id": "Sea level rise:172",
+            "evidence_label": 1,
+            "article": "Sea level rise",
+            "evidence": "In 2019, a study projected that in low emission scenario, sea level will rise 30 centimeters by 2050 and 69 centimetres by 2100, relatively to the level in 2000.",
+            "entropy": 0.0,
+            "votes": [
+              "REFUTES",
+              "REFUTES",
+              null,
+              null,
+              null
+            ]
+          },
+          {
+            "evidence_id": "Sea level rise:173",
+            "evidence_label": 0,
+            "article": "Sea level rise",
+            "evidence": "In high emission scenario, it will be 34 cm by 2050 and 111 cm by 2100.",
+            "entropy": 0.0,
+            "votes": [
+              "SUPPORTS",
+              "SUPPORTS",
+              null,
+              null,
+              null
+            ]
+          },
+          {
+            "evidence_id": "Sea level rise:8",
+            "evidence_label": 0,
+            "article": "Sea level rise",
+            "evidence": "For example, in 2007 the Intergovernmental Panel on Climate Change (IPCC) projected a high end estimate of 60 cm (2 ft) through 2099, but their 2014 report raised the high-end estimate to about 90 cm (3 ft).",
+            "entropy": 0.0,
+            "votes": [
+              "SUPPORTS",
+              "SUPPORTS",
+              null,
+              null,
+              null
+            ]
+          }
+        ]
+      },
+      "detected_claim_snippet": "When accelerating ice loss from Greenland and Antarctica are factored into sea level projections, the estimated sea level rise by 2100 is between 75cm to 2 metres.",
+      "detected_evidence_snippet": "Estimates on future contribution to sea level rise from Greenland range from 0.3 to 3 metres (1 to 10 ft), for the year 2100."
+    }
+  ],
+  "risks": [
+    "HuggingFace source schema or label metadata may change over time.",
+    "Acquired rows must remain external-evaluation-only under the leakage policy.",
+    "Climate-FEVER DISPUTED rows are excluded for clean 3-way evaluation."
+  ],
+  "recommendation": "Accepted rows cover SUPPORT, REFUTE, and NOT_ENTITLED. The file is ready for future Stage43-B2 eval-only use.",
+  "leakage_policy": "Stage43-B1 acquired data is external-evaluation-only. It must not be used for training, calibration, threshold selection, checkpoint selection, loss design, or any other model-selection feedback loop."
+}
