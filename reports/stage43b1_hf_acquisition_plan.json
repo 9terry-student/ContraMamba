@@ -1,0 +1,120 @@
+{
+  "decision": "STAGE43B1_HF_ACQUISITION_PLAN_PREPARED",
+  "status": "preparation_only",
+  "background": {
+    "stage43a_decision": "STAGE43A_EXTERNAL_VALIDATION_MANIFEST_AMBIGUOUS",
+    "stage43a_candidates_scanned": 34,
+    "stage43a_clearly_adaptable": 0,
+    "stage43a_ambiguous": 10,
+    "stage43a_not_adaptable": 24,
+    "finding": "No VitaminC/FEVER/RTE/MNLI/SNLI-style file exists in the repository.",
+    "stage43b0_artifacts": {
+      "converter_script": "scripts/convert_stage43_external_validation.py",
+      "schema_doc": "docs/stage43_external_validation_schema.md",
+      "intake_plan_md": "reports/stage43b0_external_intake_plan.md",
+      "intake_plan_json": "reports/stage43b0_external_intake_plan.json",
+      "limitation": "File-based only; cannot acquire data, only convert an already-local file."
+    },
+    "user_clarification": "Prior EpistemicBERT/ContraMamba datasets were usually pulled inside Kaggle via `from datasets import load_dataset; dataset = load_dataset(...)`.",
+    "conclusion": "Stage43-B1 adds a HuggingFace acquisition path via datasets.load_dataset so a naturalistic external source can actually be obtained, inspected, and converted into the Stage43 schema."
+  },
+  "preferred_acquisition_targets": [
+    {
+      "rank": 1,
+      "source": "VitaminC or FEVER-style fact verification dataset",
+      "rationale": "Closest match to ContraMamba's SUPPORT/REFUTE/NOT_ENTITLED schema and to fact-verification framing used elsewhere in the repo."
+    },
+    {
+      "rank": 2,
+      "source": "RTE/GLUE",
+      "rationale": "Weaker NLI transfer probe. RTE's binary entailment/not_entailment labeling does not separate REFUTE from NOT_ENTITLED; not_entailment is mapped to NOT_ENTITLED by default, never REFUTE, unless a manual label map overrides this."
+    },
+    {
+      "rank": 3,
+      "source": "MNLI/SNLI",
+      "rationale": "Broader three-way NLI source, useful for volume, but less fact-verification-specific than VitaminC/FEVER; treat as a secondary signal."
+    }
+  ],
+  "acquisition_script": {
+    "path": "scripts/acquire_stage43_hf_external_validation.py",
+    "loading_pattern": {
+      "with_config": "load_dataset(hf_dataset, hf_config, split=split, trust_remote_code=...)",
+      "without_config": "load_dataset(hf_dataset, split=split, trust_remote_code=...)",
+      "trust_remote_code_note": "Only passed to load_dataset when --trust-remote-code is explicitly supplied."
+    },
+    "field_detection": {
+      "explicit_fields_take_precedence": true,
+      "auto_detect_flag": "--auto-detect-fields",
+      "claim_aliases": ["claim", "hypothesis", "statement", "query", "sentence2", "premise2"],
+      "evidence_aliases": ["evidence", "premise", "context", "passage", "text", "sentence1"],
+      "label_aliases": ["label", "gold", "gold_label", "answer", "verdict", "relation"],
+      "no_confident_mapping_behavior": "Fails with STAGE43B1_HF_EXTERNAL_ACQUISITION_NO_VALID_ROWS and writes zero accepted rows."
+    },
+    "class_label_resolution": "Integer labels resolved to string names via dataset.features[label_field].names when available, before label-string mapping.",
+    "label_mapping": {
+      "default_support": ["SUPPORTS", "SUPPORT", "entailment", "true", "1"],
+      "default_refute": ["REFUTES", "REFUTE", "contradiction", "false", "-1"],
+      "default_not_entitled": ["NOT ENOUGH INFO", "NEI", "neutral", "unknown", "not_entitled", "not_entailment", "0"],
+      "not_entailment_policy": "Maps to NOT_ENTITLED, not REFUTE, unless --label-map-json overrides. A risk is recorded whenever this rule fires.",
+      "manual_override": "--label-map-json accepts inline JSON or a file path and fully overrides default mapping when supplied."
+    },
+    "rejection_rules": [
+      "missing_or_too_short_claim",
+      "missing_or_too_short_evidence",
+      "missing_label",
+      "ambiguous_or_unmapped_label",
+      "duplicate_claim_evidence_label (only when --dedupe is set)"
+    ],
+    "output_schema_fields": {
+      "required": ["id", "claim", "evidence", "label", "source_dataset", "source_label", "stage43_split", "metadata"],
+      "optional": ["original_id", "source_config", "source_split", "topic", "domain", "notes"]
+    },
+    "dry_run_flag": "--dry-run inspects and reports without writing the accepted output JSONL; rejected JSONL and reports are still written.",
+    "decision_labels": [
+      "STAGE43B1_HF_EXTERNAL_ACQUISITION_READY",
+      "STAGE43B1_HF_EXTERNAL_ACQUISITION_LABEL_IMBALANCED",
+      "STAGE43B1_HF_EXTERNAL_ACQUISITION_NO_VALID_ROWS",
+      "STAGE43B1_HF_EXTERNAL_ACQUISITION_FAILED"
+    ]
+  },
+  "stage43b2_evaluation_plan": {
+    "precondition": "A Stage43-B1 acquisition report with decision STAGE43B1_HF_EXTERNAL_ACQUISITION_READY (or an accepted LABEL_IMBALANCED result) must exist first.",
+    "action": "Run the existing external final-composer evaluation on the acquired JSONL only, eval-only.",
+    "constraints": [
+      "Do not modify model code",
+      "Do not modify training scripts",
+      "Do not modify evaluator scripts",
+      "Do not modify Stage33/36/37/39/40 logic",
+      "Do not modify existing Stage39/40/41/42/43-A/43-B0 reports",
+      "Do not modify existing data/probe files",
+      "Do not use acquired data for training, calibration, threshold selection, checkpoint selection, or loss design"
+    ]
+  },
+  "guardrails": {
+    "do_not": [
+      "download data at implementation time",
+      "run the acquisition script as part of this task",
+      "run model training or evaluation",
+      "run external probe evaluation",
+      "run Kaggle commands",
+      "run py_compile",
+      "run smoke tests",
+      "run help checks",
+      "run local model execution",
+      "create fake examples",
+      "infer labels from model predictions",
+      "treat RTE not_entailment as REFUTE unless manual label mapping says so",
+      "treat synthetic Stage34/35 probes as naturalistic external evidence",
+      "alter existing source reports or previous stage outputs"
+    ]
+  },
+  "leakage_policy": "Any JSONL produced by scripts/acquire_stage43_hf_external_validation.py is external-evaluation-only. It must never be used to update model weights, select checkpoints, tune thresholds, or otherwise influence training or calibration decisions.",
+  "recommendation": "Run scripts/acquire_stage43_hf_external_validation.py explicitly (not as part of this task) against a VitaminC/FEVER-style dataset first; fall back to RTE/GLUE or MNLI/SNLI only if no fact-verification-specific dataset is accessible. Review the resulting report's risks, rejection_reason_counts, and accepted_label_counts before treating output as ready for Stage43-B2. No model, training, or evaluator code was modified to produce this plan or the acquisition script.",
+  "artifacts": {
+    "acquisition_script": "scripts/acquire_stage43_hf_external_validation.py",
+    "prior_converter_script": "scripts/convert_stage43_external_validation.py",
+    "schema_doc": "docs/stage43_external_validation_schema.md",
+    "plan_md": "reports/stage43b1_hf_acquisition_plan.md",
+    "plan_json": "reports/stage43b1_hf_acquisition_plan.json"
+  }
+}
