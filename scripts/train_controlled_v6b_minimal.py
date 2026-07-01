@@ -3860,6 +3860,48 @@ def _stage39_is_high_precision_contradiction(row: dict) -> bool:
     )
 
 
+def _stage39_high_precision_contradiction_trigger_v2(row: dict) -> dict[str, Any]:
+    """Stage39-C: safe_structured_v2 REFUTE gate diagnostics.
+
+    `_stage39_is_high_precision_contradiction` requires Stage33 route,
+    override, and reason=="none_to_some" to *all* agree, which silently
+    excludes the equally high-precision "some_to_none" contradiction group.
+    This broadens the gate to an OR across four independent high-precision-
+    contradiction signals (Stage33 route, Stage33 structured label, a
+    Stage33/Stage36/Stage37 conditional override, or the Stage33 reason
+    being none_to_some/some_to_none), any one of which is sufficient.
+    Never reads gold labels.
+    """
+    route = str(row.get("stage33_structured_coverage_route") or "")
+    label = str(row.get("stage33_structured_coverage_label") or "")
+    reason = str(row.get("stage33_structured_coverage_reason") or "")
+    override_value = next(
+        (
+            str(row.get(key))
+            for key in (
+                "stage33_conditional_override_type",
+                "stage36_conditional_override_type",
+                "stage37_conditional_override_type",
+            )
+            if str(row.get(key) or "") == "high_precision_contradiction"
+        ),
+        None,
+    )
+
+    route_fired = route == "CONTRADICTION_REFUTE"
+    label_fired = label == "STRUCT_CONTRADICTION_REFUTE"
+    override_fired = override_value is not None
+    reason_fired = reason in {"none_to_some", "some_to_none"}
+    fired = route_fired or label_fired or override_fired or reason_fired
+
+    return {
+        "fired": fired,
+        "reason": reason if fired and reason else None,
+        "route": route if fired and route else None,
+        "override": override_value if fired else None,
+    }
+
+
 def _stage39_blocked_action_reason(result: dict[str, Any]) -> "tuple[str, str]":
     if result["stage39_blocked_by_stage36"]:
         return "blocked_by_stage36", "stage36_support_safety_blocker_fired"
@@ -3883,9 +3925,12 @@ def compute_stage39_final_composer(row: dict, args: "argparse.Namespace") -> dic
     `stage32_shadow_label`), the Stage36 blocker flag
     (`stage36_support_blocker_fired`), the Stage37 recovery provenance
     (`stage37_recovered_from_label`), and the Stage33 structured fields used
-    for the safe_structured high-precision-contradiction gate. `row` may also
-    carry a gold label for reporting only -- it is never read here for any
-    decision.
+    for the safe_structured / safe_structured_v2 high-precision-contradiction
+    gates (`stage33_structured_coverage_reason`, `_route`, `_label`,
+    `stage33_conditional_override_type`, and, if present,
+    `stage36_conditional_override_type` / `stage37_conditional_override_type`).
+    `row` may also carry a gold label for reporting only -- it is never read
+    here for any decision.
     """
     enabled = bool(getattr(args, "stage39_use_final_composer_opt_in", False))
     policy = getattr(args, "stage39_final_composer_policy", "support_only")
@@ -3919,6 +3964,10 @@ def compute_stage39_final_composer(row: dict, args: "argparse.Namespace") -> dic
         "stage39_blocked_by_refute_to_support_guard": False,
         "stage39_blocked_by_stage37_from_refute_guard": False,
         "stage39_blocked_by_missing_source": False,
+        "stage39_refute_trigger": False,
+        "stage39_refute_trigger_reason": None,
+        "stage39_refute_trigger_route": None,
+        "stage39_refute_trigger_override": None,
     }
     if not enabled:
         return result
@@ -4000,6 +4049,34 @@ def compute_stage39_final_composer(row: dict, args: "argparse.Namespace") -> dic
             )
         else:
             action, reason = "no_change", "safe_structured_no_qualifying_transition"
+
+    elif policy == "safe_structured_v2":
+        trigger = _stage39_high_precision_contradiction_trigger_v2(row)
+        result["stage39_refute_trigger"] = trigger["fired"]
+        result["stage39_refute_trigger_reason"] = trigger["reason"]
+        result["stage39_refute_trigger_route"] = trigger["route"]
+        result["stage39_refute_trigger_override"] = trigger["override"]
+
+        if source_label == "SUPPORT" and original_final_label != "SUPPORT":
+            if _guard_support_composition():
+                candidate_label = "SUPPORT"
+                action, reason = "composed_to_support", "support_only_from_stage37"
+            else:
+                action, reason = _stage39_blocked_action_reason(result)
+        elif source_label == "NOT_ENTITLED" and original_final_label == "SUPPORT":
+            candidate_label = "NOT_ENTITLED"
+            action, reason = (
+                "composed_to_not_entitled",
+                "overclaim_not_entitled_from_stage37_shadow",
+            )
+        elif original_final_label == "NOT_ENTITLED" and trigger["fired"]:
+            candidate_label = "REFUTE"
+            action, reason = (
+                "composed_to_refute",
+                "safe_structured_v2_high_precision_contradiction",
+            )
+        else:
+            action, reason = "no_change", "safe_structured_v2_no_qualifying_transition"
 
     elif policy == "full_shadow":
         candidate_label = source_label
@@ -4635,8 +4712,17 @@ def prediction_records_v6b(
                 "stage33_structured_coverage_route": item.get(
                     "stage33_structured_coverage_route"
                 ),
+                "stage33_structured_coverage_label": item.get(
+                    "stage33_structured_coverage_label"
+                ),
                 "stage33_conditional_override_type": item.get(
                     "stage33_conditional_override_type"
+                ),
+                "stage36_conditional_override_type": item.get(
+                    "stage36_conditional_override_type"
+                ),
+                "stage37_conditional_override_type": item.get(
+                    "stage37_conditional_override_type"
                 ),
                 "gold_final_label": item.get("gold_final_label"),
             }
@@ -4676,6 +4762,16 @@ def prediction_records_v6b(
             ]
             item["stage39_blocked_by_missing_source"] = _stage39_result[
                 "stage39_blocked_by_missing_source"
+            ]
+            item["stage39_refute_trigger"] = _stage39_result["stage39_refute_trigger"]
+            item["stage39_refute_trigger_reason"] = _stage39_result[
+                "stage39_refute_trigger_reason"
+            ]
+            item["stage39_refute_trigger_route"] = _stage39_result[
+                "stage39_refute_trigger_route"
+            ]
+            item["stage39_refute_trigger_override"] = _stage39_result[
+                "stage39_refute_trigger_override"
             ]
             if (
                 _stage39_opt_in_enabled
@@ -6435,14 +6531,19 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--stage39-final-composer-policy",
-        choices=("support_only", "safe_structured", "full_shadow"),
+        choices=("support_only", "safe_structured", "full_shadow", "safe_structured_v2"),
         default="support_only",
         help=(
             "Stage39-A: composition policy. support_only only composes "
             "SUPPORT from the source shadow label; safe_structured also "
             "allows high-precision-contradiction REFUTE; full_shadow "
             "diagnostically adopts the source shadow label outright, still "
-            "subject to hard safety guards."
+            "subject to hard safety guards. Stage39-C: safe_structured_v2 "
+            "keeps all safe_structured SUPPORT behavior and safety guards, "
+            "and broadens high-precision-contradiction REFUTE composition "
+            "(OR across Stage33 route/label/override/reason signals, "
+            "restricted to original final label NOT_ENTITLED only -- never "
+            "SUPPORT->REFUTE)."
         ),
     )
     parser.add_argument(
