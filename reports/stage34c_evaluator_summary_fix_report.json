@@ -1,0 +1,46 @@
+{
+  "stage": "Stage34-C",
+  "title": "Evaluator top-level diagnostics and concise held-out summaries",
+  "scope": {
+    "modified_evaluator": true,
+    "model_architecture_changed": false,
+    "train_script_changed": false,
+    "stage33f_owner_logic_changed": false,
+    "final_logits_changed": false,
+    "final_predictions_changed": false,
+    "shadow_predictions_changed": false,
+    "training_data_changed": false,
+    "stage31_data_changed": false,
+    "stage34_probe_examples_changed": false,
+    "checkpoint_selection_changed": false
+  },
+  "top_level_diagnostics_added": [
+    "stage33_structured_coverage_route_counts",
+    "stage33_structured_coverage_reason_counts",
+    "stage33_structured_coverage_rule_strength_counts",
+    "stage33_conditional_action_counts",
+    "stage33_conditional_override_type_counts",
+    "stage33_whole_part_relation_counts",
+    "stage33_whole_part_match_counts",
+    "stage33_whole_part_direct_support_allowed_counts",
+    "stage33_whole_part_direct_support_candidate_counts"
+  ],
+  "heldout_scalar_counters_exported_top_level": true,
+  "heldout_group_summary_added": true,
+  "stage34_reverse_overclaim_handling_added": true,
+  "decision_reason_refined": true,
+  "diagnostic_only_policy": "Stage34 held-out reports must not be used for training, calibration, threshold selection, loss, checkpoint selection, or Kaggle selection.",
+  "validation": {
+    "static_syntax_check": "python -m py_compile scripts/evaluate_stage34_heldout_coverage.py",
+    "training_run": false,
+    "evaluation_run": false,
+    "kaggle_run": false,
+    "smoke_tests_run": false,
+    "full_experiments_run": false,
+    "git_commands_run": false
+  },
+  "remaining_risks": [
+    "Runtime values depend on the user's prediction export schema.",
+    "Reverse-overclaim handling is inferred from exported route and override fields when explicit route metadata is absent."
+  ]
+}
