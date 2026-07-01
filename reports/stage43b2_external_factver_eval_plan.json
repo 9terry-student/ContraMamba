@@ -1,0 +1,94 @@
+{
+  "decision": "STAGE43B2_EXTERNAL_FACTVER_EVAL_PLAN_PREPARED",
+  "status": "preparation_only",
+  "scope": "Evaluation script and reports only. No training, tuning, smoke test, py_compile, help check, Kaggle command, external evaluation, or model evaluation was run during implementation.",
+  "stage43b1_sources": [
+    {
+      "name": "VitaminC validation sample1000",
+      "path": "data/stage43b1_vitaminc_validation_sample1000.jsonl",
+      "decision": "STAGE43B1_FACTVER_ACQUISITION_READY",
+      "accepted_rows": 1000,
+      "rejected_rows": 0,
+      "label_counts": {
+        "SUPPORT": 500,
+        "REFUTE": 355,
+        "NOT_ENTITLED": 145
+      },
+      "interpretation": "In-family fact-verification external validation."
+    },
+    {
+      "name": "Climate-FEVER test sample1000",
+      "path": "data/stage43b1_climate_fever_test_sample1000.jsonl",
+      "decision": "STAGE43B1_FACTVER_ACQUISITION_READY",
+      "accepted_rows": 903,
+      "rejected_rows": 97,
+      "label_counts": {
+        "SUPPORT": 438,
+        "REFUTE": 164,
+        "NOT_ENTITLED": 301
+      },
+      "rejected_reason_counts": {
+        "disputed_label_excluded": 97
+      },
+      "interpretation": "Cross-domain fact-verification external validation."
+    }
+  ],
+  "script": {
+    "path": "scripts/evaluate_stage43_external_factver.py",
+    "purpose": "Evaluate Stage39-C safe_structured_v2 base-vs-composed behavior on Stage43-B1 external fact-verification JSONL files without training or tuning.",
+    "required_inputs": ["--input-jsonl", "--output-json", "--output-md", "--run-name"],
+    "optional_inputs": [
+      "--max-rows",
+      "--composer-mode",
+      "--prediction-source",
+      "--checkpoint",
+      "--device",
+      "--batch-size",
+      "--max-length",
+      "--write-predictions-jsonl",
+      "--allow-heuristic-only"
+    ]
+  },
+  "metrics": [
+    "accuracy",
+    "macro_f1",
+    "per_label_precision_recall_f1",
+    "confusion_matrix",
+    "label_distribution",
+    "prediction_distribution",
+    "delta_accuracy",
+    "delta_macro_f1"
+  ],
+  "safety_counters": [
+    "changed_row_count",
+    "changed_to_SUPPORT_count",
+    "changed_to_REFUTE_count",
+    "changed_to_NOT_ENTITLED_count",
+    "introduced_unsafe_SUPPORT_count",
+    "introduced_REFUTE_to_SUPPORT_count",
+    "introduced_SUPPORT_to_REFUTE_count",
+    "total_composed_wrong_SUPPORT_count",
+    "total_composed_SUPPORT_to_REFUTE_count",
+    "blocker_fired_count",
+    "recovery_fired_count"
+  ],
+  "decision_labels": [
+    "STAGE43B2_EXTERNAL_FACTVER_PASS",
+    "STAGE43B2_EXTERNAL_FACTVER_SAFE_BUT_NO_GAIN",
+    "STAGE43B2_EXTERNAL_FACTVER_UNSAFE",
+    "STAGE43B2_EXTERNAL_FACTVER_INCOMPLETE"
+  ],
+  "guardrails": [
+    "Do not train.",
+    "Do not tune thresholds.",
+    "Do not select checkpoints.",
+    "Do not modify model behavior based on Stage43-B2.",
+    "Do not use Stage43-B1 data for training or calibration.",
+    "Do not silently fall back to heuristic-only model evaluation.",
+    "Do not mark heuristic-only output as PASS.",
+    "Do not alter Stage39-C behavior.",
+    "Do not treat synthetic Stage34/35 as naturalistic external evidence."
+  ],
+  "leakage_policy": "Acquired data must remain external-evaluation-only. No threshold, model, checkpoint, or loss may be selected using Stage43-B2 outcomes.",
+  "recommendation": "Run Stage43-B2 only as eval-only after a real model/export prediction path is available for the Stage43-B1 JSONL files. Treat Climate-FEVER failures as cross-domain limitations, not training signals."
+}
