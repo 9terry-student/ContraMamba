@@ -149,8 +149,16 @@ def has_stage36_fields(rows: list[dict[str, Any]]) -> bool:
     return any(row.get("stage36_support_blocker_fired") is not None for row in rows)
 
 
+def has_stage37_fields(rows: list[dict[str, Any]]) -> bool:
+    """True when any row carries Stage37-A safe SUPPORT recovery diagnostics."""
+    return any(row.get("stage37_safe_recovery_fired") is not None for row in rows)
+
+
 def resolve_shadow_label(row: dict[str, Any]) -> str:
-    """Post-Stage36 shadow label: prefers stage36_final_shadow_label when present."""
+    """Final shadow label. Priority: stage37_final > stage36_final > stage32 > stage33."""
+    value = row.get("stage37_final_shadow_label")
+    if value not in (None, ""):
+        return normalize_label(value)
     value = row.get("stage36_final_shadow_label")
     if value not in (None, ""):
         return normalize_label(value)
@@ -160,6 +168,17 @@ def resolve_shadow_label(row: dict[str, Any]) -> str:
 def resolve_shadow_label_original(row: dict[str, Any]) -> str:
     """Pre-Stage36 shadow label: prefers stage36_original_shadow_label when present."""
     value = row.get("stage36_original_shadow_label")
+    if value not in (None, ""):
+        return normalize_label(value)
+    return get_shadow_label(row)
+
+
+def resolve_shadow_label_pre_stage37(row: dict[str, Any]) -> str:
+    """Pre-Stage37 (post-Stage36) shadow label: prefers stage37_original_shadow_label."""
+    value = row.get("stage37_original_shadow_label")
+    if value not in (None, ""):
+        return normalize_label(value)
+    value = row.get("stage36_final_shadow_label")
     if value not in (None, ""):
         return normalize_label(value)
     return get_shadow_label(row)
@@ -658,6 +677,201 @@ def stage36_decide(
     }
 
 
+def stage37_safe_recovery_counters(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Stage37-A: top-level counters over rows carrying safe SUPPORT recovery diagnostics."""
+    fired = 0
+    no_except_fired = 0
+    coord_fired = 0
+    numeric_fired = 0
+    from_not_entitled = 0
+    from_refute = 0
+    blocked_stage36 = 0
+    blocked_scope = 0
+    blocked_exception = 0
+    blocked_not_all = 0
+    reason_counts: Counter = Counter()
+    for row in rows:
+        if row.get("stage37_safe_recovery_fired") is True:
+            fired += 1
+            if row.get("stage37_no_except_included_subset_fired") is True:
+                no_except_fired += 1
+            if row.get("stage37_coordination_universal_subset_fired") is True:
+                coord_fired += 1
+            if row.get("stage37_numeric_universal_subset_fired") is True:
+                numeric_fired += 1
+            recovered_from = row.get("stage37_recovered_from_label")
+            if recovered_from == "NOT_ENTITLED":
+                from_not_entitled += 1
+            elif recovered_from == "REFUTE":
+                from_refute += 1
+            for reason in row.get("stage37_safe_recovery_reasons") or []:
+                reason_counts[str(reason)] += 1
+        if row.get("stage37_blocked_by_stage36") is True:
+            blocked_stage36 += 1
+        if row.get("stage37_blocked_by_scope_hazard") is True:
+            blocked_scope += 1
+        if row.get("stage37_blocked_by_exception_hazard") is True:
+            blocked_exception += 1
+        if row.get("stage37_blocked_by_not_all_hazard") is True:
+            blocked_not_all += 1
+    return {
+        "stage37_safe_recovery_fired_count": fired,
+        "stage37_no_except_included_subset_fired_count": no_except_fired,
+        "stage37_coordination_universal_subset_fired_count": coord_fired,
+        "stage37_numeric_universal_subset_fired_count": numeric_fired,
+        "stage37_recovered_from_not_entitled_count": from_not_entitled,
+        "stage37_recovered_from_refute_count": from_refute,
+        "stage37_blocked_by_stage36_count": blocked_stage36,
+        "stage37_blocked_by_scope_hazard_count": blocked_scope,
+        "stage37_blocked_by_exception_hazard_count": blocked_exception,
+        "stage37_blocked_by_not_all_hazard_count": blocked_not_all,
+        "stage37_safe_recovery_reason_counts": dict(reason_counts),
+    }
+
+
+def _stage37_diagnostic_snapshot(rows: list[dict[str, Any]], shadow_fn) -> dict[str, int]:
+    overclaim = 0
+    exception_err = 0
+    location_err = 0
+    refute_to_support = 0
+    support_shadow_support = 0
+    subset_recovered = 0
+    numeric_recovered = 0
+    exception_recovered = 0
+    for row in rows:
+        gold = get_gold_label(row)
+        group = get_group(row)
+        shadow = shadow_fn(row)
+        if gold == "NOT_ENTITLED" and shadow == "SUPPORT":
+            overclaim += 1
+        if gold == "REFUTE" and shadow == "SUPPORT":
+            refute_to_support += 1
+        if group in EXCEPTION_GROUPS and gold != "SUPPORT" and shadow == "SUPPORT":
+            exception_err += 1
+        if group == "adv_location_scope_not_entitled" and shadow == "SUPPORT":
+            location_err += 1
+        if gold == "SUPPORT" and shadow == "SUPPORT":
+            support_shadow_support += 1
+        if group in SUBSET_SUPPORT_GROUPS and shadow == "SUPPORT":
+            subset_recovered += 1
+        if group in NUMERIC_SUPPORT_GROUPS and shadow == "SUPPORT":
+            numeric_recovered += 1
+        if group in EXCEPTION_SUPPORT_GROUPS and shadow == "SUPPORT":
+            exception_recovered += 1
+    return {
+        "overclaim_to_support": overclaim,
+        "exception_to_support_error": exception_err,
+        "location_scope_to_support_error": location_err,
+        "refute_to_support": refute_to_support,
+        "support_shadow_support": support_shadow_support,
+        "subset_support_recovered": subset_recovered,
+        "numeric_support_recovered": numeric_recovered,
+        "exception_support_recovered": exception_recovered,
+    }
+
+
+def stage37_before_after_diagnostics(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Stage37-A: compare unsafe-error and support-recovery counters before/after safe recovery."""
+    before = _stage37_diagnostic_snapshot(rows, resolve_shadow_label_pre_stage37)
+    after = _stage37_diagnostic_snapshot(rows, resolve_shadow_label)
+    return {
+        "stage37_original_support_shadow_support": before["support_shadow_support"],
+        "stage37_post_support_shadow_support": after["support_shadow_support"],
+        "stage37_original_subset_support_recovered": before["subset_support_recovered"],
+        "stage37_post_subset_support_recovered": after["subset_support_recovered"],
+        "stage37_original_numeric_support_recovered": before["numeric_support_recovered"],
+        "stage37_post_numeric_support_recovered": after["numeric_support_recovered"],
+        "stage37_original_exception_support_recovered": before["exception_support_recovered"],
+        "stage37_post_exception_support_recovered": after["exception_support_recovered"],
+        "stage37_original_overclaim_to_support": before["overclaim_to_support"],
+        "stage37_post_overclaim_to_support": after["overclaim_to_support"],
+        "stage37_original_exception_to_support_error": before["exception_to_support_error"],
+        "stage37_post_exception_to_support_error": after["exception_to_support_error"],
+        "stage37_original_location_scope_to_support_error": before["location_scope_to_support_error"],
+        "stage37_post_location_scope_to_support_error": after["location_scope_to_support_error"],
+        "stage37_original_refute_to_support": before["refute_to_support"],
+        "stage37_post_refute_to_support": after["refute_to_support"],
+    }
+
+
+def stage37_decide(before_after: dict[str, Any]) -> dict[str, str]:
+    """Stage37-A decision label. Only called when Stage37 fields are present."""
+    support_increased = (
+        before_after["stage37_post_support_shadow_support"]
+        > before_after["stage37_original_support_shadow_support"]
+    )
+    subset_increased = (
+        before_after["stage37_post_subset_support_recovered"]
+        > before_after["stage37_original_subset_support_recovered"]
+    )
+    numeric_improved = (
+        before_after["stage37_post_numeric_support_recovered"]
+        > before_after["stage37_original_numeric_support_recovered"]
+    )
+    exception_improved = (
+        before_after["stage37_post_exception_support_recovered"]
+        > before_after["stage37_original_exception_support_recovered"]
+    )
+    overclaim_zero = before_after["stage37_post_overclaim_to_support"] == 0
+    exception_err_zero = before_after["stage37_post_exception_to_support_error"] == 0
+    location_err_zero = before_after["stage37_post_location_scope_to_support_error"] == 0
+    refute_not_increased = (
+        before_after["stage37_post_refute_to_support"]
+        <= before_after["stage37_original_refute_to_support"]
+    )
+    unsafe_reappeared = (
+        before_after["stage37_post_overclaim_to_support"] > 0
+        or before_after["stage37_post_exception_to_support_error"] > 0
+        or before_after["stage37_post_location_scope_to_support_error"] > 0
+        or before_after["stage37_post_refute_to_support"]
+        > before_after["stage37_original_refute_to_support"]
+    )
+
+    if unsafe_reappeared and (support_increased or subset_increased):
+        return {
+            "label": "STAGE37A_RECOVERY_TOO_UNSAFE",
+            "reason": (
+                "SUPPORT recovery improved but unsafe SUPPORT errors (overclaim, "
+                "exception, location-scope, or REFUTE-to-SUPPORT leakage) reappeared."
+            ),
+        }
+    if (
+        support_increased
+        and (subset_increased or numeric_improved or exception_improved)
+        and overclaim_zero
+        and exception_err_zero
+        and location_err_zero
+        and refute_not_increased
+    ):
+        return {
+            "label": "STAGE37A_SAFE_SUPPORT_RECOVERY_EFFECTIVE",
+            "reason": (
+                "SUPPORT recovery increased (subset, numeric, and/or exception/"
+                "no-except support improved) while overclaim, exception, and "
+                "location-scope SUPPORT errors remained zero and REFUTE-to-"
+                "SUPPORT leakage did not increase."
+            ),
+        }
+    if (
+        overclaim_zero
+        and exception_err_zero
+        and location_err_zero
+        and refute_not_increased
+        and not support_increased
+        and not subset_increased
+        and not numeric_improved
+        and not exception_improved
+    ):
+        return {
+            "label": "STAGE37A_RECOVERY_TOO_WEAK",
+            "reason": "Safety remained good after Stage37, but SUPPORT recovery barely improved.",
+        }
+    return {
+        "label": "STAGE37A_DIAGNOSTIC_ONLY",
+        "reason": "Stage37 safe SUPPORT recovery impact on this run is mixed or inconclusive.",
+    }
+
+
 def write_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
@@ -765,6 +979,43 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
         ])
         for name, count in sorted(report["stage36_blocker_reason_counts"].items()):
             lines.append(f"| `{name}` | {count} |")
+    if report.get("stage37_fields_present"):
+        lines.extend([
+            "",
+            "## Stage37-A Safe SUPPORT Recovery",
+            f"- Decision: `{report['stage37_decision']['label']}`",
+            f"- Decision reason: {report['stage37_decision']['reason']}",
+            "",
+            "| Counter | Value |",
+            "|---|---:|",
+            f"| Safe recovery fired | {report['stage37_safe_recovery_fired_count']} |",
+            f"| No-except included-subset fired | {report['stage37_no_except_included_subset_fired_count']} |",
+            f"| Coordination universal-subset fired | {report['stage37_coordination_universal_subset_fired_count']} |",
+            f"| Numeric universal-subset fired | {report['stage37_numeric_universal_subset_fired_count']} |",
+            f"| Recovered from NOT_ENTITLED | {report['stage37_recovered_from_not_entitled_count']} |",
+            f"| Recovered from REFUTE | {report['stage37_recovered_from_refute_count']} |",
+            f"| Blocked by Stage36 blocker | {report['stage37_blocked_by_stage36_count']} |",
+            f"| Blocked by scope hazard | {report['stage37_blocked_by_scope_hazard_count']} |",
+            f"| Blocked by exception hazard | {report['stage37_blocked_by_exception_hazard_count']} |",
+            f"| Blocked by not-all hazard | {report['stage37_blocked_by_not_all_hazard_count']} |",
+            "",
+            "| Before/After | Post-Stage36 | Post-Stage37 |",
+            "|---|---:|---:|",
+            f"| SUPPORT rows shadow==SUPPORT | {report['stage37_original_support_shadow_support']} | {report['stage37_post_support_shadow_support']} |",
+            f"| Subset SUPPORT recovered | {report['stage37_original_subset_support_recovered']} | {report['stage37_post_subset_support_recovered']} |",
+            f"| Numeric SUPPORT recovered | {report['stage37_original_numeric_support_recovered']} | {report['stage37_post_numeric_support_recovered']} |",
+            f"| Exception SUPPORT recovered | {report['stage37_original_exception_support_recovered']} | {report['stage37_post_exception_support_recovered']} |",
+            f"| Overclaim to SUPPORT | {report['stage37_original_overclaim_to_support']} | {report['stage37_post_overclaim_to_support']} |",
+            f"| Exception to SUPPORT error | {report['stage37_original_exception_to_support_error']} | {report['stage37_post_exception_to_support_error']} |",
+            f"| Location scope to SUPPORT error | {report['stage37_original_location_scope_to_support_error']} | {report['stage37_post_location_scope_to_support_error']} |",
+            f"| REFUTE to SUPPORT | {report['stage37_original_refute_to_support']} | {report['stage37_post_refute_to_support']} |",
+            "",
+            "### Safe Recovery Reason Counts",
+            "| Reason | Count |",
+            "|---|---:|",
+        ])
+        for name, count in sorted(report["stage37_safe_recovery_reason_counts"].items()):
+            lines.append(f"| `{name}` | {count} |")
     lines.extend([
         "",
         "## Caution",
@@ -792,7 +1043,14 @@ def main() -> int:
     gold_field = detect_field(rows, ["gold_final_label", "gold_label", "final_label", "label"], "gold label")
     current_field = detect_field(rows, ["pred_final_label", "pred_label", "prediction", "predicted_label"], "current prediction")
     shadow_field = detect_field(
-        rows, ["stage32_shadow_label", "stage33_conditional_shadow_label"], "shadow prediction"
+        rows,
+        [
+            "stage37_final_shadow_label",
+            "stage36_final_shadow_label",
+            "stage32_shadow_label",
+            "stage33_conditional_shadow_label",
+        ],
+        "shadow prediction",
     )
     golds = [get_gold_label(row) for row in rows]
     current = [get_current_label(row) for row in rows]
@@ -807,6 +1065,7 @@ def main() -> int:
         key: value for key, value in counters.items() if isinstance(value, int)
     }
     stage36_present = has_stage36_fields(rows)
+    stage37_present = has_stage37_fields(rows)
     report = {
         "run_name": args.run_name,
         "predictions_file": args.predictions_file,
@@ -847,6 +1106,7 @@ def main() -> int:
             scope_safety,
         ),
         "stage36_fields_present": stage36_present,
+        "stage37_fields_present": stage37_present,
         "leakage_policy": (
             "Diagnostic-only. Do not use for training, calibration, threshold "
             "selection, loss, or checkpoint selection."
@@ -858,6 +1118,12 @@ def main() -> int:
         report.update(stage36_counters)
         report.update(stage36_before_after)
         report["stage36_decision"] = stage36_decide(stage36_before_after, counters)
+    if stage37_present:
+        stage37_counters = stage37_safe_recovery_counters(rows)
+        stage37_before_after = stage37_before_after_diagnostics(rows)
+        report.update(stage37_counters)
+        report.update(stage37_before_after)
+        report["stage37_decision"] = stage37_decide(stage37_before_after)
     write_json(REPO_ROOT / args.output_json, report)
     write_markdown(REPO_ROOT / args.output_md, report)
     print(f"JSON report -> {REPO_ROOT / args.output_json}")

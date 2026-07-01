@@ -1,0 +1,187 @@
+{
+  "stage": "Stage37-A",
+  "title": "Conservative safe SUPPORT recovery after Stage36 safety blockers",
+  "status": "implemented_shadow_only_not_yet_kaggle_validated",
+  "files_changed": [
+    "scripts/train_controlled_v6b_minimal.py",
+    "scripts/evaluate_stage35_adversarial_coverage.py"
+  ],
+  "files_not_modified": [
+    "model architecture / Mamba backbone",
+    "final logits",
+    "final classifier predictions",
+    "training data",
+    "Stage31 data",
+    "Stage34 data",
+    "Stage35 data",
+    "checkpoint selection",
+    "loss functions",
+    "dataloaders",
+    "Stage36 safety blocker behavior (Stage37 only reads Stage36's post-blocker output and cannot override a fired blocker)",
+    "Stage33-F structured owner behavior (only a new call site was added after Stage36's call site)"
+  ],
+  "stage36a_safety_baseline": {
+    "shadow_macro_f1": 0.6390,
+    "adv_overclaim_to_support": 0,
+    "adv_exception_to_support_error": 0,
+    "adv_location_scope_to_support_error": 0,
+    "adv_temporal_scope_to_support_error": 0,
+    "adv_refute_to_support": 0,
+    "stage35_scope_safety": "safe",
+    "stage36_support_blocker_fired_count": 58,
+    "stage36_exception_blocker_fired_count": 8,
+    "stage36_not_all_blocker_fired_count": 25,
+    "stage36_location_scope_blocker_fired_count": 25,
+    "stage36_post_support_shadow_support": 91,
+    "adv_support_shadow_support": "91 / 250",
+    "adv_subset_support_recovered": "60 / 175",
+    "adv_numeric_support_recovered": "0 / 25"
+  },
+  "remaining_weakness_addressed": [
+    {
+      "pattern": "no_x_except_y",
+      "description": "'No X except Y ...' evidence entails Y SUPPORT (included-subset double-negative), left as REFUTE/NOT_ENTITLED after Stage36.",
+      "example_evidence": "No workers except the night-shift workers were notified.",
+      "example_claim": "The night-shift workers were notified.",
+      "recovery_flag": "--stage37-recover-no-except-included-subset",
+      "recovery_reason": "no_except_included_subset_support"
+    },
+    {
+      "pattern": "all_x_and_all_z_subset",
+      "description": "'All X and all Z were P' evidence entails SUPPORT for a subset of X or Z, left as REFUTE/NOT_ENTITLED after Stage36.",
+      "example_evidence": "All workers and all visitors were registered.",
+      "example_claim": "The night-shift workers were registered.",
+      "recovery_flag": "--stage37-recover-coordination-universal-subset",
+      "recovery_reason": "coordination_universal_subset_support"
+    },
+    {
+      "pattern": "all_n_x_subset_among",
+      "description": "'All N X were P' evidence entails SUPPORT for a subset among X, left as REFUTE/NOT_ENTITLED after Stage36.",
+      "example_evidence": "All 12 workers were notified.",
+      "example_claim": "The night-shift workers among the workers were notified.",
+      "recovery_flag": "--stage37-recover-numeric-universal-subset",
+      "recovery_reason": "numeric_universal_subset_support"
+    }
+  ],
+  "new_flags": {
+    "train_controlled_v6b_minimal.py": [
+      {"flag": "--stage37-use-safe-support-recovery", "default": false, "purpose": "master switch to compute Stage37 safe SUPPORT recovery diagnostics; identical to Stage36-A when off"},
+      {"flag": "--stage37-safe-support-export", "default": false, "purpose": "include stage37_* diagnostic fields in prediction exports"},
+      {"flag": "--stage37-safe-support-shadow-mode", "default": false, "purpose": "allow a fired safe-recovery rule to replace the exported shadow label; never touches final logits/predictions"},
+      {"flag": "--stage37-recover-no-except-included-subset", "default": false},
+      {"flag": "--stage37-recover-coordination-universal-subset", "default": false},
+      {"flag": "--stage37-recover-numeric-universal-subset", "default": false},
+      {"flag": "--stage37-allow-recover-from-refute", "default": false, "purpose": "when false, recover only from NOT_ENTITLED to SUPPORT; when true, also allow REFUTE to SUPPORT if the rule is exact and safety checks pass"}
+    ]
+  },
+  "safe_recovery_rule_summary": {
+    "gating": "Only fires when Stage37 is enabled, the post-Stage36 shadow label is NOT_ENTITLED or REFUTE (never already SUPPORT), no Stage36 support blocker fired on the row, and none of the four hazard checks trip. REFUTE recovery additionally requires --stage37-allow-recover-from-refute. Stage37 can never override a fired Stage36 blocker.",
+    "no_except_included_subset_recovery": "Detects 'no <whole> except <included> ... <predicate>' in evidence. Requires the claim's subject word-set to be an EXACT match (not merely overlapping) with the included-subset word-set, plus >=0.5 predicate word overlap. Exact match is required so that a distinguishing modifier swap (night-shift vs day-shift) -- which shares tokens like 'shift'/'workers' -- is never conflated with the actually-included subset.",
+    "coordination_universal_subset_recovery": "Detects 'all <first> and all <second> <predicate>' in evidence (literal 'and all', so 'and some' never matches). Recovers if the claim subject contains the head noun of <first> or <second> and predicate overlap >= 0.5.",
+    "numeric_universal_subset_recovery": "Detects 'all <number> <whole> <predicate>' in evidence (requires a leading 'all', so a bare '3 X were P' without 'all' never matches -- this specifically blocks reverse-numeric-overclaim). Recovers if the claim uses 'among the <whole>' phrasing or otherwise names a subset whose head is <whole>, plus predicate overlap >= 0.5.",
+    "hazard_helpers": [
+      "has_excluded_subset_hazard (wraps Stage36's _stage36_exception_blocker)",
+      "has_not_all_existential_hazard (wraps Stage36's _stage36_not_all_existential_blocker)",
+      "has_location_scope_mismatch (wraps Stage36's _stage36_location_scope_blocker)",
+      "has_temporal_scope_mismatch (wraps Stage36's _stage36_temporal_scope_blocker)"
+    ]
+  },
+  "integration_point": {
+    "location": "scripts/train_controlled_v6b_minimal.py: prediction_records_v6b(), inside the per-record export loop, immediately after the Stage36 support-safety-blocker block and before exported.append(item)",
+    "execution_order": [
+      "1. Stage33-F computes the proposed structured shadow label (composer_shadow.shadow_label).",
+      "2. Stage36 safety blockers may block unsafe SUPPORT (compute_stage36_support_safety_blocker).",
+      "3. Stage37 safe SUPPORT recovery may recover SUPPORT only if no Stage36 blocker fired on that row and no scope/exception/not-all hazard is present (compute_stage37_safe_support_recovery)."
+    ],
+    "inputs_used": "record claim/evidence text, the post-Stage36 shadow label (Stage36's final_shadow_label when Stage36 ran, else the Stage33 composer_shadow label), the Stage36 result dict (for the fired-blocker gate), and the CLI args namespace",
+    "output_written_to": "item dict fields only (stage32_shadow_label / stage33_conditional_shadow_label overwritten only in shadow_mode when a Stage37 rule fired; stage37_* diagnostic fields added only when export is enabled). stage36_final_shadow_label and other pre-existing Stage33/Stage36 fields are never overwritten by Stage37.",
+    "never_touches": ["output['logits']", "output['predictions']", "final_logits", "final_probs", "pred_label", "pred_final_label", "a fired Stage36 blocker's decision"]
+  },
+  "exported_fields": [
+    "stage37_original_shadow_label",
+    "stage37_final_shadow_label",
+    "stage37_safe_recovery_fired",
+    "stage37_safe_recovery_reasons",
+    "stage37_safe_recovery_action",
+    "stage37_no_except_included_subset_fired",
+    "stage37_coordination_universal_subset_fired",
+    "stage37_numeric_universal_subset_fired",
+    "stage37_recovered_from_label",
+    "stage37_recovered_to_label",
+    "stage37_blocked_by_stage36",
+    "stage37_blocked_by_scope_hazard",
+    "stage37_blocked_by_exception_hazard",
+    "stage37_blocked_by_not_all_hazard"
+  ],
+  "evaluator_changes": {
+    "file": "scripts/evaluate_stage35_adversarial_coverage.py",
+    "shadow_label_resolution": "resolve_shadow_label() now prefers stage37_final_shadow_label, then stage36_final_shadow_label, then stage32_shadow_label, then stage33_conditional_shadow_label. All normal Stage35/36 counters (adv_*, group/family/perturbation metrics) automatically reflect the post-Stage37 label because they all route through resolve_shadow_label(). resolve_shadow_label_pre_stage37() (new) prefers stage37_original_shadow_label, else stage36_final_shadow_label, for the pre-Stage37 (post-Stage36) view used in before/after diagnostics.",
+    "new_top_level_counters": [
+      "stage37_safe_recovery_fired_count",
+      "stage37_no_except_included_subset_fired_count",
+      "stage37_coordination_universal_subset_fired_count",
+      "stage37_numeric_universal_subset_fired_count",
+      "stage37_recovered_from_not_entitled_count",
+      "stage37_recovered_from_refute_count",
+      "stage37_blocked_by_stage36_count",
+      "stage37_blocked_by_scope_hazard_count",
+      "stage37_blocked_by_exception_hazard_count",
+      "stage37_blocked_by_not_all_hazard_count",
+      "stage37_safe_recovery_reason_counts"
+    ],
+    "new_before_after_diagnostics": [
+      "stage37_original_support_shadow_support",
+      "stage37_post_support_shadow_support",
+      "stage37_original_subset_support_recovered",
+      "stage37_post_subset_support_recovered",
+      "stage37_original_numeric_support_recovered",
+      "stage37_post_numeric_support_recovered",
+      "stage37_original_exception_support_recovered",
+      "stage37_post_exception_support_recovered",
+      "stage37_original_overclaim_to_support",
+      "stage37_post_overclaim_to_support",
+      "stage37_original_exception_to_support_error",
+      "stage37_post_exception_to_support_error",
+      "stage37_original_location_scope_to_support_error",
+      "stage37_post_location_scope_to_support_error",
+      "stage37_original_refute_to_support",
+      "stage37_post_refute_to_support"
+    ],
+    "new_decision_labels": [
+      "STAGE37A_SAFE_SUPPORT_RECOVERY_EFFECTIVE",
+      "STAGE37A_RECOVERY_TOO_UNSAFE",
+      "STAGE37A_RECOVERY_TOO_WEAK",
+      "STAGE37A_DIAGNOSTIC_ONLY"
+    ],
+    "backward_compatibility": "When no row carries stage37_safe_recovery_fired, stage37_fields_present is false, no stage37_* keys are added to the report, and the Stage35/Stage36 decision labels are computed exactly as before (verified against a synthetic predictions file carrying only stage36_* fields)."
+  },
+  "verification_performed": {
+    "type": "local unit-level smoke tests only (no Kaggle run, no training run)",
+    "checks": [
+      "py_compile on both modified files",
+      "module import smoke test of scripts/train_controlled_v6b_minimal.py",
+      "_stage37_no_except_included_subset_recovery / _stage37_coordination_universal_subset_recovery / _stage37_numeric_universal_subset_recovery tested against the positive examples from the design spec (all fired as expected) and the explicit negative examples (day-shift vs night-shift non-included subset, unrelated coordination target, reverse-numeric-overclaim; all correctly did not fire)",
+      "has_excluded_subset_hazard / has_not_all_existential_hazard / has_location_scope_mismatch verified to trip on the corresponding hazard patterns",
+      "compute_stage37_safe_support_recovery() verified: no-op when Stage37 disabled (default), fires on NOT_ENTITLED->SUPPORT when enabled, never fires when a Stage36 blocker already fired on the row, gated off for REFUTE->SUPPORT unless --stage37-allow-recover-from-refute is set (then fires), no-op when already SUPPORT, blocked by exception hazard on an all-except-excluded-subset claim",
+      "ran evaluate_stage35_adversarial_coverage.py end-to-end on a synthetic predictions file with stage37_* fields present: resolve_shadow_label priority, before/after counters, and STAGE37A_SAFE_SUPPORT_RECOVERY_EFFECTIVE decision matched expectations",
+      "ran evaluate_stage35_adversarial_coverage.py end-to-end on a synthetic predictions file simulating unsafe Stage37 recovery (overclaim reappearing): STAGE37A_RECOVERY_TOO_UNSAFE decision correctly triggered",
+      "ran evaluate_stage35_adversarial_coverage.py end-to-end on a synthetic legacy predictions file with only stage36_* fields (no stage37_* fields): stage37_fields_present is false, no stage37_* keys appear, and the existing stage36_decision path is unaffected"
+    ]
+  },
+  "guardrails_confirmed": {
+    "stage37_off_by_default": true,
+    "identical_to_stage36a_when_off": true,
+    "no_final_logit_changes": true,
+    "no_final_prediction_changes": true,
+    "stage37_cannot_override_stage36_blockers": true,
+    "no_training_or_kaggle_run_performed": true,
+    "no_git_commands_run": true
+  },
+  "remaining_risks": [
+    "passive/active-voice SUPPORT recovery is not addressed by any Stage37-A rule and remains unresolved",
+    "coordination parsing (--stage37-recover-coordination-universal-subset) is heuristic head-noun overlap, not real parsing, and is deliberately loose per the design spec (e.g. 'night-shift workers' matches 'workers'); this could overclaim on contrived multi-word whole phrases sharing a head noun with a different qualifier, and should be monitored via stage37_blocked_by_*_count and stage37_post_overclaim_to_support on every run",
+    "numeric subset recovery (--stage37-recover-numeric-universal-subset) is synthetic in that it depends on a specific 'among the X' claim phrasing or exact head-noun subset phrasing; other real-world phrasings expressing the same fact will not be recovered",
+    "Stage37 remains shadow-only and diagnostic-only: it must not be used for training, calibration, threshold selection, loss, checkpoint selection, or Kaggle selection",
+    "all Stage35-A/Stage36-A baseline numbers in this report are carried over from the task's previously reported Kaggle run; actual post-Stage37-A numbers require a fresh Kaggle validation run per task instructions"
+  ]
+}

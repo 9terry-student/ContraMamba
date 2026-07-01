@@ -3547,6 +3547,296 @@ def _stage36_config_from_args(args: "argparse.Namespace") -> dict[str, Any]:
     }
 
 
+# ---------------------------------------------------------------------------
+# Stage37-A: conservative safe SUPPORT recovery (shadow-only)
+# ---------------------------------------------------------------------------
+# Stage37 runs strictly *after* Stage36's post-blocker shadow label is known.
+# It never overrides a fired Stage36 blocker and never touches final logits or
+# final classifier predictions. It only recovers SUPPORT for a small set of
+# conservative, narrowly-scoped patterns left over from Stage35-A/Stage36-A:
+#   (1) "no X except Y" -> Y SUPPORT  (included-subset double-negative)
+#   (2) "all X and all Z" -> subset of X or Z SUPPORT (coordination universal)
+#   (3) "all N X" -> subset among X SUPPORT (numeric universal)
+# All heuristics reuse the Stage36 hazard detectors so hazard logic is never
+# duplicated or allowed to drift out of sync.
+
+_STAGE37_VERB_SPLIT_RE = re.compile(r"\b(were|was|is|are|had|have|has|received)\b")
+
+_STAGE37_NO_EXCEPT_RE = re.compile(
+    r"\bno\s+(?P<whole>.+?)\s+except\s+(?:the\s+)?(?P<included>.+?)\s+"
+    r"(?P<predicate>(?:were|was|is|are|had|have|has)\b.+?)[.,;]?$"
+)
+
+_STAGE37_COORD_UNIVERSAL_RE = re.compile(
+    r"\ball\s+(?P<first>.+?)\s+and\s+all\s+(?P<second>.+?)\s+"
+    r"(?P<predicate>(?:were|was|is|are|had|have|has)\b.+?)[.,;]?$"
+)
+
+_STAGE37_NUMERIC_UNIVERSAL_RE = re.compile(
+    r"\ball\s+(?P<number>\d+)\s+(?P<whole>.+?)\s+"
+    r"(?P<predicate>(?:were|was|is|are|had|have|has|received)\b.+?)[.,;]?$"
+)
+
+_STAGE37_AMONG_RE = re.compile(
+    r"\bamong\s+(?:the\s+)?(?P<whole>.+?)"
+    r"(?=\s+(?:were|was|is|are|had|have|has)\b|[.,;]|$)"
+)
+
+
+def has_excluded_subset_hazard(claim: str, evidence: str) -> bool:
+    """Stage37-A: reuse the Stage36 'all X except Y' excluded-subset blocker."""
+    return bool(_stage36_exception_blocker(claim, evidence).get("fired"))
+
+
+def has_not_all_existential_hazard(claim: str, evidence: str) -> bool:
+    """Stage37-A: reuse the Stage36 'not all/every X' -> 'some X' blocker."""
+    return bool(_stage36_not_all_existential_blocker(claim, evidence).get("fired"))
+
+
+def has_location_scope_mismatch(claim: str, evidence: str) -> bool:
+    """Stage37-A: reuse the Stage36 conflicting location-scope blocker."""
+    return bool(_stage36_location_scope_blocker(claim, evidence).get("fired"))
+
+
+def has_temporal_scope_mismatch(claim: str, evidence: str) -> bool:
+    """Stage37-A: reuse the Stage36 conflicting temporal-scope blocker."""
+    return bool(_stage36_temporal_scope_blocker(claim, evidence).get("fired"))
+
+
+def _stage37_split_subject_predicate(text: str) -> "tuple[str, str] | None":
+    normalized = _stage33_normalize_phrase(text).rstrip(".")
+    match = _STAGE37_VERB_SPLIT_RE.search(normalized)
+    if not match:
+        return None
+    subject = normalized[: match.start()].strip()
+    predicate = normalized[match.start():].strip()
+    if not subject or not predicate:
+        return None
+    return subject, predicate
+
+
+def _stage37_phrase_head(phrase: str) -> str:
+    words = re.findall(r"[a-z0-9']+", phrase.lower())
+    return words[-1] if words else ""
+
+
+def _stage37_is_subset_of_whole(claim_subject: str, whole_phrase: str) -> bool:
+    """Conservative subset check: claim subject must contain the whole's head noun."""
+    claim_words = _stage33_word_set(claim_subject)
+    whole_head = _stage37_phrase_head(whole_phrase)
+    if not whole_head or not claim_words:
+        return False
+    return whole_head in claim_words
+
+
+def _stage37_predicate_overlap_ratio(evidence_predicate: str, claim_predicate: str) -> float:
+    predicate_words = _stage33_word_set(evidence_predicate)
+    claim_predicate_words = _stage33_word_set(claim_predicate)
+    if not claim_predicate_words:
+        return 0.0
+    overlap = predicate_words.intersection(claim_predicate_words)
+    return len(overlap) / len(claim_predicate_words)
+
+
+def _stage37_no_except_included_subset_recovery(claim: str, evidence: str) -> dict[str, Any]:
+    """Part C: 'no X except Y ...' -> Y SUPPORT when claim targets the included subset Y."""
+    evidence_norm = _stage33_normalize_phrase(evidence).rstrip(".")
+    match = _STAGE37_NO_EXCEPT_RE.search(evidence_norm)
+    if not match:
+        return {"fired": False}
+    included_phrase = match.group("included").strip()
+    evidence_predicate = match.group("predicate").strip()
+    claim_split = _stage37_split_subject_predicate(claim)
+    if claim_split is None:
+        return {"fired": False}
+    claim_subject, claim_predicate = claim_split
+    included_words = _stage33_word_set(included_phrase)
+    claim_subject_words = _stage33_word_set(claim_subject)
+    if not included_words or not claim_subject_words:
+        return {"fired": False}
+    subject_overlap = included_words.intersection(claim_subject_words)
+    # Require exact word-set equality (not mere overlap) so that a distinguishing
+    # modifier swap (e.g. "night-shift" -> "day-shift") -- which shares tokens
+    # like "shift"/"workers" with the included phrase -- is never conflated with
+    # the actually-included subset. This is deliberately conservative.
+    subject_exact_match = claim_subject_words == included_words
+    predicate_ratio = _stage37_predicate_overlap_ratio(evidence_predicate, claim_predicate)
+    fired = subject_exact_match and predicate_ratio >= 0.5
+    return {
+        "fired": fired,
+        "included_phrase": included_phrase,
+        "subject_overlap": sorted(subject_overlap),
+    }
+
+
+def _stage37_coordination_universal_subset_recovery(claim: str, evidence: str) -> dict[str, Any]:
+    """Part D: 'all X and all Z were P' -> subset of X or Z SUPPORT."""
+    evidence_norm = _stage33_normalize_phrase(evidence).rstrip(".")
+    match = _STAGE37_COORD_UNIVERSAL_RE.search(evidence_norm)
+    if not match:
+        return {"fired": False}
+    first_whole = match.group("first").strip()
+    second_whole = match.group("second").strip()
+    evidence_predicate = match.group("predicate").strip()
+    claim_split = _stage37_split_subject_predicate(claim)
+    if claim_split is None:
+        return {"fired": False}
+    claim_subject, claim_predicate = claim_split
+    matched_whole = None
+    if _stage37_is_subset_of_whole(claim_subject, first_whole):
+        matched_whole = first_whole
+    elif _stage37_is_subset_of_whole(claim_subject, second_whole):
+        matched_whole = second_whole
+    if matched_whole is None:
+        return {"fired": False}
+    predicate_ratio = _stage37_predicate_overlap_ratio(evidence_predicate, claim_predicate)
+    fired = predicate_ratio >= 0.5
+    return {"fired": fired, "matched_whole": matched_whole}
+
+
+def _stage37_numeric_universal_subset_recovery(claim: str, evidence: str) -> dict[str, Any]:
+    """Part E: 'all N X were P' -> subset among X SUPPORT."""
+    evidence_norm = _stage33_normalize_phrase(evidence).rstrip(".")
+    match = _STAGE37_NUMERIC_UNIVERSAL_RE.search(evidence_norm)
+    if not match:
+        return {"fired": False}
+    whole_phrase = match.group("whole").strip()
+    evidence_predicate = match.group("predicate").strip()
+    claim_norm = _stage33_normalize_phrase(claim).rstrip(".")
+    whole_head = _stage37_phrase_head(whole_phrase)
+    subset_ok = False
+    among_match = _STAGE37_AMONG_RE.search(claim_norm)
+    if among_match:
+        among_words = _stage33_word_set(among_match.group("whole").strip())
+        if whole_head and whole_head in among_words:
+            subset_ok = True
+    claim_split = _stage37_split_subject_predicate(claim)
+    if claim_split is None:
+        return {"fired": False}
+    claim_subject, claim_predicate = claim_split
+    if not subset_ok and _stage37_is_subset_of_whole(claim_subject, whole_phrase):
+        subset_ok = True
+    if not subset_ok:
+        return {"fired": False}
+    predicate_ratio = _stage37_predicate_overlap_ratio(evidence_predicate, claim_predicate)
+    fired = predicate_ratio >= 0.5
+    return {"fired": fired, "whole_phrase": whole_phrase}
+
+
+def compute_stage37_safe_support_recovery(
+    claim: str,
+    evidence: str,
+    current_shadow_label: str,
+    args: "argparse.Namespace",
+    stage36_info: dict[str, Any],
+) -> dict[str, Any]:
+    """Stage37-A: conservative safe SUPPORT recovery after Stage36 blockers.
+
+    Only fires when Stage37 is enabled, the post-Stage36 shadow label is not
+    already SUPPORT, no Stage36 support blocker fired, and none of the
+    conservative hazard checks (excluded-subset, not-all-existential,
+    location-scope, temporal-scope) trip. Never overrides a fired Stage36
+    blocker. Shadow/diagnostic only -- never touches final logits or final
+    classifier predictions.
+    """
+    result: dict[str, Any] = {
+        "stage37_safe_recovery_fired": False,
+        "stage37_safe_recovery_reasons": [],
+        "stage37_safe_recovery_action": "none",
+        "stage37_original_shadow_label": current_shadow_label,
+        "stage37_final_shadow_label": current_shadow_label,
+        "stage37_no_except_included_subset_fired": False,
+        "stage37_coordination_universal_subset_fired": False,
+        "stage37_numeric_universal_subset_fired": False,
+        "stage37_recovered_from_label": None,
+        "stage37_recovered_to_label": None,
+        "stage37_blocked_by_stage36": False,
+        "stage37_blocked_by_scope_hazard": False,
+        "stage37_blocked_by_exception_hazard": False,
+        "stage37_blocked_by_not_all_hazard": False,
+    }
+
+    if not getattr(args, "stage37_use_safe_support_recovery", False):
+        return result
+    if current_shadow_label not in ("NOT_ENTITLED", "REFUTE"):
+        return result
+    if stage36_info.get("stage36_support_blocker_fired"):
+        result["stage37_blocked_by_stage36"] = True
+        return result
+    if current_shadow_label == "REFUTE" and not getattr(
+        args, "stage37_allow_recover_from_refute", False
+    ):
+        return result
+
+    if has_excluded_subset_hazard(claim, evidence):
+        result["stage37_blocked_by_exception_hazard"] = True
+        return result
+    if has_not_all_existential_hazard(claim, evidence):
+        result["stage37_blocked_by_not_all_hazard"] = True
+        return result
+    if has_location_scope_mismatch(claim, evidence) or has_temporal_scope_mismatch(
+        claim, evidence
+    ):
+        result["stage37_blocked_by_scope_hazard"] = True
+        return result
+
+    reasons: list[str] = []
+    fired_rule: "str | None" = None
+
+    if getattr(args, "stage37_recover_no_except_included_subset", False):
+        no_except_result = _stage37_no_except_included_subset_recovery(claim, evidence)
+        if no_except_result.get("fired"):
+            result["stage37_no_except_included_subset_fired"] = True
+            reasons.append("no_except_included_subset_support")
+            fired_rule = fired_rule or "no_except_included_subset_support"
+
+    if getattr(args, "stage37_recover_coordination_universal_subset", False):
+        coord_result = _stage37_coordination_universal_subset_recovery(claim, evidence)
+        if coord_result.get("fired"):
+            result["stage37_coordination_universal_subset_fired"] = True
+            reasons.append("coordination_universal_subset_support")
+            fired_rule = fired_rule or "coordination_universal_subset_support"
+
+    if getattr(args, "stage37_recover_numeric_universal_subset", False):
+        numeric_result = _stage37_numeric_universal_subset_recovery(claim, evidence)
+        if numeric_result.get("fired"):
+            result["stage37_numeric_universal_subset_fired"] = True
+            reasons.append("numeric_universal_subset_support")
+            fired_rule = fired_rule or "numeric_universal_subset_support"
+
+    result["stage37_safe_recovery_reasons"] = reasons
+    if not reasons:
+        return result
+
+    result["stage37_safe_recovery_fired"] = True
+    result["stage37_safe_recovery_action"] = fired_rule or "safe_support_recovery"
+    result["stage37_recovered_from_label"] = current_shadow_label
+    result["stage37_recovered_to_label"] = "SUPPORT"
+    result["stage37_final_shadow_label"] = "SUPPORT"
+    return result
+
+
+def _stage37_config_from_args(args: "argparse.Namespace") -> dict[str, Any]:
+    """Build the Stage37-A safe SUPPORT recovery config dict from CLI args. All defaults off."""
+    return {
+        "enabled": getattr(args, "stage37_use_safe_support_recovery", False),
+        "export": getattr(args, "stage37_safe_support_export", False),
+        "shadow_mode": getattr(args, "stage37_safe_support_shadow_mode", False),
+        "recover_no_except_included_subset": getattr(
+            args, "stage37_recover_no_except_included_subset", False
+        ),
+        "recover_coordination_universal_subset": getattr(
+            args, "stage37_recover_coordination_universal_subset", False
+        ),
+        "recover_numeric_universal_subset": getattr(
+            args, "stage37_recover_numeric_universal_subset", False
+        ),
+        "allow_recover_from_refute": getattr(
+            args, "stage37_allow_recover_from_refute", False
+        ),
+    }
+
+
 def flatten_stage32_owner_state(state: dict[str, Any]) -> dict[str, Any]:
     hard_core = state["hard_core"]
     coverage = state["coverage_entailment"]
@@ -3713,6 +4003,8 @@ def prediction_records_v6b(
     stage33_structured_coverage_whole_part_v2_direct_support_policy: str = "hard_core_required",
     stage33_whole_part_conditional_safe_overrides_hard_core: bool = False,
     stage36_support_safety_config: "dict[str, Any] | None" = None,
+    stage37_safe_support_recovery_config: "dict[str, Any] | None" = None,
+    args: "argparse.Namespace | None" = None,
 ) -> list[dict]:
     """Export predictions with Stage28-E enriched schema (additive; preserves all legacy fields)."""
     logits_cpu = output["logits"].detach().cpu()
@@ -3952,6 +4244,7 @@ def prediction_records_v6b(
                 item[metadata_key] = record[metadata_key]
 
         # ── Stage36-A: conservative support-safety blockers (shadow-only) ──────
+        _stage37_stage36_info: dict[str, Any] = {}
         if (
             stage36_support_safety_config is not None
             and stage36_support_safety_config.get("enabled")
@@ -3983,6 +4276,7 @@ def prediction_records_v6b(
                 ),
                 current_final_label=pred_label,
             )
+            _stage37_stage36_info = _stage36_result
             if stage36_support_safety_config.get("export"):
                 item["stage36_original_shadow_label"] = _stage36_result[
                     "stage36_support_blocker_original_shadow_label"
@@ -4031,6 +4325,86 @@ def prediction_records_v6b(
                 )
                 if item.get("stage33_conditional_shadow_label") is not None:
                     item["stage33_conditional_shadow_label"] = _stage36_final_label
+
+        # ── Stage37-A: conservative safe SUPPORT recovery (shadow-only) ────────
+        # Runs strictly after Stage36's post-blocker shadow label is known and
+        # never overrides a fired Stage36 blocker.
+        if (
+            stage37_safe_support_recovery_config is not None
+            and stage37_safe_support_recovery_config.get("enabled")
+            and stage32_owner_state is not None
+            and args is not None
+        ):
+            if _stage37_stage36_info:
+                _stage37_post_stage36_label = _stage37_stage36_info[
+                    "stage36_support_blocker_final_shadow_label"
+                ]
+            else:
+                _stage37_post_stage36_label = stage32_owner_state["composer_shadow"][
+                    "shadow_label"
+                ]
+            _stage37_result = compute_stage37_safe_support_recovery(
+                claim=str(record.get("claim") or ""),
+                evidence=str(record.get("evidence") or ""),
+                current_shadow_label=_stage37_post_stage36_label,
+                args=args,
+                stage36_info=_stage37_stage36_info,
+            )
+            if stage37_safe_support_recovery_config.get("export"):
+                item["stage37_original_shadow_label"] = _stage37_result[
+                    "stage37_original_shadow_label"
+                ]
+                item["stage37_final_shadow_label"] = _stage37_result[
+                    "stage37_final_shadow_label"
+                ]
+                item["stage37_safe_recovery_fired"] = _stage37_result[
+                    "stage37_safe_recovery_fired"
+                ]
+                item["stage37_safe_recovery_reasons"] = _stage37_result[
+                    "stage37_safe_recovery_reasons"
+                ]
+                item["stage37_safe_recovery_action"] = _stage37_result[
+                    "stage37_safe_recovery_action"
+                ]
+                item["stage37_no_except_included_subset_fired"] = _stage37_result[
+                    "stage37_no_except_included_subset_fired"
+                ]
+                item["stage37_coordination_universal_subset_fired"] = _stage37_result[
+                    "stage37_coordination_universal_subset_fired"
+                ]
+                item["stage37_numeric_universal_subset_fired"] = _stage37_result[
+                    "stage37_numeric_universal_subset_fired"
+                ]
+                item["stage37_recovered_from_label"] = _stage37_result[
+                    "stage37_recovered_from_label"
+                ]
+                item["stage37_recovered_to_label"] = _stage37_result[
+                    "stage37_recovered_to_label"
+                ]
+                item["stage37_blocked_by_stage36"] = _stage37_result[
+                    "stage37_blocked_by_stage36"
+                ]
+                item["stage37_blocked_by_scope_hazard"] = _stage37_result[
+                    "stage37_blocked_by_scope_hazard"
+                ]
+                item["stage37_blocked_by_exception_hazard"] = _stage37_result[
+                    "stage37_blocked_by_exception_hazard"
+                ]
+                item["stage37_blocked_by_not_all_hazard"] = _stage37_result[
+                    "stage37_blocked_by_not_all_hazard"
+                ]
+            if (
+                stage37_safe_support_recovery_config.get("shadow_mode")
+                and _stage37_result["stage37_safe_recovery_fired"]
+            ):
+                _stage37_final_label = _stage37_result["stage37_final_shadow_label"]
+                item["stage32_shadow_label"] = _stage37_final_label
+                item["stage32_shadow_reason"] = (
+                    "stage37_safe_support_recovery:"
+                    + ",".join(_stage37_result["stage37_safe_recovery_reasons"])
+                )
+                if item.get("stage33_conditional_shadow_label") is not None:
+                    item["stage33_conditional_shadow_label"] = _stage37_final_label
 
         exported.append(item)
     if stage32_shadow_logits_before is not None and not torch.equal(
@@ -5685,6 +6059,75 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+    # ── Stage37-A: conservative safe SUPPORT recovery (shadow-only) ──────────
+    # All off by default. When off, behavior is identical to Stage36-A. When on,
+    # recovery only affects exported shadow/diagnostic SUPPORT overrides -- never
+    # final logits or final classifier predictions, and never overrides a fired
+    # Stage36 blocker.
+    parser.add_argument(
+        "--stage37-use-safe-support-recovery",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage37-A: compute deterministic conservative safe SUPPORT recovery "
+            "rules that fire after Stage36's post-blocker shadow label is known. "
+            "Shadow/diagnostic only. Default off (identical to Stage36-A)."
+        ),
+    )
+    parser.add_argument(
+        "--stage37-safe-support-export",
+        action="store_true",
+        default=False,
+        help="Stage37-A: include stage37_* diagnostic fields in prediction exports.",
+    )
+    parser.add_argument(
+        "--stage37-safe-support-shadow-mode",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage37-A: allow a fired safe SUPPORT recovery rule to replace the "
+            "exported Stage32/Stage33/Stage36 shadow label. Does not affect "
+            "final logits/predictions."
+        ),
+    )
+    parser.add_argument(
+        "--stage37-recover-no-except-included-subset",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage37-A: recover SUPPORT for 'no X except Y ...' evidence when "
+            "the claim targets the included subset Y."
+        ),
+    )
+    parser.add_argument(
+        "--stage37-recover-coordination-universal-subset",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage37-A: recover SUPPORT for 'all X and all Z were P' evidence "
+            "when the claim targets a subset of X or Z."
+        ),
+    )
+    parser.add_argument(
+        "--stage37-recover-numeric-universal-subset",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage37-A: recover SUPPORT for 'all N X were P' evidence when the "
+            "claim targets a clear subset among X (e.g. 'among the X')."
+        ),
+    )
+    parser.add_argument(
+        "--stage37-allow-recover-from-refute",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage37-A: allow safe SUPPORT recovery to fire when the post-"
+            "Stage36 shadow label is REFUTE, not just NOT_ENTITLED. Default "
+            "off: recovery only fires from NOT_ENTITLED."
+        ),
+    )
+
     parser.add_argument(
         "--v7-no-aux-losses",
         action="store_true",
@@ -6025,6 +6468,8 @@ def evaluate_external_probe(
             args, "stage33_whole_part_conditional_safe_overrides_hard_core", False
         ),
         stage36_support_safety_config=_stage36_config_from_args(args),
+        stage37_safe_support_recovery_config=_stage37_config_from_args(args),
+        args=args,
     )
 
     predictions_cpu = output["predictions"].detach().cpu()
@@ -6411,6 +6856,14 @@ _LIFT_CONFIG_KEYS: tuple[str, ...] = (
     "stage36_block_location_scope_mismatch",
     "stage36_block_temporal_scope_mismatch",
     "stage36_support_blocker_action",
+    # Stage37-A: safe SUPPORT recovery flags (shadow-only)
+    "stage37_use_safe_support_recovery",
+    "stage37_safe_support_export",
+    "stage37_safe_support_shadow_mode",
+    "stage37_recover_no_except_included_subset",
+    "stage37_recover_coordination_universal_subset",
+    "stage37_recover_numeric_universal_subset",
+    "stage37_allow_recover_from_refute",
     # v7 Stage15 / time_swap provenance (also lifted from audit_ledger elsewhere;
     # this covers the configuration copy when the ledger path is absent)
     "stage15_used_for_v7_training",
@@ -8623,6 +9076,8 @@ def main(argv: list[str] | None = None) -> int:
                         False,
                     ),
                     stage36_support_safety_config=_stage36_config_from_args(args),
+                    stage37_safe_support_recovery_config=_stage37_config_from_args(args),
+                    args=args,
                 )
                 best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
                 best_pc_metrics = {
@@ -8777,6 +9232,8 @@ def main(argv: list[str] | None = None) -> int:
                             False,
                         ),
                         stage36_support_safety_config=_stage36_config_from_args(args),
+                        stage37_safe_support_recovery_config=_stage37_config_from_args(args),
+                        args=args,
                     )
                     _tc_state = {
                         k: v.detach().cpu().clone() for k, v in model.state_dict().items()
@@ -8899,6 +9356,8 @@ def main(argv: list[str] | None = None) -> int:
                                 False,
                             ),
                             stage36_support_safety_config=_stage36_config_from_args(args),
+                            stage37_safe_support_recovery_config=_stage37_config_from_args(args),
+                            args=args,
                         )
                         _pcs_state = {
                             k: v.detach().cpu().clone() for k, v in model.state_dict().items()
@@ -10592,6 +11051,29 @@ def main(argv: list[str] | None = None) -> int:
             ),
             "stage36_support_safety_modifies_final_logits": False,
             "stage36_support_safety_modifies_final_predictions": False,
+            "stage37_use_safe_support_recovery": getattr(
+                args, "stage37_use_safe_support_recovery", False
+            ),
+            "stage37_safe_support_export": getattr(
+                args, "stage37_safe_support_export", False
+            ),
+            "stage37_safe_support_shadow_mode": getattr(
+                args, "stage37_safe_support_shadow_mode", False
+            ),
+            "stage37_recover_no_except_included_subset": getattr(
+                args, "stage37_recover_no_except_included_subset", False
+            ),
+            "stage37_recover_coordination_universal_subset": getattr(
+                args, "stage37_recover_coordination_universal_subset", False
+            ),
+            "stage37_recover_numeric_universal_subset": getattr(
+                args, "stage37_recover_numeric_universal_subset", False
+            ),
+            "stage37_allow_recover_from_refute": getattr(
+                args, "stage37_allow_recover_from_refute", False
+            ),
+            "stage37_safe_support_recovery_modifies_final_logits": False,
+            "stage37_safe_support_recovery_modifies_final_predictions": False,
             "v7_h1_entitlement_for_decision_source": (
                 _V7_H1_DECISION_SIGNAL_SOURCE.get(
                     getattr(args, "v7_h1_entitlement_decision_signal", "learned"),
@@ -10836,6 +11318,29 @@ def main(argv: list[str] | None = None) -> int:
                 ),
                 "stage36_support_safety_modifies_final_logits": False,
                 "stage36_support_safety_modifies_final_predictions": False,
+                "stage37_use_safe_support_recovery": getattr(
+                    args, "stage37_use_safe_support_recovery", False
+                ),
+                "stage37_safe_support_export": getattr(
+                    args, "stage37_safe_support_export", False
+                ),
+                "stage37_safe_support_shadow_mode": getattr(
+                    args, "stage37_safe_support_shadow_mode", False
+                ),
+                "stage37_recover_no_except_included_subset": getattr(
+                    args, "stage37_recover_no_except_included_subset", False
+                ),
+                "stage37_recover_coordination_universal_subset": getattr(
+                    args, "stage37_recover_coordination_universal_subset", False
+                ),
+                "stage37_recover_numeric_universal_subset": getattr(
+                    args, "stage37_recover_numeric_universal_subset", False
+                ),
+                "stage37_allow_recover_from_refute": getattr(
+                    args, "stage37_allow_recover_from_refute", False
+                ),
+                "stage37_safe_support_recovery_modifies_final_logits": False,
+                "stage37_safe_support_recovery_modifies_final_predictions": False,
                 "freeze_encoder": getattr(args, "freeze_encoder", None),
                 "freeze_a_log": getattr(args, "freeze_a_log", None),
                 "max_length": getattr(args, "max_length", None),
