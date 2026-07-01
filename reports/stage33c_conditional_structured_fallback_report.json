@@ -1,0 +1,74 @@
+{
+  "stage": "Stage33-C",
+  "title": "Conditional structured coverage fallback composer",
+  "scope": [
+    "scripts/train_controlled_v6b_minimal.py",
+    "scripts/evaluate_stage32_shadow_composer.py",
+    "reports/stage33c_conditional_structured_fallback_report.md",
+    "reports/stage33c_conditional_structured_fallback_report.json"
+  ],
+  "purpose": "Allow high-precision structured Coverage Owner routes to locally override in shadow mode while falling back to the current final prediction for residual, unresolved, weak proxy, and blocked cases.",
+  "new_cli_flags": [
+    "--stage33-structured-coverage-conditional-fallback",
+    "--stage33-structured-coverage-fallback-source"
+  ],
+  "fallback_source": {
+    "choices": [
+      "current_final",
+      "h1_current"
+    ],
+    "implementation_note": "h1_current is treated as equivalent to the already-computed current final prediction."
+  },
+  "policy": {
+    "hard_core_fail": "fallback_current_final",
+    "high_precision_contradiction": "REFUTE",
+    "high_precision_overclaim": "NOT_ENTITLED",
+    "allowed_direct_support": "SUPPORT",
+    "entailment_positive_polarity": "SUPPORT",
+    "otherwise": "fallback_current_final"
+  },
+  "exported_fields": [
+    "stage33_conditional_fallback_enabled",
+    "stage33_conditional_fallback_source",
+    "stage33_conditional_action",
+    "stage33_conditional_fallback_used",
+    "stage33_conditional_override_applied",
+    "stage33_conditional_override_type",
+    "stage33_conditional_original_current_label",
+    "stage33_conditional_shadow_label"
+  ],
+  "evaluator_diagnostics": [
+    "stage33_conditional_action_counts",
+    "stage33_conditional_fallback_used_count",
+    "stage33_conditional_fallback_used_rate",
+    "stage33_conditional_override_applied_count",
+    "stage33_conditional_override_applied_rate",
+    "stage33_conditional_override_type_counts",
+    "stage33_conditional_original_current_label_counts",
+    "stage33_conditional_shadow_label_counts",
+    "stage33_conditional_support_recovered",
+    "stage33_conditional_support_still_ne",
+    "stage33_conditional_overclaim_to_support",
+    "stage33_conditional_refute_to_support",
+    "stage33_conditional_refute_recovered"
+  ],
+  "decision_labels": [
+    "STAGE33C_CONDITIONAL_PROMISING",
+    "STAGE33C_CONDITIONAL_DIAGNOSTIC_ONLY",
+    "STAGE33C_CONDITIONAL_UNSAFE"
+  ],
+  "shadow_only_guarantee": {
+    "modifies_final_logits": false,
+    "modifies_final_predictions": false,
+    "modifies_h1_final_decision": false,
+    "modifies_checkpoint_selection": false,
+    "modifies_training_data_selection": false,
+    "uses_stage31_probe_for_training_or_selection": false
+  },
+  "remaining_risks": [
+    "whole/part entailment remains unresolved",
+    "positive-polarity proxy recovery still needs dev safety review",
+    "fallback quality depends on current final predictions"
+  ],
+  "next_step": "Stage33-D whole/part extension if conditional fallback is promising"
+}

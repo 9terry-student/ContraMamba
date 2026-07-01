@@ -390,6 +390,55 @@ def compute_stage33_structured_summary(
     }
 
 
+def compute_stage33_conditional_summary(rows: list[dict[str, Any]]) -> dict[str, Any] | None:
+    fields = {
+        "stage33_conditional_fallback_enabled",
+        "stage33_conditional_action",
+        "stage33_conditional_fallback_used",
+        "stage33_conditional_override_applied",
+        "stage33_conditional_override_type",
+        "stage33_conditional_original_current_label",
+        "stage33_conditional_shadow_label",
+    }
+    if not any(any(field in row for field in fields) for row in rows):
+        return None
+    fallback_used = sum(
+        normalize_bool(row.get("stage33_conditional_fallback_used")) is True
+        for row in rows
+    )
+    override_applied = sum(
+        normalize_bool(row.get("stage33_conditional_override_applied")) is True
+        for row in rows
+    )
+    enabled_count = sum(
+        normalize_bool(row.get("stage33_conditional_fallback_enabled")) is True
+        for row in rows
+    )
+    return {
+        "stage33_conditional_enabled_count": enabled_count,
+        "stage33_conditional_action_counts": group_distribution(
+            rows, "stage33_conditional_action"
+        ),
+        "stage33_conditional_fallback_used_count": fallback_used,
+        "stage33_conditional_fallback_used_rate": round(
+            safe_div(fallback_used, len(rows)), 4
+        ),
+        "stage33_conditional_override_applied_count": override_applied,
+        "stage33_conditional_override_applied_rate": round(
+            safe_div(override_applied, len(rows)), 4
+        ),
+        "stage33_conditional_override_type_counts": group_distribution(
+            rows, "stage33_conditional_override_type"
+        ),
+        "stage33_conditional_original_current_label_counts": group_distribution(
+            rows, "stage33_conditional_original_current_label"
+        ),
+        "stage33_conditional_shadow_label_counts": group_distribution(
+            rows, "stage33_conditional_shadow_label"
+        ),
+    }
+
+
 def compute_group_metrics(
     rows: list[dict[str, Any]],
     group_field: str | None,
@@ -514,6 +563,9 @@ def compute_stage31_diagnostics_from_values(
         rows, current, shadow, v2_routes, structured_routes, structured_reasons
     ):
         group = str(row.get(group_field, ""))
+        conditional_enabled = (
+            normalize_bool(row.get("stage33_conditional_fallback_enabled")) is True
+        )
         if group in SUPPORT_ENTAILMENT_GROUPS:
             if structured_route == "ENTAILMENT_PRESERVE":
                 diag["support_entailment_stage33_entailment_preserve"] += 1
@@ -529,10 +581,14 @@ def compute_stage31_diagnostics_from_values(
                 diag["support_entailment_shadow_ne"] += 1
                 diag["shadow_support_to_ne"] += 1
                 diag["stage33_shadow_support_to_ne"] += 1
+                if conditional_enabled:
+                    diag["stage33_conditional_support_still_ne"] += 1
             if shadow_label == "SUPPORT":
                 diag["support_entailment_shadow_support"] += 1
                 diag["support_entailment_stage33_shadow_support"] += 1
                 support_by_reason[structured_reason or "missing"] += 1
+                if conditional_enabled:
+                    diag["stage33_conditional_support_recovered"] += 1
             if shadow_label == "REFUTE":
                 diag["shadow_support_to_refute"] += 1
                 diag["stage33_shadow_support_to_refute"] += 1
@@ -553,6 +609,8 @@ def compute_stage31_diagnostics_from_values(
                 diag["overclaim_stage33_shadow_support"] += 1
                 diag["stage33_shadow_overclaim_to_support"] += 1
                 overclaim_support_by_reason[structured_reason or "missing"] += 1
+                if conditional_enabled:
+                    diag["stage33_conditional_overclaim_to_support"] += 1
             if shadow_label == "NOT_ENTITLED":
                 diag["overclaim_shadow_ne"] += 1
         elif group in REFUTE_GROUPS:
@@ -571,9 +629,13 @@ def compute_stage31_diagnostics_from_values(
                 diag["shadow_refute_to_support"] += 1
                 diag["stage33_shadow_refute_to_support"] += 1
                 refute_support_by_reason[structured_reason or "missing"] += 1
+                if conditional_enabled:
+                    diag["stage33_conditional_refute_to_support"] += 1
             if shadow_label == "REFUTE":
                 diag["refute_shadow_refute"] += 1
                 diag["refute_stage33_shadow_refute"] += 1
+                if conditional_enabled:
+                    diag["stage33_conditional_refute_recovered"] += 1
             if shadow_label == "NOT_ENTITLED":
                 diag["refute_shadow_ne"] += 1
 
@@ -611,6 +673,11 @@ def compute_stage31_diagnostics_from_values(
         "stage33_shadow_refute_to_support",
         "stage33_shadow_support_to_ne",
         "stage33_shadow_support_to_refute",
+        "stage33_conditional_support_recovered",
+        "stage33_conditional_support_still_ne",
+        "stage33_conditional_overclaim_to_support",
+        "stage33_conditional_refute_to_support",
+        "stage33_conditional_refute_recovered",
     ):
         diag.setdefault(key, 0)
     result = dict(diag)
@@ -805,8 +872,65 @@ def decide(
     stage31_diag: dict[str, Any] | None,
     coverage_v2_summary: dict[str, Any] | None,
     stage33_summary: dict[str, Any] | None = None,
+    stage33_conditional_summary: dict[str, Any] | None = None,
 ) -> dict[str, str]:
     macro_delta = shadow_metrics["macro_f1"] - current_metrics["macro_f1"]
+    if (
+        stage33_conditional_summary is not None
+        and stage33_conditional_summary.get("stage33_conditional_enabled_count", 0) > 0
+    ):
+        cond_support = (
+            stage31_diag.get("stage33_conditional_support_recovered", 0)
+            if stage31_diag else 0
+        )
+        cond_overclaim_support = (
+            stage31_diag.get("stage33_conditional_overclaim_to_support", 0)
+            if stage31_diag else 0
+        )
+        cond_refute_support = (
+            stage31_diag.get("stage33_conditional_refute_to_support", 0)
+            if stage31_diag else 0
+        )
+        fallback_used = stage33_conditional_summary.get(
+            "stage33_conditional_fallback_used_count", 0
+        )
+        if (
+            cond_overclaim_support > 0
+            or cond_refute_support > 0
+            or macro_delta <= -0.05
+            or fallback_used == 0
+        ):
+            return {
+                "label": "STAGE33C_CONDITIONAL_UNSAFE",
+                "reason": (
+                    "Conditional structured fallback is unsafe or ineffective: "
+                    "safety errors appeared, macro-F1 dropped materially, or fallback "
+                    "was not used."
+                ),
+            }
+        if cond_support > 0 and macro_delta > -0.02:
+            return {
+                "label": "STAGE33C_CONDITIONAL_PROMISING",
+                "reason": (
+                    "Conditional fallback recovers Stage31 SUPPORT cases without "
+                    "overclaim/refute to SUPPORT errors and without material macro-F1 drop."
+                ),
+            }
+        if cond_support > 0:
+            return {
+                "label": "STAGE33C_CONDITIONAL_DIAGNOSTIC_ONLY",
+                "reason": (
+                    "Conditional fallback recovers some Stage31 SUPPORT cases, but "
+                    "aggregate dev behavior is still neutral or unclear."
+                ),
+            }
+        return {
+            "label": "STAGE33C_CONDITIONAL_DIAGNOSTIC_ONLY",
+            "reason": (
+                "Conditional fallback fields are present, but support recovery has "
+                "not been demonstrated in this export."
+            ),
+        }
     if stage33_summary is not None:
         if stage31_diag:
             stage33_overclaim_support = stage31_diag.get(
@@ -1068,6 +1192,30 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
         ].items():
             lines.append(f"- {key}: {value}")
 
+    if report.get("stage33_conditional_summary") is not None:
+        summary = report["stage33_conditional_summary"]
+        lines.extend(["", "## Stage33-C Conditional Fallback Summary"])
+        lines.append(
+            f"- Fallback used: {summary['stage33_conditional_fallback_used_count']} "
+            f"({summary['stage33_conditional_fallback_used_rate']:.4f})"
+        )
+        lines.append(
+            f"- Overrides applied: {summary['stage33_conditional_override_applied_count']} "
+            f"({summary['stage33_conditional_override_applied_rate']:.4f})"
+        )
+        for title, key in (
+            ("Conditional Action Counts", "stage33_conditional_action_counts"),
+            ("Conditional Override Type Counts", "stage33_conditional_override_type_counts"),
+            (
+                "Conditional Original Current Label Counts",
+                "stage33_conditional_original_current_label_counts",
+            ),
+            ("Conditional Shadow Label Counts", "stage33_conditional_shadow_label_counts"),
+        ):
+            lines.extend(["", f"### {title}", "| Value | Count |", "|---|---:|"])
+            for name, count in sorted(summary[key].items()):
+                lines.append(f"| {name} | {count} |")
+
     if report["group_metrics"]:
         lines.extend(["", "## Group-Level Metrics", "| Group | N | Current Acc | Shadow Acc | Delta |", "|---|---:|---:|---:|---:|"])
         for group, metrics in report["group_metrics"].items():
@@ -1230,6 +1378,7 @@ def main() -> int:
     stage31_diag = compute_stage31_diagnostics(rows, group_field, current_field, shadow_field)
     coverage_v2_summary = compute_coverage_v2_summary(rows)
     stage33_summary = compute_stage33_structured_summary(rows, gold_field, shadow_field)
+    stage33_conditional_summary = compute_stage33_conditional_summary(rows)
     offline_sweep: list[dict[str, Any]] | None = None
     offline_sweep_best: dict[str, Any] | None = None
     offline_sweep_decision: dict[str, str] | None = None
@@ -1290,6 +1439,7 @@ def main() -> int:
         stage31_diag,
         coverage_v2_summary,
         stage33_summary,
+        stage33_conditional_summary,
     )
     report = {
         "run_name": args.run_name,
@@ -1391,6 +1541,51 @@ def main() -> int:
         "stage33_structured_coverage_confidence_summary": (
             stage33_summary.get("stage33_structured_coverage_confidence_summary")
             if stage33_summary else None
+        ),
+        "stage33_conditional_summary": stage33_conditional_summary,
+        "stage33_conditional_action_counts": (
+            stage33_conditional_summary.get("stage33_conditional_action_counts")
+            if stage33_conditional_summary else None
+        ),
+        "stage33_conditional_fallback_used_count": (
+            stage33_conditional_summary.get(
+                "stage33_conditional_fallback_used_count"
+            )
+            if stage33_conditional_summary else None
+        ),
+        "stage33_conditional_fallback_used_rate": (
+            stage33_conditional_summary.get("stage33_conditional_fallback_used_rate")
+            if stage33_conditional_summary else None
+        ),
+        "stage33_conditional_override_applied_count": (
+            stage33_conditional_summary.get(
+                "stage33_conditional_override_applied_count"
+            )
+            if stage33_conditional_summary else None
+        ),
+        "stage33_conditional_override_applied_rate": (
+            stage33_conditional_summary.get(
+                "stage33_conditional_override_applied_rate"
+            )
+            if stage33_conditional_summary else None
+        ),
+        "stage33_conditional_override_type_counts": (
+            stage33_conditional_summary.get(
+                "stage33_conditional_override_type_counts"
+            )
+            if stage33_conditional_summary else None
+        ),
+        "stage33_conditional_original_current_label_counts": (
+            stage33_conditional_summary.get(
+                "stage33_conditional_original_current_label_counts"
+            )
+            if stage33_conditional_summary else None
+        ),
+        "stage33_conditional_shadow_label_counts": (
+            stage33_conditional_summary.get(
+                "stage33_conditional_shadow_label_counts"
+            )
+            if stage33_conditional_summary else None
         ),
         "group_metrics": compute_group_metrics(
             rows, group_field, gold_field, current_field, shadow_field

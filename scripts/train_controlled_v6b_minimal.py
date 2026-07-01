@@ -2022,6 +2022,14 @@ def _stage32_bool_label(value: bool | None) -> str:
     return "unavailable"
 
 
+def _stage32_current_final_label(output: dict[str, Any], index: int) -> str:
+    pred_id = _stage32_output_value(output, "predictions", index)
+    try:
+        return v5.ID_TO_FINAL_LABEL[int(pred_id)]
+    except (KeyError, TypeError, ValueError):
+        return "UNKNOWN"
+
+
 _STAGE33_STOPWORDS = {
     "a", "an", "and", "are", "as", "at", "by", "for", "from", "in", "into",
     "is", "it", "of", "on", "or", "that", "the", "their", "there", "to",
@@ -2471,6 +2479,9 @@ def build_stage32_shadow_composer_state(
     structured_shadow_mode: bool,
     structured_preserve_can_support: bool,
     structured_direct_support_rules: set[str],
+    structured_conditional_fallback: bool,
+    structured_conditional_fallback_source: str,
+    current_final_label: str,
     residual_adjudication: dict[str, Any],
     ani_diagnostic: dict[str, Any],
     polarity: dict[str, Any],
@@ -2478,7 +2489,94 @@ def build_stage32_shadow_composer_state(
     """Build the Stage32-B shadow composer route without applying it."""
     del residual_adjudication, ani_diagnostic
     priority_trace: list[str] = []
-    if hard_core.get("pass") is False:
+    conditional_enabled = (
+        bool(structured_conditional_fallback)
+        and bool(structured_shadow_mode)
+        and bool(structured_coverage.get("enabled"))
+    )
+    conditional_action = "not_applicable"
+    conditional_fallback_used = False
+    conditional_override_applied = False
+    conditional_override_type = "none"
+    route = structured_coverage.get("route")
+    structured_reason = str(
+        structured_coverage.get("original_reason") or structured_coverage.get("reason")
+    )
+    structured_strength = str(structured_coverage.get("rule_strength", "unknown"))
+    direct_support_allowed = (
+        route == "ENTAILMENT_PRESERVE"
+        and structured_preserve_can_support
+        and structured_reason in structured_direct_support_rules
+        and structured_strength == "high_precision"
+        and hard_core.get("pass") is True
+    )
+    if route == "ENTAILMENT_PRESERVE":
+        if direct_support_allowed:
+            direct_block_reason = "allowed"
+        elif not structured_preserve_can_support:
+            direct_block_reason = "preserve_can_support_disabled"
+        elif hard_core.get("pass") is not True:
+            direct_block_reason = "hard_core_not_true"
+        elif structured_strength != "high_precision":
+            direct_block_reason = f"rule_strength:{structured_strength}"
+        else:
+            direct_block_reason = f"rule_not_allowed:{structured_reason}"
+        structured_coverage["direct_support_allowed"] = direct_support_allowed
+        structured_coverage["direct_support_block_reason"] = direct_block_reason
+
+    if conditional_enabled:
+        priority_trace.extend([
+            "conditional_fallback:on",
+            f"route:{route}",
+            f"strength:{structured_strength}",
+        ])
+        if hard_core.get("pass") is False:
+            shadow_label = current_final_label
+            shadow_reason = "stage33_conditional_fallback_hard_core_block"
+            conditional_action = "fallback_current_final"
+            conditional_fallback_used = True
+        elif route == "CONTRADICTION_REFUTE" and structured_strength == "high_precision":
+            shadow_label = "REFUTE"
+            shadow_reason = "stage33_conditional_high_precision_contradiction"
+            conditional_action = "REFUTE"
+            conditional_override_applied = shadow_label != current_final_label
+            conditional_override_type = "high_precision_contradiction"
+        elif route == "OVERCLAIM_NE" and structured_strength == "high_precision":
+            shadow_label = "NOT_ENTITLED"
+            shadow_reason = "stage33_conditional_high_precision_overclaim"
+            conditional_action = "NOT_ENTITLED"
+            conditional_override_applied = shadow_label != current_final_label
+            conditional_override_type = "high_precision_overclaim"
+        elif route == "ENTAILMENT_PRESERVE" and direct_support_allowed:
+            shadow_label = "SUPPORT"
+            shadow_reason = "stage33_conditional_high_precision_direct_support"
+            conditional_action = "SUPPORT"
+            conditional_override_applied = shadow_label != current_final_label
+            conditional_override_type = "high_precision_direct_support"
+        elif (
+            route == "ENTAILMENT_PRESERVE"
+            and polarity["pred_label"] == "SUPPORT"
+            and structured_strength != "unknown"
+        ):
+            structured_coverage["direct_support_allowed"] = False
+            structured_coverage["direct_support_block_reason"] = (
+                "not_needed_positive_polarity"
+            )
+            shadow_label = "SUPPORT"
+            shadow_reason = "stage33_conditional_entailment_positive_polarity"
+            conditional_action = "SUPPORT"
+            conditional_override_applied = shadow_label != current_final_label
+            conditional_override_type = "entailment_positive_polarity"
+        else:
+            shadow_label = current_final_label
+            shadow_reason = "stage33_conditional_fallback_current_final"
+            conditional_action = "fallback_current_final"
+            conditional_fallback_used = True
+        priority_trace.append(f"action:{conditional_action}")
+        would_block_support = hard_core.get("pass") is False
+        would_route_ne = shadow_label == "NOT_ENTITLED"
+        would_route_refute = shadow_label == "REFUTE"
+    elif hard_core.get("pass") is False:
         priority_trace.extend(["hard_core:fail", "route:NOT_ENTITLED"])
         shadow_label = "NOT_ENTITLED"
         shadow_reason = "hard_core_block"
@@ -2486,9 +2584,6 @@ def build_stage32_shadow_composer_state(
         would_route_ne = True
         would_route_refute = False
     elif structured_shadow_mode and structured_coverage.get("enabled"):
-        route = structured_coverage.get("route")
-        structured_reason = str(structured_coverage.get("original_reason") or structured_coverage.get("reason"))
-        structured_strength = str(structured_coverage.get("rule_strength", "unknown"))
         if route == "OVERCLAIM_NE":
             priority_trace.extend([
                 "hard_core:pass",
@@ -2528,11 +2623,6 @@ def build_stage32_shadow_composer_state(
             would_route_ne = False
             would_route_refute = False
         elif route == "ENTAILMENT_PRESERVE" and structured_preserve_can_support:
-            direct_support_allowed = (
-                structured_reason in structured_direct_support_rules
-                and structured_strength == "high_precision"
-                and hard_core.get("pass") is True
-            )
             if direct_support_allowed:
                 block_reason = "allowed"
             elif hard_core.get("pass") is not True:
@@ -2715,6 +2805,14 @@ def build_stage32_shadow_composer_state(
         "shadow_label": shadow_label,
         "shadow_reason": shadow_reason,
         "priority_trace": priority_trace,
+        "stage33_conditional_fallback_enabled": conditional_enabled,
+        "stage33_conditional_fallback_source": structured_conditional_fallback_source,
+        "stage33_conditional_action": conditional_action,
+        "stage33_conditional_fallback_used": conditional_fallback_used,
+        "stage33_conditional_override_applied": conditional_override_applied,
+        "stage33_conditional_override_type": conditional_override_type,
+        "stage33_conditional_original_current_label": current_final_label,
+        "stage33_conditional_shadow_label": shadow_label if conditional_enabled else None,
         "note": "Stage32-B shadow only; not used for logits, loss, predictions, or selection.",
     }
 
@@ -2733,6 +2831,8 @@ def build_stage32_owner_state(
     structured_coverage_preserve_can_support: bool = False,
     structured_coverage_direct_support_rules: set[str] | None = None,
     structured_coverage_weak_rules_to_residual: set[str] | None = None,
+    structured_coverage_conditional_fallback: bool = False,
+    structured_coverage_fallback_source: str = "current_final",
 ) -> dict[str, Any]:
     """Build Stage32-B owner-state proxies without changing model outputs."""
     hard_core = build_stage32_hard_core_owner_state(output, index)
@@ -2752,6 +2852,7 @@ def build_stage32_owner_state(
     residual_adjudication = build_stage32_residual_adjudication_owner_state(output, index)
     ani_diagnostic = build_stage32_ani_diagnostic_state(output, index)
     polarity = build_stage32_polarity_owner_state(output, index, hard_core)
+    current_final_label = _stage32_current_final_label(output, index)
     composer_shadow = build_stage32_shadow_composer_state(
         hard_core=hard_core,
         coverage_entailment=coverage_entailment,
@@ -2763,6 +2864,9 @@ def build_stage32_owner_state(
             structured_coverage_direct_support_rules
             or _stage33_parse_csv_set(_STAGE33_DEFAULT_DIRECT_SUPPORT_RULES)
         ),
+        structured_conditional_fallback=structured_coverage_conditional_fallback,
+        structured_conditional_fallback_source=structured_coverage_fallback_source,
+        current_final_label=current_final_label,
         residual_adjudication=residual_adjudication,
         ani_diagnostic=ani_diagnostic,
         polarity=polarity,
@@ -2850,6 +2954,28 @@ def flatten_stage32_owner_state(state: dict[str, Any]) -> dict[str, Any]:
         "stage32_shadow_would_block_support": shadow["would_block_support"],
         "stage32_shadow_would_route_ne": shadow["would_route_ne"],
         "stage32_shadow_would_route_refute": shadow["would_route_refute"],
+        "stage33_conditional_fallback_enabled": shadow[
+            "stage33_conditional_fallback_enabled"
+        ],
+        "stage33_conditional_fallback_source": shadow[
+            "stage33_conditional_fallback_source"
+        ],
+        "stage33_conditional_action": shadow["stage33_conditional_action"],
+        "stage33_conditional_fallback_used": shadow[
+            "stage33_conditional_fallback_used"
+        ],
+        "stage33_conditional_override_applied": shadow[
+            "stage33_conditional_override_applied"
+        ],
+        "stage33_conditional_override_type": shadow[
+            "stage33_conditional_override_type"
+        ],
+        "stage33_conditional_original_current_label": shadow[
+            "stage33_conditional_original_current_label"
+        ],
+        "stage33_conditional_shadow_label": shadow[
+            "stage33_conditional_shadow_label"
+        ],
     }
 
 
@@ -2870,6 +2996,8 @@ def prediction_records_v6b(
     stage33_structured_coverage_direct_support_rules: str = _STAGE33_DEFAULT_DIRECT_SUPPORT_RULES,
     stage33_structured_coverage_disable_specific_general_direct_support: bool = False,
     stage33_structured_coverage_weak_rules_to_residual: str = "",
+    stage33_structured_coverage_conditional_fallback: bool = False,
+    stage33_structured_coverage_fallback_source: str = "current_final",
 ) -> list[dict]:
     """Export predictions with Stage28-E enriched schema (additive; preserves all legacy fields)."""
     logits_cpu = output["logits"].detach().cpu()
@@ -2941,6 +3069,12 @@ def prediction_records_v6b(
                 ),
                 structured_coverage_direct_support_rules=structured_direct_support_rules,
                 structured_coverage_weak_rules_to_residual=structured_weak_rules_to_residual,
+                structured_coverage_conditional_fallback=(
+                    stage33_structured_coverage_conditional_fallback
+                ),
+                structured_coverage_fallback_source=(
+                    stage33_structured_coverage_fallback_source
+                ),
             )
             if stage32_owner_state_export
             else None
@@ -4571,6 +4705,25 @@ def build_parser() -> argparse.ArgumentParser:
             "STRUCT_UNRESOLVED/RESIDUAL while preserving the original reason field."
         ),
     )
+    parser.add_argument(
+        "--stage33-structured-coverage-conditional-fallback",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage33-C: in structured shadow mode, apply only high-precision local "
+            "structured overrides and fall back to the current final prediction for "
+            "residual, unresolved, weak, or blocked cases."
+        ),
+    )
+    parser.add_argument(
+        "--stage33-structured-coverage-fallback-source",
+        choices=("current_final", "h1_current"),
+        default="current_final",
+        help=(
+            "Stage33-C: source label for conditional fallback. h1_current is treated "
+            "as the current final prediction in this implementation."
+        ),
+    )
 
     parser.add_argument(
         "--v7-no-aux-losses",
@@ -4879,6 +5032,12 @@ def evaluate_external_probe(
         ),
         stage33_structured_coverage_weak_rules_to_residual=getattr(
             args, "stage33_structured_coverage_weak_rules_to_residual", ""
+        ),
+        stage33_structured_coverage_conditional_fallback=getattr(
+            args, "stage33_structured_coverage_conditional_fallback", False
+        ),
+        stage33_structured_coverage_fallback_source=getattr(
+            args, "stage33_structured_coverage_fallback_source", "current_final"
         ),
     )
 
@@ -5248,6 +5407,8 @@ _LIFT_CONFIG_KEYS: tuple[str, ...] = (
     "stage33_structured_coverage_direct_support_rules",
     "stage33_structured_coverage_disable_specific_general_direct_support",
     "stage33_structured_coverage_weak_rules_to_residual",
+    "stage33_structured_coverage_conditional_fallback",
+    "stage33_structured_coverage_fallback_source",
     # v7 Stage15 / time_swap provenance (also lifted from audit_ledger elsewhere;
     # this covers the configuration copy when the ledger path is absent)
     "stage15_used_for_v7_training",
@@ -7426,6 +7587,12 @@ def main(argv: list[str] | None = None) -> int:
                     stage33_structured_coverage_weak_rules_to_residual=getattr(
                         args, "stage33_structured_coverage_weak_rules_to_residual", ""
                     ),
+                    stage33_structured_coverage_conditional_fallback=getattr(
+                        args, "stage33_structured_coverage_conditional_fallback", False
+                    ),
+                    stage33_structured_coverage_fallback_source=getattr(
+                        args, "stage33_structured_coverage_fallback_source", "current_final"
+                    ),
                 )
                 best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
                 best_pc_metrics = {
@@ -7546,6 +7713,12 @@ def main(argv: list[str] | None = None) -> int:
                         stage33_structured_coverage_weak_rules_to_residual=getattr(
                             args, "stage33_structured_coverage_weak_rules_to_residual", ""
                         ),
+                        stage33_structured_coverage_conditional_fallback=getattr(
+                            args, "stage33_structured_coverage_conditional_fallback", False
+                        ),
+                        stage33_structured_coverage_fallback_source=getattr(
+                            args, "stage33_structured_coverage_fallback_source", "current_final"
+                        ),
                     )
                     _tc_state = {
                         k: v.detach().cpu().clone() for k, v in model.state_dict().items()
@@ -7633,6 +7806,12 @@ def main(argv: list[str] | None = None) -> int:
                             ),
                             stage33_structured_coverage_weak_rules_to_residual=getattr(
                                 args, "stage33_structured_coverage_weak_rules_to_residual", ""
+                            ),
+                            stage33_structured_coverage_conditional_fallback=getattr(
+                                args, "stage33_structured_coverage_conditional_fallback", False
+                            ),
+                            stage33_structured_coverage_fallback_source=getattr(
+                                args, "stage33_structured_coverage_fallback_source", "current_final"
                             ),
                         )
                         _pcs_state = {
@@ -9266,6 +9445,12 @@ def main(argv: list[str] | None = None) -> int:
             "stage33_structured_coverage_weak_rules_to_residual": getattr(
                 args, "stage33_structured_coverage_weak_rules_to_residual", ""
             ),
+            "stage33_structured_coverage_conditional_fallback": getattr(
+                args, "stage33_structured_coverage_conditional_fallback", False
+            ),
+            "stage33_structured_coverage_fallback_source": getattr(
+                args, "stage33_structured_coverage_fallback_source", "current_final"
+            ),
             "stage33_structured_coverage_modifies_final_logits": False,
             "stage33_structured_coverage_modifies_final_predictions": False,
             "v7_h1_entitlement_for_decision_source": (
@@ -9450,6 +9635,12 @@ def main(argv: list[str] | None = None) -> int:
                 ),
                 "stage33_structured_coverage_weak_rules_to_residual": getattr(
                     args, "stage33_structured_coverage_weak_rules_to_residual", ""
+                ),
+                "stage33_structured_coverage_conditional_fallback": getattr(
+                    args, "stage33_structured_coverage_conditional_fallback", False
+                ),
+                "stage33_structured_coverage_fallback_source": getattr(
+                    args, "stage33_structured_coverage_fallback_source", "current_final"
                 ),
                 "stage33_structured_coverage_modifies_final_logits": False,
                 "stage33_structured_coverage_modifies_final_predictions": False,
