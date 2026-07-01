@@ -343,6 +343,8 @@ def compute_stage33_structured_summary(
         "stage33_whole_part_direct_support_candidate",
         "stage33_whole_part_direct_support_allowed",
         "stage33_whole_part_direct_support_block_reason",
+        "stage33_whole_part_direct_support_action_block_reason",
+        "stage33_whole_part_conditional_safe_override_hard_core_enabled",
     }
     if not any(any(field in row for field in fields) for row in rows):
         return None
@@ -351,6 +353,12 @@ def compute_stage33_structured_summary(
         (safe_float(row.get("stage33_structured_coverage_confidence")) for row in rows)
         if value is not None
     ]
+    allowed_but_fallback = 0
+    for row in rows:
+        allowed = normalize_bool(row.get("stage33_whole_part_direct_support_allowed")) is True
+        action = str(row.get("stage33_conditional_action", ""))
+        if allowed and action == "fallback_current_final":
+            allowed_but_fallback += 1
     proxy_refute_to_support = 0
     proxy_ne_to_support = 0
     if gold_field is not None and shadow_field is not None:
@@ -422,6 +430,21 @@ def compute_stage33_structured_summary(
         "stage33_whole_part_direct_support_block_reason_counts": group_distribution(
             rows, "stage33_whole_part_direct_support_block_reason"
         ),
+        "stage33_whole_part_action_block_reason_counts": group_distribution(
+            rows, "stage33_whole_part_direct_support_action_block_reason"
+        ),
+        "stage33_whole_part_allowed_but_fallback_count": allowed_but_fallback,
+        "stage33_whole_part_allowed_but_fallback_rate": round(
+            safe_div(allowed_but_fallback, len(rows)), 4
+        ),
+        "stage33_whole_part_conditional_safe_override_hard_core_enabled_counts": dict(Counter(
+            normalize_bool(
+                row.get(
+                    "stage33_whole_part_conditional_safe_override_hard_core_enabled"
+                )
+            )
+            for row in rows
+        )),
         "stage33_proxy_refute_to_support": proxy_refute_to_support,
         "stage33_proxy_ne_to_support": proxy_ne_to_support,
         "stage33_structured_coverage_confidence_summary": numeric_summary(confidences),
@@ -605,10 +628,41 @@ def compute_stage31_diagnostics_from_values(
         conditional_enabled = (
             normalize_bool(row.get("stage33_conditional_fallback_enabled")) is True
         )
+        relation = str(row.get("stage33_structured_coverage_whole_part_relation", ""))
+        reason = str(
+            row.get("stage33_structured_coverage_original_reason")
+            or row.get("stage33_structured_coverage_reason", "")
+        )
+        if relation == "whole_to_part" and reason in {
+            "quantifier_all_to_some",
+            "quantifier_some_to_all",
+            "only_to_base",
+            "also_to_only",
+            "none_to_some",
+            "some_to_none",
+        }:
+            diag["whole_to_part_pattern_overfire_on_quantifier_count"] += 1
         if group in SUPPORT_ENTAILMENT_GROUPS:
             if group == "whole_to_part_support":
                 if normalize_bool(row.get("stage33_whole_part_direct_support_allowed")) is True:
                     diag["whole_to_part_direct_support_allowed"] += 1
+                    if shadow_label != "SUPPORT":
+                        diag["whole_to_part_allowed_but_fallback"] += 1
+                if (
+                    str(row.get("stage33_conditional_override_type", ""))
+                    == "whole_part_conditional_safe_direct_support"
+                    and shadow_label == "SUPPORT"
+                ):
+                    diag["whole_to_part_conditional_safe_override_support"] += 1
+                hard_core = normalize_bool(row.get("stage33_whole_part_hard_core_pass"))
+                if hard_core is False and shadow_label == "SUPPORT":
+                    diag["whole_to_part_hard_core_false_support"] += 1
+                if (
+                    hard_core is False
+                    and str(row.get("stage33_conditional_action", ""))
+                    == "fallback_current_final"
+                ):
+                    diag["whole_to_part_hard_core_false_fallback"] += 1
                 block_reason = str(
                     row.get("stage33_whole_part_direct_support_block_reason", "")
                 )
@@ -749,6 +803,11 @@ def compute_stage31_diagnostics_from_values(
         "whole_part_shadow_overclaim_to_support",
         "whole_part_shadow_refute_to_support",
         "whole_to_part_direct_support_allowed",
+        "whole_to_part_allowed_but_fallback",
+        "whole_to_part_conditional_safe_override_support",
+        "whole_to_part_hard_core_false_support",
+        "whole_to_part_hard_core_false_fallback",
+        "whole_to_part_pattern_overfire_on_quantifier_count",
     ):
         diag.setdefault(key, 0)
     result = dict(diag)
@@ -953,10 +1012,69 @@ def decide(
         whole_part_counts = stage33_summary.get("stage33_whole_part_relation_counts", {})
         v2_counts = stage33_summary.get("stage33_whole_part_v2_enabled_counts", {})
         v2_enabled = int(v2_counts.get(True, 0) or 0) > 0
+        override_counts = stage33_summary.get(
+            "stage33_whole_part_conditional_safe_override_hard_core_enabled_counts", {}
+        )
+        override_enabled = int(override_counts.get(True, 0) or 0) > 0
         whole_part_detected = sum(
             count for relation, count in whole_part_counts.items()
             if relation not in {"", "none", "MISSING"}
         )
+        if v2_enabled and override_enabled:
+            whole_to_part_support = (
+                stage31_diag.get("whole_to_part_stage33_shadow_support", 0)
+                if stage31_diag else 0
+            )
+            part_to_whole_ne = (
+                stage31_diag.get("part_to_whole_stage33_shadow_ne", 0)
+                if stage31_diag else 0
+            )
+            overclaim_support = (
+                stage31_diag.get("whole_part_shadow_overclaim_to_support", 0)
+                if stage31_diag else 0
+            )
+            refute_support = (
+                stage31_diag.get("whole_part_shadow_refute_to_support", 0)
+                if stage31_diag else 0
+            )
+            allowed_but_fallback = int(
+                stage33_summary.get(
+                    "stage33_whole_part_allowed_but_fallback_count", 0
+                )
+            )
+            override_support = (
+                stage31_diag.get("whole_to_part_conditional_safe_override_support", 0)
+                if stage31_diag else 0
+            )
+            if overclaim_support > 0 or refute_support > 0 or macro_delta <= -0.05:
+                return {
+                    "label": "STAGE33F_CONSERVATIVE_LOCK_RECOMMENDED",
+                    "reason": (
+                        "Conditional-safe hard-core override introduces safety risk "
+                        "or material dev degradation; prefer conservative lock."
+                    ),
+                }
+            if (
+                allowed_but_fallback == 0
+                and override_support > 0
+                and whole_to_part_support > 11
+                and part_to_whole_ne > 0
+                and macro_delta > -0.02
+            ):
+                return {
+                    "label": "STAGE33F_CONDITIONAL_SAFE_CONSISTENT_PROMISING",
+                    "reason": (
+                        "Conditional-safe whole/part action diagnostics are consistent "
+                        "and SUPPORT recovery improves without safety errors."
+                    ),
+                }
+            return {
+                "label": "STAGE33F_DIAGNOSTIC_ONLY",
+                "reason": (
+                    "Stage33-F diagnostics are present, but whole/part SUPPORT "
+                    "recovery is not meaningfully improved."
+                ),
+            }
         if v2_enabled:
             whole_to_part_support = (
                 stage31_diag.get("whole_to_part_stage33_shadow_support", 0)
@@ -1373,10 +1491,30 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
                 "Whole/Part Direct Support Block Reason Counts",
                 "stage33_whole_part_direct_support_block_reason_counts",
             ),
+            (
+                "Whole/Part Action Block Reason Counts",
+                "stage33_whole_part_action_block_reason_counts",
+            ),
+            (
+                "Whole/Part Override Hard-Core Enabled Counts",
+                "stage33_whole_part_conditional_safe_override_hard_core_enabled_counts",
+            ),
         ):
             lines.extend(["", f"### {title}", "| Value | Count |", "|---|---:|"])
             for name, count in sorted(report["stage33_structured_coverage_summary"][key].items()):
                 lines.append(f"| {name} | {count} |")
+        lines.extend([
+            "",
+            "Whole/part action consistency:",
+            (
+                "- allowed but fallback count: "
+                f"{report['stage33_structured_coverage_summary'].get('stage33_whole_part_allowed_but_fallback_count', 0)}"
+            ),
+            (
+                "- allowed but fallback rate: "
+                f"{report['stage33_structured_coverage_summary'].get('stage33_whole_part_allowed_but_fallback_rate', 0.0):.4f}"
+            ),
+        ])
         lines.extend([
             "",
             "Proxy safety summary:",
@@ -1772,6 +1910,24 @@ def main() -> int:
         "stage33_whole_part_direct_support_block_reason_counts": (
             stage33_summary.get(
                 "stage33_whole_part_direct_support_block_reason_counts"
+            )
+            if stage33_summary else None
+        ),
+        "stage33_whole_part_action_block_reason_counts": (
+            stage33_summary.get("stage33_whole_part_action_block_reason_counts")
+            if stage33_summary else None
+        ),
+        "stage33_whole_part_allowed_but_fallback_count": (
+            stage33_summary.get("stage33_whole_part_allowed_but_fallback_count")
+            if stage33_summary else None
+        ),
+        "stage33_whole_part_allowed_but_fallback_rate": (
+            stage33_summary.get("stage33_whole_part_allowed_but_fallback_rate")
+            if stage33_summary else None
+        ),
+        "stage33_whole_part_conditional_safe_override_hard_core_enabled_counts": (
+            stage33_summary.get(
+                "stage33_whole_part_conditional_safe_override_hard_core_enabled_counts"
             )
             if stage33_summary else None
         ),

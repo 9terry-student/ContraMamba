@@ -2422,6 +2422,12 @@ def build_stage33_structured_coverage_owner_state(
         reason = f"weak_rule_forced_to_residual:{original_reason}"
 
     rule_strength = _stage33_rule_strength(original_reason)
+    selected_whole_part = original_reason in {
+        "whole_to_part_proxy",
+        "part_to_whole_proxy",
+    }
+    exported_whole_part_relation = whole_part["relation"] if selected_whole_part else "none"
+    exported_whole_part_match = whole_part["match"] if selected_whole_part else ""
     return {
         "enabled": bool(enabled),
         "label": label,
@@ -2431,8 +2437,8 @@ def build_stage33_structured_coverage_owner_state(
         "rule_strength": rule_strength,
         "confidence": confidence,
         "whole_part_enabled": bool(whole_part_enabled),
-        "whole_part_relation": whole_part["relation"],
-        "whole_part_match": whole_part["match"],
+        "whole_part_relation": exported_whole_part_relation,
+        "whole_part_match": exported_whole_part_match,
         "whole_part_direct_support_enabled": bool(whole_part_direct_support_enabled),
         "whole_part_v2_enabled": bool(whole_part_v2_enabled),
         "whole_part_v2_expanded_lexicon": bool(whole_part_v2_expanded_lexicon),
@@ -2444,6 +2450,8 @@ def build_stage33_structured_coverage_owner_state(
         "whole_part_direct_support_block_reason": (
             "not_whole_to_part" if reason != "whole_to_part_proxy" else "not_evaluated"
         ),
+        "whole_part_direct_support_action_block_reason": "none",
+        "whole_part_conditional_safe_override_hard_core_enabled": False,
         "whole_part_hard_core_pass": None,
         "whole_part_original_current_label": None,
         "whole_part_conditional_action": None,
@@ -2711,6 +2719,7 @@ def build_stage32_shadow_composer_state(
     structured_whole_part_direct_support: bool,
     structured_whole_part_v2_enabled: bool,
     structured_whole_part_v2_direct_support_policy: str,
+    structured_whole_part_conditional_safe_overrides_hard_core: bool,
     current_final_label: str,
     residual_adjudication: dict[str, Any],
     ani_diagnostic: dict[str, Any],
@@ -2782,6 +2791,10 @@ def build_stage32_shadow_composer_state(
     structured_coverage["whole_part_direct_support_block_reason"] = (
         whole_part_block_reason
     )
+    structured_coverage["whole_part_direct_support_action_block_reason"] = "none"
+    structured_coverage[
+        "whole_part_conditional_safe_override_hard_core_enabled"
+    ] = bool(structured_whole_part_conditional_safe_overrides_hard_core)
     structured_coverage["whole_part_hard_core_pass"] = hard_core.get("pass")
     structured_coverage["whole_part_original_current_label"] = current_final_label
     if route == "ENTAILMENT_PRESERVE":
@@ -2806,11 +2819,34 @@ def build_stage32_shadow_composer_state(
             f"route:{route}",
             f"strength:{structured_strength}",
         ])
-        if hard_core.get("pass") is False:
+        if (
+            hard_core.get("pass") is False
+            and whole_part_direct_support_allowed
+            and whole_part_policy == "conditional_safe"
+            and structured_whole_part_conditional_safe_overrides_hard_core
+        ):
+            shadow_label = "SUPPORT"
+            shadow_reason = (
+                "stage33_conditional_whole_part_conditional_safe_direct_support"
+            )
+            conditional_action = "SUPPORT"
+            conditional_override_applied = True
+            conditional_override_type = "whole_part_conditional_safe_direct_support"
+        elif hard_core.get("pass") is False:
             shadow_label = current_final_label
             shadow_reason = "stage33_conditional_fallback_hard_core_block"
             conditional_action = "fallback_current_final"
             conditional_fallback_used = True
+            if (
+                whole_part_direct_support_allowed
+                and whole_part_policy == "conditional_safe"
+            ):
+                structured_coverage["whole_part_direct_support_block_reason"] = (
+                    "hard_core_priority_blocks_action"
+                )
+                structured_coverage["whole_part_direct_support_action_block_reason"] = (
+                    "hard_core_priority_blocks_action"
+                )
         elif route == "CONTRADICTION_REFUTE" and structured_strength == "high_precision":
             shadow_label = "REFUTE"
             shadow_reason = "stage33_conditional_high_precision_contradiction"
@@ -2854,6 +2890,10 @@ def build_stage32_shadow_composer_state(
             shadow_reason = "stage33_conditional_fallback_current_final"
             conditional_action = "fallback_current_final"
             conditional_fallback_used = True
+            if whole_part_direct_support_allowed and whole_part_policy == "conditional_safe":
+                structured_coverage["whole_part_direct_support_action_block_reason"] = (
+                    "fallback_priority_blocks_action"
+                )
         structured_coverage["whole_part_conditional_action"] = conditional_action
         priority_trace.append(f"action:{conditional_action}")
         would_block_support = hard_core.get("pass") is False
@@ -3122,6 +3162,7 @@ def build_stage32_owner_state(
     structured_coverage_whole_part_v2: bool = False,
     structured_coverage_whole_part_v2_expanded_lexicon: bool = False,
     structured_coverage_whole_part_v2_direct_support_policy: str = "hard_core_required",
+    structured_whole_part_conditional_safe_overrides_hard_core: bool = False,
 ) -> dict[str, Any]:
     """Build Stage32-B owner-state proxies without changing model outputs."""
     hard_core = build_stage32_hard_core_owner_state(output, index)
@@ -3173,6 +3214,9 @@ def build_stage32_owner_state(
         ),
         structured_whole_part_v2_direct_support_policy=(
             structured_coverage_whole_part_v2_direct_support_policy
+        ),
+        structured_whole_part_conditional_safe_overrides_hard_core=(
+            structured_whole_part_conditional_safe_overrides_hard_core
         ),
         current_final_label=current_final_label,
         residual_adjudication=residual_adjudication,
@@ -3259,6 +3303,12 @@ def flatten_stage32_owner_state(state: dict[str, Any]) -> dict[str, Any]:
         ],
         "stage33_whole_part_direct_support_block_reason": structured[
             "whole_part_direct_support_block_reason"
+        ],
+        "stage33_whole_part_direct_support_action_block_reason": structured[
+            "whole_part_direct_support_action_block_reason"
+        ],
+        "stage33_whole_part_conditional_safe_override_hard_core_enabled": structured[
+            "whole_part_conditional_safe_override_hard_core_enabled"
         ],
         "stage33_whole_part_hard_core_pass": structured["whole_part_hard_core_pass"],
         "stage33_whole_part_original_current_label": structured[
@@ -3349,6 +3399,7 @@ def prediction_records_v6b(
     stage33_structured_coverage_whole_part_v2: bool = False,
     stage33_structured_coverage_whole_part_v2_use_expanded_lexicon: bool = False,
     stage33_structured_coverage_whole_part_v2_direct_support_policy: str = "hard_core_required",
+    stage33_whole_part_conditional_safe_overrides_hard_core: bool = False,
 ) -> list[dict]:
     """Export predictions with Stage28-E enriched schema (additive; preserves all legacy fields)."""
     logits_cpu = output["logits"].detach().cpu()
@@ -3443,6 +3494,9 @@ def prediction_records_v6b(
                 ),
                 structured_coverage_whole_part_v2_direct_support_policy=(
                     stage33_structured_coverage_whole_part_v2_direct_support_policy
+                ),
+                structured_whole_part_conditional_safe_overrides_hard_core=(
+                    stage33_whole_part_conditional_safe_overrides_hard_core
                 ),
             )
             if stage32_owner_state_export
@@ -5144,6 +5198,15 @@ def build_parser() -> argparse.ArgumentParser:
             "shadow mode."
         ),
     )
+    parser.add_argument(
+        "--stage33-whole-part-conditional-safe-overrides-hard-core",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage33-F: ablation flag allowing conditional-safe whole/part direct "
+            "SUPPORT to override hard-core in shadow mode only."
+        ),
+    )
 
     parser.add_argument(
         "--v7-no-aux-losses",
@@ -5480,6 +5543,9 @@ def evaluate_external_probe(
             args,
             "stage33_structured_coverage_whole_part_v2_direct_support_policy",
             "hard_core_required",
+        ),
+        stage33_whole_part_conditional_safe_overrides_hard_core=getattr(
+            args, "stage33_whole_part_conditional_safe_overrides_hard_core", False
         ),
     )
 
@@ -5857,6 +5923,7 @@ _LIFT_CONFIG_KEYS: tuple[str, ...] = (
     "stage33_structured_coverage_whole_part_v2",
     "stage33_structured_coverage_whole_part_v2_use_expanded_lexicon",
     "stage33_structured_coverage_whole_part_v2_direct_support_policy",
+    "stage33_whole_part_conditional_safe_overrides_hard_core",
     # v7 Stage15 / time_swap provenance (also lifted from audit_ledger elsewhere;
     # this covers the configuration copy when the ledger path is absent)
     "stage15_used_for_v7_training",
@@ -8063,6 +8130,11 @@ def main(argv: list[str] | None = None) -> int:
                         "stage33_structured_coverage_whole_part_v2_direct_support_policy",
                         "hard_core_required",
                     ),
+                    stage33_whole_part_conditional_safe_overrides_hard_core=getattr(
+                        args,
+                        "stage33_whole_part_conditional_safe_overrides_hard_core",
+                        False,
+                    ),
                 )
                 best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
                 best_pc_metrics = {
@@ -8211,6 +8283,11 @@ def main(argv: list[str] | None = None) -> int:
                             "stage33_structured_coverage_whole_part_v2_direct_support_policy",
                             "hard_core_required",
                         ),
+                        stage33_whole_part_conditional_safe_overrides_hard_core=getattr(
+                            args,
+                            "stage33_whole_part_conditional_safe_overrides_hard_core",
+                            False,
+                        ),
                     )
                     _tc_state = {
                         k: v.detach().cpu().clone() for k, v in model.state_dict().items()
@@ -8326,6 +8403,11 @@ def main(argv: list[str] | None = None) -> int:
                                 args,
                                 "stage33_structured_coverage_whole_part_v2_direct_support_policy",
                                 "hard_core_required",
+                            ),
+                            stage33_whole_part_conditional_safe_overrides_hard_core=getattr(
+                                args,
+                                "stage33_whole_part_conditional_safe_overrides_hard_core",
+                                False,
                             ),
                         )
                         _pcs_state = {
@@ -9987,6 +10069,11 @@ def main(argv: list[str] | None = None) -> int:
                 "stage33_structured_coverage_whole_part_v2_direct_support_policy",
                 "hard_core_required",
             ),
+            "stage33_whole_part_conditional_safe_overrides_hard_core": getattr(
+                args,
+                "stage33_whole_part_conditional_safe_overrides_hard_core",
+                False,
+            ),
             "stage33_structured_coverage_modifies_final_logits": False,
             "stage33_structured_coverage_modifies_final_predictions": False,
             "v7_h1_entitlement_for_decision_source": (
@@ -10199,6 +10286,11 @@ def main(argv: list[str] | None = None) -> int:
                     args,
                     "stage33_structured_coverage_whole_part_v2_direct_support_policy",
                     "hard_core_required",
+                ),
+                "stage33_whole_part_conditional_safe_overrides_hard_core": getattr(
+                    args,
+                    "stage33_whole_part_conditional_safe_overrides_hard_core",
+                    False,
                 ),
                 "stage33_structured_coverage_modifies_final_logits": False,
                 "stage33_structured_coverage_modifies_final_predictions": False,

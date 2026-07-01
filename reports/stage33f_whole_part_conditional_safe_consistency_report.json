@@ -1,0 +1,54 @@
+{
+  "stage": "Stage33-F",
+  "title": "Whole/part conditional-safe action consistency and pattern-overfire cleanup",
+  "new_cli_flags": [
+    "--stage33-whole-part-conditional-safe-overrides-hard-core"
+  ],
+  "consistency_invariant_when_override_enabled": {
+    "requires_candidate": true,
+    "requires_allowed": true,
+    "requires_policy": "conditional_safe",
+    "stage33_conditional_action": "SUPPORT",
+    "stage33_conditional_override_type": "whole_part_conditional_safe_direct_support",
+    "stage32_shadow_label": "SUPPORT",
+    "stage32_shadow_reason": "stage33_conditional_whole_part_conditional_safe_direct_support"
+  },
+  "conservative_default": {
+    "override_hard_core": false,
+    "hard_core_action_block_reason": "hard_core_priority_blocks_action"
+  },
+  "pattern_overfire_cleanup": {
+    "suppress_whole_part_relation_for_high_precision_non_whole_part_rules": true,
+    "relation_when_suppressed": "none",
+    "candidate_when_suppressed": false,
+    "block_reason_when_suppressed": "not_whole_to_part"
+  },
+  "exported_fields": [
+    "stage33_whole_part_direct_support_action_block_reason",
+    "stage33_whole_part_conditional_safe_override_hard_core_enabled"
+  ],
+  "evaluator_diagnostics": [
+    "stage33_whole_part_action_block_reason_counts",
+    "stage33_whole_part_allowed_but_fallback_count",
+    "stage33_whole_part_allowed_but_fallback_rate",
+    "stage33_whole_part_conditional_safe_override_hard_core_enabled_counts",
+    "whole_to_part_allowed_but_fallback",
+    "whole_to_part_conditional_safe_override_support",
+    "whole_to_part_hard_core_false_support",
+    "whole_to_part_hard_core_false_fallback",
+    "whole_to_part_pattern_overfire_on_quantifier_count"
+  ],
+  "decision_labels": [
+    "STAGE33F_CONDITIONAL_SAFE_CONSISTENT_PROMISING",
+    "STAGE33F_CONSERVATIVE_LOCK_RECOMMENDED",
+    "STAGE33F_DIAGNOSTIC_ONLY"
+  ],
+  "shadow_only_guarantee": {
+    "modifies_final_logits": false,
+    "modifies_final_predictions": false,
+    "modifies_h1_final_decision": false,
+    "modifies_checkpoint_selection": false,
+    "modifies_training_data_selection": false,
+    "uses_stage31_probe_for_training_or_selection": false
+  }
+}
