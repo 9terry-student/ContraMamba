@@ -1,0 +1,84 @@
+{
+  "stage": "Stage33-D",
+  "title": "Whole/part structured coverage rules with conditional fallback preservation",
+  "scope": [
+    "scripts/train_controlled_v6b_minimal.py",
+    "scripts/evaluate_stage32_shadow_composer.py",
+    "reports/stage33d_whole_part_structured_coverage_report.md",
+    "reports/stage33d_whole_part_structured_coverage_report.json"
+  ],
+  "new_cli_flags": [
+    "--stage33-structured-coverage-enable-whole-part-rules",
+    "--stage33-structured-coverage-whole-part-direct-support",
+    "--stage33-structured-coverage-whole-part-lexicon"
+  ],
+  "built_in_pairs": [
+    ["employees", "engineers"],
+    ["research projects", "biology projects"],
+    ["services", "payment service"],
+    ["projects", "biology projects"],
+    ["company", "engineers at the company"],
+    ["department", "biology projects in the department"],
+    ["platform", "payment service on the platform"]
+  ],
+  "rule_behavior": {
+    "whole_to_part": {
+      "label": "STRUCT_ENTAILMENT_PRESERVE",
+      "route": "ENTAILMENT_PRESERVE",
+      "reason": "whole_to_part_proxy",
+      "rule_strength": "proxy",
+      "confidence": 0.75
+    },
+    "part_to_whole": {
+      "label": "STRUCT_OVERCLAIM_NE",
+      "route": "OVERCLAIM_NE",
+      "reason": "part_to_whole_proxy",
+      "rule_strength": "proxy",
+      "confidence": 0.75
+    }
+  },
+  "direct_support_policy": {
+    "default_direct_support": false,
+    "requires_conditional_fallback": true,
+    "requires_whole_part_direct_support_flag": true,
+    "requires_hard_core_pass_true": true,
+    "shadow_reason": "stage33_conditional_whole_part_direct_support"
+  },
+  "exported_fields": [
+    "stage33_structured_coverage_whole_part_enabled",
+    "stage33_structured_coverage_whole_part_relation",
+    "stage33_structured_coverage_whole_part_match",
+    "stage33_structured_coverage_whole_part_direct_support_enabled"
+  ],
+  "evaluator_diagnostics": [
+    "stage33_whole_part_relation_counts",
+    "stage33_whole_part_match_counts",
+    "stage33_whole_part_direct_support_enabled_counts",
+    "whole_to_part_stage33_entailment_preserve",
+    "whole_to_part_stage33_shadow_support",
+    "whole_to_part_stage33_unresolved",
+    "part_to_whole_stage33_overclaim_ne",
+    "part_to_whole_stage33_shadow_ne",
+    "part_to_whole_stage33_unresolved",
+    "whole_part_shadow_overclaim_to_support",
+    "whole_part_shadow_refute_to_support"
+  ],
+  "decision_labels": [
+    "STAGE33D_WHOLE_PART_PROMISING",
+    "STAGE33D_WHOLE_PART_DIAGNOSTIC_ONLY",
+    "STAGE33D_WHOLE_PART_UNSAFE"
+  ],
+  "shadow_only_guarantee": {
+    "modifies_final_logits": false,
+    "modifies_final_predictions": false,
+    "modifies_h1_final_decision": false,
+    "modifies_checkpoint_selection": false,
+    "modifies_training_data_selection": false,
+    "uses_stage31_probe_for_training_or_selection": false
+  },
+  "remaining_risks": [
+    "narrow lexicon may miss valid whole/part paraphrases",
+    "custom pairs can broaden proxy behavior",
+    "direct whole/part support remains experimental"
+  ]
+}

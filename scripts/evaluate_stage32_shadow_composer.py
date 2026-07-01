@@ -336,6 +336,9 @@ def compute_stage33_structured_summary(
         "stage33_structured_coverage_rule_strength",
         "stage33_structured_coverage_direct_support_allowed",
         "stage33_structured_coverage_direct_support_block_reason",
+        "stage33_structured_coverage_whole_part_relation",
+        "stage33_structured_coverage_whole_part_match",
+        "stage33_structured_coverage_whole_part_direct_support_enabled",
     }
     if not any(any(field in row for field in fields) for row in rows):
         return None
@@ -384,6 +387,20 @@ def compute_stage33_structured_summary(
                 rows, "stage33_structured_coverage_direct_support_block_reason"
             )
         ),
+        "stage33_whole_part_relation_counts": group_distribution(
+            rows, "stage33_structured_coverage_whole_part_relation"
+        ),
+        "stage33_whole_part_match_counts": group_distribution(
+            rows, "stage33_structured_coverage_whole_part_match"
+        ),
+        "stage33_whole_part_direct_support_enabled_counts": dict(Counter(
+            normalize_bool(
+                row.get(
+                    "stage33_structured_coverage_whole_part_direct_support_enabled"
+                )
+            )
+            for row in rows
+        )),
         "stage33_proxy_refute_to_support": proxy_refute_to_support,
         "stage33_proxy_ne_to_support": proxy_ne_to_support,
         "stage33_structured_coverage_confidence_summary": numeric_summary(confidences),
@@ -569,8 +586,12 @@ def compute_stage31_diagnostics_from_values(
         if group in SUPPORT_ENTAILMENT_GROUPS:
             if structured_route == "ENTAILMENT_PRESERVE":
                 diag["support_entailment_stage33_entailment_preserve"] += 1
+                if group == "whole_to_part_support":
+                    diag["whole_to_part_stage33_entailment_preserve"] += 1
             if structured_route == "RESIDUAL":
                 diag["support_entailment_stage33_unresolved"] += 1
+                if group == "whole_to_part_support":
+                    diag["whole_to_part_stage33_unresolved"] += 1
             if v2_route == "ENTAILMENT_PRESERVE":
                 diag["support_entailment_v2_entailment_preserve"] += 1
             if v2_route == "RESIDUAL":
@@ -589,14 +610,20 @@ def compute_stage31_diagnostics_from_values(
                 support_by_reason[structured_reason or "missing"] += 1
                 if conditional_enabled:
                     diag["stage33_conditional_support_recovered"] += 1
+                if group == "whole_to_part_support":
+                    diag["whole_to_part_stage33_shadow_support"] += 1
             if shadow_label == "REFUTE":
                 diag["shadow_support_to_refute"] += 1
                 diag["stage33_shadow_support_to_refute"] += 1
         elif group in OVERCLAIM_GROUPS:
             if structured_route == "OVERCLAIM_NE":
                 diag["overclaim_stage33_overclaim_ne"] += 1
+                if group == "part_to_whole_not_entitled":
+                    diag["part_to_whole_stage33_overclaim_ne"] += 1
             if structured_route == "RESIDUAL":
                 diag["overclaim_stage33_unresolved"] += 1
+                if group == "part_to_whole_not_entitled":
+                    diag["part_to_whole_stage33_unresolved"] += 1
             if v2_route == "OVERCLAIM_NE":
                 diag["overclaim_v2_overclaim_ne"] += 1
             if v2_route == "RESIDUAL":
@@ -611,8 +638,12 @@ def compute_stage31_diagnostics_from_values(
                 overclaim_support_by_reason[structured_reason or "missing"] += 1
                 if conditional_enabled:
                     diag["stage33_conditional_overclaim_to_support"] += 1
+                if group == "part_to_whole_not_entitled":
+                    diag["whole_part_shadow_overclaim_to_support"] += 1
             if shadow_label == "NOT_ENTITLED":
                 diag["overclaim_shadow_ne"] += 1
+                if group == "part_to_whole_not_entitled":
+                    diag["part_to_whole_stage33_shadow_ne"] += 1
         elif group in REFUTE_GROUPS:
             if structured_route == "CONTRADICTION_REFUTE":
                 diag["refute_stage33_contradiction_refute"] += 1
@@ -631,6 +662,7 @@ def compute_stage31_diagnostics_from_values(
                 refute_support_by_reason[structured_reason or "missing"] += 1
                 if conditional_enabled:
                     diag["stage33_conditional_refute_to_support"] += 1
+                diag["whole_part_shadow_refute_to_support"] += 1
             if shadow_label == "REFUTE":
                 diag["refute_shadow_refute"] += 1
                 diag["refute_stage33_shadow_refute"] += 1
@@ -678,6 +710,14 @@ def compute_stage31_diagnostics_from_values(
         "stage33_conditional_overclaim_to_support",
         "stage33_conditional_refute_to_support",
         "stage33_conditional_refute_recovered",
+        "whole_to_part_stage33_entailment_preserve",
+        "whole_to_part_stage33_shadow_support",
+        "whole_to_part_stage33_unresolved",
+        "part_to_whole_stage33_overclaim_ne",
+        "part_to_whole_stage33_shadow_ne",
+        "part_to_whole_stage33_unresolved",
+        "whole_part_shadow_overclaim_to_support",
+        "whole_part_shadow_refute_to_support",
     ):
         diag.setdefault(key, 0)
     result = dict(diag)
@@ -875,6 +915,59 @@ def decide(
     stage33_conditional_summary: dict[str, Any] | None = None,
 ) -> dict[str, str]:
     macro_delta = shadow_metrics["macro_f1"] - current_metrics["macro_f1"]
+    if stage33_summary is not None:
+        whole_part_counts = stage33_summary.get("stage33_whole_part_relation_counts", {})
+        whole_part_detected = sum(
+            count for relation, count in whole_part_counts.items()
+            if relation not in {"", "none", "MISSING"}
+        )
+        if whole_part_detected > 0:
+            whole_to_part_support = (
+                stage31_diag.get("whole_to_part_stage33_shadow_support", 0)
+                if stage31_diag else 0
+            )
+            part_to_whole_ne = (
+                stage31_diag.get("part_to_whole_stage33_shadow_ne", 0)
+                if stage31_diag else 0
+            )
+            overclaim_support = (
+                stage31_diag.get("whole_part_shadow_overclaim_to_support", 0)
+                if stage31_diag else 0
+            )
+            refute_support = (
+                stage31_diag.get("whole_part_shadow_refute_to_support", 0)
+                if stage31_diag else 0
+            )
+            if overclaim_support > 0 or refute_support > 0 or macro_delta <= -0.05:
+                return {
+                    "label": "STAGE33D_WHOLE_PART_UNSAFE",
+                    "reason": (
+                        "Whole/part structured coverage is unsafe: safety errors "
+                        "appeared or macro-F1 dropped materially."
+                    ),
+                }
+            if (
+                whole_to_part_support > 0
+                and part_to_whole_ne > 0
+                and overclaim_support == 0
+                and refute_support == 0
+                and macro_delta > -0.02
+            ):
+                return {
+                    "label": "STAGE33D_WHOLE_PART_PROMISING",
+                    "reason": (
+                        "Whole/part rules recover whole-to-part SUPPORT while "
+                        "preserving part-to-whole NOT_ENTITLED safety and avoiding "
+                        "material macro-F1 drop."
+                    ),
+                }
+            return {
+                "label": "STAGE33D_WHOLE_PART_DIAGNOSTIC_ONLY",
+                "reason": (
+                    "Whole/part relations are detected, but safe SUPPORT recovery "
+                    "is not yet demonstrated."
+                ),
+            }
     if (
         stage33_conditional_summary is not None
         and stage33_conditional_summary.get("stage33_conditional_enabled_count", 0) > 0
@@ -1169,6 +1262,12 @@ def write_markdown(path: Path, report: dict[str, Any]) -> None:
             (
                 "Direct Support Block Reason Counts",
                 "stage33_structured_coverage_direct_support_block_reason_counts",
+            ),
+            ("Whole/Part Relation Counts", "stage33_whole_part_relation_counts"),
+            ("Whole/Part Match Counts", "stage33_whole_part_match_counts"),
+            (
+                "Whole/Part Direct Support Enabled Counts",
+                "stage33_whole_part_direct_support_enabled_counts",
             ),
         ):
             lines.extend(["", f"### {title}", "| Value | Count |", "|---|---:|"])
@@ -1540,6 +1639,18 @@ def main() -> int:
         ),
         "stage33_structured_coverage_confidence_summary": (
             stage33_summary.get("stage33_structured_coverage_confidence_summary")
+            if stage33_summary else None
+        ),
+        "stage33_whole_part_relation_counts": (
+            stage33_summary.get("stage33_whole_part_relation_counts")
+            if stage33_summary else None
+        ),
+        "stage33_whole_part_match_counts": (
+            stage33_summary.get("stage33_whole_part_match_counts")
+            if stage33_summary else None
+        ),
+        "stage33_whole_part_direct_support_enabled_counts": (
+            stage33_summary.get("stage33_whole_part_direct_support_enabled_counts")
             if stage33_summary else None
         ),
         "stage33_conditional_summary": stage33_conditional_summary,

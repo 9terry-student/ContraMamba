@@ -2053,6 +2053,16 @@ _STAGE33_RULE_STRENGTHS = {
 
 _STAGE33_DEFAULT_DIRECT_SUPPORT_RULES = "quantifier_all_to_some,only_to_base"
 
+_STAGE33_WHOLE_PART_PAIRS: tuple[tuple[str, str], ...] = (
+    ("employees", "engineers"),
+    ("research projects", "biology projects"),
+    ("services", "payment service"),
+    ("projects", "biology projects"),
+    ("company", "engineers at the company"),
+    ("department", "biology projects in the department"),
+    ("platform", "payment service on the platform"),
+)
+
 
 def _stage33_text(record: dict[str, Any], field: str) -> str:
     raw = record.get(field)
@@ -2125,6 +2135,103 @@ def _stage33_parse_csv_set(value: Any) -> set[str]:
     return {item.strip() for item in str(value).split(",") if item.strip()}
 
 
+def _stage33_normalize_phrase(text: str) -> str:
+    return re.sub(r"\s+", " ", str(text).lower()).strip()
+
+
+def _stage33_phrase_variants(phrase: str) -> set[str]:
+    normalized = _stage33_normalize_phrase(phrase)
+    variants = {normalized}
+    replacements = (
+        ("services", "service"),
+        ("service", "services"),
+        ("projects", "project"),
+        ("project", "projects"),
+        ("employees", "employee"),
+        ("employee", "employees"),
+    )
+    for src, dst in replacements:
+        variants.add(re.sub(rf"\b{re.escape(src)}\b", dst, normalized))
+    return {variant for variant in variants if variant}
+
+
+def _stage33_contains_phrase(text: str, phrase: str) -> bool:
+    normalized = _stage33_normalize_phrase(text)
+    return any(
+        re.search(rf"\b{re.escape(variant)}\b", normalized) is not None
+        for variant in _stage33_phrase_variants(phrase)
+    )
+
+
+def _stage33_parse_whole_part_pairs(value: Any) -> list[tuple[str, str]]:
+    pairs = list(_STAGE33_WHOLE_PART_PAIRS)
+    for item in sorted(_stage33_parse_csv_set(value)):
+        if "->" in item:
+            whole, part = item.split("->", 1)
+        elif ":" in item:
+            whole, part = item.split(":", 1)
+        else:
+            continue
+        whole = _stage33_normalize_phrase(whole)
+        part = _stage33_normalize_phrase(part)
+        if whole and part:
+            pairs.append((whole, part))
+    return pairs
+
+
+def _stage33_local_domains(text: str) -> set[str]:
+    normalized = _stage33_normalize_phrase(text)
+    domains: set[str] = set()
+    for match in re.finditer(r"\b(?:at|in|on)\s+(?:the\s+)?([a-z0-9' -]+)", normalized):
+        domain = match.group(1)
+        domain = re.split(r"\b(?:that|which|where|and|but|,|\.)\b", domain)[0]
+        words = [
+            word for word in re.findall(r"[a-z0-9']+", domain)
+            if word not in _STAGE33_STOPWORDS
+        ]
+        if words:
+            domains.add(" ".join(words[:4]))
+            domains.add(words[0])
+    return domains
+
+
+def _stage33_same_local_domain(evidence: str, claim: str, whole: str, part: str) -> bool:
+    evidence_domains = _stage33_local_domains(evidence)
+    claim_domains = _stage33_local_domains(claim)
+    if evidence_domains and claim_domains:
+        return bool(evidence_domains.intersection(claim_domains))
+    return (
+        _stage33_contains_phrase(evidence, whole)
+        and _stage33_contains_phrase(claim, part)
+    ) or (
+        _stage33_contains_phrase(evidence, part)
+        and _stage33_contains_phrase(claim, whole)
+    )
+
+
+def _stage33_whole_part_match(
+    evidence: str,
+    claim: str,
+    *,
+    enabled: bool,
+    lexicon: Any = "",
+) -> dict[str, str]:
+    if not enabled:
+        return {"relation": "none", "match": ""}
+    for whole, part in _stage33_parse_whole_part_pairs(lexicon):
+        evidence_has_whole = _stage33_contains_phrase(evidence, whole)
+        evidence_has_part = _stage33_contains_phrase(evidence, part)
+        claim_has_whole = _stage33_contains_phrase(claim, whole)
+        claim_has_part = _stage33_contains_phrase(claim, part)
+        if not _stage33_same_local_domain(evidence, claim, whole, part):
+            continue
+        if evidence_has_whole and claim_has_part:
+            return {"relation": "whole_to_part", "match": f"{whole}->{part}"}
+        if evidence_has_part and claim_has_whole:
+            return {"relation": "part_to_whole", "match": f"{part}->{whole}"}
+    return {"relation": "none", "match": ""}
+
+
 def _stage33_rule_strength(reason: str) -> str:
     if str(reason).startswith("weak_rule_forced_to_residual:"):
         reason = str(reason).split(":", 1)[1]
@@ -2136,6 +2243,9 @@ def build_stage33_structured_coverage_owner_state(
     *,
     enabled: bool,
     weak_rules_to_residual: set[str] | None = None,
+    whole_part_enabled: bool = False,
+    whole_part_lexicon: str = "",
+    whole_part_direct_support_enabled: bool = False,
 ) -> dict[str, Any]:
     """Build deterministic Stage33 structured coverage owner diagnostics."""
     claim = _stage33_text(record, "claim")
@@ -2149,6 +2259,12 @@ def build_stage33_structured_coverage_owner_state(
     confidence = 0.0
     rule_fired = False
     weak_rules_to_residual = weak_rules_to_residual or set()
+    whole_part = _stage33_whole_part_match(
+        evidence,
+        claim,
+        enabled=enabled and whole_part_enabled,
+        lexicon=whole_part_lexicon,
+    )
 
     claim_tokens = claim_cues["tokens"]
     evidence_tokens = evidence_cues["tokens"]
@@ -2192,6 +2308,18 @@ def build_stage33_structured_coverage_owner_state(
             reason = "also_to_only"
             confidence = 1.0
             rule_fired = True
+        elif evidence_cues["universal"] and whole_part["relation"] == "whole_to_part":
+            label = "STRUCT_ENTAILMENT_PRESERVE"
+            route = "ENTAILMENT_PRESERVE"
+            reason = "whole_to_part_proxy"
+            confidence = 0.75
+            rule_fired = True
+        elif claim_cues["universal"] and whole_part["relation"] == "part_to_whole":
+            label = "STRUCT_OVERCLAIM_NE"
+            route = "OVERCLAIM_NE"
+            reason = "part_to_whole_proxy"
+            confidence = 0.75
+            rule_fired = True
         elif claim_subset_evidence and len(evidence_tokens - claim_tokens) >= 2:
             label = "STRUCT_ENTAILMENT_PRESERVE"
             route = "ENTAILMENT_PRESERVE"
@@ -2220,6 +2348,10 @@ def build_stage33_structured_coverage_owner_state(
         "original_reason": original_reason,
         "rule_strength": rule_strength,
         "confidence": confidence,
+        "whole_part_enabled": bool(whole_part_enabled),
+        "whole_part_relation": whole_part["relation"],
+        "whole_part_match": whole_part["match"],
+        "whole_part_direct_support_enabled": bool(whole_part_direct_support_enabled),
         "claim_cues": _stage33_compact_cues(claim_cues),
         "evidence_cues": _stage33_compact_cues(evidence_cues),
         "rule_fired": rule_fired,
@@ -2481,6 +2613,7 @@ def build_stage32_shadow_composer_state(
     structured_direct_support_rules: set[str],
     structured_conditional_fallback: bool,
     structured_conditional_fallback_source: str,
+    structured_whole_part_direct_support: bool,
     current_final_label: str,
     residual_adjudication: dict[str, Any],
     ani_diagnostic: dict[str, Any],
@@ -2510,8 +2643,15 @@ def build_stage32_shadow_composer_state(
         and structured_strength == "high_precision"
         and hard_core.get("pass") is True
     )
+    whole_part_direct_support_allowed = (
+        route == "ENTAILMENT_PRESERVE"
+        and structured_reason == "whole_to_part_proxy"
+        and hard_core.get("pass") is True
+        and conditional_enabled
+        and structured_whole_part_direct_support
+    )
     if route == "ENTAILMENT_PRESERVE":
-        if direct_support_allowed:
+        if direct_support_allowed or whole_part_direct_support_allowed:
             direct_block_reason = "allowed"
         elif not structured_preserve_can_support:
             direct_block_reason = "preserve_can_support_disabled"
@@ -2521,7 +2661,9 @@ def build_stage32_shadow_composer_state(
             direct_block_reason = f"rule_strength:{structured_strength}"
         else:
             direct_block_reason = f"rule_not_allowed:{structured_reason}"
-        structured_coverage["direct_support_allowed"] = direct_support_allowed
+        structured_coverage["direct_support_allowed"] = (
+            direct_support_allowed or whole_part_direct_support_allowed
+        )
         structured_coverage["direct_support_block_reason"] = direct_block_reason
 
     if conditional_enabled:
@@ -2553,6 +2695,12 @@ def build_stage32_shadow_composer_state(
             conditional_action = "SUPPORT"
             conditional_override_applied = shadow_label != current_final_label
             conditional_override_type = "high_precision_direct_support"
+        elif route == "ENTAILMENT_PRESERVE" and whole_part_direct_support_allowed:
+            shadow_label = "SUPPORT"
+            shadow_reason = "stage33_conditional_whole_part_direct_support"
+            conditional_action = "SUPPORT"
+            conditional_override_applied = shadow_label != current_final_label
+            conditional_override_type = "whole_part_direct_support"
         elif (
             route == "ENTAILMENT_PRESERVE"
             and polarity["pred_label"] == "SUPPORT"
@@ -2833,6 +2981,9 @@ def build_stage32_owner_state(
     structured_coverage_weak_rules_to_residual: set[str] | None = None,
     structured_coverage_conditional_fallback: bool = False,
     structured_coverage_fallback_source: str = "current_final",
+    structured_coverage_whole_part_enabled: bool = False,
+    structured_coverage_whole_part_direct_support: bool = False,
+    structured_coverage_whole_part_lexicon: str = "",
 ) -> dict[str, Any]:
     """Build Stage32-B owner-state proxies without changing model outputs."""
     hard_core = build_stage32_hard_core_owner_state(output, index)
@@ -2848,6 +2999,9 @@ def build_stage32_owner_state(
         record,
         enabled=structured_coverage_enabled,
         weak_rules_to_residual=structured_coverage_weak_rules_to_residual,
+        whole_part_enabled=structured_coverage_whole_part_enabled,
+        whole_part_lexicon=structured_coverage_whole_part_lexicon,
+        whole_part_direct_support_enabled=structured_coverage_whole_part_direct_support,
     )
     residual_adjudication = build_stage32_residual_adjudication_owner_state(output, index)
     ani_diagnostic = build_stage32_ani_diagnostic_state(output, index)
@@ -2866,6 +3020,7 @@ def build_stage32_owner_state(
         ),
         structured_conditional_fallback=structured_coverage_conditional_fallback,
         structured_conditional_fallback_source=structured_coverage_fallback_source,
+        structured_whole_part_direct_support=structured_coverage_whole_part_direct_support,
         current_final_label=current_final_label,
         residual_adjudication=residual_adjudication,
         ani_diagnostic=ani_diagnostic,
@@ -2922,6 +3077,18 @@ def flatten_stage32_owner_state(state: dict[str, Any]) -> dict[str, Any]:
         "stage33_structured_coverage_original_reason": structured["original_reason"],
         "stage33_structured_coverage_rule_strength": structured["rule_strength"],
         "stage33_structured_coverage_confidence": structured["confidence"],
+        "stage33_structured_coverage_whole_part_enabled": structured[
+            "whole_part_enabled"
+        ],
+        "stage33_structured_coverage_whole_part_relation": structured[
+            "whole_part_relation"
+        ],
+        "stage33_structured_coverage_whole_part_match": structured[
+            "whole_part_match"
+        ],
+        "stage33_structured_coverage_whole_part_direct_support_enabled": structured[
+            "whole_part_direct_support_enabled"
+        ],
         "stage33_structured_coverage_direct_support_allowed": structured[
             "direct_support_allowed"
         ],
@@ -2998,6 +3165,9 @@ def prediction_records_v6b(
     stage33_structured_coverage_weak_rules_to_residual: str = "",
     stage33_structured_coverage_conditional_fallback: bool = False,
     stage33_structured_coverage_fallback_source: str = "current_final",
+    stage33_structured_coverage_enable_whole_part_rules: bool = False,
+    stage33_structured_coverage_whole_part_direct_support: bool = False,
+    stage33_structured_coverage_whole_part_lexicon: str = "",
 ) -> list[dict]:
     """Export predictions with Stage28-E enriched schema (additive; preserves all legacy fields)."""
     logits_cpu = output["logits"].detach().cpu()
@@ -3074,6 +3244,15 @@ def prediction_records_v6b(
                 ),
                 structured_coverage_fallback_source=(
                     stage33_structured_coverage_fallback_source
+                ),
+                structured_coverage_whole_part_enabled=(
+                    stage33_structured_coverage_enable_whole_part_rules
+                ),
+                structured_coverage_whole_part_direct_support=(
+                    stage33_structured_coverage_whole_part_direct_support
+                ),
+                structured_coverage_whole_part_lexicon=(
+                    stage33_structured_coverage_whole_part_lexicon
                 ),
             )
             if stage32_owner_state_export
@@ -4724,6 +4903,33 @@ def build_parser() -> argparse.ArgumentParser:
             "as the current final prediction in this implementation."
         ),
     )
+    parser.add_argument(
+        "--stage33-structured-coverage-enable-whole-part-rules",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage33-D: enable conservative whole/part structured coverage rules "
+            "for known Stage31-style lexicon pairs. Shadow/export-only."
+        ),
+    )
+    parser.add_argument(
+        "--stage33-structured-coverage-whole-part-direct-support",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage33-D: allow whole_to_part_proxy to recover SUPPORT directly only "
+            "inside conditional fallback shadow mode."
+        ),
+    )
+    parser.add_argument(
+        "--stage33-structured-coverage-whole-part-lexicon",
+        type=str,
+        default="",
+        help=(
+            "Stage33-D: optional comma-separated custom whole/part pairs using "
+            "'whole->part' or 'whole:part' syntax."
+        ),
+    )
 
     parser.add_argument(
         "--v7-no-aux-losses",
@@ -5038,6 +5244,15 @@ def evaluate_external_probe(
         ),
         stage33_structured_coverage_fallback_source=getattr(
             args, "stage33_structured_coverage_fallback_source", "current_final"
+        ),
+        stage33_structured_coverage_enable_whole_part_rules=getattr(
+            args, "stage33_structured_coverage_enable_whole_part_rules", False
+        ),
+        stage33_structured_coverage_whole_part_direct_support=getattr(
+            args, "stage33_structured_coverage_whole_part_direct_support", False
+        ),
+        stage33_structured_coverage_whole_part_lexicon=getattr(
+            args, "stage33_structured_coverage_whole_part_lexicon", ""
         ),
     )
 
@@ -5409,6 +5624,9 @@ _LIFT_CONFIG_KEYS: tuple[str, ...] = (
     "stage33_structured_coverage_weak_rules_to_residual",
     "stage33_structured_coverage_conditional_fallback",
     "stage33_structured_coverage_fallback_source",
+    "stage33_structured_coverage_enable_whole_part_rules",
+    "stage33_structured_coverage_whole_part_direct_support",
+    "stage33_structured_coverage_whole_part_lexicon",
     # v7 Stage15 / time_swap provenance (also lifted from audit_ledger elsewhere;
     # this covers the configuration copy when the ledger path is absent)
     "stage15_used_for_v7_training",
@@ -7593,6 +7811,15 @@ def main(argv: list[str] | None = None) -> int:
                     stage33_structured_coverage_fallback_source=getattr(
                         args, "stage33_structured_coverage_fallback_source", "current_final"
                     ),
+                    stage33_structured_coverage_enable_whole_part_rules=getattr(
+                        args, "stage33_structured_coverage_enable_whole_part_rules", False
+                    ),
+                    stage33_structured_coverage_whole_part_direct_support=getattr(
+                        args, "stage33_structured_coverage_whole_part_direct_support", False
+                    ),
+                    stage33_structured_coverage_whole_part_lexicon=getattr(
+                        args, "stage33_structured_coverage_whole_part_lexicon", ""
+                    ),
                 )
                 best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
                 best_pc_metrics = {
@@ -7719,6 +7946,15 @@ def main(argv: list[str] | None = None) -> int:
                         stage33_structured_coverage_fallback_source=getattr(
                             args, "stage33_structured_coverage_fallback_source", "current_final"
                         ),
+                        stage33_structured_coverage_enable_whole_part_rules=getattr(
+                            args, "stage33_structured_coverage_enable_whole_part_rules", False
+                        ),
+                        stage33_structured_coverage_whole_part_direct_support=getattr(
+                            args, "stage33_structured_coverage_whole_part_direct_support", False
+                        ),
+                        stage33_structured_coverage_whole_part_lexicon=getattr(
+                            args, "stage33_structured_coverage_whole_part_lexicon", ""
+                        ),
                     )
                     _tc_state = {
                         k: v.detach().cpu().clone() for k, v in model.state_dict().items()
@@ -7812,6 +8048,15 @@ def main(argv: list[str] | None = None) -> int:
                             ),
                             stage33_structured_coverage_fallback_source=getattr(
                                 args, "stage33_structured_coverage_fallback_source", "current_final"
+                            ),
+                            stage33_structured_coverage_enable_whole_part_rules=getattr(
+                                args, "stage33_structured_coverage_enable_whole_part_rules", False
+                            ),
+                            stage33_structured_coverage_whole_part_direct_support=getattr(
+                                args, "stage33_structured_coverage_whole_part_direct_support", False
+                            ),
+                            stage33_structured_coverage_whole_part_lexicon=getattr(
+                                args, "stage33_structured_coverage_whole_part_lexicon", ""
                             ),
                         )
                         _pcs_state = {
@@ -9451,6 +9696,15 @@ def main(argv: list[str] | None = None) -> int:
             "stage33_structured_coverage_fallback_source": getattr(
                 args, "stage33_structured_coverage_fallback_source", "current_final"
             ),
+            "stage33_structured_coverage_enable_whole_part_rules": getattr(
+                args, "stage33_structured_coverage_enable_whole_part_rules", False
+            ),
+            "stage33_structured_coverage_whole_part_direct_support": getattr(
+                args, "stage33_structured_coverage_whole_part_direct_support", False
+            ),
+            "stage33_structured_coverage_whole_part_lexicon": getattr(
+                args, "stage33_structured_coverage_whole_part_lexicon", ""
+            ),
             "stage33_structured_coverage_modifies_final_logits": False,
             "stage33_structured_coverage_modifies_final_predictions": False,
             "v7_h1_entitlement_for_decision_source": (
@@ -9641,6 +9895,15 @@ def main(argv: list[str] | None = None) -> int:
                 ),
                 "stage33_structured_coverage_fallback_source": getattr(
                     args, "stage33_structured_coverage_fallback_source", "current_final"
+                ),
+                "stage33_structured_coverage_enable_whole_part_rules": getattr(
+                    args, "stage33_structured_coverage_enable_whole_part_rules", False
+                ),
+                "stage33_structured_coverage_whole_part_direct_support": getattr(
+                    args, "stage33_structured_coverage_whole_part_direct_support", False
+                ),
+                "stage33_structured_coverage_whole_part_lexicon": getattr(
+                    args, "stage33_structured_coverage_whole_part_lexicon", ""
                 ),
                 "stage33_structured_coverage_modifies_final_logits": False,
                 "stage33_structured_coverage_modifies_final_predictions": False,
