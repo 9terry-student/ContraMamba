@@ -1,0 +1,55 @@
+{
+  "decision": "STAGE43B1_FACTVER_ACQUISITION_PLAN_PREPARED",
+  "status": "preparation_only",
+  "background": {
+    "stage43a_decision": "STAGE43A_EXTERNAL_VALIDATION_MANIFEST_AMBIGUOUS",
+    "stage43a_candidates_scanned": 34,
+    "stage43a_clearly_adaptable": 0,
+    "stage43a_ambiguous": 10,
+    "stage43a_not_adaptable": 24,
+    "stage43a_finding": "Stage43-A found no naturalistic external validation source inside the ContraMamba repository.",
+    "stage43b0": "Stage43-B0 created scripts/convert_stage43_external_validation.py, docs/stage43_external_validation_schema.md, reports/stage43b0_external_intake_plan.md, and reports/stage43b0_external_intake_plan.json."
+  },
+  "epistemicbert_prior": {
+    "main_dataset": "Uploaded EpistemicBERT code confirms tals/vitaminc as the original main fact-verification dataset loaded with load_dataset(\"tals/vitaminc\").",
+    "main_fields": ["claim", "evidence", "label"],
+    "main_labels": ["SUPPORTS", "REFUTES", "NOT ENOUGH INFO"],
+    "transfer_dataset": "Uploaded EpistemicBERT code confirms climate_fever as a prior cross-domain fact-verification transfer dataset.",
+    "transfer_fields": {
+      "claim": "claim",
+      "evidence": ["evidences", "evidence"],
+      "label": ["claim_label", "label"]
+    },
+    "climate_fever_disputed_policy": "DISPUTED is excluded for clean 3-way evaluation and must not be mapped to NOT_ENTITLED."
+  },
+  "stage43b1": {
+    "script": "scripts/acquire_stage43_factver_external_validation.py",
+    "purpose": "Acquire/convert targeted VitaminC or Climate-FEVER HuggingFace rows into Stage43 canonical external validation JSONL plus provenance reports.",
+    "supported_presets": ["vitaminc", "climate_fever"],
+    "scope": "Preparation/acquisition only. No dataset download or acquisition script execution was performed during implementation."
+  },
+  "source_priority": {
+    "preferred": ["tals/vitaminc", "climate_fever"],
+    "rationale": "VitaminC and Climate-FEVER are preferred over RTE/MNLI/SNLI because they directly support SUPPORT/REFUTE/NOT_ENTITLED-style fact verification.",
+    "rte_policy": "RTE is not a primary test because not_entailment conflates contradiction and insufficient evidence.",
+    "mnli_snli_policy": "MNLI/SNLI can be used later only as auxiliary NLI transfer diagnostics."
+  },
+  "stage43b2_gate": "Stage43-B2 should run ContraMamba external final-composer evaluation only after valid acquisition reports exist.",
+  "leakage_policy": "Acquired data must not be used for training, calibration, threshold selection, checkpoint selection, loss design, or any other model-selection feedback loop.",
+  "guardrails": [
+    "Do not run the acquisition script during implementation.",
+    "Do not download data during implementation.",
+    "Do not run model training or evaluation.",
+    "Do not create fake examples.",
+    "Do not infer labels from model predictions.",
+    "Do not treat RTE/MNLI/SNLI as primary Stage43 external validation.",
+    "Do not treat synthetic Stage34/35 as naturalistic external evidence.",
+    "Do not alter existing source reports or previous stage outputs."
+  ],
+  "artifacts": {
+    "acquisition_script": "scripts/acquire_stage43_factver_external_validation.py",
+    "plan_md": "reports/stage43b1_factver_acquisition_plan.md",
+    "plan_json": "reports/stage43b1_factver_acquisition_plan.json"
+  },
+  "recommendation": "Acquire VitaminC and/or Climate-FEVER with the targeted Stage43-B1 script only when the user explicitly runs it later, then proceed to Stage43-B2 eval-only work only after valid acquisition reports exist."
+}
