@@ -10,7 +10,7 @@ any model. It does not fabricate rows, does not infer labels from model
 predictions, and does not treat synthetic Stage34/35 probes as naturalistic
 external evidence. It is not executed as part of writing this file -- it
 is only run later, explicitly, by a human operator who supplies
---hf-dataset/--split (and optionally --hf-config, field names, etc).
+--hf-dataset/--split (and optionally --hf-config, --preset, field names).
 
 Supported dataset loading pattern:
 
@@ -20,6 +20,21 @@ Supported dataset loading pattern:
         dataset = load_dataset(hf_dataset, hf_config, split=split, ...)
     else:
         dataset = load_dataset(hf_dataset, split=split, ...)
+
+Dataset presets (--preset):
+
+    - fever_claim_evidence: claim/evidence/label fields, FEVER-style string
+      label mapping (SUPPORTS/REFUTES/NOT ENOUGH INFO).
+    - glue_rte: sentence2/sentence1/label fields (load_dataset("glue",
+      "rte")), entailment -> SUPPORT, not_entailment -> NOT_ENTITLED
+      (never REFUTE).
+    - nli_premise_hypothesis: hypothesis/premise/label fields (SNLI/MNLI/
+      ANLI-style), label names resolved via ClassLabel when possible,
+      with a positional fallback (0 entailment, 1 neutral, 2 contradiction).
+    - manual: use only explicitly supplied --claim-field/--evidence-field/
+      --label-field.
+    - auto (default): infer fields from alias lists and use the generic
+      default label mapping.
 
 Converted output produced by this script must not be used for training,
 calibration, threshold selection, checkpoint selection, or loss design --
@@ -37,6 +52,7 @@ from typing import Any
 
 SAMPLE_LIMIT = 5
 
+# Generic default mapping used by the 'auto' and 'manual' presets.
 DEFAULT_SUPPORT_VALUES = {"supports", "support", "entailment", "true", "1"}
 DEFAULT_REFUTE_VALUES = {"refutes", "refute", "contradiction", "false", "-1"}
 DEFAULT_NOT_ENTITLED_VALUES = {
@@ -44,14 +60,47 @@ DEFAULT_NOT_ENTITLED_VALUES = {
     "nei",
     "neutral",
     "unknown",
-    "not_entitled",
     "not_entailment",
+    "not_entitled",
     "0",
 }
+
+# FEVER-style preset mapping (string labels only).
+FEVER_LABEL_MAP = {
+    "supports": "SUPPORT",
+    "support": "SUPPORT",
+    "refutes": "REFUTE",
+    "refute": "REFUTE",
+    "not enough info": "NOT_ENTITLED",
+    "nei": "NOT_ENTITLED",
+}
+
+# NLI positional fallback used only when ClassLabel names are unavailable.
+NLI_POSITIONAL_FALLBACK = {"0": "SUPPORT", "1": "NOT_ENTITLED", "2": "REFUTE"}
 
 CLAIM_FIELD_ALIASES = ["claim", "hypothesis", "statement", "query", "sentence2", "premise2"]
 EVIDENCE_FIELD_ALIASES = ["evidence", "premise", "context", "passage", "text", "sentence1"]
 LABEL_FIELD_ALIASES = ["label", "gold", "gold_label", "answer", "verdict", "relation"]
+
+RTE_RISK_NOTE = (
+    "RTE not_entailment conflates contradiction and neutral/insufficient evidence, "
+    "so it is a weak external transfer probe for ContraMamba's three-way "
+    "SUPPORT/REFUTE/NOT_ENTITLED decision."
+)
+
+NLI_FALLBACK_RISK_NOTE = (
+    "Dataset label field had no resolvable ClassLabel names, so the positional NLI "
+    "fallback mapping (0 entailment -> SUPPORT, 1 neutral -> NOT_ENTITLED, "
+    "2 contradiction -> REFUTE) was used. Verify this ordering matches the source "
+    "dataset before trusting the mapped labels."
+)
+
+GENERIC_NUMERIC_RISK_NOTE = (
+    "One or more labels were raw numeric strings mapped via the generic auto/manual "
+    "label table (e.g. '0' -> NOT_ENTITLED, '1' -> SUPPORT). Numeric label meaning "
+    "varies by dataset; prefer a preset or resolved ClassLabel names, or supply "
+    "--label-map-json, when the source dataset's numeric convention is uncertain."
+)
 
 LEAKAGE_POLICY = (
     "Converted output produced by this script is external-evaluation-only. It must not "
@@ -59,6 +108,8 @@ LEAKAGE_POLICY = (
     "loss design. See docs/stage43_external_validation_schema.md and "
     "reports/stage43b1_hf_acquisition_plan.md."
 )
+
+VALID_LABELS = {"SUPPORT", "REFUTE", "NOT_ENTITLED"}
 
 
 def load_label_map(label_map_json: str | None) -> dict[str, str] | None:
@@ -75,49 +126,6 @@ def load_label_map(label_map_json: str | None) -> dict[str, str] | None:
     return {str(k).strip().lower(): str(v).strip().upper() for k, v in raw.items()}
 
 
-def normalize_label(
-    raw_label: Any,
-    allow_neutral_as_not_entitled: bool,
-    strict_labels: bool,
-    manual_label_map: dict[str, str] | None,
-) -> tuple[str | None, bool]:
-    """Return (mapped_label_or_None, used_not_entailment_risk)."""
-    if raw_label is None:
-        return None, False
-    norm = str(raw_label).strip().lower()
-    if not norm:
-        return None, False
-
-    if manual_label_map is not None:
-        mapped = manual_label_map.get(norm)
-        if mapped in {"SUPPORT", "REFUTE", "NOT_ENTITLED"}:
-            return mapped, False
-        return None, False
-
-    used_not_entailment_risk = False
-
-    if norm in DEFAULT_SUPPORT_VALUES:
-        return "SUPPORT", False
-    if norm in DEFAULT_REFUTE_VALUES:
-        return "REFUTE", False
-
-    if norm == "not_entailment":
-        used_not_entailment_risk = True
-        return "NOT_ENTITLED", used_not_entailment_risk
-
-    if norm == "neutral":
-        if strict_labels:
-            return None, False
-        if allow_neutral_as_not_entitled:
-            return "NOT_ENTITLED", False
-        return None, False
-
-    if norm in DEFAULT_NOT_ENTITLED_VALUES:
-        return "NOT_ENTITLED", False
-
-    return None, False
-
-
 def detect_field(candidates: list[str], available_fields: list[str]) -> str | None:
     lowered = {f.lower(): f for f in available_fields}
     for cand in candidates:
@@ -126,30 +134,210 @@ def detect_field(candidates: list[str], available_fields: list[str]) -> str | No
     return None
 
 
-def resolve_class_label(dataset: Any, field_name: str, raw_value: Any) -> Any:
-    """Best-effort resolution of an integer ClassLabel to its string name."""
+def get_class_label_names(dataset: Any, field_name: str) -> list[str] | None:
+    """Best-effort lookup of a ClassLabel feature's string names."""
     try:
         features = getattr(dataset, "features", None)
         if features is None or field_name not in features:
-            return raw_value
+            return None
         feature = features[field_name]
         names = getattr(feature, "names", None)
-        if names is None:
-            return raw_value
-        if isinstance(raw_value, bool):
-            return raw_value
-        if isinstance(raw_value, int) and 0 <= raw_value < len(names):
-            return names[raw_value]
+        if names:
+            return list(names)
     except Exception:
-        return raw_value
-    return raw_value
+        return None
+    return None
+
+
+def resolve_field_mapping(
+    preset: str,
+    args: argparse.Namespace,
+    available_fields: list[str],
+) -> tuple[str | None, str | None, str | None, str | None, dict[str, Any]]:
+    notes: dict[str, Any] = {"preset": preset}
+
+    if preset == "manual":
+        notes["mode"] = "manual_explicit_only"
+        return args.claim_field, args.evidence_field, args.label_field, args.id_field, notes
+
+    if preset == "fever_claim_evidence":
+        claim_field = args.claim_field or "claim"
+        evidence_field = args.evidence_field or "evidence"
+        label_field = args.label_field or "label"
+        id_field = args.id_field
+        notes["mode"] = "fever_preset_defaults"
+        return claim_field, evidence_field, label_field, id_field, notes
+
+    if preset == "glue_rte":
+        claim_field = args.claim_field or "sentence2"
+        evidence_field = args.evidence_field or "sentence1"
+        label_field = args.label_field or "label"
+        id_field = args.id_field
+        if id_field is None and "idx" in available_fields:
+            id_field = "idx"
+        notes["mode"] = "glue_rte_preset_defaults"
+        return claim_field, evidence_field, label_field, id_field, notes
+
+    if preset == "nli_premise_hypothesis":
+        claim_field = args.claim_field or "hypothesis"
+        evidence_field = args.evidence_field or "premise"
+        label_field = args.label_field or "label"
+        id_field = args.id_field
+        notes["mode"] = "nli_preset_defaults"
+        return claim_field, evidence_field, label_field, id_field, notes
+
+    # preset == "auto" (default)
+    claim_field = args.claim_field
+    evidence_field = args.evidence_field
+    label_field = args.label_field
+    id_field = args.id_field
+
+    if claim_field is None:
+        claim_field = detect_field(CLAIM_FIELD_ALIASES, available_fields)
+        notes["claim_field_auto_detected"] = claim_field
+    if evidence_field is None:
+        evidence_field = detect_field(EVIDENCE_FIELD_ALIASES, available_fields)
+        notes["evidence_field_auto_detected"] = evidence_field
+    if label_field is None:
+        label_field = detect_field(LABEL_FIELD_ALIASES, available_fields)
+        notes["label_field_auto_detected"] = label_field
+    notes["mode"] = "auto_alias_detection"
+    return claim_field, evidence_field, label_field, id_field, notes
+
+
+def map_label(
+    preset: str,
+    resolved_label: Any,
+    label_names_available: bool,
+    manual_label_map: dict[str, str] | None,
+    allow_neutral_as_not_entitled: bool,
+    strict_labels: bool,
+) -> tuple[str | None, str | None]:
+    """Return (mapped_label_or_None, risk_note_or_None)."""
+    if resolved_label is None:
+        return None, None
+    norm = str(resolved_label).strip().lower()
+    if not norm:
+        return None, None
+
+    if manual_label_map is not None:
+        mapped = manual_label_map.get(norm)
+        if mapped in VALID_LABELS:
+            return mapped, None
+        return None, None
+
+    if preset == "fever_claim_evidence":
+        mapped = FEVER_LABEL_MAP.get(norm)
+        return (mapped, None) if mapped else (None, None)
+
+    if preset == "glue_rte":
+        if norm == "entailment":
+            return "SUPPORT", None
+        if norm == "not_entailment":
+            return "NOT_ENTITLED", RTE_RISK_NOTE
+        # Raw integer fallback if ClassLabel names were unavailable.
+        if not label_names_available:
+            if norm == "0":
+                return "SUPPORT", None
+            if norm == "1":
+                return "NOT_ENTITLED", RTE_RISK_NOTE
+        return None, None
+
+    if preset == "nli_premise_hypothesis":
+        if label_names_available:
+            if "entail" in norm:
+                return "SUPPORT", None
+            if "contrad" in norm:
+                return "REFUTE", None
+            if "neutral" in norm:
+                if strict_labels:
+                    return None, None
+                if allow_neutral_as_not_entitled:
+                    return "NOT_ENTITLED", None
+                return None, None
+            return None, None
+        # ClassLabel names unavailable: positional fallback.
+        mapped = NLI_POSITIONAL_FALLBACK.get(norm)
+        return (mapped, NLI_FALLBACK_RISK_NOTE) if mapped else (None, NLI_FALLBACK_RISK_NOTE)
+
+    # preset in {"auto", "manual" (without explicit label map)}
+    if norm in DEFAULT_SUPPORT_VALUES:
+        risk = GENERIC_NUMERIC_RISK_NOTE if norm.lstrip("-").isdigit() else None
+        return "SUPPORT", risk
+    if norm in DEFAULT_REFUTE_VALUES:
+        risk = GENERIC_NUMERIC_RISK_NOTE if norm.lstrip("-").isdigit() else None
+        return "REFUTE", risk
+    if norm == "neutral":
+        if strict_labels:
+            return None, None
+        if allow_neutral_as_not_entitled:
+            return "NOT_ENTITLED", None
+        return None, None
+    if norm in DEFAULT_NOT_ENTITLED_VALUES:
+        risk = GENERIC_NUMERIC_RISK_NOTE if norm.lstrip("-").isdigit() else None
+        return "NOT_ENTITLED", risk
+
+    return None, None
 
 
 def build_row_key(claim: str, evidence: str, label: str) -> tuple[str, str, str]:
     return (claim.strip(), evidence.strip(), label)
 
 
+def describe_label_mapping(preset: str, manual_label_map: dict[str, str] | None) -> dict[str, Any]:
+    if manual_label_map is not None:
+        return {"mode": "manual", "map": manual_label_map}
+
+    if preset == "fever_claim_evidence":
+        return {
+            "mode": "fever_claim_evidence",
+            "map": {k: v for k, v in FEVER_LABEL_MAP.items()},
+        }
+
+    if preset == "glue_rte":
+        return {
+            "mode": "glue_rte",
+            "map": {"entailment": "SUPPORT", "not_entailment": "NOT_ENTITLED"},
+            "not_entailment_policy": (
+                "not_entailment maps to NOT_ENTITLED, never REFUTE, because RTE's binary "
+                "label does not separate contradiction from neutral/insufficient evidence."
+            ),
+        }
+
+    if preset == "nli_premise_hypothesis":
+        return {
+            "mode": "nli_premise_hypothesis",
+            "label_name_substring_map": {
+                "*entail*": "SUPPORT",
+                "*contrad*": "REFUTE",
+                "*neutral*": "NOT_ENTITLED",
+            },
+            "positional_fallback": dict(NLI_POSITIONAL_FALLBACK),
+            "positional_fallback_policy": (
+                "Positional fallback is only used when the label field has no resolvable "
+                "ClassLabel names."
+            ),
+        }
+
+    return {
+        "mode": "default",
+        "SUPPORT": sorted(DEFAULT_SUPPORT_VALUES),
+        "REFUTE": sorted(DEFAULT_REFUTE_VALUES),
+        "NOT_ENTITLED": sorted(DEFAULT_NOT_ENTITLED_VALUES),
+        "not_entailment_policy": (
+            "not_entailment maps to NOT_ENTITLED, not REFUTE, because RTE-style "
+            "not_entailment does not distinguish contradiction from neutral."
+        ),
+        "numeric_caution": (
+            "Generic numeric string labels (e.g. '0', '1', '-1') are mapped via this "
+            "table only as a last resort; prefer a dataset-specific preset or resolved "
+            "ClassLabel names whenever possible, since numeric meaning varies by dataset."
+        ),
+    }
+
+
 def acquire(args: argparse.Namespace) -> dict[str, Any]:
+    preset = args.preset
     source_dataset = args.source_dataset
     if source_dataset is None:
         source_dataset = args.hf_dataset
@@ -160,6 +348,7 @@ def acquire(args: argparse.Namespace) -> dict[str, Any]:
         "hf_dataset": args.hf_dataset,
         "hf_config": args.hf_config,
         "split": args.split,
+        "preset": preset,
         "source_dataset": source_dataset,
         "output_jsonl": str(args.output_jsonl),
         "rejected_jsonl": str(args.rejected_jsonl),
@@ -176,6 +365,7 @@ def acquire(args: argparse.Namespace) -> dict[str, Any]:
             "id_field": args.id_field,
         },
         "label_mapping": {},
+        "used_classlabel_names": False,
         "sample_accepted_rows": [],
         "sample_rejected_rows": [],
         "risks": [],
@@ -214,24 +404,23 @@ def acquire(args: argparse.Namespace) -> dict[str, Any]:
     except Exception:
         available_fields = list(dataset.features.keys()) if hasattr(dataset, "features") else []
 
-    claim_field = args.claim_field
-    evidence_field = args.evidence_field
-    label_field = args.label_field
-    id_field = args.id_field
+    claim_field, evidence_field, label_field, id_field, field_notes = resolve_field_mapping(
+        preset, args, available_fields
+    )
 
-    risks: list[str] = []
-    field_detection_notes: dict[str, Any] = {}
-
+    # --auto-detect-fields can still fill in any field left unresolved by the
+    # chosen preset (e.g. a fever_claim_evidence dataset without an 'evidence'
+    # column), independent of which preset was selected.
     if args.auto_detect_fields:
         if claim_field is None:
             claim_field = detect_field(CLAIM_FIELD_ALIASES, available_fields)
-            field_detection_notes["claim_field_auto_detected"] = claim_field
+            field_notes["claim_field_auto_detected"] = claim_field
         if evidence_field is None:
             evidence_field = detect_field(EVIDENCE_FIELD_ALIASES, available_fields)
-            field_detection_notes["evidence_field_auto_detected"] = evidence_field
+            field_notes["evidence_field_auto_detected"] = evidence_field
         if label_field is None:
             label_field = detect_field(LABEL_FIELD_ALIASES, available_fields)
-            field_detection_notes["label_field_auto_detected"] = label_field
+            field_notes["label_field_auto_detected"] = label_field
 
     base_report["field_mapping"] = {
         "claim_field": claim_field,
@@ -239,7 +428,7 @@ def acquire(args: argparse.Namespace) -> dict[str, Any]:
         "label_field": label_field,
         "id_field": id_field,
         "available_fields": available_fields,
-        "detection_notes": field_detection_notes,
+        "detection_notes": field_notes,
     }
 
     if not claim_field or not evidence_field or not label_field:
@@ -247,10 +436,9 @@ def acquire(args: argparse.Namespace) -> dict[str, Any]:
         base_report["recommendation"] = (
             "Could not resolve a confident claim/evidence/label field mapping. "
             f"Available fields: {available_fields}. Supply --claim-field/--evidence-field/"
-            "--label-field explicitly, or pass --auto-detect-fields with a dataset whose "
-            "field names match the known aliases."
+            "--label-field explicitly, choose a matching --preset, or pass "
+            "--auto-detect-fields with a dataset whose field names match the known aliases."
         )
-        base_report["risks"] = risks
         return base_report
 
     try:
@@ -260,19 +448,10 @@ def acquire(args: argparse.Namespace) -> dict[str, Any]:
         base_report["recommendation"] = f"Could not parse --label-map-json: {exc}"
         return base_report
 
-    if manual_label_map is not None:
-        base_report["label_mapping"] = {"mode": "manual", "map": manual_label_map}
-    else:
-        base_report["label_mapping"] = {
-            "mode": "default",
-            "SUPPORT": sorted(DEFAULT_SUPPORT_VALUES),
-            "REFUTE": sorted(DEFAULT_REFUTE_VALUES),
-            "NOT_ENTITLED": sorted(DEFAULT_NOT_ENTITLED_VALUES),
-            "not_entailment_policy": (
-                "not_entailment maps to NOT_ENTITLED, not REFUTE, because RTE-style "
-                "not_entailment does not distinguish contradiction from neutral."
-            ),
-        }
+    label_names = get_class_label_names(dataset, label_field)
+    label_names_available = label_names is not None
+    base_report["used_classlabel_names"] = label_names_available
+    base_report["label_mapping"] = describe_label_mapping(preset, manual_label_map)
 
     try:
         indices = list(range(len(dataset)))
@@ -295,7 +474,7 @@ def acquire(args: argparse.Namespace) -> dict[str, Any]:
     source_label_counts: dict[str, int] = {}
     rejection_reason_counts: dict[str, int] = {}
     seen_keys: set[tuple[str, str, str]] = set()
-    used_not_entailment_risk = False
+    risk_notes: set[str] = set()
 
     for idx in indices:
         record = dataset[idx]
@@ -304,7 +483,12 @@ def acquire(args: argparse.Namespace) -> dict[str, Any]:
         raw_evidence = record.get(evidence_field)
         raw_label = record.get(label_field)
 
-        resolved_label = resolve_class_label(dataset, label_field, raw_label)
+        numeric_label: int | None = raw_label if isinstance(raw_label, int) and not isinstance(raw_label, bool) else None
+
+        if label_names is not None and numeric_label is not None and 0 <= numeric_label < len(label_names):
+            resolved_label: Any = label_names[numeric_label]
+        else:
+            resolved_label = raw_label
 
         claim = str(raw_claim).strip() if raw_claim is not None else ""
         evidence = str(raw_evidence).strip() if raw_evidence is not None else ""
@@ -323,13 +507,18 @@ def acquire(args: argparse.Namespace) -> dict[str, Any]:
         elif resolved_label is None or not str(resolved_label).strip():
             reason = "missing_label"
         else:
-            mapped_label, row_risk = normalize_label(
-                resolved_label, args.allow_neutral_as_not_entitled, args.strict_labels, manual_label_map
+            mapped_label, row_risk = map_label(
+                preset,
+                resolved_label,
+                label_names_available,
+                manual_label_map,
+                args.allow_neutral_as_not_entitled,
+                args.strict_labels,
             )
             if mapped_label is None:
                 reason = "ambiguous_or_unmapped_label"
-            elif row_risk:
-                used_not_entailment_risk = True
+            if row_risk:
+                risk_notes.add(row_risk)
 
         if reason is None and args.dedupe:
             key = build_row_key(claim, evidence, mapped_label)
@@ -356,6 +545,16 @@ def acquire(args: argparse.Namespace) -> dict[str, Any]:
             original_id = str(record.get(id_field))
         row_id = original_id if original_id is not None else f"{source_dataset}_{idx}"
 
+        metadata: dict[str, Any] = {
+            "row_index": idx,
+            "hf_dataset": args.hf_dataset,
+            "hf_config": args.hf_config,
+            "hf_split": args.split,
+            "preset": preset,
+        }
+        if numeric_label is not None:
+            metadata["original_numeric_label"] = numeric_label
+
         out_row: dict[str, Any] = {
             "id": row_id,
             "claim": claim,
@@ -364,12 +563,7 @@ def acquire(args: argparse.Namespace) -> dict[str, Any]:
             "source_dataset": source_dataset,
             "source_label": source_label_str,
             "stage43_split": "external_validation",
-            "metadata": {
-                "row_index": idx,
-                "hf_dataset": args.hf_dataset,
-                "hf_config": args.hf_config,
-                "hf_split": args.split,
-            },
+            "metadata": metadata,
         }
         if original_id is not None:
             out_row["original_id"] = original_id
@@ -380,23 +574,17 @@ def acquire(args: argparse.Namespace) -> dict[str, Any]:
         accepted.append(out_row)
         accepted_label_counts[mapped_label] = accepted_label_counts.get(mapped_label, 0) + 1
 
-    if used_not_entailment_risk:
-        risks.append(
-            "Source dataset uses RTE-style 'not_entailment' labels, which were mapped to "
-            "NOT_ENTITLED rather than REFUTE because RTE does not separate REFUTE from "
-            "NOT_ENTITLED. Supply --label-map-json to override this if a different mapping "
-            "is intended."
+    risks: list[str] = sorted(risk_notes)
+    if preset == "glue_rte" or args.hf_dataset.lower() in {"rte", "glue"} or (args.hf_config or "").lower() == "rte":
+        if RTE_RISK_NOTE not in risks:
+            risks.append(RTE_RISK_NOTE)
+    if any(name in args.hf_dataset.lower() for name in ["mnli", "snli", "anli"]) or preset == "nli_premise_hypothesis":
+        note = (
+            "MNLI/SNLI/ANLI-style NLI data is broader and less fact-verification-specific "
+            "than VitaminC/FEVER-style verification; treat results as a secondary signal only."
         )
-    if args.hf_dataset.lower() in {"rte", "glue"} or (args.hf_config or "").lower() == "rte":
-        risks.append(
-            "RTE/GLUE-style sources are a weaker NLI transfer probe, not a dedicated "
-            "fact-verification dataset; treat results as a secondary signal only."
-        )
-    if any(name in args.hf_dataset.lower() for name in ["mnli", "snli"]):
-        risks.append(
-            "MNLI/SNLI is broad NLI, not fact-verification-specific; claim/evidence "
-            "semantics differ from VitaminC/FEVER-style verification."
-        )
+        if note not in risks:
+            risks.append(note)
 
     total_rows_seen = len(indices)
     accepted_rows = len(accepted)
@@ -420,8 +608,8 @@ def acquire(args: argparse.Namespace) -> dict[str, Any]:
         decision = "STAGE43B1_HF_EXTERNAL_ACQUISITION_NO_VALID_ROWS"
         recommendation = (
             "No rows could be converted to the ContraMamba external validation schema. "
-            "Check --claim-field/--evidence-field/--label-field against the dataset's "
-            f"actual columns ({available_fields}) and review rejected_jsonl for reasons."
+            "Check --claim-field/--evidence-field/--label-field (or --preset) against the "
+            f"dataset's actual columns ({available_fields}) and review rejected_jsonl for reasons."
         )
     elif distinct_labels < 2:
         decision = "STAGE43B1_HF_EXTERNAL_ACQUISITION_LABEL_IMBALANCED"
@@ -490,8 +678,10 @@ def render_markdown(report: dict[str, Any]) -> str:
     lines.append(f"- Total rows seen: {report['total_rows_seen']}")
     lines.append("")
 
-    lines.append("## 3. Field Mapping")
+    lines.append("## 3. Preset and Field Mapping")
     lines.append("")
+    lines.append(f"- Preset: `{report['preset']}`")
+    lines.append(f"- Used resolved ClassLabel names: `{report['used_classlabel_names']}`")
     lines.append(f"```json\n{json.dumps(report['field_mapping'], indent=2)}\n```")
     lines.append("")
 
@@ -585,6 +775,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--report-json", type=Path, required=True)
     parser.add_argument("--report-md", type=Path, required=True)
 
+    parser.add_argument(
+        "--preset",
+        type=str,
+        choices=["auto", "fever_claim_evidence", "glue_rte", "nli_premise_hypothesis", "manual"],
+        default="auto",
+    )
     parser.add_argument("--claim-field", type=str, default=None)
     parser.add_argument("--evidence-field", type=str, default=None)
     parser.add_argument("--label-field", type=str, default=None)

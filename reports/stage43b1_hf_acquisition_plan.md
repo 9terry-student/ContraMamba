@@ -54,10 +54,14 @@ any model training, calibration, or evaluation.
    `entailment` / `not_entailment` labeling does not separate REFUTE from
    NOT_ENTITLED, so `not_entailment` is mapped to `NOT_ENTITLED` by default
    (never to `REFUTE`) unless a manual `--label-map-json` says otherwise.
-3. **MNLI/SNLI**, as a broader three-way NLI source -- useful for volume,
-   but its `entailment`/`neutral`/`contradiction` labels are less
+3. **MNLI/SNLI/ANLI**, as a broader three-way NLI source -- useful for
+   volume, but its `entailment`/`neutral`/`contradiction` labels are less
    fact-verification-specific than VitaminC/FEVER, so results from this
    tier should be treated as a secondary signal.
+
+Presets exist for all three tiers: `fever_claim_evidence` for tier 1,
+`glue_rte` for tier 2, and `nli_premise_hypothesis` for tier 3
+(SNLI/MNLI/ANLI-style premise/hypothesis data).
 
 ## 4. Acquisition Script Scope
 
@@ -71,23 +75,51 @@ implements:
   `trust_remote_code` is only passed through when `--trust-remote-code` is
   explicitly supplied. The script is generic -- it does not hardcode any
   single dataset name.
-- **Field detection**: explicit `--claim-field`/`--evidence-field`/
-  `--label-field`/`--id-field` take precedence; `--auto-detect-fields`
-  infers a mapping from alias lists (claim: `claim`, `hypothesis`,
-  `statement`, `query`, `sentence2`, `premise2`; evidence: `evidence`,
-  `premise`, `context`, `passage`, `text`, `sentence1`; label: `label`,
-  `gold`, `gold_label`, `answer`, `verdict`, `relation`). If no confident
-  mapping can be found, the script fails with
+- **Presets (`--preset`)**: a fixed choice of `auto` (default),
+  `fever_claim_evidence`, `glue_rte`, `nli_premise_hypothesis`, or
+  `manual`, each supplying dataset-family-specific field defaults and
+  label-mapping rules on top of the generic engine:
+  - `fever_claim_evidence` -- fields `claim`/`evidence`/`label`; string
+    mapping `SUPPORTS`/`SUPPORT` -> `SUPPORT`, `REFUTES`/`REFUTE` ->
+    `REFUTE`, `NOT ENOUGH INFO`/`NEI` -> `NOT_ENTITLED`.
+  - `glue_rte` -- fields `sentence2` (claim), `sentence1` (evidence),
+    `label`, `idx` (id, if present); resolves `dataset.features["label"].names`
+    when possible; `entailment` -> `SUPPORT`, `not_entailment` ->
+    `NOT_ENTITLED` (**never** `REFUTE`), and always records the RTE risk
+    note describing why this is a weak transfer probe.
+  - `nli_premise_hypothesis` -- fields `hypothesis` (claim), `premise`
+    (evidence), `label`; resolves ClassLabel names and matches by
+    substring (`entail`/`contrad`/`neutral`); if no ClassLabel names are
+    available it falls back to the positional convention `0 entailment ->
+    SUPPORT`, `1 neutral -> NOT_ENTITLED`, `2 contradiction -> REFUTE` and
+    records a risk note that the fallback was used.
+  - `manual` -- uses only the explicitly supplied `--claim-field`/
+    `--evidence-field`/`--label-field` (no defaults, no alias guessing).
+  - `auto` -- infers fields from alias lists (claim: `claim`,
+    `hypothesis`, `statement`, `query`, `sentence2`, `premise2`; evidence:
+    `evidence`, `premise`, `context`, `passage`, `text`, `sentence1`;
+    label: `label`, `gold`, `gold_label`, `answer`, `verdict`, `relation`)
+    and uses the generic default label mapping.
+
+  Regardless of preset, `--claim-field`/`--evidence-field`/`--label-field`/
+  `--id-field` (when supplied) override the preset's defaults, and
+  `--auto-detect-fields` can still fill in any field a preset left
+  unresolved. If no confident mapping can be found, the script fails with
   `STAGE43B1_HF_EXTERNAL_ACQUISITION_NO_VALID_ROWS` and writes zero
   accepted rows rather than guessing.
 - **ClassLabel resolution**: integer labels are resolved to string names
   via the dataset's `features[label_field].names` when available, before
-  label-string mapping is applied.
-- **Label mapping**: default mapping (see
-  [`docs/stage43_external_validation_schema.md`](../docs/stage43_external_validation_schema.md))
-  extended with an explicit `not_entailment -> NOT_ENTITLED` rule and a
-  recorded risk note whenever that rule fires. `--label-map-json` (inline
-  JSON or a file path) overrides the defaults entirely when supplied.
+  label-string mapping is applied. The report records whether resolved
+  ClassLabel names were used (`used_classlabel_names`).
+- **Label mapping**: `--label-map-json` (inline JSON or a file path)
+  overrides every preset's default mapping when supplied, including
+  numeric-string keys. Absent an override, each preset uses the
+  dataset-family-specific mapping described above; `auto`/`manual` fall
+  back to the generic default table, which is extended with an explicit
+  `not_entailment -> NOT_ENTITLED` rule and a risk note whenever a bare
+  numeric string label is mapped through that generic table (since
+  numeric meaning varies by dataset and resolved ClassLabel names are
+  preferred whenever available).
 - **Rejection rules**: missing/empty claim or evidence, missing or
   unmapped label, text shorter than `--min-text-chars`, and (with
   `--dedupe`) duplicate claim/evidence/label triples. Rejected rows are
@@ -96,7 +128,9 @@ implements:
 - **Output schema**: each accepted row matches the canonical Stage43
   schema (`id`, `claim`, `evidence`, `label`, `source_dataset`,
   `source_label`, `stage43_split="external_validation"`, `metadata`, plus
-  optional `original_id`, `source_config`, `source_split`).
+  optional `original_id`, `source_config`, `source_split`). `metadata`
+  additionally carries `hf_dataset`, `hf_config`, `preset`, `row_index`,
+  and `original_numeric_label` when the source label was a raw integer.
 - **`--dry-run`**: inspects and reports without writing the accepted
   output JSONL (the rejected JSONL and reports are still written so field/
   label mapping issues are visible before committing to a real pull).

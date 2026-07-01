@@ -22,16 +22,19 @@
     {
       "rank": 1,
       "source": "VitaminC or FEVER-style fact verification dataset",
+      "preset": "fever_claim_evidence",
       "rationale": "Closest match to ContraMamba's SUPPORT/REFUTE/NOT_ENTITLED schema and to fact-verification framing used elsewhere in the repo."
     },
     {
       "rank": 2,
       "source": "RTE/GLUE",
+      "preset": "glue_rte",
       "rationale": "Weaker NLI transfer probe. RTE's binary entailment/not_entailment labeling does not separate REFUTE from NOT_ENTITLED; not_entailment is mapped to NOT_ENTITLED by default, never REFUTE, unless a manual label map overrides this."
     },
     {
       "rank": 3,
-      "source": "MNLI/SNLI",
+      "source": "MNLI/SNLI/ANLI",
+      "preset": "nli_premise_hypothesis",
       "rationale": "Broader three-way NLI source, useful for volume, but less fact-verification-specific than VitaminC/FEVER; treat as a secondary signal."
     }
   ],
@@ -42,6 +45,37 @@
       "without_config": "load_dataset(hf_dataset, split=split, trust_remote_code=...)",
       "trust_remote_code_note": "Only passed to load_dataset when --trust-remote-code is explicitly supplied."
     },
+    "presets": {
+      "flag": "--preset",
+      "choices": ["auto", "fever_claim_evidence", "glue_rte", "nli_premise_hypothesis", "manual"],
+      "default": "auto",
+      "fever_claim_evidence": {
+        "fields": {"claim": "claim", "evidence": "evidence", "label": "label"},
+        "label_map": {"SUPPORTS": "SUPPORT", "SUPPORT": "SUPPORT", "REFUTES": "REFUTE", "REFUTE": "REFUTE", "NOT ENOUGH INFO": "NOT_ENTITLED", "NEI": "NOT_ENTITLED"}
+      },
+      "glue_rte": {
+        "fields": {"claim": "sentence2", "evidence": "sentence1", "label": "label", "id": "idx (if present)"},
+        "classlabel_resolution": "dataset.features['label'].names when available",
+        "label_map": {"entailment": "SUPPORT", "not_entailment": "NOT_ENTITLED"},
+        "not_entailment_policy": "Never mapped to REFUTE.",
+        "risk_note": "RTE not_entailment conflates contradiction and neutral/insufficient evidence, so it is a weak external transfer probe for ContraMamba's three-way SUPPORT/REFUTE/NOT_ENTITLED decision."
+      },
+      "nli_premise_hypothesis": {
+        "fields": {"claim": "hypothesis", "evidence": "premise", "label": "label"},
+        "classlabel_resolution": "dataset.features['label'].names when available",
+        "label_name_substring_map": {"*entail*": "SUPPORT", "*contrad*": "REFUTE", "*neutral*": "NOT_ENTITLED"},
+        "positional_fallback": {"0": "SUPPORT", "1": "NOT_ENTITLED", "2": "REFUTE"},
+        "positional_fallback_condition": "Only used when label names are unavailable; a risk note is recorded when this fallback fires."
+      },
+      "manual": {
+        "fields": "Only explicitly supplied --claim-field/--evidence-field/--label-field are used; no defaults, no alias guessing."
+      },
+      "auto": {
+        "field_detection": "Infers fields from alias lists when not explicitly supplied.",
+        "label_mapping": "Generic default table (see label_mapping below)."
+      },
+      "override_behavior": "Explicit --claim-field/--evidence-field/--label-field/--id-field always override preset defaults. --auto-detect-fields can still fill in any field a preset left unresolved."
+    },
     "field_detection": {
       "explicit_fields_take_precedence": true,
       "auto_detect_flag": "--auto-detect-fields",
@@ -50,13 +84,15 @@
       "label_aliases": ["label", "gold", "gold_label", "answer", "verdict", "relation"],
       "no_confident_mapping_behavior": "Fails with STAGE43B1_HF_EXTERNAL_ACQUISITION_NO_VALID_ROWS and writes zero accepted rows."
     },
-    "class_label_resolution": "Integer labels resolved to string names via dataset.features[label_field].names when available, before label-string mapping.",
+    "class_label_resolution": "Integer labels resolved to string names via dataset.features[label_field].names when available, before label-string mapping. Reported via used_classlabel_names.",
     "label_mapping": {
       "default_support": ["SUPPORTS", "SUPPORT", "entailment", "true", "1"],
       "default_refute": ["REFUTES", "REFUTE", "contradiction", "false", "-1"],
-      "default_not_entitled": ["NOT ENOUGH INFO", "NEI", "neutral", "unknown", "not_entitled", "not_entailment", "0"],
+      "default_not_entitled": ["NOT ENOUGH INFO", "NEI", "neutral", "unknown", "not_entailment", "not_entitled", "0"],
       "not_entailment_policy": "Maps to NOT_ENTITLED, not REFUTE, unless --label-map-json overrides. A risk is recorded whenever this rule fires.",
-      "manual_override": "--label-map-json accepts inline JSON or a file path and fully overrides default mapping when supplied."
+      "numeric_string_caution": "Generic mapping of bare numeric strings (e.g. '0') can conflict with datasets where numeric 0 means something else; resolved ClassLabel names and dataset-specific presets are preferred over the generic numeric fallback. A risk note is recorded when a bare numeric string is mapped via the generic table.",
+      "preset_specific_mapping_precedence": "fever_claim_evidence, glue_rte, and nli_premise_hypothesis each use their own mapping (see presets above) instead of the generic table; the generic table is only used by auto/manual.",
+      "manual_override": "--label-map-json accepts inline JSON or a file path (numeric keys as strings supported) and fully overrides preset/default mapping when supplied."
     },
     "rejection_rules": [
       "missing_or_too_short_claim",
@@ -67,7 +103,8 @@
     ],
     "output_schema_fields": {
       "required": ["id", "claim", "evidence", "label", "source_dataset", "source_label", "stage43_split", "metadata"],
-      "optional": ["original_id", "source_config", "source_split", "topic", "domain", "notes"]
+      "optional": ["original_id", "source_config", "source_split", "topic", "domain", "notes"],
+      "metadata_contents": ["row_index", "hf_dataset", "hf_config", "preset", "original_numeric_label (when source label was a raw integer)"]
     },
     "dry_run_flag": "--dry-run inspects and reports without writing the accepted output JSONL; rejected JSONL and reports are still written.",
     "decision_labels": [
