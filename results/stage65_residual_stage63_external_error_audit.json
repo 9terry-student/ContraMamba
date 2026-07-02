@@ -1,0 +1,270 @@
+{
+  "summary": {
+    "stage": "Stage65",
+    "decision": "STAGE65_RESIDUAL_STAGE63_EXTERNAL_ERROR_AUDIT_READY",
+    "run_dir": "results/stage63_bridge_enabled_vitaminc_external_eval_20260702_060044",
+    "prediction_file": "results/stage63_bridge_enabled_vitaminc_external_eval_20260702_060044/external/stage63_bridge_enabled_vitaminc_stage43b1_vitaminc_validation_sample1000_external_factver_predictions.jsonl",
+    "row_count": 1000,
+    "correct_count": 322,
+    "error_count": 678,
+    "accuracy_from_predictions": 0.322,
+    "stage63_report_accuracy": 0.322,
+    "stage63_report_macro_f1": 0.315319,
+    "stage63_dataset_decision": "STAGE43C0_EXTERNAL_FACTVER_INCOMPLETE",
+    "stage63_aggregate_decision": "STAGE43C0_EXTERNAL_FACTVER_AGGREGATE_INCOMPLETE",
+    "major_error_type": "false_NE_on_SUPPORT",
+    "false_ne_total": 411,
+    "polarity_error_total": 203,
+    "false_entitlement_total": 64,
+    "recommended_focus": [
+      "increase entitlement-positive bridge coverage for gold SUPPORT/REFUTE still predicted NOT_ENTITLED",
+      "add polarity-disambiguating bridge rows for REFUTE/SUPPORT confusion",
+      "add stricter NE/frame-mismatch bridge rows to prevent false entitlement",
+      "inspect temporal/date-heavy residuals",
+      "inspect numeric/entity-attribute residuals",
+      "inspect comparative predicate residuals"
+    ],
+    "recommended_next_stage": "Stage66 residual-bridge expansion design",
+    "allowed_claim": "Stage65 identifies the dominant remaining Stage63 external errors after bridge training; it does not introduce new training or external tuning.",
+    "forbidden_claim": "Do not claim solved external generalization. Stage63 remains incomplete and residual errors remain large."
+  },
+  "confusion_matrix_long": [
+    {
+      "gold_label": "NOT_ENTITLED",
+      "final_pred": "NOT_ENTITLED",
+      "count": 81
+    },
+    {
+      "gold_label": "NOT_ENTITLED",
+      "final_pred": "REFUTE",
+      "count": 33
+    },
+    {
+      "gold_label": "NOT_ENTITLED",
+      "final_pred": "SUPPORT",
+      "count": 31
+    },
+    {
+      "gold_label": "REFUTE",
+      "final_pred": "NOT_ENTITLED",
+      "count": 166
+    },
+    {
+      "gold_label": "REFUTE",
+      "final_pred": "REFUTE",
+      "count": 85
+    },
+    {
+      "gold_label": "REFUTE",
+      "final_pred": "SUPPORT",
+      "count": 104
+    },
+    {
+      "gold_label": "SUPPORT",
+      "final_pred": "NOT_ENTITLED",
+      "count": 245
+    },
+    {
+      "gold_label": "SUPPORT",
+      "final_pred": "REFUTE",
+      "count": 99
+    },
+    {
+      "gold_label": "SUPPORT",
+      "final_pred": "SUPPORT",
+      "count": 156
+    }
+  ],
+  "error_type_counts": [
+    {
+      "error_type": "correct",
+      "count": 322,
+      "rate_total": 0.322,
+      "rate_errors_only": 0.4749262536873156
+    },
+    {
+      "error_type": "false_NE_on_SUPPORT",
+      "count": 245,
+      "rate_total": 0.245,
+      "rate_errors_only": 0.3613569321533923
+    },
+    {
+      "error_type": "false_NE_on_REFUTE",
+      "count": 166,
+      "rate_total": 0.166,
+      "rate_errors_only": 0.2448377581120944
+    },
+    {
+      "error_type": "wrong_polarity_REFUTE_to_SUPPORT",
+      "count": 104,
+      "rate_total": 0.104,
+      "rate_errors_only": 0.15339233038348082
+    },
+    {
+      "error_type": "wrong_polarity_SUPPORT_to_REFUTE",
+      "count": 99,
+      "rate_total": 0.099,
+      "rate_errors_only": 0.14601769911504425
+    },
+    {
+      "error_type": "false_REFUTE_on_NE",
+      "count": 33,
+      "rate_total": 0.033,
+      "rate_errors_only": 0.048672566371681415
+    },
+    {
+      "error_type": "false_SUPPORT_on_NE",
+      "count": 31,
+      "rate_total": 0.031,
+      "rate_errors_only": 0.045722713864306784
+    }
+  ],
+  "gold_recall_audit": [
+    {
+      "gold_label": "NOT_ENTITLED",
+      "gold_count": 145,
+      "correct": 81,
+      "recall": 0.5586206896551724,
+      "false_NE_count": null,
+      "false_NE_rate": null
+    },
+    {
+      "gold_label": "REFUTE",
+      "gold_count": 355,
+      "correct": 85,
+      "recall": 0.23943661971830985,
+      "false_NE_count": 166.0,
+      "false_NE_rate": 0.4676056338028169
+    },
+    {
+      "gold_label": "SUPPORT",
+      "gold_count": 500,
+      "correct": 156,
+      "recall": 0.312,
+      "false_NE_count": 245.0,
+      "false_NE_rate": 0.49
+    }
+  ],
+  "prediction_precision_audit": [
+    {
+      "pred_label": "NOT_ENTITLED",
+      "pred_count": 492,
+      "correct": 81,
+      "precision": 0.16463414634146342
+    },
+    {
+      "pred_label": "REFUTE",
+      "pred_count": 217,
+      "correct": 85,
+      "precision": 0.391705069124424
+    },
+    {
+      "pred_label": "SUPPORT",
+      "pred_count": 291,
+      "correct": 156,
+      "precision": 0.5360824742268041
+    }
+  ],
+  "feature_audit_by_error_type": [
+    {
+      "error_type": "correct",
+      "count": 322,
+      "accuracy_bucket": "correct",
+      "has_digit_rate": 0.6925465838509317,
+      "has_year_rate": 0.391304347826087,
+      "has_temporal_word_rate": 0.2981366459627329,
+      "has_comparison_word_rate": 0.38198757763975155,
+      "has_negation_rate": 0.043478260869565216,
+      "avg_claim_len": 14.173913043478262,
+      "avg_evidence_len": 27.493788819875775
+    },
+    {
+      "error_type": "false_NE_on_SUPPORT",
+      "count": 245,
+      "accuracy_bucket": "error",
+      "has_digit_rate": 0.689795918367347,
+      "has_year_rate": 0.4448979591836735,
+      "has_temporal_word_rate": 0.3673469387755102,
+      "has_comparison_word_rate": 0.2,
+      "has_negation_rate": 0.0326530612244898,
+      "avg_claim_len": 11.371428571428572,
+      "avg_evidence_len": 30.587755102040816
+    },
+    {
+      "error_type": "false_NE_on_REFUTE",
+      "count": 166,
+      "accuracy_bucket": "error",
+      "has_digit_rate": 0.7650602409638554,
+      "has_year_rate": 0.4879518072289157,
+      "has_temporal_word_rate": 0.3433734939759036,
+      "has_comparison_word_rate": 0.29518072289156627,
+      "has_negation_rate": 0.018072289156626505,
+      "avg_claim_len": 10.25301204819277,
+      "avg_evidence_len": 28.518072289156628
+    },
+    {
+      "error_type": "wrong_polarity_REFUTE_to_SUPPORT",
+      "count": 104,
+      "accuracy_bucket": "error",
+      "has_digit_rate": 0.75,
+      "has_year_rate": 0.5096153846153846,
+      "has_temporal_word_rate": 0.4230769230769231,
+      "has_comparison_word_rate": 0.28846153846153844,
+      "has_negation_rate": 0.009615384615384616,
+      "avg_claim_len": 11.442307692307692,
+      "avg_evidence_len": 28.634615384615383
+    },
+    {
+      "error_type": "wrong_polarity_SUPPORT_to_REFUTE",
+      "count": 99,
+      "accuracy_bucket": "error",
+      "has_digit_rate": 0.8383838383838383,
+      "has_year_rate": 0.3333333333333333,
+      "has_temporal_word_rate": 0.2828282828282828,
+      "has_comparison_word_rate": 0.6060606060606061,
+      "has_negation_rate": 0.050505050505050504,
+      "avg_claim_len": 15.01010101010101,
+      "avg_evidence_len": 27.060606060606062
+    },
+    {
+      "error_type": "false_REFUTE_on_NE",
+      "count": 33,
+      "accuracy_bucket": "error",
+      "has_digit_rate": 0.9090909090909091,
+      "has_year_rate": 0.6060606060606061,
+      "has_temporal_word_rate": 0.3939393939393939,
+      "has_comparison_word_rate": 0.5151515151515151,
+      "has_negation_rate": 0.06060606060606061,
+      "avg_claim_len": 17.727272727272727,
+      "avg_evidence_len": 28.333333333333332
+    },
+    {
+      "error_type": "false_SUPPORT_on_NE",
+      "count": 31,
+      "accuracy_bucket": "error",
+      "has_digit_rate": 0.6451612903225806,
+      "has_year_rate": 0.3870967741935484,
+      "has_temporal_word_rate": 0.3225806451612903,
+      "has_comparison_word_rate": 0.1935483870967742,
+      "has_negation_rate": 0.0967741935483871,
+      "avg_claim_len": 18.548387096774192,
+      "avg_evidence_len": 31.838709677419356
+    }
+  ],
+  "sample_file": "results/stage65_residual_stage63_external_error_samples.csv",
+  "source_files": {
+    "stage63_run_dir": "results/stage63_bridge_enabled_vitaminc_external_eval_20260702_060044",
+    "stage63_prediction_file": "results/stage63_bridge_enabled_vitaminc_external_eval_20260702_060044/external/stage63_bridge_enabled_vitaminc_stage43b1_vitaminc_validation_sample1000_external_factver_predictions.jsonl",
+    "stage63_dataset_report": "results/stage63_bridge_enabled_vitaminc_external_eval_20260702_060044/external/stage63_bridge_enabled_vitaminc_stage43b1_vitaminc_validation_sample1000_external_factver_report.json",
+    "stage63_aggregate_report": "results/stage63_bridge_enabled_vitaminc_external_eval_20260702_060044/external/stage63_bridge_enabled_vitaminc_external_factver_aggregate_report.json",
+    "stage64_external_improvement_audit": "results/stage64_stage53a_vs_stage63_external_improvement_audit.json"
+  },
+  "leakage_policy": {
+    "training_executed": false,
+    "external_eval_executed": false,
+    "external_data_used_for_training": false,
+    "external_metrics_used_for_threshold_tuning": false,
+    "threshold_tuning": false,
+    "time_swap_used": false
+  }
+}
