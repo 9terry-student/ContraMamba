@@ -1,0 +1,20 @@
+{
+  "decision": "STAGE43C0_EXTERNAL_FACTVER_AGGREGATE_UNSAFE",
+  "run_prefix": "stage53a_vitaminc_frozen",
+  "input_reports": [
+    "/kaggle/working/ContraMamba/results/stage53a_vitaminc_frozen_external_eval_20260702_045300/external/stage53a_vitaminc_frozen_stage43b1_vitaminc_validation_sample1000_external_factver_report.json"
+  ],
+  "per_dataset_decisions": {
+    "stage43b1_vitaminc_validation_sample1000": "STAGE43C0_EXTERNAL_FACTVER_UNSAFE"
+  },
+  "total_row_count": 1000,
+  "total_introduced_unsafe_SUPPORT": 1,
+  "total_introduced_REFUTE_to_SUPPORT": 0,
+  "total_introduced_SUPPORT_to_REFUTE": 0,
+  "all_evaluated_datasets_safe": false,
+  "any_evaluated_dataset_improved": true,
+  "recommendation": "At least one external dataset has introduced safety transitions; keep external composer claims rejected.",
+  "leakage_policy": "Stage43-B1 external fact-verification data is evaluation-only. It is not used for training, calibration, threshold selection, checkpoint selection, loss design, model selection, or composer behavior changes.",
+  "output_report_json": "/kaggle/working/ContraMamba/results/stage53a_vitaminc_frozen_external_eval_20260702_045300/external/stage53a_vitaminc_frozen_external_factver_aggregate_report.json",
+  "output_report_md": "/kaggle/working/ContraMamba/results/stage53a_vitaminc_frozen_external_eval_20260702_045300/external/stage53a_vitaminc_frozen_external_factver_aggregate_report.md"
+}
