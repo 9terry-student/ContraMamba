@@ -1,0 +1,271 @@
+{
+  "stage": "Stage52",
+  "decision": "STAGE52_STAGE51_FROZEN_RECOVERY_RUN_SUMMARY_READY",
+  "source_run_dir": "results/stage51_frozen_recovery_run_20260702_044005",
+  "source_train_report": "results/stage51_frozen_recovery_run_20260702_044005/stage51_frozen_recovery_train_report.json",
+  "source_stage45c_report": "results/stage51_frozen_recovery_run_20260702_044005/stage51_stage45c_recovery_report.json",
+  "best_epoch": 80,
+  "selected_epoch": 80,
+  "best_dev_accuracy": 0.9736111164093018,
+  "best_dev_macro_f1": 0.962854521766615,
+  "prediction_distribution": {
+    "NOT_ENTITLED": 525,
+    "REFUTE": 86,
+    "SUPPORT": 109
+  },
+  "stage45c_enabled": true,
+  "stage45c_support_recovery_weight": 0.1,
+  "stage45c_entitled_ne_penalty_weight": 0.1,
+  "stage45c_loss_terms_active": [
+    "support_recovery",
+    "entitled_ne_penalty"
+  ],
+  "stage45c_support_recovery_loss_mean": 0.0033116755075752735,
+  "stage45c_entitled_ne_penalty_loss_mean": 0.001808105269446969,
+  "stage15_used_for_training": false,
+  "stage15_used_for_checkpoint_selection": false,
+  "time_swap_used_in_main_clean_data": false,
+  "stage44b_decision": "STAGE44B_INTERNAL_ANTI_COLLAPSE_SELECTION_DISABLED",
+  "stage44b2_decision": "STAGE44B2_PRIOR_AWARE_SELECTION_DISABLED",
+  "stage45b_decision": "STAGE45B_INTERNAL_FAMILY_HOLDOUT_DISABLED",
+  "audit_warnings": [
+    "aux_to_ce_loss_ratio_weighted=0.792 > 0.5: weighted auxiliary losses exceed 50% of CE ??total_loss is not CE-dominated",
+    "ranking_loss is active (ranking_weight=2.0): baseline is not CE-only; see loss_component_epoch_avg_weighted['ranking_loss']"
+  ],
+  "per_label_metrics": [
+    {
+      "label": "NOT_ENTITLED",
+      "precision": 0.9961904761904762,
+      "recall": 0.9685185185185186,
+      "f1": 0.9821596244131456
+    },
+    {
+      "label": "REFUTE",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "label": "SUPPORT",
+      "precision": 0.8440366972477065,
+      "recall": 0.9787234042553191,
+      "f1": 0.9064039408866995
+    }
+  ],
+  "pairwise_checks": [
+    {
+      "check": "deletion_sufficiency_drop",
+      "mean": 0.9980769524971644
+    },
+    {
+      "check": "deletion_sufficiency_lower",
+      "passed": true,
+      "pass_rate": 1.0
+    },
+    {
+      "check": "entity_frame_drop",
+      "mean": 0.927616748213768
+    },
+    {
+      "check": "entity_frame_lower",
+      "passed": false,
+      "pass_rate": 0.9833333333333333
+    },
+    {
+      "check": "event_frame_drop",
+      "mean": 0.8712319667140643
+    },
+    {
+      "check": "event_frame_lower",
+      "passed": false,
+      "pass_rate": 0.9666666666666667
+    },
+    {
+      "check": "flip_entitlement_delta",
+      "mean": 0.05573240319887797
+    },
+    {
+      "check": "paraphrase_gate_delta",
+      "mean": 0.05669484833876292
+    },
+    {
+      "check": "paraphrase_preserved",
+      "passed": false,
+      "pass_rate": 0.8833333333333333
+    },
+    {
+      "check": "polarity_flip_preserved_and_reversed",
+      "passed": false,
+      "pass_rate": 0.8833333333333333
+    },
+    {
+      "check": "predicate_coverage_drop",
+      "mean": 0.9456488055487474
+    },
+    {
+      "check": "predicate_disentangled",
+      "passed": false,
+      "pass_rate": 0.95
+    },
+    {
+      "check": "predicate_frame_delta",
+      "mean": 0.02789512773354848
+    },
+    {
+      "check": "truncation_sufficiency_drop",
+      "mean": 0.9980294853448868
+    },
+    {
+      "check": "truncation_sufficiency_lower",
+      "passed": true,
+      "pass_rate": 1.0
+    }
+  ],
+  "intervention_distributions": [
+    {
+      "intervention": "entity_swap",
+      "NOT_ENTITLED": 58,
+      "REFUTE": 0,
+      "SUPPORT": 2,
+      "entitlement_prob": 0.02700956165790558,
+      "frame_prob": 0.03200383484363556,
+      "predicate_coverage_prob": 0.05849755182862282,
+      "sufficiency_prob": 0.9987939596176147,
+      "polarity_margin": 3.0759761333465576
+    },
+    {
+      "intervention": "event_swap",
+      "NOT_ENTITLED": 54,
+      "REFUTE": 0,
+      "SUPPORT": 6,
+      "entitlement_prob": 0.07246574759483337,
+      "frame_prob": 0.08838861435651779,
+      "predicate_coverage_prob": 0.13523545861244202,
+      "sufficiency_prob": 0.9988811016082764,
+      "polarity_margin": 3.693854570388794
+    },
+    {
+      "intervention": "evidence_deletion",
+      "NOT_ENTITLED": 60,
+      "REFUTE": 0,
+      "SUPPORT": 0,
+      "entitlement_prob": 0.0005788825801573694,
+      "frame_prob": 0.9973217248916626,
+      "predicate_coverage_prob": 0.9974247217178345,
+      "sufficiency_prob": 0.0005819270154461265,
+      "polarity_margin": -2.4001452922821045
+    },
+    {
+      "intervention": "evidence_truncation",
+      "NOT_ENTITLED": 60,
+      "REFUTE": 0,
+      "SUPPORT": 0,
+      "entitlement_prob": 0.0006247267592698336,
+      "frame_prob": 0.9958229660987854,
+      "predicate_coverage_prob": 0.9978798031806946,
+      "sufficiency_prob": 0.0006293904152698815,
+      "polarity_margin": -2.2908339500427246
+    },
+    {
+      "intervention": "irrelevant_evidence",
+      "NOT_ENTITLED": 60,
+      "REFUTE": 0,
+      "SUPPORT": 0,
+      "entitlement_prob": 6.989660517042751e-10,
+      "frame_prob": 0.0008462283294647932,
+      "predicate_coverage_prob": 0.001035799621604383,
+      "sufficiency_prob": 0.0008046911680139601,
+      "polarity_margin": -0.2699349522590637
+    },
+    {
+      "intervention": "location_swap",
+      "NOT_ENTITLED": 55,
+      "REFUTE": 0,
+      "SUPPORT": 5,
+      "entitlement_prob": 0.06224256008863449,
+      "frame_prob": 0.06832407414913177,
+      "predicate_coverage_prob": 0.9437832236289978,
+      "sufficiency_prob": 0.9983170032501221,
+      "polarity_margin": 4.558545112609863
+    },
+    {
+      "intervention": "none",
+      "NOT_ENTITLED": 1,
+      "REFUTE": 26,
+      "SUPPORT": 33,
+      "entitlement_prob": 0.9378309845924377,
+      "frame_prob": 0.9596205949783325,
+      "predicate_coverage_prob": 0.9754465222358704,
+      "sufficiency_prob": 0.9986589550971985,
+      "polarity_margin": 0.560275673866272
+    },
+    {
+      "intervention": "paraphrase",
+      "NOT_ENTITLED": 1,
+      "REFUTE": 26,
+      "SUPPORT": 33,
+      "entitlement_prob": 0.9564660787582397,
+      "frame_prob": 0.9781933426856995,
+      "predicate_coverage_prob": 0.9793407320976257,
+      "sufficiency_prob": 0.9970113635063171,
+      "polarity_margin": 0.5741373896598816
+    },
+    {
+      "intervention": "polarity_flip",
+      "NOT_ENTITLED": 0,
+      "REFUTE": 34,
+      "SUPPORT": 26,
+      "entitlement_prob": 0.9898814558982849,
+      "frame_prob": 0.9945062398910522,
+      "predicate_coverage_prob": 0.9967615008354187,
+      "sufficiency_prob": 0.9985849261283875,
+      "polarity_margin": -0.8506733179092407
+    },
+    {
+      "intervention": "predicate_swap",
+      "NOT_ENTITLED": 59,
+      "REFUTE": 0,
+      "SUPPORT": 1,
+      "entitlement_prob": 0.028663258999586105,
+      "frame_prob": 0.9704518914222717,
+      "predicate_coverage_prob": 0.029797594994306564,
+      "sufficiency_prob": 0.996529757976532,
+      "polarity_margin": 0.29257503151893616
+    },
+    {
+      "intervention": "role_swap",
+      "NOT_ENTITLED": 57,
+      "REFUTE": 0,
+      "SUPPORT": 3,
+      "entitlement_prob": 0.03971516340970993,
+      "frame_prob": 0.08328063786029816,
+      "predicate_coverage_prob": 0.938048243522644,
+      "sufficiency_prob": 0.9838200211524963,
+      "polarity_margin": 4.475022315979004
+    },
+    {
+      "intervention": "title_name_swap",
+      "NOT_ENTITLED": 60,
+      "REFUTE": 0,
+      "SUPPORT": 0,
+      "entitlement_prob": 0.005150941666215658,
+      "frame_prob": 0.018305080011487007,
+      "predicate_coverage_prob": 0.05707235634326935,
+      "sufficiency_prob": 0.9820094704627991,
+      "polarity_margin": 2.748825788497925
+    }
+  ],
+  "leakage_policy": {
+    "external_data_used_for_training": false,
+    "external_data_used_for_checkpoint_selection": false,
+    "stage15_used_for_training": false,
+    "stage15_used_for_checkpoint_selection": false,
+    "time_swap_used_in_main_clean_data": false,
+    "scope": "internal_clean_controlled_dev_only"
+  },
+  "interpretation": {
+    "claim_allowed": "Internal controlled clean-dev recovery run completed successfully with Stage47 frozen recovery weights.",
+    "claim_not_allowed": "Do not claim external generalization, VitaminC transfer, Climate-FEVER transfer, or naturalistic robustness from this run alone.",
+    "next_recommended_stage": "Run a separate frozen external/OOD evaluation or create a formal Stage52 audit report before any external claim."
+  }
+}
