@@ -11,9 +11,10 @@
     "stage66_bridge_row_count": 720,
     "combined_bridge_row_count": 1240,
     "primary_mode": "stage57_stage66_append_train_only",
+    "stage66_encode_label_tensors_ok": true,
     "training_executed": false,
     "external_eval_executed": false,
-    "next_stage": "Stage71 bridge-enabled frozen recovery run with Stage57 + Stage66 train-only append"
+    "next_stage": "Stage71 retry bridge-enabled frozen recovery run with encoder-compatible Stage66 bridge"
   },
   "help_flag_check": [
     {
@@ -35,265 +36,97 @@
   ],
   "source_static_checks": [
     {
-      "check": "arg_stage57_bridge_train_jsonl_preserved",
-      "patterns": [
-        "stage57_bridge_train_jsonl"
-      ],
+      "check": "stage57_bridge_train_jsonl",
       "pass": true
     },
     {
-      "check": "arg_stage57_bridge_train_mode_preserved",
-      "patterns": [
-        "stage57_bridge_train_mode"
-      ],
+      "check": "stage57_bridge_train_mode",
       "pass": true
     },
     {
-      "check": "arg_stage66_bridge_train_jsonl_added",
-      "patterns": [
-        "stage66_bridge_train_jsonl"
-      ],
+      "check": "stage66_bridge_train_jsonl",
       "pass": true
     },
     {
-      "check": "arg_stage66_bridge_train_mode_added",
-      "patterns": [
-        "stage66_bridge_train_mode"
-      ],
+      "check": "stage66_bridge_train_mode",
       "pass": true
     },
     {
-      "check": "append_train_only_mode_present",
-      "patterns": [
-        "append_train_only"
-      ],
+      "check": "append_train_only",
       "pass": true
     },
     {
-      "check": "stage66_bridge_enabled_report",
-      "patterns": [
-        "stage66_bridge_enabled"
-      ],
+      "check": "stage66_bridge_enabled",
       "pass": true
     },
     {
-      "check": "stage66_row_count_report",
-      "patterns": [
-        "stage66_bridge_row_count",
-        "stage66_bridge_train_row_count"
-      ],
+      "check": "stage66_bridge_row_count",
       "pass": true
     },
     {
-      "check": "stage66_label_counts_report",
-      "patterns": [
-        "stage66_bridge_label_counts"
-      ],
+      "check": "stage66_bridge_label_counts",
       "pass": true
     },
     {
-      "check": "stage66_family_counts_report",
-      "patterns": [
-        "stage66_bridge_family_counts"
-      ],
+      "check": "stage66_bridge_family_counts",
       "pass": true
     },
     {
-      "check": "stage66_train_only_report",
-      "patterns": [
-        "stage66_bridge_train_only"
-      ],
+      "check": "stage66_bridge_train_only",
       "pass": true
     },
     {
-      "check": "stage66_dev_false_report",
-      "patterns": [
-        "stage66_used_for_dev",
-        "stage66_bridge_used_for_dev"
-      ],
+      "check": "stage66_used_for_dev",
       "pass": true
     },
     {
-      "check": "stage66_checkpoint_false_report",
-      "patterns": [
-        "stage66_used_for_checkpoint_selection",
-        "stage66_bridge_used_for_checkpoint_selection"
-      ],
+      "check": "stage66_used_for_checkpoint_selection",
       "pass": true
     },
     {
-      "check": "combined_bridge_enabled_report",
-      "patterns": [
-        "combined_bridge_enabled"
-      ],
+      "check": "combined_bridge_enabled",
       "pass": true
     },
     {
-      "check": "combined_bridge_row_count_report",
-      "patterns": [
-        "combined_bridge_row_count"
-      ],
+      "check": "combined_bridge_row_count",
       "pass": true
     },
     {
-      "check": "combined_bridge_label_counts_report",
-      "patterns": [
-        "combined_bridge_label_counts"
-      ],
+      "check": "combined_bridge_label_counts",
       "pass": true
     },
     {
-      "check": "combined_bridge_train_only_report",
-      "patterns": [
-        "combined_bridge_train_only"
-      ],
+      "check": "combined_bridge_train_only",
       "pass": true
     },
     {
-      "check": "bridge_sources_enabled_report",
-      "patterns": [
-        "bridge_sources_enabled"
-      ],
+      "check": "bridge_sources_enabled",
       "pass": true
     },
     {
-      "check": "clean_dev_checkpoint_selection_report",
-      "patterns": [
-        "clean_dev_for_checkpoint_selection"
-      ],
+      "check": "clean_dev_for_checkpoint_selection",
       "pass": true
     },
     {
-      "check": "external_training_false_report",
-      "patterns": [
-        "external_data_used_for_training"
-      ],
+      "check": "external_data_used_for_training",
       "pass": true
     },
     {
-      "check": "external_threshold_false_report",
-      "patterns": [
-        "external_metrics_used_for_threshold_tuning"
-      ],
+      "check": "external_metrics_used_for_threshold_tuning",
       "pass": true
     },
     {
-      "check": "time_swap_false_report_or_guard",
-      "patterns": [
-        "time_swap_used",
-        "time_swap"
-      ],
-      "pass": true
-    },
-    {
-      "check": "forbidden_path_guard_marker_present_vitaminc",
-      "patterns": [
-        "vitaminc"
-      ],
-      "pass": true
-    },
-    {
-      "check": "forbidden_path_guard_marker_present_vitamin-c",
-      "patterns": [
-        "vitamin-c"
-      ],
-      "pass": true
-    },
-    {
-      "check": "forbidden_path_guard_marker_present_climate_fever",
-      "patterns": [
-        "climate_fever"
-      ],
-      "pass": true
-    },
-    {
-      "check": "forbidden_path_guard_marker_present_climate-fever",
-      "patterns": [
-        "climate-fever"
-      ],
-      "pass": true
-    },
-    {
-      "check": "forbidden_path_guard_marker_present_feverous",
-      "patterns": [
-        "feverous"
-      ],
-      "pass": true
-    },
-    {
-      "check": "forbidden_path_guard_marker_present_time_swap",
-      "patterns": [
-        "time_swap"
-      ],
-      "pass": true
-    },
-    {
-      "check": "forbidden_path_guard_marker_present_stage43",
-      "patterns": [
-        "stage43"
-      ],
-      "pass": true
-    },
-    {
-      "check": "forbidden_path_guard_marker_present_stage53",
-      "patterns": [
-        "stage53"
-      ],
-      "pass": true
-    },
-    {
-      "check": "forbidden_path_guard_marker_present_stage55",
-      "patterns": [
-        "stage55"
-      ],
-      "pass": true
-    },
-    {
-      "check": "forbidden_path_guard_marker_present_stage63",
-      "patterns": [
-        "stage63"
-      ],
-      "pass": true
-    },
-    {
-      "check": "forbidden_path_guard_marker_present_stage65",
-      "patterns": [
-        "stage65"
-      ],
+      "check": "time_swap_used",
       "pass": true
     }
   ],
   "data_report_checks": [
     {
-      "check": "main_row_count_ok",
+      "check": "help_flags_ok",
       "pass": true
     },
     {
-      "check": "stage57_row_count_ok",
-      "pass": true
-    },
-    {
-      "check": "stage66_row_count_ok",
-      "pass": true
-    },
-    {
-      "check": "combined_bridge_row_count_ok",
-      "pass": true
-    },
-    {
-      "check": "stage57_label_counts_ok",
-      "pass": true
-    },
-    {
-      "check": "stage66_label_counts_ok",
-      "pass": true
-    },
-    {
-      "check": "combined_bridge_label_counts_ok",
-      "pass": true
-    },
-    {
-      "check": "stage66_family_counts_ok",
+      "check": "source_checks_ok",
       "pass": true
     },
     {
@@ -305,27 +138,19 @@
       "pass": true
     },
     {
-      "check": "stage67_ready",
+      "check": "stage71a_ready",
       "pass": true
     },
     {
-      "check": "stage69_primary_mode_ok",
+      "check": "stage66_encode_label_tensors_ok",
       "pass": true
     },
     {
-      "check": "stage69_clean_dev_selection_ok",
+      "check": "combined_bridge_row_count_ok",
       "pass": true
     },
     {
-      "check": "stage69_no_external_training_ok",
-      "pass": true
-    },
-    {
-      "check": "stage69_no_external_threshold_tuning_ok",
-      "pass": true
-    },
-    {
-      "check": "stage69_no_time_swap_ok",
+      "check": "combined_bridge_label_counts_ok",
       "pass": true
     }
   ],
@@ -352,71 +177,24 @@
       "expected_combined": 520
     }
   ],
-  "stage57_family_counts": [
+  "stage66_polarity_label_counts": [
     {
-      "stage57_family": "distractor_evidence_bridge",
-      "count": 40
-    },
-    {
-      "stage57_family": "entity_attribute_bridge",
-      "count": 120
-    },
-    {
-      "stage57_family": "lexical_paraphrase_bridge",
-      "count": 120
-    },
-    {
-      "stage57_family": "numeric_comparison_bridge",
-      "count": 120
-    },
-    {
-      "stage57_family": "temporal_comparison_bridge",
-      "count": 120
-    }
-  ],
-  "stage66_family_counts": [
-    {
-      "stage66_family": "numeric_temporal_comparison_bridge",
-      "count": 120,
-      "expected": 120
-    },
-    {
-      "stage66_family": "polarity_disambiguation_bridge",
-      "count": 200,
-      "expected": 200
-    },
-    {
-      "stage66_family": "refute_entitlement_recovery_bridge",
-      "count": 160,
-      "expected": 160
-    },
-    {
-      "stage66_family": "strict_ne_frame_safety_bridge",
+      "polarity_label": "NONE",
       "count": 40,
-      "expected": 40
+      "encoder_id": 0,
+      "encoder_compatible": true
     },
     {
-      "stage66_family": "support_entitlement_recovery_bridge",
-      "count": 200,
-      "expected": 200
+      "polarity_label": "REFUTE",
+      "count": 320,
+      "encoder_id": 1,
+      "encoder_compatible": true
+    },
+    {
+      "polarity_label": "SUPPORT",
+      "count": 360,
+      "encoder_id": 2,
+      "encoder_compatible": true
     }
-  ],
-  "source_files": {
-    "runner_script": "scripts/train_controlled_v6b_minimal.py",
-    "main_clean_data": "data/controlled_v5_v3_without_time_swap.jsonl",
-    "stage57_bridge": "data/stage57_nonleaking_external_bridge.jsonl",
-    "stage66_bridge": "data/stage66_residual_bridge.jsonl",
-    "stage69_plan": "results/stage69_stage57_stage66_bridge_integration_plan.json",
-    "stage68_audit": "results/stage68_stage66_residual_bridge_static_audit.json",
-    "stage67_audit": "results/stage67_stage66_residual_bridge_generation_audit.json"
-  },
-  "execution_policy": {
-    "training_executed": false,
-    "external_eval_executed": false,
-    "kaggle_training_command_executed": false,
-    "smoke_test_executed": false,
-    "full_run_executed": false,
-    "py_compile_executed": true,
-    "help_check_executed": true
-  }
+  ]
 }
