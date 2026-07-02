@@ -6948,7 +6948,12 @@ def build_parser() -> argparse.ArgumentParser:
         default="auto",
         help=(
             "Stage45-B: family metadata field to use for internal holdout splitting, "
-            "or 'auto' for the shared preferred-field resolver. Default auto."
+            "or 'auto' for the shared preferred-field resolver. Also accepts the "
+            "Stage45-B1 recovered fields 'intervention_type' and "
+            "'primary_failure_type', or composite fields "
+            "'intervention_type+primary_failure_type', "
+            "'intervention_type+final_label', 'primary_failure_type+final_label'. "
+            "Default auto."
         ),
     )
     parser.add_argument(

@@ -58,7 +58,19 @@ def build_parser() -> argparse.ArgumentParser:
         default=Path("reports/stage45b_internal_family_manifest.md"),
     )
     parser.add_argument("--min-family-size", type=int, default=20)
-    parser.add_argument("--family-field", default="auto")
+    parser.add_argument(
+        "--family-field",
+        default="auto",
+        help=(
+            "Family field to use. 'auto' prefers explicit family metadata, then "
+            "recovered internal fields. Also accepts explicit metadata fields, "
+            "the Stage45-B1 recovered fields 'intervention_type' and "
+            "'primary_failure_type', or the composite fields "
+            "'intervention_type+primary_failure_type', "
+            "'intervention_type+final_label', and "
+            "'primary_failure_type+final_label'."
+        ),
+    )
     return parser
 
 
