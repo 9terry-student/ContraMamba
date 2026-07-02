@@ -1,0 +1,70 @@
+{
+  "decision": "STAGE45D_GENERALIZATION_AUDIT_NO_DATA",
+  "holdout_groups": [],
+  "leakage_policy": {
+    "evaluation_run": false,
+    "external_data_used": false,
+    "kaggle_commands_run": false,
+    "scope": "internal_stage45c_stage45d_train_reports_only",
+    "training_run": false
+  },
+  "overall_summary": {
+    "baseline": {
+      "avg_delta_acc": null,
+      "avg_delta_macro_all3": null,
+      "avg_delta_ne_pred_rate": null,
+      "avg_delta_refute_recall": null,
+      "avg_delta_support_recall": null,
+      "groups_improved_over_baseline": 0,
+      "groups_with_catastrophic_regression": 0,
+      "groups_with_refute_regression": 0,
+      "groups_with_support_recovery_gain": 0,
+      "holdout_groups_seen": 0
+    },
+    "recovery_w010_ne020": {
+      "avg_delta_acc": null,
+      "avg_delta_macro_all3": null,
+      "avg_delta_ne_pred_rate": null,
+      "avg_delta_refute_recall": null,
+      "avg_delta_support_recall": null,
+      "groups_improved_over_baseline": 0,
+      "groups_with_catastrophic_regression": 0,
+      "groups_with_refute_regression": 0,
+      "groups_with_support_recovery_gain": 0,
+      "holdout_groups_seen": 0
+    },
+    "recovery_w01_ne01": {
+      "avg_delta_acc": null,
+      "avg_delta_macro_all3": null,
+      "avg_delta_ne_pred_rate": null,
+      "avg_delta_refute_recall": null,
+      "avg_delta_support_recall": null,
+      "groups_improved_over_baseline": 0,
+      "groups_with_catastrophic_regression": 0,
+      "groups_with_refute_regression": 0,
+      "groups_with_support_recovery_gain": 0,
+      "holdout_groups_seen": 0
+    }
+  },
+  "recommendation": {
+    "has_any_data": false,
+    "mark_paraphrase_specialized": false,
+    "other_observed_configs": [],
+    "reasoning": {
+      "specialized_catastrophic_regression_groups": 0,
+      "specialized_is_best_on_intervention_type_paraphrase": false,
+      "specialized_regresses_on_primary_failure_type_none": false,
+      "stable_avg_delta_macro_all3": null,
+      "stable_catastrophic_regression_groups": 0,
+      "stable_has_no_refute_regression": true,
+      "stable_preserves_or_improves_primary_failure_type_none": false
+    },
+    "recommend_stable_default": false,
+    "specialized_config": "recovery_w010_ne020",
+    "stable_config": "recovery_w01_ne01"
+  },
+  "report_files": [],
+  "report_files_scanned": 0,
+  "results_dir_scanned": "C:\\Users\\Home1\\Desktop\\ContraMamba\\results",
+  "rows_parsed": 0
+}
