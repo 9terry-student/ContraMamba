@@ -9,6 +9,13 @@ within its holdout group, flags regressions/gains, and writes:
   - results/stage45d_generalization_audit.md    (human-readable audit report)
   - results/stage45d_generalization_summary.json (machine-readable summary + recommendation)
 
+`ne_rate_shift_large` (a large absolute swing in NOT_ENTITLED prediction rate vs.
+baseline) is purely diagnostic and direction-agnostic: a large *decrease* in NE
+rate can be a genuine improvement (less over-rejection), not a regression. It only
+contributes to `catastrophic_regression` via the narrower `harmful_ne_rate_shift`
+flag, which additionally requires a large NE-rate swing to co-occur with real harm
+on accuracy, macro-F1, SUPPORT recall, or REFUTE recall.
+
 This script does not train, evaluate, or run any Kaggle/OOD/experiment commands. It
 only reads existing JSON files and writes report files.
 """
@@ -28,8 +35,6 @@ DEFAULT_CSV_OUTPUT = ROOT / "results" / "stage45d_generalization_audit.csv"
 DEFAULT_MD_OUTPUT = ROOT / "results" / "stage45d_generalization_audit.md"
 DEFAULT_SUMMARY_JSON_OUTPUT = ROOT / "results" / "stage45d_generalization_summary.json"
 
-# A JSON file is treated as a Stage45C/Stage45D train report if its filename
-# (case-insensitive) contains at least one of these tokens.
 # A JSON file must satisfy ALL of: contain "stage45c" or "stage45d", contain
 # "holdout", and contain "train_report" (filename, case-insensitive). This is
 # an AND predicate, not an "any token" match, to avoid ingesting unrelated
@@ -80,6 +85,7 @@ FLAG_FIELDS: tuple[str, ...] = (
     "support_recovery_gain",
     "refute_regression",
     "ne_rate_shift_large",
+    "harmful_ne_rate_shift",
     "catastrophic_regression",
 )
 
@@ -87,6 +93,7 @@ REFUTE_REGRESSION_THRESHOLD = 0.02
 NE_RATE_SHIFT_THRESHOLD = 0.08
 ACC_CATASTROPHIC_THRESHOLD = 0.03
 MACRO_CATASTROPHIC_THRESHOLD = 0.03
+SUPPORT_RECALL_HARM_THRESHOLD = 0.03
 _EPS = 1e-9
 
 
@@ -282,9 +289,31 @@ def analyze_holdout_group(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
             delta_refute_recall is not None
             and delta_refute_recall < -REFUTE_REGRESSION_THRESHOLD
         )
+        # Diagnostic only: a large absolute swing in NE prediction rate, in
+        # either direction. A large *decrease* (less over-rejection) can be a
+        # genuine improvement, so this flag alone must not imply harm.
         ne_rate_shift_large = (
             delta_ne_pred_rate is not None
             and abs(delta_ne_pred_rate) > NE_RATE_SHIFT_THRESHOLD
+        )
+        # harmful_ne_rate_shift narrows ne_rate_shift_large to cases where the
+        # large NE-rate swing co-occurs with real harm on another core metric,
+        # so a beneficial NE-rate drop (accuracy/macro/support/refute all
+        # improving) is not counted as catastrophic on its own.
+        harmful_ne_rate_shift = bool(
+            ne_rate_shift_large
+            and (
+                (delta_acc is not None and delta_acc < -ACC_CATASTROPHIC_THRESHOLD)
+                or (
+                    delta_macro_all3 is not None
+                    and delta_macro_all3 < -MACRO_CATASTROPHIC_THRESHOLD
+                )
+                or (
+                    delta_support_recall is not None
+                    and delta_support_recall < -SUPPORT_RECALL_HARM_THRESHOLD
+                )
+                or refute_regression
+            )
         )
         catastrophic_regression = bool(
             (delta_acc is not None and delta_acc < -ACC_CATASTROPHIC_THRESHOLD)
@@ -293,7 +322,7 @@ def analyze_holdout_group(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 and delta_macro_all3 < -MACRO_CATASTROPHIC_THRESHOLD
             )
             or refute_regression
-            or ne_rate_shift_large
+            or harmful_ne_rate_shift
         )
 
         entry["improves_over_baseline"] = bool(
@@ -307,6 +336,7 @@ def analyze_holdout_group(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
         )
         entry["refute_regression"] = refute_regression
         entry["ne_rate_shift_large"] = ne_rate_shift_large
+        entry["harmful_ne_rate_shift"] = harmful_ne_rate_shift
         entry["catastrophic_regression"] = catastrophic_regression
         analyzed.append(entry)
     return analyzed
@@ -347,6 +377,12 @@ def compute_overall_summary(analyzed_rows: list[dict[str, Any]]) -> dict[str, di
             ),
             "groups_with_refute_regression": sum(
                 1 for row in config_rows if row.get("refute_regression") is True
+            ),
+            "groups_with_ne_rate_shift_large": sum(
+                1 for row in config_rows if row.get("ne_rate_shift_large") is True
+            ),
+            "groups_with_harmful_ne_rate_shift": sum(
+                1 for row in config_rows if row.get("harmful_ne_rate_shift") is True
             ),
             "groups_with_catastrophic_regression": sum(
                 1 for row in config_rows if row.get("catastrophic_regression") is True
@@ -576,6 +612,8 @@ def _summary_table_md(summary: dict[str, dict[str, Any]]) -> list[str]:
         "groups_improved_over_baseline",
         "groups_with_support_recovery_gain",
         "groups_with_refute_regression",
+        "groups_with_ne_rate_shift_large",
+        "groups_with_harmful_ne_rate_shift",
         "groups_with_catastrophic_regression",
         "avg_delta_acc",
         "avg_delta_macro_all3",
