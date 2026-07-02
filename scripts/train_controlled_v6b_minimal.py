@@ -7275,6 +7275,30 @@ def build_parser() -> argparse.ArgumentParser:
             "loaded from --stage57-bridge-train-jsonl to train only."
         ),
     )
+    parser.add_argument(
+        "--stage66-bridge-train-jsonl",
+        type=str,
+        default=None,
+        help=(
+            "Stage69/Stage70: optional path to the Stage66 residual bridge JSONL "
+            "(e.g. data/stage66_residual_bridge.jsonl). Only used when "
+            "--stage66-bridge-train-mode=append_train_only. Default: None, which "
+            "preserves current training/data split behavior exactly."
+        ),
+    )
+    parser.add_argument(
+        "--stage66-bridge-train-mode",
+        choices=("none", "append_train_only"),
+        default="none",
+        help=(
+            "Stage69/Stage70: whether to append Stage66 residual bridge rows to the "
+            "train split only, after the clean main train/dev split is created (and "
+            "after any Stage57 bridge rows are appended). 'none' (default) leaves "
+            "current behavior unchanged; the clean dev split always remains the "
+            "checkpoint-selection/dev source. 'append_train_only' appends the rows "
+            "loaded from --stage66-bridge-train-jsonl to train only."
+        ),
+    )
 
     return parser
 
@@ -8219,15 +8243,20 @@ def lift_report_aliases(report: dict[str, Any]) -> None:
 
 # ---------------------------------------------------------------------------
 # Stage60: optional train-only Stage57 non-leaking external bridge integration.
+# Stage69/Stage70: extended with an analogous train-only Stage66 residual
+# bridge integration path (see load_stage66_bridge_train_rows below), which
+# shares the same forbidden-source guard.
 #
-# Policy (frozen by Stage59):
+# Policy (frozen by Stage59, extended by Stage69):
 #   - Main clean data / dev split behavior is unchanged unless the user opts in
-#     via --stage57-bridge-train-mode append_train_only.
+#     via --stage57-bridge-train-mode append_train_only and/or
+#     --stage66-bridge-train-mode append_train_only.
 #   - Bridge rows may only be appended to the train split, and only AFTER the
 #     clean main train/dev split has already been created.
 #   - Bridge rows never enter dev / checkpoint selection.
-#   - No external datasets (VitaminC, Climate-FEVER, FEVEROUS), no Stage43/53/55
-#     outputs, and no time_swap data may be pulled in through this path.
+#   - No external datasets (VitaminC, Climate-FEVER, FEVEROUS), no
+#     Stage43/53/55/63/65 outputs, and no time_swap data may be pulled in
+#     through this path.
 # ---------------------------------------------------------------------------
 STAGE60_FORBIDDEN_SOURCE_TOKENS = (
     "vitaminc",
@@ -8238,6 +8267,8 @@ STAGE60_FORBIDDEN_SOURCE_TOKENS = (
     "stage43",
     "stage53",
     "stage55",
+    "stage63",
+    "stage65",
     "time_swap",
 )
 # This exact Stage57 metadata string is expected on every bridge row (it records
@@ -8367,6 +8398,134 @@ def load_stage57_bridge_train_rows(
 
         label_counts[final_label] += 1
         family = row.get("stage57_bridge_family") or row.get("stage57_family") or "unknown"
+        family_counts[family] = family_counts.get(family, 0) + 1
+        family_label_counts.setdefault(
+            family, {name: 0 for name in v5.ID_TO_FINAL_LABEL.values()}
+        )
+        family_label_counts[family][final_label] += 1
+
+    return normalized, label_counts, family_counts, family_label_counts
+
+
+# ---------------------------------------------------------------------------
+# Stage69/Stage70: optional train-only Stage66 residual bridge integration.
+#
+# Same policy as the Stage57 bridge above: bridge rows are appended to the
+# train split only, strictly after the clean main train/dev split has been
+# created, and never enter dev / checkpoint selection.
+#
+# Difference from Stage57: Stage66 rows carry stage66_* metadata (no
+# Stage57-specific metadata required), and row-level forbidden-source
+# scanning is restricted to id/pair_id/claim/evidence only. In particular,
+# stage66_leakage_policy is NOT scanned, because its expected value legitimately
+# contains "no_vitaminc_text_or_labels_used_taxonomy_only" (a declaration that
+# VitaminC was NOT used, not a leak).
+# ---------------------------------------------------------------------------
+STAGE66_BRIDGE_REQUIRED_FIELDS = ("id", "claim", "evidence", "label")
+
+
+def load_stage66_bridge_train_rows(
+    bridge_path: Path,
+    existing_ids: set[str],
+) -> tuple[list[dict], dict[str, int], dict[str, int], dict[str, dict[str, int]]]:
+    """Load, validate, and normalize Stage66 residual bridge rows for train-only append.
+
+    Mirrors load_stage57_bridge_train_rows for the Stage66 residual bridge dataset.
+    Returns (normalized_records, label_counts, family_counts, family_label_counts).
+    Raises ValueError/FileNotFoundError on any safety-check violation.
+    """
+    _stage60_check_forbidden_source(str(bridge_path), "--stage66-bridge-train-jsonl path")
+
+    if not bridge_path.exists():
+        raise FileNotFoundError(
+            f"[stage66] --stage66-bridge-train-jsonl not found: {bridge_path}"
+        )
+
+    raw_rows: list[dict] = []
+    with bridge_path.open("r", encoding="utf-8") as handle:
+        for line_number, line in enumerate(handle, start=1):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                raw_rows.append(json.loads(line))
+            except json.JSONDecodeError as exc:
+                raise ValueError(
+                    f"[stage66] invalid JSON on line {line_number} of {bridge_path}: {exc}"
+                ) from exc
+
+    if not raw_rows:
+        raise ValueError(f"[stage66] --stage66-bridge-train-jsonl is empty: {bridge_path}")
+
+    normalized: list[dict] = []
+    seen_bridge_ids: set[str] = set()
+    label_counts: dict[str, int] = {name: 0 for name in v5.ID_TO_FINAL_LABEL.values()}
+    family_counts: dict[str, int] = {}
+    family_label_counts: dict[str, dict[str, int]] = {}
+
+    for row_number, row in enumerate(raw_rows, start=1):
+        prefix = f"[stage66] row {row_number} in {bridge_path}: "
+        missing = [
+            field for field in STAGE66_BRIDGE_REQUIRED_FIELDS if row.get(field) is None
+        ]
+        if missing:
+            raise ValueError(f"{prefix}missing required fields: {missing}")
+
+        row_id = row["id"]
+        if row_id in seen_bridge_ids:
+            raise ValueError(f"{prefix}duplicate bridge id: {row_id!r}")
+        seen_bridge_ids.add(row_id)
+        if row_id in existing_ids:
+            raise ValueError(
+                f"{prefix}bridge id {row_id!r} duplicates an existing clean train/dev "
+                "or already-appended bridge id"
+            )
+
+        label = row["label"]
+        if isinstance(label, bool) or label not in (0, 1, 2):
+            raise ValueError(f"{prefix}label must be 0, 1, or 2; got {label!r}")
+        final_label = v5.ID_TO_FINAL_LABEL[int(label)]
+        row_final_label = row.get("final_label")
+        if row_final_label is not None and row_final_label != final_label:
+            raise ValueError(
+                f"{prefix}label={label!r} does not match final_label={row_final_label!r}"
+            )
+
+        # Row-level forbidden-source scanning is restricted to id/pair_id/claim/
+        # evidence only. stage66_family/stage66_bridge_family/stage66_subtype/
+        # stage66_target_error/stage66_generation_source/stage66_leakage_policy
+        # are intentionally NOT scanned (see module docstring above).
+        for field_name in ("id", "pair_id", "claim", "evidence"):
+            field_value = row.get(field_name)
+            if isinstance(field_value, str):
+                _stage60_check_forbidden_source(
+                    field_value, f"row {row_number} field {field_name!r}"
+                )
+
+        normalized.append({
+            "id": row_id,
+            "pair_id": row.get("pair_id", row_id),
+            "claim": row["claim"],
+            "evidence": row["evidence"],
+            "final_label": final_label,
+            "frame_compatible_label": row.get("frame_compatible_label", 1),
+            "predicate_covered_label": row.get("predicate_covered_label", 1),
+            "sufficiency_label": row.get("sufficiency_label", 1),
+            "polarity_label": row.get(
+                "polarity_label", "NONE" if final_label == "NOT_ENTITLED" else final_label
+            ),
+            "primary_failure_type": row.get("primary_failure_type", "none"),
+            "intervention_type": row.get("intervention_type", "stage66_bridge"),
+            "stage66_family": row.get("stage66_family"),
+            "stage66_bridge_family": row.get("stage66_bridge_family"),
+            "stage66_subtype": row.get("stage66_subtype"),
+            "stage66_target_error": row.get("stage66_target_error"),
+            "stage66_generation_source": row.get("stage66_generation_source"),
+            "stage66_leakage_policy": row.get("stage66_leakage_policy"),
+        })
+
+        label_counts[final_label] += 1
+        family = row.get("stage66_bridge_family") or row.get("stage66_family") or "unknown"
         family_counts[family] = family_counts.get(family, 0) + 1
         family_label_counts.setdefault(
             family, {name: 0 for name in v5.ID_TO_FINAL_LABEL.values()}
@@ -8654,6 +8813,127 @@ def main(argv: list[str] | None = None) -> int:
             "--stage57-bridge-train-mode is 'none'; bridge data will NOT be used "
             "(default training/data split behavior is unchanged)."
         )
+
+    # ---------------------------------------------------------------------------
+    # Stage69/Stage70: optional train-only Stage66 residual bridge append.
+    # Must run strictly AFTER the clean main train/dev split (and after any
+    # Stage57 bridge append above). Bridge rows are only ever added to
+    # train_records; dev_records (checkpoint selection) is never touched.
+    # ---------------------------------------------------------------------------
+    _stage66_bridge_info: dict[str, Any] = {
+        "stage66_bridge_train_mode": args.stage66_bridge_train_mode,
+        "stage66_bridge_train_jsonl": (
+            str(args.stage66_bridge_train_jsonl)
+            if args.stage66_bridge_train_jsonl is not None else None
+        ),
+        "stage66_bridge_train_enabled": False,
+        "stage66_bridge_train_row_count": 0,
+        "stage66_bridge_train_label_counts": None,
+        "stage66_bridge_train_family_counts": None,
+        "stage66_bridge_train_family_label_counts": None,
+        "stage66_bridge_train_only": False,
+        "stage66_bridge_appended_after_clean_split": False,
+        "stage66_bridge_used_for_dev": False,
+        "stage66_bridge_used_for_checkpoint_selection": False,
+        "stage66_external_data_used_for_training": False,
+        "stage66_external_metrics_used_for_threshold_tuning": False,
+    }
+    if args.stage66_bridge_train_mode == "append_train_only":
+        if args.stage66_bridge_train_jsonl is None:
+            raise ValueError(
+                "--stage66-bridge-train-mode append_train_only requires "
+                "--stage66-bridge-train-jsonl."
+            )
+        _stage66_bridge_path = Path(args.stage66_bridge_train_jsonl)
+        _stage66_existing_ids = {r["id"] for r in train_records} | {
+            r["id"] for r in dev_records
+        }
+        (
+            _stage66_bridge_records,
+            _stage66_bridge_label_counts,
+            _stage66_bridge_family_counts,
+            _stage66_bridge_family_label_counts,
+        ) = load_stage66_bridge_train_rows(_stage66_bridge_path, _stage66_existing_ids)
+
+        train_records = train_records + _stage66_bridge_records
+
+        _stage66_bridge_info.update({
+            "stage66_bridge_train_enabled": True,
+            "stage66_bridge_train_row_count": len(_stage66_bridge_records),
+            "stage66_bridge_train_label_counts": _stage66_bridge_label_counts,
+            "stage66_bridge_train_family_counts": _stage66_bridge_family_counts,
+            "stage66_bridge_train_family_label_counts": _stage66_bridge_family_label_counts,
+            "stage66_bridge_train_only": True,
+            "stage66_bridge_appended_after_clean_split": True,
+        })
+        print(
+            f"[stage66] appended Stage66 bridge train rows: "
+            f"{len(_stage66_bridge_records)} from {_stage66_bridge_path}"
+        )
+        print(f"[stage66] bridge label counts: {_stage66_bridge_label_counts}")
+        print(f"[stage66] bridge family counts: {_stage66_bridge_family_counts}")
+    elif args.stage66_bridge_train_jsonl is not None:
+        print(
+            "[stage66] --stage66-bridge-train-jsonl was provided but "
+            "--stage66-bridge-train-mode is 'none'; bridge data will NOT be used "
+            "(default training/data split behavior is unchanged)."
+        )
+
+    # ---------------------------------------------------------------------------
+    # Stage69/Stage70: report-field aliases (spec-named, without "_train_") plus
+    # combined Stage57+Stage66 bridge metadata. These are additive: the original
+    # stage57_bridge_train_* / stage66_bridge_train_* fields above are preserved
+    # unchanged for backward compatibility.
+    # ---------------------------------------------------------------------------
+    _stage60_bridge_info.update({
+        "stage57_bridge_enabled": _stage60_bridge_info["stage57_bridge_train_enabled"],
+        "stage57_bridge_row_count": _stage60_bridge_info["stage57_bridge_train_row_count"],
+        "stage57_bridge_label_counts": _stage60_bridge_info["stage57_bridge_train_label_counts"],
+        "stage57_bridge_family_counts": _stage60_bridge_info["stage57_bridge_train_family_counts"],
+        "stage57_used_for_dev": _stage60_bridge_info["stage57_bridge_used_for_dev"],
+        "stage57_used_for_checkpoint_selection": (
+            _stage60_bridge_info["stage57_bridge_used_for_checkpoint_selection"]
+        ),
+    })
+    _stage66_bridge_info.update({
+        "stage66_bridge_enabled": _stage66_bridge_info["stage66_bridge_train_enabled"],
+        "stage66_bridge_row_count": _stage66_bridge_info["stage66_bridge_train_row_count"],
+        "stage66_bridge_label_counts": _stage66_bridge_info["stage66_bridge_train_label_counts"],
+        "stage66_bridge_family_counts": _stage66_bridge_info["stage66_bridge_train_family_counts"],
+        "stage66_used_for_dev": _stage66_bridge_info["stage66_bridge_used_for_dev"],
+        "stage66_used_for_checkpoint_selection": (
+            _stage66_bridge_info["stage66_bridge_used_for_checkpoint_selection"]
+        ),
+    })
+
+    _bridge_sources_enabled = [
+        _name for _name, _enabled in (
+            ("stage57", _stage60_bridge_info["stage57_bridge_enabled"]),
+            ("stage66", _stage66_bridge_info["stage66_bridge_enabled"]),
+        )
+        if _enabled
+    ]
+    _combined_bridge_label_counts = {
+        name: (
+            (_stage60_bridge_info.get("stage57_bridge_label_counts") or {}).get(name, 0)
+            + (_stage66_bridge_info.get("stage66_bridge_label_counts") or {}).get(name, 0)
+        )
+        for name in v5.ID_TO_FINAL_LABEL.values()
+    }
+    _combined_bridge_info: dict[str, Any] = {
+        "combined_bridge_enabled": bool(_bridge_sources_enabled),
+        "combined_bridge_row_count": (
+            _stage60_bridge_info["stage57_bridge_row_count"]
+            + _stage66_bridge_info["stage66_bridge_row_count"]
+        ),
+        "combined_bridge_label_counts": _combined_bridge_label_counts,
+        "combined_bridge_train_only": bool(_bridge_sources_enabled),
+        "bridge_sources_enabled": _bridge_sources_enabled,
+        "clean_dev_for_checkpoint_selection": True,
+        "external_data_used_for_training": False,
+        "external_metrics_used_for_threshold_tuning": False,
+        "time_swap_used": False,
+    }
 
     ce_class_weights = compute_class_weights_v6b(train_records, args.class_weighting, device)
     label_counts: dict[str, int] = {name: 0 for name in v5.ID_TO_FINAL_LABEL.values()}
@@ -12402,6 +12682,10 @@ def main(argv: list[str] | None = None) -> int:
             "time_swap_used_in_main_clean_data": False,
             # Stage60: train-only Stage57 non-leaking external bridge provenance
             **_stage60_bridge_info,
+            # Stage69/Stage70: train-only Stage66 residual bridge + combined
+            # Stage57+Stage66 bridge provenance
+            **_stage66_bridge_info,
+            **_combined_bridge_info,
             # Stage26-A: v7 hierarchical architecture provenance (always False in Stage26-A)
             "stage15_used_for_v7_training": False,
             "stage15_used_for_v7_selection": False,
@@ -13375,6 +13659,10 @@ def main(argv: list[str] | None = None) -> int:
             "time_swap_used_in_main_clean_data": False,
             # Stage60: train-only Stage57 non-leaking external bridge provenance
             **_stage60_bridge_info,
+            # Stage69/Stage70: train-only Stage66 residual bridge + combined
+            # Stage57+Stage66 bridge provenance
+            **_stage66_bridge_info,
+            **_combined_bridge_info,
             "loss_component_epoch_avg_semantics": "weighted",
             "audit_ledger_note": (
                 "active_training_losses, active_final_logit_modifiers, "
@@ -13842,6 +14130,42 @@ def main(argv: list[str] | None = None) -> int:
             "stage57_bridge_used_for_checkpoint_selection",
             "stage57_external_data_used_for_training",
             "stage57_external_metrics_used_for_threshold_tuning",
+            "stage57_bridge_enabled",
+            "stage57_bridge_row_count",
+            "stage57_bridge_label_counts",
+            "stage57_bridge_family_counts",
+            "stage57_used_for_dev",
+            "stage57_used_for_checkpoint_selection",
+            # Stage69/Stage70: train-only Stage66 residual bridge provenance
+            "stage66_bridge_train_mode",
+            "stage66_bridge_train_jsonl",
+            "stage66_bridge_train_enabled",
+            "stage66_bridge_train_row_count",
+            "stage66_bridge_train_label_counts",
+            "stage66_bridge_train_family_counts",
+            "stage66_bridge_train_family_label_counts",
+            "stage66_bridge_train_only",
+            "stage66_bridge_appended_after_clean_split",
+            "stage66_bridge_used_for_dev",
+            "stage66_bridge_used_for_checkpoint_selection",
+            "stage66_external_data_used_for_training",
+            "stage66_external_metrics_used_for_threshold_tuning",
+            "stage66_bridge_enabled",
+            "stage66_bridge_row_count",
+            "stage66_bridge_label_counts",
+            "stage66_bridge_family_counts",
+            "stage66_used_for_dev",
+            "stage66_used_for_checkpoint_selection",
+            # Stage69/Stage70: combined Stage57+Stage66 bridge provenance
+            "combined_bridge_enabled",
+            "combined_bridge_row_count",
+            "combined_bridge_label_counts",
+            "combined_bridge_train_only",
+            "bridge_sources_enabled",
+            "clean_dev_for_checkpoint_selection",
+            "external_data_used_for_training",
+            "external_metrics_used_for_threshold_tuning",
+            "time_swap_used",
         ):
             if _audit_key in _single_ledger:
                 report[_audit_key] = _single_ledger[_audit_key]
