@@ -494,10 +494,26 @@ def build_recommendation(
             )
         )
     )
+    # recovery_w010_ne020 is a paraphrase-specialized diagnostic / runner-up whenever
+    # it wins the intervention_type=paraphrase holdout but is not the overall pick:
+    # either it loses out globally because recovery_w01_ne01 was selected as the
+    # stable default (stronger average/global and primary_failure_type=none
+    # behavior), or it has its own direct weaknesses (regresses on
+    # primary_failure_type=none, or more catastrophic regressions than the stable
+    # config). Any one of these is sufficient; it is never marked as global default.
     mark_specialized_paraphrase_only = bool(
         has_any_data
         and specialized_best_on_paraphrase
-        and (specialized_regresses_primary_none or specialized_cat > stable_cat)
+        and (
+            recommend_stable_default
+            or specialized_regresses_primary_none
+            or specialized_cat > stable_cat
+        )
+    )
+    specialized_label = (
+        "paraphrase-specialized diagnostic / runner-up"
+        if mark_specialized_paraphrase_only
+        else None
     )
 
     other_configs = sorted(
@@ -512,6 +528,7 @@ def build_recommendation(
         "has_any_data": has_any_data,
         "recommend_stable_default": recommend_stable_default,
         "mark_paraphrase_specialized": mark_specialized_paraphrase_only,
+        "specialized_label": specialized_label,
         "stable_config": CONFIG_RECOVERY_STABLE,
         "specialized_config": CONFIG_RECOVERY_PARAPHRASE,
         "other_observed_configs": other_configs,
@@ -528,6 +545,9 @@ def build_recommendation(
             ),
             "specialized_regresses_on_primary_failure_type_none": (
                 specialized_regresses_primary_none
+            ),
+            "specialized_is_runner_up_to_stable_default": (
+                recommend_stable_default and specialized_best_on_paraphrase
             ),
         },
     }
@@ -665,15 +685,33 @@ def _recommendation_md(recommendation: dict[str, Any]) -> list[str]:
     lines.append("")
     lines.append("**Paraphrase-specialized diagnostic setting:**")
     if recommendation["mark_paraphrase_specialized"]:
+        label = recommendation.get("specialized_label") or "paraphrase-specialized diagnostic"
         lines.append(
-            f"- `{CONFIG_RECOVERY_PARAPHRASE}` (support_w=0.1, ne_w=0.2) is marked as a "
-            "paraphrase-specialized diagnostic setting, not a general default: it is the "
-            "best-performing config on the `intervention_type=paraphrase` holdout, but "
-            "regresses on `primary_failure_type=none` and/or shows more catastrophic "
-            f"regressions than `{CONFIG_RECOVERY_STABLE}` "
-            f"({reasoning['specialized_catastrophic_regression_groups']} vs. "
-            f"{reasoning['stable_catastrophic_regression_groups']})."
+            f"- `{CONFIG_RECOVERY_PARAPHRASE}` (support_w=0.1, ne_w=0.2) is marked as "
+            f"**{label}**: it is the best-performing config on the "
+            "`intervention_type=paraphrase` holdout, but is not selected as the global "
+            "default."
         )
+        reasons: list[str] = []
+        if reasoning.get("specialized_is_runner_up_to_stable_default"):
+            reasons.append(
+                f"`{CONFIG_RECOVERY_STABLE}` was selected as the stable global default "
+                "because it has stronger average/global behavior and stronger "
+                "`primary_failure_type=none` behavior"
+            )
+        if reasoning.get("specialized_regresses_on_primary_failure_type_none"):
+            reasons.append("it regresses on `primary_failure_type=none`")
+        if reasoning["specialized_catastrophic_regression_groups"] > reasoning[
+            "stable_catastrophic_regression_groups"
+        ]:
+            reasons.append(
+                "it shows more catastrophic regressions than "
+                f"`{CONFIG_RECOVERY_STABLE}` "
+                f"({reasoning['specialized_catastrophic_regression_groups']} vs. "
+                f"{reasoning['stable_catastrophic_regression_groups']})"
+            )
+        if reasons:
+            lines.append("- Reason(s): " + "; ".join(reasons) + ".")
     else:
         lines.append(
             f"- `{CONFIG_RECOVERY_PARAPHRASE}` (support_w=0.1, ne_w=0.2) does not currently "

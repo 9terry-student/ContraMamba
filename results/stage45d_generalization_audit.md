@@ -14,11 +14,11 @@ _No non-baseline configs with a matching baseline row were found._
 
 ## Overall Selection Summary
 
-| config | holdout_groups_seen | groups_improved_over_baseline | groups_with_support_recovery_gain | groups_with_refute_regression | groups_with_catastrophic_regression | avg_delta_acc | avg_delta_macro_all3 | avg_delta_support_recall | avg_delta_refute_recall | avg_delta_ne_pred_rate |
-|---|---|---|---|---|---|---|---|---|---|---|
-| baseline | 0 | 0 | 0 | 0 | 0 |  |  |  |  |  |
-| recovery_w01_ne01 | 0 | 0 | 0 | 0 | 0 |  |  |  |  |  |
-| recovery_w010_ne020 | 0 | 0 | 0 | 0 | 0 |  |  |  |  |  |
+| config | holdout_groups_seen | groups_improved_over_baseline | groups_with_support_recovery_gain | groups_with_refute_regression | groups_with_ne_rate_shift_large | groups_with_harmful_ne_rate_shift | groups_with_catastrophic_regression | avg_delta_acc | avg_delta_macro_all3 | avg_delta_support_recall | avg_delta_refute_recall | avg_delta_ne_pred_rate |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| baseline | 0 | 0 | 0 | 0 | 0 | 0 | 0 |  |  |  |  |  |
+| recovery_w01_ne01 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |  |  |  |  |  |
+| recovery_w010_ne020 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |  |  |  |  |  |
 
 ## Recommendation
 

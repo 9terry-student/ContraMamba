@@ -17,6 +17,8 @@
       "avg_delta_support_recall": null,
       "groups_improved_over_baseline": 0,
       "groups_with_catastrophic_regression": 0,
+      "groups_with_harmful_ne_rate_shift": 0,
+      "groups_with_ne_rate_shift_large": 0,
       "groups_with_refute_regression": 0,
       "groups_with_support_recovery_gain": 0,
       "holdout_groups_seen": 0
@@ -29,6 +31,8 @@
       "avg_delta_support_recall": null,
       "groups_improved_over_baseline": 0,
       "groups_with_catastrophic_regression": 0,
+      "groups_with_harmful_ne_rate_shift": 0,
+      "groups_with_ne_rate_shift_large": 0,
       "groups_with_refute_regression": 0,
       "groups_with_support_recovery_gain": 0,
       "holdout_groups_seen": 0
@@ -41,6 +45,8 @@
       "avg_delta_support_recall": null,
       "groups_improved_over_baseline": 0,
       "groups_with_catastrophic_regression": 0,
+      "groups_with_harmful_ne_rate_shift": 0,
+      "groups_with_ne_rate_shift_large": 0,
       "groups_with_refute_regression": 0,
       "groups_with_support_recovery_gain": 0,
       "holdout_groups_seen": 0
