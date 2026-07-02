@@ -320,6 +320,71 @@ def compute_stage31c_coverage_entailment_metrics(
     }
 
 
+def _stage44b_clean_dev_selection_metrics(
+    *,
+    epoch: int,
+    score: float,
+    dev_metrics: dict[str, Any],
+    dev_inputs: dict[str, torch.Tensor],
+    constraints: dict[str, float | None],
+) -> dict[str, Any]:
+    labels_cpu = dev_inputs["final_labels"].detach().cpu().tolist()
+    gold_counts = {
+        label_name: sum(
+            1
+            for label_id in labels_cpu
+            if v5.ID_TO_FINAL_LABEL[int(label_id)] == label_name
+        )
+        for label_name in ("SUPPORT", "REFUTE", "NOT_ENTITLED")
+    }
+    prediction_counts = {
+        label_name: int((dev_metrics.get("prediction_distribution") or {}).get(label_name, 0))
+        for label_name in ("SUPPORT", "REFUTE", "NOT_ENTITLED")
+    }
+    total_predictions = sum(prediction_counts.values())
+    per_label = dev_metrics.get("per_label") or {}
+    support_recall = per_label.get("SUPPORT", {}).get("recall")
+    refute_recall = per_label.get("REFUTE", {}).get("recall")
+    ne_pred_rate = (
+        prediction_counts["NOT_ENTITLED"] / total_predictions
+        if total_predictions
+        else None
+    )
+    accuracy = dev_metrics.get("final_accuracy")
+    checks = {
+        "min_support_recall": (
+            True if constraints.get("min_support_recall") is None
+            else (support_recall is not None and support_recall >= constraints["min_support_recall"])
+        ),
+        "min_refute_recall": (
+            True if constraints.get("min_refute_recall") is None
+            else (refute_recall is not None and refute_recall >= constraints["min_refute_recall"])
+        ),
+        "max_not_entitled_pred_rate": (
+            True if constraints.get("max_not_entitled_pred_rate") is None
+            else (ne_pred_rate is not None and ne_pred_rate <= constraints["max_not_entitled_pred_rate"])
+        ),
+        "min_clean_dev_accuracy": (
+            True if constraints.get("min_clean_dev_accuracy") is None
+            else (accuracy is not None and accuracy >= constraints["min_clean_dev_accuracy"])
+        ),
+    }
+    return {
+        "epoch": epoch,
+        "score": score,
+        "macro_f1": dev_metrics.get("final_macro_f1"),
+        "accuracy": accuracy,
+        "per_label": per_label,
+        "prediction_counts": prediction_counts,
+        "gold_label_counts": gold_counts,
+        "not_entitled_prediction_rate": ne_pred_rate,
+        "support_recall": support_recall,
+        "refute_recall": refute_recall,
+        "constraint_checks": checks,
+        "constraints_satisfied": all(bool(value) for value in checks.values()),
+    }
+
+
 def parse_stage31c_class_weights(
     raw: str | None,
     device: torch.device,
@@ -6728,6 +6793,60 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+    #  Stage44-B: internal-only anti-collapse checkpoint selection
+    parser.add_argument(
+        "--stage44-use-anti-collapse-selection",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage44-B: enable internal clean-dev-only checkpoint selection constraints "
+            "for SUPPORT/REFUTE recall and NOT_ENTITLED prediction rate. Default off."
+        ),
+    )
+    parser.add_argument(
+        "--stage44-min-support-recall",
+        type=float,
+        default=None,
+        help="Stage44-B: optional minimum internal clean-dev SUPPORT recall.",
+    )
+    parser.add_argument(
+        "--stage44-min-refute-recall",
+        type=float,
+        default=None,
+        help="Stage44-B: optional minimum internal clean-dev REFUTE recall.",
+    )
+    parser.add_argument(
+        "--stage44-max-not-entitled-pred-rate",
+        type=float,
+        default=None,
+        help="Stage44-B: optional maximum internal clean-dev NOT_ENTITLED prediction rate.",
+    )
+    parser.add_argument(
+        "--stage44-min-clean-dev-accuracy",
+        type=float,
+        default=None,
+        help="Stage44-B: optional minimum internal clean-dev final accuracy.",
+    )
+    parser.add_argument(
+        "--stage44-selection-fallback",
+        choices=("best_metric", "fail_incomplete"),
+        default="best_metric",
+        help=(
+            "Stage44-B: fallback when no epoch satisfies anti-collapse constraints. "
+            "best_metric keeps the original best-metric checkpoint; fail_incomplete "
+            "marks Stage44-B incomplete while preserving normal output behavior."
+        ),
+    )
+    parser.add_argument(
+        "--stage44-selection-report-json",
+        type=Path,
+        default=None,
+        help=(
+            "Stage44-B: optional path for a standalone internal-only selection report JSON. "
+            "If omitted, fields are embedded in the normal output JSON only."
+        ),
+    )
+
     # Stage28-E: prediction export schema version
     parser.add_argument(
         "--prediction-export-schema",
@@ -8859,6 +8978,13 @@ def main(argv: list[str] | None = None) -> int:
         sel_min_paraphrase_preserved=0.70,
         sel_min_predicate_disentangled=0.85,
         sel_fallback="final_macro_f1",
+        # Stage44-B: internal-only anti-collapse checkpoint selection (default off)
+        stage44_use_anti_collapse_selection=False,
+        stage44_min_support_recall=None,
+        stage44_min_refute_recall=None,
+        stage44_max_not_entitled_pred_rate=None,
+        stage44_min_clean_dev_accuracy=None,
+        stage44_selection_fallback="best_metric",
         # Stage30-C2: temporal safety auxiliary BCE loss (separate dataset; v7 only)
         ts_train_inputs=None,
         ts_train_labels=None,
@@ -8894,6 +9020,14 @@ def main(argv: list[str] | None = None) -> int:
                 "cannot both be enabled in the same run. Enable only one. "
                 "Both selectors override best_* after training; combining them would create "
                 "ambiguous behavior. Use one or the other."
+            )
+        if stage44_use_anti_collapse_selection and (
+            use_preservation_constrained_selection or use_td_constrained_selection
+        ):
+            raise ValueError(
+                "--stage44-use-anti-collapse-selection cannot be combined with "
+                "--use-preservation-constrained-selection or --use-td-constrained-selection. "
+                "Enable only one post-epoch checkpoint selector per run."
             )
         if use_temporal_channel_gated_penalty and ta_final_penalty_scale > 0.0:
             raise ValueError(
@@ -8969,6 +9103,27 @@ def main(argv: list[str] | None = None) -> int:
         _tc_td_final_temporal_rejection: float = float("nan")
         _tc_td_final_control_preservation: float = float("nan")
         _tc_td_final_binary_accuracy: float = float("nan")
+
+        # Stage44-B anti-collapse selection tracking (internal clean-dev only).
+        _stage44_constraints: dict[str, float | None] = {
+            "min_support_recall": stage44_min_support_recall,
+            "min_refute_recall": stage44_min_refute_recall,
+            "max_not_entitled_pred_rate": stage44_max_not_entitled_pred_rate,
+            "min_clean_dev_accuracy": stage44_min_clean_dev_accuracy,
+        }
+        _stage44_candidate_table: list[dict[str, Any]] = []
+        _stage44_epoch: int = -1
+        _stage44_score: float = float("-inf")
+        _stage44_state: "dict[str, torch.Tensor] | None" = None
+        _stage44_dev_metrics: "dict | None" = None
+        _stage44_dev_interventions: "dict | None" = None
+        _stage44_dev_pairwise_checks: "dict | None" = None
+        _stage44_dev_predictions: "list | None" = None
+        _stage44_pc_metrics: dict[str, Any] = {}
+        _stage44_selected_metrics: dict[str, Any] | None = None
+        _stage44_satisfying_count: int = 0
+        _stage44_original_best_epoch: int | None = None
+        _stage44_original_best_metrics: dict[str, Any] | None = None
 
         #  Audit ledger: loss accumulators (reporting only; no effect on training) 
         # Per-epoch raw (pre-weight) and weighted (actual contribution to total_loss) loss values.
@@ -9991,6 +10146,124 @@ def main(argv: list[str] | None = None) -> int:
                 if args.architecture == "v7_hierarchical":
                     _best_dev_output_v7 = _v7_capture_dev_output(dev_output)
 
+            # Stage44-B internal-only anti-collapse checkpoint selection.
+            # Uses only normal internal clean-dev metrics already computed above.
+            if stage44_use_anti_collapse_selection and not smoke_mode:
+                _stage44_row = _stage44b_clean_dev_selection_metrics(
+                    epoch=epoch,
+                    score=score,
+                    dev_metrics=dev_metrics,
+                    dev_inputs=dev_inputs,
+                    constraints=_stage44_constraints,
+                )
+                _stage44_candidate_table.append(_stage44_row)
+                if _stage44_row["constraints_satisfied"]:
+                    _stage44_satisfying_count += 1
+                    if score > _stage44_score:
+                        _stage44_score = score
+                        _stage44_epoch = epoch
+                        _stage44_selected_metrics = _stage44_row
+                        _stage44_dev_metrics = dev_metrics
+                        _stage44_dev_interventions = intervention_diagnostics_v6b(
+                            dev_records, dev_output
+                        )
+                        _stage44_dev_pairwise_checks = (
+                            None if smoke_mode else v5.pairwise_checks(dev_records, dev_output)
+                        )
+                        _stage44_dev_predictions = prediction_records_v6b(
+                            dev_records,
+                            dev_output,
+                            stage32_owner_state_export=getattr(
+                                args, "stage32_owner_state_export", False
+                            ),
+                            stage32_owner_state_shadow_mode=getattr(
+                                args, "stage32_owner_state_shadow_mode", False
+                            ),
+                            stage32_coverage_owner_v2=getattr(
+                                args, "stage32_coverage_owner_v2", False
+                            ),
+                            stage32_coverage_owner_v2_min_confidence=getattr(
+                                args, "stage32_coverage_owner_v2_min_confidence", 0.50
+                            ),
+                            stage32_coverage_owner_v2_min_margin=getattr(
+                                args, "stage32_coverage_owner_v2_min_margin", 0.05
+                            ),
+                            stage32_coverage_owner_v2_allow_abstain=getattr(
+                                args, "stage32_coverage_owner_v2_allow_abstain", False
+                            ),
+                            stage33_structured_coverage_owner=getattr(
+                                args, "stage33_use_structured_coverage_owner", False
+                            ),
+                            stage33_structured_coverage_owner_export=getattr(
+                                args, "stage33_structured_coverage_owner_export", False
+                            ),
+                            stage33_structured_coverage_owner_shadow_mode=getattr(
+                                args, "stage33_structured_coverage_owner_shadow_mode", False
+                            ),
+                            stage33_structured_coverage_preserve_can_support=getattr(
+                                args, "stage33_structured_coverage_preserve_can_support", False
+                            ),
+                            stage33_structured_coverage_direct_support_rules=getattr(
+                                args,
+                                "stage33_structured_coverage_direct_support_rules",
+                                _STAGE33_DEFAULT_DIRECT_SUPPORT_RULES,
+                            ),
+                            stage33_structured_coverage_disable_specific_general_direct_support=getattr(
+                                args,
+                                "stage33_structured_coverage_disable_specific_general_direct_support",
+                                False,
+                            ),
+                            stage33_structured_coverage_weak_rules_to_residual=getattr(
+                                args, "stage33_structured_coverage_weak_rules_to_residual", ""
+                            ),
+                            stage33_structured_coverage_conditional_fallback=getattr(
+                                args, "stage33_structured_coverage_conditional_fallback", False
+                            ),
+                            stage33_structured_coverage_fallback_source=getattr(
+                                args, "stage33_structured_coverage_fallback_source", "current_final"
+                            ),
+                            stage33_structured_coverage_enable_whole_part_rules=getattr(
+                                args, "stage33_structured_coverage_enable_whole_part_rules", False
+                            ),
+                            stage33_structured_coverage_whole_part_direct_support=getattr(
+                                args, "stage33_structured_coverage_whole_part_direct_support", False
+                            ),
+                            stage33_structured_coverage_whole_part_lexicon=getattr(
+                                args, "stage33_structured_coverage_whole_part_lexicon", ""
+                            ),
+                            stage33_structured_coverage_whole_part_v2=getattr(
+                                args, "stage33_structured_coverage_whole_part_v2", False
+                            ),
+                            stage33_structured_coverage_whole_part_v2_use_expanded_lexicon=getattr(
+                                args,
+                                "stage33_structured_coverage_whole_part_v2_use_expanded_lexicon",
+                                False,
+                            ),
+                            stage33_structured_coverage_whole_part_v2_direct_support_policy=getattr(
+                                args,
+                                "stage33_structured_coverage_whole_part_v2_direct_support_policy",
+                                "hard_core_required",
+                            ),
+                            stage33_whole_part_conditional_safe_overrides_hard_core=getattr(
+                                args,
+                                "stage33_whole_part_conditional_safe_overrides_hard_core",
+                                False,
+                            ),
+                            stage36_support_safety_config=_stage36_config_from_args(args),
+                            stage37_safe_support_recovery_config=_stage37_config_from_args(args),
+                            args=args,
+                        )
+                        _stage44_state = {
+                            k: v.detach().cpu().clone()
+                            for k, v in model.state_dict().items()
+                        }
+                        _stage44_pc_metrics = {
+                            **_pc_eval_metrics,
+                            "pair_contrastive_use_case": args.pair_contrastive_use_case,
+                            "count_by_preservation_construction_type": _pc_pres_type_counts,
+                            "count_by_frame_construction_type": _pc_frame_type_counts,
+                        }
+
             # TD-constrained checkpoint selection (parallel, default off, never uses Stage15/OOD)
             if use_td_constrained_selection and not smoke_mode:
                 _ep_pw = v5.pairwise_checks(dev_records, dev_output)
@@ -10533,7 +10806,99 @@ def main(argv: list[str] | None = None) -> int:
             ),
         }
 
-        #  Build run-level audit ledger (reporting only; no model/loss/logit change) 
+        # Apply Stage44-B internal anti-collapse checkpoint selection after all epochs.
+        _stage44_original_best_epoch = best_epoch
+        _stage44_original_best_metrics = next(
+            (
+                row for row in _stage44_candidate_table
+                if row.get("epoch") == _stage44_original_best_epoch
+            ),
+            None,
+        )
+        _stage44_selected_by_constraints = False
+        _stage44_constraints_satisfied = False
+        if not stage44_use_anti_collapse_selection:
+            _stage44_decision = "STAGE44B_INTERNAL_ANTI_COLLAPSE_SELECTION_DISABLED"
+            _stage44_recommendation = (
+                "Stage44-B anti-collapse selection is disabled; default checkpoint selection behavior is unchanged."
+            )
+            _stage44_selected_metrics = _stage44_original_best_metrics
+        elif _stage44_epoch >= 1:
+            _stage44_selected_by_constraints = True
+            _stage44_constraints_satisfied = True
+            best_epoch = _stage44_epoch
+            best_dev_metrics = _stage44_dev_metrics
+            best_dev_interventions = _stage44_dev_interventions
+            best_dev_pairwise_checks = _stage44_dev_pairwise_checks
+            best_dev_predictions = _stage44_dev_predictions
+            best_state = _stage44_state
+            best_pc_metrics = _stage44_pc_metrics
+            _stage44_decision = "STAGE44B_INTERNAL_ANTI_COLLAPSE_SELECTION_READY"
+            _stage44_recommendation = (
+                "Selected the highest primary-metric internal clean-dev checkpoint satisfying Stage44-B anti-collapse constraints."
+            )
+            print(
+                f"  [stage44b_sel] selected epoch={_stage44_epoch} "
+                f"score={_stage44_score:.4f} satisfying_epochs={_stage44_satisfying_count} "
+                f"original_best_epoch={_stage44_original_best_epoch}"
+            )
+        elif stage44_selection_fallback == "fail_incomplete":
+            _stage44_decision = "STAGE44B_INTERNAL_ANTI_COLLAPSE_SELECTION_INCOMPLETE"
+            _stage44_recommendation = (
+                "No internal clean-dev epoch satisfied Stage44-B constraints; normal best-metric checkpoint is preserved, but Stage44-B should be treated as incomplete."
+            )
+            _stage44_selected_metrics = _stage44_original_best_metrics
+            print(
+                "  [stage44b_sel] WARNING: no eligible epoch found; "
+                f"fallback=fail_incomplete preserves original best epoch={best_epoch}"
+            )
+        else:
+            _stage44_decision = "STAGE44B_INTERNAL_ANTI_COLLAPSE_SELECTION_FALLBACK"
+            _stage44_recommendation = (
+                "No internal clean-dev epoch satisfied Stage44-B constraints; selected the original best-metric checkpoint by fallback policy."
+            )
+            _stage44_selected_metrics = _stage44_original_best_metrics
+            print(
+                "  [stage44b_sel] WARNING: no eligible epoch found; "
+                f"fallback=best_metric preserves original best epoch={best_epoch}"
+            )
+
+        _stage44_selected_metrics_final = next(
+            (row for row in _stage44_candidate_table if row.get("epoch") == best_epoch),
+            _stage44_selected_metrics,
+        )
+        _stage44_selection_info: dict[str, Any] = {
+            "stage44b_enabled": bool(stage44_use_anti_collapse_selection),
+            "stage44b_decision": _stage44_decision,
+            "stage44b_selection_mode": "internal_clean_dev_constraints",
+            "stage44b_constraints": _stage44_constraints,
+            "stage44b_selected_epoch": best_epoch if stage44_use_anti_collapse_selection else None,
+            "stage44b_original_best_metric_epoch": (
+                _stage44_original_best_epoch if stage44_use_anti_collapse_selection else None
+            ),
+            "stage44b_selected_by_constraints": _stage44_selected_by_constraints,
+            "stage44b_constraints_satisfied": _stage44_constraints_satisfied,
+            "stage44b_num_candidate_epochs": len(_stage44_candidate_table),
+            "stage44b_num_constraint_satisfying_epochs": _stage44_satisfying_count,
+            "stage44b_candidate_table": _stage44_candidate_table,
+            "stage44b_selected_metrics": _stage44_selected_metrics_final,
+            "stage44b_original_best_metric_metrics": _stage44_original_best_metrics,
+            "stage44b_not_entitled_prediction_rate": (
+                (_stage44_selected_metrics_final or {}).get("not_entitled_prediction_rate")
+            ),
+            "stage44b_support_recall": (
+                (_stage44_selected_metrics_final or {}).get("support_recall")
+            ),
+            "stage44b_refute_recall": (
+                (_stage44_selected_metrics_final or {}).get("refute_recall")
+            ),
+            "stage44b_leakage_policy": (
+                "Stage44-B uses only the normal internal clean-dev split. It does not read or use Stage43-B1 external labels, metrics, examples, predictions, thresholds, calibration, checkpoint/model selection signals, loss design signals, or composer behavior changes."
+            ),
+            "stage44b_recommendation": _stage44_recommendation,
+        }
+
+        #  Build run-level audit ledger (reporting only; no model/loss/logit change)
         _n = max(_audit_epoch_count, 1)
 
         def _avg_epoch_dicts(dicts: list[dict]) -> dict[str, float]:
@@ -11005,6 +11370,20 @@ def main(argv: list[str] | None = None) -> int:
                     _pcs_eligible_count if use_preservation_constrained_selection else None
                 ),
             },
+            "stage44b_anti_collapse_selection": {
+                "enabled": bool(stage44_use_anti_collapse_selection),
+                "constraints": _stage44_constraints if stage44_use_anti_collapse_selection else None,
+                "fallback": stage44_selection_fallback,
+                "stage43b1_used": False,
+                "fallback_triggered": (
+                    bool(stage44_use_anti_collapse_selection)
+                    and not _stage44_selected_by_constraints
+                    and _stage44_satisfying_count == 0
+                ),
+                "eligible_epoch_count": (
+                    _stage44_satisfying_count if stage44_use_anti_collapse_selection else None
+                ),
+            },
         }
 
         # Audit warnings (reporting only; using weighted ratios as primary signal)
@@ -11246,6 +11625,7 @@ def main(argv: list[str] | None = None) -> int:
             "best_stage31c_coverage_entailment_metrics": best_covent_metrics,
             **_tc_selection_info,
             **_pcs_selection_info,
+            **_stage44_selection_info,
             "audit_ledger": _run_audit_ledger,
             # Stage26-F: per-epoch dev metric history for post-hoc diagnosis
             "v7_epoch_diagnostic_history": _v7_epoch_history,
@@ -11383,6 +11763,12 @@ def main(argv: list[str] | None = None) -> int:
             sel_min_paraphrase_preserved=args.selection_min_paraphrase_preserved,
             sel_min_predicate_disentangled=args.selection_min_predicate_disentangled,
             sel_fallback=args.selection_fallback,
+            stage44_use_anti_collapse_selection=args.stage44_use_anti_collapse_selection,
+            stage44_min_support_recall=args.stage44_min_support_recall,
+            stage44_min_refute_recall=args.stage44_min_refute_recall,
+            stage44_max_not_entitled_pred_rate=args.stage44_max_not_entitled_pred_rate,
+            stage44_min_clean_dev_accuracy=args.stage44_min_clean_dev_accuracy,
+            stage44_selection_fallback=args.stage44_selection_fallback,
             ts_train_inputs=_ts_train_inputs if _ts_data_needed else None,
             ts_train_labels=_ts_train_labels if _ts_data_needed else None,
             ts_train_mask=_ts_train_mask if _ts_data_needed else None,
@@ -12382,6 +12768,25 @@ def main(argv: list[str] | None = None) -> int:
             "preservation_constrained_selection_selected_clean_macro",
             "preservation_constrained_selection_selected_paraphrase_preserved",
             "preservation_constrained_selection_selected_predicate_disentangled",
+            # Stage44-B internal anti-collapse selection results
+            "stage44b_enabled",
+            "stage44b_decision",
+            "stage44b_selection_mode",
+            "stage44b_constraints",
+            "stage44b_selected_epoch",
+            "stage44b_original_best_metric_epoch",
+            "stage44b_selected_by_constraints",
+            "stage44b_constraints_satisfied",
+            "stage44b_num_candidate_epochs",
+            "stage44b_num_constraint_satisfying_epochs",
+            "stage44b_candidate_table",
+            "stage44b_selected_metrics",
+            "stage44b_original_best_metric_metrics",
+            "stage44b_not_entitled_prediction_rate",
+            "stage44b_support_recall",
+            "stage44b_refute_recall",
+            "stage44b_leakage_policy",
+            "stage44b_recommendation",
             # Audit ledger (nested dict; lifted from run report)
             "audit_ledger",
         ):
@@ -12846,6 +13251,20 @@ def main(argv: list[str] | None = None) -> int:
                 args, "selection_min_predicate_disentangled", 0.85
             ),
             "selection_fallback": getattr(args, "selection_fallback", "final_macro_f1"),
+            "stage44_use_anti_collapse_selection": getattr(
+                args, "stage44_use_anti_collapse_selection", False
+            ),
+            "stage44_min_support_recall": getattr(args, "stage44_min_support_recall", None),
+            "stage44_min_refute_recall": getattr(args, "stage44_min_refute_recall", None),
+            "stage44_max_not_entitled_pred_rate": getattr(
+                args, "stage44_max_not_entitled_pred_rate", None
+            ),
+            "stage44_min_clean_dev_accuracy": getattr(
+                args, "stage44_min_clean_dev_accuracy", None
+            ),
+            "stage44_selection_fallback": getattr(
+                args, "stage44_selection_fallback", "best_metric"
+            ),
             "preservation_constrained_selection_used": (
                 next(iter(reports.values()), {}).get(
                     "preservation_constrained_selection_used", False
@@ -13396,6 +13815,55 @@ def main(argv: list[str] | None = None) -> int:
     lift_report_aliases(report)
 
     print("\nFINAL_REPORT")
+    if getattr(args, "stage44_selection_report_json", None) is not None:
+        _stage44_report_keys = [
+            "stage44b_enabled",
+            "stage44b_decision",
+            "stage44b_selection_mode",
+            "stage44b_constraints",
+            "stage44b_selected_epoch",
+            "stage44b_original_best_metric_epoch",
+            "stage44b_selected_by_constraints",
+            "stage44b_constraints_satisfied",
+            "stage44b_num_candidate_epochs",
+            "stage44b_num_constraint_satisfying_epochs",
+            "stage44b_candidate_table",
+            "stage44b_selected_metrics",
+            "stage44b_original_best_metric_metrics",
+            "stage44b_not_entitled_prediction_rate",
+            "stage44b_support_recall",
+            "stage44b_refute_recall",
+            "stage44b_leakage_policy",
+            "stage44b_recommendation",
+        ]
+        _stage44_report = {
+            key: report.get(key)
+            for key in _stage44_report_keys
+            if key in report
+        }
+        if "stage44b_decision" not in _stage44_report:
+            _stage44_report["per_run_stage44b"] = {
+                name: {
+                    key: run_report.get(key)
+                    for key in _stage44_report_keys
+                    if key in run_report
+                }
+                for name, run_report in reports.items()
+            }
+        _stage44_report.update(
+            {
+                "stage44b_report_scope": "internal_clean_dev_only",
+                "stage43b1_files_read": False,
+                "stage43b1_used_for_threshold_selection": False,
+                "stage43b1_used_for_checkpoint_selection": False,
+                "stage43b1_used_for_calibration": False,
+                "stage43b1_used_for_loss_design": False,
+                "stage43b1_used_for_model_selection": False,
+                "stage43b1_used_for_composer_behavior_changes": False,
+            }
+        )
+        v5.write_report_json(_stage44_report, args.stage44_selection_report_json)
+
     print(json.dumps(report, indent=2, sort_keys=True))
     if args.output_json is not None:
         v5.write_report_json(report, args.output_json)
