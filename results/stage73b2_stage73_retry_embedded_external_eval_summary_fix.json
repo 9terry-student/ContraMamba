@@ -1,0 +1,384 @@
+{
+  "summary": {
+    "stage": "Stage73B2",
+    "decision": "STAGE73B2_STAGE73_RETRY_EMBEDDED_EXTERNAL_EVAL_SUMMARY_READY",
+    "purpose": "Correct Stage73 retry embedded external-eval summary using deep metadata lookup; no training rerun.",
+    "source_run_dir": "results/stage73_retry_stage57_stage66_bridge_vitaminc_external_diag_run_20260702_080534",
+    "source_train_report": "results/stage73_retry_stage57_stage66_bridge_vitaminc_external_diag_run_20260702_080534/stage73_retry_stage57_stage66_train_report.json",
+    "source_predictions_json": "results/stage73_retry_stage57_stage66_bridge_vitaminc_external_diag_run_20260702_080534/stage73_retry_stage57_stage66_predictions.json",
+    "source_stdout_log": "results/stage73_retry_stage57_stage66_bridge_vitaminc_external_diag_run_20260702_080534/stage73_retry_stdout.log",
+    "best_epoch": 151,
+    "selected_epoch": 151,
+    "best_dev_acc": 0.9750000238418579,
+    "best_dev_macro_f1": 0.9640472521828455,
+    "external_eval_name": "stage73_retry_vitaminc",
+    "external_eval_jsonl": "data/stage43b1_vitaminc_validation_sample1000.jsonl",
+    "external_predictions_path": "results/stage73_retry_stage57_stage66_bridge_vitaminc_external_diag_run_20260702_080534/external_vitaminc/external_probe_stage73_retry_vitaminc_predictions.json",
+    "external_n_records": 1000,
+    "external_accuracy": 0.353,
+    "external_macro_f1": 0.3262,
+    "external_prediction_distribution": {
+      "NOT_ENTITLED": 388,
+      "REFUTE": 219,
+      "SUPPORT": 393
+    },
+    "external_label_counts": {
+      "NOT_ENTITLED": 145,
+      "REFUTE": 355,
+      "SUPPORT": 500
+    },
+    "external_per_label": {
+      "NOT_ENTITLED": {
+        "f1": 0.2439,
+        "precision": 0.1675,
+        "predicted": 388,
+        "recall": 0.4483,
+        "support": 145
+      },
+      "REFUTE": {
+        "f1": 0.2509,
+        "precision": 0.3288,
+        "predicted": 219,
+        "recall": 0.2028,
+        "support": 355
+      },
+      "SUPPORT": {
+        "f1": 0.4838,
+        "precision": 0.5496,
+        "predicted": 393,
+        "recall": 0.432,
+        "support": 500
+      }
+    },
+    "false_SUPPORT_total": 177,
+    "true_SUPPORT_correct": 216,
+    "external_schema_normalized": true,
+    "external_schema_label_field_used": [
+      "label"
+    ],
+    "external_schema_missing_final_label_fixed": true,
+    "external_schema_records_normalized": 1000,
+    "external_schema_records_with_added_aux_labels": 1000,
+    "bridge_rows_excluded_from_intervention_pairwise_loss": true,
+    "intervention_pairwise_loss_source": "clean_main_train_only",
+    "intervention_pairwise_loss_clean_main_row_count": 2880,
+    "intervention_pairwise_loss_bridge_row_count_excluded": 1240,
+    "intervention_pairwise_loss_stage57_row_count_excluded": 520,
+    "intervention_pairwise_loss_stage66_row_count_excluded": 720,
+    "stage73_minus_stage63_accuracy": 0.030999999999999972,
+    "stage73_minus_stage63_macro_f1": 0.010880999999999974,
+    "stage73_minus_stage53_accuracy": 0.19699999999999998,
+    "stage73_minus_stage53_macro_f1": 0.21021399999999998,
+    "training_executed": false,
+    "external_eval_executed": false,
+    "rerun_required": false,
+    "recommended_next_stage": "Stage74 residual external error audit using Stage73 retry external predictions"
+  },
+  "metadata_checks": [
+    {
+      "check": "train_report_exists",
+      "pass": true
+    },
+    {
+      "check": "predictions_json_exists",
+      "pass": true
+    },
+    {
+      "check": "stdout_log_exists",
+      "pass": true
+    },
+    {
+      "check": "external_eval_present_in_train_report",
+      "pass": true
+    },
+    {
+      "check": "external_n_records_1000",
+      "pass": true
+    },
+    {
+      "check": "external_accuracy_present",
+      "pass": true
+    },
+    {
+      "check": "external_macro_f1_present",
+      "pass": true
+    },
+    {
+      "check": "external_schema_normalized_true",
+      "pass": true
+    },
+    {
+      "check": "external_schema_missing_final_label_fixed_true",
+      "pass": true
+    },
+    {
+      "check": "external_schema_records_normalized_1000",
+      "pass": true
+    },
+    {
+      "check": "external_schema_records_with_added_aux_labels_1000",
+      "pass": true
+    },
+    {
+      "check": "external_probe_not_used_for_training",
+      "pass": true
+    },
+    {
+      "check": "external_probe_not_used_for_checkpoint_selection",
+      "pass": true
+    },
+    {
+      "check": "external_probe_not_used_for_calibration",
+      "pass": true
+    },
+    {
+      "check": "stage57_enabled",
+      "pass": true
+    },
+    {
+      "check": "stage57_row_count_520",
+      "pass": true
+    },
+    {
+      "check": "stage57_train_only",
+      "pass": true
+    },
+    {
+      "check": "stage57_not_dev",
+      "pass": true
+    },
+    {
+      "check": "stage57_not_checkpoint",
+      "pass": true
+    },
+    {
+      "check": "stage66_enabled",
+      "pass": true
+    },
+    {
+      "check": "stage66_row_count_720",
+      "pass": true
+    },
+    {
+      "check": "stage66_train_only",
+      "pass": true
+    },
+    {
+      "check": "stage66_not_dev",
+      "pass": true
+    },
+    {
+      "check": "stage66_not_checkpoint",
+      "pass": true
+    },
+    {
+      "check": "combined_bridge_enabled",
+      "pass": true
+    },
+    {
+      "check": "combined_bridge_row_count_1240",
+      "pass": true
+    },
+    {
+      "check": "combined_bridge_train_only",
+      "pass": true
+    },
+    {
+      "check": "bridge_pairwise_excluded",
+      "pass": true
+    },
+    {
+      "check": "stage57_pairwise_excluded",
+      "pass": true
+    },
+    {
+      "check": "stage66_pairwise_excluded",
+      "pass": true
+    },
+    {
+      "check": "pairwise_source_clean_main",
+      "pass": true
+    },
+    {
+      "check": "pairwise_clean_main_2880",
+      "pass": true
+    },
+    {
+      "check": "pairwise_bridge_excluded_1240",
+      "pass": true
+    },
+    {
+      "check": "pairwise_stage57_excluded_520",
+      "pass": true
+    },
+    {
+      "check": "pairwise_stage66_excluded_720",
+      "pass": true
+    },
+    {
+      "check": "clean_dev_checkpoint_selection",
+      "pass": true
+    },
+    {
+      "check": "external_data_not_used_for_training",
+      "pass": true
+    },
+    {
+      "check": "external_metrics_not_used_for_threshold_tuning",
+      "pass": true
+    },
+    {
+      "check": "time_swap_false",
+      "pass": true
+    }
+  ],
+  "comparisons": [
+    {
+      "comparison": "Stage73_retry_minus_Stage53A",
+      "delta_accuracy": 0.19699999999999998,
+      "delta_macro_f1": 0.21021399999999998,
+      "stage73_accuracy": 0.353,
+      "baseline_accuracy": 0.156,
+      "stage73_macro_f1": 0.3262,
+      "baseline_macro_f1": 0.115986
+    },
+    {
+      "comparison": "Stage73_retry_minus_Stage63",
+      "delta_accuracy": 0.030999999999999972,
+      "delta_macro_f1": 0.010880999999999974,
+      "stage73_accuracy": 0.353,
+      "baseline_accuracy": 0.322,
+      "stage73_macro_f1": 0.3262,
+      "baseline_macro_f1": 0.315319
+    }
+  ],
+  "external_distribution": [
+    {
+      "label": "NOT_ENTITLED",
+      "gold": 145,
+      "predicted": 388
+    },
+    {
+      "label": "REFUTE",
+      "gold": 355,
+      "predicted": 219
+    },
+    {
+      "label": "SUPPORT",
+      "gold": 500,
+      "predicted": 393
+    }
+  ],
+  "external_per_label": [
+    {
+      "label": "NOT_ENTITLED",
+      "f1": 0.2439,
+      "precision": 0.1675,
+      "predicted": 388,
+      "recall": 0.4483,
+      "support": 145
+    },
+    {
+      "label": "REFUTE",
+      "f1": 0.2509,
+      "precision": 0.3288,
+      "predicted": 219,
+      "recall": 0.2028,
+      "support": 355
+    },
+    {
+      "label": "SUPPORT",
+      "f1": 0.4838,
+      "precision": 0.5496,
+      "predicted": 393,
+      "recall": 0.432,
+      "support": 500
+    }
+  ],
+  "embedded_external_eval": {
+    "config_summary": {
+      "architecture": "v6b_minimal",
+      "flag_source": "controlled_heuristic",
+      "v7_h1_entitlement_decision_signal": "learned",
+      "v7_location_boundary_cap_detach": false,
+      "v7_location_boundary_cap_gamma": 1.0,
+      "v7_location_boundary_cap_mode": "none",
+      "v7_temporal_mismatch_multihead_cap_mode": "none",
+      "v7_temporal_mismatch_multihead_fusion": "frame_only",
+      "v7_temporal_safety_cap_detach": false,
+      "v7_temporal_safety_cap_gamma": 1.0,
+      "v7_temporal_safety_cap_mode": "none",
+      "v7_use_location_boundary_head": false,
+      "v7_use_location_boundary_loss": false,
+      "v7_use_temporal_mismatch_multihead": false,
+      "v7_use_temporal_mismatch_multihead_loss": false,
+      "v7_use_temporal_safety_head": false,
+      "v7_use_temporal_safety_loss": false,
+      "v7_use_v6b_style_final_decision": false
+    },
+    "eval_epoch": 151,
+    "eval_state": "best_dev",
+    "external_eval_jsonl": "data/stage43b1_vitaminc_validation_sample1000.jsonl",
+    "external_eval_name": "stage73_retry_vitaminc",
+    "external_eval_path": "data/stage43b1_vitaminc_validation_sample1000.jsonl",
+    "external_probe_used_for_calibration": false,
+    "external_probe_used_for_checkpoint_selection": false,
+    "external_probe_used_for_training": false,
+    "external_schema_label_field_used": [
+      "label"
+    ],
+    "external_schema_missing_final_label_fixed": true,
+    "external_schema_normalization_source": "runner_external_eval",
+    "external_schema_normalized": true,
+    "external_schema_records_normalized": 1000,
+    "external_schema_records_with_added_aux_labels": 1000,
+    "false_SUPPORT_by_axis": {},
+    "false_SUPPORT_by_intervention": {
+      "stage43b1_external_factver": 177
+    },
+    "false_SUPPORT_total": 177,
+    "final_accuracy": 0.353,
+    "final_macro_f1": 0.3262,
+    "intervention_counts": {
+      "stage43b1_external_factver": 1000
+    },
+    "label_counts": {
+      "NOT_ENTITLED": 145,
+      "REFUTE": 355,
+      "SUPPORT": 500
+    },
+    "n_records": 1000,
+    "output_predictions_path": "results/stage73_retry_stage57_stage66_bridge_vitaminc_external_diag_run_20260702_080534/external_vitaminc/external_probe_stage73_retry_vitaminc_predictions.json",
+    "per_label": {
+      "NOT_ENTITLED": {
+        "f1": 0.2439,
+        "precision": 0.1675,
+        "predicted": 388,
+        "recall": 0.4483,
+        "support": 145
+      },
+      "REFUTE": {
+        "f1": 0.2509,
+        "precision": 0.3288,
+        "predicted": 219,
+        "recall": 0.2028,
+        "support": 355
+      },
+      "SUPPORT": {
+        "f1": 0.4838,
+        "precision": 0.5496,
+        "predicted": 393,
+        "recall": 0.432,
+        "support": 500
+      }
+    },
+    "prediction_distribution": {
+      "NOT_ENTITLED": 388,
+      "REFUTE": 219,
+      "SUPPORT": 393
+    },
+    "stage15_used_for_checkpoint_selection": false,
+    "stage15_used_for_training": false,
+    "true_SUPPORT_correct": 216
+  }
+}
