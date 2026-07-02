@@ -1,0 +1,292 @@
+{
+  "summary": {
+    "stage": "Stage69",
+    "decision": "STAGE69_STAGE57_STAGE66_BRIDGE_INTEGRATION_PLAN_READY",
+    "main_data": "data/controlled_v5_v3_without_time_swap.jsonl",
+    "main_row_count": 3600,
+    "stage57_bridge_data": "data/stage57_nonleaking_external_bridge.jsonl",
+    "stage57_bridge_row_count": 520,
+    "stage66_bridge_data": "data/stage66_residual_bridge.jsonl",
+    "stage66_bridge_row_count": 720,
+    "combined_bridge_row_count": 1240,
+    "stage57_ratio_vs_main": 0.14444444444444443,
+    "stage66_ratio_vs_main": 0.2,
+    "combined_bridge_ratio_vs_main": 0.34444444444444444,
+    "primary_integration_mode": "stage57_stage66_append_train_only",
+    "clean_dev_for_checkpoint_selection": true,
+    "stage57_used_for_dev": false,
+    "stage66_used_for_dev": false,
+    "stage57_used_for_checkpoint_selection": false,
+    "stage66_used_for_checkpoint_selection": false,
+    "external_data_used_for_training": false,
+    "external_metrics_used_for_threshold_tuning": false,
+    "time_swap_used": false,
+    "recommended_next_stage": "Stage70 runner patch for Stage57 + Stage66 train-only bridge integration"
+  },
+  "checks": [
+    {
+      "check": "main_clean_exists",
+      "pass": true
+    },
+    {
+      "check": "stage57_exists",
+      "pass": true
+    },
+    {
+      "check": "stage66_exists",
+      "pass": true
+    },
+    {
+      "check": "main_row_count_ok",
+      "pass": true
+    },
+    {
+      "check": "stage57_row_count_ok",
+      "pass": true
+    },
+    {
+      "check": "stage66_row_count_ok",
+      "pass": true
+    },
+    {
+      "check": "combined_bridge_row_count_ok",
+      "pass": true
+    },
+    {
+      "check": "stage57_label_counts_ok",
+      "pass": true
+    },
+    {
+      "check": "stage66_label_counts_ok",
+      "pass": true
+    },
+    {
+      "check": "combined_bridge_label_counts_ok",
+      "pass": true
+    },
+    {
+      "check": "stage68_ready",
+      "pass": true
+    },
+    {
+      "check": "stage67_ready",
+      "pass": true
+    },
+    {
+      "check": "stage66_design_ready",
+      "pass": true
+    },
+    {
+      "check": "no_stage57_stage66_id_overlap",
+      "pass": true
+    },
+    {
+      "check": "no_stage57_stage66_pair_overlap",
+      "pass": true
+    },
+    {
+      "check": "no_main_stage57_pair_overlap",
+      "pass": true
+    },
+    {
+      "check": "no_main_stage66_pair_overlap",
+      "pass": true
+    }
+  ],
+  "main_label_counts": [
+    {
+      "label": "NOT_ENTITLED",
+      "main_count": 2700
+    },
+    {
+      "label": "REFUTE",
+      "main_count": 450
+    },
+    {
+      "label": "SUPPORT",
+      "main_count": 450
+    }
+  ],
+  "bridge_label_plan": [
+    {
+      "label": "NOT_ENTITLED",
+      "stage57_count": 200,
+      "stage66_count": 40,
+      "combined_bridge_count": 240,
+      "main_plus_bridge_count": 2940
+    },
+    {
+      "label": "REFUTE",
+      "stage57_count": 160,
+      "stage66_count": 320,
+      "combined_bridge_count": 480,
+      "main_plus_bridge_count": 930
+    },
+    {
+      "label": "SUPPORT",
+      "stage57_count": 160,
+      "stage66_count": 360,
+      "combined_bridge_count": 520,
+      "main_plus_bridge_count": 970
+    }
+  ],
+  "bridge_ratio_plan": [
+    {
+      "main_rows": 3600,
+      "stage57_rows": 520,
+      "stage66_rows": 720,
+      "combined_bridge_rows": 1240,
+      "stage57_ratio_vs_main": 0.14444444444444443,
+      "stage66_ratio_vs_main": 0.2,
+      "combined_bridge_ratio_vs_main": 0.34444444444444444
+    }
+  ],
+  "integration_modes": [
+    {
+      "mode": "baseline_no_bridge",
+      "description": "Stage51-compatible frozen recovery baseline without Stage57 or Stage66 bridge rows.",
+      "train_data": "clean main train split only",
+      "dev_data": "clean main dev split only",
+      "bridge_rows": 0,
+      "purpose": "Reference internal baseline."
+    },
+    {
+      "mode": "stage57_only_append_train_only",
+      "description": "Stage61-compatible Stage57 train-only bridge integration.",
+      "train_data": "clean main train split + Stage57 bridge rows",
+      "dev_data": "clean main dev split only",
+      "bridge_rows": 520,
+      "purpose": "Reference bridge improvement baseline."
+    },
+    {
+      "mode": "stage57_stage66_append_train_only",
+      "description": "Primary Stage70 mode: append Stage57 and Stage66 bridge rows to train only after clean split.",
+      "train_data": "clean main train split + Stage57 bridge rows + Stage66 bridge rows",
+      "dev_data": "clean main dev split only",
+      "bridge_rows": 1240,
+      "purpose": "Test residual bridge expansion while preserving clean-dev evaluation."
+    }
+  ],
+  "runner_patch_requirements": [
+    {
+      "requirement": "Add optional CLI --stage66-bridge-train-jsonl",
+      "detail": "Path to data/stage66_residual_bridge.jsonl. Default None."
+    },
+    {
+      "requirement": "Add optional CLI --stage66-bridge-train-mode",
+      "detail": "Choices: none, append_train_only. Default none."
+    },
+    {
+      "requirement": "Keep existing Stage57 flags unchanged",
+      "detail": "Do not break --stage57-bridge-train-jsonl or --stage57-bridge-train-mode."
+    },
+    {
+      "requirement": "Split clean main data before appending bridge rows",
+      "detail": "Stage57/Stage66 bridge rows must never enter dev or checkpoint selection."
+    },
+    {
+      "requirement": "Report separate and combined bridge metadata",
+      "detail": "Include Stage57 counts, Stage66 counts, combined bridge counts, family counts, and label counts."
+    },
+    {
+      "requirement": "Hard fail forbidden external/time_swap paths",
+      "detail": "Stage66 must be synthetic-only; no VitaminC/Stage63/Stage65 text, no time_swap."
+    },
+    {
+      "requirement": "Preserve default behavior",
+      "detail": "If both bridge modes are none, output must match pre-Stage60 default behavior."
+    }
+  ],
+  "overlap_checks": [
+    {
+      "overlap_check": "stage57_stage66_id_overlap",
+      "count": 0
+    },
+    {
+      "overlap_check": "main_stage57_id_overlap",
+      "count": 0
+    },
+    {
+      "overlap_check": "main_stage66_id_overlap",
+      "count": 0
+    },
+    {
+      "overlap_check": "stage57_stage66_pair_overlap",
+      "count": 0
+    },
+    {
+      "overlap_check": "main_stage57_pair_overlap",
+      "count": 0
+    },
+    {
+      "overlap_check": "main_stage66_pair_overlap",
+      "count": 0
+    }
+  ],
+  "stage57_family_counts": [
+    {
+      "stage57_family": "distractor_evidence_bridge",
+      "count": 40
+    },
+    {
+      "stage57_family": "entity_attribute_bridge",
+      "count": 120
+    },
+    {
+      "stage57_family": "lexical_paraphrase_bridge",
+      "count": 120
+    },
+    {
+      "stage57_family": "numeric_comparison_bridge",
+      "count": 120
+    },
+    {
+      "stage57_family": "temporal_comparison_bridge",
+      "count": 120
+    }
+  ],
+  "stage66_family_counts": [
+    {
+      "stage66_family": "numeric_temporal_comparison_bridge",
+      "count": 120
+    },
+    {
+      "stage66_family": "polarity_disambiguation_bridge",
+      "count": 200
+    },
+    {
+      "stage66_family": "refute_entitlement_recovery_bridge",
+      "count": 160
+    },
+    {
+      "stage66_family": "strict_ne_frame_safety_bridge",
+      "count": 40
+    },
+    {
+      "stage66_family": "support_entitlement_recovery_bridge",
+      "count": 200
+    }
+  ],
+  "source_files": {
+    "main_clean_data": "data/controlled_v5_v3_without_time_swap.jsonl",
+    "stage57_bridge": "data/stage57_nonleaking_external_bridge.jsonl",
+    "stage66_bridge": "data/stage66_residual_bridge.jsonl",
+    "stage59_plan": "results/stage59_bridge_integration_plan.json",
+    "stage66_design": "results/stage66_residual_bridge_expansion_design.json",
+    "stage67_audit": "results/stage67_stage66_residual_bridge_generation_audit.json",
+    "stage68_audit": "results/stage68_stage66_residual_bridge_static_audit.json"
+  },
+  "leakage_policy": {
+    "training_executed": false,
+    "external_eval_executed": false,
+    "stage57_bridge_train_only": true,
+    "stage66_bridge_train_only": true,
+    "stage57_used_for_dev": false,
+    "stage66_used_for_dev": false,
+    "stage57_used_for_checkpoint_selection": false,
+    "stage66_used_for_checkpoint_selection": false,
+    "external_data_used_for_training": false,
+    "external_metrics_used_for_threshold_tuning": false,
+    "time_swap_used": false
+  }
+}
