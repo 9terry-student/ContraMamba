@@ -326,7 +326,7 @@ def _stage44b_clean_dev_selection_metrics(
     score: float,
     dev_metrics: dict[str, Any],
     dev_inputs: dict[str, torch.Tensor],
-    constraints: dict[str, float | None],
+    constraints: dict[str, Any],
 ) -> dict[str, Any]:
     labels_cpu = dev_inputs["final_labels"].detach().cpu().tolist()
     gold_counts = {
@@ -337,6 +337,11 @@ def _stage44b_clean_dev_selection_metrics(
         )
         for label_name in ("SUPPORT", "REFUTE", "NOT_ENTITLED")
     }
+    total_gold = sum(gold_counts.values())
+    gold_rates = {
+        label_name: (count / total_gold if total_gold else None)
+        for label_name, count in gold_counts.items()
+    }
     prediction_counts = {
         label_name: int((dev_metrics.get("prediction_distribution") or {}).get(label_name, 0))
         for label_name in ("SUPPORT", "REFUTE", "NOT_ENTITLED")
@@ -345,12 +350,23 @@ def _stage44b_clean_dev_selection_metrics(
     per_label = dev_metrics.get("per_label") or {}
     support_recall = per_label.get("SUPPORT", {}).get("recall")
     refute_recall = per_label.get("REFUTE", {}).get("recall")
+    support_precision = per_label.get("SUPPORT", {}).get("precision")
+    refute_precision = per_label.get("REFUTE", {}).get("precision")
     ne_pred_rate = (
         prediction_counts["NOT_ENTITLED"] / total_predictions
         if total_predictions
         else None
     )
+    gold_ne_rate = gold_rates.get("NOT_ENTITLED")
+    ne_pred_minus_gold_ne_rate = (
+        ne_pred_rate - gold_ne_rate
+        if ne_pred_rate is not None and gold_ne_rate is not None
+        else None
+    )
     accuracy = dev_metrics.get("final_accuracy")
+    macro_f1 = dev_metrics.get("final_macro_f1")
+    prior_aware_enabled = bool(constraints.get("use_prior_aware_ne_constraint"))
+    prior_delta = constraints.get("max_ne_gold_prior_delta")
     checks = {
         "min_support_recall": (
             True if constraints.get("min_support_recall") is None
@@ -364,26 +380,49 @@ def _stage44b_clean_dev_selection_metrics(
             True if constraints.get("max_not_entitled_pred_rate") is None
             else (ne_pred_rate is not None and ne_pred_rate <= constraints["max_not_entitled_pred_rate"])
         ),
+        "prior_aware_ne_pred_rate": (
+            True if (not prior_aware_enabled or prior_delta is None)
+            else (
+                ne_pred_rate is not None
+                and gold_ne_rate is not None
+                and ne_pred_rate <= gold_ne_rate + prior_delta
+            )
+        ),
         "min_clean_dev_accuracy": (
             True if constraints.get("min_clean_dev_accuracy") is None
             else (accuracy is not None and accuracy >= constraints["min_clean_dev_accuracy"])
+        ),
+        "min_macro_f1": (
+            True if (not prior_aware_enabled or constraints.get("min_macro_f1") is None)
+            else (macro_f1 is not None and macro_f1 >= constraints["min_macro_f1"])
+        ),
+        "min_support_precision": (
+            True if (not prior_aware_enabled or constraints.get("min_support_precision") is None)
+            else (support_precision is not None and support_precision >= constraints["min_support_precision"])
+        ),
+        "min_refute_precision": (
+            True if (not prior_aware_enabled or constraints.get("min_refute_precision") is None)
+            else (refute_precision is not None and refute_precision >= constraints["min_refute_precision"])
         ),
     }
     return {
         "epoch": epoch,
         "score": score,
-        "macro_f1": dev_metrics.get("final_macro_f1"),
+        "macro_f1": macro_f1,
         "accuracy": accuracy,
         "per_label": per_label,
         "prediction_counts": prediction_counts,
         "gold_label_counts": gold_counts,
+        "gold_label_rates": gold_rates,
         "not_entitled_prediction_rate": ne_pred_rate,
+        "stage44b2_ne_pred_minus_gold_ne_rate": ne_pred_minus_gold_ne_rate,
         "support_recall": support_recall,
         "refute_recall": refute_recall,
+        "support_precision": support_precision,
+        "refute_precision": refute_precision,
         "constraint_checks": checks,
         "constraints_satisfied": all(bool(value) for value in checks.values()),
     }
-
 
 def parse_stage31c_class_weights(
     raw: str | None,
@@ -6846,6 +6885,52 @@ def build_parser() -> argparse.ArgumentParser:
             "If omitted, fields are embedded in the normal output JSON only."
         ),
     )
+    parser.add_argument(
+        "--stage44-use-prior-aware-ne-constraint",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage44-B2: enable prior-aware NOT_ENTITLED prediction-rate constraint "
+            "using the internal clean-dev gold NOT_ENTITLED rate plus optional delta. "
+            "Default off."
+        ),
+    )
+    parser.add_argument(
+        "--stage44-max-ne-gold-prior-delta",
+        type=float,
+        default=None,
+        help=(
+            "Stage44-B2: optional maximum allowed excess of internal clean-dev "
+            "NOT_ENTITLED prediction rate over the internal clean-dev gold NOT_ENTITLED rate."
+        ),
+    )
+    parser.add_argument(
+        "--stage44-min-macro-f1",
+        type=float,
+        default=None,
+        help="Stage44-B2: optional minimum internal clean-dev final macro-F1.",
+    )
+    parser.add_argument(
+        "--stage44-min-relative-macro-f1-of-best",
+        type=float,
+        default=None,
+        help=(
+            "Stage44-B2: optional minimum selected macro-F1 as a fraction of the "
+            "original best-metric checkpoint macro-F1."
+        ),
+    )
+    parser.add_argument(
+        "--stage44-min-support-precision",
+        type=float,
+        default=None,
+        help="Stage44-B2: optional minimum internal clean-dev SUPPORT precision.",
+    )
+    parser.add_argument(
+        "--stage44-min-refute-precision",
+        type=float,
+        default=None,
+        help="Stage44-B2: optional minimum internal clean-dev REFUTE precision.",
+    )
 
     # Stage28-E: prediction export schema version
     parser.add_argument(
@@ -8985,6 +9070,12 @@ def main(argv: list[str] | None = None) -> int:
         stage44_max_not_entitled_pred_rate=None,
         stage44_min_clean_dev_accuracy=None,
         stage44_selection_fallback="best_metric",
+        stage44_use_prior_aware_ne_constraint=False,
+        stage44_max_ne_gold_prior_delta=None,
+        stage44_min_macro_f1=None,
+        stage44_min_relative_macro_f1_of_best=None,
+        stage44_min_support_precision=None,
+        stage44_min_refute_precision=None,
         # Stage30-C2: temporal safety auxiliary BCE loss (separate dataset; v7 only)
         ts_train_inputs=None,
         ts_train_labels=None,
@@ -9105,11 +9196,17 @@ def main(argv: list[str] | None = None) -> int:
         _tc_td_final_binary_accuracy: float = float("nan")
 
         # Stage44-B anti-collapse selection tracking (internal clean-dev only).
-        _stage44_constraints: dict[str, float | None] = {
+        _stage44_constraints: dict[str, Any] = {
             "min_support_recall": stage44_min_support_recall,
             "min_refute_recall": stage44_min_refute_recall,
             "max_not_entitled_pred_rate": stage44_max_not_entitled_pred_rate,
             "min_clean_dev_accuracy": stage44_min_clean_dev_accuracy,
+            "use_prior_aware_ne_constraint": stage44_use_prior_aware_ne_constraint,
+            "max_ne_gold_prior_delta": stage44_max_ne_gold_prior_delta,
+            "min_macro_f1": stage44_min_macro_f1,
+            "min_relative_macro_f1_of_best": stage44_min_relative_macro_f1_of_best,
+            "min_support_precision": stage44_min_support_precision,
+            "min_refute_precision": stage44_min_refute_precision,
         }
         _stage44_candidate_table: list[dict[str, Any]] = []
         _stage44_epoch: int = -1
@@ -10815,18 +10912,81 @@ def main(argv: list[str] | None = None) -> int:
             ),
             None,
         )
+        _stage44_prior_aware_enabled = bool(
+            stage44_use_anti_collapse_selection
+            and stage44_use_prior_aware_ne_constraint
+        )
+        _stage44_prior_aware_constraints = {
+            "use_prior_aware_ne_constraint": bool(stage44_use_prior_aware_ne_constraint),
+            "max_ne_gold_prior_delta": stage44_max_ne_gold_prior_delta,
+            "min_macro_f1": stage44_min_macro_f1,
+            "min_relative_macro_f1_of_best": stage44_min_relative_macro_f1_of_best,
+            "min_support_precision": stage44_min_support_precision,
+            "min_refute_precision": stage44_min_refute_precision,
+        }
+        _stage44_gold_label_rates = next(
+            (
+                row.get("gold_label_rates") for row in _stage44_candidate_table
+                if row.get("gold_label_rates") is not None
+            ),
+            None,
+        )
+        _stage44_effective_epoch = _stage44_epoch
+        _stage44_relative_macro_f1_satisfied = True
+        _stage44_relative_macro_f1_threshold = None
+        if (
+            _stage44_prior_aware_enabled
+            and stage44_min_relative_macro_f1_of_best is not None
+            and _stage44_epoch >= 1
+        ):
+            _stage44_original_best_macro_f1 = (
+                (_stage44_original_best_metrics or {}).get("macro_f1")
+                or (best_dev_metrics or {}).get("final_macro_f1")
+            )
+            _stage44_selected_macro_f1 = (_stage44_selected_metrics or {}).get("macro_f1")
+            if _stage44_original_best_macro_f1 is not None:
+                _stage44_relative_macro_f1_threshold = (
+                    _stage44_original_best_macro_f1
+                    * stage44_min_relative_macro_f1_of_best
+                )
+            _stage44_relative_macro_f1_satisfied = (
+                _stage44_selected_macro_f1 is not None
+                and _stage44_relative_macro_f1_threshold is not None
+                and _stage44_selected_macro_f1 >= _stage44_relative_macro_f1_threshold
+            )
+            if _stage44_selected_metrics is not None:
+                _stage44_selected_metrics = dict(_stage44_selected_metrics)
+                _stage44_checks = dict(_stage44_selected_metrics.get("constraint_checks") or {})
+                _stage44_checks["min_relative_macro_f1_of_best"] = bool(
+                    _stage44_relative_macro_f1_satisfied
+                )
+                _stage44_selected_metrics["constraint_checks"] = _stage44_checks
+                _stage44_selected_metrics["constraints_satisfied"] = bool(
+                    _stage44_selected_metrics.get("constraints_satisfied")
+                    and _stage44_relative_macro_f1_satisfied
+                )
+                _stage44_selected_metrics["stage44b2_relative_macro_f1_threshold"] = (
+                    _stage44_relative_macro_f1_threshold
+                )
+            if not _stage44_relative_macro_f1_satisfied:
+                _stage44_effective_epoch = -1
+
         _stage44_selected_by_constraints = False
         _stage44_constraints_satisfied = False
         if not stage44_use_anti_collapse_selection:
             _stage44_decision = "STAGE44B_INTERNAL_ANTI_COLLAPSE_SELECTION_DISABLED"
+            _stage44b2_decision = "STAGE44B2_PRIOR_AWARE_SELECTION_DISABLED"
             _stage44_recommendation = (
                 "Stage44-B anti-collapse selection is disabled; default checkpoint selection behavior is unchanged."
             )
+            _stage44b2_recommendation = (
+                "Stage44-B2 prior-aware selection is disabled because Stage44-B selection is disabled."
+            )
             _stage44_selected_metrics = _stage44_original_best_metrics
-        elif _stage44_epoch >= 1:
+        elif _stage44_effective_epoch >= 1:
             _stage44_selected_by_constraints = True
             _stage44_constraints_satisfied = True
-            best_epoch = _stage44_epoch
+            best_epoch = _stage44_effective_epoch
             best_dev_metrics = _stage44_dev_metrics
             best_dev_interventions = _stage44_dev_interventions
             best_dev_pairwise_checks = _stage44_dev_pairwise_checks
@@ -10834,18 +10994,38 @@ def main(argv: list[str] | None = None) -> int:
             best_state = _stage44_state
             best_pc_metrics = _stage44_pc_metrics
             _stage44_decision = "STAGE44B_INTERNAL_ANTI_COLLAPSE_SELECTION_READY"
+            _stage44b2_decision = (
+                "STAGE44B2_PRIOR_AWARE_SELECTION_READY"
+                if _stage44_prior_aware_enabled
+                else "STAGE44B2_PRIOR_AWARE_SELECTION_DISABLED"
+            )
             _stage44_recommendation = (
                 "Selected the highest primary-metric internal clean-dev checkpoint satisfying Stage44-B anti-collapse constraints."
             )
+            _stage44b2_recommendation = (
+                "Selected the highest primary-metric internal clean-dev checkpoint satisfying enabled Stage44-B2 prior-aware constraints."
+                if _stage44_prior_aware_enabled
+                else "Stage44-B2 prior-aware selection is disabled; Stage44-B behavior is unchanged."
+            )
             print(
-                f"  [stage44b_sel] selected epoch={_stage44_epoch} "
+                f"  [stage44b_sel] selected epoch={_stage44_effective_epoch} "
                 f"score={_stage44_score:.4f} satisfying_epochs={_stage44_satisfying_count} "
                 f"original_best_epoch={_stage44_original_best_epoch}"
             )
         elif stage44_selection_fallback == "fail_incomplete":
             _stage44_decision = "STAGE44B_INTERNAL_ANTI_COLLAPSE_SELECTION_INCOMPLETE"
+            _stage44b2_decision = (
+                "STAGE44B2_PRIOR_AWARE_SELECTION_INCOMPLETE"
+                if _stage44_prior_aware_enabled
+                else "STAGE44B2_PRIOR_AWARE_SELECTION_DISABLED"
+            )
             _stage44_recommendation = (
                 "No internal clean-dev epoch satisfied Stage44-B constraints; normal best-metric checkpoint is preserved, but Stage44-B should be treated as incomplete."
+            )
+            _stage44b2_recommendation = (
+                "No internal clean-dev epoch satisfied the enabled Stage44-B2 prior-aware constraints; treat Stage44-B2 as incomplete."
+                if _stage44_prior_aware_enabled
+                else "Stage44-B2 prior-aware selection is disabled; Stage44-B fallback behavior is unchanged."
             )
             _stage44_selected_metrics = _stage44_original_best_metrics
             print(
@@ -10854,8 +11034,18 @@ def main(argv: list[str] | None = None) -> int:
             )
         else:
             _stage44_decision = "STAGE44B_INTERNAL_ANTI_COLLAPSE_SELECTION_FALLBACK"
+            _stage44b2_decision = (
+                "STAGE44B2_PRIOR_AWARE_SELECTION_FALLBACK"
+                if _stage44_prior_aware_enabled
+                else "STAGE44B2_PRIOR_AWARE_SELECTION_DISABLED"
+            )
             _stage44_recommendation = (
                 "No internal clean-dev epoch satisfied Stage44-B constraints; selected the original best-metric checkpoint by fallback policy."
+            )
+            _stage44b2_recommendation = (
+                "No internal clean-dev epoch satisfied the enabled Stage44-B2 prior-aware constraints; selected the original best-metric checkpoint by fallback policy."
+                if _stage44_prior_aware_enabled
+                else "Stage44-B2 prior-aware selection is disabled; Stage44-B fallback behavior is unchanged."
             )
             _stage44_selected_metrics = _stage44_original_best_metrics
             print(
@@ -10863,10 +11053,13 @@ def main(argv: list[str] | None = None) -> int:
                 f"fallback=best_metric preserves original best epoch={best_epoch}"
             )
 
-        _stage44_selected_metrics_final = next(
-            (row for row in _stage44_candidate_table if row.get("epoch") == best_epoch),
-            _stage44_selected_metrics,
-        )
+        if _stage44_selected_by_constraints and _stage44_selected_metrics is not None:
+            _stage44_selected_metrics_final = _stage44_selected_metrics
+        else:
+            _stage44_selected_metrics_final = next(
+                (row for row in _stage44_candidate_table if row.get("epoch") == best_epoch),
+                _stage44_selected_metrics,
+            )
         _stage44_selection_info: dict[str, Any] = {
             "stage44b_enabled": bool(stage44_use_anti_collapse_selection),
             "stage44b_decision": _stage44_decision,
@@ -10896,6 +11089,38 @@ def main(argv: list[str] | None = None) -> int:
                 "Stage44-B uses only the normal internal clean-dev split. It does not read or use Stage43-B1 external labels, metrics, examples, predictions, thresholds, calibration, checkpoint/model selection signals, loss design signals, or composer behavior changes."
             ),
             "stage44b_recommendation": _stage44_recommendation,
+            "stage44b2_enabled": bool(_stage44_prior_aware_enabled),
+            "stage44b2_decision": _stage44b2_decision,
+            "stage44b2_prior_aware_enabled": bool(_stage44_prior_aware_enabled),
+            "stage44b2_gold_label_rates": _stage44_gold_label_rates,
+            "stage44b2_gold_not_entitled_rate": (
+                (_stage44_gold_label_rates or {}).get("NOT_ENTITLED")
+            ),
+            "stage44b2_gold_support_rate": (
+                (_stage44_gold_label_rates or {}).get("SUPPORT")
+            ),
+            "stage44b2_gold_refute_rate": (
+                (_stage44_gold_label_rates or {}).get("REFUTE")
+            ),
+            "stage44b2_prior_aware_constraints": _stage44_prior_aware_constraints,
+            "stage44b2_selected_epoch": (
+                best_epoch if _stage44_prior_aware_enabled else None
+            ),
+            "stage44b2_original_best_metric_epoch": (
+                _stage44_original_best_epoch if _stage44_prior_aware_enabled else None
+            ),
+            "stage44b2_selected_metrics": _stage44_selected_metrics_final,
+            "stage44b2_original_best_metric_metrics": _stage44_original_best_metrics,
+            "stage44b2_ne_pred_minus_gold_ne_rate": (
+                (_stage44_selected_metrics_final or {}).get("stage44b2_ne_pred_minus_gold_ne_rate")
+            ),
+            "stage44b2_original_best_ne_pred_minus_gold_ne_rate": (
+                (_stage44_original_best_metrics or {}).get("stage44b2_ne_pred_minus_gold_ne_rate")
+            ),
+            "stage44b2_reason_previous_fixed_cap_was_invalid": (
+                "A fixed NOT_ENTITLED prediction cap below the internal clean-dev NOT_ENTITLED gold prior can force over-SUPPORT checkpoints; Stage44-B2 compares predicted NOT_ENTITLED rate against internal gold prior plus delta instead."
+            ),
+            "stage44b2_recommendation": _stage44b2_recommendation,
         }
 
         #  Build run-level audit ledger (reporting only; no model/loss/logit change)
@@ -11378,11 +11603,17 @@ def main(argv: list[str] | None = None) -> int:
                 "fallback_triggered": (
                     bool(stage44_use_anti_collapse_selection)
                     and not _stage44_selected_by_constraints
-                    and _stage44_satisfying_count == 0
                 ),
                 "eligible_epoch_count": (
                     _stage44_satisfying_count if stage44_use_anti_collapse_selection else None
                 ),
+                "stage44b2_prior_aware": {
+                    "enabled": bool(_stage44_prior_aware_enabled),
+                    "constraints": _stage44_prior_aware_constraints,
+                    "gold_label_rates": _stage44_gold_label_rates,
+                    "decision": _stage44b2_decision,
+                    "stage43b1_used": False,
+                },
             },
         }
 
@@ -11769,6 +12000,12 @@ def main(argv: list[str] | None = None) -> int:
             stage44_max_not_entitled_pred_rate=args.stage44_max_not_entitled_pred_rate,
             stage44_min_clean_dev_accuracy=args.stage44_min_clean_dev_accuracy,
             stage44_selection_fallback=args.stage44_selection_fallback,
+            stage44_use_prior_aware_ne_constraint=args.stage44_use_prior_aware_ne_constraint,
+            stage44_max_ne_gold_prior_delta=args.stage44_max_ne_gold_prior_delta,
+            stage44_min_macro_f1=args.stage44_min_macro_f1,
+            stage44_min_relative_macro_f1_of_best=args.stage44_min_relative_macro_f1_of_best,
+            stage44_min_support_precision=args.stage44_min_support_precision,
+            stage44_min_refute_precision=args.stage44_min_refute_precision,
             ts_train_inputs=_ts_train_inputs if _ts_data_needed else None,
             ts_train_labels=_ts_train_labels if _ts_data_needed else None,
             ts_train_mask=_ts_train_mask if _ts_data_needed else None,
@@ -12787,6 +13024,22 @@ def main(argv: list[str] | None = None) -> int:
             "stage44b_refute_recall",
             "stage44b_leakage_policy",
             "stage44b_recommendation",
+            "stage44b2_enabled",
+            "stage44b2_decision",
+            "stage44b2_prior_aware_enabled",
+            "stage44b2_gold_label_rates",
+            "stage44b2_gold_not_entitled_rate",
+            "stage44b2_gold_support_rate",
+            "stage44b2_gold_refute_rate",
+            "stage44b2_prior_aware_constraints",
+            "stage44b2_selected_epoch",
+            "stage44b2_original_best_metric_epoch",
+            "stage44b2_selected_metrics",
+            "stage44b2_original_best_metric_metrics",
+            "stage44b2_ne_pred_minus_gold_ne_rate",
+            "stage44b2_original_best_ne_pred_minus_gold_ne_rate",
+            "stage44b2_reason_previous_fixed_cap_was_invalid",
+            "stage44b2_recommendation",
             # Audit ledger (nested dict; lifted from run report)
             "audit_ledger",
         ):
@@ -13264,6 +13517,22 @@ def main(argv: list[str] | None = None) -> int:
             ),
             "stage44_selection_fallback": getattr(
                 args, "stage44_selection_fallback", "best_metric"
+            ),
+            "stage44_use_prior_aware_ne_constraint": getattr(
+                args, "stage44_use_prior_aware_ne_constraint", False
+            ),
+            "stage44_max_ne_gold_prior_delta": getattr(
+                args, "stage44_max_ne_gold_prior_delta", None
+            ),
+            "stage44_min_macro_f1": getattr(args, "stage44_min_macro_f1", None),
+            "stage44_min_relative_macro_f1_of_best": getattr(
+                args, "stage44_min_relative_macro_f1_of_best", None
+            ),
+            "stage44_min_support_precision": getattr(
+                args, "stage44_min_support_precision", None
+            ),
+            "stage44_min_refute_precision": getattr(
+                args, "stage44_min_refute_precision", None
             ),
             "preservation_constrained_selection_used": (
                 next(iter(reports.values()), {}).get(
@@ -13835,6 +14104,22 @@ def main(argv: list[str] | None = None) -> int:
             "stage44b_refute_recall",
             "stage44b_leakage_policy",
             "stage44b_recommendation",
+            "stage44b2_enabled",
+            "stage44b2_decision",
+            "stage44b2_prior_aware_enabled",
+            "stage44b2_gold_label_rates",
+            "stage44b2_gold_not_entitled_rate",
+            "stage44b2_gold_support_rate",
+            "stage44b2_gold_refute_rate",
+            "stage44b2_prior_aware_constraints",
+            "stage44b2_selected_epoch",
+            "stage44b2_original_best_metric_epoch",
+            "stage44b2_selected_metrics",
+            "stage44b2_original_best_metric_metrics",
+            "stage44b2_ne_pred_minus_gold_ne_rate",
+            "stage44b2_original_best_ne_pred_minus_gold_ne_rate",
+            "stage44b2_reason_previous_fixed_cap_was_invalid",
+            "stage44b2_recommendation",
         ]
         _stage44_report = {
             key: report.get(key)
