@@ -49,6 +49,11 @@ from scripts.stage43_external_factver_eval_utils import (  # noqa: E402
     write_text,
 )
 from scripts.stage45_internal_family_utils import split_leave_family_out  # noqa: E402
+from scripts.stage45_support_recovery_utils import (  # noqa: E402
+    build_stage45c_report,
+    compute_support_recovery_terms,
+    label_counts as stage45c_label_counts,
+)
 
 STAGE31C_COVERAGE_LABELS = [
     "ENTAILS_SUPPORT",
@@ -6980,6 +6985,64 @@ def build_parser() -> argparse.ArgumentParser:
         help="Stage45-B: optional standalone internal family-holdout report Markdown.",
     )
 
+    # Stage45-C: internal-only SUPPORT entitlement recovery scaffold
+    parser.add_argument(
+        "--stage45c-enable-support-recovery",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage45-C: enable an optional internal-only auxiliary loss targeting "
+            "SUPPORT under-recall and entitled-to-NOT_ENTITLED over-rejection, "
+            "computed only from the internal training split. Default off; leaves "
+            "existing training behavior unchanged when off."
+        ),
+    )
+    parser.add_argument(
+        "--stage45c-support-recovery-weight",
+        type=float,
+        default=0.0,
+        help=(
+            "Stage45-C: weight for the SUPPORT recovery auxiliary term "
+            "(penalizes low predicted --stage45c-target-label probability on gold "
+            "--stage45c-target-label training rows). Default 0.0 (inactive)."
+        ),
+    )
+    parser.add_argument(
+        "--stage45c-entitled-ne-penalty-weight",
+        type=float,
+        default=0.0,
+        help=(
+            "Stage45-C: weight for the entitled-NOT_ENTITLED over-rejection penalty "
+            "(penalizes high predicted NOT_ENTITLED probability on gold "
+            "--stage45c-entitled-labels training rows). Default 0.0 (inactive)."
+        ),
+    )
+    parser.add_argument(
+        "--stage45c-target-label",
+        default="SUPPORT",
+        help="Stage45-C: gold label targeted by the SUPPORT recovery term. Default SUPPORT.",
+    )
+    parser.add_argument(
+        "--stage45c-entitled-labels",
+        default="SUPPORT,REFUTE",
+        help=(
+            "Stage45-C: comma-separated gold labels considered 'entitled' for the "
+            "over-rejection penalty. Default SUPPORT,REFUTE."
+        ),
+    )
+    parser.add_argument(
+        "--stage45c-report-json",
+        type=Path,
+        default=None,
+        help="Stage45-C: optional standalone internal support-recovery report JSON.",
+    )
+    parser.add_argument(
+        "--stage45c-report-md",
+        type=Path,
+        default=None,
+        help="Stage45-C: optional standalone internal support-recovery report Markdown.",
+    )
+
     # Stage28-E: prediction export schema version
     parser.add_argument(
         "--prediction-export-schema",
@@ -9154,6 +9217,12 @@ def main(argv: list[str] | None = None) -> int:
         stage44_min_support_precision=None,
         stage44_min_refute_precision=None,
         stage45b_split_info=None,
+        # Stage45-C: internal-only SUPPORT entitlement recovery scaffold (default off)
+        stage45c_enabled=False,
+        stage45c_support_recovery_weight=0.0,
+        stage45c_entitled_ne_penalty_weight=0.0,
+        stage45c_target_label="SUPPORT",
+        stage45c_entitled_labels=("SUPPORT", "REFUTE"),
         # Stage30-C2: temporal safety auxiliary BCE loss (separate dataset; v7 only)
         ts_train_inputs=None,
         ts_train_labels=None,
@@ -9261,6 +9330,17 @@ def main(argv: list[str] | None = None) -> int:
         # Stage45-B2: diagnostics from v5.intervention_objective's internal-family-holdout
         # guard, refreshed each epoch when the ranking-objective branch runs.
         _stage45b2_intervention_diag: "dict[str, Any] | None" = None
+        # Stage45-C: internal-only auxiliary loss diagnostics, refreshed each epoch.
+        _stage45c_entitled_labels_tuple = tuple(
+            str(name).strip() for name in stage45c_entitled_labels if str(name).strip()
+        )
+        _stage45c_diag: "dict[str, Any] | None" = None
+        if stage45c_enabled:
+            _stage45c_train_label_counts = stage45c_label_counts(
+                train_inputs["final_labels"], v5.ID_TO_FINAL_LABEL
+            )
+        else:
+            _stage45c_train_label_counts = {}
 
         # TD-constrained selection tracking (parallel to unconstrained; fallback is existing best_*)
         _tc_epoch: int = -1
@@ -9378,6 +9458,43 @@ def main(argv: list[str] | None = None) -> int:
                     v5.intervention_objective, "last_diagnostics", None
                 )
             total_loss = losses["total"] + active_intervention_loss
+
+            # Stage45-C: internal-only SUPPORT recovery / entitled-NE over-rejection
+            # auxiliary terms. Computed strictly from the internal training split
+            # (train_inputs["final_labels"], output["logits"]); no dev/holdout labels
+            # or external data are read. Inactive (zero-valued, gradient-connected)
+            # unless explicitly enabled with a positive weight.
+            if stage45c_enabled and (
+                stage45c_support_recovery_weight > 0.0
+                or stage45c_entitled_ne_penalty_weight > 0.0
+            ):
+                _stage45c_terms = compute_support_recovery_terms(
+                    output["logits"],
+                    train_inputs["final_labels"],
+                    label_to_id=v5.FINAL_LABEL_TO_ID,
+                    target_label=stage45c_target_label,
+                    entitled_labels=_stage45c_entitled_labels_tuple,
+                )
+                if stage45c_support_recovery_weight > 0.0:
+                    total_loss = total_loss + (
+                        stage45c_support_recovery_weight
+                        * _stage45c_terms["support_recovery_loss"]
+                    )
+                if stage45c_entitled_ne_penalty_weight > 0.0:
+                    total_loss = total_loss + (
+                        stage45c_entitled_ne_penalty_weight
+                        * _stage45c_terms["entitled_ne_penalty_loss"]
+                    )
+                _stage45c_diag = {
+                    "support_recovery_loss_mean": _stage45c_terms[
+                        "support_recovery_loss"
+                    ].item(),
+                    "entitled_ne_penalty_loss_mean": _stage45c_terms[
+                        "entitled_ne_penalty_loss"
+                    ].item(),
+                    "support_recovery_active": _stage45c_terms["support_recovery_active"],
+                    "entitled_ne_penalty_active": _stage45c_terms["entitled_ne_penalty_active"],
+                }
 
             # Stage22-A: boundary head BCE loss (training signal only; output["logits"] unchanged)
             _bdry_loss = torch.tensor(0.0)
@@ -12036,6 +12153,21 @@ def main(argv: list[str] | None = None) -> int:
                     )
                 )
 
+        _stage45c_report = build_stage45c_report(
+            enabled=stage45c_enabled,
+            support_recovery_weight=stage45c_support_recovery_weight,
+            entitled_ne_penalty_weight=stage45c_entitled_ne_penalty_weight,
+            target_label=stage45c_target_label,
+            entitled_labels=_stage45c_entitled_labels_tuple,
+            train_label_counts=_stage45c_train_label_counts,
+            support_recovery_loss_mean=(
+                (_stage45c_diag or {}).get("support_recovery_loss_mean")
+            ),
+            entitled_ne_penalty_loss_mean=(
+                (_stage45c_diag or {}).get("entitled_ne_penalty_loss_mean")
+            ),
+        )
+
         report = {
             "run_name": run_name,
             "final_epoch": epochs,
@@ -12048,6 +12180,7 @@ def main(argv: list[str] | None = None) -> int:
             "loss_config": loss_config,
             "best_pair_contrastive_frame_metrics": best_pc_metrics,
             "best_stage31c_coverage_entailment_metrics": best_covent_metrics,
+            **_stage45c_report,
             **_tc_selection_info,
             **_pcs_selection_info,
             **_stage44_selection_info,
@@ -12202,6 +12335,21 @@ def main(argv: list[str] | None = None) -> int:
             stage44_min_support_precision=args.stage44_min_support_precision,
             stage44_min_refute_precision=args.stage44_min_refute_precision,
             stage45b_split_info=_stage45b_split_info,
+            stage45c_enabled=getattr(args, "stage45c_enable_support_recovery", False),
+            stage45c_support_recovery_weight=getattr(
+                args, "stage45c_support_recovery_weight", 0.0
+            ),
+            stage45c_entitled_ne_penalty_weight=getattr(
+                args, "stage45c_entitled_ne_penalty_weight", 0.0
+            ),
+            stage45c_target_label=getattr(args, "stage45c_target_label", "SUPPORT"),
+            stage45c_entitled_labels=tuple(
+                name.strip()
+                for name in getattr(
+                    args, "stage45c_entitled_labels", "SUPPORT,REFUTE"
+                ).split(",")
+                if name.strip()
+            ),
             ts_train_inputs=_ts_train_inputs if _ts_data_needed else None,
             ts_train_labels=_ts_train_labels if _ts_data_needed else None,
             ts_train_mask=_ts_train_mask if _ts_data_needed else None,
@@ -13261,6 +13409,19 @@ def main(argv: list[str] | None = None) -> int:
             "stage45b3_pairwise_active_group_count",
             "stage45b3_pairwise_checks_effectively_inactive",
             "stage45b3_recommendation",
+            "stage45c_enabled",
+            "stage45c_support_recovery_weight",
+            "stage45c_entitled_ne_penalty_weight",
+            "stage45c_target_label",
+            "stage45c_entitled_labels",
+            "stage45c_train_support_count",
+            "stage45c_train_refute_count",
+            "stage45c_train_not_entitled_count",
+            "stage45c_loss_terms_active",
+            "stage45c_support_recovery_loss_mean",
+            "stage45c_entitled_ne_penalty_loss_mean",
+            "stage45c_leakage_policy",
+            "stage45c_recommendation",
             # Audit ledger (nested dict; lifted from run report)
             "audit_ledger",
         ):
@@ -14497,6 +14658,90 @@ def main(argv: list[str] | None = None) -> int:
                 "",
             ]
             write_text(args.stage45_family_holdout_report_md, "\n".join(_stage45_md_lines))
+
+    if (
+        getattr(args, "stage45c_report_json", None) is not None
+        or getattr(args, "stage45c_report_md", None) is not None
+    ):
+        _stage45c_report_keys = [
+            "stage45c_enabled",
+            "stage45c_support_recovery_weight",
+            "stage45c_entitled_ne_penalty_weight",
+            "stage45c_target_label",
+            "stage45c_entitled_labels",
+            "stage45c_train_support_count",
+            "stage45c_train_refute_count",
+            "stage45c_train_not_entitled_count",
+            "stage45c_loss_terms_active",
+            "stage45c_support_recovery_loss_mean",
+            "stage45c_entitled_ne_penalty_loss_mean",
+            "stage45c_leakage_policy",
+            "stage45c_recommendation",
+        ]
+        _stage45c_standalone_report = {
+            key: report.get(key)
+            for key in _stage45c_report_keys
+            if key in report
+        }
+        if "stage45c_enabled" not in _stage45c_standalone_report:
+            _stage45c_standalone_report["per_run_stage45c"] = {
+                name: {
+                    key: run_report.get(key)
+                    for key in _stage45c_report_keys
+                    if key in run_report
+                }
+                for name, run_report in reports.items()
+            }
+        _stage45c_standalone_report.update(
+            {
+                "stage45c_report_scope": "internal_controlled_training_split_only",
+                "stage43b1_files_read": False,
+                "external_examples_used": False,
+                "external_labels_or_metrics_used": False,
+                "vitaminc_used": False,
+                "climate_fever_used": False,
+                "used_for_threshold_selection": False,
+                "used_for_calibration": False,
+                "used_for_checkpoint_selection": False,
+                "used_dev_or_holdout_labels_in_loss": False,
+            }
+        )
+        if getattr(args, "stage45c_report_json", None) is not None:
+            v5.write_report_json(_stage45c_standalone_report, args.stage45c_report_json)
+        if getattr(args, "stage45c_report_md", None) is not None:
+            _stage45c_md_lines = [
+                "# Stage45-C Internal SUPPORT Entitlement Recovery Report",
+                "",
+                "## Enabled",
+                "",
+                f"- Enabled: {_stage45c_standalone_report.get('stage45c_enabled')}",
+                f"- Support recovery weight: {_stage45c_standalone_report.get('stage45c_support_recovery_weight')}",
+                f"- Entitled NE penalty weight: {_stage45c_standalone_report.get('stage45c_entitled_ne_penalty_weight')}",
+                f"- Target label: `{_stage45c_standalone_report.get('stage45c_target_label')}`",
+                f"- Entitled labels: {_stage45c_standalone_report.get('stage45c_entitled_labels')}",
+                "",
+                "## Internal Training Label Counts",
+                "",
+                f"- SUPPORT: {_stage45c_standalone_report.get('stage45c_train_support_count')}",
+                f"- REFUTE: {_stage45c_standalone_report.get('stage45c_train_refute_count')}",
+                f"- NOT_ENTITLED: {_stage45c_standalone_report.get('stage45c_train_not_entitled_count')}",
+                "",
+                "## Loss Terms",
+                "",
+                f"- Active loss terms: {_stage45c_standalone_report.get('stage45c_loss_terms_active')}",
+                f"- SUPPORT recovery loss mean: {_stage45c_standalone_report.get('stage45c_support_recovery_loss_mean')}",
+                f"- Entitled NE penalty loss mean: {_stage45c_standalone_report.get('stage45c_entitled_ne_penalty_loss_mean')}",
+                "",
+                "## Leakage Policy",
+                "",
+                str(_stage45c_standalone_report.get("stage45c_leakage_policy")),
+                "",
+                "## Recommendation",
+                "",
+                str(_stage45c_standalone_report.get("stage45c_recommendation")),
+                "",
+            ]
+            write_text(args.stage45c_report_md, "\n".join(_stage45c_md_lines))
 
     print(json.dumps(report, indent=2, sort_keys=True))
     if args.output_json is not None:

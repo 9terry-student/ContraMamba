@@ -1,0 +1,178 @@
+{
+  "decision": "STAGE45C_INTERNAL_SUPPORT_RECOVERY_SCAFFOLD_READY",
+  "scope": "internal_only_support_entitlement_recovery_scaffold",
+  "created_components": {
+    "utility_module": "scripts/stage45_support_recovery_utils.py",
+    "runner_support": "scripts/train_controlled_v6b_minimal.py optional Stage45-C support recovery flags",
+    "plan_markdown": "reports/stage45c_support_entitlement_recovery_plan.md",
+    "plan_json": "reports/stage45c_support_entitlement_recovery_plan.json"
+  },
+  "stage45b1_diagnosis_summary": {
+    "source": "Stage45-B1 internal family holdouts on data/controlled_v5_v3_without_time_swap.jsonl",
+    "findings": [
+      {
+        "family": "intervention_type=entity_swap",
+        "holdout_rows": 300,
+        "gold_label_distribution": {"NOT_ENTITLED": 300},
+        "present_label_macro_f1": 1.0,
+        "note": "single-class NOT_ENTITLED holdout; not informative for SUPPORT/REFUTE robustness"
+      },
+      {
+        "family": "intervention_type=none",
+        "holdout_rows": 300,
+        "gold_label_distribution": {"REFUTE": 150, "SUPPORT": 150},
+        "present_label_macro_f1": 0.9444,
+        "not_entitled_prediction_rate": 0.10,
+        "support_recall": 0.80,
+        "refute_recall": 1.0
+      },
+      {
+        "family": "intervention_type=paraphrase",
+        "holdout_rows": 300,
+        "gold_label_distribution": {"REFUTE": 150, "SUPPORT": 150},
+        "present_label_macro_f1": 0.8293,
+        "not_entitled_prediction_rate": 0.2133,
+        "support_recall": 0.56,
+        "refute_recall": 0.9467
+      },
+      {
+        "family": "intervention_type=polarity_flip",
+        "holdout_rows": 300,
+        "gold_label_distribution": {"REFUTE": 150, "SUPPORT": 150},
+        "present_label_macro_f1": 1.0,
+        "not_entitled_prediction_rate": 0.0,
+        "support_recall": 1.0,
+        "refute_recall": 1.0
+      },
+      {
+        "family": "primary_failure_type=none",
+        "holdout_rows": 600,
+        "gold_label_distribution": {"REFUTE": 300, "SUPPORT": 300},
+        "present_label_macro_f1": 0.7921,
+        "not_entitled_prediction_rate": 0.2483,
+        "support_recall": 0.4633,
+        "refute_recall": 0.97
+      }
+    ],
+    "diagnosis": "Internal-only family holdouts show asymmetric entitlement robustness: REFUTE is robust across every entitled holdout family, while SUPPORT is brittle, especially under the paraphrase and primary_failure_type=none holdouts. Many gold-entitled (mostly SUPPORT) examples are over-rejected as NOT_ENTITLED. This is an internal-only analogue of the NOT_ENTITLED collapse seen in external diagnostics, produced entirely from internal controlled data."
+  },
+  "target_failure_mode": {
+    "primary": "SUPPORT under-recall",
+    "secondary": "entitled-to-NOT_ENTITLED over-rejection (both SUPPORT and REFUTE, but most acute for SUPPORT)",
+    "not_targeted": "REFUTE recall (already robust in every internal family holdout observed)"
+  },
+  "allowed_inputs": [
+    "data/controlled_v5_v3_without_time_swap.jsonl (internal controlled data)",
+    "internal training split final_labels",
+    "internal training split model output logits",
+    "Stage45-B1 recovered family fields (intervention_type, primary_failure_type, and their composites)",
+    "internal Stage45-B family holdout dev split for reporting/selection only (never for the auxiliary loss)"
+  ],
+  "disallowed_inputs": [
+    "Stage43-B1 files or predictions",
+    "VitaminC data",
+    "Climate-FEVER data",
+    "Stage43 external reports",
+    "any external examples, labels, metrics, or prediction distributions",
+    "dev/holdout labels inside the auxiliary training loss"
+  ],
+  "new_runner_cli_flags": [
+    "--stage45c-enable-support-recovery",
+    "--stage45c-support-recovery-weight",
+    "--stage45c-entitled-ne-penalty-weight",
+    "--stage45c-target-label",
+    "--stage45c-entitled-labels",
+    "--stage45c-report-json",
+    "--stage45c-report-md"
+  ],
+  "default_behavior_when_disabled": "All Stage45-C flags default off/0.0; when disabled or all weights are 0.0, no auxiliary loss term is added to total_loss and existing training behavior is preserved exactly. Report fields are still emitted with stage45c_enabled=false.",
+  "auxiliary_loss_design": {
+    "support_recovery_term": {
+      "formula": "mean(relu(1 - softmax(logits)[:, target_label_id])) over gold target_label training rows",
+      "target_label_default": "SUPPORT",
+      "inputs": "output['logits'] and train_inputs['final_labels'] from the internal training split only",
+      "weight_flag": "--stage45c-support-recovery-weight",
+      "inactive_value": "zero-valued, gradient-connected tensor (logits.sum() * 0.0) when no gold target_label rows are present in the batch"
+    },
+    "entitled_ne_over_rejection_term": {
+      "formula": "mean(softmax(logits)[:, NOT_ENTITLED_id]) over gold entitled (--stage45c-entitled-labels, default SUPPORT,REFUTE) training rows",
+      "weight_flag": "--stage45c-entitled-ne-penalty-weight",
+      "inactive_value": "zero-valued, gradient-connected tensor when no gold entitled rows are present in the batch"
+    },
+    "integration": "total_loss = total_loss + support_recovery_weight * support_recovery_loss + entitled_ne_penalty_weight * entitled_ne_penalty_loss, added after the existing label/frame/predicate/sufficiency/polarity/intervention losses and before other optional auxiliary BCE terms",
+    "constraints": [
+      "no pseudo-examples fabricated",
+      "no dev/holdout rows used",
+      "no threshold tuning",
+      "no calibration",
+      "no composer behavior changes",
+      "no model architecture changes",
+      "no external hyperparameter tuning"
+    ]
+  },
+  "expected_evaluation_protocol": [
+    "Enable Stage45-C alongside Stage45-B1 family holdout (--stage45-use-family-holdout --stage45-family-field intervention_type --stage45-holdout-family paraphrase, or --stage45-family-field primary_failure_type --stage45-holdout-family none) to test whether the auxiliary terms improve SUPPORT recall on the held-out internal family.",
+    "Compare stage45b_holdout_metrics.support_recall and not_entitled_prediction_rate with Stage45-C enabled vs. disabled, holding all other flags fixed.",
+    "Use only the internal holdout dev split for this comparison; do not introduce Stage43-B1 or other external data into the comparison.",
+    "Existing Stage44-B2 prior-aware selection may still be used for checkpoint selection, restricted to the internal holdout dev split."
+  ],
+  "runner_family_holdout_compatibility": {
+    "flags": [
+      "--stage45-use-family-holdout",
+      "--stage45-family-field",
+      "--stage45-holdout-family",
+      "--stage45-family-holdout-report-json",
+      "--stage45-family-holdout-report-md"
+    ],
+    "behavior": "Stage45-C reads only train_inputs['final_labels'] and output['logits'] from whichever train split is active (family-holdout train split when Stage45-B1 is enabled, or the normal internal train split otherwise). It does not alter how the family holdout split is constructed."
+  },
+  "stage45c_report_fields": [
+    "stage45c_enabled",
+    "stage45c_support_recovery_weight",
+    "stage45c_entitled_ne_penalty_weight",
+    "stage45c_target_label",
+    "stage45c_entitled_labels",
+    "stage45c_train_support_count",
+    "stage45c_train_refute_count",
+    "stage45c_train_not_entitled_count",
+    "stage45c_loss_terms_active",
+    "stage45c_support_recovery_loss_mean",
+    "stage45c_entitled_ne_penalty_loss_mean",
+    "stage45c_leakage_policy",
+    "stage45c_recommendation"
+  ],
+  "leakage_policy": {
+    "scope": "internal_controlled_training_split_only",
+    "stage43b1_files_read": false,
+    "external_examples_used": false,
+    "external_labels_or_metrics_used": false,
+    "vitaminc_used": false,
+    "climate_fever_used": false,
+    "used_for_threshold_selection": false,
+    "used_for_calibration": false,
+    "used_for_checkpoint_selection": false,
+    "used_dev_or_holdout_labels_in_loss": false,
+    "stage43b1_used_for_tuning_or_final_validation": false
+  },
+  "allowed_claims": [
+    "Stage45-C introduces an internal-only SUPPORT entitlement recovery scaffold.",
+    "Stage45-C targets internal SUPPORT under-recall and entitled-to-NOT_ENTITLED over-rejection.",
+    "Stage45-C does not use external data.",
+    "Stage45-C remains compatible with Stage45-B1 family holdout diagnostics."
+  ],
+  "disallowed_claims": [
+    "Do not claim external validation PASS.",
+    "Do not claim VitaminC transfer success.",
+    "Do not claim Climate-FEVER robustness.",
+    "Do not claim naturalistic fact-verification generalization.",
+    "Do not claim Stage45-C solves external collapse before a new held-out external evaluation.",
+    "Do not use Stage43-B1 for tuning or final validation."
+  ],
+  "remaining_risks": [
+    "The auxiliary terms are diagnostic/regularization signals derived from training-split labels the model already sees via the main label loss; measured internal-holdout gains may be modest or may trade off against REFUTE/NOT_ENTITLED precision.",
+    "Internal family holdout robustness remains an internal proxy and is not equivalent to external (VitaminC/Climate-FEVER/naturalistic) generalization.",
+    "If --stage45c-entitled-labels or --stage45c-target-label is misconfigured to a label absent from the internal training split, the corresponding term silently stays inactive (zero-valued) rather than failing; this is intentional per the no-crash/no-NaN requirement but should be checked in stage45c_loss_terms_active and stage45c_train_*_count before interpreting results.",
+    "Combining Stage45-C with --stage45-use-family-holdout on a family whose train split has zero SUPPORT or REFUTE rows will leave the corresponding term permanently inactive for that run."
+  ],
+  "next_stage": "Stage45-D: internal-only ablation comparing Stage45-C on/off across multiple Stage45-B1 holdout families, still restricted to internal controlled data, before any new external evaluation is proposed"
+}
