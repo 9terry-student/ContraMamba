@@ -1,0 +1,144 @@
+{
+  "stage": "Stage62",
+  "decision": "STAGE62_STAGE51_VS_STAGE61_INTERNAL_COMPARISON_READY",
+  "comparison": [
+    {
+      "stage": "Stage51_baseline_frozen_recovery",
+      "run_dir": "results/stage51_frozen_recovery_run_20260702_044005",
+      "best_epoch": 80,
+      "selected_epoch": null,
+      "best_dev_acc": 0.9736111164093018,
+      "best_dev_macro_f1": 0.962854521766615,
+      "stage57_bridge_train_enabled": false,
+      "stage57_bridge_train_mode": "none",
+      "stage57_bridge_train_row_count": 0,
+      "stage57_bridge_train_only": false,
+      "stage57_bridge_used_for_dev": false,
+      "stage57_bridge_used_for_checkpoint_selection": false,
+      "stage57_external_data_used_for_training": false,
+      "stage57_external_metrics_used_for_threshold_tuning": false,
+      "time_swap_used_in_main_clean_data": false
+    },
+    {
+      "stage": "Stage61_bridge_enabled_frozen_recovery",
+      "run_dir": "results/stage61_bridge_enabled_frozen_recovery_run_20260702_055007",
+      "best_epoch": 191,
+      "selected_epoch": null,
+      "best_dev_acc": 0.9708333611488342,
+      "best_dev_macro_f1": 0.9588083427579085,
+      "stage57_bridge_train_enabled": true,
+      "stage57_bridge_train_mode": "append_train_only",
+      "stage57_bridge_train_row_count": 520,
+      "stage57_bridge_train_only": true,
+      "stage57_bridge_used_for_dev": false,
+      "stage57_bridge_used_for_checkpoint_selection": false,
+      "stage57_external_data_used_for_training": false,
+      "stage57_external_metrics_used_for_threshold_tuning": false,
+      "time_swap_used_in_main_clean_data": false
+    }
+  ],
+  "delta_summary": {
+    "stage": "Stage62",
+    "decision": "STAGE62_STAGE51_VS_STAGE61_INTERNAL_COMPARISON_READY",
+    "baseline": "Stage51_baseline_frozen_recovery",
+    "bridge_enabled": "Stage61_bridge_enabled_frozen_recovery",
+    "stage51_best_dev_acc": 0.9736111164093018,
+    "stage61_best_dev_acc": 0.9708333611488342,
+    "delta_dev_acc": -0.0027777552604675293,
+    "stage51_best_dev_macro_f1": 0.962854521766615,
+    "stage61_best_dev_macro_f1": 0.9588083427579085,
+    "delta_dev_macro_f1": -0.004046179008706519,
+    "bridge_row_count": 520,
+    "bridge_train_only": true,
+    "bridge_used_for_dev": false,
+    "bridge_used_for_checkpoint_selection": false,
+    "external_data_used_for_training": false,
+    "external_metrics_used_for_threshold_tuning": false,
+    "time_swap_used": false,
+    "clean_dev_preservation_verdict": "PRESERVED_WITH_SMALL_DROP",
+    "interpretation": "Stage61 bridge-enabled training preserved clean-dev performance within a small-drop band relative to Stage51. This supports moving to external diagnostic rerun, while not claiming external generalization yet."
+  },
+  "safety_checks": [
+    {
+      "check": "bridge_train_only",
+      "value": true,
+      "pass": true
+    },
+    {
+      "check": "bridge_not_used_for_dev",
+      "value": false,
+      "pass": true
+    },
+    {
+      "check": "bridge_not_used_for_checkpoint_selection",
+      "value": false,
+      "pass": true
+    },
+    {
+      "check": "no_external_data_used_for_training",
+      "value": false,
+      "pass": true
+    },
+    {
+      "check": "no_external_metrics_used_for_threshold_tuning",
+      "value": false,
+      "pass": true
+    },
+    {
+      "check": "time_swap_absent",
+      "value": false,
+      "pass": true
+    }
+  ],
+  "bridge_label_counts": [
+    {
+      "label": "NOT_ENTITLED",
+      "count": 200
+    },
+    {
+      "label": "REFUTE",
+      "count": 160
+    },
+    {
+      "label": "SUPPORT",
+      "count": 160
+    }
+  ],
+  "bridge_family_counts": [
+    {
+      "family": "distractor_evidence_bridge",
+      "count": 40
+    },
+    {
+      "family": "entity_attribute_bridge",
+      "count": 120
+    },
+    {
+      "family": "lexical_paraphrase_bridge",
+      "count": 120
+    },
+    {
+      "family": "numeric_comparison_bridge",
+      "count": 120
+    },
+    {
+      "family": "temporal_comparison_bridge",
+      "count": 120
+    }
+  ],
+  "source_files": {
+    "stage51_run_dir": "results/stage51_frozen_recovery_run_20260702_044005",
+    "stage51_report": "results/stage51_frozen_recovery_run_20260702_044005/stage51_frozen_recovery_train_report.json",
+    "stage61_run_dir": "results/stage61_bridge_enabled_frozen_recovery_run_20260702_055007",
+    "stage61_report": "results/stage61_bridge_enabled_frozen_recovery_run_20260702_055007/stage61_bridge_enabled_train_report.json"
+  },
+  "recommended_next_stage": "Stage63 bridge-enabled VitaminC external diagnostic rerun",
+  "leakage_policy": {
+    "stage57_bridge_train_only": true,
+    "stage57_bridge_used_for_dev": false,
+    "stage57_bridge_used_for_checkpoint_selection": false,
+    "external_data_used_for_training": false,
+    "external_metrics_used_for_threshold_tuning": false,
+    "time_swap_used": false
+  }
+}
