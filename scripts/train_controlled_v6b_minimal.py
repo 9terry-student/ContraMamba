@@ -48,6 +48,7 @@ from scripts.stage43_external_factver_eval_utils import (  # noqa: E402
     write_jsonl,
     write_text,
 )
+from scripts.stage45_internal_family_utils import split_leave_family_out  # noqa: E402
 
 STAGE31C_COVERAGE_LABELS = [
     "ENTAILS_SUPPORT",
@@ -6932,6 +6933,48 @@ def build_parser() -> argparse.ArgumentParser:
         help="Stage44-B2: optional minimum internal clean-dev REFUTE precision.",
     )
 
+    # Stage45-B: internal leave-family-out validation scaffold
+    parser.add_argument(
+        "--stage45-use-family-holdout",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage45-B: replace the normal internal train/dev split with an "
+            "internal leave-family-out split. Default off. Does not read external data."
+        ),
+    )
+    parser.add_argument(
+        "--stage45-family-field",
+        default="auto",
+        help=(
+            "Stage45-B: family metadata field to use for internal holdout splitting, "
+            "or 'auto' for the shared preferred-field resolver. Default auto."
+        ),
+    )
+    parser.add_argument(
+        "--stage45-holdout-family",
+        default=None,
+        help="Stage45-B: internal transformation family to hold out as dev/validation.",
+    )
+    parser.add_argument(
+        "--stage45-min-holdout-size",
+        type=int,
+        default=20,
+        help="Stage45-B: minimum required internal holdout rows. Default 20.",
+    )
+    parser.add_argument(
+        "--stage45-family-holdout-report-json",
+        type=Path,
+        default=None,
+        help="Stage45-B: optional standalone internal family-holdout report JSON.",
+    )
+    parser.add_argument(
+        "--stage45-family-holdout-report-md",
+        type=Path,
+        default=None,
+        help="Stage45-B: optional standalone internal family-holdout report Markdown.",
+    )
+
     # Stage28-E: prediction export schema version
     parser.add_argument(
         "--prediction-export-schema",
@@ -8149,9 +8192,38 @@ def main(argv: list[str] | None = None) -> int:
     if args.max_train_records is not None:
         records = records[: args.max_train_records]
 
-    train_records, dev_records = v5.split_by_pair_id(
-        records, dev_ratio=args.dev_ratio, seed=args.seed
-    )
+    _stage45b_split_info: dict[str, Any] = {
+        "stage45b_enabled": False,
+        "stage45b_decision": "STAGE45B_INTERNAL_FAMILY_HOLDOUT_DISABLED",
+        "stage45b_family_field_used": None,
+        "stage45b_holdout_family": None,
+        "stage45b_train_rows": None,
+        "stage45b_holdout_rows": None,
+        "stage45b_train_label_counts": None,
+        "stage45b_holdout_label_counts": None,
+        "stage45b_holdout_metrics": None,
+        "stage45b_leakage_policy": (
+            "Stage45-B family holdout is disabled; default internal train/dev split behavior is unchanged."
+        ),
+        "stage45b_recommendation": (
+            "Enable --stage45-use-family-holdout only for internal controlled-family robustness diagnostics."
+        ),
+    }
+    if args.stage45_use_family_holdout:
+        if not args.stage45_holdout_family:
+            raise ValueError(
+                "--stage45-use-family-holdout requires --stage45-holdout-family."
+            )
+        train_records, dev_records, _stage45b_split_info = split_leave_family_out(
+            records,
+            holdout_family=args.stage45_holdout_family,
+            family_field=args.stage45_family_field,
+            min_holdout_size=args.stage45_min_holdout_size,
+        )
+    else:
+        train_records, dev_records = v5.split_by_pair_id(
+            records, dev_ratio=args.dev_ratio, seed=args.seed
+        )
 
     ce_class_weights = compute_class_weights_v6b(train_records, args.class_weighting, device)
     label_counts: dict[str, int] = {name: 0 for name in v5.ID_TO_FINAL_LABEL.values()}
@@ -9076,6 +9148,7 @@ def main(argv: list[str] | None = None) -> int:
         stage44_min_relative_macro_f1_of_best=None,
         stage44_min_support_precision=None,
         stage44_min_refute_precision=None,
+        stage45b_split_info=None,
         # Stage30-C2: temporal safety auxiliary BCE loss (separate dataset; v7 only)
         ts_train_inputs=None,
         ts_train_labels=None,
@@ -9179,6 +9252,8 @@ def main(argv: list[str] | None = None) -> int:
         _pcs_paraphrase_preserved: float = float("nan")
         _pcs_predicate_disentangled: float = float("nan")
         _pcs_eligible_count: int = 0
+        _stage45b_split_info = dict(stage45b_split_info or {})
+
         # TD-constrained selection tracking (parallel to unconstrained; fallback is existing best_*)
         _tc_epoch: int = -1
         _tc_score: float = float("-inf")
@@ -11842,6 +11917,25 @@ def main(argv: list[str] | None = None) -> int:
             "time_swap_used_in_v7_main_clean_data": False,
         }
 
+        if _stage45b_split_info.get("stage45b_enabled"):
+            _stage45b_pred_counts = (best_dev_metrics or {}).get("prediction_distribution") or {}
+            _stage45b_holdout_rows = _stage45b_split_info.get("stage45b_holdout_rows") or 0
+            _stage45b_ne_rate = (
+                _stage45b_pred_counts.get("NOT_ENTITLED", 0) / _stage45b_holdout_rows
+                if _stage45b_holdout_rows else None
+            )
+            _stage45b_per_label = (best_dev_metrics or {}).get("per_label") or {}
+            _stage45b_split_info["stage45b_holdout_metrics"] = {
+                "accuracy": (best_dev_metrics or {}).get("final_accuracy"),
+                "macro_f1": (best_dev_metrics or {}).get("final_macro_f1"),
+                "per_label": _stage45b_per_label,
+                "prediction_counts": _stage45b_pred_counts,
+                "gold_counts": _stage45b_split_info.get("stage45b_holdout_label_counts"),
+                "not_entitled_prediction_rate": _stage45b_ne_rate,
+                "support_recall": _stage45b_per_label.get("SUPPORT", {}).get("recall"),
+                "refute_recall": _stage45b_per_label.get("REFUTE", {}).get("recall"),
+            }
+
         report = {
             "run_name": run_name,
             "final_epoch": epochs,
@@ -11857,6 +11951,7 @@ def main(argv: list[str] | None = None) -> int:
             **_tc_selection_info,
             **_pcs_selection_info,
             **_stage44_selection_info,
+            **_stage45b_split_info,
             "audit_ledger": _run_audit_ledger,
             # Stage26-F: per-epoch dev metric history for post-hoc diagnosis
             "v7_epoch_diagnostic_history": _v7_epoch_history,
@@ -12006,6 +12101,7 @@ def main(argv: list[str] | None = None) -> int:
             stage44_min_relative_macro_f1_of_best=args.stage44_min_relative_macro_f1_of_best,
             stage44_min_support_precision=args.stage44_min_support_precision,
             stage44_min_refute_precision=args.stage44_min_refute_precision,
+            stage45b_split_info=_stage45b_split_info,
             ts_train_inputs=_ts_train_inputs if _ts_data_needed else None,
             ts_train_labels=_ts_train_labels if _ts_data_needed else None,
             ts_train_mask=_ts_train_mask if _ts_data_needed else None,
@@ -13040,6 +13136,17 @@ def main(argv: list[str] | None = None) -> int:
             "stage44b2_original_best_ne_pred_minus_gold_ne_rate",
             "stage44b2_reason_previous_fixed_cap_was_invalid",
             "stage44b2_recommendation",
+            "stage45b_enabled",
+            "stage45b_decision",
+            "stage45b_family_field_used",
+            "stage45b_holdout_family",
+            "stage45b_train_rows",
+            "stage45b_holdout_rows",
+            "stage45b_train_label_counts",
+            "stage45b_holdout_label_counts",
+            "stage45b_holdout_metrics",
+            "stage45b_leakage_policy",
+            "stage45b_recommendation",
             # Audit ledger (nested dict; lifted from run report)
             "audit_ledger",
         ):
@@ -13534,6 +13641,12 @@ def main(argv: list[str] | None = None) -> int:
             "stage44_min_refute_precision": getattr(
                 args, "stage44_min_refute_precision", None
             ),
+            "stage45_use_family_holdout": getattr(
+                args, "stage45_use_family_holdout", False
+            ),
+            "stage45_family_field": getattr(args, "stage45_family_field", "auto"),
+            "stage45_holdout_family": getattr(args, "stage45_holdout_family", None),
+            "stage45_min_holdout_size": getattr(args, "stage45_min_holdout_size", 20),
             "preservation_constrained_selection_used": (
                 next(iter(reports.values()), {}).get(
                     "preservation_constrained_selection_used", False
@@ -14148,6 +14261,90 @@ def main(argv: list[str] | None = None) -> int:
             }
         )
         v5.write_report_json(_stage44_report, args.stage44_selection_report_json)
+
+    if (
+        getattr(args, "stage45_family_holdout_report_json", None) is not None
+        or getattr(args, "stage45_family_holdout_report_md", None) is not None
+    ):
+        _stage45_report_keys = [
+            "stage45b_enabled",
+            "stage45b_decision",
+            "stage45b_family_field_used",
+            "stage45b_holdout_family",
+            "stage45b_train_rows",
+            "stage45b_holdout_rows",
+            "stage45b_train_label_counts",
+            "stage45b_holdout_label_counts",
+            "stage45b_holdout_metrics",
+            "stage45b_leakage_policy",
+            "stage45b_recommendation",
+        ]
+        _stage45_report = {
+            key: report.get(key)
+            for key in _stage45_report_keys
+            if key in report
+        }
+        if "stage45b_decision" not in _stage45_report:
+            _stage45_report["per_run_stage45b"] = {
+                name: {
+                    key: run_report.get(key)
+                    for key in _stage45_report_keys
+                    if key in run_report
+                }
+                for name, run_report in reports.items()
+            }
+        _stage45_report.update(
+            {
+                "stage45b_report_scope": "internal_controlled_family_holdout_only",
+                "stage43b1_files_read": False,
+                "external_factver_files_read": False,
+                "external_examples_used": False,
+                "external_labels_or_metrics_used": False,
+                "stage43b1_used_for_threshold_selection": False,
+                "stage43b1_used_for_checkpoint_selection": False,
+                "stage43b1_used_for_calibration": False,
+                "stage43b1_used_for_loss_design": False,
+                "stage43b1_used_for_model_selection": False,
+                "stage43b1_used_for_composer_behavior_changes": False,
+            }
+        )
+        if getattr(args, "stage45_family_holdout_report_json", None) is not None:
+            v5.write_report_json(_stage45_report, args.stage45_family_holdout_report_json)
+        if getattr(args, "stage45_family_holdout_report_md", None) is not None:
+            _stage45_metrics = _stage45_report.get("stage45b_holdout_metrics") or {}
+            _stage45_md_lines = [
+                "# Stage45-B Internal Family Holdout Report",
+                "",
+                "## Decision",
+                "",
+                f"`{_stage45_report.get('stage45b_decision')}`",
+                "",
+                "## Split",
+                "",
+                f"- Enabled: {_stage45_report.get('stage45b_enabled')}",
+                f"- Family field used: `{_stage45_report.get('stage45b_family_field_used')}`",
+                f"- Holdout family: `{_stage45_report.get('stage45b_holdout_family')}`",
+                f"- Train rows: {_stage45_report.get('stage45b_train_rows')}",
+                f"- Holdout rows: {_stage45_report.get('stage45b_holdout_rows')}",
+                "",
+                "## Holdout Metrics",
+                "",
+                f"- Accuracy: {_stage45_metrics.get('accuracy')}",
+                f"- Macro-F1: {_stage45_metrics.get('macro_f1')}",
+                f"- NOT_ENTITLED prediction rate: {_stage45_metrics.get('not_entitled_prediction_rate')}",
+                f"- SUPPORT recall: {_stage45_metrics.get('support_recall')}",
+                f"- REFUTE recall: {_stage45_metrics.get('refute_recall')}",
+                "",
+                "## Leakage Policy",
+                "",
+                str(_stage45_report.get("stage45b_leakage_policy")),
+                "",
+                "## Recommendation",
+                "",
+                str(_stage45_report.get("stage45b_recommendation")),
+                "",
+            ]
+            write_text(args.stage45_family_holdout_report_md, "\n".join(_stage45_md_lines))
 
     print(json.dumps(report, indent=2, sort_keys=True))
     if args.output_json is not None:

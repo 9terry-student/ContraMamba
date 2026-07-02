@@ -1,0 +1,138 @@
+﻿{
+  "decision": "STAGE45B_INTERNAL_LEAVE_FAMILY_OUT_SCAFFOLD_PLAN_READY",
+  "scope": "internal_only_controlled_family_robustness_scaffold",
+  "created_components": {
+    "utility_module": "scripts/stage45_internal_family_utils.py",
+    "manifest_builder": "scripts/build_stage45_internal_family_manifest.py",
+    "runner_support": "scripts/train_controlled_v6b_minimal.py optional Stage45-B family holdout flags",
+    "plan_markdown": "reports/stage45b_internal_leave_family_out_scaffold_plan.md",
+    "plan_json": "reports/stage45b_internal_leave_family_out_scaffold_plan.json"
+  },
+  "manifest_builder_behavior": {
+    "input": "internal controlled JSONL only",
+    "default_outputs": [
+      "reports/stage45b_internal_family_manifest.json",
+      "reports/stage45b_internal_family_manifest.md"
+    ],
+    "family_field_preference_order": [
+      "transformation_family",
+      "stage15_probe_type",
+      "probe_type",
+      "family",
+      "source_family",
+      "controlled_family",
+      "template_family",
+      "case_type",
+      "metadata.transformation_family",
+      "metadata.stage15_probe_type",
+      "metadata.probe_type"
+    ],
+    "fallback_family": "unknown_family",
+    "reports": [
+      "family counts",
+      "label counts per family",
+      "eligible holdout families by min row count",
+      "tiny family warnings",
+      "time_swap-like family warnings"
+    ],
+    "decision_labels": [
+      "STAGE45B_INTERNAL_FAMILY_MANIFEST_READY",
+      "STAGE45B_INTERNAL_FAMILY_MANIFEST_INCOMPLETE"
+    ]
+  },
+  "runner_family_holdout_behavior": {
+    "default_behavior_when_disabled": "preserve existing train/dev split exactly",
+    "enabled_behavior": "dev rows are records whose internal resolved family equals --stage45-holdout-family; train rows are all other records",
+    "failure_conditions": [
+      "--stage45-use-family-holdout without --stage45-holdout-family",
+      "holdout family missing",
+      "holdout family below --stage45-min-holdout-size",
+      "zero training rows after holdout split"
+    ],
+    "stage44b2_compatibility": "Stage44-B2 selection may be used and will operate only on the current internal holdout dev split.",
+    "stage43_external_eval": "remains optional and is never implicitly enabled by Stage45-B"
+  },
+  "new_runner_cli_flags": [
+    "--stage45-use-family-holdout",
+    "--stage45-family-field",
+    "--stage45-holdout-family",
+    "--stage45-min-holdout-size",
+    "--stage45-family-holdout-report-json",
+    "--stage45-family-holdout-report-md"
+  ],
+  "manifest_builder_cli_flags": [
+    "--data",
+    "--output-json",
+    "--output-md",
+    "--min-family-size",
+    "--family-field"
+  ],
+  "stage45b_report_fields": [
+    "stage45b_enabled",
+    "stage45b_decision",
+    "stage45b_family_field_used",
+    "stage45b_holdout_family",
+    "stage45b_train_rows",
+    "stage45b_holdout_rows",
+    "stage45b_train_label_counts",
+    "stage45b_holdout_label_counts",
+    "stage45b_holdout_metrics",
+    "stage45b_leakage_policy",
+    "stage45b_recommendation"
+  ],
+  "holdout_metric_fields": [
+    "accuracy",
+    "macro_f1",
+    "per_label precision/recall/F1",
+    "prediction counts",
+    "gold counts",
+    "NOT_ENTITLED prediction rate",
+    "SUPPORT recall",
+    "REFUTE recall"
+  ],
+  "guardrails": [
+    "Do not read Stage43-B1 files.",
+    "Do not read Stage43 external reports to set thresholds or families.",
+    "Do not use external examples, metrics, labels, or predictions.",
+    "Do not tune thresholds.",
+    "Do not calibrate.",
+    "Do not change loss/model/composer behavior.",
+    "Do not claim external validation."
+  ],
+  "leakage_policy": {
+    "stage43b1_files_read": false,
+    "external_factver_files_read": false,
+    "external_examples_used": false,
+    "external_labels_or_metrics_used": false,
+    "external_prediction_distributions_used": false,
+    "external_reports_used_for_thresholds_or_families": false,
+    "stage43b1_used_for_training": false,
+    "stage43b1_used_for_checkpoint_selection": false,
+    "stage43b1_used_for_threshold_selection": false,
+    "stage43b1_used_for_calibration": false,
+    "stage43b1_used_for_loss_design": false,
+    "stage43b1_used_for_model_selection": false,
+    "stage43b1_used_for_composer_behavior_changes": false
+  },
+  "allowed_claims": [
+    "Stage45-B creates an internal family manifest scaffold.",
+    "Stage45-B creates optional internal leave-family-out split support.",
+    "Stage45-B does not use Stage43-B1.",
+    "Stage45-B is designed to diagnose controlled-family robustness before Stage45-C redesign.",
+    "Default runner behavior is unchanged when Stage45 flags are off."
+  ],
+  "disallowed_claims": [
+    "Do not claim external PASS.",
+    "Do not claim VitaminC transfer success.",
+    "Do not claim Climate-FEVER robustness.",
+    "Do not claim naturalistic fact-verification generalization.",
+    "Do not claim Stage45-B improves performance.",
+    "Do not use Stage43-B1 for tuning, calibration, thresholds, checkpoint selection, loss selection, data generation, or model selection."
+  ],
+  "remaining_risks": [
+    "If controlled data lacks explicit family metadata, all rows may fall back to unknown_family.",
+    "Tiny families may be unsuitable as holdouts without aggregation or more internal data.",
+    "Leave-family-out robustness is an internal proxy, not external validation."
+  ],
+  "next_stage": "Stage45-C: evidence sufficiency contrast curriculum or auxiliary diagnostic, selected only by internal leave-family-out criteria"
+}
