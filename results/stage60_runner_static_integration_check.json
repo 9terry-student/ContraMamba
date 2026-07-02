@@ -1,0 +1,276 @@
+{
+  "stage": "Stage60",
+  "decision": "STAGE60_RUNNER_STATIC_INTEGRATION_READY",
+  "script": "scripts/train_controlled_v6b_minimal.py",
+  "help_flags_ok": true,
+  "source_checks_ok": true,
+  "required_paths_ok": true,
+  "stage58_stage59_metadata_ok": true,
+  "bridge_row_count": 520,
+  "training_executed": false,
+  "external_eval_executed": false,
+  "next_stage": "Stage61 bridge-enabled frozen recovery run",
+  "help_flag_check": [
+    {
+      "flag": "--stage57-bridge-train-jsonl",
+      "present_in_help": true
+    },
+    {
+      "flag": "--stage57-bridge-train-mode",
+      "present_in_help": true
+    }
+  ],
+  "source_static_checks": [
+    {
+      "check": "arg_stage57_bridge_train_jsonl",
+      "pattern": "stage57_bridge_train_jsonl",
+      "pass": true
+    },
+    {
+      "check": "arg_stage57_bridge_train_mode",
+      "pattern": "stage57_bridge_train_mode",
+      "pass": true
+    },
+    {
+      "check": "append_train_only_mode",
+      "pattern": "append_train_only",
+      "pass": true
+    },
+    {
+      "check": "stage57_report_metadata",
+      "pattern": "stage57_bridge_train_row_count",
+      "pass": true
+    },
+    {
+      "check": "stage57_train_only_metadata",
+      "pattern": "stage57_bridge_train_only",
+      "pass": true
+    },
+    {
+      "check": "stage57_dev_false_metadata",
+      "pattern": "stage57_bridge_used_for_dev",
+      "pass": true
+    },
+    {
+      "check": "stage57_checkpoint_false_metadata",
+      "pattern": "stage57_bridge_used_for_checkpoint_selection",
+      "pass": true
+    },
+    {
+      "check": "stage57_external_training_false_metadata",
+      "pattern": "stage57_external_data_used_for_training",
+      "pass": true
+    },
+    {
+      "check": "stage57_threshold_false_metadata",
+      "pattern": "stage57_external_metrics_used_for_threshold_tuning",
+      "pass": true
+    },
+    {
+      "check": "forbidden_source_guard_vitaminc",
+      "pattern": "vitaminc",
+      "pass": true
+    },
+    {
+      "check": "forbidden_source_guard_time_swap",
+      "pattern": "time_swap",
+      "pass": true
+    },
+    {
+      "check": "console_stage60_marker",
+      "pattern": "[stage60]",
+      "pass": true
+    }
+  ],
+  "required_path_checks": [
+    {
+      "name": "main_clean_data",
+      "path": "data/controlled_v5_v3_without_time_swap.jsonl",
+      "exists": true,
+      "size": 1879999
+    },
+    {
+      "name": "stage57_bridge_data",
+      "path": "data/stage57_nonleaking_external_bridge.jsonl",
+      "exists": true,
+      "size": 374520
+    },
+    {
+      "name": "stage58_audit",
+      "path": "results/stage58_bridge_dataset_static_audit.json",
+      "exists": true,
+      "size": 18326
+    },
+    {
+      "name": "stage59_plan",
+      "path": "results/stage59_bridge_integration_plan.json",
+      "exists": true,
+      "size": 7441
+    }
+  ],
+  "metadata_checks": [
+    {
+      "check": "stage58_ready",
+      "value": "STAGE58_BRIDGE_STATIC_AUDIT_READY",
+      "pass": true
+    },
+    {
+      "check": "stage59_ready",
+      "value": "STAGE59_BRIDGE_INTEGRATION_PLAN_READY",
+      "pass": true
+    },
+    {
+      "check": "stage59_primary_mode",
+      "value": "bridge_train_only_append_1x",
+      "pass": true
+    },
+    {
+      "check": "stage57_row_count",
+      "value": 520,
+      "pass": true
+    },
+    {
+      "check": "stage57_generation_source",
+      "value": [
+        "synthetic_nonleaking_bridge"
+      ],
+      "pass": true
+    },
+    {
+      "check": "stage57_leakage_policy",
+      "value": [
+        "no_vitaminc_text_or_labels_used"
+      ],
+      "pass": true
+    }
+  ],
+  "stage57_bridge_label_counts": [
+    {
+      "final_label": "REFUTE",
+      "label": 0,
+      "count": 160
+    },
+    {
+      "final_label": "NOT_ENTITLED",
+      "label": 1,
+      "count": 200
+    },
+    {
+      "final_label": "SUPPORT",
+      "label": 2,
+      "count": 160
+    }
+  ],
+  "stage57_bridge_family_counts": [
+    {
+      "stage57_bridge_family": "distractor_evidence_bridge",
+      "count": 40
+    },
+    {
+      "stage57_bridge_family": "entity_attribute_bridge",
+      "count": 120
+    },
+    {
+      "stage57_bridge_family": "lexical_paraphrase_bridge",
+      "count": 120
+    },
+    {
+      "stage57_bridge_family": "numeric_comparison_bridge",
+      "count": 120
+    },
+    {
+      "stage57_bridge_family": "temporal_comparison_bridge",
+      "count": 120
+    }
+  ],
+  "stage57_bridge_family_label_counts": [
+    {
+      "stage57_bridge_family": "distractor_evidence_bridge",
+      "final_label": "NOT_ENTITLED",
+      "label": 1,
+      "count": 40
+    },
+    {
+      "stage57_bridge_family": "entity_attribute_bridge",
+      "final_label": "REFUTE",
+      "label": 0,
+      "count": 40
+    },
+    {
+      "stage57_bridge_family": "entity_attribute_bridge",
+      "final_label": "NOT_ENTITLED",
+      "label": 1,
+      "count": 40
+    },
+    {
+      "stage57_bridge_family": "entity_attribute_bridge",
+      "final_label": "SUPPORT",
+      "label": 2,
+      "count": 40
+    },
+    {
+      "stage57_bridge_family": "lexical_paraphrase_bridge",
+      "final_label": "REFUTE",
+      "label": 0,
+      "count": 40
+    },
+    {
+      "stage57_bridge_family": "lexical_paraphrase_bridge",
+      "final_label": "NOT_ENTITLED",
+      "label": 1,
+      "count": 40
+    },
+    {
+      "stage57_bridge_family": "lexical_paraphrase_bridge",
+      "final_label": "SUPPORT",
+      "label": 2,
+      "count": 40
+    },
+    {
+      "stage57_bridge_family": "numeric_comparison_bridge",
+      "final_label": "REFUTE",
+      "label": 0,
+      "count": 40
+    },
+    {
+      "stage57_bridge_family": "numeric_comparison_bridge",
+      "final_label": "NOT_ENTITLED",
+      "label": 1,
+      "count": 40
+    },
+    {
+      "stage57_bridge_family": "numeric_comparison_bridge",
+      "final_label": "SUPPORT",
+      "label": 2,
+      "count": 40
+    },
+    {
+      "stage57_bridge_family": "temporal_comparison_bridge",
+      "final_label": "REFUTE",
+      "label": 0,
+      "count": 40
+    },
+    {
+      "stage57_bridge_family": "temporal_comparison_bridge",
+      "final_label": "NOT_ENTITLED",
+      "label": 1,
+      "count": 40
+    },
+    {
+      "stage57_bridge_family": "temporal_comparison_bridge",
+      "final_label": "SUPPORT",
+      "label": 2,
+      "count": 40
+    }
+  ],
+  "leakage_policy": {
+    "vitaminc_text_used_for_training": false,
+    "vitaminc_labels_used_for_training": false,
+    "climate_fever_used_for_training": false,
+    "external_metrics_used_for_threshold_tuning": false,
+    "stage57_bridge_train_only_policy": true,
+    "clean_dev_selection_only_policy": true,
+    "time_swap_used": false
+  },
+  "note": "Static integration check only. No training or external evaluation was executed."
+}
