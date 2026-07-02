@@ -1,0 +1,264 @@
+{
+  "summary": {
+    "stage": "Stage75A",
+    "decision": "STAGE75A_TARGETED_BRIDGE_DESIGN_READY",
+    "source_stage74": "results/stage74_residual_external_error_audit.json",
+    "design_basis": "Stage74 residual external error audit aggregate counts only; no VitaminC text/labels used as training rows.",
+    "planned_bridge_name": "stage75_targeted_residual_bridge",
+    "planned_output_jsonl": "data/stage75_targeted_residual_bridge.jsonl",
+    "planned_row_count": 1020,
+    "planned_label_mix": {
+      "SUPPORT": 480,
+      "REFUTE": 460,
+      "NOT_ENTITLED": 80
+    },
+    "target_priority_order": [
+      "false_NE_on_SUPPORT",
+      "false_NE_on_REFUTE",
+      "wrong_polarity_REFUTE_to_SUPPORT",
+      "wrong_polarity_SUPPORT_to_REFUTE",
+      "small NE safety backstop"
+    ],
+    "training_executed": false,
+    "data_generated": false,
+    "external_eval_executed": false,
+    "recommended_next_stage": "Stage75B implement synthetic targeted residual bridge generator"
+  },
+  "stage74_signal": [
+    {
+      "signal": "row_count",
+      "value": 1000,
+      "rate": 1.0
+    },
+    {
+      "signal": "error_total",
+      "value": 647,
+      "rate": 0.647
+    },
+    {
+      "signal": "false_ne_total",
+      "value": 323,
+      "rate": 0.323
+    },
+    {
+      "signal": "polarity_error_total",
+      "value": 244,
+      "rate": 0.244
+    },
+    {
+      "signal": "false_entitlement_total",
+      "value": 80,
+      "rate": 0.08
+    },
+    {
+      "signal": "false_support_total",
+      "value": 177,
+      "rate": 0.177
+    },
+    {
+      "signal": "false_refute_total",
+      "value": 147,
+      "rate": 0.147
+    }
+  ],
+  "family_plan": [
+    {
+      "family": "support_entitlement_direct_recovery_v2",
+      "target_error": "false_NE_on_SUPPORT",
+      "stage74_count": 178,
+      "planned_rows": 240,
+      "SUPPORT": 240,
+      "REFUTE": 0,
+      "NOT_ENTITLED": 0,
+      "purpose": "Recover obvious SUPPORT cases that are currently over-abstained as NOT_ENTITLED."
+    },
+    {
+      "family": "refute_entitlement_direct_recovery_v2",
+      "target_error": "false_NE_on_REFUTE",
+      "stage74_count": 145,
+      "planned_rows": 220,
+      "SUPPORT": 0,
+      "REFUTE": 220,
+      "NOT_ENTITLED": 0,
+      "purpose": "Recover obvious REFUTE cases that are currently over-abstained as NOT_ENTITLED."
+    },
+    {
+      "family": "numeric_temporal_polarity_comparison_v2",
+      "target_error": "wrong_polarity_SUPPORT_to_REFUTE + wrong_polarity_REFUTE_to_SUPPORT",
+      "stage74_count": 244,
+      "planned_rows": 260,
+      "SUPPORT": 130,
+      "REFUTE": 130,
+      "NOT_ENTITLED": 0,
+      "purpose": "Reduce polarity flips on before/after, greater/less, at-least/under, exact-count comparisons."
+    },
+    {
+      "family": "lexical_type_polarity_disambiguation_v2",
+      "target_error": "wrong_polarity_SUPPORT_to_REFUTE + wrong_polarity_REFUTE_to_SUPPORT",
+      "stage74_count": 244,
+      "planned_rows": 220,
+      "SUPPORT": 110,
+      "REFUTE": 110,
+      "NOT_ENTITLED": 0,
+      "purpose": "Reduce polarity flips where lexical overlap hides type mismatch or direct equivalence."
+    },
+    {
+      "family": "strict_ne_external_style_safety_v2",
+      "target_error": "false_SUPPORT_on_NE + false_REFUTE_on_NE",
+      "stage74_count": 80,
+      "planned_rows": 80,
+      "SUPPORT": 0,
+      "REFUTE": 0,
+      "NOT_ENTITLED": 80,
+      "purpose": "Preserve NE safety without overcorrecting into more false_NE."
+    }
+  ],
+  "planned_label_mix": [
+    {
+      "label": "SUPPORT",
+      "planned_rows": 480,
+      "rate": 0.47058823529411764
+    },
+    {
+      "label": "REFUTE",
+      "planned_rows": 460,
+      "rate": 0.45098039215686275
+    },
+    {
+      "label": "NOT_ENTITLED",
+      "planned_rows": 80,
+      "rate": 0.0784313725490196
+    }
+  ],
+  "checks": [
+    {
+      "check": "stage74_ready",
+      "pass": true
+    },
+    {
+      "check": "false_ne_is_largest_residual_bucket",
+      "pass": true
+    },
+    {
+      "check": "polarity_error_second_priority",
+      "pass": true
+    },
+    {
+      "check": "ne_safety_small_by_design",
+      "pass": true
+    },
+    {
+      "check": "positive_entitled_skew_by_design",
+      "pass": true
+    },
+    {
+      "check": "no_external_text_training_policy",
+      "pass": true
+    },
+    {
+      "check": "stage75_total_rows_1020",
+      "pass": true
+    },
+    {
+      "check": "stage75_support_refute_balanced_enough",
+      "pass": true
+    }
+  ],
+  "families": [
+    {
+      "family": "support_entitlement_direct_recovery_v2",
+      "target_error": "false_NE_on_SUPPORT",
+      "stage74_count": 178,
+      "planned_rows": 240,
+      "label_mix": {
+        "SUPPORT": 240,
+        "REFUTE": 0,
+        "NOT_ENTITLED": 0
+      },
+      "purpose": "Recover obvious SUPPORT cases that are currently over-abstained as NOT_ENTITLED.",
+      "construction": [
+        "simple entity-attribute support",
+        "numeric/date support with explicit comparison",
+        "title/work/role membership support",
+        "lexical paraphrase support with surface mismatch"
+      ],
+      "must_not_copy_external_text": true
+    },
+    {
+      "family": "refute_entitlement_direct_recovery_v2",
+      "target_error": "false_NE_on_REFUTE",
+      "stage74_count": 145,
+      "planned_rows": 220,
+      "label_mix": {
+        "SUPPORT": 0,
+        "REFUTE": 220,
+        "NOT_ENTITLED": 0
+      },
+      "purpose": "Recover obvious REFUTE cases that are currently over-abstained as NOT_ENTITLED.",
+      "construction": [
+        "explicit type mismatch refute",
+        "count/date inequality refute",
+        "exclusive-only refute",
+        "wrong entity / wrong work / wrong role refute"
+      ],
+      "must_not_copy_external_text": true
+    },
+    {
+      "family": "numeric_temporal_polarity_comparison_v2",
+      "target_error": "wrong_polarity_SUPPORT_to_REFUTE + wrong_polarity_REFUTE_to_SUPPORT",
+      "stage74_count": 244,
+      "planned_rows": 260,
+      "label_mix": {
+        "SUPPORT": 130,
+        "REFUTE": 130,
+        "NOT_ENTITLED": 0
+      },
+      "purpose": "Reduce polarity flips on before/after, greater/less, at-least/under, exact-count comparisons.",
+      "construction": [
+        "paired greater-than / less-than examples",
+        "before/after date comparisons",
+        "at least / fewer than / more than threshold cases",
+        "exact vs approximate numeric contradiction"
+      ],
+      "must_not_copy_external_text": true
+    },
+    {
+      "family": "lexical_type_polarity_disambiguation_v2",
+      "target_error": "wrong_polarity_SUPPORT_to_REFUTE + wrong_polarity_REFUTE_to_SUPPORT",
+      "stage74_count": 244,
+      "planned_rows": 220,
+      "label_mix": {
+        "SUPPORT": 110,
+        "REFUTE": 110,
+        "NOT_ENTITLED": 0
+      },
+      "purpose": "Reduce polarity flips where lexical overlap hides type mismatch or direct equivalence.",
+      "construction": [
+        "same surface term but wrong type",
+        "occupation/work/title/category distinction",
+        "organization/person/place mismatch",
+        "work title vs creator/actor/performer mismatch"
+      ],
+      "must_not_copy_external_text": true
+    },
+    {
+      "family": "strict_ne_external_style_safety_v2",
+      "target_error": "false_SUPPORT_on_NE + false_REFUTE_on_NE",
+      "stage74_count": 80,
+      "planned_rows": 80,
+      "label_mix": {
+        "SUPPORT": 0,
+        "REFUTE": 0,
+        "NOT_ENTITLED": 80
+      },
+      "purpose": "Preserve NE safety without overcorrecting into more false_NE.",
+      "construction": [
+        "partial evidence missing decisive field",
+        "near-threshold numeric insufficiency",
+        "entity present but predicate absent",
+        "claim asks a conjunction but evidence supports only one conjunct"
+      ],
+      "must_not_copy_external_text": true
+    }
+  ]
+}
