@@ -287,7 +287,7 @@ def make_row(
         "polarity_label": polarity_label,
         "primary_failure_type": primary_failure_type,
         "intervention_type": intervention_type,
-        "stage66_family": "bridge",
+        "stage66_family": family,
         "stage66_bridge_family": family,
         "stage66_subtype": subtype,
         "stage66_target_error": FAMILY_PLAN[family]["target_error"],
@@ -830,6 +830,13 @@ def check_family_and_label_counts(rows: list[dict[str, Any]]) -> dict[str, Any]:
     for row in rows:
         family_label_counts.setdefault(row["stage66_bridge_family"], Counter())[row["final_label"]] += 1
 
+    extra_families = sorted(set(family_counts.keys()) - set(FAMILY_PLAN.keys()))
+    missing_families = sorted(set(FAMILY_PLAN.keys()) - set(family_counts.keys()))
+    if extra_families:
+        mismatches.append(f"unexpected stage66_bridge_family value(s) present: {extra_families}")
+    if missing_families:
+        mismatches.append(f"expected stage66_bridge_family value(s) missing: {missing_families}")
+
     for family, plan in FAMILY_PLAN.items():
         if family_counts.get(family, 0) != plan["planned_rows"]:
             mismatches.append(f"family '{family}' row count {family_counts.get(family, 0)} != planned {plan['planned_rows']}")
@@ -848,6 +855,24 @@ def check_family_and_label_counts(rows: list[dict[str, Any]]) -> dict[str, Any]:
             )
 
     return {"passed": len(mismatches) == 0, "mismatches": mismatches}
+
+
+def check_bridge_family_matches_family(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    bad: list[str] = []
+    wrong_target_error: list[str] = []
+    for row in rows:
+        if row["stage66_bridge_family"] != row["stage66_family"]:
+            bad.append(row["id"])
+        expected_target_error = FAMILY_PLAN.get(row["stage66_family"], {}).get("target_error")
+        if row["stage66_target_error"] != expected_target_error:
+            wrong_target_error.append(row["id"])
+    return {
+        "passed": len(bad) == 0 and len(wrong_target_error) == 0,
+        "bridge_family_mismatch_count": len(bad),
+        "bridge_family_mismatch_examples": bad[:20],
+        "target_error_mismatch_count": len(wrong_target_error),
+        "target_error_mismatch_examples": wrong_target_error[:20],
+    }
 
 
 def scan_forbidden_markers(rows: list[dict[str, Any]]) -> dict[str, Any]:
@@ -885,6 +910,7 @@ def build_audit(
     label_mapping_check = check_label_mapping(rows)
     axis_consistency_check = check_axis_consistency(rows)
     family_label_count_check = check_family_and_label_counts(rows)
+    bridge_family_identity_check = check_bridge_family_matches_family(rows)
     forbidden_marker_scan = scan_forbidden_markers(rows)
     design_plan_check = check_design_plan_match(design)
 
@@ -895,6 +921,7 @@ def build_audit(
         and label_mapping_check["passed"]
         and axis_consistency_check["passed"]
         and family_label_count_check["passed"]
+        and bridge_family_identity_check["passed"]
         and forbidden_marker_scan["passed"]
         and len(rows) == STAGE66_TOTAL_ROWS
     )
@@ -922,6 +949,7 @@ def build_audit(
             "label_mapping_check": label_mapping_check,
             "axis_consistency_check": axis_consistency_check,
             "family_and_label_count_check": family_label_count_check,
+            "bridge_family_identity_check": bridge_family_identity_check,
             "forbidden_marker_scan": forbidden_marker_scan,
             "design_plan_match_check": design_plan_check,
         },
