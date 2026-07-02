@@ -1,0 +1,112 @@
+﻿{
+  "decision": "STAGE43C3_EXTERNAL_FACTVER_SYNTHESIS_COMPLETE_BUT_NO_EXTERNAL_PASS",
+  "stage43b1_external_eval_only_policy": {
+    "summary": "Stage43-B1 VitaminC and Climate-FEVER data remain external-evaluation-only.",
+    "must_not_be_used_for": [
+      "training",
+      "validation/dev split construction",
+      "checkpoint selection",
+      "threshold selection",
+      "calibration",
+      "loss design",
+      "model selection",
+      "composer behavior changes"
+    ]
+  },
+  "c0_summary": {
+    "external_eval_timing": "post_training_after_best_state_restore",
+    "used_for_training": false,
+    "used_for_checkpoint_selection": false,
+    "used_for_threshold_selection": false,
+    "result": "Both datasets INCOMPLETE because safe_structured_v2 composer output was unavailable for every row."
+  },
+  "c1_diagnostic_summary": {
+    "external_prediction_path_matches_controlled_dev": true,
+    "external_label_mapping_matches_controlled_dev": true,
+    "token_truncation_not_excessive": true,
+    "climate_fever_truncation_rate_approx": 0.051,
+    "vitaminc_truncation_rate_approx": 0.068,
+    "prediction_collapse": "Dominated by NOT_ENTITLED.",
+    "composer_unavailable_reason": "missing_source_shadow_label for every row.",
+    "required_intermediate_fields_absent": [
+      "stage37_final_shadow_label",
+      "stage36_final_shadow_label",
+      "stage32_shadow_label",
+      "stage36_support_blocker_fired",
+      "stage37_recovered_from_label",
+      "Stage33/36/37 conditional override fields"
+    ]
+  },
+  "c2_shadow_export_summary": {
+    "shadow_export_result": "Stage32/36/37/39 shadow/composer fields became available for external rows.",
+    "composer_availability": {
+      "climate_fever": "903/903",
+      "vitaminc": "1000/1000"
+    },
+    "missing_source_shadow_label_resolved": true,
+    "composer_changed_rows": {
+      "climate_fever": 2,
+      "vitaminc": 1
+    }
+  },
+  "vitaminc_result": {
+    "dataset": "VitaminC validation sample1000",
+    "row_count": 1000,
+    "base_macro_f1": 0.093653,
+    "composed_macro_f1": 0.095031,
+    "delta_macro_f1": 0.001378,
+    "composed_not_entitled_count": 979,
+    "composed_row_count": 1000,
+    "interpretation": "Closer in-family fact-verification than Climate-FEVER, but still severe NOT_ENTITLED collapse; no transfer-success claim."
+  },
+  "climate_fever_result": {
+    "dataset": "Climate-FEVER test sample1000",
+    "row_count": 903,
+    "base_macro_f1": 0.165973,
+    "composed_macro_f1": 0.174139,
+    "delta_macro_f1": 0.008166,
+    "composed_not_entitled_count": 898,
+    "composed_row_count": 903,
+    "interpretation": "Cross-domain limitation; not a training signal and not a robustness claim."
+  },
+  "safety_counter_summary": {
+    "introduced_unsafe_SUPPORT_count": 0,
+    "introduced_REFUTE_to_SUPPORT_count": 0,
+    "introduced_SUPPORT_to_REFUTE_count": 0,
+    "interpretation": "No introduced unsafe SUPPORT or REFUTE/SUPPORT flips were observed in Stage43-C2."
+  },
+  "leakage_summary": {
+    "boundary_preserved": true,
+    "used_for_training": false,
+    "used_for_checkpoint_selection": false,
+    "used_for_threshold_selection": false,
+    "used_for_calibration": false,
+    "used_for_loss_design": false,
+    "used_for_model_selection": false,
+    "used_for_composer_behavior_changes": false
+  },
+  "failure_mode": {
+    "primary": "NOT_ENTITLED collapse under external distribution.",
+    "composer_path_failure": "Fixed by Stage43-C2 shadow export.",
+    "external_generalization": "Still not demonstrated."
+  },
+  "allowed_claims": [
+    "Stage43 external eval hook works post-best-state restoration.",
+    "Stage43-B1 leakage boundary was preserved.",
+    "Stage43-C2 resolved composer shadow-field availability.",
+    "No introduced unsafe SUPPORT / REFUTE-to-SUPPORT / SUPPORT-to-REFUTE transitions were observed in C2."
+  ],
+  "disallowed_claims": [
+    "External validation PASS.",
+    "Naturalistic generalization.",
+    "Climate-FEVER robustness.",
+    "VitaminC transfer success.",
+    "Safety improvement from Stage43-B1."
+  ],
+  "recommendation": "Freeze Stage43 as an honest negative/incomplete external validation result. Do not tune thresholds/calibration on Stage43-B1 and do not use Stage43-B1 for checkpoint/model selection.",
+  "next_stage_options": [
+    "Pre-register a future training-stage design using only controlled/internal data, then re-evaluate Stage43-B1 once, read-only.",
+    "Acquire a separate held-out external set before any redesign if additional external validation is needed.",
+    "Keep Stage43-B1 protected as evaluation-only evidence and report current results as incomplete/no external PASS."
+  ]
+}
