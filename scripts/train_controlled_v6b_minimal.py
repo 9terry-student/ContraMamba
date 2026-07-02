@@ -7324,15 +7324,6 @@ def prediction_distribution_from_records(records: list[dict]) -> dict[str, int]:
 # Stage29-B: external probe evaluation helpers
 # ---------------------------------------------------------------------------
 
-_S29B_PROBE_OPTIONAL_DEFAULTS: dict[str, Any] = {
-    "frame_compatible_label": 0,
-    "predicate_covered_label": 0,
-    "sufficiency_label": 0,
-    "polarity_label": "NONE",
-    "primary_failure_type": "none",
-    "source_intervention_type": "",
-}
-
 
 def load_external_probe_jsonl(path: "Path") -> list[dict]:
     """Load external probe JSONL records tolerantly (no schema enforcement)."""
@@ -7345,17 +7336,279 @@ def load_external_probe_jsonl(path: "Path") -> list[dict]:
     return records
 
 
-def _patch_probe_record(record: dict) -> dict:
-    """Return a copy of record with conservative defaults for missing optional fields.
+# ---------------------------------------------------------------------------
+# Stage73: external fact-verification schema normalization (eval-only)
+#
+# Fixes external eval crashing with `KeyError: 'final_label'` when
+# --external-eval-jsonl points at a Stage43B1-style external fact-verification
+# file (e.g. data/stage43b1_vitaminc_validation_sample1000.jsonl) whose schema
+# differs from the controlled v5/v6 training/dev schema expected by
+# v5.encode_mamba_records / v5.encode_label_tensors. This normalization is
+# runner-side only: it never touches src/contramamba/losses.py, never affects
+# controlled train/dev construction, and derived labels are used solely to
+# satisfy the encoder's tensor-construction requirements for eval-only
+# forward passes (never for training, calibration, threshold selection, or
+# checkpoint selection).
+# ---------------------------------------------------------------------------
 
-    Required for v5.encode_records / v5.encode_mamba_records which expect the full
-    controlled-data schema.  Defaults are used only for tensor construction; they do
-    not affect prediction or metric computation.
+_STAGE73_LABEL_FIELD_CANDIDATES: tuple[str, ...] = (
+    "final_label",
+    "label",
+    "gold",
+    "gold_label",
+    "answer",
+    "verdict",
+    "fact_label",
+    "vitaminc_label",
+    "stage43_label",
+    "original_label",
+)
+
+_STAGE73_CLAIM_FIELD_CANDIDATES: tuple[str, ...] = (
+    "claim",
+    "hypothesis",
+    "statement",
+    "query",
+)
+
+_STAGE73_EVIDENCE_FIELD_CANDIDATES: tuple[str, ...] = (
+    "evidence",
+    "premise",
+    "context",
+    "passage",
+    "document",
+    "evidence_text",
+)
+
+# Case-insensitive canonicalization: raw values are upper-cased and any run of
+# whitespace/hyphen characters is collapsed to a single underscore before
+# lookup, so "Not Enough Info", "not-enough-info", and "NOT_ENOUGH_INFO" all
+# resolve to the same key.
+_STAGE73_LABEL_CANONICAL_MAP: dict[str, str] = {
+    "SUPPORT": "SUPPORT",
+    "SUPPORTS": "SUPPORT",
+    "ENTAILMENT": "SUPPORT",
+    "ENTAILED": "SUPPORT",
+    "REFUTE": "REFUTE",
+    "REFUTES": "REFUTE",
+    "CONTRADICTION": "REFUTE",
+    "CONTRADICTS": "REFUTE",
+    "NOT_ENTITLED": "NOT_ENTITLED",
+    "NEI": "NOT_ENTITLED",
+    "NOT_ENOUGH_INFO": "NOT_ENTITLED",
+    "UNKNOWN": "NOT_ENTITLED",
+    "UNVERIFIABLE": "NOT_ENTITLED",
+}
+
+# Stage73 requirement 7: recommended auxiliary-label defaults, keyed by the
+# canonicalized final_label. Only used to satisfy v5.encode_label_tensors for
+# external eval; never used for training losses or checkpoint selection.
+_STAGE73_AUX_LABEL_DEFAULTS_BY_FINAL_LABEL: dict[str, dict[str, Any]] = {
+    "SUPPORT": {
+        "frame_compatible_label": 1,
+        "predicate_covered_label": 1,
+        "sufficiency_label": 1,
+        "polarity_label": "SUPPORT",
+    },
+    "REFUTE": {
+        "frame_compatible_label": 1,
+        "predicate_covered_label": 1,
+        "sufficiency_label": 1,
+        "polarity_label": "REFUTE",
+    },
+    "NOT_ENTITLED": {
+        "frame_compatible_label": 0,
+        "predicate_covered_label": 0,
+        "sufficiency_label": 0,
+        "polarity_label": "NONE",
+    },
+}
+
+
+def _stage73_canonicalize_label(raw: Any) -> "str | None":
+    """Case-insensitive canonicalization of an external label value.
+
+    Returns None (rather than raising) when the value is unmapped so callers
+    can produce a clear, contextualized ValueError.
+    """
+    if raw is None:
+        return None
+    key = re.sub(r"[\s\-]+", "_", str(raw).strip().upper())
+    return _STAGE73_LABEL_CANONICAL_MAP.get(key)
+
+
+def _stage73_first_present_field(
+    record: dict, candidates: tuple[str, ...]
+) -> "tuple[str | None, Any]":
+    """Return the (field_name, value) of the first candidate with a non-empty value."""
+    for field in candidates:
+        if field not in record:
+            continue
+        value = record[field]
+        if value is None:
+            continue
+        if isinstance(value, str) and not value.strip():
+            continue
+        return field, value
+    return None, None
+
+
+def normalize_external_factver_record(
+    record: dict[str, Any], index: int
+) -> "tuple[dict[str, Any], dict[str, Any]]":
+    """Normalize one external fact-verification record (Stage43B1 / VitaminC-style
+    schema) into the controlled v5/v6 schema expected by v5.encode_mamba_records
+    and v5.encode_label_tensors.
+
+    Never mutates the input record. Preserves all original fields on the
+    returned copy and adds provenance metadata
+    (external_original_label / external_schema_normalized /
+    external_schema_source). Raises ValueError with the record id and
+    available keys when a required field cannot be resolved.
+
+    Returns (normalized_record, stats) where stats reports what this record
+    needed: which label/claim/evidence field was used, whether final_label
+    was missing beforehand, whether auxiliary labels were defaulted, and
+    whether the record required any normalization at all.
     """
     out = dict(record)
-    for field, default in _S29B_PROBE_OPTIONAL_DEFAULTS.items():
-        out.setdefault(field, default)
-    return out
+    available_keys = sorted(record.keys())
+    record_id = record.get("id")
+    if record_id is None:
+        record_id = record.get("pair_id")
+    if record_id is None:
+        record_id = f"external_row_{index}"
+
+    # --- final_label -------------------------------------------------------
+    final_label_was_missing = "final_label" not in record or record.get("final_label") is None
+    label_field, label_value = _stage73_first_present_field(
+        record, _STAGE73_LABEL_FIELD_CANDIDATES
+    )
+    if label_field is None:
+        raise ValueError(
+            "External eval record has no usable label field: "
+            f"record_id={record_id!r} "
+            f"candidate_label_fields={list(_STAGE73_LABEL_FIELD_CANDIDATES)} "
+            f"available_keys={available_keys}"
+        )
+    canonical_label = _stage73_canonicalize_label(label_value)
+    if canonical_label is None:
+        raise ValueError(
+            "External eval label cannot be canonicalized: "
+            f"record_id={record_id!r} label_value={label_value!r} "
+            f"label_field={label_field!r} "
+            f"candidate_label_fields={list(_STAGE73_LABEL_FIELD_CANDIDATES)} "
+            f"available_keys={available_keys}"
+        )
+    out["final_label"] = canonical_label
+
+    # --- claim / evidence ---------------------------------------------------
+    claim_field, claim_value = _stage73_first_present_field(
+        record, _STAGE73_CLAIM_FIELD_CANDIDATES
+    )
+    evidence_field, evidence_value = _stage73_first_present_field(
+        record, _STAGE73_EVIDENCE_FIELD_CANDIDATES
+    )
+    if claim_field is None or evidence_field is None:
+        raise ValueError(
+            "External eval record is missing required claim/evidence text: "
+            f"record_id={record_id!r} "
+            f"claim_field_found={claim_field!r} evidence_field_found={evidence_field!r} "
+            f"candidate_claim_fields={list(_STAGE73_CLAIM_FIELD_CANDIDATES)} "
+            f"candidate_evidence_fields={list(_STAGE73_EVIDENCE_FIELD_CANDIDATES)} "
+            f"available_keys={available_keys}"
+        )
+    out["claim"] = str(claim_value)
+    out["evidence"] = str(evidence_value)
+
+    # --- auxiliary labels (external-eval-only; never used for training) ----
+    aux_defaults = _STAGE73_AUX_LABEL_DEFAULTS_BY_FINAL_LABEL[canonical_label]
+    aux_labels_added = False
+    for aux_field, default_value in aux_defaults.items():
+        if aux_field not in out or out[aux_field] is None:
+            out[aux_field] = default_value
+            aux_labels_added = True
+
+    # --- identity / pairing fields required by v5.encode_mamba_records -----
+    id_defaulted = "id" not in out or out["id"] is None
+    if id_defaulted:
+        out["id"] = record_id
+    pair_id_defaulted = "pair_id" not in out or out["pair_id"] is None
+    if pair_id_defaulted:
+        out["pair_id"] = out["id"]
+    intervention_type_defaulted = (
+        "intervention_type" not in out or out["intervention_type"] is None
+    )
+    if intervention_type_defaulted:
+        out["intervention_type"] = "stage43b1_external_factver"
+    out.setdefault("normalized_intervention", out["intervention_type"])
+    out.setdefault("primary_failure_type", "stage43b1_external_factver")
+    out.setdefault("source_intervention_type", "")
+
+    # --- provenance metadata (additive; does not break prediction export) --
+    out["external_original_label"] = label_value
+    out["external_schema_normalized"] = True
+    out["external_schema_source"] = "stage43b1_factver"
+
+    changed = (
+        final_label_was_missing
+        or label_field != "final_label"
+        or claim_field != "claim"
+        or evidence_field != "evidence"
+        or aux_labels_added
+        or id_defaulted
+        or pair_id_defaulted
+        or intervention_type_defaulted
+    )
+    stats = {
+        "label_field_used": label_field,
+        "claim_field_used": claim_field,
+        "evidence_field_used": evidence_field,
+        "final_label_was_missing": final_label_was_missing,
+        "aux_labels_added": aux_labels_added,
+        "changed": changed,
+    }
+    return out, stats
+
+
+def normalize_external_factver_records(
+    records: list[dict[str, Any]],
+) -> "tuple[list[dict[str, Any]], dict[str, Any]]":
+    """Batch wrapper around normalize_external_factver_record.
+
+    Returns (normalized_records, schema_report) where schema_report supplies
+    the Stage73 external-eval reporting fields (requirement 9):
+    external_schema_normalized, external_schema_normalization_source,
+    external_schema_missing_final_label_fixed, external_schema_label_field_used,
+    external_schema_records_normalized, external_schema_records_with_added_aux_labels.
+    """
+    normalized: list[dict[str, Any]] = []
+    label_fields_used: set[str] = set()
+    records_normalized = 0
+    records_with_added_aux_labels = 0
+    missing_final_label_fixed = False
+
+    for index, record in enumerate(records):
+        norm_record, rec_stats = normalize_external_factver_record(record, index)
+        normalized.append(norm_record)
+        if rec_stats["label_field_used"] is not None:
+            label_fields_used.add(rec_stats["label_field_used"])
+        if rec_stats["changed"]:
+            records_normalized += 1
+        if rec_stats["aux_labels_added"]:
+            records_with_added_aux_labels += 1
+        if rec_stats["final_label_was_missing"]:
+            missing_final_label_fixed = True
+
+    schema_report = {
+        "external_schema_normalized": True,
+        "external_schema_normalization_source": "runner_external_eval",
+        "external_schema_missing_final_label_fixed": missing_final_label_fixed,
+        "external_schema_label_field_used": sorted(label_fields_used),
+        "external_schema_records_normalized": records_normalized,
+        "external_schema_records_with_added_aux_labels": records_with_added_aux_labels,
+    }
+    return normalized, schema_report
 
 
 def evaluate_external_probe(
@@ -15151,9 +15404,16 @@ def main(argv: list[str] | None = None) -> int:
                 f"eval_state={_ext_eval_state} epoch={_ext_eval_epoch}"
             )
 
-            # Load and patch records (fills in missing optional fields with safe defaults)
+            # Load and normalize records. Stage73: records from an external
+            # fact-verification schema (e.g. Stage43B1 / VitaminC, which uses
+            # `label` instead of `final_label` and has no auxiliary labels) are
+            # mapped onto the controlled v5/v6 schema here; records that already
+            # use the controlled schema pass through unchanged aside from the
+            # additive provenance metadata fields.
             _ext_records_raw = load_external_probe_jsonl(_ext_path)
-            _ext_records = [_patch_probe_record(r) for r in _ext_records_raw]
+            _ext_records, _ext_schema_report = normalize_external_factver_records(
+                _ext_records_raw
+            )
 
             # Encode (reuses same backbone/tokenizer as training)
             if args.backbone == "dummy":
@@ -15187,6 +15447,14 @@ def main(argv: list[str] | None = None) -> int:
             _ext_result["eval_state"] = _ext_eval_state
             _ext_result["eval_epoch"] = _ext_eval_epoch
 
+            # Stage73: external fact-verification schema normalization reporting
+            # (requirement 9). Reflects only eval-time schema mapping; never
+            # affects training, calibration, threshold selection, or checkpoint
+            # selection.
+            _ext_result.update(_ext_schema_report)
+            _ext_result["external_eval_jsonl"] = str(_ext_path)
+            _ext_result["external_eval_name"] = _ext_name
+
             # Write per-probe prediction JSON (optional)
             _ext_pred_out_str: "str | None" = None
             if _ext_output_dir is not None:
@@ -15212,6 +15480,22 @@ def main(argv: list[str] | None = None) -> int:
                     "external_probe_used_for_calibration": False,
                     "external_probe_used_for_training": False,
                     "config_summary": _ext_result["config_summary"],
+                    "external_schema_normalized": _ext_schema_report["external_schema_normalized"],
+                    "external_schema_normalization_source": _ext_schema_report[
+                        "external_schema_normalization_source"
+                    ],
+                    "external_schema_missing_final_label_fixed": _ext_schema_report[
+                        "external_schema_missing_final_label_fixed"
+                    ],
+                    "external_schema_label_field_used": _ext_schema_report[
+                        "external_schema_label_field_used"
+                    ],
+                    "external_schema_records_normalized": _ext_schema_report[
+                        "external_schema_records_normalized"
+                    ],
+                    "external_schema_records_with_added_aux_labels": _ext_schema_report[
+                        "external_schema_records_with_added_aux_labels"
+                    ],
                 }
                 v5.write_predictions_json(
                     _ext_pred_out_path_obj, _ext_pred_metadata, _ext_pred_records
