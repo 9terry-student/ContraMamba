@@ -1,0 +1,25 @@
+{
+  "decision": "STAGE49_STAGE48_INTEGRATION_READY",
+  "leakage_policy": {
+    "evaluation_run": false,
+    "external_data_used": false,
+    "scope": "static_stage48_integration_check_only",
+    "training_run": false
+  },
+  "overridden_runner_args": {
+    "stage45c_entitled_ne_penalty_weight": 0.1,
+    "stage45c_support_recovery_weight": 0.1
+  },
+  "runner_flags_detected": {
+    "stage47_recovery_config_path": true,
+    "use_stage47_selected_recovery_config": true
+  },
+  "selected_config_name": "recovery_w01_ne01",
+  "selected_ne_w": 0.1,
+  "selected_support_w": 0.1,
+  "source_files": {
+    "runner": "scripts\\train_controlled_v6b_minimal.py",
+    "stage47_config": "results\\stage47_selected_recovery_config_check.json"
+  },
+  "stage": "Stage49"
+}
