@@ -1,0 +1,33 @@
+{
+  "decision": "STAGE50_STAGE48_USAGE_MANIFEST_READY",
+  "default_config_path": "results/stage47_selected_recovery_config_check.json",
+  "diagnostic_runner_up": {
+    "config_name": "recovery_w010_ne020",
+    "ne_w": 0.2,
+    "role": "paraphrase_specialized_diagnostic_runner_up",
+    "support_w": 0.1
+  },
+  "dropped_configs": [
+    "w0.05_ne0.05",
+    "w0.2_ne0.1"
+  ],
+  "leakage_policy": {
+    "evaluation_run": false,
+    "external_data_used": false,
+    "scope": "static_usage_manifest_only",
+    "training_run": false
+  },
+  "overridden_runner_args": {
+    "stage45c_entitled_ne_penalty_weight": 0.1,
+    "stage45c_support_recovery_weight": 0.1
+  },
+  "required_runner_flag": "--use-stage47-selected-recovery-config",
+  "selected_config_name": "recovery_w01_ne01",
+  "selected_ne_w": 0.1,
+  "selected_support_w": 0.1,
+  "source_files": {
+    "stage47_config": "results\\stage47_selected_recovery_config_check.json",
+    "stage49_report": "results\\stage49_stage48_integration_report.json"
+  },
+  "stage": "Stage50"
+}
