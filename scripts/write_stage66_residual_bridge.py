@@ -57,6 +57,18 @@ STAGE67_DECISION_FAILED = "STAGE67_STAGE66_RESIDUAL_BRIDGE_DATA_FAILED"
 # elsewhere in this repo, e.g. scripts/write_stage57_nonleaking_external_bridge.py).
 FINAL_LABEL_TO_ID: dict[str, int] = {"REFUTE": 0, "NOT_ENTITLED": 1, "SUPPORT": 2}
 
+# polarity_label values are *string keys*, not raw ints: scripts/train_controlled_v5.py
+# looks each row up via POLARITY_LABEL_TO_ID[record["polarity_label"]], where
+# POLARITY_LABEL_TO_ID = {label.name: int(label) for label in PolarityLabel}
+# and src/contramamba/labels.py defines PolarityLabel as NONE=0, REFUTE=1,
+# SUPPORT=2 (there is no NOT_ENTITLED member). This matches the convention
+# already on disk in data/controlled_v5_v3_without_time_swap.jsonl and
+# data/stage57_nonleaking_external_bridge.jsonl: SUPPORT rows use "SUPPORT",
+# REFUTE rows use "REFUTE", and NOT_ENTITLED rows use "NONE".
+POLARITY_LABEL_SUPPORT = "SUPPORT"
+POLARITY_LABEL_REFUTE = "REFUTE"
+POLARITY_LABEL_NOT_ENTITLED = "NONE"
+
 STAGE66_GENERATION_SOURCE = "synthetic_nonleaking_residual_bridge"
 STAGE66_LEAKAGE_POLICY_TAG = "no_vitaminc_text_or_labels_used_taxonomy_only"
 
@@ -270,7 +282,7 @@ def make_row(
     frame_compatible_label: int,
     predicate_covered_label: int,
     sufficiency_label: int,
-    polarity_label: int,
+    polarity_label: str,
     primary_failure_type: str,
 ) -> dict[str, Any]:
     row_id = f"{pair_id}__{intervention_type}"
@@ -377,7 +389,7 @@ def build_support_entitlement_recovery_bridge(rng: Random, n_total: int) -> list
                 family=_SERB_FAMILY, subtype=subtype, pair_id=pair_id,
                 intervention_type=f"bridge_support_{subtype}", claim=claim, evidence=evidence,
                 label_name="SUPPORT", frame_compatible_label=1, predicate_covered_label=1,
-                sufficiency_label=1, polarity_label=1, primary_failure_type="none",
+                sufficiency_label=1, polarity_label=POLARITY_LABEL_SUPPORT, primary_failure_type="none",
             ))
     return rows
 
@@ -461,7 +473,7 @@ def build_refute_entitlement_recovery_bridge(rng: Random, n_total: int) -> list[
                 family=_RERB_FAMILY, subtype=subtype, pair_id=pair_id,
                 intervention_type=f"bridge_refute_{subtype}", claim=claim, evidence=evidence,
                 label_name="REFUTE", frame_compatible_label=1, predicate_covered_label=1,
-                sufficiency_label=1, polarity_label=0, primary_failure_type="polarity",
+                sufficiency_label=1, polarity_label=POLARITY_LABEL_REFUTE, primary_failure_type="polarity",
             ))
     return rows
 
@@ -548,13 +560,13 @@ def build_polarity_disambiguation_bridge(rng: Random, n_pairs: int) -> list[dict
                 family=_PDB_FAMILY, subtype=subtype, pair_id=pair_id,
                 intervention_type=f"bridge_polarity_support_{subtype}", claim=support_claim, evidence=evidence,
                 label_name="SUPPORT", frame_compatible_label=1, predicate_covered_label=1,
-                sufficiency_label=1, polarity_label=1, primary_failure_type="none",
+                sufficiency_label=1, polarity_label=POLARITY_LABEL_SUPPORT, primary_failure_type="none",
             ))
             rows.append(make_row(
                 family=_PDB_FAMILY, subtype=subtype, pair_id=pair_id,
                 intervention_type=f"bridge_polarity_refute_{subtype}", claim=refute_claim, evidence=evidence,
                 label_name="REFUTE", frame_compatible_label=1, predicate_covered_label=1,
-                sufficiency_label=1, polarity_label=0, primary_failure_type="polarity",
+                sufficiency_label=1, polarity_label=POLARITY_LABEL_REFUTE, primary_failure_type="polarity",
             ))
     return rows
 
@@ -614,14 +626,14 @@ def build_numeric_temporal_comparison_bridge(rng: Random, n_pairs_per_type: int)
                 intervention_type=f"bridge_numeric_temporal_support_{support_subtype}",
                 claim=support_claim, evidence=evidence,
                 label_name="SUPPORT", frame_compatible_label=1, predicate_covered_label=1,
-                sufficiency_label=1, polarity_label=1, primary_failure_type="none",
+                sufficiency_label=1, polarity_label=POLARITY_LABEL_SUPPORT, primary_failure_type="none",
             ))
             rows.append(make_row(
                 family=_NTCB_FAMILY, subtype=refute_subtype, pair_id=refute_pair_id,
                 intervention_type=f"bridge_numeric_temporal_refute_{refute_subtype}",
                 claim=refute_claim, evidence=evidence,
                 label_name="REFUTE", frame_compatible_label=1, predicate_covered_label=1,
-                sufficiency_label=1, polarity_label=0, primary_failure_type="polarity",
+                sufficiency_label=1, polarity_label=POLARITY_LABEL_REFUTE, primary_failure_type="polarity",
             ))
     return rows
 
@@ -637,10 +649,13 @@ _SNFSB_SUBTYPES = [
 ]
 _SNFSB_FAMILY = "strict_ne_frame_safety_bridge"
 
-# polarity_label is not applicable for NOT_ENTITLED rows; -1 keeps it
-# distinct from REFUTE's 0 and SUPPORT's 1 so no ambiguous label id is
-# introduced on the polarity axis.
-_NE_POLARITY_LABEL = -1
+# polarity_label for NOT_ENTITLED rows: PolarityLabel (src/contramamba/labels.py)
+# has no NOT_ENTITLED member, so, mirroring the existing main/Stage57 data
+# convention, these rows use "NONE" (POLARITY_LABEL_NOT_ENTITLED), the same
+# encoder-compatible key used by every NOT_ENTITLED row already on disk in
+# data/controlled_v5_v3_without_time_swap.jsonl and
+# data/stage57_nonleaking_external_bridge.jsonl.
+_NE_POLARITY_LABEL = POLARITY_LABEL_NOT_ENTITLED
 
 
 def build_strict_ne_frame_safety_bridge(rng: Random, n_total: int) -> list[dict[str, Any]]:
@@ -800,14 +815,14 @@ def check_axis_consistency(rows: list[dict[str, Any]]) -> dict[str, Any]:
                 row["frame_compatible_label"] == 1
                 and row["predicate_covered_label"] == 1
                 and row["sufficiency_label"] == 1
-                and row["polarity_label"] == 1
+                and row["polarity_label"] == POLARITY_LABEL_SUPPORT
             )
         elif label == "REFUTE":
             ok = (
                 row["frame_compatible_label"] == 1
                 and row["predicate_covered_label"] == 1
                 and row["sufficiency_label"] == 1
-                and row["polarity_label"] == 0
+                and row["polarity_label"] == POLARITY_LABEL_REFUTE
             )
         elif label == "NOT_ENTITLED":
             blocked = (
@@ -821,6 +836,77 @@ def check_axis_consistency(rows: list[dict[str, Any]]) -> dict[str, Any]:
         if not ok:
             bad.append(row["id"])
     return {"passed": len(bad) == 0, "bad_count": len(bad), "bad_examples": bad[:20]}
+
+
+# Fallback mapping only used if scripts.train_controlled_v5 cannot be imported
+# in this environment (e.g. torch missing). Mirrors src/contramamba/labels.py
+# PolarityLabel exactly, so the check still runs, but scripts.train_controlled_v5
+# is always tried first because it is the real training-time source of truth.
+_FALLBACK_POLARITY_LABEL_TO_ID = {"NONE": 0, "REFUTE": 1, "SUPPORT": 2}
+
+
+def check_polarity_label_encoder_compatibility(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Verify every row's polarity_label is a key accepted by the real
+    training-time encoder (scripts.train_controlled_v5.POLARITY_LABEL_TO_ID),
+    and dry-run the exact label-tensor encoding path
+    (scripts.train_controlled_v5.encode_label_tensors) that
+    scripts/train_controlled_v5.py uses when it builds `polarity_labels`.
+    This imports scripts.train_controlled_v5 only for its label dictionaries
+    and a pure tensor-encoding helper -- it builds no model, loads no
+    dataset, and runs no training/evaluation loop.
+    """
+    root = Path(__file__).resolve().parents[1]
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+    v5_module = None
+    encoder_import_error: str | None = None
+    try:
+        # Deliberately a local, lazy import (not moved to module scope) so this
+        # generator has no hard torch/train_controlled_v5 dependency for its
+        # core row-building path; only this compatibility check needs it.
+        from scripts import train_controlled_v5 as v5_module
+    except Exception as exc:  # pragma: no cover - environment-dependent (e.g. torch missing)
+        encoder_import_error = f"{type(exc).__name__}: {exc}"
+
+    if v5_module is not None:
+        encoder_mapping_used = dict(v5_module.POLARITY_LABEL_TO_ID)
+        encoder_mapping_source = "scripts.train_controlled_v5.POLARITY_LABEL_TO_ID"
+    else:
+        encoder_mapping_used = dict(_FALLBACK_POLARITY_LABEL_TO_ID)
+        encoder_mapping_source = "fallback_static_polarity_label_mapping (scripts.train_controlled_v5 import failed)"
+
+    bad: list[str] = []
+    for row in rows:
+        if row["polarity_label"] not in encoder_mapping_used:
+            bad.append(row["id"])
+
+    tensor_encode_ran = False
+    tensor_encode_passed: bool | None = None
+    tensor_encode_error: str | None = None
+    if v5_module is not None and not bad:
+        try:
+            encoded = v5_module.encode_label_tensors(rows)
+            tensor_encode_ran = True
+            tensor_encode_passed = len(encoded["polarity_labels"]) == len(rows)
+        except Exception as exc:
+            tensor_encode_ran = True
+            tensor_encode_passed = False
+            tensor_encode_error = f"{type(exc).__name__}: {exc}"
+
+    passed = len(bad) == 0 and tensor_encode_passed is not False
+
+    return {
+        "passed": passed,
+        "bad_count": len(bad),
+        "bad_examples": bad[:20],
+        "encoder_mapping_used": encoder_mapping_used,
+        "encoder_mapping_source": encoder_mapping_source,
+        "encoder_import_error": encoder_import_error,
+        "tensor_encode_check_ran": tensor_encode_ran,
+        "tensor_encode_check_passed": tensor_encode_passed,
+        "tensor_encode_check_error": tensor_encode_error,
+    }
 
 
 def check_family_and_label_counts(rows: list[dict[str, Any]]) -> dict[str, Any]:
@@ -894,6 +980,7 @@ def build_audit(
     design: dict[str, Any] | None,
 ) -> dict[str, Any]:
     label_counts = Counter(row["final_label"] for row in rows)
+    polarity_label_counts = Counter(row["polarity_label"] for row in rows)
     family_counts = Counter(row["stage66_bridge_family"] for row in rows)
     subtype_counts = Counter(row["stage66_subtype"] for row in rows)
 
@@ -909,6 +996,7 @@ def build_audit(
     duplicate_pair_check = check_duplicate_claim_evidence_pairs(rows)
     label_mapping_check = check_label_mapping(rows)
     axis_consistency_check = check_axis_consistency(rows)
+    polarity_label_encoder_check = check_polarity_label_encoder_compatibility(rows)
     family_label_count_check = check_family_and_label_counts(rows)
     bridge_family_identity_check = check_bridge_family_matches_family(rows)
     forbidden_marker_scan = scan_forbidden_markers(rows)
@@ -920,6 +1008,7 @@ def build_audit(
         and duplicate_pair_check["passed"]
         and label_mapping_check["passed"]
         and axis_consistency_check["passed"]
+        and polarity_label_encoder_check["passed"]
         and family_label_count_check["passed"]
         and bridge_family_identity_check["passed"]
         and forbidden_marker_scan["passed"]
@@ -942,12 +1031,16 @@ def build_audit(
         "counts_by_subtype": dict(subtype_counts),
         "bridge_families": BRIDGE_FAMILY_ORDER,
         "label_mapping": FINAL_LABEL_TO_ID,
+        "polarity_label_counts": dict(polarity_label_counts),
+        "polarity_label_encoder_compatible": polarity_label_encoder_check["passed"],
+        "encoder_mapping_used": polarity_label_encoder_check["encoder_mapping_used"],
         "checks": {
             "required_fields_present": required_fields_check,
             "duplicate_id_check": duplicate_id_check,
             "duplicate_claim_evidence_pair_check": duplicate_pair_check,
             "label_mapping_check": label_mapping_check,
             "axis_consistency_check": axis_consistency_check,
+            "polarity_label_encoder_compatibility_check": polarity_label_encoder_check,
             "family_and_label_count_check": family_label_count_check,
             "bridge_family_identity_check": bridge_family_identity_check,
             "forbidden_marker_scan": forbidden_marker_scan,
@@ -1004,6 +1097,16 @@ def render_markdown(audit: dict[str, Any]) -> str:
         lines.append(
             f"| {label} | {audit['counts_by_label'].get(label, 0)} | {audit['expected_counts_by_label'].get(label, 0)} |"
         )
+    lines.append("")
+    lines.append("## Polarity label encoder compatibility")
+    lines.append("")
+    lines.append(f"- `polarity_label_encoder_compatible`: {audit['polarity_label_encoder_compatible']}")
+    lines.append(f"- `encoder_mapping_used` (POLARITY_LABEL_TO_ID keys): {audit['encoder_mapping_used']}")
+    lines.append("")
+    lines.append("| polarity_label | Count |")
+    lines.append("|---|---|")
+    for key, count in sorted(audit["polarity_label_counts"].items()):
+        lines.append(f"| {key} | {count} |")
     lines.append("")
     lines.append("## Counts by bridge family")
     lines.append("")
