@@ -1,0 +1,280 @@
+{
+  "summary": {
+    "stage": "Stage64",
+    "decision": "STAGE64_EXTERNAL_IMPROVEMENT_AUDIT_READY_INCOMPLETE",
+    "stage53a_dataset_decision": "STAGE43C0_EXTERNAL_FACTVER_UNSAFE",
+    "stage63_dataset_decision": "STAGE43C0_EXTERNAL_FACTVER_INCOMPLETE",
+    "stage53a_aggregate_decision": "STAGE43C0_EXTERNAL_FACTVER_AGGREGATE_UNSAFE",
+    "stage63_aggregate_decision": "STAGE43C0_EXTERNAL_FACTVER_AGGREGATE_INCOMPLETE",
+    "base_accuracy_delta": 0.166,
+    "base_macro_f1_delta": 0.199333,
+    "composed_accuracy_delta": 0.166,
+    "composed_macro_f1_delta": 0.198602,
+    "base_NOT_ENTITLED_delta": -454,
+    "base_SUPPORT_delta": 270,
+    "base_REFUTE_delta": 184,
+    "external_improvement_detected": true,
+    "external_still_incomplete": true,
+    "clean_dev_preservation_verdict": "PRESERVED_WITH_SMALL_DROP",
+    "allowed_claim": "Stage57 bridge-enabled training substantially reduces VitaminC NOT_ENTITLED collapse and improves external diagnostic accuracy/macro-F1 over Stage53A, while preserving clean-dev performance.",
+    "forbidden_claim": "Do not claim VitaminC robustness or solved external generalization; Stage63 remains INCOMPLETE and still overpredicts NOT_ENTITLED relative to gold.",
+    "recommended_next_stage": "Stage65 residual Stage63 external error audit"
+  },
+  "metric_comparison": [
+    {
+      "metric": "base_accuracy",
+      "stage53a": 0.156,
+      "stage63": 0.322,
+      "delta": 0.166
+    },
+    {
+      "metric": "base_macro_f1",
+      "stage53a": 0.115986,
+      "stage63": 0.315319,
+      "delta": 0.199333
+    },
+    {
+      "metric": "composed_accuracy",
+      "stage53a": 0.156,
+      "stage63": 0.322,
+      "delta": 0.166
+    },
+    {
+      "metric": "composed_macro_f1",
+      "stage53a": 0.116717,
+      "stage63": 0.315319,
+      "delta": 0.198602
+    },
+    {
+      "metric": "delta_accuracy",
+      "stage53a": 0.0,
+      "stage63": 0.0,
+      "delta": 0.0
+    },
+    {
+      "metric": "delta_macro_f1",
+      "stage53a": 0.000731,
+      "stage63": 0.0,
+      "delta": -0.000731
+    },
+    {
+      "metric": "introduced_unsafe_SUPPORT_count",
+      "stage53a": 1.0,
+      "stage63": 0.0,
+      "delta": -1.0
+    },
+    {
+      "metric": "introduced_REFUTE_to_SUPPORT_count",
+      "stage53a": 0.0,
+      "stage63": 0.0,
+      "delta": 0.0
+    },
+    {
+      "metric": "introduced_SUPPORT_to_REFUTE_count",
+      "stage53a": 0.0,
+      "stage63": 0.0,
+      "delta": 0.0
+    },
+    {
+      "metric": "changed_row_count",
+      "stage53a": 2.0,
+      "stage63": 0.0,
+      "delta": -2.0
+    },
+    {
+      "metric": "recovery_fired_count",
+      "stage53a": 0.0,
+      "stage63": 0.0,
+      "delta": 0.0
+    },
+    {
+      "metric": "blocker_fired_count",
+      "stage53a": 0.0,
+      "stage63": 0.0,
+      "delta": 0.0
+    }
+  ],
+  "prediction_distribution_comparison": [
+    {
+      "kind": "gold",
+      "NOT_ENTITLED": 145,
+      "REFUTE": 355,
+      "SUPPORT": 500
+    },
+    {
+      "kind": "stage53a_base_prediction",
+      "NOT_ENTITLED": 946,
+      "REFUTE": 33,
+      "SUPPORT": 21
+    },
+    {
+      "kind": "stage63_base_prediction",
+      "NOT_ENTITLED": 492,
+      "REFUTE": 217,
+      "SUPPORT": 291
+    },
+    {
+      "kind": "stage53a_composed_prediction",
+      "NOT_ENTITLED": 944,
+      "REFUTE": 33,
+      "SUPPORT": 23
+    },
+    {
+      "kind": "stage63_composed_prediction",
+      "NOT_ENTITLED": 492,
+      "REFUTE": 217,
+      "SUPPORT": 291
+    }
+  ],
+  "label_movement_audit": [
+    {
+      "label": "NOT_ENTITLED",
+      "gold_count": 145,
+      "stage53a_base_pred": 946,
+      "stage63_base_pred": 492,
+      "delta_base_pred": -454,
+      "stage53a_composed_pred": 944,
+      "stage63_composed_pred": 492,
+      "delta_composed_pred": -452,
+      "stage63_base_minus_gold": 347,
+      "stage63_composed_minus_gold": 347
+    },
+    {
+      "label": "REFUTE",
+      "gold_count": 355,
+      "stage53a_base_pred": 33,
+      "stage63_base_pred": 217,
+      "delta_base_pred": 184,
+      "stage53a_composed_pred": 33,
+      "stage63_composed_pred": 217,
+      "delta_composed_pred": 184,
+      "stage63_base_minus_gold": -138,
+      "stage63_composed_minus_gold": -138
+    },
+    {
+      "label": "SUPPORT",
+      "gold_count": 500,
+      "stage53a_base_pred": 21,
+      "stage63_base_pred": 291,
+      "delta_base_pred": 270,
+      "stage53a_composed_pred": 23,
+      "stage63_composed_pred": 291,
+      "delta_composed_pred": 268,
+      "stage63_base_minus_gold": -209,
+      "stage63_composed_minus_gold": -209
+    }
+  ],
+  "per_label_metric_comparison": [
+    {
+      "mode": "base",
+      "label": "NOT_ENTITLED",
+      "stage53a_precision": 0.138478,
+      "stage63_precision": 0.164634,
+      "delta_precision": 0.026156000000000013,
+      "stage53a_recall": 0.903448,
+      "stage63_recall": 0.558621,
+      "delta_recall": -0.344827,
+      "stage53a_f1": 0.240147,
+      "stage63_f1": 0.254317,
+      "delta_f1": 0.014170000000000016,
+      "support": 145
+    },
+    {
+      "mode": "base",
+      "label": "REFUTE",
+      "stage53a_precision": 0.272727,
+      "stage63_precision": 0.391705,
+      "delta_precision": 0.11897800000000003,
+      "stage53a_recall": 0.025352,
+      "stage63_recall": 0.239437,
+      "delta_recall": 0.21408500000000003,
+      "stage53a_f1": 0.046392,
+      "stage63_f1": 0.297203,
+      "delta_f1": 0.250811,
+      "support": 355
+    },
+    {
+      "mode": "base",
+      "label": "SUPPORT",
+      "stage53a_precision": 0.761905,
+      "stage63_precision": 0.536082,
+      "delta_precision": -0.2258230000000001,
+      "stage53a_recall": 0.032,
+      "stage63_recall": 0.312,
+      "delta_recall": 0.28,
+      "stage53a_f1": 0.06142,
+      "stage63_f1": 0.394437,
+      "delta_f1": 0.333017,
+      "support": 500
+    },
+    {
+      "mode": "composed",
+      "label": "NOT_ENTITLED",
+      "stage53a_precision": 0.137712,
+      "stage63_precision": 0.164634,
+      "delta_precision": 0.026922,
+      "stage53a_recall": 0.896552,
+      "stage63_recall": 0.558621,
+      "delta_recall": -0.337931,
+      "stage53a_f1": 0.238751,
+      "stage63_f1": 0.254317,
+      "delta_f1": 0.015566000000000024,
+      "support": 145
+    },
+    {
+      "mode": "composed",
+      "label": "REFUTE",
+      "stage53a_precision": 0.272727,
+      "stage63_precision": 0.391705,
+      "delta_precision": 0.11897800000000003,
+      "stage53a_recall": 0.025352,
+      "stage63_recall": 0.239437,
+      "delta_recall": 0.21408500000000003,
+      "stage53a_f1": 0.046392,
+      "stage63_f1": 0.297203,
+      "delta_f1": 0.250811,
+      "support": 355
+    },
+    {
+      "mode": "composed",
+      "label": "SUPPORT",
+      "stage53a_precision": 0.73913,
+      "stage63_precision": 0.536082,
+      "delta_precision": -0.203048,
+      "stage53a_recall": 0.034,
+      "stage63_recall": 0.312,
+      "delta_recall": 0.278,
+      "stage53a_f1": 0.06501,
+      "stage63_f1": 0.394437,
+      "delta_f1": 0.32942699999999997,
+      "support": 500
+    }
+  ],
+  "clean_dev_preservation": {
+    "stage51_best_dev_acc": 0.9736111164093018,
+    "stage61_best_dev_acc": 0.9708333611488342,
+    "delta_dev_acc": -0.0027777552604675293,
+    "stage51_best_dev_macro_f1": 0.962854521766615,
+    "stage61_best_dev_macro_f1": 0.9588083427579085,
+    "delta_dev_macro_f1": -0.004046179008706519,
+    "clean_dev_preservation_verdict": "PRESERVED_WITH_SMALL_DROP"
+  },
+  "source_files": {
+    "stage53a_run_dir": "results/stage53a_vitaminc_frozen_external_eval_20260702_045300",
+    "stage53a_dataset_report": "results/stage53a_vitaminc_frozen_external_eval_20260702_045300/external/stage53a_vitaminc_frozen_stage43b1_vitaminc_validation_sample1000_external_factver_report.json",
+    "stage53a_aggregate_report": "results/stage53a_vitaminc_frozen_external_eval_20260702_045300/external/stage53a_vitaminc_frozen_external_factver_aggregate_report.json",
+    "stage63_run_dir": "results/stage63_bridge_enabled_vitaminc_external_eval_20260702_060044",
+    "stage63_dataset_report": "results/stage63_bridge_enabled_vitaminc_external_eval_20260702_060044/external/stage63_bridge_enabled_vitaminc_stage43b1_vitaminc_validation_sample1000_external_factver_report.json",
+    "stage63_aggregate_report": "results/stage63_bridge_enabled_vitaminc_external_eval_20260702_060044/external/stage63_bridge_enabled_vitaminc_external_factver_aggregate_report.json",
+    "stage62_internal_comparison": "results/stage62_stage51_vs_stage61_internal_comparison.json",
+    "stage63_summary": "results/stage63_bridge_enabled_vitaminc_external_diagnostic_summary.json"
+  },
+  "leakage_policy": {
+    "stage57_bridge_train_only": true,
+    "stage57_bridge_used_for_dev": false,
+    "stage57_bridge_used_for_checkpoint_selection": false,
+    "external_data_used_for_training": false,
+    "external_metrics_used_for_threshold_tuning": false,
+    "time_swap_used": false
+  }
+}
