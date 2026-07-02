@@ -1,0 +1,140 @@
+{
+  "stage": "Stage56",
+  "decision": "STAGE56_NONLEAKING_EXTERNAL_TRANSFER_BRIDGE_DESIGN_READY",
+  "source_stage54": "results/stage54_vitaminc_external_collapse_postmortem.json",
+  "source_stage55": "results/stage55_vitaminc_external_collapse_mechanism_audit.json",
+  "problem_statement": "Stage53A/55 showed VitaminC external failure dominated by NOT_ENTITLED overprediction. The bridge objective is to teach entitlement under open-domain-like lexical, numeric, temporal, and entity-attribute forms without using VitaminC data for training, calibration, checkpoint selection, or threshold tuning.",
+  "bridge_design_principle": {
+    "frame_first": "Preserve ContraMamba ordering: Frame first, Predicate second, Polarity third, Uncertainty/NE last.",
+    "not_composer_tuning": "Do not solve the failure by changing composer thresholds on VitaminC.",
+    "not_external_supervision": "Do not use VitaminC labels/text/examples for bridge generation.",
+    "controlled_synthetic_only": "Generate new controlled bridge examples from templates and synthetic entities/values."
+  },
+  "bridge_families": [
+    {
+      "family": "entity_attribute_bridge",
+      "purpose": "Teach entitlement for ordinary entity-attribute facts without requiring synthetic frame identity cues.",
+      "examples_to_generate": [
+        "X was born before/after YEAR.",
+        "X is a singer/actor/album/film/company/city.",
+        "X was founded in YEAR.",
+        "X is located in COUNTRY/CITY."
+      ],
+      "target_failure_from_stage55": "SUPPORT/REFUTE examples about ordinary entities collapse into NOT_ENTITLED.",
+      "labels": [
+        "SUPPORT",
+        "REFUTE",
+        "NOT_ENTITLED"
+      ],
+      "source_policy": "synthetic templates only; do not copy VitaminC claims/evidence/text."
+    },
+    {
+      "family": "numeric_comparison_bridge",
+      "purpose": "Teach entitlement for numeric thresholds and approximate comparisons under open-domain wording.",
+      "examples_to_generate": [
+        "less than / more than / at least / fewer than / exactly",
+        "population, cases, gross revenue, scores, dates, counts",
+        "claim number differs from evidence number by small or large margin"
+      ],
+      "target_failure_from_stage55": "COVID/count/revenue examples collapse into NOT_ENTITLED despite explicit evidence.",
+      "labels": [
+        "SUPPORT",
+        "REFUTE",
+        "NOT_ENTITLED"
+      ],
+      "source_policy": "synthetic numbers and controlled arithmetic only; no external dataset text."
+    },
+    {
+      "family": "temporal_comparison_bridge",
+      "purpose": "Teach before/after/as-of relations without using time_swap as main classifier data.",
+      "examples_to_generate": [
+        "before YEAR / after YEAR / as of DATE",
+        "event happened in YEAR vs claim threshold YEAR",
+        "founded/released/born/died before-or-after claim"
+      ],
+      "target_failure_from_stage55": "Temporal entitlement cases collapse into NOT_ENTITLED.",
+      "labels": [
+        "SUPPORT",
+        "REFUTE",
+        "NOT_ENTITLED"
+      ],
+      "source_policy": "new synthetic temporal templates; do not reintroduce corrupted time_swap into main training."
+    },
+    {
+      "family": "lexical_paraphrase_bridge",
+      "purpose": "Reduce domain shift from exact controlled wording to open-domain paraphrase wording.",
+      "examples_to_generate": [
+        "was sentenced to four years -> had a four-year sentence",
+        "is the seventh studio album -> is an album",
+        "was founded in 1988 -> was founded before 1990",
+        "is a television competition show -> is a competition"
+      ],
+      "target_failure_from_stage55": "Obvious paraphrastic SUPPORT cases collapse into NOT_ENTITLED.",
+      "labels": [
+        "SUPPORT",
+        "REFUTE",
+        "NOT_ENTITLED"
+      ],
+      "source_policy": "manually specified synthetic paraphrase patterns, not mined from VitaminC."
+    },
+    {
+      "family": "distractor_evidence_bridge",
+      "purpose": "Preserve NOT_ENTITLED when evidence is related but insufficient, without overgeneralizing NE.",
+      "examples_to_generate": [
+        "same entity but missing predicate",
+        "same domain but wrong subject",
+        "evidence mentions only partial role/list/count",
+        "evidence provides related context but not claim-verifying relation"
+      ],
+      "target_failure_from_stage55": "Need distinguish true insufficiency from open-domain paraphrastic sufficiency.",
+      "labels": [
+        "NOT_ENTITLED"
+      ],
+      "source_policy": "synthetic distractors; no external dataset examples."
+    }
+  ],
+  "recommended_next_stage": {
+    "stage": "Stage57",
+    "name": "bridge dataset generator implementation",
+    "scope": "Implement a reportable synthetic bridge data generator that writes a JSONL file and an audit report.",
+    "must_not_do": [
+      "Do not train.",
+      "Do not run external evaluation.",
+      "Do not use VitaminC rows as source examples.",
+      "Do not include Kaggle commands inside the agent prompt."
+    ],
+    "expected_outputs": [
+      "data/stage57_nonleaking_external_bridge.jsonl",
+      "results/stage57_nonleaking_external_bridge_audit.json",
+      "results/stage57_nonleaking_external_bridge_audit.md"
+    ]
+  },
+  "risk_controls": [
+    {
+      "risk": "VitaminC leakage through design",
+      "control": "Use Stage55 only for failure category names, not for copying rows, labels, strings, or thresholds tuned on external performance."
+    },
+    {
+      "risk": "Overcorrecting NE collapse into unsafe SUPPORT",
+      "control": "Every bridge family must include REFUTE and NOT_ENTITLED counterexamples, not only SUPPORT recovery examples."
+    },
+    {
+      "risk": "Reintroducing time_swap corruption",
+      "control": "Do not use data/controlled_v5_v3.jsonl time_swap rows in main classifier training. Generate new temporal bridge rows with explicit audit metadata."
+    },
+    {
+      "risk": "Composer threshold tuning on external set",
+      "control": "Do not alter composer thresholds using VitaminC metrics. Bridge is a training-data/diagnostic design, not an external-set calibration."
+    },
+    {
+      "risk": "Internal clean-dev degradation",
+      "control": "Next training stage must report clean-dev, pairwise controlled diagnostics, and external diagnostic separately."
+    }
+  ],
+  "leakage_policy": {
+    "vitaminc_text_used_for_generation": false,
+    "vitaminc_labels_used_for_generation": false,
+    "vitaminc_metrics_used_for_threshold_tuning": false,
+    "stage55_used_for_failure_taxonomy_only": true
+  }
+}
