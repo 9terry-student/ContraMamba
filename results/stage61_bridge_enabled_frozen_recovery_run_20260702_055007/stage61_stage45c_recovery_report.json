@@ -1,0 +1,42 @@
+{
+  "climate_fever_used": false,
+  "external_examples_used": false,
+  "external_labels_or_metrics_used": false,
+  "stage43b1_files_read": false,
+  "stage45c_enabled": true,
+  "stage45c_entitled_labels": [
+    "SUPPORT",
+    "REFUTE"
+  ],
+  "stage45c_entitled_ne_penalty_loss_mean": 0.0037372256629168987,
+  "stage45c_entitled_ne_penalty_weight": 0.1,
+  "stage45c_leakage_policy": {
+    "climate_fever_used": false,
+    "external_examples_used": false,
+    "external_labels_or_metrics_used": false,
+    "scope": "internal_controlled_training_split_only",
+    "stage43b1_files_read": false,
+    "used_dev_or_holdout_labels_in_loss": false,
+    "used_for_calibration": false,
+    "used_for_checkpoint_selection": false,
+    "used_for_threshold_selection": false,
+    "vitaminc_used": false
+  },
+  "stage45c_loss_terms_active": [
+    "support_recovery",
+    "entitled_ne_penalty"
+  ],
+  "stage45c_recommendation": "Stage45-C is an internal-only auxiliary diagnostic/training scaffold targeting SUPPORT under-recall and entitled-to-NOT_ENTITLED over-rejection observed in Stage45-B1 internal family holdouts. Treat any resulting improvement as an internal robustness signal only; it does not constitute external validation and must not be claimed as VitaminC/Climate-FEVER transfer success or naturalistic generalization without a new, separate held-out external evaluation.",
+  "stage45c_report_scope": "internal_controlled_training_split_only",
+  "stage45c_support_recovery_loss_mean": 0.09655824303627014,
+  "stage45c_support_recovery_weight": 0.1,
+  "stage45c_target_label": "SUPPORT",
+  "stage45c_train_not_entitled_count": 2360,
+  "stage45c_train_refute_count": 524,
+  "stage45c_train_support_count": 516,
+  "used_dev_or_holdout_labels_in_loss": false,
+  "used_for_calibration": false,
+  "used_for_checkpoint_selection": false,
+  "used_for_threshold_selection": false,
+  "vitaminc_used": false
+}
