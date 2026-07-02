@@ -1,0 +1,234 @@
+{
+  "stage": "Stage59",
+  "decision": "STAGE59_BRIDGE_INTEGRATION_PLAN_READY",
+  "main_data": "data/controlled_v5_v3_without_time_swap.jsonl",
+  "bridge_data": "data/stage57_nonleaking_external_bridge.jsonl",
+  "source_stage56": "results/stage56_nonleaking_external_transfer_bridge_design.json",
+  "source_stage57_audit": "results/stage57_nonleaking_external_bridge_audit.json",
+  "source_stage58_audit": "results/stage58_bridge_dataset_static_audit.json",
+  "main_row_count": 3600,
+  "bridge_row_count": 520,
+  "bridge_ratio_vs_main": 0.14444444444444443,
+  "stage58_decision": "STAGE58_BRIDGE_STATIC_AUDIT_READY",
+  "primary_integration_mode": "bridge_train_only_append_1x",
+  "clean_dev_for_checkpoint_selection": true,
+  "external_data_used_for_training": false,
+  "external_data_used_for_checkpoint_selection": false,
+  "external_data_used_for_threshold_tuning": false,
+  "time_swap_used": false,
+  "composer_threshold_tuning": false,
+  "recommended_next_stage": "Stage60 runner patch for optional train-only bridge data",
+  "label_plan": [
+    {
+      "label": "NOT_ENTITLED",
+      "main_count": 2700,
+      "bridge_count": 200,
+      "combined_if_train_append": 2900,
+      "bridge_to_main_ratio": 0.07407407407407407
+    },
+    {
+      "label": "REFUTE",
+      "main_count": 450,
+      "bridge_count": 160,
+      "combined_if_train_append": 610,
+      "bridge_to_main_ratio": 0.35555555555555557
+    },
+    {
+      "label": "SUPPORT",
+      "main_count": 450,
+      "bridge_count": 160,
+      "combined_if_train_append": 610,
+      "bridge_to_main_ratio": 0.35555555555555557
+    }
+  ],
+  "bridge_family_counts": [
+    {
+      "bridge_family": "distractor_evidence_bridge",
+      "count": 40
+    },
+    {
+      "bridge_family": "entity_attribute_bridge",
+      "count": 120
+    },
+    {
+      "bridge_family": "lexical_paraphrase_bridge",
+      "count": 120
+    },
+    {
+      "bridge_family": "numeric_comparison_bridge",
+      "count": 120
+    },
+    {
+      "bridge_family": "temporal_comparison_bridge",
+      "count": 120
+    }
+  ],
+  "bridge_family_label_counts": [
+    {
+      "bridge_family": "distractor_evidence_bridge",
+      "final_label": "NOT_ENTITLED",
+      "label": 1,
+      "count": 40
+    },
+    {
+      "bridge_family": "entity_attribute_bridge",
+      "final_label": "REFUTE",
+      "label": 0,
+      "count": 40
+    },
+    {
+      "bridge_family": "entity_attribute_bridge",
+      "final_label": "NOT_ENTITLED",
+      "label": 1,
+      "count": 40
+    },
+    {
+      "bridge_family": "entity_attribute_bridge",
+      "final_label": "SUPPORT",
+      "label": 2,
+      "count": 40
+    },
+    {
+      "bridge_family": "lexical_paraphrase_bridge",
+      "final_label": "REFUTE",
+      "label": 0,
+      "count": 40
+    },
+    {
+      "bridge_family": "lexical_paraphrase_bridge",
+      "final_label": "NOT_ENTITLED",
+      "label": 1,
+      "count": 40
+    },
+    {
+      "bridge_family": "lexical_paraphrase_bridge",
+      "final_label": "SUPPORT",
+      "label": 2,
+      "count": 40
+    },
+    {
+      "bridge_family": "numeric_comparison_bridge",
+      "final_label": "REFUTE",
+      "label": 0,
+      "count": 40
+    },
+    {
+      "bridge_family": "numeric_comparison_bridge",
+      "final_label": "NOT_ENTITLED",
+      "label": 1,
+      "count": 40
+    },
+    {
+      "bridge_family": "numeric_comparison_bridge",
+      "final_label": "SUPPORT",
+      "label": 2,
+      "count": 40
+    },
+    {
+      "bridge_family": "temporal_comparison_bridge",
+      "final_label": "REFUTE",
+      "label": 0,
+      "count": 40
+    },
+    {
+      "bridge_family": "temporal_comparison_bridge",
+      "final_label": "NOT_ENTITLED",
+      "label": 1,
+      "count": 40
+    },
+    {
+      "bridge_family": "temporal_comparison_bridge",
+      "final_label": "SUPPORT",
+      "label": 2,
+      "count": 40
+    }
+  ],
+  "integration_modes": [
+    {
+      "mode": "baseline_no_bridge",
+      "description": "Stage51/52 frozen recovery baseline. No bridge data.",
+      "main_data": "data/controlled_v5_v3_without_time_swap.jsonl",
+      "bridge_data": null,
+      "clean_dev_for_selection": true,
+      "bridge_train_only": false,
+      "recommended_for": "reference_control"
+    },
+    {
+      "mode": "bridge_train_only_append_1x",
+      "description": "Split clean main data first, then append all Stage57 bridge rows to train only.",
+      "main_data": "data/controlled_v5_v3_without_time_swap.jsonl",
+      "bridge_data": "data/stage57_nonleaking_external_bridge.jsonl",
+      "clean_dev_for_selection": true,
+      "bridge_train_only": true,
+      "bridge_sampling": "use_each_bridge_row_once_per_epoch",
+      "recommended_for": "primary_stage60_implementation"
+    },
+    {
+      "mode": "bridge_train_only_family_balanced",
+      "description": "Split clean main data first, then append Stage57 bridge rows with family-balanced sampler if implemented.",
+      "main_data": "data/controlled_v5_v3_without_time_swap.jsonl",
+      "bridge_data": "data/stage57_nonleaking_external_bridge.jsonl",
+      "clean_dev_for_selection": true,
+      "bridge_train_only": true,
+      "bridge_sampling": "family_balanced_optional",
+      "recommended_for": "secondary_diagnostic_only"
+    }
+  ],
+  "guardrails": [
+    {
+      "guardrail": "clean_dev_selection_only",
+      "requirement": "Checkpoint selection must remain on clean main dev split, not bridge dev and not external data."
+    },
+    {
+      "guardrail": "bridge_train_only",
+      "requirement": "Stage57 bridge rows may be appended to train split only after the clean train/dev split is created."
+    },
+    {
+      "guardrail": "no_external_tuning",
+      "requirement": "VitaminC/Climate-FEVER metrics must not be used for loss weights, thresholds, checkpoint selection, or early stopping."
+    },
+    {
+      "guardrail": "time_swap_excluded",
+      "requirement": "Do not use data/controlled_v5_v3.jsonl time_swap rows in main classification training."
+    },
+    {
+      "guardrail": "no_composer_threshold_tuning",
+      "requirement": "Do not tune composer thresholds on Stage53A/55 external failures."
+    },
+    {
+      "guardrail": "report_all_three_axes",
+      "requirement": "Future run report must separately show clean dev, controlled pairwise diagnostics, and external diagnostic."
+    }
+  ],
+  "implementation_requirements": [
+    {
+      "requirement": "Add CLI arg --stage57-bridge-train-jsonl",
+      "purpose": "Optional path to Stage57 bridge data."
+    },
+    {
+      "requirement": "Add CLI arg --stage57-bridge-train-mode",
+      "purpose": "Allowed values: none, append_train_only. Default none."
+    },
+    {
+      "requirement": "Split clean main data before appending bridge rows",
+      "purpose": "Prevent bridge rows from entering clean dev/checkpoint selection."
+    },
+    {
+      "requirement": "Tag report fields",
+      "purpose": "Record bridge row count, bridge label counts, bridge family counts, and bridge train-only policy."
+    },
+    {
+      "requirement": "Hard fail if bridge path references VitaminC/Climate-FEVER/time_swap",
+      "purpose": "Protect non-leaking bridge policy."
+    }
+  ],
+  "leakage_policy": {
+    "vitaminc_text_used_for_training": false,
+    "vitaminc_labels_used_for_training": false,
+    "climate_fever_used_for_training": false,
+    "external_metrics_used_for_threshold_tuning": false,
+    "stage57_bridge_train_only": true,
+    "clean_dev_selection_only": true,
+    "time_swap_used": false
+  }
+}
