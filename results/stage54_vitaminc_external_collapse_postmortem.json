@@ -1,0 +1,52 @@
+{
+  "stage": "Stage54",
+  "decision": "STAGE54_VITAMINC_EXTERNAL_COLLAPSE_POSTMORTEM_READY",
+  "source_run_dir": "results/stage53a_vitaminc_frozen_external_eval_20260702_045300",
+  "source_external_dir": "results/stage53a_vitaminc_frozen_external_eval_20260702_045300/external",
+  "stage53a_status": "failed_external_diagnostic",
+  "primary_failure_mode": "external_domain_not_entitled_prediction_collapse",
+  "secondary_failure_mode": "limited_unsafe_support_case",
+  "stage45c_recovery_implicated": false,
+  "composer_tuning_recommended": false,
+  "collapse_diagnosis_recommended": true,
+  "known_metrics_from_stage53a": {
+    "vitaminc_accuracy": 0.156,
+    "vitaminc_macro_f1_base": 0.115986,
+    "vitaminc_macro_f1_composed": 0.116717,
+    "gold_distribution": {
+      "SUPPORT": 500,
+      "REFUTE": 355,
+      "NOT_ENTITLED": 145
+    },
+    "base_prediction_distribution": {
+      "SUPPORT": 21,
+      "REFUTE": 33,
+      "NOT_ENTITLED": 946
+    },
+    "composed_prediction_distribution": {
+      "SUPPORT": 23,
+      "REFUTE": 33,
+      "NOT_ENTITLED": 944
+    },
+    "unsafe_support_count": 1,
+    "support_refute_cross_flip_count": 0,
+    "recovery_fired_count": 0,
+    "blocker_fired_count": 0
+  },
+  "interpretation": {
+    "allowed_claim": "Stage53A shows that the Stage47 frozen recovery configuration does not transfer to the VitaminC sample1000 external diagnostic setting. The dominant observed failure is NOT_ENTITLED overprediction/collapse, not broad unsafe SUPPORT explosion.",
+    "not_allowed_claims": [
+      "Do not claim VitaminC external robustness.",
+      "Do not claim broad naturalistic fact-verification generalization.",
+      "Do not claim Stage45C recovery caused the VitaminC failure.",
+      "Do not tune composer thresholds on this external set and report it as held-out performance."
+    ],
+    "next_stage": "Stage55 should inspect external collapse mechanisms: label mapping/template mismatch, input truncation/max_length, domain lexical shift, internal prior mismatch, and base-logit NE bias."
+  },
+  "leakage_policy": {
+    "external_data_used_for_training": false,
+    "external_data_used_for_checkpoint_selection": false,
+    "external_data_used_for_threshold_tuning": false,
+    "external_data_used_for_postmortem_only": true
+  }
+}
