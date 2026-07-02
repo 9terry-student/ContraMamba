@@ -43,6 +43,7 @@ from scripts.stage43_external_factver_eval_utils import (  # noqa: E402
     render_aggregate_markdown,
     render_report_markdown,
     stage43_rows_to_controlled_records,
+    summarize_numeric,
     write_json,
     write_jsonl,
     write_text,
@@ -7163,6 +7164,87 @@ def _stage43_slice_inputs(inputs: dict[str, torch.Tensor], start: int, end: int)
     return {key: value[start:end] for key, value in inputs.items()}
 
 
+def _stage43_input_path_diagnostics(args: argparse.Namespace, max_length: int) -> dict[str, Any]:
+    if args.backbone == "dummy":
+        template = "v5.encode_records: lowercase tokenized claim + <sep> + lowercase tokenized evidence; claim/evidence masks over their spans; padded/truncated to training max_length"
+    else:
+        template = "v5.encode_mamba_records: tokenizer claim span truncated to floor((max_length - 1) / 2), separator token, tokenizer evidence span truncated to remaining budget; exact claim/evidence masks"
+    return {
+        "external_input_template": template,
+        "controlled_dev_input_template": template,
+        "external_uses_same_prediction_path_as_dev": True,
+        "external_uses_same_label_mapping_as_dev": True,
+        "label_id_to_name": {str(key): value for key, value in sorted(v5.ID_TO_FINAL_LABEL.items())},
+        "name_to_label_id": dict(sorted(v5.FINAL_LABEL_TO_ID.items())),
+        "model_forward_path": "model(**v5.model_feature_inputs(inputs), temporal_mismatch_flags=extract_flags(...), predicate_mismatch_flags=extract_flags(...))",
+        "prediction_export_path": "prediction_records_v6b with Stage39 export-only composer diagnostics",
+        "tokenizer_source": "dummy_vocab" if args.backbone == "dummy" else getattr(args, "model_name", None),
+        "max_length": max_length,
+    }
+
+
+def _stage43_token_diagnostics(
+    records: list[dict],
+    *,
+    args: argparse.Namespace,
+    tokenizer: Any | None,
+    max_length: int,
+) -> dict[str, Any]:
+    lengths: list[int] = []
+    truncation_count = 0
+    claim_budget = max(1, (int(args.max_length) - 1) // 2) if args.backbone != "dummy" else None
+    evidence_budget = int(args.max_length) - int(claim_budget) - 1 if claim_budget is not None else None
+    for record in records:
+        claim = str(record.get("claim") or "")
+        evidence = str(record.get("evidence") or "")
+        if args.backbone == "dummy":
+            claim_len = len(v5.tokenize(claim))
+            evidence_len = len(v5.tokenize(evidence))
+            pair_len = claim_len + 1 + evidence_len
+            truncated = pair_len > max_length
+        else:
+            if tokenizer is None:
+                claim_len = 0
+                evidence_len = 0
+            else:
+                claim_len = len(tokenizer.encode(claim, add_special_tokens=False, truncation=False))
+                evidence_len = len(tokenizer.encode(evidence, add_special_tokens=False, truncation=False))
+            pair_len = claim_len + 1 + evidence_len
+            truncated = (
+                claim_budget is not None
+                and evidence_budget is not None
+                and (claim_len > claim_budget or evidence_len > evidence_budget)
+            )
+        lengths.append(pair_len)
+        if truncated:
+            truncation_count += 1
+    row_count = len(records)
+    return {
+        "external_token_length_summary": summarize_numeric(lengths),
+        "external_truncation_count": truncation_count,
+        "external_truncation_rate": round(truncation_count / row_count, 6) if row_count else None,
+        "token_length_definition": "untruncated claim token count + separator + untruncated evidence token count",
+        "claim_budget": claim_budget,
+        "evidence_budget": evidence_budget,
+    }
+
+
+def _stage43_enrich_prediction_confidence(prediction_rows: list[dict]) -> None:
+    for row in prediction_rows:
+        probs = row.get("final_probs")
+        if not isinstance(probs, list) or not probs:
+            continue
+        clean_probs = [float(value) for value in probs if isinstance(value, (int, float))]
+        if not clean_probs:
+            continue
+        max_prob = max(clean_probs)
+        entropy = 0.0
+        for prob in clean_probs:
+            if prob > 0.0:
+                entropy -= prob * float(np.log(prob))
+        row["stage43c1_max_probability"] = round(max_prob, 6)
+        row["stage43c1_prediction_entropy"] = round(entropy, 6)
+
 def _stage43_prediction_records_from_model(
     model: "ContraMambaV6BMinimal | Any",
     records: list[dict],
@@ -7249,6 +7331,13 @@ def run_stage43_external_factver_hook(
 
         rows = load_stage43_jsonl(jsonl_path, max_rows=max_rows)
         records = stage43_rows_to_controlled_records(rows)
+        stage43_path_diagnostics = _stage43_input_path_diagnostics(args, max_length)
+        stage43_token_diagnostics = _stage43_token_diagnostics(
+            records,
+            args=args,
+            tokenizer=tokenizer,
+            max_length=max_length,
+        )
         prediction_rows: list[dict] = []
         stage43_prediction_error: str | None = None
         if records:
@@ -7282,6 +7371,7 @@ def run_stage43_external_factver_hook(
                     args=args,
                     batch_size=batch_size,
                 )
+                _stage43_enrich_prediction_confidence(prediction_rows)
             except Exception as exc:
                 stage43_prediction_error = f"{type(exc).__name__}: {exc}"
                 prediction_rows = []
@@ -7292,6 +7382,8 @@ def run_stage43_external_factver_hook(
             rows=rows,
             prediction_rows=prediction_rows,
             output_predictions_path=str(pred_jsonl),
+            token_diagnostics=stage43_token_diagnostics,
+            path_diagnostics=stage43_path_diagnostics,
         )
         report_payload["output_report_json"] = str(report_json)
         report_payload["output_report_md"] = str(report_md)

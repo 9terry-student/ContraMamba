@@ -18,9 +18,46 @@ VALID_LABELS = set(LABELS)
 SAMPLE_LIMIT = 20
 
 LEAKAGE_POLICY = (
-    "Stage43-C0 external fact-verification data is evaluation-only. It is not "
+    "Stage43-B1 external fact-verification data is evaluation-only. It is not "
     "used for training, calibration, threshold selection, checkpoint selection, "
     "loss design, model selection, or composer behavior changes."
+)
+
+STAGE43C1_REQUIRED_COMPOSER_FIELDS = (
+    "stage37_final_shadow_label",
+    "stage36_final_shadow_label",
+    "stage32_shadow_label",
+    "stage36_support_blocker_fired",
+    "stage37_recovered_from_label",
+    "stage33_structured_coverage_reason",
+    "stage33_structured_coverage_route",
+    "stage33_structured_coverage_label",
+    "stage33_conditional_override_type",
+    "stage36_conditional_override_type",
+    "stage37_conditional_override_type",
+)
+
+STAGE43C1_FIELD_PRESENCE_KEYS = (
+    "stage32_shadow_label",
+    "stage32_shadow_reason",
+    "stage33_structured_coverage_reason",
+    "stage33_structured_coverage_route",
+    "stage33_structured_coverage_label",
+    "stage33_conditional_override_type",
+    "stage36_final_shadow_label",
+    "stage36_support_blocker_fired",
+    "stage36_support_blocker_reasons",
+    "stage36_conditional_override_type",
+    "stage37_final_shadow_label",
+    "stage37_safe_recovery_fired",
+    "stage37_safe_recovery_reasons",
+    "stage37_recovered_from_label",
+    "stage37_conditional_override_type",
+    "stage39_source_shadow_label",
+    "stage39_composed_final_label",
+    "stage39_composer_action",
+    "stage39_composer_reason",
+    "stage39_blocked_by_missing_source",
 )
 
 
@@ -205,6 +242,251 @@ def compute_metrics(golds: list[str], preds: list[str]) -> dict[str, Any]:
     }
 
 
+def _percentile(sorted_values: list[float], percentile: float) -> float | None:
+    if not sorted_values:
+        return None
+    if len(sorted_values) == 1:
+        return round(float(sorted_values[0]), 6)
+    pos = (len(sorted_values) - 1) * percentile
+    lower = int(pos)
+    upper = min(lower + 1, len(sorted_values) - 1)
+    weight = pos - lower
+    value = sorted_values[lower] * (1.0 - weight) + sorted_values[upper] * weight
+    return round(float(value), 6)
+
+
+def summarize_numeric(values: list[float | int]) -> dict[str, float | int | None]:
+    clean = sorted(float(value) for value in values if value is not None)
+    if not clean:
+        return {
+            "min": None,
+            "p25": None,
+            "median": None,
+            "p75": None,
+            "p90": None,
+            "p95": None,
+            "max": None,
+        }
+    return {
+        "min": round(clean[0], 6),
+        "p25": _percentile(clean, 0.25),
+        "median": _percentile(clean, 0.50),
+        "p75": _percentile(clean, 0.75),
+        "p90": _percentile(clean, 0.90),
+        "p95": _percentile(clean, 0.95),
+        "max": round(clean[-1], 6),
+    }
+
+
+def _has_present_value(row: dict[str, Any], key: str) -> bool:
+    return key in row and row.get(key) is not None
+
+
+def _sample_row(
+    *,
+    source_row: dict[str, Any],
+    pred_row: dict[str, Any] | None,
+    gold: str | None,
+    base: str | None,
+    row_index: int,
+) -> dict[str, Any]:
+    sample = {
+        "row_index": row_index,
+        "id": source_row.get("id"),
+        "gold_label": gold,
+        "base_prediction": base,
+        "claim": source_row.get("claim"),
+        "evidence": source_row.get("evidence"),
+        "source_dataset": source_row.get("source_dataset"),
+    }
+    if pred_row is not None:
+        sample["max_probability"] = pred_row.get("stage43c1_max_probability")
+        sample["prediction_entropy"] = pred_row.get("stage43c1_prediction_entropy")
+        sample["composer_reason"] = pred_row.get("stage39_composer_reason")
+    return sample
+
+
+def _build_stage43c1_diagnostics(
+    *,
+    rows: list[dict[str, Any]],
+    prediction_rows: list[dict[str, Any]],
+    base_predictions_by_id: dict[str, str],
+    token_diagnostics: dict[str, Any] | None,
+    path_diagnostics: dict[str, Any] | None,
+) -> dict[str, Any]:
+    token_diagnostics = token_diagnostics or {}
+    path_diagnostics = path_diagnostics or {}
+    pred_by_id = {str(row.get("id")): row for row in prediction_rows}
+    per_gold_prediction_distribution = {
+        gold: {pred: 0 for pred in LABELS} for gold in LABELS
+    }
+    sample_rows_by_gold_and_prediction: dict[str, dict[str, list[dict[str, Any]]]] = {
+        gold: {pred: [] for pred in LABELS} for gold in LABELS
+    }
+    sample_not_entitled_collapse_rows: list[dict[str, Any]] = []
+    sample_high_confidence_errors: list[dict[str, Any]] = []
+    max_probs: list[float] = []
+    entropies: list[float] = []
+    missing_claim_count = 0
+    missing_evidence_count = 0
+
+    for index, row in enumerate(rows):
+        row_id = str(row.get("id"))
+        gold = normalize_label(row.get("label"))
+        base = base_predictions_by_id.get(row_id)
+        pred_row = pred_by_id.get(row_id)
+        if not str(row.get("claim") or "").strip():
+            missing_claim_count += 1
+        if not str(row.get("evidence") or "").strip():
+            missing_evidence_count += 1
+        if gold in LABELS and base in LABELS:
+            per_gold_prediction_distribution[gold][base] += 1
+            samples = sample_rows_by_gold_and_prediction[gold][base]
+            if len(samples) < 3:
+                samples.append(
+                    _sample_row(
+                        source_row=row,
+                        pred_row=pred_row,
+                        gold=gold,
+                        base=base,
+                        row_index=index,
+                    )
+                )
+            if base == "NOT_ENTITLED" and gold != "NOT_ENTITLED" and len(sample_not_entitled_collapse_rows) < SAMPLE_LIMIT:
+                sample_not_entitled_collapse_rows.append(
+                    _sample_row(
+                        source_row=row,
+                        pred_row=pred_row,
+                        gold=gold,
+                        base=base,
+                        row_index=index,
+                    )
+                )
+            max_prob = pred_row.get("stage43c1_max_probability") if pred_row else None
+            entropy = pred_row.get("stage43c1_prediction_entropy") if pred_row else None
+            if isinstance(max_prob, (int, float)):
+                max_probs.append(float(max_prob))
+                if gold != base and max_prob >= 0.80 and len(sample_high_confidence_errors) < SAMPLE_LIMIT:
+                    sample_high_confidence_errors.append(
+                        _sample_row(
+                            source_row=row,
+                            pred_row=pred_row,
+                            gold=gold,
+                            base=base,
+                            row_index=index,
+                        )
+                    )
+            if isinstance(entropy, (int, float)):
+                entropies.append(float(entropy))
+
+    composer_available_row_count = 0
+    composer_unavailable_reasons: Counter[str] = Counter()
+    required_field_counts: dict[str, int] = {key: 0 for key in STAGE43C1_REQUIRED_COMPOSER_FIELDS}
+    stage_field_counts: dict[str, int] = {key: 0 for key in STAGE43C1_FIELD_PRESENCE_KEYS}
+    for pred_row in prediction_rows:
+        action = str(pred_row.get("stage39_composer_action") or "")
+        reason = str(pred_row.get("stage39_composer_reason") or "")
+        if action.startswith("composed_to_") or action == "no_change":
+            composer_available_row_count += 1
+        else:
+            composer_unavailable_reasons[reason or action or "unknown"] += 1
+        for key in required_field_counts:
+            if _has_present_value(pred_row, key):
+                required_field_counts[key] += 1
+        for key in stage_field_counts:
+            if _has_present_value(pred_row, key):
+                stage_field_counts[key] += 1
+
+    row_count = len(prediction_rows)
+    ne_count = sum(1 for value in base_predictions_by_id.values() if value == "NOT_ENTITLED")
+    ne_rate = (ne_count / row_count) if row_count else None
+    truncation_count = int(token_diagnostics.get("external_truncation_count") or 0)
+    truncation_rate = token_diagnostics.get("external_truncation_rate")
+    if not isinstance(truncation_rate, (int, float)):
+        truncation_rate = None
+
+    collapse_factors: list[str] = []
+    if truncation_rate is not None and truncation_rate >= 0.25:
+        collapse_factors.append("excessive token truncation is present")
+    else:
+        collapse_factors.append("excessive token truncation is not indicated by the token audit")
+    if not bool(path_diagnostics.get("external_uses_same_prediction_path_as_dev", False)):
+        collapse_factors.append("external prediction path differs from the controlled dev export path")
+    else:
+        collapse_factors.append("external prediction path matches the controlled dev encode/forward/export path")
+    if not bool(path_diagnostics.get("external_uses_same_label_mapping_as_dev", False)):
+        collapse_factors.append("label mapping mismatch is possible")
+    else:
+        collapse_factors.append("label mapping matches the controlled dev mapping")
+    if missing_claim_count or missing_evidence_count:
+        collapse_factors.append("missing claim/evidence fields are present")
+    else:
+        collapse_factors.append("missing claim/evidence fields are not indicated")
+    if max_probs:
+        collapse_factors.append("model confidence is available for collapse inspection")
+    else:
+        collapse_factors.append("model confidence probabilities are unavailable")
+    if ne_rate is not None and ne_rate >= 0.80:
+        collapse_factors.append("observed predictions are dominated by NOT_ENTITLED, consistent with learned controlled-model behavior under this external distribution")
+
+    composer_unavailable_row_count = row_count - composer_available_row_count
+    missing_required = [key for key, count in required_field_counts.items() if count < row_count]
+    if composer_unavailable_row_count == row_count and missing_required:
+        composer_conclusion = (
+            "safe_structured_v2 composer output is unavailable because the external export rows do not carry "
+            "the required Stage32/36/37/39 intermediate structures for every row: "
+            + ", ".join(missing_required)
+        )
+    elif composer_unavailable_row_count:
+        composer_conclusion = "safe_structured_v2 composer output is partially unavailable; inspect composer_unavailable_reasons and required_composer_fields_present_counts."
+    else:
+        composer_conclusion = "safe_structured_v2 composer diagnostics are available for all exported rows."
+
+    diagnostic_conclusion = (
+        "Diagnostic-only audit: "
+        + "; ".join(collapse_factors)
+        + ". "
+        + composer_conclusion
+        + " Decisions remain Stage43-C0 decisions and diagnostics do not convert INCOMPLETE into PASS."
+    )
+    diagnostic_next_action = (
+        "For a future non-diagnostic stage, compare external formatting with controlled dev examples and enable/export the required Stage32/36/37 shadow structures before expecting safe_structured_v2 composition; do not tune thresholds or calibrate on Stage43-B1 labels."
+    )
+
+    return {
+        "stage43c1_diagnostic_enabled": True,
+        "external_input_template": path_diagnostics.get("external_input_template"),
+        "controlled_dev_input_template": path_diagnostics.get("controlled_dev_input_template"),
+        "external_uses_same_prediction_path_as_dev": bool(path_diagnostics.get("external_uses_same_prediction_path_as_dev", False)),
+        "external_uses_same_label_mapping_as_dev": bool(path_diagnostics.get("external_uses_same_label_mapping_as_dev", False)),
+        "label_id_to_name": path_diagnostics.get("label_id_to_name", {}),
+        "name_to_label_id": path_diagnostics.get("name_to_label_id", {}),
+        "external_tokenizer_source": path_diagnostics.get("tokenizer_source"),
+        "controlled_dev_tokenizer_source": path_diagnostics.get("tokenizer_source"),
+        "external_max_length": path_diagnostics.get("max_length"),
+        "controlled_dev_max_length": path_diagnostics.get("max_length"),
+        "external_token_length_summary": token_diagnostics.get("external_token_length_summary", summarize_numeric([])),
+        "external_truncation_count": truncation_count,
+        "external_truncation_rate": round(float(truncation_rate), 6) if isinstance(truncation_rate, (int, float)) else None,
+        "prediction_entropy_summary": summarize_numeric(entropies) if entropies else None,
+        "max_probability_summary": summarize_numeric(max_probs) if max_probs else None,
+        "per_gold_prediction_distribution": per_gold_prediction_distribution,
+        "sample_rows_by_gold_and_prediction": sample_rows_by_gold_and_prediction,
+        "sample_high_confidence_errors": sample_high_confidence_errors if max_probs else None,
+        "sample_not_entitled_collapse_rows": sample_not_entitled_collapse_rows,
+        "composer_availability_summary": {
+            "requested_composer_mode": "safe_structured_v2",
+            "composer_available_row_count": composer_available_row_count,
+            "composer_unavailable_row_count": composer_unavailable_row_count,
+            "composer_unavailable_reasons": dict(composer_unavailable_reasons),
+            "required_composer_fields_present_counts": required_field_counts,
+        },
+        "stage36_stage37_stage39_field_presence": stage_field_counts,
+        "diagnostic_conclusion": diagnostic_conclusion,
+        "diagnostic_next_action": diagnostic_next_action,
+        "diagnostic_non_leakage_statement": LEAKAGE_POLICY,
+    }
+
 def _incomplete_report(
     *,
     input_jsonl: Path,
@@ -213,9 +495,19 @@ def _incomplete_report(
     rows: list[dict[str, Any]],
     sample_errors: list[dict[str, Any]],
     reason: str,
+    prediction_rows: list[dict[str, Any]] | None = None,
+    token_diagnostics: dict[str, Any] | None = None,
+    path_diagnostics: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     gold_counts = Counter(normalize_label(row.get("label")) for row in rows)
     gold_counts.pop(None, None)
+    diagnostics = _build_stage43c1_diagnostics(
+        rows=rows,
+        prediction_rows=prediction_rows or [],
+        base_predictions_by_id={},
+        token_diagnostics=token_diagnostics,
+        path_diagnostics=path_diagnostics,
+    )
     return {
         "decision": "STAGE43C0_EXTERNAL_FACTVER_INCOMPLETE",
         "input_jsonl": str(input_jsonl),
@@ -257,6 +549,7 @@ def _incomplete_report(
         "risks": [reason],
         "recommendation": reason,
         "leakage_policy": LEAKAGE_POLICY,
+        **diagnostics,
     }
 
 
@@ -267,6 +560,8 @@ def analyze_stage43_predictions(
     rows: list[dict[str, Any]],
     prediction_rows: list[dict[str, Any]],
     output_predictions_path: str | None,
+    token_diagnostics: dict[str, Any] | None = None,
+    path_diagnostics: dict[str, Any] | None = None,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     validation_errors = validate_stage43_rows(rows)
     if validation_errors:
@@ -277,6 +572,9 @@ def analyze_stage43_predictions(
             rows=rows,
             sample_errors=validation_errors,
             reason="Input schema is invalid or has fewer than two labels represented.",
+            prediction_rows=prediction_rows,
+            token_diagnostics=token_diagnostics,
+            path_diagnostics=path_diagnostics,
         ), []
 
     pred_by_id = {str(row.get("id")): row for row in prediction_rows}
@@ -376,6 +674,9 @@ def analyze_stage43_predictions(
             rows=rows,
             sample_errors=sample_errors,
             reason="Model predictions could not be produced for Stage43 external rows.",
+            prediction_rows=prediction_rows,
+            token_diagnostics=token_diagnostics,
+            path_diagnostics=path_diagnostics,
         ), []
 
     if len(output_rows) != len(rows):
@@ -434,6 +735,15 @@ def analyze_stage43_predictions(
         "recommendation": "",
         "leakage_policy": LEAKAGE_POLICY,
     }
+    report.update(
+        _build_stage43c1_diagnostics(
+            rows=rows,
+            prediction_rows=prediction_rows,
+            base_predictions_by_id={row["id"]: row["base_prediction"] for row in output_rows},
+            token_diagnostics=token_diagnostics,
+            path_diagnostics=path_diagnostics,
+        )
+    )
     decision, recommendation = decide_stage43c0(report, len(rows), composer_unavailable_count)
     report["decision"] = decision
     report["recommendation"] = recommendation
@@ -457,6 +767,17 @@ def decide_stage43c0(report: dict[str, Any], input_row_count: int, composer_unav
         return (
             "STAGE43C0_EXTERNAL_FACTVER_INCOMPLETE",
             "Input has fewer than 100 rows or fewer than two labels represented.",
+        )
+    base_counts = report.get("base_prediction_counts") or {}
+    not_entitled_rate = (
+        int(base_counts.get("NOT_ENTITLED") or 0) / report["row_count"]
+        if report["row_count"]
+        else 0.0
+    )
+    if not_entitled_rate >= 0.80:
+        return (
+            "STAGE43C0_EXTERNAL_FACTVER_INCOMPLETE",
+            "Diagnostic audit found prediction collapse dominated by NOT_ENTITLED; do not report this external result as PASS.",
         )
     unsafe = (
         report["introduced_unsafe_SUPPORT_count"] > 0
@@ -571,6 +892,94 @@ def render_report_markdown(report: dict[str, Any]) -> str:
         lines.append("None.")
     lines.extend(["", "## 10. Risks", ""])
     lines.extend(f"- {risk}" for risk in report["risks"])
+    if report.get("stage43c1_diagnostic_enabled"):
+        diag_payload = {
+            "prediction_collapse_summary": {
+                "base_prediction_counts": report.get("base_prediction_counts"),
+                "per_gold_prediction_distribution": report.get("per_gold_prediction_distribution"),
+                "max_probability_summary": report.get("max_probability_summary"),
+                "prediction_entropy_summary": report.get("prediction_entropy_summary"),
+            },
+            "token_length_truncation_summary": {
+                "external_token_length_summary": report.get("external_token_length_summary"),
+                "external_truncation_count": report.get("external_truncation_count"),
+                "external_truncation_rate": report.get("external_truncation_rate"),
+            },
+            "input_template_path_audit": {
+                "external_input_template": report.get("external_input_template"),
+                "controlled_dev_input_template": report.get("controlled_dev_input_template"),
+                "external_uses_same_prediction_path_as_dev": report.get("external_uses_same_prediction_path_as_dev"),
+                "external_tokenizer_source": report.get("external_tokenizer_source"),
+                "controlled_dev_tokenizer_source": report.get("controlled_dev_tokenizer_source"),
+                "external_max_length": report.get("external_max_length"),
+                "controlled_dev_max_length": report.get("controlled_dev_max_length"),
+            },
+            "label_mapping_audit": {
+                "external_uses_same_label_mapping_as_dev": report.get("external_uses_same_label_mapping_as_dev"),
+                "label_id_to_name": report.get("label_id_to_name"),
+                "name_to_label_id": report.get("name_to_label_id"),
+            },
+            "composer_availability_audit": report.get("composer_availability_summary"),
+            "stage36_stage37_stage39_field_presence": report.get("stage36_stage37_stage39_field_presence"),
+            "sample_collapsed_rows": report.get("sample_not_entitled_collapse_rows"),
+            "sample_high_confidence_errors": report.get("sample_high_confidence_errors"),
+        }
+        lines.extend(
+            [
+                "",
+                "## Stage43-C1 Diagnostic Audit",
+                "",
+                "### Prediction collapse summary",
+                "",
+                "```json",
+                json.dumps(diag_payload["prediction_collapse_summary"], indent=2),
+                "```",
+                "",
+                "### Token length/truncation summary",
+                "",
+                "```json",
+                json.dumps(diag_payload["token_length_truncation_summary"], indent=2),
+                "```",
+                "",
+                "### Input template/path audit",
+                "",
+                "```json",
+                json.dumps(diag_payload["input_template_path_audit"], indent=2),
+                "```",
+                "",
+                "### Label mapping audit",
+                "",
+                "```json",
+                json.dumps(diag_payload["label_mapping_audit"], indent=2),
+                "```",
+                "",
+                "### Composer availability audit",
+                "",
+                "```json",
+                json.dumps(
+                    {
+                        "composer_availability_summary": diag_payload["composer_availability_audit"],
+                        "stage36_stage37_stage39_field_presence": diag_payload["stage36_stage37_stage39_field_presence"],
+                    },
+                    indent=2,
+                ),
+                "```",
+                "",
+                "### Sample collapsed rows",
+                "",
+                "```json",
+                json.dumps(diag_payload["sample_collapsed_rows"], indent=2),
+                "```",
+                "",
+                "### Diagnostic conclusion",
+                "",
+                str(report.get("diagnostic_conclusion")),
+                "",
+                "### Non-leakage statement",
+                "",
+                str(report.get("diagnostic_non_leakage_statement") or report.get("leakage_policy")),
+            ]
+        )
     lines.extend(
         [
             "",
