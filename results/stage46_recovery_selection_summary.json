@@ -1,15 +1,64 @@
 {
-  "block_reason": "stage45d_no_data: Stage45D found no comparison data (has_any_data is false)",
-  "decision": "STAGE46_RECOVERY_SELECTION_BLOCKED",
-  "diagnostic_runner_up": null,
-  "dropped_configs": [],
-  "key_metrics": {},
+  "decision": "STAGE46_RECOVERY_SELECTION_FROZEN",
+  "diagnostic_runner_up": {
+    "config_name": "recovery_w010_ne020",
+    "ne_w": 0.2,
+    "role": "paraphrase_specialized_diagnostic_runner_up",
+    "support_w": 0.1
+  },
+  "dropped_configs": [
+    "w0.05_ne0.05",
+    "w0.2_ne0.1"
+  ],
+  "key_metrics": {
+    "recovery_w010_ne020": {
+      "avg_delta_acc": 0.04833334684371948,
+      "avg_delta_macro_all3": 0.026985229823958623,
+      "avg_delta_ne_pred_rate": -0.04500000000000001,
+      "avg_delta_refute_recall": 0.006666666666666654,
+      "avg_delta_support_recall": 0.09,
+      "groups_improved_over_baseline": 2,
+      "groups_with_catastrophic_regression": 0,
+      "groups_with_harmful_ne_rate_shift": 0,
+      "groups_with_ne_rate_shift_large": 0,
+      "groups_with_refute_regression": 0,
+      "groups_with_support_recovery_gain": 2,
+      "holdout_groups_seen": 2
+    },
+    "recovery_w01_ne01": {
+      "avg_delta_acc": 0.06000000238418579,
+      "avg_delta_macro_all3": 0.030813440614527177,
+      "avg_delta_ne_pred_rate": -0.06333333333333334,
+      "avg_delta_refute_recall": 0.013333333333333364,
+      "avg_delta_support_recall": 0.10666666666666666,
+      "groups_improved_over_baseline": 2,
+      "groups_with_catastrophic_regression": 0,
+      "groups_with_harmful_ne_rate_shift": 0,
+      "groups_with_ne_rate_shift_large": 1,
+      "groups_with_refute_regression": 0,
+      "groups_with_support_recovery_gain": 2,
+      "holdout_groups_seen": 2
+    }
+  },
   "leakage_policy": {
     "evaluation_run": false,
     "external_data_used": false,
     "scope": "stage45d_internal_report_aggregation_only",
     "training_run": false
   },
-  "recommendation_reasoning": {},
-  "selected_config": null
+  "recommendation_reasoning": {
+    "specialized_catastrophic_regression_groups": 0,
+    "specialized_is_best_on_intervention_type_paraphrase": true,
+    "specialized_regresses_on_primary_failure_type_none": false,
+    "stable_avg_delta_macro_all3": 0.030813440614527177,
+    "stable_catastrophic_regression_groups": 0,
+    "stable_has_no_refute_regression": true,
+    "stable_preserves_or_improves_primary_failure_type_none": true
+  },
+  "selected_config": {
+    "config_name": "recovery_w01_ne01",
+    "ne_w": 0.1,
+    "role": "stable_global_default",
+    "support_w": 0.1
+  }
 }

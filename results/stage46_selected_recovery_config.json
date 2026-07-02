@@ -1,19 +1,34 @@
 {
-  "block_reason": "stage45d_no_data: Stage45D found no comparison data (has_any_data is false)",
   "caveats": [
     "Stage45D used reconstructed/internal Stage45C train-report JSONs where applicable.",
     "Stage46 is a reporting/freeze stage only.",
     "No training or evaluation is performed by this script."
   ],
-  "decision": "STAGE46_RECOVERY_SELECTION_BLOCKED",
-  "diagnostic_runner_up": null,
-  "dropped_configs": [],
-  "selected_stable_default": null,
+  "decision": "STAGE46_RECOVERY_SELECTION_FROZEN",
+  "diagnostic_runner_up": {
+    "config_name": "recovery_w010_ne020",
+    "ne_w": 0.2,
+    "role": "paraphrase_specialized_diagnostic_runner_up",
+    "support_w": 0.1
+  },
+  "dropped_configs": [
+    "w0.05_ne0.05",
+    "w0.2_ne0.1"
+  ],
+  "selected_stable_default": {
+    "config_name": "recovery_w01_ne01",
+    "ne_w": 0.1,
+    "role": "stable_global_default",
+    "support_w": 0.1
+  },
   "source_summary": {
-    "decision": null,
-    "holdout_groups": [],
-    "path": "results\\stage45d_generalization_summary.json",
-    "rows_parsed": null
+    "decision": "STAGE45D_GENERALIZATION_AUDIT_READY",
+    "holdout_groups": [
+      "intervention_type=paraphrase",
+      "primary_failure_type=none"
+    ],
+    "path": "results/stage45d_generalization_summary.json",
+    "rows_parsed": 10
   },
   "stage": "Stage46"
 }
