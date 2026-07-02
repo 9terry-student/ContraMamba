@@ -621,7 +621,34 @@ def write_predictions_json(
     )
 
 
+# Stage45-B3: variants a pairwise_checks group would use if all were present. Under
+# Stage45 internal family holdout, the dev split may contain only the held-out
+# family's variant, so this is a lookup contract, not a guarantee (mirrors
+# REQUIRED_INTERVENTION_VARIANTS in intervention_objective, Stage45-B2).
+REQUIRED_PAIRWISE_VARIANTS: tuple[str, ...] = (
+    "none",
+    "paraphrase",
+    "entity_swap",
+    "event_swap",
+    "predicate_swap",
+    "evidence_deletion",
+    "evidence_truncation",
+    "polarity_flip",
+)
+
+
 def pairwise_checks(records: list[dict], output: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """Output-only pairwise preservation/degradation diagnostics.
+
+    Stage45-B3: under internal family holdout, a dev pair group may be missing the
+    `none` anchor row or one or more intervention variants (e.g. a dev split that is
+    entirely the held-out family has no `none` row at all). Checks that require a
+    missing variant are skipped rather than raising KeyError; skipped groups/checks
+    are never filled in from train rows or external data. If every group is skipped,
+    this returns an otherwise-empty diagnostics dict plus a guard summary reporting
+    zero active checks rather than crashing or dividing by zero.
+    """
+
     values = {
         key: output[key].detach().cpu()
         for key in (
@@ -635,80 +662,142 @@ def pairwise_checks(records: list[dict], output: dict[str, Any]) -> dict[str, di
     }
     accumulators: dict[str, list[float]] = defaultdict(list)
     booleans: dict[str, list[bool]] = defaultdict(list)
+    groups_considered = 0
+    groups_skipped_missing_none = 0
+    groups_skipped_missing_variant = 0
+    active_group_count = 0
+    missing_variant_counts: Counter[str] = Counter()
+
     for variants in pair_index(records).values():
-        original = variants["none"]
-        paraphrase = variants["paraphrase"]
-        entity = variants["entity_swap"]
-        event = variants["event_swap"]
-        predicate = variants["predicate_swap"]
-        deletion = variants["evidence_deletion"]
-        truncation = variants["evidence_truncation"]
-        flip = variants["polarity_flip"]
+        groups_considered += 1
+        present = {name for name in REQUIRED_PAIRWISE_VARIANTS if name in variants}
+        for name in REQUIRED_PAIRWISE_VARIANTS:
+            if name not in present:
+                missing_variant_counts[name] += 1
 
-        entity_drop = (values["frame_prob"][original] - values["frame_prob"][entity]).item()
-        event_drop = (values["frame_prob"][original] - values["frame_prob"][event]).item()
-        predicate_frame_delta = torch.abs(
-            values["frame_prob"][original] - values["frame_prob"][predicate]
-        ).item()
-        predicate_drop = (
-            values["predicate_coverage_prob"][original]
-            - values["predicate_coverage_prob"][predicate]
-        ).item()
-        deletion_drop = (
-            values["sufficiency_prob"][original]
-            - values["sufficiency_prob"][deletion]
-        ).item()
-        truncation_drop = (
-            values["sufficiency_prob"][original]
-            - values["sufficiency_prob"][truncation]
-        ).item()
-        paraphrase_gate_delta = max(
-            abs((values[key][original] - values[key][paraphrase]).item())
-            for key in ("frame_prob", "predicate_coverage_prob", "sufficiency_prob")
-        )
-        flip_entitlement_delta = abs(
-            (values["entitlement_prob"][original] - values["entitlement_prob"][flip]).item()
-        )
-        margin_reversed = bool(
-            values["polarity_margin"][original] * values["polarity_margin"][flip] < 0
-        )
+        original = variants.get("none")
+        if original is None:
+            groups_skipped_missing_none += 1
+            continue
 
-        accumulators["entity_frame_drop"].append(entity_drop)
-        accumulators["event_frame_drop"].append(event_drop)
-        accumulators["predicate_frame_delta"].append(predicate_frame_delta)
-        accumulators["predicate_coverage_drop"].append(predicate_drop)
-        accumulators["deletion_sufficiency_drop"].append(deletion_drop)
-        accumulators["truncation_sufficiency_drop"].append(truncation_drop)
-        accumulators["paraphrase_gate_delta"].append(paraphrase_gate_delta)
-        accumulators["flip_entitlement_delta"].append(flip_entitlement_delta)
-        booleans["entity_frame_lower"].append(entity_drop > 0)
-        booleans["event_frame_lower"].append(event_drop > 0)
-        booleans["predicate_disentangled"].append(
-            predicate_frame_delta < 0.5 * entity_drop and predicate_drop > 0
-        )
-        booleans["deletion_sufficiency_lower"].append(deletion_drop > 0)
-        booleans["truncation_sufficiency_lower"].append(truncation_drop > 0)
-        booleans["paraphrase_preserved"].append(
-            paraphrase_gate_delta < 0.1
-            and bool(
-                values["predictions"][original]
-                == values["predictions"][paraphrase]
+        group_contributed = False
+        entity_drop: float | None = None
+
+        if "entity_swap" in present:
+            entity = variants["entity_swap"]
+            entity_drop = (
+                values["frame_prob"][original] - values["frame_prob"][entity]
+            ).item()
+            accumulators["entity_frame_drop"].append(entity_drop)
+            booleans["entity_frame_lower"].append(entity_drop > 0)
+            group_contributed = True
+
+        if "event_swap" in present:
+            event = variants["event_swap"]
+            event_drop = (
+                values["frame_prob"][original] - values["frame_prob"][event]
+            ).item()
+            accumulators["event_frame_drop"].append(event_drop)
+            booleans["event_frame_lower"].append(event_drop > 0)
+            group_contributed = True
+
+        if "predicate_swap" in present:
+            predicate = variants["predicate_swap"]
+            predicate_frame_delta = torch.abs(
+                values["frame_prob"][original] - values["frame_prob"][predicate]
+            ).item()
+            predicate_drop = (
+                values["predicate_coverage_prob"][original]
+                - values["predicate_coverage_prob"][predicate]
+            ).item()
+            accumulators["predicate_frame_delta"].append(predicate_frame_delta)
+            accumulators["predicate_coverage_drop"].append(predicate_drop)
+            group_contributed = True
+            if entity_drop is not None:
+                booleans["predicate_disentangled"].append(
+                    predicate_frame_delta < 0.5 * entity_drop and predicate_drop > 0
+                )
+
+        if "evidence_deletion" in present:
+            deletion = variants["evidence_deletion"]
+            deletion_drop = (
+                values["sufficiency_prob"][original]
+                - values["sufficiency_prob"][deletion]
+            ).item()
+            accumulators["deletion_sufficiency_drop"].append(deletion_drop)
+            booleans["deletion_sufficiency_lower"].append(deletion_drop > 0)
+            group_contributed = True
+
+        if "evidence_truncation" in present:
+            truncation = variants["evidence_truncation"]
+            truncation_drop = (
+                values["sufficiency_prob"][original]
+                - values["sufficiency_prob"][truncation]
+            ).item()
+            accumulators["truncation_sufficiency_drop"].append(truncation_drop)
+            booleans["truncation_sufficiency_lower"].append(truncation_drop > 0)
+            group_contributed = True
+
+        if "paraphrase" in present:
+            paraphrase = variants["paraphrase"]
+            paraphrase_gate_delta = max(
+                abs((values[key][original] - values[key][paraphrase]).item())
+                for key in ("frame_prob", "predicate_coverage_prob", "sufficiency_prob")
             )
-        )
-        booleans["polarity_flip_preserved_and_reversed"].append(
-            flip_entitlement_delta < 0.15 and margin_reversed
-        )
+            accumulators["paraphrase_gate_delta"].append(paraphrase_gate_delta)
+            booleans["paraphrase_preserved"].append(
+                paraphrase_gate_delta < 0.1
+                and bool(
+                    values["predictions"][original]
+                    == values["predictions"][paraphrase]
+                )
+            )
+            group_contributed = True
 
-    return {
+        if "polarity_flip" in present:
+            flip = variants["polarity_flip"]
+            flip_entitlement_delta = abs(
+                (values["entitlement_prob"][original] - values["entitlement_prob"][flip]).item()
+            )
+            margin_reversed = bool(
+                values["polarity_margin"][original] * values["polarity_margin"][flip] < 0
+            )
+            accumulators["flip_entitlement_delta"].append(flip_entitlement_delta)
+            booleans["polarity_flip_preserved_and_reversed"].append(
+                flip_entitlement_delta < 0.15 and margin_reversed
+            )
+            group_contributed = True
+
+        if group_contributed:
+            active_group_count += 1
+        else:
+            groups_skipped_missing_variant += 1
+
+    result = {
         name: {
             "pass_rate": sum(results) / len(results),
             "passed": all(results),
         }
         for name, results in booleans.items()
+        if results
     } | {
         name: {"mean": sum(results) / len(results)}
         for name, results in accumulators.items()
+        if results
     }
+
+    result["stage45b3_pairwise_diagnostics"] = {
+        "stage45b3_pairwise_check_guard_enabled": True,
+        "pairwise_groups_considered": groups_considered,
+        "pairwise_groups_skipped_missing_none": groups_skipped_missing_none,
+        "pairwise_groups_skipped_missing_variant": groups_skipped_missing_variant,
+        "pairwise_active_group_count": active_group_count,
+        "pairwise_checks_effectively_inactive": (
+            groups_considered > 0 and active_group_count == 0
+        ),
+        "pairwise_missing_variant_counts": dict(sorted(missing_variant_counts.items())),
+    }
+    return result
 
 
 def evaluate(

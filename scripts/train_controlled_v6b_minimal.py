@@ -11993,6 +11993,49 @@ def main(argv: list[str] | None = None) -> int:
                     )
                 )
 
+            _stage45b3_diag = (best_dev_pairwise_checks or {}).get(
+                "stage45b3_pairwise_diagnostics"
+            )
+            if _stage45b3_diag:
+                _stage45b3_inactive = _stage45b3_diag.get(
+                    "pairwise_checks_effectively_inactive"
+                )
+                _stage45b_split_info["stage45b3_pairwise_check_guard_enabled"] = (
+                    _stage45b3_diag.get("stage45b3_pairwise_check_guard_enabled", True)
+                )
+                _stage45b_split_info["stage45b3_pairwise_missing_variant_counts"] = (
+                    _stage45b3_diag.get("pairwise_missing_variant_counts")
+                )
+                _stage45b_split_info["stage45b3_pairwise_skipped_missing_none_count"] = (
+                    _stage45b3_diag.get("pairwise_groups_skipped_missing_none")
+                )
+                _stage45b_split_info["stage45b3_pairwise_active_group_count"] = (
+                    _stage45b3_diag.get("pairwise_active_group_count")
+                )
+                _stage45b_split_info["stage45b3_pairwise_checks_effectively_inactive"] = (
+                    _stage45b3_inactive
+                )
+                _stage45b_split_info["stage45b3_decision"] = (
+                    "STAGE45B3_FAMILY_HOLDOUT_PAIRWISE_CHECKS_GUARDED"
+                )
+                _stage45b_split_info["stage45b3_recommendation"] = (
+                    (
+                        "Pairwise preservation/degradation checks were entirely inactive for "
+                        "this dev split because no group retained the 'none' anchor row (e.g. "
+                        "a single-family holdout dev split). This is expected under Stage45 "
+                        "internal family holdout and does not invalidate the holdout "
+                        "classification metrics; treat pairwise diagnostics as undefined for "
+                        "this run rather than failed."
+                    )
+                    if _stage45b3_inactive
+                    else (
+                        "Some pairwise checks were skipped because their required variant(s) "
+                        "were missing from the dev split under internal family holdout. "
+                        "Remaining checks were computed only from complete groups; no train "
+                        "rows or external data were used to fill gaps."
+                    )
+                )
+
         report = {
             "run_name": run_name,
             "final_epoch": epochs,
@@ -13211,6 +13254,13 @@ def main(argv: list[str] | None = None) -> int:
             "stage45b2_intervention_objective_active_group_count",
             "stage45b2_intervention_objective_effectively_inactive",
             "stage45b2_recommendation",
+            "stage45b3_decision",
+            "stage45b3_pairwise_check_guard_enabled",
+            "stage45b3_pairwise_missing_variant_counts",
+            "stage45b3_pairwise_skipped_missing_none_count",
+            "stage45b3_pairwise_active_group_count",
+            "stage45b3_pairwise_checks_effectively_inactive",
+            "stage45b3_recommendation",
             # Audit ledger (nested dict; lifted from run report)
             "audit_ledger",
         ):
@@ -14349,6 +14399,13 @@ def main(argv: list[str] | None = None) -> int:
             "stage45b2_intervention_objective_active_group_count",
             "stage45b2_intervention_objective_effectively_inactive",
             "stage45b2_recommendation",
+            "stage45b3_decision",
+            "stage45b3_pairwise_check_guard_enabled",
+            "stage45b3_pairwise_missing_variant_counts",
+            "stage45b3_pairwise_skipped_missing_none_count",
+            "stage45b3_pairwise_active_group_count",
+            "stage45b3_pairwise_checks_effectively_inactive",
+            "stage45b3_recommendation",
         ]
         _stage45_report = {
             key: report.get(key)
@@ -14417,6 +14474,18 @@ def main(argv: list[str] | None = None) -> int:
                 f"- Effectively inactive: {_stage45_report.get('stage45b2_intervention_objective_effectively_inactive')}",
                 "",
                 str(_stage45_report.get("stage45b2_recommendation")),
+                "",
+                "## Stage45-B3 Pairwise Check Guard",
+                "",
+                f"`{_stage45_report.get('stage45b3_decision')}`",
+                "",
+                f"- Guard enabled: {_stage45_report.get('stage45b3_pairwise_check_guard_enabled')}",
+                f"- Missing variant counts: {_stage45_report.get('stage45b3_pairwise_missing_variant_counts')}",
+                f"- Groups skipped (missing none): {_stage45_report.get('stage45b3_pairwise_skipped_missing_none_count')}",
+                f"- Active group count: {_stage45_report.get('stage45b3_pairwise_active_group_count')}",
+                f"- Effectively inactive: {_stage45_report.get('stage45b3_pairwise_checks_effectively_inactive')}",
+                "",
+                str(_stage45_report.get("stage45b3_recommendation")),
                 "",
                 "## Leakage Policy",
                 "",
