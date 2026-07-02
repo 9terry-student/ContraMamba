@@ -1,0 +1,159 @@
+﻿{
+  "decision": "STAGE45A_INTERNAL_ONLY_GENERALIZATION_REDESIGN_PLAN_READY",
+  "stage43_44_diagnosis": {
+    "external_pass": false,
+    "summary": [
+      "Stage43/44 did not produce external PASS.",
+      "Stage44 ruled out internal checkpoint selection collapse as the proximate cause.",
+      "The composer path is operational after Stage43-C2 shadow export fixes.",
+      "The remaining issue is controlled-to-naturalistic generalization failure, especially SUPPORT/REFUTE entitlement collapse under external-style evidence.",
+      "Stage43-B1 must not be used for further optimization."
+    ],
+    "stage44b2_internal_selection": {
+      "selected_epoch": 47,
+      "original_best_metric_epoch": 47,
+      "internal_clean_dev_macro_f1_approx": 0.9619,
+      "internal_not_entitled_gold_rate": 0.75,
+      "internal_not_entitled_prediction_rate_approx": 0.7264,
+      "support_precision_approx": 0.8318,
+      "support_recall_approx": 0.9889,
+      "refute_precision": 1.0,
+      "refute_recall": 1.0
+    }
+  },
+  "stage43b1_lock_policy": {
+    "status": "diagnostic_only_no_longer_pristine_for_final_model_development_claims",
+    "disallowed_uses": [
+      "training",
+      "synthetic data generation",
+      "prompt/example mining",
+      "threshold selection",
+      "calibration",
+      "checkpoint selection",
+      "loss design",
+      "data mixture design",
+      "model selection",
+      "composer rule changes",
+      "repeated iterative evaluation for development"
+    ],
+    "allowed_uses": [
+      "historical diagnostic summary only",
+      "reporting the already-observed negative/incomplete result",
+      "one clearly labeled diagnostic comparison if absolutely necessary, but not as final validation"
+    ],
+    "future_final_validation_requirement": "Acquire a new held-out external set after Stage45 redesign is frozen."
+  },
+  "allowed_inputs": [
+    "internal controlled train data",
+    "internal controlled dev data",
+    "internal transformation-family metadata or diagnostics",
+    "historical Stage43/44 high-level diagnosis without examples, thresholds, per-example predictions, or tuning signals"
+  ],
+  "disallowed_inputs": [
+    "Stage43-B1 external labels",
+    "Stage43-B1 examples or example-derived prompts",
+    "Stage43-B1 per-example predictions",
+    "Stage43-B1 prediction distributions for tuning",
+    "Stage43-B1 threshold or calibration sweeps",
+    "Stage43-B1 checkpoint/model selection signals",
+    "Stage43-B1 loss-design or data-mixture signals",
+    "Stage43-B1 composer behavior changes"
+  ],
+  "candidate_redesign_options": {
+    "option_a_internal_controlled_naturalization_augmentation": {
+      "summary": "Generate more naturalistic claim/evidence phrasing from internal controlled examples only.",
+      "requirements": [
+        "split before augmentation to avoid train/dev leakage",
+        "preserve labels from controlled transformations",
+        "include paraphrase, sentence-length variation, distractor insertion, entity aliasing, and evidence-style variation",
+        "do not copy or imitate Stage43-B1 examples"
+      ]
+    },
+    "option_b_entitlement_balance_loss_auxiliary_recall_protection": {
+      "summary": "Add an internal-only auxiliary objective to protect SUPPORT/REFUTE entitlement against over-conservative NOT_ENTITLED gating.",
+      "requirements": [
+        "use only controlled train labels",
+        "use only internal dev metrics",
+        "avoid unless diagnostics show gating/loss is the main bottleneck"
+      ]
+    },
+    "option_c_internal_leave_transformation_family_out_validation": {
+      "summary": "Hold out transformation families internally and select checkpoints by robustness across held-out internal transformation types.",
+      "requirements": [
+        "no Stage43-B1 access",
+        "report per-family metrics",
+        "use as internal generalization proxy"
+      ]
+    },
+    "option_d_evidence_sufficiency_contrast_curriculum": {
+      "summary": "Construct internal contrast pairs where minimal evidence changes flip SUPPORT/REFUTE/NOT_ENTITLED.",
+      "requirements": [
+        "emphasize sufficiency boundary learning",
+        "use controlled data only",
+        "preserve traceable labels and family metadata"
+      ]
+    },
+    "option_e_new_external_holdout_acquisition_plan": {
+      "summary": "Acquire a new external validation set after Stage45 design is frozen for final claims only.",
+      "requirements": [
+        "read-only external holdout",
+        "not used for iteration",
+        "not used for thresholding, calibration, checkpoint selection, data generation, or model selection"
+      ]
+    }
+  },
+  "recommended_path": {
+    "primary": "Option C + Option D first: internal leave-family-out validation plus evidence sufficiency contrast curriculum.",
+    "secondary": "Option A only if implemented with strict split-before-augmentation.",
+    "avoid_initially": "Option B unless diagnostics show gating/loss is the main bottleneck, because loss changes can hide leakage-like overfitting to internal dev."
+  },
+  "stage45b_plan": {
+    "name": "internal leave-transformation-family-out validation scaffold",
+    "external_files_allowed": false,
+    "stage43b1_access_allowed": false,
+    "reports": [
+      "transformation-family macro-F1",
+      "SUPPORT recall",
+      "REFUTE recall",
+      "NOT_ENTITLED prediction rate",
+      "unsafe SUPPORT proxy on internal controlled families"
+    ]
+  },
+  "stage45c_plan": {
+    "name": "evidence sufficiency contrast curriculum or auxiliary diagnostic",
+    "training_data": "controlled internal data only",
+    "selection_policy": "select only by internal leave-family-out criteria",
+    "focus": "minimal evidence changes that flip SUPPORT/REFUTE/NOT_ENTITLED boundaries"
+  },
+  "future_external_eval_policy": {
+    "stage43b1_final_claim_status": "not clean final validation after redesign informed by its failure",
+    "new_external_holdout_required_for_final_claim": true,
+    "if_stage43b1_reused_label": "previously observed diagnostic set, not clean validation"
+  },
+  "internal_success_criteria": [
+    "improved leave-family-out macro-F1",
+    "no SUPPORT/REFUTE recall collapse",
+    "NOT_ENTITLED prediction rate consistent with internal gold priors",
+    "no increase in unsafe SUPPORT proxy",
+    "stable performance across transformation families"
+  ],
+  "external_success_criteria": [
+    "not evaluated in Stage45-A/B/C",
+    "final external success requires a new held-out dataset after design freeze"
+  ],
+  "allowed_claims": [
+    "Stage45-A defines an internal-only generalization redesign plan.",
+    "Stage43-B1 remains locked and cannot guide future optimization.",
+    "Stage44 ruled out internal checkpoint selection as the proximate cause.",
+    "Future redesign must be validated internally first."
+  ],
+  "disallowed_claims": [
+    "Do not claim external PASS.",
+    "Do not claim VitaminC transfer success.",
+    "Do not claim Climate-FEVER robustness.",
+    "Do not claim naturalistic generalization.",
+    "Do not claim Stage45 will solve the external failure.",
+    "Do not use Stage43-B1 as a clean final validation set after redesign."
+  ],
+  "next_stage": "Stage45-B: internal leave-transformation-family-out validation scaffold"
+}
