@@ -1,0 +1,246 @@
+{
+  "stage": "Stage55",
+  "decision": "STAGE55_VITAMINC_EXTERNAL_COLLAPSE_MECHANISM_AUDIT_READY",
+  "source_run_dir": "results/stage53a_vitaminc_frozen_external_eval_20260702_045300",
+  "source_external_dir": "results/stage53a_vitaminc_frozen_external_eval_20260702_045300/external",
+  "source_report": "results/stage53a_vitaminc_frozen_external_eval_20260702_045300/external/stage53a_vitaminc_frozen_stage43b1_vitaminc_validation_sample1000_external_factver_report.json",
+  "source_predictions": "results/stage53a_vitaminc_frozen_external_eval_20260702_045300/external/stage53a_vitaminc_frozen_stage43b1_vitaminc_validation_sample1000_external_factver_predictions.jsonl",
+  "mechanism_verdict": [
+    {
+      "mechanism": "label_mapping_mismatch",
+      "verdict": "unlikely",
+      "evidence": "external_uses_same_label_mapping_as_dev=True"
+    },
+    {
+      "mechanism": "prediction_path_mismatch",
+      "verdict": "unlikely",
+      "evidence": "external_uses_same_prediction_path_as_dev=True"
+    },
+    {
+      "mechanism": "truncation_or_max_length",
+      "verdict": "unlikely_as_primary",
+      "evidence": "external_truncation_rate=0.068"
+    },
+    {
+      "mechanism": "external_domain_not_entitled_bias",
+      "verdict": "primary_failure",
+      "evidence": "base NOT_ENTITLED pred rate=0.946, gold NOT_ENTITLED rate=0.145, base NOT_ENTITLED count=946/1000"
+    },
+    {
+      "mechanism": "composer_or_stage45c_recovery",
+      "verdict": "not_primary",
+      "evidence": "changed_row_count=2, recovery_fired_count=0, blocker_fired_count=0"
+    },
+    {
+      "mechanism": "controlled_to_vitaminc_domain_shift",
+      "verdict": "likely",
+      "evidence": "Internal controlled training used synthetic/controlled examples; VitaminC external examples contain open-domain lexical, numeric, temporal, and entity paraphrase patterns."
+    }
+  ],
+  "decision_safety": [
+    {
+      "aggregate_decision": "STAGE43C0_EXTERNAL_FACTVER_AGGREGATE_UNSAFE",
+      "dataset_decision": "STAGE43C0_EXTERNAL_FACTVER_UNSAFE",
+      "row_count": 1000,
+      "base_accuracy": 0.156,
+      "composed_accuracy": 0.156,
+      "base_macro_f1": 0.115986,
+      "composed_macro_f1": 0.116717,
+      "delta_accuracy": 0.0,
+      "delta_macro_f1": 0.000731,
+      "introduced_unsafe_SUPPORT_count": 1,
+      "introduced_REFUTE_to_SUPPORT_count": 0,
+      "introduced_SUPPORT_to_REFUTE_count": 0,
+      "changed_row_count": 2,
+      "recovery_fired_count": 0,
+      "blocker_fired_count": 0
+    }
+  ],
+  "label_template_sanity": [
+    {
+      "label_id_to_name": {
+        "0": "REFUTE",
+        "1": "NOT_ENTITLED",
+        "2": "SUPPORT"
+      },
+      "name_to_label_id": {
+        "NOT_ENTITLED": 1,
+        "REFUTE": 0,
+        "SUPPORT": 2
+      },
+      "external_uses_same_label_mapping_as_dev": true,
+      "external_uses_same_prediction_path_as_dev": true,
+      "external_tokenizer_source": "state-spaces/mamba-130m-hf",
+      "controlled_dev_tokenizer_source": "state-spaces/mamba-130m-hf",
+      "external_max_length": 128,
+      "controlled_dev_max_length": 128
+    }
+  ],
+  "distribution_collapse": [
+    {
+      "label": "REFUTE",
+      "gold_count": 355,
+      "base_pred_count": 33,
+      "composed_pred_count": 33,
+      "base_pred_minus_gold": -322,
+      "composed_pred_minus_gold": -322,
+      "base_pred_rate": 0.033,
+      "composed_pred_rate": 0.033,
+      "gold_rate": 0.355
+    },
+    {
+      "label": "NOT_ENTITLED",
+      "gold_count": 145,
+      "base_pred_count": 946,
+      "composed_pred_count": 944,
+      "base_pred_minus_gold": 801,
+      "composed_pred_minus_gold": 799,
+      "base_pred_rate": 0.946,
+      "composed_pred_rate": 0.944,
+      "gold_rate": 0.145
+    },
+    {
+      "label": "SUPPORT",
+      "gold_count": 500,
+      "base_pred_count": 21,
+      "composed_pred_count": 23,
+      "base_pred_minus_gold": -479,
+      "composed_pred_minus_gold": -477,
+      "base_pred_rate": 0.021,
+      "composed_pred_rate": 0.023,
+      "gold_rate": 0.5
+    }
+  ],
+  "per_gold_not_entitled_collapse": [
+    {
+      "gold": "SUPPORT",
+      "total": 500,
+      "base_to_NOT_ENTITLED": 472,
+      "base_to_NOT_ENTITLED_rate": 0.944,
+      "composed_to_NOT_ENTITLED": 471,
+      "composed_to_NOT_ENTITLED_rate": 0.942
+    },
+    {
+      "gold": "REFUTE",
+      "total": 355,
+      "base_to_NOT_ENTITLED": 343,
+      "base_to_NOT_ENTITLED_rate": 0.9661971830985916,
+      "composed_to_NOT_ENTITLED": 343,
+      "composed_to_NOT_ENTITLED_rate": 0.9661971830985916
+    }
+  ],
+  "per_label_metrics": [
+    {
+      "mode": "base",
+      "label": "SUPPORT",
+      "precision": 0.761905,
+      "recall": 0.032,
+      "f1": 0.06142,
+      "support": 500
+    },
+    {
+      "mode": "base",
+      "label": "REFUTE",
+      "precision": 0.272727,
+      "recall": 0.025352,
+      "f1": 0.046392,
+      "support": 355
+    },
+    {
+      "mode": "base",
+      "label": "NOT_ENTITLED",
+      "precision": 0.138478,
+      "recall": 0.903448,
+      "f1": 0.240147,
+      "support": 145
+    },
+    {
+      "mode": "composed",
+      "label": "SUPPORT",
+      "precision": 0.73913,
+      "recall": 0.034,
+      "f1": 0.06501,
+      "support": 500
+    },
+    {
+      "mode": "composed",
+      "label": "REFUTE",
+      "precision": 0.272727,
+      "recall": 0.025352,
+      "f1": 0.046392,
+      "support": 355
+    },
+    {
+      "mode": "composed",
+      "label": "NOT_ENTITLED",
+      "precision": 0.137712,
+      "recall": 0.896552,
+      "f1": 0.238751,
+      "support": 145
+    }
+  ],
+  "token_truncation_audit": [
+    {
+      "external_max_length": 128,
+      "external_truncation_count": 68,
+      "external_truncation_rate": 0.068,
+      "token_min": 16.0,
+      "token_p25": 37.0,
+      "token_median": 48.0,
+      "token_p75": 60.0,
+      "token_p90": 78.0,
+      "token_p95": 91.05,
+      "token_max": 278.0
+    }
+  ],
+  "confidence_entropy_audit": [
+    {
+      "entropy_min": 0.0676,
+      "entropy_p25": 0.939423,
+      "entropy_median": 0.939463,
+      "entropy_p75": 0.940835,
+      "entropy_p90": 0.963018,
+      "entropy_p95": 1.010943,
+      "entropy_max": 1.073927,
+      "maxprob_min": 0.387999,
+      "maxprob_p25": 0.608436,
+      "maxprob_median": 0.60966,
+      "maxprob_p75": 0.609695,
+      "maxprob_p90": 0.609697,
+      "maxprob_p95": 0.609697,
+      "maxprob_max": 0.98911
+    }
+  ],
+  "composer_effect_audit": [
+    {
+      "composer_mode": "safe_structured_v2",
+      "prediction_source": "post_training_in_memory_best_state",
+      "composer_available_row_count": 1000,
+      "composer_unavailable_row_count": 0,
+      "changed_row_count": 2,
+      "changed_to_SUPPORT_count": 2,
+      "changed_to_REFUTE_count": 0,
+      "changed_to_NOT_ENTITLED_count": 0,
+      "recovery_fired_count": 0,
+      "blocker_fired_count": 0,
+      "stage43c2_composer_application_count": 2,
+      "stage43c2_composer_blocked_count": 0
+    }
+  ],
+  "interpretation": {
+    "primary_conclusion": "VitaminC failure is primarily a base prediction NOT_ENTITLED collapse under external-domain transfer.",
+    "not_primary_causes": [
+      "Stage45C recovery is not primary because recovery_fired_count=0.",
+      "Composer is not primary because changed_row_count is very small.",
+      "Label mapping mismatch is unlikely if same label mapping is confirmed.",
+      "Truncation is unlikely as primary if truncation rate remains low."
+    ],
+    "next_stage": "Stage56 should be a non-training diagnostic or small controlled bridge design, not composer threshold tuning on VitaminC."
+  },
+  "leakage_policy": {
+    "external_data_used_for_training": false,
+    "external_data_used_for_checkpoint_selection": false,
+    "external_data_used_for_threshold_tuning": false,
+    "external_data_used_for_diagnosis_only": true
+  }
+}
