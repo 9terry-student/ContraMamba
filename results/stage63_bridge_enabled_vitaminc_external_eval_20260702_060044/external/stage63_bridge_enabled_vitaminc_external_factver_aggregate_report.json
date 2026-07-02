@@ -1,0 +1,20 @@
+{
+  "decision": "STAGE43C0_EXTERNAL_FACTVER_AGGREGATE_INCOMPLETE",
+  "run_prefix": "stage63_bridge_enabled_vitaminc",
+  "input_reports": [
+    "results/stage63_bridge_enabled_vitaminc_external_eval_20260702_060044/external/stage63_bridge_enabled_vitaminc_stage43b1_vitaminc_validation_sample1000_external_factver_report.json"
+  ],
+  "per_dataset_decisions": {
+    "stage43b1_vitaminc_validation_sample1000": "STAGE43C0_EXTERNAL_FACTVER_INCOMPLETE"
+  },
+  "total_row_count": 1000,
+  "total_introduced_unsafe_SUPPORT": 0,
+  "total_introduced_REFUTE_to_SUPPORT": 0,
+  "total_introduced_SUPPORT_to_REFUTE": 0,
+  "all_evaluated_datasets_safe": false,
+  "any_evaluated_dataset_improved": false,
+  "recommendation": "At least one external dataset evaluation is incomplete; do not make external safety claims yet.",
+  "leakage_policy": "Stage43-B1 external fact-verification data is evaluation-only. It is not used for training, calibration, threshold selection, checkpoint selection, loss design, model selection, or composer behavior changes.",
+  "output_report_json": "results/stage63_bridge_enabled_vitaminc_external_eval_20260702_060044/external/stage63_bridge_enabled_vitaminc_external_factver_aggregate_report.json",
+  "output_report_md": "results/stage63_bridge_enabled_vitaminc_external_eval_20260702_060044/external/stage63_bridge_enabled_vitaminc_external_factver_aggregate_report.md"
+}

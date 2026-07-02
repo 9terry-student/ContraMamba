@@ -1,0 +1,122 @@
+{
+  "summary": {
+    "stage": "Stage63",
+    "decision": "STAGE63_BRIDGE_ENABLED_VITAMINC_EXTERNAL_DIAGNOSTIC_SUMMARY_READY",
+    "run_dir": "results/stage63_bridge_enabled_vitaminc_external_eval_20260702_060044",
+    "aggregate_decision": "STAGE43C0_EXTERNAL_FACTVER_AGGREGATE_INCOMPLETE",
+    "dataset_decision": "STAGE43C0_EXTERNAL_FACTVER_INCOMPLETE",
+    "row_count": 1000,
+    "stage63_base_accuracy": 0.322,
+    "stage63_base_macro_f1": 0.315319,
+    "stage63_composed_accuracy": 0.322,
+    "stage63_composed_macro_f1": 0.315319,
+    "stage63_delta_accuracy": 0.0,
+    "stage63_delta_macro_f1": 0.0,
+    "stage63_gold_label_counts": {
+      "NOT_ENTITLED": 145,
+      "REFUTE": 355,
+      "SUPPORT": 500
+    },
+    "stage63_base_prediction_counts": {
+      "REFUTE": 217,
+      "NOT_ENTITLED": 492,
+      "SUPPORT": 291
+    },
+    "stage63_composed_prediction_counts": {
+      "REFUTE": 217,
+      "NOT_ENTITLED": 492,
+      "SUPPORT": 291
+    },
+    "stage63_introduced_unsafe_SUPPORT_count": 0,
+    "stage63_introduced_REFUTE_to_SUPPORT_count": 0,
+    "stage63_introduced_SUPPORT_to_REFUTE_count": 0,
+    "stage63_changed_row_count": 0,
+    "stage63_recovery_fired_count": 0,
+    "stage63_blocker_fired_count": 0,
+    "stage57_bridge_train_enabled": true,
+    "stage57_bridge_train_mode": "append_train_only",
+    "stage57_bridge_train_row_count": 520,
+    "stage57_bridge_train_only": true,
+    "stage57_bridge_used_for_dev": false,
+    "stage57_bridge_used_for_checkpoint_selection": false,
+    "stage57_external_data_used_for_training": false,
+    "stage57_external_metrics_used_for_threshold_tuning": false,
+    "time_swap_used_in_main_clean_data": false
+  },
+  "stage53a_vs_stage63_metric_comparison": {
+    "stage53a_base_accuracy": 0.156,
+    "stage63_base_accuracy": 0.322,
+    "delta_base_accuracy": 0.166,
+    "stage53a_base_macro_f1": 0.115986,
+    "stage63_base_macro_f1": 0.315319,
+    "delta_base_macro_f1": 0.199333,
+    "stage53a_composed_accuracy": 0.156,
+    "stage63_composed_accuracy": 0.322,
+    "delta_composed_accuracy": 0.166,
+    "stage53a_composed_macro_f1": 0.116717,
+    "stage63_composed_macro_f1": 0.315319,
+    "delta_composed_macro_f1": 0.198602
+  },
+  "stage53a_vs_stage63_ne_collapse_comparison": {
+    "stage53a_base_NOT_ENTITLED": 946,
+    "stage63_base_NOT_ENTITLED": 492,
+    "delta_base_NOT_ENTITLED": -454,
+    "stage53a_composed_NOT_ENTITLED": 944,
+    "stage63_composed_NOT_ENTITLED": 492,
+    "delta_composed_NOT_ENTITLED": -452,
+    "stage53a_base_SUPPORT": 21,
+    "stage63_base_SUPPORT": 291,
+    "delta_base_SUPPORT": 270,
+    "stage53a_base_REFUTE": 33,
+    "stage63_base_REFUTE": 217,
+    "delta_base_REFUTE": 184
+  },
+  "distributions": [
+    {
+      "kind": "stage63_gold",
+      "NOT_ENTITLED": 145,
+      "REFUTE": 355,
+      "SUPPORT": 500
+    },
+    {
+      "kind": "stage63_base_prediction",
+      "REFUTE": 217,
+      "NOT_ENTITLED": 492,
+      "SUPPORT": 291
+    },
+    {
+      "kind": "stage63_composed_prediction",
+      "REFUTE": 217,
+      "NOT_ENTITLED": 492,
+      "SUPPORT": 291
+    },
+    {
+      "kind": "stage53a_base_prediction",
+      "REFUTE": 33,
+      "NOT_ENTITLED": 946,
+      "SUPPORT": 21
+    },
+    {
+      "kind": "stage53a_composed_prediction",
+      "REFUTE": 33,
+      "NOT_ENTITLED": 944,
+      "SUPPORT": 23
+    }
+  ],
+  "source_files": {
+    "run_dir": "results/stage63_bridge_enabled_vitaminc_external_eval_20260702_060044",
+    "train_report": "results/stage63_bridge_enabled_vitaminc_external_eval_20260702_060044/stage63_bridge_enabled_train_report.json",
+    "aggregate_report": "results/stage63_bridge_enabled_vitaminc_external_eval_20260702_060044/external/stage63_bridge_enabled_vitaminc_external_factver_aggregate_report.json",
+    "dataset_report": "results/stage63_bridge_enabled_vitaminc_external_eval_20260702_060044/external/stage63_bridge_enabled_vitaminc_stage43b1_vitaminc_validation_sample1000_external_factver_report.json",
+    "predictions": "results/stage63_bridge_enabled_vitaminc_external_eval_20260702_060044/external/stage63_bridge_enabled_vitaminc_stage43b1_vitaminc_validation_sample1000_external_factver_predictions.jsonl",
+    "stage53a_report": "results/stage53a_vitaminc_frozen_external_eval_20260702_045300/external/stage53a_vitaminc_frozen_stage43b1_vitaminc_validation_sample1000_external_factver_report.json"
+  },
+  "leakage_policy": {
+    "stage57_bridge_train_only": true,
+    "stage57_bridge_used_for_dev": false,
+    "stage57_bridge_used_for_checkpoint_selection": false,
+    "stage57_external_data_used_for_training": false,
+    "stage57_external_metrics_used_for_threshold_tuning": false,
+    "time_swap_used_in_main_clean_data": false
+  }
+}
