@@ -1,0 +1,644 @@
+{
+  "stage": "Stage58",
+  "decision": "STAGE58_BRIDGE_STATIC_AUDIT_READY",
+  "source_jsonl": "data/stage57_nonleaking_external_bridge.jsonl",
+  "source_stage57_audit": "results/stage57_nonleaking_external_bridge_audit.json",
+  "controlled_schema_reference": "data/controlled_v5_v3_without_time_swap.jsonl",
+  "row_count": 520,
+  "checks": {
+    "required_fields_present": true,
+    "label_mapping_ok": true,
+    "balance_ok": true,
+    "duplicate_ids_ok": true,
+    "duplicate_claim_evidence_label_ok": true,
+    "empty_required_fields_ok": true,
+    "forbidden_external_markers_ok": true,
+    "time_swap_absent": true,
+    "axis_consistency_ok": true,
+    "primary_failure_type_aware_axis_rule_used": true
+  },
+  "axis_rule": {
+    "name": "primary_failure_type_aware_v2",
+    "reason": "Frame-failure NOT_ENTITLED rows are allowed to have sufficiency_label=1 when the evidence contains a complete predicate/value for the wrong subject/frame. FrameGate blocks entitlement first."
+  },
+  "required_field_check": [
+    {
+      "field": "id",
+      "present": true,
+      "non_null_count": 520,
+      "unique_count": 520
+    },
+    {
+      "field": "pair_id",
+      "present": true,
+      "non_null_count": 520,
+      "unique_count": 200
+    },
+    {
+      "field": "claim",
+      "present": true,
+      "non_null_count": 520,
+      "unique_count": 280
+    },
+    {
+      "field": "evidence",
+      "present": true,
+      "non_null_count": 520,
+      "unique_count": 440
+    },
+    {
+      "field": "final_label",
+      "present": true,
+      "non_null_count": 520,
+      "unique_count": 3
+    },
+    {
+      "field": "label",
+      "present": true,
+      "non_null_count": 520,
+      "unique_count": 3
+    },
+    {
+      "field": "frame_compatible_label",
+      "present": true,
+      "non_null_count": 520,
+      "unique_count": 2
+    },
+    {
+      "field": "predicate_covered_label",
+      "present": true,
+      "non_null_count": 520,
+      "unique_count": 2
+    },
+    {
+      "field": "sufficiency_label",
+      "present": true,
+      "non_null_count": 520,
+      "unique_count": 2
+    },
+    {
+      "field": "polarity_label",
+      "present": true,
+      "non_null_count": 520,
+      "unique_count": 3
+    },
+    {
+      "field": "primary_failure_type",
+      "present": true,
+      "non_null_count": 520,
+      "unique_count": 4
+    },
+    {
+      "field": "intervention_type",
+      "present": true,
+      "non_null_count": 520,
+      "unique_count": 18
+    },
+    {
+      "field": "stage57_family",
+      "present": true,
+      "non_null_count": 520,
+      "unique_count": 1
+    },
+    {
+      "field": "stage57_bridge_family",
+      "present": true,
+      "non_null_count": 520,
+      "unique_count": 5
+    },
+    {
+      "field": "stage57_subtype",
+      "present": true,
+      "non_null_count": 520,
+      "unique_count": 30
+    },
+    {
+      "field": "stage57_generation_source",
+      "present": true,
+      "non_null_count": 520,
+      "unique_count": 1
+    },
+    {
+      "field": "stage57_leakage_policy",
+      "present": true,
+      "non_null_count": 520,
+      "unique_count": 1
+    }
+  ],
+  "label_mapping_check": [
+    {
+      "valid_label_ids": [
+        0,
+        1,
+        2
+      ],
+      "expected_mapping": {
+        "REFUTE": 0,
+        "NOT_ENTITLED": 1,
+        "SUPPORT": 2
+      },
+      "label_mapping_all_rows_ok": true,
+      "bad_label_row_count": 0
+    }
+  ],
+  "label_counts": [
+    {
+      "final_label": "REFUTE",
+      "label": 0,
+      "count": 160
+    },
+    {
+      "final_label": "NOT_ENTITLED",
+      "label": 1,
+      "count": 200
+    },
+    {
+      "final_label": "SUPPORT",
+      "label": 2,
+      "count": 160
+    }
+  ],
+  "family_counts": [
+    {
+      "stage57_bridge_family": "distractor_evidence_bridge",
+      "count": 40
+    },
+    {
+      "stage57_bridge_family": "entity_attribute_bridge",
+      "count": 120
+    },
+    {
+      "stage57_bridge_family": "lexical_paraphrase_bridge",
+      "count": 120
+    },
+    {
+      "stage57_bridge_family": "numeric_comparison_bridge",
+      "count": 120
+    },
+    {
+      "stage57_bridge_family": "temporal_comparison_bridge",
+      "count": 120
+    }
+  ],
+  "family_label_counts": [
+    {
+      "stage57_bridge_family": "distractor_evidence_bridge",
+      "final_label": "NOT_ENTITLED",
+      "label": 1,
+      "count": 40
+    },
+    {
+      "stage57_bridge_family": "entity_attribute_bridge",
+      "final_label": "REFUTE",
+      "label": 0,
+      "count": 40
+    },
+    {
+      "stage57_bridge_family": "entity_attribute_bridge",
+      "final_label": "NOT_ENTITLED",
+      "label": 1,
+      "count": 40
+    },
+    {
+      "stage57_bridge_family": "entity_attribute_bridge",
+      "final_label": "SUPPORT",
+      "label": 2,
+      "count": 40
+    },
+    {
+      "stage57_bridge_family": "lexical_paraphrase_bridge",
+      "final_label": "REFUTE",
+      "label": 0,
+      "count": 40
+    },
+    {
+      "stage57_bridge_family": "lexical_paraphrase_bridge",
+      "final_label": "NOT_ENTITLED",
+      "label": 1,
+      "count": 40
+    },
+    {
+      "stage57_bridge_family": "lexical_paraphrase_bridge",
+      "final_label": "SUPPORT",
+      "label": 2,
+      "count": 40
+    },
+    {
+      "stage57_bridge_family": "numeric_comparison_bridge",
+      "final_label": "REFUTE",
+      "label": 0,
+      "count": 40
+    },
+    {
+      "stage57_bridge_family": "numeric_comparison_bridge",
+      "final_label": "NOT_ENTITLED",
+      "label": 1,
+      "count": 40
+    },
+    {
+      "stage57_bridge_family": "numeric_comparison_bridge",
+      "final_label": "SUPPORT",
+      "label": 2,
+      "count": 40
+    },
+    {
+      "stage57_bridge_family": "temporal_comparison_bridge",
+      "final_label": "REFUTE",
+      "label": 0,
+      "count": 40
+    },
+    {
+      "stage57_bridge_family": "temporal_comparison_bridge",
+      "final_label": "NOT_ENTITLED",
+      "label": 1,
+      "count": 40
+    },
+    {
+      "stage57_bridge_family": "temporal_comparison_bridge",
+      "final_label": "SUPPORT",
+      "label": 2,
+      "count": 40
+    }
+  ],
+  "balance_checks": [
+    {
+      "check": "family_count",
+      "key": "entity_attribute_bridge",
+      "expected": 120,
+      "actual": 120,
+      "pass": true
+    },
+    {
+      "check": "family_count",
+      "key": "numeric_comparison_bridge",
+      "expected": 120,
+      "actual": 120,
+      "pass": true
+    },
+    {
+      "check": "family_count",
+      "key": "temporal_comparison_bridge",
+      "expected": 120,
+      "actual": 120,
+      "pass": true
+    },
+    {
+      "check": "family_count",
+      "key": "lexical_paraphrase_bridge",
+      "expected": 120,
+      "actual": 120,
+      "pass": true
+    },
+    {
+      "check": "family_count",
+      "key": "distractor_evidence_bridge",
+      "expected": 40,
+      "actual": 40,
+      "pass": true
+    },
+    {
+      "check": "family_label_count",
+      "key": "entity_attribute_bridge::REFUTE",
+      "expected": 40,
+      "actual": 40,
+      "pass": true
+    },
+    {
+      "check": "family_label_count",
+      "key": "entity_attribute_bridge::NOT_ENTITLED",
+      "expected": 40,
+      "actual": 40,
+      "pass": true
+    },
+    {
+      "check": "family_label_count",
+      "key": "entity_attribute_bridge::SUPPORT",
+      "expected": 40,
+      "actual": 40,
+      "pass": true
+    },
+    {
+      "check": "family_label_count",
+      "key": "numeric_comparison_bridge::REFUTE",
+      "expected": 40,
+      "actual": 40,
+      "pass": true
+    },
+    {
+      "check": "family_label_count",
+      "key": "numeric_comparison_bridge::NOT_ENTITLED",
+      "expected": 40,
+      "actual": 40,
+      "pass": true
+    },
+    {
+      "check": "family_label_count",
+      "key": "numeric_comparison_bridge::SUPPORT",
+      "expected": 40,
+      "actual": 40,
+      "pass": true
+    },
+    {
+      "check": "family_label_count",
+      "key": "temporal_comparison_bridge::REFUTE",
+      "expected": 40,
+      "actual": 40,
+      "pass": true
+    },
+    {
+      "check": "family_label_count",
+      "key": "temporal_comparison_bridge::NOT_ENTITLED",
+      "expected": 40,
+      "actual": 40,
+      "pass": true
+    },
+    {
+      "check": "family_label_count",
+      "key": "temporal_comparison_bridge::SUPPORT",
+      "expected": 40,
+      "actual": 40,
+      "pass": true
+    },
+    {
+      "check": "family_label_count",
+      "key": "lexical_paraphrase_bridge::REFUTE",
+      "expected": 40,
+      "actual": 40,
+      "pass": true
+    },
+    {
+      "check": "family_label_count",
+      "key": "lexical_paraphrase_bridge::NOT_ENTITLED",
+      "expected": 40,
+      "actual": 40,
+      "pass": true
+    },
+    {
+      "check": "family_label_count",
+      "key": "lexical_paraphrase_bridge::SUPPORT",
+      "expected": 40,
+      "actual": 40,
+      "pass": true
+    },
+    {
+      "check": "family_label_count",
+      "key": "distractor_evidence_bridge::NOT_ENTITLED",
+      "expected": 40,
+      "actual": 40,
+      "pass": true
+    }
+  ],
+  "duplicate_check": [
+    {
+      "duplicate_id_count": 0,
+      "duplicate_claim_evidence_label_count": 0
+    }
+  ],
+  "empty_required_fields": [
+    {
+      "field": "id",
+      "empty_count": 0
+    },
+    {
+      "field": "claim",
+      "empty_count": 0
+    },
+    {
+      "field": "evidence",
+      "empty_count": 0
+    },
+    {
+      "field": "final_label",
+      "empty_count": 0
+    },
+    {
+      "field": "stage57_bridge_family",
+      "empty_count": 0
+    }
+  ],
+  "forbidden_external_marker_hits": [],
+  "time_swap_hits": [],
+  "axis_consistency_checks": [
+    {
+      "check": "SUPPORT/REFUTE rows require frame_compatible_label=1",
+      "bad_count": 0,
+      "pass": true,
+      "rationale": "Entitled labels require a valid frame."
+    },
+    {
+      "check": "SUPPORT/REFUTE rows require predicate_covered_label=1",
+      "bad_count": 0,
+      "pass": true,
+      "rationale": "Entitled labels require predicate coverage."
+    },
+    {
+      "check": "SUPPORT/REFUTE rows require sufficiency_label=1",
+      "bad_count": 0,
+      "pass": true,
+      "rationale": "Entitled labels require sufficient evidence."
+    },
+    {
+      "check": "SUPPORT rows require polarity_label=SUPPORT",
+      "bad_count": 0,
+      "pass": true,
+      "rationale": "SUPPORT rows must have SUPPORT polarity."
+    },
+    {
+      "check": "REFUTE rows require polarity_label=REFUTE",
+      "bad_count": 0,
+      "pass": true,
+      "rationale": "REFUTE rows must have REFUTE polarity."
+    },
+    {
+      "check": "NOT_ENTITLED frame failures require frame_compatible_label=0",
+      "bad_count": 0,
+      "pass": true,
+      "rationale": "Frame-failure NE is caused by incompatible frame."
+    },
+    {
+      "check": "NOT_ENTITLED sufficiency failures require sufficiency_label=0",
+      "bad_count": 0,
+      "pass": true,
+      "rationale": "Sufficiency-failure NE must have insufficient evidence."
+    },
+    {
+      "check": "NOT_ENTITLED predicate failures require predicate_covered_label=0",
+      "bad_count": 0,
+      "pass": true,
+      "rationale": "Predicate-failure NE must lack predicate coverage."
+    },
+    {
+      "check": "NOT_ENTITLED rows require polarity_label=NONE",
+      "bad_count": 0,
+      "pass": true,
+      "rationale": "NE rows should not assert SUPPORT/REFUTE polarity."
+    },
+    {
+      "check": "NOT_ENTITLED rows require an allowed primary_failure_type",
+      "bad_count": 0,
+      "pass": true,
+      "rationale": "NE rows should be explained by frame, predicate, or sufficiency failure."
+    }
+  ],
+  "allowed_frame_failure_ne_with_sufficiency_1_count": 10,
+  "allowed_frame_failure_ne_with_sufficiency_1_sample": [
+    {
+      "_line_no": 491,
+      "id": "stage57_deb_wrong_subject_same_domain_0011__bridge_wrong_subject_same_domain",
+      "claim": "Frostpine Dynamics was founded in 1960.",
+      "evidence": "Solace Works was founded in 1960.",
+      "final_label": "NOT_ENTITLED",
+      "frame_compatible_label": 0,
+      "predicate_covered_label": 0,
+      "sufficiency_label": 1,
+      "polarity_label": "NONE",
+      "primary_failure_type": "frame",
+      "intervention_type": "bridge_wrong_subject_same_domain",
+      "stage57_bridge_family": "distractor_evidence_bridge",
+      "stage57_subtype": "wrong_subject_same_domain"
+    },
+    {
+      "_line_no": 492,
+      "id": "stage57_deb_wrong_subject_same_domain_0012__bridge_wrong_subject_same_domain",
+      "claim": "Cobalt Systems was founded in 1957.",
+      "evidence": "Northgate Systems was founded in 1957.",
+      "final_label": "NOT_ENTITLED",
+      "frame_compatible_label": 0,
+      "predicate_covered_label": 0,
+      "sufficiency_label": 1,
+      "polarity_label": "NONE",
+      "primary_failure_type": "frame",
+      "intervention_type": "bridge_wrong_subject_same_domain",
+      "stage57_bridge_family": "distractor_evidence_bridge",
+      "stage57_subtype": "wrong_subject_same_domain"
+    },
+    {
+      "_line_no": 493,
+      "id": "stage57_deb_wrong_subject_same_domain_0013__bridge_wrong_subject_same_domain",
+      "claim": "Solace Works was founded in 1965.",
+      "evidence": "Ironvale Assembly was founded in 1965.",
+      "final_label": "NOT_ENTITLED",
+      "frame_compatible_label": 0,
+      "predicate_covered_label": 0,
+      "sufficiency_label": 1,
+      "polarity_label": "NONE",
+      "primary_failure_type": "frame",
+      "intervention_type": "bridge_wrong_subject_same_domain",
+      "stage57_bridge_family": "distractor_evidence_bridge",
+      "stage57_subtype": "wrong_subject_same_domain"
+    },
+    {
+      "_line_no": 494,
+      "id": "stage57_deb_wrong_subject_same_domain_0014__bridge_wrong_subject_same_domain",
+      "claim": "Halcyon Collective was founded in 1982.",
+      "evidence": "Verdant Systems was founded in 1982.",
+      "final_label": "NOT_ENTITLED",
+      "frame_compatible_label": 0,
+      "predicate_covered_label": 0,
+      "sufficiency_label": 1,
+      "polarity_label": "NONE",
+      "primary_failure_type": "frame",
+      "intervention_type": "bridge_wrong_subject_same_domain",
+      "stage57_bridge_family": "distractor_evidence_bridge",
+      "stage57_subtype": "wrong_subject_same_domain"
+    },
+    {
+      "_line_no": 495,
+      "id": "stage57_deb_wrong_subject_same_domain_0015__bridge_wrong_subject_same_domain",
+      "claim": "Northgate Systems was founded in 1957.",
+      "evidence": "Cobalt Institute was founded in 1957.",
+      "final_label": "NOT_ENTITLED",
+      "frame_compatible_label": 0,
+      "predicate_covered_label": 0,
+      "sufficiency_label": 1,
+      "polarity_label": "NONE",
+      "primary_failure_type": "frame",
+      "intervention_type": "bridge_wrong_subject_same_domain",
+      "stage57_bridge_family": "distractor_evidence_bridge",
+      "stage57_subtype": "wrong_subject_same_domain"
+    },
+    {
+      "_line_no": 496,
+      "id": "stage57_deb_wrong_subject_same_domain_0016__bridge_wrong_subject_same_domain",
+      "claim": "Frostpine Assembly was founded in 1954.",
+      "evidence": "Amberline Collective was founded in 1954.",
+      "final_label": "NOT_ENTITLED",
+      "frame_compatible_label": 0,
+      "predicate_covered_label": 0,
+      "sufficiency_label": 1,
+      "polarity_label": "NONE",
+      "primary_failure_type": "frame",
+      "intervention_type": "bridge_wrong_subject_same_domain",
+      "stage57_bridge_family": "distractor_evidence_bridge",
+      "stage57_subtype": "wrong_subject_same_domain"
+    },
+    {
+      "_line_no": 497,
+      "id": "stage57_deb_wrong_subject_same_domain_0017__bridge_wrong_subject_same_domain",
+      "claim": "Frostpine Systems was founded in 1951.",
+      "evidence": "Frostpine Collective was founded in 1951.",
+      "final_label": "NOT_ENTITLED",
+      "frame_compatible_label": 0,
+      "predicate_covered_label": 0,
+      "sufficiency_label": 1,
+      "polarity_label": "NONE",
+      "primary_failure_type": "frame",
+      "intervention_type": "bridge_wrong_subject_same_domain",
+      "stage57_bridge_family": "distractor_evidence_bridge",
+      "stage57_subtype": "wrong_subject_same_domain"
+    },
+    {
+      "_line_no": 498,
+      "id": "stage57_deb_wrong_subject_same_domain_0018__bridge_wrong_subject_same_domain",
+      "claim": "Kestrel Institute was founded in 1979.",
+      "evidence": "Northgate Holdings was founded in 1979.",
+      "final_label": "NOT_ENTITLED",
+      "frame_compatible_label": 0,
+      "predicate_covered_label": 0,
+      "sufficiency_label": 1,
+      "polarity_label": "NONE",
+      "primary_failure_type": "frame",
+      "intervention_type": "bridge_wrong_subject_same_domain",
+      "stage57_bridge_family": "distractor_evidence_bridge",
+      "stage57_subtype": "wrong_subject_same_domain"
+    },
+    {
+      "_line_no": 499,
+      "id": "stage57_deb_wrong_subject_same_domain_0019__bridge_wrong_subject_same_domain",
+      "claim": "Solace Assembly was founded in 2015.",
+      "evidence": "Amberline Union was founded in 2015.",
+      "final_label": "NOT_ENTITLED",
+      "frame_compatible_label": 0,
+      "predicate_covered_label": 0,
+      "sufficiency_label": 1,
+      "polarity_label": "NONE",
+      "primary_failure_type": "frame",
+      "intervention_type": "bridge_wrong_subject_same_domain",
+      "stage57_bridge_family": "distractor_evidence_bridge",
+      "stage57_subtype": "wrong_subject_same_domain"
+    },
+    {
+      "_line_no": 500,
+      "id": "stage57_deb_wrong_subject_same_domain_0020__bridge_wrong_subject_same_domain",
+      "claim": "Amberline Works was founded in 1979.",
+      "evidence": "Cobalt Union was founded in 1979.",
+      "final_label": "NOT_ENTITLED",
+      "frame_compatible_label": 0,
+      "predicate_covered_label": 0,
+      "sufficiency_label": 1,
+      "polarity_label": "NONE",
+      "primary_failure_type": "frame",
+      "intervention_type": "bridge_wrong_subject_same_domain",
+      "stage57_bridge_family": "distractor_evidence_bridge",
+      "stage57_subtype": "wrong_subject_same_domain"
+    }
+  ],
+  "leakage_policy": {
+    "vitaminc_text_used_for_generation": false,
+    "vitaminc_labels_used_for_generation": false,
+    "external_metrics_used_for_threshold_tuning": false,
+    "synthetic_only": true,
+    "time_swap_used": false
+  },
+  "recommended_next_stage": "Stage59 bridge integration plan: define how to combine clean main data with Stage57 bridge data without using external data for threshold tuning or checkpoint selection."
+}
