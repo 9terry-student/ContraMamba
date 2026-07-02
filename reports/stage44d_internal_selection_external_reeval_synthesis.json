@@ -1,0 +1,123 @@
+﻿{
+  "decision": "STAGE44D_INTERNAL_SELECTION_NOT_CAUSE_EXTERNAL_COLLAPSE",
+  "stage44b2_internal_selection_summary": {
+    "decision": "STAGE44B2_PRIOR_AWARE_SELECTION_READY",
+    "selected_epoch": 47,
+    "original_best_metric_epoch": 47,
+    "internal_clean_dev_gold_label_rates": {
+      "NOT_ENTITLED": 0.75,
+      "REFUTE": 0.125,
+      "SUPPORT": 0.125
+    },
+    "selected_internal_metrics": {
+      "accuracy": 0.973611,
+      "macro_f1": 0.961893,
+      "not_entitled_prediction_rate": 0.726389,
+      "ne_pred_minus_gold_ne_rate": -0.023611,
+      "support_precision": 0.831776,
+      "support_recall": 0.988889,
+      "refute_precision": 1.0,
+      "refute_recall": 1.0
+    },
+    "interpretation": [
+      "The original best checkpoint already satisfies prior-aware anti-collapse constraints.",
+      "Internal clean-dev checkpoint selection is not the source of the external NOT_ENTITLED collapse."
+    ],
+    "fixed_cap_issue": "Stage44-B fixed NE cap was too aggressive because internal clean-dev gold NOT_ENTITLED prior was 0.75; Stage44-B2 uses the internal gold prior plus delta instead."
+  },
+  "stage44c_external_result_summary": {
+    "vitaminc": {
+      "dataset": "VitaminC validation sample1000",
+      "row_count": 1000,
+      "base_prediction_counts": {
+        "NOT_ENTITLED": 980,
+        "REFUTE": 14,
+        "SUPPORT": 6
+      },
+      "composed_prediction_counts": {
+        "NOT_ENTITLED": 979,
+        "REFUTE": 14,
+        "SUPPORT": 7
+      },
+      "base_macro_f1": 0.093653,
+      "composed_macro_f1": 0.095031,
+      "delta_macro_f1": 0.001378,
+      "changed_rows": 1,
+      "decision": "STAGE43C0_EXTERNAL_FACTVER_INCOMPLETE"
+    },
+    "climate_fever": {
+      "dataset": "Climate-FEVER test sample1000",
+      "row_count": 903,
+      "base_prediction_counts": {
+        "NOT_ENTITLED": 900,
+        "REFUTE": 3
+      },
+      "composed_prediction_counts": {
+        "NOT_ENTITLED": 898,
+        "REFUTE": 5
+      },
+      "base_macro_f1": 0.165973,
+      "composed_macro_f1": 0.174139,
+      "delta_macro_f1": 0.008166,
+      "changed_rows": 2,
+      "decision": "STAGE43C0_EXTERNAL_FACTVER_INCOMPLETE"
+    },
+    "interpretation": "The read-only external re-evaluation remains dominated by NOT_ENTITLED and does not support an external validation PASS."
+  },
+  "composer_path_summary": {
+    "safe_structured_v2_available_rows": {
+      "vitaminc": "1000/1000",
+      "climate_fever": "903/903"
+    },
+    "stage43c2_shadow_export_available": true,
+    "composer_changed_rows": {
+      "vitaminc": 1,
+      "climate_fever": 2
+    },
+    "interpretation": "The composer path is operational but does not solve base external collapse."
+  },
+  "safety_counter_summary": {
+    "introduced_unsafe_SUPPORT_count": 0,
+    "introduced_REFUTE_to_SUPPORT_count": 0,
+    "introduced_SUPPORT_to_REFUTE_count": 0,
+    "interpretation": "No newly introduced unsafe SUPPORT or REFUTE/SUPPORT flips were observed, but this is not an external PASS because performance remains collapsed and decisions remain INCOMPLETE."
+  },
+  "leakage_summary": {
+    "stage43b1_used_for_training": false,
+    "stage43b1_used_for_checkpoint_selection": false,
+    "stage43b1_used_for_threshold_selection": false,
+    "stage43b1_eval_timing": "post_training_after_best_state_restoration_only",
+    "stage44b2_selection_inputs": "internal clean-dev statistics only"
+  },
+  "main_conclusion": [
+    "External collapse is not caused by internal checkpoint selection collapse.",
+    "External collapse is not caused by missing composer fields.",
+    "External collapse is not explained by label mapping or truncation diagnostics from Stage43-C1.",
+    "The remaining explanation is distribution/generalization failure from controlled training to naturalistic fact-verification evidence.",
+    "Stage44-C does not support an external validation PASS."
+  ],
+  "allowed_claims": [
+    "Stage44-B2 prior-aware internal selection works.",
+    "The selected internal checkpoint satisfies internal anti-collapse constraints.",
+    "Stage44-C preserved external-evaluation-only leakage boundaries.",
+    "safe_structured_v2 was available on all external rows.",
+    "No introduced unsafe SUPPORT / REFUTE-to-SUPPORT / SUPPORT-to-REFUTE transitions were observed.",
+    "Internal checkpoint selection is not the proximate cause of external NOT_ENTITLED collapse."
+  ],
+  "disallowed_claims": [
+    "Do not claim external validation PASS.",
+    "Do not claim VitaminC transfer success.",
+    "Do not claim Climate-FEVER robustness.",
+    "Do not claim naturalistic fact-verification generalization.",
+    "Do not claim Stage44 improves external performance.",
+    "Do not use Stage43-B1 for tuning, calibration, thresholds, or future model selection."
+  ],
+  "recommendation": [
+    "Freeze Stage43/44 as honest negative external validation.",
+    "Next stage should be Stage45-A: internal-only generalization redesign plan.",
+    "Stage45 must not tune on Stage43-B1.",
+    "Any future model redesign should be pre-registered using internal/controlled data only.",
+    "If the model is redesigned after observing Stage43-B1 results, Stage43-B1 should be treated as no longer pristine for final external validation unless a new held-out external dataset is acquired."
+  ],
+  "next_stage": "Stage45-A: internal-only generalization redesign plan"
+}
