@@ -6829,6 +6829,17 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--stage43-external-enable-shadow-export",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage43-C2: during external fact-verification eval only, export the "
+            "Stage32/33/36/37 shadow fields required by Stage39 safe_structured_v2. "
+            "Export/composer diagnostic only; does not alter base predictions, "
+            "training, calibration, thresholds, or checkpoint selection."
+        ),
+    )
+    parser.add_argument(
         "--enable-stage43-external-eval",
         action="store_true",
         default=False,
@@ -7151,12 +7162,27 @@ def _stage43_factver_eval_args(args: argparse.Namespace) -> argparse.Namespace:
     prediction export path.
     """
     eval_args = argparse.Namespace(**vars(args))
+    shadow_export = bool(getattr(args, "stage43_external_enable_shadow_export", False))
+    if shadow_export:
+        eval_args.stage32_owner_state_export = True
+        eval_args.stage32_owner_state_shadow_mode = True
+        eval_args.stage33_use_structured_coverage_owner = True
+        eval_args.stage33_structured_coverage_owner_export = True
+        eval_args.stage33_structured_coverage_owner_shadow_mode = True
+        eval_args.stage33_structured_coverage_conditional_fallback = True
+        eval_args.stage36_use_support_safety_blockers = True
+        eval_args.stage36_support_safety_export = True
+        eval_args.stage36_support_safety_shadow_mode = True
+        eval_args.stage37_use_safe_support_recovery = True
+        eval_args.stage37_safe_support_export = True
+        eval_args.stage37_safe_support_shadow_mode = True
     eval_args.stage39_use_final_composer_opt_in = True
     eval_args.stage39_final_composer_export = True
     eval_args.stage39_final_composer_policy = "safe_structured_v2"
     eval_args.stage39_final_composer_output_mode = "export_only"
     if not getattr(eval_args, "stage39_final_composer_source", None):
         eval_args.stage39_final_composer_source = "stage37_final_shadow_label"
+    eval_args.stage43c2_shadow_export_enabled = shadow_export
     return eval_args
 
 
@@ -7180,6 +7206,26 @@ def _stage43_input_path_diagnostics(args: argparse.Namespace, max_length: int) -
         "prediction_export_path": "prediction_records_v6b with Stage39 export-only composer diagnostics",
         "tokenizer_source": "dummy_vocab" if args.backbone == "dummy" else getattr(args, "model_name", None),
         "max_length": max_length,
+        "stage43c2_shadow_export_enabled": bool(getattr(args, "stage43_external_enable_shadow_export", False)),
+        "stage43c2_reused_internal_export_path": "prediction_records_v6b -> build_stage32_owner_state -> compute_stage36_support_safety_blocker -> compute_stage37_safe_support_recovery -> compute_stage39_final_composer",
+        "stage43c2_forced_eval_only_exports": [
+            "stage32_owner_state_export",
+            "stage32_owner_state_shadow_mode",
+            "stage33_use_structured_coverage_owner",
+            "stage33_structured_coverage_owner_export",
+            "stage33_structured_coverage_owner_shadow_mode",
+            "stage33_structured_coverage_conditional_fallback",
+            "stage36_use_support_safety_blockers",
+            "stage36_support_safety_export",
+            "stage36_support_safety_shadow_mode",
+            "stage37_use_safe_support_recovery",
+            "stage37_safe_support_export",
+            "stage37_safe_support_shadow_mode",
+            "stage39_use_final_composer_opt_in",
+            "stage39_final_composer_export",
+            "stage39_final_composer_policy=safe_structured_v2",
+            "stage39_final_composer_output_mode=export_only",
+        ] if bool(getattr(args, "stage43_external_enable_shadow_export", False)) else [],
     }
 
 

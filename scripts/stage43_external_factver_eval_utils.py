@@ -60,6 +60,25 @@ STAGE43C1_FIELD_PRESENCE_KEYS = (
     "stage39_blocked_by_missing_source",
 )
 
+STAGE43C2_REQUIRED_SHADOW_FIELDS = (
+    "stage32_shadow_label",
+    "stage32_shadow_reason",
+    "stage33_structured_coverage_label",
+    "stage33_structured_coverage_reason",
+    "stage33_structured_coverage_route",
+    "stage36_final_shadow_label",
+    "stage36_support_blocker_fired",
+    "stage36_support_blocker_reasons",
+    "stage37_final_shadow_label",
+    "stage37_safe_recovery_fired",
+    "stage37_safe_recovery_reasons",
+    "stage37_recovered_from_label",
+    "stage39_source_shadow_label",
+    "stage39_composed_final_label",
+    "stage39_composer_action",
+    "stage39_composer_reason",
+)
+
 
 def normalize_label(raw: Any) -> str | None:
     if raw is None:
@@ -282,6 +301,95 @@ def _has_present_value(row: dict[str, Any], key: str) -> bool:
     return key in row and row.get(key) is not None
 
 
+def _build_stage43c2_diagnostics(
+    *,
+    prediction_rows: list[dict[str, Any]],
+    path_diagnostics: dict[str, Any],
+) -> dict[str, Any]:
+    enabled = bool(path_diagnostics.get("stage43c2_shadow_export_enabled", False))
+    row_count = len(prediction_rows)
+    present_counts = {key: 0 for key in STAGE43C2_REQUIRED_SHADOW_FIELDS}
+    non_null_counts = {key: 0 for key in STAGE43C2_REQUIRED_SHADOW_FIELDS}
+    blocked_reasons: Counter[str] = Counter()
+    application_count = 0
+    blocked_count = 0
+    for row in prediction_rows:
+        for key in present_counts:
+            if key in row:
+                present_counts[key] += 1
+            if key in row and row.get(key) is not None:
+                non_null_counts[key] += 1
+        action = str(row.get("stage39_composer_action") or "")
+        reason = str(row.get("stage39_composer_reason") or "")
+        if action.startswith("composed_to_"):
+            application_count += 1
+        elif action.startswith("blocked_by_"):
+            blocked_count += 1
+            blocked_reasons[reason or action] += 1
+
+    missing_dependencies: list[str] = []
+    if not enabled:
+        missing_dependencies.append("stage43_external_enable_shadow_export_disabled")
+    if enabled and row_count == 0:
+        missing_dependencies.append("no_prediction_rows_available_for_shadow_export")
+    if enabled and row_count:
+        for key, count in present_counts.items():
+            if count < row_count:
+                missing_dependencies.append(f"missing:{key}")
+        if non_null_counts.get("stage39_source_shadow_label", 0) < row_count:
+            missing_dependencies.append("missing_or_null:stage39_source_shadow_label")
+        if present_counts.get("stage32_shadow_label", 0) < row_count:
+            missing_dependencies.append("stage32_owner_state_export_or_shadow_owner_state_unavailable")
+        if present_counts.get("stage33_structured_coverage_label", 0) < row_count:
+            missing_dependencies.append("stage33_structured_coverage_owner_export_unavailable")
+        if present_counts.get("stage36_final_shadow_label", 0) < row_count:
+            missing_dependencies.append("stage36_support_safety_export_unavailable")
+        if present_counts.get("stage37_final_shadow_label", 0) < row_count:
+            missing_dependencies.append("stage37_safe_support_export_unavailable")
+        if present_counts.get("stage39_source_shadow_label", 0) < row_count:
+            missing_dependencies.append("stage39_source_shadow_label_unavailable")
+
+    shadow_available = bool(
+        enabled
+        and row_count > 0
+        and present_counts.get("stage37_final_shadow_label", 0) == row_count
+        and non_null_counts.get("stage39_source_shadow_label", 0) == row_count
+    )
+    if not enabled:
+        conclusion = (
+            "Stage43-C2 shadow export was not requested; safe_structured_v2 may remain unavailable if source shadow labels are absent."
+        )
+        next_action = "Run with --stage43-external-enable-shadow-export for diagnostic-only external shadow/composer export."
+    elif shadow_available:
+        conclusion = (
+            "Stage43-C2 shadow export produced Stage37 source shadow labels for every prediction row using the internal prediction_records_v6b export path."
+        )
+        next_action = (
+            "Inspect base-vs-composed metrics and safety counters; do not use Stage43-B1 labels for tuning, calibration, or selection."
+        )
+    else:
+        conclusion = (
+            "Stage43-C2 shadow export did not make safe_structured_v2 fully available; inspect missing dependencies before interpreting composed metrics."
+        )
+        next_action = (
+            "Enable or repair only the missing export-only shadow dependencies; do not fake fields or tune on external labels."
+        )
+
+    return {
+        "stage43c2_shadow_export_enabled": enabled,
+        "stage43c2_shadow_export_available": shadow_available,
+        "stage43c2_shadow_export_missing_dependencies": sorted(set(missing_dependencies)),
+        "stage43c2_required_shadow_fields_present_counts": present_counts,
+        "stage43c2_composer_application_count": application_count,
+        "stage43c2_composer_blocked_count": blocked_count,
+        "stage43c2_composer_blocked_reasons": dict(blocked_reasons),
+        "stage43c2_reused_internal_export_path": path_diagnostics.get("stage43c2_reused_internal_export_path"),
+        "stage43c2_forced_eval_only_exports": path_diagnostics.get("stage43c2_forced_eval_only_exports", []),
+        "stage43c2_conclusion": conclusion,
+        "stage43c2_next_action": next_action,
+    }
+
+
 def _sample_row(
     *,
     source_row: dict[str, Any],
@@ -452,6 +560,10 @@ def _build_stage43c1_diagnostics(
     diagnostic_next_action = (
         "For a future non-diagnostic stage, compare external formatting with controlled dev examples and enable/export the required Stage32/36/37 shadow structures before expecting safe_structured_v2 composition; do not tune thresholds or calibrate on Stage43-B1 labels."
     )
+    stage43c2_diagnostics = _build_stage43c2_diagnostics(
+        prediction_rows=prediction_rows,
+        path_diagnostics=path_diagnostics,
+    )
 
     return {
         "stage43c1_diagnostic_enabled": True,
@@ -485,7 +597,9 @@ def _build_stage43c1_diagnostics(
         "diagnostic_conclusion": diagnostic_conclusion,
         "diagnostic_next_action": diagnostic_next_action,
         "diagnostic_non_leakage_statement": LEAKAGE_POLICY,
+        **stage43c2_diagnostics,
     }
+
 
 def _incomplete_report(
     *,
@@ -768,6 +882,16 @@ def decide_stage43c0(report: dict[str, Any], input_row_count: int, composer_unav
             "STAGE43C0_EXTERNAL_FACTVER_INCOMPLETE",
             "Input has fewer than 100 rows or fewer than two labels represented.",
         )
+    unsafe = (
+        report["introduced_unsafe_SUPPORT_count"] > 0
+        or report["introduced_REFUTE_to_SUPPORT_count"] > 0
+        or report["introduced_SUPPORT_to_REFUTE_count"] > 0
+    )
+    if unsafe:
+        return (
+            "STAGE43C0_EXTERNAL_FACTVER_UNSAFE",
+            "Composition introduced unsafe SUPPORT or SUPPORT/REFUTE transition(s).",
+        )
     base_counts = report.get("base_prediction_counts") or {}
     not_entitled_rate = (
         int(base_counts.get("NOT_ENTITLED") or 0) / report["row_count"]
@@ -779,15 +903,14 @@ def decide_stage43c0(report: dict[str, Any], input_row_count: int, composer_unav
             "STAGE43C0_EXTERNAL_FACTVER_INCOMPLETE",
             "Diagnostic audit found prediction collapse dominated by NOT_ENTITLED; do not report this external result as PASS.",
         )
-    unsafe = (
-        report["introduced_unsafe_SUPPORT_count"] > 0
-        or report["introduced_REFUTE_to_SUPPORT_count"] > 0
-        or report["introduced_SUPPORT_to_REFUTE_count"] > 0
-    )
-    if unsafe:
+    if (
+        report.get("stage43c2_shadow_export_enabled")
+        and report.get("stage43c2_shadow_export_available")
+        and int(report.get("stage43c2_composer_application_count") or 0) == 0
+    ):
         return (
-            "STAGE43C0_EXTERNAL_FACTVER_UNSAFE",
-            "Composition introduced unsafe SUPPORT or SUPPORT/REFUTE transition(s).",
+            "STAGE43C0_EXTERNAL_FACTVER_INCOMPLETE",
+            "Stage43-C2 shadow fields were exported, but safe_structured_v2 did not compose any row; do not report this external result as PASS.",
         )
     if (
         all(label in report["gold_label_counts"] for label in LABELS)
@@ -978,6 +1101,38 @@ def render_report_markdown(report: dict[str, Any]) -> str:
                 "### Non-leakage statement",
                 "",
                 str(report.get("diagnostic_non_leakage_statement") or report.get("leakage_policy")),
+            ]
+        )
+    if "stage43c2_shadow_export_enabled" in report:
+        lines.extend(
+            [
+                "",
+                "## Stage43-C2 Shadow Export Audit",
+                "",
+                "```json",
+                json.dumps(
+                    {
+                        "stage43c2_shadow_export_enabled": report.get("stage43c2_shadow_export_enabled"),
+                        "stage43c2_shadow_export_available": report.get("stage43c2_shadow_export_available"),
+                        "stage43c2_shadow_export_missing_dependencies": report.get("stage43c2_shadow_export_missing_dependencies"),
+                        "stage43c2_required_shadow_fields_present_counts": report.get("stage43c2_required_shadow_fields_present_counts"),
+                        "stage43c2_composer_application_count": report.get("stage43c2_composer_application_count"),
+                        "stage43c2_composer_blocked_count": report.get("stage43c2_composer_blocked_count"),
+                        "stage43c2_composer_blocked_reasons": report.get("stage43c2_composer_blocked_reasons"),
+                        "stage43c2_reused_internal_export_path": report.get("stage43c2_reused_internal_export_path"),
+                        "stage43c2_forced_eval_only_exports": report.get("stage43c2_forced_eval_only_exports"),
+                    },
+                    indent=2,
+                ),
+                "```",
+                "",
+                "### Stage43-C2 conclusion",
+                "",
+                str(report.get("stage43c2_conclusion")),
+                "",
+                "### Stage43-C2 next action",
+                "",
+                str(report.get("stage43c2_next_action")),
             ]
         )
     lines.extend(
