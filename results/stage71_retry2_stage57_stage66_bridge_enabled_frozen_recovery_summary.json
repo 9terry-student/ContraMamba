@@ -1,0 +1,201 @@
+{
+  "summary": {
+    "stage": "Stage71_retry2",
+    "decision": "STAGE71_RETRY2_STAGE57_STAGE66_BRIDGE_ENABLED_FROZEN_RECOVERY_RUN_READY",
+    "run_dir": "results/stage71_retry2_stage57_stage66_bridge_enabled_frozen_recovery_run_20260702_072827",
+    "elapsed_min": 6.191,
+    "returncode": 0,
+    "best_epoch": 151,
+    "selected_epoch": 151,
+    "best_dev_acc": 0.9750000238418579,
+    "best_dev_accuracy": null,
+    "best_dev_macro_f1": 0.9640472521828455,
+    "dev_accuracy": null,
+    "dev_macro_f1": null,
+    "stage44b2_decision": "STAGE44B2_PRIOR_AWARE_SELECTION_DISABLED",
+    "stage44_decision": null,
+    "stage57_bridge_enabled": true,
+    "stage57_bridge_row_count": 520,
+    "stage57_bridge_train_only": true,
+    "stage57_used_for_dev": false,
+    "stage57_used_for_checkpoint_selection": false,
+    "stage66_bridge_enabled": true,
+    "stage66_bridge_row_count": 720,
+    "stage66_bridge_train_only": true,
+    "stage66_used_for_dev": false,
+    "stage66_used_for_checkpoint_selection": false,
+    "combined_bridge_enabled": true,
+    "combined_bridge_row_count": 1240,
+    "combined_bridge_train_only": true,
+    "clean_dev_for_checkpoint_selection": true,
+    "external_data_used_for_training": false,
+    "external_metrics_used_for_threshold_tuning": false,
+    "time_swap_used": false,
+    "bridge_rows_excluded_from_intervention_pairwise_loss": true,
+    "stage57_excluded_from_intervention_pairwise_loss": true,
+    "stage66_excluded_from_intervention_pairwise_loss": true,
+    "intervention_pairwise_loss_source": "clean_main_train_only",
+    "intervention_pairwise_loss_clean_main_row_count": 2880,
+    "intervention_pairwise_loss_bridge_row_count_excluded": 1240,
+    "intervention_pairwise_loss_stage57_row_count_excluded": 520,
+    "intervention_pairwise_loss_stage66_row_count_excluded": 720,
+    "training_executed": true,
+    "external_eval_executed": false,
+    "recommended_next_stage": "Stage72 compare Stage61 vs Stage71 retry2 clean-dev preservation"
+  },
+  "metadata_checks": [
+    {
+      "check": "train_report_exists",
+      "pass": true
+    },
+    {
+      "check": "predictions_json_exists",
+      "pass": true
+    },
+    {
+      "check": "stage57_bridge_enabled_true",
+      "pass": true
+    },
+    {
+      "check": "stage57_bridge_row_count_520",
+      "pass": true
+    },
+    {
+      "check": "stage57_train_only_true",
+      "pass": true
+    },
+    {
+      "check": "stage57_used_for_dev_false",
+      "pass": true
+    },
+    {
+      "check": "stage57_used_for_checkpoint_false",
+      "pass": true
+    },
+    {
+      "check": "stage66_bridge_enabled_true",
+      "pass": true
+    },
+    {
+      "check": "stage66_bridge_row_count_720",
+      "pass": true
+    },
+    {
+      "check": "stage66_train_only_true",
+      "pass": true
+    },
+    {
+      "check": "stage66_used_for_dev_false",
+      "pass": true
+    },
+    {
+      "check": "stage66_used_for_checkpoint_false",
+      "pass": true
+    },
+    {
+      "check": "combined_bridge_enabled_true",
+      "pass": true
+    },
+    {
+      "check": "combined_bridge_row_count_1240",
+      "pass": true
+    },
+    {
+      "check": "combined_bridge_train_only_true",
+      "pass": true
+    },
+    {
+      "check": "clean_dev_for_checkpoint_selection_true",
+      "pass": true
+    },
+    {
+      "check": "external_data_used_for_training_false",
+      "pass": true
+    },
+    {
+      "check": "external_metrics_used_for_threshold_tuning_false",
+      "pass": true
+    },
+    {
+      "check": "time_swap_used_false",
+      "pass": true
+    },
+    {
+      "check": "bridge_rows_excluded_from_pairwise_true",
+      "pass": true
+    },
+    {
+      "check": "stage57_excluded_from_pairwise_true",
+      "pass": true
+    },
+    {
+      "check": "stage66_excluded_from_pairwise_true",
+      "pass": true
+    },
+    {
+      "check": "pairwise_loss_source_clean_main_train_only",
+      "pass": true
+    },
+    {
+      "check": "pairwise_clean_main_count_2880",
+      "pass": true
+    },
+    {
+      "check": "pairwise_bridge_excluded_count_1240",
+      "pass": true
+    },
+    {
+      "check": "pairwise_stage57_excluded_count_520",
+      "pass": true
+    },
+    {
+      "check": "pairwise_stage66_excluded_count_720",
+      "pass": true
+    }
+  ],
+  "extracted_report_fields": {
+    "best_epoch": 151,
+    "selected_epoch": 151,
+    "best_dev_acc": 0.9750000238418579,
+    "best_dev_accuracy": null,
+    "best_dev_macro_f1": 0.9640472521828455,
+    "dev_accuracy": null,
+    "dev_macro_f1": null,
+    "stage44b2_decision": "STAGE44B2_PRIOR_AWARE_SELECTION_DISABLED",
+    "stage44_decision": null,
+    "stage57_bridge_enabled": true,
+    "stage57_bridge_row_count": 520,
+    "stage57_bridge_train_only": true,
+    "stage57_used_for_dev": false,
+    "stage57_used_for_checkpoint_selection": false,
+    "stage66_bridge_enabled": true,
+    "stage66_bridge_row_count": 720,
+    "stage66_bridge_train_only": true,
+    "stage66_used_for_dev": false,
+    "stage66_used_for_checkpoint_selection": false,
+    "combined_bridge_enabled": true,
+    "combined_bridge_row_count": 1240,
+    "combined_bridge_train_only": true,
+    "clean_dev_for_checkpoint_selection": true,
+    "external_data_used_for_training": false,
+    "external_metrics_used_for_threshold_tuning": false,
+    "time_swap_used": false,
+    "bridge_rows_excluded_from_intervention_pairwise_loss": true,
+    "stage57_excluded_from_intervention_pairwise_loss": true,
+    "stage66_excluded_from_intervention_pairwise_loss": true,
+    "intervention_pairwise_loss_source": "clean_main_train_only",
+    "intervention_pairwise_loss_clean_main_row_count": 2880,
+    "intervention_pairwise_loss_bridge_row_count_excluded": 1240,
+    "intervention_pairwise_loss_stage57_row_count_excluded": 520,
+    "intervention_pairwise_loss_stage66_row_count_excluded": 720
+  },
+  "source_files": {
+    "train_report": "results/stage71_retry2_stage57_stage66_bridge_enabled_frozen_recovery_run_20260702_072827/stage71_retry2_stage57_stage66_train_report.json",
+    "predictions_json": "results/stage71_retry2_stage57_stage66_bridge_enabled_frozen_recovery_run_20260702_072827/stage71_retry2_stage57_stage66_predictions.json",
+    "stdout_log": "results/stage71_retry2_stage57_stage66_bridge_enabled_frozen_recovery_run_20260702_072827/stage71_retry2_stdout.log",
+    "command_json": "results/stage71_retry2_stage57_stage66_bridge_enabled_frozen_recovery_run_20260702_072827/stage71_retry2_command.json",
+    "selection_report": "results/stage71_retry2_stage57_stage66_bridge_enabled_frozen_recovery_run_20260702_072827/stage71_retry2_stage44_selection_report.json",
+    "recovery_report_json": "results/stage71_retry2_stage57_stage66_bridge_enabled_frozen_recovery_run_20260702_072827/stage71_retry2_stage45c_recovery_report.json",
+    "recovery_report_md": "results/stage71_retry2_stage57_stage66_bridge_enabled_frozen_recovery_run_20260702_072827/stage71_retry2_stage45c_recovery_report.md"
+  }
+}
