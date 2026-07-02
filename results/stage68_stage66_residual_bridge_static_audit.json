@@ -1,0 +1,394 @@
+{
+  "summary": {
+    "stage": "Stage68",
+    "decision": "STAGE68_STAGE66_RESIDUAL_BRIDGE_STATIC_AUDIT_READY",
+    "row_count": 720,
+    "stage67_audit_decision": "STAGE67_STAGE66_RESIDUAL_BRIDGE_DATA_READY",
+    "stage66_design_decision": "STAGE66_RESIDUAL_BRIDGE_EXPANSION_DESIGN_READY",
+    "computed_ready": true,
+    "label_counts": {
+      "SUPPORT": 360,
+      "REFUTE": 320,
+      "NOT_ENTITLED": 40
+    },
+    "family_counts": {
+      "support_entitlement_recovery_bridge": 200,
+      "refute_entitlement_recovery_bridge": 160,
+      "polarity_disambiguation_bridge": 200,
+      "numeric_temporal_comparison_bridge": 120,
+      "strict_ne_frame_safety_bridge": 40
+    },
+    "family_label_counts": [
+      {
+        "stage66_family": "numeric_temporal_comparison_bridge",
+        "final_label": "REFUTE",
+        "count": 60
+      },
+      {
+        "stage66_family": "numeric_temporal_comparison_bridge",
+        "final_label": "SUPPORT",
+        "count": 60
+      },
+      {
+        "stage66_family": "polarity_disambiguation_bridge",
+        "final_label": "REFUTE",
+        "count": 100
+      },
+      {
+        "stage66_family": "polarity_disambiguation_bridge",
+        "final_label": "SUPPORT",
+        "count": 100
+      },
+      {
+        "stage66_family": "refute_entitlement_recovery_bridge",
+        "final_label": "REFUTE",
+        "count": 160
+      },
+      {
+        "stage66_family": "strict_ne_frame_safety_bridge",
+        "final_label": "NOT_ENTITLED",
+        "count": 40
+      },
+      {
+        "stage66_family": "support_entitlement_recovery_bridge",
+        "final_label": "SUPPORT",
+        "count": 200
+      }
+    ],
+    "subtype_count": 28,
+    "stage57_row_count": 520,
+    "id_overlap_with_stage57_count": 0,
+    "claim_evidence_overlap_with_stage57_count": 0,
+    "recommended_next_stage": "Stage69 Stage57 + Stage66 bridge integration plan"
+  },
+  "checks": [
+    {
+      "check": "row_count_ok",
+      "pass": true
+    },
+    {
+      "check": "label_counts_ok",
+      "pass": true
+    },
+    {
+      "check": "family_counts_ok",
+      "pass": true
+    },
+    {
+      "check": "family_label_counts_ok",
+      "pass": true
+    },
+    {
+      "check": "required_fields_ok",
+      "pass": true
+    },
+    {
+      "check": "duplicate_ids_ok",
+      "pass": true
+    },
+    {
+      "check": "duplicate_claim_evidence_pairs_ok",
+      "pass": true
+    },
+    {
+      "check": "label_mapping_ok",
+      "pass": true
+    },
+    {
+      "check": "axis_consistency_ok",
+      "pass": true
+    },
+    {
+      "check": "known_family_names_ok",
+      "pass": true
+    },
+    {
+      "check": "bridge_family_equals_family_ok",
+      "pass": true
+    },
+    {
+      "check": "target_error_mapping_ok",
+      "pass": true
+    },
+    {
+      "check": "generation_source_ok",
+      "pass": true
+    },
+    {
+      "check": "leakage_policy_ok",
+      "pass": true
+    },
+    {
+      "check": "forbidden_text_markers_ok",
+      "pass": true
+    },
+    {
+      "check": "no_id_overlap_with_stage57",
+      "pass": true
+    },
+    {
+      "check": "no_claim_evidence_overlap_with_stage57",
+      "pass": true
+    },
+    {
+      "check": "stage67_audit_ready",
+      "pass": true
+    },
+    {
+      "check": "stage66_design_ready",
+      "pass": true
+    }
+  ],
+  "label_counts": [
+    {
+      "final_label": "NOT_ENTITLED",
+      "count": 40,
+      "expected": 40
+    },
+    {
+      "final_label": "REFUTE",
+      "count": 320,
+      "expected": 320
+    },
+    {
+      "final_label": "SUPPORT",
+      "count": 360,
+      "expected": 360
+    }
+  ],
+  "family_counts": [
+    {
+      "stage66_family": "numeric_temporal_comparison_bridge",
+      "count": 120,
+      "expected": 120
+    },
+    {
+      "stage66_family": "polarity_disambiguation_bridge",
+      "count": 200,
+      "expected": 200
+    },
+    {
+      "stage66_family": "refute_entitlement_recovery_bridge",
+      "count": 160,
+      "expected": 160
+    },
+    {
+      "stage66_family": "strict_ne_frame_safety_bridge",
+      "count": 40,
+      "expected": 40
+    },
+    {
+      "stage66_family": "support_entitlement_recovery_bridge",
+      "count": 200,
+      "expected": 200
+    }
+  ],
+  "family_label_counts": [
+    {
+      "stage66_family": "numeric_temporal_comparison_bridge",
+      "final_label": "REFUTE",
+      "count": 60,
+      "expected": 60
+    },
+    {
+      "stage66_family": "numeric_temporal_comparison_bridge",
+      "final_label": "SUPPORT",
+      "count": 60,
+      "expected": 60
+    },
+    {
+      "stage66_family": "polarity_disambiguation_bridge",
+      "final_label": "REFUTE",
+      "count": 100,
+      "expected": 100
+    },
+    {
+      "stage66_family": "polarity_disambiguation_bridge",
+      "final_label": "SUPPORT",
+      "count": 100,
+      "expected": 100
+    },
+    {
+      "stage66_family": "refute_entitlement_recovery_bridge",
+      "final_label": "REFUTE",
+      "count": 160,
+      "expected": 160
+    },
+    {
+      "stage66_family": "strict_ne_frame_safety_bridge",
+      "final_label": "NOT_ENTITLED",
+      "count": 40,
+      "expected": 40
+    },
+    {
+      "stage66_family": "support_entitlement_recovery_bridge",
+      "final_label": "SUPPORT",
+      "count": 200,
+      "expected": 200
+    }
+  ],
+  "target_error_counts": [
+    {
+      "stage66_target_error": "REFUTE_SUPPORT_polarity_confusion",
+      "count": 200
+    },
+    {
+      "stage66_target_error": "false_NE_on_REFUTE",
+      "count": 160
+    },
+    {
+      "stage66_target_error": "false_NE_on_SUPPORT",
+      "count": 200
+    },
+    {
+      "stage66_target_error": "false_SUPPORT_or_REFUTE_on_NE",
+      "count": 40
+    },
+    {
+      "stage66_target_error": "numeric_temporal_comparative_residuals",
+      "count": 120
+    }
+  ],
+  "subtype_counts": [
+    {
+      "stage66_subtype": "album_film_work_support",
+      "count": 33
+    },
+    {
+      "stage66_subtype": "before_after_pair",
+      "count": 34
+    },
+    {
+      "stage66_subtype": "before_after_refute",
+      "count": 20
+    },
+    {
+      "stage66_subtype": "before_after_support",
+      "count": 20
+    },
+    {
+      "stage66_subtype": "date_release_birth_support",
+      "count": 33
+    },
+    {
+      "stage66_subtype": "direct_attribute_support",
+      "count": 34
+    },
+    {
+      "stage66_subtype": "founded_released_born_date_pair",
+      "count": 32
+    },
+    {
+      "stage66_subtype": "is_a_vs_is_not_a_type_pair",
+      "count": 32
+    },
+    {
+      "stage66_subtype": "more_than_less_than_pair",
+      "count": 34
+    },
+    {
+      "stage66_subtype": "number_word_equivalence_support",
+      "count": 20
+    },
+    {
+      "stage66_subtype": "numeric_threshold_refute",
+      "count": 20
+    },
+    {
+      "stage66_subtype": "partial_attribute_without_entitlement_ne",
+      "count": 10
+    },
+    {
+      "stage66_subtype": "positive_review_vs_negative_review_pair",
+      "count": 34
+    },
+    {
+      "stage66_subtype": "profession_role_support",
+      "count": 34
+    },
+    {
+      "stage66_subtype": "quantity_paraphrase_support",
+      "count": 33
+    },
+    {
+      "stage66_subtype": "related_entity_distractor_ne",
+      "count": 10
+    },
+    {
+      "stage66_subtype": "review_sentiment_support",
+      "count": 33
+    },
+    {
+      "stage66_subtype": "same_domain_missing_predicate_ne",
+      "count": 10
+    },
+    {
+      "stage66_subtype": "same_value_vs_conflicting_value_pair",
+      "count": 34
+    },
+    {
+      "stage66_subtype": "wrong_creator_director_refute",
+      "count": 26
+    },
+    {
+      "stage66_subtype": "wrong_date_refute",
+      "count": 27
+    },
+    {
+      "stage66_subtype": "wrong_location_refute",
+      "count": 27
+    },
+    {
+      "stage66_subtype": "wrong_numeric_threshold_refute",
+      "count": 26
+    },
+    {
+      "stage66_subtype": "wrong_role_refute",
+      "count": 27
+    },
+    {
+      "stage66_subtype": "wrong_subject_same_predicate_ne",
+      "count": 10
+    },
+    {
+      "stage66_subtype": "wrong_type_refute",
+      "count": 27
+    },
+    {
+      "stage66_subtype": "year_exact_match_support",
+      "count": 20
+    },
+    {
+      "stage66_subtype": "year_mismatch_refute",
+      "count": 20
+    }
+  ],
+  "failure_previews": {
+    "missing_required": [],
+    "bad_label_rows": [],
+    "bad_axis_rows": [],
+    "bad_family_rows": [],
+    "bad_bridge_family_rows": [],
+    "bad_target_error_rows": [],
+    "forbidden_hits": [],
+    "id_overlap_with_stage57": [],
+    "pair_overlap_with_stage57": []
+  },
+  "source_files": {
+    "stage66_bridge_jsonl": "data/stage66_residual_bridge.jsonl",
+    "stage67_generation_audit_json": "results/stage67_stage66_residual_bridge_generation_audit.json",
+    "stage67_generation_audit_md": "results/stage67_stage66_residual_bridge_generation_audit.md",
+    "stage66_design_json": "results/stage66_residual_bridge_expansion_design.json",
+    "stage57_bridge_jsonl": "data/stage57_nonleaking_external_bridge.jsonl"
+  },
+  "leakage_policy": {
+    "training_executed": false,
+    "external_eval_executed": false,
+    "vitaminc_text_used_for_generation": false,
+    "vitaminc_labels_used_for_generation": false,
+    "stage65_residual_samples_used_as_templates": false,
+    "stage65_error_taxonomy_used_for_quota_only": true,
+    "time_swap_used": false,
+    "external_metrics_used_for_threshold_tuning": false
+  }
+}
