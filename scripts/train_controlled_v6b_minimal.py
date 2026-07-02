@@ -3847,7 +3847,7 @@ def _stage37_config_from_args(args: "argparse.Namespace") -> dict[str, Any]:
     }
 
 
-# ?€?€ Stage39-A: opt-in final composer (prediction/export-time only) ?€?€?€?€?€?€?€?€?€?€
+#  Stage39-A: opt-in final composer (prediction/export-time only) 
 #
 # Off by default. Reuses the Stage32/Stage33/Stage36/Stage37 shadow labels
 # already computed above; never touches final logits, training, or loss.
@@ -4449,23 +4449,23 @@ def prediction_records_v6b(
         support_prob = _s28e_safe_float(probs_row[2])
 
         item: dict[str, Any] = {
-            # ?€?€ Stable identity ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+            #  Stable identity 
             "stable_id": stable_id,
             "source_id": source_id,
             "pair_id": pair_id,
             "example_index": index,
-            # ?€?€ Text ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+            #  Text 
             "claim": record.get("claim"),
             "evidence": record.get("evidence"),
-            # ?€?€ Intervention ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+            #  Intervention 
             "intervention": record.get("intervention_type"),
             "normalized_intervention": norm_intervention,
             "diagnostic_axis": diagnostic_axis,
-            # ?€?€ Gold labels ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+            #  Gold labels 
             "gold_label_raw": gold_raw,
             "gold_label": gold_label,
             "gold_label_id": gold_label_id,
-            # ?€?€ Predicted labels ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+            #  Predicted labels 
             "pred_label_id": pred_id,
             "pred_label": pred_label,
             "pred_label_raw": pred_label,
@@ -4473,7 +4473,7 @@ def prediction_records_v6b(
             "is_false_support": is_false_support,
             "is_location_false_support": is_location_false_support,
             "is_role_false_support": is_role_false_support,
-            # ?€?€ Final logits / probs (order: REFUTE=0, NOT_ENTITLED=1, SUPPORT=2) ?€?€
+            #  Final logits / probs (order: REFUTE=0, NOT_ENTITLED=1, SUPPORT=2) 
             "final_logits": final_logits,
             "final_probs": final_probs_list,
             "refute_logit": refute_logit,
@@ -4482,11 +4482,11 @@ def prediction_records_v6b(
             "refute_prob": refute_prob,
             "ne_prob": ne_prob,
             "support_prob": support_prob,
-            # ?€?€ Existing v6b diagnostic scalars ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+            #  Existing v6b diagnostic scalars 
             **{key: float(scalars[key][index]) for key in scalar_keys if key in scalars},
-            # ?€?€ Gold auxiliary labels (when present in source record) ?€?€?€?€?€?€?€?€?€
+            #  Gold auxiliary labels (when present in source record) 
             **{key: record[key] for key in _S28E_AUX_LABEL_KEYS if key in record},
-            # ?€?€ V7/H1 diagnostic scalars (absent on v6b_minimal runs) ?€?€?€?€?€?€?€?€?€
+            #  V7/H1 diagnostic scalars (absent on v6b_minimal runs) 
             **{key: float(v7_scalars[key][index]) for key in _S28E_V7_SCALAR_KEYS
                if key in v7_scalars},
             **(
@@ -4505,7 +4505,7 @@ def prediction_records_v6b(
                 and output.get("coverage_entailment_pred_label") is not None
                 else {}
             ),
-            # ?€?€ Legacy backward-compat fields ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+            #  Legacy backward-compat fields 
             **(
                 flatten_stage32_owner_state(stage32_owner_state)
                 if stage32_owner_state is not None
@@ -4515,14 +4515,14 @@ def prediction_records_v6b(
             "intervention_type": record.get("intervention_type"),
             "gold_final_label": gold_raw,
             "pred_final_label": pred_label,
-            # ?€?€ Shallow raw record snapshot ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+            #  Shallow raw record snapshot 
             "raw_record": {k: record[k] for k in _S28E_RAW_RECORD_KEYS if k in record},
         }
         for metadata_key in _S28E_PRESERVED_METADATA_KEYS:
             if metadata_key in record:
                 item[metadata_key] = record[metadata_key]
 
-        # ?€?€ Stage36-A: conservative support-safety blockers (shadow-only) ?€?€?€?€?€?€
+        #  Stage36-A: conservative support-safety blockers (shadow-only) 
         _stage37_stage36_info: dict[str, Any] = {}
         if (
             stage36_support_safety_config is not None
@@ -4605,7 +4605,7 @@ def prediction_records_v6b(
                 if item.get("stage33_conditional_shadow_label") is not None:
                     item["stage33_conditional_shadow_label"] = _stage36_final_label
 
-        # ?€?€ Stage37-A: conservative safe SUPPORT recovery (shadow-only) ?€?€?€?€?€?€?€?€
+        #  Stage37-A: conservative safe SUPPORT recovery (shadow-only) 
         # Runs strictly after Stage36's post-blocker shadow label is known and
         # never overrides a fired Stage36 blocker.
         _stage39_stage37_info: dict[str, Any] = {}
@@ -4687,7 +4687,7 @@ def prediction_records_v6b(
                 if item.get("stage33_conditional_shadow_label") is not None:
                     item["stage33_conditional_shadow_label"] = _stage37_final_label
 
-        # ?€?€ Stage39-A: opt-in final composer (prediction/export-time only) ?€?€?€?€?€
+        #  Stage39-A: opt-in final composer (prediction/export-time only) 
         # Runs strictly after Stage37's final shadow label is known. Off by
         # default: no stage39_* fields are added and pred_final_label is
         # untouched unless --stage39-use-final-composer-opt-in (and, to
@@ -5406,7 +5406,7 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    # ?€?€ Temporal residual adapter ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+    #  Temporal residual adapter 
     # A 2-layer MLP adapter that absorbs temporal diagnostic supervision without propagating
     # gradients into the shared frame_pair_repr / FrameGate representation.
     # Architecture: Linear(frame_size, frame_size//2) ??GELU ??Linear(frame_size//2, 1)
@@ -5486,7 +5486,7 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    # ?€?€ TemporalChannel V1 (v6C Lean) ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+    #  TemporalChannel V1 (v6C Lean) 
     # Default off. Independent temporal channel reading from cat([claim_frame_state,
     # evidence_frame_state]) ??NOT frame_pair_repr ??to avoid Stage23 gradient coupling.
     # Stage15 OOD is eval-only and is NEVER used for TC loss, calibration, or penalty selection.
@@ -5572,7 +5572,7 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    # ?€?€ Stage26-A: v7 Hierarchical Entitlement architecture ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+    #  Stage26-A: v7 Hierarchical Entitlement architecture 
     # Default: architecture=v6b_minimal (full backward compatibility; no v6B behavior changes).
     # Set --architecture v7_hierarchical to use ContraMambaV7Hierarchical instead.
     # v7 flags below are only consulted when architecture==v7_hierarchical; they have no
@@ -5716,7 +5716,7 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    # ?€?€ Stage28-I-A: independent location-boundary cap/head ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+    #  Stage28-I-A: independent location-boundary cap/head 
     # All off by default. Preserves all current Stage27/Stage28 behavior when disabled.
     # Only meaningful for --architecture v7_hierarchical.
     parser.add_argument(
@@ -5781,7 +5781,7 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    # ?€?€ Stage30-C2: independent temporal-safety cap/head ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+    #  Stage30-C2: independent temporal-safety cap/head 
     # All off by default. Preserves all current Stage28-I behavior when disabled.
     # Only meaningful for --architecture v7_hierarchical with --v7-use-v6b-style-final-decision.
     parser.add_argument(
@@ -5868,7 +5868,7 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    # ?€?€ Stage30-D: representation-decomposed temporal mismatch multihead ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+    #  Stage30-D: representation-decomposed temporal mismatch multihead 
     parser.add_argument(
         "--v7-use-temporal-mismatch-multihead",
         action="store_true",
@@ -5887,7 +5887,7 @@ def build_parser() -> argparse.ArgumentParser:
         default=False,
         help=(
             "Stage30-D: Enable auxiliary BCE training for the temporal mismatch multihead. "
-            "Reads stage30_temporal_safe_label (0?’mismatch=1, 1?’safe=0) or "
+            "Reads stage30_temporal_safe_label (0->mismatch=1, 1->safe=0) or "
             "falls back to intervention_type (time_swap??, none/paraphrase??). "
             "Requires --v7-use-temporal-mismatch-multihead and "
             "--v7-temporal-mismatch-multihead-data. Default off."
@@ -5969,7 +5969,7 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    # ?€?€ Stage30-E: temporal residual preservation-aware cap ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+    #  Stage30-E: temporal residual preservation-aware cap 
     # Reuses Stage30-D temporal_mismatch_fused_prob as the soft risk signal.
     # Adds a narrow TemporalPreservationSignal head for the preservation signal.
     # Cannot combine Stage30-E preservation-aware cap with Stage30-D direct cap.
@@ -6366,7 +6366,7 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    # ?€?€ Stage36-A: conservative support-safety blockers (shadow-only) ?€?€?€?€?€?€?€?€
+    #  Stage36-A: conservative support-safety blockers (shadow-only) 
     # All off by default. When off, behavior is identical to Stage33-F. When on,
     # blockers only affect exported shadow/diagnostic SUPPORT overrides -- never
     # final logits or final classifier predictions.
@@ -6445,7 +6445,7 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    # ?€?€ Stage37-A: conservative safe SUPPORT recovery (shadow-only) ?€?€?€?€?€?€?€?€?€?€
+    #  Stage37-A: conservative safe SUPPORT recovery (shadow-only) 
     # All off by default. When off, behavior is identical to Stage36-A. When on,
     # recovery only affects exported shadow/diagnostic SUPPORT overrides -- never
     # final logits or final classifier predictions, and never overrides a fired
@@ -6514,7 +6514,7 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    # ?€?€ Stage39-A: opt-in final composer validation (prediction/export-time) ?€
+    #  Stage39-A: opt-in final composer validation (prediction/export-time) 
     # All off by default. When off, final predictions/metrics/exported labels
     # are identical to Stage38/Stage37. When on, composes a candidate final
     # label from a Stage37/Stage36/Stage32 shadow label under deterministic
@@ -6634,7 +6634,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--v7-entitlement-loss-weight", type=float, default=0.0,
         help="v7: EntitlementGate auxiliary BCE loss weight. Default 0.0.")
 
-    # ?€?€ Stage26-G: v7 stabilization options ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+    #  Stage26-G: v7 stabilization options 
     # All off by default. Clean-data supervision only. No Stage15. No OOD. No time_swap.
     parser.add_argument("--v7-use-polarity-margin-loss", action="store_true", default=False,
         help=(
@@ -6682,7 +6682,7 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    # ?€?€ Generic preservation-constrained checkpoint selection ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+    #  Generic preservation-constrained checkpoint selection 
     # Default off. Uses ONLY clean dev pairwise checks ??no Stage15/OOD, no temporal diagnostic
     # metrics. Compatible with baseline, TD, TA, PE, and future runs. Cannot be combined with
     # --use-td-constrained-selection (raises a clear error).
@@ -7662,7 +7662,7 @@ def main(argv: list[str] | None = None) -> int:
     # It has no text comprehension capacity; metrics it produces are not
     # claim-worthy. Require --allow-dummy-backbone to proceed.
     # ---------------------------------------------------------------------------
-    # ?€?€ Stage28-I-A: location boundary flag validation ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+    #  Stage28-I-A: location boundary flag validation 
     _use_lb_head = getattr(args, "v7_use_location_boundary_head", False)
     _use_lb_loss = getattr(args, "v7_use_location_boundary_loss", False)
     _lb_cap_mode = getattr(args, "v7_location_boundary_cap_mode", "none")
@@ -7683,7 +7683,7 @@ def main(argv: list[str] | None = None) -> int:
             f"--v7-location-boundary-cap-gamma must be > 0, got {_lb_cap_gamma!r}."
         )
 
-    # ?€?€ Stage30-C2: temporal safety flag validation ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+    #  Stage30-C2: temporal safety flag validation 
     _use_ts_head = getattr(args, "v7_use_temporal_safety_head", False)
     _use_ts_loss = getattr(args, "v7_use_temporal_safety_loss", False)
     _ts_cap_mode = getattr(args, "v7_temporal_safety_cap_mode", "none")
@@ -7721,7 +7721,7 @@ def main(argv: list[str] | None = None) -> int:
                 "into the main clean controlled train/eval classification data."
             )
 
-    # ?€?€ Stage30-D: temporal mismatch multihead flag validation ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+    #  Stage30-D: temporal mismatch multihead flag validation 
     _use_tmm = getattr(args, "v7_use_temporal_mismatch_multihead", False)
     _use_tmm_loss = getattr(args, "v7_use_temporal_mismatch_multihead_loss", False)
     _tmm_cap_mode = getattr(args, "v7_temporal_mismatch_multihead_cap_mode", "none")
@@ -8831,14 +8831,14 @@ def main(argv: list[str] | None = None) -> int:
         _tc_td_final_control_preservation: float = float("nan")
         _tc_td_final_binary_accuracy: float = float("nan")
 
-        # ?€?€ Audit ledger: loss accumulators (reporting only; no effect on training) ?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+        #  Audit ledger: loss accumulators (reporting only; no effect on training) 
         # Per-epoch raw (pre-weight) and weighted (actual contribution to total_loss) loss values.
         # Both lists grow one entry per epoch and are indexed by epoch-1 at ledger build time.
         _audit_per_epoch_raw: list[dict] = []
         _audit_per_epoch_weighted: list[dict] = []
         _audit_epoch_count: int = 0
 
-        # ?€?€ Stage26-F: v7 epoch diagnostic history ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+        #  Stage26-F: v7 epoch diagnostic history 
         # Per-epoch dev metric snapshots stored for post-hoc diagnosis (e.g. label collapse
         # trajectory, channel prob trends).  Reporting only; no effect on training or selection.
         _v7_epoch_history: list[dict[str, Any]] = []
@@ -9168,7 +9168,7 @@ def main(argv: list[str] | None = None) -> int:
                     _pc_loss = F.relu(pc_margin - _margins).mean()
                     total_loss = total_loss + pc_loss_weight * _pc_loss
 
-            # ?€?€ Stage26-G: v7 polarity margin auxiliary loss ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+            #  Stage26-G: v7 polarity margin auxiliary loss 
             # Hinge margin loss on v7_polarity_support/refute_logit.
             # Applied only to gold SUPPORT and REFUTE examples; NOT_ENTITLED excluded.
             # Does NOT replace CE. CE continues using output["logits"]. No loss_logits.
@@ -9202,7 +9202,7 @@ def main(argv: list[str] | None = None) -> int:
                         _v7_pm_loss = torch.cat(_pm_parts).mean()
                         total_loss = total_loss + args.v7_polarity_margin_loss_weight * _v7_pm_loss
 
-            # ?€?€ Stage26-G: v7 entitlement BCE auxiliary loss ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+            #  Stage26-G: v7 entitlement BCE auxiliary loss 
             # BCE on v7_entitlement_logit with ground-truth entitled target derived from labels:
             #   entitled=1 for SUPPORT (2) and REFUTE (0) ??these require a polarity judgment
             #   entitled=0 for NOT_ENTITLED (1) ??evidence fails to entitle a polarity judgment
@@ -9229,7 +9229,7 @@ def main(argv: list[str] | None = None) -> int:
                     )
                     total_loss = total_loss + args.v7_entitlement_bce_loss_weight * _v7_ent_bce_loss
 
-            # ?€?€ Stage26-G: v7 entitled class-balanced CE ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+            #  Stage26-G: v7 entitled class-balanced CE 
             # Auxiliary CE over SUPPORT/REFUTE examples only, using v7_polarity_logits [B, 2].
             # Local labels: REFUTE (gold=0) ??local 0; SUPPORT (gold=2) ??local 1.
             # NOT_ENTITLED examples are excluded entirely.
@@ -9253,7 +9253,7 @@ def main(argv: list[str] | None = None) -> int:
                         _v7_ecb_loss = F.cross_entropy(_ecb_pol_sub, _ecb_local_labels)
                         total_loss = total_loss + args.v7_entitled_class_balanced_ce_weight * _v7_ecb_loss
 
-            # ?€?€ Stage28-I-A: v7 location boundary BCE auxiliary loss ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+            #  Stage28-I-A: v7 location boundary BCE auxiliary loss 
             # Target: 0 for location_swap; 1 for none/paraphrase/polarity_flip.
             # All other intervention types are excluded from this loss.
             # Stage15/OOD is not used for this loss or target selection.
@@ -9292,7 +9292,7 @@ def main(argv: list[str] | None = None) -> int:
                             + args.v7_location_boundary_loss_weight * _v7_lb_loss
                         )
 
-            # ?€?€ Stage30-C2: v7 temporal safety BCE auxiliary loss ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+            #  Stage30-C2: v7 temporal safety BCE auxiliary loss 
             # Separate forward pass on temporal safety diagnostic records.
             # Records are NOT in the main clean train/dev; no classification CE here.
             # Stage15/OOD is eval-only and is NEVER used here.
@@ -9335,7 +9335,7 @@ def main(argv: list[str] | None = None) -> int:
                             )
                         total_loss = total_loss + ts_loss_weight * _v7_ts_loss
 
-            # ?€?€ Stage30-D: v7 temporal mismatch multihead BCE auxiliary loss ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+            #  Stage30-D: v7 temporal mismatch multihead BCE auxiliary loss 
             # Separate forward pass on temporal mismatch diagnostic records.
             # Records are NOT in the main clean train/dev; no classification CE here.
             # Stage15/OOD is eval-only and is NEVER used here.
@@ -9386,11 +9386,11 @@ def main(argv: list[str] | None = None) -> int:
                                 )
                             _tmm_per_head_losses.append(_h_loss)
                     if _tmm_per_head_losses:
-                        # Mean for scale stability (3 heads ??3Ã— scale without mean)
+                        # Mean for scale stability (3 heads ??3 scale without mean)
                         _v7_tmm_loss = sum(_tmm_per_head_losses) / len(_tmm_per_head_losses)
                         total_loss = total_loss + tmm_loss_weight * _v7_tmm_loss
 
-            # ?€?€ Stage30-E: v7 temporal preservation head BCE auxiliary loss ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+            #  Stage30-E: v7 temporal preservation head BCE auxiliary loss 
             # Separate forward pass on temporal preservation diagnostic records.
             # Labels: 1 = preserved (none/paraphrase), 0 = not preserved (time_swap).
             # Stage15/OOD data must not be in the data file.
@@ -9463,7 +9463,7 @@ def main(argv: list[str] | None = None) -> int:
                     )
                     total_loss = total_loss + covent_loss_weight * _v7_covent_loss
 
-            # ?€?€ Audit ledger accumulation (reporting only; does not affect gradients) ?€?€?€?€?€?€?€?€?€
+            #  Audit ledger accumulation (reporting only; does not affect gradients) 
             # raw = loss value before weight multiplication; weighted = actual total_loss contribution
             _ep_ce_raw = float(losses["label"].item())
             _ep_ai_val = (
@@ -9560,7 +9560,7 @@ def main(argv: list[str] | None = None) -> int:
                 "total_loss": _ep_total,
             })
             _audit_epoch_count += 1
-            # ?€?€ end audit accumulation ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+            #  end audit accumulation 
 
             total_loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
@@ -10110,7 +10110,7 @@ def main(argv: list[str] | None = None) -> int:
                             "count_by_frame_construction_type": _pc_frame_type_counts,
                         }
 
-            # ?€?€ Stage26-F: record per-epoch dev snapshot ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+            #  Stage26-F: record per-epoch dev snapshot 
             # All values come from dev_metrics (already computed) and dev_output (already
             # available in no_grad context).  No new forward passes.  Reporting only.
             _v7_ep_snap: dict[str, Any] = {
@@ -10146,7 +10146,7 @@ def main(argv: list[str] | None = None) -> int:
             else:
                 _v7_ep_snap["v7_logit_summary"] = None
             _v7_epoch_history.append(_v7_ep_snap)
-            # ?€?€ end Stage26-F epoch snapshot ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+            #  end Stage26-F epoch snapshot 
 
             print(
                 f"run={run_name} "
@@ -10394,7 +10394,7 @@ def main(argv: list[str] | None = None) -> int:
             ),
         }
 
-        # ?€?€ Build run-level audit ledger (reporting only; no model/loss/logit change) ?€?€?€?€?€?€?€?€?€?€
+        #  Build run-level audit ledger (reporting only; no model/loss/logit change) 
         _n = max(_audit_epoch_count, 1)
 
         def _avg_epoch_dicts(dicts: list[dict]) -> dict[str, float]:
@@ -10616,7 +10616,7 @@ def main(argv: list[str] | None = None) -> int:
                 ),
                 "weight": getattr(args, "v7_entitled_class_balanced_ce_weight", 0.0),
                 "target": "v7_polarity_logits",
-                "target_derivation": "REFUTE?’local_0, SUPPORT?’local_1 (NOT_ENTITLED excluded)",
+                "target_derivation": "REFUTE->local_0, SUPPORT->local_1 (NOT_ENTITLED excluded)",
                 "stage15_used_for_selection_or_calibration": False,
                 "ood_used": False,
                 "raw_loss_key": "v7_entitled_class_balanced_ce_loss",
@@ -10954,7 +10954,7 @@ def main(argv: list[str] | None = None) -> int:
                 "no epoch satisfied preservation constraints; using unconstrained best epoch"
             )
 
-        # ?€?€ Stage26-F extended: build v7 collapse and logit diagnostics ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+        #  Stage26-F extended: build v7 collapse and logit diagnostics 
         # No new forward passes.  All values derived from already-computed variables.
         # _best_dev_output_v7 : CPU tensors from the unconstrained-best epoch (may differ
         #                       from checkpointed epoch if TC/PCS selection applied).
@@ -11048,7 +11048,7 @@ def main(argv: list[str] | None = None) -> int:
                 "v7_refute_recall": _per_label.get("REFUTE", {}).get("recall"),
                 "v7_ne_recall": _per_label.get("NOT_ENTITLED", {}).get("recall"),
             }
-        # ?€?€ end Stage26-F extended ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+        #  end Stage26-F extended 
 
         _run_audit_ledger: dict[str, Any] = {
             "active_training_losses": _active_training_losses,
