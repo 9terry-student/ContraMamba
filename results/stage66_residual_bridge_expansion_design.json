@@ -1,0 +1,253 @@
+{
+  "summary": {
+    "stage": "Stage66",
+    "decision": "STAGE66_RESIDUAL_BRIDGE_EXPANSION_DESIGN_READY",
+    "basis": "Stage65 residual Stage63 external error audit",
+    "row_count_stage65": 1000,
+    "error_count_stage65": 678,
+    "false_ne_total": 411,
+    "polarity_error_total": 203,
+    "false_entitlement_total": 64,
+    "primary_design_goal": "Reduce remaining false NOT_ENTITLED on gold SUPPORT/REFUTE while improving REFUTE/SUPPORT polarity separation.",
+    "stage66_incremental_rows": 720,
+    "stage57_existing_rows": 520,
+    "combined_bridge_rows_if_stage57_plus_stage66": 1240,
+    "stage66_label_plan": {
+      "SUPPORT": 360,
+      "REFUTE": 320,
+      "NOT_ENTITLED": 40
+    },
+    "combined_stage57_stage66_label_plan": {
+      "SUPPORT": 520,
+      "REFUTE": 480,
+      "NOT_ENTITLED": 240
+    },
+    "recommended_generation_mode": "synthetic_nonleaking_residual_bridge",
+    "recommended_integration_mode": "append_train_only_after_clean_split",
+    "recommended_next_stage": "Stage67 implement synthetic Stage66 residual bridge generator",
+    "allowed_claim": "Stage66 defines a non-leaking synthetic residual bridge expansion plan based on Stage65 error taxonomy and counts.",
+    "forbidden_claim": "Do not claim Stage66 uses VitaminC residual text for training; it only uses residual error taxonomy/counts to set synthetic quotas."
+  },
+  "proposed_bridge_families": [
+    {
+      "stage66_family": "support_entitlement_recovery_bridge",
+      "primary_target_error": "false_NE_on_SUPPORT",
+      "planned_rows": 200,
+      "label_plan": {
+        "SUPPORT": 200,
+        "REFUTE": 0,
+        "NOT_ENTITLED": 0
+      },
+      "purpose": "Teach the model that semantically sufficient evidence should license SUPPORT instead of defaulting to NOT_ENTITLED.",
+      "synthetic_pattern_types": [
+        "direct_attribute_support",
+        "profession_role_support",
+        "album_film_work_support",
+        "quantity_paraphrase_support",
+        "date_release_birth_support",
+        "review_sentiment_support"
+      ],
+      "must_not_use": [
+        "Do not copy VitaminC claims/evidence.",
+        "Do not paraphrase Stage65 residual sample rows.",
+        "Do not use external labels or texts."
+      ]
+    },
+    {
+      "stage66_family": "refute_entitlement_recovery_bridge",
+      "primary_target_error": "false_NE_on_REFUTE",
+      "planned_rows": 160,
+      "label_plan": {
+        "SUPPORT": 0,
+        "REFUTE": 160,
+        "NOT_ENTITLED": 0
+      },
+      "purpose": "Teach the model that same-frame predicate/value conflict should license REFUTE instead of NOT_ENTITLED.",
+      "synthetic_pattern_types": [
+        "wrong_type_refute",
+        "wrong_role_refute",
+        "wrong_location_refute",
+        "wrong_date_refute",
+        "wrong_numeric_threshold_refute",
+        "wrong_creator_director_refute"
+      ],
+      "must_not_use": [
+        "Do not copy VitaminC residual examples.",
+        "Do not use real external examples as templates.",
+        "Use synthetic entities and synthetic facts only."
+      ]
+    },
+    {
+      "stage66_family": "polarity_disambiguation_bridge",
+      "primary_target_error": "REFUTE_SUPPORT_polarity_confusion",
+      "planned_rows": 200,
+      "label_plan": {
+        "SUPPORT": 100,
+        "REFUTE": 100,
+        "NOT_ENTITLED": 0
+      },
+      "purpose": "Separate SUPPORT vs REFUTE when frame and predicate are covered but polarity/value relation differs.",
+      "synthetic_pattern_types": [
+        "more_than_less_than_pair",
+        "before_after_pair",
+        "same_value_vs_conflicting_value_pair",
+        "positive_review_vs_negative_review_pair",
+        "is_a_vs_is_not_a_type_pair",
+        "founded_released_born_date_pair"
+      ],
+      "must_not_use": [
+        "Do not tune composer thresholds.",
+        "Do not add external evaluation examples.",
+        "Pairs must be synthetic controlled contrasts."
+      ]
+    },
+    {
+      "stage66_family": "numeric_temporal_comparison_bridge",
+      "primary_target_error": "numeric_temporal_comparative_residuals",
+      "planned_rows": 120,
+      "label_plan": {
+        "SUPPORT": 60,
+        "REFUTE": 60,
+        "NOT_ENTITLED": 0
+      },
+      "purpose": "Reinforce entitlement and polarity in digit/year/comparison-heavy cases identified by Stage65 feature audit.",
+      "synthetic_pattern_types": [
+        "number_word_equivalence_support",
+        "numeric_threshold_refute",
+        "year_exact_match_support",
+        "year_mismatch_refute",
+        "before_after_support",
+        "before_after_refute"
+      ],
+      "must_not_use": [
+        "Do not import time_swap rows.",
+        "Do not use corrupted temporal examples.",
+        "Use only newly generated synthetic numeric/temporal facts."
+      ]
+    },
+    {
+      "stage66_family": "strict_ne_frame_safety_bridge",
+      "primary_target_error": "false_SUPPORT_or_REFUTE_on_NE",
+      "planned_rows": 40,
+      "label_plan": {
+        "SUPPORT": 0,
+        "REFUTE": 0,
+        "NOT_ENTITLED": 40
+      },
+      "purpose": "Keep a small safety anchor for related-but-insufficient evidence so positive-skewed residual bridges do not over-entitle.",
+      "synthetic_pattern_types": [
+        "wrong_subject_same_predicate_ne",
+        "related_entity_distractor_ne",
+        "same_domain_missing_predicate_ne",
+        "partial_attribute_without_entitlement_ne"
+      ],
+      "must_not_use": [
+        "Do not increase NE rows enough to reintroduce collapse.",
+        "Do not use VitaminC text.",
+        "Do not use time_swap."
+      ]
+    }
+  ],
+  "stage66_incremental_label_plan": {
+    "SUPPORT": 360,
+    "REFUTE": 320,
+    "NOT_ENTITLED": 40
+  },
+  "stage57_existing_label_counts": {
+    "SUPPORT": 160,
+    "REFUTE": 160,
+    "NOT_ENTITLED": 200
+  },
+  "combined_stage57_stage66_label_plan": {
+    "SUPPORT": 520,
+    "REFUTE": 480,
+    "NOT_ENTITLED": 240
+  },
+  "bridge_ratio_plan": {
+    "stage57_existing_rows": 520,
+    "stage66_incremental_rows": 720,
+    "combined_bridge_rows": 1240,
+    "main_rows": 3600,
+    "stage66_ratio_vs_main": 0.2,
+    "combined_bridge_ratio_vs_main": 0.34444444444444444
+  },
+  "leakage_constraints": [
+    {
+      "constraint": "synthetic_only",
+      "requirement": "All Stage66 rows must be generated from synthetic templates only.",
+      "reason": "Avoid external leakage from Stage63/Stage65 VitaminC residuals."
+    },
+    {
+      "constraint": "no_vitaminc_text_or_labels",
+      "requirement": "Stage65 residual samples may inform taxonomy/quota only; their claim/evidence text must not be copied, paraphrased, or templated.",
+      "reason": "Stage66 must remain non-leaking."
+    },
+    {
+      "constraint": "no_time_swap",
+      "requirement": "Do not use data/controlled_v5_v3.jsonl time_swap rows or any corrupted temporal examples.",
+      "reason": "time_swap is excluded from main classification training."
+    },
+    {
+      "constraint": "train_only_append",
+      "requirement": "Stage66 bridge may be appended to train only after clean main split; never to dev/checkpoint selection.",
+      "reason": "Preserve clean-dev evaluation validity."
+    },
+    {
+      "constraint": "no_external_threshold_tuning",
+      "requirement": "Do not use VitaminC metrics to tune composer/recovery thresholds.",
+      "reason": "Stage63 is diagnostic, not a tuning target."
+    },
+    {
+      "constraint": "positive_skew_with_ne_safety",
+      "requirement": "Stage66 is SUPPORT/REFUTE-heavy but keeps small NE safety rows.",
+      "reason": "Residual failure is dominated by false NE, but false entitlement must remain bounded."
+    }
+  ],
+  "implementation_plan": [
+    {
+      "next_stage": "Stage67",
+      "task": "Implement synthetic Stage66 residual bridge generator.",
+      "expected_outputs": [
+        "scripts/write_stage66_residual_bridge.py",
+        "data/stage66_residual_bridge.jsonl",
+        "results/stage67_stage66_residual_bridge_generation_audit.json",
+        "results/stage67_stage66_residual_bridge_generation_audit.md"
+      ],
+      "allowed_execution": "local/static generation only; no model training."
+    },
+    {
+      "next_stage": "Stage68",
+      "task": "Static audit of generated Stage66 residual bridge.",
+      "expected_outputs": [
+        "results/stage68_stage66_residual_bridge_static_audit.json",
+        "results/stage68_stage66_residual_bridge_static_audit.md"
+      ],
+      "allowed_execution": "dataset audit only; no model training."
+    },
+    {
+      "next_stage": "Stage69",
+      "task": "Runner integration plan for Stage57 + Stage66 bridge train-only append.",
+      "expected_outputs": [
+        "results/stage69_stage57_stage66_bridge_integration_plan.json",
+        "results/stage69_stage57_stage66_bridge_integration_plan.md"
+      ],
+      "allowed_execution": "report-only or runner static patch planning; no external tuning."
+    }
+  ],
+  "source_files": {
+    "stage65_residual_error_audit": "results/stage65_residual_stage63_external_error_audit.json",
+    "stage64_external_improvement_audit": "results/stage64_stage53a_vs_stage63_external_improvement_audit.json",
+    "stage59_bridge_integration_plan": "results/stage59_bridge_integration_plan.json",
+    "stage57_bridge_data": "data/stage57_nonleaking_external_bridge.jsonl"
+  },
+  "leakage_policy": {
+    "training_executed": false,
+    "external_eval_executed": false,
+    "vitaminc_text_used_for_generation": false,
+    "vitaminc_labels_used_for_generation": false,
+    "stage65_residual_samples_used_as_templates": false,
+    "stage65_error_taxonomy_used_for_quota_only": true,
+    "time_swap_used": false,
+    "external_metrics_used_for_threshold_tuning": false
+  }
+}
