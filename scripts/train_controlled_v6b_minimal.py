@@ -8444,7 +8444,8 @@ def main(argv: list[str] | None = None) -> int:
                 "Loss will be zero."
             )
         else:
-            # encode_temporal_safety_labels: safe=1 (none/paraphrase) = preserved=1 ??            _tpres_train_labels, _tpres_train_mask = encode_temporal_safety_labels(
+            # encode_temporal_safety_labels: safe=1 (none/paraphrase) = preserved=1; time_swap = preserved=0.
+            _tpres_train_labels, _tpres_train_mask = encode_temporal_safety_labels(
                 _tpres_train_records, device
             )
             if args.backbone == "dummy":
