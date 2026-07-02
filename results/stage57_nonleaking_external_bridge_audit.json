@@ -1,0 +1,77 @@
+{
+  "stage": "Stage57",
+  "decision": "STAGE57_NONLEAKING_EXTERNAL_BRIDGE_DATA_READY",
+  "source_stage56_design": "results/stage56_nonleaking_external_transfer_bridge_design.json",
+  "stage56_design_file_found": true,
+  "generation_config": {
+    "seed": 57,
+    "examples_per_family_label": 40
+  },
+  "output_jsonl": "data/stage57_nonleaking_external_bridge.jsonl",
+  "total_rows": 520,
+  "counts_by_label": {
+    "SUPPORT": 160,
+    "REFUTE": 160,
+    "NOT_ENTITLED": 200
+  },
+  "counts_by_bridge_family": {
+    "entity_attribute_bridge": 120,
+    "numeric_comparison_bridge": 120,
+    "temporal_comparison_bridge": 120,
+    "lexical_paraphrase_bridge": 120,
+    "distractor_evidence_bridge": 40
+  },
+  "counts_by_bridge_family_and_label": {
+    "entity_attribute_bridge": {
+      "SUPPORT": 40,
+      "REFUTE": 40,
+      "NOT_ENTITLED": 40
+    },
+    "numeric_comparison_bridge": {
+      "SUPPORT": 40,
+      "REFUTE": 40,
+      "NOT_ENTITLED": 40
+    },
+    "temporal_comparison_bridge": {
+      "SUPPORT": 40,
+      "REFUTE": 40,
+      "NOT_ENTITLED": 40
+    },
+    "lexical_paraphrase_bridge": {
+      "SUPPORT": 40,
+      "REFUTE": 40,
+      "NOT_ENTITLED": 40
+    },
+    "distractor_evidence_bridge": {
+      "NOT_ENTITLED": 40
+    }
+  },
+  "bridge_families": [
+    "entity_attribute_bridge",
+    "numeric_comparison_bridge",
+    "temporal_comparison_bridge",
+    "lexical_paraphrase_bridge",
+    "distractor_evidence_bridge"
+  ],
+  "label_mapping": {
+    "REFUTE": 0,
+    "NOT_ENTITLED": 1,
+    "SUPPORT": 2
+  },
+  "leakage_policy": {
+    "vitaminc_text_used_for_generation": false,
+    "vitaminc_labels_used_for_generation": false,
+    "external_metrics_used_for_threshold_tuning": false,
+    "synthetic_only": true
+  },
+  "notes": [
+    "This dataset is synthetic training/diagnostic data only. It is NOT an external evaluation result and must not be reported as VitaminC or any other external-benchmark metric.",
+    "This dataset must not be mixed with corrupted time_swap rows from data/controlled_v5_v3.jsonl; temporal bridge rows here are freshly generated and independent of that corruption.",
+    "No VitaminC/Climate-FEVER text, labels, ids, or examples were read or used to produce any row in this file."
+  ],
+  "recommended_next_stage": {
+    "stage": "Stage58",
+    "name": "bridge dataset static audit / schema check",
+    "scope": "Validate schema, label balance, and non-leakage of this bridge dataset before any training uses it."
+  }
+}
