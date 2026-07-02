@@ -15,6 +15,17 @@
 | REFUTE | 320 | 320 |
 | NOT_ENTITLED | 40 | 40 |
 
+## Polarity label encoder compatibility
+
+- `polarity_label_encoder_compatible`: True
+- `encoder_mapping_used` (POLARITY_LABEL_TO_ID keys): {'NONE': 0, 'REFUTE': 1, 'SUPPORT': 2}
+
+| polarity_label | Count |
+|---|---|
+| NONE | 40 |
+| REFUTE | 320 |
+| SUPPORT | 360 |
+
 ## Counts by bridge family
 
 | Family | Count |
@@ -77,6 +88,7 @@
 | duplicate_claim_evidence_pair_check | True |
 | label_mapping_check | True |
 | axis_consistency_check | True |
+| polarity_label_encoder_compatibility_check | True |
 | family_and_label_count_check | True |
 | bridge_family_identity_check | True |
 | forbidden_marker_scan | True |

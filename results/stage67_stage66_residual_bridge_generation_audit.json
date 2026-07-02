@@ -86,6 +86,17 @@
     "NOT_ENTITLED": 1,
     "SUPPORT": 2
   },
+  "polarity_label_counts": {
+    "SUPPORT": 360,
+    "REFUTE": 320,
+    "NONE": 40
+  },
+  "polarity_label_encoder_compatible": true,
+  "encoder_mapping_used": {
+    "NONE": 0,
+    "REFUTE": 1,
+    "SUPPORT": 2
+  },
   "checks": {
     "required_fields_present": {
       "passed": true,
@@ -111,6 +122,21 @@
       "passed": true,
       "bad_count": 0,
       "bad_examples": []
+    },
+    "polarity_label_encoder_compatibility_check": {
+      "passed": true,
+      "bad_count": 0,
+      "bad_examples": [],
+      "encoder_mapping_used": {
+        "NONE": 0,
+        "REFUTE": 1,
+        "SUPPORT": 2
+      },
+      "encoder_mapping_source": "scripts.train_controlled_v5.POLARITY_LABEL_TO_ID",
+      "encoder_import_error": null,
+      "tensor_encode_check_ran": true,
+      "tensor_encode_check_passed": true,
+      "tensor_encode_check_error": null
     },
     "family_and_label_count_check": {
       "passed": true,

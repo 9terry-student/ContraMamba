@@ -1,0 +1,192 @@
+{
+  "summary": {
+    "stage": "Stage71A",
+    "decision": "STAGE71A_STAGE66_POLARITY_SCHEMA_FIX_READY",
+    "stage67_audit_decision": "STAGE67_STAGE66_RESIDUAL_BRIDGE_DATA_READY",
+    "row_count": 720,
+    "polarity_mapping": {
+      "NONE": 0,
+      "REFUTE": 1,
+      "SUPPORT": 2
+    },
+    "polarity_label_counts": {
+      "SUPPORT": 360,
+      "REFUTE": 320,
+      "NONE": 40
+    },
+    "encode_label_tensors_ok": true,
+    "encode_error": null,
+    "recommended_next_stage": "Regenerate Stage68/69/70 reports, then rerun Stage71 full training"
+  },
+  "checks": [
+    {
+      "check": "stage67_audit_ready",
+      "pass": true
+    },
+    {
+      "check": "row_count_ok",
+      "pass": true
+    },
+    {
+      "check": "label_counts_ok",
+      "pass": true
+    },
+    {
+      "check": "family_counts_ok",
+      "pass": true
+    },
+    {
+      "check": "family_label_counts_ok",
+      "pass": true
+    },
+    {
+      "check": "duplicate_ids_ok",
+      "pass": true
+    },
+    {
+      "check": "duplicate_claim_evidence_pairs_ok",
+      "pass": true
+    },
+    {
+      "check": "bridge_family_equals_family_ok",
+      "pass": true
+    },
+    {
+      "check": "target_error_mapping_ok",
+      "pass": true
+    },
+    {
+      "check": "forbidden_text_markers_ok",
+      "pass": true
+    },
+    {
+      "check": "polarity_labels_encoder_compatible",
+      "pass": true
+    },
+    {
+      "check": "encode_label_tensors_ok",
+      "pass": true
+    }
+  ],
+  "polarity_label_counts": [
+    {
+      "polarity_label": "NONE",
+      "count": 40,
+      "encoder_id": 0,
+      "encoder_compatible": true
+    },
+    {
+      "polarity_label": "REFUTE",
+      "count": 320,
+      "encoder_id": 1,
+      "encoder_compatible": true
+    },
+    {
+      "polarity_label": "SUPPORT",
+      "count": 360,
+      "encoder_id": 2,
+      "encoder_compatible": true
+    }
+  ],
+  "label_counts": [
+    {
+      "final_label": "NOT_ENTITLED",
+      "count": 40,
+      "expected": 40
+    },
+    {
+      "final_label": "REFUTE",
+      "count": 320,
+      "expected": 320
+    },
+    {
+      "final_label": "SUPPORT",
+      "count": 360,
+      "expected": 360
+    }
+  ],
+  "family_counts": [
+    {
+      "stage66_family": "numeric_temporal_comparison_bridge",
+      "count": 120,
+      "expected": 120
+    },
+    {
+      "stage66_family": "polarity_disambiguation_bridge",
+      "count": 200,
+      "expected": 200
+    },
+    {
+      "stage66_family": "refute_entitlement_recovery_bridge",
+      "count": 160,
+      "expected": 160
+    },
+    {
+      "stage66_family": "strict_ne_frame_safety_bridge",
+      "count": 40,
+      "expected": 40
+    },
+    {
+      "stage66_family": "support_entitlement_recovery_bridge",
+      "count": 200,
+      "expected": 200
+    }
+  ],
+  "family_label_counts": [
+    {
+      "stage66_family": "numeric_temporal_comparison_bridge",
+      "final_label": "REFUTE",
+      "count": 60,
+      "expected": 60
+    },
+    {
+      "stage66_family": "numeric_temporal_comparison_bridge",
+      "final_label": "SUPPORT",
+      "count": 60,
+      "expected": 60
+    },
+    {
+      "stage66_family": "polarity_disambiguation_bridge",
+      "final_label": "REFUTE",
+      "count": 100,
+      "expected": 100
+    },
+    {
+      "stage66_family": "polarity_disambiguation_bridge",
+      "final_label": "SUPPORT",
+      "count": 100,
+      "expected": 100
+    },
+    {
+      "stage66_family": "refute_entitlement_recovery_bridge",
+      "final_label": "REFUTE",
+      "count": 160,
+      "expected": 160
+    },
+    {
+      "stage66_family": "strict_ne_frame_safety_bridge",
+      "final_label": "NOT_ENTITLED",
+      "count": 40,
+      "expected": 40
+    },
+    {
+      "stage66_family": "support_entitlement_recovery_bridge",
+      "final_label": "SUPPORT",
+      "count": 200,
+      "expected": 200
+    }
+  ],
+  "failure_previews": {
+    "bad_polarity_rows": [],
+    "bad_bridge_family_rows": [],
+    "bad_target_error_rows": [],
+    "forbidden_hits": [],
+    "encode_error": null
+  },
+  "source_files": {
+    "stage66_jsonl": "data/stage66_residual_bridge.jsonl",
+    "stage67_audit_json": "results/stage67_stage66_residual_bridge_generation_audit.json",
+    "generator": "scripts/write_stage66_residual_bridge.py",
+    "encoder": "scripts/train_controlled_v5.py"
+  }
+}
