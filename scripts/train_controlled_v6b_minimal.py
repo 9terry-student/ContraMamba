@@ -8749,6 +8749,17 @@ def main(argv: list[str] | None = None) -> int:
             records, dev_ratio=args.dev_ratio, seed=args.seed
         )
 
+    # Stage71: train-source mask, captured immediately after the clean main
+    # train/dev split and before any bridge rows are appended below. Used to
+    # restrict intervention_pairwise_losses (which requires a full
+    # intervention family per pair_id, including an intervention_type=="none"
+    # original record) to clean main train rows only. Stage57/Stage66 bridge
+    # rows are standalone examples that never satisfy that requirement, but
+    # must still flow through CE/classification training normally, so they
+    # are tracked here rather than removed from train_records.
+    _clean_main_train_row_count = len(train_records)
+    _train_source_labels: list[str] = ["clean_main"] * _clean_main_train_row_count
+
     # ---------------------------------------------------------------------------
     # Stage60: optional train-only Stage57 non-leaking external bridge append.
     # Must run strictly AFTER the clean main train/dev split above. Bridge rows
@@ -8791,6 +8802,9 @@ def main(argv: list[str] | None = None) -> int:
         ) = load_stage57_bridge_train_rows(_stage60_bridge_path, _stage60_existing_ids)
 
         train_records = train_records + _stage60_bridge_records
+        _train_source_labels = _train_source_labels + (
+            ["stage57_bridge"] * len(_stage60_bridge_records)
+        )
 
         _stage60_bridge_info.update({
             "stage57_bridge_train_enabled": True,
@@ -8856,6 +8870,9 @@ def main(argv: list[str] | None = None) -> int:
         ) = load_stage66_bridge_train_rows(_stage66_bridge_path, _stage66_existing_ids)
 
         train_records = train_records + _stage66_bridge_records
+        _train_source_labels = _train_source_labels + (
+            ["stage66_bridge"] * len(_stage66_bridge_records)
+        )
 
         _stage66_bridge_info.update({
             "stage66_bridge_train_enabled": True,
@@ -8934,6 +8951,36 @@ def main(argv: list[str] | None = None) -> int:
         "external_metrics_used_for_threshold_tuning": False,
         "time_swap_used": False,
     }
+
+    # Stage71: Stage57/Stage66 bridge rows have no intervention_type=="none"
+    # original record for their pair_id, so intervention_pairwise_losses (which
+    # requires a full intervention family per pair_id) must never see them.
+    # These counts are derived from the same bridge-row-count bookkeeping as
+    # _combined_bridge_info above; the actual exclusion is applied inside
+    # run_training_v6b using the _train_source_labels mask built alongside the
+    # train/dev split and bridge appends. Bridge rows are NOT removed from
+    # train_records/train_inputs -- they remain fully active for CE/label loss
+    # and all other per-row losses.
+    assert len(_train_source_labels) == len(train_records), (
+        "_train_source_labels must track train_records 1:1 after bridge appends"
+    )
+    _pairwise_loss_stage57_excluded = _stage60_bridge_info["stage57_bridge_row_count"]
+    _pairwise_loss_stage66_excluded = _stage66_bridge_info["stage66_bridge_row_count"]
+    _pairwise_loss_bridge_excluded = (
+        _pairwise_loss_stage57_excluded + _pairwise_loss_stage66_excluded
+    )
+    _combined_bridge_info.update({
+        "bridge_rows_excluded_from_intervention_pairwise_loss": _pairwise_loss_bridge_excluded > 0,
+        "stage57_excluded_from_intervention_pairwise_loss": _pairwise_loss_stage57_excluded > 0,
+        "stage66_excluded_from_intervention_pairwise_loss": _pairwise_loss_stage66_excluded > 0,
+        "intervention_pairwise_loss_source": (
+            "clean_main_train_only" if _pairwise_loss_bridge_excluded > 0 else "full_train"
+        ),
+        "intervention_pairwise_loss_clean_main_row_count": _clean_main_train_row_count,
+        "intervention_pairwise_loss_bridge_row_count_excluded": _pairwise_loss_bridge_excluded,
+        "intervention_pairwise_loss_stage57_row_count_excluded": _pairwise_loss_stage57_excluded,
+        "intervention_pairwise_loss_stage66_row_count_excluded": _pairwise_loss_stage66_excluded,
+    })
 
     ce_class_weights = compute_class_weights_v6b(train_records, args.class_weighting, device)
     label_counts: dict[str, int] = {name: 0 for name in v5.ID_TO_FINAL_LABEL.values()}
@@ -9778,6 +9825,13 @@ def main(argv: list[str] | None = None) -> int:
         loss_config,
         seed,
         run_name,
+        # Stage71: per-train-row source tags ("clean_main" / "stage57_bridge" /
+        # "stage66_bridge"), aligned 1:1 with train_records/train_bundle/
+        # train_inputs. When any bridge rows are present, intervention_pairwise_losses
+        # is restricted to the "clean_main" rows only (bridge rows lack the
+        # intervention_type=="none" original record required per pair_id).
+        # None means no bridge rows were appended -- behavior is unchanged.
+        train_source_labels=None,
         select_metric="final_macro_f1",
         capture_best_trainable_state=False,
         smoke_mode=False,
@@ -10046,6 +10100,39 @@ def main(argv: list[str] | None = None) -> int:
         # Collapse / recall fields are always from best_dev_metrics (correctly overridden).
         _best_dev_output_v7: "dict[str, Any] | None" = None
 
+        # Stage71: precompute the clean-main-only view used for pairwise
+        # intervention loss. Stage57/Stage66 bridge rows are appended to
+        # train_records/train_inputs (so they still get CE/classification and
+        # every other per-row loss below), but they are standalone examples
+        # with no intervention_type=="none" original record for their
+        # pair_id, so passing them into intervention_pairwise_losses raises
+        # ValueError (pair_id has no original ('none') record). When
+        # train_source_labels is None or contains no bridge rows, this is a
+        # no-op and pairwise loss behavior is byte-for-byte unchanged.
+        _pw_output_keys = (
+            "frame_logit", "predicate_coverage_logit", "sufficiency_logit",
+            "polarity_margin", "entitlement_prob", "logits",
+        )
+        _pw_clean_main_index_tensor: "torch.Tensor | None" = None
+        _pw_pair_ids = train_bundle["pair_ids"]
+        _pw_intervention_types = train_bundle["intervention_types"]
+        _pw_final_labels = train_inputs["final_labels"]
+        if train_source_labels is not None:
+            _pw_clean_indices = [
+                _i for _i, _src in enumerate(train_source_labels) if _src == "clean_main"
+            ]
+            if len(_pw_clean_indices) != len(train_source_labels):
+                _pw_clean_main_index_tensor = torch.tensor(
+                    _pw_clean_indices, dtype=torch.long, device=device
+                )
+                _pw_pair_ids = [train_bundle["pair_ids"][_i] for _i in _pw_clean_indices]
+                _pw_intervention_types = [
+                    train_bundle["intervention_types"][_i] for _i in _pw_clean_indices
+                ]
+                _pw_final_labels = train_inputs["final_labels"].index_select(
+                    0, _pw_clean_main_index_tensor
+                )
+
         for epoch in range(1, epochs + 1):
             model.train()
             optimizer.zero_grad()
@@ -10083,12 +10170,24 @@ def main(argv: list[str] | None = None) -> int:
             if use_intervention_loss:
                 from contramamba import intervention_pairwise_losses
 
-                # Pairwise losses consume output["logits"] (final logits from v6b)
+                # Pairwise losses consume output["logits"] (final logits from v6b).
+                # Stage71: when bridge rows are present, _pw_* is restricted to the
+                # clean-main-row subset of this epoch's fresh `output` tensors (see
+                # _pw_clean_main_index_tensor precomputed above the epoch loop);
+                # otherwise _pw_* equals the original full-batch arguments unchanged.
+                _pw_output = (
+                    {
+                        key: output[key].index_select(0, _pw_clean_main_index_tensor)
+                        for key in _pw_output_keys
+                    }
+                    if _pw_clean_main_index_tensor is not None
+                    else output
+                )
                 pairwise_losses = intervention_pairwise_losses(
-                    output,
-                    train_bundle["pair_ids"],
-                    train_bundle["intervention_types"],
-                    train_inputs["final_labels"],
+                    _pw_output,
+                    _pw_pair_ids,
+                    _pw_intervention_types,
+                    _pw_final_labels,
                     **loss_config,
                 )
                 active_intervention_loss = pairwise_losses["total"]
@@ -12894,6 +12993,7 @@ def main(argv: list[str] | None = None) -> int:
             loss_config=loss_config,
             seed=args.seed,
             run_name=run_name,
+            train_source_labels=_train_source_labels,
             select_metric=args.select_metric,
             smoke_mode=args.smoke,
             ce_class_weights=ce_class_weights,
