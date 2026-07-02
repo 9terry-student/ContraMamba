@@ -1,0 +1,15 @@
+{
+  "block_reason": "stage45d_no_data: Stage45D found no comparison data (has_any_data is false)",
+  "decision": "STAGE46_RECOVERY_SELECTION_BLOCKED",
+  "diagnostic_runner_up": null,
+  "dropped_configs": [],
+  "key_metrics": {},
+  "leakage_policy": {
+    "evaluation_run": false,
+    "external_data_used": false,
+    "scope": "stage45d_internal_report_aggregation_only",
+    "training_run": false
+  },
+  "recommendation_reasoning": {},
+  "selected_config": null
+}

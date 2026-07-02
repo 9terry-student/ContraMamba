@@ -1,0 +1,19 @@
+{
+  "block_reason": "stage45d_no_data: Stage45D found no comparison data (has_any_data is false)",
+  "caveats": [
+    "Stage45D used reconstructed/internal Stage45C train-report JSONs where applicable.",
+    "Stage46 is a reporting/freeze stage only.",
+    "No training or evaluation is performed by this script."
+  ],
+  "decision": "STAGE46_RECOVERY_SELECTION_BLOCKED",
+  "diagnostic_runner_up": null,
+  "dropped_configs": [],
+  "selected_stable_default": null,
+  "source_summary": {
+    "decision": null,
+    "holdout_groups": [],
+    "path": "results\\stage45d_generalization_summary.json",
+    "rows_parsed": null
+  },
+  "stage": "Stage46"
+}
