@@ -1,0 +1,379 @@
+{
+  "summary": {
+    "stage": "Stage73A",
+    "decision": "STAGE73A_EXTERNAL_SCHEMA_NORMALIZATION_STATIC_CHECK_READY",
+    "external_eval_jsonl": "data/stage43b1_vitaminc_validation_sample1000.jsonl",
+    "external_eval_name": "stage73_vitaminc",
+    "row_count": 1000,
+    "records_normalized": 1000,
+    "normalization_error_count": 0,
+    "records_missing_final_label": 1000,
+    "records_with_added_aux_labels": 1000,
+    "canonical_label_counts": {
+      "NOT_ENTITLED": 145,
+      "REFUTE": 355,
+      "SUPPORT": 500
+    },
+    "label_field_counts": {
+      "label": 1000
+    },
+    "claim_field_counts": {
+      "claim": 1000
+    },
+    "evidence_field_counts": {
+      "evidence": 1000
+    },
+    "added_aux_field_counts": {
+      "frame_compatible_label": 1000,
+      "predicate_covered_label": 1000,
+      "sufficiency_label": 1000,
+      "polarity_label": 1000
+    },
+    "encode_label_tensors_ok": true,
+    "encode_label_tensors_error": null,
+    "encoded_tensor_shapes": {
+      "final_labels": [
+        1000
+      ],
+      "frame_compatible_labels": [
+        1000
+      ],
+      "predicate_covered_labels": [
+        1000
+      ],
+      "sufficiency_labels": [
+        1000
+      ],
+      "polarity_labels": [
+        1000
+      ]
+    },
+    "training_executed": false,
+    "external_eval_executed": false,
+    "recommended_next_stage": "Stage73 retry external diagnostic full run"
+  },
+  "checks": [
+    {
+      "check": "row_count_1000",
+      "pass": true
+    },
+    {
+      "check": "all_records_normalized",
+      "pass": true
+    },
+    {
+      "check": "no_normalization_errors",
+      "pass": true
+    },
+    {
+      "check": "expected_vitaminc_label_counts",
+      "pass": true
+    },
+    {
+      "check": "claim_field_found_for_all",
+      "pass": true
+    },
+    {
+      "check": "evidence_field_found_for_all",
+      "pass": true
+    },
+    {
+      "check": "label_field_found_for_all",
+      "pass": true
+    },
+    {
+      "check": "encode_label_tensors_ok",
+      "pass": true
+    },
+    {
+      "check": "help_external_eval_jsonl_present",
+      "pass": true
+    },
+    {
+      "check": "help_external_output_dir_present",
+      "pass": true
+    },
+    {
+      "check": "source_checks_pass",
+      "pass": true
+    },
+    {
+      "check": "stage71c_ready",
+      "pass": true
+    },
+    {
+      "check": "stage72_ready",
+      "pass": true
+    }
+  ],
+  "help_checks": [
+    {
+      "flag": "--external-eval-jsonl",
+      "present_in_help": true
+    },
+    {
+      "flag": "--external-eval-name",
+      "present_in_help": true
+    },
+    {
+      "flag": "--external-output-dir",
+      "present_in_help": true
+    },
+    {
+      "flag": "--stage57-bridge-train-jsonl",
+      "present_in_help": true
+    },
+    {
+      "flag": "--stage66-bridge-train-jsonl",
+      "present_in_help": true
+    }
+  ],
+  "source_checks": [
+    {
+      "check": "source_contains_external_schema_normalized",
+      "pass": true
+    },
+    {
+      "check": "source_contains_external_schema_normalization_source",
+      "pass": true
+    },
+    {
+      "check": "source_contains_external_schema_missing_final_label_fixed",
+      "pass": true
+    },
+    {
+      "check": "source_contains_external_schema_label_field_used",
+      "pass": true
+    },
+    {
+      "check": "source_contains_external_schema_records_normalized",
+      "pass": true
+    },
+    {
+      "check": "source_contains_external_schema_records_with_added_aux_labels",
+      "pass": true
+    },
+    {
+      "check": "source_contains_external_eval_jsonl",
+      "pass": true
+    },
+    {
+      "check": "source_contains_external_eval_name",
+      "pass": true
+    },
+    {
+      "check": "source_contains_final_label",
+      "pass": true
+    },
+    {
+      "check": "source_contains_polarity_label",
+      "pass": true
+    },
+    {
+      "check": "source_contains_frame_compatible_label",
+      "pass": true
+    },
+    {
+      "check": "source_contains_predicate_covered_label",
+      "pass": true
+    },
+    {
+      "check": "source_contains_sufficiency_label",
+      "pass": true
+    },
+    {
+      "check": "label_candidate_gold_label_present",
+      "pass": true
+    },
+    {
+      "check": "label_candidate_fact_label_present",
+      "pass": true
+    },
+    {
+      "check": "label_candidate_vitaminc_label_present",
+      "pass": true
+    },
+    {
+      "check": "label_candidate_stage43_label_present",
+      "pass": true
+    },
+    {
+      "check": "label_candidate_original_label_present",
+      "pass": true
+    },
+    {
+      "check": "text_candidate_hypothesis_present",
+      "pass": true
+    },
+    {
+      "check": "text_candidate_statement_present",
+      "pass": true
+    },
+    {
+      "check": "text_candidate_query_present",
+      "pass": true
+    },
+    {
+      "check": "text_candidate_premise_present",
+      "pass": true
+    },
+    {
+      "check": "text_candidate_context_present",
+      "pass": true
+    },
+    {
+      "check": "text_candidate_passage_present",
+      "pass": true
+    },
+    {
+      "check": "text_candidate_document_present",
+      "pass": true
+    },
+    {
+      "check": "text_candidate_evidence_text_present",
+      "pass": true
+    },
+    {
+      "check": "clear_uncanonicalizable_label_error_present",
+      "pass": true
+    },
+    {
+      "check": "clear_missing_claim_evidence_error_present",
+      "pass": true
+    }
+  ],
+  "label_field_counts": [
+    {
+      "label_field": "label",
+      "count": 1000
+    }
+  ],
+  "claim_field_counts": [
+    {
+      "claim_field": "claim",
+      "count": 1000
+    }
+  ],
+  "evidence_field_counts": [
+    {
+      "evidence_field": "evidence",
+      "count": 1000
+    }
+  ],
+  "canonical_label_counts": [
+    {
+      "canonical_final_label": "NOT_ENTITLED",
+      "count": 145
+    },
+    {
+      "canonical_final_label": "REFUTE",
+      "count": 355
+    },
+    {
+      "canonical_final_label": "SUPPORT",
+      "count": 500
+    }
+  ],
+  "aux_fields_added": [
+    {
+      "aux_field_added": "frame_compatible_label",
+      "count": 1000
+    },
+    {
+      "aux_field_added": "polarity_label",
+      "count": 1000
+    },
+    {
+      "aux_field_added": "predicate_covered_label",
+      "count": 1000
+    },
+    {
+      "aux_field_added": "sufficiency_label",
+      "count": 1000
+    }
+  ],
+  "sample_normalized_records": [
+    {
+      "record_id": "tals_vitaminc_validation_sample1000_validation_9543",
+      "line_no": 1,
+      "label_field": "label",
+      "claim_field": "claim",
+      "evidence_field": "evidence",
+      "original_label": "NOT_ENTITLED",
+      "final_label": "NOT_ENTITLED",
+      "claim_preview": "Airbourne 's song Live It Up was selected as the official theme song for Extreme Rules in 2013 .",
+      "evidence_preview": "In the movie The Lost Boys : The Tribe , a sequel to the original Lost Boys , the song `` Too Much , Too Young , Too Fast '' is played in the car as Chris and N"
+    },
+    {
+      "record_id": "tals_vitaminc_validation_sample1000_validation_62847",
+      "line_no": 2,
+      "label_field": "label",
+      "claim_field": "claim",
+      "evidence_field": "evidence",
+      "original_label": "REFUTE",
+      "final_label": "REFUTE",
+      "claim_preview": "The Cincinnati Kid is a boy .",
+      "evidence_preview": "He considers it the film that allowed him to transition from the lighter comedic films he had previously been making and take on more serious films and subjects"
+    },
+    {
+      "record_id": "tals_vitaminc_validation_sample1000_validation_61972",
+      "line_no": 3,
+      "label_field": "label",
+      "claim_field": "claim",
+      "evidence_field": "evidence",
+      "original_label": "SUPPORT",
+      "final_label": "SUPPORT",
+      "claim_preview": "Efraim Diveroli had a four-year sentence .",
+      "evidence_preview": "Diveroli was sentenced to four years in federal prison ."
+    },
+    {
+      "record_id": "tals_vitaminc_validation_sample1000_validation_47744",
+      "line_no": 4,
+      "label_field": "label",
+      "claim_field": "claim",
+      "evidence_field": "evidence",
+      "original_label": "SUPPORT",
+      "final_label": "SUPPORT",
+      "claim_preview": "Emma Watson was born before 1995 .",
+      "evidence_preview": "Emma Charlotte Duerre Watson -LRB- born 15 April 1990 -RRB- is a French-British actress , model , and activist ."
+    },
+    {
+      "record_id": "tals_vitaminc_validation_sample1000_validation_59780",
+      "line_no": 5,
+      "label_field": "label",
+      "claim_field": "claim",
+      "evidence_field": "evidence",
+      "original_label": "SUPPORT",
+      "final_label": "SUPPORT",
+      "claim_preview": "Tilda Swinton is a singer .",
+      "evidence_preview": "After participating in Celine Dion 's tour , Swinton released her album `` True '' ."
+    }
+  ],
+  "normalization_errors_preview": [],
+  "label_field_candidates": [
+    "final_label",
+    "label",
+    "gold",
+    "gold_label",
+    "answer",
+    "verdict",
+    "fact_label",
+    "vitaminc_label",
+    "stage43_label",
+    "original_label"
+  ],
+  "claim_field_candidates": [
+    "claim",
+    "hypothesis",
+    "statement",
+    "query"
+  ],
+  "evidence_field_candidates": [
+    "evidence",
+    "premise",
+    "context",
+    "passage",
+    "document",
+    "evidence_text"
+  ]
+}
