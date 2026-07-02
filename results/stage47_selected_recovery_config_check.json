@@ -1,0 +1,21 @@
+{
+  "decision": "STAGE47_SELECTED_RECOVERY_CONFIG_READY",
+  "diagnostic_config_name": "recovery_w010_ne020",
+  "diagnostic_ne_w": 0.2,
+  "diagnostic_support_w": 0.1,
+  "dropped_configs": [
+    "w0.05_ne0.05",
+    "w0.2_ne0.1"
+  ],
+  "leakage_policy": {
+    "evaluation_run": false,
+    "external_data_used": false,
+    "scope": "stage46_frozen_config_read_only",
+    "training_run": false
+  },
+  "selected_config_name": "recovery_w01_ne01",
+  "selected_ne_w": 0.1,
+  "selected_support_w": 0.1,
+  "source_file": "results\\stage46_selected_recovery_config.json",
+  "stage": "Stage47"
+}
