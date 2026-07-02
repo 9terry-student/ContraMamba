@@ -799,7 +799,7 @@ _FRAME_VIOLATION_NEGATIVE: frozenset = frozenset({
 })
 
 # Predicate isolation label mapping
-# positive/noncoverage=1: predicate_swap (predicate mismatch â€” not frame, not sufficiency)
+# positive/noncoverage=1: predicate_swap (predicate mismatch ??not frame, not sufficiency)
 # negative/covered=0: none, paraphrase (predicate coverage present in both)
 # excluded/masked: all frame-swap, evidence, polarity intervention types, and unknown
 # Class balance in controlled_v5_v3_without_time_swap.jsonl:
@@ -812,12 +812,12 @@ _PRED_ISOLATION_NEGATIVE: frozenset = frozenset({"none", "paraphrase"})
 # Preservation entitlement label mapping
 # positive/entitled=1: none, paraphrase (preservation-positive; should remain entitled)
 # negative/rejected=0: entity_swap, event_swap, location_swap, role_swap, title_name_swap
-#   (narrow true frame-mismatch rejections â€” these and only these are valid frame negatives)
+#   (narrow true frame-mismatch rejections ??these and only these are valid frame negatives)
 # excluded/masked:
-#   predicate_swap â€” predicate noncoverage path, kept separate from FrameGate supervision
-#   evidence_deletion, evidence_truncation, irrelevant_evidence â€” sufficiency failures;
+#   predicate_swap ??predicate noncoverage path, kept separate from FrameGate supervision
+#   evidence_deletion, evidence_truncation, irrelevant_evidence ??sufficiency failures;
 #     masking avoids conflating frame-rejection with evidence-insufficiency
-#   polarity_flip â€” polarity failure, not frame/entitlement failure
+#   polarity_flip ??polarity failure, not frame/entitlement failure
 # Class balance in controlled_v5_v3_without_time_swap.jsonl:
 #   positive: 600 (none+paraphrase); negative: 1500 (5 frame-swap types x 300)
 #   ratio neg/pos = 2.5
@@ -837,7 +837,7 @@ _PRES_ENT_NEGATIVE: frozenset = frozenset({
 # negative/temporal_control=0: none, paraphrase records (temporally safe controls)
 # excluded: all other intervention types are not present in the temporal diagnostic file
 # Supervision target: temporal_diagnostic_head on frame_pair_repr only.
-#   time_swap is a frame-compatibility failure â†’ frame_pair_repr is the most specific
+#   time_swap is a frame-compatibility failure ??frame_pair_repr is the most specific
 #   available representation. Distinct from predicate_isolation_head (predicate_pair_repr)
 #   and preservation_entitlement_head (sufficiency_repr).
 # Class balance in temporal diagnostic file (default with paraphrase controls):
@@ -994,7 +994,7 @@ def compute_temporal_adapter_metrics(
 
     Returns empty dict when adapter is disabled or no valid examples.
     Keys: ta_accuracy, ta_mismatch_recall, ta_control_acceptance, ta_valid_count, ta_mean_prob.
-    Uses temporal_adapter_prob (output of the 2-layer MLP adapter) â€” not temporal_diagnostic_prob.
+    Uses temporal_adapter_prob (output of the 2-layer MLP adapter) ??not temporal_diagnostic_prob.
     Labels: 1=temporal_mismatch (time_swap), 0=temporal_control (none/paraphrase).
     """
     if (
@@ -1051,11 +1051,11 @@ def compute_td_final_decision_metrics(
     A temporal_control (label=0) is correctly handled if the final prediction is NOT NOT_ENTITLED.
 
     Keys returned:
-      td_final_temporal_rejection_rate  â€” among label=1 records, frac predicted NOT_ENTITLED
-      td_final_control_preservation_rate â€” among label=0 records, frac predicted non-NOT_ENTITLED
-      td_final_binary_accuracy           â€” overall binary accuracy under the above mapping
-      td_final_temporal_count            â€” number of label=1 records with valid mask
-      td_final_control_count             â€” number of label=0 records with valid mask
+      td_final_temporal_rejection_rate  ??among label=1 records, frac predicted NOT_ENTITLED
+      td_final_control_preservation_rate ??among label=0 records, frac predicted non-NOT_ENTITLED
+      td_final_binary_accuracy           ??overall binary accuracy under the above mapping
+      td_final_temporal_count            ??number of label=1 records with valid mask
+      td_final_control_count             ??number of label=0 records with valid mask
 
     Returns empty dict when logits are absent or no valid examples.
     Stage15/OOD data is never passed here; this runs only on --temporal-diagnostic-data.
@@ -1144,9 +1144,9 @@ def encode_temporal_safety_labels(
 
     Primary: reads `stage30_temporal_safe_label` (1=safe, 0=mismatch) if present.
     Fallback derivation from intervention_type:
-        time_swap  â†’ label=0 (temporal mismatch; unsafe)
-        none, paraphrase â†’ label=1 (temporally safe)
-        all others â†’ masked (excluded from loss)
+        time_swap  ??label=0 (temporal mismatch; unsafe)
+        none, paraphrase ??label=1 (temporally safe)
+        all others ??masked (excluded from loss)
 
     Returns (labels, mask) both of shape [B].
     Stage15 OOD is never passed here.
@@ -1185,12 +1185,12 @@ def encode_temporal_mismatch_multihead_labels(
     This is the INVERSE of encode_temporal_safety_labels (where safe=1).
 
     Primary: reads `stage30_temporal_safe_label` (1=safe, 0=mismatch) if present.
-        safe_label 0 â†’ mismatch target = 1
-        safe_label 1 â†’ mismatch target = 0
+        safe_label 0 ??mismatch target = 1
+        safe_label 1 ??mismatch target = 0
     Fallback derivation from intervention_type:
-        time_swap          â†’ label=1 (temporal mismatch positive)
-        none, paraphrase   â†’ label=0 (temporal safe/control)
-        all others         â†’ masked (excluded from loss)
+        time_swap          ??label=1 (temporal mismatch positive)
+        none, paraphrase   ??label=0 (temporal safe/control)
+        all others         ??masked (excluded from loss)
 
     Returns (labels, mask) both of shape [B].
     Stage15 OOD is never passed here.
@@ -1200,7 +1200,7 @@ def encode_temporal_mismatch_multihead_labels(
     for r in records:
         explicit = r.get("stage30_temporal_safe_label")
         if explicit is not None:
-            # Invert: safe_label=0 means mismatch â†’ target 1; safe_label=1 means safe â†’ target 0
+            # Invert: safe_label=0 means mismatch ??target 1; safe_label=1 means safe ??target 0
             labels.append(1 - int(explicit))
             mask.append(1)
         else:
@@ -1537,7 +1537,7 @@ def _normalize_pair_record(r: dict[str, Any]) -> dict[str, Any]:
     schema = _detect_pc_schema(r)
     if schema == "a4b2":
         return r  # already has canonical fields
-    # A4d: alias source_intervention_type â†’ intervention_type
+    # A4d: alias source_intervention_type ??intervention_type
     out = dict(r)
     if "preservation_intervention_type" not in out and "preservation_source_intervention_type" in out:
         out["preservation_intervention_type"] = out["preservation_source_intervention_type"]
@@ -1572,11 +1572,11 @@ def load_pair_contrastive_jsonl(
 
     Filtering rules:
       frame_violation_contrastive / support_safe_frame_contrastive
-          â†’ A4b2 records matched by contrastive_use_case field
-      ood_matched        â†’ all A4d records (target or source tag present)
-      ood_matched_surface  â†’ A4d records where preservation_construction_type == surface_like_preservation
-      ood_matched_temporal â†’ A4d records where preservation_construction_type == temporal_erased_like_preservation
-      all                â†’ all records from either schema
+          ??A4b2 records matched by contrastive_use_case field
+      ood_matched        ??all A4d records (target or source tag present)
+      ood_matched_surface  ??A4d records where preservation_construction_type == surface_like_preservation
+      ood_matched_temporal ??A4d records where preservation_construction_type == temporal_erased_like_preservation
+      all                ??all records from either schema
 
     Returns normalized records (preservation_intervention_type and frame_intervention_type
     always populated). Stage15 OOD records are never loaded here.
@@ -1652,8 +1652,7 @@ def _pair_record_to_virtual_records(
     Missing required fields raise a clear ValueError naming the field and contrastive_id.
 
     Optional label fields fall back to conservative defaults when absent rather than
-    crashing with KeyError.  These defaults are used only for tensor construction â€”
-    the pair-contrastive loss reads frame_violation_logit, not these label tensors.
+    crashing with KeyError.  These defaults are used only for tensor construction ??    the pair-contrastive loss reads frame_violation_logit, not these label tensors.
     """
     cid = r.get("contrastive_id", "<unknown>")
     _schema = _detect_pc_schema(r)
@@ -3848,7 +3847,7 @@ def _stage37_config_from_args(args: "argparse.Namespace") -> dict[str, Any]:
     }
 
 
-# â”€â”€ Stage39-A: opt-in final composer (prediction/export-time only) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ?€?€ Stage39-A: opt-in final composer (prediction/export-time only) ?€?€?€?€?€?€?€?€?€?€
 #
 # Off by default. Reuses the Stage32/Stage33/Stage36/Stage37 shadow labels
 # already computed above; never touches final logits, training, or loss.
@@ -4450,23 +4449,23 @@ def prediction_records_v6b(
         support_prob = _s28e_safe_float(probs_row[2])
 
         item: dict[str, Any] = {
-            # â”€â”€ Stable identity â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            # ?€?€ Stable identity ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
             "stable_id": stable_id,
             "source_id": source_id,
             "pair_id": pair_id,
             "example_index": index,
-            # â”€â”€ Text â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            # ?€?€ Text ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
             "claim": record.get("claim"),
             "evidence": record.get("evidence"),
-            # â”€â”€ Intervention â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            # ?€?€ Intervention ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
             "intervention": record.get("intervention_type"),
             "normalized_intervention": norm_intervention,
             "diagnostic_axis": diagnostic_axis,
-            # â”€â”€ Gold labels â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            # ?€?€ Gold labels ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
             "gold_label_raw": gold_raw,
             "gold_label": gold_label,
             "gold_label_id": gold_label_id,
-            # â”€â”€ Predicted labels â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            # ?€?€ Predicted labels ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
             "pred_label_id": pred_id,
             "pred_label": pred_label,
             "pred_label_raw": pred_label,
@@ -4474,7 +4473,7 @@ def prediction_records_v6b(
             "is_false_support": is_false_support,
             "is_location_false_support": is_location_false_support,
             "is_role_false_support": is_role_false_support,
-            # â”€â”€ Final logits / probs (order: REFUTE=0, NOT_ENTITLED=1, SUPPORT=2) â”€â”€
+            # ?€?€ Final logits / probs (order: REFUTE=0, NOT_ENTITLED=1, SUPPORT=2) ?€?€
             "final_logits": final_logits,
             "final_probs": final_probs_list,
             "refute_logit": refute_logit,
@@ -4483,11 +4482,11 @@ def prediction_records_v6b(
             "refute_prob": refute_prob,
             "ne_prob": ne_prob,
             "support_prob": support_prob,
-            # â”€â”€ Existing v6b diagnostic scalars â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            # ?€?€ Existing v6b diagnostic scalars ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
             **{key: float(scalars[key][index]) for key in scalar_keys if key in scalars},
-            # â”€â”€ Gold auxiliary labels (when present in source record) â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            # ?€?€ Gold auxiliary labels (when present in source record) ?€?€?€?€?€?€?€?€?€
             **{key: record[key] for key in _S28E_AUX_LABEL_KEYS if key in record},
-            # â”€â”€ V7/H1 diagnostic scalars (absent on v6b_minimal runs) â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            # ?€?€ V7/H1 diagnostic scalars (absent on v6b_minimal runs) ?€?€?€?€?€?€?€?€?€
             **{key: float(v7_scalars[key][index]) for key in _S28E_V7_SCALAR_KEYS
                if key in v7_scalars},
             **(
@@ -4506,7 +4505,7 @@ def prediction_records_v6b(
                 and output.get("coverage_entailment_pred_label") is not None
                 else {}
             ),
-            # â”€â”€ Legacy backward-compat fields â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            # ?€?€ Legacy backward-compat fields ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
             **(
                 flatten_stage32_owner_state(stage32_owner_state)
                 if stage32_owner_state is not None
@@ -4516,14 +4515,14 @@ def prediction_records_v6b(
             "intervention_type": record.get("intervention_type"),
             "gold_final_label": gold_raw,
             "pred_final_label": pred_label,
-            # â”€â”€ Shallow raw record snapshot â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            # ?€?€ Shallow raw record snapshot ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
             "raw_record": {k: record[k] for k in _S28E_RAW_RECORD_KEYS if k in record},
         }
         for metadata_key in _S28E_PRESERVED_METADATA_KEYS:
             if metadata_key in record:
                 item[metadata_key] = record[metadata_key]
 
-        # â”€â”€ Stage36-A: conservative support-safety blockers (shadow-only) â”€â”€â”€â”€â”€â”€
+        # ?€?€ Stage36-A: conservative support-safety blockers (shadow-only) ?€?€?€?€?€?€
         _stage37_stage36_info: dict[str, Any] = {}
         if (
             stage36_support_safety_config is not None
@@ -4606,7 +4605,7 @@ def prediction_records_v6b(
                 if item.get("stage33_conditional_shadow_label") is not None:
                     item["stage33_conditional_shadow_label"] = _stage36_final_label
 
-        # â”€â”€ Stage37-A: conservative safe SUPPORT recovery (shadow-only) â”€â”€â”€â”€â”€â”€â”€â”€
+        # ?€?€ Stage37-A: conservative safe SUPPORT recovery (shadow-only) ?€?€?€?€?€?€?€?€
         # Runs strictly after Stage36's post-blocker shadow label is known and
         # never overrides a fired Stage36 blocker.
         _stage39_stage37_info: dict[str, Any] = {}
@@ -4688,7 +4687,7 @@ def prediction_records_v6b(
                 if item.get("stage33_conditional_shadow_label") is not None:
                     item["stage33_conditional_shadow_label"] = _stage37_final_label
 
-        # â”€â”€ Stage39-A: opt-in final composer (prediction/export-time only) â”€â”€â”€â”€â”€
+        # ?€?€ Stage39-A: opt-in final composer (prediction/export-time only) ?€?€?€?€?€
         # Runs strictly after Stage37's final shadow label is known. Off by
         # default: no stage39_* fields are added and pred_final_label is
         # untouched unless --stage39-use-final-composer-opt-in (and, to
@@ -5407,10 +5406,10 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    # â”€â”€ Temporal residual adapter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ?€?€ Temporal residual adapter ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
     # A 2-layer MLP adapter that absorbs temporal diagnostic supervision without propagating
     # gradients into the shared frame_pair_repr / FrameGate representation.
-    # Architecture: Linear(frame_size, frame_size//2) â†’ GELU â†’ Linear(frame_size//2, 1)
+    # Architecture: Linear(frame_size, frame_size//2) ??GELU ??Linear(frame_size//2, 1)
     # Default: disabled. When enabled, adapter is trained only via --use-temporal-adapter-loss.
     # Stage15 OOD is eval-only and is NEVER used for adapter loss, calibration, or selection.
     parser.add_argument(
@@ -5487,9 +5486,9 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    # â”€â”€ TemporalChannel V1 (v6C Lean) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ?€?€ TemporalChannel V1 (v6C Lean) ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
     # Default off. Independent temporal channel reading from cat([claim_frame_state,
-    # evidence_frame_state]) â€” NOT frame_pair_repr â€” to avoid Stage23 gradient coupling.
+    # evidence_frame_state]) ??NOT frame_pair_repr ??to avoid Stage23 gradient coupling.
     # Stage15 OOD is eval-only and is NEVER used for TC loss, calibration, or penalty selection.
     # Gated penalty requires --use-preservation-entitlement-loss (raises clear error otherwise).
     # Cannot be stacked with --use-temporal-adapter-final-penalty (raises clear error).
@@ -5499,8 +5498,8 @@ def build_parser() -> argparse.ArgumentParser:
         default=False,
         help=(
             "Enable TemporalChannel V1. Default off. Adds a 2-layer MLP reading "
-            "cat([claim_frame_state, evidence_frame_state]) â€” pre-pair-projector slot states "
-            "from FrameGate, NOT frame_pair_repr â€” to produce temporal_channel_logit and "
+            "cat([claim_frame_state, evidence_frame_state]) ??pre-pair-projector slot states "
+            "from FrameGate, NOT frame_pair_repr ??to produce temporal_channel_logit and "
             "temporal_channel_prob. With --temporal-channel-detach-input (default), TC loss "
             "gradients cannot propagate into FrameGate parameters."
         ),
@@ -5573,7 +5572,7 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    # â”€â”€ Stage26-A: v7 Hierarchical Entitlement architecture â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ?€?€ Stage26-A: v7 Hierarchical Entitlement architecture ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
     # Default: architecture=v6b_minimal (full backward compatibility; no v6B behavior changes).
     # Set --architecture v7_hierarchical to use ContraMambaV7Hierarchical instead.
     # v7 flags below are only consulted when architecture==v7_hierarchical; they have no
@@ -5717,7 +5716,7 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    # â”€â”€ Stage28-I-A: independent location-boundary cap/head â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ?€?€ Stage28-I-A: independent location-boundary cap/head ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
     # All off by default. Preserves all current Stage27/Stage28 behavior when disabled.
     # Only meaningful for --architecture v7_hierarchical.
     parser.add_argument(
@@ -5782,7 +5781,7 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    # â”€â”€ Stage30-C2: independent temporal-safety cap/head â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ?€?€ Stage30-C2: independent temporal-safety cap/head ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
     # All off by default. Preserves all current Stage28-I behavior when disabled.
     # Only meaningful for --architecture v7_hierarchical with --v7-use-v6b-style-final-decision.
     parser.add_argument(
@@ -5869,7 +5868,7 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    # â”€â”€ Stage30-D: representation-decomposed temporal mismatch multihead â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ?€?€ Stage30-D: representation-decomposed temporal mismatch multihead ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
     parser.add_argument(
         "--v7-use-temporal-mismatch-multihead",
         action="store_true",
@@ -5888,8 +5887,8 @@ def build_parser() -> argparse.ArgumentParser:
         default=False,
         help=(
             "Stage30-D: Enable auxiliary BCE training for the temporal mismatch multihead. "
-            "Reads stage30_temporal_safe_label (0â†’mismatch=1, 1â†’safe=0) or "
-            "falls back to intervention_type (time_swapâ†’1, none/paraphraseâ†’0). "
+            "Reads stage30_temporal_safe_label (0?’mismatch=1, 1?’safe=0) or "
+            "falls back to intervention_type (time_swap??, none/paraphrase??). "
             "Requires --v7-use-temporal-mismatch-multihead and "
             "--v7-temporal-mismatch-multihead-data. Default off."
         ),
@@ -5970,7 +5969,7 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    # â”€â”€ Stage30-E: temporal residual preservation-aware cap â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ?€?€ Stage30-E: temporal residual preservation-aware cap ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
     # Reuses Stage30-D temporal_mismatch_fused_prob as the soft risk signal.
     # Adds a narrow TemporalPreservationSignal head for the preservation signal.
     # Cannot combine Stage30-E preservation-aware cap with Stage30-D direct cap.
@@ -6025,7 +6024,7 @@ def build_parser() -> argparse.ArgumentParser:
         help=(
             "Stage30-E: Path to temporal preservation auxiliary JSONL. "
             "Same format as Stage30-C2/D temporal diagnostic data. "
-            "none/paraphrase â†’ preserved=1; time_swap â†’ preserved=0. "
+            "none/paraphrase ??preserved=1; time_swap ??preserved=0. "
             "Never added to main train/dev; never used for checkpoint selection. "
             "Required when --v7-use-temporal-preservation-loss is enabled. "
             "Do not use Stage15 OOD data here."
@@ -6367,7 +6366,7 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    # â”€â”€ Stage36-A: conservative support-safety blockers (shadow-only) â”€â”€â”€â”€â”€â”€â”€â”€
+    # ?€?€ Stage36-A: conservative support-safety blockers (shadow-only) ?€?€?€?€?€?€?€?€
     # All off by default. When off, behavior is identical to Stage33-F. When on,
     # blockers only affect exported shadow/diagnostic SUPPORT overrides -- never
     # final logits or final classifier predictions.
@@ -6446,7 +6445,7 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    # â”€â”€ Stage37-A: conservative safe SUPPORT recovery (shadow-only) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ?€?€ Stage37-A: conservative safe SUPPORT recovery (shadow-only) ?€?€?€?€?€?€?€?€?€?€
     # All off by default. When off, behavior is identical to Stage36-A. When on,
     # recovery only affects exported shadow/diagnostic SUPPORT overrides -- never
     # final logits or final classifier predictions, and never overrides a fired
@@ -6515,7 +6514,7 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    # â”€â”€ Stage39-A: opt-in final composer validation (prediction/export-time) â”€
+    # ?€?€ Stage39-A: opt-in final composer validation (prediction/export-time) ?€
     # All off by default. When off, final predictions/metrics/exported labels
     # are identical to Stage38/Stage37. When on, composes a candidate final
     # label from a Stage37/Stage36/Stage32 shadow label under deterministic
@@ -6620,7 +6619,7 @@ def build_parser() -> argparse.ArgumentParser:
             "Only valid when --architecture v7_hierarchical."
         ),
     )
-    # v7 auxiliary loss flags â€” all off by default; no v7 aux losses active in Stage26-A.
+    # v7 auxiliary loss flags ??all off by default; no v7 aux losses active in Stage26-A.
     # These are reserved for Stage26-B when channel-level supervision targets are defined.
     parser.add_argument("--v7-use-aux-losses", action="store_true", default=False,
         help="v7: Enable v7 auxiliary channel losses. Default off (Stage26-A).")
@@ -6635,7 +6634,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--v7-entitlement-loss-weight", type=float, default=0.0,
         help="v7: EntitlementGate auxiliary BCE loss weight. Default 0.0.")
 
-    # â”€â”€ Stage26-G: v7 stabilization options â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ?€?€ Stage26-G: v7 stabilization options ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
     # All off by default. Clean-data supervision only. No Stage15. No OOD. No time_swap.
     parser.add_argument("--v7-use-polarity-margin-loss", action="store_true", default=False,
         help=(
@@ -6683,8 +6682,8 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    # â”€â”€ Generic preservation-constrained checkpoint selection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    # Default off. Uses ONLY clean dev pairwise checks â€” no Stage15/OOD, no temporal diagnostic
+    # ?€?€ Generic preservation-constrained checkpoint selection ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+    # Default off. Uses ONLY clean dev pairwise checks ??no Stage15/OOD, no temporal diagnostic
     # metrics. Compatible with baseline, TD, TA, PE, and future runs. Cannot be combined with
     # --use-td-constrained-selection (raises a clear error).
     parser.add_argument(
@@ -6695,7 +6694,7 @@ def build_parser() -> argparse.ArgumentParser:
             "Enable generic preservation-constrained checkpoint selection. Default off. "
             "Among all epochs, select the one with highest clean-dev final_macro_f1 that also "
             "satisfies paraphrase-preserved and predicate-disentangled pass-rate thresholds "
-            "(from clean dev pairwise checks only â€” Stage15/OOD is never consulted). "
+            "(from clean dev pairwise checks only ??Stage15/OOD is never consulted). "
             "Falls back to unconstrained final_macro_f1 if no epoch is eligible. "
             "Cannot be combined with --use-td-constrained-selection."
         ),
@@ -7232,8 +7231,8 @@ def run_stage43_external_factver_hook(
     max_rows: int | None,
     batch_size: int,
     args: argparse.Namespace,
-    vocab: dict[str, int],
-    tokenizer: Any,
+    vocab: dict[str, int] | None,
+    tokenizer: Any | None,
     max_length: int,
     device: torch.device,
 ) -> dict[str, Any]:
@@ -7255,8 +7254,16 @@ def run_stage43_external_factver_hook(
         if records:
             try:
                 if args.backbone == "dummy":
+                    if vocab is None:
+                        raise ValueError(
+                            "Stage43-C0 dummy external eval requires the dummy vocab."
+                        )
                     bundle = v5.encode_records(records, vocab)
                 else:
+                    if tokenizer is None:
+                        raise ValueError(
+                            "Stage43-C0 Mamba external eval requires the Mamba tokenizer."
+                        )
                     bundle = v5.encode_mamba_records(records, tokenizer, args.max_length)
                 model_inputs = v5.move_inputs(bundle["model_inputs"], device)
                 seq_len = model_inputs["input_ids"].shape[1]
@@ -7655,7 +7662,7 @@ def main(argv: list[str] | None = None) -> int:
     # It has no text comprehension capacity; metrics it produces are not
     # claim-worthy. Require --allow-dummy-backbone to proceed.
     # ---------------------------------------------------------------------------
-    # â”€â”€ Stage28-I-A: location boundary flag validation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ?€?€ Stage28-I-A: location boundary flag validation ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
     _use_lb_head = getattr(args, "v7_use_location_boundary_head", False)
     _use_lb_loss = getattr(args, "v7_use_location_boundary_loss", False)
     _lb_cap_mode = getattr(args, "v7_location_boundary_cap_mode", "none")
@@ -7676,7 +7683,7 @@ def main(argv: list[str] | None = None) -> int:
             f"--v7-location-boundary-cap-gamma must be > 0, got {_lb_cap_gamma!r}."
         )
 
-    # â”€â”€ Stage30-C2: temporal safety flag validation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ?€?€ Stage30-C2: temporal safety flag validation ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
     _use_ts_head = getattr(args, "v7_use_temporal_safety_head", False)
     _use_ts_loss = getattr(args, "v7_use_temporal_safety_loss", False)
     _ts_cap_mode = getattr(args, "v7_temporal_safety_cap_mode", "none")
@@ -7714,7 +7721,7 @@ def main(argv: list[str] | None = None) -> int:
                 "into the main clean controlled train/eval classification data."
             )
 
-    # â”€â”€ Stage30-D: temporal mismatch multihead flag validation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ?€?€ Stage30-D: temporal mismatch multihead flag validation ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
     _use_tmm = getattr(args, "v7_use_temporal_mismatch_multihead", False)
     _use_tmm_loss = getattr(args, "v7_use_temporal_mismatch_multihead_loss", False)
     _tmm_cap_mode = getattr(args, "v7_temporal_mismatch_multihead_cap_mode", "none")
@@ -7808,6 +7815,9 @@ def main(argv: list[str] | None = None) -> int:
     label_counts: dict[str, int] = {name: 0 for name in v5.ID_TO_FINAL_LABEL.values()}
     for _record in train_records:
         label_counts[_record["final_label"]] += 1
+
+    vocab: dict[str, int] | None = None
+    tokenizer: Any | None = None
 
     if args.backbone == "dummy":
         vocab = v5.build_vocab(records)
@@ -8109,7 +8119,7 @@ def main(argv: list[str] | None = None) -> int:
             f" train_pos={_train_pe_pos_only}"
         )
 
-    # Temporal diagnostic data loading â€” separate dataset, never mixed into main train/dev.
+    # Temporal diagnostic data loading ??separate dataset, never mixed into main train/dev.
     # Records may include time_swap; they must not be part of the main classification CE.
     _td_train_records: list[dict] = []
     _td_dev_records: list[dict] = []
@@ -8205,7 +8215,7 @@ def main(argv: list[str] | None = None) -> int:
             f" td_train_neg={_td_train_neg}"
         )
 
-    # Stage30-C2: temporal safety data loading â€” separate dataset, never mixed into main train/dev.
+    # Stage30-C2: temporal safety data loading ??separate dataset, never mixed into main train/dev.
     # Records contain none/paraphrase (temporal_safe=1) and time_swap (temporal_safe=0).
     # Stage15 OOD records must NOT be present here.
     # Filtering uses already-computed main train/dev pair_ids to prevent controlled-dev leakage.
@@ -8298,7 +8308,7 @@ def main(argv: list[str] | None = None) -> int:
                 f" ts_train_neg={_ts_train_neg}"
             )
 
-    # Stage30-D: temporal mismatch multihead aux data loading â€” separate from main train/dev.
+    # Stage30-D: temporal mismatch multihead aux data loading ??separate from main train/dev.
     # Uses the same pair_id filtering as Stage30-C2 to exclude main dev records.
     _tmm_train_inputs: "dict[str, torch.Tensor] | None" = None
     _tmm_train_labels: "torch.Tensor | None" = None
@@ -8383,8 +8393,8 @@ def main(argv: list[str] | None = None) -> int:
                 f" tmm_train_neg={_tmm_train_neg}"
             )
 
-    # Stage30-E: temporal preservation aux data loading â€” separate from main train/dev.
-    # Reuses encode_temporal_safety_labels: none/paraphrase â†’ label=1, time_swap â†’ label=0.
+    # Stage30-E: temporal preservation aux data loading ??separate from main train/dev.
+    # Reuses encode_temporal_safety_labels: none/paraphrase ??label=1, time_swap ??label=0.
     # Same pair_id filtering as Stage30-C2/D to exclude main dev records.
     # Stage15 OOD records must NOT be present here.
     _tpres_train_inputs: "dict[str, torch.Tensor] | None" = None
@@ -8434,8 +8444,7 @@ def main(argv: list[str] | None = None) -> int:
                 "Loss will be zero."
             )
         else:
-            # encode_temporal_safety_labels: safe=1 (none/paraphrase) = preserved=1 âœ“
-            _tpres_train_labels, _tpres_train_mask = encode_temporal_safety_labels(
+            # encode_temporal_safety_labels: safe=1 (none/paraphrase) = preserved=1 ??            _tpres_train_labels, _tpres_train_mask = encode_temporal_safety_labels(
                 _tpres_train_records, device
             )
             if args.backbone == "dummy":
@@ -8822,14 +8831,14 @@ def main(argv: list[str] | None = None) -> int:
         _tc_td_final_control_preservation: float = float("nan")
         _tc_td_final_binary_accuracy: float = float("nan")
 
-        # â”€â”€ Audit ledger: loss accumulators (reporting only; no effect on training) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        # ?€?€ Audit ledger: loss accumulators (reporting only; no effect on training) ?€?€?€?€?€?€?€?€?€?€?€?€?€?€
         # Per-epoch raw (pre-weight) and weighted (actual contribution to total_loss) loss values.
         # Both lists grow one entry per epoch and are indexed by epoch-1 at ledger build time.
         _audit_per_epoch_raw: list[dict] = []
         _audit_per_epoch_weighted: list[dict] = []
         _audit_epoch_count: int = 0
 
-        # â”€â”€ Stage26-F: v7 epoch diagnostic history â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        # ?€?€ Stage26-F: v7 epoch diagnostic history ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
         # Per-epoch dev metric snapshots stored for post-hoc diagnosis (e.g. label collapse
         # trajectory, channel prob trends).  Reporting only; no effect on training or selection.
         _v7_epoch_history: list[dict[str, Any]] = []
@@ -9159,7 +9168,7 @@ def main(argv: list[str] | None = None) -> int:
                     _pc_loss = F.relu(pc_margin - _margins).mean()
                     total_loss = total_loss + pc_loss_weight * _pc_loss
 
-            # â”€â”€ Stage26-G: v7 polarity margin auxiliary loss â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            # ?€?€ Stage26-G: v7 polarity margin auxiliary loss ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
             # Hinge margin loss on v7_polarity_support/refute_logit.
             # Applied only to gold SUPPORT and REFUTE examples; NOT_ENTITLED excluded.
             # Does NOT replace CE. CE continues using output["logits"]. No loss_logits.
@@ -9193,10 +9202,10 @@ def main(argv: list[str] | None = None) -> int:
                         _v7_pm_loss = torch.cat(_pm_parts).mean()
                         total_loss = total_loss + args.v7_polarity_margin_loss_weight * _v7_pm_loss
 
-            # â”€â”€ Stage26-G: v7 entitlement BCE auxiliary loss â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            # ?€?€ Stage26-G: v7 entitlement BCE auxiliary loss ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
             # BCE on v7_entitlement_logit with ground-truth entitled target derived from labels:
-            #   entitled=1 for SUPPORT (2) and REFUTE (0) â€” these require a polarity judgment
-            #   entitled=0 for NOT_ENTITLED (1) â€” evidence fails to entitle a polarity judgment
+            #   entitled=1 for SUPPORT (2) and REFUTE (0) ??these require a polarity judgment
+            #   entitled=0 for NOT_ENTITLED (1) ??evidence fails to entitle a polarity judgment
             # Clean-data only (main train split). No Stage15. No OOD. No time_swap.
             _v7_ent_bce_loss = torch.tensor(0.0, device=device)
             if (
@@ -9208,7 +9217,7 @@ def main(argv: list[str] | None = None) -> int:
                 _ent_logit = output.get("v7_entitlement_logit")
                 if _ent_logit is not None:
                     _ent_labels = train_inputs["final_labels"]
-                    # SUPPORT=2 and REFUTE=0 â†’ entitled=1; NOT_ENTITLED=1 â†’ entitled=0
+                    # SUPPORT=2 and REFUTE=0 ??entitled=1; NOT_ENTITLED=1 ??entitled=0
                     _ent_target = (_ent_labels != 1).float()
                     _ent_pos_w = torch.tensor(
                         args.v7_entitlement_bce_pos_weight,
@@ -9220,9 +9229,9 @@ def main(argv: list[str] | None = None) -> int:
                     )
                     total_loss = total_loss + args.v7_entitlement_bce_loss_weight * _v7_ent_bce_loss
 
-            # â”€â”€ Stage26-G: v7 entitled class-balanced CE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            # ?€?€ Stage26-G: v7 entitled class-balanced CE ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
             # Auxiliary CE over SUPPORT/REFUTE examples only, using v7_polarity_logits [B, 2].
-            # Local labels: REFUTE (gold=0) â†’ local 0; SUPPORT (gold=2) â†’ local 1.
+            # Local labels: REFUTE (gold=0) ??local 0; SUPPORT (gold=2) ??local 1.
             # NOT_ENTITLED examples are excluded entirely.
             # Intended to anchor polarity direction independently of the entitlement gate.
             # Does NOT use output["logits"]. Does NOT create loss_logits.
@@ -9239,16 +9248,16 @@ def main(argv: list[str] | None = None) -> int:
                     _ecb_mask = _ecb_labels != 1  # True for SUPPORT (2) and REFUTE (0)
                     if _ecb_mask.any():
                         _ecb_pol_sub = _ecb_polarity_logits[_ecb_mask]
-                        # REFUTE (gold=0) â†’ local 0; SUPPORT (gold=2) â†’ local 1
+                        # REFUTE (gold=0) ??local 0; SUPPORT (gold=2) ??local 1
                         _ecb_local_labels = (_ecb_labels[_ecb_mask] == 2).long()
                         _v7_ecb_loss = F.cross_entropy(_ecb_pol_sub, _ecb_local_labels)
                         total_loss = total_loss + args.v7_entitled_class_balanced_ce_weight * _v7_ecb_loss
 
-            # â”€â”€ Stage28-I-A: v7 location boundary BCE auxiliary loss â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            # ?€?€ Stage28-I-A: v7 location boundary BCE auxiliary loss ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
             # Target: 0 for location_swap; 1 for none/paraphrase/polarity_flip.
             # All other intervention types are excluded from this loss.
             # Stage15/OOD is not used for this loss or target selection.
-            # Zero masked records â†’ loss is zero; no crash.
+            # Zero masked records ??loss is zero; no crash.
             _v7_lb_loss = torch.tensor(0.0, device=device)
             if (
                 args.architecture == "v7_hierarchical"
@@ -9283,7 +9292,7 @@ def main(argv: list[str] | None = None) -> int:
                             + args.v7_location_boundary_loss_weight * _v7_lb_loss
                         )
 
-            # â”€â”€ Stage30-C2: v7 temporal safety BCE auxiliary loss â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            # ?€?€ Stage30-C2: v7 temporal safety BCE auxiliary loss ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
             # Separate forward pass on temporal safety diagnostic records.
             # Records are NOT in the main clean train/dev; no classification CE here.
             # Stage15/OOD is eval-only and is NEVER used here.
@@ -9326,7 +9335,7 @@ def main(argv: list[str] | None = None) -> int:
                             )
                         total_loss = total_loss + ts_loss_weight * _v7_ts_loss
 
-            # â”€â”€ Stage30-D: v7 temporal mismatch multihead BCE auxiliary loss â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            # ?€?€ Stage30-D: v7 temporal mismatch multihead BCE auxiliary loss ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
             # Separate forward pass on temporal mismatch diagnostic records.
             # Records are NOT in the main clean train/dev; no classification CE here.
             # Stage15/OOD is eval-only and is NEVER used here.
@@ -9377,11 +9386,11 @@ def main(argv: list[str] | None = None) -> int:
                                 )
                             _tmm_per_head_losses.append(_h_loss)
                     if _tmm_per_head_losses:
-                        # Mean for scale stability (3 heads â†’ 3Ã— scale without mean)
+                        # Mean for scale stability (3 heads ??3Ã— scale without mean)
                         _v7_tmm_loss = sum(_tmm_per_head_losses) / len(_tmm_per_head_losses)
                         total_loss = total_loss + tmm_loss_weight * _v7_tmm_loss
 
-            # â”€â”€ Stage30-E: v7 temporal preservation head BCE auxiliary loss â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            # ?€?€ Stage30-E: v7 temporal preservation head BCE auxiliary loss ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
             # Separate forward pass on temporal preservation diagnostic records.
             # Labels: 1 = preserved (none/paraphrase), 0 = not preserved (time_swap).
             # Stage15/OOD data must not be in the data file.
@@ -9454,7 +9463,7 @@ def main(argv: list[str] | None = None) -> int:
                     )
                     total_loss = total_loss + covent_loss_weight * _v7_covent_loss
 
-            # â”€â”€ Audit ledger accumulation (reporting only; does not affect gradients) â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            # ?€?€ Audit ledger accumulation (reporting only; does not affect gradients) ?€?€?€?€?€?€?€?€?€
             # raw = loss value before weight multiplication; weighted = actual total_loss contribution
             _ep_ce_raw = float(losses["label"].item())
             _ep_ai_val = (
@@ -9551,7 +9560,7 @@ def main(argv: list[str] | None = None) -> int:
                 "total_loss": _ep_total,
             })
             _audit_epoch_count += 1
-            # â”€â”€ end audit accumulation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            # ?€?€ end audit accumulation ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
 
             total_loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
@@ -10101,7 +10110,7 @@ def main(argv: list[str] | None = None) -> int:
                             "count_by_frame_construction_type": _pc_frame_type_counts,
                         }
 
-            # â”€â”€ Stage26-F: record per-epoch dev snapshot â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            # ?€?€ Stage26-F: record per-epoch dev snapshot ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
             # All values come from dev_metrics (already computed) and dev_output (already
             # available in no_grad context).  No new forward passes.  Reporting only.
             _v7_ep_snap: dict[str, Any] = {
@@ -10137,7 +10146,7 @@ def main(argv: list[str] | None = None) -> int:
             else:
                 _v7_ep_snap["v7_logit_summary"] = None
             _v7_epoch_history.append(_v7_ep_snap)
-            # â”€â”€ end Stage26-F epoch snapshot â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            # ?€?€ end Stage26-F epoch snapshot ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
 
             print(
                 f"run={run_name} "
@@ -10250,7 +10259,7 @@ def main(argv: list[str] | None = None) -> int:
         if use_td_constrained_selection:
             _tc_used = True
             if _tc_epoch >= 1:
-                # At least one epoch satisfied all constraints â€” override best_* with constrained
+                # At least one epoch satisfied all constraints ??override best_* with constrained
                 print(
                     f"  [td_constrained_sel] selected epoch={_tc_epoch}"
                     f" clean_macro={_tc_score:.4f}"
@@ -10268,7 +10277,7 @@ def main(argv: list[str] | None = None) -> int:
                 best_pc_metrics = _tc_pc_metrics
                 _tc_reason = "constrained_selection_applied"
             else:
-                # No epoch met all constraints â€” fall back to unconstrained best
+                # No epoch met all constraints ??fall back to unconstrained best
                 _tc_fallback_used = True
                 _tc_reason = "constrained_fallback_no_eligible_epoch"
                 _fd_note = (
@@ -10331,7 +10340,7 @@ def main(argv: list[str] | None = None) -> int:
         if use_preservation_constrained_selection:
             _pcs_used = True
             if _pcs_epoch >= 1:
-                # At least one epoch satisfied preservation constraints â€” override best_*
+                # At least one epoch satisfied preservation constraints ??override best_*
                 print(
                     f"  [pres_constrained_sel] selected epoch={_pcs_epoch}"
                     f" clean_macro={_pcs_score:.4f}"
@@ -10349,7 +10358,7 @@ def main(argv: list[str] | None = None) -> int:
                 best_pc_metrics = _pcs_pc_metrics
                 _pcs_reason = "constrained_selection_applied"
             else:
-                # No epoch met preservation constraints â€” fall back to unconstrained best
+                # No epoch met preservation constraints ??fall back to unconstrained best
                 _pcs_fallback_used = True
                 _pcs_reason = "constrained_fallback_no_eligible_epoch"
                 print(
@@ -10385,7 +10394,7 @@ def main(argv: list[str] | None = None) -> int:
             ),
         }
 
-        # â”€â”€ Build run-level audit ledger (reporting only; no model/loss/logit change) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        # ?€?€ Build run-level audit ledger (reporting only; no model/loss/logit change) ?€?€?€?€?€?€?€?€?€?€
         _n = max(_audit_epoch_count, 1)
 
         def _avg_epoch_dicts(dicts: list[dict]) -> dict[str, float]:
@@ -10436,7 +10445,7 @@ def main(argv: list[str] | None = None) -> int:
                 "weighted_loss_key": "ranking_loss",
                 "note": (
                     f"ranking_weight={ranking_weight}; weighted_loss = ranking_weight * raw_loss. "
-                    "Baseline is NOT CE-only when this is enabled â€” ranking loss is active by default."
+                    "Baseline is NOT CE-only when this is enabled ??ranking loss is active by default."
                     if not use_intervention_loss else "disabled; use_intervention_loss=True"
                 ),
             },
@@ -10448,7 +10457,7 @@ def main(argv: list[str] | None = None) -> int:
                 "raw_loss_key": "intervention_loss",
                 "weighted_loss_key": "intervention_loss",
                 "note": (
-                    "pairwise_losses['total']; internally weighted composite â€” "
+                    "pairwise_losses['total']; internally weighted composite ??"
                     "raw and weighted are identical in the audit (no outer scalar)"
                     if use_intervention_loss else "disabled; use_intervention_loss=False"
                 ),
@@ -10537,7 +10546,7 @@ def main(argv: list[str] | None = None) -> int:
                 "head_active": getattr(model, "temporal_channel_v1", None) is not None,
                 "input_representation": "cat([claim_frame_state, evidence_frame_state])",
                 "input_representation_note": (
-                    "pre-pair-projector slot states from FrameGate â€” NOT frame_pair_repr. "
+                    "pre-pair-projector slot states from FrameGate ??NOT frame_pair_repr. "
                     "With detach=True (default), TC loss cannot propagate into FrameGate parameters."
                 ),
                 "raw_loss_key": "temporal_channel_loss",
@@ -10548,7 +10557,7 @@ def main(argv: list[str] | None = None) -> int:
                     if tc_loss_weight > 0.0 else "disabled"
                 ),
             },
-            # Stage26-G: v7 stabilization losses â€” all off by default, v7_hierarchical only
+            # Stage26-G: v7 stabilization losses ??all off by default, v7_hierarchical only
             "v7_polarity_margin_loss": {
                 "enabled": (
                     args.architecture == "v7_hierarchical"
@@ -10607,7 +10616,7 @@ def main(argv: list[str] | None = None) -> int:
                 ),
                 "weight": getattr(args, "v7_entitled_class_balanced_ce_weight", 0.0),
                 "target": "v7_polarity_logits",
-                "target_derivation": "REFUTEâ†’local_0, SUPPORTâ†’local_1 (NOT_ENTITLED excluded)",
+                "target_derivation": "REFUTE?’local_0, SUPPORT?’local_1 (NOT_ENTITLED excluded)",
                 "stage15_used_for_selection_or_calibration": False,
                 "ood_used": False,
                 "raw_loss_key": "v7_entitled_class_balanced_ce_loss",
@@ -10736,7 +10745,7 @@ def main(argv: list[str] | None = None) -> int:
                 "stage15_used_for_selection_or_calibration": False,
                 "note": (
                     "per-example NOT_ENTITLED boost proportional to sigmoid(adapter_logit).detach(). "
-                    "Scale is a fixed hyperparameter â€” not OOD-calibrated. Stage15 never used."
+                    "Scale is a fixed hyperparameter ??not OOD-calibrated. Stage15 never used."
                     if ta_final_penalty_scale > 0.0 else "disabled"
                 ),
             },
@@ -10754,7 +10763,7 @@ def main(argv: list[str] | None = None) -> int:
                 "stage15_used_for_selection_or_calibration": False,
                 "note": (
                     "PE-gated NOT_ENTITLED boost. Fires only when TC detects temporal mismatch "
-                    "AND PE signals non-entitlement. Scale is a fixed hyperparameter â€” not "
+                    "AND PE signals non-entitlement. Scale is a fixed hyperparameter ??not "
                     "OOD-calibrated. Stage15 never used. Cannot be combined with "
                     "temporal_adapter_final_penalty in the same run."
                     if use_temporal_channel_gated_penalty and tc_gated_penalty_scale > 0.0 else "disabled"
@@ -10770,7 +10779,7 @@ def main(argv: list[str] | None = None) -> int:
                 ),
                 "stage15_used_for_selection_or_calibration": False,
                 "note": (
-                    "post-hoc global NE logit shift; selected on controlled data only â€” not Stage15. "
+                    "post-hoc global NE logit shift; selected on controlled data only ??not Stage15. "
                     "Diagnostic method; not a validated final-model component."
                     if args.dev_calibrated_ne_shift_candidates is not None else "disabled"
                 ),
@@ -10782,7 +10791,7 @@ def main(argv: list[str] | None = None) -> int:
                     args.ood_unflagged_ne_shift_sweep is not None
                 ),
                 "note": (
-                    "OOD-tuned global NE shift â€” Stage15 is consulted to select the shift. "
+                    "OOD-tuned global NE shift ??Stage15 is consulted to select the shift. "
                     "NOT a valid final-model component. Diagnostic upper bound only."
                     if args.ood_unflagged_ne_shift_sweep is not None else "disabled"
                 ),
@@ -10794,7 +10803,7 @@ def main(argv: list[str] | None = None) -> int:
                     args.ood_selective_ne_shift_sweep is not None
                 ),
                 "note": (
-                    "OOD-tuned selective NE shift â€” Stage15 is consulted to select the shift. "
+                    "OOD-tuned selective NE shift ??Stage15 is consulted to select the shift. "
                     "NOT a valid final-model component. Diagnostic upper bound only."
                     if args.ood_selective_ne_shift_sweep is not None else "disabled"
                 ),
@@ -10802,7 +10811,7 @@ def main(argv: list[str] | None = None) -> int:
         }
 
         # Architectural logit components: learned parameters inside model.forward().
-        # These modify final_logits as part of the model graph â€” they are trained through
+        # These modify final_logits as part of the model graph ??they are trained through
         # backprop and gated on external flag inputs, NOT post-hoc fixed-scale modifiers.
         _active_architectural_logit_components: dict[str, Any] = {
             "temporal_comparator_alpha": {
@@ -10864,7 +10873,7 @@ def main(argv: list[str] | None = None) -> int:
         if _aux_to_ce_w is not None and _aux_to_ce_w > 0.5:
             _audit_warnings.append(
                 f"aux_to_ce_loss_ratio_weighted={_aux_to_ce_w:.3f} > 0.5: "
-                "weighted auxiliary losses exceed 50% of CE â€” total_loss is not CE-dominated"
+                "weighted auxiliary losses exceed 50% of CE ??total_loss is not CE-dominated"
             )
         if not use_intervention_loss and ranking_weight > 2.0:
             _audit_warnings.append(
@@ -10891,7 +10900,7 @@ def main(argv: list[str] | None = None) -> int:
         if use_td_constrained_selection and use_preservation_constrained_selection:
             _audit_warnings.append(
                 "CRITICAL: both td_constrained_selection and preservation_constrained_selection "
-                "are enabled â€” this should have been caught at startup"
+                "are enabled ??this should have been caught at startup"
             )
         if args.ood_unflagged_ne_shift_sweep is not None or args.ood_selective_ne_shift_sweep is not None:
             _audit_warnings.append(
@@ -10945,7 +10954,7 @@ def main(argv: list[str] | None = None) -> int:
                 "no epoch satisfied preservation constraints; using unconstrained best epoch"
             )
 
-        # â”€â”€ Stage26-F extended: build v7 collapse and logit diagnostics â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        # ?€?€ Stage26-F extended: build v7 collapse and logit diagnostics ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
         # No new forward passes.  All values derived from already-computed variables.
         # _best_dev_output_v7 : CPU tensors from the unconstrained-best epoch (may differ
         #                       from checkpointed epoch if TC/PCS selection applied).
@@ -10955,7 +10964,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.architecture == "v7_hierarchical":
             _v7_best_logit_summary = _v7_make_logit_summary(_best_dev_output_v7)
 
-            # Final-epoch logit summary â€” dev_output is the last iteration's output
+            # Final-epoch logit summary ??dev_output is the last iteration's output
             _v7_final_logit_summary: "dict[str, Any] | None" = None
             if epochs > 0:
                 _fin_out_v7 = {
@@ -11039,14 +11048,14 @@ def main(argv: list[str] | None = None) -> int:
                 "v7_refute_recall": _per_label.get("REFUTE", {}).get("recall"),
                 "v7_ne_recall": _per_label.get("NOT_ENTITLED", {}).get("recall"),
             }
-        # â”€â”€ end Stage26-F extended â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        # ?€?€ end Stage26-F extended ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
 
         _run_audit_ledger: dict[str, Any] = {
             "active_training_losses": _active_training_losses,
             "active_final_logit_modifiers": _active_final_logit_modifiers,
             "active_architectural_logit_components": _active_architectural_logit_components,
             "active_selection_rules": _active_selection_rules,
-            # Loss component averages â€” raw (pre-weight) and weighted (contribution to total_loss)
+            # Loss component averages ??raw (pre-weight) and weighted (contribution to total_loss)
             "loss_component_epoch_avg_raw": _loss_epoch_avg_raw,
             "loss_component_epoch_avg_weighted": _loss_epoch_avg_weighted,
             "loss_component_epoch_avg": _loss_epoch_avg_weighted,   # backward-compat alias
@@ -11059,7 +11068,7 @@ def main(argv: list[str] | None = None) -> int:
             "final_epoch_loss_component_avg_raw": _final_epoch_raw,
             "final_epoch_loss_component_avg_weighted": _final_epoch_weighted,
             "final_epoch_loss_component_avg": _final_epoch_weighted,
-            # Ratios â€” weighted is primary; raw is supplemental
+            # Ratios ??weighted is primary; raw is supplemental
             "aux_weighted_loss_sum": _aux_weighted_sum,
             "aux_to_ce_loss_ratio_weighted": _aux_to_ce_w,
             "aux_raw_loss_sum": _aux_raw_sum,
@@ -12198,7 +12207,7 @@ def main(argv: list[str] | None = None) -> int:
             "v7_support_recall",
             "v7_refute_recall",
             "v7_ne_recall",
-            # TD constrained selection results â€” lifted from run report to top level
+            # TD constrained selection results ??lifted from run report to top level
             "use_td_constrained_selection",
             "td_selection_min_paraphrase_preserved",
             "td_selection_min_mismatch_recall",
@@ -12292,8 +12301,8 @@ def main(argv: list[str] | None = None) -> int:
     # Stage22-G2/G3: dev-calibrated selective NE shift
     # Shift (and optionally frame penalty) is selected on controlled data only.
     # Stage15 OOD labels are NEVER consulted during selection.
-    # G2: source=dev (default) â€” same pool as before.
-    # G3: source=train or train_dev â€” larger pool without any OOD records.
+    # G2: source=dev (default) ??same pool as before.
+    # G3: source=train or train_dev ??larger pool without any OOD records.
     # ---------------------------------------------------------------------------
     _selected_dev_ne_shift: float | None = None
     _selected_dev_ne_frame_penalty: float | None = None
@@ -12376,7 +12385,7 @@ def main(argv: list[str] | None = None) -> int:
             _dc_selected_count / _dc_unflagged_count if _dc_unflagged_count > 0 else 0.0
         )
 
-        # Record sets derived from intervention_type only â€” no Stage15 labels used
+        # Record sets derived from intervention_type only ??no Stage15 labels used
         _dc_pres_idx = [
             i for i, r in enumerate(_dc_records)
             if r.get("intervention_type", "") in _DC_PRES_ITYPES
@@ -12399,7 +12408,7 @@ def main(argv: list[str] | None = None) -> int:
         else:
             _dc_penalty_cands = [args.dev_calibrated_ne_frame_penalty]
 
-        # Joint (penalty, shift) sweep â€” nested dict keyed by penalty then shift
+        # Joint (penalty, shift) sweep ??nested dict keyed by penalty then shift
         _dc_sweep: dict[str, Any] = {}
         # Best-so-far tracking; tie-breaks applied in order:
         # 1 higher score  2 lower frame_fe_rate  3 higher pres_rate  4 lower shift  5 higher penalty
@@ -12447,7 +12456,7 @@ def main(argv: list[str] | None = None) -> int:
 
                 # Tie-break order: (1) higher score; (2) lower fe_rate; (3) higher pres_rate;
                 # (4) lower shift (ascending loop handles this); (5) higher penalty (desc loop
-                # would handle â€” instead we check explicitly).
+                # would handle ??instead we check explicitly).
                 def _dc_beats_best() -> bool:
                     if _dc_score > _dc_best_score:
                         return True
@@ -12546,7 +12555,7 @@ def main(argv: list[str] | None = None) -> int:
 
         # Provenance block written to every --output-ood-json file so the backbone
         # audit script can classify OOD-only JSONs without the main seed JSON.
-        # This is logging only â€” no model behavior, loss, or logit change.
+        # This is logging only ??no model behavior, loss, or logit change.
         _ood_provenance: dict[str, Any] = {
             "backbone": args.backbone,
             "freeze_encoder": getattr(args, "freeze_encoder", None),
@@ -12990,7 +12999,7 @@ def main(argv: list[str] | None = None) -> int:
 
         # Stage22-G2: apply dev-calibrated shift to OOD (always runs if shift was selected,
         # independent of which sweep branch above was active; adds ood_dev_calibrated_ne_shift
-        # to the main report â€” Stage15 OOD labels never used for shift selection)
+        # to the main report ??Stage15 OOD labels never used for shift selection)
         if _selected_dev_ne_shift is not None:
             _dc_ood_ne_idx = v5.FINAL_LABEL_TO_ID.get("NOT_ENTITLED")
             if _dc_ood_ne_idx is None:
@@ -13145,7 +13154,7 @@ def main(argv: list[str] | None = None) -> int:
                 for _k in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
                     _ext_inputs[_k] = _ext_inputs[_k][:, :max_length]
 
-            # Eval-only forward pass â€” no loss, no gradient
+            # Eval-only forward pass ??no loss, no gradient
             _ext_result, _ext_pred_records = evaluate_external_probe(
                 model=model,
                 probe_records=_ext_records,
@@ -13238,7 +13247,7 @@ def main(argv: list[str] | None = None) -> int:
             batch_size=int(_stage43_batch_size),
             args=args,
             vocab=vocab,
-            tokenizer=locals().get("tokenizer"),
+            tokenizer=tokenizer,
             max_length=max_length,
             device=device,
         )
