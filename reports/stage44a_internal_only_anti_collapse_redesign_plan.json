@@ -1,0 +1,138 @@
+﻿{
+  "decision": "STAGE44A_INTERNAL_ONLY_ANTI_COLLAPSE_PLAN_READY",
+  "stage43_summary": {
+    "external_eval_status": "incomplete_no_external_pass",
+    "high_level_findings_allowed_for_stage44": [
+      "External evaluation remains incomplete due to severe NOT_ENTITLED collapse.",
+      "Stage43-C2 made the external composer path available.",
+      "Stage43-B1 must not be used for tuning, calibration, selection, loss design, model selection, or composer behavior changes."
+    ],
+    "composer_path_status": "Stage32/36/37/39 shadow fields are exported for all external rows and safe_structured_v2 is available for all external rows.",
+    "safety_counters": {
+      "introduced_unsafe_SUPPORT_count": 0,
+      "introduced_REFUTE_to_SUPPORT_count": 0,
+      "introduced_SUPPORT_to_REFUTE_count": 0
+    },
+    "performance_status": {
+      "vitaminc_composed_macro_f1_approx": 0.095,
+      "climate_fever_composed_macro_f1_approx": 0.174,
+      "dominant_failure_mode": "NOT_ENTITLED collapse"
+    }
+  },
+  "external_data_lock_policy": {
+    "locked_datasets": [
+      "VitaminC validation sample1000",
+      "Climate-FEVER test sample1000"
+    ],
+    "policy": "Stage43-B1 remains external-evaluation-only and must not inform optimization, calibration, threshold tuning, checkpoint selection, model selection, loss design, composer behavior changes, or training templates."
+  },
+  "allowed_internal_inputs": [
+    "data/controlled_v5_v3_without_time_swap.jsonl",
+    "existing internal controlled dev split",
+    "existing internal synthetic/controlled diagnostics as internal diagnostics only",
+    "existing Stage30/32/33/36/37/39/40/41/42 reports as historical internal reports",
+    "Stage43 high-level conclusion only: external evaluation remains incomplete due to severe NOT_ENTITLED collapse; composer path is now available; do not tune on external data"
+  ],
+  "disallowed_external_uses": [
+    "Stage43-B1 external labels for any design choice",
+    "Stage43-B1 per-example predictions",
+    "Stage43-B1 threshold search",
+    "Stage43-B1 calibration",
+    "Stage43-B1 checkpoint/model selection",
+    "Stage43-B1 examples as training templates",
+    "Stage34/35 synthetic probes as naturalistic external validation"
+  ],
+  "internal_hypotheses": [
+    {
+      "id": "H1",
+      "text": "NOT_ENTITLED over-prediction is caused by overly conservative final entitlement gating."
+    },
+    {
+      "id": "H2",
+      "text": "SUPPORT/REFUTE recall is under-protected during checkpoint selection."
+    },
+    {
+      "id": "H3",
+      "text": "Class-balanced CE or inverse-frequency loss alone may be insufficient because collapse happens through final entitlement gating, not only label imbalance."
+    },
+    {
+      "id": "H4",
+      "text": "safe_structured_v2 changes too few rows because its source shadow labels inherit the base collapse."
+    },
+    {
+      "id": "H5",
+      "text": "Improving internal SUPPORT/REFUTE recall must not increase unsafe SUPPORT."
+    }
+  ],
+  "candidate_options": [
+    {
+      "name": "Option A",
+      "title": "Internal selection constraint",
+      "description": "Add internal clean-dev selection constraints: minimum SUPPORT recall, minimum REFUTE recall, maximum NOT_ENTITLED prediction rate, and clean-dev accuracy tolerance while preserving macro-F1 as primary metric.",
+      "uses_stage43b1": false,
+      "audit_risk": "lowest"
+    },
+    {
+      "name": "Option B",
+      "title": "Entitled-class anti-collapse auxiliary loss",
+      "description": "Add an internal auxiliary loss protecting SUPPORT/REFUTE entitlement separation using only controlled clean data labels and fields.",
+      "uses_stage43b1": false,
+      "audit_risk": "medium"
+    },
+    {
+      "name": "Option C",
+      "title": "Final entitlement gate temperature/bias parameter",
+      "description": "Learn or select a final entitlement gate temperature/bias parameter only on internal controlled train/dev data.",
+      "uses_stage43b1": false,
+      "audit_risk": "medium"
+    }
+  ],
+  "recommended_option": {
+    "name": "Option A",
+    "reason": "It changes checkpoint selection only within internal clean-dev constraints, is easiest to audit for leakage, and directly tests whether SUPPORT/REFUTE recall is under-protected during selection.",
+    "fallback": "If Option A fails, pre-register Option B as a separate internal-only training change."
+  },
+  "stage44b_selection_rule": {
+    "selection_data": "internal clean-dev only",
+    "primary_metric": "clean-dev macro-F1",
+    "constraints": [
+      "support_recall >= pre-registered fixed floor or internal-baseline-derived floor",
+      "refute_recall >= pre-registered fixed floor or internal-baseline-derived floor",
+      "not_entitled_prediction_rate <= fixed maximum",
+      "clean-dev accuracy degradation <= small pre-registered tolerance",
+      "unsafe SUPPORT counters on internal diagnostics do not increase beyond pre-registered tolerance"
+    ],
+    "baseline_rule": "If historical internal baseline values are unavailable, Stage44-B must compute them on internal dev only and write them to a report before any model comparison.",
+    "stage43b1_dependency": false
+  },
+  "stage44c_external_eval_rule": {
+    "when": "After Stage44-B selects a model/checkpoint using internal-only criteria.",
+    "frequency": "exactly once",
+    "mode": "read-only external evaluation on Stage43-B1",
+    "iteration_allowed": false,
+    "interpretation": "Improvements are post-hoc external results, not training signals. Failures must be frozen honestly."
+  },
+  "leakage_guardrails": [
+    "Stage43-B1 is locked.",
+    "No thresholds/calibration/checkpoints/model changes may be selected using Stage43-B1.",
+    "No Stage43-B1 examples may be used as training templates.",
+    "No Stage43-B1 labels, metrics, prediction distributions, or per-dataset outcomes may inform Stage44-B design choices.",
+    "Any future redesign after seeing Stage44-C external results must acquire a new external holdout or clearly label Stage43-B1 as no longer pristine."
+  ],
+  "allowed_claims": [
+    "Stage44-A defines an internal-only redesign plan.",
+    "Stage43-B1 remains locked as external-evaluation-only.",
+    "Stage44-B may use only internal controlled train/dev diagnostics."
+  ],
+  "disallowed_claims": [
+    "External PASS.",
+    "Naturalistic generalization.",
+    "Stage44 will fix VitaminC or Climate-FEVER.",
+    "Stage43-B1 can be used for tuning."
+  ],
+  "next_stage": {
+    "stage": "Stage44-B",
+    "recommended_path": "Implement Option A: internal clean-dev constrained checkpoint selection audit.",
+    "first_step": "If internal baseline floors are unavailable, compute and freeze them from internal dev only before any model comparison."
+  }
+}
