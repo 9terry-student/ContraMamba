@@ -287,64 +287,129 @@ def pair_index(records: list[dict]) -> dict[str, dict[str, int]]:
     return dict(result)
 
 
+# Stage45-B2: variants an intervention_objective group would use if all were present.
+# Under Stage45 internal family holdout, the held-out family's variant is intentionally
+# absent from the training split, so this list is a lookup contract, not a guarantee.
+REQUIRED_INTERVENTION_VARIANTS: tuple[str, ...] = (
+    "none",
+    "paraphrase",
+    "entity_swap",
+    "event_swap",
+    "predicate_swap",
+    "evidence_deletion",
+    "evidence_truncation",
+    "polarity_flip",
+)
+
+
 def intervention_objective(output: dict[str, Any], records: list[dict]) -> torch.Tensor:
-    """Output-only ranking/preservation objective; metadata is never a model input."""
+    """Output-only ranking/preservation objective; metadata is never a model input.
+
+    Stage45-B2: under internal family holdout, a pair group may be missing one or
+    more expected intervention variants (e.g. `entity_swap`) because the held-out
+    family was intentionally removed from the training split. Terms that require a
+    missing variant are skipped rather than raising KeyError. No pseudo-examples are
+    fabricated and held-out dev rows are never read here. Diagnostics from the guard
+    are exposed via `intervention_objective.last_diagnostics` after each call.
+    """
 
     terms: list[torch.Tensor] = []
     margin = 0.5
+    logits_ref = output["logits"]
+    groups_considered = 0
+    groups_skipped = 0
+    missing_variant_counts: Counter[str] = Counter()
+
     for variants in pair_index(records).values():
-        original = variants["none"]
-        paraphrase = variants["paraphrase"]
-        entity = variants["entity_swap"]
-        event = variants["event_swap"]
-        predicate = variants["predicate_swap"]
-        deletion = variants["evidence_deletion"]
-        truncation = variants["evidence_truncation"]
-        flip = variants["polarity_flip"]
+        groups_considered += 1
+        present = {name for name in REQUIRED_INTERVENTION_VARIANTS if name in variants}
+        for name in REQUIRED_INTERVENTION_VARIANTS:
+            if name not in present:
+                missing_variant_counts[name] += 1
 
-        for changed in (entity, event):
-            terms.append(
-                F.relu(
-                    margin
-                    - output["frame_logit"][original]
-                    + output["frame_logit"][changed]
+        group_terms: list[torch.Tensor] = []
+        original = variants.get("none")
+        if original is not None:
+            for changed_name in ("entity_swap", "event_swap"):
+                if changed_name in present:
+                    changed = variants[changed_name]
+                    group_terms.append(
+                        F.relu(
+                            margin
+                            - output["frame_logit"][original]
+                            + output["frame_logit"][changed]
+                        )
+                    )
+            if "predicate_swap" in present:
+                predicate = variants["predicate_swap"]
+                group_terms.append(
+                    F.relu(
+                        margin
+                        - output["predicate_coverage_logit"][original]
+                        + output["predicate_coverage_logit"][predicate]
+                    )
                 )
-            )
-        terms.append(
-            F.relu(
-                margin
-                - output["predicate_coverage_logit"][original]
-                + output["predicate_coverage_logit"][predicate]
-            )
-        )
-        for changed in (deletion, truncation):
-            terms.append(
-                F.relu(
-                    margin
-                    - output["sufficiency_logit"][original]
-                    + output["sufficiency_logit"][changed]
+                group_terms.append(
+                    (output["frame_prob"][original] - output["frame_prob"][predicate]).square()
                 )
-            )
+            for changed_name in ("evidence_deletion", "evidence_truncation"):
+                if changed_name in present:
+                    changed = variants[changed_name]
+                    group_terms.append(
+                        F.relu(
+                            margin
+                            - output["sufficiency_logit"][original]
+                            + output["sufficiency_logit"][changed]
+                        )
+                    )
+            if "paraphrase" in present:
+                paraphrase = variants["paraphrase"]
+                for key in (
+                    "frame_prob",
+                    "predicate_coverage_prob",
+                    "sufficiency_prob",
+                    "entitlement_prob",
+                ):
+                    group_terms.append(
+                        (output[key][original] - output[key][paraphrase]).square()
+                    )
+                group_terms.append(
+                    (output["logits"][original] - output["logits"][paraphrase])
+                    .square()
+                    .mean()
+                )
+            if "polarity_flip" in present:
+                flip = variants["polarity_flip"]
+                group_terms.append(
+                    (output["entitlement_prob"][original] - output["entitlement_prob"][flip])
+                    .square()
+                )
 
-        for key in (
-            "frame_prob",
-            "predicate_coverage_prob",
-            "sufficiency_prob",
-            "entitlement_prob",
-        ):
-            terms.append((output[key][original] - output[key][paraphrase]).square())
-        terms.append(
-            (output["logits"][original] - output["logits"][paraphrase])
-            .square()
-            .mean()
-        )
-        terms.append(
-            (output["frame_prob"][original] - output["frame_prob"][predicate]).square()
-        )
-        terms.append(
-            (output["entitlement_prob"][original] - output["entitlement_prob"][flip]).square()
-        )
-    return torch.stack(terms).mean()
+        if group_terms:
+            terms.extend(group_terms)
+        else:
+            groups_skipped += 1
+
+    if terms:
+        objective = torch.stack(terms).mean()
+    else:
+        objective = torch.zeros((), device=logits_ref.device, dtype=logits_ref.dtype)
+
+    intervention_objective.last_diagnostics = {
+        "stage45b2_intervention_objective_guard_enabled": True,
+        "stage45b2_intervention_objective_total_group_count": groups_considered,
+        "stage45b2_intervention_objective_skipped_group_count": groups_skipped,
+        "stage45b2_intervention_objective_active_group_count": (
+            groups_considered - groups_skipped
+        ),
+        "stage45b2_intervention_objective_missing_variant_counts": dict(
+            sorted(missing_variant_counts.items())
+        ),
+        "stage45b2_intervention_objective_effectively_inactive": (
+            groups_considered > 0 and groups_skipped == groups_considered
+        ),
+    }
+    return objective
 
 
 def class_weights(labels: torch.Tensor) -> torch.Tensor:

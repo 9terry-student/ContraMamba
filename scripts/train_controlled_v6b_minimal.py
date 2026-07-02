@@ -9258,6 +9258,9 @@ def main(argv: list[str] | None = None) -> int:
         _pcs_predicate_disentangled: float = float("nan")
         _pcs_eligible_count: int = 0
         _stage45b_split_info = dict(stage45b_split_info or {})
+        # Stage45-B2: diagnostics from v5.intervention_objective's internal-family-holdout
+        # guard, refreshed each epoch when the ranking-objective branch runs.
+        _stage45b2_intervention_diag: "dict[str, Any] | None" = None
 
         # TD-constrained selection tracking (parallel to unconstrained; fallback is existing best_*)
         _tc_epoch: int = -1
@@ -9370,6 +9373,9 @@ def main(argv: list[str] | None = None) -> int:
             else:
                 active_intervention_loss = (
                     ranking_weight * v5.intervention_objective(output, train_records)
+                )
+                _stage45b2_intervention_diag = getattr(
+                    v5.intervention_objective, "last_diagnostics", None
                 )
             total_loss = losses["total"] + active_intervention_loss
 
@@ -11940,6 +11946,52 @@ def main(argv: list[str] | None = None) -> int:
                 "support_recall": _stage45b_per_label.get("SUPPORT", {}).get("recall"),
                 "refute_recall": _stage45b_per_label.get("REFUTE", {}).get("recall"),
             }
+            if _stage45b2_intervention_diag:
+                _stage45b2_inactive = _stage45b2_intervention_diag.get(
+                    "stage45b2_intervention_objective_effectively_inactive"
+                )
+                _stage45b_split_info["stage45b2_intervention_objective_guard_enabled"] = (
+                    _stage45b2_intervention_diag.get(
+                        "stage45b2_intervention_objective_guard_enabled", True
+                    )
+                )
+                _stage45b_split_info[
+                    "stage45b2_intervention_objective_missing_variant_counts"
+                ] = _stage45b2_intervention_diag.get(
+                    "stage45b2_intervention_objective_missing_variant_counts"
+                )
+                _stage45b_split_info[
+                    "stage45b2_intervention_objective_skipped_group_count"
+                ] = _stage45b2_intervention_diag.get(
+                    "stage45b2_intervention_objective_skipped_group_count"
+                )
+                _stage45b_split_info[
+                    "stage45b2_intervention_objective_active_group_count"
+                ] = _stage45b2_intervention_diag.get(
+                    "stage45b2_intervention_objective_active_group_count"
+                )
+                _stage45b_split_info[
+                    "stage45b2_intervention_objective_effectively_inactive"
+                ] = _stage45b2_inactive
+                _stage45b_split_info["stage45b2_decision"] = (
+                    "STAGE45B2_FAMILY_HOLDOUT_OBJECTIVE_GUARDED"
+                )
+                _stage45b_split_info["stage45b2_recommendation"] = (
+                    (
+                        "The intervention objective was entirely inactive for this split "
+                        "because every group was missing a required variant; no ranking-"
+                        "objective gradient signal was available for this run. Consider "
+                        "--use-intervention-loss (structured pairwise objective) or a "
+                        "different --stage45-family-field if ranking supervision is required."
+                    )
+                    if _stage45b2_inactive
+                    else (
+                        "Missing intervention-objective terms caused by the internal family "
+                        "holdout were skipped, not fabricated. This is an internal robustness "
+                        "diagnostic; treat resulting metrics as holdout-family-specific, not a "
+                        "substitute for full-data training."
+                    )
+                )
 
         report = {
             "run_name": run_name,
@@ -13152,6 +13204,13 @@ def main(argv: list[str] | None = None) -> int:
             "stage45b_holdout_metrics",
             "stage45b_leakage_policy",
             "stage45b_recommendation",
+            "stage45b2_decision",
+            "stage45b2_intervention_objective_guard_enabled",
+            "stage45b2_intervention_objective_missing_variant_counts",
+            "stage45b2_intervention_objective_skipped_group_count",
+            "stage45b2_intervention_objective_active_group_count",
+            "stage45b2_intervention_objective_effectively_inactive",
+            "stage45b2_recommendation",
             # Audit ledger (nested dict; lifted from run report)
             "audit_ledger",
         ):
@@ -14283,6 +14342,13 @@ def main(argv: list[str] | None = None) -> int:
             "stage45b_holdout_metrics",
             "stage45b_leakage_policy",
             "stage45b_recommendation",
+            "stage45b2_decision",
+            "stage45b2_intervention_objective_guard_enabled",
+            "stage45b2_intervention_objective_missing_variant_counts",
+            "stage45b2_intervention_objective_skipped_group_count",
+            "stage45b2_intervention_objective_active_group_count",
+            "stage45b2_intervention_objective_effectively_inactive",
+            "stage45b2_recommendation",
         ]
         _stage45_report = {
             key: report.get(key)
@@ -14339,6 +14405,18 @@ def main(argv: list[str] | None = None) -> int:
                 f"- NOT_ENTITLED prediction rate: {_stage45_metrics.get('not_entitled_prediction_rate')}",
                 f"- SUPPORT recall: {_stage45_metrics.get('support_recall')}",
                 f"- REFUTE recall: {_stage45_metrics.get('refute_recall')}",
+                "",
+                "## Stage45-B2 Intervention Objective Guard",
+                "",
+                f"`{_stage45_report.get('stage45b2_decision')}`",
+                "",
+                f"- Guard enabled: {_stage45_report.get('stage45b2_intervention_objective_guard_enabled')}",
+                f"- Missing variant counts: {_stage45_report.get('stage45b2_intervention_objective_missing_variant_counts')}",
+                f"- Skipped group count: {_stage45_report.get('stage45b2_intervention_objective_skipped_group_count')}",
+                f"- Active group count: {_stage45_report.get('stage45b2_intervention_objective_active_group_count')}",
+                f"- Effectively inactive: {_stage45_report.get('stage45b2_intervention_objective_effectively_inactive')}",
+                "",
+                str(_stage45_report.get("stage45b2_recommendation")),
                 "",
                 "## Leakage Policy",
                 "",
