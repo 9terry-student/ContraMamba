@@ -86,6 +86,42 @@ def label_counts(records: list[dict[str, Any]]) -> dict[str, int]:
     return dict(sorted(counts.items()))
 
 
+def _available_top_level_keys(records: list[dict[str, Any]]) -> list[str]:
+    keys: set[str] = set()
+    for record in records:
+        keys.update(str(key) for key in record.keys())
+    return sorted(keys)
+
+
+def _available_metadata_keys(records: list[dict[str, Any]]) -> list[str]:
+    keys: set[str] = set()
+    for record in records:
+        metadata = record.get("metadata")
+        if isinstance(metadata, dict):
+            keys.update(str(key) for key in metadata.keys())
+    return sorted(keys)
+
+
+def _candidate_field_unique_counts(records: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    audit: dict[str, dict[str, Any]] = {}
+    for field in FAMILY_FIELD_CANDIDATES:
+        values: Counter[str] = Counter()
+        missing = 0
+        for record in records:
+            value = _clean_family(_lookup_dotted(record, field))
+            if value is None:
+                missing += 1
+            else:
+                values[value] += 1
+        audit[field] = {
+            "present_rows": sum(values.values()),
+            "missing_rows": missing,
+            "unique_count": len(values),
+            "unique_values": dict(sorted(values.items())),
+        }
+    return audit
+
+
 def build_family_manifest(
     records: list[dict[str, Any]],
     *,
@@ -108,14 +144,22 @@ def build_family_manifest(
         if is_time_swap_like(record, family):
             time_swap_families.add(family)
 
+    all_rows_unknown_family = (
+        len(records) > 0
+        and len(family_counts) == 1
+        and family_counts.get("unknown_family") == len(records)
+    )
     eligible = sorted(
         family for family, count in family_counts.items()
         if count >= min_family_size
+        and not (all_rows_unknown_family and family == "unknown_family")
     )
     tiny = sorted(
         family for family, count in family_counts.items()
         if count < min_family_size
     )
+    if all_rows_unknown_family:
+        warnings.append("all_rows_unknown_family_no_leave_family_out_possible")
     if tiny:
         warnings.append(
             "Tiny families below min_family_size: "
@@ -127,7 +171,7 @@ def build_family_manifest(
             + ", ".join(sorted(time_swap_families))
         )
 
-    if not records or not eligible:
+    if not records or not eligible or all_rows_unknown_family:
         decision = "STAGE45B_INTERNAL_FAMILY_MANIFEST_INCOMPLETE"
     else:
         decision = "STAGE45B_INTERNAL_FAMILY_MANIFEST_READY"
@@ -149,8 +193,18 @@ def build_family_manifest(
             for family, counts in sorted(label_counts_by_family.items())
         },
         "eligible_holdout_families": eligible,
+        "leave_family_out_possible": bool(eligible) and not all_rows_unknown_family,
         "min_family_size": min_family_size,
         "warnings": warnings,
+        "available_top_level_keys": _available_top_level_keys(records),
+        "available_metadata_keys": _available_metadata_keys(records),
+        "candidate_field_unique_counts": _candidate_field_unique_counts(records),
+        "recommendation": (
+            "If no internal family metadata exists, Stage45-B cannot perform "
+            "leave-family-out validation on this dataset. Next valid step is "
+            "Stage45-B1 internal family recovery from existing internal IDs/metadata "
+            "if available, or Stage45-C controlled family annotation/generation plan."
+        ),
         "leakage_policy": {
             "scope": "internal_controlled_jsonl_only",
             "stage43b1_files_read": False,
@@ -199,13 +253,24 @@ def split_leave_family_out(
             f"[stage45b] holdout family {holdout_family!r} not found in internal data. "
             f"Available families: {sorted(family_counts)}"
         )
+    if not train_records:
+        raise ValueError(
+            "[stage45b] STAGE45B_INTERNAL_FAMILY_HOLDOUT_INCOMPLETE: "
+            "family holdout split would produce zero training rows; "
+            "leave-family-out validation is not meaningful. "
+            f"total_rows={len(records)} holdout_family={holdout_family!r} "
+            f"holdout_rows={len(holdout_records)} train_rows={len(train_records)} "
+            f"family_counts={dict(sorted(family_counts.items()))}. "
+            "If all rows resolve to unknown_family, Stage45-B cannot perform "
+            "leave-family-out validation on this dataset. Next valid step is "
+            "Stage45-B1 internal family recovery from existing internal IDs/metadata "
+            "if available, or Stage45-C controlled family annotation/generation plan."
+        )
     if len(holdout_records) < min_holdout_size:
         raise ValueError(
             f"[stage45b] holdout family {holdout_family!r} has {len(holdout_records)} rows, "
             f"below --stage45-min-holdout-size={min_holdout_size}."
         )
-    if not train_records:
-        raise ValueError("[stage45b] family holdout split produced zero training rows.")
 
     if len(field_counts) == 1:
         resolved_field = next(iter(field_counts)) if field_counts else "fallback:unknown_family"
@@ -253,6 +318,7 @@ def render_manifest_markdown(manifest: dict[str, Any]) -> str:
         f"- Total rows: {manifest['total_rows']}",
         f"- Family field used: `{manifest['family_field_used']}`",
         f"- Minimum family size: {manifest['min_family_size']}",
+        f"- Leave-family-out possible: {manifest.get('leave_family_out_possible')}",
         "",
         "## Family Counts",
         "",
@@ -284,6 +350,34 @@ def render_manifest_markdown(manifest: dict[str, Any]) -> str:
     else:
         lines.append("- None")
     lines.extend([
+        "",
+        "## Metadata Audit",
+        "",
+        "### Available Top-Level Keys",
+        "",
+    ])
+    if manifest.get("available_top_level_keys"):
+        for key in manifest["available_top_level_keys"]:
+            lines.append(f"- `{key}`")
+    else:
+        lines.append("- None")
+    lines.extend(["", "### Available Metadata Keys", ""])
+    if manifest.get("available_metadata_keys"):
+        for key in manifest["available_metadata_keys"]:
+            lines.append(f"- `{key}`")
+    else:
+        lines.append("- None")
+    lines.extend(["", "### Candidate Field Unique Counts", ""])
+    for field, audit in (manifest.get("candidate_field_unique_counts") or {}).items():
+        lines.append(
+            f"- `{field}`: present_rows={audit.get('present_rows')} "
+            f"unique_count={audit.get('unique_count')}"
+        )
+    lines.extend([
+        "",
+        "## Recommendation",
+        "",
+        manifest.get("recommendation", "None"),
         "",
         "## Leakage Policy",
         "",
