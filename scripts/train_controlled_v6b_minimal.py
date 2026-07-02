@@ -4980,6 +4980,70 @@ def _resolve_v7_final_logit_composition(args: "argparse.Namespace") -> "str | No
     return "hierarchical_additive"
 
 
+# ---------------------------------------------------------------------------
+# Stage48: load the Stage47-validated frozen recovery config
+# ---------------------------------------------------------------------------
+
+STAGE47_DECISION_READY = "STAGE47_SELECTED_RECOVERY_CONFIG_READY"
+STAGE47_SELECTED_CONFIG_NAME = "recovery_w01_ne01"
+STAGE47_SELECTED_SUPPORT_W = 0.1
+STAGE47_SELECTED_NE_W = 0.1
+
+
+def load_stage47_selected_recovery_weights(path: Path) -> tuple[float, float]:
+    """Read and validate the Stage47 selected-recovery-config-check JSON.
+
+    Returns (support_w, ne_w) for the frozen recovery_w01_ne01 selection.
+    Raises ValueError with a clear message if the file is missing, malformed,
+    or does not match the frozen Stage47 selection. Never falls back silently.
+    """
+    if not path.exists():
+        raise ValueError(
+            f"[stage48] --use-stage47-selected-recovery-config: Stage47 config file "
+            f"not found at {path}. Run scripts/write_stage47_selected_recovery_config_check.py "
+            "first, or pass --stage47-recovery-config-path to point at it."
+        )
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError, UnicodeDecodeError) as exc:
+        raise ValueError(
+            f"[stage48] --use-stage47-selected-recovery-config: failed to parse "
+            f"Stage47 config file at {path}: {exc}"
+        ) from exc
+    if not isinstance(payload, dict):
+        raise ValueError(
+            f"[stage48] --use-stage47-selected-recovery-config: Stage47 config file "
+            f"at {path} did not contain a JSON object."
+        )
+
+    if payload.get("decision") != STAGE47_DECISION_READY:
+        raise ValueError(
+            "[stage48] --use-stage47-selected-recovery-config: Stage47 decision is "
+            f"{payload.get('decision')!r}, not {STAGE47_DECISION_READY!r}. "
+            f"Refusing to guess recovery weights from {path}."
+        )
+    if payload.get("selected_config_name") != STAGE47_SELECTED_CONFIG_NAME:
+        raise ValueError(
+            "[stage48] --use-stage47-selected-recovery-config: Stage47 "
+            f"selected_config_name is {payload.get('selected_config_name')!r}, not "
+            f"{STAGE47_SELECTED_CONFIG_NAME!r}."
+        )
+    if payload.get("selected_support_w") != STAGE47_SELECTED_SUPPORT_W:
+        raise ValueError(
+            "[stage48] --use-stage47-selected-recovery-config: Stage47 "
+            f"selected_support_w is {payload.get('selected_support_w')!r}, not "
+            f"{STAGE47_SELECTED_SUPPORT_W!r}."
+        )
+    if payload.get("selected_ne_w") != STAGE47_SELECTED_NE_W:
+        raise ValueError(
+            "[stage48] --use-stage47-selected-recovery-config: Stage47 "
+            f"selected_ne_w is {payload.get('selected_ne_w')!r}, not "
+            f"{STAGE47_SELECTED_NE_W!r}."
+        )
+
+    return STAGE47_SELECTED_SUPPORT_W, STAGE47_SELECTED_NE_W
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = v5.build_parser()
     parser.add_argument(
@@ -7043,6 +7107,31 @@ def build_parser() -> argparse.ArgumentParser:
         help="Stage45-C: optional standalone internal support-recovery report Markdown.",
     )
 
+    # Stage48: optional load of the Stage47-validated frozen recovery config
+    parser.add_argument(
+        "--use-stage47-selected-recovery-config",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage48: load the Stage47-validated frozen recovery config "
+            "(recovery_w01_ne01: support_w=0.1, ne_w=0.1) and apply it to "
+            "--stage45c-support-recovery-weight / --stage45c-entitled-ne-penalty-weight, "
+            "instead of retyping those weights manually. Fails fast if the Stage47 "
+            "file is missing or does not match the frozen selection. Default off; "
+            "leaves existing training behavior unchanged when off."
+        ),
+    )
+    parser.add_argument(
+        "--stage47-recovery-config-path",
+        type=Path,
+        default=Path("results/stage47_selected_recovery_config_check.json"),
+        help=(
+            "Stage48: path to the Stage47 selected recovery config-check JSON. "
+            "Only read when --use-stage47-selected-recovery-config is set. "
+            "Default: results/stage47_selected_recovery_config_check.json"
+        ),
+    )
+
     # Stage28-E: prediction export schema version
     parser.add_argument(
         "--prediction-export-schema",
@@ -8108,6 +8197,32 @@ def lift_report_aliases(report: dict[str, Any]) -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+
+    # ---------------------------------------------------------------------------
+    # Stage48: optionally load the Stage47-validated frozen recovery config
+    # ---------------------------------------------------------------------------
+    if getattr(args, "use_stage47_selected_recovery_config", False):
+        _stage47_support_w, _stage47_ne_w = load_stage47_selected_recovery_weights(
+            args.stage47_recovery_config_path
+        )
+        if (
+            args.stage45c_support_recovery_weight != 0.0
+            or args.stage45c_entitled_ne_penalty_weight != 0.0
+        ):
+            print(
+                "[stage48] Manual --stage45c-support-recovery-weight/"
+                "--stage45c-entitled-ne-penalty-weight values "
+                f"(support_w={args.stage45c_support_recovery_weight}, "
+                f"ne_w={args.stage45c_entitled_ne_penalty_weight}) were overridden by "
+                "the Stage47 frozen recovery config."
+            )
+        args.stage45c_support_recovery_weight = _stage47_support_w
+        args.stage45c_entitled_ne_penalty_weight = _stage47_ne_w
+        print(
+            f"[stage48] Loaded Stage47 selected recovery config "
+            f"'{STAGE47_SELECTED_CONFIG_NAME}' from {args.stage47_recovery_config_path}: "
+            f"support_w={_stage47_support_w}, ne_w={_stage47_ne_w}."
+        )
 
     # ---------------------------------------------------------------------------
     # Fail-fast: dummy backbone guard
