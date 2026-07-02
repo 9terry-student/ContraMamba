@@ -1,0 +1,210 @@
+{
+  "summary": {
+    "stage": "Stage71C",
+    "decision": "STAGE71C_BRIDGE_PAIRWISE_LOSS_EXCLUSION_STATIC_CHECK_READY",
+    "help_ok": true,
+    "source_ok": true,
+    "heuristic_ok": true,
+    "data_ok": true,
+    "main_row_count": 3600,
+    "expected_clean_main_train_count": 2880,
+    "expected_clean_main_dev_count": 720,
+    "stage57_bridge_row_count": 520,
+    "stage66_bridge_row_count": 720,
+    "combined_bridge_row_count": 1240,
+    "expected_pairwise_loss_source": "clean_main_train_only",
+    "expected_bridge_rows_excluded_from_intervention_pairwise_loss": true,
+    "training_executed": false,
+    "external_eval_executed": false,
+    "recommended_next_stage": "Stage71 retry full run after pairwise-loss bridge exclusion patch"
+  },
+  "help_flag_check": [
+    {
+      "flag": "--stage57-bridge-train-jsonl",
+      "present_in_help": true
+    },
+    {
+      "flag": "--stage57-bridge-train-mode",
+      "present_in_help": true
+    },
+    {
+      "flag": "--stage66-bridge-train-jsonl",
+      "present_in_help": true
+    },
+    {
+      "flag": "--stage66-bridge-train-mode",
+      "present_in_help": true
+    }
+  ],
+  "source_checks": [
+    {
+      "check": "intervention_pairwise_losses_call_exists",
+      "pass": true
+    },
+    {
+      "check": "bridge_exclusion_report_field_present",
+      "pass": true
+    },
+    {
+      "check": "stage57_exclusion_report_field_present",
+      "pass": true
+    },
+    {
+      "check": "stage66_exclusion_report_field_present",
+      "pass": true
+    },
+    {
+      "check": "pairwise_loss_source_report_field_present",
+      "pass": true
+    },
+    {
+      "check": "pairwise_clean_main_count_report_field_present",
+      "pass": true
+    },
+    {
+      "check": "pairwise_bridge_excluded_count_report_field_present",
+      "pass": true
+    },
+    {
+      "check": "pairwise_stage57_excluded_count_report_field_present",
+      "pass": true
+    },
+    {
+      "check": "pairwise_stage66_excluded_count_report_field_present",
+      "pass": true
+    },
+    {
+      "check": "clean_main_train_only_literal_or_equivalent_present",
+      "pass": true
+    },
+    {
+      "check": "bridge_sources_still_reported",
+      "pass": true
+    },
+    {
+      "check": "stage57_bridge_still_appended",
+      "pass": true
+    },
+    {
+      "check": "stage66_bridge_still_appended",
+      "pass": true
+    }
+  ],
+  "heuristic_checks": [
+    {
+      "check": "no_obvious_old_train_records_only_pairwise_call",
+      "pass": true
+    },
+    {
+      "check": "intervention_pairwise_losses_function_unchanged_ok",
+      "pass": true
+    }
+  ],
+  "data_checks": [
+    {
+      "check": "main_row_count_3600",
+      "pass": true
+    },
+    {
+      "check": "expected_clean_main_train_count_2880",
+      "pass": true
+    },
+    {
+      "check": "expected_clean_main_dev_count_720",
+      "pass": true
+    },
+    {
+      "check": "stage57_row_count_520",
+      "pass": true
+    },
+    {
+      "check": "stage66_row_count_720",
+      "pass": true
+    },
+    {
+      "check": "combined_bridge_row_count_1240",
+      "pass": true
+    },
+    {
+      "check": "stage57_label_counts_ok",
+      "pass": true
+    },
+    {
+      "check": "stage66_label_counts_ok",
+      "pass": true
+    },
+    {
+      "check": "combined_label_counts_ok",
+      "pass": true
+    },
+    {
+      "check": "stage68_ready",
+      "pass": true
+    },
+    {
+      "check": "stage68_encode_label_tensors_ok",
+      "pass": true
+    },
+    {
+      "check": "stage69_ready",
+      "pass": true
+    },
+    {
+      "check": "stage70_ready",
+      "pass": true
+    },
+    {
+      "check": "stage70_stage66_encode_ok",
+      "pass": true
+    },
+    {
+      "check": "stage71a_ready",
+      "pass": true
+    }
+  ],
+  "expected_report_values_for_stage71_retry": [
+    {
+      "field": "stage57_bridge_row_count",
+      "expected_value": 520
+    },
+    {
+      "field": "stage66_bridge_row_count",
+      "expected_value": 720
+    },
+    {
+      "field": "combined_bridge_row_count",
+      "expected_value": 1240
+    },
+    {
+      "field": "intervention_pairwise_loss_clean_main_row_count",
+      "expected_value": 2880
+    },
+    {
+      "field": "intervention_pairwise_loss_bridge_row_count_excluded",
+      "expected_value": 1240
+    },
+    {
+      "field": "intervention_pairwise_loss_stage57_row_count_excluded",
+      "expected_value": 520
+    },
+    {
+      "field": "intervention_pairwise_loss_stage66_row_count_excluded",
+      "expected_value": 720
+    },
+    {
+      "field": "bridge_rows_excluded_from_intervention_pairwise_loss",
+      "expected_value": true
+    },
+    {
+      "field": "intervention_pairwise_loss_source",
+      "expected_value": "clean_main_train_only"
+    }
+  ],
+  "source_files": {
+    "runner": "scripts/train_controlled_v6b_minimal.py",
+    "losses": "src/contramamba/losses.py",
+    "main_clean": "data/controlled_v5_v3_without_time_swap.jsonl",
+    "stage57_bridge": "data/stage57_nonleaking_external_bridge.jsonl",
+    "stage66_bridge": "data/stage66_residual_bridge.jsonl"
+  }
+}
