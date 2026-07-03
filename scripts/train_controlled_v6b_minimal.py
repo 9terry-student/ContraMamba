@@ -7323,6 +7323,31 @@ def build_parser() -> argparse.ArgumentParser:
             "appends the rows loaded from --stage75-bridge-train-jsonl to train only."
         ),
     )
+    parser.add_argument(
+        "--stage80a-bridge-train-jsonl",
+        type=str,
+        default=None,
+        help=(
+            "Stage80D: optional path to the Stage80A conservative Stage75v2 bridge "
+            "JSONL (e.g. data/stage80a_conservative_stage75v2_bridge.jsonl). Only "
+            "used when --stage80a-bridge-train-mode=append_train_only. Default: "
+            "None, which preserves current training/data split behavior exactly."
+        ),
+    )
+    parser.add_argument(
+        "--stage80a-bridge-train-mode",
+        choices=("none", "append_train_only"),
+        default="none",
+        help=(
+            "Stage80D: whether to append Stage80A conservative Stage75v2 bridge "
+            "rows to the train split only, after the clean main train/dev split is "
+            "created (and after any Stage57/Stage66/Stage75 bridge rows are "
+            "appended). 'none' (default) leaves current behavior unchanged; the "
+            "clean dev split always remains the checkpoint-selection/dev source. "
+            "'append_train_only' appends the rows loaded from "
+            "--stage80a-bridge-train-jsonl to train only."
+        ),
+    )
 
     return parser
 
@@ -8966,6 +8991,145 @@ def load_stage75_bridge_train_rows(
     return normalized, label_counts, family_counts, family_label_counts
 
 
+# ---------------------------------------------------------------------------
+# Stage80D: optional train-only Stage80A conservative Stage75v2 bridge
+# integration.
+#
+# Same policy as the Stage57/Stage66/Stage75 bridges above: bridge rows are
+# appended to the train split only, strictly after the clean main train/dev
+# split has been created (and after any Stage57/Stage66/Stage75 bridge
+# appends), and never enter dev / checkpoint selection.
+#
+# Row schema mirrors Stage75's exactly (scripts/generate_stage80a_conservative_
+# stage75v2_bridge.py never emits an integer "label" field or a "pair_id"
+# field; rows carry "final_label"/"polarity_label" directly), except the
+# family/subtype key names are "family"/"family_subtype" instead of
+# "bridge_family"/"bridge_subtype" and there is no "target_error_type" field.
+# This loader therefore reuses STAGE75_BRIDGE_REQUIRED_FIELDS and
+# STAGE75_EXPECTED_POLARITY_BY_FINAL_LABEL rather than redefining them.
+# ---------------------------------------------------------------------------
+def load_stage80a_bridge_train_rows(
+    bridge_path: Path,
+    existing_ids: set[str],
+) -> tuple[list[dict], dict[str, int], dict[str, int], dict[str, dict[str, int]]]:
+    """Load, validate, and normalize Stage80A conservative Stage75v2 bridge rows
+    for train-only append.
+
+    Mirrors load_stage75_bridge_train_rows for
+    data/stage80a_conservative_stage75v2_bridge.jsonl. Returns
+    (normalized_records, label_counts, family_counts, family_label_counts).
+    Raises ValueError/FileNotFoundError on any safety-check violation.
+    """
+    _stage60_check_forbidden_source(str(bridge_path), "--stage80a-bridge-train-jsonl path")
+
+    if not bridge_path.exists():
+        raise FileNotFoundError(
+            f"[stage80a] --stage80a-bridge-train-jsonl not found: {bridge_path}"
+        )
+
+    raw_rows: list[dict] = []
+    with bridge_path.open("r", encoding="utf-8") as handle:
+        for line_number, line in enumerate(handle, start=1):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                raw_rows.append(json.loads(line))
+            except json.JSONDecodeError as exc:
+                raise ValueError(
+                    f"[stage80a] invalid JSON on line {line_number} of {bridge_path}: {exc}"
+                ) from exc
+
+    if not raw_rows:
+        raise ValueError(f"[stage80a] --stage80a-bridge-train-jsonl is empty: {bridge_path}")
+
+    normalized: list[dict] = []
+    seen_bridge_ids: set[str] = set()
+    label_counts: dict[str, int] = {name: 0 for name in v5.ID_TO_FINAL_LABEL.values()}
+    family_counts: dict[str, int] = {}
+    family_label_counts: dict[str, dict[str, int]] = {}
+
+    for row_number, row in enumerate(raw_rows, start=1):
+        prefix = f"[stage80a] row {row_number} in {bridge_path}: "
+        missing = [
+            field for field in STAGE75_BRIDGE_REQUIRED_FIELDS if row.get(field) is None
+        ]
+        if missing:
+            raise ValueError(f"{prefix}missing required fields: {missing}")
+
+        row_id = row["id"]
+        if row_id in seen_bridge_ids:
+            raise ValueError(f"{prefix}duplicate bridge id: {row_id!r}")
+        seen_bridge_ids.add(row_id)
+        if row_id in existing_ids:
+            raise ValueError(
+                f"{prefix}bridge id {row_id!r} duplicates an existing clean train/dev "
+                "or already-appended bridge id"
+            )
+
+        final_label = row["final_label"]
+        if final_label not in v5.FINAL_LABEL_TO_ID:
+            raise ValueError(
+                f"{prefix}invalid final_label {final_label!r}; expected one of "
+                f"{sorted(v5.FINAL_LABEL_TO_ID)}"
+            )
+
+        polarity_label = row["polarity_label"]
+        if polarity_label not in v5.POLARITY_LABEL_TO_ID:
+            raise ValueError(
+                f"{prefix}invalid polarity_label {polarity_label!r}; expected one of "
+                f"{sorted(v5.POLARITY_LABEL_TO_ID)}"
+            )
+        expected_polarity = STAGE75_EXPECTED_POLARITY_BY_FINAL_LABEL.get(final_label)
+        if polarity_label != expected_polarity:
+            raise ValueError(
+                f"{prefix}polarity_label {polarity_label!r} does not match "
+                f"final_label {final_label!r} (expected {expected_polarity!r})"
+            )
+
+        # Row-level forbidden-source scanning is restricted to id/claim/evidence
+        # only, mirroring load_stage75_bridge_train_rows: family/family_subtype/
+        # bridge_source/leakage_note are intentionally NOT scanned because
+        # leakage_note legitimately contains "vitaminc" as part of a documented
+        # non-use declaration, not a leak, and bridge_source legitimately
+        # contains this bridge's own official name (which references Stage75v2
+        # as a naming convention, not as a used data source).
+        for field_name in ("id", "claim", "evidence"):
+            field_value = row.get(field_name)
+            if isinstance(field_value, str):
+                _stage60_check_forbidden_source(
+                    field_value, f"row {row_number} field {field_name!r}"
+                )
+
+        normalized.append({
+            "id": row_id,
+            "pair_id": row.get("pair_id", row_id),
+            "claim": row["claim"],
+            "evidence": row["evidence"],
+            "final_label": final_label,
+            "frame_compatible_label": row["frame_compatible_label"],
+            "predicate_covered_label": row["predicate_covered_label"],
+            "sufficiency_label": row["sufficiency_label"],
+            "polarity_label": polarity_label,
+            "primary_failure_type": row.get("primary_failure_type", "none"),
+            "intervention_type": row.get("intervention_type", "stage80a_bridge"),
+            "stage80a_bridge_family": row.get("family"),
+            "stage80a_bridge_subtype": row.get("family_subtype"),
+            "stage80a_bridge_source": row.get("bridge_source"),
+            "stage80a_leakage_note": row.get("leakage_note"),
+        })
+
+        label_counts[final_label] += 1
+        family = row.get("family") or "unknown"
+        family_counts[family] = family_counts.get(family, 0) + 1
+        family_label_counts.setdefault(
+            family, {name: 0 for name in v5.ID_TO_FINAL_LABEL.values()}
+        )
+        family_label_counts[family][final_label] += 1
+
+    return normalized, label_counts, family_counts, family_label_counts
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
@@ -9396,11 +9560,82 @@ def main(argv: list[str] | None = None) -> int:
         )
 
     # ---------------------------------------------------------------------------
-    # Stage69/Stage70/Stage75C: report-field aliases (spec-named, without
-    # "_train_") plus combined Stage57+Stage66+Stage75 bridge metadata. These
-    # are additive: the original stage57_bridge_train_* / stage66_bridge_train_*
-    # / stage75_bridge_train_* fields above are preserved unchanged for
-    # backward compatibility.
+    # Stage80D: optional train-only Stage80A conservative Stage75v2 bridge
+    # append. Must run strictly AFTER the clean main train/dev split (and after
+    # any Stage57/Stage66/Stage75 bridge appends above). Bridge rows are only
+    # ever added to train_records; dev_records (checkpoint selection) is never
+    # touched. Stage75's full bridge is NOT used by this integration path --
+    # this is a separate, independent bridge (data/stage80a_conservative_
+    # stage75v2_bridge.jsonl) selected under --stage80a-bridge-train-jsonl.
+    # ---------------------------------------------------------------------------
+    _stage80a_bridge_info: dict[str, Any] = {
+        "stage80a_bridge_train_mode": args.stage80a_bridge_train_mode,
+        "stage80a_bridge_train_jsonl": (
+            str(args.stage80a_bridge_train_jsonl)
+            if args.stage80a_bridge_train_jsonl is not None else None
+        ),
+        "stage80a_bridge_train_enabled": False,
+        "stage80a_bridge_train_row_count": 0,
+        "stage80a_bridge_train_label_counts": None,
+        "stage80a_bridge_train_family_counts": None,
+        "stage80a_bridge_train_family_label_counts": None,
+        "stage80a_bridge_train_only": False,
+        "stage80a_bridge_appended_after_clean_split": False,
+        "stage80a_bridge_used_for_dev": False,
+        "stage80a_bridge_used_for_checkpoint_selection": False,
+        "stage80a_external_data_used_for_training": False,
+        "stage80a_external_metrics_used_for_threshold_tuning": False,
+    }
+    if args.stage80a_bridge_train_mode == "append_train_only":
+        if args.stage80a_bridge_train_jsonl is None:
+            raise ValueError(
+                "--stage80a-bridge-train-mode append_train_only requires "
+                "--stage80a-bridge-train-jsonl."
+            )
+        _stage80a_bridge_path = Path(args.stage80a_bridge_train_jsonl)
+        _stage80a_existing_ids = {r["id"] for r in train_records} | {
+            r["id"] for r in dev_records
+        }
+        (
+            _stage80a_bridge_records,
+            _stage80a_bridge_label_counts,
+            _stage80a_bridge_family_counts,
+            _stage80a_bridge_family_label_counts,
+        ) = load_stage80a_bridge_train_rows(_stage80a_bridge_path, _stage80a_existing_ids)
+
+        train_records = train_records + _stage80a_bridge_records
+        _train_source_labels = _train_source_labels + (
+            ["stage80a_bridge"] * len(_stage80a_bridge_records)
+        )
+
+        _stage80a_bridge_info.update({
+            "stage80a_bridge_train_enabled": True,
+            "stage80a_bridge_train_row_count": len(_stage80a_bridge_records),
+            "stage80a_bridge_train_label_counts": _stage80a_bridge_label_counts,
+            "stage80a_bridge_train_family_counts": _stage80a_bridge_family_counts,
+            "stage80a_bridge_train_family_label_counts": _stage80a_bridge_family_label_counts,
+            "stage80a_bridge_train_only": True,
+            "stage80a_bridge_appended_after_clean_split": True,
+        })
+        print(
+            f"[stage80a] appended Stage80A bridge train rows: "
+            f"{len(_stage80a_bridge_records)} from {_stage80a_bridge_path}"
+        )
+        print(f"[stage80a] bridge label counts: {_stage80a_bridge_label_counts}")
+        print(f"[stage80a] bridge family counts: {_stage80a_bridge_family_counts}")
+    elif args.stage80a_bridge_train_jsonl is not None:
+        print(
+            "[stage80a] --stage80a-bridge-train-jsonl was provided but "
+            "--stage80a-bridge-train-mode is 'none'; bridge data will NOT be used "
+            "(default training/data split behavior is unchanged)."
+        )
+
+    # ---------------------------------------------------------------------------
+    # Stage69/Stage70/Stage75C/Stage80D: report-field aliases (spec-named,
+    # without "_train_") plus combined Stage57+Stage66+Stage75+Stage80A bridge
+    # metadata. These are additive: the original stage57_bridge_train_* /
+    # stage66_bridge_train_* / stage75_bridge_train_* / stage80a_bridge_train_*
+    # fields above are preserved unchanged for backward compatibility.
     # ---------------------------------------------------------------------------
     _stage60_bridge_info.update({
         "stage57_bridge_enabled": _stage60_bridge_info["stage57_bridge_train_enabled"],
@@ -9432,12 +9667,23 @@ def main(argv: list[str] | None = None) -> int:
             _stage75_bridge_info["stage75_bridge_used_for_checkpoint_selection"]
         ),
     })
+    _stage80a_bridge_info.update({
+        "stage80a_bridge_enabled": _stage80a_bridge_info["stage80a_bridge_train_enabled"],
+        "stage80a_bridge_row_count": _stage80a_bridge_info["stage80a_bridge_train_row_count"],
+        "stage80a_bridge_label_counts": _stage80a_bridge_info["stage80a_bridge_train_label_counts"],
+        "stage80a_bridge_family_counts": _stage80a_bridge_info["stage80a_bridge_train_family_counts"],
+        "stage80a_used_for_dev": _stage80a_bridge_info["stage80a_bridge_used_for_dev"],
+        "stage80a_used_for_checkpoint_selection": (
+            _stage80a_bridge_info["stage80a_bridge_used_for_checkpoint_selection"]
+        ),
+    })
 
     _bridge_sources_enabled = [
         _name for _name, _enabled in (
             ("stage57", _stage60_bridge_info["stage57_bridge_enabled"]),
             ("stage66", _stage66_bridge_info["stage66_bridge_enabled"]),
             ("stage75", _stage75_bridge_info["stage75_bridge_enabled"]),
+            ("stage80a", _stage80a_bridge_info["stage80a_bridge_enabled"]),
         )
         if _enabled
     ]
@@ -9446,6 +9692,7 @@ def main(argv: list[str] | None = None) -> int:
             (_stage60_bridge_info.get("stage57_bridge_label_counts") or {}).get(name, 0)
             + (_stage66_bridge_info.get("stage66_bridge_label_counts") or {}).get(name, 0)
             + (_stage75_bridge_info.get("stage75_bridge_label_counts") or {}).get(name, 0)
+            + (_stage80a_bridge_info.get("stage80a_bridge_label_counts") or {}).get(name, 0)
         )
         for name in v5.ID_TO_FINAL_LABEL.values()
     }
@@ -9455,6 +9702,7 @@ def main(argv: list[str] | None = None) -> int:
             _stage60_bridge_info["stage57_bridge_row_count"]
             + _stage66_bridge_info["stage66_bridge_row_count"]
             + _stage75_bridge_info["stage75_bridge_row_count"]
+            + _stage80a_bridge_info["stage80a_bridge_row_count"]
         ),
         "combined_bridge_label_counts": _combined_bridge_label_counts,
         "combined_bridge_train_only": bool(_bridge_sources_enabled),
@@ -9465,8 +9713,8 @@ def main(argv: list[str] | None = None) -> int:
         "time_swap_used": False,
     }
 
-    # Stage71/Stage75C: Stage57/Stage66/Stage75 bridge rows have no
-    # intervention_type=="none" original record for their pair_id, so
+    # Stage71/Stage75C/Stage80D: Stage57/Stage66/Stage75/Stage80A bridge rows
+    # have no intervention_type=="none" original record for their pair_id, so
     # intervention_pairwise_losses (which requires a full intervention family
     # per pair_id) must never see them. These counts are derived from the same
     # bridge-row-count bookkeeping as _combined_bridge_info above; the actual
@@ -9480,16 +9728,19 @@ def main(argv: list[str] | None = None) -> int:
     _pairwise_loss_stage57_excluded = _stage60_bridge_info["stage57_bridge_row_count"]
     _pairwise_loss_stage66_excluded = _stage66_bridge_info["stage66_bridge_row_count"]
     _pairwise_loss_stage75_excluded = _stage75_bridge_info["stage75_bridge_row_count"]
+    _pairwise_loss_stage80a_excluded = _stage80a_bridge_info["stage80a_bridge_row_count"]
     _pairwise_loss_bridge_excluded = (
         _pairwise_loss_stage57_excluded
         + _pairwise_loss_stage66_excluded
         + _pairwise_loss_stage75_excluded
+        + _pairwise_loss_stage80a_excluded
     )
     _combined_bridge_info.update({
         "bridge_rows_excluded_from_intervention_pairwise_loss": _pairwise_loss_bridge_excluded > 0,
         "stage57_excluded_from_intervention_pairwise_loss": _pairwise_loss_stage57_excluded > 0,
         "stage66_excluded_from_intervention_pairwise_loss": _pairwise_loss_stage66_excluded > 0,
         "stage75_excluded_from_intervention_pairwise_loss": _pairwise_loss_stage75_excluded > 0,
+        "stage80a_excluded_from_intervention_pairwise_loss": _pairwise_loss_stage80a_excluded > 0,
         "intervention_pairwise_loss_source": (
             "clean_main_train_only" if _pairwise_loss_bridge_excluded > 0 else "full_train"
         ),
@@ -9498,6 +9749,7 @@ def main(argv: list[str] | None = None) -> int:
         "intervention_pairwise_loss_stage57_row_count_excluded": _pairwise_loss_stage57_excluded,
         "intervention_pairwise_loss_stage66_row_count_excluded": _pairwise_loss_stage66_excluded,
         "intervention_pairwise_loss_stage75_row_count_excluded": _pairwise_loss_stage75_excluded,
+        "intervention_pairwise_loss_stage80a_row_count_excluded": _pairwise_loss_stage80a_excluded,
     })
 
     ce_class_weights = compute_class_weights_v6b(train_records, args.class_weighting, device)
@@ -13301,9 +13553,11 @@ def main(argv: list[str] | None = None) -> int:
             **_stage60_bridge_info,
             # Stage69/Stage70: train-only Stage66 residual bridge provenance
             **_stage66_bridge_info,
-            # Stage75C: train-only Stage75 targeted residual bridge + combined
-            # Stage57+Stage66+Stage75 bridge provenance
+            # Stage75C: train-only Stage75 targeted residual bridge provenance
             **_stage75_bridge_info,
+            # Stage80D: train-only Stage80A conservative Stage75v2 bridge +
+            # combined Stage57+Stage66+Stage75+Stage80A bridge provenance
+            **_stage80a_bridge_info,
             **_combined_bridge_info,
             # Stage26-A: v7 hierarchical architecture provenance (always False in Stage26-A)
             "stage15_used_for_v7_training": False,
@@ -14281,9 +14535,11 @@ def main(argv: list[str] | None = None) -> int:
             **_stage60_bridge_info,
             # Stage69/Stage70: train-only Stage66 residual bridge provenance
             **_stage66_bridge_info,
-            # Stage75C: train-only Stage75 targeted residual bridge + combined
-            # Stage57+Stage66+Stage75 bridge provenance
+            # Stage75C: train-only Stage75 targeted residual bridge provenance
             **_stage75_bridge_info,
+            # Stage80D: train-only Stage80A conservative Stage75v2 bridge +
+            # combined Stage57+Stage66+Stage75+Stage80A bridge provenance
+            **_stage80a_bridge_info,
             **_combined_bridge_info,
             "loss_component_epoch_avg_semantics": "weighted",
             "audit_ledger_note": (
@@ -14798,7 +15054,27 @@ def main(argv: list[str] | None = None) -> int:
             "stage75_bridge_family_counts",
             "stage75_used_for_dev",
             "stage75_used_for_checkpoint_selection",
-            # Stage75C: combined Stage57+Stage66+Stage75 bridge provenance
+            # Stage80D: train-only Stage80A conservative Stage75v2 bridge provenance
+            "stage80a_bridge_train_mode",
+            "stage80a_bridge_train_jsonl",
+            "stage80a_bridge_train_enabled",
+            "stage80a_bridge_train_row_count",
+            "stage80a_bridge_train_label_counts",
+            "stage80a_bridge_train_family_counts",
+            "stage80a_bridge_train_family_label_counts",
+            "stage80a_bridge_train_only",
+            "stage80a_bridge_appended_after_clean_split",
+            "stage80a_bridge_used_for_dev",
+            "stage80a_bridge_used_for_checkpoint_selection",
+            "stage80a_external_data_used_for_training",
+            "stage80a_external_metrics_used_for_threshold_tuning",
+            "stage80a_bridge_enabled",
+            "stage80a_bridge_row_count",
+            "stage80a_bridge_label_counts",
+            "stage80a_bridge_family_counts",
+            "stage80a_used_for_dev",
+            "stage80a_used_for_checkpoint_selection",
+            # Stage80D: combined Stage57+Stage66+Stage75+Stage80A bridge provenance
             "combined_bridge_enabled",
             "combined_bridge_row_count",
             "combined_bridge_label_counts",
@@ -14808,6 +15084,18 @@ def main(argv: list[str] | None = None) -> int:
             "external_data_used_for_training",
             "external_metrics_used_for_threshold_tuning",
             "time_swap_used",
+            "bridge_rows_excluded_from_intervention_pairwise_loss",
+            "stage57_excluded_from_intervention_pairwise_loss",
+            "stage66_excluded_from_intervention_pairwise_loss",
+            "stage75_excluded_from_intervention_pairwise_loss",
+            "stage80a_excluded_from_intervention_pairwise_loss",
+            "intervention_pairwise_loss_source",
+            "intervention_pairwise_loss_clean_main_row_count",
+            "intervention_pairwise_loss_bridge_row_count_excluded",
+            "intervention_pairwise_loss_stage57_row_count_excluded",
+            "intervention_pairwise_loss_stage66_row_count_excluded",
+            "intervention_pairwise_loss_stage75_row_count_excluded",
+            "intervention_pairwise_loss_stage80a_row_count_excluded",
         ):
             if _audit_key in _single_ledger:
                 report[_audit_key] = _single_ledger[_audit_key]
