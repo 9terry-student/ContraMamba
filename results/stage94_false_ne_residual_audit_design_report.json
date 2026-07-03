@@ -1,0 +1,912 @@
+{
+  "summary": {
+    "stage": "Stage94",
+    "decision": "STAGE94_FALSE_NE_RESIDUAL_AUDIT_DESIGN_READY",
+    "basis_stage93_decision": "STAGE93_REJECT_STAGE92C_AS_PRIMARY_KEEP_STAGE71",
+    "basis_stage93_candidate_status": "NEAR_MISS_SUPPORT_RECOVERY_NOT_PRIMARY",
+    "match_mode": "key",
+    "matched_n": 1000,
+    "false_ne_partition": {
+      "stage73_false_NE_total": 323,
+      "stage88c_false_NE_total": 349,
+      "stage92c_false_NE_total": 345,
+      "stage92c_minus_stage73_false_NE_total": 22,
+      "new_false_NE_vs_stage73": 49,
+      "repaired_false_NE_vs_stage73": 27,
+      "persistent_false_NE_stage73_stage92c": 296,
+      "new_minus_repaired_vs_stage73": 22,
+      "new_false_NE_vs_stage73_by_gold": {
+        "REFUTE": 21,
+        "SUPPORT": 28
+      },
+      "repaired_false_NE_vs_stage73_by_gold": {
+        "SUPPORT": 14,
+        "REFUTE": 13
+      },
+      "persistent_false_NE_stage73_stage92c_by_gold": {
+        "SUPPORT": 164,
+        "REFUTE": 132
+      },
+      "stage92c_false_NE_by_gold": {
+        "SUPPORT": 192,
+        "REFUTE": 153
+      },
+      "new_false_NE_vs_stage88c": 27,
+      "repaired_false_NE_vs_stage88c": 31,
+      "new_minus_repaired_vs_stage88c": -4
+    },
+    "diagnosis_rules": [
+      "stage92c_has_residual_false_NE_excess_vs_stage73",
+      "new_false_NE_vs_stage73_exceeds_repaired_false_NE",
+      "support_false_NE_is_larger_absolute_component",
+      "refute_false_NE_remains_material",
+      "next_bridge_should_target_entitled_sufficiency_not_generic_label_pressure"
+    ],
+    "main_diagnosis": "Stage92C repaired SUPPORT-to-REFUTE overcorrection but still has residual false_NE absorption for entitled SUPPORT/REFUTE examples.",
+    "recommended_next_stage": "Stage95A anti-NE entitlement preservation bridge generation + encoder preflight only",
+    "stage95a_design": {
+      "proposed_stage": "Stage95A",
+      "name": "anti_NE_entitlement_preservation_bridge",
+      "purpose": "Reduce residual false_NE absorption in Stage92C without reintroducing Stage88C-style SUPPORT-to-REFUTE overcorrection.",
+      "recommended_distribution": {
+        "SUPPORT": 72,
+        "REFUTE": 48,
+        "NOT_ENTITLED": 40,
+        "total": 160
+      },
+      "why_small": "Stage92C is already a near-miss; large generic pressure can break clean-dev or false-entitlement guardrails.",
+      "bridge_composition": [
+        {
+          "family": "explicit_sufficient_support_with_ne_distractor",
+          "label": "SUPPORT",
+          "rows": 36,
+          "description": "Evidence explicitly states the claim while also mentioning irrelevant/missing contextual facts that should not trigger NOT_ENTITLED."
+        },
+        {
+          "family": "explicit_sufficient_refute_with_ne_distractor",
+          "label": "REFUTE",
+          "rows": 24,
+          "description": "Evidence explicitly contradicts the claim while also including incomplete peripheral context; decisive contradiction should prevent NE absorption."
+        },
+        {
+          "family": "support_exact_predicate_coverage_after_background",
+          "label": "SUPPORT",
+          "rows": 36,
+          "description": "Longer evidence begins with background/uncertain context but later gives exact predicate coverage for SUPPORT."
+        },
+        {
+          "family": "refute_exact_predicate_coverage_after_background",
+          "label": "REFUTE",
+          "rows": 24,
+          "description": "Longer evidence begins with background/uncertain context but later gives exact predicate contradiction for REFUTE."
+        },
+        {
+          "family": "matched_missing_decisive_predicate_guardrail",
+          "label": "NOT_ENTITLED",
+          "rows": 40,
+          "description": "Matched cases where claim/evidence share frame/entity but the decisive predicate/value/date/role is genuinely absent."
+        }
+      ],
+      "required_training_combo_for_stage95b": "Stage57 + Stage66 + Stage92A + Stage95A only; no Stage83A; no Stage88A.",
+      "forbidden": [
+        "Do not use VitaminC external examples as training rows.",
+        "Do not add Stage83A NE-safety rows.",
+        "Do not add generic SUPPORT-only pressure.",
+        "Do not add REFUTE-heavy pressure.",
+        "Do not tune using external labels."
+      ],
+      "promotion_criteria": {
+        "clean_dev": "clean-dev macro_f1 >= Stage71 macro_f1 - 0.003",
+        "external_acc": ">= Stage73 external accuracy 0.353",
+        "external_macro": ">= Stage73 external macro_f1_all3 0.3261787",
+        "false_NE_total": "<= Stage73 false_NE_total 323",
+        "support_recall": ">= Stage73 support recall 0.432 - 0.02",
+        "false_entitlement_total": "<= Stage73 false_entitlement_total + 10",
+        "false_REFUTE_on_SUPPORT": "remain near Stage73; avoid Stage88C regression"
+      }
+    },
+    "diagnostic_example_files": {
+      "new_false_ne_vs_stage73": "results/stage94_new_false_ne_stage73_non_ne_stage92c_ne_examples.jsonl",
+      "repaired_false_ne_vs_stage73": "results/stage94_repaired_false_ne_stage73_ne_stage92c_non_ne_examples.jsonl",
+      "persistent_false_ne_stage73_stage92c": "results/stage94_persistent_false_ne_stage73_stage92c_both_ne_examples.jsonl",
+      "stage92c_false_ne_all": "results/stage94_stage92c_false_ne_all_examples.jsonl"
+    },
+    "source_policy": "All exported examples are diagnostic only and not allowed as training data."
+  },
+  "false_ne_partition": [
+    {
+      "metric": "stage73_false_NE_total",
+      "value": 323
+    },
+    {
+      "metric": "stage88c_false_NE_total",
+      "value": 349
+    },
+    {
+      "metric": "stage92c_false_NE_total",
+      "value": 345
+    },
+    {
+      "metric": "stage92c_minus_stage73_false_NE_total",
+      "value": 22
+    },
+    {
+      "metric": "new_false_NE_vs_stage73",
+      "value": 49
+    },
+    {
+      "metric": "repaired_false_NE_vs_stage73",
+      "value": 27
+    },
+    {
+      "metric": "persistent_false_NE_stage73_stage92c",
+      "value": 296
+    },
+    {
+      "metric": "new_minus_repaired_vs_stage73",
+      "value": 22
+    },
+    {
+      "metric": "new_false_NE_vs_stage73_by_gold",
+      "value": "{\"REFUTE\": 21, \"SUPPORT\": 28}"
+    },
+    {
+      "metric": "repaired_false_NE_vs_stage73_by_gold",
+      "value": "{\"SUPPORT\": 14, \"REFUTE\": 13}"
+    },
+    {
+      "metric": "persistent_false_NE_stage73_stage92c_by_gold",
+      "value": "{\"SUPPORT\": 164, \"REFUTE\": 132}"
+    },
+    {
+      "metric": "stage92c_false_NE_by_gold",
+      "value": "{\"SUPPORT\": 192, \"REFUTE\": 153}"
+    },
+    {
+      "metric": "new_false_NE_vs_stage88c",
+      "value": 27
+    },
+    {
+      "metric": "repaired_false_NE_vs_stage88c",
+      "value": 31
+    },
+    {
+      "metric": "new_minus_repaired_vs_stage88c",
+      "value": -4
+    }
+  ],
+  "transition_stage73_to_stage92c": [
+    {
+      "subset": "gold_entitled",
+      "gold": "SUPPORT",
+      "stage73_pred": "SUPPORT",
+      "stage92c_pred": "SUPPORT",
+      "count": 169
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "SUPPORT",
+      "stage73_pred": "NOT_ENTITLED",
+      "stage92c_pred": "NOT_ENTITLED",
+      "count": 164
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "REFUTE",
+      "stage73_pred": "NOT_ENTITLED",
+      "stage92c_pred": "NOT_ENTITLED",
+      "count": 132
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "REFUTE",
+      "stage73_pred": "SUPPORT",
+      "stage92c_pred": "SUPPORT",
+      "count": 103
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "SUPPORT",
+      "stage73_pred": "REFUTE",
+      "stage92c_pred": "REFUTE",
+      "count": 80
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "REFUTE",
+      "stage73_pred": "REFUTE",
+      "stage92c_pred": "REFUTE",
+      "count": 58
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "SUPPORT",
+      "stage73_pred": "SUPPORT",
+      "stage92c_pred": "NOT_ENTITLED",
+      "count": 25
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "SUPPORT",
+      "stage73_pred": "REFUTE",
+      "stage92c_pred": "SUPPORT",
+      "count": 23
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "SUPPORT",
+      "stage73_pred": "SUPPORT",
+      "stage92c_pred": "REFUTE",
+      "count": 22
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "REFUTE",
+      "stage73_pred": "SUPPORT",
+      "stage92c_pred": "REFUTE",
+      "count": 18
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "REFUTE",
+      "stage73_pred": "SUPPORT",
+      "stage92c_pred": "NOT_ENTITLED",
+      "count": 17
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "REFUTE",
+      "stage73_pred": "REFUTE",
+      "stage92c_pred": "SUPPORT",
+      "count": 10
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "SUPPORT",
+      "stage73_pred": "NOT_ENTITLED",
+      "stage92c_pred": "SUPPORT",
+      "count": 9
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "REFUTE",
+      "stage73_pred": "NOT_ENTITLED",
+      "stage92c_pred": "REFUTE",
+      "count": 7
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "REFUTE",
+      "stage73_pred": "NOT_ENTITLED",
+      "stage92c_pred": "SUPPORT",
+      "count": 6
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "SUPPORT",
+      "stage73_pred": "NOT_ENTITLED",
+      "stage92c_pred": "REFUTE",
+      "count": 5
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "REFUTE",
+      "stage73_pred": "REFUTE",
+      "stage92c_pred": "NOT_ENTITLED",
+      "count": 4
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "SUPPORT",
+      "stage73_pred": "REFUTE",
+      "stage92c_pred": "NOT_ENTITLED",
+      "count": 3
+    },
+    {
+      "subset": "gold_support",
+      "gold": "SUPPORT",
+      "stage73_pred": "SUPPORT",
+      "stage92c_pred": "SUPPORT",
+      "count": 169
+    },
+    {
+      "subset": "gold_support",
+      "gold": "SUPPORT",
+      "stage73_pred": "NOT_ENTITLED",
+      "stage92c_pred": "NOT_ENTITLED",
+      "count": 164
+    },
+    {
+      "subset": "gold_support",
+      "gold": "SUPPORT",
+      "stage73_pred": "REFUTE",
+      "stage92c_pred": "REFUTE",
+      "count": 80
+    },
+    {
+      "subset": "gold_support",
+      "gold": "SUPPORT",
+      "stage73_pred": "SUPPORT",
+      "stage92c_pred": "NOT_ENTITLED",
+      "count": 25
+    },
+    {
+      "subset": "gold_support",
+      "gold": "SUPPORT",
+      "stage73_pred": "REFUTE",
+      "stage92c_pred": "SUPPORT",
+      "count": 23
+    },
+    {
+      "subset": "gold_support",
+      "gold": "SUPPORT",
+      "stage73_pred": "SUPPORT",
+      "stage92c_pred": "REFUTE",
+      "count": 22
+    },
+    {
+      "subset": "gold_support",
+      "gold": "SUPPORT",
+      "stage73_pred": "NOT_ENTITLED",
+      "stage92c_pred": "SUPPORT",
+      "count": 9
+    },
+    {
+      "subset": "gold_support",
+      "gold": "SUPPORT",
+      "stage73_pred": "NOT_ENTITLED",
+      "stage92c_pred": "REFUTE",
+      "count": 5
+    },
+    {
+      "subset": "gold_support",
+      "gold": "SUPPORT",
+      "stage73_pred": "REFUTE",
+      "stage92c_pred": "NOT_ENTITLED",
+      "count": 3
+    },
+    {
+      "subset": "gold_refute",
+      "gold": "REFUTE",
+      "stage73_pred": "NOT_ENTITLED",
+      "stage92c_pred": "NOT_ENTITLED",
+      "count": 132
+    },
+    {
+      "subset": "gold_refute",
+      "gold": "REFUTE",
+      "stage73_pred": "SUPPORT",
+      "stage92c_pred": "SUPPORT",
+      "count": 103
+    },
+    {
+      "subset": "gold_refute",
+      "gold": "REFUTE",
+      "stage73_pred": "REFUTE",
+      "stage92c_pred": "REFUTE",
+      "count": 58
+    },
+    {
+      "subset": "gold_refute",
+      "gold": "REFUTE",
+      "stage73_pred": "SUPPORT",
+      "stage92c_pred": "REFUTE",
+      "count": 18
+    },
+    {
+      "subset": "gold_refute",
+      "gold": "REFUTE",
+      "stage73_pred": "SUPPORT",
+      "stage92c_pred": "NOT_ENTITLED",
+      "count": 17
+    },
+    {
+      "subset": "gold_refute",
+      "gold": "REFUTE",
+      "stage73_pred": "REFUTE",
+      "stage92c_pred": "SUPPORT",
+      "count": 10
+    },
+    {
+      "subset": "gold_refute",
+      "gold": "REFUTE",
+      "stage73_pred": "NOT_ENTITLED",
+      "stage92c_pred": "REFUTE",
+      "count": 7
+    },
+    {
+      "subset": "gold_refute",
+      "gold": "REFUTE",
+      "stage73_pred": "NOT_ENTITLED",
+      "stage92c_pred": "SUPPORT",
+      "count": 6
+    },
+    {
+      "subset": "gold_refute",
+      "gold": "REFUTE",
+      "stage73_pred": "REFUTE",
+      "stage92c_pred": "NOT_ENTITLED",
+      "count": 4
+    }
+  ],
+  "transition_stage88c_to_stage92c": [
+    {
+      "subset": "gold_entitled",
+      "gold": "SUPPORT",
+      "stage88c_pred": "NOT_ENTITLED",
+      "stage92c_pred": "NOT_ENTITLED",
+      "count": 176
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "REFUTE",
+      "stage88c_pred": "NOT_ENTITLED",
+      "stage92c_pred": "NOT_ENTITLED",
+      "count": 142
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "SUPPORT",
+      "stage88c_pred": "SUPPORT",
+      "stage92c_pred": "SUPPORT",
+      "count": 140
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "SUPPORT",
+      "stage88c_pred": "REFUTE",
+      "stage92c_pred": "REFUTE",
+      "count": 85
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "REFUTE",
+      "stage88c_pred": "SUPPORT",
+      "stage92c_pred": "SUPPORT",
+      "count": 80
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "REFUTE",
+      "stage88c_pred": "REFUTE",
+      "stage92c_pred": "REFUTE",
+      "count": 67
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "SUPPORT",
+      "stage88c_pred": "REFUTE",
+      "stage92c_pred": "SUPPORT",
+      "count": 47
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "REFUTE",
+      "stage88c_pred": "REFUTE",
+      "stage92c_pred": "SUPPORT",
+      "count": 31
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "SUPPORT",
+      "stage88c_pred": "SUPPORT",
+      "stage92c_pred": "REFUTE",
+      "count": 15
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "REFUTE",
+      "stage88c_pred": "SUPPORT",
+      "stage92c_pred": "REFUTE",
+      "count": 14
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "SUPPORT",
+      "stage88c_pred": "NOT_ENTITLED",
+      "stage92c_pred": "SUPPORT",
+      "count": 14
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "SUPPORT",
+      "stage88c_pred": "REFUTE",
+      "stage92c_pred": "NOT_ENTITLED",
+      "count": 9
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "REFUTE",
+      "stage88c_pred": "NOT_ENTITLED",
+      "stage92c_pred": "SUPPORT",
+      "count": 8
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "REFUTE",
+      "stage88c_pred": "SUPPORT",
+      "stage92c_pred": "NOT_ENTITLED",
+      "count": 7
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "SUPPORT",
+      "stage88c_pred": "NOT_ENTITLED",
+      "stage92c_pred": "REFUTE",
+      "count": 7
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "SUPPORT",
+      "stage88c_pred": "SUPPORT",
+      "stage92c_pred": "NOT_ENTITLED",
+      "count": 7
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "REFUTE",
+      "stage88c_pred": "REFUTE",
+      "stage92c_pred": "NOT_ENTITLED",
+      "count": 4
+    },
+    {
+      "subset": "gold_entitled",
+      "gold": "REFUTE",
+      "stage88c_pred": "NOT_ENTITLED",
+      "stage92c_pred": "REFUTE",
+      "count": 2
+    },
+    {
+      "subset": "gold_support",
+      "gold": "SUPPORT",
+      "stage88c_pred": "NOT_ENTITLED",
+      "stage92c_pred": "NOT_ENTITLED",
+      "count": 176
+    },
+    {
+      "subset": "gold_support",
+      "gold": "SUPPORT",
+      "stage88c_pred": "SUPPORT",
+      "stage92c_pred": "SUPPORT",
+      "count": 140
+    },
+    {
+      "subset": "gold_support",
+      "gold": "SUPPORT",
+      "stage88c_pred": "REFUTE",
+      "stage92c_pred": "REFUTE",
+      "count": 85
+    },
+    {
+      "subset": "gold_support",
+      "gold": "SUPPORT",
+      "stage88c_pred": "REFUTE",
+      "stage92c_pred": "SUPPORT",
+      "count": 47
+    },
+    {
+      "subset": "gold_support",
+      "gold": "SUPPORT",
+      "stage88c_pred": "SUPPORT",
+      "stage92c_pred": "REFUTE",
+      "count": 15
+    },
+    {
+      "subset": "gold_support",
+      "gold": "SUPPORT",
+      "stage88c_pred": "NOT_ENTITLED",
+      "stage92c_pred": "SUPPORT",
+      "count": 14
+    },
+    {
+      "subset": "gold_support",
+      "gold": "SUPPORT",
+      "stage88c_pred": "REFUTE",
+      "stage92c_pred": "NOT_ENTITLED",
+      "count": 9
+    },
+    {
+      "subset": "gold_support",
+      "gold": "SUPPORT",
+      "stage88c_pred": "NOT_ENTITLED",
+      "stage92c_pred": "REFUTE",
+      "count": 7
+    },
+    {
+      "subset": "gold_support",
+      "gold": "SUPPORT",
+      "stage88c_pred": "SUPPORT",
+      "stage92c_pred": "NOT_ENTITLED",
+      "count": 7
+    },
+    {
+      "subset": "gold_refute",
+      "gold": "REFUTE",
+      "stage88c_pred": "NOT_ENTITLED",
+      "stage92c_pred": "NOT_ENTITLED",
+      "count": 142
+    },
+    {
+      "subset": "gold_refute",
+      "gold": "REFUTE",
+      "stage88c_pred": "SUPPORT",
+      "stage92c_pred": "SUPPORT",
+      "count": 80
+    },
+    {
+      "subset": "gold_refute",
+      "gold": "REFUTE",
+      "stage88c_pred": "REFUTE",
+      "stage92c_pred": "REFUTE",
+      "count": 67
+    },
+    {
+      "subset": "gold_refute",
+      "gold": "REFUTE",
+      "stage88c_pred": "REFUTE",
+      "stage92c_pred": "SUPPORT",
+      "count": 31
+    },
+    {
+      "subset": "gold_refute",
+      "gold": "REFUTE",
+      "stage88c_pred": "SUPPORT",
+      "stage92c_pred": "REFUTE",
+      "count": 14
+    },
+    {
+      "subset": "gold_refute",
+      "gold": "REFUTE",
+      "stage88c_pred": "NOT_ENTITLED",
+      "stage92c_pred": "SUPPORT",
+      "count": 8
+    },
+    {
+      "subset": "gold_refute",
+      "gold": "REFUTE",
+      "stage88c_pred": "SUPPORT",
+      "stage92c_pred": "NOT_ENTITLED",
+      "count": 7
+    },
+    {
+      "subset": "gold_refute",
+      "gold": "REFUTE",
+      "stage88c_pred": "REFUTE",
+      "stage92c_pred": "NOT_ENTITLED",
+      "count": 4
+    },
+    {
+      "subset": "gold_refute",
+      "gold": "REFUTE",
+      "stage88c_pred": "NOT_ENTITLED",
+      "stage92c_pred": "REFUTE",
+      "count": 2
+    }
+  ],
+  "lexical_feature_diagnostics": [
+    {
+      "group": "stage92c_false_NE_all",
+      "feature": "has_number",
+      "count": 234,
+      "rate": 0.6782608695652174,
+      "n": 345
+    },
+    {
+      "group": "stage92c_false_NE_all",
+      "feature": "has_date_word",
+      "count": 102,
+      "rate": 0.2956521739130435,
+      "n": 345
+    },
+    {
+      "group": "stage92c_false_NE_all",
+      "feature": "has_negation",
+      "count": 14,
+      "rate": 0.04057971014492753,
+      "n": 345
+    },
+    {
+      "group": "stage92c_false_NE_all",
+      "feature": "has_contrast",
+      "count": 21,
+      "rate": 0.06086956521739131,
+      "n": 345
+    },
+    {
+      "group": "stage92c_false_NE_all",
+      "feature": "has_role_word",
+      "count": 16,
+      "rate": 0.0463768115942029,
+      "n": 345
+    },
+    {
+      "group": "stage92c_false_NE_all",
+      "feature": "has_location_word",
+      "count": 22,
+      "rate": 0.06376811594202898,
+      "n": 345
+    },
+    {
+      "group": "new_false_NE_vs_stage73",
+      "feature": "has_number",
+      "count": 35,
+      "rate": 0.7142857142857143,
+      "n": 49
+    },
+    {
+      "group": "new_false_NE_vs_stage73",
+      "feature": "has_date_word",
+      "count": 14,
+      "rate": 0.2857142857142857,
+      "n": 49
+    },
+    {
+      "group": "new_false_NE_vs_stage73",
+      "feature": "has_negation",
+      "count": 1,
+      "rate": 0.02040816326530612,
+      "n": 49
+    },
+    {
+      "group": "new_false_NE_vs_stage73",
+      "feature": "has_contrast",
+      "count": 3,
+      "rate": 0.061224489795918366,
+      "n": 49
+    },
+    {
+      "group": "new_false_NE_vs_stage73",
+      "feature": "has_role_word",
+      "count": 0,
+      "rate": 0.0,
+      "n": 49
+    },
+    {
+      "group": "new_false_NE_vs_stage73",
+      "feature": "has_location_word",
+      "count": 4,
+      "rate": 0.08163265306122448,
+      "n": 49
+    },
+    {
+      "group": "persistent_false_NE_stage73_stage92c",
+      "feature": "has_number",
+      "count": 199,
+      "rate": 0.6722972972972973,
+      "n": 296
+    },
+    {
+      "group": "persistent_false_NE_stage73_stage92c",
+      "feature": "has_date_word",
+      "count": 88,
+      "rate": 0.2972972972972973,
+      "n": 296
+    },
+    {
+      "group": "persistent_false_NE_stage73_stage92c",
+      "feature": "has_negation",
+      "count": 13,
+      "rate": 0.04391891891891892,
+      "n": 296
+    },
+    {
+      "group": "persistent_false_NE_stage73_stage92c",
+      "feature": "has_contrast",
+      "count": 18,
+      "rate": 0.060810810810810814,
+      "n": 296
+    },
+    {
+      "group": "persistent_false_NE_stage73_stage92c",
+      "feature": "has_role_word",
+      "count": 16,
+      "rate": 0.05405405405405406,
+      "n": 296
+    },
+    {
+      "group": "persistent_false_NE_stage73_stage92c",
+      "feature": "has_location_word",
+      "count": 18,
+      "rate": 0.060810810810810814,
+      "n": 296
+    },
+    {
+      "group": "repaired_false_NE_vs_stage73",
+      "feature": "has_number",
+      "count": 21,
+      "rate": 0.7777777777777778,
+      "n": 27
+    },
+    {
+      "group": "repaired_false_NE_vs_stage73",
+      "feature": "has_date_word",
+      "count": 11,
+      "rate": 0.4074074074074074,
+      "n": 27
+    },
+    {
+      "group": "repaired_false_NE_vs_stage73",
+      "feature": "has_negation",
+      "count": 1,
+      "rate": 0.037037037037037035,
+      "n": 27
+    },
+    {
+      "group": "repaired_false_NE_vs_stage73",
+      "feature": "has_contrast",
+      "count": 1,
+      "rate": 0.037037037037037035,
+      "n": 27
+    },
+    {
+      "group": "repaired_false_NE_vs_stage73",
+      "feature": "has_role_word",
+      "count": 0,
+      "rate": 0.0,
+      "n": 27
+    },
+    {
+      "group": "repaired_false_NE_vs_stage73",
+      "feature": "has_location_word",
+      "count": 2,
+      "rate": 0.07407407407407407,
+      "n": 27
+    }
+  ],
+  "stage95a_bridge_composition": [
+    {
+      "family": "explicit_sufficient_support_with_ne_distractor",
+      "label": "SUPPORT",
+      "rows": 36,
+      "description": "Evidence explicitly states the claim while also mentioning irrelevant/missing contextual facts that should not trigger NOT_ENTITLED."
+    },
+    {
+      "family": "explicit_sufficient_refute_with_ne_distractor",
+      "label": "REFUTE",
+      "rows": 24,
+      "description": "Evidence explicitly contradicts the claim while also including incomplete peripheral context; decisive contradiction should prevent NE absorption."
+    },
+    {
+      "family": "support_exact_predicate_coverage_after_background",
+      "label": "SUPPORT",
+      "rows": 36,
+      "description": "Longer evidence begins with background/uncertain context but later gives exact predicate coverage for SUPPORT."
+    },
+    {
+      "family": "refute_exact_predicate_coverage_after_background",
+      "label": "REFUTE",
+      "rows": 24,
+      "description": "Longer evidence begins with background/uncertain context but later gives exact predicate contradiction for REFUTE."
+    },
+    {
+      "family": "matched_missing_decisive_predicate_guardrail",
+      "label": "NOT_ENTITLED",
+      "rows": 40,
+      "description": "Matched cases where claim/evidence share frame/entity but the decisive predicate/value/date/role is genuinely absent."
+    }
+  ],
+  "diagnosis_rules": [
+    {
+      "rule": "stage92c_has_residual_false_NE_excess_vs_stage73"
+    },
+    {
+      "rule": "new_false_NE_vs_stage73_exceeds_repaired_false_NE"
+    },
+    {
+      "rule": "support_false_NE_is_larger_absolute_component"
+    },
+    {
+      "rule": "refute_false_NE_remains_material"
+    },
+    {
+      "rule": "next_bridge_should_target_entitled_sufficiency_not_generic_label_pressure"
+    }
+  ],
+  "source_files": {
+    "stage73_predictions": "results/stage73_retry_stage57_stage66_bridge_vitaminc_external_diag_run_20260702_080534/external_vitaminc/external_probe_stage73_retry_vitaminc_predictions.json",
+    "stage88c_predictions": "results/stage88c_stage57_stage66_stage88a_vitaminc_external_run_20260703_043753/stage88c_stage57_stage66_stage88a_vitaminc_external_predictions.json",
+    "stage92c_predictions": "results/stage92c_stage57_stage66_stage92a_vitaminc_external_run_20260703_052044/stage92c_stage57_stage66_stage92a_vitaminc_external_predictions.json",
+    "stage92c_summary": "results/stage92c_vitaminc_external_diagnostic_summary.json",
+    "stage93_report": "results/stage93_stage92c_external_decision_report.json"
+  }
+}

@@ -1,0 +1,269 @@
+{
+  "summary": {
+    "stage": "Stage95A",
+    "decision": "STAGE95A_ANTI_NE_ENTITLEMENT_PRESERVATION_BRIDGE_READY",
+    "stage95a_out": "data/stage95a_anti_ne_entitlement_preservation_bridge.jsonl",
+    "combined_stage80a_out": "data/stage95a_stage92a_combined_support_antine_bridge.jsonl",
+    "stage95a_n": 160,
+    "stage95a_label_counts": {
+      "SUPPORT": 72,
+      "REFUTE": 48,
+      "NOT_ENTITLED": 40
+    },
+    "stage95a_family_counts": {
+      "explicit_sufficient_support_with_ne_distractor": 36,
+      "explicit_sufficient_refute_with_ne_distractor": 24,
+      "support_exact_predicate_coverage_after_background": 36,
+      "refute_exact_predicate_coverage_after_background": 24,
+      "matched_missing_decisive_predicate_guardrail": 40
+    },
+    "stage95a_polarity_counts": {
+      "SUPPORT": 72,
+      "REFUTE": 48,
+      "NONE": 40
+    },
+    "combined_n": 400,
+    "combined_label_counts": {
+      "SUPPORT": 192,
+      "REFUTE": 108,
+      "NOT_ENTITLED": 100
+    },
+    "combined_intervention_counts": {
+      "stage92a_support_preserving_counter_bridge": 240,
+      "stage95a_anti_ne_entitlement_preservation_bridge": 160
+    },
+    "repair": {
+      "duplicate_repairs": 0,
+      "overlap_repairs": 0,
+      "total_marker_appends": 0,
+      "method": "neutral evidence disambiguator until Stage95A rows are unique and non-overlapping with checked files"
+    },
+    "target": "Reduce residual false_NE absorption under sufficient SUPPORT/REFUTE evidence without reintroducing SUPPORT-to-REFUTE overcorrection.",
+    "source_policy": "Synthetic/internal rows only. Stage94 diagnostic examples and VitaminC external rows are checked for overlap but not used as training rows.",
+    "intended_next_stage": "Stage95B clean-dev frozen recovery run with Stage57 + Stage66 + combined Stage92A+Stage95A via stage80a slot; no Stage83A; no Stage88A; no external first.",
+    "expected_stage95b_bridge_count": 1640,
+    "expected_stage95b_final_train_count": 4520,
+    "overlap_by_file": {
+      "data/controlled_v5_v3_without_time_swap.jsonl": 0,
+      "data/stage57_nonleaking_external_bridge.jsonl": 0,
+      "data/stage66_residual_bridge.jsonl": 0,
+      "data/stage83a_ne_safety_only_bridge.jsonl": 0,
+      "data/stage88a_balanced_entitlement_recovery_bridge.jsonl": 0,
+      "data/stage92a_support_preserving_counter_bridge.jsonl": 0,
+      "data/stage43b1_vitaminc_validation_sample1000.jsonl": 0,
+      "data/stage84e2_vitaminc_validation_sample1000_exact_ood_schema.jsonl": 0,
+      "results/stage94_new_false_ne_stage73_non_ne_stage92c_ne_examples.jsonl": 0,
+      "results/stage94_repaired_false_ne_stage73_ne_stage92c_non_ne_examples.jsonl": 0,
+      "results/stage94_persistent_false_ne_stage73_stage92c_both_ne_examples.jsonl": 0,
+      "results/stage94_stage92c_false_ne_all_examples.jsonl": 0
+    },
+    "checks": {
+      "stage95a_row_count_160": true,
+      "stage95a_support_72": true,
+      "stage95a_refute_48": true,
+      "stage95a_not_entitled_40": true,
+      "stage95a_pairs_unique": true,
+      "stage95a_no_exact_overlap_any_checked_file": true,
+      "stage95a_synthetic_internal_only": true,
+      "stage95a_no_vitaminc_source": true,
+      "combined_row_count_400": true,
+      "combined_contains_stage92a_240": true,
+      "combined_contains_stage95a_160": true,
+      "combined_pairs_unique": true,
+      "combined_support_192": true,
+      "combined_refute_108": true,
+      "combined_ne_100": true,
+      "encode_label_tensors_stage95a_ok": true,
+      "encode_label_tensors_combined_ok": true,
+      "encode_mamba_records_stage95a_ok": true,
+      "encode_mamba_records_combined_ok": true
+    }
+  },
+  "stage95a_label_counts": [
+    {
+      "label": "NOT_ENTITLED",
+      "count": 40
+    },
+    {
+      "label": "REFUTE",
+      "count": 48
+    },
+    {
+      "label": "SUPPORT",
+      "count": 72
+    }
+  ],
+  "stage95a_family_counts": [
+    {
+      "family": "explicit_sufficient_refute_with_ne_distractor",
+      "count": 24
+    },
+    {
+      "family": "explicit_sufficient_support_with_ne_distractor",
+      "count": 36
+    },
+    {
+      "family": "matched_missing_decisive_predicate_guardrail",
+      "count": 40
+    },
+    {
+      "family": "refute_exact_predicate_coverage_after_background",
+      "count": 24
+    },
+    {
+      "family": "support_exact_predicate_coverage_after_background",
+      "count": 36
+    }
+  ],
+  "combined_label_counts": [
+    {
+      "label": "NOT_ENTITLED",
+      "count": 100
+    },
+    {
+      "label": "REFUTE",
+      "count": 108
+    },
+    {
+      "label": "SUPPORT",
+      "count": 192
+    }
+  ],
+  "repair": [
+    {
+      "duplicate_repairs": 0,
+      "overlap_repairs": 0,
+      "total_marker_appends": 0,
+      "method": "neutral evidence disambiguator until Stage95A rows are unique and non-overlapping with checked files"
+    }
+  ],
+  "overlap_checks": [
+    {
+      "file": "data/controlled_v5_v3_without_time_swap.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "data/stage57_nonleaking_external_bridge.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "data/stage66_residual_bridge.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "data/stage83a_ne_safety_only_bridge.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "data/stage88a_balanced_entitlement_recovery_bridge.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "data/stage92a_support_preserving_counter_bridge.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "data/stage43b1_vitaminc_validation_sample1000.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "data/stage84e2_vitaminc_validation_sample1000_exact_ood_schema.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "results/stage94_new_false_ne_stage73_non_ne_stage92c_ne_examples.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "results/stage94_repaired_false_ne_stage73_ne_stage92c_non_ne_examples.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "results/stage94_persistent_false_ne_stage73_stage92c_both_ne_examples.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "results/stage94_stage92c_false_ne_all_examples.jsonl",
+      "exact_pair_overlap": 0
+    }
+  ],
+  "checks": [
+    {
+      "check": "stage95a_row_count_160",
+      "pass": true
+    },
+    {
+      "check": "stage95a_support_72",
+      "pass": true
+    },
+    {
+      "check": "stage95a_refute_48",
+      "pass": true
+    },
+    {
+      "check": "stage95a_not_entitled_40",
+      "pass": true
+    },
+    {
+      "check": "stage95a_pairs_unique",
+      "pass": true
+    },
+    {
+      "check": "stage95a_no_exact_overlap_any_checked_file",
+      "pass": true
+    },
+    {
+      "check": "stage95a_synthetic_internal_only",
+      "pass": true
+    },
+    {
+      "check": "stage95a_no_vitaminc_source",
+      "pass": true
+    },
+    {
+      "check": "combined_row_count_400",
+      "pass": true
+    },
+    {
+      "check": "combined_contains_stage92a_240",
+      "pass": true
+    },
+    {
+      "check": "combined_contains_stage95a_160",
+      "pass": true
+    },
+    {
+      "check": "combined_pairs_unique",
+      "pass": true
+    },
+    {
+      "check": "combined_support_192",
+      "pass": true
+    },
+    {
+      "check": "combined_refute_108",
+      "pass": true
+    },
+    {
+      "check": "combined_ne_100",
+      "pass": true
+    },
+    {
+      "check": "encode_label_tensors_stage95a_ok",
+      "pass": true
+    },
+    {
+      "check": "encode_label_tensors_combined_ok",
+      "pass": true
+    },
+    {
+      "check": "encode_mamba_records_stage95a_ok",
+      "pass": true
+    },
+    {
+      "check": "encode_mamba_records_combined_ok",
+      "pass": true
+    }
+  ],
+  "source_design_file": "results/stage94_false_ne_residual_audit_design_report.json"
+}
