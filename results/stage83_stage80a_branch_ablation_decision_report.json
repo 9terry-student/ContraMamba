@@ -1,0 +1,179 @@
+{
+  "summary": {
+    "stage": "Stage83",
+    "decision": "STAGE83_STAGE80A_BRANCH_ABLATION_DECISION_READY",
+    "branch_decision": "STOP_FULL_STAGE80A_ALLOW_A3_NE_SAFETY_ONLY_CLEAN_DEV_ABLATION",
+    "decision_reason": "Full Stage80A should stop before external diagnostic. If continuing the branch, only the smallest NE-safety-only subset is justified because it avoids additional SUPPORT rows.",
+    "stage80g_stage80a_decision": "STOP_BEFORE_EXTERNAL_DIAGNOSTIC",
+    "stage80f_acc": 0.9708333611488342,
+    "stage80f_macro_f1": 0.958564119910363,
+    "stage80f_minus_stage71_macro_f1": -0.005483132272482427,
+    "stage80f_macro_preservation_margin_vs_stage71": -0.0004831322724824271,
+    "full_stage80a_rows": 500,
+    "a1_polarity_only_rows": 340,
+    "a3_ne_safety_only_rows": 160,
+    "a3_target_output_jsonl": "data/stage83a_ne_safety_only_bridge.jsonl",
+    "training_executed": false,
+    "external_eval_executed": false,
+    "recommended_next_stage": "Stage83A create A3 NE-safety-only subset bridge"
+  },
+  "checks": [
+    {
+      "check": "stage80g_ready",
+      "pass": true
+    },
+    {
+      "check": "stage80g_stop_before_external",
+      "pass": true
+    },
+    {
+      "check": "stage80f_execution_valid",
+      "pass": true
+    },
+    {
+      "check": "stage80f_clean_dev_macro_failed_vs_stage71",
+      "pass": true
+    },
+    {
+      "check": "a1_rows_340",
+      "pass": true
+    },
+    {
+      "check": "a3_rows_160",
+      "pass": true
+    },
+    {
+      "check": "a3_all_ne",
+      "pass": true
+    },
+    {
+      "check": "a3_no_duplicates",
+      "pass": true
+    },
+    {
+      "check": "a3_synthetic_only",
+      "pass": true
+    },
+    {
+      "check": "decision_nonempty",
+      "pass": true
+    }
+  ],
+  "signals": [
+    {
+      "signal": "stage80g_ready",
+      "value": true
+    },
+    {
+      "signal": "stage80g_stop_before_external",
+      "value": true
+    },
+    {
+      "signal": "stage80f_execution_valid",
+      "value": true
+    },
+    {
+      "signal": "stage80f_stage75_full_unused",
+      "value": true
+    },
+    {
+      "signal": "stage80f_stage80a_used_500",
+      "value": true
+    },
+    {
+      "signal": "stage80f_clean_dev_macro_failed_vs_stage71",
+      "value": true
+    },
+    {
+      "signal": "stage80f_macro_margin_negative",
+      "value": true
+    },
+    {
+      "signal": "stage75_full_already_revise_not_default",
+      "value": true
+    },
+    {
+      "signal": "stage78_false_support_increased",
+      "value": true
+    },
+    {
+      "signal": "a1_polarity_only_rows_340",
+      "value": true
+    },
+    {
+      "signal": "a3_ne_safety_only_rows_160",
+      "value": true
+    }
+  ],
+  "candidate_decisions": [
+    {
+      "candidate": "full_stage80a_500",
+      "decision": "REJECT_AS_PRIMARY_AND_SKIP_EXTERNAL",
+      "rows": 500,
+      "reason": "Stage80F failed strict clean-dev macro preservation versus Stage71.",
+      "next_action": "Do not run external diagnostic."
+    },
+    {
+      "candidate": "A1_polarity_only_340",
+      "decision": "DENY_BY_DEFAULT",
+      "rows": 340,
+      "reason": "A1 removes NE safety and keeps only SUPPORT/REFUTE polarity rows; likely still pressures SUPPORT/entitlement.",
+      "next_action": "Do not run unless explicitly exploring polarity-only failure mode."
+    },
+    {
+      "candidate": "A3_ne_safety_only_160",
+      "decision": "ALLOW_ONE_CLEAN_DEV_ABLATION_IF_CONTINUING",
+      "rows": 160,
+      "reason": "Smallest subset; directly targets false SUPPORT / over-entitlement without adding SUPPORT rows.",
+      "next_action": "Create subset JSONL, static check it, then run clean-dev only before any external diagnostic."
+    }
+  ],
+  "subset_stats": [
+    {
+      "candidate": "A1_polarity_only",
+      "rows": 340,
+      "label_counts": "{\"SUPPORT\": 170, \"REFUTE\": 170}",
+      "family_counts": "{\"numeric_temporal_polarity_repair_v2_conservative\": 180, \"lexical_type_polarity_repair_v2_conservative\": 160}",
+      "duplicate_ids": 0,
+      "duplicate_claim_evidence_pairs": 0,
+      "synthetic_only_all_true": true,
+      "external_text_used_any": false,
+      "external_label_used_any": false,
+      "pair_id_any": false
+    },
+    {
+      "candidate": "A3_ne_safety_only",
+      "rows": 160,
+      "label_counts": "{\"NOT_ENTITLED\": 160}",
+      "family_counts": "{\"strict_ne_false_support_safety_v2\": 160}",
+      "duplicate_ids": 0,
+      "duplicate_claim_evidence_pairs": 0,
+      "synthetic_only_all_true": true,
+      "external_text_used_any": false,
+      "external_label_used_any": false,
+      "pair_id_any": false
+    }
+  ],
+  "recommendations": [
+    {
+      "recommendation": "Keep Stage71_retry2 as primary.",
+      "rationale": "Stage80G showed Stage71 has the best clean-dev macro-F1 among compared candidates."
+    },
+    {
+      "recommendation": "Do not run Stage81 external for full Stage80A.",
+      "rationale": "Full Stage80A already failed strict clean-dev preservation."
+    },
+    {
+      "recommendation": "Do not run A1 polarity-only by default.",
+      "rationale": "It contains 170 SUPPORT and 170 REFUTE rows with no NE safety backstop."
+    },
+    {
+      "recommendation": "Allow only A3 NE-safety-only as a single clean-dev ablation.",
+      "rationale": "It has 160 NOT_ENTITLED rows and directly targets false SUPPORT pressure."
+    },
+    {
+      "recommendation": "External diagnostic remains blocked until clean-dev passes.",
+      "rationale": "No VitaminC run should be spent unless A3 preserves clean-dev versus Stage71."
+    }
+  ]
+}
