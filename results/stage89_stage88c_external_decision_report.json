@@ -1,0 +1,140 @@
+{
+  "summary": {
+    "stage": "Stage89",
+    "decision": "STAGE89_REJECT_STAGE88C_AS_PRIMARY_KEEP_STAGE71",
+    "candidate_status": "USEFUL_PARTIAL_RECOVERY_NOT_PRIMARY",
+    "current_primary_after_stage89": "Stage71 retry2 Stage57+Stage66 bridge-enabled frozen recovery",
+    "candidate": "Stage88C / Stage57+Stage66+Stage88A",
+    "clean_preserved": true,
+    "improves_stage84f": true,
+    "beats_stage73_external": false,
+    "macro_only_win_vs_stage73": true,
+    "stage88c_external_acc": 0.338,
+    "stage88c_external_macro_f1_all3": 0.32945768332771147,
+    "stage73_external_acc": 0.353,
+    "stage73_external_macro_f1_all3": 0.3261787057160285,
+    "stage84f_external_acc": 0.326,
+    "stage84f_external_macro_f1_all3": 0.3066716953259303,
+    "stage88c_false_NE_total": 349,
+    "stage73_false_NE_total": 323,
+    "stage84f_false_NE_total": 367,
+    "interpretation": "Stage88A balanced entitlement recovery preserved clean-dev and partially repaired the Stage83C/Stage84F failure mode, improving external macro-F1 and reducing false_NE_total relative to Stage84F. However, it does not beat Stage71 on external accuracy and still has higher false_NE_total than Stage71. The prediction distribution shifts too far away from SUPPORT, improving REFUTE recall but damaging SUPPORT recall. Therefore Stage71 remains primary, and Stage88C is retained as a useful negative/mixed branch.",
+    "recommended_next_stage": "Stage90 support-preserving entitlement recovery / REFUTE-overcorrection audit",
+    "recommendations": [
+      "Keep Stage71 retry2 Stage57+Stage66 as current primary.",
+      "Do not promote Stage88C despite clean-dev preservation and macro-F1 improvement.",
+      "Retain Stage88A/88B/88C as a useful mixed branch: it improves over Stage84F but not over Stage71.",
+      "Do not add more generic entitlement bridge rows at the same balance.",
+      "Next stage should diagnose SUPPORT suppression caused by Stage88A, especially SUPPORT→REFUTE and SUPPORT→NOT_ENTITLED errors.",
+      "Future bridge should preserve SUPPORT recall while keeping REFUTE recovery gains and false-entitlement guardrails."
+    ]
+  },
+  "comparison": [
+    {
+      "run": "Stage73 / Stage71 primary external",
+      "external_acc": 0.353,
+      "external_macro_f1_all3": 0.3261787057160285,
+      "prediction_counts": "{\"REFUTE\": 219, \"NOT_ENTITLED\": 388, \"SUPPORT\": 393}",
+      "false_NE_total": 323,
+      "false_entitlement_total": 80,
+      "polarity_error_total": 244,
+      "status": "CURRENT_PRIMARY"
+    },
+    {
+      "run": "Stage84F / Stage83C rejected external",
+      "external_acc": 0.326,
+      "external_macro_f1_all3": 0.3066716953259303,
+      "prediction_counts": "{\"REFUTE\": 202, \"NOT_ENTITLED\": 439, \"SUPPORT\": 359}",
+      "false_NE_total": 367,
+      "false_entitlement_total": 73,
+      "polarity_error_total": 234,
+      "status": "REJECTED_BRANCH"
+    },
+    {
+      "run": "Stage88C / Stage88A candidate external",
+      "external_acc": 0.338,
+      "external_macro_f1_all3": 0.32945768332771147,
+      "prediction_counts": "{\"REFUTE\": 283, \"NOT_ENTITLED\": 423, \"SUPPORT\": 294}",
+      "false_NE_total": 349,
+      "false_entitlement_total": 71,
+      "polarity_error_total": 242,
+      "status": "MIXED_NOT_PRIMARY"
+    }
+  ],
+  "delta": [
+    {
+      "comparison": "Stage88C - Stage73",
+      "acc_delta": -0.014999999999999958,
+      "macro_f1_delta": 0.0032789776116829428,
+      "false_NE_total_delta": 26,
+      "false_entitlement_total_delta": -9,
+      "polarity_error_total_delta": -2
+    },
+    {
+      "comparison": "Stage88C - Stage84F",
+      "acc_delta": 0.01200000000000001,
+      "macro_f1_delta": 0.022785988001781166,
+      "false_NE_total_delta": -18,
+      "false_entitlement_total_delta": -2,
+      "polarity_error_total_delta": 8
+    }
+  ],
+  "checks": [
+    {
+      "check": "clean_preserved_vs_stage71",
+      "pass": true
+    },
+    {
+      "check": "improves_stage84f_external",
+      "pass": true
+    },
+    {
+      "check": "beats_stage73_external_all_required",
+      "pass": false
+    },
+    {
+      "check": "macro_only_win_vs_stage73",
+      "pass": true
+    },
+    {
+      "check": "external_acc_below_stage73",
+      "pass": true
+    },
+    {
+      "check": "false_NE_above_stage73",
+      "pass": true
+    }
+  ],
+  "recommendations": [
+    {
+      "idx": 1,
+      "recommendation": "Keep Stage71 retry2 Stage57+Stage66 as current primary."
+    },
+    {
+      "idx": 2,
+      "recommendation": "Do not promote Stage88C despite clean-dev preservation and macro-F1 improvement."
+    },
+    {
+      "idx": 3,
+      "recommendation": "Retain Stage88A/88B/88C as a useful mixed branch: it improves over Stage84F but not over Stage71."
+    },
+    {
+      "idx": 4,
+      "recommendation": "Do not add more generic entitlement bridge rows at the same balance."
+    },
+    {
+      "idx": 5,
+      "recommendation": "Next stage should diagnose SUPPORT suppression caused by Stage88A, especially SUPPORT→REFUTE and SUPPORT→NOT_ENTITLED errors."
+    },
+    {
+      "idx": 6,
+      "recommendation": "Future bridge should preserve SUPPORT recall while keeping REFUTE recovery gains and false-entitlement guardrails."
+    }
+  ],
+  "source_files": {
+    "stage87b": "results/stage87b_external_entitlement_recovery_design_report.json",
+    "stage88a": "results/stage88a_balanced_entitlement_recovery_bridge_generation_report.json",
+    "stage88b": "results/stage88b_clean_dev_preservation_summary.json",
+    "stage88c": "results/stage88c_vitaminc_external_diagnostic_summary.json"
+  }
+}

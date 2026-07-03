@@ -1,0 +1,288 @@
+{
+  "summary": {
+    "stage": "Stage88C",
+    "decision": "STAGE88C_VITAMINC_EXTERNAL_DIAGNOSTIC_READY",
+    "candidate_status": "CLEAN_OK_EXTERNAL_MIXED_OR_FAILED",
+    "run_dir": "results/stage88c_stage57_stage66_stage88a_vitaminc_external_run_20260703_043753",
+    "bridge_config": "Stage57 + Stage66 + Stage88A; no Stage83A; VitaminC external diagnostic only",
+    "stage88c_best_epoch": 171,
+    "stage88c_clean_dev_acc": 0.9763889312744141,
+    "stage88c_clean_dev_macro_f1": 0.9659043698755081,
+    "stage88c_clean_prediction_counts": {
+      "NOT_ENTITLED": 523,
+      "REFUTE": 90,
+      "SUPPORT": 107
+    },
+    "stage88c_external_acc": 0.338,
+    "stage88c_external_macro_f1_all3": 0.32945768332771147,
+    "stage88c_external_prediction_counts": {
+      "REFUTE": 283,
+      "NOT_ENTITLED": 423,
+      "SUPPORT": 294
+    },
+    "stage88c_external_gold_counts": {
+      "NOT_ENTITLED": 145,
+      "REFUTE": 355,
+      "SUPPORT": 500
+    },
+    "stage88c_external_errors": {
+      "false_NE_on_SUPPORT": 197,
+      "false_NE_on_REFUTE": 152,
+      "false_SUPPORT_on_NE": 31,
+      "false_REFUTE_on_NE": 40,
+      "false_SUPPORT_on_REFUTE": 101,
+      "false_REFUTE_on_SUPPORT": 141,
+      "false_NE_total": 349,
+      "false_entitlement_total": 71,
+      "polarity_error_total": 242
+    },
+    "stage71_clean_dev_acc": 0.9750000238,
+    "stage71_clean_dev_macro_f1": 0.9640472522,
+    "stage73_external_acc": 0.353,
+    "stage73_external_macro_f1_all3": 0.3261787057160285,
+    "stage73_external_prediction_counts": {
+      "REFUTE": 219,
+      "NOT_ENTITLED": 388,
+      "SUPPORT": 393
+    },
+    "stage73_external_errors": {
+      "false_NE_on_SUPPORT": 178,
+      "false_NE_on_REFUTE": 145,
+      "false_NE_total": 323,
+      "false_entitlement_total": 80,
+      "polarity_error_total": 244
+    },
+    "stage84f_external_acc": 0.326,
+    "stage84f_external_macro_f1_all3": 0.3066716953259303,
+    "stage84f_external_prediction_counts": {
+      "REFUTE": 202,
+      "NOT_ENTITLED": 439,
+      "SUPPORT": 359
+    },
+    "stage84f_external_errors": {
+      "false_NE_on_SUPPORT": 205,
+      "false_NE_on_REFUTE": 162,
+      "false_NE_total": 367,
+      "false_entitlement_total": 73,
+      "polarity_error_total": 234
+    },
+    "stage88c_minus_stage73_external_acc": -0.014999999999999958,
+    "stage88c_minus_stage73_external_macro_f1": 0.0032789776116829428,
+    "stage88c_minus_stage84f_false_NE_total": -18,
+    "stage88c_minus_stage73_false_NE_total": 26,
+    "elapsed_min": 7.0683,
+    "recommended_next_stage": "Stage89 decision report"
+  },
+  "metadata_checks": [
+    {
+      "check": "returncode_zero",
+      "pass": true
+    },
+    {
+      "check": "train_report_exists",
+      "pass": true
+    },
+    {
+      "check": "ood_report_exists",
+      "pass": true
+    },
+    {
+      "check": "ood_predictions_exists",
+      "pass": true
+    },
+    {
+      "check": "stage57_rows_520",
+      "pass": true
+    },
+    {
+      "check": "stage66_rows_720",
+      "pass": true
+    },
+    {
+      "check": "stage88a_rows_360_via_stage80a_slot",
+      "pass": true
+    },
+    {
+      "check": "combined_bridge_1600",
+      "pass": true
+    },
+    {
+      "check": "final_train_4480",
+      "pass": true
+    },
+    {
+      "check": "external_n_1000",
+      "pass": true
+    }
+  ],
+  "clean_checks": [
+    {
+      "check": "clean_acc_ge_stage71_minus_0p003",
+      "pass": true
+    },
+    {
+      "check": "clean_macro_ge_stage71_minus_0p003",
+      "pass": true
+    }
+  ],
+  "external_checks": [
+    {
+      "check": "external_acc_ge_stage73",
+      "pass": false
+    },
+    {
+      "check": "external_macro_ge_stage73",
+      "pass": true
+    },
+    {
+      "check": "false_NE_total_lt_stage84f",
+      "pass": true
+    },
+    {
+      "check": "false_NE_total_lte_stage73",
+      "pass": false
+    },
+    {
+      "check": "false_entitlement_lte_stage73_plus_10",
+      "pass": true
+    }
+  ],
+  "comparison": [
+    {
+      "run": "Stage73/Stage71 primary external",
+      "external_acc": 0.353,
+      "external_macro_f1_all3": 0.3261787057160285,
+      "prediction_counts": "{\"REFUTE\": 219, \"NOT_ENTITLED\": 388, \"SUPPORT\": 393}",
+      "false_NE_total": 323,
+      "false_entitlement_total": 80,
+      "polarity_error_total": 244
+    },
+    {
+      "run": "Stage84F/Stage83C rejected external",
+      "external_acc": 0.326,
+      "external_macro_f1_all3": 0.3066716953259303,
+      "prediction_counts": "{\"REFUTE\": 202, \"NOT_ENTITLED\": 439, \"SUPPORT\": 359}",
+      "false_NE_total": 367,
+      "false_entitlement_total": 73,
+      "polarity_error_total": 234
+    },
+    {
+      "run": "Stage88C/Stage88A candidate external",
+      "external_acc": 0.338,
+      "external_macro_f1_all3": 0.32945768332771147,
+      "prediction_counts": "{\"REFUTE\": 283, \"NOT_ENTITLED\": 423, \"SUPPORT\": 294}",
+      "false_NE_total": 349,
+      "false_entitlement_total": 71,
+      "polarity_error_total": 242
+    }
+  ],
+  "confusion": [
+    {
+      "gold\\pred": "REFUTE",
+      "REFUTE": 102,
+      "NOT_ENTITLED": 152,
+      "SUPPORT": 101
+    },
+    {
+      "gold\\pred": "NOT_ENTITLED",
+      "REFUTE": 40,
+      "NOT_ENTITLED": 74,
+      "SUPPORT": 31
+    },
+    {
+      "gold\\pred": "SUPPORT",
+      "REFUTE": 141,
+      "NOT_ENTITLED": 197,
+      "SUPPORT": 162
+    }
+  ],
+  "per_label": [
+    {
+      "label": "REFUTE",
+      "support": 355,
+      "pred_count": 283,
+      "tp": 102,
+      "fp": 181,
+      "fn": 253,
+      "precision": 0.36042402826855124,
+      "recall": 0.28732394366197184,
+      "f1": 0.3197492163009405
+    },
+    {
+      "label": "NOT_ENTITLED",
+      "support": 145,
+      "pred_count": 423,
+      "tp": 74,
+      "fp": 349,
+      "fn": 71,
+      "precision": 0.17494089834515367,
+      "recall": 0.5103448275862069,
+      "f1": 0.2605633802816901
+    },
+    {
+      "label": "SUPPORT",
+      "support": 500,
+      "pred_count": 294,
+      "tp": 162,
+      "fp": 132,
+      "fn": 338,
+      "precision": 0.5510204081632653,
+      "recall": 0.324,
+      "f1": 0.40806045340050373
+    }
+  ],
+  "command": [
+    "python",
+    "scripts/train_controlled_v6b_minimal.py",
+    "--data",
+    "data/controlled_v5_v3_without_time_swap.jsonl",
+    "--backbone",
+    "mamba",
+    "--model-name",
+    "state-spaces/mamba-130m-hf",
+    "--freeze-encoder",
+    "true",
+    "--epochs",
+    "200",
+    "--max-length",
+    "128",
+    "--dev-ratio",
+    "0.2",
+    "--seed",
+    "1",
+    "--device",
+    "cuda",
+    "--flag-source",
+    "controlled_heuristic",
+    "--select-metric",
+    "final_macro_f1",
+    "--use-intervention-loss",
+    "--use-stage47-selected-recovery-config",
+    "--stage47-recovery-config-path",
+    "results/stage47_selected_recovery_config_check.json",
+    "--stage57-bridge-train-jsonl",
+    "data/stage57_nonleaking_external_bridge.jsonl",
+    "--stage57-bridge-train-mode",
+    "append_train_only",
+    "--stage66-bridge-train-jsonl",
+    "data/stage66_residual_bridge.jsonl",
+    "--stage66-bridge-train-mode",
+    "append_train_only",
+    "--stage80a-bridge-train-jsonl",
+    "data/stage88a_balanced_entitlement_recovery_bridge.jsonl",
+    "--stage80a-bridge-train-mode",
+    "append_train_only",
+    "--ood-data",
+    "data/stage84e2_vitaminc_validation_sample1000_exact_ood_schema.jsonl",
+    "--ood-flag-source",
+    "none",
+    "--output-json",
+    "/kaggle/working/ContraMamba/results/stage88c_stage57_stage66_stage88a_vitaminc_external_run_20260703_043753/stage88c_stage57_stage66_stage88a_train_report.json",
+    "--output-predictions-json",
+    "/kaggle/working/ContraMamba/results/stage88c_stage57_stage66_stage88a_vitaminc_external_run_20260703_043753/stage88c_stage57_stage66_stage88a_predictions.json",
+    "--output-ood-json",
+    "/kaggle/working/ContraMamba/results/stage88c_stage57_stage66_stage88a_vitaminc_external_run_20260703_043753/stage88c_stage57_stage66_stage88a_vitaminc_external_report.json",
+    "--output-ood-predictions-json",
+    "/kaggle/working/ContraMamba/results/stage88c_stage57_stage66_stage88a_vitaminc_external_run_20260703_043753/stage88c_stage57_stage66_stage88a_vitaminc_external_predictions.json"
+  ]
+}
