@@ -1,0 +1,159 @@
+{
+  "summary": {
+    "stage": "Stage99B",
+    "decision": "STAGE99B_CLEAN_DEV_PRESERVATION_READY",
+    "candidate_status": "ALLOW_EXTERNAL_DIAGNOSTIC",
+    "run_dir": "results/stage99b_stage57_stage66_stage92a_stage97a_stage99a_clean_dev_run_20260703_071017",
+    "bridge_config": "Stage57 + Stage66 + combined Stage92A+Stage97A+Stage99A via stage80a bridge slot; no Stage83A; no Stage88A; no external eval",
+    "stage99b_best_epoch": 171,
+    "stage99b_clean_dev_acc": 0.9763889312744141,
+    "stage99b_clean_dev_macro_f1": 0.9659043698755081,
+    "stage99b_prediction_counts": {
+      "NOT_ENTITLED": 523,
+      "REFUTE": 90,
+      "SUPPORT": 107
+    },
+    "stage71_best_epoch": 151,
+    "stage71_clean_dev_acc": 0.9750000238,
+    "stage71_clean_dev_macro_f1": 0.9640472522,
+    "stage71_prediction_counts": {
+      "NOT_ENTITLED": 522,
+      "REFUTE": 90,
+      "SUPPORT": 108
+    },
+    "stage97b_best_epoch": 200,
+    "stage97b_clean_dev_acc": 0.976389,
+    "stage97b_clean_dev_macro_f1": 0.965617,
+    "stage97b_prediction_counts": {
+      "NOT_ENTITLED": 523,
+      "REFUTE": 91,
+      "SUPPORT": 106
+    },
+    "stage95b_best_epoch": 171,
+    "stage95b_clean_dev_acc": 0.9708333611488342,
+    "stage95b_clean_dev_macro_f1": 0.958564119910363,
+    "stage95b_prediction_counts": {
+      "NOT_ENTITLED": 519,
+      "REFUTE": 90,
+      "SUPPORT": 111
+    },
+    "stage99b_minus_stage71_acc": 0.0013889074744141139,
+    "stage99b_minus_stage71_macro_f1": 0.0018571176755081131,
+    "stage99b_minus_stage97b_acc": -6.872558588888467e-08,
+    "stage99b_minus_stage97b_macro_f1": 0.00028736987550814774,
+    "stage99b_minus_stage95b_acc": 0.005555570125579834,
+    "stage99b_minus_stage95b_macro_f1": 0.00734024996514504,
+    "elapsed_min": 6.3523,
+    "recommended_next_stage": "Stage99C VitaminC external diagnostic"
+  },
+  "metadata_checks": [
+    {
+      "check": "returncode_zero",
+      "pass": true
+    },
+    {
+      "check": "train_report_exists",
+      "pass": true
+    },
+    {
+      "check": "predictions_exists",
+      "pass": true
+    },
+    {
+      "check": "stage57_rows_520",
+      "pass": true
+    },
+    {
+      "check": "stage66_rows_720",
+      "pass": true
+    },
+    {
+      "check": "stage80a_combined_stage92a_stage97a_stage99a_rows_352",
+      "pass": true
+    },
+    {
+      "check": "combined_bridge_1592",
+      "pass": true
+    },
+    {
+      "check": "final_train_4472",
+      "pass": true
+    },
+    {
+      "check": "no_external_eval",
+      "pass": true
+    }
+  ],
+  "clean_checks": [
+    {
+      "check": "clean_acc_ge_stage71_minus_0p003",
+      "pass": true
+    },
+    {
+      "check": "clean_macro_ge_stage71_minus_0p003",
+      "pass": true
+    },
+    {
+      "check": "clean_acc_ge_0p972",
+      "pass": true
+    },
+    {
+      "check": "clean_macro_ge_0p961",
+      "pass": true
+    },
+    {
+      "check": "clean_macro_ge_stage97b_minus_0p003",
+      "pass": true
+    },
+    {
+      "check": "clean_not_stage95b_regression",
+      "pass": true
+    }
+  ],
+  "command": [
+    "python",
+    "scripts/train_controlled_v6b_minimal.py",
+    "--data",
+    "data/controlled_v5_v3_without_time_swap.jsonl",
+    "--backbone",
+    "mamba",
+    "--model-name",
+    "state-spaces/mamba-130m-hf",
+    "--freeze-encoder",
+    "true",
+    "--epochs",
+    "200",
+    "--max-length",
+    "128",
+    "--dev-ratio",
+    "0.2",
+    "--seed",
+    "1",
+    "--device",
+    "cuda",
+    "--flag-source",
+    "controlled_heuristic",
+    "--select-metric",
+    "final_macro_f1",
+    "--use-intervention-loss",
+    "--use-stage47-selected-recovery-config",
+    "--stage47-recovery-config-path",
+    "results/stage47_selected_recovery_config_check.json",
+    "--stage57-bridge-train-jsonl",
+    "data/stage57_nonleaking_external_bridge.jsonl",
+    "--stage57-bridge-train-mode",
+    "append_train_only",
+    "--stage66-bridge-train-jsonl",
+    "data/stage66_residual_bridge.jsonl",
+    "--stage66-bridge-train-mode",
+    "append_train_only",
+    "--stage80a-bridge-train-jsonl",
+    "data/stage99a_stage92a_stage97a_combined_support_floor_bridge.jsonl",
+    "--stage80a-bridge-train-mode",
+    "append_train_only",
+    "--output-json",
+    "/kaggle/working/ContraMamba/results/stage99b_stage57_stage66_stage92a_stage97a_stage99a_clean_dev_run_20260703_071017/stage99b_stage57_stage66_stage92a_stage97a_stage99a_train_report.json",
+    "--output-predictions-json",
+    "/kaggle/working/ContraMamba/results/stage99b_stage57_stage66_stage92a_stage97a_stage99a_clean_dev_run_20260703_071017/stage99b_stage57_stage66_stage92a_stage97a_stage99a_predictions.json"
+  ]
+}

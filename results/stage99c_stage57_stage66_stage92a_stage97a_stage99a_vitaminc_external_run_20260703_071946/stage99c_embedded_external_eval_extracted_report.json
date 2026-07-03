@@ -1,0 +1,86 @@
+{
+  "config_summary": {
+    "architecture": "v6b_minimal",
+    "flag_source": "controlled_heuristic",
+    "v7_h1_entitlement_decision_signal": "learned",
+    "v7_location_boundary_cap_detach": false,
+    "v7_location_boundary_cap_gamma": 1.0,
+    "v7_location_boundary_cap_mode": "none",
+    "v7_temporal_mismatch_multihead_cap_mode": "none",
+    "v7_temporal_mismatch_multihead_fusion": "frame_only",
+    "v7_temporal_safety_cap_detach": false,
+    "v7_temporal_safety_cap_gamma": 1.0,
+    "v7_temporal_safety_cap_mode": "none",
+    "v7_use_location_boundary_head": false,
+    "v7_use_location_boundary_loss": false,
+    "v7_use_temporal_mismatch_multihead": false,
+    "v7_use_temporal_mismatch_multihead_loss": false,
+    "v7_use_temporal_safety_head": false,
+    "v7_use_temporal_safety_loss": false,
+    "v7_use_v6b_style_final_decision": false
+  },
+  "eval_epoch": 171,
+  "eval_state": "best_dev",
+  "external_eval_jsonl": "data/stage84e2_vitaminc_validation_sample1000_exact_ood_schema.jsonl",
+  "external_eval_name": "stage84e2_vitaminc_validation_sample1000_exact_ood_schema",
+  "external_eval_path": "data/stage84e2_vitaminc_validation_sample1000_exact_ood_schema.jsonl",
+  "external_probe_used_for_calibration": false,
+  "external_probe_used_for_checkpoint_selection": false,
+  "external_probe_used_for_training": false,
+  "external_schema_label_field_used": [
+    "final_label"
+  ],
+  "external_schema_missing_final_label_fixed": false,
+  "external_schema_normalization_source": "runner_external_eval",
+  "external_schema_normalized": true,
+  "external_schema_records_normalized": 0,
+  "external_schema_records_with_added_aux_labels": 0,
+  "false_SUPPORT_by_axis": {},
+  "false_SUPPORT_by_intervention": {
+    "vitaminc_external_validation": 120
+  },
+  "false_SUPPORT_total": 120,
+  "final_accuracy": 0.344,
+  "final_macro_f1": 0.3352,
+  "intervention_counts": {
+    "vitaminc_external_validation": 1000
+  },
+  "label_counts": {
+    "NOT_ENTITLED": 145,
+    "REFUTE": 355,
+    "SUPPORT": 500
+  },
+  "n_records": 1000,
+  "output_predictions_path": null,
+  "per_label": {
+    "NOT_ENTITLED": {
+      "f1": 0.2495,
+      "precision": 0.1691,
+      "predicted": 408,
+      "recall": 0.4759,
+      "support": 145
+    },
+    "REFUTE": {
+      "f1": 0.3498,
+      "precision": 0.3726,
+      "predicted": 314,
+      "recall": 0.3296,
+      "support": 355
+    },
+    "SUPPORT": {
+      "f1": 0.4062,
+      "precision": 0.5683,
+      "predicted": 278,
+      "recall": 0.316,
+      "support": 500
+    }
+  },
+  "prediction_distribution": {
+    "NOT_ENTITLED": 408,
+    "REFUTE": 314,
+    "SUPPORT": 278
+  },
+  "stage15_used_for_checkpoint_selection": false,
+  "stage15_used_for_training": false,
+  "true_SUPPORT_correct": 158
+}

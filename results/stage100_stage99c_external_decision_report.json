@@ -1,0 +1,233 @@
+{
+  "summary": {
+    "stage": "Stage100",
+    "decision": "STAGE100_REJECT_STAGE99C_AS_PRIMARY_KEEP_STAGE71",
+    "candidate_status": "CLEAN_OK_EXTERNAL_FAILED_SUPPORT_SUPPRESSION_WORSENED",
+    "current_primary_after_stage100": "Stage71 retry2 Stage57+Stage66 bridge-enabled frozen recovery",
+    "rejected_candidate": "Stage99C / Stage57+Stage66+Stage92A+Stage97A+Stage99A",
+    "best_topline_branch": "Stage97C",
+    "best_clean_near_miss_branch": "Stage92C",
+    "clean_result": "Stage99B/99C clean preserved",
+    "external_result": "Stage99C external mixed/failed",
+    "main_interpretation": "Stage99A SUPPORT floor micro bridge did not restore SUPPORT recall. Instead, it pushed the external distribution further away from SUPPORT and toward REFUTE/NOT_ENTITLED. Stage99C keeps macro above Stage73 but loses accuracy and worsens SUPPORT recall relative to Stage97C, Stage92C, and Stage73.",
+    "stage99c_external_acc": 0.344,
+    "stage73_external_acc": 0.353,
+    "stage99c_external_macro_f1_all3": 0.3352,
+    "stage73_external_macro_f1_all3": 0.3261787057160285,
+    "stage99c_support_recall": 0.316,
+    "stage97c_support_recall": 0.348,
+    "stage92c_support_recall": 0.402,
+    "stage73_support_recall": 0.432,
+    "stage99c_prediction_counts": {
+      "NOT_ENTITLED": 408,
+      "REFUTE": 314,
+      "SUPPORT": 278
+    },
+    "stage97c_prediction_counts": {
+      "NOT_ENTITLED": 394,
+      "REFUTE": 296,
+      "SUPPORT": 310
+    },
+    "stage92c_prediction_counts": {
+      "REFUTE": 223,
+      "NOT_ENTITLED": 412,
+      "SUPPORT": 365
+    },
+    "stage73_prediction_counts": {
+      "REFUTE": 219,
+      "NOT_ENTITLED": 388,
+      "SUPPORT": 393
+    },
+    "recommendations": [
+      "Keep Stage71 as primary.",
+      "Reject Stage99C as primary.",
+      "Do not add another large synthetic bridge.",
+      "Preserve Stage97C as diagnostic: first acc/macro top-line win but support-suppressed.",
+      "Preserve Stage99C as negative evidence: support-floor micro failed and increased SUPPORT suppression.",
+      "Only continue with threshold/logit-export diagnostics, not more bridge training, unless a new mechanism is designed."
+    ]
+  },
+  "comparison": [
+    {
+      "run": "Stage73 / Stage71 current primary",
+      "external_acc": 0.353,
+      "external_macro_f1_all3": 0.3261787057160285,
+      "support_recall": 0.432,
+      "refute_recall": 0.202817,
+      "prediction_counts": "{\"REFUTE\": 219, \"NOT_ENTITLED\": 388, \"SUPPORT\": 393}",
+      "status": "CURRENT_PRIMARY"
+    },
+    {
+      "run": "Stage92C / Stage92A near-miss",
+      "external_acc": 0.351,
+      "external_macro_f1_all3": 0.330837,
+      "support_recall": 0.402,
+      "refute_recall": 0.233803,
+      "prediction_counts": "{\"REFUTE\": 223, \"NOT_ENTITLED\": 412, \"SUPPORT\": 365}",
+      "status": "NEAR_MISS"
+    },
+    {
+      "run": "Stage97C / half anti-NE top-line win",
+      "external_acc": 0.355,
+      "external_macro_f1_all3": 0.343,
+      "support_recall": 0.348,
+      "refute_recall": 0.3183,
+      "prediction_counts": "{\"NOT_ENTITLED\": 394, \"REFUTE\": 296, \"SUPPORT\": 310}",
+      "status": "TOPLINE_WIN_SUPPORT_SUPPRESSED"
+    },
+    {
+      "run": "Stage99C / support-floor micro",
+      "external_acc": 0.344,
+      "external_macro_f1_all3": 0.3352,
+      "support_recall": 0.316,
+      "refute_recall": 0.3296,
+      "prediction_counts": "{\"NOT_ENTITLED\": 408, \"REFUTE\": 314, \"SUPPORT\": 278}",
+      "status": "CLEAN_OK_EXTERNAL_MIXED_OR_FAILED"
+    }
+  ],
+  "delta": [
+    {
+      "comparison": "Stage99C - Stage73",
+      "external_acc_delta": -0.009000000000000008,
+      "external_macro_delta": 0.00902129428397147,
+      "support_recall_delta": -0.11599999999999999,
+      "refute_recall_delta": 0.126783,
+      "support_pred_delta": -115,
+      "refute_pred_delta": 95,
+      "ne_pred_delta": 20
+    },
+    {
+      "comparison": "Stage99C - Stage97C",
+      "external_acc_delta": -0.01100000000000001,
+      "external_macro_delta": -0.007800000000000029,
+      "support_recall_delta": -0.03199999999999997,
+      "refute_recall_delta": 0.011299999999999977,
+      "support_pred_delta": -32,
+      "refute_pred_delta": 18,
+      "ne_pred_delta": 14
+    },
+    {
+      "comparison": "Stage99C - Stage92C",
+      "external_acc_delta": -0.007000000000000006,
+      "external_macro_delta": 0.004363000000000006,
+      "support_recall_delta": -0.08600000000000002,
+      "refute_recall_delta": 0.095797,
+      "support_pred_delta": -87,
+      "refute_pred_delta": 91,
+      "ne_pred_delta": -4
+    }
+  ],
+  "checks": [
+    {
+      "check": "stage99b_clean_preserved",
+      "pass": true
+    },
+    {
+      "check": "stage99c_clean_preserved",
+      "pass": true
+    },
+    {
+      "check": "stage99c_external_acc_ge_stage73",
+      "pass": false
+    },
+    {
+      "check": "stage99c_external_macro_ge_stage73",
+      "pass": true
+    },
+    {
+      "check": "stage99c_external_acc_ge_stage97c",
+      "pass": false
+    },
+    {
+      "check": "stage99c_external_macro_ge_stage97c",
+      "pass": false
+    },
+    {
+      "check": "stage99c_support_recall_ge_stage97c",
+      "pass": false
+    },
+    {
+      "check": "stage99c_support_recall_ge_stage92c",
+      "pass": false
+    },
+    {
+      "check": "stage99c_support_pred_ge_stage97c",
+      "pass": false
+    },
+    {
+      "check": "stage99c_support_pred_ge_stage92c",
+      "pass": false
+    },
+    {
+      "check": "stage99c_refute_recall_ge_stage97c",
+      "pass": true
+    },
+    {
+      "check": "stage99c_refute_recall_ge_stage92c",
+      "pass": true
+    }
+  ],
+  "diagnosis_rules": [
+    {
+      "rule": "stage99b_clean_preserved"
+    },
+    {
+      "rule": "stage99c_external_macro_still_above_stage73"
+    },
+    {
+      "rule": "stage99c_external_accuracy_below_stage73"
+    },
+    {
+      "rule": "stage99c_worse_than_stage97c_on_acc_and_macro"
+    },
+    {
+      "rule": "stage99c_support_recall_worse_than_stage97c"
+    },
+    {
+      "rule": "stage99c_support_prediction_mass_worse_than_stage97c"
+    },
+    {
+      "rule": "stage99a_support_floor_micro_failed_to_restore_support"
+    },
+    {
+      "rule": "stage99a_micro_floor_increased_refute_bias_instead"
+    },
+    {
+      "rule": "reject_stage99c_as_primary"
+    },
+    {
+      "rule": "keep_stage71_primary"
+    },
+    {
+      "rule": "stop_large_bridge_append_search"
+    }
+  ],
+  "next_options": [
+    {
+      "option": "STOP_BRIDGE_SEARCH",
+      "priority": 1,
+      "decision": "Recommended",
+      "description": "Stop new synthetic bridge appends. Stage95A, Stage97A, and Stage99A show the same external tradeoff: REFUTE/macro can improve, but SUPPORT recall collapses."
+    },
+    {
+      "option": "THRESHOLD_ONLY_OR_LOGIT_EXPORT_ANALYSIS",
+      "priority": 2,
+      "decision": "Allowed diagnostic only",
+      "description": "No retraining. Inspect whether logits/probs can support a clean-preserving SUPPORT floor. Requires prediction export; do not use external metrics for threshold tuning."
+    },
+    {
+      "option": "PAPER_REPORT_BRANCH",
+      "priority": 3,
+      "decision": "Useful",
+      "description": "Report Stage92C/97C/99C as diagnostic evidence of an entitlement/polarity tradeoff: external macro improves but SUPPORT mass/reliability is unstable."
+    }
+  ],
+  "source_files": {
+    "stage99c_summary": "results/stage99c_vitaminc_external_diagnostic_summary.json",
+    "stage99b_summary": "results/stage99b_clean_dev_preservation_summary.json",
+    "stage99a_report": "results/stage99a_support_floor_micro_bridge_preflight_report.json",
+    "stage98_report": "results/stage98_stage97c_external_decision_report.json",
+    "stage97c_recovery": "results/stage97c_embedded_external_eval_recovery_summary.json",
+    "stage93_report": "results/stage93_stage92c_external_decision_report.json"
+  }
+}

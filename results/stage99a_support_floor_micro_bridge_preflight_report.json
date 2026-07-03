@@ -1,0 +1,296 @@
+{
+  "summary": {
+    "stage": "Stage99A",
+    "decision": "STAGE99A_SUPPORT_FLOOR_MICRO_BRIDGE_READY",
+    "stage99a_out": "data/stage99a_support_floor_micro_bridge.jsonl",
+    "combined_stage80a_out": "data/stage99a_stage92a_stage97a_combined_support_floor_bridge.jsonl",
+    "stage99a_n": 32,
+    "stage99a_label_counts": {
+      "SUPPORT": 16,
+      "NOT_ENTITLED": 16
+    },
+    "stage99a_family_counts": {
+      "support_floor_micro_numeric_date": 16,
+      "support_floor_micro_ne_guardrail": 16
+    },
+    "stage99a_subtype_counts": {
+      "support_floor_verified_numeric_date": 16,
+      "ne_guardrail_missing_verified_count": 16
+    },
+    "stage99a_polarity_counts": {
+      "SUPPORT": 16,
+      "NONE": 16
+    },
+    "combined_n": 352,
+    "combined_label_counts": {
+      "SUPPORT": 172,
+      "REFUTE": 84,
+      "NOT_ENTITLED": 96
+    },
+    "combined_intervention_counts": {
+      "stage92a_support_preserving_counter_bridge": 240,
+      "stage97a_half_size_numeric_date_antine_bridge": 80,
+      "stage99a_support_floor_micro_bridge": 32
+    },
+    "target": "Micro SUPPORT floor after Stage98. Restore SUPPORT recall/mass without large SUPPORT pressure or Stage95B-style clean NOT_ENTITLED-to-SUPPORT overpromotion.",
+    "source_policy": "Synthetic/internal Stage99A rows only. VitaminC/external and diagnostic rows are checked for overlap but not used as training rows.",
+    "intended_next_stage": "Stage99B clean-dev frozen recovery run with Stage57 + Stage66 + combined Stage92A+Stage97A+Stage99A via stage80a slot; no Stage83A; no Stage88A; no external first.",
+    "expected_stage99b_bridge_count": 1592,
+    "expected_stage99b_final_train_count": 4472,
+    "overlap_by_file": {
+      "data/controlled_v5_v3_without_time_swap.jsonl": 0,
+      "data/stage57_nonleaking_external_bridge.jsonl": 0,
+      "data/stage66_residual_bridge.jsonl": 0,
+      "data/stage83a_ne_safety_only_bridge.jsonl": 0,
+      "data/stage88a_balanced_entitlement_recovery_bridge.jsonl": 0,
+      "data/stage92a_support_preserving_counter_bridge.jsonl": 0,
+      "data/stage95a_anti_ne_entitlement_preservation_bridge.jsonl": 0,
+      "data/stage95a_stage92a_combined_support_antine_bridge.jsonl": 0,
+      "data/stage97a_half_size_numeric_date_antine_bridge.jsonl": 0,
+      "data/stage97a_stage92a_combined_half_antine_bridge.jsonl": 0,
+      "data/stage43b1_vitaminc_validation_sample1000.jsonl": 0,
+      "data/stage84e2_vitaminc_validation_sample1000_exact_ood_schema.jsonl": 0,
+      "results/stage94_new_false_ne_stage73_non_ne_stage92c_ne_examples.jsonl": 0,
+      "results/stage94_repaired_false_ne_stage73_ne_stage92c_non_ne_examples.jsonl": 0,
+      "results/stage94_persistent_false_ne_stage73_stage92c_both_ne_examples.jsonl": 0,
+      "results/stage94_stage92c_false_ne_all_examples.jsonl": 0,
+      "results/stage96_stage92b_correct_stage95b_wrong_examples.jsonl": 0,
+      "results/stage96_stage92b_wrong_stage95b_correct_examples.jsonl": 0,
+      "results/stage96_stage92b_stage95b_changed_prediction_examples.jsonl": 0
+    },
+    "checks": {
+      "stage99a_row_count_32": true,
+      "stage99a_support_16": true,
+      "stage99a_ne_16": true,
+      "stage99a_refute_0": true,
+      "stage99a_pairs_unique": true,
+      "stage99a_no_exact_overlap_checked_files": true,
+      "stage99a_source_synthetic_internal_only": true,
+      "stage99a_no_vitaminc_source": true,
+      "stage99a_no_external_source": true,
+      "combined_row_count_352": true,
+      "combined_contains_stage92a_240": true,
+      "combined_contains_stage97a_80": true,
+      "combined_contains_stage99a_32": true,
+      "combined_pairs_unique": true,
+      "combined_support_172": true,
+      "combined_refute_84": true,
+      "combined_ne_96": true,
+      "encode_label_tensors_stage99a_ok": true,
+      "encode_label_tensors_combined_ok": true,
+      "encode_mamba_records_stage99a_ok": true,
+      "encode_mamba_records_combined_ok": true
+    }
+  },
+  "stage99a_label_counts": [
+    {
+      "label": "NOT_ENTITLED",
+      "count": 16
+    },
+    {
+      "label": "SUPPORT",
+      "count": 16
+    }
+  ],
+  "stage99a_family_counts": [
+    {
+      "family": "support_floor_micro_ne_guardrail",
+      "count": 16
+    },
+    {
+      "family": "support_floor_micro_numeric_date",
+      "count": 16
+    }
+  ],
+  "stage99a_subtype_counts": [
+    {
+      "subtype": "ne_guardrail_missing_verified_count",
+      "count": 16
+    },
+    {
+      "subtype": "support_floor_verified_numeric_date",
+      "count": 16
+    }
+  ],
+  "combined_label_counts": [
+    {
+      "label": "NOT_ENTITLED",
+      "count": 96
+    },
+    {
+      "label": "REFUTE",
+      "count": 84
+    },
+    {
+      "label": "SUPPORT",
+      "count": 172
+    }
+  ],
+  "overlap_checks": [
+    {
+      "file": "data/controlled_v5_v3_without_time_swap.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "data/stage57_nonleaking_external_bridge.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "data/stage66_residual_bridge.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "data/stage83a_ne_safety_only_bridge.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "data/stage88a_balanced_entitlement_recovery_bridge.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "data/stage92a_support_preserving_counter_bridge.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "data/stage95a_anti_ne_entitlement_preservation_bridge.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "data/stage95a_stage92a_combined_support_antine_bridge.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "data/stage97a_half_size_numeric_date_antine_bridge.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "data/stage97a_stage92a_combined_half_antine_bridge.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "data/stage43b1_vitaminc_validation_sample1000.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "data/stage84e2_vitaminc_validation_sample1000_exact_ood_schema.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "results/stage94_new_false_ne_stage73_non_ne_stage92c_ne_examples.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "results/stage94_repaired_false_ne_stage73_ne_stage92c_non_ne_examples.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "results/stage94_persistent_false_ne_stage73_stage92c_both_ne_examples.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "results/stage94_stage92c_false_ne_all_examples.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "results/stage96_stage92b_correct_stage95b_wrong_examples.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "results/stage96_stage92b_wrong_stage95b_correct_examples.jsonl",
+      "exact_pair_overlap": 0
+    },
+    {
+      "file": "results/stage96_stage92b_stage95b_changed_prediction_examples.jsonl",
+      "exact_pair_overlap": 0
+    }
+  ],
+  "checks": [
+    {
+      "check": "stage99a_row_count_32",
+      "pass": true
+    },
+    {
+      "check": "stage99a_support_16",
+      "pass": true
+    },
+    {
+      "check": "stage99a_ne_16",
+      "pass": true
+    },
+    {
+      "check": "stage99a_refute_0",
+      "pass": true
+    },
+    {
+      "check": "stage99a_pairs_unique",
+      "pass": true
+    },
+    {
+      "check": "stage99a_no_exact_overlap_checked_files",
+      "pass": true
+    },
+    {
+      "check": "stage99a_source_synthetic_internal_only",
+      "pass": true
+    },
+    {
+      "check": "stage99a_no_vitaminc_source",
+      "pass": true
+    },
+    {
+      "check": "stage99a_no_external_source",
+      "pass": true
+    },
+    {
+      "check": "combined_row_count_352",
+      "pass": true
+    },
+    {
+      "check": "combined_contains_stage92a_240",
+      "pass": true
+    },
+    {
+      "check": "combined_contains_stage97a_80",
+      "pass": true
+    },
+    {
+      "check": "combined_contains_stage99a_32",
+      "pass": true
+    },
+    {
+      "check": "combined_pairs_unique",
+      "pass": true
+    },
+    {
+      "check": "combined_support_172",
+      "pass": true
+    },
+    {
+      "check": "combined_refute_84",
+      "pass": true
+    },
+    {
+      "check": "combined_ne_96",
+      "pass": true
+    },
+    {
+      "check": "encode_label_tensors_stage99a_ok",
+      "pass": true
+    },
+    {
+      "check": "encode_label_tensors_combined_ok",
+      "pass": true
+    },
+    {
+      "check": "encode_mamba_records_stage99a_ok",
+      "pass": true
+    },
+    {
+      "check": "encode_mamba_records_combined_ok",
+      "pass": true
+    }
+  ],
+  "source_design_file": "results/stage98_stage97c_external_decision_report.json",
+  "source_stage92a": "data/stage92a_support_preserving_counter_bridge.jsonl",
+  "source_stage97a": "data/stage97a_half_size_numeric_date_antine_bridge.jsonl"
+}
