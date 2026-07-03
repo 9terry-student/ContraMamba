@@ -1,0 +1,322 @@
+{
+  "summary": {
+    "stage": "Stage80C",
+    "decision": "STAGE80C_RUNNER_INTEGRATION_PLAN_READY",
+    "purpose": "Plan runner integration for conservative Stage75v2 bridge before patching the runner.",
+    "integration_name": "stage57_stage66_stage80a_conservative_stage75v2_append_train_only",
+    "primary_candidate": true,
+    "stage75_full_bridge_default": false,
+    "stage80a_bridge_default_candidate": true,
+    "main_clean_total": 3600,
+    "clean_train_expected": 2880,
+    "clean_dev_expected": 720,
+    "stage57_bridge_rows": 520,
+    "stage66_bridge_rows": 720,
+    "stage80a_bridge_rows": 500,
+    "combined_bridge_rows": 1740,
+    "final_train_expected": 4620,
+    "stage80a_label_counts": {
+      "SUPPORT": 170,
+      "REFUTE": 170,
+      "NOT_ENTITLED": 160
+    },
+    "stage80a_family_counts": {
+      "numeric_temporal_polarity_repair_v2_conservative": 180,
+      "lexical_type_polarity_repair_v2_conservative": 160,
+      "strict_ne_false_support_safety_v2": 160
+    },
+    "pairwise_loss_source": "clean_main_train_only",
+    "pairwise_bridge_rows_excluded": 1740,
+    "training_executed": false,
+    "external_eval_executed": false,
+    "recommended_next_stage": "Stage80D patch runner to support Stage80A conservative Stage75v2 bridge flags"
+  },
+  "checks": [
+    {
+      "check": "stage80a_data_exists",
+      "pass": true
+    },
+    {
+      "check": "stage80b_report_exists",
+      "pass": true
+    },
+    {
+      "check": "stage80b_static_exists",
+      "pass": true
+    },
+    {
+      "check": "stage80a_row_count_500",
+      "pass": true
+    },
+    {
+      "check": "stage80a_label_counts_exact",
+      "pass": true
+    },
+    {
+      "check": "stage80a_family_counts_exact",
+      "pass": true
+    },
+    {
+      "check": "stage79_revise_not_default",
+      "pass": true
+    },
+    {
+      "check": "stage75_full_not_primary",
+      "pass": true
+    },
+    {
+      "check": "stage80a_primary_candidate",
+      "pass": true
+    },
+    {
+      "check": "combined_bridge_1740",
+      "pass": true
+    },
+    {
+      "check": "final_train_expected_4620",
+      "pass": true
+    },
+    {
+      "check": "pairwise_bridge_excluded_1740",
+      "pass": true
+    },
+    {
+      "check": "clean_dev_unchanged_720",
+      "pass": true
+    }
+  ],
+  "integration_plan": {
+    "integration_name": "stage57_stage66_stage80a_conservative_stage75v2_append_train_only",
+    "primary_candidate": true,
+    "use_stage57": true,
+    "use_stage66": true,
+    "use_stage75_full": false,
+    "use_stage80a_conservative_stage75v2": true,
+    "runner_patch_required": true,
+    "new_runner_flags": [
+      {
+        "flag": "--stage80a-bridge-train-jsonl",
+        "type": "path",
+        "default": null,
+        "purpose": "Path to conservative Stage75v2 bridge JSONL."
+      },
+      {
+        "flag": "--stage80a-bridge-train-mode",
+        "choices": [
+          "none",
+          "append_train_only"
+        ],
+        "default": "none",
+        "purpose": "Append Stage80A bridge only to train split after clean main train/dev split."
+      }
+    ],
+    "canonical_run_mode": {
+      "--stage57-bridge-train-jsonl": "data/stage57_nonleaking_external_bridge.jsonl",
+      "--stage57-bridge-train-mode": "append_train_only",
+      "--stage66-bridge-train-jsonl": "data/stage66_residual_bridge.jsonl",
+      "--stage66-bridge-train-mode": "append_train_only",
+      "--stage80a-bridge-train-jsonl": "data/stage80a_conservative_stage75v2_bridge.jsonl",
+      "--stage80a-bridge-train-mode": "append_train_only"
+    },
+    "do_not_use_in_primary_candidate": {
+      "--stage75-bridge-train-jsonl": "data/stage75_targeted_residual_bridge.jsonl",
+      "--stage75-bridge-train-mode": "append_train_only"
+    },
+    "expected_counts": {
+      "main_clean_total": 3600,
+      "clean_train_expected": 2880,
+      "clean_dev_expected": 720,
+      "stage57_bridge_rows": 520,
+      "stage66_bridge_rows": 720,
+      "stage80a_bridge_rows": 500,
+      "combined_bridge_rows": 1740,
+      "final_train_expected": 4620
+    },
+    "pairwise_intervention_policy": {
+      "source": "clean_main_train_only",
+      "clean_main_pairwise_rows": 2880,
+      "bridge_rows_excluded": 1740,
+      "stage57_excluded": 520,
+      "stage66_excluded": 720,
+      "stage80a_excluded": 500
+    },
+    "checkpoint_policy": {
+      "clean_dev_for_checkpoint_selection": true,
+      "bridge_rows_in_dev": false,
+      "external_data_used_for_training": false,
+      "external_metrics_used_for_threshold_tuning": false,
+      "time_swap_used": false
+    },
+    "metadata_required_in_runner_report": [
+      "stage80a_bridge_enabled",
+      "stage80a_bridge_train_jsonl",
+      "stage80a_bridge_train_mode",
+      "stage80a_bridge_row_count",
+      "stage80a_bridge_label_counts",
+      "stage80a_bridge_family_counts",
+      "stage80a_excluded_from_intervention_pairwise_loss",
+      "intervention_pairwise_loss_stage80a_row_count_excluded",
+      "combined_bridge_row_count",
+      "combined_bridge_train_only",
+      "final_train_row_count_expected"
+    ],
+    "recommended_next_stage": "Stage80D patch runner to support Stage80A conservative Stage75v2 bridge flags"
+  },
+  "counts": [
+    {
+      "component": "clean_main_total",
+      "rows": 3600,
+      "train_included": false,
+      "dev_included": false,
+      "note": "source before split"
+    },
+    {
+      "component": "clean_train_expected",
+      "rows": 2880,
+      "train_included": true,
+      "dev_included": false,
+      "note": "80% clean main"
+    },
+    {
+      "component": "clean_dev_expected",
+      "rows": 720,
+      "train_included": false,
+      "dev_included": true,
+      "note": "checkpoint selection only"
+    },
+    {
+      "component": "stage57_bridge",
+      "rows": 520,
+      "train_included": true,
+      "dev_included": false,
+      "note": "append_train_only"
+    },
+    {
+      "component": "stage66_bridge",
+      "rows": 720,
+      "train_included": true,
+      "dev_included": false,
+      "note": "append_train_only"
+    },
+    {
+      "component": "stage80a_bridge",
+      "rows": 500,
+      "train_included": true,
+      "dev_included": false,
+      "note": "append_train_only"
+    },
+    {
+      "component": "combined_bridge",
+      "rows": 1740,
+      "train_included": true,
+      "dev_included": false,
+      "note": "excluded from pairwise"
+    },
+    {
+      "component": "final_train_expected",
+      "rows": 4620,
+      "train_included": true,
+      "dev_included": false,
+      "note": "clean_train + bridges"
+    }
+  ],
+  "stage80a_family_label_counts": [
+    {
+      "family": "lexical_type_polarity_repair_v2_conservative",
+      "SUPPORT": 80,
+      "REFUTE": 80,
+      "NOT_ENTITLED": 0,
+      "total": 160
+    },
+    {
+      "family": "numeric_temporal_polarity_repair_v2_conservative",
+      "SUPPORT": 90,
+      "REFUTE": 90,
+      "NOT_ENTITLED": 0,
+      "total": 180
+    },
+    {
+      "family": "strict_ne_false_support_safety_v2",
+      "SUPPORT": 0,
+      "REFUTE": 0,
+      "NOT_ENTITLED": 160,
+      "total": 160
+    }
+  ],
+  "runner_patch_requirements": [
+    {
+      "requirement": "Add Stage80A CLI flags.",
+      "detail": "--stage80a-bridge-train-jsonl and --stage80a-bridge-train-mode {none,append_train_only}."
+    },
+    {
+      "requirement": "Append only to train.",
+      "detail": "Stage80A rows must be appended after clean main split and never enter dev/checkpoint data."
+    },
+    {
+      "requirement": "Preserve Stage57/Stage66 behavior.",
+      "detail": "Existing Stage57 and Stage66 flags/metadata must remain unchanged."
+    },
+    {
+      "requirement": "Do not use Stage75 full bridge in Stage80 primary.",
+      "detail": "Stage75 flags remain supported but omitted from the Stage80F canonical command."
+    },
+    {
+      "requirement": "Exclude bridge rows from pairwise intervention loss.",
+      "detail": "Pairwise intervention loss source remains clean_main_train_only; Stage57/66/80A excluded."
+    },
+    {
+      "requirement": "Include Stage80A rows in CE/final/aux training losses.",
+      "detail": "Like Stage57/66/75 bridge rows, Stage80A should influence supervised heads but not pairwise intervention pairs."
+    },
+    {
+      "requirement": "Metadata must expose Stage80A counts.",
+      "detail": "Report stage80a row count, label counts, family counts, combined bridge count, final train expected count."
+    },
+    {
+      "requirement": "Preserve external diagnostic isolation.",
+      "detail": "External eval data must not affect training/checkpoint/calibration."
+    }
+  ],
+  "ablation_plan": [
+    {
+      "stage": "Stage80F",
+      "candidate": "A2_main_stage57_stage66_stage80a_full_500",
+      "stage57": true,
+      "stage66": true,
+      "stage80a_rows": 500,
+      "description": "Main conservative candidate: polarity repair plus NE safety."
+    },
+    {
+      "stage": "Stage81",
+      "candidate": "VitaminC external diagnostic for Stage80F",
+      "stage57": true,
+      "stage66": true,
+      "stage80a_rows": 500,
+      "description": "Compare against Stage73 and Stage77."
+    },
+    {
+      "stage": "Stage82",
+      "candidate": "Residual audit for Stage81",
+      "stage57": true,
+      "stage66": true,
+      "stage80a_rows": 500,
+      "description": "Check false SUPPORT, false entitlement, false NE, and polarity movement."
+    },
+    {
+      "stage": "Optional later",
+      "candidate": "A1 polarity-only subset",
+      "stage57": true,
+      "stage66": true,
+      "stage80a_rows": 340,
+      "description": "Requires subset JSONL or family filter; not part of Stage80C primary integration."
+    },
+    {
+      "stage": "Optional later",
+      "candidate": "A3 NE-safety-only subset",
+      "stage57": true,
+      "stage66": true,
+      "stage80a_rows": 160,
+      "description": "Requires subset JSONL or family filter; diagnostic only."
+    }
+  ]
+}
