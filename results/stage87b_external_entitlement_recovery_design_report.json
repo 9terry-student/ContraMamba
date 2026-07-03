@@ -1,0 +1,157 @@
+{
+  "summary": {
+    "stage": "Stage87B",
+    "decision": "STAGE87B_EXTERNAL_ENTITLEMENT_RECOVERY_DESIGN_READY",
+    "basis_stage85_decision": "STAGE85_REJECT_STAGE83C_KEEP_STAGE71_PRIMARY",
+    "basis_stage86_next_direction": "external_entitlement_recovery_without_NE_safety_expansion",
+    "basis_stage87a_next_direction": "Stage87B_design_external_entitlement_recovery_without_NE_safety",
+    "stage71_primary_policy": "KEEP_STAGE71_PRIMARY",
+    "stage83c_policy": "REJECT_AS_PRIMARY",
+    "main_failure_mode": "Stage83C/Stage84F increased false_NE external errors and suppressed SUPPORT/REFUTE entitlement recall.",
+    "stage73_external_acc": 0.353,
+    "stage73_external_macro_f1_all3": 0.3261787057160285,
+    "stage84f_external_acc": 0.326,
+    "stage84f_external_macro_f1_all3": 0.3066716953259303,
+    "stage84f_minus_stage73_false_NE_total": 44,
+    "stage84f_minus_stage73_false_entitlement_total": -7,
+    "stage84f_minus_stage73_polarity_error_total": -10,
+    "stage73_correct_stage84f_wrong_total": 83,
+    "stage73_wrong_stage84f_correct_total": 56,
+    "stage73_correct_stage84f_false_ne_total": 48,
+    "stage73_entitled_stage84f_ne_total": 89,
+    "recommended_next_stage": "Stage88A non-leaking balanced entitlement recovery bridge design/generation"
+  },
+  "error_delta": [
+    {
+      "error_type": "false_NE_on_REFUTE",
+      "stage73": 145,
+      "stage84f": 162,
+      "delta_stage84f_minus_stage73": 17
+    },
+    {
+      "error_type": "false_NE_on_SUPPORT",
+      "stage73": 178,
+      "stage84f": 205,
+      "delta_stage84f_minus_stage73": 27
+    },
+    {
+      "error_type": "false_NE_total",
+      "stage73": 323,
+      "stage84f": 367,
+      "delta_stage84f_minus_stage73": 44
+    },
+    {
+      "error_type": "false_REFUTE_on_NE",
+      "stage73": 41,
+      "stage84f": 31,
+      "delta_stage84f_minus_stage73": -10
+    },
+    {
+      "error_type": "false_REFUTE_on_SUPPORT",
+      "stage73": 106,
+      "stage84f": 106,
+      "delta_stage84f_minus_stage73": 0
+    },
+    {
+      "error_type": "false_SUPPORT_on_NE",
+      "stage73": 39,
+      "stage84f": 42,
+      "delta_stage84f_minus_stage73": 3
+    },
+    {
+      "error_type": "false_SUPPORT_on_REFUTE",
+      "stage73": 138,
+      "stage84f": 128,
+      "delta_stage84f_minus_stage73": -10
+    },
+    {
+      "error_type": "false_entitlement_total",
+      "stage73": 80,
+      "stage84f": 73,
+      "delta_stage84f_minus_stage73": -7
+    },
+    {
+      "error_type": "polarity_error_total",
+      "stage73": 244,
+      "stage84f": 234,
+      "delta_stage84f_minus_stage73": -10
+    }
+  ],
+  "design_constraints": [
+    {
+      "constraint": "external_no_train_leakage",
+      "rule": "Do not use VitaminC external claim/evidence examples from Stage73/84F/87A as training bridge rows.",
+      "status": "MANDATORY"
+    },
+    {
+      "constraint": "keep_stage71_primary",
+      "rule": "Stage71 retry2 remains the primary checkpoint until a candidate beats it on clean-dev preservation and external diagnostic.",
+      "status": "MANDATORY"
+    },
+    {
+      "constraint": "no_more_ne_safety_expansion",
+      "rule": "Do not add additional NE-safety-only bridge rows by default; Stage83A increased false_NE external errors.",
+      "status": "MANDATORY"
+    },
+    {
+      "constraint": "target_entitlement_recall",
+      "rule": "Next bridge must target SUPPORT/REFUTE recall recovery under sufficient evidence, not generic NOT_ENTITLED conservatism.",
+      "status": "MANDATORY"
+    },
+    {
+      "constraint": "preserve_false_entitlement_guardrail",
+      "rule": "Any recovery bridge must track false_SUPPORT_on_NE and false_REFUTE_on_NE so entitlement recovery does not simply over-entitle.",
+      "status": "MANDATORY"
+    }
+  ],
+  "candidate_options": [
+    {
+      "option": "Stage88A_balanced_entitlement_recovery_bridge",
+      "description": "Create a small non-leaking synthetic/internal bridge emphasizing SUPPORT and REFUTE entitlement recovery with matched NE guardrails.",
+      "expected_effect": "Reduce false_NE_on_SUPPORT and false_NE_on_REFUTE without expanding NE prediction mass.",
+      "risk": "May increase false_SUPPORT_on_NE or false_REFUTE_on_NE if recovery pressure is too strong.",
+      "priority": 1
+    },
+    {
+      "option": "Stage88B_threshold_or_logit_calibration_only",
+      "description": "Evaluate post-hoc final-head threshold/logit calibration on existing Stage71/Stage84F predictions without retraining.",
+      "expected_effect": "Diagnose whether NE over-selection is a decision-boundary issue rather than representation issue.",
+      "risk": "May not generalize if calibration relies on external labels; must remain diagnostic-only unless using clean-dev.",
+      "priority": 2
+    },
+    {
+      "option": "Stage88C_polarity_balanced_recovery",
+      "description": "Add paired SUPPORT/REFUTE templates where evidence is sufficient and polarity is explicit, with no extra NE-only rows.",
+      "expected_effect": "Recover REFUTE recall and SUPPORT recall while not increasing polarity flips.",
+      "risk": "Can worsen false_SUPPORT_on_REFUTE / false_REFUTE_on_SUPPORT if templates are too shallow.",
+      "priority": 3
+    }
+  ],
+  "promotion_criteria": [
+    {
+      "criterion": "clean_dev_preservation",
+      "threshold": "candidate clean-dev macro_f1 >= Stage71 macro_f1 - 0.003"
+    },
+    {
+      "criterion": "external_macro",
+      "threshold": "candidate VitaminC external macro_f1_all3 >= Stage73 macro_f1_all3"
+    },
+    {
+      "criterion": "external_accuracy",
+      "threshold": "candidate VitaminC external accuracy >= Stage73 accuracy"
+    },
+    {
+      "criterion": "false_ne_reduction",
+      "threshold": "false_NE_total < Stage73 false_NE_total or at minimum < Stage84F false_NE_total"
+    },
+    {
+      "criterion": "false_entitlement_guardrail",
+      "threshold": "false_entitlement_total <= Stage73 false_entitlement_total + small tolerance"
+    }
+  ],
+  "source_files": {
+    "stage85": "results/stage85_stage83c_external_decision_report.json",
+    "stage86": "results/stage86_stage84f_external_error_audit.json",
+    "stage87a": "results/stage87a_stage71_vs_stage84f_external_prediction_diff_audit.json"
+  }
+}
