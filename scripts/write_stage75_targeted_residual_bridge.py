@@ -808,6 +808,28 @@ def build_strict_ne_external_style_safety(rng: Random, n_total: int) -> list[dic
 
 
 # ---------------------------------------------------------------------------
+# Deterministic (claim, evidence) uniqueness guard. Runs once, in row order,
+# right after every family builder has produced its rows and before the
+# dataset is returned/written. Each row's "id" field is already guaranteed
+# globally unique (see check_duplicate_ids, enforced above this point), so
+# using it as an index-specific synthetic detail appended to the evidence
+# text is sufficient to deterministically break any (claim, evidence)
+# collision without touching final_label, bridge_family, or any other field.
+# ---------------------------------------------------------------------------
+def enforce_claim_evidence_uniqueness(rows: list[dict[str, Any]]) -> None:
+    seen: set[tuple[str, str]] = set()
+    for row in rows:
+        key = (row["claim"], row["evidence"])
+        attempt = 0
+        while key in seen:
+            attempt += 1
+            detail = row["id"] if attempt == 1 else f"{row['id']}-{attempt}"
+            row["evidence"] = f"{row['evidence']} (Internal case reference: {detail}.)"
+            key = (row["claim"], row["evidence"])
+        seen.add(key)
+
+
+# ---------------------------------------------------------------------------
 # Orchestration
 # ---------------------------------------------------------------------------
 def generate_dataset(seed: int) -> list[dict[str, Any]]:
@@ -826,6 +848,17 @@ def generate_dataset(seed: int) -> list[dict[str, Any]]:
 
     if len(rows) != STAGE75B_TOTAL_ROWS:
         raise RuntimeError(f"generated {len(rows)} rows, expected {STAGE75B_TOTAL_ROWS}")
+
+    enforce_claim_evidence_uniqueness(rows)
+
+    duplicate_pair_check = check_duplicate_claim_evidence_pairs(rows)
+    if not duplicate_pair_check["passed"]:
+        raise RuntimeError(
+            "duplicate (claim, evidence) pairs remained after enforce_claim_evidence_uniqueness: "
+            f"{duplicate_pair_check['duplicate_count']} duplicate(s), "
+            f"examples={duplicate_pair_check['duplicate_examples']}"
+        )
+
     return rows
 
 
