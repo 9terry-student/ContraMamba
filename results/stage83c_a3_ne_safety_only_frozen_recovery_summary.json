@@ -1,0 +1,252 @@
+{
+  "summary": {
+    "stage": "Stage83C",
+    "decision": "STAGE83C_A3_NE_SAFETY_ONLY_FROZEN_RECOVERY_RUN_READY",
+    "run_dir": "results/stage83c_stage57_stage66_stage83a_ne_safety_only_frozen_recovery_run_20260703_020152",
+    "train_report": "results/stage83c_stage57_stage66_stage83a_ne_safety_only_frozen_recovery_run_20260703_020152/stage83c_stage57_stage66_stage83a_train_report.json",
+    "predictions": "results/stage83c_stage57_stage66_stage83a_ne_safety_only_frozen_recovery_run_20260703_020152/stage83c_stage57_stage66_stage83a_predictions.json",
+    "stdout_log": "results/stage83c_stage57_stage66_stage83a_ne_safety_only_frozen_recovery_run_20260703_020152/stage83c_stdout.log",
+    "returncode": 0,
+    "elapsed_min": 6.5685,
+    "best_epoch": 158,
+    "selected_epoch": 158,
+    "best_dev_acc": 0.9791666865348816,
+    "best_dev_macro_f1": 0.9696641386782231,
+    "prediction_distribution": {
+      "NOT_ENTITLED": 525,
+      "REFUTE": 90,
+      "SUPPORT": 105
+    },
+    "stage57_bridge_rows": 520,
+    "stage66_bridge_rows": 720,
+    "stage75_bridge_rows": 0,
+    "stage83a_rows_via_stage80a_bridge": 160,
+    "combined_bridge_rows": 1400,
+    "final_train_row_count_expected": 4280,
+    "pairwise_loss_source": "clean_main_train_only",
+    "pairwise_clean_main_row_count": 2880,
+    "pairwise_bridge_rows_excluded": 1400,
+    "pairwise_stage83a_rows_excluded": 160,
+    "stage71_best_dev_acc": 0.9750000238418579,
+    "stage71_best_dev_macro_f1": 0.9640472521828455,
+    "stage75f_best_dev_acc": 0.9736111164093018,
+    "stage75f_best_dev_macro_f1": 0.9622049929193565,
+    "stage80f_best_dev_acc": 0.9708333611488342,
+    "stage80f_best_dev_macro_f1": 0.958564119910363,
+    "stage83c_minus_stage71_acc": 0.004166662693023682,
+    "stage83c_minus_stage71_macro_f1": 0.005616886495377615,
+    "stage83c_minus_stage75f_acc": 0.005555570125579834,
+    "stage83c_minus_stage75f_macro_f1": 0.0074591457588666366,
+    "stage83c_minus_stage80f_acc": 0.008333325386047363,
+    "stage83c_minus_stage80f_macro_f1": 0.011100018767860043,
+    "stage75_full_bridge_used": false,
+    "stage80a_full_bridge_used": false,
+    "stage83a_ne_safety_only_used": true,
+    "training_executed": true,
+    "external_eval_executed": false,
+    "recommended_next_stage": "Stage83D clean-dev decision report for A3 NE-safety-only bridge"
+  },
+  "metadata_checks": [
+    {
+      "check": "train_report_exists",
+      "pass": true
+    },
+    {
+      "check": "predictions_exists",
+      "pass": true
+    },
+    {
+      "check": "stdout_log_exists",
+      "pass": true
+    },
+    {
+      "check": "stage57_enabled_520",
+      "pass": true
+    },
+    {
+      "check": "stage66_enabled_720",
+      "pass": true
+    },
+    {
+      "check": "stage83a_via_stage80a_enabled_160",
+      "pass": true
+    },
+    {
+      "check": "stage75_full_not_enabled",
+      "pass": true
+    },
+    {
+      "check": "combined_bridge_1400",
+      "pass": true
+    },
+    {
+      "check": "final_train_expected_4280",
+      "pass": true
+    },
+    {
+      "check": "pairwise_source_clean_main",
+      "pass": true
+    },
+    {
+      "check": "pairwise_clean_main_2880",
+      "pass": true
+    },
+    {
+      "check": "pairwise_bridge_excluded_1400",
+      "pass": true
+    },
+    {
+      "check": "pairwise_stage83a_excluded_160",
+      "pass": true
+    },
+    {
+      "check": "stage83a_excluded_from_pairwise",
+      "pass": true
+    },
+    {
+      "check": "bridge_pairwise_excluded",
+      "pass": true
+    },
+    {
+      "check": "combined_bridge_train_only",
+      "pass": true
+    },
+    {
+      "check": "clean_dev_checkpoint_selection",
+      "pass": true
+    },
+    {
+      "check": "external_data_not_training",
+      "pass": true
+    },
+    {
+      "check": "external_metrics_not_threshold_tuning",
+      "pass": true
+    },
+    {
+      "check": "time_swap_false",
+      "pass": true
+    }
+  ],
+  "preservation_checks": [
+    {
+      "check": "stage83c_acc_ge_0p97",
+      "pass": true
+    },
+    {
+      "check": "stage83c_macro_ge_0p95",
+      "pass": true
+    },
+    {
+      "check": "stage83c_acc_not_below_stage71_by_more_than_0p005",
+      "pass": true
+    },
+    {
+      "check": "stage83c_macro_not_below_stage71_by_more_than_0p005",
+      "pass": true
+    },
+    {
+      "check": "stage83c_macro_better_than_stage80f",
+      "pass": true
+    },
+    {
+      "check": "stage83c_acc_better_than_stage80f",
+      "pass": true
+    }
+  ],
+  "per_label": [
+    {
+      "label": "NOT_ENTITLED",
+      "precision": 1.0,
+      "recall": 0.9722222222222222,
+      "f1": 0.9859154929577464
+    },
+    {
+      "label": "REFUTE",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "label": "SUPPORT",
+      "precision": 0.8571428571428571,
+      "recall": 1.0,
+      "f1": 0.923076923076923
+    }
+  ],
+  "comparison": [
+    {
+      "comparison": "Stage83C - Stage71_retry2",
+      "acc_delta": 0.004166662693023682,
+      "macro_f1_delta": 0.005616886495377615,
+      "baseline_acc": 0.9750000238418579,
+      "baseline_macro_f1": 0.9640472521828455,
+      "stage83c_acc": 0.9791666865348816,
+      "stage83c_macro_f1": 0.9696641386782231
+    },
+    {
+      "comparison": "Stage83C - Stage75F",
+      "acc_delta": 0.005555570125579834,
+      "macro_f1_delta": 0.0074591457588666366,
+      "baseline_acc": 0.9736111164093018,
+      "baseline_macro_f1": 0.9622049929193565,
+      "stage83c_acc": 0.9791666865348816,
+      "stage83c_macro_f1": 0.9696641386782231
+    },
+    {
+      "comparison": "Stage83C - Stage80F",
+      "acc_delta": 0.008333325386047363,
+      "macro_f1_delta": 0.011100018767860043,
+      "baseline_acc": 0.9708333611488342,
+      "baseline_macro_f1": 0.958564119910363,
+      "stage83c_acc": 0.9791666865348816,
+      "stage83c_macro_f1": 0.9696641386782231
+    }
+  ],
+  "command": [
+    "python",
+    "scripts/train_controlled_v6b_minimal.py",
+    "--data",
+    "data/controlled_v5_v3_without_time_swap.jsonl",
+    "--backbone",
+    "mamba",
+    "--model-name",
+    "state-spaces/mamba-130m-hf",
+    "--freeze-encoder",
+    "true",
+    "--epochs",
+    "200",
+    "--max-length",
+    "128",
+    "--dev-ratio",
+    "0.2",
+    "--seed",
+    "1",
+    "--device",
+    "cuda",
+    "--flag-source",
+    "controlled_heuristic",
+    "--select-metric",
+    "final_macro_f1",
+    "--use-intervention-loss",
+    "--use-stage47-selected-recovery-config",
+    "--stage47-recovery-config-path",
+    "results/stage47_selected_recovery_config_check.json",
+    "--stage57-bridge-train-jsonl",
+    "data/stage57_nonleaking_external_bridge.jsonl",
+    "--stage57-bridge-train-mode",
+    "append_train_only",
+    "--stage66-bridge-train-jsonl",
+    "data/stage66_residual_bridge.jsonl",
+    "--stage66-bridge-train-mode",
+    "append_train_only",
+    "--stage80a-bridge-train-jsonl",
+    "data/stage83a_ne_safety_only_bridge.jsonl",
+    "--stage80a-bridge-train-mode",
+    "append_train_only",
+    "--output-json",
+    "/kaggle/working/ContraMamba/results/stage83c_stage57_stage66_stage83a_ne_safety_only_frozen_recovery_run_20260703_020152/stage83c_stage57_stage66_stage83a_train_report.json",
+    "--output-predictions-json",
+    "/kaggle/working/ContraMamba/results/stage83c_stage57_stage66_stage83a_ne_safety_only_frozen_recovery_run_20260703_020152/stage83c_stage57_stage66_stage83a_predictions.json"
+  ]
+}
