@@ -9745,6 +9745,12 @@ def main(argv: list[str] | None = None) -> int:
             "clean_main_train_only" if _pairwise_loss_bridge_excluded > 0 else "full_train"
         ),
         "intervention_pairwise_loss_clean_main_row_count": _clean_main_train_row_count,
+        # Stage80D2: final train row count after the clean main train/dev split
+        # plus every append_train_only bridge (Stage57/Stage66/Stage75/Stage80A
+        # as applicable). Computed dynamically from the already-finalized
+        # train_records list -- never hardcoded -- so it always reflects
+        # whichever bridges were actually enabled for this run.
+        "final_train_row_count_expected": len(train_records),
         "intervention_pairwise_loss_bridge_row_count_excluded": _pairwise_loss_bridge_excluded,
         "intervention_pairwise_loss_stage57_row_count_excluded": _pairwise_loss_stage57_excluded,
         "intervention_pairwise_loss_stage66_row_count_excluded": _pairwise_loss_stage66_excluded,
@@ -15096,6 +15102,7 @@ def main(argv: list[str] | None = None) -> int:
             "intervention_pairwise_loss_stage66_row_count_excluded",
             "intervention_pairwise_loss_stage75_row_count_excluded",
             "intervention_pairwise_loss_stage80a_row_count_excluded",
+            "final_train_row_count_expected",
         ):
             if _audit_key in _single_ledger:
                 report[_audit_key] = _single_ledger[_audit_key]
