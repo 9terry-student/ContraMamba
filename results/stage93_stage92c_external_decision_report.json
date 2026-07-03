@@ -1,0 +1,173 @@
+{
+  "summary": {
+    "stage": "Stage93",
+    "decision": "STAGE93_REJECT_STAGE92C_AS_PRIMARY_KEEP_STAGE71",
+    "candidate_status": "NEAR_MISS_SUPPORT_RECOVERY_NOT_PRIMARY",
+    "current_primary_after_stage93": "Stage71 retry2 Stage57+Stage66 bridge-enabled frozen recovery",
+    "candidate": "Stage92C / Stage57+Stage66+Stage92A",
+    "clean_preserved": true,
+    "beats_stage73_required": false,
+    "near_miss": true,
+    "support_refute_overcorrection_repaired": true,
+    "false_ne_still_bad": true,
+    "stage92c_external_acc": 0.351,
+    "stage73_external_acc": 0.353,
+    "stage92c_external_macro_f1_all3": 0.33083720750354534,
+    "stage73_external_macro_f1_all3": 0.3261787057160285,
+    "stage92c_support_recall": 0.402,
+    "stage73_support_recall": 0.432,
+    "stage88c_support_recall": 0.324,
+    "stage92c_false_NE_total": 345,
+    "stage73_false_NE_total": 323,
+    "stage88c_false_NE_total": 349,
+    "interpretation": "Stage92A/92C is a strong near-miss branch. It preserves clean-dev, restores SUPPORT prediction mass relative to Stage88C, substantially repairs SUPPORT-to-REFUTE overcorrection, and improves external macro-F1 over Stage71. However, it still fails Stage71 on external accuracy and false_NE_total. The remaining failure is not primarily REFUTE overcorrection; it is residual NOT_ENTITLED absorption of entitled SUPPORT/REFUTE examples.",
+    "recommended_next_stage": "Stage94 anti-NE entitlement preservation audit/design",
+    "recommendations": [
+      "Keep Stage71 retry2 Stage57+Stage66 as current primary.",
+      "Do not promote Stage92C because external accuracy remains below Stage73/Stage71 and false_NE_total remains above Stage73.",
+      "Retain Stage92A/92B/92C as the best near-miss branch so far: it repaired Stage88C's SUPPORT-to-REFUTE overcorrection.",
+      "Next stage should not add generic SUPPORT pressure or REFUTE pressure.",
+      "Next stage should target residual false_NE absorption under sufficient evidence, especially SUPPORT/REFUTE examples predicted as NOT_ENTITLED.",
+      "Use Stage94 as an anti-NE entitlement preservation design/audit before generating any new bridge."
+    ]
+  },
+  "comparison": [
+    {
+      "run": "Stage73 / Stage71 primary external",
+      "external_acc": 0.353,
+      "external_macro_f1_all3": 0.3261787057160285,
+      "prediction_counts": "{\"REFUTE\": 219, \"NOT_ENTITLED\": 388, \"SUPPORT\": 393}",
+      "support_recall": 0.432,
+      "refute_recall": 0.202817,
+      "false_NE_total": 323,
+      "false_entitlement_total": 80,
+      "false_REFUTE_on_SUPPORT": 106,
+      "false_SUPPORT_on_REFUTE": 138,
+      "status": "CURRENT_PRIMARY"
+    },
+    {
+      "run": "Stage88C / Stage88A mixed external",
+      "external_acc": 0.338,
+      "external_macro_f1_all3": 0.32945768332771147,
+      "prediction_counts": "{\"REFUTE\": 283, \"NOT_ENTITLED\": 423, \"SUPPORT\": 294}",
+      "support_recall": 0.324,
+      "refute_recall": 0.287324,
+      "false_NE_total": 349,
+      "false_entitlement_total": 71,
+      "false_REFUTE_on_SUPPORT": 141,
+      "false_SUPPORT_on_REFUTE": 101,
+      "status": "MIXED_BRANCH"
+    },
+    {
+      "run": "Stage92C / Stage92A support-preserving candidate external",
+      "external_acc": 0.351,
+      "external_macro_f1_all3": 0.33083720750354534,
+      "prediction_counts": "{\"REFUTE\": 223, \"NOT_ENTITLED\": 412, \"SUPPORT\": 365}",
+      "support_recall": 0.402,
+      "refute_recall": 0.23380281690140844,
+      "false_NE_total": 345,
+      "false_entitlement_total": 78,
+      "false_REFUTE_on_SUPPORT": 107,
+      "false_SUPPORT_on_REFUTE": 119,
+      "status": "NEAR_MISS_NOT_PRIMARY"
+    }
+  ],
+  "delta": [
+    {
+      "comparison": "Stage92C - Stage73",
+      "external_acc_delta": -0.0020000000000000018,
+      "external_macro_delta": 0.004658501787516811,
+      "support_recall_delta": -0.02999999999999997,
+      "refute_recall_delta": 0.030985816901408447,
+      "false_NE_total_delta": 22,
+      "false_entitlement_total_delta": -2,
+      "false_REFUTE_on_SUPPORT_delta": 1,
+      "false_SUPPORT_on_REFUTE_delta": -19
+    },
+    {
+      "comparison": "Stage92C - Stage88C",
+      "external_acc_delta": 0.012999999999999956,
+      "external_macro_delta": 0.0013795241758338683,
+      "support_recall_delta": 0.07800000000000001,
+      "refute_recall_delta": -0.05352118309859158,
+      "false_NE_total_delta": -4,
+      "false_entitlement_total_delta": 7,
+      "false_REFUTE_on_SUPPORT_delta": -34,
+      "false_SUPPORT_on_REFUTE_delta": 18
+    }
+  ],
+  "checks": [
+    {
+      "check": "clean_preserved_vs_stage71",
+      "pass": true
+    },
+    {
+      "check": "external_acc_ge_stage73",
+      "pass": false
+    },
+    {
+      "check": "external_macro_ge_stage73",
+      "pass": true
+    },
+    {
+      "check": "false_NE_total_lte_stage73",
+      "pass": false
+    },
+    {
+      "check": "support_recall_ge_stage73_minus_0p02",
+      "pass": false
+    },
+    {
+      "check": "support_recall_gt_stage88c",
+      "pass": true
+    },
+    {
+      "check": "false_REFUTE_on_SUPPORT_repaired_vs_stage88c",
+      "pass": true
+    },
+    {
+      "check": "false_REFUTE_on_SUPPORT_near_stage73",
+      "pass": true
+    },
+    {
+      "check": "near_miss",
+      "pass": true
+    },
+    {
+      "check": "beats_stage73_required",
+      "pass": false
+    }
+  ],
+  "recommendations": [
+    {
+      "idx": 1,
+      "recommendation": "Keep Stage71 retry2 Stage57+Stage66 as current primary."
+    },
+    {
+      "idx": 2,
+      "recommendation": "Do not promote Stage92C because external accuracy remains below Stage73/Stage71 and false_NE_total remains above Stage73."
+    },
+    {
+      "idx": 3,
+      "recommendation": "Retain Stage92A/92B/92C as the best near-miss branch so far: it repaired Stage88C's SUPPORT-to-REFUTE overcorrection."
+    },
+    {
+      "idx": 4,
+      "recommendation": "Next stage should not add generic SUPPORT pressure or REFUTE pressure."
+    },
+    {
+      "idx": 5,
+      "recommendation": "Next stage should target residual false_NE absorption under sufficient evidence, especially SUPPORT/REFUTE examples predicted as NOT_ENTITLED."
+    },
+    {
+      "idx": 6,
+      "recommendation": "Use Stage94 as an anti-NE entitlement preservation design/audit before generating any new bridge."
+    }
+  ],
+  "source_files": {
+    "stage91": "results/stage91_support_preserving_recovery_design_report.json",
+    "stage92a": "results/stage92a_support_preserving_counter_bridge_generation_report.json",
+    "stage92b": "results/stage92b_clean_dev_preservation_summary.json",
+    "stage92c": "results/stage92c_vitaminc_external_diagnostic_summary.json"
+  }
+}
