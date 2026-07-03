@@ -1,0 +1,237 @@
+{
+  "summary": {
+    "stage": "Stage80F",
+    "decision": "STAGE80F_STAGE57_STAGE66_STAGE80A_CONSERVATIVE_BRIDGE_FROZEN_RECOVERY_RUN_NEEDS_REVIEW",
+    "run_dir": "results/stage80f_stage57_stage66_stage80a_conservative_bridge_frozen_recovery_run_20260703_013106",
+    "train_report": "results/stage80f_stage57_stage66_stage80a_conservative_bridge_frozen_recovery_run_20260703_013106/stage80f_stage57_stage66_stage80a_train_report.json",
+    "predictions": "results/stage80f_stage57_stage66_stage80a_conservative_bridge_frozen_recovery_run_20260703_013106/stage80f_stage57_stage66_stage80a_predictions.json",
+    "stdout_log": "results/stage80f_stage57_stage66_stage80a_conservative_bridge_frozen_recovery_run_20260703_013106/stage80f_stdout.log",
+    "returncode": 0,
+    "elapsed_min": 6.9887,
+    "best_epoch": 180,
+    "selected_epoch": 180,
+    "best_dev_acc": 0.9708333611488342,
+    "best_dev_macro_f1": 0.958564119910363,
+    "prediction_distribution": {
+      "NOT_ENTITLED": 519,
+      "REFUTE": 90,
+      "SUPPORT": 111
+    },
+    "stage57_bridge_rows": 520,
+    "stage66_bridge_rows": 720,
+    "stage75_bridge_rows": 0,
+    "stage80a_bridge_rows": 500,
+    "combined_bridge_rows": 1740,
+    "final_train_row_count_expected": 4620,
+    "pairwise_loss_source": "clean_main_train_only",
+    "pairwise_clean_main_row_count": 2880,
+    "pairwise_bridge_rows_excluded": 1740,
+    "pairwise_stage80a_rows_excluded": 500,
+    "stage71_best_dev_acc": 0.9750000238418579,
+    "stage71_best_dev_macro_f1": 0.9640472521828455,
+    "stage75f_best_dev_acc": 0.9736111164093018,
+    "stage75f_best_dev_macro_f1": 0.9622049929193565,
+    "stage80f_minus_stage71_acc": -0.004166662693023682,
+    "stage80f_minus_stage71_macro_f1": -0.005483132272482427,
+    "stage80f_minus_stage75f_acc": -0.0027777552604675293,
+    "stage80f_minus_stage75f_macro_f1": -0.003640873008993406,
+    "stage75_full_bridge_used": false,
+    "training_executed": true,
+    "external_eval_executed": false,
+    "recommended_next_stage": "Stage80G clean-dev preservation comparison for Stage71 vs Stage75F vs Stage80F"
+  },
+  "metadata_checks": [
+    {
+      "check": "train_report_exists",
+      "pass": true
+    },
+    {
+      "check": "predictions_exists",
+      "pass": true
+    },
+    {
+      "check": "stdout_log_exists",
+      "pass": true
+    },
+    {
+      "check": "stage57_enabled_520",
+      "pass": true
+    },
+    {
+      "check": "stage66_enabled_720",
+      "pass": true
+    },
+    {
+      "check": "stage80a_enabled_500",
+      "pass": true
+    },
+    {
+      "check": "stage75_full_not_enabled",
+      "pass": true
+    },
+    {
+      "check": "combined_bridge_1740",
+      "pass": true
+    },
+    {
+      "check": "final_train_expected_4620",
+      "pass": true
+    },
+    {
+      "check": "pairwise_source_clean_main",
+      "pass": true
+    },
+    {
+      "check": "pairwise_clean_main_2880",
+      "pass": true
+    },
+    {
+      "check": "pairwise_bridge_excluded_1740",
+      "pass": true
+    },
+    {
+      "check": "pairwise_stage80a_excluded_500",
+      "pass": true
+    },
+    {
+      "check": "stage80a_excluded_from_pairwise",
+      "pass": true
+    },
+    {
+      "check": "bridge_pairwise_excluded",
+      "pass": true
+    },
+    {
+      "check": "combined_bridge_train_only",
+      "pass": true
+    },
+    {
+      "check": "clean_dev_checkpoint_selection",
+      "pass": true
+    },
+    {
+      "check": "external_data_not_training",
+      "pass": true
+    },
+    {
+      "check": "external_metrics_not_threshold_tuning",
+      "pass": true
+    },
+    {
+      "check": "time_swap_false",
+      "pass": true
+    }
+  ],
+  "preservation_checks": [
+    {
+      "check": "stage80f_acc_ge_0p97",
+      "pass": true
+    },
+    {
+      "check": "stage80f_macro_ge_0p95",
+      "pass": true
+    },
+    {
+      "check": "stage80f_acc_not_below_stage71_by_more_than_0p005",
+      "pass": true
+    },
+    {
+      "check": "stage80f_macro_not_below_stage71_by_more_than_0p005",
+      "pass": false
+    },
+    {
+      "check": "stage80f_acc_not_below_stage75f_by_more_than_0p005",
+      "pass": true
+    },
+    {
+      "check": "stage80f_macro_not_below_stage75f_by_more_than_0p005",
+      "pass": true
+    }
+  ],
+  "per_label": [
+    {
+      "label": "NOT_ENTITLED",
+      "precision": 1.0,
+      "recall": 0.9611111111111111,
+      "f1": 0.9801699716713881
+    },
+    {
+      "label": "REFUTE",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "label": "SUPPORT",
+      "precision": 0.8108108108108109,
+      "recall": 1.0,
+      "f1": 0.8955223880597014
+    }
+  ],
+  "comparison": [
+    {
+      "comparison": "Stage80F - Stage71_retry2",
+      "acc_delta": -0.004166662693023682,
+      "macro_f1_delta": -0.005483132272482427,
+      "baseline_acc": 0.9750000238418579,
+      "baseline_macro_f1": 0.9640472521828455,
+      "stage80f_acc": 0.9708333611488342,
+      "stage80f_macro_f1": 0.958564119910363
+    },
+    {
+      "comparison": "Stage80F - Stage75F",
+      "acc_delta": -0.0027777552604675293,
+      "macro_f1_delta": -0.003640873008993406,
+      "baseline_acc": 0.9736111164093018,
+      "baseline_macro_f1": 0.9622049929193565,
+      "stage80f_acc": 0.9708333611488342,
+      "stage80f_macro_f1": 0.958564119910363
+    }
+  ],
+  "command": [
+    "python",
+    "scripts/train_controlled_v6b_minimal.py",
+    "--data",
+    "data/controlled_v5_v3_without_time_swap.jsonl",
+    "--backbone",
+    "mamba",
+    "--model-name",
+    "state-spaces/mamba-130m-hf",
+    "--freeze-encoder",
+    "true",
+    "--epochs",
+    "200",
+    "--max-length",
+    "128",
+    "--dev-ratio",
+    "0.2",
+    "--seed",
+    "1",
+    "--device",
+    "cuda",
+    "--flag-source",
+    "controlled_heuristic",
+    "--select-metric",
+    "final_macro_f1",
+    "--use-intervention-loss",
+    "--use-stage47-selected-recovery-config",
+    "--stage47-recovery-config-path",
+    "results/stage47_selected_recovery_config_check.json",
+    "--stage57-bridge-train-jsonl",
+    "data/stage57_nonleaking_external_bridge.jsonl",
+    "--stage57-bridge-train-mode",
+    "append_train_only",
+    "--stage66-bridge-train-jsonl",
+    "data/stage66_residual_bridge.jsonl",
+    "--stage66-bridge-train-mode",
+    "append_train_only",
+    "--stage80a-bridge-train-jsonl",
+    "data/stage80a_conservative_stage75v2_bridge.jsonl",
+    "--stage80a-bridge-train-mode",
+    "append_train_only",
+    "--output-json",
+    "/kaggle/working/ContraMamba/results/stage80f_stage57_stage66_stage80a_conservative_bridge_frozen_recovery_run_20260703_013106/stage80f_stage57_stage66_stage80a_train_report.json",
+    "--output-predictions-json",
+    "/kaggle/working/ContraMamba/results/stage80f_stage57_stage66_stage80a_conservative_bridge_frozen_recovery_run_20260703_013106/stage80f_stage57_stage66_stage80a_predictions.json"
+  ]
+}
