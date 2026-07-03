@@ -1,0 +1,388 @@
+{
+  "summary": {
+    "stage": "Stage76",
+    "decision": "STAGE76_CLEAN_DEV_PRESERVATION_COMPARISON_READY",
+    "stage51_best_dev_acc": 0.9736111164093018,
+    "stage51_best_dev_macro_f1": 0.962854521766615,
+    "stage61_best_dev_acc": 0.9708333611488342,
+    "stage61_best_dev_macro_f1": 0.9588083427579085,
+    "stage71_retry2_best_dev_acc": 0.9750000238418579,
+    "stage71_retry2_best_dev_macro_f1": 0.9640472521828455,
+    "stage75f_best_dev_acc": 0.9736111164093018,
+    "stage75f_best_dev_macro_f1": 0.9622049929193565,
+    "stage75f_minus_stage71_acc": -0.0013889074325561523,
+    "stage75f_minus_stage71_macro_f1": -0.0018422592634890211,
+    "stage75f_minus_stage51_acc": 0.0,
+    "stage75f_minus_stage51_macro_f1": -0.0006495288472585514,
+    "stage75f_minus_stage61_acc": 0.0027777552604675293,
+    "stage75f_minus_stage61_macro_f1": 0.003396650161447967,
+    "metadata_checks_pass": true,
+    "preservation_checks_pass": true,
+    "interpretation": "Stage75F preserves clean-dev under tolerance, but does not improve over Stage71_retry2 on clean-dev macro-F1.",
+    "training_executed": false,
+    "external_eval_executed": false,
+    "recommended_next_stage": "Stage77 Stage75F VitaminC external diagnostic rerun"
+  },
+  "run_comparison": [
+    {
+      "stage": "Stage51",
+      "source_path": "results/stage51_frozen_recovery_run_20260702_044005/stage51_frozen_recovery_train_report.json",
+      "best_epoch": 80,
+      "selected_epoch": 80,
+      "best_dev_acc": 0.9736111164093018,
+      "best_dev_macro_f1": 0.962854521766615,
+      "pred_NOT_ENTITLED": 525,
+      "pred_REFUTE": 86,
+      "pred_SUPPORT": 109,
+      "stage57_enabled": false,
+      "stage57_row_count": 0,
+      "stage66_enabled": false,
+      "stage66_row_count": 0,
+      "stage75_enabled": false,
+      "stage75_row_count": 0,
+      "combined_bridge_enabled": false,
+      "combined_bridge_row_count": 0,
+      "combined_bridge_train_only": false,
+      "clean_dev_for_checkpoint_selection": false,
+      "external_data_used_for_training": false,
+      "external_metrics_used_for_threshold_tuning": false,
+      "time_swap_used": false,
+      "bridge_pairwise_excluded": false,
+      "pairwise_source": null,
+      "pairwise_clean_main_row_count": NaN,
+      "pairwise_bridge_row_count_excluded": NaN,
+      "pairwise_stage57_excluded": false,
+      "pairwise_stage66_excluded": false,
+      "pairwise_stage75_excluded": false
+    },
+    {
+      "stage": "Stage61",
+      "source_path": "results/stage61_bridge_enabled_frozen_recovery_run_20260702_055007/stage61_bridge_enabled_train_report.json",
+      "best_epoch": 191,
+      "selected_epoch": 191,
+      "best_dev_acc": 0.9708333611488342,
+      "best_dev_macro_f1": 0.9588083427579085,
+      "pred_NOT_ENTITLED": 523,
+      "pred_REFUTE": 87,
+      "pred_SUPPORT": 110,
+      "stage57_enabled": false,
+      "stage57_row_count": 0,
+      "stage66_enabled": false,
+      "stage66_row_count": 0,
+      "stage75_enabled": false,
+      "stage75_row_count": 0,
+      "combined_bridge_enabled": false,
+      "combined_bridge_row_count": 0,
+      "combined_bridge_train_only": false,
+      "clean_dev_for_checkpoint_selection": false,
+      "external_data_used_for_training": false,
+      "external_metrics_used_for_threshold_tuning": false,
+      "time_swap_used": false,
+      "bridge_pairwise_excluded": false,
+      "pairwise_source": null,
+      "pairwise_clean_main_row_count": NaN,
+      "pairwise_bridge_row_count_excluded": NaN,
+      "pairwise_stage57_excluded": false,
+      "pairwise_stage66_excluded": false,
+      "pairwise_stage75_excluded": false
+    },
+    {
+      "stage": "Stage71_retry2",
+      "source_path": "results/stage71_retry2_stage57_stage66_bridge_enabled_frozen_recovery_run_20260702_072827/stage71_retry2_stage57_stage66_train_report.json",
+      "best_epoch": 151,
+      "selected_epoch": 151,
+      "best_dev_acc": 0.9750000238418579,
+      "best_dev_macro_f1": 0.9640472521828455,
+      "pred_NOT_ENTITLED": 522,
+      "pred_REFUTE": 90,
+      "pred_SUPPORT": 108,
+      "stage57_enabled": true,
+      "stage57_row_count": 520,
+      "stage66_enabled": true,
+      "stage66_row_count": 720,
+      "stage75_enabled": false,
+      "stage75_row_count": 0,
+      "combined_bridge_enabled": true,
+      "combined_bridge_row_count": 1240,
+      "combined_bridge_train_only": true,
+      "clean_dev_for_checkpoint_selection": true,
+      "external_data_used_for_training": false,
+      "external_metrics_used_for_threshold_tuning": false,
+      "time_swap_used": false,
+      "bridge_pairwise_excluded": true,
+      "pairwise_source": "clean_main_train_only",
+      "pairwise_clean_main_row_count": 2880.0,
+      "pairwise_bridge_row_count_excluded": 1240.0,
+      "pairwise_stage57_excluded": true,
+      "pairwise_stage66_excluded": true,
+      "pairwise_stage75_excluded": false
+    },
+    {
+      "stage": "Stage75F",
+      "source_path": "results/stage75f_stage57_stage66_stage75_bridge_enabled_frozen_recovery_run_20260703_002555/stage75f_stage57_stage66_stage75_train_report.json",
+      "best_epoch": 184,
+      "selected_epoch": 184,
+      "best_dev_acc": 0.9736111164093018,
+      "best_dev_macro_f1": 0.9622049929193565,
+      "pred_NOT_ENTITLED": 521,
+      "pred_REFUTE": 90,
+      "pred_SUPPORT": 109,
+      "stage57_enabled": true,
+      "stage57_row_count": 520,
+      "stage66_enabled": true,
+      "stage66_row_count": 720,
+      "stage75_enabled": true,
+      "stage75_row_count": 1020,
+      "combined_bridge_enabled": true,
+      "combined_bridge_row_count": 2260,
+      "combined_bridge_train_only": true,
+      "clean_dev_for_checkpoint_selection": true,
+      "external_data_used_for_training": false,
+      "external_metrics_used_for_threshold_tuning": false,
+      "time_swap_used": false,
+      "bridge_pairwise_excluded": true,
+      "pairwise_source": "clean_main_train_only",
+      "pairwise_clean_main_row_count": 2880.0,
+      "pairwise_bridge_row_count_excluded": 2260.0,
+      "pairwise_stage57_excluded": true,
+      "pairwise_stage66_excluded": true,
+      "pairwise_stage75_excluded": true
+    }
+  ],
+  "delta_comparison": [
+    {
+      "comparison": "Stage61 - Stage51",
+      "acc_delta": -0.0027777552604675293,
+      "macro_f1_delta": -0.004046179008706519,
+      "pred_NE_delta": -2,
+      "pred_REFUTE_delta": 1,
+      "pred_SUPPORT_delta": 1
+    },
+    {
+      "comparison": "Stage71_retry2 - Stage61",
+      "acc_delta": 0.004166662693023682,
+      "macro_f1_delta": 0.005238909424936988,
+      "pred_NE_delta": -1,
+      "pred_REFUTE_delta": 3,
+      "pred_SUPPORT_delta": -2
+    },
+    {
+      "comparison": "Stage71_retry2 - Stage51",
+      "acc_delta": 0.0013889074325561523,
+      "macro_f1_delta": 0.0011927304162304697,
+      "pred_NE_delta": -3,
+      "pred_REFUTE_delta": 4,
+      "pred_SUPPORT_delta": -1
+    },
+    {
+      "comparison": "Stage75F - Stage71_retry2",
+      "acc_delta": -0.0013889074325561523,
+      "macro_f1_delta": -0.0018422592634890211,
+      "pred_NE_delta": -1,
+      "pred_REFUTE_delta": 0,
+      "pred_SUPPORT_delta": 1
+    },
+    {
+      "comparison": "Stage75F - Stage61",
+      "acc_delta": 0.0027777552604675293,
+      "macro_f1_delta": 0.003396650161447967,
+      "pred_NE_delta": -2,
+      "pred_REFUTE_delta": 3,
+      "pred_SUPPORT_delta": -1
+    },
+    {
+      "comparison": "Stage75F - Stage51",
+      "acc_delta": 0.0,
+      "macro_f1_delta": -0.0006495288472585514,
+      "pred_NE_delta": -4,
+      "pred_REFUTE_delta": 4,
+      "pred_SUPPORT_delta": 0
+    }
+  ],
+  "metadata_checks": [
+    {
+      "check": "stage75f_report_exists",
+      "pass": true
+    },
+    {
+      "check": "stage75f_summary_exists",
+      "pass": true
+    },
+    {
+      "check": "stage75f_stage57_enabled_520",
+      "pass": true
+    },
+    {
+      "check": "stage75f_stage66_enabled_720",
+      "pass": true
+    },
+    {
+      "check": "stage75f_stage75_enabled_1020",
+      "pass": true
+    },
+    {
+      "check": "stage75f_combined_bridge_2260",
+      "pass": true
+    },
+    {
+      "check": "stage75f_combined_train_only",
+      "pass": true
+    },
+    {
+      "check": "stage75f_clean_dev_checkpoint_selection",
+      "pass": true
+    },
+    {
+      "check": "stage75f_external_not_training",
+      "pass": true
+    },
+    {
+      "check": "stage75f_external_not_threshold_tuning",
+      "pass": true
+    },
+    {
+      "check": "stage75f_time_swap_false",
+      "pass": true
+    },
+    {
+      "check": "stage75f_bridge_pairwise_excluded",
+      "pass": true
+    },
+    {
+      "check": "stage75f_pairwise_source_clean_main",
+      "pass": true
+    },
+    {
+      "check": "stage75f_pairwise_clean_main_2880",
+      "pass": true
+    },
+    {
+      "check": "stage75f_pairwise_bridge_excluded_2260",
+      "pass": true
+    },
+    {
+      "check": "stage75f_pairwise_stage75_excluded",
+      "pass": true
+    }
+  ],
+  "preservation_checks": [
+    {
+      "check": "stage75f_acc_ge_0p97",
+      "pass": true
+    },
+    {
+      "check": "stage75f_macro_ge_0p95",
+      "pass": true
+    },
+    {
+      "check": "stage75f_acc_not_below_stage71_by_more_than_0p005",
+      "pass": true
+    },
+    {
+      "check": "stage75f_macro_not_below_stage71_by_more_than_0p005",
+      "pass": true
+    },
+    {
+      "check": "stage75f_acc_not_below_stage51_by_more_than_0p005",
+      "pass": true
+    },
+    {
+      "check": "stage75f_macro_not_below_stage51_by_more_than_0p005",
+      "pass": true
+    },
+    {
+      "check": "stage75f_acc_ge_stage61",
+      "pass": true
+    },
+    {
+      "check": "stage75f_macro_ge_stage61",
+      "pass": true
+    }
+  ],
+  "per_label": [
+    {
+      "stage": "Stage51",
+      "label": "NOT_ENTITLED",
+      "precision": 0.9961904761904762,
+      "recall": 0.9685185185185186,
+      "f1": 0.9821596244131456
+    },
+    {
+      "stage": "Stage51",
+      "label": "REFUTE",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "stage": "Stage51",
+      "label": "SUPPORT",
+      "precision": 0.8440366972477065,
+      "recall": 0.9787234042553191,
+      "f1": 0.9064039408866995
+    },
+    {
+      "stage": "Stage61",
+      "label": "NOT_ENTITLED",
+      "precision": 0.9961759082217974,
+      "recall": 0.9648148148148148,
+      "f1": 0.9802445907808089
+    },
+    {
+      "stage": "Stage61",
+      "label": "REFUTE",
+      "precision": 0.9885057471264368,
+      "recall": 1.0,
+      "f1": 0.9942196531791908
+    },
+    {
+      "stage": "Stage61",
+      "label": "SUPPORT",
+      "precision": 0.8363636363636363,
+      "recall": 0.9787234042553191,
+      "f1": 0.9019607843137255
+    },
+    {
+      "stage": "Stage71_retry2",
+      "label": "NOT_ENTITLED",
+      "precision": 1.0,
+      "recall": 0.9666666666666667,
+      "f1": 0.983050847457627
+    },
+    {
+      "stage": "Stage71_retry2",
+      "label": "REFUTE",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "stage": "Stage71_retry2",
+      "label": "SUPPORT",
+      "precision": 0.8333333333333334,
+      "recall": 1.0,
+      "f1": 0.9090909090909091
+    },
+    {
+      "stage": "Stage75F",
+      "label": "NOT_ENTITLED",
+      "precision": 1.0,
+      "recall": 0.9648148148148148,
+      "f1": 0.9820923656927427
+    },
+    {
+      "stage": "Stage75F",
+      "label": "REFUTE",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "stage": "Stage75F",
+      "label": "SUPPORT",
+      "precision": 0.8256880733944955,
+      "recall": 1.0,
+      "f1": 0.9045226130653267
+    }
+  ]
+}
