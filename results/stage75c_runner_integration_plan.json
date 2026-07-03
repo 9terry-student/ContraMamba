@@ -1,0 +1,288 @@
+{
+  "summary": {
+    "stage": "Stage75C",
+    "decision": "STAGE75C_RUNNER_INTEGRATION_PLAN_READY",
+    "purpose": "Plan runner integration for Stage75 train-only bridge append before code patch.",
+    "main_clean_jsonl": "data/controlled_v5_v3_without_time_swap.jsonl",
+    "stage57_bridge_jsonl": "data/stage57_nonleaking_external_bridge.jsonl",
+    "stage66_bridge_jsonl": "data/stage66_residual_bridge.jsonl",
+    "stage75_bridge_jsonl": "data/stage75_targeted_residual_bridge.jsonl",
+    "main_clean_row_count": 3600,
+    "clean_train_estimated_row_count": 2880,
+    "clean_dev_estimated_row_count": 720,
+    "stage57_row_count": 520,
+    "stage66_row_count": 720,
+    "stage75_row_count": 1020,
+    "combined_bridge_row_count_stage57_stage66_stage75": 2260,
+    "final_train_row_count_if_appended": 5140,
+    "stage75_label_counts": {
+      "SUPPORT": 480,
+      "REFUTE": 460,
+      "NOT_ENTITLED": 80
+    },
+    "combined_bridge_label_counts": {
+      "SUPPORT": 1000,
+      "REFUTE": 940,
+      "NOT_ENTITLED": 320
+    },
+    "integration_mode": "stage57_stage66_stage75_append_train_only",
+    "clean_dev_for_checkpoint_selection": true,
+    "stage75_used_for_dev": false,
+    "stage75_used_for_checkpoint_selection": false,
+    "stage75_excluded_from_intervention_pairwise_loss": true,
+    "external_data_used_for_training": false,
+    "external_metrics_used_for_threshold_tuning": false,
+    "time_swap_used": false,
+    "training_executed": false,
+    "external_eval_executed": false,
+    "recommended_next_stage": "Stage75D patch runner to support Stage75 train-only bridge append"
+  },
+  "ratios": [
+    {
+      "scope": "main_clean_total",
+      "row_count": 3600,
+      "ratio_to_main_clean": 1.0,
+      "ratio_to_clean_train": 1.25
+    },
+    {
+      "scope": "clean_train_estimated",
+      "row_count": 2880,
+      "ratio_to_main_clean": 0.8,
+      "ratio_to_clean_train": 1.0
+    },
+    {
+      "scope": "clean_dev_estimated",
+      "row_count": 720,
+      "ratio_to_main_clean": 0.2,
+      "ratio_to_clean_train": 0.25
+    },
+    {
+      "scope": "stage57_bridge",
+      "row_count": 520,
+      "ratio_to_main_clean": 0.14444444444444443,
+      "ratio_to_clean_train": 0.18055555555555555
+    },
+    {
+      "scope": "stage66_bridge",
+      "row_count": 720,
+      "ratio_to_main_clean": 0.2,
+      "ratio_to_clean_train": 0.25
+    },
+    {
+      "scope": "stage75_bridge",
+      "row_count": 1020,
+      "ratio_to_main_clean": 0.2833333333333333,
+      "ratio_to_clean_train": 0.3541666666666667
+    },
+    {
+      "scope": "stage57_stage66_stage75_combined_bridge",
+      "row_count": 2260,
+      "ratio_to_main_clean": 0.6277777777777778,
+      "ratio_to_clean_train": 0.7847222222222222
+    },
+    {
+      "scope": "final_train_if_appended",
+      "row_count": 5140,
+      "ratio_to_main_clean": 1.4277777777777778,
+      "ratio_to_clean_train": 1.7847222222222223
+    }
+  ],
+  "label_plan": [
+    {
+      "label": "SUPPORT",
+      "stage57": 160,
+      "stage66": 360,
+      "stage75": 480,
+      "combined_bridge": 1000
+    },
+    {
+      "label": "REFUTE",
+      "stage57": 160,
+      "stage66": 320,
+      "stage75": 460,
+      "combined_bridge": 940
+    },
+    {
+      "label": "NOT_ENTITLED",
+      "stage57": 200,
+      "stage66": 40,
+      "stage75": 80,
+      "combined_bridge": 320
+    }
+  ],
+  "stage75_family_counts": [
+    {
+      "source": "stage75",
+      "family": "lexical_type_polarity_disambiguation_v2",
+      "count": 220
+    },
+    {
+      "source": "stage75",
+      "family": "numeric_temporal_polarity_comparison_v2",
+      "count": 260
+    },
+    {
+      "source": "stage75",
+      "family": "refute_entitlement_direct_recovery_v2",
+      "count": 220
+    },
+    {
+      "source": "stage75",
+      "family": "strict_ne_external_style_safety_v2",
+      "count": 80
+    },
+    {
+      "source": "stage75",
+      "family": "support_entitlement_direct_recovery_v2",
+      "count": 240
+    }
+  ],
+  "integration_rules": [
+    {
+      "rule": "append_after_clean_split",
+      "value": true,
+      "reason": "Preserve clean controlled dev for checkpoint selection."
+    },
+    {
+      "rule": "train_only",
+      "value": true,
+      "reason": "Stage75 bridge must not enter dev/checkpoint selection."
+    },
+    {
+      "rule": "exclude_from_intervention_pairwise_loss",
+      "value": true,
+      "reason": "Stage75 rows are standalone synthetic bridge rows and intentionally have no pair_id."
+    },
+    {
+      "rule": "external_data_used_for_training",
+      "value": false,
+      "reason": "Stage75 is synthetic-only; Stage74 used only aggregate residual counts."
+    },
+    {
+      "rule": "external_metrics_used_for_threshold_tuning",
+      "value": false,
+      "reason": "No threshold or selection tuning from VitaminC metrics."
+    },
+    {
+      "rule": "time_swap_used",
+      "value": false,
+      "reason": "Main data remains controlled_v5_v3_without_time_swap.jsonl."
+    }
+  ],
+  "runner_requirements": [
+    {
+      "item": "new CLI flag",
+      "requirement": "--stage75-bridge-train-jsonl"
+    },
+    {
+      "item": "new CLI flag",
+      "requirement": "--stage75-bridge-train-mode {none,append_train_only}"
+    },
+    {
+      "item": "metadata",
+      "requirement": "stage75_bridge_enabled, row_count, label_counts, family_counts"
+    },
+    {
+      "item": "metadata",
+      "requirement": "stage75_bridge_train_only=True, used_for_dev=False, used_for_checkpoint_selection=False"
+    },
+    {
+      "item": "metadata",
+      "requirement": "combined_bridge_row_count=2260 for Stage57+66+75"
+    },
+    {
+      "item": "metadata",
+      "requirement": "stage75_excluded_from_intervention_pairwise_loss=True"
+    },
+    {
+      "item": "metadata",
+      "requirement": "intervention_pairwise_loss_stage75_row_count_excluded=1020"
+    },
+    {
+      "item": "metadata",
+      "requirement": "intervention_pairwise_loss_bridge_row_count_excluded=2260"
+    },
+    {
+      "item": "preservation",
+      "requirement": "clean_dev_for_checkpoint_selection=True"
+    }
+  ],
+  "checks": [
+    {
+      "check": "stage75a_ready",
+      "pass": true
+    },
+    {
+      "check": "stage75b_generation_ready",
+      "pass": true
+    },
+    {
+      "check": "stage75b_static_ready",
+      "pass": true
+    },
+    {
+      "check": "stage75_row_count_1020",
+      "pass": true
+    },
+    {
+      "check": "stage75_support_480",
+      "pass": true
+    },
+    {
+      "check": "stage75_refute_460",
+      "pass": true
+    },
+    {
+      "check": "stage75_ne_80",
+      "pass": true
+    },
+    {
+      "check": "stage57_row_count_520",
+      "pass": true
+    },
+    {
+      "check": "stage66_row_count_720",
+      "pass": true
+    },
+    {
+      "check": "combined_bridge_2260",
+      "pass": true
+    },
+    {
+      "check": "clean_main_3600",
+      "pass": true
+    },
+    {
+      "check": "clean_train_estimated_2880",
+      "pass": true
+    },
+    {
+      "check": "clean_dev_estimated_720",
+      "pass": true
+    },
+    {
+      "check": "stage75_has_no_pair_id",
+      "pass": true
+    },
+    {
+      "check": "stage75_synthetic_only",
+      "pass": true
+    },
+    {
+      "check": "stage75_external_text_false",
+      "pass": true
+    },
+    {
+      "check": "stage75_external_label_false",
+      "pass": true
+    },
+    {
+      "check": "stage71c_pairwise_exclusion_prior_ready",
+      "pass": true
+    },
+    {
+      "check": "stage72_preservation_prior_ready",
+      "pass": true
+    }
+  ]
+}
