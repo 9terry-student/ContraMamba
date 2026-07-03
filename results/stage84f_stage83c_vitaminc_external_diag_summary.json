@@ -1,0 +1,164 @@
+{
+  "summary": {
+    "stage": "Stage84F",
+    "decision": "STAGE84F_STAGE83C_VITAMINC_EXTERNAL_DIAGNOSTIC_READY",
+    "external_decision": "EXTERNAL_REGRESSION_VS_STAGE71",
+    "run_dir": "results/stage84f_stage83c_vitaminc_external_exact_ood_schema_run_20260703_033759",
+    "ood_data": "data/stage84e2_vitaminc_validation_sample1000_exact_ood_schema.jsonl",
+    "external_n": 1000,
+    "stage84f_clean_dev_acc": 0.9791666865348816,
+    "stage84f_clean_dev_macro_f1": 0.9696641386782231,
+    "stage83c_clean_dev_acc": 0.9791666865348816,
+    "stage83c_clean_dev_macro_f1": 0.9696641386782231,
+    "stage84f_external_accuracy": 0.32600000500679016,
+    "stage84f_external_macro_f1_all3": 0.3066716953259303,
+    "stage84f_external_prediction_counts": {
+      "NOT_ENTITLED": 439,
+      "REFUTE": 202,
+      "SUPPORT": 359
+    },
+    "stage84f_external_gold_counts": {},
+    "stage73_external_accuracy": 0.353,
+    "stage73_external_macro_f1_all3": 0.3262,
+    "stage73_external_prediction_counts": {
+      "NOT_ENTITLED": 388,
+      "REFUTE": 219,
+      "SUPPORT": 393
+    },
+    "stage73_external_gold_counts": {
+      "NOT_ENTITLED": 145,
+      "REFUTE": 355,
+      "SUPPORT": 500
+    },
+    "stage84f_minus_stage73_external_acc": -0.02699999499320982,
+    "stage84f_minus_stage73_external_macro_f1_all3": -0.019528304674069685,
+    "elapsed_min": 6.9861,
+    "recommended_next_stage": "Stage85 external decision report"
+  },
+  "metadata_checks": [
+    {
+      "check": "returncode_zero",
+      "pass": true
+    },
+    {
+      "check": "train_report_exists",
+      "pass": true
+    },
+    {
+      "check": "ood_report_exists",
+      "pass": true
+    },
+    {
+      "check": "ood_predictions_exists",
+      "pass": true
+    },
+    {
+      "check": "stage57_rows_520",
+      "pass": true
+    },
+    {
+      "check": "stage66_rows_720",
+      "pass": true
+    },
+    {
+      "check": "stage83a_rows_160",
+      "pass": true
+    },
+    {
+      "check": "combined_bridge_1400",
+      "pass": true
+    },
+    {
+      "check": "final_train_4280",
+      "pass": true
+    },
+    {
+      "check": "external_metrics_parsed_or_computed",
+      "pass": true
+    }
+  ],
+  "clean_checks": [
+    {
+      "check": "clean_acc_ge_0p97",
+      "pass": true
+    },
+    {
+      "check": "clean_macro_ge_0p95",
+      "pass": true
+    },
+    {
+      "check": "clean_acc_close_to_stage83c",
+      "pass": true
+    },
+    {
+      "check": "clean_macro_close_to_stage83c",
+      "pass": true
+    }
+  ],
+  "external_comparison": [
+    {
+      "comparison": "Stage84F_Stage83C_external - Stage73_Stage71_external",
+      "stage84f_acc": 0.32600000500679016,
+      "stage84f_macro_f1_all3": 0.3066716953259303,
+      "stage73_acc": 0.353,
+      "stage73_macro_f1_all3": 0.3262,
+      "acc_delta": -0.02699999499320982,
+      "macro_f1_delta": -0.019528304674069685,
+      "decision": "EXTERNAL_REGRESSION_VS_STAGE71"
+    }
+  ],
+  "command": [
+    "python",
+    "scripts/train_controlled_v6b_minimal.py",
+    "--data",
+    "data/controlled_v5_v3_without_time_swap.jsonl",
+    "--backbone",
+    "mamba",
+    "--model-name",
+    "state-spaces/mamba-130m-hf",
+    "--freeze-encoder",
+    "true",
+    "--epochs",
+    "200",
+    "--max-length",
+    "128",
+    "--dev-ratio",
+    "0.2",
+    "--seed",
+    "1",
+    "--device",
+    "cuda",
+    "--flag-source",
+    "controlled_heuristic",
+    "--select-metric",
+    "final_macro_f1",
+    "--use-intervention-loss",
+    "--use-stage47-selected-recovery-config",
+    "--stage47-recovery-config-path",
+    "results/stage47_selected_recovery_config_check.json",
+    "--stage57-bridge-train-jsonl",
+    "data/stage57_nonleaking_external_bridge.jsonl",
+    "--stage57-bridge-train-mode",
+    "append_train_only",
+    "--stage66-bridge-train-jsonl",
+    "data/stage66_residual_bridge.jsonl",
+    "--stage66-bridge-train-mode",
+    "append_train_only",
+    "--stage80a-bridge-train-jsonl",
+    "data/stage83a_ne_safety_only_bridge.jsonl",
+    "--stage80a-bridge-train-mode",
+    "append_train_only",
+    "--ood-data",
+    "data/stage84e2_vitaminc_validation_sample1000_exact_ood_schema.jsonl",
+    "--ood-flag-source",
+    "none",
+    "--output-json",
+    "/kaggle/working/ContraMamba/results/stage84f_stage83c_vitaminc_external_exact_ood_schema_run_20260703_033759/stage84f_stage83c_train_report.json",
+    "--output-predictions-json",
+    "/kaggle/working/ContraMamba/results/stage84f_stage83c_vitaminc_external_exact_ood_schema_run_20260703_033759/stage84f_stage83c_predictions.json",
+    "--output-ood-json",
+    "/kaggle/working/ContraMamba/results/stage84f_stage83c_vitaminc_external_exact_ood_schema_run_20260703_033759/stage84f_stage83c_vitaminc_external_report.json",
+    "--output-ood-predictions-json",
+    "/kaggle/working/ContraMamba/results/stage84f_stage83c_vitaminc_external_exact_ood_schema_run_20260703_033759/stage84f_stage83c_vitaminc_external_predictions.json"
+  ]
+}

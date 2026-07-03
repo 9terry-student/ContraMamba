@@ -1,0 +1,101 @@
+{
+  "summary": {
+    "stage": "Stage85",
+    "decision": "STAGE85_REJECT_STAGE83C_KEEP_STAGE71_PRIMARY",
+    "candidate_status": "CLEAN_DEV_GAIN_NOT_EXTERNAL_ROBUST",
+    "current_primary_after_stage85": "Stage71 retry2 Stage57+Stage66 bridge-enabled frozen recovery",
+    "rejected_candidate": "Stage83C / Stage84F Stage57+Stage66+Stage83A NE-safety-only",
+    "clean_reproduced": true,
+    "external_regression": true,
+    "stage84f_clean_dev_acc": 0.9791666865348816,
+    "stage84f_clean_dev_macro_f1": 0.9696641386782231,
+    "stage83c_clean_dev_acc": 0.9791666865348816,
+    "stage83c_clean_dev_macro_f1": 0.9696641386782231,
+    "stage84f_external_accuracy": 0.32600000500679016,
+    "stage84f_external_macro_f1_all3": 0.3066716953259303,
+    "stage73_external_accuracy": 0.353,
+    "stage73_external_macro_f1_all3": 0.3262,
+    "stage84f_minus_stage73_external_acc": -0.02699999499320982,
+    "stage84f_minus_stage73_external_macro_f1_all3": -0.019528304674069685,
+    "stage84f_external_prediction_counts": {
+      "NOT_ENTITLED": 439,
+      "REFUTE": 202,
+      "SUPPORT": 359
+    },
+    "stage73_external_prediction_counts": {
+      "NOT_ENTITLED": 388,
+      "REFUTE": 219,
+      "SUPPORT": 393
+    },
+    "stage84e2_preflight_decision": "STAGE84E2_EXACT_OOD_ENCODER_PREFLIGHT_READY",
+    "stage84e2_encode_mamba_records_full_ok": true,
+    "interpretation": "Stage83C/A3 NE-safety-only clean-dev improvement does not transfer to VitaminC external. The external prediction distribution shifts further toward NOT_ENTITLED relative to Stage73, and both external accuracy and macro-F1 regress. Keep Stage71 as primary.",
+    "recommendations": [
+      "Keep Stage71 retry2 Stage57+Stage66 bridge-enabled frozen recovery as current primary.",
+      "Do not promote Stage83C despite clean-dev gain.",
+      "Treat Stage83C and Stage84F as a valid negative branch result.",
+      "Do not add more NE-safety bridge rows by default.",
+      "Do not revive full Stage80A/Stage75 full bridge.",
+      "Next useful direction should target external entitlement/polarity balance, not additional NE safety."
+    ]
+  },
+  "comparison": [
+    {
+      "run": "Stage73 / Stage71 primary external",
+      "clean_dev_acc": NaN,
+      "clean_dev_macro_f1": NaN,
+      "external_acc": 0.353,
+      "external_macro_f1_all3": 0.3262,
+      "prediction_counts": "{\"NOT_ENTITLED\": 388, \"REFUTE\": 219, \"SUPPORT\": 393}",
+      "status": "CURRENT_PRIMARY_BASELINE"
+    },
+    {
+      "run": "Stage84F / Stage83C candidate external",
+      "clean_dev_acc": 0.9791666865348816,
+      "clean_dev_macro_f1": 0.9696641386782231,
+      "external_acc": 0.32600000500679016,
+      "external_macro_f1_all3": 0.3066716953259303,
+      "prediction_counts": "{\"NOT_ENTITLED\": 439, \"REFUTE\": 202, \"SUPPORT\": 359}",
+      "status": "REJECT_PRIMARY_PROMOTION"
+    }
+  ],
+  "delta": [
+    {
+      "comparison": "Stage84F - Stage73",
+      "external_acc_delta": -0.02699999499320982,
+      "external_macro_f1_all3_delta": -0.019528304674069685,
+      "decision": "REGRESSION"
+    }
+  ],
+  "recommendations": [
+    {
+      "idx": 1,
+      "recommendation": "Keep Stage71 retry2 Stage57+Stage66 bridge-enabled frozen recovery as current primary."
+    },
+    {
+      "idx": 2,
+      "recommendation": "Do not promote Stage83C despite clean-dev gain."
+    },
+    {
+      "idx": 3,
+      "recommendation": "Treat Stage83C and Stage84F as a valid negative branch result."
+    },
+    {
+      "idx": 4,
+      "recommendation": "Do not add more NE-safety bridge rows by default."
+    },
+    {
+      "idx": 5,
+      "recommendation": "Do not revive full Stage80A/Stage75 full bridge."
+    },
+    {
+      "idx": 6,
+      "recommendation": "Next useful direction should target external entitlement/polarity balance, not additional NE safety."
+    }
+  ],
+  "source_files": {
+    "stage84f_summary": "results/stage84f_stage83c_vitaminc_external_diag_summary.json",
+    "stage84e2_preflight": "results/stage84e2_exact_ood_encoder_preflight.json",
+    "stage84f_run_dir": "results/stage84f_stage83c_vitaminc_external_exact_ood_schema_run_20260703_033759"
+  }
+}
