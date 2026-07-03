@@ -1,0 +1,297 @@
+{
+  "summary": {
+    "stage": "Stage83B",
+    "decision": "STAGE83B_A3_NE_SAFETY_ONLY_RUNNER_STATIC_CHECK_READY",
+    "purpose": "Static runner/loader check for A3 NE-safety-only bridge through Stage80A bridge flags.",
+    "runner": "scripts/train_controlled_v6b_minimal.py",
+    "stage83a_jsonl": "data/stage83a_ne_safety_only_bridge.jsonl",
+    "loader_signature": "(bridge_path: 'Path', existing_ids: 'set[str]') -> 'tuple[list[dict], dict[str, int], dict[str, int], dict[str, dict[str, int]]]'",
+    "py_compile_returncode": 0,
+    "help_returncode": 0,
+    "stage83a_rows": 160,
+    "stage83a_label_counts": {
+      "NOT_ENTITLED": 160
+    },
+    "stage83a_family_counts": {
+      "strict_ne_false_support_safety_v2": 160
+    },
+    "loader_rows": 160,
+    "loader_label_counts_raw": {
+      "REFUTE": 0,
+      "NOT_ENTITLED": 160,
+      "SUPPORT": 0
+    },
+    "loader_label_counts_normalized": {
+      "NOT_ENTITLED": 160
+    },
+    "loader_family_counts": {
+      "strict_ne_false_support_safety_v2": 160
+    },
+    "loader_family_label_counts_raw": {
+      "strict_ne_false_support_safety_v2": {
+        "REFUTE": 0,
+        "NOT_ENTITLED": 160,
+        "SUPPORT": 0
+      }
+    },
+    "stage57_rows": 520,
+    "stage66_rows": 720,
+    "combined_bridge_rows_expected": 1400,
+    "final_train_row_count_expected": 4280,
+    "pairwise_bridge_rows_excluded_expected": 1400,
+    "canonical_stage83c_bridge_config": "Stage57 + Stage66 + Stage83A via --stage80a-bridge-train-jsonl",
+    "training_executed": false,
+    "external_eval_executed": false,
+    "recommended_next_stage": "Stage83C clean-dev run with Stage57+Stage66+Stage83A NE-safety-only bridge"
+  },
+  "checks": [
+    {
+      "check": "runner_exists",
+      "pass": true
+    },
+    {
+      "check": "py_compile_ok",
+      "pass": true
+    },
+    {
+      "check": "help_ok",
+      "pass": true
+    },
+    {
+      "check": "help_contains_stage80a_jsonl_flag",
+      "pass": true
+    },
+    {
+      "check": "help_contains_stage80a_mode_flag",
+      "pass": true
+    },
+    {
+      "check": "stage83_decision_ready",
+      "pass": true
+    },
+    {
+      "check": "stage83_allows_a3",
+      "pass": true
+    },
+    {
+      "check": "stage83a_generation_ready",
+      "pass": true
+    },
+    {
+      "check": "stage80e_static_ready",
+      "pass": true
+    },
+    {
+      "check": "loader_function_exists",
+      "pass": true
+    },
+    {
+      "check": "loader_signature_has_existing_ids",
+      "pass": true
+    },
+    {
+      "check": "loader_returns_tuple",
+      "pass": true
+    },
+    {
+      "check": "loader_accepts_stage83a_path_object",
+      "pass": true
+    },
+    {
+      "check": "loader_label_counts_normalized_exact",
+      "pass": true
+    },
+    {
+      "check": "loader_family_counts_exact",
+      "pass": true
+    },
+    {
+      "check": "stage83a_row_count_160",
+      "pass": true
+    },
+    {
+      "check": "stage83a_label_counts_exact",
+      "pass": true
+    },
+    {
+      "check": "stage83a_family_counts_exact",
+      "pass": true
+    },
+    {
+      "check": "stage83a_duplicate_ids_zero",
+      "pass": true
+    },
+    {
+      "check": "stage83a_duplicate_claim_evidence_zero",
+      "pass": true
+    },
+    {
+      "check": "stage83a_no_pair_id",
+      "pass": true
+    },
+    {
+      "check": "stage83a_synthetic_only_true",
+      "pass": true
+    },
+    {
+      "check": "stage83a_external_text_false",
+      "pass": true
+    },
+    {
+      "check": "stage83a_external_label_false",
+      "pass": true
+    },
+    {
+      "check": "stage83a_subset_metadata_present",
+      "pass": true
+    },
+    {
+      "check": "source_contains_stage80a_pairwise_exclusion",
+      "pass": true
+    },
+    {
+      "check": "source_contains_final_train_row_count_expected",
+      "pass": true
+    },
+    {
+      "check": "source_contains_combined_bridge_metadata",
+      "pass": true
+    },
+    {
+      "check": "computed_combined_bridge_1400",
+      "pass": true
+    },
+    {
+      "check": "computed_final_train_expected_4280",
+      "pass": true
+    },
+    {
+      "check": "computed_pairwise_excluded_1400",
+      "pass": true
+    },
+    {
+      "check": "expected_counts_match_computed",
+      "pass": true
+    }
+  ],
+  "source_markers": [
+    {
+      "marker": "--stage80a-bridge-train-jsonl",
+      "present_in_runner_source": true,
+      "present_in_help": true
+    },
+    {
+      "marker": "--stage80a-bridge-train-mode",
+      "present_in_runner_source": true,
+      "present_in_help": true
+    },
+    {
+      "marker": "load_stage80a_bridge_train_rows",
+      "present_in_runner_source": true,
+      "present_in_help": null
+    },
+    {
+      "marker": "stage80a_bridge",
+      "present_in_runner_source": true,
+      "present_in_help": null
+    },
+    {
+      "marker": "stage80a_bridge_train_jsonl",
+      "present_in_runner_source": true,
+      "present_in_help": null
+    },
+    {
+      "marker": "stage80a_bridge_train_mode",
+      "present_in_runner_source": true,
+      "present_in_help": null
+    },
+    {
+      "marker": "stage80a_bridge_enabled",
+      "present_in_runner_source": true,
+      "present_in_help": null
+    },
+    {
+      "marker": "stage80a_bridge_row_count",
+      "present_in_runner_source": true,
+      "present_in_help": null
+    },
+    {
+      "marker": "stage80a_bridge_label_counts",
+      "present_in_runner_source": true,
+      "present_in_help": null
+    },
+    {
+      "marker": "stage80a_bridge_family_counts",
+      "present_in_runner_source": true,
+      "present_in_help": null
+    },
+    {
+      "marker": "stage80a_excluded_from_intervention_pairwise_loss",
+      "present_in_runner_source": true,
+      "present_in_help": null
+    },
+    {
+      "marker": "intervention_pairwise_loss_stage80a_row_count_excluded",
+      "present_in_runner_source": true,
+      "present_in_help": null
+    },
+    {
+      "marker": "combined_bridge_row_count",
+      "present_in_runner_source": true,
+      "present_in_help": null
+    },
+    {
+      "marker": "combined_bridge_train_only",
+      "present_in_runner_source": true,
+      "present_in_help": null
+    },
+    {
+      "marker": "final_train_row_count_expected",
+      "present_in_runner_source": true,
+      "present_in_help": null
+    },
+    {
+      "marker": "clean_main_train_only",
+      "present_in_runner_source": true,
+      "present_in_help": null
+    }
+  ],
+  "count_comparison": [
+    {
+      "metric": "stage57_rows",
+      "expected": 520,
+      "computed": 520,
+      "match": true
+    },
+    {
+      "metric": "stage66_rows",
+      "expected": 720,
+      "computed": 720,
+      "match": true
+    },
+    {
+      "metric": "stage83a_rows",
+      "expected": 160,
+      "computed": 160,
+      "match": true
+    },
+    {
+      "metric": "combined_bridge_rows",
+      "expected": 1400,
+      "computed": 1400,
+      "match": true
+    },
+    {
+      "metric": "final_train_row_count_expected",
+      "expected": 4280,
+      "computed": 4280,
+      "match": true
+    },
+    {
+      "metric": "pairwise_bridge_rows_excluded_expected",
+      "expected": 1400,
+      "computed": 1400,
+      "match": true
+    }
+  ]
+}
