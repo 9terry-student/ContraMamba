@@ -1,0 +1,175 @@
+{
+  "summary": {
+    "stage": "Stage98",
+    "decision": "STAGE98_REJECT_STAGE97C_AS_PRIMARY_KEEP_STAGE71",
+    "candidate_status": "TOPLINE_WIN_BUT_SUPPORT_SUPPRESSION_NOT_PRIMARY",
+    "current_primary_after_stage98": "Stage71 retry2 Stage57+Stage66 bridge-enabled frozen recovery",
+    "candidate": "Stage97C / Stage57+Stage66+Stage92A+Stage97A",
+    "clean_preserved": true,
+    "beats_stage73_required": false,
+    "topline_beats_stage73": true,
+    "support_suppression_blocks_promotion": true,
+    "stage97c_external_acc": 0.355,
+    "stage73_external_acc": 0.353,
+    "stage97c_external_macro_f1_all3": 0.343,
+    "stage73_external_macro_f1_all3": 0.3261787057160285,
+    "stage97c_support_recall": 0.348,
+    "stage73_support_recall": 0.432,
+    "stage92c_support_recall": 0.402,
+    "stage97c_prediction_counts": {
+      "NOT_ENTITLED": 394,
+      "REFUTE": 296,
+      "SUPPORT": 310
+    },
+    "stage73_prediction_counts": {
+      "REFUTE": 219,
+      "NOT_ENTITLED": 388,
+      "SUPPORT": 393
+    },
+    "stage92c_prediction_counts": {
+      "REFUTE": 223,
+      "NOT_ENTITLED": 412,
+      "SUPPORT": 365
+    },
+    "main_interpretation": "Stage97C is the first branch to beat Stage73 on both external accuracy and macro-F1, but it does so by shifting mass away from SUPPORT. SUPPORT recall drops below both Stage73 and Stage92C, so it is not safe to promote as primary.",
+    "recommended_next_stage": "Stage99 support-floor micro design or threshold-only analysis",
+    "recommendations": [
+      "Keep Stage71 as current primary.",
+      "Do not promote Stage97C despite external acc/macro top-line win.",
+      "Retain Stage97C as an important diagnostic branch: half-size numeric/date anti-NE improves macro and REFUTE recall.",
+      "Next intervention must restore SUPPORT recall/mass without adding broad SUPPORT pressure that breaks clean NE.",
+      "Do not run another large bridge append."
+    ]
+  },
+  "comparison": [
+    {
+      "run": "Stage73 / Stage71 primary external",
+      "external_acc": 0.353,
+      "external_macro_f1_all3": 0.3261787057160285,
+      "support_recall": 0.432,
+      "refute_recall": 0.202817,
+      "prediction_counts": "{\"REFUTE\": 219, \"NOT_ENTITLED\": 388, \"SUPPORT\": 393}",
+      "status": "CURRENT_PRIMARY"
+    },
+    {
+      "run": "Stage92C / Stage92A near-miss external",
+      "external_acc": 0.351,
+      "external_macro_f1_all3": 0.330837,
+      "support_recall": 0.402,
+      "refute_recall": 0.233803,
+      "prediction_counts": "{\"REFUTE\": 223, \"NOT_ENTITLED\": 412, \"SUPPORT\": 365}",
+      "status": "BEST_NEAR_MISS_BEFORE_STAGE97"
+    },
+    {
+      "run": "Stage97C / Stage92A+Stage97A half anti-NE external",
+      "external_acc": 0.355,
+      "external_macro_f1_all3": 0.343,
+      "support_recall": 0.348,
+      "refute_recall": 0.3183,
+      "prediction_counts": "{\"NOT_ENTITLED\": 394, \"REFUTE\": 296, \"SUPPORT\": 310}",
+      "status": "TOPLINE_WIN_BUT_SUPPORT_SUPPRESSION_NOT_PRIMARY"
+    }
+  ],
+  "delta": [
+    {
+      "comparison": "Stage97C - Stage73",
+      "external_acc_delta": 0.0020000000000000018,
+      "external_macro_delta": 0.0168212942839715,
+      "support_recall_delta": -0.08400000000000002,
+      "refute_recall_delta": 0.11548300000000003,
+      "support_pred_count_delta": -83,
+      "refute_pred_count_delta": 77,
+      "ne_pred_count_delta": 6
+    },
+    {
+      "comparison": "Stage97C - Stage92C",
+      "external_acc_delta": 0.0040000000000000036,
+      "external_macro_delta": 0.012163000000000035,
+      "support_recall_delta": -0.05400000000000005,
+      "refute_recall_delta": 0.08449700000000002,
+      "support_pred_count_delta": -55,
+      "refute_pred_count_delta": 73,
+      "ne_pred_count_delta": -18
+    }
+  ],
+  "promotion_checks": [
+    {
+      "check": "clean_preserved",
+      "pass": true
+    },
+    {
+      "check": "external_acc_ge_stage73",
+      "pass": true
+    },
+    {
+      "check": "external_macro_ge_stage73",
+      "pass": true
+    },
+    {
+      "check": "support_recall_ge_stage73_minus_0p02",
+      "pass": false
+    },
+    {
+      "check": "support_recall_ge_stage92c",
+      "pass": false
+    },
+    {
+      "check": "support_pred_count_ge_stage92c_minus_20",
+      "pass": false
+    },
+    {
+      "check": "external_prediction_file_available_for_exact_false_NE",
+      "pass": false
+    }
+  ],
+  "diagnosis_rules": [
+    {
+      "rule": "stage97c_external_accuracy_beats_stage73"
+    },
+    {
+      "rule": "stage97c_external_macro_beats_stage73"
+    },
+    {
+      "rule": "stage97c_fails_support_recall_guardrail"
+    },
+    {
+      "rule": "stage97c_worse_than_stage92c_on_support_recall"
+    },
+    {
+      "rule": "stage97c_support_prediction_mass_too_low"
+    },
+    {
+      "rule": "do_not_promote_without_exact_false_NE_breakdown"
+    },
+    {
+      "rule": "keep_stage71_primary"
+    },
+    {
+      "rule": "retain_stage92c_and_stage97c_as_diagnostic_branches"
+    }
+  ],
+  "next_options": [
+    {
+      "option": "Stage99A_support_floor_micro_bridge",
+      "priority": 1,
+      "description": "Add a very small SUPPORT-preservation floor to Stage97A: e.g. SUPPORT 16, NE guardrail 16, no extra REFUTE. Goal is to restore SUPPORT recall without losing Stage97C macro gain."
+    },
+    {
+      "option": "Stage99B_threshold_only_analysis",
+      "priority": 2,
+      "description": "No retraining. Inspect whether the runner can export logits/probs and apply a clean-preserving SUPPORT floor or NE margin rule. Safer if prediction probabilities are available."
+    },
+    {
+      "option": "Stage99C_stop_branch_and_report",
+      "priority": 3,
+      "description": "Stop recovery-bridge search and report Stage92C/97C as diagnostic evidence: macro can be improved, but SUPPORT recall tradeoff blocks primary promotion."
+    }
+  ],
+  "source_files": {
+    "stage97c_recovery": "results/stage97c_embedded_external_eval_recovery_summary.json",
+    "stage97b_summary": "results/stage97b_clean_dev_preservation_summary.json",
+    "stage97a_report": "results/stage97a_half_size_numeric_date_antine_bridge_preflight_report.json",
+    "stage96_report": "results/stage96_stage95b_clean_failure_audit_design_report.json",
+    "stage93_report": "results/stage93_stage92c_external_decision_report.json"
+  }
+}

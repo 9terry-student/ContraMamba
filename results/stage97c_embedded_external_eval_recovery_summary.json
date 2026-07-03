@@ -1,0 +1,184 @@
+{
+  "summary": {
+    "stage": "Stage97C",
+    "decision": "STAGE97C_EMBEDDED_EXTERNAL_EVAL_RECOVERED",
+    "candidate_status": "TOPLINE_AND_EMBEDDED_BREAKDOWN_AVAILABLE",
+    "run_dir": "results/stage97c_stage57_stage66_stage92a_stage97a_vitaminc_external_run_20260703_061803",
+    "external_eval_name": "stage84e2_vitaminc_validation_sample1000_exact_ood_schema",
+    "external_report_storage": "embedded_in_train_report_external_evals",
+    "separate_external_prediction_file_found": false,
+    "stage97c_clean_best_epoch": 200,
+    "stage97c_clean_dev_acc": 0.9763889312744141,
+    "stage97c_clean_dev_macro_f1": 0.9656166703101672,
+    "stage97b_clean_dev_acc": 0.9763889312744141,
+    "stage97b_clean_dev_macro_f1": 0.9656166703101672,
+    "stage97c_external_n": 1000,
+    "stage97c_external_acc": 0.355,
+    "stage97c_external_macro_f1_all3": 0.343,
+    "stage97c_false_SUPPORT_logged": 136,
+    "stage73_external_acc": 0.353,
+    "stage73_external_macro_f1_all3": 0.3261787057160285,
+    "stage92c_external_acc": 0.351,
+    "stage92c_external_macro_f1_all3": 0.330837,
+    "stage97c_minus_stage73_acc": 0.0020000000000000018,
+    "stage97c_minus_stage73_macro": 0.0168212942839715,
+    "stage97c_minus_stage92c_acc": 0.0040000000000000036,
+    "stage97c_minus_stage92c_macro": 0.012163000000000035,
+    "full_breakdown_available": true,
+    "recommended_next_stage": "Stage98 embedded-external decision/audit; promotion still requires exact false_NE/error breakdown or rerun with prediction export"
+  },
+  "embedded_metrics": {
+    "n": 1000,
+    "accuracy": 0.355,
+    "macro_f1_all3": 0.343,
+    "false_SUPPORT_logged": 136,
+    "prediction_counts": {
+      "NOT_ENTITLED": 394,
+      "REFUTE": 296,
+      "SUPPORT": 310
+    },
+    "gold_counts": {
+      "NOT_ENTITLED": 145,
+      "REFUTE": 355,
+      "SUPPORT": 500
+    },
+    "confusion": null,
+    "per_label": {
+      "NOT_ENTITLED": {
+        "f1": 0.2523,
+        "precision": 0.1726,
+        "predicted": 394,
+        "recall": 0.469,
+        "support": 145
+      },
+      "REFUTE": {
+        "f1": 0.3472,
+        "precision": 0.3818,
+        "predicted": 296,
+        "recall": 0.3183,
+        "support": 355
+      },
+      "SUPPORT": {
+        "f1": 0.4296,
+        "precision": 0.5613,
+        "predicted": 310,
+        "recall": 0.348,
+        "support": 500
+      }
+    }
+  },
+  "topline_checks": [
+    {
+      "check": "external_n_1000",
+      "pass": true
+    },
+    {
+      "check": "external_acc_ge_stage73",
+      "pass": true
+    },
+    {
+      "check": "external_macro_ge_stage73",
+      "pass": true
+    },
+    {
+      "check": "external_acc_ge_stage92c",
+      "pass": true
+    },
+    {
+      "check": "external_macro_ge_stage92c",
+      "pass": true
+    }
+  ],
+  "external_eval_raw": {
+    "config_summary": {
+      "architecture": "v6b_minimal",
+      "flag_source": "controlled_heuristic",
+      "v7_h1_entitlement_decision_signal": "learned",
+      "v7_location_boundary_cap_detach": false,
+      "v7_location_boundary_cap_gamma": 1.0,
+      "v7_location_boundary_cap_mode": "none",
+      "v7_temporal_mismatch_multihead_cap_mode": "none",
+      "v7_temporal_mismatch_multihead_fusion": "frame_only",
+      "v7_temporal_safety_cap_detach": false,
+      "v7_temporal_safety_cap_gamma": 1.0,
+      "v7_temporal_safety_cap_mode": "none",
+      "v7_use_location_boundary_head": false,
+      "v7_use_location_boundary_loss": false,
+      "v7_use_temporal_mismatch_multihead": false,
+      "v7_use_temporal_mismatch_multihead_loss": false,
+      "v7_use_temporal_safety_head": false,
+      "v7_use_temporal_safety_loss": false,
+      "v7_use_v6b_style_final_decision": false
+    },
+    "eval_epoch": 200,
+    "eval_state": "best_dev",
+    "external_eval_jsonl": "data/stage84e2_vitaminc_validation_sample1000_exact_ood_schema.jsonl",
+    "external_eval_name": "stage84e2_vitaminc_validation_sample1000_exact_ood_schema",
+    "external_eval_path": "data/stage84e2_vitaminc_validation_sample1000_exact_ood_schema.jsonl",
+    "external_probe_used_for_calibration": false,
+    "external_probe_used_for_checkpoint_selection": false,
+    "external_probe_used_for_training": false,
+    "external_schema_label_field_used": [
+      "final_label"
+    ],
+    "external_schema_missing_final_label_fixed": false,
+    "external_schema_normalization_source": "runner_external_eval",
+    "external_schema_normalized": true,
+    "external_schema_records_normalized": 0,
+    "external_schema_records_with_added_aux_labels": 0,
+    "false_SUPPORT_by_axis": {},
+    "false_SUPPORT_by_intervention": {
+      "vitaminc_external_validation": 136
+    },
+    "false_SUPPORT_total": 136,
+    "final_accuracy": 0.355,
+    "final_macro_f1": 0.343,
+    "intervention_counts": {
+      "vitaminc_external_validation": 1000
+    },
+    "label_counts": {
+      "NOT_ENTITLED": 145,
+      "REFUTE": 355,
+      "SUPPORT": 500
+    },
+    "n_records": 1000,
+    "output_predictions_path": null,
+    "per_label": {
+      "NOT_ENTITLED": {
+        "f1": 0.2523,
+        "precision": 0.1726,
+        "predicted": 394,
+        "recall": 0.469,
+        "support": 145
+      },
+      "REFUTE": {
+        "f1": 0.3472,
+        "precision": 0.3818,
+        "predicted": 296,
+        "recall": 0.3183,
+        "support": 355
+      },
+      "SUPPORT": {
+        "f1": 0.4296,
+        "precision": 0.5613,
+        "predicted": 310,
+        "recall": 0.348,
+        "support": 500
+      }
+    },
+    "prediction_distribution": {
+      "NOT_ENTITLED": 394,
+      "REFUTE": 296,
+      "SUPPORT": 310
+    },
+    "stage15_used_for_checkpoint_selection": false,
+    "stage15_used_for_training": false,
+    "true_SUPPORT_correct": 174
+  },
+  "source_files": {
+    "train_report": "results/stage97c_stage57_stage66_stage92a_stage97a_vitaminc_external_run_20260703_061803/stage97c_stage57_stage66_stage92a_stage97a_train_report.json",
+    "clean_predictions": "results/stage97c_stage57_stage66_stage92a_stage97a_vitaminc_external_run_20260703_061803/stage97c_stage57_stage66_stage92a_stage97a_predictions.json",
+    "stdout_log": "results/stage97c_stage57_stage66_stage92a_stage97a_vitaminc_external_run_20260703_061803/stage97c_stdout.log",
+    "stage97b_summary": "results/stage97b_clean_dev_preservation_summary.json"
+  }
+}
