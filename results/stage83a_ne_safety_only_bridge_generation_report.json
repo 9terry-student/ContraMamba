@@ -1,0 +1,118 @@
+{
+  "summary": {
+    "stage": "Stage83A",
+    "decision": "STAGE83A_NE_SAFETY_ONLY_BRIDGE_READY",
+    "purpose": "Create A3 NE-safety-only bridge subset from Stage80A conservative bridge.",
+    "source_jsonl": "data/stage80a_conservative_stage75v2_bridge.jsonl",
+    "output_jsonl": "data/stage83a_ne_safety_only_bridge.jsonl",
+    "target_family": "strict_ne_false_support_safety_v2",
+    "source_rows": 500,
+    "output_rows": 160,
+    "output_label_counts": {
+      "NOT_ENTITLED": 160
+    },
+    "output_family_counts": {
+      "strict_ne_false_support_safety_v2": 160
+    },
+    "sha256": "23c43c8fb6e9a696937854bf4b05bb7fd1f75923e6526bb0490df31c7a9e0b7d",
+    "training_executed": false,
+    "external_eval_executed": false,
+    "recommended_next_stage": "Stage83B static runner check for A3 NE-safety-only bridge"
+  },
+  "checks": [
+    {
+      "check": "stage83_ready",
+      "pass": true
+    },
+    {
+      "check": "stage83_allows_a3",
+      "pass": true
+    },
+    {
+      "check": "source_rows_500",
+      "pass": true
+    },
+    {
+      "check": "source_has_target_family_160",
+      "pass": true
+    },
+    {
+      "check": "subset_rows_160",
+      "pass": true
+    },
+    {
+      "check": "subset_all_target_family",
+      "pass": true
+    },
+    {
+      "check": "subset_all_not_entitled",
+      "pass": true
+    },
+    {
+      "check": "subset_duplicate_ids_zero",
+      "pass": true
+    },
+    {
+      "check": "subset_duplicate_claim_evidence_zero",
+      "pass": true
+    },
+    {
+      "check": "subset_no_pair_id",
+      "pass": true
+    },
+    {
+      "check": "subset_synthetic_only_true",
+      "pass": true
+    },
+    {
+      "check": "subset_external_text_false",
+      "pass": true
+    },
+    {
+      "check": "subset_external_label_false",
+      "pass": true
+    },
+    {
+      "check": "subset_has_stage83a_metadata",
+      "pass": true
+    },
+    {
+      "check": "deterministic_serialization",
+      "pass": true
+    },
+    {
+      "check": "runner_stage80a_flags_available",
+      "pass": true
+    },
+    {
+      "check": "runner_stage80a_loader_available",
+      "pass": true
+    }
+  ],
+  "source_vs_subset_counts": [
+    {
+      "scope": "Stage80A_source",
+      "rows": 500,
+      "label_counts": "{\"SUPPORT\": 170, \"REFUTE\": 170, \"NOT_ENTITLED\": 160}",
+      "family_counts": "{\"numeric_temporal_polarity_repair_v2_conservative\": 180, \"lexical_type_polarity_repair_v2_conservative\": 160, \"strict_ne_false_support_safety_v2\": 160}"
+    },
+    {
+      "scope": "Stage83A_subset",
+      "rows": 160,
+      "label_counts": "{\"NOT_ENTITLED\": 160}",
+      "family_counts": "{\"strict_ne_false_support_safety_v2\": 160}"
+    }
+  ],
+  "sample_ids": [
+    "stage80b_snfs2_partial_evidence_missing_decisive_field_0001",
+    "stage80b_snfs2_partial_evidence_missing_decisive_field_0002",
+    "stage80b_snfs2_partial_evidence_missing_decisive_field_0003",
+    "stage80b_snfs2_partial_evidence_missing_decisive_field_0004",
+    "stage80b_snfs2_partial_evidence_missing_decisive_field_0005",
+    "stage80b_snfs2_partial_evidence_missing_decisive_field_0006",
+    "stage80b_snfs2_partial_evidence_missing_decisive_field_0007",
+    "stage80b_snfs2_partial_evidence_missing_decisive_field_0008",
+    "stage80b_snfs2_partial_evidence_missing_decisive_field_0009",
+    "stage80b_snfs2_partial_evidence_missing_decisive_field_0010"
+  ]
+}
