@@ -1,0 +1,41 @@
+cd C:\Users\Home1\Desktop\ContraMamba
+
+git status
+
+git add `
+  .\data\stage99a_support_floor_micro_bridge.jsonl `
+  .\data\stage99a_stage92a_stage97a_combined_support_floor_bridge.jsonl `
+  .\results\stage99a_support_floor_micro_bridge_preflight_report.json `
+  .\results\stage99a_support_floor_micro_bridge_preflight_report.md `
+  .\results\stage99b_clean_dev_preservation_summary.json `
+  .\results\stage99b_clean_dev_preservation_summary.md `
+  .\results\stage99c_vitaminc_external_diagnostic_summary.json `
+  .\results\stage99c_vitaminc_external_diagnostic_summary.md `
+  .\results\stage100_stage99c_external_decision_report.json `
+  .\results\stage100_stage99c_external_decision_report.md `
+  .\results\stage101_logit_export_capability_audit.json `
+  .\results\stage101_logit_export_capability_audit.md `
+  .\results\stage102_threshold_only_diagnostic_report.json `
+  .\results\stage102_threshold_only_diagnostic_report.md `
+  .\results\stage102_threshold_policy_sweep.csv `
+  .\results\stage102_best_policy_changed_examples.jsonl `
+  .\results\stage103_threshold_feasibility_decision_report.json `
+  .\results\stage103_threshold_feasibility_decision_report.md `
+  .\results\stage104_clean_only_threshold_design_report.json `
+  .\results\stage104_clean_only_threshold_design_report.md `
+  .\results\stage104_clean_only_threshold_policy_sweep.csv `
+  .\results\stage104_selected_clean_only_threshold_policy.json `
+  .\results\stage104_selected_clean_policy_changed_examples.jsonl `
+  .\results\stage104b_noop_filter_threshold_decision_report.json `
+  .\results\stage104b_noop_filter_threshold_decision_report.md `
+  .\results\stage105_portable_clean_delta_external_diagnostic_report.json `
+  .\results\stage105_portable_clean_delta_external_diagnostic_report.md `
+  .\results\stage105_portable_clean_delta_changed_examples.jsonl `
+  .\results\stage106_final_synthesis_and_commit_selection_report.json `
+  .\results\stage106_final_synthesis_and_commit_selection_report.md `
+  .\results\stage106_recommended_commit_manifest.txt `
+  .\results\stage106_git_add_minimal.ps1
+
+git commit -m "Add Stage106 final synthesis for Stage99 threshold diagnostics"
+git push
+git status

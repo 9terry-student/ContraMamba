@@ -1,0 +1,488 @@
+{
+  "summary": {
+    "stage": "Stage106",
+    "decision": "STAGE106_KEEP_STAGE71_PRIMARY_CLOSE_STAGE99_TO_STAGE105_BRANCH",
+    "current_primary": "Stage71 retry2 Stage57+Stage66 bridge-enabled frozen recovery",
+    "promoted_candidate": null,
+    "closed_branches": [
+      "Stage83C/84F NE-safety",
+      "Stage88A/B/C balanced entitlement recovery",
+      "Stage92A/B/C support-preserving counter bridge",
+      "Stage95A/B anti-NE preservation",
+      "Stage97A/B/C half anti-NE",
+      "Stage99A/B/C support-floor micro",
+      "Stage102/103 external-tuned threshold diagnostic",
+      "Stage104/104B/105 clean-only threshold portability attempt"
+    ],
+    "final_interpretation": "Synthetic bridge append strategies can improve REFUTE recall or external macro-F1, but they repeatedly suppress SUPPORT. External-tuned threshold diagnostics reveal a recoverable latent SUPPORT signal in Stage92C probabilities, but clean-only threshold selection does not produce a strict nontrivial safe candidate. The portable clean delta gives only a tiny Stage92C improvement and remains below Stage73 on SUPPORT recall. Therefore the valid primary remains Stage71, and future work should shift to mechanism design or paper synthesis.",
+    "key_findings": [
+      "Stage97C achieved the best external top-line among bridge branches but suppressed SUPPORT.",
+      "Stage99C worsened SUPPORT suppression despite a support-floor micro bridge.",
+      "Stage102 proved latent SUPPORT signal exists under external-label threshold sweep.",
+      "Stage104 showed clean-dev already has perfect SUPPORT/REFUTE recall, making clean-only threshold selection underdetermined.",
+      "Stage104B found no strict nontrivial clean-safe threshold candidate.",
+      "Stage105 clean-derived portable delta was weak/negative versus Stage73 on SUPPORT recall."
+    ],
+    "recommended_next": [
+      "Commit Stage100-106 reports and compact artifacts.",
+      "Do not commit every large run directory unless needed for archival reproducibility.",
+      "Do not run more synthetic bridge append experiments on this branch.",
+      "Next research step should be either paper/report synthesis or a new clean-only mechanism design, not threshold tuning on VitaminC."
+    ]
+  },
+  "comparison": [
+    {
+      "run": "Stage73 / Stage71 current primary",
+      "validity": "PRIMARY",
+      "acc": 0.353,
+      "macro_f1_all3": 0.3261787057160285,
+      "support_recall": 0.432,
+      "refute_recall": 0.202817,
+      "support_pred_count": 393,
+      "refute_pred_count": 219,
+      "ne_pred_count": 388,
+      "false_NE_total": 323.0,
+      "false_entitlement_total": 80.0,
+      "decision": "KEEP_PRIMARY"
+    },
+    {
+      "run": "Stage92C / support-preserving bridge",
+      "validity": "EXTERNAL_DIAGNOSTIC_REJECTED_AS_PRIMARY",
+      "acc": 0.351,
+      "macro_f1_all3": 0.330837,
+      "support_recall": 0.402,
+      "refute_recall": 0.233803,
+      "support_pred_count": 365,
+      "refute_pred_count": 223,
+      "ne_pred_count": 412,
+      "false_NE_total": 345.0,
+      "false_entitlement_total": 78.0,
+      "decision": "NEAR_MISS_NOT_PROMOTED"
+    },
+    {
+      "run": "Stage97C / half anti-NE bridge",
+      "validity": "EXTERNAL_DIAGNOSTIC_REJECTED_AS_PRIMARY",
+      "acc": 0.355,
+      "macro_f1_all3": 0.343,
+      "support_recall": 0.348,
+      "refute_recall": 0.3183,
+      "support_pred_count": 310,
+      "refute_pred_count": 296,
+      "ne_pred_count": 394,
+      "false_NE_total": NaN,
+      "false_entitlement_total": NaN,
+      "decision": "TOPLINE_WIN_BUT_SUPPORT_SUPPRESSED"
+    },
+    {
+      "run": "Stage99C / support-floor micro bridge",
+      "validity": "EXTERNAL_DIAGNOSTIC_REJECTED_AS_PRIMARY",
+      "acc": 0.344,
+      "macro_f1_all3": 0.3352,
+      "support_recall": 0.316,
+      "refute_recall": NaN,
+      "support_pred_count": 278,
+      "refute_pred_count": 314,
+      "ne_pred_count": 408,
+      "false_NE_total": NaN,
+      "false_entitlement_total": NaN,
+      "decision": "REJECT_SUPPORT_SUPPRESSION_WORSE"
+    },
+    {
+      "run": "Stage102 / external-tuned threshold diagnostic",
+      "validity": "DIAGNOSTIC_ONLY_EXTERNAL_LABEL_TUNED_NOT_PROMOTABLE",
+      "acc": 0.384,
+      "macro_f1_all3": 0.3503158543004237,
+      "support_recall": 0.48,
+      "refute_recall": 0.23380281690140844,
+      "support_pred_count": 440,
+      "refute_pred_count": 223,
+      "ne_pred_count": 337,
+      "false_NE_total": 276.0,
+      "false_entitlement_total": 84.0,
+      "decision": "POSITIVE_SIGNAL_BUT_NOT_PROMOTABLE"
+    },
+    {
+      "run": "Stage105 / portable clean-delta threshold diagnostic",
+      "validity": "DIAGNOSTIC_ONLY_CLEAN_SELECTED_NOT_PROMOTABLE",
+      "acc": 0.353,
+      "macro_f1_all3": 0.3323067011648327,
+      "support_recall": 0.406,
+      "refute_recall": 0.23380281690140844,
+      "support_pred_count": 367,
+      "refute_pred_count": 223,
+      "ne_pred_count": 410,
+      "false_NE_total": 343.0,
+      "false_entitlement_total": 78.0,
+      "decision": "STAGE105_PORTABLE_CLEAN_DELTA_EXTERNAL_DIAGNOSTIC_WEAK_OR_NEGATIVE"
+    }
+  ],
+  "stage_status": [
+    {
+      "stage": "Stage100",
+      "decision": "STAGE100_REJECT_STAGE99C_AS_PRIMARY_KEEP_STAGE71",
+      "validity": "final decision report",
+      "takeaway": "Reject Stage99C; keep Stage71 primary."
+    },
+    {
+      "stage": "Stage101",
+      "decision": "STAGE101_THRESHOLD_ANALYSIS_READY",
+      "validity": "artifact capability audit",
+      "takeaway": "External threshold analysis possible for Stage73 and Stage92C prediction exports."
+    },
+    {
+      "stage": "Stage102",
+      "decision": "STAGE102_THRESHOLD_SIGNAL_BALANCED_DIAGNOSTIC_FOUND",
+      "validity": "external-label diagnostic only",
+      "takeaway": "Strong latent SUPPORT signal exists if external labels are used for threshold sweep."
+    },
+    {
+      "stage": "Stage103",
+      "decision": "STAGE103_THRESHOLD_FEASIBILITY_CONFIRMED_DIAGNOSTIC_ONLY",
+      "validity": "diagnostic feasibility report",
+      "takeaway": "Threshold feasibility confirmed, but selected external-tuned rule is not promotable."
+    },
+    {
+      "stage": "Stage104",
+      "decision": "STAGE104_CLEAN_ONLY_THRESHOLD_STRICT_CANDIDATE_READY",
+      "validity": "clean-only design attempt",
+      "takeaway": "Original selected candidate was no-op."
+    },
+    {
+      "stage": "Stage104B",
+      "decision": "STAGE104B_NONTRIVIAL_STAGE71_PRESERVED_BUT_STAGE92C_GAIN_LOST",
+      "validity": "no-op filtered clean-only decision",
+      "takeaway": "No strict nontrivial clean-safe candidate; only Stage71-preserving nontrivial candidate."
+    },
+    {
+      "stage": "Stage105",
+      "decision": "STAGE105_PORTABLE_CLEAN_DELTA_EXTERNAL_DIAGNOSTIC_WEAK_OR_NEGATIVE",
+      "validity": "optional external diagnostic only",
+      "takeaway": "Portable clean delta is weak/negative versus Stage73 SUPPORT recall; not promotable."
+    }
+  ],
+  "checks": [
+    {
+      "check": "stage99c_rejected",
+      "pass": true
+    },
+    {
+      "check": "stage101_threshold_export_ready",
+      "pass": true
+    },
+    {
+      "check": "stage102_external_tuned_signal_positive",
+      "pass": true
+    },
+    {
+      "check": "stage103_diagnostic_only_not_promotable",
+      "pass": true
+    },
+    {
+      "check": "stage104_selected_noop",
+      "pass": true
+    },
+    {
+      "check": "stage104b_no_strict_nontrivial_clean_candidate",
+      "pass": true
+    },
+    {
+      "check": "stage105_not_promotable",
+      "pass": true
+    },
+    {
+      "check": "stage105_support_recall_below_stage73",
+      "pass": true
+    },
+    {
+      "check": "keep_stage71_primary",
+      "pass": true
+    },
+    {
+      "check": "close_stage99_to_105_branch",
+      "pass": true
+    }
+  ],
+  "recommendations": [
+    {
+      "item": "Primary model",
+      "decision": "Keep Stage71",
+      "reason": "Best valid primary after all rejected external/threshold diagnostics."
+    },
+    {
+      "item": "Stage97C",
+      "decision": "Keep as diagnostic evidence only",
+      "reason": "Top-line external win but SUPPORT suppression blocks promotion."
+    },
+    {
+      "item": "Stage99C",
+      "decision": "Reject",
+      "reason": "Support-floor micro bridge worsened SUPPORT recall and support prediction mass."
+    },
+    {
+      "item": "Stage102",
+      "decision": "Keep as diagnostic evidence only",
+      "reason": "Shows recoverable latent SUPPORT signal, but threshold was external-label selected."
+    },
+    {
+      "item": "Stage105",
+      "decision": "Reject as promotion candidate",
+      "reason": "Portable clean delta improves Stage92C slightly but remains below Stage73 SUPPORT recall."
+    },
+    {
+      "item": "Next work",
+      "decision": "Paper synthesis or new mechanism",
+      "reason": "Current bridge/threshold line has reached a valid stopping point."
+    }
+  ],
+  "commit_manifest": [
+    {
+      "tier": "minimal_commit",
+      "path": "data/stage99a_support_floor_micro_bridge.jsonl",
+      "exists": true,
+      "is_dir": false,
+      "size_bytes": 42738.0,
+      "reason": "compact report/artifact required for Stage99-106 synthesis"
+    },
+    {
+      "tier": "minimal_commit",
+      "path": "data/stage99a_stage92a_stage97a_combined_support_floor_bridge.jsonl",
+      "exists": true,
+      "is_dir": false,
+      "size_bytes": 419358.0,
+      "reason": "compact report/artifact required for Stage99-106 synthesis"
+    },
+    {
+      "tier": "minimal_commit",
+      "path": "results/stage99a_support_floor_micro_bridge_preflight_report.json",
+      "exists": true,
+      "is_dir": false,
+      "size_bytes": 8846.0,
+      "reason": "compact report/artifact required for Stage99-106 synthesis"
+    },
+    {
+      "tier": "minimal_commit",
+      "path": "results/stage99a_support_floor_micro_bridge_preflight_report.md",
+      "exists": true,
+      "is_dir": false,
+      "size_bytes": 13759.0,
+      "reason": "compact report/artifact required for Stage99-106 synthesis"
+    },
+    {
+      "tier": "minimal_commit",
+      "path": "results/stage99b_clean_dev_preservation_summary.json",
+      "exists": true,
+      "is_dir": false,
+      "size_bytes": 4577.0,
+      "reason": "compact report/artifact required for Stage99-106 synthesis"
+    },
+    {
+      "tier": "minimal_commit",
+      "path": "results/stage99b_clean_dev_preservation_summary.md",
+      "exists": true,
+      "is_dir": false,
+      "size_bytes": 4643.0,
+      "reason": "compact report/artifact required for Stage99-106 synthesis"
+    },
+    {
+      "tier": "minimal_commit",
+      "path": "results/stage99c_vitaminc_external_diagnostic_summary.json",
+      "exists": true,
+      "is_dir": false,
+      "size_bytes": 12304.0,
+      "reason": "compact report/artifact required for Stage99-106 synthesis"
+    },
+    {
+      "tier": "minimal_commit",
+      "path": "results/stage99c_vitaminc_external_diagnostic_summary.md",
+      "exists": true,
+      "is_dir": false,
+      "size_bytes": 10645.0,
+      "reason": "compact report/artifact required for Stage99-106 synthesis"
+    },
+    {
+      "tier": "minimal_commit",
+      "path": "results/stage100_stage99c_external_decision_report.json",
+      "exists": true,
+      "is_dir": false,
+      "size_bytes": 7793.0,
+      "reason": "compact report/artifact required for Stage99-106 synthesis"
+    },
+    {
+      "tier": "minimal_commit",
+      "path": "results/stage100_stage99c_external_decision_report.md",
+      "exists": true,
+      "is_dir": false,
+      "size_bytes": 9799.0,
+      "reason": "compact report/artifact required for Stage99-106 synthesis"
+    },
+    {
+      "tier": "minimal_commit",
+      "path": "results/stage101_logit_export_capability_audit.json",
+      "exists": true,
+      "is_dir": false,
+      "size_bytes": 40322.0,
+      "reason": "compact report/artifact required for Stage99-106 synthesis"
+    },
+    {
+      "tier": "minimal_commit",
+      "path": "results/stage101_logit_export_capability_audit.md",
+      "exists": true,
+      "is_dir": false,
+      "size_bytes": 25660.0,
+      "reason": "compact report/artifact required for Stage99-106 synthesis"
+    },
+    {
+      "tier": "minimal_commit",
+      "path": "results/stage102_threshold_only_diagnostic_report.json",
+      "exists": true,
+      "is_dir": false,
+      "size_bytes": 114343.0,
+      "reason": "compact report/artifact required for Stage99-106 synthesis"
+    },
+    {
+      "tier": "minimal_commit",
+      "path": "results/stage102_threshold_only_diagnostic_report.md",
+      "exists": true,
+      "is_dir": false,
+      "size_bytes": 78647.0,
+      "reason": "compact report/artifact required for Stage99-106 synthesis"
+    },
+    {
+      "tier": "minimal_commit",
+      "path": "results/stage102_threshold_policy_sweep.csv",
+      "exists": true,
+      "is_dir": false,
+      "size_bytes": 77632.0,
+      "reason": "compact report/artifact required for Stage99-106 synthesis"
+    },
+    {
+      "tier": "minimal_commit",
+      "path": "results/stage102_best_policy_changed_examples.jsonl",
+      "exists": true,
+      "is_dir": false,
+      "size_bytes": 45242.0,
+      "reason": "compact report/artifact required for Stage99-106 synthesis"
+    },
+    {
+      "tier": "minimal_commit",
+      "path": "results/stage103_threshold_feasibility_decision_report.json",
+      "exists": true,
+      "is_dir": false,
+      "size_bytes": 29630.0,
+      "reason": "compact report/artifact required for Stage99-106 synthesis"
+    },
+    {
+      "tier": "minimal_commit",
+      "path": "results/stage103_threshold_feasibility_decision_report.md",
+      "exists": true,
+      "is_dir": false,
+      "size_bytes": 41503.0,
+      "reason": "compact report/artifact required for Stage99-106 synthesis"
+    },
+    {
+      "tier": "minimal_commit",
+      "path": "results/stage104_clean_only_threshold_design_report.json",
+      "exists": true,
+      "is_dir": false,
+      "size_bytes": 41363.0,
+      "reason": "compact report/artifact required for Stage99-106 synthesis"
+    },
+    {
+      "tier": "minimal_commit",
+      "path": "results/stage104_clean_only_threshold_design_report.md",
+      "exists": true,
+      "is_dir": false,
+      "size_bytes": 34801.0,
+      "reason": "compact report/artifact required for Stage99-106 synthesis"
+    },
+    {
+      "tier": "minimal_commit",
+      "path": "results/stage104_clean_only_threshold_policy_sweep.csv",
+      "exists": true,
+      "is_dir": false,
+      "size_bytes": 227506.0,
+      "reason": "compact report/artifact required for Stage99-106 synthesis"
+    },
+    {
+      "tier": "minimal_commit",
+      "path": "results/stage104_selected_clean_only_threshold_policy.json",
+      "exists": true,
+      "is_dir": false,
+      "size_bytes": 1006.0,
+      "reason": "compact report/artifact required for Stage99-106 synthesis"
+    },
+    {
+      "tier": "minimal_commit",
+      "path": "results/stage104_selected_clean_policy_changed_examples.jsonl",
+      "exists": true,
+      "is_dir": false,
+      "size_bytes": 0.0,
+      "reason": "compact report/artifact required for Stage99-106 synthesis"
+    },
+    {
+      "tier": "minimal_commit",
+      "path": "results/stage104b_noop_filter_threshold_decision_report.json",
+      "exists": true,
+      "is_dir": false,
+      "size_bytes": 48725.0,
+      "reason": "compact report/artifact required for Stage99-106 synthesis"
+    },
+    {
+      "tier": "minimal_commit",
+      "path": "results/stage104b_noop_filter_threshold_decision_report.md",
+      "exists": true,
+      "is_dir": false,
+      "size_bytes": 39287.0,
+      "reason": "compact report/artifact required for Stage99-106 synthesis"
+    },
+    {
+      "tier": "minimal_commit",
+      "path": "results/stage105_portable_clean_delta_external_diagnostic_report.json",
+      "exists": true,
+      "is_dir": false,
+      "size_bytes": 6554.0,
+      "reason": "compact report/artifact required for Stage99-106 synthesis"
+    },
+    {
+      "tier": "minimal_commit",
+      "path": "results/stage105_portable_clean_delta_external_diagnostic_report.md",
+      "exists": true,
+      "is_dir": false,
+      "size_bytes": 8827.0,
+      "reason": "compact report/artifact required for Stage99-106 synthesis"
+    },
+    {
+      "tier": "minimal_commit",
+      "path": "results/stage105_portable_clean_delta_changed_examples.jsonl",
+      "exists": true,
+      "is_dir": false,
+      "size_bytes": 1100.0,
+      "reason": "compact report/artifact required for Stage99-106 synthesis"
+    },
+    {
+      "tier": "optional_archive",
+      "path": "results/stage99b_stage57_stage66_stage92a_stage97a_stage99a_clean_dev_run_20260703_071017",
+      "exists": true,
+      "is_dir": true,
+      "size_bytes": NaN,
+      "reason": "full run directory; useful for reproducibility but not required for compact commit"
+    },
+    {
+      "tier": "optional_archive",
+      "path": "results/stage99c_stage57_stage66_stage92a_stage97a_stage99a_vitaminc_external_run_20260703_071946",
+      "exists": true,
+      "is_dir": true,
+      "size_bytes": NaN,
+      "reason": "full run directory; useful for reproducibility but not required for compact commit"
+    }
+  ],
+  "source_files": {
+    "stage100": "results/stage100_stage99c_external_decision_report.json",
+    "stage101": "results/stage101_logit_export_capability_audit.json",
+    "stage102": "results/stage102_threshold_only_diagnostic_report.json",
+    "stage103": "results/stage103_threshold_feasibility_decision_report.json",
+    "stage104": "results/stage104_clean_only_threshold_design_report.json",
+    "stage104b": "results/stage104b_noop_filter_threshold_decision_report.json",
+    "stage105": "results/stage105_portable_clean_delta_external_diagnostic_report.json"
+  }
+}

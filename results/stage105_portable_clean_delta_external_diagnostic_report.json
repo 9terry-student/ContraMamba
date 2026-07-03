@@ -1,0 +1,173 @@
+{
+  "summary": {
+    "stage": "Stage105",
+    "decision": "STAGE105_PORTABLE_CLEAN_DELTA_EXTERNAL_DIAGNOSTIC_WEAK_OR_NEGATIVE",
+    "analysis_type": "optional_external_diagnostic_using_clean_selected_portable_delta",
+    "current_primary_after_stage105": "Stage71 retry2 Stage57+Stage66 bridge-enabled frozen recovery",
+    "promotion_status": "NOT_PROMOTABLE_WITHOUT_INDEPENDENT_VALIDATION",
+    "source_policy": "Uses Stage104B clean-only selected nontrivial policy, translated into portable delta-k. No training, no new external run, no external label tuning.",
+    "clean_selected_policy_name": "Stage92C clean_rank_floor target=108 scope=ne_only",
+    "clean_selected_changed_from_stage92c": 2,
+    "portable_external_rule": "Among Stage92C external NOT_ENTITLED predictions, flip top 2 by SUPPORT probability to SUPPORT.",
+    "stage73_external_acc": 0.353,
+    "stage73_external_macro": 0.3261787057160285,
+    "stage73_support_recall": 0.432,
+    "stage92c_external_acc": 0.351,
+    "stage92c_external_macro": 0.33083720750354534,
+    "stage92c_support_recall": 0.402,
+    "stage105_external_acc": 0.353,
+    "stage105_external_macro": 0.3323067011648327,
+    "stage105_support_recall": 0.406,
+    "stage105_refute_recall": 0.23380281690140844,
+    "stage105_prediction_counts": {
+      "REFUTE": 223,
+      "NOT_ENTITLED": 410,
+      "SUPPORT": 367
+    },
+    "stage105_false_NE_total": 343,
+    "stage105_false_entitlement_total": 78,
+    "main_interpretation": "Stage105 tests whether the very small nontrivial clean-only delta generalizes directionally to external predictions. Because Stage104B found no strict nontrivial candidate and only a Stage71-preserving candidate, this is diagnostic only.",
+    "recommended_next_stage": "Stage106 final synthesis and commit selection"
+  },
+  "comparison": [
+    {
+      "run": "Stage73 external baseline",
+      "accuracy": 0.353,
+      "macro_f1_all3": 0.3261787057160285,
+      "support_recall": 0.432,
+      "refute_recall": 0.2028169014084507,
+      "ne_recall": 0.4482758620689655,
+      "support_pred_count": 393,
+      "refute_pred_count": 219,
+      "ne_pred_count": 388,
+      "false_NE_total": 323,
+      "false_entitlement_total": 80,
+      "polarity_error_total": 244,
+      "status": "CURRENT_PRIMARY_EXTERNAL"
+    },
+    {
+      "run": "Stage92C external baseline",
+      "accuracy": 0.351,
+      "macro_f1_all3": 0.33083720750354534,
+      "support_recall": 0.402,
+      "refute_recall": 0.23380281690140844,
+      "ne_recall": 0.46206896551724136,
+      "support_pred_count": 365,
+      "refute_pred_count": 223,
+      "ne_pred_count": 412,
+      "false_NE_total": 345,
+      "false_entitlement_total": 78,
+      "polarity_error_total": 226,
+      "status": "STAGE92C_BASELINE_EXTERNAL"
+    },
+    {
+      "run": "Stage105 apply clean-only portable delta NE->SUPPORT k=2",
+      "accuracy": 0.353,
+      "macro_f1_all3": 0.3323067011648327,
+      "support_recall": 0.406,
+      "refute_recall": 0.23380281690140844,
+      "ne_recall": 0.46206896551724136,
+      "support_pred_count": 367,
+      "refute_pred_count": 223,
+      "ne_pred_count": 410,
+      "false_NE_total": 343,
+      "false_entitlement_total": 78,
+      "polarity_error_total": 226,
+      "status": "CLEAN_ONLY_DELTA_DIAGNOSTIC_NOT_PROMOTABLE"
+    }
+  ],
+  "delta": [
+    {
+      "comparison": "Stage105 policy - Stage73",
+      "acc_delta": 0.0,
+      "macro_delta": 0.006127995448804158,
+      "support_recall_delta": -0.025999999999999968,
+      "refute_recall_delta": 0.030985915492957733,
+      "false_NE_total_delta": 20,
+      "false_entitlement_total_delta": -2
+    },
+    {
+      "comparison": "Stage105 policy - Stage92C",
+      "acc_delta": 0.0020000000000000018,
+      "macro_delta": 0.0014694936612873466,
+      "support_recall_delta": 0.0040000000000000036,
+      "refute_recall_delta": 0.0,
+      "false_NE_total_delta": -2,
+      "false_entitlement_total_delta": 0
+    }
+  ],
+  "checks": [
+    {
+      "check": "stage104b_has_nontrivial_stage71_only_candidate",
+      "pass": true
+    },
+    {
+      "check": "portable_delta_k_positive",
+      "pass": true
+    },
+    {
+      "check": "external_changed_count_matches_delta",
+      "pass": true
+    },
+    {
+      "check": "stage105_acc_ge_stage73",
+      "pass": true
+    },
+    {
+      "check": "stage105_macro_ge_stage73",
+      "pass": true
+    },
+    {
+      "check": "stage105_support_recall_ge_stage73",
+      "pass": false
+    },
+    {
+      "check": "stage105_refute_recall_ge_stage92c_minus_tiny",
+      "pass": true
+    },
+    {
+      "check": "stage105_not_promotable_without_independent_validation",
+      "pass": true
+    }
+  ],
+  "changed_examples": [
+    {
+      "row_index": 549,
+      "id": "tals_vitaminc_validation_sample1000_validation_21977",
+      "gold": "SUPPORT",
+      "baseline_pred": "NOT_ENTITLED",
+      "policy_pred": "SUPPORT",
+      "baseline_correct": false,
+      "policy_correct": true,
+      "support_prob": 0.401244580745697,
+      "refute_prob": 0.1768558770418167,
+      "ne_prob": 0.4218995273113251,
+      "support_margin": -0.020654946565628052,
+      "support_ne_gap": 0.020654946565628052,
+      "claim": "Mario Götze is Christian .",
+      "evidence": "Götze is a Christian."
+    },
+    {
+      "row_index": 209,
+      "id": "tals_vitaminc_validation_sample1000_validation_35442",
+      "gold": "SUPPORT",
+      "baseline_pred": "NOT_ENTITLED",
+      "policy_pred": "SUPPORT",
+      "baseline_correct": false,
+      "policy_correct": true,
+      "support_prob": 0.3987925350666046,
+      "refute_prob": 0.19625678658485413,
+      "ne_prob": 0.40495064854621887,
+      "support_margin": -0.006158113479614258,
+      "support_ne_gap": 0.006158113479614258,
+      "claim": "Breaking Benjamin released three promotional songs before the album .",
+      "evidence": "Three subsequent songs , `` Blood '' , `` Psycho '' , and `` Save Yourself '' , were released ahead of the album as promotional releases."
+    }
+  ],
+  "source_files": {
+    "stage104b_report": "results/stage104b_noop_filter_threshold_decision_report.json",
+    "stage92c_external_predictions": "results/stage92c_stage57_stage66_stage92a_vitaminc_external_run_20260703_052044/stage92c_stage57_stage66_stage92a_vitaminc_external_predictions.json",
+    "stage73_external_predictions": "results/stage73_retry_stage57_stage66_bridge_vitaminc_external_diag_run_20260702_080534/external_vitaminc/external_probe_stage73_retry_vitaminc_predictions.json",
+    "changed_examples": "results/stage105_portable_clean_delta_changed_examples.jsonl"
+  }
+}

@@ -1,0 +1,709 @@
+{
+  "summary": {
+    "stage": "Stage103",
+    "decision": "STAGE103_THRESHOLD_FEASIBILITY_CONFIRMED_DIAGNOSTIC_ONLY",
+    "current_primary_after_stage103": "Stage71 retry2 Stage57+Stage66 bridge-enabled frozen recovery",
+    "threshold_feasibility": "confirmed_diagnostic_only",
+    "not_promotable_reason": "Stage102 policy was selected using VitaminC external labels; it is diagnostic evidence, not a valid tuned deployment rule.",
+    "best_policy_name": "Stage92C support_rank_floor target=440 scope=ne_only",
+    "best_policy_family": "support_rank_floor",
+    "best_policy_scope": "ne_only",
+    "best_policy_target_support_count": 440.0,
+    "best_policy_changed_from_stage92c": 75.0,
+    "best_policy_acc": 0.384,
+    "best_policy_macro_f1_all3": 0.3503158543004237,
+    "best_policy_support_recall": 0.48,
+    "best_policy_refute_recall": 0.23380281690140844,
+    "best_policy_false_NE_total": 276,
+    "best_policy_false_entitlement_total": 84,
+    "stage73_acc": 0.353,
+    "stage73_macro_f1_all3": 0.3261787057160285,
+    "stage73_support_recall": 0.432,
+    "stage92c_acc": 0.351,
+    "stage92c_macro_f1_all3": 0.330837,
+    "stage92c_support_recall": 0.402,
+    "balanced_diag_pass_count": 47,
+    "ne_only_balanced_policy_count": 12,
+    "rank_floor_balanced_policy_count": 11,
+    "main_interpretation": "Stage102/103 shows that Stage92C contains a recoverable latent SUPPORT signal. The best diagnostic policy changes NE predictions to SUPPORT, improving accuracy, macro-F1, SUPPORT recall, and false-NE count while preserving REFUTE recall. This indicates the failure mode is not only representation; it is partly a final entitlement/routing threshold problem.",
+    "recommendations": [
+      "Keep Stage71 as primary.",
+      "Do not promote the Stage102 threshold policy.",
+      "Record threshold feasibility as diagnostic evidence.",
+      "Stop synthetic bridge append search unless a new mechanism is designed.",
+      "Next work should be clean-only threshold/mechanism design or paper/report synthesis."
+    ]
+  },
+  "comparison": [
+    {
+      "run": "Stage73 / current primary",
+      "acc": 0.353,
+      "macro_f1_all3": 0.3261787057160285,
+      "support_recall": 0.432,
+      "refute_recall": 0.202817,
+      "support_pred_count": 393,
+      "false_NE_total": 323.0,
+      "false_entitlement_total": 80.0,
+      "status": "CURRENT_PRIMARY"
+    },
+    {
+      "run": "Stage92C / baseline for threshold diagnostic",
+      "acc": 0.351,
+      "macro_f1_all3": 0.330837,
+      "support_recall": 0.402,
+      "refute_recall": 0.233803,
+      "support_pred_count": 365,
+      "false_NE_total": 345.0,
+      "false_entitlement_total": 78.0,
+      "status": "NEAR_MISS_BASELINE"
+    },
+    {
+      "run": "Stage97C / top-line bridge branch",
+      "acc": 0.355,
+      "macro_f1_all3": 0.343,
+      "support_recall": 0.348,
+      "refute_recall": 0.3183,
+      "support_pred_count": 310,
+      "false_NE_total": NaN,
+      "false_entitlement_total": NaN,
+      "status": "TOPLINE_WIN_SUPPORT_SUPPRESSED"
+    },
+    {
+      "run": "Stage99C / support-floor micro bridge",
+      "acc": 0.344,
+      "macro_f1_all3": 0.3352,
+      "support_recall": 0.316,
+      "refute_recall": 0.3296,
+      "support_pred_count": 278,
+      "false_NE_total": NaN,
+      "false_entitlement_total": NaN,
+      "status": "REJECTED_SUPPORT_SUPPRESSION_WORSE"
+    },
+    {
+      "run": "Stage92C support_rank_floor target=440 scope=ne_only",
+      "acc": 0.384,
+      "macro_f1_all3": 0.3503158543004237,
+      "support_recall": 0.48,
+      "refute_recall": 0.23380281690140844,
+      "support_pred_count": 440,
+      "false_NE_total": 276.0,
+      "false_entitlement_total": 84.0,
+      "status": "DIAGNOSTIC_ONLY_NOT_PROMOTABLE"
+    }
+  ],
+  "delta": [
+    {
+      "comparison": "Best threshold diagnostic - Stage73",
+      "acc_delta": 0.031000000000000028,
+      "macro_delta": 0.024137148584395196,
+      "support_recall_delta": 0.04799999999999999,
+      "refute_recall_delta": 0.030985816901408447,
+      "support_pred_count_delta": 47,
+      "false_NE_total_delta": -47.0,
+      "false_entitlement_total_delta": 4.0
+    },
+    {
+      "comparison": "Best threshold diagnostic - Stage92C",
+      "acc_delta": 0.03300000000000003,
+      "macro_delta": 0.01947885430042373,
+      "support_recall_delta": 0.07799999999999996,
+      "refute_recall_delta": -1.830985915662886e-07,
+      "support_pred_count_delta": 75,
+      "false_NE_total_delta": -69.0,
+      "false_entitlement_total_delta": 6.0
+    },
+    {
+      "comparison": "Best threshold diagnostic - Stage97C",
+      "acc_delta": 0.029000000000000026,
+      "macro_delta": 0.0073158543004236964,
+      "support_recall_delta": 0.132,
+      "refute_recall_delta": -0.08449718309859158,
+      "support_pred_count_delta": 130,
+      "false_NE_total_delta": NaN,
+      "false_entitlement_total_delta": NaN
+    }
+  ],
+  "checks": [
+    {
+      "check": "stage101_export_capability_ready",
+      "pass": true
+    },
+    {
+      "check": "stage102_balanced_signal_found",
+      "pass": true
+    },
+    {
+      "check": "balanced_diag_pass_count_gt_0",
+      "pass": true
+    },
+    {
+      "check": "best_policy_beats_stage73_acc",
+      "pass": true
+    },
+    {
+      "check": "best_policy_beats_stage73_macro",
+      "pass": true
+    },
+    {
+      "check": "best_policy_beats_stage73_support_recall",
+      "pass": true
+    },
+    {
+      "check": "best_policy_keeps_refute_recall_ge_stage92c",
+      "pass": false
+    },
+    {
+      "check": "best_policy_reduces_false_NE_vs_stage73",
+      "pass": true
+    },
+    {
+      "check": "best_policy_reduces_false_NE_vs_stage92c",
+      "pass": true
+    },
+    {
+      "check": "best_policy_uses_external_labels_for_diagnostic",
+      "pass": true
+    },
+    {
+      "check": "best_policy_not_promotable_as_tuned_threshold",
+      "pass": true
+    },
+    {
+      "check": "stage71_remains_primary",
+      "pass": true
+    }
+  ],
+  "diagnosis_rules": [
+    {
+      "rule": "stage102_found_47_balanced_diagnostic_policies"
+    },
+    {
+      "rule": "best_policy_is_stage92c_support_rank_floor_target_440_scope_ne_only"
+    },
+    {
+      "rule": "recoverable_support_signal_exists_inside_stage92c_probs"
+    },
+    {
+      "rule": "recoveries_are_mostly_ne_to_support_not_refute_to_support"
+    },
+    {
+      "rule": "refute_recall_is_preserved_when_scope_is_ne_only"
+    },
+    {
+      "rule": "false_ne_total_reduced_substantially"
+    },
+    {
+      "rule": "synthetic_bridge_search_failed_but_threshold_signal_exists"
+    },
+    {
+      "rule": "do_not_promote_external_tuned_threshold"
+    },
+    {
+      "rule": "stage71_remains_primary"
+    },
+    {
+      "rule": "next_valid_work_is_clean_only_mechanism_design_or_paper_synthesis"
+    }
+  ],
+  "risks": [
+    {
+      "risk": "external_label_tuning_leak",
+      "severity": "high",
+      "mitigation": "Treat Stage102/103 as diagnostic only. Do not use the selected target=440 as a deployed threshold."
+    },
+    {
+      "risk": "support_overpromotion_on_clean_NE",
+      "severity": "high",
+      "mitigation": "Any future mechanism must be derived from clean-dev/internal split only and re-run clean preservation before external."
+    },
+    {
+      "risk": "rank_floor_requires_distribution_assumption",
+      "severity": "medium",
+      "mitigation": "Prefer mechanism design based on margins/calibration learned without external labels rather than hard target support count from VitaminC."
+    },
+    {
+      "risk": "false_entitlement_increase",
+      "severity": "medium",
+      "mitigation": "Best diagnostic policy lowers false_NE but raises false_entitlement vs Stage73 by +4; guardrails required."
+    }
+  ],
+  "next_options": [
+    {
+      "option": "Stage104_clean_only_threshold_design",
+      "priority": 1,
+      "allowed": true,
+      "description": "Design a clean-dev/internal-only threshold mechanism. No external labels. Must not use Stage102 selected value as a tuned threshold."
+    },
+    {
+      "option": "Stage104_static_export_patch",
+      "priority": 2,
+      "allowed": true,
+      "description": "Patch runner to always export external prediction rows for future diagnostics. Static code patch only; no Kaggle run inside prompt."
+    },
+    {
+      "option": "Paper_synthesis",
+      "priority": 3,
+      "allowed": true,
+      "description": "Write report section: bridge training alters REFUTE/SUPPORT tradeoff, while logits reveal recoverable under-entitled SUPPORT signal."
+    }
+  ],
+  "changed_examples_preview": [
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "Mario Götze is Christian .",
+      "evidence": "Götze is a Christian.",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_21977",
+      "ne_prob": 0.4218995273113251,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.1768558770418167,
+      "row_index": 549,
+      "support_margin": -0.020654946565628052,
+      "support_prob": 0.401244580745697
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "Breaking Benjamin released three promotional songs before the album .",
+      "evidence": "Three subsequent songs , `` Blood '' , `` Psycho '' , and `` Save Yourself '' , were released ahead of the album as promotional releases.",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_35442",
+      "ne_prob": 0.40495064854621887,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.19625678658485413,
+      "row_index": 209,
+      "support_margin": -0.006158113479614258,
+      "support_prob": 0.3987925350666046
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "The San Diego Comic-Con has always been known by that name .",
+      "evidence": "The San Diego Comic Book Convention ( stylized , San Diego Comic-Con ) - was founded in 1980 by a group of San Diegans that included Shel Dorf , Richard Alf , Ken Krueger , and Mike Towry - and it has kept that name ever since .",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_56744",
+      "ne_prob": 0.4862126410007477,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.16866882145404816,
+      "row_index": 393,
+      "support_margin": -0.14109408855438232,
+      "support_prob": 0.34511855244636536
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "Eonaviego , Asturias , is officially the Principality of Asturias .",
+      "evidence": "Asturias ( , ; ; Eonaviego : Asturias , officially the Principality of Asturias ( ; ) , is an autonomous community in north-west Spain .",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_18927",
+      "ne_prob": 0.49232590198516846,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.18754644691944122,
+      "row_index": 925,
+      "support_margin": -0.17219820618629456,
+      "support_prob": 0.3201276957988739
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "Trevor Griffiths was born on April 4 , 1935 .",
+      "evidence": "Trevor Griffiths -LRB- born 4 April 1935 , Ancoats , Manchester -RRB- , is an English dramatist .",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_60256",
+      "ne_prob": 0.4928736984729767,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.1929103434085846,
+      "row_index": 72,
+      "support_margin": -0.17865771055221558,
+      "support_prob": 0.3142159879207611
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "Anne Sullivan was born in April of 1866 .",
+      "evidence": "Johanna Mansfield Sullivan Macy -LRB- April 14 , 1866 -- October 20 , 1936 -RRB- , better known as Anne Sullivan , was an American teacher , best known for being the instructor and lifelong companion of Helen Keller .",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_43240",
+      "ne_prob": 0.49539342522621155,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.1960253268480301,
+      "row_index": 863,
+      "support_margin": -0.18681222200393677,
+      "support_prob": 0.3085812032222748
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "Emma Watson was born before 1995 .",
+      "evidence": "Emma Charlotte Duerre Watson -LRB- born 15 April 1990 -RRB- is a French-British actress , model , and activist .",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_47744",
+      "ne_prob": 0.46536245942115784,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.2314547300338745,
+      "row_index": 3,
+      "support_margin": -0.16217967867851257,
+      "support_prob": 0.30318278074264526
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "Steve Ditko studied at school .",
+      "evidence": "Ditko studied under Batman artist Jerry Robinson at the Cartoonist and Illustrators School in New York City .",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_58246",
+      "ne_prob": 0.5209184885025024,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.17924006283283234,
+      "row_index": 472,
+      "support_margin": -0.2210770845413208,
+      "support_prob": 0.29984140396118164
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "The Predator ’ s production and advertisement budget was $ 88 million .",
+      "evidence": ", The Predator has grossed $ 50.9 million in the United States and Canada , and $ 76.6 million in other territories , for a total worldwide gross of $ 127.5 million , against a production and advertisement budget of $ 88 million .",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_15235",
+      "ne_prob": 0.535563051700592,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.18193234503269196,
+      "row_index": 228,
+      "support_margin": -0.25305846333503723,
+      "support_prob": 0.2825045883655548
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "Water is part of the History of Earth .",
+      "evidence": "Over time , the Earth cooled , causing the formation of a solid crust , and allowing liquid water to exist on the surface .",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_49774",
+      "ne_prob": 0.5481193661689758,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.17964953184127808,
+      "row_index": 841,
+      "support_margin": -0.27588826417922974,
+      "support_prob": 0.2722311019897461
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "The movie Ouija : Origin of Evil has grossed more than $ 44 million .",
+      "evidence": "It received generally positive reviews from critics while many praised the film as an improvement over its predecessor , marking it the first Hasbro film , as well as the first Platinum Dunes film , to be well received by critics , and has grossed over $ 44 million.",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_13084",
+      "ne_prob": 0.5611420273780823,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.17598694562911987,
+      "row_index": 413,
+      "support_margin": -0.2982710301876068,
+      "support_prob": 0.26287099719047546
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "Smriti Mandhana was born on July 18 , 1992 .",
+      "evidence": "Smriti Mandhana ( born July 18 , 1992 ) is an Indian cricketer who plays for the Indian women 's cricket team .",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_57600",
+      "ne_prob": 0.5650312304496765,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.1805373579263687,
+      "row_index": 763,
+      "support_margin": -0.31059983372688293,
+      "support_prob": 0.2544313967227936
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "A Telugu drama movie starring Sayyeshaa was made .",
+      "evidence": "After starring a Telugu film Akhil -LRB- 2015 -RRB- , she made her Bollywood debut in Ajay Devgn 's Shivaay -LRB- 2016 -RRB- .",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_57006",
+      "ne_prob": 0.5696932077407837,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.17813242971897125,
+      "row_index": 113,
+      "support_margin": -0.31751880049705505,
+      "support_prob": 0.25217440724372864
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "There were long lines at funeral homes in Wuhan on 4 April due to coronavirus .",
+      "evidence": "On 4 April , the Washington Post reported on long lines at funeral homes in Wuhan , where crematoria in the city were operating 19 hours a day .",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_26984",
+      "ne_prob": 0.5522739291191101,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.2019982784986496,
+      "row_index": 639,
+      "support_margin": -0.3065461963415146,
+      "support_prob": 0.24572773277759552
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "Between 5th January - 11th of January 2020 , no new coronavirus cases was reported in China .",
+      "evidence": "The same day , Public Health England issued its guidance.11 January 2020 : In China , more than 700 close contacts of the 41 confirmed cases , including more than 400 healthcare workers , had been monitored , with no new cases reported in China since 5 January 2020 .",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_32225",
+      "ne_prob": 0.48229947686195374,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.2758116126060486,
+      "row_index": 395,
+      "support_margin": -0.24041061103343964,
+      "support_prob": 0.2418888658285141
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "Kimi Räikkönen 's daughter is called Rianna .",
+      "evidence": "On 16 May 2017 , Räikkönen became a father for the second time with the birth of his daughter , Rianna .",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_12179",
+      "ne_prob": 0.5820663571357727,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.17765775322914124,
+      "row_index": 508,
+      "support_margin": -0.3417905420064926,
+      "support_prob": 0.2402758151292801
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "Chris Eagles is without a club .",
+      "evidence": "Oldham Athletic = 20:38 , 4 April 2018 ( UTC ) } } Christopher Mark Eagles ( born 19 November 1985 ) is an English footballer who plays as a winger ; he is without a club after leaving Ross County in April 2018.A technically skilled attacker , he has good awareness and distribution skills .",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_10472",
+      "ne_prob": 0.5801189541816711,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.17993612587451935,
+      "row_index": 929,
+      "support_margin": -0.34017403423786163,
+      "support_prob": 0.2399449199438095
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "Harold Macmillan was British .",
+      "evidence": "Maurice Harold Macmillan , 1st Earl of Stockton , -LRB- 10 February 1894 -- 29 December 1986 -RRB- was a British Conservative politician and statesman who served as the Prime Minister of the United Kingdom from 10 January 1957 to 19 October 1963 .",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_49234",
+      "ne_prob": 0.5822848677635193,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.17883598804473877,
+      "row_index": 775,
+      "support_margin": -0.34340567886829376,
+      "support_prob": 0.23887918889522552
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "Every Tuesday , TV Choice goes on sale .",
+      "evidence": "It features weekly TV broadcast programming listings , running from Saturday to Friday , and goes on sale every Tuesday .",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_60354",
+      "ne_prob": 0.5848369598388672,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.17679107189178467,
+      "row_index": 498,
+      "support_margin": -0.34646499156951904,
+      "support_prob": 0.23837196826934814
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "The state media declared that Xi Jinping had known crucial details about the outbreak .",
+      "evidence": "Despite assurances published by the state media that Xi Jinping had known `` crucial details '' about the outbreak through the releasing of a speech transcript government officials said was made on 7 January where Xi Jinping `` gave instructions for fighting the virus '' , critics have expressed doubt and believe that systemic censorship had completely `` blindsighted '' central authorities , pointing out that Xi Jinping `` would have every incentive to act quickly '' as a Central Committee member during the SARS outbreak if the central government had really known the outbreak 's severity .",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_37250",
+      "ne_prob": 0.5292980670928955,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.23259013891220093,
+      "row_index": 831,
+      "support_margin": -0.29118630290031433,
+      "support_prob": 0.23811176419258118
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "The song is from Shania Twain 's sixth album .",
+      "evidence": "This song serves as the lead single from her sixth album .",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_16559",
+      "ne_prob": 0.5835506319999695,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.17943976819515228,
+      "row_index": 996,
+      "support_margin": -0.34654103219509125,
+      "support_prob": 0.23700959980487823
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "George Cloney received the NAACP Image Award for Outstanding Supporting Actor in a Drama Series .",
+      "evidence": "The award was first given during the 1996 ceremony and since its conception , George Cloney and Joe Morton hold the record for the most wins with three each .",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_54288",
+      "ne_prob": 0.5880393385887146,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.17568492889404297,
+      "row_index": 910,
+      "support_margin": -0.3517635464668274,
+      "support_prob": 0.2362757921218872
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "Josh Stewart graduated with a business degree in marketing .",
+      "evidence": "Stewart first attended West Virginia Wesleyan College , then transferred after one year to West Virginia University , where he graduated with a business degree in marketing.",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_12053",
+      "ne_prob": 0.5906562209129333,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.17714712023735046,
+      "row_index": 470,
+      "support_margin": -0.35845960676670074,
+      "support_prob": 0.2321966141462326
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "Marco Polo was a dog .",
+      "evidence": "Polo was one of Armando Maradona 's dogs .",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_52812",
+      "ne_prob": 0.5893657803535461,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.17960980534553528,
+      "row_index": 897,
+      "support_margin": -0.3583413064479828,
+      "support_prob": 0.23102447390556335
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "Ed Wood is a motion picture .",
+      "evidence": "Ed Wood was originally in development at Columbia Pictures , but the studio put the film in `` turnaround `` over Burton 's decision to shoot in black-and-white .",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_47542",
+      "ne_prob": 0.5936499834060669,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.17949402332305908,
+      "row_index": 191,
+      "support_margin": -0.36679400503635406,
+      "support_prob": 0.22685597836971283
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "Chile is a city .",
+      "evidence": "Chile is today one of South America 's most stable and prosperous cities .",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_45484",
+      "ne_prob": 0.5902014374732971,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.1855374276638031,
+      "row_index": 703,
+      "support_margin": -0.36594028770923615,
+      "support_prob": 0.22426114976406097
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "Atlético Madrid 's players had virtually given up 10 minutes before the end of the 2014 UEFA Champions League Final .",
+      "evidence": "With only 10 minutes left , it seemed Atlético 's comeback was mission impossible , with its ' players virtually giving up .",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_17884",
+      "ne_prob": 0.46823441982269287,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.3094125986099243,
+      "row_index": 8,
+      "support_margin": -0.24588142335414886,
+      "support_prob": 0.222352996468544
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "Metacritic 's reviews indicate that `` To Pimp a Butterfly '' has received universal acclaim .",
+      "evidence": "At Metacritic , which assigns a normalized rating out of 100 to reviews from mainstream publications , the album received an average score of 96 , based on 44 reviews indicating `` universal acclaim '' .",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_42058",
+      "ne_prob": 0.6030908823013306,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.176716148853302,
+      "row_index": 475,
+      "support_margin": -0.38289792835712433,
+      "support_prob": 0.22019295394420624
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "Goa confirmed a total of fewer than 6 cases of coronavirus .",
+      "evidence": "The state has confirmed a total of 5 cases ( with 0 deaths ) , as of 31 March 2020.__TOC__",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_33266",
+      "ne_prob": 0.5542195439338684,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.22711515426635742,
+      "row_index": 462,
+      "support_margin": -0.3355542719364166,
+      "support_prob": 0.21866527199745178
+    },
+    {
+      "baseline_correct": false,
+      "baseline_pred": "NOT_ENTITLED",
+      "claim": "Britt Robertson is a musician .",
+      "evidence": "A full-time singer , several of her songs have been streamed more than 2 million times on Spotify and she has been nominated for more than five Grammy Awards .",
+      "gold": "SUPPORT",
+      "id": "tals_vitaminc_validation_sample1000_validation_44716",
+      "ne_prob": 0.604924738407135,
+      "policy_correct": true,
+      "policy_pred": "SUPPORT",
+      "refute_prob": 0.17836172878742218,
+      "row_index": 916,
+      "support_margin": -0.3882111459970474,
+      "support_prob": 0.21671359241008759
+    }
+  ],
+  "source_files": {
+    "stage102_report": "results/stage102_threshold_only_diagnostic_report.json",
+    "stage102_sweep": "results/stage102_threshold_policy_sweep.csv",
+    "stage102_changed_examples": "results/stage102_best_policy_changed_examples.jsonl",
+    "stage101_report": "results/stage101_logit_export_capability_audit.json",
+    "stage100_report": "results/stage100_stage99c_external_decision_report.json"
+  }
+}
