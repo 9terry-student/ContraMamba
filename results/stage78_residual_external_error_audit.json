@@ -1,0 +1,270 @@
+{
+  "summary": {
+    "stage": "Stage78",
+    "decision": "STAGE78_RESIDUAL_EXTERNAL_ERROR_AUDIT_READY",
+    "source_stage77_predictions": "results/stage77_stage57_stage66_stage75_bridge_vitaminc_external_diag_run_20260703_004242/external_vitaminc/external_probe_stage77_vitaminc_predictions.json",
+    "source_stage77_train_report": "results/stage77_stage57_stage66_stage75_bridge_vitaminc_external_diag_run_20260703_004242/stage77_stage57_stage66_stage75_train_report.json",
+    "source_stage77_summary": "results/stage77_stage75f_vitaminc_external_diagnostic_summary.json",
+    "row_count": 1000,
+    "accuracy": 0.357,
+    "correct_total": 357,
+    "error_total": 643,
+    "gold_counts": {
+      "NOT_ENTITLED": 145,
+      "REFUTE": 355,
+      "SUPPORT": 500
+    },
+    "prediction_counts": {
+      "REFUTE": 182,
+      "NOT_ENTITLED": 383,
+      "SUPPORT": 435
+    },
+    "false_ne_total": 324,
+    "polarity_error_total": 233,
+    "false_entitlement_total": 86,
+    "false_support_total": 196,
+    "false_refute_total": 123,
+    "dominant_error_type": "false_NE_on_SUPPORT",
+    "training_executed": false,
+    "external_eval_executed": false,
+    "recommended_next_stage": "Stage79 compare Stage74 vs Stage78 and decide whether to keep Stage75 bridge"
+  },
+  "metadata_checks": [
+    {
+      "check": "prediction_path_exists",
+      "pass": true
+    },
+    {
+      "check": "train_report_exists",
+      "pass": true
+    },
+    {
+      "check": "stage77_summary_exists",
+      "pass": true
+    },
+    {
+      "check": "stage76_exists",
+      "pass": true
+    },
+    {
+      "check": "row_count_1000",
+      "pass": true
+    },
+    {
+      "check": "gold_counts_expected",
+      "pass": true
+    },
+    {
+      "check": "pred_counts_match_stage77_summary",
+      "pass": true
+    },
+    {
+      "check": "accuracy_matches_stage77_summary",
+      "pass": true
+    }
+  ],
+  "confusion": [
+    {
+      "gold": "NOT_ENTITLED",
+      "pred": "NOT_ENTITLED",
+      "count": 59
+    },
+    {
+      "gold": "NOT_ENTITLED",
+      "pred": "REFUTE",
+      "count": 34
+    },
+    {
+      "gold": "NOT_ENTITLED",
+      "pred": "SUPPORT",
+      "count": 52
+    },
+    {
+      "gold": "REFUTE",
+      "pred": "NOT_ENTITLED",
+      "count": 152
+    },
+    {
+      "gold": "REFUTE",
+      "pred": "REFUTE",
+      "count": 59
+    },
+    {
+      "gold": "REFUTE",
+      "pred": "SUPPORT",
+      "count": 144
+    },
+    {
+      "gold": "SUPPORT",
+      "pred": "NOT_ENTITLED",
+      "count": 172
+    },
+    {
+      "gold": "SUPPORT",
+      "pred": "REFUTE",
+      "count": 89
+    },
+    {
+      "gold": "SUPPORT",
+      "pred": "SUPPORT",
+      "count": 239
+    }
+  ],
+  "per_gold_prediction": [
+    {
+      "gold": "NOT_ENTITLED",
+      "total": 145,
+      "pred_NOT_ENTITLED": 59,
+      "rate_NOT_ENTITLED": 0.4068965517241379,
+      "pred_REFUTE": 34,
+      "rate_REFUTE": 0.23448275862068965,
+      "pred_SUPPORT": 52,
+      "rate_SUPPORT": 0.3586206896551724
+    },
+    {
+      "gold": "REFUTE",
+      "total": 355,
+      "pred_NOT_ENTITLED": 152,
+      "rate_NOT_ENTITLED": 0.428169014084507,
+      "pred_REFUTE": 59,
+      "rate_REFUTE": 0.16619718309859155,
+      "pred_SUPPORT": 144,
+      "rate_SUPPORT": 0.4056338028169014
+    },
+    {
+      "gold": "SUPPORT",
+      "total": 500,
+      "pred_NOT_ENTITLED": 172,
+      "rate_NOT_ENTITLED": 0.344,
+      "pred_REFUTE": 89,
+      "rate_REFUTE": 0.178,
+      "pred_SUPPORT": 239,
+      "rate_SUPPORT": 0.478
+    }
+  ],
+  "audit_buckets": [
+    {
+      "bucket": "correct",
+      "count": 357,
+      "rate": 0.357
+    },
+    {
+      "bucket": "false_NE_total",
+      "count": 324,
+      "rate": 0.324
+    },
+    {
+      "bucket": "polarity_error_total",
+      "count": 233,
+      "rate": 0.233
+    },
+    {
+      "bucket": "false_entitlement_total",
+      "count": 86,
+      "rate": 0.086
+    },
+    {
+      "bucket": "false_SUPPORT_total",
+      "count": 196,
+      "rate": 0.196
+    },
+    {
+      "bucket": "false_REFUTE_total",
+      "count": 123,
+      "rate": 0.123
+    }
+  ],
+  "error_type_counts": [
+    {
+      "error_type": "correct",
+      "count": 357,
+      "rate": 0.357
+    },
+    {
+      "error_type": "false_NE_on_SUPPORT",
+      "count": 172,
+      "rate": 0.172
+    },
+    {
+      "error_type": "false_NE_on_REFUTE",
+      "count": 152,
+      "rate": 0.152
+    },
+    {
+      "error_type": "wrong_polarity_REFUTE_to_SUPPORT",
+      "count": 144,
+      "rate": 0.144
+    },
+    {
+      "error_type": "wrong_polarity_SUPPORT_to_REFUTE",
+      "count": 89,
+      "rate": 0.089
+    },
+    {
+      "error_type": "false_SUPPORT_on_NE",
+      "count": 52,
+      "rate": 0.052
+    },
+    {
+      "error_type": "false_REFUTE_on_NE",
+      "count": 34,
+      "rate": 0.034
+    }
+  ],
+  "stage74_comparison": [
+    {
+      "metric": "row_count",
+      "stage74": 1000.0,
+      "stage78": 1000.0,
+      "delta_stage78_minus_stage74": 0.0
+    },
+    {
+      "metric": "accuracy",
+      "stage74": 0.353,
+      "stage78": 0.357,
+      "delta_stage78_minus_stage74": 0.0040000000000000036
+    },
+    {
+      "metric": "correct_total",
+      "stage74": 353.0,
+      "stage78": 357.0,
+      "delta_stage78_minus_stage74": 4.0
+    },
+    {
+      "metric": "error_total",
+      "stage74": 647.0,
+      "stage78": 643.0,
+      "delta_stage78_minus_stage74": -4.0
+    },
+    {
+      "metric": "false_ne_total",
+      "stage74": 323.0,
+      "stage78": 324.0,
+      "delta_stage78_minus_stage74": 1.0
+    },
+    {
+      "metric": "polarity_error_total",
+      "stage74": 244.0,
+      "stage78": 233.0,
+      "delta_stage78_minus_stage74": -11.0
+    },
+    {
+      "metric": "false_entitlement_total",
+      "stage74": 80.0,
+      "stage78": 86.0,
+      "delta_stage78_minus_stage74": 6.0
+    },
+    {
+      "metric": "false_support_total",
+      "stage74": 177.0,
+      "stage78": 196.0,
+      "delta_stage78_minus_stage74": 19.0
+    },
+    {
+      "metric": "false_refute_total",
+      "stage74": 147.0,
+      "stage78": 123.0,
+      "delta_stage78_minus_stage74": -24.0
+    }
+  ]
+}
