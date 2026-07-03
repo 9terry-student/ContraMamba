@@ -1,0 +1,269 @@
+{
+  "summary": {
+    "stage": "Stage75E",
+    "decision": "STAGE75E_RUNNER_STATIC_CHECK_READY",
+    "purpose": "Static runner check for Stage75 bridge train-only append support.",
+    "runner": "scripts/train_controlled_v6b_minimal.py",
+    "main_clean_row_count": 3600,
+    "clean_train_estimated_row_count": 2880,
+    "clean_dev_estimated_row_count": 720,
+    "stage57_row_count": 520,
+    "stage66_row_count": 720,
+    "stage75_row_count": 1020,
+    "combined_bridge_row_count": 2260,
+    "final_train_if_appended": 5140,
+    "stage75_label_counts": {
+      "SUPPORT": 480,
+      "REFUTE": 460,
+      "NOT_ENTITLED": 80
+    },
+    "stage75_family_counts": {
+      "support_entitlement_direct_recovery_v2": 240,
+      "refute_entitlement_direct_recovery_v2": 220,
+      "numeric_temporal_polarity_comparison_v2": 260,
+      "lexical_type_polarity_disambiguation_v2": 220,
+      "strict_ne_external_style_safety_v2": 80
+    },
+    "missing_help_flags": [],
+    "missing_source_tokens": [],
+    "training_executed": false,
+    "external_eval_executed": false,
+    "recommended_next_stage": "Stage75F Stage57+66+75 bridge-enabled frozen recovery full run"
+  },
+  "checks": [
+    {
+      "check": "help_has_stage75_jsonl_flag",
+      "pass": true
+    },
+    {
+      "check": "help_has_stage75_mode_flag",
+      "pass": true
+    },
+    {
+      "check": "help_mentions_append_train_only",
+      "pass": true
+    },
+    {
+      "check": "help_mentions_none_mode",
+      "pass": true
+    },
+    {
+      "check": "source_has_all_stage75_tokens",
+      "pass": true
+    },
+    {
+      "check": "source_has_no_required_pair_id_for_stage75",
+      "pass": true
+    },
+    {
+      "check": "main_clean_3600",
+      "pass": true
+    },
+    {
+      "check": "clean_train_estimated_2880",
+      "pass": true
+    },
+    {
+      "check": "clean_dev_estimated_720",
+      "pass": true
+    },
+    {
+      "check": "stage57_520",
+      "pass": true
+    },
+    {
+      "check": "stage66_720",
+      "pass": true
+    },
+    {
+      "check": "stage75_1020",
+      "pass": true
+    },
+    {
+      "check": "combined_bridge_2260",
+      "pass": true
+    },
+    {
+      "check": "final_train_if_appended_5140",
+      "pass": true
+    },
+    {
+      "check": "stage75_support_480",
+      "pass": true
+    },
+    {
+      "check": "stage75_refute_460",
+      "pass": true
+    },
+    {
+      "check": "stage75_ne_80",
+      "pass": true
+    },
+    {
+      "check": "stage75_no_pair_id",
+      "pass": true
+    },
+    {
+      "check": "stage75_synthetic_only",
+      "pass": true
+    },
+    {
+      "check": "stage75_external_text_false",
+      "pass": true
+    },
+    {
+      "check": "stage75_external_label_false",
+      "pass": true
+    },
+    {
+      "check": "stage75b_report_ready",
+      "pass": true
+    },
+    {
+      "check": "stage75b_static_ready",
+      "pass": true
+    },
+    {
+      "check": "stage75c_plan_ready",
+      "pass": true
+    }
+  ],
+  "help_flags": [
+    {
+      "flag": "--stage75-bridge-train-jsonl",
+      "present_in_help": true
+    },
+    {
+      "flag": "--stage75-bridge-train-mode",
+      "present_in_help": true
+    }
+  ],
+  "source_tokens": [
+    {
+      "token": "stage75_bridge_train_jsonl",
+      "present_in_source": true
+    },
+    {
+      "token": "stage75_bridge_train_mode",
+      "present_in_source": true
+    },
+    {
+      "token": "stage75_bridge_enabled",
+      "present_in_source": true
+    },
+    {
+      "token": "stage75_bridge_row_count",
+      "present_in_source": true
+    },
+    {
+      "token": "stage75_bridge_label_counts",
+      "present_in_source": true
+    },
+    {
+      "token": "stage75_bridge_family_counts",
+      "present_in_source": true
+    },
+    {
+      "token": "stage75_bridge_train_only",
+      "present_in_source": true
+    },
+    {
+      "token": "stage75_bridge_used_for_dev",
+      "present_in_source": true
+    },
+    {
+      "token": "stage75_bridge_used_for_checkpoint_selection",
+      "present_in_source": true
+    },
+    {
+      "token": "stage75_excluded_from_intervention_pairwise_loss",
+      "present_in_source": true
+    },
+    {
+      "token": "intervention_pairwise_loss_stage75_row_count_excluded",
+      "present_in_source": true
+    },
+    {
+      "token": "combined_bridge_row_count",
+      "present_in_source": true
+    },
+    {
+      "token": "intervention_pairwise_loss_bridge_row_count_excluded",
+      "present_in_source": true
+    },
+    {
+      "token": "clean_main_train_only",
+      "present_in_source": true
+    }
+  ],
+  "row_counts": [
+    {
+      "scope": "main_clean",
+      "row_count": 3600
+    },
+    {
+      "scope": "clean_train_estimated",
+      "row_count": 2880
+    },
+    {
+      "scope": "clean_dev_estimated",
+      "row_count": 720
+    },
+    {
+      "scope": "stage57_bridge",
+      "row_count": 520
+    },
+    {
+      "scope": "stage66_bridge",
+      "row_count": 720
+    },
+    {
+      "scope": "stage75_bridge",
+      "row_count": 1020
+    },
+    {
+      "scope": "combined_bridge",
+      "row_count": 2260
+    },
+    {
+      "scope": "final_train_if_appended",
+      "row_count": 5140
+    }
+  ],
+  "stage75_label_counts": [
+    {
+      "label": "SUPPORT",
+      "stage75_count": 480
+    },
+    {
+      "label": "REFUTE",
+      "stage75_count": 460
+    },
+    {
+      "label": "NOT_ENTITLED",
+      "stage75_count": 80
+    }
+  ],
+  "stage75_family_counts": [
+    {
+      "family": "lexical_type_polarity_disambiguation_v2",
+      "count": 220
+    },
+    {
+      "family": "numeric_temporal_polarity_comparison_v2",
+      "count": 260
+    },
+    {
+      "family": "refute_entitlement_direct_recovery_v2",
+      "count": 220
+    },
+    {
+      "family": "strict_ne_external_style_safety_v2",
+      "count": 80
+    },
+    {
+      "family": "support_entitlement_direct_recovery_v2",
+      "count": 240
+    }
+  ]
+}
