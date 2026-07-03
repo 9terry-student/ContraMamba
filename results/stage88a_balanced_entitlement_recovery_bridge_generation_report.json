@@ -1,0 +1,150 @@
+{
+  "summary": {
+    "stage": "Stage88A",
+    "decision": "STAGE88A_BALANCED_ENTITLEMENT_RECOVERY_BRIDGE_READY",
+    "out": "data/stage88a_balanced_entitlement_recovery_bridge.jsonl",
+    "n": 360,
+    "label_counts": {
+      "SUPPORT": 150,
+      "REFUTE": 150,
+      "NOT_ENTITLED": 60
+    },
+    "family_counts": {
+      "explicit_entity_role_entitlement": 120,
+      "explicit_numeric_entitlement": 80,
+      "explicit_temporal_entitlement": 60,
+      "lexical_paraphrase_entitlement": 40,
+      "matched_missing_predicate_guardrail": 30,
+      "matched_insufficient_numeric_temporal_guardrail": 30
+    },
+    "polarity_counts": {
+      "SUPPORT": 150,
+      "REFUTE": 150,
+      "NONE": 60
+    },
+    "duplicate_repair": {
+      "before_duplicate_groups": 26,
+      "before_duplicate_surplus_rows": 26,
+      "after_unique_claim_evidence_pairs": 360
+    },
+    "target": "Recover SUPPORT/REFUTE entitlement recall without adding NE-safety-only pressure.",
+    "non_leakage_policy": "Synthetic/internal rows only; VitaminC external examples are not used as train bridge rows.",
+    "intended_next_stage": "Stage88B clean-dev frozen recovery run with Stage57+Stage66+Stage88A, no Stage83A.",
+    "checks": {
+      "row_count_360": true,
+      "support_150": true,
+      "refute_150": true,
+      "not_entitled_60": true,
+      "ne_ratio_le_0p20": true,
+      "ids_unique": true,
+      "pair_ids_unique": true,
+      "claim_evidence_pairs_unique": true,
+      "no_exact_train_overlap": true,
+      "no_exact_external_overlap": true,
+      "encode_label_tensors_ok": true,
+      "encode_mamba_records_ok": true,
+      "vitaminc_external_not_used_as_training_source": true
+    }
+  },
+  "label_counts": [
+    {
+      "label": "NOT_ENTITLED",
+      "count": 60
+    },
+    {
+      "label": "REFUTE",
+      "count": 150
+    },
+    {
+      "label": "SUPPORT",
+      "count": 150
+    }
+  ],
+  "family_counts": [
+    {
+      "family": "explicit_entity_role_entitlement",
+      "count": 120
+    },
+    {
+      "family": "explicit_numeric_entitlement",
+      "count": 80
+    },
+    {
+      "family": "explicit_temporal_entitlement",
+      "count": 60
+    },
+    {
+      "family": "lexical_paraphrase_entitlement",
+      "count": 40
+    },
+    {
+      "family": "matched_insufficient_numeric_temporal_guardrail",
+      "count": 30
+    },
+    {
+      "family": "matched_missing_predicate_guardrail",
+      "count": 30
+    }
+  ],
+  "checks": [
+    {
+      "check": "row_count_360",
+      "pass": true
+    },
+    {
+      "check": "support_150",
+      "pass": true
+    },
+    {
+      "check": "refute_150",
+      "pass": true
+    },
+    {
+      "check": "not_entitled_60",
+      "pass": true
+    },
+    {
+      "check": "ne_ratio_le_0p20",
+      "pass": true
+    },
+    {
+      "check": "ids_unique",
+      "pass": true
+    },
+    {
+      "check": "pair_ids_unique",
+      "pass": true
+    },
+    {
+      "check": "claim_evidence_pairs_unique",
+      "pass": true
+    },
+    {
+      "check": "no_exact_train_overlap",
+      "pass": true
+    },
+    {
+      "check": "no_exact_external_overlap",
+      "pass": true
+    },
+    {
+      "check": "encode_label_tensors_ok",
+      "pass": true
+    },
+    {
+      "check": "encode_mamba_records_ok",
+      "pass": true
+    },
+    {
+      "check": "vitaminc_external_not_used_as_training_source",
+      "pass": true
+    }
+  ],
+  "source_files_checked_for_overlap": [
+    "data/controlled_v5_v3_without_time_swap.jsonl",
+    "data/stage57_nonleaking_external_bridge.jsonl",
+    "data/stage66_residual_bridge.jsonl",
+    "data/stage83a_ne_safety_only_bridge.jsonl",
+    "data/stage43b1_vitaminc_validation_sample1000.jsonl"
+  ]
+}
