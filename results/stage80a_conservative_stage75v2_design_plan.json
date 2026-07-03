@@ -1,0 +1,224 @@
+{
+  "summary": {
+    "stage": "Stage80A",
+    "decision": "STAGE80A_CONSERVATIVE_STAGE75V2_DESIGN_READY",
+    "purpose": "Design a conservative Stage75v2 revision after Stage79 rejected full Stage75 as default.",
+    "stage75_source_decision": "REVISE_NOT_DEFAULT",
+    "planned_bridge_name": "stage80a_conservative_stage75v2_bridge",
+    "planned_output_jsonl": "data/stage80a_conservative_stage75v2_bridge.jsonl",
+    "planned_total_rows": 500,
+    "planned_label_counts": {
+      "SUPPORT": 170,
+      "REFUTE": 170,
+      "NOT_ENTITLED": 160
+    },
+    "planned_family_count": 3,
+    "main_rule": "Keep balanced polarity repair; drop broad SUPPORT recovery; add NE safety backstop.",
+    "stage77_minus_stage73_accuracy": 0.0040000000000000036,
+    "stage77_minus_stage73_macro_f1": -0.008000000000000007,
+    "stage78_minus_stage74_false_ne_total": 1,
+    "stage78_minus_stage74_polarity_error_total": -11,
+    "stage78_minus_stage74_false_entitlement_total": 6,
+    "stage78_minus_stage74_false_support_total": 19,
+    "stage78_minus_stage74_false_refute_total": -24,
+    "training_executed": false,
+    "external_eval_executed": false,
+    "recommended_next_stage": "Stage80B implement conservative Stage75v2 bridge generator"
+  },
+  "planned_families": [
+    {
+      "family": "numeric_temporal_polarity_repair_v2_conservative",
+      "source_stage75_family": "numeric_temporal_polarity_comparison_v2",
+      "planned_rows": 180,
+      "label_mix": {
+        "SUPPORT": 90,
+        "REFUTE": 90,
+        "NOT_ENTITLED": 0
+      },
+      "purpose": "Retain Stage75's useful polarity repair signal while keeping support/refute balanced.",
+      "targets": [
+        "wrong_polarity_REFUTE_to_SUPPORT",
+        "wrong_polarity_SUPPORT_to_REFUTE"
+      ],
+      "include": true
+    },
+    {
+      "family": "lexical_type_polarity_repair_v2_conservative",
+      "source_stage75_family": "lexical_type_polarity_disambiguation_v2",
+      "planned_rows": 160,
+      "label_mix": {
+        "SUPPORT": 80,
+        "REFUTE": 80,
+        "NOT_ENTITLED": 0
+      },
+      "purpose": "Retain type/predicate polarity disambiguation but reduce volume from Stage75.",
+      "targets": [
+        "wrong_polarity_REFUTE_to_SUPPORT",
+        "wrong_polarity_SUPPORT_to_REFUTE"
+      ],
+      "include": true
+    },
+    {
+      "family": "strict_ne_false_support_safety_v2",
+      "source_stage75_family": "strict_ne_external_style_safety_v2",
+      "planned_rows": 160,
+      "label_mix": {
+        "SUPPORT": 0,
+        "REFUTE": 0,
+        "NOT_ENTITLED": 160
+      },
+      "purpose": "Counter the observed false SUPPORT and false entitlement increase after Stage75.",
+      "targets": [
+        "false_SUPPORT_on_NE",
+        "false_entitlement_total"
+      ],
+      "include": true
+    },
+    {
+      "family": "support_entitlement_direct_recovery_v2",
+      "source_stage75_family": "support_entitlement_direct_recovery_v2",
+      "planned_rows": 0,
+      "label_mix": {
+        "SUPPORT": 0,
+        "REFUTE": 0,
+        "NOT_ENTITLED": 0
+      },
+      "purpose": "Dropped because broad SUPPORT recovery likely contributed to false SUPPORT increase.",
+      "targets": [
+        "false_NE_on_SUPPORT"
+      ],
+      "include": false
+    },
+    {
+      "family": "refute_entitlement_direct_recovery_v2",
+      "source_stage75_family": "refute_entitlement_direct_recovery_v2",
+      "planned_rows": 0,
+      "label_mix": {
+        "SUPPORT": 0,
+        "REFUTE": 0,
+        "NOT_ENTITLED": 0
+      },
+      "purpose": "Dropped from v2 main bridge; false REFUTE already improved, but direct recovery may destabilize entitlement.",
+      "targets": [
+        "false_NE_on_REFUTE"
+      ],
+      "include": false
+    }
+  ],
+  "ablation_plan": [
+    {
+      "ablation": "A0_primary",
+      "description": "Stage57+Stage66 only; current primary equals Stage71_retry2.",
+      "stage75v2_rows": 0,
+      "expected_use": "baseline/reference"
+    },
+    {
+      "ablation": "A1_conservative_polarity_only",
+      "description": "Use only the two balanced polarity repair families.",
+      "stage75v2_rows": 340,
+      "expected_use": "test whether polarity gains survive without SUPPORT over-recovery."
+    },
+    {
+      "ablation": "A2_conservative_polarity_plus_ne_safety",
+      "description": "Use full Stage80A v2 plan: polarity repair plus NE safety.",
+      "stage75v2_rows": 500,
+      "expected_use": "main candidate if A1 still produces false SUPPORT."
+    },
+    {
+      "ablation": "A3_ne_safety_only",
+      "description": "Use only strict_ne_false_support_safety_v2.",
+      "stage75v2_rows": 160,
+      "expected_use": "diagnostic: isolate effect on false SUPPORT / false entitlement."
+    }
+  ],
+  "rationale": [
+    {
+      "finding": "Clean-dev preservation passed.",
+      "evidence": "Stage76: Stage75F macro-F1 drop versus Stage71 was within tolerance.",
+      "design_response": "No need to reject all Stage75-derived ideas."
+    },
+    {
+      "finding": "External macro-F1 dropped.",
+      "evidence": "Stage77 - Stage73 macro-F1 = -0.008.",
+      "design_response": "Do not keep Stage75 full bridge as default."
+    },
+    {
+      "finding": "Polarity error improved.",
+      "evidence": "Stage78 - Stage74 polarity_error_total = -11.",
+      "design_response": "Preserve balanced polarity repair families."
+    },
+    {
+      "finding": "False REFUTE improved.",
+      "evidence": "Stage78 - Stage74 false_refute_total = -24.",
+      "design_response": "Keep polarity repair, but do not over-train direct recovery."
+    },
+    {
+      "finding": "False SUPPORT worsened.",
+      "evidence": "Stage78 - Stage74 false_support_total = +19.",
+      "design_response": "Drop broad SUPPORT recovery and add explicit NE safety backstop."
+    },
+    {
+      "finding": "False NE did not improve.",
+      "evidence": "Stage78 - Stage74 false_ne_total = +1.",
+      "design_response": "Do not spend v2 capacity on broad entitlement recovery."
+    }
+  ],
+  "checks": [
+    {
+      "check": "stage79_ready",
+      "pass": true
+    },
+    {
+      "check": "stage75_decision_revise_not_default",
+      "pass": true
+    },
+    {
+      "check": "clean_dev_preserved",
+      "pass": true
+    },
+    {
+      "check": "external_macro_dropped_vs_stage73",
+      "pass": true
+    },
+    {
+      "check": "external_acc_slightly_improved_vs_stage73",
+      "pass": true
+    },
+    {
+      "check": "polarity_error_reduced",
+      "pass": true
+    },
+    {
+      "check": "false_refute_reduced",
+      "pass": true
+    },
+    {
+      "check": "false_support_increased",
+      "pass": true
+    },
+    {
+      "check": "false_entitlement_increased",
+      "pass": true
+    },
+    {
+      "check": "planned_rows_500",
+      "pass": true
+    },
+    {
+      "check": "planned_rows_less_than_stage75_1020",
+      "pass": true
+    },
+    {
+      "check": "support_rows_not_dominant",
+      "pass": true
+    },
+    {
+      "check": "ne_safety_rows_present",
+      "pass": true
+    },
+    {
+      "check": "dropped_broad_support_recovery",
+      "pass": true
+    }
+  ]
+}
