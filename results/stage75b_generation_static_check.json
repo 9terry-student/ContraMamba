@@ -1,0 +1,266 @@
+{
+  "summary": {
+    "stage": "Stage75B_static_check",
+    "decision": "STAGE75B_GENERATION_STATIC_CHECK_READY",
+    "jsonl": "data/stage75_targeted_residual_bridge.jsonl",
+    "report_json": "results/stage75b_targeted_residual_bridge_generation_report.json",
+    "report_md": "results/stage75b_targeted_residual_bridge_generation_report.md",
+    "row_count": 1020,
+    "label_counts": {
+      "SUPPORT": 480,
+      "REFUTE": 460,
+      "NOT_ENTITLED": 80
+    },
+    "family_counts": {
+      "support_entitlement_direct_recovery_v2": 240,
+      "refute_entitlement_direct_recovery_v2": 220,
+      "numeric_temporal_polarity_comparison_v2": 260,
+      "lexical_type_polarity_disambiguation_v2": 220,
+      "strict_ne_external_style_safety_v2": 80
+    },
+    "duplicate_id_count": 0,
+    "duplicate_claim_evidence_count": 0,
+    "schema_error_count": 0,
+    "report_decision": "STAGE75B_TARGETED_RESIDUAL_BRIDGE_GENERATION_READY",
+    "training_executed": false,
+    "external_eval_executed": false,
+    "recommended_next_stage": "Stage75C runner integration plan for Stage75 bridge train-only append"
+  },
+  "checks": [
+    {
+      "check": "row_count_1020",
+      "pass": true
+    },
+    {
+      "check": "label_support_480",
+      "pass": true
+    },
+    {
+      "check": "label_refute_460",
+      "pass": true
+    },
+    {
+      "check": "label_ne_80",
+      "pass": true
+    },
+    {
+      "check": "family_support_recovery_240",
+      "pass": true
+    },
+    {
+      "check": "family_refute_recovery_220",
+      "pass": true
+    },
+    {
+      "check": "family_numeric_temporal_260",
+      "pass": true
+    },
+    {
+      "check": "family_lexical_type_220",
+      "pass": true
+    },
+    {
+      "check": "family_strict_ne_80",
+      "pass": true
+    },
+    {
+      "check": "no_pair_id_field",
+      "pass": true
+    },
+    {
+      "check": "all_required_fields_present",
+      "pass": true
+    },
+    {
+      "check": "schema_errors_zero",
+      "pass": true
+    },
+    {
+      "check": "synthetic_only_all_true",
+      "pass": true
+    },
+    {
+      "check": "external_text_used_all_false",
+      "pass": true
+    },
+    {
+      "check": "external_label_used_all_false",
+      "pass": true
+    },
+    {
+      "check": "duplicate_id_zero",
+      "pass": true
+    },
+    {
+      "check": "duplicate_claim_evidence_zero",
+      "pass": true
+    },
+    {
+      "check": "report_decision_ready",
+      "pass": true
+    },
+    {
+      "check": "report_row_count_1020",
+      "pass": true
+    },
+    {
+      "check": "report_training_false",
+      "pass": true
+    },
+    {
+      "check": "report_external_eval_false",
+      "pass": true
+    }
+  ],
+  "label_counts": [
+    {
+      "label": "SUPPORT",
+      "count": 480
+    },
+    {
+      "label": "REFUTE",
+      "count": 460
+    },
+    {
+      "label": "NOT_ENTITLED",
+      "count": 80
+    }
+  ],
+  "family_counts": [
+    {
+      "family": "support_entitlement_direct_recovery_v2",
+      "count": 240
+    },
+    {
+      "family": "refute_entitlement_direct_recovery_v2",
+      "count": 220
+    },
+    {
+      "family": "numeric_temporal_polarity_comparison_v2",
+      "count": 260
+    },
+    {
+      "family": "lexical_type_polarity_disambiguation_v2",
+      "count": 220
+    },
+    {
+      "family": "strict_ne_external_style_safety_v2",
+      "count": 80
+    }
+  ],
+  "family_label_counts": [
+    {
+      "family": "lexical_type_polarity_disambiguation_v2",
+      "label": "SUPPORT",
+      "count": 110
+    },
+    {
+      "family": "lexical_type_polarity_disambiguation_v2",
+      "label": "REFUTE",
+      "count": 110
+    },
+    {
+      "family": "lexical_type_polarity_disambiguation_v2",
+      "label": "NOT_ENTITLED",
+      "count": 0
+    },
+    {
+      "family": "numeric_temporal_polarity_comparison_v2",
+      "label": "SUPPORT",
+      "count": 130
+    },
+    {
+      "family": "numeric_temporal_polarity_comparison_v2",
+      "label": "REFUTE",
+      "count": 130
+    },
+    {
+      "family": "numeric_temporal_polarity_comparison_v2",
+      "label": "NOT_ENTITLED",
+      "count": 0
+    },
+    {
+      "family": "refute_entitlement_direct_recovery_v2",
+      "label": "SUPPORT",
+      "count": 0
+    },
+    {
+      "family": "refute_entitlement_direct_recovery_v2",
+      "label": "REFUTE",
+      "count": 220
+    },
+    {
+      "family": "refute_entitlement_direct_recovery_v2",
+      "label": "NOT_ENTITLED",
+      "count": 0
+    },
+    {
+      "family": "strict_ne_external_style_safety_v2",
+      "label": "SUPPORT",
+      "count": 0
+    },
+    {
+      "family": "strict_ne_external_style_safety_v2",
+      "label": "REFUTE",
+      "count": 0
+    },
+    {
+      "family": "strict_ne_external_style_safety_v2",
+      "label": "NOT_ENTITLED",
+      "count": 80
+    },
+    {
+      "family": "support_entitlement_direct_recovery_v2",
+      "label": "SUPPORT",
+      "count": 240
+    },
+    {
+      "family": "support_entitlement_direct_recovery_v2",
+      "label": "REFUTE",
+      "count": 0
+    },
+    {
+      "family": "support_entitlement_direct_recovery_v2",
+      "label": "NOT_ENTITLED",
+      "count": 0
+    }
+  ],
+  "schema_errors_preview": [],
+  "examples_by_family": [
+    {
+      "id": "stage75b_ltpd2_same_surface_wrong_type_0001_support",
+      "family": "lexical_type_polarity_disambiguation_v2",
+      "label": "SUPPORT",
+      "claim": "Kestrel Foundation is a publishing house.",
+      "evidence": "As of 2018, Kestrel Foundation is officially registered as a publishing house."
+    },
+    {
+      "id": "stage75b_ntpc2_more_than_fewer_than_0001_support",
+      "family": "numeric_temporal_polarity_comparison_v2",
+      "label": "SUPPORT",
+      "claim": "Ledgerfield Foundation reported more than 18126 containers in harbor cargo throughput during 2004.",
+      "evidence": "Ledgerfield Foundation recorded 23308 containers in harbor cargo throughput during 2004."
+    },
+    {
+      "id": "stage75b_redr2_type_mismatch_refute_0001",
+      "family": "refute_entitlement_direct_recovery_v2",
+      "label": "REFUTE",
+      "claim": "Paper Tide is a historical drama.",
+      "evidence": "As of 1980, Paper Tide is in fact a novel, not a historical drama."
+    },
+    {
+      "id": "stage75b_snes2_partial_evidence_missing_decisive_field_0001",
+      "family": "strict_ne_external_style_safety_v2",
+      "label": "NOT_ENTITLED",
+      "claim": "Rosalind Faircloth won the Merrow Institute Medal in 2018.",
+      "evidence": "Rosalind Faircloth was nominated for the Merrow Institute Medal in 2018."
+    },
+    {
+      "id": "stage75b_sedr2_entity_attribute_support_0001",
+      "family": "support_entitlement_direct_recovery_v2",
+      "label": "SUPPORT",
+      "claim": "Ledgerfield Assembly is headquartered in Ridgemarsh.",
+      "evidence": "Ledgerfield Assembly's headquarters has been located in Ridgemarsh since it was founded in 1983."
+    }
+  ]
+}

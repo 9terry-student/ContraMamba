@@ -1,0 +1,269 @@
+{
+  "stage": "Stage75B",
+  "decision": "STAGE75B_TARGETED_RESIDUAL_BRIDGE_GENERATION_READY",
+  "source_stage75a": "/kaggle/working/ContraMamba/results/stage75a_targeted_bridge_design_plan.json",
+  "source_stage74_aggregate_only": true,
+  "output_jsonl": "/kaggle/working/ContraMamba/data/stage75_targeted_residual_bridge.jsonl",
+  "generation_config": {
+    "seed": 75075002
+  },
+  "row_count": 1020,
+  "expected_row_count": 1020,
+  "label_counts": {
+    "SUPPORT": 480,
+    "REFUTE": 460,
+    "NOT_ENTITLED": 80
+  },
+  "expected_label_counts": {
+    "SUPPORT": 480,
+    "REFUTE": 460,
+    "NOT_ENTITLED": 80
+  },
+  "family_counts": {
+    "support_entitlement_direct_recovery_v2": 240,
+    "refute_entitlement_direct_recovery_v2": 220,
+    "numeric_temporal_polarity_comparison_v2": 260,
+    "lexical_type_polarity_disambiguation_v2": 220,
+    "strict_ne_external_style_safety_v2": 80
+  },
+  "family_label_counts": {
+    "support_entitlement_direct_recovery_v2": {
+      "SUPPORT": 240
+    },
+    "refute_entitlement_direct_recovery_v2": {
+      "REFUTE": 220
+    },
+    "numeric_temporal_polarity_comparison_v2": {
+      "SUPPORT": 130,
+      "REFUTE": 130
+    },
+    "lexical_type_polarity_disambiguation_v2": {
+      "SUPPORT": 110,
+      "REFUTE": 110
+    },
+    "strict_ne_external_style_safety_v2": {
+      "NOT_ENTITLED": 80
+    }
+  },
+  "bridge_families": [
+    "support_entitlement_direct_recovery_v2",
+    "refute_entitlement_direct_recovery_v2",
+    "numeric_temporal_polarity_comparison_v2",
+    "lexical_type_polarity_disambiguation_v2",
+    "strict_ne_external_style_safety_v2"
+  ],
+  "required_field_checks": {
+    "passed": true,
+    "fields_checked": [
+      "id",
+      "claim",
+      "evidence",
+      "final_label",
+      "frame_compatible_label",
+      "predicate_covered_label",
+      "sufficiency_label",
+      "polarity_label",
+      "bridge_family",
+      "target_error_type",
+      "bridge_source",
+      "synthetic_only",
+      "external_text_used",
+      "external_label_used",
+      "leakage_note",
+      "stage"
+    ],
+    "missing_count": 0,
+    "missing_examples": []
+  },
+  "leakage_checks": {
+    "synthetic_only": true,
+    "no_vitaminc_text_or_labels_used": true,
+    "no_stage74_example_claim_evidence_text_used": true,
+    "stage74_used_as_aggregate_motivation_only": true,
+    "external_metrics_used_for_threshold_tuning": false,
+    "training_executed_by_this_script": false,
+    "external_eval_executed_by_this_script": false,
+    "forbidden_marker_scan": {
+      "passed": true,
+      "markers_checked": [
+        "vitaminc",
+        "vitamin-c",
+        "climate_fever",
+        "climate-fever",
+        "feverous",
+        "stage43",
+        "stage53",
+        "stage55",
+        "stage63",
+        "stage65",
+        "stage73",
+        "stage74",
+        "time_swap"
+      ],
+      "hit_count": 0,
+      "hit_examples": []
+    }
+  },
+  "no_pair_id_check": {
+    "passed": true,
+    "field_present_count": 0,
+    "examples": []
+  },
+  "synthetic_only_check": {
+    "passed": true,
+    "field": "synthetic_only",
+    "expected": true,
+    "bad_count": 0,
+    "bad_examples": []
+  },
+  "external_text_used_check": {
+    "passed": true,
+    "field": "external_text_used",
+    "expected": false,
+    "bad_count": 0,
+    "bad_examples": []
+  },
+  "external_label_used_check": {
+    "passed": true,
+    "field": "external_label_used",
+    "expected": false,
+    "bad_count": 0,
+    "bad_examples": []
+  },
+  "duplicate_id_count": 0,
+  "duplicate_claim_evidence_count": 0,
+  "checks": {
+    "row_count_check": {
+      "passed": true,
+      "row_count": 1020,
+      "expected": 1020
+    },
+    "required_fields_present": {
+      "passed": true,
+      "fields_checked": [
+        "id",
+        "claim",
+        "evidence",
+        "final_label",
+        "frame_compatible_label",
+        "predicate_covered_label",
+        "sufficiency_label",
+        "polarity_label",
+        "bridge_family",
+        "target_error_type",
+        "bridge_source",
+        "synthetic_only",
+        "external_text_used",
+        "external_label_used",
+        "leakage_note",
+        "stage"
+      ],
+      "missing_count": 0,
+      "missing_examples": []
+    },
+    "duplicate_id_check": {
+      "passed": true,
+      "duplicate_count": 0,
+      "duplicate_examples": []
+    },
+    "duplicate_claim_evidence_pair_check": {
+      "passed": true,
+      "duplicate_count": 0,
+      "duplicate_examples": []
+    },
+    "final_label_value_check": {
+      "passed": true,
+      "bad_count": 0,
+      "bad_examples": []
+    },
+    "polarity_label_value_check": {
+      "passed": true,
+      "bad_count": 0,
+      "bad_examples": []
+    },
+    "axis_consistency_check": {
+      "passed": true,
+      "bad_count": 0,
+      "bad_examples": []
+    },
+    "polarity_label_encoder_compatibility_check": {
+      "passed": true,
+      "bad_count": 0,
+      "bad_examples": [],
+      "encoder_mapping_used": {
+        "NONE": 0,
+        "REFUTE": 1,
+        "SUPPORT": 2
+      },
+      "encoder_mapping_source": "scripts.train_controlled_v5.POLARITY_LABEL_TO_ID",
+      "encoder_import_error": null,
+      "tensor_encode_check_ran": true,
+      "tensor_encode_check_passed": true,
+      "tensor_encode_check_error": null
+    },
+    "family_and_label_count_check": {
+      "passed": true,
+      "mismatches": []
+    },
+    "no_pair_id_check": {
+      "passed": true,
+      "field_present_count": 0,
+      "examples": []
+    },
+    "synthetic_only_check": {
+      "passed": true,
+      "field": "synthetic_only",
+      "expected": true,
+      "bad_count": 0,
+      "bad_examples": []
+    },
+    "external_text_used_check": {
+      "passed": true,
+      "field": "external_text_used",
+      "expected": false,
+      "bad_count": 0,
+      "bad_examples": []
+    },
+    "external_label_used_check": {
+      "passed": true,
+      "field": "external_label_used",
+      "expected": false,
+      "bad_count": 0,
+      "bad_examples": []
+    },
+    "forbidden_marker_scan": {
+      "passed": true,
+      "markers_checked": [
+        "vitaminc",
+        "vitamin-c",
+        "climate_fever",
+        "climate-fever",
+        "feverous",
+        "stage43",
+        "stage53",
+        "stage55",
+        "stage63",
+        "stage65",
+        "stage73",
+        "stage74",
+        "time_swap"
+      ],
+      "hit_count": 0,
+      "hit_examples": []
+    },
+    "design_plan_match_check": {
+      "design_file_found": true,
+      "passed": true,
+      "mismatches": []
+    }
+  },
+  "training_executed": false,
+  "external_eval_executed": false,
+  "notes": [
+    "This dataset is synthetic training/diagnostic data only. It is NOT an external evaluation result and must not be reported as VitaminC or any other external-benchmark metric.",
+    "Stage74 residual external error counts (false_NE_total=323, polarity_error_total=244, false_entitlement_total=80) were used only to set family quotas in the Stage75A design; no Stage74 residual example claim/evidence text, VitaminC text, or VitaminC labels were read or used to produce any row in this file.",
+    "No field named 'pair_id' is emitted. Optional grouping metadata for the two polarity-comparison families uses 'bridge_pair_id' instead, so this bridge cannot be accidentally swept into the intervention pairwise-loss grouping path that keys off 'pair_id'.",
+    "This script performs no training, no smoke run, no mini-run, no full run, no OOD or external evaluation, and does not modify scripts/train_controlled_v6b_minimal.py, existing Stage57/66 data, or any existing Stage73/74/75A report."
+  ],
+  "recommended_next_stage": "Stage75C static audit and runner integration plan"
+}
