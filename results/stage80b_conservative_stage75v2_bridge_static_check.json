@@ -1,0 +1,212 @@
+{
+  "summary": {
+    "stage": "Stage80B_static_check",
+    "decision": "STAGE80B_CONSERVATIVE_STAGE75V2_BRIDGE_STATIC_CHECK_READY",
+    "jsonl": "C:/Users/Home1/Desktop/ContraMamba/data/stage80a_conservative_stage75v2_bridge.jsonl",
+    "report_json": "C:/Users/Home1/Desktop/ContraMamba/results/stage80b_conservative_stage75v2_bridge_generation_report.json",
+    "report_md": "C:/Users/Home1/Desktop/ContraMamba/results/stage80b_conservative_stage75v2_bridge_generation_report.md",
+    "row_count": 500,
+    "label_counts": {
+      "SUPPORT": 170,
+      "REFUTE": 170,
+      "NOT_ENTITLED": 160
+    },
+    "family_counts": {
+      "numeric_temporal_polarity_repair_v2_conservative": 180,
+      "lexical_type_polarity_repair_v2_conservative": 160,
+      "strict_ne_false_support_safety_v2": 160
+    },
+    "duplicate_id_count": 0,
+    "duplicate_claim_evidence_count": 0,
+    "schema_error_count": 0,
+    "report_decision": "STAGE80B_CONSERVATIVE_STAGE75V2_BRIDGE_GENERATION_READY",
+    "training_executed": false,
+    "external_eval_executed": false,
+    "recommended_next_stage": "Stage80C runner integration plan for Stage80A conservative Stage75v2 bridge"
+  },
+  "checks": [
+    {
+      "check": "required_files_exist",
+      "pass": true
+    },
+    {
+      "check": "row_count_500",
+      "pass": true
+    },
+    {
+      "check": "label_support_170",
+      "pass": true
+    },
+    {
+      "check": "label_refute_170",
+      "pass": true
+    },
+    {
+      "check": "label_ne_160",
+      "pass": true
+    },
+    {
+      "check": "family_numeric_temporal_repair_180",
+      "pass": true
+    },
+    {
+      "check": "family_lexical_type_repair_160",
+      "pass": true
+    },
+    {
+      "check": "family_strict_ne_safety_160",
+      "pass": true
+    },
+    {
+      "check": "all_required_fields_present",
+      "pass": true
+    },
+    {
+      "check": "schema_errors_zero",
+      "pass": true
+    },
+    {
+      "check": "duplicate_id_zero",
+      "pass": true
+    },
+    {
+      "check": "duplicate_claim_evidence_zero",
+      "pass": true
+    },
+    {
+      "check": "synthetic_only_all_true",
+      "pass": true
+    },
+    {
+      "check": "external_text_used_all_false",
+      "pass": true
+    },
+    {
+      "check": "external_label_used_all_false",
+      "pass": true
+    },
+    {
+      "check": "no_pair_id_field",
+      "pass": true
+    },
+    {
+      "check": "no_forbidden_external_source_markers",
+      "pass": true
+    },
+    {
+      "check": "report_decision_ready",
+      "pass": true
+    },
+    {
+      "check": "report_row_count_500",
+      "pass": true
+    },
+    {
+      "check": "report_training_false",
+      "pass": true
+    },
+    {
+      "check": "report_external_eval_false",
+      "pass": true
+    }
+  ],
+  "label_counts": [
+    {
+      "label": "SUPPORT",
+      "count": 170
+    },
+    {
+      "label": "REFUTE",
+      "count": 170
+    },
+    {
+      "label": "NOT_ENTITLED",
+      "count": 160
+    }
+  ],
+  "family_counts": [
+    {
+      "family": "numeric_temporal_polarity_repair_v2_conservative",
+      "count": 180
+    },
+    {
+      "family": "lexical_type_polarity_repair_v2_conservative",
+      "count": 160
+    },
+    {
+      "family": "strict_ne_false_support_safety_v2",
+      "count": 160
+    }
+  ],
+  "family_label_counts": [
+    {
+      "family": "numeric_temporal_polarity_repair_v2_conservative",
+      "label": "SUPPORT",
+      "count": 90
+    },
+    {
+      "family": "numeric_temporal_polarity_repair_v2_conservative",
+      "label": "REFUTE",
+      "count": 90
+    },
+    {
+      "family": "numeric_temporal_polarity_repair_v2_conservative",
+      "label": "NOT_ENTITLED",
+      "count": 0
+    },
+    {
+      "family": "lexical_type_polarity_repair_v2_conservative",
+      "label": "SUPPORT",
+      "count": 80
+    },
+    {
+      "family": "lexical_type_polarity_repair_v2_conservative",
+      "label": "REFUTE",
+      "count": 80
+    },
+    {
+      "family": "lexical_type_polarity_repair_v2_conservative",
+      "label": "NOT_ENTITLED",
+      "count": 0
+    },
+    {
+      "family": "strict_ne_false_support_safety_v2",
+      "label": "SUPPORT",
+      "count": 0
+    },
+    {
+      "family": "strict_ne_false_support_safety_v2",
+      "label": "REFUTE",
+      "count": 0
+    },
+    {
+      "family": "strict_ne_false_support_safety_v2",
+      "label": "NOT_ENTITLED",
+      "count": 160
+    }
+  ],
+  "schema_errors_preview": [],
+  "examples_by_family": [
+    {
+      "id": "stage80b_ltpr2c_same_surface_wrong_type_0001_support",
+      "family": "lexical_type_polarity_repair_v2_conservative",
+      "label": "SUPPORT",
+      "claim": "Everwood Alliance is a trade syndicate.",
+      "evidence": "As of 2016, Everwood Alliance is officially registered as a trade syndicate."
+    },
+    {
+      "id": "stage80b_ntpr2c_more_than_fewer_than_0001_support",
+      "family": "numeric_temporal_polarity_repair_v2_conservative",
+      "label": "SUPPORT",
+      "claim": "Everwood Federation reported more than 10369 containers in port container throughput during 2015.",
+      "evidence": "Everwood Federation recorded 10617 containers in port container throughput during 2015."
+    },
+    {
+      "id": "stage80b_snfs2_partial_evidence_missing_decisive_field_0001",
+      "family": "strict_ne_false_support_safety_v2",
+      "label": "NOT_ENTITLED",
+      "claim": "Xara Oakhurst won the Amberline Registry Prize in 2017.",
+      "evidence": "Xara Oakhurst was nominated for the Amberline Registry Prize in 2017."
+    }
+  ]
+}

@@ -1,0 +1,293 @@
+{
+  "stage": "Stage80B",
+  "decision": "STAGE80B_CONSERVATIVE_STAGE75V2_BRIDGE_GENERATION_READY",
+  "design_source": "Stage80A",
+  "source_design_json": "C:/Users/Home1/Desktop/ContraMamba/results/stage80a_conservative_stage75v2_design_plan.json",
+  "output_jsonl": "C:/Users/Home1/Desktop/ContraMamba/data/stage80a_conservative_stage75v2_bridge.jsonl",
+  "generation_config": {
+    "seed": 80080002
+  },
+  "row_count": 500,
+  "expected_row_count": 500,
+  "label_counts": {
+    "SUPPORT": 170,
+    "REFUTE": 170,
+    "NOT_ENTITLED": 160
+  },
+  "expected_label_counts": {
+    "SUPPORT": 170,
+    "REFUTE": 170,
+    "NOT_ENTITLED": 160
+  },
+  "family_counts": {
+    "numeric_temporal_polarity_repair_v2_conservative": 180,
+    "lexical_type_polarity_repair_v2_conservative": 160,
+    "strict_ne_false_support_safety_v2": 160
+  },
+  "family_label_counts": {
+    "numeric_temporal_polarity_repair_v2_conservative": {
+      "SUPPORT": 90,
+      "REFUTE": 90
+    },
+    "lexical_type_polarity_repair_v2_conservative": {
+      "SUPPORT": 80,
+      "REFUTE": 80
+    },
+    "strict_ne_false_support_safety_v2": {
+      "NOT_ENTITLED": 160
+    }
+  },
+  "bridge_families": [
+    "numeric_temporal_polarity_repair_v2_conservative",
+    "lexical_type_polarity_repair_v2_conservative",
+    "strict_ne_false_support_safety_v2"
+  ],
+  "excluded_families": [
+    "support_entitlement_direct_recovery_v2",
+    "refute_entitlement_direct_recovery_v2"
+  ],
+  "required_field_checks": {
+    "passed": true,
+    "fields_checked": [
+      "id",
+      "claim",
+      "evidence",
+      "final_label",
+      "final_label_id",
+      "frame_compatible_label",
+      "predicate_covered_label",
+      "sufficiency_label",
+      "polarity_label",
+      "family",
+      "family_subtype",
+      "bridge_stage",
+      "source_stage",
+      "bridge_source",
+      "synthetic_only",
+      "external_text_used",
+      "external_label_used",
+      "leakage_note"
+    ],
+    "missing_count": 0,
+    "missing_examples": []
+  },
+  "leakage_checks": {
+    "synthetic_only": true,
+    "no_vitaminc_text_or_labels_used": true,
+    "no_prior_stage_example_claim_evidence_text_used": true,
+    "stage74_through_stage79_used_as_aggregate_motivation_only": true,
+    "external_metrics_used_for_threshold_tuning": false,
+    "training_executed_by_this_script": false,
+    "external_eval_executed_by_this_script": false,
+    "forbidden_marker_scan": {
+      "passed": true,
+      "markers_checked": [
+        "vitaminc",
+        "vitamin-c",
+        "climate_fever",
+        "climate-fever",
+        "feverous",
+        "stage43",
+        "stage53",
+        "stage55",
+        "stage57",
+        "stage63",
+        "stage65",
+        "stage66",
+        "stage73",
+        "stage74",
+        "stage75",
+        "stage76",
+        "stage77",
+        "stage78",
+        "stage79",
+        "time_swap"
+      ],
+      "hit_count": 0,
+      "hit_examples": []
+    }
+  },
+  "no_pair_id_check": {
+    "passed": true,
+    "field_present_count": 0,
+    "examples": []
+  },
+  "pair_id_required": false,
+  "synthetic_only_check": {
+    "passed": true,
+    "field": "synthetic_only",
+    "expected": true,
+    "bad_count": 0,
+    "bad_examples": []
+  },
+  "external_text_used_check": {
+    "passed": true,
+    "field": "external_text_used",
+    "expected": false,
+    "bad_count": 0,
+    "bad_examples": []
+  },
+  "external_label_used_check": {
+    "passed": true,
+    "field": "external_label_used",
+    "expected": false,
+    "bad_count": 0,
+    "bad_examples": []
+  },
+  "duplicate_id_count": 0,
+  "duplicate_claim_evidence_count": 0,
+  "checks": {
+    "row_count_check": {
+      "passed": true,
+      "row_count": 500,
+      "expected": 500
+    },
+    "required_fields_present": {
+      "passed": true,
+      "fields_checked": [
+        "id",
+        "claim",
+        "evidence",
+        "final_label",
+        "final_label_id",
+        "frame_compatible_label",
+        "predicate_covered_label",
+        "sufficiency_label",
+        "polarity_label",
+        "family",
+        "family_subtype",
+        "bridge_stage",
+        "source_stage",
+        "bridge_source",
+        "synthetic_only",
+        "external_text_used",
+        "external_label_used",
+        "leakage_note"
+      ],
+      "missing_count": 0,
+      "missing_examples": []
+    },
+    "duplicate_id_check": {
+      "passed": true,
+      "duplicate_count": 0,
+      "duplicate_examples": []
+    },
+    "duplicate_claim_evidence_pair_check": {
+      "passed": true,
+      "duplicate_count": 0,
+      "duplicate_examples": []
+    },
+    "final_label_value_check": {
+      "passed": true,
+      "bad_count": 0,
+      "bad_examples": []
+    },
+    "final_label_id_consistency_check": {
+      "passed": true,
+      "bad_count": 0,
+      "bad_examples": [],
+      "mapping": {
+        "REFUTE": 0,
+        "NOT_ENTITLED": 1,
+        "SUPPORT": 2
+      }
+    },
+    "polarity_label_value_check": {
+      "passed": true,
+      "bad_count": 0,
+      "bad_examples": []
+    },
+    "axis_consistency_check": {
+      "passed": true,
+      "bad_count": 0,
+      "bad_examples": []
+    },
+    "polarity_label_encoder_compatibility_check": {
+      "passed": true,
+      "bad_count": 0,
+      "bad_examples": [],
+      "encoder_mapping_used": {
+        "NONE": 0,
+        "REFUTE": 1,
+        "SUPPORT": 2
+      },
+      "encoder_mapping_source": "scripts.train_controlled_v5.POLARITY_LABEL_TO_ID",
+      "encoder_import_error": null,
+      "tensor_encode_check_ran": true,
+      "tensor_encode_check_passed": true,
+      "tensor_encode_check_error": null
+    },
+    "family_and_label_count_check": {
+      "passed": true,
+      "mismatches": []
+    },
+    "no_pair_id_check": {
+      "passed": true,
+      "field_present_count": 0,
+      "examples": []
+    },
+    "synthetic_only_check": {
+      "passed": true,
+      "field": "synthetic_only",
+      "expected": true,
+      "bad_count": 0,
+      "bad_examples": []
+    },
+    "external_text_used_check": {
+      "passed": true,
+      "field": "external_text_used",
+      "expected": false,
+      "bad_count": 0,
+      "bad_examples": []
+    },
+    "external_label_used_check": {
+      "passed": true,
+      "field": "external_label_used",
+      "expected": false,
+      "bad_count": 0,
+      "bad_examples": []
+    },
+    "forbidden_marker_scan": {
+      "passed": true,
+      "markers_checked": [
+        "vitaminc",
+        "vitamin-c",
+        "climate_fever",
+        "climate-fever",
+        "feverous",
+        "stage43",
+        "stage53",
+        "stage55",
+        "stage57",
+        "stage63",
+        "stage65",
+        "stage66",
+        "stage73",
+        "stage74",
+        "stage75",
+        "stage76",
+        "stage77",
+        "stage78",
+        "stage79",
+        "time_swap"
+      ],
+      "hit_count": 0,
+      "hit_examples": []
+    },
+    "design_plan_match_check": {
+      "design_file_found": true,
+      "passed": true,
+      "mismatches": []
+    }
+  },
+  "training_executed": false,
+  "external_eval_executed": false,
+  "notes": [
+    "This dataset is synthetic training/diagnostic data only. It is NOT an external evaluation result and must not be reported as VitaminC or any other external-benchmark metric.",
+    "Stage77/Stage78/Stage79 aggregate diagnostics (external macro-F1 drop, reduced polarity_error_total, reduced false_refute_total, increased false_support_total, flat false_ne_total) were used only to set the Stage80A family taxonomy and quotas; no prior-stage example claim/evidence text, VitaminC text, or VitaminC labels were read or used to produce any row in this file.",
+    "The two Stage75 'direct recovery' families (support_entitlement_direct_recovery_v2, refute_entitlement_direct_recovery_v2) are intentionally excluded from this bridge per the Stage80A design.",
+    "No field named 'pair_id' is emitted. Optional grouping metadata for the two polarity-repair families uses 'bridge_pair_id' instead, so this bridge cannot be accidentally swept into the intervention pairwise-loss grouping path that keys off 'pair_id'.",
+    "This script performs no training, no smoke run, no mini-run, no full run, no OOD or external evaluation, and does not modify scripts/train_controlled_v6b_minimal.py, or any existing Stage57 / Stage66 / Stage75 / Stage76 / Stage77 / Stage78 / Stage79 file."
+  ],
+  "recommended_next_stage": "Stage80C runner integration plan for Stage80A conservative Stage75v2 bridge"
+}
