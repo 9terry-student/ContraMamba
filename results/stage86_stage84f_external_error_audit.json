@@ -1,0 +1,172 @@
+{
+  "summary": {
+    "stage": "Stage86",
+    "decision": "STAGE86_EXTERNAL_ERROR_AUDIT_READY",
+    "source_predictions": "results/stage84f_stage83c_vitaminc_external_exact_ood_schema_run_20260703_033759/stage84f_stage83c_vitaminc_external_predictions.json",
+    "n": 1000,
+    "stage73_reference": {
+      "external_acc": 0.353,
+      "external_macro_f1_all3": 0.3262,
+      "prediction_counts": {
+        "NOT_ENTITLED": 388,
+        "REFUTE": 219,
+        "SUPPORT": 393
+      }
+    },
+    "stage84f_observed": {
+      "external_acc": 0.32600000500679016,
+      "external_macro_f1_all3": 0.3066716953259303,
+      "prediction_counts": {
+        "NOT_ENTITLED": 439,
+        "REFUTE": 202,
+        "SUPPORT": 359
+      },
+      "gold_counts": {
+        "NOT_ENTITLED": 145,
+        "REFUTE": 355,
+        "SUPPORT": 500
+      }
+    },
+    "error_counts": {
+      "false_NE_on_SUPPORT": 205,
+      "false_NE_on_REFUTE": 162,
+      "false_SUPPORT_on_NE": 42,
+      "false_REFUTE_on_NE": 31,
+      "false_SUPPORT_on_REFUTE": 128,
+      "false_REFUTE_on_SUPPORT": 106
+    },
+    "derived_error_counts": {
+      "false_NE_total": 367,
+      "false_entitlement_total": 73,
+      "polarity_error_total": 234,
+      "false_SUPPORT_total": 170,
+      "false_REFUTE_total": 137,
+      "true_SUPPORT_correct": 189,
+      "true_REFUTE_correct": 65,
+      "true_NE_correct": 72
+    },
+    "diagnosis_rules": [
+      "dominant_error=false_NE_entitlement_suppression",
+      "support_recall_suppression_ge_refute_recall_suppression",
+      "NE_prediction_count_increased_vs_stage73",
+      "SUPPORT_prediction_count_decreased_vs_stage73",
+      "external_regression_confirmed"
+    ],
+    "next_direction": "external_entitlement_recovery_without_NE_safety_expansion",
+    "primary_policy": "KEEP_STAGE71_PRIMARY",
+    "rejected_policy": "DO_NOT_PROMOTE_STAGE83C"
+  },
+  "confusion_matrix": [
+    {
+      "gold\\pred": "REFUTE",
+      "REFUTE": 65,
+      "NOT_ENTITLED": 162,
+      "SUPPORT": 128
+    },
+    {
+      "gold\\pred": "NOT_ENTITLED",
+      "REFUTE": 31,
+      "NOT_ENTITLED": 72,
+      "SUPPORT": 42
+    },
+    {
+      "gold\\pred": "SUPPORT",
+      "REFUTE": 106,
+      "NOT_ENTITLED": 205,
+      "SUPPORT": 189
+    }
+  ],
+  "per_label_metrics": [
+    {
+      "label": "REFUTE",
+      "support": 355,
+      "pred_count": 202,
+      "tp": 65,
+      "fp": 137,
+      "fn": 290,
+      "precision": 0.3217821782178218,
+      "recall": 0.18309859154929578,
+      "f1": 0.2333931777378815
+    },
+    {
+      "label": "NOT_ENTITLED",
+      "support": 145,
+      "pred_count": 439,
+      "tp": 72,
+      "fp": 367,
+      "fn": 73,
+      "precision": 0.16400911161731208,
+      "recall": 0.496551724137931,
+      "f1": 0.24657534246575344
+    },
+    {
+      "label": "SUPPORT",
+      "support": 500,
+      "pred_count": 359,
+      "tp": 189,
+      "fp": 170,
+      "fn": 311,
+      "precision": 0.5264623955431755,
+      "recall": 0.378,
+      "f1": 0.440046565774156
+    }
+  ],
+  "error_breakdown": [
+    {
+      "error_type": "false_NE_on_SUPPORT",
+      "count": 205
+    },
+    {
+      "error_type": "false_NE_on_REFUTE",
+      "count": 162
+    },
+    {
+      "error_type": "false_SUPPORT_on_NE",
+      "count": 42
+    },
+    {
+      "error_type": "false_REFUTE_on_NE",
+      "count": 31
+    },
+    {
+      "error_type": "false_SUPPORT_on_REFUTE",
+      "count": 128
+    },
+    {
+      "error_type": "false_REFUTE_on_SUPPORT",
+      "count": 106
+    },
+    {
+      "error_type": "false_NE_total",
+      "count": 367
+    },
+    {
+      "error_type": "false_entitlement_total",
+      "count": 73
+    },
+    {
+      "error_type": "polarity_error_total",
+      "count": 234
+    },
+    {
+      "error_type": "false_SUPPORT_total",
+      "count": 170
+    },
+    {
+      "error_type": "false_REFUTE_total",
+      "count": 137
+    },
+    {
+      "error_type": "true_SUPPORT_correct",
+      "count": 189
+    },
+    {
+      "error_type": "true_REFUTE_correct",
+      "count": 65
+    },
+    {
+      "error_type": "true_NE_correct",
+      "count": 72
+    }
+  ]
+}
