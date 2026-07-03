@@ -1,0 +1,223 @@
+{
+  "summary": {
+    "stage": "Stage80G",
+    "decision": "STAGE80G_STAGE80A_CLEAN_DEV_DECISION_REPORT_READY",
+    "stage80a_decision": "STOP_BEFORE_EXTERNAL_DIAGNOSTIC",
+    "decision_reason": "Stage80A integration is technically valid, but Stage80F clean-dev macro-F1 falls below Stage71 by more than the strict tolerance. Do not spend the next run on external diagnostic by default; keep Stage71_retry2 as primary.",
+    "stage71_acc": 0.9750000238418579,
+    "stage71_macro_f1": 0.9640472521828455,
+    "stage75f_acc": 0.9736111164093018,
+    "stage75f_macro_f1": 0.9622049929193565,
+    "stage80f_acc": 0.9708333611488342,
+    "stage80f_macro_f1": 0.958564119910363,
+    "stage80f_minus_stage71_acc": -0.004166662693023682,
+    "stage80f_minus_stage71_macro_f1": -0.005483132272482427,
+    "stage80f_minus_stage75f_acc": -0.0027777552604675293,
+    "stage80f_minus_stage75f_macro_f1": -0.003640873008993406,
+    "strict_macro_preservation_threshold": -0.005,
+    "stage80f_macro_preservation_vs_stage71_pass": false,
+    "stage80f_macro_preservation_margin_vs_stage71": -0.0004831322724824271,
+    "training_executed": false,
+    "external_eval_executed": false,
+    "recommended_next_stage": "Stage83 design smaller polarity-only or NE-safety-only ablation, or stop Stage80A branch"
+  },
+  "checks": [
+    {
+      "check": "stage71_exists",
+      "pass": true
+    },
+    {
+      "check": "stage75f_exists",
+      "pass": true
+    },
+    {
+      "check": "stage80f_exists",
+      "pass": true
+    },
+    {
+      "check": "stage80f_summary_exists",
+      "pass": true
+    },
+    {
+      "check": "stage80e_static_ready",
+      "pass": true
+    },
+    {
+      "check": "stage80f_execution_zero",
+      "pass": true
+    },
+    {
+      "check": "stage80f_stage80a_used_500",
+      "pass": true
+    },
+    {
+      "check": "stage80f_stage75_full_not_used",
+      "pass": true
+    },
+    {
+      "check": "decision_nonempty",
+      "pass": true
+    }
+  ],
+  "signals": [
+    {
+      "signal": "stage80e_static_ready",
+      "value": true
+    },
+    {
+      "signal": "stage80f_execution_returncode_zero",
+      "value": true
+    },
+    {
+      "signal": "stage80f_metadata_valid",
+      "value": true
+    },
+    {
+      "signal": "stage80f_decision_needs_review",
+      "value": true
+    },
+    {
+      "signal": "stage80f_acc_above_0p97",
+      "value": true
+    },
+    {
+      "signal": "stage80f_macro_above_0p95",
+      "value": true
+    },
+    {
+      "signal": "stage80f_macro_preservation_vs_stage71_pass",
+      "value": false
+    },
+    {
+      "signal": "stage80f_macro_preservation_vs_stage75f_pass",
+      "value": true
+    },
+    {
+      "signal": "stage80f_stage75_full_not_used",
+      "value": true
+    },
+    {
+      "signal": "stage80f_stage80a_used_500",
+      "value": true
+    }
+  ],
+  "run_comparison": [
+    {
+      "stage": "Stage71_retry2_primary",
+      "source_path": "results/stage71_retry2_stage57_stage66_bridge_enabled_frozen_recovery_run_20260702_072827/stage71_retry2_stage57_stage66_train_report.json",
+      "best_epoch": 151,
+      "selected_epoch": 151,
+      "best_dev_acc": 0.9750000238418579,
+      "best_dev_macro_f1": 0.9640472521828455,
+      "pred_NOT_ENTITLED": 522,
+      "pred_REFUTE": 90,
+      "pred_SUPPORT": 108,
+      "stage57_rows": 520,
+      "stage66_rows": 720,
+      "stage75_rows": 0,
+      "stage80a_rows": 0,
+      "combined_bridge_rows": 1240,
+      "final_train_row_count_expected": NaN,
+      "pairwise_source": "clean_main_train_only",
+      "pairwise_bridge_rows_excluded": 1240,
+      "clean_dev_for_checkpoint_selection": true,
+      "external_data_used_for_training": false,
+      "external_metrics_used_for_threshold_tuning": false,
+      "time_swap_used": false
+    },
+    {
+      "stage": "Stage75F_full_bridge",
+      "source_path": "results/stage75f_stage57_stage66_stage75_bridge_enabled_frozen_recovery_run_20260703_002555/stage75f_stage57_stage66_stage75_train_report.json",
+      "best_epoch": 184,
+      "selected_epoch": 184,
+      "best_dev_acc": 0.9736111164093018,
+      "best_dev_macro_f1": 0.9622049929193565,
+      "pred_NOT_ENTITLED": 521,
+      "pred_REFUTE": 90,
+      "pred_SUPPORT": 109,
+      "stage57_rows": 520,
+      "stage66_rows": 720,
+      "stage75_rows": 1020,
+      "stage80a_rows": 0,
+      "combined_bridge_rows": 2260,
+      "final_train_row_count_expected": NaN,
+      "pairwise_source": "clean_main_train_only",
+      "pairwise_bridge_rows_excluded": 2260,
+      "clean_dev_for_checkpoint_selection": true,
+      "external_data_used_for_training": false,
+      "external_metrics_used_for_threshold_tuning": false,
+      "time_swap_used": false
+    },
+    {
+      "stage": "Stage80F_conservative_Stage80A",
+      "source_path": "results/stage80f_stage57_stage66_stage80a_conservative_bridge_frozen_recovery_run_20260703_013106/stage80f_stage57_stage66_stage80a_train_report.json",
+      "best_epoch": 180,
+      "selected_epoch": 180,
+      "best_dev_acc": 0.9708333611488342,
+      "best_dev_macro_f1": 0.958564119910363,
+      "pred_NOT_ENTITLED": 519,
+      "pred_REFUTE": 90,
+      "pred_SUPPORT": 111,
+      "stage57_rows": 520,
+      "stage66_rows": 720,
+      "stage75_rows": 0,
+      "stage80a_rows": 500,
+      "combined_bridge_rows": 1740,
+      "final_train_row_count_expected": 4620.0,
+      "pairwise_source": "clean_main_train_only",
+      "pairwise_bridge_rows_excluded": 1740,
+      "clean_dev_for_checkpoint_selection": true,
+      "external_data_used_for_training": false,
+      "external_metrics_used_for_threshold_tuning": false,
+      "time_swap_used": false
+    }
+  ],
+  "delta_comparison": [
+    {
+      "comparison": "Stage75F_full_bridge - Stage71_retry2_primary",
+      "acc_delta": -0.0013889074325561523,
+      "macro_f1_delta": -0.0018422592634890211,
+      "pred_NE_delta": -1,
+      "pred_REFUTE_delta": 0,
+      "pred_SUPPORT_delta": 1
+    },
+    {
+      "comparison": "Stage80F_conservative_Stage80A - Stage71_retry2_primary",
+      "acc_delta": -0.004166662693023682,
+      "macro_f1_delta": -0.005483132272482427,
+      "pred_NE_delta": -3,
+      "pred_REFUTE_delta": 0,
+      "pred_SUPPORT_delta": 3
+    },
+    {
+      "comparison": "Stage80F_conservative_Stage80A - Stage75F_full_bridge",
+      "acc_delta": -0.0027777552604675293,
+      "macro_f1_delta": -0.003640873008993406,
+      "pred_NE_delta": -2,
+      "pred_REFUTE_delta": 0,
+      "pred_SUPPORT_delta": 2
+    }
+  ],
+  "recommendations": [
+    {
+      "recommendation": "Do not promote Stage80A conservative bridge to primary.",
+      "rationale": "Stage80F failed strict clean-dev macro preservation versus Stage71."
+    },
+    {
+      "recommendation": "Do not run Stage81 external diagnostic by default.",
+      "rationale": "External diagnostic is lower priority when the candidate already loses clean-dev macro beyond tolerance."
+    },
+    {
+      "recommendation": "Keep Stage71_retry2 as primary.",
+      "rationale": "Stage71 still has the best clean-dev macro-F1 among Stage71, Stage75F, and Stage80F."
+    },
+    {
+      "recommendation": "Keep Stage80F as a valid negative result.",
+      "rationale": "The runner integration and metadata are valid; the failure is model/result-level, not execution-level."
+    },
+    {
+      "recommendation": "Next useful branch is ablation, not full Stage80A external.",
+      "rationale": "Stage80A combined polarity+NE safety may be too heavy; test smaller polarity-only or NE-safety-only only if needed."
+    }
+  ]
+}
