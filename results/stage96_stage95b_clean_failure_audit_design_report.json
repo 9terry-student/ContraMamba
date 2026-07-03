@@ -1,0 +1,226 @@
+{
+  "summary": {
+    "stage": "Stage96",
+    "decision": "STAGE96_REJECT_STAGE95B_BEFORE_EXTERNAL_CLEAN_FAILURE_AUDIT_READY",
+    "basis_stage95b_decision": "STAGE95B_CLEAN_DEV_PRESERVATION_FAILED_OR_NEEDS_REVIEW",
+    "basis_stage95b_candidate_status": "REJECT_BEFORE_EXTERNAL_OR_NEEDS_REVIEW",
+    "match_mode": "index",
+    "matched_n": 720,
+    "failure_metrics": {
+      "stage92b_clean_acc": 0.9777777791023254,
+      "stage92b_clean_macro_f1": 0.9677765843179378,
+      "stage95b_clean_acc": 0.9708333611488342,
+      "stage95b_clean_macro_f1": 0.958564119910363,
+      "stage95b_minus_stage92b_acc": -0.0069446388511658075,
+      "stage95b_minus_stage92b_macro_f1": -0.009212880089636943,
+      "stage95b_minus_stage71_acc": -0.00416666265116572,
+      "stage95b_minus_stage71_macro_f1": -0.005483132289636927,
+      "changed_predictions_total": 7,
+      "stage92_correct_stage95_wrong_total": 6,
+      "stage92_wrong_stage95_correct_total": 1,
+      "net_clean_correct_delta": -5,
+      "both_wrong_changed_total": 0,
+      "stage95b_prediction_counts": {
+        "NOT_ENTITLED": 519,
+        "REFUTE": 90,
+        "SUPPORT": 111
+      },
+      "stage92b_prediction_counts": {
+        "NOT_ENTITLED": 524,
+        "REFUTE": 90,
+        "SUPPORT": 106
+      }
+    },
+    "diagnosis_rules": [
+      "stage95a_combined_bridge_damaged_clean_boundary",
+      "stage95b_fails_clean_preservation_gate",
+      "stage95a_created_more_clean_losses_than_gains",
+      "do_not_run_external_for_stage95b",
+      "reject_stage95a_full_160_append",
+      "next_candidate_should_use_smaller_or_weighted_anti_ne_probe_not_full_append"
+    ],
+    "main_diagnosis": "Stage95A full anti-NE append over-pressured the clean decision boundary. Stop Stage95 before external.",
+    "current_primary": "Stage71 retry2 Stage57+Stage66",
+    "best_near_miss_branch": "Stage92C / Stage57+Stage66+Stage92A",
+    "rejected_branch": "Stage95B / Stage57+Stage66+Stage92A+Stage95A",
+    "recommended_next_stage": "Stage97 minimal anti-NE ablation design, not another full bridge append",
+    "stage97_design": {
+      "proposed_stage": "Stage97",
+      "name": "minimal anti-NE ablation design",
+      "rationale": "Stage95A full 160-row append broke clean-dev before external; retain the idea but not the full pressure.",
+      "safe_options": [
+        {
+          "option": "Stage97A_half_size_anti_ne",
+          "description": "Generate or subset a smaller 80-row bridge: SUPPORT 36, REFUTE 24, NE 20. Keep only numeric/date sufficient evidence families because Stage94 false_NE was mostly numeric/date-heavy.",
+          "priority": 1
+        },
+        {
+          "option": "Stage97B_support_only_micro_probe",
+          "description": "Tiny 48-row bridge: SUPPORT 32, REFUTE 8, NE 8. Use only if audit shows SUPPORT clean losses are not dominant.",
+          "priority": 2
+        },
+        {
+          "option": "Stage97C_no_new_training_threshold_clean_only",
+          "description": "No retraining. Study whether Stage92C's NE absorption can be reduced by clean-dev-only decision threshold or margin adjustment.",
+          "priority": 3
+        }
+      ],
+      "hard_constraints": [
+        "Keep Stage71 as primary.",
+        "Keep Stage92C as near-miss branch.",
+        "Reject Stage95B before external.",
+        "Do not add Stage83A or Stage88A.",
+        "Do not use VitaminC external rows for training.",
+        "Do not append full Stage95A 160 rows again without ablation."
+      ]
+    },
+    "diagnostic_example_files": {
+      "stage92b_correct_stage95b_wrong": "results/stage96_stage92b_correct_stage95b_wrong_examples.jsonl",
+      "stage92b_wrong_stage95b_correct": "results/stage96_stage92b_wrong_stage95b_correct_examples.jsonl",
+      "changed_predictions": "results/stage96_stage92b_stage95b_changed_prediction_examples.jsonl"
+    },
+    "source_policy": "Diagnostic exports only; do not use these examples as training rows."
+  },
+  "failure_metrics": [
+    {
+      "metric": "stage92b_clean_acc",
+      "value": 0.9777777791023254
+    },
+    {
+      "metric": "stage92b_clean_macro_f1",
+      "value": 0.9677765843179378
+    },
+    {
+      "metric": "stage95b_clean_acc",
+      "value": 0.9708333611488342
+    },
+    {
+      "metric": "stage95b_clean_macro_f1",
+      "value": 0.958564119910363
+    },
+    {
+      "metric": "stage95b_minus_stage92b_acc",
+      "value": -0.0069446388511658075
+    },
+    {
+      "metric": "stage95b_minus_stage92b_macro_f1",
+      "value": -0.009212880089636943
+    },
+    {
+      "metric": "stage95b_minus_stage71_acc",
+      "value": -0.00416666265116572
+    },
+    {
+      "metric": "stage95b_minus_stage71_macro_f1",
+      "value": -0.005483132289636927
+    },
+    {
+      "metric": "changed_predictions_total",
+      "value": 7
+    },
+    {
+      "metric": "stage92_correct_stage95_wrong_total",
+      "value": 6
+    },
+    {
+      "metric": "stage92_wrong_stage95_correct_total",
+      "value": 1
+    },
+    {
+      "metric": "net_clean_correct_delta",
+      "value": -5
+    },
+    {
+      "metric": "both_wrong_changed_total",
+      "value": 0
+    },
+    {
+      "metric": "stage95b_prediction_counts",
+      "value": "{\"NOT_ENTITLED\": 519, \"REFUTE\": 90, \"SUPPORT\": 111}"
+    },
+    {
+      "metric": "stage92b_prediction_counts",
+      "value": "{\"NOT_ENTITLED\": 524, \"REFUTE\": 90, \"SUPPORT\": 106}"
+    }
+  ],
+  "diagnosis_rules": [
+    {
+      "rule": "stage95a_combined_bridge_damaged_clean_boundary"
+    },
+    {
+      "rule": "stage95b_fails_clean_preservation_gate"
+    },
+    {
+      "rule": "stage95a_created_more_clean_losses_than_gains"
+    },
+    {
+      "rule": "do_not_run_external_for_stage95b"
+    },
+    {
+      "rule": "reject_stage95a_full_160_append"
+    },
+    {
+      "rule": "next_candidate_should_use_smaller_or_weighted_anti_ne_probe_not_full_append"
+    }
+  ],
+  "transition_all_changed": [
+    {
+      "subset": "changed_all",
+      "gold": "NOT_ENTITLED",
+      "stage92b_pred": "NOT_ENTITLED",
+      "stage95b_pred": "SUPPORT",
+      "count": 6
+    },
+    {
+      "subset": "changed_all",
+      "gold": "NOT_ENTITLED",
+      "stage92b_pred": "SUPPORT",
+      "stage95b_pred": "NOT_ENTITLED",
+      "count": 1
+    }
+  ],
+  "loss_transitions": [
+    {
+      "subset": "stage92_correct_stage95_wrong",
+      "gold": "NOT_ENTITLED",
+      "stage92b_pred": "NOT_ENTITLED",
+      "stage95b_pred": "SUPPORT",
+      "count": 6
+    }
+  ],
+  "gain_transitions": [
+    {
+      "subset": "stage92_wrong_stage95_correct",
+      "gold": "NOT_ENTITLED",
+      "stage92b_pred": "SUPPORT",
+      "stage95b_pred": "NOT_ENTITLED",
+      "count": 1
+    }
+  ],
+  "both_wrong_changed_transitions": [],
+  "stage97_design": [
+    {
+      "option": "Stage97A_half_size_anti_ne",
+      "description": "Generate or subset a smaller 80-row bridge: SUPPORT 36, REFUTE 24, NE 20. Keep only numeric/date sufficient evidence families because Stage94 false_NE was mostly numeric/date-heavy.",
+      "priority": 1
+    },
+    {
+      "option": "Stage97B_support_only_micro_probe",
+      "description": "Tiny 48-row bridge: SUPPORT 32, REFUTE 8, NE 8. Use only if audit shows SUPPORT clean losses are not dominant.",
+      "priority": 2
+    },
+    {
+      "option": "Stage97C_no_new_training_threshold_clean_only",
+      "description": "No retraining. Study whether Stage92C's NE absorption can be reduced by clean-dev-only decision threshold or margin adjustment.",
+      "priority": 3
+    }
+  ],
+  "source_files": {
+    "stage92b_summary": "results/stage92b_clean_dev_preservation_summary.json",
+    "stage95b_summary": "results/stage95b_clean_dev_preservation_summary.json",
+    "stage92b_predictions": "results/stage92b_stage57_stage66_stage92a_clean_dev_run_20260703_050639/stage92b_stage57_stage66_stage92a_predictions.json",
+    "stage95b_predictions": "results/stage95b_stage57_stage66_stage92a_stage95a_clean_dev_run_20260703_054948/stage95b_stage57_stage66_stage92a_stage95a_predictions.json",
+    "stage95a_report": "results/stage95a_anti_ne_entitlement_preservation_bridge_generation_report.json",
+    "stage94_report": "results/stage94_false_ne_residual_audit_design_report.json"
+  }
+}

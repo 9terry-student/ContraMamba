@@ -1,0 +1,69 @@
+# Stage96 - Stage95B Clean Failure Audit and Design
+
+## Decision
+
+`STAGE96_REJECT_STAGE95B_BEFORE_EXTERNAL_CLEAN_FAILURE_AUDIT_READY`
+
+## Summary
+
+| stage   | decision                                                          | basis_stage95b_decision                                | basis_stage95b_candidate_status        | match_mode   |   matched_n | failure_metrics                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | diagnosis_rules                                                                                                                                                                                                                                                                                      | main_diagnosis                                                                                         | current_primary                | best_near_miss_branch               | rejected_branch                              | recommended_next_stage                                                  | stage97_design                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | diagnostic_example_files                                                                                                                                                                                                                                                                                 | source_policy                                                        |
+|:--------|:------------------------------------------------------------------|:-------------------------------------------------------|:---------------------------------------|:-------------|------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------|:-------------------------------|:------------------------------------|:---------------------------------------------|:------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------|
+| Stage96 | STAGE96_REJECT_STAGE95B_BEFORE_EXTERNAL_CLEAN_FAILURE_AUDIT_READY | STAGE95B_CLEAN_DEV_PRESERVATION_FAILED_OR_NEEDS_REVIEW | REJECT_BEFORE_EXTERNAL_OR_NEEDS_REVIEW | index        |         720 | {"stage92b_clean_acc": 0.9777777791023254, "stage92b_clean_macro_f1": 0.9677765843179378, "stage95b_clean_acc": 0.9708333611488342, "stage95b_clean_macro_f1": 0.958564119910363, "stage95b_minus_stage92b_acc": -0.0069446388511658075, "stage95b_minus_stage92b_macro_f1": -0.009212880089636943, "stage95b_minus_stage71_acc": -0.00416666265116572, "stage95b_minus_stage71_macro_f1": -0.005483132289636927, "changed_predictions_total": 7, "stage92_correct_stage95_wrong_total": 6, "stage92_wrong_stage95_correct_total": 1, "net_clean_correct_delta": -5, "both_wrong_changed_total": 0, "stage95b_prediction_counts": {"NOT_ENTITLED": 519, "REFUTE": 90, "SUPPORT": 111}, "stage92b_prediction_counts": {"NOT_ENTITLED": 524, "REFUTE": 90, "SUPPORT": 106}} | ["stage95a_combined_bridge_damaged_clean_boundary", "stage95b_fails_clean_preservation_gate", "stage95a_created_more_clean_losses_than_gains", "do_not_run_external_for_stage95b", "reject_stage95a_full_160_append", "next_candidate_should_use_smaller_or_weighted_anti_ne_probe_not_full_append"] | Stage95A full anti-NE append over-pressured the clean decision boundary. Stop Stage95 before external. | Stage71 retry2 Stage57+Stage66 | Stage92C / Stage57+Stage66+Stage92A | Stage95B / Stage57+Stage66+Stage92A+Stage95A | Stage97 minimal anti-NE ablation design, not another full bridge append | {"proposed_stage": "Stage97", "name": "minimal anti-NE ablation design", "rationale": "Stage95A full 160-row append broke clean-dev before external; retain the idea but not the full pressure.", "safe_options": [{"option": "Stage97A_half_size_anti_ne", "description": "Generate or subset a smaller 80-row bridge: SUPPORT 36, REFUTE 24, NE 20. Keep only numeric/date sufficient evidence families because Stage94 false_NE was mostly numeric/date-heavy.", "priority": 1}, {"option": "Stage97B_support_only_micro_probe", "description": "Tiny 48-row bridge: SUPPORT 32, REFUTE 8, NE 8. Use only if audit shows SUPPORT clean losses are not dominant.", "priority": 2}, {"option": "Stage97C_no_new_training_threshold_clean_only", "description": "No retraining. Study whether Stage92C's NE absorption can be reduced by clean-dev-only decision threshold or margin adjustment.", "priority": 3}], "hard_constraints": ["Keep Stage71 as primary.", "Keep Stage92C as near-miss branch.", "Reject Stage95B before external.", "Do not add Stage83A or Stage88A.", "Do not use VitaminC external rows for training.", "Do not append full Stage95A 160 rows again without ablation."]} | {"stage92b_correct_stage95b_wrong": "results/stage96_stage92b_correct_stage95b_wrong_examples.jsonl", "stage92b_wrong_stage95b_correct": "results/stage96_stage92b_wrong_stage95b_correct_examples.jsonl", "changed_predictions": "results/stage96_stage92b_stage95b_changed_prediction_examples.jsonl"} | Diagnostic exports only; do not use these examples as training rows. |
+
+## Failure metrics
+
+| metric                              | value                                               |
+|:------------------------------------|:----------------------------------------------------|
+| stage92b_clean_acc                  | 0.9777777791023254                                  |
+| stage92b_clean_macro_f1             | 0.9677765843179378                                  |
+| stage95b_clean_acc                  | 0.9708333611488342                                  |
+| stage95b_clean_macro_f1             | 0.958564119910363                                   |
+| stage95b_minus_stage92b_acc         | -0.0069446388511658075                              |
+| stage95b_minus_stage92b_macro_f1    | -0.009212880089636943                               |
+| stage95b_minus_stage71_acc          | -0.00416666265116572                                |
+| stage95b_minus_stage71_macro_f1     | -0.005483132289636927                               |
+| changed_predictions_total           | 7                                                   |
+| stage92_correct_stage95_wrong_total | 6                                                   |
+| stage92_wrong_stage95_correct_total | 1                                                   |
+| net_clean_correct_delta             | -5                                                  |
+| both_wrong_changed_total            | 0                                                   |
+| stage95b_prediction_counts          | {"NOT_ENTITLED": 519, "REFUTE": 90, "SUPPORT": 111} |
+| stage92b_prediction_counts          | {"NOT_ENTITLED": 524, "REFUTE": 90, "SUPPORT": 106} |
+
+## Diagnosis rules
+
+| rule                                                                        |
+|:----------------------------------------------------------------------------|
+| stage95a_combined_bridge_damaged_clean_boundary                             |
+| stage95b_fails_clean_preservation_gate                                      |
+| stage95a_created_more_clean_losses_than_gains                               |
+| do_not_run_external_for_stage95b                                            |
+| reject_stage95a_full_160_append                                             |
+| next_candidate_should_use_smaller_or_weighted_anti_ne_probe_not_full_append |
+
+## Changed prediction transitions
+
+| subset      | gold         | stage92b_pred   | stage95b_pred   |   count |
+|:------------|:-------------|:----------------|:----------------|--------:|
+| changed_all | NOT_ENTITLED | NOT_ENTITLED    | SUPPORT         |       6 |
+| changed_all | NOT_ENTITLED | SUPPORT         | NOT_ENTITLED    |       1 |
+
+## Clean loss transitions
+
+| subset                        | gold         | stage92b_pred   | stage95b_pred   |   count |
+|:------------------------------|:-------------|:----------------|:----------------|--------:|
+| stage92_correct_stage95_wrong | NOT_ENTITLED | NOT_ENTITLED    | SUPPORT         |       6 |
+
+## Clean gain transitions
+
+| subset                        | gold         | stage92b_pred   | stage95b_pred   |   count |
+|:------------------------------|:-------------|:----------------|:----------------|--------:|
+| stage92_wrong_stage95_correct | NOT_ENTITLED | SUPPORT         | NOT_ENTITLED    |       1 |
+
+## Stage97 safe options
+
+| option                                        | description                                                                                                                                                                           |   priority |
+|:----------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------:|
+| Stage97A_half_size_anti_ne                    | Generate or subset a smaller 80-row bridge: SUPPORT 36, REFUTE 24, NE 20. Keep only numeric/date sufficient evidence families because Stage94 false_NE was mostly numeric/date-heavy. |          1 |
+| Stage97B_support_only_micro_probe             | Tiny 48-row bridge: SUPPORT 32, REFUTE 8, NE 8. Use only if audit shows SUPPORT clean losses are not dominant.                                                                        |          2 |
+| Stage97C_no_new_training_threshold_clean_only | No retraining. Study whether Stage92C's NE absorption can be reduced by clean-dev-only decision threshold or margin adjustment.                                                       |          3 |
