@@ -1,0 +1,473 @@
+{
+  "summary": {
+    "stage": "Stage90",
+    "decision": "STAGE90_SUPPORT_SUPPRESSION_REFUTE_OVERCORRECTION_AUDIT_READY",
+    "stage73_prediction_file": "results/stage73_retry_stage57_stage66_bridge_vitaminc_external_diag_run_20260702_080534/external_vitaminc/external_probe_stage73_retry_vitaminc_predictions.json",
+    "stage88c_prediction_file": "results/stage88c_stage57_stage66_stage88a_vitaminc_external_run_20260703_043753/stage88c_stage57_stage66_stage88a_vitaminc_external_predictions.json",
+    "match_mode": "key",
+    "matched_n": 1000,
+    "stage73_metrics": {
+      "accuracy": 0.353,
+      "macro_f1_all3": 0.3261787057160285,
+      "prediction_counts": {
+        "SUPPORT": 393,
+        "REFUTE": 219,
+        "NOT_ENTITLED": 388
+      },
+      "errors": {
+        "false_NE_on_SUPPORT": 178,
+        "false_NE_on_REFUTE": 145,
+        "false_SUPPORT_on_NE": 39,
+        "false_REFUTE_on_NE": 41,
+        "false_SUPPORT_on_REFUTE": 138,
+        "false_REFUTE_on_SUPPORT": 106,
+        "false_NE_total": 323,
+        "false_entitlement_total": 80,
+        "polarity_error_total": 244
+      }
+    },
+    "stage88c_metrics": {
+      "accuracy": 0.338,
+      "macro_f1_all3": 0.32945768332771147,
+      "prediction_counts": {
+        "SUPPORT": 294,
+        "REFUTE": 283,
+        "NOT_ENTITLED": 423
+      },
+      "errors": {
+        "false_NE_on_SUPPORT": 197,
+        "false_NE_on_REFUTE": 152,
+        "false_SUPPORT_on_NE": 31,
+        "false_REFUTE_on_NE": 40,
+        "false_SUPPORT_on_REFUTE": 101,
+        "false_REFUTE_on_SUPPORT": 141,
+        "false_NE_total": 349,
+        "false_entitlement_total": 71,
+        "polarity_error_total": 242
+      }
+    },
+    "critical_transition_counts": {
+      "stage73_correct_stage88c_wrong_total": 97,
+      "stage73_wrong_stage88c_correct_total": 82,
+      "support_losses_stage73_support_to_stage88c_non_support": 79,
+      "support_stage73_support_to_stage88c_ne": 34,
+      "support_stage73_support_to_stage88c_refute": 45,
+      "support_recoveries_stage73_wrong_to_stage88c_support": 25,
+      "refute_gains_stage73_wrong_to_stage88c_refute": 45,
+      "refute_gains_from_stage73_ne": 7,
+      "refute_gains_from_stage73_support": 38,
+      "new_refute_errors_on_support_not_refute_in_stage73": 50,
+      "new_ne_errors_on_support_not_ne_in_stage73": 34
+    },
+    "diagnosis_rules": [
+      "REFUTE_prediction_mass_increased",
+      "SUPPORT_prediction_mass_decreased",
+      "SUPPORT_to_REFUTE_polarity_error_increased",
+      "SUPPORT_to_NE_suppression_increased",
+      "REFUTE_recovery_trades_off_with_SUPPORT_recall"
+    ],
+    "interpretation": "Stage88C improves REFUTE recovery and macro-F1 but over-rotates prediction mass from SUPPORT toward REFUTE/NOT_ENTITLED. The next branch should preserve SUPPORT recall while retaining REFUTE gains, rather than adding more balanced/generic entitlement rows.",
+    "next_direction": "Stage91 support-preserving recovery design; avoid generic REFUTE-heavy entitlement pressure",
+    "primary_policy": "KEEP_STAGE71_PRIMARY"
+  },
+  "critical_transition_counts": [
+    {
+      "metric": "stage73_correct_stage88c_wrong_total",
+      "count": 97
+    },
+    {
+      "metric": "stage73_wrong_stage88c_correct_total",
+      "count": 82
+    },
+    {
+      "metric": "support_losses_stage73_support_to_stage88c_non_support",
+      "count": 79
+    },
+    {
+      "metric": "support_stage73_support_to_stage88c_ne",
+      "count": 34
+    },
+    {
+      "metric": "support_stage73_support_to_stage88c_refute",
+      "count": 45
+    },
+    {
+      "metric": "support_recoveries_stage73_wrong_to_stage88c_support",
+      "count": 25
+    },
+    {
+      "metric": "refute_gains_stage73_wrong_to_stage88c_refute",
+      "count": 45
+    },
+    {
+      "metric": "refute_gains_from_stage73_ne",
+      "count": 7
+    },
+    {
+      "metric": "refute_gains_from_stage73_support",
+      "count": 38
+    },
+    {
+      "metric": "new_refute_errors_on_support_not_refute_in_stage73",
+      "count": 50
+    },
+    {
+      "metric": "new_ne_errors_on_support_not_ne_in_stage73",
+      "count": 34
+    }
+  ],
+  "error_delta": [
+    {
+      "error_type": "false_NE_on_REFUTE",
+      "stage73": 145,
+      "stage88c": 152,
+      "delta_stage88c_minus_stage73": 7
+    },
+    {
+      "error_type": "false_NE_on_SUPPORT",
+      "stage73": 178,
+      "stage88c": 197,
+      "delta_stage88c_minus_stage73": 19
+    },
+    {
+      "error_type": "false_NE_total",
+      "stage73": 323,
+      "stage88c": 349,
+      "delta_stage88c_minus_stage73": 26
+    },
+    {
+      "error_type": "false_REFUTE_on_NE",
+      "stage73": 41,
+      "stage88c": 40,
+      "delta_stage88c_minus_stage73": -1
+    },
+    {
+      "error_type": "false_REFUTE_on_SUPPORT",
+      "stage73": 106,
+      "stage88c": 141,
+      "delta_stage88c_minus_stage73": 35
+    },
+    {
+      "error_type": "false_SUPPORT_on_NE",
+      "stage73": 39,
+      "stage88c": 31,
+      "delta_stage88c_minus_stage73": -8
+    },
+    {
+      "error_type": "false_SUPPORT_on_REFUTE",
+      "stage73": 138,
+      "stage88c": 101,
+      "delta_stage88c_minus_stage73": -37
+    },
+    {
+      "error_type": "false_entitlement_total",
+      "stage73": 80,
+      "stage88c": 71,
+      "delta_stage88c_minus_stage73": -9
+    },
+    {
+      "error_type": "polarity_error_total",
+      "stage73": 244,
+      "stage88c": 242,
+      "delta_stage88c_minus_stage73": -2
+    }
+  ],
+  "per_label_delta": [
+    {
+      "label": "REFUTE",
+      "support_stage73": 355,
+      "pred_count_stage73": 219,
+      "tp_stage73": 72,
+      "fp_stage73": 147,
+      "fn_stage73": 283,
+      "precision_stage73": 0.3287671232876712,
+      "recall_stage73": 0.2028169014084507,
+      "f1_stage73": 0.25087108013937287,
+      "support_stage88c": 355,
+      "pred_count_stage88c": 283,
+      "tp_stage88c": 102,
+      "fp_stage88c": 181,
+      "fn_stage88c": 253,
+      "precision_stage88c": 0.36042402826855124,
+      "recall_stage88c": 0.28732394366197184,
+      "f1_stage88c": 0.3197492163009405,
+      "precision_delta": 0.03165690498088003,
+      "recall_delta": 0.08450704225352113,
+      "f1_delta": 0.06887813616156763,
+      "pred_count_delta": 64,
+      "tp_delta": 30,
+      "fp_delta": 34,
+      "fn_delta": -30
+    },
+    {
+      "label": "NOT_ENTITLED",
+      "support_stage73": 145,
+      "pred_count_stage73": 388,
+      "tp_stage73": 65,
+      "fp_stage73": 323,
+      "fn_stage73": 80,
+      "precision_stage73": 0.16752577319587628,
+      "recall_stage73": 0.4482758620689655,
+      "f1_stage73": 0.24390243902439027,
+      "support_stage88c": 145,
+      "pred_count_stage88c": 423,
+      "tp_stage88c": 74,
+      "fp_stage88c": 349,
+      "fn_stage88c": 71,
+      "precision_stage88c": 0.17494089834515367,
+      "recall_stage88c": 0.5103448275862069,
+      "f1_stage88c": 0.2605633802816901,
+      "precision_delta": 0.007415125149277391,
+      "recall_delta": 0.06206896551724139,
+      "f1_delta": 0.01666094125729986,
+      "pred_count_delta": 35,
+      "tp_delta": 9,
+      "fp_delta": 26,
+      "fn_delta": -9
+    },
+    {
+      "label": "SUPPORT",
+      "support_stage73": 500,
+      "pred_count_stage73": 393,
+      "tp_stage73": 216,
+      "fp_stage73": 177,
+      "fn_stage73": 284,
+      "precision_stage73": 0.549618320610687,
+      "recall_stage73": 0.432,
+      "f1_stage73": 0.48376259798432253,
+      "support_stage88c": 500,
+      "pred_count_stage88c": 294,
+      "tp_stage88c": 162,
+      "fp_stage88c": 132,
+      "fn_stage88c": 338,
+      "precision_stage88c": 0.5510204081632653,
+      "recall_stage88c": 0.324,
+      "f1_stage88c": 0.40806045340050373,
+      "precision_delta": 0.0014020875525782017,
+      "recall_delta": -0.10799999999999998,
+      "f1_delta": -0.0757021445838188,
+      "pred_count_delta": -99,
+      "tp_delta": -54,
+      "fp_delta": -45,
+      "fn_delta": 54
+    }
+  ],
+  "transition": [
+    {
+      "stage73_pred": "NOT_ENTITLED",
+      "stage88c_pred": "NOT_ENTITLED",
+      "count": 357
+    },
+    {
+      "stage73_pred": "SUPPORT",
+      "stage88c_pred": "SUPPORT",
+      "count": 245
+    },
+    {
+      "stage73_pred": "REFUTE",
+      "stage88c_pred": "REFUTE",
+      "count": 181
+    },
+    {
+      "stage73_pred": "SUPPORT",
+      "stage88c_pred": "REFUTE",
+      "count": 89
+    },
+    {
+      "stage73_pred": "SUPPORT",
+      "stage88c_pred": "NOT_ENTITLED",
+      "count": 59
+    },
+    {
+      "stage73_pred": "REFUTE",
+      "stage88c_pred": "SUPPORT",
+      "count": 31
+    },
+    {
+      "stage73_pred": "NOT_ENTITLED",
+      "stage88c_pred": "SUPPORT",
+      "count": 18
+    },
+    {
+      "stage73_pred": "NOT_ENTITLED",
+      "stage88c_pred": "REFUTE",
+      "count": 13
+    },
+    {
+      "stage73_pred": "REFUTE",
+      "stage88c_pred": "NOT_ENTITLED",
+      "count": 7
+    }
+  ],
+  "gold_transition": [
+    {
+      "gold": "NOT_ENTITLED",
+      "stage73_pred": "NOT_ENTITLED",
+      "stage88c_pred": "NOT_ENTITLED",
+      "count": 62
+    },
+    {
+      "gold": "NOT_ENTITLED",
+      "stage73_pred": "REFUTE",
+      "stage88c_pred": "REFUTE",
+      "count": 33
+    },
+    {
+      "gold": "NOT_ENTITLED",
+      "stage73_pred": "SUPPORT",
+      "stage88c_pred": "SUPPORT",
+      "count": 24
+    },
+    {
+      "gold": "NOT_ENTITLED",
+      "stage73_pred": "SUPPORT",
+      "stage88c_pred": "NOT_ENTITLED",
+      "count": 9
+    },
+    {
+      "gold": "NOT_ENTITLED",
+      "stage73_pred": "SUPPORT",
+      "stage88c_pred": "REFUTE",
+      "count": 6
+    },
+    {
+      "gold": "NOT_ENTITLED",
+      "stage73_pred": "REFUTE",
+      "stage88c_pred": "SUPPORT",
+      "count": 5
+    },
+    {
+      "gold": "NOT_ENTITLED",
+      "stage73_pred": "REFUTE",
+      "stage88c_pred": "NOT_ENTITLED",
+      "count": 3
+    },
+    {
+      "gold": "NOT_ENTITLED",
+      "stage73_pred": "NOT_ENTITLED",
+      "stage88c_pred": "SUPPORT",
+      "count": 2
+    },
+    {
+      "gold": "NOT_ENTITLED",
+      "stage73_pred": "NOT_ENTITLED",
+      "stage88c_pred": "REFUTE",
+      "count": 1
+    },
+    {
+      "gold": "REFUTE",
+      "stage73_pred": "NOT_ENTITLED",
+      "stage88c_pred": "NOT_ENTITLED",
+      "count": 132
+    },
+    {
+      "gold": "REFUTE",
+      "stage73_pred": "SUPPORT",
+      "stage88c_pred": "SUPPORT",
+      "count": 84
+    },
+    {
+      "gold": "REFUTE",
+      "stage73_pred": "REFUTE",
+      "stage88c_pred": "REFUTE",
+      "count": 57
+    },
+    {
+      "gold": "REFUTE",
+      "stage73_pred": "SUPPORT",
+      "stage88c_pred": "REFUTE",
+      "count": 38
+    },
+    {
+      "gold": "REFUTE",
+      "stage73_pred": "SUPPORT",
+      "stage88c_pred": "NOT_ENTITLED",
+      "count": 16
+    },
+    {
+      "gold": "REFUTE",
+      "stage73_pred": "REFUTE",
+      "stage88c_pred": "SUPPORT",
+      "count": 11
+    },
+    {
+      "gold": "REFUTE",
+      "stage73_pred": "NOT_ENTITLED",
+      "stage88c_pred": "REFUTE",
+      "count": 7
+    },
+    {
+      "gold": "REFUTE",
+      "stage73_pred": "NOT_ENTITLED",
+      "stage88c_pred": "SUPPORT",
+      "count": 6
+    },
+    {
+      "gold": "REFUTE",
+      "stage73_pred": "REFUTE",
+      "stage88c_pred": "NOT_ENTITLED",
+      "count": 4
+    },
+    {
+      "gold": "SUPPORT",
+      "stage73_pred": "NOT_ENTITLED",
+      "stage88c_pred": "NOT_ENTITLED",
+      "count": 163
+    },
+    {
+      "gold": "SUPPORT",
+      "stage73_pred": "SUPPORT",
+      "stage88c_pred": "SUPPORT",
+      "count": 137
+    },
+    {
+      "gold": "SUPPORT",
+      "stage73_pred": "REFUTE",
+      "stage88c_pred": "REFUTE",
+      "count": 91
+    },
+    {
+      "gold": "SUPPORT",
+      "stage73_pred": "SUPPORT",
+      "stage88c_pred": "REFUTE",
+      "count": 45
+    },
+    {
+      "gold": "SUPPORT",
+      "stage73_pred": "SUPPORT",
+      "stage88c_pred": "NOT_ENTITLED",
+      "count": 34
+    },
+    {
+      "gold": "SUPPORT",
+      "stage73_pred": "REFUTE",
+      "stage88c_pred": "SUPPORT",
+      "count": 15
+    },
+    {
+      "gold": "SUPPORT",
+      "stage73_pred": "NOT_ENTITLED",
+      "stage88c_pred": "SUPPORT",
+      "count": 10
+    },
+    {
+      "gold": "SUPPORT",
+      "stage73_pred": "NOT_ENTITLED",
+      "stage88c_pred": "REFUTE",
+      "count": 5
+    }
+  ],
+  "diagnosis_rules": [
+    "REFUTE_prediction_mass_increased",
+    "SUPPORT_prediction_mass_decreased",
+    "SUPPORT_to_REFUTE_polarity_error_increased",
+    "SUPPORT_to_NE_suppression_increased",
+    "REFUTE_recovery_trades_off_with_SUPPORT_recall"
+  ],
+  "example_files": {
+    "support_losses": "results/stage90_support_losses_stage73_correct_stage88c_wrong_examples.jsonl",
+    "refute_gains": "results/stage90_refute_gains_stage73_wrong_stage88c_correct_examples.jsonl",
+    "support_to_refute": "results/stage90_support_to_refute_overcorrection_examples.jsonl",
+    "support_to_ne": "results/stage90_support_to_ne_suppression_examples.jsonl"
+  }
+}
