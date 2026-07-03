@@ -1,0 +1,209 @@
+{
+  "summary": {
+    "stage": "Stage79",
+    "decision": "STAGE79_STAGE75_BRIDGE_DECISION_REPORT_READY",
+    "stage75_bridge_decision": "REVISE_NOT_DEFAULT",
+    "decision_reason": "Stage75 preserves clean-dev and slightly improves external accuracy, but external macro-F1 drops versus Stage73 and false SUPPORT / false entitlement increase. Keep Stage71_retry2 as primary; use Stage75 only as diagnostic evidence for a smaller Stage80 targeted revision.",
+    "stage73_external_accuracy": 0.353,
+    "stage73_external_macro_f1": 0.3262,
+    "stage77_external_accuracy": 0.357,
+    "stage77_external_macro_f1": 0.3182,
+    "stage77_minus_stage73_accuracy": 0.0040000000000000036,
+    "stage77_minus_stage73_macro_f1": -0.008000000000000007,
+    "stage78_minus_stage74_false_ne_total": 1,
+    "stage78_minus_stage74_polarity_error_total": -11,
+    "stage78_minus_stage74_false_entitlement_total": 6,
+    "stage78_minus_stage74_false_support_total": 19,
+    "stage78_minus_stage74_false_refute_total": -24,
+    "clean_dev_preserved": true,
+    "training_executed": false,
+    "external_eval_executed": false,
+    "recommended_next_stage": "Stage80A design conservative Stage75v2 bridge or ablation plan"
+  },
+  "checks": [
+    {
+      "check": "stage73b2_exists",
+      "pass": true
+    },
+    {
+      "check": "stage74_exists",
+      "pass": true
+    },
+    {
+      "check": "stage76_exists",
+      "pass": true
+    },
+    {
+      "check": "stage77_exists",
+      "pass": true
+    },
+    {
+      "check": "stage78_exists",
+      "pass": true
+    },
+    {
+      "check": "stage76_clean_dev_preserved",
+      "pass": true
+    },
+    {
+      "check": "stage77_external_metrics_present",
+      "pass": true
+    },
+    {
+      "check": "stage78_error_audit_ready",
+      "pass": true
+    },
+    {
+      "check": "stage79_decision_nonempty",
+      "pass": true
+    }
+  ],
+  "signals": [
+    {
+      "signal": "clean_dev_preserved",
+      "value": true
+    },
+    {
+      "signal": "external_accuracy_improved_vs_stage73",
+      "value": true
+    },
+    {
+      "signal": "external_macro_f1_improved_vs_stage73",
+      "value": false
+    },
+    {
+      "signal": "polarity_error_reduced_vs_stage74",
+      "value": true
+    },
+    {
+      "signal": "false_refute_reduced_vs_stage74",
+      "value": true
+    },
+    {
+      "signal": "false_support_increased_vs_stage74",
+      "value": true
+    },
+    {
+      "signal": "false_entitlement_increased_vs_stage74",
+      "value": true
+    },
+    {
+      "signal": "false_ne_not_reduced_vs_stage74",
+      "value": true
+    }
+  ],
+  "external_metrics": [
+    {
+      "system": "Stage73_retry_Stage57_66",
+      "external_accuracy": 0.353,
+      "external_macro_f1": 0.3262,
+      "note": "previous best external diagnostic before Stage75"
+    },
+    {
+      "system": "Stage77_Stage57_66_75",
+      "external_accuracy": 0.357,
+      "external_macro_f1": 0.3182,
+      "note": "Stage75F configuration external diagnostic"
+    },
+    {
+      "system": "Delta_Stage77_minus_Stage73",
+      "external_accuracy": 0.0040000000000000036,
+      "external_macro_f1": -0.008000000000000007,
+      "note": "positive accuracy but negative macro-F1 means mixed result"
+    }
+  ],
+  "clean_dev": [
+    {
+      "metric": "Stage75F_minus_Stage71_acc",
+      "value": -0.0013889074325561523,
+      "pass": true
+    },
+    {
+      "metric": "Stage75F_minus_Stage71_macro_f1",
+      "value": -0.0018422592634890211,
+      "pass": true
+    },
+    {
+      "metric": "metadata_checks_pass",
+      "value": true,
+      "pass": true
+    },
+    {
+      "metric": "preservation_checks_pass",
+      "value": true,
+      "pass": true
+    }
+  ],
+  "error_delta_stage78_minus_stage74": [
+    {
+      "metric": "accuracy",
+      "stage74_stage73_retry": 0.353,
+      "stage78_stage77_stage75f": 0.357,
+      "delta_stage78_minus_stage74": 0.0040000000000000036
+    },
+    {
+      "metric": "correct_total",
+      "stage74_stage73_retry": 353.0,
+      "stage78_stage77_stage75f": 357.0,
+      "delta_stage78_minus_stage74": 4.0
+    },
+    {
+      "metric": "error_total",
+      "stage74_stage73_retry": 647.0,
+      "stage78_stage77_stage75f": 643.0,
+      "delta_stage78_minus_stage74": -4.0
+    },
+    {
+      "metric": "false_ne_total",
+      "stage74_stage73_retry": 323.0,
+      "stage78_stage77_stage75f": 324.0,
+      "delta_stage78_minus_stage74": 1.0
+    },
+    {
+      "metric": "polarity_error_total",
+      "stage74_stage73_retry": 244.0,
+      "stage78_stage77_stage75f": 233.0,
+      "delta_stage78_minus_stage74": -11.0
+    },
+    {
+      "metric": "false_entitlement_total",
+      "stage74_stage73_retry": 80.0,
+      "stage78_stage77_stage75f": 86.0,
+      "delta_stage78_minus_stage74": 6.0
+    },
+    {
+      "metric": "false_support_total",
+      "stage74_stage73_retry": 177.0,
+      "stage78_stage77_stage75f": 196.0,
+      "delta_stage78_minus_stage74": 19.0
+    },
+    {
+      "metric": "false_refute_total",
+      "stage74_stage73_retry": 147.0,
+      "stage78_stage77_stage75f": 123.0,
+      "delta_stage78_minus_stage74": -24.0
+    }
+  ],
+  "recommendations": [
+    {
+      "recommendation": "Do not make Stage75 full bridge the default.",
+      "rationale": "Stage77 macro-F1 is lower than Stage73 despite slightly higher accuracy."
+    },
+    {
+      "recommendation": "Keep Stage71_retry2 as the current primary checkpoint/config.",
+      "rationale": "Stage71 has better external macro-F1 and slightly better clean-dev macro-F1."
+    },
+    {
+      "recommendation": "Use Stage75 error movement as diagnostic signal.",
+      "rationale": "Stage75 reduced polarity_error_total and false_refute_total but increased false_support_total."
+    },
+    {
+      "recommendation": "Next revision should reduce false SUPPORT pressure.",
+      "rationale": "Stage78 shows false_support_total rose from 177 to 196 and false_entitlement_total from 80 to 86."
+    },
+    {
+      "recommendation": "Prioritize conservative polarity repair over broad SUPPORT recovery.",
+      "rationale": "Stage75's best signal was polarity_error_total -11 and false_refute_total -24."
+    }
+  ]
+}
