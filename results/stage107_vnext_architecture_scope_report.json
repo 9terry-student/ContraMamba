@@ -1,0 +1,284 @@
+{
+  "summary": {
+    "stage": "Stage107",
+    "decision": "STAGE107_VNEXT_ARCHITECTURE_SCOPE_LOCKED",
+    "current_primary": "Stage71 retry2 Stage57+Stage66 bridge-enabled frozen recovery",
+    "stage107_type": "report_only_architecture_scope_lock",
+    "promoted_candidate": null,
+    "main_conclusion": "Do not proceed to broad implementation. Stage107 locks ContraMamba-vNext as an entitlement-first state-space epistemic judgment controller and defers implementation to Stage108+ after static audit.",
+    "vnext_target": "ContraMamba-vNext as a state-space epistemic judgment controller, not a flat 3-way verifier.",
+    "core_bottleneck": "Final entitlement/routing cannot safely recover latent SUPPORT signal without external tuning.",
+    "stage108_next": "static repo audit for v7/vNext salvage before any code patch",
+    "do_not_do_next": [
+      "Do not add more synthetic bridge data.",
+      "Do not tune thresholds on VitaminC.",
+      "Do not build RAG or hallucination controller in one stage.",
+      "Do not patch architecture before static repo audit."
+    ]
+  },
+  "current_primary": {
+    "name": "Stage71 retry2 Stage57+Stage66 bridge-enabled frozen recovery",
+    "status": "KEEP_AS_CURRENT_PRIMARY",
+    "reason": "All later bridge and threshold branches failed promotion criteria. Stage71 remains the valid primary while vNext is scoped."
+  },
+  "closed_evidence": [
+    {
+      "evidence": "Bridge append limitation",
+      "summary": "Synthetic bridge append branches can improve REFUTE recall or external macro-F1, but repeatedly suppress SUPPORT entitlement.",
+      "source_stages": "Stage88/92/95/97/99/100/106",
+      "implication_for_vnext": "Do not continue bridge-append search as the main mechanism."
+    },
+    {
+      "evidence": "External threshold signal",
+      "summary": "External-label threshold sweep found recoverable latent SUPPORT signal in Stage92C probabilities.",
+      "source_stages": "Stage102/103",
+      "implication_for_vnext": "Representation contains useful signal, but external-tuned thresholds are not promotable."
+    },
+    {
+      "evidence": "Clean-only threshold underdetermination",
+      "summary": "Clean-dev already has perfect SUPPORT/REFUTE recall, so clean-only threshold selection becomes underdetermined. No strict nontrivial clean-safe threshold candidate was found.",
+      "source_stages": "Stage104/104B",
+      "implication_for_vnext": "Final routing must be structurally redesigned; threshold-only transfer is insufficient."
+    },
+    {
+      "evidence": "Portable clean delta weak/negative",
+      "summary": "Clean-derived portable delta slightly improves Stage92C but remains below Stage73 on SUPPORT recall.",
+      "source_stages": "Stage105",
+      "implication_for_vnext": "Do not promote threshold branch; use as design motivation only."
+    }
+  ],
+  "vnext_bottlenecks": [
+    {
+      "bottleneck": "Final entitlement/routing instability",
+      "description": "The model can carry SUPPORT signal in probabilities, but final routing fails to safely recover it without external-label tuning.",
+      "required_fix": "Entitlement-first hierarchical routing rather than flat 3-way final softmax."
+    },
+    {
+      "bottleneck": "NOT_ENTITLED collapse",
+      "description": "NOT_ENTITLED currently acts as one class covering frame mismatch, predicate absence, insufficiency, ambiguity, and novelty.",
+      "required_fix": "Decompose not-entitled reasons into explicit intermediate states."
+    },
+    {
+      "bottleneck": "Bridge intervention non-locality",
+      "description": "Small synthetic data interventions shift global SUPPORT/REFUTE/NE balance rather than selectively fixing errors.",
+      "required_fix": "Mechanism-level constraints and routing structure before further data append."
+    },
+    {
+      "bottleneck": "Clean-dev saturation",
+      "description": "Clean-dev is too easy for SUPPORT/REFUTE and cannot select robust thresholds.",
+      "required_fix": "Use clean-dev preservation as a gate, not as the sole design signal."
+    }
+  ],
+  "vnext_scope": {
+    "target_identity": "ContraMamba-vNext as a state-space epistemic judgment controller, not a flat 3-way verifier.",
+    "primary_goal": "Model judgment entitlement before truth polarity, then route to SUPPORT/REFUTE/NOT_ENTITLED or future action states.",
+    "minimal_vnext_output_schema": {
+      "frame_state": [
+        "same_frame",
+        "frame_mismatch",
+        "frame_uncertain"
+      ],
+      "predicate_state": [
+        "covered",
+        "partially_covered",
+        "not_covered"
+      ],
+      "sufficiency_state": [
+        "sufficient",
+        "insufficient",
+        "ambiguous"
+      ],
+      "polarity_state": [
+        "support",
+        "refute",
+        "mixed_or_uncertain"
+      ],
+      "final_label": [
+        "SUPPORT",
+        "REFUTE",
+        "NOT_ENTITLED"
+      ]
+    },
+    "deferred_future_output_schema": {
+      "not_entitled_reason": [
+        "frame_mismatch",
+        "predicate_not_covered",
+        "insufficient_evidence",
+        "ambiguity",
+        "novelty_or_ood"
+      ],
+      "action_state": [
+        "answer",
+        "abstain",
+        "ask_back",
+        "retrieve_more",
+        "mark_unsupported",
+        "revise_answer"
+      ]
+    },
+    "module_order": [
+      "Frame state first",
+      "Predicate coverage second",
+      "Sufficiency / entitlement third",
+      "Polarity only after entitlement",
+      "Final routing last"
+    ],
+    "architecture_principle": "SUPPORT and REFUTE should be high only when entitlement is high. NOT_ENTITLED should not merely be the residual class of low polarity."
+  },
+  "stage107_in_scope": [
+    "Summarize Stage71-106 failure evidence into vNext requirements.",
+    "Lock vNext architectural identity and output schema direction.",
+    "Define module order: Frame → Predicate → Sufficiency/Entitlement → Polarity → Final routing.",
+    "Define what is explicitly out of scope for the next implementation patch.",
+    "Define Stage108-112 sequence before any coding or training."
+  ],
+  "stage107_out_of_scope": [
+    "No model implementation.",
+    "No runner patch.",
+    "No training.",
+    "No clean-dev run.",
+    "No external/VitaminC evaluation.",
+    "No RAG integration.",
+    "No hallucination benchmark expansion.",
+    "No ask-back/retrieve-more action implementation.",
+    "No synthetic bridge generation.",
+    "No threshold tuning."
+  ],
+  "vnext_loss_direction": [
+    {
+      "loss_component": "final_label_ce",
+      "status": "keep but demote from sole objective",
+      "purpose": "Still needed for 3-way compatibility."
+    },
+    {
+      "loss_component": "entitlement_consistency",
+      "status": "required",
+      "purpose": "Prevent SUPPORT/REFUTE when frame/predicate/sufficiency states are invalid."
+    },
+    {
+      "loss_component": "polarity_conditioned_on_entitlement",
+      "status": "required",
+      "purpose": "Polarity should matter only after entitlement is established."
+    },
+    {
+      "loss_component": "not_entitled_reason_supervision",
+      "status": "future or synthetic-controlled",
+      "purpose": "Split NE into frame/predicate/sufficiency/ambiguity/novelty reasons."
+    },
+    {
+      "loss_component": "routing_margin",
+      "status": "candidate",
+      "purpose": "Separate entitled SUPPORT/REFUTE from non-entitled states without global SUPPORT suppression."
+    }
+  ],
+  "promotion_criteria_direction": [
+    {
+      "criterion": "clean_dev_preservation",
+      "required": true,
+      "description": "Must preserve clean-dev before any external diagnostic."
+    },
+    {
+      "criterion": "support_recall_floor",
+      "required": true,
+      "description": "No top-line promotion if SUPPORT recall collapses."
+    },
+    {
+      "criterion": "refute_recall_floor",
+      "required": true,
+      "description": "REFUTE gain cannot come solely by over-suppressing SUPPORT."
+    },
+    {
+      "criterion": "false_NE_control",
+      "required": true,
+      "description": "False NOT_ENTITLED on entitled examples must be tracked separately."
+    },
+    {
+      "criterion": "false_entitlement_control",
+      "required": true,
+      "description": "Avoid over-entitling true NOT_ENTITLED examples."
+    },
+    {
+      "criterion": "external_diagnostic_non_tuning",
+      "required": true,
+      "description": "External labels can diagnose but not tune or select deployable thresholds."
+    }
+  ],
+  "next_stage_plan": [
+    {
+      "stage": "Stage108",
+      "name": "static repo audit for v7/vNext salvage",
+      "type": "static audit only",
+      "goal": "Inspect existing v7_hierarchical / modeling files / runner flags / output export paths. Decide salvage vs new vNext file.",
+      "forbidden": "training, smoke run, external eval, dataset generation"
+    },
+    {
+      "stage": "Stage109",
+      "name": "minimal vNext architecture patch",
+      "type": "code patch",
+      "goal": "Implement or salvage minimal entitlement-first logit composition. No new benchmark and no run commands inside agent prompt.",
+      "forbidden": "full training, external eval, bridge append"
+    },
+    {
+      "stage": "Stage110",
+      "name": "plumbing validation",
+      "type": "static/local validation only",
+      "goal": "Check imports/help/config compatibility after Stage109 patch.",
+      "forbidden": "training and evaluation"
+    },
+    {
+      "stage": "Stage111",
+      "name": "clean-dev preservation run",
+      "type": "Kaggle run by user",
+      "goal": "Run main clean train/dev only after plumbing is valid.",
+      "forbidden": "external diagnostic until clean gate passes"
+    },
+    {
+      "stage": "Stage112",
+      "name": "external diagnostic",
+      "type": "diagnostic only",
+      "goal": "Apply external/VitaminC diagnostic only if Stage111 clean preservation passes.",
+      "forbidden": "external tuning or threshold selection for promotion"
+    }
+  ],
+  "checks": [
+    {
+      "check": "stage106_closed",
+      "pass": true
+    },
+    {
+      "check": "stage71_primary_preserved",
+      "pass": true
+    },
+    {
+      "check": "stage107_report_only",
+      "pass": true
+    },
+    {
+      "check": "no_training",
+      "pass": true
+    },
+    {
+      "check": "no_data_generation",
+      "pass": true
+    },
+    {
+      "check": "no_external_eval",
+      "pass": true
+    },
+    {
+      "check": "no_code_patch",
+      "pass": true
+    },
+    {
+      "check": "vnext_scope_locked",
+      "pass": true
+    },
+    {
+      "check": "stage108_static_audit_required_before_patch",
+      "pass": true
+    }
+  ],
+  "source_files": {
+    "stage106_report": "results/stage106_final_synthesis_and_commit_selection_report.json"
+  }
+}
