@@ -35,6 +35,7 @@ from contramamba.comparator_flags import (  # noqa: E402
     temporal_mismatch_flags_none,
 )
 from contramamba.modeling_v6b_minimal import ContraMambaV6BMinimal  # noqa: E402
+from contramamba.modeling_vnext_minimal import ContraMambaVNextMinimal  # noqa: E402
 from scripts import train_controlled_v5 as v5  # noqa: E402
 from scripts.stage43_external_factver_eval_utils import (  # noqa: E402
     analyze_stage43_predictions,
@@ -548,6 +549,50 @@ def build_mamba_model(
                 parameter.requires_grad = False
     return model
 
+
+def build_vnext_model(
+    vocab_size: int,
+    max_length: int,
+    hidden_size: int = 48,
+    vnext_router_mode: str = "learned_x_product",
+) -> ContraMambaVNextMinimal:
+    """Build a ContraMambaVNextMinimal with dummy backbone for plumbing validation."""
+    backbone = v5.ControlledDummyBackbone(vocab_size, hidden_size, max_length)
+    return ContraMambaVNextMinimal(
+        backbone=backbone,
+        frame_size=32,
+        predicate_size=32,
+        sufficiency_size=32,
+        energy_size=24,
+        dropout=0.0,
+        vnext_router_mode=vnext_router_mode,
+    )
+
+
+def build_vnext_mamba_model(
+    model_name: str,
+    freeze_encoder: bool,
+    freeze_a_log: bool,
+    vnext_router_mode: str = "learned_x_product",
+) -> ContraMambaVNextMinimal:
+    """Build a ContraMambaVNextMinimal with real Mamba backbone."""
+    model = ContraMambaVNextMinimal(
+        model_name=model_name,
+        frame_size=128,
+        predicate_size=128,
+        sufficiency_size=128,
+        energy_size=64,
+        dropout=0.1,
+        freeze_a_log=freeze_a_log,
+        vnext_router_mode=vnext_router_mode,
+    )
+    for parameter in model.mamba.parameters():
+        parameter.requires_grad = not freeze_encoder
+    if freeze_a_log:
+        for name, parameter in model.mamba.named_parameters():
+            if "A_log" in name:
+                parameter.requires_grad = False
+    return model
 
 def build_v7_model(
     vocab_size: int,
@@ -5754,12 +5799,23 @@ def build_parser() -> argparse.ArgumentParser:
     # effect on v6B runs and do not change any default v6B behavior.
     parser.add_argument(
         "--architecture",
-        choices=("v6b_minimal", "v7_hierarchical"),
+        choices=("v6b_minimal", "v7_hierarchical", "vnext_minimal"),
         default="v6b_minimal",
         help=(
             "Model architecture to use. Default: v6b_minimal (existing v6B behavior, "
             "fully backward compatible). v7_hierarchical: Stage26-A ContraMambaV7Hierarchical "
-            "(new hierarchical entitlement pipeline; requires explicit selection)."
+            "(new hierarchical entitlement pipeline; requires explicit selection). "
+            "vnext_minimal: Stage109 entitlement-first minimal vNext surface."
+        ),
+    )
+    parser.add_argument(
+        "--vnext-router-mode",
+        choices=("learned_only", "product", "min", "learned_x_product"),
+        default="learned_x_product",
+        help=(
+            "vNext minimal entitlement composition. Default learned_x_product: "
+            "learned entitlement probability gated by frame*predicate*sufficiency. "
+            "Only used when --architecture vnext_minimal."
         ),
     )
     parser.add_argument(
@@ -9836,6 +9892,13 @@ def main(argv: list[str] | None = None) -> int:
                     args, "v7_temporal_preservation_cap_detach", False
                 ),
             )
+        elif args.architecture == "vnext_minimal":
+            model = build_vnext_mamba_model(
+                args.model_name,
+                freeze_encoder=args.freeze_encoder,
+                freeze_a_log=args.freeze_a_log,
+                vnext_router_mode=args.vnext_router_mode,
+            )
         else:
             model = build_mamba_model(
                 args.model_name,
@@ -9927,6 +9990,12 @@ def main(argv: list[str] | None = None) -> int:
                 v7_temporal_preservation_cap_detach=getattr(
                     args, "v7_temporal_preservation_cap_detach", False
                 ),
+            )
+        elif args.architecture == "vnext_minimal":
+            model = build_vnext_model(
+                len(vocab),
+                max_length,
+                vnext_router_mode=args.vnext_router_mode,
             )
         else:
             model = build_model(
