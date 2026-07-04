@@ -4535,6 +4535,52 @@ def _stage113_vnext_scalar_report(prediction_rows: list[dict[str, Any]]) -> dict
         "stage113_vnext_scalar_fields_missing": missing,
     }
 
+
+def _stage115_clean_dev_scalar_rows(
+    prediction_rows: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    exported: list[dict[str, Any]] = []
+    for row in prediction_rows:
+        item: dict[str, Any] = {}
+        if row.get("id") is not None:
+            item["id"] = row.get("id")
+        item["claim"] = row.get("claim")
+        item["evidence"] = row.get("evidence")
+        item["gold_label"] = row.get("gold_label")
+        item["prediction"] = (
+            row.get("prediction")
+            if row.get("prediction") is not None
+            else row.get(
+                "base_prediction",
+                row.get("pred_label", row.get("pred_final_label")),
+            )
+        )
+        for key in _STAGE113_VNEXT_EXPORT_FIELDS:
+            if key in row:
+                item[key] = row[key]
+        exported.append(item)
+    return exported
+
+
+def _stage115_clean_dev_scalar_report(
+    prediction_rows: list[dict[str, Any]],
+    output_jsonl: Path,
+) -> dict[str, Any]:
+    present = sorted(
+        key
+        for key in _STAGE113_VNEXT_EXPORT_FIELDS
+        if any(key in row for row in prediction_rows)
+    )
+    missing = sorted(key for key in _STAGE113_VNEXT_EXPORT_FIELDS if key not in present)
+    return {
+        "stage115_clean_dev_scalar_output_jsonl": str(output_jsonl),
+        "stage115_clean_dev_scalar_export_enabled": True,
+        "stage115_clean_dev_scalar_fields_present": present,
+        "stage115_clean_dev_scalar_fields_missing": missing,
+        "stage115_clean_dev_scalar_row_count": len(prediction_rows),
+    }
+
+
 def prediction_records_v6b(
     records: list[dict],
     output: dict[str, Any],
@@ -7334,6 +7380,15 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+    parser.add_argument(
+        "--stage115-clean-dev-scalar-output-jsonl",
+        type=Path,
+        default=None,
+        help=(
+            "Stage115-B: optional JSONL path for best internal clean-dev per-row "
+            "vNext scalar diagnostics. Eval/export only; default off."
+        ),
+    )
     # Stage29-B: external probe evaluation (eval-only; no effect on training or selection)
     parser.add_argument(
         "--external-eval-jsonl",
@@ -14776,6 +14831,28 @@ def main(argv: list[str] | None = None) -> int:
         for _rpt in reports.values():
             _rpt.pop("_best_state", None)
 
+    if args.stage115_clean_dev_scalar_output_jsonl is not None:
+        if len(reports) != 1:
+            parser.error(
+                "--stage115-clean-dev-scalar-output-jsonl requires a single non-sweep run"
+            )
+        run_name, _run_report = next(iter(reports.items()))
+        if _ood_best_state is not None:
+            model.load_state_dict({k: v.to(device) for k, v in _ood_best_state.items()})
+        model.eval()
+        _stage115_output_path = Path(args.stage115_clean_dev_scalar_output_jsonl)
+        _stage115_output_path.parent.mkdir(parents=True, exist_ok=True)
+        _stage115_prediction_rows = prediction_exports[run_name]
+        write_jsonl(
+            _stage115_output_path,
+            _stage115_clean_dev_scalar_rows(_stage115_prediction_rows),
+        )
+        report.update(
+            _stage115_clean_dev_scalar_report(
+                _stage115_prediction_rows,
+                _stage115_output_path,
+            )
+        )
     if args.output_predictions_json is not None:
         if len(reports) != 1:
             parser.error("--output-predictions-json requires a single non-sweep run")
