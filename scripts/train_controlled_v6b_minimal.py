@@ -75,6 +75,10 @@ VNEXT_EVIDENCE_INTERFACE_CHOICES: tuple[str, ...] = (
     "core_marker_context_suffix",
     "segmented_dual_pass_scaffold",
 )
+STAGE118_DIAGNOSTIC_EVIDENCE_INTERFACE_CHOICES: tuple[str, ...] = (
+    "same_as_vnext",
+    *VNEXT_EVIDENCE_INTERFACE_CHOICES,
+)
 
 
 class Stage31CCoverageEntailmentHead(nn.Module):
@@ -4445,6 +4449,7 @@ _STAGE113_VNEXT_EXPORT_FIELDS: tuple[str, ...] = (
 
 _STAGE123_VNEXT_EVIDENCE_EXPORT_FIELDS: tuple[str, ...] = (
     "vnext_evidence_interface",
+    "stage118_diagnostic_evidence_interface",
     "vnext_resolved_evidence",
     "vnext_evidence_core_text",
     "vnext_evidence_context_text",
@@ -4569,6 +4574,13 @@ def resolve_vnext_evidence_text(record: dict[str, Any], evidence_interface: str)
         "evidence_interface_fallback_used": bool(fallback_used),
         "evidence_interface_notes": ";".join(notes),
     }
+
+
+def resolve_stage118_diagnostic_evidence_interface(args: argparse.Namespace) -> str:
+    requested = getattr(args, "stage118_diagnostic_evidence_interface", "same_as_vnext")
+    if requested == "same_as_vnext":
+        return getattr(args, "vnext_evidence_interface", "full_evidence")
+    return requested
 
 
 def apply_vnext_evidence_interface_to_records(
@@ -7589,6 +7601,16 @@ def build_parser() -> argparse.ArgumentParser:
         default="stage118_generic_diagnostic",
         help="Stage118: diagnostic name stamped into predictions and summary.",
     )
+    parser.add_argument(
+        "--stage118-diagnostic-evidence-interface",
+        choices=STAGE118_DIAGNOSTIC_EVIDENCE_INTERFACE_CHOICES,
+        default="same_as_vnext",
+        help=(
+            "Stage123-A2: evidence interface for Stage118 generic diagnostics. "
+            "same_as_vnext uses --vnext-evidence-interface; other choices override "
+            "diagnostic input evidence only."
+        ),
+    )
     # Stage29-B: external probe evaluation (eval-only; no effect on training or selection)
     parser.add_argument(
         "--external-eval-jsonl",
@@ -8795,9 +8817,14 @@ def run_stage118_generic_diagnostic_eval(
     device: torch.device,
 ) -> dict[str, Any]:
     records, skip_reasons, n_input_rows = load_stage118_diagnostic_jsonl(input_jsonl)
+    stage118_evidence_interface = resolve_stage118_diagnostic_evidence_interface(args)
     records = apply_vnext_evidence_interface_to_records(
-        records, args.vnext_evidence_interface
+        records, stage118_evidence_interface
     )
+    for record in records:
+        record["stage118_diagnostic_evidence_interface"] = getattr(
+            args, "stage118_diagnostic_evidence_interface", "same_as_vnext"
+        )
     inputs = _stage118_encode_inputs(
         records,
         args=args,
