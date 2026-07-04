@@ -4435,6 +4435,31 @@ _STAGE113_VNEXT_EXPORT_FIELDS: tuple[str, ...] = (
     *_STAGE113_VNEXT_METADATA_FIELDS,
 )
 
+_STAGE118_PRESERVED_FIELDS: tuple[str, ...] = (
+    "stage117_family",
+    "stage117_is_hard_clean",
+    "stage117_label_preserved",
+    "stage117_uses_external_data",
+    "stage117_source_dataset",
+    "stage117_distractor_id",
+    "stage117_original_claim",
+    "stage117_original_evidence",
+    "stage117_surface_before",
+    "stage117_surface_after",
+    "metadata",
+)
+
+_STAGE118_BUCKETS: tuple[str, ...] = (
+    "correct_SUPPORT",
+    "correct_REFUTE",
+    "correct_NE",
+    "false_NE_SUPPORT",
+    "false_NE_REFUTE",
+    "false_entitlement",
+    "SUPPORT_to_REFUTE",
+    "REFUTE_to_SUPPORT",
+)
+
 
 def _stage113_jsonable_metadata(value: Any) -> Any:
     if value is None or isinstance(value, (str, int, float, bool)):
@@ -7389,6 +7414,40 @@ def build_parser() -> argparse.ArgumentParser:
             "vNext scalar diagnostics. Eval/export only; default off."
         ),
     )
+    parser.add_argument(
+        "--stage118-diagnostic-jsonl",
+        type=Path,
+        default=None,
+        help=(
+            "Stage118: optional generic controlled-style diagnostic JSONL to evaluate "
+            "after best clean-dev state restoration. Does not use Stage43/VitaminC "
+            "external filtering."
+        ),
+    )
+    parser.add_argument(
+        "--stage118-diagnostic-output-jsonl",
+        type=Path,
+        default=None,
+        help="Stage118: output JSONL path for generic diagnostic predictions.",
+    )
+    parser.add_argument(
+        "--stage118-diagnostic-summary-json",
+        type=Path,
+        default=None,
+        help="Stage118: output JSON path for generic diagnostic summary metrics.",
+    )
+    parser.add_argument(
+        "--stage118-diagnostic-batch-size",
+        type=int,
+        default=16,
+        help="Stage118: eval batch size for generic diagnostic JSONL. Default: 16.",
+    )
+    parser.add_argument(
+        "--stage118-diagnostic-name",
+        type=str,
+        default="stage118_generic_diagnostic",
+        help="Stage118: diagnostic name stamped into predictions and summary.",
+    )
     # Stage29-B: external probe evaluation (eval-only; no effect on training or selection)
     parser.add_argument(
         "--external-eval-jsonl",
@@ -8345,6 +8404,286 @@ def _stage43_prediction_records_from_model(
             )
     return exported
 
+
+def _stage118_normalize_label(value: Any) -> str | None:
+    if isinstance(value, str):
+        compact = value.strip().upper().replace(" ", "_")
+        normalized = _s28e_normalize_label(compact)
+        if normalized is not None:
+            return normalized
+        if compact == "NEI":
+            return "NOT_ENTITLED"
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        if int(value) == value:
+            return _s28e_normalize_label(int(value))
+    return _s28e_normalize_label(value)
+
+
+def load_stage118_diagnostic_jsonl(path: Path) -> tuple[list[dict[str, Any]], dict[str, int], int]:
+    records: list[dict[str, Any]] = []
+    skip_reasons: dict[str, int] = {}
+    n_input_rows = 0
+
+    def skip(reason: str) -> None:
+        skip_reasons[reason] = skip_reasons.get(reason, 0) + 1
+
+    with open(path, encoding="utf-8") as fh:
+        for line_index, line in enumerate(fh):
+            stripped = line.strip()
+            if not stripped:
+                continue
+            n_input_rows += 1
+            try:
+                row = json.loads(stripped)
+            except json.JSONDecodeError:
+                skip("invalid_json")
+                continue
+            if not isinstance(row, dict):
+                skip("not_object")
+                continue
+            claim = row.get("claim")
+            evidence = row.get("evidence")
+            if claim is None or evidence is None:
+                skip("missing_claim_or_evidence")
+                continue
+            raw_label = row.get("gold_label", row.get("label"))
+            gold_label = _stage118_normalize_label(raw_label)
+            if gold_label is None:
+                skip("invalid_or_missing_label")
+                continue
+            record = dict(row)
+            record["claim"] = str(claim)
+            record["evidence"] = str(evidence)
+            record["gold_label"] = gold_label
+            record["final_label"] = gold_label
+            record.setdefault("id", row.get("id", f"stage118_row_{line_index}"))
+            record.setdefault("intervention_type", row.get("intervention_type", "stage118_generic_diagnostic"))
+            record["stage118_valid_row_index"] = len(records)
+            records.append(record)
+    return records, dict(sorted(skip_reasons.items())), n_input_rows
+
+
+def _stage118_encode_inputs(
+    records: list[dict[str, Any]],
+    *,
+    args: argparse.Namespace,
+    vocab: dict[str, int] | None,
+    tokenizer: Any | None,
+    max_length: int,
+    device: torch.device,
+) -> dict[str, torch.Tensor]:
+    if args.backbone == "dummy":
+        if vocab is None:
+            raise ValueError("Stage118 diagnostic eval with dummy backbone requires vocab.")
+        bundle = v5.encode_records(records, vocab)
+    else:
+        if tokenizer is None:
+            raise ValueError("Stage118 diagnostic eval with Mamba backbone requires tokenizer.")
+        bundle = v5.encode_mamba_records(records, tokenizer, args.max_length)
+    inputs = v5.move_inputs(bundle["model_inputs"], device)
+    seq_len = inputs["input_ids"].shape[1]
+    if seq_len < max_length:
+        for key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
+            inputs[key] = F.pad(inputs[key], (0, max_length - seq_len), value=0)
+    elif seq_len > max_length:
+        for key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
+            inputs[key] = inputs[key][:, :max_length]
+    return inputs
+
+
+def _stage118_prediction_rows(
+    records: list[dict[str, Any]],
+    prediction_rows: list[dict[str, Any]],
+    *,
+    diagnostic_name: str,
+    source_jsonl: Path,
+) -> list[dict[str, Any]]:
+    exported: list[dict[str, Any]] = []
+    for record, pred in zip(records, prediction_rows):
+        prediction = pred.get("pred_final_label") or pred.get("pred_label")
+        row: dict[str, Any] = {
+            "id": record.get("id"),
+            "claim": record.get("claim"),
+            "evidence": record.get("evidence"),
+            "gold_label": record.get("gold_label", record.get("final_label")),
+            "base_prediction": prediction,
+            "prediction": prediction,
+            "stage118_diagnostic_name": diagnostic_name,
+            "stage118_source_jsonl": str(source_jsonl),
+            "stage118_valid_row_index": record.get("stage118_valid_row_index"),
+        }
+        if record.get("source_id") is not None:
+            row["source_id"] = record.get("source_id")
+        elif pred.get("source_id") is not None:
+            row["source_id"] = pred.get("source_id")
+        if pred.get("final_logits") is not None:
+            row["logits"] = pred.get("final_logits")
+        for key in _STAGE113_VNEXT_EXPORT_FIELDS:
+            if key in pred:
+                row[key] = pred[key]
+        for key in _STAGE118_PRESERVED_FIELDS:
+            if key in record:
+                row[key] = record[key]
+        exported.append(row)
+    return exported
+
+
+def _stage118_scalar_medians(rows: list[dict[str, Any]]) -> dict[str, float]:
+    medians: dict[str, float] = {}
+    for key in _STAGE113_VNEXT_SCALAR_FIELDS:
+        values = [row.get(key) for row in rows]
+        numeric = [float(value) for value in values if isinstance(value, (int, float))]
+        if numeric:
+            medians[key] = round(float(np.median(numeric)), 6)
+    return medians
+
+
+def _stage118_build_summary(
+    *,
+    diagnostic_name: str,
+    input_jsonl: Path,
+    output_jsonl: Path,
+    n_input_rows: int,
+    skip_reasons: dict[str, int],
+    rows: list[dict[str, Any]],
+) -> dict[str, Any]:
+    labels = ("REFUTE", "NOT_ENTITLED", "SUPPORT")
+    pred_counts = {label: 0 for label in labels}
+    gold_counts = {label: 0 for label in labels}
+    for row in rows:
+        gold = row.get("gold_label")
+        pred = row.get("prediction")
+        if gold in gold_counts:
+            gold_counts[gold] += 1
+        if pred in pred_counts:
+            pred_counts[pred] += 1
+
+    per_label: dict[str, Any] = {}
+    f1_values: list[float] = []
+    for label in labels:
+        tp = sum(1 for row in rows if row.get("gold_label") == label and row.get("prediction") == label)
+        pred_n = pred_counts[label]
+        gold_n = gold_counts[label]
+        precision = tp / pred_n if pred_n else 0.0
+        recall = tp / gold_n if gold_n else 0.0
+        f1 = 2.0 * precision * recall / (precision + recall) if precision + recall else 0.0
+        f1_values.append(f1)
+        per_label[label] = {
+            "precision": round(precision, 4),
+            "recall": round(recall, 4),
+            "f1": round(f1, 4),
+            "support": int(gold_n),
+        }
+
+    n_valid = len(rows)
+    correct = sum(1 for row in rows if row.get("gold_label") == row.get("prediction"))
+    buckets: dict[str, list[dict[str, Any]]] = {name: [] for name in _STAGE118_BUCKETS}
+    for row in rows:
+        gold = row.get("gold_label")
+        pred = row.get("prediction")
+        if gold == pred == "SUPPORT":
+            buckets["correct_SUPPORT"].append(row)
+        if gold == pred == "REFUTE":
+            buckets["correct_REFUTE"].append(row)
+        if gold == pred == "NOT_ENTITLED":
+            buckets["correct_NE"].append(row)
+        if gold == "SUPPORT" and pred == "NOT_ENTITLED":
+            buckets["false_NE_SUPPORT"].append(row)
+        if gold == "REFUTE" and pred == "NOT_ENTITLED":
+            buckets["false_NE_REFUTE"].append(row)
+        if gold == "NOT_ENTITLED" and pred in {"SUPPORT", "REFUTE"}:
+            buckets["false_entitlement"].append(row)
+        if gold == "SUPPORT" and pred == "REFUTE":
+            buckets["SUPPORT_to_REFUTE"].append(row)
+        if gold == "REFUTE" and pred == "SUPPORT":
+            buckets["REFUTE_to_SUPPORT"].append(row)
+
+    scalar_medians_by_gold_label = {
+        label: _stage118_scalar_medians([row for row in rows if row.get("gold_label") == label])
+        for label in labels
+    }
+    scalar_medians_by_bucket = {
+        bucket: _stage118_scalar_medians(bucket_rows)
+        for bucket, bucket_rows in buckets.items()
+    }
+
+    return {
+        "stage": "Stage118",
+        "diagnostic_name": diagnostic_name,
+        "input_jsonl": str(input_jsonl),
+        "output_jsonl": str(output_jsonl),
+        "n_input_rows": int(n_input_rows),
+        "n_valid_rows": int(n_valid),
+        "n_skipped_rows": int(sum(skip_reasons.values())),
+        "skip_reasons": skip_reasons,
+        "accuracy": round(correct / n_valid, 4) if n_valid else 0.0,
+        "macro_f1": round(sum(f1_values) / len(f1_values), 4) if f1_values else 0.0,
+        "per_label": per_label,
+        "pred_counts": dict(sorted(pred_counts.items())),
+        "gold_counts": dict(sorted(gold_counts.items())),
+        "false_NE_total": int(len(buckets["false_NE_SUPPORT"]) + len(buckets["false_NE_REFUTE"])),
+        "false_entitlement_total": int(len(buckets["false_entitlement"])),
+        "polarity_error_total": int(len(buckets["SUPPORT_to_REFUTE"]) + len(buckets["REFUTE_to_SUPPORT"])),
+        "scalar_medians_by_gold_label": scalar_medians_by_gold_label,
+        "scalar_medians_by_bucket": scalar_medians_by_bucket,
+        "decision": "STAGE118_GENERIC_DIAGNOSTIC_EVAL_COMPLETE",
+    }
+
+
+def run_stage118_generic_diagnostic_eval(
+    *,
+    model: "ContraMambaV6BMinimal | Any",
+    input_jsonl: Path,
+    output_jsonl: Path,
+    summary_json: Path,
+    diagnostic_name: str,
+    batch_size: int,
+    args: argparse.Namespace,
+    vocab: dict[str, int] | None,
+    tokenizer: Any | None,
+    max_length: int,
+    device: torch.device,
+) -> dict[str, Any]:
+    records, skip_reasons, n_input_rows = load_stage118_diagnostic_jsonl(input_jsonl)
+    inputs = _stage118_encode_inputs(
+        records,
+        args=args,
+        vocab=vocab,
+        tokenizer=tokenizer,
+        max_length=max_length,
+        device=device,
+    ) if records else {}
+    prediction_rows = (
+        _stage43_prediction_records_from_model(
+            model=model,
+            records=records,
+            model_inputs=inputs,
+            flag_source=args.flag_source,
+            device=device,
+            args=args,
+            batch_size=batch_size,
+        )
+        if records else []
+    )
+    exported_rows = _stage118_prediction_rows(
+        records,
+        prediction_rows,
+        diagnostic_name=diagnostic_name,
+        source_jsonl=input_jsonl,
+    )
+    output_jsonl.parent.mkdir(parents=True, exist_ok=True)
+    summary_json.parent.mkdir(parents=True, exist_ok=True)
+    write_jsonl(output_jsonl, exported_rows)
+    summary = _stage118_build_summary(
+        diagnostic_name=diagnostic_name,
+        input_jsonl=input_jsonl,
+        output_jsonl=output_jsonl,
+        n_input_rows=n_input_rows,
+        skip_reasons=skip_reasons,
+        rows=exported_rows,
+    )
+    write_json(summary_json, summary)
+    return summary
 
 def run_stage43_external_factver_hook(
     *,
@@ -14852,6 +15191,41 @@ def main(argv: list[str] | None = None) -> int:
                 _stage115_prediction_rows,
                 _stage115_output_path,
             )
+        )
+    if args.stage118_diagnostic_jsonl is not None:
+        if len(reports) != 1:
+            parser.error("--stage118-diagnostic-jsonl requires a single non-sweep run")
+        if args.stage118_diagnostic_output_jsonl is None:
+            parser.error(
+                "--stage118-diagnostic-jsonl requires --stage118-diagnostic-output-jsonl"
+            )
+        if args.stage118_diagnostic_summary_json is None:
+            parser.error(
+                "--stage118-diagnostic-jsonl requires --stage118-diagnostic-summary-json"
+            )
+        if _ood_best_state is not None:
+            model.load_state_dict({k: v.to(device) for k, v in _ood_best_state.items()})
+        model.eval()
+        _stage118_summary = run_stage118_generic_diagnostic_eval(
+            model=model,
+            input_jsonl=Path(args.stage118_diagnostic_jsonl),
+            output_jsonl=Path(args.stage118_diagnostic_output_jsonl),
+            summary_json=Path(args.stage118_diagnostic_summary_json),
+            diagnostic_name=args.stage118_diagnostic_name,
+            batch_size=args.stage118_diagnostic_batch_size,
+            args=args,
+            vocab=vocab,
+            tokenizer=tokenizer,
+            max_length=max_length,
+            device=device,
+        )
+        report["stage118_generic_diagnostic_eval"] = _stage118_summary
+        print(
+            f"[STAGE118 GENERIC DIAGNOSTIC] name={args.stage118_diagnostic_name} "
+            f"valid={_stage118_summary['n_valid_rows']} "
+            f"skipped={_stage118_summary['n_skipped_rows']} "
+            f"acc={_stage118_summary['accuracy']:.4f} "
+            f"macro_f1={_stage118_summary['macro_f1']:.4f}"
         )
     if args.output_predictions_json is not None:
         if len(reports) != 1:
