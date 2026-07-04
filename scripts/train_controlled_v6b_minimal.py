@@ -67,6 +67,14 @@ STAGE31C_COVERAGE_LABEL_TO_ID = {
 }
 STAGE31C_DEFAULT_NUM_CLASSES = 3
 STAGE31C_INPUT_MODES = ("current", "raw_pair", "hybrid")
+VNEXT_EVIDENCE_INTERFACE_CHOICES: tuple[str, ...] = (
+    "full_evidence",
+    "core_only",
+    "core_first_context_suffix",
+    "context_prefix_core",
+    "core_marker_context_suffix",
+    "segmented_dual_pass_scaffold",
+)
 
 
 class Stage31CCoverageEntailmentHead(nn.Module):
@@ -4435,6 +4443,15 @@ _STAGE113_VNEXT_EXPORT_FIELDS: tuple[str, ...] = (
     *_STAGE113_VNEXT_METADATA_FIELDS,
 )
 
+_STAGE123_VNEXT_EVIDENCE_EXPORT_FIELDS: tuple[str, ...] = (
+    "vnext_evidence_interface",
+    "vnext_resolved_evidence",
+    "vnext_evidence_core_text",
+    "vnext_evidence_context_text",
+    "vnext_evidence_interface_fallback_used",
+    "vnext_evidence_interface_notes",
+)
+
 _STAGE118_PRESERVED_FIELD_PREFIXES: tuple[str, ...] = (
     "stage",
     "metadata",
@@ -4455,6 +4472,7 @@ _STAGE118_CORE_PREDICTION_FIELDS: set[str] = {
     "pred_final_label",
     "pred_label",
     *_STAGE113_VNEXT_EXPORT_FIELDS,
+    *_STAGE123_VNEXT_EVIDENCE_EXPORT_FIELDS,
 }
 
 _STAGE118_BUCKETS: tuple[str, ...] = (
@@ -4469,6 +4487,112 @@ _STAGE118_BUCKETS: tuple[str, ...] = (
 )
 
 
+def _vnext_clean_text(value: Any) -> str:
+    if value is None:
+        return ""
+    return " ".join(str(value).split())
+
+
+def _vnext_first_text(record: dict[str, Any], fields: tuple[str, ...]) -> tuple[str, str | None]:
+    for field in fields:
+        text = _vnext_clean_text(record.get(field))
+        if text:
+            return text, field
+    return "", None
+
+
+def resolve_vnext_evidence_text(record: dict[str, Any], evidence_interface: str) -> dict[str, Any]:
+    """Resolve opt-in vNext evidence text without reading labels or decisions."""
+    if evidence_interface not in VNEXT_EVIDENCE_INTERFACE_CHOICES:
+        raise ValueError(f"unknown vNext evidence interface: {evidence_interface!r}")
+
+    claim = record.get("claim")
+    evidence_text = _vnext_clean_text(record.get("evidence"))
+    core_text, core_source = _vnext_first_text(
+        record,
+        ("evidence_core", "stage122_evidence_core", "stage121_original_evidence", "evidence"),
+    )
+    context_text, context_source = _vnext_first_text(
+        record,
+        ("evidence_context", "context_prefix", "stage122_prefix_text", "stage121_prefix_text"),
+    )
+    fallback_used = False
+    notes: list[str] = []
+
+    if evidence_interface == "full_evidence":
+        resolved = evidence_text
+        notes.append("full_evidence_uses_evidence")
+    elif evidence_interface == "core_only":
+        resolved = core_text
+        fallback_used = core_source != "evidence_core"
+        notes.append(f"core_source={core_source or 'none'}")
+    elif evidence_interface == "core_first_context_suffix":
+        resolved = " ".join(part for part in (core_text, context_text) if part)
+        fallback_used = core_source != "evidence_core" or context_source != "evidence_context"
+        notes.append(f"core_source={core_source or 'none'}")
+        notes.append(f"context_source={context_source or 'none'}")
+    elif evidence_interface == "context_prefix_core":
+        resolved = " ".join(part for part in (context_text, core_text) if part)
+        fallback_used = core_source != "evidence_core" or context_source != "evidence_context"
+        notes.append("prefix_control_interface")
+        notes.append(f"core_source={core_source or 'none'}")
+        notes.append(f"context_source={context_source or 'none'}")
+    elif evidence_interface == "core_marker_context_suffix":
+        resolved = f"Evidence: {core_text}" if core_text else ""
+        if context_text:
+            resolved = f"{resolved} Context: {context_text}" if resolved else f"Context: {context_text}"
+        fallback_used = core_source != "evidence_core" or context_source != "evidence_context"
+        notes.append(f"core_source={core_source or 'none'}")
+        notes.append(f"context_source={context_source or 'none'}")
+    elif evidence_interface == "segmented_dual_pass_scaffold":
+        resolved = core_text
+        fallback_used = core_source != "evidence_core" or context_source != "evidence_context"
+        notes.append("segmented_dual_pass_scaffold_single_pass_core_sequence")
+        notes.append(f"core_source={core_source or 'none'}")
+        notes.append(f"context_source={context_source or 'none'}")
+    else:
+        resolved = evidence_text
+
+    if not resolved:
+        resolved = evidence_text
+        fallback_used = True
+        notes.append("empty_resolved_evidence_fell_back_to_evidence")
+
+    return {
+        "resolved_claim": claim,
+        "resolved_evidence": resolved,
+        "evidence_core_text": core_text,
+        "evidence_context_text": context_text,
+        "core_sequence_text": core_text,
+        "context_sequence_text": context_text,
+        "evidence_interface": evidence_interface,
+        "evidence_interface_fallback_used": bool(fallback_used),
+        "evidence_interface_notes": ";".join(notes),
+    }
+
+
+def apply_vnext_evidence_interface_to_records(
+    records: list[dict[str, Any]],
+    evidence_interface: str,
+) -> list[dict[str, Any]]:
+    resolved_records: list[dict[str, Any]] = []
+    for record in records:
+        resolved = resolve_vnext_evidence_text(record, evidence_interface)
+        item = dict(record)
+        item["claim"] = resolved["resolved_claim"]
+        item["evidence"] = resolved["resolved_evidence"]
+        item["vnext_evidence_interface"] = resolved["evidence_interface"]
+        item["vnext_resolved_evidence"] = resolved["resolved_evidence"]
+        item["vnext_evidence_core_text"] = resolved["evidence_core_text"]
+        item["vnext_evidence_context_text"] = resolved["evidence_context_text"]
+        item["vnext_core_sequence_text"] = resolved["core_sequence_text"]
+        item["vnext_context_sequence_text"] = resolved["context_sequence_text"]
+        item["vnext_evidence_interface_fallback_used"] = resolved[
+            "evidence_interface_fallback_used"
+        ]
+        item["vnext_evidence_interface_notes"] = resolved["evidence_interface_notes"]
+        resolved_records.append(item)
+    return resolved_records
 def _stage113_jsonable_metadata(value: Any) -> Any:
     if value is None or isinstance(value, (str, int, float, bool)):
         return value
@@ -5308,6 +5432,15 @@ def build_parser() -> argparse.ArgumentParser:
         choices=("stage15_probe_type", "controlled_heuristic", "none"),
         default="controlled_heuristic",
         help="Source for temporal/predicate flags",
+    )
+    parser.add_argument(
+        "--vnext-evidence-interface",
+        choices=VNEXT_EVIDENCE_INTERFACE_CHOICES,
+        default="full_evidence",
+        help=(
+            "Stage123-A experimental vNext evidence interface. "
+            "Default full_evidence preserves existing claim+evidence encoding."
+        ),
     )
     parser.add_argument(
         "--max-train-records",
@@ -8538,6 +8671,9 @@ def _stage118_prediction_rows(
         for key in _STAGE113_VNEXT_EXPORT_FIELDS:
             if key in pred:
                 row[key] = pred[key]
+        for key in _STAGE123_VNEXT_EVIDENCE_EXPORT_FIELDS:
+            if key in record:
+                row[key] = record[key]
         exported.append(row)
     return exported
 
@@ -8659,6 +8795,9 @@ def run_stage118_generic_diagnostic_eval(
     device: torch.device,
 ) -> dict[str, Any]:
     records, skip_reasons, n_input_rows = load_stage118_diagnostic_jsonl(input_jsonl)
+    records = apply_vnext_evidence_interface_to_records(
+        records, args.vnext_evidence_interface
+    )
     inputs = _stage118_encode_inputs(
         records,
         args=args,
@@ -10323,6 +10462,15 @@ def main(argv: list[str] | None = None) -> int:
     assert len(_train_source_labels) == len(train_records), (
         "_train_source_labels must track train_records 1:1 after bridge appends"
     )
+
+    # Stage123-A: optional experimental vNext evidence interface, applied only
+    # after all train/dev membership decisions and bridge appends are complete.
+    train_records = apply_vnext_evidence_interface_to_records(
+        train_records, args.vnext_evidence_interface
+    )
+    dev_records = apply_vnext_evidence_interface_to_records(
+        dev_records, args.vnext_evidence_interface
+    )
     _pairwise_loss_stage57_excluded = _stage60_bridge_info["stage57_bridge_row_count"]
     _pairwise_loss_stage66_excluded = _stage66_bridge_info["stage66_bridge_row_count"]
     _pairwise_loss_stage75_excluded = _stage75_bridge_info["stage75_bridge_row_count"]
@@ -10365,7 +10513,12 @@ def main(argv: list[str] | None = None) -> int:
     tokenizer: Any | None = None
 
     if args.backbone == "dummy":
-        vocab = v5.build_vocab(records)
+        vocab_records = (
+            records
+            if args.vnext_evidence_interface == "full_evidence"
+            else train_records + dev_records
+        )
+        vocab = v5.build_vocab(vocab_records)
         train_bundle = v5.encode_records(train_records, vocab)
         dev_bundle = v5.encode_records(dev_records, vocab)
         model = None
@@ -14710,6 +14863,10 @@ def main(argv: list[str] | None = None) -> int:
             "stage15_used_for_temporal_channel_penalty_selection": False,
             # Stage26-A: v7 hierarchical architecture fields
             "architecture": args.architecture,
+            "vnext_evidence_interface": args.vnext_evidence_interface,
+            "vnext_evidence_interface_default_preserves_existing_behavior": (
+                args.vnext_evidence_interface == "full_evidence"
+            ),
             "use_v7_hierarchical": args.architecture == "v7_hierarchical",
             "v7_disable_frame_channel": getattr(args, "v7_disable_frame_channel", False),
             "v7_disable_predicate_channel": getattr(args, "v7_disable_predicate_channel", False),
