@@ -1,0 +1,64 @@
+﻿{
+  "stage": "Stage117-A",
+  "decision": "STAGE117A_VNEXT_EXTERNAL_COLLAPSE_SYNTHESIS_LOCKED_RECONSTRUCTED",
+  "reconstructed_after_runtime_loss": true,
+  "core_findings": [
+    "Clean-dev vNext scalar geometry is strongly separated and internally successful.",
+    "External VitaminC diagnostic collapses into NOT_ENTITLED.",
+    "Product-gate collapse was observed, but router ablations did not recover external performance.",
+    "Clean/external scalar geometry shift is confirmed.",
+    "Surface/format shift is the likely root cause: clean data is lexical-overlap/template-heavy, while external data is paraphrastic/open-domain."
+  ],
+  "clean_dev_metrics": {
+    "n": 720,
+    "accuracy": 0.984722,
+    "macro_f1": 0.977373,
+    "false_NE_total": 0,
+    "false_entitlement_total": 11,
+    "pred_counts": {
+      "NOT_ENTITLED": 529,
+      "REFUTE": 90,
+      "SUPPORT": 101
+    }
+  },
+  "external_vitaminc_metrics": {
+    "n": 1000,
+    "accuracy": 0.149,
+    "macro_f1": 0.093106,
+    "false_NE_total": 845,
+    "false_entitlement_total": 2,
+    "pred_counts": {
+      "NOT_ENTITLED": 988,
+      "REFUTE": 5,
+      "SUPPORT": 7
+    }
+  },
+  "stage114_wave1": [
+    {
+      "mode": "learned_x_sufficiency",
+      "accuracy": 0.148,
+      "macro_f1": 0.091720,
+      "false_NE_total": 846
+    },
+    {
+      "mode": "sufficiency_only",
+      "accuracy": 0.147,
+      "macro_f1": 0.095885,
+      "false_NE_total": 838
+    },
+    {
+      "mode": "learned_only",
+      "accuracy": 0.148,
+      "macro_f1": 0.090261,
+      "false_NE_total": 848
+    }
+  ],
+  "locked_interpretation": "ContraMamba-vNext minimal learns a strong clean-controlled epistemic geometry, but that geometry is tied to lexical-overlap/template-heavy clean distribution. Under open-domain fact-verification format shift, SUPPORT/REFUTE examples often fail to enter the model's judgment-enabled frame/predicate/polarity manifold and collapse to NOT_ENTITLED.",
+  "next_stage": "Stage117-B controlled hard-clean diagnostic design",
+  "do_not": [
+    "Do not continue router ablation as the main path.",
+    "Do not tune thresholds on VitaminC.",
+    "Do not train on VitaminC.",
+    "Do not add bridge/synthetic external append yet."
+  ]
+}
