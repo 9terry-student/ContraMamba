@@ -1,0 +1,69 @@
+{
+  "stage": "Stage119-A",
+  "decision": "STAGE119A_HARD_CLEAN_FAILURE_AUDIT_LOCKED",
+  "created_at_local": "2026-07-04 14:28:46 +0900",
+  "audit_type": "repository_provenance_and_missing_artifact_audit",
+  "repository_state": {
+    "branch": "main",
+    "upstream": "origin/main",
+    "working_tree_before_audit": "clean",
+    "latest_commits": [
+      {
+        "sha": "4136120",
+        "subject": "Add Stage118 generic diagnostic eval path"
+      },
+      {
+        "sha": "3ad70ef",
+        "subject": "Add Stage117B hard clean diagnostic scaffold"
+      },
+      {
+        "sha": "2972978",
+        "subject": "Lock reconstructed Stage117A vNext collapse synthesis"
+      }
+    ]
+  },
+  "requested_stage_patterns": [
+    "reports/stage119a_hard_clean_failure_audit_*/stage119a_hard_clean_failure_audit.json",
+    "reports/stage119a_hard_clean_failure_audit_*/stage119a_hard_clean_failure_audit.md",
+    "reports/stage119a_hard_clean_failure_audit_*/*.csv"
+  ],
+  "initial_pattern_result": {
+    "matching_files_found": false,
+    "commit_created_before_audit": false,
+    "push_attempted_before_audit": false
+  },
+  "local_evidence": {
+    "stage119a_files_or_references_found_before_audit": false,
+    "nearest_report_directory": "reports/stage117a_vnext_external_collapse_synthesis_reconstructed_20260704_134556",
+    "stage117_builder": "scripts/build_stage117_hard_clean_diagnostic.py",
+    "stage118_evaluator": "scripts/train_controlled_v6b_minimal.py",
+    "stage117_source_input_exists": true,
+    "stage117_source_input": "data/controlled_v5_v3_without_time_swap.jsonl",
+    "local_vnext_checkpoint_or_run_export_found": false
+  },
+  "stage_chain_interpretation": [
+    "Stage117-A locked the vNext external collapse interpretation and recommended a controlled hard-clean diagnostic.",
+    "Stage117-B added a controlled hard-clean diagnostic scaffold that can generate diagnostic JSONL from the clean controlled dataset.",
+    "Stage118 added a generic diagnostic evaluation path inside the training script.",
+    "No Stage119-A hard-clean failure audit artifacts were present in the repository before this audit."
+  ],
+  "hard_clean_failure_status": {
+    "can_generate_stage117_hard_clean_dataset_locally": true,
+    "can_verify_stage118_model_failure_locally_from_current_checkout": false,
+    "blocking_reason": "The repository contains no local vNext checkpoint, prediction export, or Stage118 hard-clean evaluation summary to audit as model metrics.",
+    "metric_claims_made": false
+  },
+  "audit_outputs": [
+    "reports/stage119a_hard_clean_failure_audit_20260704_142846/stage119a_hard_clean_failure_audit.json",
+    "reports/stage119a_hard_clean_failure_audit_20260704_142846/stage119a_hard_clean_failure_audit.md",
+    "reports/stage119a_hard_clean_failure_audit_20260704_142846/stage119a_hard_clean_failure_audit_manifest.csv"
+  ],
+  "recommendation": {
+    "next_stage": "Run Stage117-B hard-clean generation and Stage118 diagnostic evaluation in the environment that has the vNext checkpoint/run artifacts, then replace or extend this provenance audit with metric-backed Stage119 results.",
+    "do_not_claim": [
+      "Do not claim hard-clean reproduces the external NOT_ENTITLED collapse until Stage118 prediction metrics exist.",
+      "Do not promote any hard-clean diagnostic result as external generalization.",
+      "Do not tune thresholds on VitaminC or train on external data for this audit."
+    ]
+  }
+}
