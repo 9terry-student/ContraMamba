@@ -200,7 +200,10 @@ def make_output_row(source: dict[str, Any], family: str) -> dict[str, Any]:
         "prefix_category": prefix_category, "label_preserved": True, "uses_external_data": False,
         "source_dataset": SOURCE_DATASET, "surface_before": before, "surface_after": after, "surface_delta": delta,
     }
-    out: dict[str, Any] = {
+    out: dict[str, Any] = dict(source)
+    out.pop("_stage121_gold_label", None)
+    out.pop("_stage121_row_index", None)
+    out.update({
         "id": f"stage121a_{family}__{row_id(source)}",
         "source_id": row_id(source),
         "claim": claim,
@@ -219,11 +222,7 @@ def make_output_row(source: dict[str, Any], family: str) -> dict[str, Any]:
         "stage121_surface_after": after,
         "stage121_surface_delta": delta,
         "metadata": metadata,
-    }
-    if "label" in source:
-        out["label"] = source["label"]
-    if "final_label" in source:
-        out["final_label"] = source["final_label"]
+    })
     return out
 
 
@@ -286,6 +285,7 @@ def build_summary(*, input_path: Path, output_path: Path, n_input_rows: int, val
         "trigger_counts_by_family": trigger_counts_by_family(output_rows),
         "no_external_data": True,
         "label_preserved": True,
+        "source_auxiliary_fields_preserved": True,
         "next_stage": "Stage121-B evaluate prefix length/discourse ablation with Stage118 generic diagnostic path",
     }
 
