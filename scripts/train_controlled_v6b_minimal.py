@@ -4435,19 +4435,27 @@ _STAGE113_VNEXT_EXPORT_FIELDS: tuple[str, ...] = (
     *_STAGE113_VNEXT_METADATA_FIELDS,
 )
 
-_STAGE118_PRESERVED_FIELDS: tuple[str, ...] = (
-    "stage117_family",
-    "stage117_is_hard_clean",
-    "stage117_label_preserved",
-    "stage117_uses_external_data",
-    "stage117_source_dataset",
-    "stage117_distractor_id",
-    "stage117_original_claim",
-    "stage117_original_evidence",
-    "stage117_surface_before",
-    "stage117_surface_after",
+_STAGE118_PRESERVED_FIELD_PREFIXES: tuple[str, ...] = (
+    "stage",
     "metadata",
+    "source_id",
+    "intervention_type",
+    "primary_failure_type",
+    "pair_id",
 )
+
+_STAGE118_CORE_PREDICTION_FIELDS: set[str] = {
+    "claim",
+    "evidence",
+    "gold_label",
+    "base_prediction",
+    "prediction",
+    "logits",
+    "final_logits",
+    "pred_final_label",
+    "pred_label",
+    *_STAGE113_VNEXT_EXPORT_FIELDS,
+}
 
 _STAGE118_BUCKETS: tuple[str, ...] = (
     "correct_SUPPORT",
@@ -8491,6 +8499,15 @@ def _stage118_encode_inputs(
     return inputs
 
 
+def _stage118_preserved_metadata_fields(record: dict[str, Any]) -> dict[str, Any]:
+    preserved: dict[str, Any] = {}
+    for key, value in record.items():
+        if key in _STAGE118_CORE_PREDICTION_FIELDS:
+            continue
+        if key.startswith(_STAGE118_PRESERVED_FIELD_PREFIXES):
+            preserved[key] = value
+    return preserved
+
 def _stage118_prediction_rows(
     records: list[dict[str, Any]],
     prediction_rows: list[dict[str, Any]],
@@ -8512,18 +8529,15 @@ def _stage118_prediction_rows(
             "stage118_source_jsonl": str(source_jsonl),
             "stage118_valid_row_index": record.get("stage118_valid_row_index"),
         }
-        if record.get("source_id") is not None:
-            row["source_id"] = record.get("source_id")
-        elif pred.get("source_id") is not None:
+        for key, value in _stage118_preserved_metadata_fields(record).items():
+            row.setdefault(key, value)
+        if record.get("source_id") is None and pred.get("source_id") is not None:
             row["source_id"] = pred.get("source_id")
         if pred.get("final_logits") is not None:
             row["logits"] = pred.get("final_logits")
         for key in _STAGE113_VNEXT_EXPORT_FIELDS:
             if key in pred:
                 row[key] = pred[key]
-        for key in _STAGE118_PRESERVED_FIELDS:
-            if key in record:
-                row[key] = record[key]
         exported.append(row)
     return exported
 
