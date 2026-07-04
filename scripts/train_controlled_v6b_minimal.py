@@ -5931,11 +5931,22 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--vnext-router-mode",
-        choices=("learned_only", "product", "min", "learned_x_product"),
+        choices=(
+            "learned_only",
+            "product",
+            "min",
+            "learned_x_product",
+            "learned_x_sufficiency",
+            "sufficiency_only",
+            "learned_x_frame_sufficiency",
+            "learned_x_predicate_sufficiency",
+        ),
         default="learned_x_product",
         help=(
             "vNext minimal entitlement composition. Default learned_x_product: "
             "learned entitlement probability gated by frame*predicate*sufficiency. "
+            "Ablations include learned_x_sufficiency, sufficiency_only, learned_only, "
+            "learned_x_frame_sufficiency, and learned_x_predicate_sufficiency. "
             "Only used when --architecture vnext_minimal."
         ),
     )

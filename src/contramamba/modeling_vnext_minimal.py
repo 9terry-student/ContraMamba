@@ -20,7 +20,16 @@ FINAL_LOGIT_ORDER = ("REFUTE", "NOT_ENTITLED", "SUPPORT")
 REFUTE_ID = 0
 NOT_ENTITLED_ID = 1
 SUPPORT_ID = 2
-VALID_VNEXT_ROUTER_MODES = {"learned_only", "product", "min", "learned_x_product"}
+VALID_VNEXT_ROUTER_MODES = {
+    "learned_only",
+    "product",
+    "min",
+    "learned_x_product",
+    "learned_x_sufficiency",
+    "sufficiency_only",
+    "learned_x_frame_sufficiency",
+    "learned_x_predicate_sufficiency",
+}
 
 
 def _inverse_softplus(value: float) -> float:
@@ -133,6 +142,14 @@ class ContraMambaVNextMinimal(nn.Module):
             ).amin(dim=0)
         if vnext_router_mode == "learned_x_product":
             return learned_entitlement_prob * compositional_entitlement_prob
+        if vnext_router_mode == "learned_x_sufficiency":
+            return learned_entitlement_prob * sufficiency_prob
+        if vnext_router_mode == "sufficiency_only":
+            return sufficiency_prob
+        if vnext_router_mode == "learned_x_frame_sufficiency":
+            return learned_entitlement_prob * frame_prob * sufficiency_prob
+        if vnext_router_mode == "learned_x_predicate_sufficiency":
+            return learned_entitlement_prob * predicate_coverage_prob * sufficiency_prob
         raise ValueError(f"unsupported vnext_router_mode: {vnext_router_mode!r}")
 
     def forward(
