@@ -4411,6 +4411,130 @@ def flatten_stage32_owner_state(state: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+_STAGE113_VNEXT_SCALAR_FIELDS: tuple[str, ...] = (
+    "frame_prob",
+    "predicate_coverage_prob",
+    "sufficiency_prob",
+    "entitlement_prob",
+    "entitlement_for_decision",
+    "compositional_entitlement_prob",
+    "learned_entitlement_prob",
+    "learned_entitlement_logit",
+    "polarity_margin",
+    "positive_energy",
+    "negative_energy",
+)
+
+_STAGE113_VNEXT_METADATA_FIELDS: tuple[str, ...] = (
+    "vnext_router_mode",
+    "vnext_final_logit_order",
+)
+
+_STAGE113_VNEXT_EXPORT_FIELDS: tuple[str, ...] = (
+    *_STAGE113_VNEXT_SCALAR_FIELDS,
+    *_STAGE113_VNEXT_METADATA_FIELDS,
+)
+
+
+def _stage113_jsonable_metadata(value: Any) -> Any:
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    if torch.is_tensor(value):
+        detached = value.detach().cpu()
+        if detached.numel() == 1:
+            item = detached.item()
+            return round(float(item), 6) if isinstance(item, (int, float)) else item
+        return detached.tolist()
+    if isinstance(value, (list, tuple)):
+        return [_stage113_jsonable_metadata(item) for item in value]
+    if isinstance(value, dict):
+        return {str(key): _stage113_jsonable_metadata(item) for key, item in value.items()}
+    return str(value)
+
+
+def _stage113_scalar_value(output: dict[str, Any], key: str, index: int) -> float | None:
+    value = output.get(key)
+    if value is None:
+        return None
+    try:
+        if torch.is_tensor(value):
+            tensor_value = value.detach().cpu()
+            if tensor_value.ndim == 0:
+                if index != 0:
+                    return None
+                row_value = tensor_value
+            else:
+                if index >= int(tensor_value.shape[0]):
+                    return None
+                row_value = tensor_value[index]
+            if not torch.is_tensor(row_value) or row_value.numel() != 1:
+                return None
+            return round(float(row_value.item()), 6)
+        if isinstance(value, (list, tuple)):
+            if index >= len(value):
+                return None
+            row_value = value[index]
+            if isinstance(row_value, (int, float)):
+                return round(float(row_value), 6)
+    except (TypeError, ValueError, IndexError, RuntimeError):
+        return None
+    return None
+
+
+def _stage113_vnext_export_values(output: dict[str, Any], index: int) -> dict[str, Any]:
+    values: dict[str, Any] = {}
+    for key in _STAGE113_VNEXT_SCALAR_FIELDS:
+        scalar = _stage113_scalar_value(output, key, index)
+        if scalar is not None:
+            values[key] = scalar
+    for key in _STAGE113_VNEXT_METADATA_FIELDS:
+        if key in output and output.get(key) is not None:
+            values[key] = _stage113_jsonable_metadata(output.get(key))
+    return values
+
+
+def _stage113_add_vnext_scalars(row: dict[str, Any], output: dict[str, Any], index: int) -> None:
+    row.update(_stage113_vnext_export_values(output, index))
+
+
+def _stage113_prediction_row_exports(prediction_rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    exports: dict[str, dict[str, Any]] = {}
+    for row in prediction_rows:
+        row_id = row.get("id")
+        if row_id is None:
+            continue
+        exported = {key: row[key] for key in _STAGE113_VNEXT_EXPORT_FIELDS if key in row}
+        if exported:
+            exports[str(row_id)] = exported
+    return exports
+
+
+def _stage113_merge_prediction_exports(
+    stage43_predictions: list[dict[str, Any]],
+    prediction_rows: list[dict[str, Any]],
+) -> None:
+    exports_by_id = _stage113_prediction_row_exports(prediction_rows)
+    if not exports_by_id:
+        return
+    for row in stage43_predictions:
+        row_exports = exports_by_id.get(str(row.get("id")))
+        if row_exports:
+            row.update(row_exports)
+
+
+def _stage113_vnext_scalar_report(prediction_rows: list[dict[str, Any]]) -> dict[str, Any]:
+    present = sorted(
+        key
+        for key in _STAGE113_VNEXT_EXPORT_FIELDS
+        if any(key in row for row in prediction_rows)
+    )
+    missing = sorted(key for key in _STAGE113_VNEXT_EXPORT_FIELDS if key not in present)
+    return {
+        "stage113_vnext_scalar_export_enabled": bool(present),
+        "stage113_vnext_scalar_fields_present": present,
+        "stage113_vnext_scalar_fields_missing": missing,
+    }
+
 def prediction_records_v6b(
     records: list[dict],
     output: dict[str, Any],
@@ -4474,19 +4598,6 @@ def prediction_records_v6b(
         "boundary_prob",        # Stage22-A:  None when boundary head is disabled
         "frame_violation_prob", # Stage22-A3: None when frame violation head is disabled
     )
-    scalars = {
-        key: output[key].detach().cpu()
-        for key in scalar_keys
-        if key in output and output[key] is not None
-    }
-
-    # Stage28-E: v7 per-example diagnostic scalars (absent on v6b_minimal runs)
-    v7_scalars = {
-        key: output[key].detach().cpu()
-        for key in _S28E_V7_SCALAR_KEYS
-        if key in output and output[key] is not None
-    }
-
     exported: list[dict] = []
     for index, record in enumerate(records):
         stage32_owner_state = (
@@ -4639,12 +4750,21 @@ def prediction_records_v6b(
             "ne_prob": ne_prob,
             "support_prob": support_prob,
             #  Existing v6b diagnostic scalars 
-            **{key: float(scalars[key][index]) for key in scalar_keys if key in scalars},
+            **{
+                key: scalar_value
+                for key in scalar_keys
+                for scalar_value in (_stage113_scalar_value(output, key, index),)
+                if scalar_value is not None
+            },
             #  Gold auxiliary labels (when present in source record) 
             **{key: record[key] for key in _S28E_AUX_LABEL_KEYS if key in record},
             #  V7/H1 diagnostic scalars (absent on v6b_minimal runs) 
-            **{key: float(v7_scalars[key][index]) for key in _S28E_V7_SCALAR_KEYS
-               if key in v7_scalars},
+            **{
+                key: scalar_value
+                for key in _S28E_V7_SCALAR_KEYS
+                for scalar_value in (_stage113_scalar_value(output, key, index),)
+                if scalar_value is not None
+            },
             **(
                 {
                     "coverage_entailment_pred_id": int(
@@ -4677,6 +4797,7 @@ def prediction_records_v6b(
         for metadata_key in _S28E_PRESERVED_METADATA_KEYS:
             if metadata_key in record:
                 item[metadata_key] = record[metadata_key]
+        _stage113_add_vnext_scalars(item, output, index)
 
         #  Stage36-A: conservative support-safety blockers (shadow-only) 
         _stage37_stage36_info: dict[str, Any] = {}
@@ -8240,6 +8361,8 @@ def run_stage43_external_factver_hook(
             token_diagnostics=stage43_token_diagnostics,
             path_diagnostics=stage43_path_diagnostics,
         )
+        _stage113_merge_prediction_exports(stage43_predictions, prediction_rows)
+        report_payload.update(_stage113_vnext_scalar_report(prediction_rows))
         report_payload["output_report_json"] = str(report_json)
         report_payload["output_report_md"] = str(report_md)
         if stage43_prediction_error is not None:
