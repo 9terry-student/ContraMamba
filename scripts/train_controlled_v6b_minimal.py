@@ -4583,6 +4583,28 @@ def resolve_stage118_diagnostic_evidence_interface(args: argparse.Namespace) -> 
     return requested
 
 
+def parse_stage118_diagnostic_evidence_interface_sweep(raw_value: str | None) -> list[str]:
+    if raw_value is None or not raw_value.strip():
+        return []
+    interfaces: list[str] = []
+    seen: set[str] = set()
+    for raw_item in raw_value.split(","):
+        interface = raw_item.strip()
+        if not interface:
+            continue
+        if interface not in VNEXT_EVIDENCE_INTERFACE_CHOICES:
+            allowed = ", ".join(VNEXT_EVIDENCE_INTERFACE_CHOICES)
+            raise ValueError(
+                "--stage118-diagnostic-evidence-interface-sweep contains "
+                f"invalid interface {interface!r}; allowed values: {allowed}"
+            )
+        if interface in seen:
+            continue
+        interfaces.append(interface)
+        seen.add(interface)
+    return interfaces
+
+
 def apply_vnext_evidence_interface_to_records(
     records: list[dict[str, Any]],
     evidence_interface: str,
@@ -7611,6 +7633,28 @@ def build_parser() -> argparse.ArgumentParser:
             "diagnostic input evidence only."
         ),
     )
+    parser.add_argument(
+        "--stage118-diagnostic-evidence-interface-sweep",
+        type=str,
+        default="",
+        help=(
+            "Stage123-A3: comma-separated Stage118 diagnostic evidence interfaces "
+            "to evaluate in one process after the selected model is ready. Valid "
+            "values: full_evidence, core_only, core_first_context_suffix, "
+            "context_prefix_core, core_marker_context_suffix, "
+            "segmented_dual_pass_scaffold. Empty preserves existing behavior."
+        ),
+    )
+    parser.add_argument(
+        "--stage118-diagnostic-sweep-output-dir",
+        type=Path,
+        default=None,
+        help=(
+            "Stage123-A3: output directory for Stage118 diagnostic sweep prediction, "
+            "summary, and manifest files. Required when "
+            "--stage118-diagnostic-evidence-interface-sweep is non-empty."
+        ),
+    )
     # Stage29-B: external probe evaluation (eval-only; no effect on training or selection)
     parser.add_argument(
         "--external-eval-jsonl",
@@ -8815,15 +8859,22 @@ def run_stage118_generic_diagnostic_eval(
     tokenizer: Any | None,
     max_length: int,
     device: torch.device,
+    diagnostic_evidence_interface_override: str | None = None,
 ) -> dict[str, Any]:
     records, skip_reasons, n_input_rows = load_stage118_diagnostic_jsonl(input_jsonl)
-    stage118_evidence_interface = resolve_stage118_diagnostic_evidence_interface(args)
+    stage118_evidence_interface = (
+        diagnostic_evidence_interface_override
+        if diagnostic_evidence_interface_override is not None
+        else resolve_stage118_diagnostic_evidence_interface(args)
+    )
     records = apply_vnext_evidence_interface_to_records(
         records, stage118_evidence_interface
     )
     for record in records:
-        record["stage118_diagnostic_evidence_interface"] = getattr(
-            args, "stage118_diagnostic_evidence_interface", "same_as_vnext"
+        record["stage118_diagnostic_evidence_interface"] = (
+            stage118_evidence_interface
+            if diagnostic_evidence_interface_override is not None
+            else getattr(args, "stage118_diagnostic_evidence_interface", "same_as_vnext")
         )
     inputs = _stage118_encode_inputs(
         records,
@@ -8864,6 +8915,70 @@ def run_stage118_generic_diagnostic_eval(
     )
     write_json(summary_json, summary)
     return summary
+
+
+def run_stage118_diagnostic_evidence_interface_sweep(
+    *,
+    model: "ContraMambaV6BMinimal | Any",
+    input_jsonl: Path,
+    output_dir: Path,
+    diagnostic_name: str,
+    batch_size: int,
+    sweep_interfaces: list[str],
+    args: argparse.Namespace,
+    vocab: dict[str, int] | None,
+    tokenizer: Any | None,
+    max_length: int,
+    device: torch.device,
+) -> dict[str, Any]:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    summaries: dict[str, Any] = {}
+    prediction_paths: dict[str, str] = {}
+    summary_paths: dict[str, str] = {}
+
+    for evidence_interface in sweep_interfaces:
+        output_jsonl = output_dir / f"stage118_diagnostic_{evidence_interface}_predictions.jsonl"
+        summary_json = output_dir / f"stage118_diagnostic_{evidence_interface}_summary.json"
+        summary = run_stage118_generic_diagnostic_eval(
+            model=model,
+            input_jsonl=input_jsonl,
+            output_jsonl=output_jsonl,
+            summary_json=summary_json,
+            diagnostic_name=diagnostic_name,
+            batch_size=batch_size,
+            args=args,
+            vocab=vocab,
+            tokenizer=tokenizer,
+            max_length=max_length,
+            device=device,
+            diagnostic_evidence_interface_override=evidence_interface,
+        )
+        summaries[evidence_interface] = summary
+        prediction_paths[evidence_interface] = str(output_jsonl)
+        summary_paths[evidence_interface] = str(summary_json)
+
+    manifest = {
+        "stage": "Stage118",
+        "sweep_interfaces": sweep_interfaces,
+        "prediction_paths": prediction_paths,
+        "summary_paths": summary_paths,
+        "train_dev_evidence_interface": getattr(args, "vnext_evidence_interface", "full_evidence"),
+        "diagnostic_source_jsonl_path": str(input_jsonl),
+        "model_architecture": (
+            "v7_hierarchical" if getattr(args, "architecture", None) == "v7_hierarchical" else "v6b_minimal"
+        ),
+        "architecture": getattr(args, "architecture", None),
+        "router_mode": getattr(args, "vnext_router_mode", None),
+        "seed": getattr(args, "seed", None),
+    }
+    manifest_path = output_dir / "stage118_diagnostic_sweep_manifest.json"
+    write_json(manifest_path, manifest)
+    return {
+        "manifest_path": str(manifest_path),
+        "manifest": manifest,
+        "summaries": summaries,
+    }
+
 
 def run_stage43_external_factver_hook(
     *,
@@ -9897,6 +10012,25 @@ def load_stage80a_bridge_train_rows(
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+    try:
+        args.stage118_diagnostic_evidence_interface_sweep_list = (
+            parse_stage118_diagnostic_evidence_interface_sweep(
+                args.stage118_diagnostic_evidence_interface_sweep
+            )
+        )
+    except ValueError as exc:
+        parser.error(str(exc))
+    if args.stage118_diagnostic_evidence_interface_sweep_list:
+        if args.stage118_diagnostic_jsonl is None:
+            parser.error(
+                "--stage118-diagnostic-evidence-interface-sweep requires "
+                "--stage118-diagnostic-jsonl"
+            )
+        if args.stage118_diagnostic_sweep_output_dir is None:
+            parser.error(
+                "--stage118-diagnostic-evidence-interface-sweep requires "
+                "--stage118-diagnostic-sweep-output-dir"
+            )
 
     # ---------------------------------------------------------------------------
     # Stage48: optionally load the Stage47-validated frozen recovery config
@@ -15393,38 +15527,76 @@ def main(argv: list[str] | None = None) -> int:
     if args.stage118_diagnostic_jsonl is not None:
         if len(reports) != 1:
             parser.error("--stage118-diagnostic-jsonl requires a single non-sweep run")
-        if args.stage118_diagnostic_output_jsonl is None:
-            parser.error(
-                "--stage118-diagnostic-jsonl requires --stage118-diagnostic-output-jsonl"
-            )
-        if args.stage118_diagnostic_summary_json is None:
-            parser.error(
-                "--stage118-diagnostic-jsonl requires --stage118-diagnostic-summary-json"
-            )
         if _ood_best_state is not None:
             model.load_state_dict({k: v.to(device) for k, v in _ood_best_state.items()})
         model.eval()
-        _stage118_summary = run_stage118_generic_diagnostic_eval(
-            model=model,
-            input_jsonl=Path(args.stage118_diagnostic_jsonl),
-            output_jsonl=Path(args.stage118_diagnostic_output_jsonl),
-            summary_json=Path(args.stage118_diagnostic_summary_json),
-            diagnostic_name=args.stage118_diagnostic_name,
-            batch_size=args.stage118_diagnostic_batch_size,
-            args=args,
-            vocab=vocab,
-            tokenizer=tokenizer,
-            max_length=max_length,
-            device=device,
-        )
-        report["stage118_generic_diagnostic_eval"] = _stage118_summary
-        print(
-            f"[STAGE118 GENERIC DIAGNOSTIC] name={args.stage118_diagnostic_name} "
-            f"valid={_stage118_summary['n_valid_rows']} "
-            f"skipped={_stage118_summary['n_skipped_rows']} "
-            f"acc={_stage118_summary['accuracy']:.4f} "
-            f"macro_f1={_stage118_summary['macro_f1']:.4f}"
-        )
+        _stage118_sweep_interfaces = args.stage118_diagnostic_evidence_interface_sweep_list
+        if _stage118_sweep_interfaces:
+            if args.stage118_diagnostic_evidence_interface != "same_as_vnext":
+                print(
+                    "[STAGE118 GENERIC DIAGNOSTIC SWEEP] "
+                    "--stage118-diagnostic-evidence-interface was also provided; "
+                    "running only the deduplicated sweep interfaces. "
+                    f"single_interface={args.stage118_diagnostic_evidence_interface} "
+                    f"sweep_interfaces={_stage118_sweep_interfaces}"
+                )
+            _stage118_sweep_report = run_stage118_diagnostic_evidence_interface_sweep(
+                model=model,
+                input_jsonl=Path(args.stage118_diagnostic_jsonl),
+                output_dir=Path(args.stage118_diagnostic_sweep_output_dir),
+                diagnostic_name=args.stage118_diagnostic_name,
+                batch_size=args.stage118_diagnostic_batch_size,
+                sweep_interfaces=_stage118_sweep_interfaces,
+                args=args,
+                vocab=vocab,
+                tokenizer=tokenizer,
+                max_length=max_length,
+                device=device,
+            )
+            report["stage118_generic_diagnostic_evidence_interface_sweep"] = _stage118_sweep_report
+            print(
+                f"[STAGE118 GENERIC DIAGNOSTIC SWEEP] name={args.stage118_diagnostic_name} "
+                f"interfaces={_stage118_sweep_interfaces} "
+                f"manifest={_stage118_sweep_report['manifest_path']}"
+            )
+            for _interface, _summary in _stage118_sweep_report["summaries"].items():
+                print(
+                    f"[STAGE118 GENERIC DIAGNOSTIC SWEEP] interface={_interface} "
+                    f"valid={_summary['n_valid_rows']} "
+                    f"skipped={_summary['n_skipped_rows']} "
+                    f"acc={_summary['accuracy']:.4f} "
+                    f"macro_f1={_summary['macro_f1']:.4f}"
+                )
+        else:
+            if args.stage118_diagnostic_output_jsonl is None:
+                parser.error(
+                    "--stage118-diagnostic-jsonl requires --stage118-diagnostic-output-jsonl"
+                )
+            if args.stage118_diagnostic_summary_json is None:
+                parser.error(
+                    "--stage118-diagnostic-jsonl requires --stage118-diagnostic-summary-json"
+                )
+            _stage118_summary = run_stage118_generic_diagnostic_eval(
+                model=model,
+                input_jsonl=Path(args.stage118_diagnostic_jsonl),
+                output_jsonl=Path(args.stage118_diagnostic_output_jsonl),
+                summary_json=Path(args.stage118_diagnostic_summary_json),
+                diagnostic_name=args.stage118_diagnostic_name,
+                batch_size=args.stage118_diagnostic_batch_size,
+                args=args,
+                vocab=vocab,
+                tokenizer=tokenizer,
+                max_length=max_length,
+                device=device,
+            )
+            report["stage118_generic_diagnostic_eval"] = _stage118_summary
+            print(
+                f"[STAGE118 GENERIC DIAGNOSTIC] name={args.stage118_diagnostic_name} "
+                f"valid={_stage118_summary['n_valid_rows']} "
+                f"skipped={_stage118_summary['n_skipped_rows']} "
+                f"acc={_stage118_summary['accuracy']:.4f} "
+                f"macro_f1={_stage118_summary['macro_f1']:.4f}"
+            )
     if args.output_predictions_json is not None:
         if len(reports) != 1:
             parser.error("--output-predictions-json requires a single non-sweep run")
