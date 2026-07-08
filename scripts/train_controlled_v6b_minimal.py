@@ -8,6 +8,7 @@ All CE/pairwise/intervention losses consume final calibrated logits.
 from __future__ import annotations
 
 import argparse
+import inspect
 import json
 import random
 import re
@@ -563,6 +564,57 @@ def build_mamba_model(
     return model
 
 
+
+_VNEXT_STAGE124_125_MODEL_KWARGS: tuple[str, ...] = (
+    "vnext_enable_segmented_dual_pass",
+    "vnext_segmented_context_role",
+    "vnext_context_risk_cap_alpha",
+    "vnext_context_risk_threshold",
+    "vnext_context_risk_source",
+)
+
+
+def _construct_vnext_minimal_with_aligned_kwargs(
+    kwargs: dict[str, Any],
+) -> ContraMambaVNextMinimal:
+    signature = inspect.signature(ContraMambaVNextMinimal.__init__)
+    parameters = signature.parameters
+    accepts_var_kwargs = any(
+        parameter.kind == inspect.Parameter.VAR_KEYWORD
+        for parameter in parameters.values()
+    )
+    if accepts_var_kwargs:
+        ctor_kwargs = dict(kwargs)
+    else:
+        ctor_kwargs = {key: value for key, value in kwargs.items() if key in parameters}
+    dropped = sorted(set(kwargs) - set(ctor_kwargs))
+    unexpected = [
+        key for key in dropped
+        if key not in _VNEXT_STAGE124_125_MODEL_KWARGS
+    ]
+    if unexpected:
+        raise TypeError(
+            "ContraMambaVNextMinimal.__init__ does not accept builder kwargs: "
+            + ", ".join(unexpected)
+        )
+    model = ContraMambaVNextMinimal(**ctor_kwargs)
+    model.vnext_enable_segmented_dual_pass = bool(
+        kwargs.get("vnext_enable_segmented_dual_pass", False)
+    )
+    model.vnext_segmented_context_role = str(
+        kwargs.get("vnext_segmented_context_role", "diagnostic_only")
+    )
+    model.vnext_context_risk_cap_alpha = float(
+        kwargs.get("vnext_context_risk_cap_alpha", 0.0)
+    )
+    model.vnext_context_risk_threshold = float(
+        kwargs.get("vnext_context_risk_threshold", 0.5)
+    )
+    model.vnext_context_risk_source = str(
+        kwargs.get("vnext_context_risk_source", "context_not_entitled_prob")
+    )
+    return model
+
 def build_vnext_model(
     vocab_size: int,
     max_length: int,
@@ -576,20 +628,20 @@ def build_vnext_model(
 ) -> ContraMambaVNextMinimal:
     """Build a ContraMambaVNextMinimal with dummy backbone for plumbing validation."""
     backbone = v5.ControlledDummyBackbone(vocab_size, hidden_size, max_length)
-    return ContraMambaVNextMinimal(
-        backbone=backbone,
-        frame_size=32,
-        predicate_size=32,
-        sufficiency_size=32,
-        energy_size=24,
-        dropout=0.0,
-        vnext_router_mode=vnext_router_mode,
-        vnext_enable_segmented_dual_pass=vnext_enable_segmented_dual_pass,
-        vnext_segmented_context_role=vnext_segmented_context_role,
-        vnext_context_risk_cap_alpha=vnext_context_risk_cap_alpha,
-        vnext_context_risk_threshold=vnext_context_risk_threshold,
-        vnext_context_risk_source=vnext_context_risk_source,
-    )
+    return _construct_vnext_minimal_with_aligned_kwargs({
+        "backbone": backbone,
+        "frame_size": 32,
+        "predicate_size": 32,
+        "sufficiency_size": 32,
+        "energy_size": 24,
+        "dropout": 0.0,
+        "vnext_router_mode": vnext_router_mode,
+        "vnext_enable_segmented_dual_pass": vnext_enable_segmented_dual_pass,
+        "vnext_segmented_context_role": vnext_segmented_context_role,
+        "vnext_context_risk_cap_alpha": vnext_context_risk_cap_alpha,
+        "vnext_context_risk_threshold": vnext_context_risk_threshold,
+        "vnext_context_risk_source": vnext_context_risk_source,
+    })
 
 
 def build_vnext_mamba_model(
@@ -604,21 +656,21 @@ def build_vnext_mamba_model(
     vnext_context_risk_source: str = "context_not_entitled_prob",
 ) -> ContraMambaVNextMinimal:
     """Build a ContraMambaVNextMinimal with real Mamba backbone."""
-    model = ContraMambaVNextMinimal(
-        model_name=model_name,
-        frame_size=128,
-        predicate_size=128,
-        sufficiency_size=128,
-        energy_size=64,
-        dropout=0.1,
-        freeze_a_log=freeze_a_log,
-        vnext_router_mode=vnext_router_mode,
-        vnext_enable_segmented_dual_pass=vnext_enable_segmented_dual_pass,
-        vnext_segmented_context_role=vnext_segmented_context_role,
-        vnext_context_risk_cap_alpha=vnext_context_risk_cap_alpha,
-        vnext_context_risk_threshold=vnext_context_risk_threshold,
-        vnext_context_risk_source=vnext_context_risk_source,
-    )
+    model = _construct_vnext_minimal_with_aligned_kwargs({
+        "model_name": model_name,
+        "frame_size": 128,
+        "predicate_size": 128,
+        "sufficiency_size": 128,
+        "energy_size": 64,
+        "dropout": 0.1,
+        "freeze_a_log": freeze_a_log,
+        "vnext_router_mode": vnext_router_mode,
+        "vnext_enable_segmented_dual_pass": vnext_enable_segmented_dual_pass,
+        "vnext_segmented_context_role": vnext_segmented_context_role,
+        "vnext_context_risk_cap_alpha": vnext_context_risk_cap_alpha,
+        "vnext_context_risk_threshold": vnext_context_risk_threshold,
+        "vnext_context_risk_source": vnext_context_risk_source,
+    })
     for parameter in model.mamba.parameters():
         parameter.requires_grad = not freeze_encoder
     if freeze_a_log:
