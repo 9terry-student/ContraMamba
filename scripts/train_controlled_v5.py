@@ -49,6 +49,17 @@ MODEL_INPUT_KEYS = {
     "polarity_labels",
 }
 MODEL_FEATURE_KEYS = {"input_ids", "attention_mask", "claim_mask", "evidence_mask"}
+OPTIONAL_MODEL_FEATURE_KEYS = {
+    "core_input_ids",
+    "core_attention_mask",
+    "core_claim_mask",
+    "core_evidence_mask",
+    "context_input_ids",
+    "context_attention_mask",
+    "context_claim_mask",
+    "context_evidence_mask",
+    "context_empty",
+}
 
 
 def parse_bool(value: str | bool) -> bool:
@@ -259,10 +270,12 @@ def move_inputs(inputs: dict[str, torch.Tensor], device: torch.device) -> dict[s
 
 def model_feature_inputs(inputs: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
     result = {key: inputs[key] for key in MODEL_FEATURE_KEYS}
+    for key in OPTIONAL_MODEL_FEATURE_KEYS:
+        if key in inputs:
+            result[key] = inputs[key]
     if "encoder_hidden_states" in inputs:
         result["encoder_hidden_states"] = inputs["encoder_hidden_states"]
     return result
-
 
 def cache_frozen_encoder_states(
     model: ContraMambaV5,

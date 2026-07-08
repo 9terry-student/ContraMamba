@@ -62,6 +62,11 @@ class ContraMambaVNextMinimal(nn.Module):
         not_entitled_alpha_init: float = 1.0,
         backbone: nn.Module | None = None,
         hidden_size: int | None = None,
+        vnext_enable_segmented_dual_pass: bool = False,
+        vnext_segmented_context_role: str = "diagnostic_only",
+        vnext_context_risk_cap_alpha: float = 0.0,
+        vnext_context_risk_threshold: float = 0.5,
+        vnext_context_risk_source: str = "context_not_entitled_prob",
     ) -> None:
         super().__init__()
         if vnext_router_mode not in VALID_VNEXT_ROUTER_MODES:
@@ -94,6 +99,11 @@ class ContraMambaVNextMinimal(nn.Module):
 
         self.return_token_diagnostics = return_token_diagnostics
         self.vnext_router_mode = vnext_router_mode
+        self.vnext_enable_segmented_dual_pass = bool(vnext_enable_segmented_dual_pass)
+        self.vnext_segmented_context_role = str(vnext_segmented_context_role)
+        self.vnext_context_risk_cap_alpha = float(vnext_context_risk_cap_alpha)
+        self.vnext_context_risk_threshold = float(vnext_context_risk_threshold)
+        self.vnext_context_risk_source = str(vnext_context_risk_source)
 
         self.frame_gate = FrameGate(
             hidden_size, frame_size, dropout, return_token_diagnostics
@@ -152,48 +162,14 @@ class ContraMambaVNextMinimal(nn.Module):
             return learned_entitlement_prob * predicate_coverage_prob * sufficiency_prob
         raise ValueError(f"unsupported vnext_router_mode: {vnext_router_mode!r}")
 
-    def forward(
+    def _compute_vnext_logits_from_states(
         self,
-        input_ids: torch.Tensor,
+        *,
+        token_states: torch.Tensor,
         attention_mask: torch.Tensor,
         claim_mask: torch.Tensor,
         evidence_mask: torch.Tensor,
-        final_labels: torch.Tensor | None = None,
-        frame_compatible_labels: torch.Tensor | None = None,
-        predicate_covered_labels: torch.Tensor | None = None,
-        sufficiency_labels: torch.Tensor | None = None,
-        polarity_labels: torch.Tensor | None = None,
-        polarity_mask: torch.Tensor | None = None,
-        intervention_types: torch.Tensor | None = None,
-        pair_ids: torch.Tensor | None = None,
-        return_token_states: bool = False,
-        decision_mode: str | None = None,
-        encoder_hidden_states: torch.Tensor | None = None,
-        temporal_mismatch_flags: torch.Tensor | None = None,
-        predicate_mismatch_flags: torch.Tensor | None = None,
-        temporal_adapter_final_penalty_scale: float = 0.0,
-        temporal_channel_gated_penalty_scale: float = 0.0,
     ) -> dict[str, Any]:
-        del (
-            intervention_types,
-            pair_ids,
-            decision_mode,
-            temporal_mismatch_flags,
-            predicate_mismatch_flags,
-            temporal_adapter_final_penalty_scale,
-            temporal_channel_gated_penalty_scale,
-        )
-
-        if encoder_hidden_states is None:
-            backbone_outputs = self.mamba(input_ids=input_ids)
-            token_states = backbone_outputs.last_hidden_state
-        else:
-            if encoder_hidden_states.shape[:2] != input_ids.shape:
-                raise ValueError(
-                    "encoder_hidden_states must match input_ids batch/sequence dimensions"
-                )
-            token_states = encoder_hidden_states
-
         frame = self.frame_gate(token_states, attention_mask, claim_mask, evidence_mask)
         predicate = self.predicate_coverage_head(
             token_states=token_states,
@@ -241,7 +217,201 @@ class ContraMambaVNextMinimal(nn.Module):
             1.0 - entitlement_for_decision
         )
         final_logits = torch.stack([refute_score, ne_score, support_score], dim=-1)
+        return {
+            "logits": final_logits,
+            "support_score": support_score,
+            "refute_score": refute_score,
+            "ne_score": ne_score,
+            "entitlement_for_decision": entitlement_for_decision,
+            "compositional_entitlement_prob": compositional_entitlement_prob,
+            "learned_entitlement_logit": learned_entitlement_logit,
+            "learned_entitlement_prob": learned_entitlement_prob,
+            "frame": frame,
+            "predicate": predicate,
+            "sufficiency": sufficiency,
+            "polarity": polarity,
+        }
+
+    def forward(
+        self,
+        input_ids: torch.Tensor,
+        attention_mask: torch.Tensor,
+        claim_mask: torch.Tensor,
+        evidence_mask: torch.Tensor,
+        core_input_ids: torch.Tensor | None = None,
+        core_attention_mask: torch.Tensor | None = None,
+        core_claim_mask: torch.Tensor | None = None,
+        core_evidence_mask: torch.Tensor | None = None,
+        context_input_ids: torch.Tensor | None = None,
+        context_attention_mask: torch.Tensor | None = None,
+        context_claim_mask: torch.Tensor | None = None,
+        context_evidence_mask: torch.Tensor | None = None,
+        context_empty: torch.Tensor | None = None,
+        final_labels: torch.Tensor | None = None,
+        frame_compatible_labels: torch.Tensor | None = None,
+        predicate_covered_labels: torch.Tensor | None = None,
+        sufficiency_labels: torch.Tensor | None = None,
+        polarity_labels: torch.Tensor | None = None,
+        polarity_mask: torch.Tensor | None = None,
+        intervention_types: torch.Tensor | None = None,
+        pair_ids: torch.Tensor | None = None,
+        return_token_states: bool = False,
+        decision_mode: str | None = None,
+        encoder_hidden_states: torch.Tensor | None = None,
+        temporal_mismatch_flags: torch.Tensor | None = None,
+        predicate_mismatch_flags: torch.Tensor | None = None,
+        temporal_adapter_final_penalty_scale: float = 0.0,
+        temporal_channel_gated_penalty_scale: float = 0.0,
+    ) -> dict[str, Any]:
+        del (
+            intervention_types,
+            pair_ids,
+            decision_mode,
+            temporal_mismatch_flags,
+            predicate_mismatch_flags,
+            temporal_adapter_final_penalty_scale,
+            temporal_channel_gated_penalty_scale,
+        )
+
+        segmented_active = self.vnext_enable_segmented_dual_pass and core_input_ids is not None
+        if segmented_active:
+            input_ids = core_input_ids
+            attention_mask = core_attention_mask if core_attention_mask is not None else attention_mask
+            claim_mask = core_claim_mask if core_claim_mask is not None else claim_mask
+            evidence_mask = core_evidence_mask if core_evidence_mask is not None else evidence_mask
+            encoder_hidden_states = None
+
+        if encoder_hidden_states is None:
+            backbone_outputs = self.mamba(input_ids=input_ids)
+            token_states = backbone_outputs.last_hidden_state
+        else:
+            if encoder_hidden_states.shape[:2] != input_ids.shape:
+                raise ValueError(
+                    "encoder_hidden_states must match input_ids batch/sequence dimensions"
+                )
+            token_states = encoder_hidden_states
+
+        context_token_states = None
+        context_attention_for_decision = None
+        context_claim_mask_for_decision = None
+        context_evidence_mask_for_decision = None
+        context_empty_bool = None
+        context_rep_norm = None
+        core_context_cosine = None
+        if segmented_active and context_input_ids is not None:
+            context_outputs = self.mamba(input_ids=context_input_ids)
+            context_token_states = context_outputs.last_hidden_state
+            context_attention = (
+                context_attention_mask
+                if context_attention_mask is not None
+                else torch.ones_like(context_input_ids, dtype=torch.bool)
+            )
+            context_mask = (
+                context_evidence_mask
+                if context_evidence_mask is not None
+                else context_attention
+            )
+            context_attention_for_decision = context_attention
+            context_claim_mask_for_decision = (
+                context_claim_mask
+                if context_claim_mask is not None
+                else torch.zeros_like(context_attention)
+            )
+            context_evidence_mask_for_decision = context_mask
+            context_weights = (
+                context_mask.float()
+                / context_mask.float().sum(dim=1, keepdim=True).clamp_min(1.0)
+            )
+            context_rep = (context_token_states * context_weights.unsqueeze(-1)).sum(dim=1)
+            if context_empty is not None:
+                context_empty_bool = context_empty.bool()
+                context_rep = context_rep.masked_fill(context_empty_bool.unsqueeze(-1), 0.0)
+            core_weights = (
+                evidence_mask.float()
+                / evidence_mask.float().sum(dim=1, keepdim=True).clamp_min(1.0)
+            )
+            core_rep_for_diag = (token_states * core_weights.unsqueeze(-1)).sum(dim=1)
+            context_rep_norm = context_rep.norm(dim=-1)
+            core_context_cosine = F.cosine_similarity(core_rep_for_diag, context_rep, dim=-1)
+            if context_empty_bool is not None:
+                core_context_cosine = core_context_cosine.masked_fill(context_empty_bool, 0.0)
+
+        core_logits = self._compute_vnext_logits_from_states(
+            token_states=token_states,
+            attention_mask=attention_mask,
+            claim_mask=claim_mask,
+            evidence_mask=evidence_mask,
+        )
+        frame = core_logits["frame"]
+        predicate = core_logits["predicate"]
+        sufficiency = core_logits["sufficiency"]
+        polarity = core_logits["polarity"]
+        learned_entitlement_logit = core_logits["learned_entitlement_logit"]
+        learned_entitlement_prob = core_logits["learned_entitlement_prob"]
+        compositional_entitlement_prob = core_logits["compositional_entitlement_prob"]
+        entitlement_for_decision = core_logits["entitlement_for_decision"]
+        support_score = core_logits["support_score"]
+        refute_score = core_logits["refute_score"]
+        ne_score = core_logits["ne_score"]
+        final_logits = core_logits["logits"]
         base_logits = final_logits
+        logits_before_context_cap = final_logits
+        prediction_before_context_cap = final_logits.argmax(dim=-1)
+        context_only_logits = None
+        context_only_prediction = None
+        context_risk = None
+        context_risk_excess = None
+        context_cap_factor = None
+        context_cap_applied = None
+        context_cap_notes = "context_cap_inactive"
+        context_risk_cap_active = (
+            segmented_active
+            and self.vnext_segmented_context_role == "risk_cap"
+            and context_token_states is not None
+        )
+        if context_risk_cap_active:
+            context_logits = self._compute_vnext_logits_from_states(
+                token_states=context_token_states,
+                attention_mask=context_attention_for_decision,
+                claim_mask=context_claim_mask_for_decision,
+                evidence_mask=context_evidence_mask_for_decision,
+            )
+            context_only_logits = context_logits["logits"]
+            context_only_prediction = context_only_logits.argmax(dim=-1)
+            context_probs = torch.softmax(context_only_logits, dim=-1)
+            if self.vnext_context_risk_source == "context_not_entitled_prob":
+                context_risk = context_probs[:, NOT_ENTITLED_ID]
+                context_cap_notes = "risk_source=context_not_entitled_prob"
+            elif self.vnext_context_risk_source == "context_uncertainty":
+                context_risk = 1.0 - context_probs.max(dim=-1).values
+                context_cap_notes = "risk_source=context_uncertainty"
+            else:
+                context_risk = torch.zeros_like(context_probs[:, NOT_ENTITLED_ID])
+                context_cap_notes = "risk_source_unknown_zero_fallback"
+            context_cap_notes = context_cap_notes + ";context_only_logits=computed"
+            if context_empty_bool is not None:
+                context_risk = context_risk.masked_fill(context_empty_bool, 0.0)
+            threshold = float(self.vnext_context_risk_threshold)
+            alpha = float(self.vnext_context_risk_cap_alpha)
+            denom = max(1e-6, 1.0 - threshold)
+            context_risk_excess = ((context_risk - threshold).clamp_min(0.0) / denom)
+            context_cap_factor = (1.0 - alpha * context_risk_excess).clamp(0.0, 1.0)
+            if context_empty_bool is not None:
+                context_cap_factor = context_cap_factor.masked_fill(context_empty_bool, 1.0)
+            context_cap_applied = context_cap_factor < 0.999999
+            if alpha > 0.0:
+                capped_logits = final_logits.clone()
+                log_cap = torch.log(context_cap_factor.clamp_min(1e-6))
+                capped_logits[:, REFUTE_ID] = capped_logits[:, REFUTE_ID] + log_cap
+                capped_logits[:, SUPPORT_ID] = capped_logits[:, SUPPORT_ID] + log_cap
+                final_logits = capped_logits
+                context_cap_notes = context_cap_notes + ";symmetric_refute_support_log_cap"
+            elif self.vnext_segmented_context_role == "risk_cap" and alpha == 0.0:
+                context_cap_notes = context_cap_notes + ";alpha_zero_noop"
+            elif self.vnext_segmented_context_role != "risk_cap":
+                context_cap_notes = context_cap_notes + ";role_noop"
+        logits_after_context_cap = final_logits
+        prediction_after_context_cap = final_logits.argmax(dim=-1)
 
         losses: dict[str, torch.Tensor | None] = {
             "label_loss": None,
@@ -306,6 +476,28 @@ class ContraMambaVNextMinimal(nn.Module):
             "learned_entitlement_prob": learned_entitlement_prob,
             "vnext_router_mode": self.vnext_router_mode,
             "vnext_final_logit_order": FINAL_LOGIT_ORDER,
+            "vnext_segmented_dual_pass_active": segmented_active,
+            "vnext_primary_rep_source": "core_rep" if segmented_active else "single_pass",
+            "vnext_core_rep_norm": sufficiency["sufficiency_repr"].norm(dim=-1)
+            if segmented_active
+            else None,
+            "vnext_context_rep_norm": context_rep_norm,
+            "vnext_core_context_cosine": core_context_cosine,
+            "vnext_context_risk_cap_active": context_risk_cap_active,
+            "vnext_context_risk_source": self.vnext_context_risk_source,
+            "vnext_context_risk": context_risk,
+            "vnext_context_risk_threshold": self.vnext_context_risk_threshold,
+            "vnext_context_risk_cap_alpha": self.vnext_context_risk_cap_alpha,
+            "vnext_context_risk_excess": context_risk_excess,
+            "vnext_context_cap_factor": context_cap_factor,
+            "vnext_context_cap_applied": context_cap_applied,
+            "vnext_logits_before_context_cap": logits_before_context_cap,
+            "vnext_logits_after_context_cap": logits_after_context_cap,
+            "vnext_prediction_before_context_cap": prediction_before_context_cap,
+            "vnext_prediction_after_context_cap": prediction_after_context_cap,
+            "vnext_context_only_logits": context_only_logits,
+            "vnext_context_only_prediction": context_only_prediction,
+            "vnext_context_cap_notes": context_cap_notes,
             "not_entitled_alpha": self.not_entitled_alpha(),
             **frame,
             **predicate,
