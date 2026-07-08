@@ -1,0 +1,33 @@
+{
+  "stage": "Stage123-C-SINGLEPROCESS",
+  "decision": "STAGE123C_SINGLEPROCESS_CORE_ONLY_RECOVERS_TEXT_INTERFACE_INSUFFICIENT",
+  "diagnostic_flags": [
+    "full_evidence_support_failure",
+    "context_prefix_core_failure_reproduced",
+    "core_only_recovers_support",
+    "core_only_high_macro_f1",
+    "core_only_recovers_but_marker_insufficient"
+  ],
+  "source_sweep_dir": "/kaggle/working/ContraMamba/reports/stage123b_singleprocess_evidence_interface_sweep_20260708_003428",
+  "output_dir": "/kaggle/working/ContraMamba/reports/stage123c_singleprocess_evidence_interface_analysis_20260708_004352",
+  "metrics": {
+    "full_evidence_SUPPORT_recall": 0.471774,
+    "core_only_SUPPORT_recall": 1.0,
+    "context_prefix_core_SUPPORT_recall": 0.162634,
+    "core_first_context_suffix_SUPPORT_recall": 0.303763,
+    "core_marker_context_suffix_SUPPORT_recall": 0.141129,
+    "full_evidence_macro_f1": 0.753022,
+    "core_only_macro_f1": 0.99639,
+    "core_first_context_suffix_macro_f1": 0.747383,
+    "core_marker_context_suffix_macro_f1": 0.633898
+  },
+  "csv_outputs": {
+    "interface_metrics": "/kaggle/working/ContraMamba/reports/stage123c_singleprocess_evidence_interface_analysis_20260708_004352/interface_metrics.csv",
+    "variant_metrics": "/kaggle/working/ContraMamba/reports/stage123c_singleprocess_evidence_interface_analysis_20260708_004352/variant_metrics.csv",
+    "bucket_view": "/kaggle/working/ContraMamba/reports/stage123c_singleprocess_evidence_interface_analysis_20260708_004352/bucket_view.csv",
+    "support_view": "/kaggle/working/ContraMamba/reports/stage123c_singleprocess_evidence_interface_analysis_20260708_004352/support_view.csv",
+    "refute_view": "/kaggle/working/ContraMamba/reports/stage123c_singleprocess_evidence_interface_analysis_20260708_004352/refute_view.csv",
+    "ne_view": "/kaggle/working/ContraMamba/reports/stage123c_singleprocess_evidence_interface_analysis_20260708_004352/ne_view.csv",
+    "support_summary": "/kaggle/working/ContraMamba/reports/stage123c_singleprocess_evidence_interface_analysis_20260708_004352/support_summary.csv"
+  }
+}

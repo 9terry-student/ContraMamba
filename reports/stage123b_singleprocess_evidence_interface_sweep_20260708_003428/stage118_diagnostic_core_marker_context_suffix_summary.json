@@ -1,0 +1,181 @@
+{
+  "stage": "Stage118",
+  "diagnostic_name": "stage123b_singleprocess_sweep",
+  "input_jsonl": "/kaggle/working/ContraMamba/data/stage122_prefix_core_localization_diagnostic_20260708_003422.jsonl",
+  "output_jsonl": "/kaggle/working/ContraMamba/reports/stage123b_singleprocess_evidence_interface_sweep_20260708_003428/stage118_diagnostic_core_marker_context_suffix_predictions.jsonl",
+  "n_input_rows": 6200,
+  "n_valid_rows": 6200,
+  "n_skipped_rows": 0,
+  "skip_reasons": {},
+  "accuracy": 0.846,
+  "macro_f1": 0.6339,
+  "per_label": {
+    "REFUTE": {
+      "precision": 0.6305,
+      "recall": 0.8871,
+      "f1": 0.7371,
+      "support": 806
+    },
+    "NOT_ENTITLED": {
+      "precision": 0.8954,
+      "recall": 0.9516,
+      "f1": 0.9226,
+      "support": 4650
+    },
+    "SUPPORT": {
+      "precision": 0.8468,
+      "recall": 0.1411,
+      "f1": 0.2419,
+      "support": 744
+    }
+  },
+  "pred_counts": {
+    "NOT_ENTITLED": 4942,
+    "REFUTE": 1134,
+    "SUPPORT": 124
+  },
+  "gold_counts": {
+    "NOT_ENTITLED": 4650,
+    "REFUTE": 806,
+    "SUPPORT": 744
+  },
+  "false_NE_total": 517,
+  "false_entitlement_total": 225,
+  "polarity_error_total": 213,
+  "scalar_medians_by_gold_label": {
+    "REFUTE": {
+      "frame_prob": 0.992568,
+      "predicate_coverage_prob": 0.993702,
+      "sufficiency_prob": 0.866751,
+      "entitlement_prob": 0.744888,
+      "entitlement_for_decision": 0.744888,
+      "compositional_entitlement_prob": 0.848709,
+      "learned_entitlement_prob": 0.892197,
+      "learned_entitlement_logit": 2.113382,
+      "polarity_margin": -5.360258,
+      "positive_energy": 0.096753,
+      "negative_energy": 5.462906
+    },
+    "NOT_ENTITLED": {
+      "frame_prob": 0.058225,
+      "predicate_coverage_prob": 0.01839,
+      "sufficiency_prob": 0.930481,
+      "entitlement_prob": 0.000185,
+      "entitlement_for_decision": 0.000185,
+      "compositional_entitlement_prob": 0.000635,
+      "learned_entitlement_prob": 0.255659,
+      "learned_entitlement_logit": -1.068657,
+      "polarity_margin": -0.385409,
+      "positive_energy": 0.217477,
+      "negative_energy": 1.026125
+    },
+    "SUPPORT": {
+      "frame_prob": 0.752907,
+      "predicate_coverage_prob": 0.694023,
+      "sufficiency_prob": 0.992107,
+      "entitlement_prob": 0.113302,
+      "entitlement_for_decision": 0.113302,
+      "compositional_entitlement_prob": 0.209871,
+      "learned_entitlement_prob": 0.592339,
+      "learned_entitlement_logit": 0.373644,
+      "polarity_margin": -3.663305,
+      "positive_energy": 0.542667,
+      "negative_energy": 3.775202
+    }
+  },
+  "scalar_medians_by_bucket": {
+    "correct_SUPPORT": {
+      "frame_prob": 0.955844,
+      "predicate_coverage_prob": 0.978843,
+      "sufficiency_prob": 0.996442,
+      "entitlement_prob": 0.609793,
+      "entitlement_for_decision": 0.609793,
+      "compositional_entitlement_prob": 0.85633,
+      "learned_entitlement_prob": 0.671801,
+      "learned_entitlement_logit": 0.716341,
+      "polarity_margin": 4.314321,
+      "positive_energy": 5.015806,
+      "negative_energy": 0.762452
+    },
+    "correct_REFUTE": {
+      "frame_prob": 0.992784,
+      "predicate_coverage_prob": 0.993941,
+      "sufficiency_prob": 0.897286,
+      "entitlement_prob": 0.76765,
+      "entitlement_for_decision": 0.76765,
+      "compositional_entitlement_prob": 0.867648,
+      "learned_entitlement_prob": 0.893608,
+      "learned_entitlement_logit": 2.128141,
+      "polarity_margin": -5.385421,
+      "positive_energy": 0.098922,
+      "negative_energy": 5.483695
+    },
+    "correct_NE": {
+      "frame_prob": 0.045036,
+      "predicate_coverage_prob": 0.013542,
+      "sufficiency_prob": 0.917376,
+      "entitlement_prob": 0.0001,
+      "entitlement_for_decision": 0.0001,
+      "compositional_entitlement_prob": 0.000451,
+      "learned_entitlement_prob": 0.241151,
+      "learned_entitlement_logit": -1.146381,
+      "polarity_margin": -0.239255,
+      "positive_energy": 0.212834,
+      "negative_energy": 0.881967
+    },
+    "false_NE_SUPPORT": {
+      "frame_prob": 0.231142,
+      "predicate_coverage_prob": 0.120056,
+      "sufficiency_prob": 0.988983,
+      "entitlement_prob": 0.010285,
+      "entitlement_for_decision": 0.010285,
+      "compositional_entitlement_prob": 0.026118,
+      "learned_entitlement_prob": 0.349139,
+      "learned_entitlement_logit": -0.622826,
+      "polarity_margin": -2.799139,
+      "positive_energy": 0.527437,
+      "negative_energy": 3.441327
+    },
+    "false_NE_REFUTE": {
+      "frame_prob": 0.976993,
+      "predicate_coverage_prob": 0.984018,
+      "sufficiency_prob": 0.124225,
+      "entitlement_prob": 0.068215,
+      "entitlement_for_decision": 0.068215,
+      "compositional_entitlement_prob": 0.076101,
+      "learned_entitlement_prob": 0.8261,
+      "learned_entitlement_logit": 1.558235,
+      "polarity_margin": -4.734351,
+      "positive_energy": 0.061289,
+      "negative_energy": 4.796188
+    },
+    "false_entitlement": {
+      "frame_prob": 0.873756,
+      "predicate_coverage_prob": 0.949331,
+      "sufficiency_prob": 0.991109,
+      "entitlement_prob": 0.424751,
+      "entitlement_for_decision": 0.424751,
+      "compositional_entitlement_prob": 0.600951,
+      "learned_entitlement_prob": 0.720998,
+      "learned_entitlement_logit": 0.949417,
+      "polarity_margin": -5.069251,
+      "positive_energy": 0.252567,
+      "negative_energy": 5.242025
+    },
+    "SUPPORT_to_REFUTE": {
+      "frame_prob": 0.974574,
+      "predicate_coverage_prob": 0.978984,
+      "sufficiency_prob": 0.992159,
+      "entitlement_prob": 0.610605,
+      "entitlement_for_decision": 0.610605,
+      "compositional_entitlement_prob": 0.84892,
+      "learned_entitlement_prob": 0.808504,
+      "learned_entitlement_logit": 1.44032,
+      "polarity_margin": -5.043778,
+      "positive_energy": 0.247162,
+      "negative_energy": 5.205973
+    },
+    "REFUTE_to_SUPPORT": {}
+  },
+  "decision": "STAGE118_GENERIC_DIAGNOSTIC_EVAL_COMPLETE"
+}

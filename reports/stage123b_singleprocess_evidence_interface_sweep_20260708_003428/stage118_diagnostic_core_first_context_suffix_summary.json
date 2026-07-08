@@ -1,0 +1,181 @@
+{
+  "stage": "Stage118",
+  "diagnostic_name": "stage123b_singleprocess_sweep",
+  "input_jsonl": "/kaggle/working/ContraMamba/data/stage122_prefix_core_localization_diagnostic_20260708_003422.jsonl",
+  "output_jsonl": "/kaggle/working/ContraMamba/reports/stage123b_singleprocess_evidence_interface_sweep_20260708_003428/stage118_diagnostic_core_first_context_suffix_predictions.jsonl",
+  "n_input_rows": 6200,
+  "n_valid_rows": 6200,
+  "n_skipped_rows": 0,
+  "skip_reasons": {},
+  "accuracy": 0.895,
+  "macro_f1": 0.7474,
+  "per_label": {
+    "REFUTE": {
+      "precision": 0.7451,
+      "recall": 0.9392,
+      "f1": 0.831,
+      "support": 806
+    },
+    "NOT_ENTITLED": {
+      "precision": 0.9235,
+      "recall": 0.9819,
+      "f1": 0.9518,
+      "support": 4650
+    },
+    "SUPPORT": {
+      "precision": 0.9417,
+      "recall": 0.3038,
+      "f1": 0.4593,
+      "support": 744
+    }
+  },
+  "pred_counts": {
+    "NOT_ENTITLED": 4944,
+    "REFUTE": 1016,
+    "SUPPORT": 240
+  },
+  "gold_counts": {
+    "NOT_ENTITLED": 4650,
+    "REFUTE": 806,
+    "SUPPORT": 744
+  },
+  "false_NE_total": 378,
+  "false_entitlement_total": 84,
+  "polarity_error_total": 189,
+  "scalar_medians_by_gold_label": {
+    "REFUTE": {
+      "frame_prob": 0.990941,
+      "predicate_coverage_prob": 0.993887,
+      "sufficiency_prob": 0.978018,
+      "entitlement_prob": 0.848028,
+      "entitlement_for_decision": 0.848028,
+      "compositional_entitlement_prob": 0.953171,
+      "learned_entitlement_prob": 0.884712,
+      "learned_entitlement_logit": 2.037831,
+      "polarity_margin": -5.535434,
+      "positive_energy": 0.124127,
+      "negative_energy": 5.674754
+    },
+    "NOT_ENTITLED": {
+      "frame_prob": 0.00943,
+      "predicate_coverage_prob": 0.005528,
+      "sufficiency_prob": 0.988623,
+      "entitlement_prob": 5.8e-05,
+      "entitlement_for_decision": 5.8e-05,
+      "compositional_entitlement_prob": 0.000312,
+      "learned_entitlement_prob": 0.219552,
+      "learned_entitlement_logit": -1.268279,
+      "polarity_margin": 0.939999,
+      "positive_energy": 1.600392,
+      "negative_energy": 0.183425
+    },
+    "SUPPORT": {
+      "frame_prob": 0.89077,
+      "predicate_coverage_prob": 0.9458,
+      "sufficiency_prob": 0.996953,
+      "entitlement_prob": 0.420126,
+      "entitlement_for_decision": 0.420126,
+      "compositional_entitlement_prob": 0.646496,
+      "learned_entitlement_prob": 0.736513,
+      "learned_entitlement_logit": 1.027921,
+      "polarity_margin": 1.114623,
+      "positive_energy": 2.55971,
+      "negative_energy": 0.816661
+    }
+  },
+  "scalar_medians_by_bucket": {
+    "correct_SUPPORT": {
+      "frame_prob": 0.979643,
+      "predicate_coverage_prob": 0.995345,
+      "sufficiency_prob": 0.997288,
+      "entitlement_prob": 0.816374,
+      "entitlement_for_decision": 0.816374,
+      "compositional_entitlement_prob": 0.923382,
+      "learned_entitlement_prob": 0.884875,
+      "learned_entitlement_logit": 2.039426,
+      "polarity_margin": 5.618025,
+      "positive_energy": 5.81076,
+      "negative_energy": 0.206038
+    },
+    "correct_REFUTE": {
+      "frame_prob": 0.992829,
+      "predicate_coverage_prob": 0.994155,
+      "sufficiency_prob": 0.980449,
+      "entitlement_prob": 0.850341,
+      "entitlement_for_decision": 0.850341,
+      "compositional_entitlement_prob": 0.960071,
+      "learned_entitlement_prob": 0.885783,
+      "learned_entitlement_logit": 2.048375,
+      "polarity_margin": -5.550313,
+      "positive_energy": 0.127929,
+      "negative_energy": 5.688873
+    },
+    "correct_NE": {
+      "frame_prob": 0.008906,
+      "predicate_coverage_prob": 0.005353,
+      "sufficiency_prob": 0.987782,
+      "entitlement_prob": 3.7e-05,
+      "entitlement_for_decision": 3.7e-05,
+      "compositional_entitlement_prob": 0.000227,
+      "learned_entitlement_prob": 0.215791,
+      "learned_entitlement_logit": -1.290363,
+      "polarity_margin": 1.028821,
+      "positive_energy": 1.653776,
+      "negative_energy": 0.178653
+    },
+    "false_NE_SUPPORT": {
+      "frame_prob": 0.176559,
+      "predicate_coverage_prob": 0.03601,
+      "sufficiency_prob": 0.996203,
+      "entitlement_prob": 0.00237,
+      "entitlement_for_decision": 0.00237,
+      "compositional_entitlement_prob": 0.00644,
+      "learned_entitlement_prob": 0.276075,
+      "learned_entitlement_logit": -0.964013,
+      "polarity_margin": 1.089809,
+      "positive_energy": 2.220021,
+      "negative_energy": 0.74901
+    },
+    "false_NE_REFUTE": {
+      "frame_prob": 0.155015,
+      "predicate_coverage_prob": 0.675185,
+      "sufficiency_prob": 0.033547,
+      "entitlement_prob": 0.004254,
+      "entitlement_for_decision": 0.004254,
+      "compositional_entitlement_prob": 0.006762,
+      "learned_entitlement_prob": 0.629144,
+      "learned_entitlement_logit": 0.528545,
+      "polarity_margin": -3.830548,
+      "positive_energy": 0.053604,
+      "negative_energy": 3.877387
+    },
+    "false_entitlement": {
+      "frame_prob": 0.894132,
+      "predicate_coverage_prob": 0.865473,
+      "sufficiency_prob": 0.997322,
+      "entitlement_prob": 0.366708,
+      "entitlement_for_decision": 0.366708,
+      "compositional_entitlement_prob": 0.564825,
+      "learned_entitlement_prob": 0.692333,
+      "learned_entitlement_logit": 0.811052,
+      "polarity_margin": -4.047742,
+      "positive_energy": 1.119462,
+      "negative_energy": 5.119658
+    },
+    "SUPPORT_to_REFUTE": {
+      "frame_prob": 0.993106,
+      "predicate_coverage_prob": 0.977479,
+      "sufficiency_prob": 0.996848,
+      "entitlement_prob": 0.799465,
+      "entitlement_for_decision": 0.799465,
+      "compositional_entitlement_prob": 0.965388,
+      "learned_entitlement_prob": 0.860344,
+      "learned_entitlement_logit": 1.818152,
+      "polarity_margin": -4.957147,
+      "positive_energy": 0.646715,
+      "negative_energy": 5.33557
+    },
+    "REFUTE_to_SUPPORT": {}
+  },
+  "decision": "STAGE118_GENERIC_DIAGNOSTIC_EVAL_COMPLETE"
+}

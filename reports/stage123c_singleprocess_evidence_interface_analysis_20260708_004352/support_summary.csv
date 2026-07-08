@@ -1,0 +1,6 @@
+interface,support_total,correct_SUPPORT,SUPPORT_to_REFUTE,false_NE_SUPPORT,correct_support_rate,support_to_refute_rate,false_ne_support_rate
+context_prefix_core,744,121,371,252,0.162634,0.498656,0.33871
+core_first_context_suffix,744,226,189,329,0.303763,0.254032,0.442204
+core_marker_context_suffix,744,105,213,426,0.141129,0.28629,0.572581
+core_only,744,744,0,0,1.0,0.0,0.0
+full_evidence,744,351,153,240,0.471774,0.205645,0.322581

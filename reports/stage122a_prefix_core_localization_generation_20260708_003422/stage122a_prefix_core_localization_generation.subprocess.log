@@ -1,0 +1,23 @@
+STDOUT:
+STAGE122A_PREFIX_CORE_LOCALIZATION_DIAGNOSTIC_GENERATED
+input_rows	2700
+valid_source_rows	2700
+selected_source_rows	900
+output_rows	6200
+label_counts_source
+NOT_ENTITLED	675
+REFUTE	117
+SUPPORT	108
+variant_counts
+core_only	900
+core_plus_suffix	900
+core_with_neutral_marker	900
+original_control	900
+prefix_only	800
+prefix_plus_core	900
+prefix_separator_core	900
+skipped_counts
+prefix_only_empty_prefix	100
+
+
+STDERR:

@@ -1,0 +1,30 @@
+{
+  "stage": "Stage118",
+  "sweep_interfaces": [
+    "full_evidence",
+    "core_only",
+    "context_prefix_core",
+    "core_first_context_suffix",
+    "core_marker_context_suffix"
+  ],
+  "prediction_paths": {
+    "full_evidence": "/kaggle/working/ContraMamba/reports/stage123b_singleprocess_evidence_interface_sweep_20260708_003428/stage118_diagnostic_full_evidence_predictions.jsonl",
+    "core_only": "/kaggle/working/ContraMamba/reports/stage123b_singleprocess_evidence_interface_sweep_20260708_003428/stage118_diagnostic_core_only_predictions.jsonl",
+    "context_prefix_core": "/kaggle/working/ContraMamba/reports/stage123b_singleprocess_evidence_interface_sweep_20260708_003428/stage118_diagnostic_context_prefix_core_predictions.jsonl",
+    "core_first_context_suffix": "/kaggle/working/ContraMamba/reports/stage123b_singleprocess_evidence_interface_sweep_20260708_003428/stage118_diagnostic_core_first_context_suffix_predictions.jsonl",
+    "core_marker_context_suffix": "/kaggle/working/ContraMamba/reports/stage123b_singleprocess_evidence_interface_sweep_20260708_003428/stage118_diagnostic_core_marker_context_suffix_predictions.jsonl"
+  },
+  "summary_paths": {
+    "full_evidence": "/kaggle/working/ContraMamba/reports/stage123b_singleprocess_evidence_interface_sweep_20260708_003428/stage118_diagnostic_full_evidence_summary.json",
+    "core_only": "/kaggle/working/ContraMamba/reports/stage123b_singleprocess_evidence_interface_sweep_20260708_003428/stage118_diagnostic_core_only_summary.json",
+    "context_prefix_core": "/kaggle/working/ContraMamba/reports/stage123b_singleprocess_evidence_interface_sweep_20260708_003428/stage118_diagnostic_context_prefix_core_summary.json",
+    "core_first_context_suffix": "/kaggle/working/ContraMamba/reports/stage123b_singleprocess_evidence_interface_sweep_20260708_003428/stage118_diagnostic_core_first_context_suffix_summary.json",
+    "core_marker_context_suffix": "/kaggle/working/ContraMamba/reports/stage123b_singleprocess_evidence_interface_sweep_20260708_003428/stage118_diagnostic_core_marker_context_suffix_summary.json"
+  },
+  "train_dev_evidence_interface": "full_evidence",
+  "diagnostic_source_jsonl_path": "/kaggle/working/ContraMamba/data/stage122_prefix_core_localization_diagnostic_20260708_003422.jsonl",
+  "model_architecture": "v6b_minimal",
+  "architecture": "vnext_minimal",
+  "router_mode": "learned_x_product",
+  "seed": 1
+}

@@ -1,0 +1,23 @@
+STDOUT:
+STAGE121A_PREFIX_LENGTH_DISCOURSE_ABLATION_GENERATED
+input_rows	3600
+valid_source_rows	3600
+selected_source_rows	300
+output_rows	2700
+label_counts_source
+NOT_ENTITLED	225
+REFUTE	38
+SUPPORT	37
+family_counts
+explicit_before_temporal	300
+length_matched_neutral_tokens	300
+length_matched_nonsense	300
+long_discourse_no_temporal	300
+long_neutral_no_order	300
+old_before_prefix	300
+original_control	300
+short_neutral_fragment	300
+short_neutral_sentence	300
+
+
+STDERR:
