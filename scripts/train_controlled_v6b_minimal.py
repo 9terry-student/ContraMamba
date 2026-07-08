@@ -1972,7 +1972,7 @@ def evaluate_ood_v6b(
     model.eval()
     with torch.no_grad():
         output = model(
-            **v5.model_feature_inputs(inputs),
+            **_vnext_model_feature_inputs(inputs),
             temporal_mismatch_flags=temporal_flags,
             predicate_mismatch_flags=predicate_flags,
         )
@@ -4835,6 +4835,30 @@ def attach_vnext_segmented_dual_pass_inputs(
         record["vnext_core_text_for_encoding"] = core_text
         record["vnext_context_text_for_encoding"] = context_text
         record["vnext_context_empty"] = bool(is_empty)
+
+
+_VNEXT_OPTIONAL_MODEL_FEATURE_KEYS: tuple[str, ...] = (
+    "core_input_ids",
+    "core_attention_mask",
+    "core_claim_mask",
+    "core_evidence_mask",
+    "context_input_ids",
+    "context_attention_mask",
+    "context_claim_mask",
+    "context_evidence_mask",
+    "context_empty",
+)
+
+
+def _vnext_model_feature_inputs(inputs: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
+    """Forward legacy model features plus opt-in segmented dual-pass tensors."""
+    result = {key: inputs[key] for key in v5.MODEL_FEATURE_KEYS}
+    for key in _VNEXT_OPTIONAL_MODEL_FEATURE_KEYS:
+        if key in inputs:
+            result[key] = inputs[key]
+    if "encoder_hidden_states" in inputs:
+        result["encoder_hidden_states"] = inputs["encoder_hidden_states"]
+    return result
 
 def _stage113_jsonable_metadata(value: Any) -> Any:
     if value is None or isinstance(value, (str, int, float, bool)):
@@ -8685,7 +8709,7 @@ def evaluate_external_probe(
     model.eval()
     with torch.no_grad():
         output = model(
-            **v5.model_feature_inputs(probe_inputs),
+            **_vnext_model_feature_inputs(probe_inputs),
             temporal_mismatch_flags=probe_temporal_flags,
             predicate_mismatch_flags=probe_predicate_flags,
         )
@@ -8952,7 +8976,7 @@ def _stage43_input_path_diagnostics(args: argparse.Namespace, max_length: int) -
         "external_uses_same_label_mapping_as_dev": True,
         "label_id_to_name": {str(key): value for key, value in sorted(v5.ID_TO_FINAL_LABEL.items())},
         "name_to_label_id": dict(sorted(v5.FINAL_LABEL_TO_ID.items())),
-        "model_forward_path": "model(**v5.model_feature_inputs(inputs), temporal_mismatch_flags=extract_flags(...), predicate_mismatch_flags=extract_flags(...))",
+        "model_forward_path": "model(**_vnext_model_feature_inputs(inputs), temporal_mismatch_flags=extract_flags(...), predicate_mismatch_flags=extract_flags(...))",
         "prediction_export_path": "prediction_records_v6b with Stage39 export-only composer diagnostics",
         "tokenizer_source": "dummy_vocab" if args.backbone == "dummy" else getattr(args, "model_name", None),
         "max_length": max_length,
@@ -9062,7 +9086,7 @@ def _stage43_prediction_records_from_model(
             batch_inputs = _stage43_slice_inputs(model_inputs, start, end)
             temporal_flags, predicate_flags = extract_flags(batch_records, flag_source, device)
             output = model(
-                **v5.model_feature_inputs(batch_inputs),
+                **_vnext_model_feature_inputs(batch_inputs),
                 temporal_mismatch_flags=temporal_flags,
                 predicate_mismatch_flags=predicate_flags,
             )
@@ -12371,7 +12395,7 @@ def main(argv: list[str] | None = None) -> int:
             _ta_pen = ta_final_penalty_scale if use_temporal_residual_adapter and ta_final_penalty_scale > 0.0 else 0.0
             _tc_pen = tc_gated_penalty_scale if use_temporal_channel_gated_penalty and tc_gated_penalty_scale > 0.0 else 0.0
             output = model(
-                **v5.model_feature_inputs(train_inputs),
+                **_vnext_model_feature_inputs(train_inputs),
                 temporal_mismatch_flags=train_temporal_flags,
                 predicate_mismatch_flags=train_predicate_flags,
                 temporal_adapter_final_penalty_scale=_ta_pen,
@@ -12572,7 +12596,7 @@ def main(argv: list[str] | None = None) -> int:
                 _td_zero_t = torch.zeros(_td_n, dtype=torch.float32, device=device)
                 _td_zero_p = torch.zeros(_td_n, dtype=torch.float32, device=device)
                 _td_train_out = model(
-                    **v5.model_feature_inputs(td_train_inputs),
+                    **_vnext_model_feature_inputs(td_train_inputs),
                     temporal_mismatch_flags=_td_zero_t,
                     predicate_mismatch_flags=_td_zero_p,
                 )
@@ -12619,7 +12643,7 @@ def main(argv: list[str] | None = None) -> int:
                     _ta_zero_t = torch.zeros(_ta_n, dtype=torch.float32, device=device)
                     _ta_zero_p = torch.zeros(_ta_n, dtype=torch.float32, device=device)
                     _ta_train_out = model(
-                        **v5.model_feature_inputs(td_train_inputs),
+                        **_vnext_model_feature_inputs(td_train_inputs),
                         temporal_mismatch_flags=_ta_zero_t,
                         predicate_mismatch_flags=_ta_zero_p,
                     )
@@ -12677,7 +12701,7 @@ def main(argv: list[str] | None = None) -> int:
                     _tc_zero_t = torch.zeros(_tc_n, dtype=torch.float32, device=device)
                     _tc_zero_p = torch.zeros(_tc_n, dtype=torch.float32, device=device)
                     _tc_train_out = model(
-                        **v5.model_feature_inputs(td_train_inputs),
+                        **_vnext_model_feature_inputs(td_train_inputs),
                         temporal_mismatch_flags=_tc_zero_t,
                         predicate_mismatch_flags=_tc_zero_p,
                     )
@@ -12714,12 +12738,12 @@ def main(argv: list[str] | None = None) -> int:
                 _pc_zero_t = torch.zeros(_pc_n, dtype=torch.float32, device=device)
                 _pc_zero_p = torch.zeros(_pc_n, dtype=torch.float32, device=device)
                 _pc_pres_out = model(
-                    **v5.model_feature_inputs(pc_pres_inputs),
+                    **_vnext_model_feature_inputs(pc_pres_inputs),
                     temporal_mismatch_flags=_pc_zero_t,
                     predicate_mismatch_flags=_pc_zero_p,
                 )
                 _pc_frame_out = model(
-                    **v5.model_feature_inputs(pc_frame_inputs),
+                    **_vnext_model_feature_inputs(pc_frame_inputs),
                     temporal_mismatch_flags=_pc_zero_t,
                     predicate_mismatch_flags=_pc_zero_p,
                 )
@@ -12876,7 +12900,7 @@ def main(argv: list[str] | None = None) -> int:
                 _ts_zero_t = torch.zeros(_ts_n, dtype=torch.float32, device=device)
                 _ts_zero_p = torch.zeros(_ts_n, dtype=torch.float32, device=device)
                 _ts_train_out = model(
-                    **v5.model_feature_inputs(ts_train_inputs),
+                    **_vnext_model_feature_inputs(ts_train_inputs),
                     temporal_mismatch_flags=_ts_zero_t,
                     predicate_mismatch_flags=_ts_zero_p,
                 )
@@ -12920,7 +12944,7 @@ def main(argv: list[str] | None = None) -> int:
                 _tmm_zero_t = torch.zeros(_tmm_n, dtype=torch.float32, device=device)
                 _tmm_zero_p = torch.zeros(_tmm_n, dtype=torch.float32, device=device)
                 _tmm_train_out = model(
-                    **v5.model_feature_inputs(tmm_train_inputs),
+                    **_vnext_model_feature_inputs(tmm_train_inputs),
                     temporal_mismatch_flags=_tmm_zero_t,
                     predicate_mismatch_flags=_tmm_zero_p,
                 )
@@ -12974,7 +12998,7 @@ def main(argv: list[str] | None = None) -> int:
                 _tpres_zero_t = torch.zeros(_tpres_n, dtype=torch.float32, device=device)
                 _tpres_zero_p = torch.zeros(_tpres_n, dtype=torch.float32, device=device)
                 _tpres_train_out = model(
-                    **v5.model_feature_inputs(tpres_train_inputs),
+                    **_vnext_model_feature_inputs(tpres_train_inputs),
                     temporal_mismatch_flags=_tpres_zero_t,
                     predicate_mismatch_flags=_tpres_zero_p,
                 )
@@ -13015,7 +13039,7 @@ def main(argv: list[str] | None = None) -> int:
                 _covent_zero_t = torch.zeros(_covent_n, dtype=torch.float32, device=device)
                 _covent_zero_p = torch.zeros(_covent_n, dtype=torch.float32, device=device)
                 _covent_train_out = model(
-                    **v5.model_feature_inputs(covent_train_inputs),
+                    **_vnext_model_feature_inputs(covent_train_inputs),
                     temporal_mismatch_flags=_covent_zero_t,
                     predicate_mismatch_flags=_covent_zero_p,
                 )
@@ -13157,7 +13181,7 @@ def main(argv: list[str] | None = None) -> int:
                     _td_zt = torch.zeros(_td_et, dtype=torch.float32, device=device)
                     _td_zp = torch.zeros(_td_et, dtype=torch.float32, device=device)
                     _td_eval_train_out = model(
-                        **v5.model_feature_inputs(td_train_inputs),
+                        **_vnext_model_feature_inputs(td_train_inputs),
                         temporal_mismatch_flags=_td_zt,
                         predicate_mismatch_flags=_td_zp,
                     )
@@ -13168,7 +13192,7 @@ def main(argv: list[str] | None = None) -> int:
                     _td_ztd = torch.zeros(_td_ed, dtype=torch.float32, device=device)
                     _td_zpd = torch.zeros(_td_ed, dtype=torch.float32, device=device)
                     _td_eval_dev_out = model(
-                        **v5.model_feature_inputs(td_dev_inputs),
+                        **_vnext_model_feature_inputs(td_dev_inputs),
                         temporal_mismatch_flags=_td_ztd,
                         predicate_mismatch_flags=_td_zpd,
                     )
@@ -13210,7 +13234,7 @@ def main(argv: list[str] | None = None) -> int:
                         _covent_train_n, dtype=torch.float32, device=device
                     )
                     _covent_train_eval_out = model(
-                        **v5.model_feature_inputs(covent_train_inputs),
+                        **_vnext_model_feature_inputs(covent_train_inputs),
                         temporal_mismatch_flags=_covent_train_zero_t,
                         predicate_mismatch_flags=_covent_train_zero_p,
                     )
@@ -13222,7 +13246,7 @@ def main(argv: list[str] | None = None) -> int:
                         _covent_dev_n, dtype=torch.float32, device=device
                     )
                     _covent_dev_eval_out = model(
-                        **v5.model_feature_inputs(covent_dev_inputs),
+                        **_vnext_model_feature_inputs(covent_dev_inputs),
                         temporal_mismatch_flags=_covent_dev_zero_t,
                         predicate_mismatch_flags=_covent_dev_zero_p,
                     )
@@ -13274,12 +13298,12 @@ def main(argv: list[str] | None = None) -> int:
                 _pc_zero_t = torch.zeros(_pc_n, dtype=torch.float32, device=device)
                 _pc_zero_p = torch.zeros(_pc_n, dtype=torch.float32, device=device)
                 _pc_pres_eval = model(
-                    **v5.model_feature_inputs(pc_pres_inputs),
+                    **_vnext_model_feature_inputs(pc_pres_inputs),
                     temporal_mismatch_flags=_pc_zero_t,
                     predicate_mismatch_flags=_pc_zero_p,
                 )
                 _pc_frame_eval = model(
-                    **v5.model_feature_inputs(pc_frame_inputs),
+                    **_vnext_model_feature_inputs(pc_frame_inputs),
                     temporal_mismatch_flags=_pc_zero_t,
                     predicate_mismatch_flags=_pc_zero_p,
                 )
@@ -16711,7 +16735,7 @@ def main(argv: list[str] | None = None) -> int:
         ) -> tuple["torch.Tensor", dict[str, "torch.Tensor | None"], "torch.Tensor"]:
             with torch.no_grad():
                 _out = model(
-                    **v5.model_feature_inputs(inputs),
+                    **_vnext_model_feature_inputs(inputs),
                     temporal_mismatch_flags=t_flags,
                     predicate_mismatch_flags=p_flags,
                 )
@@ -17219,7 +17243,7 @@ def main(argv: list[str] | None = None) -> int:
             model.eval()
             with torch.no_grad():
                 ood_output = model(
-                    **v5.model_feature_inputs(ood_inputs),
+                    **_vnext_model_feature_inputs(ood_inputs),
                     temporal_mismatch_flags=ood_temporal_flags,
                     predicate_mismatch_flags=ood_predicate_flags,
                 )
@@ -17303,7 +17327,7 @@ def main(argv: list[str] | None = None) -> int:
             model.eval()
             with torch.no_grad():
                 ood_output = model(
-                    **v5.model_feature_inputs(ood_inputs),
+                    **_vnext_model_feature_inputs(ood_inputs),
                     temporal_mismatch_flags=ood_temporal_flags,
                     predicate_mismatch_flags=ood_predicate_flags,
                 )
@@ -17424,7 +17448,7 @@ def main(argv: list[str] | None = None) -> int:
             model.eval()
             with torch.no_grad():
                 _dc_ood_out = model(
-                    **v5.model_feature_inputs(ood_inputs),
+                    **_vnext_model_feature_inputs(ood_inputs),
                     temporal_mismatch_flags=ood_temporal_flags,
                     predicate_mismatch_flags=ood_predicate_flags,
                 )
