@@ -568,6 +568,10 @@ def build_vnext_model(
     max_length: int,
     hidden_size: int = 48,
     vnext_router_mode: str = "learned_x_product",
+    vnext_segmented_context_role: str = "diagnostic_only",
+    vnext_context_risk_cap_alpha: float = 0.0,
+    vnext_context_risk_threshold: float = 0.5,
+    vnext_context_risk_source: str = "context_not_entitled_prob",
 ) -> ContraMambaVNextMinimal:
     """Build a ContraMambaVNextMinimal with dummy backbone for plumbing validation."""
     backbone = v5.ControlledDummyBackbone(vocab_size, hidden_size, max_length)
@@ -579,6 +583,10 @@ def build_vnext_model(
         energy_size=24,
         dropout=0.0,
         vnext_router_mode=vnext_router_mode,
+        vnext_segmented_context_role=vnext_segmented_context_role,
+        vnext_context_risk_cap_alpha=vnext_context_risk_cap_alpha,
+        vnext_context_risk_threshold=vnext_context_risk_threshold,
+        vnext_context_risk_source=vnext_context_risk_source,
     )
 
 
@@ -587,6 +595,10 @@ def build_vnext_mamba_model(
     freeze_encoder: bool,
     freeze_a_log: bool,
     vnext_router_mode: str = "learned_x_product",
+    vnext_segmented_context_role: str = "diagnostic_only",
+    vnext_context_risk_cap_alpha: float = 0.0,
+    vnext_context_risk_threshold: float = 0.5,
+    vnext_context_risk_source: str = "context_not_entitled_prob",
 ) -> ContraMambaVNextMinimal:
     """Build a ContraMambaVNextMinimal with real Mamba backbone."""
     model = ContraMambaVNextMinimal(
@@ -598,6 +610,10 @@ def build_vnext_mamba_model(
         dropout=0.1,
         freeze_a_log=freeze_a_log,
         vnext_router_mode=vnext_router_mode,
+        vnext_segmented_context_role=vnext_segmented_context_role,
+        vnext_context_risk_cap_alpha=vnext_context_risk_cap_alpha,
+        vnext_context_risk_threshold=vnext_context_risk_threshold,
+        vnext_context_risk_source=vnext_context_risk_source,
     )
     for parameter in model.mamba.parameters():
         parameter.requires_grad = not freeze_encoder
@@ -4465,6 +4481,21 @@ _STAGE123_VNEXT_EVIDENCE_EXPORT_FIELDS: tuple[str, ...] = (
     "vnext_core_rep_norm",
     "vnext_context_rep_norm",
     "vnext_core_context_cosine",
+    "vnext_context_risk_cap_active",
+    "vnext_context_risk_source",
+    "vnext_context_risk",
+    "vnext_context_risk_threshold",
+    "vnext_context_risk_cap_alpha",
+    "vnext_context_risk_excess",
+    "vnext_context_cap_factor",
+    "vnext_context_cap_applied",
+    "vnext_logits_before_context_cap",
+    "vnext_logits_after_context_cap",
+    "vnext_prediction_before_context_cap",
+    "vnext_prediction_after_context_cap",
+    "vnext_context_only_logits",
+    "vnext_context_only_prediction",
+    "vnext_context_cap_notes",
 )
 
 _STAGE118_PRESERVED_FIELD_PREFIXES: tuple[str, ...] = (
@@ -5176,6 +5207,69 @@ def prediction_records_v6b(
             if scalar_value is not None:
                 item[key] = scalar_value
 
+        if item.get("vnext_segmented_dual_pass_active"):
+            for key in (
+                "vnext_context_risk",
+                "vnext_context_risk_threshold",
+                "vnext_context_risk_cap_alpha",
+                "vnext_context_risk_excess",
+                "vnext_context_cap_factor",
+            ):
+                scalar_value = _stage113_scalar_value(output, key, index)
+                if scalar_value is not None:
+                    item[key] = scalar_value
+            for key in (
+                "vnext_context_risk_threshold",
+                "vnext_context_risk_cap_alpha",
+            ):
+                if key not in item and output.get(key) is not None:
+                    try:
+                        item[key] = round(float(output[key]), 6)
+                    except (TypeError, ValueError):
+                        item[key] = output[key]
+            cap_active = output.get("vnext_context_risk_cap_active")
+            if cap_active is not None:
+                item["vnext_context_risk_cap_active"] = bool(cap_active)
+            cap_source = output.get("vnext_context_risk_source")
+            if cap_source is not None:
+                item["vnext_context_risk_source"] = cap_source
+            cap_notes = output.get("vnext_context_cap_notes")
+            if cap_notes is not None:
+                item["vnext_context_cap_notes"] = cap_notes
+            cap_applied = output.get("vnext_context_cap_applied")
+            if cap_applied is not None:
+                try:
+                    item["vnext_context_cap_applied"] = bool(cap_applied.detach().cpu()[index].item())
+                except (AttributeError, IndexError, TypeError, ValueError):
+                    item["vnext_context_cap_applied"] = bool(cap_applied)
+            for source_key, export_key in (
+                ("vnext_logits_before_context_cap", "vnext_logits_before_context_cap"),
+                ("vnext_logits_after_context_cap", "vnext_logits_after_context_cap"),
+                ("vnext_context_only_logits", "vnext_context_only_logits"),
+            ):
+                value = output.get(source_key)
+                if value is not None:
+                    try:
+                        row_value = value.detach().cpu()[index]
+                    except (AttributeError, IndexError, TypeError):
+                        row_value = None
+                    list_value = _s28e_safe_list_float(row_value)
+                    if list_value is not None:
+                        item[export_key] = list_value
+            for source_key, export_key in (
+                ("vnext_prediction_before_context_cap", "vnext_prediction_before_context_cap"),
+                ("vnext_prediction_after_context_cap", "vnext_prediction_after_context_cap"),
+                ("vnext_context_only_prediction", "vnext_context_only_prediction"),
+            ):
+                value = output.get(source_key)
+                if value is not None:
+                    try:
+                        pred_id_value = int(value.detach().cpu()[index].item())
+                    except (AttributeError, IndexError, TypeError, ValueError):
+                        pred_id_value = None
+                    if pred_id_value is not None:
+                        item[export_key] = v5.ID_TO_FINAL_LABEL.get(pred_id_value, pred_id_value)
+    
         #  Stage36-A: conservative support-safety blockers (shadow-only) 
         _stage37_stage36_info: dict[str, Any] = {}
         if (
@@ -5627,11 +5721,39 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--vnext-segmented-context-role",
-        choices=("ignore", "diagnostic_only"),
+        choices=("ignore", "diagnostic_only", "risk_cap"),
         default="diagnostic_only",
         help=(
-            "Stage124-A: context role for segmented dual-pass. Both choices keep "
-            "final vNext minimal decisions based on the core representation."
+            "Stage125-A: context role for segmented dual-pass. ignore and diagnostic_only "
+            "leave logits unchanged; risk_cap may symmetrically cap REFUTE/SUPPORT."
+        ),
+    )
+    parser.add_argument(
+        "--vnext-context-risk-cap-alpha",
+        type=float,
+        default=0.0,
+        help=(
+            "Stage125-A: strength of segmented context entitlement cap. "
+            "Default 0.0 is an exact no-op."
+        ),
+    )
+    parser.add_argument(
+        "--vnext-context-risk-threshold",
+        type=float,
+        default=0.5,
+        help=(
+            "Stage125-A: context risk threshold below which no cap is applied. "
+            "Default: 0.5."
+        ),
+    )
+    parser.add_argument(
+        "--vnext-context-risk-source",
+        choices=("context_not_entitled_prob", "context_uncertainty"),
+        default="context_not_entitled_prob",
+        help=(
+            "Stage125-A: source for segmented context risk. "
+            "context_not_entitled_prob uses the context-only NOT_ENTITLED probability; "
+            "context_uncertainty uses 1 - max(context-only probability)."
         ),
     )
     parser.add_argument(
@@ -10925,6 +11047,10 @@ def main(argv: list[str] | None = None) -> int:
                 freeze_encoder=args.freeze_encoder,
                 freeze_a_log=args.freeze_a_log,
                 vnext_router_mode=args.vnext_router_mode,
+                vnext_segmented_context_role=args.vnext_segmented_context_role,
+                vnext_context_risk_cap_alpha=args.vnext_context_risk_cap_alpha,
+                vnext_context_risk_threshold=args.vnext_context_risk_threshold,
+                vnext_context_risk_source=args.vnext_context_risk_source,
             )
         else:
             model = build_mamba_model(
@@ -11040,6 +11166,10 @@ def main(argv: list[str] | None = None) -> int:
                 len(vocab),
                 max_length,
                 vnext_router_mode=args.vnext_router_mode,
+                vnext_segmented_context_role=args.vnext_segmented_context_role,
+                vnext_context_risk_cap_alpha=args.vnext_context_risk_cap_alpha,
+                vnext_context_risk_threshold=args.vnext_context_risk_threshold,
+                vnext_context_risk_source=args.vnext_context_risk_source,
             )
         else:
             model = build_model(
@@ -15216,6 +15346,11 @@ def main(argv: list[str] | None = None) -> int:
             "vnext_evidence_interface_default_preserves_existing_behavior": (
                 args.vnext_evidence_interface == "full_evidence"
             ),
+            "vnext_enable_segmented_dual_pass": getattr(args, "vnext_enable_segmented_dual_pass", False),
+            "vnext_segmented_context_role": getattr(args, "vnext_segmented_context_role", "diagnostic_only"),
+            "vnext_context_risk_cap_alpha": getattr(args, "vnext_context_risk_cap_alpha", 0.0),
+            "vnext_context_risk_threshold": getattr(args, "vnext_context_risk_threshold", 0.5),
+            "vnext_context_risk_source": getattr(args, "vnext_context_risk_source", "context_not_entitled_prob"),
             "use_v7_hierarchical": args.architecture == "v7_hierarchical",
             "v7_disable_frame_channel": getattr(args, "v7_disable_frame_channel", False),
             "v7_disable_predicate_channel": getattr(args, "v7_disable_predicate_channel", False),
