@@ -4981,6 +4981,41 @@ def _stage115_clean_dev_scalar_report(
     }
 
 
+
+_STAGE125_RISK_CAP_REQUIRED_EXPORT_FIELDS: tuple[str, ...] = (
+    "vnext_context_risk_cap_active",
+    "vnext_context_risk_source",
+    "vnext_context_risk",
+    "vnext_context_risk_threshold",
+    "vnext_context_risk_cap_alpha",
+    "vnext_context_risk_excess",
+    "vnext_context_cap_factor",
+    "vnext_context_cap_applied",
+    "vnext_logits_before_context_cap",
+    "vnext_logits_after_context_cap",
+    "vnext_prediction_before_context_cap",
+    "vnext_prediction_after_context_cap",
+    "vnext_context_only_logits",
+    "vnext_context_only_prediction",
+    "vnext_context_cap_notes",
+)
+
+
+def _stage125_assert_risk_cap_exports(row: dict[str, Any]) -> None:
+    if not row.get("vnext_segmented_dual_pass_active"):
+        return
+    if row.get("vnext_segmented_context_role") != "risk_cap":
+        return
+    missing = [
+        key
+        for key in _STAGE125_RISK_CAP_REQUIRED_EXPORT_FIELDS
+        if key not in row
+    ]
+    if missing:
+        raise RuntimeError(
+            "Stage125 risk-cap export missing fields: " + ", ".join(missing)
+        )
+
 def prediction_records_v6b(
     records: list[dict],
     output: dict[str, Any],
@@ -5244,6 +5279,20 @@ def prediction_records_v6b(
             if metadata_key in record:
                 item[metadata_key] = record[metadata_key]
         _stage113_add_vnext_scalars(item, output, index)
+        output_segmented_active = bool(output.get("vnext_segmented_dual_pass_active", False))
+        record_segmented_active = bool(record.get("vnext_segmented_dual_pass_active", False))
+        vnext_segmented_active = record_segmented_active or output_segmented_active
+        if vnext_segmented_active:
+            item["vnext_segmented_dual_pass_active"] = True
+            item.setdefault(
+                "vnext_segmented_context_role",
+                getattr(args, "vnext_segmented_context_role", record.get("vnext_segmented_context_role", "diagnostic_only"))
+                if args is not None
+                else record.get("vnext_segmented_context_role", "diagnostic_only"),
+            )
+            primary_source = output.get("vnext_primary_rep_source")
+            if primary_source is not None:
+                item["vnext_primary_rep_source"] = primary_source
         for key in (
             "vnext_segmented_dual_pass_active",
             "vnext_segmented_context_role",
@@ -5263,7 +5312,7 @@ def prediction_records_v6b(
             if scalar_value is not None:
                 item[key] = scalar_value
 
-        if item.get("vnext_segmented_dual_pass_active"):
+        if vnext_segmented_active:
             for key in (
                 "vnext_context_risk",
                 "vnext_context_risk_threshold",
@@ -5596,6 +5645,7 @@ def prediction_records_v6b(
                     "stage39_composed_final_label"
                 ]
 
+        _stage125_assert_risk_cap_exports(item)
         exported.append(item)
     if stage32_shadow_logits_before is not None and not torch.equal(
         stage32_shadow_logits_before, output["logits"].detach().cpu()
