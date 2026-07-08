@@ -74,6 +74,7 @@ VNEXT_EVIDENCE_INTERFACE_CHOICES: tuple[str, ...] = (
     "context_prefix_core",
     "core_marker_context_suffix",
     "segmented_dual_pass_scaffold",
+    "segmented_dual_pass",
 )
 STAGE118_DIAGNOSTIC_EVIDENCE_INTERFACE_CHOICES: tuple[str, ...] = (
     "same_as_vnext",
@@ -4455,6 +4456,15 @@ _STAGE123_VNEXT_EVIDENCE_EXPORT_FIELDS: tuple[str, ...] = (
     "vnext_evidence_context_text",
     "vnext_evidence_interface_fallback_used",
     "vnext_evidence_interface_notes",
+    "vnext_segmented_dual_pass_active",
+    "vnext_segmented_context_role",
+    "vnext_primary_rep_source",
+    "vnext_core_text_for_encoding",
+    "vnext_context_text_for_encoding",
+    "vnext_context_empty",
+    "vnext_core_rep_norm",
+    "vnext_context_rep_norm",
+    "vnext_core_context_cosine",
 )
 
 _STAGE118_PRESERVED_FIELD_PREFIXES: tuple[str, ...] = (
@@ -4555,6 +4565,12 @@ def resolve_vnext_evidence_text(record: dict[str, Any], evidence_interface: str)
         notes.append("segmented_dual_pass_scaffold_single_pass_core_sequence")
         notes.append(f"core_source={core_source or 'none'}")
         notes.append(f"context_source={context_source or 'none'}")
+    elif evidence_interface == "segmented_dual_pass":
+        resolved = core_text
+        fallback_used = core_source != "evidence_core" or context_source != "evidence_context"
+        notes.append("segmented_dual_pass_core_primary_dual_encoder")
+        notes.append(f"core_source={core_source or 'none'}")
+        notes.append(f"context_source={context_source or 'none'}")
     else:
         resolved = evidence_text
 
@@ -4627,6 +4643,112 @@ def apply_vnext_evidence_interface_to_records(
         item["vnext_evidence_interface_notes"] = resolved["evidence_interface_notes"]
         resolved_records.append(item)
     return resolved_records
+
+def _vnext_segmented_dual_pass_active(
+    args: argparse.Namespace,
+    evidence_interface: str | None = None,
+) -> bool:
+    selected_interface = evidence_interface or getattr(args, "vnext_evidence_interface", "full_evidence")
+    return (
+        getattr(args, "architecture", None) == "vnext_minimal"
+        and bool(getattr(args, "vnext_enable_segmented_dual_pass", False))
+        and selected_interface == "segmented_dual_pass"
+    )
+
+
+def _vnext_segmented_record_view(
+    records: list[dict[str, Any]],
+    *,
+    text_key: str,
+    empty_placeholder: str = "[empty_context]",
+) -> tuple[list[dict[str, Any]], list[bool], list[str]]:
+    encoded_records: list[dict[str, Any]] = []
+    empty_flags: list[bool] = []
+    texts: list[str] = []
+    for record in records:
+        text = _vnext_clean_text(record.get(text_key))
+        empty = not bool(text)
+        if empty:
+            text = empty_placeholder
+        item = dict(record)
+        item["evidence"] = text
+        encoded_records.append(item)
+        empty_flags.append(empty)
+        texts.append("" if empty else text)
+    return encoded_records, empty_flags, texts
+
+
+def _vnext_encode_segmented_features(
+    records: list[dict[str, Any]],
+    *,
+    args: argparse.Namespace,
+    vocab: dict[str, int] | None,
+    tokenizer: Any | None,
+) -> tuple[dict[str, torch.Tensor], list[bool], list[str], list[str]]:
+    core_records, _, core_texts = _vnext_segmented_record_view(
+        records, text_key="vnext_core_sequence_text", empty_placeholder="[empty_core]"
+    )
+    context_records, context_empty, context_texts = _vnext_segmented_record_view(
+        records, text_key="vnext_context_sequence_text", empty_placeholder="[empty_context]"
+    )
+    if args.backbone == "dummy":
+        if vocab is None:
+            raise ValueError("segmented dual-pass dummy encoding requires vocab")
+        core_bundle = v5.encode_records(core_records, vocab)
+        context_bundle = v5.encode_records(context_records, vocab)
+    else:
+        if tokenizer is None:
+            raise ValueError("segmented dual-pass Mamba encoding requires tokenizer")
+        core_bundle = v5.encode_mamba_records(core_records, tokenizer, args.max_length)
+        context_bundle = v5.encode_mamba_records(context_records, tokenizer, args.max_length)
+    features: dict[str, torch.Tensor] = {}
+    for source_key, target_key in (
+        ("input_ids", "core_input_ids"),
+        ("attention_mask", "core_attention_mask"),
+        ("claim_mask", "core_claim_mask"),
+        ("evidence_mask", "core_evidence_mask"),
+    ):
+        features[target_key] = core_bundle["model_inputs"][source_key]
+    for source_key, target_key in (
+        ("input_ids", "context_input_ids"),
+        ("attention_mask", "context_attention_mask"),
+        ("claim_mask", "context_claim_mask"),
+        ("evidence_mask", "context_evidence_mask"),
+    ):
+        features[target_key] = context_bundle["model_inputs"][source_key]
+    features["context_empty"] = torch.tensor(context_empty, dtype=torch.bool)
+    return features, context_empty, core_texts, context_texts
+
+
+def attach_vnext_segmented_dual_pass_inputs(
+    inputs: dict[str, torch.Tensor],
+    records: list[dict[str, Any]],
+    *,
+    args: argparse.Namespace,
+    vocab: dict[str, int] | None,
+    tokenizer: Any | None,
+    device: torch.device,
+    evidence_interface: str | None = None,
+) -> None:
+    if not _vnext_segmented_dual_pass_active(args, evidence_interface):
+        return
+    features, context_empty, core_texts, context_texts = _vnext_encode_segmented_features(
+        records, args=args, vocab=vocab, tokenizer=tokenizer
+    )
+    for key, value in features.items():
+        inputs[key] = value.to(device)
+    for record, is_empty, core_text, context_text in zip(
+        records, context_empty, core_texts, context_texts
+    ):
+        record["vnext_segmented_dual_pass_active"] = True
+        record["vnext_segmented_context_role"] = getattr(
+            args, "vnext_segmented_context_role", "diagnostic_only"
+        )
+        record["vnext_primary_rep_source"] = "core_rep"
+        record["vnext_core_text_for_encoding"] = core_text
+        record["vnext_context_text_for_encoding"] = context_text
+        record["vnext_context_empty"] = bool(is_empty)
+
 def _stage113_jsonable_metadata(value: Any) -> Any:
     if value is None or isinstance(value, (str, int, float, bool)):
         return value
@@ -5035,6 +5157,24 @@ def prediction_records_v6b(
             if metadata_key in record:
                 item[metadata_key] = record[metadata_key]
         _stage113_add_vnext_scalars(item, output, index)
+        for key in (
+            "vnext_segmented_dual_pass_active",
+            "vnext_segmented_context_role",
+            "vnext_primary_rep_source",
+            "vnext_core_text_for_encoding",
+            "vnext_context_text_for_encoding",
+            "vnext_context_empty",
+        ):
+            if key in record:
+                item[key] = record[key]
+        for key in (
+            "vnext_core_rep_norm",
+            "vnext_context_rep_norm",
+            "vnext_core_context_cosine",
+        ):
+            scalar_value = _stage113_scalar_value(output, key, index)
+            if scalar_value is not None:
+                item[key] = scalar_value
 
         #  Stage36-A: conservative support-safety blockers (shadow-only) 
         _stage37_stage36_info: dict[str, Any] = {}
@@ -5474,6 +5614,24 @@ def build_parser() -> argparse.ArgumentParser:
         help=(
             "Stage123-A experimental vNext evidence interface. "
             "Default full_evidence preserves existing claim+evidence encoding."
+        ),
+    )
+    parser.add_argument(
+        "--vnext-enable-segmented-dual-pass",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage124-A: enable segmented dual-pass vNext encoding when "
+            "--vnext-evidence-interface segmented_dual_pass is selected."
+        ),
+    )
+    parser.add_argument(
+        "--vnext-segmented-context-role",
+        choices=("ignore", "diagnostic_only"),
+        default="diagnostic_only",
+        help=(
+            "Stage124-A: context role for segmented dual-pass. Both choices keep "
+            "final vNext minimal decisions based on the core representation."
         ),
     )
     parser.add_argument(
@@ -7642,7 +7800,7 @@ def build_parser() -> argparse.ArgumentParser:
             "to evaluate in one process after the selected model is ready. Valid "
             "values: full_evidence, core_only, core_first_context_suffix, "
             "context_prefix_core, core_marker_context_suffix, "
-            "segmented_dual_pass_scaffold. Empty preserves existing behavior."
+            "segmented_dual_pass_scaffold, segmented_dual_pass. Empty preserves existing behavior."
         ),
     )
     parser.add_argument(
@@ -8678,6 +8836,7 @@ def _stage118_encode_inputs(
     tokenizer: Any | None,
     max_length: int,
     device: torch.device,
+    evidence_interface: str | None = None,
 ) -> dict[str, torch.Tensor]:
     if args.backbone == "dummy":
         if vocab is None:
@@ -8688,6 +8847,15 @@ def _stage118_encode_inputs(
             raise ValueError("Stage118 diagnostic eval with Mamba backbone requires tokenizer.")
         bundle = v5.encode_mamba_records(records, tokenizer, args.max_length)
     inputs = v5.move_inputs(bundle["model_inputs"], device)
+    attach_vnext_segmented_dual_pass_inputs(
+        inputs,
+        records,
+        args=args,
+        vocab=vocab,
+        tokenizer=tokenizer,
+        device=device,
+        evidence_interface=evidence_interface,
+    )
     seq_len = inputs["input_ids"].shape[1]
     if seq_len < max_length:
         for key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
@@ -8738,6 +8906,8 @@ def _stage118_prediction_rows(
             if key in pred:
                 row[key] = pred[key]
         for key in _STAGE123_VNEXT_EVIDENCE_EXPORT_FIELDS:
+            if key in pred:
+                row[key] = pred[key]
             if key in record:
                 row[key] = record[key]
         exported.append(row)
@@ -8883,6 +9053,7 @@ def run_stage118_generic_diagnostic_eval(
         tokenizer=tokenizer,
         max_length=max_length,
         device=device,
+        evidence_interface=stage118_evidence_interface,
     ) if records else {}
     prediction_rows = (
         _stage43_prediction_records_from_model(
@@ -10793,6 +10964,23 @@ def main(argv: list[str] | None = None) -> int:
             for key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
                 inputs[key] = F.pad(inputs[key], (0, difference), value=0)
 
+    attach_vnext_segmented_dual_pass_inputs(
+        train_inputs,
+        train_records,
+        args=args,
+        vocab=vocab,
+        tokenizer=tokenizer,
+        device=device,
+    )
+    attach_vnext_segmented_dual_pass_inputs(
+        dev_inputs,
+        dev_records,
+        args=args,
+        vocab=vocab,
+        tokenizer=tokenizer,
+        device=device,
+    )
+
     if model is None:
         if args.architecture == "v7_hierarchical":
             model = build_v7_model(
@@ -10914,7 +11102,7 @@ def main(argv: list[str] | None = None) -> int:
     #   with torch.no_grad(): out = model(**model_feature_inputs(dev_inputs))
     #   validate_v7_output_contract(out)
 
-    if args.backbone == "mamba" and args.freeze_encoder:
+    if args.backbone == "mamba" and args.freeze_encoder and not _vnext_segmented_dual_pass_active(args):
         print("Caching frozen Mamba token states for train/dev...")
         v5.cache_frozen_encoder_states(model, train_inputs)
         v5.cache_frozen_encoder_states(model, dev_inputs)
