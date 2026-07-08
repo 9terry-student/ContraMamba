@@ -4860,6 +4860,30 @@ def _vnext_model_feature_inputs(inputs: dict[str, torch.Tensor]) -> dict[str, to
         result["encoder_hidden_states"] = inputs["encoder_hidden_states"]
     return result
 
+
+def _assert_model_accepts_feature_kwargs(
+    model: nn.Module,
+    feature_inputs: dict[str, torch.Tensor],
+    *,
+    context: str,
+) -> None:
+    optional_keys = [key for key in _VNEXT_OPTIONAL_MODEL_FEATURE_KEYS if key in feature_inputs]
+    if not optional_keys:
+        return
+    signature = inspect.signature(model.forward)
+    parameters = signature.parameters
+    if any(
+        parameter.kind == inspect.Parameter.VAR_KEYWORD
+        for parameter in parameters.values()
+    ):
+        return
+    unsupported = sorted(key for key in optional_keys if key not in parameters)
+    if unsupported:
+        raise TypeError(
+            f"{type(model).__name__}.forward does not accept Stage126 segmented "
+            f"kwargs in {context}: " + ", ".join(unsupported)
+        )
+
 def _stage113_jsonable_metadata(value: Any) -> Any:
     if value is None or isinstance(value, (str, int, float, bool)):
         return value
@@ -8167,6 +8191,31 @@ def build_parser() -> argparse.ArgumentParser:
             "--stage118-diagnostic-evidence-interface-sweep is non-empty."
         ),
     )
+    parser.add_argument(
+        "--stage126-preflight-export-only",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage126: run only a tiny segmented_dual_pass+risk_cap Stage118 "
+            "prediction export preflight, then exit before training."
+        ),
+    )
+    parser.add_argument(
+        "--stage126-preflight-max-rows",
+        type=int,
+        default=32,
+        help="Stage126: maximum diagnostic rows for --stage126-preflight-export-only. Default: 32.",
+    )
+    parser.add_argument(
+        "--stage126-preflight-output-dir",
+        type=Path,
+        default=None,
+        help=(
+            "Stage126: optional output directory for preflight prediction/summary files. "
+            "Default: results/stage126_preflight."
+        ),
+    )
+
     # Stage29-B: external probe evaluation (eval-only; no effect on training or selection)
     parser.add_argument(
         "--external-eval-jsonl",
@@ -9085,8 +9134,12 @@ def _stage43_prediction_records_from_model(
             batch_records = records[start:end]
             batch_inputs = _stage43_slice_inputs(model_inputs, start, end)
             temporal_flags, predicate_flags = extract_flags(batch_records, flag_source, device)
+            feature_inputs = _vnext_model_feature_inputs(batch_inputs)
+            _assert_model_accepts_feature_kwargs(
+                model, feature_inputs, context="Stage118/Stage43 diagnostic export"
+            )
             output = model(
-                **_vnext_model_feature_inputs(batch_inputs),
+                **feature_inputs,
                 temporal_mismatch_flags=temporal_flags,
                 predicate_mismatch_flags=predicate_flags,
             )
@@ -9505,6 +9558,150 @@ def run_stage118_diagnostic_evidence_interface_sweep(
         "summaries": summaries,
     }
 
+
+
+_STAGE126_PREFLIGHT_REQUIRED_NON_NULL_FIELDS: tuple[str, ...] = (
+    "vnext_context_risk",
+    "vnext_logits_before_context_cap",
+    "vnext_logits_after_context_cap",
+    "vnext_prediction_before_context_cap",
+    "vnext_prediction_after_context_cap",
+    "vnext_context_only_logits",
+    "vnext_context_only_prediction",
+)
+
+
+def run_stage126_preflight_export_only(
+    *,
+    args: argparse.Namespace,
+    parser: argparse.ArgumentParser,
+    device: torch.device,
+) -> dict[str, Any]:
+    if args.architecture != "vnext_minimal":
+        parser.error("--stage126-preflight-export-only requires --architecture vnext_minimal")
+    if args.stage118_diagnostic_jsonl is None:
+        parser.error("--stage126-preflight-export-only requires --stage118-diagnostic-jsonl")
+    max_rows = int(args.stage126_preflight_max_rows)
+    if max_rows <= 0:
+        parser.error("--stage126-preflight-max-rows must be > 0")
+
+    output_dir = args.stage126_preflight_output_dir or Path("results/stage126_preflight")
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    capped_input_jsonl = output_dir / "stage126_preflight_input.jsonl"
+    output_jsonl = output_dir / "stage126_preflight_predictions.jsonl"
+    summary_json = output_dir / "stage126_preflight_summary.json"
+    report_json = output_dir / "stage126_preflight_report.json"
+
+    records, skip_reasons, n_input_rows = load_stage118_diagnostic_jsonl(
+        Path(args.stage118_diagnostic_jsonl)
+    )
+    capped_records = records[:max_rows]
+    if not capped_records:
+        raise RuntimeError(
+            "Stage126 preflight found no valid diagnostic rows in "
+            f"{args.stage118_diagnostic_jsonl}"
+        )
+    write_jsonl(capped_input_jsonl, capped_records)
+
+    preflight_args = argparse.Namespace(**vars(args))
+    preflight_args.architecture = "vnext_minimal"
+    preflight_args.vnext_evidence_interface = "segmented_dual_pass"
+    preflight_args.vnext_enable_segmented_dual_pass = True
+    preflight_args.vnext_segmented_context_role = "risk_cap"
+    preflight_args.stage118_diagnostic_evidence_interface = "segmented_dual_pass"
+
+    vocab: dict[str, int] | None = None
+    tokenizer: Any | None = None
+    if args.backbone == "dummy":
+        vocab_records = apply_vnext_evidence_interface_to_records(
+            [dict(record) for record in capped_records], "segmented_dual_pass"
+        )
+        vocab = v5.build_vocab(vocab_records)
+        model = build_vnext_model(
+            len(vocab),
+            args.max_length,
+            vnext_router_mode=args.vnext_router_mode,
+            vnext_enable_segmented_dual_pass=True,
+            vnext_segmented_context_role="risk_cap",
+            vnext_context_risk_cap_alpha=args.vnext_context_risk_cap_alpha,
+            vnext_context_risk_threshold=args.vnext_context_risk_threshold,
+            vnext_context_risk_source=args.vnext_context_risk_source,
+        )
+    else:
+        from transformers import AutoTokenizer
+
+        tokenizer = AutoTokenizer.from_pretrained(args.model_name)
+        if tokenizer.pad_token_id is None:
+            if tokenizer.eos_token_id is None:
+                raise ValueError("Mamba tokenizer has neither pad_token nor eos_token")
+            tokenizer.pad_token = tokenizer.eos_token
+        model = build_vnext_mamba_model(
+            args.model_name,
+            freeze_encoder=args.freeze_encoder,
+            freeze_a_log=args.freeze_a_log,
+            vnext_router_mode=args.vnext_router_mode,
+            vnext_enable_segmented_dual_pass=True,
+            vnext_segmented_context_role="risk_cap",
+            vnext_context_risk_cap_alpha=args.vnext_context_risk_cap_alpha,
+            vnext_context_risk_threshold=args.vnext_context_risk_threshold,
+            vnext_context_risk_source=args.vnext_context_risk_source,
+        )
+    model.to(device)
+    model.eval()
+
+    summary = run_stage118_generic_diagnostic_eval(
+        model=model,
+        input_jsonl=capped_input_jsonl,
+        output_jsonl=output_jsonl,
+        summary_json=summary_json,
+        diagnostic_name="stage126_preflight",
+        batch_size=max(1, min(int(args.stage118_diagnostic_batch_size), len(capped_records))),
+        args=preflight_args,
+        vocab=vocab,
+        tokenizer=tokenizer,
+        max_length=args.max_length,
+        device=device,
+        diagnostic_evidence_interface_override="segmented_dual_pass",
+    )
+
+    exported_rows: list[dict[str, Any]] = []
+    with open(output_jsonl, encoding="utf-8") as handle:
+        for line in handle:
+            stripped = line.strip()
+            if stripped:
+                exported_rows.append(json.loads(stripped))
+    if not exported_rows:
+        raise RuntimeError("Stage126 preflight produced no prediction rows")
+    for row_index, row in enumerate(exported_rows):
+        missing_or_null = [
+            key for key in _STAGE126_PREFLIGHT_REQUIRED_NON_NULL_FIELDS
+            if key not in row or row.get(key) is None
+        ]
+        if missing_or_null:
+            raise RuntimeError(
+                f"Stage126 preflight row {row_index} missing/null fields: "
+                + ", ".join(missing_or_null)
+            )
+        _stage125_assert_risk_cap_exports(row)
+
+    report = {
+        "stage": "Stage126",
+        "decision": "STAGE126_PREFLIGHT_EXPORT_COMPLETE",
+        "input_jsonl": str(args.stage118_diagnostic_jsonl),
+        "capped_input_jsonl": str(capped_input_jsonl),
+        "output_jsonl": str(output_jsonl),
+        "summary_json": str(summary_json),
+        "n_input_rows": n_input_rows,
+        "n_valid_rows_loaded": len(records),
+        "n_preflight_rows": len(capped_records),
+        "skip_reasons": skip_reasons,
+        "summary": summary,
+        "required_non_null_fields": list(_STAGE126_PREFLIGHT_REQUIRED_NON_NULL_FIELDS),
+    }
+    write_json(report_json, report)
+    report["report_json"] = str(report_json)
+    return report
 
 def run_stage43_external_factver_hook(
     *,
@@ -10730,6 +10927,18 @@ def main(argv: list[str] | None = None) -> int:
         args.epochs = 2
         args.max_train_records = 16
         print("[SMOKE MODE] epochs=2, max_train_records=16")
+
+    if args.stage126_preflight_export_only:
+        preflight_report = run_stage126_preflight_export_only(
+            args=args, parser=parser, device=device
+        )
+        print(
+            "[STAGE126 PREFLIGHT] "
+            f"rows={preflight_report['n_preflight_rows']} "
+            f"predictions={preflight_report['output_jsonl']} "
+            f"report={preflight_report['report_json']}"
+        )
+        return 0
 
     records = v5.load_jsonl(args.data)
     if args.max_train_records is not None:
