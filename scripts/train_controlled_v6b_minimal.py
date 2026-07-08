@@ -4649,6 +4649,8 @@ def _stage128_location_slot_guard_exports(
     prediction_before_guard: str,
     args: argparse.Namespace | None,
 ) -> dict[str, Any]:
+    # Stage128 location-slot guard is a controlled diagnostic/eval-only posthoc guard.
+    # It must remain disabled by default and must not be used for training or open-world claims.
     enabled = bool(
         getattr(args, "stage128_enable_location_slot_guard", False)
     ) if args is not None else False
@@ -8238,7 +8240,8 @@ def build_parser() -> argparse.ArgumentParser:
         help=(
             "Stage128-B: enable eval/export-only controlled location-slot guard. "
             "Default off; never affects training, loss computation, logits, or "
-            "checkpoint selection."
+            "checkpoint selection. Not general NER or fact verification; intended "
+            "only for controlled 'in <Location> during' slot mismatch diagnostics."
         ),
     )
     parser.add_argument(
@@ -8250,7 +8253,8 @@ def build_parser() -> argparse.ArgumentParser:
             "controlled_in_during_location_mismatch extracts controlled "
             "'in <Location> during' slots from claim and evidence/core text "
             "and changes exported SUPPORT predictions to NOT_ENTITLED only "
-            "when both slots are present and unequal."
+            "when both slots are present and unequal. REFUTE and NOT_ENTITLED "
+            "predictions are never changed by this guard."
         ),
     )
 
