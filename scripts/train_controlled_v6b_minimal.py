@@ -9571,6 +9571,70 @@ _STAGE126_PREFLIGHT_REQUIRED_NON_NULL_FIELDS: tuple[str, ...] = (
 )
 
 
+
+_STAGE126_PREFLIGHT_REQUIRED_SEGMENTED_VALUES: dict[str, Any] = {
+    "stage118_diagnostic_evidence_interface": "segmented_dual_pass",
+    "vnext_segmented_dual_pass_active": True,
+    "vnext_segmented_context_role": "risk_cap",
+    "vnext_primary_rep_source": "core_rep",
+}
+
+
+def _stage126_preflight_export_audit(
+    rows: list[dict[str, Any]],
+    *,
+    evidence_interface: str,
+) -> dict[str, Any]:
+    fields = list(_STAGE126_PREFLIGHT_REQUIRED_NON_NULL_FIELDS)
+    segmented_fields = list(_STAGE126_PREFLIGHT_REQUIRED_SEGMENTED_VALUES)
+    field_counts: dict[str, dict[str, int]] = {}
+    for key in fields + segmented_fields:
+        present = sum(1 for row in rows if key in row)
+        non_null = sum(1 for row in rows if row.get(key) is not None)
+        field_counts[key] = {"present": int(present), "non_null": int(non_null)}
+    segmented_value_mismatches: list[dict[str, Any]] = []
+    for row_index, row in enumerate(rows):
+        for key, expected in _STAGE126_PREFLIGHT_REQUIRED_SEGMENTED_VALUES.items():
+            actual = row.get(key)
+            if actual != expected:
+                segmented_value_mismatches.append(
+                    {
+                        "row_index": row_index,
+                        "field": key,
+                        "expected": expected,
+                        "actual": actual,
+                    }
+                )
+    sample_row = rows[0] if rows else {}
+    return {
+        "row_count": int(len(rows)),
+        "evidence_interface_used": evidence_interface,
+        "field_counts": field_counts,
+        "required_fields_all_present_non_null": all(
+            field_counts[key]["present"] == len(rows)
+            and field_counts[key]["non_null"] == len(rows)
+            for key in fields
+        ) if rows else False,
+        "segmented_values_all_match": not segmented_value_mismatches and bool(rows),
+        "segmented_value_mismatches": segmented_value_mismatches[:20],
+        "sample_vnext_context_risk": sample_row.get("vnext_context_risk"),
+        "sample_vnext_context_only_prediction": sample_row.get(
+            "vnext_context_only_prediction"
+        ),
+        "sample_stage118_diagnostic_evidence_interface": sample_row.get(
+            "stage118_diagnostic_evidence_interface"
+        ),
+        "sample_vnext_segmented_dual_pass_active": sample_row.get(
+            "vnext_segmented_dual_pass_active"
+        ),
+        "sample_vnext_segmented_context_role": sample_row.get(
+            "vnext_segmented_context_role"
+        ),
+        "sample_vnext_primary_rep_source": sample_row.get(
+            "vnext_primary_rep_source"
+        ),
+    }
+
 def run_stage126_preflight_export_only(
     *,
     args: argparse.Namespace,
@@ -9596,12 +9660,18 @@ def run_stage126_preflight_export_only(
     records, skip_reasons, n_input_rows = load_stage118_diagnostic_jsonl(
         Path(args.stage118_diagnostic_jsonl)
     )
-    capped_records = records[:max_rows]
+    capped_records = [dict(record) for record in records[:max_rows]]
     if not capped_records:
         raise RuntimeError(
             "Stage126 preflight found no valid diagnostic rows in "
             f"{args.stage118_diagnostic_jsonl}"
         )
+    for record in capped_records:
+        record["stage118_diagnostic_evidence_interface"] = "segmented_dual_pass"
+        record["vnext_evidence_interface"] = "segmented_dual_pass"
+        record["vnext_segmented_dual_pass_active"] = True
+        record["vnext_segmented_context_role"] = "risk_cap"
+        record["vnext_primary_rep_source"] = "core_rep"
     write_jsonl(capped_input_jsonl, capped_records)
 
     preflight_args = argparse.Namespace(**vars(args))
@@ -9610,6 +9680,8 @@ def run_stage126_preflight_export_only(
     preflight_args.vnext_enable_segmented_dual_pass = True
     preflight_args.vnext_segmented_context_role = "risk_cap"
     preflight_args.stage118_diagnostic_evidence_interface = "segmented_dual_pass"
+    preflight_args.stage118_diagnostic_evidence_interface_sweep = ""
+    preflight_args.stage118_diagnostic_evidence_interface_sweep_list = []
 
     vocab: dict[str, int] | None = None
     tokenizer: Any | None = None
@@ -9671,19 +9743,9 @@ def run_stage126_preflight_export_only(
             stripped = line.strip()
             if stripped:
                 exported_rows.append(json.loads(stripped))
-    if not exported_rows:
-        raise RuntimeError("Stage126 preflight produced no prediction rows")
-    for row_index, row in enumerate(exported_rows):
-        missing_or_null = [
-            key for key in _STAGE126_PREFLIGHT_REQUIRED_NON_NULL_FIELDS
-            if key not in row or row.get(key) is None
-        ]
-        if missing_or_null:
-            raise RuntimeError(
-                f"Stage126 preflight row {row_index} missing/null fields: "
-                + ", ".join(missing_or_null)
-            )
-        _stage125_assert_risk_cap_exports(row)
+    export_audit = _stage126_preflight_export_audit(
+        exported_rows, evidence_interface="segmented_dual_pass"
+    )
 
     report = {
         "stage": "Stage126",
@@ -9691,16 +9753,49 @@ def run_stage126_preflight_export_only(
         "input_jsonl": str(args.stage118_diagnostic_jsonl),
         "capped_input_jsonl": str(capped_input_jsonl),
         "output_jsonl": str(output_jsonl),
+        "prediction_path": str(output_jsonl),
         "summary_json": str(summary_json),
         "n_input_rows": n_input_rows,
         "n_valid_rows_loaded": len(records),
         "n_preflight_rows": len(capped_records),
+        "n_exported_rows": len(exported_rows),
         "skip_reasons": skip_reasons,
         "summary": summary,
         "required_non_null_fields": list(_STAGE126_PREFLIGHT_REQUIRED_NON_NULL_FIELDS),
+        "required_segmented_values": dict(_STAGE126_PREFLIGHT_REQUIRED_SEGMENTED_VALUES),
+        "export_audit": export_audit,
     }
     write_json(report_json, report)
     report["report_json"] = str(report_json)
+
+    if not exported_rows:
+        raise RuntimeError(
+            "Stage126 preflight produced no prediction rows; report="
+            f"{report_json}"
+        )
+    for row_index, row in enumerate(exported_rows):
+        missing_or_null = [
+            key for key in _STAGE126_PREFLIGHT_REQUIRED_NON_NULL_FIELDS
+            if key not in row or row.get(key) is None
+        ]
+        segmented_mismatches = [
+            f"{key}={row.get(key)!r} expected {expected!r}"
+            for key, expected in _STAGE126_PREFLIGHT_REQUIRED_SEGMENTED_VALUES.items()
+            if row.get(key) != expected
+        ]
+        if missing_or_null or segmented_mismatches:
+            details: list[str] = []
+            if missing_or_null:
+                details.append("missing/null fields: " + ", ".join(missing_or_null))
+            if segmented_mismatches:
+                details.append("segmented path mismatches: " + "; ".join(segmented_mismatches))
+            raise RuntimeError(
+                f"Stage126 preflight row {row_index} did not exercise "
+                "segmented_dual_pass+risk_cap export: "
+                + " | ".join(details)
+                + f"; report={report_json}"
+            )
+        _stage125_assert_risk_cap_exports(row)
     return report
 
 def run_stage43_external_factver_hook(
