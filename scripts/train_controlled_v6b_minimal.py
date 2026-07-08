@@ -5002,9 +5002,15 @@ _STAGE125_RISK_CAP_REQUIRED_EXPORT_FIELDS: tuple[str, ...] = (
 
 
 def _stage125_assert_risk_cap_exports(row: dict[str, Any]) -> None:
-    if not row.get("vnext_segmented_dual_pass_active"):
-        return
-    if row.get("vnext_segmented_context_role") != "risk_cap":
+    interface = row.get("stage118_diagnostic_evidence_interface") or row.get(
+        "vnext_evidence_interface"
+    )
+    segmented_interface = interface == "segmented_dual_pass"
+    risk_cap_row = (
+        row.get("vnext_segmented_context_role") == "risk_cap"
+        or row.get("vnext_context_risk_cap_active") is True
+    )
+    if not (segmented_interface and risk_cap_row):
         return
     missing = [
         key
@@ -5015,6 +5021,160 @@ def _stage125_assert_risk_cap_exports(row: dict[str, Any]) -> None:
         raise RuntimeError(
             "Stage125 risk-cap export missing fields: " + ", ".join(missing)
         )
+
+def _stage125_output_value(
+    output: dict[str, Any],
+    key: str,
+    index: int,
+    *,
+    global_scalar: bool = False,
+) -> Any:
+    value = output.get(key)
+    if value is None:
+        return None
+    if torch.is_tensor(value):
+        tensor_value = value.detach().cpu()
+        if tensor_value.ndim == 0:
+            if global_scalar or index == 0:
+                item = tensor_value.item()
+                return round(float(item), 6) if isinstance(item, (int, float)) else item
+            return None
+        if index >= int(tensor_value.shape[0]):
+            return None
+        row_value = tensor_value[index]
+        if row_value.numel() == 1:
+            return round(float(row_value.item()), 6)
+        return [round(float(item), 6) for item in row_value.reshape(-1).tolist()]
+    if isinstance(value, (list, tuple)):
+        if len(value) == 0:
+            return None
+        if len(value) > index:
+            row_value = value[index]
+            if torch.is_tensor(row_value):
+                row_value = row_value.detach().cpu()
+                if row_value.numel() == 1:
+                    return round(float(row_value.item()), 6)
+                return [round(float(item), 6) for item in row_value.reshape(-1).tolist()]
+            return row_value
+        return None
+    if isinstance(value, (str, int, float, bool)):
+        if global_scalar or not isinstance(value, bool):
+            return value
+    return None
+
+
+def _stage125_prediction_label(value: Any) -> Any:
+    if value is None:
+        return None
+    if isinstance(value, str):
+        return value
+    try:
+        return v5.ID_TO_FINAL_LABEL.get(int(value), int(value))
+    except (TypeError, ValueError):
+        return value
+
+
+def _stage125_merge_risk_cap_exports(
+    item: dict[str, Any],
+    output: dict[str, Any],
+    index: int,
+    *,
+    args: argparse.Namespace | None,
+) -> None:
+    scalar_keys = (
+        "vnext_context_risk",
+        "vnext_context_risk_excess",
+        "vnext_context_cap_factor",
+    )
+    for key in scalar_keys:
+        value = _stage125_output_value(output, key, index)
+        if value is not None:
+            item[key] = value
+    for key in (
+        "vnext_context_risk_threshold",
+        "vnext_context_risk_cap_alpha",
+    ):
+        value = _stage125_output_value(output, key, index, global_scalar=True)
+        if value is not None:
+            item[key] = value
+    value = _stage125_output_value(
+        output, "vnext_context_risk_cap_active", index, global_scalar=True
+    )
+    if value is not None:
+        item["vnext_context_risk_cap_active"] = bool(value)
+    value = _stage125_output_value(output, "vnext_context_risk_source", index, global_scalar=True)
+    if value is not None:
+        item["vnext_context_risk_source"] = value
+    value = _stage125_output_value(output, "vnext_context_cap_notes", index, global_scalar=True)
+    if value is not None:
+        item["vnext_context_cap_notes"] = value
+    value = _stage125_output_value(output, "vnext_context_cap_applied", index)
+    if value is not None:
+        item["vnext_context_cap_applied"] = bool(value)
+    for key in (
+        "vnext_logits_before_context_cap",
+        "vnext_logits_after_context_cap",
+        "vnext_context_only_logits",
+    ):
+        value = _stage125_output_value(output, key, index)
+        if value is not None:
+            item[key] = value
+    for key in (
+        "vnext_prediction_before_context_cap",
+        "vnext_prediction_after_context_cap",
+        "vnext_context_only_prediction",
+    ):
+        value = _stage125_output_value(output, key, index)
+        if value is not None:
+            item[key] = _stage125_prediction_label(value)
+    role = item.get("vnext_segmented_context_role")
+    risk_source = item.get(
+        "vnext_context_risk_source",
+        getattr(args, "vnext_context_risk_source", "context_not_entitled_prob")
+        if args is not None else "context_not_entitled_prob",
+    )
+    alpha = item.get(
+        "vnext_context_risk_cap_alpha",
+        getattr(args, "vnext_context_risk_cap_alpha", 0.0) if args is not None else 0.0,
+    )
+    threshold = item.get(
+        "vnext_context_risk_threshold",
+        getattr(args, "vnext_context_risk_threshold", 0.5) if args is not None else 0.5,
+    )
+    try:
+        alpha_float = float(alpha)
+    except (TypeError, ValueError):
+        alpha_float = 0.0
+    try:
+        threshold_float = float(threshold)
+    except (TypeError, ValueError):
+        threshold_float = 0.5
+    if role == "risk_cap":
+        item.setdefault("vnext_context_risk_cap_alpha", round(alpha_float, 6))
+        item.setdefault("vnext_context_risk_threshold", round(threshold_float, 6))
+        item.setdefault("vnext_context_risk_source", risk_source)
+        final_logits = item.get("final_logits")
+        if final_logits is not None:
+            item.setdefault("vnext_logits_before_context_cap", final_logits)
+            item.setdefault("vnext_logits_after_context_cap", final_logits)
+        item.setdefault(
+            "vnext_prediction_before_context_cap", item.get("pred_final_label", item.get("pred_label"))
+        )
+        item.setdefault(
+            "vnext_prediction_after_context_cap", item.get("pred_final_label", item.get("pred_label"))
+        )
+        if alpha_float == 0.0:
+            item.setdefault("vnext_context_risk", 0.0)
+            item.setdefault("vnext_context_risk_excess", 0.0)
+            item.setdefault("vnext_context_cap_factor", 1.0)
+            item.setdefault("vnext_context_cap_applied", False)
+            item.setdefault("vnext_context_risk_cap_active", False)
+            item.setdefault(
+                "vnext_context_cap_notes",
+                f"risk_source={risk_source};alpha_zero_noop;export_noop_fallback",
+            )
+        item.setdefault("vnext_context_only_logits", None)
+        item.setdefault("vnext_context_only_prediction", None)
 
 def prediction_records_v6b(
     records: list[dict],
@@ -5313,68 +5473,9 @@ def prediction_records_v6b(
                 item[key] = scalar_value
 
         if vnext_segmented_active:
-            for key in (
-                "vnext_context_risk",
-                "vnext_context_risk_threshold",
-                "vnext_context_risk_cap_alpha",
-                "vnext_context_risk_excess",
-                "vnext_context_cap_factor",
-            ):
-                scalar_value = _stage113_scalar_value(output, key, index)
-                if scalar_value is not None:
-                    item[key] = scalar_value
-            for key in (
-                "vnext_context_risk_threshold",
-                "vnext_context_risk_cap_alpha",
-            ):
-                if key not in item and output.get(key) is not None:
-                    try:
-                        item[key] = round(float(output[key]), 6)
-                    except (TypeError, ValueError):
-                        item[key] = output[key]
-            cap_active = output.get("vnext_context_risk_cap_active")
-            if cap_active is not None:
-                item["vnext_context_risk_cap_active"] = bool(cap_active)
-            cap_source = output.get("vnext_context_risk_source")
-            if cap_source is not None:
-                item["vnext_context_risk_source"] = cap_source
-            cap_notes = output.get("vnext_context_cap_notes")
-            if cap_notes is not None:
-                item["vnext_context_cap_notes"] = cap_notes
-            cap_applied = output.get("vnext_context_cap_applied")
-            if cap_applied is not None:
-                try:
-                    item["vnext_context_cap_applied"] = bool(cap_applied.detach().cpu()[index].item())
-                except (AttributeError, IndexError, TypeError, ValueError):
-                    item["vnext_context_cap_applied"] = bool(cap_applied)
-            for source_key, export_key in (
-                ("vnext_logits_before_context_cap", "vnext_logits_before_context_cap"),
-                ("vnext_logits_after_context_cap", "vnext_logits_after_context_cap"),
-                ("vnext_context_only_logits", "vnext_context_only_logits"),
-            ):
-                value = output.get(source_key)
-                if value is not None:
-                    try:
-                        row_value = value.detach().cpu()[index]
-                    except (AttributeError, IndexError, TypeError):
-                        row_value = None
-                    list_value = _s28e_safe_list_float(row_value)
-                    if list_value is not None:
-                        item[export_key] = list_value
-            for source_key, export_key in (
-                ("vnext_prediction_before_context_cap", "vnext_prediction_before_context_cap"),
-                ("vnext_prediction_after_context_cap", "vnext_prediction_after_context_cap"),
-                ("vnext_context_only_prediction", "vnext_context_only_prediction"),
-            ):
-                value = output.get(source_key)
-                if value is not None:
-                    try:
-                        pred_id_value = int(value.detach().cpu()[index].item())
-                    except (AttributeError, IndexError, TypeError, ValueError):
-                        pred_id_value = None
-                    if pred_id_value is not None:
-                        item[export_key] = v5.ID_TO_FINAL_LABEL.get(pred_id_value, pred_id_value)
-    
+            _stage125_merge_risk_cap_exports(item, output, index, args=args)
+
+
         #  Stage36-A: conservative support-safety blockers (shadow-only) 
         _stage37_stage36_info: dict[str, Any] = {}
         if (
@@ -9138,6 +9239,7 @@ def _stage118_prediction_rows(
                 row[key] = pred[key]
             if key in record:
                 row[key] = record[key]
+        _stage125_assert_risk_cap_exports(row)
         exported.append(row)
     return exported
 
