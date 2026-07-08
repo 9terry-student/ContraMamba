@@ -5012,14 +5012,15 @@ def _stage125_assert_risk_cap_exports(row: dict[str, Any]) -> None:
     )
     if not (segmented_interface and risk_cap_row):
         return
-    missing = [
+    missing_or_null = [
         key
         for key in _STAGE125_RISK_CAP_REQUIRED_EXPORT_FIELDS
-        if key not in row
+        if key not in row or row.get(key) is None
     ]
-    if missing:
+    if missing_or_null:
         raise RuntimeError(
-            "Stage125 risk-cap export missing fields: " + ", ".join(missing)
+            "Stage126 risk-cap export missing/null fields: "
+            + ", ".join(missing_or_null)
         )
 
 def _stage125_output_value(
