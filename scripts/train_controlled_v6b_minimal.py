@@ -81,6 +81,24 @@ STAGE118_DIAGNOSTIC_EVIDENCE_INTERFACE_CHOICES: tuple[str, ...] = (
     "same_as_vnext",
     *VNEXT_EVIDENCE_INTERFACE_CHOICES,
 )
+STAGE128_LOCATION_SLOT_GUARD_MODES: tuple[str, ...] = (
+    "off",
+    "controlled_in_during_location_mismatch",
+)
+_STAGE128_IN_DURING_LOCATION_RE = re.compile(
+    r"\bin\s+([A-Z][A-Za-z]*(?:[ -][A-Z][A-Za-z]*)*)\s+during\b"
+)
+_STAGE128_LOCATION_SLOT_GUARD_EXPORT_FIELDS: tuple[str, ...] = (
+    "stage128_location_slot_guard_enabled",
+    "stage128_location_slot_guard_mode",
+    "stage128_claim_location",
+    "stage128_evidence_location",
+    "stage128_location_mismatch",
+    "stage128_prediction_before_location_guard",
+    "stage128_prediction_after_location_guard",
+    "stage128_location_guard_applied",
+    "stage128_location_guard_notes",
+)
 
 
 class Stage31CCoverageEntailmentHead(nn.Module):
@@ -4603,6 +4621,87 @@ def _vnext_first_text(record: dict[str, Any], fields: tuple[str, ...]) -> tuple[
     return "", None
 
 
+def _stage128_extract_controlled_location_slot(text: Any) -> str:
+    """Extract the controlled `in <Location> during` slot; not general NER."""
+    cleaned = _vnext_clean_text(text)
+    if not cleaned:
+        return ""
+    match = _STAGE128_IN_DURING_LOCATION_RE.search(cleaned)
+    return _vnext_clean_text(match.group(1)) if match else ""
+
+
+def _stage128_resolve_evidence_core_text(record: dict[str, Any]) -> tuple[str, str | None]:
+    return _vnext_first_text(
+        record,
+        (
+            "stage122_evidence_core",
+            "stage122_core_text",
+            "stage121_evidence_core",
+            "evidence_core",
+            "evidence",
+        ),
+    )
+
+
+def _stage128_location_slot_guard_exports(
+    record: dict[str, Any],
+    *,
+    prediction_before_guard: str,
+    args: argparse.Namespace | None,
+) -> dict[str, Any]:
+    enabled = bool(
+        getattr(args, "stage128_enable_location_slot_guard", False)
+    ) if args is not None else False
+    mode = (
+        getattr(args, "stage128_location_slot_guard_mode", "off")
+        if args is not None else "off"
+    )
+    if not enabled or mode == "off":
+        return {}
+
+    claim_location = ""
+    evidence_location = ""
+    mismatch = False
+    applied = False
+    prediction_after_guard = prediction_before_guard
+    notes: list[str] = ["eval_only_controlled_pattern_not_general_ner"]
+
+    if mode == "controlled_in_during_location_mismatch":
+        evidence_text, evidence_source = _stage128_resolve_evidence_core_text(record)
+        claim_location = _stage128_extract_controlled_location_slot(record.get("claim"))
+        evidence_location = _stage128_extract_controlled_location_slot(evidence_text)
+        mismatch = bool(
+            claim_location
+            and evidence_location
+            and claim_location != evidence_location
+        )
+        notes.append(f"evidence_source={evidence_source or 'none'}")
+        if prediction_before_guard == "SUPPORT" and mismatch:
+            prediction_after_guard = "NOT_ENTITLED"
+            applied = True
+            notes.append("support_to_not_entitled_location_mismatch")
+        elif prediction_before_guard != "SUPPORT":
+            notes.append("non_support_prediction_unchanged")
+        elif not claim_location or not evidence_location:
+            notes.append("missing_controlled_location_slot")
+        else:
+            notes.append("locations_match_or_no_mismatch")
+    else:
+        notes.append(f"unsupported_mode={mode}")
+
+    return {
+        "stage128_location_slot_guard_enabled": enabled,
+        "stage128_location_slot_guard_mode": mode,
+        "stage128_claim_location": claim_location,
+        "stage128_evidence_location": evidence_location,
+        "stage128_location_mismatch": mismatch,
+        "stage128_prediction_before_location_guard": prediction_before_guard,
+        "stage128_prediction_after_location_guard": prediction_after_guard,
+        "stage128_location_guard_applied": applied,
+        "stage128_location_guard_notes": ";".join(notes),
+    }
+
+
 def resolve_vnext_evidence_text(record: dict[str, Any], evidence_interface: str) -> dict[str, Any]:
     """Resolve opt-in vNext evidence text without reading labels or decisions."""
     if evidence_interface not in VNEXT_EVIDENCE_INTERFACE_CHOICES:
@@ -5794,6 +5893,23 @@ def prediction_records_v6b(
                 item["pred_final_label"] = _stage39_result[
                     "stage39_composed_final_label"
                 ]
+
+        _stage128_guard_exports = _stage128_location_slot_guard_exports(
+            record,
+            prediction_before_guard=item.get("pred_final_label", pred_label),
+            args=args,
+        )
+        if _stage128_guard_exports:
+            item.update(_stage128_guard_exports)
+            item["base_prediction"] = _stage128_guard_exports[
+                "stage128_prediction_before_location_guard"
+            ]
+            item["prediction"] = _stage128_guard_exports[
+                "stage128_prediction_after_location_guard"
+            ]
+            item["pred_final_label"] = _stage128_guard_exports[
+                "stage128_prediction_after_location_guard"
+            ]
 
         _stage125_assert_risk_cap_exports(item)
         exported.append(item)
@@ -8115,6 +8231,28 @@ def build_parser() -> argparse.ArgumentParser:
             "always written since it is additive and backward-compatible)."
         ),
     )
+    parser.add_argument(
+        "--stage128-enable-location-slot-guard",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage128-B: enable eval/export-only controlled location-slot guard. "
+            "Default off; never affects training, loss computation, logits, or "
+            "checkpoint selection."
+        ),
+    )
+    parser.add_argument(
+        "--stage128-location-slot-guard-mode",
+        choices=STAGE128_LOCATION_SLOT_GUARD_MODES,
+        default="off",
+        help=(
+            "Stage128-B guard mode. off preserves existing exports; "
+            "controlled_in_during_location_mismatch extracts controlled "
+            "'in <Location> during' slots from claim and evidence/core text "
+            "and changes exported SUPPORT predictions to NOT_ENTITLED only "
+            "when both slots are present and unequal."
+        ),
+    )
 
     parser.add_argument(
         "--stage115-clean-dev-scalar-output-jsonl",
@@ -9292,13 +9430,21 @@ def _stage118_prediction_rows(
     exported: list[dict[str, Any]] = []
     for record, pred in zip(records, prediction_rows):
         prediction = pred.get("pred_final_label") or pred.get("pred_label")
+        base_prediction = pred.get(
+            "stage128_prediction_before_location_guard",
+            pred.get("base_prediction", prediction),
+        )
+        final_prediction = pred.get(
+            "stage128_prediction_after_location_guard",
+            pred.get("prediction", prediction),
+        )
         row: dict[str, Any] = {
             "id": record.get("id"),
             "claim": record.get("claim"),
             "evidence": record.get("evidence"),
             "gold_label": record.get("gold_label", record.get("final_label")),
-            "base_prediction": prediction,
-            "prediction": prediction,
+            "base_prediction": base_prediction,
+            "prediction": final_prediction,
             "stage118_diagnostic_name": diagnostic_name,
             "stage118_source_jsonl": str(source_jsonl),
             "stage118_valid_row_index": record.get("stage118_valid_row_index"),
@@ -9317,6 +9463,9 @@ def _stage118_prediction_rows(
                 row[key] = pred[key]
             if key in record:
                 row[key] = record[key]
+        for key in _STAGE128_LOCATION_SLOT_GUARD_EXPORT_FIELDS:
+            if key in pred:
+                row[key] = pred[key]
         _stage125_assert_risk_cap_exports(row)
         exported.append(row)
     return exported
