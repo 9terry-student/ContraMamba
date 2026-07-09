@@ -9804,6 +9804,7 @@ def load_stage134_slot_diagnostic_jsonl(path: Path) -> tuple[list[dict[str, Any]
             record = dict(row)
             record["claim"] = str(row.get("claim"))
             record["evidence"] = str(row.get("evidence"))
+            record["stage134d_full_evidence"] = str(row.get("evidence"))
             record.setdefault("id", row.get("id", f"stage134d_row_{line_index}"))
             record.setdefault("pair_id", row.get("pair_id") or record["id"] or f"stage134d_row_{line_index}")
             target, valid = derive_slot_mismatch_target(record)
@@ -9883,15 +9884,159 @@ def _stage134d_encode_inputs(
     max_length: int,
     device: torch.device,
 ) -> dict[str, torch.Tensor]:
-    return _stage118_encode_inputs(
-        records,
-        args=args,
-        vocab=vocab,
-        tokenizer=tokenizer,
-        max_length=max_length,
-        device=device,
-        evidence_interface=getattr(args, "vnext_evidence_interface", "full_evidence"),
+    def direct_pair_features(pair_records: list[dict[str, Any]]) -> dict[str, torch.Tensor]:
+        if args.backbone == "dummy":
+            if vocab is None:
+                raise ValueError("Stage134-D diagnostic with dummy backbone requires vocab.")
+            encoded: list[list[int]] = []
+            claim_lengths: list[int] = []
+            evidence_lengths: list[int] = []
+            for record in pair_records:
+                claim_tokens = v5.tokenize(str(record["claim"]))
+                evidence_tokens = v5.tokenize(str(record["evidence"]))
+                claim_ids = [vocab.get(token, vocab["<unk>"]) for token in claim_tokens]
+                evidence_ids = [vocab.get(token, vocab["<unk>"]) for token in evidence_tokens]
+                encoded.append(claim_ids + [vocab["<sep>"]] + evidence_ids)
+                claim_lengths.append(len(claim_ids))
+                evidence_lengths.append(len(evidence_ids))
+            seq_len = min(max_length, max((len(ids) for ids in encoded), default=1))
+            input_ids = torch.zeros(len(pair_records), seq_len, dtype=torch.long)
+            attention_mask = torch.zeros(len(pair_records), seq_len, dtype=torch.bool)
+            claim_mask = torch.zeros_like(attention_mask)
+            evidence_mask = torch.zeros_like(attention_mask)
+            for index, ids in enumerate(encoded):
+                clipped = ids[:seq_len]
+                length = len(clipped)
+                claim_length = min(claim_lengths[index], seq_len)
+                evidence_start = min(claim_lengths[index] + 1, seq_len)
+                evidence_length = min(evidence_lengths[index], max(0, seq_len - evidence_start))
+                input_ids[index, :length] = torch.tensor(clipped, dtype=torch.long)
+                attention_mask[index, :length] = True
+                claim_mask[index, :claim_length] = True
+                evidence_mask[index, evidence_start : evidence_start + evidence_length] = True
+        else:
+            if tokenizer is None:
+                raise ValueError("Stage134-D diagnostic with Mamba backbone requires tokenizer.")
+            separator_id = tokenizer.eos_token_id
+            if separator_id is None:
+                separator_id = tokenizer.pad_token_id
+            if separator_id is None:
+                raise ValueError("Mamba tokenizer requires an eos or pad token id")
+            pad_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else separator_id
+            claim_budget = max(1, (int(max_length) - 1) // 2)
+            evidence_budget = max(1, int(max_length) - claim_budget - 1)
+            encoded = []
+            claim_lengths = []
+            evidence_lengths = []
+            for row_index, record in enumerate(pair_records):
+                claim_ids = tokenizer.encode(
+                    str(record["claim"]),
+                    add_special_tokens=False,
+                    truncation=True,
+                    max_length=claim_budget,
+                )
+                evidence_ids = tokenizer.encode(
+                    str(record["evidence"]),
+                    add_special_tokens=False,
+                    truncation=True,
+                    max_length=evidence_budget,
+                )
+                if not claim_ids or not evidence_ids:
+                    record_id = record.get("id") or record.get("pair_id") or f"stage134d_row_{row_index}"
+                    raise ValueError(f"Stage134-D tokenization produced an empty span for {record_id}")
+                encoded.append(claim_ids + [separator_id] + evidence_ids)
+                claim_lengths.append(len(claim_ids))
+                evidence_lengths.append(len(evidence_ids))
+            input_ids = torch.full(
+                (len(pair_records), int(max_length)),
+                fill_value=pad_id,
+                dtype=torch.long,
+            )
+            attention_mask = torch.zeros(len(pair_records), int(max_length), dtype=torch.bool)
+            claim_mask = torch.zeros_like(attention_mask)
+            evidence_mask = torch.zeros_like(attention_mask)
+            for index, ids in enumerate(encoded):
+                length = min(len(ids), int(max_length))
+                claim_length = min(claim_lengths[index], int(max_length))
+                evidence_start = min(claim_lengths[index] + 1, int(max_length))
+                evidence_length = min(evidence_lengths[index], max(0, int(max_length) - evidence_start))
+                input_ids[index, :length] = torch.tensor(ids[:length], dtype=torch.long)
+                attention_mask[index, :length] = True
+                claim_mask[index, :claim_length] = True
+                evidence_mask[index, evidence_start : evidence_start + evidence_length] = True
+
+        return {
+            "input_ids": input_ids.to(device),
+            "attention_mask": attention_mask.to(device),
+            "claim_mask": claim_mask.to(device),
+            "evidence_mask": evidence_mask.to(device),
+        }
+
+    def records_with_evidence(source_records: list[dict[str, Any]], text_key: str) -> tuple[list[dict[str, Any]], list[bool], list[str]]:
+        encoded_records: list[dict[str, Any]] = []
+        empty_flags: list[bool] = []
+        texts: list[str] = []
+        for record in source_records:
+            text = _vnext_clean_text(record.get(text_key))
+            empty = not bool(text)
+            if empty:
+                text = _vnext_clean_text(record.get("stage134d_full_evidence")) or _vnext_clean_text(record.get("evidence"))
+            item = dict(record)
+            item["evidence"] = text
+            encoded_records.append(item)
+            empty_flags.append(empty)
+            texts.append("" if empty else text)
+        return encoded_records, empty_flags, texts
+
+    inputs = direct_pair_features(records)
+    labels, mask = encode_slot_mismatch_labels(records, device)
+    inputs["slot_mismatch_target"] = labels
+    inputs["slot_mismatch_target_valid"] = mask
+
+    evidence_interface = getattr(args, "vnext_evidence_interface", "full_evidence")
+    segmented_requested = (
+        evidence_interface == "segmented_dual_pass"
+        or bool(getattr(args, "vnext_enable_segmented_dual_pass", False))
     )
+    if segmented_requested:
+        for record in records:
+            core_text = (
+                _vnext_clean_text(record.get("stage122_evidence_core"))
+                or _vnext_clean_text(record.get("vnext_evidence_core_text"))
+                or _vnext_clean_text(record.get("evidence"))
+            )
+            full_text = _vnext_clean_text(record.get("stage134d_full_evidence")) or _vnext_clean_text(record.get("evidence"))
+            record["vnext_segmented_dual_pass_active"] = True
+            record["vnext_segmented_context_role"] = getattr(
+                args, "vnext_segmented_context_role", "diagnostic_only"
+            )
+            record["vnext_primary_rep_source"] = "core_rep"
+            record["vnext_core_text_for_encoding"] = core_text
+            record["vnext_context_text_for_encoding"] = full_text
+        core_records, _, core_texts = records_with_evidence(records, "vnext_core_text_for_encoding")
+        context_records, context_empty, context_texts = records_with_evidence(records, "vnext_context_text_for_encoding")
+        core_inputs = direct_pair_features(core_records)
+        context_inputs = direct_pair_features(context_records)
+        for source_key, target_key in (
+            ("input_ids", "core_input_ids"),
+            ("attention_mask", "core_attention_mask"),
+            ("claim_mask", "core_claim_mask"),
+            ("evidence_mask", "core_evidence_mask"),
+        ):
+            inputs[target_key] = core_inputs[source_key]
+        for source_key, target_key in (
+            ("input_ids", "context_input_ids"),
+            ("attention_mask", "context_attention_mask"),
+            ("claim_mask", "context_claim_mask"),
+            ("evidence_mask", "context_evidence_mask"),
+        ):
+            inputs[target_key] = context_inputs[source_key]
+        inputs["context_empty"] = torch.tensor(context_empty, dtype=torch.bool, device=device)
+        for record, is_empty, core_text, context_text in zip(records, context_empty, core_texts, context_texts):
+            record["vnext_core_text_for_encoding"] = core_text
+            record["vnext_context_text_for_encoding"] = context_text
+            record["vnext_context_empty"] = bool(is_empty)
+    return inputs
 
 
 def _stage134d_binary_curve_metrics(labels: list[int], probs: list[float]) -> tuple[float | None, float | None, str | None]:
@@ -10146,7 +10291,12 @@ def run_stage134_slot_diagnostic(
         max_length=max_length,
         device=device,
     ) if dev_records else {}
-    train_labels, train_mask = encode_slot_mismatch_labels(train_records, device)
+    train_labels = train_inputs["slot_mismatch_target"]
+    train_mask = train_inputs["slot_mismatch_target_valid"]
+    print(
+        "[STAGE134 SLOT DIAGNOSTIC] "
+        f"encoded_without_stage118_v5=True train={len(train_records)} dev={len(dev_records)}"
+    )
 
     original_requires_grad = {name: parameter.requires_grad for name, parameter in model.named_parameters()}
     if train_head_only:
