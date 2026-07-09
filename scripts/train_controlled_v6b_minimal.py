@@ -8,6 +8,7 @@ All CE/pairwise/intervention losses consume final calibrated logits.
 from __future__ import annotations
 
 import argparse
+import csv
 import inspect
 import json
 import random
@@ -7029,6 +7030,63 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
+        "--stage134-slot-diagnostic-jsonl",
+        type=str,
+        default=None,
+        help=(
+            "Stage134-D: first-class slot mismatch diagnostic JSONL. Accepts "
+            "Stage133/134 claim/evidence/stage133_case_type rows without v5 schema hacks."
+        ),
+    )
+    parser.add_argument(
+        "--stage134-slot-diagnostic-output-dir",
+        type=str,
+        default=None,
+        help="Stage134-D: output directory for slot mismatch diagnostic artifacts.",
+    )
+    parser.add_argument(
+        "--stage134-slot-diagnostic-batch-size",
+        type=int,
+        default=1,
+        help="Stage134-D: train/eval batch size for the slot mismatch diagnostic. Default: 1.",
+    )
+    parser.add_argument(
+        "--stage134-slot-diagnostic-split-mode",
+        choices=("scenario_holdout", "slot_holdout", "random"),
+        default="scenario_holdout",
+        help="Stage134-D: diagnostic train/dev split mode. Default: scenario_holdout.",
+    )
+    parser.add_argument(
+        "--stage134-slot-diagnostic-dev-fraction",
+        type=float,
+        default=0.33,
+        help="Stage134-D: held-out diagnostic dev fraction. Default: 0.33.",
+    )
+    parser.add_argument(
+        "--stage134-slot-diagnostic-seed",
+        type=int,
+        default=None,
+        help="Stage134-D: diagnostic split/training seed. Default: --seed if available, else 1.",
+    )
+    parser.add_argument(
+        "--stage134-slot-diagnostic-train-head-only",
+        action="store_true",
+        default=False,
+        help="Stage134-D: freeze all parameters except slot_mismatch_head.* during diagnostic training.",
+    )
+    parser.add_argument(
+        "--stage134-slot-diagnostic-epochs",
+        type=int,
+        default=5,
+        help="Stage134-D: diagnostic training epochs. Default: 5.",
+    )
+    parser.add_argument(
+        "--stage134-slot-diagnostic-lr",
+        type=float,
+        default=1e-3,
+        help="Stage134-D: diagnostic optimizer learning rate. Default: 1e-3.",
+    )
+    parser.add_argument(
         "--v7-disable-frame-channel",
         action="store_true",
         default=False,
@@ -9695,6 +9753,512 @@ def _stage118_scalar_medians(rows: list[dict[str, Any]]) -> dict[str, float]:
     return medians
 
 
+_STAGE134D_PRESERVED_FIELDS: tuple[str, ...] = (
+    "id",
+    "pair_id",
+    "label",
+    "final_label",
+    "stage133_case_type",
+    "stage133_slot_type",
+    "stage133_scenario_id",
+    "stage133_claim_slot_value",
+    "stage133_evidence_slot_value",
+    "stage122_evidence_core",
+    "stage122_variant",
+)
+_STAGE134D_GROUP_FIELDS: tuple[tuple[str, str], ...] = (
+    ("slot", "stage133_slot_type"),
+    ("case", "stage133_case_type"),
+    ("scenario", "stage133_scenario_id"),
+)
+
+
+def load_stage134_slot_diagnostic_jsonl(path: Path) -> tuple[list[dict[str, Any]], dict[str, int], int]:
+    records: list[dict[str, Any]] = []
+    skip_reasons: dict[str, int] = {}
+    n_input_rows = 0
+
+    def skip(reason: str) -> None:
+        skip_reasons[reason] = skip_reasons.get(reason, 0) + 1
+
+    with open(path, encoding="utf-8") as fh:
+        for line_index, line in enumerate(fh):
+            stripped = line.strip()
+            if not stripped:
+                continue
+            n_input_rows += 1
+            try:
+                row = json.loads(stripped)
+            except json.JSONDecodeError:
+                skip("invalid_json")
+                continue
+            if not isinstance(row, dict):
+                skip("not_object")
+                continue
+            if row.get("claim") is None or row.get("evidence") is None:
+                skip("missing_claim_or_evidence")
+                continue
+            if row.get("stage133_case_type") is None:
+                skip("missing_stage133_case_type")
+                continue
+            record = dict(row)
+            record["claim"] = str(row.get("claim"))
+            record["evidence"] = str(row.get("evidence"))
+            record.setdefault("id", row.get("id", f"stage134d_row_{line_index}"))
+            record.setdefault("pair_id", row.get("pair_id") or record["id"] or f"stage134d_row_{line_index}")
+            target, valid = derive_slot_mismatch_target(record)
+            record["slot_mismatch_target"] = int(target) if valid else None
+            record["slot_mismatch_target_valid"] = bool(valid)
+            record["stage134d_valid_row_index"] = len(records)
+            records.append(record)
+    return records, dict(sorted(skip_reasons.items())), n_input_rows
+
+
+def split_stage134_slot_diagnostic_records(
+    records: list[dict[str, Any]],
+    *,
+    split_mode: str,
+    dev_fraction: float,
+    seed: int,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
+    if not 0.0 < float(dev_fraction) < 1.0:
+        raise ValueError("--stage134-slot-diagnostic-dev-fraction must be in (0, 1)")
+    if split_mode not in {"scenario_holdout", "slot_holdout", "random"}:
+        raise ValueError(f"unsupported Stage134-D split_mode: {split_mode}")
+    indexed = list(enumerate(records))
+    rng = random.Random(seed)
+    if not indexed:
+        return [], [], {"split_mode": split_mode, "heldout_values": []}
+
+    if split_mode == "random":
+        shuffled = indexed[:]
+        rng.shuffle(shuffled)
+        dev_n = max(1, int(round(len(shuffled) * float(dev_fraction))))
+        if dev_n >= len(shuffled) and len(shuffled) > 1:
+            dev_n = len(shuffled) - 1
+        dev_indices = {idx for idx, _ in shuffled[:dev_n]}
+        heldout_values: list[str] = []
+    else:
+        group_field = "stage133_scenario_id" if split_mode == "scenario_holdout" else "stage133_slot_type"
+        groups: dict[str, list[int]] = {}
+        for idx, record in indexed:
+            value = str(record.get(group_field) or "__missing__")
+            groups.setdefault(value, []).append(idx)
+        group_items = list(groups.items())
+        rng.shuffle(group_items)
+        target_dev_n = max(1, int(round(len(records) * float(dev_fraction))))
+        dev_indices: set[int] = set()
+        heldout_values = []
+        for value, indices in group_items:
+            if dev_indices and len(dev_indices) >= target_dev_n:
+                break
+            dev_indices.update(indices)
+            heldout_values.append(value)
+        if len(dev_indices) >= len(records) and len(group_items) > 1:
+            value, indices = group_items[-1]
+            for idx in indices:
+                dev_indices.discard(idx)
+            heldout_values = [item for item in heldout_values if item != value]
+    train = [dict(record) for idx, record in indexed if idx not in dev_indices]
+    dev = [dict(record) for idx, record in indexed if idx in dev_indices]
+    if not train and dev:
+        train.append(dev.pop())
+    split_info = {
+        "split_mode": split_mode,
+        "dev_fraction": float(dev_fraction),
+        "seed": int(seed),
+        "heldout_values": heldout_values,
+        "train_rows": len(train),
+        "dev_rows": len(dev),
+    }
+    return train, dev, split_info
+
+
+def _stage134d_encode_inputs(
+    records: list[dict[str, Any]],
+    *,
+    args: argparse.Namespace,
+    vocab: dict[str, int] | None,
+    tokenizer: Any | None,
+    max_length: int,
+    device: torch.device,
+) -> dict[str, torch.Tensor]:
+    return _stage118_encode_inputs(
+        records,
+        args=args,
+        vocab=vocab,
+        tokenizer=tokenizer,
+        max_length=max_length,
+        device=device,
+        evidence_interface=getattr(args, "vnext_evidence_interface", "full_evidence"),
+    )
+
+
+def _stage134d_binary_curve_metrics(labels: list[int], probs: list[float]) -> tuple[float | None, float | None, str | None]:
+    if not labels or len(set(labels)) < 2:
+        return None, None, "AUROC/AUPRC require both positive and negative targets"
+    try:
+        from sklearn.metrics import average_precision_score, roc_auc_score
+        return (
+            round(float(roc_auc_score(labels, probs)), 6),
+            round(float(average_precision_score(labels, probs)), 6),
+            None,
+        )
+    except Exception as exc:
+        note = f"sklearn unavailable or failed ({type(exc).__name__}); used local fallback"
+
+    pairs = sorted(zip(probs, labels), key=lambda item: item[0])
+    pos = sum(labels)
+    neg = len(labels) - pos
+    rank_sum = 0.0
+    i = 0
+    while i < len(pairs):
+        j = i + 1
+        while j < len(pairs) and pairs[j][0] == pairs[i][0]:
+            j += 1
+        avg_rank = (i + 1 + j) / 2.0
+        rank_sum += avg_rank * sum(label for _, label in pairs[i:j])
+        i = j
+    auroc = (rank_sum - pos * (pos + 1) / 2.0) / (pos * neg)
+
+    desc = sorted(zip(probs, labels), key=lambda item: item[0], reverse=True)
+    tp = 0
+    precision_sum = 0.0
+    for rank, (_, label) in enumerate(desc, start=1):
+        if label == 1:
+            tp += 1
+            precision_sum += tp / rank
+    auprc = precision_sum / pos if pos else None
+    return round(float(auroc), 6), round(float(auprc), 6) if auprc is not None else None, note
+
+
+def _stage134d_metrics_from_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    valid_rows = [row for row in rows if row.get("slot_mismatch_target_valid") is True]
+    labels = [int(row["slot_mismatch_target"]) for row in valid_rows]
+    probs = [float(row["slot_mismatch_prob"]) for row in valid_rows if row.get("slot_mismatch_prob") is not None]
+    labels_for_probs = [int(row["slot_mismatch_target"]) for row in valid_rows if row.get("slot_mismatch_prob") is not None]
+    pos = sum(labels)
+    neg = len(labels) - pos
+    ignored = len(rows) - len(valid_rows)
+    if labels_for_probs:
+        correct = sum(
+            1 for row in valid_rows
+            if row.get("prediction_at_0_5") is not None
+            and int(row["prediction_at_0_5"]) == int(row["slot_mismatch_target"])
+        )
+        bce_terms = []
+        for label, prob in zip(labels_for_probs, probs):
+            p = min(max(float(prob), 1e-7), 1.0 - 1e-7)
+            bce_terms.append(-(label * float(np.log(p)) + (1 - label) * float(np.log(1.0 - p))))
+        accuracy = correct / len(labels_for_probs)
+        bce = sum(bce_terms) / len(bce_terms)
+    else:
+        accuracy = None
+        bce = None
+    auroc, auprc, note = _stage134d_binary_curve_metrics(labels_for_probs, probs)
+    metrics: dict[str, Any] = {
+        "slot_mismatch_accuracy_at_0_5": round(float(accuracy), 6) if accuracy is not None else None,
+        "slot_mismatch_auroc": auroc,
+        "slot_mismatch_auprc": auprc,
+        "slot_mismatch_bce": round(float(bce), 6) if bce is not None else None,
+        "target_positive_count": int(pos),
+        "target_negative_count": int(neg),
+        "target_ignored_count": int(ignored),
+    }
+    if note is not None:
+        metrics["curve_metric_note"] = note
+    return metrics
+
+
+def _stage134d_group_metrics(rows: list[dict[str, Any]], group_field: str) -> list[dict[str, Any]]:
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for row in rows:
+        value = str(row.get(group_field) or "__missing__")
+        grouped.setdefault(value, []).append(row)
+    result: list[dict[str, Any]] = []
+    for value in sorted(grouped):
+        metrics = _stage134d_metrics_from_rows(grouped[value])
+        result.append({"group_field": group_field, "group_value": value, "row_count": len(grouped[value]), **metrics})
+    return result
+
+
+def _stage134d_write_group_csv(path: Path, rows: list[dict[str, Any]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fieldnames = [
+        "split",
+        "group_field",
+        "group_value",
+        "row_count",
+        "slot_mismatch_accuracy_at_0_5",
+        "slot_mismatch_auroc",
+        "slot_mismatch_auprc",
+        "slot_mismatch_bce",
+        "target_positive_count",
+        "target_negative_count",
+        "target_ignored_count",
+        "curve_metric_note",
+    ]
+    with open(path, "w", encoding="utf-8", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow({key: row.get(key) for key in fieldnames})
+
+
+def _stage134d_forward_predictions(
+    *,
+    model: nn.Module,
+    records: list[dict[str, Any]],
+    inputs: dict[str, torch.Tensor],
+    args: argparse.Namespace,
+    device: torch.device,
+    batch_size: int,
+    split: str,
+) -> list[dict[str, Any]]:
+    if not records:
+        return []
+    model.eval()
+    exported: list[dict[str, Any]] = []
+    amp_enabled = _amp_enabled(args, device)
+    with torch.no_grad():
+        for start in range(0, len(records), max(1, int(batch_size))):
+            end = min(len(records), start + max(1, int(batch_size)))
+            batch_records = records[start:end]
+            batch_inputs = _slice_tensor_dict(inputs, start, end)
+            zero_t = torch.zeros(end - start, dtype=torch.float32, device=device)
+            zero_p = torch.zeros(end - start, dtype=torch.float32, device=device)
+            with _cuda_amp_autocast(amp_enabled):
+                output = model(
+                    **_vnext_model_feature_inputs(batch_inputs),
+                    temporal_mismatch_flags=zero_t,
+                    predicate_mismatch_flags=zero_p,
+                )
+            logits = output.get("slot_mismatch_logit")
+            probs = output.get("slot_mismatch_prob")
+            if logits is None or probs is None:
+                raise ValueError("Stage134-D requires model output slot_mismatch_logit/prob")
+            logits_cpu = logits.detach().cpu().tolist()
+            probs_cpu = probs.detach().cpu().tolist()
+            for offset, record in enumerate(batch_records):
+                prob = float(probs_cpu[offset])
+                row: dict[str, Any] = {
+                    "claim": record.get("claim"),
+                    "evidence": record.get("evidence"),
+                    "slot_mismatch_logit": round(float(logits_cpu[offset]), 6),
+                    "slot_mismatch_prob": round(prob, 6),
+                    "slot_mismatch_target": record.get("slot_mismatch_target"),
+                    "slot_mismatch_target_valid": bool(record.get("slot_mismatch_target_valid")),
+                    "split": split,
+                    "prediction_at_0_5": int(prob >= 0.5),
+                }
+                for key in _STAGE134D_PRESERVED_FIELDS:
+                    if key in record:
+                        row[key] = record[key]
+                for key in _STAGE123_VNEXT_EVIDENCE_EXPORT_FIELDS:
+                    if key in record:
+                        row[key] = record[key]
+                exported.append(row)
+    return exported
+
+
+def _stage134d_slot_loss(
+    model: nn.Module,
+    inputs: dict[str, torch.Tensor],
+    labels: torch.Tensor,
+    mask: torch.Tensor,
+    *,
+    device: torch.device,
+    batch_size: int,
+    amp_enabled: bool,
+) -> torch.Tensor:
+    losses: list[torch.Tensor] = []
+    for start in range(0, int(inputs["input_ids"].shape[0]), max(1, int(batch_size))):
+        end = min(int(inputs["input_ids"].shape[0]), start + max(1, int(batch_size)))
+        batch_mask = mask[start:end].bool()
+        if not torch.any(batch_mask):
+            continue
+        batch_inputs = _slice_tensor_dict(inputs, start, end)
+        zero_t = torch.zeros(end - start, dtype=torch.float32, device=device)
+        zero_p = torch.zeros(end - start, dtype=torch.float32, device=device)
+        with _cuda_amp_autocast(amp_enabled):
+            output = model(
+                **_vnext_model_feature_inputs(batch_inputs),
+                temporal_mismatch_flags=zero_t,
+                predicate_mismatch_flags=zero_p,
+            )
+            logit = output.get("slot_mismatch_logit")
+            if logit is None:
+                raise ValueError("Stage134-D requires slot_mismatch_logit; enable the slot mismatch head")
+            losses.append(F.binary_cross_entropy_with_logits(logit[batch_mask], labels[start:end][batch_mask]))
+    if not losses:
+        return torch.tensor(0.0, device=device, requires_grad=True)
+    return torch.stack(losses).mean()
+
+
+def run_stage134_slot_diagnostic(
+    *,
+    model: nn.Module,
+    input_jsonl: Path,
+    output_dir: Path,
+    batch_size: int,
+    split_mode: str,
+    dev_fraction: float,
+    seed: int,
+    train_head_only: bool,
+    epochs: int,
+    lr: float,
+    args: argparse.Namespace,
+    vocab: dict[str, int] | None,
+    tokenizer: Any | None,
+    max_length: int,
+    device: torch.device,
+) -> dict[str, Any]:
+    if getattr(args, "architecture", None) != "vnext_minimal":
+        raise ValueError("--stage134-slot-diagnostic-jsonl requires --architecture vnext_minimal")
+    if not bool(getattr(args, "vnext_use_slot_mismatch_head", False)):
+        raise ValueError("Stage134-D requires the vNext slot mismatch head to be enabled")
+    if epochs < 1:
+        raise ValueError("--stage134-slot-diagnostic-epochs must be >= 1")
+
+    raw_records, skip_reasons, n_input_rows = load_stage134_slot_diagnostic_jsonl(input_jsonl)
+    records = apply_vnext_evidence_interface_to_records(raw_records, getattr(args, "vnext_evidence_interface", "full_evidence"))
+    train_records, dev_records, split_info = split_stage134_slot_diagnostic_records(
+        records,
+        split_mode=split_mode,
+        dev_fraction=dev_fraction,
+        seed=seed,
+    )
+    if not train_records:
+        raise ValueError("Stage134-D diagnostic JSONL produced no train rows")
+    train_inputs = _stage134d_encode_inputs(
+        train_records,
+        args=args,
+        vocab=vocab,
+        tokenizer=tokenizer,
+        max_length=max_length,
+        device=device,
+    ) if train_records else {}
+    dev_inputs = _stage134d_encode_inputs(
+        dev_records,
+        args=args,
+        vocab=vocab,
+        tokenizer=tokenizer,
+        max_length=max_length,
+        device=device,
+    ) if dev_records else {}
+    train_labels, train_mask = encode_slot_mismatch_labels(train_records, device)
+
+    original_requires_grad = {name: parameter.requires_grad for name, parameter in model.named_parameters()}
+    if train_head_only:
+        for name, parameter in model.named_parameters():
+            parameter.requires_grad = name.startswith("slot_mismatch_head.")
+    trainable_names = [name for name, parameter in model.named_parameters() if parameter.requires_grad]
+    trainable_parameter_count = int(sum(parameter.numel() for parameter in model.parameters() if parameter.requires_grad))
+    total_parameter_count = int(sum(parameter.numel() for parameter in model.parameters()))
+    optimizer = v5.build_optimizer(model, lr, getattr(args, "head_lr", None), getattr(args, "encoder_lr", None))
+    amp_enabled = _amp_enabled(args, device)
+    loss_history: list[float] = []
+    try:
+        for _epoch in range(int(epochs)):
+            model.train()
+            optimizer.zero_grad()
+            loss = _stage134d_slot_loss(
+                model,
+                train_inputs,
+                train_labels,
+                train_mask,
+                device=device,
+                batch_size=batch_size,
+                amp_enabled=amp_enabled,
+            )
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
+            optimizer.step()
+            loss_history.append(round(float(loss.detach().cpu().item()), 6))
+    finally:
+        for name, parameter in model.named_parameters():
+            if name in original_requires_grad:
+                parameter.requires_grad = original_requires_grad[name]
+
+    train_rows = _stage134d_forward_predictions(
+        model=model,
+        records=train_records,
+        inputs=train_inputs,
+        args=args,
+        device=device,
+        batch_size=batch_size,
+        split="train",
+    )
+    dev_rows = _stage134d_forward_predictions(
+        model=model,
+        records=dev_records,
+        inputs=dev_inputs,
+        args=args,
+        device=device,
+        batch_size=batch_size,
+        split="dev",
+    )
+    train_metrics = _stage134d_metrics_from_rows(train_rows)
+    dev_metrics = _stage134d_metrics_from_rows(dev_rows)
+    dev_auroc = dev_metrics.get("slot_mismatch_auroc")
+    dev_auprc = dev_metrics.get("slot_mismatch_auprc")
+    if dev_auroc is not None and dev_auprc is not None and dev_auroc >= 0.80 and dev_auprc >= 0.80:
+        decision = "STAGE134D_SLOT_DIAGNOSTIC_SIGNAL_LEARNED"
+    elif dev_auroc is not None and dev_auroc >= 0.65:
+        decision = "STAGE134D_SLOT_DIAGNOSTIC_SIGNAL_WEAK"
+    else:
+        decision = "STAGE134D_SLOT_DIAGNOSTIC_SIGNAL_NOT_LEARNED"
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    train_predictions_path = output_dir / "stage134d_slot_diagnostic_train_predictions.jsonl"
+    dev_predictions_path = output_dir / "stage134d_slot_diagnostic_dev_predictions.jsonl"
+    summary_path = output_dir / "stage134d_slot_diagnostic_summary.json"
+    write_jsonl(train_predictions_path, train_rows)
+    write_jsonl(dev_predictions_path, dev_rows)
+    group_paths: dict[str, str] = {}
+    for group_name, group_field in _STAGE134D_GROUP_FIELDS:
+        path = output_dir / f"stage134d_slot_diagnostic_metrics_by_{group_name}.csv"
+        group_rows: list[dict[str, Any]] = []
+        for split_name, split_rows in (("train", train_rows), ("dev", dev_rows)):
+            for group_row in _stage134d_group_metrics(split_rows, group_field):
+                group_rows.append({"split": split_name, **group_row})
+        _stage134d_write_group_csv(path, group_rows)
+        group_paths[group_name] = str(path)
+
+    summary = {
+        "stage": "Stage134-D",
+        "decision": decision,
+        "input_jsonl": str(input_jsonl),
+        "output_dir": str(output_dir),
+        "split_mode": split_mode,
+        "split_info": split_info,
+        "n_input_rows": int(n_input_rows),
+        "n_loaded_rows": len(records),
+        "n_skipped_rows": int(sum(skip_reasons.values())),
+        "skip_reasons": skip_reasons,
+        "train_rows": len(train_records),
+        "dev_rows": len(dev_records),
+        "train_metrics": train_metrics,
+        "dev_metrics": dev_metrics,
+        "loss_history": loss_history,
+        "trainable_parameter_count": trainable_parameter_count,
+        "total_parameter_count": total_parameter_count,
+        "trainable_parameter_names": trainable_names,
+        "train_head_only": bool(train_head_only),
+        "vnext_use_slot_mismatch_head": bool(getattr(args, "vnext_use_slot_mismatch_head", False)),
+        "vnext_slot_mismatch_loss_weight": getattr(args, "vnext_slot_mismatch_loss_weight", 0.0),
+        "stage128_location_slot_guard_enabled": bool(getattr(args, "stage128_enable_location_slot_guard", False)),
+        "final_logits_modified_by_slot_head": False,
+        "prediction_paths": {
+            "train": str(train_predictions_path),
+            "dev": str(dev_predictions_path),
+        },
+        "group_metric_paths": group_paths,
+    }
+    write_json(summary_path, summary)
+    summary["summary_json"] = str(summary_path)
+    return summary
+
 
 def _positive_optional_int(value: int | None, flag_name: str) -> int | None:
     if value is None:
@@ -11562,6 +12126,23 @@ def main(argv: list[str] | None = None) -> int:
                 "--stage118-diagnostic-sweep-output-dir"
             )
 
+    if args.stage134_slot_diagnostic_jsonl is not None:
+        if args.stage134_slot_diagnostic_output_dir is None:
+            parser.error(
+                "--stage134-slot-diagnostic-jsonl requires "
+                "--stage134-slot-diagnostic-output-dir"
+            )
+        if args.architecture != "vnext_minimal":
+            parser.error(
+                "--stage134-slot-diagnostic-jsonl requires --architecture vnext_minimal"
+            )
+        if not args.vnext_use_slot_mismatch_head:
+            args.vnext_use_slot_mismatch_head = True
+        if args.stage134_slot_diagnostic_seed is None:
+            args.stage134_slot_diagnostic_seed = getattr(args, "seed", 1)
+    elif args.stage134_slot_diagnostic_seed is None:
+        args.stage134_slot_diagnostic_seed = getattr(args, "seed", 1)
+
     try:
         args.train_batch_size = _positive_optional_int(
             args.train_batch_size, "--train-batch-size"
@@ -11572,11 +12153,20 @@ def main(argv: list[str] | None = None) -> int:
         args.stage118_diagnostic_batch_size = _positive_optional_int(
             args.stage118_diagnostic_batch_size, "--stage118-diagnostic-batch-size"
         )
+        args.stage134_slot_diagnostic_batch_size = _positive_optional_int(
+            args.stage134_slot_diagnostic_batch_size, "--stage134-slot-diagnostic-batch-size"
+        )
         args.gradient_accumulation_steps = _positive_optional_int(
             args.gradient_accumulation_steps, "--gradient-accumulation-steps"
         )
     except ValueError as exc:
         parser.error(str(exc))
+    if not 0.0 < float(args.stage134_slot_diagnostic_dev_fraction) < 1.0:
+        parser.error("--stage134-slot-diagnostic-dev-fraction must be in (0, 1)")
+    if int(args.stage134_slot_diagnostic_epochs) < 1:
+        parser.error("--stage134-slot-diagnostic-epochs must be >= 1")
+    if float(args.stage134_slot_diagnostic_lr) <= 0.0:
+        parser.error("--stage134-slot-diagnostic-lr must be > 0")
     if args.vnext_use_slot_mismatch_head and args.architecture != "vnext_minimal":
         parser.error(
             "--vnext-use-slot-mismatch-head requires --architecture vnext_minimal"
@@ -17428,6 +18018,42 @@ def main(argv: list[str] | None = None) -> int:
                 f"acc={_stage118_summary['accuracy']:.4f} "
                 f"macro_f1={_stage118_summary['macro_f1']:.4f}"
             )
+    if args.stage134_slot_diagnostic_jsonl is not None:
+        if len(reports) != 1:
+            parser.error("--stage134-slot-diagnostic-jsonl requires a single non-sweep run")
+        if _ood_best_state is not None:
+            model.load_state_dict({k: v.to(device) for k, v in _ood_best_state.items()})
+        _stage134_pre_diag_state = {
+            key: value.detach().cpu().clone()
+            for key, value in model.state_dict().items()
+        }
+        try:
+            _stage134_summary = run_stage134_slot_diagnostic(
+                model=model,
+                input_jsonl=Path(args.stage134_slot_diagnostic_jsonl),
+                output_dir=Path(args.stage134_slot_diagnostic_output_dir),
+                batch_size=args.stage134_slot_diagnostic_batch_size,
+                split_mode=args.stage134_slot_diagnostic_split_mode,
+                dev_fraction=args.stage134_slot_diagnostic_dev_fraction,
+                seed=args.stage134_slot_diagnostic_seed,
+                train_head_only=args.stage134_slot_diagnostic_train_head_only,
+                epochs=args.stage134_slot_diagnostic_epochs,
+                lr=args.stage134_slot_diagnostic_lr,
+                args=args,
+                vocab=vocab,
+                tokenizer=tokenizer,
+                max_length=max_length,
+                device=device,
+            )
+        finally:
+            model.load_state_dict({k: v.to(device) for k, v in _stage134_pre_diag_state.items()})
+        report["stage134_slot_diagnostic"] = _stage134_summary
+        print(
+            f"[STAGE134-D SLOT DIAGNOSTIC] decision={_stage134_summary['decision']} "
+            f"train_rows={_stage134_summary['train_rows']} "
+            f"dev_rows={_stage134_summary['dev_rows']} "
+            f"output_dir={_stage134_summary['output_dir']}"
+        )
     if args.output_predictions_json is not None:
         if len(reports) != 1:
             parser.error("--output-predictions-json requires a single non-sweep run")
