@@ -86,6 +86,13 @@ STAGE128_LOCATION_SLOT_GUARD_MODES: tuple[str, ...] = (
     "off",
     "controlled_in_during_location_mismatch",
 )
+VNEXT_SLOT_MISMATCH_INPUT_MODES: tuple[str, ...] = (
+    "sufficiency_repr",
+    "channel_concat",
+    "pooled_pair_concat",
+    "pooled_pair_absdiff_product",
+)
+VNEXT_SLOT_MISMATCH_HEAD_TYPES: tuple[str, ...] = ("linear", "mlp")
 _STAGE128_IN_DURING_LOCATION_RE = re.compile(
     r"\bin\s+([A-Z][A-Za-z]*(?:[ -][A-Z][A-Za-z]*)*)\s+during\b"
 )
@@ -646,6 +653,8 @@ def build_vnext_model(
     vnext_context_risk_source: str = "context_not_entitled_prob",
     vnext_use_slot_mismatch_head: bool = False,
     vnext_slot_mismatch_detach_input: bool = True,
+    vnext_slot_mismatch_input_mode: str = "sufficiency_repr",
+    vnext_slot_mismatch_head_type: str = "linear",
 ) -> ContraMambaVNextMinimal:
     """Build a ContraMambaVNextMinimal with dummy backbone for plumbing validation."""
     backbone = v5.ControlledDummyBackbone(vocab_size, hidden_size, max_length)
@@ -664,6 +673,8 @@ def build_vnext_model(
         "vnext_context_risk_source": vnext_context_risk_source,
         "vnext_use_slot_mismatch_head": vnext_use_slot_mismatch_head,
         "vnext_slot_mismatch_detach_input": vnext_slot_mismatch_detach_input,
+        "vnext_slot_mismatch_input_mode": vnext_slot_mismatch_input_mode,
+        "vnext_slot_mismatch_head_type": vnext_slot_mismatch_head_type,
     })
 
 
@@ -679,6 +690,8 @@ def build_vnext_mamba_model(
     vnext_context_risk_source: str = "context_not_entitled_prob",
     vnext_use_slot_mismatch_head: bool = False,
     vnext_slot_mismatch_detach_input: bool = True,
+    vnext_slot_mismatch_input_mode: str = "sufficiency_repr",
+    vnext_slot_mismatch_head_type: str = "linear",
 ) -> ContraMambaVNextMinimal:
     """Build a ContraMambaVNextMinimal with real Mamba backbone."""
     model = _construct_vnext_minimal_with_aligned_kwargs({
@@ -697,6 +710,8 @@ def build_vnext_mamba_model(
         "vnext_context_risk_source": vnext_context_risk_source,
         "vnext_use_slot_mismatch_head": vnext_use_slot_mismatch_head,
         "vnext_slot_mismatch_detach_input": vnext_slot_mismatch_detach_input,
+        "vnext_slot_mismatch_input_mode": vnext_slot_mismatch_input_mode,
+        "vnext_slot_mismatch_head_type": vnext_slot_mismatch_head_type,
     })
     for parameter in model.mamba.parameters():
         parameter.requires_grad = not freeze_encoder
@@ -7028,6 +7043,24 @@ def build_parser() -> argparse.ArgumentParser:
         dest="vnext_slot_mismatch_detach_input",
         help="Allow slot mismatch BCE gradients to flow into sufficiency_repr.",
     )
+    parser.add_argument(
+        "--vnext-slot-mismatch-input-mode",
+        choices=VNEXT_SLOT_MISMATCH_INPUT_MODES,
+        default="sufficiency_repr",
+        help=(
+            "Stage134-E: input representation for the vNext slot mismatch diagnostic head. "
+            "Default sufficiency_repr preserves Stage134-A behavior."
+        ),
+    )
+    parser.add_argument(
+        "--vnext-slot-mismatch-head-type",
+        choices=VNEXT_SLOT_MISMATCH_HEAD_TYPES,
+        default="linear",
+        help=(
+            "Stage134-E: slot mismatch diagnostic head architecture. "
+            "Default linear preserves Stage134-A behavior."
+        ),
+    )
 
     parser.add_argument(
         "--stage134-slot-diagnostic-jsonl",
@@ -10195,6 +10228,15 @@ def _stage134d_forward_predictions(
                     "slot_mismatch_target_valid": bool(record.get("slot_mismatch_target_valid")),
                     "split": split,
                     "prediction_at_0_5": int(prob >= 0.5),
+                    "vnext_slot_mismatch_input_mode": getattr(
+                        args, "vnext_slot_mismatch_input_mode", "sufficiency_repr"
+                    ),
+                    "vnext_slot_mismatch_head_type": getattr(
+                        args, "vnext_slot_mismatch_head_type", "linear"
+                    ),
+                    "slot_mismatch_head_input_dim": getattr(
+                        model, "slot_mismatch_head_input_dim", None
+                    ),
                 }
                 for key in _STAGE134D_PRESERVED_FIELDS:
                     if key in record:
@@ -10397,6 +10439,13 @@ def run_stage134_slot_diagnostic(
         "train_head_only": bool(train_head_only),
         "vnext_use_slot_mismatch_head": bool(getattr(args, "vnext_use_slot_mismatch_head", False)),
         "vnext_slot_mismatch_loss_weight": getattr(args, "vnext_slot_mismatch_loss_weight", 0.0),
+        "vnext_slot_mismatch_input_mode": getattr(
+            args, "vnext_slot_mismatch_input_mode", "sufficiency_repr"
+        ),
+        "vnext_slot_mismatch_head_type": getattr(
+            args, "vnext_slot_mismatch_head_type", "linear"
+        ),
+        "slot_mismatch_head_input_dim": getattr(model, "slot_mismatch_head_input_dim", None),
         "stage128_location_slot_guard_enabled": bool(getattr(args, "stage128_enable_location_slot_guard", False)),
         "final_logits_modified_by_slot_head": False,
         "prediction_paths": {
@@ -10447,6 +10496,8 @@ def build_stage134_slot_diagnostic_model_context(
             vnext_context_risk_source=args.vnext_context_risk_source,
             vnext_use_slot_mismatch_head=args.vnext_use_slot_mismatch_head,
             vnext_slot_mismatch_detach_input=args.vnext_slot_mismatch_detach_input,
+            vnext_slot_mismatch_input_mode=args.vnext_slot_mismatch_input_mode,
+            vnext_slot_mismatch_head_type=args.vnext_slot_mismatch_head_type,
         )
     else:
         from transformers import AutoTokenizer
@@ -10468,6 +10519,8 @@ def build_stage134_slot_diagnostic_model_context(
             vnext_context_risk_source=args.vnext_context_risk_source,
             vnext_use_slot_mismatch_head=args.vnext_use_slot_mismatch_head,
             vnext_slot_mismatch_detach_input=args.vnext_slot_mismatch_detach_input,
+            vnext_slot_mismatch_input_mode=args.vnext_slot_mismatch_input_mode,
+            vnext_slot_mismatch_head_type=args.vnext_slot_mismatch_head_type,
         )
 
     return model.to(device), vocab, tokenizer, max_length
@@ -10655,6 +10708,12 @@ def _stage118_audit_fields(args: argparse.Namespace | None) -> dict[str, Any]:
         "vnext_slot_mismatch_detach_input": bool(
             getattr(args, "vnext_slot_mismatch_detach_input", True)
         ),
+        "vnext_slot_mismatch_input_mode": getattr(
+            args, "vnext_slot_mismatch_input_mode", "sufficiency_repr"
+        ),
+        "vnext_slot_mismatch_head_type": getattr(
+            args, "vnext_slot_mismatch_head_type", "linear"
+        ),
         "stage128_location_slot_guard_enabled": bool(
             getattr(args, "stage128_enable_location_slot_guard", False)
         ),
@@ -10696,6 +10755,8 @@ def _validate_model_checkpoint_metadata(
         "vnext_router_mode": getattr(args, "vnext_router_mode", None),
         "vnext_use_slot_mismatch_head": getattr(args, "vnext_use_slot_mismatch_head", None),
         "vnext_slot_mismatch_detach_input": getattr(args, "vnext_slot_mismatch_detach_input", None),
+        "vnext_slot_mismatch_input_mode": getattr(args, "vnext_slot_mismatch_input_mode", None),
+        "vnext_slot_mismatch_head_type": getattr(args, "vnext_slot_mismatch_head_type", None),
     }
     mismatches = []
     for key, current_value in expected.items():
@@ -10707,6 +10768,7 @@ def _validate_model_checkpoint_metadata(
             f"Checkpoint {checkpoint_path} is not compatible with requested model config: "
             + "; ".join(mismatches)
         )
+
 
 def _save_model_checkpoint(
     *,
@@ -10725,6 +10787,8 @@ def _save_model_checkpoint(
         "vnext_evidence_interface": getattr(args, "vnext_evidence_interface", None),
         "vnext_use_slot_mismatch_head": getattr(args, "vnext_use_slot_mismatch_head", None),
         "vnext_slot_mismatch_detach_input": getattr(args, "vnext_slot_mismatch_detach_input", None),
+        "vnext_slot_mismatch_input_mode": getattr(args, "vnext_slot_mismatch_input_mode", None),
+        "vnext_slot_mismatch_head_type": getattr(args, "vnext_slot_mismatch_head_type", None),
         "vnext_slot_mismatch_loss_weight": getattr(args, "vnext_slot_mismatch_loss_weight", None),
         "vnext_slot_mismatch_pos_weight": getattr(args, "vnext_slot_mismatch_pos_weight", None),
         "vnext_enable_segmented_dual_pass": getattr(
@@ -10757,7 +10821,6 @@ def _save_model_checkpoint(
         },
         checkpoint_path,
     )
-
 def _stage118_build_summary(
     *,
     diagnostic_name: str,
@@ -11226,6 +11289,8 @@ def run_stage126_preflight_export_only(
             vnext_context_risk_source=args.vnext_context_risk_source,
             vnext_use_slot_mismatch_head=args.vnext_use_slot_mismatch_head,
             vnext_slot_mismatch_detach_input=args.vnext_slot_mismatch_detach_input,
+            vnext_slot_mismatch_input_mode=args.vnext_slot_mismatch_input_mode,
+            vnext_slot_mismatch_head_type=args.vnext_slot_mismatch_head_type,
         )
     else:
         from transformers import AutoTokenizer
@@ -11247,6 +11312,8 @@ def run_stage126_preflight_export_only(
             vnext_context_risk_source=args.vnext_context_risk_source,
             vnext_use_slot_mismatch_head=args.vnext_use_slot_mismatch_head,
             vnext_slot_mismatch_detach_input=args.vnext_slot_mismatch_detach_input,
+            vnext_slot_mismatch_input_mode=args.vnext_slot_mismatch_input_mode,
+            vnext_slot_mismatch_head_type=args.vnext_slot_mismatch_head_type,
         )
     model.to(device)
     model.eval()
@@ -13190,6 +13257,8 @@ def main(argv: list[str] | None = None) -> int:
                 vnext_context_risk_source=args.vnext_context_risk_source,
                 vnext_use_slot_mismatch_head=args.vnext_use_slot_mismatch_head,
                 vnext_slot_mismatch_detach_input=args.vnext_slot_mismatch_detach_input,
+                vnext_slot_mismatch_input_mode=args.vnext_slot_mismatch_input_mode,
+                vnext_slot_mismatch_head_type=args.vnext_slot_mismatch_head_type,
             )
         else:
             model = build_mamba_model(
@@ -13312,6 +13381,8 @@ def main(argv: list[str] | None = None) -> int:
                 vnext_context_risk_source=args.vnext_context_risk_source,
                 vnext_use_slot_mismatch_head=args.vnext_use_slot_mismatch_head,
                 vnext_slot_mismatch_detach_input=args.vnext_slot_mismatch_detach_input,
+                vnext_slot_mismatch_input_mode=args.vnext_slot_mismatch_input_mode,
+                vnext_slot_mismatch_head_type=args.vnext_slot_mismatch_head_type,
             )
         else:
             model = build_model(
@@ -13385,6 +13456,7 @@ def main(argv: list[str] | None = None) -> int:
                 "vnext_evidence_interface": args.vnext_evidence_interface,
                 "vnext_router_mode": getattr(args, "vnext_router_mode", None),
                 **_stage118_audit_fields(args),
+                "slot_mismatch_head_input_dim": getattr(model, "slot_mismatch_head_input_dim", None),
             },
             "stage118_diagnostic_export_only": True,
             "stage118_checkpoint_metadata": checkpoint_metadata,
@@ -13399,6 +13471,12 @@ def main(argv: list[str] | None = None) -> int:
             ),
             "vnext_slot_mismatch_detach_input": bool(
                 getattr(args, "vnext_slot_mismatch_detach_input", True)
+            ),
+            "vnext_slot_mismatch_input_mode": getattr(
+                args, "vnext_slot_mismatch_input_mode", "sufficiency_repr"
+            ),
+            "vnext_slot_mismatch_head_type": getattr(
+                args, "vnext_slot_mismatch_head_type", "linear"
             ),
             "stage128_location_slot_guard_enabled": bool(
                 getattr(args, "stage128_enable_location_slot_guard", False)
@@ -13530,6 +13608,8 @@ def main(argv: list[str] | None = None) -> int:
             f"weight={args.vnext_slot_mismatch_loss_weight} "
             f"pos_weight={args.vnext_slot_mismatch_pos_weight} "
             f"detach_input={args.vnext_slot_mismatch_detach_input} "
+            f"input_mode={args.vnext_slot_mismatch_input_mode} "
+            f"head_type={args.vnext_slot_mismatch_head_type} "
             f"train_pos={_slot_mismatch_train_counts['slot_mismatch_target_positive_count']} "
             f"train_neg={_slot_mismatch_train_counts['slot_mismatch_target_negative_count']} "
             f"train_ignored={_slot_mismatch_train_counts['slot_mismatch_target_ignored_count']}"
@@ -16495,9 +16575,14 @@ def main(argv: list[str] | None = None) -> int:
                 "gradient_isolated": bool(
                     getattr(model, "vnext_slot_mismatch_detach_input", True)
                 ),
+                "input_mode": getattr(
+                    model, "vnext_slot_mismatch_input_mode", "sufficiency_repr"
+                ),
+                "head_type": getattr(model, "vnext_slot_mismatch_head_type", "linear"),
+                "input_dim": getattr(model, "slot_mismatch_head_input_dim", None),
                 "raw_loss_key": "slot_mismatch_loss",
                 "weighted_loss_key": "slot_mismatch_loss",
-                "note": "Stage134-A head reads sufficiency_repr and never modifies final logits.",
+                "note": "Stage134-A/E head is diagnostic-only and never modifies final logits.",
             },
             "temporal_diagnostic_loss": {
                 "enabled": td_loss_weight > 0.0,
@@ -17542,6 +17627,7 @@ def main(argv: list[str] | None = None) -> int:
             "predicate_flag_count": predicate_flag_count,
             "final_logits_used": True,
             **_stage118_audit_fields(args),
+            "slot_mismatch_head_input_dim": getattr(model, "slot_mismatch_head_input_dim", None),
             "time_swap_used": False,
             "pairwise_checks_skipped": args.smoke,
             "pairwise_checks_skip_reason": "incomplete smoke subset" if args.smoke else None,
@@ -17682,6 +17768,9 @@ def main(argv: list[str] | None = None) -> int:
             "vnext_slot_mismatch_loss_weight": getattr(args, "vnext_slot_mismatch_loss_weight", 0.0),
             "vnext_slot_mismatch_pos_weight": getattr(args, "vnext_slot_mismatch_pos_weight", 1.0),
             "vnext_slot_mismatch_detach_input": getattr(args, "vnext_slot_mismatch_detach_input", True),
+            "vnext_slot_mismatch_input_mode": getattr(args, "vnext_slot_mismatch_input_mode", "sufficiency_repr"),
+            "vnext_slot_mismatch_head_type": getattr(args, "vnext_slot_mismatch_head_type", "linear"),
+            "slot_mismatch_head_input_dim": getattr(model, "slot_mismatch_head_input_dim", None),
             **_slot_mismatch_train_counts,
             "slot_mismatch_dev_target_counts": _slot_mismatch_dev_counts,
             "slot_mismatch_label_mapping": {

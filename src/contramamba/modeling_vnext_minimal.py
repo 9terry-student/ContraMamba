@@ -30,6 +30,13 @@ VALID_VNEXT_ROUTER_MODES = {
     "learned_x_frame_sufficiency",
     "learned_x_predicate_sufficiency",
 }
+VALID_SLOT_MISMATCH_INPUT_MODES = {
+    "sufficiency_repr",
+    "channel_concat",
+    "pooled_pair_concat",
+    "pooled_pair_absdiff_product",
+}
+VALID_SLOT_MISMATCH_HEAD_TYPES = {"linear", "mlp"}
 
 
 def _inverse_softplus(value: float) -> float:
@@ -69,12 +76,26 @@ class ContraMambaVNextMinimal(nn.Module):
         vnext_context_risk_source: str = "context_not_entitled_prob",
         vnext_use_slot_mismatch_head: bool = False,
         vnext_slot_mismatch_detach_input: bool = True,
+        vnext_slot_mismatch_input_mode: str = "sufficiency_repr",
+        vnext_slot_mismatch_head_type: str = "linear",
     ) -> None:
         super().__init__()
         if vnext_router_mode not in VALID_VNEXT_ROUTER_MODES:
             raise ValueError(
                 f"unsupported vnext_router_mode: {vnext_router_mode!r}; "
                 f"expected one of {sorted(VALID_VNEXT_ROUTER_MODES)}"
+            )
+        if vnext_slot_mismatch_input_mode not in VALID_SLOT_MISMATCH_INPUT_MODES:
+            raise ValueError(
+                "unsupported vnext_slot_mismatch_input_mode: "
+                f"{vnext_slot_mismatch_input_mode!r}; expected one of "
+                f"{sorted(VALID_SLOT_MISMATCH_INPUT_MODES)}"
+            )
+        if vnext_slot_mismatch_head_type not in VALID_SLOT_MISMATCH_HEAD_TYPES:
+            raise ValueError(
+                "unsupported vnext_slot_mismatch_head_type: "
+                f"{vnext_slot_mismatch_head_type!r}; expected one of "
+                f"{sorted(VALID_SLOT_MISMATCH_HEAD_TYPES)}"
             )
 
         if backbone is None:
@@ -108,6 +129,8 @@ class ContraMambaVNextMinimal(nn.Module):
         self.vnext_context_risk_source = str(vnext_context_risk_source)
         self.vnext_use_slot_mismatch_head = bool(vnext_use_slot_mismatch_head)
         self.vnext_slot_mismatch_detach_input = bool(vnext_slot_mismatch_detach_input)
+        self.vnext_slot_mismatch_input_mode = str(vnext_slot_mismatch_input_mode)
+        self.vnext_slot_mismatch_head_type = str(vnext_slot_mismatch_head_type)
 
         self.frame_gate = FrameGate(
             hidden_size, frame_size, dropout, return_token_diagnostics
@@ -122,14 +145,98 @@ class ContraMambaVNextMinimal(nn.Module):
             frame_size, predicate_size, sufficiency_size, energy_size, dropout
         )
         self.learned_entitlement_head = nn.Linear(sufficiency_size, 1)
+        self.slot_mismatch_head_input_dim = self._slot_mismatch_input_dim(
+            input_mode=self.vnext_slot_mismatch_input_mode,
+            frame_size=frame_size,
+            predicate_size=predicate_size,
+            sufficiency_size=sufficiency_size,
+        )
         self.slot_mismatch_head = (
-            nn.Linear(sufficiency_size, 1)
+            self._build_slot_mismatch_head(
+                input_dim=self.slot_mismatch_head_input_dim,
+                head_type=self.vnext_slot_mismatch_head_type,
+                dropout=dropout,
+            )
             if self.vnext_use_slot_mismatch_head
             else None
         )
         self.not_entitled_bias = nn.Parameter(torch.tensor(float(not_entitled_bias_init)))
         self.raw_not_entitled_alpha = nn.Parameter(
             torch.tensor(_inverse_softplus(not_entitled_alpha_init))
+        )
+
+    @staticmethod
+    def _slot_mismatch_input_dim(
+        *,
+        input_mode: str,
+        frame_size: int,
+        predicate_size: int,
+        sufficiency_size: int,
+    ) -> int:
+        if input_mode == "sufficiency_repr":
+            return sufficiency_size
+        if input_mode == "channel_concat":
+            return frame_size + predicate_size + sufficiency_size
+        if input_mode == "pooled_pair_concat":
+            return frame_size * 2
+        if input_mode == "pooled_pair_absdiff_product":
+            return frame_size * 4
+        raise ValueError(f"unsupported slot mismatch input_mode: {input_mode!r}")
+
+    @staticmethod
+    def _build_slot_mismatch_head(
+        *,
+        input_dim: int,
+        head_type: str,
+        dropout: float,
+    ) -> nn.Module:
+        if head_type == "linear":
+            return nn.Linear(input_dim, 1)
+        if head_type == "mlp":
+            hidden_dim = max(32, min(128, input_dim))
+            return nn.Sequential(
+                nn.Linear(input_dim, hidden_dim),
+                nn.GELU(),
+                nn.Dropout(dropout),
+                nn.Linear(hidden_dim, 1),
+            )
+        raise ValueError(f"unsupported slot mismatch head_type: {head_type!r}")
+
+    def _slot_mismatch_features(
+        self,
+        *,
+        frame: dict[str, torch.Tensor | None],
+        predicate: dict[str, torch.Tensor | None],
+        sufficiency: dict[str, torch.Tensor],
+    ) -> torch.Tensor:
+        if self.vnext_slot_mismatch_input_mode == "sufficiency_repr":
+            return sufficiency["sufficiency_repr"]
+        if self.vnext_slot_mismatch_input_mode == "channel_concat":
+            return torch.cat(
+                [
+                    frame["frame_pair_repr"],
+                    predicate["predicate_pair_repr"],
+                    sufficiency["sufficiency_repr"],
+                ],
+                dim=-1,
+            )
+        claim_pooled = frame["claim_frame_state"]
+        evidence_pooled = frame["evidence_frame_state"]
+        if self.vnext_slot_mismatch_input_mode == "pooled_pair_concat":
+            return torch.cat([claim_pooled, evidence_pooled], dim=-1)
+        if self.vnext_slot_mismatch_input_mode == "pooled_pair_absdiff_product":
+            return torch.cat(
+                [
+                    claim_pooled,
+                    evidence_pooled,
+                    torch.abs(claim_pooled - evidence_pooled),
+                    claim_pooled * evidence_pooled,
+                ],
+                dim=-1,
+            )
+        raise ValueError(
+            "unsupported slot mismatch input_mode: "
+            f"{self.vnext_slot_mismatch_input_mode!r}"
         )
 
     def not_entitled_alpha(self) -> torch.Tensor:
@@ -208,7 +315,11 @@ class ContraMambaVNextMinimal(nn.Module):
         slot_mismatch_logit = None
         slot_mismatch_prob = None
         if self.slot_mismatch_head is not None:
-            slot_mismatch_repr = sufficiency["sufficiency_repr"]
+            slot_mismatch_repr = self._slot_mismatch_features(
+                frame=frame,
+                predicate=predicate,
+                sufficiency=sufficiency,
+            )
             if self.vnext_slot_mismatch_detach_input:
                 slot_mismatch_repr = slot_mismatch_repr.detach()
             slot_mismatch_logit = self.slot_mismatch_head(slot_mismatch_repr).squeeze(-1)
@@ -499,6 +610,9 @@ class ContraMambaVNextMinimal(nn.Module):
             "slot_mismatch_prob": slot_mismatch_prob,
             "vnext_use_slot_mismatch_head": self.vnext_use_slot_mismatch_head,
             "vnext_slot_mismatch_detach_input": self.vnext_slot_mismatch_detach_input,
+            "vnext_slot_mismatch_input_mode": self.vnext_slot_mismatch_input_mode,
+            "vnext_slot_mismatch_head_type": self.vnext_slot_mismatch_head_type,
+            "slot_mismatch_head_input_dim": self.slot_mismatch_head_input_dim,
             "vnext_router_mode": self.vnext_router_mode,
             "vnext_final_logit_order": FINAL_LOGIT_ORDER,
             "vnext_segmented_dual_pass_active": segmented_active,
