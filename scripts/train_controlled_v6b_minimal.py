@@ -10255,10 +10255,113 @@ def run_stage134_slot_diagnostic(
         },
         "group_metric_paths": group_paths,
     }
-    write_json(summary_path, summary)
     summary["summary_json"] = str(summary_path)
+    summary_report = {
+        "stage134_slot_diagnostic": dict(summary),
+    }
+    write_json(summary_path, summary_report)
     return summary
 
+
+def build_stage134_slot_diagnostic_model_context(
+    *,
+    args: argparse.Namespace,
+    device: torch.device,
+) -> tuple[nn.Module, dict[str, int] | None, Any | None, int]:
+    if args.architecture != "vnext_minimal":
+        raise ValueError("--stage134-slot-diagnostic-jsonl requires --architecture vnext_minimal")
+
+    vocab: dict[str, int] | None = None
+    tokenizer: Any | None = None
+    max_length = int(args.max_length)
+    if args.backbone == "dummy":
+        raw_records, _, _ = load_stage134_slot_diagnostic_jsonl(
+            Path(args.stage134_slot_diagnostic_jsonl)
+        )
+        diagnostic_records = apply_vnext_evidence_interface_to_records(
+            raw_records, getattr(args, "vnext_evidence_interface", "full_evidence")
+        )
+        if not diagnostic_records:
+            raise ValueError("Stage134-D diagnostic JSONL produced no usable rows")
+        vocab = v5.build_vocab(diagnostic_records)
+        diagnostic_bundle = v5.encode_records(diagnostic_records, vocab)
+        max_length = int(diagnostic_bundle["model_inputs"]["input_ids"].shape[1])
+        model = build_vnext_model(
+            len(vocab),
+            max_length,
+            vnext_router_mode=args.vnext_router_mode,
+            vnext_enable_segmented_dual_pass=args.vnext_enable_segmented_dual_pass,
+            vnext_segmented_context_role=args.vnext_segmented_context_role,
+            vnext_context_risk_cap_alpha=args.vnext_context_risk_cap_alpha,
+            vnext_context_risk_threshold=args.vnext_context_risk_threshold,
+            vnext_context_risk_source=args.vnext_context_risk_source,
+            vnext_use_slot_mismatch_head=args.vnext_use_slot_mismatch_head,
+            vnext_slot_mismatch_detach_input=args.vnext_slot_mismatch_detach_input,
+        )
+    else:
+        from transformers import AutoTokenizer
+
+        tokenizer = AutoTokenizer.from_pretrained(args.model_name)
+        if tokenizer.pad_token_id is None:
+            if tokenizer.eos_token_id is None:
+                raise ValueError("Mamba tokenizer has neither pad_token nor eos_token")
+            tokenizer.pad_token = tokenizer.eos_token
+        model = build_vnext_mamba_model(
+            args.model_name,
+            freeze_encoder=args.freeze_encoder,
+            freeze_a_log=args.freeze_a_log,
+            vnext_router_mode=args.vnext_router_mode,
+            vnext_enable_segmented_dual_pass=args.vnext_enable_segmented_dual_pass,
+            vnext_segmented_context_role=args.vnext_segmented_context_role,
+            vnext_context_risk_cap_alpha=args.vnext_context_risk_cap_alpha,
+            vnext_context_risk_threshold=args.vnext_context_risk_threshold,
+            vnext_context_risk_source=args.vnext_context_risk_source,
+            vnext_use_slot_mismatch_head=args.vnext_use_slot_mismatch_head,
+            vnext_slot_mismatch_detach_input=args.vnext_slot_mismatch_detach_input,
+        )
+
+    return model.to(device), vocab, tokenizer, max_length
+
+
+def run_stage134_slot_diagnostic_only(
+    *,
+    args: argparse.Namespace,
+    device: torch.device,
+) -> dict[str, Any]:
+    print(
+        "[STAGE134 SLOT DIAGNOSTIC] "
+        f"diagnostic_only=True input={args.stage134_slot_diagnostic_jsonl}"
+    )
+    model, vocab, tokenizer, max_length = build_stage134_slot_diagnostic_model_context(
+        args=args,
+        device=device,
+    )
+    summary = run_stage134_slot_diagnostic(
+        model=model,
+        input_jsonl=Path(args.stage134_slot_diagnostic_jsonl),
+        output_dir=Path(args.stage134_slot_diagnostic_output_dir),
+        batch_size=args.stage134_slot_diagnostic_batch_size,
+        split_mode=args.stage134_slot_diagnostic_split_mode,
+        dev_fraction=args.stage134_slot_diagnostic_dev_fraction,
+        seed=args.stage134_slot_diagnostic_seed,
+        train_head_only=args.stage134_slot_diagnostic_train_head_only,
+        epochs=args.stage134_slot_diagnostic_epochs,
+        lr=args.stage134_slot_diagnostic_lr,
+        args=args,
+        vocab=vocab,
+        tokenizer=tokenizer,
+        max_length=max_length,
+        device=device,
+    )
+    print(
+        f"[STAGE134-D SLOT DIAGNOSTIC] decision={summary['decision']} "
+        f"train_rows={summary['train_rows']} "
+        f"dev_rows={summary['dev_rows']} "
+        f"output_dir={summary['output_dir']}"
+    )
+    if args.output_json is not None:
+        v5.write_report_json({"stage134_slot_diagnostic": summary}, args.output_json)
+    return summary
 
 def _positive_optional_int(value: int | None, flag_name: str) -> int | None:
     if value is None:
@@ -12375,6 +12478,10 @@ def main(argv: list[str] | None = None) -> int:
             f"predictions={preflight_report['output_jsonl']} "
             f"report={preflight_report['report_json']}"
         )
+        return 0
+
+    if args.stage134_slot_diagnostic_jsonl is not None:
+        run_stage134_slot_diagnostic_only(args=args, device=device)
         return 0
 
     records = v5.load_jsonl(args.data)
