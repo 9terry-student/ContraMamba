@@ -6137,6 +6137,24 @@ def build_parser() -> argparse.ArgumentParser:
         help="Max train records (for smoke testing)",
     )
     parser.add_argument(
+        "--train-batch-size",
+        type=int,
+        default=None,
+        help=(
+            "Optional normal training forward batch size. Default None preserves "
+            "the existing full-train forward behavior."
+        ),
+    )
+    parser.add_argument(
+        "--eval-batch-size",
+        type=int,
+        default=None,
+        help=(
+            "Optional normal train/dev eval forward batch size. Default None preserves "
+            "the existing full-split forward behavior."
+        ),
+    )
+    parser.add_argument(
         "--smoke",
         action="store_true",
         help="Smoke mode: tiny settings, small data",
@@ -8334,6 +8352,33 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--stage118-diagnostic-export-only",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage118: skip normal training and run only diagnostic export/sweep "
+            "from --stage118-diagnostic-model-checkpoint."
+        ),
+    )
+    parser.add_argument(
+        "--stage118-diagnostic-model-checkpoint",
+        type=Path,
+        default=None,
+        help=(
+            "Stage118: checkpoint path to load for --stage118-diagnostic-export-only. "
+            "Expected to contain model_state_dict or a raw model state_dict."
+        ),
+    )
+    parser.add_argument(
+        "--save-model-checkpoint",
+        type=Path,
+        default=None,
+        help=(
+            "Optional path to save the selected/final model state after normal training "
+            "for later Stage118 diagnostic export-only runs."
+        ),
+    )
+    parser.add_argument(
         "--stage126-preflight-export-only",
         action="store_true",
         default=False,
@@ -9485,6 +9530,175 @@ def _stage118_scalar_medians(rows: list[dict[str, Any]]) -> dict[str, float]:
     return medians
 
 
+
+def _positive_optional_int(value: int | None, flag_name: str) -> int | None:
+    if value is None:
+        return None
+    value = int(value)
+    if value < 1:
+        raise ValueError(f"{flag_name} must be >= 1, got {value}")
+    return value
+
+
+def _slice_tensor_dict(inputs: dict[str, torch.Tensor], start: int, end: int) -> dict[str, torch.Tensor]:
+    sliced: dict[str, torch.Tensor] = {}
+    for key, value in inputs.items():
+        if isinstance(value, torch.Tensor) and value.shape[:1] == inputs["input_ids"].shape[:1]:
+            sliced[key] = value[start:end]
+        else:
+            sliced[key] = value
+    return sliced
+
+
+def _concat_model_outputs(chunks: list[dict[str, Any]]) -> dict[str, Any]:
+    if not chunks:
+        return {}
+    result: dict[str, Any] = {}
+    for key in chunks[0]:
+        values = [chunk[key] for chunk in chunks if key in chunk]
+        if values and all(isinstance(value, torch.Tensor) for value in values):
+            if all(value.dim() > 0 for value in values):
+                result[key] = torch.cat(values, dim=0)
+            else:
+                result[key] = values[-1]
+        elif values:
+            result[key] = values[-1]
+    return result
+
+
+def _vnext_forward_maybe_batched(
+    model: nn.Module,
+    inputs: dict[str, torch.Tensor],
+    *,
+    temporal_mismatch_flags: torch.Tensor,
+    predicate_mismatch_flags: torch.Tensor,
+    temporal_adapter_final_penalty_scale: float = 0.0,
+    temporal_channel_gated_penalty_scale: float = 0.0,
+    batch_size: int | None = None,
+) -> dict[str, Any]:
+    n_rows = int(inputs["input_ids"].shape[0])
+    batch_size = _positive_optional_int(batch_size, "batch_size")
+    if batch_size is None or batch_size >= n_rows:
+        return model(
+            **_vnext_model_feature_inputs(inputs),
+            temporal_mismatch_flags=temporal_mismatch_flags,
+            predicate_mismatch_flags=predicate_mismatch_flags,
+            temporal_adapter_final_penalty_scale=temporal_adapter_final_penalty_scale,
+            temporal_channel_gated_penalty_scale=temporal_channel_gated_penalty_scale,
+        )
+    chunks: list[dict[str, Any]] = []
+    for start in range(0, n_rows, batch_size):
+        end = min(n_rows, start + batch_size)
+        chunk_inputs = _slice_tensor_dict(inputs, start, end)
+        chunks.append(
+            model(
+                **_vnext_model_feature_inputs(chunk_inputs),
+                temporal_mismatch_flags=temporal_mismatch_flags[start:end],
+                predicate_mismatch_flags=predicate_mismatch_flags[start:end],
+                temporal_adapter_final_penalty_scale=temporal_adapter_final_penalty_scale,
+                temporal_channel_gated_penalty_scale=temporal_channel_gated_penalty_scale,
+            )
+        )
+    return _concat_model_outputs(chunks)
+
+
+def _stage118_audit_fields(args: argparse.Namespace | None) -> dict[str, Any]:
+    if args is None:
+        return {}
+    return {
+        "train_batch_size": getattr(args, "train_batch_size", None),
+        "eval_batch_size": getattr(args, "eval_batch_size", None),
+        "stage118_diagnostic_batch_size": getattr(args, "stage118_diagnostic_batch_size", None),
+        "stage118_diagnostic_export_only": bool(
+            getattr(args, "stage118_diagnostic_export_only", False)
+        ),
+        "stage118_diagnostic_model_checkpoint": (
+            str(getattr(args, "stage118_diagnostic_model_checkpoint"))
+            if getattr(args, "stage118_diagnostic_model_checkpoint", None) is not None
+            else None
+        ),
+        "stage128_location_slot_guard_enabled": bool(
+            getattr(args, "stage128_enable_location_slot_guard", False)
+        ),
+        "stage128_location_slot_guard_mode": getattr(
+            args, "stage128_location_slot_guard_mode", "off"
+        ),
+    }
+
+
+def _load_stage118_checkpoint_state(checkpoint_path: Path) -> tuple[dict[str, torch.Tensor], dict[str, Any]]:
+    payload = torch.load(checkpoint_path, map_location="cpu")
+    metadata: dict[str, Any] = {}
+    if isinstance(payload, dict) and "model_state_dict" in payload:
+        state = payload["model_state_dict"]
+        metadata = dict(payload.get("metadata") or {})
+    elif isinstance(payload, dict) and all(isinstance(key, str) for key in payload.keys()):
+        state = payload
+    else:
+        raise ValueError(
+            f"Unsupported checkpoint format at {checkpoint_path}; expected model_state_dict "
+            "or a raw model state_dict."
+        )
+    if not isinstance(state, dict):
+        raise ValueError(f"Checkpoint {checkpoint_path} model_state_dict is not a dict")
+    return state, metadata
+
+
+def _validate_model_checkpoint_metadata(
+    metadata: dict[str, Any],
+    args: argparse.Namespace,
+    checkpoint_path: Path,
+) -> None:
+    if not metadata:
+        return
+    expected = {
+        "architecture": getattr(args, "architecture", None),
+        "backbone": getattr(args, "backbone", None),
+        "model_name": getattr(args, "model_name", None),
+        "vnext_router_mode": getattr(args, "vnext_router_mode", None),
+    }
+    mismatches = []
+    for key, current_value in expected.items():
+        saved_value = metadata.get(key)
+        if saved_value is not None and saved_value != current_value:
+            mismatches.append(f"{key}: checkpoint={saved_value!r} current={current_value!r}")
+    if mismatches:
+        raise ValueError(
+            f"Checkpoint {checkpoint_path} is not compatible with requested model config: "
+            + "; ".join(mismatches)
+        )
+
+def _save_model_checkpoint(
+    *,
+    model: nn.Module,
+    checkpoint_path: Path,
+    args: argparse.Namespace,
+    best_epoch: int | None,
+) -> None:
+    checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+    metadata = {
+        "architecture": getattr(args, "architecture", None),
+        "backbone": getattr(args, "backbone", None),
+        "model_name": getattr(args, "model_name", None),
+        "vnext_router_mode": getattr(args, "vnext_router_mode", None),
+        "vnext_evidence_interface": getattr(args, "vnext_evidence_interface", None),
+        "vnext_enable_segmented_dual_pass": getattr(
+            args, "vnext_enable_segmented_dual_pass", None
+        ),
+        "seed": getattr(args, "seed", None),
+        "best_epoch": best_epoch,
+    }
+    torch.save(
+        {
+            "model_state_dict": {
+                key: value.detach().cpu().clone()
+                for key, value in model.state_dict().items()
+            },
+            "metadata": metadata,
+        },
+        checkpoint_path,
+    )
+
 def _stage118_build_summary(
     *,
     diagnostic_name: str,
@@ -9493,6 +9707,7 @@ def _stage118_build_summary(
     n_input_rows: int,
     skip_reasons: dict[str, int],
     rows: list[dict[str, Any]],
+    args: argparse.Namespace | None = None,
 ) -> dict[str, Any]:
     labels = ("REFUTE", "NOT_ENTITLED", "SUPPORT")
     pred_counts = {label: 0 for label in labels}
@@ -9574,6 +9789,7 @@ def _stage118_build_summary(
         "scalar_medians_by_gold_label": scalar_medians_by_gold_label,
         "scalar_medians_by_bucket": scalar_medians_by_bucket,
         "decision": "STAGE118_GENERIC_DIAGNOSTIC_EVAL_COMPLETE",
+        **_stage118_audit_fields(args),
     }
 
 
@@ -9644,6 +9860,7 @@ def run_stage118_generic_diagnostic_eval(
         n_input_rows=n_input_rows,
         skip_reasons=skip_reasons,
         rows=exported_rows,
+        args=args,
     )
     write_json(summary_json, summary)
     return summary
@@ -9711,6 +9928,89 @@ def run_stage118_diagnostic_evidence_interface_sweep(
         "summaries": summaries,
     }
 
+
+def run_stage118_diagnostic_exports_for_ready_model(
+    *,
+    model: nn.Module,
+    args: argparse.Namespace,
+    parser: argparse.ArgumentParser,
+    report: dict[str, Any],
+    vocab: dict[str, int] | None,
+    tokenizer: Any | None,
+    max_length: int,
+    device: torch.device,
+) -> dict[str, Any]:
+    if args.stage118_diagnostic_jsonl is None:
+        parser.error("--stage118-diagnostic-export-only requires --stage118-diagnostic-jsonl")
+    model.eval()
+    _stage118_sweep_interfaces = args.stage118_diagnostic_evidence_interface_sweep_list
+    if _stage118_sweep_interfaces:
+        if args.stage118_diagnostic_evidence_interface != "same_as_vnext":
+            print(
+                "[STAGE118 GENERIC DIAGNOSTIC SWEEP] "
+                "--stage118-diagnostic-evidence-interface was also provided; "
+                "running only the deduplicated sweep interfaces. "
+                f"single_interface={args.stage118_diagnostic_evidence_interface} "
+                f"sweep_interfaces={_stage118_sweep_interfaces}"
+            )
+        _stage118_sweep_report = run_stage118_diagnostic_evidence_interface_sweep(
+            model=model,
+            input_jsonl=Path(args.stage118_diagnostic_jsonl),
+            output_dir=Path(args.stage118_diagnostic_sweep_output_dir),
+            diagnostic_name=args.stage118_diagnostic_name,
+            batch_size=args.stage118_diagnostic_batch_size,
+            sweep_interfaces=_stage118_sweep_interfaces,
+            args=args,
+            vocab=vocab,
+            tokenizer=tokenizer,
+            max_length=max_length,
+            device=device,
+        )
+        report["stage118_generic_diagnostic_evidence_interface_sweep"] = _stage118_sweep_report
+        print(
+            f"[STAGE118 GENERIC DIAGNOSTIC SWEEP] name={args.stage118_diagnostic_name} "
+            f"interfaces={_stage118_sweep_interfaces} "
+            f"manifest={_stage118_sweep_report['manifest_path']}"
+        )
+        for _interface, _summary in _stage118_sweep_report["summaries"].items():
+            print(
+                f"[STAGE118 GENERIC DIAGNOSTIC SWEEP] interface={_interface} "
+                f"valid={_summary['n_valid_rows']} "
+                f"skipped={_summary['n_skipped_rows']} "
+                f"acc={_summary['accuracy']:.4f} "
+                f"macro_f1={_summary['macro_f1']:.4f}"
+            )
+    else:
+        if args.stage118_diagnostic_output_jsonl is None:
+            parser.error(
+                "--stage118-diagnostic-jsonl requires --stage118-diagnostic-output-jsonl"
+            )
+        if args.stage118_diagnostic_summary_json is None:
+            parser.error(
+                "--stage118-diagnostic-jsonl requires --stage118-diagnostic-summary-json"
+            )
+        _stage118_summary = run_stage118_generic_diagnostic_eval(
+            model=model,
+            input_jsonl=Path(args.stage118_diagnostic_jsonl),
+            output_jsonl=Path(args.stage118_diagnostic_output_jsonl),
+            summary_json=Path(args.stage118_diagnostic_summary_json),
+            diagnostic_name=args.stage118_diagnostic_name,
+            batch_size=args.stage118_diagnostic_batch_size,
+            args=args,
+            vocab=vocab,
+            tokenizer=tokenizer,
+            max_length=max_length,
+            device=device,
+        )
+        report["stage118_generic_diagnostic_eval"] = _stage118_summary
+        print(
+            f"[STAGE118 GENERIC DIAGNOSTIC] name={args.stage118_diagnostic_name} "
+            f"valid={_stage118_summary['n_valid_rows']} "
+            f"skipped={_stage118_summary['n_skipped_rows']} "
+            f"acc={_stage118_summary['accuracy']:.4f} "
+            f"macro_f1={_stage118_summary['macro_f1']:.4f}"
+        )
+    return report
 
 
 _STAGE126_PREFLIGHT_REQUIRED_NON_NULL_FIELDS: tuple[str, ...] = (
@@ -11003,6 +11303,30 @@ def main(argv: list[str] | None = None) -> int:
                 "--stage118-diagnostic-sweep-output-dir"
             )
 
+    try:
+        args.train_batch_size = _positive_optional_int(
+            args.train_batch_size, "--train-batch-size"
+        )
+        args.eval_batch_size = _positive_optional_int(
+            args.eval_batch_size, "--eval-batch-size"
+        )
+        args.stage118_diagnostic_batch_size = _positive_optional_int(
+            args.stage118_diagnostic_batch_size, "--stage118-diagnostic-batch-size"
+        )
+    except ValueError as exc:
+        parser.error(str(exc))
+    if args.stage118_diagnostic_export_only:
+        if args.stage118_diagnostic_model_checkpoint is None:
+            parser.error(
+                "--stage118-diagnostic-export-only requires "
+                "--stage118-diagnostic-model-checkpoint"
+            )
+        if not Path(args.stage118_diagnostic_model_checkpoint).exists():
+            parser.error(
+                f"--stage118-diagnostic-model-checkpoint does not exist: "
+                f"{args.stage118_diagnostic_model_checkpoint}"
+            )
+
     # ---------------------------------------------------------------------------
     # Stage48: optionally load the Stage47-validated frozen recovery config
     # ---------------------------------------------------------------------------
@@ -11916,6 +12240,49 @@ def main(argv: list[str] | None = None) -> int:
 
     model = model.to(device)
 
+    if args.stage118_diagnostic_export_only:
+        checkpoint_state, checkpoint_metadata = _load_stage118_checkpoint_state(
+            Path(args.stage118_diagnostic_model_checkpoint)
+        )
+        _validate_model_checkpoint_metadata(
+            checkpoint_metadata, args, Path(args.stage118_diagnostic_model_checkpoint)
+        )
+        model.load_state_dict(checkpoint_state)
+        model = model.to(device)
+        report: dict[str, Any] = {
+            "configuration": {
+                "seed": args.seed,
+                "backbone": args.backbone,
+                "model_name": args.model_name if args.backbone == "mamba" else None,
+                "device": str(args.device),
+                "architecture": args.architecture,
+                "vnext_evidence_interface": args.vnext_evidence_interface,
+                "vnext_router_mode": getattr(args, "vnext_router_mode", None),
+                **_stage118_audit_fields(args),
+            },
+            "stage118_diagnostic_export_only": True,
+            "stage118_checkpoint_metadata": checkpoint_metadata,
+            "stage128_location_slot_guard_enabled": bool(
+                getattr(args, "stage128_enable_location_slot_guard", False)
+            ),
+            "stage128_location_slot_guard_mode": getattr(
+                args, "stage128_location_slot_guard_mode", "off"
+            ),
+        }
+        run_stage118_diagnostic_exports_for_ready_model(
+            model=model,
+            args=args,
+            parser=parser,
+            report=report,
+            vocab=vocab,
+            tokenizer=tokenizer,
+            max_length=max_length,
+            device=device,
+        )
+        print(json.dumps(report, indent=2, sort_keys=True))
+        if args.output_json is not None:
+            v5.write_report_json(report, args.output_json)
+        return 0
     # Stage26-C TODO: add a one-shot contract check for v7 before the training loop.
     # Call validate_v7_output_contract(output) after the first model forward to catch
     # missing keys early.  Not wired here to avoid importing v7 code on v6B runs.
@@ -12546,6 +12913,8 @@ def main(argv: list[str] | None = None) -> int:
         select_metric="final_macro_f1",
         capture_best_trainable_state=False,
         smoke_mode=False,
+        train_batch_size=None,
+        eval_batch_size=None,
         ce_class_weights=None,
         train_boundary_labels=None,
         train_boundary_mask=None,
@@ -12851,12 +13220,14 @@ def main(argv: list[str] | None = None) -> int:
             # CRITICAL: Pass flags to v6b model forward
             _ta_pen = ta_final_penalty_scale if use_temporal_residual_adapter and ta_final_penalty_scale > 0.0 else 0.0
             _tc_pen = tc_gated_penalty_scale if use_temporal_channel_gated_penalty and tc_gated_penalty_scale > 0.0 else 0.0
-            output = model(
-                **_vnext_model_feature_inputs(train_inputs),
+            output = _vnext_forward_maybe_batched(
+                model,
+                train_inputs,
                 temporal_mismatch_flags=train_temporal_flags,
                 predicate_mismatch_flags=train_predicate_flags,
                 temporal_adapter_final_penalty_scale=_ta_pen,
                 temporal_channel_gated_penalty_scale=_tc_pen,
+                batch_size=train_batch_size,
             )
 
             indices = v5.sample_indices(
@@ -13615,19 +13986,23 @@ def main(argv: list[str] | None = None) -> int:
             # Evaluate with flags
             model.eval()
             with torch.no_grad():
-                train_output = model(
-                    **train_inputs,
+                train_output = _vnext_forward_maybe_batched(
+                    model,
+                    train_inputs,
                     temporal_mismatch_flags=train_temporal_flags,
                     predicate_mismatch_flags=train_predicate_flags,
                     temporal_adapter_final_penalty_scale=_ta_pen,
                     temporal_channel_gated_penalty_scale=_tc_pen,
+                    batch_size=eval_batch_size,
                 )
-                dev_output = model(
-                    **dev_inputs,
+                dev_output = _vnext_forward_maybe_batched(
+                    model,
+                    dev_inputs,
                     temporal_mismatch_flags=dev_temporal_flags,
                     predicate_mismatch_flags=dev_predicate_flags,
                     temporal_adapter_final_penalty_scale=_ta_pen,
                     temporal_channel_gated_penalty_scale=_tc_pen,
+                    batch_size=eval_batch_size,
                 )
                 # Temporal diagnostic eval: separate forward passes on td train/dev records.
                 # Batches are kept separate from main train/dev; no classification CE here.
@@ -15711,6 +16086,8 @@ def main(argv: list[str] | None = None) -> int:
             train_source_labels=_train_source_labels,
             select_metric=args.select_metric,
             smoke_mode=args.smoke,
+            train_batch_size=args.train_batch_size,
+            eval_batch_size=args.eval_batch_size,
             ce_class_weights=ce_class_weights,
             train_boundary_labels=train_boundary_labels if args.use_boundary_loss else None,
             train_boundary_mask=train_boundary_mask if args.use_boundary_loss else None,
@@ -15907,6 +16284,7 @@ def main(argv: list[str] | None = None) -> int:
             "temporal_flag_count": temporal_flag_count,
             "predicate_flag_count": predicate_flag_count,
             "final_logits_used": True,
+            **_stage118_audit_fields(args),
             "time_swap_used": False,
             "pairwise_checks_skipped": args.smoke,
             "pairwise_checks_skip_reason": "incomplete smoke subset" if args.smoke else None,
@@ -16516,6 +16894,19 @@ def main(argv: list[str] | None = None) -> int:
     else:
         for _rpt in reports.values():
             _rpt.pop("_best_state", None)
+
+    if args.save_model_checkpoint is not None:
+        if len(reports) != 1:
+            parser.error("--save-model-checkpoint requires a single non-sweep run")
+        if _ood_best_state is not None:
+            model.load_state_dict({k: v.to(device) for k, v in _ood_best_state.items()})
+        _save_model_checkpoint(
+            model=model,
+            checkpoint_path=Path(args.save_model_checkpoint),
+            args=args,
+            best_epoch=_ood_best_epoch,
+        )
+        report["saved_model_checkpoint"] = str(args.save_model_checkpoint)
 
     if args.stage115_clean_dev_scalar_output_jsonl is not None:
         if len(reports) != 1:
