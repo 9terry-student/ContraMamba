@@ -6155,6 +6155,24 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--gradient-accumulation-steps",
+        type=int,
+        default=1,
+        help=(
+            "Stage133-D: accumulate gradients across this many training mini-batches "
+            "before optimizer.step(). Default 1 preserves existing behavior."
+        ),
+    )
+    parser.add_argument(
+        "--fp16",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage133-D: enable CUDA fp16 AMP for training/eval forwards. "
+            "Requires --device cuda or another CUDA device."
+        ),
+    )
+    parser.add_argument(
         "--smoke",
         action="store_true",
         help="Smoke mode: tiny settings, small data",
@@ -9315,6 +9333,7 @@ def _stage43_prediction_records_from_model(
     batch_size = max(1, int(batch_size))
     exported: list[dict] = []
     model.eval()
+    amp_enabled = _amp_enabled(args, device)
     with torch.no_grad():
         for start in range(0, len(records), batch_size):
             end = min(len(records), start + batch_size)
@@ -9325,11 +9344,12 @@ def _stage43_prediction_records_from_model(
             _assert_model_accepts_feature_kwargs(
                 model, feature_inputs, context="Stage118/Stage43 diagnostic export"
             )
-            output = model(
-                **feature_inputs,
-                temporal_mismatch_flags=temporal_flags,
-                predicate_mismatch_flags=predicate_flags,
-            )
+            with _cuda_amp_autocast(amp_enabled):
+                output = model(
+                    **feature_inputs,
+                    temporal_mismatch_flags=temporal_flags,
+                    predicate_mismatch_flags=predicate_flags,
+                )
             exported.extend(
                 prediction_records_v6b(
                     batch_records,
@@ -9540,6 +9560,35 @@ def _positive_optional_int(value: int | None, flag_name: str) -> int | None:
     return value
 
 
+def _effective_train_batch_size(train_batch_size: int | None, gradient_accumulation_steps: int) -> int | None:
+    if train_batch_size is None:
+        return None
+    return int(train_batch_size) * int(gradient_accumulation_steps)
+
+
+def _amp_enabled(args: argparse.Namespace | None, device: torch.device | None = None) -> bool:
+    if args is None or not bool(getattr(args, "fp16", False)):
+        return False
+    if device is None:
+        return False
+    return device.type == "cuda"
+
+
+def _cuda_amp_autocast(enabled: bool):
+    if hasattr(torch, "amp") and hasattr(torch.amp, "autocast"):
+        return torch.amp.autocast("cuda", dtype=torch.float16, enabled=enabled)
+    return torch.cuda.amp.autocast(enabled=enabled)
+
+
+def _make_cuda_grad_scaler(enabled: bool):
+    if hasattr(torch, "amp") and hasattr(torch.amp, "GradScaler"):
+        try:
+            return torch.amp.GradScaler("cuda", enabled=enabled)
+        except TypeError:
+            return torch.amp.GradScaler(enabled=enabled)
+    return torch.cuda.amp.GradScaler(enabled=enabled)
+
+
 def _slice_tensor_dict(inputs: dict[str, torch.Tensor], start: int, end: int) -> dict[str, torch.Tensor]:
     sliced: dict[str, torch.Tensor] = {}
     for key, value in inputs.items():
@@ -9575,30 +9624,33 @@ def _vnext_forward_maybe_batched(
     temporal_adapter_final_penalty_scale: float = 0.0,
     temporal_channel_gated_penalty_scale: float = 0.0,
     batch_size: int | None = None,
+    amp_enabled: bool = False,
 ) -> dict[str, Any]:
     n_rows = int(inputs["input_ids"].shape[0])
     batch_size = _positive_optional_int(batch_size, "batch_size")
     if batch_size is None or batch_size >= n_rows:
-        return model(
-            **_vnext_model_feature_inputs(inputs),
-            temporal_mismatch_flags=temporal_mismatch_flags,
-            predicate_mismatch_flags=predicate_mismatch_flags,
-            temporal_adapter_final_penalty_scale=temporal_adapter_final_penalty_scale,
-            temporal_channel_gated_penalty_scale=temporal_channel_gated_penalty_scale,
-        )
+        with _cuda_amp_autocast(amp_enabled):
+            return model(
+                **_vnext_model_feature_inputs(inputs),
+                temporal_mismatch_flags=temporal_mismatch_flags,
+                predicate_mismatch_flags=predicate_mismatch_flags,
+                temporal_adapter_final_penalty_scale=temporal_adapter_final_penalty_scale,
+                temporal_channel_gated_penalty_scale=temporal_channel_gated_penalty_scale,
+            )
     chunks: list[dict[str, Any]] = []
     for start in range(0, n_rows, batch_size):
         end = min(n_rows, start + batch_size)
         chunk_inputs = _slice_tensor_dict(inputs, start, end)
-        chunks.append(
-            model(
-                **_vnext_model_feature_inputs(chunk_inputs),
-                temporal_mismatch_flags=temporal_mismatch_flags[start:end],
-                predicate_mismatch_flags=predicate_mismatch_flags[start:end],
-                temporal_adapter_final_penalty_scale=temporal_adapter_final_penalty_scale,
-                temporal_channel_gated_penalty_scale=temporal_channel_gated_penalty_scale,
+        with _cuda_amp_autocast(amp_enabled):
+            chunks.append(
+                model(
+                    **_vnext_model_feature_inputs(chunk_inputs),
+                    temporal_mismatch_flags=temporal_mismatch_flags[start:end],
+                    predicate_mismatch_flags=predicate_mismatch_flags[start:end],
+                    temporal_adapter_final_penalty_scale=temporal_adapter_final_penalty_scale,
+                    temporal_channel_gated_penalty_scale=temporal_channel_gated_penalty_scale,
+                )
             )
-        )
     return _concat_model_outputs(chunks)
 
 
@@ -9608,6 +9660,18 @@ def _stage118_audit_fields(args: argparse.Namespace | None) -> dict[str, Any]:
     return {
         "train_batch_size": getattr(args, "train_batch_size", None),
         "eval_batch_size": getattr(args, "eval_batch_size", None),
+        "gradient_accumulation_steps": getattr(args, "gradient_accumulation_steps", 1),
+        "effective_train_batch_size": _effective_train_batch_size(
+            getattr(args, "train_batch_size", None),
+            getattr(args, "gradient_accumulation_steps", 1),
+        ),
+        "fp16": bool(getattr(args, "fp16", False)),
+        "save_model_checkpoint": (
+            str(getattr(args, "save_model_checkpoint"))
+            if getattr(args, "save_model_checkpoint", None) is not None
+            else None
+        ),
+        "saved_model_checkpoint": None,
         "stage118_diagnostic_batch_size": getattr(args, "stage118_diagnostic_batch_size", None),
         "stage118_diagnostic_export_only": bool(
             getattr(args, "stage118_diagnostic_export_only", False)
@@ -9674,6 +9738,7 @@ def _save_model_checkpoint(
     checkpoint_path: Path,
     args: argparse.Namespace,
     best_epoch: int | None,
+    best_dev_metrics: dict[str, Any] | None = None,
 ) -> None:
     checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
     metadata = {
@@ -9685,8 +9750,22 @@ def _save_model_checkpoint(
         "vnext_enable_segmented_dual_pass": getattr(
             args, "vnext_enable_segmented_dual_pass", None
         ),
+        "vnext_segmented_context_role": getattr(
+            args, "vnext_segmented_context_role", None
+        ),
+        "max_length": getattr(args, "max_length", None),
+        "train_batch_size": getattr(args, "train_batch_size", None),
+        "eval_batch_size": getattr(args, "eval_batch_size", None),
+        "gradient_accumulation_steps": getattr(args, "gradient_accumulation_steps", 1),
+        "effective_train_batch_size": _effective_train_batch_size(
+            getattr(args, "train_batch_size", None),
+            getattr(args, "gradient_accumulation_steps", 1),
+        ),
+        "fp16": bool(getattr(args, "fp16", False)),
         "seed": getattr(args, "seed", None),
         "best_epoch": best_epoch,
+        "selected_epoch": best_epoch,
+        "best_dev_metrics": best_dev_metrics,
     }
     torch.save(
         {
@@ -11313,6 +11392,9 @@ def main(argv: list[str] | None = None) -> int:
         args.stage118_diagnostic_batch_size = _positive_optional_int(
             args.stage118_diagnostic_batch_size, "--stage118-diagnostic-batch-size"
         )
+        args.gradient_accumulation_steps = _positive_optional_int(
+            args.gradient_accumulation_steps, "--gradient-accumulation-steps"
+        )
     except ValueError as exc:
         parser.error(str(exc))
     if args.stage118_diagnostic_export_only:
@@ -11493,6 +11575,10 @@ def main(argv: list[str] | None = None) -> int:
         torch.cuda.manual_seed_all(args.seed)
     torch.set_num_threads(1)
     device = torch.device(args.device)
+    if args.fp16 and device.type != "cuda":
+        parser.error("--fp16 requires a CUDA device, e.g. --device cuda")
+    if args.fp16 and not torch.cuda.is_available():
+        parser.error("--fp16 was requested but CUDA is not available")
 
     # Smoke mode overrides
     if args.smoke:
@@ -12915,6 +13001,8 @@ def main(argv: list[str] | None = None) -> int:
         smoke_mode=False,
         train_batch_size=None,
         eval_batch_size=None,
+        gradient_accumulation_steps=1,
+        fp16=False,
         ce_class_weights=None,
         train_boundary_labels=None,
         train_boundary_mask=None,
@@ -13077,6 +13165,9 @@ def main(argv: list[str] | None = None) -> int:
                 "it cannot fire without the PE head active."
             )
         optimizer = v5.build_optimizer(model, lr, head_lr, encoder_lr)
+        gradient_accumulation_steps = int(gradient_accumulation_steps)
+        amp_enabled = bool(fp16 and device.type == "cuda")
+        grad_scaler = _make_cuda_grad_scaler(amp_enabled)
         sampling_generator = torch.Generator().manual_seed(seed)
         best_epoch = 0
         best_score = float("-inf")
@@ -13228,6 +13319,7 @@ def main(argv: list[str] | None = None) -> int:
                 temporal_adapter_final_penalty_scale=_ta_pen,
                 temporal_channel_gated_penalty_scale=_tc_pen,
                 batch_size=train_batch_size,
+                amp_enabled=amp_enabled,
             )
 
             indices = v5.sample_indices(
@@ -13979,9 +14071,19 @@ def main(argv: list[str] | None = None) -> int:
             _audit_epoch_count += 1
             #  end audit accumulation 
 
-            total_loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
-            optimizer.step()
+            loss_for_backward = total_loss / gradient_accumulation_steps
+            if amp_enabled:
+                grad_scaler.scale(loss_for_backward).backward()
+                grad_scaler.unscale_(optimizer)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
+                grad_scaler.step(optimizer)
+                grad_scaler.update()
+                optimizer.zero_grad()
+            else:
+                loss_for_backward.backward()
+                torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
+                optimizer.step()
+                optimizer.zero_grad()
 
             # Evaluate with flags
             model.eval()
@@ -13994,6 +14096,7 @@ def main(argv: list[str] | None = None) -> int:
                     temporal_adapter_final_penalty_scale=_ta_pen,
                     temporal_channel_gated_penalty_scale=_tc_pen,
                     batch_size=eval_batch_size,
+                    amp_enabled=amp_enabled,
                 )
                 dev_output = _vnext_forward_maybe_batched(
                     model,
@@ -14003,6 +14106,7 @@ def main(argv: list[str] | None = None) -> int:
                     temporal_adapter_final_penalty_scale=_ta_pen,
                     temporal_channel_gated_penalty_scale=_tc_pen,
                     batch_size=eval_batch_size,
+                    amp_enabled=amp_enabled,
                 )
                 # Temporal diagnostic eval: separate forward passes on td train/dev records.
                 # Batches are kept separate from main train/dev; no classification CE here.
@@ -16088,6 +16192,8 @@ def main(argv: list[str] | None = None) -> int:
             smoke_mode=args.smoke,
             train_batch_size=args.train_batch_size,
             eval_batch_size=args.eval_batch_size,
+            gradient_accumulation_steps=args.gradient_accumulation_steps,
+            fp16=args.fp16,
             ce_class_weights=ce_class_weights,
             train_boundary_labels=train_boundary_labels if args.use_boundary_loss else None,
             train_boundary_mask=train_boundary_mask if args.use_boundary_loss else None,
@@ -16905,8 +17011,10 @@ def main(argv: list[str] | None = None) -> int:
             checkpoint_path=Path(args.save_model_checkpoint),
             args=args,
             best_epoch=_ood_best_epoch,
+            best_dev_metrics=next(iter(reports.values())).get("best_dev_metrics"),
         )
         report["saved_model_checkpoint"] = str(args.save_model_checkpoint)
+        report["configuration"]["saved_model_checkpoint"] = str(args.save_model_checkpoint)
 
     if args.stage115_clean_dev_scalar_output_jsonl is not None:
         if len(reports) != 1:
