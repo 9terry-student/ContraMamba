@@ -643,6 +643,8 @@ def build_vnext_model(
     vnext_context_risk_cap_alpha: float = 0.0,
     vnext_context_risk_threshold: float = 0.5,
     vnext_context_risk_source: str = "context_not_entitled_prob",
+    vnext_use_slot_mismatch_head: bool = False,
+    vnext_slot_mismatch_detach_input: bool = True,
 ) -> ContraMambaVNextMinimal:
     """Build a ContraMambaVNextMinimal with dummy backbone for plumbing validation."""
     backbone = v5.ControlledDummyBackbone(vocab_size, hidden_size, max_length)
@@ -659,6 +661,8 @@ def build_vnext_model(
         "vnext_context_risk_cap_alpha": vnext_context_risk_cap_alpha,
         "vnext_context_risk_threshold": vnext_context_risk_threshold,
         "vnext_context_risk_source": vnext_context_risk_source,
+        "vnext_use_slot_mismatch_head": vnext_use_slot_mismatch_head,
+        "vnext_slot_mismatch_detach_input": vnext_slot_mismatch_detach_input,
     })
 
 
@@ -672,6 +676,8 @@ def build_vnext_mamba_model(
     vnext_context_risk_cap_alpha: float = 0.0,
     vnext_context_risk_threshold: float = 0.5,
     vnext_context_risk_source: str = "context_not_entitled_prob",
+    vnext_use_slot_mismatch_head: bool = False,
+    vnext_slot_mismatch_detach_input: bool = True,
 ) -> ContraMambaVNextMinimal:
     """Build a ContraMambaVNextMinimal with real Mamba backbone."""
     model = _construct_vnext_minimal_with_aligned_kwargs({
@@ -688,6 +694,8 @@ def build_vnext_mamba_model(
         "vnext_context_risk_cap_alpha": vnext_context_risk_cap_alpha,
         "vnext_context_risk_threshold": vnext_context_risk_threshold,
         "vnext_context_risk_source": vnext_context_risk_source,
+        "vnext_use_slot_mismatch_head": vnext_use_slot_mismatch_head,
+        "vnext_slot_mismatch_detach_input": vnext_slot_mismatch_detach_input,
     })
     for parameter in model.mamba.parameters():
         parameter.requires_grad = not freeze_encoder
@@ -1088,6 +1096,25 @@ _PRES_ENT_NEGATIVE: frozenset = frozenset({
     "entity_swap", "event_swap", "location_swap", "role_swap", "title_name_swap",
 })
 
+# Stage134-A: model-internal slot mismatch diagnostic label mapping.
+# Stage133 case types take priority when present; otherwise controlled intervention_type
+# provides clean approximate labels. Predicate/sufficiency/noise/time cases are masked.
+_SLOT_MISMATCH_STAGE133_POSITIVE: frozenset = frozenset({
+    "critical_slot_mismatch", "critical_slot_missing",
+})
+_SLOT_MISMATCH_STAGE133_NEGATIVE: frozenset = frozenset({
+    "support_match", "explicit_negation_refute",
+})
+_SLOT_MISMATCH_INTERVENTION_POSITIVE: frozenset = frozenset({
+    "entity_swap", "event_swap", "location_swap", "role_swap", "title_name_swap",
+})
+_SLOT_MISMATCH_INTERVENTION_NEGATIVE: frozenset = frozenset({
+    "none", "paraphrase", "polarity_flip",
+})
+_SLOT_MISMATCH_INTERVENTION_EXCLUDED: frozenset = frozenset({
+    "predicate_swap", "evidence_deletion", "evidence_truncation",
+    "irrelevant_evidence", "time_swap",
+})
 # Temporal diagnostic label mapping
 # Loaded from a SEPARATE temporal diagnostic JSONL built by
 #   scripts/make_temporal_diagnostic_from_controlled.py from controlled_v5_v3.jsonl.
@@ -1720,6 +1747,71 @@ def encode_preservation_entitlement_labels(
     )
 
 
+def derive_slot_mismatch_target(record: dict[str, Any]) -> tuple[int, bool]:
+    """Derive Stage134 slot mismatch target and valid mask for one record."""
+    case_type = record.get("stage133_case_type")
+    if case_type is not None:
+        case_type_s = str(case_type)
+        if case_type_s in _SLOT_MISMATCH_STAGE133_POSITIVE:
+            return 1, True
+        if case_type_s in _SLOT_MISMATCH_STAGE133_NEGATIVE:
+            return 0, True
+        return 0, False
+
+    intervention_type = str(record.get("intervention_type") or "")
+    if intervention_type in _SLOT_MISMATCH_INTERVENTION_POSITIVE:
+        return 1, True
+    if intervention_type in _SLOT_MISMATCH_INTERVENTION_NEGATIVE:
+        return 0, True
+    return 0, False
+
+
+def encode_slot_mismatch_labels(
+    records: list[dict],
+    device: torch.device,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Derive Stage134 slot mismatch labels from Stage133 or controlled fields.
+
+    Returns (labels, mask), both shape [B]. BCE loss is computed only on mask==1.
+    """
+    labels: list[int] = []
+    mask: list[int] = []
+    for record in records:
+        label, valid = derive_slot_mismatch_target(record)
+        labels.append(label)
+        mask.append(1 if valid else 0)
+    return (
+        torch.tensor(labels, dtype=torch.float32, device=device),
+        torch.tensor(mask, dtype=torch.bool, device=device),
+    )
+
+
+def slot_mismatch_target_counts(
+    labels: torch.Tensor,
+    mask: torch.Tensor,
+) -> dict[str, int]:
+    active = mask.bool()
+    positive = int(labels[active].sum().item()) if torch.any(active) else 0
+    valid = int(active.sum().item())
+    total = int(mask.numel())
+    return {
+        "slot_mismatch_target_positive_count": positive,
+        "slot_mismatch_target_negative_count": valid - positive,
+        "slot_mismatch_target_ignored_count": total - valid,
+    }
+
+
+def annotate_slot_mismatch_targets(
+    records: list[dict],
+    labels: torch.Tensor,
+    mask: torch.Tensor,
+) -> None:
+    labels_cpu = labels.detach().cpu()
+    mask_cpu = mask.detach().cpu().bool()
+    for record, label, valid in zip(records, labels_cpu.tolist(), mask_cpu.tolist()):
+        record["slot_mismatch_target"] = int(label) if valid else None
+        record["slot_mismatch_target_valid"] = bool(valid)
+
 def compute_preservation_entitlement_metrics(
     output: dict[str, Any],
     pe_labels: "torch.Tensor | None",
@@ -2197,6 +2289,8 @@ _S28E_AUX_LABEL_KEYS: tuple[str, ...] = (
     "sufficiency_label",
     "polarity_label",
     "primary_failure_type",
+    "slot_mismatch_target",
+    "slot_mismatch_target_valid",
 )
 
 _S28E_RAW_RECORD_KEYS: tuple[str, ...] = (
@@ -4526,6 +4620,8 @@ _STAGE113_VNEXT_SCALAR_FIELDS: tuple[str, ...] = (
     "polarity_margin",
     "positive_energy",
     "negative_energy",
+    "slot_mismatch_logit",
+    "slot_mismatch_prob",
 )
 
 _STAGE113_VNEXT_METADATA_FIELDS: tuple[str, ...] = (
@@ -5585,6 +5681,10 @@ def prediction_records_v6b(
             #  Shallow raw record snapshot 
             "raw_record": {k: record[k] for k in _S28E_RAW_RECORD_KEYS if k in record},
         }
+        if args is not None and getattr(args, "vnext_use_slot_mismatch_head", False):
+            _slot_target, _slot_valid = derive_slot_mismatch_target(record)
+            item["slot_mismatch_target"] = int(_slot_target) if _slot_valid else None
+            item["slot_mismatch_target_valid"] = bool(_slot_valid)
         for metadata_key in _S28E_PRESERVED_METADATA_KEYS:
             if metadata_key in record:
                 item[metadata_key] = record[metadata_key]
@@ -6886,6 +6986,48 @@ def build_parser() -> argparse.ArgumentParser:
             "Only used when --architecture vnext_minimal."
         ),
     )
+    parser.add_argument(
+        "--vnext-use-slot-mismatch-head",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage134-A: enable the vNext minimal slot mismatch diagnostic head. "
+            "The head reads sufficiency_repr and exports slot_mismatch_logit/prob. "
+            "It does not modify output['logits'] or final predictions. Default off."
+        ),
+    )
+    parser.add_argument(
+        "--vnext-slot-mismatch-loss-weight",
+        type=float,
+        default=0.0,
+        help=(
+            "Stage134-A: weight for masked BCE on slot_mismatch_logit. "
+            "Applied only with --vnext-use-slot-mismatch-head. Default 0.0."
+        ),
+    )
+    parser.add_argument(
+        "--vnext-slot-mismatch-pos-weight",
+        type=float,
+        default=1.0,
+        help="Stage134-A: positive class pos_weight for slot mismatch BCE. Default 1.0.",
+    )
+    parser.add_argument(
+        "--vnext-slot-mismatch-detach-input",
+        action="store_true",
+        default=True,
+        dest="vnext_slot_mismatch_detach_input",
+        help=(
+            "Detach sufficiency_repr before the slot mismatch diagnostic head "
+            "(default: true)."
+        ),
+    )
+    parser.add_argument(
+        "--no-vnext-slot-mismatch-detach-input",
+        action="store_false",
+        dest="vnext_slot_mismatch_detach_input",
+        help="Allow slot mismatch BCE gradients to flow into sufficiency_repr.",
+    )
+
     parser.add_argument(
         "--v7-disable-frame-channel",
         action="store_true",
@@ -9527,6 +9669,9 @@ def _stage118_prediction_rows(
         for key in _STAGE113_VNEXT_EXPORT_FIELDS:
             if key in pred:
                 row[key] = pred[key]
+        for key in ("slot_mismatch_target", "slot_mismatch_target_valid"):
+            if key in pred:
+                row[key] = pred[key]
         for key in _STAGE123_VNEXT_EVIDENCE_EXPORT_FIELDS:
             if key in pred:
                 row[key] = pred[key]
@@ -9681,6 +9826,18 @@ def _stage118_audit_fields(args: argparse.Namespace | None) -> dict[str, Any]:
             if getattr(args, "stage118_diagnostic_model_checkpoint", None) is not None
             else None
         ),
+        "vnext_use_slot_mismatch_head": bool(
+            getattr(args, "vnext_use_slot_mismatch_head", False)
+        ),
+        "vnext_slot_mismatch_loss_weight": getattr(
+            args, "vnext_slot_mismatch_loss_weight", 0.0
+        ),
+        "vnext_slot_mismatch_pos_weight": getattr(
+            args, "vnext_slot_mismatch_pos_weight", 1.0
+        ),
+        "vnext_slot_mismatch_detach_input": bool(
+            getattr(args, "vnext_slot_mismatch_detach_input", True)
+        ),
         "stage128_location_slot_guard_enabled": bool(
             getattr(args, "stage128_enable_location_slot_guard", False)
         ),
@@ -9720,6 +9877,8 @@ def _validate_model_checkpoint_metadata(
         "backbone": getattr(args, "backbone", None),
         "model_name": getattr(args, "model_name", None),
         "vnext_router_mode": getattr(args, "vnext_router_mode", None),
+        "vnext_use_slot_mismatch_head": getattr(args, "vnext_use_slot_mismatch_head", None),
+        "vnext_slot_mismatch_detach_input": getattr(args, "vnext_slot_mismatch_detach_input", None),
     }
     mismatches = []
     for key, current_value in expected.items():
@@ -9747,6 +9906,10 @@ def _save_model_checkpoint(
         "model_name": getattr(args, "model_name", None),
         "vnext_router_mode": getattr(args, "vnext_router_mode", None),
         "vnext_evidence_interface": getattr(args, "vnext_evidence_interface", None),
+        "vnext_use_slot_mismatch_head": getattr(args, "vnext_use_slot_mismatch_head", None),
+        "vnext_slot_mismatch_detach_input": getattr(args, "vnext_slot_mismatch_detach_input", None),
+        "vnext_slot_mismatch_loss_weight": getattr(args, "vnext_slot_mismatch_loss_weight", None),
+        "vnext_slot_mismatch_pos_weight": getattr(args, "vnext_slot_mismatch_pos_weight", None),
         "vnext_enable_segmented_dual_pass": getattr(
             args, "vnext_enable_segmented_dual_pass", None
         ),
@@ -9848,6 +10011,16 @@ def _stage118_build_summary(
         for bucket, bucket_rows in buckets.items()
     }
 
+    slot_target_valid_rows = [
+        row for row in rows if row.get("slot_mismatch_target_valid") is True
+    ]
+    slot_target_positive_count = sum(
+        1 for row in slot_target_valid_rows if row.get("slot_mismatch_target") == 1
+    )
+    slot_target_negative_count = sum(
+        1 for row in slot_target_valid_rows if row.get("slot_mismatch_target") == 0
+    )
+    slot_target_ignored_count = len(rows) - len(slot_target_valid_rows)
     return {
         "stage": "Stage118",
         "diagnostic_name": diagnostic_name,
@@ -9867,6 +10040,9 @@ def _stage118_build_summary(
         "polarity_error_total": int(len(buckets["SUPPORT_to_REFUTE"]) + len(buckets["REFUTE_to_SUPPORT"])),
         "scalar_medians_by_gold_label": scalar_medians_by_gold_label,
         "scalar_medians_by_bucket": scalar_medians_by_bucket,
+        "slot_mismatch_target_positive_count": int(slot_target_positive_count),
+        "slot_mismatch_target_negative_count": int(slot_target_negative_count),
+        "slot_mismatch_target_ignored_count": int(slot_target_ignored_count),
         "decision": "STAGE118_GENERIC_DIAGNOSTIC_EVAL_COMPLETE",
         **_stage118_audit_fields(args),
     }
@@ -10231,6 +10407,8 @@ def run_stage126_preflight_export_only(
             vnext_context_risk_cap_alpha=args.vnext_context_risk_cap_alpha,
             vnext_context_risk_threshold=args.vnext_context_risk_threshold,
             vnext_context_risk_source=args.vnext_context_risk_source,
+            vnext_use_slot_mismatch_head=args.vnext_use_slot_mismatch_head,
+            vnext_slot_mismatch_detach_input=args.vnext_slot_mismatch_detach_input,
         )
     else:
         from transformers import AutoTokenizer
@@ -10250,6 +10428,8 @@ def run_stage126_preflight_export_only(
             vnext_context_risk_cap_alpha=args.vnext_context_risk_cap_alpha,
             vnext_context_risk_threshold=args.vnext_context_risk_threshold,
             vnext_context_risk_source=args.vnext_context_risk_source,
+            vnext_use_slot_mismatch_head=args.vnext_use_slot_mismatch_head,
+            vnext_slot_mismatch_detach_input=args.vnext_slot_mismatch_detach_input,
         )
     model.to(device)
     model.eval()
@@ -11397,6 +11577,15 @@ def main(argv: list[str] | None = None) -> int:
         )
     except ValueError as exc:
         parser.error(str(exc))
+    if args.vnext_use_slot_mismatch_head and args.architecture != "vnext_minimal":
+        parser.error(
+            "--vnext-use-slot-mismatch-head requires --architecture vnext_minimal"
+        )
+    if args.vnext_slot_mismatch_loss_weight > 0.0 and not args.vnext_use_slot_mismatch_head:
+        parser.error(
+            "--vnext-slot-mismatch-loss-weight > 0 requires "
+            "--vnext-use-slot-mismatch-head"
+        )
     if args.stage118_diagnostic_export_only:
         if args.stage118_diagnostic_model_checkpoint is None:
             parser.error(
@@ -12152,6 +12341,8 @@ def main(argv: list[str] | None = None) -> int:
                 vnext_context_risk_cap_alpha=args.vnext_context_risk_cap_alpha,
                 vnext_context_risk_threshold=args.vnext_context_risk_threshold,
                 vnext_context_risk_source=args.vnext_context_risk_source,
+                vnext_use_slot_mismatch_head=args.vnext_use_slot_mismatch_head,
+                vnext_slot_mismatch_detach_input=args.vnext_slot_mismatch_detach_input,
             )
         else:
             model = build_mamba_model(
@@ -12272,6 +12463,8 @@ def main(argv: list[str] | None = None) -> int:
                 vnext_context_risk_cap_alpha=args.vnext_context_risk_cap_alpha,
                 vnext_context_risk_threshold=args.vnext_context_risk_threshold,
                 vnext_context_risk_source=args.vnext_context_risk_source,
+                vnext_use_slot_mismatch_head=args.vnext_use_slot_mismatch_head,
+                vnext_slot_mismatch_detach_input=args.vnext_slot_mismatch_detach_input,
             )
         else:
             model = build_model(
@@ -12348,6 +12541,18 @@ def main(argv: list[str] | None = None) -> int:
             },
             "stage118_diagnostic_export_only": True,
             "stage118_checkpoint_metadata": checkpoint_metadata,
+            "vnext_use_slot_mismatch_head": bool(
+                getattr(args, "vnext_use_slot_mismatch_head", False)
+            ),
+            "vnext_slot_mismatch_loss_weight": getattr(
+                args, "vnext_slot_mismatch_loss_weight", 0.0
+            ),
+            "vnext_slot_mismatch_pos_weight": getattr(
+                args, "vnext_slot_mismatch_pos_weight", 1.0
+            ),
+            "vnext_slot_mismatch_detach_input": bool(
+                getattr(args, "vnext_slot_mismatch_detach_input", True)
+            ),
             "stage128_location_slot_guard_enabled": bool(
                 getattr(args, "stage128_enable_location_slot_guard", False)
             ),
@@ -12454,6 +12659,34 @@ def main(argv: list[str] | None = None) -> int:
             f" train_pos={_train_pe_pos_only}"
         )
 
+    train_slot_mismatch_labels, train_slot_mismatch_mask = encode_slot_mismatch_labels(
+        train_records, device
+    )
+    dev_slot_mismatch_labels, dev_slot_mismatch_mask = encode_slot_mismatch_labels(
+        dev_records, device
+    )
+    _slot_mismatch_train_counts = slot_mismatch_target_counts(
+        train_slot_mismatch_labels, train_slot_mismatch_mask
+    )
+    _slot_mismatch_dev_counts = slot_mismatch_target_counts(
+        dev_slot_mismatch_labels, dev_slot_mismatch_mask
+    )
+    if args.vnext_use_slot_mismatch_head:
+        annotate_slot_mismatch_targets(
+            train_records, train_slot_mismatch_labels, train_slot_mismatch_mask
+        )
+        annotate_slot_mismatch_targets(
+            dev_records, dev_slot_mismatch_labels, dev_slot_mismatch_mask
+        )
+        print(
+            f"[slot_mismatch_head] enabled "
+            f"weight={args.vnext_slot_mismatch_loss_weight} "
+            f"pos_weight={args.vnext_slot_mismatch_pos_weight} "
+            f"detach_input={args.vnext_slot_mismatch_detach_input} "
+            f"train_pos={_slot_mismatch_train_counts['slot_mismatch_target_positive_count']} "
+            f"train_neg={_slot_mismatch_train_counts['slot_mismatch_target_negative_count']} "
+            f"train_ignored={_slot_mismatch_train_counts['slot_mismatch_target_ignored_count']}"
+        )
     # Temporal diagnostic data loading ??separate dataset, never mixed into main train/dev.
     # Records may include time_swap; they must not be part of the main classification CE.
     _td_train_records: list[dict] = []
@@ -13034,6 +13267,12 @@ def main(argv: list[str] | None = None) -> int:
         dev_pe_mask=None,
         pe_loss_weight=0.0,
         pe_loss_pos_weight=1.0,
+        train_slot_mismatch_labels=None,
+        train_slot_mismatch_mask=None,
+        dev_slot_mismatch_labels=None,
+        dev_slot_mismatch_mask=None,
+        slot_mismatch_loss_weight=0.0,
+        slot_mismatch_loss_pos_weight=1.0,
         # Temporal diagnostic head: separate batch forward pass (time_swap not in main data)
         td_train_inputs=None,
         td_dev_inputs=None,
@@ -13501,6 +13740,29 @@ def main(argv: list[str] | None = None) -> int:
                     )
                     total_loss = total_loss + pe_loss_weight * _pe_loss
 
+            # Stage134-A slot mismatch BCE loss (diagnostic only; output["logits"] unchanged)
+            _slot_mismatch_loss = torch.tensor(0.0, device=device)
+            if (
+                slot_mismatch_loss_weight > 0.0
+                and train_slot_mismatch_labels is not None
+                and train_slot_mismatch_mask is not None
+                and output.get("slot_mismatch_logit") is not None
+            ):
+                _active_slot = train_slot_mismatch_mask.bool()
+                if torch.any(_active_slot):
+                    _slot_pos_w = torch.tensor(
+                        slot_mismatch_loss_pos_weight,
+                        dtype=torch.float32,
+                        device=output["slot_mismatch_logit"].device,
+                    )
+                    _slot_mismatch_loss = F.binary_cross_entropy_with_logits(
+                        output["slot_mismatch_logit"][_active_slot],
+                        train_slot_mismatch_labels[_active_slot],
+                        pos_weight=_slot_pos_w,
+                    )
+                    total_loss = total_loss + (
+                        slot_mismatch_loss_weight * _slot_mismatch_loss
+                    )
             # Temporal diagnostic BCE loss (diagnostic only; output["logits"] unchanged)
             # Separate forward pass on temporal diagnostic records (which include time_swap).
             # These records are NOT in the main clean train/eval tensors; no classification
@@ -13985,6 +14247,10 @@ def main(argv: list[str] | None = None) -> int:
             _ep_pc_raw = float(_pc_loss.item()) if hasattr(_pc_loss, "item") else 0.0
             _ep_pi_raw = float(_pi_loss.item()) if hasattr(_pi_loss, "item") else 0.0
             _ep_pe_raw = float(_pe_loss.item()) if hasattr(_pe_loss, "item") else 0.0
+            _ep_slot_mismatch_raw = (
+                float(_slot_mismatch_loss.item())
+                if hasattr(_slot_mismatch_loss, "item") else 0.0
+            )
             _ep_td_raw = float(_td_loss.item()) if hasattr(_td_loss, "item") else 0.0
             _ep_ta_raw = float(_ta_loss.item()) if hasattr(_ta_loss, "item") else 0.0
             _ep_tc_raw = float(_tc_loss.item()) if hasattr(_tc_loss, "item") else 0.0
@@ -14017,6 +14283,7 @@ def main(argv: list[str] | None = None) -> int:
                 "pair_contrastive_frame_loss": _ep_pc_raw,
                 "predicate_isolation_loss": _ep_pi_raw,
                 "preservation_entitlement_loss": _ep_pe_raw,
+                "slot_mismatch_loss": _ep_slot_mismatch_raw,
                 "temporal_diagnostic_loss": _ep_td_raw,
                 "temporal_adapter_loss": _ep_ta_raw,
                 "temporal_channel_loss": _ep_tc_raw,
@@ -14045,6 +14312,9 @@ def main(argv: list[str] | None = None) -> int:
                 "pair_contrastive_frame_loss": pc_loss_weight * _ep_pc_raw,
                 "predicate_isolation_loss": pi_loss_weight * _ep_pi_raw,
                 "preservation_entitlement_loss": pe_loss_weight * _ep_pe_raw,
+                "slot_mismatch_loss": (
+                    slot_mismatch_loss_weight * _ep_slot_mismatch_raw
+                ),
                 "temporal_diagnostic_loss": td_loss_weight * _ep_td_raw,
                 "temporal_adapter_loss": ta_loss_weight * _ep_ta_raw,
                 "temporal_channel_loss": tc_loss_weight * _ep_tc_raw,
@@ -15369,6 +15639,19 @@ def main(argv: list[str] | None = None) -> int:
                 "raw_loss_key": "preservation_entitlement_loss",
                 "weighted_loss_key": "preservation_entitlement_loss",
             },
+            "slot_mismatch_loss": {
+                "enabled": slot_mismatch_loss_weight > 0.0,
+                "weight": slot_mismatch_loss_weight,
+                "pos_weight": slot_mismatch_loss_pos_weight,
+                "target": "slot_mismatch_logit",
+                "diagnostic_head_only": True,
+                "gradient_isolated": bool(
+                    getattr(model, "vnext_slot_mismatch_detach_input", True)
+                ),
+                "raw_loss_key": "slot_mismatch_loss",
+                "weighted_loss_key": "slot_mismatch_loss",
+                "note": "Stage134-A head reads sufficiency_repr and never modifies final logits.",
+            },
             "temporal_diagnostic_loss": {
                 "enabled": td_loss_weight > 0.0,
                 "weight": td_loss_weight,
@@ -16225,6 +16508,27 @@ def main(argv: list[str] | None = None) -> int:
                 if args.use_preservation_entitlement_loss else 0.0
             ),
             pe_loss_pos_weight=args.preservation_entitlement_loss_pos_weight,
+            train_slot_mismatch_labels=(
+                train_slot_mismatch_labels
+                if args.vnext_use_slot_mismatch_head else None
+            ),
+            train_slot_mismatch_mask=(
+                train_slot_mismatch_mask
+                if args.vnext_use_slot_mismatch_head else None
+            ),
+            dev_slot_mismatch_labels=(
+                dev_slot_mismatch_labels
+                if args.vnext_use_slot_mismatch_head else None
+            ),
+            dev_slot_mismatch_mask=(
+                dev_slot_mismatch_mask
+                if args.vnext_use_slot_mismatch_head else None
+            ),
+            slot_mismatch_loss_weight=(
+                args.vnext_slot_mismatch_loss_weight
+                if args.vnext_use_slot_mismatch_head else 0.0
+            ),
+            slot_mismatch_loss_pos_weight=args.vnext_slot_mismatch_pos_weight,
             td_train_inputs=_td_train_inputs if _td_data_needed else None,
             td_dev_inputs=_td_dev_inputs if _td_data_needed else None,
             td_train_labels=_td_train_labels if _td_data_needed else None,
@@ -16527,6 +16831,19 @@ def main(argv: list[str] | None = None) -> int:
             "vnext_context_risk_cap_alpha": getattr(args, "vnext_context_risk_cap_alpha", 0.0),
             "vnext_context_risk_threshold": getattr(args, "vnext_context_risk_threshold", 0.5),
             "vnext_context_risk_source": getattr(args, "vnext_context_risk_source", "context_not_entitled_prob"),
+            "vnext_use_slot_mismatch_head": getattr(args, "vnext_use_slot_mismatch_head", False),
+            "vnext_slot_mismatch_loss_weight": getattr(args, "vnext_slot_mismatch_loss_weight", 0.0),
+            "vnext_slot_mismatch_pos_weight": getattr(args, "vnext_slot_mismatch_pos_weight", 1.0),
+            "vnext_slot_mismatch_detach_input": getattr(args, "vnext_slot_mismatch_detach_input", True),
+            **_slot_mismatch_train_counts,
+            "slot_mismatch_dev_target_counts": _slot_mismatch_dev_counts,
+            "slot_mismatch_label_mapping": {
+                "stage133_positive": sorted(_SLOT_MISMATCH_STAGE133_POSITIVE),
+                "stage133_negative": sorted(_SLOT_MISMATCH_STAGE133_NEGATIVE),
+                "intervention_positive": sorted(_SLOT_MISMATCH_INTERVENTION_POSITIVE),
+                "intervention_negative": sorted(_SLOT_MISMATCH_INTERVENTION_NEGATIVE),
+                "intervention_excluded": sorted(_SLOT_MISMATCH_INTERVENTION_EXCLUDED),
+            },
             "use_v7_hierarchical": args.architecture == "v7_hierarchical",
             "v7_disable_frame_channel": getattr(args, "v7_disable_frame_channel", False),
             "v7_disable_predicate_channel": getattr(args, "v7_disable_predicate_channel", False),

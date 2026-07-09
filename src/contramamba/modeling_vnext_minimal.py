@@ -67,6 +67,8 @@ class ContraMambaVNextMinimal(nn.Module):
         vnext_context_risk_cap_alpha: float = 0.0,
         vnext_context_risk_threshold: float = 0.5,
         vnext_context_risk_source: str = "context_not_entitled_prob",
+        vnext_use_slot_mismatch_head: bool = False,
+        vnext_slot_mismatch_detach_input: bool = True,
     ) -> None:
         super().__init__()
         if vnext_router_mode not in VALID_VNEXT_ROUTER_MODES:
@@ -104,6 +106,8 @@ class ContraMambaVNextMinimal(nn.Module):
         self.vnext_context_risk_cap_alpha = float(vnext_context_risk_cap_alpha)
         self.vnext_context_risk_threshold = float(vnext_context_risk_threshold)
         self.vnext_context_risk_source = str(vnext_context_risk_source)
+        self.vnext_use_slot_mismatch_head = bool(vnext_use_slot_mismatch_head)
+        self.vnext_slot_mismatch_detach_input = bool(vnext_slot_mismatch_detach_input)
 
         self.frame_gate = FrameGate(
             hidden_size, frame_size, dropout, return_token_diagnostics
@@ -118,6 +122,11 @@ class ContraMambaVNextMinimal(nn.Module):
             frame_size, predicate_size, sufficiency_size, energy_size, dropout
         )
         self.learned_entitlement_head = nn.Linear(sufficiency_size, 1)
+        self.slot_mismatch_head = (
+            nn.Linear(sufficiency_size, 1)
+            if self.vnext_use_slot_mismatch_head
+            else None
+        )
         self.not_entitled_bias = nn.Parameter(torch.tensor(float(not_entitled_bias_init)))
         self.raw_not_entitled_alpha = nn.Parameter(
             torch.tensor(_inverse_softplus(not_entitled_alpha_init))
@@ -196,6 +205,14 @@ class ContraMambaVNextMinimal(nn.Module):
         learned_entitlement_logit = self.learned_entitlement_head(
             sufficiency["sufficiency_repr"]
         ).squeeze(-1)
+        slot_mismatch_logit = None
+        slot_mismatch_prob = None
+        if self.slot_mismatch_head is not None:
+            slot_mismatch_repr = sufficiency["sufficiency_repr"]
+            if self.vnext_slot_mismatch_detach_input:
+                slot_mismatch_repr = slot_mismatch_repr.detach()
+            slot_mismatch_logit = self.slot_mismatch_head(slot_mismatch_repr).squeeze(-1)
+            slot_mismatch_prob = torch.sigmoid(slot_mismatch_logit)
         learned_entitlement_prob = torch.sigmoid(learned_entitlement_logit)
         compositional_entitlement_prob = (
             frame["frame_prob"]
@@ -226,6 +243,8 @@ class ContraMambaVNextMinimal(nn.Module):
             "compositional_entitlement_prob": compositional_entitlement_prob,
             "learned_entitlement_logit": learned_entitlement_logit,
             "learned_entitlement_prob": learned_entitlement_prob,
+            "slot_mismatch_logit": slot_mismatch_logit,
+            "slot_mismatch_prob": slot_mismatch_prob,
             "frame": frame,
             "predicate": predicate,
             "sufficiency": sufficiency,
@@ -348,6 +367,8 @@ class ContraMambaVNextMinimal(nn.Module):
         polarity = core_logits["polarity"]
         learned_entitlement_logit = core_logits["learned_entitlement_logit"]
         learned_entitlement_prob = core_logits["learned_entitlement_prob"]
+        slot_mismatch_logit = core_logits["slot_mismatch_logit"]
+        slot_mismatch_prob = core_logits["slot_mismatch_prob"]
         compositional_entitlement_prob = core_logits["compositional_entitlement_prob"]
         entitlement_for_decision = core_logits["entitlement_for_decision"]
         support_score = core_logits["support_score"]
@@ -474,6 +495,10 @@ class ContraMambaVNextMinimal(nn.Module):
             "compositional_entitlement_prob": compositional_entitlement_prob,
             "learned_entitlement_logit": learned_entitlement_logit,
             "learned_entitlement_prob": learned_entitlement_prob,
+            "slot_mismatch_logit": slot_mismatch_logit,
+            "slot_mismatch_prob": slot_mismatch_prob,
+            "vnext_use_slot_mismatch_head": self.vnext_use_slot_mismatch_head,
+            "vnext_slot_mismatch_detach_input": self.vnext_slot_mismatch_detach_input,
             "vnext_router_mode": self.vnext_router_mode,
             "vnext_final_logit_order": FINAL_LOGIT_ORDER,
             "vnext_segmented_dual_pass_active": segmented_active,
