@@ -1,0 +1,117 @@
+{
+  "stage": "Stage147-C",
+  "decision": "STAGE147C_ROUTE_ORDER_TARGETED_DIAGNOSTIC_PASS",
+  "stage147b": {
+    "decision": "STAGE147B_ROUTE_ORDER_TARGETED_DIAGNOSTIC_PASS",
+    "analyzer_decision": "STAGE147_ROUTE_ORDER_SHADOW_CANDIDATE_PASS",
+    "input_dir": "reports/stage147b_route_order_targeted_diagnostic_20260710_044934",
+    "run_dir": "reports/stage147b_route_order_targeted_diagnostic_20260710_044934/stage147_route_order_shadow_run",
+    "n_rows": 76,
+    "n_changed_total": 24,
+    "delta_false_support": -24,
+    "delta_false_ne": 0,
+    "feature_false_support_tp": 24,
+    "feature_correct_support_fp": 0,
+    "feature_false_support_fn": 0,
+    "feature_precision_for_false_support_among_support_preds": 1.0,
+    "feature_recall_for_false_support_among_support_preds": 1.0,
+    "accuracy_before": 0.6842105263157895,
+    "accuracy_after": 1.0,
+    "macro_f1_before": 0.35000000000000003,
+    "macro_f1_after": 0.6666666666666666,
+    "delta_macro_f1": 0.3166666666666666
+  },
+  "case_checks": {
+    "route_reversal_caught": true,
+    "alias_reversal_caught": true,
+    "lowercase_reversal_caught": true,
+    "same_route_safe": true,
+    "same_route_extra_distractor_safe": true,
+    "between_safe": true,
+    "directional_vs_between_safe": true,
+    "org_endpoint_block_safe": true,
+    "alias_same_route_safe": true,
+    "one_sided_route_safe": true,
+    "non_support_prediction_safe": true
+  },
+  "case_level_assessment": {
+    "route_reversal_ne": "pass",
+    "alias_route_reversal_ne": "pass",
+    "lowercase_route_reversal_ne": "pass",
+    "same_route_support": "safe",
+    "same_route_with_extra_distractor_support": "safe",
+    "nondirectional_between_support": "safe",
+    "directional_vs_between_support": "safe",
+    "org_endpoint_reversal_support": "safe",
+    "alias_same_route_support": "safe",
+    "one_sided_route_support": "safe",
+    "non_support_prediction_safety": "safe"
+  },
+  "policy": {
+    "name": "route_order_reversal_v1",
+    "script": "scripts/analyze_stage147_route_order_shadow.py",
+    "status": "targeted_synthetic_shadow_candidate",
+    "separate_from_text_loc_disjoint_v2": true,
+    "final_integration_status": "not_ready",
+    "reason_final_integration_not_ready": "Only targeted synthetic diagnostic has passed; broader external/general prediction export behavior remains untested."
+  },
+  "policy_input_safety": {
+    "uses_claim_text": true,
+    "uses_evidence_text": true,
+    "uses_original_prediction": true,
+    "uses_deterministic_route_rules": true,
+    "uses_deterministic_alias_rules": true,
+    "uses_deterministic_org_like_rules": true,
+    "uses_intervention_type": false,
+    "uses_slot_mismatch_target": false,
+    "uses_gold_label_for_policy": false,
+    "uses_diagnostic_family_for_policy": false,
+    "uses_file_path_heuristics": false,
+    "uses_row_id_heuristics": false
+  },
+  "safety_policy": {
+    "shadow_only": true,
+    "diagnostic_only": true,
+    "source_predictions_mutated": false,
+    "final_logits_modified": false,
+    "final_predictions_modified": false,
+    "training_modified": false,
+    "checkpoint_selection_modified": false,
+    "stage128_guard_enabled": false,
+    "stage15_used": false,
+    "external_data_used_for_training": false,
+    "threshold_used_for_model_selection": false
+  },
+  "interpretation": {
+    "route_order_gap_addressed_on_targeted_synthetic": true,
+    "same_location_set_reversal_detected": true,
+    "safe_on_same_route_and_between_controls": true,
+    "safe_on_alias_same_route": true,
+    "safe_on_org_endpoint_controls": true,
+    "safe_on_non_support_predictions": true,
+    "final_integration_ready": false
+  },
+  "remaining_limitations": [
+    "Only targeted synthetic controls have been evaluated.",
+    "Broader external/general prediction export behavior is untested.",
+    "Route extraction is deterministic and pattern-based.",
+    "Complex route language, implicit directionality, multi-hop routes, and non-English routes may be missed.",
+    "The analyzer remains shadow-only and should not be used as final prediction override."
+  ],
+  "next_stage_recommendation": {
+    "stage": "Stage148",
+    "goal": "Apply route_order_reversal_v1 to existing broader prediction exports and/or generate harder route/order stress tests.",
+    "recommended_actions": [
+      "Run the route/order analyzer on existing prediction JSONLs to estimate natural trigger rate.",
+      "Create harder multi-hop and implicit route-order controls.",
+      "Keep route/order analysis separate from text_loc_disjoint_v2.",
+      "Keep all analysis shadow-only."
+    ],
+    "avoid": [
+      "automatic final prediction override",
+      "training loss integration",
+      "checkpoint selection using route/order outputs",
+      "merging route/order into text_loc_disjoint_v2 prematurely"
+    ]
+  }
+}
