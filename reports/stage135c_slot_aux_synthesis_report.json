@@ -1,0 +1,63 @@
+{
+  "stage": "Stage135-C",
+  "decision": "STAGE135C_SLOT_AUX_INTEGRATED_BUT_CLEAN_SWEEP_UNINFORMATIVE",
+  "stage134f_summary": {
+    "decision": "STAGE134F_SLOT_SIGNAL_ROBUST_USEFUL",
+    "best_input_mode": "pooled_pair_absdiff_product",
+    "best_head_type": "mlp",
+    "overall_dev_auroc_mean": 0.812794,
+    "overall_dev_auroc_min": 0.78125,
+    "overall_dev_auprc_mean": 0.835267,
+    "split_dev_auroc_mean": {
+      "scenario_holdout": 0.833333,
+      "slot_holdout": 0.803241,
+      "random": 0.801809
+    }
+  },
+  "stage135a2_summary": {
+    "decision": "STAGE135A2_REPORT_AUDIT_PASSED_RELAXED",
+    "best_slot_aux_enabled": true,
+    "input_mode": "pooled_pair_absdiff_product",
+    "head_type": "mlp",
+    "slot_mismatch_head_input_dim": 512,
+    "loss_weight": 0.1,
+    "slot_mismatch_loss_raw": 0.692012,
+    "slot_mismatch_loss_weighted": 0.069201,
+    "final_logits_modified_by_slot_head": false,
+    "stage128_location_slot_guard_enabled": false
+  },
+  "stage135b_partial_summary": {
+    "decision": "STAGE135B_SHORT_SWEEP_UNINFORMATIVE_BASELINE_COLLAPSE",
+    "completed_baseline_seeds": [
+      1,
+      2,
+      3
+    ],
+    "completed_slot_aux_w005_seeds": [
+      1
+    ],
+    "baseline_acc_mean": 0.748299,
+    "baseline_macro_f1_mean": 0.285343,
+    "baseline_prediction_collapse": "all_or_near_all_NOT_ENTITLED",
+    "slot_aux_w005_seed1_acc": 0.744898,
+    "slot_aux_w005_seed1_macro_f1": 0.2846,
+    "slot_aux_w005_seed1_prediction_collapse": "all_NOT_ENTITLED",
+    "interpretation": "No evidence of additional harm from slot aux, but the short sweep is not informative because the baseline itself collapsed."
+  },
+  "safety_policy": {
+    "final_logits_modified_by_slot_head": false,
+    "stage128_guard_enabled_by_stage135": false,
+    "external_data_used_for_training": false,
+    "time_swap_used_in_main_clean_data": false,
+    "stage15_used": false
+  },
+  "next_stage_recommendation": {
+    "recommended_next_stage": "Stage136",
+    "recommendation": "Do not run more lightweight clean-training sweeps. If using slot risk next, evaluate it first as export-only or guard/cap candidate, not as an immediate final-logit modifier.",
+    "avoid": [
+      "large multi-seed short sweeps with collapsed baselines",
+      "routing slot mismatch directly into final logits without a separate guard evaluation",
+      "enabling Stage128 guard implicitly"
+    ]
+  }
+}
