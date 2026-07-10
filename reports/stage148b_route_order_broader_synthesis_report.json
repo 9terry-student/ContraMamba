@@ -1,0 +1,126 @@
+{
+  "stage": "Stage148-B",
+  "decision": "STAGE148B_ROUTE_ORDER_BROADER_SCAN_EXPOSES_NATURAL_FALSE_POSITIVE_RISK",
+  "stage148a": {
+    "decision": "STAGE148A_ROUTE_ORDER_BROADER_HARM_OR_NO_FS_GAIN",
+    "analyzer_decision": "STAGE147_ROUTE_ORDER_SHADOW_HARM_OR_NO_FS_GAIN",
+    "run_dir": "reports/stage148a_route_order_broader_run_20260710_045357",
+    "summary_json": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+    "n_files": 7,
+    "n_rows": 33000,
+    "n_changed_total": 1,
+    "delta_false_support": 0,
+    "delta_false_ne": 1,
+    "feature_false_support_tp": 0,
+    "feature_correct_support_fp": 1,
+    "feature_false_support_fn": 229,
+    "macro_f1_before": 0.7075607576618963,
+    "macro_f1_after": 0.7074803026145983,
+    "delta_macro_f1": -0.00008045504729803366,
+    "min_per_file_delta_macro_f1": -0.0008103246190390712,
+    "support_rows_with_route_reversal": 1
+  },
+  "subset_summaries": {
+    "controlled_diagnostic": {
+      "n_files": 5,
+      "n_rows": 31000,
+      "n_changed_total": 0,
+      "support_rows_with_route_reversal": 0,
+      "delta_false_support": 0,
+      "delta_false_ne": 0,
+      "feature_false_support_tp": 0,
+      "feature_correct_support_fp": 0,
+      "assessment": "no_natural_route_triggers"
+    },
+    "external_or_factver": {
+      "n_files": 2,
+      "n_rows": 2000,
+      "n_changed_total": 1,
+      "support_rows_with_route_reversal": 1,
+      "delta_false_support": 0,
+      "delta_false_ne": 1,
+      "feature_false_support_tp": 0,
+      "feature_correct_support_fp": 1,
+      "assessment": "one_harmful_false_positive_trigger"
+    }
+  },
+  "comparison_to_stage147b": {
+    "stage147b_targeted_pass": true,
+    "stage147b_false_support_delta": -24,
+    "stage147b_false_ne_delta": 0,
+    "stage147b_feature_correct_support_fp": 0,
+    "stage148a_broader_pass": false,
+    "stage148a_false_support_delta": 0,
+    "stage148a_false_ne_delta": 1,
+    "stage148a_feature_correct_support_fp": 1,
+    "interpretation": "Targeted synthetic route/order behavior passed, but broader natural/export behavior exposed one false-positive trigger and no false-support gain."
+  },
+  "policy": {
+    "name": "route_order_reversal_v1",
+    "script": "scripts/analyze_stage147_route_order_shadow.py",
+    "status": "targeted_diagnostic_only",
+    "broader_shadow_status": "blocked_pending_false_positive_forensics",
+    "final_integration_status": "blocked",
+    "reason_final_integration_blocked": "Broader scan produced one correct-SUPPORT false positive and no false-support reduction."
+  },
+  "policy_input_safety": {
+    "uses_claim_text": true,
+    "uses_evidence_text": true,
+    "uses_original_prediction": true,
+    "uses_deterministic_route_rules": true,
+    "uses_deterministic_alias_rules": true,
+    "uses_deterministic_org_like_rules": true,
+    "uses_intervention_type": false,
+    "uses_slot_mismatch_target": false,
+    "uses_gold_label_for_policy": false,
+    "uses_diagnostic_family_for_policy": false,
+    "uses_file_path_heuristics": false,
+    "uses_row_id_heuristics": false
+  },
+  "safety_policy": {
+    "shadow_only": true,
+    "diagnostic_only": true,
+    "source_predictions_mutated": false,
+    "final_logits_modified": false,
+    "final_predictions_modified": false,
+    "training_modified": false,
+    "checkpoint_selection_modified": false,
+    "stage128_guard_enabled": false,
+    "stage15_used": false,
+    "external_data_used_for_training": false,
+    "threshold_used_for_model_selection": false
+  },
+  "interpretation": {
+    "route_order_gap_addressed_on_targeted_synthetic": true,
+    "broader_natural_trigger_rate_low": true,
+    "broader_scan_found_false_positive": true,
+    "broader_shadow_candidate": false,
+    "targeted_diagnostic_still_valid": true,
+    "final_integration_ready": false
+  },
+  "remaining_limitations": [
+    "Only one natural route/order trigger was found in the broader scan.",
+    "The only broader trigger was a correct-SUPPORT false positive.",
+    "No false-SUPPORT gain was observed in broader files.",
+    "Route extraction is deterministic and pattern-based.",
+    "Complex route language, implicit directionality, multi-hop routes, and context-dependent route semantics remain risky.",
+    "The analyzer should remain targeted-only until false-positive forensics are complete."
+  ],
+  "next_stage_recommendation": {
+    "stage": "Stage149",
+    "goal": "Inspect the single Stage148-A false-positive route/order trigger and determine whether the analyzer needs a conservative patch or should remain targeted-only.",
+    "recommended_actions": [
+      "Read the Stage148-A changed example.",
+      "Classify the false positive cause.",
+      "Check whether the route extractor confused non-route text, same-route paraphrase, event ordering, or entity movement context.",
+      "If the cause is patchable, create a stricter route/order v2 policy.",
+      "If the cause is semantic/contextual, keep route_order_reversal_v1 targeted-only."
+    ],
+    "avoid": [
+      "automatic final prediction override",
+      "training loss integration",
+      "checkpoint selection using route/order outputs",
+      "broad route/order deployment before false-positive forensics"
+    ]
+  }
+}
