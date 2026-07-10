@@ -1,0 +1,138 @@
+{
+  "broader_run": {
+    "broader_checks": {
+      "broader_no_correct_support_fp": true,
+      "broader_no_false_ne_increase": true,
+      "broader_no_harmful_trigger": true
+    },
+    "decision": "STAGE150_ROUTE_ORDER_SHADOW_V2_NO_EFFECT",
+    "delta_false_ne": 0,
+    "delta_false_support": 0,
+    "feature_correct_support_fp": 0,
+    "feature_false_support_fn": 229,
+    "feature_false_support_tp": 0,
+    "n_changed_total": 0,
+    "n_files": 7,
+    "n_rows": 33000,
+    "output_dir": "reports/stage150b_route_order_v2_broader_scan_20260710_051156",
+    "rows_self_loop_routes_rejected": 2,
+    "rows_title_like_routes_rejected": 10,
+    "total_self_loop_routes_rejected": 4,
+    "total_title_like_routes_rejected": 12
+  },
+  "comparison_to_stage148a": {
+    "stage148a_decision": "STAGE148A_ROUTE_ORDER_BROADER_HARM_OR_NO_FS_GAIN",
+    "stage148a_delta_false_ne": 1,
+    "stage148a_delta_false_support": 0,
+    "stage148a_failure_example": "Side to Side title extracted as side->side self-loop",
+    "stage148a_feature_correct_support_fp": 1,
+    "stage150b_broader_delta_false_ne": 0,
+    "stage150b_broader_feature_correct_support_fp": 0,
+    "stage150b_false_positive_removed": true
+  },
+  "decision": "STAGE150C_ROUTE_ORDER_V2_TARGETED_RETAINED_BROADER_FP_REMOVED",
+  "interpretation": {
+    "broader_false_positive_removed": true,
+    "broader_natural_true_positive_route_reversal_observed": false,
+    "conservative_shadow_diagnostic_ready": true,
+    "final_integration_ready": false,
+    "targeted_synthetic_behavior_retained": true
+  },
+  "next_stage_recommendation": {
+    "avoid": [
+      "automatic final prediction override",
+      "training loss integration",
+      "checkpoint selection using route/order outputs",
+      "merging route/order into text_loc_disjoint_v2"
+    ],
+    "goal": "Unify reporting/registry of shadow diagnostics or run a larger external route/order stress expansion.",
+    "recommended_actions": [
+      "Register route_order_reversal_v2 as a conservative optional shadow diagnostic.",
+      "Keep it separate from text_loc_disjoint_v2.",
+      "Optionally create harder multi-hop/implicit route controls.",
+      "Do not integrate into final logits or final predictions."
+    ],
+    "stage": "Stage151"
+  },
+  "policy": {
+    "broader_status": "safe_no_effect_on_available_exports",
+    "final_integration_status": "blocked",
+    "name": "route_order_reversal_v2",
+    "reason_final_integration_blocked": "Broader scan has no natural true-positive route reversal gain; the analyzer remains diagnostic-only.",
+    "script": "scripts/analyze_stage150_route_order_shadow_v2.py",
+    "status": "conservative_shadow_diagnostic",
+    "targeted_status": "passed"
+  },
+  "policy_input_safety": {
+    "uses_claim_text": true,
+    "uses_deterministic_alias_rules": true,
+    "uses_deterministic_org_like_rules": true,
+    "uses_deterministic_route_rules": true,
+    "uses_deterministic_self_loop_guard": true,
+    "uses_deterministic_title_context_guard": true,
+    "uses_diagnostic_family_for_policy": false,
+    "uses_evidence_text": true,
+    "uses_file_path_heuristics": false,
+    "uses_gold_label_for_policy": false,
+    "uses_intervention_type": false,
+    "uses_original_prediction": true,
+    "uses_row_id_heuristics": false,
+    "uses_slot_mismatch_target": false
+  },
+  "remaining_limitations": [
+    "Broader scan produced no natural true-positive route reversal gain.",
+    "Route extraction remains deterministic and pattern-based.",
+    "Complex route language, implicit directionality, multi-hop routes, and context-dependent route semantics remain untested.",
+    "The analyzer should remain shadow-only.",
+    "Final prediction override remains blocked."
+  ],
+  "safety_policy": {
+    "checkpoint_selection_modified": false,
+    "diagnostic_only": true,
+    "external_data_used_for_training": false,
+    "final_logits_modified": false,
+    "final_predictions_modified": false,
+    "shadow_only": true,
+    "source_predictions_mutated": false,
+    "stage128_guard_enabled": false,
+    "stage15_used": false,
+    "threshold_used_for_model_selection": false,
+    "training_modified": false
+  },
+  "stage": "Stage150-C",
+  "stage150b": {
+    "decision": "STAGE150B_ROUTE_ORDER_V2_TARGETED_RETAINED_BROADER_FP_REMOVED",
+    "summary_json": "reports/stage150b_route_order_v2_validation_summary/stage150b_route_order_v2_validation_summary_report.json",
+    "summary_md": "reports/stage150b_route_order_v2_validation_summary/stage150b_route_order_v2_validation_summary_report.md"
+  },
+  "targeted_run": {
+    "decision": "STAGE150_ROUTE_ORDER_SHADOW_V2_CANDIDATE_PASS",
+    "delta_false_ne": 0,
+    "delta_false_support": -24,
+    "feature_correct_support_fp": 0,
+    "feature_false_support_fn": 0,
+    "feature_false_support_tp": 24,
+    "feature_precision": 1.0,
+    "feature_recall": 1.0,
+    "n_changed_total": 24,
+    "n_rows": 76,
+    "output_dir": "reports/stage147b_route_order_targeted_diagnostic_20260710_044934/stage150_route_order_shadow_v2_on_targeted",
+    "targeted_checks": {
+      "targeted_alias_reversal_caught": true,
+      "targeted_alias_same_route_safe": true,
+      "targeted_between_safe": true,
+      "targeted_lowercase_reversal_caught": true,
+      "targeted_non_support_safe": true,
+      "targeted_org_endpoint_safe": true,
+      "targeted_route_reversal_caught": true,
+      "targeted_same_route_safe": true
+    }
+  },
+  "v2_refinements": {
+    "alias_canonicalization_retained": true,
+    "conservative_bare_to_patterns": true,
+    "organization_endpoint_guard_retained": true,
+    "self_loop_guard": true,
+    "title_context_guard": true
+  }
+}
