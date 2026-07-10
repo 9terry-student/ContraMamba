@@ -1,0 +1,144 @@
+﻿{
+  "active_shadow_diagnostics": {
+    "route_order_reversal_v2": {
+      "allowed_use": [
+        "shadow-only audit",
+        "targeted route/order stress tests",
+        "future prediction JSONL scans when explicit route reversal is suspected"
+      ],
+      "forbidden_use": [
+        "final prediction override",
+        "training loss integration",
+        "checkpoint selection",
+        "merging into text_loc_disjoint_v2"
+      ],
+      "out_of_scope": [
+        "implicit depart/arrive reversal",
+        "origin/destination start-end reversal",
+        "multi-hop itinerary order swap",
+        "context-dependent itinerary semantics"
+      ],
+      "reopen_conditions": [
+        "external/core evaluation shows route semantic errors are a major remaining false-SUPPORT source",
+        "implicit depart/arrive or multi-hop route errors appear frequently enough to justify a separate semantic analyzer",
+        "new negative controls can be designed before any route semantic expansion",
+        "the project explicitly branches into semantic itinerary parsing"
+      ],
+      "script": "scripts/analyze_stage150_route_order_shadow_v2.py",
+      "status": "conservative_shadow_diagnostic_soft_frozen",
+      "validated_scope": [
+        "explicit from-A-to-B versus from-B-to-A reversal",
+        "alias route reversal",
+        "lowercase known-location reversal",
+        "via route reversal"
+      ]
+    },
+    "text_loc_disjoint_v2": {
+      "allowed_use": [
+        "shadow-only audit",
+        "report-only analysis",
+        "future prediction JSONL scans"
+      ],
+      "forbidden_use": [
+        "final prediction override",
+        "training loss integration",
+        "checkpoint selection",
+        "external threshold tuning"
+      ],
+      "reopen_conditions": [
+        "new external/generalization evidence shows location-disjoint false SUPPORT remains a dominant failure mode",
+        "new negative controls expose systematic false positives",
+        "a broader diagnostic registry update requires harmonized interfaces"
+      ],
+      "script": "scripts/analyze_stage145_text_location_guard_shadow_v2.py",
+      "status": "strong_shadow_diagnostic_soft_frozen"
+    }
+  },
+  "decision": "STAGE153A_SHADOW_DIAGNOSTICS_SOFT_FREEZE_RETURN_TO_CORE",
+  "evidence_summary": {
+    "stage150b": {
+      "broader_delta_false_ne": 0,
+      "broader_feature_correct_support_fp": 0,
+      "broader_n_changed_total": 0,
+      "broader_n_rows": 33000,
+      "decision": "STAGE150B_ROUTE_ORDER_V2_TARGETED_RETAINED_BROADER_FP_REMOVED",
+      "targeted_delta_false_ne": 0,
+      "targeted_delta_false_support": -24,
+      "targeted_feature_correct_support_fp": 0
+    },
+    "stage152a": {
+      "boundary_misses": {
+        "implicit_depart_arrive": 4,
+        "multi_hop_order_swap": 4,
+        "origin_destination_start_end": 4
+      },
+      "decision": "STAGE152A_ROUTE_ORDER_HARD_EXPANSION_CONSERVATIVE_PASS_WITH_BOUNDARY_MISSES",
+      "delta_false_ne": 0,
+      "delta_false_support": -30,
+      "feature_correct_support_fp": 0,
+      "feature_false_support_fn": 12,
+      "feature_false_support_tp": 30,
+      "n_rows": 99,
+      "precision": 1.0,
+      "recall": 0.7142857142857143
+    }
+  },
+  "freeze_type": "soft_freeze",
+  "global_safety_policy": {
+    "checkpoint_selection_modified": false,
+    "diagnostic_only": true,
+    "external_data_used_for_training": false,
+    "final_logits_modified": false,
+    "final_predictions_modified": false,
+    "shadow_only": true,
+    "source_predictions_mutated": false,
+    "stage128_guard_enabled": false,
+    "stage15_used": false,
+    "threshold_used_for_model_selection": false,
+    "training_modified": false
+  },
+  "next_stage_recommendation": {
+    "avoid": [
+      "more route/order regex expansion unless reopen conditions are met",
+      "final prediction override",
+      "training loss integration from shadow diagnostics",
+      "checkpoint selection using shadow diagnostic outputs"
+    ],
+    "goal": "Return to core ContraMamba evaluation/generalization planning.",
+    "recommended_actions": [
+      "Summarize current clean/dev/external status.",
+      "Identify the next non-rule-patch bottleneck.",
+      "Design the next architecture/evaluation stage around model-internal judgment structure rather than external rule overrides."
+    ],
+    "stage": "Stage154"
+  },
+  "return_to_core_plan": {
+    "deprioritized": [
+      "deterministic route semantic parser expansion",
+      "final prediction override guards",
+      "rule-based training loss integration"
+    ],
+    "priority": [
+      "external/generalization diagnostics",
+      "core model error taxonomy",
+      "architecture-level entitlement and compositional failure analysis",
+      "diagnostic registry maintenance only as needed"
+    ],
+    "recommended_next_focus": "ContraMamba core/generalization/architecture work"
+  },
+  "soft_freeze_rationale": {
+    "why_freeze_now": [
+      "explicit route/order reversal is covered",
+      "known title/self-loop false positive was fixed",
+      "hard safety controls passed",
+      "remaining route errors require semantic itinerary parsing rather than simple route-order rules",
+      "additional deterministic expansion risks scope creep and false positives"
+    ],
+    "why_not_permanent_freeze": [
+      "future external/core evaluations may expose route semantics as a dominant failure mode",
+      "soft freeze preserves a clear reopen path",
+      "the diagnostic registry can evolve if evidence warrants it"
+    ]
+  },
+  "stage": "Stage153-A"
+}

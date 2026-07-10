@@ -154,3 +154,9 @@ Stage152-A should be hard route/order expansion:
 - Create via/return/back-to controls.
 - Create additional title/quoted phrase controls.
 - Evaluate `route_order_reversal_v2` conservatively.
+
+## Soft-freeze status
+
+Stage153-A applies a soft freeze to the current shadow diagnostics, not a permanent closure. `text_loc_disjoint_v2` remains a strong shadow diagnostic and `route_order_reversal_v2` remains a conservative shadow diagnostic, but both remain shadow-only and diagnostic-only.
+
+Further route/order semantic expansion is paused unless reopen conditions are met. Final logits, final predictions, training loss, checkpoint selection, and external threshold tuning remain blocked uses. The next project focus should return to ContraMamba core/generalization/architecture work.
