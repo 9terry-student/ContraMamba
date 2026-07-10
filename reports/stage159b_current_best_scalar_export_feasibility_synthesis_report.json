@@ -1,0 +1,83 @@
+{
+  "stage": "Stage159-B",
+  "decision": "STAGE159B_STAGE63_EQUIVALENT_SCALAR_EXPORT_BLOCKED_BY_MISSING_LOADABLE_CHECKPOINT_AND_LOAD_SUPPORT",
+  "stage159a": {
+    "decision": "STAGE159A_CHECKPOINT_EXISTS_BUT_RUNNER_LOAD_SUPPORT_MISSING",
+    "out_dir": "reports/stage159a_current_best_scalar_export_feasibility_20260710_062943",
+    "report_json": "reports/stage159a_current_best_scalar_export_feasibility_20260710_062943/stage159a_current_best_scalar_export_feasibility_report.json"
+  },
+  "corrected_interpretation": {
+    "stage159a_checkpoint_candidate_flag": true,
+    "usable_model_checkpoint_found": false,
+    "reason": "The detected candidates are mostly jsonl/csv/md/py/pyc artifacts rather than loadable model weight checkpoints.",
+    "runner_load_support": false,
+    "runner_eval_only_support": false
+  },
+  "stage158a_scalar_export": {
+    "status": "scalar_path_confirmed_but_run_collapsed",
+    "n_rows": 1000,
+    "accuracy": 0.174,
+    "prediction_counts": {
+      "NOT_ENTITLED": 959,
+      "SUPPORT": 41,
+      "REFUTE": 0
+    },
+    "n_scalar_fields": 10,
+    "required_scalars_present": true,
+    "usable_for_recovered_regressed_analysis": false,
+    "reason_not_usable": "The 1epoch diagnostic run collapses to NOT_ENTITLED and has zero REFUTE predictions."
+  },
+  "stage63_external": {
+    "status": "analysis_distribution_valid_but_no_scalars",
+    "n_rows": 1000,
+    "accuracy": 0.322,
+    "prediction_counts": {
+      "REFUTE": 217,
+      "NOT_ENTITLED": 492,
+      "SUPPORT": 291
+    },
+    "n_scalar_fields": 0,
+    "usable_for_recovered_regressed_transition_groups": true,
+    "usable_for_scalar_analysis": false
+  },
+  "core_blocker": {
+    "problem": "Need Stage63-equivalent or current-best external scalar export.",
+    "why": "Recovered-vs-regressed external routing cannot be explained without internal scalar fields from a non-collapsed model.",
+    "blocked_by": [
+      "no scalar fields in Stage63 prediction JSONL",
+      "Stage158-A scalar run collapsed",
+      "no apparent runner load/eval-only flags",
+      "no verified loadable checkpoint artifact"
+    ]
+  },
+  "recommended_stage160": {
+    "stage": "Stage160-A",
+    "goal": "Implement or design a reliable current-best external scalar export path.",
+    "recommended_direction": "Patch runner or add a dedicated eval-only scalar export script with checkpoint save/load support.",
+    "minimum_requirements": [
+      "save model checkpoint from a trained current-best run",
+      "load model checkpoint for external eval-only scalar export",
+      "export the same 10 scalar fields already confirmed by Stage158-A",
+      "preserve stable row ordering or IDs for Stage156-A transition joins",
+      "do not train on external labels",
+      "do not tune thresholds on external labels",
+      "do not use external labels for checkpoint selection",
+      "do not integrate shadow diagnostics"
+    ],
+    "fallback_if_checkpoint_recovery_is_impossible": [
+      "rerun a sufficiently trained current-best configuration with scalar export enabled",
+      "treat the run as diagnostic and report clean-dev selection basis only",
+      "use external data only for post-hoc evaluation/reporting"
+    ]
+  },
+  "safety_policy": {
+    "analysis_only": true,
+    "external_eval_only": true,
+    "external_data_used_for_training": false,
+    "external_labels_used_for_training": false,
+    "threshold_used_for_model_selection": false,
+    "checkpoint_selection_modified": false,
+    "shadow_diagnostics_integrated": false,
+    "final_predictions_modified_by_shadow": false
+  }
+}
