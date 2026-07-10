@@ -1,0 +1,151 @@
+{
+  "active_shadow_diagnostics": {
+    "route_order_reversal_v2": {
+      "allowed_use": [
+        "optional conservative shadow diagnostic",
+        "targeted route/order stress tests",
+        "future prediction JSONL scans"
+      ],
+      "evidence": {
+        "broader_decision": "STAGE150_ROUTE_ORDER_SHADOW_V2_NO_EFFECT",
+        "broader_delta_false_ne": 0,
+        "broader_delta_false_support": 0,
+        "broader_feature_correct_support_fp": 0,
+        "broader_n_changed_total": 0,
+        "broader_n_files": 7,
+        "broader_n_rows": 33000,
+        "rows_self_loop_routes_rejected": 2,
+        "rows_title_like_routes_rejected": 10,
+        "stage150b_decision": "STAGE150B_ROUTE_ORDER_V2_TARGETED_RETAINED_BROADER_FP_REMOVED",
+        "targeted_decision": "STAGE150_ROUTE_ORDER_SHADOW_V2_CANDIDATE_PASS",
+        "targeted_delta_false_ne": 0,
+        "targeted_delta_false_support": -24,
+        "targeted_feature_correct_support_fp": 0,
+        "targeted_feature_false_support_tp": 24,
+        "targeted_n_rows": 76,
+        "targeted_precision": 1.0,
+        "targeted_recall": 1.0,
+        "total_self_loop_routes_rejected": 4,
+        "total_title_like_routes_rejected": 12
+      },
+      "final_integration_status": "blocked",
+      "forbidden_use": [
+        "final prediction override",
+        "training loss integration",
+        "checkpoint selection",
+        "merging into text_loc_disjoint_v2"
+      ],
+      "limitations": [
+        "broader scan produced no natural true-positive route/order gain",
+        "deterministic route extraction is pattern-based",
+        "complex route language and implicit/multi-hop directionality remain untested"
+      ],
+      "purpose": "Detect explicit source/destination reversal in SUPPORT predictions using conservative deterministic route extraction.",
+      "script": "scripts/analyze_stage150_route_order_shadow_v2.py",
+      "status": "conservative_shadow_diagnostic"
+    },
+    "text_loc_disjoint_v2": {
+      "allowed_use": [
+        "optional shadow diagnostic",
+        "report-only analysis",
+        "future prediction JSONL scans"
+      ],
+      "evidence": {
+        "controlled_diagnostic_delta_false_ne": 0,
+        "controlled_diagnostic_delta_false_support": -49,
+        "delta_false_ne": 3,
+        "delta_false_support": -53,
+        "external_or_factver_delta_false_ne": 3,
+        "external_or_factver_delta_false_support": -4,
+        "feature_correct_support_fp": 0,
+        "feature_false_support_tp": 53,
+        "macro_f1_delta": 0.0017308314825622562,
+        "n_files": 7,
+        "n_rows": 33000,
+        "stage146a_decision": "STAGE146A_V2_EXTERNAL_GENERALIZATION_PASS"
+      },
+      "final_integration_status": "blocked",
+      "forbidden_use": [
+        "final prediction override",
+        "training loss integration",
+        "checkpoint selection",
+        "external threshold tuning"
+      ],
+      "limitations": [
+        "small external/factver false-NE tradeoff",
+        "deterministic extraction is incomplete",
+        "does not handle same-location-set route/order reversal"
+      ],
+      "purpose": "Detect SUPPORT predictions with disjoint claim/evidence location-like spans after deterministic alias and organization-like guarding.",
+      "script": "scripts/analyze_stage145_text_location_guard_shadow_v2.py",
+      "status": "strong_shadow_diagnostic"
+    }
+  },
+  "decision": "STAGE151A_SHADOW_DIAGNOSTIC_REGISTRY_CREATED",
+  "global_safety_policy": {
+    "checkpoint_selection_modified": false,
+    "diagnostic_only": true,
+    "external_data_used_for_training": false,
+    "final_logits_modified": false,
+    "final_predictions_modified": false,
+    "shadow_only": true,
+    "source_predictions_mutated": false,
+    "stage128_guard_enabled": false,
+    "stage15_used": false,
+    "threshold_used_for_model_selection": false,
+    "training_modified": false
+  },
+  "historical_or_superseded_diagnostics": {
+    "route_order_reversal_v1_stage147": {
+      "allowed_use": [
+        "historical comparison only"
+      ],
+      "forbidden_use": [
+        "broader/general active diagnostic use",
+        "final prediction override"
+      ],
+      "reason": "Stage148-A broader scan exposed Side-to-Side self-loop/title false positive; superseded by route_order_reversal_v2.",
+      "script": "scripts/analyze_stage147_route_order_shadow.py",
+      "status": "historical_baseline_superseded_by_v2"
+    },
+    "text_loc_disjoint_raw_stage142": {
+      "allowed_use": [
+        "historical comparison only"
+      ],
+      "forbidden_use": [
+        "active primary diagnostic use",
+        "final prediction override"
+      ],
+      "reason": "Stage144 negative controls exposed alias and organization false-positive risk; superseded by text_loc_disjoint_v2.",
+      "script": "scripts/analyze_stage142_text_location_guard_shadow.py",
+      "status": "historical_baseline"
+    }
+  },
+  "next_stage_recommendation": {
+    "goal": "Hard route/order expansion after registry creation.",
+    "stage": "Stage152-A",
+    "tasks": [
+      "Create multi-hop route/order controls.",
+      "Create implicit direction controls.",
+      "Create via/return/back-to controls.",
+      "Create additional title/quoted phrase controls.",
+      "Evaluate route_order_reversal_v2 conservatively."
+    ]
+  },
+  "recommended_workflow": {
+    "when_not_to_run": [
+      "Do not use these analyzers for training selection.",
+      "Do not use them to mutate final model predictions.",
+      "Do not use them as final deployment guards."
+    ],
+    "when_to_run_route_order_reversal_v2": [
+      "Run on route/order targeted diagnostics.",
+      "Run on prediction JSONLs when explicit from-A-to-B route reversal is suspected."
+    ],
+    "when_to_run_text_loc_disjoint_v2": [
+      "Run on prediction JSONLs when investigating false SUPPORT due to claim/evidence location mismatch.",
+      "Use especially on controlled diagnostic and external/factver prediction exports."
+    ]
+  },
+  "stage": "Stage151-A"
+}
