@@ -1,0 +1,132 @@
+{
+  "stage": "Stage144-B",
+  "decision": "STAGE144B_TEXT_LOC_DISJOINT_NEGATIVE_CONTROLS_EXPOSE_FALSE_POSITIVE_RISK",
+  "stage144a": {
+    "decision": "STAGE144A_TEXT_LOC_DISJOINT_NEGATIVE_CONTROLS_MIXED_FALSE_POSITIVE_RISK",
+    "stage142_analyzer_decision": "STAGE142_TEXT_LOCATION_GUARD_SHADOW_MIXED",
+    "n_rows": 97,
+    "n_changed_total": 26,
+    "false_support_before": 22,
+    "false_support_after": 10,
+    "delta_false_support": -12,
+    "false_ne_before": 0,
+    "false_ne_after": 14,
+    "delta_false_ne": 14,
+    "feature_false_support_tp": 12,
+    "feature_correct_support_fp": 14,
+    "feature_false_support_fn": 10,
+    "feature_precision_for_false_support_among_support_preds": 0.46153846153846156,
+    "feature_recall_for_false_support_among_support_preds": 0.5454545454545454
+  },
+  "positive_control_successes": {
+    "simple_location_mismatch_ne": {
+      "n_total": 12,
+      "n_changed_total": 12,
+      "false_support_before": 12,
+      "false_support_after": 0,
+      "assessment": "passes_explicit_location_mismatch"
+    }
+  },
+  "negative_control_passes": {
+    "same_location_exact_support": {
+      "n_total": 12,
+      "n_changed_total": 0,
+      "assessment": "safe"
+    },
+    "same_location_with_extra_distractor_support": {
+      "n_total": 12,
+      "n_changed_total": 0,
+      "assessment": "safe_with_overlap"
+    },
+    "multi_location_overlap_support": {
+      "n_total": 12,
+      "n_changed_total": 0,
+      "assessment": "safe_with_overlap"
+    },
+    "no_location_support": {
+      "n_total": 15,
+      "n_changed_total": 0,
+      "assessment": "safe"
+    },
+    "non_support_prediction_safety": {
+      "n_total": 4,
+      "n_changed_total": 0,
+      "assessment": "safe_policy_scope"
+    }
+  },
+  "failure_modes": {
+    "alias_surface_support": {
+      "n_total": 8,
+      "n_changed_total": 8,
+      "delta_false_ne": 8,
+      "examples": [
+        "New York City vs New York",
+        "NYC vs New York City",
+        "Los Angeles vs LA",
+        "San Francisco vs SF"
+      ],
+      "assessment": "severe_alias_false_positive"
+    },
+    "organization_alias_surface_support": {
+      "n_total": 6,
+      "n_changed_total": 6,
+      "delta_false_ne": 6,
+      "examples": [
+        "Beacon Harbor Labs vs Beacon Harbor Laboratory",
+        "Oxford Research Center vs Oxford Research Centre",
+        "Falcon Ridge Institute vs Falcon Ridge Initiative"
+      ],
+      "assessment": "severe_organization_like_span_false_positive"
+    },
+    "route_reversal_ne": {
+      "n_total": 6,
+      "n_changed_total": 0,
+      "false_support_remaining": 6,
+      "assessment": "known_set_based_policy_miss"
+    },
+    "lowercase_location_mismatch_ne": {
+      "n_total": 4,
+      "n_changed_total": 0,
+      "false_support_remaining": 4,
+      "assessment": "known_case_sensitive_extractor_miss"
+    }
+  },
+  "interpretation": {
+    "raw_text_loc_disjoint_shadow_diagnostic_useful": true,
+    "raw_text_loc_disjoint_final_integration_ready": false,
+    "reason_final_integration_blocked": "Alias and organization-like support controls create 14 false-NE errors.",
+    "stage142_workflow_status": "remain_optional_shadow_diagnostic",
+    "next_action": "refine extractor/policy before any final integration discussion"
+  },
+  "safety_policy": {
+    "shadow_only": true,
+    "diagnostic_only": true,
+    "final_logits_modified": false,
+    "final_predictions_modified": false,
+    "training_modified": false,
+    "checkpoint_selection_modified": false,
+    "stage128_guard_enabled": false,
+    "stage15_used": false,
+    "external_data_used_for_training": false,
+    "threshold_used_for_model_selection": false
+  },
+  "next_stage_recommendation": {
+    "stage": "Stage145",
+    "goal": "Implement a refined shadow-only text location analyzer that handles aliases and organization-like spans more conservatively.",
+    "requirements": [
+      "Keep the analyzer shadow-only.",
+      "Do not modify source predictions.",
+      "Do not integrate with final logits.",
+      "Add alias/canonicalization handling for common location aliases.",
+      "Add organization-like suffix awareness.",
+      "Re-run Stage144 negative controls after refinement."
+    ],
+    "avoid": [
+      "final prediction override",
+      "training loss integration",
+      "using gold labels as policy inputs",
+      "using intervention_type as policy input",
+      "claiming final integration readiness"
+    ]
+  }
+}
