@@ -1,0 +1,81 @@
+{
+  "stage": "Stage157-B",
+  "decision": "STAGE157B_EXTERNAL_SCALAR_EXPORT_REQUIRED_CONFIRMED",
+  "stage157a": {
+    "decision": "STAGE157A_EXTERNAL_SCALAR_EXPORT_REQUIRED",
+    "out_dir": "reports/stage157a_external_recovered_regressed_scalar_audit_20260710_055233",
+    "report_json": "reports/stage157a_external_recovered_regressed_scalar_audit_20260710_055233/stage157a_external_recovered_regressed_scalar_audit_report.json",
+    "report_md": "reports/stage157a_external_recovered_regressed_scalar_audit_20260710_055233/stage157a_external_recovered_regressed_scalar_audit_report.md"
+  },
+  "scalar_availability": {
+    "stage53_has_scalars": false,
+    "stage63_has_scalars": false,
+    "has_both_scalars": false,
+    "stage53_n_scalar_fields": 0,
+    "stage63_n_scalar_fields": 0,
+    "stage53_scalar_fields": {},
+    "stage63_scalar_fields": {}
+  },
+  "stage156a_transition_context": {
+    "both_wrong": 626,
+    "recovered_by_stage63": 218,
+    "both_correct": 104,
+    "regressed_by_stage63": 52,
+    "prediction_transitions": {
+      "NOT_ENTITLED->NOT_ENTITLED": 489,
+      "NOT_ENTITLED->SUPPORT": 264,
+      "NOT_ENTITLED->REFUTE": 191,
+      "REFUTE->REFUTE": 24,
+      "SUPPORT->SUPPORT": 18,
+      "REFUTE->SUPPORT": 9,
+      "SUPPORT->NOT_ENTITLED": 3,
+      "SUPPORT->REFUTE": 2
+    }
+  },
+  "core_diagnosis": {
+    "problem": "external entitlement/routing calibration requires scalar-level evidence",
+    "current_blocker": "external prediction exports lack internal scalar fields",
+    "why_needed": "Recovered-vs-regressed Stage63 behavior cannot be explained without frame/predicate/sufficiency/entitlement/polarity exports.",
+    "not_ready_for_architecture_patch": true,
+    "not_shadow_rule_problem": true
+  },
+  "recommended_stage158": {
+    "stage": "Stage158-A",
+    "goal": "run_current_best_external_scalar_export",
+    "purpose": "Produce external prediction JSONL with internal scalar exports for recovered/regressed/both-wrong analysis.",
+    "required_scalars": [
+      "frame_prob",
+      "predicate_coverage_prob",
+      "sufficiency_prob",
+      "entitlement_prob",
+      "compositional_entitlement_prob",
+      "learned_entitlement_prob",
+      "learned_entitlement_logit",
+      "polarity_margin",
+      "positive_energy",
+      "negative_energy"
+    ],
+    "preferred_inputs": [
+      "same VitaminC sample1000 external data used by Stage53/Stage63",
+      "current best checkpoint or Stage63-equivalent bridge-enabled checkpoint",
+      "same row ordering or stable IDs to support pairwise join against Stage156-A"
+    ],
+    "must_not_do": [
+      "do not train on external labels",
+      "do not tune thresholds on external labels",
+      "do not use external labels for checkpoint selection",
+      "do not integrate shadow diagnostics into final predictions"
+    ]
+  },
+  "safety_policy": {
+    "analysis_only": true,
+    "shadow_diagnostics_integrated": false,
+    "source_predictions_mutated": false,
+    "final_logits_modified": false,
+    "final_predictions_modified": false,
+    "training_modified": false,
+    "checkpoint_selection_modified": false,
+    "external_data_used_for_training": false,
+    "threshold_used_for_model_selection": false
+  }
+}
