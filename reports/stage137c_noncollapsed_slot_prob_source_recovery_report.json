@@ -1,0 +1,85 @@
+{
+  "stage": "Stage137-C",
+  "decision": "STAGE137C_NONCOLLAPSED_SOURCE_FOUND_BUT_FRESH_SLOT_EXPORT_COLLAPSED",
+  "stage137a": {
+    "decision": "STAGE137A_NONCOLLAPSED_EXPORT_CANDIDATES_FOUND",
+    "best_candidate": "reports/stage123b_singleprocess_evidence_interface_sweep_20260708_003428/stage118_diagnostic_core_only_predictions.jsonl",
+    "candidate_has_slot_mismatch_prob": false,
+    "candidate_pred_support_sampled": 676,
+    "candidate_support_pred_rate_sampled": 0.1352,
+    "candidate_acc_sample": 0.9972,
+    "candidate_macro_f1_sample": 0.995890,
+    "candidate_support_recall_sample": 1.0
+  },
+  "historical_stage123b_core_only": {
+    "input_jsonl": "data/stage122_prefix_core_localization_diagnostic_20260708_003422.jsonl",
+    "accuracy": 0.9977,
+    "macro_f1": 0.9964,
+    "pred_counts": {
+      "NOT_ENTITLED": 4636,
+      "REFUTE": 806,
+      "SUPPORT": 758
+    },
+    "gold_counts": {
+      "NOT_ENTITLED": 4650,
+      "REFUTE": 806,
+      "SUPPORT": 744
+    },
+    "false_NE_total": 0,
+    "false_entitlement_total": 14,
+    "polarity_error_total": 0,
+    "architecture": "vnext_minimal",
+    "router_mode": "learned_x_product",
+    "train_dev_evidence_interface": "full_evidence"
+  },
+  "stage137b_fresh_attempt": {
+    "return_code": 0,
+    "slot_mismatch_prob_exported": true,
+    "prediction_export_jsonl_exists": true,
+    "prediction_export_row_count": 720,
+    "clean_dev_pred_counts": {
+      "NOT_ENTITLED": 720,
+      "REFUTE": 0,
+      "SUPPORT": 0
+    },
+    "stage118_core_only_pred_counts": {
+      "NOT_ENTITLED": 6200,
+      "REFUTE": 0,
+      "SUPPORT": 0
+    },
+    "stage118_core_only_accuracy": 0.75,
+    "stage118_core_only_macro_f1": 0.2857,
+    "stage118_core_only_false_NE_total": 1550,
+    "usable_for_shadow_guard": false,
+    "reason_unusable": "No prediction JSONL had both slot_mismatch_prob and SUPPORT predictions."
+  },
+  "interpretation": {
+    "noncollapsed_historical_source_exists": true,
+    "slot_export_path_works": true,
+    "fresh_training_reproduction_failed": true,
+    "guard_utility_evaluated": false,
+    "not_evidence_for_guard_usefulness": true,
+    "not_evidence_for_guard_harm": true
+  },
+  "safety_policy": {
+    "final_logits_modified_by_slot_head": false,
+    "stage128_guard_enabled": false,
+    "stage15_used": false,
+    "external_data_used_for_training": false,
+    "threshold_used_for_model_selection": false
+  },
+  "next_stage_recommendation": {
+    "recommended_next_stage": "Stage138",
+    "goal": "Recover or create a non-collapsed model/export path with slot_mismatch_prob without blind short reruns.",
+    "recommended_options": [
+      "Recover the exact historical Stage123-B training config/checkpoint if available.",
+      "Use an anti-collapse/internal-prior-aware selection run before diagnostic export.",
+      "Avoid using the collapsed Stage137-B output for guard evaluation."
+    ],
+    "avoid": [
+      "claiming slot guard failure from all-NE outputs",
+      "routing slot_mismatch_prob into final logits now",
+      "repeating short 8-epoch blind reruns"
+    ]
+  }
+}
