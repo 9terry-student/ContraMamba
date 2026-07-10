@@ -1,0 +1,102 @@
+{
+  "stage": "Stage154-A",
+  "decision": "STAGE154A_RETURN_TO_CORE_STATUS_INVENTORY_READY",
+  "purpose": "Summarize post-shadow-freeze ContraMamba status and identify the next core/generalization bottleneck.",
+  "stable_assets": {
+    "clean_main_data_policy": {
+      "main_data": "data/controlled_v5_v3_without_time_swap.jsonl",
+      "time_swap_clean_training_status": "forbidden",
+      "time_swap_allowed_use": "auxiliary diagnostic/evaluation only"
+    },
+    "shadow_diagnostics": {
+      "text_loc_disjoint_v2": {
+        "status": "strong_shadow_diagnostic_soft_frozen",
+        "final_integration": "blocked"
+      },
+      "route_order_reversal_v2": {
+        "status": "conservative_shadow_diagnostic_soft_frozen",
+        "final_integration": "blocked"
+      }
+    },
+    "safety_policy": {
+      "shadow_only": true,
+      "diagnostic_only": true,
+      "source_predictions_mutated": false,
+      "final_logits_modified": false,
+      "final_predictions_modified": false,
+      "training_modified": false,
+      "checkpoint_selection_modified": false,
+      "external_data_used_for_training": false,
+      "threshold_used_for_model_selection": false
+    }
+  },
+  "recent_diagnostic_evidence": {
+    "text_loc_disjoint_v2": {
+      "stage146a_decision": "STAGE146A_V2_EXTERNAL_GENERALIZATION_PASS",
+      "n_rows": 33000,
+      "delta_false_support": -53,
+      "delta_false_ne": 3,
+      "feature_false_support_tp": 53,
+      "feature_correct_support_fp": 0,
+      "macro_f1_delta": 0.0017308314825622562
+    },
+    "route_order_reversal_v2": {
+      "stage150b_decision": "STAGE150B_ROUTE_ORDER_V2_TARGETED_RETAINED_BROADER_FP_REMOVED",
+      "stage152a_decision": "STAGE152A_ROUTE_ORDER_HARD_EXPANSION_CONSERVATIVE_PASS_WITH_BOUNDARY_MISSES",
+      "explicit_route_reversal_status": "covered",
+      "implicit_multi_hop_route_semantics": "backlog_boundary_miss",
+      "final_integration": "blocked"
+    }
+  },
+  "unresolved_core_questions": [
+    "What is the current best clean/dev architecture after the shadow diagnostic sequence?",
+    "Which external/generalization failure mode is now dominant after location and route/order diagnostics?",
+    "Is the main bottleneck still false SUPPORT, false NOT_ENTITLED, support recall, external fact-verification transfer, or prefix/artifact sensitivity?",
+    "Does vNext routing/entitlement need architecture-level modification rather than more rule diagnostics?",
+    "Which scalar exports best explain current external errors?"
+  ],
+  "non_rule_patch_bottleneck_candidates": {
+    "external_fact_verification_transfer": {
+      "status": "likely_priority",
+      "reason": "Earlier external VitaminC/Climate-FEVER diagnostics remained weak relative to clean/dev despite later shadow diagnostics."
+    },
+    "entitlement_calibration": {
+      "status": "likely_priority",
+      "reason": "Core ContraMamba goal depends on learned entitlement/compositional sufficiency rather than external rule overrides."
+    },
+    "support_recall_vs_false_support_tradeoff": {
+      "status": "likely_priority",
+      "reason": "Several stages show tension between suppressing false SUPPORT and preserving correct SUPPORT."
+    },
+    "prefix_artifact_and_core_localization": {
+      "status": "monitor",
+      "reason": "Stage120-122 explored prefix/core localization; may need consolidation before new architecture changes."
+    },
+    "implicit_temporal_or_route_semantics": {
+      "status": "backlog",
+      "reason": "Would require broader semantic parsing and negative controls; not current priority."
+    }
+  },
+  "recommended_stage155": {
+    "stage": "Stage155-A",
+    "goal": "Run or synthesize a post-freeze core error inventory over the current best prediction exports.",
+    "recommended_default": "Create a post-freeze core error taxonomy that excludes shadow-rule integration and identifies the dominant remaining model-internal failure mode.",
+    "must_not_do": [
+      "do not integrate shadow diagnostics into final predictions",
+      "do not train on external data",
+      "do not tune thresholds on external labels",
+      "do not reopen route/order expansion unless evidence shows it is dominant"
+    ],
+    "candidate_outputs": [
+      "dominant remaining error family",
+      "SUPPORT/NOT_ENTITLED/REFUTE confusion profile",
+      "scalar/error correlation table",
+      "recommendation for next architecture or evaluation stage"
+    ]
+  },
+  "interpretation": {
+    "project_state": "shadow diagnostics stabilized; core/generalization work should resume",
+    "current_best_action": "identify dominant non-rule-patch error bottleneck",
+    "final_model_direction": "model-internal structured judgment, not deterministic prediction override"
+  }
+}
