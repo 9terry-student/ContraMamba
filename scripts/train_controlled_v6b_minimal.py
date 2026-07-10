@@ -17420,6 +17420,9 @@ def main(argv: list[str] | None = None) -> int:
             "loss_config": loss_config,
             "best_pair_contrastive_frame_metrics": best_pc_metrics,
             "best_stage31c_coverage_entailment_metrics": best_covent_metrics,
+            "stage135_use_best_slot_aux": bool(
+                getattr(args, "stage135_use_best_slot_aux", False)
+            ),
             "stage135_slot_aux": _stage135_slot_aux,
             "slot_mismatch_head_input_dim": _stage135_slot_aux["slot_mismatch_head_input_dim"],
             "slot_mismatch_loss_raw": _slot_loss_raw,
@@ -18899,6 +18902,7 @@ def main(argv: list[str] | None = None) -> int:
             "aux_raw_loss_sum",
             "aux_to_ce_loss_ratio_raw",
             "aux_to_ce_loss_ratio",
+            "stage135_use_best_slot_aux",
             "stage135_slot_aux",
             "slot_mismatch_head_input_dim",
             "slot_mismatch_loss_raw",
@@ -20334,9 +20338,19 @@ def main(argv: list[str] | None = None) -> int:
             ]
             write_text(args.stage45c_report_md, "\n".join(_stage45c_md_lines))
 
-    print(json.dumps(report, indent=2, sort_keys=True))
     if args.output_json is not None:
+        if getattr(args, "stage135_use_best_slot_aux", False):
+            report["stage135_report_json"] = str(args.output_json)
+        print(json.dumps(report, indent=2, sort_keys=True))
         v5.write_report_json(report, args.output_json)
+    else:
+        if getattr(args, "stage135_use_best_slot_aux", False):
+            _stage135_report_json = Path("reports") / "stage135a_best_slot_aux_report.json"
+            report["stage135_report_json"] = str(_stage135_report_json)
+            print(json.dumps(report, indent=2, sort_keys=True))
+            v5.write_report_json(report, _stage135_report_json)
+        else:
+            print(json.dumps(report, indent=2, sort_keys=True))
     return 0
 
 
