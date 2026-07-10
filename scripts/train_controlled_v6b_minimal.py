@@ -8789,6 +8789,26 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--save-checkpoint-path",
+        type=Path,
+        default=None,
+        help=(
+            "Stage160-A: optional path to save a checkpoint for later eval-only "
+            "external scalar export. Omitted by default, preserving existing behavior."
+        ),
+    )
+    parser.add_argument(
+        "--save-checkpoint-mode",
+        choices=("final", "best_clean_dev"),
+        default="final",
+        help=(
+            "Stage160-A: checkpoint state to save. final saves the final training "
+            "weights; best_clean_dev saves the internally selected clean/dev state. "
+            "External eval, external labels, thresholds, and shadow diagnostics never "
+            "affect this selection."
+        ),
+    )
+    parser.add_argument(
         "--stage126-preflight-export-only",
         action="store_true",
         default=False,
@@ -10980,6 +11000,90 @@ def _save_model_checkpoint(
         },
         checkpoint_path,
     )
+
+def _stage160_json_safe(value: Any) -> Any:
+    if isinstance(value, Path):
+        return str(value)
+    if isinstance(value, (str, int, float, bool)) or value is None:
+        return value
+    if isinstance(value, (list, tuple)):
+        return [_stage160_json_safe(item) for item in value]
+    if isinstance(value, dict):
+        return {str(key): _stage160_json_safe(item) for key, item in value.items()}
+    return str(value)
+
+
+def _stage160_args_snapshot(args: argparse.Namespace) -> dict[str, Any]:
+    return {
+        key: _stage160_json_safe(value)
+        for key, value in sorted(vars(args).items())
+        if key not in {"stage118_diagnostic_model_checkpoint"}
+    }
+
+
+def _save_stage160_checkpoint(
+    *,
+    model: nn.Module,
+    checkpoint_path: Path,
+    args: argparse.Namespace,
+    checkpoint_mode: str,
+    selected_epoch: int | None,
+    clean_dev_metrics: dict[str, Any] | None,
+    vocab: dict[str, int] | None = None,
+) -> None:
+    checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+    label_mapping = dict(v5.ID_TO_FINAL_LABEL)
+    metadata = {
+        "architecture": getattr(args, "architecture", None),
+        "vnext_router_mode": getattr(args, "vnext_router_mode", None),
+        "backbone": getattr(args, "backbone", None),
+        "model_name": getattr(args, "model_name", None),
+        "max_length": getattr(args, "max_length", None),
+        "vnext_evidence_interface": getattr(args, "vnext_evidence_interface", None),
+        "vnext_enable_segmented_dual_pass": getattr(args, "vnext_enable_segmented_dual_pass", None),
+        "vnext_segmented_context_role": getattr(args, "vnext_segmented_context_role", None),
+        "vnext_context_risk_cap_alpha": getattr(args, "vnext_context_risk_cap_alpha", None),
+        "vnext_context_risk_threshold": getattr(args, "vnext_context_risk_threshold", None),
+        "vnext_context_risk_source": getattr(args, "vnext_context_risk_source", None),
+        "vnext_use_slot_mismatch_head": getattr(args, "vnext_use_slot_mismatch_head", None),
+        "vnext_slot_mismatch_detach_input": getattr(args, "vnext_slot_mismatch_detach_input", None),
+        "vnext_slot_mismatch_input_mode": getattr(args, "vnext_slot_mismatch_input_mode", None),
+        "vnext_slot_mismatch_head_type": getattr(args, "vnext_slot_mismatch_head_type", None),
+        "prediction_export_schema": getattr(args, "prediction_export_schema", "stage28e_v1"),
+        "label_list": [label_mapping[index] for index in sorted(label_mapping)],
+        "label_mapping": label_mapping,
+        "checkpoint_selection_mode": checkpoint_mode,
+        "selected_epoch": selected_epoch,
+        "clean_dev_metrics": _stage160_json_safe(clean_dev_metrics or {}),
+        "training_args": _stage160_args_snapshot(args),
+        "stage160_checkpoint_format_version": 1,
+        "stage160_external_data_used_for_training": False,
+        "stage160_external_used_for_checkpoint_selection": False,
+        "stage160_shadow_diagnostics_integrated": False,
+    }
+    payload = {
+        "model_state_dict": {
+            key: value.detach().cpu().clone()
+            for key, value in model.state_dict().items()
+        },
+        "metadata": metadata,
+        "architecture": metadata["architecture"],
+        "vnext_router_mode": metadata["vnext_router_mode"],
+        "backbone": metadata["backbone"],
+        "prediction_export_schema": metadata["prediction_export_schema"],
+        "label_list": metadata["label_list"],
+        "label_mapping": metadata["label_mapping"],
+        "training_args": metadata["training_args"],
+        "stage160_checkpoint_format_version": metadata["stage160_checkpoint_format_version"],
+        "stage160_external_data_used_for_training": False,
+        "stage160_external_used_for_checkpoint_selection": False,
+        "stage160_shadow_diagnostics_integrated": False,
+    }
+    if vocab is not None:
+        payload["vocab"] = dict(vocab)
+        metadata["vocab_size"] = len(vocab)
+    torch.save(payload, checkpoint_path)
+
 def _stage118_build_summary(
     *,
     diagnostic_name: str,
@@ -18518,6 +18622,40 @@ def main(argv: list[str] | None = None) -> int:
     else:
         for _rpt in reports.values():
             _rpt.pop("_best_state", None)
+
+
+    _stage160_final_state = {
+        key: value.detach().cpu().clone()
+        for key, value in model.state_dict().items()
+    }
+    if args.save_checkpoint_path is not None:
+        if len(reports) != 1:
+            parser.error("--save-checkpoint-path requires a single non-sweep run")
+        _stage160_mode = getattr(args, "save_checkpoint_mode", "final")
+        _stage160_selected_epoch = args.epochs
+        if _stage160_mode == "best_clean_dev":
+            if _ood_best_state is None:
+                parser.error(
+                    "--save-checkpoint-mode best_clean_dev requires an available internal clean/dev best state"
+                )
+            model.load_state_dict({k: v.to(device) for k, v in _ood_best_state.items()})
+            _stage160_selected_epoch = _ood_best_epoch
+        else:
+            model.load_state_dict({k: v.to(device) for k, v in _stage160_final_state.items()})
+        _stage160_clean_dev_metrics = next(iter(reports.values())).get("best_dev_metrics")
+        _save_stage160_checkpoint(
+            model=model,
+            checkpoint_path=Path(args.save_checkpoint_path),
+            args=args,
+            checkpoint_mode=_stage160_mode,
+            selected_epoch=_stage160_selected_epoch,
+            clean_dev_metrics=_stage160_clean_dev_metrics,
+            vocab=vocab,
+        )
+        report["stage160_saved_checkpoint"] = str(args.save_checkpoint_path)
+        report["stage160_saved_checkpoint_mode"] = _stage160_mode
+        report["configuration"]["stage160_saved_checkpoint"] = str(args.save_checkpoint_path)
+        report["configuration"]["stage160_saved_checkpoint_mode"] = _stage160_mode
 
     if args.save_model_checkpoint is not None:
         if len(reports) != 1:

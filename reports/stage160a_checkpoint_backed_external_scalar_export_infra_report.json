@@ -1,0 +1,43 @@
+{
+  "decision": "STAGE160A_CHECKPOINT_BACKED_EXTERNAL_SCALAR_EXPORT_INFRA_READY",
+  "stage": "Stage160-A",
+  "scope": "Infrastructure only; no training or evaluation was run for this stage.",
+  "why_needed_after_stage159a": "Stage159-A found useful Stage63 external prediction distributions without scalar fields, collapsed Stage158-A scalar exports, no obvious eval-only runner load path, and no verified loadable model-weight checkpoint artifact. Checkpoint-backed export infrastructure is required before recovered-vs-regressed scalar analysis can proceed.",
+  "implemented": {
+    "checkpoint_save_support": {
+      "file": "scripts/train_controlled_v6b_minimal.py",
+      "flags": [
+        "--save-checkpoint-path",
+        "--save-checkpoint-mode {final,best_clean_dev}"
+      ],
+      "default_behavior_changed": false,
+      "checkpoint_format": "torch.save dictionary with model_state_dict, architecture, vnext_router_mode, backbone, prediction_export_schema, label mapping, config metadata, safe training args snapshot, and Stage160 safety flags."
+    },
+    "eval_only_external_scalar_export": {
+      "file": "scripts/export_external_scalars_from_checkpoint.py",
+      "outputs": [
+        "<output-dir>/<run-prefix>_external_scalar_predictions.jsonl",
+        "<output-dir>/<run-prefix>_external_scalar_export_report.json",
+        "<output-dir>/<run-prefix>_external_scalar_export_report.md"
+      ],
+      "purpose": "Load a saved checkpoint, reconstruct the model from checkpoint metadata and CLI overrides, run external fact-verification JSONL prediction export, and emit available internal scalar fields."
+    }
+  },
+  "safety_constraints": {
+    "external_data_used_for_training": false,
+    "external_labels_used_for_training": false,
+    "external_labels_used_for_threshold_tuning": false,
+    "external_metrics_used_for_checkpoint_selection": false,
+    "shadow_diagnostics_integrated": false,
+    "final_predictions_modified_by_shadow": false,
+    "best_clean_dev_selection_source": "internal clean/dev metrics already computed by the training run only"
+  },
+  "remaining_requirement": "Future Stage161-A must run a sufficiently trained current-best configuration with --save-checkpoint-path, then use scripts/export_external_scalars_from_checkpoint.py to produce analysis-valid external scalar predictions.",
+  "not_performed": [
+    "No Kaggle run",
+    "No training run",
+    "No eval/smoke/mini/full run",
+    "No local Python validation",
+    "No git commands"
+  ]
+}
