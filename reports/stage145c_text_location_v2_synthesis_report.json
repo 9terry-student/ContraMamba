@@ -1,0 +1,110 @@
+{
+  "stage": "Stage145-C",
+  "decision": "STAGE145C_TEXT_LOC_DISJOINT_V2_NEGATIVE_CONTROLS_PASS_BROADER_RETAINED",
+  "stage145b": {
+    "combined_decision": "STAGE145B_V2_NEGATIVE_CONTROLS_PASS_AND_BROADER_STRESS_RETAINED",
+    "negative_control": {
+      "decision": "STAGE145_TEXT_LOCATION_GUARD_V2_SHADOW_CANDIDATE_PASS",
+      "n_rows": 97,
+      "n_changed_total": 16,
+      "delta_false_support": -16,
+      "delta_false_ne": 0,
+      "feature_false_support_tp": 16,
+      "feature_correct_support_fp": 0,
+      "feature_false_support_fn": 6,
+      "feature_precision": 1.0,
+      "feature_recall": 0.7272727272727273,
+      "macro_f1_before": 0.3775067750677507,
+      "macro_f1_after": 0.609674892283588,
+      "delta_macro_f1": 0.23216811721583724
+    },
+    "broader_7file": {
+      "decision": "STAGE145_TEXT_LOCATION_GUARD_V2_SHADOW_CANDIDATE_MILD_TRADEOFF",
+      "n_files": 7,
+      "n_rows": 33000,
+      "n_changed_total": 53,
+      "delta_false_support": -53,
+      "delta_false_ne": 3,
+      "feature_false_support_tp": 53,
+      "feature_correct_support_fp": 0,
+      "feature_false_support_fn": 176,
+      "macro_f1_before": 0.7075607576618963,
+      "macro_f1_after": 0.7092915891444586,
+      "delta_macro_f1": 0.0017308314825622562,
+      "min_per_file_delta_macro_f1": 0.0
+    }
+  },
+  "raw_stage144_baseline": {
+    "delta_false_support": -12,
+    "delta_false_ne": 14,
+    "feature_false_support_tp": 12,
+    "feature_correct_support_fp": 14,
+    "feature_false_support_fn": 10,
+    "precision": 0.46153846153846156,
+    "recall": 0.5454545454545454
+  },
+  "v2_refinement_effect": {
+    "alias_surface_false_positive_fixed": true,
+    "organization_like_false_positive_fixed": true,
+    "explicit_location_mismatch_retained": true,
+    "lowercase_known_location_mismatch_improved": true,
+    "broader_7file_behavior_retained": true,
+    "route_reversal_still_missed": true
+  },
+  "policy": {
+    "name": "text_loc_disjoint_v2",
+    "script": "scripts/analyze_stage145_text_location_guard_shadow_v2.py",
+    "status": "strong_shadow_candidate",
+    "final_integration_status": "not_ready",
+    "reason_final_integration_not_ready": "External evidence remains limited and Stage63 still shows a small false-NE tradeoff; route reversal remains outside the set-based policy."
+  },
+  "policy_input_safety": {
+    "uses_claim_text": true,
+    "uses_evidence_text": true,
+    "uses_original_prediction": true,
+    "uses_deterministic_alias_rules": true,
+    "uses_deterministic_org_like_rules": true,
+    "uses_intervention_type": false,
+    "uses_slot_mismatch_target": false,
+    "uses_gold_label_for_policy": false,
+    "uses_diagnostic_family_for_policy": false,
+    "uses_file_path_heuristics": false,
+    "uses_row_id_heuristics": false
+  },
+  "safety_policy": {
+    "shadow_only": true,
+    "diagnostic_only": true,
+    "source_predictions_mutated": false,
+    "final_logits_modified": false,
+    "final_predictions_modified": false,
+    "training_modified": false,
+    "checkpoint_selection_modified": false,
+    "stage128_guard_enabled": false,
+    "stage15_used": false,
+    "external_data_used_for_training": false,
+    "threshold_used_for_model_selection": false
+  },
+  "remaining_limitations": [
+    "Route reversal remains missed because the policy is set-based rather than relation/order-aware.",
+    "External validation remains limited.",
+    "Stage63 still shows a small false-NE tradeoff of +3.",
+    "Alias and organization rules are deterministic and incomplete.",
+    "The analyzer remains shadow-only and should not be used as final prediction override."
+  ],
+  "next_stage_recommendation": {
+    "stage": "Stage146",
+    "goal": "Run v2 on additional external/general prediction exports or create a relation/order-aware diagnostic for route reversal.",
+    "recommended_actions": [
+      "Keep Stage145 v2 shadow-only.",
+      "Apply v2 to future external prediction exports.",
+      "Optionally design a separate route/order mismatch diagnostic rather than overloading text_loc_disjoint_v2.",
+      "Do not integrate v2 into final logits or final predictions yet."
+    ],
+    "avoid": [
+      "automatic final prediction override",
+      "training loss integration",
+      "checkpoint selection using v2 outputs",
+      "claiming final deployment readiness"
+    ]
+  }
+}
