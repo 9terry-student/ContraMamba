@@ -1,0 +1,107 @@
+{
+  "stage": "Stage139-B",
+  "decision": "STAGE139B_CONDITIONAL_LOCATION_GUARD_UPPER_BOUND_SAFE",
+  "stage139a": {
+    "decision": "STAGE139A_CONDITIONAL_GUARD_CANDIDATE_SAFE",
+    "diagnostic_type": "cross_run_shadow_upper_bound",
+    "diagnostic_only": true,
+    "uses_controlled_intervention_metadata": true,
+    "model_consistent_final_guard_evidence": false,
+    "n_total": 6200,
+    "base_metrics": {
+      "accuracy": 0.997741935483871,
+      "macro_f1": 0.9963904828740083,
+      "false_support": 14,
+      "false_ne": 0,
+      "support_recall": 1.0,
+      "support_precision": 0.9815303430079155,
+      "refute_recall": 1.0,
+      "not_entitled_recall": 0.9969892473118279,
+      "pred_REFUTE": 806,
+      "pred_NOT_ENTITLED": 4636,
+      "pred_SUPPORT": 758
+    }
+  },
+  "best_policy": {
+    "policy": "oracle_location_swap_all",
+    "deployable": false,
+    "reason_not_deployable": "Uses controlled diagnostic metadata intervention_type == location_swap.",
+    "n_changed_total": 14,
+    "n_support_to_ne": 14,
+    "false_support_before": 14,
+    "false_support_after": 0,
+    "false_ne_before": 0,
+    "false_ne_after": 0,
+    "macro_f1_before": 0.9963904828740083,
+    "macro_f1_after": 1.0,
+    "delta_macro_f1": 0.003609517125991668,
+    "support_recall_before": 1.0,
+    "support_recall_after": 1.0,
+    "support_precision_before": 0.9815303430079155,
+    "support_precision_after": 1.0,
+    "assessment": "upper_bound_candidate_safe"
+  },
+  "conditional_slotprob_observation": {
+    "policy": "location_swap_and_slotprob_ge_t",
+    "safe_thresholds_observed": [
+      0.3,
+      0.4,
+      0.5,
+      0.55,
+      0.6,
+      0.62
+    ],
+    "n_changed_total": 14,
+    "false_support_after": 0,
+    "false_ne_after": 0,
+    "macro_f1_after": 1.0,
+    "assessment": "safe_when_conditioned_on_controlled_location_swap"
+  },
+  "global_policy_rejection": {
+    "global_threshold_safe": false,
+    "reason": "Global slot_mismatch_prob thresholds either destroy correct SUPPORT predictions or fail to reduce false SUPPORT.",
+    "example_threshold_0_62": {
+      "false_support_after": 0,
+      "false_ne_after": 503,
+      "macro_f1_after": 0.8126764261018201
+    }
+  },
+  "group_observation": {
+    "all_false_supports_in_location_swap": true,
+    "false_support_count": 14,
+    "location_swap_false_ne_increase_under_best_policy": 0,
+    "example_pattern": "location mismatch such as claim Dublin vs evidence Cork"
+  },
+  "interpretation": {
+    "global_guard_useful": false,
+    "conditional_upper_bound_useful": true,
+    "remaining_question": "Can a deployable location-mismatch condition be inferred without intervention_type or target metadata?",
+    "recommended_next_stage": "Stage140"
+  },
+  "safety_policy": {
+    "final_logits_modified": false,
+    "final_predictions_modified": false,
+    "training_modified": false,
+    "checkpoint_selection_modified": false,
+    "stage128_guard_enabled": false,
+    "stage15_used": false,
+    "external_data_used_for_training": false,
+    "threshold_used_for_model_selection": false
+  },
+  "next_stage_recommendation": {
+    "stage": "Stage140",
+    "goal": "Design/evaluate deployable location-mismatch detection signals to approximate the Stage139 upper-bound condition.",
+    "candidate_directions": [
+      "Use exported claim/evidence core text to derive location mismatch features.",
+      "Analyze whether existing frame/location scalars separate location_swap false SUPPORTs from correct SUPPORTs.",
+      "Avoid intervention_type, slot_mismatch_target, gold labels, or diagnostic family metadata as inference signals.",
+      "Keep evaluation shadow-only before any final-logit integration."
+    ],
+    "avoid": [
+      "global slot_mismatch_prob guard",
+      "using intervention_type as a deployable rule",
+      "routing conditional guard into final logits before deployable signal validation",
+      "claiming final model-consistent evidence from cross-run merge"
+    ]
+  }
+}
