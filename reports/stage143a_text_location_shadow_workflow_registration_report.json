@@ -1,0 +1,75 @@
+{
+  "stage": "Stage143-A",
+  "decision": "STAGE143A_TEXT_LOCATION_SHADOW_WORKFLOW_REGISTERED_OPTIONAL_DIAGNOSTIC",
+  "registered_workflow": {
+    "name": "Stage142 Text Location Guard Shadow Workflow",
+    "script": "scripts/analyze_stage142_text_location_guard_shadow.py",
+    "documentation": "docs/stage142_text_location_guard_shadow_workflow.md",
+    "status": "official_optional_shadow_diagnostic",
+    "final_integration_status": "blocked"
+  },
+  "evidence_basis": {
+    "stage142b_decision": "STAGE142_TEXT_LOCATION_GUARD_SHADOW_CANDIDATE_ROBUST",
+    "n_files": 7,
+    "n_rows": 33000,
+    "n_changed_total": 53,
+    "delta_false_support": -53,
+    "delta_false_ne": 3,
+    "delta_macro_f1": 0.0017308314825622562,
+    "feature_correct_support_fp": 0,
+    "feature_precision_for_false_support_among_support_preds": 1.0
+  },
+  "policy_input_safety": {
+    "uses_claim_text": true,
+    "uses_evidence_text": true,
+    "uses_original_prediction": true,
+    "uses_intervention_type": false,
+    "uses_slot_mismatch_target": false,
+    "uses_gold_label_for_policy": false,
+    "uses_diagnostic_family_for_policy": false
+  },
+  "workflow_usage_policy": {
+    "run_after_major_prediction_exports": true,
+    "run_after_external_factver_diagnostics": true,
+    "run_for_false_support_audits": true,
+    "optional": true,
+    "shadow_only": true,
+    "required_for_model_selection": false,
+    "allowed_to_modify_source_predictions": false
+  },
+  "safety_policy": {
+    "shadow_only": true,
+    "diagnostic_only": true,
+    "final_logits_modified": false,
+    "final_predictions_modified": false,
+    "training_modified": false,
+    "checkpoint_selection_modified": false,
+    "stage128_guard_enabled": false,
+    "stage15_used": false,
+    "external_data_used_for_training": false,
+    "threshold_used_for_model_selection": false
+  },
+  "known_limitations": [
+    "Regex-based location extraction can miss lower-case, non-English, ambiguous, or complex locations.",
+    "The heuristic may confuse location, organization, and person/title spans in harder text.",
+    "External evidence remains limited.",
+    "Stage63 showed a small false-NE tradeoff of +3.",
+    "The workflow is not evidence for final-logit integration."
+  ],
+  "next_stage_recommendation": {
+    "stage": "Stage144",
+    "goal": "Run targeted negative-control/adversarial text-location stress tests to measure false-positive risk before any final integration discussion.",
+    "recommended_actions": [
+      "Generate or collect same-location SUPPORT controls with varied surface forms.",
+      "Test multi-location evidence where one location matches and another distractor is present.",
+      "Test organization/person names that look location-like.",
+      "Keep all analysis shadow-only."
+    ],
+    "avoid": [
+      "automatic final prediction override",
+      "training loss integration",
+      "checkpoint selection based on Stage142 outputs",
+      "using intervention_type or gold labels as policy inputs"
+    ]
+  }
+}
