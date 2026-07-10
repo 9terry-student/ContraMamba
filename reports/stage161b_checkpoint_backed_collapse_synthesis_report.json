@@ -1,0 +1,111 @@
+{
+  "stage": "Stage161-B",
+  "decision": "STAGE161B_CHECKPOINT_BACKED_EXPORT_WORKS_BUT_CURRENT_CONFIG_COLLAPSES",
+  "source": {
+    "stage161a_runtime_interrupted": true,
+    "stage161a_summary_recovered_from_chat": true,
+    "raw_kaggle_artifacts_may_be_unavailable": true
+  },
+  "stage161a_result": {
+    "decision": "STAGE161A_CHECKPOINT_BACKED_EXTERNAL_SCALAR_EXPORT_COLLAPSED_NEEDS_LONGER_OR_CONFIG_FIX",
+    "epochs": 30,
+    "seed": 1,
+    "architecture": "vnext_minimal",
+    "vnext_router_mode": "learned_x_product",
+    "backbone": "mamba",
+    "save_checkpoint_mode": "best_clean_dev",
+    "n_rows": 1000,
+    "accuracy": 0.14,
+    "macro_f1": 0.08626074131076054,
+    "prediction_counts": {
+      "NOT_ENTITLED": 985,
+      "REFUTE": 13,
+      "SUPPORT": 2
+    },
+    "gold_counts": {
+      "NOT_ENTITLED": 145,
+      "REFUTE": 355,
+      "SUPPORT": 500
+    },
+    "required_scalar_pass": true,
+    "noncollapsed_pass": false
+  },
+  "scalar_coverage": {
+    "required_scalar_pass": true,
+    "n_scalar_fields": 10,
+    "fields": {
+      "frame_prob": 1000,
+      "predicate_coverage_prob": 1000,
+      "sufficiency_prob": 1000,
+      "entitlement_prob": 1000,
+      "compositional_entitlement_prob": 1000,
+      "learned_entitlement_prob": 1000,
+      "learned_entitlement_logit": 1000,
+      "polarity_margin": 1000,
+      "positive_energy": 1000,
+      "negative_energy": 1000
+    }
+  },
+  "comparison": {
+    "stage158a_1epoch": {
+      "status": "scalar_path_confirmed_but_collapsed",
+      "accuracy": 0.174,
+      "prediction_counts": {
+        "NOT_ENTITLED": 959,
+        "SUPPORT": 41,
+        "REFUTE": 0
+      }
+    },
+    "stage161a_30epoch": {
+      "status": "checkpoint_backed_export_confirmed_but_more_collapsed",
+      "accuracy": 0.14,
+      "prediction_counts": {
+        "NOT_ENTITLED": 985,
+        "REFUTE": 13,
+        "SUPPORT": 2
+      }
+    },
+    "stage63_external": {
+      "status": "non_collapsed_distribution_but_no_scalars",
+      "accuracy": 0.322,
+      "prediction_counts": {
+        "REFUTE": 217,
+        "NOT_ENTITLED": 492,
+        "SUPPORT": 291
+      }
+    }
+  },
+  "interpretation": {
+    "infrastructure_status": "checkpoint-backed external scalar export works",
+    "model_status": "current Stage161 configuration is not Stage63-equivalent",
+    "primary_blocker": "Stage63/current-best run configuration recovery",
+    "do_not_proceed_to_recovered_regressed_scalar_analysis": true,
+    "why": "The available scalar-bearing predictions are collapsed and therefore not analysis-valid."
+  },
+  "recommended_stage162": {
+    "stage": "Stage162-A",
+    "goal": "Recover non-collapsed Stage63-equivalent/current-best configuration before scalar analysis.",
+    "recommended_actions": [
+      "compare Stage63 run command/config/report against Stage161-A training config",
+      "identify missing bridge/composer/training flags",
+      "identify whether Stage63 used bridge-enabled data, recovery composer, or different architecture settings",
+      "rerun only after config difference is known",
+      "do not blindly increase epochs"
+    ],
+    "must_not_do": [
+      "do not train on external labels",
+      "do not tune thresholds on external labels",
+      "do not use external metrics for checkpoint selection",
+      "do not integrate shadow diagnostics",
+      "do not use collapsed scalar predictions for recovered-vs-regressed conclusions"
+    ]
+  },
+  "safety_policy": {
+    "report_only": true,
+    "external_data_used_for_training": false,
+    "external_labels_used_for_training": false,
+    "threshold_used_for_model_selection": false,
+    "checkpoint_selection_modified": false,
+    "shadow_diagnostics_integrated": false
+  }
+}
