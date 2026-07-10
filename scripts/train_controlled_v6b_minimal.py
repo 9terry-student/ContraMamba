@@ -4655,6 +4655,16 @@ _STAGE113_VNEXT_EXPORT_FIELDS: tuple[str, ...] = (
     *_STAGE113_VNEXT_METADATA_FIELDS,
 )
 
+_SLOT_MISMATCH_PREDICTION_EXPORT_FIELDS: tuple[str, ...] = (
+    "slot_mismatch_logit",
+    "slot_mismatch_prob",
+    "slot_mismatch_target",
+    "slot_mismatch_target_valid",
+    "vnext_slot_mismatch_input_mode",
+    "vnext_slot_mismatch_head_type",
+    "stage135_use_best_slot_aux",
+)
+
 _STAGE123_VNEXT_EVIDENCE_EXPORT_FIELDS: tuple[str, ...] = (
     "vnext_evidence_interface",
     "stage118_diagnostic_evidence_interface",
@@ -4709,6 +4719,7 @@ _STAGE118_CORE_PREDICTION_FIELDS: set[str] = {
     "pred_final_label",
     "pred_label",
     *_STAGE113_VNEXT_EXPORT_FIELDS,
+    *_SLOT_MISMATCH_PREDICTION_EXPORT_FIELDS,
     *_STAGE123_VNEXT_EVIDENCE_EXPORT_FIELDS,
 }
 
@@ -5163,13 +5174,103 @@ def _stage113_add_vnext_scalars(row: dict[str, Any], output: dict[str, Any], ind
     row.update(_stage113_vnext_export_values(output, index))
 
 
+def _slot_mismatch_prediction_export_active(
+    output: dict[str, Any],
+    args: "argparse.Namespace | None",
+) -> bool:
+    return bool(
+        output.get("slot_mismatch_logit") is not None
+        or output.get("slot_mismatch_prob") is not None
+        or (
+            args is not None
+            and getattr(args, "vnext_use_slot_mismatch_head", False)
+        )
+    )
+
+
+def _slot_mismatch_metadata_value(
+    output: dict[str, Any],
+    args: "argparse.Namespace | None",
+    key: str,
+    default: Any,
+) -> Any:
+    if output.get(key) is not None:
+        return _stage113_jsonable_metadata(output.get(key))
+    if args is not None:
+        return getattr(args, key, default)
+    return default
+
+
+def _add_slot_mismatch_prediction_exports(
+    row: dict[str, Any],
+    record: dict[str, Any],
+    output: dict[str, Any],
+    index: int,
+    args: "argparse.Namespace | None",
+) -> None:
+    if not _slot_mismatch_prediction_export_active(output, args):
+        return
+
+    row["slot_mismatch_logit"] = _stage113_scalar_value(
+        output, "slot_mismatch_logit", index
+    )
+    row["slot_mismatch_prob"] = _stage113_scalar_value(
+        output, "slot_mismatch_prob", index
+    )
+
+    if "slot_mismatch_target" in record or "slot_mismatch_target_valid" in record:
+        row["slot_mismatch_target"] = record.get("slot_mismatch_target")
+        row["slot_mismatch_target_valid"] = record.get("slot_mismatch_target_valid")
+    else:
+        slot_target, slot_valid = derive_slot_mismatch_target(record)
+        row["slot_mismatch_target"] = int(slot_target) if slot_valid else None
+        row["slot_mismatch_target_valid"] = bool(slot_valid)
+
+    row["vnext_slot_mismatch_input_mode"] = _slot_mismatch_metadata_value(
+        output,
+        args,
+        "vnext_slot_mismatch_input_mode",
+        "sufficiency_repr",
+    )
+    row["vnext_slot_mismatch_head_type"] = _slot_mismatch_metadata_value(
+        output,
+        args,
+        "vnext_slot_mismatch_head_type",
+        "linear",
+    )
+    row["stage135_use_best_slot_aux"] = (
+        bool(getattr(args, "stage135_use_best_slot_aux", False))
+        if args is not None else None
+    )
+
+
+def _slot_mismatch_prediction_export_report(
+    prediction_rows: list[dict[str, Any]],
+) -> dict[str, Any]:
+    present = sorted(
+        key
+        for key in _SLOT_MISMATCH_PREDICTION_EXPORT_FIELDS
+        if any(key in row for row in prediction_rows)
+    )
+    return {
+        "prediction_export_includes_slot_mismatch_prob": any(
+            "slot_mismatch_prob" in row for row in prediction_rows
+        ),
+        "prediction_export_slot_mismatch_field_names": present,
+    }
+
+
 def _stage113_prediction_row_exports(prediction_rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
     exports: dict[str, dict[str, Any]] = {}
     for row in prediction_rows:
         row_id = row.get("id")
         if row_id is None:
             continue
-        exported = {key: row[key] for key in _STAGE113_VNEXT_EXPORT_FIELDS if key in row}
+        exported = {
+            key: row[key]
+            for key in (*_STAGE113_VNEXT_EXPORT_FIELDS, *_SLOT_MISMATCH_PREDICTION_EXPORT_FIELDS)
+            if key in row
+        }
         if exported:
             exports[str(row_id)] = exported
     return exports
@@ -5221,7 +5322,7 @@ def _stage115_clean_dev_scalar_rows(
                 row.get("pred_label", row.get("pred_final_label")),
             )
         )
-        for key in _STAGE113_VNEXT_EXPORT_FIELDS:
+        for key in (*_STAGE113_VNEXT_EXPORT_FIELDS, *_SLOT_MISMATCH_PREDICTION_EXPORT_FIELDS):
             if key in row:
                 item[key] = row[key]
         exported.append(item)
@@ -5702,20 +5803,11 @@ def prediction_records_v6b(
             #  Shallow raw record snapshot 
             "raw_record": {k: record[k] for k in _S28E_RAW_RECORD_KEYS if k in record},
         }
-        if output.get("slot_mismatch_logit") is not None or (
-            args is not None and getattr(args, "vnext_use_slot_mismatch_head", False)
-        ):
-            _slot_target, _slot_valid = derive_slot_mismatch_target(record)
-            item["slot_mismatch_target"] = int(_slot_target) if _slot_valid else None
-            item["slot_mismatch_target_valid"] = bool(_slot_valid)
-            if args is not None:
-                item["stage135_use_best_slot_aux"] = bool(
-                    getattr(args, "stage135_use_best_slot_aux", False)
-                )
         for metadata_key in _S28E_PRESERVED_METADATA_KEYS:
             if metadata_key in record:
                 item[metadata_key] = record[metadata_key]
         _stage113_add_vnext_scalars(item, output, index)
+        _add_slot_mismatch_prediction_exports(item, record, output, index, args)
         output_segmented_active = bool(output.get("vnext_segmented_dual_pass_active", False))
         record_segmented_active = bool(record.get("vnext_segmented_dual_pass_active", False))
         vnext_segmented_active = record_segmented_active or output_segmented_active
@@ -9780,10 +9872,7 @@ def _stage118_prediction_rows(
             row["source_id"] = pred.get("source_id")
         if pred.get("final_logits") is not None:
             row["logits"] = pred.get("final_logits")
-        for key in _STAGE113_VNEXT_EXPORT_FIELDS:
-            if key in pred:
-                row[key] = pred[key]
-        for key in ("slot_mismatch_target", "slot_mismatch_target_valid"):
+        for key in (*_STAGE113_VNEXT_EXPORT_FIELDS, *_SLOT_MISMATCH_PREDICTION_EXPORT_FIELDS):
             if key in pred:
                 row[key] = pred[key]
         for key in _STAGE123_VNEXT_EVIDENCE_EXPORT_FIELDS:
@@ -18335,6 +18424,30 @@ def main(argv: list[str] | None = None) -> int:
         name: run_report.pop("_best_dev_predictions")
         for name, run_report in reports.items()
     }
+    _prediction_export_slot_mismatch_audits = {
+        name: _slot_mismatch_prediction_export_report(rows)
+        for name, rows in prediction_exports.items()
+    }
+    _slot_export_field_names = sorted(
+        {
+            field_name
+            for audit in _prediction_export_slot_mismatch_audits.values()
+            for field_name in audit["prediction_export_slot_mismatch_field_names"]
+        }
+    )
+    _slot_export_audit = {
+        "prediction_export_includes_slot_mismatch_prob": any(
+            audit["prediction_export_includes_slot_mismatch_prob"]
+            for audit in _prediction_export_slot_mismatch_audits.values()
+        ),
+        "prediction_export_slot_mismatch_field_names": _slot_export_field_names,
+    }
+    report.update(_slot_export_audit)
+    report["configuration"].update(_slot_export_audit)
+    if len(_prediction_export_slot_mismatch_audits) > 1:
+        report["prediction_export_slot_mismatch_audit_by_run"] = (
+            _prediction_export_slot_mismatch_audits
+        )
     _ood_best_state: dict[str, torch.Tensor] | None = None
     _ood_best_epoch: int = args.epochs
     if len(reports) == 1:
@@ -18740,12 +18853,14 @@ def main(argv: list[str] | None = None) -> int:
                     args, "v7_temporal_safety_cap_detach", False
                 ),
             }
+        metadata.update(
+            _slot_mismatch_prediction_export_report(prediction_exports[run_name])
+        )
         v5.write_predictions_json(
             args.output_predictions_json,
             metadata,
             prediction_exports[run_name],
         )
-
     if len(reports) == 1:
         single = next(iter(reports.values()))
         for key in (
@@ -19772,6 +19887,9 @@ def main(argv: list[str] | None = None) -> int:
                     "ood_flag_source": ood_flag_source,
                     "final_logits_used": True,
                 }
+                ood_metadata.update(
+                    _slot_mismatch_prediction_export_report(ood_predictions)
+                )
                 v5.write_predictions_json(
                     args.output_ood_predictions_json, ood_metadata, ood_predictions
                 )
@@ -20004,6 +20122,9 @@ def main(argv: list[str] | None = None) -> int:
                         "external_schema_records_with_added_aux_labels"
                     ],
                 }
+                _ext_pred_metadata.update(
+                    _slot_mismatch_prediction_export_report(_ext_pred_records)
+                )
                 v5.write_predictions_json(
                     _ext_pred_out_path_obj, _ext_pred_metadata, _ext_pred_records
                 )
