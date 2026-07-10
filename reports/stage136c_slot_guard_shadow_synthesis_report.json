@@ -1,0 +1,78 @@
+{
+  "stage": "Stage136-C",
+  "decision": "STAGE136C_SLOT_GUARD_SHADOW_INFRA_READY_BUT_UNINFORMATIVE_ON_COLLAPSED_SANITY_RUN",
+  "stage136a_analyzer": {
+    "script": "scripts/analyze_stage136_slot_guard_shadow.py",
+    "policy": "support_to_ne",
+    "export_only": true,
+    "modifies_training": false,
+    "modifies_model_forward": false,
+    "modifies_final_logits": false,
+    "modifies_checkpoint_selection": false,
+    "modifies_source_prediction_jsonl": false
+  },
+  "stage136b_export": {
+    "per_row_prediction_jsonl_created": true,
+    "required_slot_fields_exported": true,
+    "fields": [
+      "slot_mismatch_logit",
+      "slot_mismatch_prob",
+      "slot_mismatch_target",
+      "slot_mismatch_target_valid",
+      "vnext_slot_mismatch_input_mode",
+      "vnext_slot_mismatch_head_type",
+      "stage135_use_best_slot_aux"
+    ]
+  },
+  "stage136b_shadow_result": {
+    "decision": "STAGE136A_SHADOW_GUARD_UNINFORMATIVE_NO_SUPPORT_PREDICTIONS",
+    "input_jsonl": "reports/stage136b0_slot_prob_export_sanity_20260710_014612/stage136b0_export_sanity_report_predictions.jsonl",
+    "thresholds": [
+      0.5,
+      0.6,
+      0.7,
+      0.8,
+      0.9
+    ],
+    "n_total": 24,
+    "n_with_slot_prob": 24,
+    "n_missing_slot_prob": 0,
+    "support_pred_before": 0,
+    "support_pred_after": 0,
+    "n_changed_total": 0,
+    "false_support_before": 0,
+    "false_support_after": 0,
+    "false_ne_before": 6,
+    "false_ne_after": 6,
+    "macro_f1_before": 0.285714,
+    "macro_f1_after": 0.285714,
+    "slot_target_auc": 0.466667,
+    "slot_target_auprc": 0.700501,
+    "slot_target_positive_count": 10,
+    "slot_target_negative_count": 6
+  },
+  "interpretation": {
+    "infrastructure_status": "ready",
+    "guard_utility_status": "not_evaluated",
+    "reason": "The sanity run had zero SUPPORT predictions, so the SUPPORT-to-NOT_ENTITLED shadow policy had no eligible rows.",
+    "not_evidence_for_guard_usefulness": true,
+    "not_evidence_for_guard_harm": true
+  },
+  "safety_policy": {
+    "final_logits_modified": false,
+    "final_predictions_modified": false,
+    "stage128_guard_enabled": false,
+    "stage15_used": false,
+    "external_data_used_for_training": false,
+    "threshold_used_for_model_selection": false
+  },
+  "next_stage_recommendation": {
+    "recommended_next_stage": "Stage137",
+    "goal": "Obtain a non-collapsed prediction export containing slot_mismatch_prob and SUPPORT predictions, then rerun Stage136 shadow analysis.",
+    "avoid": [
+      "routing slot_mismatch_prob into final logits now",
+      "claiming guard usefulness from the collapsed sanity run",
+      "running more tiny sanity exports that predict only NOT_ENTITLED"
+    ]
+  }
+}
