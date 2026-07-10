@@ -1,0 +1,101 @@
+{
+  "stage": "Stage142-C",
+  "decision": "STAGE142C_TEXT_LOCATION_SHADOW_ANALYZER_REPRODUCED_ROBUST",
+  "stage142b": {
+    "decision": "STAGE142_TEXT_LOCATION_GUARD_SHADOW_CANDIDATE_ROBUST",
+    "output_dir": "reports/stage142b_text_location_guard_shadow_20260710_034736",
+    "n_files": 7,
+    "n_rows": 33000,
+    "n_valid_rows": 33000,
+    "n_changed_total": 53,
+    "n_support_to_ne": 53,
+    "false_support_before": 229,
+    "false_support_after": 176,
+    "delta_false_support": -53,
+    "false_ne_before": 2879,
+    "false_ne_after": 2882,
+    "delta_false_ne": 3,
+    "macro_f1_before": 0.7075607576618963,
+    "macro_f1_after": 0.7092915891444586,
+    "delta_macro_f1": 0.0017308314825622562,
+    "min_per_file_delta_macro_f1": 0.0,
+    "feature_false_support_tp": 53,
+    "feature_correct_support_fp": 0,
+    "feature_false_support_fn": 176,
+    "feature_precision_for_false_support_among_support_preds": 1.0,
+    "feature_recall_for_false_support_among_support_preds": 0.2314410480349345
+  },
+  "policy": {
+    "name": "text_loc_disjoint",
+    "description": "For SUPPORT predictions only, disjoint non-empty extracted claim/evidence location sets shadow SUPPORT to NOT_ENTITLED.",
+    "uses_claim_text": true,
+    "uses_evidence_text": true,
+    "uses_original_prediction": true,
+    "uses_intervention_type": false,
+    "uses_slot_mismatch_target": false,
+    "uses_gold_label_for_policy": false,
+    "uses_diagnostic_family_for_policy": false,
+    "deployment_status": "shadow_diagnostic_tool_only"
+  },
+  "per_file_summary": {
+    "stage123b_diagnostic_variants": {
+      "n_files": 5,
+      "total_delta_false_support": -49,
+      "total_delta_false_ne": 0,
+      "all_macro_f1_non_decreasing": true,
+      "interpretation": "Strong controlled diagnostic robustness across evidence interfaces."
+    },
+    "vitaminc_external": {
+      "n_files": 2,
+      "stage53_effect": "no_effect",
+      "stage63_delta_false_support": -4,
+      "stage63_delta_false_ne": 3,
+      "stage63_macro_f1_change": "slightly_positive",
+      "interpretation": "Limited external evidence with small false-NE tradeoff."
+    }
+  },
+  "script_status": {
+    "script": "scripts/analyze_stage142_text_location_guard_shadow.py",
+    "reusable": true,
+    "arbitrary_prediction_jsonl_supported": true,
+    "gold_missing_supported": true,
+    "group_audit_supported": true,
+    "changed_examples_exported": true,
+    "source_predictions_mutated": false
+  },
+  "interpretation": {
+    "stage141_reproduced_by_script": true,
+    "official_shadow_diagnostic_ready": true,
+    "final_logit_integration_ready": false,
+    "final_prediction_integration_ready": false,
+    "reason_not_final_ready": "External evidence remains limited and Stage63 shows a small false-NE tradeoff; the extractor is regex-based."
+  },
+  "safety_policy": {
+    "shadow_only": true,
+    "diagnostic_only": true,
+    "final_logits_modified": false,
+    "final_predictions_modified": false,
+    "training_modified": false,
+    "checkpoint_selection_modified": false,
+    "stage128_guard_enabled": false,
+    "stage15_used": false,
+    "external_data_used_for_training": false,
+    "threshold_used_for_model_selection": false
+  },
+  "next_stage_recommendation": {
+    "stage": "Stage143",
+    "goal": "Register Stage142 analyzer as an official optional diagnostic workflow and define when it should be run.",
+    "recommended_actions": [
+      "Add documentation describing the Stage142 shadow analyzer.",
+      "Add a report-only workflow note for applying it to future prediction JSONLs.",
+      "Keep it optional and shadow-only.",
+      "Do not route the policy into final logits or final predictions."
+    ],
+    "avoid": [
+      "automatic final prediction override",
+      "training loss integration",
+      "using intervention_type or slot_mismatch_target as policy inputs",
+      "claiming broad external generalization from current limited external evidence"
+    ]
+  }
+}
