@@ -1,0 +1,105 @@
+{
+  "stage": "Stage156-B",
+  "decision": "STAGE156B_EXTERNAL_BRIDGE_IMPROVES_COLLAPSE_BUT_OVER_RELEASES_ENTITLEMENT",
+  "stage156a": {
+    "decision": "STAGE156A_EXTERNAL_PAIRWISE_TRANSFER_INVENTORY_READY",
+    "out_dir": "reports/stage156a_external_pairwise_transfer_inventory_20260710_054822",
+    "report_json": "reports/stage156a_external_pairwise_transfer_inventory_20260710_054822/stage156a_external_pairwise_transfer_inventory_report.json",
+    "n_paired_rows": 1000
+  },
+  "stage53_frozen_external": {
+    "accuracy": 0.156,
+    "macro_f1": 0.11671748688294066,
+    "pred_counts": {
+      "REFUTE": 33,
+      "NOT_ENTITLED": 944,
+      "SUPPORT": 23
+    },
+    "false_support": 6,
+    "false_not_entitled": 814,
+    "false_refute": 24,
+    "support_recall": 0.034,
+    "not_entitled_recall": 0.896551724137931,
+    "refute_recall": 0.02535211267605634,
+    "diagnosis": "severe_NOT_ENTITLED_collapse"
+  },
+  "stage63_bridge_external": {
+    "accuracy": 0.322,
+    "macro_f1": 0.3153191098829531,
+    "pred_counts": {
+      "REFUTE": 217,
+      "NOT_ENTITLED": 492,
+      "SUPPORT": 291
+    },
+    "false_support": 135,
+    "false_not_entitled": 411,
+    "false_refute": 132,
+    "support_recall": 0.312,
+    "not_entitled_recall": 0.5586206896551724,
+    "refute_recall": 0.23943661971830985,
+    "diagnosis": "partial_collapse_recovery_with_over_release"
+  },
+  "delta_stage63_minus_stage53": {
+    "accuracy": 0.166,
+    "macro_f1": 0.19860162300001244,
+    "false_support": 129,
+    "false_not_entitled": -403,
+    "false_refute": 108,
+    "support_recall": 0.278,
+    "not_entitled_recall": -0.33793103448275863,
+    "refute_recall": 0.2140845070422535
+  },
+  "pairwise_transitions": {
+    "both_wrong": 626,
+    "recovered_by_stage63": 218,
+    "both_correct": 104,
+    "regressed_by_stage63": 52
+  },
+  "prediction_transitions": {
+    "NOT_ENTITLED->NOT_ENTITLED": 489,
+    "NOT_ENTITLED->SUPPORT": 264,
+    "NOT_ENTITLED->REFUTE": 191,
+    "REFUTE->REFUTE": 24,
+    "SUPPORT->SUPPORT": 18,
+    "REFUTE->SUPPORT": 9,
+    "SUPPORT->NOT_ENTITLED": 3,
+    "SUPPORT->REFUTE": 2
+  },
+  "core_diagnosis": {
+    "external_transfer_status": "improved_but_still_weak",
+    "main_failure_mode": "coarse_entitlement_release",
+    "stage53_problem": "overly conservative NOT_ENTITLED collapse",
+    "stage63_problem": "over-release into SUPPORT/REFUTE with reduced NOT_ENTITLED safety",
+    "dominant_remaining_issue": "external examples need finer entitlement/routing calibration",
+    "not_a_shadow_rule_problem": true
+  },
+  "recommended_stage157": {
+    "stage": "Stage157-A",
+    "goal": "Design an external entitlement/routing diagnostic or architecture response that separates justified release from NOT_ENTITLED from unsafe over-release.",
+    "recommended_direction": "external_bridge_rerouting_or_entitlement_calibration",
+    "candidate_designs": [
+      "post-freeze external scalar export for Stage63/current-best predictions",
+      "compare recovered_by_stage63 vs regressed_by_stage63 examples",
+      "learn diagnostic criteria for safe NE release without using external labels for training",
+      "inspect whether frame/predicate/sufficiency/learned entitlement disagree on recovered vs regressed rows",
+      "design an internal calibration head or router constraint on clean-controlled data only"
+    ],
+    "must_not_do": [
+      "do not train on external labels",
+      "do not tune thresholds on external labels",
+      "do not integrate shadow diagnostics into final predictions",
+      "do not reopen route/order expansion"
+    ]
+  },
+  "safety_policy": {
+    "analysis_only": true,
+    "shadow_diagnostics_integrated": false,
+    "source_predictions_mutated": false,
+    "final_logits_modified": false,
+    "final_predictions_modified": false,
+    "training_modified": false,
+    "checkpoint_selection_modified": false,
+    "external_data_used_for_training": false,
+    "threshold_used_for_model_selection": false
+  }
+}
