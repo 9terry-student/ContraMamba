@@ -1,0 +1,105 @@
+{
+  "stage": "Stage146-B",
+  "decision": "STAGE146B_V2_EXTERNAL_GENERALIZATION_PASS_STRONG_SHADOW_DIAGNOSTIC",
+  "stage146a": {
+    "decision": "STAGE146A_V2_EXTERNAL_GENERALIZATION_PASS",
+    "analyzer_decision": "STAGE145_TEXT_LOCATION_GUARD_V2_SHADOW_CANDIDATE_MILD_TRADEOFF",
+    "run_dir": "reports/stage146a_v2_external_generalization_run_20260710_043908",
+    "summary_json": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+    "n_files": 7,
+    "n_rows": 33000,
+    "n_changed_total": 53,
+    "delta_false_support": -53,
+    "delta_false_ne": 3,
+    "feature_false_support_tp": 53,
+    "feature_correct_support_fp": 0,
+    "feature_false_support_fn": 176,
+    "feature_precision_for_false_support_among_support_preds": 1.0,
+    "feature_recall_for_false_support_among_support_preds": 0.2314410480349345,
+    "macro_f1_before": 0.7075607576618963,
+    "macro_f1_after": 0.7092915891444586,
+    "delta_macro_f1": 0.0017308314825622562,
+    "min_per_file_delta_macro_f1": 0.0
+  },
+  "subset_summaries": {
+    "controlled_diagnostic": {
+      "n_files": 5,
+      "n_rows": 31000,
+      "n_changed_total": 49,
+      "delta_false_support": -49,
+      "delta_false_ne": 0,
+      "feature_correct_support_fp": 0,
+      "feature_false_support_tp": 49,
+      "assessment": "passes_without_false_ne_cost"
+    },
+    "external_or_factver": {
+      "n_files": 2,
+      "n_rows": 2000,
+      "n_changed_total": 4,
+      "delta_false_support": -4,
+      "delta_false_ne": 3,
+      "feature_correct_support_fp": 0,
+      "feature_false_support_tp": 4,
+      "assessment": "small_tradeoff_but_aggregate_pass"
+    }
+  },
+  "policy": {
+    "name": "text_loc_disjoint_v2",
+    "script": "scripts/analyze_stage145_text_location_guard_shadow_v2.py",
+    "status": "strong_shadow_diagnostic",
+    "final_integration_status": "blocked",
+    "reason_final_integration_blocked": "External evidence is still limited and external/factver subset has a small false-NE tradeoff of +3."
+  },
+  "policy_input_safety": {
+    "uses_claim_text": true,
+    "uses_evidence_text": true,
+    "uses_original_prediction": true,
+    "uses_deterministic_alias_rules": true,
+    "uses_deterministic_org_like_rules": true,
+    "uses_intervention_type": false,
+    "uses_slot_mismatch_target": false,
+    "uses_gold_label_for_policy": false,
+    "uses_diagnostic_family_for_policy": false,
+    "uses_file_path_heuristics": false,
+    "uses_row_id_heuristics": false
+  },
+  "safety_policy": {
+    "shadow_only": true,
+    "diagnostic_only": true,
+    "source_predictions_mutated": false,
+    "final_logits_modified": false,
+    "final_predictions_modified": false,
+    "training_modified": false,
+    "checkpoint_selection_modified": false,
+    "stage128_guard_enabled": false,
+    "stage15_used": false,
+    "external_data_used_for_training": false,
+    "threshold_used_for_model_selection": false
+  },
+  "interpretation": {
+    "v2_negative_control_failure_fixed": true,
+    "v2_broader_behavior_retained": true,
+    "v2_external_generalization_passed_available_exports": true,
+    "controlled_subset_clean": true,
+    "external_subset_small_tradeoff": true,
+    "final_integration_ready": false
+  },
+  "remaining_limitations": [
+    "Only two external/factver files were available in the selected Stage146-A run.",
+    "The external/factver subset still had delta_false_ne = +3.",
+    "Route/order mismatch remains outside the set-based location-disjoint policy.",
+    "Alias and organization rules are deterministic and incomplete.",
+    "The analyzer remains shadow-only and should not be used as final prediction override."
+  ],
+  "next_stage_recommendation": {
+    "stage": "Stage147",
+    "goal": "Either expand external coverage further or start a separate route/order mismatch diagnostic.",
+    "recommended_path": "If more external prediction exports are available, run another external expansion. Otherwise start route/order diagnostic separately.",
+    "avoid": [
+      "automatic final prediction override",
+      "training loss integration",
+      "checkpoint selection using v2 outputs",
+      "claiming final deployment readiness"
+    ]
+  }
+}
