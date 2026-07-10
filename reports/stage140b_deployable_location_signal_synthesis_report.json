@@ -1,0 +1,112 @@
+{
+  "stage": "Stage140-B",
+  "decision": "STAGE140B_DEPLOYABLE_TEXT_LOCATION_SIGNAL_CANDIDATE_SAFE_ON_DIAGNOSTIC",
+  "stage140a": {
+    "decision": "STAGE140A_DEPLOYABLE_TEXT_LOCATION_SIGNAL_CANDIDATE_SAFE",
+    "diagnostic_type": "cross_run_shadow_diagnostic",
+    "diagnostic_only": true,
+    "shadow_only": true,
+    "model_consistent_final_guard_evidence": false,
+    "n_total": 6200,
+    "base_metrics": {
+      "accuracy": 0.997741935483871,
+      "macro_f1": 0.9963904828740083,
+      "false_support": 14,
+      "false_ne": 0,
+      "support_recall": 1.0,
+      "support_precision": 0.9815303430079155,
+      "refute_recall": 1.0,
+      "not_entitled_recall": 0.9969892473118279,
+      "pred_REFUTE": 806,
+      "pred_NOT_ENTITLED": 4636,
+      "pred_SUPPORT": 758
+    }
+  },
+  "best_policy": {
+    "policy": "text_loc_disjoint",
+    "deployable_candidate": true,
+    "uses_claim_text": true,
+    "uses_evidence_text": true,
+    "uses_intervention_type": false,
+    "uses_slot_mismatch_target": false,
+    "uses_gold_label": false,
+    "uses_diagnostic_family": false,
+    "n_changed_total": 14,
+    "false_support_before": 14,
+    "false_support_after": 0,
+    "false_ne_before": 0,
+    "false_ne_after": 0,
+    "macro_f1_before": 0.9963904828740083,
+    "macro_f1_after": 1.0,
+    "delta_macro_f1": 0.003609517125991668,
+    "support_recall_before": 1.0,
+    "support_recall_after": 1.0,
+    "support_precision_before": 0.9815303430079155,
+    "support_precision_after": 1.0,
+    "assessment": "candidate_safe_on_this_diagnostic"
+  },
+  "feature_quality": {
+    "loc_disjoint": {
+      "support_rows_flagged": 14,
+      "false_support_tp": 14,
+      "correct_support_fp": 0,
+      "false_support_fn": 0,
+      "precision_for_false_support_among_support_preds": 1.0,
+      "recall_for_false_support_among_support_preds": 1.0
+    },
+    "loc_any_diff": {
+      "support_rows_flagged": 14,
+      "false_support_tp": 14,
+      "correct_support_fp": 0,
+      "false_support_fn": 0,
+      "precision_for_false_support_among_support_preds": 1.0,
+      "recall_for_false_support_among_support_preds": 1.0
+    },
+    "loc_both_nonempty": {
+      "support_rows_flagged": 758,
+      "false_support_tp": 14,
+      "correct_support_fp": 744,
+      "precision_for_false_support_among_support_preds": 0.0184697,
+      "recall_for_false_support_among_support_preds": 1.0,
+      "assessment": "too_broad"
+    }
+  },
+  "audit_observation": {
+    "changed_rows_all_location_swap_when_audited": true,
+    "audit_metadata_used_by_policy": false,
+    "example_pattern": "claim location Dublin vs evidence location Cork"
+  },
+  "interpretation": {
+    "global_slot_mismatch_prob_guard_rejected": true,
+    "controlled_location_upper_bound_confirmed": true,
+    "deployable_text_location_signal_promising": true,
+    "ready_for_final_logit_integration": false,
+    "reason_not_ready": "Cross-run diagnostic merge and simple regex location extraction require broader stress testing."
+  },
+  "safety_policy": {
+    "final_logits_modified": false,
+    "final_predictions_modified": false,
+    "training_modified": false,
+    "checkpoint_selection_modified": false,
+    "stage128_guard_enabled": false,
+    "stage15_used": false,
+    "external_data_used_for_training": false,
+    "threshold_used_for_model_selection": false
+  },
+  "next_stage_recommendation": {
+    "stage": "Stage141",
+    "goal": "Stress-test text_loc_disjoint and related deployable location heuristics on broader existing prediction exports and negative controls.",
+    "candidate_checks": [
+      "Apply text_loc_disjoint to existing non-collapsed prediction JSONLs beyond Stage122 core localization.",
+      "Measure false positive risk on correct SUPPORT rows with same-location paraphrases.",
+      "Inspect multi-location and person/title false extraction cases.",
+      "Keep all analysis shadow-only before any final-prediction integration."
+    ],
+    "avoid": [
+      "routing text_loc_disjoint into final logits now",
+      "treating Stage140-A as external generalization evidence",
+      "using intervention_type or slot_mismatch_target as deployable signals",
+      "repeating blind short training reruns"
+    ]
+  }
+}
