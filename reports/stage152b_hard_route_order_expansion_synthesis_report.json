@@ -1,0 +1,206 @@
+{
+  "decision": "STAGE152B_ROUTE_ORDER_HARD_EXPANSION_CONSERVATIVE_PASS_WITH_BOUNDARY_MISSES",
+  "expected_boundary_misses": {
+    "implicit_depart_arrive_reversal_ne_expected_miss": {
+      "expected_miss_allowed": true,
+      "false_support_after": 4,
+      "n_total": 4
+    },
+    "multi_hop_order_swap_ne_expected_miss": {
+      "expected_miss_allowed": true,
+      "false_support_after": 4,
+      "n_total": 4
+    },
+    "origin_destination_reversal_ne_expected_miss": {
+      "expected_miss_allowed": true,
+      "false_support_after": 4,
+      "n_total": 4
+    }
+  },
+  "interpretation": {
+    "boundary_misses_expected": true,
+    "conservative_scope_confirmed": true,
+    "final_integration_ready": false,
+    "hard_expansion_passed": true,
+    "required_safety_pass": true,
+    "required_trigger_pass": true
+  },
+  "next_stage_recommendation": {
+    "avoid": [
+      "automatic final prediction override",
+      "training loss integration",
+      "checkpoint selection using route/order outputs",
+      "expanding route semantics without negative controls"
+    ],
+    "goal": "Decide whether to extend route semantics beyond explicit from/to reversal or freeze v2 as conservative diagnostic.",
+    "possible_extension": [
+      "depart/arrive semantic analyzer",
+      "origin/destination start-end analyzer",
+      "multi-hop itinerary order analyzer"
+    ],
+    "recommended_default": "Freeze route_order_reversal_v2 as conservative shadow diagnostic and move back to broader ContraMamba architecture/evaluation work unless implicit route semantics are now a priority.",
+    "stage": "Stage153"
+  },
+  "policy": {
+    "final_integration_status": "blocked",
+    "name": "route_order_reversal_v2",
+    "out_of_scope": [
+      "implicit depart/arrive reversal",
+      "origin/destination start-end reversal",
+      "multi-hop order swap",
+      "context-dependent itinerary semantics"
+    ],
+    "scope": "explicit directional route reversal",
+    "script": "scripts/analyze_stage150_route_order_shadow_v2.py",
+    "status": "conservative_shadow_diagnostic"
+  },
+  "policy_input_safety": {
+    "uses_claim_text": true,
+    "uses_deterministic_alias_rules": true,
+    "uses_deterministic_org_like_rules": true,
+    "uses_deterministic_route_rules": true,
+    "uses_deterministic_self_loop_guard": true,
+    "uses_deterministic_title_context_guard": true,
+    "uses_diagnostic_family_for_policy": false,
+    "uses_evidence_text": true,
+    "uses_file_path_heuristics": false,
+    "uses_gold_label_for_policy": false,
+    "uses_intervention_type": false,
+    "uses_original_prediction": true,
+    "uses_row_id_heuristics": false,
+    "uses_slot_mismatch_target": false
+  },
+  "remaining_limitations": [
+    "Implicit depart/arrive reversals remain missed.",
+    "Origin/destination start-end reversals remain missed.",
+    "Multi-hop order swaps remain missed.",
+    "Complex route language and context-dependent itinerary semantics remain outside current scope.",
+    "Analyzer remains shadow-only and diagnostic-only."
+  ],
+  "required_safety_checks": {
+    "alias_same_route_support": {
+      "delta_false_ne": 0,
+      "n_changed_total": 0,
+      "n_total": 8,
+      "pass": true
+    },
+    "directional_vs_between_support": {
+      "delta_false_ne": 0,
+      "n_changed_total": 0,
+      "n_total": 6,
+      "pass": true
+    },
+    "non_support_prediction_safety": {
+      "delta_false_ne": 0,
+      "n_changed_total": 0,
+      "n_total": 4,
+      "pass": true
+    },
+    "nondirectional_between_support": {
+      "delta_false_ne": 0,
+      "n_changed_total": 0,
+      "n_total": 6,
+      "pass": true
+    },
+    "one_sided_route_support": {
+      "delta_false_ne": 0,
+      "n_changed_total": 0,
+      "n_total": 4,
+      "pass": true
+    },
+    "org_endpoint_reversal_support": {
+      "delta_false_ne": 0,
+      "n_changed_total": 0,
+      "n_total": 6,
+      "pass": true
+    },
+    "quoted_title_to_phrase_support": {
+      "delta_false_ne": 0,
+      "n_changed_total": 0,
+      "n_total": 4,
+      "pass": true
+    },
+    "return_trip_same_route_support": {
+      "delta_false_ne": 0,
+      "n_changed_total": 0,
+      "n_total": 4,
+      "pass": true
+    },
+    "same_route_support": {
+      "delta_false_ne": 0,
+      "n_changed_total": 0,
+      "n_total": 12,
+      "pass": true
+    },
+    "title_side_to_side_support": {
+      "delta_false_ne": 0,
+      "n_changed_total": 0,
+      "n_total": 3,
+      "pass": true
+    }
+  },
+  "required_trigger_checks": {
+    "alias_route_reversal_ne": {
+      "delta_false_support": -8,
+      "n_total": 8,
+      "pass": true
+    },
+    "direct_route_reversal_ne": {
+      "delta_false_support": -12,
+      "n_total": 12,
+      "pass": true
+    },
+    "lowercase_route_reversal_ne": {
+      "delta_false_support": -4,
+      "n_total": 4,
+      "pass": true
+    },
+    "via_route_reversal_ne": {
+      "delta_false_support": -6,
+      "n_total": 6,
+      "pass": true
+    }
+  },
+  "safety_policy": {
+    "checkpoint_selection_modified": false,
+    "diagnostic_only": true,
+    "external_data_used_for_training": false,
+    "final_logits_modified": false,
+    "final_predictions_modified": false,
+    "shadow_only": true,
+    "source_predictions_mutated": false,
+    "stage128_guard_enabled": false,
+    "stage15_used": false,
+    "threshold_used_for_model_selection": false,
+    "training_modified": false
+  },
+  "stage": "Stage152-B",
+  "stage152a": {
+    "analyzer_decision": "STAGE150_ROUTE_ORDER_SHADOW_V2_CANDIDATE_PASS",
+    "dataset": "data/stage152a_hard_route_order_expansion_20260710_051937.jsonl",
+    "decision": "STAGE152A_ROUTE_ORDER_HARD_EXPANSION_CONSERVATIVE_PASS_WITH_BOUNDARY_MISSES",
+    "delta_false_ne": 0,
+    "delta_false_support": -30,
+    "feature_correct_support_fp": 0,
+    "feature_false_support_fn": 12,
+    "feature_false_support_tp": 30,
+    "feature_precision": 1.0,
+    "feature_recall": 0.7142857142857143,
+    "macro_f1_delta": 0.2906962895098488,
+    "n_changed_total": 30,
+    "n_rows": 99,
+    "run_dir": "reports/stage152a_hard_route_order_expansion_20260710_051937/stage150_v2_on_stage152a_hard_route_order",
+    "summary_json": "reports/stage152a_hard_route_order_expansion_20260710_051937/stage152a_hard_route_order_expansion_summary_report.json"
+  },
+  "v2_safety_evidence": {
+    "between_controls_safe": true,
+    "non_support_predictions_unchanged": true,
+    "organization_endpoint_controls_safe": true,
+    "return_trip_controls_safe": true,
+    "rows_self_loop_routes_rejected": 3,
+    "rows_title_like_routes_rejected": 7,
+    "self_loop_title_guard_active": true,
+    "total_self_loop_routes_rejected": 6,
+    "total_title_like_routes_rejected": 14
+  }
+}
