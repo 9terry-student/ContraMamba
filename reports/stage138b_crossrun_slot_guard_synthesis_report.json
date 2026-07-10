@@ -1,0 +1,89 @@
+{
+  "stage": "Stage138-B",
+  "decision": "STAGE138B_CROSSRUN_SLOT_GUARD_GLOBAL_THRESHOLD_TRADEOFF_TOO_HIGH",
+  "stage138a": {
+    "diagnostic_type": "cross_run_merge",
+    "diagnostic_only": true,
+    "model_consistent_final_guard_evidence": false,
+    "analyzer_decision": "STAGE136A_SHADOW_GUARD_TRADEOFF",
+    "n_total": 6200,
+    "n_with_slot_prob": 6200,
+    "support_pred_before": 758,
+    "false_support_before": 14,
+    "false_ne_before": 0,
+    "accuracy_before": 0.997741935483871,
+    "macro_f1_before": 0.9963904828740083
+  },
+  "global_threshold_result": {
+    "best_threshold": 0.62,
+    "false_support_after": 0,
+    "delta_false_support": -14,
+    "false_ne_after": 503,
+    "delta_false_ne": 503,
+    "support_recall_after": 0.3239247311827957,
+    "delta_support_recall": -0.6760752688172043,
+    "macro_f1_after": 0.8126764261018201,
+    "delta_macro_f1": -0.18371405677218822,
+    "assessment": "unacceptable_tradeoff"
+  },
+  "threshold_summary": {
+    "low_thresholds_0_30_to_0_60": {
+      "changed_support": 758,
+      "false_support_after": 0,
+      "false_ne_after": 744,
+      "macro_f1_after": 0.641975,
+      "assessment": "destroys_all_support"
+    },
+    "threshold_0_64": {
+      "changed_support": 139,
+      "false_support_after": 14,
+      "false_ne_after": 139,
+      "delta_false_support": 0,
+      "assessment": "harm_without_false_support_gain"
+    },
+    "threshold_0_66_plus": {
+      "changed_support": 0,
+      "assessment": "no_effect"
+    }
+  },
+  "slot_signal_quality": {
+    "slot_target_auc": 0.5331299512580994,
+    "slot_target_auprc": 0.6766425559354456,
+    "slot_target_positive_count": 2773,
+    "slot_target_negative_count": 1550,
+    "assessment": "weak_global_ranking_signal"
+  },
+  "group_observation": {
+    "false_support_group": "location_swap",
+    "false_support_count": 14,
+    "location_swap_threshold_le_0_62_removed_false_support": true,
+    "location_swap_false_ne_increase_within_group": 0,
+    "global_threshold_harmed_none_paraphrase_polarity_flip": true,
+    "interpretation": "A conditional location/slot-specific guard may be worth separate diagnostic analysis, but the global slot_mismatch_prob threshold is unsafe."
+  },
+  "interpretation": {
+    "global_guard_useful": false,
+    "global_guard_reason": "False SUPPORT reduction requires unacceptable false-NE and macro-F1 cost.",
+    "conditional_guard_possible": true,
+    "conditional_guard_status": "not_evaluated",
+    "not_final_model_consistent_evidence": true
+  },
+  "safety_policy": {
+    "final_logits_modified": false,
+    "final_predictions_modified": false,
+    "stage128_guard_enabled": false,
+    "stage15_used": false,
+    "threshold_used_for_model_selection": false,
+    "external_data_used_for_training": false
+  },
+  "next_stage_recommendation": {
+    "recommended_next_stage": "Stage139",
+    "goal": "Run export-only conditional guard diagnostics, focusing on location/slot-conditioned gating rather than global slot_mismatch_prob thresholding.",
+    "avoid": [
+      "routing slot_mismatch_prob globally into final logits",
+      "claiming final guard success from cross-run merge",
+      "using threshold 0.62 as a production rule",
+      "repeating blind short fresh reruns"
+    ]
+  }
+}
