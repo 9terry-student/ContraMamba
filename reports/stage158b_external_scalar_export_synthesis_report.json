@@ -1,0 +1,93 @@
+{
+  "stage": "Stage158-B",
+  "decision": "STAGE158B_EXTERNAL_SCALAR_EXPORT_PATH_CONFIRMED_CURRENT_RUN_COLLAPSED",
+  "stage157a_context": {
+    "decision": "STAGE157A_EXTERNAL_SCALAR_EXPORT_REQUIRED",
+    "stage53_has_scalars": false,
+    "stage63_has_scalars": false,
+    "has_both_scalars": false,
+    "reason": "Existing Stage53/Stage63 external prediction JSONLs had no internal scalar fields."
+  },
+  "stage158a": {
+    "decision": "STAGE158A_EXTERNAL_SCALAR_EXPORT_READY",
+    "out_dir": "reports/stage158a_external_scalar_export_20260710_061132",
+    "report_json": "reports/stage158a_external_scalar_export_20260710_061132/stage158a_external_scalar_export_report.json",
+    "best_external_jsonl": "reports/stage158a_external_scalar_export_20260710_061132/runs/attempt_1_maxlen_default/stage43_external_scalar_export/stage158a_vitaminc_scalar_stage84e2_vitaminc_validation_sample1000_exact_ood_schema_external_factver_predictions.jsonl",
+    "n_rows": 1000,
+    "malformed": 0,
+    "n_scalar_fields": 10,
+    "n_expected_scalar_fields": 10,
+    "prediction_counts": {
+      "NOT_ENTITLED": 959,
+      "SUPPORT": 41
+    },
+    "gold_counts": {
+      "NOT_ENTITLED": 145,
+      "REFUTE": 355,
+      "SUPPORT": 500
+    }
+  },
+  "exported_scalars": {
+    "frame_prob": 1000,
+    "predicate_coverage_prob": 1000,
+    "sufficiency_prob": 1000,
+    "entitlement_prob": 1000,
+    "compositional_entitlement_prob": 1000,
+    "learned_entitlement_prob": 1000,
+    "learned_entitlement_logit": 1000,
+    "polarity_margin": 1000,
+    "positive_energy": 1000,
+    "negative_energy": 1000
+  },
+  "interpretation": {
+    "scalar_export_path_confirmed": true,
+    "stage157a_blocker_resolved": true,
+    "current_run_is_performance_valid": false,
+    "reason_current_run_not_performance_valid": "Short diagnostic run produced severe NOT_ENTITLED collapse and zero REFUTE predictions.",
+    "use_stage158a_for": [
+      "confirming scalar export fields",
+      "validating Stage43 external scalar export path",
+      "informing how to run future current-best scalar exports"
+    ],
+    "do_not_use_stage158a_for": [
+      "final external performance claims",
+      "checkpoint selection",
+      "threshold tuning",
+      "architecture comparison",
+      "recovered-vs-regressed scalar conclusions"
+    ]
+  },
+  "optional_cell5_failure": {
+    "status": "non_blocking",
+    "error": "No Stage156-A output directory found",
+    "meaning": "Only the optional Stage159-prep join failed because the runtime could not locate prior Stage156-A artifacts.",
+    "stage158a_validity_affected": false
+  },
+  "recommended_stage159": {
+    "stage": "Stage159-A",
+    "goal": "Prepare robust recovered-vs-regressed scalar analysis design using Stage158-A export-path knowledge.",
+    "recommended_direction": "Do not analyze the 1-epoch collapsed run as current-best. Instead, define how to obtain Stage63-equivalent or current-best scalar exports with stable row alignment.",
+    "options": [
+      "locate a real current-best checkpoint/run configuration and rerun external scalar export",
+      "patch or configure Stage63-equivalent external export to include scalar fields",
+      "create robust join code that accepts explicit Stage156-A paired CSV path and Stage158/current-best scalar JSONL path"
+    ],
+    "must_not_do": [
+      "do not train on external labels",
+      "do not tune thresholds on external labels",
+      "do not use external labels for checkpoint selection",
+      "do not integrate shadow diagnostics into final predictions"
+    ]
+  },
+  "safety_policy": {
+    "analysis_export_only": true,
+    "external_eval_only": true,
+    "external_data_used_for_training": false,
+    "external_labels_used_for_training": false,
+    "threshold_used_for_model_selection": false,
+    "checkpoint_selection_modified": false,
+    "shadow_diagnostics_integrated": false,
+    "final_logits_modified_by_shadow": false,
+    "final_predictions_modified_by_shadow": false
+  }
+}
