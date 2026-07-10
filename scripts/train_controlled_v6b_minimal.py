@@ -4643,6 +4643,11 @@ _STAGE113_VNEXT_SCALAR_FIELDS: tuple[str, ...] = (
 _STAGE113_VNEXT_METADATA_FIELDS: tuple[str, ...] = (
     "vnext_router_mode",
     "vnext_final_logit_order",
+    "vnext_use_slot_mismatch_head",
+    "vnext_slot_mismatch_detach_input",
+    "vnext_slot_mismatch_input_mode",
+    "vnext_slot_mismatch_head_type",
+    "slot_mismatch_head_input_dim",
 )
 
 _STAGE113_VNEXT_EXPORT_FIELDS: tuple[str, ...] = (
@@ -5697,10 +5702,16 @@ def prediction_records_v6b(
             #  Shallow raw record snapshot 
             "raw_record": {k: record[k] for k in _S28E_RAW_RECORD_KEYS if k in record},
         }
-        if args is not None and getattr(args, "vnext_use_slot_mismatch_head", False):
+        if output.get("slot_mismatch_logit") is not None or (
+            args is not None and getattr(args, "vnext_use_slot_mismatch_head", False)
+        ):
             _slot_target, _slot_valid = derive_slot_mismatch_target(record)
             item["slot_mismatch_target"] = int(_slot_target) if _slot_valid else None
             item["slot_mismatch_target_valid"] = bool(_slot_valid)
+            if args is not None:
+                item["stage135_use_best_slot_aux"] = bool(
+                    getattr(args, "stage135_use_best_slot_aux", False)
+                )
         for metadata_key in _S28E_PRESERVED_METADATA_KEYS:
             if metadata_key in record:
                 item[metadata_key] = record[metadata_key]
@@ -7010,6 +7021,18 @@ def build_parser() -> argparse.ArgumentParser:
             "Stage134-A: enable the vNext minimal slot mismatch diagnostic head. "
             "The head reads sufficiency_repr and exports slot_mismatch_logit/prob. "
             "It does not modify output['logits'] or final predictions. Default off."
+        ),
+    )
+    parser.add_argument(
+        "--stage135-use-best-slot-aux",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage135-A: convenience flag for the robust Stage134-F slot mismatch "
+            "auxiliary head. Enables --vnext-use-slot-mismatch-head and requires "
+            "--vnext-slot-mismatch-input-mode pooled_pair_absdiff_product plus "
+            "--vnext-slot-mismatch-head-type mlp. Auxiliary-only; does not enable "
+            "Stage128 and does not modify final logits."
         ),
     )
     parser.add_argument(
@@ -10699,6 +10722,9 @@ def _stage118_audit_fields(args: argparse.Namespace | None) -> dict[str, Any]:
         "vnext_use_slot_mismatch_head": bool(
             getattr(args, "vnext_use_slot_mismatch_head", False)
         ),
+        "stage135_use_best_slot_aux": bool(
+            getattr(args, "stage135_use_best_slot_aux", False)
+        ),
         "vnext_slot_mismatch_loss_weight": getattr(
             args, "vnext_slot_mismatch_loss_weight", 0.0
         ),
@@ -12425,7 +12451,31 @@ def load_stage80a_bridge_train_rows(
 
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
+    raw_argv = list(sys.argv[1:] if argv is None else argv)
     args = parser.parse_args(argv)
+    explicit_args = set(raw_argv)
+    if getattr(args, "stage135_use_best_slot_aux", False):
+        if args.architecture != "vnext_minimal":
+            parser.error("--stage135-use-best-slot-aux requires --architecture vnext_minimal")
+        if (
+            "--vnext-slot-mismatch-input-mode" in explicit_args
+            and args.vnext_slot_mismatch_input_mode != "pooled_pair_absdiff_product"
+        ):
+            parser.error(
+                "--stage135-use-best-slot-aux requires "
+                "--vnext-slot-mismatch-input-mode pooled_pair_absdiff_product"
+            )
+        if (
+            "--vnext-slot-mismatch-head-type" in explicit_args
+            and args.vnext_slot_mismatch_head_type != "mlp"
+        ):
+            parser.error(
+                "--stage135-use-best-slot-aux requires "
+                "--vnext-slot-mismatch-head-type mlp"
+            )
+        args.vnext_use_slot_mismatch_head = True
+        args.vnext_slot_mismatch_input_mode = "pooled_pair_absdiff_product"
+        args.vnext_slot_mismatch_head_type = "mlp"
     try:
         args.stage118_diagnostic_evidence_interface_sweep_list = (
             parse_stage118_diagnostic_evidence_interface_sweep(
@@ -17324,6 +17374,40 @@ def main(argv: list[str] | None = None) -> int:
             ),
         )
 
+        _slot_train_total = int(train_slot_mismatch_mask.numel()) if train_slot_mismatch_mask is not None else 0
+        _slot_train_valid = (
+            int(train_slot_mismatch_mask.bool().sum().item())
+            if train_slot_mismatch_mask is not None else 0
+        )
+        _slot_train_coverage = (
+            round(_slot_train_valid / _slot_train_total, 6)
+            if _slot_train_total else None
+        )
+        _slot_loss_raw = _loss_epoch_avg_raw.get("slot_mismatch_loss")
+        _slot_loss_weighted = _loss_epoch_avg_weighted.get("slot_mismatch_loss")
+        _stage135_slot_aux = {
+            "enabled": bool(getattr(model, "vnext_use_slot_mismatch_head", False)),
+            "use_best_slot_aux": bool(getattr(args, "stage135_use_best_slot_aux", False)),
+            "input_mode": getattr(model, "vnext_slot_mismatch_input_mode", "sufficiency_repr"),
+            "head_type": getattr(model, "vnext_slot_mismatch_head_type", "linear"),
+            "loss_weight": slot_mismatch_loss_weight,
+            "pos_weight": slot_mismatch_loss_pos_weight,
+            "detach_input": bool(getattr(model, "vnext_slot_mismatch_detach_input", True)),
+            "target_positive_count": _slot_mismatch_train_counts["slot_mismatch_target_positive_count"],
+            "target_negative_count": _slot_mismatch_train_counts["slot_mismatch_target_negative_count"],
+            "target_ignored_count": _slot_mismatch_train_counts["slot_mismatch_target_ignored_count"],
+            "train_target_coverage_rate": _slot_train_coverage,
+            "dev_target_positive_count": _slot_mismatch_dev_counts["slot_mismatch_target_positive_count"],
+            "dev_target_negative_count": _slot_mismatch_dev_counts["slot_mismatch_target_negative_count"],
+            "dev_target_ignored_count": _slot_mismatch_dev_counts["slot_mismatch_target_ignored_count"],
+            "final_logits_modified_by_slot_head": False,
+            "stage128_location_slot_guard_enabled": bool(
+                getattr(args, "stage128_enable_location_slot_guard", False)
+            ),
+            "slot_mismatch_head_input_dim": getattr(model, "slot_mismatch_head_input_dim", None),
+            "slot_mismatch_loss_raw": _slot_loss_raw,
+            "slot_mismatch_loss_weighted": _slot_loss_weighted,
+        }
         report = {
             "run_name": run_name,
             "final_epoch": epochs,
@@ -17336,6 +17420,10 @@ def main(argv: list[str] | None = None) -> int:
             "loss_config": loss_config,
             "best_pair_contrastive_frame_metrics": best_pc_metrics,
             "best_stage31c_coverage_entailment_metrics": best_covent_metrics,
+            "stage135_slot_aux": _stage135_slot_aux,
+            "slot_mismatch_head_input_dim": _stage135_slot_aux["slot_mismatch_head_input_dim"],
+            "slot_mismatch_loss_raw": _slot_loss_raw,
+            "slot_mismatch_loss_weighted": _slot_loss_weighted,
             **_stage45c_report,
             **_tc_selection_info,
             **_pcs_selection_info,
@@ -18811,6 +18899,10 @@ def main(argv: list[str] | None = None) -> int:
             "aux_raw_loss_sum",
             "aux_to_ce_loss_ratio_raw",
             "aux_to_ce_loss_ratio",
+            "stage135_slot_aux",
+            "slot_mismatch_head_input_dim",
+            "slot_mismatch_loss_raw",
+            "slot_mismatch_loss_weighted",
             "active_training_losses",
             "active_final_logit_modifiers",
             "active_architectural_logit_components",
@@ -20250,3 +20342,4 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
