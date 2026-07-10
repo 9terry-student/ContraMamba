@@ -2312,7 +2312,8 @@ _S28E_AUX_LABEL_KEYS: tuple[str, ...] = (
 _S28E_RAW_RECORD_KEYS: tuple[str, ...] = (
     "id", "pair_id", "source_id", "original_id",
     "claim", "evidence", "final_label",
-    "intervention", "intervention_type", "perturbation",
+    "intervention", "intervention_type", "source_intervention_type", "perturbation",
+    "family",
     "frame_compatible_label", "predicate_covered_label",
     "sufficiency_label", "polarity_label", "primary_failure_type",
 )
@@ -2324,7 +2325,9 @@ _S28E_PRESERVED_METADATA_KEYS: tuple[str, ...] = (
     "evidence",
     "group",
     "intervention_type",
+    "source_intervention_type",
     "normalized_intervention",
+    "family",
     "primary_failure_type",
     "failure_type",
     "source",
@@ -5260,6 +5263,44 @@ def _slot_mismatch_prediction_export_report(
     }
 
 
+
+def _prediction_export_jsonl_requested(args: "argparse.Namespace") -> bool:
+    return bool(
+        getattr(args, "prediction_export_schema", "stage28e_v1") == "stage28e_v1"
+        or getattr(args, "stage135_use_best_slot_aux", False)
+        or getattr(args, "vnext_use_slot_mismatch_head", False)
+    )
+
+
+def _prediction_export_jsonl_path(output_json: Path) -> Path:
+    return output_json.with_name(f"{output_json.stem}_predictions.jsonl")
+
+
+def _prediction_export_jsonl_rows(
+    prediction_exports: dict[str, list[dict[str, Any]]],
+) -> list[dict[str, Any]]:
+    if len(prediction_exports) == 1:
+        return list(next(iter(prediction_exports.values())) or [])
+
+    rows: list[dict[str, Any]] = []
+    for run_name, run_rows in prediction_exports.items():
+        for row in run_rows or []:
+            exported_row = dict(row)
+            exported_row.setdefault("run_name", run_name)
+            rows.append(exported_row)
+    return rows
+
+
+def _prediction_export_jsonl_audit(
+    path: Path | None,
+    rows: list[dict[str, Any]],
+) -> dict[str, Any]:
+    return {
+        "prediction_export_jsonl": str(path) if path is not None else None,
+        "prediction_export_jsonl_exists": bool(path is not None and path.exists()),
+        "prediction_export_row_count": len(rows),
+    }
+
 def _stage113_prediction_row_exports(prediction_rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
     exports: dict[str, dict[str, Any]] = {}
     for row in prediction_rows:
@@ -6131,6 +6172,9 @@ def prediction_records_v6b(
             item["pred_final_label"] = _stage128_guard_exports[
                 "stage128_prediction_after_location_guard"
             ]
+
+        item.setdefault("base_prediction", pred_label)
+        item.setdefault("prediction", item.get("pred_final_label", pred_label))
 
         _stage125_assert_risk_cap_exports(item)
         exported.append(item)
@@ -18444,6 +18488,23 @@ def main(argv: list[str] | None = None) -> int:
     }
     report.update(_slot_export_audit)
     report["configuration"].update(_slot_export_audit)
+    _prediction_export_rows_for_jsonl: list[dict[str, Any]] = []
+    _prediction_export_output_jsonl: Path | None = None
+    if args.output_json is not None and _prediction_export_jsonl_requested(args):
+        _prediction_export_output_jsonl = _prediction_export_jsonl_path(
+            Path(args.output_json)
+        )
+        _prediction_export_rows_for_jsonl = _prediction_export_jsonl_rows(
+            prediction_exports
+        )
+        _prediction_export_output_jsonl.parent.mkdir(parents=True, exist_ok=True)
+        write_jsonl(_prediction_export_output_jsonl, _prediction_export_rows_for_jsonl)
+    _prediction_export_jsonl_report_audit = _prediction_export_jsonl_audit(
+        _prediction_export_output_jsonl,
+        _prediction_export_rows_for_jsonl,
+    )
+    report.update(_prediction_export_jsonl_report_audit)
+    report["configuration"].update(_prediction_export_jsonl_report_audit)
     if len(_prediction_export_slot_mismatch_audits) > 1:
         report["prediction_export_slot_mismatch_audit_by_run"] = (
             _prediction_export_slot_mismatch_audits
