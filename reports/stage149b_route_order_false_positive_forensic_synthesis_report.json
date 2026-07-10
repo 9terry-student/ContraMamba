@@ -1,0 +1,101 @@
+{
+  "stage": "Stage149-B",
+  "decision": "STAGE149B_ROUTE_ORDER_FALSE_POSITIVE_PATCHABLE_SELF_LOOP_TITLE_ERROR",
+  "stage149a": {
+    "forensic_decision": "STAGE149A_ROUTE_ORDER_SINGLE_FALSE_POSITIVE_CONFIRMED_PATCHABLE_EXTRACTOR_ERROR",
+    "n_changed_examples": 1,
+    "n_false_positive": 1,
+    "n_true_positive": 0,
+    "gold_label": "SUPPORT",
+    "original_prediction": "SUPPORT",
+    "shadow_prediction": "NOT_ENTITLED",
+    "claim": "Side to Side was released after June 2 , 2016 .",
+    "evidence": "'' Side to Side '' is a song recorded by American singer Ariana Grande , released on August 30 , 2016 , as the third single from her studio album , Dangerous Woman ( 2016 ) .",
+    "claim_routes_canonical": [
+      {
+        "source": "side",
+        "destination": "side"
+      }
+    ],
+    "evidence_routes_canonical": [
+      {
+        "source": "side",
+        "destination": "side"
+      }
+    ]
+  },
+  "failure_cause": {
+    "primary": "degenerate_self_loop_route_extraction",
+    "secondary": "title_phrase_misread_as_route_expression",
+    "explanation": "The phrase 'Side to Side' is a song title, not a route. The analyzer extracted side->side on both claim and evidence and treated it as a route/order signal.",
+    "patchable": true
+  },
+  "comparison_to_prior_stages": {
+    "stage147b_targeted_pass_still_valid": true,
+    "stage148a_broader_failure_explained": true,
+    "route_order_v1_broader_status": "blocked",
+    "route_order_v1_targeted_status": "valid_targeted_diagnostic"
+  },
+  "recommended_patch": {
+    "stage": "Stage150-A",
+    "goal": "Implement route_order_reversal_v2 with conservative self-loop and title/context guards.",
+    "requirements": [
+      "Reject any directional route whose canonical source equals canonical destination.",
+      "Do not trigger on self-loop routes such as side->side.",
+      "Add conservative title/context guard for quoted or title-like phrases around to-patterns.",
+      "Keep non-SUPPORT prediction safety.",
+      "Keep organization endpoint blocking.",
+      "Keep alias canonicalization.",
+      "Keep analyzer shadow-only.",
+      "Do not modify source predictions or final logits."
+    ]
+  },
+  "policy_input_safety": {
+    "uses_claim_text": true,
+    "uses_evidence_text": true,
+    "uses_original_prediction": true,
+    "uses_deterministic_route_rules": true,
+    "uses_deterministic_alias_rules": true,
+    "uses_deterministic_org_like_rules": true,
+    "uses_gold_label_for_policy": false,
+    "uses_intervention_type": false,
+    "uses_diagnostic_family_for_policy": false,
+    "uses_file_path_heuristics": false,
+    "uses_row_id_heuristics": false
+  },
+  "safety_policy": {
+    "shadow_only": true,
+    "diagnostic_only": true,
+    "source_predictions_mutated": false,
+    "final_logits_modified": false,
+    "final_predictions_modified": false,
+    "training_modified": false,
+    "checkpoint_selection_modified": false,
+    "stage128_guard_enabled": false,
+    "stage15_used": false,
+    "external_data_used_for_training": false,
+    "threshold_used_for_model_selection": false
+  },
+  "interpretation": {
+    "route_order_reversal_v1_final_integration_ready": false,
+    "route_order_reversal_v1_broader_shadow_ready": false,
+    "route_order_reversal_v1_targeted_diagnostic_valid": true,
+    "route_order_reversal_v2_patch_warranted": true
+  },
+  "remaining_risks": [
+    "Other title-like to-phrases may still cause false positives unless guarded.",
+    "Route extraction remains deterministic and pattern-based.",
+    "Complex route language and implicit directionality remain untested.",
+    "Broader route/order use must be re-run after Stage150 patch."
+  ],
+  "next_stage_recommendation": {
+    "stage": "Stage150-A",
+    "goal": "Patch route/order analyzer into v2 and re-run Stage147-B plus Stage148-A.",
+    "avoid": [
+      "automatic final prediction override",
+      "training loss integration",
+      "checkpoint selection using route/order outputs",
+      "broad route/order deployment before v2 revalidation"
+    ]
+  }
+}
