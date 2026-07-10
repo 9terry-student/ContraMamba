@@ -1,0 +1,93 @@
+{
+  "stage": "Stage141-B",
+  "decision": "STAGE141B_TEXT_LOC_DISJOINT_STRESS_ROBUST_SHADOW_CANDIDATE",
+  "stage141a": {
+    "decision": "STAGE141A_TEXT_LOC_DISJOINT_STRESS_CANDIDATE_ROBUST",
+    "n_files_evaluated": 7,
+    "n_total_rows": 33000,
+    "n_changed_total": 53,
+    "false_support_before": 229,
+    "false_support_after": 176,
+    "delta_false_support": -53,
+    "false_ne_before": 2879,
+    "false_ne_after": 2882,
+    "delta_false_ne": 3,
+    "feature_false_support_tp": 53,
+    "feature_correct_support_fp": 0,
+    "feature_false_support_fn": 176,
+    "min_delta_macro_f1": 0.0,
+    "max_delta_false_ne_file": 3
+  },
+  "policy": {
+    "name": "text_loc_disjoint",
+    "description": "For SUPPORT predictions only, extract location-like spans from claim and evidence text; if both sides contain non-empty disjoint location sets, shadow SUPPORT to NOT_ENTITLED.",
+    "uses_claim_text": true,
+    "uses_evidence_text": true,
+    "uses_intervention_type": false,
+    "uses_slot_mismatch_target": false,
+    "uses_gold_label": false,
+    "uses_diagnostic_family": false,
+    "deployment_status": "shadow_candidate_only"
+  },
+  "per_file_summary": {
+    "stage123b_variants": {
+      "n_files": 5,
+      "total_delta_false_support": -49,
+      "total_delta_false_ne": 0,
+      "all_macro_f1_non_decreasing": true,
+      "interpretation": "Strong controlled diagnostic robustness across evidence interfaces."
+    },
+    "external_vitaminc": {
+      "n_files": 2,
+      "stage53_effect": "no_effect",
+      "stage63_delta_false_support": -4,
+      "stage63_delta_false_ne": 3,
+      "stage63_macro_f1_change": "slightly_positive",
+      "interpretation": "Small external benefit with small false-NE cost; requires further stress testing."
+    }
+  },
+  "audit_observation": {
+    "stage123b_changed_rows_location_swap_when_audited": true,
+    "audit_metadata_used_by_policy": false,
+    "example_location_pairs": [
+      "Beacon Harbor vs Elm Valley",
+      "Falcon Ridge vs Aurora City",
+      "Dublin vs Cork"
+    ]
+  },
+  "interpretation": {
+    "stage140_artifact_concern_reduced": true,
+    "shadow_analyzer_script_ready": true,
+    "final_logit_integration_ready": false,
+    "final_prediction_integration_ready": false,
+    "reason_not_final_ready": "External evidence is limited, Stage63 shows a small false-NE cost, and the extractor remains a simple regex heuristic."
+  },
+  "safety_policy": {
+    "final_logits_modified": false,
+    "final_predictions_modified": false,
+    "training_modified": false,
+    "checkpoint_selection_modified": false,
+    "stage128_guard_enabled": false,
+    "stage15_used": false,
+    "external_data_used_for_training": false,
+    "threshold_used_for_model_selection": false
+  },
+  "next_stage_recommendation": {
+    "stage": "Stage142",
+    "goal": "Implement a reusable shadow-only text_loc_disjoint analyzer for arbitrary prediction JSONLs.",
+    "requirements": [
+      "No model behavior changes.",
+      "No final-logit integration.",
+      "No final-prediction integration.",
+      "Policy must use only claim/evidence text and existing prediction labels.",
+      "Gold/intervention/family fields may be used only for evaluation/audit when present.",
+      "Export per-file metrics, aggregate metrics, group audit metrics, and changed examples."
+    ],
+    "avoid": [
+      "turning the heuristic into a training loss",
+      "using intervention_type as a rule",
+      "using slot_mismatch_target as a rule",
+      "claiming external generalization from the current limited external sample"
+    ]
+  }
+}
