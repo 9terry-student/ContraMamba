@@ -1,0 +1,101 @@
+{
+  "stage": "Stage163-B",
+  "decision": "STAGE163B_PARTIAL_CONFIG_RECOVERY_INVALID_SKELETON_BRIDGE_CANDIDATES_IDENTIFIED",
+  "stage163a": {
+    "decision": "STAGE163A_STAGE63_EQUIVALENT_CONFIG_PARTIALLY_RECOVERED",
+    "out_dir": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651",
+    "report_json": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json"
+  },
+  "critical_correction": {
+    "recovered_command_skeleton_is_executable": false,
+    "reason": "Bridge JSONL values were incorrectly extracted as prose tokens such as 'is'.",
+    "invalid_values": {
+      "--stage57-bridge-train-jsonl": "is",
+      "--stage66-bridge-train-jsonl": "is",
+      "--stage75-bridge-train-jsonl": "is",
+      "--stage80a-bridge-train-jsonl": "is"
+    },
+    "do_not_execute_stage163a_skeleton": true
+  },
+  "valid_bridge_candidates": {
+    "stage57": {
+      "path": "data/stage57_nonleaking_external_bridge.jsonl",
+      "exists_repo_relative": true,
+      "recommended_mode": "append_train_only"
+    },
+    "stage66": {
+      "path": "data/stage66_residual_bridge.jsonl",
+      "exists_repo_relative": true,
+      "recommended_mode": "append_train_only"
+    },
+    "stage75": {
+      "path": "data/stage75_targeted_residual_bridge.jsonl",
+      "exists_repo_relative": true,
+      "recommended_mode": "append_train_only"
+    },
+    "stage80a": {
+      "path": "data/stage80a_conservative_stage75v2_bridge.jsonl",
+      "exists_repo_relative": true,
+      "recommended_mode": "append_train_only"
+    }
+  },
+  "architecture_clue": {
+    "stage63_recovered_architecture": "v6b_minimal",
+    "stage161a_architecture": "vnext_minimal",
+    "likely_relevance": "high",
+    "interpretation": "Stage161-A may have collapsed because it did not reproduce the Stage63 architecture/config path."
+  },
+  "comparison_context": {
+    "stage63_bridge_external": {
+      "accuracy": 0.322,
+      "macro_f1": 0.3153191098829531,
+      "prediction_counts": {
+        "REFUTE": 217,
+        "NOT_ENTITLED": 492,
+        "SUPPORT": 291
+      },
+      "n_scalar_fields": 0
+    },
+    "stage161a_checkpoint_scalar": {
+      "accuracy": 0.14,
+      "macro_f1": 0.08626074131076054,
+      "prediction_counts": {
+        "NOT_ENTITLED": 985,
+        "REFUTE": 13,
+        "SUPPORT": 2
+      },
+      "n_scalar_fields": 10,
+      "architecture": "vnext_minimal"
+    }
+  },
+  "recommended_stage164": {
+    "stage": "Stage164-A",
+    "goal": "Validate concrete bridge candidate files and construct a manually resolved Stage63-equivalent checkpoint-backed command.",
+    "actions": [
+      "verify all concrete bridge JSONL files exist",
+      "summarize row counts and label distributions for each bridge file",
+      "verify runner accepts v6b_minimal with checkpoint save flags",
+      "construct a candidate command using v6b_minimal and concrete bridge file paths",
+      "do not execute training until command validity is confirmed"
+    ],
+    "must_not_do": [
+      "do not execute the Stage163-A recovered skeleton",
+      "do not use bridge JSONL value 'is'",
+      "do not train on external labels",
+      "do not tune thresholds on external labels",
+      "do not use external metrics for checkpoint selection",
+      "do not integrate shadow diagnostics",
+      "do not blindly increase epochs"
+    ]
+  },
+  "safety_policy": {
+    "report_only": true,
+    "training_run_executed": false,
+    "external_data_used_for_training": false,
+    "external_labels_used_for_training": false,
+    "threshold_used_for_model_selection": false,
+    "checkpoint_selection_modified": false,
+    "shadow_diagnostics_integrated": false,
+    "final_predictions_modified_by_shadow": false
+  }
+}
