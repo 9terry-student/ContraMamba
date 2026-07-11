@@ -1,0 +1,101 @@
+{
+  "stage": "Stage162-B",
+  "decision": "STAGE162B_STAGE63_NONCOLLAPSE_REQUIRES_BRIDGE_OR_COMPOSER_CONFIG_RECOVERY",
+  "stage162a": {
+    "decision": "STAGE162A_STAGE63_NONCOLLAPSE_LIKELY_BRIDGE_OR_COMPOSER_CONFIG_DIFFERENCE",
+    "out_dir": "reports/stage162a_stage63_vs_stage161_config_forensics_20260711_051300",
+    "report_json": "reports/stage162a_stage63_vs_stage161_config_forensics_20260711_051300/stage162a_stage63_vs_stage161_config_forensics_report.json"
+  },
+  "quality_comparison": {
+    "stage53_frozen_external": {
+      "accuracy": 0.156,
+      "macro_f1": 0.11671748688294066,
+      "prediction_counts": {
+        "REFUTE": 33,
+        "NOT_ENTITLED": 944,
+        "SUPPORT": 23
+      },
+      "n_scalar_fields": 0
+    },
+    "stage63_bridge_external": {
+      "accuracy": 0.322,
+      "macro_f1": 0.3153191098829531,
+      "prediction_counts": {
+        "REFUTE": 217,
+        "NOT_ENTITLED": 492,
+        "SUPPORT": 291
+      },
+      "not_entitled_rate": 0.492,
+      "support_rate": 0.291,
+      "refute_rate": 0.217,
+      "n_scalar_fields": 0,
+      "status": "non_collapsed_but_no_scalars"
+    },
+    "stage161_checkpoint_backed_scalar": {
+      "accuracy": 0.14,
+      "macro_f1": 0.08626074131076054,
+      "prediction_counts": {
+        "NOT_ENTITLED": 985,
+        "REFUTE": 13,
+        "SUPPORT": 2
+      },
+      "not_entitled_rate": 0.985,
+      "support_rate": 0.002,
+      "refute_rate": 0.013,
+      "n_scalar_fields": 10,
+      "status": "scalar_export_works_but_collapsed"
+    }
+  },
+  "config_forensics": {
+    "stage63_pred_exists": true,
+    "stage63_dir_exists": true,
+    "n_stage63_related_files": 24,
+    "has_stage63_config_artifacts": true,
+    "stage63_bridge_evidence": true,
+    "runner_has_bridge_flags": true,
+    "runner_has_checkpoint_flags": true
+  },
+  "diagnosis": {
+    "scalar_export_blocker_resolved": true,
+    "checkpoint_backed_export_blocker_resolved": true,
+    "stage63_equivalent_behavior_not_recovered": true,
+    "primary_blocker": "Stage63 bridge/composer/current-best configuration recovery",
+    "do_not_increase_epochs_blindly": true,
+    "do_not_use_stage161_for_recovered_regressed_scalar_conclusions": true
+  },
+  "recommended_stage163": {
+    "stage": "Stage163-A",
+    "goal": "Recover exact Stage63-equivalent command/config and instantiate checkpoint-backed scalar export run.",
+    "inputs": [
+      "reports/stage162a_stage63_vs_stage161_config_forensics_20260711_051300/stage162a_stage63_config_scan.json",
+      "reports/stage162a_stage63_vs_stage161_config_forensics_20260711_051300/stage162a_runner_bridge_snippets.json",
+      "reports/stage162a_stage63_vs_stage161_config_forensics_20260711_051300/stage162a_runner_relevant_flags.csv",
+      "results/stage63_bridge_enabled_vitaminc_external_eval_20260702_060044"
+    ],
+    "actions": [
+      "extract Stage63 command/config evidence from scan artifacts",
+      "identify bridge train JSONL flags and modes used by Stage63",
+      "identify composer/recovery-related flags if present",
+      "construct Stage163-A command with recovered Stage63-equivalent settings plus --save-checkpoint-path",
+      "do not run until the recovered config is explicitly reported"
+    ],
+    "must_not_do": [
+      "do not train on external labels",
+      "do not tune thresholds on external labels",
+      "do not use external metrics for checkpoint selection",
+      "do not integrate shadow diagnostics",
+      "do not use collapsed Stage161 scalar predictions for recovered-vs-regressed conclusions",
+      "do not blindly increase epochs"
+    ]
+  },
+  "safety_policy": {
+    "report_only": true,
+    "training_run_executed": false,
+    "external_data_used_for_training": false,
+    "external_labels_used_for_training": false,
+    "threshold_used_for_model_selection": false,
+    "checkpoint_selection_modified": false,
+    "shadow_diagnostics_integrated": false,
+    "final_predictions_modified_by_shadow": false
+  }
+}
