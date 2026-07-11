@@ -1,0 +1,70 @@
+﻿{
+  "stage": "Stage167-A",
+  "report_type": "v6b_native_scalar_schema_documentation",
+  "scalar_schema": "architecture_aware_native_scalar_schema_v1",
+  "architecture": "v6b_minimal",
+  "stage166_reinterpretation": {
+    "stage166_reproduced_noncollapsed_stage63_like_distribution": true,
+    "checkpoint_exists_expected_from_stage166": true,
+    "external_n_rows": 1000,
+    "external_accuracy": 0.295,
+    "external_macro_f1": 0.28791024061267173,
+    "external_prediction_counts": {
+      "NOT_ENTITLED": 536,
+      "REFUTE": 178,
+      "SUPPORT": 286
+    },
+    "external_noncollapsed": true,
+    "stage63_reference_prediction_counts": {
+      "NOT_ENTITLED": 492,
+      "REFUTE": 217,
+      "SUPPORT": 291
+    }
+  },
+  "diagnosis": {
+    "scalar_export_failure": false,
+    "original_validator_issue": "The previous 10-field validator treated vnext-only scalar fields as required for v6b_minimal.",
+    "prediction_artifact_parser_issue": "The clean prediction artifact was parsed as line-oriented JSONL before inspecting the whole JSON document. Scalar-only values were skipped as unsupported non-object values, not malformed JSON."
+  },
+  "required_scalar_fields": [
+    "frame_prob",
+    "predicate_coverage_prob",
+    "sufficiency_prob",
+    "entitlement_prob",
+    "polarity_margin",
+    "positive_energy",
+    "negative_energy"
+  ],
+  "optional_scalar_fields": [],
+  "unsupported_scalar_fields": [
+    "compositional_entitlement_prob",
+    "learned_entitlement_prob",
+    "learned_entitlement_logit"
+  ],
+  "required_scalar_counts_expected_for_stage166": {
+    "frame_prob": 1000,
+    "predicate_coverage_prob": 1000,
+    "sufficiency_prob": 1000,
+    "entitlement_prob": 1000,
+    "polarity_margin": 1000,
+    "positive_energy": 1000,
+    "negative_energy": 1000
+  },
+  "native_required_scalar_pass_expected": true,
+  "all_requested_scalar_pass_expected": false,
+  "decision_expected": "STAGE167A_V6B_NATIVE_SCALAR_EXPORT_READY_FOR_COMMON_SCALAR_ANALYSIS",
+  "next_stage": "Compare recovered and regressed examples using the common seven-scalar subset.",
+  "safety_constraints": {
+    "model_decision_behavior_changed": false,
+    "training_losses_changed": false,
+    "checkpoint_selection_modified": false,
+    "external_data_added_to_training": false,
+    "external_labels_used_for_tuning": false,
+    "missing_vnext_scalars_synthesized": false,
+    "learned_or_compositional_scalars_aliased_from_entitlement_prob": false,
+    "training_run": false,
+    "kaggle_run": false,
+    "local_python_validation_run": false,
+    "git_commands_run": false
+  }
+}
