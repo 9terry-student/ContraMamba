@@ -1,4 +1,4 @@
-"""Train ContraMamba-v6B-minimal on controlled intervention data.
+﻿"""Train ContraMamba-v6B-minimal on controlled intervention data.
 
 Minimal v6B wrapper: reuses v5 training infrastructure, adds temporal/predicate
 comparator alphas with learnable scaling. No composer, no product_final_loss.
@@ -11,9 +11,11 @@ import argparse
 import csv
 import inspect
 import json
+import os
 import random
 import re
 import sys
+import time
 from pathlib import Path
 from typing import Any
 
@@ -57,7 +59,15 @@ from scripts.stage45_support_recovery_utils import (  # noqa: E402
     compute_support_recovery_terms,
     label_counts as stage45c_label_counts,
 )
-
+from scripts.run_provenance import (  # noqa: E402
+    SCHEMA_VERSION as RUN_PROVENANCE_SCHEMA_VERSION,
+    dataset_record as provenance_dataset_record,
+    initial_record as provenance_initial_record,
+    json_safe as provenance_json_safe,
+    runtime_versions as provenance_runtime_versions,
+    utc_now_iso as provenance_utc_now_iso,
+    write_json_atomic as write_provenance_json_atomic,
+)
 STAGE31C_COVERAGE_LABELS = [
     "ENTAILS_SUPPORT",
     "OVERCLAIM_NOT_ENTITLED",
@@ -12689,8 +12699,11 @@ def load_stage80a_bridge_train_rows(
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     raw_argv = list(sys.argv[1:] if argv is None else argv)
+    _stage174a_runtime_start = time.monotonic()
     args = parser.parse_args(argv)
     explicit_args = set(raw_argv)
+    _stage174a_requested_epochs = int(args.epochs)
+    _stage174a_parsed_args = dict(vars(args))
     if getattr(args, "stage135_use_best_slot_aux", False):
         if args.architecture != "vnext_minimal":
             parser.error("--stage135-use-best-slot-aux requires --architecture vnext_minimal")
@@ -17680,6 +17693,191 @@ def main(argv: list[str] | None = None) -> int:
             report["best_trainable_state"] = best_trainable_state
         return report
 
+    _stage174a_run_dir = (
+        Path(args.output_json).parent
+        if args.output_json is not None
+        else Path("reports") / f"stage174a_run_{int(time.time())}_{os.getpid()}"
+    )
+    _stage174a_provenance_path = _stage174a_run_dir / "run_provenance.json"
+    _stage174a_resolved_train_batch_size = (
+        int(args.train_batch_size) if args.train_batch_size is not None else len(train_records)
+    )
+    _stage174a_resolved_eval_train_batch_size = (
+        int(args.eval_batch_size) if args.eval_batch_size is not None else len(train_records)
+    )
+    _stage174a_resolved_eval_dev_batch_size = (
+        int(args.eval_batch_size) if args.eval_batch_size is not None else len(dev_records)
+    )
+    _stage174a_auxiliary_datasets = {
+        "stage57_bridge": provenance_dataset_record(
+            args.stage57_bridge_train_jsonl,
+            mode=args.stage57_bridge_train_mode,
+        ),
+        "stage66_bridge": provenance_dataset_record(
+            args.stage66_bridge_train_jsonl,
+            mode=args.stage66_bridge_train_mode,
+        ),
+        "stage75_bridge": provenance_dataset_record(
+            args.stage75_bridge_train_jsonl,
+            mode=args.stage75_bridge_train_mode,
+        ),
+        "stage80a_bridge": provenance_dataset_record(
+            args.stage80a_bridge_train_jsonl,
+            mode=args.stage80a_bridge_train_mode,
+        ),
+        "temporal_diagnostic": provenance_dataset_record(
+            args.temporal_diagnostic_data,
+            mode="auxiliary_temporal_diagnostic",
+        ),
+        "time_swap_temporal_safety": provenance_dataset_record(
+            getattr(args, "v7_temporal_safety_data", None),
+            mode="auxiliary_temporal_safety",
+        ),
+        "temporal_mismatch_multihead": provenance_dataset_record(
+            getattr(args, "v7_temporal_mismatch_multihead_data", None),
+            mode="auxiliary_temporal_mismatch_multihead",
+        ),
+        "temporal_preservation": provenance_dataset_record(
+            getattr(args, "v7_temporal_preservation_data", None),
+            mode="auxiliary_temporal_preservation",
+        ),
+        "coverage_entailment": provenance_dataset_record(
+            getattr(args, "v7_coverage_entailment_data", None),
+            mode="auxiliary_coverage_entailment",
+        ),
+        "pair_contrastive_frame": provenance_dataset_record(
+            args.pair_contrastive_frame_data,
+            mode=args.pair_contrastive_use_case,
+        ),
+        "stage118_diagnostic": provenance_dataset_record(
+            getattr(args, "stage118_diagnostic_jsonl", None),
+            mode="eval_or_export_only_diagnostic",
+        ),
+        "stage134_slot_diagnostic": provenance_dataset_record(
+            getattr(args, "stage134_slot_diagnostic_jsonl", None),
+            mode="diagnostic_only",
+        ),
+        "external_eval_jsonl": [
+            provenance_dataset_record(path_value, mode="external_eval_only")
+            for path_value in (getattr(args, "external_eval_jsonl", []) or [])
+        ],
+        "stage43_external_factver": [
+            provenance_dataset_record(path_value, mode="external_factver_eval_only")
+            for path_value in (getattr(args, "stage43_external_factver_jsonl", []) or [])
+        ],
+    }
+    _stage174a_auxiliary_activity = {
+        "stage57_active": bool(_stage60_bridge_info.get("stage57_bridge_train_enabled")),
+        "stage66_active": bool(_stage66_bridge_info.get("stage66_bridge_train_enabled")),
+        "stage75_active": bool(_stage75_bridge_info.get("stage75_bridge_train_enabled")),
+        "stage80a_active": bool(_stage80a_bridge_info.get("stage80a_bridge_train_enabled")),
+        "time_swap_active": bool(
+            args.temporal_diagnostic_data is not None
+            or getattr(args, "v7_temporal_safety_data", None) is not None
+            or getattr(args, "v7_temporal_mismatch_multihead_data", None) is not None
+            or getattr(args, "v7_temporal_preservation_data", None) is not None
+        ),
+        "external_evaluation_active": bool(
+            (getattr(args, "external_eval_jsonl", []) or [])
+            or (getattr(args, "stage43_external_factver_jsonl", []) or [])
+        ),
+        "row_counts": {
+            "clean_main_loaded_rows": len(records),
+            "clean_main_train_rows_before_bridges": _clean_main_train_row_count,
+            "final_train_rows": len(train_records),
+            "dev_rows": len(dev_records),
+            "stage57_bridge_rows": _stage60_bridge_info.get("stage57_bridge_row_count"),
+            "stage66_bridge_rows": _stage66_bridge_info.get("stage66_bridge_row_count"),
+            "stage75_bridge_rows": _stage75_bridge_info.get("stage75_bridge_row_count"),
+            "stage80a_bridge_rows": _stage80a_bridge_info.get("stage80a_bridge_row_count"),
+            "temporal_diagnostic_train_rows": len(_td_train_records),
+            "temporal_diagnostic_dev_rows": len(_td_dev_records),
+            "temporal_safety_loaded_rows": _ts_meta_records_loaded,
+            "temporal_safety_used_rows": _ts_meta_records_used,
+            "temporal_mismatch_loaded_rows": _tmm_meta_records_loaded,
+            "temporal_mismatch_used_rows": _tmm_meta_records_used,
+            "temporal_preservation_loaded_rows": _tpres_meta_records_loaded,
+            "temporal_preservation_used_rows": _tpres_meta_records_used,
+            "coverage_entailment_loaded_rows": _covent_meta_records_loaded,
+            "coverage_entailment_train_rows": _covent_meta_train_records,
+            "coverage_entailment_dev_rows": _covent_meta_dev_records,
+            "pair_contrastive_frame_rows": len(_pc_pair_records),
+        },
+    }
+    _stage174a_resolved_runtime_config = {
+        "architecture": args.architecture,
+        "backbone": args.backbone,
+        "model_name": args.model_name if args.backbone == "mamba" else None,
+        "device_request": args.device,
+        "actual_torch_device": str(device),
+        "cuda_available": torch.cuda.is_available(),
+        "cuda_device_count": torch.cuda.device_count(),
+        "cuda_device_names": [
+            torch.cuda.get_device_name(index) for index in range(torch.cuda.device_count())
+        ],
+        "seed": args.seed,
+        "requested_epochs": _stage174a_requested_epochs,
+        "actual_planned_epochs": int(args.epochs),
+        "train_batch_size_argument": args.train_batch_size,
+        "resolved_train_batch_size": _stage174a_resolved_train_batch_size,
+        "eval_batch_size_argument": args.eval_batch_size,
+        "resolved_eval_batch_size": _stage174a_resolved_eval_dev_batch_size,
+        "resolved_eval_train_batch_size": _stage174a_resolved_eval_train_batch_size,
+        "resolved_eval_dev_batch_size": _stage174a_resolved_eval_dev_batch_size,
+        "gradient_accumulation_steps": int(args.gradient_accumulation_steps),
+        "effective_batch_size": _stage174a_resolved_train_batch_size * int(args.gradient_accumulation_steps),
+        "distributed_multiplier": 1,
+        "optimizer": "v5.build_optimizer",
+        "learning_rate": args.lr,
+        "head_learning_rate": args.head_lr,
+        "encoder_learning_rate": args.encoder_lr,
+        "weight_decay": getattr(args, "weight_decay", None),
+        "scheduler_configuration": None,
+        "maximum_sequence_length": max_length,
+        "prediction_export_schema": "stage28e_v1_json_plus_optional_jsonl",
+        "training_scope": "internal_controlled_clean_train_with_opt_in_train_only_auxiliary_bridges",
+        "active_bridge_auxiliary_modes_and_row_counts": _stage174a_auxiliary_activity,
+    }
+    _stage174a_training_selection_policy = {
+        "clean_dev_only_checkpoint_selection": True,
+        "checkpoint_selection_metric": args.select_metric,
+        "checkpoint_selection_direction": "maximize",
+        "external_evaluation_used_for_training": False,
+        "external_evaluation_used_for_calibration": False,
+        "external_evaluation_used_for_threshold_selection": False,
+        "external_evaluation_used_for_checkpoint_selection": False,
+        "time_swap_included_in_main_classification_training": False,
+        "final_ce_logits_source": "output['logits']",
+        "loss_logits_used_for_final_classifier_ce": False,
+        "shadow_diagnostics_integrated_into_predictions": bool(
+            getattr(args, "stage43_external_enable_shadow_export", False)
+        ),
+    }
+    _stage174a_provenance_record = provenance_initial_record(
+        run_dir=_stage174a_run_dir,
+        training_script=Path(__file__).resolve(),
+        raw_sys_argv=raw_argv,
+        working_directory=Path.cwd(),
+        parsed_args=_stage174a_parsed_args,
+        resolved_runtime_config=_stage174a_resolved_runtime_config,
+        data_provenance={
+            "expected_main_clean_dataset": "data/controlled_v5_v3_without_time_swap.jsonl",
+            "main_data": provenance_dataset_record(
+                args.data,
+                mode="main_clean_classification",
+                expected=(
+                    Path(args.data).as_posix()
+                    == "data/controlled_v5_v3_without_time_swap.jsonl"
+                ),
+            ),
+            "auxiliary_datasets": _stage174a_auxiliary_datasets,
+            "auxiliary_activity": _stage174a_auxiliary_activity,
+        },
+        model_runtime_versions=provenance_runtime_versions(torch, model, args.architecture),
+        training_selection_policy=_stage174a_training_selection_policy,
+        repo_root=ROOT,
+    )
+    write_provenance_json_atomic(_stage174a_provenance_path, _stage174a_provenance_record)
     requested_loss_config = {
         "lambda_frame_preserve": args.lambda_frame_preserve,
         "lambda_frame_anchor": args.lambda_frame_anchor,
@@ -20658,6 +20856,69 @@ def main(argv: list[str] | None = None) -> int:
             ]
             write_text(args.stage45c_report_md, "\n".join(_stage45c_md_lines))
 
+    _stage174a_report_artifact_paths = []
+    for _stage174a_report_path in [
+        args.output_json,
+        getattr(args, "stage44_selection_report_json", None),
+        getattr(args, "stage45_family_holdout_report_json", None),
+        getattr(args, "stage45_family_holdout_report_md", None),
+        getattr(args, "stage45c_report_json", None),
+        getattr(args, "stage45c_report_md", None),
+    ]:
+        if _stage174a_report_path is not None:
+            _stage174a_report_artifact_paths.append(str(_stage174a_report_path))
+    _stage174a_prediction_artifact_paths = []
+    for _stage174a_prediction_path in [
+        _prediction_export_output_jsonl,
+        getattr(args, "output_ood_json", None),
+        getattr(args, "output_ood_predictions_json", None),
+        getattr(args, "stage115_clean_dev_scalar_output_jsonl", None),
+        getattr(args, "stage118_diagnostic_output_jsonl", None),
+    ]:
+        if _stage174a_prediction_path is not None:
+            _stage174a_prediction_artifact_paths.append(str(_stage174a_prediction_path))
+    if getattr(args, "external_output_dir", None) is not None and (getattr(args, "external_eval_jsonl", []) or []):
+        _stage174a_prediction_artifact_paths.append(str(Path(args.external_output_dir)))
+    if report.get("stage43_external_factver_eval") is not None:
+        _stage174a_report_artifact_paths.append(str(Path(getattr(args, "stage43_external_output_dir", "reports"))))
+    _stage174a_selected_checkpoint_path = None
+    _stage174a_final_checkpoint_path = None
+    if args.save_checkpoint_path is not None:
+        if getattr(args, "save_checkpoint_mode", "final") == "best_clean_dev":
+            _stage174a_selected_checkpoint_path = str(args.save_checkpoint_path)
+        else:
+            _stage174a_final_checkpoint_path = str(args.save_checkpoint_path)
+    if getattr(args, "save_model_checkpoint", None) is not None:
+        _stage174a_selected_checkpoint_path = str(args.save_model_checkpoint)
+    _stage174a_selected_clean_dev_metrics = None
+    if len(reports) == 1:
+        _stage174a_selected_clean_dev_metrics = next(iter(reports.values())).get("best_dev_metrics")
+    else:
+        _stage174a_selected_clean_dev_metrics = {
+            _name: _run_report.get("best_dev_metrics")
+            for _name, _run_report in reports.items()
+        }
+    _stage174a_provenance_record.update(
+        {
+            "finalized_at_utc": provenance_utc_now_iso(),
+            "status": "completed",
+        }
+    )
+    _stage174a_provenance_record["finalization"] = provenance_json_safe(
+        {
+            "completed_epochs": int(args.epochs),
+            "final_checkpoint_path": _stage174a_final_checkpoint_path,
+            "prediction_artifact_paths": _stage174a_prediction_artifact_paths,
+            "report_artifact_paths": _stage174a_report_artifact_paths,
+            "selected_checkpoint_path": _stage174a_selected_checkpoint_path,
+            "selected_clean_dev_metric_values": _stage174a_selected_clean_dev_metrics,
+            "selected_epoch": _ood_best_epoch,
+            "total_runtime_seconds": round(time.monotonic() - _stage174a_runtime_start, 6),
+        }
+    )
+    write_provenance_json_atomic(_stage174a_provenance_path, _stage174a_provenance_record)
+    report["run_provenance_json"] = str(_stage174a_provenance_path)
+    report["run_provenance_schema_version"] = RUN_PROVENANCE_SCHEMA_VERSION
     if args.output_json is not None:
         if getattr(args, "stage135_use_best_slot_aux", False):
             report["stage135_report_json"] = str(args.output_json)
