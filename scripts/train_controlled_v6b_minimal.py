@@ -20893,11 +20893,21 @@ def main(argv: list[str] | None = None) -> int:
     _stage174a_selected_clean_dev_metrics = None
     if len(reports) == 1:
         _stage174a_selected_clean_dev_metrics = next(iter(reports.values())).get("best_dev_metrics")
+        _stage174a_selected_epoch = _ood_best_epoch
     else:
         _stage174a_selected_clean_dev_metrics = {
             _name: _run_report.get("best_dev_metrics")
             for _name, _run_report in reports.items()
         }
+        _stage174a_selected_epoch = {
+            _name: _run_report.get("best_epoch")
+            for _name, _run_report in reports.items()
+        }
+    _stage174a_selected_checkpoint = {
+        "kind": "saved_path" if _stage174a_selected_checkpoint_path is not None else "in_memory_best_clean_dev_state",
+        "path": _stage174a_selected_checkpoint_path,
+        "selection_source": "internal_clean_dev_only",
+    }
     _stage174a_provenance_record.update(
         {
             "finalized_at_utc": provenance_utc_now_iso(),
@@ -20911,8 +20921,9 @@ def main(argv: list[str] | None = None) -> int:
             "prediction_artifact_paths": _stage174a_prediction_artifact_paths,
             "report_artifact_paths": _stage174a_report_artifact_paths,
             "selected_checkpoint_path": _stage174a_selected_checkpoint_path,
+            "selected_checkpoint": _stage174a_selected_checkpoint,
             "selected_clean_dev_metric_values": _stage174a_selected_clean_dev_metrics,
-            "selected_epoch": _ood_best_epoch,
+            "selected_epoch": _stage174a_selected_epoch,
             "total_runtime_seconds": round(time.monotonic() - _stage174a_runtime_start, 6),
         }
     )
