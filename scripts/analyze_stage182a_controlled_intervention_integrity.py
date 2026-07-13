@@ -23,7 +23,10 @@ from typing import Any, Iterable
 
 
 STAGE = "Stage182-A"
-COMPLETE = "STAGE182A_CONTROLLED_INTERVENTION_INTEGRITY_AND_CLEAN_FAILURE_SET_AUDIT_COMPLETE"
+DATA_AND_MODEL_READY = "STAGE182A_DATA_CONTAMINATION_CONFIRMED_AND_CLEAN_MODEL_FAILURE_SET_READY"
+MODEL_READY = "STAGE182A_INTERVENTION_CONTRACT_CLEAN_MODEL_FAILURE_SET_READY"
+GENERATOR_REPAIR_FIRST = "STAGE182A_DATA_INTEGRITY_FAILURE_REQUIRES_GENERATOR_REPAIR_FIRST"
+SCHEMA_UNRESOLVED = "STAGE182A_INTERVENTION_SCHEMA_UNRESOLVED"
 BLOCKED = "STAGE182A_CONTROLLED_INTERVENTION_INTEGRITY_AUDIT_BLOCKED"
 EXPECTED_STAGE181 = "STAGE181A_SECOND_REVIEW_OR_HUMAN_ADJUDICATION_REQUIRED"
 EXPECTED_STAGE180 = "STAGE180A_HARD_FRAME_MANUAL_REVIEW_PACKET_READY"
@@ -108,8 +111,8 @@ COMPARISON_COLUMNS = [
     "agreement_category", "roadmap_correction_required",
 ]
 COHORT_COLUMNS = [
-    "stage176_cohort", "hard_count", "clean_failure_count", "contaminated_count",
-    "unresolved_count", "clean_failure_rate", "other_cohort_clean_failure_rate",
+    "stage176_cohort", "hard_count", "clean_failure_count", "clean_hard_native_frame_correct_count",
+    "contaminated_count", "unresolved_count", "clean_failure_rate", "other_cohort_clean_failure_rate",
     "rate_difference", "fisher_exact_p", "interpretation",
 ]
 FAMILY_COLUMNS = [
@@ -139,6 +142,14 @@ CSV_SCHEMAS = {
 
 class AuditBlocked(ValueError):
     """A frozen-input, identity, or generator contract was not satisfied."""
+
+
+class CandidateInvariantBlocked(AuditBlocked):
+    """The emitted clean-failure queue violated its native-error invariant."""
+
+    def __init__(self, offending_rows: list[dict[str, Any]]) -> None:
+        super().__init__("clean model-failure candidates must all be native frame errors")
+        self.offending_rows = offending_rows
 
 
 def require(condition: bool, message: str) -> None:
@@ -286,6 +297,20 @@ def exact_map(rows: list[dict[str, Any]], key: str) -> dict[str, dict[str, Any]]
 
 def decision_value(report: dict[str, Any]) -> str | None:
     return report.get("decision") or report.get("execution_decision") or (report.get("closure") or {}).get("decision")
+
+
+def normalized_frame_value(value: Any, field: str) -> int:
+    """Normalize a required binary frame label/prediction without string comparison."""
+    if isinstance(value, bool):
+        return int(value)
+    if isinstance(value, int) and value in {0, 1}:
+        return value
+    text = "" if value is None else str(value).strip().lower()
+    if text in {"true", "false"}:
+        return int(text == "true")
+    if text in {"0", "1"}:
+        return int(text)
+    raise AuditBlocked(f"{field} must be a resolved binary integer/boolean, got {value!r}")
 
 
 def normalize_hidden(rows: list[dict[str, str]]) -> tuple[dict[str, dict[str, str]], dict[str, list[str]]]:
@@ -498,12 +523,18 @@ The deterministic audit covered all {topology['unique_items']} unique review ite
 - Non-polarity polarity leaks: {report['structured_axis_contract']['polarity_contamination_items']}
 - Clean hard/control pairs: {hard_control['clean_pairs']} of {topology['matched_pairs']}
 - Final clean model-failure candidates: {readiness['candidate_count']}
+- Deterministic contaminated items: {integrity['contaminated_items']}
+- Candidate intervention families: {readiness['candidate_intervention_family_count']}
+- Schema unresolved rate: {readiness['schema_unresolved_rate']}
 
 ## Decision evidence
 
 - Criterion: `minimum_clean_hard_candidates`
 - Observed clean hard candidates: {readiness['candidate_count']}
 - Required minimum: {readiness['minimum_clean_hard_candidates']}
+- Candidate intervention families: {readiness['candidate_intervention_family_count']}
+- Matched clean controls available: {readiness['matched_clean_control_availability']}
+- Native mismatch invariant passed: {readiness['candidate_native_frame_mismatch_invariant']}
 - Passed: {readiness['minimum_criterion_passed']}
 
 Generator equality is provenance rather than a cleanliness verdict. A row can
@@ -624,6 +655,20 @@ def main() -> int:
                 counterpart[source_id], cohort, roadmap_by_id[source_id]["primary_stratum"].strip(),
             ))
         item_by_id = {row["source_row_id"]: row for row in items}
+        current = "native_frame_value_normalization"
+        for source_id, row in item_by_id.items():
+            native_label = normalized_frame_value(
+                hidden[source_id]["native_frame_label"], f"{source_id}.native_frame_label")
+            prediction_source = (
+                stage179_by_id[source_id].get("frame_prediction")
+                if source_id in stage179_by_id
+                else hidden[source_id]["native_frame_label"]
+            )
+            native_prediction = normalized_frame_value(
+                prediction_source, f"{source_id}.native_frame_prediction")
+            row["native_frame_label_normalized"] = native_label
+            row["native_frame_prediction_normalized"] = native_prediction
+            row["is_native_frame_error"] = native_prediction != native_label
 
         current = "matched_pair_and_clean_set"
         pair_rows: list[dict[str, Any]] = []
@@ -632,7 +677,21 @@ def main() -> int:
             hard, control = item_by_id[hard_id], item_by_id[control_id]
             pair_clean = (hard["integrity_verdict"] == "CLEAN_SINGLE_AXIS_CONSTRUCTION" and
                           control["integrity_verdict"] == "CLEAN_SINGLE_AXIS_CONSTRUCTION")
-            if pair_clean:
+            hard_contract_exact = not hard["unexpected_axes"] and not hard["missing_intended_axes"]
+            hard_grammar_valid = not hard["did_not_inflected_predicate"]
+            hard_canonical_control_valid = control["integrity_verdict"] == "CLEAN_SINGLE_AXIS_CONSTRUCTION"
+            hard_schema_resolved = (hard["generator_exact"] and hard["packet_anchor_exact"]
+                                    and hard["label_schema_exact"])
+            candidate_eligible = (
+                hard["item_role"] == "hard"
+                and hard["is_native_frame_error"]
+                and hard_contract_exact
+                and hard_grammar_valid
+                and hard_canonical_control_valid
+                and hard_schema_resolved
+                and not hard["unexpected_axes"]
+            )
+            if candidate_eligible:
                 clean_ids.add(hard_id)
                 hard["clean_model_failure_candidate"] = True
             pair_rows.append({
@@ -644,18 +703,24 @@ def main() -> int:
                 "pair_clean": pair_clean,
                 "hard_anomaly_codes": hard["anomaly_codes"],
                 "control_anomaly_codes": control["anomaly_codes"],
-                "clean_model_failure_candidate": pair_clean,
+                "clean_model_failure_candidate": hard["clean_model_failure_candidate"],
             })
 
         # Output-only projections from the canonical item/pair results above.
         for row in items:
             role = row["item_role"]
             if role == "hard":
-                row["final_diagnostic_class"] = (
-                    "CLEAN_MODEL_FAILURE_CANDIDATE"
-                    if row["clean_model_failure_candidate"]
-                    else "DATA_INTERVENTION_CONTAMINATION"
+                pair_is_clean = (
+                    row["integrity_verdict"] == "CLEAN_SINGLE_AXIS_CONSTRUCTION"
+                    and item_by_id[row["matched_source_row_id"]]["integrity_verdict"]
+                    == "CLEAN_SINGLE_AXIS_CONSTRUCTION"
                 )
+                if row["clean_model_failure_candidate"]:
+                    row["final_diagnostic_class"] = "CLEAN_MODEL_FAILURE_CANDIDATE"
+                elif pair_is_clean and not row["is_native_frame_error"]:
+                    row["final_diagnostic_class"] = "CLEAN_HARD_NATIVE_FRAME_CORRECT"
+                else:
+                    row["final_diagnostic_class"] = "DATA_INTERVENTION_CONTAMINATION"
             else:
                 row["final_diagnostic_class"] = (
                     "CLEAN_CONTROL_REFERENCE"
@@ -683,12 +748,8 @@ def main() -> int:
                 "contract_exact_match": not row["unexpected_axes"] and not row["missing_intended_axes"],
                 "canonical_control_valid": matched_valid,
                 "schema_resolved": True,
-                "native_frame_label": hidden[source_id]["native_frame_label"].strip(),
-                "native_frame_prediction": (
-                    stage179_by_id[source_id].get("frame_prediction", "")
-                    if source_id in stage179_by_id
-                    else hidden[source_id]["native_frame_label"].strip()
-                ),
+                "native_frame_label": row["native_frame_label_normalized"],
+                "native_frame_prediction": row["native_frame_prediction_normalized"],
                 "stage181_primary_stratum": row["stage181_primary_stratum"],
                 "final_diagnostic_class": row["final_diagnostic_class"],
                 "pair_id": row["pair_id"],
@@ -781,6 +842,16 @@ def main() -> int:
         hard_outputs = [row for row in item_outputs if row["item_role"] == "hard"]
         clean_output_rows = [row for row in hard_outputs
                              if row["final_diagnostic_class"] == "CLEAN_MODEL_FAILURE_CANDIDATE"]
+        current = "clean_candidate_native_frame_mismatch_invariant"
+        offending_candidates = [{
+            "row_id": row["row_id"],
+            "native_frame_label": row["native_frame_label"],
+            "native_frame_prediction": row["native_frame_prediction"],
+        } for row in clean_output_rows
+            if row["native_frame_prediction"] == row["native_frame_label"]]
+        if offending_candidates:
+            raise CandidateInvariantBlocked(offending_candidates)
+        candidate_native_frame_mismatch_invariant = True
         data_queue_rows = [row for row in hard_outputs
                            if row["final_diagnostic_class"] == "DATA_INTERVENTION_CONTAMINATION"]
         clean_control_rows = [row for row in item_outputs
@@ -809,6 +880,8 @@ def main() -> int:
             cohort_rows.append({
                 "stage176_cohort": name, "hard_count": len(group),
                 "clean_failure_count": clean_count,
+                "clean_hard_native_frame_correct_count": sum(
+                    row["final_diagnostic_class"] == "CLEAN_HARD_NATIVE_FRAME_CORRECT" for row in group),
                 "contaminated_count": sum(row["final_diagnostic_class"] == "DATA_INTERVENTION_CONTAMINATION"
                                            for row in group),
                 "unresolved_count": sum(row["final_diagnostic_class"] == "SCHEMA_UNRESOLVED_HOLD"
@@ -834,6 +907,30 @@ def main() -> int:
                 "control_anomaly_count": sum(row["final_diagnostic_class"] == "CONTROL_ANOMALY" for row in group),
             })
 
+        clean_items = sum(row["integrity_verdict"] == "CLEAN_SINGLE_AXIS_CONSTRUCTION" for row in items)
+        contaminated_items = sum(row["integrity_verdict"] == "CONTAMINATED_CONSTRUCTION" for row in items)
+        grammar_invalid = sum(row["did_not_inflected_predicate"] for row in items)
+        polarity_contamination = sum(row["non_polarity_polarity_change"] for row in items)
+        clean_pairs = sum(row["pair_clean"] for row in pair_rows)
+        anomaly_counts = dict(sorted(Counter(code for row in items for code in row["anomaly_codes"]).items()))
+        candidate_family_count = len({row["intervention_type"] for row in clean_output_rows})
+        matched_clean_control_availability = sum(row["canonical_control_valid"] for row in clean_output_rows)
+        schema_unresolved_rate = rate(len(unresolved_rows), len(items)) or 0.0
+        minimum_candidate_passed = len(clean_output_rows) >= args.minimum_clean_hard_candidates
+        candidate_family_passed = candidate_family_count >= 3
+        schema_resolved_passed = schema_unresolved_rate < 0.20
+
+        if (contaminated_items >= 5 and minimum_candidate_passed
+                and candidate_family_passed and schema_resolved_passed):
+            selected_decision = DATA_AND_MODEL_READY
+        elif minimum_candidate_passed and candidate_family_passed and schema_resolved_passed:
+            selected_decision = MODEL_READY
+        elif contaminated_items >= 5 and schema_resolved_passed:
+            selected_decision = GENERATOR_REPAIR_FIRST
+        else:
+            selected_decision = SCHEMA_UNRESOLVED
+        stage182b_authorized = selected_decision in {DATA_AND_MODEL_READY, MODEL_READY}
+
         decision_rows = [
             {"criterion": "generator_exact_match", "observed_value": len(data),
              "threshold": f"=={len(data)}", "passed": True, "evidence_source": "generator_reconstruction"},
@@ -846,24 +943,32 @@ def main() -> int:
             {"criterion": "non_none_evidence_difference", "observed_value": packet_structure["evidence_different_instances"],
              "threshold": "==72", "passed": packet_structure["evidence_different_instances"] == 72,
              "evidence_source": "pass2_packet_and_controlled_data"},
-            {"criterion": "schema_unresolved_items", "observed_value": len(unresolved_rows),
-             "threshold": "==0", "passed": len(unresolved_rows) == 0, "evidence_source": "unique_item_integrity"},
+            {"criterion": "candidate_native_frame_mismatch_invariant",
+             "observed_value": len(offending_candidates), "threshold": "==0",
+             "passed": candidate_native_frame_mismatch_invariant,
+             "evidence_source": "clean_model_failure_candidates"},
+            {"criterion": "deterministic_contaminated_items", "observed_value": contaminated_items,
+             "threshold": ">=5", "passed": contaminated_items >= 5,
+             "evidence_source": "unique_item_integrity"},
             {"criterion": "minimum_clean_hard_candidates", "observed_value": len(clean_output_rows),
-             "threshold": args.minimum_clean_hard_candidates,
-             "passed": len(clean_output_rows) >= args.minimum_clean_hard_candidates,
-             "evidence_source": "hard_control_integrity"},
+             "threshold": args.minimum_clean_hard_candidates, "passed": minimum_candidate_passed,
+             "evidence_source": "hard_control_integrity_and_native_frame_error"},
+            {"criterion": "clean_candidate_intervention_family_count",
+             "observed_value": candidate_family_count, "threshold": ">=3",
+             "passed": candidate_family_passed,
+             "evidence_source": "clean_model_failure_candidates"},
+            {"criterion": "schema_unresolved_rate", "observed_value": schema_unresolved_rate,
+             "threshold": "<0.20", "passed": schema_resolved_passed,
+             "evidence_source": "schema_unresolved_queue"},
+            {"criterion": "selected_decision", "observed_value": selected_decision,
+             "threshold": "exactly_one_official_decision", "passed": True,
+             "evidence_source": "stage182a_priority_gate"},
         ]
 
-        clean_items = sum(row["integrity_verdict"] == "CLEAN_SINGLE_AXIS_CONSTRUCTION" for row in items)
-        contaminated_items = sum(row["integrity_verdict"] == "CONTAMINATED_CONSTRUCTION" for row in items)
-        grammar_invalid = sum(row["did_not_inflected_predicate"] for row in items)
-        polarity_contamination = sum(row["non_polarity_polarity_change"] for row in items)
-        clean_pairs = sum(row["pair_clean"] for row in pair_rows)
-        anomaly_counts = dict(sorted(Counter(code for row in items for code in row["anomaly_codes"]).items()))
         input_hashes = {name: sha256(path) for name, path in paths.items()}
         report = {
             "stage": STAGE,
-            "decision": COMPLETE,
+            "decision": selected_decision,
             "scope": {"deterministic_read_only_audit": True, "identity_key": "row_id",
                       "stage181_taxonomy_used_as_integrity_ground_truth": False},
             "input_validation": {"status": "passed", "input_sha256": input_hashes,
@@ -888,7 +993,11 @@ def main() -> int:
             "hard_control_integrity": {"clean_pairs": clean_pairs,
                                        "contaminated_pairs": len(pair_rows) - clean_pairs,
                                        "clean_controls": len(clean_control_rows),
-                                       "control_anomalies": len(control_queue_rows)},
+                                       "control_anomalies": len(control_queue_rows),
+                                       "clean_hard_native_frame_correct": sum(
+                                           row["final_diagnostic_class"] == "CLEAN_HARD_NATIVE_FRAME_CORRECT"
+                                           for row in hard_outputs),
+                                       "clean_model_failure_candidates": len(clean_output_rows)},
             "stage181_taxonomy_comparison": {"rows": len(comparison_rows),
                                              "agreements": sum(row["agreement_category"] == "AGREES" for row in comparison_rows),
                                              "roadmap_corrections": sum(row["roadmap_correction_required"] for row in comparison_rows)},
@@ -896,17 +1005,40 @@ def main() -> int:
                                             "interpretation": "descriptive_only"},
             "clean_failure_set_readiness": {"candidate_count": len(clean_output_rows),
                                             "candidate_row_ids": sorted(row["row_id"] for row in clean_output_rows),
+                                            "candidate_intervention_family_count": candidate_family_count,
+                                            "matched_clean_control_availability": matched_clean_control_availability,
+                                            "candidate_native_frame_mismatch_invariant": candidate_native_frame_mismatch_invariant,
                                             "minimum_clean_hard_candidates": args.minimum_clean_hard_candidates,
-                                            "minimum_criterion_passed": len(clean_output_rows) >= args.minimum_clean_hard_candidates,
+                                            "minimum_criterion_passed": minimum_candidate_passed,
+                                            "family_criterion_passed": candidate_family_passed,
+                                            "schema_unresolved_rate": schema_unresolved_rate,
+                                            "ready": stage182b_authorized,
                                             "causal_proof": False},
             "diagnosis": {"anomaly_counts": anomaly_counts,
                           "generator_equality_is_cleanliness": False,
-                          "row_id_misalignment_rejected": True},
+                          "row_id_misalignment_rejected": True,
+                          "clean_hard_native_frame_correct_row_ids": sorted(
+                              row["row_id"] for row in hard_outputs
+                              if row["final_diagnostic_class"] == "CLEAN_HARD_NATIVE_FRAME_CORRECT")},
             "stage182b_gate": {"clean_failure_set_available": bool(clean_output_rows),
                                "minimum_clean_hard_candidates": args.minimum_clean_hard_candidates,
                                "observed_clean_hard_candidates": len(clean_output_rows),
-                               "minimum_criterion_passed": len(clean_output_rows) >= args.minimum_clean_hard_candidates,
-                               "execution_authorized": False,
+                               "clean_candidate_intervention_family_count": candidate_family_count,
+                               "schema_unresolved_rate": schema_unresolved_rate,
+                               "minimum_criterion_passed": minimum_candidate_passed,
+                               "authorized_next_stage": (
+                                   "STAGE182B_CLEAN_FRAME_MODEL_FAILURE_LOCALIZATION"
+                                   if stage182b_authorized else ""),
+                               "secondary_authorized_next_stage": (
+                                   "STAGE182C_CONTROLLED_INTERVENTION_GENERATOR_REPAIR_SPEC"
+                                   if selected_decision == DATA_AND_MODEL_READY else ""),
+                               "execution_authorized": stage182b_authorized,
+                               "authorization_scope": (
+                                   "evaluation_only_failure_localization"
+                                   if stage182b_authorized else "none"),
+                               "training_authorized": False,
+                               "dataset_edit_authorized": False,
+                               "relabeling_authorized": False,
                                "decision_evidence_rows": len(decision_rows)},
             "limitations": ["The clean set is not causal proof.",
                             "Stage181 taxonomy remains provisional.",
@@ -969,11 +1101,17 @@ def main() -> int:
                                             "minimum_criterion_passed": False},
             "diagnosis": {"error_type": type(error).__name__, "error": str(error),
                           "failure_stage": current, "traceback": traceback.format_exc(),
-                          "diagnostics": diagnostics},
+                          "diagnostics": diagnostics,
+                          "offending_candidate_rows": getattr(error, "offending_rows", [])},
             "stage182b_gate": {"minimum_clean_hard_candidates": args.minimum_clean_hard_candidates,
                                "observed_clean_hard_candidates": 0,
                                "minimum_criterion_passed": False,
-                               "execution_authorized": False},
+                               "authorized_next_stage": "",
+                               "execution_authorized": False,
+                               "authorization_scope": "none",
+                               "training_authorized": False,
+                               "dataset_edit_authorized": False,
+                               "relabeling_authorized": False},
             "limitations": ["Validation failure prevents a scientific conclusion."],
             "safety_policy": {"dataset_modification": False, "model_import": False,
                               "checkpoint_load": False, "model_forward": False, "training": False},
