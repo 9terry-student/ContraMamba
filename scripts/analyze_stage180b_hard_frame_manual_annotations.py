@@ -589,7 +589,7 @@ def main() -> int:
             "hard_control_comparison": {"rows": len(comparisons), "statistics": ["risk_difference", "risk_ratio", "Fisher exact", "Benjamini-Hochberg"],
                                         "interpretation": "observational/provisional" if len(reviewers) == 1 else "descriptive multi-reviewer"},
             "beneficial_harmful_attribution": {"summary_rows": len(cohort_rows), "beneficial_expected": 25, "harmful_expected": 14,
-                                               "families_reported": sorted({row["intervention_type"] for row in consensus_rows if row["item_role"] == "hard")},
+                                               "families_reported": sorted({row["intervention_type"] for row in consensus_rows if row["item_role"] == "hard"}),
                                                "high_confidence_action_queue_rows": len(high_queue)},
             "diagnosis": diagnosis,
             "stage181_gate": {"decision": decision_value, "next_stage": next_stage,
