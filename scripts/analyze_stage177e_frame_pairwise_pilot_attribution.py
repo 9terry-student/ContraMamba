@@ -69,6 +69,30 @@ def _require(condition: bool, message: str) -> None:
         raise AuditBlocked(message)
 
 
+def _first_non_none(*values: Any) -> Any:
+    for value in values:
+        if value is not None:
+            return value
+    return None
+
+
+def _require_int(value: Any, *, field_name: str) -> int:
+    if value is None:
+        raise ValueError(f"Required integer field is missing: {field_name}")
+    if isinstance(value, bool):
+        raise ValueError(f"Boolean is not a valid integer for {field_name}")
+    try:
+        return int(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"Invalid integer field {field_name}: {value!r}") from exc
+
+
+def _optional_int(value: Any, *, field_name: str) -> int | None:
+    if value is None:
+        return None
+    return _require_int(value, field_name=field_name)
+
+
 def _read_json(path: Path) -> dict[str, Any]:
     try:
         value = json.loads(path.read_text(encoding="utf-8"))
@@ -149,19 +173,74 @@ def _stage(prov: dict[str, Any], name: str) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
 
 
+def _resolve_provenance_integer_fields(run_name: str, provenance: dict[str, Any]) -> dict[str, int]:
+    parsed_args = provenance.get("parsed_args") or {}
+    finalization = provenance.get("finalization") or {}
+    selected_checkpoint = finalization.get("selected_checkpoint") or {}
+    _require(isinstance(parsed_args, dict), f"{run_name}.parsed_args must be an object")
+    _require(isinstance(finalization, dict), f"{run_name}.finalization must be an object")
+    _require(isinstance(selected_checkpoint, dict),
+             f"{run_name}.finalization.selected_checkpoint must be an object")
+    seed = _require_int(parsed_args.get("seed"), field_name=f"{run_name}.parsed_args.seed")
+    epochs = _require_int(parsed_args.get("epochs"), field_name=f"{run_name}.parsed_args.epochs")
+    selected_epoch_raw = _first_non_none(
+        finalization.get("selected_epoch"),
+        selected_checkpoint.get("selected_epoch"),
+    )
+    selected_epoch = _require_int(
+        selected_epoch_raw,
+        field_name=f"{run_name}.finalization.selected_epoch",
+    )
+    checkpoint_selected_epoch = _optional_int(
+        selected_checkpoint.get("selected_epoch"),
+        field_name=f"{run_name}.finalization.selected_checkpoint.selected_epoch",
+    )
+    if checkpoint_selected_epoch is not None:
+        _require(checkpoint_selected_epoch == selected_epoch,
+                 f"{run_name} finalization selected epoch fields disagree")
+    return {"seed": seed, "epochs": epochs, "selected_epoch": selected_epoch}
+
+
+def _validate_stage176_csv_identifiers(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    required = {"stable_row_index", "row_id", "pair_id", "intervention_type"}
+    missing = sorted(required - set(rows[0]))
+    _require(not missing, f"Stage176-A row-transition CSV missing columns: {missing}")
+    for line_number, row in enumerate(rows, start=2):
+        row["stable_row_index"] = _require_int(
+            row.get("stable_row_index"),
+            field_name=f"stage176a_row_transitions.line_{line_number}.stable_row_index",
+        )
+        for key in ("row_id", "pair_id", "intervention_type"):
+            value = row.get(key)
+            _require(value is not None and str(value) != "",
+                     f"Stage176-A CSV identity is missing at line {line_number}: {key}")
+            row[key] = str(value)
+    return rows
+
+
 def _validate_stage_reports(stage176a_report: dict[str, Any],
                             stage177a_report: dict[str, Any]) -> dict[str, Any]:
     decision176 = stage176a._first(stage176a_report, (
         "closure.attribution_completion_decision", "decision"))
     _require(decision176 == STAGE176A_COMPLETE, "Stage176-A completion decision mismatch")
     trade = stage176a_report.get("correctness_tradeoff") or {}
-    beneficial = stage176a._first(stage176a_report, (
-        "intervention_attribution.beneficial_correction.total",
-        "correctness_tradeoff.beneficial_correction.rows"))
-    harmful = stage176a._first(stage176a_report, (
-        "intervention_attribution.harmful_regression.total",
-        "correctness_tradeoff.harmful_regression.rows"))
-    _require(int(beneficial) == 25 and int(harmful) == 14,
+    beneficial_raw = stage176a._first(stage176a_report, (
+        "correctness_tradeoff.gold_not_entitled_false_support_removed",
+        "correctness_tradeoff.beneficial_correction.rows",
+        "intervention_attribution.beneficial_correction.total"))
+    harmful_raw = stage176a._first(stage176a_report, (
+        "correctness_tradeoff.gold_support_true_support_lost",
+        "correctness_tradeoff.harmful_regression.rows",
+        "intervention_attribution.harmful_regression.total"))
+    beneficial = _require_int(
+        beneficial_raw,
+        field_name="stage176a.required_beneficial_correction_count",
+    )
+    harmful = _require_int(
+        harmful_raw,
+        field_name="stage176a.required_harmful_regression_count",
+    )
+    _require(beneficial == 25 and harmful == 14,
              "Stage176-A beneficial/harmful cohorts must be 25/14")
     _require(stage177a_report.get("decision") == STAGE177A_DECISION,
              "Stage177-A decision mismatch")
@@ -173,16 +252,19 @@ def _validate_stage_reports(stage176a_report: dict[str, Any],
 
 def _validate_provenance(role: str, prov: dict[str, Any], data_path: Path) -> dict[str, Any]:
     _require(prov.get("status") == "completed", f"{role} status must be completed")
-    expected = {"seed": 174, "architecture": "v6b_minimal", "backbone": "mamba",
+    integers = _resolve_provenance_integer_fields(role, prov)
+    _require(integers["seed"] == 174, f"{role} seed must be 174")
+    _require(integers["epochs"] == 20, f"{role} epochs must be 20")
+    _require(integers["selected_epoch"] == 20, f"{role} selected epoch must be 20")
+    expected = {"architecture": "v6b_minimal", "backbone": "mamba",
                 "model_name": MODEL_NAME}
     for key, value in expected.items():
         _require(stage176a._runtime(prov, key) == value, f"{role} {key} mismatch")
-    _require(int(stage176a._arg(prov, "epochs", 20)) == 20, f"{role} epochs must be 20")
-    _require(stage176a._selected_epoch(prov) == 20, f"{role} selected epoch must be 20")
     record = stage176a._data_record(prov)
     actual_data_sha = _sha256(data_path)
     _require(record.get("sha256") == actual_data_sha, f"{role} data SHA-256 mismatch")
-    _require(int(record.get("row_count", -1)) == 3600, f"{role} data row count mismatch")
+    data_row_count = _require_int(record.get("row_count"), field_name=f"{role}.data_provenance.main_data.row_count")
+    _require(data_row_count == 3600, f"{role} data row count mismatch")
     recorded_path = record.get("resolved_path") or record.get("path")
     _require(recorded_path is not None and Path(str(recorded_path)).resolve() == data_path,
              f"{role} data path mismatch")
@@ -203,26 +285,44 @@ def _validate_provenance(role: str, prov: dict[str, Any], data_path: Path) -> di
                  math.isclose(float(stage177.get("weight", -1)), .05),
                  "pilot Stage177-C must be pair_softplus/0.05")
         for key, wanted in (("eligible_pair_count", 240), ("malformed_pair_count", 0)):
-            actual = stage176a._first(stage177, (f"topology.{key}", key))
-            _require(actual is not None and int(actual) == wanted,
-                     f"pilot Stage177-C {key} mismatch")
-        raw = stage176a._first(stage177, ("topology.raw_comparison_count", "raw_comparison_count"))
-        _require(raw is not None and int(raw) == 8640,
-                 "pilot Stage177-C raw comparisons must be 8640 per epoch")
+            actual = _require_int(
+                stage176a._first(stage177, (f"topology.{key}", key)),
+                field_name=f"pilot.stage177c_frame_pairwise.topology.{key}",
+            )
+            _require(actual == wanted, f"pilot Stage177-C {key} mismatch")
+        raw = _require_int(
+            stage176a._first(stage177, ("topology.raw_comparison_count", "raw_comparison_count")),
+            field_name="pilot.stage177c_frame_pairwise.topology.raw_comparison_count",
+        )
+        _require(raw == 8640, "pilot Stage177-C raw comparisons must be 8640 per epoch")
         activities = stage177.get("run_activity") or {}
         epoch_metrics = [item for run in activities.values() if isinstance(run, dict)
                          for item in (run.get("epoch_metrics") or [])]
         _require(len(epoch_metrics) == 20, "pilot Stage177-C must expose 20 epoch diagnostics")
         _require(all(item.get("gradient_enabled") is True for item in epoch_metrics),
                  "pilot Stage177-C gradient must be enabled throughout")
-        _require(all(int(item.get("eligible_pair_count", -1)) == 240 and
-                     int(item.get("raw_comparison_count", -1)) == 8640 and
-                     int(item.get("malformed_pair_count", -1)) == 0 for item in epoch_metrics),
-                 "pilot Stage177-C per-epoch topology mismatch")
-        nonfinite = stage176a._first(stage177, ("aggregate_diagnostics.non_finite_count",), -1)
+        for epoch_index, item in enumerate(epoch_metrics, start=1):
+            eligible = _require_int(
+                item.get("eligible_pair_count"),
+                field_name=f"pilot.stage177c.epoch_metrics[{epoch_index}].eligible_pair_count",
+            )
+            comparisons = _require_int(
+                item.get("raw_comparison_count"),
+                field_name=f"pilot.stage177c.epoch_metrics[{epoch_index}].raw_comparison_count",
+            )
+            malformed = _require_int(
+                item.get("malformed_pair_count"),
+                field_name=f"pilot.stage177c.epoch_metrics[{epoch_index}].malformed_pair_count",
+            )
+            _require((eligible, comparisons, malformed) == (240, 8640, 0),
+                     f"pilot Stage177-C epoch {epoch_index} topology mismatch")
+        nonfinite = _require_int(
+            stage176a._first(stage177, ("aggregate_diagnostics.non_finite_count",)),
+            field_name="pilot.stage177c_frame_pairwise.aggregate_diagnostics.non_finite_count",
+        )
         direct = stage176a._first(stage177, ("final_classifier_logits_targeted",), None)
         extra = stage176a._first(stage177, ("extra_counterpart_forward_used",), None)
-        _require(int(nonfinite) == 0, "pilot Stage177-C non-finite count must be zero")
+        _require(nonfinite == 0, "pilot Stage177-C non-finite count must be zero")
         _require(direct is False and extra is False,
                  "pilot Stage177-C target/forward contract mismatch")
     policy = prov.get("training_selection_policy") or {}
@@ -234,7 +334,8 @@ def _validate_provenance(role: str, prov: dict[str, Any], data_path: Path) -> di
                 "external_evaluation_used_for_threshold_selection", "external_evaluation_used_for_checkpoint_selection",
                 "time_swap_included_in_main_classification_training"):
         _require(policy.get(key) is False, f"{role} policy {key} must be false")
-    return {"status": "passed", **expected, "epochs": 20, "selected_epoch": 20,
+    return {"status": "passed", **expected, "seed": integers["seed"],
+            "epochs": integers["epochs"], "selected_epoch": integers["selected_epoch"],
             "data_sha256": actual_data_sha, "stage174c_off": True,
             "stage175b_off": True, "stage177c": {"mode": stage177.get("mode", "off"),
             "weight": float(stage177.get("weight", 0))}, "external_or_time_swap": False}
@@ -244,17 +345,33 @@ def _load_and_validate_checkpoint(role: str, path: Path, prov: dict[str, Any],
                                   expected_stage177_mode: str, expected_weight: float
                                   ) -> tuple[dict[str, torch.Tensor], dict[str, Any], dict[str, Any]]:
     state, metadata, payload = stage176b._load_checkpoint(path)
-    record = stage176b._selected_checkpoint_record(prov)
+    finalization = prov.get("finalization") or {}
+    record = finalization.get("selected_checkpoint") or {}
+    _require(isinstance(record, dict) and bool(record),
+             f"{role}.finalization.selected_checkpoint is missing")
+    integers = _resolve_provenance_integer_fields(role, prov)
     actual_sha = _sha256(path)
     _require(payload.get("schema_version") == SCHEMA and record.get("schema_version") == SCHEMA,
              f"{role} checkpoint schema mismatch")
     _require(record.get("sha256") == actual_sha, f"{role} checkpoint SHA-256 mismatch")
     _require(record.get("saved") is True and record.get("path"),
              f"{role} selected checkpoint was not persisted")
-    _require(metadata.get("selected_epoch") == 20, f"{role} checkpoint selected epoch mismatch")
+    metadata_epoch = _optional_int(
+        metadata.get("selected_epoch"),
+        field_name=f"{role}.checkpoint.metadata.selected_epoch",
+    )
+    if metadata_epoch is not None:
+        _require(metadata_epoch == integers["selected_epoch"],
+                 f"{role} checkpoint selected epoch mismatch")
+    metadata_seed = _optional_int(
+        metadata.get("seed"),
+        field_name=f"{role}.checkpoint.metadata.seed",
+    )
+    if metadata_seed is not None:
+        _require(metadata_seed == integers["seed"], f"{role} checkpoint seed mismatch")
     _require(metadata.get("main_data_sha256") == stage176a._data_record(prov).get("sha256"),
              f"{role} checkpoint data SHA-256 mismatch")
-    for key, value in (("seed", 174), ("architecture", "v6b_minimal"),
+    for key, value in (("architecture", "v6b_minimal"),
                        ("backbone", "mamba"), ("model_name", MODEL_NAME)):
         _require(metadata.get(key) == value, f"{role} checkpoint {key} mismatch")
     _require(metadata.get("stage174c_clean_pairwise_mode") == "off" and
@@ -276,7 +393,9 @@ def _load_and_validate_checkpoint(role: str, path: Path, prov: dict[str, Any],
              metadata.get("external_labels_used") is False and metadata.get("time_swap_used") is False,
              f"{role} checkpoint external/time_swap contract mismatch")
     return state, metadata, {"status": "passed", "path": str(path), "sha256": actual_sha,
-                             "schema_version": SCHEMA, "selected_epoch": 20,
+                             "schema_version": SCHEMA, "selected_epoch": integers["selected_epoch"],
+                             "metadata_selected_epoch_present": metadata_epoch is not None,
+                             "metadata_seed_present": metadata_seed is not None,
                              "stage177c_mode": mode, "stage177c_weight": weight}
 
 
@@ -314,9 +433,22 @@ def _evaluate(records: list[dict[str, Any]], baseline_prov: dict[str, Any], pilo
     if tokenizer.pad_token_id is None:
         _require(tokenizer.eos_token_id is not None, "tokenizer has no pad/eos token")
         tokenizer.pad_token = tokenizer.eos_token
-    max_length = int(stage176a._arg(baseline_prov, "max_length", baseline_metadata.get("max_length", 128)))
-    _require(max_length == int(stage176a._arg(pilot_prov, "max_length", pilot_metadata.get("max_length", 128))),
-             "baseline/pilot max_length mismatch")
+    baseline_max_length = _require_int(
+        _first_non_none(
+            (baseline_prov.get("parsed_args") or {}).get("max_length"),
+            baseline_metadata.get("max_length"),
+        ),
+        field_name="baseline.parsed_args.max_length",
+    )
+    pilot_max_length = _require_int(
+        _first_non_none(
+            (pilot_prov.get("parsed_args") or {}).get("max_length"),
+            pilot_metadata.get("max_length"),
+        ),
+        field_name="pilot.parsed_args.max_length",
+    )
+    _require(baseline_max_length == pilot_max_length, "baseline/pilot max_length mismatch")
+    max_length = baseline_max_length
     bundle = v5.encode_mamba_records(records, tokenizer, max_length)
     inputs = v5.move_inputs(bundle["model_inputs"], device)
     baseline_model = stage176a._construct_model(baseline_prov, baseline_metadata, baseline_state, device)
@@ -365,7 +497,10 @@ def _build_dev_rows(records: list[dict[str, Any]], transitions: list[dict[str, A
         row: dict[str, Any] = {
             "stable_row_index": index, "row_id": str(record["id"]),
             "pair_id": str(record["pair_id"]), "intervention_type": str(record["intervention_type"]),
-            "gold_label": gold, "gold_frame_label": int(record["frame_compatible_label"]),
+            "gold_label": gold, "gold_frame_label": _require_int(
+                record.get("frame_compatible_label"),
+                field_name=f"dev_rows[{index}].frame_compatible_label",
+            ),
             "stage176_cohort": cohort, "baseline_prediction": bp, "pilot_prediction": pp,
             "prediction_transition": f"{bp}->{pp}", "prediction_changed": bp != pp,
             "baseline_correct": bp == gold, "pilot_correct": pp == gold,
@@ -480,8 +615,12 @@ def _pair_records(records: list[dict[str, Any]], baseline: dict[str, Any], pilot
         groups[str(record["pair_id"])].append({**record, "baseline": b[index], "pilot": p[index]})
     output = []
     for pair_id, group in sorted(groups.items()):
-        compatible = [row for row in group if int(row["frame_compatible_label"]) == 1]
-        incompatible = [row for row in group if int(row["frame_compatible_label"]) == 0]
+        compatible = [row for row in group if _require_int(
+            row.get("frame_compatible_label"), field_name=f"{split}.{pair_id}.frame_compatible_label"
+        ) == 1]
+        incompatible = [row for row in group if _require_int(
+            row.get("frame_compatible_label"), field_name=f"{split}.{pair_id}.frame_compatible_label"
+        ) == 0]
         _require(len(compatible) == 6 and len(incompatible) == 6, f"malformed pair {pair_id}")
         item: dict[str, Any] = {"split": split, "pair_id": pair_id, "comparison_count": 36}
         for side in ("baseline", "pilot"):
@@ -537,8 +676,10 @@ def _family_pair_delta(records: list[dict[str, Any]], outputs: tuple[dict[str, A
     by_pair: dict[str, list[int]] = defaultdict(list)
     for index, record in enumerate(records): by_pair[str(record["pair_id"])].append(index)
     for indexes in by_pair.values():
-        pos = [i for i in indexes if int(records[i]["frame_compatible_label"]) == 1]
-        neg = [i for i in indexes if int(records[i]["frame_compatible_label"]) == 0]
+        pos = [i for i in indexes if _require_int(records[i].get("frame_compatible_label"),
+                                                  field_name=f"{split}.rows[{i}].frame_compatible_label") == 1]
+        neg = [i for i in indexes if _require_int(records[i].get("frame_compatible_label"),
+                                                  field_name=f"{split}.rows[{i}].frame_compatible_label") == 0]
         for i in pos:
             for j in neg:
                 groups[(str(records[i]["intervention_type"]), str(records[j]["intervention_type"]))].append((b[i] - b[j], p[i] - p[j]))
@@ -730,11 +871,24 @@ def _render_markdown(report: dict[str, Any]) -> str:
         "## Stage178 gate", "", f"`{report['stage178_gate']['decision']}`. No weight sweep, multi-seed run, external evaluation, threshold search, calibration, or training is authorized.", ""])
 
 
-def _blocked(output_dir: Path, error: Exception) -> None:
+def _blocked(output_dir: Path, error: Exception, failure_stage: str,
+             traceback_text: str) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
-    report = {"stage": STAGE, "decision": BLOCKED, "scope": {"evaluation_only": True},
-              "input_validation": {"status": "blocked", "error": f"{type(error).__name__}: {error}",
-                                   "blocked_before_forward_when_input_validation_failed": True},
+    diagnostic = {
+        "decision": BLOCKED,
+        "error_type": type(error).__name__,
+        "error": str(error),
+        "failure_stage": failure_stage,
+        "traceback": traceback_text,
+    }
+    report = {"stage": STAGE, **diagnostic, "scope": {"evaluation_only": True},
+              "input_validation": {"status": "blocked", **diagnostic,
+                                   "blocked_before_forward_when_input_validation_failed": failure_stage in {
+                                       "argument_validation", "input_path_validation",
+                                       "stage_report_validation", "stage176a_csv_validation",
+                                       "provenance_validation", "checkpoint_validation",
+                                       "deterministic_split_validation", "parameter_delta_audit",
+                                   }},
               "checkpoint_contract": None, "aggregate_final_comparison": None,
               "row_transition_attribution": None, "final_logit_drift": None,
               "frame_head_comparison": None, "pair_ranking_comparison": None,
@@ -746,7 +900,12 @@ def _blocked(output_dir: Path, error: Exception) -> None:
                                 "train_mode": False, "threshold_search": False,
                                 "external_evaluation": False, "time_swap": False}}
     _write_json(output_dir / OUTPUTS["json"], report)
-    (output_dir / OUTPUTS["md"]).write_text(f"# Stage177-E blocked\n\n**Decision:** `{BLOCKED}`\n\n`{type(error).__name__}: {error}`\n", encoding="utf-8")
+    (output_dir / OUTPUTS["md"]).write_text(
+        f"# Stage177-E blocked\n\n**Decision:** `{BLOCKED}`\n\n"
+        f"Failure stage: `{failure_stage}`\n\n"
+        f"`{type(error).__name__}: {error}`\n\n```text\n{traceback_text}\n```\n",
+        encoding="utf-8",
+    )
     for key in OUTPUTS:
         if key not in ("json", "md"):
             _write_csv(output_dir / OUTPUTS[key], [])
@@ -773,11 +932,16 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     output_dir = args.output_dir.resolve()
+    current_stage = "argument_validation"
     try:
         _require(args.device == "cuda", "Stage177-E requires --device cuda")
+        args.eval_batch_size = _require_int(args.eval_batch_size, field_name="cli.eval_batch_size")
+        args.bootstrap_samples = _require_int(args.bootstrap_samples, field_name="cli.bootstrap_samples")
+        args.bootstrap_seed = _require_int(args.bootstrap_seed, field_name="cli.bootstrap_seed")
         _require(args.eval_batch_size > 0 and args.bootstrap_samples > 0,
                  "eval batch size and bootstrap samples must be positive")
         _require(torch.cuda.is_available(), "CUDA is unavailable")
+        current_stage = "input_path_validation"
         names = ("data", "stage176a_report", "stage176a_row_transitions", "stage177a_report",
                  "baseline_provenance", "baseline_checkpoint", "pilot_provenance", "pilot_checkpoint")
         paths = {name: getattr(args, name).resolve() for name in names}
@@ -786,24 +950,32 @@ def main(argv: list[str] | None = None) -> int:
         _require(paths["baseline_checkpoint"] != paths["pilot_checkpoint"],
                  "baseline and pilot checkpoints resolve to the same path")
 
+        current_stage = "stage_report_validation"
         stage_reports = _validate_stage_reports(_read_json(paths["stage176a_report"]),
                                                 _read_json(paths["stage177a_report"]))
-        transitions = _read_csv(paths["stage176a_row_transitions"])
+        current_stage = "stage176a_csv_validation"
+        transitions = _validate_stage176_csv_identifiers(
+            _read_csv(paths["stage176a_row_transitions"])
+        )
+        current_stage = "provenance_validation"
         baseline_prov, pilot_prov = _read_json(paths["baseline_provenance"]), _read_json(paths["pilot_provenance"])
         baseline_provenance = _validate_provenance("baseline", baseline_prov, paths["data"])
         pilot_provenance = _validate_provenance("pilot", pilot_prov, paths["data"])
         _require(baseline_provenance["data_sha256"] == pilot_provenance["data_sha256"], "provenance data hashes differ")
+        current_stage = "checkpoint_validation"
         baseline_state, baseline_metadata, baseline_checkpoint = _load_and_validate_checkpoint(
             "baseline", paths["baseline_checkpoint"], baseline_prov, "off", 0.0)
         pilot_state, pilot_metadata, pilot_checkpoint = _load_and_validate_checkpoint(
             "pilot", paths["pilot_checkpoint"], pilot_prov, "pair_softplus", .05)
         _require(baseline_checkpoint["sha256"] != pilot_checkpoint["sha256"], "checkpoint SHA-256 values are identical")
+        current_stage = "deterministic_split_validation"
         train_rows, dev_rows, split = _validate_split(paths["data"], baseline_prov)
         transitions = stage176b._validate_row_alignment(transitions, dev_rows)
         _require(Counter(stage176b._cohort(row) for row in transitions)["beneficial_correction"] == 25 and
                  Counter(stage176b._cohort(row) for row in transitions)["harmful_regression"] == 14,
                  "Stage176 transition CSV cohort counts mismatch")
 
+        current_stage = "parameter_delta_audit"
         parameter_csv, module_csv, parameter_audit = _parameter_delta(baseline_state, pilot_state)
         input_validation = {"status": "passed", "stage_reports": stage_reports,
                             "baseline_provenance": baseline_provenance, "pilot_provenance": pilot_provenance,
@@ -812,10 +984,13 @@ def main(argv: list[str] | None = None) -> int:
                             "completed_before_model_construction_and_forward": True}
 
         device = torch.device("cuda")
+        current_stage = "dev_model_forward"
         baseline_dev, pilot_dev = _evaluate(dev_rows, baseline_prov, pilot_prov, baseline_metadata,
                                             pilot_metadata, baseline_state, pilot_state, device, args.eval_batch_size)
+        current_stage = "train_model_forward"
         baseline_train, pilot_train = _evaluate(train_rows, baseline_prov, pilot_prov, baseline_metadata,
                                                 pilot_metadata, baseline_state, pilot_state, device, args.eval_batch_size)
+        current_stage = "attribution_analysis"
         rows = _build_dev_rows(dev_rows, transitions, baseline_dev, pilot_dev)
         aggregate = {side: _classification(rows, side) for side in ("baseline", "pilot")}
         matrix_csv, transition_report = _transition_analysis(rows)
@@ -875,6 +1050,7 @@ def main(argv: list[str] | None = None) -> int:
                               "external_labels": False, "time_swap": False, "trainer_modified": False,
                               "loss_modified": False, "weight_sweep": False, "multi_seed": False,
                               "final_logit_pairwise_objective": False}}
+        current_stage = "output_serialization"
         output_dir.mkdir(parents=True, exist_ok=True)
         _write_json(output_dir / OUTPUTS["json"], report)
         (output_dir / OUTPUTS["md"]).write_text(_render_markdown(report), encoding="utf-8")
@@ -891,8 +1067,12 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps({"decision": decision, "output_dir": str(output_dir)}, sort_keys=True))
         return 0
     except (AuditBlocked, stage176a.ValidationBlocked, stage176b.AuditBlocked, OSError, ValueError, KeyError, TypeError, RuntimeError, ImportError) as error:
-        _blocked(output_dir, error)
-        print(json.dumps({"decision": BLOCKED, "error": str(error)}, sort_keys=True), file=sys.stderr)
+        traceback_text = traceback.format_exc()
+        diagnostic = {"decision": BLOCKED, "error_type": type(error).__name__,
+                      "error": str(error), "failure_stage": current_stage,
+                      "traceback": traceback_text}
+        _blocked(output_dir, error, current_stage, traceback_text)
+        print(json.dumps(diagnostic, sort_keys=True), file=sys.stderr)
         return 2
 
 
