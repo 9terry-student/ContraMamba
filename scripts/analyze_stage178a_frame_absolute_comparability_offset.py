@@ -63,6 +63,109 @@ class AuditBlocked(ValueError):
     """A hard input or semantic-contract failure."""
 
 
+_MISSING = object()
+
+
+def _first_non_none(*values: Any) -> Any:
+    for value in values:
+        if value is not None:
+            return value
+    return None
+
+
+def _get_path(mapping: dict[str, Any], path: tuple[str, ...], default: Any = _MISSING) -> Any:
+    current: Any = mapping
+    for key in path:
+        if not isinstance(current, dict) or key not in current:
+            if default is _MISSING:
+                raise KeyError(".".join(path))
+            return default
+        current = current[key]
+    return current
+
+
+def _path_name(path: tuple[str, ...]) -> str:
+    return ".".join(path)
+
+
+def _upstream_blocked(message: str, **diagnostic: Any) -> AuditBlocked:
+    error = AuditBlocked(message)
+    error.diagnostic = diagnostic  # type: ignore[attr-defined]
+    return error
+
+
+def _resolve_consistent_required_int(
+    report: dict[str, Any], *, field_name: str,
+    candidate_paths: tuple[tuple[str, ...], ...], fallback: int | None = None,
+    csv_fallback_attempted: bool = False, csv_columns: Iterable[str] = (),
+) -> tuple[int, dict[str, Any]]:
+    found: list[tuple[str, int]] = []
+    for path in candidate_paths:
+        value = _get_path(report, path, None)
+        if value is not None:
+            found.append((_path_name(path), _required_int(value, f"Stage177-E {_path_name(path)}")))
+    diagnostic = {
+        "requested_canonical_field": field_name,
+        "candidate_json_paths": [_path_name(path) for path in candidate_paths],
+        "paths_actually_found": [path for path, _ in found],
+        "csv_fallback_attempted": csv_fallback_attempted,
+        "csv_columns": sorted(csv_columns),
+        "report_csv_mismatch": False,
+    }
+    if found and len({value for _, value in found}) != 1:
+        raise _upstream_blocked(
+            f"Stage177-E {field_name} disagrees across official JSON paths",
+            **diagnostic, conflicting_report_values=dict(found),
+        )
+    if found:
+        value, source = found[0][1], "report"
+    elif fallback is not None:
+        value, source = fallback, "csv_fallback"
+    else:
+        raise _upstream_blocked(
+            f"Stage177-E {field_name} is missing; candidates: "
+            f"{', '.join(diagnostic['candidate_json_paths'])}", **diagnostic,
+        )
+    if fallback is not None and value != fallback:
+        diagnostic["report_csv_mismatch"] = True
+        raise _upstream_blocked(
+            f"Stage177-E {field_name} report/CSV mismatch: report={value}, CSV={fallback}",
+            **diagnostic, report_value=value, csv_value=fallback,
+        )
+    return value, {**diagnostic, "source": source, "csv_value": fallback}
+
+
+def _resolve_consistent_required_float(
+    report: dict[str, Any], *, field_name: str,
+    candidate_paths: tuple[tuple[str, ...], ...], abs_tol: float = 1e-12,
+) -> tuple[float, dict[str, Any]]:
+    found: list[tuple[str, float]] = []
+    for path in candidate_paths:
+        value = _get_path(report, path, None)
+        if value is not None:
+            found.append((_path_name(path), _finite(value, f"Stage177-E {_path_name(path)}")))
+    diagnostic = {
+        "requested_canonical_field": field_name,
+        "candidate_json_paths": [_path_name(path) for path in candidate_paths],
+        "paths_actually_found": [path for path, _ in found],
+        "csv_fallback_attempted": False,
+        "csv_columns": [],
+        "report_csv_mismatch": False,
+    }
+    if not found:
+        raise _upstream_blocked(
+            f"Stage177-E {field_name} is missing; candidates: "
+            f"{', '.join(diagnostic['candidate_json_paths'])}", **diagnostic,
+        )
+    if any(not math.isclose(found[0][1], value, rel_tol=0.0, abs_tol=abs_tol)
+           for _, value in found[1:]):
+        raise _upstream_blocked(
+            f"Stage177-E {field_name} disagrees across official JSON paths",
+            **diagnostic, conflicting_report_values=dict(found),
+        )
+    return found[0][1], {**diagnostic, "source": "report"}
+
+
 def _require(condition: bool, message: str) -> None:
     if not condition:
         raise AuditBlocked(message)
@@ -247,25 +350,149 @@ def _bootstrap(values: list[Any], samples: int, seed: int,
     return [float(_percentile(estimates, .025)), float(_percentile(estimates, .975))]
 
 
-def _validate_stage177e(report: dict[str, Any]) -> dict[str, Any]:
-    _require(report.get("decision") == STAGE177E, "Stage177-E decision mismatch")
-    final = report.get("final_decision_attribution") or {}
-    cohort = report.get("stage176_cohort_attribution") or {}
-    parameter = report.get("parameter_delta_audit") or {}
-    checks = {
-        "changed_rows": _required_int(final.get("changed_rows"), "Stage177-E changed_rows"),
-        "recovered_errors": _required_int(final.get("recovered_errors"), "Stage177-E recovered_errors"),
-        "introduced_errors": _required_int(final.get("introduced_errors"), "Stage177-E introduced_errors"),
-        "cohort_net": _required_int(cohort.get("net_cohort_benefit"), "Stage177-E cohort net"),
-        "changed_tensors": _required_int(parameter.get("changed_tensor_count"), "Stage177-E changed tensors"),
-        "unchanged_tensors": _required_int(parameter.get("unchanged_tensor_count"), "Stage177-E unchanged tensors"),
-        "global_l2_delta": _finite(parameter.get("global_checkpoint_l2_delta"), "Stage177-E global L2"),
+def _parse_bool(value: Any, name: str) -> bool:
+    if isinstance(value, bool):
+        return value
+    normalized = str(value).strip().lower()
+    if normalized in ("true", "1"):
+        return True
+    if normalized in ("false", "0"):
+        return False
+    raise AuditBlocked(f"{name} is not boolean: {value!r}")
+
+
+def _stage177e_csv_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    columns = set(rows[0])
+    if "prediction_changed" in columns:
+        changed_flags = [_parse_bool(row["prediction_changed"], "Stage177-E prediction_changed") for row in rows]
+        if {"baseline_prediction", "pilot_prediction"} <= columns:
+            prediction_comparison = [str(row["baseline_prediction"]) != str(row["pilot_prediction"]) for row in rows]
+            _require(changed_flags == prediction_comparison,
+                     "Stage177-E CSV prediction_changed disagrees with prediction strings")
+    else:
+        _require({"baseline_prediction", "pilot_prediction"} <= columns,
+                 "Stage177-E CSV cannot reconstruct changed rows")
+        changed_flags = [str(row["baseline_prediction"]) != str(row["pilot_prediction"]) for row in rows]
+
+    if "correctness_transition" in columns:
+        transitions = [str(row["correctness_transition"]).strip().lower() for row in rows]
+        allowed = {"correct_to_correct", "incorrect_to_correct", "correct_to_incorrect", "incorrect_to_incorrect"}
+        _require(set(transitions) <= allowed, "Stage177-E CSV has unknown correctness_transition values")
+        baseline_correct = [value.startswith("correct_to_") for value in transitions]
+        pilot_correct = [value.endswith("_to_correct") for value in transitions]
+        if {"baseline_correct", "pilot_correct"} <= columns:
+            explicit_baseline = [_parse_bool(row["baseline_correct"], "Stage177-E baseline_correct") for row in rows]
+            explicit_pilot = [_parse_bool(row["pilot_correct"], "Stage177-E pilot_correct") for row in rows]
+            _require(baseline_correct == explicit_baseline and pilot_correct == explicit_pilot,
+                     "Stage177-E CSV correctness_transition disagrees with correctness columns")
+    else:
+        _require({"baseline_correct", "pilot_correct"} <= columns,
+                 "Stage177-E CSV cannot reconstruct correctness transitions")
+        baseline_correct = [_parse_bool(row["baseline_correct"], "Stage177-E baseline_correct") for row in rows]
+        pilot_correct = [_parse_bool(row["pilot_correct"], "Stage177-E pilot_correct") for row in rows]
+
+    recovered = sum(not before and after for before, after in zip(baseline_correct, pilot_correct))
+    introduced = sum(before and not after for before, after in zip(baseline_correct, pilot_correct))
+    summary: dict[str, Any] = {
+        "columns": sorted(columns), "changed_rows": sum(changed_flags),
+        "unchanged_rows": len(rows) - sum(changed_flags),
+        "recovered_errors": recovered, "introduced_errors": introduced,
+        "net_correctness": recovered - introduced,
     }
-    _require((checks["changed_rows"], checks["recovered_errors"], checks["introduced_errors"], checks["cohort_net"]) == (0, 0, 0, 0), "Stage177-E final/cohort evidence mismatch")
-    _require((checks["changed_tensors"], checks["unchanged_tensors"]) == (37, 243), "Stage177-E tensor counts mismatch")
-    _require(math.isclose(checks["global_l2_delta"], .116048, abs_tol=1e-6), "Stage177-E L2 mismatch")
-    _require(report.get("authorized_next_stage") == "STAGE178A_FRAME_ABSOLUTE_COMPARABILITY_OFFSET_AUDIT", "Stage177-E next-stage authorization mismatch")
-    return {"status": "passed", "decision": STAGE177E, **checks}
+    if "stage176_cohort" in columns:
+        beneficial = sum(
+            str(row["stage176_cohort"]) == "beneficial_correction" and not before and after
+            for row, before, after in zip(rows, baseline_correct, pilot_correct)
+        )
+        harmful = sum(
+            str(row["stage176_cohort"]) == "harmful_regression" and before and not after
+            for row, before, after in zip(rows, baseline_correct, pilot_correct)
+        )
+        summary["cohort"] = {"new_beneficial_corrections": beneficial,
+                             "new_harmful_damage": harmful, "cohort_net": beneficial - harmful}
+    else:
+        summary["cohort"] = None
+    return summary
+
+
+def _validate_stage177e(report: dict[str, Any], csv_rows: list[dict[str, Any]]) -> dict[str, Any]:
+    _require(report.get("decision") == STAGE177E, "Stage177-E decision mismatch")
+    _require(_get_path(report, ("stage178_gate", "decision"), None) == STAGE177E,
+             "Stage177-E stage178 gate decision mismatch")
+    _require(_get_path(report, ("scope", "clean_controlled_data_only"), None) is True,
+             "Stage177-E clean-controlled-data scope mismatch")
+    _require(_get_path(report, ("scope", "evaluation_only"), None) is True,
+             "Stage177-E evaluation-only scope mismatch")
+    _require(_get_path(report, ("safety_policy", "external_evaluation"), None) is False,
+             "Stage177-E external-evaluation safety mismatch")
+    _require(_get_path(report, ("safety_policy", "time_swap"), None) is False,
+             "Stage177-E time-swap safety mismatch")
+
+    csv_summary = _stage177e_csv_summary(csv_rows)
+    columns = csv_summary["columns"]
+    integer_specs = {
+        "changed_rows": (("row_transition_attribution", "changed_rows"),),
+        "unchanged_rows": (("row_transition_attribution", "unchanged_rows"),),
+        "recovered_errors": (("row_transition_attribution", "recovered_errors"),),
+        "introduced_errors": (("row_transition_attribution", "introduced_errors"),),
+        "net_correctness": (("row_transition_attribution", "net_correctness_change"),
+                            ("redundancy_diagnosis", "final_net_correctness")),
+    }
+    checks: dict[str, Any] = {}
+    resolution: dict[str, Any] = {}
+    for field_name, paths in integer_specs.items():
+        checks[field_name], resolution[field_name] = _resolve_consistent_required_int(
+            report, field_name=field_name, candidate_paths=paths,
+            fallback=csv_summary[field_name], csv_fallback_attempted=True,
+            csv_columns=columns,
+        )
+
+    cohort_csv = csv_summary["cohort"]
+    cohort_specs = {
+        "new_beneficial_corrections": (("stage176_cohort_attribution", "beneficial_rows_newly_corrected_by_pilot"),),
+        "new_harmful_damage": (("stage176_cohort_attribution", "harmful_rows_newly_damaged_by_pilot"),),
+        "cohort_net": (("stage176_cohort_attribution", "net_cohort_benefit"),
+                       ("redundancy_diagnosis", "stage176_cohort_net_change")),
+    }
+    for field_name, paths in cohort_specs.items():
+        fallback = cohort_csv[field_name] if cohort_csv is not None else None
+        checks[field_name], resolution[field_name] = _resolve_consistent_required_int(
+            report, field_name=field_name, candidate_paths=paths, fallback=fallback,
+            csv_fallback_attempted=cohort_csv is not None, csv_columns=columns,
+        )
+
+    float_specs = {
+        "dev_pair_ranking_delta": (("pair_ranking_comparison", "dev", "pilot_minus_baseline", "ranking_delta"),
+                                   ("redundancy_diagnosis", "dev_pair_ranking_delta")),
+        "mean_gap_delta": (("pair_ranking_comparison", "dev", "pilot_minus_baseline", "mean_gap_delta"),),
+        "global_l2_delta": (("parameter_delta_audit", "global_l2_delta"),),
+    }
+    for field_name, paths in float_specs.items():
+        checks[field_name], resolution[field_name] = _resolve_consistent_required_float(
+            report, field_name=field_name, candidate_paths=paths, abs_tol=1e-9,
+        )
+    for field_name, paths in {
+        "changed_tensors": (("parameter_delta_audit", "changed_tensor_count"),),
+        "unchanged_tensors": (("parameter_delta_audit", "unchanged_tensor_count"),),
+    }.items():
+        checks[field_name], resolution[field_name] = _resolve_consistent_required_int(
+            report, field_name=field_name, candidate_paths=paths,
+        )
+
+    _require(tuple(checks[key] for key in ("changed_rows", "recovered_errors", "introduced_errors", "net_correctness",
+                                            "new_beneficial_corrections", "new_harmful_damage", "cohort_net")) == (0, 0, 0, 0, 0, 0, 0),
+             "Stage177-E final/cohort evidence mismatch")
+    _require(checks["unchanged_rows"] == 720, "Stage177-E unchanged row count mismatch")
+    _require((checks["changed_tensors"], checks["unchanged_tensors"]) == (37, 243),
+             "Stage177-E tensor counts mismatch")
+    _require(math.isclose(checks["dev_pair_ranking_delta"], .003241, abs_tol=1e-6),
+             "Stage177-E ranking delta mismatch")
+    _require(math.isclose(checks["mean_gap_delta"], .075925, abs_tol=1e-6),
+             "Stage177-E mean-gap delta mismatch")
+    _require(math.isclose(checks["global_l2_delta"], .116048, abs_tol=1e-6),
+             "Stage177-E global L2 mismatch")
+    return {"status": "passed", "decision": STAGE177E, **checks,
+            "field_resolution": resolution, "csv_consistency": csv_summary}
 
 
 def _validate_stage177e_rows(rows: list[dict[str, Any]]) -> dict[tuple[int, str], dict[str, Any]]:
@@ -277,7 +504,6 @@ def _validate_stage177e_rows(rows: list[dict[str, Any]]) -> dict[tuple[int, str]
         index = _required_int(row.get("stable_row_index"), f"Stage177-E line {line} index")
         identity = (index, str(row.get("row_id")))
         _require(identity not in result, f"duplicate Stage177-E row identity: {identity}")
-        _require(str(row.get("baseline_prediction")) == str(row.get("pilot_prediction")), f"Stage177-E prediction changed at {identity}")
         for field in ("baseline_support_margin", "pilot_support_margin"):
             _finite(row.get(field), f"Stage177-E line {line} {field}")
         result[identity] = row
@@ -611,7 +837,12 @@ def _render_markdown(report):
 
 
 def _blocked(output_dir, error, failure_stage):
-    output_dir.mkdir(parents=True, exist_ok=True); detail = {"error_type": type(error).__name__, "error": str(error), "failure_stage": failure_stage, "traceback": traceback.format_exc()}
+    output_dir.mkdir(parents=True, exist_ok=True)
+    detail = {"error_type": type(error).__name__, "error": str(error),
+              "failure_stage": failure_stage, "traceback": traceback.format_exc()}
+    upstream_diagnostic = getattr(error, "diagnostic", None)
+    if upstream_diagnostic is not None:
+        detail["upstream_validation"] = upstream_diagnostic
     report = {"stage": STAGE, "decision": BLOCKED, **detail, "scope": {"evaluation_only": True}, "input_validation": {"status": "blocked", **detail},
         "checkpoint_contract": None, "pair_topology": None, "offset_definition": None, "global_threshold_feasibility": None,
         "variance_decomposition": None, "within_cross_pair_ranking": None, "raw_centered_metric_comparison": None,
@@ -642,7 +873,31 @@ def main(argv=None):
         paths = {n: getattr(args, n).resolve() for n in names}; current = "input_path_validation"
         for name, path in paths.items(): _require(path.is_file(), f"{name} does not exist: {path}")
         _require(paths["baseline_checkpoint"] != paths["pilot_checkpoint"], "checkpoints resolve to the same path")
-        current = "upstream_report_validation"; stage_reports = stage177e._validate_stage_reports(_read_json(paths["stage176a_report"]), _read_json(paths["stage177a_report"])); closure = _validate_stage177e(_read_json(paths["stage177e_report"])); stage177_rows = _validate_stage177e_rows(_read_csv(paths["stage177e_dev_row_comparison"]))
+        current = "upstream_report_validation"
+        stage_reports = stage177e._validate_stage_reports(
+            _read_json(paths["stage176a_report"]), _read_json(paths["stage177a_report"])
+        )
+        stage177e_report = _read_json(paths["stage177e_report"])
+        stage177e_csv_rows = _read_csv(paths["stage177e_dev_row_comparison"])
+        try:
+            closure = _validate_stage177e(stage177e_report, stage177e_csv_rows)
+            stage177_rows = _validate_stage177e_rows(stage177e_csv_rows)
+        except AuditBlocked as error:
+            if getattr(error, "diagnostic", None) is None:
+                candidate_sections = (
+                    "row_transition_attribution", "aggregate_final_comparison",
+                    "stage176_cohort_attribution", "pair_ranking_comparison",
+                    "parameter_delta_audit", "redundancy_diagnosis", "stage178_gate",
+                )
+                error.diagnostic = {  # type: ignore[attr-defined]
+                    "requested_canonical_field": "stage177e_runtime_report_contract",
+                    "candidate_json_paths": list(candidate_sections),
+                    "paths_actually_found": [key for key in candidate_sections if key in stage177e_report],
+                    "csv_fallback_attempted": True,
+                    "csv_columns": sorted(stage177e_csv_rows[0]) if stage177e_csv_rows else [],
+                    "report_csv_mismatch": False,
+                }
+            raise
         transitions = stage177e._validate_stage176_csv_identifiers(_read_csv(paths["stage176a_row_transitions"]))
         current = "provenance_validation"; bprov, pprov = _read_json(paths["baseline_provenance"]), _read_json(paths["pilot_provenance"])
         bpv = stage177e._validate_provenance("baseline", bprov, paths["data"]); ppv = stage177e._validate_provenance("pilot", pprov, paths["data"])
