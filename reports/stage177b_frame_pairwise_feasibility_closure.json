@@ -1,0 +1,117 @@
+{
+  "stage": "Stage177-B",
+  "decision": "STAGE177B_FRAME_PAIRWISE_OBJECTIVE_FEASIBLE",
+  "scope": {
+    "data": "data/controlled_v5_v3_without_time_swap.jsonl",
+    "split_seed": 174,
+    "train_fraction": 0.8,
+    "evaluation_only": true,
+    "target_source": "actual clean-data frame_compatible_label",
+    "family_names_infer_targets": false
+  },
+  "pair_topology": {
+    "total_pairs": 300,
+    "train_pairs": 240,
+    "dev_pairs": 60,
+    "train_dev_overlap": 0,
+    "train_rows": 2880,
+    "dev_rows": 720,
+    "compatible_rows_per_pair": 6,
+    "incompatible_rows_per_pair": 6,
+    "comparisons_per_pair": 36,
+    "train_comparisons": 8640,
+    "dev_comparisons": 2160,
+    "malformed_train_pairs": 0,
+    "malformed_dev_pairs": 0,
+    "top_10_percent_comparison_concentration": 0.1
+  },
+  "baseline_gap": {
+    "train": {
+      "comparison_ranking_accuracy": 0.950347,
+      "pair_normalized_ranking_accuracy": 0.950347,
+      "mean_compatible_minus_incompatible_frame_logit_gap": 3.080331
+    },
+    "dev": {
+      "comparison_ranking_accuracy": 0.939352,
+      "pair_normalized_ranking_accuracy": 0.939352,
+      "mean_compatible_minus_incompatible_frame_logit_gap": 3.099228,
+      "pair_bootstrap_95_percent_ci": [
+        0.9263888888888889,
+        0.9518634259259259
+      ]
+    }
+  },
+  "objective_contract": {
+    "name": "pair_normalized_softplus_negative_gap",
+    "per_comparison": "softplus(-(compatible_frame_logit - incompatible_frame_logit))",
+    "within_pair_reduction": "mean over all compatible x incompatible comparisons",
+    "across_pair_reduction": "mean with every eligible pair equally weighted",
+    "pair_normalized": true,
+    "margin_used": false,
+    "threshold_used": false,
+    "teacher_used": false,
+    "detached_reference_used": false,
+    "no_grad_counterpart_used": false,
+    "cross_pair_negative_used": false,
+    "final_label_pairwise_target_used": false,
+    "final_classifier_logit_pairwise_target_used": false,
+    "external_data_used": false,
+    "time_swap_used": false
+  },
+  "batch_topology": {
+    "score_source": "full clean-train differentiable output[\"frame_logit\"]",
+    "extra_counterpart_forward_required": false,
+    "pair_index_alignment": "stable clean-train row ordering",
+    "dev_lookup_required": false,
+    "cross_pair_lookup_required": false
+  },
+  "existing_frame_supervision": {
+    "present": true,
+    "form": "direct row-level binary cross entropy",
+    "target_source": "frame_compatible_label",
+    "score_source": "native frame_logit",
+    "changed_by_stage177c": false
+  },
+  "loss_conflict_audit": {
+    "direct_frame_bce_retained": true,
+    "candidate_adds_within_pair_ordering": true,
+    "same_native_frame_head": true,
+    "shared_upstream_gradient_possible": true,
+    "final_classifier_logits_directly_targeted": false,
+    "stage174c_changed": false,
+    "stage175b_changed": false
+  },
+  "established_findings": {
+    "native_frame_logit_available_for_full_clean_train": true,
+    "train_pair_index_can_be_built_before_training": true,
+    "both_comparison_sides_can_remain_differentiable": true,
+    "exact_pair_normalization_is_implementable": true,
+    "implementation_requires_no_architecture_change": true
+  },
+  "closure": {
+    "frame_pairwise_implementation_authorized": true,
+    "default_off_required": true,
+    "implementation_smoke_authorized": true,
+    "twenty_epoch_pilot_authorized": false,
+    "weight_sweep_authorized": false,
+    "multi_seed_authorized": false,
+    "external_evaluation_authorized": false,
+    "final_logit_pairwise_authorized": false
+  },
+  "next_stage": {
+    "stage": "Stage177-C",
+    "authorized_work": "default-off native frame-logit pairwise implementation and wiring smoke only",
+    "scientific_result_claim_authorized": false
+  },
+  "safety_policy": {
+    "training_in_stage177b": false,
+    "local_smoke_in_this_patch": false,
+    "twenty_epoch_pilot": false,
+    "weight_sweep": false,
+    "margin_or_threshold_addition": false,
+    "multi_seed": false,
+    "external_evaluation_or_tuning": false,
+    "time_swap": false,
+    "final_logit_pairwise_loss": false
+  }
+}

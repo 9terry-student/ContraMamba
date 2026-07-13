@@ -85,6 +85,11 @@ from scripts.stage175b_support_anchor import (  # noqa: E402
     ordered_anchor_indices as stage175b_ordered_anchor_indices,
     resolved_configuration as stage175b_resolved_configuration,
 )
+from scripts.stage177c_frame_pairwise import (  # noqa: E402
+    OBJECTIVE_NAME as STAGE177C_OBJECTIVE_NAME,
+    build_stage177c_train_pair_index,
+    compute_stage177c_frame_pairwise_loss,
+)
 STAGE31C_COVERAGE_LABELS = [
     "ENTAILS_SUPPORT",
     "OVERCLAIM_NOT_ENTITLED",
@@ -6364,6 +6369,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--stage175b-support-anchor-weight", type=float, default=0.0)
     parser.add_argument("--stage175b-support-anchor-tolerance", type=float, default=0.10)
+    parser.add_argument(
+        "--stage177c-frame-pairwise-mode",
+        choices=("off", "pair_softplus"),
+        default="off",
+    )
+    parser.add_argument("--stage177c-frame-pairwise-weight", type=float, default=0.0)
     parser.add_argument(
         "--save-selected-checkpoint",
         action="store_true",
@@ -13094,6 +13105,14 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--stage175b-support-anchor-weight must be nonnegative")
     if args.stage175b_support_anchor_tolerance < 0.0:
         parser.error("--stage175b-support-anchor-tolerance must be nonnegative")
+    if not math.isfinite(args.stage177c_frame_pairwise_weight):
+        parser.error("--stage177c-frame-pairwise-weight must be finite")
+    if args.stage177c_frame_pairwise_weight < 0.0:
+        parser.error("--stage177c-frame-pairwise-weight must be nonnegative")
+    if args.stage177c_frame_pairwise_mode == "off" and args.stage177c_frame_pairwise_weight != 0.0:
+        parser.error("Stage177-C mode off requires --stage177c-frame-pairwise-weight 0")
+    if args.stage177c_frame_pairwise_mode == "pair_softplus" and args.stage177c_frame_pairwise_weight <= 0.0:
+        parser.error("Stage177-C pair_softplus requires --stage177c-frame-pairwise-weight > 0")
 
     if args.backbone == "dummy" and not args.allow_dummy_backbone:
         raise ValueError(
@@ -13550,6 +13569,65 @@ def main(argv: list[str] | None = None) -> int:
         "external_metrics_used_for_threshold_tuning": False,
         "time_swap_used": False,
     }
+
+    _stage177c_enabled = args.stage177c_frame_pairwise_mode == "pair_softplus"
+    _stage177c_pair_index: dict[str, Any] | None = None
+    _stage177c_safety_gate = {
+        "passed": None if not _stage177c_enabled else False,
+        "main_data_is_exact_clean_dataset": False,
+        "clean_train_only": True,
+        "train_dev_overlap_count": 0,
+        "external_data_used": False,
+        "time_swap_used": False,
+    }
+    if _stage177c_enabled:
+        _expected_stage177c_data = (ROOT / "data" / "controlled_v5_v3_without_time_swap.jsonl").resolve()
+        _stage177c_safety_gate["main_data_is_exact_clean_dataset"] = Path(args.data).resolve() == _expected_stage177c_data
+        _stage177c_train_pair_ids = {str(row.get("pair_id")) for row in train_records}
+        _stage177c_dev_pair_ids = {str(row.get("pair_id")) for row in dev_records}
+        _stage177c_safety_gate["train_dev_overlap_count"] = len(
+            _stage177c_train_pair_ids & _stage177c_dev_pair_ids
+        )
+        _stage177c_safety_gate["external_data_used"] = bool(_bridge_sources_enabled)
+        _stage177c_safety_gate["time_swap_used"] = any(row.get("intervention_type") == "time_swap" for row in train_records)
+        _stage177c_failures = [name for name, expected in (
+            ("main_data_is_exact_clean_dataset", True),
+            ("clean_train_only", True),
+            ("train_dev_overlap_count", 0),
+            ("external_data_used", False),
+            ("time_swap_used", False),
+        ) if _stage177c_safety_gate[name] != expected]
+        if args.stage45_use_family_holdout:
+            _stage177c_failures.append("noncanonical_family_holdout_split")
+        if args.max_train_records is not None or args.smoke:
+            _stage177c_failures.append("clean_dataset_truncated")
+        if _stage177c_failures:
+            raise ValueError("[stage177c] clean-train safety gate failed: " + ", ".join(_stage177c_failures))
+        _stage177c_pair_index = build_stage177c_train_pair_index(train_records)
+        _stage177c_expected_topology = {
+            "row_count": 2880,
+            "total_pair_count": 240,
+            "eligible_pair_count": 240,
+            "malformed_pair_count": 0,
+            "compatible_row_count": 1440,
+            "incompatible_row_count": 1440,
+            "raw_comparison_count": 8640,
+        }
+        _stage177c_mismatches = {
+            key: (_stage177c_pair_index.get(key), expected)
+            for key, expected in _stage177c_expected_topology.items()
+            if _stage177c_pair_index.get(key) != expected
+        }
+        _stage177c_pair_shapes_valid = all(
+            pair["compatible_count"] == 6 and pair["incompatible_count"] == 6
+            for pair in _stage177c_pair_index["pairs"]
+        )
+        if _stage177c_mismatches or not _stage177c_pair_shapes_valid:
+            raise ValueError(
+                "[stage177c] canonical train topology mismatch: "
+                f"fields={_stage177c_mismatches}, six_by_six={_stage177c_pair_shapes_valid}"
+            )
+        _stage177c_safety_gate["passed"] = True
 
     _stage174c_enabled = args.stage174c_clean_pairwise_mode != "off"
     _stage174c_pair_index: dict[str, dict[str, int]] | None = None
@@ -14871,6 +14949,9 @@ def main(argv: list[str] | None = None) -> int:
         stage175b_tolerance=0.10,
         stage175b_anchor_index=None,
         stage175b_validation=None,
+        stage177c_mode="off",
+        stage177c_weight=0.0,
+        stage177c_pair_index=None,
     ):
         """Modified run_training that passes flags to v6b model."""
         if epochs < 1:
@@ -15028,6 +15109,7 @@ def main(argv: list[str] | None = None) -> int:
         _stage175b_epoch_metrics: list[dict[str, Any]] = []
         _stage175b_reference_forward_row_count = 0
         _stage175b_reference_forward_batch_count = 0
+        _stage177c_epoch_metrics: list[dict[str, Any]] = []
 
         # Stage26-F extended: captured v7 output tensors for best-epoch logit / per-gold summaries.
         # Updated inside the epoch loop whenever score > best_score.
@@ -15100,6 +15182,19 @@ def main(argv: list[str] | None = None) -> int:
                 batch_size=train_batch_size,
                 amp_enabled=amp_enabled,
             )
+
+            _stage177c_unweighted_loss: torch.Tensor | None = None
+            _stage177c_weighted_loss: torch.Tensor | None = None
+            _stage177c_metrics: dict[str, Any] | None = None
+            if stage177c_mode != "off":
+                if stage177c_pair_index is None:
+                    raise RuntimeError("[stage177c] enabled without a validated train pair index")
+                if output.get("frame_logit") is None:
+                    raise RuntimeError('[stage177c] native output["frame_logit"] is unavailable')
+                _stage177c_unweighted_loss, _stage177c_metrics = compute_stage177c_frame_pairwise_loss(
+                    output["frame_logit"], stage177c_pair_index, mode=stage177c_mode
+                )
+                _stage177c_weighted_loss = stage177c_weight * _stage177c_unweighted_loss
 
             _stage174c_unweighted_loss = torch.tensor(0.0, device=device)
             _stage174c_metrics: dict[str, Any] | None = None
@@ -15278,6 +15373,10 @@ def main(argv: list[str] | None = None) -> int:
                     v5.intervention_objective, "last_diagnostics", None
                 )
             total_loss = losses["total"] + active_intervention_loss
+            if stage177c_mode != "off":
+                if _stage177c_weighted_loss is None:
+                    raise RuntimeError("[stage177c] weighted loss was not computed")
+                total_loss = total_loss + _stage177c_weighted_loss
             if stage174c_mode != "off":
                 total_loss = total_loss + stage174c_weight * _stage174c_unweighted_loss
                 _stage174c_epoch_metrics.append({
@@ -15927,6 +16026,25 @@ def main(argv: list[str] | None = None) -> int:
                         weight=covent_class_weights,
                     )
                     total_loss = total_loss + covent_loss_weight * _v7_covent_loss
+
+            if stage177c_mode != "off":
+                if _stage177c_unweighted_loss is None or _stage177c_weighted_loss is None:
+                    raise RuntimeError("[stage177c] enabled epoch lacks loss tensors")
+                _stage177c_total_value = float(total_loss.detach().item())
+                _stage177c_weighted_value = float(_stage177c_weighted_loss.detach().item())
+                _stage177c_epoch_metrics.append({
+                    "epoch": epoch,
+                    "mode": stage177c_mode,
+                    "weight": stage177c_weight,
+                    "enabled": True,
+                    **(_stage177c_metrics or {}),
+                    "unweighted_frame_pairwise_loss": float(_stage177c_unweighted_loss.detach().item()),
+                    "weighted_frame_pairwise_loss": _stage177c_weighted_value,
+                    "total_loss_contribution_ratio": (
+                        _stage177c_weighted_value / _stage177c_total_value
+                        if _stage177c_total_value != 0.0 else None
+                    ),
+                })
 
             #  Audit ledger accumulation (reporting only; does not affect gradients) 
             # raw = loss value before weight multiplication; weighted = actual total_loss contribution
@@ -18228,6 +18346,54 @@ def main(argv: list[str] | None = None) -> int:
             ),
             "malformed_skipped_count": 0,
         }
+        _stage177c_enabled_epoch_count = len(_stage177c_epoch_metrics)
+        _stage177c_report = {
+            "mode": stage177c_mode,
+            "weight": stage177c_weight,
+            "enabled": stage177c_mode != "off",
+            "objective": STAGE177C_OBJECTIVE_NAME,
+            "score_source": 'output["frame_logit"]',
+            "target_source": "actual_clean_frame_compatible_label",
+            "pair_normalized": True,
+            "margin_used": False,
+            "threshold_used": False,
+            "teacher_used": False,
+            "detached_reference_used": False,
+            "extra_counterpart_forward_used": False,
+            "final_classifier_logits_targeted": False,
+            "clean_train_only": True,
+            "external_data_used": False,
+            "time_swap_used": False,
+            "topology": {
+                key: value for key, value in (stage177c_pair_index or {}).items()
+                if key != "pairs"
+            },
+            "epoch_metrics": _stage177c_epoch_metrics,
+            "aggregate_diagnostics": {
+                "enabled_epoch_count": _stage177c_enabled_epoch_count,
+                "total_eligible_pair_evaluations": sum(int(x["eligible_pair_count"]) for x in _stage177c_epoch_metrics),
+                "total_raw_comparison_evaluations": sum(int(x["raw_comparison_count"]) for x in _stage177c_epoch_metrics),
+                "mean_unweighted_loss": (
+                    sum(float(x["unweighted_frame_pairwise_loss"]) for x in _stage177c_epoch_metrics) / _stage177c_enabled_epoch_count
+                    if _stage177c_enabled_epoch_count else None
+                ),
+                "mean_weighted_loss": (
+                    sum(float(x["weighted_frame_pairwise_loss"]) for x in _stage177c_epoch_metrics) / _stage177c_enabled_epoch_count
+                    if _stage177c_enabled_epoch_count else None
+                ),
+                "mean_gap": (
+                    sum(float(x["mean_gap"]) for x in _stage177c_epoch_metrics) / _stage177c_enabled_epoch_count
+                    if _stage177c_enabled_epoch_count else None
+                ),
+                "mean_ranking_accuracy": (
+                    sum(float(x["comparison_ranking_accuracy"]) for x in _stage177c_epoch_metrics) / _stage177c_enabled_epoch_count
+                    if _stage177c_enabled_epoch_count else None
+                ),
+                "malformed_pair_total": sum(int(x["malformed_pair_count"]) for x in _stage177c_epoch_metrics),
+                "non_finite_count": sum(not bool(x["finite"]) for x in _stage177c_epoch_metrics),
+            },
+        }
+
         _stage175b_report = {
             **stage175b_resolved_configuration(
                 mode=stage175b_mode,
@@ -18248,6 +18414,7 @@ def main(argv: list[str] | None = None) -> int:
             "run_name": run_name,
             "stage174c_clean_pairwise": _stage174c_report,
             "stage175b_support_anchor": _stage175b_report,
+            "stage177c_frame_pairwise": _stage177c_report,
             "final_epoch": epochs,
             "best_epoch": best_epoch,
             "select_metric": select_metric,
@@ -18502,6 +18669,30 @@ def main(argv: list[str] | None = None) -> int:
         "deterministic_reference_retrieval": True,
         "checkpoint_selection_uses_stage175b_metric": False,
     })
+    _stage174a_provenance_record["stage177c_frame_pairwise"] = provenance_json_safe({
+        "mode": args.stage177c_frame_pairwise_mode,
+        "weight": args.stage177c_frame_pairwise_weight,
+        "enabled": _stage177c_enabled,
+        "objective": STAGE177C_OBJECTIVE_NAME,
+        "score_source": 'output["frame_logit"]',
+        "target_source": "actual_clean_frame_compatible_label",
+        "pair_normalized": True,
+        "margin_used": False,
+        "threshold_used": False,
+        "teacher_used": False,
+        "detached_reference_used": False,
+        "extra_counterpart_forward_used": False,
+        "final_classifier_logits_targeted": False,
+        "clean_train_only": True,
+        "external_data_used": False,
+        "time_swap_used": False,
+        "topology": {
+            key: value for key, value in (_stage177c_pair_index or {}).items()
+            if key != "pairs"
+        },
+        "safety_gate": _stage177c_safety_gate,
+        "aggregate_diagnostics": None,
+    })
     write_provenance_json_atomic(_stage174a_provenance_path, _stage174a_provenance_record)
     requested_loss_config = {
         "lambda_frame_preserve": args.lambda_frame_preserve,
@@ -18730,6 +18921,9 @@ def main(argv: list[str] | None = None) -> int:
             stage175b_tolerance=args.stage175b_support_anchor_tolerance,
             stage175b_anchor_index=_stage175b_anchor_index,
             stage175b_validation=_stage175b_validation,
+            stage177c_mode=args.stage177c_frame_pairwise_mode,
+            stage177c_weight=args.stage177c_frame_pairwise_weight,
+            stage177c_pair_index=_stage177c_pair_index,
             pc_pres_inputs=_pc_pres_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_frame_inputs=_pc_frame_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_loss_weight=(
@@ -18765,6 +18959,29 @@ def main(argv: list[str] | None = None) -> int:
                 "clean_only_safety_gate": _stage174c_safety_gate,
                 "validated_train_pair_group_count": len(_stage174c_pair_index or {}),
                 "native_output_tensor_keys": dict(STAGE174C_NATIVE_SCORE_KEYS),
+            },
+            "stage177c_frame_pairwise": {
+                "mode": args.stage177c_frame_pairwise_mode,
+                "weight": args.stage177c_frame_pairwise_weight,
+                "enabled": _stage177c_enabled,
+                "objective": STAGE177C_OBJECTIVE_NAME,
+                "score_source": 'output["frame_logit"]',
+                "target_source": "actual_clean_frame_compatible_label",
+                "pair_normalized": True,
+                "margin_used": False,
+                "threshold_used": False,
+                "teacher_used": False,
+                "detached_reference_used": False,
+                "extra_counterpart_forward_used": False,
+                "final_classifier_logits_targeted": False,
+                "clean_train_only": True,
+                "external_data_used": False,
+                "time_swap_used": False,
+                "topology": {
+                    key: value for key, value in (_stage177c_pair_index or {}).items()
+                    if key != "pairs"
+                },
+                "safety_gate": _stage177c_safety_gate,
             },
             "stage175b_support_anchor": {
                 **stage175b_resolved_configuration(
@@ -21592,6 +21809,15 @@ def main(argv: list[str] | None = None) -> int:
             "stage175b_support_anchor_mode": args.stage175b_support_anchor_mode,
             "stage175b_support_anchor_weight": args.stage175b_support_anchor_weight,
             "stage175b_support_anchor_tolerance": args.stage175b_support_anchor_tolerance,
+            "stage177c_frame_pairwise": {
+                "mode": args.stage177c_frame_pairwise_mode,
+                "weight": args.stage177c_frame_pairwise_weight,
+                "enabled": _stage177c_enabled,
+                "objective": STAGE177C_OBJECTIVE_NAME,
+                "score_source": 'output["frame_logit"]',
+                "pair_normalized": True,
+                "final_classifier_logits_targeted": False,
+            },
             "final_ce_logits_source": "output['logits']",
             "loss_logits_used_for_final_classifier_ce": False,
             "clean_dev_only_checkpoint_selection": True,
@@ -21682,6 +21908,42 @@ def main(argv: list[str] | None = None) -> int:
             "actual_native_output_tensor_keys": (
                 dict(STAGE174C_NATIVE_SCORE_KEYS) if _stage174c_enabled else {}
             ),
+        })
+    )
+    _stage177c_final_runs = {
+        name: run_report.get("stage177c_frame_pairwise")
+        for name, run_report in reports.items()
+    }
+    _stage177c_run_aggregates = {
+        name: (summary or {}).get("aggregate_diagnostics", {})
+        for name, summary in _stage177c_final_runs.items()
+    }
+    _stage174a_provenance_record["stage177c_frame_pairwise"].update(
+        provenance_json_safe({
+            "run_activity": _stage177c_final_runs,
+            "aggregate_diagnostics": {
+                "enabled_epoch_count": sum(int(x.get("enabled_epoch_count", 0)) for x in _stage177c_run_aggregates.values()),
+                "total_eligible_pair_evaluations": sum(int(x.get("total_eligible_pair_evaluations", 0)) for x in _stage177c_run_aggregates.values()),
+                "total_raw_comparison_evaluations": sum(int(x.get("total_raw_comparison_evaluations", 0)) for x in _stage177c_run_aggregates.values()),
+                "malformed_pair_total": sum(int(x.get("malformed_pair_total", 0)) for x in _stage177c_run_aggregates.values()),
+                "non_finite_count": sum(int(x.get("non_finite_count", 0)) for x in _stage177c_run_aggregates.values()),
+                "mean_unweighted_loss_by_run": {
+                    name: values.get("mean_unweighted_loss")
+                    for name, values in _stage177c_run_aggregates.items()
+                },
+                "mean_weighted_loss_by_run": {
+                    name: values.get("mean_weighted_loss")
+                    for name, values in _stage177c_run_aggregates.items()
+                },
+                "mean_gap_by_run": {
+                    name: values.get("mean_gap")
+                    for name, values in _stage177c_run_aggregates.items()
+                },
+                "mean_ranking_accuracy_by_run": {
+                    name: values.get("mean_ranking_accuracy")
+                    for name, values in _stage177c_run_aggregates.items()
+                },
+            },
         })
     )
     _stage175b_final_runs = {
