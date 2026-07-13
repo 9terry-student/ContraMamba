@@ -36,6 +36,18 @@ F = "CONTROL_ANOMALY"
 G = "MIXED_EVIDENCE"
 STRATA = (A, B, C, D, E, F, G)
 
+SEMANTIC_PHENOMENON_ALIASES = ("primary_semantic_phenomenon", "semantic_phenomenon")
+ALLOWED_AGGREGATION_FIELDS = {
+    "primary_stratum",
+    "primary_semantic_phenomenon",
+    "intervention_family",
+}
+AGGREGATION_DISPLAY_LABELS = {
+    "primary_stratum": "roadmap",
+    "primary_semantic_phenomenon": "semantic_phenomenon",
+    "intervention_family": "intervention_family",
+}
+
 DATA_VALIDITY = {"valid_but_multi_axis_edit", "weak_or_ineffective_edit", "unnatural_or_broken_text"}
 CLEAN_VALIDITY = {"clean_single_axis_edit", "canonical_control"}
 BROKEN_WEAK = {"weak_or_ineffective_edit", "unnatural_or_broken_text"}
@@ -114,6 +126,20 @@ class RoadmapBlocked(ValueError):
     """A required frozen-artifact contract failed."""
 
 
+class CanonicalFieldBlocked(RoadmapBlocked):
+    """A normalization-boundary alias was missing or internally inconsistent."""
+
+    def __init__(self, message: str, *, canonical_name: str, available_keys: list[str],
+                 aliases_checked: list[str], aliases_found: list[str],
+                 conflicting_alias_values: dict[str, Any] | None = None) -> None:
+        super().__init__(message)
+        self.canonical_name = canonical_name
+        self.available_keys = available_keys
+        self.aliases_checked = aliases_checked
+        self.aliases_found = aliases_found
+        self.conflicting_alias_values = conflicting_alias_values or {}
+
+
 def require(condition: bool, message: str) -> None:
     if not condition:
         raise RoadmapBlocked(message)
@@ -178,6 +204,53 @@ def optional_number(value: Any) -> float | None:
         return float(value)
     except (TypeError, ValueError):
         return None
+
+
+def resolve_consistent_alias(row: dict[str, Any], *, canonical_name: str,
+                             aliases: Iterable[str], required: bool = True) -> Any:
+    """Resolve input aliases once at the Stage180-to-Stage181 boundary."""
+    checked = list(aliases)
+    found: list[tuple[str, Any]] = []
+    for name in checked:
+        if name not in row or row[name] is None:
+            continue
+        value = row[name]
+        if isinstance(value, float) and math.isnan(value):
+            continue
+        if isinstance(value, str) and not value.strip():
+            continue
+        found.append((name, value))
+    if not found:
+        if not required:
+            return None
+        raise CanonicalFieldBlocked(
+            f"Missing canonical field {canonical_name}; aliases={checked}",
+            canonical_name=canonical_name,
+            available_keys=sorted(row),
+            aliases_checked=checked,
+            aliases_found=[],
+        )
+    normalized = {str(value).strip() for _, value in found}
+    if len(normalized) != 1:
+        conflicts = {name: value for name, value in found}
+        raise CanonicalFieldBlocked(
+            f"Inconsistent aliases for {canonical_name}: {found}",
+            canonical_name=canonical_name,
+            available_keys=sorted(row),
+            aliases_checked=checked,
+            aliases_found=[name for name, _ in found],
+            conflicting_alias_values=conflicts,
+        )
+    return found[0][1]
+
+
+def aggregation_value(row: dict[str, Any], field: str) -> Any:
+    """Reject display labels and unknown names before dynamic item lookup."""
+    require(field in ALLOWED_AGGREGATION_FIELDS,
+            f"unknown aggregation field {field!r}; allowed={sorted(ALLOWED_AGGREGATION_FIELDS)}")
+    require(field in row,
+            f"canonical aggregation field {field!r} missing; available row keys={sorted(row)}")
+    return row[field]
 
 
 def rate(numerator: int, denominator: int) -> float | None:
@@ -503,7 +576,7 @@ def main() -> int:
         item_rows, _ = read_csv(paths["stage180b_item_level_adjudication"],
                                 ["row_id", "item_role", "stage176_cohort", "intervention_type", "native_frame_label",
                                  "independent_frame_judgment", "gold_frame_assessment", "intervention_validity",
-                                 "primary_semantic_phenomenon", "diagnostic_failure_locus", "recommended_data_action",
+                                 "diagnostic_failure_locus", "recommended_data_action",
                                  "pass1_confidence_min", "pass2_confidence_min"])
         comparison_rows, _ = read_csv(paths["stage180b_hard_control_comparison"],
                                       ["axis", "category", "hard_count", "control_count"])
@@ -571,6 +644,11 @@ def main() -> int:
         for source_id in sorted(hidden_by_id):
             source, hidden_row = items_by_id[source_id], hidden_by_id[source_id]
             role = hidden_row["item_role"]
+            phenomenon = resolve_consistent_alias(
+                source,
+                canonical_name="primary_semantic_phenomenon",
+                aliases=SEMANTIC_PHENOMENON_ALIASES,
+            )
             p1 = integer(source["pass1_confidence_min"], "pass1_confidence_min")
             p2 = integer(source["pass2_confidence_min"], "pass2_confidence_min")
             require(1 <= p1 <= 5 and 1 <= p2 <= 5, f"confidence outside 1..5 for {source_id}")
@@ -591,7 +669,7 @@ def main() -> int:
                 "independent_frame_judgment": source["independent_frame_judgment"], "pass1_confidence": p1,
                 "gold_frame_assessment": source["gold_frame_assessment"],
                 "intervention_validity": source["intervention_validity"],
-                "primary_semantic_phenomenon": source["primary_semantic_phenomenon"],
+                "primary_semantic_phenomenon": phenomenon,
                 "diagnostic_failure_locus": source["diagnostic_failure_locus"],
                 "recommended_data_action": source["recommended_data_action"], "pass2_confidence": p2,
                 "repeat_consistency": "exact" if repeat_consistent.get(source_id, True) else "inconsistent",
@@ -672,21 +750,28 @@ def main() -> int:
         hard = [row for row in items if row["item_role"] == "hard"]
         beneficial = [row for row in hard if row["stage176_cohort"] == "beneficial_correction"]
         harmful = [row for row in hard if row["stage176_cohort"] == "harmful_regression"]
-        categories = [("roadmap", A), ("roadmap", B), ("roadmap", C), ("roadmap", "HOLD_OR_MIXED")]
-        categories += [("semantic_phenomenon", value) for value in sorted({row["primary_semantic_phenomenon"] for row in hard})]
-        categories += [("intervention_family", value) for value in sorted({row["intervention_family"] for row in hard})]
+        categories = [("primary_stratum", A), ("primary_stratum", B), ("primary_stratum", C),
+                      ("primary_stratum", "HOLD_OR_MIXED")]
+        categories += [("primary_semantic_phenomenon", value)
+                       for value in sorted({row["primary_semantic_phenomenon"] for row in hard})]
+        categories += [("intervention_family", value)
+                       for value in sorted({row["intervention_family"] for row in hard})]
         for view, category in categories:
             def matches(row: dict[str, Any]) -> bool:
-                if view == "roadmap":
-                    return row["primary_stratum"] in {D, G} if category == "HOLD_OR_MIXED" else row["primary_stratum"] == category
-                return row[view] == category
+                require(view in ALLOWED_AGGREGATION_FIELDS,
+                        f"unknown aggregation view {view!r}; allowed={sorted(ALLOWED_AGGREGATION_FIELDS)}")
+                value = aggregation_value(row, view)
+                if view == "primary_stratum":
+                    return value in {D, G} if category == "HOLD_OR_MIXED" else value == category
+                return value == category
             a, c = sum(matches(row) for row in beneficial), sum(matches(row) for row in harmful)
             p1, p2 = a / 25, c / 14
             fisher = two_sided_fisher(a, 25 - a, c, 14 - c)
             for name, count, denom, own_rate, other_count, other_denom, other_rate, rd in (
                 ("beneficial_correction", a, 25, p1, c, 14, p2, p1 - p2),
                 ("harmful_regression", c, 14, p2, a, 25, p1, p2 - p1)):
-                cohort_rows.append({"view": view, "stage176_cohort": name, "category": category,
+                cohort_rows.append({"view": AGGREGATION_DISPLAY_LABELS[view],
+                                    "stage176_cohort": name, "category": category,
                                     "count": count, "denominator": denom, "rate": own_rate,
                                     "other_cohort_count": other_count, "other_cohort_denominator": other_denom,
                                     "other_cohort_rate": other_rate, "risk_difference": rd,
@@ -784,7 +869,12 @@ def main() -> int:
         blocked = {"stage": STAGE, "decision": BLOCKED, "error_type": type(error).__name__,
                    "error": str(error), "failure_stage": current, "traceback": traceback.format_exc(),
                    "missing_ids": diagnostics["missing_ids"], "extra_ids": diagnostics["extra_ids"],
-                   "duplicate_ids": diagnostics["duplicate_ids"], "schema_mismatch": diagnostics["schema_mismatch"]}
+                   "duplicate_ids": diagnostics["duplicate_ids"], "schema_mismatch": diagnostics["schema_mismatch"],
+                   "requested_canonical_field": getattr(error, "canonical_name", None),
+                   "available_row_keys": getattr(error, "available_keys", []),
+                   "aliases_checked": getattr(error, "aliases_checked", []),
+                   "aliases_found": getattr(error, "aliases_found", []),
+                   "conflicting_alias_values": getattr(error, "conflicting_alias_values", {})}
         write_json(output_dir / OUTPUTS[0], blocked)
         (output_dir / OUTPUTS[1]).write_text(
             "# Stage181-A blocked\n\n"
