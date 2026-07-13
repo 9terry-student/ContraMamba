@@ -1,0 +1,57 @@
+{
+  "stage": "Stage174-D1F",
+  "decision": "STAGE174D1F_CLEAN_LOCAL_PAIRWISE_OBJECTIVE_DIRECTION_CONFLICT_PATH_CLOSED",
+  "experimental_scope": {
+    "architecture": "v6b_minimal",
+    "backbone": "Mamba",
+    "seed": 174,
+    "epochs": 20,
+    "main_data": "data/controlled_v5_v3_without_time_swap.jsonl",
+    "time_swap_excluded": true,
+    "checkpoint_selection": "internal_clean_dev_only",
+    "final_classifier_ce_source": "output[\"logits\"]",
+    "loss_logits_used": false,
+    "external_evaluation_run": false,
+    "validated_train_pair_groups": 240,
+    "malformed_pair_groups": 0,
+    "skipped_pair_groups": 0
+  },
+  "baseline": {
+    "mode": "off",
+    "selected_epoch": 20,
+    "accuracy": 0.868056,
+    "macro_f1": 0.828604,
+    "support_recall": 0.730337,
+    "prediction_counts": {"NOT_ENTITLED": 493, "REFUTE": 91, "SUPPORT": 136}
+  },
+  "arms": [
+    {"mode": "local_only", "weight": 0.01, "selected_epoch": 20, "accuracy": 0.872222, "macro_f1": 0.824706, "macro_f1_delta": -0.003898, "support_recall": 0.662921, "support_recall_delta": -0.067416, "prediction_counts": {"NOT_ENTITLED": 508, "REFUTE": 91, "SUPPORT": 121}, "prediction_count_deltas": {"NOT_ENTITLED": 15, "SUPPORT": -15}},
+    {"mode": "local_only", "weight": 0.02, "selected_epoch": 19, "accuracy": 0.866667, "macro_f1": 0.822442, "macro_f1_delta": -0.006162, "support_recall": 0.685393, "support_recall_delta": -0.044944, "prediction_counts": {"NOT_ENTITLED": 500, "REFUTE": 91, "SUPPORT": 129}, "prediction_count_deltas": {"NOT_ENTITLED": 7, "SUPPORT": -7}},
+    {"mode": "local_only", "weight": 0.05, "selected_epoch": 19, "accuracy": 0.868056, "macro_f1": 0.822352, "macro_f1_delta": -0.006252, "support_recall": 0.674157, "support_recall_delta": -0.056180, "prediction_counts": {"NOT_ENTITLED": 503, "REFUTE": 91, "SUPPORT": 126}, "prediction_count_deltas": {"NOT_ENTITLED": 10, "SUPPORT": -10}},
+    {"mode": "local_only", "weight": 0.05, "polarity_preservation_weight": 0.0, "selected_epoch": 19, "result": "clean-dev metrics identical to weight-0.05 local-only"},
+    {"mode": "local_only", "weight": 0.10, "selected_epoch": 20, "accuracy": 0.883333, "accuracy_delta": 0.015277, "macro_f1": 0.823343, "macro_f1_delta": -0.005261, "support_precision": 0.525773, "support_recall": 0.573034, "support_recall_delta": -0.157303, "prediction_counts": {"NOT_ENTITLED": 532, "REFUTE": 91, "SUPPORT": 97}, "prediction_count_deltas": {"NOT_ENTITLED": 39, "SUPPORT": -39}, "frame_accuracy_delta": -0.015278, "predicate_accuracy_delta": -0.015277}
+  ],
+  "established_findings": [
+    "Stage174-C runtime and provenance paths operated normally.",
+    "The entitlement path was active: observed loss/count values were greater than zero.",
+    "Removing polarity preservation did not change the weight-0.05 result.",
+    "Weights 0.01, 0.02, 0.05, and 0.10 all failed to improve macro-F1.",
+    "Every tested weight shifted SUPPORT predictions toward NOT_ENTITLED.",
+    "The shift was strongest in the weight-0.10 stress test."
+  ],
+  "interpretation": "The accuracy increase is attributable to conservative movement toward the majority NOT_ENTITLED class, not balanced clean-classification improvement. This is an objective-direction conflict rather than simple weight tuning.",
+  "closure": {
+    "three_seed_expansion": false,
+    "long_training_expansion": false,
+    "additional_weight_sweep": false,
+    "external_evaluation": false,
+    "retain_implementation_default_off": true,
+    "clean_improvement_path_closed": true
+  },
+  "next_stage": "Stage175-A static clean SUPPORT-anchor preservation feasibility audit",
+  "safety_policy": {
+    "stage174c_retained_as_reproducible_negative_path": true,
+    "default_mode": "off",
+    "no_external_evaluation": true
+  }
+}
