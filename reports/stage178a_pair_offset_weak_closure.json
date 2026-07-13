@@ -1,0 +1,65 @@
+{
+  "stage": "Stage178-A",
+  "decision": "STAGE178A_PAIR_OFFSET_EXPLANATION_WEAK_PATH_CLOSED",
+  "scope": {
+    "data": "data/controlled_v5_v3_without_time_swap.jsonl",
+    "seed": 174,
+    "selected_epoch": 20,
+    "clean_controlled_data_only": true,
+    "single_seed": true,
+    "evaluation_only": true
+  },
+  "absolute_comparability_findings": {
+    "baseline_dev_same_pair_ranking": 0.939352,
+    "baseline_dev_cross_pair_raw_ranking": 0.931105,
+    "baseline_dev_cross_pair_loo_centered_ranking": 0.945920,
+    "raw_to_loo_centered_cross_pair_delta": 0.014815,
+    "global_zero_threshold_offset_misaligned_dev_pairs": 0,
+    "dev_pair_count": 60,
+    "pair_offset_is_primary_absolute_comparability_failure": false
+  },
+  "hard39_centering_attribution": {
+    "rows": 39,
+    "corrected_errors": 1,
+    "introduced_errors": 0,
+    "net_correctness": 1
+  },
+  "full_dev_collateral_attribution": {
+    "wrong_to_correct": 18,
+    "correct_to_wrong": 23,
+    "net_correctness": -5
+  },
+  "observed_association": {
+    "surface_or_construction_association_present": true,
+    "sufficient_for_offset_explanation_gate": false,
+    "causal_claim": false
+  },
+  "baseline_pilot_stability": {
+    "pair_center_structure_stable": true,
+    "stage177c_primarily_changed_pair_gap": true,
+    "stage177c_reduced_pair_center_offset": false
+  },
+  "closed_paths": {
+    "pair_centering_deployment": true,
+    "pair_offset_loss": true,
+    "score_normalization_sweep": true,
+    "global_threshold_fitting": true,
+    "calibration": true,
+    "stage177c_weight_sweep": true,
+    "multi_seed_expansion": true,
+    "external_evaluation": true
+  },
+  "authorized_next_stage": "STAGE179_FRAME_LABEL_SEMANTICS_AND_INPUT_REPRESENTATION_AUDIT",
+  "safety_policy": {
+    "training_authorized": false,
+    "optimizer_authorized": false,
+    "backward_authorized": false,
+    "calibration_authorized": false,
+    "threshold_search_authorized": false,
+    "checkpoint_selection_authorized": false,
+    "external_evaluation_authorized": false,
+    "time_swap_authorized": false,
+    "pair_centering_inference_authorized": false,
+    "architecture_change_authorized": false
+  }
+}
