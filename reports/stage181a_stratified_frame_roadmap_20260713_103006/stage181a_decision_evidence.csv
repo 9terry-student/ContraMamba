@@ -1,0 +1,6 @@
+gate,passed,selected,data_candidate_count,data_candidate_rate,model_candidate_count,model_candidate_rate,hold_mixed_count,hold_mixed_rate,control_anomaly_count,control_anomaly_rate,label_data_issue_count,matched_controls_clean_for_model_candidates,controls_explain_contrast,reason
+adjudication_safety_override,True,True,20,0.5128205128205128,19,0.48717948717948717,0,0.0,15,0.38461538461538464,20,False,False,hold/mixed >= .30 or control anomaly >= .20
+dual_track,False,False,20,0.5128205128205128,19,0.48717948717948717,0,0.0,15,0.38461538461538464,20,False,False,"both counts >= 5, rates >= .15, controls do not explain"
+data_first,False,False,20,0.5128205128205128,19,0.48717948717948717,0,0.0,15,0.38461538461538464,20,False,False,data count >= 8 and rate advantages >= .20
+model_first,False,False,20,0.5128205128205128,19,0.48717948717948717,0,0.0,15,0.38461538461538464,20,False,False,"model count >= 8, rate advantage >= .20, clean controls, data issues <= 3"
+fallback_adjudication,False,False,20,0.5128205128205128,19,0.48717948717948717,0,0.0,15,0.38461538461538464,20,False,False,no stable provisional branch

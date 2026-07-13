@@ -1,0 +1,312 @@
+{
+  "stage": "Stage180-B",
+  "decision": "STAGE180B_HARD_FRAME_MANUAL_TAXONOMY_MIXED",
+  "scope": {
+    "clean_controlled_manual_annotations_only": true,
+    "model_forward": false,
+    "training": false
+  },
+  "input_validation": {
+    "status": "passed",
+    "manifest_decision": "STAGE180A_HARD_FRAME_MANUAL_REVIEW_PACKET_READY",
+    "hidden_key_sha256_match": true,
+    "review_instance_id_set_validated": true,
+    "hard_control_overlap": false,
+    "original_hard_rows": 39,
+    "pass2_read_only_extra_columns_allowed": true,
+    "matched_control_context_used_for_annotation_vote": false,
+    "hidden_key_remains_identity_authority": true,
+    "output_schemas": {
+      "stage180b_item_level_adjudication.csv": [
+        "row_id",
+        "item_role",
+        "stage176_cohort",
+        "intervention_type",
+        "native_frame_label",
+        "gold_final_label",
+        "match_link_id",
+        "matched_hard_row_id",
+        "match_level",
+        "independent_frame_judgment",
+        "gold_frame_assessment",
+        "intervention_validity",
+        "primary_semantic_phenomenon",
+        "diagnostic_failure_locus",
+        "recommended_data_action",
+        "reviewer_count",
+        "pass1_confidence_min",
+        "pass2_confidence_min",
+        "independent_gold_agreement"
+      ],
+      "stage180b_pass1_gold_agreement.csv": [
+        "item_role",
+        "stage176_cohort",
+        "native_frame_label",
+        "rows",
+        "binary_judgments",
+        "agreement_count",
+        "agreement_rate",
+        "ambiguous_rate",
+        "insufficient_context_rate",
+        "high_confidence_disagreement_count"
+      ],
+      "stage180b_repeat_consistency.csv": [
+        "reviewer_id",
+        "repeat_group_id",
+        "row_id",
+        "item_role",
+        "instance_count",
+        "exact_agreement",
+        "judgment_flip",
+        "adjacent_confidence_difference",
+        "judgments",
+        "confidences"
+      ],
+      "stage180b_gold_assessment_summary.csv": [
+        "item_role",
+        "intervention_type",
+        "axis",
+        "category",
+        "count",
+        "denominator",
+        "rate"
+      ],
+      "stage180b_intervention_validity_summary.csv": [
+        "item_role",
+        "axis",
+        "category",
+        "count",
+        "denominator",
+        "rate"
+      ],
+      "stage180b_failure_locus_summary.csv": [
+        "item_role",
+        "axis",
+        "category",
+        "count",
+        "denominator",
+        "rate"
+      ],
+      "stage180b_recommended_action_summary.csv": [
+        "item_role",
+        "axis",
+        "category",
+        "count",
+        "denominator",
+        "rate"
+      ],
+      "stage180b_hard_control_comparison.csv": [
+        "axis",
+        "category",
+        "hard_count",
+        "hard_total",
+        "hard_rate",
+        "control_count",
+        "control_total",
+        "control_rate",
+        "risk_difference",
+        "risk_ratio",
+        "fisher_exact_p",
+        "benjamini_hochberg_q"
+      ],
+      "stage180b_beneficial_harmful_taxonomy.csv": [
+        "stage176_cohort",
+        "intervention_type",
+        "axis",
+        "category",
+        "count",
+        "denominator",
+        "rate"
+      ],
+      "stage180b_high_confidence_review_queue.csv": [
+        "review_instance_id",
+        "source_item_id",
+        "hard_or_control",
+        "stage176_cohort",
+        "independent_frame_judgment",
+        "gold_frame_assessment",
+        "intervention_validity",
+        "diagnostic_failure_locus",
+        "recommended_data_action",
+        "confidence",
+        "rationale",
+        "queue_reason"
+      ],
+      "stage180b_reviewer_disagreement_queue.csv": [
+        "review_instance_id",
+        "source_item_id",
+        "axis",
+        "reviewer_ids",
+        "reviewer_values",
+        "agreement_status",
+        "notes"
+      ],
+      "stage180b_decision_evidence.csv": [
+        "gate",
+        "passed",
+        "high_confidence_hard_issue_count",
+        "hard_issue_rate",
+        "control_issue_rate",
+        "risk_difference",
+        "repeat_consistency",
+        "label_valid_rate",
+        "high_confidence_data_issue_count",
+        "hard_model_locus_rate",
+        "control_model_locus_rate",
+        "hard_data_issue_rate",
+        "hard_semantic_rate",
+        "control_semantic_rate",
+        "semantic_issue_intervention_family_count",
+        "selected_by_priority"
+      ]
+    }
+  },
+  "reviewer_protocol": {
+    "status": "single_reviewer_provisional",
+    "reviewer_count": 1,
+    "reviewers": [
+      "chatgpt_single_reviewer"
+    ],
+    "agreement": {
+      "independent_frame_judgment": {
+        "computed": false,
+        "reason": "single_reviewer_provisional"
+      },
+      "gold_frame_assessment": {
+        "computed": false,
+        "reason": "single_reviewer_provisional"
+      },
+      "intervention_validity": {
+        "computed": false,
+        "reason": "single_reviewer_provisional"
+      },
+      "primary_semantic_phenomenon": {
+        "computed": false,
+        "reason": "single_reviewer_provisional"
+      },
+      "diagnostic_failure_locus": {
+        "computed": false,
+        "reason": "single_reviewer_provisional"
+      },
+      "recommended_data_action": {
+        "computed": false,
+        "reason": "single_reviewer_provisional"
+      }
+    },
+    "confidence_weighted_descriptive_agreement": 0.958974358974359,
+    "automatic_majority_relabeling": false,
+    "consensus_rule": "unanimity_only"
+  },
+  "completion": {
+    "minimum_required_rate": 1.0,
+    "review_instances": 86,
+    "annotation_pairs": 86,
+    "unique_hard_rows": 39,
+    "unique_control_rows": 39,
+    "missing_or_duplicate": false
+  },
+  "pass1_gold_agreement": {
+    "rows": 9,
+    "high_confidence_disagreements": 0
+  },
+  "repeat_consistency": {
+    "comparisons": 8,
+    "exact_agreement_rate": 1.0,
+    "judgment_flips": 0,
+    "mean_confidence_difference": 0.0,
+    "by_role": {
+      "hard": 1.0,
+      "control": 1.0
+    }
+  },
+  "gold_assessment": {
+    "summary_rows": 72,
+    "high_confidence_queue_rows": 54
+  },
+  "intervention_validity": {
+    "summary_rows": 12,
+    "hard_control_rate_differences_in_comparison": true
+  },
+  "failure_locus_taxonomy": {
+    "summary_rows": 16,
+    "stage179_comparison": "descriptive manual taxonomy versus mixed/insufficient automated localization; no causal equivalence asserted"
+  },
+  "recommended_actions": {
+    "summary_rows": 18,
+    "applied_to_dataset": false
+  },
+  "hard_control_comparison": {
+    "rows": 45,
+    "statistics": [
+      "risk_difference",
+      "risk_ratio",
+      "Fisher exact",
+      "Benjamini-Hochberg"
+    ],
+    "interpretation": "observational/provisional"
+  },
+  "beneficial_harmful_attribution": {
+    "summary_rows": 64,
+    "beneficial_expected": 25,
+    "harmful_expected": 14,
+    "families_reported": [
+      "entity_swap",
+      "event_swap",
+      "location_swap",
+      "none",
+      "paraphrase",
+      "polarity_flip",
+      "role_swap",
+      "title_name_swap"
+    ],
+    "high_confidence_action_queue_rows": 54
+  },
+  "diagnosis": {
+    "high_confidence_data_issue_count": 20,
+    "hard_data_issue_rate": 0.5128205128205128,
+    "control_data_issue_rate": 0.38461538461538464,
+    "label_valid_rate": 1.0,
+    "hard_model_locus_rate": 0.48717948717948717,
+    "control_model_locus_rate": 0.0,
+    "hard_semantic_rate": 0.0,
+    "control_semantic_rate": 0.6153846153846154,
+    "repeat_consistency": 1.0,
+    "simultaneously_passing_gate_count": 0,
+    "priority_order": [
+      "STAGE180B_FRAME_LABEL_OR_DATA_DESIGN_ISSUE_IDENTIFIED",
+      "STAGE180B_VALID_FRAME_LABELS_WITH_MODEL_FAILURE_TAXONOMY_IDENTIFIED",
+      "STAGE180B_GENUINELY_HARD_FRAME_SEMANTIC_SUBSET_IDENTIFIED",
+      "STAGE180B_HARD_FRAME_MANUAL_TAXONOMY_MIXED"
+    ]
+  },
+  "stage181_gate": {
+    "decision": "STAGE180B_HARD_FRAME_MANUAL_TAXONOMY_MIXED",
+    "next_stage": "STAGE181_STRATIFIED_FRAME_DATA_AND_MODEL_ROADMAP",
+    "provisional": true,
+    "training_authorized": false,
+    "automatic_relabeling_authorized": false
+  },
+  "limitations": [
+    "Manual taxonomy is observational and does not prove a causal model locus.",
+    "Single-reviewer results are provisional; multi-reviewer consensus uses unanimity, not majority relabeling.",
+    "Matched controls are deterministic comparisons rather than randomized experimental controls."
+  ],
+  "safety_policy": {
+    "model_forward": false,
+    "training": false,
+    "optimizer": false,
+    "backward": false,
+    "calibration": false,
+    "threshold_fitting": false,
+    "fitted_probe": false,
+    "external_evaluation": false,
+    "external_labels": false,
+    "time_swap": false,
+    "relabeling": false,
+    "dataset_modification": false,
+    "checkpoint_modification": false,
+    "automatic_adjudication": false,
+    "architecture_implementation": false,
+    "loss_implementation": false
+  }
+}

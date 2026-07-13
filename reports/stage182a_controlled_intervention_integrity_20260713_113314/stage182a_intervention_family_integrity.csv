@@ -1,0 +1,9 @@
+intervention_type,item_count,hard_count,control_count,clean_count,contaminated_count,unresolved_count,clean_model_failure_count,clean_control_reference_count,control_anomaly_count
+entity_swap,4,2,2,2,2,0,0,0,2
+event_swap,2,1,1,2,0,0,0,1,0
+location_swap,26,13,13,17,9,0,1,11,2
+none,12,6,6,12,0,0,6,6,0
+paraphrase,2,1,1,2,0,0,1,1,0
+polarity_flip,14,7,7,13,1,0,6,6,1
+role_swap,12,6,6,5,7,0,0,2,4
+title_name_swap,6,3,3,3,3,0,0,3,0

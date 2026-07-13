@@ -1,0 +1,5 @@
+gate,passed,high_confidence_hard_issue_count,hard_issue_rate,control_issue_rate,risk_difference,repeat_consistency,label_valid_rate,high_confidence_data_issue_count,hard_model_locus_rate,control_model_locus_rate,hard_data_issue_rate,hard_semantic_rate,control_semantic_rate,semantic_issue_intervention_family_count,selected_by_priority
+frame_label_or_data_design,False,20,0.5128205128205128,0.38461538461538464,0.12820512820512814,1.0,,,,,,,,,
+valid_labels_model_failure,False,,,,0.48717948717948717,1.0,1.0,20,0.48717948717948717,0.0,,,,,
+genuinely_hard_semantic_subset,False,,,,-0.6153846153846154,,1.0,,,,0.5128205128205128,0.0,0.6153846153846154,0,
+mixed,True,,,,,,,,,,,,,,True

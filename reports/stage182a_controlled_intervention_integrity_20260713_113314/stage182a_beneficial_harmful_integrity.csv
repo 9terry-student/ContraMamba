@@ -1,0 +1,3 @@
+stage176_cohort,hard_count,clean_failure_count,clean_hard_native_frame_correct_count,contaminated_count,unresolved_count,clean_failure_rate,other_cohort_clean_failure_rate,rate_difference,fisher_exact_p,interpretation
+beneficial_correction,25,1,7,17,0,0.04,0.9285714285714286,-0.8885714285714286,2.326891164505714e-08,descriptive_only
+harmful_regression,14,13,0,1,0,0.9285714285714286,0.04,0.8885714285714286,2.326891164505714e-08,descriptive_only

@@ -1,0 +1,79 @@
+rank,track,source_row_id,primary_stratum,priority_score,pass2_confidence,intervention_family,semantic_phenomenon,matched_control_clean,score_basis,score_is_fitted_metric
+1,data,generated_fact_153__location_swap,DATA_INTERVENTION_REPAIR_CANDIDATE,7,5,location_swap,location_scope,False,"[""broken_text:+3"", ""redesign:+2"", ""confidence_5:+1"", ""control_shares_artifact:+1""]",False
+2,data,generated_fact_176__location_swap,DATA_INTERVENTION_REPAIR_CANDIDATE,7,5,location_swap,location_scope,False,"[""broken_text:+3"", ""redesign:+2"", ""confidence_5:+1"", ""control_shares_artifact:+1""]",False
+3,data,generated_fact_195__polarity_flip,DATA_INTERVENTION_REPAIR_CANDIDATE,7,5,polarity_flip,polarity,False,"[""broken_text:+3"", ""redesign:+2"", ""confidence_5:+1"", ""control_shares_artifact:+1""]",False
+4,data,generated_fact_230__polarity_flip,DATA_INTERVENTION_REPAIR_CANDIDATE,7,5,polarity_flip,polarity,False,"[""broken_text:+3"", ""redesign:+2"", ""confidence_5:+1"", ""control_shares_artifact:+1""]",False
+5,data,generated_fact_230__role_swap,DATA_INTERVENTION_REPAIR_CANDIDATE,7,5,role_swap,role_relation,False,"[""broken_text:+3"", ""redesign:+2"", ""confidence_5:+1"", ""control_shares_artifact:+1""]",False
+6,data,generated_fact_240__polarity_flip,DATA_INTERVENTION_REPAIR_CANDIDATE,7,5,polarity_flip,polarity,False,"[""broken_text:+3"", ""redesign:+2"", ""confidence_5:+1"", ""control_shares_artifact:+1""]",False
+7,data,generated_fact_262__polarity_flip,DATA_INTERVENTION_REPAIR_CANDIDATE,7,5,polarity_flip,polarity,False,"[""broken_text:+3"", ""redesign:+2"", ""confidence_5:+1"", ""control_shares_artifact:+1""]",False
+8,data,generated_fact_271__role_swap,DATA_INTERVENTION_REPAIR_CANDIDATE,7,5,role_swap,role_relation,False,"[""broken_text:+3"", ""redesign:+2"", ""confidence_5:+1"", ""control_shares_artifact:+1""]",False
+9,data,generated_fact_274__polarity_flip,DATA_INTERVENTION_REPAIR_CANDIDATE,7,5,polarity_flip,polarity,False,"[""broken_text:+3"", ""redesign:+2"", ""confidence_5:+1"", ""control_shares_artifact:+1""]",False
+10,data,generated_fact_287__polarity_flip,DATA_INTERVENTION_REPAIR_CANDIDATE,7,5,polarity_flip,polarity,False,"[""broken_text:+3"", ""redesign:+2"", ""confidence_5:+1"", ""control_shares_artifact:+1""]",False
+11,data,generated_fact_300__polarity_flip,DATA_INTERVENTION_REPAIR_CANDIDATE,7,5,polarity_flip,polarity,False,"[""broken_text:+3"", ""redesign:+2"", ""confidence_5:+1"", ""control_shares_artifact:+1""]",False
+12,data,generated_fact_158__location_swap,DATA_INTERVENTION_REPAIR_CANDIDATE,6,5,location_swap,location_scope,True,"[""broken_text:+3"", ""redesign:+2"", ""confidence_5:+1""]",False
+13,data,generated_fact_158__role_swap,DATA_INTERVENTION_REPAIR_CANDIDATE,6,5,role_swap,role_relation,True,"[""broken_text:+3"", ""redesign:+2"", ""confidence_5:+1""]",False
+14,data,generated_fact_158__title_name_swap,DATA_INTERVENTION_REPAIR_CANDIDATE,6,5,title_name_swap,title_name_identity,True,"[""broken_text:+3"", ""redesign:+2"", ""confidence_5:+1""]",False
+15,data,generated_fact_225__location_swap,DATA_INTERVENTION_REPAIR_CANDIDATE,6,5,location_swap,location_scope,True,"[""broken_text:+3"", ""redesign:+2"", ""confidence_5:+1""]",False
+16,data,generated_fact_227__title_name_swap,DATA_INTERVENTION_REPAIR_CANDIDATE,6,5,title_name_swap,title_name_identity,True,"[""broken_text:+3"", ""redesign:+2"", ""confidence_5:+1""]",False
+17,data,generated_fact_230__title_name_swap,DATA_INTERVENTION_REPAIR_CANDIDATE,6,5,title_name_swap,title_name_identity,True,"[""broken_text:+3"", ""redesign:+2"", ""confidence_5:+1""]",False
+18,data,generated_fact_238__location_swap,DATA_INTERVENTION_REPAIR_CANDIDATE,6,5,location_swap,location_scope,True,"[""broken_text:+3"", ""redesign:+2"", ""confidence_5:+1""]",False
+19,data,generated_fact_271__location_swap,DATA_INTERVENTION_REPAIR_CANDIDATE,6,5,location_swap,location_scope,True,"[""broken_text:+3"", ""redesign:+2"", ""confidence_5:+1""]",False
+20,data,generated_fact_273__location_swap,DATA_INTERVENTION_REPAIR_CANDIDATE,6,5,location_swap,location_scope,True,"[""broken_text:+3"", ""redesign:+2"", ""confidence_5:+1""]",False
+21,data,clinic_expansion__location_swap,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,0,4,location_swap,location_scope,True,[],False
+22,data,generated_fact_055__none,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,0,4,none,other,True,[],False
+23,data,generated_fact_078__location_swap,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,0,4,location_swap,location_scope,True,[],False
+24,data,generated_fact_080__location_swap,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,0,4,location_swap,location_scope,True,[],False
+25,data,generated_fact_083__role_swap,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,0,4,role_swap,role_relation,False,[],False
+26,data,generated_fact_086__entity_swap,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,0,4,entity_swap,entity_identity,False,[],False
+27,data,generated_fact_086__none,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,0,4,none,other,True,[],False
+28,data,generated_fact_087__role_swap,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,0,4,role_swap,role_relation,True,[],False
+29,data,generated_fact_090__location_swap,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,0,4,location_swap,location_scope,True,[],False
+30,data,generated_fact_090__none,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,0,4,none,other,True,[],False
+31,data,generated_fact_110__entity_swap,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,0,4,entity_swap,entity_identity,False,[],False
+32,data,generated_fact_135__role_swap,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,0,4,role_swap,role_relation,False,[],False
+33,data,generated_fact_146__none,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,0,4,none,other,True,[],False
+34,data,language_program__paraphrase,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,0,4,paraphrase,lexical_or_surface_artifact,True,[],False
+35,data,museum_purchase__none,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,0,4,none,other,True,[],False
+36,data,orion_approval__location_swap,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,0,4,location_swap,location_scope,True,[],False
+37,data,reef_protection__location_swap,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,0,4,location_swap,location_scope,True,[],False
+38,data,satellite_launch__event_swap,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,0,4,event_swap,event_identity,True,[],False
+39,data,satellite_launch__none,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,0,4,none,other,True,[],False
+1,model,clinic_expansion__location_swap,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,7,4,location_swap,location_scope,True,"[""clean_boundary_failure:+3"", ""matched_control_clean:+2"", ""confidence_4:+1"", ""phenomenon_support_ge_3:+1""]",False
+2,model,generated_fact_055__none,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,7,4,none,other,True,"[""clean_representation_failure:+3"", ""matched_control_clean:+2"", ""confidence_4:+1"", ""phenomenon_support_ge_3:+1""]",False
+3,model,generated_fact_078__location_swap,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,7,4,location_swap,location_scope,True,"[""clean_boundary_failure:+3"", ""matched_control_clean:+2"", ""confidence_4:+1"", ""phenomenon_support_ge_3:+1""]",False
+4,model,generated_fact_080__location_swap,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,7,4,location_swap,location_scope,True,"[""clean_boundary_failure:+3"", ""matched_control_clean:+2"", ""confidence_4:+1"", ""phenomenon_support_ge_3:+1""]",False
+5,model,generated_fact_086__none,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,7,4,none,other,True,"[""clean_representation_failure:+3"", ""matched_control_clean:+2"", ""confidence_4:+1"", ""phenomenon_support_ge_3:+1""]",False
+6,model,generated_fact_087__role_swap,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,7,4,role_swap,role_relation,True,"[""clean_boundary_failure:+3"", ""matched_control_clean:+2"", ""confidence_4:+1"", ""phenomenon_support_ge_3:+1""]",False
+7,model,generated_fact_090__location_swap,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,7,4,location_swap,location_scope,True,"[""clean_boundary_failure:+3"", ""matched_control_clean:+2"", ""confidence_4:+1"", ""phenomenon_support_ge_3:+1""]",False
+8,model,generated_fact_090__none,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,7,4,none,other,True,"[""clean_representation_failure:+3"", ""matched_control_clean:+2"", ""confidence_4:+1"", ""phenomenon_support_ge_3:+1""]",False
+9,model,generated_fact_146__none,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,7,4,none,other,True,"[""clean_representation_failure:+3"", ""matched_control_clean:+2"", ""confidence_4:+1"", ""phenomenon_support_ge_3:+1""]",False
+10,model,museum_purchase__none,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,7,4,none,other,True,"[""clean_representation_failure:+3"", ""matched_control_clean:+2"", ""confidence_4:+1"", ""phenomenon_support_ge_3:+1""]",False
+11,model,orion_approval__location_swap,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,7,4,location_swap,location_scope,True,"[""clean_boundary_failure:+3"", ""matched_control_clean:+2"", ""confidence_4:+1"", ""phenomenon_support_ge_3:+1""]",False
+12,model,satellite_launch__none,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,7,4,none,other,True,"[""clean_representation_failure:+3"", ""matched_control_clean:+2"", ""confidence_4:+1"", ""phenomenon_support_ge_3:+1""]",False
+13,model,language_program__paraphrase,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,6,4,paraphrase,lexical_or_surface_artifact,True,"[""clean_representation_failure:+3"", ""matched_control_clean:+2"", ""confidence_4:+1""]",False
+14,model,reef_protection__location_swap,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,6,4,location_swap,location_scope,True,"[""readout_candidate:+2"", ""matched_control_clean:+2"", ""confidence_4:+1"", ""phenomenon_support_ge_3:+1""]",False
+15,model,satellite_launch__event_swap,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,6,4,event_swap,event_identity,True,"[""clean_boundary_failure:+3"", ""matched_control_clean:+2"", ""confidence_4:+1""]",False
+16,model,generated_fact_158__location_swap,DATA_INTERVENTION_REPAIR_CANDIDATE,5,5,location_swap,location_scope,True,"[""confidence_5:+2"", ""matched_control_clean:+2"", ""phenomenon_support_ge_3:+1""]",False
+17,model,generated_fact_158__role_swap,DATA_INTERVENTION_REPAIR_CANDIDATE,5,5,role_swap,role_relation,True,"[""confidence_5:+2"", ""matched_control_clean:+2"", ""phenomenon_support_ge_3:+1""]",False
+18,model,generated_fact_158__title_name_swap,DATA_INTERVENTION_REPAIR_CANDIDATE,5,5,title_name_swap,title_name_identity,True,"[""confidence_5:+2"", ""matched_control_clean:+2"", ""phenomenon_support_ge_3:+1""]",False
+19,model,generated_fact_225__location_swap,DATA_INTERVENTION_REPAIR_CANDIDATE,5,5,location_swap,location_scope,True,"[""confidence_5:+2"", ""matched_control_clean:+2"", ""phenomenon_support_ge_3:+1""]",False
+20,model,generated_fact_227__title_name_swap,DATA_INTERVENTION_REPAIR_CANDIDATE,5,5,title_name_swap,title_name_identity,True,"[""confidence_5:+2"", ""matched_control_clean:+2"", ""phenomenon_support_ge_3:+1""]",False
+21,model,generated_fact_230__title_name_swap,DATA_INTERVENTION_REPAIR_CANDIDATE,5,5,title_name_swap,title_name_identity,True,"[""confidence_5:+2"", ""matched_control_clean:+2"", ""phenomenon_support_ge_3:+1""]",False
+22,model,generated_fact_238__location_swap,DATA_INTERVENTION_REPAIR_CANDIDATE,5,5,location_swap,location_scope,True,"[""confidence_5:+2"", ""matched_control_clean:+2"", ""phenomenon_support_ge_3:+1""]",False
+23,model,generated_fact_271__location_swap,DATA_INTERVENTION_REPAIR_CANDIDATE,5,5,location_swap,location_scope,True,"[""confidence_5:+2"", ""matched_control_clean:+2"", ""phenomenon_support_ge_3:+1""]",False
+24,model,generated_fact_273__location_swap,DATA_INTERVENTION_REPAIR_CANDIDATE,5,5,location_swap,location_scope,True,"[""confidence_5:+2"", ""matched_control_clean:+2"", ""phenomenon_support_ge_3:+1""]",False
+25,model,generated_fact_083__role_swap,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,5,4,role_swap,role_relation,False,"[""clean_boundary_failure:+3"", ""confidence_4:+1"", ""phenomenon_support_ge_3:+1""]",False
+26,model,generated_fact_135__role_swap,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,5,4,role_swap,role_relation,False,"[""clean_boundary_failure:+3"", ""confidence_4:+1"", ""phenomenon_support_ge_3:+1""]",False
+27,model,generated_fact_086__entity_swap,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,4,4,entity_swap,entity_identity,False,"[""clean_boundary_failure:+3"", ""confidence_4:+1""]",False
+28,model,generated_fact_110__entity_swap,CLEAN_LABEL_MODEL_FAILURE_CANDIDATE,4,4,entity_swap,entity_identity,False,"[""clean_boundary_failure:+3"", ""confidence_4:+1""]",False
+29,model,generated_fact_153__location_swap,DATA_INTERVENTION_REPAIR_CANDIDATE,3,5,location_swap,location_scope,False,"[""confidence_5:+2"", ""phenomenon_support_ge_3:+1""]",False
+30,model,generated_fact_176__location_swap,DATA_INTERVENTION_REPAIR_CANDIDATE,3,5,location_swap,location_scope,False,"[""confidence_5:+2"", ""phenomenon_support_ge_3:+1""]",False
+31,model,generated_fact_195__polarity_flip,DATA_INTERVENTION_REPAIR_CANDIDATE,3,5,polarity_flip,polarity,False,"[""confidence_5:+2"", ""phenomenon_support_ge_3:+1""]",False
+32,model,generated_fact_230__polarity_flip,DATA_INTERVENTION_REPAIR_CANDIDATE,3,5,polarity_flip,polarity,False,"[""confidence_5:+2"", ""phenomenon_support_ge_3:+1""]",False
+33,model,generated_fact_230__role_swap,DATA_INTERVENTION_REPAIR_CANDIDATE,3,5,role_swap,role_relation,False,"[""confidence_5:+2"", ""phenomenon_support_ge_3:+1""]",False
+34,model,generated_fact_240__polarity_flip,DATA_INTERVENTION_REPAIR_CANDIDATE,3,5,polarity_flip,polarity,False,"[""confidence_5:+2"", ""phenomenon_support_ge_3:+1""]",False
+35,model,generated_fact_262__polarity_flip,DATA_INTERVENTION_REPAIR_CANDIDATE,3,5,polarity_flip,polarity,False,"[""confidence_5:+2"", ""phenomenon_support_ge_3:+1""]",False
+36,model,generated_fact_271__role_swap,DATA_INTERVENTION_REPAIR_CANDIDATE,3,5,role_swap,role_relation,False,"[""confidence_5:+2"", ""phenomenon_support_ge_3:+1""]",False
+37,model,generated_fact_274__polarity_flip,DATA_INTERVENTION_REPAIR_CANDIDATE,3,5,polarity_flip,polarity,False,"[""confidence_5:+2"", ""phenomenon_support_ge_3:+1""]",False
+38,model,generated_fact_287__polarity_flip,DATA_INTERVENTION_REPAIR_CANDIDATE,3,5,polarity_flip,polarity,False,"[""confidence_5:+2"", ""phenomenon_support_ge_3:+1""]",False
+39,model,generated_fact_300__polarity_flip,DATA_INTERVENTION_REPAIR_CANDIDATE,3,5,polarity_flip,polarity,False,"[""confidence_5:+2"", ""phenomenon_support_ge_3:+1""]",False

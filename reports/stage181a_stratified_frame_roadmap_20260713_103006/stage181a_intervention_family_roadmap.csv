@@ -1,0 +1,9 @@
+intervention_family,hard_count,control_count,data_repair_candidate_count,clean_model_failure_candidate_count,hard_semantic_candidate_count,hold_mixed_count,control_anomaly_count,high_confidence_count,high_confidence_rate,beneficial_count,harmful_count,support_below_three,priority_gate_used
+entity_swap,2,2,0,2,0,0,2,4,1.0,2,0,True,False
+event_swap,1,1,0,1,0,0,0,2,1.0,1,0,True,False
+location_swap,13,13,7,6,0,0,2,26,1.0,13,0,False,False
+none,6,6,0,6,0,0,0,12,1.0,0,6,False,False
+paraphrase,1,1,0,1,0,0,0,2,1.0,0,1,True,False
+polarity_flip,7,7,7,0,0,0,7,14,1.0,0,7,False,False
+role_swap,6,6,3,3,0,0,4,12,1.0,6,0,False,False
+title_name_swap,3,3,3,0,0,0,0,6,1.0,3,0,False,False

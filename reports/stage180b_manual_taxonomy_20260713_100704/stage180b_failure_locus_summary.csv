@@ -1,0 +1,17 @@
+item_role,axis,category,count,denominator,rate
+control,diagnostic_failure_locus,cannot_determine,24,39,0.6153846153846154
+control,diagnostic_failure_locus,data_or_intervention_design,15,39,0.38461538461538464
+control,diagnostic_failure_locus,downstream_final_boundary,0,39,0.0
+control,diagnostic_failure_locus,genuinely_hard_semantic_case,0,39,0.0
+control,diagnostic_failure_locus,head_direction_or_readout,0,39,0.0
+control,diagnostic_failure_locus,input_representation_insensitivity,0,39,0.0
+control,diagnostic_failure_locus,label_semantics_or_annotation,0,39,0.0
+control,diagnostic_failure_locus,mixed,0,39,0.0
+hard,diagnostic_failure_locus,cannot_determine,0,39,0.0
+hard,diagnostic_failure_locus,data_or_intervention_design,20,39,0.5128205128205128
+hard,diagnostic_failure_locus,downstream_final_boundary,11,39,0.28205128205128205
+hard,diagnostic_failure_locus,genuinely_hard_semantic_case,0,39,0.0
+hard,diagnostic_failure_locus,head_direction_or_readout,1,39,0.02564102564102564
+hard,diagnostic_failure_locus,input_representation_insensitivity,7,39,0.1794871794871795
+hard,diagnostic_failure_locus,label_semantics_or_annotation,0,39,0.0
+hard,diagnostic_failure_locus,mixed,0,39,0.0

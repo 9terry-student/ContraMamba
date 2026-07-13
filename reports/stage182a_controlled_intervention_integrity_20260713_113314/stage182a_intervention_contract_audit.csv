@@ -1,0 +1,79 @@
+row_id,pair_id,intervention_type,intended_changed_axes,observed_changed_axes,unexpected_additional_axes,missing_intended_axes,exact_contract_match,primary_integrity_status
+clinic_expansion__location_swap,clinic_expansion,location_swap,"[""location""]","[""location""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_039__location_swap,generated_fact_039,location_swap,"[""location""]","[""location""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_039__role_swap,generated_fact_039,role_swap,"[""role""]","[""role""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_039__title_name_swap,generated_fact_039,title_name_swap,"[""name"", ""title""]","[""name"", ""title""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_045__none,generated_fact_045,none,[],[],[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_055__location_swap,generated_fact_055,location_swap,"[""location""]","[""location""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_055__none,generated_fact_055,none,[],[],[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_073__location_swap,generated_fact_073,location_swap,"[""location""]","[""location""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_075__location_swap,generated_fact_075,location_swap,"[""location""]","[""location""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_075__paraphrase,generated_fact_075,paraphrase,"[""realization""]","[""realization""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_078__location_swap,generated_fact_078,location_swap,"[""location""]","[""location""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_078__polarity_flip,generated_fact_078,polarity_flip,"[""polarity""]","[""polarity""]",[],[],True,CONTAMINATED_CONSTRUCTION
+generated_fact_080__location_swap,generated_fact_080,location_swap,"[""location""]","[""location""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_080__title_name_swap,generated_fact_080,title_name_swap,"[""name"", ""title""]","[""name"", ""title""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_083__none,generated_fact_083,none,[],[],[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_083__role_swap,generated_fact_083,role_swap,"[""role""]","[""role""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_086__entity_swap,generated_fact_086,entity_swap,"[""name""]","[""name""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_086__none,generated_fact_086,none,[],[],[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_087__role_swap,generated_fact_087,role_swap,"[""role""]","[""role""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_089__location_swap,generated_fact_089,location_swap,"[""location""]","[""location""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_089__none,generated_fact_089,none,[],[],[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_090__location_swap,generated_fact_090,location_swap,"[""location""]","[""location""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_090__none,generated_fact_090,none,[],[],[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_110__entity_swap,generated_fact_110,entity_swap,"[""name""]","[""name""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_110__role_swap,generated_fact_110,role_swap,"[""role""]","[""role""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_110__title_name_swap,generated_fact_110,title_name_swap,"[""name"", ""title""]","[""name"", ""title""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_115__none,generated_fact_115,none,[],[],[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_118__none,generated_fact_118,none,[],[],[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_120__location_swap,generated_fact_120,location_swap,"[""location""]","[""location""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_128__location_swap,generated_fact_128,location_swap,"[""location""]","[""location""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_135__role_swap,generated_fact_135,role_swap,"[""role""]","[""role""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_138__location_swap,generated_fact_138,location_swap,"[""location""]","[""location""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_146__event_swap,generated_fact_146,event_swap,"[""object""]","[""object""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_146__location_swap,generated_fact_146,location_swap,"[""location""]","[""location""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_146__none,generated_fact_146,none,[],[],[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_151__role_swap,generated_fact_151,role_swap,"[""role""]","[""polarity"", ""role""]","[""polarity""]",[],False,CONTAMINATED_CONSTRUCTION
+generated_fact_153__location_swap,generated_fact_153,location_swap,"[""location""]","[""location"", ""polarity""]","[""polarity""]",[],False,CONTAMINATED_CONSTRUCTION
+generated_fact_158__entity_swap,generated_fact_158,entity_swap,"[""name""]","[""name"", ""polarity""]","[""polarity""]",[],False,CONTAMINATED_CONSTRUCTION
+generated_fact_158__location_swap,generated_fact_158,location_swap,"[""location""]","[""location"", ""polarity""]","[""polarity""]",[],False,CONTAMINATED_CONSTRUCTION
+generated_fact_158__role_swap,generated_fact_158,role_swap,"[""role""]","[""polarity"", ""role""]","[""polarity""]",[],False,CONTAMINATED_CONSTRUCTION
+generated_fact_158__title_name_swap,generated_fact_158,title_name_swap,"[""name"", ""title""]","[""name"", ""polarity"", ""title""]","[""polarity""]",[],False,CONTAMINATED_CONSTRUCTION
+generated_fact_161__location_swap,generated_fact_161,location_swap,"[""location""]","[""location"", ""polarity""]","[""polarity""]",[],False,CONTAMINATED_CONSTRUCTION
+generated_fact_161__polarity_flip,generated_fact_161,polarity_flip,"[""polarity""]","[""polarity""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_165__role_swap,generated_fact_165,role_swap,"[""role""]","[""polarity"", ""role""]","[""polarity""]",[],False,CONTAMINATED_CONSTRUCTION
+generated_fact_166__polarity_flip,generated_fact_166,polarity_flip,"[""polarity""]","[""polarity""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_172__location_swap,generated_fact_172,location_swap,"[""location""]","[""location"", ""polarity""]","[""polarity""]",[],False,CONTAMINATED_CONSTRUCTION
+generated_fact_176__entity_swap,generated_fact_176,entity_swap,"[""name""]","[""name"", ""polarity""]","[""polarity""]",[],False,CONTAMINATED_CONSTRUCTION
+generated_fact_176__location_swap,generated_fact_176,location_swap,"[""location""]","[""location"", ""polarity""]","[""polarity""]",[],False,CONTAMINATED_CONSTRUCTION
+generated_fact_176__role_swap,generated_fact_176,role_swap,"[""role""]","[""polarity"", ""role""]","[""polarity""]",[],False,CONTAMINATED_CONSTRUCTION
+generated_fact_195__polarity_flip,generated_fact_195,polarity_flip,"[""polarity""]","[""polarity""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_221__role_swap,generated_fact_221,role_swap,"[""role""]","[""polarity"", ""role""]","[""polarity""]",[],False,CONTAMINATED_CONSTRUCTION
+generated_fact_225__location_swap,generated_fact_225,location_swap,"[""location""]","[""location"", ""polarity""]","[""polarity""]",[],False,CONTAMINATED_CONSTRUCTION
+generated_fact_227__polarity_flip,generated_fact_227,polarity_flip,"[""polarity""]","[""polarity""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_227__title_name_swap,generated_fact_227,title_name_swap,"[""name"", ""title""]","[""name"", ""polarity"", ""title""]","[""polarity""]",[],False,CONTAMINATED_CONSTRUCTION
+generated_fact_230__polarity_flip,generated_fact_230,polarity_flip,"[""polarity""]","[""polarity""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_230__role_swap,generated_fact_230,role_swap,"[""role""]","[""polarity"", ""role""]","[""polarity""]",[],False,CONTAMINATED_CONSTRUCTION
+generated_fact_230__title_name_swap,generated_fact_230,title_name_swap,"[""name"", ""title""]","[""name"", ""polarity"", ""title""]","[""polarity""]",[],False,CONTAMINATED_CONSTRUCTION
+generated_fact_238__location_swap,generated_fact_238,location_swap,"[""location""]","[""location"", ""polarity""]","[""polarity""]",[],False,CONTAMINATED_CONSTRUCTION
+generated_fact_240__polarity_flip,generated_fact_240,polarity_flip,"[""polarity""]","[""polarity""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_257__polarity_flip,generated_fact_257,polarity_flip,"[""polarity""]","[""polarity""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_262__polarity_flip,generated_fact_262,polarity_flip,"[""polarity""]","[""polarity""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_271__location_swap,generated_fact_271,location_swap,"[""location""]","[""location"", ""polarity""]","[""polarity""]",[],False,CONTAMINATED_CONSTRUCTION
+generated_fact_271__role_swap,generated_fact_271,role_swap,"[""role""]","[""polarity"", ""role""]","[""polarity""]",[],False,CONTAMINATED_CONSTRUCTION
+generated_fact_273__location_swap,generated_fact_273,location_swap,"[""location""]","[""location"", ""polarity""]","[""polarity""]",[],False,CONTAMINATED_CONSTRUCTION
+generated_fact_274__polarity_flip,generated_fact_274,polarity_flip,"[""polarity""]","[""polarity""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_285__polarity_flip,generated_fact_285,polarity_flip,"[""polarity""]","[""polarity""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_287__polarity_flip,generated_fact_287,polarity_flip,"[""polarity""]","[""polarity""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_297__polarity_flip,generated_fact_297,polarity_flip,"[""polarity""]","[""polarity""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+generated_fact_300__polarity_flip,generated_fact_300,polarity_flip,"[""polarity""]","[""polarity""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+language_program__paraphrase,language_program,paraphrase,"[""realization""]","[""realization""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+museum_purchase__location_swap,museum_purchase,location_swap,"[""location""]","[""location""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+museum_purchase__none,museum_purchase,none,[],[],[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+orion_approval__location_swap,orion_approval,location_swap,"[""location""]","[""location""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+reef_protection__location_swap,reef_protection,location_swap,"[""location""]","[""location""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+reef_protection__none,reef_protection,none,[],[],[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+satellite_launch__event_swap,satellite_launch,event_swap,"[""object""]","[""object""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+satellite_launch__location_swap,satellite_launch,location_swap,"[""location""]","[""location""]",[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION
+satellite_launch__none,satellite_launch,none,[],[],[],[],True,CLEAN_SINGLE_AXIS_CONSTRUCTION

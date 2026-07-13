@@ -1,0 +1,10 @@
+item_role,stage176_cohort,native_frame_label,rows,binary_judgments,agreement_count,agreement_rate,ambiguous_rate,insufficient_context_rate,high_confidence_disagreement_count
+control,,,39,39,39,1.0,0.0,0.0,0
+hard,,,39,39,39,1.0,0.0,0.0,0
+control,none,,39,39,39,1.0,0.0,0.0,0
+hard,beneficial_correction,,25,25,25,1.0,0.0,0.0,0
+hard,harmful_regression,,14,14,14,1.0,0.0,0.0,0
+control,,0,25,25,25,1.0,0.0,0.0,0
+control,,1,14,14,14,1.0,0.0,0.0,0
+hard,,0,25,25,25,1.0,0.0,0.0,0
+hard,,1,14,14,14,1.0,0.0,0.0,0

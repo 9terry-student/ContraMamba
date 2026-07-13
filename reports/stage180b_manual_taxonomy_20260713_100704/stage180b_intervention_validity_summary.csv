@@ -1,0 +1,13 @@
+item_role,axis,category,count,denominator,rate
+control,intervention_validity,cannot_determine,0,39,0.0
+control,intervention_validity,canonical_control,6,39,0.15384615384615385
+control,intervention_validity,clean_single_axis_edit,18,39,0.46153846153846156
+control,intervention_validity,unnatural_or_broken_text,15,39,0.38461538461538464
+control,intervention_validity,valid_but_multi_axis_edit,0,39,0.0
+control,intervention_validity,weak_or_ineffective_edit,0,39,0.0
+hard,intervention_validity,cannot_determine,0,39,0.0
+hard,intervention_validity,canonical_control,6,39,0.15384615384615385
+hard,intervention_validity,clean_single_axis_edit,13,39,0.3333333333333333
+hard,intervention_validity,unnatural_or_broken_text,20,39,0.5128205128205128
+hard,intervention_validity,valid_but_multi_axis_edit,0,39,0.0
+hard,intervention_validity,weak_or_ineffective_edit,0,39,0.0

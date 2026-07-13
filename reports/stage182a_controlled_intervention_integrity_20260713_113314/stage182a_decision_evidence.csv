@@ -1,0 +1,12 @@
+criterion,observed_value,threshold,passed,evidence_source
+generator_exact_match,3600,==3600,True,generator_reconstruction
+unique_hard_topology,39,==39,True,hidden_item_key
+unique_control_topology,39,==39,True,hidden_item_key
+review_instance_topology,86,==86,True,hidden_item_key
+non_none_evidence_difference,72,==72,True,pass2_packet_and_controlled_data
+candidate_native_frame_mismatch_invariant,0,==0,True,clean_model_failure_candidates
+deterministic_contaminated_items,22,>=5,True,unique_item_integrity
+minimum_clean_hard_candidates,14,8,True,hard_control_integrity_and_native_frame_error
+clean_candidate_intervention_family_count,4,>=3,True,clean_model_failure_candidates
+schema_unresolved_rate,0.0,<0.20,True,schema_unresolved_queue
+selected_decision,STAGE182A_DATA_CONTAMINATION_CONFIRMED_AND_CLEAN_MODEL_FAILURE_SET_READY,exactly_one_official_decision,True,stage182a_priority_gate

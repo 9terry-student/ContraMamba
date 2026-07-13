@@ -1,0 +1,185 @@
+{
+  "authoritative_schema": {
+    "controlled_rows_exact_match": 3600,
+    "generator_source": "scripts/build_controlled_v5.py",
+    "generator_source_sha256": "c41e6a52401bd8c83970286b176950fc751509bee6d797d5da9aea4262c72802"
+  },
+  "beneficial_harmful_analysis": {
+    "fisher_exact": "two_sided",
+    "interpretation": "descriptive_only",
+    "rows": [
+      {
+        "clean_failure_count": 1,
+        "clean_failure_rate": 0.04,
+        "clean_hard_native_frame_correct_count": 7,
+        "contaminated_count": 17,
+        "fisher_exact_p": 2.326891164505714e-08,
+        "hard_count": 25,
+        "interpretation": "descriptive_only",
+        "other_cohort_clean_failure_rate": 0.9285714285714286,
+        "rate_difference": -0.8885714285714286,
+        "stage176_cohort": "beneficial_correction",
+        "unresolved_count": 0
+      },
+      {
+        "clean_failure_count": 13,
+        "clean_failure_rate": 0.9285714285714286,
+        "clean_hard_native_frame_correct_count": 0,
+        "contaminated_count": 1,
+        "fisher_exact_p": 2.326891164505714e-08,
+        "hard_count": 14,
+        "interpretation": "descriptive_only",
+        "other_cohort_clean_failure_rate": 0.04,
+        "rate_difference": 0.8885714285714286,
+        "stage176_cohort": "harmful_regression",
+        "unresolved_count": 0
+      }
+    ]
+  },
+  "canonical_context_contract": {
+    "claim_equal_instances": 86,
+    "evidence_difference_relation_exact_instances": 86,
+    "evidence_different_instances": 72
+  },
+  "clean_failure_set_readiness": {
+    "candidate_count": 14,
+    "candidate_intervention_family_count": 4,
+    "candidate_native_frame_mismatch_invariant": true,
+    "candidate_row_ids": [
+      "generated_fact_055__none",
+      "generated_fact_086__none",
+      "generated_fact_090__none",
+      "generated_fact_146__none",
+      "generated_fact_195__polarity_flip",
+      "generated_fact_230__polarity_flip",
+      "generated_fact_240__polarity_flip",
+      "generated_fact_262__polarity_flip",
+      "generated_fact_274__polarity_flip",
+      "generated_fact_287__polarity_flip",
+      "language_program__paraphrase",
+      "museum_purchase__none",
+      "reef_protection__location_swap",
+      "satellite_launch__none"
+    ],
+    "causal_proof": false,
+    "family_criterion_passed": true,
+    "matched_clean_control_availability": 14,
+    "minimum_clean_hard_candidates": 8,
+    "minimum_criterion_passed": true,
+    "ready": true,
+    "schema_unresolved_rate": 0.0
+  },
+  "decision": "STAGE182A_DATA_CONTAMINATION_CONFIRMED_AND_CLEAN_MODEL_FAILURE_SET_READY",
+  "diagnosis": {
+    "anomaly_counts": {
+      "DID_NOT_INFLECTED_PREDICATE": 1,
+      "NON_POLARITY_INTERVENTION_POLARITY_CHANGE": 21
+    },
+    "clean_hard_native_frame_correct_row_ids": [
+      "clinic_expansion__location_swap",
+      "generated_fact_078__location_swap",
+      "generated_fact_080__location_swap",
+      "generated_fact_087__role_swap",
+      "generated_fact_090__location_swap",
+      "orion_approval__location_swap",
+      "satellite_launch__event_swap"
+    ],
+    "generator_equality_is_cleanliness": false,
+    "row_id_misalignment_rejected": true
+  },
+  "grammar_integrity": {
+    "audited_items": 78,
+    "invalid_items": 1,
+    "valid_items": 77
+  },
+  "hard_control_integrity": {
+    "clean_controls": 30,
+    "clean_hard_native_frame_correct": 7,
+    "clean_model_failure_candidates": 14,
+    "clean_pairs": 21,
+    "contaminated_pairs": 18,
+    "control_anomalies": 9
+  },
+  "input_validation": {
+    "exhaustive_hidden_join": true,
+    "exhaustive_packet_join": true,
+    "generator_exact_dataset": true,
+    "input_sha256": {
+      "data": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640",
+      "generator_source": "c41e6a52401bd8c83970286b176950fc751509bee6d797d5da9aea4262c72802",
+      "stage176a_row_transitions": "f89d555b9e2ebbaa7ae41c8fc7ef184e81cf1923cf5478c6d89376937a6f74ed",
+      "stage179a_hard39_attribution": "7a567c5ca6a09b31b8122909c92538ae9de8ff5326d31c9ca189256505e9cade",
+      "stage180a_hidden_item_key": "c2cdb631bb0b24aee75d058ed7fdf0ab50d7fb75689826f28a543d92eef0140d",
+      "stage180a_manifest": "6ccb5b0eb8867eebcd83edbb51f30c162728ae07b804ef078ea8b44407d316a4",
+      "stage180a_pass2_packet": "e09906d234446c8a3cd5a74876ab7b9e66f2283fb2c040a8d7c1845a51e5ae37",
+      "stage181a_report": "884e9b57d8ccaed4351bd814ada48df578019c26dd93f842872a73524ef88bbf",
+      "stage181a_unique_item_roadmap": "670cdabb6c391aa3b3bc6a5334b8eb87bf190cbf7b7a073ddacf6c09e32101b2"
+    },
+    "stage181_decision": "STAGE181A_SECOND_REVIEW_OR_HUMAN_ADJUDICATION_REQUIRED",
+    "status": "passed"
+  },
+  "intervention_integrity": {
+    "clean_items": 56,
+    "contaminated_items": 22,
+    "unresolved_items": 0
+  },
+  "limitations": [
+    "The clean set is not causal proof.",
+    "Stage181 taxonomy remains provisional.",
+    "Fisher exact results are descriptive only."
+  ],
+  "safety_policy": {
+    "annotation_modification": false,
+    "automatic_relabeling": false,
+    "calibration": false,
+    "checkpoint_load": false,
+    "dataset_modification": false,
+    "external_evaluation": false,
+    "fitting": false,
+    "model_forward": false,
+    "model_import": false,
+    "threshold_search": false,
+    "training": false,
+    "training_subset_construction": false
+  },
+  "scope": {
+    "deterministic_read_only_audit": true,
+    "identity_key": "row_id",
+    "stage181_taxonomy_used_as_integrity_ground_truth": false
+  },
+  "stage": "Stage182-A",
+  "stage181_taxonomy_comparison": {
+    "agreements": 55,
+    "roadmap_corrections": 23,
+    "rows": 78
+  },
+  "stage182b_gate": {
+    "authorization_scope": "evaluation_only_failure_localization",
+    "authorized_next_stage": "STAGE182B_CLEAN_FRAME_MODEL_FAILURE_LOCALIZATION",
+    "clean_candidate_intervention_family_count": 4,
+    "clean_failure_set_available": true,
+    "dataset_edit_authorized": false,
+    "decision_evidence_rows": 11,
+    "execution_authorized": true,
+    "minimum_clean_hard_candidates": 8,
+    "minimum_criterion_passed": true,
+    "observed_clean_hard_candidates": 14,
+    "relabeling_authorized": false,
+    "schema_unresolved_rate": 0.0,
+    "secondary_authorized_next_stage": "STAGE182C_CONTROLLED_INTERVENTION_GENERATOR_REPAIR_SPEC",
+    "training_authorized": false
+  },
+  "structured_axis_contract": {
+    "contract_rows": 78,
+    "exact_contract_rows": 57,
+    "polarity_contamination_items": 21
+  },
+  "unique_item_topology": {
+    "matched_pairs": 39,
+    "repeat_instances": 8,
+    "review_instances": 86,
+    "unique_controls": 39,
+    "unique_hard": 39,
+    "unique_items": 78
+  }
+}

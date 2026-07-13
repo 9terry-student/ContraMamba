@@ -1,0 +1,9 @@
+reviewer_id,repeat_group_id,row_id,item_role,instance_count,exact_agreement,judgment_flip,adjacent_confidence_difference,judgments,confidences
+chatgpt_single_reviewer,G180-0003,satellite_launch__none,hard,2,True,False,0,"[""compatible"", ""compatible""]","[5, 5]"
+chatgpt_single_reviewer,G180-0012,generated_fact_086__none,hard,2,True,False,0,"[""compatible"", ""compatible""]","[5, 5]"
+chatgpt_single_reviewer,G180-0030,generated_fact_230__polarity_flip,hard,2,True,False,0,"[""compatible"", ""compatible""]","[5, 5]"
+chatgpt_single_reviewer,G180-0039,generated_fact_300__polarity_flip,hard,2,True,False,0,"[""compatible"", ""compatible""]","[5, 5]"
+chatgpt_single_reviewer,G180-0043,generated_fact_128__location_swap,control,2,True,False,0,"[""incompatible"", ""incompatible""]","[5, 5]"
+chatgpt_single_reviewer,G180-0044,generated_fact_151__role_swap,control,2,True,False,0,"[""incompatible"", ""incompatible""]","[5, 5]"
+chatgpt_single_reviewer,G180-0070,generated_fact_297__polarity_flip,control,2,True,False,0,"[""compatible"", ""compatible""]","[5, 5]"
+chatgpt_single_reviewer,G180-0073,generated_fact_075__paraphrase,control,2,True,False,0,"[""compatible"", ""compatible""]","[5, 5]"
