@@ -1,0 +1,68 @@
+{
+  "stage": "Stage179-A closure",
+  "decision": "STAGE179A_FRAME_SEMANTICS_REPRESENTATION_CAUSE_MIXED_OR_INSUFFICIENT",
+  "scope": {
+    "baseline": "canonical seed-174 epoch-20 clean baseline",
+    "clean_controlled_data_only": true,
+    "dev_rows": 720,
+    "hard_rows": 39,
+    "evaluation_summary_only": true
+  },
+  "frame_head_contract": {
+    "representation_source": "output[\"frame_pair_repr\"]",
+    "tensor_shape": [720, 128],
+    "readout_module": "frame_gate.frame_classifier",
+    "readout_structure": "scalar linear layer",
+    "equation": "frame_logit = w dot h + b",
+    "maximum_reconstruction_absolute_error": 7.15255737e-07,
+    "exactly_recovered": true
+  },
+  "duplicate_consistency": {
+    "exact_duplicate_groups": 0,
+    "conflicting_frame_label_duplicate_groups": 0,
+    "near_duplicates_establish_conflict": false
+  },
+  "semantic_interference_result": {
+    "gate_passed": false,
+    "cross_channel_combination_treated_as_label_error": false
+  },
+  "representation_result": {
+    "gate_passed": false,
+    "hard39_centroid_auroc": 0.05142857142857143,
+    "centroid_corrected_native_head_errors": 1,
+    "centroid_introduced_errors": 0,
+    "centroid_net_corrections": 1,
+    "centroid_meaningfully_superior_to_native_head": false
+  },
+  "readout_result": {
+    "gate_passed": false,
+    "readout_retraining_authorized": false
+  },
+  "closed_paths": {
+    "automated_causal_localization": true,
+    "automatic_relabeling": true,
+    "new_loss": true,
+    "readout_retraining": true,
+    "architecture_change": true,
+    "additional_training": true,
+    "threshold_or_calibration": true,
+    "external_evaluation": true
+  },
+  "authorized_next_stage": "STAGE180_HARD_FRAME_CASE_MANUAL_TAXONOMY_AND_DATA_DESIGN_AUDIT",
+  "safety_policy": {
+    "training": false,
+    "optimizer": false,
+    "backward": false,
+    "model_forward": false,
+    "calibration": false,
+    "threshold_fitting": false,
+    "fitted_probe": false,
+    "external_evaluation": false,
+    "external_labels": false,
+    "time_swap": false,
+    "relabeling": false,
+    "dataset_modification": false,
+    "checkpoint_modification": false,
+    "automatic_adjudication": false
+  }
+}
