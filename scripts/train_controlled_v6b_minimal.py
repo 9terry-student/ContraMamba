@@ -8,6 +8,7 @@ All CE/pairwise/intervention losses consume final calibrated logits.
 from __future__ import annotations
 
 import argparse
+import copy
 import csv
 import inspect
 import json
@@ -62,6 +63,7 @@ from scripts.stage45_support_recovery_utils import (  # noqa: E402
 from scripts.run_provenance import (  # noqa: E402
     SCHEMA_VERSION as RUN_PROVENANCE_SCHEMA_VERSION,
     dataset_record as provenance_dataset_record,
+    file_sha256 as provenance_file_sha256,
     initial_record as provenance_initial_record,
     json_safe as provenance_json_safe,
     runtime_versions as provenance_runtime_versions,
@@ -6363,6 +6365,21 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--stage175b-support-anchor-weight", type=float, default=0.0)
     parser.add_argument("--stage175b-support-anchor-tolerance", type=float, default=0.10)
     parser.add_argument(
+        "--save-selected-checkpoint",
+        action="store_true",
+        default=False,
+        help=(
+            "Persist the internally selected best clean-dev model state in the "
+            "prospective provenance run directory. Default: disabled."
+        ),
+    )
+    parser.add_argument(
+        "--selected-checkpoint-filename",
+        type=str,
+        default="selected_checkpoint.pt",
+        help="Filename for --save-selected-checkpoint inside the provenance run directory.",
+    )
+    parser.add_argument(
         "--use-temporal-comparator",
         action="store_true",
         default=True,
@@ -11055,6 +11072,80 @@ def _stage160_json_safe(value: Any) -> Any:
     return str(value)
 
 
+def _stage176a0_cpu_state_dict(
+    selected_state_dict: dict[str, Any],
+) -> dict[str, Any]:
+    if not selected_state_dict:
+        raise RuntimeError("[stage176a0] selected best clean-dev state dict is empty")
+    return {
+        key: (
+            value.detach().cpu().clone()
+            if torch.is_tensor(value)
+            else copy.deepcopy(value)
+        )
+        for key, value in selected_state_dict.items()
+    }
+
+
+def _save_stage176a0_selected_checkpoint(
+    *,
+    checkpoint_path: Path,
+    selected_state_dict: dict[str, Any],
+    metadata: dict[str, Any],
+    selected_epoch: int,
+) -> dict[str, Any]:
+    checkpoint_path = checkpoint_path.resolve()
+    checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+    temporary_path = checkpoint_path.with_name(f"{checkpoint_path.name}.tmp")
+    payload = {
+        "schema_version": "stage176a0_selected_checkpoint_v1",
+        "model_state_dict": _stage176a0_cpu_state_dict(selected_state_dict),
+        "metadata": metadata,
+    }
+    try:
+        torch.save(payload, temporary_path)
+        if not temporary_path.is_file() or temporary_path.stat().st_size <= 0:
+            raise RuntimeError(
+                f"[stage176a0] temporary selected checkpoint is missing or empty: {temporary_path}"
+            )
+        os.replace(temporary_path, checkpoint_path)
+    finally:
+        if temporary_path.exists():
+            temporary_path.unlink()
+
+    if not checkpoint_path.is_file() or checkpoint_path.stat().st_size <= 0:
+        raise RuntimeError(
+            f"[stage176a0] selected checkpoint is missing or empty: {checkpoint_path}"
+        )
+    try:
+        loaded = torch.load(checkpoint_path, map_location="cpu")
+    except Exception as exc:
+        raise RuntimeError(
+            f"[stage176a0] failed to reload selected checkpoint: {checkpoint_path}"
+        ) from exc
+    if not isinstance(loaded, dict):
+        raise RuntimeError("[stage176a0] selected checkpoint payload is not a dictionary")
+    loaded_state = loaded.get("model_state_dict")
+    loaded_metadata = loaded.get("metadata")
+    if not isinstance(loaded_state, dict) or not loaded_state:
+        raise RuntimeError("[stage176a0] reloaded model_state_dict is missing or empty")
+    if not isinstance(loaded_metadata, dict):
+        raise RuntimeError("[stage176a0] reloaded metadata is missing")
+    if loaded_metadata.get("selected_epoch") != selected_epoch:
+        raise RuntimeError(
+            "[stage176a0] reloaded selected_epoch does not match trainer selection"
+        )
+    checkpoint_sha256 = provenance_file_sha256(checkpoint_path)
+    if not checkpoint_sha256:
+        raise RuntimeError("[stage176a0] failed to compute selected checkpoint SHA-256")
+    return {
+        "path": str(checkpoint_path),
+        "filename": checkpoint_path.name,
+        "sha256": checkpoint_sha256,
+        "size_bytes": checkpoint_path.stat().st_size,
+    }
+
+
 def _stage160_args_snapshot(args: argparse.Namespace) -> dict[str, Any]:
     return {
         key: _stage160_json_safe(value)
@@ -12735,6 +12826,16 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     explicit_args = set(raw_argv)
     _stage174a_requested_epochs = int(args.epochs)
+    if args.save_selected_checkpoint:
+        _stage176a0_filename = Path(args.selected_checkpoint_filename)
+        if (
+            not args.selected_checkpoint_filename.strip()
+            or _stage176a0_filename.name != args.selected_checkpoint_filename
+            or args.selected_checkpoint_filename in {".", ".."}
+        ):
+            parser.error(
+                "--selected-checkpoint-filename must be a non-empty filename, not a path"
+            )
     _stage174a_parsed_args = dict(vars(args))
     if getattr(args, "stage135_use_best_slot_aux", False):
         if args.architecture != "vnext_minimal":
@@ -18341,6 +18442,14 @@ def main(argv: list[str] | None = None) -> int:
             getattr(args, "stage43_external_enable_shadow_export", False)
         ),
     }
+    _stage174a_main_data_record = provenance_dataset_record(
+        args.data,
+        mode="main_clean_classification",
+        expected=(
+            Path(args.data).as_posix()
+            == "data/controlled_v5_v3_without_time_swap.jsonl"
+        ),
+    )
     _stage174a_provenance_record = provenance_initial_record(
         run_dir=_stage174a_run_dir,
         training_script=Path(__file__).resolve(),
@@ -18350,14 +18459,7 @@ def main(argv: list[str] | None = None) -> int:
         resolved_runtime_config=_stage174a_resolved_runtime_config,
         data_provenance={
             "expected_main_clean_dataset": "data/controlled_v5_v3_without_time_swap.jsonl",
-            "main_data": provenance_dataset_record(
-                args.data,
-                mode="main_clean_classification",
-                expected=(
-                    Path(args.data).as_posix()
-                    == "data/controlled_v5_v3_without_time_swap.jsonl"
-                ),
-            ),
+            "main_data": _stage174a_main_data_record,
             "auxiliary_datasets": _stage174a_auxiliary_datasets,
             "auxiliary_activity": _stage174a_auxiliary_activity,
         },
@@ -21458,10 +21560,102 @@ def main(argv: list[str] | None = None) -> int:
             _name: _run_report.get("best_epoch")
             for _name, _run_report in reports.items()
         }
+    _stage176a0_saved_checkpoint = None
+    if args.save_selected_checkpoint:
+        if len(reports) != 1:
+            raise RuntimeError(
+                "[stage176a0] --save-selected-checkpoint requires a single non-sweep run"
+            )
+        if _ood_best_state is None:
+            raise RuntimeError(
+                "[stage176a0] selected best clean-dev state is unavailable"
+            )
+        if not isinstance(_stage174a_selected_epoch, int):
+            raise RuntimeError("[stage176a0] selected epoch is not a single integer")
+        model.load_state_dict({key: value.to(device) for key, value in _ood_best_state.items()})
+        _stage176a0_metadata = {
+            "selected_epoch": _stage174a_selected_epoch,
+            "selection_source": "internal_clean_dev_only",
+            "selected_clean_dev_metric_values": _stage160_json_safe(
+                _stage174a_selected_clean_dev_metrics or {}
+            ),
+            "architecture": args.architecture,
+            "backbone": args.backbone,
+            "model_name": args.model_name if args.backbone == "mamba" else None,
+            "seed": args.seed,
+            "main_data_path": _stage174a_main_data_record.get("resolved_path"),
+            "main_data_sha256": _stage174a_main_data_record.get("sha256"),
+            "final_label_to_id": dict(v5.FINAL_LABEL_TO_ID),
+            "final_id_to_label": dict(v5.ID_TO_FINAL_LABEL),
+            "stage174c_clean_pairwise_mode": args.stage174c_clean_pairwise_mode,
+            "stage174c_clean_pairwise_weight": args.stage174c_clean_pairwise_weight,
+            "stage175b_support_anchor_mode": args.stage175b_support_anchor_mode,
+            "stage175b_support_anchor_weight": args.stage175b_support_anchor_weight,
+            "stage175b_support_anchor_tolerance": args.stage175b_support_anchor_tolerance,
+            "final_ce_logits_source": "output['logits']",
+            "loss_logits_used_for_final_classifier_ce": False,
+            "clean_dev_only_checkpoint_selection": True,
+            "checkpoint_is_selected_clean_dev_state": True,
+            "optimizer_state_saved": False,
+            "scheduler_state_saved": False,
+            "teacher_checkpoint_used": False,
+            "time_swap_used": False,
+            "external_data_used": False,
+            "external_labels_used": False,
+            "max_length": getattr(args, "max_length", None),
+            "vnext_router_mode": getattr(args, "vnext_router_mode", None),
+            "vnext_evidence_interface": getattr(args, "vnext_evidence_interface", None),
+            "training_args": _stage160_args_snapshot(args),
+        }
+        _stage176a0_saved_checkpoint = _save_stage176a0_selected_checkpoint(
+            checkpoint_path=_stage174a_run_dir / args.selected_checkpoint_filename,
+            selected_state_dict=_ood_best_state,
+            metadata=_stage176a0_metadata,
+            selected_epoch=_stage174a_selected_epoch,
+        )
+        _stage174a_selected_checkpoint_path = _stage176a0_saved_checkpoint["path"]
+        _stage174a_final_checkpoint_path = _stage176a0_saved_checkpoint["path"]
+
     _stage174a_selected_checkpoint = {
-        "kind": "saved_path" if _stage174a_selected_checkpoint_path is not None else "in_memory_best_clean_dev_state",
+        "kind": (
+            "saved_best_clean_dev_state"
+            if _stage176a0_saved_checkpoint is not None
+            else (
+                "saved_path"
+                if _stage174a_selected_checkpoint_path is not None
+                else "in_memory_best_clean_dev_state"
+            )
+        ),
+        "saved": _stage176a0_saved_checkpoint is not None,
         "path": _stage174a_selected_checkpoint_path,
+        "filename": (
+            _stage176a0_saved_checkpoint["filename"]
+            if _stage176a0_saved_checkpoint is not None else None
+        ),
+        "sha256": (
+            _stage176a0_saved_checkpoint["sha256"]
+            if _stage176a0_saved_checkpoint is not None else None
+        ),
+        "size_bytes": (
+            _stage176a0_saved_checkpoint["size_bytes"]
+            if _stage176a0_saved_checkpoint is not None else None
+        ),
+        "selected_epoch": _stage174a_selected_epoch,
         "selection_source": "internal_clean_dev_only",
+        "schema_version": (
+            "stage176a0_selected_checkpoint_v1"
+            if _stage176a0_saved_checkpoint is not None else None
+        ),
+        "checkpoint_is_selected_clean_dev_state": True,
+        "optimizer_state_saved": False,
+        "scheduler_state_saved": False,
+        "teacher_checkpoint_used": False,
+        "external_data_used": False,
+        "external_labels_used": False,
+        "time_swap_used": False,
+        "final_ce_logits_source": 'output["logits"]',
+        "loss_logits_used_for_final_classifier_ce": False,
+        "clean_dev_only_checkpoint_selection": True,
     }
     _stage174c_final_runs = {
         name: run_report.get("stage174c_clean_pairwise")
