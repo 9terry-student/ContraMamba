@@ -315,33 +315,146 @@ def merge_dev(data: list[dict[str, Any]], analysis: list[dict[str, str]]) -> lis
 
 
 def validate_hard(transitions: list[dict[str, str]], attribution: list[dict[str, str]],
-                  dev: list[dict[str, Any]]) -> tuple[dict[str, dict[str, Any]], dict[str, Any]]:
+                  dev: list[dict[str, Any]], diagnostic: dict[str, Any]
+                  ) -> tuple[dict[str, dict[str, Any]], dict[str, Any]]:
     dev_by_id = {row_id(row): row for row in dev}
-    hard: dict[str, dict[str, Any]] = {}
+    transition_hard_rows: list[dict[str, Any]] = []
     for row in transitions:
         cohort = cohort_from_transition(row)
-        if cohort != "none":
+        if cohort in {"beneficial_correction", "harmful_regression"}:
+            transition_hard_rows.append({**row, "stage176_cohort": cohort})
+    transition_ids = [row_id(row) for row in transition_hard_rows]
+    attribution_ids = [row_id(row) for row in attribution]
+    transition_counts, attribution_counts = Counter(transition_ids), Counter(attribution_ids)
+    transition_duplicates = sorted(key for key, count in transition_counts.items() if count > 1)
+    attribution_duplicates = sorted(key for key, count in attribution_counts.items() if count > 1)
+    transition_set, attribution_set = set(transition_ids), set(attribution_ids)
+    missing_ids = sorted(transition_set - attribution_set)
+    extra_ids = sorted(attribution_set - transition_set)
+    outside_dev = sorted((transition_set | attribution_set) - set(dev_by_id))
+    cohort_counts = Counter(row["stage176_cohort"] for row in transition_hard_rows)
+    diagnostic.update({
+        "cross_artifact_identity_key": "row_id",
+        "row_id_cross_artifact_authoritative": True,
+        "stable_index_cross_artifact_authoritative": False,
+        "stage176a_hard_row_count": len(transition_ids),
+        "stage179a_hard_row_count": len(attribution_ids),
+        "stage176a_hard_unique_row_count": len(transition_set),
+        "stage179a_hard_unique_row_count": len(attribution_set),
+        "stage176a_duplicate_hard_row_ids": transition_duplicates,
+        "stage179a_duplicate_hard_row_ids": attribution_duplicates,
+        "missing_hard_row_ids": missing_ids,
+        "extra_hard_row_ids": extra_ids,
+        "hard_row_ids_outside_dev": outside_dev,
+        "hard_row_identity_set_match": transition_set == attribution_set,
+        "beneficial_hard_row_count": cohort_counts["beneficial_correction"],
+        "harmful_hard_row_count": cohort_counts["harmful_regression"],
+    })
+
+    def local_stable(rows: list[dict[str, Any]], artifact: str) -> tuple[dict[str, int], list[str], list[dict[str, Any]], int]:
+        values: dict[str, int] = {}
+        missing: list[str] = []
+        invalid: list[dict[str, Any]] = []
+        positions: Counter[int] = Counter()
+        for row in rows:
             key = row_id(row)
-            require(key in dev_by_id, f"hard transition not in dev: {key}")
-            require(key not in hard, f"duplicate hard transition: {key}")
-            if "stable_row_index" in row:
-                require(as_int(row["stable_row_index"], "transition stable index") == dev_by_id[key]["stable_row_index"],
-                        f"hard stable index mismatch: {key}")
-            hard[key] = {**dev_by_id[key], **row, "stage176_cohort": cohort}
-    counts = Counter(row["stage176_cohort"] for row in hard.values())
-    require(counts == Counter({"beneficial_correction": 25, "harmful_regression": 14}),
-            f"hard cohort must be beneficial=25/harmful=14, got {dict(counts)}")
-    attribution_ids = {row_id(row) for row in attribution}
-    require(len(attribution_ids) == len(attribution), "duplicate identity in Stage179 hard attribution")
-    require(attribution_ids == set(hard), "Stage176 and Stage179 hard-39 identities differ")
-    for row in attribution:
-        key = row_id(row)
-        if row.get("stable_row_index") not in (None, ""):
-            require(as_int(row["stable_row_index"], "attribution stable index") == hard[key]["stable_row_index"],
-                    f"Stage179 hard stable index mismatch: {key}")
-        hard[key].update({f"stage179_{k}": v for k, v in row.items() if k not in {"row_id", "id"}})
-    return hard, {"status": "passed", "beneficial": 25, "harmful": 14, "total": 39,
-                  "identity_matches_stage176_stage179": True}
+            raw = row.get("stable_row_index")
+            if raw is None or str(raw).strip() == "":
+                missing.append(key)
+                continue
+            try:
+                value = int(str(raw).strip())
+            except (TypeError, ValueError):
+                invalid.append({"row_id": key, "value": raw})
+                continue
+            values[key] = value
+            positions[value] += 1
+        duplicate_count = sum(count - 1 for count in positions.values() if count > 1)
+        diagnostic[f"{artifact}_hard_stable_index_missing_ids"] = sorted(missing)
+        diagnostic[f"{artifact}_hard_stable_index_invalid"] = invalid
+        diagnostic[f"{artifact}_hard_stable_index_duplicate_count"] = duplicate_count
+        return values, missing, invalid, duplicate_count
+
+    stage176_stable, stage176_missing, stage176_invalid, stage176_duplicate_indexes = local_stable(
+        transition_hard_rows, "stage176a")
+    stage179_stable, stage179_missing, stage179_invalid, stage179_duplicate_indexes = local_stable(
+        attribution, "stage179a")
+    stable_matches = 0
+    stable_mismatches: list[dict[str, Any]] = []
+    stable_missing = 0
+    for key in sorted(transition_set & attribution_set):
+        if key not in stage176_stable or key not in stage179_stable:
+            stable_missing += 1
+        elif stage176_stable[key] == stage179_stable[key]:
+            stable_matches += 1
+        else:
+            stable_mismatches.append({"row_id": key,
+                                      "stage176a_stable_row_index": stage176_stable[key],
+                                      "stage179a_stable_row_index": stage179_stable[key]})
+    diagnostic.update({
+        "hard_stable_index_match_count": stable_matches,
+        "hard_stable_index_mismatch_count": len(stable_mismatches),
+        "hard_stable_index_missing_count": stable_missing,
+        "stable_index_mismatch_examples": stable_mismatches[:20],
+    })
+
+    require(len(transition_ids) == 39 and len(transition_set) == 39,
+            f"Stage176-A hard cohort must contain 39 unique row IDs, rows={len(transition_ids)}, unique={len(transition_set)}")
+    require(len(attribution_ids) == 39 and len(attribution_set) == 39,
+            f"Stage179-A hard attribution must contain 39 unique row IDs, rows={len(attribution_ids)}, unique={len(attribution_set)}")
+    require(not transition_duplicates and not attribution_duplicates,
+            f"duplicate hard row IDs: stage176={transition_duplicates}, stage179={attribution_duplicates}")
+    require(not missing_ids and not extra_ids,
+            f"hard row-ID sets differ: missing={missing_ids}, extra={extra_ids}")
+    require(not outside_dev, f"hard row IDs are outside canonical dev-720 identity set: {outside_dev}")
+    require(cohort_counts == Counter({"beneficial_correction": 25, "harmful_regression": 14}),
+            f"hard cohort must be beneficial=25/harmful=14, got {dict(cohort_counts)}")
+    require(not stage176_invalid and not stage179_invalid,
+            f"non-integer artifact-local stable indexes: stage176={stage176_invalid}, stage179={stage179_invalid}")
+    require(stage176_duplicate_indexes == 0 and stage179_duplicate_indexes == 0,
+            f"duplicate artifact-local hard stable indexes: stage176={stage176_duplicate_indexes}, stage179={stage179_duplicate_indexes}")
+
+    transition_by_id = {row_id(row): row for row in transition_hard_rows}
+    attribution_by_id = {row_id(row): row for row in attribution}
+    semantic_fields = ("pair_id", "intervention_type", "gold_frame_label", "gold_final_label", "claim", "evidence")
+    semantic_mismatches: list[dict[str, Any]] = []
+    checked_fields: set[str] = set()
+    for key in sorted(transition_set):
+        left, right = transition_by_id[key], attribution_by_id[key]
+        for field in semantic_fields:
+            if field in left and field in right:
+                checked_fields.add(field)
+                if str(left[field]) != str(right[field]):
+                    semantic_mismatches.append({"row_id": key, "semantic_mismatch_field": field,
+                                                "stage176a_value": left[field], "stage179a_value": right[field]})
+        if "stage176_cohort" in right:
+            checked_fields.add("stage176_cohort")
+            if str(left["stage176_cohort"]) != str(right["stage176_cohort"]):
+                semantic_mismatches.append({"row_id": key, "semantic_mismatch_field": "stage176_cohort",
+                                            "stage176a_value": left["stage176_cohort"],
+                                            "stage179a_value": right["stage176_cohort"]})
+    diagnostic["hard_semantic_fields_checked"] = sorted(checked_fields)
+    diagnostic["hard_semantic_mismatches"] = semantic_mismatches[:20]
+    diagnostic["hard_semantic_field_consistency"] = not semantic_mismatches
+    require(not semantic_mismatches,
+            f"hard semantic mismatch: {semantic_mismatches[0] if semantic_mismatches else None}")
+
+    hard: dict[str, dict[str, Any]] = {}
+    for key, row in transition_by_id.items():
+        hard[key] = {**dev_by_id[key], **row, "stage176_cohort": row["stage176_cohort"]}
+    for key, row in attribution_by_id.items():
+        hard[key].update({f"stage179_{field}": value for field, value in row.items()
+                          if field not in {"row_id", "id"}})
+    hard_check = {"status": "passed", "beneficial": 25, "harmful": 14, "total": 39,
+                  "cross_artifact_identity_key": "row_id", "stage176a_hard_unique_row_count": 39,
+                  "stage179a_hard_unique_row_count": 39, "hard_row_identity_set_match": True,
+                  "hard_semantic_field_consistency": True, "row_id_cross_artifact_authoritative": True,
+                  "stable_index_cross_artifact_authoritative": False,
+                  "hard_stable_index_match_count": stable_matches,
+                  "hard_stable_index_mismatch_count": len(stable_mismatches),
+                  "hard_stable_index_missing_count": stable_missing,
+                  "stable_index_mismatch_examples": stable_mismatches[:20]}
+    return hard, hard_check
 
 
 def text_length(row: dict[str, Any]) -> int:
@@ -364,7 +477,7 @@ def select_controls(hard: dict[str, dict[str, Any]], dev: list[dict[str, Any]], 
         ("same_frame", lambda h, c: c["frame_compatible_label"] == h["frame_compatible_label"]),
         ("all_correct", lambda _h, _c: True),
     ]
-    for hard_row in sorted(hard.values(), key=lambda row: (row["stable_row_index"], row_id(row))):
+    for hard_row in sorted(hard.values(), key=row_id):
         for ordinal in range(per_hard):
             chosen: dict[str, Any] | None = None
             chosen_level = ""
@@ -595,7 +708,8 @@ def main() -> int:
         current = "dev_and_hard_identity_validation"
         dev = merge_dev(read_data(paths["data"]), stage179_dev_analysis_rows)
         hard, hard_check = validate_hard(stage176_transition_rows,
-                                         read_csv(paths["stage179a_hard39_attribution"]), dev)
+                                         read_csv(paths["stage179a_hard39_attribution"]), dev,
+                                         dev_validation_diagnostic)
         current = "control_selection"
         controls, matching = select_controls(hard, dev, args.controls_per_hard_row)
         hard_items = [{**row, "item_role": "hard", "matched_hard_row_id": row_id(row),
