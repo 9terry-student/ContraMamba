@@ -1,0 +1,85 @@
+{
+  "stage": "Stage177-A",
+  "decision": "STAGE177A_FRAME_PAIRWISE_SIGNAL_PRESENT_ABSOLUTE_DISCRIMINATION_WEAK",
+  "scope": {
+    "split": "deterministic seed-174 pair-level clean-dev split",
+    "clean_dev_only": true,
+    "single_seed": true,
+    "diagnostic_only": true,
+    "training": false,
+    "threshold_search": false,
+    "external_evaluation": false
+  },
+  "signal_source": {
+    "primary_ranking_and_discrimination_key": "frame_logit",
+    "primary_normalization": "identity",
+    "fixed_threshold_confusion_brier_ece_key": "frame_prob",
+    "final_classifier_logits_used_to_reconstruct_frame_score": false
+  },
+  "overall_performance": {
+    "baseline": {"frame_auroc": 0.931242, "average_precision": 0.941278, "balanced_accuracy": 0.840278},
+    "treatment": {"frame_auroc": 0.932816, "average_precision": 0.942292, "balanced_accuracy": 0.826389}
+  },
+  "hard_subset_performance": {
+    "rows": 39,
+    "baseline_frame_auroc": 0.414286,
+    "treatment_frame_auroc": 0.437143,
+    "interpretation": "Cross-pair absolute frame-logit discrimination fails on the Stage176 transition cohort."
+  },
+  "within_pair_performance": {
+    "comparison": "compatible frame_logit > incompatible frame_logit within the same pair_id",
+    "baseline_ranking_accuracy": 0.939352,
+    "treatment_ranking_accuracy": 0.944444,
+    "interpretation": "Strong pair-relative ordering is preserved despite weak hard-cohort absolute comparability."
+  },
+  "established_findings": [
+    "The frame head has strong global clean-dev discrimination.",
+    "Same-pair compatible-versus-incompatible ranking is approximately 94 percent.",
+    "Absolute cross-pair discrimination fails on the hard-39 cohort.",
+    "The evidence does not support global frame-output collapse.",
+    "The actionable defect is inter-pair absolute score comparability, not absence of pair-relative distinction.",
+    "Stage175 treatment preserves same-pair ranking.",
+    "Neither a fixed threshold nor post-hoc calibration is supported as a separator of the Stage176 beneficial and harmful transitions.",
+    "A frame-head-specific same-pair relative objective is eligible for feasibility audit.",
+    "The closed Stage174-C final-classifier SUPPORT-logit pairwise path must not be reopened."
+  ],
+  "interpretation": [
+    "Stage177-A is an observational, single-seed internal clean-dev audit.",
+    "Pair-relative ordering and cross-pair absolute discrimination measure different properties; the former is strong while the latter is weak on the hard cohort.",
+    "The result authorizes only a clean frame-logit pairwise-objective feasibility audit, not implementation or training."
+  ],
+  "rejected_paths": [
+    "post-hoc threshold search",
+    "calibration-only repair",
+    "final-classifier-logit pairwise loss",
+    "external tuning or evaluation",
+    "weight or margin sweep"
+  ],
+  "closure": {
+    "global_frame_collapse": false,
+    "calibration_only_path_authorized": false,
+    "posthoc_threshold_search_authorized": false,
+    "final_logit_pairwise_path_closed": true,
+    "frame_head_pairwise_feasibility_authorized": true,
+    "training_authorized": false,
+    "external_evaluation_authorized": false
+  },
+  "next_stage": {
+    "stage": "Stage177-B",
+    "purpose": "Audit clean deterministic same-pair frame-logit supervision topology, baseline gaps, and default-off implementation feasibility."
+  },
+  "safety_policy": {
+    "clean_controlled_data_only": true,
+    "training": false,
+    "optimizer": false,
+    "backward": false,
+    "train_mode": false,
+    "threshold_search": false,
+    "calibration": false,
+    "fitted_probe": false,
+    "checkpoint_selection": false,
+    "external_evaluation": false,
+    "external_labels": false,
+    "time_swap": false
+  }
+}
