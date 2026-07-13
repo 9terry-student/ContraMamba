@@ -1,0 +1,73 @@
+{
+  "stage": "Stage177-E",
+  "decision": "STAGE177E_FRAME_PAIRWISE_OBJECTIVE_REDUNDANT_PATH_CLOSED",
+  "scope": {
+    "data": "data/controlled_v5_v3_without_time_swap.jsonl",
+    "seed": 174,
+    "selected_epoch": 20,
+    "clean_controlled_data_only": true,
+    "single_seed": true,
+    "evaluation_only": true
+  },
+  "baseline_configuration": {
+    "architecture": "v6b_minimal",
+    "backbone": "mamba",
+    "model": "state-spaces/mamba-130m-hf",
+    "stage174c": {"mode": "off", "weight": 0.0},
+    "stage175b": {"mode": "off", "weight": 0.0},
+    "stage177c": {"mode": "off", "weight": 0.0}
+  },
+  "pilot_configuration": {
+    "architecture": "v6b_minimal",
+    "backbone": "mamba",
+    "model": "state-spaces/mamba-130m-hf",
+    "stage174c": {"mode": "off", "weight": 0.0},
+    "stage175b": {"mode": "off", "weight": 0.0},
+    "stage177c": {"mode": "pair_softplus", "weight": 0.05}
+  },
+  "final_decision_attribution": {
+    "changed_rows": 0,
+    "recovered_errors": 0,
+    "introduced_errors": 0,
+    "net_correctness_change": 0,
+    "clean_final_benefit": false
+  },
+  "frame_representation_attribution": {
+    "dev_pair_ranking_delta": 0.003241,
+    "mean_gap_delta": 0.075925,
+    "representation_changed": true,
+    "final_prediction_changed": false
+  },
+  "stage176_cohort_attribution": {
+    "beneficial_rows_newly_recovered": 0,
+    "harmful_rows_newly_damaged": 0,
+    "net_cohort_benefit": 0
+  },
+  "parameter_delta_audit": {
+    "changed_tensor_count": 37,
+    "unchanged_tensor_count": 243,
+    "global_checkpoint_l2_delta": 0.116048,
+    "parameters_changed": true,
+    "causal_claim": false
+  },
+  "closed_paths": {
+    "frame_pairwise_weight_sweep": true,
+    "multi_seed_expansion": true,
+    "external_evaluation": true,
+    "calibration": true,
+    "threshold_search": true,
+    "additional_training": true
+  },
+  "authorized_next_stage": "STAGE178A_FRAME_ABSOLUTE_COMPARABILITY_OFFSET_AUDIT",
+  "safety_policy": {
+    "training_authorized": false,
+    "optimizer_authorized": false,
+    "backward_authorized": false,
+    "weight_sweep_authorized": false,
+    "multi_seed_authorized": false,
+    "external_evaluation_authorized": false,
+    "calibration_authorized": false,
+    "threshold_search_authorized": false,
+    "time_swap_authorized": false
+  }
+}
