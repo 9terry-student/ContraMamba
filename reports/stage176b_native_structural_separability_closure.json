@@ -1,0 +1,141 @@
+{
+  "stage": "Stage176-B",
+  "decision": "STAGE176B_NO_ROBUST_NATIVE_STRUCTURAL_SEPARABILITY_SIGNAL",
+  "scope": {
+    "split": "deterministic pair-level clean-dev split",
+    "seed": 174,
+    "dev_rows": 720,
+    "baseline_selected_epoch": 20,
+    "treatment_selected_epoch": 20,
+    "changed_rows": 39,
+    "beneficial_corrections": 25,
+    "harmful_regressions": 14,
+    "learned_probe": false,
+    "threshold_search": false,
+    "calibration": false,
+    "external_evaluation": false,
+    "external_labels": false,
+    "time_swap": false
+  },
+  "signals": {
+    "available": [
+      "frame_prob",
+      "predicate_coverage_prob",
+      "sufficiency_prob",
+      "entitlement_prob",
+      "polarity_margin",
+      "structural_minimum",
+      "structural_product",
+      "entitlement_conditioned_product"
+    ],
+    "native_model_outputs": [
+      "frame_prob",
+      "predicate_coverage_prob",
+      "sufficiency_prob",
+      "entitlement_prob",
+      "polarity_margin"
+    ],
+    "fixed_composites": [
+      "structural_minimum",
+      "structural_product",
+      "entitlement_conditioned_product"
+    ],
+    "derived_from_final_logits": false
+  },
+  "separability_gate": {
+    "criteria": {
+      "direction_adjusted_auroc_minimum": 0.75,
+      "bootstrap_ci95_lower_strictly_greater_than": 0.5,
+      "absolute_cliffs_delta_or_rank_biserial_minimum": 0.5,
+      "allowed_views": ["baseline", "treatment"],
+      "final_support_margin_allowed": false
+    },
+    "qualifying_signal_count": 0,
+    "best_direction_adjusted_auroc_approximately": 0.634,
+    "best_absolute_effect_size_approximately": 0.269,
+    "passed": false
+  },
+  "cohort_findings": {
+    "beneficial_correction": {
+      "rows": 25,
+      "gold_final_label": "NOT_ENTITLED",
+      "gold_frame_label": 0,
+      "intervention_distribution": {
+        "location_swap": 13,
+        "role_swap": 6,
+        "title_name_swap": 3,
+        "entity_swap": 2,
+        "event_swap": 1
+      },
+      "frame_probability": {
+        "baseline_mean": 0.409046,
+        "treatment_mean": 0.358044,
+        "mean_delta": -0.051002
+      }
+    },
+    "harmful_regression": {
+      "rows": 14,
+      "gold_final_label": "SUPPORT",
+      "gold_frame_label": 1,
+      "intervention_distribution": {
+        "none": 6,
+        "paraphrase": 1,
+        "polarity_flip": 7
+      },
+      "frame_probability": {
+        "baseline_mean": 0.397612,
+        "treatment_mean": 0.349719,
+        "mean_delta": -0.047893
+      }
+    },
+    "gold_frame_label_perfectly_separates_cohorts": true,
+    "native_frame_probability_separates_cohorts": false,
+    "predicate_coverage_nearly_identical": true,
+    "sufficiency_saturated_near": 0.995,
+    "entitlement_fixed_composites_separate_cohorts": false,
+    "polarity_margin_separates_cohorts": false
+  },
+  "established_findings": [
+    "The final-logit conservative shift corrected 25 frame-mismatch false SUPPORT predictions.",
+    "The same shift damaged 14 valid SUPPORT predictions.",
+    "No native structural score robustly separated the two outcomes.",
+    "Gold frame labels perfectly separated the beneficial and harmful cohorts.",
+    "The current frame head failed to express that gold distinction on the hard subset.",
+    "A Stage175 weight or tolerance sweep is not authorized.",
+    "A post-hoc native gating threshold is not authorized.",
+    "External tuning is not authorized.",
+    "The next admissible step is a frame-head-specific failure audit."
+  ],
+  "interpretation": [
+    "Stage176-B is a single-seed clean-dev observational audit, not causal proof.",
+    "Gold-label separability does not imply that a deployable native score or threshold exists.",
+    "The evidence closes both the Stage175 final-logit auxiliary route and the post-hoc native structural gating route."
+  ],
+  "closure": {
+    "stage175_final_logit_auxiliary_path_closed": true,
+    "posthoc_native_gating_path_closed": true,
+    "weight_sweep": false,
+    "tolerance_sweep": false,
+    "three_seed_expansion": false,
+    "external_tuning": false,
+    "proceed_to_frame_head_failure_audit": true
+  },
+  "next_stage": {
+    "stage": "Stage177-A",
+    "purpose": "Diagnose clean-dev frame-head failure on overall, family, within-pair, anchor, hard-subset, error, drift, and score-collapse views without fitting or tuning."
+  },
+  "safety_policy": {
+    "clean_dev_only": true,
+    "training": false,
+    "optimizer": false,
+    "backward": false,
+    "train_mode": false,
+    "fitted_probe": false,
+    "threshold_search": false,
+    "calibration": false,
+    "checkpoint_selection": false,
+    "external_evaluation": false,
+    "external_labels": false,
+    "time_swap": false
+  }
+}
