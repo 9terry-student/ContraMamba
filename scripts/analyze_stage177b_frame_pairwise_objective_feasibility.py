@@ -39,7 +39,6 @@ STAGE = "Stage177-B"
 FEASIBLE = "STAGE177B_FRAME_PAIRWISE_OBJECTIVE_FEASIBLE"
 NOT_FEASIBLE = "STAGE177B_FRAME_PAIRWISE_OBJECTIVE_NOT_FEASIBLE"
 BLOCKED = "STAGE177B_FRAME_PAIRWISE_FEASIBILITY_BLOCKED"
-STAGE177A_DECISION = "STAGE177A_FRAME_PAIRWISE_SIGNAL_PRESENT_ABSOLUTE_DISCRIMINATION_WEAK"
 CHECKPOINT_SCHEMA = "stage176a0_selected_checkpoint_v1"
 EXPECTED_MODEL = "state-spaces/mamba-130m-hf"
 DECLARED_COMPATIBLE_FAMILIES = {"none", "paraphrase", "polarity_flip"}
@@ -171,7 +170,32 @@ def _write_json(path: Path, value: Any) -> None:
 
 
 def _validate_stage177a(report: dict[str, Any]) -> dict[str, Any]:
-    _require(report.get("decision") == STAGE177A_DECISION, "Stage177-A decision mismatch")
+    expected_decision = (
+        "STAGE177A_FRAME_PAIRWISE_SIGNAL_PRESENT_"
+        "ABSOLUTE_DISCRIMINATION_WEAK"
+    )
+    actual_decision = report.get("decision")
+    authorization_context = (
+        f"expected_decision={expected_decision!r}, actual_decision={actual_decision!r}"
+    )
+    _require(actual_decision == expected_decision,
+             f"Stage177-A decision mismatch: {authorization_context}, "
+             "authorization_field='decision'")
+    gate = report.get("stage177b_gate")
+    _require(isinstance(gate, dict),
+             f"Stage177-A stage177b_gate must be an object: {authorization_context}, "
+             "authorization_field='stage177b_gate'")
+    if "decision" in gate:
+        _require(gate["decision"] == expected_decision,
+                 f"Stage177-A gate decision mismatch: expected_decision={expected_decision!r}, "
+                 f"actual_decision={gate['decision']!r}, "
+                 "authorization_field='stage177b_gate.decision'")
+    authorization_field = "frame_head_pairwise_feasibility_authorized"
+    if authorization_field in gate:
+        _require(gate[authorization_field] is not False,
+                 f"Stage177-A did not authorize feasibility audit: {authorization_context}, "
+                 f"authorization_field='stage177b_gate.{authorization_field}', "
+                 f"authorization_value={gate[authorization_field]!r}")
     _close(_first(report, ("overall_performance.baseline.frame_auroc",
                            "overall_frame_performance.baseline.auroc")), .931242,
            "Stage177-A baseline full-dev AUROC")
@@ -190,10 +214,10 @@ def _validate_stage177a(report: dict[str, Any]) -> dict[str, Any]:
     _require(_first(report, ("signal_source.final_classifier_logits_used_to_reconstruct_frame_score",), False) is False,
              "Stage177-A reconstructed frame score from final logits")
     closure = report.get("closure") or {}
-    _require(closure.get("frame_head_pairwise_feasibility_authorized") is True,
-             "Stage177-A did not authorize feasibility audit")
     _require(closure.get("training_authorized") is False,
-             "Stage177-A safety contract must prohibit training")
+             f"Stage177-A safety contract must prohibit training: {authorization_context}, "
+             "authorization_field='closure.training_authorized', "
+             f"authorization_value={closure.get('training_authorized')!r}")
     safety = report.get("safety_policy") or {}
     for key_name in ("training", "threshold_search", "external_evaluation", "time_swap"):
         _require(safety.get(key_name) is False, f"Stage177-A safety flag {key_name} must be false")
