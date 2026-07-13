@@ -1,0 +1,112 @@
+{
+  "stage": "Stage175-C",
+  "decision": "STAGE175C_RELATIVE_SUPPORT_ANCHOR_PRESERVATION_NO_CLEAN_BENEFIT_PATH_CLOSED",
+  "experimental_scope": {
+    "architecture": "v6b_minimal",
+    "backbone": "mamba",
+    "model_name": "state-spaces/mamba-130m-hf",
+    "seed": 174,
+    "epochs": 20,
+    "train_batch_size": 2,
+    "eval_batch_size": 4,
+    "gradient_accumulation_steps": 2,
+    "main_data": "data/controlled_v5_v3_without_time_swap.jsonl",
+    "stage174c": {"mode": "off", "weight": 0.0},
+    "stage175b": {"mode": "paraphrase_margin", "weight": 0.05, "tolerance": 0.1},
+    "checkpoint_selection": "internal_clean_dev_only",
+    "final_classifier_ce_source": "output[\"logits\"]",
+    "external_evaluation_executed": false,
+    "time_swap_used": false
+  },
+  "baseline": {
+    "selected_epoch": 20,
+    "final_accuracy": 0.868056,
+    "final_macro_f1": 0.828604,
+    "frame_accuracy": 0.840278,
+    "predicate_accuracy": 0.856944,
+    "support_precision": 0.477941,
+    "support_recall": 0.730337,
+    "support_f1": 0.577778,
+    "prediction_counts": {"NOT_ENTITLED": 493, "REFUTE": 91, "SUPPORT": 136}
+  },
+  "treatment": {
+    "selected_epoch": 20,
+    "final_accuracy": 0.883333,
+    "accuracy_delta": 0.015277,
+    "final_macro_f1": 0.823343,
+    "macro_f1_delta": -0.005261,
+    "frame_accuracy": 0.826389,
+    "frame_accuracy_delta": -0.013889,
+    "predicate_accuracy": 0.841667,
+    "predicate_accuracy_delta": -0.015277,
+    "support_precision": 0.525773,
+    "support_precision_delta": 0.047832,
+    "support_recall": 0.573034,
+    "support_recall_delta": -0.157303,
+    "support_f1": 0.548387,
+    "support_f1_delta": -0.029391,
+    "prediction_counts": {"NOT_ENTITLED": 532, "REFUTE": 91, "SUPPORT": 97},
+    "prediction_count_deltas": {"NOT_ENTITLED": 39, "REFUTE": 0, "SUPPORT": -39}
+  },
+  "runtime_activity": {
+    "eligible_train_support_anchor_pairs": 121,
+    "expected_eligible_count": 121,
+    "total_eligible_current_rows": 2420,
+    "total_detached_reference_rows": 2420,
+    "total_reference_batches": 620,
+    "active_violations": 222,
+    "zero_violations": 2198,
+    "malformed_or_skipped": 0,
+    "aggregate_mean_current_support_margin": -0.51462,
+    "aggregate_mean_detached_reference_support_margin": -0.784678,
+    "aggregate_raw_margin_gap_reference_minus_current": -0.270058,
+    "aggregate_total_unweighted_loss": 0.011612,
+    "aggregate_total_weighted_loss": 0.000581,
+    "epoch_20": {
+      "active_violations": 11,
+      "mean_current_support_margin": 0.172791,
+      "mean_detached_reference_support_margin": -0.269488,
+      "raw_margin_gap_reference_minus_current": -0.442279,
+      "weighted_loss": 0.000804
+    }
+  },
+  "established_findings": [
+    "Stage175-B eligible mapping and reference forward operated correctly.",
+    "The current paraphrase to detached same-pair canonical none mapping was exact.",
+    "There were no malformed, missing, ambiguous, or same-row reference errors.",
+    "The objective successfully protected paraphrase margin relative to canonical margin.",
+    "Clean-dev SUPPORT recall and macro-F1 nevertheless deteriorated.",
+    "The aggregate prediction distribution moved 39 SUPPORT predictions toward NOT_ENTITLED.",
+    "Relative margin preservation does not guarantee an absolute SUPPORT decision.",
+    "The detached reference is not a frozen teacher, so its canonical margin can move between optimizer steps.",
+    "Only the current paraphrase is directly protected; canonical none and other SUPPORT rows are not.",
+    "Stage175-B will not be expanded through weight/tolerance sweeps, three seeds, longer training, or external evaluation."
+  ],
+  "interpretation": {
+    "objective_activity": "confirmed",
+    "clean_benefit": "not_established",
+    "mechanism": "relative_pair_margin_without_absolute_support_floor",
+    "distributional_effect": "more_conservative_support_boundary"
+  },
+  "closure": {
+    "weight_sweep": false,
+    "tolerance_sweep": false,
+    "three_seed_expansion": false,
+    "long_training_expansion": false,
+    "external_evaluation": false,
+    "retain_implementation_default_off": true,
+    "clean_improvement_path_closed": true
+  },
+  "next_stage": {
+    "stage": "Stage176-A",
+    "purpose": "clean-dev row-level SUPPORT-boundary attribution audit",
+    "diagnostic_only": true
+  },
+  "safety_policy": {
+    "training": false,
+    "threshold_tuning": false,
+    "checkpoint_selection": false,
+    "external_evaluation": false,
+    "time_swap": false
+  }
+}
