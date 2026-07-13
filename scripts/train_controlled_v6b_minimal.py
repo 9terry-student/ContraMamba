@@ -1,4 +1,4 @@
-﻿"""Train ContraMamba-v6B-minimal on controlled intervention data.
+"""Train ContraMamba-v6B-minimal on controlled intervention data.
 
 Minimal v6B wrapper: reuses v5 training infrastructure, adds temporal/predicate
 comparator alphas with learnable scaling. No composer, no product_final_loss.
@@ -67,6 +67,14 @@ from scripts.run_provenance import (  # noqa: E402
     runtime_versions as provenance_runtime_versions,
     utc_now_iso as provenance_utc_now_iso,
     write_json_atomic as write_provenance_json_atomic,
+)
+from scripts.stage174c_clean_pairwise import (  # noqa: E402
+    NATIVE_SCORE_KEYS as STAGE174C_NATIVE_SCORE_KEYS,
+    build_train_pair_index as build_stage174c_train_pair_index,
+    compute_loss as compute_stage174c_loss,
+    select_reference_indices as select_stage174c_reference_indices,
+    taxonomy_record as stage174c_taxonomy_record,
+    validation_rules as stage174c_validation_rules,
 )
 STAGE31C_COVERAGE_LABELS = [
     "ENTAILS_SUPPORT",
@@ -6330,6 +6338,16 @@ def load_stage47_selected_recovery_weights(path: Path) -> tuple[float, float]:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = v5.build_parser()
+    parser.add_argument(
+        "--stage174c-clean-pairwise-mode",
+        choices=("off", "local_only", "local_plus_entitlement"),
+        default="off",
+    )
+    parser.add_argument("--stage174c-clean-pairwise-weight", type=float, default=0.0)
+    parser.add_argument("--stage174c-clean-pairwise-margin", type=float, default=0.10)
+    parser.add_argument(
+        "--stage174c-clean-polarity-preservation-weight", type=float, default=1.0
+    )
     parser.add_argument(
         "--use-temporal-comparator",
         action="store_true",
@@ -12951,6 +12969,13 @@ def main(argv: list[str] | None = None) -> int:
                 "main clean controlled train/eval classification data."
             )
 
+    if args.stage174c_clean_pairwise_mode != "off" and args.stage174c_clean_pairwise_weight <= 0.0:
+        parser.error("Stage174-C requires --stage174c-clean-pairwise-weight > 0 when mode is enabled")
+    if args.stage174c_clean_pairwise_margin < 0.0:
+        parser.error("--stage174c-clean-pairwise-margin must be nonnegative")
+    if args.stage174c_clean_polarity_preservation_weight < 0.0:
+        parser.error("--stage174c-clean-polarity-preservation-weight must be nonnegative")
+
     if args.backbone == "dummy" and not args.allow_dummy_backbone:
         raise ValueError(
             "[DUMMY BACKBONE BLOCKED] backbone=dummy is permitted only for explicit "
@@ -13406,6 +13431,60 @@ def main(argv: list[str] | None = None) -> int:
         "external_metrics_used_for_threshold_tuning": False,
         "time_swap_used": False,
     }
+
+    _stage174c_enabled = args.stage174c_clean_pairwise_mode != "off"
+    _stage174c_pair_index: dict[str, dict[str, int]] | None = None
+    _stage174c_safety_gate = {
+        "passed": None if not _stage174c_enabled else False,
+        "main_data_is_exact_clean_dataset": False,
+        "time_swap_absent_from_main_training": False,
+        "bridge_sources_inactive": not bool(_bridge_sources_enabled),
+        "auxiliary_training_sources_inactive": False,
+        "train_only_references": True,
+        "dev_or_external_references": False,
+        "external_labels_or_metrics_used_for_training_or_selection": False,
+    }
+    if _stage174c_enabled:
+        _expected_stage174c_data = (ROOT / "data" / "controlled_v5_v3_without_time_swap.jsonl").resolve()
+        _actual_stage174c_data = Path(args.data).resolve()
+        _stage174c_safety_gate["main_data_is_exact_clean_dataset"] = (
+            _actual_stage174c_data == _expected_stage174c_data
+        )
+        _stage174c_safety_gate["time_swap_absent_from_main_training"] = all(
+            record.get("intervention_type") != "time_swap" for record in train_records
+        )
+        _stage174c_auxiliary_sources = {
+            "temporal_diagnostic": bool(
+                args.use_temporal_diagnostic_loss
+                or args.use_temporal_channel_loss
+                or args.use_temporal_adapter_loss
+            ),
+            "temporal_safety": bool(getattr(args, "v7_use_temporal_safety_loss", False)),
+            "temporal_mismatch_multihead": bool(getattr(args, "v7_use_temporal_mismatch_multihead_loss", False)),
+            "temporal_preservation": bool(getattr(args, "v7_use_temporal_preservation_loss", False)),
+            "coverage_entailment": bool(getattr(args, "v7_use_coverage_entailment_loss", False)),
+            "pair_contrastive_frame": bool(args.use_pair_contrastive_frame_loss),
+        }
+        _stage174c_safety_gate["auxiliary_training_sources_inactive"] = not any(
+            _stage174c_auxiliary_sources.values()
+        )
+        _stage174c_failures = [
+            name for name, passed in _stage174c_safety_gate.items()
+            if name not in ("passed", "dev_or_external_references", "external_labels_or_metrics_used_for_training_or_selection")
+            and passed is not True
+        ]
+        if args.stage45_use_family_holdout:
+            _stage174c_failures.append("stage45_family_holdout_changes_required_pair_id_split")
+        if args.max_train_records is not None or args.smoke:
+            _stage174c_failures.append("main_clean_dataset_was_truncated")
+        if _stage174c_safety_gate["dev_or_external_references"] is not False:
+            _stage174c_failures.append("dev_or_external_references")
+        if _stage174c_safety_gate["external_labels_or_metrics_used_for_training_or_selection"] is not False:
+            _stage174c_failures.append("external_labels_or_metrics_used_for_training_or_selection")
+        if _stage174c_failures:
+            raise ValueError("[stage174c] clean-only safety gate failed: " + ", ".join(_stage174c_failures))
+        _stage174c_pair_index = build_stage174c_train_pair_index(train_records)
+        _stage174c_safety_gate["passed"] = True
 
     # Stage71/Stage75C/Stage80D: Stage57/Stage66/Stage75/Stage80A bridge rows
     # have no intervention_type=="none" original record for their pair_id, so
@@ -14578,6 +14657,11 @@ def main(argv: list[str] | None = None) -> int:
         covent_dev_labels=None,
         covent_loss_weight=0.0,
         covent_class_weights=None,
+        stage174c_mode="off",
+        stage174c_weight=0.0,
+        stage174c_margin=0.10,
+        stage174c_polarity_weight=1.0,
+        stage174c_pair_index=None,
     ):
         """Modified run_training that passes flags to v6b model."""
         if epochs < 1:
@@ -14729,6 +14813,9 @@ def main(argv: list[str] | None = None) -> int:
         # Per-epoch dev metric snapshots stored for post-hoc diagnosis (e.g. label collapse
         # trajectory, channel prob trends).  Reporting only; no effect on training or selection.
         _v7_epoch_history: list[dict[str, Any]] = []
+        _stage174c_epoch_metrics: list[dict[str, Any]] = []
+        _stage174c_reference_forward_row_count = 0
+        _stage174c_reference_forward_batch_count = 0
 
         # Stage26-F extended: captured v7 output tensors for best-epoch logit / per-gold summaries.
         # Updated inside the epoch loop whenever score > best_score.
@@ -14788,6 +14875,59 @@ def main(argv: list[str] | None = None) -> int:
                 amp_enabled=amp_enabled,
             )
 
+            _stage174c_unweighted_loss = torch.tensor(0.0, device=device)
+            _stage174c_metrics: dict[str, Any] | None = None
+            if stage174c_mode != "off":
+                if stage174c_pair_index is None:
+                    raise RuntimeError("[stage174c] enabled without a validated train pair index")
+                _stage174c_reference_indices = select_stage174c_reference_indices(
+                    train_records, stage174c_pair_index, seed=seed, epoch=epoch
+                )
+                _stage174c_reference_index_tensor = torch.tensor(
+                    _stage174c_reference_indices, dtype=torch.long, device=device
+                )
+                _stage174c_reference_inputs = {
+                    key: value.index_select(0, _stage174c_reference_index_tensor)
+                    for key, value in train_inputs.items()
+                    if isinstance(value, torch.Tensor) and value.dim() > 0
+                    and value.shape[0] == train_inputs["input_ids"].shape[0]
+                }
+                _stage174c_was_training = model.training
+                model.eval()
+                try:
+                    with torch.no_grad():
+                        _stage174c_reference_output = _vnext_forward_maybe_batched(
+                            model,
+                            _stage174c_reference_inputs,
+                            temporal_mismatch_flags=train_temporal_flags.index_select(0, _stage174c_reference_index_tensor),
+                            predicate_mismatch_flags=train_predicate_flags.index_select(0, _stage174c_reference_index_tensor),
+                            temporal_adapter_final_penalty_scale=_ta_pen,
+                            temporal_channel_gated_penalty_scale=_tc_pen,
+                            batch_size=train_batch_size,
+                            amp_enabled=amp_enabled,
+                        )
+                        _stage174c_reference_output = {
+                            key: value.detach() if isinstance(value, torch.Tensor) else value
+                            for key, value in _stage174c_reference_output.items()
+                        }
+                finally:
+                    model.train(_stage174c_was_training)
+                _stage174c_unweighted_loss, _stage174c_metrics = compute_stage174c_loss(
+                    output,
+                    _stage174c_reference_output,
+                    train_records,
+                    _stage174c_reference_indices,
+                    mode=stage174c_mode,
+                    margin=stage174c_margin,
+                    polarity_weight=stage174c_polarity_weight,
+                )
+                _stage174c_reference_forward_row_count += len(train_records)
+                _stage174c_epoch_reference_batch_count = (
+                    1 if train_batch_size is None
+                    else (len(train_records) + int(train_batch_size) - 1) // int(train_batch_size)
+                )
+                _stage174c_reference_forward_batch_count += _stage174c_epoch_reference_batch_count
+
             indices = v5.sample_indices(
                 train_inputs["final_labels"], balanced_sampler, sampling_generator
             )
@@ -14839,7 +14979,19 @@ def main(argv: list[str] | None = None) -> int:
                     v5.intervention_objective, "last_diagnostics", None
                 )
             total_loss = losses["total"] + active_intervention_loss
-
+            if stage174c_mode != "off":
+                total_loss = total_loss + stage174c_weight * _stage174c_unweighted_loss
+                _stage174c_epoch_metrics.append({
+                    "epoch": epoch,
+                    "total_unweighted_loss": float(_stage174c_unweighted_loss.detach().item()),
+                    "total_weighted_loss": float((stage174c_weight * _stage174c_unweighted_loss.detach()).item()),
+                    **(_stage174c_metrics or {}),
+                    "reference_forward_row_count": len(train_records),
+                    "reference_forward_batch_count": _stage174c_epoch_reference_batch_count,
+                    "validated_train_pair_group_count": len(stage174c_pair_index or {}),
+                    "malformed_pair_count": 0,
+                    "skipped_pair_count": 0,
+                })
             # Stage45-C: internal-only SUPPORT recovery / entitled-NE over-rejection
             # auxiliary terms. Computed strictly from the internal training split
             # (train_inputs["final_labels"], output["logits"]); no dev/holdout labels
@@ -17658,8 +17810,62 @@ def main(argv: list[str] | None = None) -> int:
             "slot_mismatch_loss_raw": _slot_loss_raw,
             "slot_mismatch_loss_weighted": _slot_loss_weighted,
         }
+        def _stage174c_aggregate_metric(name: str) -> float | None:
+            values = [item.get(name) for item in _stage174c_epoch_metrics if item.get(name) is not None]
+            return (sum(float(value) for value in values) / len(values)) if values else None
+
+        _stage174c_component_names = (
+            "frame_local_ranking", "frame_entitlement_ranking",
+            "predicate_local_ranking", "predicate_entitlement_ranking",
+            "sufficiency_local_ranking", "sufficiency_entitlement_ranking",
+            "polarity_local_preservation", "polarity_entitlement_preservation",
+        )
+        _stage174c_totals: dict[str, Any] = {
+            "total_unweighted_loss": _stage174c_aggregate_metric("total_unweighted_loss"),
+            "total_weighted_loss": _stage174c_aggregate_metric("total_weighted_loss"),
+            "reference_forward_row_count": _stage174c_reference_forward_row_count,
+            "reference_forward_batch_count": _stage174c_reference_forward_batch_count,
+            "validated_train_pair_group_count": len(stage174c_pair_index or {}),
+            "malformed_pair_count": 0,
+            "skipped_pair_count": 0,
+        }
+        for _stage174c_name in _stage174c_component_names:
+            _stage174c_count_key = f"{_stage174c_name}_count"
+            _stage174c_loss_key = f"{_stage174c_name}_loss"
+            _stage174c_total_count = sum(
+                int(item.get(_stage174c_count_key, 0)) for item in _stage174c_epoch_metrics
+            )
+            _stage174c_weighted_sum = sum(
+                float(item[_stage174c_loss_key]) * int(item.get(_stage174c_count_key, 0))
+                for item in _stage174c_epoch_metrics
+                if item.get(_stage174c_loss_key) is not None
+            )
+            _stage174c_totals[_stage174c_count_key] = _stage174c_total_count
+            _stage174c_totals[_stage174c_loss_key] = (
+                _stage174c_weighted_sum / _stage174c_total_count
+                if _stage174c_total_count else None
+            )
+        _stage174c_report = {
+            "enabled": stage174c_mode != "off",
+            "mode": stage174c_mode,
+            "weight": stage174c_weight,
+            "margin": stage174c_margin,
+            "polarity_preservation_weight": stage174c_polarity_weight,
+            "taxonomy": stage174c_taxonomy_record(),
+            "validation_rules": stage174c_validation_rules(),
+            "validated_train_pair_group_count": len(stage174c_pair_index or {}),
+            "train_only_reference_policy": "one same-pair train counterpart per current train row; no dev or external references",
+            "deterministic_reference_selection_policy": "SHA-256(seed, pair_id, intervention_type) offset plus epoch cycling; no Python hash()",
+            "native_output_tensor_keys": dict(STAGE174C_NATIVE_SCORE_KEYS),
+            "reference_side": "additional batched eval-mode torch.no_grad forward; all outputs detached; training mode restored",
+            "epoch_metrics": _stage174c_epoch_metrics,
+            "totals": _stage174c_totals,
+            "malformed_pair_count": 0,
+            "skipped_pair_count": 0,
+        }
         report = {
             "run_name": run_name,
+            "stage174c_clean_pairwise": _stage174c_report,
             "final_epoch": epochs,
             "best_epoch": best_epoch,
             "select_metric": select_metric,
@@ -17877,6 +18083,20 @@ def main(argv: list[str] | None = None) -> int:
         training_selection_policy=_stage174a_training_selection_policy,
         repo_root=ROOT,
     )
+    _stage174a_provenance_record["stage174c_clean_pairwise"] = provenance_json_safe({
+        "enabled": _stage174c_enabled,
+        "mode": args.stage174c_clean_pairwise_mode,
+        "weight": args.stage174c_clean_pairwise_weight,
+        "margin": args.stage174c_clean_pairwise_margin,
+        "polarity_preservation_weight": args.stage174c_clean_polarity_preservation_weight,
+        "taxonomy": stage174c_taxonomy_record(),
+        "validation_rules": stage174c_validation_rules(),
+        "clean_only_safety_gate": _stage174c_safety_gate,
+        "expected_train_only_reference_policy": "one same-pair train counterpart per current train row; never dev or external",
+        "deterministic_selection_policy": "SHA-256(seed, pair_id, intervention_type) offset plus epoch cycling",
+        "validated_train_pair_group_count": len(_stage174c_pair_index or {}),
+        "intended_native_output_tensor_keys": dict(STAGE174C_NATIVE_SCORE_KEYS),
+    })
     write_provenance_json_atomic(_stage174a_provenance_path, _stage174a_provenance_record)
     requested_loss_config = {
         "lambda_frame_preserve": args.lambda_frame_preserve,
@@ -18095,6 +18315,11 @@ def main(argv: list[str] | None = None) -> int:
                 if getattr(args, "v7_use_coverage_entailment_loss", False) else 0.0
             ),
             covent_class_weights=_covent_class_weights,
+            stage174c_mode=args.stage174c_clean_pairwise_mode,
+            stage174c_weight=args.stage174c_clean_pairwise_weight,
+            stage174c_margin=args.stage174c_clean_pairwise_margin,
+            stage174c_polarity_weight=args.stage174c_clean_polarity_preservation_weight,
+            stage174c_pair_index=_stage174c_pair_index,
             pc_pres_inputs=_pc_pres_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_frame_inputs=_pc_frame_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_loss_weight=(
@@ -18119,6 +18344,18 @@ def main(argv: list[str] | None = None) -> int:
 
     report = {
         "configuration": {
+            "stage174c_clean_pairwise": {
+                "enabled": _stage174c_enabled,
+                "mode": args.stage174c_clean_pairwise_mode,
+                "weight": args.stage174c_clean_pairwise_weight,
+                "margin": args.stage174c_clean_pairwise_margin,
+                "polarity_preservation_weight": args.stage174c_clean_polarity_preservation_weight,
+                "taxonomy": stage174c_taxonomy_record(),
+                "validation_rules": stage174c_validation_rules(),
+                "clean_only_safety_gate": _stage174c_safety_gate,
+                "validated_train_pair_group_count": len(_stage174c_pair_index or {}),
+                "native_output_tensor_keys": dict(STAGE174C_NATIVE_SCORE_KEYS),
+            },
             "seed": args.seed,
             "random_seed": args.seed,
             "numpy_seed": args.seed,
@@ -20908,6 +21145,33 @@ def main(argv: list[str] | None = None) -> int:
         "path": _stage174a_selected_checkpoint_path,
         "selection_source": "internal_clean_dev_only",
     }
+    _stage174c_final_runs = {
+        name: run_report.get("stage174c_clean_pairwise")
+        for name, run_report in reports.items()
+    }
+    _stage174c_total_reference_rows = sum(
+        int(((summary or {}).get("totals") or {}).get("reference_forward_row_count", 0))
+        for summary in _stage174c_final_runs.values()
+    )
+    _stage174c_total_reference_batches = sum(
+        int(((summary or {}).get("totals") or {}).get("reference_forward_batch_count", 0))
+        for summary in _stage174c_final_runs.values()
+    )
+    _stage174a_provenance_record["stage174c_clean_pairwise"].update(
+        provenance_json_safe({
+            "total_reference_forward_row_count": _stage174c_total_reference_rows,
+            "total_reference_forward_batch_count": _stage174c_total_reference_batches,
+            "malformed_pair_count": 0,
+            "skipped_pair_count": 0,
+            "epoch_level_loss_count_summaries": {
+                name: (summary or {}).get("epoch_metrics", [])
+                for name, summary in _stage174c_final_runs.items()
+            },
+            "actual_native_output_tensor_keys": (
+                dict(STAGE174C_NATIVE_SCORE_KEYS) if _stage174c_enabled else {}
+            ),
+        })
+    )
     _stage174a_provenance_record.update(
         {
             "finalized_at_utc": provenance_utc_now_iso(),
