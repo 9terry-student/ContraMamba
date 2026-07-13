@@ -1,0 +1,38 @@
+{
+  "stage": "Stage180-B closure",
+  "decision": "STAGE180B_HARD_FRAME_MANUAL_TAXONOMY_MIXED",
+  "review_status": "single_reviewer_provisional",
+  "scope": {
+    "unique_hard_source_items": 39,
+    "unique_matched_control_source_items": 39,
+    "repeat_exact_agreement": 1.0,
+    "taxonomy": "mixed",
+    "ai_assisted_review": true,
+    "human_annotation": false
+  },
+  "interpretation": {
+    "repeat_consistency_is_self_consistency": true,
+    "repeat_consistency_is_inter_rater_reliability": false,
+    "annotations_are_provisional": true,
+    "model_failure_taxonomy_is_causal_proof": false
+  },
+  "authorized_next_stage": "STAGE181_STRATIFIED_FRAME_DATA_AND_MODEL_ROADMAP",
+  "safety_policy": {
+    "dataset_modification": false,
+    "automatic_relabeling": false,
+    "filtering_or_exclusion": false,
+    "training_subset_construction": false,
+    "training": false,
+    "loss_modification": false,
+    "architecture_modification": false,
+    "model_forward": false,
+    "fitting": false,
+    "calibration": false,
+    "threshold_search": false,
+    "checkpoint_modification": false,
+    "external_evaluation": false,
+    "time_swap": false,
+    "multi_seed": false
+  }
+}
+
