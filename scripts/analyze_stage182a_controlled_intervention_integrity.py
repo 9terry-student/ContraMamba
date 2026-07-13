@@ -499,6 +499,13 @@ The deterministic audit covered all {topology['unique_items']} unique review ite
 - Clean hard/control pairs: {hard_control['clean_pairs']} of {topology['matched_pairs']}
 - Final clean model-failure candidates: {readiness['candidate_count']}
 
+## Decision evidence
+
+- Criterion: `minimum_clean_hard_candidates`
+- Observed clean hard candidates: {readiness['candidate_count']}
+- Required minimum: {readiness['minimum_clean_hard_candidates']}
+- Passed: {readiness['minimum_criterion_passed']}
+
 Generator equality is provenance rather than a cleanliness verdict. A row can
 exactly reproduce the generator and still be excluded for a deterministic
 grammar or multi-axis construction defect. The final set is a model-failure
@@ -519,6 +526,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--stage181a-report", type=Path, required=True)
     parser.add_argument("--stage181a-unique-item-roadmap", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--minimum-clean-hard-candidates", type=int, default=8)
     return parser.parse_args()
 
 
@@ -528,6 +536,8 @@ def main() -> int:
     current = "input_read"
     diagnostics: dict[str, Any] = {}
     try:
+        require(args.minimum_clean_hard_candidates >= 1,
+                "--minimum-clean-hard-candidates must be at least 1")
         paths = {
             "data": args.data,
             "stage176a_row_transitions": args.stage176a_row_transitions,
@@ -838,8 +848,10 @@ def main() -> int:
              "evidence_source": "pass2_packet_and_controlled_data"},
             {"criterion": "schema_unresolved_items", "observed_value": len(unresolved_rows),
              "threshold": "==0", "passed": len(unresolved_rows) == 0, "evidence_source": "unique_item_integrity"},
-            {"criterion": "clean_failure_set_materialized", "observed_value": len(clean_output_rows),
-             "threshold": ">=0", "passed": True, "evidence_source": "hard_control_integrity"},
+            {"criterion": "minimum_clean_hard_candidates", "observed_value": len(clean_output_rows),
+             "threshold": args.minimum_clean_hard_candidates,
+             "passed": len(clean_output_rows) >= args.minimum_clean_hard_candidates,
+             "evidence_source": "hard_control_integrity"},
         ]
 
         clean_items = sum(row["integrity_verdict"] == "CLEAN_SINGLE_AXIS_CONSTRUCTION" for row in items)
@@ -884,11 +896,16 @@ def main() -> int:
                                             "interpretation": "descriptive_only"},
             "clean_failure_set_readiness": {"candidate_count": len(clean_output_rows),
                                             "candidate_row_ids": sorted(row["row_id"] for row in clean_output_rows),
+                                            "minimum_clean_hard_candidates": args.minimum_clean_hard_candidates,
+                                            "minimum_criterion_passed": len(clean_output_rows) >= args.minimum_clean_hard_candidates,
                                             "causal_proof": False},
             "diagnosis": {"anomaly_counts": anomaly_counts,
                           "generator_equality_is_cleanliness": False,
                           "row_id_misalignment_rejected": True},
             "stage182b_gate": {"clean_failure_set_available": bool(clean_output_rows),
+                               "minimum_clean_hard_candidates": args.minimum_clean_hard_candidates,
+                               "observed_clean_hard_candidates": len(clean_output_rows),
+                               "minimum_criterion_passed": len(clean_output_rows) >= args.minimum_clean_hard_candidates,
                                "execution_authorized": False,
                                "decision_evidence_rows": len(decision_rows)},
             "limitations": ["The clean set is not causal proof.",
@@ -947,11 +964,16 @@ def main() -> int:
             "hard_control_integrity": {},
             "stage181_taxonomy_comparison": {},
             "beneficial_harmful_analysis": {},
-            "clean_failure_set_readiness": {"candidate_count": 0, "ready": False},
+            "clean_failure_set_readiness": {"candidate_count": 0, "ready": False,
+                                            "minimum_clean_hard_candidates": args.minimum_clean_hard_candidates,
+                                            "minimum_criterion_passed": False},
             "diagnosis": {"error_type": type(error).__name__, "error": str(error),
                           "failure_stage": current, "traceback": traceback.format_exc(),
                           "diagnostics": diagnostics},
-            "stage182b_gate": {"execution_authorized": False},
+            "stage182b_gate": {"minimum_clean_hard_candidates": args.minimum_clean_hard_candidates,
+                               "observed_clean_hard_candidates": 0,
+                               "minimum_criterion_passed": False,
+                               "execution_authorized": False},
             "limitations": ["Validation failure prevents a scientific conclusion."],
             "safety_policy": {"dataset_modification": False, "model_import": False,
                               "checkpoint_load": False, "model_forward": False, "training": False},
