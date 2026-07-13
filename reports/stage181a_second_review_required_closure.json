@@ -1,0 +1,51 @@
+{
+  "stage": "Stage181-A closure",
+  "decision": "STAGE181A_SECOND_REVIEW_OR_HUMAN_ADJUDICATION_REQUIRED",
+  "review_status": "single_ai_reviewer_provisional",
+  "counts": {
+    "unique_hard_rows": 39,
+    "unique_controls": 39,
+    "provisional_data_repair_candidates": 20,
+    "provisional_clean_model_failure_candidates": 19,
+    "control_anomalies": 15
+  },
+  "independent_blinded_pass1": {
+    "agreement_numerator": 86,
+    "agreement_denominator": 86,
+    "supports_frame_judgment_stability": true,
+    "independently_validates_pass2_taxonomy": false
+  },
+  "identity_resolution": {
+    "row_id_misalignment_hypothesis_rejected": true,
+    "pass1_claim_equals_canonical_none_claim_numerator": 86,
+    "pass1_claim_equals_canonical_none_claim_denominator": 86,
+    "different_evidence_instances": 72,
+    "different_evidence_instances_are_exactly_non_none": true,
+    "interpretation": "normal_controlled_pair_structure"
+  },
+  "interpretation": {
+    "stage181_split_is_confirmed_cause": false,
+    "repeat_agreement_is_inter_rater_reliability": false,
+    "additional_subjective_annotation_authorized": false,
+    "deterministic_integrity_audit_authorized": true
+  },
+  "unresolved_construction_risks": [
+    "did_not_plus_inflected_predicate",
+    "non_polarity_intervention_polarity_change",
+    "unintended_structured_slot_change",
+    "matched_control_construction_anomaly"
+  ],
+  "authorized_next": "STAGE182A_CONTROLLED_INTERVENTION_INTEGRITY_AND_CLEAN_FAILURE_SET_AUDIT",
+  "safety_policy": {
+    "dataset_modification": false,
+    "annotation_modification": false,
+    "automatic_relabeling": false,
+    "filtering_or_exclusion_execution": false,
+    "training_subset_construction": false,
+    "model_import": false,
+    "checkpoint_load": false,
+    "model_forward": false,
+    "training": false
+  }
+}
+
