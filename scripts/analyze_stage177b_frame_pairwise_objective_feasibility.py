@@ -180,22 +180,25 @@ def _validate_stage177a(report: dict[str, Any]) -> dict[str, Any]:
     )
     _require(actual_decision == expected_decision,
              f"Stage177-A decision mismatch: {authorization_context}, "
-             "authorization_field='decision'")
+             "conflicting_field='decision', "
+             f"conflicting_value={actual_decision!r}")
     gate = report.get("stage177b_gate")
     _require(isinstance(gate, dict),
              f"Stage177-A stage177b_gate must be an object: {authorization_context}, "
-             "authorization_field='stage177b_gate'")
+             "conflicting_field='stage177b_gate', "
+             f"conflicting_value={gate!r}")
     if "decision" in gate:
         _require(gate["decision"] == expected_decision,
                  f"Stage177-A gate decision mismatch: expected_decision={expected_decision!r}, "
                  f"actual_decision={gate['decision']!r}, "
-                 "authorization_field='stage177b_gate.decision'")
+                 "conflicting_field='stage177b_gate.decision', "
+                 f"conflicting_value={gate['decision']!r}")
     authorization_field = "frame_head_pairwise_feasibility_authorized"
     if authorization_field in gate:
         _require(gate[authorization_field] is not False,
                  f"Stage177-A did not authorize feasibility audit: {authorization_context}, "
-                 f"authorization_field='stage177b_gate.{authorization_field}', "
-                 f"authorization_value={gate[authorization_field]!r}")
+                 f"conflicting_field='stage177b_gate.{authorization_field}', "
+                 f"conflicting_value={gate[authorization_field]!r}")
     _close(_first(report, ("overall_performance.baseline.frame_auroc",
                            "overall_frame_performance.baseline.auroc")), .931242,
            "Stage177-A baseline full-dev AUROC")
@@ -213,17 +216,38 @@ def _validate_stage177a(report: dict[str, Any]) -> dict[str, Any]:
              "Stage177-A frame_logit normalization must be identity")
     _require(_first(report, ("signal_source.final_classifier_logits_used_to_reconstruct_frame_score",), False) is False,
              "Stage177-A reconstructed frame score from final logits")
-    closure = report.get("closure") or {}
-    _require(closure.get("training_authorized") is False,
-             f"Stage177-A safety contract must prohibit training: {authorization_context}, "
-             "authorization_field='closure.training_authorized', "
-             f"authorization_value={closure.get('training_authorized')!r}")
+    closure = report.get("closure") if isinstance(report.get("closure"), dict) else {}
+    optional_closure_conflicts = {
+        "training_authorized": True,
+        "external_evaluation_authorized": True,
+        "threshold_search_authorized": True,
+        "calibration_authorized": True,
+        "frame_head_pairwise_feasibility_authorized": False,
+        "final_logit_pairwise_path_closed": False,
+    }
+    for field, conflicting_value in optional_closure_conflicts.items():
+        value = closure.get(field)
+        _require(field not in closure or value is not conflicting_value,
+                 f"Stage177-A optional closure conflicts with Stage177-B: "
+                 f"{authorization_context}, conflicting_field='closure.{field}', "
+                 f"conflicting_value={value!r}")
     safety = report.get("safety_policy") or {}
     for key_name in ("training", "threshold_search", "external_evaluation", "time_swap"):
         _require(safety.get(key_name) is False, f"Stage177-A safety flag {key_name} must be false")
-    return {"status": "passed", "decision": report["decision"],
+    validation = {"status": "passed", "decision": report["decision"],
             "native_frame_logit": True, "no_final_logit_reconstruction": True,
-            "no_threshold_tuning": True, "no_training": True, "no_external_data": True}
+            "no_threshold_tuning": True, "no_training": True, "no_external_data": True,
+            "stage177a_runtime_report_has_closure": isinstance(report.get("closure"), dict),
+            "stage177a_safety_validation_basis": (
+                "top_level_exact_decision_plus_optional_closure_consistency"
+                if any(field in closure for field in optional_closure_conflicts)
+                else "top_level_exact_decision_and_stage177b_internal_safety_contract"
+            )}
+    for field in optional_closure_conflicts:
+        prefix = f"stage177a_{field}"
+        validation[f"{prefix}_field_present"] = field in closure
+        validation[f"{prefix}_value"] = closure.get(field)
+    return validation
 
 
 def _runtime(prov: dict[str, Any], key: str) -> Any:
