@@ -1,0 +1,87 @@
+﻿review_instance_id,reviewer_id,independent_frame_judgment,pass1_confidence,pass1_rationale
+R180-0001,chatgpt_pass1,incompatible,5,"The claim and evidence name different research leads, so the core entity identity does not match."
+R180-0002,chatgpt_pass1,incompatible,5,"The same person and launch context are mentioned, but the launched object is a different satellite or probe, so the event target differs."
+R180-0003,chatgpt_pass1,incompatible,5,"The person and action match, but the asserted role changes from research lead to project curator, which is a role-relation mismatch."
+R180-0004,chatgpt_pass1,incompatible,5,"The person, initiative, action, and time match, but the event location differs between Beacon Harbor and Elm Valley."
+R180-0005,chatgpt_pass1,incompatible,5,"The same person and reserve are mentioned, but the protection event is located in different cities."
+R180-0006,chatgpt_pass1,compatible,5,"The claim and evidence identify the same person, role, initiative, action, location, and time."
+R180-0007,chatgpt_pass1,incompatible,5,"The person and event match, but the role changes from regional coordinator to technical adviser."
+R180-0008,chatgpt_pass1,compatible,5,The claim and evidence describe the same approval event with matching participants and circumstances.
+R180-0009,chatgpt_pass1,incompatible,5,"The event is otherwise identical, but the location differs between Beacon Harbor and Elm Valley."
+R180-0010,chatgpt_pass1,compatible,5,The claim and evidence describe the same approval event with all core frame elements aligned.
+R180-0011,chatgpt_pass1,incompatible,5,"The same person and event are named, but the role differs between regional coordinator and technical adviser."
+R180-0012,chatgpt_pass1,compatible,5,"The claim and evidence are frame-identical across entity, role, action, initiative, place, and time."
+R180-0013,chatgpt_pass1,incompatible,5,"The same delivery event is placed in different locations, Horizon Plains versus Cedar Point."
+R180-0014,chatgpt_pass1,compatible,5,The claim and evidence identify the same selection event and all frame-defining details match.
+R180-0015,chatgpt_pass1,incompatible,5,"The person and launch event match, but the stated role differs between regional coordinator and technical adviser."
+R180-0016,chatgpt_pass1,compatible,5,The claim and evidence describe the same approval event with no frame mismatch.
+R180-0017,chatgpt_pass1,compatible,5,"The claim and evidence describe the same publication event with matching entity, role, location, and time."
+R180-0018,chatgpt_pass1,incompatible,5,"The restoration event is attributed to different named people, so the core referent does not match."
+R180-0019,chatgpt_pass1,compatible,5,The claim and evidence describe the same launch event with all core frame elements aligned.
+R180-0020,chatgpt_pass1,compatible,5,"The claim and evidence are identical in entity, role, action, initiative, location, and time."
+R180-0021,chatgpt_pass1,compatible,5,"The claim and evidence describe the same protection event with matching subject, object, place, and time."
+R180-0022,chatgpt_pass1,incompatible,5,"The launch event is otherwise the same, but its location differs between Aurora City and Delta Bay."
+R180-0023,chatgpt_pass1,compatible,5,The claim and evidence describe the same publication event with all frame elements aligned.
+R180-0024,chatgpt_pass1,incompatible,5,"The person and publication event match, but the role changes from project curator to research lead."
+R180-0025,chatgpt_pass1,incompatible,5,"The person, initiative, action, and time match, but the location differs between Beacon Harbor and Elm Valley."
+R180-0026,chatgpt_pass1,incompatible,5,"The same person and launch event are named, but the role differs between program director and operations chief."
+R180-0027,chatgpt_pass1,compatible,5,The claim and evidence identify the same selection event with all core details matching.
+R180-0028,chatgpt_pass1,compatible,5,The claim and evidence describe the same restoration event without a frame mismatch.
+R180-0029,chatgpt_pass1,incompatible,5,"The publication event is assigned to different locations, Cedar Point and Falcon Ridge."
+R180-0030,chatgpt_pass1,incompatible,5,"The person and launch event match, but the stated role differs between project curator and research lead."
+R180-0031,chatgpt_pass1,incompatible,5,"The same approval event is located in different cities, Seoul and Busan."
+R180-0032,chatgpt_pass1,incompatible,5,"The launch event is attributed to different named people, so the core entity referent differs."
+R180-0033,chatgpt_pass1,incompatible,5,"The same launch event is placed in different locations, Falcon Ridge and Aurora City."
+R180-0034,chatgpt_pass1,incompatible,5,"The approval event is attributed to different named people, so the entity frame does not match."
+R180-0035,chatgpt_pass1,compatible,5,The claim and evidence describe the same approval event with all frame-defining details aligned.
+R180-0036,chatgpt_pass1,compatible,5,The claim and evidence describe the same publication event with no frame mismatch.
+R180-0037,chatgpt_pass1,incompatible,5,"The publication event is located in different places, Delta Bay and Granite Coast."
+R180-0038,chatgpt_pass1,incompatible,5,"The same person and launch event are named, but the role differs between program director and operations chief."
+R180-0039,chatgpt_pass1,incompatible,5,"The purchase event is located in different cities, Lagos and Abuja."
+R180-0040,chatgpt_pass1,incompatible,5,"The launch event is otherwise identical, but the location differs between Horizon Plains and Cedar Point."
+R180-0041,chatgpt_pass1,incompatible,5,"The publication event is assigned to different locations, Aurora City and Delta Bay."
+R180-0042,chatgpt_pass1,compatible,5,The evidence is a word-order paraphrase of the same restoration event and preserves every core frame element.
+R180-0043,chatgpt_pass1,incompatible,5,"The person and restoration event match, but the asserted role differs between research lead and project curator."
+R180-0044,chatgpt_pass1,compatible,5,"The evidence paraphrases the same restoration event with matching entity, role, place, and time."
+R180-0045,chatgpt_pass1,compatible,5,The claim and evidence describe the same delivery event with all frame elements matching.
+R180-0046,chatgpt_pass1,compatible,5,"The claim and evidence describe the same purchase event with matching subject, object, location, and time."
+R180-0047,chatgpt_pass1,incompatible,5,"The person and launch event match, but the role changes from research lead to project curator."
+R180-0048,chatgpt_pass1,compatible,5,The evidence is a syntactic paraphrase of the same program-introduction event.
+R180-0049,chatgpt_pass1,compatible,5,The claim and evidence identify the same publication event with all frame details aligned.
+R180-0050,chatgpt_pass1,compatible,5,The claim and evidence describe the same publication event without any frame mismatch.
+R180-0051,chatgpt_pass1,incompatible,5,"The restoration event is otherwise identical, but the location differs between Aurora City and Delta Bay."
+R180-0052,chatgpt_pass1,compatible,5,"The claim and evidence describe the same publication event with matching entity, role, place, and time."
+R180-0053,chatgpt_pass1,incompatible,5,"The person and selection event match, but the role differs between regional coordinator and technical adviser."
+R180-0054,chatgpt_pass1,compatible,5,The claim and evidence describe the same satellite-launch event with all frame elements aligned.
+R180-0055,chatgpt_pass1,incompatible,5,"The selection event is attributed to different named people, so the core entity referent differs."
+R180-0056,chatgpt_pass1,compatible,5,The claim and evidence describe the same approval event with no frame mismatch.
+R180-0057,chatgpt_pass1,incompatible,5,"The delivery event is assigned to different locations, Cedar Point and Falcon Ridge."
+R180-0058,chatgpt_pass1,compatible,5,The claim and evidence describe the same restoration event with all core details matching.
+R180-0059,chatgpt_pass1,incompatible,5,"The launch event is attributed to different named people, so the entity identity does not match."
+R180-0060,chatgpt_pass1,incompatible,5,"The restoration event is otherwise the same, but the location differs between Cedar Point and Falcon Ridge."
+R180-0061,chatgpt_pass1,incompatible,5,"The person, action, number, place, and time match, but the named initiative changes from Meridian to Horizon."
+R180-0062,chatgpt_pass1,incompatible,5,"The approval event is attributed to different named people, so the core entity referent differs."
+R180-0063,chatgpt_pass1,incompatible,5,"The same person and restoration event are named, but the role differs between program director and operations chief."
+R180-0064,chatgpt_pass1,compatible,5,The claim and evidence identify the same opening event with all frame-defining details aligned.
+R180-0065,chatgpt_pass1,compatible,4,"The evidence negates the same opening event; polarity differs, but the entity, event, target, location, and time frame are the same."
+R180-0066,chatgpt_pass1,compatible,5,The claim and evidence describe the same restoration event with all frame elements matching.
+R180-0067,chatgpt_pass1,compatible,5,"The claim and evidence describe the same delivery event with matching entity, role, location, and time."
+R180-0068,chatgpt_pass1,incompatible,5,"The publication event is attributed to different named people, so the core entity identity does not match."
+R180-0069,chatgpt_pass1,compatible,5,The claim and evidence identify the same restoration event with no frame mismatch.
+R180-0070,chatgpt_pass1,incompatible,5,"The restoration event is located in different places, Elm Valley and Horizon Plains."
+R180-0071,chatgpt_pass1,incompatible,5,"The opening event is assigned to different locations, Horizon Plains and Cedar Point."
+R180-0072,chatgpt_pass1,incompatible,5,"The publication event is located in different places, Delta Bay and Granite Coast."
+R180-0073,chatgpt_pass1,compatible,5,The claim and evidence describe the same publication event with all frame details aligned.
+R180-0074,chatgpt_pass1,compatible,5,"The claim and evidence are frame-identical across entity, role, action, initiative, place, and time."
+R180-0075,chatgpt_pass1,incompatible,5,"The restoration event is assigned to different locations, Delta Bay and Granite Coast."
+R180-0076,chatgpt_pass1,compatible,5,The claim and evidence describe the same approval event with all frame elements matching.
+R180-0077,chatgpt_pass1,incompatible,5,"The clinic-expansion event is located in different cities, Valencia and Alicante."
+R180-0078,chatgpt_pass1,incompatible,5,"The approval event is otherwise identical, but the location differs between Beacon Harbor and Elm Valley."
+R180-0079,chatgpt_pass1,incompatible,5,"The opening event is located in different places, Cedar Point and Falcon Ridge."
+R180-0080,chatgpt_pass1,incompatible,5,"The approval event is assigned to different locations, Cedar Point and Falcon Ridge."
+R180-0081,chatgpt_pass1,incompatible,5,"The same satellite launch is placed at different launch locations, Tanegashima and Wenchang."
+R180-0082,chatgpt_pass1,incompatible,5,"The launch event is attributed to different named people, so the core entity referent differs."
+R180-0083,chatgpt_pass1,incompatible,5,"The delivery event is assigned to different locations, Cedar Point and Falcon Ridge."
+R180-0084,chatgpt_pass1,incompatible,5,"The opening event is otherwise identical, but its location differs between Beacon Harbor and Elm Valley."
+R180-0085,chatgpt_pass1,incompatible,5,"The person and opening event match, but the role differs between research lead and project curator."
+R180-0086,chatgpt_pass1,incompatible,5,"The restoration event is attributed to different named people, so the core entity identity does not match."
