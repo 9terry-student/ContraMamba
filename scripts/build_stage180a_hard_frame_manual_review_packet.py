@@ -70,6 +70,10 @@ CSV_SCHEMAS = {
     OUTPUTS[5]: PASS2_TEMPLATE_COLUMNS, OUTPUTS[6]: HIDDEN_COLUMNS, OUTPUTS[7]: MATCHING_COLUMNS,
     OUTPUTS[8]: ITEM_SUMMARY_COLUMNS,
 }
+_MISSING = object()
+STAGE176_REPORT_DEV_COUNT_PATH = ("split", "dev_rows")
+STAGE176_TRANSITION_IDENTITY_COLUMN = "row_id"
+STAGE179_DEV_IDENTITY_COLUMN = "row_id"
 
 
 class PacketBlocked(ValueError):
@@ -174,6 +178,77 @@ def row_id(row: dict[str, Any]) -> str:
     value = row.get("row_id", row.get("id"))
     require(value is not None and str(value).strip(), "row lacks stable row_id/id")
     return str(value)
+
+
+def _get_path(mapping: dict[str, Any], path: tuple[str, ...], default: Any = _MISSING) -> Any:
+    current: Any = mapping
+    for key in path:
+        if not isinstance(current, dict) or key not in current:
+            if default is _MISSING:
+                raise KeyError(".".join(path))
+            return default
+        current = current[key]
+    return current
+
+
+def validate_dev_artifacts(stage176_rows: list[dict[str, str]], stage179_rows: list[dict[str, str]],
+                           stage176_report: dict[str, Any], diagnostic: dict[str, Any]) -> dict[str, Any]:
+    stage176_columns = list(stage176_rows[0]) if stage176_rows else []
+    stage179_columns = list(stage179_rows[0]) if stage179_rows else []
+    diagnostic.update({
+        "stage176a_dev_csv_row_count": len(stage176_rows),
+        "stage179a_dev_csv_row_count": len(stage179_rows),
+        "stage176a_candidate_identity_columns": [column for column in ("row_id", "stable_row_index")
+                                                  if column in stage176_columns],
+        "stage179a_candidate_identity_columns": [column for column in ("row_id", "stable_row_index")
+                                                  if column in stage179_columns],
+        "stage176a_selected_identity_column": STAGE176_TRANSITION_IDENTITY_COLUMN,
+        "stage179a_selected_identity_column": STAGE179_DEV_IDENTITY_COLUMN,
+        "stage176a_report_dev_count_path": ".".join(STAGE176_REPORT_DEV_COUNT_PATH),
+        "dev_count_authoritative_source": "stage176a_row_transitions_csv",
+    })
+    try:
+        report_count_value = _get_path(stage176_report, STAGE176_REPORT_DEV_COUNT_PATH)
+        report_count_present = True
+    except KeyError:
+        report_count_value = None
+        report_count_present = False
+    diagnostic["stage176a_report_dev_count_present"] = report_count_present
+    diagnostic["stage176a_report_dev_count_raw_value"] = report_count_value
+    report_count = None if report_count_value is None else as_int(report_count_value, "Stage176-A split.dev_rows")
+    diagnostic["stage176a_report_dev_count"] = report_count
+    require(STAGE176_TRANSITION_IDENTITY_COLUMN in stage176_columns,
+            f"Stage176-A transitions lack writer identity column {STAGE176_TRANSITION_IDENTITY_COLUMN!r}")
+    require(STAGE179_DEV_IDENTITY_COLUMN in stage179_columns,
+            f"Stage179-A dev analysis lacks writer identity column {STAGE179_DEV_IDENTITY_COLUMN!r}")
+    stage176_ids = [str(row[STAGE176_TRANSITION_IDENTITY_COLUMN]) for row in stage176_rows]
+    stage179_ids = [str(row[STAGE179_DEV_IDENTITY_COLUMN]) for row in stage179_rows]
+    require(all(value.strip() for value in stage176_ids), "Stage176-A transitions contain empty stable row IDs")
+    require(all(value.strip() for value in stage179_ids), "Stage179-A dev analysis contains empty stable row IDs")
+    stage176_set, stage179_set = set(stage176_ids), set(stage179_ids)
+    only_stage176 = sorted(stage176_set - stage179_set)
+    only_stage179 = sorted(stage179_set - stage176_set)
+    diagnostic.update({
+        "stage176a_dev_unique_row_count": len(stage176_set),
+        "stage179a_dev_unique_row_count": len(stage179_set),
+        "stage176a_duplicate_stable_row_id_count": len(stage176_ids) - len(stage176_set),
+        "stage179a_duplicate_stable_row_id_count": len(stage179_ids) - len(stage179_set),
+        "stage176a_only_identity_count": len(only_stage176),
+        "stage179a_only_identity_count": len(only_stage179),
+        "stage176a_only_identities": only_stage176,
+        "stage179a_only_identities": only_stage179,
+        "stage176a_stage179a_dev_identity_match": stage176_set == stage179_set,
+    })
+    require(len(stage176_rows) == 720, f"Stage176-A transition CSV must contain 720 rows, got {len(stage176_rows)}")
+    require(len(stage179_rows) == 720, f"Stage179-A dev analysis CSV must contain 720 rows, got {len(stage179_rows)}")
+    require(len(stage176_set) == 720, f"Stage176-A transition CSV must contain 720 unique row IDs, got {len(stage176_set)}")
+    require(len(stage179_set) == 720, f"Stage179-A dev analysis CSV must contain 720 unique row IDs, got {len(stage179_set)}")
+    require(stage176_set == stage179_set,
+            f"Stage176-A/Stage179-A dev identity mismatch: only176={len(only_stage176)}, only179={len(only_stage179)}")
+    if report_count is not None:
+        require(report_count == 720, f"Stage176-A report split.dev_rows must be 720 when present, got {report_count}")
+        require(report_count == len(stage176_rows), "Stage176-A report/transition CSV dev counts differ")
+    return diagnostic
 
 
 def cohort_from_transition(row: dict[str, Any]) -> str:
@@ -488,6 +563,13 @@ def main() -> int:
     args = parse_args()
     output_dir = args.output_dir.resolve()
     current = "argument_validation"
+    dev_validation_diagnostic: dict[str, Any] = {
+        "stage176a_dev_csv_row_count": None, "stage179a_dev_csv_row_count": None,
+        "stage176a_dev_unique_row_count": None, "stage179a_dev_unique_row_count": None,
+        "stage176a_stage179a_dev_identity_match": None,
+        "stage176a_report_dev_count_present": False, "stage176a_report_dev_count": None,
+        "dev_count_authoritative_source": "stage176a_row_transitions_csv",
+    }
     try:
         require(args.controls_per_hard_row >= 1, "controls-per-hard-row must be positive")
         require(args.repeat_instance_count >= 0, "repeat-instance-count must be non-negative")
@@ -497,7 +579,11 @@ def main() -> int:
         actual = {name: decision(reports[name], name) for name in EXPECTED}
         for name, expected in EXPECTED.items():
             require(actual[name] == expected, f"{name} decision mismatch: {actual[name]!r}")
-        require(reports["stage176a"].get("scope", {}).get("dev_rows") == 720, "Stage176-A dev split is not 720 rows")
+        current = "dev_csv_identity_validation"
+        stage176_transition_rows = read_csv(paths["stage176a_row_transitions"])
+        stage179_dev_analysis_rows = read_csv(paths["stage179a_dev_row_analysis"])
+        validate_dev_artifacts(stage176_transition_rows, stage179_dev_analysis_rows,
+                               reports["stage176a"], dev_validation_diagnostic)
         for name, report in reports.items():
             encoded = json.dumps(report, sort_keys=True).lower()
             require('"external_evaluation": true' not in encoded and '"external_labels": true' not in encoded,
@@ -507,8 +593,8 @@ def main() -> int:
         current = "authoritative_definition_validation"
         authority = validate_authority(paths["codebook"])
         current = "dev_and_hard_identity_validation"
-        dev = merge_dev(read_data(paths["data"]), read_csv(paths["stage179a_dev_row_analysis"]))
-        hard, hard_check = validate_hard(read_csv(paths["stage176a_row_transitions"]),
+        dev = merge_dev(read_data(paths["data"]), stage179_dev_analysis_rows)
+        hard, hard_check = validate_hard(stage176_transition_rows,
                                          read_csv(paths["stage179a_hard39_attribution"]), dev)
         current = "control_selection"
         controls, matching = select_controls(hard, dev, args.controls_per_hard_row)
@@ -560,7 +646,8 @@ def main() -> int:
                       "evaluation_and_data_packaging_only": True},
             "input_validation": {"status": "passed", "decisions": actual, "hard39": hard_check,
                                  "external_evaluation": False, "external_labels": False, "time_swap": False,
-                                 "stable_row_identity": True, "hidden_item_key_sha256": hidden_digest},
+                                 "stable_row_identity": True, "hidden_item_key_sha256": hidden_digest,
+                                 **dev_validation_diagnostic},
             "authoritative_frame_definition": authority,
             "hard_cohort": {"beneficial": 25, "harmful": 14, "total": 39},
             "control_selection": {"controls_per_hard_row": args.controls_per_hard_row, "selected": len(controls),
@@ -594,7 +681,8 @@ def main() -> int:
     except Exception as error:  # blocked artifact is part of the external contract
         output_dir.mkdir(parents=True, exist_ok=True)
         blocked = {"stage": STAGE, "decision": BLOCKED, "error_type": type(error).__name__, "error": str(error),
-                   "failure_stage": current, "traceback": traceback.format_exc()}
+                   "failure_stage": current, "traceback": traceback.format_exc(),
+                   **dev_validation_diagnostic}
         write_json(output_dir / OUTPUTS[0], blocked)
         return 2
 
