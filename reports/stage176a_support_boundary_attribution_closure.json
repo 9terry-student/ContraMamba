@@ -1,0 +1,98 @@
+{
+  "stage": "Stage176-A",
+  "decision": "STAGE176A_GLOBAL_CONSERVATIVE_SHIFT_WITH_USEFUL_FRAME_MISMATCH_CORRECTION_AND_SUPPORT_COLLATERAL_DAMAGE",
+  "scope": {
+    "split": "deterministic pair-level clean-dev split",
+    "seed": 174,
+    "train_fraction": 0.8,
+    "total_pair_groups": 300,
+    "train_pair_groups": 240,
+    "dev_pair_groups": 60,
+    "dev_rows": 720,
+    "eligible_dev_support_anchor_pairs": 29,
+    "train_dev_overlap": 0,
+    "baseline_selected_epoch": 20,
+    "treatment_selected_epoch": 20,
+    "baseline_stage175b": {"mode": "off", "weight": 0.0},
+    "treatment_stage175b": {"mode": "paraphrase_margin", "weight": 0.05, "tolerance": 0.1},
+    "baseline_stage174c": {"mode": "off", "weight": 0.0},
+    "treatment_stage174c": {"mode": "off", "weight": 0.0},
+    "final_classifier_source": "output[\"logits\"]",
+    "checkpoint_selection": "clean-dev-only",
+    "external_evaluation": false,
+    "external_labels": false,
+    "time_swap": false
+  },
+  "overall_transition": {
+    "baseline_support_predictions": 136,
+    "treatment_support_predictions": 97,
+    "support_prediction_delta": -39,
+    "support_to_not_entitled": 39,
+    "support_to_refute": 0,
+    "not_entitled_to_support": 0,
+    "refute_to_support": 0,
+    "other_prediction_transitions": 0
+  },
+  "category_attribution": {
+    "eligible_support_paraphrase": {"rows": 29, "support_to_not_entitled": 1, "mean_support_margin_delta": -0.228879, "median_support_margin_delta": -0.260825, "negative_margin_delta_rows": 27, "accuracy_delta": -0.034483},
+    "eligible_support_canonical_none": {"rows": 29, "support_to_not_entitled": 6, "mean_support_margin_delta": -0.21107, "median_support_margin_delta": -0.21916, "negative_margin_delta_rows": 29, "accuracy_delta": -0.206897},
+    "other_gold_support": {"rows": 31, "support_to_not_entitled": 7, "mean_support_margin_delta": -0.210015, "median_support_margin_delta": -0.208368, "negative_margin_delta_rows": 31, "accuracy_delta": -0.225806},
+    "gold_not_entitled": {"rows": 540, "false_support_removed": 25, "mean_support_margin_delta": -0.119234, "accuracy_delta": 0.046296},
+    "gold_refute": {"rows": 91, "prediction_changes": 0, "mean_support_margin_delta": 0.059465, "accuracy_delta": 0.0}
+  },
+  "intervention_attribution": {
+    "beneficial_correction": {"total": 25, "by_family": {"location_swap": 13, "role_swap": 6, "title_name_swap": 3, "entity_swap": 2, "event_swap": 1}},
+    "harmful_regression": {"total": 14, "by_family": {"none": 6, "paraphrase": 1, "polarity_flip": 7}}
+  },
+  "correctness_tradeoff": {
+    "recovered_errors": 25,
+    "regressed_errors": 14,
+    "unchanged_correct": 611,
+    "unchanged_incorrect": 70,
+    "net_correctness_change": 11,
+    "beneficial_correction": {"gold": "NOT_ENTITLED", "baseline_prediction": "SUPPORT", "treatment_prediction": "NOT_ENTITLED", "rows": 25},
+    "harmful_regression": {"gold": "SUPPORT", "baseline_prediction": "SUPPORT", "treatment_prediction": "NOT_ENTITLED", "rows": 14},
+    "gold_refute_changes": 0
+  },
+  "diagnosis": {
+    "eligible_paraphrase_local_degradation": {"supported": true, "negative_margin_delta_rows": 27, "rows": 29, "support_to_not_entitled": 1},
+    "canonical_reference_drift": {"supported": true, "negative_margin_delta_rows": 29, "rows": 29, "support_to_not_entitled": 6},
+    "untargeted_support_degradation": {"supported": true, "negative_margin_delta_rows": 31, "rows": 31, "support_to_not_entitled": 7},
+    "global_conservative_boundary_shift": {"supported": true, "negative_mean_margin_categories": ["eligible_support_paraphrase", "eligible_support_canonical_none", "other_gold_support", "gold_not_entitled"], "not_entitled_increase_families": ["entity_swap", "event_swap", "location_swap", "none", "paraphrase", "polarity_flip", "role_swap", "title_name_swap"]}
+  },
+  "established_findings": [
+    "The Stage175-B path usefully removed 25 frame-mismatch-family false SUPPORT predictions.",
+    "The same selected treatment checkpoint lost 14 true SUPPORT predictions, including canonical and polarity-flip rows.",
+    "Relative paraphrase preservation did not prevent a global conservative decision-boundary shift."
+  ],
+  "interpretation": [
+    "This is observational attribution between two selected checkpoints, not causal proof.",
+    "The result does not establish that threshold adjustment or a weight sweep would resolve the tradeoff.",
+    "A Stage177 mechanism is admissible only if beneficial corrections and harmful regressions are separable by native structural signals."
+  ],
+  "closure": {
+    "attribution_completion_decision": "STAGE176A_CLEAN_DEV_SUPPORT_BOUNDARY_ATTRIBUTION_COMPLETE",
+    "stage175_weight_sweep": false,
+    "stage175_tolerance_sweep": false,
+    "stage175_three_seed_expansion": false,
+    "stage175_external_evaluation": false,
+    "stage175_implementation_default_off": true,
+    "proceed_to_native_structural_separability_audit": true
+  },
+  "next_stage": {
+    "stage": "Stage176-B",
+    "purpose": "Audit whether native baseline or treatment structural outputs separate beneficial corrections from harmful regressions without fitting or threshold search."
+  },
+  "safety_policy": {
+    "clean_dev_only": true,
+    "training": false,
+    "optimizer": false,
+    "backward": false,
+    "threshold_search": false,
+    "calibration": false,
+    "checkpoint_selection": false,
+    "external_evaluation": false,
+    "external_labels": false,
+    "time_swap": false
+  }
+}
