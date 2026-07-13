@@ -76,6 +76,13 @@ from scripts.stage174c_clean_pairwise import (  # noqa: E402
     taxonomy_record as stage174c_taxonomy_record,
     validation_rules as stage174c_validation_rules,
 )
+from scripts.stage175b_support_anchor import (  # noqa: E402
+    EXPECTED_ELIGIBLE_TRAIN_PAIR_COUNT as STAGE175B_EXPECTED_ELIGIBLE_COUNT,
+    build_train_support_anchor_index as build_stage175b_train_anchor_index,
+    compute_loss as compute_stage175b_loss,
+    ordered_anchor_indices as stage175b_ordered_anchor_indices,
+    resolved_configuration as stage175b_resolved_configuration,
+)
 STAGE31C_COVERAGE_LABELS = [
     "ENTAILS_SUPPORT",
     "OVERCLAIM_NOT_ENTITLED",
@@ -6348,6 +6355,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--stage174c-clean-polarity-preservation-weight", type=float, default=1.0
     )
+    parser.add_argument(
+        "--stage175b-support-anchor-mode",
+        choices=("off", "paraphrase_margin"),
+        default="off",
+    )
+    parser.add_argument("--stage175b-support-anchor-weight", type=float, default=0.0)
+    parser.add_argument("--stage175b-support-anchor-tolerance", type=float, default=0.10)
     parser.add_argument(
         "--use-temporal-comparator",
         action="store_true",
@@ -12975,6 +12989,10 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--stage174c-clean-pairwise-margin must be nonnegative")
     if args.stage174c_clean_polarity_preservation_weight < 0.0:
         parser.error("--stage174c-clean-polarity-preservation-weight must be nonnegative")
+    if args.stage175b_support_anchor_weight < 0.0:
+        parser.error("--stage175b-support-anchor-weight must be nonnegative")
+    if args.stage175b_support_anchor_tolerance < 0.0:
+        parser.error("--stage175b-support-anchor-tolerance must be nonnegative")
 
     if args.backbone == "dummy" and not args.allow_dummy_backbone:
         raise ValueError(
@@ -13485,6 +13503,91 @@ def main(argv: list[str] | None = None) -> int:
             raise ValueError("[stage174c] clean-only safety gate failed: " + ", ".join(_stage174c_failures))
         _stage174c_pair_index = build_stage174c_train_pair_index(train_records)
         _stage174c_safety_gate["passed"] = True
+
+    _stage175b_enabled = (
+        args.stage175b_support_anchor_mode == "paraphrase_margin"
+        and args.stage175b_support_anchor_weight > 0.0
+    )
+    _stage175b_anchor_index: dict[str, dict[str, int]] | None = None
+    _stage175b_validation: dict[str, int] = {
+        "total_train_pair_groups": 0,
+        "eligible_train_support_anchor_pair_groups": 0,
+        "expected_eligible_count": STAGE175B_EXPECTED_ELIGIBLE_COUNT,
+        "malformed_pair_count": 0,
+        "missing_current_count": 0,
+        "missing_reference_count": 0,
+        "ambiguous_reference_count": 0,
+        "train_dev_overlap_count": 0,
+        "current_reference_same_row_count": 0,
+    }
+    _stage175b_safety_gate = {
+        "passed": None if not _stage175b_enabled else False,
+        "main_data_is_exact_clean_dataset": False,
+        "time_swap_used": False,
+        "external_data_used": False,
+        "external_labels_used": False,
+        "teacher_checkpoint_used": False,
+        "failure_variant_loss_used": False,
+        "absolute_support_floor_used": False,
+        "architecture_uses_native_classifier": args.architecture in (
+            "v6b_minimal", "v7_hierarchical", "vnext_minimal"
+        ),
+        "final_ce_logits_source": 'output["logits"]',
+        "loss_logits_used_for_final_classifier_ce": False,
+        "clean_dev_only_checkpoint_selection": True,
+        "train_only_references": True,
+    }
+    if _stage175b_enabled:
+        _expected_stage175b_data = (
+            ROOT / "data" / "controlled_v5_v3_without_time_swap.jsonl"
+        ).resolve()
+        _stage175b_safety_gate["main_data_is_exact_clean_dataset"] = (
+            Path(args.data).resolve() == _expected_stage175b_data
+        )
+        _stage175b_safety_gate["time_swap_used"] = any(
+            record.get("intervention_type") == "time_swap" for record in records
+        )
+        _stage175b_external_sources = bool(
+            _bridge_sources_enabled
+            or (getattr(args, "external_eval_jsonl", []) or [])
+            or (getattr(args, "stage43_external_factver_jsonl", []) or [])
+            or getattr(args, "ood_data", None) is not None
+            or args.use_temporal_diagnostic_loss
+            or args.use_temporal_channel_loss
+            or args.use_temporal_adapter_loss
+            or getattr(args, "v7_use_temporal_safety_loss", False)
+            or getattr(args, "v7_use_temporal_mismatch_multihead_loss", False)
+            or getattr(args, "v7_use_temporal_preservation_loss", False)
+            or getattr(args, "v7_use_coverage_entailment_loss", False)
+            or args.use_pair_contrastive_frame_loss
+        )
+        _stage175b_safety_gate["external_data_used"] = _stage175b_external_sources
+        _stage175b_failures: list[str] = []
+        if not _stage175b_safety_gate["main_data_is_exact_clean_dataset"]:
+            _stage175b_failures.append("main_data_is_not_exact_clean_dataset")
+        if _stage175b_safety_gate["time_swap_used"]:
+            _stage175b_failures.append("time_swap")
+        if _stage175b_safety_gate["external_data_used"]:
+            _stage175b_failures.append("external_or_auxiliary_dataset")
+        if not _stage175b_safety_gate["architecture_uses_native_classifier"]:
+            _stage175b_failures.append("incompatible_non_native_classifier_architecture")
+        if args.stage45_use_family_holdout:
+            _stage175b_failures.append("family_holdout")
+        if args.max_train_records is not None or args.smoke:
+            _stage175b_failures.append("truncated_or_smoke_data")
+        if _stage175b_failures:
+            raise ValueError(
+                "[stage175b] clean SUPPORT-anchor safety gate failed: "
+                + ", ".join(_stage175b_failures)
+            )
+        _stage175b_anchor_index, _stage175b_validation = (
+            build_stage175b_train_anchor_index(
+                train_records,
+                dev_records,
+                expected_eligible_count=STAGE175B_EXPECTED_ELIGIBLE_COUNT,
+            )
+        )
+        _stage175b_safety_gate["passed"] = True
 
     # Stage71/Stage75C/Stage80D: Stage57/Stage66/Stage75/Stage80A bridge rows
     # have no intervention_type=="none" original record for their pair_id, so
@@ -14662,6 +14765,11 @@ def main(argv: list[str] | None = None) -> int:
         stage174c_margin=0.10,
         stage174c_polarity_weight=1.0,
         stage174c_pair_index=None,
+        stage175b_mode="off",
+        stage175b_weight=0.0,
+        stage175b_tolerance=0.10,
+        stage175b_anchor_index=None,
+        stage175b_validation=None,
     ):
         """Modified run_training that passes flags to v6b model."""
         if epochs < 1:
@@ -14816,6 +14924,9 @@ def main(argv: list[str] | None = None) -> int:
         _stage174c_epoch_metrics: list[dict[str, Any]] = []
         _stage174c_reference_forward_row_count = 0
         _stage174c_reference_forward_batch_count = 0
+        _stage175b_epoch_metrics: list[dict[str, Any]] = []
+        _stage175b_reference_forward_row_count = 0
+        _stage175b_reference_forward_batch_count = 0
 
         # Stage26-F extended: captured v7 output tensors for best-epoch logit / per-gold summaries.
         # Updated inside the epoch loop whenever score > best_score.
@@ -14856,6 +14967,20 @@ def main(argv: list[str] | None = None) -> int:
                 _pw_final_labels = train_inputs["final_labels"].index_select(
                     0, _pw_clean_main_index_tensor
                 )
+
+        _stage175b_current_indices: list[int] = []
+        _stage175b_reference_indices: list[int] = []
+        if stage175b_mode != "off" and stage175b_weight > 0.0:
+            if stage175b_anchor_index is None:
+                raise RuntimeError(
+                    "[stage175b] enabled without a validated train anchor index"
+                )
+            (
+                _stage175b_current_indices,
+                _stage175b_reference_indices,
+            ) = stage175b_ordered_anchor_indices(stage175b_anchor_index)
+            if len(set(_stage175b_reference_indices)) != len(_stage175b_reference_indices):
+                raise RuntimeError("[stage175b] duplicate canonical reference row mapping")
 
         for epoch in range(1, epochs + 1):
             model.train()
@@ -14928,6 +15053,79 @@ def main(argv: list[str] | None = None) -> int:
                 )
                 _stage174c_reference_forward_batch_count += _stage174c_epoch_reference_batch_count
 
+            _stage175b_unweighted_loss = output["logits"].sum() * 0.0
+            _stage175b_metrics: dict[str, Any] = {
+                "eligible_current_row_count": 0,
+                "active_violation_count": 0,
+                "zero_violation_count": 0,
+                "mean_current_support_margin": None,
+                "mean_detached_reference_support_margin": None,
+                "mean_raw_margin_gap": None,
+                "mean_active_hinge_loss": None,
+                "malformed_skipped_count": 0,
+            }
+            _stage175b_epoch_reference_batch_count = 0
+            if (
+                stage175b_mode != "off"
+                and stage175b_weight > 0.0
+                and _stage175b_current_indices
+            ):
+                _stage175b_reference_index_tensor = torch.tensor(
+                    _stage175b_reference_indices, dtype=torch.long, device=device
+                )
+                _stage175b_reference_inputs = {
+                    key: value.index_select(0, _stage175b_reference_index_tensor)
+                    for key, value in train_inputs.items()
+                    if isinstance(value, torch.Tensor)
+                    and value.dim() > 0
+                    and value.shape[0] == train_inputs["input_ids"].shape[0]
+                }
+                _stage175b_was_training = model.training
+                model.eval()
+                try:
+                    with torch.no_grad():
+                        _stage175b_reference_output = _vnext_forward_maybe_batched(
+                            model,
+                            _stage175b_reference_inputs,
+                            temporal_mismatch_flags=train_temporal_flags.index_select(
+                                0, _stage175b_reference_index_tensor
+                            ),
+                            predicate_mismatch_flags=train_predicate_flags.index_select(
+                                0, _stage175b_reference_index_tensor
+                            ),
+                            temporal_adapter_final_penalty_scale=_ta_pen,
+                            temporal_channel_gated_penalty_scale=_tc_pen,
+                            batch_size=eval_batch_size,
+                            amp_enabled=amp_enabled,
+                        )
+                finally:
+                    model.train(_stage175b_was_training)
+                if _stage175b_reference_output.get("logits") is None:
+                    raise RuntimeError(
+                        '[stage175b] required final classifier output["logits"] is unavailable'
+                    )
+                _stage175b_unweighted_loss, _stage175b_metrics = compute_stage175b_loss(
+                    output["logits"],
+                    _stage175b_reference_output["logits"].detach(),
+                    _stage175b_current_indices,
+                    label_to_id=v5.FINAL_LABEL_TO_ID,
+                    tolerance=stage175b_tolerance,
+                )
+                _stage175b_reference_forward_row_count += len(
+                    _stage175b_reference_indices
+                )
+                _stage175b_epoch_reference_batch_count = (
+                    1
+                    if eval_batch_size is None
+                    else (
+                        len(_stage175b_reference_indices) + int(eval_batch_size) - 1
+                    )
+                    // int(eval_batch_size)
+                )
+                _stage175b_reference_forward_batch_count += (
+                    _stage175b_epoch_reference_batch_count
+                )
+
             indices = v5.sample_indices(
                 train_inputs["final_labels"], balanced_sampler, sampling_generator
             )
@@ -14991,6 +15189,22 @@ def main(argv: list[str] | None = None) -> int:
                     "validated_train_pair_group_count": len(stage174c_pair_index or {}),
                     "malformed_pair_count": 0,
                     "skipped_pair_count": 0,
+                })
+            if stage175b_mode != "off" and stage175b_weight > 0.0:
+                _stage175b_weighted_loss = stage175b_weight * _stage175b_unweighted_loss
+                total_loss = total_loss + _stage175b_weighted_loss
+                _stage175b_epoch_metrics.append({
+                    "epoch": epoch,
+                    **_stage175b_metrics,
+                    "reference_forward_row_count": len(_stage175b_reference_indices),
+                    "reference_forward_batch_count": _stage175b_epoch_reference_batch_count,
+                    "total_unweighted_loss": float(
+                        _stage175b_unweighted_loss.detach().item()
+                    ),
+                    "total_weighted_loss": float(
+                        _stage175b_weighted_loss.detach().item()
+                    ),
+                    "malformed_skipped_count": 0,
                 })
             # Stage45-C: internal-only SUPPORT recovery / entitled-NE over-rejection
             # auxiliary terms. Computed strictly from the internal training split
@@ -17863,9 +18077,76 @@ def main(argv: list[str] | None = None) -> int:
             "malformed_pair_count": 0,
             "skipped_pair_count": 0,
         }
+
+        def _stage175b_weighted_mean(name: str, count_name: str) -> float | None:
+            count = sum(int(item.get(count_name, 0)) for item in _stage175b_epoch_metrics)
+            if count == 0:
+                return None
+            return sum(
+                float(item[name]) * int(item.get(count_name, 0))
+                for item in _stage175b_epoch_metrics
+                if item.get(name) is not None
+            ) / count
+
+        _stage175b_totals = {
+            "eligible_current_row_count": sum(
+                int(item.get("eligible_current_row_count", 0))
+                for item in _stage175b_epoch_metrics
+            ),
+            "reference_forward_row_count": _stage175b_reference_forward_row_count,
+            "reference_forward_batch_count": _stage175b_reference_forward_batch_count,
+            "active_violation_count": sum(
+                int(item.get("active_violation_count", 0))
+                for item in _stage175b_epoch_metrics
+            ),
+            "zero_violation_count": sum(
+                int(item.get("zero_violation_count", 0))
+                for item in _stage175b_epoch_metrics
+            ),
+            "mean_current_support_margin": _stage175b_weighted_mean(
+                "mean_current_support_margin", "eligible_current_row_count"
+            ),
+            "mean_detached_reference_support_margin": _stage175b_weighted_mean(
+                "mean_detached_reference_support_margin", "eligible_current_row_count"
+            ),
+            "mean_raw_margin_gap": _stage175b_weighted_mean(
+                "mean_raw_margin_gap", "eligible_current_row_count"
+            ),
+            "mean_active_hinge_loss": _stage175b_weighted_mean(
+                "mean_active_hinge_loss", "active_violation_count"
+            ),
+            "total_unweighted_loss": (
+                sum(float(item["total_unweighted_loss"]) for item in _stage175b_epoch_metrics)
+                / len(_stage175b_epoch_metrics)
+                if _stage175b_epoch_metrics else None
+            ),
+            "total_weighted_loss": (
+                sum(float(item["total_weighted_loss"]) for item in _stage175b_epoch_metrics)
+                / len(_stage175b_epoch_metrics)
+                if _stage175b_epoch_metrics else None
+            ),
+            "malformed_skipped_count": 0,
+        }
+        _stage175b_report = {
+            **stage175b_resolved_configuration(
+                mode=stage175b_mode,
+                weight=stage175b_weight,
+                tolerance=stage175b_tolerance,
+            ),
+            "validated_structure": dict(stage175b_validation or {}),
+            "reference_policy": (
+                "unique same-pair train none row; eval mode plus torch.no_grad; "
+                "reference logits detached; original model mode restored"
+            ),
+            "reference_batch_size_source": "eval_batch_size",
+            "checkpoint_selection_uses_stage175b_metric": False,
+            "epoch_metrics": _stage175b_epoch_metrics,
+            "totals": _stage175b_totals,
+        }
         report = {
             "run_name": run_name,
             "stage174c_clean_pairwise": _stage174c_report,
+            "stage175b_support_anchor": _stage175b_report,
             "final_epoch": epochs,
             "best_epoch": best_epoch,
             "select_metric": select_metric,
@@ -18055,6 +18336,7 @@ def main(argv: list[str] | None = None) -> int:
         "time_swap_included_in_main_classification_training": False,
         "final_ce_logits_source": "output['logits']",
         "loss_logits_used_for_final_classifier_ce": False,
+        "stage175b_metric_used_for_checkpoint_selection": False,
         "shadow_diagnostics_integrated_into_predictions": bool(
             getattr(args, "stage43_external_enable_shadow_export", False)
         ),
@@ -18096,6 +18378,27 @@ def main(argv: list[str] | None = None) -> int:
         "deterministic_selection_policy": "SHA-256(seed, pair_id, intervention_type) offset plus epoch cycling",
         "validated_train_pair_group_count": len(_stage174c_pair_index or {}),
         "intended_native_output_tensor_keys": dict(STAGE174C_NATIVE_SCORE_KEYS),
+    })
+    _stage174a_provenance_record["stage175b_support_anchor"] = provenance_json_safe({
+        **stage175b_resolved_configuration(
+            mode=args.stage175b_support_anchor_mode,
+            weight=args.stage175b_support_anchor_weight,
+            tolerance=args.stage175b_support_anchor_tolerance,
+        ),
+        "validated_structure": _stage175b_validation,
+        "safety_metadata": {
+            "main_data": "data/controlled_v5_v3_without_time_swap.jsonl",
+            **_stage175b_safety_gate,
+            "external_labels_used": False,
+            "teacher_checkpoint_used": False,
+            "failure_variant_loss_used": False,
+            "absolute_support_floor_used": False,
+            "final_ce_logits_source": 'output["logits"]',
+            "loss_logits_used_for_final_classifier_ce": False,
+            "clean_dev_only_checkpoint_selection": True,
+        },
+        "deterministic_reference_retrieval": True,
+        "checkpoint_selection_uses_stage175b_metric": False,
     })
     write_provenance_json_atomic(_stage174a_provenance_path, _stage174a_provenance_record)
     requested_loss_config = {
@@ -18320,6 +18623,11 @@ def main(argv: list[str] | None = None) -> int:
             stage174c_margin=args.stage174c_clean_pairwise_margin,
             stage174c_polarity_weight=args.stage174c_clean_polarity_preservation_weight,
             stage174c_pair_index=_stage174c_pair_index,
+            stage175b_mode=args.stage175b_support_anchor_mode,
+            stage175b_weight=args.stage175b_support_anchor_weight,
+            stage175b_tolerance=args.stage175b_support_anchor_tolerance,
+            stage175b_anchor_index=_stage175b_anchor_index,
+            stage175b_validation=_stage175b_validation,
             pc_pres_inputs=_pc_pres_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_frame_inputs=_pc_frame_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_loss_weight=(
@@ -18355,6 +18663,16 @@ def main(argv: list[str] | None = None) -> int:
                 "clean_only_safety_gate": _stage174c_safety_gate,
                 "validated_train_pair_group_count": len(_stage174c_pair_index or {}),
                 "native_output_tensor_keys": dict(STAGE174C_NATIVE_SCORE_KEYS),
+            },
+            "stage175b_support_anchor": {
+                **stage175b_resolved_configuration(
+                    mode=args.stage175b_support_anchor_mode,
+                    weight=args.stage175b_support_anchor_weight,
+                    tolerance=args.stage175b_support_anchor_tolerance,
+                ),
+                "validated_structure": _stage175b_validation,
+                "safety_metadata": _stage175b_safety_gate,
+                "checkpoint_selection_uses_stage175b_metric": False,
             },
             "seed": args.seed,
             "random_seed": args.seed,
@@ -21170,6 +21488,34 @@ def main(argv: list[str] | None = None) -> int:
             "actual_native_output_tensor_keys": (
                 dict(STAGE174C_NATIVE_SCORE_KEYS) if _stage174c_enabled else {}
             ),
+        })
+    )
+    _stage175b_final_runs = {
+        name: run_report.get("stage175b_support_anchor")
+        for name, run_report in reports.items()
+    }
+    _stage174a_provenance_record["stage175b_support_anchor"].update(
+        provenance_json_safe({
+            "run_activity": {
+                name: {
+                    "epoch_metrics": (summary or {}).get("epoch_metrics", []),
+                    "totals": (summary or {}).get("totals", {}),
+                }
+                for name, summary in _stage175b_final_runs.items()
+            },
+            "total_reference_forward_row_count": sum(
+                int(((summary or {}).get("totals") or {}).get(
+                    "reference_forward_row_count", 0
+                ))
+                for summary in _stage175b_final_runs.values()
+            ),
+            "total_reference_forward_batch_count": sum(
+                int(((summary or {}).get("totals") or {}).get(
+                    "reference_forward_batch_count", 0
+                ))
+                for summary in _stage175b_final_runs.values()
+            ),
+            "malformed_skipped_count": 0,
         })
     )
     _stage174a_provenance_record.update(
