@@ -308,7 +308,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--stage180a-pass2-packet", type=Path, required=True)
     parser.add_argument("--stage179a-report", type=Path, default=None)
     parser.add_argument("--stage179a-hard39-attribution", type=Path, default=None)
-    parser.add_argument("--stage176a-row-transitions", type=Path, required=True)
+    parser.add_argument("--stage176a-row-transitions", type=Path, default=None)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--bootstrap-samples", type=int, default=5000)
     parser.add_argument("--seed", type=int, default=182)
@@ -331,9 +331,11 @@ def markdown(report: dict[str, Any]) -> str:
 
 **Artifact source mode:** `{coverage.get('artifact_source_mode')}`
 
+**Stage176 cohort source mode:** `{coverage.get('stage176_artifact_source_mode')}`
+
 ## Artifact provenance
 
-Stage180-A manifest SHA: `{provenance.get('stage180a_manifest_sha256')}`. Stage180-A Pass-2 packet SHA: `{provenance.get('stage180a_pass2_packet_sha256')}`. Stage182-A candidate CSV SHA: `{provenance.get('stage182a_candidate_csv_sha256')}`. Stage182-A decision: `{provenance.get('stage182a_report_decision')}`.
+Stage180-A manifest SHA: `{provenance.get('stage180a_manifest_sha256')}`. Stage180-A Pass-2 packet SHA: `{provenance.get('stage180a_pass2_packet_sha256')}`. Stage182-A candidate CSV SHA: `{provenance.get('stage182a_candidate_csv_sha256')}`. Stage182-A decision: `{provenance.get('stage182a_report_decision')}`. Frozen Stage176 transition SHA: `{provenance.get('frozen_stage182a_stage176_sha256')}`. Direct Stage176 runtime validation available: `{coverage.get('direct_stage176_runtime_validation_available')}`.
 
 {coverage.get('provenance_limitation', '')}
 
@@ -379,6 +381,9 @@ def main() -> int:
                 "--stage179a-report and --stage179a-hard39-attribution must be provided together")
         artifact_source_mode = ("external_stage179_artifacts" if external_report
                                 else "embedded_stage180a_pass2")
+        external_stage176 = args.stage176a_row_transitions is not None
+        stage176_artifact_source_mode = ("external_stage176_transitions" if external_stage176
+                                         else "frozen_stage182a_cohort_fallback")
         current = "input_read"
         report182 = read_json(args.stage182a_report)
         report179 = read_json(args.stage179a_report) if external_report else None
@@ -393,14 +398,31 @@ def main() -> int:
         pass2_raw, _ = read_csv(args.stage180a_pass2_packet)
         hard179_raw, _ = (read_csv(args.stage179a_hard39_attribution)
                           if external_hard39 else ([], []))
-        transitions_raw, _ = read_csv(args.stage176a_row_transitions)
-        provenance_limitation = (
+        transitions_raw, _ = (read_csv(args.stage176a_row_transitions)
+                              if external_stage176 else ([], []))
+        stage179_provenance_limitation = (
             "" if external_report else
             "Stage179-derived scalar values were frozen into the Stage180-A packet. "
             "Direct Stage179 runtime report provenance was unavailable. "
             "No scalar was reconstructed or recomputed."
         )
+        stage176_provenance_limitation = (
+            "" if external_stage176 else
+            "Stage176 cohort labels were frozen into Stage182-A outputs. "
+            "Direct Stage176 runtime artifact was unavailable. "
+            "No transition or cohort value was reconstructed from model outputs."
+        )
+        provenance_limitation = " ".join(
+            value for value in (stage179_provenance_limitation, stage176_provenance_limitation) if value
+        )
         input_hashes = report182.get("input_validation", {}).get("input_sha256", {})
+        frozen_stage176_sha256 = input_hashes.get("stage176a_row_transitions")
+        require(isinstance(frozen_stage176_sha256, str) and bool(frozen_stage176_sha256),
+                "Stage182-A report lacks frozen Stage176 transition SHA-256")
+        external_stage176_sha256 = sha256(args.stage176a_row_transitions) if external_stage176 else None
+        if external_stage176:
+            require(external_stage176_sha256 == frozen_stage176_sha256,
+                    "external Stage176 transition SHA-256 disagrees with Stage182-A provenance")
         provenance = {
             "artifact_source_mode": artifact_source_mode,
             "stage180a_manifest_sha256": input_hashes.get("stage180a_manifest"),
@@ -408,7 +430,12 @@ def main() -> int:
             "stage182a_candidate_csv_sha256": sha256(args.stage182a_clean_candidates),
             "stage182a_report_decision": report182.get("decision"),
             "stage179a_report_decision": report179.get("decision") if report179 else None,
+            "stage176_artifact_source_mode": stage176_artifact_source_mode,
+            "frozen_stage182a_stage176_sha256": frozen_stage176_sha256,
+            "external_stage176_transitions_sha256": external_stage176_sha256,
+            "direct_stage176_runtime_validation_available": external_stage176,
             "scalar_reconstructed_or_recomputed": False,
+            "transition_or_cohort_reconstructed_from_model_outputs": False,
         }
 
         current = "identity_validation"
@@ -432,6 +459,67 @@ def main() -> int:
         clean_correct_ids = {key for key, row in item_by_id.items()
                              if row.get("final_diagnostic_class") == "CLEAN_HARD_NATIVE_FRAME_CORRECT"}
         require(len(clean_correct_ids) == 7, "clean-hard-correct topology must contain seven rows")
+
+        allowed_cohorts = {"beneficial_correction", "harmful_regression", "none"}
+        frozen_cohort_by_id: dict[str, str] = {}
+        for row_id, row in item_by_id.items():
+            cohort = str(row.get("stage176_cohort", "")).strip()
+            if cohort:
+                require(cohort in allowed_cohorts, f"invalid frozen Stage176 cohort for {row_id}: {cohort}")
+                frozen_cohort_by_id[row_id] = cohort
+        missing_candidate_cohorts: list[str] = []
+        for row_id, row in candidate_by_id.items():
+            candidate_cohort = str(row.get("stage176_cohort", "")).strip()
+            item_cohort = str(item_by_id.get(row_id, {}).get("stage176_cohort", "")).strip()
+            require(not candidate_cohort or candidate_cohort in allowed_cohorts,
+                    f"invalid candidate Stage176 cohort for {row_id}: {candidate_cohort}")
+            require(not item_cohort or item_cohort in allowed_cohorts,
+                    f"invalid unique-item Stage176 cohort for {row_id}: {item_cohort}")
+            require(not candidate_cohort or not item_cohort or candidate_cohort == item_cohort,
+                    f"Stage182-A candidate/unique-item cohort mismatch for {row_id}",
+                    schema_mismatch={"row_id": row_id, "candidate": candidate_cohort, "unique_item": item_cohort})
+            selected_cohort = candidate_cohort or item_cohort
+            if not selected_cohort:
+                missing_candidate_cohorts.append(row_id)
+            else:
+                frozen_cohort_by_id[row_id] = selected_cohort
+        require(not missing_candidate_cohorts, "candidate Stage176 cohort is missing",
+                missing_ids=sorted(missing_candidate_cohorts))
+        frozen_stage182a_cohort_coverage = rate(len(candidate_ids) - len(missing_candidate_cohorts), len(candidate_ids))
+
+        readiness = report182.get("clean_failure_set_readiness", {})
+        require(int(readiness.get("candidate_count", -1)) == len(candidate_ids),
+                "Stage182-A readiness candidate count mismatch")
+        report_cohort_rows = report182.get("beneficial_harmful_analysis", {}).get("rows", [])
+        expected_candidate_cohorts = {
+            str(row.get("stage176_cohort")): int(row.get("clean_failure_count", 0))
+            for row in report_cohort_rows
+            if str(row.get("stage176_cohort")) in {"beneficial_correction", "harmful_regression"}
+        }
+        require(sum(expected_candidate_cohorts.values()) == len(candidate_ids),
+                "Stage182-A cohort analysis does not cover the clean candidate set")
+        observed_candidate_cohorts = dict(Counter(frozen_cohort_by_id[row_id] for row_id in candidate_ids))
+        require(observed_candidate_cohorts == expected_candidate_cohorts,
+                "frozen Stage182-A candidate cohort topology mismatch",
+                schema_mismatch={"observed": observed_candidate_cohorts, "expected": expected_candidate_cohorts})
+
+        external_transition_by_id = (unique(transitions_raw, "external Stage176 transitions")
+                                     if external_stage176 else {})
+        if external_stage176:
+            external_candidate_ids = candidate_ids & set(external_transition_by_id)
+            require(external_candidate_ids == candidate_ids,
+                    "external Stage176 transitions lack candidate IDs",
+                    missing_ids=sorted(candidate_ids - external_candidate_ids))
+            external_candidate_cohorts: dict[str, str] = {}
+            for row_id in sorted(candidate_ids):
+                external_cohort = str(external_transition_by_id[row_id].get("stage176_cohort", "")).strip()
+                require(external_cohort == frozen_cohort_by_id[row_id],
+                        f"external Stage176 cohort mismatch for {row_id}",
+                        schema_mismatch={"row_id": row_id, "external": external_cohort,
+                                         "frozen_stage182a": frozen_cohort_by_id[row_id]})
+                external_candidate_cohorts[row_id] = external_cohort
+            require(dict(Counter(external_candidate_cohorts.values())) == expected_candidate_cohorts,
+                    "external Stage176 beneficial/harmful topology mismatch")
 
         matched_ids: set[str] = set()
         offending: list[dict[str, Any]] = []
@@ -509,7 +597,6 @@ def main() -> int:
         sources = [("stage180a_pass2", pass2_normalized)]
         if external_hard39:
             sources.append(("stage179a_hard39", merge_normalized(hard179_raw, "Stage179-A hard39")))
-        sources.append(("stage176a_transitions", merge_normalized(transitions_raw, "Stage176-A transitions")))
         sources.append(("stage182a_identity_fields",
                         merge_normalized(candidates_raw + controls_raw, "Stage182-A identity fields")))
         wanted_ids = candidate_ids | matched_ids | clean_correct_ids | set(control_by_id)
@@ -543,7 +630,7 @@ def main() -> int:
         def enriched(row_id: str, row: dict[str, Any]) -> dict[str, Any]:
             values = normalized[row_id]["values"]
             return {"row_id": row_id, "item_role": row.get("item_role", ""),
-                    "stage176_cohort": row.get("stage176_cohort", "none"),
+                    "stage176_cohort": frozen_cohort_by_id.get(row_id, row.get("stage176_cohort", "none")),
                     "intervention_type": row.get("intervention_type", ""), "scalars": values,
                     "scalar_source": normalized[row_id]["sources"]}
 
@@ -551,11 +638,8 @@ def main() -> int:
         controls = [enriched(key, control_by_id[key]) for key in sorted(control_by_id)]
         clean_correct = [enriched(key, item_by_id[key]) for key in sorted(clean_correct_ids)]
         matched_controls = {key: enriched(key, control_by_id[key]) for key in matched_ids}
-        transition_ids = {identity(row) for row in transitions_raw}
-        require(candidate_ids <= transition_ids, "Stage176 transitions lack candidate IDs",
-                missing_ids=sorted(candidate_ids - transition_ids))
-        require(composition(candidates, "stage176_cohort") == {"beneficial_correction": 1, "harmful_regression": 13},
-                "Stage176 candidate cohort topology mismatch")
+        require(composition(candidates, "stage176_cohort") == expected_candidate_cohorts,
+                "selected frozen Stage182-A candidate cohort topology mismatch")
 
         embedded_candidate_required = {
             "native_frame_label": "frame_label",
@@ -911,16 +995,27 @@ def main() -> int:
         report = {"stage": STAGE, "decision": decision,
                   "scope": {"artifact_only": True, "evaluation_only_failure_localization": True,
                             "artifact_source_mode": artifact_source_mode,
+                            "stage176_artifact_source_mode": stage176_artifact_source_mode,
                             "bootstrap_samples": args.bootstrap_samples, "seed": args.seed, "minimum_candidates": args.minimum_candidates},
                   "input_validation": {"status": "passed", "stage182a_decision": EXPECTED_182A,
                                        "stage179a_decision": report179.get("decision") if report179 else None,
                                        "stage179_runtime_decision_directly_validated": report179 is not None,
+                                       "stage176_artifact_source_mode": stage176_artifact_source_mode,
+                                       "external_stage176_transitions_available": external_stage176,
+                                       "frozen_stage182a_cohort_coverage": frozen_stage182a_cohort_coverage,
+                                       "frozen_stage182a_stage176_sha256": frozen_stage176_sha256,
+                                       "direct_stage176_runtime_validation_available": external_stage176,
                                        "candidate_native_frame_mismatch_invariant": True, "contaminated_comparison_rows": 0},
                   "provenance": provenance,
                   "artifact_coverage": {
                                         "artifact_source_mode": artifact_source_mode,
                                         "external_stage179_report_available": external_report,
                                         "external_stage179_hard39_available": external_hard39,
+                                        "stage176_artifact_source_mode": stage176_artifact_source_mode,
+                                        "external_stage176_transitions_available": external_stage176,
+                                        "frozen_stage182a_cohort_coverage": frozen_stage182a_cohort_coverage,
+                                        "frozen_stage182a_stage176_sha256": frozen_stage176_sha256,
+                                        "direct_stage176_runtime_validation_available": external_stage176,
                                         "embedded_pass2_scalar_coverage": {
                                             "candidate_native_fields": embedded_candidate_field_coverage,
                                             "matched_control_fields": embedded_control_field_coverage,
