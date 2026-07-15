@@ -1,0 +1,71 @@
+{
+  "stage": "Stage182-B closure",
+  "decision": "STAGE182B_COMPATIBLE_POSITIVE_MARGIN_COLLAPSE_SIGNAL",
+  "scope": {
+    "artifact_only": true,
+    "training_authorized": false,
+    "implementation_authorized": false,
+    "authorized_work": "Stage183 compatible-frame positive-preservation design audit only"
+  },
+  "cohort": {
+    "clean_native_frame_failure_candidates": 14,
+    "matched_clean_controls": 14,
+    "compatible_false_negatives": 13,
+    "incompatible_false_positives": 1,
+    "stage176_composition": {
+      "harmful_regression": 13,
+      "beneficial_correction": 1
+    },
+    "intervention_family_composition": {
+      "none": 6,
+      "polarity_flip": 6,
+      "paraphrase": 1,
+      "location_swap": 1
+    }
+  },
+  "paired_frame_logit_evidence": {
+    "candidate_minus_matched_control_median": -0.555523656308651,
+    "fixed_seed_bootstrap_95_percent_ci": [
+      -0.7878567576408386,
+      -0.3871966600418091
+    ],
+    "exact_sign_test_p": 0.0018310546875,
+    "negative_difference_count": 13,
+    "pair_count": 14
+  },
+  "localization_gates": {
+    "candidate_centroid_correct_count": 1,
+    "candidate_centroid_total": 14,
+    "matched_control_centroid_correct_count": 1,
+    "matched_control_centroid_total": 14,
+    "representation_mislocalization_gate_passed": false,
+    "readout_alignment_gate_passed": false,
+    "projection_available": true,
+    "bias_specific_decomposition_available": false,
+    "representation_movement_available": true,
+    "representation_movement_direction_available": false,
+    "polarity_conditioned_causal_claim_authorized": false
+  },
+  "provenance": {
+    "artifact_source": "embedded_stage180a_pass2",
+    "stage176_cohort_source": "frozen_stage182a_cohort_fallback"
+  },
+  "established_finding": "A scalar compatible-positive frame-margin collapse signal is established for the frozen clean candidate/control cohort.",
+  "not_established": [
+    "representation mislocalization",
+    "frame-readout misalignment",
+    "classifier-bias dominance",
+    "polarity-conditioned causality",
+    "a training remedy"
+  ],
+  "authorized_next_stage": "STAGE183_COMPATIBLE_FRAME_POSITIVE_PRESERVATION_DESIGN_AUDIT",
+  "safety_policy": {
+    "training": false,
+    "checkpoint_forward": false,
+    "threshold_fitting": false,
+    "calibration": false,
+    "dataset_mutation": false,
+    "external_evaluation": false,
+    "time_swap": false
+  }
+}
