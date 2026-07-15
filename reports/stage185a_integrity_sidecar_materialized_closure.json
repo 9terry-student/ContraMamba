@@ -1,0 +1,38 @@
+{
+  "stage": "Stage185-A closure",
+  "decision": "STAGE185A_INTEGRITY_SIDECAR_BUILT_AND_POSITIVE_ELIGIBILITY_MATERIALIZED",
+  "authoritative_dataset": {
+    "path": "data/controlled_v5_v3_without_time_swap.jsonl",
+    "sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640",
+    "rows": 3600,
+    "pairs": 300,
+    "one_to_one_sidecar_join_passed": true
+  },
+  "authoritative_sidecar": {
+    "successful_stage185a_directory": "reports/stage185a_controlled_train_integrity_sidecar_20260715_141914",
+    "semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc",
+    "failed_directory_is_not_authoritative": "reports/stage185a_controlled_train_integrity_sidecar_20260715_141721",
+    "stage182_overlap_regression_passed": true,
+    "contamination_recovery": "22/22",
+    "blocked_invariants": 0
+  },
+  "eligible_positive_cohort": {
+    "train_frame_compatible_denominator": 1440,
+    "eligible_rows": 605,
+    "eligible_rate": 0.4201388888888889,
+    "eligible_pairs": 121,
+    "eligible_families": 5,
+    "eligible_rows_per_pair": 5,
+    "eligible_rows_per_family": 121,
+    "largest_family_share": 0.2,
+    "family_concentration_warning": false,
+    "pair_cohort_limitation": "Only 121 of 240 train pairs contribute to the margin cohort; this is integrity-filtered coverage, not population-wide cleanliness."
+  },
+  "authorization": {
+    "stage186_fixed_spec_audit": true,
+    "loss_implementation": false,
+    "training": false,
+    "checkpoint_selection_change": false
+  },
+  "authorized_next_stage": "STAGE186_COMPATIBLE_POSITIVE_MARGIN_FIXED_SPEC_AUDIT"
+}
