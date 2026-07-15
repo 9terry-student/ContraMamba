@@ -1,0 +1,53 @@
+{
+  "stage": "Stage182-A closure",
+  "decision": "STAGE182A_DATA_CONTAMINATION_CONFIRMED_AND_CLEAN_MODEL_FAILURE_SET_READY",
+  "scope": {
+    "artifact_only": true,
+    "evaluation_only_failure_localization_authorized": true,
+    "training_authorized": false,
+    "dataset_edit_authorized": false,
+    "relabeling_authorized": false
+  },
+  "generator_reconstruction": {
+    "exact_rows": 3600,
+    "total_rows": 3600,
+    "identity_misalignment_rejected": true
+  },
+  "integrity": {
+    "unique_hard_items": 39,
+    "matched_controls": 39,
+    "clean_items": 56,
+    "deterministic_contaminated_items": 22,
+    "invalid_do_support_items": 1,
+    "non_polarity_polarity_contamination_items": 21,
+    "schema_unresolved_items": 0
+  },
+  "clean_failure_set": {
+    "clean_hard_control_pairs": 21,
+    "clean_model_failure_candidates": 14,
+    "clean_hard_native_frame_correct": 7,
+    "matched_clean_controls_available": 14,
+    "candidate_intervention_families": 4,
+    "candidate_native_frame_mismatch_invariant": true,
+    "family_counts": {
+      "none": 6,
+      "polarity_flip": 6,
+      "paraphrase": 1,
+      "location_swap": 1
+    },
+    "stage176_cohort_counts": {
+      "harmful_regression": 13,
+      "beneficial_correction": 1
+    },
+    "causal_proof": false,
+    "training_set": false,
+    "diagnostic_queue": true
+  },
+  "authorized_next_stage": "STAGE182B_CLEAN_FRAME_MODEL_FAILURE_LOCALIZATION",
+  "secondary_authorized_next_stage": "STAGE182C_CONTROLLED_INTERVENTION_GENERATOR_REPAIR_SPEC",
+  "limitations": [
+    "The clean candidate set removes detected deterministic construction contamination; it does not establish a causal model mechanism.",
+    "Stage182-B is restricted to frozen-artifact evaluation and failure localization.",
+    "No training, checkpoint forward, threshold fitting, annotation, relabeling, or dataset mutation is authorized."
+  ]
+}
