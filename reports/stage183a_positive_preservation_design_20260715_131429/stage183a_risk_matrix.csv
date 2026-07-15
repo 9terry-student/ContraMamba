@@ -1,0 +1,79 @@
+candidate,dimension,rating,basis
+A_positive_class_reweighting,scientific_fit_to_stage182b,medium,balanced topology; global shift without margin
+A_positive_class_reweighting,redundancy_with_current_bce,high,balanced topology; global shift without margin
+A_positive_class_reweighting,redundancy_with_stage175,low,balanced topology; global shift without margin
+A_positive_class_reweighting,redundancy_with_stage177,medium,balanced topology; global shift without margin
+A_positive_class_reweighting,contamination_sensitivity,medium,balanced topology; global shift without margin
+A_positive_class_reweighting,false_positive_risk,high,balanced topology; global shift without margin
+A_positive_class_reweighting,calibration_like_behavior_risk,high,balanced topology; global shift without margin
+A_positive_class_reweighting,implementation_complexity,low,balanced topology; global shift without margin
+A_positive_class_reweighting,checkpoint_dependency,low,balanced topology; global shift without margin
+A_positive_class_reweighting,external_data_leakage_risk,low,balanced topology; global shift without margin
+A_positive_class_reweighting,training_cost,low,balanced topology; global shift without margin
+A_positive_class_reweighting,interpretability,high,balanced topology; global shift without margin
+A_positive_class_reweighting,fixed_hyperparameter_feasibility,low,balanced topology; global shift without margin
+B_absolute_margin_hinge,scientific_fit_to_stage182b,high,direct target but mask unavailable and fixed values unset
+B_absolute_margin_hinge,redundancy_with_current_bce,medium,direct target but mask unavailable and fixed values unset
+B_absolute_margin_hinge,redundancy_with_stage175,low,direct target but mask unavailable and fixed values unset
+B_absolute_margin_hinge,redundancy_with_stage177,low,direct target but mask unavailable and fixed values unset
+B_absolute_margin_hinge,contamination_sensitivity,high,direct target but mask unavailable and fixed values unset
+B_absolute_margin_hinge,false_positive_risk,medium,direct target but mask unavailable and fixed values unset
+B_absolute_margin_hinge,calibration_like_behavior_risk,medium,direct target but mask unavailable and fixed values unset
+B_absolute_margin_hinge,implementation_complexity,low,direct target but mask unavailable and fixed values unset
+B_absolute_margin_hinge,checkpoint_dependency,low,direct target but mask unavailable and fixed values unset
+B_absolute_margin_hinge,external_data_leakage_risk,low,direct target but mask unavailable and fixed values unset
+B_absolute_margin_hinge,training_cost,low,direct target but mask unavailable and fixed values unset
+B_absolute_margin_hinge,interpretability,high,direct target but mask unavailable and fixed values unset
+B_absolute_margin_hinge,fixed_hyperparameter_feasibility,medium,direct target but mask unavailable and fixed values unset
+C_teacher_preservation,scientific_fit_to_stage182b,medium,reference/checkpoint provenance and Stage175 overlap
+C_teacher_preservation,redundancy_with_current_bce,medium,reference/checkpoint provenance and Stage175 overlap
+C_teacher_preservation,redundancy_with_stage175,high,reference/checkpoint provenance and Stage175 overlap
+C_teacher_preservation,redundancy_with_stage177,low,reference/checkpoint provenance and Stage175 overlap
+C_teacher_preservation,contamination_sensitivity,high,reference/checkpoint provenance and Stage175 overlap
+C_teacher_preservation,false_positive_risk,medium,reference/checkpoint provenance and Stage175 overlap
+C_teacher_preservation,calibration_like_behavior_risk,medium,reference/checkpoint provenance and Stage175 overlap
+C_teacher_preservation,implementation_complexity,high,reference/checkpoint provenance and Stage175 overlap
+C_teacher_preservation,checkpoint_dependency,high,reference/checkpoint provenance and Stage175 overlap
+C_teacher_preservation,external_data_leakage_risk,medium,reference/checkpoint provenance and Stage175 overlap
+C_teacher_preservation,training_cost,high,reference/checkpoint provenance and Stage175 overlap
+C_teacher_preservation,interpretability,medium,reference/checkpoint provenance and Stage175 overlap
+C_teacher_preservation,fixed_hyperparameter_feasibility,low,reference/checkpoint provenance and Stage175 overlap
+D_bias_constraint,scientific_fit_to_stage182b,low,bias-specific evidence unavailable
+D_bias_constraint,redundancy_with_current_bce,medium,bias-specific evidence unavailable
+D_bias_constraint,redundancy_with_stage175,low,bias-specific evidence unavailable
+D_bias_constraint,redundancy_with_stage177,low,bias-specific evidence unavailable
+D_bias_constraint,contamination_sensitivity,low,bias-specific evidence unavailable
+D_bias_constraint,false_positive_risk,high,bias-specific evidence unavailable
+D_bias_constraint,calibration_like_behavior_risk,high,bias-specific evidence unavailable
+D_bias_constraint,implementation_complexity,medium,bias-specific evidence unavailable
+D_bias_constraint,checkpoint_dependency,low,bias-specific evidence unavailable
+D_bias_constraint,external_data_leakage_risk,low,bias-specific evidence unavailable
+D_bias_constraint,training_cost,low,bias-specific evidence unavailable
+D_bias_constraint,interpretability,medium,bias-specific evidence unavailable
+D_bias_constraint,fixed_hyperparameter_feasibility,low,bias-specific evidence unavailable
+E_checkpoint_positive_recall,scientific_fit_to_stage182b,medium,clean-dev selection trade-off and leakage contract
+E_checkpoint_positive_recall,redundancy_with_current_bce,low,clean-dev selection trade-off and leakage contract
+E_checkpoint_positive_recall,redundancy_with_stage175,low,clean-dev selection trade-off and leakage contract
+E_checkpoint_positive_recall,redundancy_with_stage177,low,clean-dev selection trade-off and leakage contract
+E_checkpoint_positive_recall,contamination_sensitivity,medium,clean-dev selection trade-off and leakage contract
+E_checkpoint_positive_recall,false_positive_risk,high,clean-dev selection trade-off and leakage contract
+E_checkpoint_positive_recall,calibration_like_behavior_risk,medium,clean-dev selection trade-off and leakage contract
+E_checkpoint_positive_recall,implementation_complexity,medium,clean-dev selection trade-off and leakage contract
+E_checkpoint_positive_recall,checkpoint_dependency,high,clean-dev selection trade-off and leakage contract
+E_checkpoint_positive_recall,external_data_leakage_risk,high,clean-dev selection trade-off and leakage contract
+E_checkpoint_positive_recall,training_cost,low,clean-dev selection trade-off and leakage contract
+E_checkpoint_positive_recall,interpretability,high,clean-dev selection trade-off and leakage contract
+E_checkpoint_positive_recall,fixed_hyperparameter_feasibility,medium,clean-dev selection trade-off and leakage contract
+F_family_conditioned_weighting,scientific_fit_to_stage182b,low,selected 14-row family mix is not causal
+F_family_conditioned_weighting,redundancy_with_current_bce,medium,selected 14-row family mix is not causal
+F_family_conditioned_weighting,redundancy_with_stage175,low,selected 14-row family mix is not causal
+F_family_conditioned_weighting,redundancy_with_stage177,medium,selected 14-row family mix is not causal
+F_family_conditioned_weighting,contamination_sensitivity,high,selected 14-row family mix is not causal
+F_family_conditioned_weighting,false_positive_risk,high,selected 14-row family mix is not causal
+F_family_conditioned_weighting,calibration_like_behavior_risk,medium,selected 14-row family mix is not causal
+F_family_conditioned_weighting,implementation_complexity,medium,selected 14-row family mix is not causal
+F_family_conditioned_weighting,checkpoint_dependency,low,selected 14-row family mix is not causal
+F_family_conditioned_weighting,external_data_leakage_risk,medium,selected 14-row family mix is not causal
+F_family_conditioned_weighting,training_cost,low,selected 14-row family mix is not causal
+F_family_conditioned_weighting,interpretability,medium,selected 14-row family mix is not causal
+F_family_conditioned_weighting,fixed_hyperparameter_feasibility,low,selected 14-row family mix is not causal

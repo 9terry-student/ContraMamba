@@ -1,0 +1,11 @@
+item,value,evidence,static_check_passed,interpretation
+native_frame_loss,"F.binary_cross_entropy_with_logits(frame_logit, frame_compatible_labels)",scripts/train_controlled_v5.py:465-468,true,static_source_fact
+positive_class_weight,none,no pos_weight in native frame call,true,static_source_fact
+reduction,row mean (PyTorch default),no reduction override,true,static_source_fact
+native_frame_loss_weight,1.0 implicit,equal unweighted sum in controlled_losses,true,static_source_fact
+total_native_objective,final CE + frame BCE + predicate BCE + sufficiency BCE + polarity CE,scripts/train_controlled_v5.py:493,true,static_source_fact
+frame_classifier_bias,trainable nn.Linear bias,src/contramamba/heads/frame_gate.py:32,true,static_source_fact
+frame_probability,sigmoid(frame_logit),src/contramamba/heads/frame_gate.py:69,true,static_source_fact
+checkpoint_selection,maximize clean-dev final_macro_f1 by default,trainer select_metric,true,static_source_fact
+frame_recall_directly_selected,false,not a select_metric choice,true,static_source_fact
+frame_margin_directly_selected,false,not a select_metric choice,true,static_source_fact

@@ -1,0 +1,8 @@
+evidence,value,supports,opposes,source
+Stage182-B compatible false negatives,13/14,positive absolute target,bias/family causal claim,Stage182-B closure
+paired frame-logit median and CI,"-0.555523656308651; CI [-0.7878567576408386,-0.3871966600418091]",systematic scalar collapse signal,none,Stage182-B closure
+centroid correct,candidate=1/14; control=1/14,none,representation/readout causal route,Stage182-B closure
+train frame topology,positive=1440 negative=1440,no global imbalance remedy,Candidate A,authoritative data labels
+Stage177 objective,relative pair ordering; no absolute margin,Candidate B nonredundancy,reopening pairwise path,STAGE177E_FRAME_PAIRWISE_OBJECTIVE_REDUNDANT_PATH_CLOSED
+Stage175 objective,final SUPPORT detached-reference anchor; no clean benefit,different-head distinction,Candidate C,STAGE175C_RELATIVE_SUPPORT_ANCHOR_PRESERVATION_NO_CLEAN_BENEFIT_PATH_CLOSED
+train integrity metadata,"missing=['grammar_valid', 'intervention_contract_exact', 'polarity_contamination_absent', 'schema_resolved', 'canonical_row_valid']",integrity mask first,loss implementation now,authoritative JSONL static audit

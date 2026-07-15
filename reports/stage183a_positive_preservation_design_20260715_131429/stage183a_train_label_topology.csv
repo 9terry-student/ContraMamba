@@ -1,0 +1,13 @@
+split,metric,value,denominator,rate,source
+all,row_count,3600,,,frame_compatible_label
+all,pair_count,300,,,pair_id
+all,compatible_positive,1800,3600,0.5,frame_compatible_label
+all,incompatible_negative,1800,3600,0.5,frame_compatible_label
+train,row_count,2880,,,frame_compatible_label
+train,pair_count,240,,,pair_id
+train,compatible_positive,1440,2880,0.5,frame_compatible_label
+train,incompatible_negative,1440,2880,0.5,frame_compatible_label
+dev,row_count,720,,,frame_compatible_label
+dev,pair_count,60,,,pair_id
+dev,compatible_positive,360,720,0.5,frame_compatible_label
+dev,incompatible_negative,360,720,0.5,frame_compatible_label

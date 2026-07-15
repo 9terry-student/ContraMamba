@@ -1,0 +1,1034 @@
+{
+  "candidate_interventions": [
+    {
+      "candidate": "A_positive_class_reweighting",
+      "expected_gradient_support": "all positive rows",
+      "fixed_without_tuning": false,
+      "formula": "BCEWithLogits(pos_weight=alpha)",
+      "known_closed_path_overlap": "native BCE",
+      "new_failure_risk": "global incompatible false positives and calibration shift",
+      "nonredundant_target": "low; changes scale but adds no margin",
+      "requires_integrity_mask": false,
+      "requires_teacher_or_counterpart": false,
+      "scientific_target": "globally amplify compatible-positive BCE",
+      "status": "not_selected"
+    },
+    {
+      "candidate": "B_compatible_positive_absolute_margin_hinge",
+      "expected_gradient_support": "eligible positive rows below margin",
+      "fixed_without_tuning": false,
+      "formula": "mean_E relu(target_margin - frame_logit)",
+      "known_closed_path_overlap": "same head as native BCE; not Stage177 ordering or Stage175 final SUPPORT anchor",
+      "new_failure_risk": "false positives if mask/margin/weight are wrong",
+      "nonredundant_target": "high; absolute floor absent from BCE and Stage177",
+      "requires_integrity_mask": true,
+      "requires_teacher_or_counterpart": false,
+      "scientific_target": "absolute clean compatible-positive frame-logit floor",
+      "status": "contingent_preferred_after_integrity_gate"
+    },
+    {
+      "candidate": "C_teacher_positive_logit_preservation",
+      "expected_gradient_support": "eligible positives below reference tolerance",
+      "fixed_without_tuning": false,
+      "formula": "mean_E relu(detached_reference - tolerance - frame_logit)",
+      "known_closed_path_overlap": "Stage175 detached-reference preservation family",
+      "new_failure_risk": "teacher drift/error preservation and provenance complexity",
+      "nonredundant_target": "medium; reference-relative rather than absolute",
+      "requires_integrity_mask": true,
+      "requires_teacher_or_counterpart": true,
+      "scientific_target": "relative positive-logit preservation",
+      "status": "not_selected"
+    },
+    {
+      "candidate": "D_frame_classifier_bias_constraint",
+      "expected_gradient_support": "global through shared scalar bias",
+      "fixed_without_tuning": false,
+      "formula": "constraint or penalty on frame_classifier.bias",
+      "known_closed_path_overlap": "calibration-like global shift",
+      "new_failure_risk": "negative-class degradation",
+      "nonredundant_target": "unjustified; bias mechanism unavailable",
+      "requires_integrity_mask": false,
+      "requires_teacher_or_counterpart": false,
+      "scientific_target": "global readout offset",
+      "status": "rejected"
+    },
+    {
+      "candidate": "E_false_negative_aware_checkpoint_selection",
+      "expected_gradient_support": "none; checkpoint selection only",
+      "fixed_without_tuning": false,
+      "formula": "predeclared clean-dev selection metric including positive recall",
+      "known_closed_path_overlap": "existing clean-dev selection infrastructure",
+      "new_failure_risk": "selection leakage and incompatible precision loss",
+      "nonredundant_target": "selection rather than objective",
+      "requires_integrity_mask": false,
+      "requires_teacher_or_counterpart": false,
+      "scientific_target": "retain epochs with compatible-positive recall",
+      "status": "not_selected"
+    },
+    {
+      "candidate": "F_family_conditioned_weighting",
+      "expected_gradient_support": "chosen family positives",
+      "fixed_without_tuning": false,
+      "formula": "family-specific positive weights",
+      "known_closed_path_overlap": "weighted native BCE",
+      "new_failure_risk": "shortcut learning and 14-row hard-subset overfit",
+      "nonredundant_target": "low; hard-subset family association is not causal",
+      "requires_integrity_mask": true,
+      "requires_teacher_or_counterpart": false,
+      "scientific_target": "selected family emphasis",
+      "status": "rejected"
+    }
+  ],
+  "contamination_eligibility": {
+    "compatible_positive_rows": 1440,
+    "complete_mask_constructible": false,
+    "criteria": [
+      {
+        "authoritative_metadata_available": true,
+        "criterion": "frame_label_compatible",
+        "eligible_row_count": 1440,
+        "evidence": "row-level frame_compatible_label is present; loss eligibility additionally requires value 1",
+        "fail_closed": true,
+        "passed": true,
+        "required": true,
+        "total_row_count": 2880
+      },
+      {
+        "authoritative_metadata_available": false,
+        "criterion": "grammar_valid",
+        "eligible_row_count": 0,
+        "evidence": "accepted aliases=('grammar_valid', 'stage183_grammar_valid'); missing metadata is not inferred from text or family",
+        "fail_closed": true,
+        "passed": false,
+        "required": true,
+        "total_row_count": 2880
+      },
+      {
+        "authoritative_metadata_available": false,
+        "criterion": "intervention_contract_exact",
+        "eligible_row_count": 0,
+        "evidence": "accepted aliases=('intervention_contract_exact', 'stage183_intervention_contract_exact'); missing metadata is not inferred from text or family",
+        "fail_closed": true,
+        "passed": false,
+        "required": true,
+        "total_row_count": 2880
+      },
+      {
+        "authoritative_metadata_available": false,
+        "criterion": "polarity_contamination_absent",
+        "eligible_row_count": 0,
+        "evidence": "accepted aliases=('polarity_contamination_absent', 'stage183_polarity_contamination_absent'); missing metadata is not inferred from text or family",
+        "fail_closed": true,
+        "passed": false,
+        "required": true,
+        "total_row_count": 2880
+      },
+      {
+        "authoritative_metadata_available": false,
+        "criterion": "schema_resolved",
+        "eligible_row_count": 0,
+        "evidence": "accepted aliases=('schema_resolved', 'stage183_schema_resolved'); missing metadata is not inferred from text or family",
+        "fail_closed": true,
+        "passed": false,
+        "required": true,
+        "total_row_count": 2880
+      },
+      {
+        "authoritative_metadata_available": false,
+        "criterion": "canonical_row_valid",
+        "eligible_row_count": 0,
+        "evidence": "accepted aliases=('canonical_row_valid', 'stage183_canonical_row_valid'); missing metadata is not inferred from text or family",
+        "fail_closed": true,
+        "passed": false,
+        "required": true,
+        "total_row_count": 2880
+      },
+      {
+        "authoritative_metadata_available": true,
+        "criterion": "time_swap_absent",
+        "eligible_row_count": 1440,
+        "evidence": "intervention_type exact comparison",
+        "fail_closed": true,
+        "passed": true,
+        "required": true,
+        "total_row_count": 2880
+      },
+      {
+        "authoritative_metadata_available": true,
+        "criterion": "authoritative_main_dataset",
+        "eligible_row_count": 1440,
+        "evidence": "resolved input equals /kaggle/working/ContraMamba/data/controlled_v5_v3_without_time_swap.jsonl",
+        "fail_closed": true,
+        "passed": true,
+        "required": true,
+        "total_row_count": 2880
+      },
+      {
+        "authoritative_metadata_available": true,
+        "criterion": "not_stage34_35_external_substitute",
+        "eligible_row_count": 1440,
+        "evidence": "authoritative path identity; no external dataset inference",
+        "fail_closed": true,
+        "passed": true,
+        "required": true,
+        "total_row_count": 2880
+      },
+      {
+        "authoritative_metadata_available": true,
+        "criterion": "required_schema_present",
+        "eligible_row_count": 1440,
+        "evidence": "required standard JSONL fields",
+        "fail_closed": true,
+        "passed": true,
+        "required": true,
+        "total_row_count": 2880
+      }
+    ],
+    "criteria_passed": 5,
+    "criteria_with_authoritative_metadata": 5,
+    "fully_eligible_rows": 0,
+    "missing_integrity_fields": [
+      "grammar_valid",
+      "intervention_contract_exact",
+      "polarity_contamination_absent",
+      "schema_resolved",
+      "canonical_row_valid"
+    ],
+    "policy": "fail_closed",
+    "required_criteria_count": 10
+  },
+  "current_frame_objective": {
+    "formula": "mean BCEWithLogits(frame_logit, frame_compatible_label)",
+    "rows": [
+      {
+        "evidence": "scripts/train_controlled_v5.py:465-468",
+        "interpretation": "static_source_fact",
+        "item": "native_frame_loss",
+        "static_check_passed": true,
+        "value": "F.binary_cross_entropy_with_logits(frame_logit, frame_compatible_labels)"
+      },
+      {
+        "evidence": "no pos_weight in native frame call",
+        "interpretation": "static_source_fact",
+        "item": "positive_class_weight",
+        "static_check_passed": true,
+        "value": "none"
+      },
+      {
+        "evidence": "no reduction override",
+        "interpretation": "static_source_fact",
+        "item": "reduction",
+        "static_check_passed": true,
+        "value": "row mean (PyTorch default)"
+      },
+      {
+        "evidence": "equal unweighted sum in controlled_losses",
+        "interpretation": "static_source_fact",
+        "item": "native_frame_loss_weight",
+        "static_check_passed": true,
+        "value": "1.0 implicit"
+      },
+      {
+        "evidence": "scripts/train_controlled_v5.py:493",
+        "interpretation": "static_source_fact",
+        "item": "total_native_objective",
+        "static_check_passed": true,
+        "value": "final CE + frame BCE + predicate BCE + sufficiency BCE + polarity CE"
+      },
+      {
+        "evidence": "src/contramamba/heads/frame_gate.py:32",
+        "interpretation": "static_source_fact",
+        "item": "frame_classifier_bias",
+        "static_check_passed": true,
+        "value": "trainable nn.Linear bias"
+      },
+      {
+        "evidence": "src/contramamba/heads/frame_gate.py:69",
+        "interpretation": "static_source_fact",
+        "item": "frame_probability",
+        "static_check_passed": true,
+        "value": "sigmoid(frame_logit)"
+      },
+      {
+        "evidence": "trainer select_metric",
+        "interpretation": "static_source_fact",
+        "item": "checkpoint_selection",
+        "static_check_passed": true,
+        "value": "maximize clean-dev final_macro_f1 by default"
+      },
+      {
+        "evidence": "not a select_metric choice",
+        "interpretation": "static_source_fact",
+        "item": "frame_recall_directly_selected",
+        "static_check_passed": true,
+        "value": "false"
+      },
+      {
+        "evidence": "not a select_metric choice",
+        "interpretation": "static_source_fact",
+        "item": "frame_margin_directly_selected",
+        "static_check_passed": true,
+        "value": "false"
+      }
+    ]
+  },
+  "decision": "STAGE183A_CONTROLLED_TRAIN_INTEGRITY_MASK_REQUIRED_FIRST",
+  "gradient_analysis": {
+    "outer_weights_excluded": true,
+    "rows": [
+      {
+        "absolute_margin_enforced": false,
+        "activation_condition": "y=1",
+        "counterpart_or_teacher_required": false,
+        "dL_d_frame_logit": "sigmoid(z)-1",
+        "gradient_already_positive": "negative and approaches 0",
+        "gradient_near_zero": "-0.5",
+        "gradient_strongly_negative": "approaches -1",
+        "loss_name": "native_positive_BCE",
+        "negative_rows_affected": true
+      },
+      {
+        "absolute_margin_enforced": false,
+        "activation_condition": "y=1",
+        "counterpart_or_teacher_required": false,
+        "dL_d_frame_logit": "alpha*(sigmoid(z)-1)",
+        "gradient_already_positive": "negative and approaches 0",
+        "gradient_near_zero": "-alpha/2",
+        "gradient_strongly_negative": "approaches -alpha",
+        "loss_name": "positive_reweighted_BCE",
+        "negative_rows_affected": "native negative BCE remains; no alpha multiplier"
+      },
+      {
+        "absolute_margin_enforced": true,
+        "activation_condition": "eligible y=1 and z<target_margin",
+        "counterpart_or_teacher_required": false,
+        "dL_d_frame_logit": "-1 if active; 0 if inactive",
+        "gradient_already_positive": "0 once z>=target_margin",
+        "gradient_near_zero": "-1 when target_margin>0",
+        "gradient_strongly_negative": "-1",
+        "loss_name": "clean_positive_absolute_margin_hinge",
+        "negative_rows_affected": false
+      },
+      {
+        "absolute_margin_enforced": false,
+        "activation_condition": "eligible y=1 and z<detached_reference-tolerance",
+        "counterpart_or_teacher_required": true,
+        "dL_d_frame_logit": "-1 if active; 0 if inactive",
+        "gradient_already_positive": "reference-dependent",
+        "gradient_near_zero": "reference-dependent",
+        "gradient_strongly_negative": "-1 if active",
+        "loss_name": "teacher_positive_preservation_hinge",
+        "negative_rows_affected": false
+      }
+    ],
+    "variable": "z=frame_logit"
+  },
+  "input_validation": {
+    "artifact_sha256": {
+      "reports/stage175c_support_anchor_path_closure.json": "1945fbbea68a3e8c9dd0167368ff00ca48bea4bafead706d347396302df10169",
+      "reports/stage177e_frame_pairwise_redundancy_closure.json": "c5e8868dc2dfe1d9f169dd0828d6b56903ae728f98d9ddd726dad7139bc33543",
+      "reports/stage182a_data_contamination_clean_failure_set_closure.json": "ca4ff1270eebb199533332fec0161e1a069a239241b597e2e775261148c695ba",
+      "reports/stage182b_compatible_positive_margin_collapse_closure.json": "7965155202ad27734c2910f8830654dabd19deb0323fa7538f86930b1045eea0"
+    },
+    "data_sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640",
+    "source_files": [
+      {
+        "exists": true,
+        "path": "scripts/train_controlled_v6b_minimal.py",
+        "sha256": "1a99379b01fac3f370875cba2f1d915557ef44af48665bba63b035bedbe63eee"
+      },
+      {
+        "exists": true,
+        "path": "scripts/train_controlled_v5.py",
+        "sha256": "774ddd10deb8bf494f054044bddff5705b8329c557895e25fba4ceaa5eb18978"
+      },
+      {
+        "exists": true,
+        "path": "src/contramamba/modeling_v6b_minimal.py",
+        "sha256": "337099b7f3261eb825cb5236288f1e5672a5589d2f2ec2c6ac2dc5ec33e777cd"
+      },
+      {
+        "exists": true,
+        "path": "src/contramamba/heads/frame_gate.py",
+        "sha256": "1f140b50e60a357d64a311e086eac7fd2a2a43411c7e1eac47e2e3472133fb8c"
+      },
+      {
+        "exists": true,
+        "path": "scripts/stage175b_support_anchor.py",
+        "sha256": "17547c6b95958b9edebd33abb8e26c1ea228d5be4243aa126f1a91309da74f3f"
+      },
+      {
+        "exists": true,
+        "path": "scripts/stage177c_frame_pairwise.py",
+        "sha256": "10d584b415e67963aef8dba67e276cc81583b87d2199e2fc6c81ac9effdc8c6f"
+      }
+    ],
+    "source_static_checks": {
+      "checkpoint_selection": true,
+      "frame_classifier_bias": true,
+      "frame_margin_directly_selected": true,
+      "frame_probability": true,
+      "frame_recall_directly_selected": true,
+      "native_frame_loss": true,
+      "native_frame_loss_weight": true,
+      "positive_class_weight": true,
+      "reduction": true,
+      "total_native_objective": true
+    },
+    "stage182a_decision": "STAGE182A_DATA_CONTAMINATION_CONFIRMED_AND_CLEAN_MODEL_FAILURE_SET_READY",
+    "stage182b_decision": "STAGE182B_COMPATIBLE_POSITIVE_MARGIN_COLLAPSE_SIGNAL",
+    "status": "passed"
+  },
+  "limitations": [
+    "Static code topology does not establish runtime gradient dominance.",
+    "The Stage182-B 14-pair signal is not a population causal estimate.",
+    "Bias-specific and polarity-conditioned causal mechanisms are not established.",
+    "No fixed nonzero margin or weight is justified."
+  ],
+  "redundancy_analysis": [
+    {
+      "candidate": "A_positive_class_reweighting",
+      "conclusion": "not justified",
+      "existing_objective": "native frame BCE",
+      "known_result": "balanced frame-label topology",
+      "nonredundant_scientific_target": "none; only positive scale",
+      "overlap": "high"
+    },
+    {
+      "candidate": "B_absolute_margin_hinge",
+      "conclusion": "scientifically distinct",
+      "existing_objective": "native frame BCE",
+      "known_result": "BCE has no hard margin",
+      "nonredundant_scientific_target": "explicit absolute positive floor",
+      "overlap": "medium"
+    },
+    {
+      "candidate": "B_absolute_margin_hinge",
+      "conclusion": "nonredundant",
+      "existing_objective": "Stage177 pairwise softplus",
+      "known_result": "Stage177 margin_used=false and final predictions changed=0",
+      "nonredundant_scientific_target": "absolute z floor versus within-pair ordering",
+      "overlap": "low"
+    },
+    {
+      "candidate": "B_absolute_margin_hinge",
+      "conclusion": "nonredundant",
+      "existing_objective": "Stage175 support anchor",
+      "known_result": "Stage175 no clean benefit and reference-relative",
+      "nonredundant_scientific_target": "native frame head versus final SUPPORT margin",
+      "overlap": "low"
+    },
+    {
+      "candidate": "C_teacher_preservation",
+      "conclusion": "avoid reopening without new evidence",
+      "existing_objective": "Stage175 support anchor",
+      "known_result": "Stage175 path closed",
+      "nonredundant_scientific_target": "different head but same detached-reference family",
+      "overlap": "high"
+    },
+    {
+      "candidate": "D_bias_constraint",
+      "conclusion": "rejected",
+      "existing_objective": "calibration/threshold family",
+      "known_result": "bias decomposition unavailable",
+      "nonredundant_scientific_target": "none established",
+      "overlap": "medium"
+    },
+    {
+      "candidate": "E_checkpoint_selection",
+      "conclusion": "possible later, leakage contract required",
+      "existing_objective": "clean-dev checkpoint selection",
+      "known_result": "current metric is final macro-F1",
+      "nonredundant_scientific_target": "positive recall retention",
+      "overlap": "low"
+    },
+    {
+      "candidate": "F_family_weighting",
+      "conclusion": "rejected",
+      "existing_objective": "weighted BCE",
+      "known_result": "14 selected hard rows are not causal",
+      "nonredundant_scientific_target": "family emphasis only",
+      "overlap": "medium"
+    }
+  ],
+  "risk_analysis": {
+    "rows": [
+      {
+        "basis": "balanced topology; global shift without margin",
+        "candidate": "A_positive_class_reweighting",
+        "dimension": "scientific_fit_to_stage182b",
+        "rating": "medium"
+      },
+      {
+        "basis": "balanced topology; global shift without margin",
+        "candidate": "A_positive_class_reweighting",
+        "dimension": "redundancy_with_current_bce",
+        "rating": "high"
+      },
+      {
+        "basis": "balanced topology; global shift without margin",
+        "candidate": "A_positive_class_reweighting",
+        "dimension": "redundancy_with_stage175",
+        "rating": "low"
+      },
+      {
+        "basis": "balanced topology; global shift without margin",
+        "candidate": "A_positive_class_reweighting",
+        "dimension": "redundancy_with_stage177",
+        "rating": "medium"
+      },
+      {
+        "basis": "balanced topology; global shift without margin",
+        "candidate": "A_positive_class_reweighting",
+        "dimension": "contamination_sensitivity",
+        "rating": "medium"
+      },
+      {
+        "basis": "balanced topology; global shift without margin",
+        "candidate": "A_positive_class_reweighting",
+        "dimension": "false_positive_risk",
+        "rating": "high"
+      },
+      {
+        "basis": "balanced topology; global shift without margin",
+        "candidate": "A_positive_class_reweighting",
+        "dimension": "calibration_like_behavior_risk",
+        "rating": "high"
+      },
+      {
+        "basis": "balanced topology; global shift without margin",
+        "candidate": "A_positive_class_reweighting",
+        "dimension": "implementation_complexity",
+        "rating": "low"
+      },
+      {
+        "basis": "balanced topology; global shift without margin",
+        "candidate": "A_positive_class_reweighting",
+        "dimension": "checkpoint_dependency",
+        "rating": "low"
+      },
+      {
+        "basis": "balanced topology; global shift without margin",
+        "candidate": "A_positive_class_reweighting",
+        "dimension": "external_data_leakage_risk",
+        "rating": "low"
+      },
+      {
+        "basis": "balanced topology; global shift without margin",
+        "candidate": "A_positive_class_reweighting",
+        "dimension": "training_cost",
+        "rating": "low"
+      },
+      {
+        "basis": "balanced topology; global shift without margin",
+        "candidate": "A_positive_class_reweighting",
+        "dimension": "interpretability",
+        "rating": "high"
+      },
+      {
+        "basis": "balanced topology; global shift without margin",
+        "candidate": "A_positive_class_reweighting",
+        "dimension": "fixed_hyperparameter_feasibility",
+        "rating": "low"
+      },
+      {
+        "basis": "direct target but mask unavailable and fixed values unset",
+        "candidate": "B_absolute_margin_hinge",
+        "dimension": "scientific_fit_to_stage182b",
+        "rating": "high"
+      },
+      {
+        "basis": "direct target but mask unavailable and fixed values unset",
+        "candidate": "B_absolute_margin_hinge",
+        "dimension": "redundancy_with_current_bce",
+        "rating": "medium"
+      },
+      {
+        "basis": "direct target but mask unavailable and fixed values unset",
+        "candidate": "B_absolute_margin_hinge",
+        "dimension": "redundancy_with_stage175",
+        "rating": "low"
+      },
+      {
+        "basis": "direct target but mask unavailable and fixed values unset",
+        "candidate": "B_absolute_margin_hinge",
+        "dimension": "redundancy_with_stage177",
+        "rating": "low"
+      },
+      {
+        "basis": "direct target but mask unavailable and fixed values unset",
+        "candidate": "B_absolute_margin_hinge",
+        "dimension": "contamination_sensitivity",
+        "rating": "high"
+      },
+      {
+        "basis": "direct target but mask unavailable and fixed values unset",
+        "candidate": "B_absolute_margin_hinge",
+        "dimension": "false_positive_risk",
+        "rating": "medium"
+      },
+      {
+        "basis": "direct target but mask unavailable and fixed values unset",
+        "candidate": "B_absolute_margin_hinge",
+        "dimension": "calibration_like_behavior_risk",
+        "rating": "medium"
+      },
+      {
+        "basis": "direct target but mask unavailable and fixed values unset",
+        "candidate": "B_absolute_margin_hinge",
+        "dimension": "implementation_complexity",
+        "rating": "low"
+      },
+      {
+        "basis": "direct target but mask unavailable and fixed values unset",
+        "candidate": "B_absolute_margin_hinge",
+        "dimension": "checkpoint_dependency",
+        "rating": "low"
+      },
+      {
+        "basis": "direct target but mask unavailable and fixed values unset",
+        "candidate": "B_absolute_margin_hinge",
+        "dimension": "external_data_leakage_risk",
+        "rating": "low"
+      },
+      {
+        "basis": "direct target but mask unavailable and fixed values unset",
+        "candidate": "B_absolute_margin_hinge",
+        "dimension": "training_cost",
+        "rating": "low"
+      },
+      {
+        "basis": "direct target but mask unavailable and fixed values unset",
+        "candidate": "B_absolute_margin_hinge",
+        "dimension": "interpretability",
+        "rating": "high"
+      },
+      {
+        "basis": "direct target but mask unavailable and fixed values unset",
+        "candidate": "B_absolute_margin_hinge",
+        "dimension": "fixed_hyperparameter_feasibility",
+        "rating": "medium"
+      },
+      {
+        "basis": "reference/checkpoint provenance and Stage175 overlap",
+        "candidate": "C_teacher_preservation",
+        "dimension": "scientific_fit_to_stage182b",
+        "rating": "medium"
+      },
+      {
+        "basis": "reference/checkpoint provenance and Stage175 overlap",
+        "candidate": "C_teacher_preservation",
+        "dimension": "redundancy_with_current_bce",
+        "rating": "medium"
+      },
+      {
+        "basis": "reference/checkpoint provenance and Stage175 overlap",
+        "candidate": "C_teacher_preservation",
+        "dimension": "redundancy_with_stage175",
+        "rating": "high"
+      },
+      {
+        "basis": "reference/checkpoint provenance and Stage175 overlap",
+        "candidate": "C_teacher_preservation",
+        "dimension": "redundancy_with_stage177",
+        "rating": "low"
+      },
+      {
+        "basis": "reference/checkpoint provenance and Stage175 overlap",
+        "candidate": "C_teacher_preservation",
+        "dimension": "contamination_sensitivity",
+        "rating": "high"
+      },
+      {
+        "basis": "reference/checkpoint provenance and Stage175 overlap",
+        "candidate": "C_teacher_preservation",
+        "dimension": "false_positive_risk",
+        "rating": "medium"
+      },
+      {
+        "basis": "reference/checkpoint provenance and Stage175 overlap",
+        "candidate": "C_teacher_preservation",
+        "dimension": "calibration_like_behavior_risk",
+        "rating": "medium"
+      },
+      {
+        "basis": "reference/checkpoint provenance and Stage175 overlap",
+        "candidate": "C_teacher_preservation",
+        "dimension": "implementation_complexity",
+        "rating": "high"
+      },
+      {
+        "basis": "reference/checkpoint provenance and Stage175 overlap",
+        "candidate": "C_teacher_preservation",
+        "dimension": "checkpoint_dependency",
+        "rating": "high"
+      },
+      {
+        "basis": "reference/checkpoint provenance and Stage175 overlap",
+        "candidate": "C_teacher_preservation",
+        "dimension": "external_data_leakage_risk",
+        "rating": "medium"
+      },
+      {
+        "basis": "reference/checkpoint provenance and Stage175 overlap",
+        "candidate": "C_teacher_preservation",
+        "dimension": "training_cost",
+        "rating": "high"
+      },
+      {
+        "basis": "reference/checkpoint provenance and Stage175 overlap",
+        "candidate": "C_teacher_preservation",
+        "dimension": "interpretability",
+        "rating": "medium"
+      },
+      {
+        "basis": "reference/checkpoint provenance and Stage175 overlap",
+        "candidate": "C_teacher_preservation",
+        "dimension": "fixed_hyperparameter_feasibility",
+        "rating": "low"
+      },
+      {
+        "basis": "bias-specific evidence unavailable",
+        "candidate": "D_bias_constraint",
+        "dimension": "scientific_fit_to_stage182b",
+        "rating": "low"
+      },
+      {
+        "basis": "bias-specific evidence unavailable",
+        "candidate": "D_bias_constraint",
+        "dimension": "redundancy_with_current_bce",
+        "rating": "medium"
+      },
+      {
+        "basis": "bias-specific evidence unavailable",
+        "candidate": "D_bias_constraint",
+        "dimension": "redundancy_with_stage175",
+        "rating": "low"
+      },
+      {
+        "basis": "bias-specific evidence unavailable",
+        "candidate": "D_bias_constraint",
+        "dimension": "redundancy_with_stage177",
+        "rating": "low"
+      },
+      {
+        "basis": "bias-specific evidence unavailable",
+        "candidate": "D_bias_constraint",
+        "dimension": "contamination_sensitivity",
+        "rating": "low"
+      },
+      {
+        "basis": "bias-specific evidence unavailable",
+        "candidate": "D_bias_constraint",
+        "dimension": "false_positive_risk",
+        "rating": "high"
+      },
+      {
+        "basis": "bias-specific evidence unavailable",
+        "candidate": "D_bias_constraint",
+        "dimension": "calibration_like_behavior_risk",
+        "rating": "high"
+      },
+      {
+        "basis": "bias-specific evidence unavailable",
+        "candidate": "D_bias_constraint",
+        "dimension": "implementation_complexity",
+        "rating": "medium"
+      },
+      {
+        "basis": "bias-specific evidence unavailable",
+        "candidate": "D_bias_constraint",
+        "dimension": "checkpoint_dependency",
+        "rating": "low"
+      },
+      {
+        "basis": "bias-specific evidence unavailable",
+        "candidate": "D_bias_constraint",
+        "dimension": "external_data_leakage_risk",
+        "rating": "low"
+      },
+      {
+        "basis": "bias-specific evidence unavailable",
+        "candidate": "D_bias_constraint",
+        "dimension": "training_cost",
+        "rating": "low"
+      },
+      {
+        "basis": "bias-specific evidence unavailable",
+        "candidate": "D_bias_constraint",
+        "dimension": "interpretability",
+        "rating": "medium"
+      },
+      {
+        "basis": "bias-specific evidence unavailable",
+        "candidate": "D_bias_constraint",
+        "dimension": "fixed_hyperparameter_feasibility",
+        "rating": "low"
+      },
+      {
+        "basis": "clean-dev selection trade-off and leakage contract",
+        "candidate": "E_checkpoint_positive_recall",
+        "dimension": "scientific_fit_to_stage182b",
+        "rating": "medium"
+      },
+      {
+        "basis": "clean-dev selection trade-off and leakage contract",
+        "candidate": "E_checkpoint_positive_recall",
+        "dimension": "redundancy_with_current_bce",
+        "rating": "low"
+      },
+      {
+        "basis": "clean-dev selection trade-off and leakage contract",
+        "candidate": "E_checkpoint_positive_recall",
+        "dimension": "redundancy_with_stage175",
+        "rating": "low"
+      },
+      {
+        "basis": "clean-dev selection trade-off and leakage contract",
+        "candidate": "E_checkpoint_positive_recall",
+        "dimension": "redundancy_with_stage177",
+        "rating": "low"
+      },
+      {
+        "basis": "clean-dev selection trade-off and leakage contract",
+        "candidate": "E_checkpoint_positive_recall",
+        "dimension": "contamination_sensitivity",
+        "rating": "medium"
+      },
+      {
+        "basis": "clean-dev selection trade-off and leakage contract",
+        "candidate": "E_checkpoint_positive_recall",
+        "dimension": "false_positive_risk",
+        "rating": "high"
+      },
+      {
+        "basis": "clean-dev selection trade-off and leakage contract",
+        "candidate": "E_checkpoint_positive_recall",
+        "dimension": "calibration_like_behavior_risk",
+        "rating": "medium"
+      },
+      {
+        "basis": "clean-dev selection trade-off and leakage contract",
+        "candidate": "E_checkpoint_positive_recall",
+        "dimension": "implementation_complexity",
+        "rating": "medium"
+      },
+      {
+        "basis": "clean-dev selection trade-off and leakage contract",
+        "candidate": "E_checkpoint_positive_recall",
+        "dimension": "checkpoint_dependency",
+        "rating": "high"
+      },
+      {
+        "basis": "clean-dev selection trade-off and leakage contract",
+        "candidate": "E_checkpoint_positive_recall",
+        "dimension": "external_data_leakage_risk",
+        "rating": "high"
+      },
+      {
+        "basis": "clean-dev selection trade-off and leakage contract",
+        "candidate": "E_checkpoint_positive_recall",
+        "dimension": "training_cost",
+        "rating": "low"
+      },
+      {
+        "basis": "clean-dev selection trade-off and leakage contract",
+        "candidate": "E_checkpoint_positive_recall",
+        "dimension": "interpretability",
+        "rating": "high"
+      },
+      {
+        "basis": "clean-dev selection trade-off and leakage contract",
+        "candidate": "E_checkpoint_positive_recall",
+        "dimension": "fixed_hyperparameter_feasibility",
+        "rating": "medium"
+      },
+      {
+        "basis": "selected 14-row family mix is not causal",
+        "candidate": "F_family_conditioned_weighting",
+        "dimension": "scientific_fit_to_stage182b",
+        "rating": "low"
+      },
+      {
+        "basis": "selected 14-row family mix is not causal",
+        "candidate": "F_family_conditioned_weighting",
+        "dimension": "redundancy_with_current_bce",
+        "rating": "medium"
+      },
+      {
+        "basis": "selected 14-row family mix is not causal",
+        "candidate": "F_family_conditioned_weighting",
+        "dimension": "redundancy_with_stage175",
+        "rating": "low"
+      },
+      {
+        "basis": "selected 14-row family mix is not causal",
+        "candidate": "F_family_conditioned_weighting",
+        "dimension": "redundancy_with_stage177",
+        "rating": "medium"
+      },
+      {
+        "basis": "selected 14-row family mix is not causal",
+        "candidate": "F_family_conditioned_weighting",
+        "dimension": "contamination_sensitivity",
+        "rating": "high"
+      },
+      {
+        "basis": "selected 14-row family mix is not causal",
+        "candidate": "F_family_conditioned_weighting",
+        "dimension": "false_positive_risk",
+        "rating": "high"
+      },
+      {
+        "basis": "selected 14-row family mix is not causal",
+        "candidate": "F_family_conditioned_weighting",
+        "dimension": "calibration_like_behavior_risk",
+        "rating": "medium"
+      },
+      {
+        "basis": "selected 14-row family mix is not causal",
+        "candidate": "F_family_conditioned_weighting",
+        "dimension": "implementation_complexity",
+        "rating": "medium"
+      },
+      {
+        "basis": "selected 14-row family mix is not causal",
+        "candidate": "F_family_conditioned_weighting",
+        "dimension": "checkpoint_dependency",
+        "rating": "low"
+      },
+      {
+        "basis": "selected 14-row family mix is not causal",
+        "candidate": "F_family_conditioned_weighting",
+        "dimension": "external_data_leakage_risk",
+        "rating": "medium"
+      },
+      {
+        "basis": "selected 14-row family mix is not causal",
+        "candidate": "F_family_conditioned_weighting",
+        "dimension": "training_cost",
+        "rating": "low"
+      },
+      {
+        "basis": "selected 14-row family mix is not causal",
+        "candidate": "F_family_conditioned_weighting",
+        "dimension": "interpretability",
+        "rating": "medium"
+      },
+      {
+        "basis": "selected 14-row family mix is not causal",
+        "candidate": "F_family_conditioned_weighting",
+        "dimension": "fixed_hyperparameter_feasibility",
+        "rating": "low"
+      }
+    ],
+    "scale": [
+      "low",
+      "medium",
+      "high"
+    ],
+    "scores_fitted": false
+  },
+  "safety_policy": {
+    "no_calibration": true,
+    "no_checkpoint_load": true,
+    "no_dataset_modification": true,
+    "no_external_evaluation": true,
+    "no_forward": true,
+    "no_generator_modification": true,
+    "no_hyperparameter_sweep": true,
+    "no_model_execution": true,
+    "no_multi_seed": true,
+    "no_relabeling": true,
+    "no_smoke": true,
+    "no_threshold_fitting": true,
+    "no_time_swap": true,
+    "no_torch_execution": true,
+    "no_training": true
+  },
+  "scope": {
+    "implementation": false,
+    "model_execution": false,
+    "static_design_audit_only": true,
+    "training": false
+  },
+  "selected_design": {
+    "contingent_post_integrity_candidate": "B_compatible_positive_absolute_margin_hinge",
+    "implementation_authorized": false,
+    "mode_default": "off",
+    "primary_recommendation": "STAGE183A_CONTROLLED_TRAIN_INTEGRITY_MASK_REQUIRED_FIRST",
+    "reason": "contamination-safe eligibility and fixed no-sweep hyperparameters are unavailable",
+    "target_margin": null,
+    "weight": 0.0
+  },
+  "shared_gradient_paths": [
+    {
+      "causal_conflict_established": false,
+      "direct_target": "frame_classifier and frame_pair_repr",
+      "loss": "native_frame_BCE",
+      "shared_upstream": "FrameGate project/pair_projector and encoder token states"
+    },
+    {
+      "causal_conflict_established": false,
+      "direct_target": "output[\"logits\"]",
+      "loss": "final_classifier_CE",
+      "shared_upstream": "frame representation/probability and encoder"
+    },
+    {
+      "causal_conflict_established": false,
+      "direct_target": "respective heads",
+      "loss": "predicate_sufficiency_polarity",
+      "shared_upstream": "encoder token states; decision representation paths"
+    }
+  ],
+  "stage": "Stage183-A",
+  "stage184_gate": {
+    "authorized_next_stage": "STAGE184_CONTROLLED_TRAIN_INTEGRITY_MASK_SPEC",
+    "positive_margin_hinge_smoke_authorized": false,
+    "rows": [
+      {
+        "authorization": "required before loss smoke",
+        "gate": "complete_contamination_safe_mask",
+        "next_stage": "STAGE184_CONTROLLED_TRAIN_INTEGRITY_MASK_SPEC",
+        "passed": false,
+        "required": true
+      },
+      {
+        "authorization": "no value selected",
+        "gate": "fixed_target_margin_justified_without_sweep",
+        "next_stage": "STAGE184_CONTROLLED_TRAIN_INTEGRITY_MASK_SPEC",
+        "passed": false,
+        "required": true
+      },
+      {
+        "authorization": "default remains 0",
+        "gate": "fixed_nonzero_weight_justified_without_sweep",
+        "next_stage": "STAGE184_CONTROLLED_TRAIN_INTEGRITY_MASK_SPEC",
+        "passed": false,
+        "required": true
+      },
+      {
+        "authorization": "forbidden",
+        "gate": "training_authorized",
+        "next_stage": "STAGE184_CONTROLLED_TRAIN_INTEGRITY_MASK_SPEC",
+        "passed": false,
+        "required": true
+      }
+    ],
+    "training_pilot_authorized": false
+  },
+  "train_label_topology": {
+    "all_pair_count": 300,
+    "all_row_count": 3600,
+    "data": "/kaggle/working/ContraMamba/data/controlled_v5_v3_without_time_swap.jsonl",
+    "dev_pair_count": 60,
+    "dev_ratio": 0.2,
+    "dev_row_count": 720,
+    "split_seed": 174,
+    "targets_inferred_from_family": false,
+    "train_compatible_count": 1440,
+    "train_incompatible_count": 1440,
+    "train_pair_count": 240,
+    "train_row_count": 2880
+  }
+}

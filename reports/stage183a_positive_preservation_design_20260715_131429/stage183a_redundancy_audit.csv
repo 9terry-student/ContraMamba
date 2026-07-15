@@ -1,0 +1,9 @@
+candidate,existing_objective,overlap,nonredundant_scientific_target,known_result,conclusion
+A_positive_class_reweighting,native frame BCE,high,none; only positive scale,balanced frame-label topology,not justified
+B_absolute_margin_hinge,native frame BCE,medium,explicit absolute positive floor,BCE has no hard margin,scientifically distinct
+B_absolute_margin_hinge,Stage177 pairwise softplus,low,absolute z floor versus within-pair ordering,Stage177 margin_used=false and final predictions changed=0,nonredundant
+B_absolute_margin_hinge,Stage175 support anchor,low,native frame head versus final SUPPORT margin,Stage175 no clean benefit and reference-relative,nonredundant
+C_teacher_preservation,Stage175 support anchor,high,different head but same detached-reference family,Stage175 path closed,avoid reopening without new evidence
+D_bias_constraint,calibration/threshold family,medium,none established,bias decomposition unavailable,rejected
+E_checkpoint_selection,clean-dev checkpoint selection,low,positive recall retention,current metric is final macro-F1,"possible later, leakage contract required"
+F_family_weighting,weighted BCE,medium,family emphasis only,14 selected hard rows are not causal,rejected

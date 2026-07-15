@@ -1,0 +1,11 @@
+criterion,required,authoritative_metadata_available,passed,eligible_row_count,total_row_count,evidence,fail_closed
+frame_label_compatible,true,true,true,1440,2880,row-level frame_compatible_label is present; loss eligibility additionally requires value 1,true
+grammar_valid,true,false,false,0,2880,"accepted aliases=('grammar_valid', 'stage183_grammar_valid'); missing metadata is not inferred from text or family",true
+intervention_contract_exact,true,false,false,0,2880,"accepted aliases=('intervention_contract_exact', 'stage183_intervention_contract_exact'); missing metadata is not inferred from text or family",true
+polarity_contamination_absent,true,false,false,0,2880,"accepted aliases=('polarity_contamination_absent', 'stage183_polarity_contamination_absent'); missing metadata is not inferred from text or family",true
+schema_resolved,true,false,false,0,2880,"accepted aliases=('schema_resolved', 'stage183_schema_resolved'); missing metadata is not inferred from text or family",true
+canonical_row_valid,true,false,false,0,2880,"accepted aliases=('canonical_row_valid', 'stage183_canonical_row_valid'); missing metadata is not inferred from text or family",true
+time_swap_absent,true,true,true,1440,2880,intervention_type exact comparison,true
+authoritative_main_dataset,true,true,true,1440,2880,resolved input equals /kaggle/working/ContraMamba/data/controlled_v5_v3_without_time_swap.jsonl,true
+not_stage34_35_external_substitute,true,true,true,1440,2880,authoritative path identity; no external dataset inference,true
+required_schema_present,true,true,true,1440,2880,required standard JSONL fields,true

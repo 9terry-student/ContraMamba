@@ -1,0 +1,5 @@
+loss_name,activation_condition,dL_d_frame_logit,gradient_near_zero,gradient_strongly_negative,gradient_already_positive,absolute_margin_enforced,negative_rows_affected,counterpart_or_teacher_required
+native_positive_BCE,y=1,sigmoid(z)-1,-0.5,approaches -1,negative and approaches 0,false,true,false
+positive_reweighted_BCE,y=1,alpha*(sigmoid(z)-1),-alpha/2,approaches -alpha,negative and approaches 0,false,native negative BCE remains; no alpha multiplier,false
+clean_positive_absolute_margin_hinge,eligible y=1 and z<target_margin,-1 if active; 0 if inactive,-1 when target_margin>0,-1,0 once z>=target_margin,true,false,false
+teacher_positive_preservation_hinge,eligible y=1 and z<detached_reference-tolerance,-1 if active; 0 if inactive,reference-dependent,-1 if active,reference-dependent,false,false,true
