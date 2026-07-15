@@ -1,0 +1,68 @@
+{
+  "stage": "Stage183-A closure",
+  "decision": "STAGE183A_CONTROLLED_TRAIN_INTEGRITY_MASK_REQUIRED_FIRST",
+  "scope": {
+    "specification_only": true,
+    "loss_implementation_authorized": false,
+    "training_authorized": false
+  },
+  "authoritative_main_data": "data/controlled_v5_v3_without_time_swap.jsonl",
+  "frozen_topology": {
+    "split_seed": 174,
+    "dev_ratio": 0.2,
+    "all_rows": 3600,
+    "all_pairs": 300,
+    "train_rows": 2880,
+    "train_pairs": 240,
+    "dev_rows": 720,
+    "dev_pairs": 60,
+    "train_frame_compatible": 1440,
+    "train_frame_incompatible": 1440,
+    "balanced_train_frame_topology": true
+  },
+  "current_frame_objective": {
+    "form": "row-mean BCEWithLogits(frame_logit, frame_compatible_label)",
+    "positive_class_weight": null,
+    "native_frame_loss_weight": 1.0,
+    "native_frame_loss_weight_kind": "implicit",
+    "default_checkpoint_selection": "clean-dev final_macro_f1",
+    "frame_positive_recall_directly_selected": false,
+    "frame_positive_margin_directly_selected": false
+  },
+  "candidate_assessment": {
+    "positive_class_reweighting_has_imbalance_basis": false,
+    "contingent_best_scientific_fit": "B_compatible_positive_absolute_margin_hinge",
+    "target": "native frame-head absolute compatible-positive margin",
+    "distinct_from_stage175": "Stage175 targets final SUPPORT margin relative to a detached canonical reference",
+    "distinct_from_stage177": "Stage177 targets compatible-over-incompatible pair ordering without an absolute margin",
+    "complete_contamination_safe_mask_available": false,
+    "target_margin": null,
+    "nonzero_weight": null,
+    "hinge_implementation_authorized": false,
+    "training_authorized": false
+  },
+  "missing_authoritative_integrity_metadata": [
+    "grammar_valid",
+    "intervention_contract_exact",
+    "polarity_contamination_absent",
+    "schema_resolved",
+    "canonical_row_valid"
+  ],
+  "stage182a_contamination": {
+    "reviewed_contaminated_items": 22,
+    "NON_POLARITY_INTERVENTION_POLARITY_CHANGE": 21,
+    "DID_NOT_INFLECTED_PREDICATE": 1,
+    "generator_exact_match_implies_cleanliness": false
+  },
+  "authorized_next_stage": "STAGE184_CONTROLLED_TRAIN_INTEGRITY_MASK_SPEC",
+  "safety_policy": {
+    "dataset_modification": false,
+    "generator_modification": false,
+    "loss_implementation": false,
+    "model_execution": false,
+    "training": false,
+    "smoke": false,
+    "threshold_fitting": false,
+    "hyperparameter_sweep": false
+  }
+}
