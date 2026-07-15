@@ -1,0 +1,46 @@
+{
+  "stage": "Stage184-A closure",
+  "decision": "STAGE184A_DETERMINISTIC_FAIL_CLOSED_INTEGRITY_SIDECAR_SPEC_READY",
+  "authoritative_dataset": {
+    "path": "data/controlled_v5_v3_without_time_swap.jsonl",
+    "sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640",
+    "rows": 3600,
+    "pairs": 300,
+    "intervention_families": 12,
+    "train_pairs": 240,
+    "dev_pairs": 60,
+    "train_rows": 2880,
+    "dev_rows": 720,
+    "train_frame_compatible": 1440,
+    "train_frame_incompatible": 1440,
+    "time_swap_rows": 0
+  },
+  "feasibility": {
+    "exact_row_identity_available": true,
+    "authoritative_topology_validated": true,
+    "all_required_criteria_have_pass_fail_unresolved_rules": true,
+    "original_jsonl_rewrite_required": false,
+    "row_id_one_to_one_sidecar_join_possible": true,
+    "missing_evidence_is_fail_closed": true,
+    "general_grammar_may_remain_unresolved": true,
+    "exact_eligible_positive_count_known": false,
+    "generator_equality_is_cleanliness": false
+  },
+  "authorization": {
+    "sidecar_builder": true,
+    "sidecar_static_audit": true,
+    "loss_implementation": false,
+    "target_margin_selection": false,
+    "nonzero_loss_weight": false,
+    "training": false
+  },
+  "authorized_next_stage": "STAGE185_CONTROLLED_TRAIN_INTEGRITY_SIDECAR_BUILDER",
+  "safety_policy": {
+    "dataset_modification": false,
+    "generator_modification": false,
+    "trainer_or_model_modification": false,
+    "model_or_torch_execution": false,
+    "checkpoint_load": false,
+    "training": false
+  }
+}
