@@ -200,32 +200,138 @@ def evidence(text: str, pattern: str, label: str) -> str:
     return f"line {line}: {snippet[:180]}"
 
 
-def trainer_audit(path: Path) -> dict[str, Any]:
+def optional_evidence(text: str, pattern: str) -> str | None:
+    match = re.search(pattern, text, re.MULTILINE | re.DOTALL)
+    if match is None:
+        return None
+    line = text.count("\n", 0, match.start()) + 1
+    snippet = text[match.start():match.end()].replace("\n", " ").strip()
+    return f"line {line}: {snippet[:180]}"
+
+
+def stage183_frame_bce_crosscheck(report: dict[str, Any]) -> dict[str, Any]:
+    require(report.get("decision") == STAGE183_DECISION, "Stage183-A decision mismatch in delegated frame-BCE cross-check")
+    objective = report.get("current_frame_objective") or {}
+    rows = objective.get("rows") or []
+    by_item = {row.get("item"): row for row in rows if isinstance(row, dict)}
+
+    def fact(item: str, required_text: str) -> dict[str, Any]:
+        row = by_item.get(item) or {}
+        value = str(row.get("value", ""))
+        passed = row.get("static_check_passed") is True and required_text.lower() in value.lower()
+        require(passed, f"Stage183-A native frame-loss evidence mismatch: {item}")
+        return row
+
+    native = fact("native_frame_loss", "binary_cross_entropy_with_logits")
+    pos_weight = fact("positive_class_weight", "none")
+    reduction = fact("reduction", "row mean")
+    weight = fact("native_frame_loss_weight", "1.0")
+    bias = fact("frame_classifier_bias", "trainable")
+    formula = str(objective.get("formula", ""))
+    gradient_variable = str((report.get("gradient_analysis") or {}).get("variable", ""))
+    pre_sigmoid = "BCEWithLogits" in formula and "frame_logit" in formula and gradient_variable == "z=frame_logit"
+    require(pre_sigmoid, "Stage183-A pre-sigmoid frame-logit evidence mismatch")
+    require("pos_weight" not in str(native.get("value", "")), "Stage183-A native frame loss unexpectedly specifies pos_weight")
+    return {
+        "passed": True,
+        "bce_with_logits": True,
+        "row_mean": True,
+        "pos_weight": None,
+        "native_weight": 1.0,
+        "pre_sigmoid_frame_logit": True,
+        "frame_classifier_bias_trainable": True,
+        "evidence": {
+            "formula": formula,
+            "native_frame_loss": native.get("evidence"),
+            "positive_class_weight": pos_weight.get("evidence"),
+            "reduction": reduction.get("evidence"),
+            "native_frame_loss_weight": weight.get("evidence"),
+            "frame_classifier_bias": bias.get("evidence"),
+            "gradient_variable": gradient_variable,
+        },
+    }
+
+
+def trainer_audit(path: Path, stage183_report: dict[str, Any]) -> dict[str, Any]:
     text = path.read_text(encoding="utf-8")
     require("compatible_positive_margin" not in text and "compatible-positive-margin" not in text, "equivalent compatible-positive margin intervention already exists")
     frame_output = evidence(text, r'output\["frame_logit"\]', "native frame_logit")
-    frame_bce = evidence(text, r'F\.binary_cross_entropy_with_logits\(\s*output\["frame_logit"\]', "frame BCE")
+    direct_frame_bce = optional_evidence(
+        text, r'F\.binary_cross_entropy_with_logits\(\s*output\["frame_logit"\]'
+    )
     final_ce = evidence(text, r'F\.cross_entropy\(\s*output\["logits"\]', "final CE")
-    total = evidence(text, r'total\s*=\s*label_loss\s*\+\s*frame_loss\s*\+\s*predicate_loss\s*\+\s*sufficiency_loss\s*\+\s*polarity_loss', "existing total objective")
+    delegated_consumption = optional_evidence(
+        text, r'losses\s*=\s*[A-Za-z0-9_\.]+\.controlled_losses\(\s*output\s*,'
+    )
+    delegated_total = optional_evidence(
+        text, r'total_loss\s*=\s*losses\["total"\]\s*\+\s*active_intervention_loss'
+    )
+    weight_arg = optional_evidence(
+        text, r'parser\.add_argument\(\s*"--v7-frame-loss-weight"'
+    ) or optional_evidence(text, r'\bv7_frame_loss_weight\b')
+    stage183_crosscheck = stage183_frame_bce_crosscheck(stage183_report)
+    if direct_frame_bce is not None:
+        detection_mode = "direct_trainer"
+        frame_bce_evidence = direct_frame_bce
+        frame_aux_wiring = delegated_total or optional_evidence(
+            text, r'total\s*=\s*label_loss\s*\+\s*frame_loss\s*\+\s*predicate_loss\s*\+\s*sufficiency_loss\s*\+\s*polarity_loss'
+        )
+        require(frame_aux_wiring is not None, "trainer static evidence missing: direct frame auxiliary total-objective wiring")
+    else:
+        detection_mode = "delegated_model_forward_stage183_crosscheck"
+        require(weight_arg is not None, "trainer static evidence missing: v7 frame loss weight argument")
+        require(delegated_consumption is not None, "trainer static evidence missing: delegated model-native auxiliary-loss consumption")
+        require(delegated_total is not None, "trainer static evidence missing: frame auxiliary total-objective wiring")
+        frame_bce_evidence = "Stage183-A native frame BCE cross-check + delegated trainer auxiliary-loss consumption"
+        frame_aux_wiring = delegated_total
     assembly = evidence(text, r'total_loss\s*=\s*losses\["total"\]\s*\+\s*active_intervention_loss', "trainer objective assembly")
-    selection = evidence(text, r'select_metric:\s*str\s*=\s*"final_macro_f1"', "checkpoint default")
+    selection = (
+        optional_evidence(text, r'select_metric:\s*str\s*=\s*"final_macro_f1"')
+        or optional_evidence(text, r'parser\.add_argument\(\s*"--select-metric".{0,500}?default\s*=\s*"final_macro_f1"')
+        or optional_evidence(text, r'select_metric\s*=\s*"final_macro_f1"')
+    )
+    require(selection is not None, "trainer static evidence missing: checkpoint default final_macro_f1")
     selection_use = evidence(text, r'score\s*=\s*float\(dev_metrics\[select_metric\]\)', "checkpoint scoring")
     naming = evidence(text, r'parser\.add_argument\("--[a-z0-9-]+"', "CLI naming convention")
     prior_flags = {
-        "stage175_like_anchor_flags_present": "--lambda-frame-anchor" in text or "--lambda-logit-preserve" in text,
-        "stage177_like_pairwise_flags_present": "--ranking-margin" in text or "--use-intervention-loss" in text,
+        "stage175_like_anchor_flags_present": "--lambda-frame-anchor" in text or "--lambda-logit-preserve" in text or "--stage175b-support-anchor" in text,
+        "stage177_like_pairwise_flags_present": "--ranking-margin" in text or "--use-intervention-loss" in text or "--stage177c" in text,
     }
     return {
         "path": str(path), "static_text_only": True, "imported": False,
         "native_frame_output_key": "frame_logit", "frame_output_evidence": frame_output,
-        "frame_bce": frame_bce, "native_frame_loss_weight": 1.0,
-        "final_ce": final_ce, "existing_total": total, "assembly": assembly,
+        "native_frame_bce_detection_mode": detection_mode,
+        "direct_native_frame_bce_call_found": direct_frame_bce is not None,
+        "stage183_native_frame_bce_crosscheck": stage183_crosscheck,
+        "frame_logit_access_found": True,
+        "frame_loss_weight_arg_found": weight_arg is not None,
+        "frame_aux_objective_wiring_found": frame_aux_wiring is not None,
+        "final_ce_output_logits_found": True,
+        "checkpoint_selection_unchanged": True,
+        "frame_bce": frame_bce_evidence, "native_frame_loss_weight": 1.0,
+        "final_ce": final_ce,
+        "existing_total": delegated_consumption or frame_aux_wiring,
+        "assembly": assembly,
         "checkpoint_default": "final_macro_f1", "checkpoint_evidence": selection,
         "checkpoint_score_evidence": selection_use, "cli_naming_evidence": naming,
         "equivalent_absolute_compatible_positive_hinge_present": False,
+        "evidence_lines": {
+            "frame_logit_access": frame_output,
+            "direct_native_frame_bce": direct_frame_bce,
+            "frame_loss_weight_argument": weight_arg,
+            "delegated_auxiliary_consumption": delegated_consumption,
+            "frame_auxiliary_objective_wiring": frame_aux_wiring,
+            "final_ce_output_logits": final_ce,
+            "checkpoint_selection": selection,
+            "checkpoint_score": selection_use,
+        },
+        "limitations": [
+            "Delegated mode does not treat generic BCE calls as native frame-BCE evidence.",
+            "Stage22 frame-violation, entitlement, temporal, and location-boundary BCE calls are excluded from native evidence.",
+            "The delegated BCE semantic is established by Stage183-A facts plus trainer auxiliary-loss wiring; the trainer is not imported or executed.",
+        ],
         **prior_flags,
     }
-
 
 def gradient_rows() -> list[dict[str, Any]]:
     rows = []
@@ -271,6 +377,10 @@ Authorized next: `{report['stage187_gate']['authorized_next_stage']}`. Loss impl
 ## Stage185 closure and sidecar identity
 
 The authoritative 3,600-row sidecar exact-joins the source by unique row ID. Dataset SHA-256: `{report['stage185_closure']['dataset_sha256']}`. Semantic sidecar SHA-256: `{report['stage185_closure']['sidecar_semantic_sha256']}`. Stage182 overlap regression and 22/22 deterministic contamination recovery passed with zero blocked invariants.
+
+## Native frame BCE detection
+
+The trainer does not directly recompute native frame BCE as `F.binary_cross_entropy_with_logits(output["frame_logit"], ...)`. Detection mode is `{report['trainer_static_audit']['native_frame_bce_detection_mode']}`: the model-native auxiliary loss is consumed through the trainer's delegated loss path and wired into `losses["total"]`. Stage183-A static facts establish row-mean BCEWithLogits, no `pos_weight`, native weight 1.0, the pre-sigmoid frame logit, and a trainable frame-classifier bias. Generic BCE substrings—including Stage22 frame-violation, entitlement, temporal, and location-boundary losses—are not used as native frame-BCE evidence.
 
 ## Eligible cohort
 
@@ -411,7 +521,7 @@ def run(args: argparse.Namespace) -> int:
         "bootstrap_ci": ci, "direction_only_not_hyperparameter_fit": True,
     }
 
-    trainer = trainer_audit(trainer_path)
+    trainer = trainer_audit(trainer_path, report183)
     gradients = gradient_rows()
     balance_rows = [
         {"dimension": "pair", "identifier": key, "eligible_rows": count, "expected_rows": 5, "passed": count == 5, "interpretation": "equal row and pair mean under current topology"}
