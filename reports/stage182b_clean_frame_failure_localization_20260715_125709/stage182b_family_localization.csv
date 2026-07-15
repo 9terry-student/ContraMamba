@@ -1,0 +1,5 @@
+intervention_type,candidate_count,compatible_false_negative_count,incompatible_false_positive_count,median_frame_logit,median_matched_control_logit,median_paired_logit_difference,paired_sign_test_p,paired_sign_test_bh_q,centroid_correct_rate,projection_negative_rate,representation_movement_median,stage176_cohort_composition,support_interpretation
+location_swap,1,0,1,0.09144534170627594,-0.7257060408592224,0.8171513825654984,1.0,1.0,1.0,0.0,1.572277307510376,"{""beneficial_correction"": 1}",descriptive_only
+none,6,6,0,-0.43577195703983307,0.09791968017816544,-0.6460651755332947,0.03125,0.0625,0.0,1.0,0.0,"{""harmful_regression"": 6}",family_conditioned_association
+paraphrase,1,1,0,-0.6545320153236389,0.5787363052368164,-1.2332683205604553,1.0,1.0,0.0,1.0,2.0871856212615967,"{""harmful_regression"": 1}",descriptive_only
+polarity_flip,6,6,0,-0.28270233422517776,0.1961238607764244,-0.3871966600418091,0.03125,0.0625,0.0,1.0,10.325530529022217,"{""harmful_regression"": 6}",family_conditioned_association

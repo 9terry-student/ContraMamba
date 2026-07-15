@@ -1,0 +1,3 @@
+stage176_cohort,candidate_count,clean_hard_correct_count,candidate_rate_within_clean_hard,compatible_false_negative_count,median_frame_logit,median_paired_logit_difference,centroid_correct_rate,fisher_exact_p,interpretation
+harmful_regression,13,0,1.0,13,-0.4341762363910675,-0.5793783366680145,0.0,6.879944960440316e-05,descriptive_only
+beneficial_correction,1,7,0.125,0,0.09144534170627594,0.8171513825654984,1.0,6.879944960440316e-05,descriptive_only

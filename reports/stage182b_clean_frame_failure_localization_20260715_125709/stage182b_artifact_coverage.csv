@@ -1,0 +1,17 @@
+artifact,cohort,field,available_count,required_count,coverage_rate,threshold,passed
+normalized_priority_sources,candidates,frame_label,14,14,1.0,0.9,True
+normalized_priority_sources,candidates,frame_prediction,14,14,1.0,0.9,True
+normalized_priority_sources,candidates,frame_logit,14,14,1.0,0.9,True
+normalized_priority_sources,candidates,frame_probability,14,14,1.0,0.9,True
+normalized_priority_sources,candidates,frame_head_projection,14,14,1.0,0.9,True
+normalized_priority_sources,candidates,representation_movement_from_none,14,14,1.0,0.9,True
+normalized_priority_sources,candidates,centroid_prediction,14,14,1.0,0.9,True
+normalized_priority_sources,candidates,centroid_correct,14,14,1.0,0.9,True
+normalized_priority_sources,matched_candidate_controls,frame_label,14,14,1.0,0.9,True
+normalized_priority_sources,matched_candidate_controls,frame_prediction,14,14,1.0,0.9,True
+normalized_priority_sources,matched_candidate_controls,frame_logit,14,14,1.0,0.9,True
+normalized_priority_sources,matched_candidate_controls,frame_probability,14,14,1.0,0.9,True
+normalized_priority_sources,matched_candidate_controls,frame_head_projection,14,14,1.0,0.9,True
+normalized_priority_sources,matched_candidate_controls,representation_movement_from_none,14,14,1.0,0.9,True
+normalized_priority_sources,matched_candidate_controls,centroid_prediction,14,14,1.0,0.9,True
+normalized_priority_sources,matched_candidate_controls,centroid_correct,14,14,1.0,0.9,True

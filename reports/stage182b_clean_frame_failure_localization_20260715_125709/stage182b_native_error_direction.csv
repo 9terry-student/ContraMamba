@@ -1,0 +1,3 @@
+native_error_direction,count,rate,family_composition,stage176_cohort_composition,median_frame_logit,median_frame_probability
+compatible_false_negative,13,0.9285714285714286,"{""none"": 6, ""paraphrase"": 1, ""polarity_flip"": 6}","{""harmful_regression"": 13}",-0.4341762363910675,0.39312952756881714
+incompatible_false_positive,1,0.07142857142857142,"{""location_swap"": 1}","{""beneficial_correction"": 1}",0.09144534170627594,0.5228453874588013

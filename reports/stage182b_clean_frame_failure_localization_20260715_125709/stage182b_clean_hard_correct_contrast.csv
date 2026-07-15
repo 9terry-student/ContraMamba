@@ -1,0 +1,8 @@
+metric,candidate_value,clean_hard_correct_value,interpretation
+count,14,7,fixed_clean_hard_reference
+frame_label_distribution,"{""0"": 1, ""1"": 13}","{""0"": 7}",fixed_clean_hard_reference
+median_frame_logit,-0.3835059702396393,-0.4795682728290558,fixed_clean_hard_reference
+median_frame_probability,0.40534017980098724,0.3823540508747101,fixed_clean_hard_reference
+centroid_correct_rate,0.07142857142857142,1.0,fixed_clean_hard_reference
+family_distribution,"{""location_swap"": 1, ""none"": 6, ""paraphrase"": 1, ""polarity_flip"": 6}","{""event_swap"": 1, ""location_swap"": 5, ""role_swap"": 1}",fixed_clean_hard_reference
+stage176_cohort_distribution,"{""beneficial_correction"": 1, ""harmful_regression"": 13}","{""beneficial_correction"": 7}",fixed_clean_hard_reference

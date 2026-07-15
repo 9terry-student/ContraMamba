@@ -1,0 +1,662 @@
+{
+  "artifact_coverage": {
+    "artifact_source_mode": "embedded_stage180a_pass2",
+    "candidate_scalar_coverage": 1.0,
+    "direct_stage176_runtime_validation_available": false,
+    "embedded_centroid_coverage": 1.0,
+    "embedded_movement_coverage": 1.0,
+    "embedded_pass2_scalar_coverage": {
+      "candidate_native_fields": {
+        "native_frame_label": 1.0,
+        "native_frame_logit": 1.0,
+        "native_frame_prediction": 1.0,
+        "native_frame_probability": 1.0
+      },
+      "matched_control_fields": {
+        "matched_control_frame_logit": 1.0,
+        "matched_control_frame_prediction": 1.0,
+        "matched_control_frame_prob": 1.0
+      },
+      "minimum_required_coverage": 1.0
+    },
+    "embedded_projection_coverage": 1.0,
+    "external_stage176_transitions_available": false,
+    "external_stage179_hard39_available": false,
+    "external_stage179_report_available": false,
+    "frozen_stage182a_cohort_coverage": 1.0,
+    "frozen_stage182a_stage176_sha256": "f89d555b9e2ebbaa7ae41c8fc7ef184e81cf1923cf5478c6d89376937a6f74ed",
+    "matched_control_scalar_coverage": 1.0,
+    "provenance_limitation": "Stage179-derived scalar values were frozen into the Stage180-A packet. Direct Stage179 runtime report provenance was unavailable. No scalar was reconstructed or recomputed. Stage176 cohort labels were frozen into Stage182-A outputs. Direct Stage176 runtime artifact was unavailable. No transition or cohort value was reconstructed from model outputs.",
+    "rows": [
+      {
+        "artifact": "normalized_priority_sources",
+        "available_count": 14,
+        "cohort": "candidates",
+        "coverage_rate": 1.0,
+        "field": "frame_label",
+        "passed": true,
+        "required_count": 14,
+        "threshold": 0.9
+      },
+      {
+        "artifact": "normalized_priority_sources",
+        "available_count": 14,
+        "cohort": "candidates",
+        "coverage_rate": 1.0,
+        "field": "frame_prediction",
+        "passed": true,
+        "required_count": 14,
+        "threshold": 0.9
+      },
+      {
+        "artifact": "normalized_priority_sources",
+        "available_count": 14,
+        "cohort": "candidates",
+        "coverage_rate": 1.0,
+        "field": "frame_logit",
+        "passed": true,
+        "required_count": 14,
+        "threshold": 0.9
+      },
+      {
+        "artifact": "normalized_priority_sources",
+        "available_count": 14,
+        "cohort": "candidates",
+        "coverage_rate": 1.0,
+        "field": "frame_probability",
+        "passed": true,
+        "required_count": 14,
+        "threshold": 0.9
+      },
+      {
+        "artifact": "normalized_priority_sources",
+        "available_count": 14,
+        "cohort": "candidates",
+        "coverage_rate": 1.0,
+        "field": "frame_head_projection",
+        "passed": true,
+        "required_count": 14,
+        "threshold": 0.9
+      },
+      {
+        "artifact": "normalized_priority_sources",
+        "available_count": 14,
+        "cohort": "candidates",
+        "coverage_rate": 1.0,
+        "field": "representation_movement_from_none",
+        "passed": true,
+        "required_count": 14,
+        "threshold": 0.9
+      },
+      {
+        "artifact": "normalized_priority_sources",
+        "available_count": 14,
+        "cohort": "candidates",
+        "coverage_rate": 1.0,
+        "field": "centroid_prediction",
+        "passed": true,
+        "required_count": 14,
+        "threshold": 0.9
+      },
+      {
+        "artifact": "normalized_priority_sources",
+        "available_count": 14,
+        "cohort": "candidates",
+        "coverage_rate": 1.0,
+        "field": "centroid_correct",
+        "passed": true,
+        "required_count": 14,
+        "threshold": 0.9
+      },
+      {
+        "artifact": "normalized_priority_sources",
+        "available_count": 14,
+        "cohort": "matched_candidate_controls",
+        "coverage_rate": 1.0,
+        "field": "frame_label",
+        "passed": true,
+        "required_count": 14,
+        "threshold": 0.9
+      },
+      {
+        "artifact": "normalized_priority_sources",
+        "available_count": 14,
+        "cohort": "matched_candidate_controls",
+        "coverage_rate": 1.0,
+        "field": "frame_prediction",
+        "passed": true,
+        "required_count": 14,
+        "threshold": 0.9
+      },
+      {
+        "artifact": "normalized_priority_sources",
+        "available_count": 14,
+        "cohort": "matched_candidate_controls",
+        "coverage_rate": 1.0,
+        "field": "frame_logit",
+        "passed": true,
+        "required_count": 14,
+        "threshold": 0.9
+      },
+      {
+        "artifact": "normalized_priority_sources",
+        "available_count": 14,
+        "cohort": "matched_candidate_controls",
+        "coverage_rate": 1.0,
+        "field": "frame_probability",
+        "passed": true,
+        "required_count": 14,
+        "threshold": 0.9
+      },
+      {
+        "artifact": "normalized_priority_sources",
+        "available_count": 14,
+        "cohort": "matched_candidate_controls",
+        "coverage_rate": 1.0,
+        "field": "frame_head_projection",
+        "passed": true,
+        "required_count": 14,
+        "threshold": 0.9
+      },
+      {
+        "artifact": "normalized_priority_sources",
+        "available_count": 14,
+        "cohort": "matched_candidate_controls",
+        "coverage_rate": 1.0,
+        "field": "representation_movement_from_none",
+        "passed": true,
+        "required_count": 14,
+        "threshold": 0.9
+      },
+      {
+        "artifact": "normalized_priority_sources",
+        "available_count": 14,
+        "cohort": "matched_candidate_controls",
+        "coverage_rate": 1.0,
+        "field": "centroid_prediction",
+        "passed": true,
+        "required_count": 14,
+        "threshold": 0.9
+      },
+      {
+        "artifact": "normalized_priority_sources",
+        "available_count": 14,
+        "cohort": "matched_candidate_controls",
+        "coverage_rate": 1.0,
+        "field": "centroid_correct",
+        "passed": true,
+        "required_count": 14,
+        "threshold": 0.9
+      }
+    ],
+    "stage176_artifact_source_mode": "frozen_stage182a_cohort_fallback"
+  },
+  "candidate_topology": {
+    "all_clean_control_count": 30,
+    "candidate_count": 14,
+    "candidate_family_count": 4,
+    "clean_hard_native_frame_correct_count": 7,
+    "matched_candidate_control_count": 14,
+    "schema_unresolved_count": 0
+  },
+  "centroid_readout_analysis": {
+    "candidate_available_count": 14,
+    "candidate_centroid_correct_rate": 0.07142857142857142,
+    "candidate_centroid_wrong_rate": 0.9285714285714286,
+    "candidate_coverage": 1.0,
+    "deployable_classifier": false,
+    "gold_conditioned_transductive_diagnostic": true,
+    "head_centroid_disagreement_rate": 0.07142857142857142,
+    "matched_control_available_count": 14,
+    "matched_control_centroid_correct_rate": 0.07142857142857142,
+    "matched_control_coverage": 1.0,
+    "subanalysis_available": true
+  },
+  "clean_hard_correct_contrast": {
+    "reference_is_stage176_hard_subset": true,
+    "rows": [
+      {
+        "candidate_value": 14,
+        "clean_hard_correct_value": 7,
+        "interpretation": "fixed_clean_hard_reference",
+        "metric": "count"
+      },
+      {
+        "candidate_value": {
+          "0": 1,
+          "1": 13
+        },
+        "clean_hard_correct_value": {
+          "0": 7
+        },
+        "interpretation": "fixed_clean_hard_reference",
+        "metric": "frame_label_distribution"
+      },
+      {
+        "candidate_value": -0.3835059702396393,
+        "clean_hard_correct_value": -0.4795682728290558,
+        "interpretation": "fixed_clean_hard_reference",
+        "metric": "median_frame_logit"
+      },
+      {
+        "candidate_value": 0.40534017980098724,
+        "clean_hard_correct_value": 0.3823540508747101,
+        "interpretation": "fixed_clean_hard_reference",
+        "metric": "median_frame_probability"
+      },
+      {
+        "candidate_value": 0.07142857142857142,
+        "clean_hard_correct_value": 1.0,
+        "interpretation": "fixed_clean_hard_reference",
+        "metric": "centroid_correct_rate"
+      },
+      {
+        "candidate_value": {
+          "location_swap": 1,
+          "none": 6,
+          "paraphrase": 1,
+          "polarity_flip": 6
+        },
+        "clean_hard_correct_value": {
+          "event_swap": 1,
+          "location_swap": 5,
+          "role_swap": 1
+        },
+        "interpretation": "fixed_clean_hard_reference",
+        "metric": "family_distribution"
+      },
+      {
+        "candidate_value": {
+          "beneficial_correction": 1,
+          "harmful_regression": 13
+        },
+        "clean_hard_correct_value": {
+          "beneficial_correction": 7
+        },
+        "interpretation": "fixed_clean_hard_reference",
+        "metric": "stage176_cohort_distribution"
+      }
+    ]
+  },
+  "cohort_analysis": {
+    "fisher_exact_interpretation": "descriptive_only",
+    "rows": [
+      {
+        "candidate_count": 13,
+        "candidate_rate_within_clean_hard": 1.0,
+        "centroid_correct_rate": 0.0,
+        "clean_hard_correct_count": 0,
+        "compatible_false_negative_count": 13,
+        "fisher_exact_p": 6.879944960440316e-05,
+        "interpretation": "descriptive_only",
+        "median_frame_logit": -0.4341762363910675,
+        "median_paired_logit_difference": -0.5793783366680145,
+        "stage176_cohort": "harmful_regression"
+      },
+      {
+        "candidate_count": 1,
+        "candidate_rate_within_clean_hard": 0.125,
+        "centroid_correct_rate": 1.0,
+        "clean_hard_correct_count": 7,
+        "compatible_false_negative_count": 0,
+        "fisher_exact_p": 6.879944960440316e-05,
+        "interpretation": "descriptive_only",
+        "median_frame_logit": 0.09144534170627594,
+        "median_paired_logit_difference": 0.8171513825654984,
+        "stage176_cohort": "beneficial_correction"
+      }
+    ]
+  },
+  "compatible_positive_margin": {
+    "compatible_positive_dominant": true,
+    "negative_margin_systematic": true,
+    "paired_logit_bootstrap_ci": [
+      -0.7878567576408386,
+      -0.458047553896904
+    ],
+    "rows": [
+      {
+        "below_zero_logit_count": 13,
+        "count": 13,
+        "exact_sign_test_p": 0.000244140625,
+        "family_composition": {
+          "none": 6,
+          "paraphrase": 1,
+          "polarity_flip": 6
+        },
+        "logit_bootstrap_ci_lower": -0.5529495477676392,
+        "logit_bootstrap_ci_upper": -0.2902115285396576,
+        "matched_control_median_logit": 0.12521184980869293,
+        "median_frame_logit": -0.4341762363910675,
+        "median_frame_probability": 0.39312952756881714,
+        "median_paired_logit_difference": -0.5793783366680145,
+        "median_paired_probability_difference": -0.14384004473686218,
+        "rate": 0.9285714285714286,
+        "stage176_cohort_composition": {
+          "harmful_regression": 13
+        },
+        "subset": "compatible_false_negative"
+      }
+    ]
+  },
+  "decision": "STAGE182B_COMPATIBLE_POSITIVE_MARGIN_COLLAPSE_SIGNAL",
+  "diagnosis": {
+    "causal_mechanism_established": false,
+    "compatible_margin_gate": true,
+    "polarity_gate": false,
+    "readout_gate": false,
+    "representation_gate": false
+  },
+  "family_analysis": {
+    "multiple_comparison_correction": "Benjamini-Hochberg_family_tests_only",
+    "rows": [
+      {
+        "candidate_count": 1,
+        "centroid_correct_rate": 1.0,
+        "compatible_false_negative_count": 0,
+        "incompatible_false_positive_count": 1,
+        "intervention_type": "location_swap",
+        "median_frame_logit": 0.09144534170627594,
+        "median_matched_control_logit": -0.7257060408592224,
+        "median_paired_logit_difference": 0.8171513825654984,
+        "paired_sign_test_bh_q": 1.0,
+        "paired_sign_test_p": 1.0,
+        "projection_negative_rate": 0.0,
+        "representation_movement_median": 1.572277307510376,
+        "stage176_cohort_composition": {
+          "beneficial_correction": 1
+        },
+        "support_interpretation": "descriptive_only"
+      },
+      {
+        "candidate_count": 6,
+        "centroid_correct_rate": 0.0,
+        "compatible_false_negative_count": 6,
+        "incompatible_false_positive_count": 0,
+        "intervention_type": "none",
+        "median_frame_logit": -0.43577195703983307,
+        "median_matched_control_logit": 0.09791968017816544,
+        "median_paired_logit_difference": -0.6460651755332947,
+        "paired_sign_test_bh_q": 0.0625,
+        "paired_sign_test_p": 0.03125,
+        "projection_negative_rate": 1.0,
+        "representation_movement_median": 0.0,
+        "stage176_cohort_composition": {
+          "harmful_regression": 6
+        },
+        "support_interpretation": "family_conditioned_association"
+      },
+      {
+        "candidate_count": 1,
+        "centroid_correct_rate": 0.0,
+        "compatible_false_negative_count": 1,
+        "incompatible_false_positive_count": 0,
+        "intervention_type": "paraphrase",
+        "median_frame_logit": -0.6545320153236389,
+        "median_matched_control_logit": 0.5787363052368164,
+        "median_paired_logit_difference": -1.2332683205604553,
+        "paired_sign_test_bh_q": 1.0,
+        "paired_sign_test_p": 1.0,
+        "projection_negative_rate": 1.0,
+        "representation_movement_median": 2.0871856212615967,
+        "stage176_cohort_composition": {
+          "harmful_regression": 1
+        },
+        "support_interpretation": "descriptive_only"
+      },
+      {
+        "candidate_count": 6,
+        "centroid_correct_rate": 0.0,
+        "compatible_false_negative_count": 6,
+        "incompatible_false_positive_count": 0,
+        "intervention_type": "polarity_flip",
+        "median_frame_logit": -0.28270233422517776,
+        "median_matched_control_logit": 0.1961238607764244,
+        "median_paired_logit_difference": -0.3871966600418091,
+        "paired_sign_test_bh_q": 0.0625,
+        "paired_sign_test_p": 0.03125,
+        "projection_negative_rate": 1.0,
+        "representation_movement_median": 10.325530529022217,
+        "stage176_cohort_composition": {
+          "harmful_regression": 6
+        },
+        "support_interpretation": "family_conditioned_association"
+      }
+    ]
+  },
+  "input_validation": {
+    "candidate_native_frame_mismatch_invariant": true,
+    "contaminated_comparison_rows": 0,
+    "direct_stage176_runtime_validation_available": false,
+    "external_stage176_transitions_available": false,
+    "frozen_stage182a_cohort_coverage": 1.0,
+    "frozen_stage182a_stage176_sha256": "f89d555b9e2ebbaa7ae41c8fc7ef184e81cf1923cf5478c6d89376937a6f74ed",
+    "stage176_artifact_source_mode": "frozen_stage182a_cohort_fallback",
+    "stage179_runtime_decision_directly_validated": false,
+    "stage179a_decision": null,
+    "stage182a_decision": "STAGE182A_DATA_CONTAMINATION_CONFIRMED_AND_CLEAN_MODEL_FAILURE_SET_READY",
+    "status": "passed"
+  },
+  "limitations": [
+    "Stage179-derived scalar values were frozen into the Stage180-A packet. Direct Stage179 runtime report provenance was unavailable. No scalar was reconstructed or recomputed. Stage176 cohort labels were frozen into Stage182-A outputs. Direct Stage176 runtime artifact was unavailable. No transition or cohort value was reconstructed from model outputs.",
+    "Stage179 centroid is gold-conditioned and transductive, not deployable.",
+    "Scalar movement magnitude does not establish representation direction.",
+    "Family and cohort results are associations, not causal mechanisms.",
+    "No final-classifier output is used as localization evidence."
+  ],
+  "matched_control_analysis": {
+    "centroid_agreement_patterns": {
+      "0.0": 14
+    },
+    "exact_sign_test_p": 0.0018310546875,
+    "mean_paired_logit_difference": -0.531210056106959,
+    "median_paired_logit_difference": -0.555523656308651,
+    "median_paired_probability_difference": -0.13753221929073334,
+    "median_paired_projection_difference": -0.9514690302312374,
+    "negative_difference_count": 13,
+    "negative_difference_rate": 0.9285714285714286,
+    "pair_count": 14,
+    "paired_logit_bootstrap_ci": [
+      -0.7878567576408386,
+      -0.3871966600418091
+    ]
+  },
+  "native_error_direction": {
+    "compatible_false_negative_count": 13,
+    "incompatible_false_positive_count": 1,
+    "rows": [
+      {
+        "count": 13,
+        "family_composition": {
+          "none": 6,
+          "paraphrase": 1,
+          "polarity_flip": 6
+        },
+        "median_frame_logit": -0.4341762363910675,
+        "median_frame_probability": 0.39312952756881714,
+        "native_error_direction": "compatible_false_negative",
+        "rate": 0.9285714285714286,
+        "stage176_cohort_composition": {
+          "harmful_regression": 13
+        }
+      },
+      {
+        "count": 1,
+        "family_composition": {
+          "location_swap": 1
+        },
+        "median_frame_logit": 0.09144534170627594,
+        "median_frame_probability": 0.5228453874588013,
+        "native_error_direction": "incompatible_false_positive",
+        "rate": 0.07142857142857142,
+        "stage176_cohort_composition": {
+          "beneficial_correction": 1
+        }
+      }
+    ]
+  },
+  "polarity_conditioned_analysis": {
+    "bootstrap_ci_lower": -0.23154158145189285,
+    "bootstrap_ci_upper": 0.4853615577332657,
+    "centroid_correctness_difference": 0.0,
+    "effect_gate_passed": false,
+    "gap_difference": 0.2588685154914856,
+    "interpretation": "family_conditioned_association_not_causal_interference",
+    "none_median_paired_logit_gap": -0.6460651755332947,
+    "none_support": 6,
+    "polarity_median_paired_logit_gap": -0.3871966600418091,
+    "polarity_support": 6,
+    "pooled_scale": 0.23094580092965208,
+    "projection_difference": 0.4433751218020916
+  },
+  "projection_bias_analysis": {
+    "available_count": 28,
+    "bias_dominant_evidence_gate_passed": false,
+    "bias_specific_subanalysis_available": false,
+    "compatible_fn_projection_negative_rate": 1.0,
+    "compatible_fn_projection_positive_logit_negative_rate": 0.0,
+    "coverage": 1.0,
+    "inferred_bias_median": 0.059826990589499474,
+    "inferred_bias_variance": 0.07128365152521018,
+    "maximum_reconstruction_error": 0.5138212833553553,
+    "relationship_verified": false,
+    "subanalysis_available": true
+  },
+  "provenance": {
+    "artifact_source_mode": "embedded_stage180a_pass2",
+    "direct_stage176_runtime_validation_available": false,
+    "external_stage176_transitions_sha256": null,
+    "frozen_stage182a_stage176_sha256": "f89d555b9e2ebbaa7ae41c8fc7ef184e81cf1923cf5478c6d89376937a6f74ed",
+    "scalar_reconstructed_or_recomputed": false,
+    "stage176_artifact_source_mode": "frozen_stage182a_cohort_fallback",
+    "stage179a_report_decision": null,
+    "stage180a_manifest_sha256": "6ccb5b0eb8867eebcd83edbb51f30c162728ae07b804ef078ea8b44407d316a4",
+    "stage180a_pass2_packet_sha256": "4fddd33bf7d9250804ab6b13bbd9deb4048daa92d48b390ae15068769e4cb82a",
+    "stage182a_candidate_csv_sha256": "abda9d555404ff9cff62df895961f2c6d7c3055de8b27e738c582fc03a13fe2d",
+    "stage182a_report_decision": "STAGE182A_DATA_CONTAMINATION_CONFIRMED_AND_CLEAN_MODEL_FAILURE_SET_READY",
+    "transition_or_cohort_reconstructed_from_model_outputs": false
+  },
+  "representation_movement_analysis": {
+    "coverage": 1.0,
+    "subanalysis_available": true,
+    "subsets": {
+      "candidate": {
+        "available_count": 8,
+        "bootstrap_ci": [
+          5.435804486274719,
+          10.82304573059082
+        ],
+        "iqr": [
+          7.496295154094696,
+          10.510478973388672
+        ],
+        "median": 10.224196910858154
+      },
+      "clean_hard_correct": {
+        "available_count": 7,
+        "bootstrap_ci": [
+          1.141137957572937,
+          1.7556242942810059
+        ],
+        "iqr": [
+          1.1617920398712158,
+          1.617355227470398
+        ],
+        "median": 1.2342499494552612
+      },
+      "matched_control": {
+        "available_count": 8,
+        "bootstrap_ci": [
+          3.924337387084961,
+          9.44472885131836
+        ],
+        "iqr": [
+          7.335914134979248,
+          9.120044231414795
+        ],
+        "median": 8.674359321594238
+      }
+    },
+    "vector_direction_inference_authorized": false
+  },
+  "safety_policy": {
+    "annotation": false,
+    "calibration": false,
+    "checkpoint_load": false,
+    "classifier_fitting": false,
+    "dataset_mutation": false,
+    "embedding_recomputation": false,
+    "forward": false,
+    "learned_probe": false,
+    "model_import": false,
+    "relabeling": false,
+    "threshold_optimization": false,
+    "torch_import": false,
+    "training": false
+  },
+  "scope": {
+    "artifact_only": true,
+    "artifact_source_mode": "embedded_stage180a_pass2",
+    "bootstrap_samples": 5000,
+    "evaluation_only_failure_localization": true,
+    "minimum_candidates": 8,
+    "seed": 182,
+    "stage176_artifact_source_mode": "frozen_stage182a_cohort_fallback"
+  },
+  "stage": "Stage182-B",
+  "stage183_gate": {
+    "authorization_scope": "design_audit_only",
+    "authorized_next_stage": "STAGE183_COMPATIBLE_FRAME_POSITIVE_PRESERVATION_DESIGN_AUDIT",
+    "rows": [
+      {
+        "authorized_next_stage": "",
+        "criterion": "fixed_gate",
+        "decision": "STAGE182B_CLEAN_FRAME_REPRESENTATION_MISLOCALIZATION_SIGNAL",
+        "observed_value": false,
+        "passed": false,
+        "threshold": "all_declared_conditions"
+      },
+      {
+        "authorized_next_stage": "",
+        "criterion": "fixed_gate",
+        "decision": "STAGE182B_CLEAN_FRAME_READOUT_ALIGNMENT_FAILURE_SIGNAL",
+        "observed_value": false,
+        "passed": false,
+        "threshold": "all_declared_conditions"
+      },
+      {
+        "authorized_next_stage": "STAGE183_COMPATIBLE_FRAME_POSITIVE_PRESERVATION_DESIGN_AUDIT",
+        "criterion": "fixed_gate",
+        "decision": "STAGE182B_COMPATIBLE_POSITIVE_MARGIN_COLLAPSE_SIGNAL",
+        "observed_value": true,
+        "passed": true,
+        "threshold": "all_declared_conditions"
+      },
+      {
+        "authorized_next_stage": "",
+        "criterion": "fixed_gate",
+        "decision": "STAGE182B_POLARITY_CONDITIONED_FRAME_INTERFERENCE_SIGNAL",
+        "observed_value": false,
+        "passed": false,
+        "threshold": "all_declared_conditions"
+      },
+      {
+        "authorized_next_stage": "",
+        "criterion": "fixed_gate",
+        "decision": "STAGE182B_NATIVE_FRAME_LOCALIZATION_ARTIFACTS_INSUFFICIENT",
+        "observed_value": false,
+        "passed": false,
+        "threshold": "all_declared_conditions"
+      },
+      {
+        "authorized_next_stage": "",
+        "criterion": "fixed_gate",
+        "decision": "STAGE182B_CLEAN_FRAME_FAILURE_LOCALIZATION_MIXED",
+        "observed_value": false,
+        "passed": false,
+        "threshold": "all_declared_conditions"
+      }
+    ],
+    "training_authorized": false
+  }
+}

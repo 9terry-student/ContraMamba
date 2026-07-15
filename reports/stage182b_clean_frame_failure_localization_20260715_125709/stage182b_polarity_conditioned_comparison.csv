@@ -1,0 +1,2 @@
+polarity_support,none_support,polarity_median_paired_logit_gap,none_median_paired_logit_gap,gap_difference,pooled_scale,bootstrap_ci_lower,bootstrap_ci_upper,centroid_correctness_difference,projection_difference,effect_gate_passed,interpretation
+6,6,-0.3871966600418091,-0.6460651755332947,0.2588685154914856,0.23094580092965208,-0.23154158145189285,0.4853615577332657,0.0,0.4433751218020916,False,family_conditioned_association_not_causal_interference
