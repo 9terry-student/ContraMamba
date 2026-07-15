@@ -328,7 +328,95 @@ def criterion_rows(generator: Path, stage182: Path, policy182: Path) -> list[dic
         ("frame_label_compatible", "row frame_compatible_label", "exact binary value", ["frame_compatible_label", "split"], True, True, True, False, False, False, True, False, True, "authoritative row label", "loss scope, not semantic cleanliness"),
     ]
     headers = ["criterion", "required", "authoritative_source", "derivation_mode", "structured_inputs", "deterministic", "exhaustive", "text_heuristic_required", "model_required", "manual_annotation_required", "can_fail_closed", "unresolved_possible", "implementation_ready", "evidence", "limitation"]
-    return [dict(zip(headers, (name, True, source, mode, inputs, deterministic, exhaustive, heuristic, model, manual, fail_closed, unresolved, ready, ev, limitation))) for name, source, mode, inputs, deterministic, exhaustive, heuristic, model, manual, fail_closed, unresolved, ready, ev, limitation in specs]
+    rows = [
+        dict(
+            zip(
+                headers,
+                (
+                    name,
+                    required,
+                    source,
+                    mode,
+                    inputs,
+                    deterministic,
+                    exhaustive,
+                    heuristic,
+                    model,
+                    manual,
+                    fail_closed,
+                    unresolved,
+                    ready,
+                    ev,
+                    limitation,
+                ),
+            )
+        )
+        for (
+            name,
+            source,
+            mode,
+            inputs,
+            required,
+            deterministic,
+            exhaustive,
+            heuristic,
+            model,
+            manual,
+            fail_closed,
+            unresolved,
+            ready,
+            ev,
+            limitation,
+        ) in specs
+    ]
+
+    if len(headers) != 15:
+        raise ValueError(
+            f"criterion_rows expected 15 headers, got {len(headers)}"
+        )
+
+    if len(rows) != 10:
+        raise ValueError(
+            f"criterion_rows expected 10 criteria, got {len(rows)}"
+        )
+
+    expected_keys = set(headers)
+    criteria = [row[headers[0]] for row in rows]
+
+    if len(set(criteria)) != len(criteria):
+        raise ValueError(
+            f"Duplicate integrity criteria: {criteria}"
+        )
+
+    boolean_indexes = (1, 5, 6, 7, 8, 9, 10, 11, 12)
+    required_text_indexes = (0, 2, 3, 13, 14)
+
+    for row in rows:
+        if set(row) != expected_keys:
+            raise ValueError(
+                "Criterion row key mismatch: "
+                f"expected={sorted(expected_keys)}, "
+                f"actual={sorted(row)}"
+            )
+
+        for field_index in boolean_indexes:
+            field = headers[field_index]
+            if not isinstance(row[field], bool):
+                raise ValueError(
+                    f"Criterion {row[headers[0]]} field "
+                    f"{field} must be bool, got "
+                    f"{type(row[field]).__name__}"
+                )
+
+        for field_index in required_text_indexes:
+            field = headers[field_index]
+            if not str(row[field]).strip():
+                raise ValueError(
+                    f"Criterion {row[headers[0]]} has empty "
+                    f"required field {field}"
+                )
+
+    return rows
 
 
 def family_rows(rows: list[dict[str, Any]], generator: Path) -> list[dict[str, Any]]:

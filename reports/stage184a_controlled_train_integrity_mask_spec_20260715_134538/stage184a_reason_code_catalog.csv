@@ -1,0 +1,28 @@
+reason_code,level,status_effect,criterion,deterministic_source,fail_closed_behavior,human_interpretation
+ELIGIBLE_CLEAN_COMPATIBLE,row,ELIGIBLE,integrity_composition,composed criterion statuses + train/frame label,include only after every gate passes,positive-margin eligible
+FRAME_LABEL_NOT_COMPATIBLE,row,INELIGIBLE,frame_label_compatible,frame_compatible_label,exclude row,frame label is 0
+DEV_SPLIT_EXCLUDED,row,INELIGIBLE,integrity_composition,frozen split,exclude row,row is dev
+TIME_SWAP_EXCLUDED,row/dataset,INELIGIBLE_OR_BLOCKED,time_swap_absent,intervention_type,exclude; block authoritative dataset if present,time-swap is out of scope
+EXTERNAL_DATA_EXCLUDED,dataset,BLOCKED,authoritative_main_dataset,path/hash allowlist,reject artifact,source is external or Stage34/35
+MISSING_REQUIRED_BASE_FIELD,row,UNRESOLVED,schema_resolved,base schema,exclude row; block if identity field,required source field missing
+INVALID_FIELD_TYPE,row,INELIGIBLE,schema_resolved,base schema,exclude row,field has wrong type/nullability
+INVALID_ENUM,row,INELIGIBLE,schema_resolved,base schema enums,exclude row,label/type enum invalid
+DUPLICATE_ROW_ID,dataset,BLOCKED,integrity_composition,row identity counter,stop artifact,one-to-one join impossible
+PAIR_TOPOLOGY_INVALID,pair,UNRESOLVED_OR_BLOCKED,integrity_composition,pair/family matrix,pair unresolved; block if identity ambiguous,pair shape is invalid
+CANONICAL_ROW_MISSING,pair,UNRESOLVED,canonical_row_valid,same-pair none lookup,entire pair unresolved,canonical row absent
+CANONICAL_ROW_DUPLICATE,pair,UNRESOLVED,canonical_row_valid,same-pair none lookup,entire pair unresolved,canonical row ambiguous
+CANONICAL_LINKAGE_INVALID,pair,UNRESOLVED,canonical_row_valid,claim/evidence linkage,entire pair unresolved,canonical linkage failed
+CROSS_PAIR_CANONICAL_LEAKAGE,pair,UNRESOLVED,canonical_row_valid,pair_id/canonical_row_id,entire pair unresolved,canonical belongs to another pair
+INTERVENTION_CONTRACT_FAIL,row,INELIGIBLE,intervention_contract_exact,exact structured-axis delta,exclude row,declared branch contract failed
+INTERVENTION_CONTRACT_UNRESOLVED,row,UNRESOLVED,intervention_contract_exact,missing structured evidence,exclude row,contract cannot be decided
+NON_POLARITY_INTERVENTION_POLARITY_CHANGE,row,INELIGIBLE,polarity_contamination_absent,canonical/rendered structured polarity delta,exclude row,undeclared polarity change
+POLARITY_REALIZATION_MISMATCH,row,INELIGIBLE,polarity_contamination_absent,structured label vs template realization,exclude row,polarity label and realization disagree
+DID_NOT_INFLECTED_PREDICATE,row,INELIGIBLE,grammar_valid,generator predicate morphology rule,exclude row,did not precedes inflected predicate
+GRAMMAR_TEMPLATE_FAIL,row,INELIGIBLE,grammar_valid,deterministic template grammar,exclude row,known template grammar defect
+GRAMMAR_GENERAL_UNRESOLVED,row,UNRESOLVED,grammar_valid,absence of authorized general grammar source,exclude row,general grammar not decided
+GENERATOR_PROVENANCE_MISSING,dataset/row,UNRESOLVED_OR_BLOCKED,integrity_composition,generator path/hash/reconstruction,block reconstruction or mark affected rows unresolved,structured provenance unavailable
+DATASET_SHA_MISMATCH,dataset,BLOCKED,authoritative_main_dataset,SHA-256,reject entire sidecar,sidecar/source mismatch
+GENERATOR_SHA_MISMATCH,dataset,BLOCKED,authoritative_main_dataset,SHA-256,reject build/use,sidecar/generator mismatch
+SIDECAR_ROW_MISSING,dataset,BLOCKED,authoritative_main_dataset,row-id set equality,reject entire sidecar,source row has no sidecar row
+SIDECAR_ROW_EXTRA,dataset,BLOCKED,authoritative_main_dataset,row-id set equality,reject entire sidecar,sidecar has unknown row
+SPLIT_ASSIGNMENT_MISMATCH,dataset,BLOCKED,integrity_composition,frozen split recomputation,reject artifact,split differs from seed/ratio contract

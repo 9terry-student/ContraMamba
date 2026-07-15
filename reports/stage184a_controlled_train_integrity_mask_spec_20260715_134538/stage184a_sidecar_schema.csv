@@ -1,0 +1,24 @@
+field,type,nullable,source,contract
+row_id,string,false,authoritative JSONL id,exact one-to-one join key
+pair_id,string,false,authoritative JSONL pair_id,frozen pair identity
+split,"enum(train,dev)",false,deterministic frozen pair split,not independently assigned
+intervention_type,string enum,false,authoritative row,must match source
+frame_compatible_label,"integer enum(0,1)",false,authoritative row,loss-scope label
+grammar_status,"enum(PASS,FAIL,UNRESOLVED,NOT_APPLICABLE)",false,integrity rules,criterion status
+intervention_contract_status,"enum(PASS,FAIL,UNRESOLVED,NOT_APPLICABLE)",false,axis contract,criterion status
+polarity_contamination_status,"enum(PASS,FAIL,UNRESOLVED,NOT_APPLICABLE)",false,structured polarity contract,criterion status
+schema_status,"enum(PASS,FAIL,UNRESOLVED,NOT_APPLICABLE)",false,base/sidecar schema,criterion status
+canonical_status,"enum(PASS,FAIL,UNRESOLVED,NOT_APPLICABLE)",false,same-pair canonical validation,criterion status
+time_swap_status,"enum(PASS,FAIL,UNRESOLVED,NOT_APPLICABLE)",false,intervention_type,PASS means absent/not time_swap
+dataset_source_status,"enum(PASS,FAIL,UNRESOLVED,NOT_APPLICABLE)",false,path/hash allowlist,criterion status
+integrity_status,"enum(ELIGIBLE,INELIGIBLE,UNRESOLVED)",false,fail-closed composition,exactly one
+eligible_for_positive_margin,boolean,false,exact eligibility expression,true only for eligible train compatible rows
+reason_codes,sorted unique string list,false,rule outputs,JSON array; CSV semicolon-delimited
+canonical_row_id,string,false,same-pair none identity,must exist in source
+family_contract_id,string,false,rule catalog,stable family contract version
+rule_version,string,false,stage184a_v1,fixed contract version
+source_dataset_path,string,false,canonical resolved path,provenance
+source_dataset_sha256,sha256,false,source bytes,mismatch blocks all
+generator_source_sha256,sha256,false,generator bytes,mismatch blocks build/use
+integrity_builder_sha256,sha256,false,builder bytes,provenance
+created_at,UTC ISO-8601,false,builder clock,excluded from semantic hash

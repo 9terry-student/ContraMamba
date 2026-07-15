@@ -1,0 +1,4 @@
+coverage_kind,population,denominator,value,status,threshold_used,risk
+decision_coverage,all authoritative rows,3600,3600,structurally computable at Stage185,,UNRESOLVED may dominate but never enters loss
+positive_eligible_coverage,train frame-compatible rows,1440,,unavailable before builder,0.0,eligible count may be small or family-concentrated
+scientific_usability,eligible train positives,,,requires Stage185 family/reason-code distribution,,technical sidecar completeness does not imply useful training coverage

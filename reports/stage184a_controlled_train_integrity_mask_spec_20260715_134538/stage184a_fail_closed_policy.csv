@@ -1,0 +1,8 @@
+condition,scope,result,positive_margin_eligible,propagation,rationale
+all required criteria PASS; train; compatible; authoritative; no time_swap,row,ELIGIBLE,true,row only,exact conjunction
+any deterministic criterion FAIL,row,INELIGIBLE,false,row unless canonical/pair identity affected,known failure
+any required criterion UNRESOLVED and none FAIL,row,UNRESOLVED,false,row or pair per invariant,missing evidence never passes
+canonical missing/duplicate/linkage invalid,pair,UNRESOLVED,false,entire pair,all intervention deltas depend on anchor
+duplicate row id or dataset/sidecar SHA mismatch,dataset,BLOCKED,false,entire artifact,one-to-one provenance impossible
+dev or frame-incompatible row,row,INELIGIBLE_FOR_POSITIVE_MARGIN,false,row,loss scope exclusion independent of cleanliness
+external/Stage34/35/time_swap source,row_or_dataset,INELIGIBLE_OR_BLOCKED,false,exclude or reject artifact,explicit safety boundary

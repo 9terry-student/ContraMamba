@@ -1,0 +1,14 @@
+invariant,level,validation,failure_scope,failure_status,reason_code,stage185_action
+unique_pair_id,dataset,stable nonempty pair_id grouping,dataset,BLOCKED,PAIR_TOPOLOGY_INVALID,stop artifact
+unique_row_id,dataset,id unique across all rows,dataset,BLOCKED,DUPLICATE_ROW_ID,stop; one-to-one join impossible
+exactly_one_canonical_none,pair,one intervention_type=none row,pair,UNRESOLVED,CANONICAL_ROW_MISSING|CANONICAL_ROW_DUPLICATE,mark entire pair unresolved
+expected_family_coverage,pair,same observed family set for every pair,pair,UNRESOLVED,PAIR_TOPOLOGY_INVALID,mark affected pair unresolved
+canonical_claim_linkage,pair,every intervention claim equals same-pair canonical claim,pair,UNRESOLVED,CANONICAL_LINKAGE_INVALID,mark entire pair unresolved
+canonical_evidence_linkage,pair,none is canonical evidence; non-none relation follows family contract,row_or_pair,INELIGIBLE_OR_UNRESOLVED,CANONICAL_LINKAGE_INVALID,pair unresolved if anchor ambiguous; otherwise row ineligible
+allowed_axis_delta_topology,row,observed structured delta equals family contract,row,INELIGIBLE,INTERVENTION_CONTRACT_FAIL,exclude row
+label_topology_consistency,row,labels equal branch contract,row,INELIGIBLE,INVALID_ENUM|INTERVENTION_CONTRACT_FAIL,exclude row
+no_unintended_polarity_delta,row,only polarity_flip may change declared polarity,row,INELIGIBLE,NON_POLARITY_INTERVENTION_POLARITY_CHANGE,exclude row
+no_duplicate_intervention_row,pair,one row per pair_id+intervention_type,pair,BLOCKED,PAIR_TOPOLOGY_INVALID,stop if identity ambiguous
+no_cross_pair_canonical_leakage,pair,canonical_row_id belongs to same pair,pair,UNRESOLVED,CROSS_PAIR_CANONICAL_LEAKAGE,mark entire pair unresolved
+no_time_swap,dataset,time_swap count is zero,dataset,BLOCKED,TIME_SWAP_EXCLUDED,block authoritative-main sidecar build
+deterministic_split_assignment,pair,sorted pair IDs + seed 174 + ratio 0.2,dataset,BLOCKED,SPLIT_ASSIGNMENT_MISMATCH,stop artifact

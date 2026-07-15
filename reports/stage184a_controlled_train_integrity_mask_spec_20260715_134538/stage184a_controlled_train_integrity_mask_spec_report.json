@@ -1,0 +1,1423 @@
+{
+  "coverage_feasibility": {
+    "decision_coverage": "all rows classifiable as ELIGIBLE/INELIGIBLE/UNRESOLVED at Stage185",
+    "expected_exact_eligible_count": null,
+    "minimum_safe_positive_rate": 0.0,
+    "positive_eligible_coverage": "unavailable before builder",
+    "rows": [
+      {
+        "coverage_kind": "decision_coverage",
+        "denominator": 3600,
+        "population": "all authoritative rows",
+        "risk": "UNRESOLVED may dominate but never enters loss",
+        "status": "structurally computable at Stage185",
+        "threshold_used": null,
+        "value": 3600
+      },
+      {
+        "coverage_kind": "positive_eligible_coverage",
+        "denominator": 1440,
+        "population": "train frame-compatible rows",
+        "risk": "eligible count may be small or family-concentrated",
+        "status": "unavailable before builder",
+        "threshold_used": 0.0,
+        "value": null
+      },
+      {
+        "coverage_kind": "scientific_usability",
+        "denominator": null,
+        "population": "eligible train positives",
+        "risk": "technical sidecar completeness does not imply useful training coverage",
+        "status": "requires Stage185 family/reason-code distribution",
+        "threshold_used": null,
+        "value": null
+      }
+    ],
+    "scientific_usability": "unknown until family/reason-code coverage is materialized",
+    "threshold_fitted": false
+  },
+  "criterion_derivability": [
+    {
+      "authoritative_source": "generator structured arguments + deterministic template/morphology contract",
+      "can_fail_closed": true,
+      "criterion": "grammar_valid",
+      "derivation_mode": "known-template PASS/FAIL; otherwise UNRESOLVED",
+      "deterministic": true,
+      "evidence": "/kaggle/working/ContraMamba/scripts/analyze_stage182a_controlled_intervention_integrity.py:421: def grammar_anomaly(row: dict[str, Any], fact: dict[str, Any]) -> bool:",
+      "exhaustive": true,
+      "implementation_ready": true,
+      "limitation": "general English grammaticality is never inferred",
+      "manual_annotation_required": false,
+      "model_required": false,
+      "required": true,
+      "structured_inputs": [
+        "predicate",
+        "alternate_predicate",
+        "rendered evidence"
+      ],
+      "text_heuristic_required": false,
+      "unresolved_possible": true
+    },
+    {
+      "authoritative_source": "generator branch + structured arguments + Stage182 intended-axis contract",
+      "can_fail_closed": true,
+      "criterion": "intervention_contract_exact",
+      "derivation_mode": "exact structured-axis delta relative to canonical none",
+      "deterministic": true,
+      "evidence": "/kaggle/working/ContraMamba/scripts/analyze_stage182a_controlled_intervention_integrity.py:60: INTENDED_AXES: dict[str, set[str]] = { | /kaggle/working/ContraMamba/scripts/analyze_stage182a_controlled_intervention_integrity.py:406: def changed_axes(row: dict[str, Any], none: dict[str, Any], fact: dict[str, Any]) -> set[str]:",
+      "exhaustive": true,
+      "implementation_ready": true,
+      "limitation": "family name and generator equality alone cannot pass",
+      "manual_annotation_required": false,
+      "model_required": false,
+      "required": true,
+      "structured_inputs": [
+        "family branch",
+        "original/alternate axes",
+        "canonical row",
+        "labels"
+      ],
+      "text_heuristic_required": false,
+      "unresolved_possible": true
+    },
+    {
+      "authoritative_source": "structured polarity labels + deterministic rendered polarity + canonical row",
+      "can_fail_closed": true,
+      "criterion": "polarity_contamination_absent",
+      "derivation_mode": "declared polarity delta and realization consistency",
+      "deterministic": true,
+      "evidence": "/kaggle/working/ContraMamba/scripts/analyze_stage182a_controlled_intervention_integrity.py:471: polarity_leak = intervention in NON_POLARITY and \"polarity\" in changed",
+      "exhaustive": true,
+      "implementation_ready": true,
+      "limitation": "no sentiment model or heuristic lexicon",
+      "manual_annotation_required": false,
+      "model_required": false,
+      "required": true,
+      "structured_inputs": [
+        "intervention_type",
+        "polarity_label",
+        "canonical polarity",
+        "rendered evidence"
+      ],
+      "text_heuristic_required": false,
+      "unresolved_possible": true
+    },
+    {
+      "authoritative_source": "generator REQUIRED_FIELDS/enums/types + sidecar linkage schema",
+      "can_fail_closed": true,
+      "criterion": "schema_resolved",
+      "derivation_mode": "static type/nullability/enum/identity validation",
+      "deterministic": true,
+      "evidence": "/kaggle/working/ContraMamba/scripts/build_controlled_v5.py:474: def validate_record(record: dict, row_number: int | None = None) -> None:",
+      "exhaustive": true,
+      "implementation_ready": true,
+      "limitation": "structural validity only",
+      "manual_annotation_required": false,
+      "model_required": false,
+      "required": true,
+      "structured_inputs": [
+        "claim",
+        "evidence",
+        "final_label",
+        "frame_compatible_label",
+        "id",
+        "intervention_type",
+        "pair_id",
+        "polarity_label",
+        "predicate_covered_label",
+        "primary_failure_type",
+        "sufficiency_label"
+      ],
+      "text_heuristic_required": false,
+      "unresolved_possible": true
+    },
+    {
+      "authoritative_source": "same-pair none row + reconstructed canonical fact/linkage",
+      "can_fail_closed": true,
+      "criterion": "canonical_row_valid",
+      "derivation_mode": "unique structural canonical validation",
+      "deterministic": true,
+      "evidence": "/kaggle/working/ContraMamba/scripts/analyze_stage182a_controlled_intervention_integrity.py:440: none_id = f\"{pair_id}__none\"",
+      "exhaustive": true,
+      "implementation_ready": true,
+      "limitation": "does not assert real-world truth",
+      "manual_annotation_required": false,
+      "model_required": false,
+      "required": true,
+      "structured_inputs": [
+        "pair_id",
+        "none row",
+        "canonical labels",
+        "claim/evidence linkage"
+      ],
+      "text_heuristic_required": false,
+      "unresolved_possible": true
+    },
+    {
+      "authoritative_source": "authoritative JSONL intervention_type",
+      "can_fail_closed": true,
+      "criterion": "time_swap_absent",
+      "derivation_mode": "exact count/equality",
+      "deterministic": true,
+      "evidence": "exact row field",
+      "exhaustive": true,
+      "implementation_ready": true,
+      "limitation": "time_swap rows are excluded",
+      "manual_annotation_required": false,
+      "model_required": false,
+      "required": true,
+      "structured_inputs": [
+        "intervention_type"
+      ],
+      "text_heuristic_required": false,
+      "unresolved_possible": false
+    },
+    {
+      "authoritative_source": "resolved path + dataset SHA-256",
+      "can_fail_closed": true,
+      "criterion": "authoritative_main_dataset",
+      "derivation_mode": "exact path/hash contract",
+      "deterministic": true,
+      "evidence": "dataset identity audit",
+      "exhaustive": true,
+      "implementation_ready": true,
+      "limitation": "same content at an unapproved source cannot silently replace canonical provenance",
+      "manual_annotation_required": false,
+      "model_required": false,
+      "required": true,
+      "structured_inputs": [
+        "source path",
+        "SHA-256"
+      ],
+      "text_heuristic_required": false,
+      "unresolved_possible": false
+    },
+    {
+      "authoritative_source": "authoritative path/hash allowlist",
+      "can_fail_closed": true,
+      "criterion": "not_external_or_stage34_35",
+      "derivation_mode": "exact source allowlist",
+      "deterministic": true,
+      "evidence": "authoritative dataset identity",
+      "exhaustive": true,
+      "implementation_ready": true,
+      "limitation": "no family/text inference",
+      "manual_annotation_required": false,
+      "model_required": false,
+      "required": true,
+      "structured_inputs": [
+        "source path",
+        "SHA-256"
+      ],
+      "text_heuristic_required": false,
+      "unresolved_possible": false
+    },
+    {
+      "authoritative_source": "generator REQUIRED_FIELDS and type/enum contract",
+      "can_fail_closed": true,
+      "criterion": "required_base_schema_present",
+      "derivation_mode": "static schema validation",
+      "deterministic": true,
+      "evidence": "/kaggle/working/ContraMamba/scripts/build_controlled_v5.py:474: def validate_record(record: dict, row_number: int | None = None) -> None:",
+      "exhaustive": true,
+      "implementation_ready": true,
+      "limitation": "missing fields fail closed",
+      "manual_annotation_required": false,
+      "model_required": false,
+      "required": true,
+      "structured_inputs": [
+        "claim",
+        "evidence",
+        "final_label",
+        "frame_compatible_label",
+        "id",
+        "intervention_type",
+        "pair_id",
+        "polarity_label",
+        "predicate_covered_label",
+        "primary_failure_type",
+        "sufficiency_label"
+      ],
+      "text_heuristic_required": false,
+      "unresolved_possible": false
+    },
+    {
+      "authoritative_source": "row frame_compatible_label",
+      "can_fail_closed": true,
+      "criterion": "frame_label_compatible",
+      "derivation_mode": "exact binary value",
+      "deterministic": true,
+      "evidence": "authoritative row label",
+      "exhaustive": true,
+      "implementation_ready": true,
+      "limitation": "loss scope, not semantic cleanliness",
+      "manual_annotation_required": false,
+      "model_required": false,
+      "required": true,
+      "structured_inputs": [
+        "frame_compatible_label",
+        "split"
+      ],
+      "text_heuristic_required": false,
+      "unresolved_possible": false
+    }
+  ],
+  "dataset_identity": {
+    "authoritative_path_exact": true,
+    "canonical_none_count_per_pair_distribution": {
+      "1": 300
+    },
+    "dataset_path": "/kaggle/working/ContraMamba/data/controlled_v5_v3_without_time_swap.jsonl",
+    "dataset_sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640",
+    "dev_frame_compatible": 360,
+    "dev_frame_incompatible": 360,
+    "dev_pair_count": 60,
+    "dev_row_count": 720,
+    "duplicate_semantic_identity_key_count": 0,
+    "duplicate_semantic_identity_keys": [],
+    "intervention_families": [
+      "entity_swap",
+      "event_swap",
+      "evidence_deletion",
+      "evidence_truncation",
+      "irrelevant_evidence",
+      "location_swap",
+      "none",
+      "paraphrase",
+      "polarity_flip",
+      "predicate_swap",
+      "role_swap",
+      "title_name_swap"
+    ],
+    "intervention_family_count": 12,
+    "pair_count": 300,
+    "row_count": 3600,
+    "row_id_duplicate_count": 0,
+    "row_id_duplicates": [],
+    "rows_missing_required_base_fields": 0,
+    "rows_per_pair_distribution": {
+      "12": 300
+    },
+    "rows_with_base_schema_errors": 0,
+    "time_swap_count": 0,
+    "train_frame_compatible": 1440,
+    "train_frame_incompatible": 1440,
+    "train_pair_count": 240,
+    "train_row_count": 2880,
+    "unique_pair_id_count": 300,
+    "unique_row_id_count": 3600
+  },
+  "decision": "STAGE184A_DETERMINISTIC_FAIL_CLOSED_INTEGRITY_SIDECAR_SPEC_READY",
+  "fail_closed_policy": [
+    {
+      "condition": "all required criteria PASS; train; compatible; authoritative; no time_swap",
+      "positive_margin_eligible": true,
+      "propagation": "row only",
+      "rationale": "exact conjunction",
+      "result": "ELIGIBLE",
+      "scope": "row"
+    },
+    {
+      "condition": "any deterministic criterion FAIL",
+      "positive_margin_eligible": false,
+      "propagation": "row unless canonical/pair identity affected",
+      "rationale": "known failure",
+      "result": "INELIGIBLE",
+      "scope": "row"
+    },
+    {
+      "condition": "any required criterion UNRESOLVED and none FAIL",
+      "positive_margin_eligible": false,
+      "propagation": "row or pair per invariant",
+      "rationale": "missing evidence never passes",
+      "result": "UNRESOLVED",
+      "scope": "row"
+    },
+    {
+      "condition": "canonical missing/duplicate/linkage invalid",
+      "positive_margin_eligible": false,
+      "propagation": "entire pair",
+      "rationale": "all intervention deltas depend on anchor",
+      "result": "UNRESOLVED",
+      "scope": "pair"
+    },
+    {
+      "condition": "duplicate row id or dataset/sidecar SHA mismatch",
+      "positive_margin_eligible": false,
+      "propagation": "entire artifact",
+      "rationale": "one-to-one provenance impossible",
+      "result": "BLOCKED",
+      "scope": "dataset"
+    },
+    {
+      "condition": "dev or frame-incompatible row",
+      "positive_margin_eligible": false,
+      "propagation": "row",
+      "rationale": "loss scope exclusion independent of cleanliness",
+      "result": "INELIGIBLE_FOR_POSITIVE_MARGIN",
+      "scope": "row"
+    },
+    {
+      "condition": "external/Stage34/35/time_swap source",
+      "positive_margin_eligible": false,
+      "propagation": "exclude or reject artifact",
+      "rationale": "explicit safety boundary",
+      "result": "INELIGIBLE_OR_BLOCKED",
+      "scope": "row_or_dataset"
+    }
+  ],
+  "family_contracts": [
+    {
+      "canonical_counterpart_available": true,
+      "canonical_counterpart_requirement": "exactly one same-pair none row",
+      "deterministic_contract_check_possible": true,
+      "evidence_text_relation_requirement": "alternate_name replaces canonical name",
+      "expected_label_transition": "NOT_ENTITLED; frame=0 predicate=0 sufficiency=1 polarity=NONE",
+      "family": "entity_swap",
+      "generator_branch_location": "/kaggle/working/ContraMamba/scripts/build_controlled_v5.py:399: fact, \"entity_swap\",",
+      "grammar_check_possible": true,
+      "intended_changed_axes": [
+        "name"
+      ],
+      "intended_preserved_axes": [
+        "location",
+        "object",
+        "polarity",
+        "predicate",
+        "role",
+        "time",
+        "title"
+      ],
+      "pair_coverage": 300,
+      "polarity_check_possible": true,
+      "reason_codes": [
+        "INTERVENTION_CONTRACT_FAIL",
+        "INTERVENTION_CONTRACT_UNRESOLVED"
+      ],
+      "row_count": 300,
+      "sidecar_implementation_readiness": "ready_fail_closed",
+      "structured_provenance_available": true,
+      "unresolved_risk": "general grammar and any missing exact generator provenance remain UNRESOLVED"
+    },
+    {
+      "canonical_counterpart_available": true,
+      "canonical_counterpart_requirement": "exactly one same-pair none row",
+      "deterministic_contract_check_possible": true,
+      "evidence_text_relation_requirement": "alternate_object replaces canonical object",
+      "expected_label_transition": "NOT_ENTITLED; frame=0 predicate=0 sufficiency=1 polarity=NONE",
+      "family": "event_swap",
+      "generator_branch_location": "/kaggle/working/ContraMamba/scripts/build_controlled_v5.py:404: fact, \"event_swap\",",
+      "grammar_check_possible": true,
+      "intended_changed_axes": [
+        "object"
+      ],
+      "intended_preserved_axes": [
+        "location",
+        "name",
+        "polarity",
+        "predicate",
+        "role",
+        "time",
+        "title"
+      ],
+      "pair_coverage": 300,
+      "polarity_check_possible": true,
+      "reason_codes": [
+        "INTERVENTION_CONTRACT_FAIL",
+        "INTERVENTION_CONTRACT_UNRESOLVED"
+      ],
+      "row_count": 300,
+      "sidecar_implementation_readiness": "ready_fail_closed",
+      "structured_provenance_available": true,
+      "unresolved_risk": "general grammar and any missing exact generator provenance remain UNRESOLVED"
+    },
+    {
+      "canonical_counterpart_available": true,
+      "canonical_counterpart_requirement": "exactly one same-pair none row",
+      "deterministic_contract_check_possible": true,
+      "evidence_text_relation_requirement": "fixed deletion message",
+      "expected_label_transition": "NOT_ENTITLED; frame=1 predicate=1 sufficiency=0 polarity=NONE",
+      "family": "evidence_deletion",
+      "generator_branch_location": "/kaggle/working/ContraMamba/scripts/build_controlled_v5.py:438: fact, \"evidence_deletion\",",
+      "grammar_check_possible": true,
+      "intended_changed_axes": [
+        "content_deletion"
+      ],
+      "intended_preserved_axes": [
+        "claim",
+        "canonical_linkage",
+        "polarity"
+      ],
+      "pair_coverage": 300,
+      "polarity_check_possible": true,
+      "reason_codes": [
+        "INTERVENTION_CONTRACT_FAIL",
+        "INTERVENTION_CONTRACT_UNRESOLVED"
+      ],
+      "row_count": 300,
+      "sidecar_implementation_readiness": "ready_fail_closed",
+      "structured_provenance_available": true,
+      "unresolved_risk": "general grammar and any missing exact generator provenance remain UNRESOLVED"
+    },
+    {
+      "canonical_counterpart_available": true,
+      "canonical_counterpart_requirement": "exactly one same-pair none row",
+      "deterministic_contract_check_possible": true,
+      "evidence_text_relation_requirement": "fixed canonical title/name truncation",
+      "expected_label_transition": "NOT_ENTITLED; frame=1 predicate=1 sufficiency=0 polarity=NONE",
+      "family": "evidence_truncation",
+      "generator_branch_location": "/kaggle/working/ContraMamba/scripts/build_controlled_v5.py:443: fact, \"evidence_truncation\",",
+      "grammar_check_possible": true,
+      "intended_changed_axes": [
+        "content_truncation"
+      ],
+      "intended_preserved_axes": [
+        "claim",
+        "canonical_linkage",
+        "polarity"
+      ],
+      "pair_coverage": 300,
+      "polarity_check_possible": true,
+      "reason_codes": [
+        "INTERVENTION_CONTRACT_FAIL",
+        "INTERVENTION_CONTRACT_UNRESOLVED"
+      ],
+      "row_count": 300,
+      "sidecar_implementation_readiness": "ready_fail_closed",
+      "structured_provenance_available": true,
+      "unresolved_risk": "general grammar and any missing exact generator provenance remain UNRESOLVED"
+    },
+    {
+      "canonical_counterpart_available": true,
+      "canonical_counterpart_requirement": "exactly one same-pair none row",
+      "deterministic_contract_check_possible": true,
+      "evidence_text_relation_requirement": "fixed unrelated evidence",
+      "expected_label_transition": "NOT_ENTITLED; frame=0 predicate=0 sufficiency=0 polarity=NONE",
+      "family": "irrelevant_evidence",
+      "generator_branch_location": "/kaggle/working/ContraMamba/scripts/build_controlled_v5.py:448: fact, \"irrelevant_evidence\",",
+      "grammar_check_possible": true,
+      "intended_changed_axes": [
+        "content_replacement"
+      ],
+      "intended_preserved_axes": [
+        "claim",
+        "canonical_linkage",
+        "polarity"
+      ],
+      "pair_coverage": 300,
+      "polarity_check_possible": true,
+      "reason_codes": [
+        "INTERVENTION_CONTRACT_FAIL",
+        "INTERVENTION_CONTRACT_UNRESOLVED"
+      ],
+      "row_count": 300,
+      "sidecar_implementation_readiness": "ready_fail_closed",
+      "structured_provenance_available": true,
+      "unresolved_risk": "general grammar and any missing exact generator provenance remain UNRESOLVED"
+    },
+    {
+      "canonical_counterpart_available": true,
+      "canonical_counterpart_requirement": "exactly one same-pair none row",
+      "deterministic_contract_check_possible": true,
+      "evidence_text_relation_requirement": "alternate_location replaces canonical location",
+      "expected_label_transition": "NOT_ENTITLED; frame=0 predicate=1 sufficiency=1 polarity=NONE",
+      "family": "location_swap",
+      "generator_branch_location": "/kaggle/working/ContraMamba/scripts/build_controlled_v5.py:414: fact, \"location_swap\",",
+      "grammar_check_possible": true,
+      "intended_changed_axes": [
+        "location"
+      ],
+      "intended_preserved_axes": [
+        "name",
+        "object",
+        "polarity",
+        "predicate",
+        "role",
+        "time",
+        "title"
+      ],
+      "pair_coverage": 300,
+      "polarity_check_possible": true,
+      "reason_codes": [
+        "INTERVENTION_CONTRACT_FAIL",
+        "INTERVENTION_CONTRACT_UNRESOLVED"
+      ],
+      "row_count": 300,
+      "sidecar_implementation_readiness": "ready_fail_closed",
+      "structured_provenance_available": true,
+      "unresolved_risk": "general grammar and any missing exact generator provenance remain UNRESOLVED"
+    },
+    {
+      "canonical_counterpart_available": true,
+      "canonical_counterpart_requirement": "exactly one same-pair none row",
+      "deterministic_contract_check_possible": true,
+      "evidence_text_relation_requirement": "evidence is canonical rendering",
+      "expected_label_transition": "canonical final/polarity; frame=1 predicate=1 sufficiency=1",
+      "family": "none",
+      "generator_branch_location": "/kaggle/working/ContraMamba/scripts/build_controlled_v5.py:391: fact, \"none\", _statement(fact, negative=base_refute),",
+      "grammar_check_possible": true,
+      "intended_changed_axes": [],
+      "intended_preserved_axes": [
+        "location",
+        "name",
+        "object",
+        "polarity",
+        "predicate",
+        "role",
+        "time",
+        "title"
+      ],
+      "pair_coverage": 300,
+      "polarity_check_possible": true,
+      "reason_codes": [
+        "INTERVENTION_CONTRACT_FAIL",
+        "INTERVENTION_CONTRACT_UNRESOLVED"
+      ],
+      "row_count": 300,
+      "sidecar_implementation_readiness": "ready_fail_closed",
+      "structured_provenance_available": true,
+      "unresolved_risk": "general grammar and any missing exact generator provenance remain UNRESOLVED"
+    },
+    {
+      "canonical_counterpart_available": true,
+      "canonical_counterpart_requirement": "exactly one same-pair none row",
+      "deterministic_contract_check_possible": true,
+      "evidence_text_relation_requirement": "deterministic paraphrase of canonical structured fact",
+      "expected_label_transition": "same final/polarity as canonical; frame=1 predicate=1 sufficiency=1",
+      "family": "paraphrase",
+      "generator_branch_location": "/kaggle/working/ContraMamba/scripts/build_controlled_v5.py:395: fact, \"paraphrase\", _paraphrase(fact, negative=base_refute),",
+      "grammar_check_possible": true,
+      "intended_changed_axes": [
+        "realization"
+      ],
+      "intended_preserved_axes": [
+        "location",
+        "name",
+        "object",
+        "polarity",
+        "predicate",
+        "role",
+        "time",
+        "title"
+      ],
+      "pair_coverage": 300,
+      "polarity_check_possible": true,
+      "reason_codes": [
+        "INTERVENTION_CONTRACT_FAIL",
+        "INTERVENTION_CONTRACT_UNRESOLVED"
+      ],
+      "row_count": 300,
+      "sidecar_implementation_readiness": "ready_fail_closed",
+      "structured_provenance_available": true,
+      "unresolved_risk": "general grammar and any missing exact generator provenance remain UNRESOLVED"
+    },
+    {
+      "canonical_counterpart_available": true,
+      "canonical_counterpart_requirement": "exactly one same-pair none row",
+      "deterministic_contract_check_possible": true,
+      "evidence_text_relation_requirement": "deterministic negation inversion",
+      "expected_label_transition": "canonical SUPPORT/REFUTE flipped; frame=1 predicate=1 sufficiency=1",
+      "family": "polarity_flip",
+      "generator_branch_location": "/kaggle/working/ContraMamba/scripts/build_controlled_v5.py:453: fact, \"polarity_flip\", _statement(fact, negative=not base_refute),",
+      "grammar_check_possible": true,
+      "intended_changed_axes": [
+        "polarity"
+      ],
+      "intended_preserved_axes": [
+        "location",
+        "name",
+        "object",
+        "predicate",
+        "role",
+        "time",
+        "title"
+      ],
+      "pair_coverage": 300,
+      "polarity_check_possible": true,
+      "reason_codes": [
+        "INTERVENTION_CONTRACT_FAIL",
+        "INTERVENTION_CONTRACT_UNRESOLVED"
+      ],
+      "row_count": 300,
+      "sidecar_implementation_readiness": "ready_fail_closed",
+      "structured_provenance_available": true,
+      "unresolved_risk": "general grammar and any missing exact generator provenance remain UNRESOLVED"
+    },
+    {
+      "canonical_counterpart_available": true,
+      "canonical_counterpart_requirement": "exactly one same-pair none row",
+      "deterministic_contract_check_possible": true,
+      "evidence_text_relation_requirement": "alternate_predicate replaces canonical predicate",
+      "expected_label_transition": "NOT_ENTITLED; frame=1 predicate=0 sufficiency=1 polarity=NONE",
+      "family": "predicate_swap",
+      "generator_branch_location": "/kaggle/working/ContraMamba/scripts/build_controlled_v5.py:433: fact, \"predicate_swap\",",
+      "grammar_check_possible": true,
+      "intended_changed_axes": [
+        "predicate"
+      ],
+      "intended_preserved_axes": [
+        "location",
+        "name",
+        "object",
+        "polarity",
+        "role",
+        "time",
+        "title"
+      ],
+      "pair_coverage": 300,
+      "polarity_check_possible": true,
+      "reason_codes": [
+        "INTERVENTION_CONTRACT_FAIL",
+        "INTERVENTION_CONTRACT_UNRESOLVED"
+      ],
+      "row_count": 300,
+      "sidecar_implementation_readiness": "ready_fail_closed",
+      "structured_provenance_available": true,
+      "unresolved_risk": "general grammar and any missing exact generator provenance remain UNRESOLVED"
+    },
+    {
+      "canonical_counterpart_available": true,
+      "canonical_counterpart_requirement": "exactly one same-pair none row",
+      "deterministic_contract_check_possible": true,
+      "evidence_text_relation_requirement": "alternate_role replaces canonical role",
+      "expected_label_transition": "NOT_ENTITLED; frame=0 predicate=1 sufficiency=1 polarity=NONE",
+      "family": "role_swap",
+      "generator_branch_location": "/kaggle/working/ContraMamba/scripts/build_controlled_v5.py:419: fact, \"role_swap\",",
+      "grammar_check_possible": true,
+      "intended_changed_axes": [
+        "role"
+      ],
+      "intended_preserved_axes": [
+        "location",
+        "name",
+        "object",
+        "polarity",
+        "predicate",
+        "time",
+        "title"
+      ],
+      "pair_coverage": 300,
+      "polarity_check_possible": true,
+      "reason_codes": [
+        "INTERVENTION_CONTRACT_FAIL",
+        "INTERVENTION_CONTRACT_UNRESOLVED"
+      ],
+      "row_count": 300,
+      "sidecar_implementation_readiness": "ready_fail_closed",
+      "structured_provenance_available": true,
+      "unresolved_risk": "general grammar and any missing exact generator provenance remain UNRESOLVED"
+    },
+    {
+      "canonical_counterpart_available": true,
+      "canonical_counterpart_requirement": "exactly one same-pair none row",
+      "deterministic_contract_check_possible": true,
+      "evidence_text_relation_requirement": "alternate_title and alternate_name replace canonical values",
+      "expected_label_transition": "NOT_ENTITLED; frame=0 predicate=0 sufficiency=1 polarity=NONE",
+      "family": "title_name_swap",
+      "generator_branch_location": "/kaggle/working/ContraMamba/scripts/build_controlled_v5.py:424: fact, \"title_name_swap\",",
+      "grammar_check_possible": true,
+      "intended_changed_axes": [
+        "title",
+        "name"
+      ],
+      "intended_preserved_axes": [
+        "location",
+        "object",
+        "polarity",
+        "predicate",
+        "role",
+        "time"
+      ],
+      "pair_coverage": 300,
+      "polarity_check_possible": true,
+      "reason_codes": [
+        "INTERVENTION_CONTRACT_FAIL",
+        "INTERVENTION_CONTRACT_UNRESOLVED"
+      ],
+      "row_count": 300,
+      "sidecar_implementation_readiness": "ready_fail_closed",
+      "structured_provenance_available": true,
+      "unresolved_risk": "general grammar and any missing exact generator provenance remain UNRESOLVED"
+    }
+  ],
+  "generator_provenance": {
+    "deterministic_family_branches_available": true,
+    "evidence": [
+      "/kaggle/working/ContraMamba/scripts/build_controlled_v5.py:224: _FACT_FIELDS = (",
+      "/kaggle/working/ContraMamba/scripts/build_controlled_v5.py:380: def _build_records(templates: list[dict]) -> list[dict]:",
+      "/kaggle/working/ContraMamba/scripts/analyze_stage182a_controlled_intervention_integrity.py:358: def reconstruct_generator(data: list[dict[str, Any]], module: ModuleType) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:"
+    ],
+    "generator_equality_is_cleanliness": false,
+    "original_and_alternate_axes_available": true,
+    "reconstruction_requires_exact_generator_and_dataset_identity": true,
+    "row_metadata_embeds_structured_arguments": false,
+    "sha256": "c41e6a52401bd8c83970286b176950fc751509bee6d797d5da9aea4262c72802",
+    "source": "/kaggle/working/ContraMamba/scripts/build_controlled_v5.py",
+    "structured_fact_arguments_available": true
+  },
+  "implementation_readiness": {
+    "criteria_ready_fail_closed": true,
+    "dataset_topology_ready": true,
+    "family_contract_join_ready": true,
+    "generator_provenance_augmentation_required_first": false,
+    "row_id_sidecar_join_ready": true,
+    "stage185_sidecar_builder_ready": true
+  },
+  "input_validation": {
+    "dev_ratio": 0.2,
+    "fallback_sources": [
+      "/kaggle/working/ContraMamba/reports/stage183a_controlled_train_integrity_mask_required_closure.json",
+      "/kaggle/working/ContraMamba/reports/stage184a_controlled_train_integrity_mask_policy.md"
+    ],
+    "minimum_safe_positive_rate": 0.0,
+    "minimum_safe_positive_rate_is_reporting_only": true,
+    "optional_stage183_runtime_report_available": false,
+    "required_files": [
+      {
+        "path": "/kaggle/working/ContraMamba/data/controlled_v5_v3_without_time_swap.jsonl",
+        "sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640"
+      },
+      {
+        "path": "/kaggle/working/ContraMamba/scripts/build_controlled_v5.py",
+        "sha256": "c41e6a52401bd8c83970286b176950fc751509bee6d797d5da9aea4262c72802"
+      },
+      {
+        "path": "/kaggle/working/ContraMamba/scripts/analyze_stage182a_controlled_intervention_integrity.py",
+        "sha256": "fe33f17c61ca1e64a95fd89a4c48bea45b1dae083d6238dec898e9017e35e335"
+      },
+      {
+        "path": "/kaggle/working/ContraMamba/reports/stage182a_controlled_intervention_integrity_policy.md",
+        "sha256": "4a64dc80a5a63ac4d3f7ed9232bdfb4e47619581ba58d875a8c1f24bd57702b9"
+      },
+      {
+        "path": "/kaggle/working/ContraMamba/reports/stage183a_controlled_train_integrity_mask_required_closure.json",
+        "sha256": "c830d9137662663f73fd42a56443ea095f92a3253b296bdb2aa4d67195216815"
+      },
+      {
+        "path": "/kaggle/working/ContraMamba/reports/stage182a_data_contamination_clean_failure_set_closure.json",
+        "sha256": "ca4ff1270eebb199533332fec0161e1a069a239241b597e2e775261148c695ba"
+      },
+      {
+        "path": "/kaggle/working/ContraMamba/reports/stage182b_compatible_positive_margin_collapse_closure.json",
+        "sha256": "7965155202ad27734c2910f8830654dabd19deb0323fa7538f86930b1045eea0"
+      }
+    ],
+    "split_seed": 174,
+    "stage183_fallback_used": true,
+    "status": "passed"
+  },
+  "limitations": [
+    "Stage184-A does not build or count ELIGIBLE rows.",
+    "General English grammaticality is outside deterministic template rules and may remain UNRESOLVED.",
+    "Exact generator reproduction proves provenance, not cleanliness.",
+    "Eligible positive coverage and family concentration are unknown before Stage185.",
+    "Canonical structural validity does not assert real-world truth or complete semantic quality."
+  ],
+  "pair_invariants": [
+    {
+      "failure_scope": "dataset",
+      "failure_status": "BLOCKED",
+      "invariant": "unique_pair_id",
+      "level": "dataset",
+      "reason_code": "PAIR_TOPOLOGY_INVALID",
+      "stage185_action": "stop artifact",
+      "validation": "stable nonempty pair_id grouping"
+    },
+    {
+      "failure_scope": "dataset",
+      "failure_status": "BLOCKED",
+      "invariant": "unique_row_id",
+      "level": "dataset",
+      "reason_code": "DUPLICATE_ROW_ID",
+      "stage185_action": "stop; one-to-one join impossible",
+      "validation": "id unique across all rows"
+    },
+    {
+      "failure_scope": "pair",
+      "failure_status": "UNRESOLVED",
+      "invariant": "exactly_one_canonical_none",
+      "level": "pair",
+      "reason_code": "CANONICAL_ROW_MISSING|CANONICAL_ROW_DUPLICATE",
+      "stage185_action": "mark entire pair unresolved",
+      "validation": "one intervention_type=none row"
+    },
+    {
+      "failure_scope": "pair",
+      "failure_status": "UNRESOLVED",
+      "invariant": "expected_family_coverage",
+      "level": "pair",
+      "reason_code": "PAIR_TOPOLOGY_INVALID",
+      "stage185_action": "mark affected pair unresolved",
+      "validation": "same observed family set for every pair"
+    },
+    {
+      "failure_scope": "pair",
+      "failure_status": "UNRESOLVED",
+      "invariant": "canonical_claim_linkage",
+      "level": "pair",
+      "reason_code": "CANONICAL_LINKAGE_INVALID",
+      "stage185_action": "mark entire pair unresolved",
+      "validation": "every intervention claim equals same-pair canonical claim"
+    },
+    {
+      "failure_scope": "row_or_pair",
+      "failure_status": "INELIGIBLE_OR_UNRESOLVED",
+      "invariant": "canonical_evidence_linkage",
+      "level": "pair",
+      "reason_code": "CANONICAL_LINKAGE_INVALID",
+      "stage185_action": "pair unresolved if anchor ambiguous; otherwise row ineligible",
+      "validation": "none is canonical evidence; non-none relation follows family contract"
+    },
+    {
+      "failure_scope": "row",
+      "failure_status": "INELIGIBLE",
+      "invariant": "allowed_axis_delta_topology",
+      "level": "row",
+      "reason_code": "INTERVENTION_CONTRACT_FAIL",
+      "stage185_action": "exclude row",
+      "validation": "observed structured delta equals family contract"
+    },
+    {
+      "failure_scope": "row",
+      "failure_status": "INELIGIBLE",
+      "invariant": "label_topology_consistency",
+      "level": "row",
+      "reason_code": "INVALID_ENUM|INTERVENTION_CONTRACT_FAIL",
+      "stage185_action": "exclude row",
+      "validation": "labels equal branch contract"
+    },
+    {
+      "failure_scope": "row",
+      "failure_status": "INELIGIBLE",
+      "invariant": "no_unintended_polarity_delta",
+      "level": "row",
+      "reason_code": "NON_POLARITY_INTERVENTION_POLARITY_CHANGE",
+      "stage185_action": "exclude row",
+      "validation": "only polarity_flip may change declared polarity"
+    },
+    {
+      "failure_scope": "pair",
+      "failure_status": "BLOCKED",
+      "invariant": "no_duplicate_intervention_row",
+      "level": "pair",
+      "reason_code": "PAIR_TOPOLOGY_INVALID",
+      "stage185_action": "stop if identity ambiguous",
+      "validation": "one row per pair_id+intervention_type"
+    },
+    {
+      "failure_scope": "pair",
+      "failure_status": "UNRESOLVED",
+      "invariant": "no_cross_pair_canonical_leakage",
+      "level": "pair",
+      "reason_code": "CROSS_PAIR_CANONICAL_LEAKAGE",
+      "stage185_action": "mark entire pair unresolved",
+      "validation": "canonical_row_id belongs to same pair"
+    },
+    {
+      "failure_scope": "dataset",
+      "failure_status": "BLOCKED",
+      "invariant": "no_time_swap",
+      "level": "dataset",
+      "reason_code": "TIME_SWAP_EXCLUDED",
+      "stage185_action": "block authoritative-main sidecar build",
+      "validation": "time_swap count is zero"
+    },
+    {
+      "failure_scope": "dataset",
+      "failure_status": "BLOCKED",
+      "invariant": "deterministic_split_assignment",
+      "level": "pair",
+      "reason_code": "SPLIT_ASSIGNMENT_MISMATCH",
+      "stage185_action": "stop artifact",
+      "validation": "sorted pair IDs + seed 174 + ratio 0.2"
+    }
+  ],
+  "reason_codes": [
+    {
+      "criterion": "integrity_composition",
+      "deterministic_source": "composed criterion statuses + train/frame label",
+      "fail_closed_behavior": "include only after every gate passes",
+      "human_interpretation": "positive-margin eligible",
+      "level": "row",
+      "reason_code": "ELIGIBLE_CLEAN_COMPATIBLE",
+      "status_effect": "ELIGIBLE"
+    },
+    {
+      "criterion": "frame_label_compatible",
+      "deterministic_source": "frame_compatible_label",
+      "fail_closed_behavior": "exclude row",
+      "human_interpretation": "frame label is 0",
+      "level": "row",
+      "reason_code": "FRAME_LABEL_NOT_COMPATIBLE",
+      "status_effect": "INELIGIBLE"
+    },
+    {
+      "criterion": "integrity_composition",
+      "deterministic_source": "frozen split",
+      "fail_closed_behavior": "exclude row",
+      "human_interpretation": "row is dev",
+      "level": "row",
+      "reason_code": "DEV_SPLIT_EXCLUDED",
+      "status_effect": "INELIGIBLE"
+    },
+    {
+      "criterion": "time_swap_absent",
+      "deterministic_source": "intervention_type",
+      "fail_closed_behavior": "exclude; block authoritative dataset if present",
+      "human_interpretation": "time-swap is out of scope",
+      "level": "row/dataset",
+      "reason_code": "TIME_SWAP_EXCLUDED",
+      "status_effect": "INELIGIBLE_OR_BLOCKED"
+    },
+    {
+      "criterion": "authoritative_main_dataset",
+      "deterministic_source": "path/hash allowlist",
+      "fail_closed_behavior": "reject artifact",
+      "human_interpretation": "source is external or Stage34/35",
+      "level": "dataset",
+      "reason_code": "EXTERNAL_DATA_EXCLUDED",
+      "status_effect": "BLOCKED"
+    },
+    {
+      "criterion": "schema_resolved",
+      "deterministic_source": "base schema",
+      "fail_closed_behavior": "exclude row; block if identity field",
+      "human_interpretation": "required source field missing",
+      "level": "row",
+      "reason_code": "MISSING_REQUIRED_BASE_FIELD",
+      "status_effect": "UNRESOLVED"
+    },
+    {
+      "criterion": "schema_resolved",
+      "deterministic_source": "base schema",
+      "fail_closed_behavior": "exclude row",
+      "human_interpretation": "field has wrong type/nullability",
+      "level": "row",
+      "reason_code": "INVALID_FIELD_TYPE",
+      "status_effect": "INELIGIBLE"
+    },
+    {
+      "criterion": "schema_resolved",
+      "deterministic_source": "base schema enums",
+      "fail_closed_behavior": "exclude row",
+      "human_interpretation": "label/type enum invalid",
+      "level": "row",
+      "reason_code": "INVALID_ENUM",
+      "status_effect": "INELIGIBLE"
+    },
+    {
+      "criterion": "integrity_composition",
+      "deterministic_source": "row identity counter",
+      "fail_closed_behavior": "stop artifact",
+      "human_interpretation": "one-to-one join impossible",
+      "level": "dataset",
+      "reason_code": "DUPLICATE_ROW_ID",
+      "status_effect": "BLOCKED"
+    },
+    {
+      "criterion": "integrity_composition",
+      "deterministic_source": "pair/family matrix",
+      "fail_closed_behavior": "pair unresolved; block if identity ambiguous",
+      "human_interpretation": "pair shape is invalid",
+      "level": "pair",
+      "reason_code": "PAIR_TOPOLOGY_INVALID",
+      "status_effect": "UNRESOLVED_OR_BLOCKED"
+    },
+    {
+      "criterion": "canonical_row_valid",
+      "deterministic_source": "same-pair none lookup",
+      "fail_closed_behavior": "entire pair unresolved",
+      "human_interpretation": "canonical row absent",
+      "level": "pair",
+      "reason_code": "CANONICAL_ROW_MISSING",
+      "status_effect": "UNRESOLVED"
+    },
+    {
+      "criterion": "canonical_row_valid",
+      "deterministic_source": "same-pair none lookup",
+      "fail_closed_behavior": "entire pair unresolved",
+      "human_interpretation": "canonical row ambiguous",
+      "level": "pair",
+      "reason_code": "CANONICAL_ROW_DUPLICATE",
+      "status_effect": "UNRESOLVED"
+    },
+    {
+      "criterion": "canonical_row_valid",
+      "deterministic_source": "claim/evidence linkage",
+      "fail_closed_behavior": "entire pair unresolved",
+      "human_interpretation": "canonical linkage failed",
+      "level": "pair",
+      "reason_code": "CANONICAL_LINKAGE_INVALID",
+      "status_effect": "UNRESOLVED"
+    },
+    {
+      "criterion": "canonical_row_valid",
+      "deterministic_source": "pair_id/canonical_row_id",
+      "fail_closed_behavior": "entire pair unresolved",
+      "human_interpretation": "canonical belongs to another pair",
+      "level": "pair",
+      "reason_code": "CROSS_PAIR_CANONICAL_LEAKAGE",
+      "status_effect": "UNRESOLVED"
+    },
+    {
+      "criterion": "intervention_contract_exact",
+      "deterministic_source": "exact structured-axis delta",
+      "fail_closed_behavior": "exclude row",
+      "human_interpretation": "declared branch contract failed",
+      "level": "row",
+      "reason_code": "INTERVENTION_CONTRACT_FAIL",
+      "status_effect": "INELIGIBLE"
+    },
+    {
+      "criterion": "intervention_contract_exact",
+      "deterministic_source": "missing structured evidence",
+      "fail_closed_behavior": "exclude row",
+      "human_interpretation": "contract cannot be decided",
+      "level": "row",
+      "reason_code": "INTERVENTION_CONTRACT_UNRESOLVED",
+      "status_effect": "UNRESOLVED"
+    },
+    {
+      "criterion": "polarity_contamination_absent",
+      "deterministic_source": "canonical/rendered structured polarity delta",
+      "fail_closed_behavior": "exclude row",
+      "human_interpretation": "undeclared polarity change",
+      "level": "row",
+      "reason_code": "NON_POLARITY_INTERVENTION_POLARITY_CHANGE",
+      "status_effect": "INELIGIBLE"
+    },
+    {
+      "criterion": "polarity_contamination_absent",
+      "deterministic_source": "structured label vs template realization",
+      "fail_closed_behavior": "exclude row",
+      "human_interpretation": "polarity label and realization disagree",
+      "level": "row",
+      "reason_code": "POLARITY_REALIZATION_MISMATCH",
+      "status_effect": "INELIGIBLE"
+    },
+    {
+      "criterion": "grammar_valid",
+      "deterministic_source": "generator predicate morphology rule",
+      "fail_closed_behavior": "exclude row",
+      "human_interpretation": "did not precedes inflected predicate",
+      "level": "row",
+      "reason_code": "DID_NOT_INFLECTED_PREDICATE",
+      "status_effect": "INELIGIBLE"
+    },
+    {
+      "criterion": "grammar_valid",
+      "deterministic_source": "deterministic template grammar",
+      "fail_closed_behavior": "exclude row",
+      "human_interpretation": "known template grammar defect",
+      "level": "row",
+      "reason_code": "GRAMMAR_TEMPLATE_FAIL",
+      "status_effect": "INELIGIBLE"
+    },
+    {
+      "criterion": "grammar_valid",
+      "deterministic_source": "absence of authorized general grammar source",
+      "fail_closed_behavior": "exclude row",
+      "human_interpretation": "general grammar not decided",
+      "level": "row",
+      "reason_code": "GRAMMAR_GENERAL_UNRESOLVED",
+      "status_effect": "UNRESOLVED"
+    },
+    {
+      "criterion": "integrity_composition",
+      "deterministic_source": "generator path/hash/reconstruction",
+      "fail_closed_behavior": "block reconstruction or mark affected rows unresolved",
+      "human_interpretation": "structured provenance unavailable",
+      "level": "dataset/row",
+      "reason_code": "GENERATOR_PROVENANCE_MISSING",
+      "status_effect": "UNRESOLVED_OR_BLOCKED"
+    },
+    {
+      "criterion": "authoritative_main_dataset",
+      "deterministic_source": "SHA-256",
+      "fail_closed_behavior": "reject entire sidecar",
+      "human_interpretation": "sidecar/source mismatch",
+      "level": "dataset",
+      "reason_code": "DATASET_SHA_MISMATCH",
+      "status_effect": "BLOCKED"
+    },
+    {
+      "criterion": "authoritative_main_dataset",
+      "deterministic_source": "SHA-256",
+      "fail_closed_behavior": "reject build/use",
+      "human_interpretation": "sidecar/generator mismatch",
+      "level": "dataset",
+      "reason_code": "GENERATOR_SHA_MISMATCH",
+      "status_effect": "BLOCKED"
+    },
+    {
+      "criterion": "authoritative_main_dataset",
+      "deterministic_source": "row-id set equality",
+      "fail_closed_behavior": "reject entire sidecar",
+      "human_interpretation": "source row has no sidecar row",
+      "level": "dataset",
+      "reason_code": "SIDECAR_ROW_MISSING",
+      "status_effect": "BLOCKED"
+    },
+    {
+      "criterion": "authoritative_main_dataset",
+      "deterministic_source": "row-id set equality",
+      "fail_closed_behavior": "reject entire sidecar",
+      "human_interpretation": "sidecar has unknown row",
+      "level": "dataset",
+      "reason_code": "SIDECAR_ROW_EXTRA",
+      "status_effect": "BLOCKED"
+    },
+    {
+      "criterion": "integrity_composition",
+      "deterministic_source": "frozen split recomputation",
+      "fail_closed_behavior": "reject artifact",
+      "human_interpretation": "split differs from seed/ratio contract",
+      "level": "dataset",
+      "reason_code": "SPLIT_ASSIGNMENT_MISMATCH",
+      "status_effect": "BLOCKED"
+    }
+  ],
+  "safety_policy": {
+    "no_annotation": true,
+    "no_calibration": true,
+    "no_checkpoint_load": true,
+    "no_dataset_modification": true,
+    "no_external_evaluation": true,
+    "no_forward": true,
+    "no_generator_modification": true,
+    "no_hyperparameter_sweep": true,
+    "no_jsonl_rewrite": true,
+    "no_learned_parser_or_probe": true,
+    "no_llm_labeling": true,
+    "no_loss_implementation": true,
+    "no_model_import": true,
+    "no_multi_seed": true,
+    "no_smoke": true,
+    "no_text_classifier": true,
+    "no_threshold_fitting": true,
+    "no_time_swap": true,
+    "no_torch_import": true,
+    "no_training": true
+  },
+  "scope": {
+    "dataset_modified": false,
+    "loss_implemented": false,
+    "sidecar_built": false,
+    "static_specification_and_feasibility_only": true,
+    "training": false
+  },
+  "sidecar_schema": [
+    {
+      "contract": "exact one-to-one join key",
+      "field": "row_id",
+      "nullable": false,
+      "source": "authoritative JSONL id",
+      "type": "string"
+    },
+    {
+      "contract": "frozen pair identity",
+      "field": "pair_id",
+      "nullable": false,
+      "source": "authoritative JSONL pair_id",
+      "type": "string"
+    },
+    {
+      "contract": "not independently assigned",
+      "field": "split",
+      "nullable": false,
+      "source": "deterministic frozen pair split",
+      "type": "enum(train,dev)"
+    },
+    {
+      "contract": "must match source",
+      "field": "intervention_type",
+      "nullable": false,
+      "source": "authoritative row",
+      "type": "string enum"
+    },
+    {
+      "contract": "loss-scope label",
+      "field": "frame_compatible_label",
+      "nullable": false,
+      "source": "authoritative row",
+      "type": "integer enum(0,1)"
+    },
+    {
+      "contract": "criterion status",
+      "field": "grammar_status",
+      "nullable": false,
+      "source": "integrity rules",
+      "type": "enum(PASS,FAIL,UNRESOLVED,NOT_APPLICABLE)"
+    },
+    {
+      "contract": "criterion status",
+      "field": "intervention_contract_status",
+      "nullable": false,
+      "source": "axis contract",
+      "type": "enum(PASS,FAIL,UNRESOLVED,NOT_APPLICABLE)"
+    },
+    {
+      "contract": "criterion status",
+      "field": "polarity_contamination_status",
+      "nullable": false,
+      "source": "structured polarity contract",
+      "type": "enum(PASS,FAIL,UNRESOLVED,NOT_APPLICABLE)"
+    },
+    {
+      "contract": "criterion status",
+      "field": "schema_status",
+      "nullable": false,
+      "source": "base/sidecar schema",
+      "type": "enum(PASS,FAIL,UNRESOLVED,NOT_APPLICABLE)"
+    },
+    {
+      "contract": "criterion status",
+      "field": "canonical_status",
+      "nullable": false,
+      "source": "same-pair canonical validation",
+      "type": "enum(PASS,FAIL,UNRESOLVED,NOT_APPLICABLE)"
+    },
+    {
+      "contract": "PASS means absent/not time_swap",
+      "field": "time_swap_status",
+      "nullable": false,
+      "source": "intervention_type",
+      "type": "enum(PASS,FAIL,UNRESOLVED,NOT_APPLICABLE)"
+    },
+    {
+      "contract": "criterion status",
+      "field": "dataset_source_status",
+      "nullable": false,
+      "source": "path/hash allowlist",
+      "type": "enum(PASS,FAIL,UNRESOLVED,NOT_APPLICABLE)"
+    },
+    {
+      "contract": "exactly one",
+      "field": "integrity_status",
+      "nullable": false,
+      "source": "fail-closed composition",
+      "type": "enum(ELIGIBLE,INELIGIBLE,UNRESOLVED)"
+    },
+    {
+      "contract": "true only for eligible train compatible rows",
+      "field": "eligible_for_positive_margin",
+      "nullable": false,
+      "source": "exact eligibility expression",
+      "type": "boolean"
+    },
+    {
+      "contract": "JSON array; CSV semicolon-delimited",
+      "field": "reason_codes",
+      "nullable": false,
+      "source": "rule outputs",
+      "type": "sorted unique string list"
+    },
+    {
+      "contract": "must exist in source",
+      "field": "canonical_row_id",
+      "nullable": false,
+      "source": "same-pair none identity",
+      "type": "string"
+    },
+    {
+      "contract": "stable family contract version",
+      "field": "family_contract_id",
+      "nullable": false,
+      "source": "rule catalog",
+      "type": "string"
+    },
+    {
+      "contract": "fixed contract version",
+      "field": "rule_version",
+      "nullable": false,
+      "source": "stage184a_v1",
+      "type": "string"
+    },
+    {
+      "contract": "provenance",
+      "field": "source_dataset_path",
+      "nullable": false,
+      "source": "canonical resolved path",
+      "type": "string"
+    },
+    {
+      "contract": "mismatch blocks all",
+      "field": "source_dataset_sha256",
+      "nullable": false,
+      "source": "source bytes",
+      "type": "sha256"
+    },
+    {
+      "contract": "mismatch blocks build/use",
+      "field": "generator_source_sha256",
+      "nullable": false,
+      "source": "generator bytes",
+      "type": "sha256"
+    },
+    {
+      "contract": "provenance",
+      "field": "integrity_builder_sha256",
+      "nullable": false,
+      "source": "builder bytes",
+      "type": "sha256"
+    },
+    {
+      "contract": "excluded from semantic hash",
+      "field": "created_at",
+      "nullable": false,
+      "source": "builder clock",
+      "type": "UTC ISO-8601"
+    }
+  ],
+  "stage": "Stage184-A",
+  "stage185_gate": {
+    "authorized_next_stage": "STAGE185_CONTROLLED_TRAIN_INTEGRITY_SIDECAR_BUILDER",
+    "loss_implementation_authorized": false,
+    "rows": [
+      {
+        "authorization": "STAGE185_CONTROLLED_TRAIN_INTEGRITY_SIDECAR_BUILDER",
+        "evidence": "Stage183 closure cross-check + identity audit",
+        "gate": "authoritative_dataset_identity_and_topology",
+        "passed": true,
+        "required": true
+      },
+      {
+        "authorization": "STAGE185_CONTROLLED_TRAIN_INTEGRITY_SIDECAR_BUILDER",
+        "evidence": "criterion derivability matrix",
+        "gate": "all_criteria_have_deterministic_PASS_FAIL_UNRESOLVED_rules",
+        "passed": true,
+        "required": true
+      },
+      {
+        "authorization": "STAGE185_CONTROLLED_TRAIN_INTEGRITY_SIDECAR_BUILDER",
+        "evidence": "no duplicate row or pair-family identity",
+        "gate": "one_to_one_row_id_sidecar_join",
+        "passed": true,
+        "required": true
+      },
+      {
+        "authorization": "STAGE185_CONTROLLED_TRAIN_INTEGRITY_SIDECAR_BUILDER",
+        "evidence": "criterion derivability matrix",
+        "gate": "no_model_llm_manual_annotation_required",
+        "passed": true,
+        "required": true
+      },
+      {
+        "authorization": "modification forbidden",
+        "evidence": "external row-id sidecar contract",
+        "gate": "original_jsonl_modification_required",
+        "passed": true,
+        "required": false
+      },
+      {
+        "authorization": "not authorized",
+        "evidence": "Stage184 scope",
+        "gate": "loss_or_training_authorized",
+        "passed": false,
+        "required": false
+      }
+    ],
+    "sidecar_generation_and_static_audit_only": true,
+    "training_authorized": false
+  }
+}

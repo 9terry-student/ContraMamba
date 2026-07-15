@@ -1,0 +1,27 @@
+metric,observed,expected,passed,evidence_source
+dataset_path,/kaggle/working/ContraMamba/data/controlled_v5_v3_without_time_swap.jsonl,observed,true,computed from authoritative JSONL
+dataset_sha256,f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640,observed,true,computed from authoritative JSONL
+row_count,3600,3600,true,Stage183-A closure frozen_topology
+pair_count,300,300,true,Stage183-A closure frozen_topology
+intervention_family_count,12,observed,true,computed from authoritative JSONL
+intervention_families,"[""entity_swap"",""event_swap"",""evidence_deletion"",""evidence_truncation"",""irrelevant_evidence"",""location_swap"",""none"",""paraphrase"",""polarity_flip"",""predicate_swap"",""role_swap"",""title_name_swap""]",observed,true,computed from authoritative JSONL
+unique_row_id_count,3600,observed,true,computed from authoritative JSONL
+row_id_duplicate_count,0,0,true,Stage184 fail-closed identity contract
+row_id_duplicates,[],observed,true,computed from authoritative JSONL
+unique_pair_id_count,300,observed,true,computed from authoritative JSONL
+rows_per_pair_distribution,"{""12"":300}",observed,true,computed from authoritative JSONL
+canonical_none_count_per_pair_distribution,"{""1"":300}","{""1"":300}",true,exactly one none row per pair
+train_pair_count,240,240,true,Stage183-A closure frozen_topology
+dev_pair_count,60,60,true,Stage183-A closure frozen_topology
+train_row_count,2880,2880,true,Stage183-A closure frozen_topology
+dev_row_count,720,720,true,Stage183-A closure frozen_topology
+train_frame_compatible,1440,1440,true,Stage183-A closure frozen_topology
+train_frame_incompatible,1440,1440,true,Stage183-A closure frozen_topology
+dev_frame_compatible,360,observed,true,computed from authoritative JSONL
+dev_frame_incompatible,360,observed,true,computed from authoritative JSONL
+time_swap_count,0,0,true,Stage184 fail-closed identity contract
+rows_missing_required_base_fields,0,0,true,Stage184 fail-closed identity contract
+rows_with_base_schema_errors,0,0,true,Stage184 fail-closed identity contract
+duplicate_semantic_identity_key_count,0,0,true,Stage184 fail-closed identity contract
+duplicate_semantic_identity_keys,[],observed,true,computed from authoritative JSONL
+authoritative_path_exact,true,true,true,exact resolved path
