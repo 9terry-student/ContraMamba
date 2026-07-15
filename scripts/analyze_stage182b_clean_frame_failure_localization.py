@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import math
 import random
@@ -136,6 +137,17 @@ def read_csv(path: Path) -> tuple[list[dict[str, str]], list[str]]:
         raise LocalizationBlocked(f"cannot read CSV {path}: {exc}") from exc
     require(bool(header), f"CSV has no header: {path}")
     return rows, header
+
+
+def sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    try:
+        with path.open("rb") as handle:
+            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                digest.update(chunk)
+    except OSError as exc:
+        raise LocalizationBlocked(f"cannot hash {path}: {exc}") from exc
+    return digest.hexdigest()
 
 
 def write_csv(path: Path, rows: list[dict[str, Any]], fields: list[str]) -> None:
@@ -294,8 +306,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--stage182a-canonical-control-audit", type=Path, required=True)
     parser.add_argument("--stage180a-hidden-item-key", type=Path, required=True)
     parser.add_argument("--stage180a-pass2-packet", type=Path, required=True)
-    parser.add_argument("--stage179a-report", type=Path, required=True)
-    parser.add_argument("--stage179a-hard39-attribution", type=Path, required=True)
+    parser.add_argument("--stage179a-report", type=Path, default=None)
+    parser.add_argument("--stage179a-hard39-attribution", type=Path, default=None)
     parser.add_argument("--stage176a-row-transitions", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--bootstrap-samples", type=int, default=5000)
@@ -310,9 +322,20 @@ def markdown(report: dict[str, Any]) -> str:
     paired = report["matched_control_analysis"]
     centroid = report["centroid_readout_analysis"]
     projection = report["projection_bias_analysis"]
+    movement = report["representation_movement_analysis"]
+    coverage = report["artifact_coverage"]
+    provenance = report.get("provenance", {})
     return f"""# Stage182-B clean native-frame failure localization
 
 **Decision:** `{report['decision']}`
+
+**Artifact source mode:** `{coverage.get('artifact_source_mode')}`
+
+## Artifact provenance
+
+Stage180-A manifest SHA: `{provenance.get('stage180a_manifest_sha256')}`. Stage180-A Pass-2 packet SHA: `{provenance.get('stage180a_pass2_packet_sha256')}`. Stage182-A candidate CSV SHA: `{provenance.get('stage182a_candidate_csv_sha256')}`. Stage182-A decision: `{provenance.get('stage182a_report_decision')}`.
+
+{coverage.get('provenance_limitation', '')}
 
 ## Fixed clean cohorts
 
@@ -326,9 +349,11 @@ The median candidate-minus-control frame-logit difference was `{paired.get('medi
 
 ## Centroid and readout
 
-Candidate centroid-correct rate was `{centroid.get('candidate_centroid_correct_rate')}` and matched-control centroid-correct rate was `{centroid.get('matched_control_centroid_correct_rate')}`. Stage179 centroid outputs are gold-conditioned, leave-one-row-out, transductive diagnostics—not a deployable classifier or a Stage182 fitted probe.
+Centroid/head subanalysis availability: `{centroid.get('subanalysis_available')}`. Candidate centroid-correct rate was `{centroid.get('candidate_centroid_correct_rate')}` and matched-control centroid-correct rate was `{centroid.get('matched_control_centroid_correct_rate')}`. Stage179 centroid outputs are gold-conditioned, leave-one-row-out, transductive diagnostics—not a deployable classifier or a Stage182 fitted probe.
 
-Projection/bias decomposition availability: `{projection.get('bias_specific_subanalysis_available')}`. A bias-specific conclusion is reported only when the stored projection reconstructs the native logit with an effectively constant inferred bias and maximum error at most `1e-5`.
+Projection subanalysis availability: `{projection.get('subanalysis_available')}`. Bias-specific decomposition availability: `{projection.get('bias_specific_subanalysis_available')}`. A bias-specific conclusion is reported only when the stored projection reconstructs the native logit with an effectively constant inferred bias and maximum error at most `1e-5`.
+
+Representation-movement subanalysis availability: `{movement.get('subanalysis_available')}`. Missing centroid, projection, or movement fields do not suppress scalar-margin analysis.
 
 ## Stratified evidence
 
@@ -348,19 +373,43 @@ def main() -> int:
     try:
         require(args.bootstrap_samples >= 1000, "--bootstrap-samples must be at least 1000")
         require(args.minimum_candidates >= 1, "--minimum-candidates must be at least 1")
+        external_report = args.stage179a_report is not None
+        external_hard39 = args.stage179a_hard39_attribution is not None
+        require(external_report == external_hard39,
+                "--stage179a-report and --stage179a-hard39-attribution must be provided together")
+        artifact_source_mode = ("external_stage179_artifacts" if external_report
+                                else "embedded_stage180a_pass2")
         current = "input_read"
         report182 = read_json(args.stage182a_report)
-        report179 = read_json(args.stage179a_report)
+        report179 = read_json(args.stage179a_report) if external_report else None
         require(report182.get("decision") == EXPECTED_182A, "unexpected Stage182-A decision")
-        require(report179.get("decision") == EXPECTED_179A, "unexpected Stage179-A decision")
+        if report179 is not None:
+            require(report179.get("decision") == EXPECTED_179A, "unexpected Stage179-A decision")
         candidates_raw, _ = read_csv(args.stage182a_clean_candidates)
         controls_raw, _ = read_csv(args.stage182a_clean_controls)
         items_raw, _ = read_csv(args.stage182a_unique_item_integrity)
         canonical_raw, _ = read_csv(args.stage182a_canonical_control_audit)
         hidden_raw, _ = read_csv(args.stage180a_hidden_item_key)
         pass2_raw, _ = read_csv(args.stage180a_pass2_packet)
-        hard179_raw, _ = read_csv(args.stage179a_hard39_attribution)
+        hard179_raw, _ = (read_csv(args.stage179a_hard39_attribution)
+                          if external_hard39 else ([], []))
         transitions_raw, _ = read_csv(args.stage176a_row_transitions)
+        provenance_limitation = (
+            "" if external_report else
+            "Stage179-derived scalar values were frozen into the Stage180-A packet. "
+            "Direct Stage179 runtime report provenance was unavailable. "
+            "No scalar was reconstructed or recomputed."
+        )
+        input_hashes = report182.get("input_validation", {}).get("input_sha256", {})
+        provenance = {
+            "artifact_source_mode": artifact_source_mode,
+            "stage180a_manifest_sha256": input_hashes.get("stage180a_manifest"),
+            "stage180a_pass2_packet_sha256": sha256(args.stage180a_pass2_packet),
+            "stage182a_candidate_csv_sha256": sha256(args.stage182a_clean_candidates),
+            "stage182a_report_decision": report182.get("decision"),
+            "stage179a_report_decision": report179.get("decision") if report179 else None,
+            "scalar_reconstructed_or_recomputed": False,
+        }
 
         current = "identity_validation"
         def unique(rows: list[dict[str, Any]], name: str) -> dict[str, dict[str, Any]]:
@@ -403,9 +452,10 @@ def main() -> int:
             matched_ids.add(matched)
         require(not offending, "candidate mismatch invariant failed", offending_candidate_rows=offending)
         require(len(matched_ids) == 14, "matched candidate controls must be one-to-one")
-        require(candidate_ids <= set(identity(row) for row in hard179_raw),
-                "Stage179 hard-39 attribution lacks candidate IDs",
-                missing_ids=sorted(candidate_ids - set(identity(row) for row in hard179_raw)))
+        if external_hard39:
+            require(candidate_ids <= set(identity(row) for row in hard179_raw),
+                    "Stage179 hard-39 attribution lacks candidate IDs",
+                    missing_ids=sorted(candidate_ids - set(identity(row) for row in hard179_raw)))
 
         current = "artifact_normalization"
         review_to_id: dict[str, str] = {}
@@ -416,13 +466,52 @@ def main() -> int:
             require(review not in review_to_id, "duplicate review ID in hidden key", duplicate_ids=[review])
             review_to_id[review] = str(row_id)
         pass2_with_ids: list[dict[str, Any]] = []
+        pass2_by_source_id: dict[str, list[dict[str, Any]]] = defaultdict(list)
         for row in pass2_raw:
             review = str(row.get("review_instance_id", ""))
             require(review in review_to_id, "Pass-2 review ID absent from hidden key", missing_ids=[review])
-            pass2_with_ids.append({**row, "row_id": review_to_id[review]})
-        sources = [("stage180a_pass2", merge_normalized(pass2_with_ids, "Stage180-A Pass-2")),
-                   ("stage179a_hard39", merge_normalized(hard179_raw, "Stage179-A hard39")),
-                   ("stage176a_transitions", merge_normalized(transitions_raw, "Stage176-A transitions"))]
+            source_id = review_to_id[review]
+            normalized_row = {**row, "row_id": source_id}
+            pass2_with_ids.append(normalized_row)
+            pass2_by_source_id[source_id].append(normalized_row)
+        require(candidate_ids <= set(pass2_by_source_id),
+                "Stage180-A Pass-2 packet lacks candidate IDs",
+                missing_ids=sorted(candidate_ids - set(pass2_by_source_id)))
+
+        matched_aliases = {
+            "frame_label": ("matched_control_native_frame_label",),
+            "frame_prediction": ("matched_control_frame_prediction",),
+            "frame_logit": ("matched_control_frame_logit",),
+            "frame_probability": ("matched_control_frame_prob", "matched_control_frame_probability"),
+        }
+        embedded_matched: dict[str, dict[str, Any]] = {}
+        for candidate_id in sorted(candidate_ids):
+            expected_control = str(candidate_by_id[candidate_id]["matched_source_row_id"])
+            packet_rows = pass2_by_source_id[candidate_id]
+            linked_control_ids = {review_to_id[str(row["matched_control_review_instance_id"])]
+                                  for row in packet_rows
+                                  if str(row.get("matched_control_review_instance_id", "")) in review_to_id}
+            require(linked_control_ids == {expected_control},
+                    f"Pass-2 matched-control identity mismatch for {candidate_id}",
+                    missing_ids=[expected_control],
+                    extra_ids=sorted(linked_control_ids - {expected_control}))
+            values: dict[str, Any] = {}
+            for field, aliases in matched_aliases.items():
+                observed = [normalize_value(field, row[alias]) for row in packet_rows for alias in aliases
+                            if str(row.get(alias, "")).strip()]
+                require(not observed or all(value_equal(observed[0], value) for value in observed[1:]),
+                        f"repeat rows conflict for embedded matched-control {field}: {candidate_id}",
+                        schema_mismatch={"row_id": candidate_id, "field": field})
+                values[field] = observed[0] if observed else None
+            embedded_matched[expected_control] = values
+
+        pass2_normalized = merge_normalized(pass2_with_ids, "Stage180-A Pass-2")
+        sources = [("stage180a_pass2", pass2_normalized)]
+        if external_hard39:
+            sources.append(("stage179a_hard39", merge_normalized(hard179_raw, "Stage179-A hard39")))
+        sources.append(("stage176a_transitions", merge_normalized(transitions_raw, "Stage176-A transitions")))
+        sources.append(("stage182a_identity_fields",
+                        merge_normalized(candidates_raw + controls_raw, "Stage182-A identity fields")))
         wanted_ids = candidate_ids | matched_ids | clean_correct_ids | set(control_by_id)
         normalized: dict[str, dict[str, Any]] = {}
         for row_id in wanted_ids:
@@ -438,6 +527,18 @@ def main() -> int:
                         require(value_equal(chosen[field], value), f"cross-artifact {field} mismatch for {row_id}",
                                 schema_mismatch={"row_id": row_id, "field": field})
             normalized[row_id] = {"values": chosen, "sources": field_source}
+
+        for control_id, embedded_values in embedded_matched.items():
+            for field, value in embedded_values.items():
+                if value is None:
+                    continue
+                existing = normalized[control_id]["values"].get(field)
+                require(existing is None or value_equal(existing, value),
+                        f"embedded matched-control {field} disagrees with control row: {control_id}",
+                        schema_mismatch={"row_id": control_id, "field": field})
+                if existing is None:
+                    normalized[control_id]["values"][field] = value
+                    normalized[control_id]["sources"][field] = "embedded_stage180a_matched_control"
 
         def enriched(row_id: str, row: dict[str, Any]) -> dict[str, Any]:
             values = normalized[row_id]["values"]
@@ -455,6 +556,43 @@ def main() -> int:
                 missing_ids=sorted(candidate_ids - transition_ids))
         require(composition(candidates, "stage176_cohort") == {"beneficial_correction": 1, "harmful_regression": 13},
                 "Stage176 candidate cohort topology mismatch")
+
+        embedded_candidate_required = {
+            "native_frame_label": "frame_label",
+            "native_frame_prediction": "frame_prediction",
+            "native_frame_logit": "frame_logit",
+            "native_frame_probability": "frame_probability",
+        }
+        embedded_control_required = {
+            "matched_control_frame_prediction": "frame_prediction",
+            "matched_control_frame_logit": "frame_logit",
+            "matched_control_frame_prob": "frame_probability",
+        }
+        embedded_candidate_field_coverage = {
+            artifact_field: rate(
+                sum(pass2_normalized.get(row_id, {}).get(canonical_field) is not None
+                    for row_id in candidate_ids), 14)
+            for artifact_field, canonical_field in embedded_candidate_required.items()
+        }
+        embedded_control_field_coverage = {
+            artifact_field: rate(
+                sum(embedded_matched.get(row_id, {}).get(canonical_field) is not None
+                    for row_id in matched_ids), 14)
+            for artifact_field, canonical_field in embedded_control_required.items()
+        }
+        embedded_required_scalar_coverage = min(
+            list(embedded_candidate_field_coverage.values()) + list(embedded_control_field_coverage.values())
+        )
+        embedded_centroid_coverage = rate(
+            sum(pass2_normalized.get(row_id, {}).get("centroid_correct") is not None
+                and pass2_normalized.get(row_id, {}).get("centroid_prediction") is not None
+                for row_id in candidate_ids | matched_ids), 28)
+        embedded_projection_coverage = rate(
+            sum(pass2_normalized.get(row_id, {}).get("frame_head_projection") is not None
+                for row_id in candidate_ids | matched_ids), 28)
+        embedded_movement_coverage = rate(
+            sum(pass2_normalized.get(row_id, {}).get("representation_movement_from_none") is not None
+                for row_id in candidate_ids | matched_ids), 28)
 
         current = "paired_analysis"
         candidate_rows: list[dict[str, Any]] = []
@@ -536,7 +674,12 @@ def main() -> int:
                     for row in projection_population if scalar(row, "frame_logit") is not None and scalar(row, "frame_head_projection") is not None]
         bias = med(inferred)
         errors = [abs(value - float(bias)) for value in inferred] if bias is not None else []
-        relationship_verified = len(inferred) == len(projection_population) and bool(errors) and max(errors) <= 1e-5
+        normalized_projection_coverage = rate(len(inferred), len(projection_population))
+        projection_subanalysis_available = (normalized_projection_coverage is not None and
+                                            normalized_projection_coverage >= .90)
+        relationship_verified = (projection_subanalysis_available and
+                                 len(inferred) == len(projection_population) and
+                                 bool(errors) and max(errors) <= 1e-5)
         projection_rows = []
         for row in projection_population:
             logit, projection = scalar(row, "frame_logit"), scalar(row, "frame_head_projection")
@@ -555,7 +698,10 @@ def main() -> int:
         positive_negative_rate = rate(sum(row["projection_positive_logit_negative"] for row in fn_projection),
                                       sum(row["frame_head_projection"] is not None and row["frame_logit"] is not None for row in fn_projection))
         bias_dominant = relationship_verified and positive_negative_rate is not None and positive_negative_rate >= .70
-        projection_analysis = {"available_count": len(inferred), "inferred_bias_median": bias,
+        projection_analysis = {"available_count": len(inferred),
+                               "coverage": normalized_projection_coverage,
+                               "subanalysis_available": projection_subanalysis_available,
+                               "inferred_bias_median": bias,
                                "inferred_bias_variance": statistics.pvariance(inferred) if inferred else None,
                                "maximum_reconstruction_error": max(errors) if errors else None,
                                "relationship_verified": relationship_verified,
@@ -575,8 +721,16 @@ def main() -> int:
                                   "HEAD_WRONG_CENTROID_CORRECT" if correct else "HEAD_WRONG_CENTROID_WRONG"})
         candidate_centroid = [row for row in centroid_rows if row["row_id"] in candidate_ids and row["centroid_correct"] is not None]
         control_centroid = [row for row in centroid_rows if row["row_id"] in matched_ids and row["centroid_correct"] is not None]
+        candidate_centroid_coverage = rate(len(candidate_centroid), 14)
+        control_centroid_coverage = rate(len(control_centroid), 14)
+        centroid_subanalysis_available = (candidate_centroid_coverage is not None and
+                                          control_centroid_coverage is not None and
+                                          candidate_centroid_coverage >= .90 and
+                                          control_centroid_coverage >= .90)
         centroid_analysis = {"candidate_available_count": len(candidate_centroid),
-                             "candidate_coverage": rate(len(candidate_centroid), 14),
+                             "candidate_coverage": candidate_centroid_coverage,
+                             "matched_control_coverage": control_centroid_coverage,
+                             "subanalysis_available": centroid_subanalysis_available,
                              "candidate_centroid_correct_rate": rate(sum(row["centroid_correct"] for row in candidate_centroid), len(candidate_centroid)),
                              "candidate_centroid_wrong_rate": rate(sum(not row["centroid_correct"] for row in candidate_centroid), len(candidate_centroid)),
                              "matched_control_available_count": len(control_centroid),
@@ -592,7 +746,16 @@ def main() -> int:
                 status = "not_applicable" if row["intervention_type"] == "none" else "available" if value is not None else "missing"
                 movement_rows.append({"row_id": row["row_id"], "subset": subset, "intervention_type": row["intervention_type"],
                                       "movement_status": status, "representation_movement_from_none": value})
-        movement_analysis: dict[str, Any] = {"vector_direction_inference_authorized": False, "subsets": {}}
+        movement_available = sum(row["movement_status"] == "available" for row in movement_rows)
+        movement_applicable = sum(row["movement_status"] != "not_applicable" for row in movement_rows)
+        normalized_movement_coverage = rate(movement_available, movement_applicable)
+        movement_analysis: dict[str, Any] = {
+            "vector_direction_inference_authorized": False,
+            "coverage": normalized_movement_coverage,
+            "subanalysis_available": (normalized_movement_coverage is not None and
+                                      normalized_movement_coverage >= .90),
+            "subsets": {},
+        }
         for subset in ("candidate", "matched_control", "clean_hard_correct"):
             values = [float(row["representation_movement_from_none"]) for row in movement_rows
                       if row["subset"] == subset and row["movement_status"] == "available"]
@@ -694,26 +857,42 @@ def main() -> int:
                 coverage_rows.append({"artifact": "normalized_priority_sources", "cohort": cohort_name, "field": field,
                                       "available_count": available, "required_count": len(group), "coverage_rate": rate(available, len(group)),
                                       "threshold": threshold, "passed": rate(available, len(group)) >= threshold})
-        scalar_fields = ("frame_label", "frame_prediction", "frame_logit", "frame_probability")
-        candidate_scalar_coverage = min(rate(sum(scalar(row, field) is not None for row in candidates), 14) for field in scalar_fields)
-        control_scalar_coverage = min(rate(sum(scalar(row, field) is not None for row in matched_controls.values()), 14) for field in scalar_fields)
+        candidate_scalar_fields = ("frame_label", "frame_prediction", "frame_logit", "frame_probability")
+        control_scalar_fields = ("frame_prediction", "frame_logit", "frame_probability")
+        candidate_scalar_coverage = min(
+            rate(sum(scalar(row, field) is not None for row in candidates), 14)
+            for field in candidate_scalar_fields
+        )
+        control_scalar_coverage = min(
+            rate(sum(scalar(row, field) is not None for row in matched_controls.values()), 14)
+            for field in control_scalar_fields
+        )
+        insufficient = (candidate_scalar_coverage < .90 or control_scalar_coverage < .90 or
+                        (artifact_source_mode == "embedded_stage180a_pass2" and
+                         embedded_required_scalar_coverage < .90))
 
         compatible_dominant = len(fn_rows) / 14 >= .75
         negative_systematic = (len(fn_rows) >= args.minimum_candidates and med(fn_logits) is not None and med(fn_logits) < 0 and
                                fn_pair_ci[1] is not None and fn_pair_ci[1] < 0)
-        rep_gate = (len(candidates) >= args.minimum_candidates and centroid_analysis["candidate_centroid_wrong_rate"] is not None and
+        rep_gate = (not insufficient and centroid_subanalysis_available and
+                    len(candidates) >= args.minimum_candidates and centroid_analysis["candidate_centroid_wrong_rate"] is not None and
                     centroid_analysis["candidate_centroid_wrong_rate"] >= .65 and
                     centroid_analysis["matched_control_centroid_correct_rate"] is not None and
                     centroid_analysis["matched_control_centroid_correct_rate"] >= .75 and paired_ci[1] is not None and paired_ci[1] < 0 and
                     centroid_analysis["candidate_coverage"] >= .80)
-        readout_gate = (len(candidates) >= args.minimum_candidates and centroid_analysis["candidate_centroid_correct_rate"] is not None and
+        readout_gate = (not insufficient and centroid_subanalysis_available and
+                        len(candidates) >= args.minimum_candidates and centroid_analysis["candidate_centroid_correct_rate"] is not None and
                         centroid_analysis["candidate_centroid_correct_rate"] >= .65 and
                         centroid_analysis["matched_control_centroid_correct_rate"] is not None and
                         centroid_analysis["matched_control_centroid_correct_rate"] >= .75 and paired_ci[1] is not None and paired_ci[1] < 0 and
-                        ((projection_negative_rate is not None and projection_negative_rate >= .70) or bias_dominant))
-        margin_gate = compatible_dominant and negative_systematic and candidate_scalar_coverage >= .90 and control_scalar_coverage >= .90
-        insufficient = candidate_scalar_coverage < .90 or control_scalar_coverage < .90
-        if rep_gate:
+                        ((projection_subanalysis_available and projection_negative_rate is not None and
+                          projection_negative_rate >= .70) or bias_dominant))
+        margin_gate = (not insufficient and compatible_dominant and negative_systematic and
+                       candidate_scalar_coverage >= .90 and control_scalar_coverage >= .90)
+        polarity_gate = not insufficient and polarity_gate
+        if insufficient:
+            decision, next_stage = INSUFFICIENT, "STAGE183_NATIVE_FRAME_ARTIFACT_RECOVERY_SPEC"
+        elif rep_gate:
             decision, next_stage = REPRESENTATION, "STAGE183_FRAME_REPRESENTATION_LOCALIZATION_DESIGN_AUDIT"
         elif readout_gate:
             decision, next_stage = READOUT, "STAGE183_FRAME_READOUT_AND_POSITIVE_MARGIN_DESIGN_AUDIT"
@@ -721,8 +900,6 @@ def main() -> int:
             decision, next_stage = MARGIN, "STAGE183_COMPATIBLE_FRAME_POSITIVE_PRESERVATION_DESIGN_AUDIT"
         elif polarity_gate:
             decision, next_stage = POLARITY, "STAGE183_POLARITY_FRAME_DISENTANGLEMENT_DESIGN_AUDIT"
-        elif insufficient:
-            decision, next_stage = INSUFFICIENT, "STAGE183_NATIVE_FRAME_ARTIFACT_RECOVERY_SPEC"
         else:
             decision, next_stage = MIXED, "STAGE183_STRATIFIED_CLEAN_FRAME_FAILURE_DESIGN_AUDIT"
         gates = {REPRESENTATION: rep_gate, READOUT: readout_gate, MARGIN: margin_gate, POLARITY: polarity_gate,
@@ -733,11 +910,29 @@ def main() -> int:
 
         report = {"stage": STAGE, "decision": decision,
                   "scope": {"artifact_only": True, "evaluation_only_failure_localization": True,
+                            "artifact_source_mode": artifact_source_mode,
                             "bootstrap_samples": args.bootstrap_samples, "seed": args.seed, "minimum_candidates": args.minimum_candidates},
-                  "input_validation": {"status": "passed", "stage182a_decision": EXPECTED_182A, "stage179a_decision": EXPECTED_179A,
+                  "input_validation": {"status": "passed", "stage182a_decision": EXPECTED_182A,
+                                       "stage179a_decision": report179.get("decision") if report179 else None,
+                                       "stage179_runtime_decision_directly_validated": report179 is not None,
                                        "candidate_native_frame_mismatch_invariant": True, "contaminated_comparison_rows": 0},
-                  "artifact_coverage": {"candidate_scalar_coverage": candidate_scalar_coverage,
-                                        "matched_control_scalar_coverage": control_scalar_coverage, "rows": coverage_rows},
+                  "provenance": provenance,
+                  "artifact_coverage": {
+                                        "artifact_source_mode": artifact_source_mode,
+                                        "external_stage179_report_available": external_report,
+                                        "external_stage179_hard39_available": external_hard39,
+                                        "embedded_pass2_scalar_coverage": {
+                                            "candidate_native_fields": embedded_candidate_field_coverage,
+                                            "matched_control_fields": embedded_control_field_coverage,
+                                            "minimum_required_coverage": embedded_required_scalar_coverage,
+                                        },
+                                        "embedded_centroid_coverage": embedded_centroid_coverage,
+                                        "embedded_projection_coverage": embedded_projection_coverage,
+                                        "embedded_movement_coverage": embedded_movement_coverage,
+                                        "provenance_limitation": provenance_limitation,
+                                        "candidate_scalar_coverage": candidate_scalar_coverage,
+                                        "matched_control_scalar_coverage": control_scalar_coverage,
+                                        "rows": coverage_rows},
                   "candidate_topology": {"candidate_count": 14, "matched_candidate_control_count": 14,
                                          "clean_hard_native_frame_correct_count": 7, "all_clean_control_count": 30,
                                          "candidate_family_count": len({row["intervention_type"] for row in candidates}),
@@ -758,7 +953,8 @@ def main() -> int:
                                 "polarity_gate": polarity_gate, "causal_mechanism_established": False},
                   "stage183_gate": {"authorized_next_stage": next_stage, "authorization_scope": "design_audit_only",
                                     "training_authorized": False, "rows": gate_rows},
-                  "limitations": ["Stage179 centroid is gold-conditioned and transductive, not deployable.",
+                  "limitations": ([provenance_limitation] if provenance_limitation else []) +
+                                 ["Stage179 centroid is gold-conditioned and transductive, not deployable.",
                                   "Scalar movement magnitude does not establish representation direction.",
                                   "Family and cohort results are associations, not causal mechanisms.",
                                   "No final-classifier output is used as localization evidence."],
