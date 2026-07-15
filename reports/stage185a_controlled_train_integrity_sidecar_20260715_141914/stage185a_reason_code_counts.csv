@@ -1,0 +1,9 @@
+reason_code,row_count,pair_count,split_count,family_count,split_distribution,family_distribution
+CANONICAL_ROW_KNOWN_GENERATOR_DEFECT,1650,150,2,11,"{""dev"":341,""train"":1309}","{""entity_swap"":150,""event_swap"":150,""evidence_deletion"":150,""evidence_truncation"":150,""irrelevant_evidence"":150,""location_swap"":150,""paraphrase"":150,""polarity_flip"":150,""predicate_swap"":150,""role_swap"":150,""title_name_swap"":150}"
+DEV_SPLIT_EXCLUDED,720,60,1,12,"{""dev"":720}","{""entity_swap"":60,""event_swap"":60,""evidence_deletion"":60,""evidence_truncation"":60,""irrelevant_evidence"":60,""location_swap"":60,""none"":60,""paraphrase"":60,""polarity_flip"":60,""predicate_swap"":60,""role_swap"":60,""title_name_swap"":60}"
+DID_NOT_INFLECTED_PREDICATE,450,300,2,3,"{""dev"":91,""train"":359}","{""none"":150,""paraphrase"":150,""polarity_flip"":150}"
+ELIGIBLE_CLEAN_COMPATIBLE,605,121,1,5,"{""train"":605}","{""evidence_deletion"":121,""evidence_truncation"":121,""none"":121,""paraphrase"":121,""predicate_swap"":121}"
+FRAME_LABEL_NOT_COMPATIBLE,1800,300,2,6,"{""dev"":360,""train"":1440}","{""entity_swap"":300,""event_swap"":300,""irrelevant_evidence"":300,""location_swap"":300,""role_swap"":300,""title_name_swap"":300}"
+GRAMMAR_TEMPLATE_FAIL,450,300,2,3,"{""dev"":91,""train"":359}","{""none"":150,""paraphrase"":150,""polarity_flip"":150}"
+INTERVENTION_CONTRACT_FAIL,1350,150,2,9,"{""dev"":279,""train"":1071}","{""entity_swap"":150,""event_swap"":150,""evidence_deletion"":150,""evidence_truncation"":150,""irrelevant_evidence"":150,""location_swap"":150,""predicate_swap"":150,""role_swap"":150,""title_name_swap"":150}"
+NON_POLARITY_INTERVENTION_POLARITY_CHANGE,1350,150,2,9,"{""dev"":279,""train"":1071}","{""entity_swap"":150,""event_swap"":150,""evidence_deletion"":150,""evidence_truncation"":150,""irrelevant_evidence"":150,""location_swap"":150,""predicate_swap"":150,""role_swap"":150,""title_name_swap"":150}"

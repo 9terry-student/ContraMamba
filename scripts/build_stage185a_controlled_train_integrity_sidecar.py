@@ -718,6 +718,7 @@ def semantic_sidecar_sha(sidecar: list[dict[str, Any]]) -> str:
 def markdown_report(report: dict[str, Any]) -> str:
     identity = report["dataset_identity"]
     positive = report["positive_eligibility"]
+    risk = report["scientific_coverage_risk"]
     overlap = report["stage182_overlap_regression"]
     return f"""# Stage185-A controlled-train integrity sidecar report
 
@@ -751,7 +752,7 @@ The Stage182 subset is a regression oracle only, never a whitelist.
 
 ## Positive and family coverage
 
-Eligible train-compatible positives: {positive['eligible_count']} / {positive['train_compatible_count']} ({positive['eligible_rate']:.6f}). Eligible families: {positive['eligible_family_count']}; largest family share: {positive['largest_family_share']:.6f}. Unresolved positives: {positive['unresolved_positive_count']}.
+Eligible train-compatible positives: {positive['eligible_count']} / {positive['train_compatible_count']} ({positive['eligible_rate']:.6f}). Eligible families: {risk['eligible_positive_family_count']}; largest family share: {risk['largest_family_share']:.6f}. Unresolved positives: {risk['unresolved_positive_count']}.
 
 Warnings: {', '.join(report['scientific_coverage_risk']['warnings']) or 'none'}.
 

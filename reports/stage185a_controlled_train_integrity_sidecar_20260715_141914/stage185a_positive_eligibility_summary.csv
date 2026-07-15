@@ -1,0 +1,4 @@
+metric,value,denominator,rate
+eligible_train_compatible,605,1440,0.4201388888888889
+ineligible_train_compatible,716,1440,
+unresolved_train_compatible,119,1440,

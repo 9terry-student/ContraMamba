@@ -1,0 +1,10 @@
+dimension,group,integrity_status,count
+overall,all,ELIGIBLE,1650
+overall,all,INELIGIBLE,1800
+overall,all,UNRESOLVED,150
+split,train,UNRESOLVED,119
+split,train,INELIGIBLE,1430
+split,train,ELIGIBLE,1331
+split,dev,UNRESOLVED,31
+split,dev,INELIGIBLE,370
+split,dev,ELIGIBLE,319

@@ -1,0 +1,734 @@
+{
+  "criterion_coverage": {
+    "canonical_status": {
+      "PASS": 1950,
+      "UNRESOLVED": 1650
+    },
+    "dataset_source_status": {
+      "PASS": 3600
+    },
+    "grammar_status": {
+      "FAIL": 450,
+      "PASS": 3150
+    },
+    "intervention_contract_status": {
+      "FAIL": 1350,
+      "PASS": 2250
+    },
+    "polarity_contamination_status": {
+      "FAIL": 1350,
+      "PASS": 2250
+    },
+    "schema_status": {
+      "PASS": 3600
+    },
+    "time_swap_status": {
+      "PASS": 3600
+    }
+  },
+  "dataset_identity": {
+    "families": 12,
+    "pairs": 300,
+    "path": "data/controlled_v5_v3_without_time_swap.jsonl",
+    "rows": 3600,
+    "sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640"
+  },
+  "decision": "STAGE185A_INTEGRITY_SIDECAR_BUILT_AND_POSITIVE_ELIGIBILITY_MATERIALIZED",
+  "family_contracts": [
+    {
+      "compatible": 0,
+      "dominant_reason_codes": [
+        "FRAME_LABEL_NOT_COMPATIBLE"
+      ],
+      "eligible_positive": 0,
+      "eligible_positive_rate": 0.0,
+      "family": "entity_swap",
+      "ineligible": 150,
+      "total": 300,
+      "train": 240,
+      "unresolved": 0
+    },
+    {
+      "compatible": 0,
+      "dominant_reason_codes": [
+        "FRAME_LABEL_NOT_COMPATIBLE"
+      ],
+      "eligible_positive": 0,
+      "eligible_positive_rate": 0.0,
+      "family": "event_swap",
+      "ineligible": 150,
+      "total": 300,
+      "train": 240,
+      "unresolved": 0
+    },
+    {
+      "compatible": 300,
+      "dominant_reason_codes": [
+        "CANONICAL_ROW_KNOWN_GENERATOR_DEFECT",
+        "INTERVENTION_CONTRACT_FAIL",
+        "NON_POLARITY_INTERVENTION_POLARITY_CHANGE"
+      ],
+      "eligible_positive": 121,
+      "eligible_positive_rate": 0.4033333333333333,
+      "family": "evidence_deletion",
+      "ineligible": 150,
+      "total": 300,
+      "train": 240,
+      "unresolved": 0
+    },
+    {
+      "compatible": 300,
+      "dominant_reason_codes": [
+        "CANONICAL_ROW_KNOWN_GENERATOR_DEFECT",
+        "INTERVENTION_CONTRACT_FAIL",
+        "NON_POLARITY_INTERVENTION_POLARITY_CHANGE"
+      ],
+      "eligible_positive": 121,
+      "eligible_positive_rate": 0.4033333333333333,
+      "family": "evidence_truncation",
+      "ineligible": 150,
+      "total": 300,
+      "train": 240,
+      "unresolved": 0
+    },
+    {
+      "compatible": 0,
+      "dominant_reason_codes": [
+        "FRAME_LABEL_NOT_COMPATIBLE"
+      ],
+      "eligible_positive": 0,
+      "eligible_positive_rate": 0.0,
+      "family": "irrelevant_evidence",
+      "ineligible": 150,
+      "total": 300,
+      "train": 240,
+      "unresolved": 0
+    },
+    {
+      "compatible": 0,
+      "dominant_reason_codes": [
+        "FRAME_LABEL_NOT_COMPATIBLE"
+      ],
+      "eligible_positive": 0,
+      "eligible_positive_rate": 0.0,
+      "family": "location_swap",
+      "ineligible": 150,
+      "total": 300,
+      "train": 240,
+      "unresolved": 0
+    },
+    {
+      "compatible": 300,
+      "dominant_reason_codes": [
+        "DID_NOT_INFLECTED_PREDICATE",
+        "GRAMMAR_TEMPLATE_FAIL"
+      ],
+      "eligible_positive": 121,
+      "eligible_positive_rate": 0.4033333333333333,
+      "family": "none",
+      "ineligible": 150,
+      "total": 300,
+      "train": 240,
+      "unresolved": 0
+    },
+    {
+      "compatible": 300,
+      "dominant_reason_codes": [
+        "CANONICAL_ROW_KNOWN_GENERATOR_DEFECT",
+        "DID_NOT_INFLECTED_PREDICATE",
+        "GRAMMAR_TEMPLATE_FAIL"
+      ],
+      "eligible_positive": 121,
+      "eligible_positive_rate": 0.4033333333333333,
+      "family": "paraphrase",
+      "ineligible": 150,
+      "total": 300,
+      "train": 240,
+      "unresolved": 0
+    },
+    {
+      "compatible": 300,
+      "dominant_reason_codes": [
+        "DID_NOT_INFLECTED_PREDICATE",
+        "GRAMMAR_TEMPLATE_FAIL",
+        "CANONICAL_ROW_KNOWN_GENERATOR_DEFECT"
+      ],
+      "eligible_positive": 0,
+      "eligible_positive_rate": 0.0,
+      "family": "polarity_flip",
+      "ineligible": 150,
+      "total": 300,
+      "train": 240,
+      "unresolved": 150
+    },
+    {
+      "compatible": 300,
+      "dominant_reason_codes": [
+        "CANONICAL_ROW_KNOWN_GENERATOR_DEFECT",
+        "INTERVENTION_CONTRACT_FAIL",
+        "NON_POLARITY_INTERVENTION_POLARITY_CHANGE"
+      ],
+      "eligible_positive": 121,
+      "eligible_positive_rate": 0.4033333333333333,
+      "family": "predicate_swap",
+      "ineligible": 150,
+      "total": 300,
+      "train": 240,
+      "unresolved": 0
+    },
+    {
+      "compatible": 0,
+      "dominant_reason_codes": [
+        "FRAME_LABEL_NOT_COMPATIBLE"
+      ],
+      "eligible_positive": 0,
+      "eligible_positive_rate": 0.0,
+      "family": "role_swap",
+      "ineligible": 150,
+      "total": 300,
+      "train": 240,
+      "unresolved": 0
+    },
+    {
+      "compatible": 0,
+      "dominant_reason_codes": [
+        "FRAME_LABEL_NOT_COMPATIBLE"
+      ],
+      "eligible_positive": 0,
+      "eligible_positive_rate": 0.0,
+      "family": "title_name_swap",
+      "ineligible": 150,
+      "total": 300,
+      "train": 240,
+      "unresolved": 0
+    }
+  ],
+  "family_coverage": [
+    {
+      "compatible": 0,
+      "dominant_reason_codes": [
+        "FRAME_LABEL_NOT_COMPATIBLE"
+      ],
+      "eligible_positive": 0,
+      "eligible_positive_rate": 0.0,
+      "family": "entity_swap",
+      "ineligible": 150,
+      "total": 300,
+      "train": 240,
+      "unresolved": 0
+    },
+    {
+      "compatible": 0,
+      "dominant_reason_codes": [
+        "FRAME_LABEL_NOT_COMPATIBLE"
+      ],
+      "eligible_positive": 0,
+      "eligible_positive_rate": 0.0,
+      "family": "event_swap",
+      "ineligible": 150,
+      "total": 300,
+      "train": 240,
+      "unresolved": 0
+    },
+    {
+      "compatible": 300,
+      "dominant_reason_codes": [
+        "CANONICAL_ROW_KNOWN_GENERATOR_DEFECT",
+        "INTERVENTION_CONTRACT_FAIL",
+        "NON_POLARITY_INTERVENTION_POLARITY_CHANGE"
+      ],
+      "eligible_positive": 121,
+      "eligible_positive_rate": 0.4033333333333333,
+      "family": "evidence_deletion",
+      "ineligible": 150,
+      "total": 300,
+      "train": 240,
+      "unresolved": 0
+    },
+    {
+      "compatible": 300,
+      "dominant_reason_codes": [
+        "CANONICAL_ROW_KNOWN_GENERATOR_DEFECT",
+        "INTERVENTION_CONTRACT_FAIL",
+        "NON_POLARITY_INTERVENTION_POLARITY_CHANGE"
+      ],
+      "eligible_positive": 121,
+      "eligible_positive_rate": 0.4033333333333333,
+      "family": "evidence_truncation",
+      "ineligible": 150,
+      "total": 300,
+      "train": 240,
+      "unresolved": 0
+    },
+    {
+      "compatible": 0,
+      "dominant_reason_codes": [
+        "FRAME_LABEL_NOT_COMPATIBLE"
+      ],
+      "eligible_positive": 0,
+      "eligible_positive_rate": 0.0,
+      "family": "irrelevant_evidence",
+      "ineligible": 150,
+      "total": 300,
+      "train": 240,
+      "unresolved": 0
+    },
+    {
+      "compatible": 0,
+      "dominant_reason_codes": [
+        "FRAME_LABEL_NOT_COMPATIBLE"
+      ],
+      "eligible_positive": 0,
+      "eligible_positive_rate": 0.0,
+      "family": "location_swap",
+      "ineligible": 150,
+      "total": 300,
+      "train": 240,
+      "unresolved": 0
+    },
+    {
+      "compatible": 300,
+      "dominant_reason_codes": [
+        "DID_NOT_INFLECTED_PREDICATE",
+        "GRAMMAR_TEMPLATE_FAIL"
+      ],
+      "eligible_positive": 121,
+      "eligible_positive_rate": 0.4033333333333333,
+      "family": "none",
+      "ineligible": 150,
+      "total": 300,
+      "train": 240,
+      "unresolved": 0
+    },
+    {
+      "compatible": 300,
+      "dominant_reason_codes": [
+        "CANONICAL_ROW_KNOWN_GENERATOR_DEFECT",
+        "DID_NOT_INFLECTED_PREDICATE",
+        "GRAMMAR_TEMPLATE_FAIL"
+      ],
+      "eligible_positive": 121,
+      "eligible_positive_rate": 0.4033333333333333,
+      "family": "paraphrase",
+      "ineligible": 150,
+      "total": 300,
+      "train": 240,
+      "unresolved": 0
+    },
+    {
+      "compatible": 300,
+      "dominant_reason_codes": [
+        "DID_NOT_INFLECTED_PREDICATE",
+        "GRAMMAR_TEMPLATE_FAIL",
+        "CANONICAL_ROW_KNOWN_GENERATOR_DEFECT"
+      ],
+      "eligible_positive": 0,
+      "eligible_positive_rate": 0.0,
+      "family": "polarity_flip",
+      "ineligible": 150,
+      "total": 300,
+      "train": 240,
+      "unresolved": 150
+    },
+    {
+      "compatible": 300,
+      "dominant_reason_codes": [
+        "CANONICAL_ROW_KNOWN_GENERATOR_DEFECT",
+        "INTERVENTION_CONTRACT_FAIL",
+        "NON_POLARITY_INTERVENTION_POLARITY_CHANGE"
+      ],
+      "eligible_positive": 121,
+      "eligible_positive_rate": 0.4033333333333333,
+      "family": "predicate_swap",
+      "ineligible": 150,
+      "total": 300,
+      "train": 240,
+      "unresolved": 0
+    },
+    {
+      "compatible": 0,
+      "dominant_reason_codes": [
+        "FRAME_LABEL_NOT_COMPATIBLE"
+      ],
+      "eligible_positive": 0,
+      "eligible_positive_rate": 0.0,
+      "family": "role_swap",
+      "ineligible": 150,
+      "total": 300,
+      "train": 240,
+      "unresolved": 0
+    },
+    {
+      "compatible": 0,
+      "dominant_reason_codes": [
+        "FRAME_LABEL_NOT_COMPATIBLE"
+      ],
+      "eligible_positive": 0,
+      "eligible_positive_rate": 0.0,
+      "family": "title_name_swap",
+      "ineligible": 150,
+      "total": 300,
+      "train": 240,
+      "unresolved": 0
+    }
+  ],
+  "generator_provenance": {
+    "created_at": "2026-07-15T14:19:14.803809Z",
+    "generator_source_path": "/kaggle/working/ContraMamba/scripts/build_controlled_v5.py",
+    "generator_source_sha256": "c41e6a52401bd8c83970286b176950fc751509bee6d797d5da9aea4262c72802",
+    "integrity_builder_sha256": "11e6ba89b8131c76eac4504b4273867eaa99a131abe23d3238eb65ecda207bbc",
+    "rule_version": "stage185a_v1",
+    "sidecar_hashes": {
+      "csv_sha256": "e978798c51d5865652653d4e6c58e7167f5a88dbedf381586637431fe62a284a",
+      "jsonl_sha256": "fdaf57ab99742f042acecc0daa2c046263a8e326af1758ebdcab6d6bddf4ecfa",
+      "semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc"
+    },
+    "source_dataset_path": "data/controlled_v5_v3_without_time_swap.jsonl",
+    "source_dataset_sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640",
+    "stage182a_analyzer_path": "/kaggle/working/ContraMamba/scripts/analyze_stage182a_controlled_intervention_integrity.py",
+    "stage182a_analyzer_sha256": "fe33f17c61ca1e64a95fd89a4c48bea45b1dae083d6238dec898e9017e35e335",
+    "stage182a_report_path": "/kaggle/working/ContraMamba/reports/stage182a_controlled_intervention_integrity_20260713_113314/stage182a_controlled_intervention_integrity_report.json",
+    "stage182a_report_sha256": "8da1e6c7c4174f283a2c4a4de9f857e7cbb71dd84ddbd64af66b6f3d0e1880ed",
+    "stage184a_report_path": "/kaggle/working/ContraMamba/reports/stage184a_controlled_train_integrity_mask_spec_20260715_134538/stage184a_controlled_train_integrity_mask_spec_report.json",
+    "stage184a_report_sha256": "f9eed1c6bd0045968ab2c9ed5df9995e10152f28c7619f235bd3c9e624dee5a1"
+  },
+  "implementation_readiness": {
+    "loss_implementation_authorized": false,
+    "positive_eligibility_materialized": true,
+    "sidecar_complete": true,
+    "training_authorized": false
+  },
+  "input_validation": {
+    "required_stage182_artifacts": [
+      "stage182a_controlled_intervention_integrity_report.json",
+      "stage182a_unique_item_integrity.csv",
+      "stage182a_intervention_contract_audit.csv",
+      "stage182a_grammar_integrity_audit.csv",
+      "stage182a_canonical_control_audit.csv",
+      "stage182a_structured_axis_delta.csv",
+      "stage182a_data_intervention_contamination_queue.csv",
+      "stage182a_control_anomaly_queue.csv"
+    ],
+    "required_stage184_artifacts": [
+      "stage184a_controlled_train_integrity_mask_spec_report.json",
+      "stage184a_controlled_train_integrity_mask_spec_report.md",
+      "stage184a_dataset_identity_audit.csv",
+      "stage184a_integrity_criterion_derivability.csv",
+      "stage184a_family_contract_matrix.csv",
+      "stage184a_pair_invariant_spec.csv",
+      "stage184a_sidecar_schema.csv",
+      "stage184a_reason_code_catalog.csv",
+      "stage184a_fail_closed_policy.csv",
+      "stage184a_coverage_feasibility.csv",
+      "stage184a_stage185_gate.csv"
+    ],
+    "stage182_decision": "STAGE182A_DATA_CONTAMINATION_CONFIRMED_AND_CLEAN_MODEL_FAILURE_SET_READY",
+    "stage184_decision": "STAGE184A_DETERMINISTIC_FAIL_CLOSED_INTEGRITY_SIDECAR_SPEC_READY",
+    "status": "passed"
+  },
+  "integrity_status": {
+    "ELIGIBLE": 1650,
+    "INELIGIBLE": 1800,
+    "UNRESOLVED": 150
+  },
+  "limitations": [
+    "Template PASS is not general-English quality proof.",
+    "Stage182 overlap is a regression oracle, not a whitelist.",
+    "Coverage warnings are descriptive and do not authorize training."
+  ],
+  "pair_coverage": {
+    "all_eligible": 0,
+    "canonical_invalid_pair": 150,
+    "deterministic_failure_pair": 300,
+    "mixed_status": 300,
+    "unresolved_pair": 150
+  },
+  "positive_eligibility": {
+    "eligible_count": 605,
+    "eligible_rate": 0.4201388888888889,
+    "formula": "ELIGIBLE and train and compatible and time/source PASS",
+    "train_compatible_count": 1440
+  },
+  "reason_code_coverage": [
+    {
+      "family_count": 11,
+      "family_distribution": {
+        "entity_swap": 150,
+        "event_swap": 150,
+        "evidence_deletion": 150,
+        "evidence_truncation": 150,
+        "irrelevant_evidence": 150,
+        "location_swap": 150,
+        "paraphrase": 150,
+        "polarity_flip": 150,
+        "predicate_swap": 150,
+        "role_swap": 150,
+        "title_name_swap": 150
+      },
+      "pair_count": 150,
+      "reason_code": "CANONICAL_ROW_KNOWN_GENERATOR_DEFECT",
+      "row_count": 1650,
+      "split_count": 2,
+      "split_distribution": {
+        "dev": 341,
+        "train": 1309
+      }
+    },
+    {
+      "family_count": 12,
+      "family_distribution": {
+        "entity_swap": 60,
+        "event_swap": 60,
+        "evidence_deletion": 60,
+        "evidence_truncation": 60,
+        "irrelevant_evidence": 60,
+        "location_swap": 60,
+        "none": 60,
+        "paraphrase": 60,
+        "polarity_flip": 60,
+        "predicate_swap": 60,
+        "role_swap": 60,
+        "title_name_swap": 60
+      },
+      "pair_count": 60,
+      "reason_code": "DEV_SPLIT_EXCLUDED",
+      "row_count": 720,
+      "split_count": 1,
+      "split_distribution": {
+        "dev": 720
+      }
+    },
+    {
+      "family_count": 3,
+      "family_distribution": {
+        "none": 150,
+        "paraphrase": 150,
+        "polarity_flip": 150
+      },
+      "pair_count": 300,
+      "reason_code": "DID_NOT_INFLECTED_PREDICATE",
+      "row_count": 450,
+      "split_count": 2,
+      "split_distribution": {
+        "dev": 91,
+        "train": 359
+      }
+    },
+    {
+      "family_count": 5,
+      "family_distribution": {
+        "evidence_deletion": 121,
+        "evidence_truncation": 121,
+        "none": 121,
+        "paraphrase": 121,
+        "predicate_swap": 121
+      },
+      "pair_count": 121,
+      "reason_code": "ELIGIBLE_CLEAN_COMPATIBLE",
+      "row_count": 605,
+      "split_count": 1,
+      "split_distribution": {
+        "train": 605
+      }
+    },
+    {
+      "family_count": 6,
+      "family_distribution": {
+        "entity_swap": 300,
+        "event_swap": 300,
+        "irrelevant_evidence": 300,
+        "location_swap": 300,
+        "role_swap": 300,
+        "title_name_swap": 300
+      },
+      "pair_count": 300,
+      "reason_code": "FRAME_LABEL_NOT_COMPATIBLE",
+      "row_count": 1800,
+      "split_count": 2,
+      "split_distribution": {
+        "dev": 360,
+        "train": 1440
+      }
+    },
+    {
+      "family_count": 3,
+      "family_distribution": {
+        "none": 150,
+        "paraphrase": 150,
+        "polarity_flip": 150
+      },
+      "pair_count": 300,
+      "reason_code": "GRAMMAR_TEMPLATE_FAIL",
+      "row_count": 450,
+      "split_count": 2,
+      "split_distribution": {
+        "dev": 91,
+        "train": 359
+      }
+    },
+    {
+      "family_count": 9,
+      "family_distribution": {
+        "entity_swap": 150,
+        "event_swap": 150,
+        "evidence_deletion": 150,
+        "evidence_truncation": 150,
+        "irrelevant_evidence": 150,
+        "location_swap": 150,
+        "predicate_swap": 150,
+        "role_swap": 150,
+        "title_name_swap": 150
+      },
+      "pair_count": 150,
+      "reason_code": "INTERVENTION_CONTRACT_FAIL",
+      "row_count": 1350,
+      "split_count": 2,
+      "split_distribution": {
+        "dev": 279,
+        "train": 1071
+      }
+    },
+    {
+      "family_count": 9,
+      "family_distribution": {
+        "entity_swap": 150,
+        "event_swap": 150,
+        "evidence_deletion": 150,
+        "evidence_truncation": 150,
+        "irrelevant_evidence": 150,
+        "location_swap": 150,
+        "predicate_swap": 150,
+        "role_swap": 150,
+        "title_name_swap": 150
+      },
+      "pair_count": 150,
+      "reason_code": "NON_POLARITY_INTERVENTION_POLARITY_CHANGE",
+      "row_count": 1350,
+      "split_count": 2,
+      "split_distribution": {
+        "dev": 279,
+        "train": 1071
+      }
+    }
+  ],
+  "rule_version": "stage185a_v1",
+  "safety_policy": {
+    "no_checkpoint_or_forward": true,
+    "no_external_evaluation": true,
+    "no_generator_modification": true,
+    "no_jsonl_modification": true,
+    "no_llm_or_text_classifier": true,
+    "no_loss_implementation": true,
+    "no_model_or_torch": true,
+    "no_threshold_fitting": true,
+    "no_training": true
+  },
+  "scientific_coverage_risk": {
+    "eligible_positive_count": 605,
+    "eligible_positive_family_count": 5,
+    "eligible_positive_rate": 0.4201388888888889,
+    "families_with_zero_eligible_positives": [
+      "entity_swap",
+      "event_swap",
+      "irrelevant_evidence",
+      "location_swap",
+      "polarity_flip",
+      "role_swap",
+      "title_name_swap"
+    ],
+    "largest_family_share": 0.2,
+    "threshold_fitted": false,
+    "top_ineligible_reason": "CANONICAL_ROW_KNOWN_GENERATOR_DEFECT",
+    "top_unresolved_reason": "CANONICAL_ROW_KNOWN_GENERATOR_DEFECT",
+    "unresolved_positive_count": 119,
+    "warnings": []
+  },
+  "scope": {
+    "deterministic_sidecar_generation_only": true,
+    "loss_implemented": false,
+    "source_modified": false,
+    "training": false
+  },
+  "sidecar_contract": {
+    "claim_evidence_duplicated": false,
+    "one_to_one_row_id_join": true,
+    "reason_codes_sorted_unique": true,
+    "row_count": 3600,
+    "source_order_preserved": true
+  },
+  "sidecar_hashes": {
+    "csv_sha256": "e978798c51d5865652653d4e6c58e7167f5a88dbedf381586637431fe62a284a",
+    "jsonl_sha256": "fdaf57ab99742f042acecc0daa2c046263a8e326af1758ebdcab6d6bddf4ecfa",
+    "semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc"
+  },
+  "split_topology": {
+    "dev_pair_count": 60,
+    "dev_row_count": 720,
+    "train_frame_compatible": 1440,
+    "train_frame_incompatible": 1440,
+    "train_pair_count": 240,
+    "train_row_count": 2880
+  },
+  "stage": "Stage185-A",
+  "stage182_overlap_regression": {
+    "clean_rows_with_contamination_code": 0,
+    "contaminated_classified_eligible": 0,
+    "deterministic_contaminated_count": 22,
+    "duplicate_overlap_count": 0,
+    "expected_grammar_contamination": 1,
+    "expected_polarity_contamination": 21,
+    "overlap_count": 78,
+    "passed": true,
+    "recovered_grammar_contamination": 1,
+    "recovered_polarity_contamination": 21
+  },
+  "stage186_gate": {
+    "authorized_next_stage": "STAGE186_COMPATIBLE_POSITIVE_MARGIN_FIXED_SPEC_AUDIT",
+    "loss_implementation_authorized": false,
+    "rows": [
+      {
+        "gate": "sidecar_rows_3600",
+        "observed": 3600,
+        "passed": true,
+        "required": 3600
+      },
+      {
+        "gate": "exact_one_to_one_join",
+        "observed": "passed",
+        "passed": true,
+        "required": "passed"
+      },
+      {
+        "gate": "all_rows_classified",
+        "observed": 3600,
+        "passed": true,
+        "required": 3600
+      },
+      {
+        "gate": "blocked_invariants",
+        "observed": 0,
+        "passed": true,
+        "required": 0
+      },
+      {
+        "gate": "stage182_regression",
+        "observed": true,
+        "passed": true,
+        "required": true
+      },
+      {
+        "gate": "eligible_positive_count",
+        "observed": 605,
+        "passed": true,
+        "required": ">0 for Decision1"
+      },
+      {
+        "gate": "semantic_sha",
+        "observed": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc",
+        "passed": true,
+        "required": "nonempty"
+      }
+    ],
+    "training_authorized": false
+  }
+}

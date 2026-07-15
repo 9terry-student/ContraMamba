@@ -1,0 +1,6 @@
+check,observed,expected,passed
+source_row_count,3600,3600,true
+sidecar_row_count,3600,3600,true
+row_id_set_equal,3600,3600,true
+source_order_equal,true,true,true
+duplicate_sidecar_row_id,0,0,true

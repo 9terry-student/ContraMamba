@@ -1,0 +1,8 @@
+gate,passed,observed,required
+sidecar_rows_3600,true,3600,3600
+exact_one_to_one_join,true,passed,passed
+all_rows_classified,true,3600,3600
+blocked_invariants,true,0,0
+stage182_regression,true,true,true
+eligible_positive_count,true,605,>0 for Decision1
+semantic_sha,true,5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc,nonempty
