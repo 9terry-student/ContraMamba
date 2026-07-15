@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import copy
 import csv
+import hashlib
 import inspect
 import json
 import os
@@ -91,6 +92,249 @@ from scripts.stage177c_frame_pairwise import (  # noqa: E402
     build_stage177c_train_pair_index,
     compute_stage177c_frame_pairwise_loss,
 )
+# Stage187-A: fixed compatible-positive margin contract. Default-off and local to
+# this trainer; no model/head/controlled-loss API is changed.
+_STAGE187_AUTHORITATIVE_DATA = Path("data/controlled_v5_v3_without_time_swap.jsonl")
+_STAGE187_AUTHORITATIVE_SIDECAR = Path(
+    "reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/"
+    "stage185a_controlled_train_integrity_sidecar.jsonl"
+)
+_STAGE187_DATASET_SHA256 = "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640"
+_STAGE187_SIDECAR_SEMANTIC_SHA256 = "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc"
+_STAGE187_FIXED_MARGIN_LOGIT = 0.0
+_STAGE187_FIXED_WEIGHT = 0.05
+_STAGE187_EXPECTED_SIDECAR_ROWS = 3600
+_STAGE187_EXPECTED_ELIGIBLE_ROWS = 605
+_STAGE187_EXPECTED_ELIGIBLE_PAIRS = 121
+_STAGE187_EXPECTED_ELIGIBLE_FAMILIES = 5
+_STAGE187_ELIGIBLE_FAMILIES = {
+    "evidence_deletion", "evidence_truncation", "none", "paraphrase", "predicate_swap"
+}
+
+
+def _stage187_file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _stage187_semantic_sidecar_sha256(rows: list[dict[str, Any]]) -> str:
+    canonical = [
+        {key: row[key] for key in sorted(row) if key != "created_at"}
+        for row in rows
+    ]
+    payload = json.dumps(
+        canonical, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _stage187_validate_activation_args(args: argparse.Namespace) -> bool:
+    weight = float(args.compatible_positive_margin_weight)
+    margin = float(args.compatible_positive_margin_logit)
+    if weight not in (0.0, _STAGE187_FIXED_WEIGHT):
+        raise ValueError(
+            "--compatible-positive-margin-weight must be exactly 0.0 or 0.05; "
+            "sweeps, schedules, and adaptive weights are not supported"
+        )
+    if margin != _STAGE187_FIXED_MARGIN_LOGIT:
+        raise ValueError("--compatible-positive-margin-logit must be exactly 0.0")
+    if weight == 0.0:
+        return False
+    if args.controlled_integrity_sidecar_path is None:
+        raise ValueError(
+            "--compatible-positive-margin-weight 0.05 requires "
+            "--controlled-integrity-sidecar-path"
+        )
+    if not args.expected_integrity_sidecar_semantic_sha256:
+        raise ValueError(
+            "--compatible-positive-margin-weight 0.05 requires "
+            "--expected-integrity-sidecar-semantic-sha256"
+        )
+    if (
+        args.expected_integrity_sidecar_semantic_sha256
+        != _STAGE187_SIDECAR_SEMANTIC_SHA256
+    ):
+        raise ValueError("expected integrity-sidecar semantic SHA is not authoritative")
+    if args.smoke or args.max_train_records is not None or args.loss_sweep:
+        raise ValueError(
+            "compatible-positive margin activation forbids smoke/truncation/loss-sweep paths"
+        )
+    return True
+
+
+def _stage187_load_integrity_sidecar(
+    *,
+    data_path: Path,
+    source_records: list[dict[str, Any]],
+    sidecar_path: Path,
+    expected_semantic_sha256: str,
+) -> tuple[dict[str, bool], dict[str, str], dict[str, Any]]:
+    authoritative_data = (ROOT / _STAGE187_AUTHORITATIVE_DATA).resolve()
+    resolved_data = data_path.resolve()
+    if resolved_data != authoritative_data:
+        raise ValueError("compatible-positive margin requires the authoritative main dataset path")
+    observed_dataset_sha = _stage187_file_sha256(resolved_data)
+    if observed_dataset_sha != _STAGE187_DATASET_SHA256:
+        raise ValueError("authoritative dataset SHA-256 mismatch")
+    if expected_semantic_sha256 != _STAGE187_SIDECAR_SEMANTIC_SHA256:
+        raise ValueError("non-authoritative expected sidecar semantic SHA-256")
+    authoritative_sidecar = (ROOT / _STAGE187_AUTHORITATIVE_SIDECAR).resolve()
+    if sidecar_path.resolve() != authoritative_sidecar:
+        raise ValueError("compatible-positive margin requires the authoritative sidecar path")
+
+    rows: list[dict[str, Any]] = []
+    with sidecar_path.open("r", encoding="utf-8") as handle:
+        for line_number, line in enumerate(handle, 1):
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            if not isinstance(row, dict):
+                raise ValueError(f"sidecar line {line_number} is not a JSON object")
+            rows.append(row)
+    if len(rows) != _STAGE187_EXPECTED_SIDECAR_ROWS:
+        raise ValueError(f"sidecar must contain exactly 3600 rows, found {len(rows)}")
+
+    source_ids = [row.get("id") for row in source_records]
+    if len(source_ids) != _STAGE187_EXPECTED_SIDECAR_ROWS:
+        raise ValueError(f"source dataset must contain exactly 3600 rows, found {len(source_ids)}")
+    if any(not isinstance(row_id, str) or not row_id for row_id in source_ids):
+        raise ValueError("source dataset contains an invalid row ID")
+    if len(set(source_ids)) != len(source_ids):
+        raise ValueError("source dataset contains duplicate row IDs")
+
+    sidecar_ids = [row.get("row_id") for row in rows]
+    if any(not isinstance(row_id, str) or not row_id for row_id in sidecar_ids):
+        raise ValueError("sidecar contains an invalid row_id")
+    if len(set(sidecar_ids)) != len(sidecar_ids):
+        raise ValueError("sidecar contains duplicate row_id values")
+    if set(source_ids) != set(sidecar_ids):
+        missing = sorted(set(source_ids) - set(sidecar_ids))
+        extra = sorted(set(sidecar_ids) - set(source_ids))
+        raise ValueError(
+            f"source/sidecar row-ID join mismatch: missing={missing[:5]} extra={extra[:5]}"
+        )
+    if source_ids != sidecar_ids:
+        raise ValueError("sidecar row order is not the authoritative source order")
+
+    observed_semantic_sha = _stage187_semantic_sidecar_sha256(rows)
+    if observed_semantic_sha != expected_semantic_sha256:
+        raise ValueError("sidecar semantic SHA-256 mismatch")
+    if any(
+        row.get("source_dataset_sha256") != _STAGE187_DATASET_SHA256 for row in rows
+    ):
+        raise ValueError("sidecar row dataset SHA provenance mismatch")
+
+    eligibility: dict[str, bool] = {}
+    split_by_id: dict[str, str] = {}
+    eligible_rows: list[dict[str, Any]] = []
+    for row in rows:
+        value = row.get("eligible_for_positive_margin")
+        if not isinstance(value, bool):
+            raise ValueError(
+                f"sidecar eligibility must be a JSON boolean: {row['row_id']}"
+            )
+        row_id = row["row_id"]
+        eligibility[row_id] = value
+        split_by_id[row_id] = str(row.get("split", ""))
+        if value:
+            if not (
+                row.get("split") == "train"
+                and row.get("frame_compatible_label") == 1
+                and row.get("integrity_status") == "ELIGIBLE"
+                and row.get("time_swap_status") == "PASS"
+                and row.get("dataset_source_status") == "PASS"
+            ):
+                raise ValueError(
+                    f"eligible sidecar row fails defense-in-depth contract: {row_id}"
+                )
+            eligible_rows.append(row)
+
+    pair_counts: dict[str, int] = {}
+    family_counts: dict[str, int] = {}
+    for row in eligible_rows:
+        pair_id = str(row.get("pair_id", ""))
+        family = str(row.get("intervention_type", ""))
+        pair_counts[pair_id] = pair_counts.get(pair_id, 0) + 1
+        family_counts[family] = family_counts.get(family, 0) + 1
+    if len(eligible_rows) != _STAGE187_EXPECTED_ELIGIBLE_ROWS:
+        raise ValueError("eligible sidecar row count is not 605")
+    if len(pair_counts) != _STAGE187_EXPECTED_ELIGIBLE_PAIRS:
+        raise ValueError("eligible sidecar pair count is not 121")
+    if len(family_counts) != _STAGE187_EXPECTED_ELIGIBLE_FAMILIES:
+        raise ValueError("eligible sidecar family count is not 5")
+    if set(family_counts) != _STAGE187_ELIGIBLE_FAMILIES:
+        raise ValueError("eligible sidecar family set is not the frozen Stage185 set")
+    if set(pair_counts.values()) != {5}:
+        raise ValueError("eligible rows per pair topology is not exactly {5}")
+    if set(family_counts.values()) != {121}:
+        raise ValueError("eligible rows per family topology is not exactly {121}")
+
+    audit = {
+        "enabled": True,
+        "default_off": True,
+        "source_dataset_path": str(resolved_data),
+        "observed_dataset_sha256": observed_dataset_sha,
+        "sidecar_path": str(sidecar_path.resolve()),
+        "expected_sidecar_semantic_sha256": expected_semantic_sha256,
+        "observed_sidecar_semantic_sha256": observed_semantic_sha,
+        "sidecar_rows": len(rows),
+        "eligible_rows": len(eligible_rows),
+        "eligible_pairs": len(pair_counts),
+        "eligible_families": len(family_counts),
+        "eligible_family_names": sorted(family_counts),
+        "eligible_rows_per_pair": sorted(set(pair_counts.values())),
+        "eligible_rows_per_family": sorted(set(family_counts.values())),
+        "row_id_join": "exact_one_to_one_source_order",
+        "score_source": 'output["frame_logit"]',
+        "normalization": "eligible_row_mean",
+        "checkpoint_selection_unchanged": True,
+    }
+    return eligibility, split_by_id, audit
+
+
+def _stage187_compatible_positive_margin_loss(
+    frame_logit: torch.Tensor,
+    eligible_mask: torch.Tensor,
+    margin_logit: float,
+) -> tuple[torch.Tensor, dict[str, Any]]:
+    logits = frame_logit.reshape(-1)
+    mask = eligible_mask.reshape(-1)
+    if mask.dtype != torch.bool:
+        raise ValueError("compatible-positive margin mask must be boolean")
+    if logits.numel() != mask.numel():
+        raise ValueError(
+            "compatible-positive margin mask/logit length mismatch: "
+            f"{mask.numel()} != {logits.numel()}"
+        )
+    eligible_count = int(mask.sum().item())
+    if eligible_count == 0:
+        zero = logits.sum() * 0.0
+        return zero, {
+            "eligible_count": 0,
+            "active_count": 0,
+            "hinge_loss_sum": 0.0,
+            "eligible_frame_logit_sum": 0.0,
+            "active_rate": None,
+            "mean_eligible_frame_logit": None,
+            "zero_eligible_batch": True,
+        }
+    eligible_logits = logits[mask]
+    eligible_losses = F.relu(float(margin_logit) - eligible_logits)
+    loss = eligible_losses.sum() / eligible_count
+    active_count = int((eligible_logits < float(margin_logit)).sum().item())
+    return loss, {
+        "eligible_count": eligible_count,
+        "active_count": active_count,
+        "hinge_loss_sum": float(eligible_losses.detach().sum().item()),
+        "eligible_frame_logit_sum": float(eligible_logits.detach().sum().item()),
+        "active_rate": active_count / eligible_count,
+        "mean_eligible_frame_logit": float(eligible_logits.detach().mean().item()),
+        "zero_eligible_batch": False,
+    }
+
 STAGE31C_COVERAGE_LABELS = [
     "ENTAILS_SUPPORT",
     "OVERCLAIM_NOT_ENTITLED",
@@ -8396,6 +8640,30 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--v7-entitlement-loss-weight", type=float, default=0.0,
         help="v7: EntitlementGate auxiliary BCE loss weight. Default 0.0.")
 
+    # Stage187-A: fixed compatible-positive absolute-margin hinge. Default off.
+    parser.add_argument(
+        "--compatible-positive-margin-weight",
+        type=float,
+        default=0.0,
+        help="Stage187-A: exact allowed values are 0.0 (off) and 0.05 (fixed intervention).",
+    )
+    parser.add_argument(
+        "--compatible-positive-margin-logit",
+        type=float,
+        default=0.0,
+        help="Stage187-A: fixed native frame-logit boundary; must remain exactly 0.0.",
+    )
+    parser.add_argument(
+        "--controlled-integrity-sidecar-path",
+        type=Path,
+        default=None,
+        help="Stage187-A: authoritative Stage185 integrity-sidecar JSONL; read only when weight=0.05.",
+    )
+    parser.add_argument(
+        "--expected-integrity-sidecar-semantic-sha256",
+        default=None,
+        help="Stage187-A: required authoritative semantic SHA-256 when weight=0.05.",
+    )
     #  Stage26-G: v7 stabilization options 
     # All off by default. Clean-data supervision only. No Stage15. No OOD. No time_swap.
     parser.add_argument("--v7-use-polarity-margin-loss", action="store_true", default=False,
@@ -12836,6 +13104,17 @@ def main(argv: list[str] | None = None) -> int:
     raw_argv = list(sys.argv[1:] if argv is None else argv)
     _stage174a_runtime_start = time.monotonic()
     args = parser.parse_args(argv)
+    _stage187_margin_enabled = _stage187_validate_activation_args(args)
+    _stage187_eligibility_by_id: dict[str, bool] = {}
+    _stage187_split_by_id: dict[str, str] = {}
+    _stage187_sidecar_audit: dict[str, Any] = {
+        "enabled": False,
+        "default_off": True,
+        "configured_weight": float(args.compatible_positive_margin_weight),
+        "configured_margin_logit": float(args.compatible_positive_margin_logit),
+        "sidecar_accessed": False,
+        "checkpoint_selection_unchanged": True,
+    }
     explicit_args = set(raw_argv)
     _stage174a_requested_epochs = int(args.epochs)
     if args.save_selected_checkpoint:
@@ -13166,6 +13445,30 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     records = v5.load_jsonl(args.data)
+    if _stage187_margin_enabled:
+        _stage187_data_path = Path(args.data)
+        if not _stage187_data_path.is_absolute():
+            _stage187_data_path = ROOT / _stage187_data_path
+        _stage187_sidecar_path = Path(args.controlled_integrity_sidecar_path)
+        if not _stage187_sidecar_path.is_absolute():
+            _stage187_sidecar_path = ROOT / _stage187_sidecar_path
+        (
+            _stage187_eligibility_by_id,
+            _stage187_split_by_id,
+            _stage187_sidecar_audit,
+        ) = _stage187_load_integrity_sidecar(
+            data_path=_stage187_data_path,
+            source_records=records,
+            sidecar_path=_stage187_sidecar_path,
+            expected_semantic_sha256=(
+                args.expected_integrity_sidecar_semantic_sha256 or ""
+            ),
+        )
+        _stage187_sidecar_audit.update({
+            "configured_weight": float(args.compatible_positive_margin_weight),
+            "configured_margin_logit": float(args.compatible_positive_margin_logit),
+            "sidecar_accessed": True,
+        })
     if args.max_train_records is not None:
         records = records[: args.max_train_records]
 
@@ -13202,6 +13505,25 @@ def main(argv: list[str] | None = None) -> int:
             records, dev_ratio=args.dev_ratio, seed=args.seed
         )
 
+    if _stage187_margin_enabled:
+        _stage187_expected_train_ids = {
+            row_id for row_id, split in _stage187_split_by_id.items() if split == "train"
+        }
+        _stage187_expected_dev_ids = {
+            row_id for row_id, split in _stage187_split_by_id.items() if split == "dev"
+        }
+        _stage187_actual_train_ids = {str(row.get("id", "")) for row in train_records}
+        _stage187_actual_dev_ids = {str(row.get("id", "")) for row in dev_records}
+        if _stage187_actual_train_ids != _stage187_expected_train_ids:
+            raise ValueError(
+                "trainer train split does not match the frozen Stage185 sidecar split"
+            )
+        if _stage187_actual_dev_ids != _stage187_expected_dev_ids:
+            raise ValueError(
+                "trainer dev split does not match the frozen Stage185 sidecar split"
+            )
+        _stage187_sidecar_audit["train_split_row_ids_exact"] = True
+        _stage187_sidecar_audit["dev_split_row_ids_exact"] = True
     # Stage71: train-source mask, captured immediately after the clean main
     # train/dev split and before any bridge rows are appended below. Used to
     # restrict intervention_pairwise_losses (which requires a full
@@ -13769,6 +14091,36 @@ def main(argv: list[str] | None = None) -> int:
         )
         _stage175b_safety_gate["passed"] = True
 
+    _stage187_train_eligible_mask: torch.Tensor | None = None
+    if _stage187_margin_enabled:
+        _stage187_mask_values: list[bool] = []
+        for _record, _source in zip(train_records, _train_source_labels):
+            _row_id = str(_record.get("id", ""))
+            if _source == "clean_main":
+                if _row_id not in _stage187_eligibility_by_id:
+                    raise ValueError(
+                        f"clean-main train row is missing from integrity sidecar: {_row_id}"
+                    )
+                if _stage187_split_by_id.get(_row_id) != "train":
+                    raise ValueError(
+                        f"clean-main train row has non-train sidecar split: {_row_id}"
+                    )
+                _stage187_mask_values.append(_stage187_eligibility_by_id[_row_id])
+            else:
+                # External/bridge rows never enter the compatible-positive margin.
+                _stage187_mask_values.append(False)
+        if len(_stage187_mask_values) != len(train_records):
+            raise ValueError("compatible-positive eligibility mask alignment failed")
+        if sum(_stage187_mask_values) != _STAGE187_EXPECTED_ELIGIBLE_ROWS:
+            raise ValueError("aligned train eligibility mask does not contain exactly 605 rows")
+        _stage187_train_eligible_mask = torch.tensor(
+            _stage187_mask_values, dtype=torch.bool, device=device
+        )
+        _stage187_sidecar_audit["aligned_train_rows"] = len(train_records)
+        _stage187_sidecar_audit["aligned_eligible_rows"] = sum(_stage187_mask_values)
+        _stage187_sidecar_audit["bridge_or_external_rows_forced_ineligible"] = sum(
+            source != "clean_main" for source in _train_source_labels
+        )
     # Stage71/Stage75C/Stage80D: Stage57/Stage66/Stage75/Stage80A bridge rows
     # have no intervention_type=="none" original record for their pair_id, so
     # intervention_pairwise_losses (which requires a full intervention family
@@ -14953,6 +15305,10 @@ def main(argv: list[str] | None = None) -> int:
         stage177c_mode="off",
         stage177c_weight=0.0,
         stage177c_pair_index=None,
+        compatible_positive_margin_weight=0.0,
+        compatible_positive_margin_logit=0.0,
+        compatible_positive_margin_eligible_mask=None,
+        compatible_positive_margin_sidecar_audit=None,
     ):
         """Modified run_training that passes flags to v6b model."""
         if epochs < 1:
@@ -15111,6 +15467,7 @@ def main(argv: list[str] | None = None) -> int:
         _stage175b_reference_forward_row_count = 0
         _stage175b_reference_forward_batch_count = 0
         _stage177c_epoch_metrics: list[dict[str, Any]] = []
+        _compatible_positive_margin_epoch_metrics: list[dict[str, Any]] = []
 
         # Stage26-F extended: captured v7 output tensors for best-epoch logit / per-gold summaries.
         # Updated inside the epoch loop whenever score > best_score.
@@ -15374,6 +15731,64 @@ def main(argv: list[str] | None = None) -> int:
                     v5.intervention_objective, "last_diagnostics", None
                 )
             total_loss = losses["total"] + active_intervention_loss
+            _ep_compatible_positive_margin_raw = 0.0
+            _ep_compatible_positive_margin_weighted = 0.0
+            _compatible_positive_margin_metrics: dict[str, Any] = {
+                "epoch": epoch,
+                "enabled": False,
+                "eligible_count": 0,
+                "active_count": 0,
+                "hinge_loss_sum": 0.0,
+                "eligible_frame_logit_sum": 0.0,
+                "active_rate": None,
+                "mean_eligible_frame_logit": None,
+                "zero_eligible_batch": False,
+                "compatible_positive_margin_loss_raw": 0.0,
+                "compatible_positive_margin_loss_weighted": 0.0,
+            }
+            if compatible_positive_margin_weight > 0.0:
+                if compatible_positive_margin_weight != _STAGE187_FIXED_WEIGHT:
+                    raise RuntimeError("compatible-positive margin runtime weight is not 0.05")
+                if compatible_positive_margin_logit != _STAGE187_FIXED_MARGIN_LOGIT:
+                    raise RuntimeError("compatible-positive margin runtime logit is not 0.0")
+                if compatible_positive_margin_eligible_mask is None:
+                    raise RuntimeError("compatible-positive margin enabled without aligned eligibility mask")
+                if output.get("frame_logit") is None:
+                    raise RuntimeError('compatible-positive margin requires output["frame_logit"]')
+                (
+                    _compatible_positive_margin_loss,
+                    _compatible_positive_margin_loss_metrics,
+                ) = _stage187_compatible_positive_margin_loss(
+                    output["frame_logit"],
+                    compatible_positive_margin_eligible_mask,
+                    compatible_positive_margin_logit,
+                )
+                _compatible_positive_margin_weighted_loss = (
+                    compatible_positive_margin_weight
+                    * _compatible_positive_margin_loss
+                )
+                total_loss = total_loss + _compatible_positive_margin_weighted_loss
+                _ep_compatible_positive_margin_raw = float(
+                    _compatible_positive_margin_loss.detach().item()
+                )
+                _ep_compatible_positive_margin_weighted = float(
+                    _compatible_positive_margin_weighted_loss.detach().item()
+                )
+                _compatible_positive_margin_metrics.update(
+                    _compatible_positive_margin_loss_metrics
+                )
+                _compatible_positive_margin_metrics.update({
+                    "enabled": True,
+                    "compatible_positive_margin_loss_raw": (
+                        _ep_compatible_positive_margin_raw
+                    ),
+                    "compatible_positive_margin_loss_weighted": (
+                        _ep_compatible_positive_margin_weighted
+                    ),
+                })
+            _compatible_positive_margin_epoch_metrics.append(
+                _compatible_positive_margin_metrics
+            )
             if stage177c_mode != "off":
                 if _stage177c_weighted_loss is None:
                     raise RuntimeError("[stage177c] weighted loss was not computed")
@@ -16091,6 +16506,7 @@ def main(argv: list[str] | None = None) -> int:
                 "ce_loss": _ep_ce_raw,
                 "ranking_loss": _ep_ranking_raw,
                 "intervention_loss": _ep_intervention_raw,
+                "compatible_positive_margin_loss": _ep_compatible_positive_margin_raw,
                 "boundary_loss": _ep_bdry_raw,
                 "frame_violation_loss": _ep_fv_raw,
                 "pair_contrastive_frame_loss": _ep_pc_raw,
@@ -16120,6 +16536,7 @@ def main(argv: list[str] | None = None) -> int:
                 "ce_loss": _ep_ce_raw,  # CE weight = 1.0
                 "ranking_loss": _ep_ranking_w,
                 "intervention_loss": _ep_intervention_w,
+                "compatible_positive_margin_loss": _ep_compatible_positive_margin_weighted,
                 "boundary_loss": boundary_loss_weight * _ep_bdry_raw,
                 "frame_violation_loss": fv_loss_weight * _ep_fv_raw,
                 "pair_contrastive_frame_loss": pc_loss_weight * _ep_pc_raw,
@@ -17351,6 +17768,71 @@ def main(argv: list[str] | None = None) -> int:
 
         _loss_epoch_avg_raw = _avg_epoch_dicts(_audit_per_epoch_raw)
         _loss_epoch_avg_weighted = _avg_epoch_dicts(_audit_per_epoch_weighted)
+        _compatible_positive_margin_enabled_metrics = [
+            row for row in _compatible_positive_margin_epoch_metrics
+            if row.get("enabled")
+        ]
+        _compatible_positive_margin_total_eligible = sum(
+            int(row["eligible_count"])
+            for row in _compatible_positive_margin_enabled_metrics
+        )
+        _compatible_positive_margin_total_active = sum(
+            int(row["active_count"])
+            for row in _compatible_positive_margin_enabled_metrics
+        )
+        _compatible_positive_margin_hinge_sum = sum(
+            float(row["hinge_loss_sum"])
+            for row in _compatible_positive_margin_enabled_metrics
+        )
+        _compatible_positive_margin_logit_sum = sum(
+            float(row["eligible_frame_logit_sum"])
+            for row in _compatible_positive_margin_enabled_metrics
+        )
+        _compatible_positive_margin_zero_batch_count = sum(
+            bool(row["zero_eligible_batch"])
+            for row in _compatible_positive_margin_enabled_metrics
+        )
+        _compatible_positive_margin_raw_aggregate = (
+            _compatible_positive_margin_hinge_sum
+            / _compatible_positive_margin_total_eligible
+            if _compatible_positive_margin_total_eligible else None
+        )
+        _compatible_positive_margin_report = {
+            "enabled": compatible_positive_margin_weight > 0.0,
+            "default_off": True,
+            "configured_weight": compatible_positive_margin_weight,
+            "configured_margin_logit": compatible_positive_margin_logit,
+            "compatible_positive_margin_loss_raw": _compatible_positive_margin_raw_aggregate,
+            "compatible_positive_margin_loss_weighted": (
+                compatible_positive_margin_weight * _compatible_positive_margin_raw_aggregate
+                if _compatible_positive_margin_raw_aggregate is not None else None
+            ),
+            "compatible_positive_margin_eligible_count": int(
+                (compatible_positive_margin_sidecar_audit or {}).get("eligible_rows", 0)
+            ),
+            "compatible_positive_margin_eligible_observation_count": int(
+                _compatible_positive_margin_total_eligible
+            ),
+            "compatible_positive_margin_active_count": int(_compatible_positive_margin_total_active),
+            "compatible_positive_margin_active_rate": (
+                _compatible_positive_margin_total_active / _compatible_positive_margin_total_eligible
+                if _compatible_positive_margin_total_eligible else None
+            ),
+            "compatible_positive_margin_mean_eligible_frame_logit": (
+                _compatible_positive_margin_logit_sum / _compatible_positive_margin_total_eligible
+                if _compatible_positive_margin_total_eligible else None
+            ),
+            "zero_eligible_batch_count": int(_compatible_positive_margin_zero_batch_count),
+            "epoch_metrics": _compatible_positive_margin_epoch_metrics,
+            "score_source": 'output["frame_logit"]',
+            "normalization": "eligible_row_mean",
+            "active_region": "frame_logit < 0",
+            "inactive_region": "frame_logit > 0",
+            "boundary_convention": "native PyTorch F.relu autograd at frame_logit == 0",
+            "custom_boundary_rule": False,
+            "sidecar_contract": dict(compatible_positive_margin_sidecar_audit or {}),
+            "checkpoint_selection_unchanged": True,
+        }
 
         # selected_epoch_loss: the epoch that was actually checkpointed (best_epoch, post-selector)
         # final_epoch_loss: the last epoch of training (index -1)
@@ -17381,6 +17863,18 @@ def main(argv: list[str] | None = None) -> int:
                 "raw_loss_key": "ce_loss",
                 "weighted_loss_key": "ce_loss",
                 "note": "always active; weight=1.0 so raw == weighted",
+            },
+            "compatible_positive_margin_loss": {
+                "enabled": compatible_positive_margin_weight > 0.0,
+                "weight": compatible_positive_margin_weight,
+                "margin_logit": compatible_positive_margin_logit,
+                "target": 'output["frame_logit"] on authoritative eligible train rows',
+                "diagnostic_head_only": False,
+                "raw_loss_key": "compatible_positive_margin_loss",
+                "weighted_loss_key": "compatible_positive_margin_loss",
+                "normalization": "eligible_row_mean",
+                "default_off": True,
+                "checkpoint_selection_metric": False,
             },
             "ranking_loss": {
                 "enabled": not use_intervention_loss,
@@ -18416,6 +18910,7 @@ def main(argv: list[str] | None = None) -> int:
             "stage174c_clean_pairwise": _stage174c_report,
             "stage175b_support_anchor": _stage175b_report,
             "stage177c_frame_pairwise": _stage177c_report,
+            "compatible_positive_margin": _compatible_positive_margin_report,
             "final_epoch": epochs,
             "best_epoch": best_epoch,
             "select_metric": select_metric,
@@ -18593,6 +19088,26 @@ def main(argv: list[str] | None = None) -> int:
         "prediction_export_schema": "stage28e_v1_json_plus_optional_jsonl",
         "training_scope": "internal_controlled_clean_train_with_opt_in_train_only_auxiliary_bridges",
         "active_bridge_auxiliary_modes_and_row_counts": _stage174a_auxiliary_activity,
+        "compatible_positive_margin": {
+            "enabled": _stage187_margin_enabled,
+            "default_off": True,
+            "weight": float(args.compatible_positive_margin_weight),
+            "margin_logit": float(args.compatible_positive_margin_logit),
+            "score_source": 'output["frame_logit"]',
+            "normalization": "eligible_row_mean",
+            "sidecar_path": (
+                str(args.controlled_integrity_sidecar_path)
+                if args.controlled_integrity_sidecar_path is not None else None
+            ),
+            "expected_sidecar_semantic_sha256": (
+                args.expected_integrity_sidecar_semantic_sha256
+            ),
+            "sidecar_validation": _stage187_sidecar_audit,
+            "authoritative_sidecar_path": _STAGE187_AUTHORITATIVE_SIDECAR.as_posix(),
+            "authoritative_dataset_sha256": _STAGE187_DATASET_SHA256,
+            "authoritative_sidecar_semantic_sha256": _STAGE187_SIDECAR_SEMANTIC_SHA256,
+            "checkpoint_selection_unchanged": True,
+        },
     }
     _stage174a_training_selection_policy = {
         "clean_dev_only_checkpoint_selection": True,
@@ -18693,6 +19208,20 @@ def main(argv: list[str] | None = None) -> int:
         },
         "safety_gate": _stage177c_safety_gate,
         "aggregate_diagnostics": None,
+    })
+    _stage174a_provenance_record["compatible_positive_margin"] = provenance_json_safe({
+        "enabled": _stage187_margin_enabled,
+        "default_off": True,
+        "weight": float(args.compatible_positive_margin_weight),
+        "margin_logit": float(args.compatible_positive_margin_logit),
+        "score_source": 'output["frame_logit"]',
+        "normalization": "eligible_row_mean",
+        "sidecar_contract": _stage187_sidecar_audit,
+        "authoritative_dataset_path": _STAGE187_AUTHORITATIVE_DATA.as_posix(),
+        "authoritative_dataset_sha256": _STAGE187_DATASET_SHA256,
+        "authoritative_sidecar_semantic_sha256": _STAGE187_SIDECAR_SEMANTIC_SHA256,
+        "checkpoint_selection_unchanged": True,
+        "final_ce_logits_source": 'output["logits"]',
     })
     write_provenance_json_atomic(_stage174a_provenance_path, _stage174a_provenance_record)
     requested_loss_config = {
@@ -18925,6 +19454,16 @@ def main(argv: list[str] | None = None) -> int:
             stage177c_mode=args.stage177c_frame_pairwise_mode,
             stage177c_weight=args.stage177c_frame_pairwise_weight,
             stage177c_pair_index=_stage177c_pair_index,
+            compatible_positive_margin_weight=(
+                args.compatible_positive_margin_weight
+            ),
+            compatible_positive_margin_logit=(
+                args.compatible_positive_margin_logit
+            ),
+            compatible_positive_margin_eligible_mask=(
+                _stage187_train_eligible_mask
+            ),
+            compatible_positive_margin_sidecar_audit=_stage187_sidecar_audit,
             pc_pres_inputs=_pc_pres_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_frame_inputs=_pc_frame_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_loss_weight=(
@@ -18983,6 +19522,16 @@ def main(argv: list[str] | None = None) -> int:
                     if key != "pairs"
                 },
                 "safety_gate": _stage177c_safety_gate,
+            },
+            "compatible_positive_margin": {
+                "enabled": _stage187_margin_enabled,
+                "default_off": True,
+                "weight": float(args.compatible_positive_margin_weight),
+                "margin_logit": float(args.compatible_positive_margin_logit),
+                "score_source": 'output["frame_logit"]',
+                "normalization": "eligible_row_mean",
+                "sidecar_contract": _stage187_sidecar_audit,
+                "checkpoint_selection_unchanged": True,
             },
             "stage175b_support_anchor": {
                 **stage175b_resolved_configuration(
@@ -21973,6 +22522,15 @@ def main(argv: list[str] | None = None) -> int:
                 for summary in _stage175b_final_runs.values()
             ),
             "malformed_skipped_count": 0,
+        })
+    )
+    _stage174a_provenance_record["compatible_positive_margin"].update(
+        provenance_json_safe({
+            "run_activity": {
+                name: run_report.get("compatible_positive_margin")
+                for name, run_report in reports.items()
+            },
+            "runtime_validation_status": "pending_runtime_validation",
         })
     )
     _stage174a_provenance_record.update(

@@ -1,0 +1,57 @@
+{
+  "stage": "Stage186-A closure",
+  "decision": "STAGE186A_FIXED_NO_SWEEP_COMPATIBLE_POSITIVE_MARGIN_SPEC_READY",
+  "authorized_next": "STAGE187_COMPATIBLE_POSITIVE_MARGIN_DEFAULT_OFF_IMPLEMENTATION",
+  "scope": {
+    "fixed_spec_audit_complete": true,
+    "implementation_authorized": true,
+    "runtime_validation_authorized": false,
+    "training_authorized": false
+  },
+  "authoritative_inputs": {
+    "dataset_path": "data/controlled_v5_v3_without_time_swap.jsonl",
+    "dataset_sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640",
+    "sidecar_path": "reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_controlled_train_integrity_sidecar.jsonl",
+    "sidecar_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc"
+  },
+  "eligible_cohort": {
+    "rows": 605,
+    "pairs": 121,
+    "families": 5,
+    "rows_per_pair": 5,
+    "rows_per_family": 121,
+    "families_exact": [
+      "evidence_deletion",
+      "evidence_truncation",
+      "none",
+      "paraphrase",
+      "predicate_swap"
+    ]
+  },
+  "fixed_contract": {
+    "score_source": "output[\"frame_logit\"]",
+    "objective": "mean(relu(0.0 - frame_logit)) over eligible rows",
+    "normalization": "eligible_row_mean",
+    "margin_logit": 0.0,
+    "fixed_enabled_weight": 0.05,
+    "default_weight": 0.0,
+    "no_sweep": true,
+    "no_adaptive_rescale": true,
+    "zero_eligible_behavior": "frame_logit.sum() * 0.0",
+    "boundary_behavior": "native PyTorch relu autograd"
+  },
+  "trainer_contract": {
+    "native_frame_bce_detection_mode": "delegated_model_forward_stage183_crosscheck",
+    "final_ce_source": "output[\"logits\"]",
+    "checkpoint_selection": "clean-dev final_macro_f1",
+    "checkpoint_selection_unchanged": true
+  },
+  "not_authorized": [
+    "training",
+    "checkpoint selection change",
+    "target-margin sweep",
+    "weight sweep",
+    "adaptive weighting",
+    "dataset or sidecar mutation"
+  ]
+}
