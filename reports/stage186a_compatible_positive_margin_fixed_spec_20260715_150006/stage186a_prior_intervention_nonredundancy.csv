@@ -1,0 +1,4 @@
+intervention,target,comparison_topology,output_space,distinct_from_stage186,evidence
+Stage175 SUPPORT anchor,final SUPPORT margin against detached canonical reference,anchor/reference,final classifier,true,Stage183 closure candidate assessment
+Stage177 pair ordering,compatible above incompatible,within-pair ranking,native frame_logit,true,ordering has no absolute boundary
+Stage186 fixed margin,eligible compatible positive at or above logit zero,individual eligible row,native frame_logit,true,absolute boundary hinge; no reference or pair opponent

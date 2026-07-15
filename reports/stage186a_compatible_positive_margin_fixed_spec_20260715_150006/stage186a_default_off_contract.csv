@@ -1,0 +1,5 @@
+setting,recommended_name,default,fixed_intervention_value,activation_requirement,ambiguous_alias_forbidden
+weight,--compatible-positive-margin-weight,0.0,0.05,nonzero requires sidecar path and expected semantic SHA,--margin-weight and prior intervention flags
+margin logit,--compatible-positive-margin-logit,0.0,0.0,fixed constant; no CLI-selected alternative in Stage186 audit,probability/confidence margin aliases
+sidecar path,controlled_integrity_sidecar_path,,authoritative Stage185 sidecar,required for nonzero weight,implicit latest-folder discovery
+semantic SHA,expected_integrity_sidecar_semantic_sha256,,5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc,required for nonzero weight,path-only trust

@@ -1,0 +1,640 @@
+{
+  "checkpoint_selection": {
+    "metric": "clean-dev final_macro_f1",
+    "rows": [
+      {
+        "changed": false,
+        "current_value": "clean-dev final_macro_f1",
+        "evidence": "line 14821: select_metric=\"final_macro_f1\"",
+        "property": "best epoch metric",
+        "stage187_required_value": "clean-dev final_macro_f1"
+      },
+      {
+        "changed": false,
+        "current_value": "none specified for frame recall/margin",
+        "evidence": "line 16337: score = float(dev_metrics[select_metric])",
+        "property": "tie breaks",
+        "stage187_required_value": "unchanged; no margin or cohort tie-break"
+      },
+      {
+        "changed": false,
+        "current_value": "not a selection signal",
+        "evidence": "Stage185 coverage is identity/audit metadata only",
+        "property": "coverage feedback",
+        "stage187_required_value": "not a selection signal"
+      }
+    ],
+    "unchanged": true
+  },
+  "decision": "STAGE186A_FIXED_NO_SWEEP_COMPATIBLE_POSITIVE_MARGIN_SPEC_READY",
+  "default_off_contract": {
+    "default_weight": 0.0,
+    "fixed_run_weight": 0.05,
+    "margin_logit": 0.0,
+    "rows": [
+      {
+        "activation_requirement": "nonzero requires sidecar path and expected semantic SHA",
+        "ambiguous_alias_forbidden": "--margin-weight and prior intervention flags",
+        "default": 0.0,
+        "fixed_intervention_value": 0.05,
+        "recommended_name": "--compatible-positive-margin-weight",
+        "setting": "weight"
+      },
+      {
+        "activation_requirement": "fixed constant; no CLI-selected alternative in Stage186 audit",
+        "ambiguous_alias_forbidden": "probability/confidence margin aliases",
+        "default": 0.0,
+        "fixed_intervention_value": 0.0,
+        "recommended_name": "--compatible-positive-margin-logit",
+        "setting": "margin logit"
+      },
+      {
+        "activation_requirement": "required for nonzero weight",
+        "ambiguous_alias_forbidden": "implicit latest-folder discovery",
+        "default": null,
+        "fixed_intervention_value": "authoritative Stage185 sidecar",
+        "recommended_name": "controlled_integrity_sidecar_path",
+        "setting": "sidecar path"
+      },
+      {
+        "activation_requirement": "required for nonzero weight",
+        "ambiguous_alias_forbidden": "path-only trust",
+        "default": null,
+        "fixed_intervention_value": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc",
+        "recommended_name": "expected_integrity_sidecar_semantic_sha256",
+        "setting": "semantic SHA"
+      }
+    ]
+  },
+  "eligible_cohort": {
+    "dev_or_incompatible_or_noneligible_leakage": 0,
+    "eligible_families": 5,
+    "eligible_pairs": 121,
+    "eligible_rate": 0.4201388888888889,
+    "eligible_rows": 605,
+    "eligible_rows_per_family": {
+      "evidence_deletion": 121,
+      "evidence_truncation": 121,
+      "none": 121,
+      "paraphrase": 121,
+      "predicate_swap": 121
+    },
+    "eligible_rows_per_pair": [
+      5
+    ],
+    "family_names": [
+      "evidence_deletion",
+      "evidence_truncation",
+      "none",
+      "paraphrase",
+      "predicate_swap"
+    ],
+    "ineligible_train_compatible": 716,
+    "train_compatible_rows": 1440,
+    "unresolved_train_compatible": 119
+  },
+  "fixed_hyperparameters": {
+    "default_weight": 0.0,
+    "margin_logit": 0.0,
+    "no_adaptive_rescale": true,
+    "no_sweep": true,
+    "weight": 0.05
+  },
+  "gradient_scale": {
+    "active_region": "z<0",
+    "boundary_subgradient_fixed": false,
+    "inactive_region": "z>0",
+    "rows": [
+      {
+        "boundary_convention": "active z<0",
+        "frame_logit": -2.0,
+        "hinge_active": "true",
+        "positive_bce_gradient_magnitude": 0.8807970779778824,
+        "positive_bce_loss": 2.1269280110429727,
+        "sigmoid_probability": 0.11920292202211755,
+        "unweighted_hinge_loss": 2.0,
+        "weighted_hinge_gradient_magnitude": 0.05,
+        "weighted_hinge_loss": 0.1,
+        "weighted_hinge_to_bce_gradient_ratio": 0.056766764161830637
+      },
+      {
+        "boundary_convention": "active z<0",
+        "frame_logit": -1.0,
+        "hinge_active": "true",
+        "positive_bce_gradient_magnitude": 0.7310585786300049,
+        "positive_bce_loss": 1.3132616875182228,
+        "sigmoid_probability": 0.2689414213699951,
+        "unweighted_hinge_loss": 1.0,
+        "weighted_hinge_gradient_magnitude": 0.05,
+        "weighted_hinge_loss": 0.05,
+        "weighted_hinge_to_bce_gradient_ratio": 0.06839397205857212
+      },
+      {
+        "boundary_convention": "active z<0",
+        "frame_logit": -0.5,
+        "hinge_active": "true",
+        "positive_bce_gradient_magnitude": 0.6224593312018546,
+        "positive_bce_loss": 0.9740769841801067,
+        "sigmoid_probability": 0.3775406687981454,
+        "unweighted_hinge_loss": 0.5,
+        "weighted_hinge_gradient_magnitude": 0.05,
+        "weighted_hinge_loss": 0.025,
+        "weighted_hinge_to_bce_gradient_ratio": 0.08032653298563167
+      },
+      {
+        "boundary_convention": "active z<0",
+        "frame_logit": -0.1,
+        "hinge_active": "true",
+        "positive_bce_gradient_magnitude": 0.52497918747894,
+        "positive_bce_loss": 0.7443966600735709,
+        "sigmoid_probability": 0.47502081252106,
+        "unweighted_hinge_loss": 0.1,
+        "weighted_hinge_gradient_magnitude": 0.05,
+        "weighted_hinge_loss": 0.005000000000000001,
+        "weighted_hinge_to_bce_gradient_ratio": 0.09524187090179798
+      },
+      {
+        "boundary_convention": "ReLU subgradient at z=0 is implementation-dependent; spec fixes only z<0 active and z>0 inactive",
+        "frame_logit": 0.0,
+        "hinge_active": "boundary",
+        "positive_bce_gradient_magnitude": 0.5,
+        "positive_bce_loss": 0.6931471805599453,
+        "sigmoid_probability": 0.5,
+        "unweighted_hinge_loss": 0.0,
+        "weighted_hinge_gradient_magnitude": null,
+        "weighted_hinge_loss": 0.0,
+        "weighted_hinge_to_bce_gradient_ratio": null
+      },
+      {
+        "boundary_convention": "inactive z>0",
+        "frame_logit": 0.1,
+        "hinge_active": "false",
+        "positive_bce_gradient_magnitude": 0.47502081252106,
+        "positive_bce_loss": 0.6443966600735709,
+        "sigmoid_probability": 0.52497918747894,
+        "unweighted_hinge_loss": 0.0,
+        "weighted_hinge_gradient_magnitude": 0.0,
+        "weighted_hinge_loss": 0.0,
+        "weighted_hinge_to_bce_gradient_ratio": 0.0
+      },
+      {
+        "boundary_convention": "inactive z>0",
+        "frame_logit": 0.5,
+        "hinge_active": "false",
+        "positive_bce_gradient_magnitude": 0.3775406687981454,
+        "positive_bce_loss": 0.4740769841801067,
+        "sigmoid_probability": 0.6224593312018546,
+        "unweighted_hinge_loss": 0.0,
+        "weighted_hinge_gradient_magnitude": 0.0,
+        "weighted_hinge_loss": 0.0,
+        "weighted_hinge_to_bce_gradient_ratio": 0.0
+      },
+      {
+        "boundary_convention": "inactive z>0",
+        "frame_logit": 1.0,
+        "hinge_active": "false",
+        "positive_bce_gradient_magnitude": 0.2689414213699951,
+        "positive_bce_loss": 0.31326168751822286,
+        "sigmoid_probability": 0.7310585786300049,
+        "unweighted_hinge_loss": 0.0,
+        "weighted_hinge_gradient_magnitude": 0.0,
+        "weighted_hinge_loss": 0.0,
+        "weighted_hinge_to_bce_gradient_ratio": 0.0
+      },
+      {
+        "boundary_convention": "inactive z>0",
+        "frame_logit": 2.0,
+        "hinge_active": "false",
+        "positive_bce_gradient_magnitude": 0.11920292202211769,
+        "positive_bce_loss": 0.1269280110429725,
+        "sigmoid_probability": 0.8807970779778823,
+        "unweighted_hinge_loss": 0.0,
+        "weighted_hinge_gradient_magnitude": 0.0,
+        "weighted_hinge_loss": 0.0,
+        "weighted_hinge_to_bce_gradient_ratio": 0.0
+      }
+    ],
+    "weight_selected_from_grid": false
+  },
+  "implementation_readiness": {
+    "checkpoint_evaluation_performed": false,
+    "default_off_trainer_implementation_ready": true,
+    "loss_implementation_performed": false,
+    "training_performed": false
+  },
+  "input_validation": {
+    "rows": [
+      {
+        "check": "stage185_decision",
+        "evidence": "/kaggle/working/ContraMamba/reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_controlled_train_integrity_sidecar_report.json",
+        "expected": "STAGE185A_INTEGRITY_SIDECAR_BUILT_AND_POSITIVE_ELIGIBILITY_MATERIALIZED",
+        "observed": "STAGE185A_INTEGRITY_SIDECAR_BUILT_AND_POSITIVE_ELIGIBILITY_MATERIALIZED",
+        "passed": true
+      },
+      {
+        "check": "stage185_authorized_next",
+        "evidence": "stage186_gate",
+        "expected": "STAGE186_COMPATIBLE_POSITIVE_MARGIN_FIXED_SPEC_AUDIT",
+        "observed": "STAGE186_COMPATIBLE_POSITIVE_MARGIN_FIXED_SPEC_AUDIT",
+        "passed": true
+      },
+      {
+        "check": "dataset_sha_report",
+        "evidence": "Stage185 report",
+        "expected": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640",
+        "observed": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640",
+        "passed": true
+      },
+      {
+        "check": "dataset_sha_provenance",
+        "evidence": "Stage185 provenance",
+        "expected": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640",
+        "observed": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640",
+        "passed": true
+      },
+      {
+        "check": "semantic_sha_report",
+        "evidence": "Stage185 report",
+        "expected": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc",
+        "observed": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc",
+        "passed": true
+      },
+      {
+        "check": "semantic_sha_provenance",
+        "evidence": "Stage185 provenance",
+        "expected": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc",
+        "observed": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc",
+        "passed": true
+      },
+      {
+        "check": "stage183_decision",
+        "evidence": "Stage183 report",
+        "expected": "STAGE183A_CONTROLLED_TRAIN_INTEGRITY_MASK_REQUIRED_FIRST",
+        "observed": "STAGE183A_CONTROLLED_TRAIN_INTEGRITY_MASK_REQUIRED_FIRST",
+        "passed": true
+      },
+      {
+        "check": "stage183_candidate",
+        "evidence": "Stage183 selected_design",
+        "expected": "B_compatible_positive_absolute_margin_hinge",
+        "observed": "B_compatible_positive_absolute_margin_hinge",
+        "passed": true
+      },
+      {
+        "check": "stage183_margin_unset",
+        "evidence": "Stage183 selected_design",
+        "expected": null,
+        "observed": null,
+        "passed": true
+      },
+      {
+        "check": "stage183_implementation_unauthorized",
+        "evidence": "Stage183 selected_design",
+        "expected": false,
+        "observed": false,
+        "passed": true
+      },
+      {
+        "check": "stage182b_decision",
+        "evidence": "Stage182-B report",
+        "expected": "STAGE182B_COMPATIBLE_POSITIVE_MARGIN_COLLAPSE_SIGNAL",
+        "observed": "STAGE182B_COMPATIBLE_POSITIVE_MARGIN_COLLAPSE_SIGNAL",
+        "passed": true
+      },
+      {
+        "check": "sidecar_rows",
+        "evidence": "sidecar JSONL",
+        "expected": 3600,
+        "observed": 3600,
+        "passed": true
+      },
+      {
+        "check": "sidecar_csv_rows",
+        "evidence": "sidecar CSV",
+        "expected": 3600,
+        "observed": 3600,
+        "passed": true
+      },
+      {
+        "check": "jsonl_csv_row_id_set",
+        "evidence": "exact row-ID join over 3,600 unique IDs",
+        "expected": true,
+        "observed": true,
+        "passed": true
+      },
+      {
+        "check": "recomputed_semantic_sha",
+        "evidence": "canonical JSONL rows excluding created_at",
+        "expected": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc",
+        "observed": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc",
+        "passed": true
+      }
+    ],
+    "status": "passed"
+  },
+  "limitations": [
+    "Only 121 of 240 train pairs contribute.",
+    "Exact family balance does not establish population-wide cleanliness.",
+    "The z=0 ReLU subgradient convention remains an implementation detail to record in Stage187.",
+    "This audit did not import, compile, or execute the trainer; the analyzer itself performed static text parsing only."
+  ],
+  "margin_formula": {
+    "final_classifier_target": false,
+    "formula": "mean_{i in eligible} relu(0.0 - frame_logit_i)",
+    "probability_target": false,
+    "signal": "output[\"frame_logit\"]"
+  },
+  "normalization_contract": {
+    "current_equal_pair_equivalence": true,
+    "denominator": "eligible_count",
+    "family_or_pair_reweight": false
+  },
+  "objective_integration": {
+    "existing_auxiliary_weights_changed": false,
+    "final_ce_changed": false,
+    "formula": "L_total = L_existing + 0.05 * L_margin",
+    "rows": [
+      {
+        "changed": false,
+        "component": "native frame signal",
+        "current_semantics": "pre-sigmoid scalar",
+        "current_source": "output[\"frame_logit\"]",
+        "evidence": "line 15194: output[\"frame_logit\"]",
+        "stage187_contract": "masked absolute hinge input"
+      },
+      {
+        "changed": false,
+        "component": "native frame BCE",
+        "current_semantics": "row mean, implicit weight 1.0, no pos_weight",
+        "current_source": "binary_cross_entropy_with_logits",
+        "evidence": "Stage183-A native frame BCE cross-check + delegated trainer auxiliary-loss consumption",
+        "stage187_contract": "unchanged"
+      },
+      {
+        "changed": false,
+        "component": "final CE",
+        "current_semantics": "final classifier objective",
+        "current_source": "cross_entropy(output[\"logits\"], labels)",
+        "evidence": "line 15335: F.cross_entropy(                     output[\"logits\"]",
+        "stage187_contract": "unchanged; never use loss_logits"
+      },
+      {
+        "changed": "default-off append only",
+        "component": "total objective",
+        "current_semantics": "L_existing",
+        "current_source": "existing total plus existing intervention",
+        "evidence": "line 15376: total_loss = losses[\"total\"] + active_intervention_loss",
+        "stage187_contract": "L_existing + lambda_margin * eligible-row mean relu(-frame_logit)"
+      }
+    ]
+  },
+  "pair_family_balance": {
+    "eligible_pair_share_of_train_pairs": 0.5041666666666667,
+    "family_concentration_warning": false,
+    "future_topology_change_requires_new_gate": true,
+    "largest_family_share": 0.2,
+    "row_mean_equals_equal_pair_mean_under_current_topology": true
+  },
+  "prior_intervention_nonredundancy": {
+    "equivalent_existing_intervention": false,
+    "rows": [
+      {
+        "comparison_topology": "anchor/reference",
+        "distinct_from_stage186": true,
+        "evidence": "Stage183 closure candidate assessment",
+        "intervention": "Stage175 SUPPORT anchor",
+        "output_space": "final classifier",
+        "target": "final SUPPORT margin against detached canonical reference"
+      },
+      {
+        "comparison_topology": "within-pair ranking",
+        "distinct_from_stage186": true,
+        "evidence": "ordering has no absolute boundary",
+        "intervention": "Stage177 pair ordering",
+        "output_space": "native frame_logit",
+        "target": "compatible above incompatible"
+      },
+      {
+        "comparison_topology": "individual eligible row",
+        "distinct_from_stage186": true,
+        "evidence": "absolute boundary hinge; no reference or pair opponent",
+        "intervention": "Stage186 fixed margin",
+        "output_space": "native frame_logit",
+        "target": "eligible compatible positive at or above logit zero"
+      }
+    ]
+  },
+  "safety_policy": {
+    "no_annotation_or_llm_labeling": true,
+    "no_checkpoint_or_forward": true,
+    "no_evaluation_or_calibration": true,
+    "no_loss_implementation": true,
+    "no_margin_or_weight_sweep": true,
+    "no_source_modification": true,
+    "no_torch_or_model_import": true,
+    "no_training": true,
+    "static_only": true
+  },
+  "scope": {
+    "loss_implemented": false,
+    "static_specification_audit_only": true,
+    "training": false
+  },
+  "sidecar_consumption": {
+    "dataset_sha_gate": true,
+    "exact_row_id_join": true,
+    "fail_closed_before_training": true,
+    "rows": [
+      {
+        "authoritative_field": "eligible_for_positive_margin",
+        "eligibility_inference_forbidden": "family, reason code, Stage182 membership, prediction, probability, final label, text",
+        "failure_behavior": "exclude row",
+        "requirement": "authoritative eligibility",
+        "validation": "must be JSON boolean true"
+      },
+      {
+        "authoritative_field": "row_id",
+        "eligibility_inference_forbidden": "row-order join",
+        "failure_behavior": "block training start",
+        "requirement": "row identity",
+        "validation": "exact unique one-to-one source/sidecar join; no missing or extra IDs"
+      },
+      {
+        "authoritative_field": "source_dataset_sha256",
+        "eligibility_inference_forbidden": "path-only acceptance",
+        "failure_behavior": "block training start",
+        "requirement": "dataset provenance",
+        "validation": "exact f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640"
+      },
+      {
+        "authoritative_field": "semantic sidecar SHA-256",
+        "eligibility_inference_forbidden": "file-name or file-order acceptance",
+        "failure_behavior": "block training start",
+        "requirement": "sidecar provenance",
+        "validation": "exact 5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc"
+      },
+      {
+        "authoritative_field": "split/frame_compatible_label/integrity_status/time_swap_status/dataset_source_status",
+        "eligibility_inference_forbidden": "derived substitute fields",
+        "failure_behavior": "exclude row or block inconsistent sidecar",
+        "requirement": "defense in depth",
+        "validation": "train, 1, ELIGIBLE, PASS, PASS"
+      }
+    ],
+    "semantic_sha_gate": true
+  },
+  "stage": "Stage186-A",
+  "stage182b_directional_evidence": {
+    "bootstrap_ci": [
+      -0.7878567576408386,
+      -0.458047553896904
+    ],
+    "compatible_false_negatives": 13,
+    "decision": "STAGE182B_COMPATIBLE_POSITIVE_MARGIN_COLLAPSE_SIGNAL",
+    "direction_only_not_hyperparameter_fit": true,
+    "incompatible_false_positives": 1,
+    "median_paired_logit_difference": -0.5793783366680145
+  },
+  "stage183_candidate": {
+    "candidate": "B_compatible_positive_absolute_margin_hinge",
+    "decision": "STAGE183A_CONTROLLED_TRAIN_INTEGRITY_MASK_REQUIRED_FIRST",
+    "implementation_was_unauthorized": true,
+    "margin_was_unset": true,
+    "nonzero_weight_was_unset": true
+  },
+  "stage185_closure": {
+    "blocked_invariants": 0,
+    "contamination_recovery": "22/22",
+    "dataset_sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640",
+    "decision": "STAGE185A_INTEGRITY_SIDECAR_BUILT_AND_POSITIVE_ELIGIBILITY_MATERIALIZED",
+    "one_to_one_join_passed": true,
+    "rows": 3600,
+    "sidecar_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc",
+    "stage182_regression_passed": true
+  },
+  "stage187_gate": {
+    "authorized_next_stage": "STAGE187_COMPATIBLE_POSITIVE_MARGIN_DEFAULT_OFF_IMPLEMENTATION",
+    "rows": [
+      {
+        "authorized_next_stage": "STAGE187_COMPATIBLE_POSITIVE_MARGIN_DEFAULT_OFF_IMPLEMENTATION",
+        "gate": "Stage185 identity and SHA",
+        "observed": "passed",
+        "passed": true,
+        "required": "passed"
+      },
+      {
+        "authorized_next_stage": "STAGE187_COMPATIBLE_POSITIVE_MARGIN_DEFAULT_OFF_IMPLEMENTATION",
+        "gate": "605 rows / 121 pairs / 5 families",
+        "observed": "605/121/5",
+        "passed": true,
+        "required": "605/121/5"
+      },
+      {
+        "authorized_next_stage": "STAGE187_COMPATIBLE_POSITIVE_MARGIN_DEFAULT_OFF_IMPLEMENTATION",
+        "gate": "121 x 5 topology",
+        "observed": [
+          5
+        ],
+        "passed": true,
+        "required": [
+          5
+        ]
+      },
+      {
+        "authorized_next_stage": "STAGE187_COMPATIBLE_POSITIVE_MARGIN_DEFAULT_OFF_IMPLEMENTATION",
+        "gate": "fixed margin/weight/default",
+        "observed": "0.0/0.05/0.0",
+        "passed": true,
+        "required": "0.0/0.05/0.0"
+      },
+      {
+        "authorized_next_stage": "STAGE187_COMPATIBLE_POSITIVE_MARGIN_DEFAULT_OFF_IMPLEMENTATION",
+        "gate": "eligible normalization and empty behavior",
+        "observed": "specified",
+        "passed": true,
+        "required": "eligible-row mean and graph zero"
+      },
+      {
+        "authorized_next_stage": "STAGE187_COMPATIBLE_POSITIVE_MARGIN_DEFAULT_OFF_IMPLEMENTATION",
+        "gate": "trainer integration and selection invariance",
+        "observed": "static evidence passed",
+        "passed": true,
+        "required": "passed"
+      },
+      {
+        "authorized_next_stage": "STAGE187_COMPATIBLE_POSITIVE_MARGIN_DEFAULT_OFF_IMPLEMENTATION",
+        "gate": "implementation or training performed",
+        "observed": false,
+        "passed": true,
+        "required": false
+      }
+    ],
+    "scope": "default-off trainer implementation only; no training or checkpoint evaluation"
+  },
+  "trainer_static_audit": {
+    "assembly": "line 15376: total_loss = losses[\"total\"] + active_intervention_loss",
+    "checkpoint_default": "final_macro_f1",
+    "checkpoint_evidence": "line 14821: select_metric=\"final_macro_f1\"",
+    "checkpoint_score_evidence": "line 16337: score = float(dev_metrics[select_metric])",
+    "checkpoint_selection_unchanged": true,
+    "cli_naming_evidence": "line 6361: parser.add_argument(\"--stage174c-clean-pairwise-weight\"",
+    "direct_native_frame_bce_call_found": false,
+    "equivalent_absolute_compatible_positive_hinge_present": false,
+    "evidence_lines": {
+      "checkpoint_score": "line 16337: score = float(dev_metrics[select_metric])",
+      "checkpoint_selection": "line 14821: select_metric=\"final_macro_f1\"",
+      "delegated_auxiliary_consumption": "line 15329: losses = v5.controlled_losses(                 output,",
+      "direct_native_frame_bce": null,
+      "final_ce_output_logits": "line 15335: F.cross_entropy(                     output[\"logits\"]",
+      "frame_auxiliary_objective_wiring": "line 15376: total_loss = losses[\"total\"] + active_intervention_loss",
+      "frame_logit_access": "line 15194: output[\"frame_logit\"]",
+      "frame_loss_weight_argument": "line 8388: parser.add_argument(\"--v7-frame-loss-weight\""
+    },
+    "existing_total": "line 15329: losses = v5.controlled_losses(                 output,",
+    "final_ce": "line 15335: F.cross_entropy(                     output[\"logits\"]",
+    "final_ce_output_logits_found": true,
+    "frame_aux_objective_wiring_found": true,
+    "frame_bce": "Stage183-A native frame BCE cross-check + delegated trainer auxiliary-loss consumption",
+    "frame_logit_access_found": true,
+    "frame_loss_weight_arg_found": true,
+    "frame_output_evidence": "line 15194: output[\"frame_logit\"]",
+    "imported": false,
+    "limitations": [
+      "Delegated mode does not treat generic BCE calls as native frame-BCE evidence.",
+      "Stage22 frame-violation, entitlement, temporal, and location-boundary BCE calls are excluded from native evidence.",
+      "The delegated BCE semantic is established by Stage183-A facts plus trainer auxiliary-loss wiring; the trainer is not imported or executed."
+    ],
+    "native_frame_bce_detection_mode": "delegated_model_forward_stage183_crosscheck",
+    "native_frame_loss_weight": 1.0,
+    "native_frame_output_key": "frame_logit",
+    "path": "/kaggle/working/ContraMamba/scripts/train_controlled_v6b_minimal.py",
+    "stage175_like_anchor_flags_present": true,
+    "stage177_like_pairwise_flags_present": true,
+    "stage183_native_frame_bce_crosscheck": {
+      "bce_with_logits": true,
+      "evidence": {
+        "formula": "mean BCEWithLogits(frame_logit, frame_compatible_label)",
+        "frame_classifier_bias": "src/contramamba/heads/frame_gate.py:32",
+        "gradient_variable": "z=frame_logit",
+        "native_frame_loss": "scripts/train_controlled_v5.py:465-468",
+        "native_frame_loss_weight": "equal unweighted sum in controlled_losses",
+        "positive_class_weight": "no pos_weight in native frame call",
+        "reduction": "no reduction override"
+      },
+      "frame_classifier_bias_trainable": true,
+      "native_weight": 1.0,
+      "passed": true,
+      "pos_weight": null,
+      "pre_sigmoid_frame_logit": true,
+      "row_mean": true
+    },
+    "static_text_only": true
+  },
+  "zero_eligible_contract": {
+    "batch_skip": false,
+    "division_by_zero": false,
+    "graph_compatible": true,
+    "optimizer_semantics_changed": false,
+    "semantic_form": "frame_logit.sum() * 0.0"
+  }
+}

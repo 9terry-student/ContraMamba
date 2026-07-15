@@ -1,0 +1,15 @@
+check,passed,observed,expected
+default_off_bypasses_stage187_restrictions,True,False,False
+fixed_activation_accepted,True,True,True
+invalid_weight_rejected,True,"--compatible-positive-margin-weight must be exactly 0.0 or 0.05; sweeps, schedules, and adaptive weights are not supported",0.0 or 0.05
+invalid_margin_rejected,True,--compatible-positive-margin-logit must be exactly 0.0,exactly 0.0
+active_missing_sidecar_rejected,True,--compatible-positive-margin-weight 0.05 requires --controlled-integrity-sidecar-path,sidecar-path
+active_missing_sha_rejected,True,--compatible-positive-margin-weight 0.05 requires --expected-integrity-sidecar-semantic-sha256,semantic-sha256
+active_smoke_rejected,True,compatible-positive margin activation forbids smoke/truncation/loss-sweep paths,forbids
+authoritative_sidecar_identity,True,5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc,5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc
+eligible_topology,True,605/121/5,605/121/5
+eligible_loss_value,True,0.5,0.5
+eligible_loss_gradient,True,"[-0.5, 0.0, 0.0]","[-0.5, 0.0, 0.0]"
+zero_eligible_graph_zero,True,0.0,0.0
+non_boolean_mask_rejected,True,compatible-positive margin mask must be boolean,boolean
+mask_length_mismatch_rejected,True,compatible-positive margin mask/logit length mismatch: 2 != 3,length mismatch

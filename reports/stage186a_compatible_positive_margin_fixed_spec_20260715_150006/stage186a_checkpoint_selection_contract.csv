@@ -1,0 +1,4 @@
+property,current_value,stage187_required_value,changed,evidence
+best epoch metric,clean-dev final_macro_f1,clean-dev final_macro_f1,false,"line 14821: select_metric=""final_macro_f1"""
+tie breaks,none specified for frame recall/margin,unchanged; no margin or cohort tie-break,false,line 16337: score = float(dev_metrics[select_metric])
+coverage feedback,not a selection signal,not a selection signal,false,Stage185 coverage is identity/audit metadata only

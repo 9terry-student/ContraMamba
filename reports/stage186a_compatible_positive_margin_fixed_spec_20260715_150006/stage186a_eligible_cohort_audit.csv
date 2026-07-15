@@ -1,0 +1,14 @@
+check,observed,expected,passed,fail_closed_behavior
+eligible_rows,605,605,true,block Stage186 readiness
+train_compatible_rows,1440,1440,true,block Stage186 readiness
+eligible_pairs,121,121,true,block Stage186 readiness
+eligible_families,5,5,true,block Stage186 readiness
+each_eligible_pair_exactly_five,[5],[5],true,block Stage186 readiness
+each_eligible_family_exactly_121,[121],[121],true,block Stage186 readiness
+invalid_eligible_rows,0,0,true,block Stage186 readiness
+dev_eligible_rows,0,0,true,block Stage186 readiness
+incompatible_eligible_rows,0,0,true,block Stage186 readiness
+unresolved_eligible_rows,0,0,true,block Stage186 readiness
+ineligible_eligible_rows,0,0,true,block Stage186 readiness
+unresolved_train_compatible,119,119,true,block Stage186 readiness
+ineligible_train_compatible,716,716,true,block Stage186 readiness

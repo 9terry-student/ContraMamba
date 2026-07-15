@@ -1,0 +1,5 @@
+component,current_source,current_semantics,stage187_contract,changed,evidence
+native frame signal,"output[""frame_logit""]",pre-sigmoid scalar,masked absolute hinge input,false,"line 15194: output[""frame_logit""]"
+native frame BCE,binary_cross_entropy_with_logits,"row mean, implicit weight 1.0, no pos_weight",unchanged,false,Stage183-A native frame BCE cross-check + delegated trainer auxiliary-loss consumption
+final CE,"cross_entropy(output[""logits""], labels)",final classifier objective,unchanged; never use loss_logits,false,"line 15335: F.cross_entropy(                     output[""logits""]"
+total objective,existing total plus existing intervention,L_existing,L_existing + lambda_margin * eligible-row mean relu(-frame_logit),default-off append only,"line 15376: total_loss = losses[""total""] + active_intervention_loss"

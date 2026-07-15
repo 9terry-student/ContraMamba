@@ -595,7 +595,7 @@ def run(args: argparse.Namespace) -> int:
         "prior_intervention_nonredundancy": {"equivalent_existing_intervention": False, "rows": prior_rows},
         "implementation_readiness": {"default_off_trainer_implementation_ready": True, "loss_implementation_performed": False, "training_performed": False, "checkpoint_evaluation_performed": False},
         "stage187_gate": {"authorized_next_stage": NEXT, "scope": "default-off trainer implementation only; no training or checkpoint evaluation", "rows": gate_rows},
-        "limitations": ["Only 121 of 240 train pairs contribute.", "Exact family balance does not establish population-wide cleanliness.", "The z=0 ReLU subgradient convention remains an implementation detail to record in Stage187.", "This audit did not execute or compile the trainer or analyzer."],
+        "limitations": ["Only 121 of 240 train pairs contribute.", "Exact family balance does not establish population-wide cleanliness.", "The z=0 ReLU subgradient convention remains an implementation detail to record in Stage187.", "This audit did not import, compile, or execute the trainer; the analyzer itself performed static text parsing only."],
         "safety_policy": {"static_only": True, "no_source_modification": True, "no_torch_or_model_import": True, "no_checkpoint_or_forward": True, "no_loss_implementation": True, "no_training": True, "no_evaluation_or_calibration": True, "no_margin_or_weight_sweep": True, "no_annotation_or_llm_labeling": True},
     }
 

@@ -1,0 +1,6 @@
+requirement,authoritative_field,validation,failure_behavior,eligibility_inference_forbidden
+authoritative eligibility,eligible_for_positive_margin,must be JSON boolean true,exclude row,"family, reason code, Stage182 membership, prediction, probability, final label, text"
+row identity,row_id,exact unique one-to-one source/sidecar join; no missing or extra IDs,block training start,row-order join
+dataset provenance,source_dataset_sha256,exact f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640,block training start,path-only acceptance
+sidecar provenance,semantic sidecar SHA-256,exact 5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc,block training start,file-name or file-order acceptance
+defense in depth,split/frame_compatible_label/integrity_status/time_swap_status/dataset_source_status,"train, 1, ELIGIBLE, PASS, PASS",exclude row or block inconsistent sidecar,derived substitute fields

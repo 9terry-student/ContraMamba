@@ -1,0 +1,70 @@
+{
+  "stage": "Stage187-B",
+  "decision": "STAGE187B_DEFAULT_OFF_IMPLEMENTATION_RUNTIME_VALIDATION_PASSED",
+  "scope": {
+    "compile": true,
+    "help": true,
+    "trainer_import": true,
+    "authoritative_sidecar_validation": true,
+    "synthetic_loss_validation": true,
+    "model_forward": false,
+    "training": false,
+    "checkpoint_evaluation": false
+  },
+  "default_off_validation": {
+    "passed": true,
+    "sidecar_access_tested": false,
+    "note": "Argument gate returned before sidecar/dataset access. Full numerical training equivalence was not executed."
+  },
+  "sidecar_validation": {
+    "enabled": true,
+    "default_off": true,
+    "source_dataset_path": "/kaggle/working/ContraMamba/data/controlled_v5_v3_without_time_swap.jsonl",
+    "observed_dataset_sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640",
+    "sidecar_path": "/kaggle/working/ContraMamba/reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_controlled_train_integrity_sidecar.jsonl",
+    "expected_sidecar_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc",
+    "observed_sidecar_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc",
+    "sidecar_rows": 3600,
+    "eligible_rows": 605,
+    "eligible_pairs": 121,
+    "eligible_families": 5,
+    "eligible_family_names": [
+      "evidence_deletion",
+      "evidence_truncation",
+      "none",
+      "paraphrase",
+      "predicate_swap"
+    ],
+    "eligible_rows_per_pair": [
+      5
+    ],
+    "eligible_rows_per_family": [
+      121
+    ],
+    "row_id_join": "exact_one_to_one_source_order",
+    "score_source": "output[\"frame_logit\"]",
+    "normalization": "eligible_row_mean",
+    "checkpoint_selection_unchanged": true
+  },
+  "loss_validation": {
+    "eligible_loss": 0.5,
+    "eligible_gradient": [
+      -0.5,
+      0.0,
+      0.0
+    ],
+    "zero_eligible_loss": 0.0,
+    "zero_eligible_gradient": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "checks_passed": 14,
+  "checks_total": 14,
+  "training_authorized": false,
+  "remaining_risks": [
+    "No model forward was executed, so full output frame-logit ordering versus the 2,880-row aligned mask remains unverified.",
+    "Weight-0.0 full-training numerical equivalence was not executed."
+  ]
+}

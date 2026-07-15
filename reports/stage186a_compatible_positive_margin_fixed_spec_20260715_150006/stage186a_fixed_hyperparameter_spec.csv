@@ -1,0 +1,3 @@
+parameter,value,default_value,fixed_no_sweep,rationale,forbidden_adaptation
+margin_logit,0.0,0.0,true,native sigmoid decision boundary,dataset/dev/Stage182 gap fitting or confidence target
+compatible_positive_margin_weight,0.05,0.0,true,active-side gradient is 10% of positive BCE at z=0,"sweep, schedule, family/pair/rate rescale, learned weight"

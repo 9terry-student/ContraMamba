@@ -1,0 +1,8 @@
+gate,observed,required,passed,authorized_next_stage
+Stage185 identity and SHA,passed,passed,true,STAGE187_COMPATIBLE_POSITIVE_MARGIN_DEFAULT_OFF_IMPLEMENTATION
+605 rows / 121 pairs / 5 families,605/121/5,605/121/5,true,STAGE187_COMPATIBLE_POSITIVE_MARGIN_DEFAULT_OFF_IMPLEMENTATION
+121 x 5 topology,[5],[5],true,STAGE187_COMPATIBLE_POSITIVE_MARGIN_DEFAULT_OFF_IMPLEMENTATION
+fixed margin/weight/default,0.0/0.05/0.0,0.0/0.05/0.0,true,STAGE187_COMPATIBLE_POSITIVE_MARGIN_DEFAULT_OFF_IMPLEMENTATION
+eligible normalization and empty behavior,specified,eligible-row mean and graph zero,true,STAGE187_COMPATIBLE_POSITIVE_MARGIN_DEFAULT_OFF_IMPLEMENTATION
+trainer integration and selection invariance,static evidence passed,passed,true,STAGE187_COMPATIBLE_POSITIVE_MARGIN_DEFAULT_OFF_IMPLEMENTATION
+implementation or training performed,false,false,true,STAGE187_COMPATIBLE_POSITIVE_MARGIN_DEFAULT_OFF_IMPLEMENTATION
