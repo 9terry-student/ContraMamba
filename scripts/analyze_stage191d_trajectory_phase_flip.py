@@ -88,6 +88,14 @@ INSTABILITY_SERIES = (
     "support_recall",
     "false_entitlement_total",
 )
+CLEAN_DEV_CE_REDUCTION_CONTRACT = {
+    "row_source": "ordered epoch export final_ce",
+    "row_count": 720,
+    "dtype": "torch.float32",
+    "device": "cpu",
+    "reduction": "mean",
+    "comparison": "exact equality",
+}
 MATRIX_FIELDS = tuple(f"{left}_to_{right}" for left in LABELS for right in LABELS)
 TRANSITION_FIELDS = (
     *MATRIX_FIELDS,
@@ -546,12 +554,16 @@ def exported_rows(path: Path, epoch: int, run: str) -> list[dict[str, Any]]:
     return rows
 
 
-def recompute_prediction_metrics(rows: list[dict[str, Any]]) -> dict[str, Any]:
+def recompute_prediction_metrics(rows: list[dict[str, Any]], torch: Any) -> dict[str, Any]:
     matrix = {gold: {pred: 0 for pred in LABELS} for gold in LABELS}
-    final_ce_sum = 0.0
+    final_ce_values: list[float] = []
     for row in rows:
         matrix[row["gold_final_label"]][row["predicted_final_label"]] += 1
-        final_ce_sum += float(row["final_ce"])
+        final_ce_values.append(float(row["final_ce"]))
+    if len(final_ce_values) != 720:
+        raise ValueError("authoritative clean CE reduction requires exactly 720 ordered final_ce values")
+    reconstructed_torch_float32_mean = torch.tensor(final_ce_values, dtype=torch.float32, device="cpu").mean().item()
+    diagnostic_python_float64_mean = sum(final_ce_values) / len(final_ce_values)
     gold_counts = {gold: sum(matrix[gold].values()) for gold in LABELS}
     counts = {pred: sum(matrix[gold][pred] for gold in LABELS) for pred in LABELS}
     correct = sum(matrix[label][label] for label in LABELS)
@@ -564,7 +576,8 @@ def recompute_prediction_metrics(rows: list[dict[str, Any]]) -> dict[str, Any]:
         recall = tp / gold if gold else 0.0
         f1s.append(2 * precision * recall / (precision + recall) if precision + recall else 0.0)
     return {
-        "clean_dev_ce": final_ce_sum / 720,
+        "reconstructed_torch_float32_mean": reconstructed_torch_float32_mean,
+        "diagnostic_python_float64_mean": diagnostic_python_float64_mean,
         "counts": counts,
         "gold_counts": gold_counts,
         "clean_accuracy": correct / 720,
@@ -863,6 +876,8 @@ def add_gate(rows: list[dict[str, Any]], blockers: list[str], gate: str, run: st
 
 
 def analyze(args: argparse.Namespace, tables: dict[str, list[dict[str, Any]]]) -> dict[str, Any]:
+    import torch
+
     repo = args.repo_root.resolve()
     stage191b = args.stage191b_dir.resolve()
     output = args.output_dir.resolve()
@@ -987,7 +1002,9 @@ def analyze(args: argparse.Namespace, tables: dict[str, list[dict[str, Any]]]) -
             predictions: dict[int, list[dict[str, Any]]] = {}
             capsule_paths: dict[int, Path] = {}
             reconstructed_ce_evidence: list[dict[str, Any]] = []
-            reconstructed_metrics_passed = True
+            reconstructed_non_ce_evidence: list[dict[str, Any]] = []
+            reconstructed_ce_passed = True
+            reconstructed_non_ce_metrics_passed = True
             for epoch in EPOCHS:
                 trajectory_row = trajectory[epoch]
                 prediction_path = run_dir / f"stage191_dev_predictions_epoch_{epoch:03d}.jsonl"
@@ -1001,21 +1018,36 @@ def analyze(args: argparse.Namespace, tables: dict[str, list[dict[str, Any]]]) -
                 if file_sha256(capsule_path) != trajectory_row.get("capsule_file_sha256"):
                     raise ValueError(f"{run} epoch {epoch}: capsule file SHA256 mismatch")
                 rows = exported_rows(prediction_path, epoch, run)
-                computed = recompute_prediction_metrics(rows)
+                computed = recompute_prediction_metrics(rows, torch)
+                trajectory_ce = trajectory_row.get("clean_dev_ce")
+                if not finite(trajectory_ce):
+                    raise ValueError(f"{run} epoch {epoch}: trajectory clean_dev_ce is not finite numeric")
+                exact_float32_match = computed["reconstructed_torch_float32_mean"] == trajectory_ce
+                reconstructed_ce_passed = reconstructed_ce_passed and exact_float32_match
+                reconstructed_ce_evidence.append({
+                    "epoch": epoch,
+                    "final_ce_row_count": len(rows),
+                    "authoritative_reduction_dtype": "torch.float32",
+                    "authoritative_reduction_device": "cpu",
+                    "reconstructed_torch_float32_mean": computed["reconstructed_torch_float32_mean"],
+                    "trajectory_clean_dev_ce": trajectory_ce,
+                    "exact_float32_match": exact_float32_match,
+                    "diagnostic_python_float64_mean": computed["diagnostic_python_float64_mean"],
+                    "diagnostic_python_float64_abs_diff": abs(computed["diagnostic_python_float64_mean"] - float(trajectory_ce)),
+                })
                 dense = trajectory_row.get("normalized_prediction_counts")
                 trajectory_gold = trajectory_row.get("gold_counts")
                 gold_ok = sum(computed["gold_counts"].values()) == 720 and computed["gold_counts"]["SUPPORT"] == 89 and type(trajectory_gold) is dict and set(trajectory_gold) == set(LABELS) and all(exact_int(trajectory_gold[label]) for label in LABELS) and trajectory_gold == computed["gold_counts"]
                 integer_ok = computed["counts"] == dense and all(exact_int(trajectory_row.get(name)) and computed[name] == trajectory_row.get(name) for name in ("false_entitlement_total", "false_not_entitled_total", "polarity_error_total"))
-                float_ok = all(close_enough(computed[name], trajectory_row.get(name)) for name in ("clean_dev_ce", "clean_accuracy", "clean_macro_f1", "support_recall"))
-                epoch_reconstruction_ok = gold_ok and integer_ok and float_ok
-                reconstructed_metrics_passed = reconstructed_metrics_passed and epoch_reconstruction_ok
-                reconstructed_ce_evidence.append({"epoch": epoch, "reconstructed_mean_final_ce": computed["clean_dev_ce"], "trajectory_clean_dev_ce": trajectory_row.get("clean_dev_ce"), "within_tolerance": close_enough(computed["clean_dev_ce"], trajectory_row.get("clean_dev_ce")), "gold_total": sum(computed["gold_counts"].values()), "gold_support": computed["gold_counts"]["SUPPORT"], "all_reconstructed_metrics_passed": epoch_reconstruction_ok})
+                non_ce_float_ok = all(close_enough(computed[name], trajectory_row.get(name)) for name in ("clean_accuracy", "clean_macro_f1", "support_recall"))
+                epoch_non_ce_reconstruction_ok = gold_ok and integer_ok and non_ce_float_ok
+                reconstructed_non_ce_metrics_passed = reconstructed_non_ce_metrics_passed and epoch_non_ce_reconstruction_ok
+                reconstructed_non_ce_evidence.append({"epoch": epoch, "strict_epoch_export_schema_passed": True, "prediction_counts_and_integer_errors_exact": integer_ok, "floating_metrics_within_tolerance": non_ce_float_ok, "gold_total": sum(computed["gold_counts"].values()), "gold_support": computed["gold_counts"]["SUPPORT"], "gold_topology_exact": gold_ok, "passed": epoch_non_ce_reconstruction_ok})
                 predictions[epoch] = rows
                 capsule_paths[epoch] = capsule_path
                 tables["epochs"].append(trajectory_metric_row(run, seed, arm, trajectory_row))
-            reconstructed_ce_passed = all(item["within_tolerance"] for item in reconstructed_ce_evidence)
-            add_gate(gates, blockers, "reconstructed_clean_dev_ce_matches", run, True, reconstructed_ce_evidence, reconstructed_ce_passed, "mean exported final_ce differs from trajectory clean_dev_ce")
-            add_gate(gates, blockers, "epoch_export_reconstructed_metrics_and_gold_topology", run, True, reconstructed_metrics_passed, reconstructed_metrics_passed, "reconstructed epoch metrics or exact gold topology mismatch")
+            add_gate(gates, blockers, "reconstructed_clean_dev_ce_matches", run, CLEAN_DEV_CE_REDUCTION_CONTRACT, reconstructed_ce_evidence, reconstructed_ce_passed, "torch.float32 CPU mean of ordered exported final_ce differs exactly from trajectory clean_dev_ce")
+            add_gate(gates, blockers, "epoch_export_non_ce_metrics_and_gold_topology", run, True, reconstructed_non_ce_evidence, reconstructed_non_ce_metrics_passed, "non-CE reconstructed metrics, strict epoch-export schema, or exact gold topology mismatch")
             golds = [row["gold_final_label"] for row in predictions[1]]
             if any([row["gold_final_label"] for row in predictions[epoch]] != golds for epoch in EPOCHS):
                 raise ValueError(f"{run}: gold labels changed across epochs")
@@ -1177,7 +1209,7 @@ def analyze(args: argparse.Namespace, tables: dict[str, list[dict[str, Any]]]) -
     tables["precommit"].extend(precommitted)
     return {
         "stage": "Stage191-D", "decision": decision, "runnable": True, "blocking_reasons": [], "stage191c_equivalence_passed": True,
-        "diagnostic_only": True, "training_performed": False, "model_constructed": False, "model_advancement_decision": False, "external_data_used": False,
+        "diagnostic_only": True, "training_performed": False, "model_constructed": False, "model_advancement_decision": False, "external_data_used": False, "clean_dev_ce_reduction_contract": dict(CLEAN_DEV_CE_REDUCTION_CONTRACT),
         "current_diagnostic_git_commit": args.current_diagnostic_git_commit, "diagnostic_source_commit_identity": diagnostic_source_identity, "stage191b_commit": STAGE191B_COMMIT, "stage191b_directory": str(stage191b), "stage185_sidecar_identity": {"path": str(authoritative_sidecar), "is_regular_file": authoritative_sidecar.is_file(), "semantic_sha256": observed_sidecar_semantic_sha256},
         "authoritative_stage190_diagnostic_commit": grouping_source_contract["authoritative_stage190_diagnostic_commit"], "authoritative_stage190_grouping_source_path": grouping_source_contract["authoritative_stage190_grouping_source_path"], "authoritative_stage190_grouping_commit_blob_sha256": grouping_source_contract["authoritative_stage190_grouping_commit_blob_sha256"], "observed_stage190_grouping_source_sha256": grouping_source_contract["observed_stage190_grouping_source_sha256"], "current_source_equals_frozen_commit_blob": grouping_source_contract["current_source_equals_frozen_commit_blob"], "unstaged_clean": grouping_source_contract["unstaged_clean"], "staged_clean": grouping_source_contract["staged_clean"], "source_contract_passed": grouping_source_contract["source_contract_passed"], "stage190_to_stage191d_alias_mapping": grouping_source_contract["alias_mapping"], "stage190_parameter_inventory_contract": stage190_inventory_summary,
         "six_run_identities": [{"run": run, "seed": run_data[run]["seed"], "arm": run_data[run]["arm"], "split_seed": 174, "selected_epoch": SELECTED[run]} for run in RUNS],
@@ -1206,7 +1238,7 @@ def blocked_report(args: argparse.Namespace, blockers: list[str], exception: Bas
         reasons.append(f"{exception_record['type']}: {exception_record['message']}")
     return {
         "stage": "Stage191-D", "decision": BLOCKED, "runnable": False, "blocking_reasons": reasons or ["Stage191-D did not complete"], "stage191c_equivalence_passed": False,
-        "diagnostic_only": True, "training_performed": False, "model_constructed": False, "model_advancement_decision": False, "external_data_used": False,
+        "diagnostic_only": True, "training_performed": False, "model_constructed": False, "model_advancement_decision": False, "external_data_used": False, "clean_dev_ce_reduction_contract": dict(CLEAN_DEV_CE_REDUCTION_CONTRACT),
         "current_diagnostic_git_commit": args.current_diagnostic_git_commit, "diagnostic_source_commit_identity": diagnostic_identity, "stage191b_commit": STAGE191B_COMMIT,
         "authoritative_stage190_diagnostic_commit": grouping_identity.get("authoritative_stage190_diagnostic_commit", STAGE190_DIAGNOSTIC_COMMIT), "authoritative_stage190_grouping_source_path": grouping_identity.get("authoritative_stage190_grouping_source_path"), "authoritative_stage190_grouping_commit_blob_sha256": grouping_identity.get("authoritative_stage190_grouping_commit_blob_sha256"), "observed_stage190_grouping_source_sha256": grouping_identity.get("observed_stage190_grouping_source_sha256"), "current_source_equals_frozen_commit_blob": grouping_identity.get("current_source_equals_frozen_commit_blob", False), "unstaged_clean": grouping_identity.get("unstaged_clean", False), "staged_clean": grouping_identity.get("staged_clean", False), "source_contract_passed": grouping_identity.get("source_contract_passed", False), "stage190_to_stage191d_alias_mapping": grouping_identity.get("alias_mapping", dict(STAGE190_TO_STAGE191D_ALIASES)),
         "six_run_identities": [{"run": run, "seed": int(run[4:7]), "arm": run.split("_", 1)[1], "split_seed": 174, "selected_epoch": SELECTED[run]} for run in RUNS],
