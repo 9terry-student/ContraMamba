@@ -1,0 +1,30 @@
+{
+  "stage": "Stage191-A closure",
+  "authoritative_stage191a_report": "stage191a_trajectory_feasibility_report.json",
+  "decision": "STAGE191A_DETERMINISTIC_REPLAY_REQUIRED",
+  "runnable": false,
+  "blocking_reasons": [],
+  "identity_closure_blocking_reasons": [],
+  "artifact_validity_blocking_reasons": [],
+  "identity_and_closure_gates_passed": true,
+  "six_run_contract": {
+    "runs": ["seed174_baseline", "seed174_intervention", "seed175_baseline", "seed175_intervention", "seed176_baseline", "seed176_intervention"],
+    "epochs": 20,
+    "epoch_range": "epochs 1 through 20",
+    "margin_history_complete_for_all_runs": true,
+    "macro_f1_history_complete_for_all_runs": true,
+    "normalized_prediction_count_history_complete_for_all_runs": true,
+    "epoch_checkpoint_history_complete_for_all_runs": false,
+    "epoch_addressable_state_absent": true
+  },
+  "missing_clean_metrics": ["support_recall", "false_entitlement_total", "polarity_error_total", "clean_dev_ce"],
+  "replay_specification_required": true,
+  "next_stage_specification_authorized": true,
+  "training_authorized": false,
+  "replay_execution_authorized": false,
+  "model_advancement_decision": false,
+  "training_git_commit": "bee2f5ad452d1d9f57b30f444d18835dbffdbecf",
+  "stage190_diagnostic_git_commit": "ac0b9032b94436ce8ac8134c650d389134faebd4",
+  "stage191a_diagnostic_git_commit": "a6700aa6344e81ef02f0696e117c3d9ffbbaa10c",
+  "interpretation": "The existing trajectory is complete for margins, macro-F1, and normalized three-label prediction counts, but lacks the four required clean metrics and epoch-addressable state. A deterministic replay specification is authorized; replay execution and model advancement are not authorized by this closure."
+}

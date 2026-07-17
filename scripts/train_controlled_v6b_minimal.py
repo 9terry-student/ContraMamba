@@ -67,6 +67,7 @@ from scripts.run_provenance import (  # noqa: E402
     dataset_record as provenance_dataset_record,
     file_sha256 as provenance_file_sha256,
     initial_record as provenance_initial_record,
+    git_info as provenance_git_info,
     json_safe as provenance_json_safe,
     runtime_versions as provenance_runtime_versions,
     utc_now_iso as provenance_utc_now_iso,
@@ -111,6 +112,538 @@ _STAGE187_ELIGIBLE_FAMILIES = {
     "evidence_deletion", "evidence_truncation", "none", "paraphrase", "predicate_swap"
 }
 
+
+# Stage191-B deterministic replay observability: report-only and default-off.
+_STAGE191_LABELS = ("REFUTE", "NOT_ENTITLED", "SUPPORT")
+_STAGE191_CANONICAL_IDS = {0, 1, 2}
+_STAGE191_EXPECTED_DEV_ROWS = 720
+_STAGE191_EXPECTED_SUPPORT_ROWS = 89
+STAGE191_TRAINING_SEEDS = (174, 175, 176)
+STAGE191_FORBIDDEN_PATH_OPTIONS = (
+    "ood_data",
+    "output_ood_json",
+    "output_ood_predictions_json",
+    "external_data",
+    "external_output_dir",
+    "external_eval_jsonl",
+    "external_eval_name",
+    "stage43_external_factver_jsonl",
+    "stage57_bridge_train_jsonl",
+    "stage66_bridge_train_jsonl",
+    "stage75_bridge_train_jsonl",
+    "stage80a_bridge_train_jsonl",
+)
+STAGE191_LIST_ABSENT_OPTIONS = (
+    "stage43_external_factver_jsonl",
+    "external_eval_jsonl",
+    "external_eval_name",
+)
+STAGE191_SCALAR_ABSENT_OPTIONS = (
+    "ood_data",
+    "output_ood_json",
+    "output_ood_predictions_json",
+    "external_data",
+    "external_output_dir",
+    "stage57_bridge_train_jsonl",
+    "stage66_bridge_train_jsonl",
+    "stage75_bridge_train_jsonl",
+    "stage80a_bridge_train_jsonl",
+)
+STAGE191_EXTERNAL_ENABLE_FLAGS = (
+    "enable_external_eval",
+    "enable_stage43_external_eval",
+    "stage43_external_enable_shadow_export",
+)
+STAGE191_BRIDGE_MODE_OPTIONS = (
+    "stage57_bridge_train_mode",
+    "stage66_bridge_train_mode",
+    "stage75_bridge_train_mode",
+    "stage80a_bridge_train_mode",
+)
+
+
+def _stage191_write_json(path: Path, value: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(value, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _stage191_write_jsonl(
+    path: Path, rows: list[dict[str, Any]], append: bool = False
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a" if append else "w", encoding="utf-8", newline="\n") as handle:
+        for row in rows:
+            handle.write(json.dumps(row, sort_keys=True, ensure_ascii=False) + "\n")
+
+
+def _stage191_tensor_state_sha256(items: list[tuple[str, torch.Tensor]]) -> str:
+    digest = hashlib.sha256()
+    for name, tensor in items:
+        cpu = tensor.detach().cpu().contiguous()
+        digest.update(name.encode("utf-8") + b"\0")
+        digest.update(str(cpu.dtype).encode("ascii") + b"\0")
+        digest.update(
+            json.dumps(list(cpu.shape), separators=(",", ":")).encode("ascii") + b"\0"
+        )
+        flat = cpu.reshape(-1)
+        digest.update(flat.view(torch.uint8).numpy().tobytes())
+    return digest.hexdigest()
+
+
+def _stage191_verified_label_mapping() -> tuple[dict[str, int], dict[int, str]]:
+    raw_label_to_id = v5.FINAL_LABEL_TO_ID
+    raw_id_to_label = v5.ID_TO_FINAL_LABEL
+    if type(raw_label_to_id) is not dict or tuple(raw_label_to_id.keys()) != _STAGE191_LABELS:
+        raise RuntimeError(
+            "Stage191 requires canonical final labels exactly REFUTE, NOT_ENTITLED, SUPPORT"
+        )
+    if any(type(value) is not int for value in raw_label_to_id.values()):
+        raise RuntimeError("Stage191 final_label_to_id values must be exact non-bool integers")
+    if set(raw_label_to_id.values()) != _STAGE191_CANONICAL_IDS:
+        raise RuntimeError("Stage191 final_label_to_id values must be exactly {0, 1, 2}")
+    expected_inverse = {value: name for name, value in raw_label_to_id.items()}
+    if (
+        type(raw_id_to_label) is not dict
+        or any(type(key) is not int for key in raw_id_to_label)
+        or set(raw_id_to_label) != _STAGE191_CANONICAL_IDS
+        or raw_id_to_label != expected_inverse
+    ):
+        raise RuntimeError("Stage191 id_to_final_label must be the exact integer-keyed inverse")
+    return dict(raw_label_to_id), dict(raw_id_to_label)
+
+
+def _stage191_source_row_id(record: dict[str, Any]) -> str | int | None:
+    candidates = [record.get("row_id"), record.get("id"), record.get("stable_id")]
+    raw_record = record.get("raw_record")
+    if type(raw_record) is dict:
+        candidates.append(raw_record.get("id"))
+    for value in candidates:
+        if type(value) in (str, int):
+            return value
+    return None
+
+
+def _stage191_validate_runtime_contract(args: argparse.Namespace, split_seed: int) -> str:
+    if (
+        args.stage191_save_trajectory_state_capsules
+        and not args.stage191_trajectory_replay_observability
+    ):
+        raise ValueError(
+            "--stage191-save-trajectory-state-capsules requires "
+            "--stage191-trajectory-replay-observability"
+        )
+    if not args.stage191_trajectory_replay_observability:
+        return "disabled"
+    if type(args.seed) is not int or args.seed not in STAGE191_TRAINING_SEEDS:
+        raise ValueError(
+            "Stage191 replay training seed must be an exact non-bool integer "
+            f"in {STAGE191_TRAINING_SEEDS}; observed {args.seed!r}"
+        )
+    required = {
+        "architecture": "v6b_minimal",
+        "backbone": "mamba",
+        "device": "cuda",
+        "model_name": "state-spaces/mamba-130m-hf",
+        "epochs": 20,
+        "select_metric": "final_macro_f1",
+    }
+    for field, expected in required.items():
+        if getattr(args, field, None) != expected:
+            raise ValueError(
+                f"Stage191 replay requires {field}={expected!r}; "
+                f"observed {getattr(args, field, None)!r}"
+            )
+    if split_seed != 174 or args.split_seed != 174:
+        raise ValueError("Stage191 replay requires explicit --split-seed 174")
+    data_path = Path(args.data).resolve()
+    if (
+        data_path != (ROOT / _STAGE187_AUTHORITATIVE_DATA).resolve()
+        or _stage187_file_sha256(data_path) != _STAGE187_DATASET_SHA256
+    ):
+        raise ValueError("Stage191 replay clean controlled main data identity mismatch")
+    required_absent_values = {
+        **{name: None for name in STAGE191_SCALAR_ABSENT_OPTIONS},
+        **{name: [] for name in STAGE191_LIST_ABSENT_OPTIONS},
+    }
+    observed_absent_values = {
+        name: getattr(args, name, None)
+        for name in STAGE191_FORBIDDEN_PATH_OPTIONS
+    }
+    absent_values_valid = (
+        all(
+            observed_absent_values[name] is None
+            for name in STAGE191_SCALAR_ABSENT_OPTIONS
+        )
+        and all(
+            type(observed_absent_values[name]) is list
+            and observed_absent_values[name] == []
+            for name in STAGE191_LIST_ABSENT_OPTIONS
+        )
+    )
+    observed_external_flags = {
+        name: getattr(args, name, False)
+        for name in STAGE191_EXTERNAL_ENABLE_FLAGS
+    }
+    external_flags_valid = all(
+        value is False for value in observed_external_flags.values()
+    )
+    if not absent_values_valid or not external_flags_valid:
+        raise ValueError(
+            "Stage191 replay external/OOD/bridge absence contract failed: "
+            f"required_absent_values={required_absent_values!r}; "
+            f"observed_absent_values={observed_absent_values!r}; "
+            "required_external_flags=False; "
+            f"observed_external_flags={observed_external_flags!r}"
+        )
+    invalid_bridge_modes = {
+        name: getattr(args, name, None)
+        for name in STAGE191_BRIDGE_MODE_OPTIONS
+        if getattr(args, name, None) != "none"
+    }
+    if invalid_bridge_modes:
+        raise ValueError(
+            "Stage191 replay requires every bridge training mode to be 'none': "
+            f"{invalid_bridge_modes}"
+        )
+    if args.loss_sweep or args.smoke or getattr(args, "max_train_records", None) is not None:
+        raise ValueError("Stage191 replay forbids sweeps, smoke execution, and row truncation")
+
+    weight = float(args.compatible_positive_margin_weight)
+    margin_logit = float(args.compatible_positive_margin_logit)
+    if weight == 0.0:
+        if (
+            args.controlled_integrity_sidecar_path is not None
+            or args.expected_integrity_sidecar_semantic_sha256 is not None
+        ):
+            raise ValueError(
+                "Stage191 baseline must omit both Stage185 sidecar options"
+            )
+        return "baseline"
+    if weight == _STAGE187_FIXED_WEIGHT:
+        if margin_logit != _STAGE187_FIXED_MARGIN_LOGIT:
+            raise ValueError("Stage191 intervention margin logit must be exactly 0.0")
+        if args.controlled_integrity_sidecar_path is None:
+            raise ValueError("Stage191 intervention requires the Stage185 sidecar path")
+        sidecar_path = Path(args.controlled_integrity_sidecar_path)
+        if not sidecar_path.is_absolute():
+            sidecar_path = ROOT / sidecar_path
+        if sidecar_path.resolve() != (ROOT / _STAGE187_AUTHORITATIVE_SIDECAR).resolve():
+            raise ValueError("Stage191 intervention sidecar path is not authoritative")
+        if (
+            args.expected_integrity_sidecar_semantic_sha256
+            != _STAGE187_SIDECAR_SEMANTIC_SHA256
+        ):
+            raise ValueError("Stage191 intervention sidecar semantic SHA256 mismatch")
+        return "intervention"
+    raise ValueError("Stage191 replay arm must be baseline or exact Stage189 intervention")
+
+
+def _stage191_write_contract(
+    output_dir: Path,
+    args: argparse.Namespace,
+    arm: str,
+    seed: int,
+    split_seed: int,
+    trainer_source_commit: str,
+    sidecar_audit: dict[str, Any],
+) -> None:
+    label_to_id, id_to_label = _stage191_verified_label_mapping()
+    if type(sidecar_audit) is not dict:
+        raise RuntimeError("Stage191 requires the existing Stage187 sidecar audit")
+    if arm == "baseline":
+        sidecar_validated = (
+            sidecar_audit.get("enabled") is False
+            and sidecar_audit.get("sidecar_accessed") is False
+            and args.controlled_integrity_sidecar_path is None
+            and args.expected_integrity_sidecar_semantic_sha256 is None
+        )
+    else:
+        sidecar_validated = (
+            sidecar_audit.get("enabled") is True
+            and sidecar_audit.get("sidecar_accessed") is True
+            and Path(str(sidecar_audit.get("sidecar_path"))).resolve()
+                == (ROOT / _STAGE187_AUTHORITATIVE_SIDECAR).resolve()
+            and sidecar_audit.get("expected_sidecar_semantic_sha256")
+                == _STAGE187_SIDECAR_SEMANTIC_SHA256
+            and sidecar_audit.get("observed_sidecar_semantic_sha256")
+                == _STAGE187_SIDECAR_SEMANTIC_SHA256
+        )
+    if not sidecar_validated:
+        raise RuntimeError("Stage191 existing Stage187 sidecar access contract failed")
+    _stage191_write_json(output_dir / "stage191_trajectory_contract.json", {
+        "enabled_flags": {
+            "stage191_trajectory_replay_observability": True,
+            "stage191_save_trajectory_state_capsules": bool(
+                args.stage191_save_trajectory_state_capsules
+            ),
+        },
+        "authorized_training_seeds": list(STAGE191_TRAINING_SEEDS),
+        "training_seed_authorized": True,
+        "training_seed": seed,
+        "split_seed": split_seed,
+        "arm": arm,
+        "data_path": str(Path(args.data).resolve()),
+        "data_sha256": _STAGE187_DATASET_SHA256,
+        "sidecar_runtime_configuration": {
+            "validated": sidecar_validated,
+            "enabled": sidecar_audit.get("enabled"),
+            "accessed": sidecar_audit.get("sidecar_accessed"),
+            "configured_weight": float(args.compatible_positive_margin_weight),
+            "configured_margin_logit": float(args.compatible_positive_margin_logit),
+            "resolved_path": sidecar_audit.get("sidecar_path"),
+            "expected_semantic_sha256": sidecar_audit.get(
+                "expected_sidecar_semantic_sha256"
+            ),
+            "observed_semantic_sha256": sidecar_audit.get(
+                "observed_sidecar_semantic_sha256"
+            ),
+        },
+        "trainer_source_commit": trainer_source_commit,
+        "trainer_sha256": _stage187_file_sha256(Path(__file__).resolve()),
+        "final_label_to_id": label_to_id,
+        "id_to_final_label": id_to_label,
+        "canonical_logit_column_labels": list(_STAGE191_LABELS),
+        "epoch_count": 20,
+        "expected_dev_rows": 720,
+        "expected_gold_support_rows": 89,
+        "metric_definitions": {
+            "clean_dev_ce": "mean cross entropy over all clean-dev rows using output[\"logits\"] and gold final labels",
+            "support_recall": "gold SUPPORT predicted SUPPORT divided by gold SUPPORT",
+            "false_entitlement_total": "gold NOT_ENTITLED predicted REFUTE or SUPPORT",
+            "false_not_entitled_total": "gold REFUTE or SUPPORT predicted NOT_ENTITLED",
+            "polarity_error_total": "gold REFUTE predicted SUPPORT plus gold SUPPORT predicted REFUTE",
+            "confusion_matrix": "gold rows by prediction columns in canonical label order",
+        },
+        "logits_source": "output[\"logits\"]",
+        "loss_logits_used": False,
+        "extra_forward_pass_performed": False,
+        "training_semantics_changed": False,
+        "external_data_used": False,
+    })
+    (output_dir / "stage191_trajectory_epoch_metrics.jsonl").write_text(
+        "", encoding="utf-8"
+    )
+
+
+def _stage191_export_epoch(
+    output_dir: Path,
+    args: argparse.Namespace,
+    model: nn.Module,
+    dev_records: list[dict[str, Any]],
+    dev_inputs: dict[str, torch.Tensor],
+    dev_output: dict[str, Any],
+    epoch: int,
+    select_metric: str,
+    score: float,
+    best_before: int,
+    replaced: bool,
+    best_after: int,
+    seed: int,
+    split_seed: int,
+    arm: str,
+    model_provenance: dict[str, Any],
+) -> None:
+    if type(epoch) is not int or epoch not in range(1, 21):
+        raise RuntimeError("Stage191 epoch must be an exact non-bool integer in 1 through 20")
+    if isinstance(score, bool) or not isinstance(score, (int, float)) or not math.isfinite(float(score)):
+        raise RuntimeError("Stage191 selected metric score must be finite numeric and non-bool")
+    label_to_id, id_to_label = _stage191_verified_label_mapping()
+    canonical_ids = [label_to_id[name] for name in _STAGE191_LABELS]
+    logits = dev_output.get("logits")
+    if not isinstance(logits, torch.Tensor):
+        raise RuntimeError('Stage191 requires authoritative output["logits"] tensor')
+    if logits.ndim != 2 or tuple(logits.shape) != (720, 3):
+        raise RuntimeError("Stage191 logits topology must be exactly (720, 3)")
+    if not bool(torch.isfinite(logits).all().item()):
+        raise RuntimeError("Stage191 logits must all be finite")
+    labels = dev_inputs.get("final_labels")
+    if not isinstance(labels, torch.Tensor):
+        raise RuntimeError("Stage191 final labels must be a tensor")
+    if labels.ndim != 1 or tuple(labels.shape) != (720,):
+        raise RuntimeError("Stage191 final-label topology must be exactly (720,)")
+    if len(dev_records) != 720:
+        raise RuntimeError("Stage191 requires exactly 720 clean-dev records")
+    raw_gold_ids = labels.detach().cpu().tolist()
+    if any(type(value) is not int or value not in _STAGE191_CANONICAL_IDS for value in raw_gold_ids):
+        raise RuntimeError("Stage191 gold labels contain a non-canonical final-label ID")
+    frame = dev_output.get("frame_logit")
+    if frame is not None and (
+        not isinstance(frame, torch.Tensor) or frame.numel() != 720
+    ):
+        raise RuntimeError("Stage191 frame_logit must be absent or contain exactly 720 values")
+
+    row_ce = F.cross_entropy(logits, labels, reduction="none").detach().float().cpu()
+    logits_cpu = logits.detach().float().cpu()
+    labels_cpu = labels.detach().cpu()
+    predictions = logits_cpu.argmax(dim=-1)
+    frame_cpu = frame.detach().float().cpu().reshape(-1) if frame is not None else None
+    if not bool(torch.isfinite(row_ce).all().item()):
+        raise RuntimeError("Stage191 per-row final CE values must all be finite")
+    if frame_cpu is not None and not bool(torch.isfinite(frame_cpu).all().item()):
+        raise RuntimeError(
+            "Stage191 frame_logit values must all be finite"
+        )
+
+    gold_counts = {
+        name: int((labels_cpu == label_to_id[name]).sum().item())
+        for name in _STAGE191_LABELS
+    }
+    pred_counts = {
+        name: int((predictions == label_to_id[name]).sum().item())
+        for name in _STAGE191_LABELS
+    }
+    confusion = [
+        [
+            int(((labels_cpu == gold) & (predictions == pred)).sum().item())
+            for pred in canonical_ids
+        ]
+        for gold in canonical_ids
+    ]
+    if sum(gold_counts.values()) != 720:
+        raise RuntimeError("Stage191 gold counts must sum to 720")
+    if gold_counts["SUPPORT"] != 89:
+        raise RuntimeError("Stage191 gold SUPPORT count must be exactly 89")
+    if (
+        sum(pred_counts.values()) != 720
+        or any(type(value) is not int or value < 0 for value in pred_counts.values())
+    ):
+        raise RuntimeError("Stage191 dense prediction counts must sum to 720")
+    if sum(sum(row) for row in confusion) != 720:
+        raise RuntimeError("Stage191 confusion matrix must sum to 720")
+
+    refute = label_to_id["REFUTE"]
+    not_entitled = label_to_id["NOT_ENTITLED"]
+    support = label_to_id["SUPPORT"]
+    f1s = []
+    for label_id in canonical_ids:
+        tp = int(((predictions == label_id) & (labels_cpu == label_id)).sum().item())
+        predicted_count = int((predictions == label_id).sum().item())
+        gold_count = int((labels_cpu == label_id).sum().item())
+        precision = tp / predicted_count if predicted_count else 0.0
+        recall = tp / gold_count if gold_count else 0.0
+        f1s.append(
+            2 * precision * recall / (precision + recall)
+            if precision + recall else 0.0
+        )
+    rows = []
+    for position, (record, gold, pred) in enumerate(
+        zip(dev_records, raw_gold_ids, predictions.tolist())
+    ):
+        rows.append({
+            "epoch": epoch,
+            "dev_position": position,
+            "source_row_id": _stage191_source_row_id(record),
+            "gold_final_label": id_to_label[gold],
+            "predicted_final_label": id_to_label[pred],
+            "final_logits": [
+                float(logits_cpu[position, label_to_id[name]].item())
+                for name in _STAGE191_LABELS
+            ],
+            "final_ce": float(row_ce[position].item()),
+            "frame_logit": (
+                float(frame_cpu[position].item()) if frame_cpu is not None else None
+            ),
+        })
+    if len(rows) != 720:
+        raise RuntimeError("Stage191 must construct exactly 720 per-row records")
+    prediction_path = (
+        output_dir
+        / f"stage191_dev_predictions_epoch_{epoch:03d}.jsonl"
+    )
+    _stage191_write_jsonl(prediction_path, rows)
+    capsule_fields = {
+        "capsule_path": None,
+        "capsule_file_sha256": None,
+        "trainable_state_sha256": None,
+        "buffer_state_sha256": None,
+    }
+    if args.stage191_save_trajectory_state_capsules:
+        trainable = [
+            (name, parameter)
+            for name, parameter in model.named_parameters()
+            if parameter.requires_grad
+        ]
+        buffers = list(model.named_buffers())
+        trainable_sha = _stage191_tensor_state_sha256(trainable)
+        buffer_sha = _stage191_tensor_state_sha256(buffers)
+        capsule = {
+            "epoch": epoch,
+            "trainable_parameters": {
+                name: tensor.detach().cpu().clone() for name, tensor in trainable
+            },
+            "buffers": {
+                name: tensor.detach().cpu().clone() for name, tensor in buffers
+            },
+            "parameter_metadata": {
+                name: {"dtype": str(tensor.dtype), "shape": list(tensor.shape)}
+                for name, tensor in trainable
+            },
+            "buffer_metadata": {
+                name: {"dtype": str(tensor.dtype), "shape": list(tensor.shape)}
+                for name, tensor in buffers
+            },
+            "trainable_state_sha256": trainable_sha,
+            "buffer_state_sha256": buffer_sha,
+            "training_seed": seed,
+            "split_seed": split_seed,
+            "arm": arm,
+            "model_construction_provenance": model_provenance,
+        }
+        capsule_path = output_dir / f"stage191_trajectory_state_epoch_{epoch:03d}.pt"
+        torch.save(capsule, capsule_path)
+        capsule_fields = {
+            "capsule_path": str(capsule_path),
+            "capsule_file_sha256": _stage187_file_sha256(capsule_path),
+            "trainable_state_sha256": trainable_sha,
+            "buffer_state_sha256": buffer_sha,
+        }
+    trajectory = {
+        "epoch": epoch,
+        "dev_row_count": 720,
+        "clean_dev_ce": float(row_ce.mean().item()),
+        "clean_accuracy": float((predictions == labels_cpu).float().mean().item()),
+        "clean_macro_f1": float(sum(f1s) / 3),
+        "support_recall": confusion[_STAGE191_LABELS.index("SUPPORT")][
+            _STAGE191_LABELS.index("SUPPORT")
+        ] / 89,
+        "false_entitlement_total": int((
+            (labels_cpu == not_entitled)
+            & ((predictions == refute) | (predictions == support))
+        ).sum().item()),
+        "false_not_entitled_total": int((
+            ((labels_cpu == refute) | (labels_cpu == support))
+            & (predictions == not_entitled)
+        ).sum().item()),
+        "polarity_error_total": int((
+            ((labels_cpu == refute) & (predictions == support))
+            | ((labels_cpu == support) & (predictions == refute))
+        ).sum().item()),
+        "normalized_prediction_counts": pred_counts,
+        "gold_counts": gold_counts,
+        "confusion_matrix_gold_by_prediction": {
+            gold_name: {
+                pred_name: confusion[gold_index][pred_index]
+                for pred_index, pred_name in enumerate(_STAGE191_LABELS)
+            }
+            for gold_index, gold_name in enumerate(_STAGE191_LABELS)
+        },
+        "selected_metric_name": select_metric,
+        "selected_metric_value": score,
+        "best_epoch_before": best_before,
+        "current_epoch_replaced_selected_checkpoint": replaced,
+        "best_epoch_after": best_after,
+        "prediction_export_path": str(prediction_path),
+        "prediction_export_sha256": _stage187_file_sha256(prediction_path),
+        **capsule_fields,
+    }
+    _stage191_write_jsonl(
+        output_dir / "stage191_trajectory_epoch_metrics.jsonl",
+        [trajectory],
+        append=True,
+    )
 
 def _stage187_file_sha256(path: Path) -> str:
     digest = hashlib.sha256()
@@ -8721,6 +9254,18 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--v7-entitlement-loss-weight", type=float, default=0.0,
         help="v7: EntitlementGate auxiliary BCE loss weight. Default 0.0.")
 
+    parser.add_argument(
+        "--stage191-trajectory-replay-observability",
+        action="store_true",
+        default=False,
+        help="Stage191-B: emit deterministic per-epoch clean-dev replay diagnostics.",
+    )
+    parser.add_argument(
+        "--stage191-save-trajectory-state-capsules",
+        action="store_true",
+        default=False,
+        help="Stage191-B: save per-epoch trainable-parameter and buffer state capsules.",
+    )
     # Stage187-A: fixed compatible-positive absolute-margin hinge. Default off.
     parser.add_argument(
         "--compatible-positive-margin-weight",
@@ -13191,6 +13736,7 @@ def main(argv: list[str] | None = None) -> int:
         "fixed_explicit_split_seed"
         if split_seed_explicit else "training_seed_default"
     )
+    _stage191_arm = _stage191_validate_runtime_contract(args, resolved_split_seed)
     _stage187_margin_enabled = _stage187_validate_activation_args(args)
     _stage187_eligibility_by_id: dict[str, bool] = {}
     _stage187_split_by_id: dict[str, str] = {}
@@ -15237,6 +15783,47 @@ def main(argv: list[str] | None = None) -> int:
                     for _key in ("input_ids", "attention_mask", "claim_mask", "evidence_mask"):
                         _pc_inp[_key] = _pc_inp[_key][:, :max_length]
 
+    _stage191_runtime_context: dict[str, Any] | None = None
+    if args.stage191_trajectory_replay_observability:
+        if args.output_json is None:
+            raise ValueError("Stage191 replay requires --output-json")
+        _stage191_output_dir = Path(args.output_json).resolve().parent
+        _stage191_source_provenance = provenance_git_info(ROOT)
+        if type(_stage191_source_provenance) is not dict:
+            raise RuntimeError("Stage191 source provenance must be a dict")
+        _stage191_validated_source_commit = _stage191_source_provenance.get(
+            "git_commit"
+        )
+        if (
+            type(_stage191_validated_source_commit) is not str
+            or re.fullmatch(
+                r"[0-9a-f]{40}", _stage191_validated_source_commit
+            ) is None
+        ):
+            raise RuntimeError(
+                "Stage191 trainer source commit must be exactly 40 lowercase "
+                "hexadecimal characters"
+            )
+        _stage191_runtime_context = {
+            "output_dir": _stage191_output_dir,
+            "trainer_path": str(Path(__file__).resolve()),
+            "trainer_sha256": _stage187_file_sha256(Path(__file__).resolve()),
+            "source_provenance": provenance_json_safe(_stage191_source_provenance),
+            "trainer_source_commit": _stage191_validated_source_commit,
+            "model_construction_provenance": provenance_json_safe({
+                "architecture": args.architecture,
+                "backbone": args.backbone,
+                "model_name": args.model_name,
+                "model_class": type(model).__name__,
+                "max_length": max_length,
+                "training_seed": args.seed,
+                "split_seed": resolved_split_seed,
+                "parsed_training_arguments": dict(vars(args)),
+                "trainer_path": str(Path(__file__).resolve()),
+                "trainer_sha256": _stage187_file_sha256(Path(__file__).resolve()),
+                "trainer_source_commit": _stage191_validated_source_commit,
+            }),
+        }
     # Wrap v5 training to accept flags
     original_run_training = v5.run_training
 
@@ -15564,6 +16151,27 @@ def main(argv: list[str] | None = None) -> int:
         _stage175b_reference_forward_batch_count = 0
         _stage177c_epoch_metrics: list[dict[str, Any]] = []
         _compatible_positive_margin_epoch_metrics: list[dict[str, Any]] = []
+        if args.stage191_trajectory_replay_observability:
+            if _stage191_runtime_context is None:
+                raise RuntimeError("Stage191 runtime context was not initialized")
+            if (
+                type(seed) is not int
+                or seed != args.seed
+                or seed not in STAGE191_TRAINING_SEEDS
+            ):
+                raise RuntimeError(
+                    "Stage191 nested training seed must be an exact authorized "
+                    f"integer equal to args.seed; seed={seed!r}, args.seed={args.seed!r}"
+                )
+            _stage191_write_contract(
+                _stage191_runtime_context["output_dir"],
+                args,
+                _stage191_arm,
+                seed,
+                resolved_split_seed,
+                _stage191_runtime_context["trainer_source_commit"],
+                _stage187_sidecar_audit,
+            )
 
         # Stage26-F extended: captured v7 output tensors for best-epoch logit / per-gold summaries.
         # Updated inside the epoch loop whenever score > best_score.
@@ -16847,7 +17455,22 @@ def main(argv: list[str] | None = None) -> int:
                 dev_metrics[select_metric], (int, float)
             ):
                 raise ValueError(f"unsupported select_metric: {select_metric!r}")
-            score = float(dev_metrics[select_metric])
+            raw_stage191_selection_score = dev_metrics[select_metric]
+            if args.stage191_trajectory_replay_observability:
+                if (
+                    isinstance(raw_stage191_selection_score, bool)
+                    or type(raw_stage191_selection_score) not in (int, float)
+                    or not math.isfinite(float(raw_stage191_selection_score))
+                ):
+                    raise RuntimeError(
+                        "Stage191 raw selected metric must be an exact finite "
+                        "non-bool int or float before conversion"
+                    )
+                score = float(raw_stage191_selection_score)
+            else:
+                score = float(dev_metrics[select_metric])
+            _stage191_best_epoch_before = best_epoch
+            _stage191_replaced_selected = score > best_score
             if score > best_score:
                 best_score = score
                 best_epoch = epoch
@@ -16972,6 +17595,37 @@ def main(argv: list[str] | None = None) -> int:
                 # Stage26-F extended: snapshot v7 diagnostic tensors from the new best epoch
                 if args.architecture == "v7_hierarchical":
                     _best_dev_output_v7 = _v7_capture_dev_output(dev_output)
+
+            if args.stage191_trajectory_replay_observability:
+                if _stage191_runtime_context is None:
+                    raise RuntimeError("Stage191 runtime context was not initialized")
+                if (
+                    type(seed) is not int
+                    or seed != args.seed
+                    or seed not in STAGE191_TRAINING_SEEDS
+                ):
+                    raise RuntimeError(
+                        "Stage191 epoch-export seed must be an exact authorized "
+                        f"integer equal to args.seed; seed={seed!r}, args.seed={args.seed!r}"
+                    )
+                _stage191_export_epoch(
+                    _stage191_runtime_context["output_dir"],
+                    args,
+                    model,
+                    dev_records,
+                    dev_inputs,
+                    dev_output,
+                    epoch,
+                    select_metric,
+                    score,
+                    _stage191_best_epoch_before,
+                    _stage191_replaced_selected,
+                    best_epoch,
+                    seed,
+                    resolved_split_seed,
+                    _stage191_arm,
+                    _stage191_runtime_context["model_construction_provenance"],
+                )
 
             # Stage44-B internal-only anti-collapse checkpoint selection.
             # Uses only normal internal clean-dev metrics already computed above.
