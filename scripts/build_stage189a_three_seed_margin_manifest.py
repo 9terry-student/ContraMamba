@@ -92,7 +92,10 @@ def write_csv(path: Path, headers: list[str], rows: Iterable[dict[str, Any]]) ->
 
 def parser_options(repo: Path, trainer: Path) -> tuple[set[str], list[str]]:
     sources = [trainer, repo / "scripts" / "train_controlled_v5.py"]
-    pattern = re.compile(r"add_argument\\(\\s*[\"'](--[a-z0-9-]+)[\"']", re.IGNORECASE)
+    pattern = re.compile(
+        r"""add_argument\(\s*["'](--[a-z0-9-]+)["']""",
+        re.IGNORECASE,
+    )
     found: set[str] = set()
     evidence: list[str] = []
     for source in sources:
