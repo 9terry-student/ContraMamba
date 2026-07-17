@@ -1,0 +1,35 @@
+{
+  "stage": "Stage187-B",
+  "decision": "STAGE187B_DEFAULT_OFF_IMPLEMENTATION_RUNTIME_VALIDATION_PASSED",
+  "checks": {
+    "passed": 14,
+    "total": 14
+  },
+  "authoritative_identity": {
+    "dataset_path": "data/controlled_v5_v3_without_time_swap.jsonl",
+    "dataset_sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640",
+    "sidecar_path": "reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_controlled_train_integrity_sidecar.jsonl",
+    "sidecar_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc"
+  },
+  "validated_topology": {
+    "sidecar_rows": 3600,
+    "eligible_rows": 605,
+    "eligible_pairs": 121,
+    "eligible_families": 5
+  },
+  "loss_validation": {
+    "helper_loss": 0.5,
+    "eligible_gradient": [-0.5, 0.0, 0.0],
+    "zero_eligible_loss": 0.0,
+    "zero_eligible_gradient": [0.0, 0.0, 0.0]
+  },
+  "runtime_scope": {
+    "compile_help_import": true,
+    "model_forward_performed": false,
+    "training_performed": false,
+    "checkpoint_evaluation_performed": false
+  },
+  "authorized_next_stage": "STAGE188A_PAIRED_INTERNAL_MARGIN_EXPERIMENT_SPECIFICATION",
+  "training_authorized": false,
+  "source_report": "reports/stage187b_default_off_implementation_runtime_validation_20260715_152204/stage187b_default_off_implementation_runtime_validation_report.json"
+}
