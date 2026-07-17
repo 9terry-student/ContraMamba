@@ -134,7 +134,8 @@ def load_module(path: Path, name: str) -> Any:
 
 
 def tensor_bytes(tensor: torch.Tensor) -> bytes:
-    return tensor.detach().cpu().contiguous().view(torch.uint8).numpy().tobytes()
+    flat = tensor.detach().cpu().contiguous().reshape(-1)
+    return flat.view(torch.uint8).numpy().tobytes()
 
 
 def named_tensor_sha(items: Iterable[tuple[str, torch.Tensor]]) -> str:
