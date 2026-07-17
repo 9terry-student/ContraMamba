@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import math
 import statistics
@@ -29,6 +30,15 @@ ALLOWED_ARG_DIFFS = {
     "output_predictions_json",
     "stage115_clean_dev_scalar_output_jsonl",
 }
+AGGREGATE_REQUIRED_KEYS = frozenset({
+    "configured_weight",
+    "configured_margin_logit",
+    "compatible_positive_margin_eligible_count",
+    "compatible_positive_margin_eligible_observation_count",
+    "epoch_metrics",
+    "score_source",
+    "normalization",
+})
 
 
 def parse_args() -> argparse.Namespace:
@@ -124,6 +134,95 @@ def find_object_with_key(value: Any, key: str) -> dict[str, Any] | None:
             if found is not None:
                 return found
     return None
+
+
+def find_objects_with_keys(
+    value: Any, required: frozenset[str], path: str = "$"
+) -> list[tuple[str, dict[str, Any]]]:
+    """Return every dict that directly contains all required keys, with its JSON path."""
+    matches: list[tuple[str, dict[str, Any]]] = []
+    if isinstance(value, dict):
+        if required.issubset(value):
+            matches.append((path, value))
+        for key, child in value.items():
+            matches.extend(find_objects_with_keys(child, required, f"{path}.{key}"))
+    elif isinstance(value, list):
+        for index, child in enumerate(value):
+            matches.extend(find_objects_with_keys(child, required, f"{path}[{index}]"))
+    return matches
+
+
+def extract_margin_aggregate(value: Any) -> tuple[dict[str, Any], str | None, int]:
+    candidates = find_objects_with_keys(value, AGGREGATE_REQUIRED_KEYS)
+    if len(candidates) != 1:
+        return {}, None, len(candidates)
+    path, aggregate = candidates[0]
+    return aggregate, path, 1
+
+
+def finite_number(value: Any) -> bool:
+    return not isinstance(value, bool) and isinstance(value, (int, float)) and math.isfinite(float(value))
+
+
+def argv_has_option(argv: Any, option: str) -> bool:
+    if not isinstance(argv, list):
+        return False
+    flag = "--" + option.replace("_", "-")
+    return any(isinstance(token, str) and (token == flag or token.startswith(flag + "=")) for token in argv)
+
+
+def argv_option_value(argv: Any, option: str) -> Any:
+    if not isinstance(argv, list):
+        return None
+    flag = "--" + option.replace("_", "-")
+    for index, token in enumerate(argv):
+        if token == flag:
+            return argv[index + 1] if index + 1 < len(argv) else None
+        if isinstance(token, str) and token.startswith(flag + "="):
+            return token.split("=", 1)[1]
+    return None
+
+
+def sha256_file(path: Path) -> str | None:
+    try:
+        digest = hashlib.sha256()
+        with path.open("rb") as handle:
+            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                digest.update(chunk)
+        return digest.hexdigest()
+    except OSError:
+        return None
+
+
+def aggregate_epoch_metrics(rows: Any) -> list[dict[str, Any]]:
+    """Aggregate the trainer's per-batch epoch_metrics rows by their explicit epoch."""
+    grouped: dict[Any, dict[str, Any]] = {}
+    if not isinstance(rows, list):
+        return []
+    for row in rows:
+        if not isinstance(row, dict) or row.get("enabled") is not True or row.get("epoch") is None:
+            continue
+        epoch = row["epoch"]
+        totals = grouped.setdefault(epoch, {
+            "epoch": epoch, "eligible_count": 0, "active_count": 0,
+            "hinge_loss_sum": 0.0, "eligible_frame_logit_sum": 0.0,
+        })
+        totals["eligible_count"] += int(row.get("eligible_count") or 0)
+        totals["active_count"] += int(row.get("active_count") or 0)
+        totals["hinge_loss_sum"] += float(row.get("hinge_loss_sum") or 0.0)
+        totals["eligible_frame_logit_sum"] += float(row.get("eligible_frame_logit_sum") or 0.0)
+    result: list[dict[str, Any]] = []
+    for totals in grouped.values():
+        eligible = totals["eligible_count"]
+        totals["active_rate"] = totals["active_count"] / eligible if eligible else None
+        totals["mean_eligible_frame_logit"] = (
+            totals["eligible_frame_logit_sum"] / eligible if eligible else None
+        )
+        totals["compatible_positive_margin_loss_raw"] = (
+            totals["hinge_loss_sum"] / eligible if eligible else None
+        )
+        result.append(totals)
+    return result
 
 
 def load_predictions(directory: Path) -> tuple[Path | None, dict[str, Any], list[dict[str, Any]]]:
@@ -269,16 +368,21 @@ def main() -> int:
     pairing_rows: list[dict[str, Any]] = []
     gate_rows: list[dict[str, Any]] = []
 
-    def check(name: str, required: Any, observed: Any, passed: bool, category: str = "runtime", reason: str = "") -> bool:
+    def check(name: str, required: Any, observed: Any, passed: bool | None, category: str = "runtime",
+              reason: str = "", status: str | None = None) -> bool | None:
+        gate_status = status or ("pass" if passed else "fail")
         gate_rows.append({"gate": name, "category": category, "required": json.dumps(required, sort_keys=True),
                           "observed": json.dumps(observed, sort_keys=True), "passed": passed,
-                          "blocking_reason": "" if passed else reason})
-        if category == "runtime" and not passed:
+                          "status": gate_status,
+                          "blocking_reason": "" if gate_status != "fail" else reason})
+        if category == "runtime" and gate_status == "fail":
             blockers.append(f"{name}: {reason}")
         return passed
 
     stage188a_report_path = args.stage188a_dir / "stage188a_paired_internal_margin_manifest_report.json"
     stage188a_report = read_json(stage188a_report_path) if stage188a_report_path.is_file() else {}
+    baseline_manifest_path = args.stage188a_dir / "stage188a_baseline_manifest.json"
+    baseline_manifest = read_json(baseline_manifest_path) if baseline_manifest_path.is_file() else {}
     check("stage188a_ready", "STAGE188A_PAIRED_INTERNAL_MARGIN_EXPERIMENT_SPEC_READY",
           stage188a_report.get("decision"), stage188a_report.get("decision") == "STAGE188A_PAIRED_INTERNAL_MARGIN_EXPERIMENT_SPEC_READY",
           reason="Stage188-A manifest gate was not ready")
@@ -303,19 +407,34 @@ def main() -> int:
 
     base_run = find_object_with_key(base_report_root, "best_dev_metrics") or {}
     int_run = find_object_with_key(int_report_root, "best_dev_metrics") or {}
-    base_margin = find_object_with_key(base_report_root, "compatible_positive_margin")
-    int_margin = find_object_with_key(int_report_root, "compatible_positive_margin")
-    if base_margin and isinstance(base_margin.get("compatible_positive_margin"), dict):
-        base_margin = base_margin["compatible_positive_margin"]
-    if int_margin and isinstance(int_margin.get("compatible_positive_margin"), dict):
-        int_margin = int_margin["compatible_positive_margin"]
-    base_margin = base_margin or {}
-    int_margin = int_margin or {}
+    base_margin, base_margin_path, base_margin_candidate_count = extract_margin_aggregate(base_report_root)
+    int_margin, int_margin_path, int_margin_candidate_count = extract_margin_aggregate(int_report_root)
+    check("baseline_unique_margin_aggregate", 1, base_margin_candidate_count,
+          base_margin_candidate_count == 1, reason="completed-run margin aggregate is missing or ambiguous")
+    check("intervention_unique_margin_aggregate", 1, int_margin_candidate_count,
+          int_margin_candidate_count == 1, reason="completed-run margin aggregate is missing or ambiguous")
 
     base_args = base_prov.get("parsed_args") or {}
     int_args = int_prov.get("parsed_args") or {}
     base_commit = value_at(base_prov, "source_provenance.git_commit")
     int_commit = value_at(int_prov, "source_provenance.git_commit")
+    manifest_commit = stage188a_report.get("current_git_commit")
+    expected_trainer_sha = stage188a_report.get("trainer_sha256")
+    manifest_trainer_path = Path(str(stage188a_report.get("trainer_path") or ""))
+    trainer_path = args.repo_root / "scripts" / "train_controlled_v6b_minimal.py"
+    observed_trainer_sha = sha256_file(trainer_path)
+    runtime_trainer_names = [
+        Path(str(provenance.get("training_script") or "")).name
+        for provenance in (base_prov, int_prov)
+    ]
+    runtime_commit_matches_manifest = (
+        bool(manifest_commit) and base_commit == int_commit == manifest_commit
+    )
+    trainer_identity_matches_manifest = (
+        manifest_trainer_path.name == trainer_path.name
+        and runtime_trainer_names == [trainer_path.name, trainer_path.name]
+        and bool(expected_trainer_sha) and observed_trainer_sha == expected_trainer_sha
+    )
     same_fields = ["data", "seed", "architecture", "backbone", "model_name", "device", "epochs", "lr", "head_lr",
                    "encoder_lr", "dev_ratio", "select_metric", "train_batch_size", "eval_batch_size",
                    "gradient_accumulation_steps", "fp16", "weighted_label_loss", "balanced_sampler",
@@ -324,6 +443,12 @@ def main() -> int:
                    "stage177c_frame_pairwise_mode", "stage177c_frame_pairwise_weight"]
     check("same_git_commit", "equal non-empty", [base_commit, int_commit], bool(base_commit) and base_commit == int_commit,
           reason="run commits differ or are absent")
+    check("stage188a_runtime_git_commit", manifest_commit, [base_commit, int_commit],
+          runtime_commit_matches_manifest,
+          reason="runtime commit does not exactly match the Stage188-A manifest")
+    check("stage188a_trainer_sha", expected_trainer_sha, observed_trainer_sha,
+          trainer_identity_matches_manifest,
+          reason="current trainer bytes do not exactly match the Stage188-A manifest")
     for field in same_fields:
         passed = base_args.get(field) == int_args.get(field)
         pairing_rows.append({"field": field, "baseline": json.dumps(base_args.get(field)),
@@ -341,12 +466,51 @@ def main() -> int:
           value_at(base_prov, "data_provenance.main_data.sha256") == args.expected_dataset_sha256
           and value_at(int_prov, "data_provenance.main_data.sha256") == args.expected_dataset_sha256,
           reason="authoritative dataset SHA missing or mismatched")
-    check("baseline_margin_disabled", 0.0, base_args.get("compatible_positive_margin_weight"),
-          base_args.get("compatible_positive_margin_weight") == 0.0 and not base_margin.get("enabled"),
-          reason="baseline margin is not demonstrably disabled")
-    base_sidecar = base_args.get("controlled_integrity_sidecar_path")
-    check("baseline_sidecar_not_accessed", None, base_sidecar,
-          base_sidecar is None and not base_margin.get("sidecar_contract"), reason="baseline sidecar access cannot be excluded")
+    base_runtime_margin = base_prov.get("compatible_positive_margin") or {}
+    base_runtime_argv = base_prov.get("raw_sys_argv")
+    base_manifest_argv = baseline_manifest.get("argv")
+    base_weight = base_runtime_margin.get("weight", base_runtime_margin.get("configured_weight"))
+    base_sidecar_evidence = {
+        "manifest_weight": (baseline_manifest.get("arm_configuration") or {}).get("compatible_positive_margin_weight"),
+        "manifest_argv_weight": argv_option_value(base_manifest_argv, "compatible_positive_margin_weight"),
+        "runtime_argv_weight": argv_option_value(base_runtime_argv, "compatible_positive_margin_weight"),
+        "runtime_parsed_weight": base_args.get("compatible_positive_margin_weight"),
+        "manifest_sidecar_option_absent": isinstance(base_manifest_argv, list) and not argv_has_option(base_manifest_argv, "controlled_integrity_sidecar_path"),
+        "manifest_expected_sha_option_absent": isinstance(base_manifest_argv, list) and not argv_has_option(base_manifest_argv, "expected_integrity_sidecar_semantic_sha256"),
+        "runtime_sidecar_option_absent": isinstance(base_runtime_argv, list) and not argv_has_option(base_runtime_argv, "controlled_integrity_sidecar_path"),
+        "runtime_expected_sha_option_absent": isinstance(base_runtime_argv, list) and not argv_has_option(base_runtime_argv, "expected_integrity_sidecar_semantic_sha256"),
+        "runtime_enabled": base_runtime_margin.get("enabled"),
+        "runtime_weight": base_weight,
+        "runtime_sidecar_path": base_runtime_margin.get("sidecar_path"),
+        "runtime_expected_sidecar_semantic_sha256": base_runtime_margin.get("expected_sidecar_semantic_sha256"),
+        "aggregate_enabled": base_margin.get("enabled"),
+        "aggregate_configured_weight": base_margin.get("configured_weight"),
+        "aggregate_sidecar_accessed": (base_margin.get("sidecar_contract") or {}).get("sidecar_accessed"),
+        "runtime_commit_matches_stage188a": runtime_commit_matches_manifest,
+        "trainer_identity_matches_stage188a": trainer_identity_matches_manifest,
+    }
+    baseline_sidecar_not_accessed = (
+        str(base_sidecar_evidence["manifest_weight"]) == "0.0"
+        and str(base_sidecar_evidence["manifest_argv_weight"]) == "0.0"
+        and str(base_sidecar_evidence["runtime_argv_weight"]) == "0.0"
+        and base_args.get("compatible_positive_margin_weight") == 0.0
+        and all(base_sidecar_evidence[key] for key in (
+            "manifest_sidecar_option_absent", "manifest_expected_sha_option_absent",
+            "runtime_sidecar_option_absent", "runtime_expected_sha_option_absent"))
+        and base_runtime_margin.get("enabled") is False
+        and base_weight == 0.0
+        and base_runtime_margin.get("sidecar_path") is None
+        and base_runtime_margin.get("expected_sidecar_semantic_sha256") is None
+        and base_margin.get("enabled") is False
+        and base_margin.get("configured_weight") == 0.0
+        and (base_margin.get("sidecar_contract") or {}).get("sidecar_accessed") in (None, False)
+        and runtime_commit_matches_manifest
+        and trainer_identity_matches_manifest
+    )
+    check("baseline_margin_disabled", 0.0, base_sidecar_evidence,
+          baseline_sidecar_not_accessed, reason="baseline default-off runtime contract is not proven")
+    check("baseline_sidecar_not_accessed", True, base_sidecar_evidence,
+          baseline_sidecar_not_accessed, reason="baseline sidecar access cannot be excluded")
     check("intervention_margin_weight", 0.05, int_args.get("compatible_positive_margin_weight"),
           int_args.get("compatible_positive_margin_weight") == 0.05 and int_margin.get("enabled") is True,
           reason="intervention margin is not active at weight 0.05")
@@ -355,6 +519,10 @@ def main() -> int:
     observed_sidecar_sha = (int_margin.get("sidecar_contract") or {}).get("observed_sidecar_semantic_sha256")
     check("intervention_sidecar_sha", args.expected_sidecar_semantic_sha256, observed_sidecar_sha,
           observed_sidecar_sha == args.expected_sidecar_semantic_sha256, reason="intervention sidecar semantic SHA missing or mismatched")
+    int_sidecar_contract = int_margin.get("sidecar_contract") or {}
+    for name, expected in (("eligible_rows", 605), ("eligible_pairs", 121), ("eligible_families", 5)):
+        check(f"intervention_sidecar_{name}", expected, int_sidecar_contract.get(name),
+              int_sidecar_contract.get(name) == expected, reason=f"intervention sidecar {name} mismatch")
     for arm, provenance in (("baseline", base_prov), ("intervention", int_prov)):
         policy = provenance.get("training_selection_policy") or {}
         safe = all(policy.get(key) is False for key in (
@@ -471,8 +639,22 @@ def main() -> int:
     compatible_selected = [native_by_id[item] for item in compatible_ids if item in native_by_id]
     compatible_fn_before = sum(row.get("baseline_frame_logit") is not None and row["baseline_frame_logit"] < 0 for row in compatible_selected)
     compatible_fn_after = sum(row.get("intervention_frame_logit") is not None and row["intervention_frame_logit"] < 0 for row in compatible_selected)
-    incompatible_fp_before = sum(row.get("baseline_frame_logit") is not None and row["baseline_frame_logit"] >= 0 for row in incompatible_selected)
-    incompatible_fp_after = sum(row.get("intervention_frame_logit") is not None and row["intervention_frame_logit"] >= 0 for row in incompatible_selected)
+    incompatible_fp_before = sum(row["baseline_prediction"] != row["gold"] for row in incompatible_selected)
+    incompatible_fp_after = sum(row["intervention_prediction"] != row["gold"] for row in incompatible_selected)
+    incompatible_cohort_row = next(
+        (row for row in cohort_rows if row["cohort"] == "incompatible_false_positive"), {}
+    )
+    incompatible_transition_counts_agree = (
+        incompatible_fp_before - incompatible_fp_after
+        == incompatible_cohort_row.get("corrected_final_predictions", 0)
+        - incompatible_cohort_row.get("newly_harmed_predictions", 0)
+    )
+    check("incompatible_fp_transition_count_consistency", True,
+          {"fp_before": incompatible_fp_before, "fp_after": incompatible_fp_after,
+           "corrected_final_predictions": incompatible_cohort_row.get("corrected_final_predictions"),
+           "newly_harmed_predictions": incompatible_cohort_row.get("newly_harmed_predictions")},
+          bool(incompatible_selected) and incompatible_transition_counts_agree,
+          reason="final-prediction FP counts disagree with corrected/harmed transition counts")
 
     mechanism_keys = ["configured_weight", "configured_margin_logit", "compatible_positive_margin_eligible_count",
                       "compatible_positive_margin_eligible_observation_count", "compatible_positive_margin_loss_raw",
@@ -480,12 +662,54 @@ def main() -> int:
                       "compatible_positive_margin_active_rate", "compatible_positive_margin_mean_eligible_frame_logit",
                       "zero_eligible_batch_count", "score_source", "normalization"]
     mechanism_rows = [{"metric": key, "baseline": base_margin.get(key), "intervention": int_margin.get(key)} for key in mechanism_keys]
+    baseline_disabled_aggregate = (
+        base_margin.get("enabled") is False
+        and base_margin.get("configured_weight") == 0.0
+        and base_margin.get("configured_margin_logit") == 0.0
+        and base_margin.get("compatible_positive_margin_eligible_count") == 0
+        and base_margin.get("compatible_positive_margin_eligible_observation_count") == 0
+        and base_margin.get("compatible_positive_margin_loss_raw") in (None, 0, 0.0)
+        and base_margin.get("compatible_positive_margin_loss_weighted") in (None, 0, 0.0)
+    )
+    check("baseline_disabled_aggregate_semantics", True,
+          {key: base_margin.get(key) for key in mechanism_keys}, baseline_disabled_aggregate,
+          reason="baseline aggregate does not have disabled/default-off semantics")
+    check("intervention_aggregate_configuration", {"enabled": True, "weight": 0.05, "margin": 0.0},
+          {"enabled": int_margin.get("enabled"), "weight": int_margin.get("configured_weight"),
+           "margin": int_margin.get("configured_margin_logit")},
+          int_margin.get("enabled") is True and int_margin.get("configured_weight") == 0.05
+          and int_margin.get("configured_margin_logit") == 0.0,
+          reason="intervention aggregate configuration mismatch")
     check("intervention_eligible_count", 605, int_margin.get("compatible_positive_margin_eligible_count"),
           int_margin.get("compatible_positive_margin_eligible_count") == 605, reason="eligible training cohort count mismatch")
+    check("intervention_eligible_observations", "> 0", int_margin.get("compatible_positive_margin_eligible_observation_count"),
+          finite_number(int_margin.get("compatible_positive_margin_eligible_observation_count"))
+          and int_margin["compatible_positive_margin_eligible_observation_count"] > 0,
+          reason="eligible observation count is missing or non-positive")
+    for key in ("compatible_positive_margin_loss_raw", "compatible_positive_margin_loss_weighted",
+                "compatible_positive_margin_mean_eligible_frame_logit"):
+        check(f"intervention_finite_{key}", "finite", int_margin.get(key), finite_number(int_margin.get(key)),
+              reason=f"{key} is absent or non-finite")
+    active_count = int_margin.get("compatible_positive_margin_active_count")
+    active_rate = int_margin.get("compatible_positive_margin_active_rate")
+    zero_eligible_batches = int_margin.get("zero_eligible_batch_count")
+    check("intervention_active_count", ">= 0", active_count,
+          finite_number(active_count) and active_count >= 0, reason="active count is absent or negative")
+    check("intervention_active_rate", "[0, 1]", active_rate,
+          finite_number(active_rate) and 0 <= active_rate <= 1, reason="active rate is absent or outside [0, 1]")
+    check("intervention_zero_eligible_batch_count", ">= 0", zero_eligible_batches,
+          finite_number(zero_eligible_batches) and zero_eligible_batches >= 0,
+          reason="zero-eligible batch count is absent or negative")
     check("intervention_score_source", 'output["frame_logit"]', int_margin.get("score_source"),
           int_margin.get("score_source") == 'output["frame_logit"]', reason="native score source mismatch")
     check("intervention_normalization", "eligible_row_mean", int_margin.get("normalization"),
           int_margin.get("normalization") == "eligible_row_mean", reason="normalization mismatch")
+    check("intervention_checkpoint_selection_unchanged", True, int_margin.get("checkpoint_selection_unchanged"),
+          int_margin.get("checkpoint_selection_unchanged") is True,
+          reason="checkpoint-selection invariance is not proven")
+    check("intervention_epoch_metrics", "non-empty", int_margin.get("epoch_metrics"),
+          isinstance(int_margin.get("epoch_metrics"), list) and bool(int_margin["epoch_metrics"]),
+          reason="intervention epoch mechanism metrics are absent")
 
     clean_guards = {
         "macro_f1_guard": int_metrics.get("macro_f1") is not None and int_metrics["macro_f1"] >= base_metrics["macro_f1"] - 0.01,
@@ -495,32 +719,97 @@ def main() -> int:
         "false_entitlement_guard": int_metrics.get("false_entitlement_total") is not None and int_metrics["false_entitlement_total"] <= base_metrics["false_entitlement_total"] + 2,
         "prediction_collapse_guard": all((int_metrics.get("prediction_counts") or {}).get(label, 0) > 0 for label in LABELS),
     } if base_metrics and int_metrics else {}
-    epoch_metrics = int_margin.get("epoch_metrics") or []
-    active_rates = [row.get("active_rate") for row in epoch_metrics if isinstance(row, dict) and row.get("enabled") and row.get("active_rate") is not None]
-    mechanism_guards = {
-        "eligible_train_mean_higher_than_baseline_reference": False,
-        "active_rate_decreases": len(active_rates) >= 2 and active_rates[-1] < active_rates[0],
+    epoch_metrics = aggregate_epoch_metrics(int_margin.get("epoch_metrics"))
+    selected_epoch = int_run.get("best_epoch")
+    first_epoch_metric = epoch_metrics[0] if epoch_metrics else None
+    selected_epoch_metric = next(
+        (row for row in epoch_metrics if row.get("epoch") == selected_epoch), None
+    )
+    final_epoch_metric = epoch_metrics[-1] if epoch_metrics else None
+    comparison_epoch_metric = selected_epoch_metric or final_epoch_metric
+    comparison_epoch_reference = "selected" if selected_epoch_metric is not None else "final"
+    check("intervention_enabled_epoch_metrics", "non-empty enabled epoch aggregates", len(epoch_metrics),
+          bool(epoch_metrics), reason="enabled epoch mechanism metrics are absent")
+    check("intervention_selected_epoch_metric", selected_epoch,
+          selected_epoch_metric.get("epoch") if selected_epoch_metric else None,
+          selected_epoch_metric is not None,
+          reason="actual selected/best epoch is absent from mechanism metrics")
+    for label, row in (("first", first_epoch_metric), ("selected", selected_epoch_metric),
+                       ("final", final_epoch_metric)):
+        values = {
+            "active_rate": row.get("active_rate") if row else None,
+            "mean_eligible_frame_logit": row.get("mean_eligible_frame_logit") if row else None,
+            "raw_margin_loss": row.get("compatible_positive_margin_loss_raw") if row else None,
+            "active_count": row.get("active_count") if row else None,
+        }
+        check(f"intervention_{label}_epoch_mechanism_values", "finite", values,
+              row is not None and all(finite_number(value) for value in values.values()),
+              reason=f"{label} epoch mechanism values are absent or non-finite")
+
+    def epoch_diagnostic(label: str, row: dict[str, Any] | None) -> dict[str, Any]:
+        row = row or {}
+        return {
+            "reference": label,
+            "epoch": row.get("epoch"),
+            "active_rate": row.get("active_rate"),
+            "mean_eligible_frame_logit": row.get("mean_eligible_frame_logit"),
+            "raw_margin_loss": row.get("compatible_positive_margin_loss_raw"),
+            "active_count": row.get("active_count"),
+        }
+
+    epoch_mechanism_diagnostics = {
+        "selected_epoch_from_training_report": selected_epoch,
+        "active_rate_comparison_reference": comparison_epoch_reference,
+        "first": epoch_diagnostic("first", first_epoch_metric),
+        "selected": epoch_diagnostic("selected", selected_epoch_metric),
+        "final": epoch_diagnostic("final", final_epoch_metric),
+    }
+    for label in ("first", "selected", "final"):
+        for metric, value in epoch_mechanism_diagnostics[label].items():
+            if metric != "reference":
+                mechanism_rows.append({"metric": f"epoch_{label}_{metric}", "baseline": None, "intervention": value})
+
+    baseline_reference = None
+    baseline_reference_available = False
+    baseline_reference_reason = "baseline default-off contract forbids sidecar access"
+    active_rate_decreases = (
+        first_epoch_metric is not None and comparison_epoch_metric is not None
+        and finite_number(first_epoch_metric.get("active_rate"))
+        and finite_number(comparison_epoch_metric.get("active_rate"))
+        and comparison_epoch_metric["active_rate"] < first_epoch_metric["active_rate"]
+    )
+    mechanism_guards: dict[str, bool | None] = {
+        "eligible_train_mean_higher_than_baseline_reference": None,
+        "active_rate_decreases": active_rate_decreases,
         "stage182_compatible_fn_median_delta_positive": compatible_row.get("median_frame_logit_delta") is not None and compatible_row["median_frame_logit_delta"] > 0,
         "stage182_at_least_9_positive": compatible_row.get("positive_delta_count", 0) >= 9,
         "incompatible_fp_not_increase": bool(incompatible_selected) and incompatible_fp_after <= incompatible_fp_before,
     }
-    baseline_reference = base_margin.get("baseline_compatible_reference_mean_frame_logit")
-    intervention_mean = int_margin.get("compatible_positive_margin_mean_eligible_frame_logit")
-    if isinstance(baseline_reference, (int, float)) and isinstance(intervention_mean, (int, float)):
-        mechanism_guards["eligible_train_mean_higher_than_baseline_reference"] = intervention_mean > baseline_reference
+    mechanism_gate_status = {
+        name: ("not_evaluable_by_design" if passed is None else "pass" if passed else "fail")
+        for name, passed in mechanism_guards.items()
+    }
     for name, passed in clean_guards.items():
         check(name, True, passed, passed, category="clean_guardrail", reason="precommitted clean guardrail failed")
     for name, passed in mechanism_guards.items():
-        check(name, True, passed, passed, category="mechanism", reason="precommitted mechanism-direction check failed")
+        status = mechanism_gate_status[name]
+        check(name, True, passed, passed, category="mechanism",
+              reason="precommitted mechanism-direction check failed", status=status)
 
+    clear_regression = (
+        (compatible_row.get("median_frame_logit_delta") is not None
+         and compatible_row["median_frame_logit_delta"] <= 0)
+        or (bool(incompatible_selected) and incompatible_fp_after > incompatible_fp_before)
+    )
     if blockers:
         decision = BLOCKED
     elif clean_guards and not all(clean_guards.values()):
         decision = NEGATIVE
-    elif mechanism_guards and all(clean_guards.values()) and all(mechanism_guards.values()):
-        decision = POSITIVE
-    elif compatible_row.get("median_frame_logit_delta") is not None and compatible_row.get("median_frame_logit_delta") <= 0:
+    elif clear_regression:
         decision = NEGATIVE
+    elif (mechanism_guards and all(clean_guards.values())
+          and all(status == "pass" for status in mechanism_gate_status.values())):
+        decision = POSITIVE
     else:
         decision = MIXED
 
@@ -537,10 +826,32 @@ def main() -> int:
         "single_seed_policy": "diagnostic_only_not_conclusive", "external_evaluation_authorized": False,
         "blocking_reasons": blockers, "baseline_metrics": base_metrics, "intervention_metrics": int_metrics,
         "clean_guardrails": clean_guards, "mechanism_direction": mechanism_guards,
+        "mechanism_gate_status": mechanism_gate_status,
+        "clear_regression": clear_regression,
+        "margin_aggregate_selection": {
+            "baseline": {"path": base_margin_path, "candidate_count": base_margin_candidate_count},
+            "intervention": {"path": int_margin_path, "candidate_count": int_margin_candidate_count},
+            "mechanism_extraction_source_path": int_margin_path,
+            "required_keys": sorted(AGGREGATE_REQUIRED_KEYS),
+        },
+        "baseline_sidecar_non_access": {
+            "proven": baseline_sidecar_not_accessed,
+            "evidence": base_sidecar_evidence,
+        },
+        "baseline_eligible_reference": {
+            "baseline_train_eligible_reference_available": baseline_reference_available,
+            "value": baseline_reference,
+            "reason": baseline_reference_reason,
+            "gate_status": "not_evaluable_by_design",
+        },
+        "epoch_mechanism_diagnostics": epoch_mechanism_diagnostics,
         "prediction_transition_counts": dict(Counter(row["transition_category"] for row in transitions)),
         "class_transition_counts": dict(Counter(row["class_transition"] for row in transitions)),
         "stage182b": {"compatible_fn_before": compatible_fn_before, "compatible_fn_after": compatible_fn_after,
                       "incompatible_fp_before": incompatible_fp_before, "incompatible_fp_after": incompatible_fp_after,
+                      "incompatible_fp_gate_status": mechanism_gate_status["incompatible_fp_not_increase"],
+                      "incompatible_fp_count_source": "final class predictions",
+                      "incompatible_transition_counts_agree": incompatible_transition_counts_agree,
                       "cohorts": cohort_rows, "independent_evaluation": False},
         "mechanism": int_margin,
         "artifact_paths": {"baseline_provenance": str(base_prov_path), "intervention_provenance": str(int_prov_path),
@@ -559,7 +870,7 @@ def main() -> int:
               ["cohort", "expected_rows", "matched_rows", "mean_frame_logit_delta", "median_frame_logit_delta", "positive_delta_count", "corrected_final_predictions", "newly_harmed_predictions", "diagnostic_status"], cohort_rows)
     write_csv(output / "stage188b_training_mechanism_diagnostics.csv", ["metric", "baseline", "intervention"], mechanism_rows)
     write_csv(output / "stage188b_precommitted_gate.csv",
-              ["gate", "category", "required", "observed", "passed", "blocking_reason"], gate_rows)
+              ["gate", "category", "required", "observed", "passed", "status", "blocking_reason"], gate_rows)
     markdown = f"""# Stage188-B paired internal margin analysis
 
 **Decision:** `{decision}`
@@ -577,8 +888,16 @@ This is a single-seed internal diagnostic, not conclusive evidence. The Stage182
 
 - Compatible FN before / after: `{compatible_fn_before}` / `{compatible_fn_after}`
 - Incompatible FP before / after: `{incompatible_fp_before}` / `{incompatible_fp_after}`
+- Incompatible-FP source / gate: final class predictions / `{mechanism_gate_status['incompatible_fp_not_increase']}`
 - Compatible-FN median frame-logit delta: `{compatible_row.get('median_frame_logit_delta')}`
 - Compatible-FN positive deltas: `{compatible_row.get('positive_delta_count')}` of 13
+
+## Training mechanism extraction
+
+- Baseline / intervention aggregate paths: `{base_margin_path}` / `{int_margin_path}`
+- Baseline sidecar non-access proven: `{baseline_sidecar_not_accessed}`
+- Baseline eligible train reference: `not_evaluable_by_design` ({baseline_reference_reason})
+- Active-rate comparison: first -> `{comparison_epoch_reference}`
 
 ## Blocking reasons
 
