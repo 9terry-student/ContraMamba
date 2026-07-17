@@ -1,0 +1,32 @@
+{
+  "stage": "Stage190-C closure",
+  "decision": "STAGE190C_MARGIN_GRADIENT_HEAD_LOCAL_OR_NONCONFLICTING",
+  "interpretation": "nonconflicting",
+  "blocking_reasons": [],
+  "training_git_commit": "bee2f5ad452d1d9f57b30f444d18835dbffdbecf",
+  "stage190_diagnostic_git_commit": "ac0b9032b94436ce8ac8134c650d389134faebd4",
+  "intervention_support_conflict_by_seed": {
+    "174": false,
+    "175": false,
+    "176": false
+  },
+  "intervention_shared_margin_gradient_fraction_by_seed": {
+    "174": 0.9300744063636249,
+    "175": 0.916385071914493,
+    "176": 0.9091867800401853
+  },
+  "direct_selected_checkpoint_support_gradient_conflict_hypothesis_closed": true,
+  "margin_gradient_predominantly_shared_not_head_local": true,
+  "eligible_ce_and_support_specific_objectives_improved_in_local_margin_descent_direction": true,
+  "all_clean_dev_ce_worsened_at_all_six_selected_checkpoints": true,
+  "remaining_compatible_hypotheses": [
+    "optimization trajectory",
+    "class redistribution",
+    "checkpoint selection"
+  ],
+  "remaining_hypotheses_proven": false,
+  "causality_claimed": false,
+  "significance_claimed": false,
+  "authorized_next_design_class": "Investigate checkpoint-selection and optimization-trajectory effects.",
+  "model_advancement_decision": false
+}
