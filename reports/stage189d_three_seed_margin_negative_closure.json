@@ -1,0 +1,42 @@
+{
+  "stage": "Stage189-D",
+  "decision": "STAGE189D_THREE_SEED_MARGIN_NEGATIVE_OR_REGRESSIVE",
+  "blocking_reasons": [],
+  "authoritative": true,
+  "training_source_identity": {
+    "training_git_commit": "bee2f5ad452d1d9f57b30f444d18835dbffdbecf",
+    "trainer_sha256": "24b01c5799c762772fe1700204afae59f8566898f65e7f3eefa4ac57ac6f126f",
+    "dataset_sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640",
+    "stage185_sidecar_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc",
+    "training_seeds": [174, 175, 176],
+    "fixed_split_seed": 174,
+    "train_rows": 2880,
+    "dev_rows": 720,
+    "train_compatible_rows": 1440,
+    "integrity_topology": {"ELIGIBLE": 605, "INELIGIBLE": 716, "UNRESOLVED": 119}
+  },
+  "clean_deltas": {
+    "174": {"macro_f1": 0.0089975, "support_recall": 0.0224719, "false_entitlement": -3, "polarity": 0, "hard_guardrails_pass": true},
+    "175": {"macro_f1": -0.00364033, "support_recall": -0.0898876, "false_entitlement": -13, "polarity": 0, "hard_guardrails_pass": false},
+    "176": {"macro_f1": -0.00944096, "support_recall": -0.247191, "false_entitlement": -40, "polarity": 1, "hard_guardrails_pass": false}
+  },
+  "aggregate_clean_deltas": {"mean_macro_f1": -0.00136126, "mean_support_recall": -0.104869, "mean_false_entitlement": -18.6667},
+  "eligible_posthoc_frame_logit_deltas": {
+    "174": {"mean": 0.251300, "median": 0.279331, "positive_fraction": 0.960331},
+    "175": {"mean": 0.131983, "median": 0.101600, "positive_fraction": 0.970248},
+    "176": {"mean": -0.392888, "median": -0.395615, "positive_fraction": 0.0}
+  },
+  "stage182b_compatible_fn_newly_harmed": {"174": 0, "175": 2, "176": 7},
+  "interpretation": [
+    "Seed 174 single-seed benefit did not replicate robustly.",
+    "False-entitlement reduction came with severe SUPPORT-recall loss.",
+    "Seed 176 showed polarity regression and opposite-direction frame-logit movement.",
+    "Relative selectivity statistics do not override absolute mechanism and clean failures."
+  ],
+  "stage189_artifacts_valid_diagnostic_evidence": true,
+  "compatible_positive_absolute_margin_weight": 0.05,
+  "compatible_positive_absolute_margin_closed_as_model_advancement_candidate": true,
+  "external_evaluation_authorized": false,
+  "additional_simple_weight_sweep_authorized": false,
+  "seed_extension_authorized": false
+}
