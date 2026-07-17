@@ -5658,6 +5658,7 @@ def _stage115_clean_dev_scalar_rows(
             isinstance(frame_prob, bool)
             or not isinstance(frame_prob, (int, float))
             or not math.isfinite(float(frame_prob))
+            or not 0.0 <= float(frame_prob) <= 1.0
         ):
             raise RuntimeError(
                 f"Stage188 scalar row {identifier} lacks a finite native frame_prob"
@@ -5671,6 +5672,8 @@ def _stage115_clean_dev_scalar_rows(
             "gold_label": row.get("gold_label"),
             "prediction": prediction_value,
             "frame_logit": float(frame_logit),
+            "frame_prob": float(frame_prob),
+            "score_source": 'direct output["frame_logit"]',
         }
         for key in (*_STAGE113_VNEXT_EXPORT_FIELDS, *_SLOT_MISMATCH_PREDICTION_EXPORT_FIELDS):
             if key in row:
@@ -19219,6 +19222,9 @@ def main(argv: list[str] | None = None) -> int:
         training_selection_policy=_stage174a_training_selection_policy,
         repo_root=ROOT,
     )
+    _stage174a_provenance_record["source_provenance"]["trainer_sha256"] = (
+        provenance_file_sha256(Path(__file__).resolve())
+    )
     _stage174a_provenance_record["stage174c_clean_pairwise"] = provenance_json_safe({
         "enabled": _stage174c_enabled,
         "mode": args.stage174c_clean_pairwise_mode,
@@ -22408,9 +22414,27 @@ def main(argv: list[str] | None = None) -> int:
             )
         if not isinstance(_stage174a_selected_epoch, int):
             raise RuntimeError("[stage176a0] selected epoch is not a single integer")
+        _stage189_selection_metric_key_by_name = {
+            "final_macro_f1": "final_macro_f1",
+            "final_accuracy": "final_accuracy",
+        }
+        _stage189_selection_metric_key = _stage189_selection_metric_key_by_name.get(args.select_metric)
+        if _stage189_selection_metric_key is None:
+            raise RuntimeError("[stage189] selected checkpoint has no explicit selection metric mapping")
+        _stage189_selection_metric_value = (_stage174a_selected_clean_dev_metrics or {}).get(
+            _stage189_selection_metric_key
+        )
+        if (
+            isinstance(_stage189_selection_metric_value, bool)
+            or not isinstance(_stage189_selection_metric_value, (int, float))
+            or not math.isfinite(float(_stage189_selection_metric_value))
+        ):
+            raise RuntimeError("[stage189] selected checkpoint selection metric is not finite numeric")
         model.load_state_dict({key: value.to(device) for key, value in _ood_best_state.items()})
         _stage176a0_metadata = {
             "selected_epoch": _stage174a_selected_epoch,
+            "selection_metric_name": _stage189_selection_metric_key,
+            "selection_metric_value": float(_stage189_selection_metric_value),
             "selection_source": "internal_clean_dev_only",
             "selected_clean_dev_metric_values": _stage160_json_safe(
                 _stage174a_selected_clean_dev_metrics or {}
@@ -22421,6 +22445,15 @@ def main(argv: list[str] | None = None) -> int:
             "seed": args.seed,
             "main_data_path": _stage174a_main_data_record.get("resolved_path"),
             "main_data_sha256": _stage174a_main_data_record.get("sha256"),
+            "source_git_commit": (
+                (_stage174a_provenance_record.get("source_provenance") or {}).get(
+                    "git_commit"
+                )
+            ),
+            "trainer_path": str(Path(__file__).resolve()),
+            "trainer_sha256": provenance_file_sha256(Path(__file__).resolve()),
+            "run_identifier": _stage174a_run_dir.name,
+            "checkpoint_created_at_utc": provenance_utc_now_iso(),
             "final_label_to_id": dict(v5.FINAL_LABEL_TO_ID),
             "final_id_to_label": dict(v5.ID_TO_FINAL_LABEL),
             "stage174c_clean_pairwise_mode": args.stage174c_clean_pairwise_mode,
@@ -22436,6 +22469,21 @@ def main(argv: list[str] | None = None) -> int:
                 "score_source": 'output["frame_logit"]',
                 "pair_normalized": True,
                 "final_classifier_logits_targeted": False,
+            },
+            "compatible_positive_margin": {
+                "enabled": _stage187_margin_enabled,
+                "default_off": True,
+                "weight": float(args.compatible_positive_margin_weight),
+                "margin_logit": float(args.compatible_positive_margin_logit),
+                "score_source": 'output["frame_logit"]',
+                "normalization": "eligible_row_mean",
+                "sidecar_path": (
+                    str(args.controlled_integrity_sidecar_path)
+                    if args.controlled_integrity_sidecar_path is not None else None
+                ),
+                "expected_sidecar_semantic_sha256": (
+                    args.expected_integrity_sidecar_semantic_sha256
+                ),
             },
             "final_ce_logits_source": "output['logits']",
             "loss_logits_used_for_final_classifier_ce": False,
@@ -22642,4 +22690,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

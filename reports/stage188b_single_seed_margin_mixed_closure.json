@@ -1,0 +1,96 @@
+{
+  "stage": "Stage188-B",
+  "decision": "STAGE188B_SINGLE_SEED_MARGIN_MIXED_NO_REPLICATION_YET",
+  "seed": 174,
+  "blocking_reasons": [],
+  "baseline_sidecar_non_access_proven": true,
+  "baseline_train_eligible_reference_available": false,
+  "baseline_train_eligible_reference_status": "not_evaluable_by_design",
+  "baseline_train_eligible_reference_reason": "baseline default-off contract forbids sidecar access during training",
+  "clear_regression": false,
+  "single_seed_only": true,
+  "independent_external_validation": false,
+  "positive_mechanism_signal": true,
+  "nonselective_global_shift_risk": true,
+  "clean_dev": {
+    "baseline": {
+      "accuracy": 0.880556,
+      "macro_f1": 0.834878,
+      "support_recall": 0.685393,
+      "refute_recall": 1.0,
+      "not_entitled_recall": 0.892593,
+      "false_not_entitled_total": 28,
+      "false_entitlement_total": 58,
+      "polarity_error_total": 0
+    },
+    "intervention": {
+      "accuracy": 0.8875,
+      "macro_f1": 0.843875,
+      "support_recall": 0.707865,
+      "refute_recall": 1.0,
+      "not_entitled_recall": 0.898148,
+      "false_not_entitled_total": 26,
+      "false_entitlement_total": 55,
+      "polarity_error_total": 0
+    },
+    "delta_intervention_minus_baseline": {
+      "accuracy": 0.006944,
+      "macro_f1": 0.008997,
+      "support_recall": 0.022472,
+      "refute_recall": 0.0,
+      "not_entitled_recall": 0.005555,
+      "false_not_entitled_total": -2,
+      "false_entitlement_total": -3,
+      "polarity_error_total": 0
+    }
+  },
+  "training_mechanism": {
+    "eligible_rows": 605,
+    "eligible_observations": 12100,
+    "first_epoch": {
+      "active_rate": 0.4628099173553719,
+      "mean_eligible_frame_logit": 0.038336648231695504,
+      "raw_margin_loss": 0.0975080064505585
+    },
+    "selected_final_epoch": {
+      "active_rate": 0.1768595041322314,
+      "mean_eligible_frame_logit": 1.4243969121255164,
+      "raw_margin_loss": 0.06381791169978371
+    }
+  },
+  "stage182b_cohorts": {
+    "compatible_false_negative": {
+      "rows": 13,
+      "positive_delta_count": 13,
+      "median_frame_logit_delta": 0.372391,
+      "corrected_final_predictions": 2,
+      "newly_harmed_predictions": 0
+    },
+    "incompatible_false_positive": {
+      "rows": 1,
+      "baseline_error_count": 1,
+      "intervention_error_count": 0,
+      "corrected_final_predictions": 1,
+      "newly_harmed_predictions": 0
+    },
+    "matched_controls": {
+      "rows": 14,
+      "positive_delta_count": 14,
+      "median_frame_logit_delta": 0.265313
+    },
+    "clean_model_failures": {
+      "rows": 14,
+      "positive_delta_count": 14,
+      "median_frame_logit_delta": 0.372015,
+      "corrected_final_predictions": 3,
+      "newly_harmed_predictions": 0
+    },
+    "evidence_status": "prior_selected_internal_diagnostic_not_independent_external_validation"
+  },
+  "mixed_reason": [
+    "The baseline default-off contract prohibited sidecar access during training, so a directly comparable baseline eligible-train mean was unavailable by design.",
+    "Matched controls also shifted upward in frame_logit, leaving eligible-row selectivity unresolved.",
+    "One seed cannot establish replication or distinguish a targeted margin effect from seed-specific or global score movement."
+  ],
+  "three_seed_replication_required_because": "Seeds 174, 175, and 176 must reproduce the paired mechanism and clean direction, while evaluation-only selected-checkpoint exports must compare the same 605 eligible rows against ineligible, unresolved, and prior-selected matched-control references without changing training or checkpoint selection."
+}
