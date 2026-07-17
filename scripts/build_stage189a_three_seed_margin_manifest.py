@@ -78,6 +78,16 @@ def semantic_sidecar(path: Path) -> tuple[str, list[dict[str, Any]]]:
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest(), rows
 
 
+def sidecar_row_id(row: dict[str, Any]) -> str | None:
+    value = row.get("id", row.get("row_id"))
+    return str(value) if value is not None else None
+
+
+def is_train_compatible(row: dict[str, Any]) -> bool:
+    value = row.get("frame_compatible_label")
+    return row.get("split") == "train" and type(value) is int and value == 1
+
+
 def write_json(path: Path, value: Any) -> None:
     path.write_text(json.dumps(value, indent=2, sort_keys=True, ensure_ascii=False) + "\n", encoding="utf-8")
 
@@ -222,24 +232,57 @@ def main() -> int:
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         sidecar_sha, sidecar_rows = None, []
         blockers.append(f"sidecar unreadable: {exc}")
+    sidecar_ids = [sidecar_row_id(row) for row in sidecar_rows]
     train_rows = [row for row in sidecar_rows if row.get("split") == "train"]
-    status_counts = {status: sum(row.get("integrity_status") == status for row in train_rows)
+    dev_rows = [row for row in sidecar_rows if row.get("split") == "dev"]
+    train_compatible_rows = [row for row in sidecar_rows if is_train_compatible(row)]
+    train_incompatible_rows = [row for row in train_rows if not is_train_compatible(row)]
+    status_counts = {status: sum(row.get("integrity_status") == status for row in train_compatible_rows)
                      for status in ("ELIGIBLE", "INELIGIBLE", "UNRESOLVED")}
-    eligible = [row for row in train_rows if row.get("integrity_status") == "ELIGIBLE"]
-    topology = {"train_rows": len(train_rows), "eligible_rows": len(eligible),
+    eligible = [row for row in train_compatible_rows if row.get("integrity_status") == "ELIGIBLE"]
+    positive_margin_rows = [
+        row for row in sidecar_rows if row.get("eligible_for_positive_margin") is True
+    ]
+    full_sidecar_topology = {
+        "total_rows": len(sidecar_rows),
+        "unique_row_ids": len(set(sidecar_ids)) if None not in sidecar_ids else len(set(sidecar_ids)) - 1,
+        "train_rows": len(train_rows),
+        "dev_rows": len(dev_rows),
+    }
+    topology = {"train_rows": len(train_compatible_rows), "eligible_rows": len(eligible),
                 "eligible_pairs": len({row.get("pair_id") for row in eligible}),
                 "eligible_families": len({row.get("family_contract_id") for row in eligible}),
+                "incompatible_train_rows": len(train_incompatible_rows),
                 **{key.lower(): value for key, value in status_counts.items()}}
     gate("dataset_sha256", args.expected_dataset_sha256, observed_data_sha,
          observed_data_sha == args.expected_dataset_sha256, "dataset identity mismatch")
     gate("sidecar_semantic_sha256", args.expected_sidecar_semantic_sha256, sidecar_sha,
          sidecar_sha == args.expected_sidecar_semantic_sha256, "sidecar identity mismatch")
+    gate("full_sidecar_topology",
+         {"total_rows": 3600, "unique_row_ids": 3600, "train_rows": 2880, "dev_rows": 720},
+         full_sidecar_topology,
+         full_sidecar_topology == {
+             "total_rows": 3600, "unique_row_ids": 3600, "train_rows": 2880, "dev_rows": 720
+         } and None not in sidecar_ids,
+         "full Stage185-A sidecar topology mismatch")
     gate("sidecar_train_topology",
          {"train_rows": 1440, "eligible_rows": 605, "eligible_pairs": 121, "eligible_families": 5,
+          "incompatible_train_rows": 1440,
           "eligible": 605, "ineligible": 716, "unresolved": 119}, topology,
          topology == {"train_rows": 1440, "eligible_rows": 605, "eligible_pairs": 121,
-                      "eligible_families": 5, "eligible": 605, "ineligible": 716, "unresolved": 119},
-         "authoritative train integrity topology mismatch")
+                      "eligible_families": 5, "incompatible_train_rows": 1440,
+                      "eligible": 605, "ineligible": 716, "unresolved": 119},
+         "authoritative train-compatible integrity topology mismatch")
+    compatible_eligible_ids = {sidecar_row_id(row) for row in eligible}
+    positive_margin_ids = {sidecar_row_id(row) for row in positive_margin_rows}
+    gate("positive_margin_eligibility_identity",
+         {"row_count": 605, "same_as_train_compatible_eligible_ids": True},
+         {"row_count": len(positive_margin_rows),
+          "same_as_train_compatible_eligible_ids": positive_margin_ids == compatible_eligible_ids},
+         len(positive_margin_rows) == 605
+         and None not in positive_margin_ids
+         and positive_margin_ids == compatible_eligible_ids,
+         "positive-margin eligibility IDs differ from train-compatible ELIGIBLE IDs")
     gate("current_git_commit", "non-empty", args.current_git_commit.strip(),
          bool(args.current_git_commit.strip()), "current commit is empty")
     gate("trainer_source", "existing file", trainer_sha, trainer_sha is not None, "trainer source missing")
@@ -390,6 +433,8 @@ def main() -> int:
         "stage189c_local_direct_loop_contract": direct_loop_contract,
         "current_git_commit": args.current_git_commit.strip(),
         "dataset_sha256": observed_data_sha, "sidecar_semantic_sha256": sidecar_sha,
+        "full_sidecar_topology": full_sidecar_topology,
+        "train_compatible_topology": topology,
         "sidecar_train_topology": topology, "parser_static_evidence": option_evidence,
         "missing_emitted_options": missing_options,
         "baseline_sidecar_isolation": "weight zero; sidecar path and expected SHA options absent",

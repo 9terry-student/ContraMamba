@@ -85,6 +85,9 @@ def fprob(row):
     return float(value) if finite(value) and 0.0<=float(value)<=1.0 else None
 def argv_has(argv,option):
     return isinstance(argv,list) and any(t==option or (isinstance(t,str) and t.startswith(option+"=")) for t in argv)
+def is_train_compatible(row):
+    value=row.get("frame_compatible_label")
+    return row.get("split")=="train" and type(value) is int and value==1
 def zero_or_none(value):return value is None or (finite(value) and float(value)==0.0)
 def aggregate_contract(aggregate,arm,expected_sidecar_sha):
     if not isinstance(aggregate,dict):return False,{"schema":"not_object"}
@@ -217,11 +220,31 @@ def _main_impl():
     expected_sidecar_sha=manifest.get("sidecar_semantic_sha256")
     gate("authoritative_sidecar_semantic_sha",expected_sidecar_sha,observed_sidecar_sha,
       observed_sidecar_sha==expected_sidecar_sha,"identity_runtime","Stage185-A sidecar semantic SHA mismatch")
-    auth_train={i:r for i,r in sidecar_index.items() if r.get("split")=="train"}
+    full_train={i:r for i,r in sidecar_index.items() if r.get("split")=="train"}
+    auth_train={i:r for i,r in sidecar_index.items() if is_train_compatible(r)}
+    train_incompatible={i:r for i,r in full_train.items() if not is_train_compatible(r)}
     auth_counts=Counter(r.get("integrity_status") for r in auth_train.values())
-    gate("authoritative_train_topology",{"rows":1440,**STATUS_COUNTS},{"rows":len(auth_train),**dict(auth_counts)},
-      len(auth_train)==1440 and all(auth_counts.get(k,0)==v for k,v in STATUS_COUNTS.items()),
-      "identity_runtime","Stage185-A authoritative train topology mismatch")
+    auth_eligible=[r for r in auth_train.values() if r.get("integrity_status")=="ELIGIBLE"]
+    full_topology={"sidecar_rows":len(sidecar_index),"train_rows":len(full_train),
+      "dev_rows":sum(r.get("split")=="dev" for r in sidecar_index.values()),
+      "train_compatible_rows":len(auth_train),"train_incompatible_rows":len(train_incompatible)}
+    gate("authoritative_full_sidecar_topology",
+      {"sidecar_rows":3600,"train_rows":2880,"dev_rows":720,
+       "train_compatible_rows":1440,"train_incompatible_rows":1440},
+      full_topology,
+      full_topology=={"sidecar_rows":3600,"train_rows":2880,"dev_rows":720,
+       "train_compatible_rows":1440,"train_incompatible_rows":1440},
+      "identity_runtime","Stage185-A full sidecar/split topology mismatch")
+    compatible_topology={"rows":len(auth_train),**dict(auth_counts),
+      "eligible_pairs":len({r.get("pair_id") for r in auth_eligible}),
+      "eligible_families":len({r.get("family_contract_id") for r in auth_eligible})}
+    gate("authoritative_train_compatible_topology",
+      {"rows":1440,**STATUS_COUNTS,"eligible_pairs":121,"eligible_families":5},
+      compatible_topology,
+      len(auth_train)==1440 and all(auth_counts.get(k,0)==v for k,v in STATUS_COUNTS.items())
+      and compatible_topology["eligible_pairs"]==121
+      and compatible_topology["eligible_families"]==5,
+      "identity_runtime","Stage185-A authoritative train-compatible topology mismatch")
     source=read_csv(args.stage182b_dir/"stage182b_candidate_localization.csv")
     controls=read_csv(args.stage182b_dir/"stage182b_matched_control_pairs.csv")
     compatible={r["row_id"] for r in source if r.get("native_error_direction")=="compatible_false_negative"}

@@ -83,6 +83,11 @@ def row_id(row: dict[str, Any]) -> str | None:
     return str(value) if value is not None else None
 
 
+def is_train_compatible(row: dict[str, Any]) -> bool:
+    value = row.get("frame_compatible_label")
+    return row.get("split") == "train" and type(value) is int and value == 1
+
+
 def unique_index(rows: list[dict[str, Any]], name: str) -> dict[str, dict[str, Any]]:
     result: dict[str, dict[str, Any]] = {}
     for row in rows:
@@ -399,18 +404,44 @@ def execute(args: argparse.Namespace) -> tuple[dict[str, Any], list[dict[str, An
     sidecar_index = unique_index(sidecar_rows, "sidecar")
     gate(identity_gates, "sidecar_exact_dataset_row_ids", len(data_index), len(sidecar_index),
          set(data_index) == set(sidecar_index), "sidecar has missing or extra source row IDs")
-    train_sidecar = {identifier: row for identifier, row in sidecar_index.items() if row.get("split") == "train"}
+    full_train_sidecar = {
+        identifier: row for identifier, row in sidecar_index.items()
+        if row.get("split") == "train"
+    }
+    train_sidecar = {
+        identifier: row for identifier, row in sidecar_index.items()
+        if is_train_compatible(row)
+    }
+    train_incompatible_sidecar = {
+        identifier: row for identifier, row in full_train_sidecar.items()
+        if not is_train_compatible(row)
+    }
     counts = Counter(row.get("integrity_status") for row in train_sidecar.values())
     eligible = [row for row in train_sidecar.values() if row.get("integrity_status") == "ELIGIBLE"]
+    full_topology = {
+        "sidecar_rows": len(sidecar_index),
+        "train_rows": len(full_train_sidecar),
+        "dev_rows": sum(row.get("split") == "dev" for row in sidecar_index.values()),
+    }
     topology = {
         "total": len(train_sidecar),
+        "train_incompatible": len(train_incompatible_sidecar),
         **{key: counts.get(key, 0) for key in STATUS_COUNTS},
         "eligible_pairs": len({row.get("pair_id") for row in eligible}),
         "eligible_families": len({row.get("family_contract_id") for row in eligible}),
     }
-    required_topology = {"total": 1440, **STATUS_COUNTS, "eligible_pairs": 121, "eligible_families": 5}
-    gate(topology_gates, "authoritative_train_topology", required_topology, topology,
-         topology == required_topology, "posthoc train topology mismatch")
+    gate(topology_gates, "full_sidecar_topology",
+         {"sidecar_rows": 3600, "train_rows": 2880, "dev_rows": 720},
+         full_topology,
+         full_topology == {"sidecar_rows": 3600, "train_rows": 2880, "dev_rows": 720},
+         "full Stage185-A sidecar topology mismatch")
+    required_topology = {
+        "total": 1440, "train_incompatible": 1440, **STATUS_COUNTS,
+        "eligible_pairs": 121, "eligible_families": 5,
+    }
+    gate(topology_gates, "authoritative_train_compatible_topology", required_topology, topology,
+         topology == required_topology,
+         "posthoc train-compatible topology mismatch")
     report.update({
         "seed": metadata.get("seed"), "arm": arm, "selected_epoch": selected_epoch,
         "checkpoint_sha256": checkpoint_sha, "dataset_sha256": data_sha,
