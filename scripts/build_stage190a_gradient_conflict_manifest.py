@@ -204,9 +204,11 @@ def arm_runtime_contract(*, arm: str, parsed: dict[str, Any], training_report: A
         "aggregate_enabled": aggregate.get("enabled"),
         "aggregate_configured_weight": aggregate.get("configured_weight"),
         "aggregate_configured_margin_logit": aggregate.get("configured_margin_logit"),
-        "aggregate_sidecar_accessed": aggregate.get("sidecar_accessed"),
-        "eligible_count": aggregate.get("eligible_count"),
-        "eligible_observation_count": aggregate.get("eligible_observation_count"),
+        "aggregate_sidecar_accessed": sidecar.get("sidecar_accessed"),
+        "eligible_count": aggregate.get("compatible_positive_margin_eligible_count"),
+        "eligible_observation_count": aggregate.get(
+            "compatible_positive_margin_eligible_observation_count"
+        ),
         "score_source": aggregate.get("score_source"),
         "normalization": aggregate.get("normalization"),
         "sidecar_contract": sidecar_value,
@@ -214,27 +216,32 @@ def arm_runtime_contract(*, arm: str, parsed: dict[str, Any], training_report: A
     common = (
         aggregate_present
         and aggregate_is_dictionary
+        and isinstance(sidecar_value, dict)
         and observed["parsed_margin_logit"] == 0.0
     )
     if arm == "baseline":
         checks = {
             "aggregate_present": aggregate_present,
             "aggregate_is_dictionary": aggregate_is_dictionary,
+            "sidecar_contract_is_dictionary": isinstance(sidecar_value, dict),
             "common": common,
             "parsed_weight": observed["parsed_weight"] == 0.0,
             "parsed_sidecar_path": observed["parsed_sidecar_path"] is None,
             "parsed_expected_sidecar_sha": observed["parsed_expected_sidecar_sha"] is None,
             "aggregate_enabled": observed["aggregate_enabled"] is False,
             "aggregate_configured_weight": observed["aggregate_configured_weight"] == 0.0,
+            "aggregate_configured_margin_logit": observed["aggregate_configured_margin_logit"] == 0.0,
             "aggregate_sidecar_accessed": observed["aggregate_sidecar_accessed"] is False,
             "eligible_count": observed["eligible_count"] == 0,
             "eligible_observation_count": observed["eligible_observation_count"] == 0,
-            "sidecar_contract_sidecar_accessed": sidecar.get("sidecar_accessed") is False,
+            "score_source": observed["score_source"] == 'output["frame_logit"]',
+            "normalization": observed["normalization"] == "eligible_row_mean",
         }
     else:
         checks = {
             "aggregate_present": aggregate_present,
             "aggregate_is_dictionary": aggregate_is_dictionary,
+            "sidecar_contract_is_dictionary": isinstance(sidecar_value, dict),
             "common": common,
             "parsed_weight": observed["parsed_weight"] == 0.05,
             "parsed_sidecar_path": resolved_optional_path(repo, parsed.get("controlled_integrity_sidecar_path")) == authoritative_sidecar,
