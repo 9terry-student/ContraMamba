@@ -5610,7 +5610,7 @@ def _stage113_merge_prediction_exports(
 def _stage113_vnext_scalar_report(prediction_rows: list[dict[str, Any]]) -> dict[str, Any]:
     present = sorted(
         key
-        for key in _STAGE113_VNEXT_EXPORT_FIELDS
+        for key in ("frame_logit", *_STAGE113_VNEXT_EXPORT_FIELDS)
         if any(key in row for row in prediction_rows)
     )
     missing = sorted(key for key in _STAGE113_VNEXT_EXPORT_FIELDS if key not in present)
@@ -5624,15 +5624,21 @@ def _stage113_vnext_scalar_report(prediction_rows: list[dict[str, Any]]) -> dict
 def _stage115_clean_dev_scalar_rows(
     prediction_rows: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
+    if not prediction_rows:
+        raise RuntimeError("Stage188 native scalar export requires non-empty clean-dev rows")
     exported: list[dict[str, Any]] = []
-    for row in prediction_rows:
-        item: dict[str, Any] = {}
-        if row.get("id") is not None:
-            item["id"] = row.get("id")
-        item["claim"] = row.get("claim")
-        item["evidence"] = row.get("evidence")
-        item["gold_label"] = row.get("gold_label")
-        item["prediction"] = (
+    seen_ids: set[str] = set()
+    for index, row in enumerate(prediction_rows):
+        identifier = row.get("id")
+        if identifier is None:
+            raise RuntimeError(f"Stage188 scalar row {index} has no row ID")
+        identifier = str(identifier)
+        if identifier in seen_ids:
+            raise RuntimeError(f"Stage188 scalar row ID is duplicated: {identifier}")
+        seen_ids.add(identifier)
+        frame_logit = row.get("frame_logit")
+        frame_prob = row.get("frame_prob")
+        prediction_value = (
             row.get("prediction")
             if row.get("prediction") is not None
             else row.get(
@@ -5640,12 +5646,39 @@ def _stage115_clean_dev_scalar_rows(
                 row.get("pred_label", row.get("pred_final_label")),
             )
         )
+        if (
+            isinstance(frame_logit, bool)
+            or not isinstance(frame_logit, (int, float))
+            or not math.isfinite(float(frame_logit))
+        ):
+            raise RuntimeError(
+                f"Stage188 scalar row {identifier} lacks a finite native frame_logit"
+            )
+        if (
+            isinstance(frame_prob, bool)
+            or not isinstance(frame_prob, (int, float))
+            or not math.isfinite(float(frame_prob))
+        ):
+            raise RuntimeError(
+                f"Stage188 scalar row {identifier} lacks a finite native frame_prob"
+            )
+        if prediction_value is None:
+            raise RuntimeError(f"Stage188 scalar row {identifier} lacks a prediction")
+        item: dict[str, Any] = {
+            "id": row.get("id"),
+            "claim": row.get("claim"),
+            "evidence": row.get("evidence"),
+            "gold_label": row.get("gold_label"),
+            "prediction": prediction_value,
+            "frame_logit": float(frame_logit),
+        }
         for key in (*_STAGE113_VNEXT_EXPORT_FIELDS, *_SLOT_MISMATCH_PREDICTION_EXPORT_FIELDS):
             if key in row:
                 item[key] = row[key]
         exported.append(item)
+    if len(exported) != len(prediction_rows) or len(seen_ids) != len(prediction_rows):
+        raise RuntimeError("Stage188 scalar export row alignment failed")
     return exported
-
 
 def _stage115_clean_dev_scalar_report(
     prediction_rows: list[dict[str, Any]],
@@ -5653,7 +5686,7 @@ def _stage115_clean_dev_scalar_report(
 ) -> dict[str, Any]:
     present = sorted(
         key
-        for key in _STAGE113_VNEXT_EXPORT_FIELDS
+        for key in ("frame_logit", *_STAGE113_VNEXT_EXPORT_FIELDS)
         if any(key in row for row in prediction_rows)
     )
     missing = sorted(key for key in _STAGE113_VNEXT_EXPORT_FIELDS if key not in present)
@@ -5896,6 +5929,40 @@ def prediction_records_v6b(
     logits_cpu = output["logits"].detach().cpu()
     probabilities = torch.softmax(logits_cpu, dim=-1)
     predictions = output["predictions"].detach().cpu()
+    if output.get("frame_logit") is None:
+        raise RuntimeError('prediction export requires native output["frame_logit"]')
+    if output.get("frame_prob") is None:
+        raise RuntimeError('prediction export requires native output["frame_prob"]')
+    try:
+        native_frame_logits = output["frame_logit"].detach().cpu().reshape(-1)
+        native_frame_probs = output["frame_prob"].detach().cpu().reshape(-1)
+    except (AttributeError, TypeError, RuntimeError) as exc:
+        raise RuntimeError(
+            "prediction export requires tensor frame_logit/frame_prob sources"
+        ) from exc
+    prediction_count = int(predictions.reshape(-1).numel())
+    source_row_count = len(records)
+    gold_label_count = sum(record.get("final_label") is not None for record in records)
+    if int(native_frame_logits.numel()) != prediction_count:
+        raise RuntimeError(
+            "prediction export native frame_logit/prediction length mismatch: "
+            f"{native_frame_logits.numel()} != {prediction_count}"
+        )
+    if int(native_frame_probs.numel()) != prediction_count:
+        raise RuntimeError(
+            "prediction export native frame_prob/prediction length mismatch: "
+            f"{native_frame_probs.numel()} != {prediction_count}"
+        )
+    if source_row_count != prediction_count:
+        raise RuntimeError(
+            "prediction export source-row/prediction length mismatch: "
+            f"{source_row_count} != {prediction_count}"
+        )
+    if gold_label_count and gold_label_count != prediction_count:
+        raise RuntimeError(
+            "prediction export gold-label/prediction length mismatch: "
+            f"{gold_label_count} != {prediction_count}"
+        )
     stage32_shadow_logits_before = (
         logits_cpu.clone()
         if stage32_owner_state_shadow_mode and stage32_owner_state_export
@@ -5915,9 +5982,9 @@ def prediction_records_v6b(
         stage33_structured_coverage_weak_rules_to_residual
     )
 
-    # Existing v6b scalar outputs
+    # Existing v6b scalar outputs. frame_logit is consumed above as the direct
+    # native pre-sigmoid output["frame_logit"], then detached/CPU/flattened.
     scalar_keys = (
-        "frame_prob",
         "predicate_coverage_prob",
         "sufficiency_prob",
         "entitlement_prob",
@@ -6077,6 +6144,8 @@ def prediction_records_v6b(
             "ne_prob": ne_prob,
             "support_prob": support_prob,
             #  Existing v6b diagnostic scalars 
+            "frame_logit": round(float(native_frame_logits[index].item()), 6),
+            "frame_prob": round(float(native_frame_probs[index].item()), 6),
             **{
                 key: scalar_value
                 for key in scalar_keys

@@ -27,19 +27,21 @@ Stage187-B closed with 14/14 checks passed and topology 3,600 / 605 / 121 / 5.
 
 The repository contains a Stage174-D1F closure but no self-contained Stage174-D1 run directory. The closure fixes these facts: architecture `v6b_minimal`; Mamba backbone; seed `174`; 20 epochs; main data `data/controlled_v5_v3_without_time_swap.jsonl`; no time-swap main training; internal clean-dev checkpoint selection; final CE from `output["logits"]`; and no external evaluation. Stage175-C and Stage177-D independently corroborate model `state-spaces/mamba-130m-hf`, CUDA, and disabled Stage174/175 baseline interventions. Stage177-D records its own Stage177 intervention and therefore is not itself the clean baseline.
 
-The exact Stage174-D1 command, parsed arguments, resolved optimizer/batch settings, output policy, and commit are not present in this checkout. The manifest builder must therefore resolve them from the user-supplied `--stage174d1-dir`, preferably its `run_provenance.json`. If artifacts disagree or any required value is absent, it must emit a blocked report and no executable manifests. It must never choose a candidate heuristically or fill a missing value from current trainer defaults.
+The exact Stage174-D1 command, parsed arguments, resolved optimizer/batch settings, output policy, and commit are not present in this checkout and are not recoverable. Stage174-D1 is reference-only: it constrains the historical scope facts above but is never represented as an exact replay or metric-reproduction baseline. Missing historical argv, parsed arguments, resolved configuration, and commit are not Stage188 blockers.
+
+The paired baseline is `current_commit_default_off_paired_baseline`. Both arms are newly run from the same user-supplied current Git commit, the same current trainer bytes/SHA, and one statically constructed common argv. Any mismatch in those current identities is blocking. No historical checkpoint or historical run output is reused.
 
 ## Paired common configuration
 
-Both runs must have identical resolved values for:
+Both runs must have identical explicit common argv and current identities for:
 
 - Git commit and trainer source identity.
 - Dataset path and SHA, split, dev ratio, and exact seed `174`.
 - Architecture `v6b_minimal`, Mamba backbone, model name `state-spaces/mamba-130m-hf`, tokenizer, and CUDA device.
-- Epochs `20`, optimizer, learning rates, weight decay, scheduler, batch/full-batch semantics, gradient accumulation, and deterministic flags.
+- Epochs `20`; current-parser defaults for omitted optimizer, learning-rate, weight-decay, scheduler, batching, gradient-accumulation, and deterministic settings. Those omitted defaults are frozen by current commit and trainer SHA rather than guessed as historical values.
 - Checkpoint selection on clean-dev `final_macro_f1` and final CE from `output["logits"]`.
-- Every native auxiliary weight, intervention flag, bridge flag, external-evaluation flag, and output/export setting.
-- Stage174-C support-pairwise intervention off; Stage175 support-anchor intervention off; Stage177 frame-pairwise intervention off; no time-swap, external train, external calibration, external selection, or unrelated bridge/auxiliary intervention unless the authoritative Stage174-D1 provenance explicitly records it.
+- Every explicitly configured intervention and output/export setting. Unrelated current-parser defaults remain omitted and therefore identical.
+- Stage174-C support-pairwise intervention off; Stage175 support-anchor intervention off; Stage177 frame-pairwise intervention off; no time-swap, external train, external calibration, external selection, or unrelated bridge/auxiliary intervention. The recovery closure supplies historical reference scope, not authoritative runtime provenance for enabling omitted interventions.
 
 Run directory and descriptive run name may differ. No seed, weight, margin, or selection sweep is permitted.
 
@@ -63,11 +65,11 @@ Any forbidden difference, identity mismatch, row-ID mismatch, mask/logit length 
 
 ## Manifest builder contract
 
-`scripts/build_stage188a_paired_internal_margin_manifest.py` accepts required `--repo-root`, `--stage174d1-dir`, `--stage186a-dir`, `--stage187b-dir`, `--trainer-source`, and `--output-dir`, plus optional expected dataset/sidecar SHA arguments. Weight, margin, seed, epochs, and selection metric are intentionally not CLI-selectable.
+`scripts/build_stage188a_paired_internal_margin_manifest.py` accepts required `--repo-root`, `--stage174d1-reference`, `--stage186a-dir`, `--stage187b-dir`, `--trainer-source`, `--current-git-commit`, and `--output-dir`, plus optional expected dataset/sidecar SHA arguments. `--stage174d1-reference` must point to `reports/stage188a_historical_baseline_recovery_closure.json`, a JSON object with the two closure decisions, reference-only/recoverability booleans, paired-baseline definition, and verified `experimental_scope`. It is not original Stage174-D1F runtime provenance. Weight, margin, seed, epochs, and selection metric are intentionally not CLI-selectable.
 
-It statically validates authoritative identities and decisions, requires an unambiguous Stage174-D1 provenance/argv/config, freezes the common configuration, produces explicit baseline and intervention argv arrays and previews, audits allowed and forbidden differences, and writes all twelve required Stage188-A artifacts. It never invokes a subprocess and never runs training.
+It statically validates the closure decision and experimental scope, authoritative Stage186/187 decisions and identities, the non-empty caller-supplied current commit, trainer SHA, and the actual existence of every emitted current-parser option. It constructs one common argv rather than reusing or inferring historical argv, clones it for both arms, applies only the precommitted arm/output differences, audits argv-level allowed and forbidden differences, and writes all twelve required Stage188-A artifacts. It never invokes Git, a subprocess, the trainer, or training.
 
-The builder is successful only when `stage188a_stage188b_gate.csv` passes every row and both manifests are materialized. On failure it writes the report/audit artifacts with decision `STAGE188A_PAIRED_INTERNAL_MARGIN_EXPERIMENT_BLOCKED` and does not write runnable arm manifests.
+The builder is successful only when `stage188a_stage188b_gate.csv` passes every row and both manifests are materialized. A missing or malformed recovery closure is recorded as a blocking reason and produces fail-closed report/audit artifacts with decision `STAGE188A_PAIRED_INTERNAL_MARGIN_EXPERIMENT_BLOCKED`; it must not escape as a JSON traceback. Missing historical argv, commit, or resolved configuration remains non-blocking. On any failure it does not write runnable arm argv.
 
 ## Stage188-B full-path validation
 
@@ -115,7 +117,7 @@ Only the positive diagnostic decision authorizes `STAGE189_THREE_SEED_COMPATIBLE
 
 ## Unresolved static risks
 
-1. This checkout lacks the authoritative Stage174-D1 run directory, exact raw argv, parsed arguments, resolved configuration, and commit. The Kaggle manifest build must supply and validate them.
-2. The current prediction exporter visibly exports native `frame_prob` but not row-level native `frame_logit`. The analyzer requires direct native frame-logit evidence for the Stage182-B logit-delta gate and fails closed rather than substituting final-classifier logits. Stage188-B must confirm an allowed existing export contains that field; otherwise it is blocked.
+1. This checkout lacks the Stage174-D1 exact raw argv, parsed arguments, resolved configuration, and commit. They are intentionally unrecoverable historical context and are not manifest blockers; the newly supplied current commit and current trainer identity are blocking identities.
+2. The exporter now statically routes direct native pre-sigmoid `output["frame_logit"]` through detach/CPU/flatten into prediction rows and `clean_dev_scalars.jsonl`, with source-vector and row-level fail-closed gates. Runtime tensor shape/value evidence remains unvalidated until Stage188-B.
 3. Stage187-B did not perform a model forward, so full mask/logit alignment remains unvalidated until Stage188-B.
 4. Stage187-B did not execute weight-zero full-training numerical equivalence.

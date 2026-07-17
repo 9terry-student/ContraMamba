@@ -1,0 +1,52 @@
+{
+  "stage": "Stage188-A historical baseline recovery",
+  "decision": "STAGE174D1_EXACT_HISTORICAL_RUN_NOT_RECOVERABLE",
+  "historical_reference_only": true,
+  "exact_historical_run_recoverable": false,
+  "baseline_definition": "current_commit_default_off_paired_baseline",
+  "reference_decision": "STAGE174D1F_CLEAN_LOCAL_PAIRWISE_OBJECTIVE_DIRECTION_CONFLICT_PATH_CLOSED",
+  "reference_paths": [
+    "reports/stage174d1f_local_pairwise_path_closure.json",
+    "reports/stage174d1f_local_pairwise_path_closure.md"
+  ],
+  "experimental_scope": {
+    "architecture": "v6b_minimal",
+    "backbone": "Mamba",
+    "seed": 174,
+    "epochs": 20,
+    "main_data": "data/controlled_v5_v3_without_time_swap.jsonl",
+    "time_swap_excluded": true,
+    "checkpoint_selection": "internal_clean_dev_only",
+    "final_classifier_ce_source": "output[\"logits\"]",
+    "loss_logits_used": false,
+    "external_evaluation_run": false
+  },
+  "recovered_facts": {
+    "architecture": "v6b_minimal",
+    "backbone": "Mamba",
+    "seed": 174,
+    "epochs": 20,
+    "main_data": "data/controlled_v5_v3_without_time_swap.jsonl",
+    "time_swap_excluded": true,
+    "checkpoint_selection": "internal_clean_dev_only",
+    "final_classifier_ce_source": "output[\"logits\"]",
+    "loss_logits_used": false,
+    "external_evaluation_run": false,
+    "baseline_metrics_status": "historical_reference_only"
+  },
+  "missing_facts": [
+    "exact argv",
+    "parsed args",
+    "full resolved runtime config",
+    "historical git commit",
+    "exact optimizer provenance",
+    "exact scheduler provenance",
+    "exact batching provenance"
+  ],
+  "consequences": {
+    "historical_replay_claim_permitted": false,
+    "historical_metric_reproduction_claim_permitted": false,
+    "current_commit_paired_baseline_authorized": true,
+    "historical_results_contextual_reference_only": true
+  }
+}

@@ -141,6 +141,22 @@ def load_predictions(directory: Path) -> tuple[Path | None, dict[str, Any], list
     return candidates[0] if len(candidates) == 1 else (None, {}, [])
 
 
+def load_scalars(directory: Path) -> tuple[Path | None, list[dict[str, Any]]]:
+    candidates = [path for path in sorted(directory.rglob("clean_dev_scalars.jsonl")) if path.is_file()]
+    if len(candidates) != 1:
+        return None, []
+    return candidates[0], read_jsonl(candidates[0])
+
+
+def index_rows(rows: list[dict[str, Any]], artifact: str) -> dict[str, dict[str, Any]]:
+    result: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        identifier = row_id(row)
+        if identifier is None or identifier in result:
+            raise ValueError(f"{artifact} row IDs are missing or duplicated")
+        result[identifier] = row
+    return result
+
 def row_id(row: dict[str, Any]) -> str | None:
     for key in ("id", "row_id", "stable_id"):
         if row.get(key) is not None:
@@ -168,12 +184,12 @@ def prediction(row: dict[str, Any]) -> str | None:
 
 def native_frame_logit(row: dict[str, Any]) -> float | None:
     value = row.get("frame_logit")
-    return float(value) if isinstance(value, (int, float)) and math.isfinite(float(value)) else None
+    return float(value) if not isinstance(value, bool) and isinstance(value, (int, float)) and math.isfinite(float(value)) else None
 
 
 def native_frame_prob(row: dict[str, Any]) -> float | None:
     value = row.get("frame_prob", row.get("frame_probability"))
-    return float(value) if isinstance(value, (int, float)) and math.isfinite(float(value)) else None
+    return float(value) if not isinstance(value, bool) and isinstance(value, (int, float)) and math.isfinite(float(value)) else None
 
 
 def index_predictions(rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
@@ -273,13 +289,17 @@ def main() -> int:
     int_report_path, int_report_root = load_training_report(args.intervention_run_dir)
     base_pred_path, base_meta, base_rows = load_predictions(args.baseline_run_dir)
     int_pred_path, int_meta, int_rows = load_predictions(args.intervention_run_dir)
-    for arm, prov_path, report_path, pred_path in (
-        ("baseline", base_prov_path, base_report_path, base_pred_path),
-        ("intervention", int_prov_path, int_report_path, int_pred_path),
+    base_scalar_path, base_scalar_rows = load_scalars(args.baseline_run_dir)
+    int_scalar_path, int_scalar_rows = load_scalars(args.intervention_run_dir)
+    for arm, prov_path, report_path, pred_path, scalar_path in (
+        ("baseline", base_prov_path, base_report_path, base_pred_path, base_scalar_path),
+        ("intervention", int_prov_path, int_report_path, int_pred_path, int_scalar_path),
     ):
-        check(f"{arm}_artifacts", "unique provenance/report/predictions",
-              {"provenance": str(prov_path), "report": str(report_path), "predictions": str(pred_path)},
-              all(path is not None for path in (prov_path, report_path, pred_path)), reason="required exported artifact missing or ambiguous")
+        check(f"{arm}_artifacts", "unique provenance/report/predictions/clean_dev_scalars",
+              {"provenance": str(prov_path), "report": str(report_path), "predictions": str(pred_path),
+               "scalars": str(scalar_path)},
+              all(path is not None for path in (prov_path, report_path, pred_path, scalar_path)),
+              reason="required exported artifact missing or ambiguous")
 
     base_run = find_object_with_key(base_report_root, "best_dev_metrics") or {}
     int_run = find_object_with_key(int_report_root, "best_dev_metrics") or {}
@@ -347,35 +367,59 @@ def main() -> int:
               reason="successful full epoch completion not proven")
 
     try:
-        base_index, int_index = index_predictions(base_rows), index_predictions(int_rows)
+        base_index = index_rows(base_rows, "baseline predictions")
+        int_index = index_rows(int_rows, "intervention predictions")
+        base_scalar_index = index_rows(base_scalar_rows, "baseline scalars")
+        int_scalar_index = index_rows(int_scalar_rows, "intervention scalars")
     except ValueError as exc:
         blockers.append(str(exc))
-        base_index, int_index = {}, {}
-    check("identical_clean_dev_ids", "exact identical non-empty set", [len(base_index), len(int_index)],
-          bool(base_index) and set(base_index) == set(int_index), reason="clean-dev row IDs differ")
+        base_index, int_index, base_scalar_index, int_scalar_index = {}, {}, {}, {}
+    paired_ids = set(base_index)
+    exact_sets = (
+        bool(paired_ids)
+        and paired_ids == set(int_index)
+        and paired_ids == set(base_scalar_index)
+        and paired_ids == set(int_scalar_index)
+    )
+    check("identical_clean_dev_ids", "exact identical non-empty prediction/scalar sets for both arms",
+          [len(base_index), len(int_index), len(base_scalar_index), len(int_scalar_index)], exact_sets,
+          reason="prediction/scalar clean-dev row-ID sets differ")
 
     transitions: list[dict[str, Any]] = []
     native_rows: list[dict[str, Any]] = []
-    for identifier in sorted(set(base_index) & set(int_index)):
+    for identifier in sorted(paired_ids & set(int_index) & set(base_scalar_index) & set(int_scalar_index)):
         left, right = base_index[identifier], int_index[identifier]
+        left_scalar, right_scalar = base_scalar_index[identifier], int_scalar_index[identifier]
         g, before, after = gold(left), prediction(left), prediction(right)
-        if g != gold(right):
-            blockers.append(f"gold label mismatch for {identifier}")
+        identities_match = (
+            g == gold(right) == gold(left_scalar) == gold(right_scalar)
+            and before == prediction(left_scalar)
+            and after == prediction(right_scalar)
+        )
+        if not identities_match:
+            blockers.append(f"prediction/scalar gold or prediction identity mismatch for {identifier}")
             continue
         category = transition_category(str(g), str(before), str(after))
         transitions.append({"row_id": identifier, "gold": g, "baseline_prediction": before,
                             "intervention_prediction": after, "baseline_correct": before == g,
                             "intervention_correct": after == g, "transition_category": category,
                             "class_transition": f"{before}->{after}"})
-        left_logit, right_logit = native_frame_logit(left), native_frame_logit(right)
+        left_logit, right_logit = native_frame_logit(left_scalar), native_frame_logit(right_scalar)
+        left_prob, right_prob = native_frame_prob(left_scalar), native_frame_prob(right_scalar)
         native_rows.append({"row_id": identifier, "gold": g, "baseline_prediction": before,
-                            "intervention_prediction": after, "frame_compatible_label": left.get("frame_compatible_label"),
+                            "intervention_prediction": after,
+                            "frame_compatible_label": left.get("frame_compatible_label"),
                             "baseline_frame_logit": left_logit, "intervention_frame_logit": right_logit,
                             "frame_logit_delta": right_logit - left_logit if left_logit is not None and right_logit is not None else None,
-                            "baseline_frame_prob": native_frame_prob(left), "intervention_frame_prob": native_frame_prob(right),
-                            "score_source": 'direct exported output["frame_logit"]' if left_logit is not None and right_logit is not None else "unavailable"})
+                            "baseline_frame_prob": left_prob, "intervention_frame_prob": right_prob,
+                            "score_source": 'direct scalar export from output["frame_logit"]' if left_logit is not None and right_logit is not None else "unavailable"})
 
-    direct_frame_complete = bool(native_rows) and all(row["frame_logit_delta"] is not None for row in native_rows)
+    direct_frame_complete = bool(native_rows) and len(native_rows) == len(paired_ids) and all(
+        row["frame_logit_delta"] is not None
+        and row["baseline_frame_prob"] is not None
+        and row["intervention_frame_prob"] is not None
+        for row in native_rows
+    )
     check("direct_native_frame_logits", "direct per-row output[frame_logit] for both arms", direct_frame_complete,
           direct_frame_complete, reason="row-level native frame_logit absent; final-classifier logits are never substituted")
 
