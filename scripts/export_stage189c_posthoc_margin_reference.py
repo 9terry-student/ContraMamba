@@ -25,6 +25,34 @@ EXPECTED_SIDECAR_SHA = "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6
 STATUS_COUNTS = {"ELIGIBLE": 605, "INELIGIBLE": 716, "UNRESOLVED": 119}
 LABELS = {"REFUTE", "NOT_ENTITLED", "SUPPORT"}
 DIRECT_SCORE_SOURCE = 'direct output["frame_logit"]'
+KNOWN_CANONICAL_ARG_KEYS = {
+    "stage118_diagnostic_evidence_interface_sweep_list",
+    "stage118_diagnostic_model_checkpoint",
+    "stage134_slot_diagnostic_seed",
+}
+
+
+def canonicalize_training_args(value: Any) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise TypeError("training args must be a dictionary")
+    canonical = dict(value)
+    if canonical.get("stage118_diagnostic_evidence_interface_sweep_list") is None:
+        canonical["stage118_diagnostic_evidence_interface_sweep_list"] = []
+    if "stage118_diagnostic_model_checkpoint" not in canonical:
+        canonical["stage118_diagnostic_model_checkpoint"] = None
+    seed = canonical.get("seed")
+    if type(seed) is not int:
+        raise ValueError("training args seed must be an integer")
+    if canonical.get("stage134_slot_diagnostic_seed") is None:
+        canonical["stage134_slot_diagnostic_seed"] = seed
+    return canonical
+
+
+def raw_arg_mismatch_keys(left: dict[str, Any], right: dict[str, Any]) -> list[str]:
+    return sorted(
+        key for key in set(left) | set(right)
+        if key not in left or key not in right or left[key] != right[key]
+    )
 
 
 def parse_args() -> argparse.Namespace:
@@ -322,7 +350,8 @@ def execute(args: argparse.Namespace) -> tuple[dict[str, Any], list[dict[str, An
          metadata.get("source_git_commit"), metadata.get("source_git_commit") == args.expected_git_commit,
          "checkpoint Git commit mismatch")
 
-    parsed = provenance.get("parsed_args") or {}
+    raw_parsed = provenance.get("parsed_args")
+    parsed = raw_parsed if isinstance(raw_parsed, dict) else {}
     resolved_runtime = provenance.get("resolved_runtime_config") or {}
     provenance_split_contract = provenance.get("split_seed_contract") or {}
     provenance_commit = ((provenance.get("source_provenance") or {}).get("git_commit"))
@@ -347,10 +376,52 @@ def execute(args: argparse.Namespace) -> tuple[dict[str, Any], list[dict[str, An
          (provenance.get("finalization") or {}).get("selected_epoch"), selected_epoch,
          selected_epoch == (provenance.get("finalization") or {}).get("selected_epoch"),
          "checkpoint/provenance selected epoch mismatch")
-    training_args = metadata.get("training_args") or {}
-    gate(identity_gates, "checkpoint_training_args", "exact provenance parsed args", "compared",
-         isinstance(training_args, dict) and all(training_args.get(key) == value for key, value in parsed.items()),
-         "checkpoint parsed training args do not cover provenance parsed args")
+    raw_training_args = metadata.get("training_args")
+    training_args = raw_training_args if isinstance(raw_training_args, dict) else {}
+    canonicalization_error = None
+    canonical_parsed = None
+    canonical_training_args = None
+    raw_mismatch_keys = (
+        raw_arg_mismatch_keys(raw_parsed, raw_training_args)
+        if isinstance(raw_parsed, dict) and isinstance(raw_training_args, dict)
+        else []
+    )
+    try:
+        canonical_parsed = canonicalize_training_args(raw_parsed)
+        canonical_training_args = canonicalize_training_args(raw_training_args)
+    except (TypeError, ValueError) as exc:
+        canonicalization_error = f"{type(exc).__name__}: {exc}"
+    allowed_canonical_mismatch_keys = sorted(
+        set(raw_mismatch_keys) & KNOWN_CANONICAL_ARG_KEYS
+    )
+    unexpected_raw_mismatch_keys = sorted(
+        set(raw_mismatch_keys) - KNOWN_CANONICAL_ARG_KEYS
+    )
+    canonical_exact_match = (
+        canonicalization_error is None
+        and canonical_parsed == canonical_training_args
+    )
+    training_args_audit = {
+        "raw_mismatch_keys": raw_mismatch_keys,
+        "allowed_canonical_mismatch_keys": allowed_canonical_mismatch_keys,
+        "unexpected_raw_mismatch_keys": unexpected_raw_mismatch_keys,
+        "canonical_exact_match": canonical_exact_match,
+        "provenance_arg_count": len(raw_parsed) if isinstance(raw_parsed, dict) else None,
+        "checkpoint_arg_count": (
+            len(raw_training_args) if isinstance(raw_training_args, dict) else None
+        ),
+        "canonicalization_error": canonicalization_error,
+    }
+    training_args_ok = (
+        canonical_exact_match
+        and not unexpected_raw_mismatch_keys
+        and parsed.get("seed") in (174, 175, 176)
+    )
+    gate(identity_gates, "checkpoint_training_args",
+         {"canonical_exact_match": True, "raw_mismatch_keys_subset_of": sorted(KNOWN_CANONICAL_ARG_KEYS),
+          "training_seed": [174, 175, 176]},
+         training_args_audit, training_args_ok,
+         "checkpoint/provenance training args differ after fail-closed canonicalization")
     split_identity = {
         "provenance_training_seed": parsed.get("seed"),
         "provenance_configured_split_seed": parsed.get("split_seed"),
