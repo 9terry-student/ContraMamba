@@ -6,9 +6,11 @@
 
 ## Frozen experiment
 
-Stage189-B consists of six fresh runs: baseline and intervention at seeds 174, 175, and 176. Stage188 seed-174 checkpoints are not reusable. All runs use `data/controlled_v5_v3_without_time_swap.jsonl`, `v6b_minimal`, Mamba `state-spaces/mamba-130m-hf`, CUDA, 20 epochs, and `final_macro_f1` internal clean-dev selection. Final classifier CE remains sourced from `output["logits"]`; loss logits, external data/evaluation, Stage15 OOD, time-swap main training, sweeps, threshold tuning, and selection changes are forbidden.
+Stage189-B consists of six fresh runs: baseline and intervention at model/training seeds 174, 175, and 176. Every run uses the fixed clean main train/dev split seed 174 through explicit `--split-seed 174`, so all six runs share the same frozen 2,880/720 row-ID split and only initialization/training randomness varies by model seed. Split seed is common across arms and is not an allowed arm difference. Stage188 seed-174 checkpoints are not reusable. All runs use `data/controlled_v5_v3_without_time_swap.jsonl`, `v6b_minimal`, Mamba `state-spaces/mamba-130m-hf`, CUDA, 20 epochs, and `final_macro_f1` internal clean-dev selection. Final classifier CE remains sourced from `output["logits"]`; loss logits, external data/evaluation, Stage15 OOD, time-swap main training, sweeps, threshold tuning, and selection changes are forbidden.
 
 The baseline uses weight 0.0 and must omit both sidecar options. The intervention uses weight 0.05, margin logit 0.0, and the authoritative Stage185-A sidecar with semantic SHA `5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc`. Stage174-C, Stage175-B, Stage177-C, and unrelated interventions remain off.
+
+Artifacts from commit `21c733533317a5d5aff447a98cb4efeeaec4ee49` or any pre-split-seed-contract Stage189-A/Stage189-B run are not official replication artifacts and must not be mixed with new runs. The trainer SHA, Git commit, and explicit split provenance must all match the new manifest contract. No code path auto-discovers or reuses those old artifacts.
 
 ## Selected checkpoint
 

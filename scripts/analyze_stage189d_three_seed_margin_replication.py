@@ -202,6 +202,7 @@ def _main_impl():
     args=parse_args();output=args.output_dir.resolve();output.mkdir(parents=True,exist_ok=True)
     blockers=[];gates=[];identity_rows=[];clean_rows=[];mechanism_rows=[];integrity_rows=[]
     selectivity_rows=[];cohort_rows=[];transition_rows=[];seed_results={}
+    observed_split_contracts=[]
     def gate(name,required,observed,passed,category,reason):
         gates.append({"gate":name,"category":category,"required":json.dumps(required,sort_keys=True),
           "observed":json.dumps(observed,sort_keys=True),"passed":passed,"status":"pass" if passed else "fail",
@@ -260,15 +261,27 @@ def _main_impl():
             ok=all(run[k] is not None for k in ("provenance_path","report_path","prediction_path","scalar_path"))
             gate(f"seed{seed}_{arm}_artifacts",True,ok,ok,"identity_runtime","run artifact missing or ambiguous")
             prov=run["provenance"];parsed=prov.get("parsed_args") or {};run_commit=(prov.get("source_provenance") or {}).get("git_commit")
+            resolved_runtime=prov.get("resolved_runtime_config") or {}
+            provenance_split_contract=prov.get("split_seed_contract") or {}
             gate(f"seed{seed}_{arm}_run_completed","completed",prov.get("status"),
               prov.get("status")=="completed","identity_runtime","run provenance is not completed")
             run_trainer_sha=(prov.get("source_provenance") or {}).get("trainer_sha256")
             run_data=((prov.get("data_provenance") or {}).get("main_data") or {}).get("sha256")
             arm_manifest=read_json(args.stage189a_dir/f"stage189a_seed{seed}_{arm}_manifest.json")
+            manifest_split_ok=(
+              arm_manifest.get("training_seed")==seed
+              and arm_manifest.get("split_seed")==174
+              and arm_manifest.get("split_policy")=="fixed_across_replication_seeds"
+              and (arm_manifest.get("parsed_argv_contract") or {}).get("split_seed")=="174")
+            gate(f"seed{seed}_{arm}_manifest_split_identity",True,manifest_split_ok,
+              manifest_split_ok,"identity_runtime","arm manifest split-seed identity mismatch")
             raw_argv=prov.get("raw_sys_argv") or []
             expected_runtime={"seed":seed,"git_commit":commit,"trainer_sha256":trainer_sha,
               "dataset_sha256":data_sha,"architecture":"v6b_minimal","backbone":"mamba",
               "model_name":"state-spaces/mamba-130m-hf","device":"cuda","epochs":20,
+              "configured_split_seed":174,"resolved_split_seed":174,
+              "split_seed_explicit":True,
+              "split_policy":"fixed_explicit_split_seed",
               "select_metric":"final_macro_f1","margin_logit":0.0,
               "stage174c_mode":"off","stage174c_weight":0.0,"stage175b_mode":"off",
               "stage175b_weight":0.0,"stage177c_mode":"off","stage177c_weight":0.0,
@@ -277,6 +290,10 @@ def _main_impl():
               "trainer_sha256":run_trainer_sha,"dataset_sha256":run_data,
               "architecture":parsed.get("architecture"),"backbone":parsed.get("backbone"),
               "model_name":parsed.get("model_name"),"device":parsed.get("device"),"epochs":parsed.get("epochs"),
+              "configured_split_seed":parsed.get("split_seed"),
+              "resolved_split_seed":resolved_runtime.get("resolved_split_seed"),
+              "split_seed_explicit":resolved_runtime.get("split_seed_explicit"),
+              "split_policy":resolved_runtime.get("split_policy"),
               "select_metric":parsed.get("select_metric"),
               "margin_logit":parsed.get("compatible_positive_margin_logit"),
               "stage174c_mode":parsed.get("stage174c_clean_pairwise_mode"),
@@ -286,9 +303,33 @@ def _main_impl():
               "stage177c_mode":parsed.get("stage177c_frame_pairwise_mode"),
               "stage177c_weight":parsed.get("stage177c_frame_pairwise_weight"),
               "selected_checkpoint_enabled":bool(parsed.get("save_selected_checkpoint"))}
+            observed_split_contracts.append({
+              "seed":seed,"arm":arm,"training_seed":parsed.get("seed"),
+              "configured_split_seed":parsed.get("split_seed"),
+              "resolved_split_seed":resolved_runtime.get("resolved_split_seed"),
+              "split_seed_explicit":resolved_runtime.get("split_seed_explicit"),
+              "split_policy":resolved_runtime.get("split_policy"),
+              "provenance_training_seed":provenance_split_contract.get("training_seed"),
+              "provenance_configured_split_seed":provenance_split_contract.get("configured_split_seed"),
+              "provenance_resolved_split_seed":provenance_split_contract.get("resolved_split_seed"),
+              "provenance_split_seed_explicit":provenance_split_contract.get("split_seed_explicit"),
+              "provenance_split_policy":provenance_split_contract.get("split_policy"),
+              "clean_main_train_rows":provenance_split_contract.get("clean_main_train_rows"),
+              "clean_main_dev_rows":provenance_split_contract.get("clean_main_dev_rows")})
             identity_ok=observed_runtime==expected_runtime
             gate(f"seed{seed}_{arm}_runtime_identity",expected_runtime,observed_runtime,
               identity_ok,"identity_runtime","run provenance identity/config mismatch")
+            provenance_split_ok=(
+              provenance_split_contract.get("training_seed")==seed
+              and provenance_split_contract.get("configured_split_seed")==174
+              and provenance_split_contract.get("resolved_split_seed")==174
+              and provenance_split_contract.get("split_seed_explicit") is True
+              and provenance_split_contract.get("split_policy")=="fixed_explicit_split_seed"
+              and provenance_split_contract.get("clean_main_train_rows")==2880
+              and provenance_split_contract.get("clean_main_dev_rows")==720)
+            gate(f"seed{seed}_{arm}_provenance_split_contract",True,
+              provenance_split_contract,provenance_split_ok,"identity_runtime",
+              "run provenance fixed split-seed or 2880/720 row-count contract mismatch")
             sidecar_option=parsed.get("controlled_integrity_sidecar_path")
             sidecar_suffix=str(sidecar_option or "").replace(chr(92),"/")
             arm_ok=(parsed.get("compatible_positive_margin_weight")==(0.0 if arm=="baseline" else 0.05))
@@ -343,6 +384,9 @@ def _main_impl():
               and Path(posthoc_report.get("output_jsonl","")).resolve()==posthoc_path
               and posthoc_report.get("output_jsonl_sha256")==file_sha(posthoc_path)
               and posthoc_report.get("seed")==seed and posthoc_report.get("arm")==arm
+              and posthoc_report.get("training_seed")==seed
+              and posthoc_report.get("split_seed")==174
+              and posthoc_report.get("split_policy")=="fixed_explicit_split_seed"
               and posthoc_report.get("selected_epoch")==identity.get("selected_epoch")
               and posthoc_report.get("checkpoint_sha256")==identity.get("checkpoint_sha256")
               and posthoc_report.get("trainer_sha256")==trainer_sha
@@ -359,6 +403,8 @@ def _main_impl():
               and identity.get("dataset_sha256")==data_sha and identity.get("sidecar_semantic_sha256")==expected_sidecar_sha
               and identity.get("architecture")=="v6b_minimal" and identity.get("backbone")=="mamba"
               and identity.get("model_name")=="state-spaces/mamba-130m-hf"
+              and identity.get("training_seed")==seed and identity.get("split_seed")==174
+              and identity.get("split_policy")=="fixed_explicit_split_seed"
               and all(r.get("selected_epoch")==identity.get("selected_epoch") for r in rows)
               and all(r.get("checkpoint_identity")==identity for r in rows))
             gate(f"seed{seed}_{arm}_posthoc_identity",[seed,arm,commit,trainer_sha],
@@ -507,6 +553,28 @@ def _main_impl():
         seed_results[seed]={"clean_deltas":delta,"hard":hard,"mechanism":mech,"selectivity":sel,
           "critical_newly_harmed":cfn["newly_harmed"]+cohort_stats["incompatible_fp"]["newly_harmed"]}
 
+    six_run_split_contract=(
+      len(observed_split_contracts)==6
+      and {row.get("training_seed") for row in observed_split_contracts}==set(SEEDS)
+      and all(row.get("configured_split_seed")==174
+        and row.get("resolved_split_seed")==174
+        and row.get("split_seed_explicit") is True
+        and row.get("split_policy")=="fixed_explicit_split_seed"
+        and row.get("provenance_training_seed")==row.get("training_seed")
+        and row.get("provenance_configured_split_seed")==174
+        and row.get("provenance_resolved_split_seed")==174
+        and row.get("provenance_split_seed_explicit") is True
+        and row.get("provenance_split_policy")=="fixed_explicit_split_seed"
+        and row.get("clean_main_train_rows")==2880
+        and row.get("clean_main_dev_rows")==720
+        for row in observed_split_contracts)
+      and all(
+        {row.get("configured_split_seed") for row in observed_split_contracts
+          if row.get("seed")==seed}=={174}
+        for seed in SEEDS))
+    gate("six_run_fixed_split_seed_identity",True,observed_split_contracts,
+      six_run_split_contract,"identity_runtime",
+      "all six runs must use fixed explicit split seed 174")
     complete=len(seed_results)==3 and all("incomplete" not in seed_results[s] for s in SEEDS)
     aggregate_rows=[];aggregate_clean={};mechanism_pass={};selectivity_counts={};critical_harm=None
     if complete:
@@ -538,6 +606,8 @@ def _main_impl():
     report={"stage":"Stage189-D","decision":decision,"blocking_reasons":blockers,"seed_results":seed_results,
       "aggregate_clean_direction":aggregate_clean,"mechanism_seed_pass":mechanism_pass,
       "mechanism_failure_count":mechanism_failures,
+      "six_run_split_seed_contract":observed_split_contracts,
+      "fixed_split_seed_identity_passed":six_run_split_contract,
       "selectivity_pass_counts":selectivity_counts,"selectivity_all_pass":selective,
       "critical_stage182b_newly_harmed":critical_harm,"matched_controls_independent_evaluation":False,
       "posthoc_training_rows_generalization_evidence":False}
@@ -575,6 +645,7 @@ def main():
         report={"stage":"Stage189-D","decision":BLOCKED,"blocking_reasons":[detail],
           "fail_closed_exception":True,"seed_results":{},"aggregate_clean_direction":{},
           "mechanism_seed_pass":{},"selectivity_pass_counts":{},
+          "six_run_split_seed_contract":[],"fixed_split_seed_identity_passed":False,
           "matched_controls_independent_evaluation":False,
           "posthoc_training_rows_generalization_evidence":False}
         write_json(output/"stage189d_three_seed_analysis_report.json",report)

@@ -19,6 +19,8 @@ SIDECAR_REL = (
     "stage185a_controlled_train_integrity_sidecar.jsonl"
 )
 SIDECAR_SHA = "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc"
+FROZEN_SPLIT_SEED = 174
+INVALIDATED_PRE_SPLIT_CONTRACT_COMMIT = "21c733533317a5d5aff447a98cb4efeeaec4ee49"
 HELPER_REL = "scripts/export_external_scalars_from_checkpoint.py"
 STAGE189C_REL = "scripts/export_stage189c_posthoc_margin_reference.py"
 SEEDS = (174, 175, 176)
@@ -161,6 +163,7 @@ def common_argv(seed: int) -> list[str]:
         "--model-name", "state-spaces/mamba-130m-hf",
         "--device", "cuda",
         "--seed", str(seed),
+        "--split-seed", str(FROZEN_SPLIT_SEED),
         "--epochs", "20",
         "--select-metric", "final_macro_f1",
         "--flag-source", "controlled_heuristic",
@@ -285,6 +288,11 @@ def main() -> int:
          "positive-margin eligibility IDs differ from train-compatible ELIGIBLE IDs")
     gate("current_git_commit", "non-empty", args.current_git_commit.strip(),
          bool(args.current_git_commit.strip()), "current commit is empty")
+    gate("pre_split_contract_commit_invalidated",
+         {"must_not_equal": INVALIDATED_PRE_SPLIT_CONTRACT_COMMIT},
+         args.current_git_commit.strip(),
+         args.current_git_commit.strip() != INVALIDATED_PRE_SPLIT_CONTRACT_COMMIT,
+         "pre-split-seed-contract commit cannot produce official Stage189 artifacts")
     gate("trainer_source", "existing file", trainer_sha, trainer_sha is not None, "trainer source missing")
     helper_sha = file_sha(helper) if helper.is_file() else None
     helper_text = helper.read_text(encoding="utf-8") if helper.is_file() else ""
@@ -325,6 +333,9 @@ def main() -> int:
             '"trainer_sha256":',
             '"source_git_commit":',
             '"training_args":',
+            '"configured_split_seed": args.split_seed',
+            '"resolved_split_seed": resolved_split_seed',
+            '"split_policy": split_policy',
         )),
     }
     gate("selected_checkpoint_source_contract", {key: True for key in checkpoint_contract},
@@ -336,6 +347,24 @@ def main() -> int:
     ))
     gate("stage189c_direct_loop_source_contract", True, direct_loop_contract, direct_loop_contract,
          "Stage189-C direct tensor export contract is not statically proven")
+    split_seed_source_contract = all(token in trainer_text for token in (
+        '"--split-seed"',
+        "resolved_split_seed = args.seed if args.split_seed is None else args.split_seed",
+        "records, dev_ratio=args.dev_ratio, seed=resolved_split_seed",
+        '"configured_split_seed": args.split_seed',
+        '"resolved_split_seed": resolved_split_seed',
+        '"split_policy": split_policy',
+        '_stage174a_provenance_record["split_seed_contract"]',
+        '"clean_main_train_rows": _stage187_sidecar_audit.get("actual_train_rows")',
+        '"clean_main_dev_rows": _stage187_sidecar_audit.get("actual_dev_rows")',
+        '"train_split_row_ids_exact"',
+        '"dev_split_row_ids_exact"',
+        "trainer train split does not match the frozen Stage185 sidecar split",
+        "trainer dev split does not match the frozen Stage185 sidecar split",
+    ))
+    gate("trainer_split_seed_source_contract", True, split_seed_source_contract,
+         split_seed_source_contract,
+         "trainer does not statically prove the opt-in clean split-seed contract")
 
     available, option_evidence = parser_options(repo, trainer)
     manifests: dict[tuple[int, str], dict[str, Any]] = {}
@@ -352,7 +381,11 @@ def main() -> int:
             checkpoint = run_dir / "selected_checkpoint.pt"
             manifest = {
                 "stage": "Stage189-A", "seed": seed, "arm": arm, "runnable": False,
+                "training_seed": seed, "split_seed": FROZEN_SPLIT_SEED,
+                "split_policy": "fixed_across_replication_seeds",
                 "fresh_training_required": True, "stage188_checkpoint_reuse_forbidden": True,
+                "pre_split_contract_artifact_reuse_forbidden": True,
+                "invalidated_pre_split_contract_commit": INVALIDATED_PRE_SPLIT_CONTRACT_COMMIT,
                 "current_git_commit": args.current_git_commit.strip(),
                 "trainer_path": str(trainer), "trainer_sha256": trainer_sha,
                 "checkpoint_helper_path": str(helper), "checkpoint_helper_sha256": helper_sha,
@@ -364,7 +397,9 @@ def main() -> int:
                 "posthoc_reference_required": True,
             }
             manifests[(seed, arm)] = manifest
-            matrix.append({"seed": seed, "arm": arm, "margin_weight": mapping.get("compatible_positive_margin_weight"),
+            matrix.append({"seed": seed, "training_seed": seed, "split_seed": FROZEN_SPLIT_SEED,
+                           "split_policy": "fixed_across_replication_seeds",
+                           "arm": arm, "margin_weight": mapping.get("compatible_positive_margin_weight"),
                            "margin_logit": mapping.get("compatible_positive_margin_logit"),
                            "sidecar_path": mapping.get("controlled_integrity_sidecar_path"),
                            "run_directory": str(run_dir), "selected_checkpoint": str(checkpoint),
@@ -397,6 +432,24 @@ def main() -> int:
     gate("current_parser_options", [], missing_options, not missing_options,
          "one or more emitted options are absent from the statically inspected parser")
     gate("six_run_matrix", 6, len(matrix), len(matrix) == 6, "six manifests were not constructed")
+    six_run_split_contract = (
+        len(manifests) == 6
+        and {manifest.get("training_seed") for manifest in manifests.values()} == set(SEEDS)
+        and all(
+            manifest.get("split_seed") == FROZEN_SPLIT_SEED
+            and (manifest.get("parsed_argv_contract") or {}).get("split_seed")
+            == str(FROZEN_SPLIT_SEED)
+            for manifest in manifests.values()
+        )
+        and all(
+            manifests[(seed, "baseline")]["split_seed"]
+            == manifests[(seed, "intervention")]["split_seed"]
+            for seed in SEEDS
+        )
+    )
+    gate("six_run_fixed_split_seed_contract", True, six_run_split_contract,
+         six_run_split_contract,
+         "six manifests do not share fixed split seed 174 with model seeds 174/175/176")
     decision = READY if not blockers else BLOCKED
     runnable = decision == READY
     for manifest in manifests.values():
@@ -431,6 +484,10 @@ def main() -> int:
         "checkpoint_helper_required_functions": list(required_helper_functions),
         "selected_checkpoint_source_contract": checkpoint_contract,
         "stage189c_local_direct_loop_contract": direct_loop_contract,
+        "training_seeds": list(SEEDS), "split_seed": FROZEN_SPLIT_SEED,
+        "split_policy": "fixed_across_replication_seeds",
+        "pre_split_contract_artifacts_official_replication": False,
+        "invalidated_pre_split_contract_commit": INVALIDATED_PRE_SPLIT_CONTRACT_COMMIT,
         "current_git_commit": args.current_git_commit.strip(),
         "dataset_sha256": observed_data_sha, "sidecar_semantic_sha256": sidecar_sha,
         "full_sidecar_topology": full_sidecar_topology,
@@ -447,11 +504,12 @@ def main() -> int:
     write_csv(output / "paired_argv_difference_audit.csv",
               ["seed", "field", "baseline", "intervention", "allowed", "reason"], difference_rows)
     write_csv(output / "six_run_matrix.csv",
-              ["seed", "arm", "margin_weight", "margin_logit", "sidecar_path", "run_directory",
+              ["seed", "training_seed", "split_seed", "split_policy", "arm",
+               "margin_weight", "margin_logit", "sidecar_path", "run_directory",
                "selected_checkpoint", "training_status"], matrix)
     write_csv(output / "stage189b_gate.csv",
               ["gate", "required", "observed", "passed", "blocking_reason"], gates)
-    markdown = f"""# Stage189-A six-run manifest\n\n**Decision:** `{decision}`\n\n- Seeds: 174, 175, 176\n- Runs: six paired fresh-training manifests\n- Training performed: no\n- Selected checkpoint: opt-in internally selected clean-dev state\n- Baseline sidecar access: prohibited and argv-isolated\n- Authorized next: `{NEXT if runnable else None}`\n\n## Blocking reasons\n\n{chr(10).join('- ' + item for item in blockers) if blockers else '- None.'}\n"""
+    markdown = f"""# Stage189-A six-run manifest\n\n**Decision:** `{decision}`\n\n- Model/training seeds: 174, 175, 176\n- Fixed clean split seed: 174 for all six runs\n- Split policy: fixed_across_replication_seeds\n- Runs: six paired fresh-training manifests\n- Training performed: no\n- Selected checkpoint: opt-in internally selected clean-dev state\n- Baseline sidecar access: prohibited and argv-isolated\n- Pre-split-contract artifacts official: no\n- Authorized next: `{NEXT if runnable else None}`\n\n## Blocking reasons\n\n{chr(10).join('- ' + item for item in blockers) if blockers else '- None.'}\n"""
     (output / "stage189a_manifest_report.md").write_text(markdown, encoding="utf-8")
     return 0 if runnable else 2
 

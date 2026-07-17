@@ -6670,6 +6670,15 @@ def load_stage47_selected_recovery_weights(path: Path) -> tuple[float, float]:
 def build_parser() -> argparse.ArgumentParser:
     parser = v5.build_parser()
     parser.add_argument(
+        "--split-seed",
+        type=int,
+        default=None,
+        help=(
+            "Optional clean main train/dev split seed. Default: use --seed, "
+            "preserving existing behavior. Does not change model/training randomness."
+        ),
+    )
+    parser.add_argument(
         "--stage174c-clean-pairwise-mode",
         choices=("off", "local_only", "local_plus_entitlement"),
         default="off",
@@ -13176,6 +13185,12 @@ def main(argv: list[str] | None = None) -> int:
     raw_argv = list(sys.argv[1:] if argv is None else argv)
     _stage174a_runtime_start = time.monotonic()
     args = parser.parse_args(argv)
+    resolved_split_seed = args.seed if args.split_seed is None else args.split_seed
+    split_seed_explicit = args.split_seed is not None
+    split_policy = (
+        "fixed_explicit_split_seed"
+        if split_seed_explicit else "training_seed_default"
+    )
     _stage187_margin_enabled = _stage187_validate_activation_args(args)
     _stage187_eligibility_by_id: dict[str, bool] = {}
     _stage187_split_by_id: dict[str, str] = {}
@@ -13186,6 +13201,10 @@ def main(argv: list[str] | None = None) -> int:
         "configured_margin_logit": float(args.compatible_positive_margin_logit),
         "sidecar_accessed": False,
         "checkpoint_selection_unchanged": True,
+        "resolved_split_seed": resolved_split_seed,
+        "expected_frozen_split_exact_id_gate": None,
+        "actual_train_rows": None,
+        "actual_dev_rows": None,
     }
     explicit_args = set(raw_argv)
     _stage174a_requested_epochs = int(args.epochs)
@@ -13574,8 +13593,12 @@ def main(argv: list[str] | None = None) -> int:
         )
     else:
         train_records, dev_records = v5.split_by_pair_id(
-            records, dev_ratio=args.dev_ratio, seed=args.seed
+            records, dev_ratio=args.dev_ratio, seed=resolved_split_seed
         )
+
+    _stage187_sidecar_audit["resolved_split_seed"] = resolved_split_seed
+    _stage187_sidecar_audit["actual_train_rows"] = len(train_records)
+    _stage187_sidecar_audit["actual_dev_rows"] = len(dev_records)
 
     if _stage187_margin_enabled:
         _stage187_expected_train_ids = {
@@ -13596,6 +13619,7 @@ def main(argv: list[str] | None = None) -> int:
             )
         _stage187_sidecar_audit["train_split_row_ids_exact"] = True
         _stage187_sidecar_audit["dev_split_row_ids_exact"] = True
+        _stage187_sidecar_audit["expected_frozen_split_exact_id_gate"] = True
     # Stage71: train-source mask, captured immediately after the clean main
     # train/dev split and before any bridge rows are appended below. Used to
     # restrict intervention_pairwise_losses (which requires a full
@@ -19127,6 +19151,15 @@ def main(argv: list[str] | None = None) -> int:
             "pair_contrastive_frame_rows": len(_pc_pair_records),
         },
     }
+    _stage174a_split_contract = {
+        "training_seed": args.seed,
+        "configured_split_seed": args.split_seed,
+        "resolved_split_seed": resolved_split_seed,
+        "split_seed_explicit": split_seed_explicit,
+        "split_policy": split_policy,
+        "clean_main_train_rows": _stage187_sidecar_audit.get("actual_train_rows"),
+        "clean_main_dev_rows": _stage187_sidecar_audit.get("actual_dev_rows"),
+    }
     _stage174a_resolved_runtime_config = {
         "architecture": args.architecture,
         "backbone": args.backbone,
@@ -19139,6 +19172,11 @@ def main(argv: list[str] | None = None) -> int:
             torch.cuda.get_device_name(index) for index in range(torch.cuda.device_count())
         ],
         "seed": args.seed,
+        "training_seed": args.seed,
+        "configured_split_seed": args.split_seed,
+        "resolved_split_seed": resolved_split_seed,
+        "split_seed_explicit": split_seed_explicit,
+        "split_policy": split_policy,
         "requested_epochs": _stage174a_requested_epochs,
         "actual_planned_epochs": int(args.epochs),
         "train_batch_size_argument": args.train_batch_size,
@@ -19224,6 +19262,9 @@ def main(argv: list[str] | None = None) -> int:
     )
     _stage174a_provenance_record["source_provenance"]["trainer_sha256"] = (
         provenance_file_sha256(Path(__file__).resolve())
+    )
+    _stage174a_provenance_record["split_seed_contract"] = provenance_json_safe(
+        _stage174a_split_contract
     )
     _stage174a_provenance_record["stage174c_clean_pairwise"] = provenance_json_safe({
         "enabled": _stage174c_enabled,
@@ -19619,6 +19660,11 @@ def main(argv: list[str] | None = None) -> int:
                 "checkpoint_selection_uses_stage175b_metric": False,
             },
             "seed": args.seed,
+            "training_seed": args.seed,
+            "configured_split_seed": args.split_seed,
+            "resolved_split_seed": resolved_split_seed,
+            "split_seed_explicit": split_seed_explicit,
+            "split_policy": split_policy,
             "random_seed": args.seed,
             "numpy_seed": args.seed,
             "torch_seed": args.seed,
@@ -22443,6 +22489,11 @@ def main(argv: list[str] | None = None) -> int:
             "backbone": args.backbone,
             "model_name": args.model_name if args.backbone == "mamba" else None,
             "seed": args.seed,
+            "training_seed": args.seed,
+            "configured_split_seed": args.split_seed,
+            "resolved_split_seed": resolved_split_seed,
+            "split_seed_explicit": split_seed_explicit,
+            "split_policy": split_policy,
             "main_data_path": _stage174a_main_data_record.get("resolved_path"),
             "main_data_sha256": _stage174a_main_data_record.get("sha256"),
             "source_git_commit": (
@@ -22672,6 +22723,7 @@ def main(argv: list[str] | None = None) -> int:
     write_provenance_json_atomic(_stage174a_provenance_path, _stage174a_provenance_record)
     report["run_provenance_json"] = str(_stage174a_provenance_path)
     report["run_provenance_schema_version"] = RUN_PROVENANCE_SCHEMA_VERSION
+    report["split_seed_contract"] = provenance_json_safe(_stage174a_split_contract)
     if args.output_json is not None:
         if getattr(args, "stage135_use_best_slot_aux", False):
             report["stage135_report_json"] = str(args.output_json)

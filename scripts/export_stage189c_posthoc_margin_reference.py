@@ -247,6 +247,9 @@ def execute(args: argparse.Namespace) -> tuple[dict[str, Any], list[dict[str, An
         "sidecar_semantic_sha256": None,
         "trainer_sha256": None,
         "git_commit": None,
+        "training_seed": None,
+        "split_seed": None,
+        "split_policy": None,
         "blocking_reasons": blockers,
         "identity_gates": identity_gates,
         "topology_gates": topology_gates,
@@ -320,6 +323,8 @@ def execute(args: argparse.Namespace) -> tuple[dict[str, Any], list[dict[str, An
          "checkpoint Git commit mismatch")
 
     parsed = provenance.get("parsed_args") or {}
+    resolved_runtime = provenance.get("resolved_runtime_config") or {}
+    provenance_split_contract = provenance.get("split_seed_contract") or {}
     provenance_commit = ((provenance.get("source_provenance") or {}).get("git_commit"))
     provenance_trainer_sha = ((provenance.get("source_provenance") or {}).get("trainer_sha256"))
     provenance_checkpoint = ((provenance.get("finalization") or {}).get("selected_checkpoint") or {})
@@ -346,6 +351,47 @@ def execute(args: argparse.Namespace) -> tuple[dict[str, Any], list[dict[str, An
     gate(identity_gates, "checkpoint_training_args", "exact provenance parsed args", "compared",
          isinstance(training_args, dict) and all(training_args.get(key) == value for key, value in parsed.items()),
          "checkpoint parsed training args do not cover provenance parsed args")
+    split_identity = {
+        "provenance_training_seed": parsed.get("seed"),
+        "provenance_configured_split_seed": parsed.get("split_seed"),
+        "provenance_resolved_split_seed": resolved_runtime.get("resolved_split_seed"),
+        "provenance_split_policy": resolved_runtime.get("split_policy"),
+        "provenance_contract_training_seed": provenance_split_contract.get("training_seed"),
+        "provenance_contract_split_seed": provenance_split_contract.get("resolved_split_seed"),
+        "checkpoint_training_seed": training_args.get("seed"),
+        "checkpoint_metadata_training_seed": metadata.get("training_seed"),
+        "checkpoint_configured_split_seed": training_args.get("split_seed"),
+        "checkpoint_resolved_split_seed": metadata.get("resolved_split_seed"),
+        "checkpoint_split_policy": metadata.get("split_policy"),
+    }
+    split_identity_ok = (
+        parsed.get("seed") in (174, 175, 176)
+        and metadata.get("seed") == parsed.get("seed")
+        and metadata.get("training_seed") == parsed.get("seed")
+        and training_args.get("seed") == parsed.get("seed")
+        and parsed.get("split_seed") == 174
+        and training_args.get("split_seed") == 174
+        and metadata.get("configured_split_seed") == 174
+        and metadata.get("resolved_split_seed") == 174
+        and metadata.get("split_seed_explicit") is True
+        and metadata.get("split_policy") == "fixed_explicit_split_seed"
+        and resolved_runtime.get("configured_split_seed") == 174
+        and resolved_runtime.get("resolved_split_seed") == 174
+        and resolved_runtime.get("split_seed_explicit") is True
+        and resolved_runtime.get("split_policy") == "fixed_explicit_split_seed"
+        and provenance_split_contract.get("training_seed") == parsed.get("seed")
+        and provenance_split_contract.get("configured_split_seed") == 174
+        and provenance_split_contract.get("resolved_split_seed") == 174
+        and provenance_split_contract.get("split_seed_explicit") is True
+        and provenance_split_contract.get("split_policy") == "fixed_explicit_split_seed"
+        and provenance_split_contract.get("clean_main_train_rows") == 2880
+        and provenance_split_contract.get("clean_main_dev_rows") == 720
+    )
+    gate(identity_gates, "training_seed_split_seed_identity",
+         {"training_seed": "one of 174/175/176", "split_seed": 174,
+          "split_policy": "fixed_explicit_split_seed"},
+         split_identity, split_identity_ok,
+         "training seed and frozen clean split seed identity mismatch")
 
     margin = metadata.get("compatible_positive_margin") or {}
     weight = margin.get("weight")
@@ -444,6 +490,8 @@ def execute(args: argparse.Namespace) -> tuple[dict[str, Any], list[dict[str, An
          "posthoc train-compatible topology mismatch")
     report.update({
         "seed": metadata.get("seed"), "arm": arm, "selected_epoch": selected_epoch,
+        "training_seed": metadata.get("seed"), "split_seed": metadata.get("resolved_split_seed"),
+        "split_policy": metadata.get("split_policy"),
         "checkpoint_sha256": checkpoint_sha, "dataset_sha256": data_sha,
         "sidecar_semantic_sha256": sidecar_sha, "trainer_sha256": metadata.get("trainer_sha256"),
         "git_commit": metadata.get("source_git_commit"), "checkpoint_identity": None,
@@ -477,6 +525,9 @@ def execute(args: argparse.Namespace) -> tuple[dict[str, Any], list[dict[str, An
         "selected_epoch": selected_epoch,
         "seed": metadata.get("seed"),
         "arm": arm,
+        "training_seed": metadata.get("seed"),
+        "split_seed": metadata.get("resolved_split_seed"),
+        "split_policy": metadata.get("split_policy"),
         "architecture": metadata.get("architecture"),
         "backbone": metadata.get("backbone"),
         "model_name": metadata.get("model_name"),
@@ -571,6 +622,9 @@ def main() -> int:
             "sidecar_semantic_sha256": None,
             "trainer_sha256": None,
             "git_commit": None,
+            "training_seed": None,
+            "split_seed": None,
+            "split_policy": None,
             "checkpoint_helper_sha256": None,
             "local_direct_loop_contract": {
                 "source": 'output["frame_logit"] -> detach() -> cpu() -> reshape(-1)',
