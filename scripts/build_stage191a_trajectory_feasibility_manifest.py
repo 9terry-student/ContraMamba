@@ -69,15 +69,15 @@ CLEAN_FIELDS = {
 }
 
 FULL_SIDECAR_TOPOLOGY = {
-    "sidecar_rows": 3600,
+    "total_rows": 3600,
     "train_rows": 2880,
     "dev_rows": 720,
-    "train_compatible_rows": 1440,
-    "train_incompatible_rows": 1440,
+    "unique_row_ids": 3600,
 }
 
 TRAIN_COMPATIBLE_TOPOLOGY = {
     "train_rows": 1440,
+    "incompatible_train_rows": 1440,
     "eligible_rows": 605,
     "eligible_pairs": 121,
     "eligible_families": 5,
@@ -86,6 +86,17 @@ TRAIN_COMPATIBLE_TOPOLOGY = {
     "unresolved": 119,
 }
 
+CLEAN_PREDICTION_LABELS = ("REFUTE", "NOT_ENTITLED", "SUPPORT")
+PREDICTION_DISTRIBUTION_SEMANTICS = {
+    "raw_prediction_distributions_are_sparse": True,
+    "absent_known_labels_normalized_to_zero": True,
+    "unknown_labels_invalid": True,
+    "normalization_scope": [
+        "prediction_count_REFUTE",
+        "prediction_count_NOT_ENTITLED",
+        "prediction_count_SUPPORT",
+    ],
+}
 STAGE191_INPUT_INVENTORY = [
     "Stage189-A manifest report and six per-run manifests",
     "six Stage189 internal training reports",
@@ -191,7 +202,9 @@ def source_contract(repo: Path) -> dict[str, Any]:
             '"epoch_metrics": _compatible_positive_margin_epoch_metrics',
             '"v7_epoch_diagnostic_history": _v7_epoch_history',
             '"dev_final_macro_f1": dev_metrics.get("final_macro_f1")',
+            '"prediction_distribution": dict(sorted(pred_dist_overall.items()))',
             '"dev_prediction_distribution": dev_metrics.get("prediction_distribution")',
+            '.get(label_name, 0)',
             '"final_epoch": epochs', '"best_epoch": best_epoch', '"select_metric": select_metric',
             '"active_selection_rules": _active_selection_rules', '"runs": reports',
         ],
@@ -201,7 +214,7 @@ def source_contract(repo: Path) -> dict[str, Any]:
     missing = {name: [item for item in needles if item not in texts[name]] for name, needles in required.items()}
     if any(missing.values()):
         raise ValueError(f"authoritative report-writer source contract missing: {missing}")
-    return {"inspected_sources": [str(trainer_path), str(stage189d_path), str(stage190c_path)], "required_snippets_present": True, "authoritative_paths": PATHS}
+    return {"inspected_sources": [str(trainer_path), str(stage189d_path), str(stage190c_path)], "required_snippets_present": True, "authoritative_paths": PATHS, "prediction_distribution_semantics": PREDICTION_DISTRIBUTION_SEMANTICS}
 
 
 def path_inventory(value: Any, prefix: str = "") -> list[str]:
@@ -274,20 +287,31 @@ def audit_clean(
             else:
                 schema_valid = False
             distribution = row.get("dev_prediction_distribution")
-            distribution_ok = (
+            raw_distribution_ok = (
                 isinstance(distribution, dict)
-                and set(distribution) == {"REFUTE", "NOT_ENTITLED", "SUPPORT"}
-                and all(exact_int(distribution[label]) and distribution[label] >= 0
-                        for label in ("REFUTE", "NOT_ENTITLED", "SUPPORT"))
+                and set(distribution).issubset(set(CLEAN_PREDICTION_LABELS))
+                and all(exact_int(value) and value >= 0 for value in distribution.values())
                 and sum(distribution.values()) == 720
             )
-            if distribution_ok:
+            normalized_distribution = (
+                {
+                    label: distribution.get(label, 0)
+                    for label in CLEAN_PREDICTION_LABELS
+                }
+                if raw_distribution_ok else {}
+            )
+            normalized_distribution_ok = (
+                set(normalized_distribution) == set(CLEAN_PREDICTION_LABELS)
+                and all(exact_int(normalized_distribution[label]) and normalized_distribution[label] >= 0
+                        for label in CLEAN_PREDICTION_LABELS)
+                and sum(normalized_distribution.values()) == 720
+            )
+            if raw_distribution_ok and normalized_distribution_ok:
                 valid_distribution_epochs.add(epoch)
             else:
                 schema_valid = False
-        valid_epochs_in_order = [epoch for epoch in epochs if exact_int(epoch) and epoch in EPOCHS]
-        if len(valid_epochs_in_order) != len(epochs) or valid_epochs_in_order != sorted(valid_epochs_in_order) or len(set(valid_epochs_in_order)) != len(valid_epochs_in_order):
-            schema_valid = False
+    if len(rows) != 20 or epochs != list(EPOCHS) or len(set(epochs)) != len(epochs):
+        schema_valid = False
 
     duplicate_epochs = sorted({epoch for epoch in epochs if exact_int(epoch) and epochs.count(epoch) > 1})
     observed_epoch_set = {epoch for epoch in epochs if exact_int(epoch)}
@@ -789,7 +813,7 @@ def main() -> int:
         decision, runnable, next_stage = REPLAY, False, "Stage191-B deterministic replay specification. This decision does not itself authorize training."
 
     replay_required = decision == REPLAY
-    report = {"stage": "Stage191-A", "decision": decision, "runnable": runnable, "blocking_reasons": blockers, "identity_closure_blocking_reasons": identity_blockers, "artifact_validity_blocking_reasons": artifact_blockers, "artifact_sufficiency_reasons": artifact_sufficiency_reasons, "recommended_next_stage": next_stage, "training_performed": False, "checkpoint_loaded": False, "model_loaded": False, "external_data_used": False, "training_authorized": False, "replay_execution_authorized": False, "model_advancement_decision": False, "replay_specification_required": replay_required, "next_stage_specification_authorized": replay_required, "training_git_commit": TRAINING_COMMIT, "stage190_diagnostic_git_commit": STAGE190_COMMIT, "current_stage191_diagnostic_git_commit": args.current_diagnostic_git_commit.strip(), "trainer_sha256": TRAINER_SHA, "dataset_sha256": DATA_SHA, "sidecar_semantic_sha256": SIDECAR_SHA, "exact_six_run_identity": run_matrix, "six_run_identity": run_matrix, "margin_history_complete_by_run": margin_complete, "clean_metric_history_complete_by_run": clean_complete, "epoch_checkpoint_history_complete_by_run": checkpoint_complete, "missing_clean_metric_fields_by_run": missing_clean_fields, "missing_clean_metric_epochs_by_run": missing_clean_epochs, "checkpoint_epochs_by_run": checkpoint_epochs, "selection_epoch_by_run": {key: value.get("selected_epoch") for key, value in selections.items()}, "final_epoch_by_run": {key: value.get("final_epoch") for key, value in selections.items()}, "authoritative_schema_paths": PATHS, "source_inspection": source_inspection, "selection_provenance_by_run": selections, "non_authoritative_inventory_paths": inventory_paths, "stage191_static_input_inventory": STAGE191_INPUT_INVENTORY, "six_run_external_use_ledger": external_use_ledger, "identity_and_closure_gates_passed": identity_pass, "fail_closed_exception": exception_record}
+    report = {"stage": "Stage191-A", "decision": decision, "runnable": runnable, "blocking_reasons": blockers, "identity_closure_blocking_reasons": identity_blockers, "artifact_validity_blocking_reasons": artifact_blockers, "artifact_sufficiency_reasons": artifact_sufficiency_reasons, "recommended_next_stage": next_stage, "training_performed": False, "checkpoint_loaded": False, "model_loaded": False, "external_data_used": False, "training_authorized": False, "replay_execution_authorized": False, "model_advancement_decision": False, "replay_specification_required": replay_required, "next_stage_specification_authorized": replay_required, "training_git_commit": TRAINING_COMMIT, "stage190_diagnostic_git_commit": STAGE190_COMMIT, "current_stage191_diagnostic_git_commit": args.current_diagnostic_git_commit.strip(), "trainer_sha256": TRAINER_SHA, "dataset_sha256": DATA_SHA, "sidecar_semantic_sha256": SIDECAR_SHA, "exact_six_run_identity": run_matrix, "six_run_identity": run_matrix, "margin_history_complete_by_run": margin_complete, "clean_metric_history_complete_by_run": clean_complete, "epoch_checkpoint_history_complete_by_run": checkpoint_complete, "missing_clean_metric_fields_by_run": missing_clean_fields, "missing_clean_metric_epochs_by_run": missing_clean_epochs, "checkpoint_epochs_by_run": checkpoint_epochs, "selection_epoch_by_run": {key: value.get("selected_epoch") for key, value in selections.items()}, "final_epoch_by_run": {key: value.get("final_epoch") for key, value in selections.items()}, "authoritative_schema_paths": PATHS, "source_inspection": source_inspection, "prediction_distribution_semantics": PREDICTION_DISTRIBUTION_SEMANTICS, "selection_provenance_by_run": selections, "non_authoritative_inventory_paths": inventory_paths, "stage191_static_input_inventory": STAGE191_INPUT_INVENTORY, "six_run_external_use_ledger": external_use_ledger, "identity_and_closure_gates_passed": identity_pass, "fail_closed_exception": exception_record}
     write_json(output / "stage191a_trajectory_feasibility_report.json", report)
     write_csv(output / "stage191a_authoritative_input_identity.csv", ["artifact", "path", "expected_identity", "observed_identity", "passed"], identities)
     write_csv(output / "stage191a_run_matrix.csv", ["seed", "arm", "run", "run_directory", "training_seed", "split_seed", "train_rows", "dev_rows", "selected_epoch", "final_epoch", "margin_history_complete", "clean_metric_history_complete", "epoch_checkpoint_history_complete"], run_matrix)
