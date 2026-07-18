@@ -120,9 +120,17 @@ _STAGE191_EXPECTED_DEV_ROWS = 720
 _STAGE191_EXPECTED_SUPPORT_ROWS = 89
 STAGE191_TRAINING_SEEDS = (174, 175, 176)
 STAGE193_TAIL3_REPLICATION_SEEDS = (177, 178, 179)
+STAGE195_TAIL3_PARAMETER_SWA_SEEDS = (180, 181, 182)
 _TRAJECTORY_OBSERVABILITY_NONE = "none"
 _TRAJECTORY_OBSERVABILITY_STAGE191 = "stage191_deterministic_replay"
 _TRAJECTORY_OBSERVABILITY_STAGE193 = "stage193_tail3_fresh_seed_replication"
+_TRAJECTORY_OBSERVABILITY_STAGE195 = "stage195_tail3_parameter_swa_causal_test"
+_STAGE195_SOURCE_EPOCHS = (18, 19, 20)
+_STAGE195_OUTPUT_FILENAMES = (
+    "stage195_tail3_parameter_swa_contract.json",
+    "stage195_tail3_parameter_swa_predictions.jsonl",
+    "stage195_tail3_parameter_swa_metrics.json",
+)
 STAGE191_FORBIDDEN_PATH_OPTIONS = (
     "ood_data",
     "output_ood_json",
@@ -196,6 +204,28 @@ STAGE193_FORBIDDEN_AUXILIARY_MODES = (
     "v7_temporal_safety_cap_mode",
     "v7_temporal_mismatch_multihead_cap_mode",
 )
+STAGE195_FORBIDDEN_SELECTION_FLAGS = (
+    "use_td_constrained_selection",
+    "use_preservation_constrained_selection",
+    "stage44_use_anti_collapse_selection",
+)
+STAGE195_FORBIDDEN_CALIBRATION_OPTIONS = (
+    "ood_unflagged_ne_shift_sweep",
+    "ood_selective_ne_shift_sweep",
+    "dev_calibrated_ne_shift_candidates",
+    "dev_calibrated_ne_frame_penalty_candidates",
+)
+
+
+def _stage195_serializable_args(args: argparse.Namespace) -> dict[str, Any]:
+    snapshot = dict(vars(args))
+    if (
+        getattr(args, "stage195_tail3_parameter_swa_causal_test", False) is False
+        and getattr(args, "stage195_tail3_parameter_swa_output_dir", None) is None
+    ):
+        snapshot.pop("stage195_tail3_parameter_swa_causal_test", None)
+        snapshot.pop("stage195_tail3_parameter_swa_output_dir", None)
+    return snapshot
 
 
 def _stage191_write_json(path: Path, value: Any) -> None:
@@ -215,6 +245,47 @@ def _stage191_write_jsonl(
             handle.write(json.dumps(row, sort_keys=True, ensure_ascii=False) + "\n")
 
 
+def _stage195_atomic_publish_text(path: Path, text: str) -> None:
+    """Publish a complete Stage195 text artifact without replacing an existing file."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary_path = path.with_name(
+        f".{path.name}.{os.getpid()}.{time.time_ns()}.tmp"
+    )
+    try:
+        with temporary_path.open("x", encoding="utf-8", newline="\n") as handle:
+            handle.write(text)
+            handle.flush()
+            os.fsync(handle.fileno())
+        try:
+            os.link(temporary_path, path)
+        except FileExistsError as exc:
+            raise FileExistsError(
+                f"Stage195 refuses to overwrite existing artifact: {path}"
+            ) from exc
+    finally:
+        if temporary_path.exists():
+            temporary_path.unlink()
+
+
+def _stage195_write_json_atomic(path: Path, value: Any) -> None:
+    _stage195_atomic_publish_text(
+        path,
+        json.dumps(value, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
+    )
+
+
+def _stage195_write_jsonl_atomic(
+    path: Path, rows: list[dict[str, Any]]
+) -> None:
+    _stage195_atomic_publish_text(
+        path,
+        "".join(
+            json.dumps(row, sort_keys=True, ensure_ascii=False) + "\n"
+            for row in rows
+        ),
+    )
+
+
 def _stage191_tensor_state_sha256(items: list[tuple[str, torch.Tensor]]) -> str:
     digest = hashlib.sha256()
     for name, tensor in items:
@@ -227,6 +298,662 @@ def _stage191_tensor_state_sha256(items: list[tuple[str, torch.Tensor]]) -> str:
         flat = cpu.reshape(-1)
         digest.update(flat.view(torch.uint8).numpy().tobytes())
     return digest.hexdigest()
+
+
+def _stage195_trainable_parameter_sha256(
+    items: list[tuple[str, torch.Tensor]],
+) -> str:
+    """Fingerprint an exact trainable-parameter mapping in canonical name order."""
+    if any(type(name) is not str or not name for name, _ in items):
+        raise RuntimeError("Stage195 trainable parameter names must be non-empty strings")
+    if len({name for name, _ in items}) != len(items):
+        raise RuntimeError("Stage195 trainable parameter names must be unique")
+    digest = hashlib.sha256()
+    for name, tensor in sorted(items, key=lambda item: item[0]):
+        if not isinstance(tensor, torch.Tensor):
+            raise RuntimeError("Stage195 trainable parameter mapping contains a non-tensor")
+        cpu = tensor.detach().cpu().contiguous()
+        digest.update(name.encode("utf-8") + b"\0")
+        digest.update(str(cpu.dtype).encode("ascii") + b"\0")
+        digest.update(
+            json.dumps(list(cpu.shape), separators=(",", ":")).encode("ascii")
+            + b"\0"
+        )
+        digest.update(cpu.reshape(-1).view(torch.uint8).numpy().tobytes())
+    fingerprint = digest.hexdigest()
+    if re.fullmatch(r"[0-9a-f]{64}", fingerprint) is None:
+        raise RuntimeError("Stage195 parameter fingerprint is not lowercase SHA256")
+    return fingerprint
+
+
+def _stage195_unique_trainable_named_parameters(
+    model: nn.Module,
+) -> list[tuple[str, nn.Parameter]]:
+    named_parameters = list(model.named_parameters())
+    names = [name for name, _ in named_parameters]
+    if len(set(names)) != len(names):
+        raise RuntimeError("Stage195 model.named_parameters() returned duplicate names")
+    trainable = [
+        (name, parameter)
+        for name, parameter in named_parameters
+        if parameter.requires_grad is True
+    ]
+    if not trainable:
+        raise RuntimeError("Stage195 requires at least one trainable named parameter")
+    if len({id(parameter) for _, parameter in trainable}) != len(trainable):
+        raise RuntimeError(
+            "Stage195 requires the unique object-identity sequence from named_parameters()"
+        )
+    nonfloating = [
+        name for name, parameter in trainable if not parameter.is_floating_point()
+    ]
+    if nonfloating:
+        raise RuntimeError(
+            "Stage195 trainable parameters must all be floating point: "
+            f"{nonfloating}"
+        )
+    return trainable
+
+
+def _stage195_initialize_parameter_state(
+    model: nn.Module, optimizer: torch.optim.Optimizer
+) -> dict[str, Any]:
+    trainable = _stage195_unique_trainable_named_parameters(model)
+    name_by_identity = {id(parameter): name for name, parameter in trainable}
+    optimizer_identities: list[int] = []
+    for group_index, group in enumerate(optimizer.param_groups):
+        group_parameters = group.get("params")
+        if type(group_parameters) not in (list, tuple):
+            raise RuntimeError(
+                f"Stage195 optimizer group {group_index} params must be a list or tuple"
+            )
+        for parameter in group_parameters:
+            parameter_identity = id(parameter)
+            if parameter_identity not in name_by_identity:
+                raise RuntimeError(
+                    "Stage195 optimizer owns a parameter with no trainable model name"
+                )
+            optimizer_identities.append(parameter_identity)
+    if len(set(optimizer_identities)) != len(optimizer_identities):
+        raise RuntimeError("Stage195 detected duplicate optimizer parameter ownership")
+    trainable_identities = set(name_by_identity)
+    optimizer_identity_set = set(optimizer_identities)
+    if trainable_identities != optimizer_identity_set:
+        missing_names = sorted(
+            name_by_identity[identity]
+            for identity in trainable_identities - optimizer_identity_set
+        )
+        raise RuntimeError(
+            "Stage195 trainable named parameters are absent from the optimizer: "
+            f"{missing_names}"
+        )
+    parameter_count = len(trainable)
+    parameter_numel = sum(int(parameter.numel()) for _, parameter in trainable)
+    if type(parameter_count) is not int or parameter_count < 1:
+        raise RuntimeError("Stage195 averaged parameter count must be a positive integer")
+    if type(parameter_numel) is not int or parameter_numel < 1:
+        raise RuntimeError("Stage195 averaged parameter numel must be a positive integer")
+    return {
+        "ordered_names": [name for name, _ in trainable],
+        "parameter_identities": {
+            name: id(parameter) for name, parameter in trainable
+        },
+        "parameter_metadata": {
+            name: (tuple(parameter.shape), parameter.dtype)
+            for name, parameter in trainable
+        },
+        "optimizer_parameter_count": len(optimizer_identities),
+        "averaged_parameter_count": parameter_count,
+        "averaged_parameter_numel": parameter_numel,
+        "source_epochs": [],
+        "source_fingerprints": {},
+        "source_parameter_metadata": None,
+        "cpu_float64_sums": {},
+        "epoch20_values": None,
+    }
+
+
+def _stage195_validate_current_parameter_sequence(
+    model: nn.Module, state: dict[str, Any]
+) -> list[tuple[str, nn.Parameter]]:
+    trainable = _stage195_unique_trainable_named_parameters(model)
+    if [name for name, _ in trainable] != state["ordered_names"]:
+        raise RuntimeError("Stage195 trainable parameter-name sequence changed")
+    for name, parameter in trainable:
+        if id(parameter) != state["parameter_identities"][name]:
+            raise RuntimeError(
+                f"Stage195 trainable parameter object identity changed for {name!r}"
+            )
+        expected_shape, expected_dtype = state["parameter_metadata"][name]
+        if tuple(parameter.shape) != expected_shape:
+            raise RuntimeError(
+                f"Stage195 trainable parameter shape changed for {name!r}"
+            )
+        if parameter.dtype != expected_dtype:
+            raise RuntimeError(
+                f"Stage195 trainable parameter dtype changed for {name!r}"
+            )
+    return trainable
+
+
+def _stage195_capture_source_epoch(
+    model: nn.Module, state: dict[str, Any], epoch: int
+) -> None:
+    if type(epoch) is not int or epoch not in _STAGE195_SOURCE_EPOCHS:
+        raise RuntimeError("Stage195 capture epoch must be exactly 18, 19, or 20")
+    if epoch in state["source_epochs"]:
+        raise RuntimeError(f"Stage195 source epoch {epoch} was captured more than once")
+    expected_next_epoch = _STAGE195_SOURCE_EPOCHS[len(state["source_epochs"])]
+    if epoch != expected_next_epoch:
+        raise RuntimeError(
+            "Stage195 source epochs must be captured in exact order 18, 19, 20"
+        )
+    trainable = _stage195_validate_current_parameter_sequence(model, state)
+    captured: list[tuple[str, torch.Tensor]] = []
+    metadata: list[tuple[str, tuple[int, ...], torch.dtype]] = []
+    for name, parameter in trainable:
+        cpu_value = parameter.detach().cpu().clone().contiguous()
+        if not bool(torch.isfinite(cpu_value).all().item()):
+            raise RuntimeError(
+                f"Stage195 source epoch {epoch} parameter {name!r} is nonfinite"
+            )
+        captured.append((name, cpu_value))
+        metadata.append((name, tuple(cpu_value.shape), cpu_value.dtype))
+    if state["source_parameter_metadata"] is None:
+        state["source_parameter_metadata"] = metadata
+    elif metadata != state["source_parameter_metadata"]:
+        raise RuntimeError(
+            "Stage195 parameter name, shape, or dtype changed between source epochs"
+        )
+    fingerprint = _stage195_trainable_parameter_sha256(captured)
+    state["source_fingerprints"][epoch] = fingerprint
+    sums: dict[str, torch.Tensor] = state["cpu_float64_sums"]
+    for name, cpu_value in captured:
+        if epoch == 18:
+            sums[name] = cpu_value.to(dtype=torch.float64)
+        else:
+            if name not in sums:
+                raise RuntimeError(
+                    f"Stage195 CPU float64 accumulator is missing {name!r}"
+                )
+            sums[name].add_(cpu_value.to(dtype=torch.float64))
+        if sums[name].device.type != "cpu" or sums[name].dtype != torch.float64:
+            raise RuntimeError("Stage195 accumulator must remain CPU torch.float64")
+        if not bool(torch.isfinite(sums[name]).all().item()):
+            raise RuntimeError(
+                f"Stage195 CPU float64 sum became nonfinite for {name!r}"
+            )
+    if epoch == 20:
+        state["epoch20_values"] = {name: value for name, value in captured}
+    state["source_epochs"].append(epoch)
+
+
+def _stage195_build_clean_dev_artifacts(
+    dev_output: dict[str, Any],
+    dev_inputs: dict[str, torch.Tensor],
+    dev_records: list[dict[str, Any]],
+    *,
+    run_name: str,
+    training_seed: int,
+    split_seed: int,
+    arm: str,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    label_to_id, id_to_label = _stage191_verified_label_mapping()
+    canonical_ids = [label_to_id[name] for name in _STAGE191_LABELS]
+    if canonical_ids != [0, 1, 2]:
+        raise RuntimeError(
+            "Stage195 canonical argmax tie order must be REFUTE, NOT_ENTITLED, SUPPORT"
+        )
+    logits = dev_output.get("logits")
+    labels = dev_inputs.get("final_labels")
+    if not isinstance(logits, torch.Tensor):
+        raise RuntimeError('Stage195 requires authoritative output["logits"]')
+    if not isinstance(labels, torch.Tensor):
+        raise RuntimeError("Stage195 clean-dev final labels must be a tensor")
+    if tuple(logits.shape) != (_STAGE191_EXPECTED_DEV_ROWS, 3):
+        raise RuntimeError("Stage195 clean-dev logits must have shape (720, 3)")
+    if tuple(labels.shape) != (_STAGE191_EXPECTED_DEV_ROWS,):
+        raise RuntimeError("Stage195 clean-dev labels must have shape (720,)")
+    if len(dev_records) != _STAGE191_EXPECTED_DEV_ROWS:
+        raise RuntimeError("Stage195 clean-dev record count must be exactly 720")
+    if not bool(torch.isfinite(logits).all().item()):
+        raise RuntimeError("Stage195 clean-dev logits must all be finite")
+    raw_gold_ids = labels.detach().cpu().tolist()
+    if any(
+        type(value) is not int or value not in _STAGE191_CANONICAL_IDS
+        for value in raw_gold_ids
+    ):
+        raise RuntimeError("Stage195 clean-dev labels are not canonical")
+    row_ce = F.cross_entropy(logits, labels, reduction="none").detach().float().cpu()
+    logits_cpu = logits.detach().float().cpu()
+    labels_cpu = labels.detach().cpu()
+    predictions = logits_cpu.argmax(dim=-1)
+    if not bool(torch.isfinite(row_ce).all().item()) or bool((row_ce < 0).any().item()):
+        raise RuntimeError("Stage195 per-row final CE must be finite and nonnegative")
+
+    gold_counts = {
+        name: int((labels_cpu == label_to_id[name]).sum().item())
+        for name in _STAGE191_LABELS
+    }
+    pred_counts = {
+        name: int((predictions == label_to_id[name]).sum().item())
+        for name in _STAGE191_LABELS
+    }
+    confusion = [
+        [
+            int(((labels_cpu == gold) & (predictions == pred)).sum().item())
+            for pred in canonical_ids
+        ]
+        for gold in canonical_ids
+    ]
+    if (
+        any(type(value) is not int or value < 0 for value in gold_counts.values())
+        or any(type(value) is not int or value < 0 for value in pred_counts.values())
+        or sum(gold_counts.values()) != _STAGE191_EXPECTED_DEV_ROWS
+        or sum(pred_counts.values()) != _STAGE191_EXPECTED_DEV_ROWS
+        or sum(sum(row) for row in confusion) != _STAGE191_EXPECTED_DEV_ROWS
+    ):
+        raise RuntimeError("Stage195 clean-dev dense counts must sum to exactly 720")
+    if gold_counts["SUPPORT"] != _STAGE191_EXPECTED_SUPPORT_ROWS:
+        raise RuntimeError("Stage195 clean-dev SUPPORT count must be exactly 89")
+    f1s: list[float] = []
+    for label_id in canonical_ids:
+        tp = int(((predictions == label_id) & (labels_cpu == label_id)).sum().item())
+        predicted_count = int((predictions == label_id).sum().item())
+        gold_count = int((labels_cpu == label_id).sum().item())
+        precision = tp / predicted_count if predicted_count else 0.0
+        recall = tp / gold_count if gold_count else 0.0
+        f1s.append(
+            2 * precision * recall / (precision + recall)
+            if precision + recall
+            else 0.0
+        )
+    refute = label_to_id["REFUTE"]
+    not_entitled = label_to_id["NOT_ENTITLED"]
+    support = label_to_id["SUPPORT"]
+    rows: list[dict[str, Any]] = []
+    for position, (gold, pred) in enumerate(
+        zip(raw_gold_ids, predictions.tolist())
+    ):
+        row = {
+            "stage": "Stage195-P0",
+            "source": "tail3_trainable_parameter_swa",
+            "run": run_name,
+            "training_seed": training_seed,
+            "split_seed": split_seed,
+            "arm": arm,
+            "source_epochs": list(_STAGE195_SOURCE_EPOCHS),
+            "dev_position": position,
+            "gold_final_label": id_to_label[gold],
+            "predicted_final_label": id_to_label[pred],
+            "final_logits": [
+                float(logits_cpu[position, label_to_id[name]].item())
+                for name in _STAGE191_LABELS
+            ],
+            "final_ce": float(row_ce[position].item()),
+        }
+        if tuple(row) != (
+            "stage",
+            "source",
+            "run",
+            "training_seed",
+            "split_seed",
+            "arm",
+            "source_epochs",
+            "dev_position",
+            "gold_final_label",
+            "predicted_final_label",
+            "final_logits",
+            "final_ce",
+        ):
+            raise RuntimeError("Stage195 prediction row schema changed")
+        rows.append(row)
+    if len(rows) != _STAGE191_EXPECTED_DEV_ROWS or any(
+        type(row["dev_position"]) is not int
+        or row["dev_position"] != expected_position
+        for expected_position, row in enumerate(rows)
+    ):
+        raise RuntimeError("Stage195 dev positions must be exact integers 0 through 719")
+    metrics = {
+        "stage": "Stage195-P0",
+        "source": "tail3_trainable_parameter_swa",
+        "run": run_name,
+        "training_seed": training_seed,
+        "split_seed": split_seed,
+        "arm": arm,
+        "source_epochs": list(_STAGE195_SOURCE_EPOCHS),
+        "row_count": len(rows),
+        "clean_ce": float(row_ce.mean().item()),
+        "accuracy": float((predictions == labels_cpu).float().mean().item()),
+        "macro_f1": float(sum(f1s) / 3),
+        "support_recall": confusion[_STAGE191_LABELS.index("SUPPORT")][
+            _STAGE191_LABELS.index("SUPPORT")
+        ] / _STAGE191_EXPECTED_SUPPORT_ROWS,
+        "false_entitlement_total": int((
+            (labels_cpu == not_entitled)
+            & ((predictions == refute) | (predictions == support))
+        ).sum().item()),
+        "false_not_entitled_total": int((
+            ((labels_cpu == refute) | (labels_cpu == support))
+            & (predictions == not_entitled)
+        ).sum().item()),
+        "polarity_error_total": int((
+            ((labels_cpu == refute) & (predictions == support))
+            | ((labels_cpu == support) & (predictions == refute))
+        ).sum().item()),
+        "pred_counts": pred_counts,
+        "gold_counts": gold_counts,
+        "confusion_matrix": {
+            gold_name: {
+                pred_name: confusion[gold_index][pred_index]
+                for pred_index, pred_name in enumerate(_STAGE191_LABELS)
+            }
+            for gold_index, gold_name in enumerate(_STAGE191_LABELS)
+        },
+        "canonical_labels": list(_STAGE191_LABELS),
+        "logits_source": 'output["logits"]',
+        "checkpoint_selection_used": False,
+        "external_data_used": False,
+    }
+    if type(metrics["row_count"]) is not int or metrics["row_count"] != 720:
+        raise RuntimeError("Stage195 metrics row_count must be exact integer 720")
+    return rows, metrics
+
+
+def _stage195_finalize_parameter_swa_causal_test(
+    *,
+    model: nn.Module,
+    state: dict[str, Any],
+    dev_inputs: dict[str, torch.Tensor],
+    dev_records: list[dict[str, Any]],
+    dev_temporal_flags: torch.Tensor,
+    dev_predicate_flags: torch.Tensor,
+    run_name: str,
+    training_seed: int,
+    split_seed: int,
+    arm: str,
+    output_dir: Path,
+    eval_batch_size: int | None,
+    amp_enabled: bool,
+    temporal_adapter_final_penalty_scale: float,
+    temporal_channel_gated_penalty_scale: float,
+    args: argparse.Namespace,
+    runtime_context: dict[str, Any],
+) -> None:
+    source_epochs = state["source_epochs"]
+    if (
+        type(source_epochs) is not list
+        or len(source_epochs) != 3
+        or any(type(epoch) is not int for epoch in source_epochs)
+        or source_epochs != list(_STAGE195_SOURCE_EPOCHS)
+    ):
+        raise RuntimeError("Stage195 requires exact source epochs [18, 19, 20]")
+    source_capture_count = len(source_epochs)
+    if type(source_capture_count) is not int or source_capture_count != 3:
+        raise RuntimeError("Stage195 source_capture_count must be exact integer 3")
+    source_fingerprints = state["source_fingerprints"]
+    if (
+        type(source_fingerprints) is not dict
+        or set(source_fingerprints) != set(_STAGE195_SOURCE_EPOCHS)
+        or any(type(epoch) is not int for epoch in source_fingerprints)
+        or any(
+            type(value) is not str
+            or re.fullmatch(r"[0-9a-f]{64}", value) is None
+            for value in source_fingerprints.values()
+        )
+    ):
+        raise RuntimeError("Stage195 source fingerprints are incomplete or invalid")
+    epoch20_values = state["epoch20_values"]
+    if type(epoch20_values) is not dict:
+        raise RuntimeError("Stage195 exact epoch-20 restoration values are missing")
+    trainable = _stage195_validate_current_parameter_sequence(model, state)
+    if set(epoch20_values) != set(state["ordered_names"]):
+        raise RuntimeError("Stage195 epoch-20 restoration mapping is incomplete")
+    current_epoch20_fingerprint = _stage195_trainable_parameter_sha256(trainable)
+    if current_epoch20_fingerprint != source_fingerprints[20]:
+        raise RuntimeError(
+            "Stage195 in-memory state changed after the epoch-20 trajectory export"
+        )
+
+    predictions_path = output_dir / _STAGE195_OUTPUT_FILENAMES[1]
+    metrics_path = output_dir / _STAGE195_OUTPUT_FILENAMES[2]
+    contract_path = output_dir / _STAGE195_OUTPUT_FILENAMES[0]
+    prior_training_mode = model.training
+    averaged_fingerprint: str | None = None
+    restored_fingerprint: str | None = None
+    predictions_sha256: str | None = None
+    metrics_sha256: str | None = None
+    try:
+        with torch.no_grad():
+            for name, parameter in trainable:
+                cpu_sum = state["cpu_float64_sums"].get(name)
+                if not isinstance(cpu_sum, torch.Tensor):
+                    raise RuntimeError(
+                        f"Stage195 CPU float64 sum is missing for {name!r}"
+                    )
+                if cpu_sum.device.type != "cpu" or cpu_sum.dtype != torch.float64:
+                    raise RuntimeError(
+                        "Stage195 average source must be a CPU torch.float64 sum"
+                    )
+                cpu_average = cpu_sum / 3
+                if not bool(torch.isfinite(cpu_average).all().item()):
+                    raise RuntimeError(
+                        f"Stage195 averaged value is nonfinite for {name!r}"
+                    )
+                original_dtype_average = cpu_average.to(dtype=parameter.dtype)
+                if not bool(torch.isfinite(original_dtype_average).all().item()):
+                    raise RuntimeError(
+                        f"Stage195 cast averaged value is nonfinite for {name!r}"
+                    )
+                parameter.copy_(
+                    original_dtype_average.to(
+                        device=parameter.device, dtype=parameter.dtype
+                    )
+                )
+        averaged_fingerprint = _stage195_trainable_parameter_sha256(
+            _stage195_validate_current_parameter_sequence(model, state)
+        )
+        model.eval()
+        with torch.inference_mode():
+            swa_dev_output = _vnext_forward_maybe_batched(
+                model,
+                dev_inputs,
+                temporal_mismatch_flags=dev_temporal_flags,
+                predicate_mismatch_flags=dev_predicate_flags,
+                temporal_adapter_final_penalty_scale=(
+                    temporal_adapter_final_penalty_scale
+                ),
+                temporal_channel_gated_penalty_scale=(
+                    temporal_channel_gated_penalty_scale
+                ),
+                batch_size=eval_batch_size,
+                amp_enabled=amp_enabled,
+            )
+        prediction_rows, metrics = _stage195_build_clean_dev_artifacts(
+            swa_dev_output,
+            dev_inputs,
+            dev_records,
+            run_name=run_name,
+            training_seed=training_seed,
+            split_seed=split_seed,
+            arm=arm,
+        )
+        _stage195_write_jsonl_atomic(predictions_path, prediction_rows)
+        _stage195_write_json_atomic(metrics_path, metrics)
+        predictions_sha256 = _stage187_file_sha256(predictions_path)
+        metrics_sha256 = _stage187_file_sha256(metrics_path)
+    finally:
+        try:
+            with torch.no_grad():
+                current_trainable = _stage195_validate_current_parameter_sequence(
+                    model, state
+                )
+                for name, parameter in current_trainable:
+                    original_value = epoch20_values[name]
+                    if (
+                        original_value.device.type != "cpu"
+                        or original_value.dtype != parameter.dtype
+                        or tuple(original_value.shape) != tuple(parameter.shape)
+                    ):
+                        raise RuntimeError(
+                            f"Stage195 epoch-20 restoration metadata mismatch for {name!r}"
+                        )
+                    parameter.copy_(
+                        original_value.to(
+                            device=parameter.device, dtype=parameter.dtype
+                        )
+                    )
+        finally:
+            model.train(prior_training_mode)
+        restored_fingerprint = _stage195_trainable_parameter_sha256(
+            _stage195_validate_current_parameter_sequence(model, state)
+        )
+        if restored_fingerprint != source_fingerprints[20]:
+            raise RuntimeError(
+                "Stage195 failed exact epoch-20 trainable-parameter restoration"
+            )
+
+    if (
+        averaged_fingerprint is None
+        or restored_fingerprint is None
+        or predictions_sha256 is None
+        or metrics_sha256 is None
+    ):
+        raise RuntimeError("Stage195 subordinate artifact production was incomplete")
+    if any(
+        re.fullmatch(r"[0-9a-f]{64}", value) is None
+        for value in (
+            averaged_fingerprint,
+            restored_fingerprint,
+            predictions_sha256,
+            metrics_sha256,
+        )
+    ):
+        raise RuntimeError("Stage195 requires lowercase 64-character SHA256 values")
+    contract = {
+        "stage": "Stage195-P0",
+        "source": "tail3_trainable_parameter_swa",
+        "run": run_name,
+        "observability_mode": _TRAJECTORY_OBSERVABILITY_STAGE195,
+        "enabled_flags": {
+            "stage191_trajectory_replay_observability": False,
+            "stage191_save_trajectory_state_capsules": False,
+            "stage193_tail3_fresh_seed_observability": False,
+            "stage195_tail3_parameter_swa_causal_test": True,
+        },
+        "authorized_training_seeds": list(STAGE195_TAIL3_PARAMETER_SWA_SEEDS),
+        "training_seed": training_seed,
+        "split_seed": split_seed,
+        "arm": arm,
+        "runtime_envelope": {
+            "architecture": args.architecture,
+            "backbone": args.backbone,
+            "model_name": args.model_name,
+            "device": args.device,
+            "epochs": args.epochs,
+            "select_metric": args.select_metric,
+            "flag_source": args.flag_source,
+            "data_path": str(Path(args.data).resolve()),
+            "data_sha256": _STAGE187_DATASET_SHA256,
+            "split_seed_explicit": args.split_seed == 174,
+            "max_train_records": args.max_train_records,
+            "smoke": args.smoke,
+            "loss_sweep": args.loss_sweep,
+            "compatible_positive_margin_weight": float(
+                args.compatible_positive_margin_weight
+            ),
+            "compatible_positive_margin_logit": float(
+                args.compatible_positive_margin_logit
+            ),
+            "controlled_integrity_sidecar_path": (
+                str((
+                    Path(args.controlled_integrity_sidecar_path)
+                    if Path(args.controlled_integrity_sidecar_path).is_absolute()
+                    else ROOT / Path(args.controlled_integrity_sidecar_path)
+                ).resolve())
+                if args.controlled_integrity_sidecar_path is not None
+                else None
+            ),
+            "expected_integrity_sidecar_semantic_sha256": (
+                args.expected_integrity_sidecar_semantic_sha256
+            ),
+            "external_data_used": False,
+            "ood_data_used": False,
+            "bridge_rows_used": False,
+            "time_swap_used": False,
+            "temporal_auxiliary_data_used": False,
+            "coverage_entailment_auxiliary_data_used": False,
+            "pair_contrastive_auxiliary_data_used": False,
+            "constrained_checkpoint_selection_used": False,
+            "calibration_applied": False,
+        },
+        "source_epochs": list(_STAGE195_SOURCE_EPOCHS),
+        "source_capture_count": source_capture_count,
+        "averaged_parameter_scope": "unique_trainable_named_parameters_only",
+        "non_trainable_parameter_source": "epoch20",
+        "buffer_source": "epoch20",
+        "optimizer_trainable_parameter_ownership_validated": True,
+        "optimizer_trainable_parameter_object_identity_sets_equal": True,
+        "optimizer_parameter_without_trainable_model_name": False,
+        "trainable_parameter_absent_from_optimizer": False,
+        "duplicate_optimizer_parameter_ownership": False,
+        "optimizer_parameter_count": state["optimizer_parameter_count"],
+        "averaged_parameter_count": state["averaged_parameter_count"],
+        "averaged_parameter_numel": state["averaged_parameter_numel"],
+        "accumulator_dtype": "torch.float64",
+        "accumulator_device": "cpu",
+        "averaged_values_cast_to_original_dtype": True,
+        "epoch18_trainable_parameter_sha256": source_fingerprints[18],
+        "epoch19_trainable_parameter_sha256": source_fingerprints[19],
+        "epoch20_trainable_parameter_sha256": source_fingerprints[20],
+        "averaged_trainable_parameter_sha256": averaged_fingerprint,
+        "restored_epoch20_trainable_parameter_sha256": restored_fingerprint,
+        "epoch20_restoration_verified": True,
+        "stage191_trajectory_observability_implementation_reused": True,
+        "state_capsule_saving_enabled": False,
+        "expected_state_capsules": 0,
+        "parameter_name_shape_dtype_stable_across_source_epochs": True,
+        "source_parameter_values_finite": True,
+        "logits_source": 'output["logits"]',
+        "loss_logits_used": False,
+        "training_semantics_changed": False,
+        "parameter_averaging_changes_training_gradients": False,
+        "extra_forward_pass_performed": True,
+        "extra_training_forward_pass_performed": False,
+        "post_training_clean_dev_forward_pass_count": 1,
+        "optimizer_state_averaged": False,
+        "scheduler_state_averaged": False,
+        "optimizer_or_scheduler_call_during_swa_evaluation": False,
+        "checkpoint_selection_used_for_swa_evaluation": False,
+        "checkpoint_selection_changed": False,
+        "best_epoch_changed": False,
+        "final_epoch_changed": False,
+        "swa_checkpoint_saved": False,
+        "calibration_applied": False,
+        "entitlement_boundary_shift_applied": False,
+        "external_data_used": False,
+        "expected_prediction_rows": 720,
+        "predictions_path": str(predictions_path.resolve()),
+        "predictions_sha256": predictions_sha256,
+        "metrics_path": str(metrics_path.resolve()),
+        "metrics_sha256": metrics_sha256,
+        "stage195_output_dir": str(output_dir.resolve()),
+        "trainer_source_commit": runtime_context["trainer_source_commit"],
+        "trainer_sha256": runtime_context["trainer_sha256"],
+        "trainer_source_provenance": runtime_context["source_provenance"],
+        "training_for_model_advancement_authorized": False,
+        "model_advancement_decision": False,
+        "subsequent_training_authorized": False,
+        "stage195a_manifest_created": False,
+        "stage195b_run_authorized": False,
+        "stage195c_decision_made": False,
+        "production_swa_model_selected": False,
+        "entitlement_correction_implemented": False,
+        "statistical_significance_claim_made": False,
+        "trainer_blob_commit_conflated_with_later_runtime_commit": False,
+        "later_runtime_repository_commit": None,
+    }
+    _stage195_write_json_atomic(contract_path, contract)
 
 
 def _stage191_verified_label_mapping() -> tuple[dict[str, int], dict[int, str]]:
@@ -519,17 +1246,202 @@ def _stage193_validate_runtime_contract(
     )
 
 
+def _stage195_validate_runtime_contract(
+    args: argparse.Namespace, split_seed: int
+) -> str:
+    if args.stage191_save_trajectory_state_capsules:
+        raise ValueError(
+            "Stage195 parameter-SWA causal test forbids Stage191 state capsules"
+        )
+    if (
+        type(args.seed) is not int
+        or args.seed not in STAGE195_TAIL3_PARAMETER_SWA_SEEDS
+    ):
+        raise ValueError(
+            "Stage195 parameter-SWA training seed must be an exact non-bool "
+            f"integer in {STAGE195_TAIL3_PARAMETER_SWA_SEEDS}; "
+            f"observed {args.seed!r}"
+        )
+    required = {
+        "architecture": "v6b_minimal",
+        "backbone": "mamba",
+        "device": "cuda",
+        "model_name": "state-spaces/mamba-130m-hf",
+        "epochs": 20,
+        "select_metric": "final_macro_f1",
+        "flag_source": "controlled_heuristic",
+    }
+    for field, expected in required.items():
+        if getattr(args, field, None) != expected:
+            raise ValueError(
+                f"Stage195 parameter-SWA causal test requires {field}={expected!r}; "
+                f"observed {getattr(args, field, None)!r}"
+            )
+    if split_seed != 174 or args.split_seed != 174:
+        raise ValueError(
+            "Stage195 parameter-SWA causal test requires explicit --split-seed 174"
+        )
+    data_path = Path(args.data).resolve()
+    if (
+        data_path != (ROOT / _STAGE187_AUTHORITATIVE_DATA).resolve()
+        or _stage187_file_sha256(data_path) != _STAGE187_DATASET_SHA256
+    ):
+        raise ValueError(
+            "Stage195 parameter-SWA clean controlled main data identity mismatch"
+        )
+
+    observed_absent_values = {
+        name: getattr(args, name, None)
+        for name in STAGE191_FORBIDDEN_PATH_OPTIONS
+    }
+    absent_values_valid = (
+        all(
+            observed_absent_values[name] is None
+            for name in STAGE191_SCALAR_ABSENT_OPTIONS
+        )
+        and all(
+            type(observed_absent_values[name]) is list
+            and observed_absent_values[name] == []
+            for name in STAGE191_LIST_ABSENT_OPTIONS
+        )
+    )
+    external_flags_valid = all(
+        getattr(args, name, False) is False
+        for name in STAGE191_EXTERNAL_ENABLE_FLAGS
+    )
+    bridge_modes_valid = all(
+        getattr(args, name, None) == "none"
+        for name in STAGE191_BRIDGE_MODE_OPTIONS
+    )
+    auxiliary_paths_valid = all(
+        getattr(args, name, None) is None
+        for name in STAGE193_FORBIDDEN_AUXILIARY_PATH_OPTIONS
+    )
+    auxiliary_flags_valid = all(
+        getattr(args, name, False) is False
+        for name in STAGE193_FORBIDDEN_AUXILIARY_ENABLE_FLAGS
+    )
+    auxiliary_modes_valid = all(
+        getattr(args, name, "none") == "none"
+        for name in STAGE193_FORBIDDEN_AUXILIARY_MODES
+    )
+    selection_flags_valid = all(
+        getattr(args, name, False) is False
+        for name in STAGE195_FORBIDDEN_SELECTION_FLAGS
+    )
+    calibration_options_valid = all(
+        getattr(args, name, None) is None
+        for name in STAGE195_FORBIDDEN_CALIBRATION_OPTIONS
+    )
+    if not (
+        absent_values_valid
+        and external_flags_valid
+        and bridge_modes_valid
+        and auxiliary_paths_valid
+        and auxiliary_flags_valid
+        and auxiliary_modes_valid
+        and selection_flags_valid
+        and calibration_options_valid
+    ):
+        raise ValueError(
+            "Stage195 parameter-SWA causal test requires resolved external, OOD, "
+            "bridge, temporal, synthetic auxiliary, constrained-selection, and "
+            "calibration activity to be absent"
+        )
+    if (
+        args.loss_sweep
+        or args.smoke
+        or getattr(args, "max_train_records", None) is not None
+    ):
+        raise ValueError(
+            "Stage195 parameter-SWA causal test forbids sweeps, smoke execution, "
+            "and row truncation"
+        )
+
+    weight = float(args.compatible_positive_margin_weight)
+    margin_logit = float(args.compatible_positive_margin_logit)
+    if weight == 0.0:
+        if margin_logit != 0.0:
+            raise ValueError("Stage195 baseline margin logit must be exactly 0.0")
+        if (
+            args.controlled_integrity_sidecar_path is not None
+            or args.expected_integrity_sidecar_semantic_sha256 is not None
+        ):
+            raise ValueError(
+                "Stage195 baseline must omit both Stage185 sidecar options"
+            )
+        return "baseline"
+    if weight == _STAGE187_FIXED_WEIGHT:
+        if margin_logit != _STAGE187_FIXED_MARGIN_LOGIT:
+            raise ValueError("Stage195 intervention margin logit must be exactly 0.0")
+        if args.controlled_integrity_sidecar_path is None:
+            raise ValueError("Stage195 intervention requires the Stage185 sidecar path")
+        sidecar_path = Path(args.controlled_integrity_sidecar_path)
+        if not sidecar_path.is_absolute():
+            sidecar_path = ROOT / sidecar_path
+        if sidecar_path.resolve() != (ROOT / _STAGE187_AUTHORITATIVE_SIDECAR).resolve():
+            raise ValueError("Stage195 intervention sidecar path is not authoritative")
+        if (
+            args.expected_integrity_sidecar_semantic_sha256
+            != _STAGE187_SIDECAR_SEMANTIC_SHA256
+        ):
+            raise ValueError("Stage195 intervention sidecar semantic SHA256 mismatch")
+        return "intervention"
+    raise ValueError(
+        "Stage195 parameter-SWA arm must be baseline or exact Stage189 intervention"
+    )
+
+
 def _resolve_trajectory_observability_mode(
     args: argparse.Namespace, split_seed: int
 ) -> tuple[str, str]:
-    if (
-        args.stage191_trajectory_replay_observability
-        and args.stage193_tail3_fresh_seed_observability
-    ):
+    enabled_modes = [
+        args.stage191_trajectory_replay_observability,
+        args.stage193_tail3_fresh_seed_observability,
+        args.stage195_tail3_parameter_swa_causal_test,
+    ]
+    if sum(value is True for value in enabled_modes) > 1:
         raise ValueError(
-            "Stage191 replay and Stage193 fresh-seed observability modes are "
-            "mutually exclusive"
+            "Stage191 replay, Stage193 fresh-seed observability, and Stage195 "
+            "parameter-SWA causal-test modes are mutually exclusive"
         )
+    stage195_output_dir = args.stage195_tail3_parameter_swa_output_dir
+    if not args.stage195_tail3_parameter_swa_causal_test:
+        if stage195_output_dir is not None:
+            raise ValueError(
+                "--stage195-tail3-parameter-swa-output-dir requires "
+                "--stage195-tail3-parameter-swa-causal-test"
+            )
+    else:
+        if stage195_output_dir is None:
+            raise ValueError(
+                "--stage195-tail3-parameter-swa-causal-test requires "
+                "--stage195-tail3-parameter-swa-output-dir"
+            )
+        if args.output_json is None:
+            raise ValueError(
+                "--stage195-tail3-parameter-swa-causal-test requires --output-json"
+            )
+        resolved_stage195_output_dir = Path(stage195_output_dir).resolve()
+        resolved_report_parent = Path(args.output_json).resolve().parent
+        if resolved_stage195_output_dir != resolved_report_parent:
+            raise ValueError(
+                "Stage195 output directory must resolve exactly to the parent of "
+                "--output-json"
+            )
+        existing_targets = [
+            str(resolved_stage195_output_dir / filename)
+            for filename in _STAGE195_OUTPUT_FILENAMES
+            if (resolved_stage195_output_dir / filename).exists()
+        ]
+        if existing_targets:
+            raise FileExistsError(
+                "Stage195 refuses to overwrite existing target artifacts: "
+                f"{existing_targets}"
+            )
+    if args.stage195_tail3_parameter_swa_causal_test:
+        arm = _stage195_validate_runtime_contract(args, split_seed)
+        return _TRAJECTORY_OBSERVABILITY_STAGE195, arm
     if args.stage193_tail3_fresh_seed_observability:
         arm = _stage193_validate_runtime_contract(args, split_seed)
         return _TRAJECTORY_OBSERVABILITY_STAGE193, arm
@@ -544,6 +1456,8 @@ def _trajectory_observability_authorized_seeds(mode: str) -> tuple[int, ...]:
         return STAGE191_TRAINING_SEEDS
     if mode == _TRAJECTORY_OBSERVABILITY_STAGE193:
         return STAGE193_TAIL3_REPLICATION_SEEDS
+    if mode == _TRAJECTORY_OBSERVABILITY_STAGE195:
+        return STAGE195_TAIL3_PARAMETER_SWA_SEEDS
     raise RuntimeError(f"invalid enabled trajectory observability mode: {mode!r}")
 
 
@@ -584,6 +1498,7 @@ def _stage191_write_contract(
         observability_mode
     )
     stage193_mode = observability_mode == _TRAJECTORY_OBSERVABILITY_STAGE193
+    stage195_mode = observability_mode == _TRAJECTORY_OBSERVABILITY_STAGE195
     enabled_flags = {
         "stage191_trajectory_replay_observability": (
             observability_mode == _TRAJECTORY_OBSERVABILITY_STAGE191
@@ -594,6 +1509,8 @@ def _stage191_write_contract(
     }
     if stage193_mode:
         enabled_flags["stage193_tail3_fresh_seed_observability"] = True
+    if stage195_mode:
+        enabled_flags["stage195_tail3_parameter_swa_causal_test"] = True
     contract = {
         "enabled_flags": enabled_flags,
         "authorized_training_seeds": list(authorized_training_seeds),
@@ -646,6 +1563,21 @@ def _stage191_write_contract(
             "stage191_trajectory_observability_implementation_reused": True,
             "state_capsule_saving_enabled": False,
         })
+    if stage195_mode:
+        contract.update({
+            "observability_mode": _TRAJECTORY_OBSERVABILITY_STAGE195,
+            "expected_state_capsules": 0,
+            "source_epochs": list(_STAGE195_SOURCE_EPOCHS),
+            "stage191_trajectory_observability_implementation_reused": True,
+            "state_capsule_saving_enabled": False,
+            "parameter_averaging_changes_training_gradients": False,
+            "extra_forward_pass_performed": True,
+            "extra_training_forward_pass_performed": False,
+            "post_training_clean_dev_forward_pass_count": 1,
+            "swa_checkpoint_saved": False,
+            "calibration_applied": False,
+            "entitlement_boundary_shift_applied": False,
+        })
     _stage191_write_json(output_dir / "stage191_trajectory_contract.json", contract)
     (output_dir / "stage191_trajectory_epoch_metrics.jsonl").write_text(
         "", encoding="utf-8"
@@ -684,6 +1616,11 @@ def _stage191_export_epoch(
         and args.stage191_save_trajectory_state_capsules
     ):
         raise RuntimeError("Stage193 trajectory export forbids state capsules")
+    if (
+        observability_mode == _TRAJECTORY_OBSERVABILITY_STAGE195
+        and args.stage191_save_trajectory_state_capsules
+    ):
+        raise RuntimeError("Stage195 trajectory export forbids state capsules")
     if type(epoch) is not int or epoch not in range(1, 21):
         raise RuntimeError("Stage191 epoch must be an exact non-bool integer in 1 through 20")
     if isinstance(score, bool) or not isinstance(score, (int, float)) or not math.isfinite(float(score)):
@@ -9513,6 +10450,24 @@ def build_parser() -> argparse.ArgumentParser:
             "fixed fresh seeds 177, 178, and 179 without state capsules."
         ),
     )
+    parser.add_argument(
+        "--stage195-tail3-parameter-swa-causal-test",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage195-P0: post-training clean-dev causal test of the CPU-float64 "
+            "mean of trainable parameters from epochs 18, 19, and 20."
+        ),
+    )
+    parser.add_argument(
+        "--stage195-tail3-parameter-swa-output-dir",
+        type=Path,
+        default=None,
+        help=(
+            "Stage195-P0 output directory; required only with the Stage195 flag "
+            "and must equal the resolved parent of --output-json."
+        ),
+    )
     # Stage187-A: fixed compatible-positive absolute-margin hinge. Default off.
     parser.add_argument(
         "--compatible-positive-margin-weight",
@@ -12302,7 +13257,7 @@ def _save_stage176a0_selected_checkpoint(
 def _stage160_args_snapshot(args: argparse.Namespace) -> dict[str, Any]:
     return {
         key: _stage160_json_safe(value)
-        for key, value in sorted(vars(args).items())
+        for key, value in sorted(_stage195_serializable_args(args).items())
         if key not in {"stage118_diagnostic_model_checkpoint"}
     }
 
@@ -13989,6 +14944,9 @@ def main(argv: list[str] | None = None) -> int:
     _trajectory_observability_enabled = (
         _trajectory_observability_mode != _TRAJECTORY_OBSERVABILITY_NONE
     )
+    _stage195_parameter_swa_enabled = (
+        _trajectory_observability_mode == _TRAJECTORY_OBSERVABILITY_STAGE195
+    )
     _stage187_margin_enabled = _stage187_validate_activation_args(args)
     _stage187_eligibility_by_id: dict[str, bool] = {}
     _stage187_split_by_id: dict[str, str] = {}
@@ -14016,7 +14974,7 @@ def main(argv: list[str] | None = None) -> int:
             parser.error(
                 "--selected-checkpoint-filename must be a non-empty filename, not a path"
             )
-    _stage174a_parsed_args = dict(vars(args))
+    _stage174a_parsed_args = _stage195_serializable_args(args)
     if getattr(args, "stage135_use_best_slot_aux", False):
         if args.architecture != "vnext_minimal":
             parser.error("--stage135-use-best-slot-aux requires --architecture vnext_minimal")
@@ -16071,7 +17029,7 @@ def main(argv: list[str] | None = None) -> int:
                 "max_length": max_length,
                 "training_seed": args.seed,
                 "split_seed": resolved_split_seed,
-                "parsed_training_arguments": dict(vars(args)),
+                "parsed_training_arguments": _stage195_serializable_args(args),
                 "trainer_path": str(Path(__file__).resolve()),
                 "trainer_sha256": _stage187_file_sha256(Path(__file__).resolve()),
                 "trainer_source_commit": _stage191_validated_source_commit,
@@ -16298,6 +17256,11 @@ def main(argv: list[str] | None = None) -> int:
                 "it cannot fire without the PE head active."
             )
         optimizer = v5.build_optimizer(model, lr, head_lr, encoder_lr)
+        _stage195_parameter_state: dict[str, Any] | None = None
+        if _stage195_parameter_swa_enabled:
+            _stage195_parameter_state = _stage195_initialize_parameter_state(
+                model, optimizer
+            )
         gradient_accumulation_steps = int(gradient_accumulation_steps)
         amp_enabled = bool(fp16 and device.type == "cuda")
         grad_scaler = _make_cuda_grad_scaler(amp_enabled)
@@ -17895,6 +18858,17 @@ def main(argv: list[str] | None = None) -> int:
                     _stage191_runtime_context["model_construction_provenance"],
                     _trajectory_observability_mode,
                 )
+                if (
+                    _stage195_parameter_swa_enabled
+                    and epoch in _STAGE195_SOURCE_EPOCHS
+                ):
+                    if _stage195_parameter_state is None:
+                        raise RuntimeError(
+                            "Stage195 parameter accumulator was not initialized"
+                        )
+                    _stage195_capture_source_epoch(
+                        model, _stage195_parameter_state, epoch
+                    )
 
             # Stage44-B internal-only anti-collapse checkpoint selection.
             # Uses only normal internal clean-dev metrics already computed above.
@@ -18413,6 +19387,32 @@ def main(argv: list[str] | None = None) -> int:
                         f"  [pc22a4e] pres={_pc_pres_type_counts}"
                         f" frame={_pc_frame_type_counts}"
                     )
+
+        if _stage195_parameter_swa_enabled:
+            if (
+                _stage195_parameter_state is None
+                or _stage191_runtime_context is None
+            ):
+                raise RuntimeError("Stage195 runtime state was not initialized")
+            _stage195_finalize_parameter_swa_causal_test(
+                model=model,
+                state=_stage195_parameter_state,
+                dev_inputs=dev_inputs,
+                dev_records=dev_records,
+                dev_temporal_flags=dev_temporal_flags,
+                dev_predicate_flags=dev_predicate_flags,
+                run_name=run_name,
+                training_seed=seed,
+                split_seed=resolved_split_seed,
+                arm=_stage191_arm,
+                output_dir=_stage191_runtime_context["output_dir"],
+                eval_batch_size=eval_batch_size,
+                amp_enabled=amp_enabled,
+                temporal_adapter_final_penalty_scale=_ta_pen,
+                temporal_channel_gated_penalty_scale=_tc_pen,
+                args=args,
+                runtime_context=_stage191_runtime_context,
+            )
 
         # Apply TD-constrained checkpoint selection after all epochs
         _tc_used = False
