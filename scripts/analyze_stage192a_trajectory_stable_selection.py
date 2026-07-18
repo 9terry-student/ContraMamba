@@ -77,6 +77,20 @@ STAGE191D_OUTPUTS = {
     "stage191d_late_instability_metrics.csv", "stage191d_state_step_summary.csv",
     "stage191d_parameter_group_step.csv", "stage191d_precommitted_gate.csv",
 }
+STAGE191D_PRECOMMITTED_GATES = (
+    "stage190_grouping_source_contract",
+    "stage190_exact_parameter_inventory_mapping",
+    "parameter_ownership_exhaustive_disjoint",
+    "stage191c_equivalence_all_six",
+    "support_delta_nonzero_opposite_sign_all_seeds",
+    "false_entitlement_delta_nonzero_opposite_sign_all_seeds",
+    "refute_absolute_delta_at_most_one_all_late_cells",
+    "polarity_absolute_delta_at_most_one_all_late_cells",
+    "selected_epoch19_intervention_transition_concentration_at_least_095",
+    "phase_flip_condition_observed",
+    "redistribution_condition_observed",
+    "selected_decision_matches_precommitted_taxonomy",
+)
 
 CSV_HEADERS = {
     "closure": ["gate", "required", "observed", "passed", "blocking_reason"],
@@ -171,11 +185,15 @@ def establish_safe_output(args: argparse.Namespace) -> tuple[Path, Path, Path, P
     reports = (repo / "reports").resolve()
     stage191b = args.stage191b_dir.resolve()
     stage191d = args.stage191d_dir.resolve()
+    output = args.output_dir.resolve()
     if stage191b != (reports / STAGE191B_DIRNAME).resolve() or not stage191b.is_dir():
         raise ValueError("Stage191-B directory is not the exact frozen directory")
-    if not stage191d.is_dir():
-        raise ValueError("explicit Stage191-D directory is not an existing directory")
-    output = args.output_dir.resolve()
+    if (stage191d.parent != reports or
+            not stage191d.name.startswith("stage191d_trajectory_phase_flip_") or
+            not stage191d.is_dir()):
+        raise ValueError("Stage191-D must be an existing reports child with the exact required prefix")
+    if stage191d == stage191b or stage191d == output:
+        raise ValueError("Stage191-D must differ from Stage191-B and the Stage192-A output")
     if output.parent != reports or not output.name.startswith("stage192a_trajectory_stable_selection_"):
         raise ValueError("output must be an immediate reports child with the Stage192-A prefix")
     for frozen in (stage191b, stage191d):
@@ -218,14 +236,17 @@ def source_identity(repo: Path, commit: str) -> dict[str, Any]:
 
 
 def bool_csv(value: str) -> bool | None:
-    if value.strip().lower() == "true":
+    if value in ("True", "true"):
         return True
-    if value.strip().lower() == "false":
+    if value in ("False", "false"):
         return False
     return None
 
 
 def validate_stage191d(stage191d: Path, rows: list[dict[str, Any]]) -> dict[str, Any]:
+    rows.append({"gate": "exact_resolved_stage191d_directory", "required": {
+                     "parent": str(stage191d.parent), "basename_prefix": "stage191d_trajectory_phase_flip_"},
+                 "observed": str(stage191d), "passed": True, "blocking_reason": ""})
     entries = {path.name for path in stage191d.iterdir()}
     exact = entries == STAGE191D_OUTPUTS and all((stage191d / name).is_file() for name in STAGE191D_OUTPUTS)
     rows.append({"gate": "exact_authoritative_14_outputs", "required": sorted(STAGE191D_OUTPUTS),
@@ -233,6 +254,7 @@ def validate_stage191d(stage191d: Path, rows: list[dict[str, Any]]) -> dict[str,
                  "blocking_reason": "Stage191-D directory does not contain exactly the authoritative 14 files" if not exact else ""})
     if not exact:
         raise ValueError("Stage191-D exact output set mismatch")
+
     report = read_json(stage191d / "stage191d_trajectory_phase_flip_report.json")
     required = {
         "decision": CONFIRMED191D, "runnable": True, "blocking_reasons": [],
@@ -247,21 +269,72 @@ def validate_stage191d(stage191d: Path, rows: list[dict[str, Any]]) -> dict[str,
                  "passed": contract_ok, "blocking_reason": "Stage191-D report closure mismatch" if not contract_ok else ""})
     if not contract_ok:
         raise ValueError("Stage191-D report closure mismatch")
-    for filename, gate in (("stage191d_stage191c_equivalence_gate.csv", "no_failed_stage191c_equivalence_gate"),
-                           ("stage191d_precommitted_gate.csv", "no_failed_universally_required_precommitted_gate")):
-        headers, data = read_csv(stage191d / filename)
-        if "passed" not in headers:
-            raise ValueError(f"{filename}: missing passed column")
-        relevant = data
-        if filename.endswith("precommitted_gate.csv"):
-            relevant = [row for row in data if row.get("required") not in ("decision_alternative", "False", "false")]
-        ok = bool(relevant) and all(bool_csv(row.get("passed", "")) is True for row in relevant)
-        rows.append({"gate": gate, "required": True, "observed": {"row_count": len(relevant), "all_passed": ok},
-                     "passed": ok, "blocking_reason": f"{filename} contains a failed universally required gate" if not ok else ""})
-        if not ok:
-            raise ValueError(f"{filename}: failed required gate")
-    return report
 
+    equivalence_header, equivalence = read_csv(stage191d / "stage191d_stage191c_equivalence_gate.csv")
+    required_equivalence_header = ["gate", "run", "required", "observed", "passed", "blocking_reason"]
+    equivalence_ok = (equivalence_header == required_equivalence_header and bool(equivalence) and
+                      all(bool_csv(row["passed"]) is True for row in equivalence))
+    rows.append({"gate": "stage191d_stage191c_equivalence_schema_and_closure",
+                 "required": {"header": required_equivalence_header, "nonempty": True, "all_passed": True},
+                 "observed": {"header": equivalence_header, "row_count": len(equivalence),
+                              "all_passed": equivalence_ok},
+                 "passed": equivalence_ok,
+                 "blocking_reason": "Stage191-C equivalence CSV schema or closure mismatch" if not equivalence_ok else ""})
+    if not equivalence_ok:
+        raise ValueError("Stage191-C equivalence CSV schema or closure mismatch")
+
+    precommit_header, precommit = read_csv(stage191d / "stage191d_precommitted_gate.csv")
+    required_precommit_header = ["gate", "required", "observed", "passed"]
+    names = [row.get("gate") for row in precommit]
+    schema_ok = precommit_header == required_precommit_header and names == list(STAGE191D_PRECOMMITTED_GATES)
+    universal_indices = (0, 1, 2, 3, 11)
+    universal_ok = schema_ok and all(
+        bool_csv(precommit[index]["required"]) is True and
+        bool_csv(precommit[index]["passed"]) is True
+        for index in universal_indices
+    )
+    alternatives_ok = schema_ok and all(
+        precommit[index]["required"] == "decision_alternative" and
+        (precommit[index]["passed"] == "" or bool_csv(precommit[index]["passed"]) is not None)
+        for index in range(4, 11)
+    )
+    phase_flip_observed = bool_csv(precommit[9]["observed"]) if schema_ok else None
+    redistribution_observed = bool_csv(precommit[10]["observed"]) if schema_ok else None
+    phase_flip_ok = schema_ok and phase_flip_observed is True
+    redistribution_ok = schema_ok and redistribution_observed is False
+    taxonomy_observed = json.loads(precommit[11]["observed"]) if schema_ok else None
+    taxonomy_observed_ok = (
+        type(taxonomy_observed) is dict and
+        set(taxonomy_observed) == {"phase_flip_pass", "redistribution_pass", "decision"} and
+        taxonomy_observed["phase_flip_pass"] is True and
+        taxonomy_observed["redistribution_pass"] is False and
+        taxonomy_observed["decision"] == CONFIRMED191D
+    )
+    taxonomy_ok = (
+        schema_ok and taxonomy_observed_ok and
+        bool_csv(precommit[11]["required"]) is True and
+        bool_csv(precommit[11]["passed"]) is True
+    )
+    precommit_ok = schema_ok and universal_ok and alternatives_ok and phase_flip_ok and redistribution_ok and taxonomy_ok
+    rows.append({"gate": "stage191d_precommitted_schema_taxonomy_and_closure",
+                 "required": {"header": required_precommit_header,
+                              "ordered_gate_names": list(STAGE191D_PRECOMMITTED_GATES),
+                              "universal_indices": list(universal_indices),
+                              "decision_alternative_indices": list(range(4, 11)),
+                              "phase_flip_condition_observed": True,
+                              "redistribution_condition_observed": False,
+                              "selected_decision_matches_precommitted_taxonomy": True},
+                 "observed": {"header": precommit_header, "ordered_gate_names": names,
+                              "universal_ok": universal_ok, "alternatives_ok": alternatives_ok,
+                              "phase_flip_condition_observed": phase_flip_observed,
+                              "redistribution_condition_observed": redistribution_observed,
+                              "selected_decision_matches_precommitted_taxonomy": taxonomy_observed,
+                              "selected_decision_taxonomy_contract_passed": taxonomy_ok},
+                 "passed": precommit_ok,
+                 "blocking_reason": "Stage191-D precommit CSV schema, order, or confirmed taxonomy mismatch" if not precommit_ok else ""})
+    if not precommit_ok:
+        raise ValueError("Stage191-D precommit CSV schema, order, or confirmed taxonomy mismatch")
+    return report
 
 def option_map(argv: Any) -> dict[str, Any]:
     if type(argv) is not list or any(type(token) is not str for token in argv):
@@ -337,22 +410,87 @@ def close(left: Any, right: Any) -> bool:
 
 def load_replays(repo: Path, stage191b: Path, torch: Any) -> dict[str, Any]:
     main = read_json(stage191b / "stage191b_deterministic_replay_manifest_report.json")
-    if main.get("decision") != "STAGE191B_DETERMINISTIC_REPLAY_MANIFEST_READY" or main.get("runnable") is not True or main.get("blocking_reasons") != [] or main.get("external_data_used") is not False:
+    main_contract = {
+        "stage": main.get("stage"),
+        "decision": main.get("decision"),
+        "runnable": main.get("runnable"),
+        "blocking_reasons": main.get("blocking_reasons"),
+        "diagnostic_replay_only": main.get("diagnostic_replay_only"),
+        "replay_execution_authorized": main.get("replay_execution_authorized"),
+        "training_for_model_advancement_authorized": main.get("training_for_model_advancement_authorized"),
+        "model_advancement_decision": main.get("model_advancement_decision"),
+        "external_data_used": main.get("external_data_used"),
+        "authorized_training_seeds": main.get("authorized_training_seeds"),
+        "expected_trajectory_rows_per_run": main.get("expected_trajectory_rows_per_run"),
+        "expected_prediction_rows_per_epoch": main.get("expected_prediction_rows_per_epoch"),
+        "expected_state_capsules_per_run": main.get("expected_state_capsules_per_run"),
+        "logits_source": main.get("logits_source"),
+        "stage191b_replay_commit": (main.get("commit_identities") or {}).get("stage191b_replay_commit"),
+    }
+    required_main_contract = {
+        "stage": "Stage191-B",
+        "decision": "STAGE191B_DETERMINISTIC_REPLAY_MANIFEST_READY",
+        "runnable": True,
+        "blocking_reasons": [],
+        "diagnostic_replay_only": True,
+        "replay_execution_authorized": True,
+        "training_for_model_advancement_authorized": False,
+        "model_advancement_decision": False,
+        "external_data_used": False,
+        "authorized_training_seeds": list(SEEDS),
+        "expected_trajectory_rows_per_run": 20,
+        "expected_prediction_rows_per_epoch": 720,
+        "expected_state_capsules_per_run": 20,
+        "logits_source": 'output["logits"]',
+        "stage191b_replay_commit": STAGE191B_COMMIT,
+    }
+    main_cardinality_types_ok = all(
+        exact_int(main.get(field)) for field in (
+            "expected_trajectory_rows_per_run",
+            "expected_prediction_rows_per_epoch",
+            "expected_state_capsules_per_run",
+        )
+    )
+    if main_contract != required_main_contract or not main_cardinality_types_ok:
         raise ValueError("Stage191-B main manifest closure mismatch")
-    if (main.get("commit_identities") or {}).get("stage191b_replay_commit") != STAGE191B_COMMIT:
-        raise ValueError("Stage191-B commit mismatch")
+    expected_identities = [
+        {"run": f"seed{seed}_{arm}", "seed": seed, "arm": arm, "split_seed": 174}
+        for seed in SEEDS for arm in ARMS
+    ]
+    raw_identities = main.get("six_run_matrix")
+    observed_identities = (
+        [{key: row.get(key) for key in ("run", "seed", "arm", "split_seed")} for row in raw_identities]
+        if type(raw_identities) is list and all(type(row) is dict for row in raw_identities)
+        else None
+    )
+    identity_types_ok = observed_identities is not None and all(
+        exact_int(row["seed"]) and exact_int(row["split_seed"]) for row in observed_identities
+    )
+    if observed_identities != expected_identities or not identity_types_ok:
+        raise ValueError("Stage191-B ordered six-run identity matrix mismatch")
     data, gold_reference = {}, None
     for seed in SEEDS:
         for arm in ARMS:
             run = f"seed{seed}_{arm}"
             run_dir = (stage191b / run).resolve()
             manifest = read_json(stage191b / f"stage191b_{run}_replay_manifest.json")
-            required = {"run": run, "seed": seed, "training_seed": seed, "split_seed": 174, "arm": arm,
+            required = {"stage": "Stage191-B", "run": run, "seed": seed, "training_seed": seed,
+                        "split_seed": 174, "arm": arm,
                         "runnable": True, "blocking_reasons": [], "diagnostic_replay_only": True,
+                        "replay_execution_authorized": True,
                         "training_for_model_advancement_authorized": False, "model_advancement_decision": False,
                         "external_data_used": False, "original_selected_epoch": HISTORICAL[run],
-                        "expected_trajectory_rows": 20, "expected_prediction_rows_per_epoch": 720}
-            if any(manifest.get(k) != v for k, v in required.items()) or any(not exact_int(manifest.get(k)) for k in ("seed", "training_seed", "split_seed", "original_selected_epoch")):
+                        "expected_trajectory_rows": 20, "expected_prediction_rows_per_epoch": 720,
+                        "expected_state_capsules": 20, "logits_source": 'output["logits"]'}
+            manifest_contract_ok = (
+                all(manifest.get(k) == v for k, v in required.items()) and
+                all(exact_int(manifest.get(k)) for k in (
+                    "seed", "training_seed", "split_seed", "original_selected_epoch",
+                    "expected_trajectory_rows", "expected_prediction_rows_per_epoch",
+                    "expected_state_capsules",
+                ))
+            )
+            if not manifest_contract_ok:
                 raise ValueError(f"{run}: manifest identity/authorization mismatch")
             if (manifest.get("commit_identities") or {}).get("stage191b_replay_commit") != STAGE191B_COMMIT:
                 raise ValueError(f"{run}: replay commit mismatch")
@@ -361,7 +499,26 @@ def load_replays(repo: Path, stage191b: Path, torch: Any) -> dict[str, Any]:
             validate_internal_argv(manifest.get("original_argv"), f"{run} original argv")
             validate_internal_argv(manifest.get("argv"), f"{run} replay argv")
             contract = read_json(run_dir / "stage191_trajectory_contract.json")
-            if contract.get("trainer_source_commit") != STAGE191B_COMMIT or contract.get("training_seed") != seed or contract.get("split_seed") != 174 or contract.get("arm") != arm or contract.get("canonical_logit_column_labels") != list(LABELS) or contract.get("external_data_used") is not False or contract.get("training_semantics_changed") is not False or contract.get("extra_forward_pass_performed") is not False or contract.get("loss_logits_used") is not False:
+            contract_ok = (
+                contract.get("trainer_source_commit") == STAGE191B_COMMIT and
+                contract.get("authorized_training_seeds") == list(SEEDS) and
+                exact_int(contract.get("training_seed")) and contract.get("training_seed") == seed and
+                exact_int(contract.get("split_seed")) and contract.get("split_seed") == 174 and
+                contract.get("arm") == arm and
+                exact_int(contract.get("epoch_count")) and contract.get("epoch_count") == 20 and
+                exact_int(contract.get("expected_dev_rows")) and contract.get("expected_dev_rows") == 720 and
+                contract.get("canonical_logit_column_labels") == list(LABELS) and
+                contract.get("logits_source") == 'output["logits"]' and
+                contract.get("enabled_flags") == {
+                    "stage191_trajectory_replay_observability": True,
+                    "stage191_save_trajectory_state_capsules": True,
+                } and
+                contract.get("external_data_used") is False and
+                contract.get("training_semantics_changed") is False and
+                contract.get("extra_forward_pass_performed") is False and
+                contract.get("loss_logits_used") is False
+            )
+            if not contract_ok:
                 raise ValueError(f"{run}: trajectory contract mismatch")
             trajectory_rows = read_jsonl(run_dir / "stage191_trajectory_epoch_metrics.jsonl")
             if len(trajectory_rows) != 20 or [row.get("epoch") for row in trajectory_rows] != list(EPOCHS) or any(not exact_int(row.get("epoch")) for row in trajectory_rows):
@@ -676,19 +833,31 @@ def analyze(args: argparse.Namespace, tables: dict[str, list[dict[str, Any]]]) -
     identity = source_identity(repo, args.current_diagnostic_git_commit)
     if not identity["passed"]:
         raise ValueError("Stage192-A source identity failed")
+
     stage191d_report = validate_stage191d(stage191d, tables["closure"])
+    stage191d_closure_passed = True
     data = load_replays(repo, stage191b, torch)
+    stage191b_replay_validation_passed = True
     choices = choose_selectors(data, tables)
     aggregates = evaluate_selectors(data, choices, tables)
     ensemble_evidence = evaluate_ensembles(data, tables, torch)
+
     qualifiers = [name for name in SELECTORS if aggregates[name].get("quality_preserving")]
     tradeoffs = [name for name in SELECTORS if aggregates[name].get("quality_tradeoff")]
-    winner = None
+    exact_winner = (
+        min(qualifiers, key=lambda name: (
+            aggregates[name]["joint_phase_flip_seed_count"],
+            aggregates[name]["mean_support_delta_range"],
+            aggregates[name]["mean_false_entitlement_delta_range"],
+            -aggregates[name]["mean_clean_macro_f1"],
+            -aggregates[name]["mean_clean_accuracy"],
+            aggregates[name]["mean_clean_dev_ce"],
+            name,
+        ))
+        if qualifiers else None
+    )
+    winner = exact_winner
     if qualifiers:
-        winner = min(qualifiers, key=lambda name: (aggregates[name]["joint_phase_flip_seed_count"],
-                     aggregates[name]["mean_support_delta_range"], aggregates[name]["mean_false_entitlement_delta_range"],
-                     -aggregates[name]["mean_clean_macro_f1"], -aggregates[name]["mean_clean_accuracy"],
-                     aggregates[name]["mean_clean_dev_ce"], name))
         decision = IDENTIFIED
         recommendation = "Design Stage192-B fresh-seed validation for the frozen winning selector; do not authorize or execute it."
     elif tradeoffs:
@@ -697,22 +866,73 @@ def analyze(args: argparse.Namespace, tables: dict[str, list[dict[str, Any]]]) -
     else:
         decision = NONE
         recommendation = "Design trajectory-level optimization or regularization rather than further checkpoint-selection tuning."
+
+    taxonomy_required = {
+        IDENTIFIED: "quality_preserving_selectors nonempty; winner non-null and exact",
+        TRADEOFF: "quality_preserving_selectors empty; quality_tradeoff_selectors nonempty; winner null",
+        NONE: "both selector sets empty; winner null",
+        BLOCKED: "fail-closed exception handling only",
+    }
+    taxonomy_observed = {
+        "decision": decision,
+        "quality_preserving_selectors": qualifiers,
+        "quality_tradeoff_selectors": tradeoffs,
+        "winning_selector": winner,
+        "exact_lexicographic_winner": exact_winner,
+    }
+    taxonomy_passed = (
+        (decision == IDENTIFIED and bool(qualifiers) and winner is not None and winner == exact_winner) or
+        (decision == TRADEOFF and not qualifiers and bool(tradeoffs) and winner is None) or
+        (decision == NONE and not qualifiers and not tradeoffs and winner is None)
+    )
+    global_closure_results = {
+        "stage191d_closure_passed": stage191d_closure_passed,
+        "stage191b_replay_validation_passed": stage191b_replay_validation_passed,
+        "temporal_ensembles_excluded_from_decision": True,
+        "winning_selector_matches_exact_lexicographic_order": winner == exact_winner,
+        "selected_decision_matches_precommitted_taxonomy": taxonomy_passed,
+    }
+    global_rows = (
+        ("stage191d_closure_passed", True, stage191d_closure_passed),
+        ("stage191b_replay_validation_passed", True, stage191b_replay_validation_passed),
+        ("temporal_ensembles_excluded_from_decision", True, True),
+        ("winning_selector_matches_exact_lexicographic_order", exact_winner, winner),
+        ("selected_decision_matches_precommitted_taxonomy", taxonomy_required, taxonomy_observed),
+    )
+    for gate, required, observed in global_rows:
+        passed = (
+            taxonomy_passed if gate == "selected_decision_matches_precommitted_taxonomy"
+            else (winner == exact_winner if gate == "winning_selector_matches_exact_lexicographic_order"
+                  else observed is True)
+        )
+        tables["gates"].append({"selector": "__GLOBAL__", "gate": gate, "required": required,
+                                "observed": observed, "passed": passed, "criterion_class": "universal_closure"})
+    if not all(global_closure_results.values()):
+        raise RuntimeError("Stage192-A universal decision closure failed")
+
     return {"stage": "Stage192-A", "decision": decision, "runnable": True, "blocking_reasons": [],
             "diagnostic_only": True, "training_performed": False, "model_constructed": False,
             "external_data_used": False, "model_advancement_decision": False, "stage192b_training_authorized": False,
             "current_diagnostic_git_commit": args.current_diagnostic_git_commit, "diagnostic_source_identity": identity,
             "stage191b_commit": STAGE191B_COMMIT, "stage191b_directory": str(stage191b),
             "stage191d_implementation_commit": STAGE191D_COMMIT, "stage191d_directory": str(stage191d),
-            "stage191d_decision": stage191d_report["decision"], "clean_dev_ce_reduction_contract": CE_CONTRACT,
+            "stage191d_decision": stage191d_report["decision"], "stage191d_closure_passed": stage191d_closure_passed,
+            "stage191b_replay_validation_passed": stage191b_replay_validation_passed,
+            "clean_dev_ce_reduction_contract": CE_CONTRACT,
             "analysis_epoch_domain": list(DOMAIN), "canonical_labels": list(LABELS),
             "historical_selected_epochs": HISTORICAL, "selector_aggregates": aggregates,
             "quality_preserving_selectors": qualifiers, "quality_tradeoff_selectors": tradeoffs,
-            "winning_selector": winner, "temporal_ensembles_descriptive_only": True,
-            "temporal_ensemble_evidence": ensemble_evidence, "recommended_next_stage": recommendation,
+            "winning_selector": winner, "exact_lexicographic_winner": exact_winner,
+            "temporal_ensembles_descriptive_only": True,
+            "temporal_ensembles_excluded_from_decision": True,
+            "temporal_ensemble_evidence": ensemble_evidence,
+            "global_closure_results": global_closure_results,
+            "decision_taxonomy_required": taxonomy_required,
+            "decision_taxonomy_observed": taxonomy_observed,
+            "recommended_next_stage": recommendation,
             "interpretation_restrictions": ["no statistical significance", "no generalization beyond three frozen seeds",
                 "no external or OOD performance", "no causal parameter-group claims", "no deployment validation",
                 "no model advancement", "no Stage192-B training authorization"], "exception": None}
-
 
 def blocked_report(args: argparse.Namespace, exc: BaseException) -> dict[str, Any]:
     return {"stage": "Stage192-A", "decision": BLOCKED, "runnable": False,
@@ -722,6 +942,13 @@ def blocked_report(args: argparse.Namespace, exc: BaseException) -> dict[str, An
             "current_diagnostic_git_commit": args.current_diagnostic_git_commit,
             "stage191b_commit": STAGE191B_COMMIT, "stage191d_implementation_commit": STAGE191D_COMMIT,
             "clean_dev_ce_reduction_contract": CE_CONTRACT, "winning_selector": None,
+            "global_closure_results": {
+                "stage191d_closure_passed": False,
+                "stage191b_replay_validation_passed": False,
+                "temporal_ensembles_excluded_from_decision": True,
+                "winning_selector_matches_exact_lexicographic_order": False,
+                "selected_decision_matches_precommitted_taxonomy": True,
+            },
             "recommended_next_stage": "Resolve the frozen-input or analysis failure; do not authorize training.",
             "exception": {"type": type(exc).__name__, "message": str(exc), "traceback": traceback.format_exc()}}
 
@@ -757,6 +984,23 @@ def main() -> int:
         report = analyze(args, tables)
     except BaseException as exc:
         report = blocked_report(args, exc)
+        existing_global_gates = {
+            row.get("gate") for row in tables["gates"] if row.get("selector") == "__GLOBAL__"
+        }
+        blocked_global_rows = (
+            ("stage191d_closure_passed", True, False, False),
+            ("stage191b_replay_validation_passed", True, False, False),
+            ("temporal_ensembles_excluded_from_decision", True, True, True),
+            ("winning_selector_matches_exact_lexicographic_order", "exact lexicographic winner", None, False),
+            ("selected_decision_matches_precommitted_taxonomy",
+             {BLOCKED: "fail-closed exception handling only"},
+             {"decision": BLOCKED, "fail_closed_exception": True}, True),
+        )
+        for gate, required, observed, passed in blocked_global_rows:
+            if gate not in existing_global_gates:
+                tables["gates"].append({"selector": "__GLOBAL__", "gate": gate, "required": required,
+                                        "observed": observed, "passed": passed,
+                                        "criterion_class": "universal_closure"})
         tables["gates"].append({"selector": "", "gate": "fail_closed_exception", "required": "no exception",
                                 "observed": {"type": type(exc).__name__, "message": str(exc)}, "passed": False,
                                 "criterion_class": "integrity"})
