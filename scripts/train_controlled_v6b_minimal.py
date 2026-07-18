@@ -119,6 +119,10 @@ _STAGE191_CANONICAL_IDS = {0, 1, 2}
 _STAGE191_EXPECTED_DEV_ROWS = 720
 _STAGE191_EXPECTED_SUPPORT_ROWS = 89
 STAGE191_TRAINING_SEEDS = (174, 175, 176)
+STAGE193_TAIL3_REPLICATION_SEEDS = (177, 178, 179)
+_TRAJECTORY_OBSERVABILITY_NONE = "none"
+_TRAJECTORY_OBSERVABILITY_STAGE191 = "stage191_deterministic_replay"
+_TRAJECTORY_OBSERVABILITY_STAGE193 = "stage193_tail3_fresh_seed_replication"
 STAGE191_FORBIDDEN_PATH_OPTIONS = (
     "ood_data",
     "output_ood_json",
@@ -159,6 +163,38 @@ STAGE191_BRIDGE_MODE_OPTIONS = (
     "stage66_bridge_train_mode",
     "stage75_bridge_train_mode",
     "stage80a_bridge_train_mode",
+)
+STAGE193_FORBIDDEN_AUXILIARY_PATH_OPTIONS = (
+    "pair_contrastive_frame_data",
+    "temporal_diagnostic_data",
+    "v7_temporal_safety_data",
+    "v7_temporal_mismatch_multihead_data",
+    "v7_temporal_preservation_data",
+    "v7_coverage_entailment_data",
+)
+STAGE193_FORBIDDEN_AUXILIARY_ENABLE_FLAGS = (
+    "use_pair_contrastive_frame_loss",
+    "use_temporal_diagnostic_loss",
+    "use_td_constrained_selection",
+    "use_temporal_residual_adapter",
+    "use_temporal_adapter_loss",
+    "use_temporal_adapter_final_penalty",
+    "use_temporal_channel",
+    "use_temporal_channel_loss",
+    "use_temporal_channel_gated_penalty",
+    "v7_use_temporal_safety_head",
+    "v7_use_temporal_safety_loss",
+    "v7_use_temporal_mismatch_multihead",
+    "v7_use_temporal_mismatch_multihead_loss",
+    "v7_use_temporal_preservation_head",
+    "v7_use_temporal_preservation_loss",
+    "v7_use_temporal_preservation_aware_cap",
+    "v7_use_coverage_entailment_head",
+    "v7_use_coverage_entailment_loss",
+)
+STAGE193_FORBIDDEN_AUXILIARY_MODES = (
+    "v7_temporal_safety_cap_mode",
+    "v7_temporal_mismatch_multihead_cap_mode",
 )
 
 
@@ -341,6 +377,176 @@ def _stage191_validate_runtime_contract(args: argparse.Namespace, split_seed: in
     raise ValueError("Stage191 replay arm must be baseline or exact Stage189 intervention")
 
 
+def _stage193_validate_runtime_contract(
+    args: argparse.Namespace, split_seed: int
+) -> str:
+    if args.stage191_save_trajectory_state_capsules:
+        raise ValueError(
+            "Stage193 fresh-seed observability forbids Stage191 state capsules"
+        )
+    if (
+        type(args.seed) is not int
+        or args.seed not in STAGE193_TAIL3_REPLICATION_SEEDS
+    ):
+        raise ValueError(
+            "Stage193 fresh-seed observability training seed must be an exact "
+            f"non-bool integer in {STAGE193_TAIL3_REPLICATION_SEEDS}; "
+            f"observed {args.seed!r}"
+        )
+    required = {
+        "architecture": "v6b_minimal",
+        "backbone": "mamba",
+        "device": "cuda",
+        "model_name": "state-spaces/mamba-130m-hf",
+        "epochs": 20,
+        "select_metric": "final_macro_f1",
+    }
+    for field, expected in required.items():
+        if getattr(args, field, None) != expected:
+            raise ValueError(
+                f"Stage193 fresh-seed observability requires {field}={expected!r}; "
+                f"observed {getattr(args, field, None)!r}"
+            )
+    if split_seed != 174 or args.split_seed != 174:
+        raise ValueError(
+            "Stage193 fresh-seed observability requires explicit --split-seed 174"
+        )
+    data_path = Path(args.data).resolve()
+    if (
+        data_path != (ROOT / _STAGE187_AUTHORITATIVE_DATA).resolve()
+        or _stage187_file_sha256(data_path) != _STAGE187_DATASET_SHA256
+    ):
+        raise ValueError(
+            "Stage193 fresh-seed observability clean controlled main data "
+            "identity mismatch"
+        )
+
+    observed_absent_values = {
+        name: getattr(args, name, None)
+        for name in STAGE191_FORBIDDEN_PATH_OPTIONS
+    }
+    absent_values_valid = (
+        all(
+            observed_absent_values[name] is None
+            for name in STAGE191_SCALAR_ABSENT_OPTIONS
+        )
+        and all(
+            type(observed_absent_values[name]) is list
+            and observed_absent_values[name] == []
+            for name in STAGE191_LIST_ABSENT_OPTIONS
+        )
+    )
+    external_flags_valid = all(
+        getattr(args, name, False) is False
+        for name in STAGE191_EXTERNAL_ENABLE_FLAGS
+    )
+    bridge_modes_valid = all(
+        getattr(args, name, None) == "none"
+        for name in STAGE191_BRIDGE_MODE_OPTIONS
+    )
+    auxiliary_paths_valid = all(
+        getattr(args, name, None) is None
+        for name in STAGE193_FORBIDDEN_AUXILIARY_PATH_OPTIONS
+    )
+    auxiliary_flags_valid = all(
+        getattr(args, name, False) is False
+        for name in STAGE193_FORBIDDEN_AUXILIARY_ENABLE_FLAGS
+    )
+    auxiliary_modes_valid = all(
+        getattr(args, name, "none") == "none"
+        for name in STAGE193_FORBIDDEN_AUXILIARY_MODES
+    )
+    if not (
+        absent_values_valid
+        and external_flags_valid
+        and bridge_modes_valid
+        and auxiliary_paths_valid
+        and auxiliary_flags_valid
+        and auxiliary_modes_valid
+    ):
+        raise ValueError(
+            "Stage193 fresh-seed observability requires resolved external, OOD, "
+            "bridge, temporal, and synthetic auxiliary data activity to be absent"
+        )
+    if (
+        args.loss_sweep
+        or args.smoke
+        or getattr(args, "max_train_records", None) is not None
+    ):
+        raise ValueError(
+            "Stage193 fresh-seed observability forbids sweeps, smoke execution, "
+            "and row truncation"
+        )
+
+    weight = float(args.compatible_positive_margin_weight)
+    margin_logit = float(args.compatible_positive_margin_logit)
+    if weight == 0.0:
+        if (
+            args.controlled_integrity_sidecar_path is not None
+            or args.expected_integrity_sidecar_semantic_sha256 is not None
+        ):
+            raise ValueError(
+                "Stage193 baseline must omit both Stage185 sidecar options"
+            )
+        return "baseline"
+    if weight == _STAGE187_FIXED_WEIGHT:
+        if margin_logit != _STAGE187_FIXED_MARGIN_LOGIT:
+            raise ValueError(
+                "Stage193 intervention margin logit must be exactly 0.0"
+            )
+        if args.controlled_integrity_sidecar_path is None:
+            raise ValueError(
+                "Stage193 intervention requires the Stage185 sidecar path"
+            )
+        sidecar_path = Path(args.controlled_integrity_sidecar_path)
+        if not sidecar_path.is_absolute():
+            sidecar_path = ROOT / sidecar_path
+        if sidecar_path.resolve() != (ROOT / _STAGE187_AUTHORITATIVE_SIDECAR).resolve():
+            raise ValueError(
+                "Stage193 intervention sidecar path is not authoritative"
+            )
+        if (
+            args.expected_integrity_sidecar_semantic_sha256
+            != _STAGE187_SIDECAR_SEMANTIC_SHA256
+        ):
+            raise ValueError(
+                "Stage193 intervention sidecar semantic SHA256 mismatch"
+            )
+        return "intervention"
+    raise ValueError(
+        "Stage193 fresh-seed observability arm must be baseline or exact "
+        "Stage189 intervention"
+    )
+
+
+def _resolve_trajectory_observability_mode(
+    args: argparse.Namespace, split_seed: int
+) -> tuple[str, str]:
+    if (
+        args.stage191_trajectory_replay_observability
+        and args.stage193_tail3_fresh_seed_observability
+    ):
+        raise ValueError(
+            "Stage191 replay and Stage193 fresh-seed observability modes are "
+            "mutually exclusive"
+        )
+    if args.stage193_tail3_fresh_seed_observability:
+        arm = _stage193_validate_runtime_contract(args, split_seed)
+        return _TRAJECTORY_OBSERVABILITY_STAGE193, arm
+    arm = _stage191_validate_runtime_contract(args, split_seed)
+    if args.stage191_trajectory_replay_observability:
+        return _TRAJECTORY_OBSERVABILITY_STAGE191, arm
+    return _TRAJECTORY_OBSERVABILITY_NONE, arm
+
+
+def _trajectory_observability_authorized_seeds(mode: str) -> tuple[int, ...]:
+    if mode == _TRAJECTORY_OBSERVABILITY_STAGE191:
+        return STAGE191_TRAINING_SEEDS
+    if mode == _TRAJECTORY_OBSERVABILITY_STAGE193:
+        return STAGE193_TAIL3_REPLICATION_SEEDS
+    raise RuntimeError(f"invalid enabled trajectory observability mode: {mode!r}")
+
+
 def _stage191_write_contract(
     output_dir: Path,
     args: argparse.Namespace,
@@ -349,6 +555,7 @@ def _stage191_write_contract(
     split_seed: int,
     trainer_source_commit: str,
     sidecar_audit: dict[str, Any],
+    observability_mode: str,
 ) -> None:
     label_to_id, id_to_label = _stage191_verified_label_mapping()
     if type(sidecar_audit) is not dict:
@@ -373,14 +580,23 @@ def _stage191_write_contract(
         )
     if not sidecar_validated:
         raise RuntimeError("Stage191 existing Stage187 sidecar access contract failed")
-    _stage191_write_json(output_dir / "stage191_trajectory_contract.json", {
-        "enabled_flags": {
-            "stage191_trajectory_replay_observability": True,
-            "stage191_save_trajectory_state_capsules": bool(
-                args.stage191_save_trajectory_state_capsules
-            ),
-        },
-        "authorized_training_seeds": list(STAGE191_TRAINING_SEEDS),
+    authorized_training_seeds = _trajectory_observability_authorized_seeds(
+        observability_mode
+    )
+    stage193_mode = observability_mode == _TRAJECTORY_OBSERVABILITY_STAGE193
+    enabled_flags = {
+        "stage191_trajectory_replay_observability": (
+            observability_mode == _TRAJECTORY_OBSERVABILITY_STAGE191
+        ),
+        "stage191_save_trajectory_state_capsules": bool(
+            args.stage191_save_trajectory_state_capsules
+        ),
+    }
+    if stage193_mode:
+        enabled_flags["stage193_tail3_fresh_seed_observability"] = True
+    contract = {
+        "enabled_flags": enabled_flags,
+        "authorized_training_seeds": list(authorized_training_seeds),
         "training_seed_authorized": True,
         "training_seed": seed,
         "split_seed": split_seed,
@@ -422,7 +638,15 @@ def _stage191_write_contract(
         "extra_forward_pass_performed": False,
         "training_semantics_changed": False,
         "external_data_used": False,
-    })
+    }
+    if stage193_mode:
+        contract.update({
+            "observability_mode": _TRAJECTORY_OBSERVABILITY_STAGE193,
+            "expected_state_capsules": 0,
+            "stage191_trajectory_observability_implementation_reused": True,
+            "state_capsule_saving_enabled": False,
+        })
+    _stage191_write_json(output_dir / "stage191_trajectory_contract.json", contract)
     (output_dir / "stage191_trajectory_epoch_metrics.jsonl").write_text(
         "", encoding="utf-8"
     )
@@ -445,7 +669,21 @@ def _stage191_export_epoch(
     split_seed: int,
     arm: str,
     model_provenance: dict[str, Any],
+    observability_mode: str,
 ) -> None:
+    authorized_training_seeds = _trajectory_observability_authorized_seeds(
+        observability_mode
+    )
+    if type(seed) is not int or seed not in authorized_training_seeds:
+        raise RuntimeError(
+            "trajectory epoch-export seed is not authorized for the resolved "
+            f"observability mode {observability_mode!r}"
+        )
+    if (
+        observability_mode == _TRAJECTORY_OBSERVABILITY_STAGE193
+        and args.stage191_save_trajectory_state_capsules
+    ):
+        raise RuntimeError("Stage193 trajectory export forbids state capsules")
     if type(epoch) is not int or epoch not in range(1, 21):
         raise RuntimeError("Stage191 epoch must be an exact non-bool integer in 1 through 20")
     if isinstance(score, bool) or not isinstance(score, (int, float)) or not math.isfinite(float(score)):
@@ -9266,6 +9504,15 @@ def build_parser() -> argparse.ArgumentParser:
         default=False,
         help="Stage191-B: save per-epoch trainable-parameter and buffer state capsules.",
     )
+    parser.add_argument(
+        "--stage193-tail3-fresh-seed-observability",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage193-P0: reuse Stage191 report-only trajectory exports for the "
+            "fixed fresh seeds 177, 178, and 179 without state capsules."
+        ),
+    )
     # Stage187-A: fixed compatible-positive absolute-margin hinge. Default off.
     parser.add_argument(
         "--compatible-positive-margin-weight",
@@ -13736,7 +13983,12 @@ def main(argv: list[str] | None = None) -> int:
         "fixed_explicit_split_seed"
         if split_seed_explicit else "training_seed_default"
     )
-    _stage191_arm = _stage191_validate_runtime_contract(args, resolved_split_seed)
+    _trajectory_observability_mode, _stage191_arm = (
+        _resolve_trajectory_observability_mode(args, resolved_split_seed)
+    )
+    _trajectory_observability_enabled = (
+        _trajectory_observability_mode != _TRAJECTORY_OBSERVABILITY_NONE
+    )
     _stage187_margin_enabled = _stage187_validate_activation_args(args)
     _stage187_eligibility_by_id: dict[str, bool] = {}
     _stage187_split_by_id: dict[str, str] = {}
@@ -15784,9 +16036,9 @@ def main(argv: list[str] | None = None) -> int:
                         _pc_inp[_key] = _pc_inp[_key][:, :max_length]
 
     _stage191_runtime_context: dict[str, Any] | None = None
-    if args.stage191_trajectory_replay_observability:
+    if _trajectory_observability_enabled:
         if args.output_json is None:
-            raise ValueError("Stage191 replay requires --output-json")
+            raise ValueError("trajectory observability requires --output-json")
         _stage191_output_dir = Path(args.output_json).resolve().parent
         _stage191_source_provenance = provenance_git_info(ROOT)
         if type(_stage191_source_provenance) is not dict:
@@ -15810,6 +16062,7 @@ def main(argv: list[str] | None = None) -> int:
             "trainer_sha256": _stage187_file_sha256(Path(__file__).resolve()),
             "source_provenance": provenance_json_safe(_stage191_source_provenance),
             "trainer_source_commit": _stage191_validated_source_commit,
+            "observability_mode": _trajectory_observability_mode,
             "model_construction_provenance": provenance_json_safe({
                 "architecture": args.architecture,
                 "backbone": args.backbone,
@@ -16151,16 +16404,23 @@ def main(argv: list[str] | None = None) -> int:
         _stage175b_reference_forward_batch_count = 0
         _stage177c_epoch_metrics: list[dict[str, Any]] = []
         _compatible_positive_margin_epoch_metrics: list[dict[str, Any]] = []
-        if args.stage191_trajectory_replay_observability:
+        if _trajectory_observability_enabled:
             if _stage191_runtime_context is None:
-                raise RuntimeError("Stage191 runtime context was not initialized")
+                raise RuntimeError(
+                    "trajectory observability runtime context was not initialized"
+                )
+            _authorized_observability_seeds = (
+                _trajectory_observability_authorized_seeds(
+                    _trajectory_observability_mode
+                )
+            )
             if (
                 type(seed) is not int
                 or seed != args.seed
-                or seed not in STAGE191_TRAINING_SEEDS
+                or seed not in _authorized_observability_seeds
             ):
                 raise RuntimeError(
-                    "Stage191 nested training seed must be an exact authorized "
+                    "trajectory nested training seed must be an exact authorized "
                     f"integer equal to args.seed; seed={seed!r}, args.seed={args.seed!r}"
                 )
             _stage191_write_contract(
@@ -16171,6 +16431,7 @@ def main(argv: list[str] | None = None) -> int:
                 resolved_split_seed,
                 _stage191_runtime_context["trainer_source_commit"],
                 _stage187_sidecar_audit,
+                _trajectory_observability_mode,
             )
 
         # Stage26-F extended: captured v7 output tensors for best-epoch logit / per-gold summaries.
@@ -17456,7 +17717,7 @@ def main(argv: list[str] | None = None) -> int:
             ):
                 raise ValueError(f"unsupported select_metric: {select_metric!r}")
             raw_stage191_selection_score = dev_metrics[select_metric]
-            if args.stage191_trajectory_replay_observability:
+            if _trajectory_observability_enabled:
                 if (
                     isinstance(raw_stage191_selection_score, bool)
                     or type(raw_stage191_selection_score) not in (int, float)
@@ -17596,16 +17857,23 @@ def main(argv: list[str] | None = None) -> int:
                 if args.architecture == "v7_hierarchical":
                     _best_dev_output_v7 = _v7_capture_dev_output(dev_output)
 
-            if args.stage191_trajectory_replay_observability:
+            if _trajectory_observability_enabled:
                 if _stage191_runtime_context is None:
-                    raise RuntimeError("Stage191 runtime context was not initialized")
+                    raise RuntimeError(
+                        "trajectory observability runtime context was not initialized"
+                    )
+                _authorized_observability_seeds = (
+                    _trajectory_observability_authorized_seeds(
+                        _trajectory_observability_mode
+                    )
+                )
                 if (
                     type(seed) is not int
                     or seed != args.seed
-                    or seed not in STAGE191_TRAINING_SEEDS
+                    or seed not in _authorized_observability_seeds
                 ):
                     raise RuntimeError(
-                        "Stage191 epoch-export seed must be an exact authorized "
+                        "trajectory epoch-export seed must be an exact authorized "
                         f"integer equal to args.seed; seed={seed!r}, args.seed={args.seed!r}"
                     )
                 _stage191_export_epoch(
@@ -17625,6 +17893,7 @@ def main(argv: list[str] | None = None) -> int:
                     resolved_split_seed,
                     _stage191_arm,
                     _stage191_runtime_context["model_construction_provenance"],
+                    _trajectory_observability_mode,
                 )
 
             # Stage44-B internal-only anti-collapse checkpoint selection.
