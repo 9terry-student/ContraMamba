@@ -122,6 +122,14 @@ STAGE191_TRAINING_SEEDS = (174, 175, 176)
 STAGE193_TAIL3_REPLICATION_SEEDS = (177, 178, 179)
 STAGE195_TAIL3_PARAMETER_SWA_SEEDS = (180, 181, 182)
 STAGE196B1_FRAMEGATE_GRADIENT_OWNERSHIP_SEEDS = (183, 184, 185)
+STAGE196B2P0_EPOCH_CHANNEL_REQUIRED_FIELDS = (
+    "id", "source_row_id", "dev_position", "gold_label", "prediction",
+    "intervention_type", "frame_probability", "predicate_coverage_probability",
+    "sufficiency_probability", "polarity_support_margin", "entitlement_probability",
+    "support_probability", "not_entitled_probability", "support_logit",
+    "not_entitled_logit", "epoch", "training_seed", "frame_downstream_gradient_mode",
+)
+
 _TRAJECTORY_OBSERVABILITY_NONE = "none"
 _TRAJECTORY_OBSERVABILITY_STAGE191 = "stage191_deterministic_replay"
 _TRAJECTORY_OBSERVABILITY_STAGE193 = "stage193_tail3_fresh_seed_replication"
@@ -235,6 +243,8 @@ def _stage195_serializable_args(args: argparse.Namespace) -> dict[str, Any]:
         snapshot.pop(
             "stage196b1_framegate_gradient_ownership_observability", None
         )
+    if not getattr(args, "stage196b2p0_epoch_channel_observability", False):
+        snapshot.pop("stage196b2p0_epoch_channel_observability", None)
     return snapshot
 
 
@@ -1513,6 +1523,14 @@ def _stage196b1_validate_runtime_contract(
 def _resolve_trajectory_observability_mode(
     args: argparse.Namespace, split_seed: int
 ) -> tuple[str, str]:
+    if (
+        args.stage196b2p0_epoch_channel_observability
+        and not args.stage196b1_framegate_gradient_ownership_observability
+    ):
+        raise ValueError(
+            "--stage196b2p0-epoch-channel-observability requires the existing "
+            "Stage196-B1 FrameGate gradient-ownership observability mode"
+        )
     enabled_modes = [
         args.stage191_trajectory_replay_observability,
         args.stage193_tail3_fresh_seed_observability,
@@ -1751,6 +1769,19 @@ def _stage191_write_contract(
             ),
             "training_semantics_changed_by_observability": False,
             "extra_forward_pass_performed_by_observability": False,
+            "stage196b2p0_epoch_channel_observability_enabled": bool(
+                args.stage196b2p0_epoch_channel_observability
+            ),
+            "stage196b2p0_epoch_channel_file_count": 20 if args.stage196b2p0_epoch_channel_observability else 0,
+            "stage196b2p0_epoch_channel_rows_per_file": 720 if args.stage196b2p0_epoch_channel_observability else 0,
+            "stage196b2p0_required_fields": (
+                list(STAGE196B2P0_EPOCH_CHANNEL_REQUIRED_FIELDS)
+                if args.stage196b2p0_epoch_channel_observability else []
+            ),
+            "stage196b2p0_extra_forward_pass_performed": False,
+            "stage196b2p0_training_semantics_changed": False,
+            "stage196b2p0_gradient_semantics_changed": False,
+            "stage196b2p0_checkpoint_selection_changed": False,
         })
     _stage191_write_json(output_dir / "stage191_trajectory_contract.json", contract)
     (output_dir / "stage191_trajectory_epoch_metrics.jsonl").write_text(
@@ -1909,6 +1940,68 @@ def _stage191_export_epoch(
         / f"stage191_dev_predictions_epoch_{epoch:03d}.jsonl"
     )
     _stage191_write_jsonl(prediction_path, rows)
+    if args.stage196b2p0_epoch_channel_observability:
+        if observability_mode != _TRAJECTORY_OBSERVABILITY_STAGE196B1:
+            raise RuntimeError("Stage196-B2-P0 sidecars require Stage196-B1 mode")
+        native_names = {
+            "frame_probability": "frame_prob",
+            "predicate_coverage_probability": "predicate_coverage_prob",
+            "sufficiency_probability": "sufficiency_prob",
+            "polarity_support_margin": "polarity_margin",
+            "entitlement_probability": "entitlement_prob",
+        }
+        native: dict[str, torch.Tensor] = {}
+        for semantic_name, output_name in native_names.items():
+            value = dev_output.get(output_name)
+            if not isinstance(value, torch.Tensor) or value.numel() != 720:
+                raise RuntimeError(f"Stage196-B2-P0 requires output[{output_name!r}] with 720 values")
+            tensor = value.detach().float().cpu().reshape(-1)
+            if not bool(torch.isfinite(tensor).all().item()):
+                raise RuntimeError(f"Stage196-B2-P0 {output_name} contains nonfinite values")
+            if semantic_name != "polarity_support_margin" and not bool(
+                ((tensor >= 0.0) & (tensor <= 1.0)).all().item()
+            ):
+                raise RuntimeError(f"Stage196-B2-P0 {output_name} is not a probability")
+            native[semantic_name] = tensor
+        probabilities = torch.softmax(logits_cpu, dim=-1)
+        channel_rows: list[dict[str, Any]] = []
+        for position, record in enumerate(dev_records):
+            identifier = _stage191_source_row_id(record)
+            stable_id = record.get("id")
+            if identifier is None or stable_id is None or str(identifier) != str(stable_id):
+                raise RuntimeError("Stage196-B2-P0 id/source_row_id relationship failed")
+            prediction_row = rows[position]
+            support_logit = float(logits_cpu[position, label_to_id["SUPPORT"]].item())
+            not_entitled_logit = float(logits_cpu[position, label_to_id["NOT_ENTITLED"]].item())
+            if (
+                prediction_row["dev_position"] != position
+                or prediction_row["source_row_id"] != identifier
+                or prediction_row["gold_final_label"] != id_to_label[raw_gold_ids[position]]
+                or prediction_row["predicted_final_label"] != id_to_label[int(predictions[position].item())]
+                or not math.isclose(support_logit, float(prediction_row["final_logits"][2]), rel_tol=1e-6, abs_tol=1e-6)
+                or not math.isclose(not_entitled_logit, float(prediction_row["final_logits"][1]), rel_tol=1e-6, abs_tol=1e-6)
+            ):
+                raise RuntimeError("Stage196-B2-P0 trajectory cross-export equality failed")
+            channel_rows.append({
+                "id": str(stable_id), "source_row_id": str(identifier),
+                "dev_position": position, "gold_label": prediction_row["gold_final_label"],
+                "prediction": prediction_row["predicted_final_label"],
+                "intervention_type": record.get("intervention_type"),
+                **{name: float(tensor[position].item()) for name, tensor in native.items()},
+                "support_probability": float(probabilities[position, label_to_id["SUPPORT"]].item()),
+                "not_entitled_probability": float(probabilities[position, label_to_id["NOT_ENTITLED"]].item()),
+                "support_logit": support_logit, "not_entitled_logit": not_entitled_logit,
+                "epoch": epoch, "training_seed": seed,
+                "frame_downstream_gradient_mode": args.frame_downstream_gradient_mode,
+            })
+        if len(channel_rows) != 720 or any(set(row) != set(STAGE196B2P0_EPOCH_CHANNEL_REQUIRED_FIELDS) for row in channel_rows):
+            raise RuntimeError("Stage196-B2-P0 exact row/schema closure failed")
+        channel_path = output_dir / f"stage196b2p0_epoch_channels_{epoch:03d}.jsonl"
+        if channel_path.exists():
+            raise FileExistsError(f"Stage196-B2-P0 refuses to overwrite {channel_path}")
+        _stage191_write_jsonl(channel_path, channel_rows)
+        if len(list(output_dir.glob("stage196b2p0_epoch_channels_*.jsonl"))) != epoch:
+            raise RuntimeError("Stage196-B2-P0 epoch-channel file-count progression failed")
     capsule_fields = {
         "capsule_path": None,
         "capsule_file_sha256": None,
@@ -10669,6 +10762,16 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     # Stage187-A: fixed compatible-positive absolute-margin hinge. Default off.
+    parser.add_argument(
+        "--stage196b2p0-epoch-channel-observability",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage196-B2-P0: serialize native downstream clean-dev channel values "
+            "from the existing Stage196-B1 epoch evaluation forward pass."
+        ),
+    )
+
     parser.add_argument(
         "--compatible-positive-margin-weight",
         type=float,
