@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any, Iterable, Sequence
 
 STAGE = "Stage196-B1-C"
-RUN_COMMIT = "9835cbbf86d83aca0964821669e63f7f6deb1c59"
+FRAMEGATE_IMPLEMENTATION_ORIGIN_COMMIT = "5a39538ef3ca8f36cc2cc5d3290eae60d6a5f5c8"
 SEEDS = (183, 184, 185)
 MODES = ("joint", "frame_local_only")
 RUNS = tuple(f"seed{seed}_{mode}" for seed in SEEDS for mode in MODES)
@@ -46,7 +46,7 @@ OUTPUTS = ("stage196b1c_analysis.json", "stage196b1c_report.md",
            "stage196b1c_tail3_persistent_rows.csv",
            "stage196b1c_recurrent_position_effects.csv",
            "stage196b1c_epoch_trajectory.csv", "stage196b1c_contract.csv")
-REQUIRED_RUN_FILES = ("training_report.json", "clean_dev_predictions.json",
+REQUIRED_RUN_FILES = ("training_report.json", "run_provenance.json", "clean_dev_predictions.json",
                       "clean_dev_scalars.jsonl", "selected_checkpoint.pt",
                       "stage191_trajectory_contract.json",
                       "stage191_trajectory_epoch_metrics.jsonl")
@@ -148,6 +148,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--run-root", required=True, type=Path)
     p.add_argument("--stage196a-report-json", required=True, type=Path)
     p.add_argument("--current-git-commit", required=True)
+    p.add_argument("--stage196b1-runtime-git-commit", required=True)
     p.add_argument("--output-dir", required=True, type=Path)
     return p.parse_args()
 
@@ -249,13 +250,27 @@ def parse_bool(value: str, context: str) -> bool:
     return value.lower() == "true"
 
 
-def validate_source(repo: Path, commit: str, rows: list[dict[str, Any]]) -> None:
-    ok = re.fullmatch(r"[0-9a-f]{40}", commit or "") is not None
-    gate(rows, "source", "", "current_git_commit_format", "lowercase 40-hex", commit,
-         ok, "invalid current Git commit")
+def validate_source(repo: Path, analysis_commit: str, training_commit: str,
+                    rows: list[dict[str, Any]]) -> None:
+    analysis_ok = re.fullmatch(r"[0-9a-f]{40}", analysis_commit or "") is not None
+    gate(rows, "source", "", "analysis_runtime_commit_format", "lowercase 40-hex",
+         analysis_commit, analysis_ok, "invalid analysis runtime Git commit")
     head = git(repo, ["rev-parse", "HEAD"])
-    gate(rows, "source", "", "current_git_commit_equals_head", commit, head,
-         head == commit, "current Git commit differs from HEAD")
+    gate(rows, "source", "", "analysis_runtime_commit_equals_head", analysis_commit, head,
+         head == analysis_commit, "analysis runtime Git commit differs from HEAD")
+    training_ok = re.fullmatch(r"[0-9a-f]{40}", training_commit or "") is not None
+    gate(rows, "source", "", "stage196b1_runtime_commit_format", "lowercase 40-hex",
+         training_commit, training_ok, "invalid Stage196-B1 runtime Git commit")
+    gate(rows, "source", "", "analysis_and_training_commit_roles_separated",
+         "independent roles; equal or different values are valid",
+         {"analysis_runtime_git_commit": analysis_commit,
+          "stage196b1_runtime_git_commit": training_commit}, True, "")
+    gate(rows, "source", "", "framegate_implementation_origin_commit_preserved",
+         {"role": "FrameGate gradient-ownership implementation origin",
+          "git_commit": FRAMEGATE_IMPLEMENTATION_ORIGIN_COMMIT},
+         {"framegate_implementation_origin_git_commit": FRAMEGATE_IMPLEMENTATION_ORIGIN_COMMIT,
+          "analysis_runtime_git_commit": analysis_commit,
+          "stage196b1_runtime_git_commit": training_commit}, True, "")
 
 
 def validate_stage196a(path: Path, gates: list[dict[str, Any]]) -> tuple[dict[str, Any], dict[str, set[int]]]:
@@ -371,6 +386,31 @@ def metrics(rows: Sequence[dict[str, Any]]) -> dict[str, Any]:
             "confusion": confusion}
 
 
+def resolve_run_runtime_commit(run: str, directory: Path, report: dict[str, Any],
+                               contract: dict[str, Any], expected: str,
+                               gates: list[dict[str, Any]]) -> str:
+    provenance_path = (directory / "run_provenance.json").resolve()
+    reported_path = Path(str(report.get("run_provenance_json", ""))).resolve()
+    gate(gates, "provenance", run, "run_provenance_path",
+         str(provenance_path), str(reported_path),
+         reported_path == provenance_path and provenance_path.is_file(),
+         "authoritative run provenance path mismatch")
+    provenance = read_json(provenance_path)
+    source = provenance.get("source_provenance") if type(provenance) is dict else None
+    observed = {
+        "run_provenance.source_provenance.git_commit": (
+            source.get("git_commit") if type(source) is dict else None),
+        "trajectory_contract.trainer_source_commit": contract.get("trainer_source_commit"),
+    }
+    valid = all(type(value) is str and re.fullmatch(r"[0-9a-f]{40}", value)
+                for value in observed.values())
+    matches = valid and set(observed.values()) == {expected}
+    gate(gates, "provenance", run, "stage196b1_runtime_commit_authoritative_fields",
+         expected, observed, matches,
+         "authoritative Stage196-B1 runtime commit fields are absent, contradictory, or mismatched")
+    return observed["run_provenance.source_provenance.git_commit"]
+
+
 def validate_runtime(run: str, seed: int, mode: str, report: dict[str, Any],
                      contract: dict[str, Any], gates: list[dict[str, Any]]) -> None:
     config = report.get("configuration"); split = report.get("split_seed_contract"); trainer = report.get("runs")
@@ -441,9 +481,7 @@ def validate_runtime(run: str, seed: int, mode: str, report: dict[str, Any],
         raise ValueError(f"{run}: CUDA provenance mismatch {devices!r}")
     if single.get("final_epoch") != 20 or single.get("best_epoch") != BEST_EPOCHS[run]:
         raise ValueError(f"{run}: final/selected epoch mismatch")
-    if contract.get("trainer_source_commit") != RUN_COMMIT or RUN_COMMIT not in (
-            recursive_values(report, "trainer_source_commit") + recursive_values(report, "git_commit")):
-        raise ValueError(f"{run}: runtime commit identity mismatch")
+
     if (contract.get("epoch_count") != 20 or contract.get("expected_dev_rows") != 720
             or contract.get("training_seed") != seed or contract.get("split_seed") != 174
             or contract.get("arm") != ARMS[mode]):
@@ -487,7 +525,8 @@ def validate_ledger(run: str, rows: list[dict[str, Any]]) -> dict[int, dict[str,
     return by_epoch
 
 
-def validate_run(root: Path, run: str, gates: list[dict[str, Any]]) -> dict[str, Any]:
+def validate_run(root: Path, run: str, expected_runtime_commit: str,
+                 gates: list[dict[str, Any]]) -> dict[str, Any]:
     seed, mode = int(run[4:7]), run[8:]; directory = (root / run).resolve()
     required = [directory/name for name in REQUIRED_RUN_FILES] + [directory/f"stage191_dev_predictions_epoch_{e:03d}.jsonl" for e in range(1, 21)]
     missing = [p.name for p in required if not p.is_file()]
@@ -499,6 +538,8 @@ def validate_run(root: Path, run: str, gates: list[dict[str, Any]]) -> dict[str,
          {"trajectory": 20, "capsules": 0, "swa": 0}, counts,
          counts == {"trajectory": 20, "capsules": 0, "swa": 0}, "trajectory/capsule/SWA closure mismatch")
     report = read_json(directory/"training_report.json"); contract = read_json(directory/"stage191_trajectory_contract.json")
+    runtime_commit = resolve_run_runtime_commit(
+        run, directory, report, contract, expected_runtime_commit, gates)
     validate_runtime(run, seed, mode, report, contract, gates)
     ledger = validate_ledger(run, read_jsonl(directory/"stage191_trajectory_epoch_metrics.jsonl"))
     obj = read_json(directory/"clean_dev_predictions.json"); scalars = read_jsonl(directory/"clean_dev_scalars.jsonl")
@@ -594,7 +635,8 @@ def validate_run(root: Path, run: str, gates: list[dict[str, Any]]) -> dict[str,
         row["position"] = selected_epoch_row["position"]
     gate(gates, "run", run, "stable_id_alignment", "720 unique IDs across 20 epochs", 720, True, "")
     return {"run": run, "seed": seed, "mode": mode, "arm": ARMS[mode], "selected": selected,
-            "epochs": epochs, "position_to_id": position_to_id, "report": report, "ledger": ledger}
+            "epochs": epochs, "position_to_id": position_to_id, "report": report, "ledger": ledger,
+            "stage196b1_runtime_git_commit": runtime_commit}
 
 
 def validate_population(runs: dict[str, dict[str, Any]], gates: list[dict[str, Any]]) -> None:
@@ -820,13 +862,25 @@ def decide(d: dict[str, dict[int, float]]) -> tuple[str, dict[str, Any]]:
 
 
 def analyze(a: argparse.Namespace, gates: list[dict[str, Any]]) -> tuple[dict[str, Any], dict[str, list[dict[str, Any]]]]:
-    repo, root, prior_path, _ = safe_paths(a); validate_source(repo, a.current_git_commit, gates)
+    repo, root, prior_path, _ = safe_paths(a)
+    validate_source(repo, a.current_git_commit, a.stage196b1_runtime_git_commit, gates)
     entries = [p.name for p in root.iterdir()]
     exact = set(entries) == set(RUNS) and all((root/run).is_dir() for run in RUNS)
     gate(gates, "source", "", "exact_six_run_root", list(RUNS), entries, exact,
          "run root must contain exactly the six frozen run directories")
     prior, sets = validate_stage196a(prior_path, gates)
-    runs = {run: validate_run(root, run, gates) for run in RUNS}; validate_population(runs, gates)
+    runs = {run: validate_run(root, run, a.stage196b1_runtime_git_commit, gates) for run in RUNS}
+    runtime_commits = {run: runs[run]["stage196b1_runtime_git_commit"] for run in RUNS}
+    gate(gates, "source", "", "stage196b1_runtime_commit_matches_all_runs",
+         a.stage196b1_runtime_git_commit, runtime_commits,
+         all(value == a.stage196b1_runtime_git_commit for value in runtime_commits.values()),
+         "one or more runs differ from the supplied Stage196-B1 runtime commit")
+    observed_runtime_commits = sorted(set(runtime_commits.values()))
+    gate(gates, "source", "", "stage196b1_runtime_commit_uniform_across_six_runs",
+         [a.stage196b1_runtime_git_commit], observed_runtime_commits,
+         observed_runtime_commits == [a.stage196b1_runtime_git_commit],
+         "Stage196-B1 runtime commits are not uniform across all six runs")
+    validate_population(runs, gates)
     persistent = {run: persistent_ids(runs[run]) for run in RUNS}; stable = {run: stable_ids(runs[run]) for run in RUNS}
     controls_by_seed, control_results = {}, {}
     for seed in SEEDS:
@@ -843,7 +897,10 @@ def analyze(a: argparse.Namespace, gates: list[dict[str, Any]]) -> tuple[dict[st
     epochs = epoch_rows(runs, sets, baseline_positions)
     delta_rows, deltas = delta_table(summaries); decision, rule = decide(deltas)
     report = {"stage": STAGE, "decision": decision, "runnable": True, "blocking_reasons": [],
-              "analysis_runtime_git_commit": a.current_git_commit, "stage196b1_runtime_git_commit": RUN_COMMIT,
+              "analysis_runtime_git_commit": a.current_git_commit,
+              "stage196b1_runtime_git_commit": a.stage196b1_runtime_git_commit,
+              "analysis_runtime_and_training_runtime_commits_are_distinct_roles": True,
+              "framegate_implementation_origin_git_commit": FRAMEGATE_IMPLEMENTATION_ORIGIN_COMMIT,
               "artifact_only_analysis": True, "training_performed": False, "checkpoint_loaded": False,
               "model_loaded": False, "external_evaluation_performed": False,
               "ordered_runs": list(RUNS), "seeds": list(SEEDS), "tail_epochs": list(TAIL),
@@ -913,7 +970,7 @@ def markdown(report: dict[str, Any], tables: dict[str, list[dict[str, Any]]]) ->
         "# Stage196-B1-C FrameGate gradient-ownership analysis", "", "## Executive decision", "",
         f"`{report['decision']}`", "", report["authorized_causal_claim"], "",
         "## Source and provenance closure", "",
-        f"All six runs close to runtime commit `{RUN_COMMIT}`, frozen Mamba `state-spaces/mamba-130m-hf`, `v6b_minimal`, CUDA, 20 epochs, split seed 174, frozen encoder/A_log, no shared-encoder gradient path, and no external, bridge, margin, SWA, calibration, threshold search, or state-capsule activity. Analysis commit: `{report['analysis_runtime_git_commit']}`.", "",
+        f"All six runs close to training runtime commit `{report['stage196b1_runtime_git_commit']}`, frozen Mamba `state-spaces/mamba-130m-hf`, `v6b_minimal`, CUDA, 20 epochs, split seed 174, frozen encoder/A_log, no shared-encoder gradient path, and no external, bridge, margin, SWA, calibration, threshold search, or state-capsule activity. Analysis commit: `{report['analysis_runtime_git_commit']}`. These are independent provenance roles; equality is not required.", "",
         "Resolved alignment key: `id`, cross-validated against trajectory `source_row_id`; `dev_position` is used only as a certified stable position. Resolved schema is recorded in the JSON report.", "",
         "## Exact six-run matrix", "", *[f"{i}. `{run}`" for i, run in enumerate(RUNS, 1)], "",
         "## Selected-checkpoint metrics", "", *selected_lines, "",
@@ -937,7 +994,10 @@ def incomplete_report(a: argparse.Namespace, exc: BaseException) -> dict[str, An
     return {"stage": STAGE, "decision": INCOMPLETE, "runnable": False,
             "blocking_reasons": [f"{type(exc).__name__}: {exc}"],
             "analysis_runtime_git_commit": a.current_git_commit,
-            "stage196b1_runtime_git_commit": RUN_COMMIT, "artifact_only_analysis": True,
+            "stage196b1_runtime_git_commit": a.stage196b1_runtime_git_commit,
+            "analysis_runtime_and_training_runtime_commits_are_distinct_roles": True,
+            "framegate_implementation_origin_git_commit": FRAMEGATE_IMPLEMENTATION_ORIGIN_COMMIT,
+            "artifact_only_analysis": True,
             "training_performed": False, "checkpoint_loaded": False, "model_loaded": False,
             "external_evaluation_performed": False, "ordered_runs": list(RUNS), "seeds": list(SEEDS),
             "tail_epochs": list(TAIL), "selected_best_epoch_by_run": BEST_EPOCHS,

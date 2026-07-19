@@ -8,7 +8,7 @@ The only authorized mechanism is direct downstream gradient ownership through Fr
 
 ## Invocation and execution policy
 
-The analyzer is `scripts/analyze_stage196b1_framegate_gradient_ownership.py`. All five arguments are required:
+The analyzer is `scripts/analyze_stage196b1_framegate_gradient_ownership.py`. All six arguments are required:
 
 ```text
 python scripts/analyze_stage196b1_framegate_gradient_ownership.py \
@@ -16,6 +16,7 @@ python scripts/analyze_stage196b1_framegate_gradient_ownership.py \
   --run-root <repository>/reports/stage196b1_framegate_gradient_ownership_runs \
   --stage196a-report-json <authoritative-stage196a-report.json> \
   --current-git-commit <40-character-analysis-commit> \
+  --stage196b1-runtime-git-commit <40-character-training-runtime-commit> \
   --output-dir <empty-output-directory>
 ```
 
@@ -38,7 +39,7 @@ Its directory entries must be exactly, in the analyzer's canonical order:
 5. `seed185_joint`
 6. `seed185_frame_local_only`
 
-No substituted seed, missing arm, additional directory, or line-order-only pairing is accepted. Runtime provenance must close to commit `9835cbbf86d83aca0964821669e63f7f6deb1c59`, Mamba, `state-spaces/mamba-130m-hf`, `v6b_minimal`, CUDA, 20 epochs, split seed 174, frozen encoder and A_log, non-trainable fully isolated shared encoder, and isolation source `frozen_runtime_configuration`. The intervention must not change encoder freeze state.
+No substituted seed, missing arm, additional directory, or line-order-only pairing is accepted. Runtime provenance must close to the caller-supplied `--stage196b1-runtime-git-commit`, Mamba, `state-spaces/mamba-130m-hf`, `v6b_minimal`, CUDA, 20 epochs, split seed 174, frozen encoder and A_log, non-trainable fully isolated shared encoder, and isolation source `frozen_runtime_configuration`. For the frozen experiment the execution value is `9835cbbf86d83aca0964821669e63f7f6deb1c59`; it is supplied rather than inferred or hard-coded by the analyzer. The intervention must not change encoder freeze state.
 
 Every run must declare direct frame loss active at weight 1.0, unchanged forward values, and the exact mode-specific blocking contract:
 
@@ -50,6 +51,10 @@ Every run must declare direct frame loss active at weight 1.0, unchanged forward
 ### Provenance-source ownership
 
 Runtime provenance is validated against explicit source ownership; the training report and trajectory contract are not treated as identical schemas.
+
+Commit provenance has three independent roles. `--current-git-commit` is the analysis runtime/source commit, must be lowercase full 40-hex, and must equal repository HEAD. `--stage196b1-runtime-git-commit` is the historical six-run training runtime commit, must be lowercase full 40-hex, and is validated against every run without comparison to analyzer HEAD. Equal or different values are both valid because role ownership, not inequality, is the invariant. The FrameGate implementation-origin commit remains `5a39538ef3ca8f36cc2cc5d3290eae60d6a5f5c8`; it is neither the training runtime commit nor the analysis runtime commit.
+
+Each run resolves the training runtime commit only from `run_provenance.json` at `source_provenance.git_commit` and `stage191_trajectory_contract.json` at `trainer_source_commit`. Both fields are required, lowercase full 40-hex, equal to one another, and equal to the supplied training runtime commit. No recursive search over commit-looking keys is permitted. After all runs load, the analyzer requires the six resolved values to form exactly the singleton set containing the supplied commit.
 
 The authoritative training report owns `training_seed`, `configured_split_seed`, `resolved_split_seed`, `split_seed_explicit`, `split_policy`, `backbone`, `model_name`, `architecture`, `device`, `epochs`, `freeze_encoder`, `freeze_a_log`, `shared_encoder_trainable`, `shared_encoder_gradient_fully_isolated`, `shared_encoder_isolation_source`, `framegate_gradient_ownership_intervention_changed_encoder_freeze_state`, `frame_downstream_gradient_mode`, `frame_direct_loss_active`, `frame_direct_loss_weight`, `frame_downstream_forward_value_changed`, and `framegate_nonframe_output_gradient_blocked`. Deliberately duplicated values within the training report must be uniform. Split provenance is authoritative in `split_seed_contract`; every split field is required there, and any duplicate below `configuration` is cross-checked.
 The epoch count is read from the report's exact single-run closure at `runs.single.final_epoch`; the remaining non-split runtime fields are resolved within `configuration`.
@@ -178,7 +183,11 @@ The output directory must be absent or empty. The analyzer creates exactly:
 
 An analysis failure still writes this exact closure: an incomplete JSON/Markdown report, empty data CSVs with headers, and the accumulated failing contract ledger. Runtime or analysis failure is never converted into scientific evidence.
 
-The contract CSV exposes source ownership with separate per-run gates for `training_report_runtime_provenance`, `training_report_split_provenance`, `trajectory_observability_provenance`, and `cross_source_gradient_ownership_provenance`. A gate reports only the source or sources it actually inspected; it never attributes training-only split or configuration validation to the trajectory contract.
+The contract CSV exposes source ownership with separate per-run gates for `training_report_runtime_provenance`, `training_report_split_provenance`, `trajectory_observability_provenance`, and `cross_source_gradient_ownership_provenance`. Commit-role closure is reported separately by `analysis_runtime_commit_format`, `analysis_runtime_commit_equals_head`, `stage196b1_runtime_commit_format`, `stage196b1_runtime_commit_matches_all_runs`, `stage196b1_runtime_commit_uniform_across_six_runs`, `analysis_and_training_commit_roles_separated`, and `framegate_implementation_origin_commit_preserved`. The role-separation row reports both commit values explicitly and passes whether they are equal or different. A gate reports only the source or sources it actually inspected; it never attributes training-only split or configuration validation to the trajectory contract.
+
+Both completed and incomplete analysis JSON include `analysis_runtime_git_commit`, `stage196b1_runtime_git_commit`, and `analysis_runtime_and_training_runtime_commits_are_distinct_roles: true`. The implementation-origin commit is recorded separately as `framegate_implementation_origin_git_commit`.
+
+The historical incomplete directories `reports/stage196b1c_framegate_gradient_ownership_analysis_20260719_185153` and `reports/stage196b1c_framegate_gradient_ownership_analysis_20260719_190903` remain immutable non-scientific history. A corrected rerun must use a new timestamped output directory.
 
 ## Interpretation and next stage
 
