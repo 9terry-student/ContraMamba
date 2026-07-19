@@ -52,6 +52,27 @@ B2B2_FILES = (
     "stage196b2b2_contrast_summary.csv",
     "stage196b2b2_contract.csv",
 )
+B2B1_FILES = (
+    "stage196b2b1_analysis.json",
+    "stage196b2b1_report.md",
+    "stage196b2b1_group_summary.csv",
+    "stage196b2b1_row_profiles.csv",
+    "stage196b2b1_signature_summary.csv",
+    "stage196b2b1_cross_seed_transfer.csv",
+    "stage196b2b1_intervention_type_summary.csv",
+    "stage196b2b1_contract.csv",
+)
+B2A_FILES = (
+    "stage196b2a_analysis.json",
+    "stage196b2a_report.md",
+    "stage196b2a_seed_summary.csv",
+    "stage196b2a_support_transition_rows.csv",
+    "stage196b2a_channel_transition_summary.csv",
+    "stage196b2a_recurrent_position_propagation.csv",
+    "stage196b2a_harm_rescue_rows.csv",
+    "stage196b2a_epoch_propagation.csv",
+    "stage196b2a_contract.csv",
+)
 OUTPUTS = (
     "stage196b2b3_analysis.json",
     "stage196b2b3_report.md",
@@ -297,6 +318,8 @@ def parse_args() -> argparse.Namespace:
         ("repo-root", Path),
         ("stage196b2b2-analysis-json", Path),
         ("stage196b2b2-analyzer-git-commit", str),
+        ("stage196b2b1-analysis-json", Path),
+        ("stage196b2a-analysis-json", Path),
         ("stage196b2p0-run-root", Path),
         ("trainer-path", Path),
         ("current-git-commit", str),
@@ -430,20 +453,17 @@ def record_completed_audit(
     )
 
 
-def exact_directory(directory: Path, expected: Sequence[str], gates: list[dict[str, Any]]) -> None:
+def exact_directory(
+    directory: Path,
+    expected: Sequence[str],
+    gates: list[dict[str, Any]],
+    gate_name: str,
+    label: str,
+) -> None:
     observed = sorted(item.name for item in directory.iterdir())
     required = sorted(expected)
     ok = observed == required and all((directory / name).is_file() for name in expected)
-    gate(
-        gates,
-        "source",
-        "",
-        "exact_stage196b2b2_nine_file_closure",
-        required,
-        observed,
-        ok,
-        "Stage196-B2-B2 exact nine-file closure failed",
-    )
+    gate(gates, "source", "", gate_name, required, observed, ok, f"{label} exact closure failed")
 
 
 def contract_passes(rows: list[dict[str, str]]) -> bool:
@@ -493,65 +513,304 @@ def normalized_provenance(analysis: dict[str, Any]) -> dict[str, str]:
     return {key: str(value) for key, value in result.items()}
 
 
-def _margin_values(value: Any, context: str = "") -> list[str]:
-    values: list[str] = []
-    if type(value) is dict:
-        for key, child in value.items():
-            child_context = f"{context}.{key}".lower()
-            if "margin" in child_context and "source" in child_context and type(child) is str:
-                values.append(child)
-            values.extend(_margin_values(child, child_context))
-    elif type(value) is list:
-        for child in value:
-            values.extend(_margin_values(child, context))
-    return values
+def mapping_margin_authority(
+    rows: list[dict[str, str]],
+    source_scope: str,
+    source_gate: str,
+    output_gate: str,
+    analysis_path: Path,
+    contract_path: Path,
+    gates: list[dict[str, Any]],
+    label: str,
+) -> tuple[str, dict[str, Any], dict[str, Any]]:
+    matches = [row for row in rows if row.get("scope") == source_scope and row.get("gate") == source_gate]
+    mapping: dict[str, Any] | None = None
+    value: Any = None
+    parse_error: str | None = None
+    passed_row = False
+    if len(matches) == 1:
+        row = matches[0]
+        try:
+            passed_row = as_bool(row.get("passed", ""), f"{label} passed") and row.get("blocking_reason", "") == ""
+            parsed = cell(row.get("observed", ""))
+            if type(parsed) is not dict:
+                raise ValueError("observed is not a JSON object")
+            mapping = parsed
+            value = mapping.get("support_vs_not_entitled_margin_source")
+        except (TypeError, ValueError) as error:
+            parse_error = f"{type(error).__name__}: {error}"
+    evidence = {
+        "analysis_path": str(analysis_path),
+        "contract_path": str(contract_path),
+        "match_count": len(matches),
+        "scope": source_scope,
+        "gate": source_gate,
+        "column": "observed",
+        "field": "support_vs_not_entitled_margin_source",
+        "value": value,
+        "parse_error": parse_error,
+    }
+    ok = len(matches) == 1 and passed_row and parse_error is None and type(value) is str and value == MARGIN_SOURCE
+    gate(gates, "provenance", "", output_gate, MARGIN_SOURCE, evidence, ok, f"{label} is absent, malformed, failed, or conflicting")
+    if mapping is None:
+        raise ValueError(f"{label}: normalized source roles unavailable")
+    return value, mapping, evidence
 
 
-def normalize_margin_source(
-    analysis: dict[str, Any], contract: list[dict[str, str]]
-) -> tuple[str, list[str], dict[str, Any]]:
-    authoritative: list[str] = []
-    for row in contract:
-        if not as_bool(row.get("passed", ""), "contract passed"):
-            continue
-        gate_name = row.get("gate", "").lower()
-        for column in ("required", "observed"):
-            parsed = cell(row.get(column, ""))
-            authoritative.extend(_margin_values(parsed, gate_name))
-            if "margin" in gate_name and "source" in gate_name and type(parsed) is str:
-                authoritative.append(parsed)
-    authoritative = [value for value in authoritative if value not in (None, "")]
-    if not authoritative:
-        raise ValueError("normalized margin source absent from all authoritative contracts")
-    if any(value != MARGIN_SOURCE for value in authoritative):
-        raise ValueError(f"authoritative margin-source disagreement: {authoritative}")
+def scalar_margin_authority(
+    rows: list[dict[str, str]],
+    source_scope: str,
+    source_gate: str,
+    output_gate: str,
+    analysis_path: Path,
+    contract_path: Path,
+    gates: list[dict[str, Any]],
+    label: str,
+) -> tuple[str, dict[str, Any]]:
+    matches = [row for row in rows if row.get("scope") == source_scope and row.get("gate") == source_gate]
+    value: Any = None
+    observed_evidence: Any = None
+    parse_error: str | None = None
+    passed_row = False
+    if len(matches) == 1:
+        row = matches[0]
+        try:
+            passed_row = as_bool(row.get("passed", ""), f"{label} passed") and row.get("blocking_reason", "") == ""
+            value = cell(row.get("required", ""))
+            observed_evidence = cell(row.get("observed", ""))
+        except (TypeError, ValueError) as error:
+            parse_error = f"{type(error).__name__}: {error}"
+    evidence = {
+        "analysis_path": str(analysis_path),
+        "contract_path": str(contract_path),
+        "match_count": len(matches),
+        "scope": source_scope,
+        "gate": source_gate,
+        "column": "required",
+        "field": None,
+        "value": value,
+        "observed_evidence": observed_evidence,
+        "parse_error": parse_error,
+    }
+    ok = len(matches) == 1 and passed_row and parse_error is None and type(value) is str and value == MARGIN_SOURCE
+    gate(gates, "source", "", output_gate, MARGIN_SOURCE, evidence, ok, f"{label} is absent, malformed, failed, or conflicting")
+    return value, evidence
 
-    warnings: list[str] = []
-    primary = analysis.get("normalized_margin_source")
-    aliases = (
-        "normalized_support_vs_not_entitled_margin_source",
-        "support_vs_not_entitled_margin_source",
-        "support_vs_ne_margin_source",
+def role_value(mapping: dict[str, Any], label: str, *names: str) -> str:
+    values = [str(mapping[name]) for name in names if mapping.get(name) not in (None, "")]
+    if not values:
+        raise ValueError(f"{label}: missing role aliases {names}")
+    if any(value != values[0] for value in values):
+        raise ValueError(f"{label}: conflicting role aliases {names}")
+    return values[0]
+
+
+def contract_commit_value(
+    rows: list[dict[str, str]], gate_names: Sequence[str], expected: str, label: str
+) -> str:
+    matches = [row for row in rows if row.get("scope") == "provenance" and row.get("gate") in gate_names]
+    if not matches or any(not as_bool(row.get("passed", ""), f"{label} passed") for row in matches):
+        raise ValueError(f"{label}: passed analyzer-commit contract gate absent")
+    values = [cell(row.get("observed", "")) for row in matches]
+    if any(type(value) is not str or value == "" for value in values):
+        raise ValueError(f"{label}: analyzer-commit contract value missing or malformed")
+    if any(value != values[0] for value in values) or values[0] != expected:
+        raise ValueError(f"{label}: analyzer-commit contract disagreement: {values}")
+    return values[0]
+
+
+def analysis_commit(analysis: dict[str, Any], expected: str, label: str) -> str:
+    values = [
+        str(analysis[name])
+        for name in ("current_analyzer_git_commit", "analysis_runtime_commit", "analysis_runtime_git_commit")
+        if analysis.get(name) not in (None, "")
+    ]
+    if not values or any(value != values[0] for value in values) or values[0] != expected:
+        raise ValueError(f"{label}: analyzer commit mismatch: {values}")
+    return values[0]
+
+
+def validate_predecessors(
+    namespace: argparse.Namespace, gates: list[dict[str, Any]]
+) -> dict[str, Any]:
+    b1_path = namespace.stage196b2b1_analysis_json.resolve()
+    a_path = namespace.stage196b2a_analysis_json.resolve()
+    b1_dir = b1_path.parent
+    a_dir = a_path.parent
+    if b1_path.name != B2B1_FILES[0] or a_path.name != B2A_FILES[0]:
+        raise ValueError("explicit predecessor analysis basename mismatch")
+    exact_directory(b1_dir, B2B1_FILES, gates, "exact_eight_file_b2b1_closure", "Stage196-B2-B1")
+    b1_analysis = read_json(b1_path)
+    b1_contract = read_csv(b1_dir / B2B1_FILES[-1])
+    b1_required_decision = {
+        "decision": "STAGE196B2B1_SEED_SPECIFIC_NO_STABLE_BIFURCATION",
+        "recommended_next_stage": "STAGE196B2B2_NO_PROMOTION_ROW_LEVEL_CAUSAL_PROBE",
+        "blocking_reasons": [],
+    }
+    b1_observed_decision = {key: b1_analysis.get(key) for key in b1_required_decision}
+    gate(
+        gates, "source", "", "b2b1_decision_closure", b1_required_decision,
+        b1_observed_decision, b1_observed_decision == b1_required_decision,
+        "Stage196-B2-B1 decision closure mismatch",
     )
-    if primary is None:
-        warnings.append(
-            "SOURCE_SCHEMA_WARNING: normalized_margin_source is null; normalized from "
-            "the passed authoritative contract"
-        )
-    elif primary != MARGIN_SOURCE:
-        raise ValueError("top-level normalized_margin_source disagrees with contract")
-    for name in aliases:
-        value = analysis.get(name)
-        if value is not None and value != MARGIN_SOURCE:
-            raise ValueError(f"top-level {name} disagrees with contract")
-    return MARGIN_SOURCE, warnings, {
-        "top_level_normalized_margin_source": primary,
-        "authoritative_contract_values": sorted(set(authoritative)),
+    b1_contract_evidence = {
+        "contract_path": str((b1_dir / B2B1_FILES[-1]).resolve()),
+        "row_count": len(b1_contract),
+        "passed_count": sum(as_bool(row.get("passed", ""), "B2-B1 contract passed") for row in b1_contract),
+        "blocking_reasons": [row.get("blocking_reason", "") for row in b1_contract if row.get("blocking_reason", "")],
+    }
+    gate(
+        gates, "source", "", "b2b1_all_contract_gates_passed",
+        {"row_count": 23, "passed_count": 23, "blocking_reasons": []},
+        b1_contract_evidence,
+        len(b1_contract) == 23 and contract_passes(b1_contract),
+        "Stage196-B2-B1 contract is not exactly 23 passed gates",
+    )
+
+    exact_directory(a_dir, B2A_FILES, gates, "exact_nine_file_b2a_closure", "Stage196-B2-A")
+    a_analysis = read_json(a_path)
+    a_contract = read_csv(a_dir / B2A_FILES[-1])
+    a_required_decision = {
+        "decision": "STAGE196B2A_SEED_SPECIFIC_MIXED_PROPAGATION",
+        "recommended_next_stage": "STAGE196B2B_NO_PROMOTION_MINIMAL_SEED_SPECIFIC_FOLLOWUP",
+        "blocking_reasons": [],
+    }
+    a_observed_decision = {key: a_analysis.get(key) for key in a_required_decision}
+    gate(
+        gates, "source", "", "b2a_decision_closure", a_required_decision,
+        a_observed_decision, a_observed_decision == a_required_decision,
+        "Stage196-B2-A decision closure mismatch",
+    )
+    a_contract_evidence = {
+        "contract_path": str((a_dir / B2A_FILES[-1]).resolve()),
+        "row_count": len(a_contract),
+        "passed_count": sum(as_bool(row.get("passed", ""), "B2-A contract passed") for row in a_contract),
+        "blocking_reasons": [row.get("blocking_reason", "") for row in a_contract if row.get("blocking_reason", "")],
+    }
+    gate(
+        gates, "source", "", "b2a_all_contract_gates_passed", "all rows passed with empty blockers",
+        a_contract_evidence, contract_passes(a_contract), "Stage196-B2-A contract has failed or blocked gates",
+    )
+
+    b1_margin, b1_roles, b1_authority = mapping_margin_authority(
+        b1_contract,
+        "provenance",
+        "normalized_source_roles",
+        "b2b1_margin_source_authority",
+        b1_path,
+        (b1_dir / B2B1_FILES[-1]).resolve(),
+        gates,
+        "B2-B1 normalized-source-role margin authority",
+    )
+    a_native_margin, a_native_authority = scalar_margin_authority(
+        a_contract,
+        "source",
+        "contract_native_logit_margin_authority",
+        "b2a_margin_source_authority",
+        a_path,
+        (a_dir / B2A_FILES[-1]).resolve(),
+        gates,
+        "B2-A native margin authority",
+    )
+    a_roles_margin, a_roles, a_roles_authority = mapping_margin_authority(
+        a_contract,
+        "provenance",
+        "normalized_source_roles",
+        "b2a_normalized_source_roles_margin",
+        a_path,
+        (a_dir / B2A_FILES[-1]).resolve(),
+        gates,
+        "B2-A normalized-source-role margin authority",
+    )
+    if a_roles_margin != a_native_margin:
+        raise ValueError("B2-A normalized-source-role margin disagrees with native authority")
+    b1_analysis_commit = analysis_commit(b1_analysis, B2B1_COMMIT, "B2-B1")
+    b1_contract_commit = contract_commit_value(
+        b1_contract,
+        ("current_analyzer_commit_equals_head", "analysis_runtime_commit_equals_head"),
+        B2B1_COMMIT,
+        "B2-B1",
+    )
+    a_analysis_commit = analysis_commit(a_analysis, B2A_COMMIT, "B2-A")
+    a_contract_commit = contract_commit_value(
+        a_contract, ("analysis_runtime_commit_equals_head", "current_analyzer_commit_equals_head"),
+        B2A_COMMIT, "B2-A",
+    )
+    if b1_analysis_commit != b1_contract_commit or a_analysis_commit != a_contract_commit:
+        raise ValueError("predecessor analysis/contract analyzer commits disagree")
+    b1_chain = {
+        "stage196b2b1_analyzer_git_commit": b1_contract_commit,
+        "stage196b2a_analyzer_git_commit": role_value(b1_roles, "B2-B1 roles", "stage196b2a_analyzer_git_commit"),
+        "stage196b2p0_runtime_git_commit": role_value(b1_roles, "B2-B1 roles", "stage196b2p0_runtime_git_commit", "stage196b2p0_runtime_commit"),
+        "stage196b1_runtime_git_commit": role_value(b1_roles, "B2-B1 roles", "stage196b1_runtime_git_commit"),
+        "framegate_implementation_origin_git_commit": role_value(b1_roles, "B2-B1 roles", "framegate_implementation_origin_git_commit"),
+    }
+    a_chain = {
+        "stage196b2a_analyzer_git_commit": a_contract_commit,
+        "stage196b2p0_runtime_git_commit": role_value(a_roles, "B2-A roles", "stage196b2p0_runtime_git_commit", "stage196b2p0_runtime_commit"),
+        "stage196b1_runtime_git_commit": role_value(a_roles, "B2-A roles", "stage196b1_runtime_git_commit"),
+        "framegate_implementation_origin_git_commit": role_value(a_roles, "B2-A roles", "framegate_implementation_origin_git_commit"),
+    }
+    return {
+        "stage196b2b1_analysis_path": str(b1_path),
+        "stage196b2a_analysis_path": str(a_path),
+        "b2b1_chain": b1_chain,
+        "b2a_chain": a_chain,
+        "authorities": {
+            "stage196b2b1_normalized_source_roles": b1_authority,
+            "stage196b2a_native_logit_margin_authority": a_native_authority,
+            "stage196b2a_normalized_source_roles": a_roles_authority,
+        },
     }
 
 
+def normalize_margin_source(
+    analysis: dict[str, Any],
+    predecessor: dict[str, Any],
+    gates: list[dict[str, Any]],
+    analysis_path: Path,
+) -> tuple[str, list[str], dict[str, Any]]:
+    authorities = dict(predecessor["authorities"])
+    primary = analysis.get("normalized_margin_source")
+    authorities["stage196b2b2_top_level_normalized_margin_source"] = {
+        "analysis_path": str(analysis_path),
+        "column": "top_level",
+        "field": "normalized_margin_source",
+        "value": primary,
+    }
+    for name in (
+        "normalized_support_vs_not_entitled_margin_source",
+        "support_vs_not_entitled_margin_source",
+        "support_vs_ne_margin_source",
+    ):
+        value = analysis.get(name)
+        if value is not None:
+            authorities[f"stage196b2b2_top_level_{name}"] = {
+                "analysis_path": str(analysis_path),
+                "column": "top_level",
+                "field": name,
+                "value": value,
+            }
+    values = [evidence.get("value") for evidence in authorities.values() if evidence.get("value") is not None]
+    agreement = bool(values) and all(type(value) is str and value == MARGIN_SOURCE for value in values)
+    gate(
+        gates, "provenance", "", "cross_generation_margin_source_agreement", MARGIN_SOURCE,
+        {"authorities": authorities, "non_null_values": values}, agreement,
+        "cross-generation margin-source authority is absent, malformed, or conflicting",
+    )
+    warnings: list[str] = []
+    if primary is None:
+        warnings.append(
+            "SOURCE_SCHEMA_WARNING: B2-B2 normalized_margin_source is null; normalized from "
+            "agreeing explicit B2-B1 and B2-A authorities"
+        )
+    return MARGIN_SOURCE, warnings, authorities
+
 def validate_b2b2(
-    namespace: argparse.Namespace, gates: list[dict[str, Any]], repo: Path
+    namespace: argparse.Namespace,
+    gates: list[dict[str, Any]],
+    repo: Path,
+    predecessor: dict[str, Any],
 ) -> dict[str, Any]:
     source_path = namespace.stage196b2b2_analysis_json.resolve()
     source_dir = source_path.parent
@@ -565,7 +824,7 @@ def validate_b2b2(
         source_path.name == B2B2_FILES[0],
         "Stage196-B2-B2 analysis basename mismatch",
     )
-    exact_directory(source_dir, B2B2_FILES, gates)
+    exact_directory(source_dir, B2B2_FILES, gates, "exact_stage196b2b2_nine_file_closure", "Stage196-B2-B2")
     analysis = read_json(source_dir / B2B2_FILES[0])
     contract = read_csv(source_dir / B2B2_FILES[-1])
     required_decision = {
@@ -625,7 +884,39 @@ def validate_b2b2(
         provenance == expected_provenance,
         "historical provenance roles disagree",
     )
-    margin_source, warnings, margin_provenance = normalize_margin_source(analysis, contract)
+    expected_b1_chain = {
+        "stage196b2b1_analyzer_git_commit": B2B1_COMMIT,
+        "stage196b2a_analyzer_git_commit": B2A_COMMIT,
+        "stage196b2p0_runtime_git_commit": P0_COMMIT,
+        "stage196b1_runtime_git_commit": B1_COMMIT,
+        "framegate_implementation_origin_git_commit": FRAMEGATE_COMMIT,
+    }
+    expected_a_chain = {
+        "stage196b2a_analyzer_git_commit": B2A_COMMIT,
+        "stage196b2p0_runtime_git_commit": P0_COMMIT,
+        "stage196b1_runtime_git_commit": B1_COMMIT,
+        "framegate_implementation_origin_git_commit": FRAMEGATE_COMMIT,
+    }
+    chain_evidence = {
+        "stage196b2b2_source_provenance": provenance,
+        "stage196b2b1_explicit_input_provenance": predecessor["b2b1_chain"],
+        "stage196b2a_explicit_input_provenance": predecessor["b2a_chain"],
+        "stage196b2b1_analysis_path": predecessor["stage196b2b1_analysis_path"],
+        "stage196b2a_analysis_path": predecessor["stage196b2a_analysis_path"],
+    }
+    chain_ok = (
+        provenance == expected_provenance
+        and predecessor["b2b1_chain"] == expected_b1_chain
+        and predecessor["b2a_chain"] == expected_a_chain
+    )
+    gate(
+        gates, "provenance", "", "explicit_predecessor_provenance_chain",
+        {"b2b2": expected_provenance, "b2b1": expected_b1_chain, "b2a": expected_a_chain},
+        chain_evidence, chain_ok, "explicit predecessor provenance chain disagrees",
+    )
+    margin_source, warnings, margin_provenance = normalize_margin_source(
+        analysis, predecessor, gates, source_path
+    )
 
     row_paths = read_csv(source_dir / B2B2_FILES[2])
     paired_epochs = read_csv(source_dir / B2B2_FILES[3])
@@ -1338,6 +1629,8 @@ def analyze(
 ) -> tuple[dict[str, Any], dict[str, list[dict[str, Any]]]]:
     repo = namespace.repo_root.resolve()
     b2b2_path = namespace.stage196b2b2_analysis_json.resolve()
+    b2b1_path = namespace.stage196b2b1_analysis_json.resolve()
+    b2a_path = namespace.stage196b2a_analysis_json.resolve()
     p0_root = namespace.stage196b2p0_run_root.resolve()
     trainer = namespace.trainer_path.resolve()
     output = namespace.output_dir.resolve()
@@ -1348,8 +1641,8 @@ def analyze(
         "",
         "all_inputs_and_output_below_repo",
         True,
-        all(under(path, repo) for path in (b2b2_path, p0_root, trainer, output)),
-        all(under(path, repo) for path in (b2b2_path, p0_root, trainer, output)),
+        all(under(path, repo) for path in (b2b2_path, b2b1_path, b2a_path, p0_root, trainer, output)),
+        all(under(path, repo) for path in (b2b2_path, b2b1_path, b2a_path, p0_root, trainer, output)),
         "an input or output path escapes repo root",
     )
     expected_trainer = (repo / "scripts" / "train_controlled_v6b_minimal.py").resolve()
@@ -1365,7 +1658,7 @@ def analyze(
     )
     separated = all(
         not under(output, source) and not under(source, output)
-        for source in (b2b2_path.parent, p0_root, trainer.parent)
+        for source in (b2b2_path.parent, b2b1_path.parent, b2a_path.parent, p0_root, trainer.parent)
     )
     gate(gates, "path", "", "output_separation", True, separated, separated, "output overlaps a source")
     gate(gates, "path", "", "fresh_output_directory", "absent", output.exists(), not output.exists(), "output directory already exists")
@@ -1379,7 +1672,8 @@ def analyze(
     gate(gates, "provenance", "", "current_commit_format", "lowercase 40-hex", namespace.current_git_commit, commit_format, "invalid current analyzer commit")
     gate(gates, "provenance", "", "current_commit_equals_head", namespace.current_git_commit, head, head == namespace.current_git_commit, "current analyzer commit differs from HEAD")
 
-    b2b2 = validate_b2b2(namespace, gates, repo)
+    predecessor = validate_predecessors(namespace, gates)
+    b2b2 = validate_b2b2(namespace, gates, repo, predecessor)
     populations = validate_p0(p0_root, b2b2["provenance"], gates)
     validate_primary_against_p0(b2b2["row_paths"], populations, gates)
     graph_rows, graph_audit = audit_source_graph(trainer, repo, gates)
@@ -1423,8 +1717,11 @@ def analyze(
         "normalized_historical_provenance_roles": b2b2["provenance"],
         "normalized_margin_source": b2b2["margin_source"],
         "normalized_support_vs_not_entitled_margin_source": b2b2["margin_source"],
+        "margin_source_authorities": b2b2["margin_provenance"],
         "margin_source_provenance": b2b2["margin_provenance"],
         "source_schema_warnings": b2b2["warnings"],
+        "stage196b2b1_analysis_path": predecessor["stage196b2b1_analysis_path"],
+        "stage196b2a_analysis_path": predecessor["stage196b2a_analysis_path"],
         "positive_seeds": list(POSITIVE_SEEDS),
         "contrast_seeds": [183],
         "primary_population_total": 16,
@@ -1508,8 +1805,11 @@ def incomplete_analysis(namespace: argparse.Namespace, error: BaseException) -> 
         "normalized_historical_provenance_roles": {},
         "normalized_margin_source": None,
         "normalized_support_vs_not_entitled_margin_source": None,
+        "margin_source_authorities": {},
         "margin_source_provenance": {},
         "source_schema_warnings": [],
+        "stage196b2b1_analysis_path": str(namespace.stage196b2b1_analysis_json.resolve()),
+        "stage196b2a_analysis_path": str(namespace.stage196b2a_analysis_json.resolve()),
         "positive_seeds": [],
         "contrast_seeds": [],
         "primary_population_total": 0,
@@ -1568,9 +1868,9 @@ def markdown(analysis: dict[str, Any]) -> str:
     bodies = (
         f"`{decision}`",
         analysis["authorized_interpretation"],
-        "The exact nine-file companion closure, completed B2-B2 decision, empty blockers, 155 passed contract gates, 16 primary rows, 320 paired-epoch rows, seed roles, and frozen path counts are mandatory.",
+        "Exact explicit B2-B1 eight-file, B2-A nine-file, and B2-B2 nine-file closures are mandatory, including their completed decisions, passed contracts, provenance chain, 16 B2-B2 primary rows, and 320 paired-epoch rows.",
         "Exactly six run directories and the exact `001`-through-`020` sidecar namespace were validated at 720 rows per sidecar. Unrelated standard artifacts inside each run are outside the sidecar namespace.",
-        json.dumps({"roles": analysis.get("normalized_historical_provenance_roles", {}), "margin_source": analysis.get("normalized_margin_source"), "warnings": analysis.get("source_schema_warnings", [])}, sort_keys=True),
+        json.dumps({"roles": analysis.get("normalized_historical_provenance_roles", {}), "margin_source": analysis.get("normalized_margin_source"), "authorities": analysis.get("margin_source_authorities", {}), "warnings": analysis.get("source_schema_warnings", []), "stage196b2b1_analysis_path": analysis.get("stage196b2b1_analysis_path"), "stage196b2a_analysis_path": analysis.get("stage196b2a_analysis_path")}, sort_keys=True),
         json.dumps(graph, sort_keys=True),
         json.dumps(available, sort_keys=True),
         json.dumps(analysis.get("native_reconstruction", {}), sort_keys=True),

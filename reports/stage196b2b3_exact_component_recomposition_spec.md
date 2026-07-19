@@ -10,6 +10,8 @@ The analyzer is `scripts/analyze_stage196b2b3_exact_component_recomposition.py`.
 --repo-root
 --stage196b2b2-analysis-json
 --stage196b2b2-analyzer-git-commit
+--stage196b2b1-analysis-json
+--stage196b2a-analysis-json
 --stage196b2p0-run-root
 --trainer-path
 --current-git-commit
@@ -37,6 +39,12 @@ The new analyzer commit is supplied separately through `--current-git-commit` an
 
 The parent directory of `--stage196b2b2-analysis-json` must contain exactly the nine frozen B2-B2 outputs, with no missing or extra entries. The analyzer requires the completed B2-B2 decision and recommended stage, empty blocking reasons, exactly 155 passed contract gates with empty gate blockers, 16 row-path rows, and 320 paired-epoch rows.
 
+The predecessor paths are explicit CLI inputs. No timestamp glob, sibling guessing, repository search, or hard-coded hosted path is permitted.
+
+The parent of `--stage196b2b1-analysis-json` must contain exactly the eight frozen B2-B1 files: analysis JSON, report, group summary, row profiles, signature summary, cross-seed transfer, intervention-type summary, and contract. The decision must be `STAGE196B2B1_SEED_SPECIFIC_NO_STABLE_BIFURCATION`, the next stage must be `STAGE196B2B2_NO_PROMOTION_ROW_LEVEL_CAUSAL_PROBE`, blockers must be empty, and exactly 23 contract gates must pass with empty blockers.
+
+The parent of `--stage196b2a-analysis-json` must contain exactly the nine frozen B2-A files: analysis JSON, report, seed summary, support-transition rows, channel-transition summary, recurrent-position propagation, harm-rescue rows, epoch propagation, and contract. The decision must be `STAGE196B2A_SEED_SPECIFIC_MIXED_PROPAGATION`, the next stage must be `STAGE196B2B_NO_PROMOTION_MINIMAL_SEED_SPECIFIC_FOLLOWUP`, blockers must be empty, and every contract gate must pass with an empty blocker.
+
 The frozen primary population must be exactly:
 
 ```text
@@ -60,7 +68,33 @@ The authoritative margin source is:
 support_logit - not_entitled_logit
 ```
 
-A null top-level `normalized_margin_source` is accepted only when a passed authoritative contract establishes that exact value. The analyzer records a nonblocking schema warning. A non-null top-level value must agree. An absent authoritative contract value or any disagreement is malformed input and produces `STAGE196B2B3_ANALYSIS_INCOMPLETE`.
+Authority is extracted column-by-column from the explicit predecessor contracts:
+
+1. B2-B1 must contain exactly one passed `scope=provenance`, `gate=normalized_source_roles` row. Its `observed` cell must be a JSON object whose `support_vs_not_entitled_margin_source` field equals the formula.
+2. B2-A must contain exactly one passed `scope=source`, `gate=contract_native_logit_margin_authority` row. The formula is read from `required`; `observed` is retained only as diagnostic evidence and is not expected to contain the formula.
+3. B2-A must also contain exactly one passed `scope=provenance`, `gate=normalized_source_roles` row. Its observed JSON margin field must agree with the B2-A native required value.
+
+A null B2-B2 top-level `normalized_margin_source` continues only when all explicit predecessor authorities agree, and records a nonblocking schema warning. Every available non-null top-level alias is also checked. Any missing, malformed, failed, duplicate, null, or conflicting authority is malformed input and produces `STAGE196B2B3_ANALYSIS_INCOMPLETE`; the analyzer never silently selects among conflicts.
+
+The output analysis retains `normalized_margin_source`, the complete `margin_source_authorities` evidence, `source_schema_warnings`, both explicit predecessor analysis paths, and `normalized_historical_provenance_roles`.
+
+The contract records diagnostic evidence under these fail-closed gates:
+
+```text
+exact_eight_file_b2b1_closure
+b2b1_decision_closure
+b2b1_all_contract_gates_passed
+exact_nine_file_b2a_closure
+b2a_decision_closure
+b2a_all_contract_gates_passed
+b2b1_margin_source_authority
+b2a_margin_source_authority
+b2a_normalized_source_roles_margin
+cross_generation_margin_source_agreement
+explicit_predecessor_provenance_chain
+```
+
+The provenance-chain gate cross-checks the B2-B1 and B2-A analyzer commits and their normalized runtime/origin roles against B2-B2 source provenance. The B2-B3 commit remains a separate current-analyzer role.
 
 ## Static composer audit
 
