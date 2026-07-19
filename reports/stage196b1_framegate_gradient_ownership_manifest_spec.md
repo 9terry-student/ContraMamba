@@ -5,8 +5,11 @@
 Stage196-B1-A freezes, but does not execute, the six-run Stage196-B1 causal
 experiment. It asks only:
 
-> Does blocking direct non-frame gradient paths through FrameGate outputs reduce
-> recurrent persistent SUPPORT false-NOT_ENTITLED failures?
+> Under the frozen-Mamba training envelope that produced the persistent
+> FrameGate failures, does blocking direct non-frame gradient paths through
+> FrameGate outputs improve FrameGate behavior?
+
+The treatment changes only gradient ownership inside the trainable v6B heads.
 
 The sole intervention is the trainer option
 `--frame-downstream-gradient-mode {joint,frame_local_only}` implemented at
@@ -66,6 +69,8 @@ Every run uses:
 --architecture v6b_minimal
 --device cuda
 --epochs 20
+--freeze-encoder true
+--freeze-a-log true
 --seed <183|184|185>
 --split-seed 174
 --frame-downstream-gradient-mode <joint|frame_local_only>
@@ -95,6 +100,9 @@ frozen `a_log`, maximum length 128, dev ratio 0.2, gradient accumulation 1,
 class weighting `none`, selection metric `final_macro_f1`, flag source
 `controlled_heuristic`, and selected-checkpoint filename
 `selected_checkpoint.pt` with selected-checkpoint saving enabled.
+
+The Mamba encoder freeze and `a_log` freeze are inherited common runtime
+configuration in both arms; the Stage196-B1 intervention changes neither.
 
 The authoritative Stage195 argv omitted train/eval batch-size arguments and
 `--fp16`; therefore Stage196-B1 preserves full-split train/eval forwards and
@@ -179,12 +187,27 @@ frame_downstream_gradient_mode == expected mode
 frame_direct_loss_active == true
 frame_direct_loss_weight == 1.0
 frame_downstream_forward_value_changed == false
-shared_encoder_gradient_fully_isolated == false
+freeze_encoder == true
+freeze_a_log == true
+shared_encoder_trainable == false
+shared_encoder_gradient_fully_isolated == true
+shared_encoder_isolation_source == frozen_runtime_configuration
+framegate_gradient_ownership_intervention_changed_encoder_freeze_state == false
 ~~~
 
 For `joint`, `framegate_nonframe_output_gradient_blocked` must be false. For
 `frame_local_only`, it must be true. The mode-specific value is frozen in each
 run row rather than inferred later from the arm label.
+
+These fields describe distinct facts. Shared-encoder isolation is caused by the
+frozen runtime configuration. FrameGate non-frame output blocking is caused by
+`frame_local_only`. The ownership intervention is never credited with changing
+the encoder freeze state. Thus `joint` retains attached downstream consumers and
+may send non-frame gradients into FrameGate-owned trainable parameters, while
+`frame_local_only` detaches those outputs so the FrameGate-output path carries
+direct frame BCE only. Both arms use the same frozen Mamba encoder, and
+head-level components outside FrameGate remain trainable under their existing
+objectives.
 
 ## First-run runtime risk and fail-fast execution policy
 
@@ -224,11 +247,33 @@ is selected by this manifest generator.
 
 ## Interpretation restrictions
 
-Even after successful execution, the only authorized causal claim concerns
-direct non-frame gradient paths through FrameGate outputs. This manifest does
-not authorize claims about external/OOD performance, production readiness, full
-shared-representation isolation, intrinsic representation failure,
-contrastive-loss necessity, or final architecture superiority.
+If `frame_local_only` reproducibly improves persistent FrameGate/SUPPORT outcomes
+while preserving controls and safety, the authorized claim is:
+
+> Under a frozen Mamba encoder, direct non-frame gradients through FrameGate
+> outputs interfered with FrameGate-owned trainable parameters.
+
+If there is no reproducible rescue or there is comparable harm, the authorized
+claim is:
+
+> Under a frozen Mamba encoder, direct FrameGate-output gradient interference
+> was not supported as the main cause.
+
+The manifest does not authorize claims that shared Mamba representation
+interference or end-to-end gradient isolation was tested, that unfrozen-backbone
+behavior is known, that contrastive loss is automatically authorized, or that a
+broader architecture is superior. It also does not authorize external/OOD or
+production-readiness claims.
+
+## Superseded pre-execution manifest
+
+The already generated directory
+`stage196b1_framegate_gradient_ownership_manifest_20260719_174334` is
+mechanically valid but superseded before execution because its expected
+shared-encoder provenance was semantically incorrect. It must be preserved and
+must not be executed, deleted, rewritten, or treated as scientific output. After
+this correction is committed, a new manifest must be generated into a new
+timestamped directory.
 
 ## Generator outputs and decisions
 
@@ -253,5 +298,9 @@ The generator validates exact run order, seeds, pairing, modes, split seed,
 data identity, Mamba/CUDA/v6b identity, epoch count, observability and scalar
 exports, margins off, forbidden feature absence, unique paths, argv-array use,
 commit format, trainer/data existence, mode-specific provenance, output-name
-closure, and paired-argument equality. Publication failures are converted to a
-fixed BLOCKED closure where safe; no output is overwritten.
+closure, and paired-argument equality. It additionally requires exact
+`--freeze-encoder true` and `--freeze-a-log true` values in all six argv arrays,
+pairwise equality of both freeze values, frozen/non-trainable/isolated encoder
+provenance, frozen-runtime isolation source, and confirmation that the
+intervention did not change freeze state. Publication failures are converted to
+a fixed BLOCKED closure where safe; no output is overwritten.

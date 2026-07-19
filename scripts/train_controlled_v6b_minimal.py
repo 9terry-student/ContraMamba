@@ -1433,6 +1433,10 @@ def _stage196b1_validate_runtime_contract(
                 f"Stage196-B1 requires {field}={expected!r}; "
                 f"observed {getattr(args, field, None)!r}"
             )
+    if args.freeze_encoder is not True:
+        raise ValueError("Stage196-B1 requires --freeze-encoder true")
+    if args.freeze_a_log is not True:
+        raise ValueError("Stage196-B1 requires --freeze-a-log true")
     if split_seed != 174 or args.split_seed != 174:
         raise ValueError("Stage196-B1 requires explicit --split-seed 174")
     data_path = Path(args.data).resolve()
@@ -1726,7 +1730,9 @@ def _stage191_write_contract(
         })
     if stage196b1_mode:
         frame_contract = _frame_gradient_ownership_contract(
-            args.frame_downstream_gradient_mode
+            args.frame_downstream_gradient_mode,
+            args.freeze_encoder,
+            args.freeze_a_log,
         )
         contract.update({
             "observability_mode": _TRAJECTORY_OBSERVABILITY_STAGE196B1,
@@ -1735,15 +1741,7 @@ def _stage191_write_contract(
             "stage191_trajectory_replay_observability": False,
             "stage193_tail3_fresh_seed_observability": False,
             "stage195_tail3_parameter_swa_causal_test": False,
-            "frame_downstream_gradient_mode": (
-                frame_contract["frame_downstream_gradient_mode"]
-            ),
-            "framegate_nonframe_output_gradient_blocked": (
-                frame_contract["framegate_nonframe_output_gradient_blocked"]
-            ),
-            "shared_encoder_gradient_fully_isolated": (
-                frame_contract["shared_encoder_gradient_fully_isolated"]
-            ),
+            **frame_contract,
             "state_capsule_saving_enabled": False,
             "expected_state_capsules": 0,
             "compatible_positive_margin_enabled": margin_weight != 0.0,
@@ -13175,15 +13173,27 @@ def _concat_model_outputs(chunks: list[dict[str, Any]]) -> dict[str, Any]:
     return result
 
 
-def _frame_gradient_ownership_contract(mode: str) -> dict[str, Any]:
+def _frame_gradient_ownership_contract(
+    mode: str,
+    freeze_encoder: bool,
+    freeze_a_log: bool,
+) -> dict[str, Any]:
     blocked = mode == "frame_local_only"
+    shared_encoder_trainable = not freeze_encoder
     return {
         "frame_downstream_gradient_mode": mode,
         "frame_direct_loss_active": True,
         "frame_direct_loss_weight": 1.0,
         "frame_downstream_forward_value_changed": False,
         "framegate_nonframe_output_gradient_blocked": blocked,
-        "shared_encoder_gradient_fully_isolated": False,
+        "freeze_encoder": freeze_encoder,
+        "freeze_a_log": freeze_a_log,
+        "shared_encoder_trainable": shared_encoder_trainable,
+        "shared_encoder_gradient_fully_isolated": not shared_encoder_trainable,
+        "shared_encoder_isolation_source": (
+            "frozen_runtime_configuration" if freeze_encoder else "none"
+        ),
+        "framegate_gradient_ownership_intervention_changed_encoder_freeze_state": False,
     }
 
 
@@ -13198,7 +13208,8 @@ def _install_framegate_gradient_ownership(
     hook restores the authoritative scalar outputs and recomputes only their native
     direct BCE. Detaching all FrameGate-owned output tensors also prevents diagnostic
     heads and composition losses from reaching FrameGate parameters through its
-    representations. It does not isolate the shared encoder from other heads.
+    representations. It does not change the independently configured shared-encoder
+    freeze state.
     """
     if mode == "joint":
         return
@@ -15247,14 +15258,19 @@ def main(argv: list[str] | None = None) -> int:
             "--architecture v6b_minimal"
         )
     _frame_gradient_contract = _frame_gradient_ownership_contract(
-        args.frame_downstream_gradient_mode
+        args.frame_downstream_gradient_mode,
+        args.freeze_encoder,
+        args.freeze_a_log,
     )
     print(
         "[frame-gradient-contract]"
         f" mode={_frame_gradient_contract['frame_downstream_gradient_mode']}"
         f" direct_frame_loss_active={_frame_gradient_contract['frame_direct_loss_active']}"
         f" nonframe_output_gradient_blocked={_frame_gradient_contract['framegate_nonframe_output_gradient_blocked']}"
+        f" freeze_encoder={_frame_gradient_contract['freeze_encoder']}"
+        f" shared_encoder_trainable={_frame_gradient_contract['shared_encoder_trainable']}"
         f" shared_encoder_fully_isolated={_frame_gradient_contract['shared_encoder_gradient_fully_isolated']}"
+        f" isolation_source={_frame_gradient_contract['shared_encoder_isolation_source']}"
     )
     resolved_split_seed = args.seed if args.split_seed is None else args.split_seed
     split_seed_explicit = args.split_seed is not None

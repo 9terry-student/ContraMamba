@@ -23,6 +23,9 @@ TRAINER_RELATIVE = Path("scripts/train_controlled_v6b_minimal.py")
 DATA_RELATIVE = Path("data/controlled_v5_v3_without_time_swap.jsonl")
 DATA_SHA256 = "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640"
 RUN_ROOT_NAME = "stage196b1_framegate_gradient_ownership_runs"
+SUPERSEDED_MANIFEST_BASENAME = (
+    "stage196b1_framegate_gradient_ownership_manifest_20260719_174334"
+)
 SEEDS = (183, 184, 185)
 SPLIT_SEED = 174
 MODES = ("joint", "frame_local_only")
@@ -285,7 +288,12 @@ def runtime_provenance(seed: int, mode: str) -> dict[str, Any]:
         "frame_direct_loss_weight": 1.0,
         "frame_downstream_forward_value_changed": False,
         "framegate_nonframe_output_gradient_blocked": mode == "frame_local_only",
-        "shared_encoder_gradient_fully_isolated": False,
+        "freeze_encoder": True,
+        "freeze_a_log": True,
+        "shared_encoder_trainable": False,
+        "shared_encoder_gradient_fully_isolated": True,
+        "shared_encoder_isolation_source": "frozen_runtime_configuration",
+        "framegate_gradient_ownership_intervention_changed_encoder_freeze_state": False,
     }
 
 
@@ -385,7 +393,10 @@ def build_ready(args: argparse.Namespace) -> tuple[dict[str, str], dict[str, Any
     markers = (
         "--frame-downstream-gradient-mode", "frame_local_only",
         "framegate_nonframe_output_gradient_blocked", "frame_direct_loss_weight",
+        "freeze_encoder", "freeze_a_log", "shared_encoder_trainable",
         "shared_encoder_gradient_fully_isolated",
+        "shared_encoder_isolation_source",
+        "framegate_gradient_ownership_intervention_changed_encoder_freeze_state",
         "--stage196b1-framegate-gradient-ownership-observability",
         "STAGE196B1_FRAMEGATE_GRADIENT_OWNERSHIP_SEEDS = (183, 184, 185)",
         "stage196b1_framegate_gradient_ownership",
@@ -488,6 +499,24 @@ def build_ready(args: argparse.Namespace) -> tuple[dict[str, str], dict[str, Any
          [option_map(row["argv"])["--epochs"] for row in run_rows],
          all(option_map(row["argv"])["--epochs"] == "20" for row in run_rows),
          "epoch count mismatch")
+    freeze_encoder_values = [option_map(row["argv"])["--freeze-encoder"] for row in run_rows]
+    freeze_a_log_values = [option_map(row["argv"])["--freeze-a-log"] for row in run_rows]
+    freeze_encoder_exact = all(value == "true" for value in freeze_encoder_values)
+    freeze_a_log_exact = all(value == "true" for value in freeze_a_log_values)
+    gate(contract_rows, "freeze_encoder_exactly_true", ["true"] * 6,
+         freeze_encoder_values, freeze_encoder_exact,
+         "Stage196-B1 requires --freeze-encoder true in every run")
+    gate(contract_rows, "freeze_a_log_exactly_true", ["true"] * 6,
+         freeze_a_log_values, freeze_a_log_exact,
+         "Stage196-B1 requires --freeze-a-log true in every run")
+    freeze_pairwise_equal = all(
+        freeze_encoder_values[index] == freeze_encoder_values[index + 1]
+        and freeze_a_log_values[index] == freeze_a_log_values[index + 1]
+        for index in (0, 2, 4)
+    )
+    gate(contract_rows, "paired_freeze_arguments_equal", True,
+         freeze_pairwise_equal, freeze_pairwise_equal,
+         "freeze arguments differ within a seed pair")
     gate(contract_rows, "stage196b1_observability_enabled", True,
          [option_map(row["argv"]).get("--stage196b1-framegate-gradient-ownership-observability") for row in run_rows],
          all(option_map(row["argv"]).get("--stage196b1-framegate-gradient-ownership-observability") is True for row in run_rows),
@@ -545,6 +574,36 @@ def build_ready(args: argparse.Namespace) -> tuple[dict[str, str], dict[str, Any
     )
     gate(contract_rows, "mode_specific_runtime_ownership_assertions", True, mode_specific,
          mode_specific, "runtime ownership assertion is not mode-specific")
+    encoder_provenance_exact = all(
+        row["expected_runtime_provenance"]["freeze_encoder"] is True
+        and row["expected_runtime_provenance"]["freeze_a_log"] is True
+        and row["expected_runtime_provenance"]["shared_encoder_trainable"] is False
+        and row["expected_runtime_provenance"]["shared_encoder_gradient_fully_isolated"] is True
+        and row["expected_runtime_provenance"]["shared_encoder_isolation_source"]
+            == "frozen_runtime_configuration"
+        and row["expected_runtime_provenance"][
+            "framegate_gradient_ownership_intervention_changed_encoder_freeze_state"
+        ] is False
+        for row in run_rows
+    )
+    gate(contract_rows, "frozen_encoder_runtime_provenance_exact", True,
+         encoder_provenance_exact, encoder_provenance_exact,
+         "expected shared-encoder provenance contradicts the frozen argv")
+    paired_ownership_provenance_exact = all(
+        {
+            key: value for key, value in run_rows[index]["expected_runtime_provenance"].items()
+            if key not in ("frame_downstream_gradient_mode", "framegate_nonframe_output_gradient_blocked")
+        } == {
+            key: value for key, value in run_rows[index + 1]["expected_runtime_provenance"].items()
+            if key not in ("frame_downstream_gradient_mode", "framegate_nonframe_output_gradient_blocked")
+        }
+        and run_rows[index]["expected_runtime_provenance"]["framegate_nonframe_output_gradient_blocked"] is False
+        and run_rows[index + 1]["expected_runtime_provenance"]["framegate_nonframe_output_gradient_blocked"] is True
+        for index in (0, 2, 4)
+    )
+    gate(contract_rows, "paired_ownership_provenance_differs_only_by_mode_and_block", True,
+         paired_ownership_provenance_exact, paired_ownership_provenance_exact,
+         "paired ownership provenance differs beyond mode-specific output blocking")
     output_closure = set(OUTPUT_NAMES) == {
         "stage196b1_run_manifest.json", "stage196b1_run_manifest.csv",
         "stage196b1_run_commands.jsonl", "stage196b1_manifest_report.json",
@@ -573,6 +632,10 @@ def build_ready(args: argparse.Namespace) -> tuple[dict[str, str], dict[str, Any
         "encoder_learning_rate": None,
         "freeze_encoder": True,
         "freeze_a_log": True,
+        "shared_encoder_trainable": False,
+        "shared_encoder_gradient_fully_isolated": True,
+        "shared_encoder_isolation_source": "frozen_runtime_configuration",
+        "framegate_gradient_ownership_intervention_changed_encoder_freeze_state": False,
         "max_length": 128,
         "dev_ratio": 0.2,
         "optimizer": "v5.build_optimizer (AdamW)",
@@ -624,7 +687,9 @@ def build_ready(args: argparse.Namespace) -> tuple[dict[str, str], dict[str, Any
     ]
     interpretation_restrictions = [
         "external/OOD performance", "production readiness",
-        "full shared-representation isolation", "intrinsic representation failure",
+        "shared Mamba representation interference was tested",
+        "end-to-end gradient isolation was tested", "unfrozen-backbone behavior is known",
+        "intrinsic representation failure",
         "contrastive-loss necessity", "final architecture superiority",
     ]
     runner_policy = {
@@ -667,7 +732,11 @@ def build_ready(args: argparse.Namespace) -> tuple[dict[str, str], dict[str, Any
         "stage196b1c_precommitted_causal_metrics": causal_metrics,
         "numeric_success_threshold_selected": False,
         "interpretation_restrictions": interpretation_restrictions,
-        "authorized_causal_claim_scope": "direct non-frame gradient paths through FrameGate outputs",
+        "authorized_causal_claim_scope": "under a frozen Mamba encoder, direct non-frame gradient paths through FrameGate outputs into FrameGate-owned trainable parameters",
+        "superseded_manifest_directory": SUPERSEDED_MANIFEST_BASENAME,
+        "superseded_manifest_mechanically_valid": True,
+        "superseded_before_execution_for_semantic_provenance_error": True,
+        "new_timestamped_manifest_required_after_commit": True,
         "execution_not_performed": True,
     }
     report = {
@@ -694,9 +763,14 @@ def build_ready(args: argparse.Namespace) -> tuple[dict[str, str], dict[str, Any
         "checkpoint_loaded": False,
         "external_evaluation_executed": False,
         "execution_not_performed": True,
+        "superseded_manifest_directory": SUPERSEDED_MANIFEST_BASENAME,
+        "superseded_manifest_mechanically_valid": True,
+        "superseded_before_execution_for_semantic_provenance_error": True,
+        "new_timestamped_manifest_required_after_commit": True,
         "remaining_runtime_risks": [
             "The first frame_local_only run is the first actual hook-path runtime test.",
             "The dedicated Stage196-B1 mode and per-epoch seed checks have not been runtime-executed.",
+            "The corrected frozen-encoder provenance contract has not been runtime-executed.",
             "CUDA, dependency, memory, and full-duration training availability are not tested here.",
         ],
         "exception": None,
@@ -747,6 +821,11 @@ def render_report_markdown(report: dict[str, Any]) -> str:
         f"`{str(report['pairwise_arguments_equal']).lower()}`\n"
         "- Training executed: `false`\n"
         "- Numeric success threshold selected: `false`\n\n"
+        "## Superseded pre-execution manifest\n\n"
+        f"`{report['superseded_manifest_directory']}` is mechanically valid but "
+        "superseded before execution because its shared-encoder provenance was "
+        "semantically incorrect. It is preserved; a new timestamped manifest is "
+        "required after commit.\n\n"
         "## Frozen run order\n\n"
         f"{runs}\n\n"
         "## First-run hook policy\n\n"
@@ -789,6 +868,10 @@ def blocked_contents(args: argparse.Namespace, exc: BaseException) -> dict[str, 
         "checkpoint_loaded": False,
         "external_evaluation_executed": False,
         "execution_not_performed": True,
+        "superseded_manifest_directory": SUPERSEDED_MANIFEST_BASENAME,
+        "superseded_manifest_mechanically_valid": True,
+        "superseded_before_execution_for_semantic_provenance_error": True,
+        "new_timestamped_manifest_required_after_commit": True,
         "remaining_runtime_risks": [str(exc)],
         "exception": exception,
     }
@@ -803,6 +886,11 @@ def blocked_contents(args: argparse.Namespace, exc: BaseException) -> dict[str, 
         "frozen_common_configuration": {}, "runs": [],
         "forbidden_feature_assertions": dict(FORBIDDEN_FEATURE_ASSERTIONS),
         "expected_runtime_provenance_assertions": {}, "expected_output_schema": {},
+        "authorized_causal_claim_scope": "under a frozen Mamba encoder, direct non-frame gradient paths through FrameGate outputs into FrameGate-owned trainable parameters",
+        "superseded_manifest_directory": SUPERSEDED_MANIFEST_BASENAME,
+        "superseded_manifest_mechanically_valid": True,
+        "superseded_before_execution_for_semantic_provenance_error": True,
+        "new_timestamped_manifest_required_after_commit": True,
         "execution_not_performed": True, "exception": exception,
     }
     source_row = {

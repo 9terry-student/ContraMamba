@@ -11,10 +11,12 @@ channel-separation defect. It selected
 STAGE196B0_FRAME_REPRESENTATION_FAILURE, while leaving intrinsic representation
 insufficiency unresolved from destructive downstream-gradient interference.
 
-Stage196-B1-P0 asks one question:
+Stage196-B1-P0 asks one question under the frozen-Mamba training envelope that
+produced the Stage196-A failure population:
 
-> Does allowing non-frame losses to backpropagate through FrameGate cause the
-> recurrent FrameGate false-negative failure?
+> Under the frozen-Mamba training envelope, does allowing non-frame losses to
+> backpropagate through FrameGate outputs cause the recurrent FrameGate
+> false-negative failure?
 
 This stage introduces no contrastive loss, new loss, target change, threshold
 change, calibration, architecture replacement, or optimizer change.
@@ -42,7 +44,8 @@ another architecture is rejected.
 
 At startup the trainer prints one contract line with the selected mode, whether
 direct frame loss is active, whether non-frame FrameGate-output gradients are
-blocked, and whether the shared encoder is fully isolated.
+blocked, the encoder freeze state, whether the shared encoder is trainable,
+whether it is fully gradient-isolated, and the isolation source.
 
 ## Implementation and ownership boundary
 
@@ -68,8 +71,10 @@ The authorized claim is:
 > Direct non-frame gradient paths through FrameGate outputs into FrameGate-owned
 > parameters are blocked, while direct frame BCE remains active.
 
-FrameGate is not frozen. The shared Mamba backbone is not frozen by this
-intervention. No optimizer or optimizer group changes are made.
+FrameGate is not frozen. The shared Mamba backbone is frozen in both arms by the
+inherited runtime configuration (`--freeze-encoder true`), and frozen encoder
+states retain the same cached role across arms. The intervention neither freezes
+nor unfreezes any parameter. No optimizer or optimizer group changes are made.
 
 ## Complete FrameGate scalar consumer audit
 
@@ -101,9 +106,10 @@ temporal, diagnostic-head, selector/router, and downstream-composition
 objectives receive detached FrameGate outputs wherever they could otherwise
 reach FrameGate-owned parameters.
 
-This does not detach or freeze unrelated predicate, sufficiency, polarity,
-classifier, or backbone tensors. Those components continue receiving their
-existing gradients.
+This does not detach or freeze unrelated predicate, sufficiency, polarity, or
+classifier tensors. Those head-level components remain trainable under their
+existing objectives. The Mamba backbone is already frozen independently by the
+common runtime configuration and receives no gradients in either arm.
 
 ## Forward-value invariance
 
@@ -138,20 +144,31 @@ record runtime values for:
   "frame_direct_loss_weight": 1.0,
   "frame_downstream_forward_value_changed": false,
   "framegate_nonframe_output_gradient_blocked": false,
-  "shared_encoder_gradient_fully_isolated": false
+  "freeze_encoder": true,
+  "freeze_a_log": true,
+  "shared_encoder_trainable": false,
+  "shared_encoder_gradient_fully_isolated": true,
+  "shared_encoder_isolation_source": "frozen_runtime_configuration",
+  "framegate_gradient_ownership_intervention_changed_encoder_freeze_state": false
 }
 ~~~
 
 framegate_nonframe_output_gradient_blocked is true only for
 frame_local_only. It is false for joint.
 
-## Shared-representation limitation
+## Frozen-encoder scope and limitation
 
-The shared claim/evidence encoder remains a common trainable representation.
-Predicate, sufficiency, polarity, classifier, and other active heads may still
-send gradients into it. Therefore frame_local_only does not completely isolate
-the shared representation, and reports explicitly set
-shared_encoder_gradient_fully_isolated to false.
+The shared Mamba claim/evidence encoder is non-trainable and fully
+gradient-isolated in both arms because `freeze_encoder=true`, not because of the
+FrameGate ownership intervention. The cached encoder states have the same role
+in both arms. `shared_encoder_isolation_source` is therefore
+`frozen_runtime_configuration`, while
+`framegate_gradient_ownership_intervention_changed_encoder_freeze_state` is
+false. Stage196-B1 does not evaluate shared-backbone gradient interference.
+
+A negative Stage196-B1 result does not rule out shared-representation
+interference in a separately designed unfrozen-backbone regime. This
+specification does not automatically authorize that experiment.
 
 ## Stage196-B1 trajectory observability contract
 
@@ -167,7 +184,8 @@ and does not enable Stage195 parameter SWA. Its observability contract records
 the actual FrameGate downstream-gradient mode and blocking status. Its causal
 arm is derived only from `joint` versus `frame_local_only`; compatible-positive
 margin remains off and both Stage185 sidecar options remain absent in both arms.
-The shared encoder remains non-isolated.
+The shared encoder remains frozen and gradient-isolated by the runtime
+configuration in both arms.
 
 The Stage196-B1 trajectory contract includes actual runtime values for:
 
@@ -179,7 +197,12 @@ The Stage196-B1 trajectory contract includes actual runtime values for:
   "arm": "baseline|intervention",
   "frame_downstream_gradient_mode": "joint|frame_local_only",
   "framegate_nonframe_output_gradient_blocked": false,
-  "shared_encoder_gradient_fully_isolated": false,
+  "freeze_encoder": true,
+  "freeze_a_log": true,
+  "shared_encoder_trainable": false,
+  "shared_encoder_gradient_fully_isolated": true,
+  "shared_encoder_isolation_source": "frozen_runtime_configuration",
+  "framegate_gradient_ownership_intervention_changed_encoder_freeze_state": false,
   "state_capsule_saving_enabled": false,
   "expected_state_capsules": 0,
   "compatible_positive_margin_enabled": false,
@@ -216,6 +239,8 @@ Freeze the following across arms:
 - Model: state-spaces/mamba-130m-hf
 - Architecture: v6b_minimal
 - Device: cuda
+- Freeze encoder: true
+- Freeze A_log: true
 - Split seed: 174
 - Epochs: 20
 - Trajectory epochs: 18,19,20
@@ -238,19 +263,28 @@ The Stage196-B1 manifest freezes the exact paired run order.
 
 ## Preregistered causal interpretation
 
-Evidence for gradient interference requires the frame-local-only intervention
+Evidence for direct FrameGate-output interference requires the
+frame-local-only intervention
 to reproducibly reduce persistent stable SUPPORT negatives, increase frame
 probability on recurrent persistent SUPPORT cases, preserve stable-correct
 SUPPORT controls, avoid disproportionate false-entitlement growth, and preserve
-polarity safety.
+polarity safety. If it does so reproducibly, the authorized claim is: under a
+frozen Mamba encoder, direct non-frame gradients through FrameGate outputs
+interfered with FrameGate-owned trainable parameters.
 
 Evidence against direct FrameGate-output gradient interference is no
-reproducible rescue or comparable harm. That outcome authorizes a later,
-separately implemented Frame representation intervention such as supervised
-positive/negative contrast; it does not add that intervention here.
+reproducible rescue or comparable harm. The authorized claim is: under a frozen
+Mamba encoder, direct FrameGate-output gradient interference was not supported
+as the main cause. That outcome does not automatically authorize contrastive
+loss or an unfrozen-backbone experiment.
 
 Mixed evidence means seed directions conflict or SUPPORT rescue is offset by
 broad entitlement harm. Mixed evidence does not authorize an automatic
 contrastive intervention.
+
+Stage196-B1 does not authorize claims that shared Mamba representation
+interference or end-to-end gradient isolation was tested, that
+unfrozen-backbone behavior is known, or that any broader architecture is
+superior.
 
 No final numeric decision thresholds are encoded in the trainer.
