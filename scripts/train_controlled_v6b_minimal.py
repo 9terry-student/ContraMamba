@@ -8378,6 +8378,17 @@ def load_stage47_selected_recovery_weights(path: Path) -> tuple[float, float]:
 def build_parser() -> argparse.ArgumentParser:
     parser = v5.build_parser()
     parser.add_argument(
+        "--frame-downstream-gradient-mode",
+        choices=("joint", "frame_local_only"),
+        default="joint",
+        help=(
+            "FrameGate output-gradient ownership. joint preserves existing gradient "
+            "flow; frame_local_only detaches FrameGate outputs for every non-frame "
+            "consumer while retaining the authoritative tensors for direct frame BCE, "
+            "metrics, and exports."
+        ),
+    )
+    parser.add_argument(
         "--split-seed",
         type=int,
         default=None,
@@ -12973,6 +12984,110 @@ def _concat_model_outputs(chunks: list[dict[str, Any]]) -> dict[str, Any]:
     return result
 
 
+def _frame_gradient_ownership_contract(mode: str) -> dict[str, Any]:
+    blocked = mode == "frame_local_only"
+    return {
+        "frame_downstream_gradient_mode": mode,
+        "frame_direct_loss_active": True,
+        "frame_direct_loss_weight": 1.0,
+        "frame_downstream_forward_value_changed": False,
+        "framegate_nonframe_output_gradient_blocked": blocked,
+        "shared_encoder_gradient_fully_isolated": False,
+    }
+
+
+def _install_framegate_gradient_ownership(
+    model: nn.Module,
+    mode: str,
+) -> None:
+    """Route v6B FrameGate outputs without changing their forward values.
+
+    The FrameGate hook retains its original output dictionary as the local owner and
+    returns detached aliases to every consumer later in the model forward. The model
+    hook restores the authoritative scalar outputs and recomputes only their native
+    direct BCE. Detaching all FrameGate-owned output tensors also prevents diagnostic
+    heads and composition losses from reaching FrameGate parameters through its
+    representations. It does not isolate the shared encoder from other heads.
+    """
+    if mode == "joint":
+        return
+    if mode != "frame_local_only":
+        raise ValueError(f"unknown frame downstream gradient mode: {mode!r}")
+    frame_gate = getattr(model, "frame_gate", None)
+    if frame_gate is None:
+        raise ValueError("frame_local_only requires a model with a FrameGate")
+
+    state: dict[str, Any] = {"local": None}
+
+    def _capture_local_and_detach_downstream(
+        _module: nn.Module,
+        _inputs: tuple[Any, ...],
+        frame_output: dict[str, Any],
+    ) -> dict[str, Any]:
+        state["local"] = frame_output
+        return {
+            key: value.detach() if isinstance(value, torch.Tensor) else value
+            for key, value in frame_output.items()
+        }
+
+    def _restore_local_scalars_and_loss(
+        _module: nn.Module,
+        forward_args: tuple[Any, ...],
+        forward_kwargs: dict[str, Any],
+        output: dict[str, Any],
+    ) -> dict[str, Any]:
+        local = state.pop("local", None)
+        if not isinstance(local, dict):
+            raise RuntimeError("FrameGate local output was not captured")
+        frame_logit_local = local["frame_logit"]
+        frame_prob_local = local["frame_prob"]
+        output["frame_logit"] = frame_logit_local
+        output["frame_prob"] = frame_prob_local
+        output["frame_logit_downstream"] = frame_logit_local.detach()
+        output["frame_prob_downstream"] = frame_prob_local.detach()
+
+        frame_labels = forward_kwargs.get("frame_compatible_labels")
+        if frame_labels is None and len(forward_args) > 5:
+            frame_labels = forward_args[5]
+        if frame_labels is not None:
+            output["frame_loss"] = F.binary_cross_entropy_with_logits(
+                frame_logit_local, frame_labels.float()
+            )
+            loss_keys = (
+                "label_loss",
+                "frame_loss",
+                "predicate_loss",
+                "sufficiency_loss",
+                "polarity_loss",
+            )
+            active_losses = [
+                output[key] for key in loss_keys if output.get(key) is not None
+            ]
+            output["loss"] = (
+                torch.stack(active_losses).sum() if active_losses else None
+            )
+        return output
+
+    frame_handle = frame_gate.register_forward_hook(
+        _capture_local_and_detach_downstream
+    )
+    model_handle = model.register_forward_hook(
+        _restore_local_scalars_and_loss,
+        with_kwargs=True,
+    )
+    model._frame_gradient_ownership_hook_handles = (frame_handle, model_handle)
+
+
+def _nonframe_output(output: dict[str, Any], mode: str) -> dict[str, Any]:
+    """Return the unchanged joint output or a shallow downstream-scalar view."""
+    if mode == "joint":
+        return output
+    downstream = dict(output)
+    downstream["frame_logit"] = output["frame_logit_downstream"]
+    downstream["frame_prob"] = output["frame_prob_downstream"]
+    return downstream
+
+
 def _vnext_forward_maybe_batched(
     model: nn.Module,
     inputs: dict[str, torch.Tensor],
@@ -14932,6 +15047,24 @@ def main(argv: list[str] | None = None) -> int:
     raw_argv = list(sys.argv[1:] if argv is None else argv)
     _stage174a_runtime_start = time.monotonic()
     args = parser.parse_args(argv)
+    if (
+        args.frame_downstream_gradient_mode == "frame_local_only"
+        and args.architecture != "v6b_minimal"
+    ):
+        parser.error(
+            "--frame-downstream-gradient-mode frame_local_only requires "
+            "--architecture v6b_minimal"
+        )
+    _frame_gradient_contract = _frame_gradient_ownership_contract(
+        args.frame_downstream_gradient_mode
+    )
+    print(
+        "[frame-gradient-contract]"
+        f" mode={_frame_gradient_contract['frame_downstream_gradient_mode']}"
+        f" direct_frame_loss_active={_frame_gradient_contract['frame_direct_loss_active']}"
+        f" nonframe_output_gradient_blocked={_frame_gradient_contract['framegate_nonframe_output_gradient_blocked']}"
+        f" shared_encoder_fully_isolated={_frame_gradient_contract['shared_encoder_gradient_fully_isolated']}"
+    )
     resolved_split_seed = args.seed if args.split_seed is None else args.split_seed
     split_seed_explicit = args.split_seed is not None
     split_policy = (
@@ -16302,6 +16435,10 @@ def main(argv: list[str] | None = None) -> int:
         )
 
     model = model.to(device)
+    _install_framegate_gradient_ownership(
+        model,
+        args.frame_downstream_gradient_mode,
+    )
 
     if args.stage118_diagnostic_export_only:
         checkpoint_state, checkpoint_metadata = _load_stage118_checkpoint_state(
@@ -16314,6 +16451,7 @@ def main(argv: list[str] | None = None) -> int:
         model = model.to(device)
         report: dict[str, Any] = {
             "configuration": {
+                **_frame_gradient_contract,
                 "seed": args.seed,
                 "backbone": args.backbone,
                 "model_name": args.model_name if args.backbone == "mamba" else None,
@@ -17468,6 +17606,9 @@ def main(argv: list[str] | None = None) -> int:
                 batch_size=train_batch_size,
                 amp_enabled=amp_enabled,
             )
+            _nonframe_training_output = _nonframe_output(
+                output, args.frame_downstream_gradient_mode
+            )
 
             _stage177c_unweighted_loss: torch.Tensor | None = None
             _stage177c_weighted_loss: torch.Tensor | None = None
@@ -17478,7 +17619,8 @@ def main(argv: list[str] | None = None) -> int:
                 if output.get("frame_logit") is None:
                     raise RuntimeError('[stage177c] native output["frame_logit"] is unavailable')
                 _stage177c_unweighted_loss, _stage177c_metrics = compute_stage177c_frame_pairwise_loss(
-                    output["frame_logit"], stage177c_pair_index, mode=stage177c_mode
+                    _nonframe_training_output["frame_logit"],
+                    stage177c_pair_index, mode=stage177c_mode
                 )
                 _stage177c_weighted_loss = stage177c_weight * _stage177c_unweighted_loss
 
@@ -17520,7 +17662,7 @@ def main(argv: list[str] | None = None) -> int:
                 finally:
                     model.train(_stage174c_was_training)
                 _stage174c_unweighted_loss, _stage174c_metrics = compute_stage174c_loss(
-                    output,
+                    _nonframe_training_output,
                     _stage174c_reference_output,
                     train_records,
                     _stage174c_reference_indices,
@@ -17637,11 +17779,13 @@ def main(argv: list[str] | None = None) -> int:
                 # otherwise _pw_* equals the original full-batch arguments unchanged.
                 _pw_output = (
                     {
-                        key: output[key].index_select(0, _pw_clean_main_index_tensor)
+                        key: _nonframe_training_output[key].index_select(
+                            0, _pw_clean_main_index_tensor
+                        )
                         for key in _pw_output_keys
                     }
                     if _pw_clean_main_index_tensor is not None
-                    else output
+                    else _nonframe_training_output
                 )
                 pairwise_losses = intervention_pairwise_losses(
                     _pw_output,
@@ -17653,7 +17797,9 @@ def main(argv: list[str] | None = None) -> int:
                 active_intervention_loss = pairwise_losses["total"]
             else:
                 active_intervention_loss = (
-                    ranking_weight * v5.intervention_objective(output, train_records)
+                    ranking_weight * v5.intervention_objective(
+                        _nonframe_training_output, train_records
+                    )
                 )
                 _stage45b2_intervention_diag = getattr(
                     v5.intervention_objective, "last_diagnostics", None
@@ -17687,7 +17833,7 @@ def main(argv: list[str] | None = None) -> int:
                     _compatible_positive_margin_loss,
                     _compatible_positive_margin_loss_metrics,
                 ) = _stage187_compatible_positive_margin_loss(
-                    output["frame_logit"],
+                    _nonframe_training_output["frame_logit"],
                     compatible_positive_margin_eligible_mask,
                     compatible_positive_margin_logit,
                 )
@@ -20925,6 +21071,7 @@ def main(argv: list[str] | None = None) -> int:
             "totals": _stage175b_totals,
         }
         report = {
+            **_frame_gradient_contract,
             "run_name": run_name,
             "stage174c_clean_pairwise": _stage174c_report,
             "stage175b_support_anchor": _stage175b_report,
@@ -21084,6 +21231,7 @@ def main(argv: list[str] | None = None) -> int:
         "clean_main_dev_rows": _stage187_sidecar_audit.get("actual_dev_rows"),
     }
     _stage174a_resolved_runtime_config = {
+        **_frame_gradient_contract,
         "architecture": args.architecture,
         "backbone": args.backbone,
         "model_name": args.model_name if args.backbone == "mamba" else None,
@@ -21527,6 +21675,7 @@ def main(argv: list[str] | None = None) -> int:
 
     report = {
         "configuration": {
+            **_frame_gradient_contract,
             "stage174c_clean_pairwise": {
                 "enabled": _stage174c_enabled,
                 "mode": args.stage174c_clean_pairwise_mode,
