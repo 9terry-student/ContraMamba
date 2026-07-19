@@ -1,0 +1,313 @@
+{
+  "stage": "Stage196-B0",
+  "decision": "STAGE196B0_FRAME_REPRESENTATION_FAILURE",
+  "runnable": true,
+  "blocking_reasons": [],
+  "audit_type": "static_code_and_data_contract",
+  "training_performed": false,
+  "analyzer_executed": false,
+  "python_executed": false,
+  "model_modified": false,
+  "dataset_modified": false,
+  "files_inspected": [
+    "scripts/train_controlled_v6b_minimal.py",
+    "scripts/train_controlled_v5.py",
+    "scripts/build_controlled_v5.py",
+    "data/controlled_v5_v3_without_time_swap.jsonl",
+    "reports/stage196a_persistent_support_boundary_localization_spec.md",
+    "scripts/analyze_stage196a_persistent_support_boundary.py",
+    "src/contramamba/modeling_v6b_minimal.py",
+    "src/contramamba/modeling_vnext_minimal.py",
+    "src/contramamba/heads/frame_gate.py",
+    "src/contramamba/heads/predicate_coverage.py",
+    "src/contramamba/heads/sufficiency_gate.py",
+    "src/contramamba/heads/entitlement_decision.py",
+    "reports/stage31c_coverage_entailment_head_report.md",
+    "reports/stage176b_native_structural_separability_closure.md",
+    "reports/stage177a_frame_head_hard_subset_closure.md",
+    "reports/stage177b_frame_pairwise_feasibility_closure.md",
+    "reports/stage177b_frame_pairwise_feasibility_closure.json",
+    "reports/stage179a_mixed_insufficient_closure.md",
+    "reports/stage183a_positive_preservation_design_20260715_131429/stage183a_positive_preservation_design_report.md",
+    "reports/stage191b_deterministic_replay_implementation_spec.md",
+    "reports/stage193a_tail3_fresh_seed_replication_spec.md",
+    "reports/stage195a_tail3_parameter_swa_manifest_spec.md",
+    "reports/stage195p0_tail3_parameter_swa_spec.md"
+  ],
+  "frame_computation_path": {
+    "class": "FrameGate",
+    "forward_symbol": "src/contramamba/heads/frame_gate.py:FrameGate.forward",
+    "source_anchor": "src/contramamba/heads/frame_gate.py:37-74",
+    "input_state": "shared encoder token_states with attention_mask, claim_mask, evidence_mask",
+    "claim_evidence_states_separate": true,
+    "claim_evidence_anchor": "src/contramamba/heads/frame_gate.py:44-49",
+    "pairwise_features_used": true,
+    "pairwise_features": [
+      "claim_state",
+      "evidence_state",
+      "abs(claim_state-evidence_state)",
+      "claim_state*evidence_state"
+    ],
+    "pairwise_anchor": "src/contramamba/heads/frame_gate.py:50-59",
+    "frame_logit_expression": "frame_classifier(pair_repr).squeeze(-1)",
+    "frame_logit_anchor": "src/contramamba/heads/frame_gate.py:59-60",
+    "frame_prob_expression": "torch.sigmoid(frame_logit)",
+    "frame_prob_anchor": "src/contramamba/heads/frame_gate.py:67-73",
+    "downstream_paths": [
+      {
+        "consumer": "PredicateCoverageHead",
+        "path": "frame_pair_repr and frame_prob enter predicate pair features",
+        "anchor": "src/contramamba/heads/predicate_coverage.py:38-68"
+      },
+      {
+        "consumer": "SufficiencyGate",
+        "path": "frame_pair_repr and frame_prob enter sufficiency features",
+        "anchor": "src/contramamba/heads/sufficiency_gate.py:24-45"
+      },
+      {
+        "consumer": "FinalEntitlementDecisionHead",
+        "path": "explicit_product = frame_prob * predicate_coverage_prob * sufficiency_prob",
+        "anchor": "src/contramamba/heads/entitlement_decision.py:36-76"
+      },
+      {
+        "consumer": "vNext router",
+        "path": "product/min/learned-product router variants consume frame probability in named modes",
+        "anchor": "src/contramamba/modeling_vnext_minimal.py:245-347"
+      }
+    ],
+    "stage195_architecture": "v6b_minimal",
+    "stage195_base_composition": "explicit_product",
+    "diagnostic_only": false
+  },
+  "frame_parameters": {
+    "prefixes": [
+      "frame_gate.project.0",
+      "frame_gate.project.2",
+      "frame_gate.pair_projector.0",
+      "frame_gate.pair_projector.3",
+      "frame_gate.frame_classifier",
+      "frame_gate.token_diagnostic (optional)"
+    ],
+    "trainable": true,
+    "explicitly_frozen": false,
+    "anchor": "src/contramamba/heads/frame_gate.py:21-34"
+  },
+  "frame_target_source": {
+    "classification": "raw_dataset_field",
+    "field": "frame_compatible_label",
+    "generator_assignment": "scripts/build_controlled_v5.py:_record and _build_records",
+    "generator_anchor": "scripts/build_controlled_v5.py:353-455",
+    "runtime_tensor": "frame_compatible_labels",
+    "tensorization_expression": "[record[\"frame_compatible_label\"] for record in records]",
+    "tensorization_anchor": "scripts/train_controlled_v5.py:247-264",
+    "runtime_reconstructed": false,
+    "final_label_derived": false,
+    "primary_failure_derived": false,
+    "intervention_flag_derived_at_runtime": false,
+    "heuristic_target": false
+  },
+  "intervention_target_audit": [
+    {"intervention_type": "none", "expected_frame_alignment": 1, "actual_frame_target": 1, "masked": false, "status": "correct"},
+    {"intervention_type": "paraphrase", "expected_frame_alignment": 1, "actual_frame_target": 1, "masked": false, "status": "correct"},
+    {"intervention_type": "polarity_flip", "expected_frame_alignment": 1, "actual_frame_target": 1, "masked": false, "status": "correct"},
+    {"intervention_type": "entity_swap", "expected_frame_alignment": 0, "actual_frame_target": 0, "masked": false, "status": "correct"},
+    {"intervention_type": "event_swap", "expected_frame_alignment": 0, "actual_frame_target": 0, "masked": false, "status": "correct"},
+    {"intervention_type": "location_swap", "expected_frame_alignment": 0, "actual_frame_target": 0, "masked": false, "status": "correct"},
+    {"intervention_type": "role_swap", "expected_frame_alignment": 0, "actual_frame_target": 0, "masked": false, "status": "correct"},
+    {"intervention_type": "title_name_swap", "expected_frame_alignment": 0, "actual_frame_target": 0, "masked": false, "status": "correct"},
+    {"intervention_type": "irrelevant_evidence", "expected_frame_alignment": 0, "actual_frame_target": 0, "masked": false, "status": "correct_different_referential_situation"},
+    {"intervention_type": "predicate_swap", "expected_frame_alignment": 1, "actual_frame_target": 1, "masked": false, "status": "correct_channel_separation"},
+    {"intervention_type": "evidence_deletion", "expected_frame_alignment": 1, "actual_frame_target": 1, "masked": false, "status": "correct_channel_separation"},
+    {"intervention_type": "evidence_truncation", "expected_frame_alignment": 1, "actual_frame_target": 1, "masked": false, "status": "correct_channel_separation"},
+    {"intervention_type": "time_swap", "expected_frame_alignment": 0, "actual_frame_target": "absent_from_main_dataset_generator_value_0", "masked": "not_applicable", "status": "excluded_from_stage195_main_classification_training"},
+    {"intervention_type": "number_date_value_mismatch", "expected_frame_alignment": 1, "actual_frame_target": "not_statically_determined", "masked": "not_applicable", "status": "family_absent"}
+  ],
+  "frame_loss_present": true,
+  "frame_loss_type": "BCEWithLogits_direct_row_level",
+  "frame_loss_expression": "F.binary_cross_entropy_with_logits(output[\"frame_logit\"], inputs[\"frame_compatible_labels\"])",
+  "frame_loss_anchor": "scripts/train_controlled_v5.py:465-468",
+  "frame_loss_weight": {
+    "native": 1.0,
+    "configuration": "implicit_hard_wired_sum",
+    "default_cli_value": "not_applicable_no_native_frame_loss_weight_flag",
+    "stage195_baseline": 1.0,
+    "stage195_intervention": 1.0,
+    "stage195_intervention_additional_positive_margin_weight": 0.05
+  },
+  "frame_loss_mask": {
+    "native": "none_all_main_rows",
+    "positive_rows_excluded": false,
+    "reduction": "mean",
+    "class_weight": null,
+    "pos_weight": null,
+    "instance_weight": null,
+    "stage195_intervention_additional_margin_mask": "authoritative Stage185 eligible compatible-positive train rows only",
+    "stage195_baseline_additional_margin_mask": "inactive"
+  },
+  "frame_optimizer_inclusion": {
+    "included": true,
+    "optimizer": "AdamW",
+    "head_group_rule": "all requires_grad parameters outside model.mamba",
+    "anchor": "scripts/train_controlled_v5.py:864-886",
+    "stage195_exhaustive_ownership_validation": true
+  },
+  "frame_gradient_path": {
+    "direct": "frame BCE -> frame_logit -> frame_classifier -> pair_projector -> project",
+    "indirect_final_ce": "final CE -> product-composed final logits -> entitlement -> frame_prob -> FrameGate",
+    "indirect_predicate_sufficiency": "predicate and sufficiency direct losses -> their frame-dependent inputs -> FrameGate",
+    "stage195_intervention_only": "compatible-positive hinge -> frame_logit -> FrameGate",
+    "detach_blocks_direct_path": false,
+    "frozen_encoder_semantics": "FrameGate head updates remain active; gradients stop at backbone parameters when freeze_encoder is true",
+    "backward_anchor": "scripts/train_controlled_v6b_minimal.py:18502-18514"
+  },
+  "frame_loss_metric_logging_export": {
+    "frame_loss_console_logging": true,
+    "frame_accuracy_metrics": true,
+    "native_frame_logit_export": true,
+    "native_frame_prob_export": true,
+    "standalone_native_frame_weight_cli": false
+  },
+  "direct_supervision_structure": "direct_and_frame_local_supervision_with_additional_indirect_gradients",
+  "multiple_overlapping_frame_losses": {
+    "native_direct_bce": true,
+    "final_label_indirect_gradient": true,
+    "stage195_baseline_additional_frame_loss": false,
+    "stage195_intervention_additional_positive_margin": true,
+    "contaminating_overlap_detected": false
+  },
+  "target_contamination_detected": false,
+  "contamination_types": [],
+  "channel_separation_violations": {
+    "predicate_swap_to_frame_zero": false,
+    "insufficiency_to_frame_zero": false,
+    "final_not_entitled_to_frame_zero": false,
+    "polarity_value_mismatch_to_frame_zero": false,
+    "frame_target_entitlement_alias": false,
+    "frame_target_predicate_alias": false,
+    "frame_loss_uses_final_classifier_tensor": false,
+    "frame_parameter_excluded_from_optimizer": false,
+    "detach_blocks_direct_loss": false,
+    "frame_probability_diagnostic_only": false
+  },
+  "positive_frame_types": [
+    "none",
+    "paraphrase",
+    "polarity_flip",
+    "predicate_swap",
+    "evidence_deletion",
+    "evidence_truncation"
+  ],
+  "negative_frame_types": [
+    "entity_swap",
+    "event_swap",
+    "location_swap",
+    "role_swap",
+    "title_name_swap",
+    "irrelevant_evidence"
+  ],
+  "time_swap_policy": {
+    "generator_frame_target": 0,
+    "present_in_main_dataset": false,
+    "used_in_stage195_main_classification_training": false
+  },
+  "sampling_and_imbalance": {
+    "compatible_rows_per_pair": 6,
+    "incompatible_rows_per_pair": 6,
+    "train_compatible_rows": 1440,
+    "train_incompatible_rows": 1440,
+    "native_frame_balance": "balanced_1_to_1",
+    "balanced_sampler_affects_native_frame_bce": false,
+    "positive_frame_rows_masked": false,
+    "native_class_or_instance_weight_present": false,
+    "arm_changes_frame_target": false,
+    "arm_changes_additional_gradient_only": true,
+    "final_not_entitled_prior_gradient_dominance": "not_statically_determined"
+  },
+  "not_statically_determined": [
+    "realized per-loss and per-family gradient magnitudes",
+    "whether final NOT_ENTITLED CE gradients dominate direct frame BCE gradients",
+    "batchwise gradient conflict among frame BCE, predicate/sufficiency losses, final CE, and intervention hinge",
+    "number/date/value mismatch targets because those families are absent",
+    "row-level semantic cleanliness beyond frozen integrity reports without re-adjudication",
+    "unique latent representation subspace causing the recurrent failures"
+  ],
+  "stage195_configuration": {
+    "architecture": "v6b_minimal",
+    "backbone": "mamba",
+    "model": "state-spaces/mamba-130m-hf",
+    "epochs": 20,
+    "main_data": "data/controlled_v5_v3_without_time_swap.jsonl",
+    "native_frame_bce_active_all_six_runs": true,
+    "baseline_compatible_positive_margin_weight": 0.0,
+    "intervention_compatible_positive_margin_weight": 0.05,
+    "compatible_positive_margin_logit": 0.0,
+    "stage177c_frame_pairwise_active": false,
+    "pair_contrastive_auxiliary_active": false,
+    "time_swap_main_data": false,
+    "external_data": false
+  },
+  "stage196a_frozen_findings": {
+    "decision": "STAGE196A_RECURRENT_LOCAL_CHANNEL_FAILURE",
+    "persistent_rows": 127,
+    "mechanism_buckets": {
+      "MULTI_LOCAL_CHANNEL_FAILURE": 72,
+      "FRAME_ONLY_FAILURE": 55,
+      "PREDICATE_ONLY_FAILURE": 0,
+      "SUFFICIENCY_ONLY_FAILURE": 0,
+      "ENTITLEMENT_AGGREGATION_FAILURE": 0,
+      "FINAL_COMPOSITION_BOUNDARY_FAILURE": 0
+    },
+    "all_local_channels_pass_share": 0.0,
+    "every_persistent_row_includes_frame_failure": true,
+    "recurrent_persistent_positions": {"baseline": 22, "intervention": 19},
+    "universal_persistent_positions": {"baseline": 15, "intervention": 12},
+    "recurrent_in_both_arms": 19,
+    "intervention_only_recurrent": 0,
+    "persistent_in_all_six_runs_positions": 10,
+    "persistent_row_run_instances_by_intervention": {"none": 65, "paraphrase": 6, "polarity_flip": 56}
+  },
+  "decision_evaluation": {
+    "target_contamination": false,
+    "no_direct_supervision": false,
+    "positive_underweighting_or_masking": false,
+    "correct_supervision_representation_failure": true,
+    "mixed_or_inconclusive": false
+  },
+  "recommended_stage196b1_intervention": "ADD_FRAME_STATE_POSITIVE_NEGATIVE_CONTRAST",
+  "recommendation_rationale": "The native FrameGate already receives a correct raw frame-local target through unmasked balanced BCE with optimizer-owned trainable parameters and an intact direct gradient path. Stage196-A nevertheless freezes recurrent frame failures, so the single taxonomy-consistent next family is a positive/negative contrast over frame states rather than adding BCE, correcting targets, or restoring a missing positive mask/weight.",
+  "recommendation_authorizes_implementation": false,
+  "prohibited_claims": [
+    "threshold tuning or calibration is warranted",
+    "the entitlement product should be changed",
+    "a final-classifier bias shift is warranted",
+    "SWA should be reintroduced",
+    "multiple simultaneous losses are authorized",
+    "architecture replacement is authorized",
+    "external or OOD generalization",
+    "production advancement",
+    "global encoder representation collapse is proven",
+    "a unique causal latent defect is identified",
+    "Stage196-B1 implementation or training is authorized"
+  ],
+  "validation_not_executed": [
+    "Python",
+    "py_compile",
+    "Stage196-A analyzer",
+    "JSON parser",
+    "model import or forward",
+    "training",
+    "smoke mini or full run",
+    "Kaggle or Lightning commands",
+    "threshold search",
+    "loss-weight sweep",
+    "checkpoint load",
+    "external or OOD evaluation"
+  ],
+  "remaining_risks": [
+    "Static wiring does not determine realized gradient magnitudes or conflicts.",
+    "A frozen encoder limits learnable changes to head-side representations but does not disable FrameGate supervision.",
+    "Known generator-integrity concerns are handled by the intervention sidecar only for the added margin; native BCE remains unmasked.",
+    "Absent number/date/value intervention families cannot be target-audited.",
+    "The representation-failure taxonomy result is not proof of global collapse or a unique encoder defect."
+  ]
+}
