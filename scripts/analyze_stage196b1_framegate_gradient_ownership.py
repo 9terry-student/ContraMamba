@@ -140,6 +140,59 @@ CROSS_SOURCE_FIELDS = (
 )
 SPLIT_PROVENANCE_FIELDS = (
     "configured_split_seed", "resolved_split_seed", "split_seed_explicit", "split_policy")
+FROZEN_MAIN_DATA = "data/controlled_v5_v3_without_time_swap.jsonl"
+FROZEN_MAIN_DATA_SHA256 = "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640"
+EXTERNAL_OOD_OPTIONS = (
+    "--ood-data", "--ood-flag-source", "--output-ood-json", "--output-ood-predictions-json",
+    "--external-eval-jsonl", "--external-eval-name", "--external-output-dir",
+    "--stage43-external-factver-jsonl", "--stage43-external-output-dir",
+    "--stage43-external-run-prefix", "--stage43-external-max-rows",
+    "--stage43-external-batch-size", "--stage43-external-enable-shadow-export",
+    "--enable-stage43-external-eval",
+)
+BRIDGE_PATH_OPTIONS = (
+    "--stage57-bridge-train-jsonl", "--stage66-bridge-train-jsonl",
+    "--stage75-bridge-train-jsonl", "--stage80a-bridge-train-jsonl",
+)
+BRIDGE_MODE_OPTIONS = (
+    "--stage57-bridge-train-mode", "--stage66-bridge-train-mode",
+    "--stage75-bridge-train-mode", "--stage80a-bridge-train-mode",
+)
+CALIBRATION_THRESHOLD_OPTIONS = (
+    "--ood-ablation-modes", "--ood-unflagged-ne-shift-sweep",
+    "--ood-selective-ne-shift-sweep", "--ood-selective-ne-gates",
+    "--ood-selective-ne-thresholds", "--dev-calibrated-ne-shift-candidates",
+    "--dev-calibrated-ne-gate", "--dev-calibrated-ne-threshold",
+    "--dev-calibrated-ne-frame-penalty", "--dev-calibrated-ne-calibration-source",
+    "--dev-calibrated-ne-frame-penalty-candidates",
+)
+MARGIN_SIDECAR_OPTIONS = (
+    "--controlled-integrity-sidecar-path", "--expected-integrity-sidecar-semantic-sha256")
+FORBIDDEN_FEATURE_ASSERTIONS = {
+    "external_eval_enabled": False,
+    "external_metrics_used_for_selection": False,
+    "external_training_data_used": False,
+    "calibration_enabled": False,
+    "threshold_tuning_enabled": False,
+    "stage195_parameter_swa_enabled": False,
+    "compatible_positive_margin_enabled": False,
+    "new_loss_enabled": False,
+    "time_swap_used_in_main_training": False,
+}
+TRAINING_SELECTION_POLICY_EXPECTED = {
+    "clean_dev_only_checkpoint_selection": True,
+    "checkpoint_selection_metric": "final_macro_f1",
+    "checkpoint_selection_direction": "maximize",
+    "external_evaluation_used_for_training": False,
+    "external_evaluation_used_for_calibration": False,
+    "external_evaluation_used_for_threshold_selection": False,
+    "external_evaluation_used_for_checkpoint_selection": False,
+    "time_swap_included_in_main_classification_training": False,
+    "final_ce_logits_source": "output['logits']",
+    "loss_logits_used_for_final_classifier_ce": False,
+    "stage175b_metric_used_for_checkpoint_selection": False,
+    "shadow_diagnostics_integrated_into_predictions": False,
+}
 
 
 def parse_args() -> argparse.Namespace:
@@ -231,10 +284,6 @@ def recursive_values(value: Any, key: str) -> list[Any]:
     return found
 
 
-def require_value(value: Any, key: str, expected: Any, context: str) -> None:
-    observed = recursive_values(value, key)
-    if not observed or any(item != expected for item in observed):
-        raise ValueError(f"{context}: {key} must be uniformly {expected!r}; got {observed!r}")
 
 
 def collect_expected(value: Any, expected: dict[str, Any]) -> tuple[dict[str, list[Any]], list[str]]:
@@ -386,6 +435,312 @@ def metrics(rows: Sequence[dict[str, Any]]) -> dict[str, Any]:
             "confusion": confusion}
 
 
+def frozen_stage196b1_argv(directory: Path, seed: int, mode: str) -> list[str]:
+    return [
+        "--data", FROZEN_MAIN_DATA,
+        "--backbone", "mamba",
+        "--model-name", "state-spaces/mamba-130m-hf",
+        "--architecture", "v6b_minimal",
+        "--device", "cuda",
+        "--epochs", "20",
+        "--seed", str(seed),
+        "--split-seed", str(SPLIT_SEED),
+        "--frame-downstream-gradient-mode", mode,
+        "--stage196b1-framegate-gradient-ownership-observability",
+        "--stage115-clean-dev-scalar-output-jsonl", str(directory / "clean_dev_scalars.jsonl"),
+        "--output-json", str(directory / "training_report.json"),
+        "--output-predictions-json", str(directory / "clean_dev_predictions.json"),
+        "--compatible-positive-margin-weight", "0.0",
+        "--compatible-positive-margin-logit", "0.0",
+        "--lr", "0.001",
+        "--freeze-encoder", "true",
+        "--freeze-a-log", "true",
+        "--max-length", "128",
+        "--dev-ratio", "0.2",
+        "--gradient-accumulation-steps", "1",
+        "--class-weighting", "none",
+        "--select-metric", "final_macro_f1",
+        "--flag-source", "controlled_heuristic",
+        "--save-selected-checkpoint",
+        "--selected-checkpoint-filename", "selected_checkpoint.pt",
+    ]
+
+
+def frozen_stage196b1_parsed_args(directory: Path, seed: int, mode: str) -> dict[str, Any]:
+    return {
+        "data": FROZEN_MAIN_DATA,
+        "backbone": "mamba",
+        "model_name": "state-spaces/mamba-130m-hf",
+        "architecture": "v6b_minimal",
+        "device": "cuda",
+        "epochs": 20,
+        "seed": seed,
+        "split_seed": SPLIT_SEED,
+        "frame_downstream_gradient_mode": mode,
+        "stage196b1_framegate_gradient_ownership_observability": True,
+        "stage115_clean_dev_scalar_output_jsonl": str(directory / "clean_dev_scalars.jsonl"),
+        "output_json": str(directory / "training_report.json"),
+        "output_predictions_json": str(directory / "clean_dev_predictions.json"),
+        "compatible_positive_margin_weight": 0.0,
+        "compatible_positive_margin_logit": 0.0,
+        "lr": 0.001,
+        "freeze_encoder": True,
+        "freeze_a_log": True,
+        "max_length": 128,
+        "dev_ratio": 0.2,
+        "gradient_accumulation_steps": 1,
+        "class_weighting": "none",
+        "select_metric": "final_macro_f1",
+        "flag_source": "controlled_heuristic",
+        "save_selected_checkpoint": True,
+        "selected_checkpoint_filename": "selected_checkpoint.pt",
+    }
+
+
+def recover_executed_argv(run: str, provenance: dict[str, Any],
+                           gates: list[dict[str, Any]]) -> tuple[list[str], dict[str, list[Any]]]:
+    argv = provenance.get("raw_sys_argv") if type(provenance) is dict else None
+    errors: list[str] = []
+    occurrences: dict[str, list[Any]] = {}
+    if type(argv) is not list or not argv or any(type(token) is not str or not token for token in argv):
+        errors.append("run_provenance.raw_sys_argv is not a nonempty string array")
+    else:
+        index = 0
+        while index < len(argv):
+            token = argv[index]
+            if not token.startswith("--"):
+                errors.append(f"unexpected positional token at index {index}: {token!r}")
+                break
+            if "=" in token:
+                option, value = token.split("=", 1)
+                if not value: errors.append(f"ambiguous empty value for {option}")
+                occurrences.setdefault(option, []).append(value)
+                index += 1
+            elif index + 1 < len(argv) and not argv[index + 1].startswith("--"):
+                occurrences.setdefault(token, []).append(argv[index + 1])
+                index += 2
+            else:
+                occurrences.setdefault(token, []).append(True)
+                index += 1
+    gate(gates, "provenance", run, "executed_argv_recovered",
+         "run_provenance.raw_sys_argv: nonempty argv string array with unambiguous option tokens",
+         {"source": "run_provenance.json:raw_sys_argv", "argv": argv, "errors": errors},
+         not errors, f"executed argv could not be recovered: {errors}")
+    return argv, occurrences
+
+
+def validate_prohibited_features(run: str, directory: Path, seed: int, mode: str,
+                                 provenance: dict[str, Any],
+                                 contract: dict[str, Any], gates: list[dict[str, Any]]) -> None:
+    argv, options = recover_executed_argv(run, provenance, gates)
+    expected_argv = frozen_stage196b1_argv(directory, seed, mode)
+    data_provenance = provenance.get("data_provenance") if type(provenance) is dict else None
+    auxiliary_activity = (data_provenance.get("auxiliary_activity")
+                          if type(data_provenance) is dict else None)
+    auxiliary_datasets = (data_provenance.get("auxiliary_datasets")
+                          if type(data_provenance) is dict else None)
+
+    active_external = {key: options[key] for key in EXTERNAL_OOD_OPTIONS if key in options}
+    external_provenance = {
+        "auxiliary_activity.external_evaluation_active": (
+            auxiliary_activity.get("external_evaluation_active")
+            if type(auxiliary_activity) is dict else None),
+        "auxiliary_datasets.external_eval_jsonl": (
+            auxiliary_datasets.get("external_eval_jsonl")
+            if type(auxiliary_datasets) is dict else None),
+        "auxiliary_datasets.stage43_external_factver": (
+            auxiliary_datasets.get("stage43_external_factver")
+            if type(auxiliary_datasets) is dict else None),
+    }
+    external_command_ok = (not active_external
+                           and external_provenance == {
+                               "auxiliary_activity.external_evaluation_active": False,
+                               "auxiliary_datasets.external_eval_jsonl": [],
+                               "auxiliary_datasets.stage43_external_factver": [],
+                           })
+    gate(gates, "provenance", run, "external_ood_evaluation_disabled_by_command",
+         {"sources": ["run_provenance.json:raw_sys_argv",
+                      "run_provenance.json:data_provenance.auxiliary_activity",
+                      "run_provenance.json:data_provenance.auxiliary_datasets"],
+          "active_options": [], "external_evaluation_active": False,
+          "external_dataset_records": []},
+         {"active_options": active_external, **external_provenance}, external_command_ok,
+         "external/OOD argv or recorded auxiliary provenance is active or contradictory")
+    external_artifacts = sorted(
+        path.name for path in directory.iterdir() if path.is_file()
+        and any(marker in path.name.lower() for marker in ("ood", "external", "stage43")))
+    gate(gates, "filesystem", run, "external_ood_output_artifacts_absent", [],
+         external_artifacts, not external_artifacts,
+         f"unexpected external/OOD output artifacts exist: {external_artifacts}")
+
+    bridge_paths = {key: options[key] for key in BRIDGE_PATH_OPTIONS if key in options}
+    bridge_modes = {key: options[key] for key in BRIDGE_MODE_OPTIONS if key in options}
+    bridge_artifacts = sorted(
+        path.name for path in directory.iterdir() if path.is_file() and "bridge" in path.name.lower())
+    bridge_names = ("stage57", "stage66", "stage75", "stage80a")
+    bridge_activity = ({f"{name}_active": auxiliary_activity.get(f"{name}_active")
+                        for name in bridge_names} if type(auxiliary_activity) is dict else {})
+    bridge_dataset_records = ({f"{name}_bridge": auxiliary_datasets.get(f"{name}_bridge")
+                               for name in bridge_names}
+                              if type(auxiliary_datasets) is dict else {})
+    bridge_records_ok = (bridge_activity == {f"{name}_active": False for name in bridge_names}
+                         and set(bridge_dataset_records) == {f"{name}_bridge" for name in bridge_names}
+                         and all(type(record) is dict
+                                 and record.get("configured") is False
+                                 and record.get("path") is None
+                                 and record.get("mode") == "none"
+                                 for record in bridge_dataset_records.values()))
+    bridge_ok = (not bridge_paths and not bridge_artifacts and bridge_records_ok
+                 and all(values and all(value == "none" for value in values)
+                         for values in bridge_modes.values()))
+    gate(gates, "provenance", run, "bridge_training_disabled_by_command",
+         {"sources": ["run_provenance.json:raw_sys_argv",
+                      "run_provenance.json:data_provenance.auxiliary_activity",
+                      "run_provenance.json:data_provenance.auxiliary_datasets",
+                      "run-directory filesystem"],
+          "bridge_paths": {}, "mode_values": "absent or every occurrence exactly 'none'",
+          "bridge_activity": {f"{name}_active": False for name in bridge_names},
+          "bridge_dataset_records": "configured=false, path=null, mode=none",
+          "bridge_artifacts": []},
+         {"bridge_paths": bridge_paths, "bridge_modes": bridge_modes,
+          "bridge_activity": bridge_activity, "bridge_dataset_records": bridge_dataset_records,
+          "bridge_artifacts": bridge_artifacts}, bridge_ok,
+         "bridge command, recorded auxiliary provenance, or filesystem closure is active or contradictory")
+    calibration_options = {key: options[key] for key in CALIBRATION_THRESHOLD_OPTIONS if key in options}
+    gate(gates, "provenance", run, "calibration_threshold_tuning_disabled_by_command",
+         {"source": "run_provenance.json:raw_sys_argv", "active_options": []},
+         calibration_options, not calibration_options,
+         f"post-hoc calibration or threshold-tuning option active: {calibration_options}")
+
+    swa_options = {key: options[key] for key in (
+        "--stage195-tail3-parameter-swa-causal-test", "--stage195-tail3-parameter-swa-output-dir")
+                   if key in options}
+    swa_artifacts = sorted(path.name for path in directory.iterdir()
+                           if path.name.lower().startswith("stage195"))
+    swa_ok = (not swa_options and not swa_artifacts
+              and contract.get("parameter_swa_enabled") is False
+              and contract.get("state_capsule_saving_enabled") is False
+              and contract.get("expected_state_capsules") == 0)
+    gate(gates, "provenance", run, "stage195_swa_disabled_by_command_contract_and_artifacts",
+         {"argv_options": {}, "trajectory_contract.parameter_swa_enabled": False,
+          "trajectory_contract.state_capsule_saving_enabled": False,
+          "trajectory_contract.expected_state_capsules": 0, "filesystem_artifacts": []},
+         {"argv_options": swa_options,
+          "trajectory_contract.parameter_swa_enabled": contract.get("parameter_swa_enabled"),
+          "trajectory_contract.state_capsule_saving_enabled": contract.get("state_capsule_saving_enabled"),
+          "trajectory_contract.expected_state_capsules": contract.get("expected_state_capsules"),
+          "filesystem_artifacts": swa_artifacts}, swa_ok,
+         "Stage195 SWA or state-capsule provenance is active or artifacts exist")
+
+    margin_observed = {
+        "argv_weight": options.get("--compatible-positive-margin-weight"),
+        "argv_logit": options.get("--compatible-positive-margin-logit"),
+        "argv_sidecars": {key: options[key] for key in MARGIN_SIDECAR_OPTIONS if key in options},
+        "trajectory_contract.compatible_positive_margin_enabled": contract.get("compatible_positive_margin_enabled"),
+        "trajectory_contract.sidecar_accessed": contract.get("sidecar_accessed"),
+    }
+    margin_ok = (margin_observed["argv_weight"] == ["0.0"]
+                 and margin_observed["argv_logit"] == ["0.0"]
+                 and not margin_observed["argv_sidecars"]
+                 and margin_observed["trajectory_contract.compatible_positive_margin_enabled"] is False
+                 and margin_observed["trajectory_contract.sidecar_accessed"] is False)
+    gate(gates, "provenance", run, "compatible_positive_margin_disabled",
+         {"sources": ["run_provenance.json:raw_sys_argv", "stage191_trajectory_contract.json"],
+          "weight": ["0.0"], "logit": ["0.0"], "sidecars": {},
+          "enabled": False, "accessed": False}, margin_observed, margin_ok,
+         "compatible-positive margin or its sidecar provenance is active or ambiguous")
+
+    parsed_args = provenance.get("parsed_args") if type(provenance) is dict else None
+    expected_parsed_args = frozen_stage196b1_parsed_args(directory, seed, mode)
+    observed_parsed_args = ({key: parsed_args.get(key) for key in expected_parsed_args}
+                            if type(parsed_args) is dict else {})
+    frozen_command_ok = (argv == expected_argv
+                         and observed_parsed_args == expected_parsed_args)
+    gate(gates, "provenance", run, "frozen_command_configuration_and_output_paths",
+         {"source": "frozen Stage196-B1 manifest command contract", "argv": expected_argv,
+          "parsed_args": expected_parsed_args},
+         {"sources": ["run_provenance.json:raw_sys_argv", "run_provenance.json:parsed_args"],
+          "argv": argv, "parsed_args": observed_parsed_args}, frozen_command_ok,
+         "executed argv, parsed-argument duplicate, or frozen output paths differ from the "
+         "Stage196-B1 command contract")
+    resolved = provenance.get("resolved_runtime_config") if type(provenance) is dict else None
+    direct_frame_expected = {
+        "frame_direct_loss_active": True, "frame_direct_loss_weight": 1.0,
+        "frame_downstream_forward_value_changed": False,
+    }
+    direct_frame_observed = ({key: resolved.get(key) for key in direct_frame_expected}
+                             if type(resolved) is dict else {})
+    exact_argv = frozen_command_ok
+    new_loss_ok = exact_argv and direct_frame_observed == direct_frame_expected
+    gate(gates, "provenance", run, "new_experimental_losses_absent",
+         {"source": "frozen Stage196-B1 manifest argv plus run_provenance.resolved_runtime_config",
+          "executed_argv": expected_argv, "unchanged_direct_frame_bce": direct_frame_expected},
+         {"executed_argv": argv, "unchanged_direct_frame_bce": direct_frame_observed},
+         new_loss_ok, "executed argv differs from the frozen command or direct FrameGate BCE changed")
+
+    main_data = data_provenance.get("main_data") if type(data_provenance) is dict else None
+    data_observed = {
+        "argv_data": options.get("--data"),
+        "data_provenance.expected_main_clean_dataset": (
+            data_provenance.get("expected_main_clean_dataset") if type(data_provenance) is dict else None),
+        "data_provenance.main_data.path": main_data.get("path") if type(main_data) is dict else None,
+        "data_provenance.main_data.sha256": main_data.get("sha256") if type(main_data) is dict else None,
+        "data_provenance.main_data.configured": (
+            main_data.get("configured") if type(main_data) is dict else None),
+        "data_provenance.main_data.expected": (
+            main_data.get("expected") if type(main_data) is dict else None),
+        "data_provenance.main_data.mode": main_data.get("mode") if type(main_data) is dict else None,
+        "data_provenance.auxiliary_activity.time_swap_active": (
+            auxiliary_activity.get("time_swap_active")
+            if type(auxiliary_activity) is dict else None),
+    }
+    data_ok = (data_observed["argv_data"] == [FROZEN_MAIN_DATA]
+               and data_observed["data_provenance.expected_main_clean_dataset"] == FROZEN_MAIN_DATA
+               and data_observed["data_provenance.main_data.path"] == FROZEN_MAIN_DATA
+               and data_observed["data_provenance.main_data.sha256"] == FROZEN_MAIN_DATA_SHA256
+               and data_observed["data_provenance.main_data.configured"] is True
+               and data_observed["data_provenance.main_data.expected"] is True
+               and data_observed["data_provenance.main_data.mode"] == "main_clean_classification"
+               and data_observed["data_provenance.auxiliary_activity.time_swap_active"] is False)
+    gate(gates, "provenance", run, "time_swap_excluded_from_main_training",
+         {"sources": ["run_provenance.json:raw_sys_argv", "run_provenance.json:data_provenance"],
+          "path": FROZEN_MAIN_DATA, "sha256": FROZEN_MAIN_DATA_SHA256},
+         data_observed, data_ok, "main training data is not the frozen time-swap-excluded dataset")
+
+    derived_assertions = {
+        "external_eval_enabled": bool(active_external or external_artifacts),
+        "external_metrics_used_for_selection": bool(active_external or calibration_options
+                                                      or options.get("--select-metric") != ["final_macro_f1"]),
+        "external_training_data_used": bool(bridge_paths or not bridge_ok or not data_ok),
+        "calibration_enabled": bool(calibration_options),
+        "threshold_tuning_enabled": bool(calibration_options),
+        "stage195_parameter_swa_enabled": not swa_ok,
+        "compatible_positive_margin_enabled": not margin_ok,
+        "new_loss_enabled": not new_loss_ok,
+        "time_swap_used_in_main_training": not data_ok,
+    }
+    training_selection_policy = (provenance.get("training_selection_policy")
+                                 if type(provenance) is dict else None)
+    selection_policy_observed = ({key: training_selection_policy.get(key)
+                                  for key in TRAINING_SELECTION_POLICY_EXPECTED}
+                                 if type(training_selection_policy) is dict else {})
+    selection_policy_ok = selection_policy_observed == TRAINING_SELECTION_POLICY_EXPECTED
+    recorded_assertions = (provenance.get("forbidden_feature_assertions")
+                           if type(provenance) is dict else None)
+    recorded_ok = recorded_assertions is None or recorded_assertions == FORBIDDEN_FEATURE_ASSERTIONS
+    assertions_ok = (derived_assertions == FORBIDDEN_FEATURE_ASSERTIONS
+                     and selection_policy_ok and recorded_ok)
+    gate(gates, "provenance", run, "forbidden_feature_assertions_cross_validated",
+         {"manifest_assertions": FORBIDDEN_FEATURE_ASSERTIONS,
+          "training_selection_policy": TRAINING_SELECTION_POLICY_EXPECTED},
+         {"derived_from_authoritative_sources": derived_assertions,
+          "run_provenance.training_selection_policy": selection_policy_observed,
+          "run_provenance.forbidden_feature_assertions": (
+              "not emitted by frozen run_provenance schema" if recorded_assertions is None
+              else recorded_assertions)}, assertions_ok,
+         "forbidden-feature assertions or selection policy contradict argv, contract, data, or artifacts")
+
+
 def resolve_run_runtime_commit(run: str, directory: Path, report: dict[str, Any],
                                contract: dict[str, Any], expected: str,
                                gates: list[dict[str, Any]]) -> str:
@@ -497,14 +852,6 @@ def validate_runtime(run: str, seed: int, mode: str, report: dict[str, Any],
     margin = config.get("compatible_positive_margin")
     if type(margin) is not dict or margin.get("enabled") is not False or margin.get("weight") != 0.0 or margin.get("margin_logit") != 0.0:
         raise ValueError(f"{run}: compatible-positive margin not exactly off")
-    for key in ("external_data_used_for_training", "external_metrics_used_for_threshold_tuning", "time_swap_used"):
-        require_value(report, key, False, run)
-    for key in ("stage57_bridge_train_mode", "stage66_bridge_train_mode", "stage75_bridge_train_mode", "stage80a_bridge_train_mode"):
-        require_value(report, key, "none", run)
-    for key in ("stage57_bridge_train_enabled", "stage66_bridge_train_enabled",
-                "stage75_bridge_train_enabled", "stage80a_bridge_train_enabled",
-                "combined_bridge_enabled", "external_evaluation_active"):
-        require_value(report, key, False, run)
 
 
 def validate_ledger(run: str, rows: list[dict[str, Any]]) -> dict[int, dict[str, Any]]:
@@ -541,6 +888,8 @@ def validate_run(root: Path, run: str, expected_runtime_commit: str,
     runtime_commit = resolve_run_runtime_commit(
         run, directory, report, contract, expected_runtime_commit, gates)
     validate_runtime(run, seed, mode, report, contract, gates)
+    provenance = read_json(directory / "run_provenance.json")
+    validate_prohibited_features(run, directory, seed, mode, provenance, contract, gates)
     ledger = validate_ledger(run, read_jsonl(directory/"stage191_trajectory_epoch_metrics.jsonl"))
     obj = read_json(directory/"clean_dev_predictions.json"); scalars = read_jsonl(directory/"clean_dev_scalars.jsonl")
     if type(obj) is not dict or set(obj) != {"metadata", "predictions"}: raise ValueError(f"{run}: prediction container mismatch")
