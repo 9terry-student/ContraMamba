@@ -153,6 +153,59 @@ send gradients into it. Therefore frame_local_only does not completely isolate
 the shared representation, and reports explicitly set
 shared_encoder_gradient_fully_isolated to false.
 
+## Stage196-B1 trajectory observability contract
+
+Stage196-B1 uses the explicit default-off flag
+`--stage196b1-framegate-gradient-ownership-observability`. It reuses the
+Stage191 per-epoch clean-dev trajectory implementation and filenames, but has a
+distinct mode, `stage196b1_framegate_gradient_ownership`, and a distinct frozen
+seed tuple `(183, 184, 185)`. The Stage191, Stage193, and Stage195 seed tuples and
+mode behavior remain unchanged.
+
+The Stage196-B1 mode saves zero state capsules, performs no extra forward pass,
+and does not enable Stage195 parameter SWA. Its observability contract records
+the actual FrameGate downstream-gradient mode and blocking status. Its causal
+arm is derived only from `joint` versus `frame_local_only`; compatible-positive
+margin remains off and both Stage185 sidecar options remain absent in both arms.
+The shared encoder remains non-isolated.
+
+The Stage196-B1 trajectory contract includes actual runtime values for:
+
+~~~json
+{
+  "observability_mode": "stage196b1_framegate_gradient_ownership",
+  "authorized_training_seeds": [183, 184, 185],
+  "training_seed_authorized": true,
+  "arm": "baseline|intervention",
+  "frame_downstream_gradient_mode": "joint|frame_local_only",
+  "framegate_nonframe_output_gradient_blocked": false,
+  "shared_encoder_gradient_fully_isolated": false,
+  "state_capsule_saving_enabled": false,
+  "expected_state_capsules": 0,
+  "compatible_positive_margin_enabled": false,
+  "sidecar_accessed": false,
+  "parameter_swa_enabled": false,
+  "training_semantics_changed_by_observability": false,
+  "extra_forward_pass_performed_by_observability": false,
+  "enabled_flags": {
+    "stage191_trajectory_replay_observability": false,
+    "stage191_save_trajectory_state_capsules": false,
+    "stage193_tail3_fresh_seed_observability": false,
+    "stage195_tail3_parameter_swa_causal_test": false,
+    "stage196b1_framegate_gradient_ownership_observability": true
+  }
+}
+~~~
+
+For `frame_local_only`, the mode-specific fields instead include:
+
+~~~json
+{
+  "frame_downstream_gradient_mode": "frame_local_only",
+  "framegate_nonframe_output_gradient_blocked": true
+}
+~~~
+
 ## Future Stage196-B1 controlled experiment
 
 Freeze the following across arms:
@@ -172,15 +225,16 @@ Freeze the following across arms:
 - No contrastive loss
 - No new margin loss
 
-For every later-assigned fresh training seed, run two arms with all arguments
-otherwise identical:
+For each fresh seed 183, 184, and 185, run two arms with all arguments
+otherwise identical and enable the dedicated Stage196-B1 observability flag:
 
 ~~~text
+--stage196b1-framegate-gradient-ownership-observability
 baseline:     --frame-downstream-gradient-mode joint
 intervention: --frame-downstream-gradient-mode frame_local_only
 ~~~
 
-Fresh seeds are intentionally deferred to the later manifest stage.
+The Stage196-B1 manifest freezes the exact paired run order.
 
 ## Preregistered causal interpretation
 

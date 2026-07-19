@@ -121,10 +121,14 @@ _STAGE191_EXPECTED_SUPPORT_ROWS = 89
 STAGE191_TRAINING_SEEDS = (174, 175, 176)
 STAGE193_TAIL3_REPLICATION_SEEDS = (177, 178, 179)
 STAGE195_TAIL3_PARAMETER_SWA_SEEDS = (180, 181, 182)
+STAGE196B1_FRAMEGATE_GRADIENT_OWNERSHIP_SEEDS = (183, 184, 185)
 _TRAJECTORY_OBSERVABILITY_NONE = "none"
 _TRAJECTORY_OBSERVABILITY_STAGE191 = "stage191_deterministic_replay"
 _TRAJECTORY_OBSERVABILITY_STAGE193 = "stage193_tail3_fresh_seed_replication"
 _TRAJECTORY_OBSERVABILITY_STAGE195 = "stage195_tail3_parameter_swa_causal_test"
+_TRAJECTORY_OBSERVABILITY_STAGE196B1 = (
+    "stage196b1_framegate_gradient_ownership"
+)
 _STAGE195_SOURCE_EPOCHS = (18, 19, 20)
 _STAGE195_OUTPUT_FILENAMES = (
     "stage195_tail3_parameter_swa_contract.json",
@@ -225,6 +229,12 @@ def _stage195_serializable_args(args: argparse.Namespace) -> dict[str, Any]:
     ):
         snapshot.pop("stage195_tail3_parameter_swa_causal_test", None)
         snapshot.pop("stage195_tail3_parameter_swa_output_dir", None)
+    if not getattr(
+        args, "stage196b1_framegate_gradient_ownership_observability", False
+    ):
+        snapshot.pop(
+            "stage196b1_framegate_gradient_ownership_observability", None
+        )
     return snapshot
 
 
@@ -1392,6 +1402,110 @@ def _stage195_validate_runtime_contract(
     )
 
 
+def _stage196b1_validate_runtime_contract(
+    args: argparse.Namespace, split_seed: int
+) -> str:
+    if args.stage191_save_trajectory_state_capsules:
+        raise ValueError(
+            "Stage196-B1 FrameGate gradient-ownership observability forbids "
+            "Stage191 state capsules"
+        )
+    if (
+        type(args.seed) is not int
+        or args.seed not in STAGE196B1_FRAMEGATE_GRADIENT_OWNERSHIP_SEEDS
+    ):
+        raise ValueError(
+            "Stage196-B1 training seed must be an exact non-bool integer in "
+            f"{STAGE196B1_FRAMEGATE_GRADIENT_OWNERSHIP_SEEDS}; "
+            f"observed {args.seed!r}"
+        )
+    required = {
+        "architecture": "v6b_minimal",
+        "backbone": "mamba",
+        "device": "cuda",
+        "model_name": "state-spaces/mamba-130m-hf",
+        "epochs": 20,
+        "select_metric": "final_macro_f1",
+    }
+    for field, expected in required.items():
+        if getattr(args, field, None) != expected:
+            raise ValueError(
+                f"Stage196-B1 requires {field}={expected!r}; "
+                f"observed {getattr(args, field, None)!r}"
+            )
+    if split_seed != 174 or args.split_seed != 174:
+        raise ValueError("Stage196-B1 requires explicit --split-seed 174")
+    data_path = Path(args.data).resolve()
+    if (
+        data_path != (ROOT / _STAGE187_AUTHORITATIVE_DATA).resolve()
+        or _stage187_file_sha256(data_path) != _STAGE187_DATASET_SHA256
+    ):
+        raise ValueError("Stage196-B1 clean controlled main data identity mismatch")
+
+    observed_absent_values = {
+        name: getattr(args, name, None)
+        for name in STAGE191_FORBIDDEN_PATH_OPTIONS
+    }
+    absent_values_valid = (
+        all(
+            observed_absent_values[name] is None
+            for name in STAGE191_SCALAR_ABSENT_OPTIONS
+        )
+        and all(
+            type(observed_absent_values[name]) is list
+            and observed_absent_values[name] == []
+            for name in STAGE191_LIST_ABSENT_OPTIONS
+        )
+    )
+    external_flags_valid = all(
+        getattr(args, name, False) is False
+        for name in STAGE191_EXTERNAL_ENABLE_FLAGS
+    )
+    bridge_modes_valid = all(
+        getattr(args, name, None) == "none"
+        for name in STAGE191_BRIDGE_MODE_OPTIONS
+    )
+    if not (absent_values_valid and external_flags_valid and bridge_modes_valid):
+        raise ValueError(
+            "Stage196-B1 requires external, OOD, and bridge data activity "
+            "to be absent and every bridge mode to be 'none'"
+        )
+    if (
+        args.loss_sweep
+        or args.smoke
+        or getattr(args, "max_train_records", None) is not None
+    ):
+        raise ValueError(
+            "Stage196-B1 forbids loss sweeps, smoke execution, and row truncation"
+        )
+    if (
+        args.stage195_tail3_parameter_swa_causal_test
+        or args.stage195_tail3_parameter_swa_output_dir is not None
+    ):
+        raise ValueError("Stage196-B1 forbids Stage195 parameter-SWA mode and output")
+    weight = float(args.compatible_positive_margin_weight)
+    margin_logit = float(args.compatible_positive_margin_logit)
+    if weight != 0.0 or margin_logit != 0.0:
+        raise ValueError(
+            "Stage196-B1 requires compatible-positive margin weight and logit "
+            "to be exactly 0.0"
+        )
+    if (
+        args.controlled_integrity_sidecar_path is not None
+        or args.expected_integrity_sidecar_semantic_sha256 is not None
+    ):
+        raise ValueError("Stage196-B1 requires both Stage185 sidecar options absent")
+    mode = args.frame_downstream_gradient_mode
+    if mode == "joint":
+        return "baseline"
+    if mode == "frame_local_only":
+        return "intervention"
+    raise ValueError(
+        "Stage196-B1 frame downstream gradient mode must be exactly joint or "
+        "frame_local_only"
+    )
+
+
 def _resolve_trajectory_observability_mode(
     args: argparse.Namespace, split_seed: int
 ) -> tuple[str, str]:
@@ -1399,11 +1513,13 @@ def _resolve_trajectory_observability_mode(
         args.stage191_trajectory_replay_observability,
         args.stage193_tail3_fresh_seed_observability,
         args.stage195_tail3_parameter_swa_causal_test,
+        args.stage196b1_framegate_gradient_ownership_observability,
     ]
     if sum(value is True for value in enabled_modes) > 1:
         raise ValueError(
-            "Stage191 replay, Stage193 fresh-seed observability, and Stage195 "
-            "parameter-SWA causal-test modes are mutually exclusive"
+            "Stage191 replay, Stage193 fresh-seed observability, Stage195 "
+            "parameter-SWA causal test, and Stage196-B1 FrameGate gradient-ownership "
+            "observability modes are mutually exclusive"
         )
     stage195_output_dir = args.stage195_tail3_parameter_swa_output_dir
     if not args.stage195_tail3_parameter_swa_causal_test:
@@ -1442,6 +1558,10 @@ def _resolve_trajectory_observability_mode(
     if args.stage195_tail3_parameter_swa_causal_test:
         arm = _stage195_validate_runtime_contract(args, split_seed)
         return _TRAJECTORY_OBSERVABILITY_STAGE195, arm
+    if args.stage196b1_framegate_gradient_ownership_observability:
+        arm = _stage196b1_validate_runtime_contract(args, split_seed)
+        return _TRAJECTORY_OBSERVABILITY_STAGE196B1, arm
+
     if args.stage193_tail3_fresh_seed_observability:
         arm = _stage193_validate_runtime_contract(args, split_seed)
         return _TRAJECTORY_OBSERVABILITY_STAGE193, arm
@@ -1458,6 +1578,8 @@ def _trajectory_observability_authorized_seeds(mode: str) -> tuple[int, ...]:
         return STAGE193_TAIL3_REPLICATION_SEEDS
     if mode == _TRAJECTORY_OBSERVABILITY_STAGE195:
         return STAGE195_TAIL3_PARAMETER_SWA_SEEDS
+    if mode == _TRAJECTORY_OBSERVABILITY_STAGE196B1:
+        return STAGE196B1_FRAMEGATE_GRADIENT_OWNERSHIP_SEEDS
     raise RuntimeError(f"invalid enabled trajectory observability mode: {mode!r}")
 
 
@@ -1474,16 +1596,28 @@ def _stage191_write_contract(
     label_to_id, id_to_label = _stage191_verified_label_mapping()
     if type(sidecar_audit) is not dict:
         raise RuntimeError("Stage191 requires the existing Stage187 sidecar audit")
-    if arm == "baseline":
+    margin_weight = float(args.compatible_positive_margin_weight)
+    if margin_weight == 0.0:
         sidecar_validated = (
             sidecar_audit.get("enabled") is False
             and sidecar_audit.get("sidecar_accessed") is False
+            and sidecar_audit.get("sidecar_path") is None
             and args.controlled_integrity_sidecar_path is None
             and args.expected_integrity_sidecar_semantic_sha256 is None
         )
-    else:
+    elif margin_weight == _STAGE187_FIXED_WEIGHT:
+        configured_sidecar = args.controlled_integrity_sidecar_path
+        if configured_sidecar is not None:
+            configured_sidecar = Path(configured_sidecar)
+            if not configured_sidecar.is_absolute():
+                configured_sidecar = ROOT / configured_sidecar
         sidecar_validated = (
-            sidecar_audit.get("enabled") is True
+            configured_sidecar is not None
+            and configured_sidecar.resolve()
+                == (ROOT / _STAGE187_AUTHORITATIVE_SIDECAR).resolve()
+            and args.expected_integrity_sidecar_semantic_sha256
+                == _STAGE187_SIDECAR_SEMANTIC_SHA256
+            and sidecar_audit.get("enabled") is True
             and sidecar_audit.get("sidecar_accessed") is True
             and Path(str(sidecar_audit.get("sidecar_path"))).resolve()
                 == (ROOT / _STAGE187_AUTHORITATIVE_SIDECAR).resolve()
@@ -1492,6 +1626,8 @@ def _stage191_write_contract(
             and sidecar_audit.get("observed_sidecar_semantic_sha256")
                 == _STAGE187_SIDECAR_SEMANTIC_SHA256
         )
+    else:
+        sidecar_validated = False
     if not sidecar_validated:
         raise RuntimeError("Stage191 existing Stage187 sidecar access contract failed")
     authorized_training_seeds = _trajectory_observability_authorized_seeds(
@@ -1499,6 +1635,7 @@ def _stage191_write_contract(
     )
     stage193_mode = observability_mode == _TRAJECTORY_OBSERVABILITY_STAGE193
     stage195_mode = observability_mode == _TRAJECTORY_OBSERVABILITY_STAGE195
+    stage196b1_mode = observability_mode == _TRAJECTORY_OBSERVABILITY_STAGE196B1
     enabled_flags = {
         "stage191_trajectory_replay_observability": (
             observability_mode == _TRAJECTORY_OBSERVABILITY_STAGE191
@@ -1511,6 +1648,15 @@ def _stage191_write_contract(
         enabled_flags["stage193_tail3_fresh_seed_observability"] = True
     if stage195_mode:
         enabled_flags["stage195_tail3_parameter_swa_causal_test"] = True
+    if stage196b1_mode:
+        enabled_flags = {
+            "stage191_trajectory_replay_observability": False,
+            "stage191_save_trajectory_state_capsules": False,
+            "stage193_tail3_fresh_seed_observability": False,
+            "stage195_tail3_parameter_swa_causal_test": False,
+            "stage196b1_framegate_gradient_ownership_observability": True,
+        }
+
     contract = {
         "enabled_flags": enabled_flags,
         "authorized_training_seeds": list(authorized_training_seeds),
@@ -1578,6 +1724,36 @@ def _stage191_write_contract(
             "calibration_applied": False,
             "entitlement_boundary_shift_applied": False,
         })
+    if stage196b1_mode:
+        frame_contract = _frame_gradient_ownership_contract(
+            args.frame_downstream_gradient_mode
+        )
+        contract.update({
+            "observability_mode": _TRAJECTORY_OBSERVABILITY_STAGE196B1,
+            "stage191_trajectory_observability_implementation_reused": True,
+            "stage196b1_framegate_gradient_ownership_observability": True,
+            "stage191_trajectory_replay_observability": False,
+            "stage193_tail3_fresh_seed_observability": False,
+            "stage195_tail3_parameter_swa_causal_test": False,
+            "frame_downstream_gradient_mode": (
+                frame_contract["frame_downstream_gradient_mode"]
+            ),
+            "framegate_nonframe_output_gradient_blocked": (
+                frame_contract["framegate_nonframe_output_gradient_blocked"]
+            ),
+            "shared_encoder_gradient_fully_isolated": (
+                frame_contract["shared_encoder_gradient_fully_isolated"]
+            ),
+            "state_capsule_saving_enabled": False,
+            "expected_state_capsules": 0,
+            "compatible_positive_margin_enabled": margin_weight != 0.0,
+            "sidecar_accessed": bool(sidecar_audit.get("sidecar_accessed")),
+            "parameter_swa_enabled": bool(
+                args.stage195_tail3_parameter_swa_causal_test
+            ),
+            "training_semantics_changed_by_observability": False,
+            "extra_forward_pass_performed_by_observability": False,
+        })
     _stage191_write_json(output_dir / "stage191_trajectory_contract.json", contract)
     (output_dir / "stage191_trajectory_epoch_metrics.jsonl").write_text(
         "", encoding="utf-8"
@@ -1621,6 +1797,12 @@ def _stage191_export_epoch(
         and args.stage191_save_trajectory_state_capsules
     ):
         raise RuntimeError("Stage195 trajectory export forbids state capsules")
+    if (
+        observability_mode == _TRAJECTORY_OBSERVABILITY_STAGE196B1
+        and args.stage191_save_trajectory_state_capsules
+    ):
+        raise RuntimeError("Stage196-B1 trajectory export forbids state capsules")
+
     if type(epoch) is not int or epoch not in range(1, 21):
         raise RuntimeError("Stage191 epoch must be an exact non-bool integer in 1 through 20")
     if isinstance(score, bool) or not isinstance(score, (int, float)) or not math.isfinite(float(score)):
@@ -10477,6 +10659,15 @@ def build_parser() -> argparse.ArgumentParser:
         help=(
             "Stage195-P0 output directory; required only with the Stage195 flag "
             "and must equal the resolved parent of --output-json."
+        ),
+    )
+    parser.add_argument(
+        "--stage196b1-framegate-gradient-ownership-observability",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage196-B1: reuse Stage191 per-epoch clean-dev trajectory exports "
+            "for the frozen FrameGate gradient-ownership seeds without state capsules."
         ),
     )
     # Stage187-A: fixed compatible-positive absolute-margin hinge. Default off.
