@@ -34,6 +34,30 @@ The analyzer requires only `--repo-root`, `--stage195a-dir`,
 `--stage195b-run-root`, `--current-diagnostic-git-commit`, and `--output-dir`.
 It performs no latest, fuzzy, glob, or timestamp discovery.
 
+### Run-identity namespaces
+
+`manifest_run_id` and `trainer_run_name` are distinct namespaces and are never
+compared as if they were the same value.
+
+- `manifest_run_id` is one of the six `seedNNN_baseline|intervention` values. It
+  identifies the Stage195-A manifest row, the Stage195-B immediate child
+  directory, and the `run` column/field in every Stage195-C row-transition and
+  summary output.
+- `trainer_run_name` is exactly `"single"` for the frozen one-run trainer
+  invocation. The `run` field in Stage195-P0 SWA predictions, metrics, and
+  contract belongs to this namespace and must equal `"single"`; it is not the
+  manifest run ID.
+- The frozen Stage191 trajectory prediction eight-key schema and trajectory
+  contract do not currently serialize a `run` field. Their manifest association
+  is therefore proven by the exact run directory, manifest paths, hashes, and
+  exact seed/split/arm contract. If a Stage191 contract exposes a `run` field,
+  it belongs to the trainer namespace and must equal `"single"`; no
+  manifest-run comparison is introduced.
+
+This namespace correction repairs source-schema interpretation only. It changes
+no causal estimand, metric, aggregation, decision taxonomy, or nine-file output
+schema.
+
 ## Path and source-code provenance closure
 
 `stage195a-dir` and `stage195b-run-root` are existing immediate children of

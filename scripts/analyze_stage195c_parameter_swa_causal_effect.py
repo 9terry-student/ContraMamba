@@ -41,6 +41,7 @@ EPOCHS = tuple(range(1, 21))
 SOURCE_EPOCHS = (18, 19, 20)
 ROW_COUNT = 720
 SUPPORT_ROWS = 89
+TRAINER_RUN_NAME = "single"
 
 STAGE195A_OUTPUTS = {
     "stage195a_tail3_parameter_swa_manifest.json",
@@ -505,26 +506,38 @@ def validate_prediction_rows(path: Path, epoch: int, run: str) -> list[dict[str,
     return rows
 
 
-def validate_swa_rows(path: Path, run: str, seed: int, arm: str,
-                      golds: list[str]) -> list[dict[str, Any]]:
+def validate_swa_rows(path: Path, manifest_run_id: str, expected_seed: int,
+                      expected_arm: str, golds: list[str]) -> list[dict[str, Any]]:
     rows = read_jsonl(path)
     if len(rows) != 720:
-        raise ValueError(f"{run}: SWA row count mismatch")
+        raise ValueError(f"{manifest_run_id}: SWA row count mismatch")
     for position, row in enumerate(rows):
-        exact_keys(row, SWA_PREDICTION_KEYS, f"{run} SWA row {position}")
-        required = {"stage": "Stage195-P0", "source": "tail3_trainable_parameter_swa",
-            "run": run, "training_seed": seed, "split_seed": 174, "arm": arm,
-            "source_epochs": [18, 19, 20], "dev_position": position,
-            "gold_final_label": golds[position]}
-        if any(row.get(key) != value for key, value in required.items()) or any(
-                not exact_int(row[key]) for key in ("training_seed", "split_seed", "dev_position")):
-            raise ValueError(f"{run} SWA row {position}: identity/integer mismatch")
-        logits = validate_logits(row["final_logits"], f"{run} SWA row {position}")
+        context = f"{manifest_run_id} SWA row {position}"
+        exact_keys(row, SWA_PREDICTION_KEYS, context)
+        if row["stage"] != "Stage195-P0":
+            raise ValueError(f"{context}: stage mismatch")
+        if row["source"] != "tail3_trainable_parameter_swa":
+            raise ValueError(f"{context}: source mismatch")
+        if row["run"] != TRAINER_RUN_NAME:
+            raise ValueError(f"{context}: trainer run-name mismatch")
+        if not exact_int(row["training_seed"]) or row["training_seed"] != expected_seed:
+            raise ValueError(f"{context}: training-seed mismatch")
+        if not exact_int(row["split_seed"]) or row["split_seed"] != 174:
+            raise ValueError(f"{context}: split-seed mismatch")
+        if row["arm"] != expected_arm:
+            raise ValueError(f"{context}: arm mismatch")
+        if row["source_epochs"] != [18, 19, 20]:
+            raise ValueError(f"{context}: source-epochs mismatch")
+        if not exact_int(row["dev_position"]) or row["dev_position"] != position:
+            raise ValueError(f"{context}: dev-position mismatch")
+        if row["gold_final_label"] != golds[position]:
+            raise ValueError(f"{context}: gold-label alignment mismatch")
+        logits = validate_logits(row["final_logits"], context)
         if row["predicted_final_label"] not in LABELS or row[
                 "predicted_final_label"] != canonical_prediction(logits):
-            raise ValueError(f"{run} SWA row {position}: argmax mismatch")
+            raise ValueError(f"{context}: argmax mismatch")
         if not finite(row["final_ce"]) or float(row["final_ce"]) < 0:
-            raise ValueError(f"{run} SWA row {position}: invalid CE")
+            raise ValueError(f"{context}: invalid CE")
     return rows
 
 
@@ -536,23 +549,33 @@ def validate_runs(manifests: list[dict[str, Any]], run_root: Path,
     data: dict[str, Any] = {}
     global_golds: list[str] | None = None
     for manifest in manifests:
-        run, seed, arm = manifest["run"], manifest["training_seed"], manifest["arm"]
-        run_dir = (run_root / run).resolve()
+        manifest_run_id, seed, arm = manifest["run"], manifest["training_seed"], manifest["arm"]
+        run_dir = (run_root / manifest_run_id).resolve()
+        if Path(manifest["planned_run_directory"]).resolve() != run_dir or not run_dir.is_dir():
+            raise ValueError(f"{manifest_run_id}: manifest run-directory mismatch")
         required_names = {"training_report.json", "stage191_trajectory_contract.json",
             "stage191_trajectory_epoch_metrics.jsonl", "stage195_tail3_parameter_swa_predictions.jsonl",
             "stage195_tail3_parameter_swa_metrics.json", "stage195_tail3_parameter_swa_contract.json"}
         required_names.update(f"stage191_dev_predictions_epoch_{e:03d}.jsonl" for e in EPOCHS)
         missing = sorted(name for name in required_names if not (run_dir / name).is_file())
-        add_gate(closure, "run", run, "required_artifact_closure", [], missing, not missing,
+        add_gate(closure, "run", manifest_run_id, "required_artifact_closure", [], missing, not missing,
                  "required artifact is missing")
         capsules = [p.name for p in run_dir.iterdir() if p.is_file() and re.fullmatch(
             r"stage191_trajectory_state_epoch_[0-9]+\.pt", p.name)]
         weights = [p.name for p in run_dir.iterdir() if p.is_file() and p.suffix.lower() in
             (".pt", ".pth", ".bin", ".safetensors") and "swa" in p.name.lower()]
-        add_gate(closure, "run", run, "zero_capsules_and_swa_weight_artifacts", [],
+        add_gate(closure, "run", manifest_run_id, "zero_capsules_and_swa_weight_artifacts", [],
                  capsules + weights, not capsules and not weights,
                  "state capsule or SWA weight artifact is present")
         contract = read_json(run_dir / "stage191_trajectory_contract.json")
+        if "run" in contract and contract["run"] != TRAINER_RUN_NAME:
+            raise ValueError(f"{manifest_run_id} trajectory contract: trainer run-name mismatch")
+        if not exact_int(contract.get("training_seed")) or contract["training_seed"] != seed:
+            raise ValueError(f"{manifest_run_id} trajectory contract: training-seed mismatch")
+        if not exact_int(contract.get("split_seed")) or contract["split_seed"] != 174:
+            raise ValueError(f"{manifest_run_id} trajectory contract: split-seed mismatch")
+        if contract.get("arm") != arm:
+            raise ValueError(f"{manifest_run_id} trajectory contract: arm mismatch")
         required_contract = {"observability_mode": "stage195_tail3_parameter_swa_causal_test",
             "authorized_training_seeds": [180, 181, 182], "training_seed_authorized": True,
             "training_seed": seed, "split_seed": 174, "arm": arm, "epoch_count": 20,
@@ -572,18 +595,18 @@ def validate_runs(manifests: list[dict[str, Any]], run_root: Path,
             ("training_seed", "split_seed", "epoch_count", "expected_dev_rows",
              "expected_gold_support_rows", "expected_state_capsules",
              "post_training_clean_dev_forward_pass_count"))
-        add_gate(closure, "run", run, "trajectory_contract", required_contract,
+        add_gate(closure, "run", manifest_run_id, "trajectory_contract", required_contract,
                  {key: contract.get(key) for key in required_contract}, contract_ok,
                  "trajectory contract mismatch")
         ledger = read_jsonl(run_dir / "stage191_trajectory_epoch_metrics.jsonl")
         if len(ledger) != 20 or [row.get("epoch") for row in ledger] != list(EPOCHS) or any(
                 not exact_int(row.get("epoch")) for row in ledger):
-            raise ValueError(f"{run}: trajectory ledger is not exact epochs 1--20")
+            raise ValueError(f"{manifest_run_id}: trajectory ledger is not exact epochs 1--20")
         exports = {p.name for p in run_dir.iterdir() if p.is_file() and re.fullmatch(
             r"stage191_dev_predictions_epoch_[0-9]{3}\.jsonl", p.name)}
         expected_exports = {f"stage191_dev_predictions_epoch_{e:03d}.jsonl" for e in EPOCHS}
         if exports != expected_exports:
-            raise ValueError(f"{run}: exact twenty prediction export set mismatch")
+            raise ValueError(f"{manifest_run_id}: exact twenty prediction export set mismatch")
         retained: dict[int, list[dict[str, Any]]] = {}
         run_golds: list[str] | None = None
         source_ids: list[Any] | None = None
@@ -592,37 +615,53 @@ def validate_runs(manifests: list[dict[str, Any]], run_root: Path,
             if (not exact_int(ledger_row.get("dev_row_count")) or ledger_row.get("dev_row_count") != 720
                     or Path(str(ledger_row.get("prediction_export_path", ""))).resolve() != path
                     or ledger_row.get("prediction_export_sha256") != sha256(path)):
-                raise ValueError(f"{run} epoch {epoch}: ledger path/hash/cardinality mismatch")
-            rows = validate_prediction_rows(path, epoch, run)
+                raise ValueError(f"{manifest_run_id} epoch {epoch}: ledger path/hash/cardinality mismatch")
+            rows = validate_prediction_rows(path, epoch, manifest_run_id)
             golds, ids = [row["gold_final_label"] for row in rows], [row["source_row_id"] for row in rows]
             if run_golds is None:
                 run_golds, source_ids = golds, ids
             if golds != run_golds or ids != source_ids:
-                raise ValueError(f"{run} epoch {epoch}: row alignment mismatch")
+                raise ValueError(f"{manifest_run_id} epoch {epoch}: row alignment mismatch")
             if epoch in SOURCE_EPOCHS:
                 retained[epoch] = rows
         if run_golds is None or sum(label == "SUPPORT" for label in run_golds) != 89:
-            raise ValueError(f"{run}: gold SUPPORT cardinality mismatch")
+            raise ValueError(f"{manifest_run_id}: gold SUPPORT cardinality mismatch")
         if global_golds is None:
             global_golds = run_golds
         if run_golds != global_golds:
-            raise ValueError(f"{run}: cross-run gold alignment mismatch")
+            raise ValueError(f"{manifest_run_id}: cross-run gold alignment mismatch")
         swa_path = run_dir / "stage195_tail3_parameter_swa_predictions.jsonl"
         metrics_path = run_dir / "stage195_tail3_parameter_swa_metrics.json"
-        swa_rows = validate_swa_rows(swa_path, run, seed, arm, run_golds)
+        swa_rows = validate_swa_rows(swa_path, manifest_run_id, seed, arm, run_golds)
         metrics = read_json(metrics_path)
-        exact_keys(metrics, SWA_METRIC_KEYS, f"{run} SWA metrics")
+        exact_keys(metrics, SWA_METRIC_KEYS, f"{manifest_run_id} SWA metrics")
+        if metrics["run"] != TRAINER_RUN_NAME:
+            raise ValueError(f"{manifest_run_id} SWA metrics: trainer run-name mismatch")
+        if not exact_int(metrics["training_seed"]) or metrics["training_seed"] != seed:
+            raise ValueError(f"{manifest_run_id} SWA metrics: training-seed mismatch")
+        if not exact_int(metrics["split_seed"]) or metrics["split_seed"] != 174:
+            raise ValueError(f"{manifest_run_id} SWA metrics: split-seed mismatch")
+        if metrics["arm"] != arm:
+            raise ValueError(f"{manifest_run_id} SWA metrics: arm mismatch")
         metric_required = {"stage": "Stage195-P0", "source": "tail3_trainable_parameter_swa",
-            "run": run, "training_seed": seed, "split_seed": 174, "arm": arm,
+            "run": TRAINER_RUN_NAME, "training_seed": seed, "split_seed": 174, "arm": arm,
             "source_epochs": [18, 19, 20], "row_count": 720,
             "canonical_labels": list(LABELS), "logits_source": 'output["logits"]',
             "checkpoint_selection_used": False, "external_data_used": False}
         if any(metrics.get(key) != value for key, value in metric_required.items()) or any(
                 not exact_int(metrics[key]) for key in ("training_seed", "split_seed", "row_count")):
-            raise ValueError(f"{run}: SWA metrics identity mismatch")
+            raise ValueError(f"{manifest_run_id}: SWA metrics identity mismatch")
         swa_contract = read_json(run_dir / "stage195_tail3_parameter_swa_contract.json")
+        if swa_contract.get("run") != TRAINER_RUN_NAME:
+            raise ValueError(f"{manifest_run_id} SWA contract: trainer run-name mismatch")
+        if not exact_int(swa_contract.get("training_seed")) or swa_contract["training_seed"] != seed:
+            raise ValueError(f"{manifest_run_id} SWA contract: training-seed mismatch")
+        if not exact_int(swa_contract.get("split_seed")) or swa_contract["split_seed"] != 174:
+            raise ValueError(f"{manifest_run_id} SWA contract: split-seed mismatch")
+        if swa_contract.get("arm") != arm:
+            raise ValueError(f"{manifest_run_id} SWA contract: arm mismatch")
         contract_required = {"stage": "Stage195-P0", "source": "tail3_trainable_parameter_swa",
-            "run": run, "training_seed": seed, "split_seed": 174, "arm": arm,
+            "run": TRAINER_RUN_NAME, "training_seed": seed, "split_seed": 174, "arm": arm,
             "source_epochs": [18, 19, 20], "source_capture_count": 3,
             "accumulator_dtype": "torch.float64", "accumulator_device": "cpu",
             "averaged_values_cast_to_original_dtype": True, "epoch20_restoration_verified": True,
@@ -636,7 +675,7 @@ def validate_runs(manifests: list[dict[str, Any]], run_root: Path,
                 not exact_int(swa_contract[key]) for key in ("training_seed", "split_seed",
                     "source_capture_count", "post_training_clean_dev_forward_pass_count",
                     "expected_state_capsules", "expected_prediction_rows")):
-            raise ValueError(f"{run}: SWA contract mismatch")
+            raise ValueError(f"{manifest_run_id}: SWA contract mismatch")
         fingerprint_keys = ("epoch18_trainable_parameter_sha256",
             "epoch19_trainable_parameter_sha256", "epoch20_trainable_parameter_sha256",
             "averaged_trainable_parameter_sha256", "restored_epoch20_trainable_parameter_sha256")
@@ -648,14 +687,14 @@ def validate_runs(manifests: list[dict[str, Any]], run_root: Path,
                      and swa_contract.get("metrics_sha256") == sha256(metrics_path)
                      and Path(str(swa_contract.get("predictions_path", ""))).resolve() == swa_path.resolve()
                      and Path(str(swa_contract.get("metrics_path", ""))).resolve() == metrics_path.resolve())
-        add_gate(closure, "run", run, "swa_hash_and_restoration_closure", True,
+        add_gate(closure, "run", manifest_run_id, "swa_hash_and_restoration_closure", True,
                  {"restoration_equal": swa_contract.get("epoch20_trainable_parameter_sha256") ==
                     swa_contract.get("restored_epoch20_trainable_parameter_sha256"),
                   "prediction_sha256": swa_contract.get("predictions_sha256"),
                   "metrics_sha256": swa_contract.get("metrics_sha256")}, hashes_ok,
                  "SWA hash/path/restoration closure mismatch")
-        add_gate(closure, "run", run, "all_twenty_exports_validated", True, True, True, "")
-        data[run] = {"seed": seed, "arm": arm, "epochs": retained, "swa": swa_rows,
+        add_gate(closure, "run", manifest_run_id, "all_twenty_exports_validated", True, True, True, "")
+        data[manifest_run_id] = {"seed": seed, "arm": arm, "epochs": retained, "swa": swa_rows,
                      "metrics": metrics}
     return data
 
