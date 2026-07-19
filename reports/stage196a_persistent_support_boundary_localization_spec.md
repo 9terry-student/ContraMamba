@@ -105,6 +105,27 @@ joining, not synthesized source metadata.  The joined records are exactly 720
 and positions are exactly 0--719.  Every required scalar is finite; probabilities
 are also in [0,1].
 
+Stage115 scalar export is not intrinsically a final-epoch export.
+`clean_dev_predictions.json` and `clean_dev_scalars.jsonl` both come from the
+trainer-selected `_best_dev_predictions` after loading the selected best state.
+Their authoritative `scalar_source_epoch` is `runs["single"]["best_epoch"]`.
+Stage191 epoch 20 and Stage195-C epoch-20 fields are the distinct final-epoch
+snapshot.  Stage196-A loads the exact
+`stage191_dev_predictions_epoch_NNN.jsonl` named by the selected epoch and
+validates the selected trajectory's canonical label/logit alignment, then clean
+predictions and all eight full-channel scalars against that single selected
+snapshot.  Independently, it validates the epoch-20 trajectory
+against Stage195-C epoch-20 labels and logits.  A selected prediction may differ
+from epoch 20 without source corruption.
+
+Localization is scientifically runnable only when the selected scalar epoch is
+one of the frozen tail3 source epochs 18, 19, or 20.  A selected epoch outside
+that set BLOCKS instead of mixing its full-channel scalars with an epoch-20
+frame logit or persistent-tail evidence.  Selected and epoch-20 trajectories
+must retain identical gold/source-row identity.  Stage115's six-decimal native
+frame-logit serialization must equal the selected trajectory frame logit under
+the trainer's exact `round(value, 6)` rule.
+
 The Stage195-B training report does not use top-level `training_seed` or
 `resolved_split_seed` as authoritative identity fields.  Its authoritative
 training/split identity is the exact `split_seed_contract` and `configuration`

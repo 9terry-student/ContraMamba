@@ -284,11 +284,12 @@ def metadata_value(row: dict[str, Any], keys: Sequence[str]) -> Any:
         if k in row and row[k] is not None: return row[k]
     return None
 
-def validate_run_sources(root: Path, stage_rows: list[dict[str, Any]], closure: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
+def validate_run_sources(root: Path, stage_rows: list[dict[str, Any]], closure: list[dict[str, Any]]) -> tuple[dict[str, list[dict[str, Any]]], dict[str, int]]:
     entries = [p.name for p in root.iterdir()]
     if set(entries) != set(RUNS) or any(not (root / r).is_dir() for r in RUNS): raise ValueError("Stage195-B exact six-run root mismatch")
     stage_by_run = {r: sorted((x for x in stage_rows if x["run"] == r), key=lambda x: x["dev_position"]) for r in RUNS}
     out = {}
+    scalar_source_epochs: dict[str, int] = {}
     for run in RUNS:
         seed = int(run[4:7]); arm = run.split("_", 1)[1]; d = (root / run).resolve()
         needed = ("clean_dev_scalars.jsonl", "clean_dev_predictions.json", "training_report.json",
@@ -369,9 +370,25 @@ def validate_run_sources(root: Path, stage_rows: list[dict[str, Any]], closure: 
             raise ValueError(f"{run}: trainer run-name mismatch")
         if not exact_int(trainer_single.get("final_epoch")) or trainer_single["final_epoch"] != 20:
             raise ValueError(f"{run}: trainer final-epoch mismatch")
-        if (not exact_int(trainer_single.get("best_epoch"))
-                or not 1 <= trainer_single["best_epoch"] <= 20):
+        scalar_source_epoch = trainer_single.get("best_epoch")
+        if not exact_int(scalar_source_epoch) or not 1 <= scalar_source_epoch <= 20:
             raise ValueError(f"{run}: trainer best-epoch mismatch")
+        if scalar_source_epoch not in (18, 19, 20):
+            raise ValueError(
+                f"{run}: selected scalar epoch {scalar_source_epoch} is outside frozen tail3 "
+                "source epochs [18, 19, 20]; frozen artifacts do not contain a valid "
+                "full-channel tail3 scalar snapshot"
+            )
+        scalar_source_epochs[run] = scalar_source_epoch
+        gate(closure, "run", run, "selected_scalar_epoch_in_tail3", [18, 19, 20],
+             scalar_source_epoch, True, "")
+        selected_trajectory_path = d / f"stage191_dev_predictions_epoch_{scalar_source_epoch:03d}.jsonl"
+        gate(closure, "run", run, "selected_trajectory_file_present", True,
+             selected_trajectory_path.is_file(), selected_trajectory_path.is_file(),
+             "selected trajectory file missing")
+        selected_trajectory = epoch20 if scalar_source_epoch == 20 else read_jsonl(selected_trajectory_path)
+        if len(selected_trajectory) != ROW_COUNT:
+            raise ValueError(f"{run}: selected trajectory cardinality mismatch")
         scalar_path = training.get("stage115_clean_dev_scalar_output_jsonl")
         if scalar_path is None or Path(str(scalar_path)).resolve() != (d / needed[0]).resolve():
             raise ValueError(f"{run}: training report scalar path mismatch")
@@ -379,23 +396,68 @@ def validate_run_sources(root: Path, stage_rows: list[dict[str, Any]], closure: 
         if not exact_int(prediction_seed) or prediction_seed != seed:
             raise ValueError(f"{run}: clean prediction training-seed mismatch")
         joined = []
-        for pos, (s, p, e, c) in enumerate(zip(scalars, preds, epoch20, stage_by_run[run])):
+        trajectory_schema = {"epoch", "dev_position", "source_row_id", "gold_final_label",
+            "predicted_final_label", "final_logits", "final_ce", "frame_logit"}
+        for pos, (s, p, epoch20_row, selected_row, c) in enumerate(
+                zip(scalars, preds, epoch20, selected_trajectory, stage_by_run[run])):
             scalar_base = {"id", "claim", "evidence", "gold_label", "prediction",
                            "frame_logit", "frame_prob", "score_source"}
             if not scalar_base.issubset(s) or "dev_position" in s or s.get("score_source") != 'direct output["frame_logit"]':
                 raise ValueError(f"{run}:{pos}: Stage115 physical scalar schema mismatch")
-            if set(e) != {"epoch", "dev_position", "source_row_id", "gold_final_label", "predicted_final_label", "final_logits", "final_ce", "frame_logit"}:
-                raise ValueError(f"{run}:{pos}: Stage191 exact schema mismatch")
-            if e["epoch"] != 20 or e["dev_position"] != pos or c["dev_position"] != pos:
-                raise ValueError(f"{run}:{pos}: position mismatch")
-            if e["gold_final_label"] != c["gold_label"] or e["predicted_final_label"] != c["epoch20_prediction"] or logits(e["final_logits"], "epoch20") != logits(c["epoch20_logits"], "stage195c"):
-                raise ValueError(f"{run}:{pos}: epoch20 alignment mismatch")
+
+            if set(epoch20_row) != trajectory_schema:
+                raise ValueError(f"{run}:{pos}: epoch20 trajectory schema mismatch")
+            if (not exact_int(epoch20_row.get("epoch")) or epoch20_row["epoch"] != 20
+                    or not exact_int(epoch20_row.get("dev_position"))
+                    or epoch20_row["dev_position"] != pos or c["dev_position"] != pos):
+                raise ValueError(f"{run}:{pos}: epoch20 trajectory position mismatch")
+            if epoch20_row["gold_final_label"] != c["gold_label"]:
+                raise ValueError(f"{run}:{pos}: epoch20 gold-label mismatch")
+            if epoch20_row["predicted_final_label"] != c["epoch20_prediction"]:
+                raise ValueError(f"{run}:{pos}: epoch20 trajectory/Stage195-C prediction mismatch")
+            if logits(epoch20_row["final_logits"], "epoch20") != logits(c["epoch20_logits"], "stage195c"):
+                raise ValueError(f"{run}:{pos}: epoch20 trajectory/Stage195-C logits mismatch")
+
+            if set(selected_row) != trajectory_schema:
+                raise ValueError(f"{run}:{pos}: selected trajectory schema mismatch")
+            if (not exact_int(selected_row.get("epoch"))
+                    or selected_row["epoch"] != scalar_source_epoch):
+                raise ValueError(f"{run}:{pos}: selected trajectory epoch mismatch")
+            if (not exact_int(selected_row.get("dev_position"))
+                    or selected_row["dev_position"] != pos):
+                raise ValueError(f"{run}:{pos}: selected trajectory position mismatch")
+            if selected_row["source_row_id"] != epoch20_row["source_row_id"]:
+                raise ValueError(f"{run}:{pos}: selected/epoch20 source-row identity mismatch")
+            if (selected_row["gold_final_label"] != epoch20_row["gold_final_label"]
+                    or selected_row["gold_final_label"] != c["gold_label"]):
+                raise ValueError(f"{run}:{pos}: selected gold-label mismatch")
+            selected_logits = logits(selected_row["final_logits"], "selected trajectory")
+            if selected_row["predicted_final_label"] != canonical(selected_logits):
+                raise ValueError(f"{run}:{pos}: selected trajectory label/logit mismatch")
+
             pid = metadata_value(p, ("id",)); sid = metadata_value(s, ("id",))
-            if pid is None or sid is None or str(pid) != str(sid): raise ValueError(f"{run}:{pos}: scalar/prediction ID mismatch")
+            if pid is None or sid is None or str(pid) != str(sid):
+                raise ValueError(f"{run}:{pos}: clean prediction/scalar ID mismatch")
+            if selected_row["source_row_id"] is None or str(pid) != str(selected_row["source_row_id"]):
+                raise ValueError(f"{run}:{pos}: selected trajectory/clean source-row identity mismatch")
+            for text_key in ("claim", "evidence"):
+                if (p.get(text_key) is not None and s.get(text_key) is not None
+                        and p[text_key] != s[text_key]):
+                    raise ValueError(f"{run}:{pos}: clean prediction/scalar {text_key} mismatch")
             gold = metadata_value(p, ("gold_label", "gold_final_label"))
-            pred = metadata_value(p, ("pred_label", "pred_final_label", "prediction"))
-            if gold != c["gold_label"] or pred != c["epoch20_prediction"] or s.get("gold_label") != gold or s.get("prediction") != pred:
-                raise ValueError(f"{run}:{pos}: scalar prediction alignment mismatch")
+            if gold != selected_row["gold_final_label"] or s.get("gold_label") != gold:
+                raise ValueError(f"{run}:{pos}: selected gold-label mismatch")
+            clean_prediction = metadata_value(p, ("pred_label", "pred_final_label", "prediction"))
+            scalar_prediction = s.get("prediction")
+            if clean_prediction != scalar_prediction:
+                raise ValueError(f"{run}:{pos}: clean prediction/scalar mutual prediction mismatch")
+            if clean_prediction != selected_row["predicted_final_label"]:
+                raise ValueError(f"{run}:{pos}: selected trajectory prediction mismatch")
+            if (not finite(selected_row["frame_logit"])
+                    or not finite(s.get("frame_logit"))
+                    or float(s["frame_logit"]) != round(float(selected_row["frame_logit"]), 6)):
+                raise ValueError(f"{run}:{pos}: selected frame-logit mismatch")
+
             values = {}
             for key in SCALARS:
                 value = s.get(key)
@@ -405,8 +467,11 @@ def validate_run_sources(root: Path, stage_rows: list[dict[str, Any]], closure: 
             joined.append({**values, "stable_example_identity": metadata_value(p, ("stable_id", "id", "source_id")),
                 "pair_id": metadata_value(p, ("pair_id",)),
                 "intervention_type": metadata_value(p, ("intervention_type", "intervention", "normalized_intervention")),
-                "source_row_id": e["source_row_id"], "gold_label": e["gold_final_label"]})
+                "source_row_id": selected_row["source_row_id"], "gold_label": selected_row["gold_final_label"]})
         out[run] = joined
+        gate(closure, "run", run, "selected_trajectory_schema", True, True, True, "")
+        gate(closure, "run", run, "selected_scalar_prediction_alignment", True, True, True, "")
+        gate(closure, "run", run, "epoch20_trajectory_stage195c_alignment", True, True, True, "")
         gate(closure, "run", run, "scalar_schema_identity_alignment", True, True, True, "")
     for pos in range(ROW_COUNT):
         identities = {(out[r][pos]["source_row_id"], out[r][pos]["stable_example_identity"],
@@ -415,7 +480,7 @@ def validate_run_sources(root: Path, stage_rows: list[dict[str, Any]], closure: 
         if len(identities) != 1:
             raise ValueError(f"dev position {pos}: cross-run source identity mismatch")
     gate(closure, "source", "", "cross_run_dev_order_identity", True, True, True, "")
-    return out
+    return out, scalar_source_epochs
 
 def mechanism(v: dict[str, float]) -> tuple[str, dict[str, bool]]:
     passes = {"frame_pass": v["frame_prob"] >= .5, "predicate_pass": v["predicate_coverage_prob"] >= .5,
@@ -444,7 +509,8 @@ def stats(values: Sequence[float]) -> dict[str, Any]:
 
 def analyze(a: argparse.Namespace, tables: dict[str, list[dict[str, Any]]]) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     repo, cdir, root, _ = safe_paths(a); validate_code(repo, a.current_diagnostic_git_commit, tables["closure"])
-    source_rows = validate_stage195c(cdir, tables["closure"]); scalars = validate_run_sources(root, source_rows, tables["closure"])
+    source_rows = validate_stage195c(cdir, tables["closure"])
+    scalars, scalar_source_epochs = validate_run_sources(root, source_rows, tables["closure"])
     all_rows = []; population_rows = {}; bucket_counts = Counter()
     for run in RUNS:
         rows = sorted((x for x in source_rows if x["run"] == run), key=lambda x: x["dev_position"])
@@ -565,6 +631,8 @@ def analyze(a: argparse.Namespace, tables: dict[str, list[dict[str, Any]]]) -> t
         "training_performed":False,"model_loaded":False,"tokenizer_loaded":False,"checkpoint_loaded":False,"state_capsule_loaded":False,"gpu_used":False,
         "stage196a_runtime_repository_commit":a.current_diagnostic_git_commit,"stage195c_runtime_repository_commit":STAGE195C_COMMIT,
         "ordered_runs":list(RUNS),"split_seed":174,"persistent_row_count":127,"native_channel_threshold":.5,
+        "scalar_snapshot_semantics":"trainer_selected_best_epoch","authorized_scalar_source_epochs":[18,19,20],
+        "scalar_source_epoch_by_run":scalar_source_epochs,
         "primary_estimands":{"pooled_mechanism_bucket_counts":dict(pooled),"recurrent_persistent_position_count_by_arm":recurring,
             "universal_persistent_position_count_by_arm":universal,"all_local_channels_pass_share":sum(x["all_local_channels_pass"] for x in all_rows)/127,
             "entitlement_aggregation_failure_share":pooled[BUCKETS[4]]/127,"final_composition_boundary_failure_share":pooled[BUCKETS[5]]/127,
@@ -585,7 +653,8 @@ def blocked_report(a: argparse.Namespace, exc: BaseException) -> dict[str, Any]:
         "artifact_only_analysis":True,"training_performed":False,"model_loaded":False,"tokenizer_loaded":False,"checkpoint_loaded":False,
         "state_capsule_loaded":False,"gpu_used":False,"stage196a_runtime_repository_commit":a.current_diagnostic_git_commit,
         "stage195c_runtime_repository_commit":STAGE195C_COMMIT,"ordered_runs":list(RUNS),"split_seed":174,"persistent_row_count":0,
-        "native_channel_threshold":.5,"primary_estimands":{},"logit_margin_diagnostics":{},
+        "native_channel_threshold":.5,"scalar_snapshot_semantics":"trainer_selected_best_epoch",
+        "authorized_scalar_source_epochs":[18,19,20],"scalar_source_epoch_by_run":{},"primary_estimands":{},"logit_margin_diagnostics":{},
         "pair_level_none_paraphrase_analysis":{"status":"not_available_from_frozen_source_schema"},"cross_arm_recurrence":{},
         "decision_taxonomy":{"selected_decision":BLOCKED},"new_architecture_selected":False,"new_loss_authorized":False,
         "new_intervention_implemented":False,"external_data_used":False,"calibration_authorized":False,
