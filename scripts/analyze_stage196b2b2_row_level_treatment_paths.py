@@ -91,6 +91,15 @@ def contract_ok(rows:list[dict[str,str]])->bool:return bool(rows) and all(boolea
 def exact_dir(d:Path,names:Sequence[str],label:str,gs:list[dict[str,Any]])->None:
  obs=sorted(x.name for x in d.iterdir()); req=sorted(names)
  gate(gs,"source","",label,req,obs,obs==req and all((d/x).is_file() for x in names),f"{label} exact closure failed")
+def exact_sidecars(d:Path,names:Sequence[str],label:str,gs:list[dict[str,Any]])->None:
+ expected=set(names); pattern=re.compile(r"^stage196b2p0_epoch_channels_[0-9]{3}\.jsonl$")
+ matched=[p for p in d.iterdir() if p.is_file() and pattern.fullmatch(p.name)]
+ observed={p.name for p in matched}; resolved={p.resolve() for p in matched}
+ evidence={"expected_names":sorted(expected),"observed_names":sorted(observed),
+           "missing_names":sorted(expected-observed),"unexpected_names":sorted(observed-expected),
+           "matched_file_count":len(matched),"unique_resolved_file_count":len(resolved)}
+ ok=len(matched)==20 and len(resolved)==20 and observed==expected
+ gate(gs,"source","",label,sorted(expected),evidence,ok,f"{label} exact closure failed")
 def cvalue(rows:list[dict[str,str]],name:str,col:str)->Any:
  vs=[cell(r.get(col,"")) for r in rows if r.get("gate")==name]
  if not vs or any(x!=vs[0] for x in vs):raise ValueError(f"contract {name}/{col} missing or nonuniform")
@@ -175,7 +184,7 @@ def load_runs(ctx:dict[str,Any],gs:list[dict[str,Any]])->dict[str,dict[int,dict[
  root=ctx["run_root"]; obs=sorted(x.name for x in root.iterdir()); gate(gs,"p0","","exact_six_runs",sorted(RUNS),obs,obs==sorted(RUNS) and all((root/x).is_dir() for x in RUNS),"P0 run closure mismatch")
  runs={}
  for run in RUNS:
-  s=int(run[4:7]); mode=run[8:]; d=root/run; names=[f"stage196b2p0_epoch_channels_{e:03d}.jsonl" for e in EPOCHS]; exact_dir(d,names,f"{run}_exact_20_sidecars",gs); eps={}; ref=None
+  s=int(run[4:7]); mode=run[8:]; d=root/run; names=[f"stage196b2p0_epoch_channels_{e:03d}.jsonl" for e in EPOCHS]; exact_sidecars(d,names,f"{run}_exact_20_sidecars",gs); eps={}; ref=None
   gate(gs,"provenance",run,"p0_runtime_commit",P0_COMMIT,ctx["normalized"]["stage196b2p0_runtime_git_commit"],ctx["normalized"]["stage196b2p0_runtime_git_commit"]==P0_COMMIT,f"{run}: P0 runtime provenance mismatch")
   for e,name in zip(EPOCHS,names):
    raw=jlread(d/name); gate(gs,"p0",run,f"epoch_{e:03d}_720_rows",ROW_COUNT,len(raw),len(raw)==ROW_COUNT,f"{run} epoch row count mismatch")
