@@ -105,14 +105,34 @@ joining, not synthesized source metadata.  The joined records are exactly 720
 and positions are exactly 0--719.  Every required scalar is finite; probabilities
 are also in [0,1].
 
-Training report and trajectory/SWA contracts must establish training seed,
-split seed, arm, run-directory identity, the trainer-internal `"single"`
-namespace, no external/OOD use and no `time_swap` in main clean data.  Manifest
-run IDs remain the six external directory names and are never compared to the
-trainer run name.  Stable identity uses an actually serialized `id`/`stable_id`/
-`source_id`; pair ID and intervention type use actually serialized fields.
-Missing metadata is output as null, never guessed.  Pair analysis is unavailable,
-not blocking, unless both pair ID and intervention type are present and usable.
+The Stage195-B training report does not use top-level `training_seed` or
+`resolved_split_seed` as authoritative identity fields.  Its authoritative
+training/split identity is the exact `split_seed_contract` and `configuration`
+dictionaries.  The split contract freezes the training seed, configured and
+resolved split seed 174, explicit fixed-split policy, and 2,880/720 clean-main
+train/dev cardinalities.  Configuration independently freezes the training and
+deterministic seed fields, configured/resolved split, architecture, backbone,
+model, CUDA device, and external/time-swap denials.  These identities must agree
+with the manifest-derived seed, clean-prediction metadata, Stage195-C rows, and
+SWA contract.
+
+Top-level `runs` is a separate dictionary with exact key `"single"`.
+`runs["single"]` is the trainer-internal namespace and records
+`run_name="single"`, final epoch 20, and a valid best epoch.  Manifest run IDs
+such as `seed180_baseline` remain external run-directory identities and are
+never required as trainer run names.  The training report's Stage115 scalar
+path must still resolve exactly to that external run directory's
+`clean_dev_scalars.jsonl`.  No external/OOD use or `time_swap` main-clean use is
+allowed.
+
+Stable identity uses an actually serialized `id`/`stable_id`/`source_id`; pair
+ID and intervention type use actually serialized fields.  Missing metadata is
+output as null, never guessed.  Pair analysis is unavailable, not blocking,
+unless both pair ID and intervention type are present and usable.
+
+This training-report namespace correction changes no 127-row persistent
+population, scalar join, native threshold 0.5, mechanism bucket, recurrence
+logic, Stage196-A decision taxonomy, or exact nine-output schema.
 
 ## Populations and native channel localization
 

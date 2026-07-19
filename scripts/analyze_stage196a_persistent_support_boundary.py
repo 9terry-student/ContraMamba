@@ -297,26 +297,86 @@ def validate_run_sources(root: Path, stage_rows: list[dict[str, Any]], closure: 
         gate(closure, "run", run, "required_scalar_source_files", [], missing, not missing, "required source file missing")
         scalars = read_jsonl(d / needed[0]); pred_obj = read_json(d / needed[1]); training = read_json(d / needed[2])
         epoch20 = read_jsonl(d / needed[3]); contract = read_json(d / needed[4])
+        if type(training) is not dict:
+            raise ValueError(f"{run}: training report top-level type mismatch")
+        configuration = training.get("configuration")
+        if type(configuration) is not dict:
+            raise ValueError(f"{run}: configuration missing/not object")
+        split_contract = training.get("split_seed_contract")
+        if type(split_contract) is not dict:
+            raise ValueError(f"{run}: split-seed contract missing/not object")
+        trainer_runs = training.get("runs")
+        if type(trainer_runs) is not dict:
+            raise ValueError(f"{run}: runs container missing/not object")
         if (type(pred_obj) is not dict or set(pred_obj) != {"metadata", "predictions"}
                 or type(pred_obj["metadata"]) is not dict or type(pred_obj["predictions"]) is not list):
             raise ValueError(f"{run}: clean prediction top-level schema mismatch")
         preds = pred_obj["predictions"]
         if any(len(x) != ROW_COUNT for x in (scalars, preds, epoch20)): raise ValueError(f"{run}: 720-row source cardinality mismatch")
-        if (contract.get("run") != TRAINER_RUN or contract.get("training_seed") != seed
-                or contract.get("split_seed") != 174 or contract.get("arm") != arm
-                or contract.get("external_data_used") is not False):
+        if (contract.get("run") != TRAINER_RUN
+                or not exact_int(contract.get("training_seed")) or contract["training_seed"] != seed
+                or not exact_int(contract.get("split_seed")) or contract["split_seed"] != 174
+                or contract.get("arm") != arm or contract.get("external_data_used") is not False):
             raise ValueError(f"{run}: SWA contract identity mismatch")
-        if training.get("training_seed") != seed or training.get("resolved_split_seed") != 174 or "single" not in training.get("runs", {}):
-            raise ValueError(f"{run}: training report identity mismatch")
-        if not nested_false(training, ("time_swap_used_in_main_clean_data", "time_swap_used_in_v7_main_clean_data")):
-            raise ValueError(f"{run}: time_swap main-clean denial missing")
-        forbidden_true = ("external_data_used", "external_data_used_for_training", "external_examples_used")
-        if any(training.get(k) is True or training.get("configuration", {}).get(k) is True for k in forbidden_true):
-            raise ValueError(f"{run}: external/OOD use recorded")
+        if not exact_int(split_contract.get("training_seed")) or split_contract["training_seed"] != seed:
+            raise ValueError(f"{run}: split-contract training-seed mismatch")
+        if (not exact_int(split_contract.get("configured_split_seed"))
+                or split_contract["configured_split_seed"] != 174):
+            raise ValueError(f"{run}: split-contract configured-split-seed mismatch")
+        if (not exact_int(split_contract.get("resolved_split_seed"))
+                or split_contract["resolved_split_seed"] != 174):
+            raise ValueError(f"{run}: split-contract resolved-split-seed mismatch")
+        if (split_contract.get("split_seed_explicit") is not True
+                or split_contract.get("split_policy") != "fixed_explicit_split_seed"):
+            raise ValueError(f"{run}: split policy mismatch")
+        if (not exact_int(split_contract.get("clean_main_train_rows"))
+                or split_contract["clean_main_train_rows"] != 2880
+                or not exact_int(split_contract.get("clean_main_dev_rows"))
+                or split_contract["clean_main_dev_rows"] != 720):
+            raise ValueError(f"{run}: split-contract clean-main row-count mismatch")
+        if not exact_int(configuration.get("training_seed")) or configuration["training_seed"] != seed:
+            raise ValueError(f"{run}: configuration training-seed mismatch")
+        deterministic_seed_fields = ("seed", "random_seed", "data_seed", "torch_seed", "numpy_seed", "cuda_seed")
+        if any(not exact_int(configuration.get(key)) or configuration[key] != seed
+               for key in deterministic_seed_fields):
+            raise ValueError(f"{run}: deterministic seed-field mismatch")
+        if (not exact_int(configuration.get("configured_split_seed"))
+                or configuration["configured_split_seed"] != 174
+                or not exact_int(configuration.get("resolved_split_seed"))
+                or configuration["resolved_split_seed"] != 174
+                or configuration.get("split_seed_explicit") is not True
+                or configuration.get("split_policy") != "fixed_explicit_split_seed"):
+            raise ValueError(f"{run}: configuration split-seed mismatch")
+        expected_runtime = {"architecture": "v6b_minimal", "backbone": "mamba",
+            "model_name": "state-spaces/mamba-130m-hf", "device": "cuda"}
+        if any(configuration.get(key) != value for key, value in expected_runtime.items()):
+            raise ValueError(f"{run}: architecture/backbone/model/device mismatch")
+        if any(configuration.get(key) is not False for key in
+               ("time_swap_used", "time_swap_used_in_main_clean_data",
+                "time_swap_used_in_v7_main_clean_data")):
+            raise ValueError(f"{run}: time-swap denial mismatch")
+        if any(configuration.get(key) is not False for key in
+               ("external_data_used_for_training", "external_metrics_used_for_threshold_tuning")):
+            raise ValueError(f"{run}: external-data denial mismatch")
+        if "single" not in trainer_runs:
+            raise ValueError(f"{run}: trainer single-run missing")
+        if set(trainer_runs) != {"single"}:
+            raise ValueError(f"{run}: trainer single-run key-set mismatch")
+        trainer_single = trainer_runs["single"]
+        if type(trainer_single) is not dict:
+            raise ValueError(f"{run}: trainer single-run record is not an object")
+        if trainer_single.get("run_name") != TRAINER_RUN:
+            raise ValueError(f"{run}: trainer run-name mismatch")
+        if not exact_int(trainer_single.get("final_epoch")) or trainer_single["final_epoch"] != 20:
+            raise ValueError(f"{run}: trainer final-epoch mismatch")
+        if (not exact_int(trainer_single.get("best_epoch"))
+                or not 1 <= trainer_single["best_epoch"] <= 20):
+            raise ValueError(f"{run}: trainer best-epoch mismatch")
         scalar_path = training.get("stage115_clean_dev_scalar_output_jsonl")
         if scalar_path is None or Path(str(scalar_path)).resolve() != (d / needed[0]).resolve():
-            raise ValueError(f"{run}: training report scalar-path/run-directory mismatch")
-        if pred_obj["metadata"].get("seed") != seed:
+            raise ValueError(f"{run}: training report scalar path mismatch")
+        prediction_seed = pred_obj["metadata"].get("seed")
+        if not exact_int(prediction_seed) or prediction_seed != seed:
             raise ValueError(f"{run}: clean prediction training-seed mismatch")
         joined = []
         for pos, (s, p, e, c) in enumerate(zip(scalars, preds, epoch20, stage_by_run[run])):
