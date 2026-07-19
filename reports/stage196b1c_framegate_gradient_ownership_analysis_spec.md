@@ -47,6 +47,17 @@ Every run must declare direct frame loss active at weight 1.0, unchanged forward
 | `joint` | `false` |
 | `frame_local_only` | `true` |
 
+### Provenance-source ownership
+
+Runtime provenance is validated against explicit source ownership; the training report and trajectory contract are not treated as identical schemas.
+
+The authoritative training report owns `training_seed`, `configured_split_seed`, `resolved_split_seed`, `split_seed_explicit`, `split_policy`, `backbone`, `model_name`, `architecture`, `device`, `epochs`, `freeze_encoder`, `freeze_a_log`, `shared_encoder_trainable`, `shared_encoder_gradient_fully_isolated`, `shared_encoder_isolation_source`, `framegate_gradient_ownership_intervention_changed_encoder_freeze_state`, `frame_downstream_gradient_mode`, `frame_direct_loss_active`, `frame_direct_loss_weight`, `frame_downstream_forward_value_changed`, and `framegate_nonframe_output_gradient_blocked`. Deliberately duplicated values within the training report must be uniform. Split provenance is authoritative in `split_seed_contract`; every split field is required there, and any duplicate below `configuration` is cross-checked.
+The epoch count is read from the report's exact single-run closure at `runs.single.final_epoch`; the remaining non-split runtime fields are resolved within `configuration`.
+
+The frozen trajectory contract owns `observability_mode`, `stage191_trajectory_observability_implementation_reused`, `authorized_training_seeds`, `training_seed_authorized`, `arm`, `frame_downstream_gradient_mode`, `framegate_nonframe_output_gradient_blocked`, `freeze_encoder`, `freeze_a_log`, `shared_encoder_trainable`, `shared_encoder_gradient_fully_isolated`, `shared_encoder_isolation_source`, `framegate_gradient_ownership_intervention_changed_encoder_freeze_state`, `state_capsule_saving_enabled`, `expected_state_capsules`, `compatible_positive_margin_enabled`, `sidecar_accessed`, `parameter_swa_enabled`, `training_semantics_changed_by_observability`, and `extra_forward_pass_performed_by_observability`. Its existing run identity, cardinality, source-commit, enabled-flag, split-seed, and external-data gates remain required.
+
+Fields intentionally present in both sources are required to equal each other and the frozen expected value: `frame_downstream_gradient_mode`, `framegate_nonframe_output_gradient_blocked`, `freeze_encoder`, `freeze_a_log`, `shared_encoder_trainable`, `shared_encoder_gradient_fully_isolated`, `shared_encoder_isolation_source`, and `framegate_gradient_ownership_intervention_changed_encoder_freeze_state`. Missing `configured_split_seed`, `resolved_split_seed`, `split_seed_explicit`, `split_policy`, `backbone`, `model_name`, `architecture`, `device`, `epochs`, `frame_direct_loss_active`, `frame_direct_loss_weight`, or `frame_downstream_forward_value_changed` in the trajectory contract is valid because those fields remain fail-closed against the training report.
+
 Compatible-positive margin, Stage195 parameter SWA, state capsules, external evaluation, external training, bridge training, time swap, and external threshold metrics must be absent or false as appropriate. Each run requires exactly 720 selected predictions, 720 scalar rows, 20 epoch prediction exports of 720 rows each, and 20 trajectory-ledger rows. The selected best epochs are provenance invariants (20, 20, 18, 13, 20, 20 in canonical run order), but best-epoch movement does not enter the causal rule.
 
 ## Stage196-A source closure
@@ -166,6 +177,8 @@ The output directory must be absent or empty. The analyzer creates exactly:
 8. `stage196b1c_contract.csv`
 
 An analysis failure still writes this exact closure: an incomplete JSON/Markdown report, empty data CSVs with headers, and the accumulated failing contract ledger. Runtime or analysis failure is never converted into scientific evidence.
+
+The contract CSV exposes source ownership with separate per-run gates for `training_report_runtime_provenance`, `training_report_split_provenance`, `trajectory_observability_provenance`, and `cross_source_gradient_ownership_provenance`. A gate reports only the source or sources it actually inspected; it never attributes training-only split or configuration validation to the trajectory contract.
 
 ## Interpretation and next stage
 

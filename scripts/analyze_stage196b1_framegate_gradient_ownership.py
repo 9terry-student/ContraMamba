@@ -107,6 +107,39 @@ EPOCH_HEADER = ["run", "seed", "arm", "frame_downstream_gradient_mode", "epoch",
                 "persistent_tail_membership_precursor_count",
                 "persistent_tail_membership_precursor_definition"]
 CONTRACT_HEADER = ["scope", "run", "gate", "required", "observed", "passed", "blocking_reason"]
+TRAINING_REPORT_EXPECTED = {
+    "configured_split_seed": SPLIT_SEED, "resolved_split_seed": SPLIT_SEED,
+    "split_seed_explicit": True, "split_policy": "fixed_explicit_split_seed",
+    "backbone": "mamba", "model_name": "state-spaces/mamba-130m-hf",
+    "architecture": "v6b_minimal", "device": "cuda", "epochs": EPOCH_COUNT,
+    "freeze_encoder": True, "freeze_a_log": True, "shared_encoder_trainable": False,
+    "shared_encoder_gradient_fully_isolated": True,
+    "shared_encoder_isolation_source": "frozen_runtime_configuration",
+    "framegate_gradient_ownership_intervention_changed_encoder_freeze_state": False,
+    "frame_direct_loss_active": True, "frame_direct_loss_weight": 1.0,
+    "frame_downstream_forward_value_changed": False,
+}
+TRAJECTORY_CONTRACT_EXPECTED = {
+    "observability_mode": "stage196b1_framegate_gradient_ownership",
+    "stage191_trajectory_observability_implementation_reused": True,
+    "authorized_training_seeds": list(SEEDS), "training_seed_authorized": True,
+    "freeze_encoder": True, "freeze_a_log": True, "shared_encoder_trainable": False,
+    "shared_encoder_gradient_fully_isolated": True,
+    "shared_encoder_isolation_source": "frozen_runtime_configuration",
+    "framegate_gradient_ownership_intervention_changed_encoder_freeze_state": False,
+    "state_capsule_saving_enabled": False, "expected_state_capsules": 0,
+    "compatible_positive_margin_enabled": False, "sidecar_accessed": False,
+    "parameter_swa_enabled": False, "training_semantics_changed_by_observability": False,
+    "extra_forward_pass_performed_by_observability": False,
+}
+CROSS_SOURCE_FIELDS = (
+    "frame_downstream_gradient_mode", "framegate_nonframe_output_gradient_blocked",
+    "freeze_encoder", "freeze_a_log", "shared_encoder_trainable",
+    "shared_encoder_gradient_fully_isolated", "shared_encoder_isolation_source",
+    "framegate_gradient_ownership_intervention_changed_encoder_freeze_state",
+)
+SPLIT_PROVENANCE_FIELDS = (
+    "configured_split_seed", "resolved_split_seed", "split_seed_explicit", "split_policy")
 
 
 def parse_args() -> argparse.Namespace:
@@ -201,6 +234,13 @@ def require_value(value: Any, key: str, expected: Any, context: str) -> None:
     observed = recursive_values(value, key)
     if not observed or any(item != expected for item in observed):
         raise ValueError(f"{context}: {key} must be uniformly {expected!r}; got {observed!r}")
+
+
+def collect_expected(value: Any, expected: dict[str, Any]) -> tuple[dict[str, list[Any]], list[str]]:
+    observed = {key: recursive_values(value, key) for key in expected}
+    failures = [key for key, wanted in expected.items()
+                if not observed[key] or any(item != wanted for item in observed[key])]
+    return observed, failures
 
 
 def parse_bool(value: str, context: str) -> bool:
@@ -331,30 +371,74 @@ def metrics(rows: Sequence[dict[str, Any]]) -> dict[str, Any]:
             "confusion": confusion}
 
 
-def validate_runtime(run: str, seed: int, mode: str, report: dict[str, Any], contract: dict[str, Any]) -> None:
+def validate_runtime(run: str, seed: int, mode: str, report: dict[str, Any],
+                     contract: dict[str, Any], gates: list[dict[str, Any]]) -> None:
     config = report.get("configuration"); split = report.get("split_seed_contract"); trainer = report.get("runs")
     if type(config) is not dict or type(split) is not dict or type(trainer) is not dict:
         raise ValueError(f"{run}: report containers absent")
     if set(trainer) != {"single"} or type(trainer["single"]) is not dict:
         raise ValueError(f"{run}: exact single-run closure mismatch")
-    expected = {"training_seed": seed, "configured_split_seed": 174, "resolved_split_seed": 174,
-                "split_seed_explicit": True, "split_policy": "fixed_explicit_split_seed",
-                "backbone": "mamba", "model_name": "state-spaces/mamba-130m-hf",
-                "architecture": "v6b_minimal", "freeze_encoder": True, "freeze_a_log": True,
-                "shared_encoder_trainable": False, "shared_encoder_gradient_fully_isolated": True,
-                "shared_encoder_isolation_source": "frozen_runtime_configuration",
-                "framegate_gradient_ownership_intervention_changed_encoder_freeze_state": False,
-                "frame_direct_loss_active": True, "frame_direct_loss_weight": 1.0,
-                "frame_downstream_forward_value_changed": False,
-                "frame_downstream_gradient_mode": mode,
-                "framegate_nonframe_output_gradient_blocked": mode == "frame_local_only"}
-    for key, value in expected.items():
-        require_value(config, key, value, run); require_value(contract, key, value, run)
+    single = trainer["single"]
+    training_expected = dict(TRAINING_REPORT_EXPECTED)
+    training_expected.update({"training_seed": seed,
+                              "frame_downstream_gradient_mode": mode,
+                              "framegate_nonframe_output_gradient_blocked": mode == "frame_local_only"})
+    nonsplit_expected = {key: value for key, value in training_expected.items()
+                         if key not in SPLIT_PROVENANCE_FIELDS}
+    config_expected = {key: value for key, value in nonsplit_expected.items() if key != "epochs"}
+    training_observed, training_failures = collect_expected(config, config_expected)
+    training_observed["epochs"] = {"runs.single.final_epoch": [single.get("final_epoch")]}
+    if single.get("final_epoch") != nonsplit_expected["epochs"]:
+        training_failures.append("epochs")
+    gate(gates, "provenance", run, "training_report_runtime_provenance",
+         nonsplit_expected, training_observed, not training_failures,
+         f"training-report runtime provenance mismatch: {training_failures}")
+
+    split_expected = {key: training_expected[key] for key in SPLIT_PROVENANCE_FIELDS}
+    split_contract_observed, split_failures = collect_expected(split, split_expected)
+    split_config_duplicates = {key: recursive_values(config, key) for key in split_expected}
+    split_all_occurrences = {key: recursive_values(report, key) for key in split_expected}
+    duplicate_failures = [key for key, wanted in split_expected.items()
+                          if any(item != wanted for item in split_config_duplicates[key])]
+    occurrence_failures = [key for key, wanted in split_expected.items()
+                           if not split_all_occurrences[key]
+                           or any(item != wanted for item in split_all_occurrences[key])]
+    split_observed = {key: {"split_seed_contract": split_contract_observed[key],
+                            "configuration_duplicates": split_config_duplicates[key],
+                            "training_report_all_occurrences": split_all_occurrences[key]}
+                      for key in split_expected}
+    split_ok = not split_failures and not duplicate_failures and not occurrence_failures
+    gate(gates, "provenance", run, "training_report_split_provenance",
+         split_expected, split_observed, split_ok,
+         f"training-report split provenance mismatch: authoritative={split_failures}, "
+         f"configuration_duplicates={duplicate_failures}, all_occurrences={occurrence_failures}")
+
+    trajectory_expected = dict(TRAJECTORY_CONTRACT_EXPECTED)
+    trajectory_expected.update({"arm": ARMS[mode],
+                                "frame_downstream_gradient_mode": mode,
+                                "framegate_nonframe_output_gradient_blocked": mode == "frame_local_only"})
+    trajectory_observed = {key: contract.get(key) for key in trajectory_expected}
+    trajectory_failures = [key for key, wanted in trajectory_expected.items()
+                           if key not in contract or contract[key] != wanted]
+    gate(gates, "provenance", run, "trajectory_observability_provenance",
+         trajectory_expected, trajectory_observed, not trajectory_failures,
+         f"trajectory observability provenance mismatch: {trajectory_failures}")
+
+    cross_training = {key: training_observed[key][0] for key in CROSS_SOURCE_FIELDS}
+    cross_contract = {key: contract.get(key) for key in CROSS_SOURCE_FIELDS}
+    cross_expected = {key: nonsplit_expected[key] for key in CROSS_SOURCE_FIELDS}
+    cross_failures = [key for key in CROSS_SOURCE_FIELDS
+                      if cross_training[key] != cross_contract[key]
+                      or cross_training[key] != cross_expected[key]]
+    gate(gates, "provenance", run, "cross_source_gradient_ownership_provenance",
+         cross_expected, {"training_report": cross_training,
+                          "trajectory_contract": cross_contract}, not cross_failures,
+         f"cross-source gradient-ownership provenance mismatch: {cross_failures}")
+
     if config.get("cuda_seed") != seed: raise ValueError(f"{run}: CUDA seed mismatch")
     devices = recursive_values(config, "device") + recursive_values(config, "actual_torch_device")
     if not devices or any(str(v) != "cuda" and not str(v).startswith("cuda:") for v in devices):
         raise ValueError(f"{run}: CUDA provenance mismatch {devices!r}")
-    single = trainer["single"]
     if single.get("final_epoch") != 20 or single.get("best_epoch") != BEST_EPOCHS[run]:
         raise ValueError(f"{run}: final/selected epoch mismatch")
     if contract.get("trainer_source_commit") != RUN_COMMIT or RUN_COMMIT not in (
@@ -362,8 +446,7 @@ def validate_runtime(run: str, seed: int, mode: str, report: dict[str, Any], con
         raise ValueError(f"{run}: runtime commit identity mismatch")
     if (contract.get("epoch_count") != 20 or contract.get("expected_dev_rows") != 720
             or contract.get("training_seed") != seed or contract.get("split_seed") != 174
-            or contract.get("arm") != ARMS[mode]
-            or contract.get("observability_mode") != "stage196b1_framegate_gradient_ownership"):
+            or contract.get("arm") != ARMS[mode]):
         raise ValueError(f"{run}: trajectory identity/cardinality mismatch")
     expected_flags = {"stage191_trajectory_replay_observability": False,
                       "stage191_save_trajectory_state_capsules": False,
@@ -371,12 +454,8 @@ def validate_runtime(run: str, seed: int, mode: str, report: dict[str, Any], con
                       "stage195_tail3_parameter_swa_causal_test": False,
                       "stage196b1_framegate_gradient_ownership_observability": True}
     if contract.get("enabled_flags") != expected_flags: raise ValueError(f"{run}: enabled flags mismatch")
-    for key, value in {"external_data_used": False, "state_capsule_saving_enabled": False,
-                       "expected_state_capsules": 0, "compatible_positive_margin_enabled": False,
-                       "sidecar_accessed": False, "parameter_swa_enabled": False,
-                       "training_semantics_changed_by_observability": False,
-                       "extra_forward_pass_performed_by_observability": False}.items():
-        if contract.get(key) != value: raise ValueError(f"{run}: {key} mismatch")
+    if contract.get("external_data_used") is not False:
+        raise ValueError(f"{run}: external_data_used mismatch")
     margin = config.get("compatible_positive_margin")
     if type(margin) is not dict or margin.get("enabled") is not False or margin.get("weight") != 0.0 or margin.get("margin_logit") != 0.0:
         raise ValueError(f"{run}: compatible-positive margin not exactly off")
@@ -420,7 +499,7 @@ def validate_run(root: Path, run: str, gates: list[dict[str, Any]]) -> dict[str,
          {"trajectory": 20, "capsules": 0, "swa": 0}, counts,
          counts == {"trajectory": 20, "capsules": 0, "swa": 0}, "trajectory/capsule/SWA closure mismatch")
     report = read_json(directory/"training_report.json"); contract = read_json(directory/"stage191_trajectory_contract.json")
-    validate_runtime(run, seed, mode, report, contract)
+    validate_runtime(run, seed, mode, report, contract, gates)
     ledger = validate_ledger(run, read_jsonl(directory/"stage191_trajectory_epoch_metrics.jsonl"))
     obj = read_json(directory/"clean_dev_predictions.json"); scalars = read_jsonl(directory/"clean_dev_scalars.jsonl")
     if type(obj) is not dict or set(obj) != {"metadata", "predictions"}: raise ValueError(f"{run}: prediction container mismatch")
