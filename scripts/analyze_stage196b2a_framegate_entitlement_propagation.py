@@ -464,7 +464,7 @@ def validate_all(args: argparse.Namespace, gates: list[dict[str, Any]]) -> dict[
     stage_a, sets = b1c.validate_stage196a(stage_a_path, gates)
     sizes = {name: len(sets[name]) for name in SETS}
     add_gate(gates, "stage196a", "", "recurrent_set_counts", dict(zip(SETS, (22, 19, 19, 10))),
-             sizes, sizes == dict(zip(SETS, (22, 19, 19, 10)),
+             sizes, sizes == dict(zip(SETS, (22, 19, 19, 10))),
              "Stage196-A recurrent-set count mismatch")
     runs = {run: b1c.validate_run(run_root, run, args.stage196b1_runtime_git_commit, gates)
             for run in RUNS}
