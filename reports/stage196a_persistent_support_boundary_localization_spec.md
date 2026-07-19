@@ -34,6 +34,25 @@ header, decision, runtime identity, cardinalities, run order and blockers are
 validated.  Every required Stage195-C source-closure row must pass with an
 empty blocking reason.
 
+The Stage195-C precommitted decision gate keeps exact header
+`decision,taxonomy_condition,required,observed,passed` and exactly six decision
+rows in its frozen taxonomy order.  `required` is the precommitted expected
+Boolean for that decision condition.  `passed` states whether the observed
+condition equals that expected Boolean.  `observed` is a nonempty serialized
+JSON decision-evidence object; it is not a Boolean CSV field.  Consequently the
+selected decision has `required=True` and `passed=True`, while every
+non-selected decision has `required=False` and still has `passed=True`.  All
+six observed values must parse as dictionaries.  Their decision evidence must
+be exactly equal after excluding the row-local `condition`; that field must
+exactly equal the row's `required` Boolean, so it is true for the selected row
+and false for the other five.  The selected gate decision must equal the
+Stage195-C report decision.  Stage196-A never compares `observed` to
+the strings `"True"` or `"False"`.
+
+This typed source-schema correction changes no Stage196-A source population,
+127-row persistent cohort, mechanism bucket, native threshold 0.5, recurrence
+logic, decision taxonomy, or exact nine-output schema.
+
 ## CLI and path safety
 
 The analyzer accepts exactly `--repo-root`, `--stage195c-dir`,

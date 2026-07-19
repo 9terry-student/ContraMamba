@@ -59,6 +59,14 @@ STAGE195C_FILES = {
     "stage195c_paired_seed_arm_delta.csv", "stage195c_source_closure.csv",
     "stage195c_precommitted_decision_gate.csv",
 }
+STAGE195C_DECISION_ORDER = (
+    "STAGE195C_PARAMETER_SWA_CAUSAL_ANALYSIS_BLOCKED",
+    "STAGE195C_PARAMETER_SWA_REPLICATED_CAUSAL_HARM",
+    "STAGE195C_PARAMETER_SWA_REPLICATED_TEMPORAL_CAUSAL_SUPPORT",
+    "STAGE195C_PARAMETER_SWA_TEMPORAL_SUPPORT_WITH_BOUNDARY_TRADEOFF",
+    "STAGE195C_PARAMETER_SWA_NO_TEMPORAL_CAUSAL_SUPPORT",
+    "STAGE195C_PARAMETER_SWA_MIXED_OR_INCONCLUSIVE",
+)
 SOURCE_FILES = ("reports/stage196a_persistent_support_boundary_localization_spec.md",
                 "scripts/analyze_stage196a_persistent_support_boundary.py")
 GATE_HEADER = ["scope", "run", "gate", "required", "observed", "passed", "blocking_reason"]
@@ -197,12 +205,46 @@ def validate_stage195c(path: Path, closure: list[dict[str, Any]]) -> list[dict[s
     source_ok = bool(source) and all(x["passed"] == "True" and x["blocking_reason"] == "" for x in source)
     gate(closure, "stage195c", "", "all_source_gates_pass", True, source_ok, source_ok, "Stage195-C source gate failure")
     decisions = read_csv(path / "stage195c_precommitted_decision_gate.csv", DECISION_HEADER)
-    decision_ok = (bool(decisions) and sum(x["required"] == "True" for x in decisions) == 1
-                   and any(x["decision"] == STAGE195C_DECISION and x["required"] == "True"
-                           and x["observed"] == "True" and x["passed"] == "True" for x in decisions))
+    if len(decisions) != len(STAGE195C_DECISION_ORDER) or tuple(
+            row["decision"] for row in decisions) != STAGE195C_DECISION_ORDER:
+        raise ValueError("Stage195-C decision row count/order mismatch")
+    selected_rows = [row for row in decisions if row["required"] == "True"]
+    if (len(selected_rows) != 1
+            or sum(row["required"] == "False" for row in decisions) != 5):
+        raise ValueError("Stage195-C required cardinality mismatch")
+    selected = selected_rows[0]
+    if selected["decision"] != STAGE195C_DECISION:
+        raise ValueError("Stage195-C selected decision mismatch")
+    if selected["decision"] != report["decision"]:
+        raise ValueError("Stage195-C report/decision-gate mismatch")
+    if any(row["passed"] != "True" for row in decisions):
+        raise ValueError("Stage195-C non-passing decision row")
+    observed_evidence: list[dict[str, Any]] = []
+    for row in decisions:
+        raw_observed = row["observed"]
+        if raw_observed == "":
+            raise ValueError("Stage195-C empty observed evidence")
+        try:
+            parsed_observed = json.loads(raw_observed)
+        except (json.JSONDecodeError, TypeError) as exc:
+            raise ValueError("Stage195-C invalid observed JSON") from exc
+        if type(parsed_observed) is not dict:
+            raise ValueError("Stage195-C observed evidence is not an object")
+        observed_evidence.append(parsed_observed)
+    selected_index = decisions.index(selected)
+    if observed_evidence[selected_index].get("condition") is not True:
+        raise ValueError("Stage195-C selected observed condition is not true")
+    if any(evidence.get("condition") is not (row["required"] == "True")
+           for row, evidence in zip(decisions, observed_evidence)):
+        raise ValueError("Stage195-C observed condition/required mismatch")
+    shared_evidence = [
+        {key: value for key, value in evidence.items() if key != "condition"}
+        for evidence in observed_evidence
+    ]
+    if any(evidence != shared_evidence[0] for evidence in shared_evidence[1:]):
+        raise ValueError("Stage195-C observed evidence differs across decision rows")
     gate(closure, "stage195c", "", "precommitted_decision_gate", STAGE195C_DECISION,
-         [x["decision"] for x in decisions if x["required"] == "True"], decision_ok,
-         "Stage195-C decision-gate closure mismatch")
+         selected["decision"], True, "")
     rows = read_jsonl(path / "stage195c_row_transition.jsonl")
     if len(rows) != 4320: raise ValueError("Stage195-C transition cardinality mismatch")
     counts = Counter(); rescues = Counter(); per_run = Counter()
