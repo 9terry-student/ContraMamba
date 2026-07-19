@@ -95,6 +95,20 @@ def cvalue(rows:list[dict[str,str]],name:str,col:str)->Any:
  vs=[cell(r.get(col,"")) for r in rows if r.get("gate")==name]
  if not vs or any(x!=vs[0] for x in vs):raise ValueError(f"contract {name}/{col} missing or nonuniform")
  return vs[0]
+def b2b1_analyzer_commit(rows:list[dict[str,str]])->str:
+ def passed_values(name:str)->list[Any]:
+  matches=[r for r in rows if r.get("scope")=="provenance" and r.get("gate")==name]
+  if any(not boolean(r.get("passed",""),f"{name} passed") for r in matches):raise ValueError(f"contract {name} is not passed")
+  values=[cell(r.get("observed","")) for r in matches]
+  if any(v in (None,"") for v in values) or (values and any(v!=values[0] for v in values)):raise ValueError(f"contract {name}/observed null or nonuniform")
+  return values
+ primary=passed_values("current_analyzer_commit_equals_head")
+ legacy=passed_values("analysis_runtime_commit_equals_head")
+ if primary and legacy and primary[0]!=legacy[0]:raise ValueError("conflicting B2-B1 analyzer commit gate aliases")
+ if not primary and not legacy:raise ValueError("B2-B1 analyzer commit provenance gate absent")
+ value=str((primary or legacy)[0])
+ if re.fullmatch(r"[0-9a-f]{40}",value) is None:raise ValueError("B2-B1 analyzer commit is not lowercase 40-hex")
+ return value
 def cmap(rows:list[dict[str,str]],name:str)->dict[str,Any]:
  for col in ("observed","required"):
   for r in rows:
@@ -108,7 +122,7 @@ def normfield(a:dict[str,Any],names:Sequence[str],v:str,label:str,w:list[str])->
 
 def normalize(a:dict[str,Any],c:list[dict[str,str]],b1:bool,w:list[str])->dict[str,str]:
  if b1:
-  m=cmap(c,"normalized_source_roles"); current=str(cvalue(c,"analysis_runtime_commit_equals_head","observed"))
+  m=cmap(c,"normalized_source_roles"); current=b2b1_analyzer_commit(c)
   out={"stage196b2b1_analyzer_git_commit":current,"stage196b2a_analyzer_git_commit":str(m.get("stage196b2a_analyzer_git_commit")),"stage196b2p0_runtime_git_commit":str(m.get("stage196b2p0_runtime_git_commit")),"stage196b1_runtime_git_commit":str(m.get("stage196b1_runtime_git_commit")),"framegate_implementation_origin_git_commit":str(m.get("framegate_implementation_origin_git_commit")),"support_vs_not_entitled_margin_source":str(m.get("support_vs_not_entitled_margin_source"))}
  else:
   o=cvalue(c,"framegate_implementation_origin_commit_preserved","required")
@@ -136,7 +150,9 @@ def sources(ns:argparse.Namespace,gs:list[dict[str,Any]])->dict[str,Any]:
  w=[]; exact_dir(b1d,B1_FILES,"exact_eight_file_b2b1_closure",gs); b1a=jread(b1d/B1_FILES[0]); b1c=cread(b1d/B1_FILES[-1])
  req={"decision":"STAGE196B2B1_SEED_SPECIFIC_NO_STABLE_BIFURCATION","recommended_next_stage":"STAGE196B2B2_NO_PROMOTION_ROW_LEVEL_CAUSAL_PROBE","blocking_reasons":[]}; obs={k:b1a.get(k) for k in req}; gate(gs,"source","","b2b1_decision",req,obs,obs==req,"B2-B1 decision closure mismatch")
  gate(gs,"source","","b2b1_23_passed_gates",23,len(b1c),len(b1c)==23 and contract_ok(b1c),"B2-B1 contract is not exactly 23 passed gates")
- n1=normalize(b1a,b1c,True,w); profiles=cread(b1d/"stage196b2b1_row_profiles.csv")
+ n1=normalize(b1a,b1c,True,w)
+ gate(gs,"provenance","","b2b1_contract_commit_equals_cli",ns.stage196b2b1_analyzer_git_commit,n1["stage196b2b1_analyzer_git_commit"],n1["stage196b2b1_analyzer_git_commit"]==ns.stage196b2b1_analyzer_git_commit,"B2-B1 contract analyzer commit differs from CLI argument")
+ profiles=cread(b1d/"stage196b2b1_row_profiles.csv")
  columns("profiles",profiles,("id","source_row_id","stable_row_id","dev_position","seed","transition_role","intervention_type","trace_joint_tail3_status","trace_intervention_tail3_status","trace_selected_joint_final","trace_selected_intervention_final",*[f"in_{x}" for x in SETS]))
  counts={s:{"recovery":0,"harm":0} for s in POSITIVE}; seen=set()
  for r in profiles:
