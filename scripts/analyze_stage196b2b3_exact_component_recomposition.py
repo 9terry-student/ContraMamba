@@ -686,25 +686,38 @@ def resolve_historical_role(
 
 
 def resolve_historical_provenance(
-    namespace: argparse.Namespace,
+    *,
+    b2a_analysis: dict[str, Any],
+    b2a_contract: list[dict[str, str]],
+    b2a_analysis_path: Path,
+    b2a_contract_path: Path,
+    b2a_normalized_roles: dict[str, Any],
+    b2a_normalized_roles_present: bool,
+    b2b1_analysis: dict[str, Any],
+    b2b1_contract: list[dict[str, str]],
+    b2b1_analysis_path: Path,
+    b2b1_contract_path: Path,
+    b2b1_normalized_roles: dict[str, Any],
+    b2b1_normalized_roles_present: bool,
     b2b2_analysis: dict[str, Any],
     b2b2_contract: list[dict[str, str]],
-    b2b2_path: Path,
-    predecessor: dict[str, Any],
+    b2b2_analysis_path: Path,
+    b2b2_contract_path: Path,
+    explicit_b2b2_analyzer_commit: str,
     gates: list[dict[str, Any]],
 ) -> tuple[dict[str, str], dict[str, Any], list[str]]:
-    b1_analysis = predecessor["b2b1_analysis"]
-    b1_contract = predecessor["b2b1_contract"]
-    b1_path = Path(predecessor["stage196b2b1_analysis_path"])
-    b1_contract_path = Path(predecessor["stage196b2b1_contract_path"])
-    b1_roles = predecessor["b2b1_roles"]
-    b1_roles_present = predecessor["b2b1_normalized_authority"].get("row_present", False)
-    a_analysis = predecessor["stage196b2a_analysis"]
-    a_contract = predecessor["stage196b2a_contract"]
-    a_path = Path(predecessor["stage196b2a_analysis_path"])
-    a_contract_path = Path(predecessor["stage196b2a_contract_path"])
-    a_roles = predecessor["stage196b2a_roles"]
-    a_roles_present = predecessor["stage196b2a_normalized_authority"].get("row_present", False)
+    a_analysis = b2a_analysis
+    a_contract = b2a_contract
+    a_path = b2a_analysis_path
+    a_contract_path = b2a_contract_path
+    a_roles = b2a_normalized_roles
+    a_roles_present = b2a_normalized_roles_present
+    b1_analysis = b2b1_analysis
+    b1_contract = b2b1_contract
+    b1_path = b2b1_analysis_path
+    b1_contract_path = b2b1_contract_path
+    b1_roles = b2b1_normalized_roles
+    b1_roles_present = b2b1_normalized_roles_present
     b2b2_nested = b2b2_analysis.get("normalized_historical_provenance_roles")
     b2b2_nested_present = b2b2_nested is not None
 
@@ -744,9 +757,9 @@ def resolve_historical_provenance(
         mapped(b1_analysis, b2a_role, B2A_COMMIT, "B2-B1 analysis B2-A analyzer role",
                (b2a_role,), True, True, b1_path, None, "analysis", None, "top_level"),
         mapped(b2b2_analysis, b2a_role, B2A_COMMIT, "B2-B2 analysis B2-A analyzer role",
-               (b2a_role,), False, True, b2b2_path, None, "analysis", None, "top_level"),
+               (b2a_role,), False, True, b2b2_analysis_path, None, "analysis", None, "top_level"),
         mapped(b2b2_nested, b2a_role, B2A_COMMIT, "B2-B2 normalized historical B2-A role",
-               (b2a_role,), False, b2b2_nested_present, b2b2_path, None,
+               (b2a_role,), False, b2b2_nested_present, b2b2_analysis_path, None,
                "analysis", None, "normalized_historical_provenance_roles"),
         *b2a_direct,
     ]
@@ -767,9 +780,9 @@ def resolve_historical_provenance(
     )
     b2b1_evidence = [
         mapped(b2b2_analysis, b2b1_role, B2B1_COMMIT, "B2-B2 analysis B2-B1 analyzer role",
-               (b2b1_role,), True, True, b2b2_path, None, "analysis", None, "top_level"),
+               (b2b1_role,), True, True, b2b2_analysis_path, None, "analysis", None, "top_level"),
         mapped(b2b2_nested, b2b1_role, B2B1_COMMIT, "B2-B2 normalized historical B2-B1 role",
-               (b2b1_role,), True, b2b2_nested_present, b2b2_path, None,
+               (b2b1_role,), True, b2b2_nested_present, b2b2_analysis_path, None,
                "analysis", None, "normalized_historical_provenance_roles"),
         *b2b1_direct,
     ]
@@ -778,18 +791,18 @@ def resolve_historical_provenance(
     b2b2_evidence = [
         literal_commit_evidence(
             b2b2_role, B2B2_COMMIT, "--stage196b2b2-analyzer-git-commit",
-            namespace.stage196b2b2_analyzer_git_commit, True,
+            explicit_b2b2_analyzer_commit, True,
         ),
         mapped(b2b2_analysis, b2b2_role, B2B2_COMMIT, "B2-B2 analysis direct analyzer metadata",
                ("current_analyzer_git_commit", b2b2_role), False, True,
-               b2b2_path, None, "analysis", None, "top_level"),
+               b2b2_analysis_path, None, "analysis", None, "top_level"),
         mapped(b2b2_nested, b2b2_role, B2B2_COMMIT, "B2-B2 normalized historical self role",
-               (b2b2_role,), False, b2b2_nested_present, b2b2_path, None,
+               (b2b2_role,), False, b2b2_nested_present, b2b2_analysis_path, None,
                "analysis", None, "normalized_historical_provenance_roles"),
         contract_commit_evidence(
             b2b2_contract, b2b2_role, B2B2_COMMIT, "B2-B2 direct analyzer-commit contract gate",
             ("current_analyzer_commit_equals_head", "analysis_runtime_commit_equals_head", "current_commit_equals_head"),
-            "observed", False, b2b2_path, b2b2_path.parent / B2B2_FILES[-1],
+            "observed", False, b2b2_analysis_path, b2b2_contract_path,
         ),
     ]
 
@@ -802,9 +815,9 @@ def resolve_historical_provenance(
     for role, (expected, names) in role_specs.items():
         runtime_evidence[role] = [
             mapped(b2b2_analysis, role, expected, f"B2-B2 analysis {role}", names, True,
-                   True, b2b2_path, None, "analysis", None, "top_level"),
+                   True, b2b2_analysis_path, None, "analysis", None, "top_level"),
             mapped(b2b2_nested, role, expected, f"B2-B2 normalized historical {role}", names, True,
-                   b2b2_nested_present, b2b2_path, None, "analysis", None,
+                   b2b2_nested_present, b2b2_analysis_path, None, "analysis", None,
                    "normalized_historical_provenance_roles"),
             mapped(b1_roles, role, expected, f"B2-B1 normalized source-role {role}", names, True,
                    b1_roles_present, b1_path, b1_contract_path, "provenance",
@@ -1282,8 +1295,87 @@ def validate_b2b2(
         len(contract) == 155 and contract_passes(contract),
         "Stage196-B2-B2 contract is not exactly 155 passed gates with empty blockers",
     )
+    predecessor_object_keys = (
+        ("b2a_analysis", "stage196b2a_analysis"),
+        ("b2a_contract", "stage196b2a_contract"),
+        ("b2a_analysis_path", "stage196b2a_analysis_path"),
+        ("b2a_contract_path", "stage196b2a_contract_path"),
+        ("b2a_normalized_roles", "stage196b2a_roles"),
+        ("b2b1_analysis", "stage196b2b1_analysis"),
+        ("b2b1_contract", "stage196b2b1_contract"),
+        ("b2b1_analysis_path", "stage196b2b1_analysis_path"),
+        ("b2b1_contract_path", "stage196b2b1_contract_path"),
+        ("b2b1_normalized_roles", "stage196b2b1_roles"),
+    )
+    historical_objects = {
+        object_name: predecessor[producer_key]
+        for object_name, producer_key in predecessor_object_keys
+        if producer_key in predecessor and predecessor[producer_key] is not None
+    }
+    normalized_presence_sources = (
+        ("b2a_normalized_roles_present", "stage196b2a_normalized_authority"),
+        ("b2b1_normalized_roles_present", "stage196b2b1_normalized_authority"),
+    )
+    for object_name, producer_key in normalized_presence_sources:
+        if producer_key in predecessor:
+            authority = predecessor[producer_key]
+            if type(authority) is dict and "row_present" in authority:
+                historical_objects[object_name] = bool(authority["row_present"])
+    historical_objects.update(
+        {
+            "b2b2_analysis": analysis,
+            "b2b2_contract": contract,
+            "b2b2_analysis_path": source_path,
+            "b2b2_contract_path": source_dir / B2B2_FILES[-1],
+            "explicit_b2b2_analyzer_commit": namespace.stage196b2b2_analyzer_git_commit,
+        }
+    )
+    required_objects = [object_name for object_name, _ in predecessor_object_keys] + [
+        "b2a_normalized_roles_present",
+        "b2b1_normalized_roles_present",
+        "b2b2_analysis",
+        "b2b2_contract",
+        "b2b2_analysis_path",
+        "b2b2_contract_path",
+        "explicit_b2b2_analyzer_commit",
+    ]
+    available_objects = sorted(historical_objects)
+    missing_objects = sorted(set(required_objects) - set(available_objects))
+    context_ok = not missing_objects
+    gate(
+        gates,
+        "provenance",
+        "",
+        "historical_provenance_context_closure",
+        required_objects,
+        {
+            "required_objects": required_objects,
+            "available_objects": available_objects,
+            "missing_objects": missing_objects,
+            "passed": context_ok,
+        },
+        context_ok,
+        "historical provenance context missing required object: " + ", ".join(missing_objects),
+    )
     provenance, provenance_evidence, provenance_warnings = resolve_historical_provenance(
-        namespace, analysis, contract, source_path, predecessor, gates,
+        b2a_analysis=historical_objects["b2a_analysis"],
+        b2a_contract=historical_objects["b2a_contract"],
+        b2a_analysis_path=Path(historical_objects["b2a_analysis_path"]),
+        b2a_contract_path=Path(historical_objects["b2a_contract_path"]),
+        b2a_normalized_roles=historical_objects["b2a_normalized_roles"],
+        b2a_normalized_roles_present=historical_objects["b2a_normalized_roles_present"],
+        b2b1_analysis=historical_objects["b2b1_analysis"],
+        b2b1_contract=historical_objects["b2b1_contract"],
+        b2b1_analysis_path=Path(historical_objects["b2b1_analysis_path"]),
+        b2b1_contract_path=Path(historical_objects["b2b1_contract_path"]),
+        b2b1_normalized_roles=historical_objects["b2b1_normalized_roles"],
+        b2b1_normalized_roles_present=historical_objects["b2b1_normalized_roles_present"],
+        b2b2_analysis=historical_objects["b2b2_analysis"],
+        b2b2_contract=historical_objects["b2b2_contract"],
+        b2b2_analysis_path=Path(historical_objects["b2b2_analysis_path"]),
+        b2b2_contract_path=Path(historical_objects["b2b2_contract_path"]),
+        explicit_b2b2_analyzer_commit=historical_objects["explicit_b2b2_analyzer_commit"],
+        gates=gates,
     )
     predecessor["warnings"].extend(provenance_warnings)
     gate(
