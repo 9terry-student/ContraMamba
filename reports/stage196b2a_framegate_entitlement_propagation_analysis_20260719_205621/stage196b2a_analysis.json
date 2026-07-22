@@ -1,0 +1,105 @@
+{
+  "analysis_runtime_git_commit": "833752ec25890e76ee3c2dc3f3bc3c3c1b7428a6",
+  "artifact_only_analysis": true,
+  "authorized_interpretation": "Observed paired propagation under frozen Mamba only; no formal causal mediation claim.",
+  "blocking_reasons": [],
+  "checkpoint_loaded": false,
+  "decision": "STAGE196B2A_SEED_SPECIFIC_MIXED_PROPAGATION",
+  "decision_rule_evaluation": {
+    "at_least_half_every_seed": true,
+    "consistent_bottleneck_rule_satisfied": false,
+    "eligible_rows_at_least_five_per_seed": true,
+    "largest_blocker_by_seed": {
+      "184": "FRAME_REMAINS_SUBTHRESHOLD",
+      "185": "FRAME_REMAINS_SUBTHRESHOLD"
+    },
+    "largest_blocker_rate_by_seed": {
+      "184": 1.0,
+      "185": 1.0
+    },
+    "one_seed_dominates": false,
+    "positive_frame_shift_seed_count_at_least_two": true,
+    "same_largest_blocker": true,
+    "selected_decision": "STAGE196B2A_SEED_SPECIFIC_MIXED_PROPAGATION",
+    "selected_tail3_material_conflict": false,
+    "stable_correct_harm_conflicts_in_two_or_more_seeds": true
+  },
+  "external_evaluation_performed": false,
+  "framegate_implementation_origin_git_commit": "5a39538ef3ca8f36cc2cc5d3290eae60d6a5f5c8",
+  "model_loaded": false,
+  "negative_frame_shift_contrast_seeds": [
+    183
+  ],
+  "output_file_count": 9,
+  "per_seed_blocker_distributions": {
+    "184": {
+      "FRAME_REMAINS_SUBTHRESHOLD": 12
+    },
+    "185": {
+      "FRAME_REMAINS_SUBTHRESHOLD": 18
+    }
+  },
+  "positive_frame_shift_seeds": [
+    184,
+    185
+  ],
+  "primary_decision_population_counts": {
+    "184": 12,
+    "185": 18
+  },
+  "prohibited_interpretations": [
+    "unfrozen encoder behavior",
+    "external/OOD performance",
+    "production readiness",
+    "contrastive-loss necessity",
+    "architecture superiority",
+    "complete mechanistic explanation"
+  ],
+  "recommended_next_stage": "STAGE196B2B_NO_PROMOTION_MINIMAL_SEED_SPECIFIC_FOLLOWUP",
+  "resolved_schema": {
+    "dev_position": "stage191_dev_predictions_epoch_NNN.jsonl:[].dev_position",
+    "entitlement_probability": "stage196b2p0 sidecar entitlement_probability",
+    "epoch_channel_sidecar": [
+      "id",
+      "source_row_id",
+      "dev_position",
+      "gold_label",
+      "prediction",
+      "intervention_type",
+      "frame_probability",
+      "predicate_coverage_probability",
+      "sufficiency_probability",
+      "polarity_support_margin",
+      "entitlement_probability",
+      "support_probability",
+      "not_entitled_probability",
+      "support_logit",
+      "not_entitled_logit",
+      "epoch",
+      "training_seed",
+      "frame_downstream_gradient_mode"
+    ],
+    "epoch_frame_probability": "stage196b2p0 sidecar frame_probability",
+    "epoch_not_entitled_logit": "trajectory[].final_logits[1]",
+    "epoch_predicted_final_label": "trajectory[].predicted_final_label",
+    "epoch_support_logit": "trajectory[].final_logits[2]",
+    "gold_final_label": "predictions[].gold_final_label / trajectory[].gold_final_label",
+    "intervention_type": "predictions[].intervention_type",
+    "polarity_support_facing_margin": "stage196b2p0 sidecar polarity_support_margin",
+    "predicate_probability": "stage196b2p0 sidecar predicate_coverage_probability",
+    "selected_frame_probability": "predictions[].frame_prob (cross-checked with scalars[].frame_prob)",
+    "selected_not_entitled_probability": "predictions[].final_probs[1]",
+    "selected_predicted_final_label": "predictions[].pred_final_label",
+    "selected_support_probability": "predictions[].final_probs[2]",
+    "stable_row_id": "clean_dev_predictions.json:predictions[].id and clean_dev_scalars.jsonl:[].id",
+    "sufficiency_probability": "stage196b2p0 sidecar sufficiency_probability",
+    "trajectory_row_id": "stage191_dev_predictions_epoch_NNN.jsonl:[].source_row_id"
+  },
+  "runnable": true,
+  "stage": "Stage196-B2-A",
+  "stage196b1_runtime_git_commit": "9835cbbf86d83aca0964821669e63f7f6deb1c59",
+  "stage196b1c_source_decision": "STAGE196B1C_MIXED_GRADIENT_OWNERSHIP_EFFECT",
+  "stage196b2p0_runtime_git_commit": "e9aaff24054f1d409119b70df13b94159a34a8e4",
+  "support_vs_not_entitled_margin_source": "support_logit - not_entitled_logit",
+  "training_performed": false
+}

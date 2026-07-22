@@ -1,0 +1,10 @@
+seed,intervention_type,transition_role,path_class,count,polarity_flip_remains_harm_only,paraphrase_harm_follows_polarity_override,none_and_paraphrase_recovery_share_a_path,path_stable_across_positive_seeds
+184,none,harm,FRAME_ENTITLEMENT_LOSS,1,true,true,false,false
+184,paraphrase,harm,POLARITY_OVERRIDE_DESPITE_FRAME_GAIN,3,true,true,false,false
+184,paraphrase,recovery,MULTI_CHANNEL_CONFLICT,5,true,true,false,true
+184,polarity_flip,harm,COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY,1,true,true,false,false
+184,polarity_flip,harm,FRAME_ENTITLEMENT_LOSS,1,true,true,false,false
+185,none,harm,MULTI_CHANNEL_CONFLICT,2,true,true,false,true
+185,none,recovery,FRAME_ENTITLEMENT_GAIN,1,true,true,false,false
+185,paraphrase,recovery,FRAME_ENTITLEMENT_GAIN,1,true,true,false,false
+185,polarity_flip,harm,MULTI_CHANNEL_CONFLICT,1,true,true,false,true

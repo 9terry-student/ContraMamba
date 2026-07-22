@@ -1,0 +1,577 @@
+{
+  "analysis_runtime_and_training_runtime_commits_are_distinct_roles": true,
+  "analysis_runtime_git_commit": "9c7bb278a90c603a9fab95e5fe969f79b1bd1929",
+  "artifact_only_analysis": true,
+  "authorized_causal_claim": "No new causal promotion is authorized; the gradient-ownership effect is mixed.",
+  "blocking_reasons": [],
+  "checkpoint_loaded": false,
+  "decision": "STAGE196B1C_MIXED_GRADIENT_OWNERSHIP_EFFECT",
+  "decision_rule_evaluation": {
+    "mixed_conditions": {
+      "framegate_failure_reduction_with_multiseed_safety_degradation": false,
+      "material_seed_direction_conflict": true,
+      "one_seed_dominates_primary_signature": false,
+      "persistent_rescue_without_coherent_recurrent_frame_probability": false,
+      "selected_checkpoint_and_tail_three_disagree": false
+    },
+    "selected_decision": "STAGE196B1C_MIXED_GRADIENT_OWNERSHIP_EFFECT",
+    "supports_requirements": {
+      "common_recurrent_frame_probability_higher_at_least_two_not_lower_any": false,
+      "false_entitlement_not_increased_in_at_least_two": true,
+      "framegate_failures_lower_at_least_two_not_higher_any": false,
+      "persistent_lower_at_least_two_not_higher_any": false,
+      "polarity_error_not_increased_in_at_least_two": false,
+      "stable_correct_preservation_not_reduced_in_at_least_two": false
+    }
+  },
+  "exception": null,
+  "external_evaluation_performed": false,
+  "framegate_implementation_origin_git_commit": "5a39538ef3ca8f36cc2cc5d3290eae60d6a5f5c8",
+  "model_loaded": false,
+  "ordered_runs": [
+    "seed183_joint",
+    "seed183_frame_local_only",
+    "seed184_joint",
+    "seed184_frame_local_only",
+    "seed185_joint",
+    "seed185_frame_local_only"
+  ],
+  "output_file_count": 8,
+  "paired_seed_deltas": {
+    "framegate_failure_count_among_persistent_support_negatives": {
+      "183": 5.0,
+      "184": 16.0,
+      "185": 4.0
+    },
+    "mean_frame_probability_stage196a_common_recurrent": {
+      "183": -0.13624342105263157,
+      "184": 0.14010342105263152,
+      "185": 0.14728163157894736
+    },
+    "mean_frame_probability_stage196a_universal_all_six": {
+      "183": -0.10097469999999997,
+      "184": 0.15199200000000002,
+      "185": 0.171927
+    },
+    "persistent_stable_support_negative_count": {
+      "183": 5.0,
+      "184": 16.0,
+      "185": 9.0
+    },
+    "selected_accuracy": {
+      "183": -0.002777777777777768,
+      "184": 0.0,
+      "185": -0.06666666666666665
+    },
+    "selected_false_entitlement_count": {
+      "183": -28.0,
+      "184": -23.0,
+      "185": 39.0
+    },
+    "selected_false_not_entitled_count": {
+      "183": 28.0,
+      "184": 22.0,
+      "185": 9.0
+    },
+    "selected_macro_f1": {
+      "183": -0.06484793701550473,
+      "184": -0.04613351886505601,
+      "185": -0.07232889738533599
+    },
+    "selected_polarity_error_count": {
+      "183": 2.0,
+      "184": 1.0,
+      "185": 0.0
+    },
+    "selected_support_recall": {
+      "183": -0.32584269662921345,
+      "184": -0.2584269662921348,
+      "185": -0.10112359550561789
+    },
+    "stable_correct_support_preservation": {
+      "183": -29.0,
+      "184": -6.0,
+      "185": -3.0
+    }
+  },
+  "prohibited_claims": [
+    "unfrozen encoder behavior",
+    "external/OOD improvement",
+    "production readiness",
+    "contrastive-loss necessity",
+    "architecture superiority",
+    "complete mechanistic explanation"
+  ],
+  "recommended_next_stage": "STAGE196B2_NO_PROMOTION_TARGETED_CAUSAL_FOLLOWUP",
+  "remaining_uncertainty": "The smallest unresolved causal question is whether seed-specific persistent rescue and common-position FrameGate probability move together without entitlement or polarity harm.",
+  "resolved_schema": {
+    "certified_stable_position": "trajectory[].dev_position",
+    "epoch_final_logits": "trajectory[].final_logits, canonical REFUTE/NOT_ENTITLED/SUPPORT order",
+    "epoch_predicted_final_label": "trajectory[].predicted_final_label",
+    "frame_probability": "predictions[].frame_prob / scalars[].frame_prob / sigmoid(trajectory[].frame_logit)",
+    "gold_final_label": "predictions[].gold_final_label / trajectory[].gold_final_label",
+    "intervention_type": "predictions[].intervention_type",
+    "not_entitled_probability_or_logit": "predictions[].final_probs[1] / trajectory[].final_logits[1]",
+    "predicate_coverage_probability": "predictions[].predicate_coverage_prob / scalars[].predicate_coverage_prob",
+    "selected_final_probabilities": "predictions[].final_probs, canonical REFUTE/NOT_ENTITLED/SUPPORT order",
+    "selected_predicted_final_label": "predictions[].pred_final_label",
+    "stable_row_identifier": "predictions[].id / scalars[].id / trajectory[].source_row_id",
+    "sufficiency_probability": "predictions[].sufficiency_prob / scalars[].sufficiency_prob",
+    "support_probability_or_logit": "predictions[].final_probs[2] / trajectory[].final_logits[2]"
+  },
+  "row_alignment_key": "predictions[].id / scalars[].id / trajectory[].source_row_id",
+  "run_summaries": [
+    {
+      "accuracy": 0.9013888888888889,
+      "arm": "baseline",
+      "baseline_defined_stable_correct_support_count": 52,
+      "false_entitlement_count": 38,
+      "false_not_entitled_count": 33,
+      "frame_downstream_gradient_mode": "joint",
+      "framegate_failure_count_among_persistent_support_negatives": 26,
+      "intervention_changed_to_not_entitled_count": "",
+      "intervention_changed_to_refute_count": "",
+      "intervention_preserved_support_count": "",
+      "intervention_unstable_control_count": "",
+      "macro_f1": 0.8486584487651966,
+      "mean_frame_probability_by_gold_label": {
+        "NOT_ENTITLED": 0.4199922407407407,
+        "REFUTE": 0.9310801208791208,
+        "SUPPORT": 0.5027327752808989
+      },
+      "mean_frame_probability_by_intervention_type": {
+        "entity_swap": 0.18094791666666668,
+        "event_swap": 0.22685451666666667,
+        "evidence_deletion": 0.9638907666666667,
+        "evidence_truncation": 0.94164375,
+        "irrelevant_evidence": 0.015160333333333333,
+        "location_swap": 0.43056398333333334,
+        "none": 0.7055767166666667,
+        "paraphrase": 0.7760919166666667,
+        "polarity_flip": 0.6761898333333334,
+        "predicate_swap": 0.54764325,
+        "role_swap": 0.3418452833333333,
+        "title_name_swap": 0.13138036666666666
+      },
+      "mean_frame_probability_by_recurrent_set": {
+        "stage196a_baseline_recurrent": 0.33294954545454547,
+        "stage196a_common_recurrent": 0.3243286842105263,
+        "stage196a_intervention_recurrent": 0.3243286842105263,
+        "stage196a_universal_all_six": 0.2912296
+      },
+      "not_entitled_recall": 0.9296296296296296,
+      "persistent_false_entitlement_count": 36,
+      "persistent_refute_polarity_error_count": 0,
+      "persistent_stable_support_negative_count": 26,
+      "polarity_error_count": 0,
+      "prediction_counts": {
+        "NOT_ENTITLED": 535,
+        "REFUTE": 91,
+        "SUPPORT": 94
+      },
+      "refute_recall": 1.0,
+      "run": "seed183_joint",
+      "seed": 183,
+      "selected_best_epoch": 20,
+      "stable_correct_support_preservation_rate": "",
+      "stable_support_correct_count": 52,
+      "support_precision": 0.5957446808510638,
+      "support_recall": 0.6292134831460674,
+      "unstable_support_count": 11
+    },
+    {
+      "accuracy": 0.8986111111111111,
+      "arm": "intervention",
+      "baseline_defined_stable_correct_support_count": 52,
+      "false_entitlement_count": 10,
+      "false_not_entitled_count": 61,
+      "frame_downstream_gradient_mode": "frame_local_only",
+      "framegate_failure_count_among_persistent_support_negatives": 31,
+      "intervention_changed_to_not_entitled_count": 11,
+      "intervention_changed_to_refute_count": 0,
+      "intervention_preserved_support_count": 23,
+      "intervention_unstable_control_count": 18,
+      "macro_f1": 0.7838105117496919,
+      "mean_frame_probability_by_gold_label": {
+        "NOT_ENTITLED": 0.3760346925925926,
+        "REFUTE": 0.9424468241758241,
+        "SUPPORT": 0.44070620224719104
+      },
+      "mean_frame_probability_by_intervention_type": {
+        "entity_swap": 0.19712018333333334,
+        "event_swap": 0.1727715833333333,
+        "evidence_deletion": 0.9927883000000001,
+        "evidence_truncation": 0.9800534,
+        "irrelevant_evidence": 0.012637,
+        "location_swap": 0.2343641,
+        "none": 0.6015176666666666,
+        "paraphrase": 0.9265350333333333,
+        "polarity_flip": 0.5550391833333334,
+        "predicate_swap": 0.3686245833333333,
+        "role_swap": 0.23775118333333334,
+        "title_name_swap": 0.1882019
+      },
+      "mean_frame_probability_by_recurrent_set": {
+        "stage196a_baseline_recurrent": 0.1845465,
+        "stage196a_common_recurrent": 0.18808526315789473,
+        "stage196a_intervention_recurrent": 0.18808526315789473,
+        "stage196a_universal_all_six": 0.1902549
+      },
+      "not_entitled_recall": 0.9814814814814815,
+      "persistent_false_entitlement_count": 10,
+      "persistent_refute_polarity_error_count": 0,
+      "persistent_stable_support_negative_count": 31,
+      "polarity_error_count": 2,
+      "prediction_counts": {
+        "NOT_ENTITLED": 591,
+        "REFUTE": 91,
+        "SUPPORT": 38
+      },
+      "refute_recall": 0.989010989010989,
+      "run": "seed183_frame_local_only",
+      "seed": 183,
+      "selected_best_epoch": 20,
+      "stable_correct_support_preservation_rate": 0.4423076923076923,
+      "stable_support_correct_count": 26,
+      "support_precision": 0.7105263157894737,
+      "support_recall": 0.30337078651685395,
+      "unstable_support_count": 32
+    },
+    {
+      "accuracy": 0.8833333333333333,
+      "arm": "baseline",
+      "baseline_defined_stable_correct_support_count": 11,
+      "false_entitlement_count": 50,
+      "false_not_entitled_count": 34,
+      "frame_downstream_gradient_mode": "joint",
+      "framegate_failure_count_among_persistent_support_negatives": 34,
+      "intervention_changed_to_not_entitled_count": "",
+      "intervention_changed_to_refute_count": "",
+      "intervention_preserved_support_count": "",
+      "intervention_unstable_control_count": "",
+      "macro_f1": 0.8293543136190994,
+      "mean_frame_probability_by_gold_label": {
+        "NOT_ENTITLED": 0.39201887037037036,
+        "REFUTE": 0.8811279670329669,
+        "SUPPORT": 0.4054404494382023
+      },
+      "mean_frame_probability_by_intervention_type": {
+        "entity_swap": 0.16794203333333335,
+        "event_swap": 0.22018455,
+        "evidence_deletion": 0.9619107333333333,
+        "evidence_truncation": 0.9115541166666666,
+        "irrelevant_evidence": 0.013260966666666667,
+        "location_swap": 0.3659396833333333,
+        "none": 0.6424024500000001,
+        "paraphrase": 0.66883925,
+        "polarity_flip": 0.62653905,
+        "predicate_swap": 0.43650141666666664,
+        "role_swap": 0.3040477166666667,
+        "title_name_swap": 0.1468286166666667
+      },
+      "mean_frame_probability_by_recurrent_set": {
+        "stage196a_baseline_recurrent": 0.2696016363636364,
+        "stage196a_common_recurrent": 0.2606711578947369,
+        "stage196a_intervention_recurrent": 0.2606711578947369,
+        "stage196a_universal_all_six": 0.24435289999999998
+      },
+      "not_entitled_recall": 0.9074074074074074,
+      "persistent_false_entitlement_count": 6,
+      "persistent_refute_polarity_error_count": 0,
+      "persistent_stable_support_negative_count": 34,
+      "polarity_error_count": 0,
+      "prediction_counts": {
+        "NOT_ENTITLED": 524,
+        "REFUTE": 91,
+        "SUPPORT": 105
+      },
+      "refute_recall": 1.0,
+      "run": "seed184_joint",
+      "seed": 184,
+      "selected_best_epoch": 18,
+      "stable_correct_support_preservation_rate": "",
+      "stable_support_correct_count": 11,
+      "support_precision": 0.5238095238095238,
+      "support_recall": 0.6179775280898876,
+      "unstable_support_count": 44
+    },
+    {
+      "accuracy": 0.8833333333333333,
+      "arm": "intervention",
+      "baseline_defined_stable_correct_support_count": 11,
+      "false_entitlement_count": 27,
+      "false_not_entitled_count": 56,
+      "frame_downstream_gradient_mode": "frame_local_only",
+      "framegate_failure_count_among_persistent_support_negatives": 50,
+      "intervention_changed_to_not_entitled_count": 2,
+      "intervention_changed_to_refute_count": 0,
+      "intervention_preserved_support_count": 5,
+      "intervention_unstable_control_count": 4,
+      "macro_f1": 0.7832207947540434,
+      "mean_frame_probability_by_gold_label": {
+        "NOT_ENTITLED": 0.4910654185185185,
+        "REFUTE": 0.7502388241758241,
+        "SUPPORT": 0.4834220786516854
+      },
+      "mean_frame_probability_by_intervention_type": {
+        "entity_swap": 0.4145104333333334,
+        "event_swap": 0.4060992666666667,
+        "evidence_deletion": 0.9898462166666667,
+        "evidence_truncation": 0.8654296333333333,
+        "irrelevant_evidence": 0.015478233333333334,
+        "location_swap": 0.4293166166666667,
+        "none": 0.5817779000000001,
+        "paraphrase": 0.7010723333333334,
+        "polarity_flip": 0.5720880666666667,
+        "predicate_swap": 0.4503812833333333,
+        "role_swap": 0.42614226666666666,
+        "title_name_swap": 0.42238481666666666
+      },
+      "mean_frame_probability_by_recurrent_set": {
+        "stage196a_baseline_recurrent": 0.40210799999999997,
+        "stage196a_common_recurrent": 0.4007745789473684,
+        "stage196a_intervention_recurrent": 0.4007745789473684,
+        "stage196a_universal_all_six": 0.3963449
+      },
+      "not_entitled_recall": 0.95,
+      "persistent_false_entitlement_count": 10,
+      "persistent_refute_polarity_error_count": 0,
+      "persistent_stable_support_negative_count": 50,
+      "polarity_error_count": 1,
+      "prediction_counts": {
+        "NOT_ENTITLED": 569,
+        "REFUTE": 93,
+        "SUPPORT": 58
+      },
+      "refute_recall": 1.0,
+      "run": "seed184_frame_local_only",
+      "seed": 184,
+      "selected_best_epoch": 13,
+      "stable_correct_support_preservation_rate": 0.45454545454545453,
+      "stable_support_correct_count": 18,
+      "support_precision": 0.5517241379310345,
+      "support_recall": 0.3595505617977528,
+      "unstable_support_count": 21
+    },
+    {
+      "accuracy": 0.8986111111111111,
+      "arm": "baseline",
+      "baseline_defined_stable_correct_support_count": 17,
+      "false_entitlement_count": 43,
+      "false_not_entitled_count": 30,
+      "frame_downstream_gradient_mode": "joint",
+      "framegate_failure_count_among_persistent_support_negatives": 30,
+      "intervention_changed_to_not_entitled_count": "",
+      "intervention_changed_to_refute_count": "",
+      "intervention_preserved_support_count": "",
+      "intervention_unstable_control_count": "",
+      "macro_f1": 0.8497949757193024,
+      "mean_frame_probability_by_gold_label": {
+        "NOT_ENTITLED": 0.3949957870370371,
+        "REFUTE": 0.8906065824175824,
+        "SUPPORT": 0.43601064044943816
+      },
+      "mean_frame_probability_by_intervention_type": {
+        "entity_swap": 0.18330758333333333,
+        "event_swap": 0.21091225,
+        "evidence_deletion": 0.96419965,
+        "evidence_truncation": 0.9280787833333334,
+        "irrelevant_evidence": 0.013573066666666666,
+        "location_swap": 0.34621878333333334,
+        "none": 0.6440739833333333,
+        "paraphrase": 0.7432849,
+        "polarity_flip": 0.61014355,
+        "predicate_swap": 0.42217941666666664,
+        "role_swap": 0.31995498333333333,
+        "title_name_swap": 0.1665375666666667
+      },
+      "mean_frame_probability_by_recurrent_set": {
+        "stage196a_baseline_recurrent": 0.28633845454545453,
+        "stage196a_common_recurrent": 0.2791853157894737,
+        "stage196a_intervention_recurrent": 0.2791853157894737,
+        "stage196a_universal_all_six": 0.2573096
+      },
+      "not_entitled_recall": 0.9203703703703704,
+      "persistent_false_entitlement_count": 13,
+      "persistent_refute_polarity_error_count": 0,
+      "persistent_stable_support_negative_count": 30,
+      "polarity_error_count": 0,
+      "prediction_counts": {
+        "NOT_ENTITLED": 527,
+        "REFUTE": 91,
+        "SUPPORT": 102
+      },
+      "refute_recall": 1.0,
+      "run": "seed185_joint",
+      "seed": 185,
+      "selected_best_epoch": 20,
+      "stable_correct_support_preservation_rate": "",
+      "stable_support_correct_count": 17,
+      "support_precision": 0.5784313725490197,
+      "support_recall": 0.6629213483146067,
+      "unstable_support_count": 42
+    },
+    {
+      "accuracy": 0.8319444444444445,
+      "arm": "intervention",
+      "baseline_defined_stable_correct_support_count": 17,
+      "false_entitlement_count": 82,
+      "false_not_entitled_count": 39,
+      "frame_downstream_gradient_mode": "frame_local_only",
+      "framegate_failure_count_among_persistent_support_negatives": 34,
+      "intervention_changed_to_not_entitled_count": 0,
+      "intervention_changed_to_refute_count": 0,
+      "intervention_preserved_support_count": 14,
+      "intervention_unstable_control_count": 3,
+      "macro_f1": 0.7774660783339664,
+      "mean_frame_probability_by_gold_label": {
+        "NOT_ENTITLED": 0.5013903314814815,
+        "REFUTE": 0.7786612637362638,
+        "SUPPORT": 0.5218474044943819
+      },
+      "mean_frame_probability_by_intervention_type": {
+        "entity_swap": 0.44481101666666667,
+        "event_swap": 0.41328709999999996,
+        "evidence_deletion": 0.9864735166666667,
+        "evidence_truncation": 0.8328468666666667,
+        "irrelevant_evidence": 0.009880433333333332,
+        "location_swap": 0.4479127833333333,
+        "none": 0.6108797833333334,
+        "paraphrase": 0.7421627,
+        "polarity_flip": 0.60200075,
+        "predicate_swap": 0.47280821666666667,
+        "role_swap": 0.4516494,
+        "title_name_swap": 0.45284365
+      },
+      "mean_frame_probability_by_recurrent_set": {
+        "stage196a_baseline_recurrent": 0.42947613636363635,
+        "stage196a_common_recurrent": 0.42646694736842106,
+        "stage196a_intervention_recurrent": 0.42646694736842106,
+        "stage196a_universal_all_six": 0.4292366
+      },
+      "not_entitled_recall": 0.8481481481481481,
+      "persistent_false_entitlement_count": 46,
+      "persistent_refute_polarity_error_count": 0,
+      "persistent_stable_support_negative_count": 39,
+      "polarity_error_count": 0,
+      "prediction_counts": {
+        "NOT_ENTITLED": 497,
+        "REFUTE": 92,
+        "SUPPORT": 131
+      },
+      "refute_recall": 1.0,
+      "run": "seed185_frame_local_only",
+      "seed": 185,
+      "selected_best_epoch": 20,
+      "stable_correct_support_preservation_rate": 0.8235294117647058,
+      "stable_support_correct_count": 35,
+      "support_precision": 0.3816793893129771,
+      "support_recall": 0.5617977528089888,
+      "unstable_support_count": 15
+    }
+  ],
+  "runnable": true,
+  "seeds": [
+    183,
+    184,
+    185
+  ],
+  "selected_and_tail3_kept_distinct": true,
+  "selected_best_epoch_by_run": {
+    "seed183_frame_local_only": 20,
+    "seed183_joint": 20,
+    "seed184_frame_local_only": 13,
+    "seed184_joint": 18,
+    "seed185_frame_local_only": 20,
+    "seed185_joint": 20
+  },
+  "stage": "Stage196-B1-C",
+  "stage196a_decision": "STAGE196A_RECURRENT_LOCAL_CHANNEL_FAILURE",
+  "stage196a_recurrent_sets": {
+    "stage196a_baseline_recurrent": [
+      24,
+      25,
+      72,
+      108,
+      132,
+      168,
+      180,
+      216,
+      264,
+      276,
+      300,
+      324,
+      336,
+      359,
+      395,
+      443,
+      479,
+      503,
+      515,
+      563,
+      599,
+      635
+    ],
+    "stage196a_common_recurrent": [
+      24,
+      25,
+      72,
+      108,
+      168,
+      180,
+      216,
+      276,
+      300,
+      324,
+      336,
+      359,
+      395,
+      443,
+      479,
+      503,
+      563,
+      599,
+      635
+    ],
+    "stage196a_intervention_recurrent": [
+      24,
+      25,
+      72,
+      108,
+      168,
+      180,
+      216,
+      276,
+      300,
+      324,
+      336,
+      359,
+      395,
+      443,
+      479,
+      503,
+      563,
+      599,
+      635
+    ],
+    "stage196a_universal_all_six": [
+      24,
+      25,
+      72,
+      108,
+      276,
+      324,
+      359,
+      479,
+      503,
+      635
+    ]
+  },
+  "stage196b1_runtime_git_commit": "9835cbbf86d83aca0964821669e63f7f6deb1c59",
+  "tail_epochs": [
+    18,
+    19,
+    20
+  ],
+  "training_performed": false
+}

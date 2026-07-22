@@ -1,0 +1,7 @@
+decision,taxonomy_condition,required,observed,passed
+STAGE196A_PERSISTENT_SUPPORT_BOUNDARY_LOCALIZATION_BLOCKED,integrity failure,False,False,True
+STAGE196A_RECURRENT_LOCAL_CHANNEL_FAILURE,recurrent local-channel failure thresholds,True,True,True
+STAGE196A_RECURRENT_ENTITLEMENT_AGGREGATION_FAILURE,recurrent entitlement aggregation threshold,False,False,True
+STAGE196A_RECURRENT_FINAL_COMPOSITION_BOUNDARY_FAILURE,recurrent final-composition threshold,False,False,True
+STAGE196A_SEED_SPECIFIC_BOUNDARY_VARIANCE,nonrecurrent strict-majority single-seed positions,False,False,True
+STAGE196A_MIXED_PERSISTENT_MECHANISMS,all other integrity-passing results or simultaneous dominant conditions,False,False,True

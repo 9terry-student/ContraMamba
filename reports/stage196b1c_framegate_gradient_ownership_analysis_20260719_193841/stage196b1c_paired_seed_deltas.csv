@@ -1,0 +1,12 @@
+metric,improvement_direction,seed183_delta,seed184_delta,seed185_delta,mean_delta,median_delta,number_positive,number_zero,number_negative
+selected_accuracy,higher,-0.002777777777777768,0.0,-0.06666666666666665,-0.02314814814814814,-0.002777777777777768,0,1,2
+selected_macro_f1,higher,-0.06484793701550473,-0.04613351886505601,-0.07232889738533599,-0.061103451088632244,-0.06484793701550473,0,0,3
+selected_support_recall,higher,-0.32584269662921345,-0.2584269662921348,-0.10112359550561789,-0.2284644194756554,-0.2584269662921348,0,0,3
+selected_false_not_entitled_count,lower; negative delta is improvement,28.0,22.0,9.0,19.666666666666668,22.0,3,0,0
+selected_false_entitlement_count,lower; negative delta is improvement,-28.0,-23.0,39.0,-4.0,-23.0,1,0,2
+selected_polarity_error_count,lower; negative delta is improvement,2.0,1.0,0.0,1.0,1.0,2,1,0
+persistent_stable_support_negative_count,lower; negative delta is improvement,5.0,16.0,9.0,10.0,9.0,3,0,0
+framegate_failure_count_among_persistent_support_negatives,lower; negative delta is improvement,5.0,16.0,4.0,8.333333333333334,5.0,3,0,0
+stable_correct_support_preservation,higher; zero means full preservation,-29.0,-6.0,-3.0,-12.666666666666666,-6.0,0,0,3
+mean_frame_probability_stage196a_common_recurrent,higher,-0.13624342105263157,0.14010342105263152,0.14728163157894736,0.0503805438596491,0.14010342105263152,2,0,1
+mean_frame_probability_stage196a_universal_all_six,higher,-0.10097469999999997,0.15199200000000002,0.171927,0.07431476666666668,0.15199200000000002,2,0,1

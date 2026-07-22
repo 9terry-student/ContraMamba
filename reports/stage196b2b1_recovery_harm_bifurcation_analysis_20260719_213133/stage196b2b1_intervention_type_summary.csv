@@ -1,0 +1,7 @@
+seed,intervention_type,recovery_count,harm_count,recovery_rate_within_seed_role,harm_rate_within_seed_role,role_presence,recovery_only_in_seed,harm_only_in_seed,appears_in_both,recovery_exclusive_persists_across_positive_seeds,harm_exclusive_persists_across_positive_seeds
+184,none,0,1,0.0,0.16666666666666666,harm_only,false,true,false,false,false
+184,paraphrase,5,3,1.0,0.5,both,false,false,true,false,false
+184,polarity_flip,0,2,0.0,0.3333333333333333,harm_only,false,true,false,false,true
+185,none,1,2,0.5,0.6666666666666666,both,false,false,true,false,false
+185,paraphrase,1,0,0.5,0.0,recovery_only,true,false,false,false,false
+185,polarity_flip,0,1,0.0,0.3333333333333333,harm_only,false,true,false,false,true

@@ -1,0 +1,3138 @@
+{
+  "artifact_only": true,
+  "authorized_interpretation": "Within the frozen-Mamba, frozen-composer six-run population, exact native-input interventions may be interpreted under the frozen tail, recovery/harm, subtype, direction, and seed rules.",
+  "blocking_reasons": [],
+  "checkpoint_loaded": false,
+  "component_variants": [
+    "FRAME_ONLY",
+    "PREDICATE_ONLY",
+    "SUFFICIENCY_ONLY",
+    "ENTITLEMENT_PRIMITIVES",
+    "POLARITY_ONLY",
+    "ENTITLEMENT_PLUS_POLARITY"
+  ],
+  "cross_seed_consistency": {
+    "conflicts": [],
+    "seed183_excluded": true,
+    "variant_pass": {
+      "ENTITLEMENT_PLUS_POLARITY": false,
+      "ENTITLEMENT_PRIMITIVES": false,
+      "FRAME_ONLY": false,
+      "POLARITY_ONLY": false,
+      "PREDICATE_ONLY": false,
+      "SUFFICIENCY_ONLY": false
+    }
+  },
+  "current_git_commit": "dca07eee7d85717d21e51001c963175bb776506b",
+  "decision": "STAGE196B2B3_FINAL_COMPOSER_RESIDUAL_REQUIRED",
+  "decision_rule_evaluation": {
+    "cross_seed_variant_pass": {
+      "ENTITLEMENT_PLUS_POLARITY": false,
+      "ENTITLEMENT_PRIMITIVES": false,
+      "FRAME_ONLY": false,
+      "POLARITY_ONLY": false,
+      "PREDICATE_ONLY": false,
+      "SUFFICIENCY_ONLY": false
+    },
+    "decision": "STAGE196B2B3_FINAL_COMPOSER_RESIDUAL_REQUIRED",
+    "seed_conflicting_variants": [],
+    "seed_level_predicates": {
+      "seed184:ENTITLEMENT_PLUS_POLARITY": {
+        "harm_denominator": 6,
+        "harm_recipient_preservation": 0,
+        "passed": false,
+        "recovery_denominator": 5,
+        "recovery_donor_reproduction": 5
+      },
+      "seed184:ENTITLEMENT_PRIMITIVES": {
+        "harm_denominator": 6,
+        "harm_recipient_preservation": 3,
+        "passed": false,
+        "recovery_denominator": 5,
+        "recovery_donor_reproduction": 5
+      },
+      "seed184:FRAME_ONLY": {
+        "harm_denominator": 6,
+        "harm_recipient_preservation": 4,
+        "passed": false,
+        "recovery_denominator": 5,
+        "recovery_donor_reproduction": 3
+      },
+      "seed184:POLARITY_ONLY": {
+        "harm_denominator": 6,
+        "harm_recipient_preservation": 2,
+        "passed": false,
+        "recovery_denominator": 5,
+        "recovery_donor_reproduction": 0
+      },
+      "seed184:PREDICATE_ONLY": {
+        "harm_denominator": 6,
+        "harm_recipient_preservation": 4,
+        "passed": false,
+        "recovery_denominator": 5,
+        "recovery_donor_reproduction": 0
+      },
+      "seed184:SUFFICIENCY_ONLY": {
+        "harm_denominator": 6,
+        "harm_recipient_preservation": 6,
+        "passed": false,
+        "recovery_denominator": 5,
+        "recovery_donor_reproduction": 0
+      },
+      "seed185:ENTITLEMENT_PLUS_POLARITY": {
+        "harm_denominator": 3,
+        "harm_recipient_preservation": 0,
+        "passed": false,
+        "recovery_denominator": 2,
+        "recovery_donor_reproduction": 2
+      },
+      "seed185:ENTITLEMENT_PRIMITIVES": {
+        "harm_denominator": 3,
+        "harm_recipient_preservation": 0,
+        "passed": false,
+        "recovery_denominator": 2,
+        "recovery_donor_reproduction": 2
+      },
+      "seed185:FRAME_ONLY": {
+        "harm_denominator": 3,
+        "harm_recipient_preservation": 0,
+        "passed": false,
+        "recovery_denominator": 2,
+        "recovery_donor_reproduction": 0
+      },
+      "seed185:POLARITY_ONLY": {
+        "harm_denominator": 3,
+        "harm_recipient_preservation": 3,
+        "passed": false,
+        "recovery_denominator": 2,
+        "recovery_donor_reproduction": 0
+      },
+      "seed185:PREDICATE_ONLY": {
+        "harm_denominator": 3,
+        "harm_recipient_preservation": 3,
+        "passed": false,
+        "recovery_denominator": 2,
+        "recovery_donor_reproduction": 0
+      },
+      "seed185:SUFFICIENCY_ONLY": {
+        "harm_denominator": 3,
+        "harm_recipient_preservation": 3,
+        "passed": false,
+        "recovery_denominator": 2,
+        "recovery_donor_reproduction": 0
+      }
+    },
+    "tail_epochs": [
+      18,
+      19,
+      20
+    ]
+  },
+  "decision_rule_provenance": {
+    "reuse": "decision names, tail status, seed roles, recovery/harm, subtype populations, promotion prohibitions; unavailable data placeholders replaced by exact rows",
+    "sha256": "6b69f54df581eabb4f7726a773bb97208ad53ec5262962d0bf9a7eaaee332186",
+    "source_path": "/kaggle/working/ContraMamba/scripts/analyze_stage196b2b3_exact_component_recomposition.py"
+  },
+  "directions": [
+    "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+    "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR"
+  ],
+  "frozen_mamba_scope": true,
+  "model_loaded": false,
+  "native_reconstruction": {
+    "epoch": "",
+    "gradient_mode": "",
+    "independent_of_sidecar_diagnostics": true,
+    "maximum_branch_delta_sum_error": 0.0,
+    "maximum_decision_head_error": 3.3065668159082406e-07,
+    "maximum_entitlement_error": 5.800120184140667e-08,
+    "maximum_final_logit_error": 3.3065668159082406e-07,
+    "maximum_margin_error": 3.610712273616201e-07,
+    "passed": true,
+    "prediction_equality_rate": 1.0,
+    "row_count": 86400,
+    "run": "GLOBAL",
+    "seed": "",
+    "tolerance": 1e-06
+  },
+  "path_class_results": [
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 6,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 6,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 3,
+        "polarity_flip": 2
+      },
+      "mean_tail_margin_shift": 0.27003928514429926,
+      "path_class_counts": {
+        "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY": 1,
+        "FRAME_ENTITLEMENT_LOSS": 2,
+        "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN": 3
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PLUS_POLARITY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 2,
+      "donor_tail_reproduced_rate": 0.3333333333333333,
+      "identity_count": 6,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 3,
+        "polarity_flip": 2
+      },
+      "mean_tail_margin_shift": -0.13949533419355753,
+      "path_class_counts": {
+        "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY": 1,
+        "FRAME_ENTITLEMENT_LOSS": 2,
+        "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN": 3
+      },
+      "recipient_tail_preserved_count": 2,
+      "recipient_tail_preserved_rate": 0.3333333333333333,
+      "seed": 184,
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PRIMITIVES"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 6,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 3,
+        "polarity_flip": 2
+      },
+      "mean_tail_margin_shift": -0.3025173288368043,
+      "path_class_counts": {
+        "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY": 1,
+        "FRAME_ENTITLEMENT_LOSS": 2,
+        "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN": 3
+      },
+      "recipient_tail_preserved_count": 4,
+      "recipient_tail_preserved_rate": 0.6666666666666666,
+      "seed": 184,
+      "transition_role": "harm",
+      "variant": "FRAME_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 3,
+      "donor_tail_reproduced_rate": 0.5,
+      "identity_count": 6,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 3,
+        "polarity_flip": 2
+      },
+      "mean_tail_margin_shift": 0.628254440910289,
+      "path_class_counts": {
+        "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY": 1,
+        "FRAME_ENTITLEMENT_LOSS": 2,
+        "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN": 3
+      },
+      "recipient_tail_preserved_count": 2,
+      "recipient_tail_preserved_rate": 0.3333333333333333,
+      "seed": 184,
+      "transition_role": "harm",
+      "variant": "POLARITY_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 6,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 3,
+        "polarity_flip": 2
+      },
+      "mean_tail_margin_shift": -0.005090634934053609,
+      "path_class_counts": {
+        "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY": 1,
+        "FRAME_ENTITLEMENT_LOSS": 2,
+        "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN": 3
+      },
+      "recipient_tail_preserved_count": 4,
+      "recipient_tail_preserved_rate": 0.6666666666666666,
+      "seed": 184,
+      "transition_role": "harm",
+      "variant": "PREDICATE_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 6,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 3,
+        "polarity_flip": 2
+      },
+      "mean_tail_margin_shift": 0.0057452820016344955,
+      "path_class_counts": {
+        "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY": 1,
+        "FRAME_ENTITLEMENT_LOSS": 2,
+        "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN": 3
+      },
+      "recipient_tail_preserved_count": 6,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "transition_role": "harm",
+      "variant": "SUFFICIENCY_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 6,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 6,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 3,
+        "polarity_flip": 2
+      },
+      "mean_tail_margin_shift": -0.27003848068298747,
+      "path_class_counts": {
+        "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY": 1,
+        "FRAME_ENTITLEMENT_LOSS": 2,
+        "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN": 3
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PLUS_POLARITY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 2,
+      "donor_tail_reproduced_rate": 0.3333333333333333,
+      "identity_count": 6,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 3,
+        "polarity_flip": 2
+      },
+      "mean_tail_margin_shift": 0.3582159602273016,
+      "path_class_counts": {
+        "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY": 1,
+        "FRAME_ENTITLEMENT_LOSS": 2,
+        "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN": 3
+      },
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 0.5,
+      "seed": 184,
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PRIMITIVES"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 1,
+      "donor_tail_reproduced_rate": 0.16666666666666666,
+      "identity_count": 6,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 3,
+        "polarity_flip": 2
+      },
+      "mean_tail_margin_shift": 0.30389244192311454,
+      "path_class_counts": {
+        "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY": 1,
+        "FRAME_ENTITLEMENT_LOSS": 2,
+        "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN": 3
+      },
+      "recipient_tail_preserved_count": 4,
+      "recipient_tail_preserved_rate": 0.6666666666666666,
+      "seed": 184,
+      "transition_role": "harm",
+      "variant": "FRAME_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 2,
+      "donor_tail_reproduced_rate": 0.3333333333333333,
+      "identity_count": 6,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 3,
+        "polarity_flip": 2
+      },
+      "mean_tail_margin_shift": -0.4095346193378567,
+      "path_class_counts": {
+        "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY": 1,
+        "FRAME_ENTITLEMENT_LOSS": 2,
+        "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN": 3
+      },
+      "recipient_tail_preserved_count": 2,
+      "recipient_tail_preserved_rate": 0.3333333333333333,
+      "seed": 184,
+      "transition_role": "harm",
+      "variant": "POLARITY_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 6,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 3,
+        "polarity_flip": 2
+      },
+      "mean_tail_margin_shift": -0.15120620720843664,
+      "path_class_counts": {
+        "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY": 1,
+        "FRAME_ENTITLEMENT_LOSS": 2,
+        "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN": 3
+      },
+      "recipient_tail_preserved_count": 4,
+      "recipient_tail_preserved_rate": 0.6666666666666666,
+      "seed": 184,
+      "transition_role": "harm",
+      "variant": "PREDICATE_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 6,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 3,
+        "polarity_flip": 2
+      },
+      "mean_tail_margin_shift": -0.007100328947633128,
+      "path_class_counts": {
+        "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY": 1,
+        "FRAME_ENTITLEMENT_LOSS": 2,
+        "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN": 3
+      },
+      "recipient_tail_preserved_count": 6,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "transition_role": "harm",
+      "variant": "SUFFICIENCY_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 5,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 5,
+      "intervention_type_counts": {
+        "paraphrase": 5
+      },
+      "mean_tail_margin_shift": -2.1171098519488396,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 5
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "transition_role": "recovery",
+      "variant": "ENTITLEMENT_PLUS_POLARITY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 5,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 5,
+      "intervention_type_counts": {
+        "paraphrase": 5
+      },
+      "mean_tail_margin_shift": -2.178604281770292,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 5
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "transition_role": "recovery",
+      "variant": "ENTITLEMENT_PRIMITIVES"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 3,
+      "donor_tail_reproduced_rate": 0.6,
+      "identity_count": 5,
+      "intervention_type_counts": {
+        "paraphrase": 5
+      },
+      "mean_tail_margin_shift": -1.9485484027571922,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 5
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "transition_role": "recovery",
+      "variant": "FRAME_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 5,
+      "intervention_type_counts": {
+        "paraphrase": 5
+      },
+      "mean_tail_margin_shift": 0.30962848357900363,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 5
+      },
+      "recipient_tail_preserved_count": 5,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "transition_role": "recovery",
+      "variant": "POLARITY_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 5,
+      "intervention_type_counts": {
+        "paraphrase": 5
+      },
+      "mean_tail_margin_shift": -0.892495193661094,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 5
+      },
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 0.6,
+      "seed": 184,
+      "transition_role": "recovery",
+      "variant": "PREDICATE_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 5,
+      "intervention_type_counts": {
+        "paraphrase": 5
+      },
+      "mean_tail_margin_shift": 0.0038216249109413345,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 5
+      },
+      "recipient_tail_preserved_count": 5,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "transition_role": "recovery",
+      "variant": "SUFFICIENCY_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 5,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 5,
+      "intervention_type_counts": {
+        "paraphrase": 5
+      },
+      "mean_tail_margin_shift": 2.117108524390518,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 5
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "transition_role": "recovery",
+      "variant": "ENTITLEMENT_PLUS_POLARITY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 5,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 5,
+      "intervention_type_counts": {
+        "paraphrase": 5
+      },
+      "mean_tail_margin_shift": 2.426737007969522,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 5
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "transition_role": "recovery",
+      "variant": "ENTITLEMENT_PRIMITIVES"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 3,
+      "donor_tail_reproduced_rate": 0.6,
+      "identity_count": 5,
+      "intervention_type_counts": {
+        "paraphrase": 5
+      },
+      "mean_tail_margin_shift": 1.4359254908579522,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 5
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "transition_role": "recovery",
+      "variant": "FRAME_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 5,
+      "intervention_type_counts": {
+        "paraphrase": 5
+      },
+      "mean_tail_margin_shift": -0.0614944298214527,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 5
+      },
+      "recipient_tail_preserved_count": 5,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "transition_role": "recovery",
+      "variant": "POLARITY_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 5,
+      "intervention_type_counts": {
+        "paraphrase": 5
+      },
+      "mean_tail_margin_shift": 0.25881508555180854,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 5
+      },
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 0.6,
+      "seed": 184,
+      "transition_role": "recovery",
+      "variant": "PREDICATE_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 5,
+      "intervention_type_counts": {
+        "paraphrase": 5
+      },
+      "mean_tail_margin_shift": -0.0009329709887897015,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 5
+      },
+      "recipient_tail_preserved_count": 5,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "transition_role": "recovery",
+      "variant": "SUFFICIENCY_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 3,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 3,
+      "intervention_type_counts": {
+        "none": 2,
+        "polarity_flip": 1
+      },
+      "mean_tail_margin_shift": 0.3061973272826404,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 3
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PLUS_POLARITY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 3,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 3,
+      "intervention_type_counts": {
+        "none": 2,
+        "polarity_flip": 1
+      },
+      "mean_tail_margin_shift": 0.3414383598809691,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 3
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PRIMITIVES"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 3,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 3,
+      "intervention_type_counts": {
+        "none": 2,
+        "polarity_flip": 1
+      },
+      "mean_tail_margin_shift": 0.3074147694028851,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 3
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "transition_role": "harm",
+      "variant": "FRAME_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 3,
+      "intervention_type_counts": {
+        "none": 2,
+        "polarity_flip": 1
+      },
+      "mean_tail_margin_shift": -0.02895923086250829,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 3
+      },
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "transition_role": "harm",
+      "variant": "POLARITY_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 3,
+      "intervention_type_counts": {
+        "none": 2,
+        "polarity_flip": 1
+      },
+      "mean_tail_margin_shift": 0.022671151569125653,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 3
+      },
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "transition_role": "harm",
+      "variant": "PREDICATE_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 3,
+      "intervention_type_counts": {
+        "none": 2,
+        "polarity_flip": 1
+      },
+      "mean_tail_margin_shift": -0.0010682244163411224,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 3
+      },
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "transition_role": "harm",
+      "variant": "SUFFICIENCY_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 3,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 3,
+      "intervention_type_counts": {
+        "none": 2,
+        "polarity_flip": 1
+      },
+      "mean_tail_margin_shift": -0.3061557759307408,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 3
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PLUS_POLARITY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 3,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 3,
+      "intervention_type_counts": {
+        "none": 2,
+        "polarity_flip": 1
+      },
+      "mean_tail_margin_shift": -0.33511500679324907,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 3
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PRIMITIVES"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 1,
+      "donor_tail_reproduced_rate": 0.3333333333333333,
+      "identity_count": 3,
+      "intervention_type_counts": {
+        "none": 2,
+        "polarity_flip": 1
+      },
+      "mean_tail_margin_shift": -0.3123740529552296,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 3
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "transition_role": "harm",
+      "variant": "FRAME_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 3,
+      "intervention_type_counts": {
+        "none": 2,
+        "polarity_flip": 1
+      },
+      "mean_tail_margin_shift": 0.03524103259832867,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 3
+      },
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "transition_role": "harm",
+      "variant": "POLARITY_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 3,
+      "intervention_type_counts": {
+        "none": 2,
+        "polarity_flip": 1
+      },
+      "mean_tail_margin_shift": -0.036675494744976445,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 3
+      },
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "transition_role": "harm",
+      "variant": "PREDICATE_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 3,
+      "intervention_type_counts": {
+        "none": 2,
+        "polarity_flip": 1
+      },
+      "mean_tail_margin_shift": 0.0012843647542069138,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 3
+      },
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "transition_role": "harm",
+      "variant": "SUFFICIENCY_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 2,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 2,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 1
+      },
+      "mean_tail_margin_shift": -0.922378605232222,
+      "path_class_counts": {
+        "FRAME_ENTITLEMENT_GAIN": 2
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "transition_role": "recovery",
+      "variant": "ENTITLEMENT_PLUS_POLARITY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 2,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 2,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 1
+      },
+      "mean_tail_margin_shift": -0.9189414405540575,
+      "path_class_counts": {
+        "FRAME_ENTITLEMENT_GAIN": 2
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "transition_role": "recovery",
+      "variant": "ENTITLEMENT_PRIMITIVES"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 1,
+      "donor_tail_reproduced_rate": 0.5,
+      "identity_count": 2,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 1
+      },
+      "mean_tail_margin_shift": -0.7472729618309903,
+      "path_class_counts": {
+        "FRAME_ENTITLEMENT_GAIN": 2
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "transition_role": "recovery",
+      "variant": "FRAME_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 2,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 1
+      },
+      "mean_tail_margin_shift": -0.012962051142905606,
+      "path_class_counts": {
+        "FRAME_ENTITLEMENT_GAIN": 2
+      },
+      "recipient_tail_preserved_count": 2,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "transition_role": "recovery",
+      "variant": "POLARITY_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 2,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 1
+      },
+      "mean_tail_margin_shift": -0.3449196767955354,
+      "path_class_counts": {
+        "FRAME_ENTITLEMENT_GAIN": 2
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "transition_role": "recovery",
+      "variant": "PREDICATE_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 2,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 1
+      },
+      "mean_tail_margin_shift": -0.00010850795054108886,
+      "path_class_counts": {
+        "FRAME_ENTITLEMENT_GAIN": 2
+      },
+      "recipient_tail_preserved_count": 2,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "transition_role": "recovery",
+      "variant": "SUFFICIENCY_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 2,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 2,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 1
+      },
+      "mean_tail_margin_shift": 0.9222701711287717,
+      "path_class_counts": {
+        "FRAME_ENTITLEMENT_GAIN": 2
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "transition_role": "recovery",
+      "variant": "ENTITLEMENT_PLUS_POLARITY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 2,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 2,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 1
+      },
+      "mean_tail_margin_shift": 0.9093081199858661,
+      "path_class_counts": {
+        "FRAME_ENTITLEMENT_GAIN": 2
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "transition_role": "recovery",
+      "variant": "ENTITLEMENT_PRIMITIVES"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 2,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 1
+      },
+      "mean_tail_margin_shift": 0.570565477404934,
+      "path_class_counts": {
+        "FRAME_ENTITLEMENT_GAIN": 2
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "transition_role": "recovery",
+      "variant": "FRAME_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 2,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 1
+      },
+      "mean_tail_margin_shift": 0.0034371646781646554,
+      "path_class_counts": {
+        "FRAME_ENTITLEMENT_GAIN": 2
+      },
+      "recipient_tail_preserved_count": 2,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "transition_role": "recovery",
+      "variant": "POLARITY_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 2,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 1
+      },
+      "mean_tail_margin_shift": 0.16836211382897967,
+      "path_class_counts": {
+        "FRAME_ENTITLEMENT_GAIN": 2
+      },
+      "recipient_tail_preserved_count": 1,
+      "recipient_tail_preserved_rate": 0.5,
+      "seed": 185,
+      "transition_role": "recovery",
+      "variant": "PREDICATE_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 2,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 1
+      },
+      "mean_tail_margin_shift": 6.429882628491979e-05,
+      "path_class_counts": {
+        "FRAME_ENTITLEMENT_GAIN": 2
+      },
+      "recipient_tail_preserved_count": 2,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "transition_role": "recovery",
+      "variant": "SUFFICIENCY_ONLY"
+    }
+  ],
+  "polarity_margin_used_as_causal_input": false,
+  "positive_control": {
+    "failing_rows": [],
+    "maximum_absolute_donor_logit_error": 0.0,
+    "maximum_donor_margin_error": 0.0,
+    "passed": true,
+    "prediction_equality_rate": 1.0,
+    "row_count": 86400
+  },
+  "primary_population": {
+    "identity_count": 16,
+    "identity_epoch_count": 320,
+    "seed_roles": {
+      "183": "contrast-only",
+      "184": "primary positive",
+      "185": "primary positive"
+    }
+  },
+  "prohibited_claims": [
+    "formal causal mediation",
+    "architectural sufficiency beyond the frozen composer",
+    "external or OOD validity",
+    "unfrozen-Mamba validity",
+    "training improvement",
+    "promotion",
+    "a new decision mechanism",
+    "polarity causality from polarity_support_margin",
+    "component causality when the full-composer positive control fails"
+  ],
+  "recommended_next_stage": "STAGE196B2B4_FINAL_COMPOSER_RESIDUAL_LOCALIZATION",
+  "regression_or_interpolation_used": false,
+  "remaining_uncertainty": [
+    "inference-only within-model intervention probe",
+    "frozen-Mamba and observed clean-dev epochs only"
+  ],
+  "row_counts": {
+    "component_swap": 3840,
+    "composer": 86400,
+    "group_swap_summary": 48,
+    "paired_states": 43200,
+    "positive_control_directional": 86400,
+    "row_swap_summary": 192,
+    "subtype_summary": 72,
+    "trajectory": 86400
+  },
+  "scientific_label": "Exact Native Component Recomposition",
+  "seed_level_results": {
+    "184": {
+      "ENTITLEMENT_PLUS_POLARITY": {
+        "harm_denominator": 6,
+        "harm_recipient_preservation": 0,
+        "passed": false,
+        "recovery_denominator": 5,
+        "recovery_donor_reproduction": 5
+      },
+      "ENTITLEMENT_PRIMITIVES": {
+        "harm_denominator": 6,
+        "harm_recipient_preservation": 3,
+        "passed": false,
+        "recovery_denominator": 5,
+        "recovery_donor_reproduction": 5
+      },
+      "FRAME_ONLY": {
+        "harm_denominator": 6,
+        "harm_recipient_preservation": 4,
+        "passed": false,
+        "recovery_denominator": 5,
+        "recovery_donor_reproduction": 3
+      },
+      "POLARITY_ONLY": {
+        "harm_denominator": 6,
+        "harm_recipient_preservation": 2,
+        "passed": false,
+        "recovery_denominator": 5,
+        "recovery_donor_reproduction": 0
+      },
+      "PREDICATE_ONLY": {
+        "harm_denominator": 6,
+        "harm_recipient_preservation": 4,
+        "passed": false,
+        "recovery_denominator": 5,
+        "recovery_donor_reproduction": 0
+      },
+      "SUFFICIENCY_ONLY": {
+        "harm_denominator": 6,
+        "harm_recipient_preservation": 6,
+        "passed": false,
+        "recovery_denominator": 5,
+        "recovery_donor_reproduction": 0
+      }
+    },
+    "185": {
+      "ENTITLEMENT_PLUS_POLARITY": {
+        "harm_denominator": 3,
+        "harm_recipient_preservation": 0,
+        "passed": false,
+        "recovery_denominator": 2,
+        "recovery_donor_reproduction": 2
+      },
+      "ENTITLEMENT_PRIMITIVES": {
+        "harm_denominator": 3,
+        "harm_recipient_preservation": 0,
+        "passed": false,
+        "recovery_denominator": 2,
+        "recovery_donor_reproduction": 2
+      },
+      "FRAME_ONLY": {
+        "harm_denominator": 3,
+        "harm_recipient_preservation": 0,
+        "passed": false,
+        "recovery_denominator": 2,
+        "recovery_donor_reproduction": 0
+      },
+      "POLARITY_ONLY": {
+        "harm_denominator": 3,
+        "harm_recipient_preservation": 3,
+        "passed": false,
+        "recovery_denominator": 2,
+        "recovery_donor_reproduction": 0
+      },
+      "PREDICATE_ONLY": {
+        "harm_denominator": 3,
+        "harm_recipient_preservation": 3,
+        "passed": false,
+        "recovery_denominator": 2,
+        "recovery_donor_reproduction": 0
+      },
+      "SUFFICIENCY_ONLY": {
+        "harm_denominator": 3,
+        "harm_recipient_preservation": 3,
+        "passed": false,
+        "recovery_denominator": 2,
+        "recovery_donor_reproduction": 0
+      }
+    }
+  },
+  "source_artifact_paths": {
+    "frozen_decision_rules": "/kaggle/working/ContraMamba/scripts/analyze_stage196b2b3_exact_component_recomposition.py",
+    "stage196b2b2_analysis": "/kaggle/working/ContraMamba/reports/stage196b2b2_row_level_treatment_paths_analysis_20260719_221925/stage196b2b2_analysis.json",
+    "stage196b2b3_analysis": "/kaggle/working/ContraMamba/reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+    "stage196b2b3p0_run_root": "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834"
+  },
+  "source_hashes": {
+    "/kaggle/working/ContraMamba/reports/stage196b2b2_row_level_treatment_paths_analysis_20260719_221925/stage196b2b2_analysis.json": "fc10c156e5a21b347f66b345622a43f640cb86fa89cd77680a73e68486902a47",
+    "/kaggle/working/ContraMamba/reports/stage196b2b2_row_level_treatment_paths_analysis_20260719_221925/stage196b2b2_contract.csv": "55d6b942f0b096747a6b6489085e98dc3d76e7e6394d0e005cc16deaa81a625e",
+    "/kaggle/working/ContraMamba/reports/stage196b2b2_row_level_treatment_paths_analysis_20260719_221925/stage196b2b2_contrast_summary.csv": "66e66f160c506046a8eb180d07f5f8a7e1e6237e8c512e0deff73c7733dcf721",
+    "/kaggle/working/ContraMamba/reports/stage196b2b2_row_level_treatment_paths_analysis_20260719_221925/stage196b2b2_epoch_paired_paths.csv": "be1e10a6de26e02d26030fad9c4a211100c00ff179f4069d62ea4d51a865fff7",
+    "/kaggle/working/ContraMamba/reports/stage196b2b2_row_level_treatment_paths_analysis_20260719_221925/stage196b2b2_event_order_summary.csv": "7ef0152f3903a33c202f7f05f3770753ead920552f1196458e8c15ec95260c29",
+    "/kaggle/working/ContraMamba/reports/stage196b2b2_row_level_treatment_paths_analysis_20260719_221925/stage196b2b2_group_path_summary.csv": "3f41c6bacb08df3cb59ea0a407f490e62a0ca8266b5bed0dff8a680691147c67",
+    "/kaggle/working/ContraMamba/reports/stage196b2b2_row_level_treatment_paths_analysis_20260719_221925/stage196b2b2_intervention_type_paths.csv": "d87a4731566631308cee24e45f5f64841fac309bd1b215e3d940b23f589e5e30",
+    "/kaggle/working/ContraMamba/reports/stage196b2b2_row_level_treatment_paths_analysis_20260719_221925/stage196b2b2_report.md": "ab83be196ed60f606af30aef196d4a104196ee5208744db3e869a38ee736f650",
+    "/kaggle/working/ContraMamba/reports/stage196b2b2_row_level_treatment_paths_analysis_20260719_221925/stage196b2b2_row_path_summary.csv": "26ba79b3f06853dbf2d7340a61f756179fc8e457544754d22fc65da7c62cbd54",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json": "cde02893a76866971751a75eb14fdf0a8d74aece7f9329f3078d187cec6539df",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_component_swap_rows.csv": "0ea33d88c315dbd54aa5dfd7a6cd0282617a183954ee92f721a3191d444575fb",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_composer_graph.csv": "9b973cd7b3d8af7614e188abf71e57eefae9a2c42c6ff8b5ef3bef3c32a83487",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_contract.csv": "b1887d049e09c6b311eaa8e4b5747686b4ed797cffaa47ccb00f79bbfbebf392",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_group_swap_summary.csv": "7f3d85b14473dba6c16424f9edd3e78050d9ed1f0a5f6bb3b2cebc4226afbaed",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_native_reconstruction.csv": "a701da62f1da78c4482595cb91ab0ed72b89a9ccfdb793c0e9536e401818f092",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_report.md": "b07c5e18f42214a2f9341ae48b3e605ae9a0f7e17ef55811b2f8af5161f6cf04",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_row_swap_summary.csv": "369b8bce1c2b49dd546ebeaab136f9e7e67fc8eb6f432e4d19aa659e6c74f4eb",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_subtype_summary.csv": "c1f8ce51aa432d14cc4e2ef5b9e9cc95c6d4ef0e045ff53ab3a24ddd71b1c8fe",
+    "/kaggle/working/ContraMamba/scripts/analyze_stage196b2b3_exact_component_recomposition.py": "6b69f54df581eabb4f7726a773bb97208ad53ec5262962d0bf9a7eaaee332186"
+  },
+  "stage": "Stage196-B2-B3-R1",
+  "stage196b2b3p0_runtime_git_commit": "fa16787efa84bb15d832b6d9382fafd77016c4e2",
+  "subtype_results": [
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 1,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 1,
+      "path_class": "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "subtype": "COMPOSITION_RESIDUAL_ROWS",
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PLUS_POLARITY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 1,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 1,
+      "path_class": "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "subtype": "COMPOSITION_RESIDUAL_ROWS",
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PRIMITIVES"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 1,
+      "path_class": "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "subtype": "COMPOSITION_RESIDUAL_ROWS",
+      "transition_role": "harm",
+      "variant": "FRAME_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 1,
+      "path_class": "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY",
+      "recipient_tail_preserved_count": 1,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "subtype": "COMPOSITION_RESIDUAL_ROWS",
+      "transition_role": "harm",
+      "variant": "POLARITY_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 1,
+      "path_class": "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "subtype": "COMPOSITION_RESIDUAL_ROWS",
+      "transition_role": "harm",
+      "variant": "PREDICATE_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 1,
+      "path_class": "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY",
+      "recipient_tail_preserved_count": 1,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "subtype": "COMPOSITION_RESIDUAL_ROWS",
+      "transition_role": "harm",
+      "variant": "SUFFICIENCY_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 1,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 1,
+      "path_class": "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "subtype": "COMPOSITION_RESIDUAL_ROWS",
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PLUS_POLARITY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 1,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 1,
+      "path_class": "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "subtype": "COMPOSITION_RESIDUAL_ROWS",
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PRIMITIVES"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 1,
+      "path_class": "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "subtype": "COMPOSITION_RESIDUAL_ROWS",
+      "transition_role": "harm",
+      "variant": "FRAME_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 1,
+      "path_class": "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY",
+      "recipient_tail_preserved_count": 1,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "subtype": "COMPOSITION_RESIDUAL_ROWS",
+      "transition_role": "harm",
+      "variant": "POLARITY_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 1,
+      "path_class": "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "subtype": "COMPOSITION_RESIDUAL_ROWS",
+      "transition_role": "harm",
+      "variant": "PREDICATE_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 1,
+      "path_class": "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY",
+      "recipient_tail_preserved_count": 1,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "subtype": "COMPOSITION_RESIDUAL_ROWS",
+      "transition_role": "harm",
+      "variant": "SUFFICIENCY_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 2,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 2,
+      "path_class": "FRAME_ENTITLEMENT_LOSS",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "subtype": "FRAME_ENTITLEMENT_LOSS_LIKE_ROWS",
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PLUS_POLARITY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 1,
+      "donor_tail_reproduced_rate": 0.5,
+      "identity_count": 2,
+      "path_class": "FRAME_ENTITLEMENT_LOSS",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "subtype": "FRAME_ENTITLEMENT_LOSS_LIKE_ROWS",
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PRIMITIVES"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 2,
+      "path_class": "FRAME_ENTITLEMENT_LOSS",
+      "recipient_tail_preserved_count": 1,
+      "recipient_tail_preserved_rate": 0.5,
+      "seed": 184,
+      "subtype": "FRAME_ENTITLEMENT_LOSS_LIKE_ROWS",
+      "transition_role": "harm",
+      "variant": "FRAME_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 2,
+      "path_class": "FRAME_ENTITLEMENT_LOSS",
+      "recipient_tail_preserved_count": 1,
+      "recipient_tail_preserved_rate": 0.5,
+      "seed": 184,
+      "subtype": "FRAME_ENTITLEMENT_LOSS_LIKE_ROWS",
+      "transition_role": "harm",
+      "variant": "POLARITY_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 2,
+      "path_class": "FRAME_ENTITLEMENT_LOSS",
+      "recipient_tail_preserved_count": 1,
+      "recipient_tail_preserved_rate": 0.5,
+      "seed": 184,
+      "subtype": "FRAME_ENTITLEMENT_LOSS_LIKE_ROWS",
+      "transition_role": "harm",
+      "variant": "PREDICATE_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 2,
+      "path_class": "FRAME_ENTITLEMENT_LOSS",
+      "recipient_tail_preserved_count": 2,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "subtype": "FRAME_ENTITLEMENT_LOSS_LIKE_ROWS",
+      "transition_role": "harm",
+      "variant": "SUFFICIENCY_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 2,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 2,
+      "path_class": "FRAME_ENTITLEMENT_LOSS",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "subtype": "FRAME_ENTITLEMENT_LOSS_LIKE_ROWS",
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PLUS_POLARITY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 1,
+      "donor_tail_reproduced_rate": 0.5,
+      "identity_count": 2,
+      "path_class": "FRAME_ENTITLEMENT_LOSS",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "subtype": "FRAME_ENTITLEMENT_LOSS_LIKE_ROWS",
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PRIMITIVES"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 1,
+      "donor_tail_reproduced_rate": 0.5,
+      "identity_count": 2,
+      "path_class": "FRAME_ENTITLEMENT_LOSS",
+      "recipient_tail_preserved_count": 1,
+      "recipient_tail_preserved_rate": 0.5,
+      "seed": 184,
+      "subtype": "FRAME_ENTITLEMENT_LOSS_LIKE_ROWS",
+      "transition_role": "harm",
+      "variant": "FRAME_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 2,
+      "path_class": "FRAME_ENTITLEMENT_LOSS",
+      "recipient_tail_preserved_count": 1,
+      "recipient_tail_preserved_rate": 0.5,
+      "seed": 184,
+      "subtype": "FRAME_ENTITLEMENT_LOSS_LIKE_ROWS",
+      "transition_role": "harm",
+      "variant": "POLARITY_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 2,
+      "path_class": "FRAME_ENTITLEMENT_LOSS",
+      "recipient_tail_preserved_count": 1,
+      "recipient_tail_preserved_rate": 0.5,
+      "seed": 184,
+      "subtype": "FRAME_ENTITLEMENT_LOSS_LIKE_ROWS",
+      "transition_role": "harm",
+      "variant": "PREDICATE_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 2,
+      "path_class": "FRAME_ENTITLEMENT_LOSS",
+      "recipient_tail_preserved_count": 2,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "subtype": "FRAME_ENTITLEMENT_LOSS_LIKE_ROWS",
+      "transition_role": "harm",
+      "variant": "SUFFICIENCY_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 3,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 3,
+      "path_class": "MULTI_CHANNEL_CONFLICT",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "subtype": "FRAME_ENTITLEMENT_LOSS_LIKE_ROWS",
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PLUS_POLARITY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 3,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 3,
+      "path_class": "MULTI_CHANNEL_CONFLICT",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "subtype": "FRAME_ENTITLEMENT_LOSS_LIKE_ROWS",
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PRIMITIVES"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 3,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 3,
+      "path_class": "MULTI_CHANNEL_CONFLICT",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "subtype": "FRAME_ENTITLEMENT_LOSS_LIKE_ROWS",
+      "transition_role": "harm",
+      "variant": "FRAME_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 3,
+      "path_class": "MULTI_CHANNEL_CONFLICT",
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "subtype": "FRAME_ENTITLEMENT_LOSS_LIKE_ROWS",
+      "transition_role": "harm",
+      "variant": "POLARITY_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 3,
+      "path_class": "MULTI_CHANNEL_CONFLICT",
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "subtype": "FRAME_ENTITLEMENT_LOSS_LIKE_ROWS",
+      "transition_role": "harm",
+      "variant": "PREDICATE_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 3,
+      "path_class": "MULTI_CHANNEL_CONFLICT",
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "subtype": "FRAME_ENTITLEMENT_LOSS_LIKE_ROWS",
+      "transition_role": "harm",
+      "variant": "SUFFICIENCY_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 3,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 3,
+      "path_class": "MULTI_CHANNEL_CONFLICT",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "subtype": "FRAME_ENTITLEMENT_LOSS_LIKE_ROWS",
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PLUS_POLARITY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 3,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 3,
+      "path_class": "MULTI_CHANNEL_CONFLICT",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "subtype": "FRAME_ENTITLEMENT_LOSS_LIKE_ROWS",
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PRIMITIVES"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 1,
+      "donor_tail_reproduced_rate": 0.3333333333333333,
+      "identity_count": 3,
+      "path_class": "MULTI_CHANNEL_CONFLICT",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "subtype": "FRAME_ENTITLEMENT_LOSS_LIKE_ROWS",
+      "transition_role": "harm",
+      "variant": "FRAME_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 3,
+      "path_class": "MULTI_CHANNEL_CONFLICT",
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "subtype": "FRAME_ENTITLEMENT_LOSS_LIKE_ROWS",
+      "transition_role": "harm",
+      "variant": "POLARITY_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 3,
+      "path_class": "MULTI_CHANNEL_CONFLICT",
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "subtype": "FRAME_ENTITLEMENT_LOSS_LIKE_ROWS",
+      "transition_role": "harm",
+      "variant": "PREDICATE_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 3,
+      "path_class": "MULTI_CHANNEL_CONFLICT",
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "subtype": "FRAME_ENTITLEMENT_LOSS_LIKE_ROWS",
+      "transition_role": "harm",
+      "variant": "SUFFICIENCY_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 3,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 3,
+      "path_class": "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "subtype": "POLARITY_OVERRIDE_ROWS",
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PLUS_POLARITY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 3,
+      "path_class": "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN",
+      "recipient_tail_preserved_count": 2,
+      "recipient_tail_preserved_rate": 0.6666666666666666,
+      "seed": 184,
+      "subtype": "POLARITY_OVERRIDE_ROWS",
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PRIMITIVES"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 3,
+      "path_class": "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN",
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "subtype": "POLARITY_OVERRIDE_ROWS",
+      "transition_role": "harm",
+      "variant": "FRAME_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 3,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 3,
+      "path_class": "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "subtype": "POLARITY_OVERRIDE_ROWS",
+      "transition_role": "harm",
+      "variant": "POLARITY_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 3,
+      "path_class": "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN",
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "subtype": "POLARITY_OVERRIDE_ROWS",
+      "transition_role": "harm",
+      "variant": "PREDICATE_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 3,
+      "path_class": "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN",
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "subtype": "POLARITY_OVERRIDE_ROWS",
+      "transition_role": "harm",
+      "variant": "SUFFICIENCY_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 3,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 3,
+      "path_class": "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "subtype": "POLARITY_OVERRIDE_ROWS",
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PLUS_POLARITY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 3,
+      "path_class": "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN",
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "subtype": "POLARITY_OVERRIDE_ROWS",
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PRIMITIVES"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 3,
+      "path_class": "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN",
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "subtype": "POLARITY_OVERRIDE_ROWS",
+      "transition_role": "harm",
+      "variant": "FRAME_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 2,
+      "donor_tail_reproduced_rate": 0.6666666666666666,
+      "identity_count": 3,
+      "path_class": "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "subtype": "POLARITY_OVERRIDE_ROWS",
+      "transition_role": "harm",
+      "variant": "POLARITY_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 3,
+      "path_class": "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN",
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "subtype": "POLARITY_OVERRIDE_ROWS",
+      "transition_role": "harm",
+      "variant": "PREDICATE_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 3,
+      "path_class": "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN",
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "subtype": "POLARITY_OVERRIDE_ROWS",
+      "transition_role": "harm",
+      "variant": "SUFFICIENCY_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 5,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 5,
+      "path_class": "MULTI_CHANNEL_CONFLICT",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "subtype": "RECOVERY_SEED184_MULTI_CHANNEL_CONFLICT",
+      "transition_role": "recovery",
+      "variant": "ENTITLEMENT_PLUS_POLARITY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 5,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 5,
+      "path_class": "MULTI_CHANNEL_CONFLICT",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "subtype": "RECOVERY_SEED184_MULTI_CHANNEL_CONFLICT",
+      "transition_role": "recovery",
+      "variant": "ENTITLEMENT_PRIMITIVES"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 3,
+      "donor_tail_reproduced_rate": 0.6,
+      "identity_count": 5,
+      "path_class": "MULTI_CHANNEL_CONFLICT",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "subtype": "RECOVERY_SEED184_MULTI_CHANNEL_CONFLICT",
+      "transition_role": "recovery",
+      "variant": "FRAME_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 5,
+      "path_class": "MULTI_CHANNEL_CONFLICT",
+      "recipient_tail_preserved_count": 5,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "subtype": "RECOVERY_SEED184_MULTI_CHANNEL_CONFLICT",
+      "transition_role": "recovery",
+      "variant": "POLARITY_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 5,
+      "path_class": "MULTI_CHANNEL_CONFLICT",
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 0.6,
+      "seed": 184,
+      "subtype": "RECOVERY_SEED184_MULTI_CHANNEL_CONFLICT",
+      "transition_role": "recovery",
+      "variant": "PREDICATE_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 5,
+      "path_class": "MULTI_CHANNEL_CONFLICT",
+      "recipient_tail_preserved_count": 5,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "subtype": "RECOVERY_SEED184_MULTI_CHANNEL_CONFLICT",
+      "transition_role": "recovery",
+      "variant": "SUFFICIENCY_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 5,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 5,
+      "path_class": "MULTI_CHANNEL_CONFLICT",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "subtype": "RECOVERY_SEED184_MULTI_CHANNEL_CONFLICT",
+      "transition_role": "recovery",
+      "variant": "ENTITLEMENT_PLUS_POLARITY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 5,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 5,
+      "path_class": "MULTI_CHANNEL_CONFLICT",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "subtype": "RECOVERY_SEED184_MULTI_CHANNEL_CONFLICT",
+      "transition_role": "recovery",
+      "variant": "ENTITLEMENT_PRIMITIVES"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 3,
+      "donor_tail_reproduced_rate": 0.6,
+      "identity_count": 5,
+      "path_class": "MULTI_CHANNEL_CONFLICT",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "subtype": "RECOVERY_SEED184_MULTI_CHANNEL_CONFLICT",
+      "transition_role": "recovery",
+      "variant": "FRAME_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 5,
+      "path_class": "MULTI_CHANNEL_CONFLICT",
+      "recipient_tail_preserved_count": 5,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "subtype": "RECOVERY_SEED184_MULTI_CHANNEL_CONFLICT",
+      "transition_role": "recovery",
+      "variant": "POLARITY_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 5,
+      "path_class": "MULTI_CHANNEL_CONFLICT",
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 0.6,
+      "seed": 184,
+      "subtype": "RECOVERY_SEED184_MULTI_CHANNEL_CONFLICT",
+      "transition_role": "recovery",
+      "variant": "PREDICATE_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 5,
+      "path_class": "MULTI_CHANNEL_CONFLICT",
+      "recipient_tail_preserved_count": 5,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "subtype": "RECOVERY_SEED184_MULTI_CHANNEL_CONFLICT",
+      "transition_role": "recovery",
+      "variant": "SUFFICIENCY_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 2,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 2,
+      "path_class": "FRAME_ENTITLEMENT_GAIN",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "subtype": "RECOVERY_SEED185_FRAME_ENTITLEMENT_GAIN",
+      "transition_role": "recovery",
+      "variant": "ENTITLEMENT_PLUS_POLARITY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 2,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 2,
+      "path_class": "FRAME_ENTITLEMENT_GAIN",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "subtype": "RECOVERY_SEED185_FRAME_ENTITLEMENT_GAIN",
+      "transition_role": "recovery",
+      "variant": "ENTITLEMENT_PRIMITIVES"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 1,
+      "donor_tail_reproduced_rate": 0.5,
+      "identity_count": 2,
+      "path_class": "FRAME_ENTITLEMENT_GAIN",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "subtype": "RECOVERY_SEED185_FRAME_ENTITLEMENT_GAIN",
+      "transition_role": "recovery",
+      "variant": "FRAME_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 2,
+      "path_class": "FRAME_ENTITLEMENT_GAIN",
+      "recipient_tail_preserved_count": 2,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "subtype": "RECOVERY_SEED185_FRAME_ENTITLEMENT_GAIN",
+      "transition_role": "recovery",
+      "variant": "POLARITY_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 2,
+      "path_class": "FRAME_ENTITLEMENT_GAIN",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "subtype": "RECOVERY_SEED185_FRAME_ENTITLEMENT_GAIN",
+      "transition_role": "recovery",
+      "variant": "PREDICATE_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 2,
+      "path_class": "FRAME_ENTITLEMENT_GAIN",
+      "recipient_tail_preserved_count": 2,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "subtype": "RECOVERY_SEED185_FRAME_ENTITLEMENT_GAIN",
+      "transition_role": "recovery",
+      "variant": "SUFFICIENCY_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 2,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 2,
+      "path_class": "FRAME_ENTITLEMENT_GAIN",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "subtype": "RECOVERY_SEED185_FRAME_ENTITLEMENT_GAIN",
+      "transition_role": "recovery",
+      "variant": "ENTITLEMENT_PLUS_POLARITY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 2,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 2,
+      "path_class": "FRAME_ENTITLEMENT_GAIN",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "subtype": "RECOVERY_SEED185_FRAME_ENTITLEMENT_GAIN",
+      "transition_role": "recovery",
+      "variant": "ENTITLEMENT_PRIMITIVES"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 2,
+      "path_class": "FRAME_ENTITLEMENT_GAIN",
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "subtype": "RECOVERY_SEED185_FRAME_ENTITLEMENT_GAIN",
+      "transition_role": "recovery",
+      "variant": "FRAME_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 2,
+      "path_class": "FRAME_ENTITLEMENT_GAIN",
+      "recipient_tail_preserved_count": 2,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "subtype": "RECOVERY_SEED185_FRAME_ENTITLEMENT_GAIN",
+      "transition_role": "recovery",
+      "variant": "POLARITY_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 2,
+      "path_class": "FRAME_ENTITLEMENT_GAIN",
+      "recipient_tail_preserved_count": 1,
+      "recipient_tail_preserved_rate": 0.5,
+      "seed": 185,
+      "subtype": "RECOVERY_SEED185_FRAME_ENTITLEMENT_GAIN",
+      "transition_role": "recovery",
+      "variant": "PREDICATE_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 2,
+      "path_class": "FRAME_ENTITLEMENT_GAIN",
+      "recipient_tail_preserved_count": 2,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "subtype": "RECOVERY_SEED185_FRAME_ENTITLEMENT_GAIN",
+      "transition_role": "recovery",
+      "variant": "SUFFICIENCY_ONLY"
+    }
+  ],
+  "training_performed": false,
+  "transition_role_results": [
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 6,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 6,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 3,
+        "polarity_flip": 2
+      },
+      "mean_tail_margin_shift": 0.27003928514429926,
+      "path_class_counts": {
+        "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY": 1,
+        "FRAME_ENTITLEMENT_LOSS": 2,
+        "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN": 3
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PLUS_POLARITY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 2,
+      "donor_tail_reproduced_rate": 0.3333333333333333,
+      "identity_count": 6,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 3,
+        "polarity_flip": 2
+      },
+      "mean_tail_margin_shift": -0.13949533419355753,
+      "path_class_counts": {
+        "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY": 1,
+        "FRAME_ENTITLEMENT_LOSS": 2,
+        "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN": 3
+      },
+      "recipient_tail_preserved_count": 2,
+      "recipient_tail_preserved_rate": 0.3333333333333333,
+      "seed": 184,
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PRIMITIVES"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 6,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 3,
+        "polarity_flip": 2
+      },
+      "mean_tail_margin_shift": -0.3025173288368043,
+      "path_class_counts": {
+        "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY": 1,
+        "FRAME_ENTITLEMENT_LOSS": 2,
+        "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN": 3
+      },
+      "recipient_tail_preserved_count": 4,
+      "recipient_tail_preserved_rate": 0.6666666666666666,
+      "seed": 184,
+      "transition_role": "harm",
+      "variant": "FRAME_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 3,
+      "donor_tail_reproduced_rate": 0.5,
+      "identity_count": 6,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 3,
+        "polarity_flip": 2
+      },
+      "mean_tail_margin_shift": 0.628254440910289,
+      "path_class_counts": {
+        "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY": 1,
+        "FRAME_ENTITLEMENT_LOSS": 2,
+        "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN": 3
+      },
+      "recipient_tail_preserved_count": 2,
+      "recipient_tail_preserved_rate": 0.3333333333333333,
+      "seed": 184,
+      "transition_role": "harm",
+      "variant": "POLARITY_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 6,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 3,
+        "polarity_flip": 2
+      },
+      "mean_tail_margin_shift": -0.005090634934053609,
+      "path_class_counts": {
+        "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY": 1,
+        "FRAME_ENTITLEMENT_LOSS": 2,
+        "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN": 3
+      },
+      "recipient_tail_preserved_count": 4,
+      "recipient_tail_preserved_rate": 0.6666666666666666,
+      "seed": 184,
+      "transition_role": "harm",
+      "variant": "PREDICATE_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 6,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 3,
+        "polarity_flip": 2
+      },
+      "mean_tail_margin_shift": 0.0057452820016344955,
+      "path_class_counts": {
+        "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY": 1,
+        "FRAME_ENTITLEMENT_LOSS": 2,
+        "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN": 3
+      },
+      "recipient_tail_preserved_count": 6,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "transition_role": "harm",
+      "variant": "SUFFICIENCY_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 6,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 6,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 3,
+        "polarity_flip": 2
+      },
+      "mean_tail_margin_shift": -0.27003848068298747,
+      "path_class_counts": {
+        "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY": 1,
+        "FRAME_ENTITLEMENT_LOSS": 2,
+        "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN": 3
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PLUS_POLARITY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 2,
+      "donor_tail_reproduced_rate": 0.3333333333333333,
+      "identity_count": 6,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 3,
+        "polarity_flip": 2
+      },
+      "mean_tail_margin_shift": 0.3582159602273016,
+      "path_class_counts": {
+        "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY": 1,
+        "FRAME_ENTITLEMENT_LOSS": 2,
+        "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN": 3
+      },
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 0.5,
+      "seed": 184,
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PRIMITIVES"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 1,
+      "donor_tail_reproduced_rate": 0.16666666666666666,
+      "identity_count": 6,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 3,
+        "polarity_flip": 2
+      },
+      "mean_tail_margin_shift": 0.30389244192311454,
+      "path_class_counts": {
+        "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY": 1,
+        "FRAME_ENTITLEMENT_LOSS": 2,
+        "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN": 3
+      },
+      "recipient_tail_preserved_count": 4,
+      "recipient_tail_preserved_rate": 0.6666666666666666,
+      "seed": 184,
+      "transition_role": "harm",
+      "variant": "FRAME_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 2,
+      "donor_tail_reproduced_rate": 0.3333333333333333,
+      "identity_count": 6,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 3,
+        "polarity_flip": 2
+      },
+      "mean_tail_margin_shift": -0.4095346193378567,
+      "path_class_counts": {
+        "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY": 1,
+        "FRAME_ENTITLEMENT_LOSS": 2,
+        "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN": 3
+      },
+      "recipient_tail_preserved_count": 2,
+      "recipient_tail_preserved_rate": 0.3333333333333333,
+      "seed": 184,
+      "transition_role": "harm",
+      "variant": "POLARITY_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 6,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 3,
+        "polarity_flip": 2
+      },
+      "mean_tail_margin_shift": -0.15120620720843664,
+      "path_class_counts": {
+        "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY": 1,
+        "FRAME_ENTITLEMENT_LOSS": 2,
+        "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN": 3
+      },
+      "recipient_tail_preserved_count": 4,
+      "recipient_tail_preserved_rate": 0.6666666666666666,
+      "seed": 184,
+      "transition_role": "harm",
+      "variant": "PREDICATE_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 6,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 3,
+        "polarity_flip": 2
+      },
+      "mean_tail_margin_shift": -0.007100328947633128,
+      "path_class_counts": {
+        "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY": 1,
+        "FRAME_ENTITLEMENT_LOSS": 2,
+        "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN": 3
+      },
+      "recipient_tail_preserved_count": 6,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "transition_role": "harm",
+      "variant": "SUFFICIENCY_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 5,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 5,
+      "intervention_type_counts": {
+        "paraphrase": 5
+      },
+      "mean_tail_margin_shift": -2.1171098519488396,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 5
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "transition_role": "recovery",
+      "variant": "ENTITLEMENT_PLUS_POLARITY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 5,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 5,
+      "intervention_type_counts": {
+        "paraphrase": 5
+      },
+      "mean_tail_margin_shift": -2.178604281770292,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 5
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "transition_role": "recovery",
+      "variant": "ENTITLEMENT_PRIMITIVES"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 3,
+      "donor_tail_reproduced_rate": 0.6,
+      "identity_count": 5,
+      "intervention_type_counts": {
+        "paraphrase": 5
+      },
+      "mean_tail_margin_shift": -1.9485484027571922,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 5
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "transition_role": "recovery",
+      "variant": "FRAME_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 5,
+      "intervention_type_counts": {
+        "paraphrase": 5
+      },
+      "mean_tail_margin_shift": 0.30962848357900363,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 5
+      },
+      "recipient_tail_preserved_count": 5,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "transition_role": "recovery",
+      "variant": "POLARITY_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 5,
+      "intervention_type_counts": {
+        "paraphrase": 5
+      },
+      "mean_tail_margin_shift": -0.892495193661094,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 5
+      },
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 0.6,
+      "seed": 184,
+      "transition_role": "recovery",
+      "variant": "PREDICATE_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 5,
+      "intervention_type_counts": {
+        "paraphrase": 5
+      },
+      "mean_tail_margin_shift": 0.0038216249109413345,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 5
+      },
+      "recipient_tail_preserved_count": 5,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "transition_role": "recovery",
+      "variant": "SUFFICIENCY_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 5,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 5,
+      "intervention_type_counts": {
+        "paraphrase": 5
+      },
+      "mean_tail_margin_shift": 2.117108524390518,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 5
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "transition_role": "recovery",
+      "variant": "ENTITLEMENT_PLUS_POLARITY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 5,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 5,
+      "intervention_type_counts": {
+        "paraphrase": 5
+      },
+      "mean_tail_margin_shift": 2.426737007969522,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 5
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "transition_role": "recovery",
+      "variant": "ENTITLEMENT_PRIMITIVES"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 3,
+      "donor_tail_reproduced_rate": 0.6,
+      "identity_count": 5,
+      "intervention_type_counts": {
+        "paraphrase": 5
+      },
+      "mean_tail_margin_shift": 1.4359254908579522,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 5
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 184,
+      "transition_role": "recovery",
+      "variant": "FRAME_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 5,
+      "intervention_type_counts": {
+        "paraphrase": 5
+      },
+      "mean_tail_margin_shift": -0.0614944298214527,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 5
+      },
+      "recipient_tail_preserved_count": 5,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "transition_role": "recovery",
+      "variant": "POLARITY_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 5,
+      "intervention_type_counts": {
+        "paraphrase": 5
+      },
+      "mean_tail_margin_shift": 0.25881508555180854,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 5
+      },
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 0.6,
+      "seed": 184,
+      "transition_role": "recovery",
+      "variant": "PREDICATE_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 5,
+      "intervention_type_counts": {
+        "paraphrase": 5
+      },
+      "mean_tail_margin_shift": -0.0009329709887897015,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 5
+      },
+      "recipient_tail_preserved_count": 5,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 184,
+      "transition_role": "recovery",
+      "variant": "SUFFICIENCY_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 3,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 3,
+      "intervention_type_counts": {
+        "none": 2,
+        "polarity_flip": 1
+      },
+      "mean_tail_margin_shift": 0.3061973272826404,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 3
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PLUS_POLARITY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 3,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 3,
+      "intervention_type_counts": {
+        "none": 2,
+        "polarity_flip": 1
+      },
+      "mean_tail_margin_shift": 0.3414383598809691,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 3
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PRIMITIVES"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 3,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 3,
+      "intervention_type_counts": {
+        "none": 2,
+        "polarity_flip": 1
+      },
+      "mean_tail_margin_shift": 0.3074147694028851,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 3
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "transition_role": "harm",
+      "variant": "FRAME_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 3,
+      "intervention_type_counts": {
+        "none": 2,
+        "polarity_flip": 1
+      },
+      "mean_tail_margin_shift": -0.02895923086250829,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 3
+      },
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "transition_role": "harm",
+      "variant": "POLARITY_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 3,
+      "intervention_type_counts": {
+        "none": 2,
+        "polarity_flip": 1
+      },
+      "mean_tail_margin_shift": 0.022671151569125653,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 3
+      },
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "transition_role": "harm",
+      "variant": "PREDICATE_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 3,
+      "intervention_type_counts": {
+        "none": 2,
+        "polarity_flip": 1
+      },
+      "mean_tail_margin_shift": -0.0010682244163411224,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 3
+      },
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "transition_role": "harm",
+      "variant": "SUFFICIENCY_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 3,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 3,
+      "intervention_type_counts": {
+        "none": 2,
+        "polarity_flip": 1
+      },
+      "mean_tail_margin_shift": -0.3061557759307408,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 3
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PLUS_POLARITY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 3,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 3,
+      "intervention_type_counts": {
+        "none": 2,
+        "polarity_flip": 1
+      },
+      "mean_tail_margin_shift": -0.33511500679324907,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 3
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "transition_role": "harm",
+      "variant": "ENTITLEMENT_PRIMITIVES"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 1,
+      "donor_tail_reproduced_rate": 0.3333333333333333,
+      "identity_count": 3,
+      "intervention_type_counts": {
+        "none": 2,
+        "polarity_flip": 1
+      },
+      "mean_tail_margin_shift": -0.3123740529552296,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 3
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "transition_role": "harm",
+      "variant": "FRAME_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 3,
+      "intervention_type_counts": {
+        "none": 2,
+        "polarity_flip": 1
+      },
+      "mean_tail_margin_shift": 0.03524103259832867,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 3
+      },
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "transition_role": "harm",
+      "variant": "POLARITY_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 3,
+      "intervention_type_counts": {
+        "none": 2,
+        "polarity_flip": 1
+      },
+      "mean_tail_margin_shift": -0.036675494744976445,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 3
+      },
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "transition_role": "harm",
+      "variant": "PREDICATE_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 3,
+      "intervention_type_counts": {
+        "none": 2,
+        "polarity_flip": 1
+      },
+      "mean_tail_margin_shift": 0.0012843647542069138,
+      "path_class_counts": {
+        "MULTI_CHANNEL_CONFLICT": 3
+      },
+      "recipient_tail_preserved_count": 3,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "transition_role": "harm",
+      "variant": "SUFFICIENCY_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 2,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 2,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 1
+      },
+      "mean_tail_margin_shift": -0.922378605232222,
+      "path_class_counts": {
+        "FRAME_ENTITLEMENT_GAIN": 2
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "transition_role": "recovery",
+      "variant": "ENTITLEMENT_PLUS_POLARITY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 2,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 2,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 1
+      },
+      "mean_tail_margin_shift": -0.9189414405540575,
+      "path_class_counts": {
+        "FRAME_ENTITLEMENT_GAIN": 2
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "transition_role": "recovery",
+      "variant": "ENTITLEMENT_PRIMITIVES"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 1,
+      "donor_tail_reproduced_rate": 0.5,
+      "identity_count": 2,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 1
+      },
+      "mean_tail_margin_shift": -0.7472729618309903,
+      "path_class_counts": {
+        "FRAME_ENTITLEMENT_GAIN": 2
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "transition_role": "recovery",
+      "variant": "FRAME_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 2,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 1
+      },
+      "mean_tail_margin_shift": -0.012962051142905606,
+      "path_class_counts": {
+        "FRAME_ENTITLEMENT_GAIN": 2
+      },
+      "recipient_tail_preserved_count": 2,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "transition_role": "recovery",
+      "variant": "POLARITY_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 2,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 1
+      },
+      "mean_tail_margin_shift": -0.3449196767955354,
+      "path_class_counts": {
+        "FRAME_ENTITLEMENT_GAIN": 2
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "transition_role": "recovery",
+      "variant": "PREDICATE_ONLY"
+    },
+    {
+      "direction": "FRAME_LOCAL_ONLY_RECIPIENT_JOINT_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 2,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 1
+      },
+      "mean_tail_margin_shift": -0.00010850795054108886,
+      "path_class_counts": {
+        "FRAME_ENTITLEMENT_GAIN": 2
+      },
+      "recipient_tail_preserved_count": 2,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "transition_role": "recovery",
+      "variant": "SUFFICIENCY_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 2,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 2,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 1
+      },
+      "mean_tail_margin_shift": 0.9222701711287717,
+      "path_class_counts": {
+        "FRAME_ENTITLEMENT_GAIN": 2
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "transition_role": "recovery",
+      "variant": "ENTITLEMENT_PLUS_POLARITY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 2,
+      "donor_tail_reproduced_rate": 1.0,
+      "identity_count": 2,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 1
+      },
+      "mean_tail_margin_shift": 0.9093081199858661,
+      "path_class_counts": {
+        "FRAME_ENTITLEMENT_GAIN": 2
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "transition_role": "recovery",
+      "variant": "ENTITLEMENT_PRIMITIVES"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 2,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 1
+      },
+      "mean_tail_margin_shift": 0.570565477404934,
+      "path_class_counts": {
+        "FRAME_ENTITLEMENT_GAIN": 2
+      },
+      "recipient_tail_preserved_count": 0,
+      "recipient_tail_preserved_rate": 0.0,
+      "seed": 185,
+      "transition_role": "recovery",
+      "variant": "FRAME_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 2,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 1
+      },
+      "mean_tail_margin_shift": 0.0034371646781646554,
+      "path_class_counts": {
+        "FRAME_ENTITLEMENT_GAIN": 2
+      },
+      "recipient_tail_preserved_count": 2,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "transition_role": "recovery",
+      "variant": "POLARITY_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 2,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 1
+      },
+      "mean_tail_margin_shift": 0.16836211382897967,
+      "path_class_counts": {
+        "FRAME_ENTITLEMENT_GAIN": 2
+      },
+      "recipient_tail_preserved_count": 1,
+      "recipient_tail_preserved_rate": 0.5,
+      "seed": 185,
+      "transition_role": "recovery",
+      "variant": "PREDICATE_ONLY"
+    },
+    {
+      "direction": "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR",
+      "donor_tail_reproduced_count": 0,
+      "donor_tail_reproduced_rate": 0.0,
+      "identity_count": 2,
+      "intervention_type_counts": {
+        "none": 1,
+        "paraphrase": 1
+      },
+      "mean_tail_margin_shift": 6.429882628491979e-05,
+      "path_class_counts": {
+        "FRAME_ENTITLEMENT_GAIN": 2
+      },
+      "recipient_tail_preserved_count": 2,
+      "recipient_tail_preserved_rate": 1.0,
+      "seed": 185,
+      "transition_role": "recovery",
+      "variant": "SUFFICIENCY_ONLY"
+    }
+  ]
+}

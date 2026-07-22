@@ -1,0 +1,4 @@
+seed,common_recurrent_frame_shift,primary_decision_population_size,largest_blocker,largest_blocker_rate,rescue_count,harm_count,selected_recurrent_propagation_rate,tail3_recurrent_propagation_rate,selected_tail3_agreement,decision_contribution
+183,negative,0,,,0,29,,,,contrast
+184,positive,12,FRAME_REMAINS_SUBTHRESHOLD,1.0,5,6,,,,primary
+185,positive,18,FRAME_REMAINS_SUBTHRESHOLD,1.0,2,3,,,,primary

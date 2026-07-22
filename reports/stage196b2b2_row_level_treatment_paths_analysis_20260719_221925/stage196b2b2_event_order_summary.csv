@@ -1,0 +1,17 @@
+seed,stable_row_id,transition_role,path_class,first_terminal_sign_stable_epoch_frame,first_terminal_sign_stable_epoch_predicate,first_terminal_sign_stable_epoch_sufficiency,first_terminal_sign_stable_epoch_polarity,first_terminal_sign_stable_epoch_entitlement,first_terminal_sign_stable_epoch_margin,first_persistent_boundary_divergence_epoch_frame,first_persistent_boundary_divergence_epoch_predicate,first_persistent_boundary_divergence_epoch_sufficiency,first_persistent_boundary_divergence_epoch_polarity,first_persistent_boundary_divergence_epoch_entitlement,first_persistent_boundary_divergence_epoch_composition
+184,reef_protection__none,harm,FRAME_ENTITLEMENT_LOSS,10,10,4,5,10,10,12,19,,,,12
+184,generated_fact_083__paraphrase,harm,POLARITY_OVERRIDE_DESPITE_FRAME_GAIN,18,,4,14,18,19,,,,,,
+184,generated_fact_115__paraphrase,harm,POLARITY_OVERRIDE_DESPITE_FRAME_GAIN,18,14,10,14,16,19,,,,,,
+184,generated_fact_128__paraphrase,harm,POLARITY_OVERRIDE_DESPITE_FRAME_GAIN,16,14,4,7,15,19,18,,,,18,
+184,generated_fact_166__polarity_flip,harm,FRAME_ENTITLEMENT_LOSS,14,20,4,7,14,14,15,20,,,,19
+184,generated_fact_285__polarity_flip,harm,COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY,12,10,4,5,10,10,20,19,,,,12
+184,museum_purchase__paraphrase,recovery,MULTI_CHANNEL_CONFLICT,11,13,10,7,12,13,16,,,,17,18
+184,satellite_launch__paraphrase,recovery,MULTI_CHANNEL_CONFLICT,8,18,4,7,11,11,17,19,,,,18
+184,language_program__paraphrase,recovery,MULTI_CHANNEL_CONFLICT,11,12,4,7,11,13,18,19,,,,18
+184,generated_fact_039__paraphrase,recovery,MULTI_CHANNEL_CONFLICT,11,14,4,5,13,14,16,,,,17,18
+184,generated_fact_118__paraphrase,recovery,MULTI_CHANNEL_CONFLICT,11,13,20,7,11,12,18,19,,,17,18
+185,reef_protection__none,harm,MULTI_CHANNEL_CONFLICT,14,20,13,15,14,14,20,,,,,
+185,generated_fact_045__none,harm,MULTI_CHANNEL_CONFLICT,14,20,12,16,14,14,20,,,,,
+185,generated_fact_285__polarity_flip,harm,MULTI_CHANNEL_CONFLICT,14,20,13,16,14,14,20,,,,,
+185,museum_purchase__none,recovery,FRAME_ENTITLEMENT_GAIN,18,17,12,,18,18,20,,,,,18
+185,satellite_launch__paraphrase,recovery,FRAME_ENTITLEMENT_GAIN,17,17,15,,17,17,19,18,,,,18

@@ -1,0 +1,1377 @@
+{
+  "aggregate_score_optimized": false,
+  "artifact_only": true,
+  "auditable_gate_metadata": {
+    "auditable_gate_count": 0,
+    "authority": "shared inclusion-minimal feasible gate set",
+    "gate_keys": []
+  },
+  "authorized_interpretation": "Within the frozen-Mamba, frozen-composer controlled population, the analyzer reports exact categorical separation and cross-seed transfer. Only an epoch-20 recipient-local gate satisfying every ordered rule is potentially eligible for the recommended counterfactual audit; no integration, training, or promotion is authorized.",
+  "blocking_reasons": [],
+  "checkpoint_loaded": false,
+  "classifier_fitted": false,
+  "conservative_gated_policy_audit_completion": {
+    "auditable_gate_count": 0,
+    "completed": true,
+    "duplicate_gate_keys": [],
+    "duplicate_summary_keys": [],
+    "expected_summary_or_audit_rows": 0,
+    "extra_gate_keys": [],
+    "missing_gate_keys": [],
+    "observed_summary_or_audit_rows": 0,
+    "represented_gate_count": 0,
+    "vacuous_completion": true
+  },
+  "current_git_commit": "cb3e981ca0365912e2209101b0d09cb2a1aa77c5",
+  "decision": "STAGE196B2B6P0_CURRENT_SAFETY_OBSERVABILITY_INSUFFICIENT",
+  "decision_rule_evaluation": {
+    "localized_single_state_gates": [],
+    "ordered_rules": [
+      "contract_failure",
+      "cross_seed_single_state",
+      "single_state_in_sample_only",
+      "seed_specific_single_state",
+      "tail_trajectory_only",
+      "paired_delta_only",
+      "current_observability_insufficient"
+    ],
+    "paired_delta_bidirectional_gate_exists": false,
+    "pooled_single_state_gate_exists": false,
+    "seed_specific_single_state": {
+      "00100000000000": {
+        "184": false,
+        "185": false
+      },
+      "01000000000000": {
+        "184": false,
+        "185": false
+      },
+      "10000000000000": {
+        "184": false,
+        "185": false
+      }
+    },
+    "shared_auditable_gate_count": 0,
+    "tail_trajectory_bidirectional_gate_exists": false
+  },
+  "learned_threshold_used": false,
+  "model_loaded": false,
+  "nondominated_selector_candidates": [
+    {
+      "feature_subset_mask": "00100000000000",
+      "feature_subset_members": [
+        "HEAD_MARGIN_SIGN_SEQUENCE"
+      ]
+    },
+    {
+      "feature_subset_mask": "01000000000000",
+      "feature_subset_members": [
+        "FINAL_MARGIN_SIGN_SEQUENCE"
+      ]
+    },
+    {
+      "feature_subset_mask": "10000000000000",
+      "feature_subset_members": [
+        "RECIPIENT_PREDICTION_SEQUENCE"
+      ]
+    }
+  ],
+  "paired_delta_feasible_gates": [],
+  "paired_delta_feature_dictionary": [
+    {
+      "available": true,
+      "diagnostic_only": true,
+      "epoch_scope": [
+        20
+      ],
+      "feature_family": "paired_delta",
+      "feature_name": "E20_DELTA_FRAME_SIGN",
+      "formula": "sign(frame-local-only donor minus joint recipient)",
+      "integration_authorized": false,
+      "natural_threshold": "zero tolerance 1e-12",
+      "outcome_derived": false,
+      "source_fields": [
+        "frame_prob"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        "NEGATIVE",
+        "ZERO",
+        "POSITIVE"
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": true,
+      "epoch_scope": [
+        20
+      ],
+      "feature_family": "paired_delta",
+      "feature_name": "E20_DELTA_PREDICATE_SIGN",
+      "formula": "sign(frame-local-only donor minus joint recipient)",
+      "integration_authorized": false,
+      "natural_threshold": "zero tolerance 1e-12",
+      "outcome_derived": false,
+      "source_fields": [
+        "predicate_coverage_prob"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        "NEGATIVE",
+        "ZERO",
+        "POSITIVE"
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": true,
+      "epoch_scope": [
+        20
+      ],
+      "feature_family": "paired_delta",
+      "feature_name": "E20_DELTA_SUFFICIENCY_SIGN",
+      "formula": "sign(frame-local-only donor minus joint recipient)",
+      "integration_authorized": false,
+      "natural_threshold": "zero tolerance 1e-12",
+      "outcome_derived": false,
+      "source_fields": [
+        "sufficiency_prob"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        "NEGATIVE",
+        "ZERO",
+        "POSITIVE"
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": true,
+      "epoch_scope": [
+        20
+      ],
+      "feature_family": "paired_delta",
+      "feature_name": "E20_DELTA_POSITIVE_ENERGY_SIGN",
+      "formula": "sign(frame-local-only donor minus joint recipient)",
+      "integration_authorized": false,
+      "natural_threshold": "zero tolerance 1e-12",
+      "outcome_derived": false,
+      "source_fields": [
+        "positive_energy"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        "NEGATIVE",
+        "ZERO",
+        "POSITIVE"
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": true,
+      "epoch_scope": [
+        20
+      ],
+      "feature_family": "paired_delta",
+      "feature_name": "E20_DELTA_NEGATIVE_ENERGY_SIGN",
+      "formula": "sign(frame-local-only donor minus joint recipient)",
+      "integration_authorized": false,
+      "natural_threshold": "zero tolerance 1e-12",
+      "outcome_derived": false,
+      "source_fields": [
+        "negative_energy"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        "NEGATIVE",
+        "ZERO",
+        "POSITIVE"
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": true,
+      "epoch_scope": [
+        20
+      ],
+      "feature_family": "paired_delta",
+      "feature_name": "E20_DELTA_ENTITLEMENT_SIGN",
+      "formula": "sign(frame-local-only donor minus joint recipient)",
+      "integration_authorized": false,
+      "natural_threshold": "zero tolerance 1e-12",
+      "outcome_derived": false,
+      "source_fields": [
+        "entitlement_prob_native"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        "NEGATIVE",
+        "ZERO",
+        "POSITIVE"
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": true,
+      "epoch_scope": [
+        20
+      ],
+      "feature_family": "paired_delta",
+      "feature_name": "E20_DELTA_HEAD_MARGIN_SIGN",
+      "formula": "sign(frame-local-only donor minus joint recipient)",
+      "integration_authorized": false,
+      "natural_threshold": "zero tolerance 1e-12",
+      "outcome_derived": false,
+      "source_fields": [
+        "decision_head_support_logit",
+        "decision_head_not_entitled_logit"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        "NEGATIVE",
+        "ZERO",
+        "POSITIVE"
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": true,
+      "epoch_scope": [
+        20
+      ],
+      "feature_family": "paired_delta",
+      "feature_name": "E20_DELTA_FINAL_MARGIN_SIGN",
+      "formula": "sign(frame-local-only donor minus joint recipient)",
+      "integration_authorized": false,
+      "natural_threshold": "zero tolerance 1e-12",
+      "outcome_derived": false,
+      "source_fields": [
+        "final_support_logit",
+        "final_not_entitled_logit"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        "NEGATIVE",
+        "ZERO",
+        "POSITIVE"
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": true,
+      "epoch_scope": [
+        20
+      ],
+      "feature_family": "paired_delta",
+      "feature_name": "E20_PREDICATE_MISMATCH_CHANGE",
+      "formula": "frame-local-only donor boolean minus joint recipient boolean change category",
+      "integration_authorized": false,
+      "natural_threshold": "exact boolean transition",
+      "outcome_derived": false,
+      "source_fields": [
+        "predicate_mismatch_active"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        "UNCHANGED_FALSE",
+        "FALSE_TO_TRUE",
+        "TRUE_TO_FALSE",
+        "UNCHANGED_TRUE"
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": true,
+      "epoch_scope": [
+        20
+      ],
+      "feature_family": "paired_delta",
+      "feature_name": "E20_TEMPORAL_MISMATCH_CHANGE",
+      "formula": "frame-local-only donor boolean minus joint recipient boolean change category",
+      "integration_authorized": false,
+      "natural_threshold": "exact boolean transition",
+      "outcome_derived": false,
+      "source_fields": [
+        "temporal_mismatch_active"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        "UNCHANGED_FALSE",
+        "FALSE_TO_TRUE",
+        "TRUE_TO_FALSE",
+        "UNCHANGED_TRUE"
+      ]
+    }
+  ],
+  "population_semantics": {
+    "discovery_data_identity_key": [
+      "id",
+      "source_row_id",
+      "dev_position"
+    ],
+    "discovery_identities": {
+      "cross_seed_intersection": 3,
+      "seed184": 11,
+      "seed185": 5,
+      "union": 13
+    },
+    "per_seed_clean_dev": {
+      "all": 720,
+      "discovery_identity_union": 13,
+      "nondiscovery": 707
+    },
+    "primary_case_key": [
+      "seed",
+      "stable_row_id"
+    ],
+    "seed183": "contrast-only",
+    "seed_conditioned_primary_cases": {
+      "seed184": 11,
+      "seed185": 5,
+      "total": 16
+    }
+  },
+  "prohibited_claims": [
+    "formal causal mediation",
+    "external or OOD validity",
+    "unfrozen-Mamba validity",
+    "training improvement",
+    "promotion",
+    "deployability from tail-checkpoint trajectories",
+    "deployability from paired-treatment deltas",
+    "safety from pooled in-sample separation alone",
+    "safety from partial cross-seed coverage",
+    "OPTIONAL rows as successful activation evidence",
+    "unseen default blocking as positive selector evidence",
+    "gold correctness as an inference-time feature",
+    "seed or row identity as a safety feature",
+    "an arbitrary threshold as a mechanistic gate"
+  ],
+  "promotion_authorized": false,
+  "recommended_next_stage": "STAGE196B2B6P1_ADDITIONAL_SAFETY_STATE_OBSERVABILITY_DESIGN",
+  "remaining_uncertainty": [
+    "The evidence is internal to the frozen controlled population.",
+    "Seed183 is contrast-only and does not authorize selection or promotion.",
+    "Set-valued selector actions are evaluated conservatively row by row."
+  ],
+  "row_safety_target_summary": {
+    "00100000000000": {
+      "MUST_ALLOW": 7,
+      "MUST_BLOCK": 57,
+      "OPTIONAL": 2096
+    },
+    "01000000000000": {
+      "MUST_ALLOW": 7,
+      "MUST_BLOCK": 57,
+      "OPTIONAL": 2096
+    },
+    "10000000000000": {
+      "MUST_ALLOW": 7,
+      "MUST_BLOCK": 57,
+      "OPTIONAL": 2096
+    }
+  },
+  "seed183_contrast": {
+    "auditable_gate_count": 0,
+    "completed": true,
+    "contrast_only": true,
+    "duplicate_gate_identity_rows": [],
+    "duplicate_gate_keys": [],
+    "expected_audit_rows": 0,
+    "expected_rows": 0,
+    "extra_gate_keys": [],
+    "gate_summaries": [],
+    "missing_gate_keys": [],
+    "observed_audit_rows": 0,
+    "observed_rows": 0,
+    "represented_gate_count": 0,
+    "vacuous_completion": true,
+    "wrong_row_counts": []
+  },
+  "single_state_cross_seed_transfer": [],
+  "single_state_feature_dictionary": [
+    {
+      "available": true,
+      "diagnostic_only": false,
+      "epoch_scope": [
+        20
+      ],
+      "feature_family": "single_state",
+      "feature_name": "E20_RECIPIENT_PREDICTION",
+      "formula": "exact epoch-20 recipient prediction",
+      "integration_authorized": true,
+      "natural_threshold": "none",
+      "outcome_derived": false,
+      "source_fields": [
+        "final_native_prediction"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        "REFUTE",
+        "NOT_ENTITLED",
+        "SUPPORT"
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": false,
+      "epoch_scope": [
+        20
+      ],
+      "feature_family": "single_state",
+      "feature_name": "E20_FINAL_MARGIN_SIGN",
+      "formula": "sign(final_support_logit-final_not_entitled_logit)",
+      "integration_authorized": true,
+      "natural_threshold": "zero tolerance 1e-12",
+      "outcome_derived": false,
+      "source_fields": [
+        "final_support_logit",
+        "final_not_entitled_logit"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        "NEGATIVE",
+        "ZERO",
+        "POSITIVE"
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": false,
+      "epoch_scope": [
+        20
+      ],
+      "feature_family": "single_state",
+      "feature_name": "E20_HEAD_MARGIN_SIGN",
+      "formula": "sign(decision_head_support_logit-decision_head_not_entitled_logit)",
+      "integration_authorized": true,
+      "natural_threshold": "zero tolerance 1e-12",
+      "outcome_derived": false,
+      "source_fields": [
+        "decision_head_support_logit",
+        "decision_head_not_entitled_logit"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        "NEGATIVE",
+        "ZERO",
+        "POSITIVE"
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": false,
+      "epoch_scope": [
+        20
+      ],
+      "feature_family": "single_state",
+      "feature_name": "E20_HEAD_FINAL_MARGIN_SIGN_CONFLICT",
+      "formula": "HEAD_MARGIN_SIGN != FINAL_MARGIN_SIGN",
+      "integration_authorized": true,
+      "natural_threshold": "sign zero tolerance 1e-12",
+      "outcome_derived": false,
+      "source_fields": [
+        "decision_head_support_logit",
+        "decision_head_not_entitled_logit",
+        "final_support_logit",
+        "final_not_entitled_logit"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        false,
+        true
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": false,
+      "epoch_scope": [
+        20
+      ],
+      "feature_family": "single_state",
+      "feature_name": "E20_FRAME_HALFSPACE",
+      "formula": "halfspace(frame_prob)",
+      "integration_authorized": true,
+      "natural_threshold": "0.5; equality tolerance 1e-12",
+      "outcome_derived": false,
+      "source_fields": [
+        "frame_prob"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        "BELOW_HALF",
+        "AT_HALF",
+        "ABOVE_HALF"
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": false,
+      "epoch_scope": [
+        20
+      ],
+      "feature_family": "single_state",
+      "feature_name": "E20_PREDICATE_HALFSPACE",
+      "formula": "halfspace(predicate_coverage_prob)",
+      "integration_authorized": true,
+      "natural_threshold": "0.5; equality tolerance 1e-12",
+      "outcome_derived": false,
+      "source_fields": [
+        "predicate_coverage_prob"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        "BELOW_HALF",
+        "AT_HALF",
+        "ABOVE_HALF"
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": false,
+      "epoch_scope": [
+        20
+      ],
+      "feature_family": "single_state",
+      "feature_name": "E20_SUFFICIENCY_HALFSPACE",
+      "formula": "halfspace(sufficiency_prob)",
+      "integration_authorized": true,
+      "natural_threshold": "0.5; equality tolerance 1e-12",
+      "outcome_derived": false,
+      "source_fields": [
+        "sufficiency_prob"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        "BELOW_HALF",
+        "AT_HALF",
+        "ABOVE_HALF"
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": false,
+      "epoch_scope": [
+        20
+      ],
+      "feature_family": "single_state",
+      "feature_name": "E20_ENTITLEMENT_HALFSPACE",
+      "formula": "halfspace(entitlement_prob_native)",
+      "integration_authorized": true,
+      "natural_threshold": "0.5; equality tolerance 1e-12",
+      "outcome_derived": false,
+      "source_fields": [
+        "entitlement_prob_native"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        "BELOW_HALF",
+        "AT_HALF",
+        "ABOVE_HALF"
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": false,
+      "epoch_scope": [
+        20
+      ],
+      "feature_family": "single_state",
+      "feature_name": "E20_ENTITLEMENT_BOTTLENECK",
+      "formula": "deterministic sorted argmin set; ties preserved",
+      "integration_authorized": true,
+      "natural_threshold": "tie tolerance 1e-12",
+      "outcome_derived": false,
+      "source_fields": [
+        "frame_prob",
+        "predicate_coverage_prob",
+        "sufficiency_prob"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        "sorted nonempty subset of FRAME,PREDICATE,SUFFICIENCY"
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": false,
+      "epoch_scope": [
+        20
+      ],
+      "feature_family": "single_state",
+      "feature_name": "E20_POLARITY_ENERGY_ORDER",
+      "formula": "compare positive_energy and negative_energy",
+      "integration_authorized": true,
+      "natural_threshold": "equality tolerance 1e-12",
+      "outcome_derived": false,
+      "source_fields": [
+        "positive_energy",
+        "negative_energy"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        "POSITIVE_DOMINANT",
+        "EQUAL",
+        "NEGATIVE_DOMINANT"
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": false,
+      "epoch_scope": [
+        20
+      ],
+      "feature_family": "single_state",
+      "feature_name": "E20_PREDICATE_MISMATCH",
+      "formula": "exact exported boolean",
+      "integration_authorized": true,
+      "natural_threshold": "none",
+      "outcome_derived": false,
+      "source_fields": [
+        "predicate_mismatch_active"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        false,
+        true
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": false,
+      "epoch_scope": [
+        20
+      ],
+      "feature_family": "single_state",
+      "feature_name": "E20_TEMPORAL_MISMATCH",
+      "formula": "exact exported boolean",
+      "integration_authorized": true,
+      "natural_threshold": "none",
+      "outcome_derived": false,
+      "source_fields": [
+        "temporal_mismatch_active"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        false,
+        true
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": false,
+      "epoch_scope": [
+        20
+      ],
+      "feature_family": "single_state",
+      "feature_name": "E20_TEMPORAL_ADAPTER_ACTIVITY",
+      "formula": "exact exported boolean",
+      "integration_authorized": true,
+      "natural_threshold": "none",
+      "outcome_derived": false,
+      "source_fields": [
+        "temporal_adapter_active"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        false,
+        true
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": false,
+      "epoch_scope": [
+        20
+      ],
+      "feature_family": "single_state",
+      "feature_name": "E20_TEMPORAL_CHANNEL_ACTIVITY",
+      "formula": "exact exported boolean",
+      "integration_authorized": true,
+      "natural_threshold": "none",
+      "outcome_derived": false,
+      "source_fields": [
+        "temporal_channel_active"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        false,
+        true
+      ]
+    }
+  ],
+  "single_state_feature_subset_count": 49149,
+  "single_state_gated_policy_audit": [],
+  "single_state_inclusion_minimal_feasible_gates": [],
+  "source_closure": {
+    "b2b4_files": [
+      "stage196b2b4_analysis.json",
+      "stage196b2b4_report.md",
+      "stage196b2b4_primitive_coalition_rows.csv",
+      "stage196b2b4_primitive_mobius_terms.csv",
+      "stage196b2b4_primitive_tail_summary.csv",
+      "stage196b2b4_residual_coalition_rows.csv",
+      "stage196b2b4_residual_mobius_terms.csv",
+      "stage196b2b4_localization_summary.csv",
+      "stage196b2b4_contract.csv"
+    ],
+    "b2b5_files": [
+      "stage196b2b5_analysis.json",
+      "stage196b2b5_report.md",
+      "stage196b2b5_feature_dictionary.csv",
+      "stage196b2b5_row_action_sets.csv",
+      "stage196b2b5_recipient_signature_rows.csv",
+      "stage196b2b5_recipient_selector_summary.csv",
+      "stage196b2b5_paired_delta_signature_rows.csv",
+      "stage196b2b5_paired_delta_selector_summary.csv",
+      "stage196b2b5_contract.csv"
+    ],
+    "b2b6_files": [
+      "stage196b2b6_analysis.json",
+      "stage196b2b6_report.md",
+      "stage196b2b6_candidate_feature_subsets.csv",
+      "stage196b2b6_signature_action_map.csv",
+      "stage196b2b6_primary_policy_validation.csv",
+      "stage196b2b6_clean_dev_signature_audit.csv",
+      "stage196b2b6_clean_dev_application_summary.csv",
+      "stage196b2b6_policy_dominance.csv",
+      "stage196b2b6_contract.csv"
+    ],
+    "b2b6_metric_reproduction": {
+      "disagreements": [],
+      "extra_stored_rows": [],
+      "generated_rows": 27,
+      "stored_rows": 27
+    },
+    "p0_counts": {
+      "composer rows": 86400,
+      "composer sidecars": 120,
+      "trajectory rows": 86400,
+      "trajectory sidecars": 120
+    }
+  },
+  "source_hashes": {
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/composer_inputs/stage196b2b3p0_composer_input_manifest.json": "7d872123694dc1522fb1896d7bce7d4d4808e810a73170bbce1c61f01568ca30",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_001.jsonl": "44257f43dbeb846678a2a453fd76e899c03943d23333a82faab4fad2967d6841",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_002.jsonl": "ccad999e91bdf710dd2cdbc926014bc825f0d6e93d2c1962f68e2e147d77e7de",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_003.jsonl": "5b05ef1a6c0bebf34b2b6a18e5459fedc6a680633f8c48f445cd482a15844de3",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_004.jsonl": "17f593278ae231188b0565c17d7b841179073fc34b7e65dff668c03fd8f07f3f",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_005.jsonl": "8cb991c27c4cdd47708b0333f5137b19d422b1047e48cb6ba6c52a726c49b0a2",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_006.jsonl": "a880dd24aae1f90d7111dae20cc1ed6fb9f08b3ae8cc222053a954c35da812ed",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_007.jsonl": "14098eb1879b709f9665b724a9439c2befad18cfa3d5a70dbee948c5bfbdce99",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_008.jsonl": "75bec94d19fdaeb5f7edbc5ad1a321bf9bd2c4bf52689f01f2d2eddbb806e098",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_009.jsonl": "1b6ed09b97833f7af5fe0d7eaef47e834284651ecbfc7a345c0a80d598fca0fa",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_010.jsonl": "d493fbbf47e534a691363104072cfa795e834a7fcaa2575dcf9a6a28d639c192",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_011.jsonl": "388a279b256c835cad1675a932c816f9b35a3918620cb60c40de9ab50d9b7672",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_012.jsonl": "498e3915872ca533995318360b5980f29b392efbd527c20386622838d2783d48",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_013.jsonl": "a36b0bcec2ad050c817d406df15c2d546c914cf97ed9676510958837829c63a3",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_014.jsonl": "a0c7c0d061ab1e348b2c6f36a7aa1d6218b2296e788c3f4825f6b8b4ff05f461",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_015.jsonl": "ac375ff25ff316a8115ba3d6f56254e7b00a8dbf642c0a9d6fee902b2c411be2",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_016.jsonl": "e8fa0d52e670d24f5e66989f19022b5ceb08d3d256825196be359a888c79d124",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_017.jsonl": "294709147227f52d3de57a87fb406340b4c7402034784af59b69e5df3b198a18",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_018.jsonl": "d5a133fdaec8c0d9f289c13d8bb0abd31d21bb3159a22820274f97f2f7811500",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_019.jsonl": "09cd9035d62c73f8e272b1529a3a66f51a46d6c0e2bc7f5d4990870b284651df",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_020.jsonl": "690c3b669d6ada3199cd1cee172cc436589f49e51a50d5615b8bc7e1dea4ed22",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/trajectory/stage196b2p0_epoch_channels_001.jsonl": "6530533e6a098a94dc01c708db5152e5089b4408baa0f3dc765028e67b60d49f",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/trajectory/stage196b2p0_epoch_channels_002.jsonl": "c349bda2fe20347bc1d0d174b2e78ad5441c815fc1dfcf049f8eb82e6509cd1f",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/trajectory/stage196b2p0_epoch_channels_003.jsonl": "4b0b9c42ca0b30c03eeedcd515e38417cfa0567c68c5e0e175c14602c8261b32",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/trajectory/stage196b2p0_epoch_channels_004.jsonl": "d2583f17d038bddbab890f19b9c55fafc3833c150731ca5c78262bd93f9689bc",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/trajectory/stage196b2p0_epoch_channels_005.jsonl": "182ca75ecb87c20d44623de2060713f1ce96b3b4533b78faf4ed6ba71f8f04b9",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/trajectory/stage196b2p0_epoch_channels_006.jsonl": "8133661578d57ce3807d50dda43728f1a7ed34fd2b044adf6764152a1b6e5e42",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/trajectory/stage196b2p0_epoch_channels_007.jsonl": "1d249c03d88afec07b275156854cae58e00314fdb3127b48415436f1c7d43a5a",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/trajectory/stage196b2p0_epoch_channels_008.jsonl": "a95e52c8d99ab79f4066c902f8589fbcc274d3e8f8671438b88adc65e8c6c70b",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/trajectory/stage196b2p0_epoch_channels_009.jsonl": "d24e6604e5e5067944ea146bea7713bd846ac04c1787a93f875cd02c40c0eb41",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/trajectory/stage196b2p0_epoch_channels_010.jsonl": "76cca432e7aaf9133282ecd9beaccc6bba6a828de40876de2ac4d00800e987f2",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/trajectory/stage196b2p0_epoch_channels_011.jsonl": "b72f676b8fabee6e94b9d13a2c33286c4acb05d186d02566580b30a2e4a9f77b",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/trajectory/stage196b2p0_epoch_channels_012.jsonl": "5a014a3693676bbaf09982e77b4684b605788185e18126bcc8fc00c12e12cc78",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/trajectory/stage196b2p0_epoch_channels_013.jsonl": "3e3e7270655663a9eb752d22be5e1ab7378134a86ab45369fdaf687c0c56f005",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/trajectory/stage196b2p0_epoch_channels_014.jsonl": "f3dc27f9b186751850ae1d76a09191193db0b76552bfa94a98d93a8a05ae27e6",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/trajectory/stage196b2p0_epoch_channels_015.jsonl": "c965d3e321255e66bcdd9a61da92e84743c2b115a35bbdd52726e5e5b7aa3ee5",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/trajectory/stage196b2p0_epoch_channels_016.jsonl": "0663431a51ad58038a279312e0618b15b35f8f22351da988adf083abd871b3e1",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/trajectory/stage196b2p0_epoch_channels_017.jsonl": "08288e23ab8378185c16ccadd61c4757849ea33b60b7f60b0b45939e4a24c25c",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/trajectory/stage196b2p0_epoch_channels_018.jsonl": "f394b0d0566e8c8f760a21bebd16f73fadefa8818c61a470c53585030695258b",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/trajectory/stage196b2p0_epoch_channels_019.jsonl": "1c54d02bc1ddf13260aaf91661abbab472d19264f4bc776b274b4ecf3c63811a",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_frame_local_only/trajectory/stage196b2p0_epoch_channels_020.jsonl": "329cb6010dc1f34ecd26ad84df1b9f2994df37eda4654c9109400e8b27f24e8e",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/composer_inputs/stage196b2b3p0_composer_input_manifest.json": "dc63a41c59bcdb0c5395f28c51400ea7462de6c3d60a650ecda1eaf52544e034",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_001.jsonl": "57635a686f3c6a5eafb6da9de27f4662b6287883d1fc98d63ffb6cf45560d05f",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_002.jsonl": "941f393ba142b7a365bd1081f87cfdf5206b2f9f3bfbc215caae6ab245c1d6e6",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_003.jsonl": "03904ed5919468255538e72d32b003daba2929ddfaae91d5b8df73a42a2829f3",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_004.jsonl": "a48d62c92796b03364e36ca1f98f4fc425ec6944ae2af5c97d355b3308259f13",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_005.jsonl": "0b332220b0c5e71b9bc7909735328799a9fdc95c75a56a1ae7e22197a6c9c92a",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_006.jsonl": "9c28ddf6e028d493ac6afd868f8125d2c8bc64a83f040559b8289ea0f494bb70",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_007.jsonl": "b590120af9ab4d5ff98017dbeb5e61a5e13beaf2ba0bf97fa9844635db729377",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_008.jsonl": "23ac28955acb9c2757b9f68c6205678e3545e669d7d4d685a837df906b49c4c1",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_009.jsonl": "08e5b13fd447e65b472dc13a07a1ac67a9ff5367e9c90a49ebfcf9d2efa3d777",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_010.jsonl": "06e6eea49c3727534fe6ad06e79d20d1c624f1dc408448357a6bba5e731e2b6b",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_011.jsonl": "75352192162c85e0a409da0d05be64734c6f77f5d577f6fbbe4d7d9f22525726",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_012.jsonl": "5a9576247888ffc8ddfb09f8f192a2d953c2f2b684111d9474f594060bbada80",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_013.jsonl": "ffe2912daa4fb615a326664120e9295683cca5d449bc3db0c3725137faf5f42a",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_014.jsonl": "faa7d0e4bc5caddabb2583ba6e020cb405fc9ec7658f783993c4fa8635565ba3",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_015.jsonl": "4f8596b4ede92f007e66c6a6f5204f53584e54d63d34f3b9b793b4e50c1a7599",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_016.jsonl": "e3f69364b2dcb5e3e329d48777b4e99e015a5640fc2c832d5f21b4120c50c446",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_017.jsonl": "c63a7d97b1a427b55e08ee3bcb93f2136172849c8f4e792f2ce12f846372b36b",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_018.jsonl": "3e2f57e86e130a652f1f436a3ae880221a8e5370dc50a97338f0d7f47216d540",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_019.jsonl": "240d6bd93c3319a8d22825ed23dc9e5f4ce631e39c4bbefc59f29f1cb4958c86",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_020.jsonl": "0a023692e02cfc0289babf94a5075eee346abbbbdd08d1b61499ba44f1f00d03",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/trajectory/stage196b2p0_epoch_channels_001.jsonl": "e708f74a0dcbf3fe6467e3712bb31250220c2056bb6dea34ba71fbee57436a41",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/trajectory/stage196b2p0_epoch_channels_002.jsonl": "e24b1ff8247afc04fd7a11d1c5d435a10d05e4360c5f02bdffe1e3ce30d4977c",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/trajectory/stage196b2p0_epoch_channels_003.jsonl": "d8e408d0b422b3e8793ae68bd3e335ca309b04853dab4f80ddd6322633cc1d79",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/trajectory/stage196b2p0_epoch_channels_004.jsonl": "80798a9c08049e8d8b68166647e037629b4e11b8b43984ee2f4805f84679d0bb",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/trajectory/stage196b2p0_epoch_channels_005.jsonl": "3ff35388173b5de4a701f2fe8576c403d2f17dd89b01641172b3dac706da9d7e",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/trajectory/stage196b2p0_epoch_channels_006.jsonl": "6e5c2f1aa14b736808057cbbac08562a5b93d1366a968c987fe9f8e1f1da9558",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/trajectory/stage196b2p0_epoch_channels_007.jsonl": "7e48947c3a021c8fe91cec9e7979bbae06132c19632f3af94c6f9b6fb62ff742",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/trajectory/stage196b2p0_epoch_channels_008.jsonl": "a4e0a477cda1fdb271a8041e700071d57b122696b3b069358371d5bebf351c09",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/trajectory/stage196b2p0_epoch_channels_009.jsonl": "0b4e05b8e008f178272e88285e2f4f68440717a908bfe06aa6e417d07da4ee91",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/trajectory/stage196b2p0_epoch_channels_010.jsonl": "d5dac647db77cdd838b0c1d310effa8f9d86221905f5fe16e01c4300174b2413",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/trajectory/stage196b2p0_epoch_channels_011.jsonl": "28a2d5a0a9d8bf93b88713d66524549e5c960a30600f606c92891f4a9c84a61a",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/trajectory/stage196b2p0_epoch_channels_012.jsonl": "1e4f67d605830cb273cbf5318d1d6f73a449fbbb96e253ae722e09f3cf20333f",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/trajectory/stage196b2p0_epoch_channels_013.jsonl": "795edb01725136846e3abb632aa82a33e400d1c46966ab309c4a407b48107a29",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/trajectory/stage196b2p0_epoch_channels_014.jsonl": "24ee8201d317f7b2ee6447e0b9c61d121e9c0e1c60cd98bd8b93f87bd0608632",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/trajectory/stage196b2p0_epoch_channels_015.jsonl": "ee8d024e345e47ba85d3c712f343f37ebc045ed33dfad432a61fc661530dcf5d",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/trajectory/stage196b2p0_epoch_channels_016.jsonl": "69a483cd887af4cceaaf920917faa39892b0579041bf81db4d7366cdbafa4654",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/trajectory/stage196b2p0_epoch_channels_017.jsonl": "4aa6d7d18a1629d7c80073239120160f366ff2ad118e9ac2189760bd771dc662",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/trajectory/stage196b2p0_epoch_channels_018.jsonl": "a31210ee1f33fefcc29769c5bacaad3e7304e347cb363c02955b2abdc0f7daab",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/trajectory/stage196b2p0_epoch_channels_019.jsonl": "8cb0a69956559e2f7c6fb84c3f40225f226f08a2af7d6977f7a94819c5d4216f",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/trajectory/stage196b2p0_epoch_channels_020.jsonl": "7429c1f31f83fa06ad20d147ca78315f4ec7879c5fdc222704b1398f25c5ba40",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/composer_inputs/stage196b2b3p0_composer_input_manifest.json": "469796d0ecea75aa6b1ca898384a6a7ad11146fde1f3914f5cab07e27d0ab806",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_001.jsonl": "07676041d652a92df89200abf7c386202deee31fd58599df4a834b2e9bfbc020",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_002.jsonl": "3319bfae66ec972768d833d83037f7f293321377f704e852f9a3e2f8ed073a1f",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_003.jsonl": "91644cea3667c10d3fbc7ed02d112f457a164b8e9217d52d45b3da876e012353",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_004.jsonl": "2c0a893747ac13e88a6549184bdd20ec60b672b2d17a76dddf3925fe77f15448",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_005.jsonl": "5d1e51da40d5af0bf142ca65ecbfc9329db559545d6f4e5b4cce89d90dfb124f",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_006.jsonl": "1d0427e5bd49c893990c4d7f643f2d22f496e4a9ab214b958be2656137fa2fe9",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_007.jsonl": "26fa0b2b7dc0f5107197cddfbeed5fe8377fce3088494e81e12cf3f481eb5d1e",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_008.jsonl": "0f48067505e35b5a2eed593d6eaee3ab76ed5fbd4fca7432caf36bd54096c177",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_009.jsonl": "1ecc2974b6be6fb0df304c3cb6be9e68e14dbb142d20107378026f1d1128f4ec",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_010.jsonl": "7c9bd454483ed2cc83fba931e93571985f17fc75772255d227487131bfff2b8e",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_011.jsonl": "058159bcf9751fe934a3766a24f9423613c4fd5f7071167c47cd8bd3aabed625",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_012.jsonl": "23850dac2e5242a04c68941f2a33ab4df6a774556288377a529c9f44ba6f802c",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_013.jsonl": "5490c6b41785f014e580b4dd094e60fbf5bf617e1468c8f9c39d0b64a589ee19",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_014.jsonl": "8914953c95a549f80f0d2f3c96e47bbadeee66a96537cd61239cd4c063ebd9c5",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_015.jsonl": "24d28eef336547cd901d268ef1879156d2948a0881cd1626fea333748e960e62",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_016.jsonl": "b824c8f830f8439710ae08215c85650ecb20cf20fc1578e468eb0e3e5d5206f1",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_017.jsonl": "1d8a6e75ffbb749ec596bcdaae02d5f99f7ddead9f38542ac64ad36614118164",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_018.jsonl": "88e3adfcde1e9462f7d1a1c438e7ab739d8702d8a90e8c18978524138cb82560",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_019.jsonl": "f722ef954d62b2baddfa18eb2224cc95a6d51eaa6ba939d9c81964b48ba356aa",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_020.jsonl": "5cab90f2d8fbb5faac8b9f37c84234ca55dda895aa0f8cf19b846662bb8e0d20",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/trajectory/stage196b2p0_epoch_channels_001.jsonl": "497d2ed007cfc347ea53f7a55d298398e6fe04d6ffe4fe920247c0c82e83da2e",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/trajectory/stage196b2p0_epoch_channels_002.jsonl": "6001576e1175326e5fac7f02b0807dc55cc9adb8a649de757306be2c79373365",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/trajectory/stage196b2p0_epoch_channels_003.jsonl": "63b6df9678b50cfdced0a21922a82e40137047f6e7a59af33e90f865dd60f578",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/trajectory/stage196b2p0_epoch_channels_004.jsonl": "5f8f3a4549ac05e7b274f156e8efbc9143930303f5eededb217db44e498bdc01",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/trajectory/stage196b2p0_epoch_channels_005.jsonl": "6576641aa74ac6051614b583952bf71f87dd22fea2c3095f0bf75c2746e32950",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/trajectory/stage196b2p0_epoch_channels_006.jsonl": "8b5a612c33f1dcbc905b29ebd05a99ff254a341705621ff532eb96d6c45fe819",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/trajectory/stage196b2p0_epoch_channels_007.jsonl": "301b62ba09c33fe21aef61eea2ef07e1363e3474e665345e75c1eee3d4c1ccf4",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/trajectory/stage196b2p0_epoch_channels_008.jsonl": "79d83738e2326d4169f9ecd1e256d735141a3774cb06cea3a175964b86c66ce8",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/trajectory/stage196b2p0_epoch_channels_009.jsonl": "1ecd9ba62ae1c9410c8110c13b66ab0f734d7eb541a8faec39d6c83443a52f5f",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/trajectory/stage196b2p0_epoch_channels_010.jsonl": "ba9f9ee1193063b2ddfd2fb5c524939b8db19d895ce3f7afb9c4803e1bcda4ff",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/trajectory/stage196b2p0_epoch_channels_011.jsonl": "c9c61b2e9da33374a7a7d8762a0440f02a8383d332337b4f3592ea2450d371a7",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/trajectory/stage196b2p0_epoch_channels_012.jsonl": "b7d57de7bd323f6183d805f5fa06a17531a409ffe8d3a7f6f5e1957fbf628754",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/trajectory/stage196b2p0_epoch_channels_013.jsonl": "d793cf3c88e83019f70b2593c1e97e71c2a4e58bcd2768a9c16e5dd24b4e04c5",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/trajectory/stage196b2p0_epoch_channels_014.jsonl": "bca23fab1932431e276625ef8eb2b68c7e58695bdcb2a7f7f90f4d0bcc80529d",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/trajectory/stage196b2p0_epoch_channels_015.jsonl": "40c16f41103957a56fbf1babbd13c81f6083c2e7ca4b2e715f102d3188f710a9",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/trajectory/stage196b2p0_epoch_channels_016.jsonl": "8c2819f63026f3f3978089c24fb0e1e5dcbc9358c13150aea6299f594d91a6eb",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/trajectory/stage196b2p0_epoch_channels_017.jsonl": "22582762fadc9a67afcb24a0682ad1da0d7988a96037c16c9f14274c154c1f6b",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/trajectory/stage196b2p0_epoch_channels_018.jsonl": "d791079e2f8ede78562322215ff837c1286f036cf5a4f83ac0d9f5b99f80c6f1",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/trajectory/stage196b2p0_epoch_channels_019.jsonl": "e4c0437072ed66ed4c8d869071435a69218fae7c28226c964d420ea51539ba46",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_frame_local_only/trajectory/stage196b2p0_epoch_channels_020.jsonl": "6e6a7d450c3d2358bc759cc64ceda8bc4ed0e3e864d4b6e19d1f89d46f680713",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/composer_inputs/stage196b2b3p0_composer_input_manifest.json": "d2cd5b49d63af090ff2ee9c0913d1ce8692078ef0bb890ef325e4951cd7693de",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_001.jsonl": "1a55dccd3f88f5dbf0bbd73ffa574a325b65d3ee7dff0b10b7a16978bf0257bf",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_002.jsonl": "8e071a192a7c31dc95c4181fd193ad6a5a8faad589b600969357bdc1100b8b03",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_003.jsonl": "dea9009767b4ae431f22a472ba73a1e4974f322fb1eac2299593f5e28d42b421",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_004.jsonl": "7b12a440c9176ebbc35a2a32fa879d74bb459c50c8be47148e05990195e94b72",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_005.jsonl": "eb6442b1e576f865f15ba3e39411f8eb8d0f2cd82cfe1cd76357677b2c940a20",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_006.jsonl": "1874af445c41bb7e716040f59e64bcf60d018a7c3afa4660a2f4018151ee80bb",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_007.jsonl": "859393aa5d26fe980cc1cf232a2517da75cff67e10bbcbfa4bbaccefa1205d01",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_008.jsonl": "092caea1fc0869f11a7bcf7eca038ea80b6f83701d98234f3124629b60af01cd",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_009.jsonl": "f7225b2656b7cfa6a76c840572d6a530c80a8f2841c7f86d2665e94af688ec2f",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_010.jsonl": "85b6d65b903b2424784151578059fb4bea83d419ccfd15aa94ead3c2e2a14281",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_011.jsonl": "a2c060941928fd0fe17ad7c1abc4c6c43f4081043b7c25766f2bdac7992e6b5b",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_012.jsonl": "435d076ccf826eee1a34ce599c555995abe1b7815bb9415ebf3637d769873418",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_013.jsonl": "1c47ca162177455f1e71c4e962b40b17f83957a22a4496989a98cc87a0c2cc98",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_014.jsonl": "f4588cb201e4cf0c4a697d447c796d50d0c69d10c17d29060936e5d0b503c6df",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_015.jsonl": "24aafeb173550ce15bf6c4b61a6d2d0e6b60e72a51b8fe7aa8316323eae194a0",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_016.jsonl": "c891adbcd8847546cbffef8ebaeb44527e265639910342145c5411b4f1fe4e32",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_017.jsonl": "9e8001d92c0fb6e134bb58680001568b3c0de618fd2a97200098a087c20bd370",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_018.jsonl": "55d875e6055549d182979ae2b653a1238231bf10906709720c1f6d2c2c30bf29",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_019.jsonl": "e02b02e1d201288d3f8f7e3d2abc0515a278a391a61483aa8a4f124e4a4afa22",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_020.jsonl": "5c977975036a3c2fdb6c131799b91c4e06dcd616c48f50ee19fe01aa745fe5b7",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/trajectory/stage196b2p0_epoch_channels_001.jsonl": "ea4a6bba1524ee4083bc6837857f6b5a519ccc39e156f84f092fcc2009be906f",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/trajectory/stage196b2p0_epoch_channels_002.jsonl": "745a7a3fa88736fe06137042aeac4f84dcad0c2d1874e1b4f219dc08b4a16460",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/trajectory/stage196b2p0_epoch_channels_003.jsonl": "241fc9ae7433e551520105d86a98fe5dc2031bb60d6e9db29e94e06b9cf8d6d8",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/trajectory/stage196b2p0_epoch_channels_004.jsonl": "1defe0191e9e1e8d0ef918f8bb7dba4045996f42f832a5cc076ee0abe6b7e62b",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/trajectory/stage196b2p0_epoch_channels_005.jsonl": "a644336ab3e050bdf8bd6cad697123b44ea709a98a658cbe4e0ce824785ff2d3",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/trajectory/stage196b2p0_epoch_channels_006.jsonl": "33fac86ff5c5f16217b20855c0b9d2349fb6c1a65dff08575b95e863fead67be",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/trajectory/stage196b2p0_epoch_channels_007.jsonl": "d2a0f3dc8bf2f8ce8a173006cb10024be79d8fa80ad42634c503e0a10ef2e2cc",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/trajectory/stage196b2p0_epoch_channels_008.jsonl": "7f95de8b298571b5de7afbceb64cb84af89e52094f41156e67fce8108934119c",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/trajectory/stage196b2p0_epoch_channels_009.jsonl": "17f104ddd7df75ca8d4b85b3d134f45b79ade9338055efdb0278609f48686500",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/trajectory/stage196b2p0_epoch_channels_010.jsonl": "7d632c7b4d8fa7c029a2c30146ebd0c9d4a936d85093b199623398692d3f98df",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/trajectory/stage196b2p0_epoch_channels_011.jsonl": "23d5cd0175a4534b90da6d79aa7294e443ffa117efc9fb424a0ddb781694ac25",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/trajectory/stage196b2p0_epoch_channels_012.jsonl": "af9e02ed910630eb99ba436f567c68544de423a694c7836a5f4c89140ed4f8d7",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/trajectory/stage196b2p0_epoch_channels_013.jsonl": "9adb281c4877b2811af7cfbde656090732ae430c54d16bf0345c018b3aeb571f",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/trajectory/stage196b2p0_epoch_channels_014.jsonl": "4a4e7cee0c0abd4e165859cb84f93e1933055146b1e847bac015ae229ea80cf8",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/trajectory/stage196b2p0_epoch_channels_015.jsonl": "6d4eb3f103d2c6b94d3b4c7978065f33d70f78615ccdad6e305a8055cbd58ccf",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/trajectory/stage196b2p0_epoch_channels_016.jsonl": "1314fd751dec7c080088ff8da1ca7ddc0cc5d4de27bd39437ff6b1fafcef02f6",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/trajectory/stage196b2p0_epoch_channels_017.jsonl": "a6375ef59f38b9af8d64aaac9cb7edc3874975eb3f749920fbf0973f7820831a",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/trajectory/stage196b2p0_epoch_channels_018.jsonl": "388180ceed419b8eab8facca4a528d2f99e66fde059fb4db4ac0308b4a45d3c6",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/trajectory/stage196b2p0_epoch_channels_019.jsonl": "6f6e7a5fcb4d3844152f096c0301a4a61a0a8fce8115c493da5217c67950c91b",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed184_joint/trajectory/stage196b2p0_epoch_channels_020.jsonl": "89e9648fab75beab193016944321b1df23b5e944579b34417fae89f742b2d7da",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/composer_inputs/stage196b2b3p0_composer_input_manifest.json": "b676e32ed5d26bffc412a75a361f5a71c967c703692cf39719d6b46fbf3032c3",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_001.jsonl": "b8ba71e714b8e12c9817f1a0224ff22b6da2fb7a5564614c7c806929d6c1e835",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_002.jsonl": "0a2e11007e48bfdfb3fb53b8fed68cc47c9397d7ed2fc5a3454dbcd1542ba1ab",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_003.jsonl": "ad755afcb04fccbc764fd5ff9bce056e2611014827750f414fdd7eeef638ff00",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_004.jsonl": "149eb80ed3cc22a27c6d4c72d73efec69a94820924ae7fefd3fbbb084b8f9c96",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_005.jsonl": "655ff1bfcaf1c3c1b0fce2022ca75ac3819e3874a620cd32adc3d3323e727471",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_006.jsonl": "d2b6441b59f581f9d980413a9f19a8d95c566b3b1a4078937b136f5d67516c9b",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_007.jsonl": "c51a824f21d5971138408e4ea4923abf439d55342d94cdf46d0b23e37e63ca5b",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_008.jsonl": "8aca7df9c7e52a1dc33180c7ad938a3a4acc270221f62fb90e4c660bc4b679b3",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_009.jsonl": "d789aad0733d3e6640c0ce6e38ba34c05971b6336d9325bbc5e1f8c4f11b2cfe",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_010.jsonl": "1a30bcdea610e913a3e455043b8154ac208a4e907c4058b9e495c46f79aa13d8",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_011.jsonl": "5550db454ba1aace96863a02be8613f3fd9b8dd607f2a82ea31bff0fb99f55dd",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_012.jsonl": "107440cfc9c1c6915ac16730b3c35d4093a8aa80b8fba7f857bffcc2c8cddc2a",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_013.jsonl": "08546f1726b1d791250178c840e1c25c9c71c2011c4713cf87b6159adcd1005d",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_014.jsonl": "9692f9bb407caa6dbf338a9a18891d1b5f5d612b46dae633242fc116970c20d1",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_015.jsonl": "d06f0ca4d6d14839bbe00d36a4f4d6f2e8bd1bd0b3e09822000aac1deffdc01a",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_016.jsonl": "52b85a2769e79929353a0600f63b21fabf289230916495843f70d2afa62b6d86",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_017.jsonl": "5101389710bf1bd434985c7275e5367d6226ba0d5ef56691142af7a19cef7fba",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_018.jsonl": "d9ffcb40998e1be5fff1a5d44a0bd4bc70df3cdba4881f39b46a7391ccded783",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_019.jsonl": "8aaff5794fbded643983b6597f5580eb229273d382b8c6f9c64471b0859c1d00",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/composer_inputs/stage196b2b3p0_epoch_composer_inputs_020.jsonl": "dfd61cfeebada639efe9bb4ef9385bc2c2f9a77f96b074f90f6920f8ea289498",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/trajectory/stage196b2p0_epoch_channels_001.jsonl": "99b31ed84700693d152a03fcb201fa2fdd5dbac01ef0d0dbbaf65c1f20025fb3",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/trajectory/stage196b2p0_epoch_channels_002.jsonl": "15e4779927bad079e2d8fb5058e90f1fa94855139f14477093a468a0bce3c9f5",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/trajectory/stage196b2p0_epoch_channels_003.jsonl": "bbb768628193db817dd48e06babb25b9fcd01b9f80f2a36b2c3f3e2a24e1791f",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/trajectory/stage196b2p0_epoch_channels_004.jsonl": "43e72626eb23b41b2dd8c6547ed552490154c124c58f5da5511db3f12d49aa4d",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/trajectory/stage196b2p0_epoch_channels_005.jsonl": "b0ebd280549a6e721f863f0f21c19a05683a1b5e0bcc978384fb473da4a0f251",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/trajectory/stage196b2p0_epoch_channels_006.jsonl": "d6e413e54a035adc1493247cc1e4ed7778e4a9a24cf244016bde39ce731278fa",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/trajectory/stage196b2p0_epoch_channels_007.jsonl": "b5a4a63466a5bab202a62c68a6504ed0deb7997dbce433a5e748cd608ef2f207",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/trajectory/stage196b2p0_epoch_channels_008.jsonl": "5cfbfa71f2d1cd25fc6d5532e50e58fbbf5f0fa40d9ab81a5ead5cc26345bc77",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/trajectory/stage196b2p0_epoch_channels_009.jsonl": "8707effd41408d28bed0fdab353a4acd7c9fb4b32870bec5975bbe6ae45f11de",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/trajectory/stage196b2p0_epoch_channels_010.jsonl": "ff345d964cd7df5cb5430e4227946b07d7a121db0f2ed4907bb4ceda34d04052",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/trajectory/stage196b2p0_epoch_channels_011.jsonl": "10c7e9afbb26ce8264ac6b3bc5ff470bda8afd843d7dd4d81acec644c7003d68",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/trajectory/stage196b2p0_epoch_channels_012.jsonl": "660d424176a006214ff5d81687932f67d741935d660c47a5a58d19381a327dcb",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/trajectory/stage196b2p0_epoch_channels_013.jsonl": "7b86caec35acbfc4d5d9424d4c83e694c4a7aebc7f44f8e4dd220fe39f699e5e",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/trajectory/stage196b2p0_epoch_channels_014.jsonl": "3bdb65878e08a3725dbcfdf02239f203c0b0d20ebda5335e42d5ae9d23580bb7",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/trajectory/stage196b2p0_epoch_channels_015.jsonl": "e8297cd4e0989aba61c8c45a5a7cc97ed59a52579ebaaa59d115797867785c62",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/trajectory/stage196b2p0_epoch_channels_016.jsonl": "15539ac9d99991ef149aaf0b82575b7947e5f2f1b02375d70d736a07effa4cf9",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/trajectory/stage196b2p0_epoch_channels_017.jsonl": "ec270dd1ca069a86551b2d8ea7745ee8a8451cc8a6e65b0744a3f294fa1b30b8",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/trajectory/stage196b2p0_epoch_channels_018.jsonl": "be57952cfdd9e29fafdd7f8fda15a239cfd11e68c46855240fb337fa16e04874",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/trajectory/stage196b2p0_epoch_channels_019.jsonl": "2ba64c04e04328f666c0af025b6e83a873b818747aaf0a1a94be1c131d49c30a",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_frame_local_only/trajectory/stage196b2p0_epoch_channels_020.jsonl": "aae20fd7ba18e312cd194c1224e6e011012c395898178c9f395f48d4c84ab0ea",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/composer_inputs/stage196b2b3p0_composer_input_manifest.json": "e14de19b5b8e433eed94f3a382a411862ee534d94c6abb913013e76bddc9afed",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_001.jsonl": "9f28198d97e18fc4ec6a1542d924f9b7040b285ced551b008b182eae944b1d69",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_002.jsonl": "9b167985ec1acd970e1c21c69534c7d3067fc184075660f2e8853da2eaed277d",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_003.jsonl": "153904f0ab443cef2f80ca1ebd7f3751c6041a4d5731b6d8652fe50b36b7daf0",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_004.jsonl": "79cdd4487bb0590b3765eb0feca48241b01dec834183e997cf1bc4f5249f9196",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_005.jsonl": "7557d80f447efa94178901c0b846fb9699884671c8a90620626faacec9b79128",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_006.jsonl": "570447d717384dbcb7ed8ffc02f03ea5d72ac4bb3380da72bc1ba43acba8a7ea",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_007.jsonl": "f731f4d1957f54e7e95a6dbc7bfddc50fd9f9770f54a721e3a1c2f627b0ea158",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_008.jsonl": "29f95f7933c31ff6ee60692c157bdaf3ad634ff6b8a31e5bb5515361120a9e49",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_009.jsonl": "5cb176e78f6f2ac2f9b8b0547f8d4995a89c9374492a8b4905ab0fed5fd89f13",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_010.jsonl": "93ba031b7dbd28b195e635365b50b157fadda425d6261a3e34bae1afece8abc5",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_011.jsonl": "d42bd64853d4023af2f858cb2f16cede2f286ab166e94f0853a67fd9d768532c",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_012.jsonl": "f550ee603e027fe9bc0cb26034e1853a4c2427b1aa51ac718c93a1c3b6c285f1",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_013.jsonl": "ab5c436181d5352fb17ea62187a786ba178bf1be16ed504de122deafd07824fe",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_014.jsonl": "ce44cd5d26588757912369d475b69ad7aa9b5388ba6e72bd8ee585ed825eb384",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_015.jsonl": "a276fcee416234fe61469c93f05443bc4c3f1b6159317d02bbb969d3a138e2d6",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_016.jsonl": "7e8c8ca3865db2364cae3cfa5f304e2f7bb5ea22fee5c556a67612afcec72b40",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_017.jsonl": "92d4df3508e49ad2826aed8003f41c28784eb08bb9881d1282897d4c5967405d",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_018.jsonl": "62916ee635065f62ba694d13f8a0f0fcc230373dff83ab10dcb7472e2c902c0d",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_019.jsonl": "2b6997af984d5e567355dc24f8055630d4215db87e195314c610a3a454c4c982",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/composer_inputs/stage196b2b3p0_epoch_composer_inputs_020.jsonl": "0cc097b474205e3c2b1dc81b0aee45f5f6a7c2ce095c5fa649e22e789b48c5ca",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/trajectory/stage196b2p0_epoch_channels_001.jsonl": "91286f3e50072e92361b06ad0c1ed493acaa955320ced2bedb4f0ff98e1b5518",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/trajectory/stage196b2p0_epoch_channels_002.jsonl": "fd56e33a8c86b824c170a7259556ccdb093685db2cf882d8c8f8c35ae5103c7d",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/trajectory/stage196b2p0_epoch_channels_003.jsonl": "c6d1ed36ba53e2fc00be53495abe2d6b2ff719011b25215fed298c95eccfee34",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/trajectory/stage196b2p0_epoch_channels_004.jsonl": "960cad39b3920483f93216c97f3ea7a6cf0aae3214c028af2a1f22e380122a55",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/trajectory/stage196b2p0_epoch_channels_005.jsonl": "3b2c909f2158c2a30a1a1e5bbcc4516d38205c116418b52d3a66edc1fc14ae5f",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/trajectory/stage196b2p0_epoch_channels_006.jsonl": "079b4f8e486cee9d6bc83fe345b123244e7188e35db56d34b4431e6a4f9ba3ff",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/trajectory/stage196b2p0_epoch_channels_007.jsonl": "093b06d0103f8ce522432660a537cda01f9132ab80568d9054fe00516cf13f64",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/trajectory/stage196b2p0_epoch_channels_008.jsonl": "27bfbc3a49f509f83fe089ca4588d200a67ba3f402fa4cb1da73260bbc247bf2",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/trajectory/stage196b2p0_epoch_channels_009.jsonl": "66c38fd4500cabab4b34c120be7739bedf0e7e2ed887ff0cf09d7ed42bd6b9ca",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/trajectory/stage196b2p0_epoch_channels_010.jsonl": "52d57050824ef37c02a24c905fd732a42862a68773fbd20ff5e118ebedf57faf",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/trajectory/stage196b2p0_epoch_channels_011.jsonl": "8f7031fe9c0b2fa478154da7e20e334ad1b666238011ddeb1ed1f0a20e7ff79a",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/trajectory/stage196b2p0_epoch_channels_012.jsonl": "45593ea929bce99afac1bdaa028a1def17432d6eb42f1c8b9f6feecad4a753dc",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/trajectory/stage196b2p0_epoch_channels_013.jsonl": "e95442f6e2bda605f43048a9b3bca4bf0b003d9cac983c16ddb5cd670c5cd7c5",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/trajectory/stage196b2p0_epoch_channels_014.jsonl": "3fecf696d56b7a2c5769bccdc9e28c28e9b16d53d15f99240ac401a19b9a6643",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/trajectory/stage196b2p0_epoch_channels_015.jsonl": "2769e9fa59b2a41d20a226a2ee018eff59bc3b0a05628857fbf10477b33b22f0",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/trajectory/stage196b2p0_epoch_channels_016.jsonl": "d22186a735e138a03a599012d666af47f6208b72a31c3775f18951e90f8cc304",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/trajectory/stage196b2p0_epoch_channels_017.jsonl": "ebc6f848535d519ab35ab04dfd3f8f4517e3516dbfe9af8bf0b930a6966be48c",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/trajectory/stage196b2p0_epoch_channels_018.jsonl": "2b10f9a69cd1fbee17d86785a884c4f9f054047206d612e626ec88cf66715d67",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/trajectory/stage196b2p0_epoch_channels_019.jsonl": "902b6812c5517c60b29d9b56cbf718173e4e63e079f8bd230845186a2a55a9da",
+    "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed185_joint/trajectory/stage196b2p0_epoch_channels_020.jsonl": "fec9c7c3c3350cd623ecdbf9788c8c2a814d4e1aa8bbdd27db73fb6177b428d4",
+    "/kaggle/working/ContraMamba/reports/stage196b2b4_final_composer_residual_localization_20260722_125221/stage196b2b4_analysis.json": "aa34309f079d5c0522a639ae5d5adaa3944ba3e58d7c8b795819b03d778c7bec",
+    "/kaggle/working/ContraMamba/reports/stage196b2b4_final_composer_residual_localization_20260722_125221/stage196b2b4_contract.csv": "2599123dc7fcf5fad8afc1930ad77c98b24334db4133d0cf55f59411ec316921",
+    "/kaggle/working/ContraMamba/reports/stage196b2b4_final_composer_residual_localization_20260722_125221/stage196b2b4_localization_summary.csv": "5266a63b32ff2d18c882de6433dfd6a2b12e2396493cf443206b2c9e3a174a5e",
+    "/kaggle/working/ContraMamba/reports/stage196b2b4_final_composer_residual_localization_20260722_125221/stage196b2b4_primitive_coalition_rows.csv": "18372d8d1c15ed6268730e7e91c4f8adfbdb720421708d82ce9271ef14dc4216",
+    "/kaggle/working/ContraMamba/reports/stage196b2b4_final_composer_residual_localization_20260722_125221/stage196b2b4_primitive_mobius_terms.csv": "024a67d072e40bcb1975e4b19bfc37e1da245772c3e2fd9a24ac9bcf74ee9bdd",
+    "/kaggle/working/ContraMamba/reports/stage196b2b4_final_composer_residual_localization_20260722_125221/stage196b2b4_primitive_tail_summary.csv": "fe8afe04b0192ea7750091fc7620fb2508088853b0180b09904d78a908fa9d9b",
+    "/kaggle/working/ContraMamba/reports/stage196b2b4_final_composer_residual_localization_20260722_125221/stage196b2b4_report.md": "20e80e621f76f66825be8a22deabb194109ee7059acd2f906c59a0c42ee3e10b",
+    "/kaggle/working/ContraMamba/reports/stage196b2b4_final_composer_residual_localization_20260722_125221/stage196b2b4_residual_coalition_rows.csv": "2148382e1c8419dc648fc71c23bda2b81995a6f470de9e20f57b041948098d5a",
+    "/kaggle/working/ContraMamba/reports/stage196b2b4_final_composer_residual_localization_20260722_125221/stage196b2b4_residual_mobius_terms.csv": "d9b1ea297c25c26feab2695542223ac5635dabc6facfd62e4f6e1aa331746726",
+    "/kaggle/working/ContraMamba/reports/stage196b2b5_row_selector_observability_20260722_131143/stage196b2b5_analysis.json": "b3b3c8b620c7330800ea7ac502daca6310804525e85a648cb0d2cc559737eb39",
+    "/kaggle/working/ContraMamba/reports/stage196b2b5_row_selector_observability_20260722_131143/stage196b2b5_contract.csv": "f2c5bf0efd1a06d28a0afa54483cb0f6b9719a8a79787d3380fe1c8f9a043ef4",
+    "/kaggle/working/ContraMamba/reports/stage196b2b5_row_selector_observability_20260722_131143/stage196b2b5_feature_dictionary.csv": "c4def6bb79d9184d22c949ba3020a991198a946848384b20b92815f39b965f13",
+    "/kaggle/working/ContraMamba/reports/stage196b2b5_row_selector_observability_20260722_131143/stage196b2b5_paired_delta_selector_summary.csv": "e7f8cf189b260635122d0ad0222b029d61470e30baf59e3d5ad42739ab4795f3",
+    "/kaggle/working/ContraMamba/reports/stage196b2b5_row_selector_observability_20260722_131143/stage196b2b5_paired_delta_signature_rows.csv": "beb3785c1a75b30b0f728c2cd03492b3e9685ae925504f997441d315cb46b4e3",
+    "/kaggle/working/ContraMamba/reports/stage196b2b5_row_selector_observability_20260722_131143/stage196b2b5_recipient_selector_summary.csv": "0807d6c964d293a548f2ea6074e01a6ef3f47118cb45f6b9b7a5c6b4870a3a73",
+    "/kaggle/working/ContraMamba/reports/stage196b2b5_row_selector_observability_20260722_131143/stage196b2b5_recipient_signature_rows.csv": "3e3424c9d43e2e0606487e1368557c697078faebb5407c557b8e291345cc8491",
+    "/kaggle/working/ContraMamba/reports/stage196b2b5_row_selector_observability_20260722_131143/stage196b2b5_report.md": "e340dad162aa3196b81645d533d181800ef9f34fe6c95c7e3e416ddd3dfd3c0d",
+    "/kaggle/working/ContraMamba/reports/stage196b2b5_row_selector_observability_20260722_131143/stage196b2b5_row_action_sets.csv": "554445382d3f0f6f73a00b8827fe48c88ba47df4e0b1f0233a59e642464492e2",
+    "/kaggle/working/ContraMamba/reports/stage196b2b6_minimal_selector_intervention_20260722_143324/stage196b2b6_analysis.json": "4d4e822b955fbc333a4c541f53164266e0b3f9ddc5ca68ed6b5a980f37a96dc9",
+    "/kaggle/working/ContraMamba/reports/stage196b2b6_minimal_selector_intervention_20260722_143324/stage196b2b6_candidate_feature_subsets.csv": "cdde0377650ad016e8aad6d0efd41472eebdcd1f051ae25ce462a370e094c85b",
+    "/kaggle/working/ContraMamba/reports/stage196b2b6_minimal_selector_intervention_20260722_143324/stage196b2b6_clean_dev_application_summary.csv": "dc39f0a8d27a57c41c88115fcf65622b0e29740d14283d662ca24c713b409d98",
+    "/kaggle/working/ContraMamba/reports/stage196b2b6_minimal_selector_intervention_20260722_143324/stage196b2b6_clean_dev_signature_audit.csv": "ffffc14a6403d02f35434fa730e49175f797652f5cb74a6f087eb75465d36fe7",
+    "/kaggle/working/ContraMamba/reports/stage196b2b6_minimal_selector_intervention_20260722_143324/stage196b2b6_contract.csv": "55d535f1b9e667d4e172a7f33cc68a8936a004e9ddc9b35e7a78d7fafacc8f5c",
+    "/kaggle/working/ContraMamba/reports/stage196b2b6_minimal_selector_intervention_20260722_143324/stage196b2b6_policy_dominance.csv": "39ab57872ee1c8d7a5bc564cfed9695965e9e471e9403a80f101cc3522139acc",
+    "/kaggle/working/ContraMamba/reports/stage196b2b6_minimal_selector_intervention_20260722_143324/stage196b2b6_primary_policy_validation.csv": "69fd5b7e13931c5e32d632081467dd6e1915f9a1379357d7b2cb14d4f640911d",
+    "/kaggle/working/ContraMamba/reports/stage196b2b6_minimal_selector_intervention_20260722_143324/stage196b2b6_report.md": "37af8d0d770a155c3c0942df423260368c177e05e014f185c3bed4372230c07b",
+    "/kaggle/working/ContraMamba/reports/stage196b2b6_minimal_selector_intervention_20260722_143324/stage196b2b6_signature_action_map.csv": "52aacbc5c6008dff66c4ce475a169b90b30bb9d6597d7bbde3522ed7be53d4b1"
+  },
+  "source_paths": {
+    "stage196b2b3p0_run_root": "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834",
+    "stage196b2b4_analysis_json": "/kaggle/working/ContraMamba/reports/stage196b2b4_final_composer_residual_localization_20260722_125221/stage196b2b4_analysis.json",
+    "stage196b2b5_analysis_json": "/kaggle/working/ContraMamba/reports/stage196b2b5_row_selector_observability_20260722_131143/stage196b2b5_analysis.json",
+    "stage196b2b6_analysis_json": "/kaggle/working/ContraMamba/reports/stage196b2b6_minimal_selector_intervention_20260722_143324/stage196b2b6_analysis.json"
+  },
+  "stage": "Stage196-B2-B6P0",
+  "stage196b2b3p0_runtime_git_commit": "fa16787efa84bb15d832b6d9382fafd77016c4e2",
+  "tail_trajectory_feasible_gates": [],
+  "tail_trajectory_feature_dictionary": [
+    {
+      "available": true,
+      "diagnostic_only": true,
+      "epoch_scope": [
+        18,
+        19,
+        20
+      ],
+      "feature_family": "tail_trajectory",
+      "feature_name": "RECIPIENT_PREDICTION_SEQUENCE",
+      "formula": "exact final_native_prediction at epochs 18,19,20",
+      "integration_authorized": false,
+      "natural_threshold": "",
+      "outcome_derived": false,
+      "source_fields": [
+        "final_native_prediction"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        "REFUTE",
+        "NOT_ENTITLED",
+        "SUPPORT"
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": true,
+      "epoch_scope": [
+        18,
+        19,
+        20
+      ],
+      "feature_family": "tail_trajectory",
+      "feature_name": "FINAL_MARGIN_SIGN_SEQUENCE",
+      "formula": "sign(final_support_logit - final_not_entitled_logit), zero iff abs(delta) <= 1e-12",
+      "integration_authorized": false,
+      "natural_threshold": "0.0",
+      "outcome_derived": false,
+      "source_fields": [
+        "final_support_logit",
+        "final_not_entitled_logit"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        "NEGATIVE",
+        "ZERO",
+        "POSITIVE"
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": true,
+      "epoch_scope": [
+        18,
+        19,
+        20
+      ],
+      "feature_family": "tail_trajectory",
+      "feature_name": "HEAD_MARGIN_SIGN_SEQUENCE",
+      "formula": "sign(decision_head_support_logit - decision_head_not_entitled_logit), zero iff abs(delta) <= 1e-12",
+      "integration_authorized": false,
+      "natural_threshold": "0.0",
+      "outcome_derived": false,
+      "source_fields": [
+        "decision_head_support_logit",
+        "decision_head_not_entitled_logit"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        "NEGATIVE",
+        "ZERO",
+        "POSITIVE"
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": true,
+      "epoch_scope": [
+        18,
+        19,
+        20
+      ],
+      "feature_family": "tail_trajectory",
+      "feature_name": "HEAD_FINAL_MARGIN_SIGN_CONFLICT_SEQUENCE",
+      "formula": "HEAD_SIGN != FINAL_SIGN at each tail epoch",
+      "integration_authorized": false,
+      "natural_threshold": "0.0",
+      "outcome_derived": false,
+      "source_fields": [
+        "decision_head_support_logit",
+        "decision_head_not_entitled_logit",
+        "final_support_logit",
+        "final_not_entitled_logit"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        false,
+        true
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": true,
+      "epoch_scope": [
+        18,
+        19,
+        20
+      ],
+      "feature_family": "tail_trajectory",
+      "feature_name": "FRAME_HALFSPACE_SEQUENCE",
+      "formula": "halfspace(frame_prob; threshold=0.5, AT_HALF iff abs(x-0.5)<=1e-12)",
+      "integration_authorized": false,
+      "natural_threshold": "0.5",
+      "outcome_derived": false,
+      "source_fields": [
+        "frame_prob"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        "BELOW_HALF",
+        "AT_HALF",
+        "ABOVE_HALF"
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": true,
+      "epoch_scope": [
+        18,
+        19,
+        20
+      ],
+      "feature_family": "tail_trajectory",
+      "feature_name": "PREDICATE_HALFSPACE_SEQUENCE",
+      "formula": "halfspace(predicate_coverage_prob; threshold=0.5, AT_HALF iff abs(x-0.5)<=1e-12)",
+      "integration_authorized": false,
+      "natural_threshold": "0.5",
+      "outcome_derived": false,
+      "source_fields": [
+        "predicate_coverage_prob"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        "BELOW_HALF",
+        "AT_HALF",
+        "ABOVE_HALF"
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": true,
+      "epoch_scope": [
+        18,
+        19,
+        20
+      ],
+      "feature_family": "tail_trajectory",
+      "feature_name": "SUFFICIENCY_HALFSPACE_SEQUENCE",
+      "formula": "halfspace(sufficiency_prob; threshold=0.5, AT_HALF iff abs(x-0.5)<=1e-12)",
+      "integration_authorized": false,
+      "natural_threshold": "0.5",
+      "outcome_derived": false,
+      "source_fields": [
+        "sufficiency_prob"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        "BELOW_HALF",
+        "AT_HALF",
+        "ABOVE_HALF"
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": true,
+      "epoch_scope": [
+        18,
+        19,
+        20
+      ],
+      "feature_family": "tail_trajectory",
+      "feature_name": "ENTITLEMENT_HALFSPACE_SEQUENCE",
+      "formula": "halfspace(entitlement_prob_native; threshold=0.5, AT_HALF iff abs(x-0.5)<=1e-12)",
+      "integration_authorized": false,
+      "natural_threshold": "0.5",
+      "outcome_derived": false,
+      "source_fields": [
+        "entitlement_prob_native"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        "BELOW_HALF",
+        "AT_HALF",
+        "ABOVE_HALF"
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": true,
+      "epoch_scope": [
+        18,
+        19,
+        20
+      ],
+      "feature_family": "tail_trajectory",
+      "feature_name": "ENTITLEMENT_BOTTLENECK_SEQUENCE",
+      "formula": "sorted set of argmin names over frame_prob,predicate_coverage_prob,sufficiency_prob; ties preserved within 1e-12",
+      "integration_authorized": false,
+      "natural_threshold": "",
+      "outcome_derived": false,
+      "source_fields": [
+        "frame_prob",
+        "predicate_coverage_prob",
+        "sufficiency_prob"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        "sorted nonempty subsets of FRAME,PREDICATE,SUFFICIENCY"
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": true,
+      "epoch_scope": [
+        18,
+        19,
+        20
+      ],
+      "feature_family": "tail_trajectory",
+      "feature_name": "POLARITY_ENERGY_ORDER_SEQUENCE",
+      "formula": "compare positive_energy with negative_energy; EQUAL iff abs(delta)<=1e-12",
+      "integration_authorized": false,
+      "natural_threshold": "0.0",
+      "outcome_derived": false,
+      "source_fields": [
+        "positive_energy",
+        "negative_energy"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        "POSITIVE_DOMINANT",
+        "EQUAL",
+        "NEGATIVE_DOMINANT"
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": true,
+      "epoch_scope": [
+        18,
+        19,
+        20
+      ],
+      "feature_family": "tail_trajectory",
+      "feature_name": "PREDICATE_MISMATCH_SEQUENCE",
+      "formula": "raw exported predicate_mismatch_active flag",
+      "integration_authorized": false,
+      "natural_threshold": "",
+      "outcome_derived": false,
+      "source_fields": [
+        "predicate_mismatch_active"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        false,
+        true
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": true,
+      "epoch_scope": [
+        18,
+        19,
+        20
+      ],
+      "feature_family": "tail_trajectory",
+      "feature_name": "TEMPORAL_MISMATCH_SEQUENCE",
+      "formula": "raw exported temporal_mismatch_active flag",
+      "integration_authorized": false,
+      "natural_threshold": "",
+      "outcome_derived": false,
+      "source_fields": [
+        "temporal_mismatch_active"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        false,
+        true
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": true,
+      "epoch_scope": [
+        18,
+        19,
+        20
+      ],
+      "feature_family": "tail_trajectory",
+      "feature_name": "TEMPORAL_ADAPTER_ACTIVITY_SEQUENCE",
+      "formula": "raw exported temporal_adapter_active flag",
+      "integration_authorized": false,
+      "natural_threshold": "",
+      "outcome_derived": false,
+      "source_fields": [
+        "temporal_adapter_active"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        false,
+        true
+      ]
+    },
+    {
+      "available": true,
+      "diagnostic_only": true,
+      "epoch_scope": [
+        18,
+        19,
+        20
+      ],
+      "feature_family": "tail_trajectory",
+      "feature_name": "TEMPORAL_CHANNEL_ACTIVITY_SEQUENCE",
+      "formula": "raw exported temporal_channel_active flag",
+      "integration_authorized": false,
+      "natural_threshold": "",
+      "outcome_derived": false,
+      "source_fields": [
+        "temporal_channel_active"
+      ],
+      "unavailable_reason": "",
+      "value_domain": [
+        false,
+        true
+      ]
+    }
+  ],
+  "training_performed": false
+}
