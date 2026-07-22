@@ -60,6 +60,19 @@ The row CSV, analysis JSON, and Markdown report must agree. Seeds 184 and 185 ar
 
 The P0 root must contain exactly the six expected run directories. Each run may contain unrelated standard artifacts, but the `stage196b2p0_epoch_channels_NNN.jsonl` namespace must contain exactly basenames `001` through `020`. Every sidecar must have exactly 720 rows and the exact frozen 18-field P0 schema. IDs, source-row IDs, dense dev positions, seed, epoch, mode, labels, probabilities, and finite logits are validated across epochs and arms.
 
+## Historical provenance resolution
+
+Historical commits are resolved only after the explicit B2-B1, B2-A, and B2-B2 artifacts have passed their exact file, decision, and contract closures. One resolver collects every available non-null value from those already-loaded artifacts and the mandatory B2-B2 analyzer CLI argument. It never searches directory names, timestamps, Git history, siblings, or the repository.
+
+The frozen roles are B2-B2 analyzer `85b571610c00a4a1658229051bd6d9fcfabcf408`, B2-B1 analyzer `85f1de8f9e0393ccdca5da4bc0725d88d8f427c9`, B2-A analyzer `833752ec25890e76ee3c2dc3f3bc3c3c1b7428a6`, B2-P0 runtime `e9aaff24054f1d409119b70df13b94159a34a8e4`, B1-C runtime `9835cbbf86d83aca0964821669e63f7f6deb1c59`, and FrameGate origin `5a39538ef3ca8f36cc2cc5d3290eae60d6a5f5c8`. Every non-null commit must be lowercase full 40-hex; abbreviated hashes are rejected.
+
+B2-A analyzer authority comes primarily from passed B2-B1 source closure: the explicit B2-A analyzer gate, normalized source-role mapping, and B2-B1 analysis role are inspected when present. B2-B2 normalized provenance is a secondary consistency source. Direct B2-A analysis metadata and its historical contract gate are optional consistency sources. Therefore, absence of a dedicated B2-A analyzer-commit contract gate passes with an `optional_source_absent` warning; malformed or conflicting present evidence fails closed.
+
+B2-B1 analyzer authority comes from B2-B2 normalized provenance, with direct B2-B1 analysis and contract metadata as optional consistency evidence. B2-B2 analyzer authority remains the mandatory `--stage196b2b2-analyzer-git-commit`, cross-checked against any direct B2-B2 analysis or contract value. B2-P0, B1-C, and FrameGate roles use the same resolver across later validated closures and optional older direct metadata. A role passes only when at least one authoritative source supplies the expected value and every available non-null source agrees.
+
+Each inspected source is classified exactly as `authoritative_value`, `optional_value_agrees`, `optional_source_absent`, `optional_field_absent_or_null`, `malformed_present_evidence`, or `conflicting_present_value`. Absence/null produces a nonblocking schema warning. Failed rows, malformed JSON, ambiguous duplicate gate/run rows, invalid commit format, and conflicts fail closed. Contract evidence retains role, expected and selected values, authority source, all inspected evidence with paths/scope/gate/field/column/value/status, absent optional sources, warnings, conflicts, and pass state.
+
+The provenance contract includes `b2a_analyzer_commit_authority`, `b2a_direct_commit_optional_consistency`, `b2b1_analyzer_commit_authority`, `b2b1_direct_commit_optional_consistency`, `b2b2_analyzer_commit_cli_authority`, per-role and aggregate `historical_runtime_role_consistency` gates, and `historical_provenance_chain_complete`. Historical roles never inherit the current B2-B3 analyzer commit.
 ## Margin-source normalization
 
 The authoritative margin source is:

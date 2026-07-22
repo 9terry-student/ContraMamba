@@ -482,35 +482,414 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def normalized_provenance(analysis: dict[str, Any]) -> dict[str, str]:
-    nested = analysis.get("normalized_historical_provenance_roles")
-    nested = nested if type(nested) is dict else {}
-
-    def value(*names: str) -> str | None:
-        candidates = [analysis.get(name) for name in names]
-        candidates.extend(nested.get(name) for name in names)
-        present = [str(item) for item in candidates if item not in (None, "")]
-        if present and any(item != present[0] for item in present):
-            raise ValueError(f"provenance aliases disagree: {names}")
-        return present[0] if present else None
-
-    result = {
-        "stage196b2b2_analyzer_git_commit": value(
-            "current_analyzer_git_commit", "stage196b2b2_analyzer_git_commit"
-        ),
-        "stage196b2b1_analyzer_git_commit": value("stage196b2b1_analyzer_git_commit"),
-        "stage196b2a_analyzer_git_commit": value("stage196b2a_analyzer_git_commit"),
-        "stage196b2p0_runtime_git_commit": value(
-            "stage196b2p0_runtime_git_commit", "stage196b2p0_runtime_commit"
-        ),
-        "stage196b1_runtime_git_commit": value("stage196b1_runtime_git_commit"),
-        "framegate_implementation_origin_git_commit": value(
-            "framegate_implementation_origin_git_commit"
-        ),
+def classified_commit_evidence(
+    role: str,
+    expected: str,
+    source: str,
+    authority: bool,
+    source_present: bool,
+    field_present: bool,
+    raw_values: list[Any],
+    parse_error: str | None,
+    analysis_path: Path | None,
+    contract_path: Path | None,
+    scope: Any,
+    source_gate: Any,
+    field: Any,
+    column: str,
+) -> dict[str, Any]:
+    non_null = [value for value in raw_values if value not in (None, "")]
+    value: Any = non_null[0] if len(non_null) == 1 else non_null
+    if not source_present:
+        status = "optional_source_absent"
+    elif parse_error is not None:
+        status = "malformed_present_evidence"
+    elif not field_present or not non_null:
+        status = "optional_field_absent_or_null"
+        value = None
+    elif any(type(item) is not str or re.fullmatch(r"[0-9a-f]{40}", item) is None for item in non_null):
+        status = "malformed_present_evidence"
+    elif any(item != non_null[0] for item in non_null) or non_null[0] != expected:
+        status = "conflicting_present_value"
+    else:
+        status = "authoritative_value" if authority else "optional_value_agrees"
+        value = non_null[0]
+    return {
+        "source": source,
+        "analysis_path": str(analysis_path) if analysis_path is not None else None,
+        "contract_path": str(contract_path) if contract_path is not None else None,
+        "scope": scope,
+        "gate": source_gate,
+        "field": field,
+        "column": column,
+        "value": value,
+        "status": status,
+        "parse_error": parse_error,
+        "passed": status not in {"malformed_present_evidence", "conflicting_present_value"},
+        "role": role,
     }
-    if any(value is None for value in result.values()):
-        raise ValueError(f"required normalized provenance absent: {result}")
-    return {key: str(value) for key, value in result.items()}
+
+
+def mapping_commit_evidence(
+    mapping: Any,
+    role: str,
+    expected: str,
+    source: str,
+    field_names: Sequence[str],
+    authority: bool,
+    source_present: bool,
+    analysis_path: Path | None,
+    contract_path: Path | None,
+    scope: Any,
+    source_gate: Any,
+    column: str,
+) -> dict[str, Any]:
+    parse_error = None
+    field_present = False
+    values: list[Any] = []
+    if source_present:
+        if type(mapping) is not dict:
+            parse_error = "source mapping is not a JSON object"
+        else:
+            field_present = any(name in mapping for name in field_names)
+            values = [mapping.get(name) for name in field_names if name in mapping]
+    return classified_commit_evidence(
+        role, expected, source, authority, source_present, field_present, values,
+        parse_error, analysis_path, contract_path, scope, source_gate,
+        list(field_names), column,
+    )
+
+
+def contract_commit_evidence(
+    rows: list[dict[str, str]],
+    role: str,
+    expected: str,
+    source: str,
+    gate_names: Sequence[str],
+    column: str,
+    authority: bool,
+    analysis_path: Path,
+    contract_path: Path,
+    field: str | None = None,
+) -> dict[str, Any]:
+    matches = [
+        row for row in rows
+        if row.get("scope") in {"source", "provenance"} and row.get("gate") in gate_names
+    ]
+    values: list[Any] = []
+    field_present = field is None
+    identities = Counter((row.get("scope", ""), row.get("gate", ""), row.get("run", "")) for row in matches)
+    parse_errors: list[str] = [
+        f"duplicate ambiguous contract rows for scope/gate/run {identity}"
+        for identity, count in identities.items() if count > 1
+    ]
+    for row in matches:
+        try:
+            if not as_bool(row.get("passed", ""), f"{source} passed") or row.get("blocking_reason", "") != "":
+                raise ValueError("matching contract row is failed or blocked")
+            parsed = cell(row.get(column, ""))
+            if field is None:
+                values.append(parsed)
+            elif type(parsed) is not dict:
+                raise ValueError(f"{column} is not a JSON object")
+            else:
+                field_present = field_present or field in parsed
+                values.append(parsed.get(field))
+        except (TypeError, ValueError) as error:
+            parse_errors.append(f"{type(error).__name__}: {error}")
+    return classified_commit_evidence(
+        role, expected, source, authority, bool(matches), field_present, values,
+        "; ".join(parse_errors) if parse_errors else None,
+        analysis_path, contract_path, sorted({row.get("scope", "") for row in matches}) or ["source", "provenance"],
+        sorted({row.get("gate", "") for row in matches}) or list(gate_names),
+        field, column,
+    )
+
+
+def literal_commit_evidence(
+    role: str, expected: str, source: str, value: Any, authority: bool
+) -> dict[str, Any]:
+    return classified_commit_evidence(
+        role, expected, source, authority, True, True, [value], None,
+        None, None, "cli", None, source, "argument",
+    )
+
+
+def optional_commit_consistency_gate(
+    gates: list[dict[str, Any]], name: str, role: str, expected: str,
+    evidence: list[dict[str, Any]],
+) -> None:
+    conflicts = [
+        item for item in evidence
+        if item["status"] in {"malformed_present_evidence", "conflicting_present_value"}
+    ]
+    gate(
+        gates, "provenance", "", name, expected,
+        {
+            "role": role,
+            "expected_value": expected,
+            "available_evidence": evidence,
+            "absent_optional_sources": [
+                item["source"] for item in evidence
+                if item["status"] in {"optional_source_absent", "optional_field_absent_or_null"}
+            ],
+            "warnings": [
+                f"{item['source']}: {item['status']}" for item in evidence
+                if item["status"] in {"optional_source_absent", "optional_field_absent_or_null"}
+            ],
+            "conflicts": conflicts,
+            "passed": not conflicts,
+        },
+        not conflicts,
+        f"{role} optional direct commit evidence is malformed or conflicting",
+    )
+
+
+def resolve_historical_role(
+    gates: list[dict[str, Any]],
+    gate_name: str,
+    role: str,
+    expected: str,
+    evidence: list[dict[str, Any]],
+) -> tuple[str, dict[str, Any], list[str]]:
+    authorities = [item for item in evidence if item["status"] == "authoritative_value"]
+    conflicts = [
+        item for item in evidence
+        if item["status"] in {"malformed_present_evidence", "conflicting_present_value"}
+    ]
+    absent = [
+        item["source"] for item in evidence
+        if item["status"] in {"optional_source_absent", "optional_field_absent_or_null"}
+    ]
+    warnings = [
+        f"SOURCE_SCHEMA_WARNING: {role} {item['source']} {item['status']}"
+        for item in evidence
+        if item["status"] in {"optional_source_absent", "optional_field_absent_or_null"}
+    ]
+    selected = expected if authorities else None
+    observed = {
+        "role": role,
+        "expected_value": expected,
+        "selected_authority": selected,
+        "authority_source": authorities[0]["source"] if authorities else None,
+        "available_evidence": evidence,
+        "absent_optional_sources": absent,
+        "warnings": warnings,
+        "conflicts": conflicts,
+        "passed": bool(authorities) and not conflicts,
+    }
+    gate(
+        gates, "provenance", "", gate_name, expected, observed,
+        observed["passed"], f"{role} authority is absent, malformed, or conflicting",
+    )
+    return expected, observed, warnings
+
+
+def resolve_historical_provenance(
+    namespace: argparse.Namespace,
+    b2b2_analysis: dict[str, Any],
+    b2b2_contract: list[dict[str, str]],
+    b2b2_path: Path,
+    predecessor: dict[str, Any],
+    gates: list[dict[str, Any]],
+) -> tuple[dict[str, str], dict[str, Any], list[str]]:
+    b1_analysis = predecessor["b2b1_analysis"]
+    b1_contract = predecessor["b2b1_contract"]
+    b1_path = Path(predecessor["stage196b2b1_analysis_path"])
+    b1_contract_path = Path(predecessor["stage196b2b1_contract_path"])
+    b1_roles = predecessor["b2b1_roles"]
+    b1_roles_present = predecessor["b2b1_normalized_authority"].get("row_present", False)
+    a_analysis = predecessor["stage196b2a_analysis"]
+    a_contract = predecessor["stage196b2a_contract"]
+    a_path = Path(predecessor["stage196b2a_analysis_path"])
+    a_contract_path = Path(predecessor["stage196b2a_contract_path"])
+    a_roles = predecessor["stage196b2a_roles"]
+    a_roles_present = predecessor["stage196b2a_normalized_authority"].get("row_present", False)
+    b2b2_nested = b2b2_analysis.get("normalized_historical_provenance_roles")
+    b2b2_nested_present = b2b2_nested is not None
+
+    def mapped(
+        mapping: Any, role: str, expected: str, source: str,
+        names: Sequence[str], authority: bool, source_present: bool,
+        analysis_path: Path | None, contract_path: Path | None,
+        scope: str, source_gate: Any, column: str,
+    ) -> dict[str, Any]:
+        return mapping_commit_evidence(
+            mapping, role, expected, source, names, authority, source_present,
+            analysis_path, contract_path, scope, source_gate, column,
+        )
+
+    b2a_role = "stage196b2a_analyzer_git_commit"
+    b2a_direct = [
+        mapped(a_analysis, b2a_role, B2A_COMMIT, "B2-A analysis direct analyzer metadata",
+               ("current_analyzer_git_commit", "analysis_runtime_commit", "analysis_runtime_git_commit"),
+               False, True, a_path, None, "analysis", None, "top_level"),
+        contract_commit_evidence(
+            a_contract, b2a_role, B2A_COMMIT, "B2-A direct analyzer-commit contract gate",
+            ("current_analyzer_commit_equals_head", "analysis_runtime_commit_equals_head", "current_commit_equals_head"),
+            "observed", False, a_path, a_contract_path,
+        ),
+    ]
+    optional_commit_consistency_gate(
+        gates, "b2a_direct_commit_optional_consistency", b2a_role, B2A_COMMIT, b2a_direct,
+    )
+    b2a_evidence = [
+        contract_commit_evidence(
+            b1_contract, b2a_role, B2A_COMMIT, "B2-B1 explicit B2-A analyzer source closure",
+            ("explicit_b2a_analyzer_commit",), "observed", True, b1_path, b1_contract_path,
+        ),
+        mapped(b1_roles, b2a_role, B2A_COMMIT, "B2-B1 normalized source-role contract mapping",
+               (b2a_role,), True, b1_roles_present, b1_path, b1_contract_path,
+               "provenance", "normalized_source_roles", "observed"),
+        mapped(b1_analysis, b2a_role, B2A_COMMIT, "B2-B1 analysis B2-A analyzer role",
+               (b2a_role,), True, True, b1_path, None, "analysis", None, "top_level"),
+        mapped(b2b2_analysis, b2a_role, B2A_COMMIT, "B2-B2 analysis B2-A analyzer role",
+               (b2a_role,), False, True, b2b2_path, None, "analysis", None, "top_level"),
+        mapped(b2b2_nested, b2a_role, B2A_COMMIT, "B2-B2 normalized historical B2-A role",
+               (b2a_role,), False, b2b2_nested_present, b2b2_path, None,
+               "analysis", None, "normalized_historical_provenance_roles"),
+        *b2a_direct,
+    ]
+
+    b2b1_role = "stage196b2b1_analyzer_git_commit"
+    b2b1_direct = [
+        mapped(b1_analysis, b2b1_role, B2B1_COMMIT, "B2-B1 analysis direct analyzer metadata",
+               ("current_analyzer_git_commit", "analysis_runtime_commit", "analysis_runtime_git_commit"),
+               False, True, b1_path, None, "analysis", None, "top_level"),
+        contract_commit_evidence(
+            b1_contract, b2b1_role, B2B1_COMMIT, "B2-B1 direct analyzer-commit contract gate",
+            ("current_analyzer_commit_equals_head", "analysis_runtime_commit_equals_head", "current_commit_equals_head"),
+            "observed", False, b1_path, b1_contract_path,
+        ),
+    ]
+    optional_commit_consistency_gate(
+        gates, "b2b1_direct_commit_optional_consistency", b2b1_role, B2B1_COMMIT, b2b1_direct,
+    )
+    b2b1_evidence = [
+        mapped(b2b2_analysis, b2b1_role, B2B1_COMMIT, "B2-B2 analysis B2-B1 analyzer role",
+               (b2b1_role,), True, True, b2b2_path, None, "analysis", None, "top_level"),
+        mapped(b2b2_nested, b2b1_role, B2B1_COMMIT, "B2-B2 normalized historical B2-B1 role",
+               (b2b1_role,), True, b2b2_nested_present, b2b2_path, None,
+               "analysis", None, "normalized_historical_provenance_roles"),
+        *b2b1_direct,
+    ]
+
+    b2b2_role = "stage196b2b2_analyzer_git_commit"
+    b2b2_evidence = [
+        literal_commit_evidence(
+            b2b2_role, B2B2_COMMIT, "--stage196b2b2-analyzer-git-commit",
+            namespace.stage196b2b2_analyzer_git_commit, True,
+        ),
+        mapped(b2b2_analysis, b2b2_role, B2B2_COMMIT, "B2-B2 analysis direct analyzer metadata",
+               ("current_analyzer_git_commit", b2b2_role), False, True,
+               b2b2_path, None, "analysis", None, "top_level"),
+        mapped(b2b2_nested, b2b2_role, B2B2_COMMIT, "B2-B2 normalized historical self role",
+               (b2b2_role,), False, b2b2_nested_present, b2b2_path, None,
+               "analysis", None, "normalized_historical_provenance_roles"),
+        contract_commit_evidence(
+            b2b2_contract, b2b2_role, B2B2_COMMIT, "B2-B2 direct analyzer-commit contract gate",
+            ("current_analyzer_commit_equals_head", "analysis_runtime_commit_equals_head", "current_commit_equals_head"),
+            "observed", False, b2b2_path, b2b2_path.parent / B2B2_FILES[-1],
+        ),
+    ]
+
+    role_specs = {
+        "stage196b2p0_runtime_git_commit": (P0_COMMIT, ("stage196b2p0_runtime_git_commit", "stage196b2p0_runtime_commit")),
+        "stage196b1_runtime_git_commit": (B1_COMMIT, ("stage196b1_runtime_git_commit",)),
+        "framegate_implementation_origin_git_commit": (FRAMEGATE_COMMIT, ("framegate_implementation_origin_git_commit",)),
+    }
+    runtime_evidence: dict[str, list[dict[str, Any]]] = {}
+    for role, (expected, names) in role_specs.items():
+        runtime_evidence[role] = [
+            mapped(b2b2_analysis, role, expected, f"B2-B2 analysis {role}", names, True,
+                   True, b2b2_path, None, "analysis", None, "top_level"),
+            mapped(b2b2_nested, role, expected, f"B2-B2 normalized historical {role}", names, True,
+                   b2b2_nested_present, b2b2_path, None, "analysis", None,
+                   "normalized_historical_provenance_roles"),
+            mapped(b1_roles, role, expected, f"B2-B1 normalized source-role {role}", names, True,
+                   b1_roles_present, b1_path, b1_contract_path, "provenance",
+                   "normalized_source_roles", "observed"),
+            mapped(b1_analysis, role, expected, f"B2-B1 analysis {role}", names, True,
+                   True, b1_path, None, "analysis", None, "top_level"),
+            mapped(a_roles, role, expected, f"B2-A optional normalized source-role {role}", names, False,
+                   a_roles_present, a_path, a_contract_path, "provenance",
+                   "normalized_source_roles", "observed"),
+            mapped(a_analysis, role, expected, f"B2-A analysis direct {role}", names, False,
+                   True, a_path, None, "analysis", None, "top_level"),
+        ]
+    runtime_evidence["stage196b2p0_runtime_git_commit"].append(
+        contract_commit_evidence(
+            a_contract, "stage196b2p0_runtime_git_commit", P0_COMMIT,
+            "B2-A P0 runtime contract evidence", ("p0_runtime_commit",), "required",
+            False, a_path, a_contract_path,
+        )
+    )
+    runtime_evidence["stage196b1_runtime_git_commit"].append(
+        contract_commit_evidence(
+            a_contract, "stage196b1_runtime_git_commit", B1_COMMIT,
+            "B2-A B1-C runtime contract evidence", ("stage196b1_runtime_commit_format",),
+            "observed", False, a_path, a_contract_path,
+        )
+    )
+    runtime_evidence["framegate_implementation_origin_git_commit"].append(
+        contract_commit_evidence(
+            a_contract, "framegate_implementation_origin_git_commit", FRAMEGATE_COMMIT,
+            "B2-A FrameGate origin contract evidence",
+            ("framegate_implementation_origin_commit_preserved",), "required",
+            False, a_path, a_contract_path, "git_commit",
+        )
+    )
+
+    selected: dict[str, str] = {}
+    role_audits: dict[str, Any] = {}
+    warnings: list[str] = []
+    selected[b2a_role], role_audits[b2a_role], role_warnings = resolve_historical_role(
+        gates, "b2a_analyzer_commit_authority", b2a_role, B2A_COMMIT, b2a_evidence,
+    )
+    warnings.extend(role_warnings)
+    selected[b2b1_role], role_audits[b2b1_role], role_warnings = resolve_historical_role(
+        gates, "b2b1_analyzer_commit_authority", b2b1_role, B2B1_COMMIT, b2b1_evidence,
+    )
+    warnings.extend(role_warnings)
+    selected[b2b2_role], role_audits[b2b2_role], role_warnings = resolve_historical_role(
+        gates, "b2b2_analyzer_commit_cli_authority", b2b2_role, B2B2_COMMIT, b2b2_evidence,
+    )
+    warnings.extend(role_warnings)
+    for suffix, role in (
+        ("p0", "stage196b2p0_runtime_git_commit"),
+        ("b1c", "stage196b1_runtime_git_commit"),
+        ("framegate", "framegate_implementation_origin_git_commit"),
+    ):
+        expected = role_specs[role][0]
+        selected[role], role_audits[role], role_warnings = resolve_historical_role(
+            gates, f"historical_runtime_role_consistency_{suffix}", role,
+            expected, runtime_evidence[role],
+        )
+        warnings.extend(role_warnings)
+    runtime_roles = {role: selected[role] for role in role_specs}
+    gate(
+        gates, "provenance", "", "historical_runtime_role_consistency",
+        {role: role_specs[role][0] for role in role_specs},
+        {"roles": runtime_roles, "evidence": {role: role_audits[role] for role in role_specs}},
+        runtime_roles == {role: role_specs[role][0] for role in role_specs},
+        "historical runtime provenance roles disagree",
+    )
+    expected_all = {
+        "stage196b2b2_analyzer_git_commit": B2B2_COMMIT,
+        "stage196b2b1_analyzer_git_commit": B2B1_COMMIT,
+        "stage196b2a_analyzer_git_commit": B2A_COMMIT,
+        "stage196b2p0_runtime_git_commit": P0_COMMIT,
+        "stage196b1_runtime_git_commit": B1_COMMIT,
+        "framegate_implementation_origin_git_commit": FRAMEGATE_COMMIT,
+    }
+    gate(
+        gates, "provenance", "", "historical_provenance_chain_complete",
+        expected_all,
+        {"selected_roles": selected, "role_evidence": role_audits},
+        selected == expected_all,
+        "historical provenance chain is incomplete or conflicting",
+    )
+    return selected, role_audits, warnings
 
 
 def optional_mapping_margin_consistency(
@@ -636,45 +1015,6 @@ def scalar_margin_authority(
     return value, evidence
 
 
-def role_value(mappings: Sequence[dict[str, Any]], label: str, *names: str) -> str:
-    values = [
-        str(mapping[name])
-        for mapping in mappings
-        for name in names
-        if mapping.get(name) not in (None, "")
-    ]
-    if not values:
-        raise ValueError(f"{label}: missing role aliases {names}")
-    if any(value != values[0] for value in values):
-        raise ValueError(f"{label}: conflicting role aliases {names}")
-    return values[0]
-
-
-def contract_commit_value(
-    rows: list[dict[str, str]], gate_names: Sequence[str], expected: str, label: str
-) -> str:
-    matches = [row for row in rows if row.get("scope") == "provenance" and row.get("gate") in gate_names]
-    if not matches or any(not as_bool(row.get("passed", ""), f"{label} passed") for row in matches):
-        raise ValueError(f"{label}: passed analyzer-commit contract gate absent")
-    values = [cell(row.get("observed", "")) for row in matches]
-    if any(type(value) is not str or value == "" for value in values):
-        raise ValueError(f"{label}: analyzer-commit contract value missing or malformed")
-    if any(value != values[0] for value in values) or values[0] != expected:
-        raise ValueError(f"{label}: analyzer-commit contract disagreement: {values}")
-    return values[0]
-
-
-def analysis_commit(analysis: dict[str, Any], expected: str, label: str) -> str:
-    values = [
-        str(analysis[name])
-        for name in ("current_analyzer_git_commit", "analysis_runtime_commit", "analysis_runtime_git_commit")
-        if analysis.get(name) not in (None, "")
-    ]
-    if not values or any(value != values[0] for value in values) or values[0] != expected:
-        raise ValueError(f"{label}: analyzer commit mismatch: {values}")
-    return values[0]
-
-
 def validate_predecessors(
     namespace: argparse.Namespace, gates: list[dict[str, Any]]
 ) -> dict[str, Any]:
@@ -780,38 +1120,19 @@ def validate_predecessors(
         raise ValueError("B2-B1 normalized margin conflicts with native authority")
     if a_normalized_margin is not None and a_normalized_margin != b1_native_margin:
         raise ValueError("B2-A optional normalized margin conflicts with B2-B1 native authority")
-    b1_analysis_commit = analysis_commit(b1_analysis, B2B1_COMMIT, "B2-B1")
-    b1_contract_commit = contract_commit_value(
-        b1_contract,
-        ("current_analyzer_commit_equals_head", "analysis_runtime_commit_equals_head"),
-        B2B1_COMMIT,
-        "B2-B1",
-    )
-    a_analysis_commit = analysis_commit(a_analysis, B2A_COMMIT, "B2-A")
-    a_contract_commit = contract_commit_value(
-        a_contract, ("analysis_runtime_commit_equals_head", "current_analyzer_commit_equals_head"),
-        B2A_COMMIT, "B2-A",
-    )
-    if b1_analysis_commit != b1_contract_commit or a_analysis_commit != a_contract_commit:
-        raise ValueError("predecessor analysis/contract analyzer commits disagree")
-    b1_chain = {
-        "stage196b2b1_analyzer_git_commit": b1_contract_commit,
-        "stage196b2a_analyzer_git_commit": role_value((b1_roles, b1_analysis), "B2-B1 roles", "stage196b2a_analyzer_git_commit"),
-        "stage196b2p0_runtime_git_commit": role_value((b1_roles, b1_analysis), "B2-B1 roles", "stage196b2p0_runtime_git_commit", "stage196b2p0_runtime_commit"),
-        "stage196b1_runtime_git_commit": role_value((b1_roles, b1_analysis), "B2-B1 roles", "stage196b1_runtime_git_commit"),
-        "framegate_implementation_origin_git_commit": role_value((b1_roles, b1_analysis), "B2-B1 roles", "framegate_implementation_origin_git_commit"),
-    }
-    a_chain = {
-        "stage196b2a_analyzer_git_commit": a_contract_commit,
-        "stage196b2p0_runtime_git_commit": role_value((a_roles, a_analysis), "B2-A roles", "stage196b2p0_runtime_git_commit", "stage196b2p0_runtime_commit"),
-        "stage196b1_runtime_git_commit": role_value((a_roles, a_analysis), "B2-A roles", "stage196b1_runtime_git_commit"),
-        "framegate_implementation_origin_git_commit": role_value((a_roles, a_analysis), "B2-A roles", "framegate_implementation_origin_git_commit"),
-    }
     return {
         "stage196b2b1_analysis_path": str(b1_path),
+        "stage196b2b1_contract_path": str((b1_dir / B2B1_FILES[-1]).resolve()),
+        "stage196b2b1_analysis": b1_analysis,
+        "stage196b2b1_contract": b1_contract,
+        "stage196b2b1_roles": b1_roles,
+        "stage196b2b1_normalized_authority": b1_normalized_authority,
         "stage196b2a_analysis_path": str(a_path),
-        "b2b1_chain": b1_chain,
-        "b2a_chain": a_chain,
+        "stage196b2a_contract_path": str((a_dir / B2A_FILES[-1]).resolve()),
+        "stage196b2a_analysis": a_analysis,
+        "stage196b2a_contract": a_contract,
+        "stage196b2a_roles": a_roles,
+        "stage196b2a_normalized_authority": a_normalized_authority,
         "authorities": {
             "stage196b2b1_native_margin_authority": b1_native_authority,
             "stage196b2b1_normalized_source_roles": b1_normalized_authority,
@@ -961,64 +1282,33 @@ def validate_b2b2(
         len(contract) == 155 and contract_passes(contract),
         "Stage196-B2-B2 contract is not exactly 155 passed gates with empty blockers",
     )
-    gate(
-        gates,
-        "provenance",
-        "",
-        "stage196b2b2_analyzer_commit_argument",
-        B2B2_COMMIT,
-        namespace.stage196b2b2_analyzer_git_commit,
-        namespace.stage196b2b2_analyzer_git_commit == B2B2_COMMIT,
-        "Stage196-B2-B2 analyzer commit argument mismatch",
+    provenance, provenance_evidence, provenance_warnings = resolve_historical_provenance(
+        namespace, analysis, contract, source_path, predecessor, gates,
     )
-    provenance = normalized_provenance(analysis)
-    expected_provenance = {
-        "stage196b2b2_analyzer_git_commit": B2B2_COMMIT,
-        "stage196b2b1_analyzer_git_commit": B2B1_COMMIT,
-        "stage196b2a_analyzer_git_commit": B2A_COMMIT,
-        "stage196b2p0_runtime_git_commit": P0_COMMIT,
-        "stage196b1_runtime_git_commit": B1_COMMIT,
-        "framegate_implementation_origin_git_commit": FRAMEGATE_COMMIT,
-    }
+    predecessor["warnings"].extend(provenance_warnings)
     gate(
         gates,
         "provenance",
         "",
         "normalized_historical_provenance_roles",
-        expected_provenance,
-        provenance,
-        provenance == expected_provenance,
+        {
+            "stage196b2b2_analyzer_git_commit": B2B2_COMMIT,
+            "stage196b2b1_analyzer_git_commit": B2B1_COMMIT,
+            "stage196b2a_analyzer_git_commit": B2A_COMMIT,
+            "stage196b2p0_runtime_git_commit": P0_COMMIT,
+            "stage196b1_runtime_git_commit": B1_COMMIT,
+            "framegate_implementation_origin_git_commit": FRAMEGATE_COMMIT,
+        },
+        {"selected_roles": provenance, "role_evidence": provenance_evidence},
+        provenance == {
+            "stage196b2b2_analyzer_git_commit": B2B2_COMMIT,
+            "stage196b2b1_analyzer_git_commit": B2B1_COMMIT,
+            "stage196b2a_analyzer_git_commit": B2A_COMMIT,
+            "stage196b2p0_runtime_git_commit": P0_COMMIT,
+            "stage196b1_runtime_git_commit": B1_COMMIT,
+            "framegate_implementation_origin_git_commit": FRAMEGATE_COMMIT,
+        },
         "historical provenance roles disagree",
-    )
-    expected_b1_chain = {
-        "stage196b2b1_analyzer_git_commit": B2B1_COMMIT,
-        "stage196b2a_analyzer_git_commit": B2A_COMMIT,
-        "stage196b2p0_runtime_git_commit": P0_COMMIT,
-        "stage196b1_runtime_git_commit": B1_COMMIT,
-        "framegate_implementation_origin_git_commit": FRAMEGATE_COMMIT,
-    }
-    expected_a_chain = {
-        "stage196b2a_analyzer_git_commit": B2A_COMMIT,
-        "stage196b2p0_runtime_git_commit": P0_COMMIT,
-        "stage196b1_runtime_git_commit": B1_COMMIT,
-        "framegate_implementation_origin_git_commit": FRAMEGATE_COMMIT,
-    }
-    chain_evidence = {
-        "stage196b2b2_source_provenance": provenance,
-        "stage196b2b1_explicit_input_provenance": predecessor["b2b1_chain"],
-        "stage196b2a_explicit_input_provenance": predecessor["b2a_chain"],
-        "stage196b2b1_analysis_path": predecessor["stage196b2b1_analysis_path"],
-        "stage196b2a_analysis_path": predecessor["stage196b2a_analysis_path"],
-    }
-    chain_ok = (
-        provenance == expected_provenance
-        and predecessor["b2b1_chain"] == expected_b1_chain
-        and predecessor["b2a_chain"] == expected_a_chain
-    )
-    gate(
-        gates, "provenance", "", "explicit_predecessor_provenance_chain",
-        {"b2b2": expected_provenance, "b2b1": expected_b1_chain, "b2a": expected_a_chain},
-        chain_evidence, chain_ok, "explicit predecessor provenance chain disagrees",
     )
     margin_source, warnings, margin_provenance = normalize_margin_source(
         analysis, predecessor, gates, source_path
