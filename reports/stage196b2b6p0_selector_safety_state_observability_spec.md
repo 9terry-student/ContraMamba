@@ -177,16 +177,37 @@ directions.
 
 ## Conservative policy and seed183 contrast
 
-For every feasible gate, `ALLOW` applies the fixed candidate action set and all
+One deterministic shared auditable-gate collection contains every retained
+inclusion-minimal feasible gate, uniquely keyed by candidate feature-subset
+mask, observability family, and safety feature-subset mask. Conservative-policy
+auditing, seed183 contrast auditing, and the corresponding ordered decision
+tests consume this same collection; none reconstruct an independent gate set.
+
+For every auditable gate, `ALLOW` applies the fixed candidate action set and all
 other states use `00000`. Set-valued actions are evaluated conservatively: any
 harmful allowed action counts as harm. Audits cover all 16 primary cases,
 seed184 nondiscovery 707, seed185 nondiscovery 707, and seed183 contrast all 720.
 Primary objective failures and prediction-change, correct-to-incorrect,
 incorrect-to-correct, and stable-correct-preservation metrics are reported.
 
+When the shared auditable-gate count is zero, the exact expected conservative
+summary count and seed183 identity-audit count are both zero. Zero observed
+rows then pass as a vacuous completion, with empty missing, extra, and duplicate
+gate-key collections. No dummy or non-feasible gate is introduced, and this
+completion is not scientific success. Ordered decision evaluation continues.
+
+When the shared count is nonzero, every gate must have exactly the five frozen
+conservative summary populations and exactly 720 unique seed183 data identities.
+The expected seed183 identity-audit cardinality is therefore the auditable-gate
+count multiplied by 720. Missing or extra gate keys, duplicate gate keys,
+duplicate `(gate key, seed183 data identity)` rows, incorrect per-gate counts,
+or missing summary populations fail closed.
+
 Seed183 reports seen/unseen signatures, allowed/blocked rows, transition counts,
 and stable-correct preservation. Its outcomes never alter a mapping or subset.
-Audit completion is a contract property distinct from gate success.
+Audit completion is a contract property distinct from gate success. A zero-row
+audit is explicitly reported as vacuously complete rather than missing, and
+seed183 is never used to retrofit or discover a gate.
 
 ## Ordered decisions
 

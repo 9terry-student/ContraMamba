@@ -1132,7 +1132,8 @@ def conservative_audit(rows: Sequence[dict[str, Any]], family: str, members: Seq
     return audited
 
 
-def enumerate_family(records: list[dict[str, Any]], candidate: str, family: str, names: Sequence[str]) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
+def enumerate_family(records: list[dict[str, Any]], candidate: str, family: str,
+                     names: Sequence[str]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     rows = [row for row in records if row["candidate_feature_subset_mask"] == candidate and row["seed"] in PRIMARY_SEEDS]
     summaries = []
     details = {}
@@ -1178,14 +1179,45 @@ def enumerate_family(records: list[dict[str, Any]], candidate: str, family: str,
                all(left == "0" or right == "1" for left, right in zip(other, mask)) for other in feasible_masks)]
     for summary in summaries:
         summary["inclusion_minimal_feasible"] = summary["safety_feature_subset_mask"] in minimal
-    retained_audits = [row for mask in minimal for row in details[mask]["audit"]]
     retained_details = [{"candidate_feature_subset_mask": candidate, "feature_family": family,
                          "safety_feature_subset_mask": mask, **details[mask]} for mask in minimal]
-    return summaries, retained_audits, retained_details
+    return summaries, retained_details
 
 
-def decide(single: list[dict[str, Any]], tail: list[dict[str, Any]], paired: list[dict[str, Any]]) -> tuple[str, str, dict[str, Any]]:
-    minimal_single = [row for row in single if row["inclusion_minimal_feasible"]]
+def auditable_gate_key(row: dict[str, Any]) -> tuple[str, str, str]:
+    return (row["candidate_feature_subset_mask"], row["feature_family"],
+            row["safety_feature_subset_mask"])
+
+
+def gate_key_value(key: tuple[str, str, str]) -> dict[str, str]:
+    return {"candidate_feature_subset_mask": key[0], "feature_family": key[1],
+            "safety_feature_subset_mask": key[2]}
+
+
+def conservative_identity_audit(records: Sequence[dict[str, Any]],
+                                auditable_gates: Sequence[dict[str, Any]]) -> list[dict[str, Any]]:
+    rows = []
+    for gate_row in auditable_gates:
+        key = auditable_gate_key(gate_row)
+        family = gate_row["feature_family"]
+        members = gate_row["members"]
+        mapping = gate_row["pooled_mapping"]
+        for record in records:
+            if record["candidate_feature_subset_mask"] != key[0]:
+                continue
+            signature = canonical([record[f"_{family}"][name] for name in members])
+            rows.append({"gate_key": key, "seed": record["seed"], "id": record["id"],
+                         "source_row_id": record["source_row_id"],
+                         "dev_position": record["dev_position"],
+                         "contrast_only": record["seed"] == 183,
+                         "seen": signature in mapping,
+                         "allowed": signature in mapping and mapping[signature] == "ALLOW"})
+    return rows
+
+
+def decide(single: list[dict[str, Any]], tail: list[dict[str, Any]], paired: list[dict[str, Any]],
+           auditable_gate_keys: set[tuple[str, str, str]]) -> tuple[str, str, dict[str, Any]]:
+    minimal_single = [row for row in single if auditable_gate_key(row) in auditable_gate_keys]
     localized = [row for row in minimal_single if row["bidirectional_cross_seed_full_pass"] and
                  row["conservative_gate_passed"] and row["seed184_nondiscovery_correct_to_incorrect"] == 0 and
                  row["seed185_nondiscovery_correct_to_incorrect"] == 0]
@@ -1201,9 +1233,11 @@ def decide(single: list[dict[str, Any]], tail: list[dict[str, Any]], paired: lis
             seed_records = []
             # Seed-specific feasibility is reconstructed from per-subset conflict counts during analysis JSON assembly.
             seed_specific[candidate][seed] = any(row["feasible"] for row in candidate_rows)
-    tail_transfer = any(row["inclusion_minimal_feasible"] and row["bidirectional_cross_seed_full_pass"] and
+    tail_transfer = any(auditable_gate_key(row) in auditable_gate_keys and
+                        row["bidirectional_cross_seed_full_pass"] and
                         row["conservative_gate_passed"] for row in tail)
-    paired_transfer = any(row["inclusion_minimal_feasible"] and row["bidirectional_cross_seed_full_pass"] and
+    paired_transfer = any(auditable_gate_key(row) in auditable_gate_keys and
+                          row["bidirectional_cross_seed_full_pass"] and
                           row["conservative_gate_passed"] for row in paired)
     evaluation = {"ordered_rules": ["contract_failure", "cross_seed_single_state", "single_state_in_sample_only",
                                      "seed_specific_single_state", "tail_trajectory_only", "paired_delta_only",
@@ -1213,7 +1247,8 @@ def decide(single: list[dict[str, Any]], tail: list[dict[str, Any]], paired: lis
                   "pooled_single_state_gate_exists": pooled_single,
                   "seed_specific_single_state": seed_specific,
                   "tail_trajectory_bidirectional_gate_exists": tail_transfer,
-                  "paired_delta_bidirectional_gate_exists": paired_transfer}
+                  "paired_delta_bidirectional_gate_exists": paired_transfer,
+                  "shared_auditable_gate_count": len(auditable_gate_keys)}
     if localized:
         return ("STAGE196B2B6P0_CROSS_SEED_SINGLE_STATE_SAFETY_GATE_LOCALIZED",
                 "STAGE196B2B6P1_SAFETY_GATED_SELECTOR_COUNTERFACTUAL_AUDIT", evaluation)
@@ -1261,13 +1296,11 @@ def analyze(ns: argparse.Namespace, gates: list[dict[str, Any]]) -> tuple[dict[s
     records = make_records(source, context, policies, families, gates)
     reproduction = reproduce_b6(source, context, policies, gates)
     summaries = {family: [] for family in families}
-    audits = []
     details = {family: [] for family in families}
     for candidate in EXPECTED_CANDIDATES:
         for family, names in families.items():
-            family_summaries, family_audits, family_details = enumerate_family(records, candidate, family, names)
+            family_summaries, family_details = enumerate_family(records, candidate, family, names)
             summaries[family].extend(family_summaries)
-            audits.extend(family_audits)
             details[family].extend(family_details)
     expected_counts = {family: len(EXPECTED_CANDIDATES) * ((1 << len(names)) - 1)
                        for family, names in families.items()}
@@ -1280,19 +1313,93 @@ def analyze(ns: argparse.Namespace, gates: list[dict[str, Any]]) -> tuple[dict[s
          transfer_complete, "seed184-to-seed185 transfer incomplete")
     gate(gates, "transfer", "", "seed185_to_seed184_transfer_completion", True, transfer_complete,
          transfer_complete, "seed185-to-seed184 transfer incomplete")
+    auditable_gates = sorted((detail for values in details.values() for detail in values),
+                             key=auditable_gate_key)
+    auditable_key_counts = Counter(auditable_gate_key(row) for row in auditable_gates)
+    auditable_gate_keys = set(auditable_key_counts)
+    duplicate_gate_keys = [gate_key_value(key) for key, count in sorted(auditable_key_counts.items())
+                           if count != 1]
+    audits = [summary for gate_row in auditable_gates for summary in gate_row["audit"]]
+    expected_populations = ((183, "ALL_720"), (184, "PRIMARY"), (184, "NONDISCOVERY"),
+                            (185, "PRIMARY"), (185, "NONDISCOVERY"))
+    expected_summary_keys = {(key, seed, population) for key in auditable_gate_keys
+                             for seed, population in expected_populations}
+    observed_summary_counts = Counter((auditable_gate_key(row), row["seed"], row["population"])
+                                      for row in audits)
+    observed_summary_keys = set(observed_summary_counts)
+    represented_summary_gates = {key for key, _, _ in observed_summary_keys}
+    missing_summary_gates = sorted(auditable_gate_keys - represented_summary_gates)
+    extra_summary_gates = sorted(represented_summary_gates - auditable_gate_keys)
+    duplicate_summary_keys = [
+        {**gate_key_value(key), "seed": seed, "population": population, "count": count}
+        for (key, seed, population), count in sorted(observed_summary_counts.items()) if count != 1]
+    conservative_vacuous = not auditable_gate_keys and not audits
+    conservative_completed = (
+        not duplicate_gate_keys and observed_summary_keys == expected_summary_keys and
+        len(audits) == len(expected_summary_keys) and not duplicate_summary_keys)
+    conservative_evidence = {
+        "auditable_gate_count": len(auditable_gate_keys),
+        "expected_summary_or_audit_rows": len(expected_summary_keys),
+        "observed_summary_or_audit_rows": len(audits),
+        "represented_gate_count": len(represented_summary_gates),
+        "missing_gate_keys": [gate_key_value(key) for key in missing_summary_gates],
+        "extra_gate_keys": [gate_key_value(key) for key in extra_summary_gates],
+        "duplicate_gate_keys": duplicate_gate_keys,
+        "duplicate_summary_keys": duplicate_summary_keys,
+        "vacuous_completion": conservative_vacuous,
+        "completed": conservative_completed,
+    }
     gate(gates, "audit", "", "conservative_gated_policy_audit_completion",
-         {"minimal feasible gates audited": True}, {"audit rows": len(audits)},
-         all(detail["audit"] for values in details.values() for detail in values),
-         "conservative gate audit incomplete")
-    seed183_rows = [row for row in audits if row["seed"] == 183 and row["population"] == "ALL_720"]
+         {"auditable_gate_count_source": "shared inclusion-minimal feasible gate set",
+          "summary_populations_per_gate": 5, "zero_gate_vacuous_completion_allowed": True,
+          "missing_gate_keys": [], "extra_gate_keys": [], "duplicate_gate_keys": []},
+         conservative_evidence, conservative_completed, "conservative gate audit incomplete")
+    identity_audits = conservative_identity_audit(records, auditable_gates)
+    seed183_identity_rows = [row for row in identity_audits if row["seed"] == 183]
+    seed183_summary_rows = [row for row in audits if row["seed"] == 183 and row["population"] == "ALL_720"]
+    seed183_gate_counts = Counter(row["gate_key"] for row in seed183_identity_rows)
+    represented_seed183_gates = set(seed183_gate_counts)
+    missing_seed183_gates = sorted(auditable_gate_keys - represented_seed183_gates)
+    extra_seed183_gates = sorted(represented_seed183_gates - auditable_gate_keys)
+    seed183_identity_counts = Counter((row["gate_key"], row["id"], row["source_row_id"],
+                                       row["dev_position"]) for row in seed183_identity_rows)
+    duplicate_gate_identity_rows = [
+        {**gate_key_value(key), "id": identity, "source_row_id": source_row_id,
+         "dev_position": position, "count": count}
+        for (key, identity, source_row_id, position), count in sorted(seed183_identity_counts.items())
+        if count != 1]
+    wrong_seed183_row_counts = [
+        {**gate_key_value(key), "expected": 720, "observed": seed183_gate_counts.get(key, 0)}
+        for key in sorted(auditable_gate_keys) if seed183_gate_counts.get(key, 0) != 720]
+    expected_seed183_rows = len(auditable_gate_keys) * 720
+    seed183_contrast_only = all(row["contrast_only"] for row in seed183_identity_rows)
+    seed183_vacuous = not auditable_gate_keys and not seed183_identity_rows
+    seed183_completed = (
+        not duplicate_gate_keys and len(seed183_identity_rows) == expected_seed183_rows and
+        represented_seed183_gates == auditable_gate_keys and not duplicate_gate_identity_rows and
+        not wrong_seed183_row_counts and seed183_contrast_only and
+        len(seed183_summary_rows) == len(auditable_gate_keys))
+    seed183_completion_evidence = {
+        "auditable_gate_count": len(auditable_gate_keys),
+        "expected_audit_rows": expected_seed183_rows,
+        "observed_audit_rows": len(seed183_identity_rows),
+        "represented_gate_count": len(represented_seed183_gates),
+        "missing_gate_keys": [gate_key_value(key) for key in missing_seed183_gates],
+        "duplicate_gate_keys": duplicate_gate_keys,
+        "extra_gate_keys": [gate_key_value(key) for key in extra_seed183_gates],
+        "duplicate_gate_identity_rows": duplicate_gate_identity_rows,
+        "wrong_row_counts": wrong_seed183_row_counts,
+        "contrast_only": seed183_contrast_only,
+        "vacuous_completion": seed183_vacuous,
+        "completed": seed183_completed,
+    }
     gate(gates, "audit", "", "seed183_contrast_audit_completion",
-         {"contrast_only": True, "row_count_per_gate": 720},
-         {"contrast_only": True, "audit_rows": len(seed183_rows),
-          "wrong_row_counts": sum(row["row_count"] != 720 for row in seed183_rows)},
-         bool(seed183_rows) and all(row["row_count"] == 720 for row in seed183_rows),
-         "seed183 contrast audit incomplete")
+         {"contrast_only": True,
+          "auditable_gate_count_source": "shared inclusion-minimal feasible gate set",
+          "rows_per_gate_when_nonempty": 720, "zero_gate_vacuous_completion_allowed": True},
+         seed183_completion_evidence, seed183_completed, "seed183 contrast audit incomplete")
     decision, next_stage, evaluation = decide(summaries["single_state"], summaries["tail_trajectory"],
-                                              summaries["paired_delta"])
+                                              summaries["paired_delta"], auditable_gate_keys)
     gate(gates, "decision", "", "decision_evaluation_completion", True,
          {"completed": True, "decision": decision, "recommended_next_stage": next_stage}, True,
          "decision evaluation incomplete")
@@ -1302,13 +1409,18 @@ def analyze(ns: argparse.Namespace, gates: list[dict[str, Any]]) -> tuple[dict[s
     target_summary = {candidate: dict(Counter(row["safety_target"] for row in records
                                               if row["candidate_feature_subset_mask"] == candidate))
                       for candidate in EXPECTED_CANDIDATES}
-    minimal_single = [row for row in summaries["single_state"] if row["inclusion_minimal_feasible"]]
-    seed183_contrast = [{key: row[key] for key in ("candidate_feature_subset_mask", "feature_family",
-                                                    "safety_feature_subset_mask", "seen_count" if False else "row_count",
-                                                    "allowed_count", "blocked_count", "unseen_count",
-                                                    "correct_to_incorrect_count", "incorrect_to_correct_count",
-                                                    "stable_correct_preservation_rate")}
-                        for row in seed183_rows]
+    minimal_single = [row for row in summaries["single_state"]
+                      if auditable_gate_key(row) in auditable_gate_keys]
+    seed183_gate_summaries = [{key: row[key] for key in
+                               ("candidate_feature_subset_mask", "feature_family",
+                                "safety_feature_subset_mask", "row_count", "allowed_count", "blocked_count",
+                                "unseen_count", "correct_to_incorrect_count", "incorrect_to_correct_count",
+                                "stable_correct_preservation_rate")}
+                              for row in seed183_summary_rows]
+    seed183_contrast = {**seed183_completion_evidence,
+                        "expected_rows": seed183_completion_evidence["expected_audit_rows"],
+                        "observed_rows": seed183_completion_evidence["observed_audit_rows"],
+                        "gate_summaries": seed183_gate_summaries}
     analysis = {
         "stage": STAGE, "decision": decision, "recommended_next_stage": next_stage, "blocking_reasons": [],
         "current_git_commit": ns.current_git_commit,
@@ -1336,6 +1448,10 @@ def analyze(ns: argparse.Namespace, gates: list[dict[str, Any]]) -> tuple[dict[s
         "single_state_feature_dictionary": [spec for spec in dictionary if spec["feature_family"] == "single_state"],
         "single_state_feature_subset_count": expected_counts["single_state"],
         "single_state_inclusion_minimal_feasible_gates": minimal_single,
+        "auditable_gate_metadata": {"authority": "shared inclusion-minimal feasible gate set",
+                                    "auditable_gate_count": len(auditable_gate_keys),
+                                    "gate_keys": [gate_key_value(key) for key in sorted(auditable_gate_keys)]},
+        "conservative_gated_policy_audit_completion": conservative_evidence,
         "single_state_cross_seed_transfer": details["single_state"],
         "single_state_gated_policy_audit": [row for row in audits if row["feature_family"] == "single_state"],
         "tail_trajectory_feature_dictionary": [spec for spec in dictionary if spec["feature_family"] == "tail_trajectory"],
@@ -1381,6 +1497,18 @@ REPORT_SECTIONS = (
 
 def report(analysis: dict[str, Any]) -> str:
     target = analysis["row_safety_target_summary"]
+    no_auditable_gate = analysis.get("auditable_gate_metadata", {}).get("auditable_gate_count") == 0
+    zero_gate_text = (
+        "No inclusion-minimal feasible safety gate was available for conservative application or "
+        "seed183 contrast auditing.\n\nThe zero-row audits are vacuously complete, not missing.\n\n"
+        "Seed183 was not used to retrofit or discover a gate.")
+    conservative_body = (
+        f"{zero_gate_text}\n\n{canonical(analysis['conservative_gated_policy_audit_completion'])}"
+        if no_auditable_gate else canonical({"completion": analysis["conservative_gated_policy_audit_completion"],
+                                             "summaries": analysis["single_state_gated_policy_audit"]}))
+    seed183_body = (
+        f"{zero_gate_text}\n\n{canonical(analysis['seed183_contrast'])}"
+        if no_auditable_gate else canonical(analysis["seed183_contrast"]))
     bodies = (
         f"`{analysis['decision']}`", analysis["authorized_interpretation"],
         "The successful B2-B6 unsafe result, exact three nondominated candidates, primary closure, and both-seed nondiscovery failures are required.",
@@ -1396,7 +1524,7 @@ def report(analysis: dict[str, Any]) -> str:
         canonical(analysis["single_state_cross_seed_transfer"]),
         canonical(analysis["tail_trajectory_feasible_gates"]),
         canonical(analysis["paired_delta_feasible_gates"]),
-        canonical(analysis["single_state_gated_policy_audit"]), canonical(analysis["seed183_contrast"]),
+        conservative_body, seed183_body,
         canonical(analysis["decision_rule_evaluation"]),
         "\n".join(f"- {item}" for item in analysis["remaining_uncertainty"]),
         "\n".join(f"- {item}" for item in analysis["prohibited_claims"]),
@@ -1448,6 +1576,10 @@ def blocked_analysis(ns: argparse.Namespace, error: BaseException) -> dict[str, 
             "nondominated_selector_candidates": [], "row_safety_target_summary": {},
             "single_state_feature_dictionary": [], "single_state_feature_subset_count": 0,
             "single_state_inclusion_minimal_feasible_gates": [], "single_state_cross_seed_transfer": [],
+            "auditable_gate_metadata": {"authority": "unavailable because a contract failed",
+                                        "auditable_gate_count": None, "gate_keys": []},
+            "conservative_gated_policy_audit_completion": {"vacuous_completion": False,
+                                                            "completed": False},
             "single_state_gated_policy_audit": [], "tail_trajectory_feature_dictionary": [],
             "tail_trajectory_feasible_gates": [], "paired_delta_feature_dictionary": [],
             "paired_delta_feasible_gates": [], "seed183_contrast": [],
