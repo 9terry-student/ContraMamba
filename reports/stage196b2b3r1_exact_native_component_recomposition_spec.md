@@ -120,6 +120,14 @@ The two directions remain separate. A zero donor-minus-recipient margin denomina
 
 The frozen subtype populations are seed184 recovery multi-channel conflict, seed185 recovery frame-entitlement gain, polarity override, composition residual, and frame/entitlement-loss-like. The seed185 harm multi-channel subtype still requires negative terminal Frame, predicate, entitlement, and margin deltas from the static B2-B2 authority.
 
+### CSV numeric representation boundary
+
+Historical B2-B2 row-summary values are read with `csv.DictReader`, so numeric cells remain strings. R1 keeps `number()` strict for JSON/JSONL native numeric values and uses the separate `csv_number()` parser only for numeric CSV metadata. The CSV parser accepts one whitespace-trimmed finite decimal or scientific-notation number, plus native integer/float values for internal compatibility. It rejects nulls, booleans, empty or whitespace-only cells, `NaN`, infinities, and nonnumeric text; errors include the field name and original value.
+
+During B2-B2 primary-source validation, the analyzer selects exactly the three rows with seed185, `transition_role=harm`, and `path_class=MULTI_CHANNEL_CONFLICT`. It parses `tail3_delta_frame`, `tail3_delta_predicate`, `tail3_delta_entitlement`, and `tail3_delta_margin` from the frozen CSV authority and requires every value to be finite and strictly `< 0.0`. The `b2b2_seed185_harm_multichannel_sign_closure` contract row records the exact identities and parsed values. These values are not recomputed from P0 sidecars. The later subtype classification uses the same strict CSV parser and retains `FRAME_ENTITLEMENT_LOSS_LIKE_ROWS` unchanged.
+
+The full typed-parser boundary audit finds no other CSV numeric calls to `number()` and no CSV boolean calls to `boolean()`. CSV seed, epoch, and position fields continue through `integer()`, whose existing contract explicitly accepts strict integer strings. Manifest and sidecar numeric/boolean fields remain JSON-native and continue through `number()` and `boolean()` unchanged.
+
 ## Decision discipline
 
 Cross-seed component success requires both positive seeds. The evaluation order preserves the existing decision vocabulary:

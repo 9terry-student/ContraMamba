@@ -211,6 +211,30 @@ def number(value: Any, name: str, probability: bool = False) -> float:
     return result
 
 
+def csv_number(value: Any, name: str) -> float:
+    """Parse one finite numeric CSV cell without weakening JSON typing."""
+    original = value
+    if type(value) is bool or value is None:
+        raise ValueError(f"{name}: finite CSV numeric value required; observed={original!r}")
+    if isinstance(value, str):
+        value = value.strip()
+        if not value or re.fullmatch(
+            r"[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?", value
+        ) is None:
+            raise ValueError(f"{name}: finite CSV numeric value required; observed={original!r}")
+    elif type(value) not in (int, float):
+        raise ValueError(f"{name}: finite CSV numeric value required; observed={original!r}")
+    try:
+        result = float(value)
+    except (TypeError, ValueError) as error:
+        raise ValueError(
+            f"{name}: finite CSV numeric value required; observed={original!r}"
+        ) from error
+    if not math.isfinite(result):
+        raise ValueError(f"{name}: finite CSV numeric value required; observed={original!r}")
+    return result
+
+
 def integer(value: Any, name: str) -> int:
     if isinstance(value, str):
         if not re.fullmatch(r"-?[0-9]+", value):
@@ -340,6 +364,55 @@ def validate_authorities(ns: argparse.Namespace, gates: list[dict[str, Any]]) ->
     normalized = {s: {r: dict(counts[s][r]) for r in ("recovery", "harm")} for s in PRIMARY_SEEDS}
     gate(gates, "population", "", "b2b2_frozen_path_counts", EXPECTED_PATHS, normalized,
          normalized == EXPECTED_PATHS, "frozen path-class counts changed")
+    subtype_sign_fields = (
+        "tail3_delta_frame", "tail3_delta_predicate",
+        "tail3_delta_entitlement", "tail3_delta_margin",
+    )
+    seed185_harm_multichannel = [
+        row for row in static
+        if integer(row["seed"], "seed") == 185
+        and row["transition_role"] == "harm"
+        and row["path_class"] == "MULTI_CHANNEL_CONFLICT"
+    ]
+    sign_rows: list[dict[str, Any]] = []
+    sign_error: str | None = None
+    for row in seed185_harm_multichannel:
+        identity = {
+            "seed": integer(row["seed"], "seed"),
+            "stable_row_id": row["stable_row_id"], "id": row["id"],
+            "source_row_id": row["source_row_id"],
+            "dev_position": integer(row["dev_position"], "dev_position"),
+            "path_class": row["path_class"],
+        }
+        parsed = dict(identity)
+        try:
+            for field in subtype_sign_fields:
+                parsed[field] = csv_number(row.get(field), field)
+                if parsed[field] >= 0.0:
+                    raise ValueError(
+                        f"{field}: strictly negative frozen CSV value required; "
+                        f"identity={identity!r}; observed={row.get(field)!r}"
+                    )
+        except ValueError as error:
+            sign_error = f"identity={identity!r}; {error}"
+            break
+        sign_rows.append(parsed)
+    sign_observed = {
+        "expected_row_count": 3,
+        "observed_row_count": len(seed185_harm_multichannel),
+        "required_fields": list(subtype_sign_fields),
+        "all_finite": sign_error is None and len(sign_rows) == len(seed185_harm_multichannel),
+        "all_strictly_negative": sign_error is None and len(sign_rows) == 3,
+        "rows": sign_rows,
+    }
+    gate(
+        gates, "source", "", "b2b2_seed185_harm_multichannel_sign_closure",
+        {"expected_row_count": 3, "required_fields": list(subtype_sign_fields),
+         "all_finite": True, "all_strictly_negative": True},
+        sign_observed,
+        len(seed185_harm_multichannel) == 3 and sign_error is None and len(sign_rows) == 3,
+        sign_error or "expected exactly three seed185 harm MULTI_CHANNEL_CONFLICT rows",
+    )
     epoch_counts: Counter[tuple[int, str, str, int]] = Counter()
     for row in epochs:
         key = (integer(row["seed"], "epoch seed"), str(row["id"]), str(row["source_row_id"]), integer(row["dev_position"], "epoch position"))
@@ -643,7 +716,7 @@ def subtype(meta: dict[str, str]) -> str:
     if path == "FRAME_ENTITLEMENT_LOSS": return "FRAME_ENTITLEMENT_LOSS_LIKE_ROWS"
     if seed == 185 and role == "harm" and path == "MULTI_CHANNEL_CONFLICT":
         required = ("tail3_delta_frame", "tail3_delta_predicate", "tail3_delta_entitlement", "tail3_delta_margin")
-        if not all(number(meta[x], x) < 0.0 for x in required):
+        if not all(csv_number(meta[x], x) < 0.0 for x in required):
             raise ValueError("seed185 harm MULTI_CHANNEL_CONFLICT subtype signs changed")
         return "FRAME_ENTITLEMENT_LOSS_LIKE_ROWS"
     raise ValueError("primary row has no frozen subtype")
