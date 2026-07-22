@@ -502,9 +502,36 @@ def validate_p0(ns: argparse.Namespace, gates: list[dict[str, Any]]) -> tuple[di
         trajectory_names = [f"stage196b2p0_epoch_channels_{epoch:03d}.jsonl" for epoch in EPOCHS]
         manifest_name = "stage196b2b3p0_composer_input_manifest.json"
         exact_directory(composer_dir, (manifest_name, *composer_names), gates, f"{run}_composer_namespace")
-        observed_trajectory = sorted(p.name for p in trajectory_dir.iterdir() if p.is_file())
-        gate(gates, "p0", run, "trajectory_namespace", sorted(trajectory_names), observed_trajectory,
-             observed_trajectory == sorted(trajectory_names), "trajectory namespace failed")
+        expected_trajectory_namespace = sorted(trajectory_names)
+        trajectory_prefix = "stage196b2p0_epoch_channels_"
+        trajectory_pattern = re.compile(r"^stage196b2p0_epoch_channels_[0-9]{3}\.jsonl$")
+        all_trajectory_files = sorted(p.name for p in trajectory_dir.iterdir() if p.is_file())
+        observed_trajectory_namespace = sorted(
+            name for name in all_trajectory_files if trajectory_pattern.fullmatch(name)
+        )
+        malformed_trajectory_namespace = sorted(
+            name for name in all_trajectory_files
+            if name.startswith(trajectory_prefix) and name not in expected_trajectory_namespace
+        )
+        unrelated_trajectory_files = sorted(
+            name for name in all_trajectory_files if not name.startswith(trajectory_prefix)
+        )
+        trajectory_namespace_evidence = {
+            "expected_namespace_files": expected_trajectory_namespace,
+            "observed_namespace_files": observed_trajectory_namespace,
+            "malformed_namespace_like_files": malformed_trajectory_namespace,
+            "unrelated_file_count": len(unrelated_trajectory_files),
+            "unrelated_files_ignored": unrelated_trajectory_files,
+        }
+        trajectory_namespace_ok = (
+            observed_trajectory_namespace == expected_trajectory_namespace
+            and malformed_trajectory_namespace == []
+        )
+        gate(gates, "p0", run, "trajectory_namespace",
+             {"expected_namespace_files": expected_trajectory_namespace,
+              "malformed_namespace_like_files": []},
+             trajectory_namespace_evidence, trajectory_namespace_ok,
+             "trajectory namespace failed")
         manifest_path = composer_dir / manifest_name
         manifest = read_json(manifest_path)
         hashes[str(manifest_path)] = sha256(manifest_path)

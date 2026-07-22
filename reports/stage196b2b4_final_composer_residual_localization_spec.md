@@ -28,6 +28,10 @@ B2-B2 must preserve the seed-specific multipath decision, its B2-B3 recommendati
 
 P0 must contain exactly six named runs, 120 composer and 120 trajectory sidecars, and 86,400 rows of each kind. Manifests, hashes, runtime commit, row provenance, prediction agreement, and all tolerances must close at `1e-6`.
 
+The P0 `trajectory/` directory is mixed-purpose. Its `trajectory_namespace` gate therefore inspects only files matching the exact Stage196-B2-P0 form `stage196b2p0_epoch_channels_[0-9][0-9][0-9].jsonl`, while separately treating every file beginning with `stage196b2p0_epoch_channels_` but not equal to an expected filename as malformed. The exact observed namespace must be the 20 files numbered `001` through `020`, and the malformed list must be empty. Stage191 artifacts, checkpoints, reports, provenance files, and other unrelated filenames are retained and reported as ignored; they do not affect the gate result.
+
+The P0 `composer_inputs/` directory remains exclusive by contract. Its exact-directory closure is intentionally unchanged: exactly 20 `stage196b2b3p0_epoch_composer_inputs_001.jsonl` through `_020.jsonl` sidecars and `stage196b2b3p0_composer_input_manifest.json`, with no other files, plus existing manifest and hash closure.
+
 Pairs use exact `(seed, epoch, id, source_row_id, dev_position)` keys and exactly one state per mode. Strict identity additionally checks `stable_row_id`. Both directions remain separate, yielding 16 × 20 × 2 = 640 primary directional states.
 
 ## Native recomposition
