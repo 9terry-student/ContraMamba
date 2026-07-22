@@ -105,6 +105,94 @@ P0_FIELDS = (
     "frame_downstream_gradient_mode",
 )
 
+B2B2_IDENTITY_FIELDS = (
+    "seed",
+    "stable_row_id",
+    "id",
+    "source_row_id",
+    "dev_position",
+    "transition_role",
+    "intervention_type",
+)
+B2B2_RECURRENT_FIELDS = (
+    "in_stage196a_baseline_recurrent",
+    "in_stage196a_intervention_recurrent",
+    "in_stage196a_common_recurrent",
+    "in_stage196a_universal_all_six",
+)
+B2B2_LOCAL_CHANNELS = ("frame", "predicate", "sufficiency", "polarity", "entitlement")
+B2B2_DELTA_CHANNELS = (*B2B2_LOCAL_CHANNELS, "margin")
+B2B2_PATH_CLASSES = (
+    "FRAME_ENTITLEMENT_GAIN",
+    "FRAME_ENTITLEMENT_LOSS",
+    "POLARITY_OVERRIDE_DESPITE_FRAME_GAIN",
+    "ENTITLEMENT_OPPOSES_FRAME",
+    "COMPOSITION_DIVERGENCE_WITHOUT_LOCAL_BOUNDARY",
+    "MULTI_CHANNEL_CONFLICT",
+    "NO_STABLE_DIRECTIONAL_PATH",
+)
+B2B2_STATIC_ROW_FIELDS = (
+    *B2B2_IDENTITY_FIELDS,
+    *B2B2_RECURRENT_FIELDS,
+    "path_class",
+    "joint_tail3_status",
+    "intervention_tail3_status",
+    "tail3_prediction_pattern",
+    "margin_direction_concordant",
+    "prediction_pattern_concordant",
+    "intervention_tail3_stable_support",
+    "selected_checkpoint_agrees_with_tail3_role",
+    *tuple(
+        field
+        for channel in B2B2_DELTA_CHANNELS
+        for field in (
+            f"tail3_joint_{channel}",
+            f"tail3_intervention_{channel}",
+            f"tail3_delta_{channel}",
+            f"terminal_delta_{channel}_sign",
+            f"first_terminal_sign_stable_epoch_{channel}",
+        )
+    ),
+    *tuple(
+        field
+        for channel in (*B2B2_LOCAL_CHANNELS, "composition")
+        for field in (
+            f"tail3_{channel}_pass_transition_frequencies",
+            f"first_persistent_boundary_divergence_epoch_{channel}",
+        )
+    ),
+)
+B2B2_EPOCH_FIELDS = (
+    *B2B2_IDENTITY_FIELDS,
+    "epoch",
+    *B2B2_RECURRENT_FIELDS,
+    "gold_label",
+    "joint_prediction",
+    "intervention_prediction",
+    "joint_support",
+    "intervention_support",
+    "support_status_disagreement",
+    *tuple(
+        field
+        for channel in B2B2_LOCAL_CHANNELS
+        for field in (
+            f"joint_{channel}",
+            f"intervention_{channel}",
+            f"delta_{channel}",
+            f"delta_{channel}_sign",
+            f"{channel}_pass_transition",
+            f"delta_{channel}_sign_agrees_with_final_margin_delta_sign",
+        )
+    ),
+    "joint_support_vs_ne_margin",
+    "intervention_support_vs_ne_margin",
+    "delta_support_vs_ne_margin",
+    "delta_support_vs_ne_margin_sign",
+    "composition_pass_transition",
+)
+B2B2_DUPLICATED_STATIC_FIELDS = (*B2B2_IDENTITY_FIELDS, *B2B2_RECURRENT_FIELDS)
+
+
 SWAP_VARIANTS = (
     "FRAME_ONLY",
     "PREDICATE_ONLY",
@@ -403,13 +491,6 @@ def under(path: Path, root: Path) -> bool:
         return True
     except ValueError:
         return False
-
-
-def require_columns(label: str, rows: list[dict[str, str]], required: Sequence[str]) -> None:
-    observed = set(rows[0]) if rows else set()
-    missing = set(required) - observed
-    if not rows or missing:
-        raise ValueError(f"{label}: absent rows/columns {sorted(missing)}")
 
 
 def gate(
@@ -1407,33 +1488,7 @@ def validate_b2b2(
     )
 
     row_paths = read_csv(source_dir / B2B2_FILES[2])
-    paired_epochs = read_csv(source_dir / B2B2_FILES[3])
-    require_columns(
-        "Stage196-B2-B2 row paths",
-        row_paths,
-        (
-            "seed",
-            "stable_row_id",
-            "id",
-            "source_row_id",
-            "dev_position",
-            "transition_role",
-            "intervention_type",
-            "path_class",
-            "joint_tail3_status",
-            "intervention_tail3_status",
-            "tail3_prediction_pattern",
-            "tail3_delta_frame",
-            "tail3_delta_predicate",
-            "tail3_delta_entitlement",
-            "tail3_delta_margin",
-        ),
-    )
-    require_columns(
-        "Stage196-B2-B2 paired epochs",
-        paired_epochs,
-        ("seed", "stable_row_id", "epoch", "transition_role", "path_class"),
-    )
+    native_paired_epochs = read_csv(source_dir / B2B2_FILES[3])
     gate(
         gates,
         "population",
@@ -1442,7 +1497,7 @@ def validate_b2b2(
         16,
         len(row_paths),
         len(row_paths) == 16,
-        "Stage196-B2-B2 row-path row count mismatch",
+        f"row count mismatch: expected 16, observed {len(row_paths)}",
     )
     gate(
         gates,
@@ -1450,37 +1505,378 @@ def validate_b2b2(
         "",
         "stage196b2b2_paired_epoch_rows",
         320,
-        len(paired_epochs),
-        len(paired_epochs) == 320,
-        "Stage196-B2-B2 paired-epoch row count mismatch",
+        len(native_paired_epochs),
+        len(native_paired_epochs) == 320,
+        f"row count mismatch: expected 320, observed {len(native_paired_epochs)}",
+    )
+    row_columns = set(row_paths[0])
+    paired_columns = set(native_paired_epochs[0])
+    row_missing_columns = sorted(set(B2B2_STATIC_ROW_FIELDS) - row_columns)
+    row_extra_columns = sorted(row_columns - set(B2B2_STATIC_ROW_FIELDS))
+    paired_missing_columns = sorted(set(B2B2_EPOCH_FIELDS) - paired_columns)
+    paired_extra_columns = sorted(paired_columns - set(B2B2_EPOCH_FIELDS))
+    row_schema_ok = not row_missing_columns and not row_extra_columns and len(row_columns) == 61
+    paired_schema_ok = not paired_missing_columns and not paired_extra_columns and len(paired_columns) == 53
+    gate(
+        gates,
+        "source",
+        "",
+        "b2b2_row_summary_schema_closure",
+        {"column_count": 61, "fields": list(B2B2_STATIC_ROW_FIELDS)},
+        {
+            "row_summary_rows": len(row_paths),
+            "column_count": len(row_columns),
+            "missing_columns": row_missing_columns,
+            "unexpected_columns": row_extra_columns,
+            "passed": row_schema_ok,
+        },
+        row_schema_ok,
+        (
+            f"missing required columns: {row_missing_columns}"
+            if row_missing_columns
+            else f"unexpected columns: {row_extra_columns}"
+        ),
+    )
+    gate(
+        gates,
+        "source",
+        "",
+        "b2b2_paired_epoch_schema_closure",
+        {"column_count": 53, "fields": list(B2B2_EPOCH_FIELDS)},
+        {
+            "paired_epoch_rows": len(native_paired_epochs),
+            "column_count": len(paired_columns),
+            "missing_columns": paired_missing_columns,
+            "unexpected_columns": paired_extra_columns,
+            "static_fields_not_native": [
+                field for field in B2B2_STATIC_ROW_FIELDS if field not in paired_columns
+            ],
+            "passed": paired_schema_ok,
+        },
+        paired_schema_ok,
+        (
+            f"missing required columns: {paired_missing_columns}"
+            if paired_missing_columns
+            else f"unexpected columns: {paired_extra_columns}"
+        ),
     )
 
-    seen: set[tuple[int, str, int]] = set()
+    def identity_key(row: dict[str, str], label: str) -> tuple[Any, ...]:
+        null_fields = [field for field in B2B2_IDENTITY_FIELDS if row[field] in (None, "")]
+        if null_fields:
+            raise ValueError(f"missing identity rows: {label} null key fields {null_fields}")
+        try:
+            seed = as_int(row["seed"], f"{label} seed")
+            position = as_int(row["dev_position"], f"{label} dev_position")
+        except ValueError as error:
+            raise ValueError(f"static metadata conflicts: invalid {label} identity representation") from error
+        return (
+            seed,
+            row["stable_row_id"],
+            row["id"],
+            row["source_row_id"],
+            position,
+            row["transition_role"],
+            row["intervention_type"],
+        )
+
+    def identity_text(key: tuple[Any, ...]) -> str:
+        return "|".join(str(value) for value in key)
+
+    row_identity_counts: Counter[tuple[Any, ...]] = Counter()
+    row_summary_index: dict[tuple[Any, ...], dict[str, str]] = {}
+    row_anchor_metadata: dict[tuple[Any, ...], set[tuple[str, str, str]]] = {}
+    invalid_primary_rows: list[str] = []
+    null_path_class_rows: list[str] = []
+    unsupported_path_class_rows: list[dict[str, str]] = []
     path_counts: dict[int, dict[str, Counter[str]]] = {
         seed: {"recovery": Counter(), "harm": Counter()} for seed in POSITIVE_SEEDS
     }
-    primary_keys: set[tuple[int, str]] = set()
     for row in row_paths:
-        seed = as_int(row["seed"], "primary seed")
-        role = row["transition_role"]
-        stable_id = row["stable_row_id"]
-        position = as_int(row["dev_position"], "primary dev_position")
-        key = (seed, stable_id, position)
+        key = identity_key(row, "row summary")
+        row_identity_counts[key] += 1
+        row_summary_index.setdefault(key, row)
+        row_anchor_metadata.setdefault(key[:5], set()).add(
+            (row["transition_role"], row["intervention_type"], row["path_class"])
+        )
+        seed = key[0]
+        stable_id = key[1]
+        role = key[5]
         if (
             seed not in POSITIVE_SEEDS
             or role not in ("recovery", "harm")
             or row["id"] != stable_id
             or row["source_row_id"] != stable_id
-            or key in seen
         ):
-            raise ValueError("Stage196-B2-B2 primary identity/seed/role mismatch")
-        seen.add(key)
-        primary_keys.add((seed, stable_id))
-        path_counts[seed][role][row["path_class"]] += 1
+            invalid_primary_rows.append(identity_text(key))
+        path_class = row["path_class"]
+        if path_class in (None, ""):
+            null_path_class_rows.append(identity_text(key))
+        elif path_class not in B2B2_PATH_CLASSES:
+            unsupported_path_class_rows.append(
+                {"identity": identity_text(key), "path_class": path_class}
+            )
+        elif seed in path_counts and role in path_counts[seed]:
+            path_counts[seed][role][path_class] += 1
+    duplicate_identity_rows = [
+        identity_text(key) for key, count in row_identity_counts.items() if count != 1
+    ]
+    conflicting_row_metadata = [
+        {
+            "identity_anchor": "|".join(str(value) for value in anchor),
+            "metadata": [
+                list(values)
+                for values in sorted(
+                    metadata, key=lambda item: tuple(str(value) for value in item)
+                )
+            ],
+        }
+        for anchor, metadata in row_anchor_metadata.items()
+        if len(metadata) != 1
+    ]
+
+    paired_identity_epoch_counts: Counter[tuple[tuple[Any, ...], int]] = Counter()
+    paired_epoch_sets: dict[tuple[Any, ...], set[int]] = {}
+    paired_identities: set[tuple[Any, ...]] = set()
+    extra_identity_epoch_rows: list[dict[str, Any]] = []
+    for row in native_paired_epochs:
+        key = identity_key(row, "paired epoch")
+        try:
+            epoch = as_int(row["epoch"], "paired epoch")
+        except ValueError as error:
+            raise ValueError("missing identity-epoch rows: invalid epoch representation") from error
+        paired_identity_epoch_counts[(key, epoch)] += 1
+        paired_identities.add(key)
+        paired_epoch_sets.setdefault(key, set()).add(epoch)
+        if epoch not in EPOCHS:
+            extra_identity_epoch_rows.append(
+                {"identity": identity_text(key), "epoch": epoch}
+            )
+    duplicate_identity_epoch_rows = [
+        {"identity": identity_text(key), "epoch": epoch, "count": count}
+        for (key, epoch), count in paired_identity_epoch_counts.items()
+        if count != 1
+    ]
+    row_summary_identities = set(row_summary_index)
+    orphan_identities = sorted(identity_text(key) for key in paired_identities - row_summary_identities)
+    missing_identities = sorted(identity_text(key) for key in row_summary_identities - paired_identities)
+    missing_identity_epoch_rows = [
+        {
+            "identity": identity_text(key),
+            "missing_epochs": sorted(set(EPOCHS) - paired_epoch_sets.get(key, set())),
+        }
+        for key in sorted(row_summary_identities)
+        if paired_epoch_sets.get(key, set()) != set(EPOCHS)
+    ]
+    epochs_per_identity: Any = (
+        20
+        if row_summary_identities == paired_identities
+        and all(paired_epoch_sets.get(key, set()) == set(EPOCHS) for key in row_summary_identities)
+        else {
+            identity_text(key): sorted(paired_epoch_sets.get(key, set()))
+            for key in sorted(row_summary_identities | paired_identities)
+        }
+    )
+
+    static_conflicts: list[dict[str, Any]] = []
+    enriched_paired_epochs: list[dict[str, str]] = []
+    for paired_row in native_paired_epochs:
+        key = identity_key(paired_row, "paired epoch")
+        summary_row = row_summary_index.get(key)
+        if summary_row is None:
+            continue
+        for field in B2B2_DUPLICATED_STATIC_FIELDS:
+            left: Any = paired_row[field]
+            right: Any = summary_row[field]
+            if field in {"seed", "dev_position"}:
+                left = as_int(left, f"paired {field}")
+                right = as_int(right, f"row summary {field}")
+            if left in (None, "") or right in (None, "") or left != right:
+                static_conflicts.append(
+                    {
+                        "identity": identity_text(key),
+                        "epoch": as_int(paired_row["epoch"], "paired epoch"),
+                        "field": field,
+                        "paired_value": left,
+                        "row_summary_value": right,
+                    }
+                )
+        enriched = dict(paired_row)
+        for field in B2B2_STATIC_ROW_FIELDS:
+            if field not in enriched:
+                enriched[field] = summary_row[field]
+        enriched_paired_epochs.append(enriched)
+
     normalized_counts = {
         seed: {role: dict(path_counts[seed][role]) for role in ("recovery", "harm")}
         for seed in POSITIVE_SEEDS
     }
+    population_counts = {
+        seed: {
+            role: sum(path_counts[seed][role].values()) for role in ("recovery", "harm")
+        }
+        for seed in POSITIVE_SEEDS
+    }
+    null_enriched_path_classes = sum(
+        row.get("path_class") in (None, "") for row in enriched_paired_epochs
+    )
+    closure_evidence = {
+        "row_summary_rows": len(row_paths),
+        "paired_epoch_rows": len(native_paired_epochs),
+        "identity_key": list(B2B2_IDENTITY_FIELDS),
+        "row_summary_identity_count": len(row_summary_identities),
+        "paired_identity_count": len(paired_identities),
+        "epochs_per_identity": epochs_per_identity,
+        "duplicate_identity_count": len(duplicate_identity_rows),
+        "duplicate_identity_epoch_count": len(duplicate_identity_epoch_rows),
+        "orphan_identity_count": len(orphan_identities),
+        "missing_identity_count": len(missing_identities),
+        "static_conflict_count": len(static_conflicts),
+        "enriched_row_count": len(enriched_paired_epochs),
+        "null_path_class_count": null_enriched_path_classes,
+    }
+    row_identity_ok = (
+        len(row_summary_identities) == 16
+        and not duplicate_identity_rows
+        and not invalid_primary_rows
+        and not conflicting_row_metadata
+    )
+    gate(
+        gates,
+        "population",
+        "",
+        "b2b2_row_summary_identity_uniqueness",
+        {"identity_count": 16, "duplicate_identity_count": 0},
+        {
+            **closure_evidence,
+            "duplicate_identity_rows": duplicate_identity_rows,
+            "invalid_primary_rows": invalid_primary_rows,
+            "conflicting_row_metadata": conflicting_row_metadata,
+            "passed": row_identity_ok,
+        },
+        row_identity_ok,
+        (
+            f"duplicate identity rows: {duplicate_identity_rows}"
+            if duplicate_identity_rows
+            else f"static metadata conflicts: {conflicting_row_metadata or invalid_primary_rows}"
+        ),
+    )
+    path_class_ok = not null_path_class_rows and not unsupported_path_class_rows
+    gate(
+        gates,
+        "source",
+        "",
+        "b2b2_row_summary_path_class_closure",
+        {"null_path_class_count": 0, "supported": list(B2B2_PATH_CLASSES)},
+        {
+            **closure_evidence,
+            "null_path_class_rows": null_path_class_rows,
+            "unsupported_path_class_rows": unsupported_path_class_rows,
+            "passed": path_class_ok,
+        },
+        path_class_ok,
+        (
+            f"null path_class rows: {null_path_class_rows}"
+            if null_path_class_rows
+            else f"unsupported path_class values: {unsupported_path_class_rows}"
+        ),
+    )
+    paired_uniqueness_ok = not duplicate_identity_epoch_rows
+    gate(
+        gates,
+        "population",
+        "",
+        "b2b2_paired_epoch_identity_epoch_uniqueness",
+        {"duplicate_identity_epoch_count": 0},
+        {
+            **closure_evidence,
+            "duplicate_identity_epoch_rows": duplicate_identity_epoch_rows,
+            "passed": paired_uniqueness_ok,
+        },
+        paired_uniqueness_ok,
+        f"duplicate identity-epoch rows: {duplicate_identity_epoch_rows}",
+    )
+    paired_identity_ok = not orphan_identities and not missing_identities
+    gate(
+        gates,
+        "population",
+        "",
+        "b2b2_paired_epoch_identity_closure",
+        {"orphan_identity_count": 0, "missing_identity_count": 0},
+        {
+            **closure_evidence,
+            "orphan_identities": orphan_identities,
+            "missing_identities": missing_identities,
+            "passed": paired_identity_ok,
+        },
+        paired_identity_ok,
+        (
+            f"orphan paired identities: {orphan_identities}"
+            if orphan_identities
+            else f"missing identity rows: {missing_identities}"
+        ),
+    )
+    epoch_closure_ok = not missing_identity_epoch_rows and not extra_identity_epoch_rows
+    gate(
+        gates,
+        "population",
+        "",
+        "b2b2_exact_twenty_epochs_per_identity",
+        list(EPOCHS),
+        {
+            **closure_evidence,
+            "missing_identity_epoch_rows": missing_identity_epoch_rows,
+            "extra_identity_epoch_rows": extra_identity_epoch_rows,
+            "passed": epoch_closure_ok,
+        },
+        epoch_closure_ok,
+        (
+            f"missing identity-epoch rows: {missing_identity_epoch_rows}"
+            if missing_identity_epoch_rows
+            else f"extra identity-epoch rows: {extra_identity_epoch_rows}"
+        ),
+    )
+    static_consistency_ok = not static_conflicts
+    gate(
+        gates,
+        "source",
+        "",
+        "b2b2_static_metadata_consistency",
+        {"fields": list(B2B2_DUPLICATED_STATIC_FIELDS), "static_conflict_count": 0},
+        {**closure_evidence, "conflicts": static_conflicts, "passed": static_consistency_ok},
+        static_consistency_ok,
+        f"static metadata conflicts: {static_conflicts}",
+    )
+    join_ok = (
+        len(enriched_paired_epochs) == 320
+        and len(row_summary_index) == 16
+        and not duplicate_identity_rows
+        and not orphan_identities
+        and not missing_identities
+    )
+    gate(
+        gates,
+        "source",
+        "",
+        "b2b2_row_to_epoch_many_to_one_join",
+        {"validation": "many_to_one", "enriched_row_count": 320},
+        {**closure_evidence, "validation": "many_to_one", "passed": join_ok},
+        join_ok,
+        "row-to-epoch many-to-one join closure failed",
+    )
+    enriched_path_ok = null_enriched_path_classes == 0 and all(
+        row.get("path_class") in B2B2_PATH_CLASSES for row in enriched_paired_epochs
+    )
+    gate(
+        gates,
+        "source",
+        "",
+        "b2b2_enriched_paired_path_class_closure",
+        {"enriched_row_count": 320, "null_path_class_count": 0},
+        {**closure_evidence, "passed": enriched_path_ok},
+        enriched_path_ok,
+        "enriched paired rows contain missing or unsupported path_class values",
+    )
     gate(
         gates,
         "population",
@@ -1491,26 +1887,9 @@ def validate_b2b2(
         normalized_counts == EXPECTED_PATH_COUNTS,
         "Stage196-B2-B2 path-class counts disagree with the completed finding",
     )
-    population_counts = {
-        seed: {
-            role: sum(path_counts[seed][role].values()) for role in ("recovery", "harm")
-        }
-        for seed in POSITIVE_SEEDS
-    }
     if population_counts != EXPECTED_PRIMARY_COUNTS:
         raise ValueError("Stage196-B2-B2 primary recovery/harm counts disagree")
-
-    epoch_keys: Counter[tuple[int, str]] = Counter()
-    for row in paired_epochs:
-        seed = as_int(row["seed"], "paired seed")
-        stable_id = row["stable_row_id"]
-        epoch = as_int(row["epoch"], "paired epoch")
-        if (seed, stable_id) not in primary_keys or epoch not in EPOCHS:
-            raise ValueError("Stage196-B2-B2 paired-epoch population mismatch")
-        epoch_keys[(seed, stable_id)] += 1
-    if set(epoch_keys) != primary_keys or any(count != 20 for count in epoch_keys.values()):
-        raise ValueError("each Stage196-B2-B2 primary row must have epochs 1 through 20")
-
+    paired_epochs = enriched_paired_epochs
     analysis_counts = analysis.get("path_class_counts_by_seed_and_role")
     expected_json_counts = {
         str(seed): {role: EXPECTED_PATH_COUNTS[seed][role] for role in ("recovery", "harm")}
