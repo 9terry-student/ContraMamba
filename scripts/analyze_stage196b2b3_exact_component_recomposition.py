@@ -513,7 +513,7 @@ def normalized_provenance(analysis: dict[str, Any]) -> dict[str, str]:
     return {key: str(value) for key, value in result.items()}
 
 
-def mapping_margin_authority(
+def optional_mapping_margin_consistency(
     rows: list[dict[str, str]],
     source_scope: str,
     source_gate: str,
@@ -522,7 +522,8 @@ def mapping_margin_authority(
     contract_path: Path,
     gates: list[dict[str, Any]],
     label: str,
-) -> tuple[str, dict[str, Any], dict[str, Any]]:
+    warning_when_absent: bool,
+) -> tuple[str | None, dict[str, Any], dict[str, Any], str | None]:
     matches = [row for row in rows if row.get("scope") == source_scope and row.get("gate") == source_gate]
     mapping: dict[str, Any] | None = None
     value: Any = None
@@ -547,14 +548,34 @@ def mapping_margin_authority(
         "gate": source_gate,
         "column": "observed",
         "field": "support_vs_not_entitled_margin_source",
+        "passed": passed_row,
         "value": value,
         "parse_error": parse_error,
     }
-    ok = len(matches) == 1 and passed_row and parse_error is None and type(value) is str and value == MARGIN_SOURCE
-    gate(gates, "provenance", "", output_gate, MARGIN_SOURCE, evidence, ok, f"{label} is absent, malformed, failed, or conflicting")
+    if value is None:
+        evidence["status"] = "optional_field_absent_or_null"
+    elif type(value) is str and value == MARGIN_SOURCE:
+        evidence["status"] = "present_and_agrees"
+    else:
+        evidence["status"] = "present_and_conflicts"
+    ok = (
+        len(matches) == 1
+        and passed_row
+        and parse_error is None
+        and (value is None or (type(value) is str and value == MARGIN_SOURCE))
+    )
+    gate(
+        gates, "provenance", "", output_gate, MARGIN_SOURCE, evidence, ok,
+        f"{label} is malformed, failed, or conflicting",
+    )
     if mapping is None:
         raise ValueError(f"{label}: normalized source roles unavailable")
-    return value, mapping, evidence
+    warning = (
+        f"SOURCE_SCHEMA_WARNING: {label} field is absent/null; B2-B1 native authority remains controlling"
+        if value is None and warning_when_absent
+        else None
+    )
+    return value, mapping, evidence, warning
 
 
 def scalar_margin_authority(
@@ -588,6 +609,7 @@ def scalar_margin_authority(
         "gate": source_gate,
         "column": "required",
         "field": None,
+        "passed": passed_row,
         "value": value,
         "observed_evidence": observed_evidence,
         "parse_error": parse_error,
@@ -595,6 +617,7 @@ def scalar_margin_authority(
     ok = len(matches) == 1 and passed_row and parse_error is None and type(value) is str and value == MARGIN_SOURCE
     gate(gates, "source", "", output_gate, MARGIN_SOURCE, evidence, ok, f"{label} is absent, malformed, failed, or conflicting")
     return value, evidence
+
 
 def role_value(mapping: dict[str, Any], label: str, *names: str) -> str:
     values = [str(mapping[name]) for name in names if mapping.get(name) not in (None, "")]
@@ -692,38 +715,49 @@ def validate_predecessors(
         a_contract_evidence, contract_passes(a_contract), "Stage196-B2-A contract has failed or blocked gates",
     )
 
-    b1_margin, b1_roles, b1_authority = mapping_margin_authority(
+    source_warnings: list[str] = []
+    b1_native_margin, b1_native_authority = scalar_margin_authority(
         b1_contract,
-        "provenance",
-        "normalized_source_roles",
-        "b2b1_margin_source_authority",
+        "source",
+        "contract_native_logit_margin_authority",
+        "b2b1_native_margin_authority",
         b1_path,
         (b1_dir / B2B1_FILES[-1]).resolve(),
         gates,
-        "B2-B1 normalized-source-role margin authority",
+        "B2-B1 native margin authority",
     )
-    a_native_margin, a_native_authority = scalar_margin_authority(
-        a_contract,
-        "source",
-        "contract_native_logit_margin_authority",
-        "b2a_margin_source_authority",
-        a_path,
-        (a_dir / B2A_FILES[-1]).resolve(),
-        gates,
-        "B2-A native margin authority",
+    b1_normalized_margin, b1_roles, b1_normalized_authority, b1_warning = (
+        optional_mapping_margin_consistency(
+            b1_contract,
+            "provenance",
+            "normalized_source_roles",
+            "b2b1_normalized_margin_consistency",
+            b1_path,
+            (b1_dir / B2B1_FILES[-1]).resolve(),
+            gates,
+            "B2-B1 normalized-source-role margin",
+            True,
+        )
     )
-    a_roles_margin, a_roles, a_roles_authority = mapping_margin_authority(
-        a_contract,
-        "provenance",
-        "normalized_source_roles",
-        "b2a_normalized_source_roles_margin",
-        a_path,
-        (a_dir / B2A_FILES[-1]).resolve(),
-        gates,
-        "B2-A normalized-source-role margin authority",
+    if b1_warning is not None:
+        source_warnings.append(b1_warning)
+    a_normalized_margin, a_roles, a_normalized_authority, _a_warning = (
+        optional_mapping_margin_consistency(
+            a_contract,
+            "provenance",
+            "normalized_source_roles",
+            "b2a_optional_margin_consistency",
+            a_path,
+            (a_dir / B2A_FILES[-1]).resolve(),
+            gates,
+            "B2-A optional normalized-source-role margin",
+            False,
+        )
     )
-    if a_roles_margin != a_native_margin:
-        raise ValueError("B2-A normalized-source-role margin disagrees with native authority")
+    if b1_normalized_margin is not None and b1_normalized_margin != b1_native_margin:
+        raise ValueError("B2-B1 normalized margin conflicts with native authority")
+    if a_normalized_margin is not None and a_normalized_margin != b1_native_margin:
+        raise ValueError("B2-A optional normalized margin conflicts with B2-B1 native authority")
     b1_analysis_commit = analysis_commit(b1_analysis, B2B1_COMMIT, "B2-B1")
     b1_contract_commit = contract_commit_value(
         b1_contract,
@@ -757,10 +791,11 @@ def validate_predecessors(
         "b2b1_chain": b1_chain,
         "b2a_chain": a_chain,
         "authorities": {
-            "stage196b2b1_normalized_source_roles": b1_authority,
-            "stage196b2a_native_logit_margin_authority": a_native_authority,
-            "stage196b2a_normalized_source_roles": a_roles_authority,
+            "stage196b2b1_native_margin_authority": b1_native_authority,
+            "stage196b2b1_normalized_source_roles": b1_normalized_authority,
+            "stage196b2a_normalized_source_roles": a_normalized_authority,
         },
+        "warnings": source_warnings,
     }
 
 
@@ -771,13 +806,17 @@ def normalize_margin_source(
     analysis_path: Path,
 ) -> tuple[str, list[str], dict[str, Any]]:
     authorities = dict(predecessor["authorities"])
+    warnings = list(predecessor["warnings"])
     primary = analysis.get("normalized_margin_source")
-    authorities["stage196b2b2_top_level_normalized_margin_source"] = {
+    b2b2_primary_evidence = {
         "analysis_path": str(analysis_path),
         "column": "top_level",
         "field": "normalized_margin_source",
         "value": primary,
     }
+    authorities["stage196b2b2_top_level_normalized_margin_source"] = b2b2_primary_evidence
+    b2b2_values: list[Any] = [] if primary is None else [primary]
+    alias_evidence: dict[str, Any] = {}
     for name in (
         "normalized_support_vs_not_entitled_margin_source",
         "support_vs_not_entitled_margin_source",
@@ -785,26 +824,70 @@ def normalize_margin_source(
     ):
         value = analysis.get(name)
         if value is not None:
-            authorities[f"stage196b2b2_top_level_{name}"] = {
+            evidence = {
                 "analysis_path": str(analysis_path),
                 "column": "top_level",
                 "field": name,
                 "value": value,
             }
-    values = [evidence.get("value") for evidence in authorities.values() if evidence.get("value") is not None]
-    agreement = bool(values) and all(type(value) is str and value == MARGIN_SOURCE for value in values)
-    gate(
-        gates, "provenance", "", "cross_generation_margin_source_agreement", MARGIN_SOURCE,
-        {"authorities": authorities, "non_null_values": values}, agreement,
-        "cross-generation margin-source authority is absent, malformed, or conflicting",
-    )
-    warnings: list[str] = []
+            authorities[f"stage196b2b2_top_level_{name}"] = evidence
+            alias_evidence[name] = value
+            b2b2_values.append(value)
     if primary is None:
         warnings.append(
-            "SOURCE_SCHEMA_WARNING: B2-B2 normalized_margin_source is null; normalized from "
-            "agreeing explicit B2-B1 and B2-A authorities"
+            "SOURCE_SCHEMA_WARNING: B2-B2 normalized_margin_source is null; "
+            "B2-B1 native authority remains controlling"
         )
+        b2b2_status = "primary_null_with_warning"
+    elif type(primary) is str and primary == MARGIN_SOURCE:
+        b2b2_status = "primary_present_and_agrees"
+    else:
+        b2b2_status = "primary_present_and_conflicts"
+    b2b2_ok = all(type(value) is str and value == MARGIN_SOURCE for value in b2b2_values)
+    gate(
+        gates,
+        "provenance",
+        "",
+        "b2b2_optional_margin_consistency",
+        MARGIN_SOURCE,
+        {
+            "primary": b2b2_primary_evidence,
+            "additional_non_null_aliases": alias_evidence,
+            "status": b2b2_status,
+            "warning_recorded": primary is None,
+        },
+        b2b2_ok,
+        "B2-B2 optional margin source conflicts with B2-B1 native authority",
+    )
+    values = [
+        evidence.get("value")
+        for evidence in authorities.values()
+        if evidence.get("value") is not None
+    ]
+    agreement = bool(values) and all(
+        type(value) is str and value == MARGIN_SOURCE for value in values
+    )
+    gate(
+        gates,
+        "provenance",
+        "",
+        "cross_generation_margin_source_agreement",
+        MARGIN_SOURCE,
+        {
+            "authority_precedence": [
+                "stage196b2b1_native_margin_authority.required",
+                "stage196b2b1_normalized_source_roles.observed.support_vs_not_entitled_margin_source",
+                "stage196b2a_normalized_source_roles.observed.support_vs_not_entitled_margin_source",
+                "stage196b2b2.normalized_margin_source",
+            ],
+            "authorities": authorities,
+            "non_null_values": values,
+        },
+        agreement,
+        "cross-generation margin-source authority is absent, malformed, or conflicting",
+    )
     return MARGIN_SOURCE, warnings, authorities
+
 
 def validate_b2b2(
     namespace: argparse.Namespace,

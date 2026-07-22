@@ -68,33 +68,28 @@ The authoritative margin source is:
 support_logit - not_entitled_logit
 ```
 
-Authority is extracted column-by-column from the explicit predecessor contracts:
+Authority uses this exact precedence:
 
-1. B2-B1 must contain exactly one passed `scope=provenance`, `gate=normalized_source_roles` row. Its `observed` cell must be a JSON object whose `support_vs_not_entitled_margin_source` field equals the formula.
-2. B2-A must contain exactly one passed `scope=source`, `gate=contract_native_logit_margin_authority` row. The formula is read from `required`; `observed` is retained only as diagnostic evidence and is not expected to contain the formula.
-3. B2-A must also contain exactly one passed `scope=provenance`, `gate=normalized_source_roles` row. Its observed JSON margin field must agree with the B2-A native required value.
+1. The mandatory primary authority is exactly one passed B2-B1 contract row with `scope=source` and `gate=contract_native_logit_margin_authority`. The formula is read from `required`, never from `observed`.
+2. B2-B1 `provenance/normalized_source_roles` is parsed from its `observed` JSON. A non-null `support_vs_not_entitled_margin_source` must agree. An absent/null field is nonblocking and records a schema warning because the native B2-B1 authority remains controlling. A null B2-B1 top-level normalized alias is not a blocker.
+3. B2-A remains an explicit input with exact nine-file closure and provenance-chain validation. Its contract is not required to contain `contract_native_logit_margin_authority`. A normalized-role margin value is optional: absence/null passes, while a non-null conflict fails closed.
+4. B2-B2 top-level `normalized_margin_source` is optional. Null passes with a schema warning; a non-null value must agree. Every other already-supported non-null B2-B2 margin alias is also a consistency check.
 
-A null B2-B2 top-level `normalized_margin_source` continues only when all explicit predecessor authorities agree, and records a nonblocking schema warning. Every available non-null top-level alias is also checked. Any missing, malformed, failed, duplicate, null, or conflicting authority is malformed input and produces `STAGE196B2B3_ANALYSIS_INCOMPLETE`; the analyzer never silently selects among conflicts.
+The analyzer never fabricates a missing B2-A value and never silently selects between conflicting non-null values. Every available non-null source must equal `support_logit - not_entitled_logit`; otherwise the input is malformed and the decision is `STAGE196B2B3_ANALYSIS_INCOMPLETE`.
 
-The output analysis retains `normalized_margin_source`, the complete `margin_source_authorities` evidence, `source_schema_warnings`, both explicit predecessor analysis paths, and `normalized_historical_provenance_roles`.
+The output analysis retains `normalized_margin_source`, the complete ordered `margin_source_authorities` evidence, `source_schema_warnings`, both explicit predecessor analysis paths, and `normalized_historical_provenance_roles`. The first authority entry identifies the B2-B1 contract `required` column as primary.
 
-The contract records diagnostic evidence under these fail-closed gates:
+The contract records diagnostic evidence under these corrected gates:
 
 ```text
-exact_eight_file_b2b1_closure
-b2b1_decision_closure
-b2b1_all_contract_gates_passed
-exact_nine_file_b2a_closure
-b2a_decision_closure
-b2a_all_contract_gates_passed
-b2b1_margin_source_authority
-b2a_margin_source_authority
-b2a_normalized_source_roles_margin
+b2b1_native_margin_authority
+b2b1_normalized_margin_consistency
+b2a_optional_margin_consistency
+b2b2_optional_margin_consistency
 cross_generation_margin_source_agreement
-explicit_predecessor_provenance_chain
 ```
 
-The provenance-chain gate cross-checks the B2-B1 and B2-A analyzer commits and their normalized runtime/origin roles against B2-B2 source provenance. The B2-B3 commit remains a separate current-analyzer role.
+`b2b1_native_margin_authority` records analysis path, contract path, scope, source gate, `required` column, match count, passed state, and value. The optional consistency gates distinguish absent/null from present-and-agreeing values. The provenance-chain gate continues to cross-check B2-B1 and B2-A analyzer commits and normalized runtime/origin roles against B2-B2 source provenance. The B2-B3 commit remains a separate current-analyzer role.
 
 ## Static composer audit
 
