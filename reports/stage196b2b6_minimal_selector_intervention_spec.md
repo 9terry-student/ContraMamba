@@ -80,9 +80,15 @@ A valid policy has 16 primary rows, seven recovery rows reproducing donor tails,
 
 For each candidate, the audit includes all 720 identities for each of seeds 183, 184, and 185, yielding exactly 2,160 seed-identity states. Each state contains the exact joint recipient tail sequence and its reconstructed signature.
 
-A row whose signature has a policy action is labeled `PRIMARY_SEEN_SIGNATURE` when it is a frozen primary row and `NONPRIMARY_SEEN_SIGNATURE` otherwise. Any signature absent from the primary policy map is `UNSEEN_SIGNATURE`. Unseen signatures abstain with the null coalition `00000`; operationally this retains the unmodified joint recipient prediction. Abstention is reported separately and is never counted as selector success.
+Signature support, not the coalition mask, determines abstention. A row whose signature is present in the reconstructed policy map is labeled `PRIMARY_SEEN_SIGNATURE` when it is a frozen primary row and `NONPRIMARY_SEEN_SIGNATURE` otherwise. Any signature absent from the policy map is `UNSEEN_SIGNATURE`.
+
+For `UNSEEN_SIGNATURE`, the audit requires `abstained=true` and records `assigned_action_set=["00000"]` as a fallback representation. The application retains the unmodified joint recipient prediction, explicitly verifies that the selector prediction equals the joint baseline prediction, and requires `prediction_changed=false`. These rows do not count as seen coverage or selector success.
+
+For a seen signature, the audit requires `abstained=false`, a nonempty assigned action set, and exact equality between that set and the reconstructed signature action set. A seen mapping of `assigned_action_set=["00000"]` is a legitimate `SEEN_EXACT_NO_OP_POLICY`: the signature was recognized and the exact inclusion-minimal action is the empty primitive coalition. It remains seen coverage and must not be reclassified as abstention.
 
 For seen signatures, the paired donor is matched by exact seed, epoch, id, source row id, and development position. Unique policies apply their sole action. Set-valued policies produce separate signature-action interpretations, leaving other signatures unmodified in that interpretation, so every allowed action is audited without collapsing the set.
+
+The `unseen_signature_abstention_closure` contract records structured counts for total, unseen, seen, invalid-support, mapping-presence, abstention-state, fallback-mask, empty-action, action-set agreement, seen exact no-op, and joint-prediction-retention cases. It passes only when every violation count is zero. The legitimate `seen_exact_no_op_policy_rows` count is evidence, not a violation, and is also included in the clean-dev signature-support analysis summary and the report unseen-signature section.
 
 Descriptive gold-label metrics use the exact epoch-20 tail endpoint, while the signature and primary-objective checks retain all three tail epochs. Metrics include accuracy, macro F1, SUPPORT recall, false NOT_ENTITLED, false entitlement, polarity errors, prediction changes, correct-to-incorrect, incorrect-to-correct, and stable-correct preservation.
 
