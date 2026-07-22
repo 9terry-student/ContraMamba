@@ -522,13 +522,14 @@ def optional_mapping_margin_consistency(
     contract_path: Path,
     gates: list[dict[str, Any]],
     label: str,
-    warning_when_absent: bool,
 ) -> tuple[str | None, dict[str, Any], dict[str, Any], str | None]:
     matches = [row for row in rows if row.get("scope") == source_scope and row.get("gate") == source_gate]
-    mapping: dict[str, Any] | None = None
+    mapping: dict[str, Any] = {}
     value: Any = None
     parse_error: str | None = None
     passed_row = False
+    row_present = len(matches) > 0
+    field_present = False
     if len(matches) == 1:
         row = matches[0]
         try:
@@ -537,42 +538,58 @@ def optional_mapping_margin_consistency(
             if type(parsed) is not dict:
                 raise ValueError("observed is not a JSON object")
             mapping = parsed
+            field_present = "support_vs_not_entitled_margin_source" in mapping
             value = mapping.get("support_vs_not_entitled_margin_source")
         except (TypeError, ValueError) as error:
             parse_error = f"{type(error).__name__}: {error}"
+    if len(matches) == 0:
+        status = "optional_row_absent"
+        ok = True
+    elif len(matches) != 1:
+        status = "optional_source_malformed"
+        parse_error = f"expected zero or one matching row, found {len(matches)}"
+        ok = False
+    elif not passed_row:
+        status = "optional_source_malformed"
+        ok = False
+    elif parse_error is not None:
+        status = "optional_source_malformed"
+        ok = False
+    elif value is None:
+        status = "optional_field_absent_or_null"
+        ok = True
+    elif type(value) is not str:
+        status = "optional_source_malformed"
+        parse_error = f"non-null optional value has invalid type {type(value).__name__}"
+        ok = False
+    elif value == MARGIN_SOURCE:
+        status = "optional_value_agrees"
+        ok = True
+    else:
+        status = "optional_value_conflicts"
+        ok = False
     evidence = {
         "analysis_path": str(analysis_path),
         "contract_path": str(contract_path),
-        "match_count": len(matches),
         "scope": source_scope,
         "gate": source_gate,
-        "column": "observed",
         "field": "support_vs_not_entitled_margin_source",
-        "passed": passed_row,
+        "column": "observed",
+        "match_count": len(matches),
+        "row_present": row_present,
+        "field_present": field_present,
         "value": value,
         "parse_error": parse_error,
+        "status": status,
+        "passed": ok,
     }
-    if value is None:
-        evidence["status"] = "optional_field_absent_or_null"
-    elif type(value) is str and value == MARGIN_SOURCE:
-        evidence["status"] = "present_and_agrees"
-    else:
-        evidence["status"] = "present_and_conflicts"
-    ok = (
-        len(matches) == 1
-        and passed_row
-        and parse_error is None
-        and (value is None or (type(value) is str and value == MARGIN_SOURCE))
-    )
     gate(
         gates, "provenance", "", output_gate, MARGIN_SOURCE, evidence, ok,
         f"{label} is malformed, failed, or conflicting",
     )
-    if mapping is None:
-        raise ValueError(f"{label}: normalized source roles unavailable")
     warning = (
-        f"SOURCE_SCHEMA_WARNING: {label} field is absent/null; B2-B1 native authority remains controlling"
-        if value is None and warning_when_absent
+        f"SOURCE_SCHEMA_WARNING: {label} {status}; B2-B1 native authority remains controlling"
+        if status in {"optional_row_absent", "optional_field_absent_or_null"}
         else None
     )
     return value, mapping, evidence, warning
@@ -619,8 +636,13 @@ def scalar_margin_authority(
     return value, evidence
 
 
-def role_value(mapping: dict[str, Any], label: str, *names: str) -> str:
-    values = [str(mapping[name]) for name in names if mapping.get(name) not in (None, "")]
+def role_value(mappings: Sequence[dict[str, Any]], label: str, *names: str) -> str:
+    values = [
+        str(mapping[name])
+        for mapping in mappings
+        for name in names
+        if mapping.get(name) not in (None, "")
+    ]
     if not values:
         raise ValueError(f"{label}: missing role aliases {names}")
     if any(value != values[0] for value in values):
@@ -736,12 +758,11 @@ def validate_predecessors(
             (b1_dir / B2B1_FILES[-1]).resolve(),
             gates,
             "B2-B1 normalized-source-role margin",
-            True,
         )
     )
     if b1_warning is not None:
         source_warnings.append(b1_warning)
-    a_normalized_margin, a_roles, a_normalized_authority, _a_warning = (
+    a_normalized_margin, a_roles, a_normalized_authority, a_warning = (
         optional_mapping_margin_consistency(
             a_contract,
             "provenance",
@@ -751,9 +772,10 @@ def validate_predecessors(
             (a_dir / B2A_FILES[-1]).resolve(),
             gates,
             "B2-A optional normalized-source-role margin",
-            False,
         )
     )
+    if a_warning is not None:
+        source_warnings.append(a_warning)
     if b1_normalized_margin is not None and b1_normalized_margin != b1_native_margin:
         raise ValueError("B2-B1 normalized margin conflicts with native authority")
     if a_normalized_margin is not None and a_normalized_margin != b1_native_margin:
@@ -774,16 +796,16 @@ def validate_predecessors(
         raise ValueError("predecessor analysis/contract analyzer commits disagree")
     b1_chain = {
         "stage196b2b1_analyzer_git_commit": b1_contract_commit,
-        "stage196b2a_analyzer_git_commit": role_value(b1_roles, "B2-B1 roles", "stage196b2a_analyzer_git_commit"),
-        "stage196b2p0_runtime_git_commit": role_value(b1_roles, "B2-B1 roles", "stage196b2p0_runtime_git_commit", "stage196b2p0_runtime_commit"),
-        "stage196b1_runtime_git_commit": role_value(b1_roles, "B2-B1 roles", "stage196b1_runtime_git_commit"),
-        "framegate_implementation_origin_git_commit": role_value(b1_roles, "B2-B1 roles", "framegate_implementation_origin_git_commit"),
+        "stage196b2a_analyzer_git_commit": role_value((b1_roles, b1_analysis), "B2-B1 roles", "stage196b2a_analyzer_git_commit"),
+        "stage196b2p0_runtime_git_commit": role_value((b1_roles, b1_analysis), "B2-B1 roles", "stage196b2p0_runtime_git_commit", "stage196b2p0_runtime_commit"),
+        "stage196b1_runtime_git_commit": role_value((b1_roles, b1_analysis), "B2-B1 roles", "stage196b1_runtime_git_commit"),
+        "framegate_implementation_origin_git_commit": role_value((b1_roles, b1_analysis), "B2-B1 roles", "framegate_implementation_origin_git_commit"),
     }
     a_chain = {
         "stage196b2a_analyzer_git_commit": a_contract_commit,
-        "stage196b2p0_runtime_git_commit": role_value(a_roles, "B2-A roles", "stage196b2p0_runtime_git_commit", "stage196b2p0_runtime_commit"),
-        "stage196b1_runtime_git_commit": role_value(a_roles, "B2-A roles", "stage196b1_runtime_git_commit"),
-        "framegate_implementation_origin_git_commit": role_value(a_roles, "B2-A roles", "framegate_implementation_origin_git_commit"),
+        "stage196b2p0_runtime_git_commit": role_value((a_roles, a_analysis), "B2-A roles", "stage196b2p0_runtime_git_commit", "stage196b2p0_runtime_commit"),
+        "stage196b1_runtime_git_commit": role_value((a_roles, a_analysis), "B2-A roles", "stage196b1_runtime_git_commit"),
+        "framegate_implementation_origin_git_commit": role_value((a_roles, a_analysis), "B2-A roles", "framegate_implementation_origin_git_commit"),
     }
     return {
         "stage196b2b1_analysis_path": str(b1_path),
@@ -838,11 +860,11 @@ def normalize_margin_source(
             "SOURCE_SCHEMA_WARNING: B2-B2 normalized_margin_source is null; "
             "B2-B1 native authority remains controlling"
         )
-        b2b2_status = "primary_null_with_warning"
+        b2b2_status = "optional_field_absent_or_null"
     elif type(primary) is str and primary == MARGIN_SOURCE:
-        b2b2_status = "primary_present_and_agrees"
+        b2b2_status = "optional_value_agrees"
     else:
-        b2b2_status = "primary_present_and_conflicts"
+        b2b2_status = "optional_value_conflicts"
     b2b2_ok = all(type(value) is str and value == MARGIN_SOURCE for value in b2b2_values)
     gate(
         gates,
@@ -855,6 +877,7 @@ def normalize_margin_source(
             "additional_non_null_aliases": alias_evidence,
             "status": b2b2_status,
             "warning_recorded": primary is None,
+            "passed": b2b2_ok,
         },
         b2b2_ok,
         "B2-B2 optional margin source conflicts with B2-B1 native authority",
