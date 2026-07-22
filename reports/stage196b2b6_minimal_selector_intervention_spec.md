@@ -94,6 +94,18 @@ Descriptive gold-label metrics use the exact epoch-20 tail endpoint, while the s
 
 Seed184 and seed185 are reported as `PRIMARY_16`, `NONPRIMARY_704`, and `ALL_720`. Seed183 is reported as `CONTRAST_PRIMARY_IDENTITIES`, `NONPRIMARY`, and `ALL_720`. Seed183 is contrast-only: it cannot redefine recovery or harm labels, retrofit a selector, or support a formal held-out-generalization claim.
 
+## Audit completion versus safety outcome
+
+Audit completion and scientific safety outcome are separate contracts. Completion asks whether every required candidate and policy-action mode produced exactly one summary for the required seed and population, with the frozen population row count and all metrics present and finite where defined. It fails closed for missing, duplicate, unexpected, wrong-population-size, or malformed metric summaries.
+
+The seed184 and seed185 completion gates use structured `required={"completed":true}` semantics and structured observed evidence. Each requires `NONPRIMARY_704`, 704 rows per summary, every expected candidate-policy-mode key exactly once, and no metric defects. `safety_pass_count` and `safety_fail_count` are descriptive; their sum must close the audit, but safety failures do not fail completion.
+
+The seed183 contrast completion gate requires `CONTRAST_PRIMARY_IDENTITIES`, `NONPRIMARY`, and `ALL_720` with row counts 16, 704, and 720, respectively. It also requires signature-support closure and computed prediction-change, correct-to-incorrect, and stable-correct-preservation metrics. Seed183 remains contrast-only and is never a hard authorization condition.
+
+Safety outcome remains the existing exact result: `correct_to_incorrect_count == 0` and `stable_correct_preservation_rate == 1.0` determine each summary row's `safety_passed`. A completed unsafe audit proceeds to the ordered decision rules and may produce `STAGE196B2B6_PRIMARY_EXACT_CLEAN_DEV_UNSAFE`; it is not converted into a contract failure.
+
+Other completion gates use schema-consistent structured requirements and evidence for the 2,160-state signature audit, paired recomposition, policy equivalence, ordered dominance pairs, and decision evaluation. The exact nine-output closure continues to compare the same deterministic filename list on both sides.
+
 ## Safety authorization
 
 A unique policy is safety-authorized only if primary closure is exact and both seed184 and seed185 nonprimary populations have zero correct-to-incorrect transitions and stable-correct preservation of 1.0. A set-valued policy must meet those conditions for every allowed signature-action interpretation. There is no average-action authorization. Seed183 is required evidence but is not a hard authorization condition.
