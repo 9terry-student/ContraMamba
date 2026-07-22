@@ -364,7 +364,33 @@ def validate_sources(ns: argparse.Namespace, gates: list[dict[str, Any]]) -> dic
     application_summary = read_csv(paths["b6"].parent / B6_FILES[6])
     b5_dictionary = read_csv(paths["b5"].parent / B5_FILES[2])
     b5_actions = read_csv(paths["b5"].parent / B5_FILES[3])
-    b4_coalitions = read_csv(paths["b4"].parent / B4_FILES[2])
+    b4_primitive_rows = read_csv(paths["b4"].parent / B4_FILES[2])
+    b4_tail_summary = read_csv(paths["b4"].parent / B4_FILES[4])
+    primitive_required = {"seed", "epoch", "stable_row_id", "direction", "coalition_mask",
+                          "counterfactual_prediction"}
+    tail_required = {"seed", "stable_row_id", "direction", "coalition_mask",
+                     "coalition_tail_predictions", "recipient_tail_status", "donor_tail_status",
+                     "donor_tail_reproduced", "recipient_tail_preserved"}
+    primitive_columns = set(b4_primitive_rows[0]) if b4_primitive_rows else set()
+    tail_columns = set(b4_tail_summary[0]) if b4_tail_summary else set()
+    primitive_missing = sorted(primitive_required - primitive_columns)
+    tail_missing = sorted(tail_required - tail_columns)
+    gate(gates, "b4", "", "b2b4_primitive_row_schema_closure",
+         {"required_columns": sorted(primitive_required), "missing_columns": []},
+         {"required_columns": sorted(primitive_required), "observed_columns": sorted(primitive_columns),
+          "missing_columns": primitive_missing},
+         not primitive_missing, "stage196b2b4_primitive_coalition_rows.csv is missing required columns")
+    gate(gates, "b4", "", "b2b4_tail_summary_schema_closure",
+         {"required_columns": sorted(tail_required), "missing_columns": []},
+         {"required_columns": sorted(tail_required), "observed_columns": sorted(tail_columns),
+          "missing_columns": tail_missing},
+         not tail_missing, "stage196b2b4_primitive_tail_summary.csv is missing required columns")
+    gate(gates, "b4", "", "b2b4_primitive_20480_row_closure", 20480,
+         {"row_count": len(b4_primitive_rows)}, len(b4_primitive_rows) == 20480,
+         "B2-B4 primitive coalition row count changed")
+    gate(gates, "b4", "", "b2b4_tail_summary_1024_row_closure", 1024,
+         {"row_count": len(b4_tail_summary)}, len(b4_tail_summary) == 1024,
+         "B2-B4 primitive tail-summary row count changed")
     require_columns(candidates, ("feature_subset_mask", "feature_subset_members", "primary_policy_passed",
                                  "seed184_nonprimary_safety_passed", "seed185_nonprimary_safety_passed",
                                  "nondominated"), "B2-B6 candidates")
@@ -397,7 +423,8 @@ def validate_sources(ns: argparse.Namespace, gates: list[dict[str, Any]]) -> dic
             "candidate_rows": retained_rows, "signature_actions": signature_actions,
             "primary_validation": primary_validation, "application_summary": application_summary,
             "b5_dictionary": b5_dictionary, "b5_actions": b5_actions,
-            "b4_coalitions": b4_coalitions, "hashes": hashes}
+            "b4_primitive_rows": b4_primitive_rows, "b4_tail_summary": b4_tail_summary,
+            "hashes": hashes}
 
 
 def load_p0(ns: argparse.Namespace, source: dict[str, Any], gates: list[dict[str, Any]]) -> dict[str, Any]:
@@ -655,20 +682,106 @@ def build_context(source: dict[str, Any], p0: dict[str, Any], gates: list[dict[s
          "seed-conditioned primary population changed")
     acceptable = {key: set(json_cell(row["acceptable_coalitions"], "acceptable coalitions"))
                   for key, row in action_meta.items()}
-    coalition_index = defaultdict(dict)
-    for row in source["b4_coalitions"]:
-        key = (integer(row["seed"], "seed"), row["stable_row_id"])
-        if key in action_meta and row.get("direction") == "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR":
-            coalition_index[key][row["coalition_mask"]] = row
-    action_exact = (set(coalition_index) == set(action_meta) and
-                    all(set(rows) == {f"{value:05b}" for value in range(32)} for rows in coalition_index.values()) and
-                    all({mask for mask, row in coalition_index[key].items()
-                         if boolean(row["donor_tail_reproduced"] if action_meta[key]["transition_role"] == "recovery"
-                                    else row["recipient_tail_preserved"], "objective")} == acceptable[key]
-                        for key in action_meta))
-    gate(gates, "b4", "", "b2b4_exact_row_action_set_closure", {"primary rows": 16, "masks per row": 32},
-         {"primary rows": len(coalition_index), "mask counts": sorted({len(value) for value in coalition_index.values()})},
-         action_exact, "B2-B4 exact row action sets changed")
+    forward = "JOINT_RECIPIENT_FRAME_LOCAL_ONLY_DONOR"
+    expected_masks = {f"{value:05b}" for value in range(32)}
+    tail_rows = source["b4_tail_summary"]
+    tail_keys = [(integer(row["seed"], "seed"), row["stable_row_id"], row["direction"],
+                  row["coalition_mask"]) for row in tail_rows]
+    tail_key_counts = Counter(tail_keys)
+    duplicate_tail_keys = [list(key) for key, count in sorted(tail_key_counts.items()) if count != 1]
+    tail_identities = {(key[0], key[1]) for key in tail_keys}
+    tail_directions = {key[2] for key in tail_keys}
+    tail_masks = {key[3] for key in tail_keys}
+    tail_identity_direction_masks = defaultdict(set)
+    for seed, stable_row_id, direction, mask in tail_keys:
+        tail_identity_direction_masks[(seed, stable_row_id, direction)].add(mask)
+    incomplete_tail_groups = [list(key) for key, masks in sorted(tail_identity_direction_masks.items())
+                              if masks != expected_masks]
+    uniqueness_evidence = {
+        "row_count": len(tail_rows), "unique_key_count": len(tail_key_counts),
+        "primary_identity_count": len(tail_identities), "direction_count": len(tail_directions),
+        "coalition_count": len(tail_masks),
+        "forward_row_count": sum(row["direction"] == forward for row in tail_rows),
+        "identity_direction_count": len(tail_identity_direction_masks),
+        "incomplete_identity_directions": incomplete_tail_groups[:20],
+        "missing_columns": [], "duplicate_keys": duplicate_tail_keys[:20],
+    }
+    tail_unique = (len(tail_rows) == len(tail_key_counts) == 1024 and not duplicate_tail_keys and
+                   len(tail_identities) == 16 and len(tail_directions) == 2 and tail_masks == expected_masks and
+                   len(tail_identity_direction_masks) == 32 and not incomplete_tail_groups)
+    gate(gates, "b4", "", "b2b4_tail_summary_key_uniqueness",
+         {"row_count": 1024, "unique_key_count": 1024, "primary_identity_count": 16,
+          "direction_count": 2, "coalition_count": 32, "identity_direction_count": 32,
+          "incomplete_identity_directions": [], "duplicate_keys": []},
+         uniqueness_evidence, tail_unique, "B2-B4 primitive tail-summary keys are not unique and complete")
+    tail_summary_index = defaultdict(dict)
+    forward_rows = [row for row in tail_rows if row["direction"] == forward]
+    for row in forward_rows:
+        primary_key = (integer(row["seed"], "seed"), row["stable_row_id"])
+        if primary_key in action_meta:
+            tail_summary_index[primary_key][row["coalition_mask"]] = row
+    forward_complete = (len(forward_rows) == 512 and set(tail_summary_index) == set(action_meta) and
+                        all(set(rows) == expected_masks for rows in tail_summary_index.values()))
+    gate(gates, "b4", "", "b2b4_forward_512_action_closure",
+         {"forward_row_count": 512, "primary_identity_count": 16, "masks_per_identity": 32},
+         {"forward_row_count": len(forward_rows), "primary_identity_count": len(tail_summary_index),
+          "mask_counts": sorted({len(rows) for rows in tail_summary_index.values()}),
+          "incomplete_identities": [list(key) for key, rows in sorted(tail_summary_index.items())
+                                    if set(rows) != expected_masks]},
+         forward_complete, "B2-B4 forward primitive tail-summary action closure changed")
+    primitive_buckets = defaultdict(dict)
+    duplicate_primitive_epoch_keys = []
+    for row in source["b4_primitive_rows"]:
+        summary_key = (integer(row["seed"], "seed"), row["stable_row_id"], row["direction"],
+                       row["coalition_mask"])
+        epoch = integer(row["epoch"], "epoch")
+        if epoch in primitive_buckets[summary_key]:
+            duplicate_primitive_epoch_keys.append([*summary_key, epoch])
+        primitive_buckets[summary_key][epoch] = row
+    disagreements = []
+    observed_comparisons = 0
+    for row, summary_key in zip(tail_rows, tail_keys):
+        epochs = primitive_buckets.get(summary_key, {})
+        if set(epochs) != set(EPOCHS):
+            disagreements.append({"key": list(summary_key), "reason": "epoch closure",
+                                  "observed_epochs": sorted(epochs)})
+            continue
+        observed_comparisons += 1
+        epoch_predictions = [epochs[epoch]["counterfactual_prediction"] for epoch in TAIL]
+        summary_predictions = json_cell(row["coalition_tail_predictions"], "coalition tail predictions")
+        if epoch_predictions != summary_predictions:
+            disagreements.append({"key": list(summary_key), "epoch_predictions": epoch_predictions,
+                                  "tail_summary_predictions": summary_predictions})
+    crosscheck_evidence = {
+        "expected_comparisons": 1024, "observed_comparisons": observed_comparisons,
+        "disagreement_count": len(disagreements), "examples": disagreements[:20],
+        "primitive_bucket_count": len(primitive_buckets),
+        "duplicate_primitive_epoch_keys": duplicate_primitive_epoch_keys[:20],
+    }
+    crosscheck_passed = (len(source["b4_primitive_rows"]) == 20480 and len(primitive_buckets) == 1024 and
+                         not duplicate_primitive_epoch_keys and observed_comparisons == 1024 and not disagreements)
+    gate(gates, "b4", "", "b2b4_tail_prediction_crosscheck",
+         {"expected_comparisons": 1024, "observed_comparisons": 1024,
+          "disagreement_count": 0, "examples": []},
+         crosscheck_evidence, crosscheck_passed,
+         "B2-B4 epoch-level primitive predictions disagree with the tail summary")
+    reconstructed_acceptable = {}
+    for key, rows in tail_summary_index.items():
+        objective_field = ("donor_tail_reproduced" if action_meta[key]["transition_role"] == "recovery"
+                           else "recipient_tail_preserved")
+        reconstructed_acceptable[key] = {mask for mask, row in rows.items()
+                                           if boolean(row[objective_field], objective_field)}
+    action_exact = (forward_complete and set(reconstructed_acceptable) == set(acceptable) and
+                    all(reconstructed_acceptable[key] == acceptable[key] for key in acceptable))
+    gate(gates, "b4", "", "b2b4_exact_row_action_set_closure",
+         {"primary_identity_count": 16, "masks_per_identity": 32,
+          "b2b5_acceptable_action_set_agreement": True},
+         {"primary_identity_count": len(reconstructed_acceptable),
+          "mask_counts": sorted({len(rows) for rows in tail_summary_index.values()}),
+          "disagreement_count": sum(reconstructed_acceptable.get(key) != acceptable[key] for key in acceptable),
+          "disagreement_identities": [list(key) for key in sorted(acceptable)
+                                      if reconstructed_acceptable.get(key) != acceptable[key]]},
+         action_exact, "B2-B4 tail-summary actions disagree with B2-B5 acceptable coalitions")
     state_by_stable = {}
     clean = defaultdict(dict)
     for key, pair in p0["states"].items():
@@ -705,7 +818,8 @@ def build_context(source: dict[str, Any], p0: dict[str, Any], gates: list[dict[s
           "nondiscovery": nondiscovery,
           "same identity set": identity_sets[183] == identity_sets[184] == identity_sets[185]},
          clean_ok, "cross-seed clean-dev identity closure failed")
-    return {"action_meta": action_meta, "acceptable": acceptable, "coalitions": coalition_index,
+    return {"action_meta": action_meta, "acceptable": acceptable,
+            "tail_summary": tail_summary_index,
             "state_by_stable": state_by_stable, "clean": clean, "discovery_by_seed": discovery_by_seed,
             "discovery_union": discovery_union, "intersection": intersection}
 
@@ -785,7 +899,7 @@ def make_records(source: dict[str, Any], context: dict[str, Any], policies: dict
                 abstention_passed = "00000" in context["acceptable"][primary_key]
                 selector_objective_passed = all(action in context["acceptable"][primary_key] for action in actions)
                 for action in actions:
-                    b4 = context["coalitions"][primary_key][action]
+                    b4 = context["tail_summary"][primary_key][action]
                     expected = json_cell(b4["coalition_tail_predictions"], "B2-B4 predictions")
                     rebuilt = [apply_action(context["state_by_stable"][(seed, epoch, stable_id)]["joint"],
                                             context["state_by_stable"][(seed, epoch, stable_id)]["frame_local_only"],

@@ -64,6 +64,22 @@ The primitive order is frozen as `FRAME`, `PREDICATE`, `SUFFICIENCY`,
 `POSITIVE_ENERGY`, `NEGATIVE_ENERGY`; all 32 action masks and all exact row
 action sets are independently closed against the B2-B5 authority.
 
+The B2-B4 primitive authorities are loaded separately. The 20,480-row
+`stage196b2b4_primitive_coalition_rows.csv` artifact is epoch-level: its exact
+`counterfactual_prediction` field supplies the 20-epoch trajectory and epochs
+18/19/20 prediction cross-check only. It is never queried for tail objective
+booleans. The 1,024-row `stage196b2b4_primitive_tail_summary.csv` artifact is
+the tail-level authority for `coalition_tail_predictions`, recipient and donor
+tail status, `donor_tail_reproduced`, and `recipient_tail_preserved`. Tail keys
+must be unique over seed, stable row, direction, and coalition mask; they must
+close 16 identities, two directions, 32 masks, and exactly 512 forward rows.
+Every forward identity must contain all masks from `00000` through `11111`.
+All 1,024 stored tail prediction sequences must exactly equal the epoch-level
+predictions at epochs 18, 19, and 20. Recovery acceptable actions are exactly
+the tail rows with `donor_tail_reproduced=true`; harm acceptable actions are
+exactly those with `recipient_tail_preserved=true`; both sets must equal the
+frozen B2-B5 `acceptable_coalitions` authority.
+
 The P0 source must contain exactly the six named run directories. Each composer
 namespace contains its exact manifest and twenty exact composer sidecars. The
 mixed-purpose trajectory directory is filtered only by the exact
