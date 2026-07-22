@@ -129,6 +129,16 @@ STAGE196B2P0_EPOCH_CHANNEL_REQUIRED_FIELDS = (
     "support_probability", "not_entitled_probability", "support_logit",
     "not_entitled_logit", "epoch", "training_seed", "frame_downstream_gradient_mode",
 )
+STAGE196B2B3P0_SCHEMA_VERSION = "stage196b2b3p0_epoch_composer_inputs_v1"
+STAGE196B2B3P0_SIDECAR_PREFIX = "stage196b2b3p0_epoch_composer_inputs_"
+STAGE196B2B3P0_MANIFEST_NAME = "stage196b2b3p0_composer_input_manifest.json"
+STAGE196B2B3P0_EXPECTED_EPOCHS = 20
+STAGE196B2B3P0_EXPECTED_ROWS = 720
+STAGE196B2B3P0_TOLERANCE = 1e-6
+STAGE196B2B3P0_FRAMEGATE_ORIGIN_COMMIT = (
+    "5a39538ef3ca8f36cc2cc5d3290eae60d6a5f5c8"
+)
+STAGE196B2B3P0_NATIVE_LOGIT_ORDER = ("REFUTE", "NOT_ENTITLED", "SUPPORT")
 
 _TRAJECTORY_OBSERVABILITY_NONE = "none"
 _TRAJECTORY_OBSERVABILITY_STAGE191 = "stage191_deterministic_replay"
@@ -245,6 +255,10 @@ def _stage195_serializable_args(args: argparse.Namespace) -> dict[str, Any]:
         )
     if not getattr(args, "stage196b2p0_epoch_channel_observability", False):
         snapshot.pop("stage196b2p0_epoch_channel_observability", None)
+    if not getattr(args, "stage196b2b3p0_export_epoch_composer_inputs", False):
+        snapshot.pop("stage196b2b3p0_export_epoch_composer_inputs", None)
+        if getattr(args, "stage196b2b3p0_composer_input_dir", None) is None:
+            snapshot.pop("stage196b2b3p0_composer_input_dir", None)
     return snapshot
 
 
@@ -304,6 +318,307 @@ def _stage195_write_jsonl_atomic(
             for row in rows
         ),
     )
+
+
+def _stage196b2b3p0_atomic_write(path: Path, value: Any, *, jsonl: bool) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists():
+        raise FileExistsError(f"Stage196-B2-B3P0 refuses to overwrite {path}")
+    temporary = path.with_name(f".{path.name}.{os.getpid()}.{time.time_ns()}.tmp")
+    payload = (
+        "".join(json.dumps(row, sort_keys=True, ensure_ascii=False) + "\n" for row in value)
+        if jsonl else json.dumps(value, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+    )
+    try:
+        with temporary.open("x", encoding="utf-8", newline="\n") as handle:
+            handle.write(payload)
+            handle.flush()
+            os.fsync(handle.fileno())
+        if jsonl:
+            with temporary.open(encoding="utf-8") as handle:
+                serialized = [json.loads(line) for line in handle if line.strip()]
+            if (
+                len(serialized) != 720
+                or len({row["stable_row_id"] for row in serialized}) != 720
+                or any(set(row) != set(serialized[0]) for row in serialized)
+                or any(row["schema_version"] != STAGE196B2B3P0_SCHEMA_VERSION for row in serialized)
+                or any(
+                    row["decision_head_max_absolute_error"] > 1e-6
+                    or row["final_max_absolute_error"] > 1e-6
+                    or row["margin_absolute_error"] > 1e-6
+                    or row["prediction_equal"] is not True
+                    for row in serialized
+                )
+            ):
+                raise RuntimeError("Stage196-B2-B3P0 temporary sidecar validation failed")
+        else:
+            serialized_manifest = json.loads(temporary.read_text(encoding="utf-8"))
+            if serialized_manifest.get("completed") is not True:
+                raise RuntimeError("Stage196-B2-B3P0 temporary manifest is not complete")
+        if path.exists():
+            raise FileExistsError(f"Stage196-B2-B3P0 refuses to overwrite {path}")
+        os.rename(temporary, path)
+    finally:
+        if temporary.exists():
+            temporary.unlink()
+
+
+def _stage196b2b3p0_tensor(output: dict[str, Any], name: str, shape: tuple[int, ...]) -> torch.Tensor:
+    value = output.get(name)
+    if not isinstance(value, torch.Tensor) or tuple(value.shape) != shape:
+        raise RuntimeError(f"Stage196-B2-B3P0 requires output[{name!r}] shape {shape}")
+    value = value.detach().cpu()
+    if value.dtype != torch.bool and not bool(torch.isfinite(value).all().item()):
+        raise RuntimeError(f"Stage196-B2-B3P0 output[{name!r}] is nonfinite")
+    return value
+
+
+def _stage196b2b3p0_parameter(value: Any, name: str) -> float:
+    if not isinstance(value, torch.Tensor) or value.numel() != 1:
+        raise RuntimeError(f"Stage196-B2-B3P0 missing scalar parameter {name}")
+    result = float(value.detach().cpu().item())
+    if not math.isfinite(result):
+        raise RuntimeError(f"Stage196-B2-B3P0 parameter {name} is nonfinite")
+    return result
+
+
+def _stage196b2b3p0_reconstruction_failure(
+    run_name: str, seed: int, epoch: int, stable_id: str, field: str,
+    native: Any, reconstructed: Any, error: float,
+) -> None:
+    raise RuntimeError(
+        "Stage196-B2-B3P0 reconstruction invariant failed: "
+        f"run={run_name!r} seed={seed} epoch={epoch} stable_row_id={stable_id!r} "
+        f"field={field!r} native={native!r} reconstructed={reconstructed!r} error={error!r}"
+    )
+
+
+def _stage196b2b3p0_finalize_manifest(
+    output_dir: Path, run_name: str, seed: int, gradient_mode: str,
+    provenance: dict[str, Any],
+) -> None:
+    names = [f"{STAGE196B2B3P0_SIDECAR_PREFIX}{epoch:03d}.jsonl" for epoch in range(1, 21)]
+    paths = sorted(output_dir.glob(f"{STAGE196B2B3P0_SIDECAR_PREFIX}*.jsonl"))
+    if [path.name for path in paths] != names:
+        raise RuntimeError("Stage196-B2-B3P0 exact 001-through-020 closure failed")
+    identities: set[str] | None = None
+    fields: list[str] | None = None
+    row_counts: dict[str, int] = {}
+    max_decision = max_final = max_margin = 0.0
+    equal_count = total = 0
+    hashes: dict[str, str] = {}
+    availability: dict[str, bool] | None = None
+    for epoch, path in enumerate(paths, 1):
+        with path.open(encoding="utf-8") as handle:
+            rows = [json.loads(line) for line in handle if line.strip()]
+        if len(rows) != 720:
+            raise RuntimeError(f"Stage196-B2-B3P0 {path.name} row count is not 720")
+        current_fields = sorted(rows[0])
+        fields = current_fields if fields is None else fields
+        if any(sorted(row) != fields for row in rows):
+            raise RuntimeError("Stage196-B2-B3P0 row schemas differ")
+        if any(row["schema_version"] != STAGE196B2B3P0_SCHEMA_VERSION or row["epoch"] != epoch for row in rows):
+            raise RuntimeError(f"Stage196-B2-B3P0 schema/epoch closure failed in {path.name}")
+        current_ids = {row["stable_row_id"] for row in rows}
+        if len(current_ids) != 720:
+            raise RuntimeError(f"Stage196-B2-B3P0 duplicate identity in {path.name}")
+        identities = current_ids if identities is None else identities
+        if current_ids != identities:
+            raise RuntimeError("Stage196-B2-B3P0 identity set differs across epochs")
+        current_availability = {key: bool(rows[0][f"{key}_available"]) for key in (
+            "temporal_mismatch", "predicate_mismatch", "temporal_adapter", "temporal_channel"
+        )}
+        availability = current_availability if availability is None else availability
+        if current_availability != availability:
+            raise RuntimeError("Stage196-B2-B3P0 branch availability changed")
+        for row in rows:
+            required_causal = (
+                "frame_prob", "predicate_coverage_prob", "sufficiency_prob",
+                "positive_energy", "negative_energy", "entitlement_prob_native",
+                "not_entitled_bias", "raw_alpha", "softplus_alpha",
+                "decision_head_refute_logit", "decision_head_not_entitled_logit",
+                "decision_head_support_logit", "final_refute_logit",
+                "final_not_entitled_logit", "final_support_logit",
+                "total_final_delta_refute", "total_final_delta_not_entitled",
+                "total_final_delta_support",
+            )
+            if any(row.get(field) is None for field in required_causal):
+                raise RuntimeError("Stage196-B2-B3P0 required causal value is null")
+            if (
+                (row["temporal_mismatch_available"] and row["raw_alpha_temporal"] is None)
+                or (row["predicate_mismatch_available"] and row["raw_alpha_predicate"] is None)
+                or (row["temporal_adapter_available"] and row["temporal_adapter_logit"] is None)
+                or (row["temporal_channel_available"] and row["temporal_channel_logit"] is None)
+            ):
+                raise RuntimeError("Stage196-B2-B3P0 available branch has null causal state")
+            max_decision = max(max_decision, float(row["decision_head_max_absolute_error"]))
+            max_final = max(max_final, float(row["final_max_absolute_error"]))
+            max_margin = max(max_margin, float(row["margin_absolute_error"]))
+            equal_count += int(row["prediction_equal"] is True)
+        row_counts[str(epoch)] = len(rows)
+        total += len(rows)
+        hashes[path.name] = _stage187_file_sha256(path)
+    if total != 14400 or equal_count != total or max(max_decision, max_final, max_margin) > 1e-6:
+        raise RuntimeError("Stage196-B2-B3P0 completed-run invariant closure failed")
+    manifest = {
+        "schema_version": STAGE196B2B3P0_SCHEMA_VERSION, "run_name": run_name,
+        "seed": seed, "gradient_ownership_mode": gradient_mode,
+        **provenance,
+        "framegate_implementation_origin_git_commit": STAGE196B2B3P0_FRAMEGATE_ORIGIN_COMMIT,
+        "sidecar_namespace": f"{STAGE196B2B3P0_SIDECAR_PREFIX}001.jsonl through {STAGE196B2B3P0_SIDECAR_PREFIX}020.jsonl",
+        "expected_epoch_count": 20, "observed_epoch_count": len(paths),
+        "expected_rows_per_epoch": 720, "observed_rows_per_epoch": row_counts,
+        "expected_total_rows": 14400, "observed_total_rows": total,
+        "field_names": fields or [], "native_logit_order": list(STAGE196B2B3P0_NATIVE_LOGIT_ORDER),
+        "maximum_decision_head_error": max_decision,
+        "maximum_final_logit_error": max_final, "maximum_margin_error": max_margin,
+        "prediction_equality_rate": equal_count / total, "branch_availability": availability or {},
+        "sidecar_files": names, "sidecar_sha256": hashes, "completed": True,
+    }
+    _stage196b2b3p0_atomic_write(output_dir / STAGE196B2B3P0_MANIFEST_NAME, manifest, jsonl=False)
+
+
+def _stage196b2b3p0_export_epoch(
+    output_dir: Path, args: argparse.Namespace, model: nn.Module,
+    dev_records: list[dict[str, Any]], dev_inputs: dict[str, torch.Tensor],
+    dev_output: dict[str, Any],
+    epoch: int, seed: int, run_name: str, provenance: dict[str, Any],
+) -> None:
+    if len(dev_records) != 720:
+        raise RuntimeError("Stage196-B2-B3P0 requires exactly 720 clean-dev rows")
+    head = getattr(model, "decision_head", None)
+    if head is None or getattr(head, "decision_mode", None) != "explicit_product":
+        raise RuntimeError("Stage196-B2-B3P0 requires explicit_product decision mode")
+    vectors = {name: _stage196b2b3p0_tensor(dev_output, name, (720,)) for name in (
+        "frame_prob", "predicate_coverage_prob", "sufficiency_prob", "positive_energy",
+        "negative_energy", "entitlement_prob", "refute_logit", "not_entitled_logit",
+        "support_logit", "predictions", "composer_temporal_mismatch_condition_input",
+        "composer_predicate_mismatch_condition_input", "composer_temporal_mismatch_active",
+        "composer_predicate_mismatch_active", "composer_temporal_adapter_active",
+        "composer_temporal_channel_active", "composer_temporal_adapter_final_penalty_scale",
+        "composer_temporal_adapter_effective_penalty_scale",
+        "composer_temporal_channel_gated_penalty_scale", "composer_temporal_channel_effective_scale",
+    )}
+    matrices = {name: _stage196b2b3p0_tensor(dev_output, name, (720, 3)) for name in (
+        "base_logits", "logits", "composer_temporal_mismatch_delta",
+        "composer_predicate_mismatch_delta", "composer_temporal_adapter_delta",
+        "composer_temporal_channel_delta",
+    )}
+    optional = {name: (_stage196b2b3p0_tensor(dev_output, name, (720,)) if isinstance(dev_output.get(name), torch.Tensor) else None) for name in (
+        "temporal_adapter_logit", "temporal_adapter_prob", "temporal_channel_logit",
+        "temporal_channel_prob", "preservation_entitlement_prob",
+    )}
+    bias = _stage196b2b3p0_parameter(head.not_entitled_bias, "not_entitled_bias")
+    raw_alpha = _stage196b2b3p0_parameter(head.raw_alpha, "raw_alpha")
+    alpha = float(F.softplus(head.raw_alpha.detach()).cpu().item())
+    raw_t = (_stage196b2b3p0_parameter(model.alpha_temporal_raw, "alpha_temporal_raw") if getattr(model, "alpha_temporal_raw", None) is not None else None)
+    raw_p = (_stage196b2b3p0_parameter(model.alpha_predicate_raw, "alpha_predicate_raw") if getattr(model, "alpha_predicate_raw", None) is not None else None)
+    alpha_t = float(F.softplus(model.alpha_temporal_raw.detach()).cpu().item()) if raw_t is not None else None
+    alpha_p = float(F.softplus(model.alpha_predicate_raw.detach()).cpu().item()) if raw_p is not None else None
+    labels = STAGE196B2B3P0_NATIVE_LOGIT_ORDER
+    gold_ids = _stage196b2b3p0_tensor(dev_inputs, "final_labels", (720,))
+    rows: list[dict[str, Any]] = []
+    for position, record in enumerate(dev_records):
+        source_id, stable = _stage191_source_row_id(record), record.get("id")
+        if source_id is None or stable is None or str(source_id) != str(stable):
+            raise RuntimeError("Stage196-B2-B3P0 exact identity relationship failed")
+        stable_id = str(stable)
+        fp, pp, sp, pos, neg, ent = (float(vectors[name][position].item()) for name in (
+            "frame_prob", "predicate_coverage_prob", "sufficiency_prob", "positive_energy", "negative_energy", "entitlement_prob"
+        ))
+        native_decision = tuple(float(x) for x in matrices["base_logits"][position].tolist())
+        reconstructed_decision = (ent * neg, bias + alpha * (1.0 - ent), ent * pos)
+        branch_deltas = {key: tuple(float(x) for x in matrices[f"composer_{key}_delta"][position].tolist()) for key in (
+            "temporal_mismatch", "predicate_mismatch", "temporal_adapter", "temporal_channel"
+        )}
+        total_delta = tuple(sum(delta[i] for delta in branch_deltas.values()) for i in range(3))
+        reconstructed_final = tuple(reconstructed_decision[i] + total_delta[i] for i in range(3))
+        native_final = tuple(float(x) for x in matrices["logits"][position].tolist())
+        decision_error = max(abs(native_decision[i] - reconstructed_decision[i]) for i in range(3))
+        final_error = max(abs(native_final[i] - reconstructed_final[i]) for i in range(3))
+        native_margin, reconstructed_margin = native_final[2] - native_final[1], reconstructed_final[2] - reconstructed_final[1]
+        margin_error = abs(native_margin - reconstructed_margin)
+        native_pred = int(vectors["predictions"][position].item())
+        final_argmax = max(range(3), key=lambda i: native_final[i])
+        reconstructed_pred = max(range(3), key=lambda i: reconstructed_final[i])
+        entitlement_error = abs(ent - fp * pp * sp)
+        if entitlement_error > 1e-6:
+            _stage196b2b3p0_reconstruction_failure(run_name, seed, epoch, stable_id, "entitlement_prob", ent, fp * pp * sp, entitlement_error)
+        for field, native, reconstructed, error in (
+            ("decision_head_logits", native_decision, reconstructed_decision, decision_error),
+            ("final_logits", native_final, reconstructed_final, final_error),
+            ("margin", native_margin, reconstructed_margin, margin_error),
+        ):
+            if error > 1e-6:
+                _stage196b2b3p0_reconstruction_failure(run_name, seed, epoch, stable_id, field, native, reconstructed, error)
+        if native_pred != final_argmax:
+            _stage196b2b3p0_reconstruction_failure(run_name, seed, epoch, stable_id, "native_prediction", labels[native_pred], labels[final_argmax], float("inf"))
+        if native_pred != reconstructed_pred:
+            _stage196b2b3p0_reconstruction_failure(run_name, seed, epoch, stable_id, "prediction", labels[native_pred], labels[reconstructed_pred], float("inf"))
+        adapter_available, channel_available = optional["temporal_adapter_logit"] is not None, optional["temporal_channel_logit"] is not None
+        row: dict[str, Any] = {
+            "schema_version": STAGE196B2B3P0_SCHEMA_VERSION, "run_name": run_name,
+            "seed": seed, "epoch": epoch, "gradient_ownership_mode": args.frame_downstream_gradient_mode,
+            "stable_row_id": stable_id, "id": stable_id, "source_row_id": str(source_id),
+            "dev_position": position, "gold_label": labels[int(gold_ids[position].item())],
+            "native_prediction": labels[native_pred], "native_logit_order": list(labels),
+            "current_git_commit": provenance["current_git_commit"],
+            "trainer_file_sha256": provenance["trainer_file_sha256"],
+            "framegate_implementation_origin_git_commit": STAGE196B2B3P0_FRAMEGATE_ORIGIN_COMMIT,
+            "frame_prob": fp, "predicate_coverage_prob": pp, "sufficiency_prob": sp,
+            "positive_energy": pos, "negative_energy": neg, "entitlement_prob_native": ent,
+            "entitlement_prob_recomputed": fp * pp * sp,
+            "entitlement_prob_reconstruction_error": entitlement_error,
+            "not_entitled_bias": bias, "raw_alpha": raw_alpha, "softplus_alpha": alpha,
+            "decision_head_refute_logit": native_decision[0],
+            "decision_head_not_entitled_logit": native_decision[1], "decision_head_support_logit": native_decision[2],
+            "temporal_mismatch_available": raw_t is not None,
+            "temporal_mismatch_condition_input": bool(vectors["composer_temporal_mismatch_condition_input"][position].item()),
+            "temporal_mismatch_active": bool(vectors["composer_temporal_mismatch_active"][position].item()),
+            "raw_alpha_temporal": raw_t, "softplus_alpha_temporal": alpha_t,
+            "predicate_mismatch_available": raw_p is not None,
+            "predicate_mismatch_condition_input": bool(vectors["composer_predicate_mismatch_condition_input"][position].item()),
+            "predicate_mismatch_active": bool(vectors["composer_predicate_mismatch_active"][position].item()),
+            "raw_alpha_predicate": raw_p, "softplus_alpha_predicate": alpha_p,
+            "temporal_adapter_available": adapter_available,
+            "temporal_adapter_logit": float(optional["temporal_adapter_logit"][position].item()) if adapter_available else None,
+            "temporal_adapter_gate_probability": float(optional["temporal_adapter_prob"][position].item()) if adapter_available else None,
+            "temporal_adapter_final_penalty_scale": float(vectors["composer_temporal_adapter_final_penalty_scale"][position].item()),
+            "temporal_adapter_effective_penalty_scale": float(vectors["composer_temporal_adapter_effective_penalty_scale"][position].item()),
+            "temporal_adapter_active": bool(vectors["composer_temporal_adapter_active"][position].item()),
+            "temporal_channel_available": channel_available,
+            "temporal_channel_logit": float(optional["temporal_channel_logit"][position].item()) if channel_available else None,
+            "temporal_channel_gate_probability": float(optional["temporal_channel_prob"][position].item()) if channel_available else None,
+            "preservation_entitlement_prob": float(optional["preservation_entitlement_prob"][position].item()) if optional["preservation_entitlement_prob"] is not None else None,
+            "temporal_channel_gated_penalty_scale": float(vectors["composer_temporal_channel_gated_penalty_scale"][position].item()),
+            "temporal_channel_effective_scale": float(vectors["composer_temporal_channel_effective_scale"][position].item()),
+            "temporal_channel_active": bool(vectors["composer_temporal_channel_active"][position].item()),
+        }
+        for branch, delta in branch_deltas.items():
+            for index, label in enumerate(("refute", "not_entitled", "support")):
+                row[f"{branch}_delta_{label}"] = delta[index]
+        row.update({
+            "total_final_delta_refute": total_delta[0], "total_final_delta_not_entitled": total_delta[1], "total_final_delta_support": total_delta[2],
+            "final_refute_logit": native_final[0], "final_not_entitled_logit": native_final[1], "final_support_logit": native_final[2],
+            "final_native_prediction": labels[native_pred], "final_support_vs_not_entitled_margin": native_margin,
+            "reconstructed_decision_head_refute_logit": reconstructed_decision[0],
+            "reconstructed_decision_head_not_entitled_logit": reconstructed_decision[1],
+            "reconstructed_decision_head_support_logit": reconstructed_decision[2],
+            "reconstructed_final_refute_logit": reconstructed_final[0],
+            "reconstructed_final_not_entitled_logit": reconstructed_final[1], "reconstructed_final_support_logit": reconstructed_final[2],
+            "decision_head_max_absolute_error": decision_error, "final_max_absolute_error": final_error,
+            "margin_absolute_error": margin_error, "reconstructed_prediction": labels[reconstructed_pred], "prediction_equal": True,
+        })
+        rows.append(row)
+    if len(rows) != 720 or len({row["stable_row_id"] for row in rows}) != 720 or any(set(row) != set(rows[0]) for row in rows):
+        raise RuntimeError("Stage196-B2-B3P0 per-epoch schema/identity closure failed")
+    path = output_dir / f"{STAGE196B2B3P0_SIDECAR_PREFIX}{epoch:03d}.jsonl"
+    _stage196b2b3p0_atomic_write(path, rows, jsonl=True)
+    expected = [f"{STAGE196B2B3P0_SIDECAR_PREFIX}{value:03d}.jsonl" for value in range(1, epoch + 1)]
+    if sorted(item.name for item in output_dir.glob(f"{STAGE196B2B3P0_SIDECAR_PREFIX}*.jsonl")) != expected:
+        raise RuntimeError("Stage196-B2-B3P0 sidecar progression failed")
+    if epoch == 20:
+        _stage196b2b3p0_finalize_manifest(output_dir, run_name, seed, args.frame_downstream_gradient_mode, provenance)
 
 
 def _stage191_tensor_state_sha256(items: list[tuple[str, torch.Tensor]]) -> str:
@@ -1523,6 +1838,24 @@ def _stage196b1_validate_runtime_contract(
 def _resolve_trajectory_observability_mode(
     args: argparse.Namespace, split_seed: int
 ) -> tuple[str, str]:
+    composer_export = args.stage196b2b3p0_export_epoch_composer_inputs
+    composer_dir = args.stage196b2b3p0_composer_input_dir
+    if composer_export:
+        if composer_dir is None:
+            raise ValueError(
+                "--stage196b2b3p0-export-epoch-composer-inputs requires "
+                "--stage196b2b3p0-composer-input-dir"
+            )
+        if not args.stage196b1_framegate_gradient_ownership_observability:
+            raise ValueError(
+                "--stage196b2b3p0-export-epoch-composer-inputs requires the "
+                "Stage196-B1 epoch clean-dev observability mode"
+            )
+    elif composer_dir is not None:
+        raise ValueError(
+            "--stage196b2b3p0-composer-input-dir requires "
+            "--stage196b2b3p0-export-epoch-composer-inputs"
+        )
     if (
         args.stage196b2p0_epoch_channel_observability
         and not args.stage196b1_framegate_gradient_ownership_observability
@@ -10773,6 +11106,19 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
+        "--stage196b2b3p0-export-epoch-composer-inputs",
+        action="store_true",
+        default=False,
+        help="Stage196-B2-B3P0: export exact composer inputs from the existing epoch clean-dev pass.",
+    )
+    parser.add_argument(
+        "--stage196b2b3p0-composer-input-dir",
+        type=Path,
+        default=None,
+        help="Stage196-B2-B3P0 dedicated output directory; mandatory with the export flag.",
+    )
+
+    parser.add_argument(
         "--compatible-positive-margin-weight",
         type=float,
         default=0.0,
@@ -13401,10 +13747,14 @@ def _vnext_forward_maybe_batched(
     predicate_mismatch_flags: torch.Tensor,
     temporal_adapter_final_penalty_scale: float = 0.0,
     temporal_channel_gated_penalty_scale: float = 0.0,
+    return_composer_input_observability: bool = False,
     batch_size: int | None = None,
     amp_enabled: bool = False,
 ) -> dict[str, Any]:
     n_rows = int(inputs["input_ids"].shape[0])
+    composer_kwargs = (
+        {"return_composer_input_observability": True} if return_composer_input_observability else {}
+    )
     batch_size = _positive_optional_int(batch_size, "batch_size")
     if batch_size is None or batch_size >= n_rows:
         with _cuda_amp_autocast(amp_enabled):
@@ -13414,6 +13764,7 @@ def _vnext_forward_maybe_batched(
                 predicate_mismatch_flags=predicate_mismatch_flags,
                 temporal_adapter_final_penalty_scale=temporal_adapter_final_penalty_scale,
                 temporal_channel_gated_penalty_scale=temporal_channel_gated_penalty_scale,
+                **composer_kwargs,
             )
     chunks: list[dict[str, Any]] = []
     for start in range(0, n_rows, batch_size):
@@ -13427,6 +13778,7 @@ def _vnext_forward_maybe_batched(
                     predicate_mismatch_flags=predicate_mismatch_flags[start:end],
                     temporal_adapter_final_penalty_scale=temporal_adapter_final_penalty_scale,
                     temporal_channel_gated_penalty_scale=temporal_channel_gated_penalty_scale,
+                    **composer_kwargs,
                 )
             )
     return _concat_model_outputs(chunks)
@@ -17462,6 +17814,35 @@ def main(argv: list[str] | None = None) -> int:
                 "Stage191 trainer source commit must be exactly 40 lowercase "
                 "hexadecimal characters"
             )
+        _stage196b2b3p0_context: dict[str, Any] | None = None
+        if args.stage196b2b3p0_export_epoch_composer_inputs:
+            composer_dir = Path(args.stage196b2b3p0_composer_input_dir).resolve()
+            if composer_dir == _stage191_output_dir:
+                raise ValueError(
+                    "Stage196-B2-B3P0 composer directory must be distinct from the "
+                    "Stage196-B2-P0/trajectory output directory"
+                )
+            composer_dir.mkdir(parents=True, exist_ok=True)
+            if (composer_dir / STAGE196B2B3P0_MANIFEST_NAME).exists() or list(
+                composer_dir.glob(f"{STAGE196B2B3P0_SIDECAR_PREFIX}*.jsonl")
+            ):
+                raise FileExistsError(
+                    "Stage196-B2-B3P0 refuses a destination containing its sidecars or manifest"
+                )
+            model_path = ROOT / "src/contramamba/modeling_v6b_minimal.py"
+            head_path = ROOT / "src/contramamba/heads/entitlement_decision.py"
+            _stage196b2b3p0_context = {
+                "output_dir": composer_dir,
+                "provenance": {
+                    "current_git_commit": _stage191_validated_source_commit,
+                    "trainer_file": str(Path(__file__).resolve()),
+                    "trainer_file_sha256": _stage187_file_sha256(Path(__file__).resolve()),
+                    "model_forward_file": str(model_path.resolve()),
+                    "model_forward_file_sha256": _stage187_file_sha256(model_path),
+                    "decision_head_file": str(head_path.resolve()),
+                    "decision_head_file_sha256": _stage187_file_sha256(head_path),
+                },
+            }
         _stage191_runtime_context = {
             "output_dir": _stage191_output_dir,
             "trainer_path": str(Path(__file__).resolve()),
@@ -17469,6 +17850,7 @@ def main(argv: list[str] | None = None) -> int:
             "source_provenance": provenance_json_safe(_stage191_source_provenance),
             "trainer_source_commit": _stage191_validated_source_commit,
             "observability_mode": _trajectory_observability_mode,
+            "stage196b2b3p0": _stage196b2b3p0_context,
             "model_construction_provenance": provenance_json_safe({
                 "architecture": args.architecture,
                 "backbone": args.backbone,
@@ -18989,6 +19371,9 @@ def main(argv: list[str] | None = None) -> int:
                     predicate_mismatch_flags=dev_predicate_flags,
                     temporal_adapter_final_penalty_scale=_ta_pen,
                     temporal_channel_gated_penalty_scale=_tc_pen,
+                    return_composer_input_observability=(
+                        args.stage196b2b3p0_export_epoch_composer_inputs
+                    ),
                     batch_size=eval_batch_size,
                     amp_enabled=amp_enabled,
                 )
@@ -19314,6 +19699,24 @@ def main(argv: list[str] | None = None) -> int:
                     _stage191_runtime_context["model_construction_provenance"],
                     _trajectory_observability_mode,
                 )
+                if args.stage196b2b3p0_export_epoch_composer_inputs:
+                    composer_context = _stage191_runtime_context.get("stage196b2b3p0")
+                    if not isinstance(composer_context, dict):
+                        raise RuntimeError(
+                            "Stage196-B2-B3P0 runtime context was not initialized"
+                        )
+                    _stage196b2b3p0_export_epoch(
+                        composer_context["output_dir"],
+                        args,
+                        model,
+                        dev_records,
+                        dev_inputs,
+                        dev_output,
+                        epoch,
+                        seed,
+                        run_name,
+                        composer_context["provenance"],
+                    )
                 if (
                     _stage195_parameter_swa_enabled
                     and epoch in _STAGE195_SOURCE_EPOCHS

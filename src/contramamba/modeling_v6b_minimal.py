@@ -292,6 +292,7 @@ class ContraMambaV6BMinimal(nn.Module):
         predicate_mismatch_flags: torch.Tensor | None = None,
         temporal_adapter_final_penalty_scale: float = 0.0,
         temporal_channel_gated_penalty_scale: float = 0.0,
+        return_composer_input_observability: bool = False,
     ) -> dict[str, Any]:
         """Forward pass with optional temporal/predicate logit modulation."""
         del intervention_types, pair_ids
@@ -443,25 +444,89 @@ class ContraMambaV6BMinimal(nn.Module):
         temporal_flag_count = 0
         predicate_flag_count = 0
 
+        # Stage196-B2-B3P0: allocate exact row-level composer observations only
+        # when explicitly requested by the clean-dev exporter. These tensors are
+        # detached diagnostic witnesses; they never replace or modify final_logits.
+        composer_observability: dict[str, torch.Tensor] = {}
+        if return_composer_input_observability:
+            zero_delta = torch.zeros_like(base_logits).detach()
+            composer_observability = {
+                "composer_temporal_mismatch_condition_input": (
+                    temporal_mismatch_flags.detach()
+                    if temporal_mismatch_flags is not None
+                    else torch.zeros_like(frame["frame_prob"])
+                ),
+                "composer_predicate_mismatch_condition_input": (
+                    predicate_mismatch_flags.detach()
+                    if predicate_mismatch_flags is not None
+                    else torch.zeros_like(frame["frame_prob"])
+                ),
+                "composer_temporal_adapter_final_penalty_scale": torch.full_like(
+                    frame["frame_prob"], float(temporal_adapter_final_penalty_scale),
+                    dtype=torch.float64,
+                ).detach(),
+                "composer_temporal_channel_gated_penalty_scale": torch.full_like(
+                    frame["frame_prob"], float(temporal_channel_gated_penalty_scale),
+                    dtype=torch.float64,
+                ).detach(),
+                "composer_temporal_mismatch_active": torch.zeros_like(
+                    frame["frame_prob"], dtype=torch.bool
+                ),
+                "composer_predicate_mismatch_active": torch.zeros_like(
+                    frame["frame_prob"], dtype=torch.bool
+                ),
+                "composer_temporal_mismatch_delta": zero_delta.clone(),
+                "composer_predicate_mismatch_delta": zero_delta.clone(),
+                "composer_temporal_adapter_delta": zero_delta.clone(),
+                "composer_temporal_channel_delta": zero_delta.clone(),
+                "composer_temporal_adapter_active": torch.zeros_like(
+                    frame["frame_prob"], dtype=torch.bool
+                ),
+                "composer_temporal_channel_active": torch.zeros_like(
+                    frame["frame_prob"], dtype=torch.bool
+                ),
+                "composer_temporal_adapter_effective_penalty_scale": torch.zeros_like(
+                    frame["frame_prob"]
+                ).detach(),
+                "composer_temporal_channel_effective_scale": torch.zeros_like(
+                    frame["frame_prob"]
+                ).detach(),
+            }
+
         if self.use_temporal_comparator and temporal_mismatch_flags is not None:
             alpha = self.alpha_temporal()
             active = temporal_mismatch_flags.bool()
+            if return_composer_input_observability:
+                composer_observability["composer_temporal_mismatch_active"] = active.detach()
             if torch.any(active):
                 final_logits = final_logits.clone()
                 final_logits[active, 0] -= alpha  # SUPPORT
                 final_logits[active, 1] += alpha  # NOT_ENTITLED
                 final_logits[active, 2] -= alpha  # REFUTE
                 temporal_flag_count = int(active.sum().item())
+                if return_composer_input_observability:
+                    delta = composer_observability["composer_temporal_mismatch_delta"]
+                    delta[active, 0] = -alpha.detach()
+                    delta[active, 1] = alpha.detach()
+                    delta[active, 2] = -alpha.detach()
+
 
         if self.use_predicate_comparator and predicate_mismatch_flags is not None:
             alpha = self.alpha_predicate()
             active = predicate_mismatch_flags.bool()
+            if return_composer_input_observability:
+                composer_observability["composer_predicate_mismatch_active"] = active.detach()
             if torch.any(active):
                 final_logits = final_logits.clone()
                 final_logits[active, 0] -= alpha  # SUPPORT
                 final_logits[active, 1] += alpha  # NOT_ENTITLED
                 final_logits[active, 2] -= alpha  # REFUTE
                 predicate_flag_count = int(active.sum().item())
+                if return_composer_input_observability:
+                    delta = composer_observability["composer_predicate_mismatch_delta"]
+                    delta[active, 0] = -alpha.detach()
+                    delta[active, 1] = alpha.detach()
+                    delta[active, 2] = -alpha.detach()
 
         # Optional temporal adapter per-example NOT_ENTITLED penalty.
         # Architecture-level penalty driven by adapter temporal mismatch confidence.
@@ -474,6 +539,17 @@ class ContraMambaV6BMinimal(nn.Module):
             and temporal_adapter_final_penalty_scale > 0.0
         ):
             _ta_penalty = torch.sigmoid(temporal_adapter_logit.detach()) * temporal_adapter_final_penalty_scale
+            if return_composer_input_observability:
+                composer_observability["composer_temporal_adapter_active"] = torch.ones_like(
+                    temporal_adapter_logit, dtype=torch.bool
+                )
+                composer_observability[
+                    "composer_temporal_adapter_effective_penalty_scale"
+                ] = _ta_penalty.detach()
+                delta = composer_observability["composer_temporal_adapter_delta"]
+                delta[:, 0] = -_ta_penalty.detach()
+                delta[:, 1] = _ta_penalty.detach()
+                delta[:, 2] = -_ta_penalty.detach()
             final_logits = final_logits.clone()
             final_logits[:, 0] -= _ta_penalty  # SUPPORT
             final_logits[:, 1] += _ta_penalty  # NOT_ENTITLED
@@ -497,6 +573,17 @@ class ContraMambaV6BMinimal(nn.Module):
                 * (1.0 - preservation_entitlement_prob.detach())
                 * temporal_channel_gated_penalty_scale
             )
+            if return_composer_input_observability:
+                composer_observability["composer_temporal_channel_active"] = torch.ones_like(
+                    temporal_channel_logit, dtype=torch.bool
+                )
+                composer_observability[
+                    "composer_temporal_channel_effective_scale"
+                ] = _tc_boost.detach()
+                delta = composer_observability["composer_temporal_channel_delta"]
+                delta[:, 0] = -_tc_boost.detach()
+                delta[:, 1] = _tc_boost.detach()
+                delta[:, 2] = -_tc_boost.detach()
             final_logits = final_logits.clone()
             final_logits[:, 0] -= _tc_boost  # SUPPORT
             final_logits[:, 1] += _tc_boost  # NOT_ENTITLED
@@ -581,6 +668,7 @@ class ContraMambaV6BMinimal(nn.Module):
             # TemporalChannel V1 outputs (None when channel is disabled)
             "temporal_channel_logit": temporal_channel_logit,
             "temporal_channel_prob": temporal_channel_prob,
+            **composer_observability,
             **frame,
             **predicate,
             **sufficiency,
