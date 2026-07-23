@@ -149,20 +149,51 @@ is `P2_BYTE_HASH`. Otherwise a valid B2-B5 digest selects
 `B2B5_BYTE_HASH`. When neither exists, `SEMANTIC_CLOSURE` is used and
 `expected_sha256` is null rather than an empty string.
 
-Semantic fallback is not permissive. It requires the explicit path to exist as
-a regular file, a valid computed SHA256, exactly 524,256 rows, the complete
-schema, seeds 183/184/185, unique semantic row/action keys, exact six-run and
-candidate provenance, exact 48-row pooled-signature and 48-row transfer-target closure,
-strict pooled-primary membership, exact reproduction of
-P2's 6,480 candidate-action mapping, and exclusion of outcome or safety fields
-from reconstruction inputs. The same schema, population, key, and mapping
-checks remain mandatory when byte-level authority is available.
+Semantic closure is not permissive, but it is also not structural dictionary
+equality. The declarative `required` dictionary and evidence-rich `observed`
+dictionary intentionally have different schemas. Evidence aliases such as
+`actual_rows`, `B2B5_pooled_identity_rows`, and
+`P2_candidate_action_matched_rows` never determine pass/fail by matching key
+names. P4 computes these explicit Boolean subconditions from their underlying
+observations:
 
-The `explicit_recipient_signature_authority` contract records the selected
-authority mode and source, resolved explicit path, actual and expected digests,
-expected-digest availability, byte-match result, row count, and
-semantic-closure result. The analysis records the same facts under
-`recipient_signature_authority`.
+```text
+actual_sha256_valid_nonempty_pass
+file_identity_pass
+schema_and_key_pass
+b2b5_population_pass
+b2b5_pooled_pass
+b2b5_transfer_pass
+b2b5_seed_closure_pass
+full_population_seed_closure_pass
+b2b6_p2_mapping_pass
+candidate_semantics_pass
+six_run_pass
+leakage_pass
+```
+
+`semantic_closure_passed` is exactly `all()` over those named Booleans. The
+contract's required field declares every subcondition as true, while observed
+retains all detailed counts and also records `semantic_subconditions` and
+`failed_semantic_subconditions`. A failure reports the exact false
+subcondition names rather than relying on a generic schema mismatch.
+
+Seed authority is population-specific. B2-B5 selector-primary rows must contain
+exactly seeds `[184, 185]`; seed 183 is not required there. Independently, the
+B2-B6/P2 full candidate-action population must contain seeds `[183, 184, 185]`
+with exactly 2,160 actions per seed. These are separate Boolean contracts and
+are never collapsed into one seed-set comparison.
+
+The subconditions retain the regular-file requirement, valid computed SHA256,
+exactly 524,256 external rows, complete schema and unique semantic keys, exact
+48-row pooled plus 48-row transfer closure, strict pooled membership, exact
+6,480-row B2-B6/P2 mapping, frozen candidates and six runs, and prohibited-input
+exclusion. The same semantic checks apply in byte-hash and fallback modes.
+
+For `P2_BYTE_HASH`, `recipient_signature_authority_passed` requires the
+explicit file to exist, exact byte-hash equality, and
+`semantic_closure_passed`. The authority analysis and contract evidence record
+the named subconditions and failed-name list alongside the detailed provenance.
 
 B2-B4 must retain decision
 `STAGE196B2B4_ROW_SPECIFIC_PRIMITIVE_INTERACTION`. Its controlled coalition

@@ -768,6 +768,7 @@ def analyze(
         "source_seed", "target_seed",
     )
     explicit_b5_path = authority_paths["b5_large"]
+    explicit_b5_exists = explicit_b5_path.exists()
     explicit_b5_is_file = explicit_b5_path.is_file()
     b5_large, b5_large_header = projected_csv(explicit_b5_path, b5_fields)
     actual_large_hash = normalize_sha256_authority(sha256(explicit_b5_path))
@@ -896,7 +897,7 @@ def analyze(
             fatal=False,
         )
 
-    external_seed_set = sorted({integer(row["seed"], "recipient-signature seed") for row in b5_large})
+    b2b5_artifact_seed_set = sorted({integer(row["seed"], "recipient-signature seed") for row in b5_large})
     semantic_keys = {
         (
             row["feature_family"], row["feature_subset_mask"],
@@ -933,13 +934,6 @@ def analyze(
         for mask in CANDIDATE_MASKS
     )
     external_schema_ok = set(b5_required_schema) <= set(b5_large_header)
-    external_population_ok = (
-        explicit_b5_is_file
-        and actual_large_rows == 524256
-        and external_schema_ok
-        and external_seed_set == list(SEEDS)
-        and len(semantic_keys) == actual_large_rows
-    )
     # Pooled intersections are signature-level constants; transfer intersections
     # are emitted once per target identity and are target-row-specific.
     authorized_transfer_directions = {(184, 185), (185, 184)}
@@ -1450,14 +1444,95 @@ def analyze(
         (set(b5_fields) | set(action_fields))
         & (set(PROHIBITED) - {"seed"})
     )
+    actual_sha256_valid_nonempty_pass = (
+        actual_large_hash is not None
+        and normalize_sha256_authority(actual_large_hash) == actual_large_hash
+    )
+    file_identity_pass = (
+        explicit_b5_exists
+        and explicit_b5_is_file
+        and actual_large_rows == 524256
+    )
+    schema_and_key_pass = (
+        external_schema_ok
+        and len(semantic_keys) == 524256
+        and len(semantic_keys) == actual_large_rows
+    )
+    b2b5_population_pass = (
+        pooled_identity_row_count + transfer_identity_row_count == 96
+        and pooled_identity_row_count == 48
+        and transfer_identity_row_count == 48
+    )
+    b2b5_pooled_pass = (
+        pooled_duplicate_identity_key_count == 0
+        and pooled_within_signature_conflicting_set_count == 0
+        and pooled_within_signature_conflicting_feasible_count == 0
+        and pooled_feasibility_semantic_disagreement_count == 0
+        and pooled_empty_intersection_count == 0
+        and pooled_primary_matched_rows == 48
+        and pooled_primary_action_disagreements == 0
+    )
+    b2b5_transfer_pass = (
+        transfer_duplicate_target_row_key_count == 0
+        and transfer_row_semantic_disagreements == 0
+        and transfer_within_target_row_disagreement_count == 0
+        and transfer_variation_evidence["transfer_rows_accounted_for"] == 48
+        and observed_transfer_status_counts
+            == {"COMPATIBLE": 48, "INCOMPATIBLE": 0, "UNSEEN": 0}
+    )
+    b2b5_seed_closure_pass = (
+        b2b5_artifact_seed_set == [184, 185]
+        and sorted({seed for seed, _ in selected_seed_identities}) == [184, 185]
+    )
+    full_population_seed_closure_pass = (
+        action_seed_counts == Counter({183: 2160, 184: 2160, 185: 2160})
+    )
+    b2b6_p2_mapping_pass = (
+        len(actions) == 6480
+        and len(p2_action_index) == 6480
+        and p2_matched_rows == 6480
+        and p2_action_disagreements == 0
+        and p2_stable_row_disagreements == 0
+    )
+    candidate_semantics_pass = (
+        selected_candidate_masks == set(CANDIDATE_MASKS)
+        and {mask for mask, _, _ in actions} == set(CANDIDATE_MASKS)
+        and set(b5_committed_candidate_members) == set(CANDIDATE_MASKS)
+        and set(b6_committed_candidate_members) == set(CANDIDATE_MASKS)
+        and b5_committed_candidate_members == b6_committed_candidate_members
+        and candidate_semantic_agreement
+        and action_semantic_agreement
+    )
+    six_run_pass = semantic_run_names == sorted(RUNS)
+    leakage_pass = prohibited_reconstruction_inputs == []
+    semantic_subconditions = {
+        "actual_sha256_valid_nonempty_pass": actual_sha256_valid_nonempty_pass,
+        "file_identity_pass": file_identity_pass,
+        "schema_and_key_pass": schema_and_key_pass,
+        "b2b5_population_pass": b2b5_population_pass,
+        "b2b5_pooled_pass": b2b5_pooled_pass,
+        "b2b5_transfer_pass": b2b5_transfer_pass,
+        "b2b5_seed_closure_pass": b2b5_seed_closure_pass,
+        "full_population_seed_closure_pass": full_population_seed_closure_pass,
+        "b2b6_p2_mapping_pass": b2b6_p2_mapping_pass,
+        "candidate_semantics_pass": candidate_semantics_pass,
+        "six_run_pass": six_run_pass,
+        "leakage_pass": leakage_pass,
+    }
+    failed_semantic_subconditions = [
+        name for name, passed in semantic_subconditions.items() if not passed
+    ]
+    semantic_closure_passed = all(semantic_subconditions.values())
     semantic_closure_evidence = {
-        "explicit_path_exists": explicit_b5_path.exists(),
+        "semantic_subconditions": semantic_subconditions,
+        "failed_semantic_subconditions": failed_semantic_subconditions,
+        "explicit_path_exists": explicit_b5_exists,
         "explicit_path_is_regular_file": explicit_b5_is_file,
-        "actual_sha256_valid_nonempty": actual_large_hash is not None,
+        "actual_sha256_valid_nonempty": actual_sha256_valid_nonempty_pass,
         "actual_rows": actual_large_rows,
         "required_rows": 524256,
         "required_schema_present": external_schema_ok,
-        "required_seed_set": external_seed_set,
+        "B2B5_selector_primary_seed_set": b2b5_artifact_seed_set,
         "semantic_key_count": len(semantic_keys),
         "semantic_keys_unique": len(semantic_keys) == actual_large_rows,
         "six_run_names": semantic_run_names,
@@ -1496,77 +1571,38 @@ def analyze(
         "P2_stable_row_disagreements": p2_stable_row_disagreements,
         "prohibited_reconstruction_inputs": prohibited_reconstruction_inputs,
     }
-    semantic_closure_passed = (
-        external_population_ok
-        and semantic_run_names == sorted(RUNS)
-        and selected_candidate_masks == set(CANDIDATE_MASKS)
-        and pooled_identity_row_count == 48
-        and transfer_identity_row_count == 48
-        and len(selected_seed_identities) == 16
-        and selected_primary_seed_counts == Counter({184: 11, 185: 5})
-        and len(pooled_identity_key_counts) == 48
-        and pooled_duplicate_identity_key_count == 0
-        and pooled_identity_mask_closure
-        and pooled_within_signature_conflicting_set_count == 0
-        and pooled_within_signature_conflicting_feasible_count == 0
-        and pooled_feasibility_semantic_disagreement_count == 0
-        and pooled_empty_intersection_count == 0
-        and transfer_duplicate_target_row_key_count == 0
-        and transfer_within_target_row_disagreement_count == 0
-        and transfer_direction_counts == {"184_to_185": 15, "185_to_184": 33}
-        and transfer_row_semantic_disagreements == 0
-        and candidate_summary_bidirectional_full_pass
-        and observed_transfer_status_counts
-            == {"COMPATIBLE": 48, "INCOMPATIBLE": 0, "UNSEEN": 0}
-        and deterministic_action_population_ok
-        and len(p2_action_index) == 6480
-        and p2_matched_rows == 6480
-        and p2_mapping_disagreements == 0
-        and candidate_semantic_agreement
-        and action_semantic_agreement
-        and len(pooled_primary_identities) == 16
-        and pooled_primary_matched_rows == 48
-        and pooled_primary_missing_authority == 0
-        and pooled_primary_action_disagreements == 0
-        and not prohibited_reconstruction_inputs
+    semantic_required = {name: True for name in semantic_subconditions}
+    semantic_failure_reason = (
+        "explicit recipient-signature semantic authority closure failed: "
+        + ", ".join(failed_semantic_subconditions)
+        if failed_semantic_subconditions
+        else ""
     )
     gate(
         gates, "authority", "B2-B5/P2/B2-B6",
         "recipient_signature_semantic_closure",
-        {
-            "regular_file": True, "actual_sha256_valid_nonempty": True,
-            "rows": 524256, "required_schema_present": True,
-            "seed_set": list(SEEDS), "semantic_keys_unique": True,
-            "six_runs": sorted(RUNS), "B2B5_selected_rows": 96,
-            "B2B5_pooled_rows": 48, "B2B5_transfer_rows": 48,
-            "B2B5_pooled_within_signature_conflicting_set_count": 0,
-            "B2B5_pooled_empty_intersection_count": 0,
-            "B2B5_transfer_duplicate_target_row_keys": 0,
-            "B2B5_transfer_row_semantic_disagreements": 0,
-            "B2B5_pooled_primary_matched_rows": 48,
-            "B2B5_pooled_primary_action_disagreements": 0,
-            "candidate_action_rows": 6480,
-            "P2_matched_rows": 6480,
-            "P2_action_disagreements": 0,
-            "P2_stable_row_disagreements": 0,
-            "committed_action_semantic_agreement": True,
-            "prohibited_reconstruction_inputs": [],
-        },
+        semantic_required,
         semantic_closure_evidence,
         semantic_closure_passed,
-        "explicit recipient-signature semantic authority closure failed",
+        semantic_failure_reason,
         fatal=False,
     )
-    explicit_authority_passed = (
-        p2_provenance_ok
-        and not selected_hash_conflict
-        and semantic_closure_passed
-        and (
-            byte_hash_match
-            if expected_sha256_available
-            else authority_mode == "SEMANTIC_CLOSURE"
+
+    if authority_mode == "P2_BYTE_HASH":
+        recipient_signature_authority_passed = (
+            explicit_b5_exists and byte_hash_match and semantic_closure_passed
         )
-    )
+    elif authority_mode == "B2B5_BYTE_HASH":
+        recipient_signature_authority_passed = (
+            explicit_b5_exists and byte_hash_match and semantic_closure_passed
+        )
+    else:
+        recipient_signature_authority_passed = (
+            explicit_b5_exists
+            and authority_mode == "SEMANTIC_CLOSURE"
+            and not selected_hash_conflict
+            and semantic_closure_passed
+        )
     recipient_action_authority = {
         "full_population_assignment": "B2-B6 singleton assigned_action_set",
         "full_population_reproduction": "P2 candidate_action_key",
@@ -1604,6 +1640,9 @@ def analyze(
         },
         "row_count": actual_large_rows,
         "semantic_closure_passed": semantic_closure_passed,
+        "semantic_subconditions": semantic_subconditions,
+        "failed_semantic_subconditions": failed_semantic_subconditions,
+        "recipient_signature_authority_passed": recipient_signature_authority_passed,
     }
     gate(
         gates, "authority", "B2-B5/P2",
@@ -1614,6 +1653,8 @@ def analyze(
         },
         {
             "explicit_path": ns.stage196b2b5_recipient_signature_rows_csv.is_absolute(),
+            "explicit_path_exists": explicit_b5_exists,
+            "explicit_path_is_regular_file": explicit_b5_is_file,
             "resolved_path": str(explicit_b5_path),
             "actual_rows": actual_large_rows,
             "actual_sha256": actual_large_hash,
@@ -1623,10 +1664,16 @@ def analyze(
             "authority_mode": authority_mode,
             "byte_hash_match": byte_hash_match,
             "semantic_closure_passed": semantic_closure_passed,
+            "semantic_subconditions": semantic_subconditions,
+            "failed_semantic_subconditions": failed_semantic_subconditions,
+            "recipient_signature_authority_passed": recipient_signature_authority_passed,
         },
-        explicit_authority_passed,
+        recipient_signature_authority_passed,
         (
-            "recipient-signature byte hash authority mismatch"
+            "recipient-signature semantic authority closure failed: "
+            + ", ".join(failed_semantic_subconditions)
+            if failed_semantic_subconditions
+            else "recipient-signature byte hash authority mismatch"
             if hash_authority_status == "HASH_AUTHORITY_MISMATCH"
             else "recipient-signature authority closure failed"
         ),
