@@ -3,6 +3,8 @@
 Minimal v6B wrapper: reuses v5 training infrastructure, adds temporal/predicate
 comparator alphas with learnable scaling. No composer, no product_final_loss.
 All CE/pairwise/intervention losses consume final calibrated logits.
+Stage196-B2-B6P6 adds only an explicitly invoked diagnostic geometry helper;
+it is not part of the model forward or any training objective.
 """
 
 from __future__ import annotations
@@ -139,6 +141,110 @@ STAGE196B2B3P0_FRAMEGATE_ORIGIN_COMMIT = (
     "5a39538ef3ca8f36cc2cc5d3290eae60d6a5f5c8"
 )
 STAGE196B2B3P0_NATIVE_LOGIT_ORDER = ("REFUTE", "NOT_ENTITLED", "SUPPORT")
+# Stage196-B2-B6P6: diagnostic-only, differentiable final-composer geometry.
+STAGE196B2B6P6_CANDIDATE_MASKS = (
+    "00100000000000", "01000000000000", "10000000000000",
+)
+STAGE196B2B6P6_PRIMITIVES = (
+    "FRAME", "PREDICATE", "SUFFICIENCY", "POSITIVE_ENERGY", "NEGATIVE_ENERGY",
+)
+STAGE196B2B6P6_PRIMITIVE_OUTPUT_KEYS = (
+    "frame_prob", "predicate_coverage_prob", "sufficiency_prob",
+    "positive_energy", "negative_energy",
+)
+
+
+def _stage196b2b6p6_score_geometry(
+    logits: torch.Tensor, *, prefix: str,
+) -> dict[str, torch.Tensor]:
+    """Return batch-preserving semantic score/margin tensors before detach."""
+    if not isinstance(logits, torch.Tensor) or logits.ndim != 2 or logits.shape[1] != 3:
+        raise ValueError(f"{prefix} logits must have shape [batch, 3]")
+    refute, not_entitled, support = logits[:, 0], logits[:, 1], logits[:, 2]
+    top2 = torch.topk(logits, k=2, dim=-1, largest=True, sorted=True).values
+    return {
+        f"{prefix}_score_support": support,
+        f"{prefix}_score_not_entitled": not_entitled,
+        f"{prefix}_score_refute": refute,
+        f"{prefix}_margin_support_minus_not_entitled": support - not_entitled,
+        f"{prefix}_margin_support_minus_refute": support - refute,
+        f"{prefix}_margin_refute_minus_not_entitled": refute - not_entitled,
+        f"{prefix}_top1_runner_up_margin": top2[:, 0] - top2[:, 1],
+    }
+
+
+def stage196b2b6p6_differentiable_composer_geometry(
+    *, model: nn.Module, native_output: dict[str, Any],
+    counterpart_output: dict[str, Any],
+    candidate_primitive_actions: dict[str, torch.Tensor],
+    diagnostic_enabled: bool = False,
+) -> dict[str, Any]:
+    """Expose exact P2 composer geometry on autograd without changing training.
+
+    ``counterpart_output`` is the P2 frame-local-only donor state from its own
+    authoritative forward. For each opaque 14-bit candidate identity the
+    caller supplies a bool ``[batch, 5]`` tensor in frozen P2 primitive order.
+    This function never runs a model, detaches, reduces a batch, changes a
+    loss, or chooses a candidate action.
+    """
+    if not diagnostic_enabled:
+        raise ValueError("Stage196-B2-B6P6 requires diagnostic_enabled=True")
+    if tuple(candidate_primitive_actions) != STAGE196B2B6P6_CANDIDATE_MASKS:
+        raise ValueError("Stage196-B2-B6P6 requires the exact ordered candidate masks")
+    decision_head = getattr(model, "decision_head", None)
+    if not isinstance(decision_head, nn.Module):
+        raise ValueError("Stage196-B2-B6P6 requires model.decision_head")
+    native_logits, native_base = native_output.get("logits"), native_output.get("base_logits")
+    if not isinstance(native_logits, torch.Tensor) or not isinstance(native_base, torch.Tensor):
+        raise ValueError("native output must expose live logits and base_logits")
+    if native_logits.shape != native_base.shape:
+        raise ValueError("native logits/base_logits shape disagreement")
+    batch_size = native_logits.shape[0]
+    native_geometry = _stage196b2b6p6_score_geometry(native_logits, prefix="native")
+    # P2 substitutes only the five decision-head primitives. All final-logit
+    # modulation remains recipient-native, exactly as apply_mask retains the
+    # recipient branch fields. The residual stays live on autograd.
+    native_final_modulation = native_logits - native_base
+    by_candidate: dict[str, dict[str, torch.Tensor]] = {}
+    for candidate_mask, action in candidate_primitive_actions.items():
+        if (not isinstance(action, torch.Tensor) or action.dtype != torch.bool
+                or tuple(action.shape) != (batch_size, len(STAGE196B2B6P6_PRIMITIVES))
+                or action.device != native_logits.device):
+            raise ValueError(f"candidate {candidate_mask} action must be device-aligned bool [batch, 5]")
+        selected: dict[str, torch.Tensor] = {}
+        for column, key in enumerate(STAGE196B2B6P6_PRIMITIVE_OUTPUT_KEYS):
+            recipient, donor = native_output.get(key), counterpart_output.get(key)
+            if (not isinstance(recipient, torch.Tensor) or not isinstance(donor, torch.Tensor)
+                    or recipient.shape != donor.shape or recipient.shape != (batch_size,)
+                    or recipient.device != native_logits.device or donor.device != native_logits.device):
+                raise ValueError(f"live recipient/donor primitive {key!r} must be aligned [batch]")
+            selected[key] = torch.where(action[:, column], donor, recipient)
+        recomposed = decision_head(
+            frame_prob=selected["frame_prob"], predicate_coverage_prob=selected["predicate_coverage_prob"],
+            sufficiency_prob=selected["sufficiency_prob"], positive_energy=selected["positive_energy"],
+            negative_energy=selected["negative_energy"],
+        )
+        counterfactual_logits = recomposed["logits"] + native_final_modulation
+        cf = _stage196b2b6p6_score_geometry(counterfactual_logits, prefix="counterfactual")
+        response = {
+            "delta_score_support": cf["counterfactual_score_support"] - native_geometry["native_score_support"],
+            "delta_score_not_entitled": cf["counterfactual_score_not_entitled"] - native_geometry["native_score_not_entitled"],
+            "delta_score_refute": cf["counterfactual_score_refute"] - native_geometry["native_score_refute"],
+            "delta_support_minus_not_entitled": cf["counterfactual_margin_support_minus_not_entitled"] - native_geometry["native_margin_support_minus_not_entitled"],
+            "delta_support_minus_refute": cf["counterfactual_margin_support_minus_refute"] - native_geometry["native_margin_support_minus_refute"],
+            "delta_refute_minus_not_entitled": cf["counterfactual_margin_refute_minus_not_entitled"] - native_geometry["native_margin_refute_minus_not_entitled"],
+            "delta_top1_runner_up_margin": cf["counterfactual_top1_runner_up_margin"] - native_geometry["native_top1_runner_up_margin"],
+        }
+        by_candidate[candidate_mask] = {"counterfactual_logits": counterfactual_logits, **cf, **response}
+    return {
+        "schema_version": "stage196b2b6p6_differentiable_composer_geometry_v1",
+        "computation_path": "FULL_COUNTERFACTUAL_FORWARD_REQUIRED",
+        "candidate_masks": STAGE196B2B6P6_CANDIDATE_MASKS,
+        "primitive_order": STAGE196B2B6P6_PRIMITIVES,
+        "native_logits": native_logits, **native_geometry,
+        "candidate_geometry": by_candidate,
+        "stability_loss": None, "training_objective_changed": False,
+    }
 
 _TRAJECTORY_OBSERVABILITY_NONE = "none"
 _TRAJECTORY_OBSERVABILITY_STAGE191 = "stage191_deterministic_replay"
