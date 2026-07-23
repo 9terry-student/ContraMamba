@@ -54,17 +54,49 @@ authority.
 
 B2-B6 must retain decision `STAGE196B2B6_PRIMARY_EXACT_CLEAN_DEV_UNSAFE` and
 the exact masks `00100000000000`, `01000000000000`, and
-`10000000000000`. Its deterministic clean-dev action mapping selects an exact
-primitive action for each candidate, seed, and data identity. The selected
-action must belong to the action set authorized by the explicit B2-B5
-recipient-signature authority wherever that authority overlaps. Mask bits are
-never reinterpreted.
+`10000000000000`. Its clean-dev signature audit is the deterministic
+authority for one singleton primitive action at each of the 6,480 candidate,
+seed, and data-identity applications. Mask bits are never reinterpreted.
+
+P2 independently reproduces that full-population mapping through
+`candidate_mask`, `seed`, `data_identity`, `candidate_action_key`, and
+`stable_row_id`. P4 requires 6,480 B2-B6 rows, 6,480 P2 rows, 6,480 exact
+matches, zero action disagreements, and zero stable-row disagreements.
 
 B2-B5 must retain decision
 `STAGE196B2B5_CROSS_SEED_RECIPIENT_SELECTOR_LOCALIZED`. The explicit
-recipient-signature CSV supplies signature/action-set authority and primitive
-state semantics without contributing outcome, recovery, harm, correctness, or
-safety-target state.
+recipient-signature CSV supplies contextual acceptable-action sets and
+primitive state semantics without contributing outcome, recovery, harm,
+correctness, or safety-target state. It is not the deterministic action
+authority for the complete clean-dev population.
+
+## B2-B5 signature-evaluation contexts
+
+B2-B5 contains both pooled signature rows and transfer-specific signature
+rows. A `signature_action_intersection` is an acceptable-action set for its
+exact evaluation context. Candidate mask plus canonical signature alone is
+therefore not a complete key. P4 keys the authority by
+`feature_subset_mask`, canonical signature, `transfer_status`, normalized
+`source_seed`, and normalized `target_seed`.
+
+`POOLED` requires null source and target seeds. Transfer rows require one of
+the exact directions 184-to-185 or 185-to-184 and the frozen B2-B5 status
+vocabulary `UNSEEN`, `COMPATIBLE`, or `INCOMPATIBLE`; the row seed must equal
+the target seed. Within one qualified context, repeated rows must expose one
+identical canonical intersection. Every intersection must be a list, duplicate
+serialized actions are rejected, and every action must match `[01]{5}`. Empty
+intersections remain valid infeasibility evidence but never assign an action.
+
+Differences among pooled and transfer-specific intersections for the same
+unqualified mask/signature are expected contextual variation. P4 counts and
+reports them without treating a positive count as corruption. Transfer rows
+remain diagnostic and are never used to assign full-population actions.
+
+Only nonempty pooled `recipient_local` intersections support membership
+checking. The frozen B2-B5 primary selector population contains seeds 184 and
+185, 16 identities, and three masks, so P4 requires exactly 48 matched B2-B6
+candidate rows and zero assigned-action membership disagreements. Seed 183 and
+nondiscovery clean-dev rows do not require B2-B5 membership authority.
 
 ## Recipient-signature authority resolution
 
@@ -100,7 +132,8 @@ is `P2_BYTE_HASH`. Otherwise a valid B2-B5 digest selects
 Semantic fallback is not permissive. It requires the explicit path to exist as
 a regular file, a valid computed SHA256, exactly 524,256 rows, the complete
 schema, seeds 183/184/185, unique semantic row/action keys, exact six-run and
-candidate provenance, strict B2-B5 action-set agreement, exact reproduction of
+candidate provenance, context-qualified B2-B5 action-set consistency, exact
+48-row pooled-primary membership closure, exact reproduction of
 P2's 6,480 candidate-action mapping, and exclusion of outcome or safety fields
 from reconstruction inputs. The same schema, population, key, and mapping
 checks remain mandatory when byte-level authority is available.
@@ -365,7 +398,8 @@ The contract covers commit and frozen decision identity; P3 zero-gate and
 zero-transfer closure; P2 source counts and endpoint authority; independent P2
 recipient-artifact provenance; valid-digest normalization and ordered authority
 selection; the exact 524,256-row external schema, seed, semantic-key, six-run,
-B2-B5 action-set, and P2 6,480-row mapping closure; exact B2-B6 masks; B2-B4
+B2-B5 context-key separation, 48-row pooled membership, transfer-context
+diagnostics, and B2-B6/P2 6,480-row mapping closure; exact B2-B6 masks; B2-B4
 controlled numeric agreement; runtime commit, 120/120 sidecar, and six-manifest
 closure; exact tail populations and identities; class order, finite scores,
 margin/delta arithmetic; exact P2 epoch-20 reproduction; dictionary,
