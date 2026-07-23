@@ -100,10 +100,59 @@ FROZEN_COUNTS = {
     "cross_seed_candidate_order_disagreement": 2331,
     "cross_seed_sign_sequence_disagreement": 12448,
     "cross_seed_monotonic_direction_disagreement": 13031,
-    "cross_seed_winner_sequence_disagreement": 4032,
-    "cross_seed_transition_sequence_disagreement": 4074,
+    "cross_seed_winner_sequence_disagreement": 576,
+    "cross_seed_transition_sequence_disagreement": 582,
     "endpoint_values_all_equal": 0,
 }
+P4_AUTHORITATIVE_MODES = {
+    "cross_seed_monotonic_direction_disagreement": 13031,
+    "cross_seed_sign_sequence_disagreement": 12448,
+    "cross_seed_transition_sequence_disagreement": 582,
+    "cross_seed_winner_sequence_disagreement": 576,
+    "within_or_cross_seed_candidate_order_disagreement": 2331,
+    "within_tail_sign_reversal": 16630,
+    "within_tail_transition_flag_change": 996,
+    "within_tail_winner_change": 1002,
+}
+SIGNED_COORDINATE_TRAJECTORY_ROW = "SIGNED_COORDINATE_TRAJECTORY_ROW"
+CANDIDATE_RELATIVE_COORDINATE_ROW = "CANDIDATE_RELATIVE_COORDINATE_ROW"
+CATEGORICAL_ACTION_TRAJECTORY = "CATEGORICAL_ACTION_TRAJECTORY"
+CROSS_SEED_CATEGORICAL_TRAJECTORY = "CROSS_SEED_CATEGORICAL_TRAJECTORY"
+FROZEN_COUNTING_UNITS = {
+    "trajectory_topology_rows": SIGNED_COORDINATE_TRAJECTORY_ROW,
+    "candidate_relative_rows": CANDIDATE_RELATIVE_COORDINATE_ROW,
+    "endpoint_shift_rows": SIGNED_COORDINATE_TRAJECTORY_ROW,
+    "non_monotonic": SIGNED_COORDINATE_TRAJECTORY_ROW,
+    "within_tail_sign_reversal": SIGNED_COORDINATE_TRAJECTORY_ROW,
+    "within_tail_winner_change": CATEGORICAL_ACTION_TRAJECTORY,
+    "within_tail_transition_change": CATEGORICAL_ACTION_TRAJECTORY,
+    "within_tail_candidate_order_disagreement": CANDIDATE_RELATIVE_COORDINATE_ROW,
+    "cross_seed_candidate_order_disagreement": CANDIDATE_RELATIVE_COORDINATE_ROW,
+    "cross_seed_sign_sequence_disagreement": SIGNED_COORDINATE_TRAJECTORY_ROW,
+    "cross_seed_monotonic_direction_disagreement": SIGNED_COORDINATE_TRAJECTORY_ROW,
+    "cross_seed_winner_sequence_disagreement": CROSS_SEED_CATEGORICAL_TRAJECTORY,
+    "cross_seed_transition_sequence_disagreement": CROSS_SEED_CATEGORICAL_TRAJECTORY,
+    "endpoint_values_all_equal": SIGNED_COORDINATE_TRAJECTORY_ROW,
+}
+TOPOLOGY_CATEGORICAL_FIELDS = (
+    "native_prediction_sequence", "counterfactual_prediction_sequence",
+    "counterfactual_winner_persistence", "prediction_changed_sequence",
+    "prediction_changed_persistence", "entitlement_transition_sequence",
+    "entitlement_transition_persistence", "polarity_transition_sequence",
+    "polarity_transition_persistence", "polarity_direction_preserved_sequence",
+    "polarity_direction_persistence", "decision_boundary_crossing_count",
+)
+TRANSITION_PERSISTENCE_FIELDS = (
+    "prediction_changed_persistence",
+    "entitlement_transition_persistence",
+    "polarity_transition_persistence",
+    "polarity_direction_persistence",
+)
+ENDPOINT_CATEGORICAL_FIELDS = (
+    "counterfactual_winner_sequence_agreement",
+    "transition_sequence_agreement",
+    "categorical_sequences",
+)
 P2_REPRODUCTION_KEYS = (
     "native_score_disagreements",
     "counterfactual_score_disagreements",
@@ -458,57 +507,172 @@ def source_feasibility(root: Path, gates: list[dict[str, Any]]) -> tuple[list[di
     return rows, summary
 
 
+def p4_authoritative_modes(
+    p4: dict[str, Any], gates: list[dict[str, Any]],
+) -> dict[str, int]:
+    hierarchy = p4.get("decision_hierarchy")
+    matching = [
+        row for row in hierarchy if isinstance(row, dict)
+        and row.get("decision") == P4_DECISION and row.get("reached") is True
+    ] if isinstance(hierarchy, list) else []
+    observed = matching[0].get("observed") if len(matching) == 1 else None
+    triggered = observed.get("triggered") if isinstance(observed, dict) else None
+    modes = observed.get("modes") if isinstance(observed, dict) else None
+    normalized = {
+        key: integer(value, f"P4 authoritative mode {key}")
+        for key, value in modes.items()
+    } if isinstance(modes, dict) else {}
+    gate(
+        gates, "p4", "decision_hierarchy", "p4_reached_instability_mode_authority",
+        {"matching_reached_rows": 1, "triggered": True, "modes": P4_AUTHORITATIVE_MODES},
+        {"matching_reached_rows": len(matching), "triggered": triggered, "modes": normalized},
+        len(matching) == 1 and triggered is True and normalized == P4_AUTHORITATIVE_MODES,
+        "reached P4 instability decision modes changed",
+    )
+    return normalized
+
+
+def categorical_signature(row: dict[str, str], fields: Sequence[str]) -> str:
+    return canonical({field: cell(row[field]) for field in fields})
+
+
 def p4_observed_counts(
     topology: list[dict[str, str]], order: list[dict[str, str]],
     endpoint: list[dict[str, str]],
-) -> dict[str, int]:
-    winner_coordinate = P4_SIGNED_COORDINATES[0]
-    return {
+) -> tuple[dict[str, int], dict[str, Any]]:
+    within_groups: dict[tuple[Any, ...], list[dict[str, str]]] = defaultdict(list)
+    endpoint_groups: dict[tuple[str, str, str], list[dict[str, str]]] = defaultdict(list)
+    for row in topology:
+        within_groups[(
+            integer(row["seed"], "topology seed"), row["stable_row_id"],
+            row["data_identity"], row["candidate_mask"], row["candidate_action_key"],
+        )].append(row)
+    for row in endpoint:
+        endpoint_groups[(row["stable_row_id"], row["data_identity"], row["candidate_mask"])].append(row)
+
+    expected_coordinates = set(P4_SIGNED_COORDINATES)
+    within_representatives: list[dict[str, str]] = []
+    endpoint_representatives: list[dict[str, str]] = []
+    within_disagreements = endpoint_disagreements = 0
+    within_population_failures = endpoint_population_failures = 0
+    for rows in within_groups.values():
+        coordinates = [row["signed_response_coordinate"] for row in rows]
+        population_ok = len(rows) == 7 and len(set(coordinates)) == 7 and set(coordinates) == expected_coordinates
+        within_population_failures += not population_ok
+        within_disagreements += len({categorical_signature(row, TOPOLOGY_CATEGORICAL_FIELDS) for row in rows}) != 1
+        within_representatives.append(rows[0])
+    for rows in endpoint_groups.values():
+        coordinates = [row["signed_response_coordinate"] for row in rows]
+        population_ok = len(rows) == 7 and len(set(coordinates)) == 7 and set(coordinates) == expected_coordinates
+        endpoint_population_failures += not population_ok
+        endpoint_disagreements += len({categorical_signature(row, ENDPOINT_CATEGORICAL_FIELDS) for row in rows}) != 1
+        endpoint_representatives.append(rows[0])
+
+    categorical_audit = {
+        "within_seed_categorical_trajectories": len(within_groups),
+        "cross_seed_categorical_endpoint_trajectories": len(endpoint_groups),
+        "signed_coordinate_replicas_per_categorical_trajectory": 7,
+        "within_seed_replica_population_failures": within_population_failures,
+        "cross_seed_replica_population_failures": endpoint_population_failures,
+        "within_seed_categorical_replica_disagreements": within_disagreements,
+        "cross_seed_categorical_replica_disagreements": endpoint_disagreements,
+        "categorical_replica_disagreements": within_disagreements + endpoint_disagreements,
+        "coordinate_expanded_cross_seed_winner_disagreement_rows": sum(
+            not boolean(row["counterfactual_winner_sequence_agreement"], "winner agreement") for row in endpoint
+        ),
+        "coordinate_expanded_cross_seed_transition_disagreement_rows": sum(
+            not boolean(row["transition_sequence_agreement"], "transition agreement") for row in endpoint
+        ),
+        "coordinate_expanded_counts_authorization": "DIAGNOSTIC_ONLY_NOT_MECHANISM_TRAJECTORY_COUNTS",
+    }
+    counts = {
         "trajectory_topology_rows": len(topology),
         "candidate_relative_rows": len(order),
         "endpoint_shift_rows": len(endpoint),
         "non_monotonic": sum(row["monotonic_direction"] == "NON_MONOTONIC" for row in topology),
         "within_tail_sign_reversal": sum(integer(row["sign_reversal_count"], "sign reversal") > 0 for row in topology),
         "within_tail_winner_change": sum(
-            integer(row["decision_boundary_crossing_count"], "winner crossings") > 0
-            for row in topology if row["signed_response_coordinate"] == winner_coordinate
+            integer(row["decision_boundary_crossing_count"], "winner crossings") > 0 for row in within_representatives
         ),
         "within_tail_transition_change": sum(
-            integer(row["prediction_changed_persistence"], "prediction persistence") < 3
-            or integer(row["entitlement_transition_persistence"], "entitlement persistence") < 3
-            or integer(row["polarity_transition_persistence"], "polarity persistence") < 3
-            or integer(row["polarity_direction_persistence"], "polarity direction persistence") < 3
-            for row in topology if row["signed_response_coordinate"] == winner_coordinate
+            any(integer(row[field], field) < 3 for field in TRANSITION_PERSISTENCE_FIELDS)
+            for row in within_representatives
         ),
         "within_tail_candidate_order_disagreement": sum(
-            not boolean(row["pairwise_ordering_persistence_across_tail"], "pairwise persistence")
-            for row in order
+            not boolean(row["pairwise_ordering_persistence_across_tail"], "pairwise persistence") for row in order
         ),
         "cross_seed_candidate_order_disagreement": sum(
-            not boolean(row["cross_seed_pairwise_order_agreement"], "cross-seed pairwise agreement")
-            for row in order
+            not boolean(row["cross_seed_pairwise_order_agreement"], "cross-seed pairwise agreement") for row in order
         ),
         "cross_seed_sign_sequence_disagreement": sum(
-            not boolean(row["tail_sign_sequence_agreement"], "sign sequence agreement")
-            for row in endpoint
+            not boolean(row["tail_sign_sequence_agreement"], "sign sequence agreement") for row in endpoint
         ),
         "cross_seed_monotonic_direction_disagreement": sum(
-            not boolean(row["monotonic_direction_agreement"], "monotonic agreement")
-            for row in endpoint
+            not boolean(row["monotonic_direction_agreement"], "monotonic agreement") for row in endpoint
         ),
         "cross_seed_winner_sequence_disagreement": sum(
-            not boolean(row["counterfactual_winner_sequence_agreement"], "winner agreement")
-            for row in endpoint if row["signed_response_coordinate"] == winner_coordinate
+            not boolean(row["counterfactual_winner_sequence_agreement"], "winner agreement") for row in endpoint_representatives
         ),
         "cross_seed_transition_sequence_disagreement": sum(
-            not boolean(row["transition_sequence_agreement"], "transition agreement")
-            for row in endpoint if row["signed_response_coordinate"] == winner_coordinate
+            not boolean(row["transition_sequence_agreement"], "transition agreement") for row in endpoint_representatives
         ),
-        "endpoint_values_all_equal": sum(
-            boolean(row["endpoint_values_all_equal"], "endpoint equality") for row in endpoint
-        ),
+        "endpoint_values_all_equal": sum(boolean(row["endpoint_values_all_equal"], "endpoint equality") for row in endpoint),
     }
+    return counts, categorical_audit
 
+
+HIERARCHY_MODE_BY_METRIC = {
+    "within_tail_sign_reversal": "within_tail_sign_reversal",
+    "within_tail_winner_change": "within_tail_winner_change",
+    "within_tail_transition_change": "within_tail_transition_flag_change",
+    "cross_seed_candidate_order_disagreement": "within_or_cross_seed_candidate_order_disagreement",
+    "cross_seed_sign_sequence_disagreement": "cross_seed_sign_sequence_disagreement",
+    "cross_seed_monotonic_direction_disagreement": "cross_seed_monotonic_direction_disagreement",
+    "cross_seed_winner_sequence_disagreement": "cross_seed_winner_sequence_disagreement",
+    "cross_seed_transition_sequence_disagreement": "cross_seed_transition_sequence_disagreement",
+}
+
+
+def validate_frozen_evidence(
+    observed: dict[str, int], authoritative_modes: dict[str, int], gates: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    checks: list[dict[str, Any]] = []
+    all_passed = True
+    for metric, required in FROZEN_COUNTS.items():
+        observed_value = observed.get(metric)
+        mode_name = HIERARCHY_MODE_BY_METRIC.get(metric)
+        hierarchy_value = authoritative_modes.get(mode_name) if mode_name else None
+        csv_passed = observed_value == required
+        dual_passed = mode_name is None or hierarchy_value == required == observed_value
+        passed = csv_passed and dual_passed
+        checks.append({
+            "metric": metric, "counting_unit": FROZEN_COUNTING_UNITS[metric],
+            "required": required, "observed": observed_value, "passed": passed,
+            "source": (
+                f"P4 decision_hierarchy observed.modes.{mode_name} + appropriate CSV recomputation"
+                if mode_name else "appropriate P4 CSV recomputation"
+            ),
+        })
+        gate(
+            gates, "frozen_instability_metric", FROZEN_COUNTING_UNITS[metric], metric,
+            required, observed_value, csv_passed,
+            f"{metric}: required {required}, observed {observed_value}", fatal=False,
+        )
+        if mode_name:
+            gate(
+                gates, "frozen_instability_dual_source", mode_name,
+                f"{metric}_decision_hierarchy_equals_csv", hierarchy_value, observed_value,
+                dual_passed,
+                f"{metric}: decision hierarchy {hierarchy_value}, CSV {observed_value}", fatal=False,
+            )
+        all_passed = all_passed and passed
+    gate(
+        gates, "p4", "", "frozen_instability_evidence", True,
+        {"all_metric_checks_passed": all_passed,
+         "failed_metrics": [row["metric"] for row in checks if not row["passed"]]},
+        all_passed, "one or more metric-specific frozen evidence checks failed",
+    )
+    return checks
 
 def build_localization(
     topology: list[dict[str, str]], order: list[dict[str, str]],
@@ -911,11 +1075,10 @@ def analyze(ns: argparse.Namespace, gates: list[dict[str, Any]]) -> tuple[dict[s
     dictionary = read_csv(p4_path.parent / P4_OUTPUTS[4])
     leakage = read_csv(p4_path.parent / P4_OUTPUTS[8])
     require_columns(topology, (
-        "seed", "data_identity", "candidate_mask", "candidate_action_key",
-        "signed_response_coordinate", "monotonic_direction", "sign_reversal_count",
-        "zero_crossing_count", "decision_boundary_crossing_count",
-        "prediction_changed_persistence", "entitlement_transition_persistence",
-        "polarity_transition_persistence", "polarity_direction_persistence",
+        "seed", "stable_row_id", "data_identity", "candidate_mask",
+        "candidate_action_key", "signed_response_coordinate",
+        "monotonic_direction", "sign_reversal_count", "zero_crossing_count",
+        *TOPOLOGY_CATEGORICAL_FIELDS,
     ), "P4 topology")
     require_columns(order, (
         "seed", "data_identity", "signed_response_coordinate",
@@ -923,20 +1086,36 @@ def analyze(ns: argparse.Namespace, gates: list[dict[str, Any]]) -> tuple[dict[s
         "cross_seed_pairwise_order_agreement",
     ), "P4 order")
     require_columns(endpoint, (
-        "data_identity", "candidate_mask", "signed_response_coordinate",
-        "tail_sign_sequence_agreement", "monotonic_direction_agreement",
-        "counterfactual_winner_sequence_agreement", "transition_sequence_agreement",
-        "endpoint_values_all_equal",
+        "stable_row_id", "data_identity", "candidate_mask",
+        "signed_response_coordinate", "tail_sign_sequence_agreement",
+        "monotonic_direction_agreement", "endpoint_values_all_equal",
+        *ENDPOINT_CATEGORICAL_FIELDS,
     ), "P4 endpoint")
     require_columns(tail, (
         "seed", "epoch", "stable_row_id", "data_identity", "candidate_mask",
         "candidate_action_key", *PRIMARY_COORDINATES,
     ), "P4 tail")
-    observed_counts = p4_observed_counts(topology, order, endpoint)
+    authoritative_modes = p4_authoritative_modes(p4, gates)
+    observed_counts, categorical_audit = p4_observed_counts(topology, order, endpoint)
+    categorical_closure = (
+        categorical_audit["within_seed_categorical_trajectories"] == 6480
+        and categorical_audit["cross_seed_categorical_endpoint_trajectories"] == 2160
+        and categorical_audit["signed_coordinate_replicas_per_categorical_trajectory"] == 7
+        and categorical_audit["within_seed_replica_population_failures"] == 0
+        and categorical_audit["cross_seed_replica_population_failures"] == 0
+        and categorical_audit["categorical_replica_disagreements"] == 0
+    )
     gate(
-        gates, "p4", "", "frozen_instability_evidence",
-        FROZEN_COUNTS, observed_counts, observed_counts == FROZEN_COUNTS,
-        "P4 frozen instability evidence changed",
+        gates, "p4", "categorical_deduplication", "categorical_replica_closure",
+        {"within_seed_categorical_trajectories": 6480,
+         "cross_seed_categorical_endpoint_trajectories": 2160,
+         "signed_coordinate_replicas_per_categorical_trajectory": 7,
+         "replica_population_failures": 0, "categorical_replica_disagreements": 0},
+        categorical_audit, categorical_closure,
+        "categorical trajectory replicas disagree or do not close",
+    )
+    frozen_evidence_checks = validate_frozen_evidence(
+        observed_counts, authoritative_modes, gates
     )
     seeds = sorted({integer(row["seed"], "topology seed") for row in topology})
     masks = sorted({row["candidate_mask"] for row in topology})
@@ -1088,6 +1267,10 @@ def analyze(ns: argparse.Namespace, gates: list[dict[str, Any]]) -> tuple[dict[s
             "stage196b2b6p2_analysis.json": sha256(p2_path),
         },
         "p4_evidence_consumed": observed_counts,
+        "p4_authoritative_decision_modes": authoritative_modes,
+        "categorical_trajectory_audit": categorical_audit,
+        "frozen_instability_evidence_checks": frozen_evidence_checks,
+        "frozen_counting_units": FROZEN_COUNTING_UNITS,
         "p4_required_artifacts_loaded": [
             P4_OUTPUTS[0], P4_OUTPUTS[3], P4_OUTPUTS[5], P4_OUTPUTS[6],
             P4_OUTPUTS[7], P4_OUTPUTS[4], P4_OUTPUTS[8], P4_OUTPUTS[10],

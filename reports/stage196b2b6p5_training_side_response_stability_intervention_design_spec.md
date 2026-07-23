@@ -49,6 +49,75 @@ relative-order rows, 15,120 endpoint rows, 26,575 non-monotonic trajectories,
 zero equal cross-seed endpoints. It also requires exact P2 epoch-20
 reproduction on all nine disagreement categories.
 
+### Frozen-evidence counting units and categorical deduplication
+
+The categorical prediction, winner, and transition sequence fields are copied
+identically onto all seven signed-response-coordinate rows for a mechanism
+trajectory. Those seven rows are coordinate replicas, not seven categorical
+mechanisms. P5 therefore distinguishes these exact counting units:
+
+```text
+SIGNED_COORDINATE_TRAJECTORY_ROW
+CANDIDATE_RELATIVE_COORDINATE_ROW
+CATEGORICAL_ACTION_TRAJECTORY
+CROSS_SEED_CATEGORICAL_TRAJECTORY
+```
+
+Every frozen metric declares one of these units. Non-monotonic, sign-reversal,
+cross-seed sign-sequence, and cross-seed monotonic-direction counts use signed
+coordinate rows. Candidate-order counts use candidate-relative coordinate
+rows. Within-tail winner/transition counts use deduplicated categorical action
+trajectories, while cross-seed winner/transition counts use deduplicated
+cross-seed categorical trajectories.
+
+Before deduplication, P5 groups within-seed topology rows by:
+
+```text
+(seed, stable_row_id, data_identity, candidate_mask, candidate_action_key)
+```
+
+and endpoint rows by:
+
+```text
+(stable_row_id, data_identity, candidate_mask)
+```
+
+It requires exactly 6,480 within-seed categorical trajectories, 2,160
+cross-seed categorical endpoint trajectories, and exactly seven distinct
+signed-coordinate replicas per trajectory. All listed categorical sequence,
+persistence, and crossing fields must be identical across the seven replicas;
+endpoint winner agreement, transition agreement, and categorical sequences
+must likewise be identical. Any replica disagreement is a contract failure
+before deduplication or counting.
+
+The deduplicated categorical mechanism counts are:
+
+```text
+within_tail_winner_change = 1002
+within_tail_transition_change = 996
+cross_seed_winner_sequence_disagreement = 576
+cross_seed_transition_sequence_disagreement = 582
+```
+
+The coordinate-expanded endpoint diagnostics are 4,032 winner-disagreement
+rows and 4,074 transition-disagreement rows. They are diagnostic-only signed
+coordinate rows and are never substituted for the 576 and 582 categorical
+trajectory counts.
+
+The reached P4 decision row for
+`STAGE196B2B6P4_ACTION_RESPONSE_TOPOLOGY_UNSTABLE` must have `reached=true`,
+`observed.triggered=true`, and the exact authoritative `observed.modes` values.
+P5 independently recomputes the corresponding CSV quantities, including the
+four deduplicated categorical counts, and requires decision-hierarchy and CSV
+agreement.
+
+Frozen evidence is not checked through one opaque dictionary comparison. Each
+metric records `metric`, `counting_unit`, `required`, `observed`, `passed`, and
+`source`, with a metric-specific contract row. Dual-source metrics additionally
+record a hierarchy-versus-CSV contract row, so failures name the exact metric
+and both disagreeing values. The aggregate `frozen_instability_evidence` gate
+passes only when every individual metric check passes.
+
 The exact seeds are 183, 184, and 185. Candidate masks are:
 
 ```text
