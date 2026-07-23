@@ -223,20 +223,63 @@ Semantic score names are mapped explicitly. Native coordinates retain the
 source float32 serialization. Counterfactual application retains binary64
 arithmetic. CSV numeric values use 17 significant digits and must be finite.
 
-For every epoch, row, and candidate:
+For every epoch, row, and candidate, one deterministic
+`materialize_composer_geometry` boundary receives the three native and three
+counterfactual scores. It calls the exact P2 geometry and branch helpers, then
+returns one complete flat schema. No tail, topology, relative-order, endpoint,
+or reproduction consumer implements an alternative margin or delta formula.
+
+The six scores are materialized first:
 
 ```text
-delta_score_c = counterfactual_score_c - native_score_c
-delta_margin = counterfactual_margin - native_margin
+native_score_support
+native_score_not_entitled
+native_score_refute
+counterfactual_score_support
+counterfactual_score_not_entitled
+counterfactual_score_refute
 ```
 
-Named margins are SUPPORT-minus-NOT_ENTITLED, SUPPORT-minus-REFUTE,
-REFUTE-minus-NOT_ENTITLED, and the state-dependent top1-minus-runner-up
-margin. Exact margin and delta arithmetic must close.
+The producer then emits the four native and four counterfactual P2 margins:
 
-At epoch 20, every native score, counterfactual score, signed response margin,
-native/counterfactual prediction, and categorical transition must reproduce
-P2 exactly. Any disagreement blocks P4.
+```text
+native_top1_runner_up_margin
+native_margin_support_minus_not_entitled
+native_margin_support_minus_refute
+native_margin_refute_minus_not_entitled
+counterfactual_top1_runner_up_margin
+counterfactual_margin_support_minus_not_entitled
+counterfactual_margin_support_minus_refute
+counterfactual_margin_refute_minus_not_entitled
+```
+
+Top1 and runner-up selection inherits P2's exact class-order tie semantics. The
+three score deltas and four margin deltas are computed only from those canonical
+flat score and margin fields. Response L1, L2, and Linf norms are computed from
+the three canonical class-score deltas. P2 branch names
+`entitlement_branch_changed` and `polarity_branch_changed` are retained; legacy
+transition aliases are not emitted on candidate epoch rows.
+
+Before a candidate-action epoch row is appended, P4 requires all scores,
+margins, deltas, predictions, branch flags, and response norms to exist with the
+correct scalar type; every numeric coordinate must be finite. Missing fields
+are never replaced by zero, NaN, or null. A failure records seed, epoch,
+`stable_row_id`, `data_identity`, candidate mask, action key, missing or invalid
+fields, and all observed keys under
+`candidate_action_epoch_coordinate_schema_closure`, rather than allowing a raw
+coordinate `KeyError` to escape.
+
+The aggregate schema gate requires 19,440 checked rows. Every registered signed
+response coordinate must be present on every row. Absolute score and margin
+coordinates are explicitly excluded from the response-delta registry, so every
+produced primary coordinate is either registered or named as an exclusion. No
+downstream audit reconstructs a missing field ad hoc.
+
+At epoch 20, all 6,480 candidate-action rows independently require zero native
+score, counterfactual score, native margin, counterfactual margin, score-delta,
+margin-delta, native-prediction, and counterfactual-prediction disagreements
+against P2. Response norms, categorical flags, identity, and action provenance
+also remain exact. Any disagreement blocks P4.
 
 ## Tail population and identity
 

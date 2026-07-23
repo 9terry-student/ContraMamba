@@ -111,17 +111,55 @@ SIGNED_FIELDS = (
 SCORE_FIELDS = ("support", "not_entitled", "refute")
 MARGIN_FIELDS = (
     "top1_runner_up_margin",
-    "support_minus_not_entitled",
-    "support_minus_refute",
-    "refute_minus_not_entitled",
+    "margin_support_minus_not_entitled",
+    "margin_support_minus_refute",
+    "margin_refute_minus_not_entitled",
+)
+CANONICAL_SCORE_COORDINATES = (
+    "native_score_support", "native_score_not_entitled", "native_score_refute",
+    "counterfactual_score_support", "counterfactual_score_not_entitled",
+    "counterfactual_score_refute",
+)
+CANONICAL_NATIVE_MARGIN_COORDINATES = tuple(
+    f"native_{field}" for field in MARGIN_FIELDS
+)
+CANONICAL_COUNTERFACTUAL_MARGIN_COORDINATES = tuple(
+    f"counterfactual_{field}" for field in MARGIN_FIELDS
+)
+CANONICAL_SCORE_DELTA_COORDINATES = SIGNED_FIELDS[:3]
+CANONICAL_MARGIN_DELTA_COORDINATES = SIGNED_FIELDS[3:]
+ACTION_RESPONSE_NORM_FIELDS = (
+    "action_response_l1", "action_response_l2", "action_response_linf",
 )
 BOOL_FIELDS = (
     "prediction_changed",
-    "entitlement_transition",
-    "polarity_transition",
+    "entitlement_branch_changed",
+    "polarity_branch_changed",
     "polarity_direction_preserved",
 )
-
+CANONICAL_NUMERIC_COORDINATES = (
+    CANONICAL_SCORE_COORDINATES
+    + CANONICAL_NATIVE_MARGIN_COORDINATES
+    + CANONICAL_COUNTERFACTUAL_MARGIN_COORDINATES
+    + SIGNED_FIELDS
+    + ACTION_RESPONSE_NORM_FIELDS
+)
+REQUIRED_CANDIDATE_EPOCH_COORDINATES = (
+    CANONICAL_NUMERIC_COORDINATES
+    + ("native_prediction", "counterfactual_prediction")
+    + BOOL_FIELDS
+)
+PRIMARY_SIGNED_COORDINATES = (
+    CANONICAL_SCORE_COORDINATES
+    + CANONICAL_NATIVE_MARGIN_COORDINATES
+    + CANONICAL_COUNTERFACTUAL_MARGIN_COORDINATES
+    + SIGNED_FIELDS
+)
+SIGNED_COORDINATE_EXCLUSIONS = (
+    CANONICAL_SCORE_COORDINATES
+    + CANONICAL_NATIVE_MARGIN_COORDINATES
+    + CANONICAL_COUNTERFACTUAL_MARGIN_COORDINATES
+)
 CONTRACT_H = ("scope", "run", "gate", "required", "observed", "passed", "blocking_reason")
 SOURCE_H = (
     "stage", "artifact", "path", "sha256", "row_count", "purpose",
@@ -142,7 +180,7 @@ TAIL_H = (
     "counterfactual_margin_support_minus_not_entitled",
     "counterfactual_margin_support_minus_refute",
     "counterfactual_margin_refute_minus_not_entitled",
-    *SIGNED_FIELDS, *BOOL_FIELDS,
+    *SIGNED_FIELDS, *BOOL_FIELDS, *ACTION_RESPONSE_NORM_FIELDS,
     "native_entitlement_reserve", "counterfactual_entitlement_reserve",
     "entitlement_reserve_change", "native_polarity_reserve",
     "counterfactual_polarity_reserve", "polarity_reserve_change",
@@ -435,15 +473,142 @@ def geometry_from_p2(module: ModuleType, scores: dict[str, float]) -> dict[str, 
 def branch_flags_from_p2(
     module: ModuleType, native: str, counterfactual: str,
 ) -> dict[str, bool]:
-    """Rename fields from the exact P2 branch-state function."""
+    """Expose the exact P2 branch-state names without active aliases."""
     value = module.branch_flags(native, counterfactual)
     return {
         "prediction_changed": native != counterfactual,
-        "entitlement_transition": value["entitlement_branch_changed"],
-        "polarity_transition": value["polarity_branch_changed"],
+        "entitlement_branch_changed": value["entitlement_branch_changed"],
+        "polarity_branch_changed": value["polarity_branch_changed"],
         "polarity_direction_preserved": value["polarity_direction_preserved"],
     }
 
+
+def materialize_composer_geometry(
+    module: ModuleType,
+    native_scores: dict[str, float],
+    counterfactual_scores: dict[str, float],
+    native_prediction: str,
+    counterfactual_prediction: str,
+) -> dict[str, Any]:
+    """Materialize the one canonical flat P2 score/margin/delta schema."""
+    for label, scores in (
+        ("native", native_scores), ("counterfactual", counterfactual_scores),
+    ):
+        missing_classes = sorted(set(INTERNAL_CLASS_ORDER) - set(scores))
+        if missing_classes:
+            raise ValueError(f"{label} composer scores missing classes {missing_classes}")
+        invalid_classes = sorted(
+            class_name for class_name in INTERNAL_CLASS_ORDER
+            if type(scores[class_name]) not in (int, float)
+            or not math.isfinite(float(scores[class_name]))
+        )
+        if invalid_classes:
+            raise ValueError(f"{label} composer scores are non-numeric or non-finite: {invalid_classes}")
+
+    native_geo = geometry_from_p2(module, native_scores)
+    counterfactual_geo = geometry_from_p2(module, counterfactual_scores)
+    if native_geo["prediction"] != native_prediction:
+        raise ValueError("native score/prediction disagreement")
+    if counterfactual_geo["prediction"] != counterfactual_prediction:
+        raise ValueError("counterfactual score/prediction disagreement")
+
+    row: dict[str, Any] = {
+        "native_score_support": native_scores["SUPPORT"],
+        "native_score_not_entitled": native_scores["NOT_ENTITLED"],
+        "native_score_refute": native_scores["REFUTE"],
+        "counterfactual_score_support": counterfactual_scores["SUPPORT"],
+        "counterfactual_score_not_entitled": counterfactual_scores["NOT_ENTITLED"],
+        "counterfactual_score_refute": counterfactual_scores["REFUTE"],
+        "native_prediction": native_prediction,
+        "counterfactual_prediction": counterfactual_prediction,
+        "native_top1_runner_up_margin": native_geo["top1_runner_up_margin"],
+        "native_margin_support_minus_not_entitled": native_geo["support_minus_not_entitled"],
+        "native_margin_support_minus_refute": native_geo["support_minus_refute"],
+        "native_margin_refute_minus_not_entitled": native_geo["refute_minus_not_entitled"],
+        "counterfactual_top1_runner_up_margin": counterfactual_geo["top1_runner_up_margin"],
+        "counterfactual_margin_support_minus_not_entitled": counterfactual_geo["support_minus_not_entitled"],
+        "counterfactual_margin_support_minus_refute": counterfactual_geo["support_minus_refute"],
+        "counterfactual_margin_refute_minus_not_entitled": counterfactual_geo["refute_minus_not_entitled"],
+    }
+    row.update({
+        "delta_score_support": row["counterfactual_score_support"] - row["native_score_support"],
+        "delta_score_not_entitled": (
+            row["counterfactual_score_not_entitled"] - row["native_score_not_entitled"]
+        ),
+        "delta_score_refute": row["counterfactual_score_refute"] - row["native_score_refute"],
+    })
+    row.update({
+        "delta_top1_runner_up_margin": (
+            row["counterfactual_top1_runner_up_margin"]
+            - row["native_top1_runner_up_margin"]
+        ),
+        "delta_support_minus_not_entitled": (
+            row["counterfactual_margin_support_minus_not_entitled"]
+            - row["native_margin_support_minus_not_entitled"]
+        ),
+        "delta_support_minus_refute": (
+            row["counterfactual_margin_support_minus_refute"]
+            - row["native_margin_support_minus_refute"]
+        ),
+        "delta_refute_minus_not_entitled": (
+            row["counterfactual_margin_refute_minus_not_entitled"]
+            - row["native_margin_refute_minus_not_entitled"]
+        ),
+    })
+    row.update(branch_flags_from_p2(module, native_prediction, counterfactual_prediction))
+    score_deltas = [row[field] for field in CANONICAL_SCORE_DELTA_COORDINATES]
+    row.update({
+        "action_response_l1": sum(abs(value) for value in score_deltas),
+        "action_response_l2": math.sqrt(sum(value * value for value in score_deltas)),
+        "action_response_linf": max(abs(value) for value in score_deltas),
+    })
+    return row
+
+
+def validate_candidate_epoch_coordinate_row(
+    row: dict[str, Any], gates: list[dict[str, Any]],
+) -> None:
+    """Fail with row provenance before any downstream coordinate consumer."""
+    missing_fields = sorted(set(REQUIRED_CANDIDATE_EPOCH_COORDINATES) - set(row))
+    invalid_numeric_fields = sorted(
+        field for field in CANONICAL_NUMERIC_COORDINATES
+        if field in row and (
+            type(row[field]) not in (int, float)
+            or not math.isfinite(float(row[field]))
+        )
+    )
+    invalid_boolean_fields = sorted(
+        field for field in BOOL_FIELDS
+        if field in row and type(row[field]) is not bool
+    )
+    invalid_prediction_fields = sorted(
+        field for field in ("native_prediction", "counterfactual_prediction")
+        if field in row and (not isinstance(row[field], str) or not row[field])
+    )
+    if missing_fields or invalid_numeric_fields or invalid_boolean_fields or invalid_prediction_fields:
+        evidence = {
+            "seed": row["seed"],
+            "epoch": row["epoch"],
+            "stable_row_id": row["stable_row_id"],
+            "data_identity": row["data_identity"],
+            "candidate_mask": row["candidate_mask"],
+            "candidate_action_key": row["candidate_action_key"],
+            "missing_fields": missing_fields,
+            "invalid_numeric_fields": invalid_numeric_fields,
+            "invalid_boolean_fields": invalid_boolean_fields,
+            "invalid_prediction_fields": invalid_prediction_fields,
+            "observed_keys": sorted(row),
+        }
+        gate(
+            gates, "schema", "", "candidate_action_epoch_coordinate_schema_closure",
+            {
+                "missing_fields": [], "invalid_numeric_fields": [],
+                "invalid_boolean_fields": [], "invalid_prediction_fields": [],
+            },
+            evidence,
+            False,
+            "candidate-action epoch coordinate schema failure: " + canonical(evidence),
+        )
 
 def rank_and_pairs(values: dict[str, float]) -> tuple[list[list[str]], dict[str, str], dict[str, int]]:
     groups: dict[float, list[str]] = defaultdict(list)
@@ -1850,19 +2015,17 @@ def analyze(
     tail_rows: list[dict[str, Any]] = []
     native_epoch: dict[tuple[int, int, str], dict[str, Any]] = {}
     candidate_epoch: dict[tuple[int, int, str, str], dict[str, Any]] = {}
+    coordinate_schema_rows_checked = 0
+    coordinate_schema_common_keys: set[str] | None = None
     for key in sorted(states):
         seed, epoch, identity = key
         joint = states[key]["joint"]
         native_scores = p2_module.score_map_from_native(joint)
-        native_geo = geometry_from_p2(p2_module, native_scores)
         native_prediction = str(joint["final_native_prediction"])
-        if native_geo["prediction"] != native_prediction:
-            raise ValueError("native score/prediction disagreement")
         stable = str(joint["stable_row_id"])
         identity_text = data_identity(identity)
         native_epoch[(seed, epoch, identity_text)] = {
-            "scores": native_scores, "geo": native_geo, "prediction": native_prediction,
-            "stable_row_id": stable,
+            "prediction": native_prediction, "stable_row_id": stable,
         }
         epoch_candidates: dict[str, dict[str, Any]] = {}
         for mask in CANDIDATE_MASKS:
@@ -1874,32 +2037,32 @@ def analyze(
                 raise ValueError("cross-seed or row-identity action confusion")
             reconstructed = b6_module.apply_mask(joint, states[key]["frame_local_only"], action)
             cf_scores = p2_module.score_map_from_reconstruction(reconstructed)
-            cf_geo = geometry_from_p2(p2_module, cf_scores)
             cf_prediction = str(reconstructed.get("prediction", ""))
-            if cf_geo["prediction"] != cf_prediction:
-                raise ValueError("counterfactual score/prediction disagreement")
-            delta = {
-                "delta_score_support": cf_scores["SUPPORT"] - native_scores["SUPPORT"],
-                "delta_score_not_entitled": cf_scores["NOT_ENTITLED"] - native_scores["NOT_ENTITLED"],
-                "delta_score_refute": cf_scores["REFUTE"] - native_scores["REFUTE"],
-                "delta_top1_runner_up_margin": cf_geo["top1_runner_up_margin"] - native_geo["top1_runner_up_margin"],
-                "delta_support_minus_not_entitled": cf_geo["support_minus_not_entitled"] - native_geo["support_minus_not_entitled"],
-                "delta_support_minus_refute": cf_geo["support_minus_refute"] - native_geo["support_minus_refute"],
-                "delta_refute_minus_not_entitled": cf_geo["refute_minus_not_entitled"] - native_geo["refute_minus_not_entitled"],
-            }
-            native_entitlement = max(native_scores["SUPPORT"], native_scores["REFUTE"]) - native_scores["NOT_ENTITLED"]
-            cf_entitlement = max(cf_scores["SUPPORT"], cf_scores["REFUTE"]) - cf_scores["NOT_ENTITLED"]
-            flags = branch_flags_from_p2(p2_module, native_prediction, cf_prediction)
+            coordinates = materialize_composer_geometry(
+                p2_module, native_scores, cf_scores,
+                native_prediction, cf_prediction,
+            )
+            native_entitlement = (
+                max(coordinates["native_score_support"], coordinates["native_score_refute"])
+                - coordinates["native_score_not_entitled"]
+            )
+            cf_entitlement = (
+                max(
+                    coordinates["counterfactual_score_support"],
+                    coordinates["counterfactual_score_refute"],
+                )
+                - coordinates["counterfactual_score_not_entitled"]
+            )
             epoch_candidates[mask] = {
-                "action": action, "cf_scores": cf_scores, "cf_geo": cf_geo,
-                "cf_prediction": cf_prediction, "delta": delta, "flags": flags,
+                "action": action,
+                "coordinates": coordinates,
                 "native_entitlement": native_entitlement,
                 "cf_entitlement": cf_entitlement,
             }
         order_state: dict[str, tuple[list[list[str]], dict[str, str], dict[str, int]]] = {}
         for field in SIGNED_FIELDS:
             order_state[field] = rank_and_pairs({
-                mask: epoch_candidates[mask]["delta"][field] for mask in CANDIDATE_MASKS
+                mask: epoch_candidates[mask]["coordinates"][field] for mask in CANDIDATE_MASKS
             })
         for mask in CANDIDATE_MASKS:
             item = epoch_candidates[mask]
@@ -1911,46 +2074,102 @@ def analyze(
                 "tail_state_authorization": (
                     INFERENCE_CANDIDATE if epoch == 20 else DIAGNOSTIC
                 ),
-                "native_prediction": native_prediction,
-                "counterfactual_prediction": item["cf_prediction"],
-                "native_score_support": native_scores["SUPPORT"],
-                "native_score_not_entitled": native_scores["NOT_ENTITLED"],
-                "native_score_refute": native_scores["REFUTE"],
-                "counterfactual_score_support": item["cf_scores"]["SUPPORT"],
-                "counterfactual_score_not_entitled": item["cf_scores"]["NOT_ENTITLED"],
-                "counterfactual_score_refute": item["cf_scores"]["REFUTE"],
-                **{f"native_{field}": native_geo[field] for field in MARGIN_FIELDS},
-                **{f"counterfactual_{field}": item["cf_geo"][field] for field in MARGIN_FIELDS},
-                **item["delta"], **item["flags"],
+                **item["coordinates"],
                 "native_entitlement_reserve": item["native_entitlement"],
                 "counterfactual_entitlement_reserve": item["cf_entitlement"],
                 "entitlement_reserve_change": item["cf_entitlement"] - item["native_entitlement"],
-                "native_polarity_reserve": native_geo["support_minus_refute"],
-                "counterfactual_polarity_reserve": item["cf_geo"]["support_minus_refute"],
-                "polarity_reserve_change": item["delta"]["delta_support_minus_refute"],
+                "native_polarity_reserve": item["coordinates"]["native_margin_support_minus_refute"],
+                "counterfactual_polarity_reserve": item["coordinates"]["counterfactual_margin_support_minus_refute"],
+                "polarity_reserve_change": item["coordinates"]["delta_support_minus_refute"],
                 "entitlement_reserve_change_sign": sign(item["cf_entitlement"] - item["native_entitlement"]),
                 "entitlement_reserve_direction": (
                     "UNCHANGED" if item["cf_entitlement"] == item["native_entitlement"] else
                     "INCREASES" if item["cf_entitlement"] > item["native_entitlement"] else "DECREASES"
                 ),
-                "polarity_reserve_change_sign": sign(item["delta"]["delta_support_minus_refute"]),
+                "polarity_reserve_change_sign": sign(item["coordinates"]["delta_support_minus_refute"]),
                 "polarity_reserve_direction": (
-                    "UNCHANGED" if item["delta"]["delta_support_minus_refute"] == 0 else
-                    "INCREASES" if item["delta"]["delta_support_minus_refute"] > 0 else "DECREASES"
+                    "UNCHANGED" if item["coordinates"]["delta_support_minus_refute"] == 0 else
+                    "INCREASES" if item["coordinates"]["delta_support_minus_refute"] > 0 else "DECREASES"
                 ),
-                **{f"{field}_sign_relative_to_native": sign(item["delta"][field]) for field in SIGNED_FIELDS},
+                **{
+                    f"{field}_sign_relative_to_native": sign(item["coordinates"][field])
+                    for field in SIGNED_FIELDS
+                },
                 "score_source_boundary": p2_module.SOURCE_BOUNDARY,
                 "native_score_dtype": p2_module.NATIVE_SOURCE_DTYPE,
                 "counterfactual_score_dtype": p2_module.COUNTERFACTUAL_SOURCE_DTYPE,
             }
             for field in SIGNED_FIELDS:
-                mean = sum(epoch_candidates[candidate]["delta"][field] for candidate in CANDIDATE_MASKS) / 3.0
-                row[f"{field}_centered_across_candidates"] = item["delta"][field] - mean
+                mean = sum(
+                    epoch_candidates[candidate]["coordinates"][field]
+                    for candidate in CANDIDATE_MASKS
+                ) / 3.0
+                row[f"{field}_centered_across_candidates"] = item["coordinates"][field] - mean
                 row[f"{field}_candidate_rank"] = order_state[field][2][mask]
                 row[f"{field}_pairwise_candidate_ordering"] = order_state[field][1]
+            validate_candidate_epoch_coordinate_row(row, gates)
+            coordinate_schema_rows_checked += 1
+            coordinate_schema_common_keys = (
+                set(row)
+                if coordinate_schema_common_keys is None
+                else coordinate_schema_common_keys & set(row)
+            )
             tail_rows.append(row)
             candidate_epoch[(seed, epoch, identity_text, mask)] = row
 
+    produced_common_coordinate_names = (
+        set() if coordinate_schema_common_keys is None else coordinate_schema_common_keys
+    )
+    missing_coordinate_names = sorted(
+        set(REQUIRED_CANDIDATE_EPOCH_COORDINATES) - produced_common_coordinate_names
+    )
+    produced_primary_signed_coordinates = (
+        set(PRIMARY_SIGNED_COORDINATES) & produced_common_coordinate_names
+    )
+    missing_registered_signed_coordinates = sorted(
+        set(SIGNED_FIELDS) - produced_primary_signed_coordinates
+    )
+    unexpected_coordinate_names = sorted(
+        produced_primary_signed_coordinates
+        - set(SIGNED_FIELDS)
+        - set(SIGNED_COORDINATE_EXCLUSIONS)
+    )
+    coordinate_schema_passed = (
+        coordinate_schema_rows_checked == 19440
+        and not missing_coordinate_names
+        and not missing_registered_signed_coordinates
+        and not unexpected_coordinate_names
+    )
+    gate(
+        gates, "schema", "", "candidate_action_epoch_coordinate_schema_closure",
+        {
+            "required_coordinate_count": len(REQUIRED_CANDIDATE_EPOCH_COORDINATES),
+            "missing_coordinate_names": [],
+            "missing_registered_signed_coordinates": [],
+            "unexpected_coordinate_names": [],
+            "rows_checked": 19440,
+        },
+        {
+            "required_coordinate_count": len(REQUIRED_CANDIDATE_EPOCH_COORDINATES),
+            "produced_coordinate_count": len(
+                set(REQUIRED_CANDIDATE_EPOCH_COORDINATES)
+                & produced_common_coordinate_names
+            ),
+            "registered_signed_coordinate_count": len(SIGNED_FIELDS),
+            "produced_registered_signed_coordinate_count": len(
+                set(SIGNED_FIELDS) & produced_primary_signed_coordinates
+            ),
+            "explicitly_excluded_primary_signed_coordinates": list(
+                SIGNED_COORDINATE_EXCLUSIONS
+            ),
+            "missing_coordinate_names": missing_coordinate_names,
+            "missing_registered_signed_coordinates": missing_registered_signed_coordinates,
+            "unexpected_coordinate_names": unexpected_coordinate_names,
+            "rows_checked": coordinate_schema_rows_checked,
+        },
+        coordinate_schema_passed,
+        "candidate-action epoch coordinate schema does not close",
+    )
     trajectories: dict[tuple[int, str, str], list[dict[str, Any]]] = defaultdict(list)
     for row in tail_rows:
         trajectories[(row["seed"], row["data_identity"], row["candidate_mask"])].append(row)
@@ -2006,10 +2225,10 @@ def analyze(
                 "counterfactual_winner_persistence": persistence_count(winner_sequence),
                 "prediction_changed_sequence": bool_sequences["prediction_changed"],
                 "prediction_changed_persistence": persistence_count(bool_sequences["prediction_changed"]),
-                "entitlement_transition_sequence": bool_sequences["entitlement_transition"],
-                "entitlement_transition_persistence": persistence_count(bool_sequences["entitlement_transition"]),
-                "polarity_transition_sequence": bool_sequences["polarity_transition"],
-                "polarity_transition_persistence": persistence_count(bool_sequences["polarity_transition"]),
+                "entitlement_transition_sequence": bool_sequences["entitlement_branch_changed"],
+                "entitlement_transition_persistence": persistence_count(bool_sequences["entitlement_branch_changed"]),
+                "polarity_transition_sequence": bool_sequences["polarity_branch_changed"],
+                "polarity_transition_persistence": persistence_count(bool_sequences["polarity_branch_changed"]),
                 "polarity_direction_preserved_sequence": bool_sequences["polarity_direction_preserved"],
                 "polarity_direction_persistence": persistence_count(bool_sequences["polarity_direction_preserved"]),
                 "decision_boundary_crossing_count": decision_crossings,
@@ -2147,7 +2366,11 @@ def analyze(
         (integer(row["seed"], "P2 seed"), row["data_identity"], row["candidate_mask"]): row
         for row in p2_response
     }
-    native_score_bad = candidate_score_bad = margin_bad = prediction_bad = categorical_bad = identity_bad = 0
+    native_score_bad = counterfactual_score_bad = 0
+    native_margin_bad = counterfactual_margin_bad = 0
+    score_delta_bad = margin_delta_bad = action_response_norm_bad = 0
+    native_prediction_bad = counterfactual_prediction_bad = 0
+    categorical_bad = identity_bad = 0
     for row in tail_rows:
         if row["epoch"] != 20:
             continue
@@ -2155,37 +2378,64 @@ def analyze(
         candidate = p2_candidate_index[(row["seed"], row["data_identity"], row["candidate_mask"])]
         response = p2_response_index[(row["seed"], row["data_identity"], row["candidate_mask"])]
         native_score_bad += any(
-            float(row[f"native_score_{field}"]) != number(native[f"native_score_{field}"], "P2 native")
+            float(row[f"native_score_{field}"])
+            != number(native[f"native_score_{field}"], "P2 native score")
             for field in SCORE_FIELDS
         )
-        candidate_score_bad += any(
-            float(row[f"counterfactual_score_{field}"]) != number(candidate[f"counterfactual_score_{field}"], "P2 cf")
+        counterfactual_score_bad += any(
+            float(row[f"counterfactual_score_{field}"])
+            != number(candidate[f"counterfactual_score_{field}"], "P2 counterfactual score")
             for field in SCORE_FIELDS
         )
-        margin_bad += any(
-            float(row[field]) != number(response[field], "P2 response")
-            for field in SIGNED_FIELDS
+        native_margin_bad += any(
+            float(row[field]) != number(native[field], "P2 native margin")
+            for field in CANONICAL_NATIVE_MARGIN_COORDINATES
+        )
+        counterfactual_margin_bad += any(
+            float(row[field]) != number(candidate[field], "P2 counterfactual margin")
+            for field in CANONICAL_COUNTERFACTUAL_MARGIN_COORDINATES
+        )
+        score_delta_bad += any(
+            float(row[field]) != number(response[field], "P2 score delta")
+            for field in CANONICAL_SCORE_DELTA_COORDINATES
+        )
+        margin_delta_bad += any(
+            float(row[field]) != number(response[field], "P2 margin delta")
+            for field in CANONICAL_MARGIN_DELTA_COORDINATES
+        )
+        action_response_norm_bad += any(
+            float(row[field]) != number(response[field], "P2 action-response norm")
+            for field in ACTION_RESPONSE_NORM_FIELDS
         )
         identity_bad += (
             row["stable_row_id"] != native["stable_row_id"]
             or row["stable_row_id"] != candidate["stable_row_id"]
             or row["candidate_action_key"] != candidate["candidate_action_key"]
         )
-        prediction_bad += (
-            row["native_prediction"] != native["native_prediction"]
-            or row["counterfactual_prediction"] != candidate["counterfactual_prediction"]
+        native_prediction_bad += row["native_prediction"] != native["native_prediction"]
+        counterfactual_prediction_bad += (
+            row["counterfactual_prediction"] != candidate["counterfactual_prediction"]
         )
         categorical_bad += (
-            row["prediction_changed"] != boolean(response["prediction_changed"], "P2 prediction changed")
-            or row["entitlement_transition"] != boolean(response["entitlement_branch_changed"], "P2 entitlement transition")
-            or row["polarity_transition"] != boolean(response["polarity_branch_changed"], "P2 polarity transition")
-            or row["polarity_direction_preserved"] != boolean(response["polarity_direction_preserved"], "P2 polarity preserved")
+            row["prediction_changed"]
+                != boolean(response["prediction_changed"], "P2 prediction changed")
+            or row["entitlement_branch_changed"]
+                != boolean(response["entitlement_branch_changed"], "P2 entitlement transition")
+            or row["polarity_branch_changed"]
+                != boolean(response["polarity_branch_changed"], "P2 polarity transition")
+            or row["polarity_direction_preserved"]
+                != boolean(response["polarity_direction_preserved"], "P2 polarity preserved")
         )
     endpoint_reproduction = {
         "native_score_disagreements": native_score_bad,
-        "counterfactual_score_disagreements": candidate_score_bad,
-        "margin_disagreements": margin_bad,
-        "prediction_disagreements": prediction_bad,
+        "counterfactual_score_disagreements": counterfactual_score_bad,
+        "native_margin_disagreements": native_margin_bad,
+        "counterfactual_margin_disagreements": counterfactual_margin_bad,
+        "score_delta_disagreements": score_delta_bad,
+        "margin_delta_disagreements": margin_delta_bad,
+        "action_response_norm_disagreements": action_response_norm_bad,
+        "native_prediction_disagreements": native_prediction_bad,
+        "counterfactual_prediction_disagreements": counterfactual_prediction_bad,
         "categorical_response_disagreements": categorical_bad,
         "identity_or_action_disagreements": identity_bad,
     }
@@ -2243,32 +2493,38 @@ def analyze(
     gate(gates, "state", "", "stability_state_dictionary_closure", True,
          {"rows": len(dictionary), "families": sorted({row["family"] for row in dictionary})},
          dictionary_ok, "precommitted stability-state dictionary is incomplete")
-    finite_fields = (
-        tuple(f"native_score_{field}" for field in SCORE_FIELDS)
-        + tuple(f"counterfactual_score_{field}" for field in SCORE_FIELDS)
-        + tuple(f"native_{field}" for field in MARGIN_FIELDS)
-        + tuple(f"counterfactual_{field}" for field in MARGIN_FIELDS)
-        + SIGNED_FIELDS
+    finite_ok = all(
+        type(row[field]) in (int, float) and math.isfinite(float(row[field]))
+        for row in tail_rows for field in CANONICAL_NUMERIC_COORDINATES
     )
-    finite_ok = all(math.isfinite(float(row[field])) for row in tail_rows for field in finite_fields)
-    margin_ok = all(
-        row["native_margin_support_minus_not_entitled"] == row["native_score_support"] - row["native_score_not_entitled"]
-        and row["native_margin_support_minus_refute"] == row["native_score_support"] - row["native_score_refute"]
-        and row["native_margin_refute_minus_not_entitled"] == row["native_score_refute"] - row["native_score_not_entitled"]
-        and row["counterfactual_margin_support_minus_not_entitled"] == row["counterfactual_score_support"] - row["counterfactual_score_not_entitled"]
-        and row["counterfactual_margin_support_minus_refute"] == row["counterfactual_score_support"] - row["counterfactual_score_refute"]
-        and row["counterfactual_margin_refute_minus_not_entitled"] == row["counterfactual_score_refute"] - row["counterfactual_score_not_entitled"]
-        for row in tail_rows
-    )
-    delta_ok = all(
-        row["delta_score_support"] == row["counterfactual_score_support"] - row["native_score_support"]
-        and row["delta_score_not_entitled"] == row["counterfactual_score_not_entitled"] - row["native_score_not_entitled"]
-        and row["delta_score_refute"] == row["counterfactual_score_refute"] - row["native_score_refute"]
-        and row["delta_support_minus_not_entitled"] == row["counterfactual_margin_support_minus_not_entitled"] - row["native_margin_support_minus_not_entitled"]
-        and row["delta_support_minus_refute"] == row["counterfactual_margin_support_minus_refute"] - row["native_margin_support_minus_refute"]
-        and row["delta_refute_minus_not_entitled"] == row["counterfactual_margin_refute_minus_not_entitled"] - row["native_margin_refute_minus_not_entitled"]
-        for row in tail_rows
-    )
+    margin_ok = True
+    delta_ok = True
+    for row in tail_rows:
+        replay = materialize_composer_geometry(
+            p2_module,
+            {
+                "SUPPORT": row["native_score_support"],
+                "NOT_ENTITLED": row["native_score_not_entitled"],
+                "REFUTE": row["native_score_refute"],
+            },
+            {
+                "SUPPORT": row["counterfactual_score_support"],
+                "NOT_ENTITLED": row["counterfactual_score_not_entitled"],
+                "REFUTE": row["counterfactual_score_refute"],
+            },
+            row["native_prediction"], row["counterfactual_prediction"],
+        )
+        margin_ok = margin_ok and all(
+            row[field] == replay[field]
+            for field in (
+                CANONICAL_NATIVE_MARGIN_COORDINATES
+                + CANONICAL_COUNTERFACTUAL_MARGIN_COORDINATES
+            )
+        )
+        delta_ok = delta_ok and all(
+            row[field] == replay[field]
+            for field in SIGNED_FIELDS + ACTION_RESPONSE_NORM_FIELDS
+        )
     for name, observed in (
         ("finite_exact_score_fields", finite_ok),
         ("margin_arithmetic_closure", margin_ok),
@@ -2450,6 +2706,8 @@ def analyze(
             "identity": p2_module.SOURCE_BOUNDARY,
             "reused_p2_score_mapping": True,
             "reused_b2b6_reconstruct_apply_mask": True,
+            "canonical_geometry_helper": "materialize_composer_geometry",
+            "candidate_action_epoch_schema_rows_checked": coordinate_schema_rows_checked,
             "internal_class_order": list(INTERNAL_CLASS_ORDER),
             "serialized_precision": SERIALIZED_PRECISION,
         },
