@@ -31,9 +31,10 @@ in the relative ordering of the three frozen candidate actions.
 ```
 
 Every source path is explicit. The external B2-B5 recipient-signature CSV is
-used only from its supplied path and validated against its frozen hash.
-Timestamp-based artifact discovery is prohibited. The output directory must
-not already exist.
+used only from its supplied path. Its actual SHA256 is always computed, but an
+upstream digest is byte-level authority only when it normalizes to exactly 64
+lowercase hexadecimal characters. Timestamp-based artifact discovery is
+prohibited. The output directory must not already exist.
 
 ## Frozen authorities
 
@@ -64,6 +65,51 @@ B2-B5 must retain decision
 recipient-signature CSV supplies signature/action-set authority and primitive
 state semantics without contributing outcome, recovery, harm, correctness, or
 safety-target state.
+
+## Recipient-signature authority resolution
+
+P4 resolves byte-level authority in this exact order:
+
+1. the consumed-artifact record in P2 analysis,
+   `stage196b2b6p2_source_closure.csv`, and the P2 contract;
+2. a valid nonempty B2-B5 analysis or companion-closure digest;
+3. exact fail-closed semantic closure when neither upstream stage records a
+   valid digest.
+
+P2 is preferred because it consumed the explicit external artifact while
+materializing the exact 2,160 native and 6,480 candidate-action endpoint rows
+and completed composer reproduction. P4 validates every available P2
+recipient-artifact datum independently: semantic filename, normalized digest,
+row count, source role, and required/loaded external-artifact status.
+Machine-specific Windows and Kaggle root prefixes are not required to match.
+
+A digest normalizer accepts only a string which, after surrounding whitespace
+is stripped and uppercase hexadecimal is normalized to lowercase, has exactly
+64 characters all in `[0-9a-f]`. Empty strings, null, NaN, `None`, `unknown`,
+malformed text, and non-string values are `HASH_AUTHORITY_UNAVAILABLE`. They
+are never compared with the computed artifact hash. `HASH_AUTHORITY_MISMATCH`
+exists only when both expected and actual values are valid SHA256 digests and
+differ.
+
+The actual explicit-file SHA256 is computed and recorded in every successful
+run regardless of authority mode. When a valid P2 digest exists, authority mode
+is `P2_BYTE_HASH`. Otherwise a valid B2-B5 digest selects
+`B2B5_BYTE_HASH`. When neither exists, `SEMANTIC_CLOSURE` is used and
+`expected_sha256` is null rather than an empty string.
+
+Semantic fallback is not permissive. It requires the explicit path to exist as
+a regular file, a valid computed SHA256, exactly 524,256 rows, the complete
+schema, seeds 183/184/185, unique semantic row/action keys, exact six-run and
+candidate provenance, strict B2-B5 action-set agreement, exact reproduction of
+P2's 6,480 candidate-action mapping, and exclusion of outcome or safety fields
+from reconstruction inputs. The same schema, population, key, and mapping
+checks remain mandatory when byte-level authority is available.
+
+The `explicit_recipient_signature_authority` contract records the selected
+authority mode and source, resolved explicit path, actual and expected digests,
+expected-digest availability, byte-match result, row count, and
+semantic-closure result. The analysis records the same facts under
+`recipient_signature_authority`.
 
 B2-B4 must retain decision
 `STAGE196B2B4_ROW_SPECIFIC_PRIMITIVE_INTERACTION`. Its controlled coalition
@@ -316,9 +362,11 @@ blocking_reason
 ```
 
 The contract covers commit and frozen decision identity; P3 zero-gate and
-zero-transfer closure; P2 source counts and endpoint authority; exact B2-B6
-masks; B2-B5 external authority and action-set membership; B2-B4 controlled
-numeric agreement; runtime commit, six-run, 120/120 sidecar, and six-manifest
+zero-transfer closure; P2 source counts and endpoint authority; independent P2
+recipient-artifact provenance; valid-digest normalization and ordered authority
+selection; the exact 524,256-row external schema, seed, semantic-key, six-run,
+B2-B5 action-set, and P2 6,480-row mapping closure; exact B2-B6 masks; B2-B4
+controlled numeric agreement; runtime commit, 120/120 sidecar, and six-manifest
 closure; exact tail populations and identities; class order, finite scores,
 margin/delta arithmetic; exact P2 epoch-20 reproduction; dictionary,
 authorization, nondependency, prohibited-field, topology, ordering, endpoint,

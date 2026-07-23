@@ -464,6 +464,74 @@ def exact_authority_hash(authority: dict[str, Any], path: Path) -> str:
     return matches[0] if len(set(matches)) == 1 else ""
 
 
+def normalize_sha256_authority(value: Any) -> str | None:
+    """Return a canonical SHA256 only for valid, nonempty digest authority."""
+    if not isinstance(value, str):
+        return None
+    normalized = value.strip().lower()
+    return normalized if re.fullmatch(r"[0-9a-f]{64}", normalized) else None
+
+
+def artifact_basename(value: Any) -> str:
+    if not isinstance(value, str) or not value.strip():
+        return ""
+    return value.strip().replace("\\", "/").rsplit("/", 1)[-1]
+
+
+def recipient_artifact_row(row: dict[str, Any]) -> bool:
+    target = "stage196b2b5_recipient_signature_rows.csv"
+    values = (
+        row.get("artifact"), row.get("path"), row.get("gate"),
+        row.get("purpose"), row.get("source_role"),
+    )
+    return any(
+        target in str(value)
+        or "recipient_signature" in str(value).lower()
+        or "recipient-signature" in str(value).lower()
+        or "b2b5_large_file" in str(value).lower()
+        for value in values
+    )
+
+
+def unique_valid_hash(
+    candidates: Iterable[tuple[str, Any]],
+) -> tuple[str | None, str, list[dict[str, Any]], bool]:
+    evidence: list[dict[str, Any]] = []
+    valid: list[tuple[str, str]] = []
+    for source, raw in candidates:
+        normalized = normalize_sha256_authority(raw)
+        evidence.append({
+            "source": source, "raw_available": raw is not None,
+            "normalized_sha256": normalized,
+            "status": (
+                "HASH_AUTHORITY_AVAILABLE"
+                if normalized is not None else "HASH_AUTHORITY_UNAVAILABLE"
+            ),
+        })
+        if normalized is not None:
+            valid.append((source, normalized))
+    distinct = sorted({value for _, value in valid})
+    conflict = len(distinct) > 1
+    if len(distinct) != 1:
+        return None, "", evidence, conflict
+    sources = sorted(source for source, value in valid if value == distinct[0])
+    return distinct[0], "+".join(sources), evidence, False
+
+
+def named_hash_candidates(source: str, value: Any) -> list[tuple[str, Any]]:
+    candidates: list[tuple[str, Any]] = []
+    if isinstance(value, dict):
+        for key, item in value.items():
+            child_source = f"{source}.{key}"
+            if "sha256" in str(key).lower():
+                candidates.append((child_source, item))
+            candidates.extend(named_hash_candidates(child_source, item))
+    elif isinstance(value, list):
+        for index, item in enumerate(value):
+            candidates.extend(named_hash_candidates(f"{source}[{index}]", item))
+    return candidates
+
+
 def decision_rows(
     full_relative: bool, topology_fully_stable: bool, endpoints_differ: bool,
     exact_export_available: bool, instrumentation_available: bool,
@@ -603,6 +671,35 @@ def analyze(
     exact_files(p2_dir, P2_OUTPUTS, gates, "p2_exact_nine_file_closure")
     p3_contract, _ = contract_pass(p3_dir / P3_OUTPUTS[-1], "P3 contract")
     p2_contract, _ = contract_pass(p2_dir / P2_OUTPUTS[-1], "P2 contract")
+    p2_source, p2_source_h = read_csv(p2_dir / P2_OUTPUTS[2])
+    require_columns(
+        p2_source_h,
+        ("stage", "artifact", "path", "required", "loaded", "row_count", "sha256", "purpose"),
+        "P2 source closure",
+    )
+    p2_recipient_source = [row for row in p2_source if recipient_artifact_row(row)]
+    p2_recipient_contract = [row for row in p2_contract if recipient_artifact_row(row)]
+    p2_hash_candidates: list[tuple[str, Any]] = [
+        (f"P2_SOURCE_CLOSURE[{index}].sha256", row.get("sha256"))
+        for index, row in enumerate(p2_recipient_source)
+    ]
+    for index, row in enumerate(p2_recipient_contract):
+        p2_hash_candidates.extend(named_hash_candidates(
+            f"P2_CONTRACT[{index}]", {
+                "required": cell(row.get("required")),
+                "observed": cell(row.get("observed")),
+            },
+        ))
+    p2_hash_candidates.extend(named_hash_candidates(
+        "P2_ANALYSIS.recipient_artifact",
+        {
+            "recipient_signature_authority": p2.get("recipient_signature_authority"),
+            "b2b5_large_file_validation": p2.get("b2b5_large_file_validation"),
+        },
+    ))
+    p2_expected_hash, p2_hash_source, p2_hash_evidence, p2_hash_conflict = unique_valid_hash(
+        p2_hash_candidates
+    )
     natural, natural_h = projected_csv(p3_dir / P3_OUTPUTS[5], ("feasible",))
     transfers, transfer_h = projected_csv(
         p3_dir / P3_OUTPUTS[8], ("bidirectional_transfer_success",)
@@ -649,18 +746,190 @@ def analyze(
          ns.stage196b2b3p0_runtime_git_commit == RUNTIME_COMMIT,
          "B2-B3P0 runtime commit changed")
 
+    b5_required_schema = (
+        "feature_family", "feature_subset_mask", "feature_subset_size",
+        "feature_subset_members", "seed", "stable_row_id", "signature",
+        "acceptable_coalitions", "signature_action_intersection",
+        "signature_feasible", "source_seed", "target_seed", "transfer_status",
+    )
     b5_fields = (
         "feature_family", "feature_subset_mask", "feature_subset_members", "seed",
         "stable_row_id", "signature", "signature_action_intersection", "transfer_status",
+        "source_seed", "target_seed",
     )
-    b5_large, b5_large_header = projected_csv(authority_paths["b5_large"], b5_fields)
-    expected_large_hash = exact_authority_hash(b6.get("source_hashes", {}), authority_paths["b5_large"])
-    actual_large_hash = sha256(authority_paths["b5_large"])
-    gate(gates, "authority", "B2-B5", "explicit_recipient_signature_authority",
-         {"sha256": expected_large_hash, "explicit_path": True},
-         {"sha256": actual_large_hash, "rows": len(b5_large), "explicit_path": True},
-         bool(expected_large_hash) and expected_large_hash == actual_large_hash,
-         "explicit B2-B5 recipient-signature authority hash changed")
+    explicit_b5_path = authority_paths["b5_large"]
+    explicit_b5_is_file = explicit_b5_path.is_file()
+    b5_large, b5_large_header = projected_csv(explicit_b5_path, b5_fields)
+    actual_large_hash = normalize_sha256_authority(sha256(explicit_b5_path))
+    if actual_large_hash is None:
+        raise ValueError("computed recipient-signature SHA256 is invalid")
+    actual_large_rows = len(b5_large)
+
+    b5_dir = authority_paths["b5"].parent
+    b5_contract_path = b5_dir / "stage196b2b5_contract.csv"
+    b5_contract, _ = contract_pass(b5_contract_path, "B2-B5 contract")
+    b5_hash_candidates: list[tuple[str, Any]] = []
+    b5_source_closure_path = b5_dir / "stage196b2b5_source_closure.csv"
+    b5_source_closure_rows: list[dict[str, str]] = []
+    if p2_expected_hash is None:
+        for key, value in b5.get("source_hashes", {}).items():
+            if artifact_basename(key) == explicit_b5_path.name:
+                b5_hash_candidates.append((f"B2B5_ANALYSIS.source_hashes[{key}]", value))
+        b5_recipient_contract = [row for row in b5_contract if recipient_artifact_row(row)]
+        for index, row in enumerate(b5_recipient_contract):
+            b5_hash_candidates.extend(named_hash_candidates(
+                f"B2B5_CONTRACT[{index}]", {
+                    "required": cell(row.get("required")),
+                    "observed": cell(row.get("observed")),
+                },
+            ))
+        if b5_source_closure_path.is_file():
+            b5_source_closure_rows, b5_source_closure_h = read_csv(b5_source_closure_path)
+            require_columns(
+                b5_source_closure_h, ("artifact", "path", "sha256"),
+                "B2-B5 source closure",
+            )
+            for index, row in enumerate(b5_source_closure_rows):
+                if recipient_artifact_row(row):
+                    b5_hash_candidates.append(
+                        (f"B2B5_SOURCE_CLOSURE[{index}].sha256", row.get("sha256"))
+                    )
+    b5_expected_hash, b5_hash_source, b5_hash_evidence, b5_hash_conflict = unique_valid_hash(
+        b5_hash_candidates
+    )
+
+    if p2_expected_hash is not None:
+        authority_mode = "P2_BYTE_HASH"
+        authority_source = p2_hash_source or "P2_CONSUMED_ARTIFACT"
+        expected_large_hash: str | None = p2_expected_hash
+        selected_hash_conflict = p2_hash_conflict
+    elif b5_expected_hash is not None:
+        authority_mode = "B2B5_BYTE_HASH"
+        authority_source = b5_hash_source or "B2B5_STORED_ARTIFACT"
+        expected_large_hash = b5_expected_hash
+        selected_hash_conflict = b5_hash_conflict
+    else:
+        authority_mode = "SEMANTIC_CLOSURE"
+        authority_source = "EXPLICIT_CSV_PLUS_P2_B2B5_B2B6_SEMANTIC_AUTHORITIES"
+        expected_large_hash = None
+        selected_hash_conflict = p2_hash_conflict or b5_hash_conflict
+    expected_sha256_available = expected_large_hash is not None
+    byte_hash_match = (
+        expected_sha256_available
+        and actual_large_hash is not None
+        and expected_large_hash == actual_large_hash
+    )
+    hash_authority_status = (
+        "HASH_AUTHORITY_MISMATCH"
+        if expected_sha256_available and actual_large_hash is not None and not byte_hash_match
+        else "HASH_AUTHORITY_AVAILABLE"
+        if expected_sha256_available
+        else "HASH_AUTHORITY_UNAVAILABLE"
+    )
+
+    p2_recorded_names = sorted({
+        artifact_basename(row.get("artifact") or row.get("path"))
+        for row in p2_recipient_source
+        if artifact_basename(row.get("artifact") or row.get("path"))
+    })
+    p2_recorded_counts: list[int] = []
+    for row in p2_recipient_source:
+        raw_count = cell(row.get("row_count"))
+        if type(raw_count) is int:
+            p2_recorded_counts.append(raw_count)
+        elif isinstance(raw_count, str) and raw_count.strip().isdigit():
+            p2_recorded_counts.append(int(raw_count.strip()))
+    p2_recorded_roles = sorted({
+        str(row.get("purpose", "")) for row in p2_recipient_source
+        if str(row.get("purpose", "")).strip()
+    })
+    p2_explicit_status = all(
+        boolean(row.get("required"), "P2 recipient required")
+        and boolean(row.get("loaded"), "P2 recipient loaded")
+        for row in p2_recipient_source
+    ) if p2_recipient_source else False
+    p2_provenance_present = bool(
+        p2_recipient_source or p2_recipient_contract or p2_hash_candidates
+    )
+    p2_provenance_ok = True
+    if p2_provenance_present:
+        p2_provenance_ok = (
+            not p2_hash_conflict
+            and (not p2_recorded_names or p2_recorded_names == [explicit_b5_path.name])
+            and (not p2_recorded_counts or set(p2_recorded_counts) == {actual_large_rows})
+            and (p2_expected_hash is None or p2_expected_hash == actual_large_hash)
+            and bool(p2_recipient_source)
+            and p2_explicit_status
+            and any("external" in role.lower() for role in p2_recorded_roles)
+        )
+        gate(
+            gates, "authority", "P2", "p2_recipient_signature_provenance_closure",
+            {
+                "semantic_artifact": explicit_b5_path.name,
+                "recorded_hash_when_available_matches_actual": True,
+                "recorded_row_count_when_available": 524256,
+                "source_role": "explicit external artifact",
+                "required_and_loaded": True,
+                "machine_specific_root_equality_required": False,
+            },
+            {
+                "recorded_filenames": p2_recorded_names,
+                "recorded_sha256": p2_expected_hash,
+                "recorded_sha256_available": p2_expected_hash is not None,
+                "recorded_row_counts": p2_recorded_counts,
+                "source_roles": p2_recorded_roles,
+                "required_and_loaded": p2_explicit_status,
+                "hash_evidence": p2_hash_evidence,
+            },
+            p2_provenance_ok,
+            "P2 recipient-signature consumed-artifact provenance changed",
+            fatal=False,
+        )
+
+    external_seed_set = sorted({integer(row["seed"], "recipient-signature seed") for row in b5_large})
+    semantic_keys = {
+        (
+            row["feature_family"], row["feature_subset_mask"],
+            integer(row["seed"], "recipient-signature key seed"),
+            row["stable_row_id"], canonical(cell(row["feature_subset_members"])),
+            canonical(cell(row["signature"])),
+            canonical(cell(row["signature_action_intersection"])),
+            row["transfer_status"], row["source_seed"], row["target_seed"],
+        )
+        for row in b5_large
+    }
+    b5_committed_candidate_members = {
+        row.get("feature_subset_mask"): tuple(row.get("feature_subset_members", ()))
+        for row in b5.get("recipient_inclusion_minimal_feasible_subsets", ())
+        if row.get("feature_subset_mask") in CANDIDATE_MASKS
+    }
+    b6_committed_candidate_members = {
+        row.get("feature_subset_mask"): tuple(row.get("feature_subset_members", ()))
+        for row in b6.get("candidate_feature_subsets", ())
+        if row.get("feature_subset_mask") in CANDIDATE_MASKS
+    }
+    external_candidate_members = {
+        mask: {
+            tuple(cell(row["feature_subset_members"]))
+            for row in b5_large if row["feature_subset_mask"] == mask
+        }
+        for mask in CANDIDATE_MASKS
+    }
+    candidate_semantic_agreement = all(
+        external_candidate_members[mask]
+        == {b5_committed_candidate_members.get(mask)}
+        == {b6_committed_candidate_members.get(mask)}
+        and None not in external_candidate_members[mask]
+        for mask in CANDIDATE_MASKS
+    )
+    external_schema_ok = set(b5_required_schema) <= set(b5_large_header)
+    external_population_ok = (
+        explicit_b5_is_file
+        and actual_large_rows == 524256
+        and external_schema_ok
+        and external_seed_set == list(SEEDS)
+        and len(semantic_keys) == actual_large_rows
+    )
     b5_actions_by_signature: dict[tuple[str, str], set[str]] = {}
     for row in b5_large:
         if row["feature_family"] != "recipient_local" or row["feature_subset_mask"] not in CANDIDATE_MASKS:
@@ -716,6 +985,150 @@ def analyze(
          len(actions) == 6480 and b5_cross_checks > 0 and b5_disagreements == 0,
          "recipient/action authority does not close")
 
+    p2_action_index: dict[tuple[str, int, str], tuple[str, str]] = {}
+    for row in p2_candidate:
+        key = (
+            row["candidate_mask"], integer(row["seed"], "P2 candidate seed"),
+            row["data_identity"],
+        )
+        if key in p2_action_index:
+            raise ValueError("duplicate P2 candidate-action provenance key")
+        p2_action_index[key] = (row["candidate_action_key"], row["stable_row_id"])
+    p2_mapping_disagreements = 0
+    for (mask, seed, identity), (action, stable_row_id) in actions.items():
+        p2_value = p2_action_index.get((mask, seed, data_identity(identity)))
+        p2_mapping_disagreements += (
+            p2_value is None or p2_value != (action, stable_row_id)
+        )
+    action_seed_counts = Counter(seed for _, seed, _ in actions)
+    committed_coalitions = set(b5.get("action_set_definition", {}).get("coalition_masks", ()))
+    explicit_action_set_values = {
+        action for values in b5_actions_by_signature.values() for action in values
+    }
+    action_semantic_agreement = (
+        committed_coalitions == {f"{value:05b}" for value in range(32)}
+        and explicit_action_set_values <= committed_coalitions
+        and {action for action, _ in actions.values()} <= committed_coalitions
+    )
+    runtime_for_semantic = authority_paths["runtime"]
+    semantic_run_names = sorted(
+        path.name for path in runtime_for_semantic.iterdir() if path.is_dir()
+    ) if runtime_for_semantic.is_dir() else []
+    prohibited_reconstruction_inputs = sorted(
+        (set(b5_fields) | set(action_fields))
+        & (set(PROHIBITED) - {"seed"})
+    )
+    semantic_closure_evidence = {
+        "explicit_path_exists": explicit_b5_path.exists(),
+        "explicit_path_is_regular_file": explicit_b5_is_file,
+        "actual_sha256_valid_nonempty": actual_large_hash is not None,
+        "actual_rows": actual_large_rows,
+        "required_rows": 524256,
+        "required_schema_present": external_schema_ok,
+        "required_seed_set": external_seed_set,
+        "semantic_key_count": len(semantic_keys),
+        "semantic_keys_unique": len(semantic_keys) == actual_large_rows,
+        "six_run_names": semantic_run_names,
+        "candidate_action_rows": len(actions),
+        "candidate_action_seed_counts": {
+            str(seed): action_seed_counts[seed] for seed in SEEDS
+        },
+        "candidate_masks": sorted({mask for mask, _, _ in actions}),
+        "candidate_semantic_agreement": candidate_semantic_agreement,
+        "B2B5_candidate_members": b5_committed_candidate_members,
+        "B2B6_candidate_members": b6_committed_candidate_members,
+        "B2B5_action_set_matches": b5_cross_checks,
+        "B2B5_action_set_disagreements": b5_disagreements,
+        "committed_action_semantic_agreement": action_semantic_agreement,
+        "P2_candidate_action_rows": len(p2_action_index),
+        "P2_candidate_action_mapping_disagreements": p2_mapping_disagreements,
+        "prohibited_reconstruction_inputs": prohibited_reconstruction_inputs,
+    }
+    semantic_closure_passed = (
+        external_population_ok
+        and semantic_run_names == sorted(RUNS)
+        and len(actions) == len(p2_action_index) == 6480
+        and action_seed_counts == Counter({183: 2160, 184: 2160, 185: 2160})
+        and {mask for mask, _, _ in actions} == set(CANDIDATE_MASKS)
+        and candidate_semantic_agreement
+        and action_semantic_agreement
+        and b5_cross_checks > 0
+        and b5_disagreements == 0
+        and p2_mapping_disagreements == 0
+        and not prohibited_reconstruction_inputs
+    )
+    gate(
+        gates, "authority", "B2-B5/P2/B2-B6",
+        "recipient_signature_semantic_closure",
+        {
+            "regular_file": True, "actual_sha256_valid_nonempty": True,
+            "rows": 524256, "required_schema_present": True,
+            "seed_set": list(SEEDS), "semantic_keys_unique": True,
+            "six_runs": sorted(RUNS), "candidate_action_rows": 6480,
+            "candidate_semantic_agreement": True,
+            "P2_mapping_disagreements": 0,
+            "B2B5_action_set_disagreements": 0,
+            "committed_action_semantic_agreement": True,
+            "prohibited_reconstruction_inputs": [],
+        },
+        semantic_closure_evidence,
+        semantic_closure_passed,
+        "explicit recipient-signature semantic authority closure failed",
+        fatal=False,
+    )
+    explicit_authority_passed = (
+        p2_provenance_ok
+        and not selected_hash_conflict
+        and semantic_closure_passed
+        and (
+            byte_hash_match
+            if expected_sha256_available
+            else authority_mode == "SEMANTIC_CLOSURE"
+        )
+    )
+    recipient_signature_authority = {
+        "authority_mode": authority_mode,
+        "authority_source": authority_source,
+        "explicit_path": str(explicit_b5_path),
+        "actual_sha256": actual_large_hash,
+        "expected_sha256": expected_large_hash,
+        "expected_sha256_available": expected_sha256_available,
+        "byte_hash_match": byte_hash_match,
+        "hash_authority_status": hash_authority_status,
+        "hash_authority_evidence": {
+            "P2": p2_hash_evidence, "B2B5": b5_hash_evidence,
+            "selected_hash_conflict": selected_hash_conflict,
+        },
+        "row_count": actual_large_rows,
+        "semantic_closure_passed": semantic_closure_passed,
+    }
+    gate(
+        gates, "authority", "B2-B5/P2",
+        "explicit_recipient_signature_authority",
+        {
+            "explicit_path_required": True,
+            "authority_mode": authority_mode,
+        },
+        {
+            "explicit_path": ns.stage196b2b5_recipient_signature_rows_csv.is_absolute(),
+            "resolved_path": str(explicit_b5_path),
+            "actual_rows": actual_large_rows,
+            "actual_sha256": actual_large_hash,
+            "expected_sha256": expected_large_hash,
+            "expected_sha256_available": expected_sha256_available,
+            "authority_source": authority_source,
+            "authority_mode": authority_mode,
+            "byte_hash_match": byte_hash_match,
+            "semantic_closure_passed": semantic_closure_passed,
+        },
+        explicit_authority_passed,
+        (
+            "recipient-signature byte hash authority mismatch"
+            if hash_authority_status == "HASH_AUTHORITY_MISMATCH"
+            else "recipient-signature authority closure failed"
+        ),
+    )
+
     p2_script = root / "scripts" / "export_stage196b2b6p2_action_conditional_composer_margins.py"
     b6_script = root / "scripts" / "analyze_stage196b2b6_minimal_selector_intervention.py"
     p2_module = import_module(p2_script, "_stage196b2b6p2_exact_boundary")
@@ -762,10 +1175,12 @@ def analyze(
         source_row("P3", p3_dir / P3_OUTPUTS[5], len(natural), "projected feasible-count closure only; safety fields not loaded"),
         source_row("P3", p3_dir / P3_OUTPUTS[8], len(transfers), "projected bidirectional-transfer closure only"),
         source_row("P3", p3_dir / P3_OUTPUTS[-1], len(p3_contract), "fully passing P3 contract"),
+        source_row("P2", p2_dir / P2_OUTPUTS[2], len(p2_source), "consumed-artifact provenance and preferred recipient-signature hash authority"),
         source_row("P2", p2_dir / P2_OUTPUTS[3], len(p2_native), "epoch-20 native score authority"),
         source_row("P2", p2_dir / P2_OUTPUTS[4], len(p2_candidate), "epoch-20 counterfactual score authority"),
         source_row("P2", p2_dir / P2_OUTPUTS[5], len(p2_response), "epoch-20 margin and transition authority"),
         source_row("P2", p2_dir / P2_OUTPUTS[-1], len(p2_contract), "fully passing P2 contract"),
+        source_row("B2-B5", b5_contract_path, len(b5_contract), "fully passing B2-B5 semantic contract"),
         source_row("B2-B6", action_path, len(action_rows), "projected deterministic row/action mapping"),
         source_row("source", p2_script, "", "reused exact P2 score, geometry, and branch-state boundary"),
         source_row("source", b6_script, "", "reused deterministic reconstruct/apply_mask boundary"),
@@ -1474,6 +1889,7 @@ def analyze(
             "decision": P2_DECISION, "required_rows": required_repro,
             "epoch20_reproduction": endpoint_reproduction,
         },
+        "recipient_signature_authority": recipient_signature_authority,
         "tail_population": {
             "epochs": list(EPOCHS), "seeds": list(SEEDS),
             "native_epoch_rows": len(states), "candidate_action_epoch_rows": len(tail_rows),
@@ -1567,6 +1983,15 @@ P2:
 
 `{canonical(analysis.get("p2_endpoint_authority", {}).get("epoch20_reproduction", {}))}`
 
+## Recipient-signature authority
+
+The explicit external CSV always has its actual SHA256 computed. P2
+consumed-artifact provenance is preferred when it supplies a valid nonempty
+digest; B2-B5 is secondary; otherwise exact semantic closure is required.
+Unavailable hashes are never compared as empty expected digests.
+
+`{canonical(analysis.get("recipient_signature_authority", {}))}`
+
 ## Stability mechanism
 
 Tail trajectory values, signs, monotonic directions, persistence, and
@@ -1621,6 +2046,7 @@ def blocked_payload(
             "model_or_checkpoint_loaded": False,
         },
         "p3_closure": {}, "p2_endpoint_authority": {},
+        "recipient_signature_authority": {},
         "tail_population": {}, "composer_source_boundary": {},
         "stability_state_hierarchy": {}, "mechanism_audits": {},
         "authorization_boundary": {
