@@ -77,7 +77,7 @@ generator states immediately before and after the native downstream path.
 `ContraMambaV6BMinimal.replay_full_trainable_path` is the canonical API. It
 accepts the captured state, exact ordered candidate-action tensors, the declared
 gradient ownership mode, captured stochastic context, live native output, the
-separately loaded counterpart model, and row-aligned P7 action keys.
+separately loaded counterpart model, and row-aligned P2 action keys validated against P7 aggregate semantics.
 
 Candidate identities are exactly:
 
@@ -88,15 +88,44 @@ Candidate identities are exactly:
 ```
 
 They are opaque selector identities, not primitive bitmasks. The model validates
-their order but never derives actions from their string positions. Each row action
-is an authoritative five-bit selection in this P7 order:
+their order but never derives actions from their string positions.
+
+Row-specific candidate actions come from the P2 authority file
+`stage196b2b6p2_candidate_action_composer_scores.csv`, not from the P7 aggregate
+semantic trace. P7 analysis is the provenance authority for this P2 file: the
+probe recursively locates exactly one row-specific candidate-action summary with
+that basename, the exact three masks, the expected primitive order, and
+`row_specific = true`; it then validates the recorded path, SHA-256, row count,
+and unique recipient-candidate population. Relative recorded paths are resolved
+from the repository root, and timestamp globbing is prohibited.
+
+Each P2 row action is keyed only by:
+
+```text
+(seed, stable_row_id, candidate_mask)
+```
+
+For probe batches, stable identity is resolved as `stable_row_id`, then
+`stable_id`, then `id`. Gradient ownership mode is not part of the action key;
+`joint` and `frame_local_only` remain checkpoint/model ownership modes only.
+There is no positional fallback and no fallback based on source length.
+
+Each row action is an authoritative five-bit selection in this P2/P7 primitive
+order:
 
 ```text
 FRAME, PREDICATE, SUFFICIENCY, POSITIVE_ENERGY, NEGATIVE_ENERGY
 ```
 
-The probe loads those row actions and their keys from
-`stage196b2b6p7_candidate_semantic_trace.csv`. Arbitrary candidates are rejected.
+The P7 candidate semantic trace remains aggregate semantic authority. It must
+contain exactly one row per candidate mask with
+`primitive_mapping = ROW_SPECIFIC_5BIT_ACTION_FROM_P2_AUTHORITY`. Its JSON fields
+`primitive_order`, `observed_action_keys`, `observed_action_key_counts`,
+`first_tensor_whose_value_changes`, and `changed_primitive_union` are parsed, and
+its observed action-key sets/counts must exactly match independent aggregation of
+the full P2 row authority. This repair changes authority resolution only; replay,
+gradient, model, checkpoint, stochastic, mutation, resource, loss, decision, and
+output semantics are unchanged, and no upstream stage is rerun.
 
 ## Shared Mamba and full downstream replay
 

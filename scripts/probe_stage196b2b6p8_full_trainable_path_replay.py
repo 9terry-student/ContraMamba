@@ -59,6 +59,12 @@ P7_COMPANIONS = (
 EXPECTED_MAIN_SHA = "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640"
 EXPECTED_SOURCE_COMMIT = "fa16787efa84bb15d832b6d9382fafd77016c4e2"
 EXPECTED_TRAINER_SHA = "2f8c2596573383972f153c8a24ffaf42ea93d8f1bd1a030253c76cd66f959b87"
+EXPECTED_ROW_ACTION_CSV = "stage196b2b6p2_candidate_action_composer_scores.csv"
+EXPECTED_ROW_ACTION_COUNT = 6480
+EXPECTED_SEED183_ROW_ACTION_COUNT = 2160
+EXPECTED_ROW_ACTION_PRIMITIVE_ORDER = (
+    "FRAME", "PREDICATE", "SUFFICIENCY", "POSITIVE_ENERGY", "NEGATIVE_ENERGY",
+)
 GRAD_CLASSES = (
     "CONNECTED_NONZERO", "CONNECTED_ZERO_AT_OBSERVED_BATCH", "DISCONNECTED",
     "NONDIFFERENTIABLE", "NONFINITE",
@@ -316,40 +322,222 @@ def feature_inputs(encoded: dict[str, Any], device: torch.device) -> dict[str, t
     return {key: encoded["model_inputs"][key].to(device) for key in keys}
 
 
+def json_field(value: Any, field: str, row: dict[str, str]) -> Any:
+    if isinstance(value, (list, dict)):
+        return value
+    try:
+        return json.loads(str(value))
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"{field} is not JSON-serialized in aggregate P7 semantic row {row}: {exc}") from exc
+
+
+def normalize_string_list(value: Any, field: str, row: dict[str, str]) -> list[str]:
+    parsed = json_field(value, field, row)
+    if not isinstance(parsed, list) or not all(isinstance(item, str) for item in parsed):
+        raise ValueError(f"{field} must be a JSON string list: {row}")
+    return parsed
+
+
+def normalize_count_dict(value: Any, field: str, row: dict[str, str]) -> dict[str, int]:
+    parsed = json_field(value, field, row)
+    if not isinstance(parsed, dict):
+        raise ValueError(f"{field} must be a JSON object: {row}")
+    result: dict[str, int] = {}
+    for key, count in parsed.items():
+        try:
+            result[str(key)] = int(count)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"{field} count is not integer-like for key {key!r}: {row}") from exc
+    return result
+
+
+def iter_dicts(value: Any) -> Iterable[dict[str, Any]]:
+    if isinstance(value, dict):
+        yield value
+        for nested in value.values():
+            yield from iter_dicts(nested)
+    elif isinstance(value, list):
+        for nested in value:
+            yield from iter_dicts(nested)
+
+
+def candidate_action_provenance_matches(candidate: dict[str, Any]) -> bool:
+    try:
+        row_specific = bool_value(candidate.get("row_specific"))
+    except ValueError:
+        return False
+    path = Path(str(candidate.get("path") or ""))
+    return (
+        row_specific
+        and path.name == EXPECTED_ROW_ACTION_CSV
+        and candidate.get("candidate_masks") == list(STAGE196B2B6P8_CANDIDATE_MASKS)
+        and candidate.get("primitive_order") == list(EXPECTED_ROW_ACTION_PRIMITIVE_ORDER)
+    )
+
+
+def validate_row_action_authority(args: argparse.Namespace, p7: dict[str, Any],
+                                  rows: list[dict[str, Any]]) -> dict[str, Any]:
+    matches = [candidate for candidate in iter_dicts(p7) if candidate_action_provenance_matches(candidate)]
+    contract(rows, "p7_row_action_authority_provenance_unique", len(matches) == 1,
+             f"matches={len(matches)}")
+    if len(matches) != 1:
+        return {"path": None, "rows": [], "mapping": {}, "aggregate_counts": {}, "seed183_mapping_count": 0}
+    provenance = matches[0]
+    recorded_path = Path(str(provenance.get("path")))
+    authority_path = recorded_path if recorded_path.is_absolute() else (args.repo_root / recorded_path)
+    authority_path = authority_path.resolve()
+    exists = authority_path.is_file()
+    contract(rows, "p7_row_action_authority_file_exists", exists, str(authority_path))
+    observed_sha = sha256(authority_path) if exists else ""
+    contract(rows, "p7_row_action_authority_sha256",
+             exists and observed_sha == str(provenance.get("sha256")),
+             observed_sha or "missing")
+    p2_rows = read_csv(authority_path) if exists else []
+    try:
+        recorded_row_count = int(provenance.get("row_count"))
+    except (TypeError, ValueError):
+        recorded_row_count = -1
+    try:
+        unique_pairs = int(provenance.get("unique_recipient_candidate_pairs"))
+    except (TypeError, ValueError):
+        unique_pairs = -1
+    contract(rows, "p7_row_action_authority_row_count",
+             exists and len(p2_rows) == recorded_row_count == EXPECTED_ROW_ACTION_COUNT
+             and unique_pairs == EXPECTED_ROW_ACTION_COUNT,
+             f"observed={len(p2_rows)} recorded={recorded_row_count} unique={unique_pairs}")
+    required = {"seed", "stable_row_id", "candidate_mask", "candidate_action_key"}
+    missing = sorted(required - set(p2_rows[0])) if p2_rows else sorted(required)
+    schema_errors: list[str] = []
+    mapping: dict[tuple[int, str, str], str] = {}
+    aggregate_counts: dict[str, dict[str, int]] = {mask: {} for mask in STAGE196B2B6P8_CANDIDATE_MASKS}
+    duplicate_errors: list[str] = []
+    if missing:
+        schema_errors.append("missing columns: " + ",".join(missing))
+    else:
+        for index, row in enumerate(p2_rows):
+            stable = str(row.get("stable_row_id") or "").strip()
+            mask = str(row.get("candidate_mask") or "").strip()
+            action = str(row.get("candidate_action_key") or "").strip()
+            try:
+                seed = int(str(row.get("seed") or "").strip())
+            except ValueError:
+                schema_errors.append(f"row {index} seed is not integer: {row.get('seed')!r}")
+                continue
+            if not stable:
+                schema_errors.append(f"row {index} stable_row_id is empty")
+                continue
+            if mask not in STAGE196B2B6P8_CANDIDATE_MASKS:
+                schema_errors.append(f"row {index} unknown candidate_mask: {mask!r}")
+                continue
+            if re.fullmatch(r"[01]{5}", action) is None:
+                schema_errors.append(f"row {index} malformed candidate_action_key: {action!r}")
+                continue
+            key = (seed, stable, mask)
+            previous = mapping.get(key)
+            if previous is not None:
+                duplicate_errors.append(
+                    f"{key}: duplicate action {action!r}" if previous == action
+                    else f"{key}: conflicting actions {previous!r}/{action!r}"
+                )
+                continue
+            mapping[key] = action
+            aggregate_counts[mask][action] = aggregate_counts[mask].get(action, 0) + 1
+    seed183_count = sum(1 for seed, _, _ in mapping if seed == 183)
+    contract(rows, "p7_row_action_authority_schema", not schema_errors,
+             "; ".join(schema_errors[:20]) or "P2_ROW_SPECIFIC_ACTION_AUTHORITY schema valid")
+    contract(rows, "p7_row_action_mapping_uniqueness", not duplicate_errors,
+             "; ".join(duplicate_errors[:20]) or "unique row-specific mappings")
+    contract(rows, "p7_row_action_population_closure",
+             len(mapping) == EXPECTED_ROW_ACTION_COUNT and seed183_count == EXPECTED_SEED183_ROW_ACTION_COUNT,
+             f"mapping={len(mapping)} seed183={seed183_count}")
+    return {
+        "path": authority_path,
+        "sha256": observed_sha,
+        "row_count": len(p2_rows),
+        "mapping": mapping,
+        "aggregate_counts": aggregate_counts,
+        "seed183_mapping_count": seed183_count,
+        "provenance": provenance,
+    }
+
+
+def validate_aggregate_semantic_trace(trace_rows: list[dict[str, str]], row_authority: dict[str, Any],
+                                      rows: list[dict[str, Any]]) -> dict[str, Any]:
+    required = {
+        "candidate_mask", "primitive_mapping", "primitive_order", "observed_action_keys",
+        "observed_action_key_counts", "first_tensor_whose_value_changes", "changed_primitive_union",
+    }
+    missing = sorted(required - set(trace_rows[0])) if trace_rows else sorted(required)
+    masks = [row.get("candidate_mask") for row in trace_rows]
+    schema_ok = (
+        len(trace_rows) == 3
+        and set(masks) == set(STAGE196B2B6P8_CANDIDATE_MASKS)
+        and len(set(masks)) == 3
+        and not missing
+    )
+    errors: list[str] = []
+    matches = True
+    aggregate_counts = row_authority.get("aggregate_counts") or {}
+    if schema_ok:
+        for row in trace_rows:
+            mask = str(row.get("candidate_mask") or "")
+            try:
+                primitive_order = normalize_string_list(row.get("primitive_order"), "primitive_order", row)
+                observed_keys = normalize_string_list(row.get("observed_action_keys"), "observed_action_keys", row)
+                observed_counts = normalize_count_dict(row.get("observed_action_key_counts"), "observed_action_key_counts", row)
+                json_field(row.get("first_tensor_whose_value_changes"), "first_tensor_whose_value_changes", row)
+                normalize_string_list(row.get("changed_primitive_union"), "changed_primitive_union", row)
+            except ValueError as exc:
+                errors.append(str(exc))
+                matches = False
+                continue
+            expected_counts = aggregate_counts.get(mask, {})
+            expected_keys = sorted(expected_counts)
+            row_matches = (
+                row.get("primitive_mapping") == "ROW_SPECIFIC_5BIT_ACTION_FROM_P2_AUTHORITY"
+                and primitive_order == list(EXPECTED_ROW_ACTION_PRIMITIVE_ORDER)
+                and observed_keys == expected_keys
+                and observed_counts == expected_counts
+            )
+            if not row_matches:
+                matches = False
+                errors.append(json.dumps({"mask": mask, "observed_keys": observed_keys,
+                                          "expected_keys": expected_keys,
+                                          "observed_counts": observed_counts,
+                                          "expected_counts": expected_counts}, sort_keys=True))
+    detail = "; ".join(errors[:20]) or "P7_AGGREGATE_SEMANTIC_AUTHORITY matches P2 row authority"
+    contract(rows, "p7_aggregate_semantic_trace_schema", schema_ok,
+             f"rows={len(trace_rows)} masks={masks} missing={missing}")
+    contract(rows, "p7_aggregate_semantic_trace_matches_row_authority", schema_ok and matches, detail)
+    return {"path": "stage196b2b6p7_candidate_semantic_trace.csv", "match": schema_ok and matches}
+
+
 def trace_actions(
-    rows: list[dict[str, str]], records: list[dict[str, Any]], device: torch.device,
-) -> tuple[dict[str, torch.Tensor], dict[str, tuple[str, ...]]]:
-    """Resolve row actions from P7 trace; never interpret opaque candidate IDs."""
-    by_mask: dict[str, list[dict[str, str]]] = {mask: [] for mask in STAGE196B2B6P8_CANDIDATE_MASKS}
-    for row in rows:
-        mask = row.get("candidate_mask") or row.get("candidate_identity")
-        seed = row.get("seed") or row.get("training_seed") or "183"
-        recipient = (row.get("recipient_gradient_mode")
-                     or row.get("gradient_ownership_mode") or "joint")
-        if (mask in by_mask and str(seed) == "183"
-                and recipient in {"joint", "seed183_joint"}):
-            by_mask[mask].append(row)
+    mapping: dict[tuple[int, str, str], str], records: list[dict[str, Any]],
+    seed: int, device: torch.device,
+) -> tuple[dict[str, torch.Tensor], dict[str, tuple[str, ...]], int]:
+    """Resolve row actions from the P2 authority; never interpret opaque candidate IDs."""
     actions: dict[str, torch.Tensor] = {}
     action_keys: dict[str, tuple[str, ...]] = {}
+    resolved_count = 0
     for mask in STAGE196B2B6P8_CANDIDATE_MASKS:
-        source = by_mask[mask]
         resolved: list[str] = []
-        for index, record in enumerate(records):
-            stable = str(record.get("stable_id", record.get("id", "")))
-            matches = [row for row in source if str(row.get("stable_id", row.get("row_id", ""))) == stable]
-            row = matches[0] if len(matches) == 1 else (source[index] if len(source) == len(records) else None)
-            if row is None:
-                raise ValueError(f"P7 trace has no unique row action for {mask}/{stable}")
-            key = row.get("candidate_action_key") or row.get("action_key") or row.get("primitive_action_key")
-            if key is None or len(key) != 5 or set(key) - {"0", "1"}:
-                raise ValueError(f"P7 trace action key is not an authoritative five-bit action: {row}")
-            resolved.append(key)
+        for record in records:
+            stable = str(record.get("stable_row_id") or record.get("stable_id") or record.get("id") or "").strip()
+            if not stable:
+                raise ValueError(f"probe batch record has no stable row identity: {record}")
+            key = (seed, stable, mask)
+            action = mapping.get(key)
+            if action is None:
+                raise ValueError(f"P2 row authority has no action for {seed}/{stable}/{mask}")
+            resolved.append(action)
+            resolved_count += 1
         action_keys[mask] = tuple(resolved)
         actions[mask] = torch.tensor(
             [[character == "1" for character in key] for key in resolved],
             dtype=torch.bool, device=device,
         )
-    return actions, action_keys
+    return actions, action_keys, resolved_count
 
 
 def direct_groups(models: dict[str, torch.nn.Module]) -> dict[str, list[torch.nn.Parameter]]:
@@ -482,6 +670,11 @@ def validate_authority(args: argparse.Namespace, rows: list[dict[str, Any]]) -> 
     boundary_rows = read_csv(companions["stage196b2b6p7_execution_boundary_audit.csv"])
     boundary_ok, boundary_detail, selected_boundary = validate_p7_selected_boundary(boundary_rows)
     contract(rows, "p7_selected_boundary_closure", boundary_ok, boundary_detail)
+    row_action_authority = validate_row_action_authority(args, p7, rows)
+    aggregate_trace_path = companions["stage196b2b6p7_candidate_semantic_trace.csv"]
+    aggregate_trace = read_csv(aggregate_trace_path)
+    aggregate_trace_authority = validate_aggregate_semantic_trace(aggregate_trace, row_action_authority, rows)
+    aggregate_trace_authority["path"] = aggregate_trace_path
     stochastic_rows = read_csv(companions["stage196b2b6p7_stochastic_state_audit.csv"])
     stochastic_text = json.dumps(stochastic_rows, sort_keys=True).lower()
     contract(rows, "p7_stochastic_policy_authority",
@@ -496,7 +689,9 @@ def validate_authority(args: argparse.Namespace, rows: list[dict[str, Any]]) -> 
     return {"companions": companions, "p7": p7, "p6": p6, "p5": p5,
             "recovery": load_json(args.checkpoint_recovery_summary_json),
             "p7_source_commit": p7_commit,
-            "p7_selected_boundary": selected_boundary}
+            "p7_selected_boundary": selected_boundary,
+            "row_action_authority": row_action_authority,
+            "aggregate_trace_authority": aggregate_trace_authority}
 
 
 def recovery_entry(summary: dict[str, Any], mode: str) -> dict[str, Any]:
@@ -627,9 +822,18 @@ def main() -> int:
     authority_context: dict[str, Any] = {}
     try:
         authority = validate_authority(args, contracts)
+        row_authority = authority.get("row_action_authority") or {}
+        aggregate_authority = authority.get("aggregate_trace_authority") or {}
         authority_context = {"p7_authority_provenance": {
             "p7_source_commit": authority.get("p7_source_commit"),
             "selected_boundary": authority.get("p7_selected_boundary"),
+            "row_action_authority_path": str(row_authority.get("path") or ""),
+            "row_action_authority_sha256": row_authority.get("sha256"),
+            "row_action_authority_row_count": row_authority.get("row_count"),
+            "seed183_mapping_count": row_authority.get("seed183_mapping_count"),
+            "resolved_probe_mapping_count": None,
+            "aggregate_trace_path": str(aggregate_authority.get("path") or ""),
+            "aggregate_trace_match": aggregate_authority.get("match"),
         }}
         if any(row["status"] == "FAIL" for row in contracts):
             return publish_blocked(args, contracts, "upstream authority closure failed", authority_context)
@@ -665,9 +869,16 @@ def main() -> int:
         batch_records = records[:args.batch_size]
         encoded = v5.encode_mamba_records(batch_records, tokenizer, max_length=128)
         inputs = feature_inputs(encoded, device)
-        trace = read_csv(authority["companions"]["stage196b2b6p7_candidate_semantic_trace.csv"])
-        actions, action_keys = trace_actions(trace, batch_records, device)
-        contract(contracts, "candidate_action_key_and_primitive_closure", set(actions) == set(STAGE196B2B6P8_CANDIDATE_MASKS) and all(value.shape == (args.batch_size, 5) for value in actions.values()), "P7 trace")
+        actions, action_keys, resolved_action_count = trace_actions(
+            authority["row_action_authority"]["mapping"], batch_records, args.seed, device
+        )
+        contract(contracts, "probe_batch_row_action_closure",
+                 set(actions) == set(STAGE196B2B6P8_CANDIDATE_MASKS)
+                 and all(value.shape == (args.batch_size, 5) for value in actions.values())
+                 and resolved_action_count == 3 * args.batch_size,
+                 f"P2_ROW_SPECIFIC_ACTION_AUTHORITY resolved={resolved_action_count}")
+        authority_context["p7_authority_provenance"]["resolved_probe_mapping_count"] = resolved_action_count
+        contract(contracts, "candidate_action_key_and_primitive_closure", set(actions) == set(STAGE196B2B6P8_CANDIDATE_MASKS) and all(value.shape == (args.batch_size, 5) for value in actions.values()), "P2_ROW_SPECIFIC_ACTION_AUTHORITY + P7_AGGREGATE_SEMANTIC_AUTHORITY")
 
         torch.cuda.reset_peak_memory_stats()
         pre_ordinary = joint._stage196b2b6p8_capture_rng_state()
@@ -808,8 +1019,7 @@ def main() -> int:
             "stochastic_state_policy_closure"}]
         analysis = {"decision": decision, "recommended_next_stage": next_stage,
                     "blocking_reasons": blocking, "checkpoint_provenance": provenance,
-                    "p7_authority_provenance": {"p7_source_commit": authority.get("p7_source_commit"),
-                                                 "selected_boundary": authority.get("p7_selected_boundary")},
+                    "p7_authority_provenance": authority_context.get("p7_authority_provenance", {}),
                     "native_equivalence_passed": native_ok, "candidate_semantics_passed": semantic_ok,
                     "direction_connectivity_passed": direction_ok, "candidate_order_connectivity_passed": order_ok,
                     "no_mutation_passed": no_mutation, "resource_observation_completed": True,
@@ -862,7 +1072,7 @@ def main() -> int:
         if "initial_rng" in locals():
             trainer.ContraMambaV6BMinimal._stage196b2b6p8_restore_rng_state(initial_rng)
         contract(contracts, "probe_completed", False, f"{type(exc).__name__}: {exc}")
-        return publish_blocked(args, contracts, f"{type(exc).__name__}: {exc}", {})
+        return publish_blocked(args, contracts, f"{type(exc).__name__}: {exc}", authority_context)
 
 
 if __name__ == "__main__":
