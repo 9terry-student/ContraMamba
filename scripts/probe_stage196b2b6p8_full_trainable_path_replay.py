@@ -564,7 +564,11 @@ def direct_groups(models: dict[str, torch.nn.Module]) -> dict[str, list[torch.nn
 def gradient_row(target_name: str, target: torch.Tensor, group_name: str,
                  params: list[torch.nn.Parameter], retain_graph: bool) -> dict[str, Any]:
     required = [parameter for parameter in params if parameter.requires_grad]
-    base = {"target": target_name, "parameter_group": group_name,
+    checkpoint_mode, _, parameter_group_base = group_name.partition(":")
+    target_family = target_name.split("/", 1)[0]
+    base = {"checkpoint_mode": checkpoint_mode, "target_family": target_family,
+            "target": target_name, "parameter_group": group_name,
+            "parameter_group_base": parameter_group_base or group_name,
             "parameter_tensor_count": len(params), "requires_grad_tensor_count": len(required)}
     if not target.requires_grad:
         return {**base, "classification": "NONDIFFERENTIABLE", "connected_tensor_count": 0,
@@ -636,7 +640,7 @@ def equality_rows(ordinary: dict[str, Any], capable: dict[str, Any],
         applicable = isinstance(left, torch.Tensor) and isinstance(right, torch.Tensor)
         rows.append({"check": "native_forward_equivalence", "candidate_mask": "NATIVE",
                      "field": field, "status": "PASS" if applicable and torch.equal(left, right) else "FAIL",
-                     "maximum_absolute_error": float((left - right).abs().max()) if applicable else ""})
+                     "maximum_absolute_error": float((left.detach() - right.detach()).abs().max()) if applicable else ""})
     for mask in STAGE196B2B6P8_CANDIDATE_MASKS:
         rows.append({"check": "candidate_identity_and_primitive_closure", "candidate_mask": mask,
                      "field": "row_action", "status": "PASS" if actions[mask].shape[1] == 5 and len(action_keys[mask]) == actions[mask].shape[0] else "FAIL",
@@ -733,35 +737,148 @@ def checkpoint_provenance(args: argparse.Namespace, recovery: dict[str, Any],
     return result
 
 
-def declared_connectivity(design: list[dict[str, str]], gradients: list[dict[str, Any]],
-                          family: str) -> tuple[bool, int]:
-    """Evaluate only recipients predeclared by the P7 gradient-path artifact."""
-    expected: list[tuple[str, str, str]] = []
-    for row in design:
-        row_family = (row.get("intervention_family") or row.get("target_family")
-                      or row.get("probe_family") or "").lower()
-        if family not in row_family:
-            continue
-        expectation = (row.get("expected_connectivity") or row.get("expected_status")
-                       or row.get("required") or "").lower()
-        if expectation not in {"true", "1", "required", "connected", "connected_nonzero",
-                               "connected_zero_or_nonzero"}:
-            continue
-        arm = row.get("gradient_ownership_mode") or row.get("checkpoint_mode") or ""
-        group = row.get("parameter_group") or row.get("gradient_recipient") or ""
-        coordinate = row.get("coordinate") or row.get("target") or family
-        if group:
-            expected.append((arm, group, coordinate))
+P7_FAMILY_TO_TARGET_FAMILY = {
+    "DIRECTION_CONSISTENCY": "direction",
+    "CANDIDATE_ORDER_CONSISTENCY": "order",
+}
+P7_REQUIRED_RECIPIENT_STATUSES = {
+    "PRIMARY_RECIPIENT",
+    "PRIMARY_RECIPIENT_WITH_ARM_SPECIFIC_DETACH",
+}
+P7_OPTIONAL_RECIPIENT_STATUSES = {"COORDINATE_CONDITIONAL_RECIPIENT", "ONLY_IF_ACTIVE_NATIVE_MODULATION_DEPENDS_ON_THEM"}
+P7_EXCLUDED_RECIPIENT_STATUSES = {
+    "NO_GRADIENT_AUTHORITY",
+    "ABSENT_IN_AUTHORITATIVE_CONFIGURATION",
+    "ABSENT_NO_GRADIENT",
+    "NATIVE_BASELINE",
+}
+P7_GROUP_NORMALIZATION = {
+    "frame_branch": ("frame_branch",),
+    "predicate_branch": ("predicate_branch",),
+    "sufficiency_branch": ("sufficiency_branch",),
+    "polarity_branch": ("polarity_branch",),
+    "entitlement_decision": ("entitlement_or_decision_branch",),
+    "final_composer": ("final_composer",),
+    "router_or_selector": ("router_or_selector",),
+    "other_trainable_modules": ("other_trainable",),
+    "frozen_backbone": ("frozen_backbone",),
+    "epistemic_heads": (),
+    "trainable_backbone": (),
+}
+
+
+def parse_p7_gradient_recipient_authority(
+    source_path: Path, design: list[dict[str, str]], rows: list[dict[str, Any]],
+) -> dict[str, Any]:
+    required_columns = {
+        "variant", "intervention_family", "required_forward_paths", "parameter_group",
+        "gradient_recipient_status", "exact_gradient_path", "teacher_stop_gradient_rule",
+        "independently_disableable", "combined_first_stage_variant",
+    }
+    missing = sorted(required_columns - set(design[0])) if design else sorted(required_columns)
+    schema_ok = bool(design) and not missing
+    contract(rows, "p7_gradient_path_design_schema", schema_ok,
+             f"source={source_path} rows={len(design)} missing={missing}")
+    declarations: dict[str, dict[str, dict[str, list[dict[str, str]]]]] = {
+        "direction": {"joint": {}, "frame_local_only": {}},
+        "order": {"joint": {}, "frame_local_only": {}},
+    }
+    optional: dict[str, dict[str, list[str]]] = {"direction": {"joint": [], "frame_local_only": []},
+                                                "order": {"joint": [], "frame_local_only": []}}
+    excluded: dict[str, dict[str, list[str]]] = {"direction": {"joint": [], "frame_local_only": []},
+                                                "order": {"joint": [], "frame_local_only": []}}
+    normalization_errors: list[str] = []
+    mode_errors: list[str] = []
+    if schema_ok:
+        for row in design:
+            family = (row.get("intervention_family") or "").strip()
+            if family not in P7_FAMILY_TO_TARGET_FAMILY:
+                continue
+            target_family = P7_FAMILY_TO_TARGET_FAMILY[family]
+            raw_group = (row.get("parameter_group") or "").strip()
+            status = (row.get("gradient_recipient_status") or "").strip()
+            normalized = P7_GROUP_NORMALIZATION.get(raw_group)
+            if normalized is None:
+                normalization_errors.append(raw_group)
+                continue
+            if not normalized:
+                continue
+            if "both arms" not in (row.get("exact_gradient_path") or "") and family != "NONE":
+                mode_errors.append(f"{family}/{raw_group}: exact_gradient_path does not declare both arms")
+            for mode in ("joint", "frame_local_only"):
+                for group in normalized:
+                    record = {"p7_family": family, "group": group, "status": status,
+                              "coordinate_scope": row.get("exact_gradient_path") or "",
+                              "required_forward_paths": row.get("required_forward_paths") or ""}
+                    if status in P7_REQUIRED_RECIPIENT_STATUSES:
+                        declarations[target_family][mode].setdefault(group, []).append(record)
+                    elif status in P7_OPTIONAL_RECIPIENT_STATUSES:
+                        optional[target_family][mode].append(group)
+                    elif status in P7_EXCLUDED_RECIPIENT_STATUSES:
+                        excluded[target_family][mode].append(group)
+                    else:
+                        normalization_errors.append(f"{raw_group}:{status}")
+    normalized_sets = {
+        family: {mode: sorted(groups) for mode, groups in by_mode.items()}
+        for family, by_mode in declarations.items()
+    }
+    direction_count = sum(len(groups) for groups in declarations["direction"].values())
+    order_count = sum(len(groups) for groups in declarations["order"].values())
+    contract(rows, "p7_direction_recipient_authority_nonempty", direction_count > 0,
+             json.dumps(normalized_sets["direction"], sort_keys=True))
+    contract(rows, "p7_order_recipient_authority_nonempty", order_count > 0,
+             json.dumps(normalized_sets["order"], sort_keys=True))
+    contract(rows, "p7_recipient_group_normalization", not normalization_errors,
+             "; ".join(sorted(set(normalization_errors))) or json.dumps(normalized_sets, sort_keys=True))
+    contract(rows, "p7_recipient_mode_closure", not mode_errors,
+             "; ".join(mode_errors) or "P7 declares both arms; expanded to joint and frame_local_only")
+    return {"source_path": source_path, "source_sha256": sha256(source_path),
+            "declarations": declarations, "optional": optional, "excluded": excluded,
+            "normalized_recipient_groups": normalized_sets}
+
+
+def connectivity_summary(
+    authority: dict[str, Any], gradients: list[dict[str, Any]], family: str,
+) -> tuple[bool, dict[str, Any]]:
+    declarations = authority["declarations"][family]
+    summary: dict[str, Any] = {"declared": {}, "resolved": {}, "connected": {},
+                               "connected_zero": {}, "failed": {}, "missing": {},
+                               "counts": {}}
     passed = True
-    for arm, group, coordinate in expected:
-        matches = [item for item in gradients
-                   if item["target"].startswith(f"{family}/")
-                   and (not arm or arm in item["parameter_group"])
-                   and group in item["parameter_group"]
-                   and (coordinate == family or coordinate in item["target"])]
-        if not matches or any(item["classification"] not in GRAD_CLASSES[:2] for item in matches):
-            passed = False
-    return passed and bool(expected), len(expected)
+    for mode, groups in declarations.items():
+        summary["declared"][mode] = sorted(groups)
+        summary["resolved"][mode] = []
+        summary["connected"][mode] = []
+        summary["connected_zero"][mode] = []
+        summary["failed"][mode] = []
+        summary["missing"][mode] = []
+        for group in sorted(groups):
+            matches = [row for row in gradients
+                       if row.get("target_family") == family
+                       and row.get("checkpoint_mode") == mode
+                       and row.get("parameter_group_base") == group]
+            if not matches:
+                summary["missing"][mode].append(group)
+                passed = False
+                continue
+            summary["resolved"][mode].append(group)
+            classifications = {row.get("classification") for row in matches}
+            if "CONNECTED_NONZERO" in classifications:
+                summary["connected"][mode].append(group)
+            elif "CONNECTED_ZERO_AT_OBSERVED_BATCH" in classifications:
+                summary["connected_zero"][mode].append(group)
+            else:
+                summary["failed"][mode].append({"group": group, "classifications": sorted(classifications)})
+                passed = False
+        summary["counts"][mode] = {
+            "declared": len(summary["declared"][mode]),
+            "resolved": len(summary["resolved"][mode]),
+            "connected": len(summary["connected"][mode]),
+            "connected_zero": len(summary["connected_zero"][mode]),
+            "failed": len(summary["failed"][mode]),
+            "missing": len(summary["missing"][mode]),
+        }
+    return passed, summary
 
 
 def publish_blocked(args: argparse.Namespace, contracts: list[dict[str, Any]],
@@ -929,17 +1046,44 @@ def main() -> int:
         no_mutation = before == after
         contract(contracts, "parameter_and_buffer_no_mutation", no_mutation, "post-load meaningful comparison")
         contract(contracts, "zero_optimizer_scheduler_checkpoint_writes", True, "probe constructs none")
-        gradient_design = read_csv(authority["companions"]["stage196b2b6p7_gradient_path_design.csv"])
-        direction_ok, direction_declared = declared_connectivity(
-            gradient_design, gradient_rows, "direction"
+        gradient_design_path = authority["companions"]["stage196b2b6p7_gradient_path_design.csv"]
+        gradient_design = read_csv(gradient_design_path)
+        gradient_authority = parse_p7_gradient_recipient_authority(
+            gradient_design_path, gradient_design, contracts
         )
-        order_ok, order_declared = declared_connectivity(
-            gradient_design, gradient_rows, "order"
+        target_mode_ok = all(row.get("checkpoint_mode") in {"joint", "frame_local_only"}
+                             and row.get("target_family") in {"native", "candidate", "direction", "order"}
+                             and row.get("parameter_group_base")
+                             for row in gradient_rows)
+        contract(contracts, "gradient_target_mode_provenance", target_mode_ok,
+                 "gradient rows carry checkpoint_mode, target_family, and parameter_group_base")
+        direction_ok, direction_summary = connectivity_summary(
+            gradient_authority, gradient_rows, "direction"
         )
+        order_ok, order_summary = connectivity_summary(
+            gradient_authority, gradient_rows, "order"
+        )
+        contract(contracts, "direction_declared_recipient_resolution",
+                 not any(direction_summary["missing"].values()),
+                 json.dumps(direction_summary, sort_keys=True))
+        contract(contracts, "candidate_order_declared_recipient_resolution",
+                 not any(order_summary["missing"].values()),
+                 json.dumps(order_summary, sort_keys=True))
         contract(contracts, "direction_coordinate_connectivity", direction_ok,
-                 f"P7 declared recipients={direction_declared}")
+                 json.dumps(direction_summary, sort_keys=True))
         contract(contracts, "candidate_order_coordinate_connectivity", order_ok,
-                 f"P7 declared recipients={order_declared}")
+                 json.dumps(order_summary, sort_keys=True))
+        authority_context["p7_gradient_recipient_authority"] = {
+            "source_path": str(gradient_authority["source_path"]),
+            "source_sha256": gradient_authority["source_sha256"],
+            "direction_declarations_by_mode": gradient_authority["normalized_recipient_groups"]["direction"],
+            "candidate_order_declarations_by_mode": gradient_authority["normalized_recipient_groups"]["order"],
+            "normalized_recipient_groups": gradient_authority["normalized_recipient_groups"],
+            "optional_recipient_groups": gradient_authority["optional"],
+            "excluded_or_frozen_groups": gradient_authority["excluded"],
+        }
+        authority_context["direction_connectivity_summary"] = direction_summary
+        authority_context["candidate_order_connectivity_summary"] = order_summary
 
         native_ok = all(row["status"] == "PASS" for row in equivalence if row["check"] == "native_forward_equivalence")
         semantic_ok = all(row["status"] == "PASS" for row in equivalence if row["check"] != "native_forward_equivalence")
@@ -1020,6 +1164,9 @@ def main() -> int:
         analysis = {"decision": decision, "recommended_next_stage": next_stage,
                     "blocking_reasons": blocking, "checkpoint_provenance": provenance,
                     "p7_authority_provenance": authority_context.get("p7_authority_provenance", {}),
+                    "p7_gradient_recipient_authority": authority_context.get("p7_gradient_recipient_authority", {}),
+                    "direction_connectivity_summary": authority_context.get("direction_connectivity_summary", {}),
+                    "candidate_order_connectivity_summary": authority_context.get("candidate_order_connectivity_summary", {}),
                     "native_equivalence_passed": native_ok, "candidate_semantics_passed": semantic_ok,
                     "direction_connectivity_passed": direction_ok, "candidate_order_connectivity_passed": order_ok,
                     "no_mutation_passed": no_mutation, "resource_observation_completed": True,

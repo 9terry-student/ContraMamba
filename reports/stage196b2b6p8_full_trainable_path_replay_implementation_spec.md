@@ -184,6 +184,56 @@ them in P8. Provenance records enabled/default-off and explicit false values for
 replay execution, loss integration, optimizer/scheduler changes, checkpoint
 schema changes, and checkpoint selection changes.
 
+## P7 Gradient Recipient Authority
+
+The P7 gradient-path design CSV is consumed using the actual producer schema from
+`scripts/analyze_stage196b2b6p7_full_counterfactual_forward_design.py`:
+
+```text
+variant
+intervention_family
+required_forward_paths
+parameter_group
+gradient_recipient_status
+exact_gradient_path
+teacher_stop_gradient_rule
+independently_disableable
+combined_first_stage_variant
+```
+
+Only the exact P7 family values `DIRECTION_CONSISTENCY` and
+`CANDIDATE_ORDER_CONSISTENCY` authorize the P8 direction and candidate-order
+gates. P8 no longer guesses recipient fields such as `required`,
+`expected_connectivity`, or `gradient_recipient`; those fields are not written by
+P7 and caused zero recovered recipients.
+
+P7 parameter groups are normalized to P8 runtime groups before comparison:
+`frame_branch`, `predicate_branch`, `sufficiency_branch`, `polarity_branch`,
+`entitlement_decision -> entitlement_or_decision_branch`, `final_composer`,
+`router_or_selector`, `other_trainable_modules -> other_trainable`, and
+`frozen_backbone`. The aggregate `epistemic_heads` row and absent trainable
+backbone row are preserved as authority context but are not treated as concrete
+runtime parameter groups.
+
+P7 declares the direction and candidate-order paths through both loaded arms, so
+recipient authority is expanded to `joint` and `frame_local_only`. Each gradient
+CSV row now carries explicit `checkpoint_mode`, `target_family`, and
+`parameter_group_base` columns. The gate compares only matching target family,
+checkpoint mode, and normalized base group; cross-checkpoint rows are excluded
+from same-model connectivity decisions.
+
+`PRIMARY_RECIPIENT` and `PRIMARY_RECIPIENT_WITH_ARM_SPECIFIC_DETACH` are required
+recipient statuses. `COORDINATE_CONDITIONAL_RECIPIENT` and
+`ONLY_IF_ACTIVE_NATIVE_MODULATION_DEPENDS_ON_THEM` are optional/conditional and
+are reported separately. Frozen or absent groups are excluded. Empty P7 recipient
+declarations are contract authority failures, not scientific gradient-path
+failures.
+
+The connectivity gate treats `CONNECTED_NONZERO` and
+`CONNECTED_ZERO_AT_OBSERVED_BATCH` as graph-connected. `DISCONNECTED`,
+`NONDIFFERENTIABLE`, and `NONFINITE` are not connected. The warning cleanup for
+native equivalence detaches tensors only for scalar diagnostic logging and does
+not alter replay tensors or autograd probe targets.
 ## Gradient probe
 
 The probe loads the joint and frame-local-only reconstructed seed183 checkpoints,
