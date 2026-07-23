@@ -365,6 +365,12 @@ def _stage195_serializable_args(args: argparse.Namespace) -> dict[str, Any]:
         snapshot.pop("stage196b2b3p0_export_epoch_composer_inputs", None)
         if getattr(args, "stage196b2b3p0_composer_input_dir", None) is None:
             snapshot.pop("stage196b2b3p0_composer_input_dir", None)
+    if not getattr(
+        args, "stage196b2b6p8_enable_full_trainable_path_replay_api", False
+    ):
+        snapshot.pop(
+            "stage196b2b6p8_enable_full_trainable_path_replay_api", None
+        )
     return snapshot
 
 
@@ -9101,6 +9107,16 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--stage196b2b6p8-enable-full-trainable-path-replay-api",
+        action="store_true",
+        default=False,
+        help=(
+            "Expose the P8 replay state on the native training forward for a "
+            "future stability stage. This captures tensors only: it adds no "
+            "replay, loss, backward, optimizer, scheduler, or selection change."
+        ),
+    )
+    parser.add_argument(
         "--split-seed",
         type=int,
         default=None,
@@ -13854,12 +13870,17 @@ def _vnext_forward_maybe_batched(
     temporal_adapter_final_penalty_scale: float = 0.0,
     temporal_channel_gated_penalty_scale: float = 0.0,
     return_composer_input_observability: bool = False,
+    stage196b2b6p8_return_replay_state: bool = False,
     batch_size: int | None = None,
     amp_enabled: bool = False,
 ) -> dict[str, Any]:
     n_rows = int(inputs["input_ids"].shape[0])
     composer_kwargs = (
         {"return_composer_input_observability": True} if return_composer_input_observability else {}
+    )
+    replay_kwargs = (
+        {"stage196b2b6p8_return_replay_state": True}
+        if stage196b2b6p8_return_replay_state else {}
     )
     batch_size = _positive_optional_int(batch_size, "batch_size")
     if batch_size is None or batch_size >= n_rows:
@@ -13871,6 +13892,7 @@ def _vnext_forward_maybe_batched(
                 temporal_adapter_final_penalty_scale=temporal_adapter_final_penalty_scale,
                 temporal_channel_gated_penalty_scale=temporal_channel_gated_penalty_scale,
                 **composer_kwargs,
+                **replay_kwargs,
             )
     chunks: list[dict[str, Any]] = []
     for start in range(0, n_rows, batch_size):
@@ -13885,9 +13907,19 @@ def _vnext_forward_maybe_batched(
                     temporal_adapter_final_penalty_scale=temporal_adapter_final_penalty_scale,
                     temporal_channel_gated_penalty_scale=temporal_channel_gated_penalty_scale,
                     **composer_kwargs,
+                    **replay_kwargs,
                 )
             )
-    return _concat_model_outputs(chunks)
+    merged = _concat_model_outputs(chunks)
+    if stage196b2b6p8_return_replay_state:
+        merged.pop("stage196b2b6p8_replay_state", None)
+        merged.pop("stage196b2b6p8_stochastic_context", None)
+        merged["stage196b2b6p8_replay_chunks"] = tuple(
+            (chunk["stage196b2b6p8_replay_state"],
+             chunk["stage196b2b6p8_stochastic_context"])
+            for chunk in chunks
+        )
+    return merged
 
 
 def _stage118_audit_fields(args: argparse.Namespace | None) -> dict[str, Any]:
@@ -18401,6 +18433,9 @@ def main(argv: list[str] | None = None) -> int:
                 predicate_mismatch_flags=train_predicate_flags,
                 temporal_adapter_final_penalty_scale=_ta_pen,
                 temporal_channel_gated_penalty_scale=_tc_pen,
+                stage196b2b6p8_return_replay_state=bool(
+                    args.stage196b2b6p8_enable_full_trainable_path_replay_api
+                ),
                 batch_size=train_batch_size,
                 amp_enabled=amp_enabled,
             )
@@ -22156,6 +22191,17 @@ def main(argv: list[str] | None = None) -> int:
     _stage174a_provenance_record["split_seed_contract"] = provenance_json_safe(
         _stage174a_split_contract
     )
+    if args.stage196b2b6p8_enable_full_trainable_path_replay_api:
+        _stage174a_provenance_record["stage196b2b6p8_replay_api"] = {
+            "enabled": True,
+            "default_off": True,
+            "replay_executed_by_trainer": False,
+            "loss_integrated": False,
+            "optimizer_changed": False,
+            "scheduler_changed": False,
+            "checkpoint_schema_changed": False,
+            "checkpoint_selection_changed": False,
+        }
     _stage174a_provenance_record["stage174c_clean_pairwise"] = provenance_json_safe({
         "enabled": _stage174c_enabled,
         "mode": args.stage174c_clean_pairwise_mode,
@@ -22495,6 +22541,19 @@ def main(argv: list[str] | None = None) -> int:
     report = {
         "configuration": {
             **_frame_gradient_contract,
+            **({"stage196b2b6p8_replay_api": {
+                    "enabled": True,
+                    "default_off": True,
+                    "replay_executed_by_trainer": False,
+                    "loss_integrated": False,
+                    "optimizer_changed": False,
+                    "scheduler_changed": False,
+                    "checkpoint_schema_changed": False,
+                    "checkpoint_selection_changed": False,
+                }}
+                if args.stage196b2b6p8_enable_full_trainable_path_replay_api
+                else {}
+            ),
             "stage174c_clean_pairwise": {
                 "enabled": _stage174c_enabled,
                 "mode": args.stage174c_clean_pairwise_mode,

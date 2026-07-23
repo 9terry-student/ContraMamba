@@ -22,6 +22,23 @@ from .heads import (
     SufficiencyGate,
 )
 
+STAGE196B2B6P8_CANDIDATE_MASKS = (
+    "00100000000000",
+    "01000000000000",
+    "10000000000000",
+)
+STAGE196B2B6P8_PRIMITIVE_KEYS = (
+    "frame_prob",
+    "predicate_coverage_prob",
+    "sufficiency_prob",
+    "positive_energy",
+    "negative_energy",
+)
+STAGE196B2B6P8_CLASS_ORDER = ("REFUTE", "NOT_ENTITLED", "SUPPORT")
+STAGE196B2B6P8_RNG_POLICY = (
+    "MATCH_NATIVE_AND_COUNTERPART_DOWNSTREAM_RESTORE_POST_NATIVE"
+)
+
 
 def _inverse_softplus(target: float) -> float:
     """Compute x such that softplus(x) ≈ target.
@@ -271,9 +288,234 @@ class ContraMambaV6BMinimal(nn.Module):
             return 0.0
         return F.softplus(self.alpha_predicate_raw)
 
+    @staticmethod
+    def _stage196b2b6p8_capture_rng_state() -> dict[str, Any]:
+        """Capture CPU and all CUDA generator states for matched dropout."""
+        return {
+            "cpu_rng_state": torch.get_rng_state().clone(),
+            "cuda_rng_states": tuple(
+                state.clone() for state in torch.cuda.get_rng_state_all()
+            ) if torch.cuda.is_available() else (),
+        }
+
+    @staticmethod
+    def _stage196b2b6p8_restore_rng_state(state: dict[str, Any]) -> None:
+        cpu_state = state.get("cpu_rng_state")
+        cuda_states = state.get("cuda_rng_states")
+        if not isinstance(cpu_state, torch.Tensor):
+            raise ValueError("Stage196-B2-B6P8 CPU RNG state is missing")
+        if not isinstance(cuda_states, tuple) or not all(
+            isinstance(item, torch.Tensor) for item in cuda_states
+        ):
+            raise ValueError("Stage196-B2-B6P8 CUDA RNG states are invalid")
+        torch.set_rng_state(cpu_state)
+        if cuda_states:
+            if not torch.cuda.is_available():
+                raise ValueError("captured CUDA RNG state requires CUDA")
+            torch.cuda.set_rng_state_all(list(cuda_states))
+
+    @staticmethod
+    def _stage196b2b6p8_geometry(
+        logits: torch.Tensor, *, prefix: str,
+    ) -> dict[str, torch.Tensor]:
+        """Use P2/P6 class order and the existing torch.topk tie semantics."""
+        if logits.ndim != 2 or logits.shape[1] != len(STAGE196B2B6P8_CLASS_ORDER):
+            raise ValueError(f"{prefix} logits must have shape [batch, 3]")
+        refute, not_entitled, support = logits.unbind(dim=-1)
+        top_two = torch.topk(
+            logits, k=2, dim=-1, largest=True, sorted=True
+        ).values
+        return {
+            f"{prefix}_score_support": support,
+            f"{prefix}_score_not_entitled": not_entitled,
+            f"{prefix}_score_refute": refute,
+            f"{prefix}_margin_support_minus_not_entitled": (
+                support - not_entitled
+            ),
+            f"{prefix}_margin_support_minus_refute": support - refute,
+            f"{prefix}_margin_refute_minus_not_entitled": (
+                refute - not_entitled
+            ),
+            f"{prefix}_top1_runner_up_margin": top_two[:, 0] - top_two[:, 1],
+        }
+
+    def replay_full_trainable_path(
+        self,
+        replay_state: dict[str, torch.Tensor],
+        candidate_mask: dict[str, torch.Tensor],
+        *,
+        gradient_ownership_mode: str,
+        stochastic_context: dict[str, Any],
+        native_output: dict[str, Any],
+        counterpart_model: "ContraMambaV6BMinimal",
+        candidate_action_keys: dict[str, tuple[str, ...]],
+    ) -> dict[str, Any]:
+        """Replay the P7 full trainable path from one shared Mamba state.
+
+        The 14-bit dictionary keys are opaque candidate identities. Their
+        row-wise five-bit actions and action keys must come from the P7
+        candidate semantic trace; this method never interprets candidate IDs.
+        """
+        if gradient_ownership_mode not in {"joint", "frame_local_only"}:
+            raise ValueError("unsupported gradient ownership mode")
+        if counterpart_model is self:
+            raise ValueError("counterpart_model must be the separately loaded arm")
+        if tuple(candidate_mask) != STAGE196B2B6P8_CANDIDATE_MASKS:
+            raise ValueError("Stage196-B2-B6P8 requires exact candidate order")
+        if tuple(candidate_action_keys) != STAGE196B2B6P8_CANDIDATE_MASKS:
+            raise ValueError("candidate action-key closure is incomplete")
+        required_state = (
+            "encoder_hidden_states",
+            "attention_mask",
+            "claim_mask",
+            "evidence_mask",
+        )
+        if tuple(replay_state)[:len(required_state)] != required_state:
+            raise ValueError("Stage196-B2-B6P8 replay-state schema drift")
+        tensors = [replay_state[name] for name in required_state]
+        if not all(isinstance(value, torch.Tensor) for value in tensors):
+            raise ValueError("replay state may contain tensors only")
+        hidden, attention, claim, evidence = tensors
+        if hidden.ndim != 3 or any(
+            mask.shape != hidden.shape[:2] for mask in (attention, claim, evidence)
+        ):
+            raise ValueError("replay-state batch/sequence dimensions disagree")
+        if hidden.device.type != "cuda" or any(
+            tensor.device != hidden.device for tensor in tensors
+        ):
+            raise ValueError("replay state must remain aligned on CUDA")
+        if not hidden.is_floating_point():
+            raise ValueError("encoder_hidden_states must retain floating dtype")
+        if stochastic_context.get("rng_policy") != STAGE196B2B6P8_RNG_POLICY:
+            raise ValueError("P7 stochastic-state policy mismatch")
+        before_rng = stochastic_context.get("native_pre_downstream_rng")
+        after_rng = stochastic_context.get("native_post_downstream_rng")
+        if not isinstance(before_rng, dict) or not isinstance(after_rng, dict):
+            raise ValueError("matched native RNG states are required")
+
+        native_logits = native_output.get("logits")
+        native_base_logits = native_output.get("base_logits")
+        if not isinstance(native_logits, torch.Tensor) or not isinstance(
+            native_base_logits, torch.Tensor
+        ):
+            raise ValueError("native output must contain live final/base logits")
+        if native_logits.shape != native_base_logits.shape:
+            raise ValueError("native final/base logit shapes disagree")
+        batch_size = hidden.shape[0]
+        if native_logits.shape != (batch_size, 3):
+            raise ValueError("native logits must align with replay batch")
+
+        counterpart_mode = counterpart_model.training
+        counterpart_mamba_mode = counterpart_model.mamba.training
+        counterpart_model.train(self.training)
+        counterpart_model.mamba.train(counterpart_mamba_mode)
+        self._stage196b2b6p8_restore_rng_state(before_rng)
+        try:
+            counterpart_output = counterpart_model(
+                input_ids=None,
+                attention_mask=attention,
+                claim_mask=claim,
+                evidence_mask=evidence,
+                encoder_hidden_states=hidden,
+                temporal_mismatch_flags=replay_state.get(
+                    "temporal_mismatch_flags"
+                ),
+                predicate_mismatch_flags=replay_state.get(
+                    "predicate_mismatch_flags"
+                ),
+            )
+        finally:
+            self._stage196b2b6p8_restore_rng_state(after_rng)
+            counterpart_model.train(counterpart_mode)
+            counterpart_model.mamba.train(counterpart_mamba_mode)
+
+        native_geometry = self._stage196b2b6p8_geometry(
+            native_logits, prefix="native"
+        )
+        native_final_modulation = native_logits - native_base_logits
+        candidates: dict[str, dict[str, Any]] = {}
+        for opaque_id, row_actions in candidate_mask.items():
+            if (
+                not isinstance(row_actions, torch.Tensor)
+                or row_actions.dtype != torch.bool
+                or row_actions.shape != (
+                    batch_size, len(STAGE196B2B6P8_PRIMITIVE_KEYS)
+                )
+                or row_actions.device != hidden.device
+            ):
+                raise ValueError(
+                    f"candidate {opaque_id} must be CUDA bool [batch, 5]"
+                )
+            row_keys = tuple(
+                "".join("1" if value else "0" for value in row)
+                for row in row_actions.detach().cpu().tolist()
+            )
+            if candidate_action_keys[opaque_id] != row_keys:
+                raise ValueError(f"candidate action-key mismatch for {opaque_id}")
+            selected: dict[str, torch.Tensor] = {}
+            for column, key in enumerate(STAGE196B2B6P8_PRIMITIVE_KEYS):
+                recipient = native_output.get(key)
+                donor = counterpart_output.get(key)
+                if (
+                    not isinstance(recipient, torch.Tensor)
+                    or not isinstance(donor, torch.Tensor)
+                    or recipient.shape != (batch_size,)
+                    or donor.shape != recipient.shape
+                    or recipient.device != hidden.device
+                    or donor.device != hidden.device
+                ):
+                    raise ValueError(f"unaligned live primitive {key!r}")
+                selected[key] = torch.where(
+                    row_actions[:, column], donor, recipient
+                )
+            recomposed = self.decision_head(
+                frame_prob=selected["frame_prob"],
+                predicate_coverage_prob=selected["predicate_coverage_prob"],
+                sufficiency_prob=selected["sufficiency_prob"],
+                positive_energy=selected["positive_energy"],
+                negative_energy=selected["negative_energy"],
+            )
+            counterfactual_logits = (
+                recomposed["logits"] + native_final_modulation
+            )
+            geometry = self._stage196b2b6p8_geometry(
+                counterfactual_logits, prefix="counterfactual"
+            )
+            response = {
+                "delta_score_support": geometry["counterfactual_score_support"] - native_geometry["native_score_support"],
+                "delta_score_not_entitled": geometry["counterfactual_score_not_entitled"] - native_geometry["native_score_not_entitled"],
+                "delta_score_refute": geometry["counterfactual_score_refute"] - native_geometry["native_score_refute"],
+                "delta_support_minus_not_entitled": geometry["counterfactual_margin_support_minus_not_entitled"] - native_geometry["native_margin_support_minus_not_entitled"],
+                "delta_support_minus_refute": geometry["counterfactual_margin_support_minus_refute"] - native_geometry["native_margin_support_minus_refute"],
+                "delta_refute_minus_not_entitled": geometry["counterfactual_margin_refute_minus_not_entitled"] - native_geometry["native_margin_refute_minus_not_entitled"],
+                "delta_top1_runner_up_margin": geometry["counterfactual_top1_runner_up_margin"] - native_geometry["native_top1_runner_up_margin"],
+            }
+            candidates[opaque_id] = {
+                "candidate_action_keys": row_keys,
+                "counterfactual_logits": counterfactual_logits,
+                **selected,
+                **geometry,
+                **response,
+            }
+        return {
+            "schema_version": "stage196b2b6p8_full_trainable_path_replay_v1",
+            "class_order": STAGE196B2B6P8_CLASS_ORDER,
+            "primitive_order": STAGE196B2B6P8_PRIMITIVE_KEYS,
+            "candidate_masks": STAGE196B2B6P8_CANDIDATE_MASKS,
+            "gradient_ownership_mode": gradient_ownership_mode,
+            "rng_policy": STAGE196B2B6P8_RNG_POLICY,
+            "native_logits": native_logits,
+            **native_geometry,
+            "candidate_geometry": candidates,
+            "mamba_forward_count": 0,
+            "downstream_replay_count": 1,
+            "stability_loss": None,
+            "training_objective_changed": False,
+        }
+
     def forward(
         self,
-        input_ids: torch.Tensor,
+        input_ids: torch.Tensor | None,
         attention_mask: torch.Tensor,
         claim_mask: torch.Tensor,
         evidence_mask: torch.Tensor,
@@ -293,20 +535,35 @@ class ContraMambaV6BMinimal(nn.Module):
         temporal_adapter_final_penalty_scale: float = 0.0,
         temporal_channel_gated_penalty_scale: float = 0.0,
         return_composer_input_observability: bool = False,
+        stage196b2b6p8_return_replay_state: bool = False,
     ) -> dict[str, Any]:
         """Forward pass with optional temporal/predicate logit modulation."""
         del intervention_types, pair_ids
 
         # Encode
         if encoder_hidden_states is None:
+            if input_ids is None:
+                raise ValueError("input_ids are required without encoder_hidden_states")
             backbone_outputs = self.mamba(input_ids=input_ids)
             token_states = backbone_outputs.last_hidden_state
         else:
-            if encoder_hidden_states.shape[:2] != input_ids.shape:
+            if input_ids is not None and encoder_hidden_states.shape[:2] != input_ids.shape:
                 raise ValueError(
                     "encoder_hidden_states must match input_ids batch/sequence dimensions"
                 )
             token_states = encoder_hidden_states
+
+        stage196b2b6p8_stochastic_context: dict[str, Any] | None = None
+        if stage196b2b6p8_return_replay_state:
+            if token_states.device.type != "cuda":
+                raise ValueError("Stage196-B2-B6P8 replay state requires CUDA")
+            stage196b2b6p8_stochastic_context = {
+                "rng_policy": STAGE196B2B6P8_RNG_POLICY,
+                "native_pre_downstream_rng": (
+                    self._stage196b2b6p8_capture_rng_state()
+                ),
+                "model_training": self.training,
+            }
 
         # Slot gates (unchanged from V5)
         frame = self.frame_gate(token_states, attention_mask, claim_mask, evidence_mask)
@@ -637,7 +894,7 @@ class ContraMambaV6BMinimal(nn.Module):
         total_loss = torch.stack(active_losses).sum() if active_losses else None
 
         # Return: final_logits as the only logits for downstream losses
-        return {
+        output: dict[str, Any] = {
             **decision,
             "logits": final_logits,  # ← FINAL logits for all downstream loss paths
             "base_logits": base_logits,  # ← diagnostic only
@@ -677,3 +934,25 @@ class ContraMambaV6BMinimal(nn.Module):
             "loss": total_loss,
             **losses,
         }
+        if stage196b2b6p8_return_replay_state:
+            assert stage196b2b6p8_stochastic_context is not None
+            stage196b2b6p8_stochastic_context[
+                "native_post_downstream_rng"
+            ] = self._stage196b2b6p8_capture_rng_state()
+            replay_state = {
+                "encoder_hidden_states": token_states,
+                "attention_mask": attention_mask,
+                "claim_mask": claim_mask,
+                "evidence_mask": evidence_mask,
+            }
+            if temporal_mismatch_flags is not None:
+                replay_state["temporal_mismatch_flags"] = temporal_mismatch_flags
+            if predicate_mismatch_flags is not None:
+                replay_state[
+                    "predicate_mismatch_flags"
+                ] = predicate_mismatch_flags
+            output["stage196b2b6p8_replay_state"] = replay_state
+            output[
+                "stage196b2b6p8_stochastic_context"
+            ] = stage196b2b6p8_stochastic_context
+        return output
