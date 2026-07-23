@@ -88,8 +88,54 @@ The analyzer fail-closes unless all of the following hold.
   feasible-gate lists are also empty.
 - Aggregate row targets are exactly 6,480: 21 MUST_ALLOW, 171 MUST_BLOCK, and
   6,288 OPTIONAL.
-- Summary CSV cardinalities reproduce 49,149 single-state, 49,149
-  tail-trajectory, and 3,069 paired-delta subsets per selector candidate.
+- Enumeration closure preserves three exact selector candidates:
+  `00100000000000`, `01000000000000`, and `10000000000000`.
+- Each candidate has exactly 16,383 single-state, 16,383 tail-trajectory, and
+  1,023 paired-delta feature subsets.
+- Across all three candidates, the aggregate candidate-subset evaluation counts
+  are exactly 49,149 single-state, 49,149 tail-trajectory, and 3,069
+  paired-delta evaluations.
+
+### P0 enumeration cardinality levels
+
+The feature-subset universe size per selector candidate is distinct from the
+total candidate-subset evaluations across the three selector candidates:
+
+```text
+family              per candidate    three-candidate aggregate
+single-state        16,383           49,149
+tail-trajectory     16,383           49,149
+paired-delta         1,023            3,069
+```
+
+The analyzer assigns an explicit semantic level to every enumeration source:
+
+- `PER_CANDIDATE_SUBSET_UNIVERSE`: unique
+  `safety_feature_subset_mask` values within one candidate and family.
+- `CANDIDATE_FAMILY_EVALUATION_ROWS`: summary CSV rows keyed by candidate,
+  family, and safety-feature subset.
+- `AGGREGATE_ACROSS_CANDIDATES`: family totals across all three frozen
+  candidates, including available analysis-JSON aggregate fields.
+
+`single_state_feature_subset_count` in the P0 analysis JSON is an aggregate
+across candidates. It is validated independently against the single-state
+summary-row aggregate and is never multiplied by three. Summary rows establish
+both per-candidate coverage and aggregate counts.
+
+When per-candidate and aggregate authorities coexist, both are validated
+independently and must satisfy:
+
+```text
+aggregate_count[family]
+    = candidate_count * per_candidate_subset_count[family]
+```
+
+When only per-candidate authority is present, the aggregate is derived only
+after exact candidate coverage is established. When only an aggregate field is
+present, division is authorized only with exact divisibility and independent
+equal-candidate coverage. Any disagreement, missing or extra mask/family,
+duplicate candidate-family source, or duplicate candidate-family subset row
+fails closed.
 
 P0 target labels are used only to close prior-stage provenance and counts. They
 are not inspected against candidate quantities and do not select a state family.

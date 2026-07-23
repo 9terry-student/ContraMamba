@@ -17,13 +17,29 @@ import re
 import shutil
 import subprocess
 import time
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any, Iterable, Sequence
 
 STAGE = "Stage196-B2-B6P1"
 PREIMPLEMENTATION_AUTHORITY_COMMIT = "a959097bd2b34302503dac19d45a8a113f6b139a"
 EXPECTED_CANDIDATES = ("00100000000000", "01000000000000", "10000000000000")
+P0_ENUMERATION_FAMILIES = ("single-state", "tail-trajectory", "paired-delta")
+P0_PER_CANDIDATE_SUBSET_COUNTS = {
+    "single-state": 16383,
+    "tail-trajectory": 16383,
+    "paired-delta": 1023,
+}
+P0_AGGREGATE_CANDIDATE_SUBSET_COUNTS = {
+    "single-state": 49149,
+    "tail-trajectory": 49149,
+    "paired-delta": 3069,
+}
+P0_ENUMERATION_FAMILY_NAMES = {
+    "single_state": "single-state",
+    "tail_trajectory": "tail-trajectory",
+    "paired_delta": "paired-delta",
+}
 AUTHORITY_STATUSES = (
     "EXACT_EXISTING_ARTIFACT",
     "EXACT_DETERMINISTIC_RECONSTRUCTION",
@@ -173,15 +189,247 @@ def csv_header_and_count(path: Path) -> tuple[list[str], int]:
         return header, sum(1 for _ in reader)
 
 
-def csv_value_counts(path: Path, field: str) -> Counter[str]:
-    counts: Counter[str] = Counter()
-    with path.open(newline="", encoding="utf-8-sig") as handle:
-        reader = csv.DictReader(handle)
-        if reader.fieldnames is None or field not in reader.fieldnames:
-            raise ValueError(f"{path}: missing count field {field}")
-        for row in reader:
-            counts[row[field]] += 1
-    return counts
+def reconcile_p0_enumeration(
+    p0: dict[str, Any], single_summary_path: Path, diagnostic_summary_path: Path
+) -> tuple[dict[str, Any], dict[str, Any], bool, dict[str, Any]]:
+    required = {
+        "candidate_count": len(EXPECTED_CANDIDATES),
+        "candidate_masks": list(EXPECTED_CANDIDATES),
+        "per_candidate_subset_counts": dict(P0_PER_CANDIDATE_SUBSET_COUNTS),
+        "aggregate_candidate_subset_counts": dict(
+            P0_AGGREGATE_CANDIDATE_SUBSET_COUNTS
+        ),
+    }
+    evaluation_row_counts: Counter[tuple[str, str]] = Counter()
+    unique_subset_counts: Counter[tuple[str, str]] = Counter()
+    source_files: defaultdict[tuple[str, str], set[str]] = defaultdict(set)
+    seen_subset_rows: set[tuple[str, str, str]] = set()
+    duplicate_subset_rows: list[dict[str, str]] = []
+    invalid_family_rows: list[dict[str, str]] = []
+    source_specs = (
+        (single_summary_path, {"single_state"}),
+        (diagnostic_summary_path, {"tail_trajectory", "paired_delta"}),
+    )
+    for path, allowed_raw_families in source_specs:
+        with path.open(newline="", encoding="utf-8-sig") as handle:
+            reader = csv.DictReader(handle)
+            required_columns = {
+                "candidate_feature_subset_mask",
+                "feature_family",
+                "safety_feature_subset_mask",
+            }
+            columns = set(reader.fieldnames or ())
+            missing_columns = sorted(required_columns - columns)
+            if missing_columns:
+                raise ValueError(
+                    f"{path}: missing enumeration columns {missing_columns}"
+                )
+            for row in reader:
+                candidate = row["candidate_feature_subset_mask"]
+                raw_family = row["feature_family"]
+                family = P0_ENUMERATION_FAMILY_NAMES.get(raw_family, "")
+                if raw_family not in allowed_raw_families or not family:
+                    invalid_family_rows.append({
+                        "source_file": path.name,
+                        "candidate_mask": candidate,
+                        "feature_family": raw_family,
+                    })
+                    continue
+                candidate_family = (candidate, family)
+                evaluation_row_counts[candidate_family] += 1
+                source_files[candidate_family].add(path.name)
+                subset_key = (
+                    candidate,
+                    family,
+                    row["safety_feature_subset_mask"],
+                )
+                if subset_key in seen_subset_rows:
+                    duplicate_subset_rows.append({
+                        "source_file": path.name,
+                        "candidate_mask": candidate,
+                        "feature_family": family,
+                        "safety_feature_subset_mask": row[
+                            "safety_feature_subset_mask"
+                        ],
+                    })
+                else:
+                    seen_subset_rows.add(subset_key)
+                    unique_subset_counts[candidate_family] += 1
+
+    candidate_masks = sorted({candidate for candidate, _ in evaluation_row_counts})
+    observed_families = sorted({family for _, family in evaluation_row_counts})
+    expected_candidate_set = set(EXPECTED_CANDIDATES)
+    expected_family_set = set(P0_ENUMERATION_FAMILIES)
+    missing_candidates = sorted(expected_candidate_set - set(candidate_masks))
+    extra_candidates = sorted(set(candidate_masks) - expected_candidate_set)
+    missing_families = sorted(expected_family_set - set(observed_families))
+    extra_families = sorted(set(observed_families) - expected_family_set)
+    missing_candidate_families = [
+        {"candidate_mask": candidate, "feature_family": family}
+        for candidate in EXPECTED_CANDIDATES
+        for family in P0_ENUMERATION_FAMILIES
+        if (candidate, family) not in evaluation_row_counts
+    ]
+    duplicate_candidate_family_summaries = [
+        {
+            "candidate_mask": candidate,
+            "feature_family": family,
+            "source_files": sorted(files),
+        }
+        for (candidate, family), files in sorted(source_files.items())
+        if len(files) != 1
+    ]
+    per_candidate_by_mask = {
+        candidate: {
+            family: unique_subset_counts[(candidate, family)]
+            for family in P0_ENUMERATION_FAMILIES
+        }
+        for candidate in candidate_masks
+    }
+    evaluation_rows_by_mask = {
+        candidate: {
+            family: evaluation_row_counts[(candidate, family)]
+            for family in P0_ENUMERATION_FAMILIES
+        }
+        for candidate in candidate_masks
+    }
+    reconciled_per_candidate: dict[str, int | None] = {}
+    for family in P0_ENUMERATION_FAMILIES:
+        values = {
+            unique_subset_counts[(candidate, family)]
+            for candidate in EXPECTED_CANDIDATES
+            if (candidate, family) in evaluation_row_counts
+        }
+        reconciled_per_candidate[family] = (
+            next(iter(values))
+            if len(values) == 1
+            and all(
+                (candidate, family) in evaluation_row_counts
+                for candidate in EXPECTED_CANDIDATES
+            )
+            else None
+        )
+    aggregate_counts = {
+        family: sum(
+            evaluation_row_counts[(candidate, family)]
+            for candidate in candidate_masks
+        )
+        for family in P0_ENUMERATION_FAMILIES
+    }
+    arithmetic_by_family = {
+        family: (
+            reconciled_per_candidate[family] is not None
+            and aggregate_counts[family]
+            == len(candidate_masks) * reconciled_per_candidate[family]
+        )
+        for family in P0_ENUMERATION_FAMILIES
+    }
+    json_field_names = {
+        "single-state": "single_state_feature_subset_count",
+        "tail-trajectory": "tail_trajectory_feature_subset_count",
+        "paired-delta": "paired_delta_feature_subset_count",
+    }
+    json_aggregate_values: dict[str, int] = {}
+    json_authority_errors: list[dict[str, Any]] = []
+    for family, field in json_field_names.items():
+        if field not in p0:
+            continue
+        value = p0[field]
+        if isinstance(value, bool) or not isinstance(value, int):
+            json_authority_errors.append({
+                "feature_family": family,
+                "source_field": field,
+                "observed": value,
+                "reason": "integer aggregate required",
+            })
+            continue
+        json_aggregate_values[family] = value
+        if value != aggregate_counts[family]:
+            json_authority_errors.append({
+                "feature_family": family,
+                "source_field": field,
+                "observed": value,
+                "summary_row_aggregate": aggregate_counts[family],
+                "reason": "JSON aggregate disagrees with summary-row aggregate",
+            })
+    arithmetic_closed = all(arithmetic_by_family.values())
+    observed = {
+        "candidate_count": len(candidate_masks),
+        "candidate_masks": candidate_masks,
+        "observed_per_candidate_subset_counts": per_candidate_by_mask,
+        "observed_candidate_family_evaluation_rows": evaluation_rows_by_mask,
+        "reconciled_per_candidate_subset_counts": reconciled_per_candidate,
+        "observed_aggregate_evaluation_counts": aggregate_counts,
+        "arithmetic_by_family": arithmetic_by_family,
+        "arithmetic_closed": arithmetic_closed,
+        "missing_candidates": missing_candidates,
+        "extra_candidates": extra_candidates,
+        "missing_families": missing_families,
+        "extra_families": extra_families,
+        "missing_candidate_families": missing_candidate_families,
+        "duplicate_candidate_family_summaries": duplicate_candidate_family_summaries,
+        "duplicate_candidate_family_subset_rows": duplicate_subset_rows,
+        "invalid_family_rows": invalid_family_rows,
+        "json_aggregate_values": json_aggregate_values,
+        "json_authority_errors": json_authority_errors,
+    }
+    passed = (
+        len(candidate_masks) == len(EXPECTED_CANDIDATES)
+        and candidate_masks == sorted(EXPECTED_CANDIDATES)
+        and not missing_candidates
+        and not extra_candidates
+        and not missing_families
+        and not extra_families
+        and not missing_candidate_families
+        and not duplicate_candidate_family_summaries
+        and not duplicate_subset_rows
+        and not invalid_family_rows
+        and evaluation_rows_by_mask == per_candidate_by_mask
+        and reconciled_per_candidate == P0_PER_CANDIDATE_SUBSET_COUNTS
+        and aggregate_counts == P0_AGGREGATE_CANDIDATE_SUBSET_COUNTS
+        and arithmetic_closed
+        and not json_authority_errors
+    )
+    source_fields = {
+        "summary_csv_candidate_family_rows": {
+            "semantic_level": "CANDIDATE_FAMILY_EVALUATION_ROWS",
+            "source_files": [
+                single_summary_path.name,
+                diagnostic_summary_path.name,
+            ],
+            "fields": [
+                "candidate_feature_subset_mask",
+                "feature_family",
+                "safety_feature_subset_mask",
+            ],
+        },
+        "unique_subset_masks_within_candidate_family": {
+            "semantic_level": "PER_CANDIDATE_SUBSET_UNIVERSE",
+            "field": "safety_feature_subset_mask",
+            "duplicate_rows": len(duplicate_subset_rows),
+        },
+        "summary_csv_family_totals": {
+            "semantic_level": "AGGREGATE_ACROSS_CANDIDATES",
+            "values": aggregate_counts,
+        },
+        "analysis_json_counts": {
+            "semantic_level": "AGGREGATE_ACROSS_CANDIDATES",
+            "fields": json_field_names,
+            "available_values": json_aggregate_values,
+        },
+    }
+    observed["source_fields"] = source_fields
+    closure = {
+        "candidate_count": len(candidate_masks),
+        "candidate_masks": candidate_masks,
+        "per_candidate_subset_counts": reconciled_per_candidate,
+        "per_candidate_subset_counts_by_mask": per_candidate_by_mask,
+        "candidate_family_evaluation_rows_by_mask": evaluation_rows_by_mask,
+        "aggregate_candidate_subset_counts": aggregate_counts,
+        "arithmetic_closed": arithmetic_closed,
+        "source_fields": source_fields,
+    }
+    return required, observed, passed, closure
 
 
 def sha256(path: Path) -> str:
@@ -500,23 +748,15 @@ def validate_sources(ns: argparse.Namespace, gates: list[dict[str, Any]]) -> dic
          {"rows": target_rows, **target_counts} ==
          {"rows": 6480, "MUST_ALLOW": 21, "MUST_BLOCK": 171, "OPTIONAL": 6288},
          "P0 target counts changed")
-    single_summary_counts = csv_value_counts(
-        paths["p0"].parent / "stage196b2b6p0_single_state_gate_summary.csv", "feature_family"
+    enumeration_required, enumeration_observed, enumeration_passed, enumeration_closure = (
+        reconcile_p0_enumeration(
+            p0,
+            paths["p0"].parent / "stage196b2b6p0_single_state_gate_summary.csv",
+            paths["p0"].parent / "stage196b2b6p0_diagnostic_gate_summary.csv",
+        )
     )
-    diagnostic_counts = csv_value_counts(
-        paths["p0"].parent / "stage196b2b6p0_diagnostic_gate_summary.csv", "feature_family"
-    )
-    candidate_count = len(EXPECTED_CANDIDATES)
-    single_count = single_summary_counts["single_state"] // candidate_count
-    tail_count = diagnostic_counts["tail_trajectory"] // candidate_count
-    paired_count = diagnostic_counts["paired_delta"] // candidate_count
-    counts = {"single-state": single_count, "tail-trajectory": tail_count, "paired-delta": paired_count}
     gate(gates, "source", "p0", "p0_frozen_enumeration_counts",
-         {"single-state": 49149, "tail-trajectory": 49149, "paired-delta": 3069}, counts,
-         counts == {"single-state": 49149, "tail-trajectory": 49149, "paired-delta": 3069}
-         and single_summary_counts == Counter({"single_state": 49149 * candidate_count})
-         and diagnostic_counts == Counter({"tail_trajectory": 49149 * candidate_count,
-                                           "paired_delta": 3069 * candidate_count}),
+         enumeration_required, enumeration_observed, enumeration_passed,
          "P0 enumeration counts changed")
     metric_reproduction = p0.get("source_closure", {}).get("b2b6_metric_reproduction", {})
     expected_metric_reproduction = {
@@ -627,7 +867,8 @@ def validate_sources(ns: argparse.Namespace, gates: list[dict[str, Any]]) -> dic
         })
     return {"paths": paths, "docs": docs, "closure": closure, "schemas": schemas,
             "source_files": source_files, "source_text": source_text,
-            "commit_provenance": commit_provenance}
+            "commit_provenance": commit_provenance,
+            "p0_enumeration_closure": enumeration_closure}
 
 
 def inventory(source: dict[str, Any]) -> list[dict[str, Any]]:
@@ -958,8 +1199,8 @@ def analyze(ns: argparse.Namespace, gates: list[dict[str, Any]]) -> tuple[dict[s
             "feature_families_exhausted": ["single-state", "tail-trajectory", "paired-delta"],
             "zero_feasible_gates": True, "candidate_row_applications": 6480,
             "target_counts": {"MUST_ALLOW": 21, "MUST_BLOCK": 171, "OPTIONAL": 6288},
-            "enumeration_counts": {"single-state": 49149, "tail-trajectory": 49149, "paired-delta": 3069},
         },
+        "p0_enumeration_closure": source["p0_enumeration_closure"],
         "precommitted_candidate_hierarchy": {
             "A": "native composer decision geometry",
             "B": "candidate-action counterfactual composer geometry",
@@ -1155,6 +1396,7 @@ def blocked_analysis(
                                                    "large_recipient_signature_csv_required": False,
                                                    "large_recipient_signature_csv_loaded": False},
         "p0_closure": {}, "precommitted_candidate_hierarchy": {},
+        "p0_enumeration_closure": {},
         "action_conditional_state_definition": {}, "composer_source_boundary": {},
         "observability_finding": "unavailable because contract failed",
         "missing_observability_boundary": "unavailable because contract failed",
