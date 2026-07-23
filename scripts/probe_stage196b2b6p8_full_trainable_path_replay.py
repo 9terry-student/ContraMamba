@@ -788,7 +788,6 @@ def parse_p7_gradient_recipient_authority(
     excluded: dict[str, dict[str, list[str]]] = {"direction": {"joint": [], "frame_local_only": []},
                                                 "order": {"joint": [], "frame_local_only": []}}
     normalization_errors: list[str] = []
-    mode_errors: list[str] = []
     if schema_ok:
         for row in design:
             family = (row.get("intervention_family") or "").strip()
@@ -803,8 +802,6 @@ def parse_p7_gradient_recipient_authority(
                 continue
             if not normalized:
                 continue
-            if "both arms" not in (row.get("exact_gradient_path") or "") and family != "NONE":
-                mode_errors.append(f"{family}/{raw_group}: exact_gradient_path does not declare both arms")
             for mode in ("joint", "frame_local_only"):
                 for group in normalized:
                     record = {"p7_family": family, "group": group, "status": status,
@@ -828,10 +825,15 @@ def parse_p7_gradient_recipient_authority(
              json.dumps(normalized_sets["direction"], sort_keys=True))
     contract(rows, "p7_order_recipient_authority_nonempty", order_count > 0,
              json.dumps(normalized_sets["order"], sort_keys=True))
+    mode_closure = (
+        set(normalized_sets) == {"direction", "order"}
+        and all(set(by_mode) == {"joint", "frame_local_only"} for by_mode in normalized_sets.values())
+        and all(bool(groups) for by_mode in normalized_sets.values() for groups in by_mode.values())
+    )
     contract(rows, "p7_recipient_group_normalization", not normalization_errors,
              "; ".join(sorted(set(normalization_errors))) or json.dumps(normalized_sets, sort_keys=True))
-    contract(rows, "p7_recipient_mode_closure", not mode_errors,
-             "; ".join(mode_errors) or "P7 declares both arms; expanded to joint and frame_local_only")
+    contract(rows, "p7_recipient_mode_closure", mode_closure,
+             json.dumps(normalized_sets, sort_keys=True))
     return {"source_path": source_path, "source_sha256": sha256(source_path),
             "declarations": declarations, "optional": optional, "excluded": excluded,
             "normalized_recipient_groups": normalized_sets}
@@ -1099,8 +1101,12 @@ def main() -> int:
         contract(contracts, "default_off_trainer_closure", trainer.build_parser().get_default("stage196b2b6p8_enable_full_trainable_path_replay_api") is False, "default false")
         contract(contracts, "resource_observation_closure", True, "CUDA counters captured")
         contract(contracts, "decision_hierarchy_reachability", True, "derived below")
+        blocking = [row["contract"] for row in contracts if row["status"] == "FAIL"]
 
-        if native_ok and semantic_ok and direction_ok and order_ok and no_mutation and stochastic_ok and resource_ok:
+        if blocking:
+            decision = "STAGE196B2B6P8_BLOCKED_CONTRACT_FAILURE"
+            next_stage = "STAGE196B2B6P8_REPAIR_CONTRACT"
+        elif native_ok and semantic_ok and direction_ok and order_ok and no_mutation and stochastic_ok and resource_ok:
             decision = "STAGE196B2B6P8_FULL_TRAINABLE_PATH_REPLAY_COMPLETE"
             next_stage = "STAGE196B2B6P9_SEPARATE_STABILITY_INTERVENTION_IMPLEMENTATION"
         elif native_ok and semantic_ok and direction_ok and order_ok and not resource_ok:
@@ -1118,7 +1124,6 @@ def main() -> int:
         else:
             decision = "STAGE196B2B6P8_BLOCKED_CONTRACT_FAILURE"
             next_stage = "STAGE196B2B6P8_REPAIR_CONTRACT"
-
         replay_schema = []
         for name, tensor in replay_state.items():
             replay_schema.append({"tensor": name, "shape": str(tuple(tensor.shape)),
@@ -1157,10 +1162,6 @@ def main() -> int:
                           "peak_cuda_reserved_bytes": torch.cuda.max_memory_reserved(),
                           "replay_output_tensor_count": tensor_count,
                           "retained_graph_count": 2, "status": "COMPLETE"}]
-        blocking = [row["contract"] for row in contracts if row["status"] == "FAIL" and row["contract"] not in {
-            "direction_coordinate_connectivity", "candidate_order_coordinate_connectivity",
-            "native_forward_equivalence", "candidate_semantic_equivalence",
-            "stochastic_state_policy_closure"}]
         analysis = {"decision": decision, "recommended_next_stage": next_stage,
                     "blocking_reasons": blocking, "checkpoint_provenance": provenance,
                     "p7_authority_provenance": authority_context.get("p7_authority_provenance", {}),

@@ -215,12 +215,16 @@ P7 parameter groups are normalized to P8 runtime groups before comparison:
 backbone row are preserved as authority context but are not treated as concrete
 runtime parameter groups.
 
-P7 declares the direction and candidate-order paths through both loaded arms, so
-recipient authority is expanded to `joint` and `frame_local_only`. Each gradient
-CSV row now carries explicit `checkpoint_mode`, `target_family`, and
-`parameter_group_base` columns. The gate compares only matching target family,
-checkpoint mode, and normalized base group; cross-checkpoint rows are excluded
-from same-model connectivity decisions.
+P7's free-text `exact_gradient_path` describes structural gradient flow; it is
+not checkpoint-mode authority. Recipient-mode closure is therefore checked at the
+normalized authority-map level: for both `direction` and `order`, the required
+recipient map must contain exactly `joint` and `frame_local_only`, and each mode
+must have a nonempty recognized required-recipient set. Optional, excluded,
+frozen, zero-parameter, and non-recipient rows do not participate in this closure.
+Each gradient CSV row now carries explicit `checkpoint_mode`, `target_family`,
+and `parameter_group_base` columns. The gate compares only matching target
+family, checkpoint mode, and normalized base group; cross-checkpoint rows are
+excluded from same-model connectivity decisions.
 
 `PRIMARY_RECIPIENT` and `PRIMARY_RECIPIENT_WITH_ARM_SPECIFIC_DETACH` are required
 recipient statuses. `COORDINATE_CONDITIONAL_RECIPIENT` and
@@ -281,10 +285,14 @@ peak CUDA allocated/reserved bytes, replay tensor count, and retained graph coun
 It never changes batch size automatically and makes no throughput claim. CUDA OOM
 is caught as a structured result.
 
-The decision is derived in the required hierarchy: complete, valid/resource
-constrained, stochastic repair, gradient repair, semantic repair, or blocked
-contract. Scientific negative results do not by themselves become upstream
-contract failures.
+The decision is derived in the required hierarchy with a blocking-first
+consistency invariant: any failed contract or nonempty `blocking_reasons` forces
+`STAGE196B2B6P8_BLOCKED_CONTRACT_FAILURE` and
+`STAGE196B2B6P8_REPAIR_CONTRACT`. A complete decision is allowed only when all
+contracts pass, `blocking_reasons` is empty, and native equivalence, candidate
+semantics, direction gradients, order gradients, and no-mutation all pass.
+Scientific negative results do not by themselves become upstream contract
+failures.
 
 Exactly ten files are written atomically into a directory that must not already
 exist. The process returns zero exactly when `blocking_reasons` is empty and two
