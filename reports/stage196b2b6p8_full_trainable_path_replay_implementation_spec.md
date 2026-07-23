@@ -22,6 +22,36 @@ Because those runtime artifacts are not checked into this source checkout, the
 probe never synthesizes them: a missing file, failed P7 contract, ambiguous row
 mapping, or changed boundary yields `STAGE196B2B6P8_BLOCKED_CONTRACT_FAILURE`.
 
+The authority parser intentionally distinguishes the upstream P7 contract schema
+from the P8 output schema. P7 contract rows are read with the canonical fields
+`contract`, `required`, `observed`, `passed`, and `blocking_reason`; the closure
+passes only when every `passed` value parses through the strict boolean parser as
+true and every stripped `blocking_reason` is empty. P8 continues to write its own
+`contract`, `status`, and `detail` schema for `stage196b2b6p8_contract.csv`.
+
+Cross-stage source provenance uses ancestry, not equality. The P7 source commit
+is taken from the supplied P7 analysis JSON, must be a 40-character lowercase hex
+commit, must exist according to `git cat-file -e <commit>^{commit}`, and must be
+an ancestor of the current P8 commit according to `git merge-base --is-ancestor`.
+The separate current-P8 identity gate remains exact: the supplied
+`--current-git-commit` must equal repository `HEAD`.
+
+The execution boundary is selected only from
+`stage196b2b6p7_execution_boundary_audit.csv` using
+`replay_feasibility = EARLIEST_SAFE_SHARED_REPLAY_BOUNDARY`. The probe does not
+use `selected` or `is_selected` for boundary closure, and it does not borrow the
+`selected` column from the counterfactual design-comparison CSV. The selected row
+must identify `encoder_hidden_states`, `model.mamba` or the frozen-state cache,
+`[B,T,H_backbone]`, frozen producer trainability, no candidate-action dependency,
+and in-memory `encoder_hidden_states` serialization. The full selected row is
+recorded in P8 analysis provenance. The P7 policy that the frozen hidden state
+may be cached under `no_grad` is preserved.
+
+This repair changes authority parsing only. Replay/model execution, candidate
+lookup, checkpoint handling, stochastic policy, autograd targets, parameter
+groups, resource accounting, no-mutation checks, loss nonexistence, decision
+hierarchy, and exact output files remain unchanged.
+
 ## Replay-state schema
 
 The opt-in native output contains only the tensors needed at the P7 boundary:

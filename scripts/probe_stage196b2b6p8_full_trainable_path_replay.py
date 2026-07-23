@@ -11,6 +11,7 @@ import hashlib
 import json
 import os
 import random
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -154,7 +155,122 @@ def model_fingerprints(model: torch.nn.Module) -> tuple[str, str]:
 
 
 def bool_value(value: Any) -> bool:
-    return value is True or str(value).strip().lower() in {"true", "1", "pass", "passed"}
+    if isinstance(value, bool):
+        return value
+    if value is None:
+        return False
+    lowered = str(value).strip().lower()
+    if lowered in {"true", "1", "yes", "y", "pass", "passed"}:
+        return True
+    if lowered in {"false", "0", "no", "n", "fail", "failed", ""}:
+        return False
+    raise ValueError(f"not a strict boolean: {value!r}")
+
+
+def git_run(args: argparse.Namespace, git_args: list[str]) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["git", *git_args],
+        cwd=args.repo_root,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+
+
+def validate_p7_contract_closure(p7_contract: list[dict[str, str]]) -> tuple[bool, str]:
+    required = {"contract", "required", "observed", "passed", "blocking_reason"}
+    if not p7_contract:
+        return False, "empty P7 contract"
+    missing = sorted(required - set(p7_contract[0]))
+    if missing:
+        return False, "missing columns: " + ",".join(missing)
+    failures: list[str] = []
+    for index, row in enumerate(p7_contract):
+        name = (row.get("contract") or f"row_{index}").strip()
+        try:
+            passed = bool_value(row.get("passed"))
+        except ValueError as exc:
+            failures.append(f"{name}: invalid passed value {row.get('passed')!r}: {exc}")
+            continue
+        reason = (row.get("blocking_reason") or "").strip()
+        if not passed or reason:
+            failures.append(f"{name}: passed={row.get('passed')!r} blocking_reason={reason!r}")
+    return not failures, "P7 contract closure" if not failures else "; ".join(failures)
+
+
+def validate_p7_source_commit(args: argparse.Namespace, p7: dict[str, Any],
+                              rows: list[dict[str, Any]]) -> str:
+    p7_commit = str(p7.get("current_git_commit") or p7.get("git_commit")
+                    or (p7.get("source_provenance") or {}).get("git_commit")
+                    or "").strip()
+    declared = re.fullmatch(r"[0-9a-f]{40}", p7_commit) is not None
+    contract(rows, "p7_source_commit_declared", declared, p7_commit or "missing")
+    exists = False
+    ancestor = False
+    exists_detail = "not checked"
+    ancestor_detail = "not checked"
+    if declared:
+        cat = git_run(args, ["cat-file", "-e", f"{p7_commit}^{{commit}}"])
+        exists = cat.returncode == 0
+        exists_detail = "git cat-file commit exists" if exists else (cat.stderr.strip() or f"git cat-file rc={cat.returncode}")
+        if exists:
+            merge_base = git_run(args, ["merge-base", "--is-ancestor", p7_commit, args.current_git_commit])
+            ancestor = merge_base.returncode == 0
+            if merge_base.returncode == 0:
+                ancestor_detail = "P7 commit is ancestor of current"
+            elif merge_base.returncode == 1:
+                ancestor_detail = "P7 commit is not ancestor of current"
+            else:
+                ancestor_detail = merge_base.stderr.strip() or f"git merge-base rc={merge_base.returncode}"
+    contract(rows, "p7_source_commit_exists", exists, exists_detail)
+    contract(rows, "p7_source_commit_is_ancestor_of_current", ancestor, ancestor_detail)
+    head = git_run(args, ["rev-parse", "HEAD"])
+    head_value = head.stdout.strip() if head.returncode == 0 else ""
+    head_detail = head_value if head.returncode == 0 else (head.stderr.strip() or f"git rev-parse rc={head.returncode}")
+    contract(rows, "current_commit_identity", head.returncode == 0 and args.current_git_commit == head_value, head_detail)
+    return p7_commit
+
+
+def validate_p7_selected_boundary(boundary_rows: list[dict[str, str]]) -> tuple[bool, str, dict[str, str] | None]:
+    required = {
+        "state_name",
+        "producing_module",
+        "tensor_shape_contract",
+        "producer_trainability",
+        "candidate_action_dependency",
+        "detach_boundary",
+        "serialization_boundary",
+        "replay_feasibility",
+    }
+    if not boundary_rows:
+        return False, "empty P7 execution-boundary audit", None
+    missing = sorted(required - set(boundary_rows[0]))
+    if missing:
+        return False, "missing columns: " + ",".join(missing), None
+    selected = [
+        row for row in boundary_rows
+        if (row.get("replay_feasibility") or "").strip() == "EARLIEST_SAFE_SHARED_REPLAY_BOUNDARY"
+    ]
+    if len(selected) != 1:
+        return False, f"expected exactly one EARLIEST_SAFE_SHARED_REPLAY_BOUNDARY row, found {len(selected)}", None
+    row = selected[0]
+    state_name = (row.get("state_name") or "").lower()
+    producing_module = (row.get("producing_module") or "").lower()
+    shape = (row.get("tensor_shape_contract") or "").replace(" ", "")
+    trainability = (row.get("producer_trainability") or "").lower()
+    dependency = (row.get("candidate_action_dependency") or "").strip().lower()
+    serialization = (row.get("serialization_boundary") or "").lower()
+    checks = {
+        "state_name_contains_encoder_hidden_states": "encoder_hidden_states" in state_name,
+        "producing_module_is_mamba_or_frozen_cache": "model.mamba" in producing_module or "frozen-state cache" in producing_module,
+        "tensor_shape_contract_is_backbone_hidden": shape == "[B,T,H_backbone]",
+        "producer_trainability_is_frozen": "frozen" in trainability,
+        "candidate_action_dependency_none": dependency == "none",
+        "serialization_boundary_in_memory_encoder_hidden_states": "in-memory" in serialization and "encoder_hidden_states" in serialization,
+    }
+    detail = json.dumps({"selected_boundary": row, "checks": checks}, sort_keys=True)
+    return all(checks.values()), detail, row
 
 
 def blockers(payload: dict[str, Any]) -> list[Any]:
@@ -360,19 +476,12 @@ def validate_authority(args: argparse.Namespace, rows: list[dict[str, Any]]) -> 
     contract(rows, "p7_decision_closure", p7.get("decision") == "STAGE196B2B6P7_FULL_TRAINABLE_PATH_REPLAY_READY", str(p7.get("decision")))
     contract(rows, "p7_zero_blockers", not blockers(p7), repr(blockers(p7)))
     p7_contract = read_csv(companions["stage196b2b6p7_contract.csv"]) if companions["stage196b2b6p7_contract.csv"].is_file() else []
-    contract(rows, "p7_zero_failed_contracts", bool(p7_contract) and all(row.get("status") == "PASS" for row in p7_contract), "P7 contract rows")
-    p7_commit = (p7.get("current_git_commit") or p7.get("git_commit")
-                 or (p7.get("source_provenance") or {}).get("git_commit"))
-    contract(rows, "p7_current_commit_identity", p7_commit == args.current_git_commit,
-             str(p7_commit))
+    p7_contract_ok, p7_contract_detail = validate_p7_contract_closure(p7_contract)
+    contract(rows, "p7_zero_failed_contracts", p7_contract_ok, p7_contract_detail)
+    p7_commit = validate_p7_source_commit(args, p7, rows)
     boundary_rows = read_csv(companions["stage196b2b6p7_execution_boundary_audit.csv"])
-    boundary_selected = [row for row in boundary_rows
-                         if bool_value(row.get("selected", row.get("is_selected", False)))]
-    boundary_text = json.dumps(boundary_selected, sort_keys=True).lower()
-    contract(rows, "p7_selected_boundary_closure",
-             len(boundary_selected) == 1
-             and ("encoder_hidden_states" in boundary_text or "last_hidden_state" in boundary_text),
-             boundary_text)
+    boundary_ok, boundary_detail, selected_boundary = validate_p7_selected_boundary(boundary_rows)
+    contract(rows, "p7_selected_boundary_closure", boundary_ok, boundary_detail)
     stochastic_rows = read_csv(companions["stage196b2b6p7_stochastic_state_audit.csv"])
     stochastic_text = json.dumps(stochastic_rows, sort_keys=True).lower()
     contract(rows, "p7_stochastic_policy_authority",
@@ -380,13 +489,14 @@ def validate_authority(args: argparse.Namespace, rows: list[dict[str, Any]]) -> 
              and "dropout" in stochastic_text, "matched RNG/dropout policy")
     contract(rows, "p6_decision_closure", p6.get("decision") == "STAGE196B2B6P6_FULL_COUNTERFACTUAL_FORWARD_REQUIRED" and not blockers(p6), str(p6.get("decision")))
     contract(rows, "p5_decision_closure", p5.get("decision") == "STAGE196B2B6P5_GRADIENT_PATH_INSTRUMENTATION_REQUIRED" and not blockers(p5), str(p5.get("decision")))
-    contract(rows, "current_commit_identity", args.current_git_commit == subprocess.check_output(
-        ["git", "rev-parse", "HEAD"], cwd=args.repo_root, text=True).strip(), args.current_git_commit)
+
     contract(rows, "mamba_130m_identity", args.backbone == "mamba" and args.model_name == "state-spaces/mamba-130m-hf", f"{args.backbone}/{args.model_name}")
     contract(rows, "cuda_device", args.device == "cuda" and torch.cuda.is_available(), args.device)
     contract(rows, "main_clean_data_identity", sha256(args.main_data_path) == EXPECTED_MAIN_SHA, sha256(args.main_data_path))
     return {"companions": companions, "p7": p7, "p6": p6, "p5": p5,
-            "recovery": load_json(args.checkpoint_recovery_summary_json)}
+            "recovery": load_json(args.checkpoint_recovery_summary_json),
+            "p7_source_commit": p7_commit,
+            "p7_selected_boundary": selected_boundary}
 
 
 def recovery_entry(summary: dict[str, Any], mode: str) -> dict[str, Any]:
@@ -483,11 +593,12 @@ def publish_blocked(args: argparse.Namespace, contracts: list[dict[str, Any]],
 
 
 def publish_resource_oom(args: argparse.Namespace, contracts: list[dict[str, Any]],
-                         reason: str) -> int:
+                         reason: str, context: dict[str, Any] | None = None) -> int:
     decision = "STAGE196B2B6P8_REPLAY_VALID_RESOURCE_CONSTRAINED"
     next_stage = "STAGE196B2B6P9_REPLAY_RESOURCE_CONFIGURATION"
     analysis = {"decision": decision, "recommended_next_stage": next_stage,
-                "blocking_reasons": [], "resource_result": "CUDA_OOM", "detail": reason}
+                "blocking_reasons": [], "resource_result": "CUDA_OOM", "detail": reason,
+                "context": context or {}}
     atomic_json(args.output_dir / OUTPUTS[0], analysis)
     atomic_text(args.output_dir / OUTPUTS[1], "# Stage196-B2-B6P8 Report\n\nStructured resource result: " + reason + "\n")
     rows_by_name = {
@@ -513,10 +624,15 @@ def main() -> int:
         raise FileExistsError(f"refusing to overwrite output directory: {args.output_dir}")
     args.output_dir.mkdir(parents=True, exist_ok=False)
     contracts: list[dict[str, Any]] = []
+    authority_context: dict[str, Any] = {}
     try:
         authority = validate_authority(args, contracts)
+        authority_context = {"p7_authority_provenance": {
+            "p7_source_commit": authority.get("p7_source_commit"),
+            "selected_boundary": authority.get("p7_selected_boundary"),
+        }}
         if any(row["status"] == "FAIL" for row in contracts):
-            return publish_blocked(args, contracts, "upstream authority closure failed", {})
+            return publish_blocked(args, contracts, "upstream authority closure failed", authority_context)
         provenance = checkpoint_provenance(args, authority["recovery"], contracts)
         records = v5.load_jsonl(args.main_data_path)
         contract(contracts, "time_swap_exclusion", all(row.get("intervention_type") != "time_swap" for row in records), "main rows")
@@ -524,7 +640,7 @@ def main() -> int:
         if args.batch_size <= 0 or args.batch_size > len(records):
             contract(contracts, "batch_size_valid", False, str(args.batch_size))
         if any(row["status"] == "FAIL" for row in contracts):
-            return publish_blocked(args, contracts, "data/checkpoint contract failed", {"checkpoint_provenance": provenance})
+            return publish_blocked(args, contracts, "data/checkpoint contract failed", {**authority_context, "checkpoint_provenance": provenance})
 
         random.seed(args.seed); np.random.seed(args.seed); torch.manual_seed(args.seed); torch.cuda.manual_seed_all(args.seed)
         initial_rng = trainer.ContraMambaV6BMinimal._stage196b2b6p8_capture_rng_state()
@@ -692,6 +808,8 @@ def main() -> int:
             "stochastic_state_policy_closure"}]
         analysis = {"decision": decision, "recommended_next_stage": next_stage,
                     "blocking_reasons": blocking, "checkpoint_provenance": provenance,
+                    "p7_authority_provenance": {"p7_source_commit": authority.get("p7_source_commit"),
+                                                 "selected_boundary": authority.get("p7_selected_boundary")},
                     "native_equivalence_passed": native_ok, "candidate_semantics_passed": semantic_ok,
                     "direction_connectivity_passed": direction_ok, "candidate_order_connectivity_passed": order_ok,
                     "no_mutation_passed": no_mutation, "resource_observation_completed": True,
@@ -735,7 +853,7 @@ def main() -> int:
         if "initial_rng" in locals():
             trainer.ContraMambaV6BMinimal._stage196b2b6p8_restore_rng_state(initial_rng)
         contract(contracts, "resource_observation_closure", True, "structured OOM")
-        return publish_resource_oom(args, contracts, f"structured CUDA OOM: {exc}")
+        return publish_resource_oom(args, contracts, f"structured CUDA OOM: {exc}", authority_context)
     except Exception as exc:
         if "joint" in locals() and "modes_before" in locals():
             joint.train(modes_before["joint"]); frame.train(modes_before["frame_local_only"])
