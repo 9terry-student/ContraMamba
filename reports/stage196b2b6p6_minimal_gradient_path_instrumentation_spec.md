@@ -38,6 +38,11 @@ Every tensor row records shape, dtype, device, requires-grad, grad-fn class, lea
 
 The probe requires explicit joint and frame-local-only checkpoints. It also requires P5, P4, and P2 analysis paths; the exact Mamba identity; CUDA; clean main data; batch size; seed; commit; and a nonexistent output directory. It performs one deterministic P2-aligned clean controlled batch.
 
+The supplied seed183 checkpoints may be reconstructed from the original
+training commands. Role, seed, configuration, source, and checkpoint
+provenance checks remain mandatory; reconstruction is not a claim of byte
+identity with lost historical checkpoint files.
+
 The probe creates no optimizer or scheduler, calls neither `optimizer.step` nor `scheduler.step`, writes no checkpoint, runs no epoch, performs no external or OOD evaluation, and never invokes a global training backward. It performs exactly one forward for each authoritative arm because P5 established that a final-composer-only native simulation cannot recover donor primitives.
 
 ## Parameter grouping and intended authority
@@ -87,7 +92,15 @@ Required disagreement counts are all zero: native scores, native predictions, co
 
 ## No-mutation and loss nonexistence
 
-Parameter fingerprints are recorded before probing and after native, counterfactual, direction, and candidate-order probes. Persistent-buffer fingerprints and model training/evaluation states are recorded and restored exactly. Evaluation mode prevents BatchNorm-like running-state mutation. Optimizer, scheduler, and checkpoint-write counts remain zero.
+Parameter fingerprints are recorded before probing and after native, counterfactual, direction, and candidate-order probes. Persistent-buffer fingerprints and model training/evaluation states are recorded and restored exactly. Scalar parameters and scalar buffers are included and are never skipped.
+
+The canonical tensor-byte boundary first detaches, moves to CPU, makes the tensor contiguous, and then reshapes it to one dimension before reinterpreting it as `uint8`. The digest metadata is written before payload bytes and retains the state name, dtype, and original exact shape; therefore scalar shape `[]` remains distinct from vector shape `[1]` even though both payloads are flat.
+
+Empty tensors produce an empty byte payload while retaining their name, dtype, and original shape metadata. Floating and integer strided dtypes use the same byte reinterpretation. In particular, `bfloat16` is viewed as `uint8` before NumPy conversion, so NumPy is never asked to represent `bfloat16` values. No scalar uses `item()`, a Python float, or textual value serialization. Fingerprint equality remains exact.
+
+Serialization failures include structured fingerprint scope, tensor name, shape, dtype, layout, pre-CPU device, `requires_grad`, and exception type. This repair changes byte serialization only; it does not change model forwards, geometry, gradient targets, classifications, equivalence checks, or mutation checkpoints.
+
+Evaluation mode prevents BatchNorm-like running-state mutation. Optimizer, scheduler, and checkpoint-write counts remain zero.
 
 P6 proves all five values false:
 

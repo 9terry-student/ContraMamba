@@ -83,13 +83,50 @@ def closed(path: Path) -> bool:
  rows = read_csv(path)
  return bool(rows) and all(str(r.get("passed", "")).lower() == "true" and not r.get("blocking_reason", "").strip() for r in rows)
 
-def fingerprint(models: Sequence[torch.nn.Module], buffers: bool = False) -> str:
+def tensor_payload_bytes(
+ tensor: torch.Tensor, *, fingerprint_scope: str, tensor_name: str,
+) -> bytes:
+ if not isinstance(tensor, torch.Tensor):
+  raise TypeError(f"{tensor_name}: torch.Tensor required")
+ device_before_cpu = str(tensor.device)
+ original_shape = list(tensor.shape)
+ try:
+  cpu = tensor.detach().cpu().contiguous()
+  if cpu.layout != torch.strided:
+   raise RuntimeError(f"strided tensor layout required, observed {cpu.layout}")
+  flat = cpu.reshape(-1)
+  if flat.numel() == 0:
+   return b""
+  return flat.view(torch.uint8).numpy().tobytes()
+ except Exception as exc:
+  provenance = {
+   "fingerprint_scope": fingerprint_scope,
+   "tensor_name": tensor_name,
+   "shape": original_shape,
+   "dtype": str(tensor.dtype),
+   "layout": str(tensor.layout),
+   "device_before_cpu_conversion": device_before_cpu,
+   "requires_grad": bool(tensor.requires_grad),
+   "exception_type": type(exc).__name__,
+  }
+  raise RuntimeError(
+   "P6 tensor fingerprint serialization failed: "
+   + json.dumps(provenance, sort_keys=True)
+  ) from exc
+
+def fingerprint(
+ models: Sequence[torch.nn.Module], buffers: bool = False,
+ *, fingerprint_scope: str | None = None,
+) -> str:
  h = hashlib.sha256()
+ scope = fingerprint_scope or ("buffer" if buffers else "parameter")
  for i, model in enumerate(models):
   source = model.named_buffers() if buffers else model.named_parameters()
   for name, tensor in source:
    h.update(f"{i}:{name}:{tensor.dtype}:{tuple(tensor.shape)}".encode())
-   h.update(tensor.detach().cpu().contiguous().view(torch.uint8).numpy().tobytes())
+   h.update(tensor_payload_bytes(
+    tensor, fingerprint_scope=scope, tensor_name=f"model{i}.{name}",
+   ))
  return h.hexdigest()
 
 def ids(module: torch.nn.Module | None) -> set[int]:
@@ -236,7 +273,12 @@ def run(ns: argparse.Namespace, contracts: list[dict[str, Any]]) -> dict[str, An
  gate(contracts, "authoritative_checkpoint_role_and_seed", {"native": "joint", "donor": "frame_local_only", "seed": ns.seed},
   {"native": args.get("frame_downstream_gradient_mode", "joint"), "donor": donor_args.get("frame_downstream_gradient_mode"), "seed": args.get("seed")}, role_ok, "checkpoint role changed")
  models = (native_model, donor_model); modes_before = [model.training for model in models]
- parameters_before = fingerprint(models); buffers_before = fingerprint(models, True)
+ parameters_before = fingerprint(
+  models, fingerprint_scope="before_probe.parameters",
+ )
+ buffers_before = fingerprint(
+  models, True, fingerprint_scope="before_probe.buffers",
+ )
  for model in models: model.eval()
  from transformers import AutoTokenizer
  tokenizer = AutoTokenizer.from_pretrained(ns.model_name)
@@ -320,7 +362,11 @@ def run(ns: argparse.Namespace, contracts: list[dict[str, Any]]) -> dict[str, An
     group_status = "CONNECTED_ZERO_AT_OBSERVED_BATCH"
    gradient_rows.append({"target_family": family, "candidate_or_pair": candidate,
     "target_coordinate": coordinate, "target_classification": group_status, **summary})
-  if i == len(targets) - 1 or targets[i + 1][0] != family: phases[phase_names[family]] = fingerprint(models)
+  if i == len(targets) - 1 or targets[i + 1][0] != family:
+   phase = phase_names[family]
+   phases[phase] = fingerprint(
+    models, fingerprint_scope=f"{phase}.parameters",
+   )
  connected = ("CONNECTED_NONZERO", "CONNECTED_ZERO_AT_OBSERVED_BATCH")
  direction_rows = [row for row in gradient_rows if row["target_family"] == "direction" and row["parameter_group"] in INTENDED["direction_stability"]["groups"]]
  order_rows = [row for row in gradient_rows if row["target_family"] == "candidate_order" and row["parameter_group"] in INTENDED["candidate_order_stability"]["groups"]]
@@ -329,7 +375,12 @@ def run(ns: argparse.Namespace, contracts: list[dict[str, Any]]) -> dict[str, An
  evaluated = all(any(row["target_family"] == family for row in gradient_rows) for family in ("native_score", "counterfactual_score", "direction", "candidate_order"))
  gate(contracts, "all_independent_gradient_families_evaluated", True, evaluated, evaluated, "probe family missing")
  for model, mode in zip(models, modes_before): model.train(mode)
- parameters_after = fingerprint(models); buffers_after = fingerprint(models, True)
+ parameters_after = fingerprint(
+  models, fingerprint_scope="after_state_restore.parameters",
+ )
+ buffers_after = fingerprint(
+  models, True, fingerprint_scope="after_state_restore.buffers",
+ )
  mutation_rows = [{"checkpoint": name, "parameter_fingerprint": value, "equals_before": value == parameters_before,
   "buffer_fingerprint": buffers_before, "optimizer_step_count": 0, "scheduler_step_count": 0,
   "checkpoint_write_count": 0} for name, value in phases.items()]
