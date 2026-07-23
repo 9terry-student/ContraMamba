@@ -15,13 +15,14 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import time
 from collections import Counter
 from pathlib import Path
 from typing import Any, Iterable, Sequence
 
 STAGE = "Stage196-B2-B6P1"
-AUTHORITATIVE_SOURCE_COMMIT = "a959097bd2b34302503dac19d45a8a113f6b139a"
+PREIMPLEMENTATION_AUTHORITY_COMMIT = "a959097bd2b34302503dac19d45a8a113f6b139a"
 EXPECTED_CANDIDATES = ("00100000000000", "01000000000000", "10000000000000")
 AUTHORITY_STATUSES = (
     "EXACT_EXISTING_ARTIFACT",
@@ -222,6 +223,113 @@ def under(root: Path, path: Path) -> bool:
     return path == root or root in path.parents
 
 
+def git_result(root: Path, arguments: Sequence[str]) -> dict[str, Any]:
+    command = ["git", "-C", str(root), *arguments]
+    try:
+        completed = subprocess.run(
+            command,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return {
+            "command": command,
+            "returncode": None,
+            "stdout": "",
+            "stderr": f"{type(exc).__name__}: {exc}",
+        }
+    return {
+        "command": command,
+        "returncode": completed.returncode,
+        "stdout": completed.stdout.strip(),
+        "stderr": completed.stderr.strip(),
+    }
+
+
+def validate_commit_roles(
+    root: Path, cli_current_commit: str, gates: list[dict[str, Any]]
+) -> dict[str, Any]:
+    head_result = git_result(root, ("rev-parse", "--verify", "HEAD^{commit}"))
+    repo_head = head_result["stdout"] if head_result["returncode"] == 0 else ""
+    head_equal = bool(repo_head) and repo_head == cli_current_commit
+    gate(
+        gates,
+        "source",
+        "",
+        "current_commit_identity",
+        {"repo_head_equals_cli_current_git_commit": True},
+        {
+            "repo_head": repo_head,
+            "cli_current_git_commit": cli_current_commit,
+            "equal": head_equal,
+            "git_returncode": head_result["returncode"],
+            "git_stderr": head_result["stderr"],
+        },
+        head_equal,
+        "repository HEAD differs from --current-git-commit or cannot be determined",
+    )
+
+    authority_result = git_result(
+        root,
+        ("rev-parse", "--verify", f"{PREIMPLEMENTATION_AUTHORITY_COMMIT}^{{commit}}"),
+    )
+    resolved_authority = (
+        authority_result["stdout"] if authority_result["returncode"] == 0 else ""
+    )
+    authority_exists = resolved_authority == PREIMPLEMENTATION_AUTHORITY_COMMIT
+    gate(
+        gates,
+        "source",
+        "",
+        "preimplementation_authority_commit_identity",
+        PREIMPLEMENTATION_AUTHORITY_COMMIT,
+        {
+            "authority_commit": PREIMPLEMENTATION_AUTHORITY_COMMIT,
+            "resolved_commit": resolved_authority,
+            "commit_object_exists": authority_exists,
+            "git_returncode": authority_result["returncode"],
+            "git_stderr": authority_result["stderr"],
+        },
+        authority_exists,
+        "frozen preimplementation authority commit is missing or cannot be resolved",
+    )
+
+    ancestry_result = git_result(
+        root,
+        (
+            "merge-base",
+            "--is-ancestor",
+            PREIMPLEMENTATION_AUTHORITY_COMMIT,
+            repo_head,
+        ),
+    )
+    is_ancestor = ancestry_result["returncode"] == 0
+    gate(
+        gates,
+        "source",
+        "",
+        "current_commit_descends_from_preimplementation_authority",
+        {"preimplementation_authority_is_ancestor_of_repo_head": True},
+        {
+            "authority_commit": PREIMPLEMENTATION_AUTHORITY_COMMIT,
+            "current_commit": repo_head,
+            "is_ancestor": is_ancestor,
+            "git_returncode": ancestry_result["returncode"],
+            "git_stderr": ancestry_result["stderr"],
+        },
+        is_ancestor,
+        "current HEAD has divergent history or Git ancestry cannot be determined",
+    )
+    return {
+        "preimplementation_authority_commit": PREIMPLEMENTATION_AUTHORITY_COMMIT,
+        "current_implementation_commit": cli_current_commit,
+        "repo_head": repo_head,
+        "authority_is_ancestor_of_current": is_ancestor,
+    }
+
+
 def require_columns(columns: Sequence[str], required: Sequence[str], label: str) -> None:
     missing = sorted(set(required) - set(columns))
     if missing:
@@ -298,11 +406,61 @@ def validate_sources(ns: argparse.Namespace, gates: list[dict[str, Any]]) -> dic
          {"absolute_under_repo": explicit, "commit_format_valid": commit_valid},
          root.is_dir() and explicit and commit_valid,
          "all paths must be absolute and under repo root")
-    gate(gates, "source", "", "current_commit_identity", AUTHORITATIVE_SOURCE_COMMIT,
-         ns.current_git_commit, ns.current_git_commit == AUTHORITATIVE_SOURCE_COMMIT,
-         "current source commit differs from the precommitted authority")
+    commit_provenance = validate_commit_roles(root, ns.current_git_commit, gates)
 
     closure, schemas = source_rows(paths, gates)
+    closure.extend((
+        {
+            "stage": "commit-authority",
+            "artifact": "preimplementation_authority_commit",
+            "path": str(root),
+            "required": True,
+            "loaded": True,
+            "row_count": "",
+            "columns": [],
+            "sha256": "",
+            "purpose": PREIMPLEMENTATION_AUTHORITY_COMMIT,
+            "large_file_dependency": False,
+        },
+        {
+            "stage": "commit-authority",
+            "artifact": "current_implementation_commit",
+            "path": str(root),
+            "required": True,
+            "loaded": True,
+            "row_count": "",
+            "columns": [],
+            "sha256": "",
+            "purpose": ns.current_git_commit,
+            "large_file_dependency": False,
+        },
+        {
+            "stage": "commit-authority",
+            "artifact": "repo_head",
+            "path": str(root),
+            "required": True,
+            "loaded": True,
+            "row_count": "",
+            "columns": [],
+            "sha256": "",
+            "purpose": commit_provenance["repo_head"],
+            "large_file_dependency": False,
+        },
+        {
+            "stage": "commit-authority",
+            "artifact": "authority_is_ancestor_of_current",
+            "path": str(root),
+            "required": True,
+            "loaded": True,
+            "row_count": "",
+            "columns": [],
+            "sha256": "",
+            "purpose": canonical(
+                commit_provenance["authority_is_ancestor_of_current"]
+            ),
+            "large_file_dependency": False,
+        },
+    ))
     docs = {key: read_json(path) for key, path in paths.items() if key not in ("output",)}
     expected = {
         "p0": ("STAGE196B2B6P0_CURRENT_SAFETY_OBSERVABILITY_INSUFFICIENT",
@@ -468,7 +626,8 @@ def validate_sources(ns: argparse.Namespace, gates: list[dict[str, Any]]) -> dic
             "large_file_dependency": False,
         })
     return {"paths": paths, "docs": docs, "closure": closure, "schemas": schemas,
-            "source_files": source_files, "source_text": source_text}
+            "source_files": source_files, "source_text": source_text,
+            "commit_provenance": commit_provenance}
 
 
 def inventory(source: dict[str, Any]) -> list[dict[str, Any]]:
@@ -783,11 +942,13 @@ def analyze(ns: argparse.Namespace, gates: list[dict[str, Any]]) -> tuple[dict[s
     status_counts = Counter(row["authority_status"] for row in dictionary)
     analysis = {
         "stage": STAGE, "decision": decision, "recommended_next_stage": NEXT_STAGE[decision],
-        "blocking_reasons": [], "current_git_commit": ns.current_git_commit,
+        "blocking_reasons": [],
+        **source["commit_provenance"],
         "source_paths": {key: str(value) for key, value in source["paths"].items() if key != "output"},
         "source_hashes": {row["path"]: row["sha256"] for row in source["closure"] if row["sha256"]},
         "source_closure": {
             "five_stage_closed": True,
+            **source["commit_provenance"],
             "large_recipient_signature_csv_required": False,
             "large_recipient_signature_csv_loaded": False,
             "artifacts_inspected": len(source["closure"]),
@@ -960,12 +1121,24 @@ def render_contract(rows: list[dict[str, Any]]) -> str:
     ])
 
 
-def blocked_analysis(ns: argparse.Namespace, error: BaseException) -> dict[str, Any]:
+def blocked_analysis(
+    ns: argparse.Namespace, error: BaseException, gates: Sequence[dict[str, Any]]
+) -> dict[str, Any]:
+    observed = {row["gate"]: row.get("observed", {}) for row in gates}
+    current_observed = observed.get("current_commit_identity", {})
+    ancestry_observed = observed.get(
+        "current_commit_descends_from_preimplementation_authority", {}
+    )
+    repo_head = current_observed.get("repo_head", "")
+    authority_is_ancestor = ancestry_observed.get("is_ancestor", False)
     return {
         "stage": STAGE, "decision": DECISION_BLOCKED,
         "recommended_next_stage": NEXT_STAGE[DECISION_BLOCKED],
         "blocking_reasons": [f"{type(error).__name__}: {error}"],
-        "current_git_commit": ns.current_git_commit,
+        "preimplementation_authority_commit": PREIMPLEMENTATION_AUTHORITY_COMMIT,
+        "current_implementation_commit": ns.current_git_commit,
+        "repo_head": repo_head,
+        "authority_is_ancestor_of_current": authority_is_ancestor,
         "source_paths": {
             "stage196b2b6p0_analysis_json": str(ns.stage196b2b6p0_analysis_json.resolve()),
             "stage196b2b6_analysis_json": str(ns.stage196b2b6_analysis_json.resolve()),
@@ -973,7 +1146,12 @@ def blocked_analysis(ns: argparse.Namespace, error: BaseException) -> dict[str, 
             "stage196b2b4_analysis_json": str(ns.stage196b2b4_analysis_json.resolve()),
             "stage196b2b3r1_analysis_json": str(ns.stage196b2b3r1_analysis_json.resolve()),
         },
-        "source_hashes": {}, "source_closure": {"five_stage_closed": False,
+        "source_hashes": {}, "source_closure": {
+                                                   "five_stage_closed": False,
+                                                   "preimplementation_authority_commit": PREIMPLEMENTATION_AUTHORITY_COMMIT,
+                                                   "current_implementation_commit": ns.current_git_commit,
+                                                   "repo_head": repo_head,
+                                                   "authority_is_ancestor_of_current": authority_is_ancestor,
                                                    "large_recipient_signature_csv_required": False,
                                                    "large_recipient_signature_csv_loaded": False},
         "p0_closure": {}, "precommitted_candidate_hierarchy": {},
@@ -1040,7 +1218,7 @@ def main() -> int:
         gate(gates, "analysis", "", "unhandled_contract_failure", False,
              f"{type(error).__name__}: {error}", False,
              f"{type(error).__name__}: {error}", fatal=False)
-        analysis = blocked_analysis(ns, error)
+        analysis = blocked_analysis(ns, error, gates)
         tables = {"source": [], "inventory": [], "dictionary": [], "authority": [],
                   "leakage": [], "decision": []}
     atomic_write_outputs(ns.output_dir.resolve(), payloads(analysis, tables, gates))

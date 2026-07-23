@@ -33,8 +33,41 @@ The CLI requires explicit paths:
 
 Every path must be absolute and resolve under the supplied repository root.
 Companion files are derived from the supplied analysis JSON directory; no
-timestamp glob selection is permitted. The preimplementation source authority
-is `a959097bd2b34302503dac19d45a8a113f6b139a`.
+timestamp glob selection is permitted.
+
+## Commit roles and closure
+
+`a959097bd2b34302503dac19d45a8a113f6b139a` is the frozen
+preimplementation authority baseline. It identifies the repository history
+containing the committed Stage196 authority chain; it is not the analyzer
+execution commit.
+
+The analyzer execution commit is expected to be a descendant implementation
+commit and is supplied through `--current-git-commit`. The current
+implementation commit is never hardcoded.
+
+Equality is required only between the CLI commit and actual repository `HEAD`.
+The `current_commit_identity` contract records both values and fails closed
+when they differ or `HEAD` cannot be resolved.
+
+The separate `preimplementation_authority_commit_identity` contract requires
+the frozen baseline to resolve as a commit object. The
+`current_commit_descends_from_preimplementation_authority` contract then uses
+exact Git ancestry semantics equivalent to:
+
+```text
+git merge-base --is-ancestor
+    a959097bd2b34302503dac19d45a8a113f6b139a
+    <repository HEAD>
+```
+
+Direct parentage is not required. Missing authority objects, unrelated or
+divergent history, and indeterminate Git ancestry all block analysis.
+
+These repository-level roles do not replace artifact-specific provenance.
+Each supplied report retains and validates its own stored runtime or
+implementation commit semantics where already implemented; an artifact is not
+required to have been generated at the frozen baseline.
 
 The B2-B5 companion closure deliberately excludes
 `stage196b2b5_recipient_signature_rows.csv`. The analyzer neither opens nor
@@ -247,11 +280,15 @@ nine-file closure, and atomically renamed. An existing output directory is never
 overwritten. The output parent must already exist.
 
 The contract schema is `scope, run, gate, required, observed, passed,
-blocking_reason`. It closes commit identity, five-stage authorities, P0
-decision/zero-gate/target/enumeration facts, B2-B6 masks and summaries, B2-B5
+blocking_reason`. It separately closes CLI-to-HEAD identity, frozen authority
+identity, authority-to-current ancestry, five-stage authorities, P0 decision/
+zero-gate/target/enumeration facts, B2-B6 masks and summaries, B2-B5
 localization, B2-B4 epoch/tail separation, B2-B3-R1 recomposition, large-file
 nondependency, inventory/dictionary/status/leakage completion, decision
-reachability, and output closure.
+reachability, and output closure. Analysis provenance records
+`preimplementation_authority_commit`, `current_implementation_commit`,
+`repo_head`, and `authority_is_ancestor_of_current` separately in both the
+analysis and source closure.
 
 Unhandled analysis exceptions produce the same exact nine filenames with a
 blocked analysis and whatever contract rows were accumulated, where output
