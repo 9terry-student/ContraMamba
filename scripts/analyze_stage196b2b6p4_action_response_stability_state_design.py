@@ -763,7 +763,8 @@ def analyze(
     )
     b5_fields = (
         "feature_family", "feature_subset_mask", "feature_subset_members", "seed",
-        "stable_row_id", "signature", "signature_action_intersection", "transfer_status",
+        "stable_row_id", "signature", "acceptable_coalitions",
+        "signature_action_intersection", "signature_feasible", "transfer_status",
         "source_seed", "target_seed",
     )
     explicit_b5_path = authority_paths["b5_large"]
@@ -939,19 +940,26 @@ def analyze(
         and external_seed_set == list(SEEDS)
         and len(semantic_keys) == actual_large_rows
     )
-    # B2-B5 intersections are contextual acceptable-action sets. They are not
-    # the deterministic full-population action assignment authority.
+    # Pooled intersections are signature-level constants; transfer intersections
+    # are emitted once per target identity and are target-row-specific.
     authorized_transfer_directions = {(184, 185), (185, 184)}
     authorized_transfer_statuses = {"UNSEEN", "COMPATIBLE", "INCOMPATIBLE"}
-    b5_context_action_sets: dict[
-        tuple[str, str, str, int | None, int | None], set[tuple[str, ...]]
+    pooled_evidence_by_signature: dict[
+        tuple[str, str], set[tuple[tuple[str, ...], bool]]
     ] = defaultdict(set)
     pooled_primary_identities: set[tuple[int, str]] = set()
-    transfer_signatures_by_direction: dict[tuple[int, int], set[tuple[str, str]]] = {
-        direction: set() for direction in authorized_transfer_directions
-    }
-    transfer_nonempty_intersections = transfer_empty_intersections = 0
-    observed_context_forms: set[tuple[str, int | None, int | None]] = set()
+    pooled_identity_key_counts: Counter[tuple[str, int, str]] = Counter()
+    pooled_identity_row_count = pooled_empty_intersection_count = 0
+    pooled_feasibility_semantic_disagreement_count = 0
+    transfer_evidence_by_target: dict[
+        tuple[str, int, int, str],
+        set[tuple[str, str, tuple[str, ...], tuple[str, ...]]],
+    ] = defaultdict(set)
+    transfer_target_key_counts: Counter[tuple[str, int, int, str]] = Counter()
+    transfer_records: list[dict[str, Any]] = []
+    transfer_status_counts: Counter[str] = Counter()
+    transfer_row_semantic_disagreements = 0
+    selected_seed_identities: set[tuple[int, str]] = set()
 
     for row in b5_large:
         transfer_status = str(cell(row["transfer_status"]))
@@ -970,128 +978,301 @@ def analyze(
                 raise ValueError("B2-B5 transfer row seed does not equal target_seed")
 
         intersection = cell(row["signature_action_intersection"])
-        if not isinstance(intersection, list):
-            raise ValueError("B2-B5 signature action intersection must be a list")
-        if any(not isinstance(action, str) or re.fullmatch(r"[01]{5}", action) is None for action in intersection):
-            raise ValueError("B2-B5 signature contains an invalid primitive action")
-        if len(intersection) != len(set(intersection)):
-            raise ValueError("B2-B5 signature contains duplicate serialized primitive actions")
+        acceptable = cell(row["acceptable_coalitions"])
+        for values, label in (
+            (intersection, "signature action intersection"),
+            (acceptable, "acceptable coalitions"),
+        ):
+            if not isinstance(values, list):
+                raise ValueError(f"B2-B5 {label} must be a list")
+            if any(
+                not isinstance(action, str)
+                or re.fullmatch(r"[01]{5}", action) is None
+                for action in values
+            ):
+                raise ValueError(f"B2-B5 {label} contains an invalid primitive action")
+            if len(values) != len(set(values)):
+                raise ValueError(f"B2-B5 {label} contains duplicate serialized primitive actions")
+        signature_feasible = boolean(row["signature_feasible"], "B2-B5 signature_feasible")
 
         if row["feature_family"] != "recipient_local" or row["feature_subset_mask"] not in CANDIDATE_MASKS:
             continue
+        if row_seed not in (184, 185):
+            raise ValueError("selected B2-B5 recipient candidate row has a non-primary seed")
         mask = row["feature_subset_mask"]
         signature = canonical(cell(row["signature"]))
-        observed_context_forms.add((transfer_status, source_seed, target_seed))
+        stable_row_id = str(row["stable_row_id"])
+        if not stable_row_id:
+            raise ValueError("selected B2-B5 row has an empty stable_row_id")
+        canonical_intersection = tuple(sorted(intersection))
+        canonical_acceptable = tuple(sorted(acceptable))
+        selected_seed_identities.add((row_seed, stable_row_id))
+
         if transfer_status == "POOLED":
-            if row_seed in (184, 185):
-                pooled_primary_identities.add((row_seed, row["stable_row_id"]))
-        else:
-            transfer_signatures_by_direction[(source_seed, target_seed)].add((mask, signature))
-
-        canonical_actions = tuple(sorted(intersection))
-        context_key = (mask, signature, transfer_status, source_seed, target_seed)
-        b5_context_action_sets[context_key].add(canonical_actions)
-        if transfer_status != "POOLED":
-            if canonical_actions:
-                transfer_nonempty_intersections += 1
-            else:
-                transfer_empty_intersections += 1
-
-    within_context_conflicting_set_count = sum(
-        len(action_sets) > 1 for action_sets in b5_context_action_sets.values()
-    )
-    b5_context_actions = {
-        key: next(iter(action_sets))
-        for key, action_sets in b5_context_action_sets.items()
-        if len(action_sets) == 1
-    }
-    b5_pooled_actions_by_signature = {
-        (mask, signature): frozenset(actions_for_signature)
-        for (mask, signature, status, source_seed, target_seed), actions_for_signature
-        in b5_context_actions.items()
-        if status == "POOLED"
-        and source_seed is None
-        and target_seed is None
-        and actions_for_signature
-    }
-    transfer_context_mapping_count = sum(
-        status != "POOLED" for _, _, status, _, _ in b5_context_actions
-    )
-    action_sets_by_unqualified_signature: dict[tuple[str, str], set[tuple[str, ...]]] = defaultdict(set)
-    for (mask, signature, _, _, _), action_set in b5_context_actions.items():
-        action_sets_by_unqualified_signature[(mask, signature)].add(action_set)
-    cross_context_differing_set_count = sum(
-        len(action_sets) > 1 for action_sets in action_sets_by_unqualified_signature.values()
-    )
-
-    context_evidence = {
-        "B2B5_context_qualified_mapping_count": len(b5_context_action_sets),
-        "context_key_fields": [
-            "feature_subset_mask", "canonical_signature", "transfer_status",
-            "source_seed_or_none", "target_seed_or_none",
-        ],
-        "within_context_conflicting_set_count": within_context_conflicting_set_count,
-        "observed_context_forms": [
-            {"transfer_status": status, "source_seed": source, "target_seed": target}
-            for status, source, target in sorted(
-                observed_context_forms,
-                key=lambda value: (value[0], -1 if value[1] is None else value[1], -1 if value[2] is None else value[2]),
+            pooled_identity_row_count += 1
+            pooled_primary_identities.add((row_seed, stable_row_id))
+            pooled_identity_key_counts[(mask, row_seed, stable_row_id)] += 1
+            pooled_evidence_by_signature[(mask, signature)].add(
+                (canonical_intersection, signature_feasible)
             )
-        ],
-    }
-    gate(
-        gates, "authority", "B2-B5", "b2b5_signature_context_key_closure",
-        {
-            "context_key_fields": [
-                "feature_subset_mask", "canonical_signature", "transfer_status",
-                "source_seed_or_none", "target_seed_or_none",
-            ],
-            "within_context_conflicting_set_count": 0,
-        },
-        context_evidence,
-        bool(b5_context_actions) and within_context_conflicting_set_count == 0,
-        "B2-B5 signature/action sets conflict within an exact evaluation context",
+            pooled_empty_intersection_count += not canonical_intersection
+            pooled_feasibility_semantic_disagreement_count += (
+                signature_feasible != bool(canonical_intersection)
+            )
+            continue
+
+        target_key = (mask, source_seed, target_seed, stable_row_id)
+        transfer_target_key_counts[target_key] += 1
+        transfer_evidence_by_target[target_key].add((
+            signature, transfer_status, canonical_intersection, canonical_acceptable,
+        ))
+        transfer_status_counts[transfer_status] += 1
+        semantic_ok = (
+            set(canonical_intersection) <= set(canonical_acceptable)
+            and signature_feasible == bool(canonical_intersection)
+            and (
+                (transfer_status == "COMPATIBLE" and bool(canonical_intersection))
+                or (transfer_status in {"INCOMPATIBLE", "UNSEEN"} and not canonical_intersection)
+            )
+        )
+        transfer_row_semantic_disagreements += not semantic_ok
+        transfer_records.append({
+            "candidate_mask": mask,
+            "source_seed": source_seed,
+            "target_seed": target_seed,
+            "stable_row_id": stable_row_id,
+            "signature": signature,
+            "transfer_status": transfer_status,
+            "intersection": canonical_intersection,
+            "acceptable_coalitions": canonical_acceptable,
+            "signature_feasible": signature_feasible,
+        })
+
+    pooled_duplicate_identity_key_count = sum(
+        count - 1 for count in pooled_identity_key_counts.values() if count > 1
     )
-    gate(
-        gates, "authority", "B2-B5", "b2b5_pooled_signature_action_set_closure",
-        {"candidate_masks": list(CANDIDATE_MASKS), "pooled_signature_mapping_count_nonzero": True},
-        {
-            "candidate_masks": sorted({key[0] for key in b5_pooled_actions_by_signature}),
-            "pooled_signature_mapping_count": len(b5_pooled_actions_by_signature),
-            "pooled_primary_identity_count": len(pooled_primary_identities),
-        },
-        bool(b5_pooled_actions_by_signature)
-        and {key[0] for key in b5_pooled_actions_by_signature} == set(CANDIDATE_MASKS)
-        and len(pooled_primary_identities) == 16,
-        "B2-B5 pooled primary acceptable-action-set authority does not close",
+    pooled_identity_mask_closure = (
+        len(pooled_identity_key_counts) == 48
+        and all(
+            sum(key[1:] == identity for key in pooled_identity_key_counts) == 3
+            for identity in pooled_primary_identities
+        )
     )
-    transfer_context_evidence = {
-        "transfer_context_mapping_count": transfer_context_mapping_count,
-        "unique_signatures_by_transfer_direction": {
-            f"{source}_to_{target}": len(transfer_signatures_by_direction[(source, target)])
-            for source, target in sorted(authorized_transfer_directions)
-        },
-        "nonempty_intersections": transfer_nonempty_intersections,
-        "empty_intersections": transfer_empty_intersections,
-        "cross_context_differing_set_count": cross_context_differing_set_count,
-        "within_context_conflicting_set_count": within_context_conflicting_set_count,
-        "assignment_authorized": False,
+    pooled_within_signature_conflicting_set_count = sum(
+        len({entry[0] for entry in evidence}) > 1
+        for evidence in pooled_evidence_by_signature.values()
+    )
+    pooled_within_signature_conflicting_feasible_count = sum(
+        len({entry[1] for entry in evidence}) > 1
+        for evidence in pooled_evidence_by_signature.values()
+    )
+    b5_pooled_actions_by_signature = {
+        key: frozenset(next(iter(evidence))[0])
+        for key, evidence in pooled_evidence_by_signature.items()
+        if len({entry[0] for entry in evidence}) == 1
+        and len({entry[1] for entry in evidence}) == 1
+        and next(iter(evidence))[0]
     }
-    gate(
-        gates, "authority", "B2-B5", "b2b5_transfer_context_separation",
-        {
-            "authorized_directions": [[184, 185], [185, 184]],
-            "assignment_authorized": False,
-            "within_context_conflicting_set_count": 0,
-            "cross_context_differences_are_failures": False,
-        },
-        transfer_context_evidence,
-        transfer_context_mapping_count > 0
-        and all(transfer_signatures_by_direction.values())
-        and within_context_conflicting_set_count == 0,
-        "B2-B5 transfer contexts are incomplete or conflict within a qualified context",
+    transfer_identity_row_count = len(transfer_records)
+    transfer_duplicate_target_row_key_count = sum(
+        count - 1 for count in transfer_target_key_counts.values() if count > 1
+    )
+    transfer_within_target_row_disagreement_count = sum(
+        len(evidence) > 1 for evidence in transfer_evidence_by_target.values()
     )
 
+    variation_intersections: dict[
+        tuple[str, str, int, int, str], set[tuple[str, ...]]
+    ] = defaultdict(set)
+    variation_row_counts: Counter[tuple[str, str, int, int, str]] = Counter()
+    for record in transfer_records:
+        variation_key = (
+            record["candidate_mask"], record["signature"], record["source_seed"],
+            record["target_seed"], record["transfer_status"],
+        )
+        variation_intersections[variation_key].add(record["intersection"])
+        variation_row_counts[variation_key] += 1
+    varying_transfer_groups = {
+        key for key, intersections in variation_intersections.items()
+        if len(intersections) > 1
+    }
+    transfer_variation_evidence = {
+        "transfer_rows_accounted_for": sum(variation_row_counts.values()),
+        "group_count": len(variation_intersections),
+        "groups_with_one_intersection": sum(
+            len(intersections) == 1 for intersections in variation_intersections.values()
+        ),
+        "groups_with_multiple_target_row_intersections": len(varying_transfer_groups),
+        "maximum_distinct_intersections_within_group": max(
+            (len(intersections) for intersections in variation_intersections.values()),
+            default=0,
+        ),
+        "target_rows_in_varying_intersection_groups": sum(
+            variation_row_counts[key] for key in varying_transfer_groups
+        ),
+        "transfer_target_row_specific_intersection_variation_count": len(varying_transfer_groups),
+        "variation_is_contract_failure": False,
+    }
+
+    selected_primary_seed_counts = Counter(seed for seed, _ in selected_seed_identities)
+    selected_candidate_masks = (
+        {record["candidate_mask"] for record in transfer_records}
+        | {key[0] for key in pooled_evidence_by_signature}
+    )
+    transfer_direction_counts = {
+        "184_to_185": sum(
+            record["source_seed"] == 184 and record["target_seed"] == 185
+            for record in transfer_records
+        ),
+        "185_to_184": sum(
+            record["source_seed"] == 185 and record["target_seed"] == 184
+            for record in transfer_records
+        ),
+    }
+    gate(
+        gates, "authority", "B2-B5", "b2b5_selected_population_closure",
+        {
+            "candidate_masks": 3, "primary_identities": 16,
+            "primary_seed_counts": {"184": 11, "185": 5},
+            "pooled_rows": 48, "transfer_rows": 48, "selected_rows": 96,
+            "seed183_selector_rows": 0,
+        },
+        {
+            "candidate_masks": len(selected_candidate_masks),
+            "primary_identities": len(selected_seed_identities),
+            "primary_seed_counts": {
+                "184": selected_primary_seed_counts[184],
+                "185": selected_primary_seed_counts[185],
+            },
+            "pooled_rows": pooled_identity_row_count,
+            "transfer_rows": transfer_identity_row_count,
+            "selected_rows": pooled_identity_row_count + transfer_identity_row_count,
+            "seed183_selector_rows": sum(seed == 183 for seed, _ in selected_seed_identities),
+        },
+        selected_candidate_masks == set(CANDIDATE_MASKS)
+        and len(selected_seed_identities) == 16
+        and selected_primary_seed_counts == Counter({184: 11, 185: 5})
+        and pooled_identity_row_count == 48
+        and transfer_identity_row_count == 48,
+        "selected B2-B5 recipient candidate population does not close at 48 pooled plus 48 transfer rows",
+    )
+    gate(
+        gates, "authority", "B2-B5", "b2b5_pooled_signature_intersection_closure",
+        {
+            "pooled_identity_row_count": 48,
+            "pooled_unique_identity_keys": 48,
+            "pooled_duplicate_identity_keys": 0,
+            "pooled_identity_mask_closure": True,
+            "pooled_within_signature_conflicting_set_count": 0,
+            "pooled_within_signature_conflicting_feasible_count": 0,
+            "pooled_feasibility_semantic_disagreements": 0,
+            "pooled_empty_intersection_count": 0,
+        },
+        {
+            "pooled_identity_row_count": pooled_identity_row_count,
+            "pooled_unique_identity_keys": len(pooled_identity_key_counts),
+            "pooled_duplicate_identity_keys": pooled_duplicate_identity_key_count,
+            "pooled_identity_mask_closure": pooled_identity_mask_closure,
+            "pooled_signature_key_count": len(pooled_evidence_by_signature),
+            "pooled_within_signature_conflicting_set_count": pooled_within_signature_conflicting_set_count,
+            "pooled_within_signature_conflicting_feasible_count": pooled_within_signature_conflicting_feasible_count,
+            "pooled_feasibility_semantic_disagreements": pooled_feasibility_semantic_disagreement_count,
+            "pooled_empty_intersection_count": pooled_empty_intersection_count,
+            "candidate_masks": sorted({key[0] for key in pooled_evidence_by_signature}),
+        },
+        pooled_identity_row_count == 48
+        and len(pooled_identity_key_counts) == 48
+        and pooled_duplicate_identity_key_count == 0
+        and pooled_identity_mask_closure
+        and pooled_within_signature_conflicting_set_count == 0
+        and pooled_within_signature_conflicting_feasible_count == 0
+        and pooled_feasibility_semantic_disagreement_count == 0
+        and pooled_empty_intersection_count == 0
+        and {key[0] for key in pooled_evidence_by_signature} == set(CANDIDATE_MASKS),
+        "B2-B5 pooled signature-level intersection authority does not close",
+    )
+    gate(
+        gates, "authority", "B2-B5", "b2b5_transfer_target_row_closure",
+        {
+            "transfer_target_rows": 48,
+            "unique_target_row_keys": 48,
+            "duplicate_target_row_keys": 0,
+            "within_target_row_evidence_disagreements": 0,
+            "direction_row_counts": {"184_to_185": 15, "185_to_184": 33},
+            "target_row_key_fields": [
+                "feature_subset_mask", "source_seed", "target_seed", "stable_row_id",
+            ],
+        },
+        {
+            "transfer_target_rows": transfer_identity_row_count,
+            "unique_target_row_keys": len(transfer_target_key_counts),
+            "duplicate_target_row_keys": transfer_duplicate_target_row_key_count,
+            "within_target_row_evidence_disagreements": transfer_within_target_row_disagreement_count,
+            "direction_row_counts": transfer_direction_counts,
+        },
+        transfer_identity_row_count == 48
+        and len(transfer_target_key_counts) == 48
+        and transfer_duplicate_target_row_key_count == 0
+        and transfer_within_target_row_disagreement_count == 0
+        and transfer_direction_counts == {"184_to_185": 15, "185_to_184": 33},
+        "B2-B5 transfer target-row identity closure failed",
+    )
+
+    b5_candidate_transfer_summary = {
+        row.get("feature_subset_mask"): row
+        for row in b5.get("recipient_inclusion_minimal_feasible_subsets", ())
+        if row.get("feature_subset_mask") in CANDIDATE_MASKS
+    }
+    candidate_summary_bidirectional_full_pass = (
+        set(b5_candidate_transfer_summary) == set(CANDIDATE_MASKS)
+        and all(
+            row.get("bidirectional_cross_seed_full_pass") is True
+            for row in b5_candidate_transfer_summary.values()
+        )
+    )
+    transfer_status_required = (
+        {"COMPATIBLE": 48, "INCOMPATIBLE": 0, "UNSEEN": 0}
+        if candidate_summary_bidirectional_full_pass else None
+    )
+    observed_transfer_status_counts = {
+        status: transfer_status_counts[status]
+        for status in ("COMPATIBLE", "INCOMPATIBLE", "UNSEEN")
+    }
+    gate(
+        gates, "authority", "B2-B5", "b2b5_transfer_status_semantics",
+        {
+            "candidate_summary_bidirectional_full_pass": True,
+            "transfer_rows": 48,
+            "status_counts": {"COMPATIBLE": 48, "INCOMPATIBLE": 0, "UNSEEN": 0},
+            "transfer_row_semantic_disagreements": 0,
+        },
+        {
+            "candidate_summary_bidirectional_full_pass": candidate_summary_bidirectional_full_pass,
+            "summary_by_candidate_mask": {
+                mask: row.get("bidirectional_cross_seed_full_pass")
+                for mask, row in sorted(b5_candidate_transfer_summary.items())
+            },
+            "transfer_rows": transfer_identity_row_count,
+            "status_counts": observed_transfer_status_counts,
+            "transfer_row_semantic_disagreements": transfer_row_semantic_disagreements,
+        },
+        candidate_summary_bidirectional_full_pass
+        and transfer_status_required == observed_transfer_status_counts
+        and transfer_identity_row_count == 48
+        and transfer_row_semantic_disagreements == 0,
+        "B2-B5 selected transfer status or target-row intersection semantics changed",
+    )
+    gate(
+        gates, "diagnostic", "B2-B5",
+        "b2b5_transfer_target_specific_variation_audit",
+        {
+            "transfer_rows_accounted_for": 48,
+            "target_row_specific_variation_is_failure": False,
+        },
+        transfer_variation_evidence,
+        sum(variation_row_counts.values()) == 48,
+        "B2-B5 transfer target-row variation audit is incomplete",
+    )
     b6_dir, b4_dir = authority_paths["b6"].parent, authority_paths["b4"].parent
     action_path = b6_dir / "stage196b2b6_clean_dev_signature_audit.csv"
     action_fields = (
@@ -1101,6 +1282,7 @@ def analyze(
     action_rows, action_header = projected_csv(action_path, action_fields)
     actions: dict[tuple[str, int, tuple[str, str, int]], tuple[str, str]] = {}
     action_signatures: dict[tuple[str, int, tuple[str, str, int]], str] = {}
+    actions_by_stable: dict[tuple[str, int, str], str] = {}
     for row in action_rows:
         mask = row["feature_subset_mask"]
         seed = integer(row["seed"], "action seed")
@@ -1116,6 +1298,10 @@ def analyze(
             raise ValueError("duplicate deterministic candidate action")
         actions[key] = (action, row["stable_row_id"])
         action_signatures[key] = canonical(cell(row["signature"]))
+        stable_key = (mask, seed, row["stable_row_id"])
+        if stable_key in actions_by_stable:
+            raise ValueError("duplicate B2-B6 candidate action stable-row key")
+        actions_by_stable[stable_key] = action
 
     action_seed_counts = Counter(seed for _, seed, _ in actions)
     action_mask_counts = Counter(mask for mask, _, _ in actions)
@@ -1126,6 +1312,29 @@ def analyze(
         and all(action_mask_counts[mask] == 2160 for mask in CANDIDATE_MASKS)
     )
 
+    transfer_action_membership = {
+        "transfer_rows_checked": 0,
+        "assigned_action_in_transfer_intersection": 0,
+        "assigned_action_outside_transfer_intersection": 0,
+        "empty_transfer_intersections": 0,
+        "missing_deterministic_target_actions": 0,
+        "diagnostic_only": True,
+        "deterministic_assignment_redefined": False,
+    }
+    for record in transfer_records:
+        action = actions_by_stable.get((
+            record["candidate_mask"], record["target_seed"], record["stable_row_id"],
+        ))
+        if action is None:
+            transfer_action_membership["missing_deterministic_target_actions"] += 1
+            continue
+        transfer_action_membership["transfer_rows_checked"] += 1
+        if not record["intersection"]:
+            transfer_action_membership["empty_transfer_intersections"] += 1
+        if action in record["intersection"]:
+            transfer_action_membership["assigned_action_in_transfer_intersection"] += 1
+        else:
+            transfer_action_membership["assigned_action_outside_transfer_intersection"] += 1
     pooled_primary_matched_rows = pooled_primary_action_disagreements = 0
     pooled_primary_missing_authority = 0
     for key, (action, stable_row_id) in actions.items():
@@ -1221,7 +1430,12 @@ def analyze(
 
     committed_coalitions = set(b5.get("action_set_definition", {}).get("coalition_masks", ()))
     explicit_action_set_values = {
-        action for values in b5_context_actions.values() for action in values
+        action
+        for evidence in pooled_evidence_by_signature.values()
+        for intersection, _ in evidence
+        for action in intersection
+    } | {
+        action for record in transfer_records for action in record["intersection"]
     }
     action_semantic_agreement = (
         committed_coalitions == {f"{value:05b}" for value in range(32)}
@@ -1247,13 +1461,26 @@ def analyze(
         "semantic_key_count": len(semantic_keys),
         "semantic_keys_unique": len(semantic_keys) == actual_large_rows,
         "six_run_names": semantic_run_names,
-        "B2B5_context_qualified_mapping_count": len(b5_context_action_sets),
-        "B2B5_pooled_signature_mapping_count": len(b5_pooled_actions_by_signature),
-        "B2B5_transfer_context_mapping_count": transfer_context_mapping_count,
-        "B2B5_cross_context_differing_set_count": cross_context_differing_set_count,
-        "B2B5_within_context_conflicting_set_count": within_context_conflicting_set_count,
+        "B2B5_selected_rows": pooled_identity_row_count + transfer_identity_row_count,
+        "B2B5_pooled_identity_rows": pooled_identity_row_count,
+        "B2B5_pooled_signature_key_count": len(pooled_evidence_by_signature),
+        "B2B5_pooled_duplicate_identity_keys": pooled_duplicate_identity_key_count,
+        "B2B5_pooled_identity_mask_closure": pooled_identity_mask_closure,
+        "B2B5_pooled_within_signature_conflicting_set_count": pooled_within_signature_conflicting_set_count,
+        "B2B5_pooled_within_signature_conflicting_feasible_count": pooled_within_signature_conflicting_feasible_count,
+        "B2B5_pooled_feasibility_semantic_disagreements": pooled_feasibility_semantic_disagreement_count,
+        "B2B5_pooled_empty_intersection_count": pooled_empty_intersection_count,
+        "B2B5_transfer_target_rows": transfer_identity_row_count,
+        "B2B5_transfer_duplicate_target_row_keys": transfer_duplicate_target_row_key_count,
+        "B2B5_transfer_within_target_row_disagreements": transfer_within_target_row_disagreement_count,
+        "B2B5_transfer_row_semantic_disagreements": transfer_row_semantic_disagreements,
+        "B2B5_transfer_status_counts": observed_transfer_status_counts,
+        "B2B5_transfer_direction_counts": transfer_direction_counts,
+        "B2B5_candidate_summary_bidirectional_full_pass": candidate_summary_bidirectional_full_pass,
+        "B2B5_transfer_target_specific_variation": transfer_variation_evidence,
         "B2B5_pooled_primary_matched_rows": pooled_primary_matched_rows,
         "B2B5_pooled_primary_action_disagreements": pooled_primary_action_disagreements,
+        "B2B5_transfer_action_membership_diagnostic": transfer_action_membership,
         "candidate_action_rows": len(actions),
         "candidate_action_seed_counts": {
             str(seed): action_seed_counts[seed] for seed in SEEDS
@@ -1272,13 +1499,31 @@ def analyze(
     semantic_closure_passed = (
         external_population_ok
         and semantic_run_names == sorted(RUNS)
+        and selected_candidate_masks == set(CANDIDATE_MASKS)
+        and pooled_identity_row_count == 48
+        and transfer_identity_row_count == 48
+        and len(selected_seed_identities) == 16
+        and selected_primary_seed_counts == Counter({184: 11, 185: 5})
+        and len(pooled_identity_key_counts) == 48
+        and pooled_duplicate_identity_key_count == 0
+        and pooled_identity_mask_closure
+        and pooled_within_signature_conflicting_set_count == 0
+        and pooled_within_signature_conflicting_feasible_count == 0
+        and pooled_feasibility_semantic_disagreement_count == 0
+        and pooled_empty_intersection_count == 0
+        and transfer_duplicate_target_row_key_count == 0
+        and transfer_within_target_row_disagreement_count == 0
+        and transfer_direction_counts == {"184_to_185": 15, "185_to_184": 33}
+        and transfer_row_semantic_disagreements == 0
+        and candidate_summary_bidirectional_full_pass
+        and observed_transfer_status_counts
+            == {"COMPATIBLE": 48, "INCOMPATIBLE": 0, "UNSEEN": 0}
         and deterministic_action_population_ok
         and len(p2_action_index) == 6480
         and p2_matched_rows == 6480
         and p2_mapping_disagreements == 0
         and candidate_semantic_agreement
         and action_semantic_agreement
-        and within_context_conflicting_set_count == 0
         and len(pooled_primary_identities) == 16
         and pooled_primary_matched_rows == 48
         and pooled_primary_missing_authority == 0
@@ -1292,11 +1537,15 @@ def analyze(
             "regular_file": True, "actual_sha256_valid_nonempty": True,
             "rows": 524256, "required_schema_present": True,
             "seed_set": list(SEEDS), "semantic_keys_unique": True,
-            "six_runs": sorted(RUNS), "candidate_action_rows": 6480,
-            "candidate_semantic_agreement": True,
-            "B2B5_within_context_conflicting_set_count": 0,
+            "six_runs": sorted(RUNS), "B2B5_selected_rows": 96,
+            "B2B5_pooled_rows": 48, "B2B5_transfer_rows": 48,
+            "B2B5_pooled_within_signature_conflicting_set_count": 0,
+            "B2B5_pooled_empty_intersection_count": 0,
+            "B2B5_transfer_duplicate_target_row_keys": 0,
+            "B2B5_transfer_row_semantic_disagreements": 0,
             "B2B5_pooled_primary_matched_rows": 48,
             "B2B5_pooled_primary_action_disagreements": 0,
+            "candidate_action_rows": 6480,
             "P2_matched_rows": 6480,
             "P2_action_disagreements": 0,
             "P2_stable_row_disagreements": 0,
@@ -1319,20 +1568,23 @@ def analyze(
         )
     )
     recipient_action_authority = {
-        "full_population_authority": "B2-B6 clean-dev singleton assigned_action_set",
-        "reproduction_authority": "P2 candidate_action_key",
-        "contextual_acceptable_set_authority": "B2-B5 signature_action_intersection",
-        "b2b5_context_key_fields": [
-            "feature_subset_mask", "canonical_signature", "transfer_status",
-            "source_seed_or_none", "target_seed_or_none",
+        "full_population_assignment": "B2-B6 singleton assigned_action_set",
+        "full_population_reproduction": "P2 candidate_action_key",
+        "pooled_signature_semantics": "B2-B5 pooled signature_action_intersection",
+        "transfer_semantics": "B2-B5 target-row-specific source-signature/target-acceptable intersection",
+        "pooled_key_fields": ["feature_subset_mask", "canonical_signature"],
+        "transfer_row_key_fields": [
+            "feature_subset_mask", "source_seed", "target_seed", "stable_row_id",
         ],
-        "b2b5_context_qualified_mapping_count": len(b5_context_action_sets),
-        "pooled_signature_mapping_count": len(b5_pooled_actions_by_signature),
-        "transfer_context_mapping_count": transfer_context_mapping_count,
+        "transfer_intersection_is_signature_constant": False,
+        "selected_rows": pooled_identity_row_count + transfer_identity_row_count,
+        "pooled_rows": pooled_identity_row_count,
+        "transfer_rows": transfer_identity_row_count,
         "pooled_primary_cross_check_rows": pooled_primary_matched_rows,
-        "transfer_rows_assignment_authorized": False,
-        "cross_context_action_set_differences": cross_context_differing_set_count,
-        "within_context_conflicting_action_sets": within_context_conflicting_set_count,
+        "transfer_target_row_specific_intersection_variation_count": (
+            transfer_variation_evidence["transfer_target_row_specific_intersection_variation_count"]
+        ),
+        "transfer_action_membership_diagnostic": transfer_action_membership,
         "B2B6_P2_matched_rows": p2_matched_rows,
         "B2B6_P2_action_disagreements": p2_action_disagreements,
         "B2B6_P2_stable_row_disagreements": p2_stable_row_disagreements,
@@ -2245,10 +2497,11 @@ Unavailable hashes are never compared as empty expected digests.
 `{canonical(analysis.get("recipient_signature_authority", {}))}`
 
 B2-B6 is the deterministic 6,480-row action authority and P2 independently
-reproduces that mapping. B2-B5 intersections are context-qualified acceptable
-action sets: pooled primary membership is checked for exactly 48 candidate rows,
-while transfer intersections remain diagnostic and never assign actions.
-Cross-context action-set differences are expected contextual variation.
+reproduces that mapping. B2-B5 pooled intersections are signature-level
+constants and provide the strict 48-row primary membership check. B2-B5
+transfer intersections are target-row-specific diagnostics keyed by target
+`stable_row_id`; same-signature variation across target rows is expected and
+never assigns or redefines an action.
 
 `{canonical(analysis.get("recipient_action_authority", {}))}`
 
