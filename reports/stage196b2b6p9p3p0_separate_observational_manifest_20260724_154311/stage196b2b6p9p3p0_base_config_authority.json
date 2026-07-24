@@ -1,0 +1,509 @@
+{
+  "base_config_fingerprint": "a5fe586a17bd2510da6dd6be2eff11f83f4f5f537dbff4163f6cbce06beae883",
+  "blocking_reasons": [],
+  "candidate_sources_considered": [
+    {
+      "accepted": true,
+      "path": "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/trajectory/run_provenance.json",
+      "reason": "tracked_authority_file_present",
+      "tier": "deterministic_hierarchy"
+    },
+    {
+      "accepted": true,
+      "path": "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/trajectory/training_report.json",
+      "reason": "tracked_authority_file_present",
+      "tier": "deterministic_hierarchy"
+    },
+    {
+      "accepted": true,
+      "path": "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/composer_inputs/stage196b2b3p0_composer_input_manifest.json",
+      "reason": "tracked_authority_file_present",
+      "tier": "deterministic_hierarchy"
+    },
+    {
+      "accepted": true,
+      "path": "/kaggle/working/ContraMamba/reports/stage196b2b6p8_full_trainable_path_replay_20260723_203414/stage196b2b6p8_analysis.json",
+      "reason": "tracked_authority_file_present",
+      "tier": "deterministic_hierarchy"
+    },
+    {
+      "accepted": true,
+      "path": "/kaggle/working/ContraMamba/reports/stage196b2b6p8_full_trainable_path_replay_20260723_203414/stage196b2b6p8_contract.csv",
+      "reason": "tracked_authority_file_present",
+      "tier": "deterministic_hierarchy"
+    },
+    {
+      "accepted": true,
+      "path": "/kaggle/working/ContraMamba/reports/stage196b2b6p7_full_counterfactual_forward_design_spec.md",
+      "reason": "tracked_authority_file_present",
+      "tier": "deterministic_hierarchy"
+    },
+    {
+      "accepted": true,
+      "path": "/kaggle/working/ContraMamba/reports/stage196b2b6p6_minimal_gradient_path_instrumentation_spec.md",
+      "reason": "tracked_authority_file_present",
+      "tier": "deterministic_hierarchy"
+    },
+    {
+      "accepted": true,
+      "path": "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/trajectory/run_provenance.json",
+      "reason": "accepted_primary_arm_seed_authority_candidate",
+      "tier": "seed_authority"
+    }
+  ],
+  "candidate_sources_rejected": [
+    {
+      "candidate_arm": "frame_local_only",
+      "reason": "P7/P8 authorize frame_local_only as separately trained donor/restricted contrast, not unrestricted native primary arm."
+    }
+  ],
+  "conflicts": [],
+  "decision": "STAGE196B2B6P9P3P0_MANIFEST_READY",
+  "failure": null,
+  "field_provenance": {
+    "active_stage195_stage196_flags": {
+      "entries": {
+        "stage196b1_framegate_gradient_ownership_observability": {
+          "source": "primary_exact_command_and_parsed_args",
+          "value": true
+        },
+        "stage196b2b3p0_export_epoch_composer_inputs": {
+          "source": "primary_exact_command_and_parsed_args",
+          "value": true
+        },
+        "stage196b2b6p8_enable_full_trainable_path_replay_api": {
+          "authority": "P8_FULL_TRAINABLE_PATH_REPLAY_COMPLETE",
+          "normalization_applied": true,
+          "source": "source_backed_lineage_normalization",
+          "value": true
+        },
+        "stage196b2p0_epoch_channel_observability": {
+          "source": "primary_exact_command_and_parsed_args",
+          "value": true
+        }
+      },
+      "source": "primary_exact_command_tokens_primary_parsed_args_resolved_runtime_config_and_source_backed_lineage_normalizations",
+      "value": {
+        "stage196b1_framegate_gradient_ownership_observability": true,
+        "stage196b2b3p0_export_epoch_composer_inputs": true,
+        "stage196b2b6p8_enable_full_trainable_path_replay_api": true,
+        "stage196b2p0_epoch_channel_observability": true
+      }
+    },
+    "architecture": {
+      "source": "primary_run_provenance.parsed_args",
+      "source_key": "architecture",
+      "value": "v6b_minimal"
+    },
+    "backbone": {
+      "source": "primary_run_provenance.parsed_args",
+      "source_key": "backbone",
+      "value": "mamba"
+    },
+    "batch_size": {
+      "source": "primary_run_provenance.resolved_runtime_config",
+      "value": {
+        "authority": "resolved_runtime_config_from_primary_run_provenance",
+        "dev_batch_size": 720,
+        "effective_batch_size": 2880,
+        "eval_batch_size_argument": null,
+        "eval_train_batch_size": 2880,
+        "gradient_accumulation_steps": 1,
+        "train_batch_size": 2880,
+        "train_batch_size_argument": null,
+        "trainer_has_batch_size_flag": false
+      }
+    },
+    "bridge_training_state": {
+      "source": "primary_run_provenance_and_training_report",
+      "value": {
+        "disabled": true,
+        "modes": {
+          "stage57_bridge_train_mode": "none",
+          "stage66_bridge_train_mode": "none",
+          "stage75_bridge_train_mode": "none",
+          "stage80a_bridge_train_mode": "none"
+        },
+        "paths": {
+          "stage57_bridge_train_jsonl": null,
+          "stage66_bridge_train_jsonl": null,
+          "stage75_bridge_train_jsonl": null,
+          "stage80a_bridge_train_jsonl": null
+        }
+      }
+    },
+    "checkpoint_selection_behavior": {
+      "source": "primary_run_provenance_and_training_report",
+      "value": {
+        "checkpoint_is_selected_clean_dev_state": true,
+        "save_selected_checkpoint": true,
+        "select_metric": "final_macro_f1",
+        "selected_checkpoint_filename": "selected_checkpoint.pt",
+        "selected_epoch": 20,
+        "selection_source": "internal_clean_dev_only"
+      }
+    },
+    "class_weighting": {
+      "source": "primary_run_provenance.parsed_args",
+      "source_key": "class_weighting",
+      "value": "none"
+    },
+    "compatible_positive_margin_logit": {
+      "source": "primary_run_provenance.parsed_args",
+      "source_key": "compatible_positive_margin_logit",
+      "value": 0.0
+    },
+    "compatible_positive_margin_weight": {
+      "source": "primary_run_provenance.parsed_args",
+      "source_key": "compatible_positive_margin_weight",
+      "value": 0.0
+    },
+    "data": {
+      "source": "primary_run_provenance.parsed_args",
+      "source_key": "data",
+      "value": "data/controlled_v5_v3_without_time_swap.jsonl"
+    },
+    "dev_ratio": {
+      "source": "primary_run_provenance.parsed_args",
+      "source_key": "dev_ratio",
+      "value": 0.2
+    },
+    "device": {
+      "source": "primary_run_provenance.parsed_args",
+      "source_key": "device",
+      "value": "cuda"
+    },
+    "encoder_lr": {
+      "source": "primary_run_provenance.parsed_args",
+      "source_key": "encoder_lr",
+      "value": null
+    },
+    "epochs": {
+      "source": "primary_run_provenance.parsed_args",
+      "source_key": "epochs",
+      "value": 20
+    },
+    "eval_batch_size": {
+      "source": "primary_run_provenance.parsed_args",
+      "source_key": "eval_batch_size",
+      "value": null
+    },
+    "external_evaluation_state": {
+      "source": "primary_run_provenance_and_training_report",
+      "value": {
+        "disabled": true,
+        "flags": {
+          "enable_external_eval": null,
+          "enable_stage43_external_eval": false,
+          "external_data": null,
+          "ood_data": null,
+          "stage43_external_enable_shadow_export": false
+        },
+        "training_report_external_examples_used": null
+      }
+    },
+    "flag_source": {
+      "source": "primary_run_provenance.parsed_args",
+      "source_key": "flag_source",
+      "value": "controlled_heuristic"
+    },
+    "frame_downstream_gradient_mode": {
+      "source": "primary_run_provenance.parsed_args",
+      "source_key": "frame_downstream_gradient_mode",
+      "value": "joint"
+    },
+    "freeze_a_log": {
+      "source": "primary_run_provenance.parsed_args",
+      "source_key": "freeze_a_log",
+      "value": true
+    },
+    "freeze_encoder": {
+      "source": "primary_run_provenance.parsed_args",
+      "source_key": "freeze_encoder",
+      "value": true
+    },
+    "gradient_accumulation_steps": {
+      "source": "primary_run_provenance.parsed_args",
+      "source_key": "gradient_accumulation_steps",
+      "value": 1
+    },
+    "head_lr": {
+      "source": "primary_run_provenance.parsed_args",
+      "source_key": "head_lr",
+      "value": null
+    },
+    "learning_rates": {
+      "source": "primary_run_provenance.parsed_args",
+      "value": {
+        "authority": "primary_run_provenance.parsed_args_and_resolved_runtime_config",
+        "encoder_lr": null,
+        "head_lr": null,
+        "lr": 0.001
+      }
+    },
+    "lr": {
+      "source": "primary_run_provenance.parsed_args",
+      "source_key": "lr",
+      "value": 0.001
+    },
+    "max_length": {
+      "source": "primary_run_provenance.parsed_args",
+      "source_key": "max_length",
+      "value": 128
+    },
+    "mixed_precision_behavior": {
+      "source": "primary_run_provenance_and_training_report",
+      "value": {
+        "amp": null,
+        "authority": "explicit_absence_or_value_in_primary_run_provenance_parsed_args",
+        "fp16": false,
+        "mixed_precision": null
+      }
+    },
+    "model_name": {
+      "source": "primary_run_provenance.parsed_args",
+      "source_key": "model_name",
+      "value": "state-spaces/mamba-130m-hf"
+    },
+    "optimizer_configuration": {
+      "source": "primary_run_provenance.resolved_runtime_config",
+      "value": {
+        "authority": "primary_run_provenance.resolved_runtime_config",
+        "optimizer": "v5.build_optimizer",
+        "scheduler_configuration": null,
+        "weight_decay": null
+      }
+    },
+    "save_selected_checkpoint": {
+      "source": "primary_run_provenance.parsed_args",
+      "source_key": "save_selected_checkpoint",
+      "value": true
+    },
+    "seed": {
+      "authority": "EXACT_PRIMARY_SOURCE_SEED_183",
+      "normalization_applied": false,
+      "source": "primary_run_provenance.parsed_args",
+      "source_key": "seed",
+      "value": 183
+    },
+    "select_metric": {
+      "source": "primary_run_provenance.parsed_args",
+      "source_key": "select_metric",
+      "value": "final_macro_f1"
+    },
+    "selected_checkpoint_filename": {
+      "source": "primary_run_provenance.parsed_args",
+      "source_key": "selected_checkpoint_filename",
+      "value": "selected_checkpoint.pt"
+    },
+    "split_seed": {
+      "source": "primary_run_provenance.parsed_args",
+      "source_key": "split_seed",
+      "value": 174
+    },
+    "stage196b1_framegate_gradient_ownership_observability": {
+      "source": "primary_exact_command_and_parsed_args",
+      "value": true
+    },
+    "stage196b2b3p0_export_epoch_composer_inputs": {
+      "source": "primary_exact_command_and_parsed_args",
+      "value": true
+    },
+    "stage196b2b6p8_enable_full_trainable_path_replay_api": {
+      "authority": "P8_FULL_TRAINABLE_PATH_REPLAY_COMPLETE",
+      "normalization_applied": true,
+      "source": "source_backed_lineage_normalization",
+      "value": true
+    },
+    "stage196b2p0_epoch_channel_observability": {
+      "source": "primary_exact_command_and_parsed_args",
+      "value": true
+    },
+    "train_batch_size": {
+      "source": "primary_run_provenance.parsed_args",
+      "source_key": "train_batch_size",
+      "value": null
+    },
+    "training_scope": {
+      "source": "primary_run_provenance_and_training_report",
+      "value": {
+        "effective_batch_size": 2880,
+        "eval_batch_size_argument": null,
+        "expected_epoch_count": 20,
+        "expected_rows_per_epoch": 720,
+        "loss_sweep": false,
+        "main_data_sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640",
+        "max_train_records": null,
+        "resolved_eval_batch_size": 720,
+        "resolved_train_batch_size": 2880,
+        "scope": "clean_controlled_main_training",
+        "smoke": false,
+        "train_batch_size_argument": null
+      }
+    },
+    "vnext_evidence_interface": {
+      "source": "primary_run_provenance.parsed_args",
+      "source_key": "vnext_evidence_interface",
+      "value": "full_evidence"
+    },
+    "vnext_router_mode": {
+      "source": "primary_run_provenance.parsed_args",
+      "source_key": "vnext_router_mode",
+      "value": "learned_x_product"
+    },
+    "weight_decay": {
+      "source": "explicit_absence_from_primary_command_and_parsed_args",
+      "source_key": "weight_decay",
+      "value": null
+    }
+  },
+  "manifest_overlays_not_base_authority": {
+    "ema_decay": 0.99,
+    "ema_decay_authority": "EX_ANTE_EFFECTIVE_HORIZON_100_SUCCESSFUL_STEPS",
+    "seed": 183
+  },
+  "normalizations_applied": [
+    {
+      "authority": "flag_absent_from_exact_command_and_parsed_args",
+      "field": "weight_decay",
+      "value": null
+    },
+    {
+      "authority": "P8_FULL_TRAINABLE_PATH_REPLAY_COMPLETE",
+      "field": "stage196b2b6p8_enable_full_trainable_path_replay_api",
+      "value": true
+    },
+    {
+      "authority": "EXACT_PRIMARY_SOURCE_SEED_183",
+      "field": "seed",
+      "normalization_applied": false,
+      "value": 183
+    }
+  ],
+  "primary_arm_authority": "PRIMARY_UNRESTRICTED_JOINT_LINEAGE",
+  "recommended_next_stage": "STAGE196B2B6P9P3_EXECUTE_SEVEN_CONTROLLED_RUNS",
+  "resolution_strategy": "1 exact seed183 primary Stage196 resolved command/parsed_args with singleton seed authority when it is the only accepted primary source; 2 tracked P8/P7/P6 manifest/checkpoint/design metadata for primary-arm authority; 3 field-level consensus across multiple primary-arm lineage sources only when non-seed configurations agree after removing seed and run paths; 4 fail closed.",
+  "resolved_base_config": {
+    "active_stage195_stage196_flags": {
+      "stage196b1_framegate_gradient_ownership_observability": true,
+      "stage196b2b3p0_export_epoch_composer_inputs": true,
+      "stage196b2b6p8_enable_full_trainable_path_replay_api": true,
+      "stage196b2p0_epoch_channel_observability": true
+    },
+    "architecture": "v6b_minimal",
+    "backbone": "mamba",
+    "batch_size": {
+      "authority": "resolved_runtime_config_from_primary_run_provenance",
+      "dev_batch_size": 720,
+      "effective_batch_size": 2880,
+      "eval_batch_size_argument": null,
+      "eval_train_batch_size": 2880,
+      "gradient_accumulation_steps": 1,
+      "train_batch_size": 2880,
+      "train_batch_size_argument": null,
+      "trainer_has_batch_size_flag": false
+    },
+    "bridge_training_state": {
+      "disabled": true,
+      "modes": {
+        "stage57_bridge_train_mode": "none",
+        "stage66_bridge_train_mode": "none",
+        "stage75_bridge_train_mode": "none",
+        "stage80a_bridge_train_mode": "none"
+      },
+      "paths": {
+        "stage57_bridge_train_jsonl": null,
+        "stage66_bridge_train_jsonl": null,
+        "stage75_bridge_train_jsonl": null,
+        "stage80a_bridge_train_jsonl": null
+      }
+    },
+    "checkpoint_selection_behavior": {
+      "checkpoint_is_selected_clean_dev_state": true,
+      "save_selected_checkpoint": true,
+      "select_metric": "final_macro_f1",
+      "selected_checkpoint_filename": "selected_checkpoint.pt",
+      "selected_epoch": 20,
+      "selection_source": "internal_clean_dev_only"
+    },
+    "class_weighting": "none",
+    "compatible_positive_margin_logit": 0.0,
+    "compatible_positive_margin_weight": 0.0,
+    "data": "data/controlled_v5_v3_without_time_swap.jsonl",
+    "dev_ratio": 0.2,
+    "device": "cuda",
+    "encoder_lr": null,
+    "epochs": 20,
+    "eval_batch_size": null,
+    "external_evaluation_state": {
+      "disabled": true,
+      "flags": {
+        "enable_external_eval": null,
+        "enable_stage43_external_eval": false,
+        "external_data": null,
+        "ood_data": null,
+        "stage43_external_enable_shadow_export": false
+      },
+      "training_report_external_examples_used": null
+    },
+    "flag_source": "controlled_heuristic",
+    "frame_downstream_gradient_mode": "joint",
+    "freeze_a_log": "true",
+    "freeze_encoder": "true",
+    "gradient_accumulation_steps": 1,
+    "head_lr": null,
+    "learning_rates": {
+      "authority": "primary_run_provenance.parsed_args_and_resolved_runtime_config",
+      "encoder_lr": null,
+      "head_lr": null,
+      "lr": 0.001
+    },
+    "lr": 0.001,
+    "max_length": 128,
+    "mixed_precision_behavior": {
+      "amp": null,
+      "authority": "explicit_absence_or_value_in_primary_run_provenance_parsed_args",
+      "fp16": false,
+      "mixed_precision": null
+    },
+    "model_name": "state-spaces/mamba-130m-hf",
+    "optimizer_configuration": {
+      "authority": "primary_run_provenance.resolved_runtime_config",
+      "optimizer": "v5.build_optimizer",
+      "scheduler_configuration": null,
+      "weight_decay": null
+    },
+    "save_selected_checkpoint": true,
+    "seed": 183,
+    "select_metric": "final_macro_f1",
+    "selected_checkpoint_filename": "selected_checkpoint.pt",
+    "split_seed": 174,
+    "stage196b1_framegate_gradient_ownership_observability": true,
+    "stage196b2b3p0_export_epoch_composer_inputs": true,
+    "stage196b2b6p8_enable_full_trainable_path_replay_api": true,
+    "stage196b2p0_epoch_channel_observability": true,
+    "train_batch_size": null,
+    "training_scope": {
+      "effective_batch_size": 2880,
+      "eval_batch_size_argument": null,
+      "expected_epoch_count": 20,
+      "expected_rows_per_epoch": 720,
+      "loss_sweep": false,
+      "main_data_sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640",
+      "max_train_records": null,
+      "resolved_eval_batch_size": 720,
+      "resolved_train_batch_size": 2880,
+      "scope": "clean_controlled_main_training",
+      "smoke": false,
+      "train_batch_size_argument": null
+    },
+    "vnext_evidence_interface": "full_evidence",
+    "vnext_router_mode": "learned_x_product",
+    "weight_decay": null
+  },
+  "seed_authority": "EXACT_PRIMARY_SOURCE_SEED_183",
+  "selected_base_config_source": "/kaggle/working/ContraMamba/reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/trajectory/run_provenance.json",
+  "selected_primary_arm": "joint",
+  "stage": "Stage196-B2-B6P9-P3-P0",
+  "unresolved_fields": []
+}
