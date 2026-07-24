@@ -375,7 +375,7 @@ def evaluate_p4_authority(
     p7: dict[str, Any],
     p6_contract_path: Path,
     p7_contract_path: Path,
-+) -> dict[str, Any]:
+) -> dict[str, Any]:
     original_available = p4_path is not None and p4_path.exists()
     base: dict[str, Any] = {
         "authority_mode": "ORIGINAL_P4_ANALYSIS" if original_available else "DOWNSTREAM_ATTESTED_P4_MINIMAL_CLOSURE",
@@ -533,7 +533,7 @@ def evaluate_p5_authority(
     p7: dict[str, Any],
     p6_contract_path: Path,
     p7_contract_path: Path,
-+) -> dict[str, Any]:
+) -> dict[str, Any]:
     original_available = p5_path is not None and p5_path.exists()
     base: dict[str, Any] = {
         "authority_mode": "ORIGINAL_P5_ANALYSIS" if original_available else "DOWNSTREAM_ATTESTED_P5_MINIMAL_CLOSURE",
