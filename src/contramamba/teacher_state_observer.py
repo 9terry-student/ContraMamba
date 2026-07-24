@@ -53,6 +53,64 @@ UNAVAILABLE_NO_LOSS_OR_BACKWARD = {
     "reason": "NO_LOSS_OR_BACKWARD_IN_OBSERVATIONAL_STAGE",
 }
 
+EPOCH_IDENTITY_FIELDS = {
+    "epoch",
+    "mode",
+    "target_family",
+    "run_name",
+    "schema_version",
+    "student_quantity_source",
+}
+EPOCH_ADDITIVE_COUNT_FIELDS = {
+    "direction_teacher_total_targets",
+    "direction_teacher_exact_tie_targets",
+    "direction_teacher_positive_sign_targets",
+    "direction_teacher_negative_sign_targets",
+    "direction_student_teacher_sign_agreement_count",
+    "direction_student_teacher_sign_disagreement_count",
+    "direction_nonzero_loss_target_count",
+    "direction_nonzero_gradient_target_count",
+    "order_teacher_total_pairs",
+    "order_teacher_exact_tie_pairs",
+    "order_teacher_positive_pair_targets",
+    "order_teacher_negative_pair_targets",
+    "order_student_teacher_pair_agreement_count",
+    "order_student_teacher_pair_disagreement_count",
+    "order_nonzero_loss_pair_count",
+    "order_nonzero_gradient_pair_count",
+}
+EPOCH_CUMULATIVE_COUNTER_FIELDS = {
+    "teacher_state_update_count",
+    "teacher_state_read_count",
+    "student_forward_count",
+    "teacher_forward_count",
+    "successful_optimizer_step_count",
+    "skipped_optimizer_step_count",
+}
+EPOCH_STATE_MEASUREMENT_FIELDS = {
+    "teacher_state_parameter_count",
+    "teacher_state_buffer_count",
+    "teacher_state_bytes",
+    "student_teacher_parameter_l2",
+    "student_teacher_parameter_relative_l2",
+    "student_teacher_buffer_mismatch_count",
+    "student_teacher_exact_parameter_match_rate",
+    "teacher_state_initialized",
+    "teacher_state_serialized",
+    "teacher_state_restored",
+    "teacher_state_missing_on_resume",
+    "teacher_stop_gradient",
+    "teacher_eval_mode",
+    "student_mode_restored",
+    "rng_state_preserved",
+}
+EPOCH_RATE_FIELDS = {
+    "direction_student_teacher_sign_agreement_rate",
+    "direction_student_teacher_sign_flip_rate",
+    "order_student_teacher_pair_agreement_rate",
+    "order_student_teacher_pair_flip_rate",
+}
+
 
 def validate_teacher_observer_cli(
     mode: str, target_family: str, ema_decay: float | None
@@ -473,6 +531,7 @@ class TeacherStateObserver:
             metrics.update(self._order_metrics(student_geometry, teacher_geometry))
             metrics["order_nonzero_loss_pair_count"] = UNAVAILABLE_NO_LOSS_OR_BACKWARD
             metrics["order_nonzero_gradient_pair_count"] = UNAVAILABLE_NO_LOSS_OR_BACKWARD
+        self._validate_batch_metric_closure(metrics)
         self.batch_metrics.append(metrics)
         self._accumulate_epoch(epoch, metrics)
         self._append_jsonl(
@@ -492,13 +551,15 @@ class TeacherStateObserver:
                 teacher_delta = t_row[key].detach()
                 teacher_sign = torch.sign(teacher_delta)
                 student_sign = torch.sign(student_delta)
-                active = teacher_sign != 0
+                teacher_active = teacher_sign != 0
+                comparable_active = teacher_active & (student_sign != 0)
                 ties += int((teacher_sign == 0).sum().item())
-                total += int(active.sum().item())
                 pos += int((teacher_sign > 0).sum().item())
                 neg += int((teacher_sign < 0).sum().item())
-                agree += int((student_sign[active] == teacher_sign[active]).sum().item())
-                disagree += int((student_sign[active] != teacher_sign[active]).sum().item())
+                total += int(teacher_sign.numel())
+                agree += int((student_sign[comparable_active] == teacher_sign[comparable_active]).sum().item())
+                disagree += int((student_sign[comparable_active] != teacher_sign[comparable_active]).sum().item())
+        comparable_total = agree + disagree
         return {
             "direction_teacher_total_targets": total,
             "direction_teacher_exact_tie_targets": ties,
@@ -507,10 +568,10 @@ class TeacherStateObserver:
             "direction_student_teacher_sign_agreement_count": agree,
             "direction_student_teacher_sign_disagreement_count": disagree,
             "direction_student_teacher_sign_agreement_rate": (
-                agree / total if total else None
+                agree / comparable_total if comparable_total else None
             ),
             "direction_student_teacher_sign_flip_rate": (
-                disagree / total if total else None
+                disagree / comparable_total if comparable_total else None
             ),
         }
 
@@ -533,13 +594,15 @@ class TeacherStateObserver:
                 student_gap = s_values[left] - s_values[right]
                 teacher_sign = torch.sign(teacher_gap)
                 student_sign = torch.sign(student_gap)
-                active = teacher_sign != 0
+                teacher_active = teacher_sign != 0
+                comparable_active = teacher_active & (student_sign != 0)
                 ties += int((teacher_sign == 0).sum().item())
-                total += int(active.sum().item())
                 pos += int((teacher_sign > 0).sum().item())
                 neg += int((teacher_sign < 0).sum().item())
-                agree += int((student_sign[active] == teacher_sign[active]).sum().item())
-                disagree += int((student_sign[active] != teacher_sign[active]).sum().item())
+                total += int(teacher_sign.numel())
+                agree += int((student_sign[comparable_active] == teacher_sign[comparable_active]).sum().item())
+                disagree += int((student_sign[comparable_active] != teacher_sign[comparable_active]).sum().item())
+        comparable_total = agree + disagree
         return {
             "order_teacher_total_pairs": total,
             "order_teacher_exact_tie_pairs": ties,
@@ -547,16 +610,59 @@ class TeacherStateObserver:
             "order_teacher_negative_pair_targets": neg,
             "order_student_teacher_pair_agreement_count": agree,
             "order_student_teacher_pair_disagreement_count": disagree,
-            "order_student_teacher_pair_agreement_rate": agree / total if total else None,
-            "order_student_teacher_pair_flip_rate": disagree / total if total else None,
+            "order_student_teacher_pair_agreement_rate": agree / comparable_total if comparable_total else None,
+            "order_student_teacher_pair_flip_rate": disagree / comparable_total if comparable_total else None,
         }
+
+    def _validate_batch_metric_closure(self, metrics: dict[str, Any]) -> None:
+        if self.target_family == "direction":
+            total = int(metrics.get("direction_teacher_total_targets", 0))
+            ties = int(metrics.get("direction_teacher_exact_tie_targets", 0))
+            pos = int(metrics.get("direction_teacher_positive_sign_targets", 0))
+            neg = int(metrics.get("direction_teacher_negative_sign_targets", 0))
+            if total != ties + pos + neg:
+                raise RuntimeError(
+                    "teacher observer direction target closure failed: "
+                    f"total={total} ties={ties} positive={pos} negative={neg}"
+                )
+        elif self.target_family == "candidate_order":
+            total = int(metrics.get("order_teacher_total_pairs", 0))
+            ties = int(metrics.get("order_teacher_exact_tie_pairs", 0))
+            pos = int(metrics.get("order_teacher_positive_pair_targets", 0))
+            neg = int(metrics.get("order_teacher_negative_pair_targets", 0))
+            if total != ties + pos + neg:
+                raise RuntimeError(
+                    "teacher observer candidate-order pair closure failed: "
+                    f"total={total} ties={ties} positive={pos} negative={neg}"
+                )
 
     def _accumulate_epoch(self, epoch: int, metrics: dict[str, Any]) -> None:
         total = self.epoch_totals.setdefault(int(epoch), {"epoch": int(epoch), "rows": 0})
         total["rows"] += 1
         for key, value in metrics.items():
-            if isinstance(value, (int, float)) and not isinstance(value, bool):
-                total[key] = total.get(key, 0) + value
+            if key in EPOCH_RATE_FIELDS:
+                continue
+            if key in EPOCH_IDENTITY_FIELDS:
+                if key in total and total[key] != value:
+                    raise RuntimeError(
+                        f"teacher observer epoch identity field {key!r} changed "
+                        f"within epoch {epoch}: {total[key]!r} != {value!r}"
+                    )
+                total[key] = value
+            elif key in EPOCH_ADDITIVE_COUNT_FIELDS:
+                if isinstance(value, dict):
+                    total[key] = copy.deepcopy(value)
+                else:
+                    total[key] = total.get(key, 0) + value
+            elif key in EPOCH_CUMULATIVE_COUNTER_FIELDS:
+                prior = total.get(key)
+                total[key] = value if prior is None else max(prior, value)
+            elif key in EPOCH_STATE_MEASUREMENT_FIELDS:
+                total[key] = value
+            elif key == "batch_index":
+                total["last_batch_index"] = value
+            else:
+                total[key] = value
 
     def mark_optimizer_step(self, student_model: nn.Module, *, successful: bool) -> None:
         if successful:
@@ -720,25 +826,26 @@ class TeacherStateObserver:
             ):
                 row.pop(rate_key, None)
             if self.target_family == "direction":
-                total = row.get("direction_teacher_total_targets", 0)
                 agree = row.get("direction_student_teacher_sign_agreement_count", 0)
                 disagree = row.get("direction_student_teacher_sign_disagreement_count", 0)
+                comparable_total = agree + disagree
                 row["direction_student_teacher_sign_agreement_rate"] = (
-                    agree / total if total else None
+                    agree / comparable_total if comparable_total else None
                 )
                 row["direction_student_teacher_sign_flip_rate"] = (
-                    disagree / total if total else None
+                    disagree / comparable_total if comparable_total else None
                 )
             else:
-                total = row.get("order_teacher_total_pairs", 0)
                 agree = row.get("order_student_teacher_pair_agreement_count", 0)
                 disagree = row.get("order_student_teacher_pair_disagreement_count", 0)
+                comparable_total = agree + disagree
                 row["order_student_teacher_pair_agreement_rate"] = (
-                    agree / total if total else None
+                    agree / comparable_total if comparable_total else None
                 )
                 row["order_student_teacher_pair_flip_rate"] = (
-                    disagree / total if total else None
+                    disagree / comparable_total if comparable_total else None
                 )
+            self._validate_batch_metric_closure(row)
             epoch_rows.append(row)
         self._write_epoch_csv(epoch_rows)
         summary = {
@@ -804,6 +911,11 @@ class TeacherStateObserver:
             writer.writeheader()
             for row in rows:
                 writer.writerow({key: _json_safe(row.get(key)) for key in fieldnames})
+
+
+
+
+
 
 
 
