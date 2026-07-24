@@ -1,0 +1,5 @@
+invariant,passed
+disabled_no_allocation,True
+disabled_no_sidecars,True
+no_loss_or_backward,True
+rng_preserved,True

@@ -1,0 +1,4 @@
+flag,passed
+--teacher-observer-mode,True
+--teacher-observer-target-family,True
+--teacher-observer-ema-decay,True

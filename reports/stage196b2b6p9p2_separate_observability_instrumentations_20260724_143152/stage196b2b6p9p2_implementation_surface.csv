@@ -1,0 +1,5 @@
+file,role,present,passed
+/kaggle/working/ContraMamba/scripts/train_controlled_v6b_minimal.py,trainer_cli_and_hooks,True,True
+/kaggle/working/ContraMamba/src/contramamba/teacher_state_observer.py,trainer_owned_observer,True,True
+/kaggle/working/ContraMamba/scripts/analyze_stage196b2b6p9p2_separate_observability_instrumentations.py,static_source_analyzer,True,True
+/kaggle/working/ContraMamba/reports/stage196b2b6p9p2_separate_observability_instrumentations_spec.md,implementation_spec,True,True

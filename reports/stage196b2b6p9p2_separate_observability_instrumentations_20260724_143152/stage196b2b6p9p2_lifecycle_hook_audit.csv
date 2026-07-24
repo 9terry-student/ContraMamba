@@ -1,0 +1,6 @@
+hook,passed
+initialize_before_first_batch,True
+observe_before_optimizer_step,True
+successful_step_update,True
+previous_epoch_boundary,True
+amp_skipped_step,True
