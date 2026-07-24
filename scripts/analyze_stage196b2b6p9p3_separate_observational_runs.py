@@ -7,6 +7,7 @@ import csv
 import hashlib
 import json
 import math
+import pickletools
 import zipfile
 from pathlib import Path
 from typing import Any
@@ -119,23 +120,50 @@ def read_jsonl(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
-def checkpoint_observer_state_presence(path: Path) -> str:
+def _pickle_string_atom(value: Any) -> str | None:
+    if isinstance(value, str):
+        return value
+    if isinstance(value, bytes):
+        for encoding in ("utf-8", "latin1"):
+            try:
+                return value.decode(encoding)
+            except UnicodeDecodeError:
+                continue
+    return None
+
+
+def checkpoint_observer_state_presence(path: Path) -> tuple[str, int | None]:
     if not path.is_file():
-        return "MISSING"
+        return "MISSING", None
+    exact_key_count = 0
     try:
         with zipfile.ZipFile(path) as zf:
-            blob = b"".join(
-                zf.read(name) for name in zf.namelist()
+            pickle_names = [
+                name for name in zf.namelist()
                 if name.endswith(".pkl") or name.endswith("data.pkl")
-            )
-        count = blob.count(b"teacher_observer_state")
-    except Exception:  # noqa: BLE001 - never torch.load; report unavailable.
-        return "UNAVAILABLE"
-    if count == 0:
-        return "ABSENT"
-    if count == 1:
-        return "ONE"
-    return "MULTIPLE"
+            ]
+            for name in pickle_names:
+                payload = zf.read(name)
+                for opcode, arg, _pos in pickletools.genops(payload):
+                    if opcode.name not in {
+                        "UNICODE",
+                        "BINUNICODE",
+                        "SHORT_BINUNICODE",
+                        "BINUNICODE8",
+                        "STRING",
+                        "BINSTRING",
+                        "SHORT_BINSTRING",
+                    }:
+                        continue
+                    if _pickle_string_atom(arg) == "teacher_observer_state":
+                        exact_key_count += 1
+    except Exception:  # noqa: BLE001 - never torch.load/pickle.load; report unavailable.
+        return "UNAVAILABLE", None
+    if exact_key_count == 0:
+        return "ABSENT", 0
+    if exact_key_count == 1:
+        return "ONE", 1
+    return "MULTIPLE", exact_key_count
 
 
 def load_manifest(path: Path) -> tuple[dict[str, Any] | None, list[str]]:
@@ -292,7 +320,7 @@ def main() -> int:
         report = read_json(report_path) if report_path.is_file() else None
         reports[run_id] = report
         observed_sidecars = sorted(p.name for p in Path(row["observer_output_dir"]).iterdir() if p.is_file()) if row.get("observer_output_dir") and Path(row["observer_output_dir"]).exists() else []
-        ckpt_presence = checkpoint_observer_state_presence(Path(row["checkpoint_path"]))
+        ckpt_presence, ckpt_exact_key_count = checkpoint_observer_state_presence(Path(row["checkpoint_path"]))
         completion_rows.append({
             "run_id": run_id,
             "execution_dir": str(run_dir),
@@ -303,6 +331,7 @@ def main() -> int:
             "checkpoint_exists": Path(row["checkpoint_path"]).is_file(),
             "observer_sidecar_count": len(observed_sidecars),
             "checkpoint_observer_state_presence": ckpt_presence,
+            "checkpoint_observer_state_exact_key_count": ckpt_exact_key_count,
             "manifest_fingerprint_match": (
                 resolved.get("manifest_command_fingerprint") == row.get("config_fingerprint")
                 and status.get("config_fingerprint") == row.get("config_fingerprint")
@@ -357,8 +386,8 @@ def main() -> int:
         for row in completion_rows
     )
     ckpt_ok = all(
-        (row["run_id"] == "control_off_none" and row["checkpoint_observer_state_presence"] == "ABSENT")
-        or (row["run_id"] != "control_off_none" and row["checkpoint_observer_state_presence"] == "ONE")
+        (row["run_id"] == "control_off_none" and row["checkpoint_observer_state_exact_key_count"] == 0 and row["checkpoint_observer_state_presence"] == "ABSENT")
+        or (row["run_id"] != "control_off_none" and row["checkpoint_observer_state_exact_key_count"] == 1 and row["checkpoint_observer_state_presence"] == "ONE")
         for row in completion_rows
     )
     trajectory_safe = all(row["classification"] in {"EXACT_MATCH", "NUMERIC_MATCH_WITH_EXPLICIT_TOLERANCE", "UNAVAILABLE"} for row in invariant_rows) and not any(row["classification"] == "MISMATCH" for row in invariant_rows)
@@ -374,8 +403,8 @@ def main() -> int:
         "all_returncodes_zero": all_return_zero,
         "control_zero_sidecars": any(row["run_id"] == "control_off_none" and row["observer_sidecar_count"] == 0 for row in completion_rows),
         "enabled_exact_five_sidecars": all(row["observer_sidecar_count"] == 5 for row in completion_rows if row["run_id"] != "control_off_none"),
-        "control_checkpoint_no_observer_state": any(row["run_id"] == "control_off_none" and row["checkpoint_observer_state_presence"] == "ABSENT" for row in completion_rows),
-        "enabled_checkpoint_one_observer_state": all(row["checkpoint_observer_state_presence"] == "ONE" for row in completion_rows if row["run_id"] != "control_off_none"),
+        "control_checkpoint_no_observer_state": any(row["run_id"] == "control_off_none" and row["checkpoint_observer_state_exact_key_count"] == 0 and row["checkpoint_observer_state_presence"] == "ABSENT" for row in completion_rows),
+        "enabled_checkpoint_one_observer_state": all(row["checkpoint_observer_state_exact_key_count"] == 1 and row["checkpoint_observer_state_presence"] == "ONE" for row in completion_rows if row["run_id"] != "control_off_none"),
         "base_config_fingerprint_identical": len({row["base_config_fingerprint"] for row in config_rows}) == 1,
         "student_trajectory_exact_or_tolerance_match": trajectory_safe,
         "previous_step_lifecycle_closed": all(row["lifecycle_closed"] for row in lifecycle_rows if row["observer_mode"] == "previous_step"),
@@ -424,6 +453,14 @@ def main() -> int:
         "nondegenerate_direction_candidate_present": nondeg_direction,
         "nondegenerate_candidate_order_candidate_present": nondeg_order,
         "contracts": contracts,
+        "checkpoint_namespace_evidence": [
+            {
+                "run_id": row["run_id"],
+                "checkpoint_observer_state_presence": row["checkpoint_observer_state_presence"],
+                "checkpoint_observer_state_exact_key_count": row["checkpoint_observer_state_exact_key_count"],
+            }
+            for row in completion_rows
+        ],
     }
     report_md = "\n".join([
         "# Stage196-B2-B6P9-P3 Separate Observational Runs",
@@ -433,12 +470,13 @@ def main() -> int:
         "",
         "This analyzer does not load a model, run a forward pass, train, evaluate, rank a teacher, or create a loss.",
         f"Numeric floating comparisons use abs_tol={ABS_TOL} and rel_tol={REL_TOL}.",
+        "Checkpoint observer-state namespace detection uses static pickle opcode inspection and exact string-atom equality.",
         "",
     ])
 
     write_json(args.output_dir / "stage196b2b6p9p3_analysis.json", analysis)
     (args.output_dir / "stage196b2b6p9p3_report.md").write_text(report_md, encoding="utf-8")
-    write_csv(args.output_dir / "stage196b2b6p9p3_run_completion.csv", completion_rows, ["run_id", "execution_dir", "returncode", "success", "resolved_command_fingerprint", "manifest_config_fingerprint", "manifest_fingerprint_match", "checkpoint_exists", "observer_sidecar_count", "checkpoint_observer_state_presence"])
+    write_csv(args.output_dir / "stage196b2b6p9p3_run_completion.csv", completion_rows, ["run_id", "execution_dir", "returncode", "success", "resolved_command_fingerprint", "manifest_config_fingerprint", "manifest_fingerprint_match", "checkpoint_exists", "observer_sidecar_count", "checkpoint_observer_state_presence", "checkpoint_observer_state_exact_key_count"])
     write_csv(args.output_dir / "stage196b2b6p9p3_config_fingerprint_audit.csv", config_rows, ["run_id", "config_fingerprint", "base_config_fingerprint", "observer_config_fingerprint", "seed", "observer_mode", "target_family", "ema_decay"])
     write_csv(args.output_dir / "stage196b2b6p9p3_student_trajectory_invariance.csv", invariant_rows, ["run_id", "field", "classification", "evidence"])
     write_csv(args.output_dir / "stage196b2b6p9p3_lifecycle_runtime_audit.csv", lifecycle_rows, ["run_id", "observer_mode", "teacher_state_initialized", "read_count", "update_count", "successful_optimizer_step_count", "skipped_optimizer_step_count", "decay", "effective_teacher_age", "lifecycle_closed"])
@@ -451,6 +489,9 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+
 
 
 
