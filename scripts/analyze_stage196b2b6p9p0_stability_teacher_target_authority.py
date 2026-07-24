@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Audit Stage196-B2-B6P9-P0 stability teacher/target authority.
 
 This is a static design analyzer.  It reads source and upstream report
@@ -24,10 +24,40 @@ STAGE = "Stage196-B2-B6P9-P0"
 STAGE_TITLE = "Separate Stability Teacher/Target Authority Design"
 P4_DECISION = "STAGE196B2B6P4_ACTION_RESPONSE_TOPOLOGY_UNSTABLE"
 P5_DECISION = "STAGE196B2B6P5_GRADIENT_PATH_INSTRUMENTATION_REQUIRED"
+P4_RECOMMENDED_NEXT = (
+    "STAGE196B2B6P5_TRAINING_SIDE_RESPONSE_STABILITY_INTERVENTION_DESIGN"
+)
 P8_DECISION = "STAGE196B2B6P8_FULL_TRAINABLE_PATH_REPLAY_COMPLETE"
 P8_FINAL_AUTHORITY_DIR = (
     "reports/stage196b2b6p8_full_trainable_path_replay_20260723_203414"
 )
+P4_AUTHORITY_MODES = (
+    "ORIGINAL_P4_ANALYSIS",
+    "DOWNSTREAM_ATTESTED_P4_MINIMAL_CLOSURE",
+)
+P4_ATTESTED_SCOPE = (
+    "P4 decision identity",
+    "zero P4 blockers",
+    "P4 recommended next-stage identity",
+    "zero failed P4 contracts",
+)
+P4_ATTESTED_LIMITATIONS = (
+    "original P4 numerical tables",
+    "original P4 row-level data",
+    "original P4 source-file hashes",
+    "original P4 output-directory identity",
+    "original P4 creation timestamp",
+    "byte-identical original P4 content",
+)
+P4_P6_DECISION_PAYLOAD = {
+    "blocking_reasons": [],
+    "decision": P4_DECISION,
+    "recommended_next_stage": P4_RECOMMENDED_NEXT,
+}
+P4_P7_DECISION_PAYLOAD = {
+    "blocking_reasons": [],
+    "decision": P4_DECISION,
+}
 
 TEACHER_CANDIDATES = (
     "CURRENT_NATIVE_STOP_GRAD",
@@ -161,9 +191,11 @@ CONTRACT_FIELDS = (
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--stage196b2b6p4-analysis-json", type=Path, required=True)
+    parser.add_argument("--stage196b2b6p4-analysis-json", type=Path)
     parser.add_argument("--stage196b2b6p5-analysis-json", type=Path, required=True)
     parser.add_argument("--stage196b2b6p7-analysis-json", type=Path, required=True)
+    parser.add_argument("--stage196b2b6p6-contract-csv", type=Path, required=True)
+    parser.add_argument("--stage196b2b6p7-contract-csv", type=Path, required=True)
     parser.add_argument("--stage196b2b6p8-analysis-json", type=Path, required=True)
     parser.add_argument("--stage196b2b6p8-gradient-connectivity-csv",
                         type=Path, required=True)
@@ -252,6 +284,178 @@ def zero_failed_contracts(path: Path) -> tuple[bool, int]:
         if not ok or row.get("blocking_reason", "").strip():
             failed += 1
     return failed == 0, failed
+
+
+
+def strict_bool(value: Any) -> bool | None:
+    if isinstance(value, bool):
+        return value
+    lowered = str(value).strip().lower()
+    if lowered == "true":
+        return True
+    if lowered == "false":
+        return False
+    return None
+
+
+def contract_rows_named(rows: list[dict[str, str]], name: str) -> list[dict[str, str]]:
+    return [row for row in rows if str(row.get("contract", "")).strip() == name]
+
+
+def parse_contract_json_payload(value: Any) -> Any:
+    if isinstance(value, (dict, list, bool)) or value is None:
+        return value
+    return json.loads(str(value))
+
+
+def p7_p6_contract_expected_sha(p7: dict[str, Any]) -> str:
+    artifacts = (p7.get("upstream") or {}).get("p6_artifacts") or {}
+    value = artifacts.get("stage196b2b6p6_contract.csv")
+    if isinstance(value, dict):
+        value = value.get("sha256")
+    return str(value or "").strip()
+
+
+def evaluate_p4_authority(
+    *,
+    p4_path: Path | None,
+    p7: dict[str, Any],
+    p6_contract_path: Path,
+    p7_contract_path: Path,
++) -> dict[str, Any]:
+    original_available = p4_path is not None and p4_path.exists()
+    base: dict[str, Any] = {
+        "authority_mode": "ORIGINAL_P4_ANALYSIS" if original_available else "DOWNSTREAM_ATTESTED_P4_MINIMAL_CLOSURE",
+        "original_artifact_available": original_available,
+        "original_artifact_path": str(p4_path) if p4_path is not None else "",
+        "attestation_scope": list(P4_ATTESTED_SCOPE),
+        "attestation_limitations": list(P4_ATTESTED_LIMITATIONS),
+        "p6_contract_path": str(p6_contract_path),
+        "p6_contract_sha256_expected": "",
+        "p6_contract_sha256_observed": "",
+        "p6_decision_closure": {"passed": False, "mode": "not_checked"},
+        "p6_zero_failed_contracts_closure": {"passed": False, "mode": "not_checked"},
+        "p7_analysis_decision_concurrence": {"passed": False, "mode": "not_checked"},
+        "p7_contract_decision_concurrence": {"passed": False, "mode": "not_checked"},
+        "minimal_authority_passed": False,
+        "original_artifact_not_fabricated": True,
+        "blocking_reasons": [],
+    }
+    if original_available:
+        original = load_json(p4_path)  # type: ignore[arg-type]
+        passed = original.get("decision") == P4_DECISION and original.get("blocking_reasons") == []
+        base.update({
+            "observed_decision": original.get("decision"),
+            "observed_blocking_reasons": original.get("blocking_reasons"),
+            "minimal_authority_passed": passed,
+            "p6_decision_closure": {"passed": True, "mode": "not_applicable_original_mode"},
+            "p6_zero_failed_contracts_closure": {"passed": True, "mode": "not_applicable_original_mode"},
+            "p7_analysis_decision_concurrence": {"passed": True, "mode": "not_applicable_original_mode"},
+            "p7_contract_decision_concurrence": {"passed": True, "mode": "not_applicable_original_mode"},
+        })
+        if not passed:
+            base["blocking_reasons"].append("original P4 analysis failed exact decision/zero-blocker checks")
+        return base
+
+    missing_contract_paths = []
+    if not p6_contract_path.exists():
+        missing_contract_paths.append("stage196b2b6p6_contract.csv")
+    if not p7_contract_path.exists():
+        missing_contract_paths.append("stage196b2b6p7_contract.csv")
+    if missing_contract_paths:
+        base["checks"] = {
+            "p6_contract_hash_closure": False,
+            "p6_decision_closure": False,
+            "p6_zero_failed_contracts_closure": False,
+            "p7_analysis_decision_concurrence": False,
+            "p7_contract_decision_concurrence": False,
+        }
+        base["blocking_reasons"] = [
+            "missing downstream attestation contract path: " + name
+            for name in missing_contract_paths
+        ]
+        return base
+
+    p6_rows = read_csv(p6_contract_path)
+    p7_rows = read_csv(p7_contract_path)
+    expected_sha = p7_p6_contract_expected_sha(p7)
+    observed_sha = sha256(p6_contract_path)
+    hash_passed = bool(expected_sha) and expected_sha == observed_sha
+    base["p6_contract_sha256_expected"] = expected_sha
+    base["p6_contract_sha256_observed"] = observed_sha
+
+    p6_decision_rows = contract_rows_named(p6_rows, "p4_decision_closure")
+    p6_decision_detail: dict[str, Any] = {"row_count": len(p6_decision_rows), "passed": False}
+    if len(p6_decision_rows) == 1:
+        row = p6_decision_rows[0]
+        try:
+            required = parse_contract_json_payload(row.get("required", ""))
+            observed = parse_contract_json_payload(row.get("observed", ""))
+            passed_value = strict_bool(row.get("passed"))
+            p6_decision_detail.update({
+                "required": required,
+                "observed": observed,
+                "passed_value": passed_value,
+                "passed": passed_value is True and required == P4_P6_DECISION_PAYLOAD and observed == P4_P6_DECISION_PAYLOAD,
+            })
+        except json.JSONDecodeError as exc:
+            p6_decision_detail.update({"parse_error": str(exc)})
+
+    p6_zero_rows = contract_rows_named(p6_rows, "p4_zero_failed_contracts")
+    p6_zero_detail: dict[str, Any] = {"row_count": len(p6_zero_rows), "passed": False}
+    if len(p6_zero_rows) == 1:
+        row = p6_zero_rows[0]
+        passed_value = strict_bool(row.get("passed"))
+        required_bool = strict_bool(row.get("required"))
+        observed_bool = strict_bool(row.get("observed"))
+        p6_zero_detail.update({
+            "passed_value": passed_value,
+            "required": required_bool,
+            "observed": observed_bool,
+            "passed": passed_value is True and required_bool is True and observed_bool is True,
+        })
+
+    p7_upstream_decision = (p7.get("upstream") or {}).get("p4_decision")
+    p7_analysis_detail = {
+        "required": P4_DECISION,
+        "observed": p7_upstream_decision,
+        "passed": p7_upstream_decision == P4_DECISION,
+    }
+
+    p7_contract_rows = contract_rows_named(p7_rows, "p4_decision_and_zero_blockers")
+    p7_contract_detail: dict[str, Any] = {"row_count": len(p7_contract_rows), "passed": False}
+    if len(p7_contract_rows) == 1:
+        row = p7_contract_rows[0]
+        try:
+            required = parse_contract_json_payload(row.get("required", ""))
+            observed = parse_contract_json_payload(row.get("observed", ""))
+            passed_value = strict_bool(row.get("passed"))
+            p7_contract_detail.update({
+                "required": required,
+                "observed": observed,
+                "passed_value": passed_value,
+                "passed": passed_value is True and required == P4_P7_DECISION_PAYLOAD and observed == P4_P7_DECISION_PAYLOAD,
+            })
+        except json.JSONDecodeError as exc:
+            p7_contract_detail.update({"parse_error": str(exc)})
+
+    base.update({
+        "p6_decision_closure": p6_decision_detail,
+        "p6_zero_failed_contracts_closure": p6_zero_detail,
+        "p7_analysis_decision_concurrence": p7_analysis_detail,
+        "p7_contract_decision_concurrence": p7_contract_detail,
+    })
+    checks = {
+        "p6_contract_hash_closure": hash_passed,
+        "p6_decision_closure": bool(p6_decision_detail["passed"]),
+        "p6_zero_failed_contracts_closure": bool(p6_zero_detail["passed"]),
+        "p7_analysis_decision_concurrence": bool(p7_analysis_detail["passed"]),
+        "p7_contract_decision_concurrence": bool(p7_contract_detail["passed"]),
+    }
+    base["minimal_authority_passed"] = all(checks.values())
+    base["checks"] = checks
+    base["blocking_reasons"] = [name for name, passed in checks.items() if not passed]
+    return base
 
 
 def source_line(text: str, pattern: str) -> str:
@@ -694,6 +898,18 @@ This stage does not authorize or activate a stability loss.  P8 is used only
 for graph availability: direction has graph availability, and candidate-order
 is graph-connected while zero on the observed P8 batch.
 
+## P4 Authority
+
+P4 authority mode = `{analysis["p4_authority"]["authority_mode"]}`
+
+Original P4 artifact available = `{analysis["p4_authority"]["original_artifact_available"]}`
+
+The downstream-attested mode establishes only P4 decision identity, zero P4
+blockers, P4 recommended next-stage identity, and zero failed P4 contracts. It
+does not reconstruct or authorize the original P4 numerical tables, row-level
+data, source-file hashes, output-directory identity, creation timestamp, or
+byte-identical original content.
+
 ## Teacher Authority
 
 No audited teacher candidate is justified for direction or candidate-order in
@@ -754,7 +970,6 @@ def main() -> int:
     output_dir = args.output_dir
     output_dir.mkdir(parents=True, exist_ok=False)
 
-    p4 = load_json(args.stage196b2b6p4_analysis_json)
     p5 = load_json(args.stage196b2b6p5_analysis_json)
     p7 = load_json(args.stage196b2b6p7_analysis_json)
     p8 = load_json(args.stage196b2b6p8_analysis_json)
@@ -770,7 +985,13 @@ def main() -> int:
     expected_p8_dir = repo / P8_FINAL_AUTHORITY_DIR
     contracts: list[dict[str, Any]] = []
 
-    p4_ok = p4.get("decision") == P4_DECISION and p4.get("blocking_reasons") == []
+    p4_authority = evaluate_p4_authority(
+        p4_path=args.stage196b2b6p4_analysis_json,
+        p7=p7,
+        p6_contract_path=args.stage196b2b6p6_contract_csv,
+        p7_contract_path=args.stage196b2b6p7_contract_csv,
+    )
+    p4_ok = bool(p4_authority["minimal_authority_passed"])
     p5_ok = p5.get("decision") == P5_DECISION and p5.get("blocking_reasons") == []
     p7_text = canonical(p7).lower()
     p7_selected_teacher = (
@@ -825,7 +1046,37 @@ def main() -> int:
     portability = portability_rows(audits)
 
     add_contract(contracts, "upstream_p4_authority", P4_DECISION,
-                 p4.get("decision"), p4_ok, "P4 authority failed")
+                 {"authority_mode": p4_authority["authority_mode"],
+                  "minimal_authority_passed": p4_authority["minimal_authority_passed"]},
+                 p4_ok, "P4 authority failed")
+    add_contract(contracts, "p4_authority_mode_valid", P4_AUTHORITY_MODES,
+                 p4_authority["authority_mode"],
+                 p4_authority["authority_mode"] in P4_AUTHORITY_MODES)
+    add_contract(contracts, "p4_original_or_attested_authority_available", True,
+                 p4_authority["minimal_authority_passed"], p4_ok,
+                 "neither original nor downstream-attested P4 authority passed")
+    original_mode = p4_authority["authority_mode"] == "ORIGINAL_P4_ANALYSIS"
+    add_contract(contracts, "p4_downstream_p6_contract_hash_closure", True,
+                 p4_authority.get("checks", {}).get("p6_contract_hash_closure", "not_applicable_original_mode"),
+                 original_mode or p4_authority.get("checks", {}).get("p6_contract_hash_closure") is True)
+    add_contract(contracts, "p4_downstream_p6_decision_closure", P4_P6_DECISION_PAYLOAD,
+                 p4_authority["p6_decision_closure"],
+                 original_mode or p4_authority["p6_decision_closure"].get("passed") is True)
+    add_contract(contracts, "p4_downstream_p6_zero_failed_contracts", True,
+                 p4_authority["p6_zero_failed_contracts_closure"],
+                 original_mode or p4_authority["p6_zero_failed_contracts_closure"].get("passed") is True)
+    add_contract(contracts, "p4_downstream_p7_analysis_concurrence", P4_DECISION,
+                 p4_authority["p7_analysis_decision_concurrence"],
+                 original_mode or p4_authority["p7_analysis_decision_concurrence"].get("passed") is True)
+    add_contract(contracts, "p4_downstream_p7_contract_concurrence", P4_P7_DECISION_PAYLOAD,
+                 p4_authority["p7_contract_decision_concurrence"],
+                 original_mode or p4_authority["p7_contract_decision_concurrence"].get("passed") is True)
+    add_contract(contracts, "p4_downstream_attestation_scope_restricted", P4_ATTESTED_SCOPE,
+                 {"scope": p4_authority["attestation_scope"],
+                  "limitations": p4_authority["attestation_limitations"]}, True)
+    add_contract(contracts, "p4_original_artifact_not_fabricated", True,
+                 p4_authority["original_artifact_not_fabricated"],
+                 p4_authority["original_artifact_not_fabricated"] is True)
     add_contract(contracts, "upstream_p5_authority", P5_DECISION,
                  p5.get("decision"), p5_ok, "P5 authority failed")
     add_contract(contracts, "upstream_p7_authority", "zero blockers and no selected teacher",
@@ -872,7 +1123,11 @@ def main() -> int:
     add_contract(contracts, "exact_nine_file_closure", OUTPUTS, OUTPUTS,
                  len(OUTPUTS) == 9)
 
-    upstream_ok = all(bool(row["passed"]) for row in contracts[:7])
+    upstream_ok = (
+        p4_ok and p5_ok and p7_ok and p8_ok
+        and bool(direction_graph["graph_available"])
+        and bool(order_graph["graph_available"])
+    )
     decision, decision_rows = decision_gate(audits, upstream_ok)
     recommended = NEXT_STAGE[decision]
 
@@ -886,8 +1141,12 @@ def main() -> int:
         ],
         "intervention_families": FUTURE_VARIANTS,
         "teacher_candidates": TEACHER_CANDIDATES,
+        "p4_authority": p4_authority,
         "upstream_authority": {
-            "p4_analysis_json": str(args.stage196b2b6p4_analysis_json),
+            "p4_analysis_json": str(args.stage196b2b6p4_analysis_json or ""),
+            "p4_authority": p4_authority,
+            "p6_contract_csv": str(args.stage196b2b6p6_contract_csv),
+            "p7_contract_csv": str(args.stage196b2b6p7_contract_csv),
             "p5_analysis_json": str(args.stage196b2b6p5_analysis_json),
             "p7_analysis_json": str(args.stage196b2b6p7_analysis_json),
             "p8_analysis_json": str(args.stage196b2b6p8_analysis_json),
@@ -938,4 +1197,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

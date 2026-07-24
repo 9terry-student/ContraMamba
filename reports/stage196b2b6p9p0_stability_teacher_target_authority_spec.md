@@ -31,13 +31,20 @@ scripts/analyze_stage196b2b6p9p0_stability_teacher_target_authority.py
 It requires explicit paths for:
 
 ```text
---stage196b2b6p4-analysis-json
 --stage196b2b6p5-analysis-json
 --stage196b2b6p7-analysis-json
+--stage196b2b6p6-contract-csv
+--stage196b2b6p7-contract-csv
 --stage196b2b6p8-analysis-json
 --stage196b2b6p8-gradient-connectivity-csv
 --repo-root
 --output-dir
+```
+
+The original P4 analysis path is optional:
+
+```text
+--stage196b2b6p4-analysis-json
 ```
 
 P8 authority must come from exactly:
@@ -57,6 +64,102 @@ candidate_order_connectivity_passed = true
 ```
 
 No earlier blocked P8 output is valid authority.
+
+## P4 Authority Modes
+
+The analyzer supports exactly two P4 authority modes:
+
+```text
+ORIGINAL_P4_ANALYSIS
+DOWNSTREAM_ATTESTED_P4_MINIMAL_CLOSURE
+```
+
+`ORIGINAL_P4_ANALYSIS` is used only when an explicitly supplied P4 analysis file
+exists and passes the existing exact authority checks.  The original-file
+semantics are unchanged: the decision must be
+`STAGE196B2B6P4_ACTION_RESPONSE_TOPOLOGY_UNSTABLE` and `blocking_reasons` must
+be exactly `[]`.
+
+`DOWNSTREAM_ATTESTED_P4_MINIMAL_CLOSURE` is used only when the original P4
+analysis path is omitted or unavailable.  This mode does not fabricate,
+reconstruct, or recover an original-looking P4 analysis JSON.
+
+### Downstream-Attested P4 Checks
+
+The P7 analysis must close the supplied P6 contract hash through:
+
+```text
+upstream.p6_artifacts["stage196b2b6p6_contract.csv"]
+```
+
+The analyzer computes the actual SHA256 of `--stage196b2b6p6-contract-csv` and
+requires exact equality.  A P6 contract whose hash is not closed by P7 is not
+trusted.
+
+The P6 contract must contain exactly one `p4_decision_closure` row.  Its
+`passed` value must parse as true, and both its `required` and `observed` JSON
+payloads must equal exactly:
+
+```json
+{
+  "blocking_reasons": [],
+  "decision": "STAGE196B2B6P4_ACTION_RESPONSE_TOPOLOGY_UNSTABLE",
+  "recommended_next_stage": "STAGE196B2B6P5_TRAINING_SIDE_RESPONSE_STABILITY_INTERVENTION_DESIGN"
+}
+```
+
+The P6 contract must contain exactly one `p4_zero_failed_contracts` row with
+strict booleans:
+
+```text
+passed = true
+required = true
+observed = true
+```
+
+The P7 analysis must record:
+
+```text
+upstream.p4_decision = STAGE196B2B6P4_ACTION_RESPONSE_TOPOLOGY_UNSTABLE
+```
+
+The P7 contract must contain exactly one `p4_decision_and_zero_blockers` row.
+Its `passed` value must parse as true, and both its `required` and `observed`
+JSON payloads must equal exactly:
+
+```json
+{
+  "blocking_reasons": [],
+  "decision": "STAGE196B2B6P4_ACTION_RESPONSE_TOPOLOGY_UNSTABLE"
+}
+```
+
+### Downstream-Attested Scope
+
+The downstream-attested mode establishes only:
+
+```text
+P4 decision identity
+zero P4 blockers
+P4 recommended next-stage identity
+zero failed P4 contracts
+```
+
+It does not reconstruct or authorize:
+
+```text
+original P4 numerical tables
+original P4 row-level data
+original P4 source-file hashes
+original P4 output-directory identity
+original P4 creation timestamp
+byte-identical original P4 content
+```
+
+A valid downstream-attested minimal closure satisfies the existing
+`upstream_p4_authority` gate.  It must not create a blocker merely because the
+original P4 artifact is absent.  If downstream attestation fails, the decision is
+`STAGE196B2B6P9P0_BLOCKED_UPSTREAM_AUTHORITY`.
 
 ## Teacher Candidates
 
@@ -234,6 +337,15 @@ The contract output includes at minimum:
 
 ```text
 upstream_p4_authority
+p4_authority_mode_valid
+p4_original_or_attested_authority_available
+p4_downstream_p6_contract_hash_closure
+p4_downstream_p6_decision_closure
+p4_downstream_p6_zero_failed_contracts
+p4_downstream_p7_analysis_concurrence
+p4_downstream_p7_contract_concurrence
+p4_downstream_attestation_scope_restricted
+p4_original_artifact_not_fabricated
 upstream_p5_authority
 upstream_p7_authority
 upstream_p8_final_authority
