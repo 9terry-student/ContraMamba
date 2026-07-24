@@ -108,6 +108,19 @@ def contract_row(name: str, passed: bool, evidence: str) -> dict[str, Any]:
     return {"contract": name, "passed": bool(passed), "evidence": evidence}
 
 
+def validate_audit_rows(collection_name: str, rows: list[dict[str, Any]]) -> None:
+    for index, row in enumerate(rows):
+        if "passed" not in row:
+            raise ValueError(
+                f"{collection_name}[{index}] is missing required boolean 'passed'"
+            )
+        if type(row["passed"]) is not bool:
+            raise ValueError(
+                f"{collection_name}[{index}] has non-boolean 'passed': "
+                f"{row['passed']!r}"
+            )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--stage196b2b6p9p1-analysis-json", required=True)
@@ -150,10 +163,10 @@ def main(argv: list[str] | None = None) -> int:
     order_candidates = {row.get("teacher_candidate") for row in order}
 
     surface_rows = [
-        {"file": str(trainer_path), "role": "trainer_cli_and_hooks", "present": trainer_path.exists()},
-        {"file": str(observer_path), "role": "trainer_owned_observer", "present": observer_path.exists()},
-        {"file": str(analyzer_path), "role": "static_source_analyzer", "present": analyzer_path.exists()},
-        {"file": str(spec_path), "role": "implementation_spec", "present": spec_path.exists()},
+        {"file": str(trainer_path), "role": "trainer_cli_and_hooks", "present": trainer_path.exists(), "passed": trainer_path.exists()},
+        {"file": str(observer_path), "role": "trainer_owned_observer", "present": observer_path.exists(), "passed": observer_path.exists()},
+        {"file": str(analyzer_path), "role": "static_source_analyzer", "present": analyzer_path.exists(), "passed": analyzer_path.exists()},
+        {"file": str(spec_path), "role": "implementation_spec", "present": spec_path.exists(), "passed": spec_path.exists()},
     ]
     cli_rows = [
         {"flag": "--teacher-observer-mode", "passed": contains(trainer, "--teacher-observer-mode") and "default=\"off\"" in trainer},
@@ -220,6 +233,17 @@ def main(argv: list[str] | None = None) -> int:
     }
     contract_rows = [contract_row(name, bool(contracts.get(name)), "static_source_and_authority_scan") for name in CONTRACTS]
 
+    readiness_collections = {
+        "surface_rows": surface_rows,
+        "cli_rows": cli_rows,
+        "lifecycle_rows": lifecycle_rows,
+        "baseline_rows": baseline_rows,
+        "checkpoint_rows": checkpoint_rows,
+        "contract_rows": contract_rows,
+    }
+    for collection_name, rows in readiness_collections.items():
+        validate_audit_rows(collection_name, rows)
+
     core_ok = all(row["passed"] for row in surface_rows) and all(row["passed"] for row in cli_rows) and all(row["passed"] for row in lifecycle_rows)
     candidate_ok = contracts["exact_three_candidate_set"] and contracts["exact_two_target_families"]
     contract_ok = all(row["passed"] for row in contract_rows)
@@ -257,7 +281,7 @@ def main(argv: list[str] | None = None) -> int:
         "recommended_next_stages": NEXT_STAGES,
     }
 
-    write_csv(out / "stage196b2b6p9p2_implementation_surface.csv", surface_rows, ["file", "role", "present"])
+    write_csv(out / "stage196b2b6p9p2_implementation_surface.csv", surface_rows, ["file", "role", "present", "passed"])
     write_csv(out / "stage196b2b6p9p2_cli_contract.csv", cli_rows, ["flag", "passed"])
     write_csv(out / "stage196b2b6p9p2_lifecycle_hook_audit.csv", lifecycle_rows, ["hook", "passed"])
     write_csv(out / "stage196b2b6p9p2_baseline_invariance_audit.csv", baseline_rows, ["invariant", "passed"])
@@ -280,4 +304,6 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
 
