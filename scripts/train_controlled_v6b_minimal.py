@@ -9120,7 +9120,8 @@ def build_parser() -> argparse.ArgumentParser:
             "future stability stage. This captures tensors only: it adds no "
             "replay, loss, backward, optimizer, scheduler, or selection change."
         ),
-    )    parser.add_argument(
+    )
+    parser.add_argument(
         "--teacher-observer-mode",
         choices=("off", "previous_step", "previous_epoch", "ema"),
         default="off",
@@ -25825,6 +25826,7 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
 
 
 
