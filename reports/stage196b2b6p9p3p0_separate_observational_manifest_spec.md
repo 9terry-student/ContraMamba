@@ -1,4 +1,4 @@
-# Stage196-B2-B6P9-P3-P0 Separate Observational Manifest Spec
+﻿# Stage196-B2-B6P9-P3-P0 Separate Observational Manifest Spec
 
 ## Authority
 
@@ -23,20 +23,49 @@ inspects `scripts/train_controlled_v6b_minimal.py` and
 
 ## Base Configuration
 
-The builder searches historical JSON authority records under `reports`,
-`outputs`, `results`, and `experiments` for Stage195/Stage196 training-lineage
-run provenance, summaries, command records, manifests, and trainer
-configuration artifacts. It accepts exactly one normalized full-training
-configuration after replacing only seed, output, checkpoint, and observer
-fields. If no unique source-backed configuration is found, it fails closed with:
+The builder uses a deterministic authority hierarchy and does not accept
+filenames alone as configuration evidence:
 
-`STAGE196B2B6P9P3P0_BLOCKED_BASE_CONFIG_AUTHORITY`
+1. exact tracked resolved command and parsed arguments for the seed-183 primary
+   Stage196 lineage:
+   `reports/stage196b2b3p0_epoch_composer_input_observability_runs_retry_20260722_104834/seed183_joint/trajectory/run_provenance.json`;
+2. tracked P8/P7/P6 manifest, checkpoint, and design metadata for the same
+   mechanistic lineage;
+3. field-level consensus across tracked seed183/184/185 Stage196 primary-arm
+   sources after canonical normalization, only when every required field is
+   present and the primary arm is independently resolved;
+4. otherwise fail closed with
+   `STAGE196B2B6P9P3P0_BLOCKED_BASE_CONFIG_AUTHORITY`.
 
-The accepted base must include or resolve data path, backbone, model name,
-device, seed, epochs, batch sizing when configured, learning rates, weight
-decay when configured, architecture mode, router mode, evidence interface,
-training scope where present, checkpoint selection behavior, mixed precision
-behavior where present, and active Stage195/Stage196-relevant flags.
+The primary arm is resolved mechanistically, not by performance. `joint` is
+accepted only when tracked P7/P8 authority establishes it as the unrestricted
+native trainable recipient path and establishes `frame_local_only` as the
+separately trained donor/restricted contrast. The authority label is:
+
+`PRIMARY_UNRESTRICTED_JOINT_LINEAGE`
+
+The accepted base must source or explicitly normalize data path, backbone,
+model name, device, seed, epochs, train/eval batch sizing, learning rates,
+weight decay or its tracked absence, architecture mode, router mode, evidence
+interface, training scope, checkpoint-selection behavior, mixed-precision
+behavior, active Stage195/Stage196 lineage flags, external-evaluation state,
+and bridge-training state. Required closures include `backbone = mamba`,
+`model_name = state-spaces/mamba-130m-hf`, `device = cuda`, `seed = 183`, and
+external evaluation disabled.
+
+The P9-P3 frozen run seed is a manifest overlay and is not used by itself to
+prove base-configuration authority. In the tracked Stage196 lineage, seed 183 is
+present in the exact primary command and is corroborated by joint seed183/184/185
+consensus showing seed as the only primary-arm seed-varying field after run paths
+are removed.
+
+The base authority JSON records the stage, decision, recommended next stage,
+blocking reasons, failure, selected base source, selected primary arm, primary-arm
+authority, base configuration fingerprint, resolved base configuration, field
+provenance, considered and rejected candidate sources, normalizations, unresolved
+fields, and conflicts in both ready and blocked states. Manifest contracts require
+strict boolean `passed` values; any internal non-boolean contract value is a schema
+failure that closes the builder with a controlled blocked decision.
 
 ## Frozen Run Set
 
@@ -241,3 +270,7 @@ The analyzer writes exactly:
 - `stage196b2b6p9p3_degeneracy_audit.csv`
 - `stage196b2b6p9p3_decision_gate.csv`
 - `stage196b2b6p9p3_contract.csv`
+
+
+
+
