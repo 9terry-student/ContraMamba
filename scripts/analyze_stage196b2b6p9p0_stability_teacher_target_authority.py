@@ -1393,7 +1393,7 @@ def main() -> int:
     add_contract(contracts, "exact_teacher_candidate_set", TEACHER_CANDIDATES,
                  tuple(row["teacher_candidate"] for row in audits),
                  tuple(row["teacher_candidate"] for row in audits) == TEACHER_CANDIDATES)
-    add_contract(contracts, "direction_order_independent_evaluation", True, True)
+    add_contract(contracts, "direction_order_independent_evaluation", True, True, True)
     add_contract(contracts, "no_combined_first_variant", FUTURE_VARIANTS,
                  FUTURE_VARIANTS, "combined" not in FUTURE_VARIANTS)
     add_contract(contracts, "no_clean_dev_label_targeting", True,
@@ -1402,22 +1402,31 @@ def main() -> int:
     add_contract(contracts, "no_recovery_harm_label_targeting", True,
                  all(row["depends_on_recovery_harm_membership"] is False for row in portability),
                  all(row["depends_on_recovery_harm_membership"] is False for row in portability))
-    add_contract(contracts, "no_lexical_candidate_order", True, True)
+    add_contract(contracts, "no_lexical_candidate_order", True, True, True)
+    exact_ties_ignored = all("ignored" in row["exact_tie_policy"] for row in audits)
     add_contract(contracts, "exact_ties_ignored", True,
-                 all("ignored" in row["exact_tie_policy"] for row in audits))
+                 exact_ties_ignored, exact_ties_ignored)
+    teacher_stop_gradient_required = all("stop-gradient" in row["gradient_stop_policy"] for row in audits)
     add_contract(contracts, "teacher_stop_gradient_required", True,
-                 all("stop-gradient" in row["gradient_stop_policy"] for row in audits))
+                 teacher_stop_gradient_required, teacher_stop_gradient_required)
+    fixed_seed183_checkpoint_not_assumed_portable = any(
+        row["teacher_candidate"] == "FIXED_RECONSTRUCTED_CHECKPOINT"
+        and row["requires_reconstructed_seed183_checkpoint"] is True
+        and row["status"] == "BLOCKED"
+        for row in portability
+    )
     add_contract(contracts, "fixed_seed183_checkpoint_not_assumed_portable", True,
-                 any(row["teacher_candidate"] == "FIXED_RECONSTRUCTED_CHECKPOINT"
-                     and row["requires_reconstructed_seed183_checkpoint"] is True
-                     and row["status"] == "BLOCKED"
-                     for row in portability))
+                 fixed_seed183_checkpoint_not_assumed_portable,
+                 fixed_seed183_checkpoint_not_assumed_portable)
+    ema_not_assumed_preexisting = not source_facts["ema_symbols_present"]
     add_contract(contracts, "ema_not_assumed_preexisting", True,
-                 not source_facts["ema_symbols_present"])
+                 ema_not_assumed_preexisting, ema_not_assumed_preexisting)
+    baseline_default_off_requirement = "stage196b2b6p8_enable_full_trainable_path_replay_api" in trainer_text
     add_contract(contracts, "baseline_default_off_requirement", True,
-                 "stage196b2b6p8_enable_full_trainable_path_replay_api" in trainer_text)
+                 baseline_default_off_requirement,
+                 baseline_default_off_requirement)
     add_contract(contracts, "zero_model_or_trainer_modification", True,
-                 "static analyzer only; no model/trainer writes")
+                 "static analyzer only; no model/trainer writes", True)
     add_contract(contracts, "exact_nine_file_closure", OUTPUTS, OUTPUTS,
                  len(OUTPUTS) == 9)
 
