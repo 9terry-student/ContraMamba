@@ -1,0 +1,8 @@
+run_id,observer_mode,teacher_state_initialized,read_count,update_count,successful_optimizer_step_count,skipped_optimizer_step_count,decay,effective_teacher_age,lifecycle_closed
+control_off_none,off,,,,,,,,True
+previous_step_direction,previous_step,True,20,20,,,,,True
+previous_step_candidate_order,previous_step,True,20,20,,,,,True
+previous_epoch_direction,previous_epoch,True,20,20,,,,,True
+previous_epoch_candidate_order,previous_epoch,True,20,20,,,,,True
+ema_direction,ema,True,20,20,,,0.99,20,True
+ema_candidate_order,ema,True,20,20,,,0.99,20,True

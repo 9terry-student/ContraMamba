@@ -1,0 +1,79 @@
+run_id,field,classification,evidence
+previous_step_direction,selected_epoch,EXACT_MATCH,exact discrete/hash match
+previous_step_direction,final_epoch,EXACT_MATCH,exact discrete/hash match
+previous_step_direction,best_epoch,EXACT_MATCH,exact discrete/hash match
+previous_step_direction,final_model_state_dict_sha256,UNAVAILABLE,field absent in one or both runs
+previous_step_direction,selected_model_state_dict_sha256,UNAVAILABLE,field absent in one or both runs
+previous_step_direction,checkpoint_model_state_fingerprint,UNAVAILABLE,field absent in one or both runs
+previous_step_direction,training_prediction_fingerprint,EXACT_MATCH,exact discrete/hash match
+previous_step_direction,clean_dev_prediction_fingerprint,EXACT_MATCH,exact discrete/hash match
+previous_step_direction,clean_dev_metric_vector,EXACT_MATCH,canonical JSON match
+previous_step_direction,training_loss_history,UNAVAILABLE,field absent in one or both runs
+previous_step_direction,dev_loss_history,UNAVAILABLE,field absent in one or both runs
+previous_step_direction,optimizer_successful_step_count,UNAVAILABLE,field absent in one or both runs
+previous_step_direction,optimizer_skipped_step_count,UNAVAILABLE,field absent in one or both runs
+previous_step_candidate_order,selected_epoch,EXACT_MATCH,exact discrete/hash match
+previous_step_candidate_order,final_epoch,EXACT_MATCH,exact discrete/hash match
+previous_step_candidate_order,best_epoch,EXACT_MATCH,exact discrete/hash match
+previous_step_candidate_order,final_model_state_dict_sha256,UNAVAILABLE,field absent in one or both runs
+previous_step_candidate_order,selected_model_state_dict_sha256,UNAVAILABLE,field absent in one or both runs
+previous_step_candidate_order,checkpoint_model_state_fingerprint,UNAVAILABLE,field absent in one or both runs
+previous_step_candidate_order,training_prediction_fingerprint,EXACT_MATCH,exact discrete/hash match
+previous_step_candidate_order,clean_dev_prediction_fingerprint,EXACT_MATCH,exact discrete/hash match
+previous_step_candidate_order,clean_dev_metric_vector,EXACT_MATCH,canonical JSON match
+previous_step_candidate_order,training_loss_history,UNAVAILABLE,field absent in one or both runs
+previous_step_candidate_order,dev_loss_history,UNAVAILABLE,field absent in one or both runs
+previous_step_candidate_order,optimizer_successful_step_count,UNAVAILABLE,field absent in one or both runs
+previous_step_candidate_order,optimizer_skipped_step_count,UNAVAILABLE,field absent in one or both runs
+previous_epoch_direction,selected_epoch,EXACT_MATCH,exact discrete/hash match
+previous_epoch_direction,final_epoch,EXACT_MATCH,exact discrete/hash match
+previous_epoch_direction,best_epoch,EXACT_MATCH,exact discrete/hash match
+previous_epoch_direction,final_model_state_dict_sha256,UNAVAILABLE,field absent in one or both runs
+previous_epoch_direction,selected_model_state_dict_sha256,UNAVAILABLE,field absent in one or both runs
+previous_epoch_direction,checkpoint_model_state_fingerprint,UNAVAILABLE,field absent in one or both runs
+previous_epoch_direction,training_prediction_fingerprint,EXACT_MATCH,exact discrete/hash match
+previous_epoch_direction,clean_dev_prediction_fingerprint,EXACT_MATCH,exact discrete/hash match
+previous_epoch_direction,clean_dev_metric_vector,EXACT_MATCH,canonical JSON match
+previous_epoch_direction,training_loss_history,UNAVAILABLE,field absent in one or both runs
+previous_epoch_direction,dev_loss_history,UNAVAILABLE,field absent in one or both runs
+previous_epoch_direction,optimizer_successful_step_count,UNAVAILABLE,field absent in one or both runs
+previous_epoch_direction,optimizer_skipped_step_count,UNAVAILABLE,field absent in one or both runs
+previous_epoch_candidate_order,selected_epoch,EXACT_MATCH,exact discrete/hash match
+previous_epoch_candidate_order,final_epoch,EXACT_MATCH,exact discrete/hash match
+previous_epoch_candidate_order,best_epoch,EXACT_MATCH,exact discrete/hash match
+previous_epoch_candidate_order,final_model_state_dict_sha256,UNAVAILABLE,field absent in one or both runs
+previous_epoch_candidate_order,selected_model_state_dict_sha256,UNAVAILABLE,field absent in one or both runs
+previous_epoch_candidate_order,checkpoint_model_state_fingerprint,UNAVAILABLE,field absent in one or both runs
+previous_epoch_candidate_order,training_prediction_fingerprint,EXACT_MATCH,exact discrete/hash match
+previous_epoch_candidate_order,clean_dev_prediction_fingerprint,EXACT_MATCH,exact discrete/hash match
+previous_epoch_candidate_order,clean_dev_metric_vector,EXACT_MATCH,canonical JSON match
+previous_epoch_candidate_order,training_loss_history,UNAVAILABLE,field absent in one or both runs
+previous_epoch_candidate_order,dev_loss_history,UNAVAILABLE,field absent in one or both runs
+previous_epoch_candidate_order,optimizer_successful_step_count,UNAVAILABLE,field absent in one or both runs
+previous_epoch_candidate_order,optimizer_skipped_step_count,UNAVAILABLE,field absent in one or both runs
+ema_direction,selected_epoch,EXACT_MATCH,exact discrete/hash match
+ema_direction,final_epoch,EXACT_MATCH,exact discrete/hash match
+ema_direction,best_epoch,EXACT_MATCH,exact discrete/hash match
+ema_direction,final_model_state_dict_sha256,UNAVAILABLE,field absent in one or both runs
+ema_direction,selected_model_state_dict_sha256,UNAVAILABLE,field absent in one or both runs
+ema_direction,checkpoint_model_state_fingerprint,UNAVAILABLE,field absent in one or both runs
+ema_direction,training_prediction_fingerprint,EXACT_MATCH,exact discrete/hash match
+ema_direction,clean_dev_prediction_fingerprint,EXACT_MATCH,exact discrete/hash match
+ema_direction,clean_dev_metric_vector,EXACT_MATCH,canonical JSON match
+ema_direction,training_loss_history,UNAVAILABLE,field absent in one or both runs
+ema_direction,dev_loss_history,UNAVAILABLE,field absent in one or both runs
+ema_direction,optimizer_successful_step_count,UNAVAILABLE,field absent in one or both runs
+ema_direction,optimizer_skipped_step_count,UNAVAILABLE,field absent in one or both runs
+ema_candidate_order,selected_epoch,EXACT_MATCH,exact discrete/hash match
+ema_candidate_order,final_epoch,EXACT_MATCH,exact discrete/hash match
+ema_candidate_order,best_epoch,EXACT_MATCH,exact discrete/hash match
+ema_candidate_order,final_model_state_dict_sha256,UNAVAILABLE,field absent in one or both runs
+ema_candidate_order,selected_model_state_dict_sha256,UNAVAILABLE,field absent in one or both runs
+ema_candidate_order,checkpoint_model_state_fingerprint,UNAVAILABLE,field absent in one or both runs
+ema_candidate_order,training_prediction_fingerprint,EXACT_MATCH,exact discrete/hash match
+ema_candidate_order,clean_dev_prediction_fingerprint,EXACT_MATCH,exact discrete/hash match
+ema_candidate_order,clean_dev_metric_vector,EXACT_MATCH,canonical JSON match
+ema_candidate_order,training_loss_history,UNAVAILABLE,field absent in one or both runs
+ema_candidate_order,dev_loss_history,UNAVAILABLE,field absent in one or both runs
+ema_candidate_order,optimizer_successful_step_count,UNAVAILABLE,field absent in one or both runs
+ema_candidate_order,optimizer_skipped_step_count,UNAVAILABLE,field absent in one or both runs

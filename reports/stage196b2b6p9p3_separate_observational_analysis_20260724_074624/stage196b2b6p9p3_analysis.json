@@ -1,0 +1,88 @@
+{
+  "absolute_tolerance": 1e-08,
+  "blocking_reasons": [],
+  "checkpoint_namespace_evidence": [
+    {
+      "checkpoint_observer_state_exact_key_count": 0,
+      "checkpoint_observer_state_presence": "ABSENT",
+      "run_id": "control_off_none"
+    },
+    {
+      "checkpoint_observer_state_exact_key_count": 1,
+      "checkpoint_observer_state_presence": "ONE",
+      "run_id": "previous_step_direction"
+    },
+    {
+      "checkpoint_observer_state_exact_key_count": 1,
+      "checkpoint_observer_state_presence": "ONE",
+      "run_id": "previous_step_candidate_order"
+    },
+    {
+      "checkpoint_observer_state_exact_key_count": 1,
+      "checkpoint_observer_state_presence": "ONE",
+      "run_id": "previous_epoch_direction"
+    },
+    {
+      "checkpoint_observer_state_exact_key_count": 1,
+      "checkpoint_observer_state_presence": "ONE",
+      "run_id": "previous_epoch_candidate_order"
+    },
+    {
+      "checkpoint_observer_state_exact_key_count": 1,
+      "checkpoint_observer_state_presence": "ONE",
+      "run_id": "ema_direction"
+    },
+    {
+      "checkpoint_observer_state_exact_key_count": 1,
+      "checkpoint_observer_state_presence": "ONE",
+      "run_id": "ema_candidate_order"
+    }
+  ],
+  "contracts": {
+    "all_returncodes_zero": true,
+    "base_config_fingerprint_identical": true,
+    "control_checkpoint_no_observer_state": true,
+    "control_zero_sidecars": true,
+    "direction_metric_closure": true,
+    "ema_lifecycle_closed": true,
+    "enabled_checkpoint_one_observer_state": true,
+    "enabled_exact_five_sidecars": true,
+    "exact_seven_runs_complete": true,
+    "exact_ten_analysis_outputs": true,
+    "exact_ties_excluded": true,
+    "gradient_fields_unavailable": true,
+    "loss_fields_unavailable": true,
+    "manifest_exact_decision": true,
+    "manifest_fingerprint_match": true,
+    "no_candidate_ranked_by_performance": true,
+    "no_teacher_selected": true,
+    "order_metric_closure": true,
+    "previous_epoch_lifecycle_closed": true,
+    "previous_step_lifecycle_closed": true,
+    "student_trajectory_exact_or_tolerance_match": true
+  },
+  "decision": "STAGE196B2B6P9P3_SEPARATE_OBSERVABILITY_COMPLETE",
+  "decision_hierarchy": [
+    "STAGE196B2B6P9P3_BLOCKED_MANIFEST_AUTHORITY",
+    "STAGE196B2B6P9P3_INCOMPLETE_RUN_SET",
+    "STAGE196B2B6P9P3_RUNTIME_CONTRACT_FAILURE",
+    "STAGE196B2B6P9P3_STUDENT_TRAJECTORY_UNSAFE",
+    "STAGE196B2B6P9P3_ALL_TARGETS_DEGENERATE",
+    "STAGE196B2B6P9P3_PARTIAL_OBSERVABILITY",
+    "STAGE196B2B6P9P3_SEPARATE_OBSERVABILITY_COMPLETE"
+  ],
+  "gradient_targets": {
+    "available": false,
+    "reason": "NO_LOSS_OR_BACKWARD_IN_OBSERVATIONAL_STAGE"
+  },
+  "loss_targets": {
+    "available": false,
+    "reason": "NO_LOSS_OR_BACKWARD_IN_OBSERVATIONAL_STAGE"
+  },
+  "nondegenerate_candidate_order_candidate_present": true,
+  "nondegenerate_direction_candidate_present": true,
+  "recommended_next_stage": "STAGE196B2B6P9P4_SEPARATE_TEACHER_SUITABILITY_ANALYSIS",
+  "relative_tolerance": 1e-06,
+  "stage": "Stage196-B2-B6P9-P3",
+  "upstream_p9p2_decision": "STAGE196B2B6P9P2_SEPARATE_IMPLEMENTATIONS_READY"
+}

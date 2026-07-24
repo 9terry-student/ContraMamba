@@ -1,0 +1,7 @@
+run_id,target_family,degenerate,zero_active,one_sided,all_tie,finding_not_runtime_failure
+previous_step_direction,direction,True,True,False,True,True
+previous_step_candidate_order,candidate_order,True,True,False,True,True
+previous_epoch_direction,direction,True,True,False,True,True
+previous_epoch_candidate_order,candidate_order,True,True,False,True,True
+ema_direction,direction,False,False,False,False,True
+ema_candidate_order,candidate_order,False,False,False,False,True

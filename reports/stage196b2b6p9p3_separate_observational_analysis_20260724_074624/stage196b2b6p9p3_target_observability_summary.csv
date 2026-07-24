@@ -1,0 +1,7 @@
+run_id,target_family,metric_fields_present,metric_closure_passed,total,ties,positive,negative,active,agreement_count,disagreement_count
+previous_step_direction,direction,True,True,1209600,1209600,0,0,0,0,0
+previous_step_candidate_order,candidate_order,True,True,1209600,1209600,0,0,0,0,0
+previous_epoch_direction,direction,True,True,1209600,1209600,0,0,0,0,0
+previous_epoch_candidate_order,candidate_order,True,True,1209600,1209600,0,0,0,0,0
+ema_direction,direction,True,True,1209600,60480,589455,559665,1149120,133686,1015434
+ema_candidate_order,candidate_order,True,True,1209600,60481,611353,537766,1149119,168509,980602
