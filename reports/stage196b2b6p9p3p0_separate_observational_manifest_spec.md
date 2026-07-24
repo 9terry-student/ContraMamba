@@ -70,6 +70,21 @@ eval-train batch size, gradient accumulation steps, and effective batch size. Th
 normalized `batch_size` field preserves these source-backed semantics and remains
 blocked as `batch_size_authority_missing` if they cannot be recovered.
 
+Active Stage195/Stage196 lineage flags are represented by one canonical snake-case
+map sorted by key. The map is built from the union of exact primary command
+tokens, primary parsed arguments, resolved runtime configuration, and explicit
+source-backed lineage normalizations. A flag is included only when its active
+value is source-backed; inactive, false, null, absent, observer-path, run-path,
+and unrelated diagnostic values are excluded. The current authority closes at
+least `stage196b1_framegate_gradient_ownership_observability`,
+`stage196b2p0_epoch_channel_observability`,
+`stage196b2b3p0_export_epoch_composer_inputs`, and
+`stage196b2b6p8_enable_full_trainable_path_replay_api`, with the P8 replay API
+entry retaining `P8_FULL_TRAINABLE_PATH_REPLAY_COMPLETE` authority. The base CLI
+is reconstructed from individual normalized arguments using trainer CLI spelling;
+the aggregate active-flag map is included for provenance and fingerprinting but
+is not emitted as a trainer switch.
+
 The base authority JSON records the stage, decision, recommended next stage,
 blocking reasons, failure, selected base source, selected primary arm, primary-arm
 authority, seed authority, base configuration fingerprint, resolved base
@@ -284,6 +299,7 @@ The analyzer writes exactly:
 - `stage196b2b6p9p3_degeneracy_audit.csv`
 - `stage196b2b6p9p3_decision_gate.csv`
 - `stage196b2b6p9p3_contract.csv`
+
 
 
 

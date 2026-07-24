@@ -348,24 +348,56 @@ def build_base_from_primary(repo_root: Path) -> dict[str, Any]:
     }
     field_provenance["optimizer_configuration"] = {"source": "primary_run_provenance.resolved_runtime_config", "value": base["optimizer_configuration"]}
 
-    active_stage_flags: dict[str, Any] = {}
-    for key, value in sorted(parsed_args.items()):
-        if not key.startswith(("stage195", "stage196")):
-            continue
-        if key in base or key in RUN_PATH_KEYS or key in OBSERVER_KEYS:
-            continue
-        if value in (None, False, [], ""):
-            continue
-        if command_contains_flag(command_string, "--" + key.replace("_", "-")):
-            base[key] = value
-            active_stage_flags[key] = value
-            field_provenance[key] = {"source": "primary_exact_command_and_parsed_args", "value": value}
-    base["active_stage195_stage196_flags"] = active_stage_flags
-    field_provenance["active_stage195_stage196_flags"] = {"source": "primary_exact_command_and_parsed_args", "value": active_stage_flags}
-
     base["stage196b2b6p8_enable_full_trainable_path_replay_api"] = True
-    field_provenance["stage196b2b6p8_enable_full_trainable_path_replay_api"] = {"source": str(P8_ANALYSIS), "value": True, "reason": "P8 full trainable-path replay implementation is required for P9 teacher observer replay-state geometry."}
+    field_provenance["stage196b2b6p8_enable_full_trainable_path_replay_api"] = {"source": str(P8_ANALYSIS), "value": True, "authority": "P8_FULL_TRAINABLE_PATH_REPLAY_COMPLETE", "reason": "P8 full trainable-path replay implementation is required for P9 teacher observer replay-state geometry."}
     normalizations.append({"field": "stage196b2b6p8_enable_full_trainable_path_replay_api", "value": True, "authority": "P8_FULL_TRAINABLE_PATH_REPLAY_COMPLETE"})
+
+    active_stage_flags: dict[str, Any] = {}
+    active_stage_flag_provenance: dict[str, Any] = {}
+
+    def is_active_stage_value(value: Any) -> bool:
+        return value not in (None, False, [], "")
+
+    def add_active_stage_flag(key: str, value: Any, provenance: dict[str, Any]) -> None:
+        if not key.startswith(("stage195", "stage196")):
+            return
+        if key in RUN_PATH_KEYS or key in OBSERVER_KEYS:
+            return
+        if not is_active_stage_value(value):
+            return
+        active_stage_flags[key] = value
+        active_stage_flag_provenance[key] = provenance
+
+    for key, value in sorted(parsed_args.items()):
+        if key in base and base[key] != value:
+            source_value = base[key]
+        else:
+            source_value = value
+        if command_contains_flag(command_string, "--" + key.replace("_", "-")):
+            add_active_stage_flag(key, source_value, {"source": "primary_exact_command_and_parsed_args", "value": source_value})
+
+    for key, value in sorted((resolved_runtime or {}).items()):
+        add_active_stage_flag(key, value, {"source": "primary_run_provenance.resolved_runtime_config", "value": value})
+
+    for normalization in normalizations:
+        key = normalization.get("field")
+        if isinstance(key, str):
+            add_active_stage_flag(key, normalization.get("value"), {
+                "source": "source_backed_lineage_normalization",
+                "value": normalization.get("value"),
+                "authority": normalization.get("authority"),
+                "normalization_applied": normalization.get("normalization_applied", True),
+            })
+
+    active_stage_flags = {key: active_stage_flags[key] for key in sorted(active_stage_flags)}
+    for key in active_stage_flags:
+        field_provenance[key] = active_stage_flag_provenance[key]
+    base["active_stage195_stage196_flags"] = active_stage_flags
+    field_provenance["active_stage195_stage196_flags"] = {
+        "source": "primary_exact_command_tokens_primary_parsed_args_resolved_runtime_config_and_source_backed_lineage_normalizations",
+        "value": active_stage_flags,
+        "entries": {key: active_stage_flag_provenance[key] for key in sorted(active_stage_flag_provenance) if key in active_stage_flags},
+    }
 
     bridge_modes = {name: parsed_args.get(name) for name in ("stage57_bridge_train_mode", "stage66_bridge_train_mode", "stage75_bridge_train_mode", "stage80a_bridge_train_mode")}
     bridge_paths = {name: parsed_args.get(name) for name in ("stage57_bridge_train_jsonl", "stage66_bridge_train_jsonl", "stage75_bridge_train_jsonl", "stage80a_bridge_train_jsonl")}
@@ -564,6 +596,17 @@ def validate_required_base_fields(base: dict[str, Any]) -> list[str]:
     optimizer = base.get("optimizer_configuration")
     if not isinstance(optimizer, dict) or optimizer.get("optimizer") is None:
         unresolved.append("optimizer_configuration.optimizer")
+    active_flags = base.get("active_stage195_stage196_flags")
+    if isinstance(active_flags, dict):
+        for key, value in base.items():
+            if key == "active_stage195_stage196_flags":
+                continue
+            if not key.startswith(("stage195", "stage196")):
+                continue
+            if key in RUN_PATH_KEYS or key in OBSERVER_KEYS:
+                continue
+            if value not in (None, False, [], "") and key not in active_flags:
+                unresolved.append(f"active_stage195_stage196_flags.{key}")
     return sorted(set(unresolved))
 
 def validate_contract_schema(contracts: list[tuple[str, bool]]) -> tuple[bool, list[str]]:
@@ -704,6 +747,8 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
 
 
 
