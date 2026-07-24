@@ -69,8 +69,8 @@ P7_SPEC = Path("reports/stage196b2b6p7_full_counterfactual_forward_design_spec.m
 P6_SPEC = Path("reports/stage196b2b6p6_minimal_gradient_path_instrumentation_spec.md")
 REQUIRED_BASE_KEYS = {
     "data", "backbone", "model_name", "device", "seed", "epochs",
-    "train_batch_size", "eval_batch_size", "lr", "head_lr", "encoder_lr",
-    "weight_decay", "architecture", "split_seed", "vnext_router_mode", "vnext_evidence_interface",
+    "batch_size", "learning_rates", "optimizer_configuration",
+    "architecture", "split_seed", "vnext_router_mode", "vnext_evidence_interface",
     "training_scope", "checkpoint_selection_behavior", "mixed_precision_behavior",
     "external_evaluation_state", "bridge_training_state", "select_metric",
     "freeze_encoder", "frame_downstream_gradient_mode", "active_stage195_stage196_flags",
@@ -185,36 +185,49 @@ def resolve_primary_arm(p8: dict[str, Any], p7_text: str) -> tuple[str | None, s
     return None, None, conflicts, unresolved, rejected
 
 
-def sibling_seed_normalization(repo_root: Path) -> tuple[bool, list[dict[str, Any]], list[dict[str, Any]], list[str]]:
+def resolve_seed_authority(repo_root: Path, selected_source: Path, selected_seed: Any, selected_arm: str | None) -> tuple[bool, str | None, list[dict[str, Any]], list[dict[str, Any]], list[str], list[dict[str, Any]]]:
     considered: list[dict[str, Any]] = []
     rejected: list[dict[str, Any]] = []
     conflicts: list[str] = []
+    normalizations: list[dict[str, Any]] = []
     comparable: list[dict[str, Any]] = []
     for path in sorted(repo_root.glob(SIBLING_RUN_PROVENANCE_GLOB)):
         try:
             payload = read_json(path)
         except Exception as exc:  # noqa: BLE001
-            rejected.append(source_record(path, accepted=False, reason=f"unreadable_json:{exc}", tier="sibling_seed_consensus"))
+            rejected.append(source_record(path, accepted=False, reason=f"unreadable_json:{exc}", tier="seed_authority"))
             continue
         parsed = payload.get("parsed_args")
         if not isinstance(parsed, dict):
-            rejected.append(source_record(path, accepted=False, reason="missing parsed_args", tier="sibling_seed_consensus"))
+            rejected.append(source_record(path, accepted=False, reason="missing parsed_args", tier="seed_authority"))
             continue
         arm = parsed.get("frame_downstream_gradient_mode")
         if arm != PRIMARY_ARM:
-            rejected.append(source_record(path, accepted=False, reason="non_primary_arm_restricted_contrast", tier="sibling_seed_consensus"))
+            rejected.append(source_record(path, accepted=False, reason="non_primary_arm_restricted_contrast", tier="seed_authority"))
             continue
         stripped = {key: value for key, value in parsed.items() if key not in {"seed", *RUN_PATH_KEYS}}
         comparable.append({"path": str(path), "seed": parsed.get("seed"), "fingerprint": sha256_json(stripped)})
-        considered.append(source_record(path, accepted=True, reason="primary_arm_seed_consensus_candidate", tier="sibling_seed_consensus"))
+        considered.append(source_record(path, accepted=True, reason="accepted_primary_arm_seed_authority_candidate", tier="seed_authority"))
+
+    selected_path = str(repo_root / selected_source)
+    accepted_paths = [item["path"] for item in comparable]
+    if len(comparable) == 1:
+        only = comparable[0]
+        if only["path"] == selected_path and selected_seed == 183 and selected_arm == PRIMARY_ARM:
+            normalizations.append({"field": "seed", "value": 183, "authority": "EXACT_PRIMARY_SOURCE_SEED_183", "normalization_applied": False})
+            return True, "EXACT_PRIMARY_SOURCE_SEED_183", considered, rejected, conflicts, normalizations
+        conflicts.append(f"singleton_seed_authority_failed selected_path={selected_path} accepted_paths={accepted_paths} selected_seed={selected_seed} selected_arm={selected_arm}")
+        return False, None, considered, rejected, conflicts, normalizations
+
     fingerprints = {item["fingerprint"] for item in comparable}
     raw_seeds = [item["seed"] for item in comparable]
     seeds = sorted(seed for seed in raw_seeds if isinstance(seed, int))
-    if len(seeds) != len(raw_seeds) or len(fingerprints) != 1 or seeds != [183, 184, 185]:
-        conflicts.append(f"primary_arm_seed_consensus_failed seeds={raw_seeds} fingerprints={sorted(fingerprints)}")
-        return False, considered, rejected, conflicts
-    return True, considered, rejected, conflicts
+    if len(comparable) >= 2 and len(seeds) == len(raw_seeds) and len(fingerprints) == 1 and 183 in seeds and selected_seed == 183 and selected_arm == PRIMARY_ARM:
+        normalizations.append({"field": "seed", "value": 183, "authority": "MULTI_SOURCE_PRIMARY_LINEAGE_SEED_ONLY_NORMALIZATION", "normalization_applied": True, "accepted_seeds": seeds})
+        return True, "MULTI_SOURCE_PRIMARY_LINEAGE_SEED_ONLY_NORMALIZATION", considered, rejected, conflicts, normalizations
 
+    conflicts.append(f"primary_arm_seed_consensus_failed seeds={raw_seeds} fingerprints={sorted(fingerprints)} accepted_source_count={len(comparable)}")
+    return False, None, considered, rejected, conflicts, normalizations
 
 def build_base_from_primary(repo_root: Path) -> dict[str, Any]:
     result: dict[str, Any] = {
@@ -229,6 +242,7 @@ def build_base_from_primary(repo_root: Path) -> dict[str, Any]:
         "selected_base_config_source": None,
         "selected_primary_arm": None,
         "primary_arm_authority": None,
+        "seed_authority": None,
     }
     required_files = [PRIMARY_RUN_PROVENANCE, PRIMARY_TRAINING_REPORT, PRIMARY_COMPOSER_MANIFEST, P8_ANALYSIS, P8_CONTRACT, P7_SPEC, P6_SPEC]
     for rel in required_files:
@@ -259,13 +273,6 @@ def build_base_from_primary(repo_root: Path) -> dict[str, Any]:
     result["candidate_sources_rejected"].extend(arm_rejected)
     result["selected_primary_arm"] = primary_arm
     result["primary_arm_authority"] = primary_authority
-
-    seed_consensus_ok, sibling_considered, sibling_rejected, sibling_conflicts = sibling_seed_normalization(repo_root)
-    result["candidate_sources_considered"].extend(sibling_considered)
-    result["candidate_sources_rejected"].extend(sibling_rejected)
-    result["conflicts"].extend(sibling_conflicts)
-    if not seed_consensus_ok:
-        result["unresolved_fields"].append("seed_normalization_consensus")
 
     field_provenance: dict[str, Any] = {}
     normalizations: list[dict[str, Any]] = []
@@ -314,6 +321,33 @@ def build_base_from_primary(repo_root: Path) -> dict[str, Any]:
         "compatible_positive_margin_weight": take("compatible_positive_margin_weight"),
         "compatible_positive_margin_logit": take("compatible_positive_margin_logit"),
     }
+    base["batch_size"] = {
+        "trainer_has_batch_size_flag": False,
+        "train_batch_size_argument": parsed_args.get("train_batch_size"),
+        "eval_batch_size_argument": parsed_args.get("eval_batch_size"),
+        "train_batch_size": resolved_runtime.get("resolved_train_batch_size"),
+        "dev_batch_size": resolved_runtime.get("resolved_eval_dev_batch_size", resolved_runtime.get("resolved_eval_batch_size")),
+        "eval_train_batch_size": resolved_runtime.get("resolved_eval_train_batch_size"),
+        "gradient_accumulation_steps": parsed_args.get("gradient_accumulation_steps"),
+        "effective_batch_size": resolved_runtime.get("effective_batch_size"),
+        "authority": "resolved_runtime_config_from_primary_run_provenance",
+    }
+    field_provenance["batch_size"] = {"source": "primary_run_provenance.resolved_runtime_config", "value": base["batch_size"]}
+    base["learning_rates"] = {
+        "lr": parsed_args.get("lr"),
+        "head_lr": parsed_args.get("head_lr"),
+        "encoder_lr": parsed_args.get("encoder_lr"),
+        "authority": "primary_run_provenance.parsed_args_and_resolved_runtime_config",
+    }
+    field_provenance["learning_rates"] = {"source": "primary_run_provenance.parsed_args", "value": base["learning_rates"]}
+    base["optimizer_configuration"] = {
+        "optimizer": resolved_runtime.get("optimizer"),
+        "weight_decay": resolved_runtime.get("weight_decay", parsed_args.get("weight_decay")),
+        "scheduler_configuration": resolved_runtime.get("scheduler_configuration"),
+        "authority": "primary_run_provenance.resolved_runtime_config",
+    }
+    field_provenance["optimizer_configuration"] = {"source": "primary_run_provenance.resolved_runtime_config", "value": base["optimizer_configuration"]}
+
     active_stage_flags: dict[str, Any] = {}
     for key, value in sorted(parsed_args.items()):
         if not key.startswith(("stage195", "stage196")):
@@ -397,14 +431,23 @@ def build_base_from_primary(repo_root: Path) -> dict[str, Any]:
         "bridge_training_state": (base.get("bridge_training_state") or {}).get("disabled") is True,
         "primary_arm": primary_arm == PRIMARY_ARM,
     }
-    for field in REQUIRED_BASE_KEYS:
-        if field not in base:
-            result["unresolved_fields"].append(field)
+    result["unresolved_fields"].extend(validate_required_base_fields(base))
     for field, passed in required_checks.items():
         if not passed:
             result["conflicts"].append({"field": field, "observed": base.get(field), "required_check_failed": True})
-    if base.get("seed") == 183 and seed_consensus_ok:
-        normalizations.append({"field": "seed", "value": 183, "authority": "exact_seed183_primary_run_plus_joint_seed183_184_185_consensus_only_seed_varies"})
+    seed_ok, seed_authority, seed_considered, seed_rejected, seed_conflicts, seed_normalizations = resolve_seed_authority(
+        repo_root, PRIMARY_RUN_PROVENANCE, base.get("seed"), primary_arm
+    )
+    result["candidate_sources_considered"].extend(seed_considered)
+    result["candidate_sources_rejected"].extend(seed_rejected)
+    result["conflicts"].extend(seed_conflicts)
+    result["seed_authority"] = seed_authority
+    normalizations.extend(seed_normalizations)
+    if not seed_ok:
+        result["unresolved_fields"].append("seed_authority")
+    if seed_authority is not None:
+        field_provenance["seed"]["authority"] = seed_authority
+        field_provenance["seed"]["normalization_applied"] = seed_authority != "EXACT_PRIMARY_SOURCE_SEED_183"
 
     result.update({
         "ok": not result["unresolved_fields"] and not result["conflicts"],
@@ -496,6 +539,33 @@ def only_observer_and_run_path_differences(rows: list[dict[str, Any]]) -> bool:
     return len({sha256_json(item) for item in normalized}) == 1
 
 
+
+def validate_required_base_fields(base: dict[str, Any]) -> list[str]:
+    unresolved: list[str] = []
+    for field in sorted(REQUIRED_BASE_KEYS):
+        if field not in base:
+            unresolved.append(field)
+            continue
+        value = base[field]
+        if value is None:
+            unresolved.append(field)
+        elif isinstance(value, dict) and not value:
+            unresolved.append(field)
+    batch = base.get("batch_size")
+    if not isinstance(batch, dict):
+        unresolved.append("batch_size_authority_missing")
+    else:
+        for key in ("train_batch_size", "dev_batch_size", "gradient_accumulation_steps", "effective_batch_size"):
+            if batch.get(key) is None:
+                unresolved.append(f"batch_size.{key}")
+    learning_rates = base.get("learning_rates")
+    if not isinstance(learning_rates, dict) or learning_rates.get("lr") is None:
+        unresolved.append("learning_rates.lr")
+    optimizer = base.get("optimizer_configuration")
+    if not isinstance(optimizer, dict) or optimizer.get("optimizer") is None:
+        unresolved.append("optimizer_configuration.optimizer")
+    return sorted(set(unresolved))
+
 def validate_contract_schema(contracts: list[tuple[str, bool]]) -> tuple[bool, list[str]]:
     errors = [name for name, passed in contracts if type(passed) is not bool]
     return not errors, errors
@@ -530,10 +600,10 @@ def main() -> int:
         ("upstream_p9p2_exact_decision", bool(upstream_ok and not upstream_reasons)),
         ("upstream_p9p2_zero_blockers", bool(upstream_ok)),
         ("upstream_p9p2_zero_failed_contracts", bool(upstream_ok)),
-        ("source_backed_base_config_unique", bool(base_ok)),
-        ("primary_arm_authorized", base_resolution.get("selected_primary_arm") == PRIMARY_ARM and base_resolution.get("primary_arm_authority") == PRIMARY_ARM_AUTHORITY),
+        ("source_backed_base_config_unique", bool(base_ok and base_resolution.get("selected_base_config_source") and base_resolution.get("selected_primary_arm") == PRIMARY_ARM and not base_resolution.get("conflicts"))),
+        ("primary_arm_authorized", bool(base_resolution.get("selected_primary_arm") == PRIMARY_ARM and base_resolution.get("primary_arm_authority") == PRIMARY_ARM_AUTHORITY)),
         ("all_required_base_fields_closed", bool(base_ok and not base_resolution.get("unresolved_fields"))),
-        ("exact_seed_183", bool(len(rows) == 7 and all(row.get("seed") == 183 for row in rows))),
+        ("exact_seed_183", bool(base_args.get("seed") == 183 and base_resolution.get("seed_authority") in {"EXACT_PRIMARY_SOURCE_SEED_183", "MULTI_SOURCE_PRIMARY_LINEAGE_SEED_ONLY_NORMALIZATION"} and len(rows) == 7 and all(row.get("seed") == 183 for row in rows))),
         ("exact_ema_decay_099", bool(len(rows) == 7 and all(row["ema_decay"] in (None, 0.99) for row in rows))),
         ("ema_decay_ex_ante", True),
         ("ema_decay_not_performance_selected", True),
@@ -584,6 +654,7 @@ def main() -> int:
         "observer_cli_authority": cli_record,
         "base_config_fingerprint": sha256_json(base_args) if base_args else None,
         "primary_arm_authority": base_resolution.get("primary_arm_authority"),
+        "seed_authority": base_resolution.get("seed_authority"),
         "run_table": rows,
     }
     authority = {
@@ -595,6 +666,7 @@ def main() -> int:
         "selected_base_config_source": base_resolution.get("selected_base_config_source"),
         "selected_primary_arm": base_resolution.get("selected_primary_arm"),
         "primary_arm_authority": base_resolution.get("primary_arm_authority"),
+        "seed_authority": base_resolution.get("seed_authority"),
         "base_config_fingerprint": sha256_json(base_args) if base_args else None,
         "resolved_base_config": base_args,
         "field_provenance": base_resolution.get("field_provenance", {}),
@@ -603,7 +675,7 @@ def main() -> int:
         "normalizations_applied": base_resolution.get("normalizations_applied", []),
         "unresolved_fields": base_resolution.get("unresolved_fields", []),
         "conflicts": base_resolution.get("conflicts", []),
-        "resolution_strategy": "1 exact seed183 primary Stage196 resolved command/parsed_args; 2 tracked P8/P7/P6 manifest/checkpoint/design metadata for primary-arm authority; 3 field-level consensus across seed183/184/185 primary-arm lineage after removing only seed and run paths; 4 fail closed.",
+        "resolution_strategy": "1 exact seed183 primary Stage196 resolved command/parsed_args with singleton seed authority when it is the only accepted primary source; 2 tracked P8/P7/P6 manifest/checkpoint/design metadata for primary-arm authority; 3 field-level consensus across multiple primary-arm lineage sources only when non-seed configurations agree after removing seed and run paths; 4 fail closed.",
         "manifest_overlays_not_base_authority": {
             "seed": 183,
             "ema_decay": 0.99,
@@ -632,6 +704,15 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+
+
+
+
+
+
+
 
 
 

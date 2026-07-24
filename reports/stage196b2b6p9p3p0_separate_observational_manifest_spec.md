@@ -54,18 +54,32 @@ and bridge-training state. Required closures include `backbone = mamba`,
 external evaluation disabled.
 
 The P9-P3 frozen run seed is a manifest overlay and is not used by itself to
-prove base-configuration authority. In the tracked Stage196 lineage, seed 183 is
-present in the exact primary command and is corroborated by joint seed183/184/185
-consensus showing seed as the only primary-arm seed-varying field after run paths
-are removed.
+prove base-configuration authority. When exactly one accepted primary-arm source
+exists and that selected Stage196 lineage source explicitly records `seed = 183`,
+the seed authority is `EXACT_PRIMARY_SOURCE_SEED_183`; no seed normalization or
+multi-seed corroboration is required, and the singleton fingerprint is not a
+conflict. Multi-source seed-only normalization remains available only when two or
+more accepted primary-lineage sources have one canonical non-seed fingerprint and
+seed is the only relevant varying field.
+
+Batch-size authority is resolved from the exact tracked runtime surface, not from
+a guessed `--batch-size` flag. The accepted Stage196 lineage records separate
+`train_batch_size` and `eval_batch_size` arguments as null, plus resolved runtime
+semantics: resolved train batch size, resolved dev/eval batch size,
+eval-train batch size, gradient accumulation steps, and effective batch size. The
+normalized `batch_size` field preserves these source-backed semantics and remains
+blocked as `batch_size_authority_missing` if they cannot be recovered.
 
 The base authority JSON records the stage, decision, recommended next stage,
 blocking reasons, failure, selected base source, selected primary arm, primary-arm
-authority, base configuration fingerprint, resolved base configuration, field
-provenance, considered and rejected candidate sources, normalizations, unresolved
-fields, and conflicts in both ready and blocked states. Manifest contracts require
-strict boolean `passed` values; any internal non-boolean contract value is a schema
-failure that closes the builder with a controlled blocked decision.
+authority, seed authority, base configuration fingerprint, resolved base
+configuration, field provenance, considered and rejected candidate sources,
+normalizations, unresolved fields, and conflicts in both ready and blocked states.
+Required-field closure and `unresolved_fields` are generated from one canonical
+required-field validator; a ready decision cannot contain null, missing,
+contradictory, or unsupported required base fields. Manifest contracts require
+strict boolean `passed` values; any internal non-boolean contract value is a
+schema failure that closes the builder with a controlled blocked decision.
 
 ## Frozen Run Set
 
@@ -270,6 +284,8 @@ The analyzer writes exactly:
 - `stage196b2b6p9p3_degeneracy_audit.csv`
 - `stage196b2b6p9p3_decision_gate.csv`
 - `stage196b2b6p9p3_contract.csv`
+
+
 
 
 
