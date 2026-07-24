@@ -24,6 +24,7 @@ STAGE = "Stage196-B2-B6P9-P0"
 STAGE_TITLE = "Separate Stability Teacher/Target Authority Design"
 P4_DECISION = "STAGE196B2B6P4_ACTION_RESPONSE_TOPOLOGY_UNSTABLE"
 P5_DECISION = "STAGE196B2B6P5_GRADIENT_PATH_INSTRUMENTATION_REQUIRED"
+P5_RECOMMENDED_NEXT = "STAGE196B2B6P6_MINIMAL_GRADIENT_PATH_INSTRUMENTATION"
 P4_RECOMMENDED_NEXT = (
     "STAGE196B2B6P5_TRAINING_SIDE_RESPONSE_STABILITY_INTERVENTION_DESIGN"
 )
@@ -57,6 +58,58 @@ P4_P6_DECISION_PAYLOAD = {
 P4_P7_DECISION_PAYLOAD = {
     "blocking_reasons": [],
     "decision": P4_DECISION,
+}
+P5_AUTHORITY_MODES = (
+    "ORIGINAL_P5_ANALYSIS",
+    "DOWNSTREAM_ATTESTED_P5_MINIMAL_CLOSURE",
+)
+P5_ATTESTED_SCOPE = (
+    "P5 decision identity",
+    "zero P5 blockers",
+    "P5 recommended-next-stage identity",
+    "P5 source-feasibility facts required by P6",
+    "teacher unavailable without additional instrumentation",
+    "P7 concurrence that no teacher was authorized",
+)
+P5_ATTESTED_LIMITATIONS = (
+    "the original P5 analysis JSON",
+    "original P5 numerical tables",
+    "original P5 output directory",
+    "original P5 timestamps",
+    "original P5 source hashes",
+    "original P5 complete prose",
+    "byte-identical original P5 content",
+)
+P5_P6_DECISION_PAYLOAD = {
+    "blocking_reasons": [],
+    "decision": P5_DECISION,
+    "recommended_next_stage": P5_RECOMMENDED_NEXT,
+}
+P5_P6_SOURCE_FEASIBILITY_REQUIRED = {
+    "counterfactual_gradient_path": "MINIMAL_GRADIENT_INSTRUMENTATION_REQUIRED",
+    "final_margin_autograd": True,
+    "three_candidates_currently_available": False,
+}
+P5_P6_SOURCE_FEASIBILITY_OBSERVED_REQUIRED = {
+    "counterfactual_gradient_path": "MINIMAL_GRADIENT_INSTRUMENTATION_REQUIRED",
+    "final_margin_autograd": True,
+    "three_candidates_currently_available": False,
+    "three_candidates_vectorizable": True,
+    "top1_runner_up_piecewise": True,
+    "teacher_status": "UNAVAILABLE_WITHOUT_ADDITIONAL_INSTRUMENTATION",
+    "exact_training_entry_point": "scripts/train_controlled_v6b_minimal.py::main::<locals>.run_training_v6b",
+    "native_final_scores": "src/contramamba/modeling_v6b_minimal.py::ContraMambaV6BMinimal.forward::output['logits']",
+    "optimizer_step_boundary": "after total_loss assembly/backward/clip in run_training_v6b",
+}
+P5_P7_DECISION_PAYLOAD = {
+    "blocking_reasons": [],
+    "decision": P5_DECISION,
+}
+P7_TEACHER_NON_AUTHORIZATION_REQUIRED = {
+    "implementation_authorized": False,
+    "selected_teacher": "not yet justified",
+    "exact_ties_ignored": True,
+    "p5_conceptual_preference": "stop-gradient EMA model",
 }
 
 TEACHER_CANDIDATES = (
@@ -192,7 +245,7 @@ CONTRACT_FIELDS = (
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--stage196b2b6p4-analysis-json", type=Path)
-    parser.add_argument("--stage196b2b6p5-analysis-json", type=Path, required=True)
+    parser.add_argument("--stage196b2b6p5-analysis-json", type=Path)
     parser.add_argument("--stage196b2b6p7-analysis-json", type=Path, required=True)
     parser.add_argument("--stage196b2b6p6-contract-csv", type=Path, required=True)
     parser.add_argument("--stage196b2b6p7-contract-csv", type=Path, required=True)
@@ -451,6 +504,200 @@ def evaluate_p4_authority(
         "p6_zero_failed_contracts_closure": bool(p6_zero_detail["passed"]),
         "p7_analysis_decision_concurrence": bool(p7_analysis_detail["passed"]),
         "p7_contract_decision_concurrence": bool(p7_contract_detail["passed"]),
+    }
+    base["minimal_authority_passed"] = all(checks.values())
+    base["checks"] = checks
+    base["blocking_reasons"] = [name for name, passed in checks.items() if not passed]
+    return base
+
+
+def p7_teacher_rows_descriptive(teacher_state: dict[str, Any]) -> bool:
+    rows = teacher_state.get("rows") or teacher_state.get("teacher_rows") or []
+    if not isinstance(rows, list) or not rows:
+        return False
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        for key in ("selected", "approved", "implementation_authorized"):
+            if strict_bool(row.get(key)) is True:
+                return False
+        status = str(row.get("status") or row.get("decision") or "").strip().lower()
+        if status in {"approved", "ready", "selected"}:
+            return False
+    return True
+
+
+def evaluate_p5_authority(
+    *,
+    p5_path: Path | None,
+    p7: dict[str, Any],
+    p6_contract_path: Path,
+    p7_contract_path: Path,
++) -> dict[str, Any]:
+    original_available = p5_path is not None and p5_path.exists()
+    base: dict[str, Any] = {
+        "authority_mode": "ORIGINAL_P5_ANALYSIS" if original_available else "DOWNSTREAM_ATTESTED_P5_MINIMAL_CLOSURE",
+        "original_artifact_available": original_available,
+        "original_artifact_path": str(p5_path) if p5_path is not None else "",
+        "attestation_scope": list(P5_ATTESTED_SCOPE),
+        "attestation_limitations": list(P5_ATTESTED_LIMITATIONS),
+        "p6_contract_path": str(p6_contract_path),
+        "p6_contract_sha256_expected": "",
+        "p6_contract_sha256_observed": "",
+        "p6_decision_closure": {"passed": False, "mode": "not_checked"},
+        "p6_source_feasibility_closure": {"passed": False, "mode": "not_checked"},
+        "p7_analysis_decision_concurrence": {"passed": False, "mode": "not_checked"},
+        "p7_contract_decision_concurrence": {"passed": False, "mode": "not_checked"},
+        "p7_teacher_non_authorization_closure": {"passed": False, "mode": "not_checked"},
+        "minimal_authority_passed": False,
+        "original_artifact_not_fabricated": True,
+        "blocking_reasons": [],
+    }
+    if original_available:
+        original = load_json(p5_path)  # type: ignore[arg-type]
+        passed = original.get("decision") == P5_DECISION and original.get("blocking_reasons") == []
+        base.update({
+            "observed_decision": original.get("decision"),
+            "observed_blocking_reasons": original.get("blocking_reasons"),
+            "minimal_authority_passed": passed,
+            "p6_decision_closure": {"passed": True, "mode": "not_applicable_original_mode"},
+            "p6_source_feasibility_closure": {"passed": True, "mode": "not_applicable_original_mode"},
+            "p7_analysis_decision_concurrence": {"passed": True, "mode": "not_applicable_original_mode"},
+            "p7_contract_decision_concurrence": {"passed": True, "mode": "not_applicable_original_mode"},
+            "p7_teacher_non_authorization_closure": {"passed": True, "mode": "not_applicable_original_mode"},
+        })
+        if not passed:
+            base["blocking_reasons"].append("original P5 analysis failed exact decision/zero-blocker checks")
+        return base
+
+    missing_contract_paths = []
+    if not p6_contract_path.exists():
+        missing_contract_paths.append("stage196b2b6p6_contract.csv")
+    if not p7_contract_path.exists():
+        missing_contract_paths.append("stage196b2b6p7_contract.csv")
+    if missing_contract_paths:
+        base["checks"] = {
+            "p6_contract_hash_closure": False,
+            "p6_decision_closure": False,
+            "p6_source_feasibility_closure": False,
+            "p7_analysis_decision_concurrence": False,
+            "p7_contract_decision_concurrence": False,
+            "p7_teacher_non_authorization_closure": False,
+        }
+        base["blocking_reasons"] = [
+            "missing downstream attestation contract path: " + name
+            for name in missing_contract_paths
+        ]
+        return base
+
+    p6_rows = read_csv(p6_contract_path)
+    p7_rows = read_csv(p7_contract_path)
+    expected_sha = p7_p6_contract_expected_sha(p7)
+    observed_sha = sha256(p6_contract_path)
+    hash_passed = bool(expected_sha) and expected_sha == observed_sha
+    base["p6_contract_sha256_expected"] = expected_sha
+    base["p6_contract_sha256_observed"] = observed_sha
+
+    p6_decision_rows = contract_rows_named(p6_rows, "p5_decision_and_zero_blockers")
+    p6_decision_detail: dict[str, Any] = {"row_count": len(p6_decision_rows), "passed": False}
+    if len(p6_decision_rows) == 1:
+        row = p6_decision_rows[0]
+        try:
+            required = parse_contract_json_payload(row.get("required", ""))
+            observed = parse_contract_json_payload(row.get("observed", ""))
+            passed_value = strict_bool(row.get("passed"))
+            p6_decision_detail.update({
+                "required": required,
+                "observed": observed,
+                "passed_value": passed_value,
+                "passed": passed_value is True and required == P5_P6_DECISION_PAYLOAD and observed == P5_P6_DECISION_PAYLOAD,
+            })
+        except json.JSONDecodeError as exc:
+            p6_decision_detail.update({"parse_error": str(exc)})
+
+    p6_source_rows = contract_rows_named(p6_rows, "p5_source_feasibility_schema")
+    p6_source_detail: dict[str, Any] = {"row_count": len(p6_source_rows), "passed": False}
+    if len(p6_source_rows) == 1:
+        row = p6_source_rows[0]
+        try:
+            required = parse_contract_json_payload(row.get("required", ""))
+            observed = parse_contract_json_payload(row.get("observed", ""))
+            passed_value = strict_bool(row.get("passed"))
+            observed_subset_passed = (
+                isinstance(observed, dict)
+                and all(observed.get(key) == value for key, value in P5_P6_SOURCE_FEASIBILITY_OBSERVED_REQUIRED.items())
+            )
+            p6_source_detail.update({
+                "required": required,
+                "observed": observed,
+                "passed_value": passed_value,
+                "observed_required_fields": P5_P6_SOURCE_FEASIBILITY_OBSERVED_REQUIRED,
+                "observed_subset_passed": observed_subset_passed,
+                "passed": passed_value is True and required == P5_P6_SOURCE_FEASIBILITY_REQUIRED and observed_subset_passed,
+            })
+        except json.JSONDecodeError as exc:
+            p6_source_detail.update({"parse_error": str(exc)})
+
+    p7_upstream_decision = (p7.get("upstream") or {}).get("p5_decision")
+    p7_analysis_detail = {
+        "required": P5_DECISION,
+        "observed": p7_upstream_decision,
+        "passed": p7_upstream_decision == P5_DECISION,
+    }
+
+    p7_contract_rows = contract_rows_named(p7_rows, "p5_decision_and_zero_blockers")
+    p7_contract_detail: dict[str, Any] = {"row_count": len(p7_contract_rows), "passed": False}
+    if len(p7_contract_rows) == 1:
+        row = p7_contract_rows[0]
+        try:
+            required = parse_contract_json_payload(row.get("required", ""))
+            observed = parse_contract_json_payload(row.get("observed", ""))
+            passed_value = strict_bool(row.get("passed"))
+            p7_contract_detail.update({
+                "required": required,
+                "observed": observed,
+                "passed_value": passed_value,
+                "passed": passed_value is True and required == P5_P7_DECISION_PAYLOAD and observed == P5_P7_DECISION_PAYLOAD,
+            })
+        except json.JSONDecodeError as exc:
+            p7_contract_detail.update({"parse_error": str(exc)})
+
+    teacher_state = p7.get("teacher_state_analysis") or {}
+    teacher_checks = {
+        "implementation_authorized": teacher_state.get("implementation_authorized"),
+        "selected_teacher": teacher_state.get("selected_teacher"),
+        "exact_ties_ignored": teacher_state.get("exact_ties_ignored"),
+        "p5_conceptual_preference": teacher_state.get("p5_conceptual_preference"),
+        "teacher_rows_descriptive": p7_teacher_rows_descriptive(teacher_state),
+    }
+    teacher_non_auth_passed = (
+        teacher_checks["implementation_authorized"] is False
+        and teacher_checks["selected_teacher"] == P7_TEACHER_NON_AUTHORIZATION_REQUIRED["selected_teacher"]
+        and teacher_checks["exact_ties_ignored"] is True
+        and teacher_checks["p5_conceptual_preference"] == P7_TEACHER_NON_AUTHORIZATION_REQUIRED["p5_conceptual_preference"]
+        and teacher_checks["teacher_rows_descriptive"] is True
+    )
+    teacher_detail = {
+        "required": P7_TEACHER_NON_AUTHORIZATION_REQUIRED,
+        "observed": teacher_checks,
+        "passed": teacher_non_auth_passed,
+        "ema_interpretation": "conceptual preference only; not implementation authority",
+    }
+
+    base.update({
+        "p6_decision_closure": p6_decision_detail,
+        "p6_source_feasibility_closure": p6_source_detail,
+        "p7_analysis_decision_concurrence": p7_analysis_detail,
+        "p7_contract_decision_concurrence": p7_contract_detail,
+        "p7_teacher_non_authorization_closure": teacher_detail,
+    })
+    checks = {
+        "p6_contract_hash_closure": hash_passed,
+        "p6_decision_closure": bool(p6_decision_detail["passed"]),
+        "p6_source_feasibility_closure": bool(p6_source_detail["passed"]),
+        "p7_analysis_decision_concurrence": bool(p7_analysis_detail["passed"]),
+        "p7_contract_decision_concurrence": bool(p7_contract_detail["passed"]),
+        "p7_teacher_non_authorization_closure": bool(teacher_detail["passed"]),
     }
     base["minimal_authority_passed"] = all(checks.values())
     base["checks"] = checks
@@ -910,6 +1157,19 @@ does not reconstruct or authorize the original P4 numerical tables, row-level
 data, source-file hashes, output-directory identity, creation timestamp, or
 byte-identical original content.
 
+## P5 Authority
+
+P5 authority mode = `{analysis["p5_authority"]["authority_mode"]}`
+
+Original P5 artifact available = `{analysis["p5_authority"]["original_artifact_available"]}`
+
+The downstream-attested P5 mode establishes only P5 decision identity, zero P5
+blockers, P5 recommended-next-stage identity, P5 source-feasibility facts
+required by P6, teacher unavailability without additional instrumentation, and
+P7 concurrence that no teacher was authorized. It does not reconstruct the
+original P5 analysis JSON, original numerical tables, output directory,
+timestamps, source hashes, complete prose, or byte-identical original content.
+
 ## Teacher Authority
 
 No audited teacher candidate is justified for direction or candidate-order in
@@ -970,7 +1230,6 @@ def main() -> int:
     output_dir = args.output_dir
     output_dir.mkdir(parents=True, exist_ok=False)
 
-    p5 = load_json(args.stage196b2b6p5_analysis_json)
     p7 = load_json(args.stage196b2b6p7_analysis_json)
     p8 = load_json(args.stage196b2b6p8_analysis_json)
     p8_gradient = read_csv(args.stage196b2b6p8_gradient_connectivity_csv)
@@ -992,7 +1251,13 @@ def main() -> int:
         p7_contract_path=args.stage196b2b6p7_contract_csv,
     )
     p4_ok = bool(p4_authority["minimal_authority_passed"])
-    p5_ok = p5.get("decision") == P5_DECISION and p5.get("blocking_reasons") == []
+    p5_authority = evaluate_p5_authority(
+        p5_path=args.stage196b2b6p5_analysis_json,
+        p7=p7,
+        p6_contract_path=args.stage196b2b6p6_contract_csv,
+        p7_contract_path=args.stage196b2b6p7_contract_csv,
+    )
+    p5_ok = bool(p5_authority["minimal_authority_passed"])
     p7_text = canonical(p7).lower()
     p7_selected_teacher = (
         (p7.get("teacher_state_analysis") or {}).get("selected_teacher")
@@ -1078,7 +1343,40 @@ def main() -> int:
                  p4_authority["original_artifact_not_fabricated"],
                  p4_authority["original_artifact_not_fabricated"] is True)
     add_contract(contracts, "upstream_p5_authority", P5_DECISION,
-                 p5.get("decision"), p5_ok, "P5 authority failed")
+                 {"authority_mode": p5_authority["authority_mode"],
+                  "minimal_authority_passed": p5_authority["minimal_authority_passed"]},
+                 p5_ok, "P5 authority failed")
+    add_contract(contracts, "p5_authority_mode_valid", P5_AUTHORITY_MODES,
+                 p5_authority["authority_mode"],
+                 p5_authority["authority_mode"] in P5_AUTHORITY_MODES)
+    add_contract(contracts, "p5_original_or_attested_authority_available", True,
+                 p5_authority["minimal_authority_passed"], p5_ok,
+                 "neither original nor downstream-attested P5 authority passed")
+    p5_original_mode = p5_authority["authority_mode"] == "ORIGINAL_P5_ANALYSIS"
+    add_contract(contracts, "p5_downstream_p6_contract_hash_closure", True,
+                 p5_authority.get("checks", {}).get("p6_contract_hash_closure", "not_applicable_original_mode"),
+                 p5_original_mode or p5_authority.get("checks", {}).get("p6_contract_hash_closure") is True)
+    add_contract(contracts, "p5_downstream_p6_decision_closure", P5_P6_DECISION_PAYLOAD,
+                 p5_authority["p6_decision_closure"],
+                 p5_original_mode or p5_authority["p6_decision_closure"].get("passed") is True)
+    add_contract(contracts, "p5_downstream_p6_source_feasibility_closure", P5_P6_SOURCE_FEASIBILITY_REQUIRED,
+                 p5_authority["p6_source_feasibility_closure"],
+                 p5_original_mode or p5_authority["p6_source_feasibility_closure"].get("passed") is True)
+    add_contract(contracts, "p5_downstream_p7_analysis_concurrence", P5_DECISION,
+                 p5_authority["p7_analysis_decision_concurrence"],
+                 p5_original_mode or p5_authority["p7_analysis_decision_concurrence"].get("passed") is True)
+    add_contract(contracts, "p5_downstream_p7_contract_concurrence", P5_P7_DECISION_PAYLOAD,
+                 p5_authority["p7_contract_decision_concurrence"],
+                 p5_original_mode or p5_authority["p7_contract_decision_concurrence"].get("passed") is True)
+    add_contract(contracts, "p5_downstream_p7_teacher_non_authorization", P7_TEACHER_NON_AUTHORIZATION_REQUIRED,
+                 p5_authority["p7_teacher_non_authorization_closure"],
+                 p5_original_mode or p5_authority["p7_teacher_non_authorization_closure"].get("passed") is True)
+    add_contract(contracts, "p5_downstream_attestation_scope_restricted", P5_ATTESTED_SCOPE,
+                 {"scope": p5_authority["attestation_scope"],
+                  "limitations": p5_authority["attestation_limitations"]}, True)
+    add_contract(contracts, "p5_original_artifact_not_fabricated", True,
+                 p5_authority["original_artifact_not_fabricated"],
+                 p5_authority["original_artifact_not_fabricated"] is True)
     add_contract(contracts, "upstream_p7_authority", "zero blockers and no selected teacher",
                  {"decision": p7.get("decision"), "blocking_reasons": p7.get("blocking_reasons")},
                  p7_ok, "P7 authority failed")
@@ -1142,12 +1440,14 @@ def main() -> int:
         "intervention_families": FUTURE_VARIANTS,
         "teacher_candidates": TEACHER_CANDIDATES,
         "p4_authority": p4_authority,
+        "p5_authority": p5_authority,
         "upstream_authority": {
             "p4_analysis_json": str(args.stage196b2b6p4_analysis_json or ""),
             "p4_authority": p4_authority,
             "p6_contract_csv": str(args.stage196b2b6p6_contract_csv),
             "p7_contract_csv": str(args.stage196b2b6p7_contract_csv),
-            "p5_analysis_json": str(args.stage196b2b6p5_analysis_json),
+            "p5_analysis_json": str(args.stage196b2b6p5_analysis_json or ""),
+            "p5_authority": p5_authority,
             "p7_analysis_json": str(args.stage196b2b6p7_analysis_json),
             "p8_analysis_json": str(args.stage196b2b6p8_analysis_json),
             "p8_gradient_connectivity_csv": str(args.stage196b2b6p8_gradient_connectivity_csv),

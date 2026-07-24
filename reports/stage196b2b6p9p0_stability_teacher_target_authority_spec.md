@@ -31,7 +31,6 @@ scripts/analyze_stage196b2b6p9p0_stability_teacher_target_authority.py
 It requires explicit paths for:
 
 ```text
---stage196b2b6p5-analysis-json
 --stage196b2b6p7-analysis-json
 --stage196b2b6p6-contract-csv
 --stage196b2b6p7-contract-csv
@@ -41,10 +40,11 @@ It requires explicit paths for:
 --output-dir
 ```
 
-The original P4 analysis path is optional:
+The original P4 and P5 analysis paths are optional:
 
 ```text
 --stage196b2b6p4-analysis-json
+--stage196b2b6p5-analysis-json
 ```
 
 P8 authority must come from exactly:
@@ -159,6 +159,140 @@ byte-identical original P4 content
 A valid downstream-attested minimal closure satisfies the existing
 `upstream_p4_authority` gate.  It must not create a blocker merely because the
 original P4 artifact is absent.  If downstream attestation fails, the decision is
+`STAGE196B2B6P9P0_BLOCKED_UPSTREAM_AUTHORITY`.
+
+## P5 Authority Modes
+
+The analyzer supports exactly two P5 authority modes:
+
+```text
+ORIGINAL_P5_ANALYSIS
+DOWNSTREAM_ATTESTED_P5_MINIMAL_CLOSURE
+```
+
+`ORIGINAL_P5_ANALYSIS` is used only when an explicitly supplied P5 analysis file
+exists and passes the existing exact authority checks.  The original-file
+semantics are unchanged: the decision must be
+`STAGE196B2B6P5_GRADIENT_PATH_INSTRUMENTATION_REQUIRED` and `blocking_reasons`
+must be exactly `[]`.
+
+`DOWNSTREAM_ATTESTED_P5_MINIMAL_CLOSURE` is used only when the original P5
+analysis path is omitted or unavailable.  This mode does not fabricate,
+synthesize, recover, or create an original-looking P5 analysis JSON.
+
+### Downstream-Attested P5 Checks
+
+The P7 analysis must close the supplied P6 contract hash through:
+
+```text
+upstream.p6_artifacts["stage196b2b6p6_contract.csv"]
+```
+
+The analyzer computes the actual SHA256 of `--stage196b2b6p6-contract-csv` and
+requires exact equality.  An unclosed P6 contract is not trusted.
+
+The P6 contract must contain exactly one `p5_decision_and_zero_blockers` row.
+Its `passed` value must parse as true, and both its `required` and `observed`
+JSON payloads must equal exactly:
+
+```json
+{
+  "blocking_reasons": [],
+  "decision": "STAGE196B2B6P5_GRADIENT_PATH_INSTRUMENTATION_REQUIRED",
+  "recommended_next_stage": "STAGE196B2B6P6_MINIMAL_GRADIENT_PATH_INSTRUMENTATION"
+}
+```
+
+The P6 contract must contain exactly one `p5_source_feasibility_schema` row. Its
+`passed` value must parse as true. Its `required` JSON payload must equal
+exactly:
+
+```json
+{
+  "counterfactual_gradient_path": "MINIMAL_GRADIENT_INSTRUMENTATION_REQUIRED",
+  "final_margin_autograd": true,
+  "three_candidates_currently_available": false
+}
+```
+
+Its `observed` JSON payload may contain additional descriptive cost fields, but
+these fields must match exactly:
+
+```text
+counterfactual_gradient_path = MINIMAL_GRADIENT_INSTRUMENTATION_REQUIRED
+final_margin_autograd = true
+three_candidates_currently_available = false
+three_candidates_vectorizable = true
+top1_runner_up_piecewise = true
+teacher_status = UNAVAILABLE_WITHOUT_ADDITIONAL_INSTRUMENTATION
+exact_training_entry_point = scripts/train_controlled_v6b_minimal.py::main::<locals>.run_training_v6b
+native_final_scores = src/contramamba/modeling_v6b_minimal.py::ContraMambaV6BMinimal.forward::output['logits']
+optimizer_step_boundary = after total_loss assembly/backward/clip in run_training_v6b
+```
+
+This closure is not teacher approval.  It establishes only that P5 found native
+final margins remain differentiable, three candidate outputs were not yet
+available in the trainer, teacher state was unavailable without additional
+instrumentation, and minimal gradient instrumentation was required.
+
+The P7 analysis must record:
+
+```text
+upstream.p5_decision = STAGE196B2B6P5_GRADIENT_PATH_INSTRUMENTATION_REQUIRED
+```
+
+The P7 contract must contain exactly one `p5_decision_and_zero_blockers` row.
+Its `passed` value must parse as true, and both its `required` and `observed`
+JSON payloads must equal exactly:
+
+```json
+{
+  "blocking_reasons": [],
+  "decision": "STAGE196B2B6P5_GRADIENT_PATH_INSTRUMENTATION_REQUIRED"
+}
+```
+
+The P7 teacher-state section must establish:
+
+```text
+teacher_state_analysis.implementation_authorized = false
+teacher_state_analysis.selected_teacher = "not yet justified"
+teacher_state_analysis.exact_ties_ignored = true
+teacher_state_analysis.p5_conceptual_preference = "stop-gradient EMA model"
+```
+
+The EMA value is a conceptual preference only, not implementation authority, and
+P7 teacher rows must remain descriptive alternatives rather than an approved
+teacher selection.
+
+### Downstream-Attested P5 Scope
+
+The downstream-attested P5 mode establishes only:
+
+```text
+P5 decision identity
+zero P5 blockers
+P5 recommended-next-stage identity
+P5 source-feasibility facts required by P6
+teacher unavailable without additional instrumentation
+P7 concurrence that no teacher was authorized
+```
+
+It does not reconstruct:
+
+```text
+the original P5 analysis JSON
+original P5 numerical tables
+original P5 output directory
+original P5 timestamps
+original P5 source hashes
+original P5 complete prose
+byte-identical original P5 content
+```
+
+A valid downstream-attested minimal closure satisfies the existing
+`upstream_p5_authority` gate.  Original P5 absence alone must not create a
+blocker.  If downstream attestation fails, the decision is
 `STAGE196B2B6P9P0_BLOCKED_UPSTREAM_AUTHORITY`.
 
 ## Teacher Candidates
@@ -347,6 +481,16 @@ p4_downstream_p7_contract_concurrence
 p4_downstream_attestation_scope_restricted
 p4_original_artifact_not_fabricated
 upstream_p5_authority
+p5_authority_mode_valid
+p5_original_or_attested_authority_available
+p5_downstream_p6_contract_hash_closure
+p5_downstream_p6_decision_closure
+p5_downstream_p6_source_feasibility_closure
+p5_downstream_p7_analysis_concurrence
+p5_downstream_p7_contract_concurrence
+p5_downstream_p7_teacher_non_authorization
+p5_downstream_attestation_scope_restricted
+p5_original_artifact_not_fabricated
 upstream_p7_authority
 upstream_p8_final_authority
 p8_zero_failed_contracts
