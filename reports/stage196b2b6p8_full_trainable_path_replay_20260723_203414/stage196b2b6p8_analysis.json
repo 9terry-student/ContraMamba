@@ -1,0 +1,323 @@
+{
+  "blocking_reasons": [],
+  "candidate_order_connectivity_passed": true,
+  "candidate_order_connectivity_summary": {
+    "connected": {
+      "frame_local_only": [],
+      "joint": []
+    },
+    "connected_zero": {
+      "frame_local_only": [
+        "frame_branch",
+        "polarity_branch",
+        "predicate_branch",
+        "sufficiency_branch"
+      ],
+      "joint": [
+        "frame_branch",
+        "polarity_branch",
+        "predicate_branch",
+        "sufficiency_branch"
+      ]
+    },
+    "counts": {
+      "frame_local_only": {
+        "connected": 0,
+        "connected_zero": 4,
+        "declared": 4,
+        "failed": 0,
+        "missing": 0,
+        "resolved": 4
+      },
+      "joint": {
+        "connected": 0,
+        "connected_zero": 4,
+        "declared": 4,
+        "failed": 0,
+        "missing": 0,
+        "resolved": 4
+      }
+    },
+    "declared": {
+      "frame_local_only": [
+        "frame_branch",
+        "polarity_branch",
+        "predicate_branch",
+        "sufficiency_branch"
+      ],
+      "joint": [
+        "frame_branch",
+        "polarity_branch",
+        "predicate_branch",
+        "sufficiency_branch"
+      ]
+    },
+    "failed": {
+      "frame_local_only": [],
+      "joint": []
+    },
+    "missing": {
+      "frame_local_only": [],
+      "joint": []
+    },
+    "resolved": {
+      "frame_local_only": [
+        "frame_branch",
+        "polarity_branch",
+        "predicate_branch",
+        "sufficiency_branch"
+      ],
+      "joint": [
+        "frame_branch",
+        "polarity_branch",
+        "predicate_branch",
+        "sufficiency_branch"
+      ]
+    }
+  },
+  "candidate_semantics_passed": true,
+  "checkpoint_provenance": [
+    {
+      "gradient_mode": "joint",
+      "path": "/kaggle/working/stage196b2b6p6_seed183_checkpoint_recovery/seed183_joint/trajectory/selected_checkpoint.pt",
+      "reconstructed_provenance": true,
+      "selected_epoch": 20,
+      "sha256": "0fdc97c0b34272579656d202b283ed0e0431808c41b75d624dfa989e7652e3ea",
+      "size_bytes": 518269073,
+      "source_commit": "fa16787efa84bb15d832b6d9382fafd77016c4e2"
+    },
+    {
+      "gradient_mode": "frame_local_only",
+      "path": "/kaggle/working/stage196b2b6p6_seed183_checkpoint_recovery/seed183_frame_local_only/trajectory/selected_checkpoint.pt",
+      "reconstructed_provenance": true,
+      "selected_epoch": 20,
+      "sha256": "7ef271ab68d859cef90a4a3578bb6cae64ad1533ac040d5e1c94f41f3478c70a",
+      "size_bytes": 518269073,
+      "source_commit": "fa16787efa84bb15d832b6d9382fafd77016c4e2"
+    }
+  ],
+  "decision": "STAGE196B2B6P8_FULL_TRAINABLE_PATH_REPLAY_COMPLETE",
+  "direction_connectivity_passed": true,
+  "direction_connectivity_summary": {
+    "connected": {
+      "frame_local_only": [
+        "frame_branch",
+        "predicate_branch"
+      ],
+      "joint": [
+        "frame_branch",
+        "polarity_branch",
+        "predicate_branch",
+        "sufficiency_branch"
+      ]
+    },
+    "connected_zero": {
+      "frame_local_only": [
+        "polarity_branch",
+        "sufficiency_branch"
+      ],
+      "joint": []
+    },
+    "counts": {
+      "frame_local_only": {
+        "connected": 2,
+        "connected_zero": 2,
+        "declared": 4,
+        "failed": 0,
+        "missing": 0,
+        "resolved": 4
+      },
+      "joint": {
+        "connected": 4,
+        "connected_zero": 0,
+        "declared": 4,
+        "failed": 0,
+        "missing": 0,
+        "resolved": 4
+      }
+    },
+    "declared": {
+      "frame_local_only": [
+        "frame_branch",
+        "polarity_branch",
+        "predicate_branch",
+        "sufficiency_branch"
+      ],
+      "joint": [
+        "frame_branch",
+        "polarity_branch",
+        "predicate_branch",
+        "sufficiency_branch"
+      ]
+    },
+    "failed": {
+      "frame_local_only": [],
+      "joint": []
+    },
+    "missing": {
+      "frame_local_only": [],
+      "joint": []
+    },
+    "resolved": {
+      "frame_local_only": [
+        "frame_branch",
+        "polarity_branch",
+        "predicate_branch",
+        "sufficiency_branch"
+      ],
+      "joint": [
+        "frame_branch",
+        "polarity_branch",
+        "predicate_branch",
+        "sufficiency_branch"
+      ]
+    }
+  },
+  "loss_nonexistence": {
+    "candidate_order_stability_loss_implemented": false,
+    "checkpoint_selection_changed": false,
+    "combined_intervention_implemented": false,
+    "direction_stability_loss_implemented": false,
+    "ema_implemented": false,
+    "optimizer_objective_changed": false,
+    "teacher_implemented": false,
+    "training_objective_changed": false
+  },
+  "native_equivalence_passed": true,
+  "no_mutation_passed": true,
+  "p7_authority_provenance": {
+    "aggregate_trace_match": true,
+    "aggregate_trace_path": "/kaggle/working/ContraMamba/reports/stage196b2b6p7_full_counterfactual_forward_design_20260723_190847/stage196b2b6p7_candidate_semantic_trace.csv",
+    "p7_source_commit": "a34b703d8753b6cc9f789a23e182b2b23353ea8e",
+    "resolved_probe_mapping_count": 12,
+    "row_action_authority_path": "/kaggle/working/ContraMamba/reports/stage196b2b6p2_action_conditional_composer_margin_export_20260723_142312/stage196b2b6p2_candidate_action_composer_scores.csv",
+    "row_action_authority_row_count": 6480,
+    "row_action_authority_sha256": "ffe460f7c10d000c25d02132331ed19ce3f3f3105096eaa93d590e9a78af4d7c",
+    "seed183_mapping_count": 2160,
+    "selected_boundary": {
+      "candidate_action_dependency": "none",
+      "detach_boundary": "cached under no_grad; valid because producer is frozen",
+      "native_loss_dependency": "source for every epistemic head",
+      "producer_trainability": "frozen in authoritative configuration",
+      "producing_module": "model.mamba or frozen-state cache",
+      "replay_feasibility": "EARLIEST_SAFE_SHARED_REPLAY_BOUNDARY",
+      "serialization_boundary": "in-memory inputs['encoder_hidden_states']; not diagnostic JSON",
+      "source_file": "/kaggle/working/ContraMamba/src/contramamba/modeling_v6b_minimal.py",
+      "source_line_range": "300-311",
+      "state_name": "Mamba hidden state / encoder_hidden_states",
+      "tensor_shape_contract": "[B,T,H_backbone]"
+    }
+  },
+  "p7_gradient_recipient_authority": {
+    "candidate_order_declarations_by_mode": {
+      "frame_local_only": [
+        "frame_branch",
+        "polarity_branch",
+        "predicate_branch",
+        "sufficiency_branch"
+      ],
+      "joint": [
+        "frame_branch",
+        "polarity_branch",
+        "predicate_branch",
+        "sufficiency_branch"
+      ]
+    },
+    "direction_declarations_by_mode": {
+      "frame_local_only": [
+        "frame_branch",
+        "polarity_branch",
+        "predicate_branch",
+        "sufficiency_branch"
+      ],
+      "joint": [
+        "frame_branch",
+        "polarity_branch",
+        "predicate_branch",
+        "sufficiency_branch"
+      ]
+    },
+    "excluded_or_frozen_groups": {
+      "direction": {
+        "frame_local_only": [
+          "frozen_backbone",
+          "router_or_selector"
+        ],
+        "joint": [
+          "frozen_backbone",
+          "router_or_selector"
+        ]
+      },
+      "order": {
+        "frame_local_only": [
+          "frozen_backbone",
+          "router_or_selector"
+        ],
+        "joint": [
+          "frozen_backbone",
+          "router_or_selector"
+        ]
+      }
+    },
+    "normalized_recipient_groups": {
+      "direction": {
+        "frame_local_only": [
+          "frame_branch",
+          "polarity_branch",
+          "predicate_branch",
+          "sufficiency_branch"
+        ],
+        "joint": [
+          "frame_branch",
+          "polarity_branch",
+          "predicate_branch",
+          "sufficiency_branch"
+        ]
+      },
+      "order": {
+        "frame_local_only": [
+          "frame_branch",
+          "polarity_branch",
+          "predicate_branch",
+          "sufficiency_branch"
+        ],
+        "joint": [
+          "frame_branch",
+          "polarity_branch",
+          "predicate_branch",
+          "sufficiency_branch"
+        ]
+      }
+    },
+    "optional_recipient_groups": {
+      "direction": {
+        "frame_local_only": [
+          "entitlement_or_decision_branch",
+          "final_composer",
+          "other_trainable"
+        ],
+        "joint": [
+          "entitlement_or_decision_branch",
+          "final_composer",
+          "other_trainable"
+        ]
+      },
+      "order": {
+        "frame_local_only": [
+          "entitlement_or_decision_branch",
+          "final_composer",
+          "other_trainable"
+        ],
+        "joint": [
+          "entitlement_or_decision_branch",
+          "final_composer",
+          "other_trainable"
+        ]
+      }
+    },
+    "source_path": "/kaggle/working/ContraMamba/reports/stage196b2b6p7_full_counterfactual_forward_design_20260723_190847/stage196b2b6p7_gradient_path_design.csv",
+    "source_sha256": "9eb6cdc9e7a782078397e8837d5f36b3692668b05b52b380fd313a65db74f646"
+  },
+  "recommended_next_stage": "STAGE196B2B6P9_SEPARATE_STABILITY_INTERVENTION_IMPLEMENTATION",
+  "resource_observation_completed": true
+}

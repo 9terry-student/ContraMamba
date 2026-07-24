@@ -1,0 +1,2 @@
+model_mode,rng_policy,native_rng_state_handling,candidate_rng_state_handling,dropout_modules_encountered,stateful_buffers_encountered
+train,MATCH_NATIVE_AND_COUNTERPART_DOWNSTREAM_RESTORE_POST_NATIVE,pre and post state captured explicitly,donor restores pre; global restores post,frame_gate.pair_projector.2;predicate_coverage_head.pair_projector.2;sufficiency_gate.projector.2;polarity_energy_head.feature_projector.2,NONE

@@ -1,0 +1,15 @@
+check,candidate_mask,field,status,maximum_absolute_error
+native_forward_equivalence,NATIVE,logits,PASS,0.0
+native_forward_equivalence,NATIVE,predictions,PASS,0.0
+native_forward_equivalence,NATIVE,frame_pair_repr,PASS,0.0
+native_forward_equivalence,NATIVE,predicate_pair_repr,PASS,0.0
+native_forward_equivalence,NATIVE,sufficiency_repr,PASS,0.0
+native_forward_equivalence,NATIVE,polarity_features,PASS,0.0
+native_forward_equivalence,NATIVE,entitlement_prob,PASS,0.0
+native_forward_equivalence,NATIVE,base_logits,PASS,0.0
+candidate_identity_and_primitive_closure,00100000000000,row_action,PASS,0.0
+candidate_logits_finite,00100000000000,counterfactual_logits,PASS,0.0
+candidate_identity_and_primitive_closure,01000000000000,row_action,PASS,0.0
+candidate_logits_finite,01000000000000,counterfactual_logits,PASS,0.0
+candidate_identity_and_primitive_closure,10000000000000,row_action,PASS,0.0
+candidate_logits_finite,10000000000000,counterfactual_logits,PASS,0.0

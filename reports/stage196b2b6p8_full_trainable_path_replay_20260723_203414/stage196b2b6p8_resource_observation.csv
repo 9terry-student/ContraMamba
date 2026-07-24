@@ -1,0 +1,2 @@
+batch_size,candidate_count,mamba_forward_count,downstream_forward_replay_count,peak_cuda_allocated_bytes,peak_cuda_reserved_bytes,replay_output_tensor_count,retained_graph_count,status
+4,3,1,2,1095731200,1184890880,60,2,COMPLETE

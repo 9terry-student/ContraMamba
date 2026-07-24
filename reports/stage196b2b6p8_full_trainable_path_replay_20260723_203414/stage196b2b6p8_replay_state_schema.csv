@@ -1,0 +1,5 @@
+tensor,shape,dtype,device,requires_grad,role
+encoder_hidden_states,"(4, 128, 768)",torch.float32,cuda:0,False,P7 shared boundary
+attention_mask,"(4, 128)",torch.bool,cuda:0,False,production mask_or_flag
+claim_mask,"(4, 128)",torch.bool,cuda:0,False,production mask_or_flag
+evidence_mask,"(4, 128)",torch.bool,cuda:0,False,production mask_or_flag
