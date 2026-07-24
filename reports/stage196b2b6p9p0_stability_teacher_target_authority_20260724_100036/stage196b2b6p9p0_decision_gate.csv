@@ -1,0 +1,7 @@
+order,decision,condition,observed,reached,recommended_next_stage
+1,STAGE196B2B6P9P0_BLOCKED_UPSTREAM_AUTHORITY,any upstream authority or final P8 contract fails,"{""upstream_ok"":true}",False,STAGE196B2B6P9P0_REPAIR_UPSTREAM_AUTHORITY
+2,STAGE196B2B6P9P0_NO_JUSTIFIED_TEACHER,upstream passes but no candidate is ready for either family,"{""direction_ready"":[],""order_ready"":[]}",True,STAGE196B2B6P9P1_TEACHER_STATE_OBSERVABILITY_DESIGN
+3,STAGE196B2B6P9P0_DIRECTION_TEACHER_ONLY_READY,direction has at least one ready teacher and order has none,"{""direction_ready"":[],""order_ready"":[]}",False,STAGE196B2B6P9D_DIRECTION_ONLY_INTERVENTION_IMPLEMENTATION
+4,STAGE196B2B6P9P0_ORDER_TEACHER_ONLY_READY,order has at least one ready teacher and direction has none,"{""direction_ready"":[],""order_ready"":[]}",False,STAGE196B2B6P9O_ORDER_ONLY_INTERVENTION_IMPLEMENTATION
+5,STAGE196B2B6P9P0_SEPARATE_TEACHERS_READY,both families have ready teachers without shared-teacher coupling authority,"{""direction_ready"":[],""order_ready"":[]}",False,STAGE196B2B6P9DO_SEPARATE_INTERVENTION_IMPLEMENTATIONS
+6,STAGE196B2B6P9P0_SHARED_TEACHER_READY,same candidate is ready for both and sharing does not couple mechanisms,"{""shared_ready"":[],""sharing_decoupling_argument"":false}",False,STAGE196B2B6P9DO_SEPARATE_INTERVENTION_IMPLEMENTATIONS

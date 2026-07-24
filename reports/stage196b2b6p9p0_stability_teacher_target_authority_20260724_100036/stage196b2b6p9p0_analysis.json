@@ -1,0 +1,591 @@
+{
+  "blocking_reasons": [],
+  "candidate_order_family_eligibility": [],
+  "decision": "STAGE196B2B6P9P0_NO_JUSTIFIED_TEACHER",
+  "direction_family_eligibility": [],
+  "exact_tie_policy": "ignore exact teacher zero and exact order ties",
+  "intervention_families": [
+    "baseline",
+    "direction_consistency_only",
+    "candidate_order_consistency_only"
+  ],
+  "p4_authority": {
+    "attestation_limitations": [
+      "original P4 numerical tables",
+      "original P4 row-level data",
+      "original P4 source-file hashes",
+      "original P4 output-directory identity",
+      "original P4 creation timestamp",
+      "byte-identical original P4 content"
+    ],
+    "attestation_scope": [
+      "P4 decision identity",
+      "zero P4 blockers",
+      "P4 recommended next-stage identity",
+      "zero failed P4 contracts"
+    ],
+    "authority_mode": "DOWNSTREAM_ATTESTED_P4_MINIMAL_CLOSURE",
+    "blocking_reasons": [],
+    "checks": {
+      "p6_contract_hash_closure": true,
+      "p6_decision_closure": true,
+      "p6_zero_failed_contracts_closure": true,
+      "p7_analysis_decision_concurrence": true,
+      "p7_contract_decision_concurrence": true
+    },
+    "minimal_authority_passed": true,
+    "original_artifact_available": false,
+    "original_artifact_not_fabricated": true,
+    "original_artifact_path": "",
+    "p6_contract_path": "/kaggle/working/ContraMamba/reports/stage196b2b6p6_minimal_gradient_path_instrumentation_20260723_184816/stage196b2b6p6_contract.csv",
+    "p6_contract_sha256_expected": "2949f735c65ff9ebd7f9804e2cd6a73600069d5f04542e26ec4faf881f0e569c",
+    "p6_contract_sha256_observed": "2949f735c65ff9ebd7f9804e2cd6a73600069d5f04542e26ec4faf881f0e569c",
+    "p6_decision_closure": {
+      "observed": {
+        "blocking_reasons": [],
+        "decision": "STAGE196B2B6P4_ACTION_RESPONSE_TOPOLOGY_UNSTABLE",
+        "recommended_next_stage": "STAGE196B2B6P5_TRAINING_SIDE_RESPONSE_STABILITY_INTERVENTION_DESIGN"
+      },
+      "passed": true,
+      "passed_value": true,
+      "required": {
+        "blocking_reasons": [],
+        "decision": "STAGE196B2B6P4_ACTION_RESPONSE_TOPOLOGY_UNSTABLE",
+        "recommended_next_stage": "STAGE196B2B6P5_TRAINING_SIDE_RESPONSE_STABILITY_INTERVENTION_DESIGN"
+      },
+      "row_count": 1
+    },
+    "p6_zero_failed_contracts_closure": {
+      "observed": true,
+      "passed": true,
+      "passed_value": true,
+      "required": true,
+      "row_count": 1
+    },
+    "p7_analysis_decision_concurrence": {
+      "observed": "STAGE196B2B6P4_ACTION_RESPONSE_TOPOLOGY_UNSTABLE",
+      "passed": true,
+      "required": "STAGE196B2B6P4_ACTION_RESPONSE_TOPOLOGY_UNSTABLE"
+    },
+    "p7_contract_decision_concurrence": {
+      "observed": {
+        "blocking_reasons": [],
+        "decision": "STAGE196B2B6P4_ACTION_RESPONSE_TOPOLOGY_UNSTABLE"
+      },
+      "passed": true,
+      "passed_value": true,
+      "required": {
+        "blocking_reasons": [],
+        "decision": "STAGE196B2B6P4_ACTION_RESPONSE_TOPOLOGY_UNSTABLE"
+      },
+      "row_count": 1
+    }
+  },
+  "p5_authority": {
+    "attestation_limitations": [
+      "the original P5 analysis JSON",
+      "original P5 numerical tables",
+      "original P5 output directory",
+      "original P5 timestamps",
+      "original P5 source hashes",
+      "original P5 complete prose",
+      "byte-identical original P5 content"
+    ],
+    "attestation_scope": [
+      "P5 decision identity",
+      "zero P5 blockers",
+      "P5 recommended-next-stage identity",
+      "P5 source-feasibility facts required by P6",
+      "teacher unavailable without additional instrumentation",
+      "P7 concurrence that no teacher was authorized"
+    ],
+    "authority_mode": "DOWNSTREAM_ATTESTED_P5_MINIMAL_CLOSURE",
+    "blocking_reasons": [],
+    "checks": {
+      "p6_contract_hash_closure": true,
+      "p6_decision_closure": true,
+      "p6_source_feasibility_closure": true,
+      "p7_analysis_decision_concurrence": true,
+      "p7_contract_decision_concurrence": true,
+      "p7_teacher_non_authorization_closure": true
+    },
+    "minimal_authority_passed": true,
+    "original_artifact_available": false,
+    "original_artifact_not_fabricated": true,
+    "original_artifact_path": "",
+    "p6_contract_path": "/kaggle/working/ContraMamba/reports/stage196b2b6p6_minimal_gradient_path_instrumentation_20260723_184816/stage196b2b6p6_contract.csv",
+    "p6_contract_sha256_expected": "2949f735c65ff9ebd7f9804e2cd6a73600069d5f04542e26ec4faf881f0e569c",
+    "p6_contract_sha256_observed": "2949f735c65ff9ebd7f9804e2cd6a73600069d5f04542e26ec4faf881f0e569c",
+    "p6_decision_closure": {
+      "observed": {
+        "blocking_reasons": [],
+        "decision": "STAGE196B2B6P5_GRADIENT_PATH_INSTRUMENTATION_REQUIRED",
+        "recommended_next_stage": "STAGE196B2B6P6_MINIMAL_GRADIENT_PATH_INSTRUMENTATION"
+      },
+      "passed": true,
+      "passed_value": true,
+      "required": {
+        "blocking_reasons": [],
+        "decision": "STAGE196B2B6P5_GRADIENT_PATH_INSTRUMENTATION_REQUIRED",
+        "recommended_next_stage": "STAGE196B2B6P6_MINIMAL_GRADIENT_PATH_INSTRUMENTATION"
+      },
+      "row_count": 1
+    },
+    "p6_source_feasibility_closure": {
+      "observed": {
+        "counterfactual_gradient_path": "MINIMAL_GRADIENT_INSTRUMENTATION_REQUIRED",
+        "estimated_incremental_cost": {
+          "candidate_geometry": "minimum one counterpart-arm full forward plus negligible three-candidate composer arithmetic",
+          "separate_teacher": "one additional no-grad teacher full forward plus EMA update"
+        },
+        "exact_training_entry_point": "scripts/train_controlled_v6b_minimal.py::main::<locals>.run_training_v6b",
+        "final_margin_autograd": true,
+        "native_final_scores": "src/contramamba/modeling_v6b_minimal.py::ContraMambaV6BMinimal.forward::output['logits']",
+        "optimizer_step_boundary": "after total_loss assembly/backward/clip in run_training_v6b",
+        "teacher_status": "UNAVAILABLE_WITHOUT_ADDITIONAL_INSTRUMENTATION",
+        "three_candidates_currently_available": false,
+        "three_candidates_vectorizable": true,
+        "top1_runner_up_piecewise": true
+      },
+      "observed_required_fields": {
+        "counterfactual_gradient_path": "MINIMAL_GRADIENT_INSTRUMENTATION_REQUIRED",
+        "exact_training_entry_point": "scripts/train_controlled_v6b_minimal.py::main::<locals>.run_training_v6b",
+        "final_margin_autograd": true,
+        "native_final_scores": "src/contramamba/modeling_v6b_minimal.py::ContraMambaV6BMinimal.forward::output['logits']",
+        "optimizer_step_boundary": "after total_loss assembly/backward/clip in run_training_v6b",
+        "teacher_status": "UNAVAILABLE_WITHOUT_ADDITIONAL_INSTRUMENTATION",
+        "three_candidates_currently_available": false,
+        "three_candidates_vectorizable": true,
+        "top1_runner_up_piecewise": true
+      },
+      "observed_subset_passed": true,
+      "passed": true,
+      "passed_value": true,
+      "required": {
+        "counterfactual_gradient_path": "MINIMAL_GRADIENT_INSTRUMENTATION_REQUIRED",
+        "final_margin_autograd": true,
+        "three_candidates_currently_available": false
+      },
+      "row_count": 1
+    },
+    "p7_analysis_decision_concurrence": {
+      "observed": "STAGE196B2B6P5_GRADIENT_PATH_INSTRUMENTATION_REQUIRED",
+      "passed": true,
+      "required": "STAGE196B2B6P5_GRADIENT_PATH_INSTRUMENTATION_REQUIRED"
+    },
+    "p7_contract_decision_concurrence": {
+      "observed": {
+        "blocking_reasons": [],
+        "decision": "STAGE196B2B6P5_GRADIENT_PATH_INSTRUMENTATION_REQUIRED"
+      },
+      "passed": true,
+      "passed_value": true,
+      "required": {
+        "blocking_reasons": [],
+        "decision": "STAGE196B2B6P5_GRADIENT_PATH_INSTRUMENTATION_REQUIRED"
+      },
+      "row_count": 1
+    },
+    "p7_teacher_non_authorization_closure": {
+      "ema_interpretation": "conceptual preference only; not implementation authority",
+      "observed": {
+        "exact_ties_ignored": true,
+        "implementation_authorized": false,
+        "p5_conceptual_preference": "stop-gradient EMA model",
+        "selected_teacher": "not yet justified",
+        "teacher_rows_descriptive": true
+      },
+      "passed": true,
+      "required": {
+        "exact_ties_ignored": true,
+        "implementation_authorized": false,
+        "p5_conceptual_preference": "stop-gradient EMA model",
+        "selected_teacher": "not yet justified"
+      }
+    }
+  },
+  "p8_graph_interpretation": {
+    "candidate_order": {
+      "counts": {
+        "CONNECTED_NONZERO": 0,
+        "CONNECTED_ZERO_AT_OBSERVED_BATCH": 189,
+        "DISCONNECTED": 189
+      },
+      "csv_target_family": "order",
+      "family": "candidate_order",
+      "graph_available": true,
+      "interpretation": "graph-connected but zero at observed batch",
+      "other_classifications": {},
+      "row_count": 378
+    },
+    "direction": {
+      "counts": {
+        "CONNECTED_NONZERO": 81,
+        "CONNECTED_ZERO_AT_OBSERVED_BATCH": 27,
+        "DISCONNECTED": 108
+      },
+      "csv_target_family": "direction",
+      "family": "direction",
+      "graph_available": true,
+      "interpretation": "graph-connected with nonzero observed gradients",
+      "other_classifications": {},
+      "row_count": 216
+    },
+    "distinction_preserved": [
+      "CONNECTED_NONZERO",
+      "CONNECTED_ZERO_AT_OBSERVED_BATCH",
+      "DISCONNECTED"
+    ]
+  },
+  "recommended_next_stage": "STAGE196B2B6P9P1_TEACHER_STATE_OBSERVABILITY_DESIGN",
+  "remaining_scientific_uncertainty": "which, if any, non-self teacher supplies portable causal signs without becoming a second opaque selector",
+  "report_summary": {
+    "current_native_algebraic_identity": "invalid stability teacher",
+    "donor_arm_imitation_risk": "blocked without portability/global-superiority proof",
+    "ema_state_requirements": "initialization, update timing, decay ownership, buffers, dropout/eval policy, serialization, resume, determinism, warm-up, ties, drift observability, and default-off closure",
+    "fixed_checkpoint_restriction": "reconstructed seed183 checkpoints remain diagnostic-only"
+  },
+  "source_facts": {
+    "ema_symbols_present": false,
+    "model_loss_assembly_line": "893",
+    "model_path": "/kaggle/working/ContraMamba/src/contramamba/modeling_v6b_minimal.py",
+    "model_sha256": "0aa6eb65d5a7be54dd2e0184509fc40a3e4943289b15a4dfa12b965bff55bc8a",
+    "p8_default_off_line": "369,372,18437,22194,22554",
+    "replay_full_trainable_path_line": "342",
+    "stability_loss_none_line": "512",
+    "trainer_path": "/kaggle/working/ContraMamba/scripts/train_controlled_v6b_minimal.py",
+    "trainer_sha256": "2d70bffe75ece8a530c96d7421e0e1b371b5dd0b29e63d8e207874960ecad564"
+  },
+  "stage": "Stage196-B2-B6P9-P0",
+  "stop_gradient_policy": "teacher signs are stop-gradient; student target quantities remain live",
+  "teacher_candidate_audit": [
+    {
+      "available_in_current_training_source": true,
+      "blocking_reason": "student_delta and current-native stop-gradient sign/order are derived from the same forward quantities, so the teacher is not an independent stability authority",
+      "candidate_order_family_status": "INVALID_ALGEBRAIC_IDENTITY",
+      "causal_interpretability": "invalid: same-forward target is algebraically identical to the live student quantity after stop-gradient",
+      "direction_family_status": "INVALID_ALGEBRAIC_IDENTITY",
+      "exact_tie_policy": "exact teacher zero/order ties ignored",
+      "gradient_stop_policy": "teacher target must be stop-gradient; student remains live",
+      "requires_checkpoint_dependency": false,
+      "requires_historical_runtime_artifact": false,
+      "requires_new_state": false,
+      "requires_second_model_copy": false,
+      "risk_of_cross_seed_coordinate_locking": "low",
+      "risk_of_self_confirmation": "high",
+      "risk_of_target_drift": "none independent of student because target is current student",
+      "run_portability": "portable but self-referential",
+      "seed_portability": "portable but self-referential",
+      "teacher_candidate": "CURRENT_NATIVE_STOP_GRAD"
+    },
+    {
+      "available_in_current_training_source": true,
+      "blocking_reason": "would force branches toward a frame-local-only coordinate system without source authority that it is the desired teacher",
+      "candidate_order_family_status": "BLOCKED_DONOR_ARM_IMITATION_RISK",
+      "causal_interpretability": "mechanistically meaningful for FrameGate isolation but not globally superior",
+      "direction_family_status": "BLOCKED_DONOR_ARM_IMITATION_RISK",
+      "exact_tie_policy": "exact teacher zero/order ties ignored",
+      "gradient_stop_policy": "teacher target must be stop-gradient; student remains live",
+      "requires_checkpoint_dependency": true,
+      "requires_historical_runtime_artifact": true,
+      "requires_new_state": false,
+      "requires_second_model_copy": true,
+      "risk_of_cross_seed_coordinate_locking": "high",
+      "risk_of_self_confirmation": "medium",
+      "risk_of_target_drift": "checkpoint/runtime dependent",
+      "run_portability": "not established",
+      "seed_portability": "not established",
+      "teacher_candidate": "FRAME_LOCAL_ONLY_DONOR_STOP_GRAD"
+    },
+    {
+      "available_in_current_training_source": false,
+      "blocking_reason": "no source lifecycle for per-step snapshot creation, update, serialization, resume, or observability",
+      "candidate_order_family_status": "REQUIRES_NEW_STATE_LIFECYCLE",
+      "causal_interpretability": "temporally local; may be near-identity",
+      "direction_family_status": "REQUIRES_NEW_STATE_LIFECYCLE",
+      "exact_tie_policy": "exact teacher zero/order ties ignored",
+      "gradient_stop_policy": "teacher target must be stop-gradient; student remains live",
+      "requires_checkpoint_dependency": false,
+      "requires_historical_runtime_artifact": false,
+      "requires_new_state": true,
+      "requires_second_model_copy": true,
+      "risk_of_cross_seed_coordinate_locking": "low if initialized per seed",
+      "risk_of_self_confirmation": "medium-high",
+      "risk_of_target_drift": "high at optimizer-step cadence",
+      "run_portability": "designable but not source-authorized",
+      "seed_portability": "designable but not source-authorized",
+      "teacher_candidate": "PREVIOUS_STEP_FROZEN_SNAPSHOT"
+    },
+    {
+      "available_in_current_training_source": false,
+      "blocking_reason": "no source lifecycle for epoch snapshot, checkpoint/state-copy retention, resume, or target-count observability",
+      "candidate_order_family_status": "REQUIRES_NEW_STATE_LIFECYCLE",
+      "causal_interpretability": "stronger temporal separation than previous-step",
+      "direction_family_status": "REQUIRES_NEW_STATE_LIFECYCLE",
+      "exact_tie_policy": "exact teacher zero/order ties ignored",
+      "gradient_stop_policy": "teacher target must be stop-gradient; student remains live",
+      "requires_checkpoint_dependency": true,
+      "requires_historical_runtime_artifact": false,
+      "requires_new_state": true,
+      "requires_second_model_copy": true,
+      "risk_of_cross_seed_coordinate_locking": "low if initialized per seed",
+      "risk_of_self_confirmation": "medium",
+      "risk_of_target_drift": "coarse epoch-boundary drift",
+      "run_portability": "designable but not source-authorized",
+      "seed_portability": "designable but not source-authorized",
+      "teacher_candidate": "PREVIOUS_EPOCH_FROZEN_SNAPSHOT"
+    },
+    {
+      "available_in_current_training_source": false,
+      "blocking_reason": "P7 made EMA a conceptual preference only; initialization, update timing, decay ownership, buffers, dropout/eval policy, serialization, resume, warm-up, exact ties, and drift observability are not source-authorized",
+      "candidate_order_family_status": "REQUIRES_NEW_STATE_LIFECYCLE",
+      "causal_interpretability": "conceptually smooth teacher; implementation authority absent",
+      "direction_family_status": "REQUIRES_NEW_STATE_LIFECYCLE",
+      "exact_tie_policy": "exact teacher zero/order ties ignored",
+      "gradient_stop_policy": "teacher target must be stop-gradient; student remains live",
+      "requires_checkpoint_dependency": true,
+      "requires_historical_runtime_artifact": false,
+      "requires_new_state": true,
+      "requires_second_model_copy": true,
+      "risk_of_cross_seed_coordinate_locking": "low if per-seed EMA is deterministic",
+      "risk_of_self_confirmation": "medium",
+      "risk_of_target_drift": "requires explicit drift observability",
+      "run_portability": "designable but not source-authorized",
+      "seed_portability": "designable but not source-authorized",
+      "teacher_candidate": "EMA_STUDENT_TEACHER"
+    },
+    {
+      "available_in_current_training_source": false,
+      "blocking_reason": "seed183 reconstructed checkpoints are not permanent teacher infrastructure and are not available for every future seed",
+      "candidate_order_family_status": "DIAGNOSTIC_ONLY_NOT_PORTABLE",
+      "causal_interpretability": "diagnostic-only unless portability is proven",
+      "direction_family_status": "DIAGNOSTIC_ONLY_NOT_PORTABLE",
+      "exact_tie_policy": "exact teacher zero/order ties ignored",
+      "gradient_stop_policy": "teacher target must be stop-gradient; student remains live",
+      "requires_checkpoint_dependency": true,
+      "requires_historical_runtime_artifact": true,
+      "requires_new_state": false,
+      "requires_second_model_copy": true,
+      "risk_of_cross_seed_coordinate_locking": "high",
+      "risk_of_self_confirmation": "low",
+      "risk_of_target_drift": "none after fixation, but historically anchored",
+      "run_portability": "failed: reconstructed after runtime loss",
+      "seed_portability": "failed: seed183-specific",
+      "teacher_candidate": "FIXED_RECONSTRUCTED_CHECKPOINT"
+    }
+  ],
+  "teacher_candidates": [
+    "CURRENT_NATIVE_STOP_GRAD",
+    "FRAME_LOCAL_ONLY_DONOR_STOP_GRAD",
+    "PREVIOUS_STEP_FROZEN_SNAPSHOT",
+    "PREVIOUS_EPOCH_FROZEN_SNAPSHOT",
+    "EMA_STUDENT_TEACHER",
+    "FIXED_RECONSTRUCTED_CHECKPOINT"
+  ],
+  "title": "Separate Stability Teacher/Target Authority Design",
+  "upstream_authority": {
+    "p4_analysis_json": "",
+    "p4_authority": {
+      "attestation_limitations": [
+        "original P4 numerical tables",
+        "original P4 row-level data",
+        "original P4 source-file hashes",
+        "original P4 output-directory identity",
+        "original P4 creation timestamp",
+        "byte-identical original P4 content"
+      ],
+      "attestation_scope": [
+        "P4 decision identity",
+        "zero P4 blockers",
+        "P4 recommended next-stage identity",
+        "zero failed P4 contracts"
+      ],
+      "authority_mode": "DOWNSTREAM_ATTESTED_P4_MINIMAL_CLOSURE",
+      "blocking_reasons": [],
+      "checks": {
+        "p6_contract_hash_closure": true,
+        "p6_decision_closure": true,
+        "p6_zero_failed_contracts_closure": true,
+        "p7_analysis_decision_concurrence": true,
+        "p7_contract_decision_concurrence": true
+      },
+      "minimal_authority_passed": true,
+      "original_artifact_available": false,
+      "original_artifact_not_fabricated": true,
+      "original_artifact_path": "",
+      "p6_contract_path": "/kaggle/working/ContraMamba/reports/stage196b2b6p6_minimal_gradient_path_instrumentation_20260723_184816/stage196b2b6p6_contract.csv",
+      "p6_contract_sha256_expected": "2949f735c65ff9ebd7f9804e2cd6a73600069d5f04542e26ec4faf881f0e569c",
+      "p6_contract_sha256_observed": "2949f735c65ff9ebd7f9804e2cd6a73600069d5f04542e26ec4faf881f0e569c",
+      "p6_decision_closure": {
+        "observed": {
+          "blocking_reasons": [],
+          "decision": "STAGE196B2B6P4_ACTION_RESPONSE_TOPOLOGY_UNSTABLE",
+          "recommended_next_stage": "STAGE196B2B6P5_TRAINING_SIDE_RESPONSE_STABILITY_INTERVENTION_DESIGN"
+        },
+        "passed": true,
+        "passed_value": true,
+        "required": {
+          "blocking_reasons": [],
+          "decision": "STAGE196B2B6P4_ACTION_RESPONSE_TOPOLOGY_UNSTABLE",
+          "recommended_next_stage": "STAGE196B2B6P5_TRAINING_SIDE_RESPONSE_STABILITY_INTERVENTION_DESIGN"
+        },
+        "row_count": 1
+      },
+      "p6_zero_failed_contracts_closure": {
+        "observed": true,
+        "passed": true,
+        "passed_value": true,
+        "required": true,
+        "row_count": 1
+      },
+      "p7_analysis_decision_concurrence": {
+        "observed": "STAGE196B2B6P4_ACTION_RESPONSE_TOPOLOGY_UNSTABLE",
+        "passed": true,
+        "required": "STAGE196B2B6P4_ACTION_RESPONSE_TOPOLOGY_UNSTABLE"
+      },
+      "p7_contract_decision_concurrence": {
+        "observed": {
+          "blocking_reasons": [],
+          "decision": "STAGE196B2B6P4_ACTION_RESPONSE_TOPOLOGY_UNSTABLE"
+        },
+        "passed": true,
+        "passed_value": true,
+        "required": {
+          "blocking_reasons": [],
+          "decision": "STAGE196B2B6P4_ACTION_RESPONSE_TOPOLOGY_UNSTABLE"
+        },
+        "row_count": 1
+      }
+    },
+    "p5_analysis_json": "",
+    "p5_authority": {
+      "attestation_limitations": [
+        "the original P5 analysis JSON",
+        "original P5 numerical tables",
+        "original P5 output directory",
+        "original P5 timestamps",
+        "original P5 source hashes",
+        "original P5 complete prose",
+        "byte-identical original P5 content"
+      ],
+      "attestation_scope": [
+        "P5 decision identity",
+        "zero P5 blockers",
+        "P5 recommended-next-stage identity",
+        "P5 source-feasibility facts required by P6",
+        "teacher unavailable without additional instrumentation",
+        "P7 concurrence that no teacher was authorized"
+      ],
+      "authority_mode": "DOWNSTREAM_ATTESTED_P5_MINIMAL_CLOSURE",
+      "blocking_reasons": [],
+      "checks": {
+        "p6_contract_hash_closure": true,
+        "p6_decision_closure": true,
+        "p6_source_feasibility_closure": true,
+        "p7_analysis_decision_concurrence": true,
+        "p7_contract_decision_concurrence": true,
+        "p7_teacher_non_authorization_closure": true
+      },
+      "minimal_authority_passed": true,
+      "original_artifact_available": false,
+      "original_artifact_not_fabricated": true,
+      "original_artifact_path": "",
+      "p6_contract_path": "/kaggle/working/ContraMamba/reports/stage196b2b6p6_minimal_gradient_path_instrumentation_20260723_184816/stage196b2b6p6_contract.csv",
+      "p6_contract_sha256_expected": "2949f735c65ff9ebd7f9804e2cd6a73600069d5f04542e26ec4faf881f0e569c",
+      "p6_contract_sha256_observed": "2949f735c65ff9ebd7f9804e2cd6a73600069d5f04542e26ec4faf881f0e569c",
+      "p6_decision_closure": {
+        "observed": {
+          "blocking_reasons": [],
+          "decision": "STAGE196B2B6P5_GRADIENT_PATH_INSTRUMENTATION_REQUIRED",
+          "recommended_next_stage": "STAGE196B2B6P6_MINIMAL_GRADIENT_PATH_INSTRUMENTATION"
+        },
+        "passed": true,
+        "passed_value": true,
+        "required": {
+          "blocking_reasons": [],
+          "decision": "STAGE196B2B6P5_GRADIENT_PATH_INSTRUMENTATION_REQUIRED",
+          "recommended_next_stage": "STAGE196B2B6P6_MINIMAL_GRADIENT_PATH_INSTRUMENTATION"
+        },
+        "row_count": 1
+      },
+      "p6_source_feasibility_closure": {
+        "observed": {
+          "counterfactual_gradient_path": "MINIMAL_GRADIENT_INSTRUMENTATION_REQUIRED",
+          "estimated_incremental_cost": {
+            "candidate_geometry": "minimum one counterpart-arm full forward plus negligible three-candidate composer arithmetic",
+            "separate_teacher": "one additional no-grad teacher full forward plus EMA update"
+          },
+          "exact_training_entry_point": "scripts/train_controlled_v6b_minimal.py::main::<locals>.run_training_v6b",
+          "final_margin_autograd": true,
+          "native_final_scores": "src/contramamba/modeling_v6b_minimal.py::ContraMambaV6BMinimal.forward::output['logits']",
+          "optimizer_step_boundary": "after total_loss assembly/backward/clip in run_training_v6b",
+          "teacher_status": "UNAVAILABLE_WITHOUT_ADDITIONAL_INSTRUMENTATION",
+          "three_candidates_currently_available": false,
+          "three_candidates_vectorizable": true,
+          "top1_runner_up_piecewise": true
+        },
+        "observed_required_fields": {
+          "counterfactual_gradient_path": "MINIMAL_GRADIENT_INSTRUMENTATION_REQUIRED",
+          "exact_training_entry_point": "scripts/train_controlled_v6b_minimal.py::main::<locals>.run_training_v6b",
+          "final_margin_autograd": true,
+          "native_final_scores": "src/contramamba/modeling_v6b_minimal.py::ContraMambaV6BMinimal.forward::output['logits']",
+          "optimizer_step_boundary": "after total_loss assembly/backward/clip in run_training_v6b",
+          "teacher_status": "UNAVAILABLE_WITHOUT_ADDITIONAL_INSTRUMENTATION",
+          "three_candidates_currently_available": false,
+          "three_candidates_vectorizable": true,
+          "top1_runner_up_piecewise": true
+        },
+        "observed_subset_passed": true,
+        "passed": true,
+        "passed_value": true,
+        "required": {
+          "counterfactual_gradient_path": "MINIMAL_GRADIENT_INSTRUMENTATION_REQUIRED",
+          "final_margin_autograd": true,
+          "three_candidates_currently_available": false
+        },
+        "row_count": 1
+      },
+      "p7_analysis_decision_concurrence": {
+        "observed": "STAGE196B2B6P5_GRADIENT_PATH_INSTRUMENTATION_REQUIRED",
+        "passed": true,
+        "required": "STAGE196B2B6P5_GRADIENT_PATH_INSTRUMENTATION_REQUIRED"
+      },
+      "p7_contract_decision_concurrence": {
+        "observed": {
+          "blocking_reasons": [],
+          "decision": "STAGE196B2B6P5_GRADIENT_PATH_INSTRUMENTATION_REQUIRED"
+        },
+        "passed": true,
+        "passed_value": true,
+        "required": {
+          "blocking_reasons": [],
+          "decision": "STAGE196B2B6P5_GRADIENT_PATH_INSTRUMENTATION_REQUIRED"
+        },
+        "row_count": 1
+      },
+      "p7_teacher_non_authorization_closure": {
+        "ema_interpretation": "conceptual preference only; not implementation authority",
+        "observed": {
+          "exact_ties_ignored": true,
+          "implementation_authorized": false,
+          "p5_conceptual_preference": "stop-gradient EMA model",
+          "selected_teacher": "not yet justified",
+          "teacher_rows_descriptive": true
+        },
+        "passed": true,
+        "required": {
+          "exact_ties_ignored": true,
+          "implementation_authorized": false,
+          "p5_conceptual_preference": "stop-gradient EMA model",
+          "selected_teacher": "not yet justified"
+        }
+      }
+    },
+    "p6_contract_csv": "/kaggle/working/ContraMamba/reports/stage196b2b6p6_minimal_gradient_path_instrumentation_20260723_184816/stage196b2b6p6_contract.csv",
+    "p7_analysis_json": "/kaggle/working/ContraMamba/reports/stage196b2b6p7_full_counterfactual_forward_design_20260723_190847/stage196b2b6p7_analysis.json",
+    "p7_contract_csv": "/kaggle/working/ContraMamba/reports/stage196b2b6p7_full_counterfactual_forward_design_20260723_190847/stage196b2b6p7_contract.csv",
+    "p8_analysis_json": "/kaggle/working/ContraMamba/reports/stage196b2b6p8_full_trainable_path_replay_20260723_203414/stage196b2b6p8_analysis.json",
+    "p8_final_authority_dir": "/kaggle/working/ContraMamba/reports/stage196b2b6p8_full_trainable_path_replay_20260723_203414",
+    "p8_gradient_connectivity_csv": "/kaggle/working/ContraMamba/reports/stage196b2b6p8_full_trainable_path_replay_20260723_203414/stage196b2b6p8_gradient_connectivity.csv"
+  }
+}
