@@ -1,4 +1,4 @@
-"""Train ContraMamba-v6B-minimal on controlled intervention data.
+﻿"""Train ContraMamba-v6B-minimal on controlled intervention data.
 
 Minimal v6B wrapper: reuses v5 training infrastructure, adds temporal/predicate
 comparator alphas with learnable scaling. No composer, no product_final_loss.
@@ -44,6 +44,11 @@ from contramamba.comparator_flags import (  # noqa: E402
     temporal_mismatch_flags_none,
 )
 from contramamba.modeling_v6b_minimal import ContraMambaV6BMinimal  # noqa: E402
+from contramamba.teacher_state_observer import (  # noqa: E402
+    build_teacher_observer,
+    teacher_observer_enabled,
+    validate_teacher_observer_cli,
+)
 from contramamba.modeling_vnext_minimal import ContraMambaVNextMinimal  # noqa: E402
 from scripts import train_controlled_v5 as v5  # noqa: E402
 from scripts.stage43_external_factver_eval_utils import (  # noqa: E402
@@ -9115,6 +9120,43 @@ def build_parser() -> argparse.ArgumentParser:
             "future stability stage. This captures tensors only: it adds no "
             "replay, loss, backward, optimizer, scheduler, or selection change."
         ),
+    )    parser.add_argument(
+        "--teacher-observer-mode",
+        choices=("off", "previous_step", "previous_epoch", "ema"),
+        default="off",
+        help=(
+            "Stage196-B2-B6P9-P2 observational teacher-state mode. Default off. "
+            "Enabled modes add no loss, gradient, prediction, optimizer, scheduler, "
+            "or checkpoint-selection behavior."
+        ),
+    )
+    parser.add_argument(
+        "--teacher-observer-target-family",
+        choices=("none", "direction", "candidate_order"),
+        default="none",
+        help=(
+            "Stage196-B2-B6P9-P2 single observed target family. Use none only "
+            "with --teacher-observer-mode off; direction and candidate_order are "
+            "separate runs."
+        ),
+    )
+    parser.add_argument(
+        "--teacher-observer-ema-decay",
+        type=float,
+        default=None,
+        help=(
+            "Explicit EMA decay for --teacher-observer-mode ema. No default is "
+            "provided; forbidden for non-EMA modes; must satisfy 0 < decay < 1."
+        ),
+    )
+    parser.add_argument(
+        "--teacher-observer-output-dir",
+        type=Path,
+        default=None,
+        help=(
+            "Optional Stage196-B2-B6P9-P2 observer sidecar directory. Default: "
+            "the provenance run directory's teacher_observer subdirectory."
+        ),
     )
     parser.add_argument(
         "--split-seed",
@@ -14033,6 +14075,7 @@ def _save_model_checkpoint(
     args: argparse.Namespace,
     best_epoch: int | None,
     best_dev_metrics: dict[str, Any] | None = None,
+    teacher_observer_state: dict[str, Any] | None = None,
 ) -> None:
     checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
     metadata = {
@@ -14067,16 +14110,16 @@ def _save_model_checkpoint(
         "selected_epoch": best_epoch,
         "best_dev_metrics": best_dev_metrics,
     }
-    torch.save(
-        {
-            "model_state_dict": {
-                key: value.detach().cpu().clone()
-                for key, value in model.state_dict().items()
-            },
-            "metadata": metadata,
+    payload = {
+        "model_state_dict": {
+            key: value.detach().cpu().clone()
+            for key, value in model.state_dict().items()
         },
-        checkpoint_path,
-    )
+        "metadata": metadata,
+    }
+    if teacher_observer_state is not None:
+        payload["teacher_observer_state"] = teacher_observer_state
+    torch.save(payload, checkpoint_path)
 
 def _stage160_json_safe(value: Any) -> Any:
     if isinstance(value, Path):
@@ -14111,6 +14154,7 @@ def _save_stage176a0_selected_checkpoint(
     selected_state_dict: dict[str, Any],
     metadata: dict[str, Any],
     selected_epoch: int,
+    teacher_observer_state: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     checkpoint_path = checkpoint_path.resolve()
     checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
@@ -14120,6 +14164,8 @@ def _save_stage176a0_selected_checkpoint(
         "model_state_dict": _stage176a0_cpu_state_dict(selected_state_dict),
         "metadata": metadata,
     }
+    if teacher_observer_state is not None:
+        payload["teacher_observer_state"] = teacher_observer_state
     try:
         torch.save(payload, temporary_path)
         if not temporary_path.is_file() or temporary_path.stat().st_size <= 0:
@@ -14181,6 +14227,7 @@ def _save_stage160_checkpoint(
     selected_epoch: int | None,
     clean_dev_metrics: dict[str, Any] | None,
     vocab: dict[str, int] | None = None,
+    teacher_observer_state: dict[str, Any] | None = None,
 ) -> None:
     checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
     label_mapping = dict(v5.ID_TO_FINAL_LABEL)
@@ -14230,6 +14277,8 @@ def _save_stage160_checkpoint(
         "stage160_external_used_for_checkpoint_selection": False,
         "stage160_shadow_diagnostics_integrated": False,
     }
+    if teacher_observer_state is not None:
+        payload["teacher_observer_state"] = teacher_observer_state
     if vocab is not None:
         payload["vocab"] = dict(vocab)
         metadata["vocab_size"] = len(vocab)
@@ -15842,6 +15891,16 @@ def main(argv: list[str] | None = None) -> int:
     raw_argv = list(sys.argv[1:] if argv is None else argv)
     _stage174a_runtime_start = time.monotonic()
     args = parser.parse_args(argv)
+    try:
+        validate_teacher_observer_cli(
+            args.teacher_observer_mode,
+            args.teacher_observer_target_family,
+            args.teacher_observer_ema_decay,
+        )
+    except ValueError as exc:
+        parser.error(str(exc))
+    if teacher_observer_enabled(args) and args.architecture != "v6b_minimal":
+        parser.error("--teacher-observer-mode enabled requires --architecture v6b_minimal")
     if (
         args.frame_downstream_gradient_mode == "frame_local_only"
         and args.architecture != "v6b_minimal"
@@ -18171,6 +18230,7 @@ def main(argv: list[str] | None = None) -> int:
         compatible_positive_margin_logit=0.0,
         compatible_positive_margin_eligible_mask=None,
         compatible_positive_margin_sidecar_audit=None,
+        teacher_observer_output_dir=None,
     ):
         """Modified run_training that passes flags to v6b model."""
         if epochs < 1:
@@ -18225,6 +18285,7 @@ def main(argv: list[str] | None = None) -> int:
             )
         optimizer = v5.build_optimizer(model, lr, head_lr, encoder_lr)
         _stage195_parameter_state: dict[str, Any] | None = None
+
         if _stage195_parameter_swa_enabled:
             _stage195_parameter_state = _stage195_initialize_parameter_state(
                 model, optimizer
@@ -18232,6 +18293,16 @@ def main(argv: list[str] | None = None) -> int:
         gradient_accumulation_steps = int(gradient_accumulation_steps)
         amp_enabled = bool(fp16 and device.type == "cuda")
         grad_scaler = _make_cuda_grad_scaler(amp_enabled)
+        teacher_observer = build_teacher_observer(
+            args=args,
+            student_model=model,
+            output_dir=Path(teacher_observer_output_dir or "."),
+            run_name=run_name,
+            seed=seed,
+            device=device,
+            feature_input_fn=_vnext_model_feature_inputs,
+            autocast_fn=_cuda_amp_autocast,
+        )
         sampling_generator = torch.Generator().manual_seed(seed)
         best_epoch = 0
         best_score = float("-inf")
@@ -18420,6 +18491,8 @@ def main(argv: list[str] | None = None) -> int:
                 raise RuntimeError("[stage175b] duplicate canonical reference row mapping")
 
         for epoch in range(1, epochs + 1):
+            if teacher_observer is not None:
+                teacher_observer.on_epoch_start(epoch)
             model.train()
             optimizer.zero_grad()
 
@@ -18435,6 +18508,7 @@ def main(argv: list[str] | None = None) -> int:
                 temporal_channel_gated_penalty_scale=_tc_pen,
                 stage196b2b6p8_return_replay_state=bool(
                     args.stage196b2b6p8_enable_full_trainable_path_replay_api
+                    or teacher_observer is not None
                 ),
                 batch_size=train_batch_size,
                 amp_enabled=amp_enabled,
@@ -18442,6 +18516,19 @@ def main(argv: list[str] | None = None) -> int:
             _nonframe_training_output = _nonframe_output(
                 output, args.frame_downstream_gradient_mode
             )
+            if teacher_observer is not None:
+                teacher_observer.observe_batch(
+                    epoch=epoch,
+                    batch_index=1,
+                    student_model=model,
+                    student_output=output,
+                    inputs=train_inputs,
+                    temporal_mismatch_flags=train_temporal_flags,
+                    predicate_mismatch_flags=train_predicate_flags,
+                    temporal_adapter_final_penalty_scale=_ta_pen,
+                    temporal_channel_gated_penalty_scale=_tc_pen,
+                    amp_enabled=amp_enabled,
+                )
 
             _stage177c_unweighted_loss: torch.Tensor | None = None
             _stage177c_weighted_loss: torch.Tensor | None = None
@@ -19479,18 +19566,28 @@ def main(argv: list[str] | None = None) -> int:
             #  end audit accumulation 
 
             loss_for_backward = total_loss / gradient_accumulation_steps
+            _teacher_observer_optimizer_step_successful = True
             if amp_enabled:
+                _teacher_observer_scale_before = float(grad_scaler.get_scale())
                 grad_scaler.scale(loss_for_backward).backward()
                 grad_scaler.unscale_(optimizer)
                 torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
                 grad_scaler.step(optimizer)
                 grad_scaler.update()
+                _teacher_observer_scale_after = float(grad_scaler.get_scale())
+                _teacher_observer_optimizer_step_successful = (
+                    _teacher_observer_scale_after >= _teacher_observer_scale_before
+                )
                 optimizer.zero_grad()
             else:
                 loss_for_backward.backward()
                 torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
                 optimizer.step()
                 optimizer.zero_grad()
+            if teacher_observer is not None:
+                teacher_observer.mark_optimizer_step(
+                    model, successful=_teacher_observer_optimizer_step_successful
+                )
 
             # Evaluate with flags
             model.eval()
@@ -20387,6 +20484,8 @@ def main(argv: list[str] | None = None) -> int:
                         f"  [pc22a4e] pres={_pc_pres_type_counts}"
                         f" frame={_pc_frame_type_counts}"
                     )
+            if teacher_observer is not None:
+                teacher_observer.on_epoch_end(model, epoch)
 
         if _stage195_parameter_swa_enabled:
             if (
@@ -21924,6 +22023,28 @@ def main(argv: list[str] | None = None) -> int:
             "epoch_metrics": _stage175b_epoch_metrics,
             "totals": _stage175b_totals,
         }
+        _teacher_observer_report = None
+        _teacher_observer_checkpoint_state_for_run = None
+        if teacher_observer is not None:
+            _teacher_observer_checkpoint_state_for_run = teacher_observer.checkpoint_state()
+            teacher_observer.finalize(model)
+            _teacher_observer_report = {
+                "enabled": True,
+                "mode": teacher_observer.mode,
+                "target_family": teacher_observer.target_family,
+                "output_dir": str(teacher_observer.output_dir),
+                "sidecars": [
+                    "teacher_observer_manifest.json",
+                    "teacher_observer_batch_metrics.jsonl",
+                    "teacher_observer_epoch_metrics.csv",
+                    "teacher_observer_run_summary.json",
+                    "teacher_observer_state_audit.json",
+                ],
+                "loss_implemented": False,
+                "total_loss_changed": False,
+                "backward_changed": False,
+                "checkpoint_selection_changed": False,
+            }
         report = {
             **_frame_gradient_contract,
             "run_name": run_name,
@@ -21931,6 +22052,7 @@ def main(argv: list[str] | None = None) -> int:
             "stage175b_support_anchor": _stage175b_report,
             "stage177c_frame_pairwise": _stage177c_report,
             "compatible_positive_margin": _compatible_positive_margin_report,
+            "teacher_observer": _teacher_observer_report,
             "final_epoch": epochs,
             "best_epoch": best_epoch,
             "select_metric": select_metric,
@@ -21960,6 +22082,8 @@ def main(argv: list[str] | None = None) -> int:
             **_v7_ext_diagnostics,
         }
         report["_best_state"] = best_state
+        if _teacher_observer_checkpoint_state_for_run is not None:
+            report["_teacher_observer_checkpoint_state"] = _teacher_observer_checkpoint_state_for_run
         if best_trainable_state is not None:
             report["best_trainable_state"] = best_trainable_state
         return report
@@ -22516,6 +22640,7 @@ def main(argv: list[str] | None = None) -> int:
                 _stage187_train_eligible_mask
             ),
             compatible_positive_margin_sidecar_audit=_stage187_sidecar_audit,
+            teacher_observer_output_dir=_stage174a_run_dir,
             pc_pres_inputs=_pc_pres_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_frame_inputs=_pc_frame_inputs if args.use_pair_contrastive_frame_loss else None,
             pc_loss_weight=(
@@ -23308,13 +23433,18 @@ def main(argv: list[str] | None = None) -> int:
         )
     _ood_best_state: dict[str, torch.Tensor] | None = None
     _ood_best_epoch: int = args.epochs
+    _teacher_observer_checkpoint_state: dict[str, Any] | None = None
     if len(reports) == 1:
         _single_run = next(iter(reports.values()))
         _ood_best_state = _single_run.pop("_best_state", None)
+        _teacher_observer_checkpoint_state = _single_run.pop(
+            "_teacher_observer_checkpoint_state", None
+        )
         _ood_best_epoch = _single_run.get("best_epoch", args.epochs)
     else:
         for _rpt in reports.values():
             _rpt.pop("_best_state", None)
+            _rpt.pop("_teacher_observer_checkpoint_state", None)
 
 
     _stage160_final_state = {
@@ -23344,6 +23474,7 @@ def main(argv: list[str] | None = None) -> int:
             selected_epoch=_stage160_selected_epoch,
             clean_dev_metrics=_stage160_clean_dev_metrics,
             vocab=vocab,
+            teacher_observer_state=_teacher_observer_checkpoint_state,
         )
         report["stage160_saved_checkpoint"] = str(args.save_checkpoint_path)
         report["stage160_saved_checkpoint_mode"] = _stage160_mode
@@ -23361,6 +23492,7 @@ def main(argv: list[str] | None = None) -> int:
             args=args,
             best_epoch=_ood_best_epoch,
             best_dev_metrics=next(iter(reports.values())).get("best_dev_metrics"),
+            teacher_observer_state=_teacher_observer_checkpoint_state,
         )
         report["saved_model_checkpoint"] = str(args.save_model_checkpoint)
         report["configuration"]["saved_model_checkpoint"] = str(args.save_model_checkpoint)
@@ -25506,6 +25638,7 @@ def main(argv: list[str] | None = None) -> int:
             selected_state_dict=_ood_best_state,
             metadata=_stage176a0_metadata,
             selected_epoch=_stage174a_selected_epoch,
+            teacher_observer_state=_teacher_observer_checkpoint_state,
         )
         _stage174a_selected_checkpoint_path = _stage176a0_saved_checkpoint["path"]
         _stage174a_final_checkpoint_path = _stage176a0_saved_checkpoint["path"]
@@ -25692,3 +25825,23 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
