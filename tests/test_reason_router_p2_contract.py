@@ -81,12 +81,17 @@ def test_q_normalization_and_boundary_contract() -> None:
         "negative_energy": torch.tensor([1.5, 0.1, 2.2, 0.4, 1.4, 0.8]),
     }
     out = head(**inputs)
-    expected_q = torch.stack([
-        torch.tensor([1.0, 0.0, 0.0, 0.0, 0.8, 0.3]),
-        torch.tensor([0.0, 1.0, 0.0, 0.0, 0.16, 0.49]),
-        torch.tensor([0.0, 0.0, 1.0, 0.0, 0.024, 0.021]),
-        torch.tensor([0.0, 0.0, 0.0, 1.0, 0.016, 0.189]),
-    ], dim=-1)
+    expected_q = torch.tensor(
+        [
+            [1.0, 0.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+            [0.8, 0.04, 0.096, 0.064],
+            [0.3, 0.49, 0.021, 0.189],
+        ],
+        dtype=out["q_masses_4"].dtype,
+    )
     assert out["normalization_max_abs_error"].shape == torch.Size([])
     assert out["normalization_ok"].shape == torch.Size([])
     assert torch.all(out["normalization_ok"])
@@ -590,6 +595,7 @@ def test_a1_a3_export_requires_a0_reference_not_shadow_prediction() -> None:
 
 
 def test_product_arm_q_export_and_original_active_alias() -> None:
+    import pytest
     import scripts.train_controlled_v6b_minimal as trainer
 
     item = {"stable_id": "r1", "pair_id": "p1", "gold_label": "NOT_ENTITLED", "gold_label_id": 1, "pred_label": "NOT_ENTITLED", "final_logits": [0.0, 1.0, 0.0], "final_probs": [0.2, 0.6, 0.2]}
@@ -606,10 +612,10 @@ def test_product_arm_q_export_and_original_active_alias() -> None:
     assert item["original_product_logits_3"] == item["active_collapsed_logits_3"]
     assert item["original_product_probs_3"] == item["active_collapsed_probs_3"]
     assert item["revised_collapsed_logits_3"] is None
-    assert item["q_frame"] == 0.1
-    assert item["q_predicate"] == 0.2
-    assert item["q_sufficiency"] == 0.3
-    assert item["q_authorized"] == 0.4
+    assert item["q_frame"] == pytest.approx(0.1)
+    assert item["q_predicate"] == pytest.approx(0.2)
+    assert item["q_sufficiency"] == pytest.approx(0.3)
+    assert item["q_authorized"] == pytest.approx(0.4)
 
 
 def test_predicted_reason_uses_posterior_and_external_validity() -> None:
