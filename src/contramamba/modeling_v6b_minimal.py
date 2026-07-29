@@ -72,6 +72,7 @@ class ContraMambaV6BMinimal(nn.Module):
         freeze_a_log: bool = True,
         return_token_diagnostics: bool = False,
         decision_mode: str = "explicit_product",
+        reason_router_epsilon: float = 1e-8,
         backbone: nn.Module | None = None,
         hidden_size: int | None = None,
         use_temporal_comparator: bool = False,
@@ -133,7 +134,10 @@ class ContraMambaV6BMinimal(nn.Module):
         self.polarity_energy_head = PolarityEnergyHead(
             frame_size, predicate_size, sufficiency_size, energy_size, dropout
         )
-        self.decision_head = FinalEntitlementDecisionHead(decision_mode=decision_mode)
+        self.decision_head = FinalEntitlementDecisionHead(
+            decision_mode=decision_mode,
+            router_epsilon=reason_router_epsilon,
+        )
 
         # Learnable alphas for comparators (initialized near calibrated values)
         self.alpha_temporal_raw: nn.Parameter | None = None
@@ -529,6 +533,8 @@ class ContraMambaV6BMinimal(nn.Module):
         pair_ids: torch.Tensor | None = None,
         return_token_states: bool = False,
         decision_mode: str | None = None,
+        gradient_ownership_mode: str | None = None,
+        return_q_diagnostics: bool = False,
         encoder_hidden_states: torch.Tensor | None = None,
         temporal_mismatch_flags: torch.Tensor | None = None,
         predicate_mismatch_flags: torch.Tensor | None = None,
@@ -565,28 +571,72 @@ class ContraMambaV6BMinimal(nn.Module):
                 "model_training": self.training,
             }
 
-        # Slot gates (unchanged from V5)
+        p2_ownership_report_active = (
+            gradient_ownership_mode is not None
+            or hasattr(self, "gradient_ownership_mode")
+            or bool(return_q_diagnostics)
+            or bool(getattr(self, "return_q_diagnostics", False))
+        )
+        ownership_mode = gradient_ownership_mode or getattr(self, "gradient_ownership_mode", "joint")
+        if ownership_mode not in {"joint", "explicit_local"}:
+            raise ValueError(f"unsupported gradient_ownership_mode: {ownership_mode}")
+        explicit_local = ownership_mode == "explicit_local"
+
+        # Slot gates (unchanged from V5 for joint ownership). In explicit-local
+        # mode, each downstream consumer receives detached aliases while the
+        # owner output dictionary keeps the raw tensors for local losses.
         frame = self.frame_gate(token_states, attention_mask, claim_mask, evidence_mask)
+        predicate_frame_inputs = {
+            "claim_frame_state": frame["claim_frame_state"].detach(),
+            "evidence_frame_state": frame["evidence_frame_state"].detach(),
+            "frame_pair_repr": frame["frame_pair_repr"].detach(),
+            "frame_prob": frame["frame_prob"].detach(),
+        } if explicit_local else {
+            "claim_frame_state": frame["claim_frame_state"],
+            "evidence_frame_state": frame["evidence_frame_state"],
+            "frame_pair_repr": frame["frame_pair_repr"],
+            "frame_prob": frame["frame_prob"],
+        }
         predicate = self.predicate_coverage_head(
             token_states=token_states,
             attention_mask=attention_mask,
             claim_mask=claim_mask,
             evidence_mask=evidence_mask,
-            claim_frame_state=frame["claim_frame_state"],
-            evidence_frame_state=frame["evidence_frame_state"],
-            frame_pair_repr=frame["frame_pair_repr"],
-            frame_prob=frame["frame_prob"],
+            claim_frame_state=predicate_frame_inputs["claim_frame_state"],
+            evidence_frame_state=predicate_frame_inputs["evidence_frame_state"],
+            frame_pair_repr=predicate_frame_inputs["frame_pair_repr"],
+            frame_prob=predicate_frame_inputs["frame_prob"],
         )
         sufficiency = self.sufficiency_gate(
-            frame_pair_repr=frame["frame_pair_repr"],
-            predicate_pair_repr=predicate["predicate_pair_repr"],
-            frame_prob=frame["frame_prob"],
-            predicate_coverage_prob=predicate["predicate_coverage_prob"],
+            frame_pair_repr=(
+                frame["frame_pair_repr"].detach()
+                if explicit_local else frame["frame_pair_repr"]
+            ),
+            predicate_pair_repr=(
+                predicate["predicate_pair_repr"].detach()
+                if explicit_local else predicate["predicate_pair_repr"]
+            ),
+            frame_prob=(
+                frame["frame_prob"].detach() if explicit_local else frame["frame_prob"]
+            ),
+            predicate_coverage_prob=(
+                predicate["predicate_coverage_prob"].detach()
+                if explicit_local else predicate["predicate_coverage_prob"]
+            ),
         )
         polarity = self.polarity_energy_head(
-            frame_pair_repr=frame["frame_pair_repr"],
-            predicate_pair_repr=predicate["predicate_pair_repr"],
-            sufficiency_repr=sufficiency["sufficiency_repr"],
+            frame_pair_repr=(
+                frame["frame_pair_repr"].detach()
+                if explicit_local else frame["frame_pair_repr"]
+            ),
+            predicate_pair_repr=(
+                predicate["predicate_pair_repr"].detach()
+                if explicit_local else predicate["predicate_pair_repr"]
+            ),
+            sufficiency_repr=(
+                sufficiency["sufficiency_repr"].detach()
+                if explicit_local else sufficiency["sufficiency_repr"]
+            ),
         )
 
         # Stage22-A / A3: shared slot concatenation for auxiliary diagnostic heads.
@@ -687,12 +737,28 @@ class ContraMambaV6BMinimal(nn.Module):
 
         # Base logits (V5 standard)
         decision = self.decision_head(
-            frame_prob=frame["frame_prob"],
-            predicate_coverage_prob=predicate["predicate_coverage_prob"],
-            sufficiency_prob=sufficiency["sufficiency_prob"],
-            positive_energy=polarity["positive_energy"],
-            negative_energy=polarity["negative_energy"],
+            frame_prob=(
+                frame["frame_prob"].detach()
+                if explicit_local else frame["frame_prob"]
+            ),
+            predicate_coverage_prob=(
+                predicate["predicate_coverage_prob"].detach()
+                if explicit_local else predicate["predicate_coverage_prob"]
+            ),
+            sufficiency_prob=(
+                sufficiency["sufficiency_prob"].detach()
+                if explicit_local else sufficiency["sufficiency_prob"]
+            ),
+            positive_energy=(
+                polarity["positive_energy"].detach()
+                if explicit_local else polarity["positive_energy"]
+            ),
+            negative_energy=(
+                polarity["negative_energy"].detach()
+                if explicit_local else polarity["negative_energy"]
+            ),
             decision_mode=decision_mode,
+            return_q_diagnostics=return_q_diagnostics or bool(getattr(self, "return_q_diagnostics", False)),
         )
         base_logits = decision["logits"]
 
@@ -955,4 +1021,16 @@ class ContraMambaV6BMinimal(nn.Module):
             output[
                 "stage196b2b6p8_stochastic_context"
             ] = stage196b2b6p8_stochastic_context
+        if p2_ownership_report_active:
+            output["gradient_ownership_configuration"] = {
+                "schema_version": "reason_router_p2_gradient_ownership_config_v1",
+                "mode": ownership_mode,
+                "frame_to_predicate_detached": explicit_local,
+                "frame_predicate_to_sufficiency_detached": explicit_local,
+                "frame_predicate_sufficiency_to_polarity_detached": explicit_local,
+                "local_to_final_router_detached": explicit_local,
+                "final_router_inputs_detached": explicit_local,
+                "mamba_frozen_expected_by_p2_trainer": True,
+            }
+
         return output

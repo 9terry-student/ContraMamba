@@ -119,6 +119,61 @@ _STAGE187_ELIGIBLE_FAMILIES = {
     "evidence_deletion", "evidence_truncation", "none", "paraphrase", "predicate_swap"
 }
 
+P2_REASON_ROUTER_SCHEMA_VERSION = "reason_router_p2_v1"
+P2_REASON_CLASS_ORDER = ("FRAME", "PREDICATE", "SUFFICIENCY", "AUTHORIZED")
+P2_INTERNAL_CLASS_ORDER = (
+    "FRAME_FAIL", "PREDICATE_FAIL", "SUFFICIENCY_FAIL", "REFUTE", "SUPPORT"
+)
+P2_EXTERNAL_CLASS_ORDER = ("REFUTE", "NOT_ENTITLED", "SUPPORT")
+P2_ARM_CONTRACTS = {
+    "A0": ("explicit_product", "joint"),
+    "A1": ("conditional_first_blocker", "joint"),
+    "A2": ("explicit_product", "explicit_local"),
+    "A3": ("conditional_first_blocker", "explicit_local"),
+}
+P2_REASON_TO_ID = {name: index for index, name in enumerate(P2_REASON_CLASS_ORDER)}
+P2_SIDE_CAR_REQUIRED_FIELDS = (
+    "row_id",
+    "split",
+    "pair_id",
+    "canonical_row_id",
+    "canonical_status",
+    "intervention_contract_status",
+    "integrity_status",
+    "schema_status",
+    "dataset_source_status",
+    "grammar_status",
+    "polarity_contamination_status",
+    "time_swap_status",
+    "reason_codes",
+    "source_dataset_path",
+    "source_dataset_sha256",
+    "frame_compatible_label",
+)
+P2_SOURCE_REQUIRED_FIELDS = (
+    "id",
+    "pair_id",
+    "intervention_type",
+    "final_label",
+    "frame_compatible_label",
+    "predicate_covered_label",
+    "sufficiency_label",
+    "polarity_label",
+    "primary_failure_type",
+)
+P2_GENERATOR_COMPONENT_STATUS_FIELDS = (
+    "schema_status",
+    "dataset_source_status",
+    "grammar_status",
+    "canonical_status",
+    "intervention_contract_status",
+    "polarity_contamination_status",
+    "time_swap_status",
+)
+P2_PRIMARY_FAILURE_TYPES = {"none", "frame", "predicate", "sufficiency", "polarity"}
+P2_DIRECTIONAL_LABELS = {"REFUTE", "SUPPORT"}
+P2_GENERATOR_CLEAN_STATUSES = {"PASS"}
+
 
 # Stage191-B deterministic replay observability: report-only and default-off.
 _STAGE191_LABELS = ("REFUTE", "NOT_ENTITLED", "SUPPORT")
@@ -158,6 +213,445 @@ STAGE196B2B6P6_PRIMITIVE_OUTPUT_KEYS = (
     "positive_energy", "negative_energy",
 )
 
+
+def _p2_cli_flag_present(raw_argv: list[str], flag: str) -> bool:
+    return any(item == flag or item.startswith(flag + "=") for item in raw_argv)
+
+
+def _p2_resolve_arm_contract(
+    args: argparse.Namespace,
+    raw_argv: list[str],
+    parser: argparse.ArgumentParser,
+) -> dict[str, Any]:
+    arm = getattr(args, "reason_router_arm", "none")
+    if arm == "none":
+        args.resolved_reason_router_mode = None
+        args.resolved_gradient_ownership_mode = None
+        args.resolved_reason_loss_weight = 0.0
+        args.resolved_use_temporal_comparator = getattr(args, "use_temporal_comparator", False)
+        args.resolved_use_predicate_comparator = getattr(args, "use_predicate_comparator", False)
+        return {"enabled": False, "arm": "none"}
+    if getattr(args, "architecture", None) != "v6b_minimal":
+        parser.error("P2_ARM_CONFIG_MISMATCH: reason-router arms require architecture=v6b_minimal")
+    expected_router, expected_ownership = P2_ARM_CONTRACTS[arm]
+    router_override = getattr(args, "reason_router_mode", "auto")
+    ownership_override = getattr(args, "gradient_ownership_mode", "auto")
+    if router_override != "auto" and router_override != expected_router:
+        parser.error(
+            "P2_ARM_CONFIG_MISMATCH: "
+            f"arm={arm} requires router={expected_router} ownership={expected_ownership}"
+        )
+    if ownership_override != "auto" and ownership_override != expected_ownership:
+        parser.error(
+            "P2_ARM_CONFIG_MISMATCH: "
+            f"arm={arm} requires router={expected_router} ownership={expected_ownership}"
+        )
+    reason_weight_was_set = _p2_cli_flag_present(raw_argv, "--reason-loss-weight")
+    raw_reason_weight = getattr(args, "reason_loss_weight", None)
+    if arm in {"A1", "A3"}:
+        if not reason_weight_was_set or raw_reason_weight is None:
+            parser.error("P2_REASON_LOSS_WEIGHT_REQUIRED")
+        if not math.isfinite(float(raw_reason_weight)) or float(raw_reason_weight) <= 0.0:
+            parser.error("P2_ARM_CONFIG_MISMATCH: A1/A3 require reason_loss_weight > 0")
+        resolved_reason_weight = float(raw_reason_weight)
+    else:
+        if raw_reason_weight not in (None, 0, 0.0):
+            parser.error("P2_ARM_CONFIG_MISMATCH: A0/A2 require reason_loss_weight == 0")
+        resolved_reason_weight = 0.0
+    if getattr(args, "freeze_encoder", None) is not True:
+        parser.error("P2_BACKBONE_MUST_BE_FROZEN")
+    if getattr(args, "frame_downstream_gradient_mode", "joint") != "joint":
+        parser.error("P2_ARM_CONFIG_MISMATCH: P2 forbids legacy frame_local_only hook")
+    if not math.isfinite(float(args.reason_router_epsilon)) or not (
+        0.0 < float(args.reason_router_epsilon) <= 1e-4
+    ):
+        parser.error("--reason-router-epsilon must satisfy 0 < epsilon <= 1e-4")
+    if int(args.reason_min_train_count) <= 0 or int(args.reason_min_dev_count) <= 0:
+        parser.error("--reason-min-train-count and --reason-min-dev-count must be positive")
+
+    if _p2_cli_flag_present(raw_argv, "--use-temporal-comparator"):
+        parser.error("P2_INCOMPATIBLE_OPTION: option=use_temporal_comparator value=True")
+    if _p2_cli_flag_present(raw_argv, "--use-predicate-comparator"):
+        parser.error("P2_INCOMPATIBLE_OPTION: option=use_predicate_comparator value=True")
+    args.resolved_use_temporal_comparator = False
+    args.resolved_use_predicate_comparator = False
+    incompatible_options = {
+        "temporal_adapter_final_penalty_scale": getattr(args, "temporal_adapter_final_penalty_scale", 0.0),
+        "temporal_channel_gated_penalty_scale": getattr(args, "temporal_channel_gated_penalty_scale", 0.0),
+        "use_temporal_adapter_final_penalty": getattr(args, "use_temporal_adapter_final_penalty", False),
+        "use_temporal_channel_gated_penalty": getattr(args, "use_temporal_channel_gated_penalty", False),
+        "vnext_enable_segmented_dual_pass": getattr(args, "vnext_enable_segmented_dual_pass", False),
+        "use_temporal_diagnostic_loss": getattr(args, "use_temporal_diagnostic_loss", False),
+        "use_temporal_channel_loss": getattr(args, "use_temporal_channel_loss", False),
+        "use_temporal_adapter_loss": getattr(args, "use_temporal_adapter_loss", False),
+    }
+    if getattr(args, "architecture", None) == "vnext_minimal":
+        incompatible_options["architecture"] = "vnext_minimal"
+    for option, value in incompatible_options.items():
+        active = bool(value) if not isinstance(value, float) else value != 0.0
+        if active:
+            parser.error(f"P2_INCOMPATIBLE_OPTION: option={option} value={value!r}")
+    p2_forbidden_path_options = (
+        "ood_data",
+        "output_ood_json",
+        "output_ood_predictions_json",
+        "external_data",
+        "external_output_dir",
+        "external_eval_jsonl",
+        "stage43_external_factver_jsonl",
+        "stage57_bridge_train_jsonl",
+        "stage66_bridge_train_jsonl",
+        "stage75_bridge_train_jsonl",
+        "stage80a_bridge_train_jsonl",
+    )
+    for option in p2_forbidden_path_options:
+        value = getattr(args, option, None)
+        if value not in (None, "", [], ()):
+            parser.error(f"P2_INCOMPATIBLE_OPTION: option={option} value={value!r}")
+    for option in (
+        "stage57_bridge_train_mode",
+        "stage66_bridge_train_mode",
+        "stage75_bridge_train_mode",
+        "stage80a_bridge_train_mode",
+    ):
+        value = getattr(args, option, "none")
+        if value != "none":
+            parser.error(f"P2_INCOMPATIBLE_OPTION: option={option} value={value!r}")
+    for option in (
+        "enable_external_eval",
+        "enable_stage43_external_eval",
+        "stage43_external_enable_shadow_export",
+    ):
+        value = getattr(args, option, False)
+        if value:
+            parser.error(f"P2_INCOMPATIBLE_OPTION: option={option} value={value!r}")
+
+    objective_options = {
+        "ranking_weight": getattr(args, "ranking_weight", 0.0),
+        "use_intervention_loss": getattr(args, "use_intervention_loss", False),
+        "loss_sweep": getattr(args, "loss_sweep", False),
+        "compatible_positive_margin_weight": getattr(args, "compatible_positive_margin_weight", 0.0),
+        "compatible_positive_margin_logit": getattr(args, "compatible_positive_margin_logit", 0.0),
+        "use_boundary_loss": getattr(args, "use_boundary_loss", False),
+        "boundary_loss_weight": getattr(args, "boundary_loss_weight", 0.0),
+        "use_frame_violation_loss": getattr(args, "use_frame_violation_loss", False),
+        "frame_violation_loss_weight": getattr(args, "frame_violation_loss_weight", 0.0),
+        "use_predicate_isolation_loss": getattr(args, "use_predicate_isolation_loss", False),
+        "predicate_isolation_loss_weight": getattr(args, "predicate_isolation_loss_weight", 0.0),
+        "use_preservation_entitlement_loss": getattr(args, "use_preservation_entitlement_loss", False),
+        "preservation_entitlement_loss_weight": getattr(args, "preservation_entitlement_loss_weight", 0.0),
+        "stage174c_clean_pairwise_mode": getattr(args, "stage174c_clean_pairwise_mode", "off") != "off",
+        "stage174c_clean_pairwise_weight": getattr(args, "stage174c_clean_pairwise_weight", 0.0),
+        "stage174c_clean_polarity_preservation_weight": getattr(args, "stage174c_clean_polarity_preservation_weight", 0.0),
+        "use_pair_contrastive_frame_loss": getattr(args, "use_pair_contrastive_frame_loss", False),
+        "pair_contrastive_frame_loss_weight": getattr(args, "pair_contrastive_frame_loss_weight", 0.0),
+        "pair_contrastive_frame_data": getattr(args, "pair_contrastive_frame_data", None),
+        "stage175b_support_anchor_mode": getattr(args, "stage175b_support_anchor_mode", "off") != "off",
+        "stage175b_support_anchor_weight": getattr(args, "stage175b_support_anchor_weight", 0.0),
+        "stage177c_frame_pairwise_mode": getattr(args, "stage177c_frame_pairwise_mode", "off") != "off",
+        "stage177c_frame_pairwise_weight": getattr(args, "stage177c_frame_pairwise_weight", 0.0),
+        "use_temporal_diagnostic_loss": getattr(args, "use_temporal_diagnostic_loss", False),
+        "temporal_diagnostic_loss_weight": getattr(args, "temporal_diagnostic_loss_weight", 0.0),
+        "use_temporal_residual_adapter": getattr(args, "use_temporal_residual_adapter", False),
+        "use_temporal_adapter_loss": getattr(args, "use_temporal_adapter_loss", False),
+        "temporal_adapter_loss_weight": getattr(args, "temporal_adapter_loss_weight", 0.0),
+        "use_temporal_channel": getattr(args, "use_temporal_channel", False),
+        "use_temporal_channel_loss": getattr(args, "use_temporal_channel_loss", False),
+        "temporal_channel_loss_weight": getattr(args, "temporal_channel_loss_weight", 0.0),
+        "v7_use_location_boundary_loss": getattr(args, "v7_use_location_boundary_loss", False),
+        "v7_location_boundary_loss_weight": getattr(args, "v7_location_boundary_loss_weight", 0.0),
+        "v7_use_temporal_safety_loss": getattr(args, "v7_use_temporal_safety_loss", False),
+        "v7_temporal_safety_loss_weight": getattr(args, "v7_temporal_safety_loss_weight", 0.0),
+        "v7_use_temporal_mismatch_multihead_loss": getattr(args, "v7_use_temporal_mismatch_multihead_loss", False),
+        "v7_temporal_mismatch_multihead_loss_weight": getattr(args, "v7_temporal_mismatch_multihead_loss_weight", 0.0),
+        "v7_use_temporal_preservation_loss": getattr(args, "v7_use_temporal_preservation_loss", False),
+        "v7_temporal_preservation_loss_weight": getattr(args, "v7_temporal_preservation_loss_weight", 0.0),
+        "v7_use_coverage_entailment_loss": getattr(args, "v7_use_coverage_entailment_loss", False),
+        "v7_coverage_entailment_loss_weight": getattr(args, "v7_coverage_entailment_loss_weight", 0.0),
+        "v7_use_polarity_margin_loss": getattr(args, "v7_use_polarity_margin_loss", False),
+        "v7_polarity_margin_loss_weight": getattr(args, "v7_polarity_margin_loss_weight", 0.0),
+        "v7_use_entitlement_bce_loss": getattr(args, "v7_use_entitlement_bce_loss", False),
+        "v7_entitlement_bce_loss_weight": getattr(args, "v7_entitlement_bce_loss_weight", 0.0),
+        "v7_use_entitled_class_balanced_ce": getattr(args, "v7_use_entitled_class_balanced_ce", False),
+        "v7_entitled_class_balanced_ce_weight": getattr(args, "v7_entitled_class_balanced_ce_weight", 0.0),
+    }
+    for option, value in objective_options.items():
+        active = bool(value) if not isinstance(value, float) else value != 0.0
+        if active:
+            parser.error(f"P2_INCOMPATIBLE_OPTION: option={option} value={value!r}")
+
+
+    if getattr(args, "teacher_observer_mode", "off") != "off":
+        parser.error(
+            "P2_INCOMPATIBLE_OPTION: option=teacher_observer_mode "
+            f"value={getattr(args, 'teacher_observer_mode', None)!r}"
+        )
+
+    args.resolved_reason_router_mode = expected_router
+    args.resolved_gradient_ownership_mode = expected_ownership
+    args.resolved_reason_loss_weight = resolved_reason_weight
+    return {
+        "enabled": True,
+        "schema_version": P2_REASON_ROUTER_SCHEMA_VERSION,
+        "arm": arm,
+        "router_mode": expected_router,
+        "gradient_ownership_mode": expected_ownership,
+        "reason_loss_weight": resolved_reason_weight,
+        "reason_router_epsilon": float(args.reason_router_epsilon),
+        "reason_class_order": list(P2_REASON_CLASS_ORDER),
+        "internal_class_order": list(P2_INTERNAL_CLASS_ORDER),
+        "external_class_order": list(P2_EXTERNAL_CLASS_ORDER),
+        "mamba_backbone_frozen": True,
+    }
+
+
+def _p2_differentiable_zero(reference: torch.Tensor) -> torch.Tensor:
+    return reference.sum() * 0.0
+
+
+def _p2_masked_bce_loss(
+    logits: torch.Tensor,
+    targets: torch.Tensor,
+    mask: torch.Tensor,
+) -> torch.Tensor:
+    active = mask.bool()
+    if torch.any(active):
+        return F.binary_cross_entropy_with_logits(logits[active], targets[active].float())
+    return _p2_differentiable_zero(logits)
+
+
+def _p2_target_class_counts(targets: torch.Tensor, mask: torch.Tensor, class_ids: tuple[int, ...]) -> dict[int, int]:
+    active_targets = targets[mask.bool()].detach().cpu().reshape(-1)
+    return {class_id: int((active_targets == class_id).sum().item()) for class_id in class_ids}
+
+
+def _p2_loss_export_entry(
+    loss: torch.Tensor | None,
+    *,
+    weighted_loss: torch.Tensor | None,
+    applicable_count: torch.Tensor | int,
+    total_count: int,
+    target_class_counts: dict[int, int] | None,
+) -> dict[str, Any]:
+    if isinstance(applicable_count, torch.Tensor):
+        applicable = int(applicable_count.detach().cpu().item())
+    else:
+        applicable = int(applicable_count)
+    return {
+        "value": None if loss is None else float(loss.detach().cpu().item()),
+        "weighted_value": None if weighted_loss is None else float(weighted_loss.detach().cpu().item()),
+        "applicable_count": applicable,
+        "ignored_count": int(total_count) - applicable,
+        "target_class_counts": target_class_counts,
+    }
+
+
+
+def _p2_product_arm_loss_export(
+    losses: dict[str, torch.Tensor],
+    inputs: dict[str, torch.Tensor],
+    indices: torch.Tensor,
+) -> dict[str, Any]:
+    batch_total = int(inputs["final_labels"].shape[0])
+    selected_mask = torch.zeros_like(inputs["final_labels"], dtype=torch.bool)
+    selected_mask.index_fill_(0, indices, True)
+    all_mask = torch.ones(batch_total, dtype=torch.bool, device=inputs["final_labels"].device)
+    zero_mask = torch.zeros(batch_total, dtype=torch.bool, device=inputs["final_labels"].device)
+    polarity_active = inputs["final_labels"] != int(v5.FinalLabel.NOT_ENTITLED)
+    def term(name: str) -> torch.Tensor | None:
+        value = losses.get(name)
+        return value if isinstance(value, torch.Tensor) else None
+    polarity_targets = inputs.get("polarity_labels")
+    polarity_counts = (
+        None
+        if polarity_targets is None
+        else _p2_target_class_counts(polarity_targets.long(), polarity_active, (0, 1, 2))
+    )
+    return {
+        "loss_frame_bce": _p2_loss_export_entry(term("frame"), weighted_loss=term("frame"), applicable_count=batch_total, total_count=batch_total, target_class_counts=_p2_target_class_counts(inputs["frame_compatible_labels"].long(), all_mask, (0, 1))),
+        "loss_predicate_conditional_bce": _p2_loss_export_entry(term("predicate"), weighted_loss=term("predicate"), applicable_count=batch_total, total_count=batch_total, target_class_counts=_p2_target_class_counts(inputs["predicate_covered_labels"].long(), all_mask, (0, 1))),
+        "loss_sufficiency_conditional_bce": _p2_loss_export_entry(term("sufficiency"), weighted_loss=term("sufficiency"), applicable_count=batch_total, total_count=batch_total, target_class_counts=_p2_target_class_counts(inputs["sufficiency_labels"].long(), all_mask, (0, 1))),
+        "loss_authorized_polarity_ce": _p2_loss_export_entry(term("polarity"), weighted_loss=term("polarity"), applicable_count=polarity_active.sum(), total_count=batch_total, target_class_counts=polarity_counts),
+        "loss_primary_reason_ce": _p2_loss_export_entry(None, weighted_loss=None, applicable_count=0, total_count=batch_total, target_class_counts=_p2_target_class_counts(inputs["final_labels"], zero_mask, (0, 1, 2, 3))),
+        "loss_final_3way_ce": _p2_loss_export_entry(term("label"), weighted_loss=term("label"), applicable_count=int(indices.numel()), total_count=batch_total, target_class_counts=_p2_target_class_counts(inputs["final_labels"], selected_mask, (0, 1, 2))),
+        "loss_total": _p2_loss_export_entry(term("total"), weighted_loss=term("total"), applicable_count=int(indices.numel()), total_count=batch_total, target_class_counts=None),
+    }
+
+
+def _p2_reason_arm_loss_export(
+    losses: dict[str, torch.Tensor],
+    inputs: dict[str, torch.Tensor],
+    indices: torch.Tensor,
+    reason_loss_weight: float,
+) -> dict[str, Any]:
+    batch_total = int(inputs["final_labels"].shape[0])
+    selected_mask = torch.zeros_like(inputs["final_labels"], dtype=torch.bool)
+    selected_mask.index_fill_(0, indices, True)
+    polarity_targets = inputs["p2_polarity_targets_2"].long()
+    polarity_active = (polarity_targets != -100) & inputs["p2_polarity_applicability_mask"].bool()
+    reason_targets = inputs["p2_primary_reason_targets_4"].long()
+    reason_active = inputs["p2_reason_supervision_eligible"].bool() & (reason_targets != -100)
+    return {
+        "loss_frame_bce": _p2_loss_export_entry(losses["frame"], weighted_loss=losses["frame"], applicable_count=inputs["p2_frame_applicability_mask"].sum(), total_count=batch_total, target_class_counts=_p2_target_class_counts(inputs["frame_compatible_labels"].long(), inputs["p2_frame_applicability_mask"], (0, 1))),
+        "loss_predicate_conditional_bce": _p2_loss_export_entry(losses["predicate"], weighted_loss=losses["predicate"], applicable_count=inputs["p2_predicate_applicability_mask"].sum(), total_count=batch_total, target_class_counts=_p2_target_class_counts(inputs["predicate_covered_labels"].long(), inputs["p2_predicate_applicability_mask"], (0, 1))),
+        "loss_sufficiency_conditional_bce": _p2_loss_export_entry(losses["sufficiency"], weighted_loss=losses["sufficiency"], applicable_count=inputs["p2_sufficiency_applicability_mask"].sum(), total_count=batch_total, target_class_counts=_p2_target_class_counts(inputs["sufficiency_labels"].long(), inputs["p2_sufficiency_applicability_mask"], (0, 1))),
+        "loss_authorized_polarity_ce": _p2_loss_export_entry(losses["polarity"], weighted_loss=losses["polarity"], applicable_count=polarity_active.sum(), total_count=batch_total, target_class_counts=_p2_target_class_counts(polarity_targets, polarity_active, (0, 1))),
+        "loss_primary_reason_ce": _p2_loss_export_entry(losses["primary_reason"], weighted_loss=float(reason_loss_weight) * losses["primary_reason"], applicable_count=reason_active.sum(), total_count=batch_total, target_class_counts=_p2_target_class_counts(reason_targets, reason_active, (0, 1, 2, 3))),
+        "loss_final_3way_ce": _p2_loss_export_entry(losses["label"], weighted_loss=losses["label"], applicable_count=int(indices.numel()), total_count=batch_total, target_class_counts=_p2_target_class_counts(inputs["final_labels"], selected_mask, (0, 1, 2))),
+        "loss_total": _p2_loss_export_entry(losses["total"], weighted_loss=losses["total"], applicable_count=int(indices.numel()), total_count=batch_total, target_class_counts=None),
+    }
+
+
+def _p2_record_epoch_loss_snapshot(
+    history: list[dict[str, Any]],
+    *,
+    epoch: int,
+    loss_export: dict[str, Any],
+) -> dict[str, Any]:
+    snapshot = {
+        "epoch": int(epoch),
+        "loss_summary": copy.deepcopy(loss_export),
+    }
+    history.append(snapshot)
+    return snapshot
+
+def _p2_reason_router_losses(
+    output: dict[str, Any],
+    inputs: dict[str, torch.Tensor],
+    indices: torch.Tensor,
+    weighted_label_loss: bool,
+    reason_loss_weight: float,
+) -> dict[str, torch.Tensor]:
+    selected_labels = inputs["final_labels"].index_select(0, indices)
+    weights = v5.class_weights(inputs["final_labels"]).to(output["logits"].device)
+    label_loss = F.cross_entropy(
+        output["logits"].index_select(0, indices),
+        selected_labels,
+        weight=weights if weighted_label_loss else None,
+    )
+    frame_loss = _p2_masked_bce_loss(
+        output["frame_logit"],
+        inputs["frame_compatible_labels"],
+        inputs["p2_frame_applicability_mask"],
+    )
+    predicate_loss = _p2_masked_bce_loss(
+        output["predicate_coverage_logit"],
+        inputs["predicate_covered_labels"],
+        inputs["p2_predicate_applicability_mask"],
+    )
+    sufficiency_loss = _p2_masked_bce_loss(
+        output["sufficiency_logit"],
+        inputs["sufficiency_labels"],
+        inputs["p2_sufficiency_applicability_mask"],
+    )
+    polarity_targets = inputs["p2_polarity_targets_2"].long()
+    polarity_active = (polarity_targets != -100) & inputs["p2_polarity_applicability_mask"].bool()
+    local_polarity_logits_2 = torch.stack(
+        [output["negative_energy"], output["positive_energy"]],
+        dim=-1,
+    )
+    if torch.any(polarity_active):
+        polarity_loss = F.cross_entropy(
+            local_polarity_logits_2[polarity_active],
+            polarity_targets[polarity_active],
+        )
+    else:
+        polarity_loss = _p2_differentiable_zero(local_polarity_logits_2)
+    reason_targets = inputs["p2_primary_reason_targets_4"].long()
+    reason_active = inputs["p2_reason_supervision_eligible"].bool() & (reason_targets != -100)
+    if torch.any(reason_active):
+        reason_loss = F.cross_entropy(output["reason_logits_4"][reason_active], reason_targets[reason_active])
+    else:
+        reason_loss = _p2_differentiable_zero(output["reason_logits_4"])
+    total = (
+        label_loss
+        + frame_loss
+        + predicate_loss
+        + sufficiency_loss
+        + polarity_loss
+        + float(reason_loss_weight) * reason_loss
+    )
+    batch_total = int(inputs["final_labels"].shape[0])
+    selected_mask = torch.zeros_like(inputs["final_labels"], dtype=torch.bool)
+    selected_mask.index_fill_(0, indices, True)
+    loss_export = {
+        "loss_frame_bce": _p2_loss_export_entry(
+            frame_loss,
+            weighted_loss=frame_loss,
+            applicable_count=inputs["p2_frame_applicability_mask"].sum(),
+            total_count=batch_total,
+            target_class_counts=_p2_target_class_counts(
+                inputs["frame_compatible_labels"].long(),
+                inputs["p2_frame_applicability_mask"],
+                (0, 1),
+            ),
+        ),
+        "loss_predicate_conditional_bce": _p2_loss_export_entry(
+            predicate_loss,
+            weighted_loss=predicate_loss,
+            applicable_count=inputs["p2_predicate_applicability_mask"].sum(),
+            total_count=batch_total,
+            target_class_counts=_p2_target_class_counts(
+                inputs["predicate_covered_labels"].long(),
+                inputs["p2_predicate_applicability_mask"],
+                (0, 1),
+            ),
+        ),
+        "loss_sufficiency_conditional_bce": _p2_loss_export_entry(
+            sufficiency_loss,
+            weighted_loss=sufficiency_loss,
+            applicable_count=inputs["p2_sufficiency_applicability_mask"].sum(),
+            total_count=batch_total,
+            target_class_counts=_p2_target_class_counts(
+                inputs["sufficiency_labels"].long(),
+                inputs["p2_sufficiency_applicability_mask"],
+                (0, 1),
+            ),
+        ),
+        "loss_authorized_polarity_ce": _p2_loss_export_entry(
+            polarity_loss,
+            weighted_loss=polarity_loss,
+            applicable_count=polarity_active.sum(),
+            total_count=batch_total,
+            target_class_counts=_p2_target_class_counts(polarity_targets, polarity_active, (0, 1)),
+        ),
+        "loss_primary_reason_ce": _p2_loss_export_entry(
+            reason_loss,
+            weighted_loss=float(reason_loss_weight) * reason_loss,
+            applicable_count=reason_active.sum(),
+            total_count=batch_total,
+            target_class_counts=_p2_target_class_counts(reason_targets, reason_active, (0, 1, 2, 3)),
+        ),
+        "loss_final_3way_ce": _p2_loss_export_entry(
+            label_loss,
+            weighted_loss=label_loss,
+            applicable_count=int(indices.numel()),
+            total_count=batch_total,
+            target_class_counts=_p2_target_class_counts(inputs["final_labels"], selected_mask, (0, 1, 2)),
+        ),
+        "loss_total": _p2_loss_export_entry(
+            total,
+            weighted_loss=total,
+            applicable_count=int(indices.numel()),
+            total_count=batch_total,
+            target_class_counts=None,
+        ),
+    }
+    return {
+        "total": total,
+        "label": label_loss,
+        "frame": frame_loss,
+        "predicate": predicate_loss,
+        "sufficiency": sufficiency_loss,
+        "polarity": polarity_loss,
+        "primary_reason": reason_loss,
+        "p2_frame_applicable_count": inputs["p2_frame_applicability_mask"].sum(),
+        "p2_predicate_applicable_count": inputs["p2_predicate_applicability_mask"].sum(),
+        "p2_sufficiency_applicable_count": inputs["p2_sufficiency_applicability_mask"].sum(),
+        "p2_polarity_applicable_count": polarity_active.sum(),
+        "p2_reason_eligible_count": reason_active.sum(),
+        "p2_loss_export": loss_export,
+    }
 
 def _stage196b2b6p6_score_geometry(
     logits: torch.Tensor, *, prefix: str,
@@ -2726,6 +3220,325 @@ def _stage187_load_integrity_sidecar(
     return eligibility, split_by_id, audit
 
 
+def _p2_load_reason_integrity_sidecar(
+    *,
+    data_path: Path,
+    source_records: list[dict[str, Any]],
+    sidecar_path: Path,
+    expected_semantic_sha256: str,
+) -> tuple[dict[str, dict[str, Any]], dict[str, Any]]:
+    authoritative_data = (ROOT / _STAGE187_AUTHORITATIVE_DATA).resolve()
+    if data_path.resolve() != authoritative_data:
+        raise ValueError("P2_METADATA_SOURCE_MISMATCH: data path is not authoritative")
+    if _stage187_file_sha256(data_path.resolve()) != _STAGE187_DATASET_SHA256:
+        raise ValueError("P2_METADATA_SOURCE_MISMATCH: dataset SHA mismatch")
+    authoritative_sidecar = (ROOT / _STAGE187_AUTHORITATIVE_SIDECAR).resolve()
+    if sidecar_path.resolve() != authoritative_sidecar:
+        raise ValueError("P2_METADATA_SOURCE_MISMATCH: sidecar path is not authoritative")
+    if expected_semantic_sha256 != _STAGE187_SIDECAR_SEMANTIC_SHA256:
+        raise ValueError("P2_METADATA_SOURCE_MISMATCH: sidecar semantic SHA mismatch")
+    rows: list[dict[str, Any]] = []
+    with sidecar_path.open("r", encoding="utf-8") as handle:
+        for line_number, line in enumerate(handle, 1):
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            if not isinstance(row, dict):
+                raise ValueError(f"P2 sidecar line {line_number} is not an object")
+            missing = [field for field in P2_SIDE_CAR_REQUIRED_FIELDS if field not in row]
+            if missing:
+                raise ValueError(f"P2 sidecar line {line_number} missing fields: {missing}")
+            if row.get("source_dataset_sha256") != _STAGE187_DATASET_SHA256:
+                raise ValueError(f"P2 sidecar line {line_number} source_dataset_sha256 mismatch")
+            if not isinstance(row.get("reason_codes"), list):
+                raise ValueError(f"P2 sidecar line {line_number} reason_codes must be a list")
+            rows.append(row)
+    if len(rows) != len(source_records):
+        raise ValueError("P2 sidecar/source row count mismatch")
+    source_ids = [str(row.get("id", "")) for row in source_records]
+    sidecar_ids = [str(row.get("row_id", "")) for row in rows]
+    if source_ids != sidecar_ids or len(set(sidecar_ids)) != len(sidecar_ids):
+        raise ValueError("P2 sidecar row_id order is not authoritative")
+    observed_semantic_sha = _stage187_semantic_sidecar_sha256(rows)
+    if observed_semantic_sha != expected_semantic_sha256:
+        raise ValueError("P2 sidecar semantic SHA mismatch")
+    by_id = {str(row["row_id"]): row for row in rows}
+    return by_id, {
+        "source": "Stage185 authoritative controlled integrity sidecar",
+        "path": str(sidecar_path.resolve()),
+        "schema_fields": sorted(rows[0].keys()) if rows else [],
+        "expected_semantic_sha256": expected_semantic_sha256,
+        "observed_semantic_sha256": observed_semantic_sha,
+        "row_id_join": "exact_one_to_one_source_order",
+        "intervention_contract_pass_field": "intervention_contract_status",
+        "generator_integrity_status_fields": list(P2_GENERATOR_COMPONENT_STATUS_FIELDS),
+        "generator_integrity_status_normalization": {
+            "CLEAN": "all authoritative component status fields are PASS",
+            "DEFECT": "at least one authoritative component status field is non-PASS",
+            "UNRESOLVED": "one or more authoritative component status fields are missing or unsupported",
+        },
+    }
+
+
+def _p2_normalized_generator_status(sidecar: dict[str, Any]) -> str:
+    component_statuses = [sidecar.get(field) for field in P2_GENERATOR_COMPONENT_STATUS_FIELDS]
+    if any(status is None for status in component_statuses):
+        return "UNRESOLVED"
+    if any(not isinstance(status, str) for status in component_statuses):
+        return "UNRESOLVED"
+    if any(status not in P2_GENERATOR_CLEAN_STATUSES and status != "FAIL" for status in component_statuses):
+        return "UNRESOLVED"
+    if all(status in P2_GENERATOR_CLEAN_STATUSES for status in component_statuses):
+        return "CLEAN"
+    return "DEFECT"
+
+def _p2_primary_reason_from_axes(frame: int, predicate: int, sufficiency: int) -> str:
+    if frame == 0:
+        return "FRAME"
+    if predicate == 0:
+        return "PREDICATE"
+    if sufficiency == 0:
+        return "SUFFICIENCY"
+    return "AUTHORIZED"
+
+
+def _p2_expected_primary_from_record(record: dict[str, Any]) -> str | None:
+    raw = str(record.get("primary_failure_type", "")).strip().lower()
+    if raw == "frame":
+        return "FRAME"
+    if raw == "predicate":
+        return "PREDICATE"
+    if raw == "sufficiency":
+        return "SUFFICIENCY"
+    if raw in {"none", "polarity"}:
+        return "AUTHORIZED"
+    return None
+
+
+def _p2_prepare_reason_supervision(
+    *,
+    train_records: list[dict[str, Any]],
+    dev_records: list[dict[str, Any]],
+    train_inputs: dict[str, torch.Tensor],
+    dev_inputs: dict[str, torch.Tensor],
+    train_source_labels: list[str],
+    sidecar_by_id: dict[str, dict[str, Any]],
+    require_min_counts: bool,
+    min_train_count: int,
+    min_dev_count: int,
+    device: torch.device,
+) -> dict[str, Any]:
+    def require_source_fields(record: dict[str, Any], row_id: str) -> None:
+        missing = [field for field in P2_SOURCE_REQUIRED_FIELDS if field not in record]
+        if missing:
+            raise ValueError(f"P2_REQUIRED_SOURCE_METADATA_MISSING: row_id={row_id} missing={missing}")
+
+    def exact_binary(record: dict[str, Any], field: str, row_id: str) -> int:
+        value = record.get(field)
+        if isinstance(value, bool) or value not in (0, 1):
+            raise ValueError(f"P2_EXACT_BINARY_VALIDATION_FAILED: row_id={row_id} field={field} value={value!r}")
+        return int(value)
+
+    def canonical_polarity(value: Any) -> str:
+        if isinstance(value, int) and not isinstance(value, bool):
+            return {0: "NONE", 1: "REFUTE", 2: "SUPPORT"}.get(value, "UNKNOWN")
+        return str(value).strip().upper()
+
+    all_row_ids = [str(record.get("id", "")) for record in train_records + dev_records]
+    if len(set(all_row_ids)) != len(all_row_ids):
+        raise ValueError("P2_DUPLICATE_ROW_ID")
+    train_pair_ids = {str(record.get("pair_id", "")) for record in train_records if str(record.get("pair_id", ""))}
+    dev_pair_ids = {str(record.get("pair_id", "")) for record in dev_records if str(record.get("pair_id", ""))}
+    leaked_pair_ids = sorted(train_pair_ids & dev_pair_ids)
+    if leaked_pair_ids:
+        raise ValueError(f"P2_TRAIN_DEV_PAIR_ID_LEAKAGE: pair_ids={leaked_pair_ids[:10]}")
+
+    def build(records: list[dict[str, Any]], split: str, source_labels: list[str] | None):
+        primary_targets: list[int] = []
+        secondary: list[list[int]] = []
+        eligible: list[bool] = []
+        frame_mask: list[bool] = []
+        predicate_mask: list[bool] = []
+        sufficiency_mask: list[bool] = []
+        polarity_mask: list[bool] = []
+        polarity_targets: list[int] = []
+        exclusion_counts: dict[str, int] = {}
+        binary_cohorts: dict[str, list[int]] = {"frame": [], "predicate": [], "sufficiency": [], "polarity": []}
+        for index, record in enumerate(records):
+            row_id = str(record.get("id", ""))
+            require_source_fields(record, row_id)
+            frame = exact_binary(record, "frame_compatible_label", row_id)
+            predicate = exact_binary(record, "predicate_covered_label", row_id)
+            sufficiency = exact_binary(record, "sufficiency_label", row_id)
+            raw_primary = str(record.get("primary_failure_type", "")).strip().lower()
+            if raw_primary not in P2_PRIMARY_FAILURE_TYPES:
+                raise ValueError(f"P2_UNKNOWN_PRIMARY_FAILURE_TYPE: row_id={row_id} value={raw_primary!r}")
+            derived = _p2_primary_reason_from_axes(frame, predicate, sufficiency)
+            expected = _p2_expected_primary_from_record(record)
+            final_label = _s28e_normalize_label(record.get("final_label"))
+            directional = final_label in P2_DIRECTIONAL_LABELS
+            polarity_label = canonical_polarity(record.get("polarity_label"))
+            intervention_type = str(record.get("intervention_type", "")).strip().lower()
+            codes: list[str] = []
+            sidecar = sidecar_by_id.get(row_id)
+            if source_labels is not None and source_labels[index] != "clean_main":
+                codes.append("P2_NON_CANONICAL_SOURCE")
+            if sidecar is None:
+                codes.append("P2_SIDECAR_MISSING")
+                intervention_contract_pass = False
+                generator_integrity_status = "UNRESOLVED"
+            else:
+                intervention_contract_pass = sidecar.get("intervention_contract_status") == "PASS"
+                generator_integrity_status = _p2_normalized_generator_status(sidecar)
+                if sidecar.get("split") != split:
+                    codes.append("P2_SPLIT_MISMATCH")
+                if sidecar.get("canonical_row_id") != row_id:
+                    codes.append("P2_CANONICAL_ROW_ID_MISMATCH")
+                try:
+                    sidecar_frame = exact_binary(sidecar, "frame_compatible_label", row_id)
+                except ValueError as exc:
+                    raise ValueError(str(exc).replace("P2_EXACT_BINARY_VALIDATION_FAILED", "P2_SIDECAR_EXACT_BINARY_VALIDATION_FAILED")) from exc
+                if sidecar_frame != frame:
+                    codes.append("P2_SIDECAR_SOURCE_BINARY_MISMATCH")
+                if not intervention_contract_pass:
+                    codes.append("P2_POLARITY_INTERVENTION_CONTRACT_FAIL")
+                if generator_integrity_status == "UNRESOLVED":
+                    codes.append("P2_INTEGRITY_SOURCE_REQUIRED")
+                elif generator_integrity_status != "CLEAN":
+                    codes.append("P2_GENERATOR_STATUS_DEFECT")
+            if expected != derived:
+                codes.append("P2_PRIMARY_REASON_AXIS_CONFLICT")
+            if derived in {"FRAME", "PREDICATE", "SUFFICIENCY"} and final_label != "NOT_ENTITLED":
+                codes.append("P2_FAILURE_FINAL_LABEL_MISMATCH")
+            if raw_primary in {"none", "polarity"} and not directional:
+                codes.append("P2_AUTHORIZED_FINAL_LABEL_MISMATCH")
+            if directional:
+                if polarity_label != final_label:
+                    codes.append("P2_POLARITY_TARGET_FINAL_MISMATCH")
+            elif polarity_label not in {"NONE", "NOT_ENTITLED"}:
+                codes.append("P2_POLARITY_TARGET_FINAL_MISMATCH")
+            if raw_primary == "polarity" and (not directional or intervention_type != "polarity_flip"):
+                codes.append("P2_POLARITY_INTERVENTION_CONTRACT_FAIL")
+            is_eligible = not codes
+            for code in codes:
+                exclusion_counts[code] = exclusion_counts.get(code, 0) + 1
+            primary_targets.append(P2_REASON_TO_ID[derived] if is_eligible else -100)
+            secondary.append([1 - frame, 1 - predicate, 1 - sufficiency])
+            eligible.append(is_eligible)
+            frame_applicable = is_eligible
+            predicate_applicable = is_eligible and frame == 1
+            sufficiency_applicable = is_eligible and frame == 1 and predicate == 1
+            polarity_applicable = is_eligible and frame == 1 and predicate == 1 and sufficiency == 1 and directional
+            frame_mask.append(frame_applicable)
+            predicate_mask.append(predicate_applicable)
+            sufficiency_mask.append(sufficiency_applicable)
+            polarity_mask.append(polarity_applicable)
+            if frame_applicable:
+                binary_cohorts["frame"].append(frame)
+            if predicate_applicable:
+                binary_cohorts["predicate"].append(predicate)
+            if sufficiency_applicable:
+                binary_cohorts["sufficiency"].append(sufficiency)
+            if polarity_applicable:
+                binary_cohorts["polarity"].append(1 if final_label == "SUPPORT" else 0)
+            if polarity_applicable:
+                polarity_targets.append(0 if final_label == "REFUTE" else 1)
+            else:
+                polarity_targets.append(-100)
+            record["p2_primary_reason"] = derived
+            record["p2_primary_reason_target_4"] = primary_targets[-1]
+            record["p2_secondary_reasons_3"] = secondary[-1]
+            record["p2_reason_supervision_eligible"] = is_eligible
+            record["p2_reason_exclusion_codes"] = codes
+            record["p2_frame_applicable"] = frame_mask[-1]
+            record["p2_predicate_applicable"] = predicate_mask[-1]
+            record["p2_sufficiency_applicable"] = sufficiency_mask[-1]
+            record["p2_polarity_applicable"] = polarity_mask[-1]
+            record["p2_polarity_target_2"] = polarity_targets[-1]
+            record["intervention_contract_pass"] = intervention_contract_pass
+            record["generator_integrity_status"] = generator_integrity_status
+        counts = {
+            name: sum(
+                1 for target, ok in zip(primary_targets, eligible)
+                if ok and target == P2_REASON_TO_ID[name]
+            )
+            for name in P2_REASON_CLASS_ORDER
+        }
+        binary_counts = {
+            name: {0: values.count(0), 1: values.count(1)}
+            for name, values in binary_cohorts.items()
+        }
+        return {
+            "primary_targets": primary_targets,
+            "secondary": secondary,
+            "eligible": eligible,
+            "frame_mask": frame_mask,
+            "predicate_mask": predicate_mask,
+            "sufficiency_mask": sufficiency_mask,
+            "polarity_mask": polarity_mask,
+            "polarity_targets": polarity_targets,
+            "counts": counts,
+            "binary_counts": binary_counts,
+            "exclusion_counts": exclusion_counts,
+        }
+    train = build(train_records, "train", train_source_labels)
+    dev = build(dev_records, "dev", None)
+    if require_min_counts:
+        low_train = {k: v for k, v in train["counts"].items() if v < min_train_count}
+        low_dev = {k: v for k, v in dev["counts"].items() if v < min_dev_count}
+        if low_train or low_dev:
+            raise ValueError(
+                "P2_REASON_MIN_CLASS_COUNT_FAILED: "
+                f"train={low_train} dev={low_dev}"
+            )
+        degenerate: dict[str, dict[str, dict[int, int]]] = {}
+        for split_name, payload in (("train", train), ("dev", dev)):
+            for cohort, counts in payload["binary_counts"].items():
+                if counts[0] < 1 or counts[1] < 1:
+                    degenerate.setdefault(split_name, {})[cohort] = counts
+        if degenerate:
+            raise ValueError(f"P2_APPLICABLE_COHORT_BINARY_CLASS_DEGENERATE: {degenerate}")
+    def attach(inputs: dict[str, torch.Tensor], payload: dict[str, Any]) -> None:
+        inputs["p2_primary_reason_targets_4"] = torch.tensor(payload["primary_targets"], dtype=torch.long, device=device)
+        inputs["p2_secondary_reason_targets_3"] = torch.tensor(payload["secondary"], dtype=torch.long, device=device)
+        inputs["p2_reason_supervision_eligible"] = torch.tensor(payload["eligible"], dtype=torch.bool, device=device)
+        inputs["p2_frame_applicability_mask"] = torch.tensor(payload["frame_mask"], dtype=torch.bool, device=device)
+        inputs["p2_predicate_applicability_mask"] = torch.tensor(payload["predicate_mask"], dtype=torch.bool, device=device)
+        inputs["p2_sufficiency_applicability_mask"] = torch.tensor(payload["sufficiency_mask"], dtype=torch.bool, device=device)
+        inputs["p2_polarity_applicability_mask"] = torch.tensor(payload["polarity_mask"], dtype=torch.bool, device=device)
+        inputs["p2_polarity_targets_2"] = torch.tensor(payload["polarity_targets"], dtype=torch.long, device=device)
+    attach(train_inputs, train)
+    attach(dev_inputs, dev)
+    return {
+        "schema_version": P2_REASON_ROUTER_SCHEMA_VERSION,
+        "train_reason_counts": train["counts"],
+        "dev_reason_counts": dev["counts"],
+        "target_class_counts": {
+            "train_primary_reason": train["counts"],
+            "dev_primary_reason": dev["counts"],
+            "train_applicable_binary": train["binary_counts"],
+            "dev_applicable_binary": dev["binary_counts"],
+        },
+        "train_exclusion_counts": train["exclusion_counts"],
+        "dev_exclusion_counts": dev["exclusion_counts"],
+        "polarity_canonical_mapping": {
+            "REFUTE": 0,
+            "SUPPORT": 1,
+            "NOT_ENTITLED": -100,
+            "NONE": -100,
+        },
+        "applicability_masks": {
+            "frame": "reason_supervision_eligible",
+            "predicate": "reason_supervision_eligible and frame_compatible_label == 1",
+            "sufficiency": "reason_supervision_eligible and frame_compatible_label == 1 and predicate_covered_label == 1",
+            "polarity": "reason_supervision_eligible and frame_compatible_label == 1 and predicate_covered_label == 1 and sufficiency_label == 1 and final_label in {REFUTE,SUPPORT}",
+        },
+        "generator_status_normalization": {
+            "source_fields": list(P2_GENERATOR_COMPONENT_STATUS_FIELDS),
+            "clean_status_values": sorted(P2_GENERATOR_CLEAN_STATUSES),
+            "normalized_values": ["CLEAN", "DEFECT", "UNRESOLVED"],
+        },
+    }
 def _stage187_compatible_positive_margin_loss(
     frame_logit: torch.Tensor,
     eligible_mask: torch.Tensor,
@@ -3211,6 +4024,10 @@ def build_model(
     temporal_channel_loss_pos_weight: float = 1.0,
     use_temporal_channel_gated_penalty: bool = False,
     temporal_channel_gated_penalty_scale: float = 0.0,
+    decision_mode: str = "explicit_product",
+    reason_router_epsilon: float = 1e-8,
+    use_temporal_comparator: bool = True,
+    use_predicate_comparator: bool = True,
 ) -> ContraMambaV6BMinimal:
     backbone = v5.ControlledDummyBackbone(vocab_size, hidden_size, max_length)
     return ContraMambaV6BMinimal(
@@ -3220,9 +4037,10 @@ def build_model(
         sufficiency_size=32,
         energy_size=24,
         dropout=0.0,
-        decision_mode="explicit_product",
-        use_temporal_comparator=True,
-        use_predicate_comparator=True,
+        decision_mode=decision_mode,
+        reason_router_epsilon=reason_router_epsilon,
+        use_temporal_comparator=use_temporal_comparator,
+        use_predicate_comparator=use_predicate_comparator,
         alpha_temporal_init=1.25,
         alpha_predicate_init=1.25,
         use_boundary_head=use_boundary_head,
@@ -3260,6 +4078,10 @@ def build_mamba_model(
     temporal_channel_loss_pos_weight: float = 1.0,
     use_temporal_channel_gated_penalty: bool = False,
     temporal_channel_gated_penalty_scale: float = 0.0,
+    decision_mode: str = "explicit_product",
+    reason_router_epsilon: float = 1e-8,
+    use_temporal_comparator: bool = True,
+    use_predicate_comparator: bool = True,
 ) -> ContraMambaV6BMinimal:
     model = ContraMambaV6BMinimal(
         model_name=model_name,
@@ -3269,9 +4091,10 @@ def build_mamba_model(
         energy_size=64,
         dropout=0.1,
         freeze_a_log=freeze_a_log,
-        decision_mode="explicit_product",
-        use_temporal_comparator=True,
-        use_predicate_comparator=True,
+        decision_mode=decision_mode,
+        reason_router_epsilon=reason_router_epsilon,
+        use_temporal_comparator=use_temporal_comparator,
+        use_predicate_comparator=use_predicate_comparator,
         alpha_temporal_init=1.25,
         alpha_predicate_init=1.25,
         use_boundary_head=use_boundary_head,
@@ -3296,7 +4119,6 @@ def build_mamba_model(
             if "A_log" in name:
                 parameter.requires_grad = False
     return model
-
 
 
 _VNEXT_STAGE124_125_MODEL_KWARGS: tuple[str, ...] = (
@@ -7971,7 +8793,6 @@ def _slot_mismatch_prediction_export_report(
     }
 
 
-
 def _prediction_export_jsonl_requested(args: "argparse.Namespace") -> bool:
     return bool(
         getattr(args, "prediction_export_schema", "stage28e_v1") == "stage28e_v1"
@@ -8131,7 +8952,6 @@ def _stage115_clean_dev_scalar_report(
         "stage115_clean_dev_scalar_fields_missing": missing,
         "stage115_clean_dev_scalar_row_count": len(prediction_rows),
     }
-
 
 
 _STAGE125_RISK_CAP_REQUIRED_EXPORT_FIELDS: tuple[str, ...] = (
@@ -8328,6 +9148,394 @@ def _stage125_merge_risk_cap_exports(
             )
         item.setdefault("vnext_context_only_logits", None)
         item.setdefault("vnext_context_only_prediction", None)
+
+
+def _p2_tensor_row_list(output: dict[str, Any], key: str, index: int) -> list[float] | None:
+    value = output.get(key)
+    if not torch.is_tensor(value):
+        return None
+    row = value.detach().cpu()
+    if row.dim() == 0:
+        return [_s28e_safe_float(row)]
+    if row.shape[0] <= index:
+        return None
+    return _s28e_safe_list_float(row[index].reshape(-1))
+
+
+def _p2_tensor_row_float(output: dict[str, Any], key: str, index: int) -> float | None:
+    value = output.get(key)
+    if not torch.is_tensor(value):
+        return None
+    flat = value.detach().cpu().reshape(-1)
+    if flat.numel() <= index:
+        return None
+    return _s28e_safe_float(flat[index])
+
+
+def _p2_name_from_probs(probs: list[float] | None, order: tuple[str, ...]) -> str | None:
+    if not probs or len(probs) != len(order):
+        return None
+    best_index = max(range(len(probs)), key=lambda idx: probs[idx])
+    return order[best_index]
+
+
+def _p2_nullable_nll(probs: list[float] | None, target: Any) -> float | None:
+    try:
+        target_id = int(target)
+    except (TypeError, ValueError):
+        return None
+    if target_id < 0 or probs is None or target_id >= len(probs):
+        return None
+    prob = probs[target_id]
+    if prob is None or prob <= 0.0:
+        return None
+    return round(float(-math.log(max(float(prob), 1e-12))), 6)
+
+
+def _p2_nullable_bce_from_prob(prob: Any, target: Any, *, active: bool = True) -> float | None:
+    if not active or prob is None or target is None:
+        return None
+    try:
+        target_id = int(target)
+        prob_float = float(prob)
+    except (TypeError, ValueError):
+        return None
+    if target_id not in (0, 1):
+        return None
+    prob_float = min(max(prob_float, 1e-12), 1.0 - 1e-12)
+    loss = -math.log(prob_float if target_id == 1 else 1.0 - prob_float)
+    return round(float(loss), 6)
+
+
+def _p2_row_identity(record: dict[str, Any], item: dict[str, Any] | None = None) -> str:
+    for source in (item or {}, record):
+        for key in ("stable_id", "row_id", "source_id", "id"):
+            value = source.get(key)
+            if value is not None and str(value) != "":
+                return str(value)
+    return ""
+
+
+def _p2_reference_pair_id(record: dict[str, Any], item: dict[str, Any] | None = None) -> str:
+    for source in (item or {}, record):
+        value = source.get("pair_id")
+        if value is not None and str(value) != "":
+            return str(value)
+    return ""
+
+
+def _p2_a0_reference_key(record: dict[str, Any], item: dict[str, Any] | None = None) -> tuple[str, str]:
+    return (_p2_row_identity(record, item), _p2_reference_pair_id(record, item))
+
+
+def _p2_load_a0_reference_predictions(path: Path) -> dict[tuple[str, str], dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    with path.open("r", encoding="utf-8") as handle:
+        first = handle.read(1)
+        handle.seek(0)
+        if first == "[":
+            loaded = json.load(handle)
+            if not isinstance(loaded, list):
+                raise ValueError("P2_A0_REFERENCE_SCHEMA_INVALID: expected list or JSONL rows")
+            rows = [row for row in loaded if isinstance(row, dict)]
+        else:
+            for line_number, line in enumerate(handle, 1):
+                if not line.strip():
+                    continue
+                row = json.loads(line)
+                if not isinstance(row, dict):
+                    raise ValueError(f"P2_A0_REFERENCE_SCHEMA_INVALID: line={line_number}")
+                rows.append(row)
+    reference: dict[tuple[str, str], dict[str, Any]] = {}
+    for row in rows:
+        key = _p2_a0_reference_key(row, row)
+        if not key[0] or not key[1]:
+            raise ValueError(f"P2_A0_REFERENCE_SCHEMA_INVALID: missing identity key row={row!r}")
+        gold = row.get("gold_label") or row.get("gold_final_label") or row.get("final_label")
+        pred = row.get("pred_label") or row.get("prediction") or row.get("pred_final_label")
+        if gold is None or pred is None:
+            raise ValueError(f"P2_A0_REFERENCE_SCHEMA_INVALID: missing gold/pred key={key}")
+        normalized = dict(row)
+        normalized["p2_a0_reference_gold_label"] = _s28e_normalize_label(gold)
+        normalized["p2_a0_reference_prediction"] = _s28e_normalize_label(pred)
+        if key in reference:
+            raise ValueError(f"P2_A0_REFERENCE_DUPLICATE_ROW_ID: key={key}")
+        reference[key] = normalized
+    return reference
+
+
+def _p2_row_identity_hash(records: list[dict[str, Any]]) -> str:
+    digest = hashlib.sha256()
+    for record in records:
+        row_id = str(record.get("id", ""))
+        pair_id = str(record.get("pair_id", ""))
+        digest.update(f"{row_id}\t{pair_id}\n".encode("utf-8"))
+    return digest.hexdigest()
+
+
+def _p2_validate_a0_reference_for_universe(
+    args: argparse.Namespace,
+    records: list[dict[str, Any]],
+) -> dict[str, Any]:
+    arm = getattr(args, "reason_router_arm", "none")
+    if arm not in {"A1", "A2", "A3"}:
+        return {"required": False, "joined_row_count": 0}
+    path = getattr(args, "reason_router_a0_reference_predictions", None)
+    if path is None:
+        raise ValueError("P2_A0_REFERENCE_REQUIRED: --reason-router-a0-reference-predictions")
+    path = Path(path)
+    if not path.exists():
+        raise ValueError(f"P2_A0_REFERENCE_REQUIRED: path does not exist: {path}")
+    reference = _p2_load_a0_reference_predictions(path)
+    setattr(args, "_p2_a0_reference_predictions_cache", reference)
+    by_row_id: dict[str, list[tuple[tuple[str, str], dict[str, Any]]]] = {}
+    for key, row in reference.items():
+        by_row_id.setdefault(key[0], []).append((key, row))
+    joined = 0
+    for record in records:
+        row_id = _p2_row_identity(record)
+        pair_id = _p2_reference_pair_id(record)
+        key = (row_id, pair_id)
+        ref = reference.get(key)
+        if ref is None:
+            row_matches = by_row_id.get(row_id, [])
+            if row_matches:
+                raise ValueError(f"P2_A0_REFERENCE_PAIR_MISMATCH: row_id={row_id} pair_id={pair_id}")
+            raise ValueError(f"P2_A0_REFERENCE_ROW_MISSING: key={key}")
+        current_gold = _s28e_normalize_label(record.get("final_label"))
+        reference_gold = ref.get("p2_a0_reference_gold_label")
+        reference_prediction = ref.get("p2_a0_reference_prediction")
+        if current_gold not in set(P2_EXTERNAL_CLASS_ORDER) or reference_gold not in set(P2_EXTERNAL_CLASS_ORDER):
+            raise ValueError(f"P2_A0_REFERENCE_SCHEMA_INVALID: unknown gold label key={key}")
+        if reference_prediction not in set(P2_EXTERNAL_CLASS_ORDER):
+            raise ValueError(f"P2_A0_REFERENCE_SCHEMA_INVALID: unknown prediction label key={key}")
+        if reference_gold != current_gold:
+            raise ValueError(
+                "P2_A0_REFERENCE_GOLD_MISMATCH: "
+                f"key={key} reference={reference_gold!r} current={current_gold!r}"
+            )
+        joined += 1
+    return {
+        "required": True,
+        "path": str(path.resolve()),
+        "sha256": _stage187_file_sha256(path.resolve()),
+        "joined_row_count": joined,
+        "reference_row_count": len(reference),
+    }
+
+def _p2_a0_reference_for_export(args: argparse.Namespace | None) -> dict[tuple[str, str], dict[str, Any]] | None:
+    if args is None:
+        return None
+    path = getattr(args, "reason_router_a0_reference_predictions", None)
+    if path is None:
+        return None
+    cached = getattr(args, "_p2_a0_reference_predictions_cache", None)
+    if cached is None:
+        cached = _p2_load_a0_reference_predictions(Path(path))
+        setattr(args, "_p2_a0_reference_predictions_cache", cached)
+    return cached
+def _add_reason_router_p2_prediction_exports(
+    item: dict[str, Any],
+    record: dict[str, Any],
+    output: dict[str, Any],
+    index: int,
+    args: argparse.Namespace | None,
+) -> None:
+    arm = getattr(args, "reason_router_arm", "none") if args is not None else "none"
+    p2_active = arm != "none" or output.get("reason_logits_4") is not None
+    if not p2_active:
+        return
+    active_logits = item.get("final_logits")
+    active_probs = item.get("final_probs")
+    gold_label_id = item.get("gold_label_id")
+    gold_label = item.get("gold_label")
+    pred_label = item.get("pred_label")
+
+    if arm in {"A0", "A2"}:
+        original_logits = active_logits
+        original_probs = active_probs
+        revised_logits = None
+        revised_probs = None
+    else:
+        original_logits = _p2_tensor_row_list(output, "original_product_logits_3", index)
+        original_probs = None
+        if original_logits is not None:
+            tensor = torch.tensor(original_logits, dtype=torch.float32)
+            original_probs = _s28e_safe_list_float(torch.softmax(tensor, dim=-1))
+        revised_logits = _p2_tensor_row_list(output, "collapsed_logits_3", index)
+        revised_probs = _p2_tensor_row_list(output, "collapsed_probs_3", index)
+
+    q_masses = _p2_tensor_row_list(output, "q_masses_4", index)
+    if q_masses is None:
+        q_parts = [
+            _p2_tensor_row_float(output, "q_frame", index),
+            _p2_tensor_row_float(output, "q_predicate", index),
+            _p2_tensor_row_float(output, "q_sufficiency", index),
+            _p2_tensor_row_float(output, "q_authorized", index),
+        ]
+        q_masses = None if any(value is None for value in q_parts) else q_parts
+    reason_probs = _p2_tensor_row_list(output, "reason_probs_4", index)
+    polarity_probs = _p2_tensor_row_list(output, "polarity_probs_2", index)
+    primary_reason_posterior = _p2_tensor_row_list(output, "primary_reason_posterior", index)
+    predicted_primary_reason = None
+    predicted_primary_reason_id = None
+    primary_reason_posterior_valid = False
+    if pred_label == "NOT_ENTITLED" and primary_reason_posterior is not None:
+        predicted_primary_reason_id = max(range(3), key=lambda idx: primary_reason_posterior[idx])
+        predicted_primary_reason = P2_REASON_CLASS_ORDER[predicted_primary_reason_id]
+        primary_reason_posterior_valid = True
+    secondary = record.get("p2_secondary_reasons_3")
+    secondary_names = [
+        name for name, active in zip(P2_REASON_CLASS_ORDER[:3], secondary or [])
+        if bool(active)
+    ]
+
+    a0_reference = _p2_a0_reference_for_export(args)
+    a0_reference_row = None
+    if a0_reference is not None:
+        a0_reference_key = _p2_a0_reference_key(record, item)
+        a0_reference_row = a0_reference.get(a0_reference_key)
+        if a0_reference_row is None:
+            raise ValueError(f"P2_A0_REFERENCE_ROW_MISSING: key={a0_reference_key}")
+    elif arm in {"A1", "A2", "A3"}:
+        raise ValueError("P2_A0_REFERENCE_REQUIRED: --reason-router-a0-reference-predictions")
+
+    if a0_reference_row is None and arm == "A0":
+        a0_gold_label = gold_label
+        a0_prediction = pred_label
+        a0_reference_source = "current_a0_selected_checkpoint_export"
+    elif a0_reference_row is not None:
+        a0_gold_label = a0_reference_row.get("p2_a0_reference_gold_label")
+        a0_prediction = a0_reference_row.get("p2_a0_reference_prediction")
+        a0_reference_source = str(getattr(args, "reason_router_a0_reference_predictions", None))
+    else:
+        a0_gold_label = None
+        a0_prediction = None
+        a0_reference_source = None
+
+    a0_false_entitlement_population = (
+        a0_gold_label == "NOT_ENTITLED" and a0_prediction in P2_DIRECTIONAL_LABELS
+    ) if a0_prediction is not None else None
+    a0_stable_true_support_population = (
+        a0_gold_label == "SUPPORT" and a0_prediction == "SUPPORT"
+    ) if a0_prediction is not None else None
+    recovery_from_a0_false_entitlement = (
+        gold_label == "NOT_ENTITLED"
+        and bool(a0_false_entitlement_population)
+        and pred_label == "NOT_ENTITLED"
+    ) if a0_false_entitlement_population is not None else None
+    harm_support_to_ne = (
+        gold_label == "SUPPORT"
+        and bool(a0_stable_true_support_population)
+        and pred_label == "NOT_ENTITLED"
+    ) if a0_stable_true_support_population is not None else None
+    harm_support_to_refute = (
+        gold_label == "SUPPORT"
+        and bool(a0_stable_true_support_population)
+        and pred_label == "REFUTE"
+    ) if a0_stable_true_support_population is not None else None
+    support_preserved_from_a0 = (
+        gold_label == "SUPPORT"
+        and bool(a0_stable_true_support_population)
+        and pred_label == "SUPPORT"
+    ) if a0_stable_true_support_population is not None else None
+    item.update({
+        "reason_router_schema_version": P2_REASON_ROUTER_SCHEMA_VERSION,
+        "reason_router_arm": arm,
+        "reason_router_mode": (
+            getattr(args, "resolved_reason_router_mode", None)
+            if args is not None else None
+        ),
+        "gradient_ownership_mode": (
+            getattr(args, "resolved_gradient_ownership_mode", None)
+            if args is not None else None
+        ),
+        "reason_class_order": list(P2_REASON_CLASS_ORDER),
+        "internal_class_order": list(P2_INTERNAL_CLASS_ORDER),
+        "external_class_order": list(P2_EXTERNAL_CLASS_ORDER),
+        "active_collapsed_logits_3": active_logits,
+        "active_collapsed_probs_3": active_probs,
+        "original_product_logits_3": original_logits,
+        "original_product_probs_3": original_probs,
+        "revised_collapsed_logits_3": revised_logits,
+        "revised_collapsed_probs_3": revised_probs,
+        "support_ne_margin_active": (
+            None if active_logits is None else round(float(active_logits[2] - active_logits[1]), 6)
+        ),
+        "support_ne_margin_original": (
+            None if original_logits is None else round(float(original_logits[2] - original_logits[1]), 6)
+        ),
+        "support_ne_margin_revised": (
+            None if revised_logits is None else round(float(revised_logits[2] - revised_logits[1]), 6)
+        ),
+        "q_masses_4": q_masses,
+        "q_frame": None if q_masses is None else q_masses[0],
+        "q_predicate": None if q_masses is None else q_masses[1],
+        "q_sufficiency": None if q_masses is None else q_masses[2],
+        "q_authorized": None if q_masses is None else q_masses[3],
+        "reason_logits_4": _p2_tensor_row_list(output, "reason_logits_4", index),
+        "reason_probs_4": reason_probs,
+        "polarity_logits_2": _p2_tensor_row_list(output, "polarity_logits_2", index),
+        "polarity_probs_2": polarity_probs,
+        "internal_probs_5": _p2_tensor_row_list(output, "internal_probs_5", index),
+        "primary_reason_posterior": primary_reason_posterior,
+        "primary_reason": record.get("p2_primary_reason"),
+        "primary_reason_target_4": record.get("p2_primary_reason_target_4"),
+        "predicted_primary_reason": predicted_primary_reason,
+        "predicted_primary_reason_id": predicted_primary_reason_id,
+        "primary_reason_posterior_valid": primary_reason_posterior_valid,
+        "secondary_reasons": secondary_names,
+        "secondary_reasons_diagnostic_only": True,
+        "frame_applicable": record.get("p2_frame_applicable"),
+        "predicate_applicable": record.get("p2_predicate_applicable"),
+        "sufficiency_applicable": record.get("p2_sufficiency_applicable"),
+        "polarity_applicable": record.get("p2_polarity_applicable"),
+        "reason_supervision_eligible": record.get("p2_reason_supervision_eligible"),
+        "reason_exclusion_codes": record.get("p2_reason_exclusion_codes"),
+        "intervention_contract_pass": record.get("intervention_contract_pass"),
+        "generator_integrity_status": record.get("generator_integrity_status"),
+        "polarity_target_2": record.get("p2_polarity_target_2"),
+        "a0_reference_prediction": a0_prediction,
+        "a0_reference_source": a0_reference_source,
+        "a0_fixed_false_entitlement_population": a0_false_entitlement_population,
+        "a0_fixed_stable_true_support_population": a0_stable_true_support_population,
+        "a0_tail_stable_population": None,
+        "recovery_from_a0_false_entitlement": recovery_from_a0_false_entitlement,
+        "harm_support_to_not_entitled": harm_support_to_ne,
+        "harm_support_to_refute": harm_support_to_refute,
+        "support_preserved_from_a0": support_preserved_from_a0,
+        "recovery_population": record.get("recovery_population"),
+        "harm_population": record.get("harm_population"),
+        "unreduced_final_ce_loss": _p2_nullable_nll(active_probs, gold_label_id),
+        "unreduced_frame_bce_loss": _p2_nullable_bce_from_prob(
+            item.get("frame_prob"),
+            record.get("frame_compatible_label"),
+            active=bool(record.get("p2_frame_applicable")),
+        ),
+        "unreduced_predicate_bce_loss": _p2_nullable_bce_from_prob(
+            item.get("predicate_coverage_prob"),
+            record.get("predicate_covered_label"),
+            active=bool(record.get("p2_predicate_applicable")),
+        ),
+        "unreduced_sufficiency_bce_loss": _p2_nullable_bce_from_prob(
+            item.get("sufficiency_prob"),
+            record.get("sufficiency_label"),
+            active=bool(record.get("p2_sufficiency_applicable")),
+        ),
+        "unreduced_primary_reason_ce_loss": _p2_nullable_nll(
+            reason_probs, record.get("p2_primary_reason_target_4")
+        ) if record.get("p2_reason_supervision_eligible") else None,
+        "unreduced_polarity_ce_loss": _p2_nullable_nll(
+            polarity_probs, record.get("p2_polarity_target_2")
+        ),
+        "q_sum": _p2_tensor_row_float(output, "q_sum", index),
+        "q_sum_abs_error": _p2_tensor_row_float(output, "q_sum_abs_error", index),
+        "reason_probs_4_sum": _p2_tensor_row_float(output, "reason_probs_4_sum", index),
+        "internal_probs_5_sum": _p2_tensor_row_float(output, "internal_probs_5_sum", index),
+        "collapsed_probs_3_sum": _p2_tensor_row_float(output, "collapsed_probs_3_sum", index),
+        "primary_reason_posterior_sum": _p2_tensor_row_float(output, "primary_reason_posterior_sum", index),
+        "gradient_ownership_configuration": output.get("gradient_ownership_configuration"),
+    })
 
 def prediction_records_v6b(
     records: list[dict],
@@ -8629,6 +9837,7 @@ def prediction_records_v6b(
                 item[metadata_key] = record[metadata_key]
         _stage113_add_vnext_scalars(item, output, index)
         _add_slot_mismatch_prediction_exports(item, record, output, index, args)
+        _add_reason_router_p2_prediction_exports(item, record, output, index, args)
         output_segmented_active = bool(output.get("vnext_segmented_dual_pass_active", False))
         record_segmented_active = bool(record.get("vnext_segmented_dual_pass_active", False))
         vnext_segmented_active = record_segmented_active or output_segmented_active
@@ -9111,6 +10320,39 @@ def build_parser() -> argparse.ArgumentParser:
             "metrics, and exports."
         ),
     )
+    parser.add_argument(
+        "--reason-router-arm",
+        choices=("none", "A0", "A1", "A2", "A3"),
+        default="none",
+        help="P2 reason-router arm. Default none preserves the legacy workflow.",
+    )
+    parser.add_argument(
+        "--reason-router-a0-reference-predictions",
+        type=Path,
+        default=None,
+        help="P2 A0 selected-checkpoint prediction export used to join fixed A0 populations.",
+    )
+    parser.add_argument(
+        "--reason-router-mode",
+        choices=("auto", "explicit_product", "conditional_first_blocker"),
+        default="auto",
+        help="P2 router mode override. auto resolves from --reason-router-arm.",
+    )
+    parser.add_argument(
+        "--gradient-ownership-mode",
+        choices=("auto", "joint", "explicit_local"),
+        default="auto",
+        help="P2 ownership override. auto resolves from --reason-router-arm.",
+    )
+    parser.add_argument(
+        "--reason-loss-weight",
+        type=float,
+        default=None,
+        help="P2 primary reason CE weight. Required and >0 for A1/A3.",
+    )
+    parser.add_argument("--reason-router-epsilon", type=float, default=1e-8)
+    parser.add_argument("--reason-min-train-count", type=int, default=50)
+    parser.add_argument("--reason-min-dev-count", type=int, default=20)
     parser.add_argument(
         "--stage196b2b6p8-enable-full-trainable-path-replay-api",
         action="store_true",
@@ -13914,6 +15156,8 @@ def _vnext_forward_maybe_batched(
     temporal_channel_gated_penalty_scale: float = 0.0,
     return_composer_input_observability: bool = False,
     stage196b2b6p8_return_replay_state: bool = False,
+    gradient_ownership_mode: str | None = None,
+    return_q_diagnostics: bool = False,
     batch_size: int | None = None,
     amp_enabled: bool = False,
 ) -> dict[str, Any]:
@@ -13925,6 +15169,11 @@ def _vnext_forward_maybe_batched(
         {"stage196b2b6p8_return_replay_state": True}
         if stage196b2b6p8_return_replay_state else {}
     )
+    p2_forward_kwargs: dict[str, Any] = {}
+    if gradient_ownership_mode is not None:
+        p2_forward_kwargs["gradient_ownership_mode"] = gradient_ownership_mode
+    if return_q_diagnostics:
+        p2_forward_kwargs["return_q_diagnostics"] = True
     batch_size = _positive_optional_int(batch_size, "batch_size")
     if batch_size is None or batch_size >= n_rows:
         with _cuda_amp_autocast(amp_enabled):
@@ -13936,6 +15185,7 @@ def _vnext_forward_maybe_batched(
                 temporal_channel_gated_penalty_scale=temporal_channel_gated_penalty_scale,
                 **composer_kwargs,
                 **replay_kwargs,
+                **p2_forward_kwargs,
             )
     chunks: list[dict[str, Any]] = []
     for start in range(0, n_rows, batch_size):
@@ -13951,6 +15201,7 @@ def _vnext_forward_maybe_batched(
                     temporal_channel_gated_penalty_scale=temporal_channel_gated_penalty_scale,
                     **composer_kwargs,
                     **replay_kwargs,
+                    **p2_forward_kwargs,
                 )
             )
     merged = _concat_model_outputs(chunks)
@@ -14040,6 +15291,84 @@ def _load_stage118_checkpoint_state(checkpoint_path: Path) -> tuple[dict[str, to
     return state, metadata
 
 
+def _p2_checkpoint_metadata_from_args(args: argparse.Namespace) -> dict[str, Any]:
+    arm = getattr(args, "reason_router_arm", "none")
+    if arm == "none":
+        return {}
+    loss_weights = {
+        "lambda_frame_preserve": getattr(args, "lambda_frame_preserve", None),
+        "lambda_frame_anchor": getattr(args, "lambda_frame_anchor", None),
+        "ranking_weight": getattr(args, "ranking_weight", None),
+        "reason_loss_weight": getattr(args, "resolved_reason_loss_weight", None),
+        "boundary_loss_weight": getattr(args, "boundary_loss_weight", None),
+        "frame_violation_loss_weight": getattr(args, "frame_violation_loss_weight", None),
+        "predicate_isolation_loss_weight": getattr(args, "predicate_isolation_loss_weight", None),
+        "preservation_entitlement_loss_weight": getattr(args, "preservation_entitlement_loss_weight", None),
+    }
+    return {
+        "reason_router_p2_schema_version": P2_REASON_ROUTER_SCHEMA_VERSION,
+        "reason_router_p2_checkpoint_metadata_mode": "p2_exact_resume",
+        "reason_router_arm": arm,
+        "reason_router_composer": getattr(args, "resolved_reason_router_mode", None),
+        "reason_router_mode": getattr(args, "resolved_reason_router_mode", None),
+        "gradient_ownership_mode": getattr(args, "resolved_gradient_ownership_mode", None),
+        "reason_loss_weight": getattr(args, "resolved_reason_loss_weight", 0.0),
+        "reason_router_epsilon": getattr(args, "reason_router_epsilon", None),
+        "reason_min_train_count": getattr(args, "reason_min_train_count", None),
+        "reason_min_dev_count": getattr(args, "reason_min_dev_count", None),
+        "integrity_sidecar_semantic_sha256": getattr(args, "expected_integrity_sidecar_semantic_sha256", None),
+        "data_sha256": _STAGE187_DATASET_SHA256,
+        "split_identity": {
+            "resolved_split_seed": getattr(args, "resolved_split_seed", None),
+            "split_policy": getattr(args, "resolved_split_policy", None),
+            "split_seed_explicit": getattr(args, "resolved_split_seed_explicit", None),
+            "dev_ratio": getattr(args, "dev_ratio", None),
+            "train_row_identity_hash": getattr(args, "p2_train_row_identity_hash", None),
+            "dev_row_identity_hash": getattr(args, "p2_dev_row_identity_hash", None),
+        },
+        "class_weighting_configuration": {
+            "class_weighting": getattr(args, "class_weighting", None),
+            "weighted_label_loss": getattr(args, "weighted_label_loss", None),
+            "balanced_sampler": getattr(args, "balanced_sampler", None),
+        },
+        "local_core_loss_weights": loss_weights,
+        "optimizer_identity": "v5.build_optimizer",
+        "optimizer_config": {
+            "learning_rate": getattr(args, "lr", None),
+            "head_learning_rate": getattr(args, "head_lr", None),
+            "encoder_learning_rate": getattr(args, "encoder_lr", None),
+            "weight_decay": getattr(args, "weight_decay", None),
+        },
+        "scheduler_identity": None,
+        "scheduler_config": None,
+        "reason_class_order": list(P2_REASON_CLASS_ORDER),
+        "internal_class_order": list(P2_INTERNAL_CLASS_ORDER),
+        "external_class_order": list(P2_EXTERNAL_CLASS_ORDER),
+        "mamba_backbone_frozen": bool(getattr(args, "freeze_encoder", False)),
+    }
+
+
+def _p2_load_state_dict_with_contract(
+    model: nn.Module,
+    state: dict[str, Any],
+    args: argparse.Namespace,
+) -> str:
+    arm = getattr(args, "reason_router_arm", "none")
+    if arm in {"A1", "A3"}:
+        result = model.load_state_dict(state, strict=False)
+        missing = set(result.missing_keys)
+        unexpected = set(result.unexpected_keys)
+        if missing == {"decision_head.reason_bias_3"} and not unexpected:
+            return "p2_common_initialization_migration"
+        if missing or unexpected:
+            raise RuntimeError(
+                "P2_CHECKPOINT_COMPATIBILITY_FAILED: "
+                f"missing={sorted(missing)} unexpected={sorted(unexpected)}"
+            )
+        return "p2_exact_resume"
+    model.load_state_dict(state, strict=True)
+    return "strict_legacy_or_product"
+
 def _validate_model_checkpoint_metadata(
     metadata: dict[str, Any],
     args: argparse.Namespace,
@@ -14068,7 +15397,18 @@ def _validate_model_checkpoint_metadata(
             + "; ".join(mismatches)
         )
 
-
+    p2_expected = _p2_checkpoint_metadata_from_args(args)
+    if p2_expected and metadata.get("reason_router_p2_schema_version") is not None:
+        p2_mismatches = []
+        for key, current_value in p2_expected.items():
+            saved_value = metadata.get(key)
+            if saved_value != current_value:
+                p2_mismatches.append(f"{key}: checkpoint={saved_value!r} current={current_value!r}")
+        if p2_mismatches:
+            raise ValueError(
+                "P2_CHECKPOINT_RESUME_FORBIDDEN: "
+                + "; ".join(p2_mismatches)
+            )
 def _save_model_checkpoint(
     *,
     model: nn.Module,
@@ -14111,6 +15451,7 @@ def _save_model_checkpoint(
         "selected_epoch": best_epoch,
         "best_dev_metrics": best_dev_metrics,
     }
+    metadata.update(_p2_checkpoint_metadata_from_args(args))
     payload = {
         "model_state_dict": {
             key: value.detach().cpu().clone()
@@ -14260,6 +15601,7 @@ def _save_stage160_checkpoint(
         "stage160_external_used_for_checkpoint_selection": False,
         "stage160_shadow_diagnostics_integrated": False,
     }
+    metadata.update(_p2_checkpoint_metadata_from_args(args))
     payload = {
         "model_state_dict": {
             key: value.detach().cpu().clone()
@@ -14621,7 +15963,6 @@ _STAGE126_PREFLIGHT_REQUIRED_NON_NULL_FIELDS: tuple[str, ...] = (
     "vnext_context_only_logits",
     "vnext_context_only_prediction",
 )
-
 
 
 _STAGE126_PREFLIGHT_REQUIRED_SEGMENTED_VALUES: dict[str, Any] = {
@@ -15892,6 +17233,7 @@ def main(argv: list[str] | None = None) -> int:
     raw_argv = list(sys.argv[1:] if argv is None else argv)
     _stage174a_runtime_start = time.monotonic()
     args = parser.parse_args(argv)
+    _p2_contract = _p2_resolve_arm_contract(args, raw_argv, parser)
     try:
         validate_teacher_observer_cli(
             args.teacher_observer_mode,
@@ -15931,6 +17273,9 @@ def main(argv: list[str] | None = None) -> int:
         "fixed_explicit_split_seed"
         if split_seed_explicit else "training_seed_default"
     )
+    args.resolved_split_seed = resolved_split_seed
+    args.resolved_split_policy = split_policy
+    args.resolved_split_seed_explicit = split_seed_explicit
     _trajectory_observability_mode, _stage191_arm = (
         _resolve_trajectory_observability_mode(args, resolved_split_seed)
     )
@@ -16987,6 +18332,8 @@ def main(argv: list[str] | None = None) -> int:
     dev_records = apply_vnext_evidence_interface_to_records(
         dev_records, args.vnext_evidence_interface
     )
+    args.p2_train_row_identity_hash = _p2_row_identity_hash(train_records)
+    args.p2_dev_row_identity_hash = _p2_row_identity_hash(dev_records)
     _pairwise_loss_stage57_excluded = _stage60_bridge_info["stage57_bridge_row_count"]
     _pairwise_loss_stage66_excluded = _stage66_bridge_info["stage66_bridge_row_count"]
     _pairwise_loss_stage75_excluded = _stage75_bridge_info["stage75_bridge_row_count"]
@@ -17144,6 +18491,12 @@ def main(argv: list[str] | None = None) -> int:
                     args.temporal_channel_gated_penalty_scale
                     if args.use_temporal_channel_gated_penalty else 0.0
                 ),
+                decision_mode=(
+                    args.resolved_reason_router_mode or "explicit_product"
+                ),
+                reason_router_epsilon=args.reason_router_epsilon,
+                use_temporal_comparator=getattr(args, "resolved_use_temporal_comparator", args.use_temporal_comparator),
+                use_predicate_comparator=getattr(args, "resolved_use_predicate_comparator", args.use_predicate_comparator),
             )
 
     train_inputs = v5.move_inputs(train_bundle["model_inputs"], device)
@@ -17173,6 +18526,35 @@ def main(argv: list[str] | None = None) -> int:
         tokenizer=tokenizer,
         device=device,
     )
+
+    _p2_reason_metadata_audit: dict[str, Any] = {}
+    _p2_reason_supervision_audit: dict[str, Any] = {}
+    _p2_last_loss_export: dict[str, Any] = {}
+    _p2_epoch_loss_history: list[dict[str, Any]] = []
+    if _p2_contract.get("enabled"):
+        if args.controlled_integrity_sidecar_path is None:
+            raise ValueError("P2_METADATA_INTEGRITY_SOURCE_REQUIRED: --controlled-integrity-sidecar-path")
+        if args.expected_integrity_sidecar_semantic_sha256 is None:
+            raise ValueError("P2_METADATA_INTEGRITY_SOURCE_REQUIRED: --expected-integrity-sidecar-semantic-sha256")
+        _p2_sidecar_by_id, _p2_reason_metadata_audit = _p2_load_reason_integrity_sidecar(
+            data_path=Path(args.data),
+            source_records=records,
+            sidecar_path=Path(args.controlled_integrity_sidecar_path),
+            expected_semantic_sha256=args.expected_integrity_sidecar_semantic_sha256,
+        )
+        _p2_reason_supervision_audit = _p2_prepare_reason_supervision(
+            train_records=train_records,
+            dev_records=dev_records,
+            train_inputs=train_inputs,
+            dev_inputs=dev_inputs,
+            train_source_labels=_train_source_labels,
+            sidecar_by_id=_p2_sidecar_by_id,
+            require_min_counts=args.reason_router_arm in {"A1", "A3"},
+            min_train_count=args.reason_min_train_count,
+            min_dev_count=args.reason_min_dev_count,
+            device=device,
+        )
+        _p2_reason_metadata_audit["a0_reference"] = _p2_validate_a0_reference_for_universe(args, dev_records)
 
     if model is None:
         if args.architecture == "v7_hierarchical":
@@ -17266,6 +18648,12 @@ def main(argv: list[str] | None = None) -> int:
                     args.temporal_channel_gated_penalty_scale
                     if args.use_temporal_channel_gated_penalty else 0.0
                 ),
+                decision_mode=(
+                    args.resolved_reason_router_mode or "explicit_product"
+                ),
+                reason_router_epsilon=args.reason_router_epsilon,
+                use_temporal_comparator=getattr(args, "resolved_use_temporal_comparator", args.use_temporal_comparator),
+                use_predicate_comparator=getattr(args, "resolved_use_predicate_comparator", args.use_predicate_comparator),
             )
     if getattr(args, "v7_use_coverage_entailment_loss", False):
         if args.architecture != "v7_hierarchical":
@@ -17295,6 +18683,9 @@ def main(argv: list[str] | None = None) -> int:
         )
 
     model = model.to(device)
+    if _p2_contract.get("enabled"):
+        model.gradient_ownership_mode = args.resolved_gradient_ownership_mode
+        model.return_q_diagnostics = True
     _install_framegate_gradient_ownership(
         model,
         args.frame_downstream_gradient_mode,
@@ -17307,7 +18698,7 @@ def main(argv: list[str] | None = None) -> int:
         _validate_model_checkpoint_metadata(
             checkpoint_metadata, args, Path(args.stage118_diagnostic_model_checkpoint)
         )
-        model.load_state_dict(checkpoint_state)
+        _p2_checkpoint_load_mode = _p2_load_state_dict_with_contract(model, checkpoint_state, args)
         model = model.to(device)
         report: dict[str, Any] = {
             "configuration": {
@@ -17324,6 +18715,7 @@ def main(argv: list[str] | None = None) -> int:
             },
             "stage118_diagnostic_export_only": True,
             "stage118_checkpoint_metadata": checkpoint_metadata,
+            "p2_checkpoint_load_mode": _p2_checkpoint_load_mode,
             "vnext_use_slot_mismatch_head": bool(
                 getattr(args, "vnext_use_slot_mismatch_head", False)
             ),
@@ -18674,10 +20066,19 @@ def main(argv: list[str] | None = None) -> int:
             indices = v5.sample_indices(
                 train_inputs["final_labels"], balanced_sampler, sampling_generator
             )
-            losses = v5.controlled_losses(
-                output, train_inputs, indices,
-                False if ce_class_weights is not None else weighted_label_loss,
-            )
+            if args.reason_router_arm in {"A1", "A3"}:
+                losses = _p2_reason_router_losses(
+                    output,
+                    train_inputs,
+                    indices,
+                    False if ce_class_weights is not None else weighted_label_loss,
+                    reason_loss_weight=args.resolved_reason_loss_weight,
+                )
+            else:
+                losses = v5.controlled_losses(
+                    output, train_inputs, indices,
+                    False if ce_class_weights is not None else weighted_label_loss,
+                )
             if ce_class_weights is not None:
                 selected_labels = train_inputs["final_labels"].index_select(0, indices)
                 new_label_loss = F.cross_entropy(
@@ -18689,6 +20090,25 @@ def main(argv: list[str] | None = None) -> int:
                 losses = dict(losses)
                 losses["label"] = new_label_loss
                 losses["total"] = non_label_total + new_label_loss
+
+            if args.reason_router_arm in {"A1", "A3"}:
+                losses = dict(losses)
+                losses["p2_loss_export"] = _p2_reason_arm_loss_export(
+                    losses,
+                    train_inputs,
+                    indices,
+                    args.resolved_reason_loss_weight,
+                )
+            elif args.reason_router_arm in {"A0", "A2"}:
+                losses = dict(losses)
+                losses["p2_loss_export"] = _p2_product_arm_loss_export(losses, train_inputs, indices)
+            if args.reason_router_arm in {"A0", "A1", "A2", "A3"}:
+                _p2_epoch_snapshot = _p2_record_epoch_loss_snapshot(
+                    _p2_epoch_loss_history,
+                    epoch=epoch,
+                    loss_export=losses.get("p2_loss_export", {}),
+                )
+                _p2_last_loss_export = _p2_epoch_snapshot["loss_summary"]
 
             if use_intervention_loss:
                 from contramamba import intervention_pairwise_losses
@@ -22054,6 +23474,16 @@ def main(argv: list[str] | None = None) -> int:
             "stage177c_frame_pairwise": _stage177c_report,
             "compatible_positive_margin": _compatible_positive_margin_report,
             "teacher_observer": _teacher_observer_report,
+            **({
+                "reason_router_p2": {
+                    "contract": _p2_contract,
+                    "metadata_integrity_source": _p2_reason_metadata_audit,
+                    "supervision": _p2_reason_supervision_audit,
+                    "epoch_loss_history": _p2_epoch_loss_history,
+                    "final_epoch_loss_summary": _p2_last_loss_export,
+                    "loss_summaries": _p2_last_loss_export,
+                }
+            } if _p2_contract.get("enabled") else {}),
             "final_epoch": epochs,
             "best_epoch": best_epoch,
             "select_metric": select_metric,
@@ -22246,6 +23676,14 @@ def main(argv: list[str] | None = None) -> int:
         "scheduler_configuration": None,
         "maximum_sequence_length": max_length,
         "prediction_export_schema": "stage28e_v1_json_plus_optional_jsonl",
+        **({
+            "reason_router_p2_contract": _p2_contract,
+            "reason_router_p2_metadata_integrity_source": _p2_reason_metadata_audit,
+            "reason_router_p2_supervision": _p2_reason_supervision_audit,
+            "reason_router_p2_epoch_loss_history": _p2_epoch_loss_history,
+            "reason_router_p2_final_epoch_loss_summary": _p2_last_loss_export,
+            "reason_router_p2_loss_summaries": _p2_last_loss_export,
+        } if _p2_contract.get("enabled") else {}),
         "training_scope": "internal_controlled_clean_train_with_opt_in_train_only_auxiliary_bridges",
         "active_bridge_auxiliary_modes_and_row_counts": _stage174a_auxiliary_activity,
         "compatible_positive_margin": {
@@ -22715,6 +24153,16 @@ def main(argv: list[str] | None = None) -> int:
                 },
                 "safety_gate": _stage177c_safety_gate,
             },
+            **({
+                "reason_router_p2": {
+                    "contract": _p2_contract,
+                    "metadata_integrity_source": _p2_reason_metadata_audit,
+                    "supervision": _p2_reason_supervision_audit,
+                    "epoch_loss_history": _p2_epoch_loss_history,
+                    "final_epoch_loss_summary": _p2_last_loss_export,
+                    "loss_summaries": _p2_last_loss_export,
+                }
+            } if _p2_contract.get("enabled") else {}),
             "compatible_positive_margin": {
                 "enabled": _stage187_margin_enabled,
                 "default_off": True,
