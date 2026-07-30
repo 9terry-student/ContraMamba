@@ -14,6 +14,7 @@
   ],
   "execution_repair_files_changed": [
     "scripts/train_controlled_v6b_minimal.py",
+    "tests/test_reason_router_p2_contract.py",
     "tests/test_reason_router_p3w1_calibration.py",
     "reports/reason_router_p2_p3w1_calibration_instrumentation_spec.md",
     "reports/reason_router_p2_p3w1_calibration_instrumentation_manifest.json"
@@ -33,30 +34,52 @@
   "failed_execution_reached_model_load": false,
   "failed_execution_reached_calibration_forward": false,
   "failed_execution_wrote_unit_artifact": false,
-  "failed_execution_stage": "P3W1_CALIBRATION_ARGUMENT_GATE",
-  "failed_execution_seed": 180,
-  "failed_execution_commit": "6df1d013b74cb95c658a3ffddbcff8ed0214cdb3",
+  "failed_execution_attempts": [
+    {
+      "commit": "6df1d013b74cb95c658a3ffddbcff8ed0214cdb3",
+      "seed": 180,
+      "stage": "P3W1_CALIBRATION_ARGUMENT_GATE",
+      "reason": "legacy raw comparator defaults incorrectly rejected",
+      "reached_model_load": false,
+      "reached_calibration_forward": false,
+      "wrote_unit_artifact": false
+    },
+    {
+      "commit": "5e3907cbc954885ba8ccc681f86b5a737f8afd22",
+      "seed": 180,
+      "stage": "P3W1_TRAIN_ONLY_REASON_SUPERVISION_GATE",
+      "reason": "canonical_row_id lineage pointer incorrectly compared with current row_id",
+      "reached_model_load": false,
+      "reached_calibration_forward": false,
+      "wrote_unit_artifact": false
+    }
+  ],
   "validation_executed": [
     "Kaggle Python trainer invocation for P3-W2 seed180",
     "trainer CLI invocation",
     "argument parsing",
     "P2 arm resolution",
-    "P3-W1 calibration-only argument gate"
+    "P3-W1 calibration-only argument gate",
+    "Kaggle Python CPU metadata diagnostic",
+    "authoritative dataset split construction",
+    "raw first-blocker counting",
+    "train-only supervision audit",
+    "full supervision audit",
+    "exclusion decomposition"
   ],
-  "validation_not_executed_after_repair": [
-    "pytest",
-    "py_compile",
-    "--help",
-    "model load",
+  "validation_not_executed_after_lineage_repair": [
+    "post-lineage-repair pytest",
+    "post-lineage-repair model load",
     "calibration forward",
     "unit artifact write",
+    "aggregation",
     "backward",
     "optimizer step",
     "scheduler step",
-    "dev forward",
-    "aggregation",
-    "training",
-    "evaluation",
+    "dev evaluation",
+    "A1/A2/A3 training",
+    "py_compile",
+    "--help",
     "git add",
     "git commit",
     "git push",
@@ -81,7 +104,10 @@
   "execution_discovered_repairs": [
     "calibration comparator authority changed from legacy raw parser values to P2 resolved comparator values",
     "explicit temporal/predicate comparator CLI rejection preserved",
-    "legacy non-P2 comparator defaults unchanged"
+    "legacy non-P2 comparator defaults unchanged",
+    "canonical_row_id interpreted as pair-level canonical control pointer instead of current row alias",
+    "pair-level canonical lineage helper shared by full and train-only reason supervision",
+    "canonical lineage corruption now fails fast before eligibility exclusion"
   ],
   "identity_authority_model": {
     "dataset_sha256": "observed file SHA compared with expected aggregate CLI",

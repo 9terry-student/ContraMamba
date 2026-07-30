@@ -4,9 +4,11 @@ import copy
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
 import torch
 import torch.nn.functional as F
 
+import scripts.train_controlled_v6b_minimal as trainer
 from contramamba.heads.entitlement_decision import (
     FinalEntitlementDecisionHead,
     _p2_finite_nonnegative,
@@ -461,48 +463,79 @@ def test_legacy_none_comparator_constructor_config_preserved() -> None:
     assert p2_args.resolved_use_predicate_comparator is False
 
 
-def test_p2_supervision_integrity_polarity_intervention_and_frame_binary_audit() -> None:
+def _p2_lineage_record(row_id: str, pair_id: str, kind: str) -> dict:
+    configs = {
+        "none": ("none", "SUPPORT", 1, 1, 1, "SUPPORT"),
+        "entity_swap": ("entity_swap", "NOT_ENTITLED", 0, 1, 1, "NONE"),
+        "predicate_swap": ("predicate_swap", "NOT_ENTITLED", 1, 0, 1, "NONE"),
+        "evidence_deletion": ("evidence_deletion", "NOT_ENTITLED", 1, 1, 0, "NONE"),
+        "polarity_flip": ("polarity_flip", "REFUTE", 1, 1, 1, "REFUTE"),
+    }
+    intervention_type, final_label, frame, predicate, sufficiency, polarity = configs[kind]
+    primary = "polarity" if kind == "polarity_flip" else "frame" if kind == "entity_swap" else "predicate" if kind == "predicate_swap" else "sufficiency" if kind == "evidence_deletion" else "none"
+    return {
+        "id": row_id,
+        "pair_id": pair_id,
+        "intervention_type": intervention_type,
+        "final_label": final_label,
+        "frame_compatible_label": frame,
+        "predicate_covered_label": predicate,
+        "sufficiency_label": sufficiency,
+        "polarity_label": polarity,
+        "primary_failure_type": primary,
+    }
+
+
+def _p2_lineage_sidecar(row: dict, split: str, canonical_row_id: str) -> dict:
     import scripts.train_controlled_v6b_minimal as trainer
 
-    records = [
-        {"id": "r_frame", "pair_id": "p1", "intervention_type": "entity_swap", "final_label": "NOT_ENTITLED", "frame_compatible_label": 0, "predicate_covered_label": 1, "sufficiency_label": 1, "polarity_label": "NONE", "primary_failure_type": "frame"},
-        {"id": "r_pred", "pair_id": "p2", "intervention_type": "predicate_swap", "final_label": "NOT_ENTITLED", "frame_compatible_label": 1, "predicate_covered_label": 0, "sufficiency_label": 1, "polarity_label": "NONE", "primary_failure_type": "predicate"},
-        {"id": "r_suff", "pair_id": "p3", "intervention_type": "evidence_deletion", "final_label": "NOT_ENTITLED", "frame_compatible_label": 1, "predicate_covered_label": 1, "sufficiency_label": 0, "polarity_label": "NONE", "primary_failure_type": "sufficiency"},
-        {"id": "r_pol", "pair_id": "p4", "intervention_type": "polarity_flip", "final_label": "SUPPORT", "frame_compatible_label": 1, "predicate_covered_label": 1, "sufficiency_label": 1, "polarity_label": "SUPPORT", "primary_failure_type": "polarity"},
-    ]
-    sidecar = {
-        row["id"]: {
-            "split": split,
-            "canonical_row_id": row["id"],
-            "frame_compatible_label": row["frame_compatible_label"],
-            **{field: "PASS" for field in trainer.P2_GENERATOR_COMPONENT_STATUS_FIELDS},
-        }
-        for split, source in (("train", records), ("dev", [{**row, "id": row["id"] + "_dev", "pair_id": row["pair_id"] + "_dev"} for row in records]))
-        for row in source
+    return {
+        "row_id": row["id"],
+        "pair_id": row["pair_id"],
+        "split": split,
+        "canonical_row_id": canonical_row_id,
+        "frame_compatible_label": row["frame_compatible_label"],
+        **{field: "PASS" for field in trainer.P2_GENERATOR_COMPONENT_STATUS_FIELDS},
     }
-    dev_records = [{**row, "id": row["id"] + "_dev", "pair_id": row["pair_id"] + "_dev"} for row in records]
+
+
+def _p2_lineage_records(pair_id: str, split: str) -> tuple[list[dict], dict[str, dict]]:
+    suffixes = ("none", "entity_swap", "predicate_swap", "evidence_deletion", "polarity_flip")
+    records = [_p2_lineage_record(f"{pair_id}__{suffix}", pair_id, suffix) for suffix in suffixes]
+    canonical_row_id = f"{pair_id}__none"
+    return records, {row["id"]: _p2_lineage_sidecar(row, split, canonical_row_id) for row in records}
+
+
+def test_p2_supervision_integrity_polarity_intervention_and_frame_binary_audit() -> None:
+    train_records, train_sidecar = _p2_lineage_records("pair_x", "train")
+    dev_records, dev_sidecar = _p2_lineage_records("pair_y", "dev")
+    sidecar = {**train_sidecar, **dev_sidecar}
     audit = trainer._p2_prepare_reason_supervision(
-        train_records=records,
+        train_records=train_records,
         dev_records=dev_records,
         train_inputs={},
         dev_inputs={},
-        train_source_labels=["clean_main"] * len(records),
+        train_source_labels=["clean_main"] * len(train_records),
         sidecar_by_id=sidecar,
         require_min_counts=False,
         min_train_count=1,
         min_dev_count=1,
         device=torch.device("cpu"),
     )
-    assert audit["target_class_counts"]["train_applicable_binary"]["frame"] == {0: 1, 1: 3}
+    assert audit["target_class_counts"]["train_applicable_binary"]["frame"] == {0: 1, 1: 4}
+    assert audit["train_reason_counts"] == {"FRAME": 1, "PREDICATE": 1, "SUFFICIENCY": 1, "AUTHORIZED": 2}
+    assert audit["train_exclusion_counts"].get("P2_CANONICAL_ROW_ID_MISMATCH", 0) == 0
 
-    bad = [{**records[-1], "id": "bad_pol", "pair_id": "bad_pair", "intervention_type": "none"}]
+    bad = [_p2_lineage_record("bad_pair__polarity_flip", "bad_pair", "polarity_flip")]
+    bad_dev = [_p2_lineage_record("bad_pair_dev__polarity_flip", "bad_pair_dev", "polarity_flip")]
+    bad[0]["intervention_type"] = "none"
     bad_sidecar = {
-        "bad_pol": {"split": "train", "canonical_row_id": "bad_pol", "frame_compatible_label": 1, **{field: "PASS" for field in trainer.P2_GENERATOR_COMPONENT_STATUS_FIELDS}},
-        "bad_pol_dev": {"split": "dev", "canonical_row_id": "bad_pol_dev", "frame_compatible_label": 1, **{field: "PASS" for field in trainer.P2_GENERATOR_COMPONENT_STATUS_FIELDS}},
+        bad[0]["id"]: _p2_lineage_sidecar(bad[0], "train", bad[0]["id"]),
+        bad_dev[0]["id"]: _p2_lineage_sidecar(bad_dev[0], "dev", bad_dev[0]["id"]),
     }
     trainer._p2_prepare_reason_supervision(
         train_records=bad,
-        dev_records=[{**bad[0], "id": "bad_pol_dev", "pair_id": "bad_pair_dev"}],
+        dev_records=bad_dev,
         train_inputs={},
         dev_inputs={},
         train_source_labels=["clean_main"],
@@ -514,6 +547,53 @@ def test_p2_supervision_integrity_polarity_intervention_and_frame_binary_audit()
     )
     assert bad[0]["p2_reason_supervision_eligible"] is False
     assert "P2_POLARITY_INTERVENTION_CONTRACT_FAIL" in bad[0]["p2_reason_exclusion_codes"]
+
+
+def test_p2_canonical_lineage_accepts_shared_pair_anchor() -> None:
+    records, sidecar = _p2_lineage_records("pair_x", "train")
+    assert trainer._p2_resolve_canonical_lineage_for_split(records=records, sidecar_by_id=sidecar, split="train") == {"pair_x": "pair_x__none"}
+
+
+def test_p2_canonical_lineage_rejects_sidecar_identity_corruption() -> None:
+    records, sidecar = _p2_lineage_records("pair_x", "train")
+    sidecar["pair_x__entity_swap"]["row_id"] = "wrong"
+    with pytest.raises(ValueError, match="sidecar row_id mismatch"):
+        trainer._p2_resolve_canonical_lineage_for_split(records=records, sidecar_by_id=sidecar, split="train")
+    records, sidecar = _p2_lineage_records("pair_x", "train")
+    sidecar["pair_x__entity_swap"]["pair_id"] = "other_pair"
+    with pytest.raises(ValueError, match="sidecar pair_id mismatch"):
+        trainer._p2_resolve_canonical_lineage_for_split(records=records, sidecar_by_id=sidecar, split="train")
+
+
+def test_p2_canonical_lineage_rejects_multiple_canonical_ids_in_one_pair() -> None:
+    records, sidecar = _p2_lineage_records("pair_x", "train")
+    sidecar["pair_x__entity_swap"]["canonical_row_id"] = "pair_x__entity_swap"
+    with pytest.raises(ValueError, match="multiple canonical_row_id"):
+        trainer._p2_resolve_canonical_lineage_for_split(records=records, sidecar_by_id=sidecar, split="train")
+
+
+def test_p2_canonical_lineage_rejects_missing_or_cross_pair_target() -> None:
+    records, sidecar = _p2_lineage_records("pair_x", "train")
+    sidecar["pair_x__none"]["canonical_row_id"] = "missing"
+    for row in records[1:]:
+        sidecar[row["id"]]["canonical_row_id"] = "missing"
+    with pytest.raises(ValueError, match="canonical target missing"):
+        trainer._p2_resolve_canonical_lineage_for_split(records=records, sidecar_by_id=sidecar, split="train")
+    records, sidecar = _p2_lineage_records("pair_x", "train")
+    other = _p2_lineage_record("other_pair__none", "other_pair", "none")
+    records.append(other)
+    sidecar[other["id"]] = _p2_lineage_sidecar(other, "train", other["id"])
+    for row in records[:-1]:
+        sidecar[row["id"]]["canonical_row_id"] = other["id"]
+    with pytest.raises(ValueError, match="canonical target pair mismatch"):
+        trainer._p2_resolve_canonical_lineage_for_split(records=records, sidecar_by_id=sidecar, split="train")
+
+
+def test_p2_canonical_lineage_rejects_non_self_anchored_canonical_target() -> None:
+    records, sidecar = _p2_lineage_records("pair_x", "train")
+    sidecar["pair_x__none"]["canonical_row_id"] = "pair_x__entity_swap"
+    with pytest.raises(ValueError, match="canonical target is not self-anchored"):
+        trainer._p2_resolve_canonical_lineage_for_split(records=records, sidecar_by_id=sidecar, split="train")
 
 def test_metadata_eligibility_and_checkpoint_contract_source_names() -> None:
     import scripts.train_controlled_v6b_minimal as trainer

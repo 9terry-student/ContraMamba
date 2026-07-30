@@ -82,17 +82,18 @@ def _patch_tensor(monkeypatch) -> None:
 
 def _reason_record(row_id: str, pair_id: str, split: str, kind: str) -> dict:
     configs = {
-        "frame": (0, 1, 1, "NOT_ENTITLED", "NONE", "frame"),
-        "predicate": (1, 0, 1, "NOT_ENTITLED", "NONE", "predicate"),
-        "sufficiency": (1, 1, 0, "NOT_ENTITLED", "NONE", "sufficiency"),
-        "support": (1, 1, 1, "SUPPORT", "SUPPORT", "none"),
-        "refute": (1, 1, 1, "REFUTE", "REFUTE", "none"),
+        "none": (1, 1, 1, "SUPPORT", "SUPPORT", "none", "none"),
+        "frame": (0, 1, 1, "NOT_ENTITLED", "NONE", "frame", "entity_swap"),
+        "predicate": (1, 0, 1, "NOT_ENTITLED", "NONE", "predicate", "predicate_swap"),
+        "sufficiency": (1, 1, 0, "NOT_ENTITLED", "NONE", "sufficiency", "evidence_deletion"),
+        "support": (1, 1, 1, "SUPPORT", "SUPPORT", "none", "none"),
+        "refute": (1, 1, 1, "REFUTE", "REFUTE", "none", "polarity_flip"),
     }
-    frame, predicate, sufficiency, final_label, polarity, primary = configs[kind]
+    frame, predicate, sufficiency, final_label, polarity, primary, intervention_type = configs[kind]
     return {
         "id": row_id,
         "pair_id": pair_id,
-        "intervention_type": "polarity_flip" if kind in {"support", "refute"} else f"{kind}_edit",
+        "intervention_type": intervention_type,
         "final_label": final_label,
         "frame_compatible_label": frame,
         "predicate_covered_label": predicate,
@@ -103,10 +104,12 @@ def _reason_record(row_id: str, pair_id: str, split: str, kind: str) -> dict:
     }
 
 
-def _reason_sidecar(record: dict, split: str) -> dict:
+def _reason_sidecar(record: dict, split: str, canonical_row_id: str) -> dict:
     sidecar = {
+        "row_id": record["id"],
+        "pair_id": record["pair_id"],
         "split": split,
-        "canonical_row_id": record["id"],
+        "canonical_row_id": canonical_row_id,
         "canonical_status": "PASS",
         "intervention_contract_status": "PASS",
         "frame_compatible_label": record["frame_compatible_label"],
@@ -117,15 +120,25 @@ def _reason_sidecar(record: dict, split: str) -> dict:
 
 
 def _reason_records(split: str, kinds=("frame", "predicate", "sufficiency", "support", "refute")) -> list[dict]:
+    pair_id = f"{split}_pair"
+    ordered_kinds = ["none", *[kind for kind in kinds if kind != "none"]]
+    suffix_by_kind = {
+        "none": "none",
+        "frame": "entity_swap",
+        "predicate": "predicate_swap",
+        "sufficiency": "evidence_deletion",
+        "support": "support_control",
+        "refute": "polarity_flip",
+    }
     return [
-        _reason_record(f"{split}_{index}", f"{split}_pair_{index}", split, kind)
-        for index, kind in enumerate(kinds)
+        _reason_record(f"{pair_id}__{suffix_by_kind[kind]}", pair_id, split, kind)
+        for kind in ordered_kinds
     ]
 
 
 def _sidecars(records: list[dict], split: str) -> dict[str, dict]:
-    return {record["id"]: _reason_sidecar(record, split) for record in records}
-
+    canonical_row_id = records[0]["id"]
+    return {record["id"]: _reason_sidecar(record, split, canonical_row_id) for record in records}
 
 def test_normal_a3_weight_zero_rejected() -> None:
     args = _args(reason_router_weight_calibration_export=None)
@@ -461,6 +474,72 @@ def test_calibration_train_only_does_not_apply_dev_minimum_or_degeneracy_gate(mo
     )
     assert audit["dev_reason_counts"] is None
     assert audit["dev_counts_used_for_gate"] is False
+
+
+def test_calibration_pair_level_lineage_counts_nonzero_and_match_full_helper(monkeypatch) -> None:
+    _patch_tensor(monkeypatch)
+    train_records = _reason_records("train")
+    dev_records = _reason_records("dev")
+    train_sidecars = _sidecars(train_records, "train")
+    dev_sidecars = _sidecars(dev_records, "dev")
+    train_only_audit, _ = trainer._p3w1_prepare_train_only_reason_supervision_for_calibration(
+        train_records=[dict(record) for record in train_records],
+        train_inputs={},
+        train_source_labels=["clean_main"] * len(train_records),
+        sidecar_by_id=train_sidecars,
+        require_min_counts=True,
+        min_train_count=1,
+        device="cpu",
+    )
+    full_audit = trainer._p2_prepare_reason_supervision(
+        train_records=[dict(record) for record in train_records],
+        dev_records=[dict(record) for record in dev_records],
+        train_inputs={},
+        dev_inputs={},
+        train_source_labels=["clean_main"] * len(train_records),
+        sidecar_by_id={**train_sidecars, **dev_sidecars},
+        require_min_counts=True,
+        min_train_count=1,
+        min_dev_count=1,
+        device="cpu",
+    )
+    assert all(count > 0 for count in train_only_audit["train_reason_counts"].values())
+    assert train_only_audit["train_reason_counts"] == full_audit["train_reason_counts"]
+    assert train_only_audit["train_exclusion_counts"].get("P2_CANONICAL_ROW_ID_MISMATCH", 0) == 0
+    assert full_audit["train_exclusion_counts"].get("P2_CANONICAL_ROW_ID_MISMATCH", 0) == 0
+
+
+def test_calibration_rejects_intervention_self_reference_against_pair_authority() -> None:
+    train_records = _reason_records("train")
+    sidecars = _sidecars(train_records, "train")
+    sidecars["train_pair__entity_swap"]["canonical_row_id"] = "train_pair__entity_swap"
+    with pytest.raises(ValueError, match="multiple canonical_row_id"):
+        trainer._p2_resolve_canonical_lineage_for_split(
+            records=train_records,
+            sidecar_by_id=sidecars,
+            split="train",
+        )
+
+
+def test_calibration_rejects_canonical_row_self_anchor_corruption() -> None:
+    train_records = _reason_records("train")
+    sidecars = _sidecars(train_records, "train")
+    sidecars["train_pair__none"]["canonical_row_id"] = "train_pair__entity_swap"
+    with pytest.raises(ValueError, match="canonical target is not self-anchored"):
+        trainer._p2_resolve_canonical_lineage_for_split(
+            records=train_records,
+            sidecar_by_id=sidecars,
+            split="train",
+        )
+
+
+def test_train_only_and_full_helper_canonical_lineage_resolution_identical() -> None:
+    train_records = _reason_records("train")
+    assert trainer._p2_resolve_canonical_lineage_for_split(
+        records=train_records,
+        sidecar_by_id=_sidecars(train_records, "train"),
+        split="train",
+    ) == {"train_pair": "train_pair__none"}
 
 
 def test_wrong_backbone_rejected() -> None:

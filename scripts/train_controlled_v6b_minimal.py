@@ -3342,6 +3342,65 @@ def _p2_expected_primary_from_record(record: dict[str, Any]) -> str | None:
     return None
 
 
+
+def _p2_lineage_fail(message: str) -> None:
+    raise ValueError(f"P2_CANONICAL_LINEAGE_CONTRACT_FAILED: {message}")
+
+
+def _p2_resolve_canonical_lineage_for_split(
+    *,
+    records: list[dict[str, Any]],
+    sidecar_by_id: dict[str, dict[str, Any]],
+    split: str,
+) -> dict[str, str]:
+    records_by_id: dict[str, dict[str, Any]] = {}
+    canonical_by_pair: dict[str, str] = {}
+    for record in records:
+        row_id = str(record.get("id", ""))
+        pair_id = str(record.get("pair_id", ""))
+        if row_id:
+            records_by_id[row_id] = record
+        sidecar = sidecar_by_id.get(row_id)
+        if sidecar is None:
+            continue
+        if sidecar.get("row_id") != row_id:
+            _p2_lineage_fail("sidecar row_id mismatch")
+        if sidecar.get("pair_id") != pair_id:
+            _p2_lineage_fail("sidecar pair_id mismatch")
+        if sidecar.get("split") != split:
+            _p2_lineage_fail("sidecar split mismatch")
+        canonical_row_id = sidecar.get("canonical_row_id")
+        if type(canonical_row_id) is not str or canonical_row_id == "":
+            _p2_lineage_fail("canonical_row_id missing")
+        previous = canonical_by_pair.get(pair_id)
+        if previous is not None and previous != canonical_row_id:
+            for candidate in (previous, canonical_row_id):
+                candidate_record = records_by_id.get(candidate)
+                candidate_sidecar = sidecar_by_id.get(candidate)
+                if candidate_record is not None and candidate_sidecar is not None and candidate_sidecar.get("canonical_row_id") != candidate:
+                    _p2_lineage_fail("canonical target is not self-anchored")
+            _p2_lineage_fail("multiple canonical_row_id values for pair")
+        canonical_by_pair[pair_id] = canonical_row_id
+    for pair_id, canonical_row_id in canonical_by_pair.items():
+        canonical_record = records_by_id.get(canonical_row_id)
+        if canonical_record is None:
+            _p2_lineage_fail("canonical target missing")
+        if str(canonical_record.get("pair_id", "")) != pair_id:
+            _p2_lineage_fail("canonical target pair mismatch")
+        canonical_sidecar = sidecar_by_id.get(canonical_row_id)
+        if canonical_sidecar is None:
+            _p2_lineage_fail("canonical target missing")
+        if canonical_sidecar.get("row_id") != canonical_row_id:
+            _p2_lineage_fail("canonical target is not self-anchored")
+        if canonical_sidecar.get("pair_id") != pair_id:
+            _p2_lineage_fail("canonical target pair mismatch")
+        if canonical_sidecar.get("split") != split:
+            _p2_lineage_fail("canonical target split mismatch")
+        if canonical_sidecar.get("canonical_row_id") != canonical_row_id:
+            _p2_lineage_fail("canonical target is not self-anchored")
+    return canonical_by_pair
+
+
 def _p2_prepare_reason_supervision(
     *,
     train_records: list[dict[str, Any]],
@@ -3379,6 +3438,18 @@ def _p2_prepare_reason_supervision(
     leaked_pair_ids = sorted(train_pair_ids & dev_pair_ids)
     if leaked_pair_ids:
         raise ValueError(f"P2_TRAIN_DEV_PAIR_ID_LEAKAGE: pair_ids={leaked_pair_ids[:10]}")
+    canonical_by_pair_by_split = {
+        "train": _p2_resolve_canonical_lineage_for_split(
+            records=train_records,
+            sidecar_by_id=sidecar_by_id,
+            split="train",
+        ),
+        "dev": _p2_resolve_canonical_lineage_for_split(
+            records=dev_records,
+            sidecar_by_id=sidecar_by_id,
+            split="dev",
+        ),
+    }
 
     def build(records: list[dict[str, Any]], split: str, source_labels: list[str] | None):
         primary_targets: list[int] = []
@@ -3419,7 +3490,8 @@ def _p2_prepare_reason_supervision(
                 generator_integrity_status = _p2_normalized_generator_status(sidecar)
                 if sidecar.get("split") != split:
                     codes.append("P2_SPLIT_MISMATCH")
-                if sidecar.get("canonical_row_id") != row_id:
+                expected_canonical = canonical_by_pair_by_split[split][str(record.get("pair_id", ""))]
+                if sidecar.get("canonical_row_id") != expected_canonical:
                     codes.append("P2_CANONICAL_ROW_ID_MISMATCH")
                 try:
                     sidecar_frame = exact_binary(sidecar, "frame_compatible_label", row_id)
@@ -3604,6 +3676,11 @@ def _p2_prepare_reason_supervision_train_only(
     polarity_targets: list[int] = []
     exclusion_counts: dict[str, int] = {}
     binary_cohorts: dict[str, list[int]] = {"frame": [], "predicate": [], "sufficiency": [], "polarity": []}
+    expected_canonical_by_pair = _p2_resolve_canonical_lineage_for_split(
+        records=train_records,
+        sidecar_by_id=sidecar_by_id,
+        split="train",
+    )
     for index, record in enumerate(train_records):
         row_id = str(record.get("id", ""))
         if row_id in seen_row_ids:
@@ -3635,7 +3712,8 @@ def _p2_prepare_reason_supervision_train_only(
             generator_integrity_status = _p2_normalized_generator_status(sidecar)
             if sidecar.get("split") != "train":
                 codes.append("P2_SPLIT_MISMATCH")
-            if sidecar.get("canonical_row_id") != row_id:
+            expected_canonical = expected_canonical_by_pair[str(record.get("pair_id", ""))]
+            if sidecar.get("canonical_row_id") != expected_canonical:
                 codes.append("P2_CANONICAL_ROW_ID_MISMATCH")
             try:
                 sidecar_frame = exact_binary(sidecar, "frame_compatible_label", row_id)

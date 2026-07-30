@@ -17,6 +17,7 @@
 ## Execution-Discovered Repair Files
 
 - `scripts/train_controlled_v6b_minimal.py`
+- `tests/test_reason_router_p2_contract.py`
 - `tests/test_reason_router_p3w1_calibration.py`
 - `reports/reason_router_p2_p3w1_calibration_instrumentation_spec.md`
 - `reports/reason_router_p2_p3w1_calibration_instrumentation_manifest.json`
@@ -148,6 +149,25 @@ P3-W2 first execution attempt at commit `6df1d013b74cb95c658a3ffddbcff8ed0214cdb
 The repair removes raw `use_temporal_comparator` and `use_predicate_comparator` checks from the calibration validator and retains resolved comparator checks as the authority.
 
 Explicit comparator CLI flags remain forbidden by the P2 resolver.
+
+## Execution-Discovered Canonical-Lineage Repair
+
+P3-W2 reason-supervision eligibility diagnostic at commit `5e3907cbc954885ba8ccc681f86b5a737f8afd22` identified `P2_CANONICAL_LINEAGE_JOIN_SEMANTICS_DEFECT`.
+
+Diagnostic observed facts:
+
+- authoritative train rows: `2880`
+- raw train counts: `FRAME=1440`, `PREDICATE=240`, `SUFFICIENCY=480`, `AUTHORIZED=720`
+- derived reason matched expected reason for `2880 / 2880` rows
+- pre-repair train-only eligible counts: `FRAME=0`, `PREDICATE=0`, `SUFFICIENCY=0`, `AUTHORIZED=121`
+- pre-repair full-helper train counts matched train-only counts
+- `P2_CANONICAL_ROW_ID_MISMATCH=2640`
+
+`canonical_row_id` is a pair-level pointer to the canonical control row, not an alias of the current intervention `row_id`. The previous equality check excluded all non-canonical variants.
+
+The repair validates sidecar row identity, pair identity, per-pair canonical consensus, canonical target existence, same-pair membership, and canonical self-anchoring. Full and train-only reason supervision now use the same pair-level lineage helper.
+
+No integrity, generator-status, intervention-contract, reason minimum-count, or applicable-cohort gate is relaxed. Expected post-repair authority is that every primary class has nonzero eligible train count, every class satisfies the pre-registered train minimum count of `50`, `P2_CANONICAL_ROW_ID_MISMATCH=0`, and train-only train counts match full-helper train counts. Actual repaired counts are not claimed before execution.
 
 ## Decision
 
