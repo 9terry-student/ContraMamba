@@ -1,0 +1,187 @@
+{
+  "schema_version": "reason_router_p2_p3_run_manifest_v1",
+  "authority": {
+    "inspected_sources": [
+      "reason_router_p2.patch",
+      "reason_router_p2_final_review.patch",
+      "reason_router_p2_final_review_v7.patch",
+      "tests/test_reason_router_p2_contract.py",
+      "scripts/train_controlled_v6b_minimal.py",
+      "src/contramamba/heads/entitlement_decision.py",
+      "src/contramamba/modeling_v6b_minimal.py",
+      "reports/stage195p0_tail3_parameter_swa_spec.md",
+      "scripts/build_stage195a_tail3_parameter_swa_manifest.py",
+      "reports/stage195a_tail3_parameter_swa_manifest_spec.md",
+      "scripts/train_controlled_v5.py",
+      "scripts/build_controlled_v5.py"
+    ],
+    "p2_test_result_reported_by_user": {"passed": 26, "P2_TEST_RETURN_CODE": 0}
+  },
+  "phase_decisions": {
+    "overall_p3_decision": "P3_BLOCKED_BY_UNRESOLVED_EXECUTION_CONTRACT",
+    "a0_phase_decision": "P3_A0_PHASE_READY_FOR_EXECUTION",
+    "a1_a3_phase_decision": "P3_A1_A3_BLOCKED"
+  },
+  "commit_identity": {
+    "p2_implementation_tested_commit": "<P2_IMPLEMENTATION_TESTED_COMMIT_SHA>",
+    "p3_execution_spec_commit": "<P3_EXECUTION_SPEC_COMMIT_SHA>",
+    "execution_checkout_commit": "<P3_EXECUTION_CHECKOUT_COMMIT_SHA>",
+    "p3_execution_spec_must_equal_checkout_commit": true,
+    "p2_code_tree_must_match_tested_commit": true,
+    "p2_code_tree_diff_check": ["git", "diff", "--exit-code", "<P2_IMPLEMENTATION_TESTED_COMMIT_SHA>..<P3_EXECUTION_CHECKOUT_COMMIT_SHA>", "--", "scripts/train_controlled_v6b_minimal.py", "src/contramamba/heads/entitlement_decision.py", "src/contramamba/modeling_v6b_minimal.py", "tests/test_reason_router_p2_contract.py"]
+  },
+  "validated_commit_placeholder": "<P3_EXECUTION_CHECKOUT_COMMIT_SHA>",
+  "shared_contract": {
+    "trainer": "scripts/train_controlled_v6b_minimal.py",
+    "architecture": "v6b_minimal",
+    "backbone": "mamba",
+    "model_name": "state-spaces/mamba-130m-hf",
+    "device": "cuda",
+    "freeze_encoder": true,
+    "frame_downstream_gradient_mode": "joint",
+    "data_path": "data/controlled_v5_v3_without_time_swap.jsonl",
+    "dataset_sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640",
+    "sidecar_path": "reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_controlled_train_integrity_sidecar.jsonl",
+    "sidecar_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc",
+    "training_seeds": [180, 181, 182],
+    "split_seed": 174,
+    "split_policy": "fixed_explicit_split_seed",
+    "dev_ratio": 0.2,
+    "epochs": 20,
+    "max_length": 128,
+    "flag_source": "controlled_heuristic",
+    "select_metric": "final_macro_f1",
+    "optimizer": "v5.build_optimizer/torch.optim.AdamW",
+    "lr": 0.001,
+    "actual_optimizer_weight_decay": 0.0001,
+    "class_weighting": "none",
+    "weighted_label_loss": false,
+    "balanced_sampler": false,
+    "save_selected_checkpoint": true,
+    "selected_checkpoint_filename": "selected_checkpoint.pt",
+    "prediction_jsonl_derivation": {
+      "authority_function": "_prediction_export_jsonl_path",
+      "source_file": "scripts/train_controlled_v6b_minimal.py",
+      "production_expression": "output_json.with_name(f\"{output_json.stem}_predictions.jsonl\")",
+      "stem_source_cli_option": "--output-json"
+    },
+    "authoritative_dev_universe": {
+      "load_function": "scripts.build_controlled_v5.load_jsonl via scripts.train_controlled_v5.load_jsonl",
+      "split_function": "scripts.build_controlled_v5.split_by_pair_id via v5.split_by_pair_id",
+      "trainer_split_call": "v5.split_by_pair_id(records, dev_ratio=args.dev_ratio, seed=resolved_split_seed)",
+      "label_normalizer": "_s28e_normalize_label",
+      "prediction_identity_resolvers": ["_p2_row_identity", "_p2_reference_pair_id", "_p2_a0_reference_key"]
+    },
+    "reason_loss_weight_contract": {
+      "A0": 0.0,
+      "A1": "UNRESOLVED_EXECUTION_PARAMETER",
+      "A2": 0.0,
+      "A3": "UNRESOLVED_EXECUTION_PARAMETER",
+      "authority_status": "NOT_ESTABLISHED"
+    },
+    "commit": "<P3_EXECUTION_CHECKOUT_COMMIT_SHA>"
+  },
+  "forbidden_objectives": {
+    "omit_flags": ["--use-temporal-comparator", "--use-predicate-comparator", "--use-intervention-loss", "--loss-sweep", "--use-boundary-loss", "--use-frame-violation-loss", "--use-predicate-isolation-loss", "--use-preservation-entitlement-loss", "--use-pair-contrastive-frame-loss", "--use-temporal-diagnostic-loss", "--use-temporal-residual-adapter", "--use-temporal-adapter-loss", "--use-temporal-channel", "--use-temporal-channel-loss", "--enable-external-eval"],
+    "explicit_zero_or_safe_value": {"--ranking-weight": "0.0", "--compatible-positive-margin-weight": "0.0", "--class-weighting": "none"},
+    "forbidden_paths": ["--ood-data", "--external-data", "--external-output-dir", "--stage57-bridge-train-jsonl", "--stage66-bridge-train-jsonl", "--stage75-bridge-train-jsonl", "--stage80a-bridge-train-jsonl", "--pair-contrastive-frame-data"],
+    "teacher_observer_mode": "off"
+  },
+  "runs": [
+    {
+      "run_id": "p3_seed180_A0", "arm": "A0", "seed": 180, "runnable": true, "blocked_by": [],
+      "router_mode": "explicit_product", "gradient_ownership_mode": "joint", "reason_loss_weight": 0.0,
+      "data_path": "data/controlled_v5_v3_without_time_swap.jsonl", "sidecar_path": "reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_controlled_train_integrity_sidecar.jsonl", "sidecar_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc", "split_policy": "fixed_explicit_split_seed",
+      "command_argv": ["python", "scripts/train_controlled_v6b_minimal.py", "--data", "data/controlled_v5_v3_without_time_swap.jsonl", "--architecture", "v6b_minimal", "--backbone", "mamba", "--model-name", "state-spaces/mamba-130m-hf", "--freeze-encoder", "true", "--frame-downstream-gradient-mode", "joint", "--epochs", "20", "--max-length", "128", "--dev-ratio", "0.2", "--seed", "180", "--split-seed", "174", "--device", "cuda", "--flag-source", "controlled_heuristic", "--select-metric", "final_macro_f1", "--ranking-weight", "0.0", "--class-weighting", "none", "--lr", "0.001", "--reason-router-arm", "A0", "--controlled-integrity-sidecar-path", "reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_controlled_train_integrity_sidecar.jsonl", "--expected-integrity-sidecar-semantic-sha256", "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc", "--compatible-positive-margin-weight", "0.0", "--save-selected-checkpoint", "--selected-checkpoint-filename", "selected_checkpoint.pt", "--output-json", "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed180/A0/training_report.json", "--output-predictions-json", "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed180/A0/clean_dev_predictions.json"],
+      "output_dir": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed180/A0", "report_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed180/A0/training_report.json", "checkpoint_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed180/A0/selected_checkpoint.pt", "prediction_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed180/A0/training_report_predictions.jsonl", "a0_reference_prediction_path": null, "depends_on": [],
+      "expected_contract": {"execution_commit": "<P3_EXECUTION_CHECKOUT_COMMIT_SHA>", "p2_implementation_tested_commit": "<P2_IMPLEMENTATION_TESTED_COMMIT_SHA>", "dataset_sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640", "sidecar_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc", "split_seed": 174, "dev_ratio": 0.2}
+    },
+    {
+      "run_id": "p3_seed181_A0", "arm": "A0", "seed": 181, "runnable": true, "blocked_by": [],
+      "router_mode": "explicit_product", "gradient_ownership_mode": "joint", "reason_loss_weight": 0.0,
+      "data_path": "data/controlled_v5_v3_without_time_swap.jsonl", "sidecar_path": "reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_controlled_train_integrity_sidecar.jsonl", "sidecar_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc", "split_policy": "fixed_explicit_split_seed",
+      "command_argv": ["python", "scripts/train_controlled_v6b_minimal.py", "--data", "data/controlled_v5_v3_without_time_swap.jsonl", "--architecture", "v6b_minimal", "--backbone", "mamba", "--model-name", "state-spaces/mamba-130m-hf", "--freeze-encoder", "true", "--frame-downstream-gradient-mode", "joint", "--epochs", "20", "--max-length", "128", "--dev-ratio", "0.2", "--seed", "181", "--split-seed", "174", "--device", "cuda", "--flag-source", "controlled_heuristic", "--select-metric", "final_macro_f1", "--ranking-weight", "0.0", "--class-weighting", "none", "--lr", "0.001", "--reason-router-arm", "A0", "--controlled-integrity-sidecar-path", "reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_controlled_train_integrity_sidecar.jsonl", "--expected-integrity-sidecar-semantic-sha256", "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc", "--compatible-positive-margin-weight", "0.0", "--save-selected-checkpoint", "--selected-checkpoint-filename", "selected_checkpoint.pt", "--output-json", "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed181/A0/training_report.json", "--output-predictions-json", "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed181/A0/clean_dev_predictions.json"],
+      "output_dir": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed181/A0", "report_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed181/A0/training_report.json", "checkpoint_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed181/A0/selected_checkpoint.pt", "prediction_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed181/A0/training_report_predictions.jsonl", "a0_reference_prediction_path": null, "depends_on": [],
+      "expected_contract": {"execution_commit": "<P3_EXECUTION_CHECKOUT_COMMIT_SHA>", "p2_implementation_tested_commit": "<P2_IMPLEMENTATION_TESTED_COMMIT_SHA>", "dataset_sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640", "sidecar_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc", "split_seed": 174, "dev_ratio": 0.2}
+    },
+    {
+      "run_id": "p3_seed182_A0", "arm": "A0", "seed": 182, "runnable": true, "blocked_by": [],
+      "router_mode": "explicit_product", "gradient_ownership_mode": "joint", "reason_loss_weight": 0.0,
+      "data_path": "data/controlled_v5_v3_without_time_swap.jsonl", "sidecar_path": "reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_controlled_train_integrity_sidecar.jsonl", "sidecar_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc", "split_policy": "fixed_explicit_split_seed",
+      "command_argv": ["python", "scripts/train_controlled_v6b_minimal.py", "--data", "data/controlled_v5_v3_without_time_swap.jsonl", "--architecture", "v6b_minimal", "--backbone", "mamba", "--model-name", "state-spaces/mamba-130m-hf", "--freeze-encoder", "true", "--frame-downstream-gradient-mode", "joint", "--epochs", "20", "--max-length", "128", "--dev-ratio", "0.2", "--seed", "182", "--split-seed", "174", "--device", "cuda", "--flag-source", "controlled_heuristic", "--select-metric", "final_macro_f1", "--ranking-weight", "0.0", "--class-weighting", "none", "--lr", "0.001", "--reason-router-arm", "A0", "--controlled-integrity-sidecar-path", "reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_controlled_train_integrity_sidecar.jsonl", "--expected-integrity-sidecar-semantic-sha256", "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc", "--compatible-positive-margin-weight", "0.0", "--save-selected-checkpoint", "--selected-checkpoint-filename", "selected_checkpoint.pt", "--output-json", "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed182/A0/training_report.json", "--output-predictions-json", "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed182/A0/clean_dev_predictions.json"],
+      "output_dir": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed182/A0", "report_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed182/A0/training_report.json", "checkpoint_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed182/A0/selected_checkpoint.pt", "prediction_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed182/A0/training_report_predictions.jsonl", "a0_reference_prediction_path": null, "depends_on": [],
+      "expected_contract": {"execution_commit": "<P3_EXECUTION_CHECKOUT_COMMIT_SHA>", "p2_implementation_tested_commit": "<P2_IMPLEMENTATION_TESTED_COMMIT_SHA>", "dataset_sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640", "sidecar_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc", "split_seed": 174, "dev_ratio": 0.2}
+    },
+    {
+      "run_id": "p3_seed180_A1", "arm": "A1", "seed": 180, "runnable": false, "blocked_by": ["UNRESOLVED_REASON_LOSS_WEIGHT"], "router_mode": "conditional_first_blocker", "gradient_ownership_mode": "joint", "reason_loss_weight": "UNRESOLVED_EXECUTION_PARAMETER", "data_path": "data/controlled_v5_v3_without_time_swap.jsonl", "sidecar_path": "reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_controlled_train_integrity_sidecar.jsonl", "sidecar_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc", "split_policy": "fixed_explicit_split_seed", "command_argv": null, "blocked_command_template": ["python", "scripts/train_controlled_v6b_minimal.py", "<A0_MATCHED_BASE_ARGS>", "--reason-router-arm", "A1", "--reason-loss-weight", "<RESOLVED_POSITIVE_REASON_LOSS_WEIGHT>", "--reason-router-a0-reference-predictions", "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed180/A0/training_report_predictions.jsonl"], "output_dir": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed180/A1", "report_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed180/A1/training_report.json", "checkpoint_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed180/A1/selected_checkpoint.pt", "prediction_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed180/A1/training_report_predictions.jsonl", "a0_reference_prediction_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed180/A0/training_report_predictions.jsonl", "depends_on": ["p3_seed180_A0_REFERENCE_AUDIT"], "dependency_condition": "status == PASS", "expected_contract": {"same_seed_a0_reference_required": true, "dependency_gate": "read_A0_REFERENCE_AUDIT.json_from_disk"}
+    },
+    {
+      "run_id": "p3_seed180_A2", "arm": "A2", "seed": 180, "runnable": false, "blocked_by": ["P3_A1_A3_MATCHED_EXECUTION_CONTRACT_NOT_RELEASED"], "router_mode": "explicit_product", "gradient_ownership_mode": "explicit_local", "reason_loss_weight": 0.0, "data_path": "data/controlled_v5_v3_without_time_swap.jsonl", "sidecar_path": "reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_controlled_train_integrity_sidecar.jsonl", "sidecar_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc", "split_policy": "fixed_explicit_split_seed", "command_argv": null, "blocked_command_template": ["python", "scripts/train_controlled_v6b_minimal.py", "<A0_MATCHED_BASE_ARGS>", "--reason-router-arm", "A2", "--reason-router-a0-reference-predictions", "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed180/A0/training_report_predictions.jsonl"], "output_dir": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed180/A2", "report_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed180/A2/training_report.json", "checkpoint_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed180/A2/selected_checkpoint.pt", "prediction_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed180/A2/training_report_predictions.jsonl", "a0_reference_prediction_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed180/A0/training_report_predictions.jsonl", "depends_on": ["p3_seed180_A0_REFERENCE_AUDIT"], "dependency_condition": "status == PASS", "expected_contract": {"same_seed_a0_reference_required": true, "dependency_gate": "read_A0_REFERENCE_AUDIT.json_from_disk"}
+    },
+    {
+      "run_id": "p3_seed180_A3", "arm": "A3", "seed": 180, "runnable": false, "blocked_by": ["UNRESOLVED_REASON_LOSS_WEIGHT"], "router_mode": "conditional_first_blocker", "gradient_ownership_mode": "explicit_local", "reason_loss_weight": "UNRESOLVED_EXECUTION_PARAMETER", "data_path": "data/controlled_v5_v3_without_time_swap.jsonl", "sidecar_path": "reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_controlled_train_integrity_sidecar.jsonl", "sidecar_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc", "split_policy": "fixed_explicit_split_seed", "command_argv": null, "blocked_command_template": ["python", "scripts/train_controlled_v6b_minimal.py", "<A0_MATCHED_BASE_ARGS>", "--reason-router-arm", "A3", "--reason-loss-weight", "<RESOLVED_POSITIVE_REASON_LOSS_WEIGHT>", "--reason-router-a0-reference-predictions", "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed180/A0/training_report_predictions.jsonl"], "output_dir": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed180/A3", "report_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed180/A3/training_report.json", "checkpoint_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed180/A3/selected_checkpoint.pt", "prediction_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed180/A3/training_report_predictions.jsonl", "a0_reference_prediction_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed180/A0/training_report_predictions.jsonl", "depends_on": ["p3_seed180_A0_REFERENCE_AUDIT"], "dependency_condition": "status == PASS", "expected_contract": {"same_seed_a0_reference_required": true, "dependency_gate": "read_A0_REFERENCE_AUDIT.json_from_disk"}
+    },
+    {
+      "run_id": "p3_seed181_A1", "arm": "A1", "seed": 181, "runnable": false, "blocked_by": ["UNRESOLVED_REASON_LOSS_WEIGHT"], "router_mode": "conditional_first_blocker", "gradient_ownership_mode": "joint", "reason_loss_weight": "UNRESOLVED_EXECUTION_PARAMETER", "data_path": "data/controlled_v5_v3_without_time_swap.jsonl", "sidecar_path": "reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_controlled_train_integrity_sidecar.jsonl", "sidecar_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc", "split_policy": "fixed_explicit_split_seed", "command_argv": null, "blocked_command_template": ["python", "scripts/train_controlled_v6b_minimal.py", "<A0_MATCHED_BASE_ARGS>", "--reason-router-arm", "A1", "--reason-loss-weight", "<RESOLVED_POSITIVE_REASON_LOSS_WEIGHT>", "--reason-router-a0-reference-predictions", "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed181/A0/training_report_predictions.jsonl"], "output_dir": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed181/A1", "report_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed181/A1/training_report.json", "checkpoint_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed181/A1/selected_checkpoint.pt", "prediction_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed181/A1/training_report_predictions.jsonl", "a0_reference_prediction_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed181/A0/training_report_predictions.jsonl", "depends_on": ["p3_seed181_A0_REFERENCE_AUDIT"], "dependency_condition": "status == PASS", "expected_contract": {"same_seed_a0_reference_required": true, "dependency_gate": "read_A0_REFERENCE_AUDIT.json_from_disk"}
+    },
+    {
+      "run_id": "p3_seed181_A2", "arm": "A2", "seed": 181, "runnable": false, "blocked_by": ["P3_A1_A3_MATCHED_EXECUTION_CONTRACT_NOT_RELEASED"], "router_mode": "explicit_product", "gradient_ownership_mode": "explicit_local", "reason_loss_weight": 0.0, "data_path": "data/controlled_v5_v3_without_time_swap.jsonl", "sidecar_path": "reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_controlled_train_integrity_sidecar.jsonl", "sidecar_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc", "split_policy": "fixed_explicit_split_seed", "command_argv": null, "blocked_command_template": ["python", "scripts/train_controlled_v6b_minimal.py", "<A0_MATCHED_BASE_ARGS>", "--reason-router-arm", "A2", "--reason-router-a0-reference-predictions", "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed181/A0/training_report_predictions.jsonl"], "output_dir": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed181/A2", "report_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed181/A2/training_report.json", "checkpoint_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed181/A2/selected_checkpoint.pt", "prediction_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed181/A2/training_report_predictions.jsonl", "a0_reference_prediction_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed181/A0/training_report_predictions.jsonl", "depends_on": ["p3_seed181_A0_REFERENCE_AUDIT"], "dependency_condition": "status == PASS", "expected_contract": {"same_seed_a0_reference_required": true, "dependency_gate": "read_A0_REFERENCE_AUDIT.json_from_disk"}
+    },
+    {
+      "run_id": "p3_seed181_A3", "arm": "A3", "seed": 181, "runnable": false, "blocked_by": ["UNRESOLVED_REASON_LOSS_WEIGHT"], "router_mode": "conditional_first_blocker", "gradient_ownership_mode": "explicit_local", "reason_loss_weight": "UNRESOLVED_EXECUTION_PARAMETER", "data_path": "data/controlled_v5_v3_without_time_swap.jsonl", "sidecar_path": "reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_controlled_train_integrity_sidecar.jsonl", "sidecar_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc", "split_policy": "fixed_explicit_split_seed", "command_argv": null, "blocked_command_template": ["python", "scripts/train_controlled_v6b_minimal.py", "<A0_MATCHED_BASE_ARGS>", "--reason-router-arm", "A3", "--reason-loss-weight", "<RESOLVED_POSITIVE_REASON_LOSS_WEIGHT>", "--reason-router-a0-reference-predictions", "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed181/A0/training_report_predictions.jsonl"], "output_dir": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed181/A3", "report_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed181/A3/training_report.json", "checkpoint_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed181/A3/selected_checkpoint.pt", "prediction_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed181/A3/training_report_predictions.jsonl", "a0_reference_prediction_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed181/A0/training_report_predictions.jsonl", "depends_on": ["p3_seed181_A0_REFERENCE_AUDIT"], "dependency_condition": "status == PASS", "expected_contract": {"same_seed_a0_reference_required": true, "dependency_gate": "read_A0_REFERENCE_AUDIT.json_from_disk"}
+    },
+    {
+      "run_id": "p3_seed182_A1", "arm": "A1", "seed": 182, "runnable": false, "blocked_by": ["UNRESOLVED_REASON_LOSS_WEIGHT"], "router_mode": "conditional_first_blocker", "gradient_ownership_mode": "joint", "reason_loss_weight": "UNRESOLVED_EXECUTION_PARAMETER", "data_path": "data/controlled_v5_v3_without_time_swap.jsonl", "sidecar_path": "reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_controlled_train_integrity_sidecar.jsonl", "sidecar_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc", "split_policy": "fixed_explicit_split_seed", "command_argv": null, "blocked_command_template": ["python", "scripts/train_controlled_v6b_minimal.py", "<A0_MATCHED_BASE_ARGS>", "--reason-router-arm", "A1", "--reason-loss-weight", "<RESOLVED_POSITIVE_REASON_LOSS_WEIGHT>", "--reason-router-a0-reference-predictions", "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed182/A0/training_report_predictions.jsonl"], "output_dir": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed182/A1", "report_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed182/A1/training_report.json", "checkpoint_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed182/A1/selected_checkpoint.pt", "prediction_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed182/A1/training_report_predictions.jsonl", "a0_reference_prediction_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed182/A0/training_report_predictions.jsonl", "depends_on": ["p3_seed182_A0_REFERENCE_AUDIT"], "dependency_condition": "status == PASS", "expected_contract": {"same_seed_a0_reference_required": true, "dependency_gate": "read_A0_REFERENCE_AUDIT.json_from_disk"}
+    },
+    {
+      "run_id": "p3_seed182_A2", "arm": "A2", "seed": 182, "runnable": false, "blocked_by": ["P3_A1_A3_MATCHED_EXECUTION_CONTRACT_NOT_RELEASED"], "router_mode": "explicit_product", "gradient_ownership_mode": "explicit_local", "reason_loss_weight": 0.0, "data_path": "data/controlled_v5_v3_without_time_swap.jsonl", "sidecar_path": "reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_controlled_train_integrity_sidecar.jsonl", "sidecar_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc", "split_policy": "fixed_explicit_split_seed", "command_argv": null, "blocked_command_template": ["python", "scripts/train_controlled_v6b_minimal.py", "<A0_MATCHED_BASE_ARGS>", "--reason-router-arm", "A2", "--reason-router-a0-reference-predictions", "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed182/A0/training_report_predictions.jsonl"], "output_dir": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed182/A2", "report_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed182/A2/training_report.json", "checkpoint_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed182/A2/selected_checkpoint.pt", "prediction_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed182/A2/training_report_predictions.jsonl", "a0_reference_prediction_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed182/A0/training_report_predictions.jsonl", "depends_on": ["p3_seed182_A0_REFERENCE_AUDIT"], "dependency_condition": "status == PASS", "expected_contract": {"same_seed_a0_reference_required": true, "dependency_gate": "read_A0_REFERENCE_AUDIT.json_from_disk"}
+    },
+    {
+      "run_id": "p3_seed182_A3", "arm": "A3", "seed": 182, "runnable": false, "blocked_by": ["UNRESOLVED_REASON_LOSS_WEIGHT"], "router_mode": "conditional_first_blocker", "gradient_ownership_mode": "explicit_local", "reason_loss_weight": "UNRESOLVED_EXECUTION_PARAMETER", "data_path": "data/controlled_v5_v3_without_time_swap.jsonl", "sidecar_path": "reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_controlled_train_integrity_sidecar.jsonl", "sidecar_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc", "split_policy": "fixed_explicit_split_seed", "command_argv": null, "blocked_command_template": ["python", "scripts/train_controlled_v6b_minimal.py", "<A0_MATCHED_BASE_ARGS>", "--reason-router-arm", "A3", "--reason-loss-weight", "<RESOLVED_POSITIVE_REASON_LOSS_WEIGHT>", "--reason-router-a0-reference-predictions", "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed182/A0/training_report_predictions.jsonl"], "output_dir": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed182/A3", "report_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed182/A3/training_report.json", "checkpoint_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed182/A3/selected_checkpoint.pt", "prediction_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed182/A3/training_report_predictions.jsonl", "a0_reference_prediction_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed182/A0/training_report_predictions.jsonl", "depends_on": ["p3_seed182_A0_REFERENCE_AUDIT"], "dependency_condition": "status == PASS", "expected_contract": {"same_seed_a0_reference_required": true, "dependency_gate": "read_A0_REFERENCE_AUDIT.json_from_disk"}
+    }
+  ],
+  "a0_reference_audit_schema": {
+    "schema_version": "reason_router_p2_p3_a0_reference_audit_v1",
+    "required_fields": ["audit_id", "run_id", "seed", "status", "errors", "execution_commit", "p2_implementation_tested_commit", "output_dir", "reference_prediction_path", "prediction_sha256", "selected_checkpoint_path", "selected_checkpoint_sha256", "report_path", "report_sha256", "selected_epoch", "selected_epoch_source", "row_count", "unique_row_id_count", "unique_row_pair_count", "authoritative_dev_row_count", "authoritative_dev_row_identity_hash", "prediction_joined_dev_row_identity_hash", "gold_counts", "prediction_counts", "a0_false_entitlement_count", "a0_stable_true_support_count", "data_path", "dataset_sha256_expected", "dataset_sha256_observed", "sidecar_path", "sidecar_semantic_sha256_expected", "sidecar_semantic_sha256_observed", "split_seed", "split_policy", "dev_ratio"],
+    "non_null_fields": ["selected_epoch", "selected_epoch_source", "prediction_sha256", "selected_checkpoint_sha256", "report_sha256", "authoritative_dev_row_identity_hash", "prediction_joined_dev_row_identity_hash"]
+  },  "a0_reference_audits": [
+    {"audit_id": "p3_seed180_A0_REFERENCE_AUDIT", "run_id": "p3_seed180_A0", "seed": 180, "audit_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed180/A0/A0_REFERENCE_AUDIT.json"},
+    {"audit_id": "p3_seed181_A0_REFERENCE_AUDIT", "run_id": "p3_seed181_A0", "seed": 181, "audit_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed181/A0/A0_REFERENCE_AUDIT.json"},
+    {"audit_id": "p3_seed182_A0_REFERENCE_AUDIT", "run_id": "p3_seed182_A0", "seed": 182, "audit_path": "/kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed182/A0/A0_REFERENCE_AUDIT.json"}
+  ],
+  "dependencies": [
+    {"phase": "A1_A3_RELEASE", "status": "BLOCKED", "blocked_by": ["UNRESOLVED_REASON_LOSS_WEIGHT"]},
+    {"phase": "A2_RELEASE", "status": "BLOCKED", "blocked_by": ["P3_A1_A3_MATCHED_EXECUTION_CONTRACT_NOT_RELEASED"]},
+    {"future_phase3_gate": ["same-seed A0_REFERENCE_AUDIT.status == PASS", "A0 audit execution commit == current execution commit", "A0 audit dataset SHA == current dataset SHA", "A0 audit sidecar semantic SHA == current sidecar SHA", "A0 audit split seed == current split seed", "A0 audit dev identity hash == current dev identity hash", "A0 prediction SHA recorded", "A0 reference prediction SHA must match current file", "A0 selected checkpoint SHA must match current file", "A0 report SHA must match current file", "A0 audit seed/run_id/output_dir/reference path must match same-seed expected identity", "audit JSON must be re-read from disk"]}
+  ],
+  "expected_artifacts": {
+    "a0_primary_reference": "training_report_predictions.jsonl",
+    "a0_auxiliary_prediction_json": "clean_dev_predictions.json",
+    "training_report": "training_report.json",
+    "selected_checkpoint": "selected_checkpoint.pt",
+    "a0_audit_json": "A0_REFERENCE_AUDIT.json",
+    "canonical_sha_fields": ["prediction_sha256", "selected_checkpoint_sha256", "report_sha256"]
+  },
+  "comparison_plan": {
+    "status": "POST_UNBLOCK_TEMPLATE_ONLY",
+    "required_comparisons": ["A1-A0", "A2-A0", "A3-A1", "A3-A2", "A3-A0"],
+    "rates": ["recovery_rate", "total_support_harm_rate"],
+    "direction_consistency": ["seed_delta", "mean_delta", "positive_count", "negative_count", "zero_count", "all_seed_direction_consistent"],
+    "observability": {
+      "AVAILABLE_AND_COLLECTED": ["accuracy", "macro_f1", "per_label_recall", "prediction_counts", "A0 reference join status from A0 audit JSON"],
+      "DERIVABLE_FROM_EXISTING_ARTIFACTS": ["A0 false-entitlement recovery", "stable true-SUPPORT harm", "polarity error", "reason confusion matrix if row-level reason fields exist", "reason eligible/ignored counts when emitted", "local loss applicable/ignored counts when emitted", "normalization errors", "nonfinite/negative count"],
+      "NOT_CURRENTLY_EMITTED": ["ownership_violation_count NOT_CURRENTLY_EMITTED_PER_RUN", "checkpoint_metadata_contract NOT_CURRENTLY_EMITTED_PER_RUN_SUMMARY"]
+    }
+  },
+  "decision_gate": {
+    "final_pre_execution_decision": "P3_BLOCKED_BY_UNRESOLVED_EXECUTION_CONTRACT",
+    "overall_p3_decision": "P3_BLOCKED_BY_UNRESOLVED_EXECUTION_CONTRACT",
+    "a0_phase_decision": "P3_A0_PHASE_READY_FOR_EXECUTION",
+    "a1_a3_phase_decision": "P3_A1_A3_BLOCKED",
+    "additional_block_reason": "P3_BLOCKED_BY_MISSING_EXECUTION_OBSERVABILITY",
+    "invalid_execution_decision": "P3_INVALID_EXECUTION",
+    "mechanism_supported_candidate": "P3_MECHANISM_SUPPORTED",
+    "mechanism_not_supported": "P3_MECHANISM_NOT_SUPPORTED",
+    "threshold_policy": "Do not invent unresolved harm or polarity thresholds."
+  }
+}
