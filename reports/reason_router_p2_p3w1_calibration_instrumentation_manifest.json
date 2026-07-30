@@ -5,9 +5,15 @@
     "P3_A0_EXECUTION_COMMIT": "b118a984c749ca70bad63919f95aad918881a29d"
   },
   "p3w0_final_decision": "P3W0_BLOCKED_BY_INSUFFICIENT_SCALE_AUTHORITY",
-  "files_changed": [
+  "implementation_files": [
     "scripts/train_controlled_v6b_minimal.py",
     "scripts/aggregate_reason_router_p3w1_calibration.py",
+    "tests/test_reason_router_p3w1_calibration.py",
+    "reports/reason_router_p2_p3w1_calibration_instrumentation_spec.md",
+    "reports/reason_router_p2_p3w1_calibration_instrumentation_manifest.json"
+  ],
+  "execution_repair_files_changed": [
+    "scripts/train_controlled_v6b_minimal.py",
     "tests/test_reason_router_p3w1_calibration.py",
     "reports/reason_router_p2_p3w1_calibration_instrumentation_spec.md",
     "reports/reason_router_p2_p3w1_calibration_instrumentation_manifest.json"
@@ -24,18 +30,33 @@
   "aggregation_executed": false,
   "a1_a2_a3_released": false,
   "reason_loss_weight_resolved": false,
-  "validation_executed": [],
-  "validation_not_executed": [
-    "Python",
+  "failed_execution_reached_model_load": false,
+  "failed_execution_reached_calibration_forward": false,
+  "failed_execution_wrote_unit_artifact": false,
+  "failed_execution_stage": "P3W1_CALIBRATION_ARGUMENT_GATE",
+  "failed_execution_seed": 180,
+  "failed_execution_commit": "6df1d013b74cb95c658a3ffddbcff8ed0214cdb3",
+  "validation_executed": [
+    "Kaggle Python trainer invocation for P3-W2 seed180",
+    "trainer CLI invocation",
+    "argument parsing",
+    "P2 arm resolution",
+    "P3-W1 calibration-only argument gate"
+  ],
+  "validation_not_executed_after_repair": [
     "pytest",
     "py_compile",
     "--help",
     "model load",
-    "training",
-    "calibration",
+    "calibration forward",
+    "unit artifact write",
+    "backward",
+    "optimizer step",
+    "scheduler step",
+    "dev forward",
     "aggregation",
+    "training",
     "evaluation",
-    "Kaggle",
     "git add",
     "git commit",
     "git push",
@@ -56,6 +77,11 @@
     "A0 reference prediction access removed from calibration-only path",
     "dev reason-supervision and dev-count gates removed from calibration-only authority",
     "normal P2 A0/dev requirements preserved"
+  ],
+  "execution_discovered_repairs": [
+    "calibration comparator authority changed from legacy raw parser values to P2 resolved comparator values",
+    "explicit temporal/predicate comparator CLI rejection preserved",
+    "legacy non-P2 comparator defaults unchanged"
   ],
   "identity_authority_model": {
     "dataset_sha256": "observed file SHA compared with expected aggregate CLI",

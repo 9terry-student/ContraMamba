@@ -6,10 +6,17 @@
 - P3_A0_EXECUTION_COMMIT: `b118a984c749ca70bad63919f95aad918881a29d`
 - P3-W0 final decision: `P3W0_BLOCKED_BY_INSUFFICIENT_SCALE_AUTHORITY`
 
-## Files Changed
+## P3-W1 Implementation Files
 
 - `scripts/train_controlled_v6b_minimal.py`
 - `scripts/aggregate_reason_router_p3w1_calibration.py`
+- `tests/test_reason_router_p3w1_calibration.py`
+- `reports/reason_router_p2_p3w1_calibration_instrumentation_spec.md`
+- `reports/reason_router_p2_p3w1_calibration_instrumentation_manifest.json`
+
+## Execution-Discovered Repair Files
+
+- `scripts/train_controlled_v6b_minimal.py`
 - `tests/test_reason_router_p3w1_calibration.py`
 - `reports/reason_router_p2_p3w1_calibration_instrumentation_spec.md`
 - `reports/reason_router_p2_p3w1_calibration_instrumentation_manifest.json`
@@ -90,7 +97,11 @@ It does not use seed mean averages, seed ratio averages, mean-of-means, or seed-
 
 ## Non-Executed Validation
 
-Per instruction, no Python, pytest, py_compile, help, model load, training, calibration, aggregation, evaluation, Kaggle, git add, commit, push, or pull was executed.
+The first P3-W2 seed180 attempt executed in Kaggle through Python, CLI parsing, P2 arm resolution, and the P3-W1 calibration argument gate.
+
+It failed before model load, calibration forward, artifact write, backward, optimizer/scheduler steps, dev evaluation, aggregation, or training.
+
+No post-repair Python, pytest, py_compile, model load, calibration, or aggregation validation has yet been executed.
 
 ## Static Review Repair Notes
 
@@ -129,6 +140,14 @@ P3-W1 static review v4 result `P3W1_FINAL_REVIEW_V4_BLOCKED` was addressed with 
 - calibration-only reason supervision is train-only through a dedicated train-only helper and A0-disabled audit record
 - dev targets, dev counts, dev minimum gates, dev cohort-degeneracy gates, and dev metrics are excluded from calibration authority
 - normal P2 A1/A2/A3 A0 reference requirements and train+dev reason-supervision contracts remain unchanged
+
+## Execution-Discovered Repair Notes
+
+P3-W2 first execution attempt at commit `6df1d013b74cb95c658a3ffddbcff8ed0214cdb3` failed before model load and artifact write because the P3-W1 calibration gate incorrectly validated legacy raw comparator defaults.
+
+The repair removes raw `use_temporal_comparator` and `use_predicate_comparator` checks from the calibration validator and retains resolved comparator checks as the authority.
+
+Explicit comparator CLI flags remain forbidden by the P2 resolver.
 
 ## Decision
 

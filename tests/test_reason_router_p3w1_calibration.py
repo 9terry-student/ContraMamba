@@ -48,6 +48,8 @@ def _args(**overrides):
         resolved_reason_router_mode="conditional_first_blocker",
         resolved_gradient_ownership_mode="explicit_local",
         resolved_reason_loss_weight=0.0,
+        use_temporal_comparator=True,
+        use_predicate_comparator=True,
         resolved_use_temporal_comparator=False,
         resolved_use_predicate_comparator=False,
         train_batch_size=None,
@@ -147,6 +149,64 @@ def test_calibration_bypasses_positive_weight_gate_only() -> None:
                 "0.0",
                 "--reason-router-weight-calibration-export",
                 "unit.json",
+            ],
+        )
+
+
+def test_calibration_accepts_legacy_raw_comparator_defaults_when_resolved_false() -> None:
+    args = _args(
+        use_temporal_comparator=True,
+        use_predicate_comparator=True,
+        resolved_use_temporal_comparator=False,
+        resolved_use_predicate_comparator=False,
+    )
+    assert trainer._p3w1_validate_calibration_only_args(args) == Path("unit.json")
+
+
+def test_calibration_rejects_resolved_temporal_comparator_true() -> None:
+    with pytest.raises(ValueError, match="resolved temporal comparator"):
+        trainer._p3w1_validate_calibration_only_args(
+            _args(
+                use_temporal_comparator=True,
+                resolved_use_temporal_comparator=True,
+            )
+        )
+
+
+def test_calibration_rejects_resolved_predicate_comparator_true() -> None:
+    with pytest.raises(ValueError, match="resolved predicate comparator"):
+        trainer._p3w1_validate_calibration_only_args(
+            _args(
+                use_predicate_comparator=True,
+                resolved_use_predicate_comparator=True,
+            )
+        )
+
+
+def test_explicit_temporal_comparator_cli_still_rejected_by_p2_resolver() -> None:
+    with pytest.raises(SystemExit):
+        _resolve(
+            _args(),
+            [
+                "--reason-loss-weight",
+                "0.0",
+                "--reason-router-weight-calibration-export",
+                "unit.json",
+                "--use-temporal-comparator",
+            ],
+        )
+
+
+def test_explicit_predicate_comparator_cli_still_rejected_by_p2_resolver() -> None:
+    with pytest.raises(SystemExit):
+        _resolve(
+            _args(),
+            [
+                "--reason-loss-weight",
+                "0.0",
+                "--reason-router-weight-calibration-export",
+                "unit.json",
+                "--use-predicate-comparator",
             ],
         )
 

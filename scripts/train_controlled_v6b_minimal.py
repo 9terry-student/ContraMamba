@@ -9652,9 +9652,9 @@ def _p3w1_validate_calibration_only_args(args: argparse.Namespace) -> Path | Non
     ):
         _p3w1_require(getattr(args, option, "none") == "none", f"{option} must be none")
     for option in (
-        "enable_external_eval", "enable_stage43_external_eval", "use_temporal_comparator",
-        "use_predicate_comparator", "use_temporal_diagnostic_loss", "use_temporal_channel_loss",
-        "use_temporal_adapter_loss", "use_intervention_loss", "loss_sweep", "smoke",
+        "enable_external_eval", "enable_stage43_external_eval", "use_temporal_diagnostic_loss",
+        "use_temporal_channel_loss", "use_temporal_adapter_loss", "use_intervention_loss",
+        "loss_sweep", "smoke",
     ):
         _p3w1_require(bool(getattr(args, option, False)) is False, f"{option} must be false")
     _p3w1_require(getattr(args, "resolved_use_temporal_comparator", None) is False, "resolved temporal comparator must be false")
