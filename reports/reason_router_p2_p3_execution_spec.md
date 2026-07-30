@@ -96,7 +96,7 @@ The value `1.0` in unit fixtures, exact-resume metadata tests, or example loss c
 | external/OOD/bridge paths | Do not pass paths. |
 | Ranking loss | Explicit `--ranking-weight 0.0`. |
 | Intervention/pairwise loss | Omit; default safe. |
-| Compatible-positive margin | Explicit `--compatible-positive-margin-weight 0.0`. |
+| Compatible-positive margin | Explicit `--compatible-positive-margin-weight 0.0` and `--compatible-positive-margin-logit 0.0`. |
 | Boundary/frame/predicate/preservation losses | Defaults off/zero; omit. |
 | Stage174/175/177 objectives | Defaults off/zero/no path; omit. |
 | Pair-contrastive frame objective | Default off/no path; omit. |
@@ -106,16 +106,39 @@ The value `1.0` in unit fixtures, exact-resume metadata tests, or example loss c
 | P2 sidecar | Explicit path and expected semantic SHA. |
 | A0 reference | Never pass for A0; required for future same-seed A1-A3 only. |
 
-Conclusion: A0 commands are compatible with P2 fail-fast gates. A1-A3 are templates only until reason weight is resolved and same-seed A0 audits pass.
+Conclusion: A0 commands are compatible with P2 fail-fast gates after explicit objective neutralization. A1-A3 remain blocked.
+
+P2 resolver parser-default audit for `_p2_resolve_arm_contract()` collections:
+
+| Resolver collection | Option(s) | Parser default | Classification | P3 A0 handling |
+|---|---|---|---|---|
+| direct CLI flag check | `--use-temporal-comparator`, `--use-predicate-comparator` | parser default `True`, but P2 rejects CLI flag presence and resolves both false internally | `FLAG_MUST_BE_OMITTED` | Omit both flags; preflight asserts absence. |
+| `incompatible_options` | `temporal_adapter_final_penalty_scale`, `temporal_channel_gated_penalty_scale` | `0.0` | `SAFE_DEFAULT` | Omit. |
+| `incompatible_options` | `use_temporal_adapter_final_penalty`, `use_temporal_channel_gated_penalty`, `vnext_enable_segmented_dual_pass`, `use_temporal_diagnostic_loss`, `use_temporal_channel_loss`, `use_temporal_adapter_loss` | `False` | `SAFE_DEFAULT` | Omit. |
+| `incompatible_options` | `architecture` | explicit `v6b_minimal` | `SAFE_DEFAULT` with explicit architecture | Set `--architecture v6b_minimal`. |
+| forbidden paths | OOD, external, Stage43, Stage57/66/75/80A bridge paths | `None` | `PATH_MUST_BE_OMITTED` | Do not pass paths. |
+| forbidden bridge modes | `stage57_bridge_train_mode`, `stage66_bridge_train_mode`, `stage75_bridge_train_mode`, `stage80a_bridge_train_mode` | `none` | `SAFE_DEFAULT` | Omit. |
+| forbidden external flags | `enable_external_eval`, `enable_stage43_external_eval`, `stage43_external_enable_shadow_export` | `False` | `SAFE_DEFAULT` | Omit. |
+| `objective_options` | `ranking_weight` | `2.0` from v5 parser | `EXPLICIT_ZERO_REQUIRED` | Pass `--ranking-weight 0.0`. |
+| `objective_options` | `compatible_positive_margin_weight`, `compatible_positive_margin_logit` | `0.0`, `0.0` | `SAFE_DEFAULT`; explicit neutralization required by P3 manifest | Pass both as `0.0`. |
+| `objective_options` | `stage174c_clean_pairwise_mode`, `stage174c_clean_pairwise_weight` | `off`, `0.0` | `SAFE_DEFAULT`; explicit neutralization required by P3 manifest | Pass `off` and `0.0`. |
+| `objective_options` | `stage174c_clean_polarity_preservation_weight` | `1.0` | `EXPLICIT_ZERO_REQUIRED` | Pass `--stage174c-clean-polarity-preservation-weight 0.0`. |
+| `objective_options` | `stage175b_support_anchor_mode`, `stage175b_support_anchor_weight` | `off`, `0.0` | `SAFE_DEFAULT`; explicit neutralization required by P3 manifest | Pass `off` and `0.0`. |
+| `objective_options` | `stage177c_frame_pairwise_mode`, `stage177c_frame_pairwise_weight` | `off`, `0.0` | `SAFE_DEFAULT`; explicit neutralization required by P3 manifest | Pass `off` and `0.0`. |
+| `objective_options` | intervention/loss-sweep/boundary/frame-violation/predicate-isolation/preservation/pair-contrastive/temporal/v7 use flags | `False` | `SAFE_DEFAULT` | Omit flags. |
+| `objective_options` | corresponding objective weights except `ranking_weight` and Stage174-C polarity preservation | `0.0` | `SAFE_DEFAULT` | Omit unless included in explicit neutralization above. |
+| `objective_options` | `pair_contrastive_frame_data` | `None` | `PATH_MUST_BE_OMITTED` | Do not pass path. |
+
+Known non-safe defaults found by static parser inspection: `ranking_weight = 2.0` and `stage174c_clean_polarity_preservation_weight = 1.0`. Both are explicitly neutralized in A0 commands.
 
 ## 6. A0-first execution design
 
-A0 Phase 1 is runnable for seeds `180`, `181`, `182`. Each run uses `P3_EXECUTION_CHECKOUT_COMMIT_SHA`, records `P2_IMPLEMENTATION_TESTED_COMMIT_SHA`, and requires the four P2 files to be unchanged between those commits.
+A0 Phase 1 is runnable for seeds `180`, `181`, and `182`. Each run uses `P3_EXECUTION_CHECKOUT_COMMIT_SHA`, records `P2_IMPLEMENTATION_TESTED_COMMIT_SHA`, and requires the four P2 files to be unchanged between those commits.
 
 A0 command template:
 
 ```text
-python scripts/train_controlled_v6b_minimal.py --data data/controlled_v5_v3_without_time_swap.jsonl --architecture v6b_minimal --backbone mamba --model-name state-spaces/mamba-130m-hf --freeze-encoder true --frame-downstream-gradient-mode joint --epochs 20 --max-length 128 --dev-ratio 0.2 --seed <SEED> --split-seed 174 --device cuda --flag-source controlled_heuristic --select-metric final_macro_f1 --ranking-weight 0.0 --class-weighting none --lr 0.001 --reason-router-arm A0 --controlled-integrity-sidecar-path reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_controlled_train_integrity_sidecar.jsonl --expected-integrity-sidecar-semantic-sha256 5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc --compatible-positive-margin-weight 0.0 --save-selected-checkpoint --selected-checkpoint-filename selected_checkpoint.pt --output-json /kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed<SEED>/A0/training_report.json --output-predictions-json /kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed<SEED>/A0/clean_dev_predictions.json
+python scripts/train_controlled_v6b_minimal.py --data data/controlled_v5_v3_without_time_swap.jsonl --architecture v6b_minimal --backbone mamba --model-name state-spaces/mamba-130m-hf --freeze-encoder true --frame-downstream-gradient-mode joint --epochs 20 --max-length 128 --dev-ratio 0.2 --seed <SEED> --split-seed 174 --device cuda --flag-source controlled_heuristic --select-metric final_macro_f1 --ranking-weight 0.0 --class-weighting none --stage174c-clean-pairwise-mode off --stage174c-clean-pairwise-weight 0.0 --stage174c-clean-polarity-preservation-weight 0.0 --stage175b-support-anchor-mode off --stage175b-support-anchor-weight 0.0 --stage177c-frame-pairwise-mode off --stage177c-frame-pairwise-weight 0.0 --compatible-positive-margin-logit 0.0 --lr 0.001 --reason-router-arm A0 --controlled-integrity-sidecar-path reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_controlled_train_integrity_sidecar.jsonl --expected-integrity-sidecar-semantic-sha256 5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc --compatible-positive-margin-weight 0.0 --save-selected-checkpoint --selected-checkpoint-filename selected_checkpoint.pt --output-json /kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed<SEED>/A0/training_report.json --output-predictions-json /kaggle/working/ContraMamba/reports/reason_router_p2_p3_runs/seed<SEED>/A0/clean_dev_predictions.json
 ```
 
 The command intentionally omits `--reason-loss-weight`.
@@ -341,8 +364,40 @@ def run_paths(seed, arm):
     return {"dir": out, "report": output_json, "prediction_jsonl": prediction_jsonl, "prediction_json": out / "clean_dev_predictions.json", "checkpoint": out / "selected_checkpoint.pt", "audit": out / "A0_REFERENCE_AUDIT.json"}
 def a0_command(seed):
     p = run_paths(seed, "A0")
-    return ["python", "scripts/train_controlled_v6b_minimal.py", "--data", DATA, "--architecture", "v6b_minimal", "--backbone", "mamba", "--model-name", "state-spaces/mamba-130m-hf", "--freeze-encoder", "true", "--frame-downstream-gradient-mode", "joint", "--epochs", "20", "--max-length", "128", "--dev-ratio", str(DEV_RATIO), "--seed", str(seed), "--split-seed", str(SPLIT_SEED), "--device", "cuda", "--flag-source", "controlled_heuristic", "--select-metric", "final_macro_f1", "--ranking-weight", "0.0", "--class-weighting", "none", "--lr", "0.001", "--reason-router-arm", "A0", "--controlled-integrity-sidecar-path", SIDECAR, "--expected-integrity-sidecar-semantic-sha256", SIDECAR_SHA_EXPECTED, "--compatible-positive-margin-weight", "0.0", "--save-selected-checkpoint", "--selected-checkpoint-filename", "selected_checkpoint.pt", "--output-json", str(p["report"]), "--output-predictions-json", str(p["prediction_json"])]
-for seed in SEEDS: run(a0_command(seed))
+    return ["python", "scripts/train_controlled_v6b_minimal.py", "--data", DATA, "--architecture", "v6b_minimal", "--backbone", "mamba", "--model-name", "state-spaces/mamba-130m-hf", "--freeze-encoder", "true", "--frame-downstream-gradient-mode", "joint", "--epochs", "20", "--max-length", "128", "--dev-ratio", str(DEV_RATIO), "--seed", str(seed), "--split-seed", str(SPLIT_SEED), "--device", "cuda", "--flag-source", "controlled_heuristic", "--select-metric", "final_macro_f1", "--ranking-weight", "0.0", "--class-weighting", "none", "--stage174c-clean-pairwise-mode", "off", "--stage174c-clean-pairwise-weight", "0.0", "--stage174c-clean-polarity-preservation-weight", "0.0", "--stage175b-support-anchor-mode", "off", "--stage175b-support-anchor-weight", "0.0", "--stage177c-frame-pairwise-mode", "off", "--stage177c-frame-pairwise-weight", "0.0", "--compatible-positive-margin-logit", "0.0", "--lr", "0.001", "--reason-router-arm", "A0", "--controlled-integrity-sidecar-path", SIDECAR, "--expected-integrity-sidecar-semantic-sha256", SIDECAR_SHA_EXPECTED, "--compatible-positive-margin-weight", "0.0", "--save-selected-checkpoint", "--selected-checkpoint-filename", "selected_checkpoint.pt", "--output-json", str(p["report"]), "--output-predictions-json", str(p["prediction_json"])]
+def cli_value(argv, flag):
+    positions = [i for i, value in enumerate(argv) if value == flag]
+    if len(positions) != 1:
+        raise RuntimeError(f"Expected exactly one {flag}, found {len(positions)}")
+    index = positions[0]
+    if index + 1 >= len(argv):
+        raise RuntimeError(f"Missing value after {flag}")
+    return argv[index + 1]
+
+EXPECTED_P2_NEUTRALIZATION = {
+    "--stage174c-clean-pairwise-mode": "off",
+    "--stage174c-clean-pairwise-weight": "0.0",
+    "--stage174c-clean-polarity-preservation-weight": "0.0",
+    "--stage175b-support-anchor-mode": "off",
+    "--stage175b-support-anchor-weight": "0.0",
+    "--stage177c-frame-pairwise-mode": "off",
+    "--stage177c-frame-pairwise-weight": "0.0",
+    "--compatible-positive-margin-logit": "0.0",
+    "--compatible-positive-margin-weight": "0.0",
+    "--ranking-weight": "0.0",
+    "--class-weighting": "none",
+}
+
+a0_runs = [{"run_id": f"p3_seed{seed}_A0", "command_argv": a0_command(seed)} for seed in SEEDS]
+for run_spec in a0_runs:
+    argv = run_spec["command_argv"]
+    for flag, expected in EXPECTED_P2_NEUTRALIZATION.items():
+        observed = cli_value(argv, flag)
+        assert observed == expected, {"run_id": run_spec["run_id"], "flag": flag, "expected": expected, "observed": observed}
+    assert "--use-temporal-comparator" not in argv
+    assert "--use-predicate-comparator" not in argv
+print("P3_A0_P2_NEUTRALIZATION_PREFLIGHT_PASS")
+for run_spec in a0_runs: run(run_spec["command_argv"])
 ```
 
 ```python
@@ -495,7 +550,20 @@ print("POST_UNBLOCK_ANALYSIS_TEMPLATE_ONLY: requires A1/A2/A3 artifacts")
 
 ## 14. Risks and invalidation conditions
 
-Invalidation conditions include forbidden objective activation, running A1/A3 with placeholder or fixture-derived reason-loss weight, running A2 before matched Phase 3 release, wrong-seed A0 reference, trusting in-memory A0 audit state instead of audit JSON, SHA mismatch, fixed-row-count PASS, missing selected epoch, or assuming per-run ownership/checkpoint diagnostics from tests.
+Invalidation conditions include forbidden objective activation, running A1/A3 with placeholder or fixture-derived reason-loss weight,
+Seed180 first attempt failure record:
+
+```text
+seed180 first attempt:
+return_code = 2
+failure_stage = argparse P2 fail-fast
+failure_option = stage174c_clean_polarity_preservation_weight
+observed_value = 1.0
+training_started = false
+artifacts_authorized_as_reference = false
+```
+
+Any directory or partial file from this failed prelaunch attempt is not an immutable A0 reference. running A2 before matched Phase 3 release, wrong-seed A0 reference, trusting in-memory A0 audit state instead of audit JSON, SHA mismatch, fixed-row-count PASS, missing selected epoch, or assuming per-run ownership/checkpoint diagnostics from tests.
 
 ## 15. Final P3 decision
 
@@ -511,4 +579,4 @@ Additional full-causal block reason:
 P3_BLOCKED_BY_MISSING_EXECUTION_OBSERVABILITY
 ```
 
-This specification permits A0 Phase 1 only. It does not authorize A1, A2, A3, aggregate causal comparison, `P3_MECHANISM_SUPPORTED`, or P3 PASS.
+This specification authorizes A0 Phase 1 only. It does not authorize A1, A2, A3, aggregate causal comparison, `P3_MECHANISM_SUPPORTED`, or P3 PASS.
