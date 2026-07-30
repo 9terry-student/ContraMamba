@@ -1,0 +1,65 @@
+{
+  "A1_A3_released": false,
+  "calibration_seeds": [
+    180,
+    181,
+    182
+  ],
+  "decision": "P3W2_CALIBRATION_RESULT_REVIEW_PASS",
+  "execution_commit": "e8124806dd5644c9713c0afd5cc9af8bc041eff4",
+  "files": {
+    "reports/reason_router_p2_p3w2_calibration_e8124806/calibration_aggregate.json": {
+      "sha256": "efbb95a61538d1a3fab9c66e5f378157b536cfb61f160d2e6008bf2fa7e92234",
+      "size_bytes": 4565
+    },
+    "reports/reason_router_p2_p3w2_calibration_e8124806/seed180/calibration_unit.json": {
+      "sha256": "4dde343d80a56c84cc106835b066a230a0fd49c78d7f23b8ed47338562313ace",
+      "size_bytes": 4031
+    },
+    "reports/reason_router_p2_p3w2_calibration_e8124806/seed181/calibration_unit.json": {
+      "sha256": "30ba9724b2d62deda6fcffc9346117efebc4891267259434791b5a38f69f78fb",
+      "size_bytes": 4030
+    },
+    "reports/reason_router_p2_p3w2_calibration_e8124806/seed182/calibration_unit.json": {
+      "sha256": "be759d4b35b209a2a8215a734947efb131bf544171a4967b2facd60848eb4b43",
+      "size_bytes": 4030
+    }
+  },
+  "local_binary_cohort_counts": {
+    "frame": {
+      "0": 726,
+      "1": 605
+    },
+    "polarity": {
+      "0": 0,
+      "1": 242
+    },
+    "predicate": {
+      "0": 121,
+      "1": 484
+    },
+    "sufficiency": {
+      "0": 242,
+      "1": 242
+    }
+  },
+  "mu_final": 0.8755522966384888,
+  "mu_reason": 1.3432798782984416,
+  "normal_a1_a3_training_ready": false,
+  "polarity_local_training_ready": false,
+  "primary_reason_class_counts": {
+    "AUTHORIZED": 242,
+    "FRAME": 726,
+    "PREDICATE": 121,
+    "SUFFICIENCY": 242
+  },
+  "reason_loss_weight_resolved": true,
+  "remaining_blocker": "P2_POLARITY_LOCAL_SUPERVISION_NOT_TRAINING_READY",
+  "resolved_reason_loss_weight": 0.6518018402446165,
+  "run_root": "reports/reason_router_p2_p3w2_calibration_e8124806",
+  "schema_version": "reason_router_p2_p3w2_calibration_authority_v1",
+  "status": "PASS",
+  "total_final_count": 8640,
+  "total_reason_count": 3993,
+  "weight_resolution_measurement_valid": true
+}

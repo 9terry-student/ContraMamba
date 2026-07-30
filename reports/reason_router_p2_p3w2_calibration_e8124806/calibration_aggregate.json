@@ -1,0 +1,129 @@
+{
+  "A1_A3_common_weight": true,
+  "A1_A3_released": false,
+  "all_a0_checkpoints_unused": true,
+  "all_a0_logits_unused": true,
+  "all_a0_metrics_unused": true,
+  "all_a0_predictions_unused": true,
+  "all_a0_reference_predictions_unaccessed": true,
+  "all_a0_reference_predictions_unrequired": true,
+  "all_dev_counts_unused": true,
+  "all_dev_inputs_unaccessed": true,
+  "all_dev_labels_unused": true,
+  "all_dev_metrics_unused": true,
+  "all_dev_reason_supervision_absent": true,
+  "all_execution_commits_verified": true,
+  "all_local_binary_cohorts_training_ready": false,
+  "all_polarity_local_training_ready": false,
+  "all_primary_reason_min_count_gates_pass": true,
+  "all_sidecar_hashes_verified": true,
+  "all_three_seeds_present": true,
+  "all_train_reason_supervision_built": true,
+  "all_unit_gates_pass": true,
+  "all_weight_resolution_measurements_valid": true,
+  "architecture": "v6b_minimal",
+  "backbone": "mamba",
+  "balanced_sampler": false,
+  "calibration_data_scope": "TRAIN_ONLY",
+  "calibration_forward_batch_size": 8,
+  "calibration_seeds": [
+    180,
+    181,
+    182
+  ],
+  "class_weighting": "none",
+  "dataset_sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640",
+  "decision": "P3W1_CALIBRATION_AGGREGATE_PASS_PENDING_REVIEW",
+  "device": "cuda",
+  "execution_commit": "e8124806dd5644c9713c0afd5cc9af8bc041eff4",
+  "expected_dev_ratio": 0.2,
+  "expected_ordered_train_row_count": 2880,
+  "expected_ordered_train_row_identity_hash": "cbce1775ddc73f2fbad024ded6a314d15e2eb1988ef107fa72a5eacbdd836784",
+  "expected_split_seed": 174,
+  "flag_source": "controlled_heuristic",
+  "freeze_encoder": true,
+  "local_binary_cohort_counts": {
+    "frame": {
+      "0": 726,
+      "1": 605
+    },
+    "polarity": {
+      "0": 0,
+      "1": 242
+    },
+    "predicate": {
+      "0": 121,
+      "1": 484
+    },
+    "sufficiency": {
+      "0": 242,
+      "1": 242
+    }
+  },
+  "local_binary_training_readiness": {
+    "frame": true,
+    "polarity": false,
+    "predicate": true,
+    "sufficiency": true
+  },
+  "local_binary_training_readiness_by_seed": {
+    "180": {
+      "frame": true,
+      "polarity": false,
+      "predicate": true,
+      "sufficiency": true
+    },
+    "181": {
+      "frame": true,
+      "polarity": false,
+      "predicate": true,
+      "sufficiency": true
+    },
+    "182": {
+      "frame": true,
+      "polarity": false,
+      "predicate": true,
+      "sufficiency": true
+    }
+  },
+  "logical_unit_scope": "COMPLETE_AUTHORITATIVE_TRAIN_SPLIT",
+  "logical_units_per_seed": 1,
+  "max_length": 128,
+  "model_name": "state-spaces/mamba-130m-hf",
+  "mu_final": 0.8755522966384888,
+  "mu_reason": 1.3432798782984416,
+  "nonfinite_count": 0,
+  "normal_a1_a3_training_ready": false,
+  "ordered_train_row_count": 2880,
+  "ordered_train_row_identity_hash": "cbce1775ddc73f2fbad024ded6a314d15e2eb1988ef107fa72a5eacbdd836784",
+  "primary_reason_class_counts": {
+    "AUTHORIZED": 242,
+    "FRAME": 726,
+    "PREDICATE": 121,
+    "SUFFICIENCY": 242
+  },
+  "reason_router_epsilon": 1e-08,
+  "resolved_reason_loss_weight": 0.6518018402446165,
+  "schema_version": "reason_router_p3w1_calibration_aggregate_v1",
+  "seed_unit_artifact_sha256": {
+    "/kaggle/working/ContraMamba/reports/reason_router_p2_p3w2_calibration_e8124806/seed180/calibration_unit.json": "4dde343d80a56c84cc106835b066a230a0fd49c78d7f23b8ed47338562313ace",
+    "/kaggle/working/ContraMamba/reports/reason_router_p2_p3w2_calibration_e8124806/seed181/calibration_unit.json": "30ba9724b2d62deda6fcffc9346117efebc4891267259434791b5a38f69f78fb",
+    "/kaggle/working/ContraMamba/reports/reason_router_p2_p3w2_calibration_e8124806/seed182/calibration_unit.json": "be759d4b35b209a2a8215a734947efb131bf544171a4967b2facd60848eb4b43"
+  },
+  "seed_unit_paths": [
+    "/kaggle/working/ContraMamba/reports/reason_router_p2_p3w2_calibration_e8124806/seed180/calibration_unit.json",
+    "/kaggle/working/ContraMamba/reports/reason_router_p2_p3w2_calibration_e8124806/seed181/calibration_unit.json",
+    "/kaggle/working/ContraMamba/reports/reason_router_p2_p3w2_calibration_e8124806/seed182/calibration_unit.json"
+  ],
+  "sidecar_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc",
+  "split_seed": 174,
+  "split_seed_verified": true,
+  "status": "PASS",
+  "total_final_count": 8640,
+  "total_final_loss_sum": 7564.771842956543,
+  "total_reason_count": 3993,
+  "total_reason_loss_sum": 5363.716554045677,
+  "train_batch_size": null,
+  "training_readiness_separate_from_weight_resolution": true,
+  "weighted_label_loss": false
+}
