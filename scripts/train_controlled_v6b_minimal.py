@@ -1,4 +1,4 @@
-﻿"""Train ContraMamba-v6B-minimal on controlled intervention data.
+"""Train ContraMamba-v6B-minimal on controlled intervention data.
 
 Minimal v6B wrapper: reuses v5 training infrastructure, adds temporal/predicate
 comparator alphas with learnable scaling. No composer, no product_final_loss.
@@ -19,6 +19,7 @@ import os
 import random
 import re
 import sys
+import subprocess
 import time
 import math
 from pathlib import Path
@@ -131,6 +132,24 @@ P2_ARM_CONTRACTS = {
     "A2": ("explicit_product", "explicit_local"),
     "A3": ("conditional_first_blocker", "explicit_local"),
 }
+P3W1_CALIBRATION_UNIT_SCHEMA_VERSION = "reason_router_p3w1_calibration_unit_v1"
+P3W1_CALIBRATION_UNIT_SCOPE = "COMPLETE_AUTHORITATIVE_TRAIN_SPLIT"
+P3W1_CALIBRATION_UNIT_DECISION = "P3W1_CALIBRATION_UNIT_PASS"
+P3W1_FULL_SHA_RE = re.compile(r"[0-9a-fA-F]{40}")
+P3W1_SHA256_RE = re.compile(r"[0-9a-fA-F]{64}")
+P3W1_CALIBRATION_SEEDS = {180, 181, 182}
+P3W1_CALIBRATION_SPLIT_SEED = 174
+P3W1_CALIBRATION_DEV_RATIO = 0.2
+P3W1_CALIBRATION_FORWARD_BATCH_SIZE = 8
+P3W1_LOGICAL_UNITS_PER_SEED = 1
+P3W1_CALIBRATION_ARCHITECTURE = "v6b_minimal"
+P3W1_CALIBRATION_BACKBONE = "mamba"
+P3W1_CALIBRATION_MODEL_NAME = "state-spaces/mamba-130m-hf"
+P3W1_CALIBRATION_MAX_LENGTH = 128
+P3W1_CALIBRATION_DEVICE = "cuda"
+P3W1_CALIBRATION_FLAG_SOURCE = "controlled_heuristic"
+P3W1_CALIBRATION_REASON_ROUTER_EPSILON = 1e-8
+P3W1_CALIBRATION_CLASS_WEIGHTING = "none"
 P2_REASON_TO_ID = {name: index for index, name in enumerate(P2_REASON_CLASS_ORDER)}
 P2_SIDE_CAR_REQUIRED_FIELDS = (
     "row_id",
@@ -218,6 +237,9 @@ def _p2_cli_flag_present(raw_argv: list[str], flag: str) -> bool:
     return any(item == flag or item.startswith(flag + "=") for item in raw_argv)
 
 
+def _p3w1_calibration_export_requested(args: argparse.Namespace) -> bool:
+    return getattr(args, "reason_router_weight_calibration_export", None) is not None
+
 def _p2_resolve_arm_contract(
     args: argparse.Namespace,
     raw_argv: list[str],
@@ -248,10 +270,15 @@ def _p2_resolve_arm_contract(
         )
     reason_weight_was_set = _p2_cli_flag_present(raw_argv, "--reason-loss-weight")
     raw_reason_weight = getattr(args, "reason_loss_weight", None)
+    calibration_export_requested = _p3w1_calibration_export_requested(args)
     if arm in {"A1", "A3"}:
         if not reason_weight_was_set or raw_reason_weight is None:
             parser.error("P2_REASON_LOSS_WEIGHT_REQUIRED")
-        if not math.isfinite(float(raw_reason_weight)) or float(raw_reason_weight) <= 0.0:
+        if not math.isfinite(float(raw_reason_weight)):
+            parser.error("P2_ARM_CONFIG_MISMATCH: A1/A3 require finite reason_loss_weight")
+        if float(raw_reason_weight) <= 0.0 and not (
+            calibration_export_requested and arm == "A3" and float(raw_reason_weight) == 0.0
+        ):
             parser.error("P2_ARM_CONFIG_MISMATCH: A1/A3 require reason_loss_weight > 0")
         resolved_reason_weight = float(raw_reason_weight)
     else:
@@ -3539,6 +3566,205 @@ def _p2_prepare_reason_supervision(
             "normalized_values": ["CLEAN", "DEFECT", "UNRESOLVED"],
         },
     }
+
+def _p2_prepare_reason_supervision_train_only(
+    *,
+    train_records: list[dict[str, Any]],
+    train_inputs: dict[str, torch.Tensor],
+    train_source_labels: list[str],
+    sidecar_by_id: dict[str, dict[str, Any]],
+    require_min_counts: bool,
+    min_train_count: int,
+    device: torch.device,
+) -> dict[str, Any]:
+    def require_source_fields(record: dict[str, Any], row_id: str) -> None:
+        missing = [field for field in P2_SOURCE_REQUIRED_FIELDS if field not in record]
+        if missing:
+            raise ValueError(f"P2_REQUIRED_SOURCE_METADATA_MISSING: row_id={row_id} missing={missing}")
+
+    def exact_binary(record: dict[str, Any], field: str, row_id: str) -> int:
+        value = record.get(field)
+        if isinstance(value, bool) or value not in (0, 1):
+            raise ValueError(f"P2_EXACT_BINARY_VALIDATION_FAILED: row_id={row_id} field={field} value={value!r}")
+        return int(value)
+
+    def canonical_polarity(value: Any) -> str:
+        if isinstance(value, int) and not isinstance(value, bool):
+            return {0: "NONE", 1: "REFUTE", 2: "SUPPORT"}.get(value, "UNKNOWN")
+        return str(value).strip().upper()
+
+    seen_row_ids: set[str] = set()
+    primary_targets: list[int] = []
+    secondary: list[list[int]] = []
+    eligible: list[bool] = []
+    frame_mask: list[bool] = []
+    predicate_mask: list[bool] = []
+    sufficiency_mask: list[bool] = []
+    polarity_mask: list[bool] = []
+    polarity_targets: list[int] = []
+    exclusion_counts: dict[str, int] = {}
+    binary_cohorts: dict[str, list[int]] = {"frame": [], "predicate": [], "sufficiency": [], "polarity": []}
+    for index, record in enumerate(train_records):
+        row_id = str(record.get("id", ""))
+        if row_id in seen_row_ids:
+            raise ValueError("P2_DUPLICATE_ROW_ID")
+        seen_row_ids.add(row_id)
+        require_source_fields(record, row_id)
+        frame = exact_binary(record, "frame_compatible_label", row_id)
+        predicate = exact_binary(record, "predicate_covered_label", row_id)
+        sufficiency = exact_binary(record, "sufficiency_label", row_id)
+        raw_primary = str(record.get("primary_failure_type", "")).strip().lower()
+        if raw_primary not in P2_PRIMARY_FAILURE_TYPES:
+            raise ValueError(f"P2_UNKNOWN_PRIMARY_FAILURE_TYPE: row_id={row_id} value={raw_primary!r}")
+        derived = _p2_primary_reason_from_axes(frame, predicate, sufficiency)
+        expected = _p2_expected_primary_from_record(record)
+        final_label = _s28e_normalize_label(record.get("final_label"))
+        directional = final_label in P2_DIRECTIONAL_LABELS
+        polarity_label = canonical_polarity(record.get("polarity_label"))
+        intervention_type = str(record.get("intervention_type", "")).strip().lower()
+        codes: list[str] = []
+        sidecar = sidecar_by_id.get(row_id)
+        if train_source_labels[index] != "clean_main":
+            codes.append("P2_NON_CANONICAL_SOURCE")
+        if sidecar is None:
+            codes.append("P2_SIDECAR_MISSING")
+            intervention_contract_pass = False
+            generator_integrity_status = "UNRESOLVED"
+        else:
+            intervention_contract_pass = sidecar.get("intervention_contract_status") == "PASS"
+            generator_integrity_status = _p2_normalized_generator_status(sidecar)
+            if sidecar.get("split") != "train":
+                codes.append("P2_SPLIT_MISMATCH")
+            if sidecar.get("canonical_row_id") != row_id:
+                codes.append("P2_CANONICAL_ROW_ID_MISMATCH")
+            try:
+                sidecar_frame = exact_binary(sidecar, "frame_compatible_label", row_id)
+            except ValueError as exc:
+                raise ValueError(str(exc).replace("P2_EXACT_BINARY_VALIDATION_FAILED", "P2_SIDECAR_EXACT_BINARY_VALIDATION_FAILED")) from exc
+            if sidecar_frame != frame:
+                codes.append("P2_SIDECAR_SOURCE_BINARY_MISMATCH")
+            if not intervention_contract_pass:
+                codes.append("P2_POLARITY_INTERVENTION_CONTRACT_FAIL")
+            if generator_integrity_status == "UNRESOLVED":
+                codes.append("P2_INTEGRITY_SOURCE_REQUIRED")
+            elif generator_integrity_status != "CLEAN":
+                codes.append("P2_GENERATOR_STATUS_DEFECT")
+        if expected != derived:
+            codes.append("P2_PRIMARY_REASON_AXIS_CONFLICT")
+        if derived in {"FRAME", "PREDICATE", "SUFFICIENCY"} and final_label != "NOT_ENTITLED":
+            codes.append("P2_FAILURE_FINAL_LABEL_MISMATCH")
+        if raw_primary in {"none", "polarity"} and not directional:
+            codes.append("P2_AUTHORIZED_FINAL_LABEL_MISMATCH")
+        if directional:
+            if polarity_label != final_label:
+                codes.append("P2_POLARITY_TARGET_FINAL_MISMATCH")
+        elif polarity_label not in {"NONE", "NOT_ENTITLED"}:
+            codes.append("P2_POLARITY_TARGET_FINAL_MISMATCH")
+        if raw_primary == "polarity" and (not directional or intervention_type != "polarity_flip"):
+            codes.append("P2_POLARITY_INTERVENTION_CONTRACT_FAIL")
+        is_eligible = not codes
+        for code in codes:
+            exclusion_counts[code] = exclusion_counts.get(code, 0) + 1
+        primary_targets.append(P2_REASON_TO_ID[derived] if is_eligible else -100)
+        secondary.append([1 - frame, 1 - predicate, 1 - sufficiency])
+        eligible.append(is_eligible)
+        frame_applicable = is_eligible
+        predicate_applicable = is_eligible and frame == 1
+        sufficiency_applicable = is_eligible and frame == 1 and predicate == 1
+        polarity_applicable = is_eligible and frame == 1 and predicate == 1 and sufficiency == 1 and directional
+        frame_mask.append(frame_applicable)
+        predicate_mask.append(predicate_applicable)
+        sufficiency_mask.append(sufficiency_applicable)
+        polarity_mask.append(polarity_applicable)
+        if frame_applicable:
+            binary_cohorts["frame"].append(frame)
+        if predicate_applicable:
+            binary_cohorts["predicate"].append(predicate)
+        if sufficiency_applicable:
+            binary_cohorts["sufficiency"].append(sufficiency)
+        if polarity_applicable:
+            binary_cohorts["polarity"].append(1 if final_label == "SUPPORT" else 0)
+        polarity_targets.append(0 if polarity_applicable and final_label == "REFUTE" else 1 if polarity_applicable else -100)
+        record["p2_primary_reason"] = derived
+        record["p2_primary_reason_target_4"] = primary_targets[-1]
+        record["p2_secondary_reasons_3"] = secondary[-1]
+        record["p2_reason_supervision_eligible"] = is_eligible
+        record["p2_reason_exclusion_codes"] = codes
+        record["p2_frame_applicable"] = frame_mask[-1]
+        record["p2_predicate_applicable"] = predicate_mask[-1]
+        record["p2_sufficiency_applicable"] = sufficiency_mask[-1]
+        record["p2_polarity_applicable"] = polarity_mask[-1]
+        record["p2_polarity_target_2"] = polarity_targets[-1]
+        record["intervention_contract_pass"] = intervention_contract_pass
+        record["generator_integrity_status"] = generator_integrity_status
+    counts = {
+        name: sum(1 for target, ok in zip(primary_targets, eligible) if ok and target == P2_REASON_TO_ID[name])
+        for name in P2_REASON_CLASS_ORDER
+    }
+    binary_counts = {name: {0: values.count(0), 1: values.count(1)} for name, values in binary_cohorts.items()}
+    if sum(counts.values()) <= 0:
+        raise ValueError("P3W1_REASON_SUPERVISION_TRAIN_EMPTY")
+    if require_min_counts:
+        low_train = {k: v for k, v in counts.items() if v < min_train_count}
+        if low_train:
+            raise ValueError(f"P2_REASON_MIN_CLASS_COUNT_FAILED: train={low_train}")
+        degenerate = {cohort: values for cohort, values in binary_counts.items() if values[0] < 1 or values[1] < 1}
+        if degenerate:
+            raise ValueError(f"P2_APPLICABLE_COHORT_BINARY_CLASS_DEGENERATE: {{'train': {degenerate}}}")
+    train_inputs["p2_primary_reason_targets_4"] = torch.tensor(primary_targets, dtype=torch.long, device=device)
+    train_inputs["p2_secondary_reason_targets_3"] = torch.tensor(secondary, dtype=torch.long, device=device)
+    train_inputs["p2_reason_supervision_eligible"] = torch.tensor(eligible, dtype=torch.bool, device=device)
+    train_inputs["p2_frame_applicability_mask"] = torch.tensor(frame_mask, dtype=torch.bool, device=device)
+    train_inputs["p2_predicate_applicability_mask"] = torch.tensor(predicate_mask, dtype=torch.bool, device=device)
+    train_inputs["p2_sufficiency_applicability_mask"] = torch.tensor(sufficiency_mask, dtype=torch.bool, device=device)
+    train_inputs["p2_polarity_applicability_mask"] = torch.tensor(polarity_mask, dtype=torch.bool, device=device)
+    train_inputs["p2_polarity_targets_2"] = torch.tensor(polarity_targets, dtype=torch.long, device=device)
+    return {
+        "schema_version": P2_REASON_ROUTER_SCHEMA_VERSION,
+        "calibration_data_scope": "TRAIN_ONLY",
+        "train_reason_counts": counts,
+        "dev_reason_counts": None,
+        "target_class_counts": {
+            "train_primary_reason": counts,
+            "train_applicable_binary": binary_counts,
+        },
+        "train_exclusion_counts": exclusion_counts,
+        "dev_exclusion_counts": None,
+        "train_reason_supervision_built": True,
+        "dev_reason_supervision_built": False,
+        "dev_inputs_accessed_for_calibration": False,
+        "dev_labels_used_for_calibration": False,
+        "dev_counts_used_for_gate": False,
+        "dev_metrics_used_for_calibration": False,
+    }
+
+def _p3w1_prepare_train_only_reason_supervision_for_calibration(
+    *,
+    train_records: list[dict[str, Any]],
+    train_inputs: dict[str, torch.Tensor],
+    train_source_labels: list[str],
+    sidecar_by_id: dict[str, dict[str, Any]],
+    require_min_counts: bool,
+    min_train_count: int,
+    device: torch.device,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    supervision = _p2_prepare_reason_supervision_train_only(
+        train_records=train_records,
+        train_inputs=train_inputs,
+        train_source_labels=train_source_labels,
+        sidecar_by_id=sidecar_by_id,
+        require_min_counts=require_min_counts,
+        min_train_count=min_train_count,
+        device=device,
+    )
+    a0_audit = {
+        "required": False,
+        "accessed": False,
+        "reason": "P3W1_TRAIN_ONLY_CALIBRATION",
+    }
+    return supervision, a0_audit
+
+
 def _stage187_compatible_positive_margin_loss(
     frame_logit: torch.Tensor,
     eligible_mask: torch.Tensor,
@@ -9273,6 +9499,345 @@ def _p2_row_identity_hash(records: list[dict[str, Any]]) -> str:
     return digest.hexdigest()
 
 
+
+def _p3w1_ordered_train_identity(records: list[dict[str, Any]]) -> dict[str, Any]:
+    digest = hashlib.sha256()
+    for record in records:
+        row_id = _p2_row_identity(record)
+        pair_id = _p2_reference_pair_id(record)
+        gold_label = _s28e_normalize_label(record.get("final_label"))
+        digest.update(f"{row_id}\t{pair_id}\t{gold_label}\n".encode("utf-8"))
+    return {
+        "ordered_train_row_count": len(records),
+        "ordered_train_row_identity_hash": digest.hexdigest(),
+    }
+
+
+def _p3w1_validate_execution_commit(value: str | None) -> str:
+    if value is None or P3W1_FULL_SHA_RE.fullmatch(str(value)) is None:
+        raise ValueError(
+            "P3W1_CALIBRATION_GATE: --reason-router-weight-calibration-execution-commit "
+            "must be exactly 40 hexadecimal characters"
+        )
+    return str(value)
+
+
+def _p3w1_require(value: bool, message: str) -> None:
+    if not value:
+        raise ValueError(f"P3W1_CALIBRATION_GATE: {message}")
+
+
+
+def _p3w1_validate_sha256(value: str | None, name: str) -> str:
+    if value is None or P3W1_SHA256_RE.fullmatch(str(value)) is None:
+        raise ValueError(f"P3W1_CALIBRATION_GATE: {name} must be exactly 64 hexadecimal characters")
+    return str(value)
+
+
+def _p3w1_observed_git_head(repo_root: Path) -> str:
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(repo_root), "rev-parse", "HEAD"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except Exception as exc:
+        raise RuntimeError("P3W1_CALIBRATION_GATE: failed to observe git HEAD") from exc
+    observed = result.stdout.strip()
+    if P3W1_FULL_SHA_RE.fullmatch(observed) is None:
+        raise ValueError("P3W1_CALIBRATION_GATE: observed git HEAD must be exactly 40 hexadecimal characters")
+    return observed
+
+
+def _p3w1_verify_execution_commit(declared: str | None, observed: str | None) -> str:
+    declared_commit = _p3w1_validate_execution_commit(declared)
+    observed_commit = _p3w1_validate_execution_commit(observed)
+    _p3w1_require(declared_commit == observed_commit, "declared execution commit does not match observed git HEAD")
+    return observed_commit
+
+
+def _p3w1_verify_sidecar_semantic_sha(expected: str | None, observed: str | None) -> str:
+    expected_sha = _p3w1_validate_sha256(expected, "expected sidecar semantic SHA")
+    observed_sha = _p3w1_validate_sha256(observed, "observed sidecar semantic SHA")
+    _p3w1_require(observed_sha == expected_sha, "observed sidecar semantic SHA does not match expected sidecar semantic SHA")
+    return observed_sha
+
+def _p3w1_validate_calibration_only_args(args: argparse.Namespace) -> Path | None:
+    export_path = getattr(args, "reason_router_weight_calibration_export", None)
+    execution_commit = getattr(
+        args,
+        "reason_router_weight_calibration_execution_commit",
+        None,
+    )
+    forward_batch_size = getattr(
+        args,
+        "reason_router_weight_calibration_forward_batch_size",
+        None,
+    )
+    if export_path is None and execution_commit is None:
+        _p3w1_require(
+            forward_batch_size is None,
+            "calibration forward batch size requires calibration export",
+        )
+        return None
+    _p3w1_require(export_path is not None, "calibration execution commit requires calibration export")
+    _p3w1_require(execution_commit is not None, "calibration export requires execution commit")
+    _p3w1_require(forward_batch_size is not None, "calibration export requires calibration forward batch size")
+    _p3w1_require(
+        type(forward_batch_size) is int
+        and forward_batch_size == P3W1_CALIBRATION_FORWARD_BATCH_SIZE,
+        "calibration forward batch size must be exactly 8",
+    )
+    export_path = Path(export_path)
+    _p3w1_validate_execution_commit(execution_commit)
+    _p3w1_validate_sha256(
+        getattr(args, "expected_integrity_sidecar_semantic_sha256", None),
+        "expected sidecar semantic SHA",
+    )
+    _p3w1_require(not export_path.exists(), f"export path already exists: {export_path}")
+    _p3w1_require(getattr(args, "reason_router_arm", None) == "A3", "reason_router_arm must be A3")
+    _p3w1_require(
+        getattr(args, "resolved_reason_router_mode", None) == "conditional_first_blocker",
+        "resolved reason_router_mode must be conditional_first_blocker",
+    )
+    _p3w1_require(
+        getattr(args, "resolved_gradient_ownership_mode", None) == "explicit_local",
+        "resolved gradient_ownership_mode must be explicit_local",
+    )
+    _p3w1_require(float(getattr(args, "resolved_reason_loss_weight", 1.0)) == 0.0, "reason_loss_weight must be 0.0")
+    _p3w1_require(getattr(args, "architecture", None) == P3W1_CALIBRATION_ARCHITECTURE, "architecture must be v6b_minimal")
+    _p3w1_require(getattr(args, "backbone", None) == P3W1_CALIBRATION_BACKBONE, "backbone must be mamba")
+    _p3w1_require(getattr(args, "model_name", None) == P3W1_CALIBRATION_MODEL_NAME, "model_name must be state-spaces/mamba-130m-hf")
+    _p3w1_require(
+        type(getattr(args, "max_length", None)) is int
+        and getattr(args, "max_length", None) == P3W1_CALIBRATION_MAX_LENGTH,
+        "max_length must be exactly 128",
+    )
+    _p3w1_require(getattr(args, "device", None) == P3W1_CALIBRATION_DEVICE, "device must be cuda")
+    _p3w1_require(getattr(args, "flag_source", None) == P3W1_CALIBRATION_FLAG_SOURCE, "flag_source must be controlled_heuristic")
+    _p3w1_require(
+        math.isclose(
+            float(getattr(args, "reason_router_epsilon", float("nan"))),
+            P3W1_CALIBRATION_REASON_ROUTER_EPSILON,
+            rel_tol=0.0,
+            abs_tol=0.0,
+        ),
+        "reason_router_epsilon must be exactly 1e-8",
+    )
+    _p3w1_require(getattr(args, "freeze_encoder", None) is True, "freeze_encoder must be true")
+    _p3w1_require(getattr(args, "train_batch_size", None) is None, "train_batch_size must be None")
+    _p3w1_require(getattr(args, "balanced_sampler", None) is False, "balanced_sampler must be false")
+    _p3w1_require(getattr(args, "weighted_label_loss", None) is False, "weighted_label_loss must be false")
+    _p3w1_require(getattr(args, "class_weighting", None) == P3W1_CALIBRATION_CLASS_WEIGHTING, "class_weighting must be none")
+    _p3w1_require(getattr(args, "save_selected_checkpoint", None) is False, "save_selected_checkpoint must be false")
+    _p3w1_require(
+        getattr(args, "reason_router_a0_reference_predictions", None) in (None, ""),
+        "A0 reference predictions are forbidden in calibration-only mode",
+    )
+    for option in (
+        "output_json", "output_predictions_json", "output_ood_json", "output_ood_predictions_json",
+        "stage118_diagnostic_model_checkpoint", "save_model_checkpoint", "save_checkpoint_path",
+        "ood_data", "external_data", "external_eval_jsonl", "stage43_external_factver_jsonl",
+        "stage57_bridge_train_jsonl", "stage66_bridge_train_jsonl", "stage75_bridge_train_jsonl",
+        "stage80a_bridge_train_jsonl", "temporal_diagnostic_data", "v7_temporal_safety_data",
+        "v7_temporal_mismatch_multihead_data", "v7_temporal_preservation_data",
+        "v7_coverage_entailment_data", "pair_contrastive_frame_data",
+    ):
+        value = getattr(args, option, None)
+        _p3w1_require(value in (None, "", [], ()), f"{option} must be unset")
+    for option in (
+        "stage57_bridge_train_mode", "stage66_bridge_train_mode", "stage75_bridge_train_mode",
+        "stage80a_bridge_train_mode",
+    ):
+        _p3w1_require(getattr(args, option, "none") == "none", f"{option} must be none")
+    for option in (
+        "enable_external_eval", "enable_stage43_external_eval", "use_temporal_comparator",
+        "use_predicate_comparator", "use_temporal_diagnostic_loss", "use_temporal_channel_loss",
+        "use_temporal_adapter_loss", "use_intervention_loss", "loss_sweep", "smoke",
+    ):
+        _p3w1_require(bool(getattr(args, option, False)) is False, f"{option} must be false")
+    _p3w1_require(getattr(args, "resolved_use_temporal_comparator", None) is False, "resolved temporal comparator must be false")
+    _p3w1_require(getattr(args, "resolved_use_predicate_comparator", None) is False, "resolved predicate comparator must be false")
+    _p3w1_require(float(getattr(args, "ranking_weight", 0.0)) == 0.0, "ranking_weight must be 0.0")
+    _p3w1_require(getattr(args, "seed", None) in P3W1_CALIBRATION_SEEDS, "seed must be one of 180, 181, 182")
+    _p3w1_require(getattr(args, "resolved_split_seed", None) == P3W1_CALIBRATION_SPLIT_SEED, "resolved split seed must be 174")
+    _p3w1_require(
+        math.isclose(
+            float(getattr(args, "dev_ratio", float("nan"))),
+            P3W1_CALIBRATION_DEV_RATIO,
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        ),
+        "dev_ratio must be exactly 0.2",
+    )
+    return export_path
+
+
+def _p3w1_write_json_atomic_no_overwrite(path: Path, payload: dict[str, Any]) -> None:
+    path = Path(path)
+    if path.exists():
+        raise FileExistsError(f"P3W1_CALIBRATION_WRITE_REFUSED: destination exists: {path}")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary_path = path.with_name(f".{path.name}.tmp.{os.getpid()}")
+    if temporary_path.exists():
+        raise FileExistsError(f"P3W1_CALIBRATION_WRITE_REFUSED: temporary exists: {temporary_path}")
+    encoded = (json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False) + "\n").encode("utf-8")
+    try:
+        with temporary_path.open("xb") as handle:
+            handle.write(encoded)
+        try:
+            os.link(temporary_path, path)
+        except FileExistsError as exc:
+            raise FileExistsError(
+                f"P3W1_CALIBRATION_WRITE_REFUSED: destination exists: {path}"
+            ) from exc
+    finally:
+        temporary_path.unlink(missing_ok=True)
+
+
+def _p3w1_finite_positive_scalar(value: float, name: str) -> float:
+    value = float(value)
+    if not math.isfinite(value) or value <= 0.0:
+        raise ValueError(f"P3W1_CALIBRATION_INVALID_LOSS: {name} must be finite and > 0")
+    return value
+
+
+def _p3w1_run_reason_weight_calibration_unit(
+    *,
+    args: argparse.Namespace,
+    model: nn.Module,
+    train_records: list[dict[str, Any]],
+    train_inputs: dict[str, torch.Tensor],
+    train_temporal_flags: torch.Tensor,
+    train_predicate_flags: torch.Tensor,
+    dataset_path: Path,
+    sidecar_path: Path,
+    observed_sidecar_semantic_sha256: str,
+    observed_execution_commit: str,
+) -> dict[str, Any]:
+    model.train()
+    with torch.no_grad():
+        output = _vnext_forward_maybe_batched(
+            model,
+            train_inputs,
+            temporal_mismatch_flags=train_temporal_flags,
+            predicate_mismatch_flags=train_predicate_flags,
+            gradient_ownership_mode="explicit_local",
+            batch_size=P3W1_CALIBRATION_FORWARD_BATCH_SIZE,
+            amp_enabled=False,
+        )
+        indices = torch.arange(train_inputs["final_labels"].shape[0], device=train_inputs["final_labels"].device)
+        losses = _p2_reason_router_losses(
+            output,
+            train_inputs,
+            indices,
+            weighted_label_loss=False,
+            reason_loss_weight=0.0,
+        )
+    final_count = int(indices.numel())
+    reason_targets = train_inputs["p2_primary_reason_targets_4"].long()
+    reason_active = train_inputs["p2_reason_supervision_eligible"].bool() & (reason_targets != -100)
+    reason_count = int(reason_active.sum().item())
+    final_mean = _p3w1_finite_positive_scalar(float(losses["label"].detach().cpu().item()), "final_loss_mean")
+    reason_mean = _p3w1_finite_positive_scalar(float(losses["primary_reason"].detach().cpu().item()), "reason_loss_mean")
+    _p3w1_require(final_count > 0, "final_applicable_count must be > 0")
+    _p3w1_require(reason_count > 0, "reason_eligible_count must be > 0")
+    final_sum = final_mean * final_count
+    reason_sum = reason_mean * reason_count
+    _p3w1_require(math.isfinite(final_sum), "final reconstructed sum must be finite")
+    _p3w1_require(math.isfinite(reason_sum), "reason reconstructed sum must be finite")
+    identity = _p3w1_ordered_train_identity(train_records)
+    expected_sidecar_semantic_sha256 = _p3w1_validate_sha256(
+        getattr(args, "expected_integrity_sidecar_semantic_sha256", None),
+        "expected sidecar semantic SHA",
+    )
+    verified_sidecar_semantic_sha256 = _p3w1_verify_sidecar_semantic_sha(
+        expected_sidecar_semantic_sha256,
+        observed_sidecar_semantic_sha256,
+    )
+    declared_execution_commit = _p3w1_validate_execution_commit(
+        getattr(args, "reason_router_weight_calibration_execution_commit", None)
+    )
+    verified_execution_commit = _p3w1_verify_execution_commit(
+        declared_execution_commit,
+        observed_execution_commit,
+    )
+    return {
+        "schema_version": P3W1_CALIBRATION_UNIT_SCHEMA_VERSION,
+        "status": "PASS",
+        "seed": int(args.seed),
+        "unit_index": 0,
+        "unit_scope": P3W1_CALIBRATION_UNIT_SCOPE,
+        **identity,
+        "model_mode": "train",
+        "measurement_arm": "conditional_first_blocker",
+        "measurement_gradient_ownership": "explicit_local",
+        "reason_loss_weight_placeholder": 0.0,
+        "architecture": P3W1_CALIBRATION_ARCHITECTURE,
+        "backbone": P3W1_CALIBRATION_BACKBONE,
+        "model_name": P3W1_CALIBRATION_MODEL_NAME,
+        "max_length": P3W1_CALIBRATION_MAX_LENGTH,
+        "device": P3W1_CALIBRATION_DEVICE,
+        "flag_source": P3W1_CALIBRATION_FLAG_SOURCE,
+        "freeze_encoder": True,
+        "reason_router_epsilon": P3W1_CALIBRATION_REASON_ROUTER_EPSILON,
+        "train_batch_size": None,
+        "balanced_sampler": False,
+        "weighted_label_loss": False,
+        "class_weighting": P3W1_CALIBRATION_CLASS_WEIGHTING,
+        "calibration_forward_batch_size": P3W1_CALIBRATION_FORWARD_BATCH_SIZE,
+        "logical_units_per_seed": P3W1_LOGICAL_UNITS_PER_SEED,
+        "logical_unit_scope": P3W1_CALIBRATION_UNIT_SCOPE,
+        "fresh_initialization": True,
+        "checkpoint_loaded": False,
+        "gradient_tracking_enabled": False,
+        "before_backward": True,
+        "before_optimizer_step": True,
+        "before_scheduler_step": True,
+        "parameter_update_count": 0,
+        "optimizer_step_executed": False,
+        "scheduler_step_executed": False,
+        "dev_forward_executed": False,
+        "calibration_data_scope": "TRAIN_ONLY",
+        "train_reason_supervision_built": True,
+        "dev_reason_supervision_built": False,
+        "dev_inputs_accessed_for_calibration": False,
+        "dev_labels_used_for_calibration": False,
+        "dev_counts_used_for_gate": False,
+        "dev_metrics_used_for_calibration": False,
+        "a0_reference_predictions_required": False,
+        "a0_reference_predictions_accessed": False,
+        "a0_predictions_used_for_calibration": False,
+        "a0_logits_used_for_calibration": False,
+        "a0_metrics_used_for_calibration": False,
+        "a0_checkpoint_used_for_calibration": False,
+        "external_eval_executed": False,
+        "normal_training_report_written": False,
+        "causal_checkpoint_written": False,
+        "final_loss_mean": final_mean,
+        "final_applicable_count": final_count,
+        "final_loss_sum_reconstructed": final_sum,
+        "final_loss_finite": True,
+        "reason_loss_mean": reason_mean,
+        "reason_eligible_count": reason_count,
+        "reason_loss_sum_reconstructed": reason_sum,
+        "reason_loss_finite": True,
+        "dataset_path": str(Path(dataset_path)),
+        "dataset_sha256": _stage187_file_sha256(Path(dataset_path)),
+        "sidecar_path": str(Path(sidecar_path)),
+        "sidecar_semantic_sha256": verified_sidecar_semantic_sha256,
+        "expected_sidecar_semantic_sha256": expected_sidecar_semantic_sha256,
+        "sidecar_semantic_sha256_verified": True,
+        "split_seed": int(args.resolved_split_seed),
+        "dev_ratio": float(args.dev_ratio),
+        "execution_commit": verified_execution_commit,
+        "declared_execution_commit": declared_execution_commit,
+        "execution_commit_verified": True,
+        "decision": P3W1_CALIBRATION_UNIT_DECISION,
+    }
+
+
 def _p2_validate_a0_reference_for_universe(
     args: argparse.Namespace,
     records: list[dict[str, Any]],
@@ -10349,6 +10914,24 @@ def build_parser() -> argparse.ArgumentParser:
         type=float,
         default=None,
         help="P2 primary reason CE weight. Required and >0 for A1/A3.",
+    )
+    parser.add_argument(
+        "--reason-router-weight-calibration-export",
+        type=Path,
+        default=None,
+        help="P3-W1 calibration-only unit artifact destination. Default disabled.",
+    )
+    parser.add_argument(
+        "--reason-router-weight-calibration-execution-commit",
+        type=str,
+        default=None,
+        help="P3-W1 calibration-only execution authority full 40-hex commit.",
+    )
+    parser.add_argument(
+        "--reason-router-weight-calibration-forward-batch-size",
+        type=int,
+        default=None,
+        help="P3-W1 calibration-only computational forward microbatch size. Must be exactly 8 in calibration mode.",
     )
     parser.add_argument("--reason-router-epsilon", type=float, default=1e-8)
     parser.add_argument("--reason-min-train-count", type=int, default=50)
@@ -17390,6 +17973,8 @@ def main(argv: list[str] | None = None) -> int:
         )
     except ValueError as exc:
         parser.error(str(exc))
+    _p3w1_calibration_export_path = _p3w1_validate_calibration_only_args(args)
+
     if not 0.0 < float(args.stage134_slot_diagnostic_dev_fraction) < 1.0:
         parser.error("--stage134-slot-diagnostic-dev-fraction must be in (0, 1)")
     if int(args.stage134_slot_diagnostic_epochs) < 1:
@@ -18542,19 +19127,30 @@ def main(argv: list[str] | None = None) -> int:
             sidecar_path=Path(args.controlled_integrity_sidecar_path),
             expected_semantic_sha256=args.expected_integrity_sidecar_semantic_sha256,
         )
-        _p2_reason_supervision_audit = _p2_prepare_reason_supervision(
-            train_records=train_records,
-            dev_records=dev_records,
-            train_inputs=train_inputs,
-            dev_inputs=dev_inputs,
-            train_source_labels=_train_source_labels,
-            sidecar_by_id=_p2_sidecar_by_id,
-            require_min_counts=args.reason_router_arm in {"A1", "A3"},
-            min_train_count=args.reason_min_train_count,
-            min_dev_count=args.reason_min_dev_count,
-            device=device,
-        )
-        _p2_reason_metadata_audit["a0_reference"] = _p2_validate_a0_reference_for_universe(args, dev_records)
+        if _p3w1_calibration_export_path is not None:
+            _p2_reason_supervision_audit, _p2_reason_metadata_audit["a0_reference"] = _p3w1_prepare_train_only_reason_supervision_for_calibration(
+                train_records=train_records,
+                train_inputs=train_inputs,
+                train_source_labels=_train_source_labels,
+                sidecar_by_id=_p2_sidecar_by_id,
+                require_min_counts=args.reason_router_arm in {"A1", "A3"},
+                min_train_count=args.reason_min_train_count,
+                device=device,
+            )
+        else:
+            _p2_reason_supervision_audit = _p2_prepare_reason_supervision(
+                train_records=train_records,
+                dev_records=dev_records,
+                train_inputs=train_inputs,
+                dev_inputs=dev_inputs,
+                train_source_labels=_train_source_labels,
+                sidecar_by_id=_p2_sidecar_by_id,
+                require_min_counts=args.reason_router_arm in {"A1", "A3"},
+                min_train_count=args.reason_min_train_count,
+                min_dev_count=args.reason_min_dev_count,
+                device=device,
+            )
+            _p2_reason_metadata_audit["a0_reference"] = _p2_validate_a0_reference_for_universe(args, dev_records)
 
     if model is None:
         if args.architecture == "v7_hierarchical":
@@ -18691,6 +19287,32 @@ def main(argv: list[str] | None = None) -> int:
         args.frame_downstream_gradient_mode,
     )
 
+    if _p3w1_calibration_export_path is not None:
+        train_temporal_flags, train_predicate_flags = extract_flags(
+            train_records, args.flag_source, device
+        )
+        observed_sidecar_semantic_sha256 = _p3w1_verify_sidecar_semantic_sha(
+            args.expected_integrity_sidecar_semantic_sha256,
+            _p2_reason_metadata_audit.get("observed_semantic_sha256"),
+        )
+        observed_execution_commit = _p3w1_verify_execution_commit(
+            args.reason_router_weight_calibration_execution_commit,
+            _p3w1_observed_git_head(ROOT),
+        )
+        payload = _p3w1_run_reason_weight_calibration_unit(
+            args=args,
+            model=model,
+            train_records=train_records,
+            train_inputs=train_inputs,
+            train_temporal_flags=train_temporal_flags,
+            train_predicate_flags=train_predicate_flags,
+            dataset_path=Path(args.data),
+            sidecar_path=Path(args.controlled_integrity_sidecar_path),
+            observed_sidecar_semantic_sha256=observed_sidecar_semantic_sha256,
+            observed_execution_commit=observed_execution_commit,
+        )
+        _p3w1_write_json_atomic_no_overwrite(_p3w1_calibration_export_path, payload)
+        return 0
     if args.stage118_diagnostic_export_only:
         checkpoint_state, checkpoint_metadata = _load_stage118_checkpoint_state(
             Path(args.stage118_diagnostic_model_checkpoint)

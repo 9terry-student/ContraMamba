@@ -1,0 +1,91 @@
+{
+  "schema_version": "reason_router_p2_p3w1_calibration_instrumentation_manifest_v1",
+  "authority_commits": {
+    "P3W0_SPEC_COMMIT": "efb18e0660e9c886e2c64c0557282313431383d0",
+    "P3_A0_EXECUTION_COMMIT": "b118a984c749ca70bad63919f95aad918881a29d"
+  },
+  "p3w0_final_decision": "P3W0_BLOCKED_BY_INSUFFICIENT_SCALE_AUTHORITY",
+  "files_changed": [
+    "scripts/train_controlled_v6b_minimal.py",
+    "scripts/aggregate_reason_router_p3w1_calibration.py",
+    "tests/test_reason_router_p3w1_calibration.py",
+    "reports/reason_router_p2_p3w1_calibration_instrumentation_spec.md",
+    "reports/reason_router_p2_p3w1_calibration_instrumentation_manifest.json"
+  ],
+  "trainer_cli": [
+    "--reason-router-weight-calibration-export PATH",
+    "--reason-router-weight-calibration-execution-commit FULL_SHA",
+    "--reason-router-weight-calibration-forward-batch-size 8"
+  ],
+  "unit_schema_version": "reason_router_p3w1_calibration_unit_v1",
+  "aggregate_schema_version": "reason_router_p3w1_calibration_aggregate_v1",
+  "positive_weight_exception_scope": "A3 reason_loss_weight == 0.0 only when calibration export is requested; all other P2 gates remain active",
+  "calibration_executed": false,
+  "aggregation_executed": false,
+  "a1_a2_a3_released": false,
+  "reason_loss_weight_resolved": false,
+  "validation_executed": [],
+  "validation_not_executed": [
+    "Python",
+    "pytest",
+    "py_compile",
+    "--help",
+    "model load",
+    "training",
+    "calibration",
+    "aggregation",
+    "evaluation",
+    "Kaggle",
+    "git add",
+    "git commit",
+    "git push",
+    "git pull"
+  ],
+  "static_review_v2_repairs": [
+    "sidecar semantic SHA changed from declared copy to observed verification",
+    "execution commit changed from declared copy to observed HEAD verification",
+    "calibration seed/split gate completed",
+    "logical unit separated from deterministic computational microbatching",
+    "aggregate now checks external authoritative train identity"
+  ],
+  "static_review_v3_repairs": [
+    "P3 factorial model/input configuration frozen in trainer and artifacts",
+    "aggregate expected split seed independently fixed to 174"
+  ],
+  "static_review_v4_repairs": [
+    "A0 reference prediction access removed from calibration-only path",
+    "dev reason-supervision and dev-count gates removed from calibration-only authority",
+    "normal P2 A0/dev requirements preserved"
+  ],
+  "identity_authority_model": {
+    "dataset_sha256": "observed file SHA compared with expected aggregate CLI",
+    "sidecar_semantic_sha256": "observed semantic SHA compared with expected CLI and recorded separately from expected_sidecar_semantic_sha256",
+    "execution_commit": "observed git HEAD compared with declared execution commit",
+    "ordered_train_identity": "unit observed identity compared with external expected row count and SHA256; cross-seed equality is only a consistency check",
+    "p3_factorial_configuration": "code-fixed expected model/input configuration validated in trainer, unit validator, and aggregate artifact",
+    "split_seed": "caller expected split seed is independently fixed to 174 before unit split seed comparison",
+    "calibration_data_scope": "train-only reason supervision with dev supervision, dev count gates, and A0 reference access excluded from calibration authority"
+  },
+  "static_review_repairs": [
+    "fatal function-boundary syntax defect corrected",
+    "existing P2 objective gate preserved",
+    "unit schema validator made strict",
+    "atomic no-overwrite publication hardened",
+    "calibration CLI flags coupled"
+  ],
+  "remaining_blockers": [
+    "UNRESOLVED_REASON_LOSS_WEIGHT",
+    "UNRESOLVED_P2_IMPLEMENTATION_TESTED_COMMIT",
+    "STATIC_REVIEW_PENDING"
+  ],
+  "forbidden_claims_not_made": [
+    "P3W1_IMPLEMENTATION_PASS",
+    "P3W1_CALIBRATION_EXECUTED",
+    "P3W0_REASON_LOSS_WEIGHT_RESOLVED",
+    "A1_READY",
+    "A2_READY",
+    "A3_READY",
+    "P3_PASS"
+  ],
+  "decision": "P3W1_IMPLEMENTATION_READY_FOR_STATIC_REVIEW"
+}
