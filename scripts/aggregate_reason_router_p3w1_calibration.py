@@ -27,6 +27,10 @@ LOGICAL_UNITS_PER_SEED = 1
 LOGICAL_UNIT_SCOPE = "COMPLETE_AUTHORITATIVE_TRAIN_SPLIT"
 EXPECTED_DEV_RATIO = 0.2
 EXPECTED_SPLIT_SEED = 174
+PRIMARY_REASON_MIN_TRAIN_COUNT = 50
+CALIBRATION_GATE_SCOPE = "PRIMARY_REASON_CLASS_COUNTS_ONLY"
+PRIMARY_REASON_CLASSES = ("FRAME", "PREDICATE", "SUFFICIENCY", "AUTHORIZED")
+LOCAL_BINARY_COHORTS = ("frame", "predicate", "sufficiency", "polarity")
 EXPECTED_CONFIGURATION = {
     "architecture": "v6b_minimal",
     "backbone": "mamba",
@@ -45,7 +49,13 @@ UNIT_REQUIRED_FIELDS = {
     "schema_version", "status", "seed", "unit_index", "unit_scope",
     "ordered_train_row_count", "ordered_train_row_identity_hash",
     "model_mode", "measurement_arm", "measurement_gradient_ownership",
-    "reason_loss_weight_placeholder", "architecture", "backbone", "model_name",
+    "reason_loss_weight_placeholder", "calibration_gate_scope",
+    "primary_reason_min_train_count", "primary_reason_class_counts",
+    "primary_reason_min_count_gate_pass", "local_binary_cohort_counts",
+    "local_binary_training_readiness", "all_local_binary_cohorts_training_ready",
+    "polarity_local_training_ready", "weight_resolution_measurement_valid",
+    "normal_a1_a3_training_ready", "training_readiness_separate_from_weight_resolution",
+    "architecture", "backbone", "model_name",
     "max_length", "device", "flag_source", "freeze_encoder",
     "reason_router_epsilon", "train_batch_size", "balanced_sampler",
     "weighted_label_loss", "class_weighting", "calibration_forward_batch_size",
@@ -156,6 +166,87 @@ def _validate_expected_identity(
     _require(expected_split_seed == EXPECTED_SPLIT_SEED, "expected split seed must be exactly 174")
 
 
+
+def _cohort_count_pair(value: Any, name: str) -> dict[int, int]:
+    _require(isinstance(value, dict), f"{name} must be an object")
+    result: dict[int, int] = {}
+    for key in (0, 1):
+        raw = value.get(key, value.get(str(key)))
+        _require(type(raw) is int and raw >= 0, f"{name}[{key}] must be an integer >= 0")
+        result[key] = raw
+    return result
+
+
+def _validate_readiness_fields(unit: dict[str, Any]) -> dict[str, Any]:
+    _require(unit.get("calibration_gate_scope") == CALIBRATION_GATE_SCOPE, "calibration_gate_scope mismatch")
+    _require(unit.get("primary_reason_min_train_count") == PRIMARY_REASON_MIN_TRAIN_COUNT and type(unit.get("primary_reason_min_train_count")) is int, "primary_reason_min_train_count mismatch")
+    _require(unit.get("primary_reason_min_count_gate_pass") is True, "primary_reason_min_count_gate_pass mismatch")
+    _require(unit.get("weight_resolution_measurement_valid") is True, "weight_resolution_measurement_valid mismatch")
+    _require(unit.get("training_readiness_separate_from_weight_resolution") is True, "training_readiness_separate_from_weight_resolution mismatch")
+    primary_counts = unit.get("primary_reason_class_counts")
+    _require(isinstance(primary_counts, dict), "primary_reason_class_counts must be an object")
+    normalized_primary: dict[str, int] = {}
+    for reason in PRIMARY_REASON_CLASSES:
+        value = primary_counts.get(reason)
+        _require(type(value) is int, f"primary_reason_class_counts[{reason}] must be an exact integer")
+        _require(value >= PRIMARY_REASON_MIN_TRAIN_COUNT, f"primary_reason_class_counts[{reason}] must be >= 50")
+        normalized_primary[reason] = value
+    local_counts = unit.get("local_binary_cohort_counts")
+    readiness = unit.get("local_binary_training_readiness")
+    _require(isinstance(local_counts, dict), "local_binary_cohort_counts must be an object")
+    _require(isinstance(readiness, dict), "local_binary_training_readiness must be an object")
+    normalized_counts: dict[str, dict[int, int]] = {}
+    normalized_readiness: dict[str, bool] = {}
+    for cohort in LOCAL_BINARY_COHORTS:
+        counts = _cohort_count_pair(local_counts.get(cohort), f"local_binary_cohort_counts[{cohort}]")
+        expected_ready = counts[0] >= 1 and counts[1] >= 1
+        _require(readiness.get(cohort) is expected_ready, f"local_binary_training_readiness[{cohort}] mismatch")
+        normalized_counts[cohort] = counts
+        normalized_readiness[cohort] = expected_ready
+    frame_count = normalized_primary["FRAME"]
+    predicate_count = normalized_primary["PREDICATE"]
+    sufficiency_count = normalized_primary["SUFFICIENCY"]
+    authorized_count = normalized_primary["AUTHORIZED"]
+    _require(
+        normalized_counts["frame"][0] == frame_count,
+        "frame cohort count does not match primary FRAME count",
+    )
+    _require(
+        normalized_counts["frame"][1] == predicate_count + sufficiency_count + authorized_count,
+        "frame cohort positive count does not match first-blocker remainder",
+    )
+    _require(
+        normalized_counts["predicate"][0] == predicate_count,
+        "predicate cohort count does not match primary PREDICATE count",
+    )
+    _require(
+        normalized_counts["predicate"][1] == sufficiency_count + authorized_count,
+        "predicate cohort positive count does not match first-blocker remainder",
+    )
+    _require(
+        normalized_counts["sufficiency"][0] == sufficiency_count,
+        "sufficiency cohort count does not match primary SUFFICIENCY count",
+    )
+    _require(
+        normalized_counts["sufficiency"][1] == authorized_count,
+        "sufficiency cohort positive count does not match AUTHORIZED count",
+    )
+    _require(
+        sum(normalized_counts["polarity"].values()) == authorized_count,
+        "polarity applicable count does not match primary AUTHORIZED count",
+    )
+    all_ready = all(normalized_readiness.values())
+    _require(unit.get("all_local_binary_cohorts_training_ready") is all_ready, "all_local_binary_cohorts_training_ready mismatch")
+    _require(unit.get("polarity_local_training_ready") is normalized_readiness["polarity"], "polarity_local_training_ready mismatch")
+    _require(unit.get("normal_a1_a3_training_ready") is all_ready, "normal_a1_a3_training_ready mismatch")
+    return {
+        "primary_reason_class_counts": normalized_primary,
+        "local_binary_cohort_counts": normalized_counts,
+        "local_binary_training_readiness": normalized_readiness,
+        "all_local_binary_cohorts_training_ready": all_ready,
+        "polarity_local_training_ready": normalized_readiness["polarity"],
+        "normal_a1_a3_training_ready": all_ready,
+    }
 def validate_unit_artifact(
     unit: dict[str, Any],
     *,
@@ -183,6 +274,7 @@ def validate_unit_artifact(
     _require(unit.get("decision") == UNIT_DECISION, "unit decision mismatch")
     _require(unit.get("calibration_data_scope") == "TRAIN_ONLY", "calibration_data_scope mismatch")
     _require(unit.get("train_reason_supervision_built") is True, "train_reason_supervision_built mismatch")
+    readiness_summary = _validate_readiness_fields(unit)
     for key in (
         "dev_reason_supervision_built",
         "dev_inputs_accessed_for_calibration",
@@ -276,6 +368,13 @@ def validate_unit_artifact(
     )
     final_count = _positive_int(unit.get("final_applicable_count"), "final_applicable_count")
     reason_count = _positive_int(unit.get("reason_eligible_count"), "reason_eligible_count")
+    primary_count_total = sum(readiness_summary["primary_reason_class_counts"].values())
+    _require(final_count == row_count, "final_applicable_count must equal ordered_train_row_count")
+    _require(
+        reason_count == primary_count_total,
+        "reason_eligible_count must equal the sum of primary_reason_class_counts",
+    )
+    _require(reason_count <= final_count, "reason_eligible_count must be <= final_applicable_count")
     final_mean = _finite_positive(unit.get("final_loss_mean"), "final_loss_mean")
     reason_mean = _finite_positive(unit.get("reason_loss_mean"), "reason_loss_mean")
     final_sum = _finite_positive(unit.get("final_loss_sum_reconstructed"), "final_loss_sum_reconstructed")
@@ -291,6 +390,12 @@ def validate_unit_artifact(
         "final_sum": final_sum,
         "reason_sum": reason_sum,
         "split_seed": split_seed,
+        "primary_reason_class_counts": readiness_summary["primary_reason_class_counts"],
+        "local_binary_cohort_counts": readiness_summary["local_binary_cohort_counts"],
+        "local_binary_training_readiness": readiness_summary["local_binary_training_readiness"],
+        "all_local_binary_cohorts_training_ready": readiness_summary["all_local_binary_cohorts_training_ready"],
+        "polarity_local_training_ready": readiness_summary["polarity_local_training_ready"],
+        "normal_a1_a3_training_ready": readiness_summary["normal_a1_a3_training_ready"],
     }
 
 
@@ -339,10 +444,44 @@ def build_aggregate(
     _require(len(row_counts) == 1, "ordered train row count mismatch")
     _require(len(row_hashes) == 1, "ordered train identity hash mismatch")
     _require(len(split_seeds) == 1, "split seed mismatch")
+    common_primary_counts = summaries[0]["primary_reason_class_counts"]
+    common_local_counts = summaries[0]["local_binary_cohort_counts"]
+    common_local_readiness = summaries[0]["local_binary_training_readiness"]
+    common_all_local_ready = summaries[0]["all_local_binary_cohorts_training_ready"]
+    common_polarity_ready = summaries[0]["polarity_local_training_ready"]
+    common_normal_ready = summaries[0]["normal_a1_a3_training_ready"]
+    for summary in summaries[1:]:
+        _require(
+            summary["primary_reason_class_counts"] == common_primary_counts,
+            "primary reason class counts mismatch across seeds",
+        )
+        _require(
+            summary["local_binary_cohort_counts"] == common_local_counts,
+            "local binary cohort counts mismatch across seeds",
+        )
+        _require(
+            summary["local_binary_training_readiness"] == common_local_readiness,
+            "local binary training readiness mismatch across seeds",
+        )
+        _require(
+            summary["all_local_binary_cohorts_training_ready"] is common_all_local_ready,
+            "all local binary cohort readiness mismatch across seeds",
+        )
+        _require(
+            summary["polarity_local_training_ready"] is common_polarity_ready,
+            "polarity local training readiness mismatch across seeds",
+        )
+        _require(
+            summary["normal_a1_a3_training_ready"] is common_normal_ready,
+            "normal A1/A3 training readiness mismatch across seeds",
+        )
     total_final_count = sum(summary["final_count"] for summary in summaries)
     total_reason_count = sum(summary["reason_count"] for summary in summaries)
     total_final_loss_sum = sum(summary["final_sum"] for summary in summaries)
     total_reason_loss_sum = sum(summary["reason_sum"] for summary in summaries)
+    readiness_by_seed = {str(summary["seed"]): summary["local_binary_training_readiness"] for summary in summaries}
+    all_local_ready = common_all_local_ready
+    all_polarity_ready = common_polarity_ready
     mu_final = total_final_loss_sum / total_final_count
     mu_reason = total_reason_loss_sum / total_reason_count
     resolved_reason_loss_weight = mu_final / mu_reason
@@ -381,6 +520,16 @@ def build_aggregate(
         "all_a0_logits_unused": True,
         "all_a0_metrics_unused": True,
         "all_a0_checkpoints_unused": True,
+        "all_weight_resolution_measurements_valid": True,
+        "all_primary_reason_min_count_gates_pass": True,
+        "primary_reason_class_counts": common_primary_counts,
+        "local_binary_cohort_counts": common_local_counts,
+        "local_binary_training_readiness": common_local_readiness,
+        "local_binary_training_readiness_by_seed": readiness_by_seed,
+        "all_local_binary_cohorts_training_ready": all_local_ready,
+        "all_polarity_local_training_ready": all_polarity_ready,
+        "normal_a1_a3_training_ready": all_local_ready,
+        "training_readiness_separate_from_weight_resolution": True,
         "total_final_count": total_final_count,
         "total_reason_count": total_reason_count,
         "total_final_loss_sum": total_final_loss_sum,

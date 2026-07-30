@@ -14,6 +14,7 @@
   ],
   "execution_repair_files_changed": [
     "scripts/train_controlled_v6b_minimal.py",
+    "scripts/aggregate_reason_router_p3w1_calibration.py",
     "tests/test_reason_router_p2_contract.py",
     "tests/test_reason_router_p3w1_calibration.py",
     "reports/reason_router_p2_p3w1_calibration_instrumentation_spec.md",
@@ -52,6 +53,17 @@
       "reached_model_load": false,
       "reached_calibration_forward": false,
       "wrote_unit_artifact": false
+    },
+    {
+      "commit": "fdd80d81ba2fbcc9279a328bc24ae0f726097484",
+      "seed": 180,
+      "stage": "P3W1_TRAIN_ONLY_REASON_SUPERVISION_GATE",
+      "reason": "normal local polarity training-readiness gate applied to weight calibration measurement",
+      "canonical_lineage_repair_loaded": true,
+      "p2_p3w1_tests_reported_passed": 118,
+      "reached_model_load": false,
+      "reached_calibration_forward": false,
+      "wrote_unit_artifact": false
     }
   ],
   "validation_executed": [
@@ -65,11 +77,16 @@
     "raw first-blocker counting",
     "train-only supervision audit",
     "full supervision audit",
-    "exclusion decomposition"
+    "exclusion decomposition",
+    "repaired module reload",
+    "canonical-lineage repaired train-only audit",
+    "observed primary reason counts",
+    "observed local binary cohort counts",
+    "polarity degeneracy gate failure before model load"
   ],
-  "validation_not_executed_after_lineage_repair": [
-    "post-lineage-repair pytest",
-    "post-lineage-repair model load",
+  "validation_not_executed_after_readiness_separation_repair": [
+    "post-readiness-separation-repair pytest",
+    "post-readiness-separation-repair model load",
     "calibration forward",
     "unit artifact write",
     "aggregation",
@@ -107,7 +124,17 @@
     "legacy non-P2 comparator defaults unchanged",
     "canonical_row_id interpreted as pair-level canonical control pointer instead of current row alias",
     "pair-level canonical lineage helper shared by full and train-only reason supervision",
-    "canonical lineage corruption now fails fast before eligibility exclusion"
+    "canonical lineage corruption now fails fast before eligibility exclusion",
+    "calibration validity separated from normal local binary training readiness",
+    "primary reason class count gate fixed to 50 for calibration weight measurement",
+    "local polarity cohort readiness recorded as diagnostic and not used to block weight measurement"
+  ],
+  "static_review_v9_repairs": [
+    "unit artifact final/reason/primary count authority made internally consistent",
+    "conditional first-blocker local applicability counts validated against primary reason counts",
+    "aggregate now rejects cross-seed supervision count/readiness mismatches",
+    "aggregate records common primary reason and local binary count authority",
+    "polarity readiness separation preserved with A1_A3_released false"
   ],
   "identity_authority_model": {
     "dataset_sha256": "observed file SHA compared with expected aggregate CLI",
@@ -127,13 +154,17 @@
   ],
   "remaining_blockers": [
     "UNRESOLVED_REASON_LOSS_WEIGHT",
+    "P2_POLARITY_LOCAL_SUPERVISION_NOT_TRAINING_READY",
     "UNRESOLVED_P2_IMPLEMENTATION_TESTED_COMMIT",
     "STATIC_REVIEW_PENDING"
   ],
   "forbidden_claims_not_made": [
     "P3W1_IMPLEMENTATION_PASS",
     "P3W1_CALIBRATION_EXECUTED",
+    "P3W1_CALIBRATION_GATE_REPAIR_PASS",
+    "P3W2_CALIBRATION_EXECUTION_PASS",
     "P3W0_REASON_LOSS_WEIGHT_RESOLVED",
+    "P2_POLARITY_SUPERVISION_RESOLVED",
     "A1_READY",
     "A2_READY",
     "A3_READY",

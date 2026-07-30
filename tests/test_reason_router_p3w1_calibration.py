@@ -36,7 +36,7 @@ def _args(**overrides):
         freeze_encoder=True,
         frame_downstream_gradient_mode="joint",
         reason_router_epsilon=1e-8,
-        reason_min_train_count=1,
+        reason_min_train_count=50,
         reason_min_dev_count=1,
         reason_router_weight_calibration_export=Path("unit.json"),
         reason_router_weight_calibration_execution_commit=EXEC,
@@ -137,8 +137,21 @@ def _reason_records(split: str, kinds=("frame", "predicate", "sufficiency", "sup
 
 
 def _sidecars(records: list[dict], split: str) -> dict[str, dict]:
-    canonical_row_id = records[0]["id"]
-    return {record["id"]: _reason_sidecar(record, split, canonical_row_id) for record in records}
+    canonical_by_pair: dict[str, str] = {}
+    for record in records:
+        canonical_by_pair.setdefault(record["pair_id"], record["id"])
+    return {
+        record["id"]: _reason_sidecar(record, split, canonical_by_pair[record["pair_id"]])
+        for record in records
+    }
+
+
+def _many_reason_records(split: str, pairs: int = 50, kinds=("frame", "predicate", "sufficiency", "support")) -> list[dict]:
+    records: list[dict] = []
+    for index in range(pairs):
+        pair_records = _reason_records(f"{split}_{index}", kinds=kinds)
+        records.extend(pair_records)
+    return records
 
 def test_normal_a3_weight_zero_rejected() -> None:
     args = _args(reason_router_weight_calibration_export=None)
@@ -414,7 +427,7 @@ def test_normal_a1_a3_path_still_applies_dev_cohort_degeneracy_gate(monkeypatch)
 
 def test_calibration_train_only_supervision_isolation(monkeypatch) -> None:
     _patch_tensor(monkeypatch)
-    train_records = _reason_records("train")
+    train_records = _many_reason_records("train")
     train_inputs: dict = {}
     audit, a0_audit = trainer._p3w1_prepare_train_only_reason_supervision_for_calibration(
         train_records=train_records,
@@ -422,7 +435,7 @@ def test_calibration_train_only_supervision_isolation(monkeypatch) -> None:
         train_source_labels=["clean_main"] * len(train_records),
         sidecar_by_id=_sidecars(train_records, "train"),
         require_min_counts=True,
-        min_train_count=1,
+        min_train_count=50,
         device="cpu",
     )
     assert audit["calibration_data_scope"] == "TRAIN_ONLY"
@@ -447,14 +460,14 @@ def test_calibration_train_only_supervision_does_not_invoke_a0_loader(monkeypatc
         raise AssertionError("A0 reference loader must not be called")
 
     monkeypatch.setattr(trainer, "_p2_validate_a0_reference_for_universe", fail_a0_loader)
-    train_records = _reason_records("train")
+    train_records = _many_reason_records("train")
     _, a0_audit = trainer._p3w1_prepare_train_only_reason_supervision_for_calibration(
         train_records=train_records,
         train_inputs={},
         train_source_labels=["clean_main"] * len(train_records),
         sidecar_by_id=_sidecars(train_records, "train"),
         require_min_counts=True,
-        min_train_count=1,
+        min_train_count=50,
         device="cpu",
     )
     assert a0_audit["accessed"] is False
@@ -462,14 +475,14 @@ def test_calibration_train_only_supervision_does_not_invoke_a0_loader(monkeypatc
 
 def test_calibration_train_only_does_not_apply_dev_minimum_or_degeneracy_gate(monkeypatch) -> None:
     _patch_tensor(monkeypatch)
-    train_records = _reason_records("train")
+    train_records = _many_reason_records("train")
     audit, _ = trainer._p3w1_prepare_train_only_reason_supervision_for_calibration(
         train_records=train_records,
         train_inputs={},
         train_source_labels=["clean_main"] * len(train_records),
         sidecar_by_id=_sidecars(train_records, "train"),
         require_min_counts=True,
-        min_train_count=1,
+        min_train_count=50,
         device="cpu",
     )
     assert audit["dev_reason_counts"] is None
@@ -478,8 +491,8 @@ def test_calibration_train_only_does_not_apply_dev_minimum_or_degeneracy_gate(mo
 
 def test_calibration_pair_level_lineage_counts_nonzero_and_match_full_helper(monkeypatch) -> None:
     _patch_tensor(monkeypatch)
-    train_records = _reason_records("train")
-    dev_records = _reason_records("dev")
+    train_records = _many_reason_records("train")
+    dev_records = _many_reason_records("dev")
     train_sidecars = _sidecars(train_records, "train")
     dev_sidecars = _sidecars(dev_records, "dev")
     train_only_audit, _ = trainer._p3w1_prepare_train_only_reason_supervision_for_calibration(
@@ -488,7 +501,7 @@ def test_calibration_pair_level_lineage_counts_nonzero_and_match_full_helper(mon
         train_source_labels=["clean_main"] * len(train_records),
         sidecar_by_id=train_sidecars,
         require_min_counts=True,
-        min_train_count=1,
+        min_train_count=50,
         device="cpu",
     )
     full_audit = trainer._p2_prepare_reason_supervision(
@@ -499,14 +512,52 @@ def test_calibration_pair_level_lineage_counts_nonzero_and_match_full_helper(mon
         train_source_labels=["clean_main"] * len(train_records),
         sidecar_by_id={**train_sidecars, **dev_sidecars},
         require_min_counts=True,
-        min_train_count=1,
-        min_dev_count=1,
+        min_train_count=50,
+        min_dev_count=50,
         device="cpu",
     )
     assert all(count > 0 for count in train_only_audit["train_reason_counts"].values())
     assert train_only_audit["train_reason_counts"] == full_audit["train_reason_counts"]
     assert train_only_audit["train_exclusion_counts"].get("P2_CANONICAL_ROW_ID_MISMATCH", 0) == 0
     assert full_audit["train_exclusion_counts"].get("P2_CANONICAL_ROW_ID_MISMATCH", 0) == 0
+
+
+def test_calibration_reason_authority_passes_with_polarity_degenerate(monkeypatch) -> None:
+    _patch_tensor(monkeypatch)
+    train_records = _many_reason_records("train", kinds=("frame", "predicate", "sufficiency", "support"))
+    audit, _ = trainer._p3w1_prepare_train_only_reason_supervision_for_calibration(
+        train_records=train_records,
+        train_inputs={},
+        train_source_labels=["clean_main"] * len(train_records),
+        sidecar_by_id=_sidecars(train_records, "train"),
+        require_min_counts=True,
+        min_train_count=50,
+        device="cpu",
+    )
+    assert audit["primary_reason_min_count_gate_pass"] is True
+    assert audit["polarity_local_training_ready"] is False
+    assert audit["weight_resolution_measurement_valid"] is True
+    assert audit["normal_a1_a3_training_ready"] is False
+
+
+def test_calibration_reason_authority_rejects_primary_count_below_50(monkeypatch) -> None:
+    _patch_tensor(monkeypatch)
+    train_records = _many_reason_records("train", pairs=49, kinds=("frame", "predicate", "sufficiency", "support"))
+    with pytest.raises(ValueError, match="train reason count"):
+        trainer._p3w1_prepare_train_only_reason_supervision_for_calibration(
+            train_records=train_records,
+            train_inputs={},
+            train_source_labels=["clean_main"] * len(train_records),
+            sidecar_by_id=_sidecars(train_records, "train"),
+            require_min_counts=True,
+            min_train_count=50,
+            device="cpu",
+        )
+
+
+def test_reason_min_train_count_must_be_50() -> None:
+    with pytest.raises(ValueError, match="reason_min_train_count"):
+        trainer._p3w1_validate_calibration_only_args(_args(reason_min_train_count=49))
 
 
 def test_calibration_rejects_intervention_self_reference_against_pair_authority() -> None:
@@ -582,19 +633,60 @@ def test_ordered_train_hash_deterministic() -> None:
     assert trainer._p3w1_ordered_train_identity(list(reversed(rows)))["ordered_train_row_identity_hash"] != trainer._p3w1_ordered_train_identity(rows)["ordered_train_row_identity_hash"]
 
 
-def _unit(seed: int = 180, *, final_count: int = 10, reason_count: int = 5, final_mean: float = 2.0, reason_mean: float = 4.0, row_hash: str = ROW_HASH):
+def _local_counts_for_primary(primary_counts: dict[str, int]) -> dict[str, dict[int, int]]:
+    frame = primary_counts["FRAME"]
+    predicate = primary_counts["PREDICATE"]
+    sufficiency = primary_counts["SUFFICIENCY"]
+    authorized = primary_counts["AUTHORIZED"]
+    return {
+        "frame": {0: frame, 1: predicate + sufficiency + authorized},
+        "predicate": {0: predicate, 1: sufficiency + authorized},
+        "sufficiency": {0: sufficiency, 1: authorized},
+        "polarity": {0: 0, 1: authorized},
+    }
+
+
+def _readiness_for_local_counts(local_counts: dict[str, dict[int, int]]) -> dict[str, bool]:
+    return {cohort: counts[0] >= 1 and counts[1] >= 1 for cohort, counts in local_counts.items()}
+
+
+def _unit(
+    seed: int = 180,
+    *,
+    final_mean: float = 2.0,
+    reason_mean: float = 4.0,
+    row_hash: str = ROW_HASH,
+    primary_counts: dict[str, int] | None = None,
+):
+    if primary_counts is None:
+        primary_counts = {"FRAME": 50, "PREDICATE": 50, "SUFFICIENCY": 50, "AUTHORIZED": 50}
+    local_counts = _local_counts_for_primary(primary_counts)
+    local_readiness = _readiness_for_local_counts(local_counts)
+    all_local_ready = all(local_readiness.values())
+    row_count = sum(primary_counts.values())
     return {
         "schema_version": agg.UNIT_SCHEMA,
         "status": "PASS",
         "seed": seed,
         "unit_index": 0,
         "unit_scope": "COMPLETE_AUTHORITATIVE_TRAIN_SPLIT",
-        "ordered_train_row_count": 100,
+        "ordered_train_row_count": row_count,
         "ordered_train_row_identity_hash": row_hash,
         "model_mode": "train",
         "measurement_arm": "conditional_first_blocker",
         "measurement_gradient_ownership": "explicit_local",
         "reason_loss_weight_placeholder": 0.0,
+        "calibration_gate_scope": "PRIMARY_REASON_CLASS_COUNTS_ONLY",
+        "primary_reason_min_train_count": 50,
+        "primary_reason_class_counts": primary_counts,
+        "primary_reason_min_count_gate_pass": True,
+        "local_binary_cohort_counts": local_counts,
+        "local_binary_training_readiness": local_readiness,
+        "all_local_binary_cohorts_training_ready": all_local_ready,
+        "polarity_local_training_ready": local_readiness["polarity"],
+        "weight_resolution_measurement_valid": True,
+        "normal_a1_a3_training_ready": all_local_ready,
+        "training_readiness_separate_from_weight_resolution": True,
         "architecture": "v6b_minimal",
         "backbone": "mamba",
         "model_name": "state-spaces/mamba-130m-hf",
@@ -637,12 +729,12 @@ def _unit(seed: int = 180, *, final_count: int = 10, reason_count: int = 5, fina
         "normal_training_report_written": False,
         "causal_checkpoint_written": False,
         "final_loss_mean": final_mean,
-        "final_applicable_count": final_count,
-        "final_loss_sum_reconstructed": final_mean * final_count,
+        "final_applicable_count": row_count,
+        "final_loss_sum_reconstructed": final_mean * row_count,
         "final_loss_finite": True,
         "reason_loss_mean": reason_mean,
-        "reason_eligible_count": reason_count,
-        "reason_loss_sum_reconstructed": reason_mean * reason_count,
+        "reason_eligible_count": row_count,
+        "reason_loss_sum_reconstructed": reason_mean * row_count,
         "reason_loss_finite": True,
         "dataset_path": "data/controlled.jsonl",
         "dataset_sha256": DATA,
@@ -659,14 +751,14 @@ def _unit(seed: int = 180, *, final_count: int = 10, reason_count: int = 5, fina
     }
 
 
-def _validate_unit(unit: dict):
+def _validate_unit(unit: dict, *, expected_ordered_train_row_count: int = 200):
     return agg.validate_unit_artifact(
         unit,
         expected_execution_commit=EXEC,
         expected_dataset_sha256=DATA,
         expected_sidecar_semantic_sha256=SIDE,
         expected_split_seed=174,
-        expected_ordered_train_row_count=100,
+        expected_ordered_train_row_count=expected_ordered_train_row_count,
         expected_ordered_train_row_identity_hash=ROW_HASH,
         expected_dev_ratio=0.2,
     )
@@ -771,6 +863,27 @@ def test_unit_validator_rejects_non_train_only_scope() -> None:
         _validate_unit(unit)
 
 
+def test_unit_validator_accepts_weight_measurement_with_polarity_not_ready() -> None:
+    unit = _unit()
+    summary = _validate_unit(unit)
+    assert summary["polarity_local_training_ready"] is False
+    assert summary["normal_a1_a3_training_ready"] is False
+
+
+def test_unit_validator_rejects_inconsistent_local_readiness_boolean() -> None:
+    unit = _unit()
+    unit["local_binary_training_readiness"]["polarity"] = True
+    with pytest.raises(ValueError, match="local_binary_training_readiness"):
+        _validate_unit(unit)
+
+
+def test_unit_validator_rejects_primary_reason_count_below_50() -> None:
+    unit = _unit()
+    unit["primary_reason_class_counts"]["PREDICATE"] = 49
+    with pytest.raises(ValueError, match="primary_reason_class_counts"):
+        _validate_unit(unit)
+
+
 def test_observed_sidecar_sha_mismatch_rejected() -> None:
     with pytest.raises(ValueError, match="observed sidecar"):
         trainer._p3w1_verify_sidecar_semantic_sha(SIDE, "e" * 64)
@@ -829,11 +942,70 @@ def test_logical_unit_remains_one() -> None:
     summary = _validate_unit(unit)
     assert unit["logical_units_per_seed"] == 1
     assert unit["logical_unit_scope"] == "COMPLETE_AUTHORITATIVE_TRAIN_SPLIT"
-    assert summary["row_count"] == 100
+    assert summary["row_count"] == 200
 
 def test_zero_reason_count_rejected() -> None:
+    unit = _unit()
+    unit["reason_eligible_count"] = 0
+    unit["reason_loss_sum_reconstructed"] = 0.0
     with pytest.raises(ValueError, match="reason_eligible_count"):
-        _validate_unit(_unit(reason_count=0))
+        _validate_unit(unit)
+
+
+def test_final_applicable_count_must_equal_ordered_train_row_count() -> None:
+    unit = _unit()
+    unit["ordered_train_row_count"] = 199
+    with pytest.raises(ValueError, match="final_applicable_count"):
+        _validate_unit(unit, expected_ordered_train_row_count=199)
+
+
+def test_reason_eligible_count_must_equal_primary_reason_sum() -> None:
+    unit = _unit()
+    unit["reason_eligible_count"] = 199
+    unit["reason_loss_sum_reconstructed"] = unit["reason_loss_mean"] * 199
+    with pytest.raises(ValueError, match="reason_eligible_count"):
+        _validate_unit(unit)
+
+
+def test_reason_eligible_count_must_not_exceed_final_applicable_count() -> None:
+    unit = _unit()
+    unit["ordered_train_row_count"] = 199
+    unit["final_applicable_count"] = 199
+    unit["final_loss_sum_reconstructed"] = unit["final_loss_mean"] * 199
+    with pytest.raises(ValueError, match="reason_eligible_count"):
+        _validate_unit(unit, expected_ordered_train_row_count=199)
+
+
+def test_frame_cohort_counts_must_match_primary_counts() -> None:
+    unit = _unit()
+    unit["local_binary_cohort_counts"]["frame"][0] = 51
+    with pytest.raises(ValueError, match="frame cohort"):
+        _validate_unit(unit)
+
+
+def test_predicate_cohort_counts_must_match_primary_counts() -> None:
+    unit = _unit()
+    unit["local_binary_cohort_counts"]["predicate"][1] = 101
+    with pytest.raises(ValueError, match="predicate cohort"):
+        _validate_unit(unit)
+
+
+def test_sufficiency_cohort_counts_must_match_primary_counts() -> None:
+    unit = _unit()
+    unit["local_binary_cohort_counts"]["sufficiency"][1] = 51
+    with pytest.raises(ValueError, match="sufficiency cohort"):
+        _validate_unit(unit)
+
+
+def test_polarity_applicable_count_must_match_authorized_count() -> None:
+    unit = _unit()
+    unit["local_binary_cohort_counts"]["polarity"] = {0: 1, 1: 50}
+    unit["local_binary_training_readiness"]["polarity"] = True
+    unit["all_local_binary_cohorts_training_ready"] = True
+    unit["polarity_local_training_ready"] = True
+    unit["normal_a1_a3_training_ready"] = True
+    with pytest.raises(ValueError, match="polarity applicable count"):
+        _validate_unit(unit)
 
 
 def test_nonfinite_mean_rejected() -> None:
@@ -860,7 +1032,7 @@ def _write_units(tmp_path: Path, units: list[dict]) -> list[Path]:
 def _aggregate(tmp_path: Path, units: list[dict], **overrides):
     expected = dict(
         expected_split_seed=174,
-        expected_ordered_train_row_count=100,
+        expected_ordered_train_row_count=200,
         expected_ordered_train_row_identity_hash=ROW_HASH,
         expected_dev_ratio=0.2,
     )
@@ -899,16 +1071,26 @@ def test_mismatched_execution_data_sidecar_split_identity_rejected() -> None:
 
 
 def test_pooled_estimator_uses_count_weighting(tmp_path: Path) -> None:
-    result = _aggregate(tmp_path, [_unit(180, final_count=1, reason_count=1, final_mean=10, reason_mean=2), _unit(181, final_count=9, reason_count=9, final_mean=1, reason_mean=1), _unit(182, final_count=10, reason_count=10, final_mean=2, reason_mean=2)])
-    assert result["mu_final"] == pytest.approx((10 + 9 + 20) / 20)
-    assert result["mu_reason"] == pytest.approx((2 + 9 + 20) / 20)
+    result = _aggregate(
+        tmp_path,
+        [
+            _unit(180, final_mean=10, reason_mean=2),
+            _unit(181, final_mean=1, reason_mean=1),
+            _unit(182, final_mean=2, reason_mean=2),
+        ],
+    )
+    assert result["mu_final"] == pytest.approx(((10 * 200) + (1 * 200) + (2 * 200)) / 600)
+    assert result["mu_reason"] == pytest.approx(((2 * 200) + (1 * 200) + (2 * 200)) / 600)
 
 
-def test_mean_of_means_counterexample_produces_different_result(tmp_path: Path) -> None:
-    units = [_unit(180, final_count=1, reason_count=1, final_mean=10, reason_mean=2), _unit(181, final_count=9, reason_count=9, final_mean=1, reason_mean=1), _unit(182, final_count=10, reason_count=10, final_mean=2, reason_mean=2)]
-    result = _aggregate(tmp_path, units)
-    mean_of_means_final = sum(unit["final_loss_mean"] for unit in units) / 3
-    assert not math.isclose(result["mu_final"], mean_of_means_final)
+def test_mean_of_means_counterexample_with_different_counts_is_rejected(tmp_path: Path) -> None:
+    units = [
+        _unit(180, primary_counts={"FRAME": 50, "PREDICATE": 50, "SUFFICIENCY": 50, "AUTHORIZED": 60}),
+        _unit(181, primary_counts={"FRAME": 50, "PREDICATE": 60, "SUFFICIENCY": 50, "AUTHORIZED": 50}),
+        _unit(182, primary_counts={"FRAME": 50, "PREDICATE": 50, "SUFFICIENCY": 50, "AUTHORIZED": 60}),
+    ]
+    with pytest.raises(ValueError, match="primary reason class counts"):
+        _aggregate(tmp_path, units, expected_ordered_train_row_count=210)
 
 
 def test_aggregate_resolved_weight_exact_recomputation(tmp_path: Path) -> None:
@@ -918,7 +1100,7 @@ def test_aggregate_resolved_weight_exact_recomputation(tmp_path: Path) -> None:
 
 def test_wrong_expected_train_row_count_rejected(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="row count"):
-        _aggregate(tmp_path, [_unit(180), _unit(181), _unit(182)], expected_ordered_train_row_count=101)
+        _aggregate(tmp_path, [_unit(180), _unit(181), _unit(182)], expected_ordered_train_row_count=201)
 
 
 def test_wrong_expected_train_row_hash_rejected(tmp_path: Path) -> None:
@@ -985,6 +1167,65 @@ def test_aggregate_records_all_train_only_a0_isolation_fields(tmp_path: Path) ->
     assert result["all_a0_metrics_unused"] is True
     assert result["all_a0_checkpoints_unused"] is True
 
+
+def test_aggregate_records_common_supervision_count_authority(tmp_path: Path) -> None:
+    result = _aggregate(tmp_path, [_unit(180), _unit(181), _unit(182)])
+    assert result["primary_reason_class_counts"] == {
+        "FRAME": 50,
+        "PREDICATE": 50,
+        "SUFFICIENCY": 50,
+        "AUTHORIZED": 50,
+    }
+    assert result["local_binary_cohort_counts"] == {
+        "frame": {0: 50, 1: 150},
+        "predicate": {0: 50, 1: 100},
+        "sufficiency": {0: 50, 1: 50},
+        "polarity": {0: 0, 1: 50},
+    }
+    assert result["local_binary_training_readiness"] == {
+        "frame": True,
+        "predicate": True,
+        "sufficiency": True,
+        "polarity": False,
+    }
+
+
+def test_aggregate_computes_weight_when_polarity_readiness_false(tmp_path: Path) -> None:
+    result = _aggregate(tmp_path, [_unit(180), _unit(181), _unit(182)])
+    assert result["all_weight_resolution_measurements_valid"] is True
+    assert result["all_primary_reason_min_count_gates_pass"] is True
+    assert result["normal_a1_a3_training_ready"] is False
+    assert result["all_polarity_local_training_ready"] is False
+    assert result["A1_A3_released"] is False
+    assert result["resolved_reason_loss_weight"] == pytest.approx(result["mu_final"] / result["mu_reason"])
+
+
+def test_aggregate_rejects_cross_seed_primary_reason_count_mismatch(tmp_path: Path) -> None:
+    units = [
+        _unit(180, primary_counts={"FRAME": 50, "PREDICATE": 50, "SUFFICIENCY": 50, "AUTHORIZED": 60}),
+        _unit(181, primary_counts={"FRAME": 50, "PREDICATE": 60, "SUFFICIENCY": 50, "AUTHORIZED": 50}),
+        _unit(182, primary_counts={"FRAME": 50, "PREDICATE": 50, "SUFFICIENCY": 50, "AUTHORIZED": 60}),
+    ]
+    with pytest.raises(ValueError, match="primary reason class counts"):
+        _aggregate(tmp_path, units, expected_ordered_train_row_count=210)
+
+
+def test_aggregate_rejects_cross_seed_local_cohort_count_mismatch(tmp_path: Path) -> None:
+    unit = _unit(181)
+    unit["local_binary_cohort_counts"]["polarity"] = {0: 1, 1: 49}
+    unit["local_binary_training_readiness"]["polarity"] = True
+    unit["all_local_binary_cohorts_training_ready"] = True
+    unit["polarity_local_training_ready"] = True
+    unit["normal_a1_a3_training_ready"] = True
+    with pytest.raises(ValueError, match="local binary cohort counts"):
+        _aggregate(tmp_path, [_unit(180), unit, _unit(182)])
+
+
+def test_aggregate_rejects_seed_readiness_mismatch_via_unit_validation(tmp_path: Path) -> None:
+    unit = _unit(181)
+    unit["local_binary_training_readiness"]["polarity"] = True
+    with pytest.raises(ValueError, match="local_binary_training_readiness"):
+        _aggregate(tmp_path, [_unit(180), unit, _unit(182)])
 
 def test_unit_dev_ratio_mismatch_rejected(tmp_path: Path) -> None:
     unit = _unit(180)

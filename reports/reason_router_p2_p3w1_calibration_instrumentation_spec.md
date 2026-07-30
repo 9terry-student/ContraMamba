@@ -92,9 +92,10 @@ It does not use seed mean averages, seed ratio averages, mean-of-means, or seed-
 
 ## Remaining Blockers
 
-- `MISSING_CALIBRATION_ONLY_INSTRUMENTATION` is addressed by this static implementation and remains pending static review.
 - `UNRESOLVED_REASON_LOSS_WEIGHT` remains unresolved until actual calibration unit artifacts and aggregate review are completed.
-- `UNRESOLVED_P2_IMPLEMENTATION_TESTED_COMMIT` remains unresolved because this step did not execute validation.
+- `P2_POLARITY_LOCAL_SUPERVISION_NOT_TRAINING_READY` remains unresolved for normal A1/A3 local-owner training readiness.
+- `UNRESOLVED_P2_IMPLEMENTATION_TESTED_COMMIT` remains unresolved for P2 implementation authority.
+- `STATIC_REVIEW_PENDING` remains open for this static repair.
 
 ## Non-Executed Validation
 
@@ -169,8 +170,32 @@ The repair validates sidecar row identity, pair identity, per-pair canonical con
 
 No integrity, generator-status, intervention-contract, reason minimum-count, or applicable-cohort gate is relaxed. Expected post-repair authority is that every primary class has nonzero eligible train count, every class satisfies the pre-registered train minimum count of `50`, `P2_CANONICAL_ROW_ID_MISMATCH=0`, and train-only train counts match full-helper train counts. Actual repaired counts are not claimed before execution.
 
+## Execution-Discovered Calibration-vs-Training Readiness Separation
+
+The canonical-lineage repair was validated at commit `fdd80d81ba2fbcc9279a328bc24ae0f726097484`: repaired module reload was observed, P2/P3-W1 tests reported `118 passed`, and the repaired train-only authority diagnostic observed `P2_CANONICAL_ROW_ID_MISMATCH=0`.
+
+The canonical-lineage repair restored primary reason authority: `FRAME=726`, `PREDICATE=121`, `SUFFICIENCY=242`, `AUTHORIZED=242`.
+
+The remaining polarity cohort was `REFUTE=0`, `SUPPORT=242`, producing `P2_APPLICABLE_COHORT_BINARY_CLASS_DEGENERATE` for normal local-owner A1/A3 training readiness.
+
+P3-W1 weight calibration measures final CE versus primary reason CE only. Therefore local polarity class diversity is recorded as training-readiness diagnostic rather than weight-measurement validity.
+
+The normal A1/A3 training gate remains unchanged and still rejects degenerate polarity supervision. A successful weight aggregate may resolve the reason-loss-weight blocker, but it does not release A1 or A3 while `P2_POLARITY_LOCAL_SUPERVISION_NOT_TRAINING_READY` remains.
+
+The diagnostic reached repaired train-only reason supervision but still did not reach model load, calibration forward, unit artifact write, aggregation, backward, optimizer/scheduler steps, dev evaluation, or A1/A2/A3 training.
+
+## Static Review V9 Count-Authority Repair
+
+The aggregate unit validator now rejects impossible count authority: `final_applicable_count` must equal `ordered_train_row_count`, `reason_eligible_count` must equal the sum of the mutually exclusive `primary_reason_class_counts`, and reason applicability cannot exceed final applicability.
+
+The first-blocker local applicability counts are also validated against primary counts: frame covers `FRAME` versus `PREDICATE+SUFFICIENCY+AUTHORIZED`, predicate covers `PREDICATE` versus `SUFFICIENCY+AUTHORIZED`, sufficiency covers `SUFFICIENCY` versus `AUTHORIZED`, and polarity applicability sums to `AUTHORIZED`.
+
+Because all three calibration seeds share the same execution, dataset, sidecar, split, and ordered train identity authority, aggregate construction now requires cross-seed equality of primary reason counts, local binary cohort counts, local binary readiness, polarity readiness, and normal A1/A3 readiness. The aggregate records the common supervision count authority instead of adopting a seed-local variant silently.
+
+This repair preserves the readiness separation: degenerate polarity local training readiness can remain `false` while weight-resolution measurement validity remains governed by primary reason class counts only. `A1_A3_released` remains `false`.
+
 ## Decision
 
 `P3W1_IMPLEMENTATION_READY_FOR_STATIC_REVIEW`
 
-This report does not claim `P3W1_IMPLEMENTATION_PASS`, `P3W1_CALIBRATION_EXECUTED`, `P3W0_REASON_LOSS_WEIGHT_RESOLVED`, `A1_READY`, `A2_READY`, `A3_READY`, or `P3_PASS`.
+This report does not claim `P3W1_IMPLEMENTATION_PASS`, `P3W1_CALIBRATION_EXECUTED`, `P3W1_CALIBRATION_GATE_REPAIR_PASS`, `P3W2_CALIBRATION_EXECUTION_PASS`, `P3W0_REASON_LOSS_WEIGHT_RESOLVED`, `P2_POLARITY_SUPERVISION_RESOLVED`, `A1_READY`, `A2_READY`, `A3_READY`, or `P3_PASS`.

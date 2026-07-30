@@ -150,6 +150,8 @@ P3W1_CALIBRATION_DEVICE = "cuda"
 P3W1_CALIBRATION_FLAG_SOURCE = "controlled_heuristic"
 P3W1_CALIBRATION_REASON_ROUTER_EPSILON = 1e-8
 P3W1_CALIBRATION_CLASS_WEIGHTING = "none"
+P3W1_PRIMARY_REASON_MIN_TRAIN_COUNT = 50
+P3W1_CALIBRATION_GATE_SCOPE = "PRIMARY_REASON_CLASS_COUNTS_ONLY"
 P2_REASON_TO_ID = {name: index for index, name in enumerate(P2_REASON_CLASS_ORDER)}
 P2_SIDE_CAR_REQUIRED_FIELDS = (
     "row_id",
@@ -3816,6 +3818,54 @@ def _p2_prepare_reason_supervision_train_only(
         "dev_metrics_used_for_calibration": False,
     }
 
+
+def _p3w1_local_binary_readiness(binary_counts: dict[str, Any]) -> dict[str, bool]:
+    readiness: dict[str, bool] = {}
+    for cohort in ("frame", "predicate", "sufficiency", "polarity"):
+        counts = binary_counts.get(cohort, {})
+        zero = int(counts.get(0, 0))
+        one = int(counts.get(1, 0))
+        readiness[cohort] = zero >= 1 and one >= 1
+    return readiness
+
+
+def _p3w1_validate_calibration_reason_authority(
+    *,
+    supervision: dict[str, Any],
+    min_train_count: int,
+) -> dict[str, Any]:
+    _p3w1_require(supervision.get("calibration_data_scope") == "TRAIN_ONLY", "calibration data scope must be TRAIN_ONLY")
+    _p3w1_require(supervision.get("train_reason_supervision_built") is True, "train reason supervision must be built")
+    _p3w1_require(type(min_train_count) is int and min_train_count == P3W1_PRIMARY_REASON_MIN_TRAIN_COUNT, "primary reason min train count must be 50")
+    counts = supervision.get("train_reason_counts")
+    _p3w1_require(isinstance(counts, dict), "train reason counts must be present")
+    primary_counts: dict[str, int] = {}
+    for name in P2_REASON_CLASS_ORDER:
+        value = counts.get(name)
+        _p3w1_require(type(value) is int, f"{name} train reason count must be an exact integer")
+        _p3w1_require(value >= min_train_count, f"{name} train reason count must be >= {min_train_count}")
+        primary_counts[name] = value
+    _p3w1_require(sum(primary_counts.values()) > 0, "primary reason train count sum must be > 0")
+    target_counts = supervision.get("target_class_counts") or {}
+    binary_counts = target_counts.get("train_applicable_binary") or {}
+    local_counts: dict[str, dict[int, int]] = {}
+    for cohort in ("frame", "predicate", "sufficiency", "polarity"):
+        raw = binary_counts.get(cohort, {})
+        local_counts[cohort] = {0: int(raw.get(0, 0)), 1: int(raw.get(1, 0))}
+    readiness = _p3w1_local_binary_readiness(local_counts)
+    all_ready = all(readiness.values())
+    supervision["calibration_gate_scope"] = P3W1_CALIBRATION_GATE_SCOPE
+    supervision["primary_reason_min_train_count"] = min_train_count
+    supervision["primary_reason_class_counts"] = primary_counts
+    supervision["primary_reason_min_count_gate_pass"] = True
+    supervision["local_binary_cohort_counts"] = local_counts
+    supervision["local_binary_training_readiness"] = readiness
+    supervision["all_local_binary_cohorts_training_ready"] = all_ready
+    supervision["polarity_local_training_ready"] = readiness["polarity"]
+    supervision["weight_resolution_measurement_valid"] = True
+    supervision["normal_a1_a3_training_ready"] = all_ready
+    supervision["training_readiness_separate_from_weight_resolution"] = True
+    return supervision
 def _p3w1_prepare_train_only_reason_supervision_for_calibration(
     *,
     train_records: list[dict[str, Any]],
@@ -3831,9 +3881,13 @@ def _p3w1_prepare_train_only_reason_supervision_for_calibration(
         train_inputs=train_inputs,
         train_source_labels=train_source_labels,
         sidecar_by_id=sidecar_by_id,
-        require_min_counts=require_min_counts,
+        require_min_counts=False,
         min_train_count=min_train_count,
         device=device,
+    )
+    supervision = _p3w1_validate_calibration_reason_authority(
+        supervision=supervision,
+        min_train_count=min_train_count,
     )
     a0_audit = {
         "required": False,
@@ -9708,6 +9762,11 @@ def _p3w1_validate_calibration_only_args(args: argparse.Namespace) -> Path | Non
     _p3w1_require(getattr(args, "balanced_sampler", None) is False, "balanced_sampler must be false")
     _p3w1_require(getattr(args, "weighted_label_loss", None) is False, "weighted_label_loss must be false")
     _p3w1_require(getattr(args, "class_weighting", None) == P3W1_CALIBRATION_CLASS_WEIGHTING, "class_weighting must be none")
+    _p3w1_require(
+        type(getattr(args, "reason_min_train_count", None)) is int
+        and getattr(args, "reason_min_train_count", None) == P3W1_PRIMARY_REASON_MIN_TRAIN_COUNT,
+        "reason_min_train_count must be exactly 50",
+    )
     _p3w1_require(getattr(args, "save_selected_checkpoint", None) is False, "save_selected_checkpoint must be false")
     _p3w1_require(
         getattr(args, "reason_router_a0_reference_predictions", None) in (None, ""),
@@ -9789,6 +9848,7 @@ def _p3w1_run_reason_weight_calibration_unit(
     train_inputs: dict[str, torch.Tensor],
     train_temporal_flags: torch.Tensor,
     train_predicate_flags: torch.Tensor,
+    train_reason_supervision_audit: dict[str, Any],
     dataset_path: Path,
     sidecar_path: Path,
     observed_sidecar_semantic_sha256: str,
@@ -9852,6 +9912,17 @@ def _p3w1_run_reason_weight_calibration_unit(
         "measurement_arm": "conditional_first_blocker",
         "measurement_gradient_ownership": "explicit_local",
         "reason_loss_weight_placeholder": 0.0,
+        "calibration_gate_scope": train_reason_supervision_audit["calibration_gate_scope"],
+        "primary_reason_min_train_count": train_reason_supervision_audit["primary_reason_min_train_count"],
+        "primary_reason_class_counts": train_reason_supervision_audit["primary_reason_class_counts"],
+        "primary_reason_min_count_gate_pass": train_reason_supervision_audit["primary_reason_min_count_gate_pass"],
+        "local_binary_cohort_counts": train_reason_supervision_audit["local_binary_cohort_counts"],
+        "local_binary_training_readiness": train_reason_supervision_audit["local_binary_training_readiness"],
+        "all_local_binary_cohorts_training_ready": train_reason_supervision_audit["all_local_binary_cohorts_training_ready"],
+        "polarity_local_training_ready": train_reason_supervision_audit["polarity_local_training_ready"],
+        "weight_resolution_measurement_valid": train_reason_supervision_audit["weight_resolution_measurement_valid"],
+        "normal_a1_a3_training_ready": train_reason_supervision_audit["normal_a1_a3_training_ready"],
+        "training_readiness_separate_from_weight_resolution": train_reason_supervision_audit["training_readiness_separate_from_weight_resolution"],
         "architecture": P3W1_CALIBRATION_ARCHITECTURE,
         "backbone": P3W1_CALIBRATION_BACKBONE,
         "model_name": P3W1_CALIBRATION_MODEL_NAME,
@@ -19384,6 +19455,7 @@ def main(argv: list[str] | None = None) -> int:
             train_inputs=train_inputs,
             train_temporal_flags=train_temporal_flags,
             train_predicate_flags=train_predicate_flags,
+            train_reason_supervision_audit=_p2_reason_supervision_audit,
             dataset_path=Path(args.data),
             sidecar_path=Path(args.controlled_integrity_sidecar_path),
             observed_sidecar_semantic_sha256=observed_sidecar_semantic_sha256,

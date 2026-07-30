@@ -549,6 +549,36 @@ def test_p2_supervision_integrity_polarity_intervention_and_frame_binary_audit()
     assert "P2_POLARITY_INTERVENTION_CONTRACT_FAIL" in bad[0]["p2_reason_exclusion_codes"]
 
 
+def test_normal_p2_full_helper_rejects_degenerate_polarity_cohort() -> None:
+    train_records = [
+        _p2_lineage_record("pair_deg__none", "pair_deg", "none"),
+        _p2_lineage_record("pair_deg__entity_swap", "pair_deg", "entity_swap"),
+        _p2_lineage_record("pair_deg__predicate_swap", "pair_deg", "predicate_swap"),
+        _p2_lineage_record("pair_deg__evidence_deletion", "pair_deg", "evidence_deletion"),
+    ]
+    dev_records = [
+        _p2_lineage_record("pair_dev_deg__none", "pair_dev_deg", "none"),
+        _p2_lineage_record("pair_dev_deg__entity_swap", "pair_dev_deg", "entity_swap"),
+        _p2_lineage_record("pair_dev_deg__predicate_swap", "pair_dev_deg", "predicate_swap"),
+        _p2_lineage_record("pair_dev_deg__evidence_deletion", "pair_dev_deg", "evidence_deletion"),
+    ]
+    train_sidecar = {row["id"]: _p2_lineage_sidecar(row, "train", "pair_deg__none") for row in train_records}
+    dev_sidecar = {row["id"]: _p2_lineage_sidecar(row, "dev", "pair_dev_deg__none") for row in dev_records}
+    with pytest.raises(ValueError, match="P2_APPLICABLE_COHORT_BINARY_CLASS_DEGENERATE"):
+        trainer._p2_prepare_reason_supervision(
+            train_records=train_records,
+            dev_records=dev_records,
+            train_inputs={},
+            dev_inputs={},
+            train_source_labels=["clean_main"] * len(train_records),
+            sidecar_by_id={**train_sidecar, **dev_sidecar},
+            require_min_counts=True,
+            min_train_count=1,
+            min_dev_count=1,
+            device=torch.device("cpu"),
+        )
+
+
 def test_p2_canonical_lineage_accepts_shared_pair_anchor() -> None:
     records, sidecar = _p2_lineage_records("pair_x", "train")
     assert trainer._p2_resolve_canonical_lineage_for_split(records=records, sidecar_by_id=sidecar, split="train") == {"pair_x": "pair_x__none"}
