@@ -1,0 +1,401 @@
+{
+  "schema_version": "reason_router_p2_p3w0_weight_resolution_v1",
+  "authority": {
+    "p2_implementation_tested_commit": "UNRESOLVED_P2_IMPLEMENTATION_TESTED_COMMIT",
+    "p3_a0_execution_commit": "b118a984c749ca70bad63919f95aad918881a29d",
+    "p2_code_tree_unchanged_at_a0_execution_commit": true,
+    "p2_code_tree_identity_verification": {
+      "status": "RECORDED_BY_PRIOR_P3_EXECUTION_GATE",
+      "note": "This prior identity gate does not replace the unresolved tested commit SHA.",
+      "files": [
+        "scripts/train_controlled_v6b_minimal.py",
+        "src/contramamba/heads/entitlement_decision.py",
+        "src/contramamba/modeling_v6b_minimal.py",
+        "tests/test_reason_router_p2_contract.py"
+      ]
+    },
+    "authoritative_dev_row_count": 720,
+    "authoritative_dev_row_identity_hash": "3b807eeecbff097efdae5dfef73786ea1bd3414236237673c3ae42ecc4f52f4e",
+    "fixture_values_are_not_hyperparameter_authority": true
+  },
+  "current_blocker": {
+    "parameter": "reason_loss_weight_A1_A3",
+    "status": "UNRESOLVED_EXECUTION_PARAMETER"
+  },
+  "loss_algebra": {
+    "authoritative_A1_A3_function": "scripts/train_controlled_v6b_minimal.py::_p2_reason_router_losses",
+    "A1_A3_total_formula": "final_3way_ce + frame_bce + predicate_bce + sufficiency_bce + authorized_polarity_ce + reason_loss_weight * primary_reason_ce",
+    "final_3way_ce": {
+      "shape": "[N_selected, 3]",
+      "class_count": 3,
+      "class_order": ["REFUTE", "NOT_ENTITLED", "SUPPORT"],
+      "reduction": "mean",
+      "denominator": "N_selected",
+      "class_weight": "weights if weighted_label_loss else None"
+    },
+    "primary_reason_ce": {
+      "shape": "[N_reason_eligible, 4]",
+      "class_count": 4,
+      "class_order": ["FRAME", "PREDICATE", "SUFFICIENCY", "AUTHORIZED"],
+      "reduction": "mean",
+      "denominator": "N_reason_eligible",
+      "class_weight": null,
+      "zero_eligible_batch": "_p2_differentiable_zero(output['reason_logits_4'])"
+    },
+    "local_losses": {
+      "frame_bce": {
+        "reduction": "mean",
+        "eligibility": "reason_supervision_eligible",
+        "gradient_owner": "FrameGate"
+      },
+      "predicate_bce": {
+        "reduction": "mean",
+        "eligibility": "reason_supervision_eligible && frame_compatible_label == 1",
+        "gradient_owner": "PredicateCoverageHead"
+      },
+      "sufficiency_bce": {
+        "reduction": "mean",
+        "eligibility": "reason_supervision_eligible && frame_compatible_label == 1 && predicate_covered_label == 1",
+        "gradient_owner": "SufficiencyGate"
+      },
+      "polarity_ce": {
+        "reduction": "mean",
+        "eligibility": "reason_supervision_eligible && frame_compatible_label == 1 && predicate_covered_label == 1 && sufficiency_label == 1 && final_label in {REFUTE,SUPPORT}",
+        "gradient_owner": "PolarityEnergyHead",
+        "class_order": ["REFUTE", "SUPPORT"]
+      }
+    },
+    "A1_joint_ownership": {
+      "gradient_ownership_mode": "joint",
+      "local_to_router_inputs_detached": false
+    },
+    "A3_explicit_local_ownership": {
+      "gradient_ownership_mode": "explicit_local",
+      "local_to_router_inputs_detached": true,
+      "detach_value_preserving": true
+    }
+  },
+  "weight_resolution": {
+    "authority_type": "TRAIN_ONLY_FINAL_VS_REASON_SCALAR_CONTRIBUTION_MATCHING",
+    "authority_limitations": {
+      "total_objective_balance": "not established",
+      "gradient_norm_balance": "not established",
+      "local_owner_balance": "not established",
+      "per_example_equivalence": "not established",
+      "per_eligible_example_equivalence": "not established",
+      "A1_A3_optimization_equivalence": "not established",
+      "causal_superiority": "not established"
+    },
+    "reason_loss_weight_1_0_meaning": {
+      "scalar_summand_coefficient_equivalence_only": true,
+      "optimization_authority_equivalence": false
+    },
+    "chance_level_ce_scale_normalization": {
+      "log3_log4_considered": true,
+      "accepted": false,
+      "rejection_reason": "Does not account for eligible denominators, local BCE summands, sampled final CE denominator, or A1/A3 detach differences."
+    },
+    "candidate_selection": {
+      "status": "REJECTED_TAUTOLOGICAL",
+      "reason": "base candidate minimizes its own defining objective by construction",
+      "math": [
+        "When base_weight = L_final / L_reason",
+        "(base_weight * L_reason) / L_final = 1",
+        "abs(log(1)) = 0",
+        "The central candidate is selected by construction."
+      ],
+      "diagnostic_sensitivity_multipliers_allowed_only": [0.7071067811865476, 1.0, 1.4142135623730951],
+      "not_weight_selection_candidates": true,
+      "not_execution_authorizing_evidence": true
+    },
+    "measurement_contract": {
+      "measurement_arm": "conditional_first_blocker",
+      "measurement_gradient_ownership": "explicit_local",
+      "detach_value_preserving_for_scalar_forward": true,
+      "fresh_initialization_per_seed": true,
+      "same_architecture_and_execution_configuration_as_p3_factorial_runs": true,
+      "frozen_mamba_backbone": true,
+      "before_backward": true,
+      "before_optimizer_step": true,
+      "before_scheduler_step": true,
+      "before_any_parameter_update": true,
+      "train_split_only": true,
+      "no_dev_forward": true,
+      "no_a0_checkpoint_load": true,
+      "reason_loss_weight_excluded_from_unweighted_measurement": true
+    },
+    "calibration_unit_contract": {
+      "train_batch_size": null,
+      "units_per_seed": 1,
+      "unit_index": 0,
+      "unit_scope": "COMPLETE_AUTHORITATIVE_TRAIN_SPLIT",
+      "model_mode": "train",
+      "balanced_sampler": false,
+      "calibration_seeds": [180, 181, 182],
+      "measurement_arm": "conditional_first_blocker",
+      "measurement_gradient_ownership": "explicit_local",
+      "ordered_train_row_identity": {
+        "ordered_train_row_count": "exact authoritative train row count",
+        "ordered_train_row_identity_hash": "SHA256 of ordered (row_id, pair_id, normalized_gold_label)"
+      }
+    },
+    "pooled_estimator": {
+      "actual_execution_units": "single complete-train unit per seed",
+      "calibration_seeds": [180, 181, 182],
+      "n_final_s": "final applicable count from seed s complete-train unit",
+      "ell_final_s": "mean final CE from seed s complete-train unit",
+      "n_reason_s": "reason eligible count from seed s complete-train unit",
+      "ell_reason_s": "mean reason CE from seed s complete-train unit",
+      "mu_final_formula": "sum_s n_final[s] * ell_final[s] / sum_s n_final[s]",
+      "mu_reason_formula": "sum_s n_reason[s] * ell_reason[s] / sum_s n_reason[s]",
+      "resolved_weight_formula": "mu_final / mu_reason",
+      "mean_of_seed_loss_means_without_count_weighting_forbidden": true,
+      "seed_ratio_simple_average_forbidden": true,
+      "seed_specific_weights_forbidden": true,
+      "seed180_only_authority_forbidden": true,
+      "dev_selected_weight_forbidden": true,
+      "a0_performance_selected_weight_forbidden": true,
+      "one_global_weight_shared_by_seeds": true,
+      "one_global_weight_shared_by_A1_A3": true
+    },
+    "calibration_only_p2_gate_exception": {
+      "recommended_flag": "--reason-router-weight-calibration-export PATH",
+      "reason_router_weight_calibration_only": true,
+      "reason_router_mode": "conditional_first_blocker",
+      "gradient_ownership_mode": "explicit_local",
+      "reason_loss_weight": 0.0,
+      "bypassed_requirement": "positive A1/A3 reason_loss_weight requirement only",
+      "all_other_p2_fail_fast_and_objective_neutralization_contracts_remain_active": true,
+      "reason_loss_weight_0_is_measurement_placeholder_only": true,
+      "does_not_multiply_exported_unweighted_reason_ce": true,
+      "must_not_construct_execution_authorizing_A1_A3_training_result": true,
+      "must_not_backward": true,
+      "must_not_optimizer_step": true,
+      "must_not_scheduler_step": true,
+      "must_not_evaluate_dev": true,
+      "must_not_evaluate_external_ood": true,
+      "must_not_save_causal_run_checkpoint": true,
+      "must_not_write_normal_A1_A3_training_report": true
+    },
+    "artifact_namespace": {
+      "root": "reports/reason_router_p2_p3w0_calibration/",
+      "seed_unit_paths": [
+        "reports/reason_router_p2_p3w0_calibration/seed180/calibration_unit.json",
+        "reports/reason_router_p2_p3w0_calibration/seed181/calibration_unit.json",
+        "reports/reason_router_p2_p3w0_calibration/seed182/calibration_unit.json"
+      ],
+      "aggregate_path": "reports/reason_router_p2_p3w0_calibration/calibration_aggregate.json",
+      "unit_required_fields": [
+        "schema_version",
+        "seed",
+        "unit_index",
+        "unit_scope",
+        "ordered_train_row_count",
+        "ordered_train_row_identity_hash",
+        "model_mode",
+        "measurement_arm",
+        "measurement_gradient_ownership",
+        "fresh_initialization",
+        "checkpoint_loaded",
+        "before_backward",
+        "before_optimizer_step",
+        "before_scheduler_step",
+        "parameter_update_count",
+        "dev_forward_executed",
+        "external_eval_executed",
+        "final_loss_mean",
+        "final_applicable_count",
+        "final_loss_sum_reconstructed",
+        "reason_loss_mean",
+        "reason_eligible_count",
+        "reason_loss_sum_reconstructed",
+        "final_loss_finite",
+        "reason_loss_finite",
+        "dataset_sha256",
+        "sidecar_semantic_sha256",
+        "split_seed",
+        "execution_commit"
+      ],
+      "aggregate_required_fields": [
+        "schema_version",
+        "calibration_seeds",
+        "seed_unit_artifact_sha256",
+        "total_final_count",
+        "total_reason_count",
+        "total_final_loss_sum",
+        "total_reason_loss_sum",
+        "mu_final",
+        "mu_reason",
+        "resolved_reason_loss_weight",
+        "all_three_seeds_present",
+        "all_unit_gates_pass",
+        "nonfinite_count",
+        "decision"
+      ],
+      "loss_sum_reconstruction_rules": {
+        "final_loss_sum_reconstructed": "final_loss_mean * final_applicable_count",
+        "reason_loss_sum_reconstructed": "reason_loss_mean * reason_eligible_count"
+      }
+    },
+    "validity_gates": [
+      "calibration seeds exactly [180,181,182]",
+      "all three seed records present",
+      "dataset SHA exact match",
+      "sidecar semantic SHA exact match",
+      "split seed exact match",
+      "train split only",
+      "no dev access",
+      "no A0 prediction access",
+      "measurement_arm == conditional_first_blocker",
+      "measurement_gradient_ownership == explicit_local",
+      "train_batch_size is null",
+      "units_per_seed == 1",
+      "unit_index == 0",
+      "unit_scope == COMPLETE_AUTHORITATIVE_TRAIN_SPLIT",
+      "model_mode == train",
+      "balanced_sampler == false",
+      "fresh_initialization == true",
+      "checkpoint_loaded == false",
+      "parameter_update_count == 0",
+      "before_backward == true",
+      "before_optimizer_step == true",
+      "before_scheduler_step == true",
+      "dev_forward_executed == false",
+      "external_eval_executed == false",
+      "ordered train row count exact match",
+      "ordered train row identity hash exact match across all three seeds",
+      "total_final_count > 0",
+      "total_reason_count > 0",
+      "mu_final finite",
+      "mu_reason finite",
+      "mu_final > 0",
+      "mu_reason > 0",
+      "resolved weight finite",
+      "resolved weight > 0",
+      "no duplicate calibration unit identity",
+      "no missing calibration unit identity"
+    ],
+    "resolved_reason_loss_weight": null
+  },
+  "p2_loss_export_aggregation_semantics": {
+    "classification": "PER_EPOCH_PRE_STEP_FULL_TRAIN_FORWARD_SNAPSHOT",
+    "not": [
+      "PER_BATCH_PRE_STEP_EXPORT",
+      "LAST_BATCH_ONLY",
+      "dedicated calibration artifact",
+      "no-step execution mode",
+      "all-three-seed pooled authority artifact",
+      "sufficient to release A1/A2/A3"
+    ],
+    "path_A_dedicated_no_step_calibration": {
+      "status": "REJECTED_NOT_AVAILABLE"
+    },
+    "path_B_throwaway_training_invocation": {
+      "status": "REJECTED_INSUFFICIENT_AUTHORITY"
+    }
+  },
+  "observability": {
+    "calibration_only_mode": "REQUIRES_MINIMAL_INSTRUMENTATION",
+    "no_step_artifact_persistence": "REQUIRES_MINIMAL_INSTRUMENTATION",
+    "complete_train_unit_identity_proof": "REQUIRES_MINIMAL_INSTRUMENTATION",
+    "parameter_update_count_proof": "REQUIRES_MINIMAL_INSTRUMENTATION",
+    "pooled_three_seed_aggregate": "REQUIRES_MINIMAL_INSTRUMENTATION",
+    "pre_update_final_ce_scalar": "REQUIRES_MINIMAL_INSTRUMENTATION",
+    "pre_update_reason_ce_scalar": "REQUIRES_MINIMAL_INSTRUMENTATION",
+    "final_applicable_count": "REQUIRES_MINIMAL_INSTRUMENTATION",
+    "reason_eligible_count": "REQUIRES_MINIMAL_INSTRUMENTATION",
+    "seed_identity": "ALREADY_AVAILABLE",
+    "nonfinite_count": "REQUIRES_MINIMAL_INSTRUMENTATION"
+  },
+  "a0_information_policy": {
+    "identity_fields_allowed": [
+      "execution commit identity",
+      "dataset identity",
+      "sidecar identity",
+      "split identity",
+      "train/dev universe identity",
+      "artifact existence",
+      "artifact schema identity"
+    ],
+    "performance_fields_forbidden": [
+      "A0 accuracy",
+      "A0 macro-F1",
+      "A0 prediction counts",
+      "false-entitlement count",
+      "stable true-SUPPORT count",
+      "seed-specific A0 error pattern",
+      "A0 prediction probabilities/logits",
+      "A0 selected epoch state or checkpoint as weight-selection signal"
+    ],
+    "a0_error_population_future_use": "recovery/harm denominator only"
+  },
+  "release_contract": {
+    "A0": {
+      "status": "EXECUTION_AND_REFERENCE_AUDIT_PASS"
+    },
+    "A1": {
+      "router_mode": "conditional_first_blocker",
+      "gradient_ownership_mode": "joint",
+      "reason_loss_weight": "UNRESOLVED_EXECUTION_PARAMETER",
+      "status": "BLOCKED_BY_UNRESOLVED_REASON_LOSS_WEIGHT"
+    },
+    "A2": {
+      "router_mode": "explicit_product",
+      "gradient_ownership_mode": "explicit_local",
+      "reason_loss_weight": 0.0,
+      "status": "BLOCKED_BY_MATCHED_FACTORIAL_RELEASE"
+    },
+    "A3": {
+      "router_mode": "conditional_first_blocker",
+      "gradient_ownership_mode": "explicit_local",
+      "reason_loss_weight": "UNRESOLVED_EXECUTION_PARAMETER",
+      "status": "BLOCKED_BY_UNRESOLVED_REASON_LOSS_WEIGHT"
+    },
+    "A1_A3_common_weight_required": true,
+    "A1_A3_released": false
+  },
+  "decision": {
+    "status": "P3W0_BLOCKED_BY_INSUFFICIENT_SCALE_AUTHORITY",
+    "resolved_reason_loss_weight": null,
+    "calibration_executed": false,
+    "calibration_protocol_complete": false,
+    "candidate_selection_rejected_as_tautological": true,
+    "scalar_matching_formula_defined": true,
+    "execution_observability_sufficient": false,
+    "minimal_instrumentation_required": true,
+    "measurement_gradient_ownership": "explicit_local",
+    "calibration_unit_contract_complete": true,
+    "A1_A3_common_weight": true,
+    "A1_A3_released": false,
+    "blockers": [
+      "INSUFFICIENT_SCALE_AUTHORITY",
+      "MISSING_CALIBRATION_ONLY_INSTRUMENTATION",
+      "UNRESOLVED_P2_IMPLEMENTATION_TESTED_COMMIT"
+    ],
+    "not_claimed": [
+      "P3W0_TRAIN_ONLY_CALIBRATION_PROTOCOL_READY",
+      "P3W0_REASON_LOSS_WEIGHT_RESOLVED",
+      "A1_READY",
+      "A2_READY",
+      "A3_READY"
+    ]
+  },
+  "non_executed_verification": [
+    "trainer modification",
+    "model/head modification",
+    "test modification",
+    "data modification",
+    "calibration",
+    "training",
+    "evaluation",
+    "model load",
+    "Python",
+    "pytest",
+    "py_compile",
+    "Kaggle",
+    "git add",
+    "git commit",
+    "git push",
+    "git pull"
+  ]
+}
