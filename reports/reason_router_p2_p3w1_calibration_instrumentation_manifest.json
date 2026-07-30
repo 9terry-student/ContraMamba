@@ -66,6 +66,23 @@
       "wrote_unit_artifact": false
     }
   ],
+  "static_validation_failures": [
+    {
+      "commit": "1d6e63fb830fd061f6a9962a5bdba70312a34d7f",
+      "command_scope": [
+        "tests/test_reason_router_p2_contract.py",
+        "tests/test_reason_router_p3w1_calibration.py"
+      ],
+      "result": {
+        "passed": 136,
+        "failed": 1
+      },
+      "failed_test": "test_calibration_pair_level_lineage_counts_nonzero_and_match_full_helper",
+      "reason": "full-helper comparison fixture omitted REFUTE polarity targets",
+      "implementation_failure": false,
+      "normal_p2_polarity_gate_correctly_preserved": true
+    }
+  ],
   "validation_executed": [
     "Kaggle Python trainer invocation for P3-W2 seed180",
     "trainer CLI invocation",
@@ -82,10 +99,11 @@
     "canonical-lineage repaired train-only audit",
     "observed primary reason counts",
     "observed local binary cohort counts",
-    "polarity degeneracy gate failure before model load"
+    "polarity degeneracy gate failure before model load",
+    "post-readiness-separation pytest at commit 1d6e63f: 136 passed, 1 failed"
   ],
   "validation_not_executed_after_readiness_separation_repair": [
-    "post-readiness-separation-repair pytest",
+    "post-test-fixture-repair pytest",
     "post-readiness-separation-repair model load",
     "calibration forward",
     "unit artifact write",

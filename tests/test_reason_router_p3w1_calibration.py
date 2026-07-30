@@ -491,8 +491,9 @@ def test_calibration_train_only_does_not_apply_dev_minimum_or_degeneracy_gate(mo
 
 def test_calibration_pair_level_lineage_counts_nonzero_and_match_full_helper(monkeypatch) -> None:
     _patch_tensor(monkeypatch)
-    train_records = _many_reason_records("train")
-    dev_records = _many_reason_records("dev")
+    comparison_kinds = ("frame", "predicate", "sufficiency", "refute")
+    train_records = _many_reason_records("train", kinds=comparison_kinds)
+    dev_records = _many_reason_records("dev", kinds=comparison_kinds)
     train_sidecars = _sidecars(train_records, "train")
     dev_sidecars = _sidecars(dev_records, "dev")
     train_only_audit, _ = trainer._p3w1_prepare_train_only_reason_supervision_for_calibration(
@@ -516,8 +517,18 @@ def test_calibration_pair_level_lineage_counts_nonzero_and_match_full_helper(mon
         min_dev_count=50,
         device="cpu",
     )
+    expected_reason_counts = {
+        "FRAME": 50,
+        "PREDICATE": 50,
+        "SUFFICIENCY": 50,
+        "AUTHORIZED": 100,
+    }
     assert all(count > 0 for count in train_only_audit["train_reason_counts"].values())
+    assert train_only_audit["train_reason_counts"] == expected_reason_counts
+    assert full_audit["train_reason_counts"] == expected_reason_counts
     assert train_only_audit["train_reason_counts"] == full_audit["train_reason_counts"]
+    assert train_only_audit["target_class_counts"]["train_applicable_binary"]["polarity"] == {0: 50, 1: 50}
+    assert full_audit["target_class_counts"]["train_applicable_binary"]["polarity"] == {0: 50, 1: 50}
     assert train_only_audit["train_exclusion_counts"].get("P2_CANONICAL_ROW_ID_MISMATCH", 0) == 0
     assert full_audit["train_exclusion_counts"].get("P2_CANONICAL_ROW_ID_MISMATCH", 0) == 0
 

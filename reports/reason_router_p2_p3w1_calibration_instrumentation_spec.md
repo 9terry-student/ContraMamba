@@ -194,6 +194,16 @@ Because all three calibration seeds share the same execution, dataset, sidecar, 
 
 This repair preserves the readiness separation: degenerate polarity local training readiness can remain `false` while weight-resolution measurement validity remains governed by primary reason class counts only. `A1_A3_released` remains `false`.
 
+## Execution-Validation Test-Fixture Repair
+
+At commit `1d6e63fb830fd061f6a9962a5bdba70312a34d7f`, the P2/P3-W1 test run produced `136 passed` and `1 failed`.
+
+The failing comparison test supplied SUPPORT-only authorized polarity examples while invoking the normal full P2 training-readiness helper.
+
+The resulting polarity degeneracy failure demonstrated that the normal training gate remained correctly preserved.
+
+The fixture is repaired by adding a REFUTE polarity-flip row to every comparison pair. No production gate or calibration validity rule is changed.
+
 ## Decision
 
 `P3W1_IMPLEMENTATION_READY_FOR_STATIC_REVIEW`
