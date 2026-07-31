@@ -1,0 +1,167 @@
+{
+  "schema_version": "reason_router_p2_p3w3_polarity_authority_audit_manifest_v3",
+  "v1_static_review_result": "P3W3_POLARITY_AUTHORITY_V1_STATIC_REVIEW_BLOCKED",
+  "v2_static_review_result": "P3W3_POLARITY_AUTHORITY_V2_STATIC_REVIEW_BLOCKED",
+  "v3_static_review_result": "P3W3_POLARITY_AUTHORITY_V3_STATIC_REVIEW_BLOCKED",
+  "runtime_analyzer_schema_version": "reason_router_p3w3_polarity_authority_audit_v3",
+  "decision_after_static_implementation": "P3W3_IMPLEMENTATION_READY_FOR_STATIC_REVIEW",
+  "created_or_modified_files": [
+    "scripts/analyze_reason_router_p3w3_polarity_authority.py",
+    "tests/test_reason_router_p3w3_polarity_authority.py",
+    "reports/reason_router_p2_p3w3_polarity_authority_audit_spec.md",
+    "reports/reason_router_p2_p3w3_polarity_authority_audit_manifest.json"
+  ],
+  "v2_static_review_blockers_recorded": [
+    "unknown intervention membership gate was declared but not applied",
+    "narrow-repair reason-code and preserved-axis authority was not repository-backed",
+    "production supervision audit counts were not retained",
+    "pair eligibility was mislabeled as clean evidence",
+    "no-missing-REFUTE decision branch was incorrect"
+  ],
+  "v3_static_review_blockers_recorded": [
+    "unsupported generator statuses were overclassified as independent defects",
+    "runtime output retained an audit-not-executed blocker after execution",
+    "mixed evidence classes did not always produce mixed remediation",
+    "production-count equality test used row-derived self-comparison",
+    "main control-flow order did not match documented fail-closed order"
+  ],
+  "v3_static_review_fixes": [
+    "Generator component statuses are partitioned into PASS, exact FAIL, and unsupported-or-missing before evidence classification.",
+    "Unsupported statuses such as None, non-string values, UNKNOWN, UNRESOLVED, and NOT_APPLICABLE are ambiguous rather than independent defects.",
+    "Runtime analyzer output uses execution-complete status and result-static-review blocker, while pre-execution blockers remain only in static spec and manifest.",
+    "Missing REFUTE evidence classes map to remediation classes, and multiple remediation classes emit mixed remediation.",
+    "Production audit equality test now compares row reconstruction against the actual production helper return value.",
+    "Main validates train sidecar identity and canonical lineage before invoking production reason supervision.",
+    "Schema versions were advanced to v3 for analyzer output and manifest."
+  ],
+  "observed_p3w2_evidence": {
+    "implementation_authority_commit": "e8124806dd5644c9713c0afd5cc9af8bc041eff4",
+    "preserved_calibration_authority_commit": "76d068cd9bc3b888d101e0cf2b7a3ded82578077",
+    "resolved_reason_loss_weight": 0.6518018402446165,
+    "eligible_polarity": {"REFUTE": 0, "SUPPORT": 242},
+    "normal_a1_a3_training_ready": false,
+    "A1_A3_released": false
+  },
+  "authority_inputs": {
+    "data": "data/controlled_v5_v3_without_time_swap.jsonl",
+    "expected_data_sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640",
+    "sidecar": "reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_controlled_train_integrity_sidecar.jsonl",
+    "expected_sidecar_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc",
+    "split_seed": 174,
+    "dev_ratio": 0.2,
+    "train_rows": 2880,
+    "dev_rows": 720,
+    "ordered_train_identity_hash": "cbce1775ddc73f2fbad024ded6a314d15e2eb1988ef107fa72a5eacbdd836784"
+  },
+  "production_helper_authority": {
+    "helper": "scripts/train_controlled_v6b_minimal.py::_p2_prepare_reason_supervision_train_only",
+    "device": "cpu",
+    "train_inputs": {},
+    "train_source_labels": "clean_main for every authoritative train row",
+    "require_min_counts": false,
+    "min_train_count": 50,
+    "retained_count_authority": [
+      "train_reason_counts",
+      "target_class_counts.train_applicable_binary",
+      "train_exclusion_counts"
+    ]
+  },
+  "intervention_type_authority": {
+    "source": "scripts/build_controlled_v5.py::INTERVENTION_TYPES",
+    "derived_from": "src/contramamba/labels.py::InterventionType",
+    "builder_validation": "scripts/build_controlled_v5.py::validate_record"
+  },
+  "generator_component_status_domain": {
+    "production_authority": [
+      "scripts/train_controlled_v6b_minimal.py::P2_GENERATOR_COMPONENT_STATUS_FIELDS",
+      "scripts/train_controlled_v6b_minimal.py::P2_GENERATOR_CLEAN_STATUSES",
+      "scripts/train_controlled_v6b_minimal.py::_p2_normalized_generator_status"
+    ],
+    "pass_status": "PASS",
+    "fail_status": "FAIL",
+    "unsupported_or_missing_class": "AMBIGUOUS_INTEGRITY_EVIDENCE"
+  },
+  "generator_evidence_proof_contract": {
+    "available": false,
+    "source": null,
+    "clause": null,
+    "production_default_narrow_repair_allowed": false
+  },
+  "runtime_output_truthfulness": {
+    "status": "P3W3_AUDIT_EXECUTION_COMPLETE_PENDING_RESULT_REVIEW",
+    "audit_execution_completed": true,
+    "result_static_review_completed": false,
+    "production_behavior_modified": false,
+    "polarity_supervision_released": false,
+    "A1_A3_released": false,
+    "remaining_blockers": [
+      "P2_POLARITY_LOCAL_SUPERVISION_NOT_TRAINING_READY",
+      "P3W3_RESULT_STATIC_REVIEW_PENDING"
+    ],
+    "forbidden_runtime_blocker": "P3W3_POLARITY_AUTHORITY_AUDIT_NOT_EXECUTED"
+  },
+  "pre_execution_remaining_blockers": [
+    "P2_POLARITY_LOCAL_SUPERVISION_NOT_TRAINING_READY",
+    "P3W3_POLARITY_AUTHORITY_AUDIT_NOT_EXECUTED",
+    "P3W3_STATIC_REVIEW_PENDING"
+  ],
+  "candidate_universes_nested": ["U1", "U2", "U3", "U4", "U5", "U6", "U7", "U8"],
+  "generator_evidence_classes": [
+    "PROVEN_EXPECTED_POLARITY_INTERVENTION_MISMATCH_ONLY",
+    "INDEPENDENT_GENERATOR_OR_SEMANTIC_DEFECT_EVIDENCE",
+    "AMBIGUOUS_INTEGRITY_EVIDENCE",
+    "CLEAN"
+  ],
+  "remediation_class_mapping": {
+    "PROVEN_EXPECTED_POLARITY_INTERVENTION_MISMATCH_ONLY": "NARROW_CONTRACT_REPAIR",
+    "AMBIGUOUS_INTEGRITY_EVIDENCE": "INTEGRITY_REANNOTATION",
+    "INDEPENDENT_GENERATOR_OR_SEMANTIC_DEFECT_EVIDENCE": "NEW_REFUTE_AUTHORITY",
+    "CLEAN_missing_refute": "P3W3_AUDIT_BLOCKED"
+  },
+  "counterfactuals": {
+    "C0": "current production eligibility",
+    "C1": "ignore P2_GENERATOR_STATUS_DEFECT only",
+    "C2": "ignore P2_INTEGRITY_SOURCE_REQUIRED only",
+    "C3": "ignore P2_POLARITY_INTERVENTION_CONTRACT_FAIL only",
+    "C4": "ignore generator defect and intervention-contract failure",
+    "C5": "admit only proven expected polarity-only mismatch REFUTE rows satisfying identity, lineage, axis, label, intervention, and proof-authority contracts"
+  },
+  "pair_level_aggregation": {
+    "pair_key": "pair_id",
+    "eligibility_key": "pairs_with_eligible_canonical_SUPPORT_row",
+    "evidence_clean_key": "pairs_with_generator_evidence_clean_canonical_SUPPORT_row"
+  },
+  "execution_isolation_contract": {
+    "model_loaded": false,
+    "encoder_loaded": false,
+    "tokenizer_loaded": false,
+    "cuda_required": false,
+    "forward_executed": false,
+    "backward_executed": false,
+    "optimizer_step_executed": false,
+    "scheduler_step_executed": false,
+    "training_executed": false,
+    "dev_evaluation_executed": false,
+    "checkpoint_loaded": false,
+    "checkpoint_written": false,
+    "prediction_artifact_used": false,
+    "A0_artifact_used": false,
+    "EMA_artifact_used": false
+  },
+  "forbidden_claims": [
+    "P3W3_AUDIT_PASS",
+    "P2_INTEGRITY_GATE_DEFECTIVE",
+    "P2_REFUTE_ROWS_RECOVERABLE",
+    "P2_POLARITY_SUPERVISION_RESOLVED",
+    "NEW_REFUTE_DATA_REQUIRED",
+    "A1_READY",
+    "A2_READY",
+    "A3_READY",
+    "P3_PASS"
+  ],
+  "runtime_validation_executed": false,
+  "python_executed": false,
+  "pytest_executed": false,
+  "analyzer_executed": false,
+  "git_stage_commit_push_executed": false
+}
