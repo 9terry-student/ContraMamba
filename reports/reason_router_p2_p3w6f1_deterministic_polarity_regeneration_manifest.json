@@ -1,0 +1,634 @@
+{
+  "schema_version": "reason_router_p2_p3w6f1_deterministic_polarity_regeneration_implementation_manifest_v3",
+  "decision": "P3W6F1_IMPLEMENTATION_SPEC_READY_FOR_STATIC_REVIEW",
+  "revision_history": {
+    "v1_static_review": "P3W6F1_IMPLEMENTATION_SPEC_V1_STATIC_REVIEW_BLOCKED_REVISION_REQUIRED",
+    "v2_static_review": "P3W6F1_IMPLEMENTATION_SPEC_V2_STATIC_REVIEW_BLOCKED_SURGICAL_REVISION_REQUIRED"
+  },
+  "authority_commit": "01d983f8d09cacf0eddefd2014fc81a28771cf5e",
+  "p3w5_spec_paths": [
+    "reports/reason_router_p2_p3w5_separate_remediation_spec.md",
+    "reports/reason_router_p2_p3w5_separate_remediation_manifest.json"
+  ],
+  "p3w4_result_authority_commit": "f0a9afddc5b93c54aa72b0335c5a1a2f517cf934",
+  "p3w4_authority_artifact_paths": [
+    "reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_canonical_grammar_authority_summary.json",
+    "reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_canonical_grammar_authority_pairs.jsonl",
+    "reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_f2_manual_review.csv"
+  ],
+  "F1_target_pair_count": 121,
+  "F1_target_row_count": 121,
+  "F1_root_cause_class": "F1_TRUE_POLARITY_GENERATION_DEFECT",
+  "F1_remediation_state": "REGENERATION_REQUIRED",
+  "static_source_trace": {
+    "dataset_generator_source_file": {
+      "source_path": "scripts/build_controlled_v5.py",
+      "function_or_symbol": "module build_controlled_v5",
+      "relevant_responsibility": "Production controlled-v5 dataset generator.",
+      "source_sha256": "c41e6a52401bd8c83970286b176950fc751509bee6d797d5da9aea4262c72802"
+    },
+    "relevant_generator_function": {
+      "source_path": "scripts/build_controlled_v5.py",
+      "function_or_symbol": "_build_records; build_controlled_records",
+      "relevant_responsibility": "Constructs generated records and calls _statement for polarity_flip evidence.",
+      "line_references": [380, 453, 470]
+    },
+    "polarity_flip_construction_path": {
+      "source_path": "scripts/build_controlled_v5.py",
+      "function_or_symbol": "_build_records polarity_flip branch",
+      "relevant_responsibility": "Creates polarity_flip rows using _statement(fact, negative=not base_refute).",
+      "line_references": [453]
+    },
+    "predicate_representation_source": {
+      "source_path": "scripts/build_controlled_v5.py",
+      "function_or_symbol": "FACT_TEMPLATES; _ADDITIONAL_FACT_ROWS; _GENERATED_PREDICATES; _generated_fact_template",
+      "relevant_responsibility": "Provides predicate and alternate_predicate as inflected surface strings.",
+      "line_references": [51, 252, 269, 295],
+      "upstream_base_predicate_metadata": "NOT_FOUND_IN_AUDITED_SOURCE"
+    },
+    "predicate_surface_form_construction": {
+      "source_path": "scripts/build_controlled_v5.py",
+      "function_or_symbol": "_statement",
+      "relevant_responsibility": "Reads values[\"predicate\"] and renders it into evidence.",
+      "line_references": [333, 335, 339]
+    },
+    "negation_construction": {
+      "source_path": "scripts/build_controlled_v5.py",
+      "function_or_symbol": "_statement negative branch",
+      "relevant_responsibility": "Prefixes predicate with did not when negative is true.",
+      "line_references": [333, 337]
+    },
+    "did_not_construction": {
+      "source_path": "scripts/build_controlled_v5.py",
+      "function_or_symbol": "_statement",
+      "relevant_responsibility": "Exact construction predicate = f\"did not {predicate}\".",
+      "line_references": [337]
+    },
+    "inflected_predicate_construction": {
+      "source_path": "scripts/build_controlled_v5.py",
+      "function_or_symbol": "FACT_TEMPLATES; _ADDITIONAL_FACT_ROWS; _GENERATED_PREDICATES; _generated_fact_template",
+      "relevant_responsibility": "Selects past-tense predicate surfaces before _statement is called.",
+      "line_references": [51, 252, 269, 295]
+    },
+    "evidence_rendering_path": {
+      "source_path": "scripts/build_controlled_v5.py",
+      "function_or_symbol": "_statement; _paraphrase; _record; _build_records",
+      "relevant_responsibility": "_statement renders F1 polarity_flip evidence; _record stores evidence in source row.",
+      "line_references": [333, 344, 353, 380, 453]
+    },
+    "row_id_construction": {
+      "source_path": "scripts/build_controlled_v5.py",
+      "function_or_symbol": "_record",
+      "relevant_responsibility": "Constructs id as f\"{fact['pair_id']}__{intervention}\".",
+      "line_references": [353, 366]
+    },
+    "pair_canonical_linkage_construction": {
+      "source_path": "scripts/build_controlled_v5.py; scripts/build_stage185a_controlled_train_integrity_sidecar.py",
+      "function_or_symbol": "_record; build_sidecar",
+      "relevant_responsibility": "_record stores pair_id; Stage185 groups by pair_id and selects intervention_type none as canonical.",
+      "line_references": [367, 479, 491]
+    },
+    "grammar_validator_path": {
+      "source_path": "scripts/build_stage185a_controlled_train_integrity_sidecar.py",
+      "function_or_symbol": "grammar_anomaly; build_sidecar",
+      "relevant_responsibility": "Detects did not followed by fact predicate or alternate predicate and assigns grammar failure codes.",
+      "source_sha256": "11e6ba89b8131c76eac4504b4273867eaa99a131abe23d3238eb65ecda207bbc",
+      "line_references": [343, 346, 510, 513]
+    }
+  },
+  "root_cause_trace": {
+    "all_121_same_generator_rule_path": true,
+    "defect_location_classification": "surface rendering / morphology selection in _statement negative branch",
+    "generator_input_metadata_wrong": "UNRESOLVED_STATICALLY",
+    "morphology_selection_wrong": true,
+    "surface_rendering_wrong": true,
+    "base_predicate_form_already_upstream": "NOT_FOUND_IN_AUDITED_SOURCE",
+    "current_inflected_predicate_selection": "values[\"predicate\"] from fact metadata populated by FACT_TEMPLATES, _ADDITIONAL_FACT_ROWS, or _GENERATED_PREDICATES.",
+    "did_not_inflected_mechanism": "_statement sets predicate to f\"did not {predicate}\" after predicate = values[\"predicate\"].",
+    "p3w4_static_proof": {
+      "F1_selector_count": 121,
+      "production_rule_reproduction_result_true_count": 121,
+      "reason_codes": ["DID_NOT_INFLECTED_PREDICATE", "GRAMMAR_TEMPLATE_FAIL"],
+      "generator_source_sha_matches_true_count": 121,
+      "polarity_member_final_label": "REFUTE",
+      "polarity_member_polarity_label": "REFUTE",
+      "canonical_member_final_label": "SUPPORT"
+    }
+  },
+  "root_cause_resolution": {
+    "exact_root_cause": "_statement reuses inflected fact predicate surface after do-support negation; generic negative _statement repair is forbidden because it would also alter F2 canonical REFUTE rows.",
+    "preferred_resolution": "correct generation at the source only in the F1-scoped polarity_flip negative construction branch after target-scope equivalence passes.",
+    "post_hoc_text_repair_allowed": false
+  },
+  "global_negative_statement_repair_authorized": false,
+  "negative_statement_caller_inventory": [
+    {
+      "source_path": "scripts/build_controlled_v5.py",
+      "caller_symbol": "_build_records canonical none branch -> _statement(fact, negative=base_refute)",
+      "intervention_member_type": "canonical none",
+      "negative_condition": "base_refute == true",
+      "possible_final_label": "REFUTE",
+      "F1_F2_unaffected_membership_relationship": "Includes P3-W4 F2 canonical REFUTE grammar-defect rows under manual-review authority; may include other non-F1 canonical REFUTE rows.",
+      "repair_effect_if_generic_negative_branch_changes": "Would change F2 canonical rows and violate F2_changed_row_ids == []."
+    },
+    {
+      "source_path": "scripts/build_controlled_v5.py",
+      "caller_symbol": "_build_records canonical none branch -> _statement(fact, negative=base_refute)",
+      "intervention_member_type": "canonical none",
+      "negative_condition": "base_refute == false",
+      "possible_final_label": "SUPPORT",
+      "F1_F2_unaffected_membership_relationship": "Includes F1 canonical SUPPORT and unaffected canonical rows.",
+      "repair_effect_if_generic_negative_branch_changes": "No direct text effect because negative rendering is not active."
+    },
+    {
+      "source_path": "scripts/build_controlled_v5.py",
+      "caller_symbol": "_build_records polarity_flip branch -> _statement(fact, negative=not base_refute)",
+      "intervention_member_type": "polarity_flip",
+      "negative_condition": "base_refute == false",
+      "possible_final_label": "REFUTE",
+      "F1_F2_unaffected_membership_relationship": "Authorized F1 target rows are a P3-W4/P3-W5-derived 121-row set; equality with generated negative polarity_flip IDs must be verified.",
+      "repair_effect_if_generic_negative_branch_changes": "Allowed only through the F1-scoped polarity_flip branch after target-scope equivalence passes."
+    },
+    {
+      "source_path": "scripts/build_controlled_v5.py",
+      "caller_symbol": "_build_records polarity_flip branch -> _statement(fact, negative=not base_refute)",
+      "intervention_member_type": "polarity_flip",
+      "negative_condition": "base_refute == true",
+      "possible_final_label": "SUPPORT",
+      "F1_F2_unaffected_membership_relationship": "Includes positive polarity_flip rows associated with canonical REFUTE pairs, including F2 triples.",
+      "repair_effect_if_generic_negative_branch_changes": "No direct text effect because negative rendering is not active; behavior must be preserved."
+    },
+    {
+      "source_path": "scripts/build_controlled_v5.py",
+      "caller_symbol": "_build_records other _statement callers",
+      "intervention_member_type": "entity_swap/event_swap/time_swap/location_swap/role_swap/title_name_swap/predicate_swap",
+      "negative_condition": "omitted default negative == false",
+      "possible_final_label": "NOT_ENTITLED",
+      "F1_F2_unaffected_membership_relationship": "Unaffected by F1 authorization.",
+      "repair_effect_if_generic_negative_branch_changes": "No direct text effect; must preserve existing behavior."
+    },
+    {
+      "source_path": "scripts/build_controlled_v5.py",
+      "caller_symbol": "_build_records paraphrase branch -> _paraphrase(fact, negative=base_refute)",
+      "intervention_member_type": "paraphrase",
+      "negative_condition": "base_refute == true in _paraphrase, not _statement",
+      "possible_final_label": "REFUTE",
+      "F1_F2_unaffected_membership_relationship": "P3-W4 F2 includes paraphrase REFUTE members under manual-review authority.",
+      "repair_effect_if_generic_negative_branch_changes": "Not an _statement caller; F1 repair must not alter _paraphrase."
+    }
+  ],
+  "F1_scoped_repair_contract": {
+    "generic_negative_statement_repair_authorized": false,
+    "forbidden_implementation": "changing every _statement(..., negative=True) output",
+    "repair_point": "scripts/build_controlled_v5.py::_build_records polarity_flip branch",
+    "allowed_consumer": "negative polarity_flip branch only after target-scope equivalence passes",
+    "preserve_when_polarity_flip_not_negative": true,
+    "preserve_canonical_none": true,
+    "preserve_paraphrase": true,
+    "preserve_other_interventions": true,
+    "required_blast_radius": {
+      "changed_ids": "authorized_F1_row_ids",
+      "F2_changed_row_ids": [],
+      "canonical_changed_row_ids": [],
+      "paraphrase_changed_row_ids": [],
+      "unaffected_changed_row_ids": []
+    }
+  },
+  "target_scope_equivalence_contract": {
+    "negative_polarity_flip_generated_ids": "derived from current production generator structure: _build_records polarity_flip branch when negative rendering is requested",
+    "authorized_F1_row_ids": "derived from P3-W4/P3-W5 authority polarity member source_row.id values",
+    "equivalence_required": true,
+    "on_mismatch": "TARGET_SCOPE_EQUIVALENCE_UNRESOLVED",
+    "current_static_status": "TARGET_SCOPE_EQUIVALENCE_UNRESOLVED",
+    "future_verification_required_before_execution": true,
+    "future_verification_required_during_execution": true
+  },
+  "repair_api_contract": {
+    "approved_callable_interface": "_statement(fact, negative=False, predicate_surface_override=None, **overrides)",
+    "one_and_only_one_approved_interface": true,
+    "predicate_surface_override_none": "current behavior exactly preserved",
+    "predicate_surface_override_not_none_and_negative_true": "use exact supplied predicate surface after did not",
+    "predicate_surface_override_not_none_and_negative_false": "fail closed / reject invalid invocation",
+    "only_authorized_consumer": "_build_records polarity_flip branch AND polarity flip requests negative rendering AND target-scope equivalence gate has passed",
+    "base_predicate_expression": "_BASE_PREDICATE_BY_INFLECTED[fact[\"predicate\"]]",
+    "forbidden_consumers": [
+      "canonical none",
+      "_paraphrase",
+      "other interventions",
+      "positive polarity_flip"
+    ]
+  },  "base_form_implementation_authority": {
+    "selected_authority": "generator-owned explicit base-form mapping",
+    "symbol_name": "_BASE_PREDICATE_BY_INFLECTED",
+    "source_path": "scripts/build_controlled_v5.py",
+    "key_representation": "exact generator-owned inflected predicate surface string",
+    "value_representation": "exact generator-owned base predicate surface string suitable after did not",
+    "coverage_universe": "required_F1_inflected_predicate_surfaces; optional superset for generator-known predicate and alternate_predicate surfaces",
+    "duplicate_key_policy": "duplicate keys forbidden; conflicting base values fail validation",
+    "missing_key_behavior": "base form missing -> MANUAL_REVIEW_REQUIRED -> candidate_accepted = false",
+    "alternate_predicate_handling": "alternate_predicate surfaces may be included for table completeness and Stage185 validator parity, but F1 repair consumer uses only fact[\"predicate\"] for authorized polarity_flip rows",
+    "validation_behavior": "validate coverage before candidate acceptance and fail closed on missing or ambiguous mapping",
+    "fact_metadata_fields_selected": false
+  },
+  "base_form_coverage_contract": {
+    "current_static_status": "BASE_FORM_COVERAGE_NOT_EVALUATED",
+    "current_mapping_implemented": false,
+    "current_coverage_evaluated": false,
+    "required_F1_inflected_predicate_surfaces": "derive during authorized implementation/audit",
+    "required_result": {
+      "missing_base_form_surfaces": [],
+      "ambiguous_base_form_surfaces": [],
+      "mapping_or_metadata_covered_surfaces_superset_of_required_F1_inflected_predicate_surfaces": true
+    },
+    "on_missing_or_ambiguous": "MANUAL_REVIEW_REQUIRED with candidate_accepted = false",
+    "consumer_scope": "F1-scoped negative polarity_flip branch only"
+  },  "p3w5_artifact_contract_preservation": {
+    "summary_required_count_and_pair_id_arrays": [
+      "F1_target_pair_count",
+      "F1_target_pair_ids",
+      "F1_generated_candidate_count",
+      "F1_generated_candidate_pair_ids",
+      "F1_accepted_candidate_count",
+      "F1_accepted_candidate_pair_ids",
+      "F1_manual_review_required_count",
+      "F1_manual_review_required_pair_ids",
+      "F1_rejected_candidate_count",
+      "F1_rejected_candidate_pair_ids",
+      "F1_missing_candidate_count",
+      "F1_missing_candidate_pair_ids",
+      "F1_unauthorized_candidate_count",
+      "F1_unauthorized_candidate_pair_ids"
+    ],
+    "summary_count_array_length_equality_required": true,
+    "summary_partition_contract": "accepted/manual-review-required/rejected arrays are pairwise disjoint and union to generated authorized candidate pair IDs",
+    "execution_namespace_fields": [
+      "F1_execution_status",
+      "F1_execution_decision",
+      "F1_artifact_paths",
+      "F1_input_sha256",
+      "F1_execution_commit",
+      "F1_output_sha256"
+    ],
+    "record_required_fields": [
+      "pair_id",
+      "original_row_id",
+      "regenerated_row_id",
+      "intervention_type",
+      "original_text",
+      "regenerated_text",
+      "original_final_label",
+      "regenerated_final_label",
+      "canonical_row_id",
+      "generator_source_path",
+      "generator_source_sha256",
+      "generator_commit",
+      "fact_identity",
+      "grammar_validator_source",
+      "grammar_validator_sha256",
+      "grammar_before",
+      "grammar_after",
+      "sidecar_before",
+      "sidecar_after",
+      "lineage_preserved",
+      "semantic_validation_status",
+      "semantic_polarity_preserved",
+      "candidate_accepted",
+      "ordered_rejection_codes",
+      "inflected_predicate_surface",
+      "expected_base_predicate",
+      "base_form_derivation_method",
+      "base_form_derivation_source_path",
+      "base_form_derivation_source_sha256",
+      "base_form_source_symbol",
+      "authorized_replacement_span",
+      "outside_span_byte_identity"
+    ],
+    "semantic_transformation_evidence_fields": [
+      "canonical_text",
+      "original_defective_text",
+      "regenerated_text",
+      "normalized_changed_span",
+      "negation_markers_added",
+      "negation_markers_removed",
+      "auxiliary_verb_changes",
+      "predicate_inflection_changes",
+      "duplicate_or_missing_tokens",
+      "semantic_validation_method",
+      "semantic_validation_evidence"
+    ],
+    "full_output_generator_identity_fields": [
+      "baseline_generator_commit",
+      "baseline_generator_source_path",
+      "baseline_generator_source_sha256",
+      "repaired_generator_commit",
+      "repaired_generator_source_path",
+      "repaired_generator_source_sha256",
+      "deterministic_generator_invocation",
+      "generator_configuration_identity",
+      "baseline_complete_output_sha256",
+      "repaired_complete_output_sha256",
+      "baseline_row_count",
+      "repaired_row_count",
+      "baseline_id_sequence",
+      "repaired_id_sequence",
+      "baseline_id_sequence_sha256",
+      "repaired_id_sequence_sha256",
+      "row_order_changed"
+    ],
+    "nested_source_row_objects_do_not_replace_explicit_authority_fields": true
+  },
+  "authorized_target_contract": {
+    "authorized_F1_pairs": "exactly 121",
+    "authorized_F1_rows": "exactly 121 polarity_flip rows",
+    "selector": {
+      "family": "F1",
+      "automatic_root_cause_class": "F1_TRUE_POLARITY_GENERATION_DEFECT",
+      "remediation_state": "REGENERATION_REQUIRED",
+      "pair_id_membership": "decision_supporting_pair_ids"
+    },
+    "authorized_row_id_source": "P3-W4 pair artifact members.polarity_flip.source_row.id",
+    "F2_target_expansion": false
+  },
+  "row_identity_equality_contract": {
+    "original_row_id": "source_original[\"id\"]",
+    "regenerated_row_id": "source_regenerated[\"id\"]",
+    "original_row_id_equals_regenerated_row_id": true
+  },  "source_identity_contract": {
+    "comparison_source_identity_field": "id",
+    "normalized_artifact_identity": "row_id = source_row[\"id\"]"
+  },
+  "proposed_code_changes": [
+    {
+      "source_path": "scripts/build_controlled_v5.py",
+      "symbol_function": "_build_records polarity_flip branch",
+      "current_behavior": "Calls _statement(fact, negative=not base_refute) for polarity_flip; when negative, _statement creates did not plus inflected predicate.",
+      "root_cause": "The F1 negative polarity_flip construction path lacks a base-form predicate surface.",
+      "proposed_behavior": "Only in the polarity_flip branch, when the polarity flip is negative and target-scope equivalence passes, obtain base_predicate = _BASE_PREDICATE_BY_INFLECTED[fact[\"predicate\"]] and call _statement(..., negative=True, predicate_surface_override=base_predicate); preserve all other branches.",
+      "why_this_is_minimal": "Repairs the source-level F1 polarity construction path without changing canonical none, paraphrase, F2, or other negative _statement callers.",
+      "authorized_effect": "Only evidence for authorized 121 F1 polarity_flip rows may change after equivalence verification.",
+      "forbidden_effect": "No changes to claim, non-evidence fields, row order, F2 rows, canonical rows, paraphrase rows, or unaffected rows. Changing every _statement(..., negative=True) output is forbidden."
+    },
+    {
+      "source_path": "scripts/build_controlled_v5.py",
+      "symbol_function": "_BASE_PREDICATE_BY_INFLECTED",
+      "current_behavior": "No reusable upstream base-form field or deterministic base morphology rule was found in audited generator source.",
+      "root_cause": "The F1-scoped negative polarity_flip renderer needs generator-owned base-form authority after did not.",
+      "proposed_behavior": "Add a generator-owned explicit mapping from exact inflected predicate surfaces to exact base predicate surfaces.",
+      "why_this_is_minimal": "Provides deterministic morphology authority scoped to generator provenance without generic NLP, external lookup, or fact metadata redesign.",
+      "authorized_effect": "May be consumed only by the F1-scoped negative polarity_flip branch after coverage and target-scope gates pass.",
+      "forbidden_effect": "No final-label-derived guessing, network lookup, LLM inference, unbounded regex rewrite, or broad _statement negative repair."
+    }
+  ],
+  "repair_design": {
+    "v1_open_alternatives_rejected_as_implementation_choice": [
+      "existing metadata OR morphology rule OR explicit mapping"
+    ],
+    "selected_static_design": "Source repair in _build_records polarity_flip negative branch only; base-form authority is fixed to generator-owned explicit mapping _BASE_PREDICATE_BY_INFLECTED.",
+    "global_negative_statement_repair_authorized": false,
+    "forbidden_implementation": "changing every _statement(..., negative=True) output",
+    "forbidden_methods": [
+      "unbounded regex rewrite",
+      "generic string cleanup across all rows",
+      "LLM-based grammatical correction",
+      "external language model",
+      "runtime heuristic based on final label alone",
+      "dataset-wide postprocessing without generator provenance"
+    ]
+  },  "base_form_authority_contract": {
+    "selected_authority": "generator-owned explicit base-form mapping",
+    "symbol_name": "_BASE_PREDICATE_BY_INFLECTED",
+    "source_path": "scripts/build_controlled_v5.py",
+    "key_representation": "exact generator-owned inflected predicate surface string",
+    "value_representation": "exact generator-owned base predicate surface string suitable after did not",
+    "coverage_universe": "required_F1_inflected_predicate_surfaces; optional superset for generator-known predicate and alternate_predicate surfaces",
+    "duplicate_key_policy": "duplicate keys forbidden; conflicting base values fail validation",
+    "missing_key_behavior": "base form missing -> MANUAL_REVIEW_REQUIRED -> candidate_accepted = false",
+    "alternate_predicate_handling": "alternate_predicate surfaces may be included for table completeness and Stage185 validator parity, but the F1 repair consumer must use only fact[\"predicate\"] for authorized polarity_flip rows",
+    "validation_behavior": "future implementation validates coverage before candidate acceptance and fails closed on missing or ambiguous mapping",
+    "current_static_base_metadata_status": "NOT_FOUND_IN_AUDITED_SOURCE",
+    "required_provenance": [
+      "inflected_predicate_surface",
+      "expected_base_predicate",
+      "base_form_derivation_method",
+      "base_form_derivation_source_path",
+      "base_form_derivation_source_sha256",
+      "base_form_source_symbol",
+      "authorized_replacement_span",
+      "outside_span_byte_identity"
+    ],
+    "forbidden_sources": [
+      "LLM inference",
+      "free-form NLP model inference",
+      "label-derived guess",
+      "dictionary/network lookup at generation time",
+      "heuristic unrelated to generator provenance"
+    ],
+    "fail_closed_rule": "base form missing -> MANUAL_REVIEW_REQUIRED -> candidate_accepted = false"
+  },
+  "semantic_validation_status_mapping": {
+    "positive_acceptance": {
+      "semantic_validation_status": "DETERMINISTIC_POLARITY_REPAIR_PASS",
+      "semantic_polarity_preserved": true,
+      "candidate_accepted": true,
+      "required_derivation": "regenerated evidence preserves exactly one did and exactly one not"
+    },
+    "unresolved": {
+      "semantic_validation_status": "MANUAL_REVIEW_REQUIRED",
+      "semantic_polarity_preserved": null,
+      "candidate_accepted": false,
+      "ordered_rejection_codes_includes": "SEMANTIC_AUTHORITY_UNRESOLVED"
+    },
+    "explicit_contradiction": {
+      "semantic_validation_status": "REJECTED",
+      "semantic_polarity_preserved": false,
+      "candidate_accepted": false
+    }
+  },  "deterministic_semantic_algorithm": {
+    "status_enum": [
+      "DETERMINISTIC_POLARITY_REPAIR_PASS",
+      "MANUAL_REVIEW_REQUIRED",
+      "REJECTED"
+    ],
+    "positive_path_requirements": [
+      "original defective evidence contains authority-reproduced did not plus inflected predicate construction",
+      "replacement span is uniquely identified",
+      "same generator-authorized predicate is rendered in required base form after did not",
+      "claim is byte-identical",
+      "evidence outside authorized replacement span is byte-identical",
+      "exact negation semantics are preserved",
+      "entity / role / title / object / location / time tokens are unchanged",
+      "final_label == REFUTE",
+      "polarity_label == REFUTE",
+      "Stage185 post-regeneration contract passes",
+      "full-output isolation passes"
+    ],
+    "manual_review_required_condition": "Missing, duplicated, or statically underived replacement span/base-form provenance without explicit contradiction.",
+    "rejected_condition": "Claim, labels, protected slots, polarity semantics, row identity, row ordering, or non-authorized rows change."
+  },
+  "full_output_isolation_contract": {
+    "authorized_changed_source_fields": ["evidence"],
+    "evidence_changed_row_ids": "authorized_F1_row_ids",
+    "claim_changed_row_ids": [],
+    "non_text_field_changed_row_ids": [],
+    "changed_ids": "authorized_F1_row_ids",
+    "missing_ids": [],
+    "added_ids": [],
+    "duplicate_ids": [],
+    "unauthorized_changed_row_ids": [],
+    "F2_changed_row_ids": [],
+    "unaffected_changed_row_ids": [],
+    "canonical_changed_row_ids": [],
+    "paraphrase_changed_row_ids": []
+  },
+  "row_order_contract": {
+    "baseline_id_sequence": "repaired_id_sequence",
+    "baseline_id_sequence_sha256": "repaired_id_sequence_sha256",
+    "row_order_changed": false
+  },
+  "stage185_transition_contract": {
+    "baseline_F1_polarity_row": {
+      "grammar_status": "FAIL",
+      "integrity_status": "INELIGIBLE",
+      "canonical_status": "PASS"
+    },
+    "accepted_regenerated_row": {
+      "dataset_source_status": "PASS",
+      "schema_status": "PASS",
+      "intervention_contract_status": "PASS",
+      "grammar_status": "PASS",
+      "integrity_status": "ELIGIBLE",
+      "canonical_status": "PASS",
+      "polarity_contamination_status": "PASS",
+      "time_swap_status": "PASS",
+      "audit_expected_axes": ["polarity"],
+      "audit_changed_axes": ["polarity"],
+      "audit_pair_failure_scope": "none"
+    },
+    "F1_integrity_transition": "INELIGIBLE_TO_ELIGIBLE"
+  },
+  "future_implementation_components": {
+    "A_production_generator_repair": "Reuse scripts/build_controlled_v5.py and repair only the _build_records polarity_flip negative construction path; generic _statement negative rendering repair is forbidden.",
+    "B_F1_authority_target_extractor": "Read P3-W4/P3-W5 authority and emit exactly 121 authorized polarity source_row.id values.",
+    "C_full_output_isolation_semantic_audit_analyzer": "Likely new analyzer; may call production generator and Stage185 logic; must not reconstruct generator behavior to create PASS.",
+    "D_tests": "Focused generator, guard, full-output, and semantic-status tests."
+  },
+  "future_test_contract": {
+    "generator_unit_tests": [
+      "authorized defect example becomes grammatical",
+      "predicate is base form after did not",
+      "negation preserved",
+      "claim unchanged",
+      "labels unchanged",
+      "non-target construction unchanged"
+    ],
+    "guard_tests": [
+      "ordinary affirmative rows unchanged",
+      "ordinary REFUTE rows unchanged",
+      "F2 rows unchanged",
+      "canonical rows unchanged",
+      "paraphrase rows unchanged",
+      "time_swap not admitted"
+    ],
+    "full_output_tests": [
+      "same row count",
+      "same ID set",
+      "same ID sequence",
+      "exactly 121 changed IDs",
+      "all changed IDs authorized",
+      "only evidence changes"
+    ],
+    "semantic_status_tests": [
+      "valid deterministic repair -> DETERMINISTIC_POLARITY_REPAIR_PASS",
+      "ambiguous/non-unique repair -> MANUAL_REVIEW_REQUIRED",
+      "explicit semantic contradiction -> REJECTED"
+    ]
+  },
+  "future_artifact_contract": {
+    "required_artifacts": [
+      "p3w6f1_regeneration_summary.json",
+      "p3w6f1_regenerated_rows.jsonl",
+      "p3w6f1_regeneration_audit.jsonl"
+    ],
+    "recommended_artifacts": [
+      "p3w6f1_full_output_isolation.json"
+    ],
+    "schemas_defined_in_spec": true,
+    "p3w5_required_fields_preserved": true
+  },
+  "future_execution_decisions": [
+    "P3W5_F1_REGENERATION_COMPLETE_ALL_CANDIDATES_ACCEPTED_PENDING_RESULT_REVIEW",
+    "P3W5_F1_REGENERATION_COMPLETE_WITH_BLOCKERS_PENDING_RESULT_REVIEW"
+  ],
+  "future_result_review_decisions": [
+    "P3W5_F1_RESULT_REVIEW_PASS_ALL_ACCEPTED",
+    "P3W5_F1_AUDIT_ARTIFACT_REVIEW_PASS_WITH_BLOCKERS",
+    "P3W5_F1_RESULT_REVIEW_BLOCKED"
+  ],
+  "F2_isolation_contract": {
+    "F2_manual_review_executed": false,
+    "F2_row_regeneration_design_expanded": false,
+    "F2_source_mutation_authorized": false,
+    "F2_decision_changed": false,
+    "F1_repair_auto_applied_to_F2": false,
+    "future_full_output_required": {
+      "F2_changed_row_ids": []
+    }
+  },
+  "release_non_authority": {
+    "F1_regeneration_executed": false,
+    "F1_candidate_authority_established": false,
+    "production_dataset_repair_authority_established": false,
+    "training_admission_authority_established": false,
+    "polarity_supervision_released": false,
+    "A1_A2_A3_released": false,
+    "F2_review_executed": false
+  },
+  "static_blockers": [
+    "P3W6F1_IMPLEMENTATION_SPEC_NOT_STATICALLY_REVIEWED",
+    "P3W6F1_GENERATOR_REPAIR_NOT_IMPLEMENTED",
+    "P3W6F1_REGENERATION_NOT_EXECUTED",
+    "P3W6F1_RESULT_REVIEW_NOT_EXECUTED",
+    "P3W5_F2_MANUAL_REVIEW_NOT_EXECUTED",
+    "P2_POLARITY_LOCAL_SUPERVISION_NOT_TRAINING_READY",
+    "A1_A3_NOT_RELEASED"
+  ],
+  "forbidden_claims_not_made": [
+    "P3W6F1_IMPLEMENTATION_COMPLETE",
+    "P3W6F1_EXECUTION_PASS",
+    "F1_REGENERATED",
+    "F1_REPAIR_COMPLETE",
+    "F1_CANDIDATE_AUTHORITY_ESTABLISHED",
+    "PRODUCTION_DATASET_REPAIRED",
+    "TRAINING_ADMISSION_READY",
+    "POLARITY_SUPERVISION_RELEASED",
+    "F2_REVIEW_COMPLETE",
+    "A1_READY",
+    "A2_READY",
+    "A3_READY",
+    "P3_PASS"
+  ],
+  "forbidden_claims": [
+    "P3W6F1_IMPLEMENTATION_COMPLETE",
+    "P3W6F1_EXECUTION_PASS",
+    "F1_REGENERATED",
+    "F1_REPAIR_COMPLETE",
+    "F1_CANDIDATE_AUTHORITY_ESTABLISHED",
+    "PRODUCTION_DATASET_REPAIRED",
+    "TRAINING_ADMISSION_READY",
+    "POLARITY_SUPERVISION_RELEASED",
+    "F2_REVIEW_COMPLETE",
+    "A1_READY",
+    "A2_READY",
+    "A3_READY",
+    "P3_PASS"
+  ],
+  "implementation_executed": false,
+  "generator_executed": false,
+  "regeneration_executed": false,
+  "analyzer_executed": false,
+  "tests_executed": false,
+  "manual_review_executed": false,
+  "training_executed": false,
+  "evaluation_executed": false,
+  "git_actions_executed": false
+}
