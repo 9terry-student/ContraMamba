@@ -1,0 +1,896 @@
+{
+    "schema_version":  "reason_router_p2_p3w5_separate_remediation_manifest_v5",
+    "revision_history":  {
+                             "v1_static_review":  "P3W5_SPEC_STATIC_REVIEW_BLOCKED_REVISION_REQUIRED",
+                             "v2_static_review":  "P3W5_SPEC_V2_STATIC_REVIEW_BLOCKED_REVISION_REQUIRED",
+                             "v3_static_review":  "P3W5_SPEC_V3_STATIC_REVIEW_BLOCKED_REVISION_REQUIRED",
+                             "v4_static_review":  "P3W5_SPEC_V4_STATIC_REVIEW_BLOCKED_SURGICAL_REVISION_REQUIRED"
+                         },
+    "decision":  "P3W5_SEPARATE_REMEDIATION_SPEC_READY_FOR_STATIC_REVIEW",
+    "authority_commit":  "f0a9afddc5b93c54aa72b0335c5a1a2f517cf934",
+    "p3w4_execution_commit":  "ca99038d812696467a4330cffc1c4c5b5f72cfe2",
+    "p3w4_result_decision":  "P3W4_RESULT_REVIEW_PASS_F1_REGENERATION_F2_MANUAL_REVIEW_REQUIRED",
+    "authority_artifact_paths":  {
+                                     "summary_json":  "reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_canonical_grammar_authority_summary.json",
+                                     "pairs_jsonl":  "reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_canonical_grammar_authority_pairs.jsonl",
+                                     "f2_manual_review_csv":  "reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_f2_manual_review.csv"
+                                 },
+    "authority_artifact_sha256":  {
+                                      "p3w4_canonical_grammar_authority_summary_json":  "7c0cc383dde38a1c564dae445a78eaf9171b8648d0720de3a2acc0ba68e68e80",
+                                      "p3w4_canonical_grammar_authority_pairs_jsonl":  "850ac6e8924fe334fa7f18659d204f6e0546381b1c3d3eb601f893f3eb00a493",
+                                      "p3w4_f2_manual_review_csv_git_canonical_lf":  "ccc539e743d1a4226391cdca1422bb0a1054c53fd7c53a4210a54271d1e9e8a5",
+                                      "p3w4_f2_manual_review_csv_original_execution_crlf":  "0c3c0f85bed08cedc9d664a3c685d1c40560dbe3f9bd5b8bb88543ed9e528515"
+                                  },
+    "preserved_contracts":  [
+                                "Conditional First-Blocker Reason Router",
+                                "Reason-Specific Supervision",
+                                "Explicit Gradient Ownership",
+                                "FRAME \u003e PREDICATE \u003e SUFFICIENCY \u003e AUTHORIZED",
+                                "final 3-way CE = router-only",
+                                "F/P/S/polarity inputs detached from final CE",
+                                "secondary reasons = diagnostic only",
+                                "EMA = observer/baseline only",
+                                "A0-A3 and E0 preserved"
+                            ],
+    "affected_pair_universe_count":  240,
+    "F1_target_pair_count":  121,
+    "F1_target_row_count":  121,
+    "F1_root_cause_class":  "F1_TRUE_POLARITY_GENERATION_DEFECT",
+    "F1_remediation_state":  "REGENERATION_REQUIRED",
+    "F1_target_selector":  {
+                               "family":  "F1",
+                               "automatic_root_cause_class":  "F1_TRUE_POLARITY_GENERATION_DEFECT",
+                               "remediation_state":  "REGENERATION_REQUIRED",
+                               "pair_id_membership":  "decision_supporting_pair_ids"
+                           },
+    "F1_modification_scope":  {
+                                  "allowed_member":  "polarity_flip",
+                                  "forbidden_members":  [
+                                                            "canonical none member",
+                                                            "optional paraphrase member",
+                                                            "F2 family member",
+                                                            "unaffected dataset rows"
+                                                        ],
+                                  "row_id_policy":  "preserve existing row_id as stable logical identity",
+                                  "provenance_required":  [
+                                                              "original_text",
+                                                              "regenerated_text"
+                                                          ]
+                              },
+    "F1_generator_impact_isolation_contract":  {
+                                                   "required_identity_fields":  [
+                                                                                    "baseline_generator_commit",
+                                                                                    "baseline_generator_source_path",
+                                                                                    "baseline_generator_source_sha256",
+                                                                                    "repaired_generator_commit",
+                                                                                    "repaired_generator_source_path",
+                                                                                    "repaired_generator_source_sha256",
+                                                                                    "deterministic_generator_invocation",
+                                                                                    "generator_configuration_identity",
+                                                                                    "baseline_complete_output_sha256",
+                                                                                    "repaired_complete_output_sha256",
+                                                                                    "baseline_row_count",
+                                                                                    "repaired_row_count",
+                                                                                    "baseline_id_sequence",
+                                                                                    "repaired_id_sequence",
+                                                                                    "baseline_id_sequence_sha256",
+                                                                                    "repaired_id_sequence_sha256"
+                                                                                ],
+                                                   "comparison_key":  "id",
+                                                   "allowed_changed_row_set":  "exactly the 121 authorized F1 polarity_flip source_row.id values",
+                                                   "required_comparison_results":  {
+                                                                                       "changed_ids":  "authorized_F1_row_ids",
+                                                                                       "missing_ids":  [
+
+                                                                                                       ],
+                                                                                       "added_ids":  [
+
+                                                                                                     ],
+                                                                                       "duplicate_ids":  [
+
+                                                                                                         ],
+                                                                                       "unauthorized_changed_row_ids":  [
+
+                                                                                                                        ],
+                                                                                       "F2_changed_row_ids":  [
+
+                                                                                                              ],
+                                                                                       "unaffected_changed_row_ids":  [
+
+                                                                                                                      ],
+                                                                                       "canonical_changed_row_ids":  [
+
+                                                                                                                     ],
+                                                                                       "paraphrase_changed_row_ids":  [
+
+                                                                                                                      ],
+                                                                                       "row_order_changed":  false
+                                                                                   },
+                                                   "authorized_F1_row_change_limit":  "evidence field only",
+                                                   "must_remain_identical":  [
+                                                                                 "claim",
+                                                                                 "id",
+                                                                                 "row_id as normalized artifact identity derived from id",
+                                                                                 "pair_id",
+                                                                                 "intervention_type",
+                                                                                 "final_label",
+                                                                                 "polarity_label",
+                                                                                 "frame_compatible_label",
+                                                                                 "predicate_covered_label",
+                                                                                 "sufficiency_label",
+                                                                                 "primary_failure_type",
+                                                                                 "canonical linkage",
+                                                                                 "split",
+                                                                                 "fact identity",
+                                                                                 "all other source-row fields"
+                                                                             ],
+                                                   "candidate_only_export_sufficient":  false,
+                                                   "authorized_changed_source_fields":  [
+                                                                                            "evidence"
+                                                                                        ],
+                                                   "required_changed_field_comparison_results":  {
+                                                                                                     "evidence_changed_row_ids":  "authorized_F1_row_ids",
+                                                                                                     "claim_changed_row_ids":  [
+
+                                                                                                                               ],
+                                                                                                     "non_text_field_changed_row_ids":  [
+
+                                                                                                                                        ]
+                                                                                                 },
+                                                   "complete_dataset_output_rule":  "generator code or template identity may differ in provenance, but any complete dataset row output field other than evidence changing is isolation failure",
+                                                   "authorized_F1_row_ids_definition":  "exact 121 IDs extracted from P3-W4 pair artifact polarity member source_row.id values",
+                                                   "future_artifact_row_id_requirements":  {
+                                                                                               "original_row_id":  "source_original[\"id\"]",
+                                                                                               "regenerated_row_id":  "source_regenerated[\"id\"]",
+                                                                                               "original_row_id_equals_regenerated_row_id":  true
+                                                                                           },
+                                                   "id_sequence_definition":  "source-row id array extracted from complete generator output in row order",
+                                                   "required_ordering_results":  {
+                                                                                     "baseline_id_sequence":  "repaired_id_sequence",
+                                                                                     "baseline_id_sequence_sha256":  "repaired_id_sequence_sha256",
+                                                                                     "row_order_changed":  false
+                                                                                 },
+                                                   "row_order_equality_non_substitution_contract":  "Set equality, changed-ID equality, and per-row field equality do not substitute for row-order equality."
+                                               },
+    "F1_semantic_validation_derivation_contract":  {
+                                                       "required_stage185_post_regeneration_state":  {
+                                                                                                         "dataset_source_status":  "PASS",
+                                                                                                         "schema_status":  "PASS",
+                                                                                                         "intervention_contract_status":  "PASS",
+                                                                                                         "grammar_status":  "PASS",
+                                                                                                         "integrity_status":  "ELIGIBLE",
+                                                                                                         "canonical_status":  "PASS",
+                                                                                                         "polarity_contamination_status":  "PASS",
+                                                                                                         "time_swap_status":  "PASS",
+                                                                                                         "audit_expected_axes":  [
+                                                                                                                                     "polarity"
+                                                                                                                                 ],
+                                                                                                         "audit_changed_axes":  [
+                                                                                                                                    "polarity"
+                                                                                                                                ],
+                                                                                                         "audit_pair_failure_scope":  "none"
+                                                                                                     },
+                                                       "preserved_axis_identity":  [
+                                                                                       "frame",
+                                                                                       "predicate",
+                                                                                       "sufficiency",
+                                                                                       "name",
+                                                                                       "role",
+                                                                                       "title",
+                                                                                       "location",
+                                                                                       "object",
+                                                                                       "time"
+                                                                                   ],
+                                                       "text_transformation_evidence_fields":  [
+                                                                                                   "canonical_text",
+                                                                                                   "original_defective_text",
+                                                                                                   "regenerated_text",
+                                                                                                   "normalized_changed_span",
+                                                                                                   "negation_markers_added",
+                                                                                                   "negation_markers_removed",
+                                                                                                   "auxiliary_verb_changes",
+                                                                                                   "predicate_inflection_changes",
+                                                                                                   "duplicate_or_missing_tokens",
+                                                                                                   "semantic_validation_method",
+                                                                                                   "semantic_validation_evidence"
+                                                                                               ],
+                                                       "candidate_accepted_requires_more_than":  [
+                                                                                                     "grammar PASS",
+                                                                                                     "label preservation"
+                                                                                                 ],
+                                                       "unresolved_semantic_authority_result":  {
+                                                                                                    "semantic_validation_status":  "MANUAL_REVIEW_REQUIRED",
+                                                                                                    "semantic_polarity_preserved":  null,
+                                                                                                    "candidate_accepted":  false,
+                                                                                                    "ordered_rejection_codes_includes":  "SEMANTIC_AUTHORITY_UNRESOLVED"
+                                                                                                },
+                                                       "F1_integrity_transition":  "INELIGIBLE_TO_ELIGIBLE",
+                                                       "required_baseline_polarity_flip_state":  {
+                                                                                                     "grammar_status":  "FAIL",
+                                                                                                     "integrity_status":  "INELIGIBLE",
+                                                                                                     "canonical_status":  "PASS"
+                                                                                                 },
+                                                       "integrity_status_forbidden_value":  "PASS",
+                                                       "semantic_validation_status_enum":  [
+                                                                                               "DETERMINISTIC_POLARITY_REPAIR_PASS",
+                                                                                               "MANUAL_REVIEW_REQUIRED",
+                                                                                               "REJECTED"
+                                                                                           ],
+                                                       "positive_acceptance_contract":  {
+                                                                                            "semantic_validation_status":  "DETERMINISTIC_POLARITY_REPAIR_PASS",
+                                                                                            "semantic_polarity_preserved":  true,
+                                                                                            "candidate_accepted":  true
+                                                                                        },
+                                                       "positive_semantic_derivation_evidence":  [
+                                                                                                     "original defective evidence contains the authority-reproduced \"did not \u003cinflected predicate\u003e\" span",
+                                                                                                     "regenerated evidence preserves exactly one \"did\" auxiliary and exactly one \"not\" negation marker",
+                                                                                                     "the predicate governed by \"did not\" is converted to the generator-authorized base form",
+                                                                                                     "claim is byte-identical",
+                                                                                                     "all evidence tokens outside the authorized predicate-inflection replacement span are byte-identical",
+                                                                                                     "no negation marker is added or removed relative to the defective polarity evidence",
+                                                                                                     "no entity, role, title, object, location, or time token changes",
+                                                                                                     "final_label remains REFUTE",
+                                                                                                     "polarity_label remains REFUTE",
+                                                                                                     "Stage185 accepted post-state passes",
+                                                                                                     "full-output impact isolation passes"
+                                                                                                 ],
+                                                       "base_form_derivation_provenance_fields":  [
+                                                                                                      "inflected_predicate_surface",
+                                                                                                      "expected_base_predicate",
+                                                                                                      "base_form_derivation_method",
+                                                                                                      "base_form_derivation_source_path",
+                                                                                                      "base_form_derivation_source_sha256",
+                                                                                                      "authorized_replacement_span",
+                                                                                                      "outside_span_byte_identity"
+                                                                                                  ],
+                                                       "base_form_derivation_method_contract":  "explicitly approved deterministic generator rule; arbitrary LLM judgment and label itself are not semantic proof",
+                                                       "semantic_contradiction_result":  {
+                                                                                             "semantic_validation_status":  "REJECTED",
+                                                                                             "semantic_polarity_preserved":  false,
+                                                                                             "candidate_accepted":  false
+                                                                                         }
+                                                   },
+    "F1_candidate_acceptance_contract":  [
+                                             "exactly one candidate per authorized F1 pair",
+                                             "no F2 pair included",
+                                             "no duplicate pair_id",
+                                             "no duplicate row_id",
+                                             "nonempty textual change from defective source",
+                                             "same intended polarity semantics established through semantic validation derivation",
+                                             "same canonical relationship",
+                                             "production grammar validator no longer reports anomaly",
+                                             "Stage185 integrity sidecar contract passes",
+                                             "no new frame/predicate/sufficiency defect",
+                                             "no label mutation",
+                                             "no split movement",
+                                             "no time_swap admission",
+                                             "full-output generator impact isolation passes"
+                                         ],
+    "F1_future_output_contract":  {
+                                      "artifacts":  [
+                                                        "p3w5_f1_regeneration_summary.json",
+                                                        "p3w5_f1_regenerated_rows.jsonl",
+                                                        "p3w5_f1_regeneration_audit.jsonl"
+                                                    ],
+                                      "execution_status":  [
+                                                               "P3W5_F1_REGENERATION_COMPLETE_ALL_CANDIDATES_ACCEPTED_PENDING_RESULT_REVIEW",
+                                                               "P3W5_F1_REGENERATION_COMPLETE_WITH_BLOCKERS_PENDING_RESULT_REVIEW"
+                                                           ],
+                                      "execution_namespace_fields":  [
+                                                                         "F1_execution_status",
+                                                                         "F1_execution_decision",
+                                                                         "F1_artifact_paths",
+                                                                         "F1_input_sha256",
+                                                                         "F1_execution_commit",
+                                                                         "F1_output_sha256"
+                                                                     ],
+                                      "required_record_fields":  [
+                                                                     "pair_id",
+                                                                     "original_row_id",
+                                                                     "regenerated_row_id",
+                                                                     "intervention_type",
+                                                                     "original_text",
+                                                                     "regenerated_text",
+                                                                     "original_final_label",
+                                                                     "regenerated_final_label",
+                                                                     "canonical_row_id",
+                                                                     "generator_source_path",
+                                                                     "generator_source_sha256",
+                                                                     "generator_commit",
+                                                                     "fact_identity",
+                                                                     "grammar_validator_source",
+                                                                     "grammar_validator_sha256",
+                                                                     "grammar_before",
+                                                                     "grammar_after",
+                                                                     "sidecar_before",
+                                                                     "sidecar_after",
+                                                                     "lineage_preserved",
+                                                                     "semantic_validation_status",
+                                                                     "semantic_polarity_preserved",
+                                                                     "candidate_accepted",
+                                                                     "ordered_rejection_codes",
+                                                                     "F1_generator_impact_isolation_contract fields",
+                                                                     "F1_semantic_validation_derivation_contract fields"
+                                                                 ],
+                                      "summary_count_pair_id_array_symmetry":  {
+                                                                                   "F1_target_pair_count":  "F1_target_pair_ids",
+                                                                                   "F1_generated_candidate_count":  "F1_generated_candidate_pair_ids",
+                                                                                   "F1_accepted_candidate_count":  "F1_accepted_candidate_pair_ids",
+                                                                                   "F1_manual_review_required_count":  "F1_manual_review_required_pair_ids",
+                                                                                   "F1_rejected_candidate_count":  "F1_rejected_candidate_pair_ids",
+                                                                                   "F1_missing_candidate_count":  "F1_missing_candidate_pair_ids",
+                                                                                   "F1_unauthorized_candidate_count":  "F1_unauthorized_candidate_pair_ids"
+                                                                               },
+                                      "category_contract":  {
+                                                                "disjoint_arrays":  [
+                                                                                        "F1_accepted_candidate_pair_ids",
+                                                                                        "F1_manual_review_required_pair_ids",
+                                                                                        "F1_rejected_candidate_pair_ids"
+                                                                                    ],
+                                                                "union_equals":  "generated authorized candidate pair IDs"
+                                                            },
+                                      "all_candidates_accepted_decision":  {
+                                                                               "decision":  "P3W5_F1_REGENERATION_COMPLETE_ALL_CANDIDATES_ACCEPTED_PENDING_RESULT_REVIEW",
+                                                                               "required_counts":  {
+                                                                                                       "target":  121,
+                                                                                                       "generated":  121,
+                                                                                                       "accepted":  121,
+                                                                                                       "manual_review_required":  0,
+                                                                                                       "rejected":  0,
+                                                                                                       "missing":  0,
+                                                                                                       "unauthorized":  0
+                                                                                                   }
+                                                                           },
+                                      "with_blockers_decision":  "P3W5_F1_REGENERATION_COMPLETE_WITH_BLOCKERS_PENDING_RESULT_REVIEW"
+                                  },
+    "F1_release_gate":  {
+                            "insufficient_conditions":  [
+                                                            "121 candidates generated",
+                                                            "grammar validator passes",
+                                                            "minimum REFUTE count 50 exceeded"
+                                                        ],
+                            "required_result_review_checks":  [
+                                                                  "121/121 exact coverage",
+                                                                  "zero unauthorized pair",
+                                                                  "zero label mutation",
+                                                                  "zero lineage mutation",
+                                                                  "zero new integrity defect",
+                                                                  "full-output generator impact isolation pass",
+                                                                  "production generator authority established",
+                                                                  "candidate artifact Git preservation",
+                                                                  "result static review pass"
+                                                              ],
+                            "result_review_pass_establishes":  "accepted F1 candidate artifact authority established only if all candidates accepted",
+                            "result_review_pass_does_not_establish":  [
+                                                                          "production dataset repair authority not established",
+                                                                          "training admission authority not established",
+                                                                          "polarity supervision released = false",
+                                                                          "A1/A2/A3 released = false"
+                                                                      ],
+                            "release_decision":  "separate future stage required",
+                            "result_review_pass_with_unresolved_or_rejected":  [
+                                                                                   "F1 regeneration audit artifact authority established",
+                                                                                   "accepted complete F1 candidate-set authority not established"
+                                                                               ]
+                        },
+    "F2_target_pair_count":  119,
+    "F2_target_member_count":  357,
+    "F2_root_cause_class":  "F2_CANONICAL_DEFECT_PROPAGATED_TO_DERIVATIVES",
+    "F2_remediation_state":  "MANUAL_REVIEW_REQUIRED",
+    "F2_target_selector":  {
+                               "family":  "F2",
+                               "automatic_root_cause_class":  "F2_CANONICAL_DEFECT_PROPAGATED_TO_DERIVATIVES",
+                               "remediation_state":  "MANUAL_REVIEW_REQUIRED",
+                               "pair_id_membership":  "decision_blocking_pair_ids"
+                           },
+    "F2_review_unit":  [
+                           "canonical none REFUTE",
+                           "paraphrase REFUTE",
+                           "polarity_flip SUPPORT"
+                       ],
+    "F2_review_template_authority":  "reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_f2_manual_review.csv",
+    "F2_immutable_source_schema":  [
+                                       "pair_id",
+                                       "canonical_none_row_id",
+                                       "paraphrase_row_id",
+                                       "polarity_flip_row_id",
+                                       "canonical_final_label",
+                                       "paraphrase_final_label",
+                                       "polarity_flip_final_label",
+                                       "canonical_claim",
+                                       "paraphrase_claim",
+                                       "polarity_flip_claim",
+                                       "canonical_evidence",
+                                       "paraphrase_evidence",
+                                       "polarity_flip_evidence",
+                                       "canonical_grammar_status",
+                                       "paraphrase_grammar_status",
+                                       "polarity_flip_grammar_status",
+                                       "canonical_reason_codes",
+                                       "paraphrase_reason_codes",
+                                       "polarity_flip_reason_codes",
+                                       "canonical_claim_text_diff_summary",
+                                       "paraphrase_claim_text_diff_summary",
+                                       "polarity_flip_claim_text_diff_summary",
+                                       "canonical_evidence_text_diff_summary",
+                                       "paraphrase_evidence_text_diff_summary",
+                                       "polarity_flip_evidence_text_diff_summary",
+                                       "automatic_root_cause_class",
+                                       "automatic_evidence"
+                                   ],
+    "F2_reviewer_provenance_fields":  [
+                                          "source_record_sha256",
+                                          "reviewer_id",
+                                          "review_protocol_version",
+                                          "reviewed_at_utc"
+                                      ],
+    "F2_source_record_sha256_contract":  {
+                                             "canonicalization_contract_id":  "F2_SOURCE_RECORD_HASH_V1",
+                                             "steps":  [
+                                                           "Read the authority CSV with an RFC 4180-compatible CSV parser.",
+                                                           "Use the 27 immutable source schema columns in the exact specified order.",
+                                                           "Treat each cell as the exact string returned by the CSV parser.",
+                                                           "Do not trim, apply Unicode normalization, reparse JSON, or sort reason codes.",
+                                                           "Preserve an empty cell as the empty string \"\".",
+                                                           "Serialize each row as a JSON array [value_of_pair_id,value_of_canonical_none_row_id,...,value_of_automatic_evidence].",
+                                                           "JSON serialization is UTF-8 without BOM, ensure_ascii = false, allow_nan = false, separators = [\",\",\":\"], and no trailing newline.",
+                                                           "Use the SHA-256 lowercase hex of that UTF-8 byte sequence as source_record_sha256."
+                                                       ],
+                                             "csv_parser":  "RFC 4180-compatible CSV parser",
+                                             "source_columns":  [
+                                                                    "pair_id",
+                                                                    "canonical_none_row_id",
+                                                                    "paraphrase_row_id",
+                                                                    "polarity_flip_row_id",
+                                                                    "canonical_final_label",
+                                                                    "paraphrase_final_label",
+                                                                    "polarity_flip_final_label",
+                                                                    "canonical_claim",
+                                                                    "paraphrase_claim",
+                                                                    "polarity_flip_claim",
+                                                                    "canonical_evidence",
+                                                                    "paraphrase_evidence",
+                                                                    "polarity_flip_evidence",
+                                                                    "canonical_grammar_status",
+                                                                    "paraphrase_grammar_status",
+                                                                    "polarity_flip_grammar_status",
+                                                                    "canonical_reason_codes",
+                                                                    "paraphrase_reason_codes",
+                                                                    "polarity_flip_reason_codes",
+                                                                    "canonical_claim_text_diff_summary",
+                                                                    "paraphrase_claim_text_diff_summary",
+                                                                    "polarity_flip_claim_text_diff_summary",
+                                                                    "canonical_evidence_text_diff_summary",
+                                                                    "paraphrase_evidence_text_diff_summary",
+                                                                    "polarity_flip_evidence_text_diff_summary",
+                                                                    "automatic_root_cause_class",
+                                                                    "automatic_evidence"
+                                                                ],
+                                             "cell_handling":  "exact string returned by CSV parser; empty cell preserved as empty string",
+                                             "forbidden_normalization":  [
+                                                                             "trim",
+                                                                             "Unicode normalization",
+                                                                             "JSON reparse",
+                                                                             "reason-code sorting"
+                                                                         ],
+                                             "serialization_shape":  "[value_of_pair_id,value_of_canonical_none_row_id,...,value_of_automatic_evidence]",
+                                             "json_serialization":  {
+                                                                        "encoding":  "UTF-8 without BOM",
+                                                                        "ensure_ascii":  false,
+                                                                        "allow_nan":  false,
+                                                                        "separators":  [
+                                                                                           ",",
+                                                                                           ":"
+                                                                                       ],
+                                                                        "trailing_newline":  false
+                                                                    },
+                                             "digest":  "SHA-256 lowercase hex",
+                                             "excluded_from_hash_input":  [
+                                                                              "human fields",
+                                                                              "reviewer provenance"
+                                                                          ],
+                                             "completion_requires_template_hash_match":  true
+                                         },
+    "F2_human_fields":  [
+                            "human_canonical_semantics",
+                            "human_paraphrase_semantics",
+                            "human_polarity_flip_semantics",
+                            "human_grammar_validity",
+                            "human_authority_decision",
+                            "human_notes"
+                        ],
+    "F2_semantic_field_definition":  [
+                                         "member text is consistent with that member final label",
+                                         "member is consistent with the intended family transformation relationship"
+                                     ],
+    "F2_human_field_enums":  {
+                                 "semantic_fields":  [
+                                                         "VALID",
+                                                         "INVALID",
+                                                         "UNCLEAR"
+                                                     ],
+                                 "grammar_validity":  [
+                                                          "CANONICAL_ONLY_DEFECT",
+                                                          "MULTI_MEMBER_DEFECT",
+                                                          "NO_REPRODUCIBLE_DEFECT",
+                                                          "UNCLEAR"
+                                                      ],
+                                 "authority_decision":  [
+                                                            "CANONICAL_TEXTUAL_REPAIR_CANDIDATE",
+                                                            "CANONICAL_REGENERATION_REQUIRED",
+                                                            "SEMANTIC_CONFLICT",
+                                                            "INSUFFICIENT_EVIDENCE_KEEP_BLOCKED",
+                                                            "NO_REPRODUCIBLE_DEFECT_KEEP_BLOCKED"
+                                                        ]
+                             },
+    "F2_decision_meanings":  {
+                                 "CANONICAL_TEXTUAL_REPAIR_CANDIDATE":  "Canonical semantics are preserved but surface grammar/text defect exists; repair candidate generation, triple reconstruction or derivative revalidation, and separate audit are required before any admission.",
+                                 "CANONICAL_REGENERATION_REQUIRED":  "Canonical member and derivative authority must be newly generated; existing triple is not reused as-is.",
+                                 "SEMANTIC_CONFLICT":  "Canonical/paraphrase/polarity-flip relationship conflicts with the intended transformation contract; automatic repair and regeneration are not approved.",
+                                 "INSUFFICIENT_EVIDENCE_KEEP_BLOCKED":  "Current artifacts are insufficient for semantic or remediation conclusion; blocked state remains.",
+                                 "NO_REPRODUCIBLE_DEFECT_KEEP_BLOCKED":  "Human review could not reproduce the P3-W4 automatic grammar defect; this does not prove correctness, recoverability, training admission, or polarity supervision eligibility, and the pair remains blocked until separate authority resolution."
+                             },
+    "F2_compatibility_matrix":  [
+                                    {
+                                        "rule":  "Rule 1 - Unclear",
+                                        "condition":  "any semantic field == UNCLEAR or human_grammar_validity == UNCLEAR",
+                                        "required_human_authority_decision":  "INSUFFICIENT_EVIDENCE_KEEP_BLOCKED"
+                                    },
+                                    {
+                                        "rule":  "Rule 2 - Semantic invalidity",
+                                        "condition":  "Rule 1 does not apply and any semantic field == INVALID",
+                                        "required_human_authority_decision":  "SEMANTIC_CONFLICT",
+                                        "automatic_regeneration_candidate":  false
+                                    },
+                                    {
+                                        "rule":  "Rule 3 - All semantics valid / canonical only defect",
+                                        "condition":  "all three semantic fields == VALID and human_grammar_validity == CANONICAL_ONLY_DEFECT",
+                                        "required_human_authority_decision":  "CANONICAL_TEXTUAL_REPAIR_CANDIDATE"
+                                    },
+                                    {
+                                        "rule":  "Rule 3 - All semantics valid / multi-member defect",
+                                        "condition":  "all three semantic fields == VALID and human_grammar_validity == MULTI_MEMBER_DEFECT",
+                                        "required_human_authority_decision":  "CANONICAL_REGENERATION_REQUIRED"
+                                    },
+                                    {
+                                        "rule":  "Rule 3 - All semantics valid / no reproducible defect",
+                                        "condition":  "all three semantic fields == VALID and human_grammar_validity == NO_REPRODUCIBLE_DEFECT",
+                                        "required_human_authority_decision":  "NO_REPRODUCIBLE_DEFECT_KEEP_BLOCKED"
+                                    }
+                                ],
+    "F2_human_notes_contract":  {
+                                    "trim_before_check":  true,
+                                    "required_nonempty_when":  [
+                                                                   "any semantic field == UNCLEAR",
+                                                                   "human_grammar_validity == UNCLEAR",
+                                                                   "SEMANTIC_CONFLICT",
+                                                                   "INSUFFICIENT_EVIDENCE_KEEP_BLOCKED",
+                                                                   "NO_REPRODUCIBLE_DEFECT_KEEP_BLOCKED"
+                                                               ]
+                                },
+    "F2_review_completion_gate":  [
+                                      "119 unique pair IDs",
+                                      "119 review rows",
+                                      "zero missing pair",
+                                      "zero duplicate pair",
+                                      "all six human fields present",
+                                      "all reviewer provenance fields present",
+                                      "all categorical fields use allowed enums",
+                                      "all decision combinations satisfy the compatibility matrix",
+                                      "nonempty trimmed human_notes when required",
+                                      "no source field mutation",
+                                      "per-pair completed-review source_record_sha256 matches original template source-field hash",
+                                      "no row/pair/label mutation"
+                                  ],
+    "F2_future_output_contract":  {
+                                      "artifacts":  [
+                                                        "p3w5_f2_review_completed.csv",
+                                                        "p3w5_f2_review_summary.json",
+                                                        "p3w5_f2_review_decisions.jsonl"
+                                                    ],
+                                      "execution_status":  "P3W5_F2_MANUAL_REVIEW_EXECUTION_COMPLETE_PENDING_RESULT_REVIEW",
+                                      "execution_namespace_fields":  [
+                                                                         "F2_execution_status",
+                                                                         "F2_execution_decision",
+                                                                         "F2_artifact_paths",
+                                                                         "F2_input_sha256",
+                                                                         "F2_execution_commit",
+                                                                         "F2_output_sha256"
+                                                                     ],
+                                      "summary_counts":  [
+                                                             "authorized_F2_pair_count",
+                                                             "reviewed_pair_count",
+                                                             "unreviewed_pair_count",
+                                                             "completed_decision_pair_count",
+                                                             "textual_repair_candidate_count",
+                                                             "regeneration_required_count",
+                                                             "semantic_conflict_count",
+                                                             "insufficient_evidence_count",
+                                                             "no_reproducible_defect_keep_blocked_count",
+                                                             "invalid_review_count",
+                                                             "invalid_combination_count",
+                                                             "missing_reviewer_provenance_count",
+                                                             "source_hash_mismatch_count",
+                                                             "missing_human_field_count",
+                                                             "invalid_enum_count",
+                                                             "missing_required_notes_count"
+                                                         ],
+                                      "pair_id_arrays":  [
+                                                             "authorized_F2_pair_ids",
+                                                             "reviewed_pair_ids",
+                                                             "unreviewed_pair_ids",
+                                                             "completed_decision_pair_ids",
+                                                             "textual_repair_candidate_pair_ids",
+                                                             "regeneration_required_pair_ids",
+                                                             "semantic_conflict_pair_ids",
+                                                             "insufficient_evidence_pair_ids",
+                                                             "no_reproducible_defect_keep_blocked_pair_ids",
+                                                             "invalid_review_pair_ids",
+                                                             "invalid_combination_pair_ids",
+                                                             "missing_reviewer_provenance_pair_ids",
+                                                             "source_hash_mismatch_pair_ids",
+                                                             "missing_human_field_pair_ids",
+                                                             "invalid_enum_pair_ids",
+                                                             "missing_required_notes_pair_ids"
+                                                         ],
+                                      "count_pair_id_array_symmetry":  {
+                                                                           "authorized_F2_pair_count":  "authorized_F2_pair_ids",
+                                                                           "reviewed_pair_count":  "reviewed_pair_ids",
+                                                                           "unreviewed_pair_count":  "unreviewed_pair_ids",
+                                                                           "completed_decision_pair_count":  "completed_decision_pair_ids",
+                                                                           "textual_repair_candidate_count":  "textual_repair_candidate_pair_ids",
+                                                                           "regeneration_required_count":  "regeneration_required_pair_ids",
+                                                                           "semantic_conflict_count":  "semantic_conflict_pair_ids",
+                                                                           "insufficient_evidence_count":  "insufficient_evidence_pair_ids",
+                                                                           "no_reproducible_defect_keep_blocked_count":  "no_reproducible_defect_keep_blocked_pair_ids",
+                                                                           "invalid_review_count":  "invalid_review_pair_ids",
+                                                                           "invalid_combination_count":  "invalid_combination_pair_ids",
+                                                                           "missing_reviewer_provenance_count":  "missing_reviewer_provenance_pair_ids",
+                                                                           "source_hash_mismatch_count":  "source_hash_mismatch_pair_ids",
+                                                                           "missing_human_field_count":  "missing_human_field_pair_ids",
+                                                                           "invalid_enum_count":  "invalid_enum_pair_ids",
+                                                                           "missing_required_notes_count":  "missing_required_notes_pair_ids"
+                                                                       },
+                                      "array_length_must_equal_count":  true,
+                                      "category_array_union_disjointness_contract":  "reviewed_pair_ids and unreviewed_pair_ids are disjoint; their union equals authorized_F2_pair_ids; invalid_review_pair_ids is subset of reviewed_pair_ids; completed_decision_pair_ids equals reviewed_pair_ids minus invalid_review_pair_ids; completed decision category arrays are pairwise disjoint and their union equals completed_decision_pair_ids; invalid and unreviewed records are excluded from completed decision categories",
+                                      "authoritative_universe":  {
+                                                                     "authorized_F2_pair_count":  119,
+                                                                     "authorized_F2_pair_ids":  "required"
+                                                                 },
+                                      "invalid_review_pair_ids_definition":  "unique union of invalid_combination_pair_ids, missing_reviewer_provenance_pair_ids, source_hash_mismatch_pair_ids, missing_human_field_pair_ids, invalid_enum_pair_ids, missing_required_notes_pair_ids",
+                                      "review_execution_complete_required_counts":  {
+                                                                                        "reviewed_pair_count":  119,
+                                                                                        "unreviewed_pair_count":  0,
+                                                                                        "invalid_review_count":  0,
+                                                                                        "completed_decision_pair_count":  119
+                                                                                    }
+                                  },
+    "partition_disjoint":  true,
+    "partition_complete":  true,
+    "row_namespace_counts":  {
+                                 "p3w3_exported_REFUTE_rows":  359,
+                                 "p3w4_affected_member_rows":  478,
+                                 "F1_polarity_flip_rows":  121,
+                                 "F2_pair_families":  119,
+                                 "F2_member_rows":  357
+                             },
+    "workstream_isolation":  {
+                                 "not_shared":  [
+                                                    "input target set",
+                                                    "candidate generator",
+                                                    "review decision",
+                                                    "acceptance criterion",
+                                                    "output namespace",
+                                                    "release gate",
+                                                    "supporting/blocking pair IDs"
+                                                ],
+                                 "forbidden_shortcuts":  [
+                                                             "F1 grammar reproduction used as F2 semantic proof",
+                                                             "F2 propagated lineage used as F1 regeneration proof",
+                                                             "F1 regenerated row automatically propagated to F2 derivative authority",
+                                                             "F2 human decision used as F1 generator acceptance",
+                                                             "combined F1/F2 recovery rate"
+                                                         ],
+                                 "summary_namespace":  [
+                                                           "F1_target_pair_count",
+                                                           "F1_target_row_count",
+                                                           "F1_regeneration_candidate_count",
+                                                           "F1_accepted_candidate_count",
+                                                           "F2_target_pair_count",
+                                                           "F2_target_member_count",
+                                                           "F2_reviewed_pair_count",
+                                                           "F2_decision_counts"
+                                                       ],
+                                 "separate_execution_identity_required":  [
+                                                                              "artifact paths",
+                                                                              "input SHA",
+                                                                              "execution commit",
+                                                                              "output SHA",
+                                                                              "execution status",
+                                                                              "execution decision",
+                                                                              "Git-preserved artifact identity before separate result review"
+                                                                          ],
+                                 "combined_recovery_rate_forbidden":  true
+                             },
+    "release_matrix":  [
+                           {
+                               "condition":  "P3-W5 spec only",
+                               "F1_execution":  "blocked",
+                               "F2_review":  "blocked",
+                               "production_dataset_repaired":  false,
+                               "polarity_supervision":  "blocked",
+                               "A1_A2_A3":  "blocked"
+                           },
+                           {
+                               "condition":  "F1 regeneration complete, F2 unresolved",
+                               "F1_execution":  "complete candidate set only",
+                               "F2_review":  "blocked",
+                               "production_dataset_repaired":  false,
+                               "polarity_supervision":  "blocked",
+                               "A1_A2_A3":  "blocked"
+                           },
+                           {
+                               "condition":  "F2 review complete, F1 unresolved",
+                               "F1_execution":  "blocked",
+                               "F2_review":  "review complete only",
+                               "production_dataset_repaired":  false,
+                               "polarity_supervision":  "blocked",
+                               "A1_A2_A3":  "blocked"
+                           },
+                           {
+                               "condition":  "F1 all-accepted result review pass only",
+                               "F1_execution":  "accepted F1 candidate artifact authority established",
+                               "F2_review":  "blocked",
+                               "production_dataset_repaired":  false,
+                               "polarity_supervision":  "blocked",
+                               "A1_A2_A3":  "blocked"
+                           },
+                           {
+                               "condition":  "F1 with-blockers audit artifact review pass only",
+                               "F1_execution":  "F1 regeneration audit artifact authority established; accepted complete F1 candidate-set authority not established",
+                               "F2_review":  "blocked",
+                               "production_dataset_repaired":  false,
+                               "polarity_supervision":  "blocked",
+                               "A1_A2_A3":  "blocked"
+                           },
+                           {
+                               "condition":  "F2 result review pass only",
+                               "F1_execution":  "blocked",
+                               "F2_review":  "F2 human-review decision artifact authority established",
+                               "production_dataset_repaired":  false,
+                               "polarity_supervision":  "blocked",
+                               "A1_A2_A3":  "blocked"
+                           },
+                           {
+                               "condition":  "F1 all-accepted result review and F2 result review both pass",
+                               "F1_execution":  "accepted F1 candidate artifact authority established",
+                               "F2_review":  "F2 human-review decision artifact authority established",
+                               "production_dataset_repaired":  false,
+                               "polarity_supervision":  "blocked",
+                               "A1_A2_A3":  "blocked"
+                           },
+                           {
+                               "condition":  "F1 with-blockers audit artifact review and F2 result review both pass",
+                               "F1_execution":  "F1 regeneration audit artifact authority established; accepted complete F1 candidate-set authority not established",
+                               "F2_review":  "F2 human-review decision artifact authority established",
+                               "production_dataset_repaired":  false,
+                               "polarity_supervision":  "blocked",
+                               "A1_A2_A3":  "blocked"
+                           },
+                           {
+                               "condition":  "Separate training-readiness release passes for explicitly approved subset",
+                               "F1_execution":  "complete for explicitly approved subset only",
+                               "F2_review":  "complete for explicitly approved subset only",
+                               "production_dataset_repaired":  "only if separately established",
+                               "polarity_supervision":  "may be released explicitly for explicitly approved subset only",
+                               "A1_A2_A3":  "only then considered"
+                           }
+                       ],
+    "release_semantics":  {
+                              "F1_result_review_pass":  [
+                                                            "accepted F1 candidate artifact authority established only for P3W5_F1_RESULT_REVIEW_PASS_ALL_ACCEPTED"
+                                                        ],
+                              "F2_result_review_pass":  [
+                                                            "F2 human-review decision artifact authority established"
+                                                        ],
+                              "both_reviews_pass":  {
+                                                        "production_dataset_repaired":  false,
+                                                        "polarity_supervision_released":  false,
+                                                        "A1_A2_A3_released":  false
+                                                    },
+                              "separate_training_readiness_release_audit_scope":  "explicitly approved regenerated or repaired subset only",
+                              "blocked_F2_categories_implicit_admission":  false,
+                              "exact_release_non_authority_wording":  [
+                                                                          "production dataset repair authority not established",
+                                                                          "training admission authority not established"
+                                                                      ],
+                              "result_reviews_do_not_mean":  [
+                                                                 "production dataset repaired",
+                                                                 "training rows admitted",
+                                                                 "polarity supervision released",
+                                                                 "A1/A2/A3 released"
+                                                             ],
+                              "F1_result_review_pass_with_unresolved_or_rejected":  [
+                                                                                        "F1 regeneration audit artifact authority established",
+                                                                                        "accepted complete F1 candidate-set authority not established"
+                                                                                    ]
+                          },
+    "static_blockers":  [
+                            "P3W5_SPEC_NOT_STATICALLY_REVIEWED",
+                            "P3W5_F1_REGENERATION_NOT_EXECUTED",
+                            "P3W5_F2_MANUAL_REVIEW_NOT_EXECUTED",
+                            "P2_POLARITY_LOCAL_SUPERVISION_NOT_TRAINING_READY",
+                            "A1_A3_NOT_RELEASED"
+                        ],
+    "forbidden_claims":  [
+                             "P3W5_EXECUTION_PASS",
+                             "F1_REGENERATED",
+                             "F1_REPAIR_COMPLETE",
+                             "F2_REVIEW_COMPLETE",
+                             "F2_ROWS_RECOVERABLE",
+                             "F2_REGENERATION_APPROVED",
+                             "POLARITY_SUPERVISION_RELEASED",
+                             "P2_POLARITY_SUPERVISION_RESOLVED",
+                             "A1_READY",
+                             "A2_READY",
+                             "A3_READY",
+                             "P3_PASS"
+                         ],
+    "implementation_executed":  false,
+    "regeneration_executed":  false,
+    "manual_review_executed":  false,
+    "training_executed":  false,
+    "evaluation_executed":  false,
+    "git_actions_executed":  false,
+    "F1_integrity_transition":  "INELIGIBLE_TO_ELIGIBLE",
+    "F2_reviewer_provenance_contract":  {
+                                            "reviewer_id":  "nonempty trimmed stable identifier",
+                                            "review_protocol_version":  "exactly P3W5_F2_MANUAL_REVIEW_V1",
+                                            "reviewed_at_utc":  "RFC 3339 UTC timestamp ending in Z"
+                                        },
+    "F2_compatibility_matrix_version":  "F2_REVIEW_COMPATIBILITY_V1",
+    "F2_compatibility_precedence":  [
+                                        "UNCLEAR",
+                                        "INVALID",
+                                        "ALL_VALID_BY_GRAMMAR_STATUS"
+                                    ],
+    "F2_compatibility_matrix_exhaustive":  true,
+    "F2_compatibility_matrix_mutually_exclusive":  true,
+    "F2_invalid_review_conditions":  [
+                                         "undefined combination",
+                                         "different decision",
+                                         "empty value"
+                                     ],
+    "execution_artifact_git_preservation_contract":  {
+                                                         "F1":  "F1 execution artifacts require Git-preserved artifact identity before separate result review",
+                                                         "F2":  "F2 execution artifacts require Git-preserved artifact identity before separate result review"
+                                                     },
+    "F1_source_identity_contract":  {
+                                        "dataset_identity_field":  "id",
+                                        "normalized_artifact_identity_field":  "row_id",
+                                        "normalized_row_id_derivation":  "source_row[\"id\"]"
+                                    },
+    "F1_result_review_decision_enum":  [
+                                           "P3W5_F1_RESULT_REVIEW_PASS_ALL_ACCEPTED",
+                                           "P3W5_F1_AUDIT_ARTIFACT_REVIEW_PASS_WITH_BLOCKERS",
+                                           "P3W5_F1_RESULT_REVIEW_BLOCKED"
+                                       ],
+    "F1_result_review_decision_meanings":  {
+                                               "P3W5_F1_RESULT_REVIEW_PASS_ALL_ACCEPTED":  {
+                                                                                               "accepted_count":  121,
+                                                                                               "manual_review_required_count":  0,
+                                                                                               "rejected_count":  0,
+                                                                                               "missing_count":  0,
+                                                                                               "unauthorized_count":  0,
+                                                                                               "authority":  "accepted F1 candidate artifact authority established"
+                                                                                           },
+                                               "P3W5_F1_AUDIT_ARTIFACT_REVIEW_PASS_WITH_BLOCKERS":  {
+                                                                                                        "authority":  "audit artifact identity and accounting may be authoritative",
+                                                                                                        "non_authority":  "accepted complete F1 candidate-set authority not established"
+                                                                                                    },
+                                               "P3W5_F1_RESULT_REVIEW_BLOCKED":  {
+                                                                                     "meaning":  "artifact identity, accounting, isolation, or contract validation failed"
+                                                                                 },
+                                               "accepted_F1_candidate_artifact_authority_allowed_only_for":  "P3W5_F1_RESULT_REVIEW_PASS_ALL_ACCEPTED"
+                                           }
+}
