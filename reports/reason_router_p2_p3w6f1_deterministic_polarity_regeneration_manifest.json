@@ -1,9 +1,12 @@
 {
-  "schema_version": "reason_router_p2_p3w6f1_deterministic_polarity_regeneration_implementation_manifest_v3",
+  "schema_version": "reason_router_p2_p3w6f1_deterministic_polarity_regeneration_implementation_manifest_v4",
   "decision": "P3W6F1_IMPLEMENTATION_SPEC_READY_FOR_STATIC_REVIEW",
   "revision_history": {
     "v1_static_review": "P3W6F1_IMPLEMENTATION_SPEC_V1_STATIC_REVIEW_BLOCKED_REVISION_REQUIRED",
-    "v2_static_review": "P3W6F1_IMPLEMENTATION_SPEC_V2_STATIC_REVIEW_BLOCKED_SURGICAL_REVISION_REQUIRED"
+    "v2_static_review": "P3W6F1_IMPLEMENTATION_SPEC_V2_STATIC_REVIEW_BLOCKED_SURGICAL_REVISION_REQUIRED",
+    "v3_implementation_review": "P3W6F1_TARGET_SCOPE_SPECIFICATION_CONTRADICTION_DISCOVERED",
+    "v4_revision": "P3W6F1_TARGET_SCOPE_CONTRACT_CORRECTED_TO_MEMBERSHIP_AND_ISOLATION",
+    "v4_phase_order_review": "P3W6F1_SPEC_V4_PHASE_ORDER_CONTRADICTION_CORRECTED"
   },
   "authority_commit": "01d983f8d09cacf0eddefd2014fc81a28771cf5e",
   "p3w5_spec_paths": [
@@ -117,7 +120,7 @@
   },
   "root_cause_resolution": {
     "exact_root_cause": "_statement reuses inflected fact predicate surface after do-support negation; generic negative _statement repair is forbidden because it would also alter F2 canonical REFUTE rows.",
-    "preferred_resolution": "correct generation at the source only in the F1-scoped polarity_flip negative construction branch after target-scope equivalence passes.",
+    "preferred_resolution": "correct generation at the source only in the polarity_flip negative construction branch when the constructed row_id is in authorized_F1_row_ids and pre-generation target-scope membership preflight has passed.",
     "post_hoc_text_repair_allowed": false
   },
   "global_negative_statement_repair_authorized": false,
@@ -146,8 +149,8 @@
       "intervention_member_type": "polarity_flip",
       "negative_condition": "base_refute == false",
       "possible_final_label": "REFUTE",
-      "F1_F2_unaffected_membership_relationship": "Authorized F1 target rows are a P3-W4/P3-W5-derived 121-row set; equality with generated negative polarity_flip IDs must be verified.",
-      "repair_effect_if_generic_negative_branch_changes": "Allowed only through the F1-scoped polarity_flip branch after target-scope equivalence passes."
+      "F1_F2_unaffected_membership_relationship": "Authorized F1 target rows are a P3-W4/P3-W5-derived 121-row subset of the structurally negative polarity_flip universe.",
+      "repair_effect_if_generic_negative_branch_changes": "Allowed only through the polarity_flip branch when row_id is in authorized_F1_row_ids after pre-generation target-scope membership preflight has passed."
     },
     {
       "source_path": "scripts/build_controlled_v5.py",
@@ -181,27 +184,88 @@
     "generic_negative_statement_repair_authorized": false,
     "forbidden_implementation": "changing every _statement(..., negative=True) output",
     "repair_point": "scripts/build_controlled_v5.py::_build_records polarity_flip branch",
-    "allowed_consumer": "negative polarity_flip branch only after target-scope equivalence passes",
+    "allowed_consumer": "_build_records polarity_flip branch AND polarity flip requests negative rendering AND row_id in authorized_F1_row_ids AND pre-generation target-scope membership preflight has passed",
+    "generation_authority": "Only the 121 authorized F1 polarity_flip rows may consume the base-predicate override after membership preflight passes.",
+    "acceptance_authority": "The generated change is not accepted until repair-consumption audit, full-output isolation, Stage185 provenance/state validation, semantic candidate validation, and execution provenance gates pass.",
     "preserve_when_polarity_flip_not_negative": true,
     "preserve_canonical_none": true,
     "preserve_paraphrase": true,
     "preserve_other_interventions": true,
     "required_blast_radius": {
       "changed_ids": "authorized_F1_row_ids",
+      "evidence_changed_row_ids": "authorized_F1_row_ids",
+      "repair_consumed_row_ids": "authorized_F1_row_ids",
+      "non_authorized_structural_negative_polarity_flip_changed_row_ids": [],
       "F2_changed_row_ids": [],
       "canonical_changed_row_ids": [],
       "paraphrase_changed_row_ids": [],
       "unaffected_changed_row_ids": []
     }
   },
-  "target_scope_equivalence_contract": {
-    "negative_polarity_flip_generated_ids": "derived from current production generator structure: _build_records polarity_flip branch when negative rendering is requested",
+  "target_scope_membership_contract": {
+    "deprecated_v3_contract_not_acceptance_requirement": "negative_polarity_flip_generated_ids == authorized_F1_row_ids",
+    "v3_contract_invalid_reason": "Preserved authority establishes 121 authorized F1 target rows, 300 full controlled dataset unique pairs, and 150 structurally negative polarity_flip rows; authorized F1 rows are a subset, not the complete structural-negative universe.",
+    "required_phase_order": [
+      "authority extraction",
+      "pre-generation target-scope membership preflight",
+      "authorized repair generation",
+      "repair-consumption audit",
+      "full-output isolation",
+      "Stage185 provenance/state validation",
+      "semantic candidate validation",
+      "execution decision"
+    ],
+    "phase_order_rule": "Full-output isolation is a post-generation acceptance gate and must not be used as a prerequisite for invoking the authorized repair.",
+    "structural_negative_polarity_flip_row_ids": "complete set of generator rows whose polarity_flip construction requests negative rendering",
     "authorized_F1_row_ids": "derived from P3-W4/P3-W5 authority polarity member source_row.id values",
-    "equivalence_required": true,
-    "on_mismatch": "TARGET_SCOPE_EQUIVALENCE_UNRESOLVED",
-    "current_static_status": "TARGET_SCOPE_EQUIVALENCE_UNRESOLVED",
+    "non_authorized_structural_negative_polarity_flip_row_ids": "structural_negative_polarity_flip_row_ids - authorized_F1_row_ids",
+    "repair_consumed_row_ids": "row IDs for which the future repair path actually consumes the base-predicate override",
+    "membership_required": true,
+    "pre_generation_membership_preflight": {
+      "required_before_repair_generation_consumes_override": true,
+      "pass_requires": [
+        "authorized_F1_row_ids subset_of structural_negative_polarity_flip_row_ids",
+        "len(authorized_F1_row_ids) == 121",
+        "every authorized F1 row structurally requests negative polarity_flip rendering"
+      ],
+      "on_failure": "TARGET_SCOPE_MEMBERSHIP_UNRESOLVED",
+      "repair_generation_fail_closed_before_override_consumption": true,
+      "must_not_require": [
+        "repair_consumed_row_ids",
+        "changed_ids",
+        "evidence_changed_row_ids",
+        "non_authorized_structural_negative_polarity_flip_changed_row_ids",
+        "full-output isolation",
+        "Stage185 repaired state"
+      ]
+    },
+    "post_generation_scope_acceptance": {
+      "required_after_repaired_output_exists_before_candidate_acceptance": true,
+      "pass_requires": [
+        "repair_consumed_row_ids == authorized_F1_row_ids",
+        "non_authorized_structural_negative_polarity_flip_changed_row_ids == []",
+        "changed_ids == authorized_F1_row_ids",
+        "evidence_changed_row_ids == authorized_F1_row_ids",
+        "full-output isolation PASS"
+      ],
+      "failure_effect": "blocks candidate acceptance and all-accepted execution decision",
+      "failure_authority": "existing full-output isolation failure authority"
+    },
+    "generation_authority": "Only the 121 authorized F1 polarity_flip rows may consume the base-predicate override after membership preflight passes.",
+    "acceptance_authority": "The generated change is not accepted until repair-consumption, full-output isolation, Stage185, semantic, and provenance gates pass.",
+    "on_mismatch": "TARGET_SCOPE_MEMBERSHIP_UNRESOLVED",
+    "deprecated_token_not_active_v4_acceptance": "TARGET_SCOPE_EQUIVALENCE_UNRESOLVED",
+    "current_static_status": "TARGET_SCOPE_MEMBERSHIP_UNRESOLVED",
     "future_verification_required_before_execution": true,
-    "future_verification_required_during_execution": true
+    "future_verification_required_before_execution_scope": "pre_generation_membership_preflight_only",
+    "future_verification_required_before_execution_does_not_require": [
+      "repair_consumed_row_ids",
+      "changed_ids",
+      "full-output isolation",
+      "repaired Stage185 state"
+    ],
+    "future_verification_required_during_execution": true,
+    "future_verification_required_during_execution_scope": "post_generation_scope_acceptance_after_repaired_output_exists_before_candidate_acceptance"
   },
   "repair_api_contract": {
     "approved_callable_interface": "_statement(fact, negative=False, predicate_surface_override=None, **overrides)",
@@ -209,8 +273,17 @@
     "predicate_surface_override_none": "current behavior exactly preserved",
     "predicate_surface_override_not_none_and_negative_true": "use exact supplied predicate surface after did not",
     "predicate_surface_override_not_none_and_negative_false": "fail closed / reject invalid invocation",
-    "only_authorized_consumer": "_build_records polarity_flip branch AND polarity flip requests negative rendering AND target-scope equivalence gate has passed",
+    "only_authorized_consumer": "_build_records polarity_flip branch AND polarity flip requests negative rendering AND row_id in authorized_F1_row_ids AND pre-generation target-scope membership preflight has passed",
+    "pseudo_contract": [
+      "polarity_row_id = f\"{fact['pair_id']}__polarity_flip\"",
+      "if repair_mode and polarity_flip_negative and polarity_row_id in authorized_F1_row_ids and pre_generation_membership_preflight_passed: use generator-owned base predicate override",
+      "else: preserve existing rendering exactly"
+    ],
     "base_predicate_expression": "_BASE_PREDICATE_BY_INFLECTED[fact[\"predicate\"]]",
+    "forbidden_implementations": [
+      "repair every negative polarity_flip row",
+      "repair every _statement(..., negative=True) row"
+    ],
     "forbidden_consumers": [
       "canonical none",
       "_paraphrase",
@@ -261,6 +334,16 @@
     ],
     "summary_count_array_length_equality_required": true,
     "summary_partition_contract": "accepted/manual-review-required/rejected arrays are pairwise disjoint and union to generated authorized candidate pair IDs",
+    "generated_candidate_accounting_contract": {
+      "generated_authorized_candidate_rows": "authorized_F1_row_ids that are present in the regenerated candidate output, or equivalent exact authority-grounded representation",
+      "F1_generated_candidate_pair_ids_source": "generated authorized F1 candidates only",
+      "structural_negative_polarity_flip_universe_role": "diagnostic/scope provenance, not F1_generated_candidate_count",
+      "ALL_ACCEPTED_requires": {
+        "F1_target_pair_count": 121,
+        "F1_generated_candidate_count": 121,
+        "F1_accepted_candidate_count": 121
+      }
+    },
     "execution_namespace_fields": [
       "F1_execution_status",
       "F1_execution_decision",
@@ -335,6 +418,13 @@
       "repaired_id_sequence_sha256",
       "row_order_changed"
     ],
+    "full_output_scope_fields": [
+      "structural_negative_polarity_flip_row_ids",
+      "authorized_F1_row_ids",
+      "non_authorized_structural_negative_polarity_flip_row_ids",
+      "repair_consumed_row_ids",
+      "non_authorized_structural_negative_polarity_flip_changed_row_ids"
+    ],
     "nested_source_row_objects_do_not_replace_explicit_authority_fields": true
   },
   "authorized_target_contract": {
@@ -363,10 +453,11 @@
       "symbol_function": "_build_records polarity_flip branch",
       "current_behavior": "Calls _statement(fact, negative=not base_refute) for polarity_flip; when negative, _statement creates did not plus inflected predicate.",
       "root_cause": "The F1 negative polarity_flip construction path lacks a base-form predicate surface.",
-      "proposed_behavior": "Only in the polarity_flip branch, when the polarity flip is negative and target-scope equivalence passes, obtain base_predicate = _BASE_PREDICATE_BY_INFLECTED[fact[\"predicate\"]] and call _statement(..., negative=True, predicate_surface_override=base_predicate); preserve all other branches.",
+      "proposed_behavior": "Only in the polarity_flip branch, when the polarity flip is negative and polarity_row_id is in authorized_F1_row_ids after pre-generation target-scope membership preflight passes, obtain base_predicate = _BASE_PREDICATE_BY_INFLECTED[fact[\"predicate\"]] and call _statement(..., negative=True, predicate_surface_override=base_predicate); preserve all other branches and structurally negative but unauthorized polarity_flip rows exactly.",
       "why_this_is_minimal": "Repairs the source-level F1 polarity construction path without changing canonical none, paraphrase, F2, or other negative _statement callers.",
-      "authorized_effect": "Only evidence for authorized 121 F1 polarity_flip rows may change after equivalence verification.",
-      "forbidden_effect": "No changes to claim, non-evidence fields, row order, F2 rows, canonical rows, paraphrase rows, or unaffected rows. Changing every _statement(..., negative=True) output is forbidden."
+      "generation_authority": "Only the 121 authorized F1 polarity_flip rows may consume the base-predicate override after membership preflight passes.",
+      "acceptance_authority": "The generated change is not accepted until repair-consumption audit, full-output isolation, Stage185 provenance/state validation, semantic candidate validation, and execution provenance gates pass.",
+      "forbidden_effect": "No changes to claim, non-evidence fields, row order, F2 rows, canonical rows, paraphrase rows, structurally negative but unauthorized polarity_flip rows, or unaffected rows. Changing every negative polarity_flip row or every _statement(..., negative=True) output is forbidden."
     },
     {
       "source_path": "scripts/build_controlled_v5.py",
@@ -375,7 +466,8 @@
       "root_cause": "The F1-scoped negative polarity_flip renderer needs generator-owned base-form authority after did not.",
       "proposed_behavior": "Add a generator-owned explicit mapping from exact inflected predicate surfaces to exact base predicate surfaces.",
       "why_this_is_minimal": "Provides deterministic morphology authority scoped to generator provenance without generic NLP, external lookup, or fact metadata redesign.",
-      "authorized_effect": "May be consumed only by the F1-scoped negative polarity_flip branch after coverage and target-scope gates pass.",
+      "generation_authority": "May be consumed only by the authorized F1 negative polarity_flip branch after base-form coverage validation and pre-generation target-scope membership preflight pass.",
+      "acceptance_authority": "Mapping consumption does not establish candidate acceptance; acceptance still requires post-generation scope, isolation, Stage185, semantic, and provenance gates.",
       "forbidden_effect": "No final-label-derived guessing, network lookup, LLM inference, unbounded regex rewrite, or broad _statement negative repair."
     }
   ],
@@ -383,9 +475,9 @@
     "v1_open_alternatives_rejected_as_implementation_choice": [
       "existing metadata OR morphology rule OR explicit mapping"
     ],
-    "selected_static_design": "Source repair in _build_records polarity_flip negative branch only; base-form authority is fixed to generator-owned explicit mapping _BASE_PREDICATE_BY_INFLECTED.",
+    "selected_static_design": "Source repair in _build_records polarity_flip negative branch only when polarity_row_id is in authorized_F1_row_ids; base-form authority is fixed to generator-owned explicit mapping _BASE_PREDICATE_BY_INFLECTED.",
     "global_negative_statement_repair_authorized": false,
-    "forbidden_implementation": "changing every _statement(..., negative=True) output",
+    "forbidden_implementation": "changing every negative polarity_flip row or every _statement(..., negative=True) output",
     "forbidden_methods": [
       "unbounded regex rewrite",
       "generic string cleanup across all rows",
@@ -423,7 +515,8 @@
       "dictionary/network lookup at generation time",
       "heuristic unrelated to generator provenance"
     ],
-    "fail_closed_rule": "base form missing -> MANUAL_REVIEW_REQUIRED -> candidate_accepted = false"
+    "fail_closed_rule": "base form missing -> MANUAL_REVIEW_REQUIRED -> candidate_accepted = false",
+    "coverage_does_not_expand_authority": "Mapping coverage is required only for authorized F1 repair surfaces; coverage of additional predicates does not broaden repair authority."
   },
   "semantic_validation_status_mapping": {
     "positive_acceptance": {
@@ -467,6 +560,11 @@
   },
   "full_output_isolation_contract": {
     "authorized_changed_source_fields": ["evidence"],
+    "structural_negative_polarity_flip_row_ids": "complete set of generator rows whose polarity_flip construction requests negative rendering",
+    "authorized_F1_row_ids": "P3-W4/P3-W5-derived 121 authorized F1 polarity row IDs",
+    "non_authorized_structural_negative_polarity_flip_row_ids": "structural_negative_polarity_flip_row_ids - authorized_F1_row_ids",
+    "repair_consumed_row_ids": "authorized_F1_row_ids",
+    "non_authorized_structural_negative_polarity_flip_changed_row_ids": [],
     "evidence_changed_row_ids": "authorized_F1_row_ids",
     "claim_changed_row_ids": [],
     "non_text_field_changed_row_ids": [],
@@ -506,8 +604,32 @@
     },
     "F1_integrity_transition": "INELIGIBLE_TO_ELIGIBLE"
   },
+  "stage185_provenance_hardening_contract": {
+    "externally_supplied_sidecars_trusted_by_field_values_alone": false,
+    "future_implementation_must_verify": [
+      "exact one-to-one row_id join with corresponding source dataset",
+      "sidecar pair_id == source row pair_id",
+      "canonical_row_id lineage is valid",
+      "source_dataset_sha256 matches the dataset used to build that sidecar",
+      "integrity_builder_sha256 matches the authorized Stage185 builder source",
+      "required Stage185 schema fields exist"
+    ],
+    "reuse_preference": "If existing production Stage185 semantic sidecar hash machinery is reusable, prefer reuse over reimplementation.",
+    "synthetic_unit_test_sidecars_allowed_only_for_unit_tests": true,
+    "execution_pass_requires_provenance_validated_stage185_artifacts": true,
+    "fail_closed_token": "STAGE185_PROVENANCE_UNRESOLVED"
+  },
+  "execution_provenance_hardening_contract": {
+    "non_empty_strings_sufficient_for_pass": false,
+    "F1_input_sha256_required_identity": "actual baseline JSONL sha256",
+    "F1_output_sha256_required_identity": "actual repaired JSONL sha256",
+    "repaired_generator_source_identity": "must be verified against the actual repaired generator source",
+    "baseline_generator_authority_identity": "baseline generator commit/path/SHA must be tied to baseline generator authority, preferably by repository/Git blob identity or equivalent deterministic source snapshot proof",
+    "arbitrary_caller_supplied_sha_or_commit_strings_create_pass": false,
+    "fail_closed_token": "PROVENANCE_IDENTITY_MISMATCH"
+  },
   "future_implementation_components": {
-    "A_production_generator_repair": "Reuse scripts/build_controlled_v5.py and repair only the _build_records polarity_flip negative construction path; generic _statement negative rendering repair is forbidden.",
+    "A_production_generator_repair": "Reuse scripts/build_controlled_v5.py and repair only the _build_records polarity_flip negative construction path when row_id is in authorized_F1_row_ids; repairing every negative polarity_flip row and generic _statement negative rendering repair are forbidden.",
     "B_F1_authority_target_extractor": "Read P3-W4/P3-W5 authority and emit exactly 121 authorized polarity source_row.id values.",
     "C_full_output_isolation_semantic_audit_analyzer": "Likely new analyzer; may call production generator and Stage185 logic; must not reconstruct generator behavior to create PASS.",
     "D_tests": "Focused generator, guard, full-output, and semantic-status tests."
@@ -535,6 +657,7 @@
       "same ID sequence",
       "exactly 121 changed IDs",
       "all changed IDs authorized",
+      "structurally negative but unauthorized polarity_flip rows unchanged",
       "only evidence changes"
     ],
     "semantic_status_tests": [
