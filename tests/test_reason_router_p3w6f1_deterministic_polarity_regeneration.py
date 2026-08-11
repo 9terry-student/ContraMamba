@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import ast
+import copy
 import hashlib
+from functools import lru_cache
 from pathlib import Path
 
 import pytest
@@ -112,6 +114,100 @@ def stage185_runtime_authority_stub() -> dict:
         "resolved_grammar_validator_source_path": f1.P3W6F1_STAGE182_ANALYZER_PATH,
         "resolved_grammar_validator_source_sha256": "grammar-sha",
     }
+
+
+def authoritative_clean_baseline_rows() -> list[dict]:
+    root = Path(f1.__file__).resolve().parents[1]
+    return f1.load_jsonl(root / f1.P3W6F1_AUTHORITATIVE_DATA_PATH)
+
+
+def authoritative_clean_baseline_expected_generator_rows() -> list[dict]:
+    baseline = authoritative_clean_baseline_rows()
+    pair_count = f1.baseline_pair_count(baseline)
+    raw_generator_rows = generator.build_controlled_records(pair_count)
+    return f1.project_replay_to_baseline_topology(raw_generator_rows, baseline)
+
+
+def actual_authorized_f1_row_ids() -> set[str]:
+    root = Path(f1.__file__).resolve().parents[1]
+    summary = f1.load_json(root / f1.P3W6F1_P3W4_SUMMARY_PATH)
+    pairs = f1.load_jsonl(root / f1.P3W6F1_P3W4_PAIRS_PATH)
+    manifest = f1.load_json(root / f1.P3W6F1_P3W5_MANIFEST_PATH)
+    supporting = f1.extract_decision_supporting_pair_ids(summary, manifest)
+    targets = f1.extract_authorized_f1_targets(pairs, supporting)
+    assert targets["F1_target_row_count"] == 121
+    return set(targets["authorized_F1_row_ids"])
+
+
+@lru_cache(maxsize=1)
+def _cached_stage185_baseline_case() -> tuple[list[dict], list[dict], list[dict]]:
+    source = authoritative_clean_baseline_rows()
+    expected_generator_rows = authoritative_clean_baseline_expected_generator_rows()
+    source_families = {row["intervention_type"] for row in source}
+    expected_families = {row["intervention_type"] for row in expected_generator_rows}
+    assert len(source) == 3600
+    assert len(expected_generator_rows) == 3600
+    assert source_families == expected_families
+    assert "time_swap" not in source_families
+    assert {"none", "paraphrase", "polarity_flip"}.issubset(source_families)
+    sidecar = f1.derive_stage185_expected_sidecar(
+        source,
+        actual_source_dataset_sha256=f1.P3W6F1_AUTHORITATIVE_DATA_SHA256,
+        actual_source_dataset_path=Path(f1.P3W6F1_AUTHORITATIVE_DATA_PATH),
+        actual_integrity_builder_sha256="builder-sha",
+        expected_generator_rows=expected_generator_rows,
+        runtime_authority=stage185_runtime_authority_stub(),
+    )
+    return source, expected_generator_rows, sidecar
+
+
+def stage185_source_and_sidecar() -> tuple[list[dict], list[dict]]:
+    source, _expected_generator_rows, sidecar = _cached_stage185_baseline_case()
+    return copy.deepcopy(source), copy.deepcopy(sidecar)
+
+
+def stage185_source_expected_and_sidecar() -> tuple[list[dict], list[dict], list[dict]]:
+    source, expected_generator_rows, sidecar = _cached_stage185_baseline_case()
+    return copy.deepcopy(source), copy.deepcopy(expected_generator_rows), copy.deepcopy(sidecar)
+
+
+def authorized_defective_f1_sidecar_index(sidecar: list[dict]) -> int:
+    authorized = actual_authorized_f1_row_ids()
+    matches = [
+        index
+        for index, row_value in enumerate(sidecar)
+        if row_value["row_id"] in authorized
+    ]
+    assert len(matches) == 121
+
+    target_index = matches[0]
+    target = sidecar[target_index]
+    assert target["row_id"] in authorized
+    assert target["intervention_type"] == "polarity_flip"
+    assert target["grammar_status"] == "FAIL"
+    assert target["integrity_status"] == "INELIGIBLE"
+    assert target["canonical_status"] == "PASS"
+    assert target["audit_changed_axes"] == ["polarity"]
+    return target_index
+
+
+@lru_cache(maxsize=1)
+def _cached_repaired_stage185_replay_case() -> tuple[list[dict], list[dict], set[str], dict]:
+    baseline = authoritative_clean_baseline_rows()
+    authorized = actual_authorized_f1_row_ids()
+    replay = f1.actual_repaired_generator_replay(baseline, authorized)
+    repaired = replay["replayed_records"]
+    assert len(baseline) == 3600
+    assert len(repaired) == 3600
+    assert len(authorized) == 121
+    assert "time_swap" not in {row["intervention_type"] for row in repaired}
+    assert set(replay["actual_generator_repair_consumed_row_ids"]) == authorized
+    return baseline, repaired, authorized, replay
+
+
+def repaired_stage185_replay_case() -> tuple[list[dict], list[dict], set[str], dict]:
+    baseline, repaired, authorized, replay = _cached_repaired_stage185_replay_case()
+    return copy.deepcopy(baseline), copy.deepcopy(repaired), set(authorized), copy.deepcopy(replay)
 
 def authority_record(pair_id: str = "p", family: str = "F1", predicate: str = "approved") -> dict:
     return {
@@ -752,33 +848,16 @@ def test_stage185_positive_case_checks_exact_transition():
     assert evidence["F1_integrity_transition"] == "INELIGIBLE_TO_ELIGIBLE"
 
 
-def stage185_source_and_sidecar() -> tuple[list[dict], list[dict]]:
-    templates = [fact("approved") | {"pair_id": "p"}, fact("released") | {"pair_id": "q"}]
-    source = [
-        record for record in generator._build_records(templates)
-        if record["id"] in {"p__none", "p__polarity_flip", "q__none", "q__polarity_flip"}
-    ]
-    sidecar = f1.derive_stage185_expected_sidecar(
-        source,
-        actual_source_dataset_sha256="source-sha",
-        actual_source_dataset_path=Path(f1.P3W6F1_AUTHORITATIVE_DATA_PATH),
-        actual_integrity_builder_sha256="builder-sha",
-        expected_generator_rows=source,
-        runtime_authority=stage185_runtime_authority_stub(),
-    )
-    return source, sidecar
-
-
 def assert_stage185_provenance_failure(sidecar_mutation):
-    source, sidecar = stage185_source_and_sidecar()
+    source, expected_generator_rows, sidecar = stage185_source_expected_and_sidecar()
     sidecar_mutation(source, sidecar)
     result = f1.validate_stage185_sidecar_provenance(
         source,
         sidecar,
-        actual_source_dataset_sha256="source-sha",
+        actual_source_dataset_sha256=f1.P3W6F1_AUTHORITATIVE_DATA_SHA256,
         actual_source_dataset_path=Path(f1.P3W6F1_AUTHORITATIVE_DATA_PATH),
         actual_integrity_builder_sha256="builder-sha",
-        expected_generator_rows=source,
+        expected_generator_rows=expected_generator_rows,
         runtime_authority=stage185_runtime_authority_stub(),
     )
     assert result["stage185_provenance_status"] == "STAGE185_PROVENANCE_UNRESOLVED"
@@ -786,14 +865,14 @@ def assert_stage185_provenance_failure(sidecar_mutation):
 
 
 def test_stage185_provenance_positive_case():
-    source, sidecar = stage185_source_and_sidecar()
+    source, expected_generator_rows, sidecar = stage185_source_expected_and_sidecar()
     result = f1.validate_stage185_sidecar_provenance(
         source,
         sidecar,
-        actual_source_dataset_sha256="source-sha",
+        actual_source_dataset_sha256=f1.P3W6F1_AUTHORITATIVE_DATA_SHA256,
         actual_source_dataset_path=Path(f1.P3W6F1_AUTHORITATIVE_DATA_PATH),
         actual_integrity_builder_sha256="builder-sha",
-        expected_generator_rows=source,
+        expected_generator_rows=expected_generator_rows,
         runtime_authority=stage185_runtime_authority_stub(),
     )
     assert result["stage185_provenance_pass"] is True
@@ -831,8 +910,41 @@ def test_stage185_provenance_required_schema_missing_blocks_acceptance():
     assert_stage185_provenance_failure(lambda source, sidecar: sidecar[1].pop("schema_status"))
 
 
+def test_stage185_test_fixture_uses_complete_authoritative_clean_family_universe():
+    baseline = authoritative_clean_baseline_rows()
+    source, _sidecar = stage185_source_and_sidecar()
+    baseline_families = {row["intervention_type"] for row in baseline}
+    source_families = {row["intervention_type"] for row in source}
+    assert len(source) == 3600
+    assert source_families == baseline_families
+    assert {"none", "paraphrase", "polarity_flip"}.issubset(source_families)
+
+
+def test_stage185_test_fixture_excludes_time_swap_by_authoritative_baseline_topology():
+    baseline = authoritative_clean_baseline_rows()
+    projected_expected_rows = authoritative_clean_baseline_expected_generator_rows()
+    baseline_families = {row["intervention_type"] for row in baseline}
+    projected_families = {row["intervention_type"] for row in projected_expected_rows}
+    assert len(baseline) == 3600
+    assert len(projected_expected_rows) == 3600
+    assert baseline_families == projected_families
+    assert "time_swap" not in baseline_families
+
+
+def test_repaired_stage185_fixture_uses_exact_121_authority_rows_on_clean_topology():
+    baseline, repaired, authorized, replay = repaired_stage185_replay_case()
+    repaired_families = {row["intervention_type"] for row in repaired}
+    assert len(baseline) == 3600
+    assert len(repaired) == 3600
+    assert len(authorized) == 121
+    assert len(replay["actual_generator_repair_consumed_row_ids"]) == 121
+    assert set(replay["actual_generator_repair_consumed_row_ids"]) == authorized
+    assert "time_swap" not in repaired_families
+
+
 def test_stage185_expected_sidecar_preserves_production_dev_split():
-    source = generator.build_controlled_records(300)
+    source = authoritative_clean_baseline_rows()
+    expected_generator_rows = authoritative_clean_baseline_expected_generator_rows()
     _train_rows, _dev_rows, dev_ids = f1.stage185_builder.split_by_pair(
         [dict(row) for row in source],
         f1.P3W6F1_STAGE185_SPLIT_SEED,
@@ -843,7 +955,7 @@ def test_stage185_expected_sidecar_preserves_production_dev_split():
         actual_source_dataset_sha256=f1.P3W6F1_AUTHORITATIVE_DATA_SHA256,
         actual_source_dataset_path=Path(f1.P3W6F1_AUTHORITATIVE_DATA_PATH),
         actual_integrity_builder_sha256="builder-sha",
-        expected_generator_rows=source,
+        expected_generator_rows=expected_generator_rows,
         runtime_authority=stage185_runtime_authority_stub(),
     )
     dev_row = next(row for row in sidecar if row["pair_id"] in dev_ids)
@@ -851,7 +963,8 @@ def test_stage185_expected_sidecar_preserves_production_dev_split():
 
 
 def test_stage185_expected_sidecar_preserves_production_train_split():
-    source = generator.build_controlled_records(300)
+    source = authoritative_clean_baseline_rows()
+    expected_generator_rows = authoritative_clean_baseline_expected_generator_rows()
     _train_rows, _dev_rows, dev_ids = f1.stage185_builder.split_by_pair(
         [dict(row) for row in source],
         f1.P3W6F1_STAGE185_SPLIT_SEED,
@@ -862,7 +975,7 @@ def test_stage185_expected_sidecar_preserves_production_train_split():
         actual_source_dataset_sha256=f1.P3W6F1_AUTHORITATIVE_DATA_SHA256,
         actual_source_dataset_path=Path(f1.P3W6F1_AUTHORITATIVE_DATA_PATH),
         actual_integrity_builder_sha256="builder-sha",
-        expected_generator_rows=source,
+        expected_generator_rows=expected_generator_rows,
         runtime_authority=stage185_runtime_authority_stub(),
     )
     train_row = next(row for row in sidecar if row["pair_id"] not in dev_ids)
@@ -870,15 +983,15 @@ def test_stage185_expected_sidecar_preserves_production_train_split():
 
 
 def test_stage185_split_tamper_fails_provenance():
-    source, sidecar = stage185_source_and_sidecar()
+    source, expected_generator_rows, sidecar = stage185_source_expected_and_sidecar()
     sidecar[0] = dict(sidecar[0]) | {"split": "dev" if sidecar[0]["split"] == "train" else "train"}
     result = f1.validate_stage185_sidecar_provenance(
         source,
         sidecar,
-        actual_source_dataset_sha256="source-sha",
+        actual_source_dataset_sha256=f1.P3W6F1_AUTHORITATIVE_DATA_SHA256,
         actual_source_dataset_path=Path(f1.P3W6F1_AUTHORITATIVE_DATA_PATH),
         actual_integrity_builder_sha256="builder-sha",
-        expected_generator_rows=source,
+        expected_generator_rows=expected_generator_rows,
         runtime_authority=stage185_runtime_authority_stub(),
     )
     assert result["stage185_provenance_status"] == "STAGE185_PROVENANCE_UNRESOLVED"
@@ -911,6 +1024,20 @@ def test_analyzer_local_contract_map_cannot_be_stage185_authority():
     assert "stage185_contracts_for_rows" not in source
 
 
+def test_stage185_semantic_tamper_fixture_targets_authorized_defective_f1_row():
+    _source, _expected_generator_rows, sidecar = stage185_source_expected_and_sidecar()
+    authorized = actual_authorized_f1_row_ids()
+    authorized_rows = [row_value for row_value in sidecar if row_value["row_id"] in authorized]
+    target = sidecar[authorized_defective_f1_sidecar_index(sidecar)]
+    assert len(authorized_rows) == 121
+    assert target["row_id"] in authorized
+    assert target["intervention_type"] == "polarity_flip"
+    assert target["grammar_status"] == "FAIL"
+    assert target["integrity_status"] == "INELIGIBLE"
+    assert target["canonical_status"] == "PASS"
+    assert target["audit_changed_axes"] == ["polarity"]
+
+
 @pytest.mark.parametrize(
     ("field", "value"),
     [
@@ -921,25 +1048,22 @@ def test_analyzer_local_contract_map_cannot_be_stage185_authority():
     ],
 )
 def test_stage185_semantic_tamper_fails_provenance_before_transition(field: str, value):
-    source, sidecar = stage185_source_and_sidecar()
-    sidecar[1] = dict(sidecar[1]) | {field: value}
+    source, expected_generator_rows, sidecar = stage185_source_expected_and_sidecar()
+    target_index = authorized_defective_f1_sidecar_index(sidecar)
+    assert sidecar[target_index][field] != value
+    sidecar[target_index] = dict(sidecar[target_index]) | {field: value}
     result = f1.validate_stage185_sidecar_provenance(
         source,
         sidecar,
-        actual_source_dataset_sha256="source-sha",
+        actual_source_dataset_sha256=f1.P3W6F1_AUTHORITATIVE_DATA_SHA256,
         actual_source_dataset_path=Path(f1.P3W6F1_AUTHORITATIVE_DATA_PATH),
         actual_integrity_builder_sha256="builder-sha",
-        expected_generator_rows=source,
+        expected_generator_rows=expected_generator_rows,
         runtime_authority=stage185_runtime_authority_stub(),
     )
     assert result["stage185_provenance_status"] == "STAGE185_PROVENANCE_UNRESOLVED"
+    assert result["stage185_provenance_pass"] is False
     assert "stage185_semantic_identity" in result["stage185_provenance_failures"]
-
-
-def repaired_stage185_replay_case() -> tuple[list[dict], list[dict], set[str], dict]:
-    baseline, repaired, authorized = replay_case()
-    replay = f1.validate_repaired_output_replay_identity(baseline, repaired, authorized)
-    return baseline, repaired, authorized, replay
 
 
 def test_repaired_stage185_expected_sidecar_uses_authorized_repaired_generator_replay():
@@ -960,7 +1084,8 @@ def test_repaired_stage185_expected_sidecar_uses_authorized_repaired_generator_r
 
 
 def test_repaired_stage185_expected_sidecar_does_not_use_unrepaired_baseline_expected_rows():
-    baseline, repaired, _authorized, replay = repaired_stage185_replay_case()
+    _baseline, repaired, _authorized, replay = repaired_stage185_replay_case()
+    unrepaired_expected_rows = authoritative_clean_baseline_expected_generator_rows()
     observed_sidecar = f1.derive_stage185_expected_sidecar(
         repaired,
         actual_source_dataset_sha256="repaired-sha",
@@ -975,7 +1100,7 @@ def test_repaired_stage185_expected_sidecar_does_not_use_unrepaired_baseline_exp
         actual_source_dataset_sha256="repaired-sha",
         actual_source_dataset_path=Path("reports/p3w6f1_repaired.jsonl"),
         actual_integrity_builder_sha256="builder-sha",
-        expected_generator_rows=baseline,
+        expected_generator_rows=unrepaired_expected_rows,
         runtime_authority=stage185_runtime_authority_stub(),
     )
     assert result["stage185_provenance_status"] == "STAGE185_PROVENANCE_UNRESOLVED"
