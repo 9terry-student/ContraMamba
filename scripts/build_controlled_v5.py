@@ -275,6 +275,51 @@ _GENERATED_PREDICATES = (
     ("opened", "planned"),
     ("selected", "evaluated"),
 )
+
+_BASE_PREDICATE_BY_INFLECTED: dict[str, str] = {
+    "approved": "approve",
+    "borrowed": "borrow",
+    "catalogued": "catalogue",
+    "delivered": "deliver",
+    "designed": "design",
+    "digitized": "digitize",
+    "discussed": "discuss",
+    "displayed": "display",
+    "documented": "document",
+    "evaluated": "evaluate",
+    "expanded": "expand",
+    "hosted": "host",
+    "inspected": "inspect",
+    "introduced": "introduce",
+    "judged": "judge",
+    "launched": "launch",
+    "mapped": "map",
+    "measured": "measure",
+    "opened": "open",
+    "patrolled": "patrol",
+    "planned": "plan",
+    "premiered": "premiere",
+    "presented": "present",
+    "protected": "protect",
+    "published": "publish",
+    "purchased": "purchase",
+    "received": "receive",
+    "recorded": "record",
+    "rehearsed": "rehearse",
+    "released": "release",
+    "renovated": "renovate",
+    "reopened": "reopen",
+    "restored": "restore",
+    "reviewed": "review",
+    "screened": "screen",
+    "selected": "select",
+    "signed": "sign",
+    "surveyed": "survey",
+    "tested": "test",
+    "upgraded": "upgrade",
+    "visited": "visit",
+    "won": "win",
+}
 _GENERATED_TIMES = (
     "January", "March", "May", "July", "September", "November",
 )
@@ -330,9 +375,19 @@ def fact_templates_for_count(num_pairs: int) -> list[dict]:
     return templates
 
 
-def _statement(fact: dict, *, negative: bool = False, **overrides: str) -> str:
+def _statement(
+    fact: dict,
+    *,
+    negative: bool = False,
+    predicate_surface_override: str | None = None,
+    **overrides: str,
+) -> str:
     values = {**fact, **overrides}
     predicate = values["predicate"]
+    if predicate_surface_override is not None:
+        if not negative:
+            raise ValueError("predicate_surface_override requires negative=True")
+        predicate = predicate_surface_override
     if negative:
         predicate = f"did not {predicate}"
     return (
@@ -377,7 +432,39 @@ def _record(
     }
 
 
-def _build_records(templates: list[dict]) -> list[dict]:
+def _negative_polarity_flip_row_ids(templates: list[dict]) -> set[str]:
+    return {
+        f"{fact['pair_id']}__polarity_flip"
+        for index, fact in enumerate(templates)
+        if index < len(templates) // 2
+    }
+
+
+def _build_records(
+    templates: list[dict],
+    *,
+    authorized_negative_polarity_flip_row_ids: set[str] | frozenset[str] | None = None,
+    repair_consumed_row_ids: set[str] | None = None,
+) -> list[dict]:
+    repair_negative_polarity_flip = authorized_negative_polarity_flip_row_ids is not None
+    authorized_ids = set(authorized_negative_polarity_flip_row_ids or set())
+    if repair_negative_polarity_flip:
+        generated_negative_ids = _negative_polarity_flip_row_ids(templates)
+        if not authorized_ids <= generated_negative_ids:
+            raise ValueError("TARGET_SCOPE_MEMBERSHIP_UNRESOLVED")
+        required_surfaces = {
+            fact["predicate"]
+            for index, fact in enumerate(templates)
+            if f"{fact['pair_id']}__polarity_flip" in authorized_ids
+            and index < len(templates) // 2
+        }
+        missing_surfaces = sorted(
+            surface for surface in required_surfaces
+            if surface not in _BASE_PREDICATE_BY_INFLECTED
+        )
+        if missing_surfaces:
+            raise ValueError("BASE_FORM_COVERAGE_UNRESOLVED")
+
     records: list[dict] = []
     for index, fact in enumerate(templates):
         base_refute = index >= len(templates) // 2
@@ -385,6 +472,17 @@ def _build_records(templates: list[dict]) -> list[dict]:
         base_final = "REFUTE" if base_refute else "SUPPORT"
         base_polarity = base_final
         flipped_final = "SUPPORT" if base_refute else "REFUTE"
+        polarity_flip_negative = not base_refute
+        polarity_row_id = f"{fact['pair_id']}__polarity_flip"
+        predicate_surface_override = None
+        if (
+            repair_negative_polarity_flip
+            and polarity_flip_negative
+            and polarity_row_id in authorized_ids
+        ):
+            predicate_surface_override = _BASE_PREDICATE_BY_INFLECTED[fact["predicate"]]
+            if repair_consumed_row_ids is not None:
+                repair_consumed_row_ids.add(polarity_row_id)
         records.extend(
             [
                 _record(
@@ -450,7 +548,13 @@ def _build_records(templates: list[dict]) -> list[dict]:
                     "NOT_ENTITLED", 0, 0, 0, "NONE", "frame", claim,
                 ),
                 _record(
-                    fact, "polarity_flip", _statement(fact, negative=not base_refute),
+                    fact,
+                    "polarity_flip",
+                    _statement(
+                        fact,
+                        negative=polarity_flip_negative,
+                        predicate_surface_override=predicate_surface_override,
+                    ),
                     flipped_final, 1, 1, 1, flipped_final, "polarity", claim,
                 ),
             ]
@@ -469,6 +573,33 @@ def build_v1_records() -> list[dict]:
 
 def build_controlled_records(num_pairs: int) -> list[dict]:
     return _build_records(fact_templates_for_count(num_pairs))
+
+
+def build_controlled_records_with_f1_polarity_repair(
+    num_pairs: int,
+    authorized_negative_polarity_flip_row_ids: set[str] | frozenset[str],
+) -> list[dict]:
+    if len(set(authorized_negative_polarity_flip_row_ids)) != 121:
+        raise ValueError("F1_AUTHORITY_CARDINALITY_MISMATCH")
+    return _build_records(
+        fact_templates_for_count(num_pairs),
+        authorized_negative_polarity_flip_row_ids=authorized_negative_polarity_flip_row_ids,
+    )
+
+
+def build_controlled_records_with_f1_polarity_repair_audit(
+    num_pairs: int,
+    authorized_negative_polarity_flip_row_ids: set[str] | frozenset[str],
+) -> tuple[list[dict], dict[str, list[str]]]:
+    if len(set(authorized_negative_polarity_flip_row_ids)) != 121:
+        raise ValueError("F1_AUTHORITY_CARDINALITY_MISMATCH")
+    repair_consumed_row_ids: set[str] = set()
+    records = _build_records(
+        fact_templates_for_count(num_pairs),
+        authorized_negative_polarity_flip_row_ids=authorized_negative_polarity_flip_row_ids,
+        repair_consumed_row_ids=repair_consumed_row_ids,
+    )
+    return records, {"repair_consumed_row_ids": sorted(repair_consumed_row_ids)}
 
 
 def validate_record(record: dict, row_number: int | None = None) -> None:
