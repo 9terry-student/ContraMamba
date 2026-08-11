@@ -1,0 +1,192 @@
+{
+  "schema_version": "reason_router_p2_p3w6f1_stage185_predicate_realization_compatibility_audit_v1",
+  "decision": "P3W6F1_STAGE185_COMPATIBILITY_AUDIT_PASS_SPEC_REVISION_REQUIRED",
+  "audit_stage": "P3-W6-F1 Stage185 Predicate-Realization Compatibility Audit",
+  "report_only": true,
+  "implementation_modified": false,
+  "tests_modified": false,
+  "data_modified": false,
+  "training_executed": false,
+  "evaluation_executed": false,
+  "regeneration_executed": false,
+  "python_executed": false,
+  "pytest_executed": false,
+  "git_actions_executed": false,
+  "authorities": {
+    "current_implementation_authority": "11102ea05b28f6638fdead205b4a9ee0f35ca0de",
+    "trusted_stage185_dependency_commit": "ff6929bf33693fb4e70bd9528551053f4402fe1c",
+    "p3w6f1_spec": "reports/reason_router_p2_p3w6f1_deterministic_polarity_regeneration_implementation_spec.md",
+    "p3w6f1_manifest": "reports/reason_router_p2_p3w6f1_deterministic_polarity_regeneration_manifest.json",
+    "p3w5_spec": "reports/reason_router_p2_p3w5_separate_remediation_spec.md",
+    "p3w5_manifest": "reports/reason_router_p2_p3w5_separate_remediation_manifest.json",
+    "p3w4_summary": "reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_canonical_grammar_authority_summary.json",
+    "p3w4_pairs": "reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_canonical_grammar_authority_pairs.jsonl",
+    "stage184_contract_matrix": "reports/stage184a_controlled_train_integrity_mask_spec_20260715_134538/stage184a_family_contract_matrix.csv",
+    "stage185_builder": "scripts/build_stage185a_controlled_train_integrity_sidecar.py",
+    "generator": "scripts/build_controlled_v5.py"
+  },
+  "observed_conflict": {
+    "approved_generator_repair": "did not <inflected predicate> -> did not <generator-authorized base predicate>",
+    "stage185_semantic_state_predicate_basis": "literal presence of fact[\"predicate\"] and fact[\"alternate_predicate\"]",
+    "stage184_polarity_flip_intended_changed_axes": ["polarity"],
+    "stage184_polarity_flip_preserved_axes_include": ["predicate"],
+    "predicted_repaired_stage185_v1": {
+      "grammar_status": "PASS",
+      "audit_changed_axes": ["polarity", "predicate"],
+      "intervention_contract_status": "FAIL",
+      "reason_codes_includes": ["INTERVENTION_CONTRACT_FAIL"],
+      "integrity_status": "INELIGIBLE"
+    },
+    "required_p3w6_repaired_post_state": {
+      "grammar_status": "PASS",
+      "audit_changed_axes": ["polarity"],
+      "intervention_contract_status": "PASS",
+      "integrity_status": "ELIGIBLE"
+    },
+    "post_state_reachable_under_pinned_stage185_v1": false
+  },
+  "representative_trace": {
+    "pair_id": "archive_release",
+    "row_id": "archive_release__polarity_flip",
+    "fact_predicate": "released",
+    "fact_alternate_predicate": "catalogued",
+    "expected_base_predicate": "release",
+    "canonical_evidence": "Director Omar Haddad, the archivist, released the coastal records in Amman during January.",
+    "defective_evidence": "Director Omar Haddad, the archivist, did not released the coastal records in Amman during January.",
+    "repaired_evidence": "Director Omar Haddad, the archivist, did not release the coastal records in Amman during January.",
+    "semantic_state": {
+      "canonical_predicate": "original:released",
+      "defective_predicate": "original:released",
+      "repaired_predicate": "absent",
+      "canonical_polarity": "positive",
+      "defective_polarity": "negative",
+      "repaired_polarity": "negative"
+    },
+    "baseline_stage185": {
+      "grammar_status": "FAIL",
+      "intervention_contract_status": "PASS",
+      "integrity_status": "INELIGIBLE",
+      "audit_expected_axes": ["polarity"],
+      "audit_changed_axes": ["polarity"],
+      "reason_codes": ["DID_NOT_INFLECTED_PREDICATE", "GRAMMAR_TEMPLATE_FAIL"]
+    },
+    "predicted_repaired_stage185_v1": {
+      "grammar_status": "PASS",
+      "intervention_contract_status": "FAIL",
+      "integrity_status": "INELIGIBLE",
+      "audit_expected_axes": ["polarity"],
+      "audit_changed_axes": ["polarity", "predicate"],
+      "reason_codes_includes": ["INTERVENTION_CONTRACT_FAIL"]
+    }
+  },
+  "authorized_scope": {
+    "authorized_f1_row_count": 121,
+    "authorized_f1_pair_count": 121,
+    "unique_authorized_predicate_surface_count": 18,
+    "authorized_predicate_surface_counts": {
+      "approved": 13,
+      "delivered": 18,
+      "digitized": 1,
+      "inspected": 1,
+      "launched": 15,
+      "mapped": 1,
+      "opened": 18,
+      "premiered": 1,
+      "published": 13,
+      "received": 1,
+      "released": 2,
+      "renovated": 1,
+      "reopened": 1,
+      "restored": 16,
+      "selected": 14,
+      "signed": 2,
+      "upgraded": 1,
+      "won": 2
+    },
+    "same_mechanism_applies_to_all_121": true
+  },
+  "root_cause_classification": {
+    "A_generator_repair_defect": false,
+    "B_stage185_representation_defect_for_realization_equivalence": true,
+    "C_p3w6_spec_integration_defect": true,
+    "D_combination": "B plus C",
+    "summary": "Stage185 v1 conflates semantic predicate identity with literal surface realization, and P3-W6 requires a Stage185 v1 accepted post-state while also requiring base-form repair."
+  },
+  "candidate_comparison": {
+    "A_modify_historical_stage185_builder": {
+      "recommended": false,
+      "reason": "Unsafe because P3-W6 pins the trusted Stage185 builder blob and the frozen baseline sidecar must remain immutable."
+    },
+    "B_versioned_p3w6_compatibility_layer": {
+      "recommended": true,
+      "requires_spec_revision": true,
+      "reason": "Preserves historical Stage185 v1 identity while adding exact authorized F1 predicate-realization equivalence."
+    },
+    "C_relax_required_repaired_state": {
+      "recommended": false,
+      "reason": "Would weaken predicate preservation and accepted Stage185 integrity requirements."
+    },
+    "D_avoid_base_form_replacement": {
+      "recommended": false,
+      "reason": "Would preserve the P3-W4 F1 grammar defect and violate did-not base-form repair authority."
+    }
+  },
+  "recommended_mechanism": {
+    "name": "P3W6F1_STAGE185_PREDICATE_REALIZATION_COMPATIBILITY_V1",
+    "implementation_ready_under_current_authority": false,
+    "requires_spec_revision": true,
+    "preserve_historical_stage185_baseline_sidecar_identity": true,
+    "preserve_trusted_stage185_v1_blob": true,
+    "scope": "authorized F1 polarity_flip rows only",
+    "equivalence": "semantic predicate identity preserved while surface grammatical realization changes",
+    "forbidden": [
+      "arbitrary lemmatization",
+      "LLM semantic judgment",
+      "non-authorized row application",
+      "predicate-swap weakening",
+      "historical Stage185 mutation"
+    ]
+  },
+  "second_failing_test_audit": {
+    "test": "test_stage185_expected_generator_label_mismatch_fails_semantic_identity",
+    "finding": "Stage185 provenance compares derived sidecar semantic fields, not raw expected-generator label identity.",
+    "why_it_can_remain_pass": "If the repaired row is already intervention-contract FAIL because predicate appears changed, a label mismatch can produce the same derived FAIL/INELIGIBLE sidecar state.",
+    "replay_identity_owner": "validate_repaired_output_replay_identity and full-output isolation",
+    "do_not_assign_to_stage185": "exact evidence replay identity"
+  },
+  "required_future_tests": [
+    "Stage185 v1 repaired authorized row remains INELIGIBLE with predicate in audit_changed_axes",
+    "compatibility positive for exact authorized inflected/base replacement span",
+    "121-row aggregate compatibility proof",
+    "wrong base-form surface fails",
+    "non-authorized row fails",
+    "predicate-swap detection preserved",
+    "full-output isolation preserved",
+    "historical baseline sidecar semantic SHA preserved",
+    "label mutation caught by replay/full-output authority"
+  ],
+  "non_authorizations": [
+    "production code modification",
+    "test modification",
+    "data modification",
+    "checkpoint mutation",
+    "training",
+    "evaluation",
+    "regeneration",
+    "Kaggle execution",
+    "Git commit/push/pull",
+    "historical Stage185 builder modification",
+    "historical Stage185 baseline sidecar mutation",
+    "P3-W6-F1 execution PASS",
+    "F1 candidate authority establishment",
+    "production dataset repair",
+    "polarity supervision release",
+    "A1/A2/A3 release",
+    "F2 automatic repair",
+    "LLM semantic judgment",
+    "arbitrary morphology heuristic",
+    "generic lemmatization",
+    "predicate-swap weakening"
+  ],
+  "final_status": "P3W6F1_STAGE185_COMPATIBILITY_AUDIT_PASS_SPEC_REVISION_REQUIRED"
+}
