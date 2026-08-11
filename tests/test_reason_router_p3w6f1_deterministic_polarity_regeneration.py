@@ -1067,31 +1067,45 @@ def test_stage185_semantic_tamper_fails_provenance_before_transition(field: str,
 
 
 def test_repaired_stage185_expected_sidecar_uses_authorized_repaired_generator_replay():
-    _baseline, repaired, authorized, replay = repaired_stage185_replay_case()
+    baseline, repaired, authorized, _raw_replay = repaired_stage185_replay_case()
+    replay_validation = f1.validate_repaired_output_replay_identity(
+        baseline,
+        repaired,
+        authorized,
+    )
+    assert replay_validation["generator_replay_identity_pass"] is True
+    assert replay_validation["generator_replay_identity_status"] == "PASS"
+    assert replay_validation["replayed_records"] == repaired
+    assert set(replay_validation["actual_generator_repair_consumed_row_ids"]) == authorized
     sidecar = f1.derive_stage185_expected_sidecar(
         repaired,
         actual_source_dataset_sha256="repaired-sha",
         actual_source_dataset_path=Path("reports/p3w6f1_repaired.jsonl"),
         actual_integrity_builder_sha256="builder-sha",
-        expected_generator_rows=replay["replayed_records"],
+        expected_generator_rows=replay_validation["replayed_records"],
         runtime_authority=stage185_runtime_authority_stub(),
     )
     repaired_member = next(row for row in sidecar if row["row_id"] in authorized)
-    assert replay["generator_replay_identity_pass"] is True
     assert repaired_member["grammar_status"] == "PASS"
     assert repaired_member["integrity_status"] == "ELIGIBLE"
     assert repaired_member["dataset_source_status"] == "PASS"
 
 
-def test_repaired_stage185_expected_sidecar_does_not_use_unrepaired_baseline_expected_rows():
-    _baseline, repaired, _authorized, replay = repaired_stage185_replay_case()
+def test_stage185_expected_generator_evidence_does_not_replace_replay_identity_authority():
+    baseline, repaired, authorized, _raw_replay = repaired_stage185_replay_case()
+    replay_validation = f1.validate_repaired_output_replay_identity(
+        baseline,
+        repaired,
+        authorized,
+    )
+    assert replay_validation["generator_replay_identity_pass"] is True
     unrepaired_expected_rows = authoritative_clean_baseline_expected_generator_rows()
     observed_sidecar = f1.derive_stage185_expected_sidecar(
         repaired,
         actual_source_dataset_sha256="repaired-sha",
         actual_source_dataset_path=Path("reports/p3w6f1_repaired.jsonl"),
         actual_integrity_builder_sha256="builder-sha",
-        expected_generator_rows=replay["replayed_records"],
+        expected_generator_rows=replay_validation["replayed_records"],
         runtime_authority=stage185_runtime_authority_stub(),
     )
     result = f1.validate_stage185_sidecar_provenance(
@@ -1103,6 +1117,42 @@ def test_repaired_stage185_expected_sidecar_does_not_use_unrepaired_baseline_exp
         expected_generator_rows=unrepaired_expected_rows,
         runtime_authority=stage185_runtime_authority_stub(),
     )
+    assert result["stage185_provenance_pass"] is True
+    assert result["stage185_provenance_status"] == "PASS"
+
+
+def test_stage185_expected_generator_label_mismatch_fails_semantic_identity():
+    baseline, repaired, authorized, _raw_replay = repaired_stage185_replay_case()
+    replay_validation = f1.validate_repaired_output_replay_identity(
+        baseline,
+        repaired,
+        authorized,
+    )
+    assert replay_validation["generator_replay_identity_pass"] is True
+    observed_sidecar = f1.derive_stage185_expected_sidecar(
+        repaired,
+        actual_source_dataset_sha256="repaired-sha",
+        actual_source_dataset_path=Path("reports/p3w6f1_repaired.jsonl"),
+        actual_integrity_builder_sha256="builder-sha",
+        expected_generator_rows=replay_validation["replayed_records"],
+        runtime_authority=stage185_runtime_authority_stub(),
+    )
+    tampered_expected_rows = copy.deepcopy(authoritative_clean_baseline_expected_generator_rows())
+    target_row_id = sorted(authorized)[0]
+    target_expected = next(row_value for row_value in tampered_expected_rows if row_value["id"] == target_row_id)
+    replacement = "SUPPORT" if target_expected["polarity_label"] != "SUPPORT" else "REFUTE"
+    assert target_expected["polarity_label"] != replacement
+    target_expected["polarity_label"] = replacement
+    result = f1.validate_stage185_sidecar_provenance(
+        repaired,
+        observed_sidecar,
+        actual_source_dataset_sha256="repaired-sha",
+        actual_source_dataset_path=Path("reports/p3w6f1_repaired.jsonl"),
+        actual_integrity_builder_sha256="builder-sha",
+        expected_generator_rows=tampered_expected_rows,
+        runtime_authority=stage185_runtime_authority_stub(),
+    )
+    assert result["stage185_provenance_pass"] is False
     assert result["stage185_provenance_status"] == "STAGE185_PROVENANCE_UNRESOLVED"
     assert "stage185_semantic_identity" in result["stage185_provenance_failures"]
 
