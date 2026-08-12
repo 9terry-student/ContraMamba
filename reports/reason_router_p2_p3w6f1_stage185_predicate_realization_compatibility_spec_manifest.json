@@ -1,0 +1,794 @@
+{
+  "accounting_invariants": {
+    "checked_and_missing_authorized_ids_disjoint": true,
+    "checked_and_missing_authorized_ids_equal_exact_authorized_F1_row_ids": true,
+    "compatibility_checked_row_ids_authorized_only": true,
+    "count_matches_array_length": true,
+    "cross_field_status_mapping": {
+      "MANUAL_REVIEW_REQUIRED": {
+        "compatibility_pass": false,
+        "effective_F1_repair_integrity_status": "COMPATIBILITY_BLOCKED",
+        "effective_intervention_contract_status": "COMPATIBILITY_BLOCKED"
+      },
+      "PASS": {
+        "compatibility_pass": true,
+        "effective_F1_repair_integrity_status": "COMPATIBILITY_ELIGIBLE",
+        "effective_intervention_contract_status": "COMPATIBILITY_PASS"
+      },
+      "REJECTED": {
+        "compatibility_pass": false,
+        "effective_F1_repair_integrity_status": "COMPATIBILITY_INELIGIBLE",
+        "effective_intervention_contract_status": "COMPATIBILITY_FAIL"
+      }
+    },
+    "expected_successful_future_execution": {
+      "compatibility_checked_count": 121,
+      "compatibility_manual_count": 0,
+      "compatibility_pass_count": 121,
+      "compatibility_rejected_count": 0,
+      "missing_count": 0,
+      "unauthorized_count": 0
+    },
+    "equations": [
+      "compatibility_checked_count == compatibility_pass_count + compatibility_manual_count + compatibility_rejected_count",
+      "compatibility_checked_row_ids == ordered partition union of pass_row_ids, manual_row_ids, rejected_row_ids",
+      "target_count == compatibility_checked_count + missing_count",
+      "target_count == 121"
+    ],
+    "every_count_equals_corresponding_row_id_array_length": true,
+    "focused_unit_validation_unauthorized_invocation": {
+      "accounting_partition_membership": false,
+      "semantic_result": "REJECTED"
+    },
+    "missing_row_ids_authorized_only": true,
+    "pass_manual_rejected_pairwise_disjoint": true,
+    "rejected_row_ids_definition": "authorized target rows whose compatibility result is REJECTED",
+    "row_id_arrays_preserve_deterministic_order": true,
+    "target_count": 121,
+    "unauthorized_accounting": {
+      "compatibility_semantic_result": "REJECTED",
+      "execution_accounting_fields_only": [
+        "unauthorized_row_ids",
+        "unauthorized_count"
+      ],
+      "must_not_insert_into": [
+        "compatibility_checked_row_ids",
+        "pass_row_ids",
+        "manual_row_ids",
+        "rejected_row_ids",
+        "missing_row_ids"
+      ],
+      "production_success_requires_unauthorized_count": 0,
+      "unauthorized_count_equation": "unauthorized_count == len(unauthorized_row_ids)",
+      "unauthorized_row_ids_disjoint_from": [
+        "compatibility_checked_row_ids",
+        "missing_row_ids"
+      ]
+    },
+    "unauthorized_rows_outside_authorized_target_partition": true,
+    "universe_partition_required": true
+  },
+  "artifact_schemas": {
+    "artifacts": [
+      "row-level compatibility JSONL",
+      "row-level compatibility CSV",
+      "compatibility summary JSON",
+      "compatibility execution report MD",
+      "compatibility provenance manifest JSON"
+    ],
+    "deterministic_serialization": {
+      "csv_order": "authorized_F1_row_order",
+      "json_documents": "UTF-8, sorted keys, two-space indentation, newline terminated",
+      "jsonl": "one compact sorted-key JSON object per row in authorized_F1_row_order"
+    },
+    "required_summary_fields": [
+      "target_count",
+      "compatibility_checked_count",
+      "compatibility_pass_count",
+      "compatibility_manual_count",
+      "compatibility_rejected_count",
+      "missing_count",
+      "unauthorized_count",
+      "compatibility_checked_row_ids",
+      "pass_row_ids",
+      "manual_row_ids",
+      "rejected_row_ids",
+      "missing_row_ids",
+      "unauthorized_row_ids"
+    ],
+    "required_row_fields": [
+      "compatibility_rule_id",
+      "compatibility_rule_version",
+      "row_id",
+      "pair_id",
+      "compatibility_status",
+      "compatibility_pass",
+      "authorized_F1_membership",
+      "intervention_type",
+      "inflected_predicate_surface",
+      "expected_base_predicate",
+      "base_form_derivation_method",
+      "base_form_source_path",
+      "base_form_source_sha256",
+      "base_form_source_symbol",
+      "base_form_source_identity_status",
+      "span_uniqueness_status",
+      "original_authorized_span",
+      "regenerated_authorized_span",
+      "outside_span_byte_identity",
+      "claim_identity_status",
+      "label_identity_status",
+      "non_evidence_field_identity_status",
+      "generator_replay_identity_status",
+      "repair_consumption_status",
+      "full_output_isolation_status",
+      "stage185_v1_runtime_authority_status",
+      "baseline_stage185_v1_provenance_status",
+      "repaired_stage185_v1_provenance_status",
+      "baseline_stage185_v1_grammar_status",
+      "baseline_stage185_v1_intervention_contract_status",
+      "baseline_stage185_v1_integrity_status",
+      "baseline_stage185_v1_canonical_status",
+      "baseline_stage185_v1_polarity_contamination_status",
+      "baseline_stage185_v1_audit_expected_axes",
+      "baseline_stage185_v1_audit_changed_axes",
+      "baseline_stage185_v1_reason_codes",
+      "repaired_stage185_v1_grammar_status",
+      "repaired_stage185_v1_intervention_contract_status",
+      "repaired_stage185_v1_integrity_status",
+      "repaired_stage185_v1_canonical_status",
+      "repaired_stage185_v1_polarity_contamination_status",
+      "repaired_stage185_v1_dataset_source_status",
+      "repaired_stage185_v1_schema_status",
+      "repaired_stage185_v1_time_swap_status",
+      "repaired_stage185_v1_audit_expected_axes",
+      "repaired_stage185_v1_audit_changed_axes",
+      "repaired_stage185_v1_reason_codes",
+      "predicate_semantic_identity_preserved",
+      "surface_realization_changed",
+      "compatibility_explained_stage185_axes",
+      "unexplained_stage185_axes",
+      "effective_semantic_changed_axes",
+      "effective_intervention_contract_status",
+      "effective_F1_repair_integrity_status",
+      "ordered_compatibility_blockers"
+    ],
+    "sha_accounting_required": true
+  },
+  "authorities": {
+    "immediate_compatibility_audit_commit": "d15fc541dc4d0e54296a5c0fdc6d3a34ef2551d8",
+    "p3w4_implementation_commit": "ca99038d812696467a4330cffc1c4c5b5f72cfe2",
+    "p3w4_preservation_authority_commit": "f0a9afddc5b93c54aa72b0335c5a1a2f517cf934",
+    "p3w5_authority_commit": "01d983f8d09cacf0eddefd2014fc81a28771cf5e",
+    "p3w6f1_implementation_authority_commit": "11102ea05b28f6638fdead205b4a9ee0f35ca0de",
+    "p3w6f1_target_scope_spec_authority_commit": "ff6929bf33693fb4e70bd9528551053f4402fe1c"
+  },
+  "authority_commits": {
+    "immediate_authority": "d15fc541dc4d0e54296a5c0fdc6d3a34ef2551d8"
+  },
+  "authority_hierarchy": [
+    "immediate compatibility-audit authority",
+    "prior P3-W6-F1 specification/target-scope authority",
+    "P3-W6-F1 implementation authority",
+    "P3-W5 remediation authority",
+    "P3-W4 grammar authority",
+    "immutable historical Stage185 evidence/dependencies",
+    "repository AGENTS.md"
+  ],
+  "authority_inputs": {
+    "authoritative_findings": [
+      "reports/reason_router_p2_p3w6f1_stage185_predicate_realization_compatibility_audit.md",
+      "reports/reason_router_p2_p3w6f1_stage185_predicate_realization_compatibility_manifest.json"
+    ],
+    "preserved_authority_families": [
+      "P3-W6-F1",
+      "P3-W5",
+      "P3-W4",
+      "Stage184",
+      "historical Stage185"
+    ]
+  },
+  "compatibility_enums": {
+    "authorized_F1_membership": [
+      "PASS",
+      "FAIL"
+    ],
+    "base_form_derivation_method": [
+      "GENERATOR_AUTHORITY_BASE_PREDICATE_BY_INFLECTED"
+    ],
+    "compatibility_status": [
+      "PASS",
+      "MANUAL_REVIEW_REQUIRED",
+      "REJECTED"
+    ],
+    "effective_F1_repair_integrity_status": [
+      "COMPATIBILITY_ELIGIBLE",
+      "COMPATIBILITY_INELIGIBLE",
+      "COMPATIBILITY_BLOCKED"
+    ],
+    "effective_intervention_contract_status": [
+      "COMPATIBILITY_PASS",
+      "COMPATIBILITY_FAIL",
+      "COMPATIBILITY_BLOCKED"
+    ],
+    "grammar_status": [
+      "PASS",
+      "FAIL"
+    ],
+    "identity_status": [
+      "PASS",
+      "FAIL",
+      "NOT_RUN"
+    ],
+    "row_field_enum_bindings": {
+      "base_form_source_identity_status": "identity_status",
+      "baseline_stage185_v1_canonical_status": "stage185_binary_status",
+      "baseline_stage185_v1_polarity_contamination_status": "stage185_binary_status",
+      "baseline_stage185_v1_reason_codes": "array<string>",
+      "claim_identity_status": "identity_status",
+      "label_identity_status": "identity_status",
+      "non_evidence_field_identity_status": "identity_status",
+      "repaired_stage185_v1_canonical_status": "stage185_binary_status",
+      "repaired_stage185_v1_dataset_source_status": "stage185_binary_status",
+      "repaired_stage185_v1_polarity_contamination_status": "stage185_binary_status",
+      "repaired_stage185_v1_reason_codes": "array<string>",
+      "repaired_stage185_v1_schema_status": "stage185_binary_status",
+      "repaired_stage185_v1_time_swap_status": "stage185_binary_status",
+      "span_uniqueness_status": [
+        "PASS",
+        "FAIL",
+        "NOT_RUN"
+      ]
+    },
+    "stage185_binary_status": [
+      "PASS",
+      "FAIL"
+    ],
+    "integrity_status": [
+      "ELIGIBLE",
+      "INELIGIBLE"
+    ],
+    "intervention_contract_status": [
+      "PASS",
+      "FAIL"
+    ],
+    "intervention_type": [
+      "polarity_flip",
+      "other"
+    ],
+    "truth_status": [
+      "TRUE",
+      "FALSE"
+    ]
+  },
+  "compatibility_rule": {
+    "id": "P3W6F1_STAGE185_PREDICATE_REALIZATION_COMPATIBILITY",
+    "version": "V1"
+  },
+  "effective_compatibility_signature": {
+    "compatibility_explained_stage185_axes": [
+      "predicate"
+    ],
+    "compatibility_status": "PASS",
+    "effective_F1_repair_integrity_status": "COMPATIBILITY_ELIGIBLE",
+    "effective_intervention_contract_status": "COMPATIBILITY_PASS",
+    "effective_semantic_changed_axes": [
+      "polarity"
+    ],
+    "predicate_semantic_identity_preserved": "TRUE",
+    "surface_realization_changed": "TRUE",
+    "unexplained_stage185_axes": []
+  },
+  "final_decision": "P3W6F1_STAGE185_COMPATIBILITY_SPEC_READY_FOR_STATIC_REVIEW",
+  "focused_pytest_status_preserved": {
+    "failed": 2,
+    "passed": 115,
+    "status": "not fully passing"
+  },
+  "generator_boundary": {
+    "compatibility_may_require_prerequisite_statuses": true,
+    "identity_owners": [
+      "validate_repaired_output_replay_identity",
+      "repair-consumption audit",
+      "full-output isolation",
+      "execution provenance"
+    ],
+    "stage185_is_not_raw_evidence_or_generator_label_identity_oracle": true
+  },
+  "historical_vs_repaired_generator_provenance": {
+    "compatibility_base_form_authority": {
+      "blob_sha256": null,
+      "blob_sha256_status": "NOT_AUTHORITY_VERIFIED_IN_THIS_SPEC",
+      "commit": "11102ea05b28f6638fdead205b4a9ee0f35ca0de",
+      "mismatch_result": "MANUAL_REVIEW_REQUIRED",
+      "path": "scripts/build_controlled_v5.py",
+      "symbol": "_BASE_PREDICATE_BY_INFLECTED"
+    },
+    "compatibility_mapping_must_not_be_derived_from_historical_stage185_generator_source": true,
+    "historical_stage185_generator_provenance": {
+      "historical_stage185_generator_source_sha256": "c41e6a52401bd8c83970286b176950fc751509bee6d797d5da9aea4262c72802",
+      "scope": "historical Stage185/baseline provenance only"
+    },
+    "silent_generator_change_allowed": false
+  },
+  "immutable_historical_artifacts_dependencies": {
+    "authoritative_clean_dataset_sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640",
+    "historical_stage185_baseline_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc",
+    "historical_stage185_generator_source_sha256": "c41e6a52401bd8c83970286b176950fc751509bee6d797d5da9aea4262c72802",
+    "historical_stage185_integrity_builder_sha256": "11e6ba89b8131c76eac4504b4273867eaa99a131abe23d3238eb65ecda207bbc"
+  },
+  "implementation_authority_boundary": {
+    "compatibility_mechanism_has_implementation_authority": false,
+    "p3w6f1_implementation_authority_scope": "currently blocked deterministic polarity-regeneration implementation only",
+    "p3w6f1_implementation_commit": "11102ea05b28f6638fdead205b4a9ee0f35ca0de"
+  },
+  "negative_cases": [
+    {
+      "case": "wrong base predicate",
+      "reason": "Realized base form does not match generator authority.",
+      "result": "REJECTED"
+    },
+    {
+      "case": "correct base predicate on non-authorized structural polarity row",
+      "reason": "Scope is limited to exact authorized F1 row IDs.",
+      "result": "REJECTED"
+    },
+    {
+      "case": "alternate-predicate substitution",
+      "reason": "Semantic predicate change.",
+      "result": "REJECTED"
+    },
+    {
+      "case": "unrelated third-predicate substitution",
+      "reason": "No arbitrary predicate equivalence is authorized.",
+      "result": "REJECTED"
+    },
+    {
+      "case": "multiple candidate replacement spans",
+      "reason": "Authorized replacement span is not unique.",
+      "result": "REJECTED"
+    },
+    {
+      "case": "missing original authorized span",
+      "reason": "Original authorized realization cannot be proven.",
+      "result": "REJECTED"
+    },
+    {
+      "case": "missing regenerated authorized span",
+      "reason": "Regenerated authorized realization cannot be proven.",
+      "result": "REJECTED"
+    },
+    {
+      "case": "outside-span evidence mutation",
+      "reason": "Compatibility explains only the authorized span.",
+      "result": "REJECTED"
+    },
+    {
+      "case": "claim mutation",
+      "reason": "Claim identity is a hard invariant.",
+      "result": "REJECTED"
+    },
+    {
+      "case": "any label mutation",
+      "reason": "Label identity is a hard invariant.",
+      "result": "REJECTED"
+    },
+    {
+      "case": "any non-evidence field mutation",
+      "reason": "Non-evidence identity is a hard invariant.",
+      "result": "REJECTED"
+    },
+    {
+      "case": "generator replay failure",
+      "reason": "Generator identity is unresolved.",
+      "result": "MANUAL_REVIEW_REQUIRED"
+    },
+    {
+      "case": "repair-consumption mismatch",
+      "reason": "Repair set authority is unresolved.",
+      "result": "MANUAL_REVIEW_REQUIRED"
+    },
+    {
+      "case": "full-output isolation failure",
+      "reason": "Output isolation is unresolved.",
+      "result": "MANUAL_REVIEW_REQUIRED"
+    },
+    {
+      "case": "baseline Stage185 provenance failure",
+      "reason": "Baseline historical authority is unresolved.",
+      "result": "MANUAL_REVIEW_REQUIRED"
+    },
+    {
+      "case": "repaired Stage185 provenance failure",
+      "reason": "Repaired historical authority is unresolved.",
+      "result": "MANUAL_REVIEW_REQUIRED"
+    },
+    {
+      "case": "Stage185 runtime authority mismatch",
+      "reason": "Runtime dependency identity is unresolved.",
+      "result": "MANUAL_REVIEW_REQUIRED"
+    },
+    {
+      "case": "repaired grammar_status still FAIL",
+      "reason": "F1 grammar repair did not succeed.",
+      "result": "REJECTED"
+    },
+    {
+      "case": "repaired Stage185 changed axes missing polarity",
+      "reason": "Expected semantic polarity change was not observed.",
+      "result": "REJECTED"
+    },
+    {
+      "case": "repaired Stage185 changed axes containing anything beyond polarity+predicate",
+      "reason": "Additional axes are not compatibility-explainable.",
+      "result": "REJECTED"
+    },
+    {
+      "case": "raw Stage185 failure reason beyond exact compatibility-explainable predicate artifact",
+      "reason": "Compatibility explains only predicate realization.",
+      "result": "REJECTED"
+    },
+    {
+      "case": "generator base-form source identity mismatch",
+      "reason": "Base-form authority is unresolved.",
+      "result": "MANUAL_REVIEW_REQUIRED"
+    },
+    {
+      "case": "F2 row passed to the compatibility mechanism",
+      "reason": "F2 remains manual-only.",
+      "result": "REJECTED"
+    },
+    {
+      "case": "unauthorized F1-like row",
+      "reason": "Scope is the exact authorized F1 target set.",
+      "result": "REJECTED"
+    },
+    {
+      "case": "predicate_swap or other semantic predicate change",
+      "reason": "Predicate-swap semantics are preserved.",
+      "result": "REJECTED"
+    }
+  ],
+  "non_authorizations": [
+    "production code modification in this phase",
+    "test modification in this phase",
+    "data modification in this phase",
+    "checkpoint modification",
+    "historical authority artifact modification",
+    "production regeneration",
+    "candidate acceptance",
+    "polarity supervision release",
+    "A1/A2/A3",
+    "F2 automatic repair",
+    "generic lemmatization",
+    "generic stemming",
+    "arbitrary morphology heuristics",
+    "external NLP morphology packages",
+    "LLM semantic judgment",
+    "learned semantic equivalence",
+    "fuzzy predicate matching",
+    "predicate-swap weakening",
+    "silent upgrade after MANUAL downgrade or rejection"
+  ],
+  "phase_order": [
+    {
+      "generation_requirement": "PRE_NO_REPAIRED_OUTPUT_REQUIRED",
+      "name": "input authority validation",
+      "number": 1
+    },
+    {
+      "generation_requirement": "PRE_NO_REPAIRED_OUTPUT_REQUIRED",
+      "name": "frozen artifact / dependency validation",
+      "number": 2
+    },
+    {
+      "generation_requirement": "PRE_NO_REPAIRED_OUTPUT_REQUIRED",
+      "name": "authorized F1 target extraction",
+      "number": 3
+    },
+    {
+      "generation_requirement": "PRE_NO_REPAIRED_OUTPUT_REQUIRED",
+      "name": "PRE target-scope membership validation",
+      "number": 4
+    },
+    {
+      "generation_requirement": "GENERATION_REPLAY_PRODUCTION",
+      "name": "deterministic generator repair replay",
+      "number": 5
+    },
+    {
+      "generation_requirement": "POST_GENERATION_ONLY",
+      "name": "repair-consumption audit",
+      "number": 6
+    },
+    {
+      "generation_requirement": "POST_GENERATION_ONLY",
+      "name": "repaired-output replay identity validation",
+      "number": 7
+    },
+    {
+      "generation_requirement": "POST_GENERATION_ONLY",
+      "name": "full-output isolation",
+      "number": 8
+    },
+    {
+      "generation_requirement": "POST_GENERATION_ONLY",
+      "name": "historical Stage185-v1 runtime authority validation",
+      "number": 9
+    },
+    {
+      "generation_requirement": "POST_GENERATION_ONLY",
+      "name": "baseline Stage185-v1 provenance reconstruction",
+      "number": 10
+    },
+    {
+      "generation_requirement": "POST_GENERATION_ONLY",
+      "name": "repaired Stage185-v1 provenance reconstruction",
+      "number": 11
+    },
+    {
+      "generation_requirement": "POST_GENERATION_ONLY",
+      "name": "P3W6F1 predicate-realization compatibility derivation",
+      "number": 12
+    },
+    {
+      "generation_requirement": "POST_GENERATION_ONLY",
+      "name": "compatibility-aware effective F1 transition derivation",
+      "number": 13
+    },
+    {
+      "generation_requirement": "POST_GENERATION_ONLY",
+      "name": "row-local semantic audit",
+      "number": 14
+    },
+    {
+      "generation_requirement": "POST_GENERATION_ONLY",
+      "name": "execution provenance validation",
+      "number": 15
+    },
+    {
+      "generation_requirement": "POST_GENERATION_ONLY",
+      "name": "global candidate finalization",
+      "number": 16
+    },
+    {
+      "generation_requirement": "POST_GENERATION_ONLY",
+      "name": "accounting",
+      "number": 17
+    },
+    {
+      "generation_requirement": "POST_GENERATION_ONLY",
+      "name": "execution decision",
+      "number": 18
+    }
+  ],
+  "positive_contract": {
+    "all_required_simultaneously": true,
+    "required_statuses": {
+      "authorized_F1_membership": "PASS",
+      "base_form_source_identity_status": "PASS",
+      "baseline_stage185_v1_provenance_status": "PASS",
+      "claim_identity_status": "PASS",
+      "full_output_isolation_status": "PASS",
+      "generator_replay_identity_status": "PASS",
+      "intervention_type": "polarity_flip",
+      "label_identity_status": "PASS",
+      "non_evidence_field_identity_status": "PASS",
+      "outside_span_byte_identity": "PASS",
+      "repair_consumption_status": "PASS",
+      "repaired_stage185_v1_provenance_status": "PASS",
+      "span_uniqueness_status": "PASS",
+      "stage185_v1_runtime_authority_status": "PASS"
+    }
+  },
+  "required_key_nullability_contract": {
+    "compatibility_pass_forbids_null_in": [
+      "positive_contract_fields",
+      "raw_stage185_signature_fields_required_for_PASS"
+    ],
+    "decisions": {
+      "MANUAL_REVIEW_REQUIRED": {
+        "null_allowed_for": "fields whose authority/provenance or prerequisite execution was unresolved",
+        "semantic_meaning": "unresolved authority/provenance/prerequisite"
+      },
+      "PASS": {
+        "null_allowed": false,
+        "semantic_meaning": "every positive prerequisite established"
+      },
+      "REJECTED": {
+        "null_allowed_for": "unrelated downstream fields not evaluated after decisive blocker",
+        "semantic_meaning": "concrete contradiction or unauthorized use"
+      }
+    },
+    "null_can_contribute_to_COMPATIBILITY_ELIGIBLE": false,
+    "null_meaning": "UNRESOLVED / NOT ESTABLISHED",
+    "null_never_means": [
+      "PASS",
+      "FAIL",
+      "TRUE",
+      "FALSE"
+    ],
+    "ordered_compatibility_blockers_requirement": "identify owner/reason for each unresolved or decisive failure",
+    "owner_rules": {
+      "base_form_source_identity_status != PASS": {
+        "compatibility_can_PASS": false,
+        "nullable_fields": "base-form-dependent derived values"
+      },
+      "baseline_stage185_v1_provenance_status != PASS": {
+        "compatibility_can_PASS": false,
+        "nullable_fields": "baseline raw Stage185 value fields"
+      },
+      "repaired_stage185_v1_provenance_status != PASS": {
+        "compatibility_can_PASS": false,
+        "nullable_fields": "repaired raw Stage185 value fields"
+      },
+      "span_uniqueness_status == NOT_RUN_due_to_earlier_authority_or_provenance_blocker": {
+        "compatibility_can_PASS": false,
+        "nullable_fields": "span-derived fields"
+      }
+    },
+    "raw_stage185_binary_observation_fields": {
+      "fields": [
+        "baseline_stage185_v1_canonical_status",
+        "baseline_stage185_v1_polarity_contamination_status",
+        "repaired_stage185_v1_canonical_status",
+        "repaired_stage185_v1_polarity_contamination_status",
+        "repaired_stage185_v1_dataset_source_status",
+        "repaired_stage185_v1_schema_status",
+        "repaired_stage185_v1_time_swap_status"
+      ],
+      "not_run_allowed": false,
+      "observed_domain": "stage185_binary_status",
+      "unavailable_when_unresolved": null,
+      "validation": "PASS | FAIL | null when unresolved; NOT_RUN is not a raw Stage185 observation value"
+    },
+    "required_key_presence": "unconditional",
+    "unresolved_provenance_semantics": "MANUAL_REVIEW_REQUIRED unless independent contradiction is proven",
+    "value_may_be_null_only_when": "owning prerequisite/status proves value could not be established"
+  },
+  "provenance_requirements": {
+    "required_bindings": [
+      "compatibility_rule_id",
+      "compatibility_rule_version",
+      "immediate_authority_commit",
+      "audit_report_path",
+      "audit_manifest_path",
+      "base_form_source_path",
+      "base_form_source_sha256",
+      "base_form_source_symbol",
+      "stage185_v1_runtime_dependency_id",
+      "stage185_v1_runtime_dependency_sha256",
+      "baseline_stage185_v1_sidecar_sha256",
+      "repaired_stage185_v1_sidecar_sha256",
+      "generator_replay_artifact_sha256",
+      "repair_consumption_artifact_sha256",
+      "full_output_isolation_artifact_sha256"
+    ],
+    "sha_format": "lowercase hex SHA-256"
+  },
+  "raw_stage185_v1_signature": {
+    "baseline": {
+      "audit_changed_axes": [
+        "polarity"
+      ],
+      "audit_expected_axes": [
+        "polarity"
+      ],
+      "canonical_status": "PASS",
+      "grammar_status": "FAIL",
+      "integrity_status": "INELIGIBLE",
+      "intervention_contract_status": "PASS",
+      "polarity_contamination_status": "PASS",
+      "reason_codes_requirement": "contains approved grammar-defect evidence"
+    },
+    "repaired": {
+      "audit_changed_axes": [
+        "polarity",
+        "predicate"
+      ],
+      "audit_expected_axes": [
+        "polarity"
+      ],
+      "canonical_status": "PASS",
+      "dataset_source_status": "PASS",
+      "grammar_status": "PASS",
+      "integrity_status": "INELIGIBLE",
+      "intervention_contract_status": "FAIL",
+      "polarity_contamination_status": "PASS",
+      "reason_codes_requirement": "contains INTERVENTION_CONTRACT_FAIL",
+      "schema_status": "PASS",
+      "time_swap_status": "PASS"
+    },
+    "raw_fields_are_historical_observations": true,
+    "reason_codes_replaced_or_reinterpreted": false
+  },
+  "required_future_tests": [
+    "all 121 authorized F1 rows derive compatibility PASS under exact replay",
+    "row order and row ID sequence are preserved",
+    "raw Stage185-v1 fields remain unchanged and visible",
+    "effective state is COMPATIBILITY_ELIGIBLE only with compatibility PASS",
+    "wrong base predicate is rejected",
+    "correct base predicate on unauthorized structural polarity row is rejected",
+    "alternate-predicate substitution is rejected",
+    "unrelated third-predicate substitution is rejected",
+    "multiple spans are rejected",
+    "missing original span is rejected",
+    "missing regenerated span is rejected",
+    "outside-span mutation is rejected",
+    "claim mutation is rejected",
+    "label mutation is rejected",
+    "non-evidence field mutation is rejected",
+    "generator replay failure blocks",
+    "repair-consumption mismatch blocks",
+    "full-output isolation failure blocks",
+    "Stage185 provenance failure blocks",
+    "Stage185 runtime identity mismatch blocks",
+    "F2 input is rejected",
+    "predicate_swap remains rejected",
+    "additional changed axes beyond polarity+predicate are rejected",
+    "unresolved raw Stage185 provenance yields null rather than NOT_RUN for raw Stage185 binary fields",
+    "raw Stage185 binary fields reject NOT_RUN",
+    "focused pytest conflict is resolved by implementation rather than test weakening"
+  ],
+  "semantic_audit_revision": {
+    "DETERMINISTIC_POLARITY_REPAIR_PASS_requires": [
+      "exact local repair semantics = PASS",
+      "P3W6F1_STAGE185_PREDICATE_REALIZATION_COMPATIBILITY_V1 = PASS"
+    ],
+    "must_not_require": "repaired raw Stage185-v1 integrity_status = ELIGIBLE"
+  },
+  "supersession_map": [
+    {
+      "historical_evidence_preserved": true,
+      "new_replacement_requirement": "repaired raw state must match compatibility signature and compatibility_status must be PASS",
+      "old_requirement": "repaired Stage185-v1 intervention_contract_status == PASS",
+      "reason_unreachable": "Stage185-v1 observes authorized base-form realization as predicate-axis change and emits FAIL.",
+      "scope": "exact authorized P3-W6-F1 rows only"
+    },
+    {
+      "historical_evidence_preserved": true,
+      "new_replacement_requirement": "effective_F1_repair_integrity_status == COMPATIBILITY_ELIGIBLE",
+      "old_requirement": "repaired Stage185-v1 integrity_status == ELIGIBLE",
+      "reason_unreachable": "Raw repaired Stage185-v1 remains INELIGIBLE for all 121 authorized F1 repairs.",
+      "scope": "exact authorized P3-W6-F1 rows only"
+    },
+    {
+      "historical_evidence_preserved": true,
+      "new_replacement_requirement": "raw axes exactly [\"polarity\", \"predicate\"] and compatibility explains only predicate",
+      "old_requirement": "repaired Stage185-v1 audit_changed_axes == [\"polarity\"]",
+      "reason_unreachable": "Raw repaired Stage185-v1 deterministically reports [\"polarity\", \"predicate\"].",
+      "scope": "exact authorized P3-W6-F1 rows only"
+    },
+    {
+      "historical_evidence_preserved": true,
+      "new_replacement_requirement": "F1_effective_transition == RAW_INELIGIBLE_TO_COMPATIBILITY_ELIGIBLE",
+      "old_requirement": "F1_integrity_transition == INELIGIBLE_TO_ELIGIBLE",
+      "reason_unreachable": "Historical Stage185-v1 cannot produce raw ELIGIBLE.",
+      "scope": "exact authorized P3-W6-F1 rows only"
+    }
+  ],
+  "target_scope": {
+    "authorized_F1_row_count": 121,
+    "authorized_F1_row_ids_must_equal": "exact 121 polarity member source_row.id values established by prior authority",
+    "authorized_F1_row_ids_source": "P3-W4 pair artifact + P3-W5 decision-supporting F1 pair authority + existing extraction contract",
+    "extraction_contract": [
+      "extract_decision_supporting_pair_ids(...)",
+      "extract_authorized_f1_targets(...)"
+    ],
+    "exact_row_id_set_required": true,
+    "row_order_authority": "authoritative clean baseline ID sequence filtered by row_id in authorized_F1_row_ids",
+    "row_order_forbidden_authorities": [
+      "lexical sorting",
+      "set iteration order",
+      "compatibility-audit manifest order"
+    ],
+    "row_order_required": true
+  },
+  "trusted_historical_stage185_dependency": {
+    "baseline_builder_blob_preserved": true,
+    "baseline_semantic_sha_preserved": true,
+    "baseline_sidecar_bytes_preserved": true,
+    "raw_fields_mutated": false,
+    "separate_compatibility_result_required": true
+  }
+}
