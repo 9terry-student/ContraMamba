@@ -824,7 +824,23 @@ effective_F1_repair_integrity_status
 effective_semantic_changed_axes
 ```
 
-Current analyzer behavior is not compliant until this flow is implemented.
+Post-regeneration repository inspection at `dc8179e45f7c10416026acdadcbe5cbd8a78d37e` shows the analyzer now implements this compatibility-aware flow and validates baseline/repaired Stage185 sidecar provenance through semantic derivation helpers. The remaining execution gap is not the 19-argument analyzer contract; it is the non-executable repaired sidecar producer previously mapped to the historical Stage185-v1 builder.
+
+The repaired `--repaired-sidecar-jsonl` artifact must therefore be produced by the dedicated P3-W6-F1 repaired Stage185 materializer reserved at:
+
+```text
+scripts/materialize_reason_router_p3w6f1_repaired_stage185_sidecar.py
+```
+
+The materializer consumes repaired source rows and repaired generator replay rows, preserves the 2880/720 split, and leaves historical Stage185-v1 builder semantics immutable. The unique repaired sidecar path supplied to this analyzer is:
+
+```text
+reports/stage185a_controlled_train_integrity_sidecar_p3w6f1_<MATERIALIZER_EXECUTION_COMMIT>/stage185a_controlled_train_integrity_sidecar.jsonl
+```
+
+`MATERIALIZER_EXECUTION_COMMIT` is the future materializer implementation/runtime commit. It does not replace `F1_EXECUTION_COMMIT = dc8179e45f7c10416026acdadcbe5cbd8a78d37e`, which remains the analyzer `--f1-execution-commit` and `--repaired-generator-commit` identity.
+
+The dedicated materializer does not execute the historical Stage185 builder binary against repaired input. Its materialization manifest must record `historical_stage185_binary_executed = false`. The row-level Stage185 provenance field `integrity_builder_sha256` identifies the historical Stage185 source as semantic-contract authority only, not a binary execution event. Raw Stage185 observation fields must contain concrete `PASS`/`FAIL` values; `NOT_RUN` must not be used as a fake PASS state.
 
 ## Required Future Tests
 

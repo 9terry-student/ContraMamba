@@ -621,7 +621,7 @@ The wrapper writes exactly these regeneration artifacts inside that output direc
 
 | artifact | producer | consumer |
 | --- | --- | --- |
-| `controlled_v5_v3_without_time_swap_p3w6f1_repaired.jsonl` | future wrapper after calling `build_controlled_records_with_f1_polarity_repair_audit(pair_count, authorized_F1_row_ids)` and projecting the replay to baseline ID sequence | analyzer `--repaired-jsonl`; repaired Stage185 builder `--data` |
+| `controlled_v5_v3_without_time_swap_p3w6f1_repaired.jsonl` | deterministic wrapper after calling `build_controlled_records_with_f1_polarity_repair_audit(pair_count, authorized_F1_row_ids)` and projecting the replay to baseline ID sequence | analyzer `--repaired-jsonl`; dedicated P3-W6-F1 repaired Stage185 materializer source rows |
 | `p3w6f1_deterministic_generator_invocation.json` | future wrapper | analyzer `--deterministic-generator-invocation-json` |
 | `p3w6f1_generator_configuration_identity.json` | future wrapper | analyzer `--generator-configuration-identity-json` |
 | `p3w6f1_regeneration_execution_manifest.json` | future wrapper | later static/provenance review; source of `--f1-output-sha256` |
@@ -670,19 +670,21 @@ deterministic_generator_invocation_json
 generator_configuration_identity_json
 ```
 
-The repaired Stage185 sidecar directory is:
+The historical Stage185-v1 builder command formerly specified here is not executable for repaired data under the current repository-backed builder contract. The builder requires `--data` to resolve to `data/controlled_v5_v3_without_time_swap.jsonl`, requires the baseline SHA-256 `f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640`, reconstructs exact ordinary baseline generator rows, and enforces historical Stage182 overlap expectations. The repaired JSONL SHA-256 is `d403c437d982e7d61e524fe21ed24391c84d5103be75890a61be7aa40d942833` and intentionally differs in 121 authorized F1 evidence rows, so raw historical Stage185-v1 must remain immutable and must not be used as the repaired sidecar producer.
+
+The replacement repaired Stage185 sidecar directory is:
 
 ```text
-reports/stage185a_controlled_train_integrity_sidecar_p3w6f1_<F1_EXECUTION_COMMIT>/
+reports/stage185a_controlled_train_integrity_sidecar_p3w6f1_<MATERIALIZER_EXECUTION_COMMIT>/
 ```
 
 The repaired sidecar path supplied to the analyzer is:
 
 ```text
-reports/stage185a_controlled_train_integrity_sidecar_p3w6f1_<F1_EXECUTION_COMMIT>/stage185a_controlled_train_integrity_sidecar.jsonl
+reports/stage185a_controlled_train_integrity_sidecar_p3w6f1_<MATERIALIZER_EXECUTION_COMMIT>/stage185a_controlled_train_integrity_sidecar.jsonl
 ```
 
-The exact future repaired Stage185 builder command contract is:
+The exact historical builder command below is superseded for repaired data and must not be executed:
 
 ```text
 python scripts/build_stage185a_controlled_train_integrity_sidecar.py \
@@ -698,7 +700,7 @@ python scripts/build_stage185a_controlled_train_integrity_sidecar.py \
   --rule-version stage185a_v1
 ```
 
-The repaired Stage185 command must consume the repaired JSONL above and must not consume `data/controlled_v5_v3_without_time_swap.jsonl`. Expected split accounting remains:
+The approved replacement producer is `scripts/materialize_reason_router_p3w6f1_repaired_stage185_sidecar.py`. It must reuse Stage185 contract functions and the analyzer's semantic derivation helpers, consume the repaired JSONL above plus the repaired generator replay rows, preserve the 2880/720 split, write the same JSONL schema required by analyzer `--repaired-sidecar-jsonl`, and leave historical Stage185-v1 constants, fail-closed checks, sidecar rows, SHA values, and Stage182 regression expectations unchanged. Expected split accounting remains:
 
 ```text
 train rows = 2880
@@ -707,10 +709,188 @@ split seed = 174
 dev ratio = 0.2
 ```
 
+The exact reserved future materializer source path is:
+
+```text
+scripts/materialize_reason_router_p3w6f1_repaired_stage185_sidecar.py
+```
+
+This file is not created by this specification repair. The exact reserved future test path is:
+
+```text
+tests/test_reason_router_p3w6f1_repaired_stage185_sidecar_materializer.py
+```
+
+This test file is not created by this specification repair.
+
+The exact active future materializer command contract is:
+
+```text
+python scripts/materialize_reason_router_p3w6f1_repaired_stage185_sidecar.py \
+  --repo-root . \
+  --repaired-jsonl reports/reason_router_p2_p3w6f1_deterministic_polarity_regeneration_execution_dc8179e45f7c10416026acdadcbe5cbd8a78d37e/controlled_v5_v3_without_time_swap_p3w6f1_repaired.jsonl \
+  --repaired-jsonl-sha256 d403c437d982e7d61e524fe21ed24391c84d5103be75890a61be7aa40d942833 \
+  --regeneration-execution-manifest-json reports/reason_router_p2_p3w6f1_deterministic_polarity_regeneration_execution_dc8179e45f7c10416026acdadcbe5cbd8a78d37e/p3w6f1_regeneration_execution_manifest.json \
+  --deterministic-generator-invocation-json reports/reason_router_p2_p3w6f1_deterministic_polarity_regeneration_execution_dc8179e45f7c10416026acdadcbe5cbd8a78d37e/p3w6f1_deterministic_generator_invocation.json \
+  --generator-configuration-identity-json reports/reason_router_p2_p3w6f1_deterministic_polarity_regeneration_execution_dc8179e45f7c10416026acdadcbe5cbd8a78d37e/p3w6f1_generator_configuration_identity.json \
+  --p3w4-summary-json reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_canonical_grammar_authority_summary.json \
+  --p3w4-pairs-jsonl reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_canonical_grammar_authority_pairs.jsonl \
+  --p3w5-manifest-json reports/reason_router_p2_p3w5_separate_remediation_manifest.json \
+  --f1-execution-commit dc8179e45f7c10416026acdadcbe5cbd8a78d37e \
+  --materializer-execution-commit <MATERIALIZER_EXECUTION_COMMIT> \
+  --generator-source scripts/build_controlled_v5.py \
+  --stage184-contract-matrix reports/stage184a_controlled_train_integrity_mask_spec_20260715_134538/stage184a_family_contract_matrix.csv \
+  --stage185-builder-source scripts/build_stage185a_controlled_train_integrity_sidecar.py \
+  --split-seed 174 \
+  --dev-ratio 0.2 \
+  --rule-version stage185a_v1 \
+  --output-dir reports/stage185a_controlled_train_integrity_sidecar_p3w6f1_<MATERIALIZER_EXECUTION_COMMIT>
+```
+
+No other materializer CLI inputs are authorized. In particular, the materializer must not accept free-form row IDs, alternate repair modes, implicit latest/current discovery, `--dataset-version`, or a historical Stage182 directory input.
+
+Frozen materializer input identities:
+
+```text
+F1_EXECUTION_COMMIT = dc8179e45f7c10416026acdadcbe5cbd8a78d37e
+repaired_jsonl_sha256 = d403c437d982e7d61e524fe21ed24391c84d5103be75890a61be7aa40d942833
+authorized_F1_row_ids_sha256 = 386c0c5d5ed80e699f1607f94c2f8ba2861fa0cb1216d5d421f66e62c03d8c64
+baseline_id_sequence_sha256 = 898070cd6718f9c677ba68442ee8ed9010200363df01d147528779306917c0eb
+repaired_generator_source_sha256 = 37e47a3ef60b26c7186d37367d59db158c28c6b9c9eb9e25a13927fc85810684
+stage184_contract_matrix_sha256 = e5f61ac8d0ca3de3dd43767b83bec8c2c171a1635d419466c98d8d32ec2f38e5
+historical_stage185_builder_source_sha256 = 11e6ba89b8131c76eac4504b4273867eaa99a131abe23d3238eb65ecda207bbc
+```
+
+`F1_EXECUTION_COMMIT` identifies the already completed regeneration, generator replay authority, repaired JSONL production, analyzer `--f1-execution-commit`, and analyzer `--repaired-generator-commit`. `MATERIALIZER_EXECUTION_COMMIT` is a future full 40-hex commit created only after this specification, the materializer implementation, and focused tests are approved and committed. The materializer runtime must require `HEAD == MATERIALIZER_EXECUTION_COMMIT` and a clean tracked worktree. It must separately require `--f1-execution-commit == dc8179e45f7c10416026acdadcbe5cbd8a78d37e`; it must not require `HEAD == F1_EXECUTION_COMMIT`.
+
+The materializer writes exactly two final artifacts:
+
+```text
+reports/stage185a_controlled_train_integrity_sidecar_p3w6f1_<MATERIALIZER_EXECUTION_COMMIT>/stage185a_controlled_train_integrity_sidecar.jsonl
+reports/stage185a_controlled_train_integrity_sidecar_p3w6f1_<MATERIALIZER_EXECUTION_COMMIT>/p3w6f1_repaired_stage185_materialization_manifest.json
+```
+
+No historical Stage185 report bundle and no historical Stage182 overlap-regression report are synthesized. The unique producer of analyzer `--repaired-sidecar-jsonl` is `scripts/materialize_reason_router_p3w6f1_repaired_stage185_sidecar.py`, and the unique artifact is the JSONL path above.
+
+Deterministic output policy:
+
+```text
+all validation and semantic derivation complete before final artifacts appear
+JSON/JSONL are UTF-8 without BOM
+stable key order
+final newline required
+source row order preserved exactly
+write temporary files first, then atomically replace into the final names
+if neither final artifact exists, materialization may proceed
+if both final artifacts already exist and byte-for-byte match newly derived outputs, return deterministic idempotent success
+if either final artifact conflicts, is missing while the other exists, or contains different bytes, fail closed
+never overwrite a conflicting artifact set
+emit no accepted partial artifact set
+```
+
+The materializer must derive authorized F1 row IDs from the frozen P3-W4/P3-W5 authority chain, not from user-provided row IDs, using `extract_decision_supporting_pair_ids` and `extract_authorized_f1_targets`. It must require exactly 121 unique authorized row IDs, no F2 membership, and SHA-256 `386c0c5d5ed80e699f1607f94c2f8ba2861fa0cb1216d5d421f66e62c03d8c64`.
+
+The materializer must use the repaired replay dependency, not ordinary `build_controlled_records(...)`, by calling `actual_repaired_generator_replay(...)`. The resulting `expected_generator_rows` are the projected repaired replay rows. The materializer must verify them against `p3w6f1_deterministic_generator_invocation.json` and `p3w6f1_generator_configuration_identity.json`, including pair count 300, authorized F1 row count 121, structural negative polarity_flip row count 150, baseline topology row count 3600, and baseline ID-sequence SHA-256 `898070cd6718f9c677ba68442ee8ed9010200363df01d147528779306917c0eb`.
+
+Exact semantic helper dependency graph:
+
+```text
+frozen P3-W4/P3-W5 authority
+-> extract_decision_supporting_pair_ids
+-> extract_authorized_f1_targets
+-> actual_repaired_generator_replay
+-> projected repaired expected_generator_rows
+-> generator_expected_rows_and_facts_for_source
+-> load_authoritative_stage185_contracts
+-> derive_stage185_dev_ids
+-> historical stage185_builder.build_sidecar
+-> candidate repaired sidecar
+-> validate_stage185_sidecar_provenance
+-> materialize exact output bytes
+```
+
+The materializer may import those pure deterministic helpers from `scripts/analyze_reason_router_p3w6f1_deterministic_polarity_regeneration.py` and `build_sidecar` from `scripts/build_stage185a_controlled_train_integrity_sidecar.py`. It must not invoke analyzer `main`, analyzer final-decision logic, analyzer output artifacts, or result-review artifacts. It must not reimplement Stage185 grammar classification, changed-axis logic, label matching, eligibility logic, split semantics, or F1 repair semantics.
+
+For each repaired sidecar row, provenance fields are frozen as:
+
+```text
+source_dataset_path = reports/reason_router_p2_p3w6f1_deterministic_polarity_regeneration_execution_dc8179e45f7c10416026acdadcbe5cbd8a78d37e/controlled_v5_v3_without_time_swap_p3w6f1_repaired.jsonl
+source_dataset_sha256 = d403c437d982e7d61e524fe21ed24391c84d5103be75890a61be7aa40d942833
+generator_source_path = scripts/build_controlled_v5.py
+generator_source_sha256 = 37e47a3ef60b26c7186d37367d59db158c28c6b9c9eb9e25a13927fc85810684
+stage184a_report_sha256 = ""
+stage182a_report_sha256 = ""
+integrity_builder_sha256 = 11e6ba89b8131c76eac4504b4273867eaa99a131abe23d3238eb65ecda207bbc
+created_at = ""
+```
+
+The empty Stage182/Stage184 report SHA fields and empty `created_at` are intentional deterministic representations matching current analyzer semantic derivation behavior: the fields must exist for schema compatibility, but current repaired-sidecar provenance validation does not use them for semantic identity. `created_at` is ignored by semantic sidecar identity and must remain the empty string for deterministic materialization.
+
+The dedicated materializer does not execute `scripts/build_stage185a_controlled_train_integrity_sidecar.py` as a binary against repaired input. `integrity_builder_sha256` identifies the historical Stage185 semantic-contract source used by imported pure functions; it does not claim historical binary execution. `historical_stage185_binary_executed` in the materialization manifest must be `false`. The materializer must not write `NOT_RUN` into raw Stage185 binary observation fields. Current analyzer compatibility accepts materializer sidecars through provenance and signature validation when raw fields contain concrete `PASS`/`FAIL` values and match the expected repaired raw signature.
+
+Expected authorized-F1 repaired raw Stage185 fields remain:
+
+```text
+grammar_status = PASS
+intervention_contract_status = FAIL
+integrity_status = INELIGIBLE
+canonical_status = PASS
+polarity_contamination_status = PASS
+dataset_source_status = PASS
+schema_status = PASS
+time_swap_status = PASS
+audit_expected_axes = ["polarity"]
+audit_changed_axes = ["polarity", "predicate"]
+```
+
+The materializer must not convert this raw state into compatibility PASS; compatibility remains a later analyzer concern.
+
+The materialization manifest is a deterministic JSON object with at least:
+
+```text
+schema_version = p3w6f1_repaired_stage185_materialization_manifest_v1
+status = P3W6F1_REPAIRED_STAGE185_MATERIALIZATION_PASS
+F1_execution_commit
+materializer_execution_commit
+materializer_source_path
+materializer_source_sha256
+repaired_source_path
+repaired_source_sha256
+repaired_source_row_count
+repaired_source_id_sequence_sha256
+authorized_F1_row_count
+authorized_F1_row_ids_sha256
+repaired_generator_source_path
+repaired_generator_source_sha256
+regeneration_execution_manifest_path
+regeneration_execution_manifest_sha256
+deterministic_generator_invocation_path
+deterministic_generator_invocation_sha256
+generator_configuration_identity_path
+generator_configuration_identity_sha256
+stage184_contract_matrix_path
+stage184_contract_matrix_sha256
+historical_stage185_builder_source_path
+historical_stage185_builder_source_sha256
+historical_stage185_binary_executed = false
+split_seed
+dev_ratio
+rule_version
+train_row_count
+dev_row_count
+total_row_count
+sidecar_path
+sidecar_sha256
+sidecar_semantic_sha256
+provenance_validation_status = PASS
+```
+
+The future focused test module `tests/test_reason_router_p3w6f1_repaired_stage185_sidecar_materializer.py` must cover at least: exact CLI contract; direct-script importability if repository-package imports are used; invalid materializer commit format; HEAD/materializer commit mismatch; tracked dirty worktree rejection; repaired JSONL path mismatch; repaired JSONL SHA mismatch; regeneration manifest identity mismatch; invocation identity mismatch; configuration identity mismatch; wrong F1 execution commit; malformed/missing/duplicate/wrong-count authorized F1 IDs; F2 inclusion; wrong repaired generator replay; replay-consumption mismatch; generator source SHA mismatch; Stage184 matrix path/SHA mismatch; historical Stage185 builder source path/SHA mismatch; split/accounting mismatch; sidecar schema mismatch; source path/SHA provenance spoof; historical baseline SHA spoof; `historical_stage185_binary_executed` remains false; non-circular dependency with no analyzer output consumed; expected repaired raw Stage185 signature; `validate_stage185_sidecar_provenance` accepts a valid synthetic artifact; `validate_stage185_sidecar_provenance` rejects a tampered sidecar; exact deterministic output names; conflicting existing artifact rejection; partial-existing artifact rejection; deterministic idempotent identical-output success; exact 3600/2880/720 accounting.
+
 Analyzer output directory:
 
 ```text
-reports/reason_router_p2_p3w6f1_deterministic_polarity_regeneration_execution_<F1_EXECUTION_COMMIT>/analyzer/
+reports/reason_router_p2_p3w6f1_deterministic_polarity_regeneration_execution_dc8179e45f7c10416026acdadcbe5cbd8a78d37e/analyzer/
 ```
 
 Complete analyzer argument producer map:
@@ -721,35 +901,41 @@ Complete analyzer argument producer map:
 | `--p3w4-pairs-jsonl` | frozen P3-W4 canonical grammar authority | `reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_canonical_grammar_authority_pairs.jsonl` | before execution |
 | `--p3w5-manifest-json` | frozen P3-W5 authority at commit `01d983f8d09cacf0eddefd2014fc81a28771cf5e` | `reports/reason_router_p2_p3w5_separate_remediation_manifest.json` | before execution |
 | `--baseline-jsonl` | frozen baseline dataset authority | `data/controlled_v5_v3_without_time_swap.jsonl` | before execution |
-| `--repaired-jsonl` | future dedicated wrapper | `reports/reason_router_p2_p3w6f1_deterministic_polarity_regeneration_execution_<F1_EXECUTION_COMMIT>/controlled_v5_v3_without_time_swap_p3w6f1_repaired.jsonl` | after wrapper execution |
+| `--repaired-jsonl` | completed deterministic regeneration | `reports/reason_router_p2_p3w6f1_deterministic_polarity_regeneration_execution_dc8179e45f7c10416026acdadcbe5cbd8a78d37e/controlled_v5_v3_without_time_swap_p3w6f1_repaired.jsonl` | known now |
 | `--baseline-sidecar-jsonl` | frozen historical Stage185-v1 baseline sidecar | `reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_controlled_train_integrity_sidecar.jsonl` | before execution |
-| `--repaired-sidecar-jsonl` | future repaired Stage185 builder invocation | `reports/stage185a_controlled_train_integrity_sidecar_p3w6f1_<F1_EXECUTION_COMMIT>/stage185a_controlled_train_integrity_sidecar.jsonl` | after repaired Stage185 build |
+| `--repaired-sidecar-jsonl` | `scripts/materialize_reason_router_p3w6f1_repaired_stage185_sidecar.py` | `reports/stage185a_controlled_train_integrity_sidecar_p3w6f1_<MATERIALIZER_EXECUTION_COMMIT>/stage185a_controlled_train_integrity_sidecar.jsonl` | after repaired sidecar materialization |
 | `--baseline-generator-commit` | frozen baseline provenance authority | historical generator commit recorded by the baseline Stage185/P3-W4 provenance for `scripts/build_controlled_v5.py` | before execution |
 | `--baseline-generator-source-path` | frozen baseline provenance authority | `scripts/build_controlled_v5.py` | before execution |
 | `--baseline-generator-source-sha256` | frozen baseline Stage185/P3-W4 provenance | `c41e6a52401bd8c83970286b176950fc751509bee6d797d5da9aea4262c72802` | before execution |
-| `--repaired-generator-commit` | committed future implementation state | `F1_EXECUTION_COMMIT` | after implementation commit and clean checkout |
-| `--repaired-generator-source-path` | analyzer generator-source identity contract | `scripts/build_controlled_v5.py` | after implementation commit and clean checkout |
-| `--repaired-generator-source-sha256` | Git raw-file SHA256 of `F1_EXECUTION_COMMIT:scripts/build_controlled_v5.py` | recorded in `p3w6f1_regeneration_execution_manifest.json` | after implementation commit and before analyzer |
-| `--deterministic-generator-invocation-json` | future dedicated wrapper | `reports/reason_router_p2_p3w6f1_deterministic_polarity_regeneration_execution_<F1_EXECUTION_COMMIT>/p3w6f1_deterministic_generator_invocation.json` | after wrapper execution |
-| `--generator-configuration-identity-json` | future dedicated wrapper | `reports/reason_router_p2_p3w6f1_deterministic_polarity_regeneration_execution_<F1_EXECUTION_COMMIT>/p3w6f1_generator_configuration_identity.json` | after wrapper execution |
+| `--repaired-generator-commit` | completed F1 execution authority | `dc8179e45f7c10416026acdadcbe5cbd8a78d37e` | known now |
+| `--repaired-generator-source-path` | analyzer generator-source identity contract | `scripts/build_controlled_v5.py` | known now |
+| `--repaired-generator-source-sha256` | Git raw-file SHA256 of `dc8179e45f7c10416026acdadcbe5cbd8a78d37e:scripts/build_controlled_v5.py` | `37e47a3ef60b26c7186d37367d59db158c28c6b9c9eb9e25a13927fc85810684` | known now |
+| `--deterministic-generator-invocation-json` | completed deterministic regeneration | `reports/reason_router_p2_p3w6f1_deterministic_polarity_regeneration_execution_dc8179e45f7c10416026acdadcbe5cbd8a78d37e/p3w6f1_deterministic_generator_invocation.json` | known now |
+| `--generator-configuration-identity-json` | completed deterministic regeneration | `reports/reason_router_p2_p3w6f1_deterministic_polarity_regeneration_execution_dc8179e45f7c10416026acdadcbe5cbd8a78d37e/p3w6f1_generator_configuration_identity.json` | known now |
 | `--f1-input-sha256` | frozen baseline dataset authority and wrapper manifest | `f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640` | before execution |
-| `--f1-execution-commit` | committed future implementation state | `F1_EXECUTION_COMMIT` | after implementation commit and clean checkout |
-| `--f1-output-sha256` | future dedicated wrapper | SHA256 of `controlled_v5_v3_without_time_swap_p3w6f1_repaired.jsonl`, recorded in `p3w6f1_regeneration_execution_manifest.json` | after wrapper execution |
-| `--output-dir` | deterministic analyzer output contract | `reports/reason_router_p2_p3w6f1_deterministic_polarity_regeneration_execution_<F1_EXECUTION_COMMIT>/analyzer/` | after `F1_EXECUTION_COMMIT` is known |
+| `--f1-execution-commit` | completed F1 execution authority | `dc8179e45f7c10416026acdadcbe5cbd8a78d37e` | known now |
+| `--f1-output-sha256` | completed deterministic regeneration | `d403c437d982e7d61e524fe21ed24391c84d5103be75890a61be7aa40d942833` | known now |
+| `--output-dir` | deterministic analyzer output contract | `reports/reason_router_p2_p3w6f1_deterministic_polarity_regeneration_execution_dc8179e45f7c10416026acdadcbe5cbd8a78d37e/analyzer/` | known now |
 
-Future ordering is exactly:
+Active continuation ordering is exactly:
 
 1. final static review PASS
-2. implement dedicated regeneration wrapper
-3. implementation static/tests gate
-4. commit approved implementation
-5. resolve `F1_EXECUTION_COMMIT` from clean committed tree
-6. deterministic F1 regeneration wrapper
-7. verify regeneration outputs/hashes/identity artifacts
-8. repaired Stage185 sidecar build
-9. verify Stage185 accounting/provenance
-10. P3-W6-F1 analyzer
-11. result/audit review
+2. successful deterministic regeneration
+3. materializer specification repair
+4. independent materializer specification rereview
+5. dedicated materializer implementation + focused tests
+6. independent materializer implementation review
+7. commit exact approved spec/materializer/test candidate
+8. resolve `MATERIALIZER_EXECUTION_COMMIT` from new `HEAD`
+9. Kaggle exact-commit sync
+10. materializer runtime tests
+11. reconfirm successful F1 regeneration artifacts by path/SHA
+12. execute dedicated repaired Stage185 materializer
+13. independent sidecar accounting/provenance verification
+14. execute existing 19-argument P3-W6-F1 analyzer
+15. result/audit review
+
+No F1 regeneration rerun is required merely because the materializer is added.
 
 Specification-level blockers resolved by this section:
 
@@ -763,12 +949,12 @@ BASE_FORM_AUTHORITY_SHA256_UNPINNED
 Execution/implementation blockers intentionally remain unresolved:
 
 ```text
-GENERATOR_REPAIR_NOT_IMPLEMENTED
-REGENERATION_NOT_EXECUTED
 REPAIRED_STAGE185_NOT_EXECUTED
 ANALYZER_NOT_EXECUTED
 RESULT_REVIEW_NOT_EXECUTED
 ```
+
+`REPAIRED_STAGE185_EXECUTION_CONTRACT_INCOMPATIBLE` is specification-resolved by the exact dedicated materializer contract above. It is not a runtime PASS and must not be confused with `REPAIRED_STAGE185_NOT_EXECUTED`.
 
 ## Future Implementation Components
 
@@ -1047,19 +1233,19 @@ F2_changed_row_ids == []
 
 ## Release State
 
-Even after static review:
+Current post-regeneration audit state:
 
 ```text
-implementation_executed = false
-generator_executed = false
-regeneration_executed = false
+implementation_executed = true
+generator_executed = true
+regeneration_executed = true
 analyzer_executed = false
 tests_executed = false
 manual_review_executed = false
 training_executed = false
 evaluation_executed = false
 
-F1 regeneration executed = false
+F1 regeneration executed = true
 F1 candidate authority established = false
 production dataset repair authority not established
 training admission authority not established
@@ -1068,11 +1254,29 @@ A1/A2/A3 released = false
 F2 review executed = false
 ```
 
+Post-regeneration execution-gap audit state:
+
+```text
+F1_EXECUTION_COMMIT = dc8179e45f7c10416026acdadcbe5cbd8a78d37e
+repaired_jsonl = reports/reason_router_p2_p3w6f1_deterministic_polarity_regeneration_execution_dc8179e45f7c10416026acdadcbe5cbd8a78d37e/controlled_v5_v3_without_time_swap_p3w6f1_repaired.jsonl
+repaired_jsonl_sha256 = d403c437d982e7d61e524fe21ed24391c84d5103be75890a61be7aa40d942833
+TOTAL_ROWS = 3600
+CHANGED_ROWS = 121
+authorized_F1_row_ids_sha256 = 386c0c5d5ed80e699f1607f94c2f8ba2861fa0cb1216d5d421f66e62c03d8c64
+baseline_id_sequence_sha256 = 898070cd6718f9c677ba68442ee8ed9010200363df01d147528779306917c0eb
+
+GENERATOR_REPAIR_IMPLEMENTED_AND_VALIDATED
+REGENERATION_EXECUTED
+REPAIRED_STAGE185_NOT_EXECUTED
+ANALYZER_NOT_EXECUTED
+RESULT_REVIEW_NOT_EXECUTED
+```
+
 ## Static Blockers
 
 - `P3W6F1_IMPLEMENTATION_SPEC_NOT_STATICALLY_REVIEWED`
-- `P3W6F1_GENERATOR_REPAIR_NOT_IMPLEMENTED`
-- `P3W6F1_REGENERATION_NOT_EXECUTED`
+- `P3W6F1_REPAIRED_STAGE185_NOT_EXECUTED`
+- `P3W6F1_ANALYZER_NOT_EXECUTED`
 - `P3W6F1_RESULT_REVIEW_NOT_EXECUTED`
 - `P3W5_F2_MANUAL_REVIEW_NOT_EXECUTED`
 - `P2_POLARITY_LOCAL_SUPERVISION_NOT_TRAINING_READY`
@@ -1084,7 +1288,6 @@ This specification does not claim:
 
 - `P3W6F1_IMPLEMENTATION_COMPLETE`
 - `P3W6F1_EXECUTION_PASS`
-- `F1_REGENERATED`
 - `F1_REPAIR_COMPLETE`
 - `F1_CANDIDATE_AUTHORITY_ESTABLISHED`
 - `PRODUCTION_DATASET_REPAIRED`

@@ -790,5 +790,44 @@
     "baseline_sidecar_bytes_preserved": true,
     "raw_fields_mutated": false,
     "separate_compatibility_result_required": true
+  },
+  "post_regeneration_execution_gap_audit": {
+    "F1_EXECUTION_COMMIT": "dc8179e45f7c10416026acdadcbe5cbd8a78d37e",
+    "MATERIALIZER_EXECUTION_COMMIT": "<MATERIALIZER_EXECUTION_COMMIT>",
+    "analyzer_compatibility_flow_status": "IMPLEMENTED_IN_REPOSITORY",
+    "analyzer_19_argument_cli_changed": false,
+    "remaining_gap": "REPAIRED_STAGE185_NOT_EXECUTED",
+    "specification_blocker_status": {
+      "REPAIRED_STAGE185_EXECUTION_CONTRACT_INCOMPATIBLE": "SPECIFICATION_RESOLVED"
+    },
+    "invalid_repaired_sidecar_producer": "scripts/build_stage185a_controlled_train_integrity_sidecar.py",
+    "replacement_repaired_sidecar_producer": "scripts/materialize_reason_router_p3w6f1_repaired_stage185_sidecar.py",
+    "replacement_repaired_sidecar_jsonl": "reports/stage185a_controlled_train_integrity_sidecar_p3w6f1_<MATERIALIZER_EXECUTION_COMMIT>/stage185a_controlled_train_integrity_sidecar.jsonl",
+    "materialization_manifest_json": "reports/stage185a_controlled_train_integrity_sidecar_p3w6f1_<MATERIALIZER_EXECUTION_COMMIT>/p3w6f1_repaired_stage185_materialization_manifest.json",
+    "historical_stage185_binary_executed": false,
+    "row_provenance_contract": {
+      "source_dataset_path": "reports/reason_router_p2_p3w6f1_deterministic_polarity_regeneration_execution_dc8179e45f7c10416026acdadcbe5cbd8a78d37e/controlled_v5_v3_without_time_swap_p3w6f1_repaired.jsonl",
+      "source_dataset_sha256": "d403c437d982e7d61e524fe21ed24391c84d5103be75890a61be7aa40d942833",
+      "generator_source_path": "scripts/build_controlled_v5.py",
+      "generator_source_sha256": "37e47a3ef60b26c7186d37367d59db158c28c6b9c9eb9e25a13927fc85810684",
+      "stage182a_report_sha256": "",
+      "stage184a_report_sha256": "",
+      "integrity_builder_sha256": "11e6ba89b8131c76eac4504b4273867eaa99a131abe23d3238eb65ecda207bbc",
+      "created_at": ""
+    },
+    "replacement_requirements": [
+      "reuse extract_decision_supporting_pair_ids",
+      "reuse extract_authorized_f1_targets",
+      "reuse actual_repaired_generator_replay",
+      "reuse derive_stage185_dev_ids",
+      "reuse load_authoritative_stage185_contracts",
+      "reuse generator_expected_rows_and_facts_for_source",
+      "reuse validate_stage185_sidecar_provenance",
+      "reuse historical stage185_builder.build_sidecar",
+      "consume repaired source rows and repaired generator replay rows",
+      "preserve 2880/720 split",
+      "materialize a separate analyzer-compatible repaired sidecar artifact",
+      "do not mutate or weaken historical Stage185-v1 semantics"
+    ]
   }
 }
