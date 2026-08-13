@@ -3,7 +3,10 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import shutil
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -189,6 +192,31 @@ def test_cli_contract_contains_only_approved_semantic_arguments():
     }
     assert expected <= options
     assert "--dataset-version" not in options
+
+
+@pytest.mark.parametrize("cwd_kind", ["repo_root", "outside_repo"])
+def test_direct_script_help_bootstraps_repo_import_path_without_pythonpath(cwd_kind: str):
+    repo_root = Path(__file__).resolve().parents[1]
+    script = repo_root / "scripts" / "regenerate_reason_router_p3w6f1_deterministic_polarity.py"
+    cwd = repo_root if cwd_kind == "repo_root" else repo_root.parent
+    env = os.environ.copy()
+    env.pop("PYTHONPATH", None)
+
+    result = subprocess.run(
+        [sys.executable, str(script), "--help"],
+        cwd=str(cwd),
+        env=env,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+
+    assert result.returncode == 0
+    assert "ModuleNotFoundError" not in result.stderr
+    assert "--repo-root" in result.stdout
+    assert "--baseline-jsonl" in result.stdout
+    assert "--dataset-version" not in result.stdout
 
 
 def test_invalid_non_40_hex_execution_commit_rejects(workspace: Path):

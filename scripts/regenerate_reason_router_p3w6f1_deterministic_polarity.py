@@ -13,8 +13,18 @@ import hashlib
 import json
 import re
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
+
+
+_REPO_IMPORT_ROOT = Path(__file__).resolve().parents[1]
+if not any(
+    Path(entry).resolve() == _REPO_IMPORT_ROOT
+    for entry in sys.path
+    if entry
+):
+    sys.path.insert(0, str(_REPO_IMPORT_ROOT))
 
 from scripts import build_controlled_v5 as generator
 from scripts import analyze_reason_router_p3w6f1_deterministic_polarity_regeneration as p3w6f1
