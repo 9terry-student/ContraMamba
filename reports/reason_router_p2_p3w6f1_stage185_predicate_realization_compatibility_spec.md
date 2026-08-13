@@ -112,9 +112,12 @@ scripts/build_controlled_v5.py
 
 symbol:
 _BASE_PREDICATE_BY_INFLECTED
+
+raw source SHA256:
+37e47a3ef60b26c7186d37367d59db158c28c6b9c9eb9e25a13927fc85810684
 ```
 
-The exact source/blob identity for this compatibility base-form mapping must be resolved from that commit and bound in future execution provenance. No SHA256 is frozen here for `scripts/build_controlled_v5.py` at `11102ea05b28f6638fdead205b4a9ee0f35ca0de` because that file blob identity has not been authority-verified by this V2 correction.
+The exact raw-file SHA256 above is the SHA256 of `11102ea05b28f6638fdead205b4a9ee0f35ca0de:scripts/build_controlled_v5.py` as read from Git object contents. It is not a Git commit SHA and not a Git blob SHA. Future compatibility execution must bind commit, path, symbol, and raw source SHA256 together; any mismatch is `MANUAL_REVIEW_REQUIRED` and cannot PASS.
 
 The compatibility implementation must not silently change the generator or derive the mapping from the historical `c41e6a52401bd8c83970286b176950fc751509bee6d797d5da9aea4262c72802` source identity. If the generator path, symbol, or blob at the preserved P3-W6-F1 implementation authority does not match the expected mapping authority, compatibility is `MANUAL_REVIEW_REQUIRED` and cannot PASS.
 

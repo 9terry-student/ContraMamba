@@ -297,8 +297,8 @@
   },
   "historical_vs_repaired_generator_provenance": {
     "compatibility_base_form_authority": {
-      "blob_sha256": null,
-      "blob_sha256_status": "NOT_AUTHORITY_VERIFIED_IN_THIS_SPEC",
+      "raw_source_sha256": "37e47a3ef60b26c7186d37367d59db158c28c6b9c9eb9e25a13927fc85810684",
+      "raw_source_sha256_status": "AUTHORITY_VERIFIED_FROM_GIT_OBJECT_CONTENTS",
       "commit": "11102ea05b28f6638fdead205b4a9ee0f35ca0de",
       "mismatch_result": "MANUAL_REVIEW_REQUIRED",
       "path": "scripts/build_controlled_v5.py",

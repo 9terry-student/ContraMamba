@@ -28,6 +28,7 @@ P3-W5 F1/F2 partition, release state, Git-preservation contract, semantic-author
 - `v3_implementation_review`: `P3W6F1_TARGET_SCOPE_SPECIFICATION_CONTRADICTION_DISCOVERED`
 - `v4_revision`: replaces the invalid negative-polarity-flip equality contract with target-scope membership and full-output isolation semantics, narrows the repair consumer to authorized F1 row IDs, corrects generated-candidate accounting, and hardens Stage185 and execution provenance requirements.
 - `v4_phase_order_review`: `P3W6F1_SPEC_V4_PHASE_ORDER_CONTRADICTION_CORRECTED`
+- `v5_execution_totality_spec_repair`: adds the contract-only dedicated regeneration wrapper, deterministic execution/output directories, repaired Stage185 builder invocation, complete analyzer input producer map, and frozen base-form authority raw-file SHA256. This revision does not implement or execute the wrapper.
 
 ## Static Source Trace
 
@@ -523,6 +524,250 @@ Transition token:
 
 ```text
 F1_integrity_transition = INELIGIBLE_TO_ELIGIBLE
+```
+
+## Total Future Execution Contract
+
+This section is a specification-only repair. It reserves a future dedicated regeneration wrapper path but does not create or authorize execution of that script in this task.
+
+Reserved future wrapper path:
+
+```text
+scripts/regenerate_reason_router_p3w6f1_deterministic_polarity.py
+```
+
+Wrapper implementation state:
+
+```text
+CONTRACT_ONLY
+NOT_YET_IMPLEMENTED
+```
+
+The existing `scripts/build_controlled_v5.py` CLI remains authoritative as currently observed:
+
+```text
+--dataset-version {seed,v1}
+```
+
+The P3-W6-F1 repaired workflow must not request a generator dataset-version choice named `v3`; the artifact name `controlled_v5_v3_without_time_swap` does not imply such a generator CLI choice exists.
+
+The future wrapper must reuse the existing approved Python-level repair symbols rather than reimplementing repair semantics:
+
+```text
+scripts.build_controlled_v5.build_controlled_records_with_f1_polarity_repair_audit
+scripts.analyze_reason_router_p3w6f1_deterministic_polarity_regeneration.project_replay_to_baseline_topology
+```
+
+The future wrapper may reuse the analyzer's authority-extraction helpers so the target definition cannot diverge:
+
+```text
+extract_decision_supporting_pair_ids
+extract_authorized_f1_targets
+baseline_pair_count
+id_sequence_sha256
+canonical_sha256
+structural_negative_polarity_flip_row_ids_for_pair_count
+```
+
+The one authoritative `authorized_F1_row_ids` derivation is:
+
+1. Load `reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_canonical_grammar_authority_summary.json`.
+2. Load `reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_canonical_grammar_authority_pairs.jsonl`.
+3. Load `reports/reason_router_p2_p3w5_separate_remediation_manifest.json`, whose authority commit is `01d983f8d09cacf0eddefd2014fc81a28771cf5e`.
+4. Derive `decision_supporting_pair_ids` with `extract_decision_supporting_pair_ids(p3w4_summary, p3w5_manifest)`.
+5. Derive targets with `extract_authorized_f1_targets(pair_records, decision_supporting_pair_ids)`.
+6. The only authorized repaired row set is `targets["authorized_F1_row_ids"]`, requiring exactly 121 row IDs, each ending in `__polarity_flip`, each from a P3-W4 record with `family == F1`, `automatic_root_cause_class == F1_TRUE_POLARITY_GENERATION_DEFECT`, `remediation_state == REGENERATION_REQUIRED`, and `pair_id` in `decision_supporting_pair_ids`.
+
+No other F1 row discovery mechanism, latest artifact, compatibility output, or manual row list may define the repair target set.
+
+Define `F1_EXECUTION_COMMIT` as the full 40-character Git commit checked out at future execution. Future execution requires:
+
+```text
+repository branch/identity checked
+tracked worktree clean
+future wrapper present in F1_EXECUTION_COMMIT
+approved repaired generator behavior present in F1_EXECUTION_COMMIT
+no semantic behavior supplied by uncommitted tracked changes
+```
+
+The deterministic regeneration directory is:
+
+```text
+reports/reason_router_p2_p3w6f1_deterministic_polarity_regeneration_execution_<F1_EXECUTION_COMMIT>/
+```
+
+Here `<F1_EXECUTION_COMMIT>` is the exact full 40-hex execution commit, not a branch name, not `HEAD` as a moving reference, and not `latest`.
+
+The future wrapper command contract is:
+
+```text
+python scripts/regenerate_reason_router_p3w6f1_deterministic_polarity.py \
+  --repo-root . \
+  --baseline-jsonl data/controlled_v5_v3_without_time_swap.jsonl \
+  --baseline-jsonl-sha256 f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640 \
+  --p3w4-summary-json reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_canonical_grammar_authority_summary.json \
+  --p3w4-pairs-jsonl reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_canonical_grammar_authority_pairs.jsonl \
+  --p3w5-manifest-json reports/reason_router_p2_p3w5_separate_remediation_manifest.json \
+  --baseline-sidecar-jsonl reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_controlled_train_integrity_sidecar.jsonl \
+  --base-form-authority-commit 11102ea05b28f6638fdead205b4a9ee0f35ca0de \
+  --base-form-authority-path scripts/build_controlled_v5.py \
+  --base-form-authority-symbol _BASE_PREDICATE_BY_INFLECTED \
+  --base-form-authority-sha256 37e47a3ef60b26c7186d37367d59db158c28c6b9c9eb9e25a13927fc85810684 \
+  --f1-execution-commit <F1_EXECUTION_COMMIT> \
+  --output-dir reports/reason_router_p2_p3w6f1_deterministic_polarity_regeneration_execution_<F1_EXECUTION_COMMIT>
+```
+
+The wrapper writes exactly these regeneration artifacts inside that output directory:
+
+| artifact | producer | consumer |
+| --- | --- | --- |
+| `controlled_v5_v3_without_time_swap_p3w6f1_repaired.jsonl` | future wrapper after calling `build_controlled_records_with_f1_polarity_repair_audit(pair_count, authorized_F1_row_ids)` and projecting the replay to baseline ID sequence | analyzer `--repaired-jsonl`; repaired Stage185 builder `--data` |
+| `p3w6f1_deterministic_generator_invocation.json` | future wrapper | analyzer `--deterministic-generator-invocation-json` |
+| `p3w6f1_generator_configuration_identity.json` | future wrapper | analyzer `--generator-configuration-identity-json` |
+| `p3w6f1_regeneration_execution_manifest.json` | future wrapper | later static/provenance review; source of `--f1-output-sha256` |
+
+The wrapper must emit `p3w6f1_deterministic_generator_invocation.json` with this canonical schema, matching the analyzer's `actual_repaired_generator_replay` identity object:
+
+```json
+{
+  "authorized_F1_row_ids_sha256": "<canonical_sha256(sorted_authorized_F1_row_ids)>",
+  "baseline_id_sequence_sha256": "<id_sequence_sha256(baseline_id_sequence)>",
+  "pair_count": 300,
+  "projection_policy": "baseline_id_sequence",
+  "repair_api": "build_controlled_records_with_f1_polarity_repair_audit",
+  "repair_mode": "f1_authorized_polarity_negative_only"
+}
+```
+
+The wrapper must emit `p3w6f1_generator_configuration_identity.json` with this canonical schema, matching the analyzer's `actual_repaired_generator_replay` configuration object:
+
+```json
+{
+  "authorized_F1_row_count": 121,
+  "baseline_id_sequence_sha256": "<id_sequence_sha256(baseline_id_sequence)>",
+  "baseline_topology_row_count": 3600,
+  "generator_source_path": "scripts/build_controlled_v5.py",
+  "pair_count": 300,
+  "structural_negative_polarity_flip_row_count": 150
+}
+```
+
+The wrapper execution manifest must pin at minimum:
+
+```text
+F1_execution_commit
+baseline_input_path
+baseline_input_sha256
+repaired_output_path
+repaired_output_sha256
+repaired_generator_source_path = scripts/build_controlled_v5.py
+repaired_generator_source_sha256
+base_form_authority_commit = 11102ea05b28f6638fdead205b4a9ee0f35ca0de
+base_form_authority_path = scripts/build_controlled_v5.py
+base_form_authority_symbol = _BASE_PREDICATE_BY_INFLECTED
+base_form_authority_sha256 = 37e47a3ef60b26c7186d37367d59db158c28c6b9c9eb9e25a13927fc85810684
+deterministic_generator_invocation_json
+generator_configuration_identity_json
+```
+
+The repaired Stage185 sidecar directory is:
+
+```text
+reports/stage185a_controlled_train_integrity_sidecar_p3w6f1_<F1_EXECUTION_COMMIT>/
+```
+
+The repaired sidecar path supplied to the analyzer is:
+
+```text
+reports/stage185a_controlled_train_integrity_sidecar_p3w6f1_<F1_EXECUTION_COMMIT>/stage185a_controlled_train_integrity_sidecar.jsonl
+```
+
+The exact future repaired Stage185 builder command contract is:
+
+```text
+python scripts/build_stage185a_controlled_train_integrity_sidecar.py \
+  --repo-root . \
+  --data reports/reason_router_p2_p3w6f1_deterministic_polarity_regeneration_execution_<F1_EXECUTION_COMMIT>/controlled_v5_v3_without_time_swap_p3w6f1_repaired.jsonl \
+  --stage184a-dir reports/stage184a_controlled_train_integrity_mask_spec_20260715_134538 \
+  --stage182a-dir reports/stage182a_controlled_intervention_integrity_20260713_113314 \
+  --output-dir reports/stage185a_controlled_train_integrity_sidecar_p3w6f1_<F1_EXECUTION_COMMIT> \
+  --generator-source scripts/build_controlled_v5.py \
+  --stage182a-analyzer-source scripts/analyze_stage182a_controlled_intervention_integrity.py \
+  --split-seed 174 \
+  --dev-ratio 0.2 \
+  --rule-version stage185a_v1
+```
+
+The repaired Stage185 command must consume the repaired JSONL above and must not consume `data/controlled_v5_v3_without_time_swap.jsonl`. Expected split accounting remains:
+
+```text
+train rows = 2880
+dev rows = 720
+split seed = 174
+dev ratio = 0.2
+```
+
+Analyzer output directory:
+
+```text
+reports/reason_router_p2_p3w6f1_deterministic_polarity_regeneration_execution_<F1_EXECUTION_COMMIT>/analyzer/
+```
+
+Complete analyzer argument producer map:
+
+| analyzer argument | exact upstream producer | exact artifact or authority | when value becomes known |
+| --- | --- | --- | --- |
+| `--p3w4-summary-json` | frozen P3-W4 canonical grammar authority | `reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_canonical_grammar_authority_summary.json` | before execution |
+| `--p3w4-pairs-jsonl` | frozen P3-W4 canonical grammar authority | `reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_canonical_grammar_authority_pairs.jsonl` | before execution |
+| `--p3w5-manifest-json` | frozen P3-W5 authority at commit `01d983f8d09cacf0eddefd2014fc81a28771cf5e` | `reports/reason_router_p2_p3w5_separate_remediation_manifest.json` | before execution |
+| `--baseline-jsonl` | frozen baseline dataset authority | `data/controlled_v5_v3_without_time_swap.jsonl` | before execution |
+| `--repaired-jsonl` | future dedicated wrapper | `reports/reason_router_p2_p3w6f1_deterministic_polarity_regeneration_execution_<F1_EXECUTION_COMMIT>/controlled_v5_v3_without_time_swap_p3w6f1_repaired.jsonl` | after wrapper execution |
+| `--baseline-sidecar-jsonl` | frozen historical Stage185-v1 baseline sidecar | `reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_controlled_train_integrity_sidecar.jsonl` | before execution |
+| `--repaired-sidecar-jsonl` | future repaired Stage185 builder invocation | `reports/stage185a_controlled_train_integrity_sidecar_p3w6f1_<F1_EXECUTION_COMMIT>/stage185a_controlled_train_integrity_sidecar.jsonl` | after repaired Stage185 build |
+| `--baseline-generator-commit` | frozen baseline provenance authority | historical generator commit recorded by the baseline Stage185/P3-W4 provenance for `scripts/build_controlled_v5.py` | before execution |
+| `--baseline-generator-source-path` | frozen baseline provenance authority | `scripts/build_controlled_v5.py` | before execution |
+| `--baseline-generator-source-sha256` | frozen baseline Stage185/P3-W4 provenance | `c41e6a52401bd8c83970286b176950fc751509bee6d797d5da9aea4262c72802` | before execution |
+| `--repaired-generator-commit` | committed future implementation state | `F1_EXECUTION_COMMIT` | after implementation commit and clean checkout |
+| `--repaired-generator-source-path` | analyzer generator-source identity contract | `scripts/build_controlled_v5.py` | after implementation commit and clean checkout |
+| `--repaired-generator-source-sha256` | Git raw-file SHA256 of `F1_EXECUTION_COMMIT:scripts/build_controlled_v5.py` | recorded in `p3w6f1_regeneration_execution_manifest.json` | after implementation commit and before analyzer |
+| `--deterministic-generator-invocation-json` | future dedicated wrapper | `reports/reason_router_p2_p3w6f1_deterministic_polarity_regeneration_execution_<F1_EXECUTION_COMMIT>/p3w6f1_deterministic_generator_invocation.json` | after wrapper execution |
+| `--generator-configuration-identity-json` | future dedicated wrapper | `reports/reason_router_p2_p3w6f1_deterministic_polarity_regeneration_execution_<F1_EXECUTION_COMMIT>/p3w6f1_generator_configuration_identity.json` | after wrapper execution |
+| `--f1-input-sha256` | frozen baseline dataset authority and wrapper manifest | `f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640` | before execution |
+| `--f1-execution-commit` | committed future implementation state | `F1_EXECUTION_COMMIT` | after implementation commit and clean checkout |
+| `--f1-output-sha256` | future dedicated wrapper | SHA256 of `controlled_v5_v3_without_time_swap_p3w6f1_repaired.jsonl`, recorded in `p3w6f1_regeneration_execution_manifest.json` | after wrapper execution |
+| `--output-dir` | deterministic analyzer output contract | `reports/reason_router_p2_p3w6f1_deterministic_polarity_regeneration_execution_<F1_EXECUTION_COMMIT>/analyzer/` | after `F1_EXECUTION_COMMIT` is known |
+
+Future ordering is exactly:
+
+1. final static review PASS
+2. implement dedicated regeneration wrapper
+3. implementation static/tests gate
+4. commit approved implementation
+5. resolve `F1_EXECUTION_COMMIT` from clean committed tree
+6. deterministic F1 regeneration wrapper
+7. verify regeneration outputs/hashes/identity artifacts
+8. repaired Stage185 sidecar build
+9. verify Stage185 accounting/provenance
+10. P3-W6-F1 analyzer
+11. result/audit review
+
+Specification-level blockers resolved by this section:
+
+```text
+REGENERATION_PROCEDURE_UNSPECIFIED
+REPAIRED_STAGE185_INVOCATION_UNSPECIFIED
+ANALYZER_UPSTREAM_IDENTITY_UNSPECIFIED
+BASE_FORM_AUTHORITY_SHA256_UNPINNED
+```
+
+Execution/implementation blockers intentionally remain unresolved:
+
+```text
+GENERATOR_REPAIR_NOT_IMPLEMENTED
+REGENERATION_NOT_EXECUTED
+REPAIRED_STAGE185_NOT_EXECUTED
+ANALYZER_NOT_EXECUTED
+RESULT_REVIEW_NOT_EXECUTED
 ```
 
 ## Future Implementation Components
