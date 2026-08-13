@@ -65,18 +65,18 @@ def stage185_sidecar(
         "intervention_type": intervention,
         "frame_compatible_label": 1,
         "grammar_status": "FAIL" if before else "PASS",
-        "integrity_status": "INELIGIBLE" if before else "ELIGIBLE",
+        "integrity_status": "INELIGIBLE",
         "canonical_status": "PASS",
         "dataset_source_status": "PASS",
         "schema_status": "PASS",
-        "intervention_contract_status": "PASS",
+        "intervention_contract_status": "PASS" if before else "FAIL",
         "polarity_contamination_status": "PASS",
         "time_swap_status": "PASS",
         "audit_expected_axes": ["polarity"],
-        "audit_changed_axes": ["polarity"],
+        "audit_changed_axes": ["polarity"] if before else ["polarity", "predicate"],
         "audit_pair_failure_scope": "none",
-        "eligible_for_positive_margin": not before,
-        "reason_codes": ["DID_NOT_INFLECTED_PREDICATE"] if before else ["ELIGIBLE_CLEAN_COMPATIBLE"],
+        "eligible_for_positive_margin": False,
+        "reason_codes": ["DID_NOT_INFLECTED_PREDICATE", "GRAMMAR_TEMPLATE_FAIL"] if before else ["INTERVENTION_CONTRACT_FAIL"],
         "canonical_row_id": f"{pair_id}__none",
         "family_contract_id": f"stage185a_v1:{intervention}",
         "rule_version": "stage185a_v1",
@@ -102,10 +102,40 @@ def pass_audit(pair_id: str) -> dict:
         "semantic_polarity_preserved": True,
         "candidate_accepted": True,
         "ordered_rejection_codes": [],
-        "semantic_validation_evidence": {"stage185_transition_pass": True},
+        "semantic_validation_evidence": {
+            "stage185_transition_pass": True,
+            "compatibility_record": {
+                "row_id": f"{pair_id}__polarity_flip",
+                "compatibility_status": "PASS",
+                "effective_F1_repair_integrity_status": "COMPATIBILITY_ELIGIBLE",
+            },
+        },
     }
 
 
+
+def compatibility_base_identity(status: str = "PASS") -> dict:
+    return {
+        "base_form_source_identity_status": status,
+        "base_form_source_path": f1.GENERATOR_SOURCE_PATH,
+        "base_form_source_sha256": "a" * 64 if status == "PASS" else None,
+        "base_form_source_symbol": f1.BASE_FORM_SYMBOL,
+    }
+
+
+def resolved_compatibility_prerequisites() -> dict:
+    return {
+        "generator_replay_identity_status": "PASS",
+        "repair_consumption_status": "PASS",
+        "full_output_isolation_status": "PASS",
+        "stage185_v1_runtime_authority_status": "PASS",
+        "baseline_stage185_v1_provenance_status": "PASS",
+        "repaired_stage185_v1_provenance_status": "PASS",
+    }
+
+
+def compatibility_record(audit: dict) -> dict:
+    return audit["semantic_validation_evidence"]["compatibility_record"]
 def stage185_runtime_authority_stub() -> dict:
     return {
         "stage185_runtime_authority_pass": True,
@@ -382,6 +412,22 @@ def test_exact_authority_extraction_and_f2_not_included():
     assert targets["authorized_F1_row_ids"] == ["p__polarity_flip"]
 
 
+def test_extract_authorized_targets_sorted_api_output_but_compatibility_uses_baseline_order():
+    records = [authority_record("b"), authority_record("a")]
+    targets = f1.extract_authorized_f1_targets(records, {"a", "b"})
+    assert targets["F1_target_pair_ids"] == ["a", "b"]
+    assert targets["authorized_F1_row_ids"] == ["a__polarity_flip", "b__polarity_flip"]
+
+    authorized = targets["authorized_F1_row_ids"] + [f"x{i:03d}__polarity_flip" for i in range(119)]
+    baseline_order = ["b__polarity_flip", "a__polarity_flip"] + [f"x{i:03d}__polarity_flip" for i in range(119)]
+    accounting = f1.build_compatibility_accounting(
+        authorized,
+        [compatibility_case(pair_id="a"), compatibility_case(pair_id="b")],
+        baseline_row_order=baseline_order,
+    )
+    assert accounting["compatibility_checked_row_ids"] == ["b__polarity_flip", "a__polarity_flip"]
+    assert accounting["pass_row_ids"] == ["b__polarity_flip", "a__polarity_flip"]
+
 def test_121_target_pair_row_expectation_shape():
     records = [authority_record(f"p{i:03d}") for i in range(121)]
     ids = {f"p{i:03d}" for i in range(121)}
@@ -416,6 +462,9 @@ def test_valid_deterministic_repair_pass_contract():
         sidecar_after=stage185_sidecar("p__polarity_flip", "p"),
         inflected_predicate_surface="approved",
         expected_base_predicate="approve",
+        authorized_f1_row_ids={"p__polarity_flip"},
+        base_form_source_identity=compatibility_base_identity(),
+        **resolved_compatibility_prerequisites(),
     )
     assert audit["semantic_validation_status"] == "DETERMINISTIC_POLARITY_REPAIR_PASS"
     assert audit["semantic_polarity_preserved"] is True
@@ -438,11 +487,14 @@ def test_missing_or_ambiguous_authority_manual_review_required():
         sidecar_after=stage185_sidecar("p__polarity_flip", "p"),
         inflected_predicate_surface="missing_surface",
         expected_base_predicate=None,
+        authorized_f1_row_ids={"p__polarity_flip"},
+        base_form_source_identity=compatibility_base_identity(),
+        **resolved_compatibility_prerequisites(),
     )
-    assert audit["semantic_validation_status"] == "MANUAL_REVIEW_REQUIRED"
-    assert audit["semantic_polarity_preserved"] is None
+    assert audit["semantic_validation_status"] == "REJECTED"
+    assert audit["semantic_polarity_preserved"] is False
     assert audit["candidate_accepted"] is False
-    assert "SEMANTIC_AUTHORITY_UNRESOLVED" in audit["ordered_rejection_codes"]
+    assert "ORIGINAL_AUTHORIZED_SPAN_MISSING_OR_AMBIGUOUS" in audit["ordered_rejection_codes"]
 
 
 def test_explicit_contradiction_rejected():
@@ -457,6 +509,9 @@ def test_explicit_contradiction_rejected():
         sidecar_after=stage185_sidecar("p__polarity_flip", "p"),
         inflected_predicate_surface="approved",
         expected_base_predicate="approve",
+        authorized_f1_row_ids={"p__polarity_flip"},
+        base_form_source_identity=compatibility_base_identity(),
+        **resolved_compatibility_prerequisites(),
     )
     assert audit["semantic_validation_status"] == "REJECTED"
     assert audit["semantic_polarity_preserved"] is False
@@ -472,6 +527,9 @@ def locally_valid_deterministic_repair_audit(pair_id: str = "p") -> dict:
         sidecar_after=stage185_sidecar(f"{pair_id}__polarity_flip", pair_id),
         inflected_predicate_surface="approved",
         expected_base_predicate="approve",
+        authorized_f1_row_ids={f"{pair_id}__polarity_flip"},
+        base_form_source_identity=compatibility_base_identity(),
+        **resolved_compatibility_prerequisites(),
     )
 
 
@@ -825,6 +883,9 @@ def test_stage185_field_failure_prevents_candidate_acceptance():
         sidecar_after=stage185_sidecar("p__polarity_flip", "p", override={"canonical_status": "UNRESOLVED"}),
         inflected_predicate_surface="approved",
         expected_base_predicate="approve",
+        authorized_f1_row_ids={"p__polarity_flip"},
+        base_form_source_identity=compatibility_base_identity(),
+        **resolved_compatibility_prerequisites(),
     )
     assert audit["candidate_accepted"] is False
     assert "STAGE185_TRANSITION_FAILED" in audit["ordered_rejection_codes"]
@@ -842,10 +903,65 @@ def test_stage185_positive_case_checks_exact_transition():
         sidecar_after=stage185_sidecar("p__polarity_flip", "p"),
         inflected_predicate_surface="approved",
         expected_base_predicate="approve",
+        authorized_f1_row_ids={"p__polarity_flip"},
+        base_form_source_identity=compatibility_base_identity(),
+        **resolved_compatibility_prerequisites(),
     )
     evidence = audit["semantic_validation_evidence"]
+    assert evidence["raw_stage185_transition"]["stage185_transition_pass"] is True
+    assert evidence["raw_stage185_transition"]["F1_integrity_transition"] == "RAW_INELIGIBLE_TO_RAW_INELIGIBLE"
     assert evidence["stage185_transition_pass"] is True
-    assert evidence["F1_integrity_transition"] == "INELIGIBLE_TO_ELIGIBLE"
+    assert evidence["F1_effective_transition"] == "RAW_INELIGIBLE_TO_COMPATIBILITY_ELIGIBLE"
+    assert "F1_integrity_transition" not in {
+        key
+        for key in evidence
+        if key != "raw_stage185_transition"
+    }
+    assert evidence["compatibility_record"]["effective_F1_repair_integrity_status"] == "COMPATIBILITY_ELIGIBLE"
+
+
+def test_manual_compatibility_effective_transition_is_unresolved():
+    original = row("p", "polarity_flip", "A did not approved B.")
+    regenerated = row("p", "polarity_flip", "A did not approve B.")
+    canonical = row("p", "none", "A approved B.", "SUPPORT")
+    audit = f1.semantic_audit_record(
+        original,
+        regenerated,
+        canonical,
+        sidecar_before=stage185_sidecar("p__polarity_flip", "p", before=True),
+        sidecar_after=stage185_sidecar("p__polarity_flip", "p"),
+        inflected_predicate_surface="approved",
+        expected_base_predicate="approve",
+        authorized_f1_row_ids={"p__polarity_flip"},
+        base_form_source_identity=compatibility_base_identity("FAIL"),
+        **resolved_compatibility_prerequisites(),
+    )
+    evidence = audit["semantic_validation_evidence"]
+    assert evidence["compatibility_record"]["compatibility_status"] == f1.COMPATIBILITY_MANUAL_STATUS
+    assert evidence["raw_stage185_transition"]["F1_integrity_transition"] == "RAW_INELIGIBLE_TO_RAW_INELIGIBLE"
+    assert evidence["F1_effective_transition"] == "UNRESOLVED"
+
+
+def test_rejected_compatibility_effective_transition_is_unresolved():
+    original = row("p", "polarity_flip", "A did not approved B.")
+    regenerated = row("p", "polarity_flip", "A did not approve B.")
+    canonical = row("p", "none", "A approved B.", "SUPPORT")
+    audit = f1.semantic_audit_record(
+        original,
+        regenerated,
+        canonical,
+        sidecar_before=stage185_sidecar("p__polarity_flip", "p", before=True),
+        sidecar_after=stage185_sidecar("p__polarity_flip", "p"),
+        inflected_predicate_surface="approved",
+        expected_base_predicate="approve",
+        authorized_f1_row_ids={"other__polarity_flip"},
+        base_form_source_identity=compatibility_base_identity(),
+        **resolved_compatibility_prerequisites(),
+    )
+    evidence = audit["semantic_validation_evidence"]
+    assert evidence["compatibility_record"]["compatibility_status"] == f1.COMPATIBILITY_REJECTED_STATUS
+    assert evidence["raw_stage185_transition"]["F1_integrity_transition"] == "RAW_INELIGIBLE_TO_RAW_INELIGIBLE"
+    assert evidence["F1_effective_transition"] == "UNRESOLVED"
 
 
 def assert_stage185_provenance_failure(sidecar_mutation):
@@ -1087,7 +1203,9 @@ def test_repaired_stage185_expected_sidecar_uses_authorized_repaired_generator_r
     )
     repaired_member = next(row for row in sidecar if row["row_id"] in authorized)
     assert repaired_member["grammar_status"] == "PASS"
-    assert repaired_member["integrity_status"] == "ELIGIBLE"
+    assert repaired_member["integrity_status"] == "INELIGIBLE"
+    assert repaired_member["intervention_contract_status"] == "FAIL"
+    assert repaired_member["audit_changed_axes"] == ["polarity", "predicate"]
     assert repaired_member["dataset_source_status"] == "PASS"
 
 
@@ -1297,8 +1415,11 @@ def test_resolved_grammar_validator_identity_is_used_in_candidate_audit():
         sidecar_after=stage185_sidecar("p__polarity_flip", "p"),
         inflected_predicate_surface="approved",
         expected_base_predicate="approve",
+        authorized_f1_row_ids={"p__polarity_flip"},
+        base_form_source_identity=compatibility_base_identity(),
         grammar_validator_source=f1.P3W6F1_STAGE182_ANALYZER_PATH,
         grammar_validator_sha256="g" * 64,
+        **resolved_compatibility_prerequisites(),
     )
     assert audit["grammar_validator_source"] == f1.P3W6F1_STAGE182_ANALYZER_PATH
     assert audit["grammar_validator_sha256"] == "g" * 64
@@ -1316,6 +1437,9 @@ def test_regenerated_candidate_record_schema_contains_explicit_fields():
         sidecar_after=stage185_sidecar("p__polarity_flip", "p"),
         inflected_predicate_surface="approved",
         expected_base_predicate="approve",
+        authorized_f1_row_ids={"p__polarity_flip"},
+        base_form_source_identity=compatibility_base_identity(),
+        **resolved_compatibility_prerequisites(),
     )
     isolation = f1.full_output_isolation([original], [regenerated], authorized_f1_row_ids={"p__polarity_flip"})
     summary = f1.build_summary(["p"], ["p"], [candidate])
@@ -1586,6 +1710,7 @@ def install_run_trace_mocks(
     monkeypatch.setattr(f1, "validate_authority_cardinality", lambda targets: {"authority_cardinality_pass": True})
     monkeypatch.setattr(f1, "required_f1_inflected_predicate_surfaces", lambda records, pairs: {"approved"})
     monkeypatch.setattr(f1, "validate_base_form_coverage", lambda surfaces, mapping: {"coverage_pass": True})
+    monkeypatch.setattr(f1, "validate_compatibility_base_form_source_identity", lambda **kwargs: compatibility_base_identity())
     monkeypatch.setattr(f1, "structural_negative_polarity_flip_row_ids_for_pair_count", lambda pair_count: {"p__polarity_flip"})
     monkeypatch.setattr(f1, "validate_target_scope_membership", lambda structural, authorized: {
         "target_scope_membership_pass": True,
@@ -1622,7 +1747,7 @@ def install_run_trace_mocks(
     monkeypatch.setattr(f1, "file_sha256", lambda path: "sha")
     def fake_stage185(*args, **kwargs):
         calls.append("validate_stage185_sidecar_provenance")
-        return {"stage185_provenance_pass": stage185_pass}
+        return {"stage185_provenance_pass": stage185_pass, "stage185_provenance_status": "PASS" if stage185_pass else f1.STAGE185_PROVENANCE_UNRESOLVED}
     monkeypatch.setattr(f1, "validate_stage185_sidecar_provenance", fake_stage185)
     def fake_audit(*args, **kwargs):
         calls.append("audit_authorized_candidates")
@@ -1642,7 +1767,7 @@ def install_run_trace_mocks(
     monkeypatch.setattr(f1, "finalize_candidate_acceptance", tracing_finalize)
     def fake_build_summary(*args, **kwargs):
         calls.append("build_summary")
-        return {"schema_version": f1.SCHEMA_VERSION}
+        return {"schema_version": f1.SCHEMA_VERSION, "F1_execution_decision": f1.ALL_ACCEPTED_DECISION, "F1_execution_blockers": [], "F1_artifact_paths": {}}
     monkeypatch.setattr(f1, "build_summary", fake_build_summary)
     monkeypatch.setattr(f1, "assert_artifact_schemas", lambda *args, **kwargs: None)
     monkeypatch.setattr(f1, "write_json", lambda path, value: None)
@@ -1952,3 +2077,855 @@ def test_ambiguous_base_form_coverage_blocks_execution_decision():
     assert coverage["coverage_pass"] is False
     assert "BASE_FORM_COVERAGE_UNRESOLVED" in summary["F1_execution_blockers"]
     assert summary["F1_execution_decision"] == "P3W5_F1_REGENERATION_COMPLETE_WITH_BLOCKERS_PENDING_RESULT_REVIEW"
+
+def compatibility_case(
+    *,
+    original_text: str = "A did not approved B.",
+    regenerated_text: str = "A did not approve B.",
+    pair_id: str = "p",
+    intervention: str = "polarity_flip",
+    final: str = "REFUTE",
+    sidecar_before_override: dict | None = None,
+    sidecar_after_override: dict | None = None,
+    authorized: set[str] | None = None,
+    f2_ids: set[str] | None = None,
+    **kwargs,
+) -> dict:
+    original = row(pair_id, intervention, original_text)
+    regenerated = row(pair_id, intervention, regenerated_text, final)
+    canonical = row(pair_id, "none", "A approved B.", "SUPPORT")
+    for key, value in resolved_compatibility_prerequisites().items():
+        kwargs.setdefault(key, value)
+    return f1.semantic_audit_record(
+        original,
+        regenerated,
+        canonical,
+        sidecar_before=stage185_sidecar(f"{pair_id}__{intervention}", pair_id, before=True, override=sidecar_before_override),
+        sidecar_after=stage185_sidecar(f"{pair_id}__{intervention}", pair_id, override=sidecar_after_override),
+        inflected_predicate_surface="approved",
+        expected_base_predicate=kwargs.pop("expected_base_predicate", "approve"),
+        authorized_f1_row_ids=authorized or {f"{pair_id}__{intervention}"},
+        f2_row_ids=f2_ids,
+        base_form_source_identity=kwargs.pop("base_form_source_identity", compatibility_base_identity()),
+        **kwargs,
+    )
+
+
+
+def test_exact_valid_121_authorized_rows_derive_compatibility_pass_fixture():
+    baseline, repaired, authorized, replay = repaired_stage185_replay_case()
+    _source, _expected_generator_rows, baseline_sidecar_rows = stage185_source_expected_and_sidecar()
+    repaired_sidecar_rows = f1.derive_stage185_expected_sidecar(
+        repaired,
+        actual_source_dataset_sha256="repaired-sha",
+        actual_source_dataset_path=Path("reports/p3w6f1_repaired.jsonl"),
+        actual_integrity_builder_sha256="builder-sha",
+        expected_generator_rows=replay["replayed_records"],
+        runtime_authority=stage185_runtime_authority_stub(),
+    )
+    root = Path(f1.__file__).resolve().parents[1]
+    pairs = f1.load_jsonl(root / f1.P3W6F1_P3W4_PAIRS_PATH)
+    audit_rows = f1.audit_authorized_candidates(
+        baseline,
+        repaired,
+        pairs,
+        authorized,
+        f1.sidecar_by_row_id(baseline_sidecar_rows),
+        f1.sidecar_by_row_id(repaired_sidecar_rows),
+        base_form_source_identity=compatibility_base_identity(),
+        generator_replay_identity_status="PASS",
+        repair_consumption_status="PASS",
+        full_output_isolation_status="PASS",
+        stage185_v1_runtime_authority_status="PASS",
+        baseline_stage185_v1_provenance_status="PASS",
+        repaired_stage185_v1_provenance_status="PASS",
+    )
+    assert len(audit_rows) == 121
+    assert all(compatibility_record(row)["compatibility_status"] == "PASS" for row in audit_rows)
+    assert [row["original_row_id"] for row in audit_rows] == [row["id"] for row in baseline if row["id"] in authorized]
+def test_compatibility_record_pass_preserves_raw_stage185_and_derives_effective_state():
+    audit = compatibility_case()
+    record = compatibility_record(audit)
+    assert audit["semantic_validation_status"] == f1.PASS_STATUS
+    assert record["compatibility_status"] == "PASS"
+    assert record["label_identity_status"] == "PASS"
+    assert audit["original_final_label"] == "REFUTE"
+    assert audit["regenerated_final_label"] == "REFUTE"
+    assert "POLARITY_LABEL_CONTRADICTION" not in record["ordered_compatibility_blockers"]
+    assert record["compatibility_pass"] is True
+    assert record["repaired_stage185_v1_intervention_contract_status"] == "FAIL"
+    assert record["repaired_stage185_v1_integrity_status"] == "INELIGIBLE"
+    assert record["repaired_stage185_v1_audit_changed_axes"] == ["polarity", "predicate"]
+    assert record["effective_F1_repair_integrity_status"] == "COMPATIBILITY_ELIGIBLE"
+    assert record["effective_semantic_changed_axes"] == ["polarity"]
+    assert record["ordered_compatibility_blockers"] == []
+    assert all(record[field] is not None for field in f1.COMPATIBILITY_ROW_FIELDS)
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "blocker"),
+    [
+        ({"expected_base_predicate": "approves", "regenerated_text": "A did not approves B."}, "EXPECTED_BASE_PREDICATE_MISMATCH"),
+        ({"authorized": {"other__polarity_flip"}}, "UNAUTHORIZED_F1_ROW"),
+        ({"regenerated_text": "A did not reviewed B.", "expected_base_predicate": "reviewed"}, "EXPECTED_BASE_PREDICATE_MISMATCH"),
+        ({"regenerated_text": "A did not inspect B.", "expected_base_predicate": "inspect"}, "EXPECTED_BASE_PREDICATE_MISMATCH"),
+        ({"original_text": "A did not approved B and did not approved C."}, "ORIGINAL_AUTHORIZED_SPAN_MISSING_OR_AMBIGUOUS"),
+        ({"original_text": "A approved B."}, "ORIGINAL_AUTHORIZED_SPAN_MISSING_OR_AMBIGUOUS"),
+        ({"regenerated_text": "A approved B."}, "REGENERATED_AUTHORIZED_SPAN_MISSING_OR_AMBIGUOUS"),
+        ({"regenerated_text": "A did not approve C."}, "OUTSIDE_SPAN_CHANGED"),
+        ({"final": "SUPPORT"}, "LABEL_IDENTITY_CHANGED"),
+        ({"intervention": "predicate_swap"}, "INTERVENTION_TYPE_NOT_POLARITY_FLIP"),
+        ({"f2_ids": {"p__polarity_flip"}}, "F2_COMPATIBILITY_SCOPE_REJECTED"),
+        ({"sidecar_after_override": {"grammar_status": "FAIL"}}, "REPAIRED_STAGE185_SIGNATURE_MISMATCH"),
+        ({"sidecar_after_override": {"audit_changed_axes": ["predicate"]}}, "REPAIRED_STAGE185_SIGNATURE_MISMATCH"),
+        ({"sidecar_after_override": {"audit_changed_axes": ["polarity", "predicate", "time"]}}, "REPAIRED_STAGE185_SIGNATURE_MISMATCH"),
+    ],
+)
+def test_compatibility_concrete_contradictions_rejected(kwargs: dict, blocker: str):
+    audit = compatibility_case(**kwargs)
+    record = compatibility_record(audit)
+    assert audit["semantic_validation_status"] == f1.REJECTED_STATUS
+    assert record["compatibility_status"] == "REJECTED"
+    assert record["effective_F1_repair_integrity_status"] == "COMPATIBILITY_INELIGIBLE"
+    assert blocker in record["ordered_compatibility_blockers"]
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "blocker"),
+    [
+        ({"base_form_source_identity": compatibility_base_identity("FAIL")}, "BASE_FORM_SOURCE_IDENTITY_UNRESOLVED"),
+        ({"generator_replay_identity_status": "FAIL"}, "GENERATOR_REPLAY_IDENTITY_UNRESOLVED"),
+        ({"repair_consumption_status": "FAIL"}, "REPAIR_CONSUMPTION_UNRESOLVED"),
+        ({"full_output_isolation_status": "FAIL"}, "FULL_OUTPUT_ISOLATION_FAILED"),
+        ({"baseline_stage185_v1_provenance_status": "FAIL"}, "BASELINE_STAGE185_PROVENANCE_UNRESOLVED"),
+        ({"repaired_stage185_v1_provenance_status": "FAIL"}, "REPAIRED_STAGE185_PROVENANCE_UNRESOLVED"),
+        ({"stage185_v1_runtime_authority_status": "FAIL"}, "STAGE185_RUNTIME_AUTHORITY_UNRESOLVED"),
+    ],
+)
+def test_compatibility_unresolved_authority_manual_not_rejected(kwargs: dict, blocker: str):
+    audit = compatibility_case(**kwargs)
+    record = compatibility_record(audit)
+    assert audit["semantic_validation_status"] == f1.MANUAL_STATUS
+    assert record["compatibility_status"] == "MANUAL_REVIEW_REQUIRED"
+    assert record["effective_F1_repair_integrity_status"] == "COMPATIBILITY_BLOCKED"
+    assert blocker in record["ordered_compatibility_blockers"]
+
+
+
+def test_compatibility_claim_and_non_evidence_mutations_rejected():
+    original = row("p", "polarity_flip", "A did not approved B.")
+    claim_changed = row("p", "polarity_flip", "A did not approve B.") | {"claim": "changed claim"}
+    non_evidence_changed = row("p", "polarity_flip", "A did not approve B.") | {"primary_failure_type": "predicate"}
+    canonical = row("p", "none", "A approved B.", "SUPPORT")
+    claim_audit = f1.semantic_audit_record(
+        original,
+        claim_changed,
+        canonical,
+        sidecar_before=stage185_sidecar("p__polarity_flip", "p", before=True),
+        sidecar_after=stage185_sidecar("p__polarity_flip", "p"),
+        inflected_predicate_surface="approved",
+        expected_base_predicate="approve",
+        authorized_f1_row_ids={"p__polarity_flip"},
+        base_form_source_identity=compatibility_base_identity(),
+        **resolved_compatibility_prerequisites(),
+    )
+    non_evidence_audit = f1.semantic_audit_record(
+        original,
+        non_evidence_changed,
+        canonical,
+        sidecar_before=stage185_sidecar("p__polarity_flip", "p", before=True),
+        sidecar_after=stage185_sidecar("p__polarity_flip", "p"),
+        inflected_predicate_surface="approved",
+        expected_base_predicate="approve",
+        authorized_f1_row_ids={"p__polarity_flip"},
+        base_form_source_identity=compatibility_base_identity(),
+        **resolved_compatibility_prerequisites(),
+    )
+    assert compatibility_record(claim_audit)["compatibility_status"] == "REJECTED"
+    assert "CLAIM_CHANGED" in compatibility_record(claim_audit)["ordered_compatibility_blockers"]
+    assert compatibility_record(non_evidence_audit)["compatibility_status"] == "REJECTED"
+    assert "NON_EVIDENCE_FIELD_CHANGED" in compatibility_record(non_evidence_audit)["ordered_compatibility_blockers"]
+
+def test_unresolved_raw_stage185_binary_fields_are_null_never_not_run():
+    audit = compatibility_case(repaired_stage185_v1_provenance_status="FAIL")
+    record = compatibility_record(audit)
+    assert record["compatibility_status"] == "MANUAL_REVIEW_REQUIRED"
+    assert record["repaired_stage185_v1_canonical_status"] is None
+    assert record["repaired_stage185_v1_canonical_status"] != "NOT_RUN"
+
+
+def test_raw_stage185_binary_not_run_is_rejected_when_observed():
+    audit = compatibility_case(sidecar_after_override={"canonical_status": "NOT_RUN"})
+    record = compatibility_record(audit)
+    assert record["compatibility_status"] == "REJECTED"
+    assert "RAW_STAGE185_BINARY_NOT_RUN" in record["ordered_compatibility_blockers"]
+
+
+def test_authorized_row_accounting_excludes_unauthorized_rejected_invocation():
+    authorized = ["p__polarity_flip", "q__polarity_flip"]
+    good = compatibility_case(pair_id="p")
+    unauthorized = compatibility_case(pair_id="u", authorized=set(authorized))
+    accounting = f1.build_compatibility_accounting(
+        authorized,
+        [good, unauthorized],
+        baseline_row_order=["q__polarity_flip", "p__polarity_flip", "u__polarity_flip"],
+    )
+    assert accounting["compatibility_checked_row_ids"] == ["p__polarity_flip"]
+    assert accounting["pass_row_ids"] == ["p__polarity_flip"]
+    assert accounting["rejected_row_ids"] == []
+    assert accounting["missing_row_ids"] == ["q__polarity_flip"]
+    assert accounting["unauthorized_row_ids"] == ["u__polarity_flip"]
+
+
+def test_required_compatibility_keys_present_under_manual_and_rejected():
+    manual = compatibility_record(compatibility_case(generator_replay_identity_status="FAIL"))
+    rejected = compatibility_record(compatibility_case(regenerated_text="A did not inspect B.", expected_base_predicate="inspect"))
+    assert all(field in manual for field in f1.COMPATIBILITY_ROW_FIELDS)
+    assert all(field in rejected for field in f1.COMPATIBILITY_ROW_FIELDS)
+
+
+def test_finalizer_does_not_upgrade_genuine_compatibility_rejection():
+    rejected = compatibility_case(regenerated_text="A did not inspect B.", expected_base_predicate="inspect")
+    finalized = f1.finalize_candidate_acceptance(
+        [rejected],
+        full_output_isolation_validation={"full_output_isolation_pass": True},
+        stage185_provenance_validation={"stage185_provenance_pass": True},
+        execution_provenance_validation={"execution_provenance_pass": True},
+    )
+    assert finalized[0]["semantic_validation_status"] == f1.REJECTED_STATUS
+    assert compatibility_record(finalized[0])["compatibility_status"] == "REJECTED"
+
+def direct_no_authority_case(**kwargs) -> dict:
+    original = row("p", "polarity_flip", "A did not approved B.")
+    regenerated = row("p", "polarity_flip", "A did not approve B.")
+    canonical = row("p", "none", "A approved B.", "SUPPORT")
+    for key, value in resolved_compatibility_prerequisites().items():
+        kwargs.setdefault(key, value)
+    return f1.semantic_audit_record(
+        original,
+        regenerated,
+        canonical,
+        sidecar_before=stage185_sidecar("p__polarity_flip", "p", before=True),
+        sidecar_after=stage185_sidecar("p__polarity_flip", "p", override=kwargs.pop("sidecar_after_override", None)),
+        inflected_predicate_surface="approved",
+        expected_base_predicate="approve",
+        **kwargs,
+    )
+
+
+def test_no_authorized_authority_supplied_cannot_self_authorize_or_pass():
+    audit = direct_no_authority_case(base_form_source_identity=compatibility_base_identity())
+    record = compatibility_record(audit)
+    assert record["compatibility_status"] == "MANUAL_REVIEW_REQUIRED"
+    assert record["authorized_F1_membership"] is None
+    assert "AUTHORIZED_F1_AUTHORITY_UNRESOLVED" in record["ordered_compatibility_blockers"]
+
+
+def test_no_base_form_source_identity_supplied_cannot_default_to_pass():
+    audit = direct_no_authority_case(authorized_f1_row_ids={"p__polarity_flip"})
+    record = compatibility_record(audit)
+    assert record["compatibility_status"] == "MANUAL_REVIEW_REQUIRED"
+    assert record["base_form_source_identity_status"] == "NOT_RUN"
+    assert "BASE_FORM_SOURCE_IDENTITY_UNRESOLVED" in record["ordered_compatibility_blockers"]
+
+
+def test_untrusted_repaired_sidecar_contradiction_remains_manual_under_failed_provenance():
+    audit = compatibility_case(
+        sidecar_after_override={"grammar_status": "FAIL", "canonical_status": "NOT_RUN"},
+        repaired_stage185_v1_provenance_status="FAIL",
+    )
+    record = compatibility_record(audit)
+    assert record["compatibility_status"] == "MANUAL_REVIEW_REQUIRED"
+    assert "REPAIRED_STAGE185_SIGNATURE_MISMATCH" not in record["ordered_compatibility_blockers"]
+    assert record["repaired_stage185_v1_grammar_status"] is None
+
+
+def test_untrusted_baseline_sidecar_contradiction_remains_manual_under_failed_provenance():
+    original = row("p", "polarity_flip", "A did not approved B.")
+    regenerated = row("p", "polarity_flip", "A did not approve B.")
+    canonical = row("p", "none", "A approved B.", "SUPPORT")
+    audit = f1.semantic_audit_record(
+        original,
+        regenerated,
+        canonical,
+        sidecar_before=stage185_sidecar("p__polarity_flip", "p", before=True, override={"grammar_status": "PASS"}),
+        sidecar_after=stage185_sidecar("p__polarity_flip", "p"),
+        inflected_predicate_surface="approved",
+        expected_base_predicate="approve",
+        authorized_f1_row_ids={"p__polarity_flip"},
+        base_form_source_identity=compatibility_base_identity(),
+        generator_replay_identity_status="PASS",
+        repair_consumption_status="PASS",
+        full_output_isolation_status="PASS",
+        stage185_v1_runtime_authority_status="PASS",
+        baseline_stage185_v1_provenance_status="FAIL",
+        repaired_stage185_v1_provenance_status="PASS",
+    )
+    record = compatibility_record(audit)
+    assert record["compatibility_status"] == "MANUAL_REVIEW_REQUIRED"
+    assert "BASELINE_STAGE185_SIGNATURE_MISMATCH" not in record["ordered_compatibility_blockers"]
+    assert record["baseline_stage185_v1_grammar_status"] is None
+
+
+def test_partial_provenance_trusted_baseline_valid_untrusted_repaired_manual():
+    audit = compatibility_case(repaired_stage185_v1_provenance_status="FAIL")
+    record = compatibility_record(audit)
+    assert record["compatibility_status"] == "MANUAL_REVIEW_REQUIRED"
+    assert "BASELINE_STAGE185_SIGNATURE_MISMATCH" not in record["ordered_compatibility_blockers"]
+    assert "REPAIRED_STAGE185_SIGNATURE_MISMATCH" not in record["ordered_compatibility_blockers"]
+    assert record["baseline_stage185_v1_grammar_status"] == "FAIL"
+    assert record["repaired_stage185_v1_grammar_status"] is None
+
+
+def test_partial_provenance_trusted_baseline_contradiction_rejected_even_if_repaired_untrusted():
+    audit = compatibility_case(
+        sidecar_before_override={"grammar_status": "PASS"},
+        repaired_stage185_v1_provenance_status="FAIL",
+    )
+    record = compatibility_record(audit)
+    assert record["compatibility_status"] == "REJECTED"
+    assert "BASELINE_STAGE185_SIGNATURE_MISMATCH" in record["ordered_compatibility_blockers"]
+    assert "REPAIRED_STAGE185_SIGNATURE_MISMATCH" not in record["ordered_compatibility_blockers"]
+    assert record["repaired_stage185_v1_grammar_status"] is None
+
+
+def test_partial_provenance_untrusted_baseline_trusted_repaired_valid_manual():
+    audit = compatibility_case(baseline_stage185_v1_provenance_status="FAIL")
+    record = compatibility_record(audit)
+    assert record["compatibility_status"] == "MANUAL_REVIEW_REQUIRED"
+    assert "BASELINE_STAGE185_SIGNATURE_MISMATCH" not in record["ordered_compatibility_blockers"]
+    assert "REPAIRED_STAGE185_SIGNATURE_MISMATCH" not in record["ordered_compatibility_blockers"]
+    assert record["baseline_stage185_v1_grammar_status"] is None
+    assert record["repaired_stage185_v1_grammar_status"] == "PASS"
+
+
+def test_partial_provenance_trusted_repaired_contradiction_rejected_even_if_baseline_untrusted():
+    audit = compatibility_case(
+        sidecar_after_override={"grammar_status": "FAIL"},
+        baseline_stage185_v1_provenance_status="FAIL",
+    )
+    record = compatibility_record(audit)
+    assert record["compatibility_status"] == "REJECTED"
+    assert "BASELINE_STAGE185_SIGNATURE_MISMATCH" not in record["ordered_compatibility_blockers"]
+    assert "REPAIRED_STAGE185_SIGNATURE_MISMATCH" in record["ordered_compatibility_blockers"]
+    assert record["baseline_stage185_v1_grammar_status"] is None
+
+def test_identical_but_wrong_final_labels_are_rejected():
+    original = row("p", "polarity_flip", "A did not approved B.", "SUPPORT")
+    regenerated = row("p", "polarity_flip", "A did not approve B.", "SUPPORT")
+    canonical = row("p", "none", "A approved B.", "SUPPORT")
+    audit = f1.semantic_audit_record(
+        original,
+        regenerated,
+        canonical,
+        sidecar_before=stage185_sidecar("p__polarity_flip", "p", before=True),
+        sidecar_after=stage185_sidecar("p__polarity_flip", "p"),
+        inflected_predicate_surface="approved",
+        expected_base_predicate="approve",
+        authorized_f1_row_ids={"p__polarity_flip"},
+        base_form_source_identity=compatibility_base_identity(),
+        **resolved_compatibility_prerequisites(),
+    )
+    record = compatibility_record(audit)
+    assert record["compatibility_status"] == "REJECTED"
+    assert record["label_identity_status"] == "PASS"
+    assert "FINAL_LABEL_NOT_REFUTE" in record["ordered_compatibility_blockers"]
+    assert "LABEL_IDENTITY_CHANGED" not in record["ordered_compatibility_blockers"]
+
+
+def test_wrong_repaired_polarity_label_rejected():
+    original = row("p", "polarity_flip", "A did not approved B.")
+    regenerated = row("p", "polarity_flip", "A did not approve B.") | {"polarity_label": "SUPPORT"}
+    canonical = row("p", "none", "A approved B.", "SUPPORT")
+    audit = f1.semantic_audit_record(
+        original,
+        regenerated,
+        canonical,
+        sidecar_before=stage185_sidecar("p__polarity_flip", "p", before=True),
+        sidecar_after=stage185_sidecar("p__polarity_flip", "p"),
+        inflected_predicate_surface="approved",
+        expected_base_predicate="approve",
+        authorized_f1_row_ids={"p__polarity_flip"},
+        base_form_source_identity=compatibility_base_identity(),
+        **resolved_compatibility_prerequisites(),
+    )
+    record = compatibility_record(audit)
+    assert record["compatibility_status"] == "REJECTED"
+    assert "POLARITY_LABEL_CONTRADICTION" in record["ordered_compatibility_blockers"]
+
+
+def test_label_identity_mutation_uses_specific_label_blockers():
+    audit = compatibility_case(final="SUPPORT")
+    record = compatibility_record(audit)
+    assert record["compatibility_status"] == "REJECTED"
+    assert "LABEL_IDENTITY_CHANGED" in record["ordered_compatibility_blockers"]
+    assert "FINAL_LABEL_NOT_REFUTE" in record["ordered_compatibility_blockers"]
+    assert audit["semantic_validation_status"] == "REJECTED"
+    assert audit["semantic_polarity_preserved"] is False
+    assert audit["candidate_accepted"] is False
+
+
+def test_finalizer_does_not_upgrade_label_contract_rejections():
+    identity_mutation = compatibility_case(final="SUPPORT")
+
+    original_wrong = row("p", "polarity_flip", "A did not approved B.", "SUPPORT")
+    regenerated_wrong = row("p", "polarity_flip", "A did not approve B.", "SUPPORT")
+    same_wrong = f1.semantic_audit_record(
+        original_wrong,
+        regenerated_wrong,
+        row("p", "none", "A approved B.", "SUPPORT"),
+        sidecar_before=stage185_sidecar("p__polarity_flip", "p", before=True),
+        sidecar_after=stage185_sidecar("p__polarity_flip", "p"),
+        inflected_predicate_surface="approved",
+        expected_base_predicate="approve",
+        authorized_f1_row_ids={"p__polarity_flip"},
+        base_form_source_identity=compatibility_base_identity(),
+        **resolved_compatibility_prerequisites(),
+    )
+
+    wrong_polarity = f1.semantic_audit_record(
+        row("p", "polarity_flip", "A did not approved B."),
+        row("p", "polarity_flip", "A did not approve B.") | {"polarity_label": "SUPPORT"},
+        row("p", "none", "A approved B.", "SUPPORT"),
+        sidecar_before=stage185_sidecar("p__polarity_flip", "p", before=True),
+        sidecar_after=stage185_sidecar("p__polarity_flip", "p"),
+        inflected_predicate_surface="approved",
+        expected_base_predicate="approve",
+        authorized_f1_row_ids={"p__polarity_flip"},
+        base_form_source_identity=compatibility_base_identity(),
+        **resolved_compatibility_prerequisites(),
+    )
+
+    finalized = f1.finalize_candidate_acceptance(
+        [identity_mutation, same_wrong, wrong_polarity],
+        full_output_isolation_validation={"full_output_isolation_pass": True},
+        stage185_provenance_validation={"stage185_provenance_pass": True},
+        execution_provenance_validation={"execution_provenance_pass": True},
+    )
+    assert [candidate["semantic_validation_status"] for candidate in finalized] == ["REJECTED", "REJECTED", "REJECTED"]
+    assert [candidate["semantic_polarity_preserved"] for candidate in finalized] == [False, False, False]
+    assert [candidate["candidate_accepted"] for candidate in finalized] == [False, False, False]
+    assert "LABEL_IDENTITY_CHANGED" in compatibility_record(finalized[0])["ordered_compatibility_blockers"]
+    assert "FINAL_LABEL_NOT_REFUTE" in compatibility_record(finalized[1])["ordered_compatibility_blockers"]
+    assert "POLARITY_LABEL_CONTRADICTION" in compatibility_record(finalized[2])["ordered_compatibility_blockers"]
+
+def test_compatibility_accounting_uses_compatibility_status_after_global_downgrade():
+    candidate = compatibility_case(pair_id="p")
+    finalized = f1.finalize_candidate_acceptance(
+        [candidate],
+        full_output_isolation_validation={"full_output_isolation_pass": False},
+        stage185_provenance_validation={"stage185_provenance_pass": True},
+        execution_provenance_validation={"execution_provenance_pass": True},
+    )
+    assert finalized[0]["semantic_validation_status"] == f1.MANUAL_STATUS
+    accounting = f1.build_compatibility_accounting(["p__polarity_flip"], finalized, baseline_row_order=["p__polarity_flip"])
+    assert accounting["pass_row_ids"] == ["p__polarity_flip"]
+    assert accounting["manual_row_ids"] == []
+
+
+def test_interleaved_compatibility_accounting_preserves_authoritative_order():
+    passed = compatibility_case(pair_id="p")
+    manual = compatibility_case(pair_id="m", generator_replay_identity_status="FAIL")
+    rejected = compatibility_case(pair_id="r", regenerated_text="A did not inspect B.", expected_base_predicate="inspect")
+    authorized = ["p__polarity_flip", "m__polarity_flip", "r__polarity_flip"] + [f"x{i:03d}__polarity_flip" for i in range(118)]
+    order = ["m__polarity_flip", "p__polarity_flip", "r__polarity_flip"] + [f"x{i:03d}__polarity_flip" for i in range(118)]
+    accounting = f1.build_compatibility_accounting(authorized, [passed, manual, rejected], baseline_row_order=order)
+    assert accounting["compatibility_checked_row_ids"] == ["m__polarity_flip", "p__polarity_flip", "r__polarity_flip"]
+    assert accounting["manual_row_ids"] == ["m__polarity_flip"]
+    assert accounting["pass_row_ids"] == ["p__polarity_flip"]
+    assert accounting["rejected_row_ids"] == ["r__polarity_flip"]
+
+
+def test_compatibility_execution_ready_requires_all_121_pass_partition():
+    authorized = [f"p{i:03d}__polarity_flip" for i in range(121)]
+    audit_rows = [pass_audit(f"p{i:03d}") for i in range(121)]
+    accounting = f1.build_compatibility_accounting(authorized, audit_rows, baseline_row_order=authorized)
+    readiness = f1.compatibility_execution_ready(accounting)
+    assert accounting["compatibility_checked_count"] == 121
+    assert accounting["compatibility_pass_count"] == 121
+    assert accounting["compatibility_manual_count"] == 0
+    assert accounting["compatibility_rejected_count"] == 0
+    assert accounting["missing_count"] == 0
+    assert accounting["unauthorized_count"] == 0
+    assert readiness["compatibility_execution_ready"] is True
+    assert readiness["compatibility_execution_readiness_status"] == "PASS"
+
+
+@pytest.mark.parametrize(
+    "audit_rows",
+    [
+        [],
+        [compatibility_case(pair_id="p", generator_replay_identity_status="FAIL")],
+        [compatibility_case(pair_id="p", regenerated_text="A did not inspect B.", expected_base_predicate="inspect")],
+    ],
+)
+def test_missing_manual_rejected_accounting_blocks_execution_readiness(audit_rows):
+    authorized = ["p__polarity_flip"] + [f"x{i:03d}__polarity_flip" for i in range(120)]
+    accounting = f1.build_compatibility_accounting(authorized, audit_rows, baseline_row_order=authorized)
+    assert accounting["compatibility_accounting_validation"]["compatibility_accounting_pass"] is True
+    readiness = f1.compatibility_execution_ready(accounting)
+    assert readiness["compatibility_execution_ready"] is False
+    assert readiness["compatibility_execution_readiness_status"] == f1.COMPATIBILITY_ACCOUNTING_UNRESOLVED
+
+
+def test_structurally_valid_all_missing_accounting_blocks_main_execution_readiness():
+    authorized = [f"p{i:03d}__polarity_flip" for i in range(121)]
+    summary = f1.build_summary(
+        [f"p{i:03d}" for i in range(121)],
+        [],
+        [],
+        authority_cardinality={"authority_cardinality_pass": True},
+        target_scope={"target_scope_membership_pass": True},
+        base_form_coverage={"coverage_pass": True},
+        stage185_provenance_validation={"stage185_provenance_pass": True},
+        full_output_validation={"full_output_isolation_pass": True},
+        provenance_validation={"execution_provenance_pass": True},
+        authorized_target_row_ids=authorized,
+        baseline_row_order=authorized,
+    )
+    accounting = summary["compatibility_accounting"]
+    assert accounting["compatibility_accounting_validation"]["compatibility_accounting_pass"] is True
+    assert accounting["compatibility_checked_count"] == 0
+    assert accounting["missing_count"] == 121
+    assert f1.COMPATIBILITY_ACCOUNTING_UNRESOLVED in summary["F1_execution_blockers"]
+    assert summary["F1_execution_decision"] == f1.BLOCKERS_DECISION
+
+def test_missing_authorized_target_keeps_target_count_121_and_visible_missing():
+    authorized = ["p__polarity_flip"] + [f"x{i:03d}__polarity_flip" for i in range(120)]
+    accounting = f1.build_compatibility_accounting(authorized, [compatibility_case(pair_id="p")], baseline_row_order=authorized)
+    assert accounting["target_count"] == 121
+    assert accounting["compatibility_checked_row_ids"] == ["p__polarity_flip"]
+    assert len(accounting["missing_row_ids"]) == 120
+
+
+def test_authorized_target_absent_from_baseline_order_records_authority_failure():
+    authorized = ["p__polarity_flip"] + [f"x{i:03d}__polarity_flip" for i in range(120)]
+    baseline_order = authorized[:-1]
+    accounting = f1.build_compatibility_accounting(authorized, [compatibility_case(pair_id="p")], baseline_row_order=baseline_order)
+    assert accounting["target_count"] == 121
+    assert authorized[-1] in accounting["missing_row_ids"]
+    validation = accounting["compatibility_accounting_validation"]
+    assert validation["compatibility_accounting_pass"] is False
+    assert "authorized_target_missing_from_baseline_order" in validation["compatibility_accounting_failures"]
+
+
+@pytest.mark.parametrize(
+    ("mutation", "failure"),
+    [
+        (lambda acc: acc | {"target_count": 120}, "target_count_not_121"),
+        (lambda acc: acc | {"compatibility_checked_count": 2}, "compatibility_checked_count_mismatch"),
+        (lambda acc: acc | {"missing_row_ids": ["p__polarity_flip"]}, "checked_missing_overlap"),
+        (lambda acc: acc | {"manual_row_ids": ["p__polarity_flip"]}, "status_partition_overlap"),
+        (lambda acc: acc | {"compatibility_checked_row_ids": ["q__polarity_flip", "p__polarity_flip"]}, "checked_order_not_authoritative"),
+        (lambda acc: acc | {"unauthorized_row_ids": ["p__polarity_flip"], "unauthorized_count": 1}, "unauthorized_authorized_overlap"),
+        (lambda acc: acc | {"pass_row_ids": ["p__polarity_flip", "p__polarity_flip"], "compatibility_pass_count": 2}, "pass_row_ids_duplicates"),
+    ],
+)
+def test_compatibility_accounting_validator_negative_cases(mutation, failure: str):
+    authorized = ["p__polarity_flip", "q__polarity_flip"] + [f"x{i:03d}__polarity_flip" for i in range(119)]
+    accounting = f1.build_compatibility_accounting(authorized, [compatibility_case(pair_id="p")], baseline_row_order=authorized)
+    result = f1.validate_compatibility_accounting(mutation(accounting), authorized)
+    assert result["compatibility_accounting_pass"] is False
+    assert failure in result["compatibility_accounting_failures"]
+
+
+def test_duplicate_authorized_compatibility_result_is_detected():
+    authorized = ["p__polarity_flip"] + [f"x{i:03d}__polarity_flip" for i in range(120)]
+    accounting = f1.build_compatibility_accounting(
+        authorized,
+        [compatibility_case(pair_id="p"), compatibility_case(pair_id="p")],
+        baseline_row_order=authorized,
+    )
+    validation = accounting["compatibility_accounting_validation"]
+    assert validation["compatibility_accounting_pass"] is False
+    assert accounting["duplicate_checked_compatibility_row_ids"] == ["p__polarity_flip"]
+    assert "duplicate_checked_compatibility_row_id" in validation["compatibility_accounting_failures"]
+
+def test_provisional_pass_null_required_field_downgrades_and_clears_positive_proof():
+    audit = compatibility_case(base_form_source_identity={
+        "base_form_source_identity_status": "PASS",
+        "base_form_source_path": f1.GENERATOR_SOURCE_PATH,
+        "base_form_source_symbol": f1.BASE_FORM_SYMBOL,
+    })
+    record = compatibility_record(audit)
+    assert record["compatibility_status"] == "MANUAL_REVIEW_REQUIRED"
+    assert record["predicate_semantic_identity_preserved"] is None
+    assert record["surface_realization_changed"] is None
+    assert record["compatibility_explained_stage185_axes"] is None
+    assert record["effective_semantic_changed_axes"] is None
+    assert record["effective_F1_repair_integrity_status"] == "COMPATIBILITY_BLOCKED"
+
+
+def test_compatibility_artifact_names_and_row_schema(tmp_path: Path):
+    authorized = ["p__polarity_flip"] + [f"x{i:03d}__polarity_flip" for i in range(120)]
+    baseline_sidecar_path = tmp_path / "baseline.jsonl"
+    repaired_sidecar_path = tmp_path / "repaired.jsonl"
+    baseline_sidecar_path.write_text("{}\n", encoding="utf-8")
+    repaired_sidecar_path.write_text("{}\n", encoding="utf-8")
+    paths = f1.write_compatibility_artifacts(
+        tmp_path,
+        audit_rows=[compatibility_case(pair_id="p")],
+        authorized_f1_row_ids=authorized,
+        baseline_row_order=authorized,
+        execution_decision="BLOCKED",
+        base_form_source_identity=compatibility_base_identity(),
+        runtime_authority={"stage185_integrity_builder_source_path": f1.P3W6F1_STAGE185_BUILDER_PATH, "stage185_integrity_builder_source_sha256": "b" * 64},
+        baseline_sidecar_path=baseline_sidecar_path,
+        repaired_sidecar_path=repaired_sidecar_path,
+        replay_validation={"actual_generator_repair_consumed_row_ids": authorized},
+        isolation={},
+    )
+    assert set(paths) == {
+        "compatibility_rows_jsonl",
+        "compatibility_rows_csv",
+        "compatibility_summary_json",
+        "compatibility_report_md",
+        "compatibility_provenance_manifest_json",
+    }
+    row_payload = f1.load_jsonl(tmp_path / f1.COMPATIBILITY_JSONL_NAME)
+    assert row_payload
+    assert list(row_payload[0]) == sorted(f1.COMPATIBILITY_ROW_FIELDS)
+    assert set(row_payload[0]) == set(f1.COMPATIBILITY_ROW_FIELDS)
+    assert (tmp_path / f1.COMPATIBILITY_CSV_NAME).read_text(encoding="utf-8").splitlines()[0].split(",") == list(f1.COMPATIBILITY_ROW_FIELDS)
+    manifest = f1.load_json(tmp_path / f1.COMPATIBILITY_PROVENANCE_NAME)
+    assert set(manifest["compatibility_artifact_sha256"]) == set(f1.REQUIRED_COMPATIBILITY_ARTIFACT_SHA_KEYS)
+    assert f1.validate_compatibility_provenance_manifest_payload(manifest)["compatibility_provenance_manifest_payload_pass"] is True
+
+
+def test_invalid_compatibility_provenance_blocks_successful_execution_decision(tmp_path: Path):
+    authorized = ["p__polarity_flip"] + [f"x{i:03d}__polarity_flip" for i in range(120)]
+    f1.write_compatibility_artifacts(
+        tmp_path,
+        audit_rows=[compatibility_case(pair_id="p")],
+        authorized_f1_row_ids=authorized,
+        baseline_row_order=authorized,
+        execution_decision=f1.ALL_ACCEPTED_DECISION,
+        base_form_source_identity=compatibility_base_identity(),
+        runtime_authority={"stage185_integrity_builder_source_path": f1.P3W6F1_STAGE185_BUILDER_PATH, "stage185_integrity_builder_source_sha256": "b" * 64},
+        baseline_sidecar_path=tmp_path / "missing-baseline.jsonl",
+        repaired_sidecar_path=tmp_path / "missing-repaired.jsonl",
+        replay_validation={"actual_generator_repair_consumed_row_ids": authorized},
+        isolation={},
+    )
+    summary = f1.load_json(tmp_path / f1.COMPATIBILITY_SUMMARY_NAME)
+    manifest = f1.load_json(tmp_path / f1.COMPATIBILITY_PROVENANCE_NAME)
+    assert summary["compatibility_execution_decision"] == f1.BLOCKERS_DECISION
+    assert manifest["compatibility_provenance_validation"]["compatibility_provenance_manifest_pass"] is False
+
+
+def test_compatibility_provenance_manifest_required_bindings(tmp_path: Path):
+    authorized = ["p__polarity_flip"] + [f"x{i:03d}__polarity_flip" for i in range(120)]
+    baseline_sidecar_path = tmp_path / "baseline.jsonl"
+    repaired_sidecar_path = tmp_path / "repaired.jsonl"
+    baseline_sidecar_path.write_text("{}\n", encoding="utf-8")
+    repaired_sidecar_path.write_text("{}\n", encoding="utf-8")
+    f1.write_compatibility_artifacts(
+        tmp_path,
+        audit_rows=[compatibility_case(pair_id="p")],
+        authorized_f1_row_ids=authorized,
+        baseline_row_order=authorized,
+        execution_decision="BLOCKED",
+        base_form_source_identity=compatibility_base_identity(),
+        runtime_authority={"stage185_integrity_builder_source_path": f1.P3W6F1_STAGE185_BUILDER_PATH, "stage185_integrity_builder_source_sha256": "b" * 64},
+        baseline_sidecar_path=baseline_sidecar_path,
+        repaired_sidecar_path=repaired_sidecar_path,
+        replay_validation={"actual_generator_repair_consumed_row_ids": authorized},
+        isolation={},
+    )
+    manifest = f1.load_json(tmp_path / f1.COMPATIBILITY_PROVENANCE_NAME)
+    for field in [
+        "compatibility_rule_id",
+        "compatibility_rule_version",
+        "immediate_authority_commit",
+        "audit_report_path",
+        "audit_manifest_path",
+        "base_form_source_path",
+        "base_form_source_sha256",
+        "base_form_source_symbol",
+        "stage185_v1_runtime_dependency_id",
+        "stage185_v1_runtime_dependency_sha256",
+        "generator_replay_artifact_sha256",
+        "repair_consumption_artifact_sha256",
+        "full_output_isolation_artifact_sha256",
+        "compatibility_artifact_sha256",
+        "compatibility_provenance_manifest_json_payload_sha256",
+    ]:
+        assert field in manifest
+    assert set(manifest["compatibility_artifact_sha256"]) == set(f1.REQUIRED_COMPATIBILITY_ARTIFACT_SHA_KEYS)
+    validation = f1.validate_compatibility_provenance_manifest(manifest)
+    assert validation["compatibility_provenance_manifest_pass"] is True
+
+
+def complete_compatibility_manifest_fixture() -> dict:
+    return {
+        "compatibility_rule_id": f1.COMPATIBILITY_RULE_ID,
+        "compatibility_rule_version": f1.COMPATIBILITY_RULE_VERSION,
+        "immediate_authority_commit": f1.COMPATIBILITY_IMMEDIATE_AUTHORITY_COMMIT,
+        "audit_report_path": f1.COMPATIBILITY_AUDIT_REPORT_PATH,
+        "audit_manifest_path": f1.COMPATIBILITY_AUDIT_MANIFEST_PATH,
+        "base_form_source_path": f1.GENERATOR_SOURCE_PATH,
+        "base_form_source_sha256": "a" * 64,
+        "base_form_source_symbol": f1.BASE_FORM_SYMBOL,
+        "stage185_v1_runtime_dependency_id": f1.P3W6F1_STAGE185_BUILDER_PATH,
+        "stage185_v1_runtime_dependency_sha256": "b" * 64,
+        "baseline_stage185_v1_sidecar_sha256": "c" * 64,
+        "repaired_stage185_v1_sidecar_sha256": "d" * 64,
+        "generator_replay_artifact_sha256": "e" * 64,
+        "repair_consumption_artifact_sha256": "f" * 64,
+        "full_output_isolation_artifact_sha256": "0" * 64,
+        "compatibility_artifact_sha256": {
+            "compatibility_rows_jsonl": "1" * 64,
+            "compatibility_rows_csv": "2" * 64,
+            "compatibility_summary_json": "3" * 64,
+            "compatibility_report_md": "4" * 64,
+        },
+    }
+
+
+def complete_compatibility_manifest_with_payload_fixture() -> dict:
+    manifest = complete_compatibility_manifest_fixture()
+    manifest["compatibility_provenance_validation"] = f1.validate_compatibility_provenance_manifest(manifest)
+    manifest["compatibility_provenance_manifest_json_payload_sha256"] = f1.canonical_sha256(manifest)
+    return manifest
+
+
+@pytest.mark.parametrize(
+    "field",
+    [
+        "compatibility_rule_id",
+        "compatibility_rule_version",
+        "immediate_authority_commit",
+        "audit_report_path",
+        "audit_manifest_path",
+        "base_form_source_path",
+        "base_form_source_symbol",
+        "stage185_v1_runtime_dependency_id",
+    ],
+)
+def test_compatibility_provenance_manifest_validator_rejects_wrong_fixed_identity(field: str):
+    manifest = complete_compatibility_manifest_fixture()
+    manifest[field] = "wrong-non-empty-value"
+    result = f1.validate_compatibility_provenance_manifest(manifest)
+    assert result["compatibility_provenance_manifest_pass"] is False
+    assert f"{field}_identity_mismatch" in result["compatibility_provenance_manifest_failures"]
+
+def test_compatibility_provenance_manifest_validator_accepts_complete_manifest():
+    result = f1.validate_compatibility_provenance_manifest(complete_compatibility_manifest_fixture())
+    assert result["compatibility_provenance_manifest_pass"] is True
+    assert result["compatibility_provenance_manifest_failures"] == []
+
+
+def test_compatibility_provenance_requires_all_generated_artifact_hashes():
+    for key in f1.REQUIRED_COMPATIBILITY_ARTIFACT_SHA_KEYS:
+        manifest = complete_compatibility_manifest_fixture()
+        manifest["compatibility_artifact_sha256"] = {
+            artifact_key: value
+            for artifact_key, value in manifest["compatibility_artifact_sha256"].items()
+            if artifact_key != key
+        }
+        result = f1.validate_compatibility_provenance_manifest(manifest)
+        assert result["compatibility_provenance_manifest_pass"] is False
+        assert f"compatibility_artifact_sha256:{key}_missing" in result["compatibility_provenance_manifest_failures"]
+
+
+def test_compatibility_provenance_rejects_unexpected_artifact_hash_key():
+    manifest = complete_compatibility_manifest_fixture()
+    manifest["compatibility_artifact_sha256"]["compatibility_provenance_manifest_json"] = "5" * 64
+    result = f1.validate_compatibility_provenance_manifest(manifest)
+    assert result["compatibility_provenance_manifest_pass"] is False
+    assert "compatibility_artifact_sha256:compatibility_provenance_manifest_json_unexpected" in result["compatibility_provenance_manifest_failures"]
+
+
+def test_compatibility_provenance_rejects_malformed_artifact_hash():
+    manifest = complete_compatibility_manifest_fixture()
+    manifest["compatibility_artifact_sha256"]["compatibility_rows_csv"] = "ABC"
+    result = f1.validate_compatibility_provenance_manifest(manifest)
+    assert result["compatibility_provenance_manifest_pass"] is False
+    assert "compatibility_artifact_sha256:compatibility_rows_csv_malformed_sha256" in result["compatibility_provenance_manifest_failures"]
+
+
+def test_compatibility_provenance_payload_sha_validates():
+    manifest = complete_compatibility_manifest_with_payload_fixture()
+    result = f1.validate_compatibility_provenance_manifest_payload(manifest)
+    assert result["compatibility_provenance_manifest_payload_pass"] is True
+    assert result["compatibility_provenance_manifest_payload_failures"] == []
+
+
+def test_compatibility_provenance_payload_sha_detects_tampering():
+    manifest = complete_compatibility_manifest_with_payload_fixture()
+    assert f1.validate_compatibility_provenance_manifest_payload(manifest)["compatibility_provenance_manifest_payload_pass"] is True
+    manifest["base_form_source_sha256"] = "9" * 64
+    result = f1.validate_compatibility_provenance_manifest_payload(manifest)
+    assert result["compatibility_provenance_manifest_payload_pass"] is False
+    assert "compatibility_provenance_manifest_json_payload_sha256_mismatch" in result["compatibility_provenance_manifest_payload_failures"]
+
+
+@pytest.mark.parametrize(
+    "digest",
+    [None, "", "ABC", "g" * 64, "1" * 63],
+)
+def test_compatibility_provenance_payload_sha_missing_or_malformed_fails(digest):
+    manifest = complete_compatibility_manifest_with_payload_fixture()
+    manifest["compatibility_provenance_manifest_json_payload_sha256"] = digest
+    result = f1.validate_compatibility_provenance_manifest_payload(manifest)
+    assert result["compatibility_provenance_manifest_payload_pass"] is False
+
+
+@pytest.mark.parametrize(
+    ("mutation", "failure"),
+    [
+        (lambda manifest: manifest | {"baseline_stage185_v1_sidecar_sha256": None}, "baseline_stage185_v1_sidecar_sha256_missing"),
+        (lambda manifest: manifest | {"base_form_source_sha256": "ABC"}, "base_form_source_sha256_malformed_sha256"),
+        (lambda manifest: {key: value for key, value in manifest.items() if key != "base_form_source_symbol"}, "base_form_source_symbol_missing"),
+    ],
+)
+def test_compatibility_provenance_manifest_validator_rejects_missing_or_malformed_bindings(mutation, failure: str):
+    result = f1.validate_compatibility_provenance_manifest(mutation(complete_compatibility_manifest_fixture()))
+    assert result["compatibility_provenance_manifest_pass"] is False
+    assert failure in result["compatibility_provenance_manifest_failures"]
+
+
+def accepted_compatibility_summary_fixture() -> dict:
+    pair_ids = [f"p{i:03d}" for i in range(121)]
+    return f1.build_summary(
+        pair_ids,
+        pair_ids,
+        [pass_audit(pair_id) for pair_id in pair_ids],
+        authority_cardinality={"authority_cardinality_pass": True},
+        target_scope={"target_scope_membership_pass": True},
+        base_form_coverage={"coverage_pass": True},
+        stage185_provenance_validation={"stage185_provenance_pass": True},
+        full_output_validation={"full_output_isolation_pass": True},
+        provenance_validation={"execution_provenance_pass": True},
+        authorized_target_row_ids=[f"p{i:03d}__polarity_flip" for i in range(121)],
+        baseline_row_order=[f"p{i:03d}__polarity_flip" for i in range(121)],
+    )
+
+
+def test_compatibility_provenance_failure_propagates_to_main_execution_decision():
+    summary = accepted_compatibility_summary_fixture()
+    assert summary["F1_execution_decision"] == f1.ALL_ACCEPTED_DECISION
+    updated = f1.apply_compatibility_provenance_validation(
+        summary,
+        {
+            "compatibility_provenance_manifest_pass": False,
+            "compatibility_provenance_manifest_status": "FAIL",
+            "compatibility_provenance_manifest_failures": ["base_form_source_sha256_missing"],
+        },
+    )
+    assert updated["F1_execution_decision"] == f1.BLOCKERS_DECISION
+    assert f1.COMPATIBILITY_PROVENANCE_UNRESOLVED in updated["F1_execution_blockers"]
+
+
+def test_valid_compatibility_provenance_does_not_downgrade_main_execution_decision():
+    summary = accepted_compatibility_summary_fixture()
+    updated = f1.apply_compatibility_provenance_validation(
+        summary,
+        {
+            "compatibility_provenance_manifest_pass": True,
+            "compatibility_provenance_manifest_status": "PASS",
+            "compatibility_provenance_manifest_failures": [],
+        },
+    )
+    assert updated["F1_execution_decision"] == f1.ALL_ACCEPTED_DECISION
+    assert f1.COMPATIBILITY_PROVENANCE_UNRESOLVED not in updated["F1_execution_blockers"]
