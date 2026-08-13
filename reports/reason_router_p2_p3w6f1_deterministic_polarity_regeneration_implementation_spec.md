@@ -757,11 +757,34 @@ repaired_jsonl_sha256 = d403c437d982e7d61e524fe21ed24391c84d5103be75890a61be7aa4
 authorized_F1_row_ids_sha256 = 386c0c5d5ed80e699f1607f94c2f8ba2861fa0cb1216d5d421f66e62c03d8c64
 baseline_id_sequence_sha256 = 898070cd6718f9c677ba68442ee8ed9010200363df01d147528779306917c0eb
 repaired_generator_source_sha256 = 37e47a3ef60b26c7186d37367d59db158c28c6b9c9eb9e25a13927fc85810684
-stage184_contract_matrix_sha256 = e5f61ac8d0ca3de3dd43767b83bec8c2c171a1635d419466c98d8d32ec2f38e5
+stage184_contract_matrix_sha256 = 4287bf1ca7f1f2b08e5de53d24ad4019ca5ddff8a16db2dbb65727a5189e96fa
 historical_stage185_builder_source_sha256 = 11e6ba89b8131c76eac4504b4273867eaa99a131abe23d3238eb65ecda207bbc
 ```
 
+Corrective portability repair note:
+
+```text
+Runtime execution on Kaggle established that the previous Stage184 freeze
+e5f61ac8d0ca3de3dd43767b83bec8c2c171a1635d419466c98d8d32ec2f38e5
+identified a Windows CRLF worktree rendering of the tracked contract matrix, not
+the repository Git-object raw bytes. The canonical authority for
+reports/stage184a_controlled_train_integrity_mask_spec_20260715_134538/stage184a_family_contract_matrix.csv
+is now the raw Git-object SHA256
+4287bf1ca7f1f2b08e5de53d24ad4019ca5ddff8a16db2dbb65727a5189e96fa.
+The old e5f61... value is historical diagnostic evidence only and must not be
+accepted by executable authority validation. This repair changes no Stage184 CSV
+content, no Stage184 semantics, no F1 authorization or repaired JSONL semantics,
+no Stage185 semantics, and no analyzer semantics.
+```
+
 `F1_EXECUTION_COMMIT` identifies the already completed regeneration, generator replay authority, repaired JSONL production, analyzer `--f1-execution-commit`, and analyzer `--repaired-generator-commit`. `MATERIALIZER_EXECUTION_COMMIT` is a future full 40-hex commit created only after this specification, the materializer implementation, and focused tests are approved and committed. The materializer runtime must require `HEAD == MATERIALIZER_EXECUTION_COMMIT` and a clean tracked worktree. It must separately require `--f1-execution-commit == dc8179e45f7c10416026acdadcbe5cbd8a78d37e`; it must not require `HEAD == F1_EXECUTION_COMMIT`.
+
+The reviewed materializer commit `90235a339714e40aff6ee0ead2256173891df685`
+is now classified as `IMPLEMENTATION_REVIEWED_BUT_RUNTIME_PORTABILITY_BLOCKED`.
+It is not the final executable materializer authority. After this corrective
+repair is reviewed and committed, a new full commit becomes
+`MATERIALIZER_EXECUTION_COMMIT`; `F1_EXECUTION_COMMIT` remains
+`dc8179e45f7c10416026acdadcbe5cbd8a78d37e`.
 
 The materializer writes exactly two final artifacts:
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import shutil
@@ -198,6 +199,67 @@ def test_repaired_jsonl_sha_mismatch(workspace, monkeypatch):
         mat.validate_repaired_jsonl_path_and_sha(workspace, path, mat.REPAIRED_JSONL_SHA256)
 
 
+def test_canonical_stage184_git_object_raw_sha_matches_tracked_commit():
+    repo_root = Path(__file__).resolve().parents[1]
+    blob = mat.git_object_bytes(repo_root, "90235a339714e40aff6ee0ead2256173891df685", mat.STAGE184_CONTRACT_MATRIX_PATH)
+    assert hashlib.sha256(blob).hexdigest() == "4287bf1ca7f1f2b08e5de53d24ad4019ca5ddff8a16db2dbb65727a5189e96fa"
+
+
+def test_old_stage184_crlf_worktree_sha_rejects_as_executable_authority(workspace):
+    repo_root = Path(__file__).resolve().parents[1]
+    canonical_blob = mat.git_object_bytes(repo_root, "90235a339714e40aff6ee0ead2256173891df685", mat.STAGE184_CONTRACT_MATRIX_PATH)
+    crlf_blob = canonical_blob.replace(b"\n", b"\r\n")
+    assert hashlib.sha256(crlf_blob).hexdigest() == mat.HISTORICAL_STAGE184_CONTRACT_MATRIX_WINDOWS_CRLF_WORKTREE_SHA256
+    stage184_path = _write(workspace / mat.STAGE184_CONTRACT_MATRIX_PATH, crlf_blob)
+    with pytest.raises(mat.MaterializerError, match="STAGE184_MATRIX_SHA_MISMATCH"):
+        mat.validate_stage184_contract_matrix_argument(
+            workspace,
+            stage184_path,
+            FULL_COMMIT,
+            git_object_reader=lambda repo, commit, source_path: crlf_blob,
+        )
+
+
+def test_stage184_canonical_path_mismatch_still_fails(workspace):
+    with pytest.raises(mat.MaterializerError, match="STAGE184_MATRIX_PATH_MISMATCH"):
+        mat.validate_stage184_contract_matrix_argument(
+            workspace,
+            _write(workspace / "alternate" / "stage184a_family_contract_matrix.csv"),
+            FULL_COMMIT,
+            git_object_reader=lambda repo, commit, source_path: b"unused",
+        )
+
+
+def test_stage184_git_object_sha_mismatch_fails_closed(workspace):
+    with pytest.raises(mat.MaterializerError, match="STAGE184_MATRIX_SHA_MISMATCH"):
+        mat.validate_stage184_contract_matrix_argument(
+            workspace,
+            _write(workspace / mat.STAGE184_CONTRACT_MATRIX_PATH),
+            FULL_COMMIT,
+            git_object_reader=lambda repo, commit, source_path: b"not the tracked matrix",
+        )
+
+
+@pytest.mark.parametrize("worktree_payload", [b"family,row_count\nx,1\n", b"family,row_count\r\nx,1\r\n"])
+def test_stage184_worktree_eol_representation_does_not_change_git_object_authority(workspace, monkeypatch, worktree_payload):
+    canonical_blob = b"git object authority bytes"
+    monkeypatch.setattr(mat, "STAGE184_CONTRACT_MATRIX_SHA256", hashlib.sha256(canonical_blob).hexdigest())
+    monkeypatch.setattr(mat, "file_sha256", lambda path: pytest.fail("Stage184 authority must not read worktree bytes"))
+    mat.verify_materializer_execution_identity(
+        workspace,
+        FULL_COMMIT,
+        repo_checker=lambda root: None,
+        head_resolver=lambda root: FULL_COMMIT,
+        tracked_clean_checker=lambda root: True,
+    )
+    mat.validate_stage184_contract_matrix_argument(
+        workspace,
+        _write(workspace / mat.STAGE184_CONTRACT_MATRIX_PATH, worktree_payload),
+        FULL_COMMIT,
+        git_object_reader=lambda repo, commit, source_path: canonical_blob,
+    )
+
+
 def test_regeneration_manifest_mismatch(workspace):
     manifest, invocation, config = _canonical_regeneration_artifacts(workspace)
     _json(manifest, {"F1_execution_commit": "bad"})
@@ -335,7 +397,6 @@ def test_repair_consumption_mismatch(workspace, monkeypatch):
     "path_arg,expected_path,expected_sha,path_error,sha_error",
     [
         ("generator.py", mat.GENERATOR_SOURCE_PATH, mat.GENERATOR_SOURCE_SHA256, "GENERATOR_SOURCE_PATH_MISMATCH", "GENERATOR_SOURCE_SHA_MISMATCH"),
-        ("matrix.csv", mat.STAGE184_CONTRACT_MATRIX_PATH, mat.STAGE184_CONTRACT_MATRIX_SHA256, "STAGE184_MATRIX_PATH_MISMATCH", "STAGE184_MATRIX_SHA_MISMATCH"),
         ("builder.py", mat.STAGE185_BUILDER_SOURCE_PATH, mat.STAGE185_BUILDER_SOURCE_SHA256, "STAGE185_BUILDER_PATH_MISMATCH", "STAGE185_BUILDER_SHA_MISMATCH"),
     ],
 )
@@ -349,7 +410,6 @@ def test_fixed_source_path_mismatches(workspace, path_arg, expected_path, expect
     "expected_path,expected_sha,path_error,sha_error",
     [
         (mat.GENERATOR_SOURCE_PATH, mat.GENERATOR_SOURCE_SHA256, "GENERATOR_SOURCE_PATH_MISMATCH", "GENERATOR_SOURCE_SHA_MISMATCH"),
-        (mat.STAGE184_CONTRACT_MATRIX_PATH, mat.STAGE184_CONTRACT_MATRIX_SHA256, "STAGE184_MATRIX_PATH_MISMATCH", "STAGE184_MATRIX_SHA_MISMATCH"),
         (mat.STAGE185_BUILDER_SOURCE_PATH, mat.STAGE185_BUILDER_SOURCE_SHA256, "STAGE185_BUILDER_PATH_MISMATCH", "STAGE185_BUILDER_SHA_MISMATCH"),
     ],
 )
@@ -413,6 +473,27 @@ def test_historical_stage185_binary_executed_remains_false(workspace, monkeypatc
         provenance_validation={"stage185_provenance_status": "PASS"},
     )
     assert manifest["historical_stage185_binary_executed"] is False
+
+
+def test_manifest_records_stage184_git_object_authority_not_historical_crlf_sha(workspace):
+    sidecar_path = workspace / mat.SIDECAR_NAME
+    sidecar_bytes = mat.deterministic_jsonl_bytes([_sidecar()])
+    manifest = mat.build_manifest(
+        repo_root=workspace,
+        materializer_execution_commit=FULL_COMMIT,
+        materializer_source_sha="s",
+        regeneration_manifest_path=_write(workspace / "regen.json"),
+        invocation_path=_write(workspace / "invocation.json"),
+        configuration_path=_write(workspace / "config.json"),
+        stage184_contract_matrix_path=_write(workspace / mat.STAGE184_CONTRACT_MATRIX_PATH),
+        sidecar_path=sidecar_path,
+        sidecar_bytes=sidecar_bytes,
+        sidecar_rows=[_sidecar()],
+        provenance_validation={"stage185_provenance_status": "PASS"},
+    )
+    assert manifest["stage184_contract_matrix_sha256"] == mat.STAGE184_CONTRACT_MATRIX_SHA256
+    assert manifest["stage184_contract_matrix_sha256"] == "4287bf1ca7f1f2b08e5de53d24ad4019ca5ddff8a16db2dbb65727a5189e96fa"
+    assert manifest["stage184_contract_matrix_sha256"] != mat.HISTORICAL_STAGE184_CONTRACT_MATRIX_WINDOWS_CRLF_WORKTREE_SHA256
 
 
 def test_derived_manifest_status_uses_exact_materialization_success_value(workspace):

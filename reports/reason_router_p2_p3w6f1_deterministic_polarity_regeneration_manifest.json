@@ -796,8 +796,25 @@
       "authorized_F1_row_ids_sha256": "386c0c5d5ed80e699f1607f94c2f8ba2861fa0cb1216d5d421f66e62c03d8c64",
       "baseline_id_sequence_sha256": "898070cd6718f9c677ba68442ee8ed9010200363df01d147528779306917c0eb",
       "repaired_generator_source_sha256": "37e47a3ef60b26c7186d37367d59db158c28c6b9c9eb9e25a13927fc85810684",
-      "stage184_contract_matrix_sha256": "e5f61ac8d0ca3de3dd43767b83bec8c2c171a1635d419466c98d8d32ec2f38e5",
+      "stage184_contract_matrix_sha256": "4287bf1ca7f1f2b08e5de53d24ad4019ca5ddff8a16db2dbb65727a5189e96fa",
       "historical_stage185_builder_source_sha256": "11e6ba89b8131c76eac4504b4273867eaa99a131abe23d3238eb65ecda207bbc"
+    },
+    "stage184_authority_portability_repair": {
+      "runtime_discovered_defect": "previous_stage184_contract_matrix_sha256_identified_windows_crlf_worktree_rendering_not_git_object_raw_bytes",
+      "canonical_stage184_contract_matrix_path": "reports/stage184a_controlled_train_integrity_mask_spec_20260715_134538/stage184a_family_contract_matrix.csv",
+      "canonical_git_object_raw_sha256": "4287bf1ca7f1f2b08e5de53d24ad4019ca5ddff8a16db2dbb65727a5189e96fa",
+      "historical_windows_crlf_worktree_sha256": "e5f61ac8d0ca3de3dd43767b83bec8c2c171a1635d419466c98d8d32ec2f38e5",
+      "old_sha_executable_authority": false,
+      "accepted_authority_hash_count": 1,
+      "semantic_changes": {
+        "stage184_csv_content_changed": false,
+        "stage184_semantics_changed": false,
+        "f1_semantics_changed": false,
+        "stage185_semantics_changed": false,
+        "analyzer_semantics_changed": false
+      },
+      "materializer_commit_90235a339714e40aff6ee0ead2256173891df685_state": "IMPLEMENTATION_REVIEWED_BUT_RUNTIME_PORTABILITY_BLOCKED",
+      "next_materializer_execution_commit": "future_reviewed_repair_commit"
     },
     "split_seed": 174,
     "dev_ratio": 0.2,

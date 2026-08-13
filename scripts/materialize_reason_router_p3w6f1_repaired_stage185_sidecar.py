@@ -44,7 +44,8 @@ STRUCTURAL_NEGATIVE_POLARITY_FLIP_ROW_COUNT = 150
 GENERATOR_SOURCE_PATH = "scripts/build_controlled_v5.py"
 GENERATOR_SOURCE_SHA256 = "37e47a3ef60b26c7186d37367d59db158c28c6b9c9eb9e25a13927fc85810684"
 STAGE184_CONTRACT_MATRIX_PATH = p3w6f1.P3W6F1_STAGE184_CONTRACT_MATRIX_PATH
-STAGE184_CONTRACT_MATRIX_SHA256 = "e5f61ac8d0ca3de3dd43767b83bec8c2c171a1635d419466c98d8d32ec2f38e5"
+STAGE184_CONTRACT_MATRIX_SHA256 = "4287bf1ca7f1f2b08e5de53d24ad4019ca5ddff8a16db2dbb65727a5189e96fa"
+HISTORICAL_STAGE184_CONTRACT_MATRIX_WINDOWS_CRLF_WORKTREE_SHA256 = "e5f61ac8d0ca3de3dd43767b83bec8c2c171a1635d419466c98d8d32ec2f38e5"
 STAGE185_BUILDER_SOURCE_PATH = "scripts/build_stage185a_controlled_train_integrity_sidecar.py"
 STAGE185_BUILDER_SOURCE_SHA256 = "11e6ba89b8131c76eac4504b4273867eaa99a131abe23d3238eb65ecda207bbc"
 
@@ -218,6 +219,18 @@ def validate_repaired_jsonl_path_and_sha(repo_root: Path, repaired_jsonl: Path, 
 def validate_fixed_source_argument(repo_root: Path, observed: Path, expected_path: str, expected_sha: str, path_error: str, sha_error: str) -> None:
     canonical = require_canonical_path(repo_root, observed, expected_path, path_error)
     verify_file_identity(canonical, expected_sha, sha_error)
+
+
+def validate_stage184_contract_matrix_argument(
+    repo_root: Path,
+    observed: Path,
+    materializer_execution_commit: str,
+    *,
+    git_object_reader: Any | None = None,
+) -> None:
+    require_canonical_path(repo_root, observed, STAGE184_CONTRACT_MATRIX_PATH, "STAGE184_MATRIX_PATH_MISMATCH")
+    blob = (git_object_reader or git_object_bytes)(repo_root, materializer_execution_commit, STAGE184_CONTRACT_MATRIX_PATH)
+    require(sha256_bytes(blob) == STAGE184_CONTRACT_MATRIX_SHA256, "STAGE184_MATRIX_SHA_MISMATCH")
 
 
 def validate_regeneration_artifact_paths(
@@ -569,7 +582,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     validate_repaired_jsonl_path_and_sha(repo_root, repaired_jsonl, args.repaired_jsonl_sha256)
     validate_fixed_source_argument(repo_root, generator_source, GENERATOR_SOURCE_PATH, GENERATOR_SOURCE_SHA256, "GENERATOR_SOURCE_PATH_MISMATCH", "GENERATOR_SOURCE_SHA_MISMATCH")
-    validate_fixed_source_argument(repo_root, stage184_contract_matrix, STAGE184_CONTRACT_MATRIX_PATH, STAGE184_CONTRACT_MATRIX_SHA256, "STAGE184_MATRIX_PATH_MISMATCH", "STAGE184_MATRIX_SHA_MISMATCH")
+    validate_stage184_contract_matrix_argument(repo_root, stage184_contract_matrix, args.materializer_execution_commit)
     validate_fixed_source_argument(repo_root, stage185_builder_source, STAGE185_BUILDER_SOURCE_PATH, STAGE185_BUILDER_SOURCE_SHA256, "STAGE185_BUILDER_PATH_MISMATCH", "STAGE185_BUILDER_SHA_MISMATCH")
     validate_regeneration_manifest(regeneration_manifest, repo_root=repo_root, invocation_json=invocation_json, configuration_json=configuration_json)
 

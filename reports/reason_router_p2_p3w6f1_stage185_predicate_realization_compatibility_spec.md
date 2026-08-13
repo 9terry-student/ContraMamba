@@ -840,6 +840,28 @@ reports/stage185a_controlled_train_integrity_sidecar_p3w6f1_<MATERIALIZER_EXECUT
 
 `MATERIALIZER_EXECUTION_COMMIT` is the future materializer implementation/runtime commit. It does not replace `F1_EXECUTION_COMMIT = dc8179e45f7c10416026acdadcbe5cbd8a78d37e`, which remains the analyzer `--f1-execution-commit` and `--repaired-generator-commit` identity.
 
+Runtime authority portability repair:
+
+```text
+The reviewed materializer commit
+90235a339714e40aff6ee0ead2256173891df685
+is classified as IMPLEMENTATION_REVIEWED_BUT_RUNTIME_PORTABILITY_BLOCKED.
+
+The Stage184 contract matrix did not change, but the executable authority for
+reports/stage184a_controlled_train_integrity_mask_spec_20260715_134538/stage184a_family_contract_matrix.csv
+must be the raw Git-object SHA256:
+4287bf1ca7f1f2b08e5de53d24ad4019ca5ddff8a16db2dbb65727a5189e96fa
+
+The previous value:
+e5f61ac8d0ca3de3dd43767b83bec8c2c171a1635d419466c98d8d32ec2f38e5
+is retained only as historical evidence of an accidental Windows CRLF worktree
+representation. It is not executable authority and must not be accepted as an
+alternate hash.
+
+This repair changes no Stage184 content or semantics, no F1 repaired JSONL or
+authorization semantics, no Stage185 semantics, and no analyzer semantics.
+```
+
 The dedicated materializer does not execute the historical Stage185 builder binary against repaired input. Its materialization manifest must record `historical_stage185_binary_executed = false`. The row-level Stage185 provenance field `integrity_builder_sha256` identifies the historical Stage185 source as semantic-contract authority only, not a binary execution event. Raw Stage185 observation fields must contain concrete `PASS`/`FAIL` values; `NOT_RUN` must not be used as a fake PASS state.
 
 ## Required Future Tests

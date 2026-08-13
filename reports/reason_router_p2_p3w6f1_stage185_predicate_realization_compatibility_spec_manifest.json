@@ -188,6 +188,22 @@
       "historical Stage185"
     ]
   },
+  "stage184_authority_portability_repair": {
+    "runtime_discovered_defect": "previous_stage184_contract_matrix_sha256_identified_windows_crlf_worktree_rendering_not_git_object_raw_bytes",
+    "canonical_stage184_contract_matrix_path": "reports/stage184a_controlled_train_integrity_mask_spec_20260715_134538/stage184a_family_contract_matrix.csv",
+    "canonical_git_object_raw_sha256": "4287bf1ca7f1f2b08e5de53d24ad4019ca5ddff8a16db2dbb65727a5189e96fa",
+    "historical_windows_crlf_worktree_sha256": "e5f61ac8d0ca3de3dd43767b83bec8c2c171a1635d419466c98d8d32ec2f38e5",
+    "old_sha_executable_authority": false,
+    "accepted_authority_hash_count": 1,
+    "materializer_commit_90235a339714e40aff6ee0ead2256173891df685_state": "IMPLEMENTATION_REVIEWED_BUT_RUNTIME_PORTABILITY_BLOCKED",
+    "semantic_changes": {
+      "stage184_csv_content_changed": false,
+      "stage184_semantics_changed": false,
+      "f1_semantics_changed": false,
+      "stage185_semantics_changed": false,
+      "analyzer_semantics_changed": false
+    }
+  },
   "compatibility_enums": {
     "authorized_F1_membership": [
       "PASS",
