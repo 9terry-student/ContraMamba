@@ -1,0 +1,103 @@
+{
+  "schema_version": "reason_router_p2_p3w6f2_f2_paper_candidate_registry_v1",
+  "candidate_id": "F2_TRANSFORMATION_INTEGRITY_ANALYSIS_V1",
+  "status": "PAPER_CANDIDATE_PRESERVE_FOR_POST_REVIEW_ANALYSIS",
+  "origin_stage": "P3-W6-F2",
+  "created_by_stage": "P3-W6-F2-P3 HUMAN REVIEW PREPARATION ADDENDUM",
+  "annotation_authority": false,
+  "wip_authority": false,
+  "final_review_result": false,
+  "production_data": false,
+  "scientific_result": false,
+  "purpose": "Preserve the P3-W6-F2 119-pair / 357-member cohort as a GitHub-tracked machine-readable research candidate after ContraMamba integrity remediation continues.",
+  "reserved_path": "reports/reason_router_p2_p3w6f2_f2_paper_candidate_registry.json",
+  "cohort": {
+    "pair_count": 119,
+    "member_count": 357,
+    "member_roles": [
+      "canonical",
+      "paraphrase",
+      "polarity_flip"
+    ],
+    "source_authority_stage": "P3-W4",
+    "source_template_path": "reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_f2_manual_review.csv",
+    "source_pair_authority_path": "reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_canonical_grammar_authority_pairs.jsonl",
+    "source_summary_authority_path": "reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_canonical_grammar_authority_summary.json"
+  },
+  "research_questions": [
+    {
+      "id": "RQ1",
+      "question": "canonical generation defect가 paraphrase와 polarity-derived member에 어떤 형태로 전파되는가?"
+    },
+    {
+      "id": "RQ2",
+      "question": "surface grammatical defect와 semantic validity contamination은 어떻게 분리되는가?"
+    },
+    {
+      "id": "RQ3",
+      "question": "어떤 pair가 canonical-only textual repair 후보이고, 어떤 pair가 regeneration을 요구하는가?"
+    },
+    {
+      "id": "RQ4",
+      "question": "automatic integrity diagnostics와 human semantic/grammar judgment가 어느 정도 일치하는가?"
+    }
+  ],
+  "planned_analysis_axes": [
+    "human semantic validity by member",
+    "human grammar-defect scope",
+    "derived authority decision",
+    "automatic root-cause class",
+    "automatic grammar statuses",
+    "predicate / lexical signature",
+    "automatic-vs-human agreement",
+    "repairability category",
+    "decision distribution",
+    "notes/error taxonomy"
+  ],
+  "future_minimum_preserved_fields": [
+    "pair_id",
+    "human_canonical_semantics",
+    "human_paraphrase_semantics",
+    "human_polarity_flip_semantics",
+    "human_grammar_validity",
+    "human_authority_decision",
+    "automatic_root_cause_class",
+    "canonical_grammar_status",
+    "paraphrase_grammar_status",
+    "polarity_flip_grammar_status",
+    "canonical_reason_codes",
+    "paraphrase_reason_codes",
+    "polarity_flip_reason_codes",
+    "predicate_or_lexical_signature_if_mechanically_derivable",
+    "reviewed_at_utc",
+    "reviewer_id",
+    "human_notes"
+  ],
+  "scientific_nonclaims": [
+    "no paper conclusion exists before human review",
+    "structural similarity does not authorize bulk labeling",
+    "119 pairs are a paper candidate cohort, not yet a completed dataset study",
+    "ContraMamba remediation result and independent paper claim are separate"
+  ],
+  "track_separation": {
+    "track_a": "ContraMamba F2 integrity closure",
+    "track_b": "future independent transformation-integrity analysis / paper candidate",
+    "reuse_policy": "P3 human decisions may be reused as research observations after validated review output exists.",
+    "prohibitions": [
+      "future paper hypotheses cannot influence current human labels",
+      "F2 repair decisions remain governed by ContraMamba authority",
+      "no retrospective relabeling to make paper categories cleaner",
+      "remediation conclusions and paper claims must remain separately reviewed"
+    ]
+  },
+  "stage_boundary": {
+    "no_real_f2_annotation": true,
+    "no_real_wip_creation": true,
+    "no_xlsx_creation": true,
+    "no_finalization": true,
+    "no_remediation": true,
+    "no_data_mutation": true,
+    "no_training": true,
+    "no_evaluation": true
+  }
+}
