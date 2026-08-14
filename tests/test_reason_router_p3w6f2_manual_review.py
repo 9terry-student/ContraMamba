@@ -701,7 +701,7 @@ def test_execution_script_must_be_tracked_at_head(tmp_path):
         f2.require_tracked_execution_state(repo)
 
 
-def test_dirty_provenance_failure_produces_no_target(tmp_path):
+def test_dirty_provenance_failure_produces_no_target(tmp_path, monkeypatch):
     repo = tmp_path / "repo"
     init_git_repo(repo)
     prepare_reports_dir(repo)
@@ -709,6 +709,7 @@ def test_dirty_provenance_failure_produces_no_target(tmp_path):
     auth = authority(tmp_path=repo)
     wip = tmp_path / "external_wip.jsonl"
     f2.write_wip_atomic(wip, [review_record(auth)])
+    monkeypatch.setattr(f2, "EXPECTED_PAIR_COUNT", 1)
     with pytest.raises(f2.ReviewInfrastructureError, match="DIRTY_TRACKED_EXECUTION_STATE"):
         f2.finalize_artifacts(auth, wip)
     assert not any((repo / "reports").glob("reason_router_p2_p3w5_f2_manual_review_execution_*"))
