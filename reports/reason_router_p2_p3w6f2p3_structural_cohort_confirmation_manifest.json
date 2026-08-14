@@ -1,0 +1,129 @@
+{
+  "schema_version": "reason_router_p2_p3w6f2p3_structural_cohort_confirmation_manifest_v1",
+  "decision": "P3W6F2P3_STRUCTURAL_COHORT_CONFIRMATION_V2_BLOCKER_REPAIR_READY_FOR_INDEPENDENT_REREVIEW",
+  "repository_authority": {
+    "branch": "main",
+    "head": "f99e6f4bba00c6aaf9730d8326ce728831c2bd98"
+  },
+  "protocols": {
+    "historical_human_wip_protocol": "P3W5_F2_MANUAL_REVIEW_V1",
+    "active_hybrid_human_review_protocol": "P3W6F2_HYBRID_HUMAN_REVIEW_V2",
+    "ai_prescreen_protocol": "P3W6F2_AI_ASSISTED_PRESCREEN_V1",
+    "structural_gate_version": "P3W6F2_STRUCTURAL_COHORT_GATE_V1",
+    "structural_audit_schema": "reason_router_p3w6f2_structural_cohort_audit_v1",
+    "cohort_confirmation_protocol": "P3W6F2_STRUCTURAL_COHORT_CONFIRMATION_V1"
+  },
+  "review_methods": [
+    "INDIVIDUAL_TRIPLE_REVIEW",
+    "STRUCTURAL_COHORT_CONFIRMATION"
+  ],
+  "method_provenance_matrix": [
+    {
+      "review_method": "INDIVIDUAL_TRIPLE_REVIEW",
+      "human_review_time_provenance": "CAPTURED_IN_RECORD",
+      "record_origin": "CLI_INDIVIDUAL_RECORD"
+    },
+    {
+      "review_method": "INDIVIDUAL_TRIPLE_REVIEW",
+      "human_review_time_provenance": "NOT_CAPTURED_IN_XLSX",
+      "record_origin": "XLSX_CONFIRMED_IMPORT"
+    },
+    {
+      "review_method": "STRUCTURAL_COHORT_CONFIRMATION",
+      "human_review_time_provenance": "NOT_APPLICABLE_STRUCTURAL_COHORT",
+      "record_origin": "STRUCTURAL_COHORT_CONFIRMATION"
+    }
+  ],
+  "two_phase_cohort_confirmation": {
+    "phase_1": "cohort-audit writes a stable external audit artifact and no human authority",
+    "phase_2": "cohort-confirm requires audit-path, expected audit SHA-256, fresh recomputation equality, and explicit COHORT_CONFIRM acknowledgement",
+    "canonical_audit_payload_sha256": "UTF-8 canonical JSON with sort_keys=true, compact separators, no NaN, excluding audit_created_at_utc and audit_payload_sha256",
+    "toctou_policy": "any source, WIP, AI-prescreen, eligible-set, exception-set, or gate-result drift invalidates the reviewed audit"
+  },
+  "human_audit_evidence": {
+    "sample_count": 20,
+    "sample_result": "V/V/V/M",
+    "override_count": 0,
+    "derived_decision": "CANONICAL_REGENERATION_REQUIRED",
+    "individually_reviewed_pair_ids": [
+      "generated_fact_152",
+      "generated_fact_154",
+      "generated_fact_156",
+      "generated_fact_157",
+      "generated_fact_159",
+      "generated_fact_160",
+      "generated_fact_162",
+      "generated_fact_163",
+      "generated_fact_164",
+      "generated_fact_167",
+      "generated_fact_168",
+      "generated_fact_169",
+      "generated_fact_170",
+      "generated_fact_171",
+      "generated_fact_173",
+      "generated_fact_175",
+      "generated_fact_177",
+      "generated_fact_178",
+      "generated_fact_179",
+      "generated_fact_180"
+    ],
+    "predicate_coverage": {
+      "restored": 4,
+      "selected": 4,
+      "approved": 4,
+      "delivered": 3,
+      "published": 2,
+      "opened": 2,
+      "launched": 1
+    },
+    "coverage_interpretation": "structural coverage audit, not statistical proof"
+  },
+  "timestamp_contract": {
+    "authority_recorded_at_utc": "authoritative V2 record creation/import time",
+    "reviewed_at_utc": "same value as authority_recorded_at_utc under V2 compatibility semantics",
+    "human_review_time_provenance_values": [
+      "CAPTURED_IN_RECORD",
+      "NOT_CAPTURED_IN_XLSX",
+      "NOT_APPLICABLE_STRUCTURAL_COHORT"
+    ],
+    "xlsx_visual_review_time_policy": "do not fabricate; existing workbook confirmations use NOT_CAPTURED_IN_XLSX at later import",
+    "structural_review_time_policy": "structural records use NOT_APPLICABLE_STRUCTURAL_COHORT and do not claim individual visual inspection time"
+  },
+  "cohort_artifact_binding": {
+    "requires_structural_audit_sha256": true,
+    "requires_confirmation_payload_sha256": true,
+    "confirmation_payload_sha256_recomputed_on_load": true,
+    "cohort_confirmation_id_derived_from_confirmation_payload_sha256": true,
+    "arbitrary_loaded_cohort_confirmation_id_rejected": true,
+    "requires_ai_prescreen_artifact_sha256": true,
+    "requires_validated_individual_wip_state_sha256": true,
+    "requires_exact_pair_membership_validation": true,
+    "cohort_confirmation_id_alone_is_insufficient": true
+  },
+  "transaction_contract": {
+    "validate_before_final_write": true,
+    "stage_cohort_artifact_and_wip": true,
+    "rollback_first_promotion_if_second_fails": true,
+    "final_hash_verification": true
+  },
+  "stage_boundary": {
+    "no_real_wip_creation": true,
+    "no_real_ai_prescreen_import": true,
+    "no_real_cohort_confirm": true,
+    "no_finalization": true,
+    "no_remediation": true,
+    "no_data_mutation": true,
+    "no_training": true,
+    "no_evaluation": true,
+    "no_commit": true,
+    "no_push": true
+  },
+  "nonclaims": [
+    "all 119 pairs were individually visually inspected",
+    "AI labels became human labels automatically",
+    "20 examples statistically prove 99 examples",
+    "structural equivalence proves a general scientific claim",
+    "this creates a paper result",
+    "Level-1 hybrid review completion is remediation completion"
+  ]
+}
