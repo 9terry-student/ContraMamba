@@ -61,6 +61,44 @@ def authority(rows: list[dict[str, str]] | None = None, tmp_path: Path | None = 
     )
 
 
+def pair_authority_record(row: dict[str, str], family: str = "F2") -> dict[str, object]:
+    return {
+        "pair_id": row["pair_id"],
+        "family": family,
+        "members": {
+            "canonical": {
+                "source_row": {
+                    "id": row["canonical_none_row_id"],
+                    "final_label": row["canonical_final_label"],
+                }
+            },
+            "paraphrase": {
+                "source_row": {
+                    "id": row["paraphrase_row_id"],
+                    "final_label": row["paraphrase_final_label"],
+                }
+            },
+            "polarity_flip": {
+                "source_row": {
+                    "id": row["polarity_flip_row_id"],
+                    "final_label": row["polarity_flip_final_label"],
+                }
+            },
+        },
+    }
+
+
+def pair_summary(pair_count: int, member_count: int) -> dict[str, object]:
+    return {
+        "aggregates": {
+            "family_counts": {
+                "F2_pair_count": pair_count,
+                "F2_complete_triple_members": member_count,
+            }
+        }
+    }
+
+
 def external_wip_path(tmp_path: Path) -> Path:
     return tmp_path.parent / f"{tmp_path.name}_p3w6f2_review_wip.jsonl"
 
@@ -130,6 +168,24 @@ def test_source_record_hash_v1_exact_known_authority_first_row_fixture():
     ]
     row = dict(zip(f2.SOURCE_FIELDS, literal_values, strict=True))
     assert f2.compute_source_record_sha256(row) == "b4127d435bb063fc8dca2213a753d23382f528014703736bd0d4c56ade836154"
+
+
+def test_make_review_record_valid_empty_error_path_succeeds():
+    auth = authority()
+    record = f2.make_review_record(
+        auth,
+        pair_id="pair_a",
+        reviewer_id="reviewer",
+        canonical_semantics="VALID",
+        paraphrase_semantics="VALID",
+        polarity_flip_semantics="VALID",
+        grammar_validity="CANONICAL_ONLY_DEFECT",
+        notes="",
+        clock=lambda: datetime(2026, 8, 14, 0, 0, tzinfo=UTC),
+    )
+
+    assert f2.validate_review_record(record, auth) == []
+    assert record["human_authority_decision"] == "CANONICAL_TEXTUAL_REPAIR_CANDIDATE"
 
 
 @pytest.mark.parametrize("field", ["human_canonical_semantics", "human_paraphrase_semantics", "human_polarity_flip_semantics"])
@@ -264,6 +320,18 @@ def test_correction_replaces_rather_than_duplicates(tmp_path):
     assert records[0]["human_authority_decision"] == "CANONICAL_REGENERATION_REQUIRED"
 
 
+def test_strict_load_wip_and_upsert_valid_empty_error_paths_succeed(tmp_path):
+    path = external_wip_path(tmp_path)
+    auth = authority(tmp_path=tmp_path)
+    record = review_record(auth)
+
+    f2.upsert_wip_record(auth, path, record)
+    records, duplicates = f2.strict_load_wip(auth, path)
+
+    assert duplicates == set()
+    assert records == [record]
+
+
 def test_correction_updates_timestamp_semantics_through_clock():
     auth = authority()
     first = f2.make_review_record(auth, "pair_a", "reviewer", "VALID", "VALID", "VALID", "CANONICAL_ONLY_DEFECT", "", clock=lambda: datetime(2026, 8, 14, tzinfo=UTC))
@@ -276,6 +344,20 @@ def test_source_authority_order_preservation():
     auth = authority(rows)
     assert auth.ordered_pair_ids == ["pair_b", "pair_a"]
     assert f2.next_unreviewed_pair_id(auth, [review_record(auth, "pair_b")]) == "pair_a"
+
+
+def test_verify_pair_membership_rejects_missing_f2_pair(monkeypatch):
+    rows = [source_row("pair_a"), source_row("pair_b")]
+    wrong_extra_row = source_row("pair_c")
+    monkeypatch.setattr(f2, "EXPECTED_PAIR_COUNT", 2)
+    monkeypatch.setattr(f2, "EXPECTED_MEMBER_COUNT", 6)
+
+    with pytest.raises(f2.ReviewInfrastructureError, match="missing pair pair_b"):
+        f2.verify_pair_membership(
+            rows,
+            [pair_authority_record(rows[0]), pair_authority_record(wrong_extra_row)],
+            pair_summary(pair_count=2, member_count=6),
+        )
 
 
 def test_partial_review_never_reaches_completion():

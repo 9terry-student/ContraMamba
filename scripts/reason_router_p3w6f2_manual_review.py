@@ -215,6 +215,11 @@ def require(condition: bool, code: str, detail: str = "") -> None:
         raise ReviewInfrastructureError(code if not detail else f"{code}: {detail}")
 
 
+def require_no_validation_errors(errors: list[str]) -> None:
+    if errors:
+        raise ReviewInfrastructureError(f"{errors[0]}: {','.join(errors)}")
+
+
 def resolve_repo_root(start: Path | None = None) -> Path:
     cwd = (start or Path.cwd()).resolve()
     result = subprocess.run(
@@ -549,7 +554,6 @@ def verify_pair_membership(source_rows: list[dict[str, str]], pair_records: list
     require(len(f2_records) == EXPECTED_PAIR_COUNT, "AUTHORITY_PAIR_UNIVERSE_MISMATCH", "P3-W4 pair authority F2 count mismatch")
     f2_by_pair = {str(record.get("pair_id", "")): record for record in f2_records}
     require(len(f2_by_pair) == EXPECTED_PAIR_COUNT, "AUTHORITY_PAIR_UNIVERSE_MISMATCH", "P3-W4 duplicate F2 pair IDs")
-    require([row["pair_id"] for row in source_rows] == [row["pair_id"] for row in source_rows], "AUTHORITY_PAIR_UNIVERSE_MISMATCH")
     expected_members = 0
     for row in source_rows:
         pair_record = f2_by_pair.get(row["pair_id"])
@@ -614,7 +618,7 @@ def strict_load_wip(authority: Authority, path: Path) -> tuple[list[dict[str, An
     require_wip_path_outside_repo(authority.repo_root, path)
     records, duplicate_pair_ids = load_wip(path)
     errors = validate_wip_records(authority, records, duplicate_pair_ids)
-    require(not errors, errors[0], ",".join(errors))
+    require_no_validation_errors(errors)
     return records, duplicate_pair_ids
 
 
@@ -678,7 +682,7 @@ def make_review_record(
         "reviewed_at_utc": utc_timestamp(clock),
     }
     errors = validate_review_record(record, authority)
-    require(not errors, errors[0], ",".join(errors))
+    require_no_validation_errors(errors)
     return record
 
 
@@ -686,9 +690,9 @@ def upsert_wip_record(authority: Authority, path: Path, record: dict[str, Any]) 
     require_wip_path_outside_repo(authority.repo_root, path)
     records, duplicate_pair_ids = load_wip(path)
     errors = validate_wip_records(authority, records, duplicate_pair_ids)
-    require(not errors, errors[0], ",".join(errors))
+    require_no_validation_errors(errors)
     record_errors = validate_review_record(record, authority)
-    require(not record_errors, record_errors[0], ",".join(record_errors))
+    require_no_validation_errors(record_errors)
     replaced = False
     next_records: list[dict[str, Any]] = []
     for existing in records:
