@@ -10,9 +10,13 @@ Augmented preparation decision:
 
 `P3W6F2P3_HUMAN_REVIEW_PREPARATION_AUGMENTED_READY_NO_CODE_CHANGE`
 
+AI-assisted amendment decision:
+
+`P3W6F2P3_AI_ASSISTED_HUMAN_REVIEW_AMENDMENT_READY_NO_CODE_CHANGE`
+
 This is a human-review operating workflow specification only. It does not begin the 119-pair F2 review, create a real WIP ledger, create an XLSX workbook, record human decisions, finalize artifacts, remediate rows, mutate data, train, evaluate, commit, or push.
 
-The existing `scripts/reason_router_p3w6f2_manual_review.py` infrastructure is sufficient for authority loading, pair presentation, strict external WIP validation, deterministic decision derivation, note enforcement, correction by replacement, resume, and final Level-1 artifact generation. No production code change is required before actual P3 execution, provided the reviewer follows the confirmation, shorthand, paper-preservation, and auxiliary-workbook boundary below.
+This amendment permits a future non-authoritative AI prescreen layer for workload reduction. The layer may suggest per-pair semantic and grammar values, but it is not annotation authority, WIP authority, remediation authority, controlled-data authority, or a substitute for explicit human row-level action. The existing `scripts/reason_router_p3w6f2_manual_review.py` infrastructure is sufficient for authority loading, pair presentation, strict external WIP validation, deterministic decision derivation, note enforcement, correction by replacement, resume, and final Level-1 artifact generation. No production code change is required before actual P3 execution, provided the reviewer follows the confirmation, shorthand, paper-preservation, AI-prescreen, and auxiliary-workbook boundary below.
 
 ## Authority Checked
 
@@ -116,6 +120,8 @@ The CLI derives `human_authority_decision` after the four classifications are kn
 
 If notes are required and blank after trim, the existing infrastructure fails closed with `MISSING_REQUIRED_NOTES`. Optional notes remain allowed for `CANONICAL_TEXTUAL_REPAIR_CANDIDATE` and `CANONICAL_REGENERATION_REQUIRED`.
 
+AI rationale does not satisfy `human_notes`. `ai_prescreen_rationale` and `human_notes` are different fields; only human-authored notes satisfy the frozen notes policy.
+
 ## F. Save / Edit / Cancel Flow
 
 Before any real WIP write, the reviewer must see:
@@ -191,25 +197,55 @@ After each batch, copy the external WIP ledger to a timestamped backup outside t
 
 Backups must not be added to Git and must not be copied under the repository root. Before resuming from a backup, restore it to the canonical external WIP path and run `status` so strict validation checks it before any new review.
 
-## L. ChatGPT Assistance Boundary
+## L. AI-Assisted Prescreen Boundary
 
-Allowed assistance:
+This amendment explicitly supersedes the prior ChatGPT assistance boundary that prohibited AI from proposing semantic validity or grammar scope. The conflict is narrow: the frozen preparation text allowed formatting, enum explanation, and literal-difference support, but disallowed AI semantic/grammar suggestions; the new human workload policy permits those suggestions only as a non-authoritative diagnostic prescreen.
 
-- format the three members clearly
-- explain enum meanings
-- point out literal textual differences
-- identify which words changed
-- answer questions about this protocol
+New auxiliary protocol version:
 
-Not allowed:
+`P3W6F2_AI_ASSISTED_PRESCREEN_V1`
 
-- automatically write `V/I/U` or `C/M/N/U` into WIP
-- decide semantic validity for the reviewer
-- bulk approve structurally similar pairs
-- infer remaining decisions from P0 cluster patterns
-- use root-cause class as a substitute for human judgment
+The authoritative human WIP protocol remains:
 
-The final selection must come from the human reviewer.
+`P3W5_F2_MANUAL_REVIEW_V1`
+
+AI prescreen role:
+
+`NON_AUTHORITATIVE_DIAGNOSTIC_PRESCREEN`
+
+For each pair, a future AI prescreen may inspect the complete triple (`canonical`, `paraphrase`, `polarity_flip`) and propose:
+
+- `ai_canonical_semantics_suggestion`
+- `ai_paraphrase_semantics_suggestion`
+- `ai_polarity_flip_semantics_suggestion`
+- `ai_grammar_validity_suggestion`
+- `ai_triage_status`
+- `ai_prescreen_rationale`
+
+Allowed suggestion shorthands:
+
+- Semantic: `V`, `I`, `U`
+- Grammar: `C`, `M`, `N`, `U`
+- Triage: `CLEAR_SUGGESTION`, `HUMAN_REVIEW_REQUIRED`
+
+Do not introduce numeric confidence in this version. The intended distinction is binary triage, not calibrated scoring.
+
+`CLEAR_SUGGESTION` is allowed only when the AI can identify a straightforward semantic and grammar relation from the displayed complete triple without material ambiguity. A representative clear case is one where the claim expresses event X, canonical/paraphrase evidence unambiguously expresses negated X despite a directly observable surface grammar error, polarity flip restores affirmative X, and the grammar defect scope is directly observable.
+
+`HUMAN_REVIEW_REQUIRED` is required when any material ambiguity exists, including uncertain semantic preservation, transformations that changed more than surface form, multiple plausible interpretations, questionable label/text relation, uncertain grammar-defect scope, inconsistency between diagnostics and literal text, any case where the AI would otherwise choose `U`, or unusual structure relative to the dominant F2 pattern. The AI should preferentially escalate uncertain cases rather than force a label.
+
+AI suggestions are not human judgments, annotations, WIP records, remediation decisions, controlled-data authority, reviewer identity, or permission to skip review. AI fields must not be written into human fields before a human action, must not directly enter the external WIP JSONL, and must not be retrospectively edited to match the human final judgment.
+
+Every one of the 119 pairs still requires exactly one explicit human row-level action:
+
+- `CONFIRM`: the human reviewer inspected the complete triple and explicitly accepts the AI suggestion as their own final human judgment.
+- `OVERRIDE`: the human reviewer inspected the complete triple and supplies one or more different final human classifications.
+
+No `AUTO_ACCEPT`, blanket confirmation, batch confirmation, cluster-level approval, or approval by structural similarity is allowed. Action on one pair never approves another pair. If the human independently chooses the same values for an escalated case, `CONFIRM` remains allowed only after pair-level inspection.
+
+For `CONFIRM`: AI proposed values -> human inspects complete triple -> explicit `CONFIRM` -> values become human-selected final classifications -> frozen compatibility matrix derives `human_authority_decision` -> notes rules are checked -> WIP may be written.
+
+For `OVERRIDE`: AI proposed values -> human inspects complete triple -> explicit `OVERRIDE` -> human supplies final values -> frozen compatibility matrix derives `human_authority_decision` -> notes rules are checked -> WIP may be written.
 
 ## M. Recommended Batch Size
 
@@ -271,15 +307,48 @@ Writable authority remains the existing external WIP JSONL produced through `scr
 
 Minimum workbook sheets:
 
-- `Review`: one row per F2 pair, exactly 119 data rows. Columns include `review_index`, `pair_id`, the three final labels, the three claims, the three evidence fields, the three automatic grammar statuses, `automatic_root_cause_class`, the four human classification fields, `human_notes`, `derived_authority_decision`, and `review_status`. Human fields must start blank. Do not pre-label.
+- `Review`: one row per F2 pair, exactly 119 data rows. Recommended visible ordering is `review_index`, `pair_id`, source/context fields for the three members, AI prescreen fields, human final fields, `derived_authority_decision`, and `review_status`. Initial pre-prescreen state may keep all AI fields blank. After a future prescreen pass, AI fields may be populated, but `human_review_action` and all human final fields must remain blank until the human acts.
 - `Authority`: exact 27 immutable source fields from frozen source authority. This sheet is not an annotation sheet. Use a visually protected/read-only convention where practical. Do not normalize, rewrite, or reparse source values.
 - `Legend`: Korean reviewer instructions, shorthand, and exact frozen enum meanings. Semantic shorthand is `V/I/U`; grammar shorthand is `C/M/N/U`.
 - `Summary`: human-facing convenience layout for total, reviewed, remaining, `V/V/V/C`, `V/V/V/M`, semantic conflict, insufficient evidence, no reproducible defect, and derived-decision distribution. This summary is not final scientific aggregate authority.
+
+`Review` sheet source/context fields should include the existing display fields for canonical, paraphrase, and polarity flip: final labels, claims, evidence, automatic grammar statuses, reason codes, claim diff summaries, evidence diff summaries, `automatic_root_cause_class`, and `automatic_evidence`.
+
+`Review` sheet AI prescreen fields are auxiliary diagnostic fields:
+
+- `ai_canonical_semantics_suggestion`
+- `ai_paraphrase_semantics_suggestion`
+- `ai_polarity_flip_semantics_suggestion`
+- `ai_grammar_validity_suggestion`
+- `ai_triage_status`
+- `ai_prescreen_rationale`
+
+`Review` sheet human final fields are authority-intent fields that require explicit human action:
+
+- `human_review_action`
+- `human_canonical_semantics`
+- `human_paraphrase_semantics`
+- `human_polarity_flip_semantics`
+- `human_grammar_validity`
+- `human_notes`
+
+The existing six human WIP fields remain human authority fields:
+
+- `human_canonical_semantics`
+- `human_paraphrase_semantics`
+- `human_polarity_flip_semantics`
+- `human_grammar_validity`
+- `human_authority_decision`
+- `human_notes`
+
+AI diagnostic fields must not be stored as if they were human fields. The current production WIP schema does not need to contain the AI diagnostic fields. Prefer keeping AI diagnostics workbook-side or analysis-side only until a later authority explicitly changes the WIP schema.
 
 Spreadsheet input validation may use dropdowns:
 
 - semantic fields: `V`, `I`, `U`, blank
 - grammar field: `C`, `M`, `N`, `U`, blank
+- `ai_triage_status`: `CLEAR_SUGGESTION`, `HUMAN_REVIEW_REQUIRED`, blank
+- `human_review_action`: `CONFIRM`, `OVERRIDE`, blank
 - `review_status`: `UNREVIEWED`, `READY_TO_IMPORT`, `IMPORTED`
 
 Do not permit arbitrary alternate semantic labels. An Excel formula may display a tentative `derived_authority_decision` for reviewer convenience, but it must not become final authority. The existing Python compatibility matrix must recompute the final decision before WIP import/write.
@@ -290,16 +359,21 @@ Spreadsheet cell entry is not an authoritative WIP record.
 
 Future import boundary:
 
-1. XLSX human selections
-2. deterministic shorthand expansion
-3. frozen `source_record_sha256` verification
-4. enum validation
-5. compatibility matrix derivation
-6. notes requirement validation
-7. explicit reviewer confirmation/import
-8. existing external WIP JSONL
+1. XLSX row contains complete source triple and any auxiliary AI suggestion.
+2. Human reviewer inspects the complete triple.
+3. Human reviewer selects exactly one `human_review_action`: `CONFIRM` or `OVERRIDE`.
+4. Final human selections are resolved from explicit `CONFIRM` or `OVERRIDE`.
+5. Deterministic shorthand expansion.
+6. Frozen `source_record_sha256` verification.
+7. Enum validation.
+8. Compatibility matrix derivation.
+9. Notes requirement validation.
+10. Explicit reviewer confirmation/import.
+11. Existing external WIP JSONL.
 
 Only after this validation/import does a decision become review authority. Manual CLI `record` transfer is sufficient for the current preparation authority; no importer is required now.
+
+A pair is human-reviewed only if the complete triple was available to the reviewer, `human_review_action` is `CONFIRM` or `OVERRIDE`, the four final human classification fields exist, the compatibility decision is valid, the notes requirement is satisfied, and the authoritative WIP record is successfully written. AI prescreen completion alone never increments reviewed count.
 
 ## Q. No Dual Source Of Truth
 
@@ -340,7 +414,31 @@ The eventual validated review output should preserve enough fields for later pap
 - reviewer ID
 - human notes
 
+If a future AI prescreen is scientifically analyzed as an AI-human agreement signal, preserve or recover these additional non-authoritative AI fields separately from human fields:
+
+- AI-suggested three semantic judgments
+- AI-suggested grammar scope
+- `ai_triage_status`
+- AI-human agreement/disagreement
+- escalated/non-escalated case status
+- `human_review_action`
+- AI prescreen rationale
+
 Do not add new mandatory human judgments solely for a hypothetical paper. Paper analysis must derive from the existing integrity review where possible.
+
+Future paper analyses may estimate AI-human agreement rate, disagreement patterns, whether ambiguous cases cluster by predicate/transformation, and the precision of `CLEAR_SUGGESTION` triage. These are future research questions, not current findings.
+
+AI prescreen must be generated before viewing human final labels for that pair if it will later be analyzed scientifically as an AI-human agreement signal. Stored AI suggestions must not be retrospectively edited to match human judgments. If AI suggestions are regenerated later, preserve version/provenance and do not silently overwrite the original prescreen.
+
+Minimal future AI prescreen provenance contract:
+
+- `ai_prescreen_protocol_version`
+- `ai_prescreen_model_or_system_id`
+- `ai_prescreen_created_at_utc`
+- `source_record_sha256`
+- `pair_id`
+
+The specific ChatGPT/model identifier must be recorded at execution time. Do not fabricate it in this preparation amendment, and do not claim model reproducibility beyond what is actually recorded.
 
 ## T. ContraMamba Track Vs Paper Track
 
@@ -406,19 +504,27 @@ Finalization is not part of this preparation stage.
 Do not automate:
 
 - real F2 annotation in this stage
+- AI prescreen execution in this stage
 - WIP creation in this stage
 - XLSX workbook creation in this stage
 - finalization
 - remediation
 - data mutation
 - training or evaluation
-- LLM classification
+- real WIP population
+- human field population
+- LLM classification execution in this stage
 - heuristic pre-labeling
 - grammar-based semantic autofill
 - root-cause based autofill
 - bulk `V/V/V` assignment
 - bulk grammar assignment
-- automatic recommended semantic decisions
+- automatic acceptance of AI labels
+- bulk semantic labeling
+- cluster-level approval
+- skipping human review for high-confidence AI cases
+- AI directly populating WIP
+- AI becoming `reviewer_id`
 - automatic notes generation
 - Excel formula output as final authority
 - paper-analysis hypotheses influencing review labels
@@ -428,6 +534,8 @@ Do not automate:
 Previous readiness decision: `P3W6F2P3_HUMAN_REVIEW_PREPARATION_READY_NO_CODE_CHANGE`.
 
 Revised readiness decision: `P3W6F2P3_HUMAN_REVIEW_PREPARATION_AUGMENTED_READY_NO_CODE_CHANGE`.
+
+AI-assisted amendment decision: `P3W6F2P3_AI_ASSISTED_HUMAN_REVIEW_AMENDMENT_READY_NO_CODE_CHANGE`.
 
 Rationale:
 
@@ -439,10 +547,15 @@ Rationale:
 - WIP paths inside the repository are rejected.
 - The paper-candidate registry is documentation/research preservation only and contains no human decisions.
 - XLSX review is an auxiliary human workspace only; the external WIP JSONL remains the only writable review ledger.
+- AI prescreen suggestions remain auxiliary diagnostic fields and do not enter the production WIP schema.
+- `CONFIRM` and `OVERRIDE` both require explicit per-pair human inspection of the complete triple.
+- No batch confirmation or automatic acceptance is authorized.
+- `scripts/reason_router_p3w6f2_manual_review.py` remains unchanged.
 
 Known UX limitation accepted as operating procedure rather than code change:
 
 - Native shorthand input and an interactive `SAVE / EDIT / CANCEL` prompt are not built into the CLI. For the real review, shorthand expansion and preview must be done deterministically before executing `record`; executing `record` is the explicit `SAVE`.
 - Native XLSX import is not built into the CLI. Manual CLI `record` transfer remains sufficient unless a future reviewed authority approves an importer.
+- Native AI-prescreen import/confirmation expansion is not built into the CLI. A helper/importer may be considered later, but it is not necessary for this authority amendment.
 
-No real review, WIP creation, XLSX creation, finalization, remediation, training, or evaluation was begun by this spec.
+No real review, AI prescreen execution, WIP creation, XLSX creation, finalization, remediation, data mutation, training, or evaluation was begun by this spec.

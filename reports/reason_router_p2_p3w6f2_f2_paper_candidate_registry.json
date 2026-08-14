@@ -1,5 +1,7 @@
 {
   "schema_version": "reason_router_p2_p3w6f2_f2_paper_candidate_registry_v1",
+  "preparation_protocol_version": "P3W6F2_AI_ASSISTED_PRESCREEN_V1",
+  "authoritative_human_wip_protocol_version": "P3W5_F2_MANUAL_REVIEW_V1",
   "candidate_id": "F2_TRANSFORMATION_INTEGRITY_ANALYSIS_V1",
   "status": "PAPER_CANDIDATE_PRESERVE_FOR_POST_REVIEW_ANALYSIS",
   "origin_stage": "P3-W6-F2",
@@ -7,6 +9,8 @@
   "annotation_authority": false,
   "wip_authority": false,
   "final_review_result": false,
+  "ai_prescreen_authority": false,
+  "ai_prescreen_scientific_result": false,
   "production_data": false,
   "scientific_result": false,
   "purpose": "Preserve the P3-W6-F2 119-pair / 357-member cohort as a GitHub-tracked machine-readable research candidate after ContraMamba integrity remediation continues.",
@@ -50,12 +54,72 @@
     "automatic grammar statuses",
     "predicate / lexical signature",
     "automatic-vs-human agreement",
+    "AI prescreen suggestion by member",
+    "AI prescreen grammar-scope suggestion",
+    "AI-human agreement",
+    "AI-human disagreement",
+    "AI triage status",
+    "escalated/non-escalated case status",
+    "precision of CLEAR_SUGGESTION triage",
     "repairability category",
     "decision distribution",
     "notes/error taxonomy"
   ],
+  "ai_prescreen_policy": {
+    "role": "NON_AUTHORITATIVE_DIAGNOSTIC_PRESCREEN",
+    "allowed_triage_status": [
+      "CLEAR_SUGGESTION",
+      "HUMAN_REVIEW_REQUIRED"
+    ],
+    "semantic_suggestion_shorthand": [
+      "V",
+      "I",
+      "U"
+    ],
+    "grammar_suggestion_shorthand": [
+      "C",
+      "M",
+      "N",
+      "U"
+    ],
+    "human_review_actions": [
+      "CONFIRM",
+      "OVERRIDE"
+    ],
+    "prohibitions": [
+      "AI suggestion is not human judgment",
+      "AI suggestion is not annotation authority",
+      "AI suggestion is not WIP authority",
+      "AI suggestion cannot write human fields",
+      "AI suggestion cannot directly enter external WIP JSONL",
+      "no automatic acceptance of AI labels",
+      "no blanket or batch confirmation",
+      "no skipping human review for high-confidence AI cases",
+      "human reviewer remains final semantic authority"
+    ]
+  },
+  "ai_prescreen_contamination_control": {
+    "ai_before_human_required_for_scientific_agreement_analysis": true,
+    "do_not_retroactively_edit_ai_suggestion_to_match_human": true,
+    "preserve_version_and_provenance_on_regeneration": true,
+    "do_not_silently_overwrite_original_prescreen": true
+  },
+  "ai_prescreen_minimum_provenance_fields": [
+    "ai_prescreen_protocol_version",
+    "ai_prescreen_model_or_system_id",
+    "ai_prescreen_created_at_utc",
+    "source_record_sha256",
+    "pair_id"
+  ],
   "future_minimum_preserved_fields": [
     "pair_id",
+    "ai_canonical_semantics_suggestion",
+    "ai_paraphrase_semantics_suggestion",
+    "ai_polarity_flip_semantics_suggestion",
+    "ai_grammar_validity_suggestion",
+    "ai_triage_status",
+    "ai_prescreen_rationale",
+    "human_review_action",
     "human_canonical_semantics",
     "human_paraphrase_semantics",
     "human_polarity_flip_semantics",
@@ -75,6 +139,8 @@
   ],
   "scientific_nonclaims": [
     "no paper conclusion exists before human review",
+    "AI prescreen completion alone is not human review completion",
+    "AI-human agreement analysis is a future research question, not a current finding",
     "structural similarity does not authorize bulk labeling",
     "119 pairs are a paper candidate cohort, not yet a completed dataset study",
     "ContraMamba remediation result and independent paper claim are separate"
@@ -94,6 +160,7 @@
     "no_real_f2_annotation": true,
     "no_real_wip_creation": true,
     "no_xlsx_creation": true,
+    "no_ai_prescreen_execution": true,
     "no_finalization": true,
     "no_remediation": true,
     "no_data_mutation": true,
