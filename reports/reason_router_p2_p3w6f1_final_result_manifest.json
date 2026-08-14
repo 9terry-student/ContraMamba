@@ -1,0 +1,267 @@
+{
+  "schema_version": "reason_router_p2_p3w6f1_final_result_manifest_v1",
+  "decision": "P3W6F1_FINAL_RESULT_REVIEW_PASS",
+  "lifecycle_state": "P3W6F1_CLOSED",
+  "F1_execution_commit": "dc8179e45f7c10416026acdadcbe5cbd8a78d37e",
+  "materializer_execution_commit": "35157bca7e34a36e1a398c1d419ce0473a109fd4",
+  "documentation_only": true,
+  "repository_identity": {
+    "expected_branch": "main",
+    "expected_head": "35157bca7e34a36e1a398c1d419ce0473a109fd4",
+    "expected_commit_message": "Fix P3-W6-F1 Stage184 Git-object authority portability",
+    "parent": "90235a339714e40aff6ee0ead2256173891df685"
+  },
+  "execution_authorities": {
+    "F1_execution_commit": "dc8179e45f7c10416026acdadcbe5cbd8a78d37e",
+    "materializer_execution_commit": "35157bca7e34a36e1a398c1d419ce0473a109fd4",
+    "do_not_collapse_execution_authorities": true,
+    "historical_materializer_predecessor": {
+      "commit": "90235a339714e40aff6ee0ead2256173891df685",
+      "classification": "IMPLEMENTATION_REVIEWED_BUT_RUNTIME_PORTABILITY_BLOCKED"
+    }
+  },
+  "decision_chain": {
+    "previous_analyzer_decision": "P3W5_F1_REGENERATION_COMPLETE_ALL_CANDIDATES_ACCEPTED_PENDING_RESULT_REVIEW",
+    "final_review_decision": "P3W6F1_FINAL_RESULT_REVIEW_PASS",
+    "analyzer_output_rewritten": false
+  },
+  "baseline_authority": {
+    "baseline_dataset_path": "data/controlled_v5_v3_without_time_swap.jsonl",
+    "baseline_dataset_sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640",
+    "historical_baseline_stage185_sidecar_path": "reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_controlled_train_integrity_sidecar.jsonl",
+    "historical_baseline_stage185_semantic_sha256": "5bc03caa2a29f9b9176ab0201db57ebad516352797546db1a18e6ec3373fc",
+    "historical_baseline_generator_sha256": "c41e6a52401bd8c83970286b176950fc751509bee6d797d5da9aea4262c72802"
+  },
+  "p3w4_p3w5_authority": {
+    "p3w4_summary_sha256": "7c0cc383dde38a1c564dae445a78eaf9171b8648d0720de3a2acc0ba68e68e80",
+    "p3w4_pairs_sha256": "850ac6e8924fe334fa7f18659d204f6e0546381b1c3d3eb601f893f3eb00a493",
+    "p3w5_authority_commit": "01d983f8d09cacf0eddefd2014fc81a28771cf5e",
+    "trusted_historical_stage185_dependency": "ff6929bf33693fb4e70bd9528551053f4402fe1c"
+  },
+  "scientific_result": {
+    "authorized_repair_only": "did not <inflected_predicate_surface> -> did not <expected_base_predicate>",
+    "authorized_scope": "approved F1 negative polarity_flip rows only",
+    "no_other_grammar_normalization": true,
+    "no_predicate_equivalence_cleanup": true,
+    "no_paraphrase_cleanup": true,
+    "no_label_reinterpretation": true,
+    "no_semantic_rewrite": true,
+    "no_F2_remediation": true
+  },
+  "f1_regeneration_authority": {
+    "F1_execution_commit": "dc8179e45f7c10416026acdadcbe5cbd8a78d37e",
+    "repaired_jsonl_sha256": "d403c437d982e7d61e524fe21ed24391c84d5103be75890a61be7aa40d942833",
+    "rows": 3600,
+    "changed_rows": 121,
+    "authorized_F1_row_ids_sha256": "386c0c5d5ed80e699f1607f94c2f8ba2861fa0cb1216d5d421f66e62c03d8c64",
+    "baseline_id_sequence_sha256": "898070cd6718f9c677ba68442ee8ed9010200363df01d147528779306917c0eb",
+    "pair_count": 300,
+    "authorized_F1_row_count": 121,
+    "structural_negative_polarity_flip_row_count": 150,
+    "repaired_generator_sha256": "37e47a3ef60b26c7186d37367d59db158c28c6b9c9eb9e25a13927fc85810684",
+    "repair_api": "build_controlled_records_with_f1_polarity_repair_audit",
+    "repair_mode": "f1_authorized_polarity_negative_only",
+    "projection": "baseline_id_sequence"
+  },
+  "F1_accounting": {
+    "F1_target_pair_count": 121,
+    "F1_generated_candidate_count": 121,
+    "F1_accepted_candidate_count": 121,
+    "F1_manual_review_required_count": 0,
+    "F1_rejected_candidate_count": 0,
+    "F1_missing_candidate_count": 0,
+    "F1_unauthorized_candidate_count": 0,
+    "F1_execution_blockers": []
+  },
+  "compatibility_accounting": {
+    "target_count": 121,
+    "compatibility_checked_count": 121,
+    "compatibility_pass_count": 121,
+    "compatibility_manual_count": 0,
+    "compatibility_rejected_count": 0,
+    "missing_count": 0,
+    "unauthorized_count": 0
+  },
+  "full_output_isolation": {
+    "changed_ids_equals_authorized_F1_row_ids": true,
+    "repair_consumed_row_ids_equals_authorized_F1_row_ids": true,
+    "evidence_changed_row_ids_equals_authorized_F1_row_ids": true,
+    "missing_ids": [],
+    "added_ids": [],
+    "duplicate_ids": [],
+    "unauthorized_changed_row_ids": [],
+    "F2_changed_row_ids": [],
+    "unaffected_changed_row_ids": [],
+    "canonical_changed_row_ids": [],
+    "paraphrase_changed_row_ids": [],
+    "claim_changed_row_ids": [],
+    "non_text_field_changed_row_ids": [],
+    "baseline_row_count": 3600,
+    "repaired_row_count": 3600,
+    "row_order_changed": false,
+    "generalizes_beyond_authorized_F1_scope": false
+  },
+  "core_gates": {
+    "authority_cardinality_pass": true,
+    "target_scope_membership_pass": true,
+    "base_form_coverage_pass": true,
+    "full_output_isolation_pass": true,
+    "stage185_provenance_pass": true,
+    "execution_provenance_pass": true,
+    "compatibility_provenance_pass": true
+  },
+  "F2_status": {
+    "F2_target_pair_count": 119,
+    "F2_target_member_count": 357,
+    "F2_remediation_state": "MANUAL_REVIEW_REQUIRED",
+    "manual_review_status": "P3W5_F2_MANUAL_REVIEW_NOT_EXECUTED",
+    "F2_modified": false,
+    "F2_changed_row_ids": [],
+    "P3W6F1_constitutes_F2_remediation": false,
+    "separately_authorized_unresolved_path": true,
+    "F2_plan_created_by_this_freeze": false
+  },
+  "stage184_portability_authority": {
+    "stage184_contract_matrix_path": "reports/stage184a_controlled_train_integrity_mask_spec_20260715_134538/stage184a_family_contract_matrix.csv",
+    "final_executable_canonical_raw_git_object_sha256": "4287bf1ca7f1f2b08e5de53d24ad4019ca5ddff8a16db2dbb65727a5189e96fa",
+    "historical_accidental_windows_crlf_worktree_sha256": "e5f61ac8d0ca3de3dd43767b83bec8c2c171a1635d419466c98d8d32ec2f38e5",
+    "old_value_executable_authority": false,
+    "portability_correction_changed_scientific_semantics": false,
+    "runtime_validation": {
+      "focused_materializer": "57 passed",
+      "regeneration_wrapper": "22 passed",
+      "existing_p3w6f1_analyzer_regression": "206 passed"
+    }
+  },
+  "repaired_stage185_materialization_authority": {
+    "materializer_execution_commit": "35157bca7e34a36e1a398c1d419ce0473a109fd4",
+    "status": "P3W6F1_REPAIRED_STAGE185_MATERIALIZATION_PASS",
+    "independent_gate": "P3W6F1_REPAIRED_STAGE185_MATERIALIZATION_INDEPENDENT_OUTPUT_GATE_PASS",
+    "sidecar_physical_sha256": "2d7323bb4dccf5bb8c68b18ffce1041a601fd8383590aa6902557db44ce810cf",
+    "sidecar_semantic_sha256": "fd8f71beaaae028e65fa477726fefa9fde08c8767c6abdd6b9c58c6d3fae9938",
+    "authorized_F1_row_count": 121,
+    "total_rows": 3600,
+    "train_rows": 2880,
+    "dev_rows": 720,
+    "split_seed": 174,
+    "dev_ratio": 0.2,
+    "rule_version": "stage185a_v1",
+    "historical_stage185_binary_executed": false,
+    "provenance_validation_status": "PASS"
+  },
+  "raw_stage185_state": {
+    "grammar_status": "PASS",
+    "intervention_contract_status": "FAIL",
+    "integrity_status": "INELIGIBLE",
+    "canonical_status": "PASS",
+    "polarity_contamination_status": "PASS",
+    "dataset_source_status": "PASS",
+    "schema_status": "PASS",
+    "time_swap_status": "PASS",
+    "audit_expected_axes": [
+      "polarity"
+    ],
+    "audit_changed_axes": [
+      "polarity",
+      "predicate"
+    ],
+    "historical_raw_stage185_evidence_immutable": true
+  },
+  "compatibility_interpretation": {
+    "rule": "P3W6F1_STAGE185_PREDICATE_REALIZATION_COMPATIBILITY",
+    "version": "V1",
+    "scope": "exact authorized F1 compatibility rows",
+    "may_derive": {
+      "effective_intervention_contract_status": "COMPATIBILITY_PASS",
+      "effective_F1_repair_integrity_status": "COMPATIBILITY_ELIGIBLE"
+    },
+    "does_not_rewrite_raw_intervention_contract_status_to_PASS": true,
+    "does_not_rewrite_raw_integrity_status_to_ELIGIBLE": true
+  },
+  "analyzer_authority": {
+    "analyzer_execution_commit": "dc8179e45f7c10416026acdadcbe5cbd8a78d37e",
+    "runtime_head_required_to_equal_F1_execution_commit": true,
+    "analyzer_source_byte_identical_between_F1_and_materializer_commits": true,
+    "byte_identical_commits": [
+      "dc8179e45f7c10416026acdadcbe5cbd8a78d37e",
+      "35157bca7e34a36e1a398c1d419ce0473a109fd4"
+    ],
+    "successful_invocation_mode": "python -m scripts.analyze_reason_router_p3w6f1_deterministic_polarity_regeneration",
+    "canonical_json_payload_strings_used": true,
+    "earlier_failed_launches": [
+      {
+        "failure": "direct script package import failure",
+        "scientific_blocker": false,
+        "produced_final_result_artifacts": false
+      },
+      {
+        "failure": "JSON path passed where analyzer requires JSON payload string",
+        "scientific_blocker": false,
+        "produced_final_result_artifacts": false
+      }
+    ],
+    "independent_final_analyzer_gate": "P3W6F1_AUTHORITATIVE_ANALYZER_INDEPENDENT_RESULT_GATE_PASS"
+  },
+  "analyzer_artifact_sha256": {
+    "p3w6f1_full_output_isolation.json": "4561ae365ae912ecf55a56a1a77bcf487342c44b18e6da9eb45ac2c376050e3b",
+    "p3w6f1_regenerated_rows.jsonl": "62ec4840df8b494ed08d9020d3cdf24db47edca026cead058a3a9d03bd349325",
+    "p3w6f1_regeneration_audit.jsonl": "62ec4840df8b494ed08d9020d3cdf24db47edca026cead058a3a9d03bd349325",
+    "p3w6f1_regeneration_summary.json": "e99e991580329b3e7b6a48d9c5b0165ef01693699e049fe0a365a7b157d9f612",
+    "p3w6f1_stage185_predicate_realization_compatibility_provenance_manifest.json": "31297c32655ecf25618a8a0ec030fae7f43e6d1815e8f86e09064b86ef330ebe",
+    "p3w6f1_stage185_predicate_realization_compatibility_report.md": "dea1265714174e39864a582a1fa57e054e8ea33108a785839bf6c3cbc50552c9",
+    "p3w6f1_stage185_predicate_realization_compatibility_rows.csv": "861d62c3b486e216832b2bdadd507e17b5a662b00bb29fa014b5d0042a3eae97",
+    "p3w6f1_stage185_predicate_realization_compatibility_rows.jsonl": "16b1556ca036ceca471cef71c2c35e656a2db2f542a435dee7e1da933c271929",
+    "p3w6f1_stage185_predicate_realization_compatibility_summary.json": "0d1ea255b3f1269b97fb94a8ba3b00262a9973d472aadc788ee519f24b284323"
+  },
+  "post_execution_state": {
+    "returned_branch": "main",
+    "returned_head": "35157bca7e34a36e1a398c1d419ce0473a109fd4",
+    "gate": "P3W6F1_POST_ANALYZER_RETURN_TO_MATERIALIZER_HEAD_PASS"
+  },
+  "final_result_review_authority": {
+    "authority_chain": "PASS",
+    "F1_target_totality": "PASS",
+    "causal_repair_scope": "PASS",
+    "full_output_isolation": "PASS",
+    "F2_preservation": "PASS",
+    "raw_stage185_preservation": "PASS",
+    "compatibility_legitimacy": "PASS",
+    "provenance": "PASS",
+    "stage184_portability_scientific_non_change": "PASS",
+    "analyzer_invocation_failures_non_scientific": true,
+    "analyzer_accounting_consistency": "PASS",
+    "remaining_P3W6F1_blocker": false
+  },
+  "scientific_non_claims": [
+    "F2 remediation",
+    "general grammar normalization",
+    "arbitrary predicate equivalence",
+    "general semantic paraphrase equivalence",
+    "model-training improvement",
+    "Reason Router experimental benefit",
+    "A1/A2/A3 comparative benefit",
+    "generalization beyond the controlled P3-W6-F1 authority set"
+  ],
+  "next_state": {
+    "closed": "P3-W6-F1 deterministic F1 polarity repair",
+    "open": "P3-W5 F2 manual remediation authority: 119 target pairs; 357 target members; MANUAL_REVIEW_REQUIRED; P3W5_F2_MANUAL_REVIEW_NOT_EXECUTED",
+    "separately_possible_after_freeze": "return to the larger P3 Reason Router experimental path",
+    "future_path_chosen_or_executed_here": false
+  },
+  "forbidden_actions_observed": {
+    "code_modified": false,
+    "data_modified": false,
+    "generator_modified": false,
+    "tests_modified": false,
+    "F1_regeneration_executed": false,
+    "Stage185_rematerialization_executed": false,
+    "analyzer_executed": false,
+    "training_executed": false,
+    "evaluation_executed": false,
+    "new_experiment_executed": false,
+    "F2_remediation_executed": false,
+    "commit_executed": false,
+    "push_executed": false,
+    "runtime_artifacts_copied": false
+  }
+}
