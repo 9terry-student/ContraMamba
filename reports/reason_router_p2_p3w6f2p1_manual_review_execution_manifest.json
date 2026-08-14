@@ -1,0 +1,456 @@
+{
+  "schema_version": "reason_router_p2_p3w6f2p1_manual_review_execution_manifest_v1",
+  "decision": "P3W6F2P1_MANUAL_REVIEW_EXECUTION_SPEC_READY_FOR_STATIC_REREVIEW",
+  "repository_authority": {
+    "repository": "9terry-student/ContraMamba",
+    "expected_branch": "main",
+    "expected_head": "49d7c37cd307893bf8fbc96cd2b6730369fcd8d6",
+    "expected_head_message": "Freeze P3-W6-F1 final result authority",
+    "expected_parent": "35157bca7e34a36e1a398c1d419ce0473a109fd4",
+    "p3w6f1_status": [
+      "P3W6F1_FINAL_RESULT_REVIEW_PASS",
+      "P3W6F1_CLOSED"
+    ],
+    "documentation_only": true,
+    "no_code_modification": true,
+    "no_data_modification": true,
+    "no_annotation": true,
+    "no_regeneration": true,
+    "no_repair": true,
+    "no_stage185_rematerialization": true,
+    "no_analyzer_execution": true,
+    "no_training": true,
+    "no_evaluation": true,
+    "no_commit": true,
+    "no_push": true
+  },
+  "p3w6f2p0_authority": {
+    "decision": [
+      "P3W6F2P0_ROOT_CAUSE_AUDIT_PASS",
+      "P3W6F2P0_NEXT_F2_MANUAL_REVIEW_EXECUTION_SPEC_READY"
+    ],
+    "structural_context_only": true,
+    "not_human_judgments": true
+  },
+  "p3w5_authority": {
+    "spec_path": "reports/reason_router_p2_p3w5_separate_remediation_spec.md",
+    "manifest_path": "reports/reason_router_p2_p3w5_separate_remediation_manifest.json",
+    "authority_commit": "01d983f8d09cacf0eddefd2014fc81a28771cf5e",
+    "f2_state": {
+      "F2_target_pair_count": 119,
+      "F2_target_member_count": 357,
+      "F2_remediation_state": "MANUAL_REVIEW_REQUIRED",
+      "manual_review_status": "P3W5_F2_MANUAL_REVIEW_NOT_EXECUTED"
+    }
+  },
+  "p3w4_authority": {
+    "execution_commit": "ca99038d812696467a4330cffc1c4c5b5f72cfe2",
+    "result_authority_commit": "f0a9afddc5b93c54aa72b0335c5a1a2f517cf934",
+    "result_decision": "P3W4_RESULT_REVIEW_PASS_F1_REGENERATION_F2_MANUAL_REVIEW_REQUIRED"
+  },
+  "F2_target_pair_count": 119,
+  "F2_target_member_count": 357,
+  "review_protocol_version": "P3W5_F2_MANUAL_REVIEW_V1",
+  "compatibility_matrix_version": "F2_REVIEW_COMPATIBILITY_V1",
+  "source_hash_version": "F2_SOURCE_RECORD_HASH_V1",
+  "input_artifact_authority": {
+    "template_path": "reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_f2_manual_review.csv",
+    "template_git_lf_sha256": "ccc539e743d1a4226391cdca1422bb0a1054c53fd7c53a4210a54271d1e9e8a5",
+    "template_historical_original_execution_crlf_sha256": "0c3c0f85bed08cedc9d664a3c685d1c40560dbe3f9bd5b8bb88543ed9e528515",
+    "pair_authority_path": "reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_canonical_grammar_authority_pairs.jsonl",
+    "pair_authority_sha256": "850ac6e8924fe334fa7f18659d204f6e0546381b1c3d3eb601f893f3eb00a493",
+    "summary_authority_path": "reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_canonical_grammar_authority_summary.json",
+    "summary_authority_sha256": "7c0cc383dde38a1c564dae445a78eaf9171b8648d0720de3a2acc0ba68e68e80",
+    "repository_authoritative_template_identity": "canonical Git/LF SHA256 only"
+  },
+  "review_unit_contract": {
+    "unit_identity": "pair_id",
+    "unit_members": [
+      "canonical none REFUTE",
+      "paraphrase REFUTE",
+      "polarity_flip SUPPORT"
+    ],
+    "member_row_independent_review_forbidden": true,
+    "complete_triple_required_for_any_semantic_decision": true,
+    "review_order": "source authority CSV order"
+  },
+  "immutable_source_columns": [
+    "pair_id",
+    "canonical_none_row_id",
+    "paraphrase_row_id",
+    "polarity_flip_row_id",
+    "canonical_final_label",
+    "paraphrase_final_label",
+    "polarity_flip_final_label",
+    "canonical_claim",
+    "paraphrase_claim",
+    "polarity_flip_claim",
+    "canonical_evidence",
+    "paraphrase_evidence",
+    "polarity_flip_evidence",
+    "canonical_grammar_status",
+    "paraphrase_grammar_status",
+    "polarity_flip_grammar_status",
+    "canonical_reason_codes",
+    "paraphrase_reason_codes",
+    "polarity_flip_reason_codes",
+    "canonical_claim_text_diff_summary",
+    "paraphrase_claim_text_diff_summary",
+    "polarity_flip_claim_text_diff_summary",
+    "canonical_evidence_text_diff_summary",
+    "paraphrase_evidence_text_diff_summary",
+    "polarity_flip_evidence_text_diff_summary",
+    "automatic_root_cause_class",
+    "automatic_evidence"
+  ],
+  "human_review_fields": [
+    "human_canonical_semantics",
+    "human_paraphrase_semantics",
+    "human_polarity_flip_semantics",
+    "human_grammar_validity",
+    "human_authority_decision",
+    "human_notes"
+  ],
+  "reviewer_provenance_fields": [
+    "source_record_sha256",
+    "reviewer_id",
+    "review_protocol_version",
+    "reviewed_at_utc"
+  ],
+  "semantic_enums": [
+    "VALID",
+    "INVALID",
+    "UNCLEAR"
+  ],
+  "grammar_enums": [
+    "CANONICAL_ONLY_DEFECT",
+    "MULTI_MEMBER_DEFECT",
+    "NO_REPRODUCIBLE_DEFECT",
+    "UNCLEAR"
+  ],
+  "authority_decision_enums": [
+    "CANONICAL_TEXTUAL_REPAIR_CANDIDATE",
+    "CANONICAL_REGENERATION_REQUIRED",
+    "SEMANTIC_CONFLICT",
+    "INSUFFICIENT_EVIDENCE_KEEP_BLOCKED",
+    "NO_REPRODUCIBLE_DEFECT_KEEP_BLOCKED"
+  ],
+  "compatibility_matrix": {
+    "version": "F2_REVIEW_COMPATIBILITY_V1",
+    "precedence": [
+      "UNCLEAR",
+      "INVALID",
+      "ALL_VALID_BY_GRAMMAR_STATUS"
+    ],
+    "rules": [
+      {
+        "condition": "any semantic field == UNCLEAR or human_grammar_validity == UNCLEAR",
+        "required_decision": "INSUFFICIENT_EVIDENCE_KEEP_BLOCKED"
+      },
+      {
+        "condition": "else any semantic field == INVALID",
+        "required_decision": "SEMANTIC_CONFLICT"
+      },
+      {
+        "condition": "else all semantic fields == VALID and human_grammar_validity == CANONICAL_ONLY_DEFECT",
+        "required_decision": "CANONICAL_TEXTUAL_REPAIR_CANDIDATE"
+      },
+      {
+        "condition": "else all semantic fields == VALID and human_grammar_validity == MULTI_MEMBER_DEFECT",
+        "required_decision": "CANONICAL_REGENERATION_REQUIRED"
+      },
+      {
+        "condition": "else all semantic fields == VALID and human_grammar_validity == NO_REPRODUCIBLE_DEFECT",
+        "required_decision": "NO_REPRODUCIBLE_DEFECT_KEEP_BLOCKED"
+      }
+    ],
+    "undefined_combinations_invalid": true,
+    "human_authority_decision_entry_must_match_matrix": true
+  },
+  "notes_requirement": {
+    "trim_before_check": true,
+    "required_nonempty_when": [
+      "any semantic field == UNCLEAR",
+      "human_grammar_validity == UNCLEAR",
+      "human_authority_decision == SEMANTIC_CONFLICT",
+      "human_authority_decision == INSUFFICIENT_EVIDENCE_KEEP_BLOCKED",
+      "human_authority_decision == NO_REPRODUCIBLE_DEFECT_KEEP_BLOCKED"
+    ],
+    "optional_for_positive_repair_or_regeneration_candidates": true
+  },
+  "source_hash_contract": {
+    "version": "F2_SOURCE_RECORD_HASH_V1",
+    "read_csv": "RFC 4180-compatible parser",
+    "columns": "exact 27 immutable source columns in frozen order",
+    "cell_values": "exact strings returned by parser",
+    "trim": false,
+    "unicode_normalize": false,
+    "reparse_json_like_cells": false,
+    "sort_reason_codes": false,
+    "empty_cells": "",
+    "serialize": "one JSON array",
+    "encoding": "UTF-8 without BOM",
+    "ensure_ascii": false,
+    "allow_nan": false,
+    "separators": [
+      ",",
+      ":"
+    ],
+    "trailing_newline": false,
+    "hash": "SHA256 lowercase hex",
+    "excluded_fields": [
+      "human_review_fields",
+      "reviewer_provenance_fields"
+    ]
+  },
+  "execution_artifact_names": [
+    "p3w5_f2_review_completed.csv",
+    "p3w5_f2_review_summary.json",
+    "p3w5_f2_review_decisions.jsonl"
+  ],
+  "execution_directory_namespace": "reports/reason_router_p2_p3w5_f2_manual_review_execution_<execution_commit_short>/",
+  "execution_artifact_authority": {
+    "p3w5_f2_review_completed.csv": "full source plus human review table",
+    "p3w5_f2_review_summary.json": "machine-readable summary/accounting",
+    "p3w5_f2_review_decisions.jsonl": "pair-level decision records"
+  },
+  "completed_csv_schema_order": [
+    "pair_id",
+    "canonical_none_row_id",
+    "paraphrase_row_id",
+    "polarity_flip_row_id",
+    "canonical_final_label",
+    "paraphrase_final_label",
+    "polarity_flip_final_label",
+    "canonical_claim",
+    "paraphrase_claim",
+    "polarity_flip_claim",
+    "canonical_evidence",
+    "paraphrase_evidence",
+    "polarity_flip_evidence",
+    "canonical_grammar_status",
+    "paraphrase_grammar_status",
+    "polarity_flip_grammar_status",
+    "canonical_reason_codes",
+    "paraphrase_reason_codes",
+    "polarity_flip_reason_codes",
+    "canonical_claim_text_diff_summary",
+    "paraphrase_claim_text_diff_summary",
+    "polarity_flip_claim_text_diff_summary",
+    "canonical_evidence_text_diff_summary",
+    "paraphrase_evidence_text_diff_summary",
+    "polarity_flip_evidence_text_diff_summary",
+    "automatic_root_cause_class",
+    "automatic_evidence",
+    "human_canonical_semantics",
+    "human_paraphrase_semantics",
+    "human_polarity_flip_semantics",
+    "human_grammar_validity",
+    "human_authority_decision",
+    "human_notes",
+    "source_record_sha256",
+    "reviewer_id",
+    "review_protocol_version",
+    "reviewed_at_utc"
+  ],
+  "completed_csv_contract": {
+    "immutable_source_column_count": 27,
+    "human_review_field_count": 6,
+    "reviewer_provenance_field_count": 4,
+    "total_column_count": 37,
+    "row_count": 119,
+    "unique_pair_id_count": 119,
+    "extra_pair_count": 0,
+    "missing_pair_count": 0,
+    "duplicate_pair_count": 0
+  },
+  "decisions_jsonl_minimum_fields": [
+    "pair_id",
+    "source_record_sha256",
+    "human_canonical_semantics",
+    "human_paraphrase_semantics",
+    "human_polarity_flip_semantics",
+    "human_grammar_validity",
+    "human_authority_decision",
+    "human_notes",
+    "reviewer_id",
+    "review_protocol_version",
+    "reviewed_at_utc",
+    "compatibility_matrix_version",
+    "compatibility_matrix_expected_decision",
+    "compatibility_matrix_match",
+    "review_record_valid",
+    "ordered_validation_errors"
+  ],
+  "summary_contract": {
+    "count_pair_id_array_symmetry": {
+      "authorized_F2_pair_count": "authorized_F2_pair_ids",
+      "reviewed_pair_count": "reviewed_pair_ids",
+      "unreviewed_pair_count": "unreviewed_pair_ids",
+      "textual_repair_candidate_count": "textual_repair_candidate_pair_ids",
+      "regeneration_required_count": "regeneration_required_pair_ids",
+      "semantic_conflict_count": "semantic_conflict_pair_ids",
+      "insufficient_evidence_count": "insufficient_evidence_pair_ids",
+      "no_reproducible_defect_keep_blocked_count": "no_reproducible_defect_keep_blocked_pair_ids",
+      "invalid_review_count": "invalid_review_pair_ids",
+      "invalid_combination_count": "invalid_combination_pair_ids",
+      "missing_reviewer_provenance_count": "missing_reviewer_provenance_pair_ids",
+      "source_hash_mismatch_count": "source_hash_mismatch_pair_ids",
+      "missing_human_field_count": "missing_human_field_pair_ids",
+      "invalid_enum_count": "invalid_enum_pair_ids",
+      "missing_required_notes_count": "missing_required_notes_pair_ids",
+      "completed_decision_pair_count": "completed_decision_pair_ids"
+    },
+    "reviewed_unreviewed_disjoint": true,
+    "reviewed_union_unreviewed_equals_authorized": true,
+    "invalid_review_subset_of_reviewed": true,
+    "completed_decision_pair_ids_equals_reviewed_minus_invalid": true,
+    "completed_decision_arrays_pairwise_disjoint": true,
+    "completed_decision_arrays_union_equals_completed_decision_pair_ids": true,
+    "invalid_and_unreviewed_excluded_from_completed_decision_categories": true
+  },
+  "completion_gate": {
+    "reviewed_pair_count": 119,
+    "unreviewed_pair_count": 0,
+    "invalid_review_count": 0,
+    "completed_decision_pair_count": 119,
+    "unique_pair_ids": 119,
+    "missing_pair_count": 0,
+    "duplicate_pair_count": 0,
+    "all_six_human_fields_populated": true,
+    "all_provenance_fields_populated": true,
+    "all_enums_valid": true,
+    "all_compatibility_combinations_valid": true,
+    "all_required_notes_present": true,
+    "all_119_source_hashes_match": true,
+    "no_immutable_source_mutation": true,
+    "no_pair_row_label_mutation": true,
+    "execution_status": "P3W5_F2_MANUAL_REVIEW_EXECUTION_COMPLETE_PENDING_RESULT_REVIEW",
+    "not_f2_remediated_or_closed": true
+  },
+  "validation_failure_codes": [
+    "AUTHORITY_PAIR_UNIVERSE_MISMATCH",
+    "SOURCE_SCHEMA_MISMATCH",
+    "SOURCE_RECORD_HASH_MISMATCH",
+    "SOURCE_FIELD_MUTATION",
+    "MISSING_HUMAN_FIELD",
+    "INVALID_SEMANTIC_ENUM",
+    "INVALID_GRAMMAR_ENUM",
+    "INVALID_AUTHORITY_DECISION_ENUM",
+    "COMPATIBILITY_MATRIX_MISMATCH",
+    "MISSING_REQUIRED_NOTES",
+    "MISSING_REVIEWER_ID",
+    "INVALID_REVIEW_PROTOCOL_VERSION",
+    "INVALID_REVIEW_TIMESTAMP",
+    "DUPLICATE_PAIR_ID",
+    "MISSING_PAIR_ID",
+    "UNAUTHORIZED_PAIR_ID",
+    "COUNT_ARRAY_ASYMMETRY",
+    "DECISION_PARTITION_MISMATCH"
+  ],
+  "validation_precedence": [
+    "authority pair universe and schema checks",
+    "immutable source hash/mutation checks",
+    "pair identity coverage checks",
+    "human/provenance field presence checks",
+    "enum checks",
+    "compatibility matrix checks",
+    "required notes checks",
+    "count/array symmetry checks",
+    "decision partition checks"
+  ],
+  "automation_boundary": {
+    "may_automate": [
+      "authority loading",
+      "target-set verification",
+      "pair presentation",
+      "source hashing",
+      "schema validation",
+      "enum validation",
+      "compatibility-matrix derivation",
+      "notes requirement validation",
+      "provenance validation",
+      "source mutation detection",
+      "pair/count/set accounting",
+      "output generation",
+      "completion gate"
+    ],
+    "must_not_automate": [
+      "semantic VALID/INVALID/UNCLEAR judgments",
+      "intended transformation semantic judgment",
+      "human grammar classification",
+      "free-form human notes",
+      "replacing human semantic authority with an LLM/model heuristic"
+    ],
+    "matrix_derivation_may_be_automated": true
+  },
+  "three_level_lifecycle": {
+    "level_1": "F2 manual review completion: all 119 pairs reviewed validly with provenance.",
+    "level_2": "F2 remediation completion: all pairs routed to repair/regeneration/conflict-resolution branches resolved under separate authority and validated.",
+    "level_3": "controlled-data integrity closure: no known unresolved F1/F2 integrity defect remains, post-remediation Stage185/provenance/isolation passes, independent result review passes, and final authority is frozen.",
+    "this_spec_prepares_only": "level_1"
+  },
+  "F1_non_regression_boundary": {
+    "p3w6f1_remains_closed": true,
+    "f2_review_consumes_only_frozen_f2_authority_artifacts": true,
+    "must_not_regenerate": [
+      "dataset rows",
+      "F1 rows",
+      "F1 sidecars",
+      "F1 analyzer outputs"
+    ],
+    "no_F1_SHA_changes_authorized_at_level_1": true
+  },
+  "P0_structural_observations": {
+    "structural_cluster": "F2-SC-01",
+    "pair_count": 119,
+    "member_count": 357,
+    "automatic_pattern": {
+      "canonical_grammar_status": "FAIL",
+      "paraphrase_grammar_status": "FAIL",
+      "polarity_flip_grammar_status": "PASS",
+      "canonical_reasons": [
+        "DID_NOT_INFLECTED_PREDICATE",
+        "GRAMMAR_TEMPLATE_FAIL"
+      ],
+      "paraphrase_reasons": [
+        "CANONICAL_ROW_KNOWN_GENERATOR_DEFECT",
+        "DID_NOT_INFLECTED_PREDICATE",
+        "GRAMMAR_TEMPLATE_FAIL"
+      ],
+      "polarity_reasons": [
+        "CANONICAL_ROW_KNOWN_GENERATOR_DEFECT"
+      ]
+    },
+    "malformed_surface_counts": {
+      "did not selected": 20,
+      "did not restored": 18,
+      "did not approved": 17,
+      "did not opened": 17,
+      "did not delivered": 16,
+      "did not published": 16,
+      "did not launched": 15
+    },
+    "not_automatic_semantic_judgments": true
+  },
+  "future_remediation_branch_meanings": {
+    "CANONICAL_TEXTUAL_REPAIR_CANDIDATE": "future separate textual repair/revalidation authority required",
+    "CANONICAL_REGENERATION_REQUIRED": "future separate generator/regeneration authority required",
+    "SEMANTIC_CONFLICT": "future separate semantic-conflict resolution authority required",
+    "INSUFFICIENT_EVIDENCE_KEEP_BLOCKED": "remains blocked",
+    "NO_REPRODUCIBLE_DEFECT_KEEP_BLOCKED": "remains blocked pending separate authority resolution"
+  },
+  "non_claims": [
+    "any F2 semantic judgment",
+    "any F2 repair candidate",
+    "any F2 regeneration candidate",
+    "any semantic conflict",
+    "any training admission",
+    "polarity supervision release",
+    "F2 remediation completion",
+    "controlled-data integrity closure",
+    "any model performance change",
+    "any Reason Router experimental result"
+  ],
+  "next_stage": "independent P1 static rereview"
+}
