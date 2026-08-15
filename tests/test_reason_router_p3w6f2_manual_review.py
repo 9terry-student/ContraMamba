@@ -237,6 +237,11 @@ def audit_authority(tmp_path: Path) -> f2.Authority:
     )
 
 
+def configure_audit_authority_universe(monkeypatch: pytest.MonkeyPatch, auth: f2.Authority) -> None:
+    monkeypatch.setattr(f2, "EXPECTED_PAIR_COUNT", len(auth.source_rows))
+    monkeypatch.setattr(f2, "EXPECTED_MEMBER_COUNT", len(auth.source_rows) * 3)
+
+
 def write_full_ai_prescreen(path: Path, auth: f2.Authority, **overrides: str) -> None:
     records = []
     for pair_id in auth.ordered_pair_ids:
@@ -1296,6 +1301,7 @@ def test_cohort_command_uses_structural_ack_not_individual_ack():
 
 def test_cohort_audit_command_writes_stable_artifact_and_no_wip_authority(tmp_path, monkeypatch):
     auth = audit_authority(tmp_path)
+    configure_audit_authority_universe(monkeypatch, auth)
     monkeypatch.setattr(f2, "load_authority", lambda: auth)
     wip = external_wip_path(tmp_path)
     ai_path = tmp_path / "ai.jsonl"
@@ -1317,6 +1323,8 @@ def test_cohort_audit_command_writes_stable_artifact_and_no_wip_authority(tmp_pa
     assert f2.command_cohort_audit(args) == 0
     audit = json.loads(audit_path.read_text(encoding="utf-8"))
     assert audit["audit_payload_sha256"] == f2.canonical_json_sha256({field: audit[field] for field in f2.STRUCTURAL_AUDIT_FIELDS if field not in {"audit_created_at_utc", "audit_payload_sha256"}})
+    assert audit["eligible_pair_ids"] == ["generated_fact_999"]
+    assert audit["exception_pair_ids"] == []
     loaded, duplicates = f2.strict_load_wip(auth, wip)
     assert duplicates == set()
     assert loaded == audit_records
@@ -1354,6 +1362,7 @@ def test_cohort_confirm_requires_audit_artifact_and_expected_sha(tmp_path, monke
 
 def test_cohort_confirm_rejects_wrong_expected_audit_sha(tmp_path, monkeypatch):
     auth = audit_authority(tmp_path)
+    configure_audit_authority_universe(monkeypatch, auth)
     monkeypatch.setattr(f2, "load_authority", lambda: auth)
     wip = external_wip_path(tmp_path)
     ai_path = tmp_path / "ai.jsonl"
@@ -1388,6 +1397,7 @@ def test_cohort_confirm_rejects_wrong_expected_audit_sha(tmp_path, monkeypatch):
 @pytest.mark.parametrize("drift", ["source", "ai", "wip", "eligible"])
 def test_cohort_confirm_recomputes_and_rejects_stale_reviewed_audit(tmp_path, monkeypatch, drift):
     auth = audit_authority(tmp_path)
+    configure_audit_authority_universe(monkeypatch, auth)
     monkeypatch.setattr(f2, "load_authority", lambda: auth)
     wip = external_wip_path(tmp_path)
     ai_path = tmp_path / "ai.jsonl"
@@ -1396,6 +1406,8 @@ def test_cohort_confirm_recomputes_and_rejects_stale_reviewed_audit(tmp_path, mo
     records = [review_record(auth, pair_id, human_grammar_validity="MULTI_MEMBER_DEFECT") for pair_id in f2.INDIVIDUALLY_REVIEWED_AUDIT_PAIR_IDS]
     f2.write_wip_atomic(wip, records)
     audit = f2.structural_audit_artifact(auth, records, f2.load_ai_prescreen(ai_path, auth), f2.path_sha256(ai_path), "2026-08-14T00:00:00Z")
+    assert audit["eligible_pair_ids"] == ["generated_fact_999"]
+    assert audit["exception_pair_ids"] == []
     f2.write_json_atomic(audit_path, audit)
     if drift == "source":
         changed_rows = [dict(row) for row in auth.source_rows]
@@ -1446,6 +1458,7 @@ def test_cohort_confirm_recomputes_and_rejects_stale_reviewed_audit(tmp_path, mo
 
 def test_cohort_command_does_not_overwrite_existing_individual_record(tmp_path, monkeypatch):
     auth = audit_authority(tmp_path)
+    configure_audit_authority_universe(monkeypatch, auth)
     monkeypatch.setattr(f2, "load_authority", lambda: auth)
     wip = external_wip_path(tmp_path)
     ai_path = tmp_path / "ai.jsonl"
@@ -1484,6 +1497,7 @@ def test_cohort_command_does_not_overwrite_existing_individual_record(tmp_path, 
 
 def test_fresh_exact_audit_confirmation_creates_structural_records(tmp_path, monkeypatch):
     auth = audit_authority(tmp_path)
+    configure_audit_authority_universe(monkeypatch, auth)
     monkeypatch.setattr(f2, "load_authority", lambda: auth)
     wip = external_wip_path(tmp_path)
     ai_path = tmp_path / "ai.jsonl"
@@ -1493,6 +1507,8 @@ def test_fresh_exact_audit_confirmation_creates_structural_records(tmp_path, mon
     records = [review_record(auth, pair_id, human_grammar_validity="MULTI_MEMBER_DEFECT") for pair_id in f2.INDIVIDUALLY_REVIEWED_AUDIT_PAIR_IDS]
     f2.write_wip_atomic(wip, records)
     audit = f2.structural_audit_artifact(auth, records, f2.load_ai_prescreen(ai_path, auth), f2.path_sha256(ai_path), "2026-08-14T00:00:00Z")
+    assert audit["eligible_pair_ids"] == ["generated_fact_999"]
+    assert audit["exception_pair_ids"] == []
     f2.write_json_atomic(audit_path, audit)
     args = f2.build_arg_parser().parse_args(
         [
