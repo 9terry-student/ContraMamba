@@ -1635,6 +1635,20 @@ def test_import_confirmed_individual_command_refuses_existing_pair_collision(tmp
     assert wip.read_bytes() == original_bytes
 
 
+def invalid_structural_existing_import_pair_record(auth: f2.Authority) -> dict[str, object]:
+    target_pair = f2.INDIVIDUALLY_REVIEWED_AUDIT_PAIR_IDS[0]
+    record = f2.make_structural_cohort_record(
+        auth,
+        "generated_fact_999",
+        "reviewer",
+        "cohort-id",
+        "2026-08-14T00:00:00Z",
+    )
+    record["pair_id"] = target_pair
+    record["source_record_sha256"] = auth.source_sha256_by_pair_id[target_pair]
+    return record
+
+
 @pytest.mark.parametrize(
     "existing_builder",
     [
@@ -1651,15 +1665,7 @@ def test_import_confirmed_individual_command_refuses_existing_pair_collision(tmp
                 "human_review_time_provenance": f2.CAPTURED_IN_RECORD,
             }
         ],
-        lambda auth: [
-            f2.make_structural_cohort_record(
-                auth,
-                f2.INDIVIDUALLY_REVIEWED_AUDIT_PAIR_IDS[0],
-                "reviewer",
-                "cohort-id",
-                "2026-08-14T00:00:00Z",
-            )
-        ],
+        lambda auth: [invalid_structural_existing_import_pair_record(auth)],
         lambda auth: [
             review_record(auth, f2.INDIVIDUALLY_REVIEWED_AUDIT_PAIR_IDS[0], human_grammar_validity="MULTI_MEMBER_DEFECT"),
             review_record(auth, f2.INDIVIDUALLY_REVIEWED_AUDIT_PAIR_IDS[0], human_grammar_validity="MULTI_MEMBER_DEFECT"),
