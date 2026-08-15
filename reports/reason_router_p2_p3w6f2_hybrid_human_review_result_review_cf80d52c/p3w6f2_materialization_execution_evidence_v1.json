@@ -1,0 +1,47 @@
+{
+  "authority_recorded_at_utc_values": [
+    "2026-08-15T10:05:17Z"
+  ],
+  "cohort_audit_executed": false,
+  "cohort_confirmation_executed": false,
+  "historical_ai_prescreen_name": "p3w6f2_ai_prescreen_v1_from_reviewed_workbook.jsonl",
+  "historical_ai_prescreen_sha256": "eb95efb78df825528db52feb7eb13f2c48117d8e95e9272d47d0e9228f40c4c0",
+  "human_review_time_provenance": "NOT_CAPTURED_IN_XLSX",
+  "import_intermediate_name": "p3w6f2_xlsx_confirmed_import_intermediate_v1.json",
+  "import_intermediate_sha256": "b80edc4ad7c510e988a287b929e33f8ca91ae8f8c29c2c6d8dfd13cc94f1bdce",
+  "importer_runtime_commit": "cf80d52c222450cf84622a4f830b7331355bee07",
+  "level1_hybrid_review_complete": false,
+  "record_origin": "XLSX_CONFIRMED_IMPORT",
+  "resulting_pair_ids": [
+    "generated_fact_152",
+    "generated_fact_154",
+    "generated_fact_156",
+    "generated_fact_157",
+    "generated_fact_159",
+    "generated_fact_160",
+    "generated_fact_162",
+    "generated_fact_163",
+    "generated_fact_164",
+    "generated_fact_167",
+    "generated_fact_168",
+    "generated_fact_169",
+    "generated_fact_170",
+    "generated_fact_171",
+    "generated_fact_173",
+    "generated_fact_175",
+    "generated_fact_177",
+    "generated_fact_178",
+    "generated_fact_179",
+    "generated_fact_180"
+  ],
+  "resulting_record_count": 20,
+  "resulting_wip_name": "p3w6f2_review_wip.jsonl",
+  "resulting_wip_sha256": "af8049bb5575b3f95324fac8894ed6c085fb7c81996269c2b1f57a48d18658de",
+  "review_method": "INDIVIDUAL_TRIPLE_REVIEW",
+  "reviewer_ids": [
+    "taehyun_koo"
+  ],
+  "schema_version": "P3W6F2_REAL_HYBRID_MATERIALIZATION_EXECUTION_EVIDENCE_V1",
+  "source_workbook_name": "p3w6f2_f2_ai_assisted_human_review_workbook(2).xlsx",
+  "source_workbook_sha256": "21454672b36c899994df54518b07bba43003bb9db6f49f62efb7511f38348397"
+}

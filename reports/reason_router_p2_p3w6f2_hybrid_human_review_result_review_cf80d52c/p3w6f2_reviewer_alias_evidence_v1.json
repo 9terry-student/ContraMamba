@@ -1,0 +1,18 @@
+{
+  "annotation_scope": "PROVENANCE_ONLY_NO_AUTHORITY_MUTATION",
+  "authority_correction_performed": false,
+  "cause": "The individual XLSX-confirmed import was executed with reviewer_id 'taehyun_koo' from the execution command, while the later structural cohort confirmation used the preferred reviewer identifier '9terry'.",
+  "cohort_confirmation_file_sha256": "b3686f732136bf3f3e5047ddf5123d5a78153abaf03cb397203704eeb5f25d06",
+  "cohort_confirmation_reexecuted": false,
+  "final_wip_sha256": "28792fe90a8470c0fb3fec2a134a61c9d6897c458f23bfc174175f5bd906bf6b",
+  "individual_materialization_reviewer_identifier": "taehyun_koo",
+  "individual_records_rewritten": false,
+  "individual_review_pair_count": 20,
+  "interpretation": "The two reviewer_id strings identify the same human reviewer. Review method, semantic judgments, structural eligibility, source authority, and cohort linkage are unchanged.",
+  "preferred_reviewer_identifier": "9terry",
+  "same_human_reviewer": true,
+  "schema_version": "P3W6F2_REVIEWER_ALIAS_EVIDENCE_V1",
+  "structural_cohort_confirmation_pair_count": 99,
+  "structural_confirmation_reviewer_identifier": "9terry",
+  "structural_records_rewritten": false
+}

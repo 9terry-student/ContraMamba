@@ -1,0 +1,752 @@
+{
+  "ai_prescreen_artifact_sha256": "eb95efb78df825528db52feb7eb13f2c48117d8e95e9272d47d0e9228f40c4c0",
+  "ai_prescreen_protocol_version": "P3W6F2_AI_ASSISTED_PRESCREEN_V1",
+  "audit_created_at_utc": "2026-08-15T10:07:43Z",
+  "audit_payload_sha256": "3779797ff959ec94eb8b43c60c7f3a0be9be21ca4bbdfe41003c9dfafa16af5f",
+  "authorized_member_count": 357,
+  "authorized_pair_count": 119,
+  "eligible_pair_ids": [
+    "generated_fact_181",
+    "generated_fact_182",
+    "generated_fact_183",
+    "generated_fact_184",
+    "generated_fact_185",
+    "generated_fact_187",
+    "generated_fact_188",
+    "generated_fact_189",
+    "generated_fact_190",
+    "generated_fact_191",
+    "generated_fact_192",
+    "generated_fact_193",
+    "generated_fact_194",
+    "generated_fact_196",
+    "generated_fact_197",
+    "generated_fact_198",
+    "generated_fact_199",
+    "generated_fact_200",
+    "generated_fact_201",
+    "generated_fact_202",
+    "generated_fact_203",
+    "generated_fact_204",
+    "generated_fact_205",
+    "generated_fact_206",
+    "generated_fact_208",
+    "generated_fact_209",
+    "generated_fact_211",
+    "generated_fact_212",
+    "generated_fact_213",
+    "generated_fact_214",
+    "generated_fact_215",
+    "generated_fact_216",
+    "generated_fact_217",
+    "generated_fact_218",
+    "generated_fact_219",
+    "generated_fact_220",
+    "generated_fact_222",
+    "generated_fact_223",
+    "generated_fact_224",
+    "generated_fact_226",
+    "generated_fact_228",
+    "generated_fact_229",
+    "generated_fact_231",
+    "generated_fact_232",
+    "generated_fact_233",
+    "generated_fact_234",
+    "generated_fact_235",
+    "generated_fact_236",
+    "generated_fact_237",
+    "generated_fact_239",
+    "generated_fact_242",
+    "generated_fact_243",
+    "generated_fact_244",
+    "generated_fact_245",
+    "generated_fact_246",
+    "generated_fact_247",
+    "generated_fact_248",
+    "generated_fact_249",
+    "generated_fact_250",
+    "generated_fact_251",
+    "generated_fact_252",
+    "generated_fact_253",
+    "generated_fact_254",
+    "generated_fact_255",
+    "generated_fact_256",
+    "generated_fact_258",
+    "generated_fact_259",
+    "generated_fact_260",
+    "generated_fact_261",
+    "generated_fact_263",
+    "generated_fact_264",
+    "generated_fact_266",
+    "generated_fact_267",
+    "generated_fact_268",
+    "generated_fact_269",
+    "generated_fact_270",
+    "generated_fact_272",
+    "generated_fact_275",
+    "generated_fact_276",
+    "generated_fact_277",
+    "generated_fact_278",
+    "generated_fact_279",
+    "generated_fact_280",
+    "generated_fact_281",
+    "generated_fact_282",
+    "generated_fact_283",
+    "generated_fact_284",
+    "generated_fact_286",
+    "generated_fact_288",
+    "generated_fact_289",
+    "generated_fact_290",
+    "generated_fact_291",
+    "generated_fact_292",
+    "generated_fact_293",
+    "generated_fact_294",
+    "generated_fact_295",
+    "generated_fact_296",
+    "generated_fact_298",
+    "generated_fact_299"
+  ],
+  "exception_pair_ids": [],
+  "overall_structural_gate_result": "PASS",
+  "required_individual_audit_pair_ids": [
+    "generated_fact_152",
+    "generated_fact_154",
+    "generated_fact_156",
+    "generated_fact_157",
+    "generated_fact_159",
+    "generated_fact_160",
+    "generated_fact_162",
+    "generated_fact_163",
+    "generated_fact_164",
+    "generated_fact_167",
+    "generated_fact_168",
+    "generated_fact_169",
+    "generated_fact_170",
+    "generated_fact_171",
+    "generated_fact_173",
+    "generated_fact_175",
+    "generated_fact_177",
+    "generated_fact_178",
+    "generated_fact_179",
+    "generated_fact_180"
+  ],
+  "schema_version": "reason_router_p3w6f2_structural_cohort_audit_v1",
+  "source_authority_identity": {
+    "P1_authority_commit": "030fbf18e24a57caeaeb67e5a612445877094728",
+    "P3W4_artifact_commit": "f0a9afddc5b93c54aa72b0335c5a1a2f517cf934",
+    "P3W4_result_authority_commit": "f0a9afddc5b93c54aa72b0335c5a1a2f517cf934",
+    "authorized_F2_member_count": 357,
+    "authorized_F2_pair_count": 119,
+    "input_authority_paths": {
+      "pairs": "reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_canonical_grammar_authority_pairs.jsonl",
+      "summary": "reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_canonical_grammar_authority_summary.json",
+      "template": "reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_f2_manual_review.csv"
+    },
+    "input_authority_sha256": {
+      "reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_canonical_grammar_authority_pairs.jsonl": "850ac6e8924fe334fa7f18659d204f6e0546381b1c3d3eb601f893f3eb00a493",
+      "reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_canonical_grammar_authority_summary.json": "7c0cc383dde38a1c564dae445a78eaf9171b8648d0720de3a2acc0ba68e68e80",
+      "reports/reason_router_p2_p3w4_canonical_grammar_authority_execution_ca99038d/p3w4_f2_manual_review.csv": "ccc539e743d1a4226391cdca1422bb0a1054c53fd7c53a4210a54271d1e9e8a5"
+    }
+  },
+  "source_record_sha256_by_pair": {
+    "generated_fact_152": "b4127d435bb063fc8dca2213a753d23382f528014703736bd0d4c56ade836154",
+    "generated_fact_154": "4b3f63c14bae2b91fbaac57eba3dd867aa44a717ec003499d573601be3067556",
+    "generated_fact_156": "3d55b69278b3a5b6325c63aa0b371439fec933458a6c95ef326638ad1c314841",
+    "generated_fact_157": "fee27d312889a6ad005214ac70907fd746ab3969c5733b188e4580e66745f32a",
+    "generated_fact_159": "db738464898b1860b64931154da2d7ddcb80bcdebf62e2551773b38981bb73c9",
+    "generated_fact_160": "2d7ef7d217630e81320a662a6cdbf2499a994d071a0df542d721d33cce342457",
+    "generated_fact_162": "4841b22956220c78af3e4ca1340738a017adcdd646c9cca35755e2406e7bc318",
+    "generated_fact_163": "b2ceaf7fed32d436ebbd9875ffe2d31f61f684696e0f4f80799155fbbd61821f",
+    "generated_fact_164": "18319508523b37eb21a7909861828a266f986347de19e4fd1595be50c0ac7646",
+    "generated_fact_167": "6d94b11cdf5652d5bfbf35de5e282b5630ae1f8b3fead045c0f98e62a19fdbfb",
+    "generated_fact_168": "1553ee9fce17b49832a3d932268a19afb50cd8882ccbca09d1196b7f9c707b03",
+    "generated_fact_169": "ce838e5132c72221bc95f26cf8e5c54e09169f6d16975e9a292eb92cc31a18da",
+    "generated_fact_170": "23a8baa799644213633f31cd7ca5067ce83ccba94b8653c63645c34300840256",
+    "generated_fact_171": "160e1c61a236b1ed6dfe12a467d66aa03d158dd65902cdea2736f354ecdd39a2",
+    "generated_fact_173": "b11c2779bd0695c542b07ad38d3ba93d88a408da9ebb2c0fc6f8e4746a452275",
+    "generated_fact_175": "f5753fcd342fb1a38ea6313c9076d4c8aa96fe9cbf9bf9283e0599f1bbd20e83",
+    "generated_fact_177": "6ac3ae44c254611429fb45ca76050ffdfb17b8ff7f72470282a0ad5b11b34dd6",
+    "generated_fact_178": "5a160021da627913d2f43e6218081fd9a9a7cc6b1b4d18dde5f36829f4e59117",
+    "generated_fact_179": "200b040c0b1598b9009b6caf9f35190bff405fe1fe13507a27f407a4a9489ccb",
+    "generated_fact_180": "086bcdb94439d7dc84ea6c542d7688b194a5a64f9934ab96ea81ac3e99e0ac04",
+    "generated_fact_181": "84954814ecc6defcec66157cee16b9a5d81a74934fcae4aa22fd088a86d42454",
+    "generated_fact_182": "d5369e3967e24e02a40d86b05b9277ed1d10497b37332187e1a07cd6bd21c3ae",
+    "generated_fact_183": "c124cb85ddeb71abb57b256f7fac1043d8fc0e3588ec0e225745deb58a36263f",
+    "generated_fact_184": "c7eb6dc1ad48e9396644ff9cbfa35f4901605a498d0f7210936f51c3abdf486f",
+    "generated_fact_185": "1fed911a284958f814eb545a4dd85c03ef1f55dffe64f8863fae43d9d4153b66",
+    "generated_fact_187": "a2e0517e24b556672bffa8a008cc83bd055c8663b2c339369e4b5e122937560b",
+    "generated_fact_188": "a5bf9cc7923f52527b9256fa436b778ec7b8630f7120def25cf67fb935d20001",
+    "generated_fact_189": "681b3e2d7e961c8f4046c3a5bb2d3d235551b9472c98bcece858ff08890c2fbc",
+    "generated_fact_190": "63c9dca82951c4a69e2ff7d6c75915526a2bd8eeca12167c0055401664a00c9b",
+    "generated_fact_191": "59a4842cde2002b43d6eeaf6b7d70815118488f90dd9dad8499c7778ae713427",
+    "generated_fact_192": "7b2e284b9da7fb5ef9cd5024ab9485bf8b9cd2dd36d794de3c182788cc18efe0",
+    "generated_fact_193": "71cb5aa2113052a3c4fe97681ae093471f518ce387770b8acddb2f02b921e687",
+    "generated_fact_194": "ad60f79a8501a60083fe7edf7f54320d0d1f528d9f16e2dbaabcd45f0b839cbe",
+    "generated_fact_196": "341f6160997974d3d1dc4f67145cfe8b587af509feaf54321a7a577bc5e9e7f5",
+    "generated_fact_197": "d6b65fe2b9be4d0e629cc08a3eedc8eec57dd8b197c61e3526dc20e0a5dff24b",
+    "generated_fact_198": "203f63fec12d5c40a6e348057c1fe7560c040f6edce5e61c7d5bbbb420f8b985",
+    "generated_fact_199": "e13235da1d50513d258f827e624b3c8db9741205d11bab51adb7c768db5ab041",
+    "generated_fact_200": "de6518cb5f103ba46f8552c6183de7aac1abf4013b8b46faf04127b46e6e5550",
+    "generated_fact_201": "738bc429443f6a5f54359070073e52e6a0722c4561ce8dac2a3363e5c0df48e0",
+    "generated_fact_202": "58486cc2fc1545d393f927bb394211d023548b3621f605b60f069d3a916a40c1",
+    "generated_fact_203": "4d618b59f62af48c0e2ab2a28c0a165580a1957a661fbabdf3073f0e4ca58d97",
+    "generated_fact_204": "c5b583687869d0927262807b3e76a3ff8fb0e2bb00561ae342053bb3ebbcadec",
+    "generated_fact_205": "92f5e5598a3c6e6ab200e69790351707a4a4c6fd53baa3e3da1a9b8e115a6e7f",
+    "generated_fact_206": "ecac610748b30a97149f6008432c216675363c873b65f3c09427d3e1b438c081",
+    "generated_fact_208": "ea960955504964157f1258773f2c0442016c01cf2fe9b1a58e75e9c54512303d",
+    "generated_fact_209": "c00d57fc9150102cae47ab67abb35e9b2d99d8b1f34643f793ebcb7a6cbf9fed",
+    "generated_fact_211": "f43741ae954800f2c0831e1a88dd7f9a6aac3687a5e1cd594d6feb11446474c2",
+    "generated_fact_212": "96b96621ecc9c8873ce2a3995fcef9363a6b08318c49156b4bd15dd127c8d421",
+    "generated_fact_213": "d7127a9c50f072478d61d59a338f68ec05c6db1048f77c2d671ae759e79141f8",
+    "generated_fact_214": "10ac58b34f02b6ce0da0efa7039129736855991e16e327bc2b4161395e1775c4",
+    "generated_fact_215": "0a26d568890d15e93968d00304e4ec7af1b0d9b260ab0633a1bb05481e81cbb4",
+    "generated_fact_216": "ef1e88b508d5cd83fe0238d2f0a07cab44614ba56115029ca77ec245c04292a2",
+    "generated_fact_217": "cb73070a1498c9118989a43425c6d1ec1d42ea64be1fd0d43cf0a56f37f65e63",
+    "generated_fact_218": "8ace3d8b5697ae6770f9f8934e1f760acaa421138d815e5a187d6c06a4ede7e6",
+    "generated_fact_219": "83672d72b40e9a9fc4f210de0afa22c031f4c4554ddbb041ae1be5a9fe9b288b",
+    "generated_fact_220": "9161796065762de1902945eff3c2746b67b6d59d2a59879161e08264829b3611",
+    "generated_fact_222": "5c4e7a255ec0a86ed0e2912909029973aec765c13295b9bcde0cae1686d968c5",
+    "generated_fact_223": "b10a21ffa5520c32946be61eda5d1ed98bfe7aa2ca4a8bfab9fa0d79e0606879",
+    "generated_fact_224": "de49906d3b078949e4532b17303fb3ca6eb4e75afec124cab3a3d74ed2f76b18",
+    "generated_fact_226": "20d3468f0c584eb7070dac2ca1e186d0e236f57d4be6464014d75bb0466acdd0",
+    "generated_fact_228": "90d4f481f44b3c6963e7308ac8e01e68da096c3a93ea777dd470d9ed7459da82",
+    "generated_fact_229": "67921e2751d58fd0052fb1b7a5b88a6fea2618ab03f3e99400970df9b3623d1e",
+    "generated_fact_231": "1111138867d4c86fd77e07495d9233a78ecff3debe0295a22bdc92fb33f4e7f2",
+    "generated_fact_232": "5e7bd7ee5190299f69c5b4aeee494ea22aef4a96d6249a9c8a5184ea5e5d7e9c",
+    "generated_fact_233": "75a5c681848490a813aea35f328edf2fa0c0d845c4b66e8f8c4f07f6cd19896e",
+    "generated_fact_234": "57fdae63f32849fb35407fc1249e5493414d744fbe5e18084765144a209e2ea6",
+    "generated_fact_235": "23e6e04bab6165dc617073173cdf9b488a372f2329f80b3adc6e360d929faf97",
+    "generated_fact_236": "10d823713ae6958ebd6b7772bc6349bfdd59ea221bfbca639eeaf6aa0a0d2ce3",
+    "generated_fact_237": "83faa4391aa0a7973925304da92bd8e04c1fefbc298fbc9facdda1239fbd627a",
+    "generated_fact_239": "d081f123a651a1fffbd669fda3c4e18262a64ae1ea8284b038f9fd95f0e7883c",
+    "generated_fact_242": "ef31871d1e98cae888156eed7da9cb6a6b79524476b21b6c30cbc002286e8997",
+    "generated_fact_243": "74b182c5cb46d46b52a9fd95de70f8e005e74feda5ff5e26100571932d0807d6",
+    "generated_fact_244": "d4e4fdedcb9645da201557f976bc1dbdf12ef6ffb620be011246cacfdb43926d",
+    "generated_fact_245": "4e0c4ea4b623073d3574ce38caf94e01ce550ac6d722d391fb55705e0ee9250e",
+    "generated_fact_246": "cebe24972560b40c8a4264c600040cc3ab0f194a2fb6978b988752e1ef07b4de",
+    "generated_fact_247": "4c951ae7626ee32198beceb2483a2318c7965521b178ec6201c44902d36929ff",
+    "generated_fact_248": "a8af6e205035bf48a2cc4b03614b727d46a5b1fec5c9cf5629e9cd5a4f8c5d71",
+    "generated_fact_249": "23e5ca13717c18c1467ecc7c07e11d4903b5d8e9511b64db4a049b398495bc42",
+    "generated_fact_250": "04a133de46c70241a0f69beb684e15cb7294df8b937c3175a535f15f1d76417a",
+    "generated_fact_251": "88e44cdfd4313b1bf61908d7f34fe4c77c9241c2ca8f4ab76fa0d29eed59e036",
+    "generated_fact_252": "81fc957db10df85cd33eba60777f5603f2825ed1d9afc13520edf4e175bd7217",
+    "generated_fact_253": "a22606746263a983a7b48db571627d449e6aed315549cad00e8fc43e2357eb75",
+    "generated_fact_254": "76b7d3ee857e0d6c532f76771ce99c809239372caa5c9b96eea9a3502f12046c",
+    "generated_fact_255": "f06aa35fb82a7ee726220b7cc635c725eff0ea5b6e24c312be6c4508989d4a5f",
+    "generated_fact_256": "ab7ec4b714545dccbea7a01b8418d425109a8ffc615c6494489d17739d1b3974",
+    "generated_fact_258": "5555510342a2128211685d13a6f6580a3cc8043fe9dacebe70c01374d24413dd",
+    "generated_fact_259": "8cd5447d3c25522af2c7042d07d9fc04d756bad714c4d5e08293b365997b9c2d",
+    "generated_fact_260": "4fc6cdca759f6ca817dca72c9c897cf1ca485b454dd4a9fd5744a953d247c213",
+    "generated_fact_261": "529f1b4c8f98f0edb811dbdf4231f3349b9c6fc1851a4bfd9bc5161cbe1532ad",
+    "generated_fact_263": "1fd8294e804ce0bc4fe8a2abbdbf1096043ffe25217b3832f8bba90982e71a56",
+    "generated_fact_264": "be5d9161d4ffb14d7abf3298970ab45c8979e1a70ba382bf0c4a7b0414b2fa54",
+    "generated_fact_266": "0be1519887c9a50c64f31fbd9f93cf1e01d879431d72aae33b7890453f33016d",
+    "generated_fact_267": "87c91365277ac099903dacd7410385ef55f5ae13c89bab758a4020369f6c37b7",
+    "generated_fact_268": "b3e67dc38b983d3d3b6d0d9bf528c7e357ceb22ea4726e4b24d4b7cef3b136a2",
+    "generated_fact_269": "2663b58c2c39b631e430492497d4746f5c943b6cacc0ddc3b0e661499e7134b9",
+    "generated_fact_270": "23cae9a9316a23c2a174c144b52536cc6557190943151c06dd11e937cea50af2",
+    "generated_fact_272": "6b00ff5f6db661b9daafb2a96804d057709e38fb0b65b73e658e9b0cd86ab311",
+    "generated_fact_275": "d7e9bdc3be9b221a4b38877653bdbeb0c0da1d0c95e3a3604a577c15196e9f8c",
+    "generated_fact_276": "c7d6d412cc4f6dd0a237b5985376ac9a94beffa8e394ffd25385df71c26be32a",
+    "generated_fact_277": "982cf19194e30de081a4a0d812b540062670a55aac78d15ef38406a5a475e92d",
+    "generated_fact_278": "8de954896c4b305708e0d2fb9575a4507e19935bf1f5ba1c8883984718967bce",
+    "generated_fact_279": "0a3970f878fe8f4cdd051e0f6f881e69f56f043cf66c3155f362cee05e8196d0",
+    "generated_fact_280": "a834e73e418b4b0830022d21464d01a85538c03f9bb376f70907e0a4e185f49a",
+    "generated_fact_281": "704d72f392a54f794bc1a06307578a76013d62cf3b541e8fef1bd1256c796fb5",
+    "generated_fact_282": "19bbb0af1d71c5153f46f41654736eb408ff531f57443456b4c2905a181a4ba0",
+    "generated_fact_283": "fb16cc9f63743c50224f3eb13f5367677954165d512d9d9b4df17171c4852f1f",
+    "generated_fact_284": "5886b57b52176a105b5feaaa4f1217f2b9b1d92cb3669e12946a089d623b33f7",
+    "generated_fact_286": "4a4f85a2a885e328d3f61c364efec3721e2f63168b27bd666fa8d6f2e0f39b58",
+    "generated_fact_288": "f58653ec2a8609de21636a8ef1122a3f3fc4bf85a31675ea682ac30491b608af",
+    "generated_fact_289": "2bd2f61163baec8893c6bbe6849ab8f8196d6779248cf9f20c2fabc3b898b545",
+    "generated_fact_290": "9ca51c840c5be8045cb0b043e2e248defb37e2ad4087454472ce4d7a892883fd",
+    "generated_fact_291": "85c1ac78b9bc0131d450005aebf62bc2585835665bc48dfaeef09febde9c2eb8",
+    "generated_fact_292": "447436e41c0f4d6cda0177fa2d5adf0945fe8b0144809bee0c83bc633887c915",
+    "generated_fact_293": "5186bf5b19b895ef04e1ae7b2836d8bfa39693022230b1cefd0eb47157c66a6a",
+    "generated_fact_294": "67b43a5147bc36685d7a81adf124a97da66c995e6c726f211aa6954b7eee28a4",
+    "generated_fact_295": "4d66fe828d3f62e3e031d4fd5555dbd72d6004e5185110215812747114061d59",
+    "generated_fact_296": "c0d9f925c4c72ceedac9bbc6d24c337d9b79987ae0d624f2a7337ac606924aa3",
+    "generated_fact_298": "a7c4022f7f5f9e3c8a01cbe1bc06fa3317c747b815441417dd636b9382976751",
+    "generated_fact_299": "faff077de95cdf489023a042a063d5fe1738545bad3adb1dee2ec386a5bd6294"
+  },
+  "structural_gate_result_by_pair": {
+    "generated_fact_152": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_154": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_156": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_157": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_159": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_160": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_162": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_163": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_164": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_167": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_168": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_169": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_170": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_171": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_173": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_175": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_177": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_178": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_179": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_180": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_181": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_182": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_183": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_184": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_185": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_187": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_188": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_189": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_190": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_191": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_192": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_193": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_194": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_196": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_197": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_198": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_199": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_200": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_201": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_202": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_203": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_204": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_205": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_206": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_208": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_209": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_211": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_212": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_213": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_214": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_215": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_216": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_217": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_218": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_219": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_220": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_222": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_223": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_224": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_226": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_228": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_229": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_231": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_232": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_233": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_234": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_235": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_236": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_237": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_239": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_242": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_243": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_244": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_245": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_246": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_247": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_248": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_249": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_250": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_251": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_252": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_253": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_254": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_255": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_256": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_258": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_259": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_260": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_261": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_263": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_264": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_266": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_267": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_268": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_269": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_270": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_272": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_275": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_276": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_277": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_278": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_279": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_280": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_281": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_282": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_283": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_284": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_286": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_288": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_289": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_290": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_291": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_292": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_293": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_294": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_295": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_296": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_298": {
+      "eligible": true,
+      "errors": []
+    },
+    "generated_fact_299": {
+      "eligible": true,
+      "errors": []
+    }
+  },
+  "structural_gate_version": "P3W6F2_STRUCTURAL_COHORT_GATE_V1",
+  "validated_individual_wip_state_sha256": "97344bf7ef8a6ef9cf10c5e18fbd61b5ae7362e6fd4fddae1c3ec0c04e707dd5"
+}
