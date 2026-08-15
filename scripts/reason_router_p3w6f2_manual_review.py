@@ -38,6 +38,7 @@ EXECUTION_DECISION_COMPLETE = "P3W6F2_HYBRID_HUMAN_REVIEW_LEVEL1_COMPLETE_PENDIN
 F2_OUTPUT_SHA256_CONTRACT = "NON_SELF_REFERENTIAL_ARTIFACT_SHA256_MAP_V1"
 STRUCTURAL_GATE_VERSION = "P3W6F2_STRUCTURAL_COHORT_GATE_V1"
 AI_PRESCREEN_PROTOCOL_VERSION = "P3W6F2_AI_ASSISTED_PRESCREEN_V1"
+XLSX_CONFIRMED_IMPORT_INTERMEDIATE_PROTOCOL_VERSION = "P3W6F2_XLSX_CONFIRMED_IMPORT_INTERMEDIATE_V1"
 COHORT_CONFIRMATION_PROTOCOL_VERSION = "P3W6F2_STRUCTURAL_COHORT_CONFIRMATION_V1"
 STRUCTURAL_AUDIT_SCHEMA_VERSION = "reason_router_p3w6f2_structural_cohort_audit_v1"
 COHORT_CONFIRMATION_SCHEMA_VERSION = "reason_router_p3w6f2_structural_cohort_confirmation_v1"
@@ -121,6 +122,37 @@ AI_PRESCREEN_FIELDS = [
     "ai_prescreen_created_at_utc",
 ]
 AI_PRESCREEN_FIELD_SET = frozenset(AI_PRESCREEN_FIELDS)
+XLSX_IMPORT_INTERMEDIATE_FIELDS = [
+    "schema_version",
+    "import_intermediate_protocol_version",
+    "source_workbook_sha256",
+    "source_workbook_name",
+    "conversion_created_at_utc",
+    "row_count",
+    "records",
+]
+XLSX_IMPORT_INTERMEDIATE_FIELD_SET = frozenset(XLSX_IMPORT_INTERMEDIATE_FIELDS)
+XLSX_IMPORT_RECORD_FIELDS = [
+    "pair_id",
+    "source_record_sha256",
+    "ai_canonical_semantics_suggestion",
+    "ai_paraphrase_semantics_suggestion",
+    "ai_polarity_flip_semantics_suggestion",
+    "ai_grammar_validity_suggestion",
+    "ai_triage_status",
+    "human_review_action",
+    "human_override_canonical_semantics",
+    "human_override_paraphrase_semantics",
+    "human_override_polarity_flip_semantics",
+    "human_override_grammar_validity",
+    "derived_human_canonical_semantics",
+    "derived_human_paraphrase_semantics",
+    "derived_human_polarity_flip_semantics",
+    "derived_human_grammar_validity",
+    "derived_human_authority_decision",
+    "review_status",
+]
+XLSX_IMPORT_RECORD_FIELD_SET = frozenset(XLSX_IMPORT_RECORD_FIELDS)
 COHORT_CONFIRMATION_FIELDS = [
     "schema_version",
     "cohort_confirmation_protocol_version",
@@ -974,6 +1006,71 @@ def load_ai_prescreen(path: Path, authority: Authority) -> dict[str, dict[str, A
     return out
 
 
+def load_xlsx_confirmed_import_intermediate(path: Path, authority: Authority) -> dict[str, dict[str, Any]]:
+    require_wip_path_outside_repo(authority.repo_root, path)
+    artifact = load_external_json_object(path, "WIP_SCHEMA_MISMATCH")
+    require(frozenset(artifact.keys()) == XLSX_IMPORT_INTERMEDIATE_FIELD_SET, "WIP_SCHEMA_MISMATCH", "XLSX import intermediate schema mismatch")
+    require(
+        artifact.get("schema_version") == XLSX_CONFIRMED_IMPORT_INTERMEDIATE_PROTOCOL_VERSION,
+        "WIP_SCHEMA_MISMATCH",
+        "XLSX import intermediate schema_version mismatch",
+    )
+    require(
+        artifact.get("import_intermediate_protocol_version") == XLSX_CONFIRMED_IMPORT_INTERMEDIATE_PROTOCOL_VERSION,
+        "WIP_SCHEMA_MISMATCH",
+        "XLSX import intermediate protocol mismatch",
+    )
+    workbook_sha = artifact.get("source_workbook_sha256")
+    require(isinstance(workbook_sha, str) and re.fullmatch(r"[0-9a-f]{64}", workbook_sha), "WIP_SCHEMA_MISMATCH", "invalid source workbook SHA-256")
+    workbook_name = artifact.get("source_workbook_name")
+    require(isinstance(workbook_name, str) and workbook_name.strip() != "", "WIP_SCHEMA_MISMATCH", "missing source workbook name")
+    require(valid_rfc3339_utc_z(artifact.get("conversion_created_at_utc", "")), "INVALID_REVIEW_TIMESTAMP", "invalid conversion timestamp")
+    require(artifact.get("row_count") == len(INDIVIDUALLY_REVIEWED_AUDIT_PAIR_IDS), "WIP_SCHEMA_MISMATCH", "XLSX import row count mismatch")
+    records = artifact.get("records")
+    require(isinstance(records, list), "WIP_SCHEMA_MISMATCH", "XLSX import records must be a list")
+    require(len(records) == len(INDIVIDUALLY_REVIEWED_AUDIT_PAIR_IDS), "WIP_SCHEMA_MISMATCH", "XLSX import records length mismatch")
+
+    out: dict[str, dict[str, Any]] = {}
+    expected_pairs = set(INDIVIDUALLY_REVIEWED_AUDIT_PAIR_IDS)
+    for index, record in enumerate(records, 1):
+        require(isinstance(record, dict), "WIP_SCHEMA_MISMATCH", f"XLSX import record {index} is not an object")
+        require(frozenset(record.keys()) == XLSX_IMPORT_RECORD_FIELD_SET, "WIP_SCHEMA_MISMATCH", f"XLSX import record {index} schema mismatch")
+        pair_id = str(record.get("pair_id", ""))
+        require(pair_id in expected_pairs, "UNAUTHORIZED_PAIR_ID", pair_id)
+        require(pair_id in authority.row_by_pair_id, "UNAUTHORIZED_PAIR_ID", pair_id)
+        require(pair_id not in out, "DUPLICATE_PAIR_ID", pair_id)
+        require(record.get("source_record_sha256") == authority.source_sha256_by_pair_id[pair_id], "SOURCE_RECORD_HASH_MISMATCH", pair_id)
+        expected_ai = {
+            "ai_canonical_semantics_suggestion": "V",
+            "ai_paraphrase_semantics_suggestion": "V",
+            "ai_polarity_flip_semantics_suggestion": "V",
+            "ai_grammar_validity_suggestion": "M",
+            "ai_triage_status": "CLEAR_SUGGESTION",
+        }
+        require(all(record.get(key) == value for key, value in expected_ai.items()), "WIP_SCHEMA_MISMATCH", f"AI suggestion mismatch for {pair_id}")
+        require(record.get("human_review_action") == "CONFIRM", "WIP_SCHEMA_MISMATCH", f"non-CONFIRM action for {pair_id}")
+        override_fields = [
+            "human_override_canonical_semantics",
+            "human_override_paraphrase_semantics",
+            "human_override_polarity_flip_semantics",
+            "human_override_grammar_validity",
+        ]
+        require(all(record.get(field) == "" for field in override_fields), "WIP_SCHEMA_MISMATCH", f"override field must be empty for {pair_id}")
+        expected_human = {
+            "derived_human_canonical_semantics": "VALID",
+            "derived_human_paraphrase_semantics": "VALID",
+            "derived_human_polarity_flip_semantics": "VALID",
+            "derived_human_grammar_validity": "MULTI_MEMBER_DEFECT",
+        }
+        require(all(record.get(key) == value for key, value in expected_human.items()), "WIP_SCHEMA_MISMATCH", f"derived human value mismatch for {pair_id}")
+        expected_decision = derive_authority_decision("VALID", "VALID", "VALID", "MULTI_MEMBER_DEFECT")
+        require(record.get("derived_human_authority_decision") == expected_decision, "COMPATIBILITY_MATRIX_MISMATCH", pair_id)
+        require(record.get("review_status") == "READY_TO_IMPORT", "WIP_SCHEMA_MISMATCH", f"review status mismatch for {pair_id}")
+        out[pair_id] = record
+    require(set(out) == expected_pairs, "WIP_SCHEMA_MISMATCH", "XLSX import must contain exactly the required 20 pair IDs")
+    return out
+
+
 def validate_cohort_confirmation_artifact(
     artifact: dict[str, Any],
     authority: Authority,
@@ -1482,6 +1579,39 @@ def make_review_record(
     return record
 
 
+def make_xlsx_imported_individual_record(
+    authority: Authority,
+    pair_id: str,
+    reviewer_id: str,
+    authority_recorded_at_utc: str,
+) -> dict[str, Any]:
+    require(pair_id in authority.row_by_pair_id, "UNAUTHORIZED_PAIR_ID", pair_id)
+    require(reviewer_id != "", "MISSING_REVIEWER_ID")
+    require(reviewer_id == reviewer_id.strip(), "MISSING_REVIEWER_ID", "reviewer_id has leading/trailing whitespace")
+    require(valid_rfc3339_utc_z(authority_recorded_at_utc), "INVALID_REVIEW_TIMESTAMP")
+    decision = derive_authority_decision("VALID", "VALID", "VALID", "MULTI_MEMBER_DEFECT")
+    record = {
+        "pair_id": pair_id,
+        "source_record_sha256": authority.source_sha256_by_pair_id[pair_id],
+        "human_canonical_semantics": "VALID",
+        "human_paraphrase_semantics": "VALID",
+        "human_polarity_flip_semantics": "VALID",
+        "human_grammar_validity": "MULTI_MEMBER_DEFECT",
+        "human_authority_decision": decision,
+        "human_notes": "",
+        "reviewer_id": reviewer_id,
+        "review_protocol_version": REVIEW_PROTOCOL_VERSION,
+        "reviewed_at_utc": authority_recorded_at_utc,
+        "authority_recorded_at_utc": authority_recorded_at_utc,
+        "human_review_time_provenance": NOT_CAPTURED_IN_XLSX,
+        "record_origin": XLSX_CONFIRMED_IMPORT,
+        "review_method": INDIVIDUAL_REVIEW_METHOD,
+        "cohort_confirmation_id": NO_COHORT_LINKAGE,
+    }
+    require_no_validation_errors(validate_review_record(record, authority))
+    return record
+
+
 def upsert_wip_record(
     authority: Authority,
     path: Path,
@@ -1824,6 +1954,53 @@ def command_record(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_import_confirmed_individual(args: argparse.Namespace) -> int:
+    authority = load_authority()
+    require(args.reviewer_id != "", "MISSING_REVIEWER_ID")
+    require(args.reviewer_id == args.reviewer_id.strip(), "MISSING_REVIEWER_ID", "reviewer_id has leading/trailing whitespace")
+    require_wip_path_outside_repo(authority.repo_root, args.wip_path)
+    require_wip_path_outside_repo(authority.repo_root, args.import_intermediate_path)
+    records, duplicate_pair_ids = load_wip(args.wip_path)
+    require_no_validation_errors(validate_wip_records(authority, records, duplicate_pair_ids))
+    import_by_pair = load_xlsx_confirmed_import_intermediate(args.import_intermediate_path, authority)
+    existing_pair_ids = {record.get("pair_id") for record in records}
+    collisions = [pair_id for pair_id in INDIVIDUALLY_REVIEWED_AUDIT_PAIR_IDS if pair_id in existing_pair_ids]
+    require(not collisions, "DUPLICATE_PAIR_ID", ",".join(collisions))
+
+    timestamp = utc_timestamp()
+    imported_records = [
+        make_xlsx_imported_individual_record(
+            authority=authority,
+            pair_id=pair_id,
+            reviewer_id=args.reviewer_id,
+            authority_recorded_at_utc=timestamp,
+        )
+        for pair_id in INDIVIDUALLY_REVIEWED_AUDIT_PAIR_IDS
+    ]
+    require(set(import_by_pair) == {record["pair_id"] for record in imported_records}, "WIP_SCHEMA_MISMATCH", "import pair mismatch")
+    next_records = [*records, *imported_records]
+    require_no_validation_errors(validate_wip_records(authority, next_records))
+    require_no_validation_errors(validate_individual_audit_evidence(authority, next_records))
+    write_wip_atomic(args.wip_path, next_records)
+    print(
+        json.dumps(
+            {
+                "imported_individual_record_count": len(imported_records),
+                "imported_pair_ids": [record["pair_id"] for record in imported_records],
+                "record_origin": XLSX_CONFIRMED_IMPORT,
+                "review_method": INDIVIDUAL_REVIEW_METHOD,
+                "human_review_time_provenance": NOT_CAPTURED_IN_XLSX,
+                "authority_recorded_at_utc": timestamp,
+                "historical_visual_review_time_claimed": False,
+            },
+            ensure_ascii=False,
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
 def write_json_atomic(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, tmp_name = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=str(path.parent))
@@ -2107,6 +2284,12 @@ def build_arg_parser() -> argparse.ArgumentParser:
     record.add_argument("--wip-path", type=Path, default=Path(DEFAULT_WIP_PATH))
     record.add_argument("--ack-complete-triple-reviewed", action="store_true")
     record.set_defaults(func=command_record)
+
+    import_confirmed = sub.add_parser("import-confirmed-individual")
+    import_confirmed.add_argument("--wip-path", type=Path, default=Path(DEFAULT_WIP_PATH))
+    import_confirmed.add_argument("--import-intermediate-path", type=Path, required=True)
+    import_confirmed.add_argument("--reviewer-id", required=True)
+    import_confirmed.set_defaults(func=command_import_confirmed_individual)
 
     audit = sub.add_parser("cohort-audit")
     audit.add_argument("--wip-path", type=Path, default=Path(DEFAULT_WIP_PATH))

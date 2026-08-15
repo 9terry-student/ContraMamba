@@ -252,6 +252,70 @@ def write_full_ai_prescreen(path: Path, auth: f2.Authority, **overrides: str) ->
     path.write_text("\n".join(json.dumps(record) for record in records) + "\n", encoding="utf-8")
 
 
+def xlsx_import_intermediate(auth: f2.Authority) -> dict[str, object]:
+    records = []
+    for pair_id in f2.INDIVIDUALLY_REVIEWED_AUDIT_PAIR_IDS:
+        records.append(
+            {
+                "pair_id": pair_id,
+                "source_record_sha256": auth.source_sha256_by_pair_id[pair_id],
+                "ai_canonical_semantics_suggestion": "V",
+                "ai_paraphrase_semantics_suggestion": "V",
+                "ai_polarity_flip_semantics_suggestion": "V",
+                "ai_grammar_validity_suggestion": "M",
+                "ai_triage_status": "CLEAR_SUGGESTION",
+                "human_review_action": "CONFIRM",
+                "human_override_canonical_semantics": "",
+                "human_override_paraphrase_semantics": "",
+                "human_override_polarity_flip_semantics": "",
+                "human_override_grammar_validity": "",
+                "derived_human_canonical_semantics": "VALID",
+                "derived_human_paraphrase_semantics": "VALID",
+                "derived_human_polarity_flip_semantics": "VALID",
+                "derived_human_grammar_validity": "MULTI_MEMBER_DEFECT",
+                "derived_human_authority_decision": "CANONICAL_REGENERATION_REQUIRED",
+                "review_status": "READY_TO_IMPORT",
+            }
+        )
+    return {
+        "schema_version": f2.XLSX_CONFIRMED_IMPORT_INTERMEDIATE_PROTOCOL_VERSION,
+        "import_intermediate_protocol_version": f2.XLSX_CONFIRMED_IMPORT_INTERMEDIATE_PROTOCOL_VERSION,
+        "source_workbook_sha256": "d" * 64,
+        "source_workbook_name": "p3w6f2_f2_human_review_workbook.xlsx",
+        "conversion_created_at_utc": "2026-08-14T00:00:00Z",
+        "row_count": len(records),
+        "records": records,
+    }
+
+
+def clone_json(value: object) -> object:
+    return json.loads(json.dumps(value))
+
+
+def write_xlsx_import_intermediate(path: Path, artifact: dict[str, object]) -> None:
+    path.write_text(json.dumps(artifact), encoding="utf-8")
+
+
+def import_confirmed_args(wip: Path, import_path: Path, reviewer_id: str = "reviewer") -> object:
+    return f2.build_arg_parser().parse_args(
+        [
+            "import-confirmed-individual",
+            "--wip-path",
+            str(wip),
+            "--import-intermediate-path",
+            str(import_path),
+            "--reviewer-id",
+            reviewer_id,
+        ]
+    )
+
+
+def write_valid_xlsx_import(tmp_path: Path, auth: f2.Authority) -> Path:
+    import_path = external_wip_path(tmp_path).with_name("xlsx_confirmed_import.json")
+    write_xlsx_import_intermediate(import_path, xlsx_import_intermediate(auth))
+    return import_path
+
+
 def write_template(rows: list[dict[str, str]], fields: list[str], human_values: dict[str, str] | None = None) -> bytes:
     human_values = human_values or {}
     from io import StringIO
@@ -679,6 +743,114 @@ def test_twenty_pair_audit_accepts_truthful_xlsx_import_time_provenance(tmp_path
         for pair_id in f2.INDIVIDUALLY_REVIEWED_AUDIT_PAIR_IDS
     ]
     assert f2.validate_individual_audit_evidence(auth, records) == []
+
+
+def test_load_xlsx_confirmed_import_intermediate_accepts_exact_twenty(tmp_path):
+    auth = audit_authority(tmp_path)
+    path = external_wip_path(tmp_path).with_name("xlsx_confirmed_import.json")
+    artifact = xlsx_import_intermediate(auth)
+    path.write_text(json.dumps(artifact), encoding="utf-8")
+
+    loaded = f2.load_xlsx_confirmed_import_intermediate(path, auth)
+
+    assert list(loaded) == f2.INDIVIDUALLY_REVIEWED_AUDIT_PAIR_IDS
+
+
+def test_load_xlsx_confirmed_import_intermediate_rejects_override(tmp_path):
+    auth = audit_authority(tmp_path)
+    path = external_wip_path(tmp_path).with_name("xlsx_confirmed_import.json")
+    artifact = xlsx_import_intermediate(auth)
+    artifact["records"][0]["human_override_grammar_validity"] = "C"
+    path.write_text(json.dumps(artifact), encoding="utf-8")
+
+    with pytest.raises(f2.ReviewInfrastructureError, match="override field must be empty"):
+        f2.load_xlsx_confirmed_import_intermediate(path, auth)
+
+
+def test_load_xlsx_confirmed_import_intermediate_rejects_wrong_pair_set(tmp_path):
+    auth = audit_authority(tmp_path)
+    path = external_wip_path(tmp_path).with_name("xlsx_confirmed_import.json")
+    artifact = xlsx_import_intermediate(auth)
+    artifact["records"][0]["pair_id"] = "generated_fact_999"
+    path.write_text(json.dumps(artifact), encoding="utf-8")
+
+    with pytest.raises(f2.ReviewInfrastructureError, match="UNAUTHORIZED_PAIR_ID"):
+        f2.load_xlsx_confirmed_import_intermediate(path, auth)
+
+
+@pytest.mark.parametrize(
+    ("mutator", "match"),
+    [
+        (lambda artifact: artifact["records"].__setitem__(1, {**artifact["records"][1], "pair_id": artifact["records"][0]["pair_id"], "source_record_sha256": artifact["records"][0]["source_record_sha256"]}), "DUPLICATE_PAIR_ID"),
+        (lambda artifact: artifact["records"][0].update({"source_record_sha256": "0" * 64}), "SOURCE_RECORD_HASH_MISMATCH"),
+        (lambda artifact: artifact.update({"source_workbook_sha256": "not-a-sha"}), "invalid source workbook SHA-256"),
+        (lambda artifact: artifact.update({"schema_version": "WRONG"}), "schema_version mismatch"),
+        (lambda artifact: artifact.update({"import_intermediate_protocol_version": "WRONG"}), "protocol mismatch"),
+        (lambda artifact: artifact.update({"row_count": 19}), "row count mismatch"),
+        (lambda artifact: artifact["records"].pop(), "records length mismatch"),
+        (lambda artifact: artifact["records"][0].update({"human_review_action": "OVERRIDE"}), "non-CONFIRM action"),
+        (lambda artifact: artifact["records"][0].update({"human_override_canonical_semantics": "VALID"}), "override field must be empty"),
+        (lambda artifact: artifact["records"][0].update({"human_override_paraphrase_semantics": "VALID"}), "override field must be empty"),
+        (lambda artifact: artifact["records"][0].update({"human_override_polarity_flip_semantics": "VALID"}), "override field must be empty"),
+        (lambda artifact: artifact["records"][0].update({"human_override_grammar_validity": "MULTI_MEMBER_DEFECT"}), "override field must be empty"),
+        (lambda artifact: artifact["records"][0].update({"ai_canonical_semantics_suggestion": "I"}), "AI suggestion mismatch"),
+        (lambda artifact: artifact["records"][0].update({"ai_paraphrase_semantics_suggestion": "I"}), "AI suggestion mismatch"),
+        (lambda artifact: artifact["records"][0].update({"ai_polarity_flip_semantics_suggestion": "I"}), "AI suggestion mismatch"),
+        (lambda artifact: artifact["records"][0].update({"ai_grammar_validity_suggestion": "V"}), "AI suggestion mismatch"),
+        (lambda artifact: artifact["records"][0].update({"ai_triage_status": "HUMAN_REVIEW_REQUIRED"}), "AI suggestion mismatch"),
+        (lambda artifact: artifact["records"][0].update({"derived_human_canonical_semantics": "INVALID"}), "derived human value mismatch"),
+        (lambda artifact: artifact["records"][0].update({"derived_human_paraphrase_semantics": "INVALID"}), "derived human value mismatch"),
+        (lambda artifact: artifact["records"][0].update({"derived_human_polarity_flip_semantics": "INVALID"}), "derived human value mismatch"),
+        (lambda artifact: artifact["records"][0].update({"derived_human_grammar_validity": "NO_REPRODUCIBLE_DEFECT"}), "derived human value mismatch"),
+        (lambda artifact: artifact["records"][0].update({"derived_human_authority_decision": "SEMANTIC_CONFLICT"}), "COMPATIBILITY_MATRIX_MISMATCH"),
+        (lambda artifact: artifact["records"][0].update({"review_status": "DRAFT"}), "review status mismatch"),
+        (lambda artifact: artifact.update({"conversion_created_at_utc": "2026-08-14T00:00:00+00:00"}), "INVALID_REVIEW_TIMESTAMP"),
+        (lambda artifact: artifact.pop("source_workbook_name"), "schema mismatch"),
+        (lambda artifact: artifact.update({"extra": "field"}), "schema mismatch"),
+        (lambda artifact: artifact["records"][0].pop("review_status"), "schema mismatch"),
+        (lambda artifact: artifact["records"][0].update({"extra": "field"}), "schema mismatch"),
+    ],
+)
+def test_load_xlsx_confirmed_import_intermediate_rejects_mutated_contract(tmp_path, mutator, match):
+    auth = audit_authority(tmp_path)
+    path = external_wip_path(tmp_path).with_name("xlsx_confirmed_import.json")
+    artifact = clone_json(xlsx_import_intermediate(auth))
+    mutator(artifact)
+    write_xlsx_import_intermediate(path, artifact)
+
+    with pytest.raises(f2.ReviewInfrastructureError, match=match):
+        f2.load_xlsx_confirmed_import_intermediate(path, auth)
+
+
+@pytest.mark.parametrize(
+    "mutator",
+    [
+        lambda artifact: artifact["records"].pop(0),
+        lambda artifact: artifact["records"].append({**artifact["records"][0], "pair_id": "generated_fact_999", "source_record_sha256": "0" * 64}),
+        lambda artifact: artifact["records"][0].update({"pair_id": "generated_fact_999"}),
+        lambda artifact: artifact["records"].__setitem__(1, {**artifact["records"][1], "pair_id": artifact["records"][0]["pair_id"], "source_record_sha256": artifact["records"][0]["source_record_sha256"]}),
+    ],
+)
+def test_load_xlsx_confirmed_import_intermediate_rejects_non_exact_pair_sets(tmp_path, mutator):
+    auth = audit_authority(tmp_path)
+    path = external_wip_path(tmp_path).with_name("xlsx_confirmed_import.json")
+    artifact = clone_json(xlsx_import_intermediate(auth))
+    mutator(artifact)
+    write_xlsx_import_intermediate(path, artifact)
+
+    with pytest.raises(f2.ReviewInfrastructureError):
+        f2.load_xlsx_confirmed_import_intermediate(path, auth)
+
+
+def test_load_xlsx_confirmed_import_intermediate_requires_workbook_name(tmp_path):
+    auth = audit_authority(tmp_path)
+    path = external_wip_path(tmp_path).with_name("xlsx_confirmed_import.json")
+    artifact = xlsx_import_intermediate(auth)
+    artifact["source_workbook_name"] = ""
+    write_xlsx_import_intermediate(path, artifact)
+
+    with pytest.raises(f2.ReviewInfrastructureError, match="missing source workbook name"):
+        f2.load_xlsx_confirmed_import_intermediate(path, auth)
 
 
 def test_audit_pair_override_blocks_cohort_confirm(tmp_path):
@@ -1299,6 +1471,51 @@ def test_cohort_command_uses_structural_ack_not_individual_ack():
         )
 
 
+def test_import_confirmed_individual_parser_has_no_interactive_ack_substitution():
+    parser = f2.build_arg_parser()
+    args = parser.parse_args(
+        [
+            "import-confirmed-individual",
+            "--wip-path",
+            "wip.jsonl",
+            "--import-intermediate-path",
+            "xlsx_confirmed_import.json",
+            "--reviewer-id",
+            "reviewer",
+        ]
+    )
+    assert not hasattr(args, "ack_complete_triple_reviewed")
+    assert not hasattr(args, "ack_structural_cohort_confirm")
+    assert not hasattr(args, "review_method")
+
+    with pytest.raises(SystemExit):
+        parser.parse_args(
+            [
+                "import-confirmed-individual",
+                "--wip-path",
+                "wip.jsonl",
+                "--import-intermediate-path",
+                "xlsx_confirmed_import.json",
+                "--reviewer-id",
+                "reviewer",
+                "--ack-complete-triple-reviewed",
+            ]
+        )
+    with pytest.raises(SystemExit):
+        parser.parse_args(
+            [
+                "import-confirmed-individual",
+                "--wip-path",
+                "wip.jsonl",
+                "--import-intermediate-path",
+                "xlsx_confirmed_import.json",
+                "--reviewer-id",
+                "reviewer",
+                "--ack-structural-cohort-confirm",
+            ]
+        )
+
+
 def test_cohort_audit_command_writes_stable_artifact_and_no_wip_authority(tmp_path, monkeypatch):
     auth = audit_authority(tmp_path)
     configure_audit_authority_universe(monkeypatch, auth)
@@ -1328,6 +1545,159 @@ def test_cohort_audit_command_writes_stable_artifact_and_no_wip_authority(tmp_pa
     loaded, duplicates = f2.strict_load_wip(auth, wip)
     assert duplicates == set()
     assert loaded == audit_records
+
+
+def test_import_confirmed_individual_command_materializes_xlsx_records(tmp_path, monkeypatch):
+    auth = audit_authority(tmp_path)
+    configure_audit_authority_universe(monkeypatch, auth)
+    monkeypatch.setattr(f2, "load_authority", lambda: auth)
+    monkeypatch.setattr(f2, "utc_timestamp", lambda clock=None: "2026-08-15T00:00:00Z")
+    wip = external_wip_path(tmp_path)
+    import_path = write_valid_xlsx_import(tmp_path, auth)
+    args = import_confirmed_args(wip, import_path, reviewer_id="explicit-human-reviewer")
+
+    assert f2.command_import_confirmed_individual(args) == 0
+    loaded, duplicates = f2.strict_load_wip(auth, wip)
+    assert duplicates == set()
+    assert len(loaded) == 20
+    assert [record["pair_id"] for record in loaded] == f2.INDIVIDUALLY_REVIEWED_AUDIT_PAIR_IDS
+    for record in loaded:
+        assert record["review_method"] == f2.INDIVIDUAL_REVIEW_METHOD
+        assert record["record_origin"] == f2.XLSX_CONFIRMED_IMPORT
+        assert record["human_review_time_provenance"] == f2.NOT_CAPTURED_IN_XLSX
+        assert record["cohort_confirmation_id"] == ""
+        assert record["human_canonical_semantics"] == "VALID"
+        assert record["human_paraphrase_semantics"] == "VALID"
+        assert record["human_polarity_flip_semantics"] == "VALID"
+        assert record["human_grammar_validity"] == "MULTI_MEMBER_DEFECT"
+        assert record["human_authority_decision"] == "CANONICAL_REGENERATION_REQUIRED"
+        assert record["review_protocol_version"] == f2.REVIEW_PROTOCOL_VERSION
+        assert record["reviewer_id"] == "explicit-human-reviewer"
+        assert record["authority_recorded_at_utc"] == "2026-08-15T00:00:00Z"
+        assert f2.valid_rfc3339_utc_z(record["authority_recorded_at_utc"])
+        assert record["reviewed_at_utc"] == record["authority_recorded_at_utc"]
+        assert record["human_review_time_provenance"] == f2.NOT_CAPTURED_IN_XLSX
+        assert record["review_method"] != f2.STRUCTURAL_COHORT_METHOD
+        assert record["record_origin"] != f2.STRUCTURAL_COHORT_RECORD_ORIGIN
+    assert f2.validate_individual_audit_evidence(auth, loaded) == []
+
+
+@pytest.mark.parametrize("reviewer_id", ["", " reviewer "])
+def test_import_confirmed_individual_command_requires_explicit_human_reviewer(tmp_path, monkeypatch, reviewer_id):
+    auth = audit_authority(tmp_path)
+    configure_audit_authority_universe(monkeypatch, auth)
+    monkeypatch.setattr(f2, "load_authority", lambda: auth)
+    wip = external_wip_path(tmp_path)
+    import_path = write_valid_xlsx_import(tmp_path, auth)
+    args = import_confirmed_args(wip, import_path, reviewer_id=reviewer_id)
+
+    with pytest.raises(f2.ReviewInfrastructureError, match="MISSING_REVIEWER_ID"):
+        f2.command_import_confirmed_individual(args)
+    assert not wip.exists()
+
+
+def test_import_confirmed_individual_command_validates_existing_wip_before_import_artifact(tmp_path, monkeypatch):
+    auth = audit_authority(tmp_path)
+    configure_audit_authority_universe(monkeypatch, auth)
+    monkeypatch.setattr(f2, "load_authority", lambda: auth)
+    wip = external_wip_path(tmp_path)
+    invalid_existing = review_record(auth, f2.INDIVIDUALLY_REVIEWED_AUDIT_PAIR_IDS[0], human_grammar_validity="MULTI_MEMBER_DEFECT")
+    invalid_existing["source_record_sha256"] = "0" * 64
+    f2.write_wip_atomic(wip, [invalid_existing])
+    original_bytes = wip.read_bytes()
+    import_path = external_wip_path(tmp_path).with_name("xlsx_confirmed_import.json")
+    invalid_import = xlsx_import_intermediate(auth)
+    invalid_import["schema_version"] = "WRONG"
+    write_xlsx_import_intermediate(import_path, invalid_import)
+    args = import_confirmed_args(wip, import_path)
+
+    with pytest.raises(f2.ReviewInfrastructureError, match="SOURCE_RECORD_HASH_MISMATCH"):
+        f2.command_import_confirmed_individual(args)
+    assert wip.read_bytes() == original_bytes
+
+
+def test_import_confirmed_individual_command_refuses_existing_pair_collision(tmp_path, monkeypatch):
+    auth = audit_authority(tmp_path)
+    configure_audit_authority_universe(monkeypatch, auth)
+    monkeypatch.setattr(f2, "load_authority", lambda: auth)
+    wip = external_wip_path(tmp_path)
+    existing = review_record(auth, f2.INDIVIDUALLY_REVIEWED_AUDIT_PAIR_IDS[0], human_grammar_validity="MULTI_MEMBER_DEFECT")
+    f2.write_wip_atomic(wip, [existing])
+    original_bytes = wip.read_bytes()
+    import_path = write_valid_xlsx_import(tmp_path, auth)
+    args = import_confirmed_args(wip, import_path)
+
+    with pytest.raises(f2.ReviewInfrastructureError, match="DUPLICATE_PAIR_ID"):
+        f2.command_import_confirmed_individual(args)
+    loaded, duplicates = f2.strict_load_wip(auth, wip)
+    assert duplicates == set()
+    assert loaded == [existing]
+    assert wip.read_bytes() == original_bytes
+
+
+@pytest.mark.parametrize(
+    "existing_builder",
+    [
+        lambda auth: [
+            {
+                **review_record(auth, f2.INDIVIDUALLY_REVIEWED_AUDIT_PAIR_IDS[0], human_grammar_validity="MULTI_MEMBER_DEFECT"),
+                "source_record_sha256": "0" * 64,
+            }
+        ],
+        lambda auth: [
+            {
+                **review_record(auth, f2.INDIVIDUALLY_REVIEWED_AUDIT_PAIR_IDS[0], human_grammar_validity="MULTI_MEMBER_DEFECT"),
+                "record_origin": f2.XLSX_CONFIRMED_IMPORT,
+                "human_review_time_provenance": f2.CAPTURED_IN_RECORD,
+            }
+        ],
+        lambda auth: [
+            f2.make_structural_cohort_record(
+                auth,
+                f2.INDIVIDUALLY_REVIEWED_AUDIT_PAIR_IDS[0],
+                "reviewer",
+                "cohort-id",
+                "2026-08-14T00:00:00Z",
+            )
+        ],
+        lambda auth: [
+            review_record(auth, f2.INDIVIDUALLY_REVIEWED_AUDIT_PAIR_IDS[0], human_grammar_validity="MULTI_MEMBER_DEFECT"),
+            review_record(auth, f2.INDIVIDUALLY_REVIEWED_AUDIT_PAIR_IDS[0], human_grammar_validity="MULTI_MEMBER_DEFECT"),
+        ],
+    ],
+)
+def test_import_confirmed_individual_command_refuses_invalid_or_duplicate_existing_wip_without_mutation(tmp_path, monkeypatch, existing_builder):
+    auth = audit_authority(tmp_path)
+    configure_audit_authority_universe(monkeypatch, auth)
+    monkeypatch.setattr(f2, "load_authority", lambda: auth)
+    wip = external_wip_path(tmp_path)
+    f2.write_wip_atomic(wip, existing_builder(auth))
+    original_bytes = wip.read_bytes()
+    import_path = write_valid_xlsx_import(tmp_path, auth)
+    args = import_confirmed_args(wip, import_path)
+
+    with pytest.raises(f2.ReviewInfrastructureError):
+        f2.command_import_confirmed_individual(args)
+    assert wip.read_bytes() == original_bytes
+
+
+def test_import_confirmed_individual_command_import_validation_failure_leaves_wip_unchanged(tmp_path, monkeypatch):
+    auth = audit_authority(tmp_path)
+    configure_audit_authority_universe(monkeypatch, auth)
+    monkeypatch.setattr(f2, "load_authority", lambda: auth)
+    wip = external_wip_path(tmp_path)
+    existing = review_record(auth, "generated_fact_999")
+    f2.write_wip_atomic(wip, [existing])
+    original_bytes = wip.read_bytes()
+    import_path = external_wip_path(tmp_path).with_name("xlsx_confirmed_import.json")
+    artifact = xlsx_import_intermediate(auth)
+    artifact["records"][0]["review_status"] = "DRAFT"
+    write_xlsx_import_intermediate(import_path, artifact)
+    args = import_confirmed_args(wip, import_path)
+
+    with pytest.raises(f2.ReviewInfrastructureError, match="review status mismatch"):
+        f2.command_import_confirmed_individual(args)
+    assert wip.read_bytes() == original_bytes
 
 
 def test_cohort_confirm_requires_audit_artifact_and_expected_sha(tmp_path, monkeypatch):
