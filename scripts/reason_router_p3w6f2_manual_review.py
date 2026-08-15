@@ -951,6 +951,8 @@ def load_ai_prescreen(path: Path, authority: Authority) -> dict[str, dict[str, A
             records = parsed
         elif isinstance(parsed, dict) and isinstance(parsed.get("records"), list):
             records = parsed["records"]
+        elif isinstance(parsed, dict) and frozenset(parsed.keys()) == AI_PRESCREEN_FIELD_SET:
+            records = [parsed]
         else:
             raise ReviewInfrastructureError("INVALID_AI_PRESCREEN_ARTIFACT: expected JSONL, array, or object.records")
 

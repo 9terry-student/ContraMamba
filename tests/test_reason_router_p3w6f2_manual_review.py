@@ -99,8 +99,14 @@ def pair_summary(pair_count: int, member_count: int) -> dict[str, object]:
     }
 
 
+def external_workspace(tmp_path: Path) -> Path:
+    path = tmp_path.parent / f"{tmp_path.name}_external"
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
 def external_wip_path(tmp_path: Path) -> Path:
-    return tmp_path.parent / f"{tmp_path.name}_p3w6f2_review_wip.jsonl"
+    return external_workspace(tmp_path) / "p3w6f2_review_wip.jsonl"
 
 
 def prepare_reports_dir(repo_root: Path) -> None:
@@ -790,6 +796,18 @@ def test_wip_outside_repo_accepted(tmp_path):
     f2.require_wip_path_outside_repo(auth.repo_root, external_wip_path(tmp_path))
 
 
+def test_external_workspace_isolates_cohort_paths_outside_repo(tmp_path):
+    repo_a = tmp_path / "repo_a"
+    repo_b = tmp_path / "repo_b"
+    repo_a.mkdir()
+    repo_b.mkdir()
+    cohort_a = external_wip_path(repo_a).with_name("cohort.json")
+    cohort_b = external_wip_path(repo_b).with_name("cohort.json")
+    assert cohort_a != cohort_b
+    f2.require_wip_path_outside_repo(repo_a, cohort_a)
+    f2.require_wip_path_outside_repo(repo_b, cohort_b)
+
+
 def test_load_ai_prescreen_requires_artifact(tmp_path):
     auth = authority(tmp_path=tmp_path)
     with pytest.raises(f2.ReviewInfrastructureError, match="INVALID_AI_PRESCREEN_ARTIFACT"):
@@ -812,6 +830,32 @@ def test_load_ai_prescreen_accepts_strict_jsonl(tmp_path):
     path.write_text(json.dumps(record) + "\n", encoding="utf-8")
     loaded = f2.load_ai_prescreen(path, auth)
     assert loaded == {"pair_a": record}
+
+
+@pytest.mark.parametrize(
+    "payload_builder",
+    [
+        lambda records: json.dumps(records),
+        lambda records: json.dumps({"records": records}),
+        lambda records: "\n".join(json.dumps(record) for record in records) + "\n",
+    ],
+)
+def test_load_ai_prescreen_accepts_authorized_multi_record_formats(tmp_path, payload_builder):
+    rows = [source_row("pair_a"), source_row("pair_b")]
+    auth = authority(rows, tmp_path)
+    path = tmp_path / "ai.json"
+    records = [ai_prescreen_record(auth, "pair_a"), ai_prescreen_record(auth, "pair_b")]
+    path.write_text(payload_builder(records), encoding="utf-8")
+    loaded = f2.load_ai_prescreen(path, auth)
+    assert loaded == {record["pair_id"]: record for record in records}
+
+
+def test_load_ai_prescreen_rejects_unknown_json_object_container(tmp_path):
+    auth = authority(tmp_path=tmp_path)
+    path = tmp_path / "ai.json"
+    path.write_text(json.dumps({"unexpected": []}), encoding="utf-8")
+    with pytest.raises(f2.ReviewInfrastructureError, match="INVALID_AI_PRESCREEN_ARTIFACT"):
+        f2.load_ai_prescreen(path, auth)
 
 
 def test_cohort_confirmation_artifact_strict_schema_validation(tmp_path):
@@ -1155,12 +1199,12 @@ def test_final_output_target_is_derived_from_head_short_sha(tmp_path, monkeypatc
 
 
 def test_finalize_uses_exact_structural_pair_membership(tmp_path, monkeypatch):
+    monkeypatch.setattr(f2, "EXPECTED_PAIR_COUNT", 1)
     auth = authority([structural_row()], tmp_path)
     prepare_reports_dir(tmp_path)
     wip = external_wip_path(tmp_path)
     record = f2.make_structural_cohort_record(auth, "pair_a", "reviewer", cohort_id(auth, ["pair_a"]), "2026-08-14T00:00:00Z")
     f2.write_wip_atomic(wip, [record])
-    monkeypatch.setattr(f2, "EXPECTED_PAIR_COUNT", 1)
     monkeypatch.setattr(f2, "require_tracked_execution_state", lambda repo_root: "f" * 40)
     with pytest.raises(f2.ReviewInfrastructureError, match="INVALID_COHORT_CONFIRMATION_LINKAGE"):
         f2.finalize_artifacts(auth, wip, cohort_confirmations(auth, []))
@@ -1294,7 +1338,7 @@ def test_cohort_confirm_requires_audit_artifact_and_expected_sha(tmp_path, monke
             "--ai-prescreen-path",
             str(ai_path),
             "--audit-path",
-            str(tmp_path / "missing_audit.json"),
+            str(external_wip_path(tmp_path).with_name("missing_audit.json")),
             "--expected-audit-sha256",
             "a" * 64,
             "--cohort-confirmation-path",
