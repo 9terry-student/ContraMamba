@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
 import json
+import tempfile
 from pathlib import Path
+from typing import Iterator
 
 import pytest
 
@@ -12,6 +15,15 @@ from scripts import regenerate_reason_router_p3w6f2_p4b_r1_structured as regen
 
 def repo_root() -> Path:
     return Path(__file__).resolve().parents[1]
+
+
+@contextmanager
+def repo_scoped_reports_tmp() -> Iterator[Path]:
+    with tempfile.TemporaryDirectory(
+        prefix=".p3w6f2_p4c_pytest_",
+        dir=repo_root() / "reports",
+    ) as temp_dir:
+        yield Path(temp_dir)
 
 
 def authority_pair_ids() -> list[str]:
@@ -345,7 +357,7 @@ def test_analyzer_rejects_forged_pass_flags_and_historical_text_patch(tmp_path: 
         analyzer.analyze_execution_dir(repo_root(), execution_dir)
 
 
-def test_materializer_payload_contract_and_analyzer_accepts_tmp_execution_dir(tmp_path: Path):
+def test_materializer_payload_contract_and_analyzer_accepts_repo_scoped_execution_dir():
     baseline = historical_rows()
     payloads = regen.build_regenerated_payload(
         repo_root=repo_root(),
@@ -354,12 +366,13 @@ def test_materializer_payload_contract_and_analyzer_accepts_tmp_execution_dir(tm
         execution_commit="f" * 40,
         authority_hashes=regen.verify_authority_files(repo_root()),
     )
-    execution_dir = tmp_path / ("reason_router_p2_p3w6f2_p4b_r1_regeneration_execution_" + "f" * 40)
-    write_payloads(execution_dir, payloads)
-    result = analyzer.analyze_execution_dir(repo_root(), execution_dir)
-    assert result["analysis_status"] == "PASS"
-    assert result["authorized_pair_count"] == 119
-    assert result["authorized_member_count"] == 357
+    with repo_scoped_reports_tmp() as temp_root:
+        execution_dir = temp_root / ("reason_router_p2_p3w6f2_p4b_r1_regeneration_execution_" + "f" * 40)
+        write_payloads(execution_dir, payloads)
+        result = analyzer.analyze_execution_dir(repo_root(), execution_dir)
+        assert result["analysis_status"] == "PASS"
+        assert result["authorized_pair_count"] == 119
+        assert result["authorized_member_count"] == 357
 
 
 def rewrite_json(path: Path, value: dict) -> None:

@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
 import copy
 import json
+import tempfile
 from pathlib import Path
+from typing import Iterator
 
 import pytest
 
@@ -12,6 +15,15 @@ from scripts import regenerate_reason_router_p3w6f2_p4b_r1_structured as regen
 
 def repo_root() -> Path:
     return Path(__file__).resolve().parents[1]
+
+
+@contextmanager
+def repo_scoped_reports_tmp() -> Iterator[Path]:
+    with tempfile.TemporaryDirectory(
+        prefix=".p3w6f2_p4c_pytest_",
+        dir=repo_root() / "reports",
+    ) as temp_dir:
+        yield Path(temp_dir)
 
 
 def authority_pair_ids() -> list[str]:
@@ -35,17 +47,17 @@ def artifacts_from_payload(payloads: dict[str, bytes]) -> dict[str, object]:
     }
 
 
-def write_regeneration_execution_dir(tmp_path: Path, commit: str = "c") -> Path:
+def write_regeneration_execution_dir(temp_root: Path, commit: str = "c") -> Path:
     payloads = payload_case()
-    execution_dir = tmp_path / ("reason_router_p2_p3w6f2_p4b_r1_regeneration_execution_" + commit * 40)
+    execution_dir = temp_root / ("reason_router_p2_p3w6f2_p4b_r1_regeneration_execution_" + commit * 40)
     execution_dir.mkdir()
     for name in regen.EXPECTED_ARTIFACT_NAMES:
         (execution_dir / name).write_bytes(payloads[name])
     return execution_dir
 
 
-def compatibility_payloads(tmp_path: Path) -> tuple[Path, dict[str, bytes]]:
-    execution_dir = write_regeneration_execution_dir(tmp_path)
+def compatibility_payloads(temp_root: Path) -> tuple[Path, dict[str, bytes]]:
+    execution_dir = write_regeneration_execution_dir(temp_root)
     artifacts = artifacts_from_payload(payload_case())
     rows = compat.build_compatibility_rows(
         members=artifacts[regen.MEMBERS_NAME],
@@ -170,62 +182,67 @@ def test_non_f2_member_cannot_receive_compatibility():
         )
 
 
-def test_compatibility_artifact_names_schema_and_provenance(tmp_path: Path):
-    execution_dir = write_regeneration_execution_dir(tmp_path)
-    output_dir = execution_dir
-    result = compat.materialize(repo_root(), execution_dir, output_dir)
-    assert result["status"] == "PASS"
-    assert compat.EXPECTED_ARTIFACT_NAMES <= {entry.name for entry in output_dir.iterdir()}
-    rows = regen.load_jsonl(output_dir / compat.ROWS_NAME)
-    summary = regen.load_json(output_dir / compat.SUMMARY_NAME)
-    provenance = regen.load_json(output_dir / compat.PROVENANCE_NAME)
-    assert rows[0]["schema_version"] == "P3W6F2P4B_R1_STAGE185_COMPATIBILITY_ROW_V1"
-    assert summary["schema_version"] == "P3W6F2P4B_R1_STAGE185_COMPATIBILITY_SUMMARY_V1"
-    assert provenance["schema_version"] == "P3W6F2P4B_R1_STAGE185_COMPATIBILITY_PROVENANCE_V1"
-    assert provenance["stage185_source_script"] == compat.STAGE185_SOURCE_SCRIPT
-    assert provenance["compatibility_rows_sha256"] == regen.file_sha256(output_dir / compat.ROWS_NAME)
-    assert provenance["compatibility_summary_sha256"] == regen.file_sha256(output_dir / compat.SUMMARY_NAME)
+def test_compatibility_artifact_names_schema_and_provenance():
+    with repo_scoped_reports_tmp() as temp_root:
+        execution_dir = write_regeneration_execution_dir(temp_root)
+        output_dir = execution_dir
+        result = compat.materialize(repo_root(), execution_dir, output_dir)
+        assert result["status"] == "PASS"
+        assert compat.EXPECTED_ARTIFACT_NAMES <= {entry.name for entry in output_dir.iterdir()}
+        rows = regen.load_jsonl(output_dir / compat.ROWS_NAME)
+        summary = regen.load_json(output_dir / compat.SUMMARY_NAME)
+        provenance = regen.load_json(output_dir / compat.PROVENANCE_NAME)
+        assert rows[0]["schema_version"] == "P3W6F2P4B_R1_STAGE185_COMPATIBILITY_ROW_V1"
+        assert summary["schema_version"] == "P3W6F2P4B_R1_STAGE185_COMPATIBILITY_SUMMARY_V1"
+        assert provenance["schema_version"] == "P3W6F2P4B_R1_STAGE185_COMPATIBILITY_PROVENANCE_V1"
+        assert provenance["stage185_source_script"] == compat.STAGE185_SOURCE_SCRIPT
+        assert provenance["compatibility_rows_sha256"] == regen.file_sha256(output_dir / compat.ROWS_NAME)
+        assert provenance["compatibility_summary_sha256"] == regen.file_sha256(output_dir / compat.SUMMARY_NAME)
 
 
-def test_conflicting_compatibility_output_rejected(tmp_path: Path):
-    output_dir, payloads = compatibility_payloads(tmp_path)
-    (output_dir / compat.ROWS_NAME).write_text("conflict\n", encoding="utf-8")
-    (output_dir / compat.SUMMARY_NAME).write_text("{}\n", encoding="utf-8")
-    (output_dir / compat.PROVENANCE_NAME).write_text("{}\n", encoding="utf-8")
-    with pytest.raises(compat.Stage185CompatibilityError, match="COMPATIBILITY_OUTPUT_CONFLICT"):
-        compat.publish_artifacts(output_dir, payloads)
+def test_conflicting_compatibility_output_rejected():
+    with repo_scoped_reports_tmp() as temp_root:
+        output_dir, payloads = compatibility_payloads(temp_root)
+        (output_dir / compat.ROWS_NAME).write_text("conflict\n", encoding="utf-8")
+        (output_dir / compat.SUMMARY_NAME).write_text("{}\n", encoding="utf-8")
+        (output_dir / compat.PROVENANCE_NAME).write_text("{}\n", encoding="utf-8")
+        with pytest.raises(compat.Stage185CompatibilityError, match="COMPATIBILITY_OUTPUT_CONFLICT"):
+            compat.publish_artifacts(output_dir, payloads)
 
 
-def test_partial_compatibility_output_rejected(tmp_path: Path):
-    output_dir, payloads = compatibility_payloads(tmp_path)
-    (output_dir / compat.ROWS_NAME).write_text("partial\n", encoding="utf-8")
-    with pytest.raises(compat.Stage185CompatibilityError, match="COMPATIBILITY_OUTPUT_PARTIAL_PREEXISTING"):
-        compat.publish_artifacts(output_dir, payloads)
+def test_partial_compatibility_output_rejected():
+    with repo_scoped_reports_tmp() as temp_root:
+        output_dir, payloads = compatibility_payloads(temp_root)
+        (output_dir / compat.ROWS_NAME).write_text("partial\n", encoding="utf-8")
+        with pytest.raises(compat.Stage185CompatibilityError, match="COMPATIBILITY_OUTPUT_PARTIAL_PREEXISTING"):
+            compat.publish_artifacts(output_dir, payloads)
 
 
-def test_mid_publication_failure_leaves_no_partial_compatibility_set(tmp_path: Path):
-    output_dir, payloads = compatibility_payloads(tmp_path)
-    calls = []
+def test_mid_publication_failure_leaves_no_partial_compatibility_set():
+    with repo_scoped_reports_tmp() as temp_root:
+        output_dir, payloads = compatibility_payloads(temp_root)
+        calls = []
 
-    def failing_promote(source: Path, target: Path) -> None:
-        calls.append((source, target))
-        raise RuntimeError("simulated promotion failure")
+        def failing_promote(source: Path, target: Path) -> None:
+            calls.append((source, target))
+            raise RuntimeError("simulated promotion failure")
 
-    with pytest.raises(RuntimeError, match="simulated promotion failure"):
-        compat.publish_artifacts(output_dir, payloads, promote_directory=failing_promote)
-    assert calls
-    assert not any((output_dir / name).exists() for name in compat.EXPECTED_ARTIFACT_NAMES)
-    assert regen.EXPECTED_ARTIFACT_NAMES <= {entry.name for entry in output_dir.iterdir()}
+        with pytest.raises(RuntimeError, match="simulated promotion failure"):
+            compat.publish_artifacts(output_dir, payloads, promote_directory=failing_promote)
+        assert calls
+        assert not any((output_dir / name).exists() for name in compat.EXPECTED_ARTIFACT_NAMES)
+        assert regen.EXPECTED_ARTIFACT_NAMES <= {entry.name for entry in output_dir.iterdir()}
 
 
-def test_compatibility_publish_success_and_idempotent_replay(tmp_path: Path):
-    output_dir, payloads = compatibility_payloads(tmp_path)
-    assert compat.publish_artifacts(output_dir, payloads) == "PUBLISHED"
-    assert all((output_dir / name).is_file() for name in compat.EXPECTED_ARTIFACT_NAMES)
-    before = {name: (output_dir / name).read_bytes() for name in compat.EXPECTED_ARTIFACT_NAMES}
-    assert compat.publish_artifacts(output_dir, payloads) == "IDEMPOTENT_PASS"
-    after = {name: (output_dir / name).read_bytes() for name in compat.EXPECTED_ARTIFACT_NAMES}
-    assert after == before
+def test_compatibility_publish_success_and_idempotent_replay():
+    with repo_scoped_reports_tmp() as temp_root:
+        output_dir, payloads = compatibility_payloads(temp_root)
+        assert compat.publish_artifacts(output_dir, payloads) == "PUBLISHED"
+        assert all((output_dir / name).is_file() for name in compat.EXPECTED_ARTIFACT_NAMES)
+        before = {name: (output_dir / name).read_bytes() for name in compat.EXPECTED_ARTIFACT_NAMES}
+        assert compat.publish_artifacts(output_dir, payloads) == "IDEMPOTENT_PASS"
+        after = {name: (output_dir / name).read_bytes() for name in compat.EXPECTED_ARTIFACT_NAMES}
+        assert after == before
 
 
 def test_stage185_source_hash_spoof_rejected(monkeypatch):
