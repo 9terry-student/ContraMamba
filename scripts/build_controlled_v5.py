@@ -396,11 +396,21 @@ def _statement(
     )
 
 
-def _paraphrase(fact: dict, *, negative: bool = False) -> str:
+def _paraphrase(
+    fact: dict,
+    *,
+    negative: bool = False,
+    predicate_surface_override: str | None = None,
+) -> str:
+    predicate = fact["predicate"]
+    if predicate_surface_override is not None:
+        if not negative:
+            raise ValueError("predicate_surface_override requires negative=True")
+        predicate = predicate_surface_override
     polarity = "did not " if negative else ""
     return (
         f"During {fact['time']} in {fact['location']}, {fact['title']} "
-        f"{fact['name']} acting as {fact['role']} {polarity}{fact['predicate']} "
+        f"{fact['name']} acting as {fact['role']} {polarity}{predicate} "
         f"{fact['object']}."
     )
 
@@ -600,6 +610,185 @@ def build_controlled_records_with_f1_polarity_repair_audit(
         repair_consumed_row_ids=repair_consumed_row_ids,
     )
     return records, {"repair_consumed_row_ids": sorted(repair_consumed_row_ids)}
+
+
+F2_P4B_R1_AUTHORITY_PAIR_COUNT = 119
+F2_P4B_R1_REQUIRED_INTERVENTIONS = ("none", "paraphrase", "polarity_flip")
+F2_P4B_R1_REQUIRED_PREDICATE_BASES: dict[str, str] = {
+    "approved": "approve",
+    "delivered": "deliver",
+    "launched": "launch",
+    "opened": "open",
+    "published": "publish",
+    "restored": "restore",
+    "selected": "select",
+}
+
+
+def _f2_p4b_r1_base_predicate(predicate: str) -> str:
+    expected = F2_P4B_R1_REQUIRED_PREDICATE_BASES.get(predicate)
+    if expected is None:
+        raise ValueError("F2_P4B_R1_UNEXPECTED_AUTHORIZED_PREDICATE")
+    observed = _BASE_PREDICATE_BY_INFLECTED.get(predicate)
+    if observed != expected:
+        raise ValueError("F2_P4B_R1_BASE_FORM_COVERAGE_UNRESOLVED")
+    return observed
+
+
+def _f2_p4b_r1_fact_by_pair_id(
+    templates: list[dict],
+    authorized_f2_pair_ids: set[str],
+) -> dict[str, dict]:
+    if len(authorized_f2_pair_ids) != F2_P4B_R1_AUTHORITY_PAIR_COUNT:
+        raise ValueError("F2_P4B_R1_AUTHORITY_CARDINALITY_MISMATCH")
+    by_pair: dict[str, dict] = {}
+    for index, fact in enumerate(templates):
+        pair_id = fact["pair_id"]
+        if pair_id not in authorized_f2_pair_ids:
+            continue
+        if index < len(templates) // 2:
+            raise ValueError("F2_P4B_R1_PAIR_NOT_BASE_REFUTE")
+        if pair_id in by_pair:
+            raise ValueError("F2_P4B_R1_AMBIGUOUS_STRUCTURED_FACT")
+        by_pair[pair_id] = dict(fact)
+    missing = sorted(authorized_f2_pair_ids - set(by_pair))
+    if missing:
+        raise ValueError("F2_P4B_R1_STRUCTURED_FACT_UNRESOLVED")
+    observed_predicates = {fact["predicate"] for fact in by_pair.values()}
+    if observed_predicates != set(F2_P4B_R1_REQUIRED_PREDICATE_BASES):
+        raise ValueError("F2_P4B_R1_AUTHORIZED_PREDICATE_SET_MISMATCH")
+    for predicate in observed_predicates:
+        _f2_p4b_r1_base_predicate(predicate)
+    return by_pair
+
+
+def _f2_p4b_r1_member_record(fact: dict, intervention: str) -> dict:
+    base_predicate = _f2_p4b_r1_base_predicate(fact["predicate"])
+    claim = _statement(fact)
+    if intervention == "none":
+        return _record(
+            fact,
+            "none",
+            _statement(fact, negative=True, predicate_surface_override=base_predicate),
+            "REFUTE",
+            1,
+            1,
+            1,
+            "REFUTE",
+            "none",
+            claim,
+        )
+    if intervention == "paraphrase":
+        return _record(
+            fact,
+            "paraphrase",
+            _paraphrase(fact, negative=True, predicate_surface_override=base_predicate),
+            "REFUTE",
+            1,
+            1,
+            1,
+            "REFUTE",
+            "none",
+            claim,
+        )
+    if intervention == "polarity_flip":
+        return _record(
+            fact,
+            "polarity_flip",
+            _statement(fact, negative=False),
+            "SUPPORT",
+            1,
+            1,
+            1,
+            "SUPPORT",
+            "polarity",
+            claim,
+        )
+    raise ValueError("F2_P4B_R1_UNKNOWN_MEMBER_INTERVENTION")
+
+
+def build_controlled_records_with_f2_p4b_r1_regeneration(
+    num_pairs: int,
+    authorized_f2_pair_ids: set[str] | frozenset[str] | list[str] | tuple[str, ...],
+) -> list[dict]:
+    records, _audit = build_controlled_records_with_f2_p4b_r1_regeneration_audit(
+        num_pairs,
+        authorized_f2_pair_ids,
+    )
+    return records
+
+
+def build_controlled_records_with_f2_p4b_r1_regeneration_audit(
+    num_pairs: int,
+    authorized_f2_pair_ids: set[str] | frozenset[str] | list[str] | tuple[str, ...],
+) -> tuple[list[dict], dict[str, list[dict] | list[str] | dict[str, str]]]:
+    authorized = set(authorized_f2_pair_ids)
+    templates = fact_templates_for_count(num_pairs)
+    facts_by_pair = _f2_p4b_r1_fact_by_pair_id(templates, authorized)
+    historical_records = _build_records(templates)
+    regenerated_records: list[dict] = []
+    regenerated_members: list[dict] = []
+    consumed_member_ids: set[str] = set()
+    for record in historical_records:
+        pair_id = record["pair_id"]
+        if pair_id not in facts_by_pair:
+            regenerated_records.append(record)
+            continue
+        intervention = record["intervention_type"]
+        if intervention not in F2_P4B_R1_REQUIRED_INTERVENTIONS:
+            regenerated_records.append(record)
+            continue
+        fact = facts_by_pair[pair_id]
+        regenerated = _f2_p4b_r1_member_record(fact, intervention)
+        preserved_fields = set(REQUIRED_FIELDS) - {"evidence"}
+        if intervention == "polarity_flip":
+            preserved_fields = set(REQUIRED_FIELDS)
+        changed = sorted(
+            field for field in REQUIRED_FIELDS
+            if record.get(field) != regenerated.get(field)
+        )
+        allowed = ["evidence"] if intervention in {"none", "paraphrase"} else []
+        if changed != allowed:
+            raise ValueError("F2_P4B_R1_FIELD_DELTA_SCOPE_UNRESOLVED")
+        if any(record[field] != regenerated[field] for field in preserved_fields):
+            raise ValueError("F2_P4B_R1_IDENTITY_OR_LABEL_DRIFT")
+        regenerated_records.append(regenerated)
+        consumed_member_ids.add(regenerated["id"])
+        regenerated_members.append(
+            {
+                "pair_id": pair_id,
+                "member_id": regenerated["id"],
+                "intervention_type": intervention,
+                "structured_fact": dict(fact),
+                "semantic_predicate": fact["predicate"],
+                "base_predicate": _f2_p4b_r1_base_predicate(fact["predicate"]),
+                "negative_auxiliary_realization": (
+                    f"did not {_f2_p4b_r1_base_predicate(fact['predicate'])}"
+                    if intervention in {"none", "paraphrase"}
+                    else ""
+                ),
+                "generation_root": "structured_fact",
+                "generation_template": (
+                    "_statement" if intervention in {"none", "polarity_flip"} else "_paraphrase"
+                ),
+                "old_text_used_for_generation": False,
+                "row_field_delta_keys": changed,
+            }
+        )
+    expected_members = {
+        f"{pair_id}__{intervention}"
+        for pair_id in authorized
+        for intervention in F2_P4B_R1_REQUIRED_INTERVENTIONS
+    }
+    if consumed_member_ids != expected_members:
+        raise ValueError("F2_P4B_R1_MEMBER_UNIVERSE_MISMATCH")
+    validate_records(regenerated_records)
+    return regenerated_records, {
+        "authorized_f2_pair_ids": sorted(authorized),
+        "regenerated_member_ids": sorted(consumed_member_ids),
+        "regenerated_members": regenerated_members,
+        "base_predicate_by_inflected": dict(F2_P4B_R1_REQUIRED_PREDICATE_BASES),
+    }
 
 
 def validate_record(record: dict, row_number: int | None = None) -> None:
