@@ -1,0 +1,33 @@
+{
+  "arguments": {
+    "execution_commit": "4122078ab7962042e3d6bf89f8b4eb5cec463458"
+  },
+  "command": "scripts/regenerate_reason_router_p3w6f2_p4b_r1_structured.py",
+  "deterministic_invocation_sha256": "301dfc6f412ad71555db8bb905af8f1f466e52b33ef84a36a7df8c5b9a09f040",
+  "dirty_tracked_worktree_allowed": false,
+  "environment_policy": "deterministic_cpu_file_materialization_only",
+  "execution_commit": "4122078ab7962042e3d6bf89f8b4eb5cec463458",
+  "implementation_commit": "4122078ab7962042e3d6bf89f8b4eb5cec463458",
+  "input_paths": [
+    "data/controlled_v5_v3_without_time_swap.jsonl",
+    "reports/reason_router_p2_p3w6f2_hybrid_human_review_execution_cf80d52c/p3w6f2_hybrid_review_completed.csv",
+    "reports/reason_router_p2_p3w6f2_hybrid_human_review_execution_cf80d52c/p3w6f2_hybrid_review_decisions.jsonl",
+    "reports/reason_router_p2_p3w6f2_hybrid_human_review_execution_cf80d52c/p3w6f2_hybrid_review_summary.json",
+    "reports/reason_router_p2_p3w6f2_hybrid_human_review_result_review_cf80d52c/p3w6f2_final_result_review.json",
+    "reports/reason_router_p2_p3w6f2_hybrid_human_review_result_review_cf80d52c/p3w6f2_final_review_wip.jsonl",
+    "reports/reason_router_p2_p3w6f2_hybrid_human_review_result_review_cf80d52c/p3w6f2_reviewer_alias_evidence_v1.json",
+    "reports/reason_router_p2_p3w6f2_hybrid_human_review_result_review_cf80d52c/p3w6f2_structural_cohort_audit_v1.json",
+    "reports/reason_router_p2_p3w6f2_hybrid_human_review_result_review_cf80d52c/p3w6f2_structural_cohort_confirmation_v1.json",
+    "reports/reason_router_p2_p3w6f2_p4b_r1_regeneration_spec.md",
+    "scripts/build_controlled_v5.py",
+    "scripts/build_stage185a_controlled_train_integrity_sidecar.py"
+  ],
+  "locale_policy": "UTF-8",
+  "output_directory": "reports/reason_router_p2_p3w6f2_p4b_r1_regeneration_execution_4122078ab7962042e3d6bf89f8b4eb5cec463458",
+  "p4b_spec_authority_commit": "fcc3b9ccaf2bbee33ac18dcef10d50acff54aab4",
+  "python_version": "3.12.13",
+  "random_seed_policy": "no random sampling; Stage185 split identity replay uses fixed seed 17 only",
+  "schema_version": "P3W6F2P4B_R1_INVOCATION_V1",
+  "source_authority_commit": "acc078f8ddb5ba362d0c6861e23de21aad09cb8b",
+  "timezone_policy": "UTC for manifests only; dataset rows contain no wall-clock timestamp"
+}

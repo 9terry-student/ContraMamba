@@ -1,0 +1,634 @@
+{
+  "ambiguous_mappings": [],
+  "authorized_predicates": [
+    "approved",
+    "delivered",
+    "launched",
+    "opened",
+    "published",
+    "restored",
+    "selected"
+  ],
+  "coverage_status": "PASS",
+  "extra_observed_predicates": [],
+  "mapping_source_sha256": "9fbd94a151c4d83a5e824412d7c0837062fedd20628f4f198116b2d08b679410",
+  "mapping_source_symbol": "_BASE_PREDICATE_BY_INFLECTED",
+  "missing_mappings": [],
+  "observed_authorized_predicates": [
+    "approved",
+    "delivered",
+    "launched",
+    "opened",
+    "published",
+    "restored",
+    "selected"
+  ],
+  "pair_coverage": {
+    "generated_fact_152": {
+      "base_predicate": "restore",
+      "coverage_status": "PASS",
+      "semantic_predicate": "restored"
+    },
+    "generated_fact_154": {
+      "base_predicate": "deliver",
+      "coverage_status": "PASS",
+      "semantic_predicate": "delivered"
+    },
+    "generated_fact_156": {
+      "base_predicate": "select",
+      "coverage_status": "PASS",
+      "semantic_predicate": "selected"
+    },
+    "generated_fact_157": {
+      "base_predicate": "approve",
+      "coverage_status": "PASS",
+      "semantic_predicate": "approved"
+    },
+    "generated_fact_159": {
+      "base_predicate": "restore",
+      "coverage_status": "PASS",
+      "semantic_predicate": "restored"
+    },
+    "generated_fact_160": {
+      "base_predicate": "publish",
+      "coverage_status": "PASS",
+      "semantic_predicate": "published"
+    },
+    "generated_fact_162": {
+      "base_predicate": "open",
+      "coverage_status": "PASS",
+      "semantic_predicate": "opened"
+    },
+    "generated_fact_163": {
+      "base_predicate": "select",
+      "coverage_status": "PASS",
+      "semantic_predicate": "selected"
+    },
+    "generated_fact_164": {
+      "base_predicate": "approve",
+      "coverage_status": "PASS",
+      "semantic_predicate": "approved"
+    },
+    "generated_fact_167": {
+      "base_predicate": "publish",
+      "coverage_status": "PASS",
+      "semantic_predicate": "published"
+    },
+    "generated_fact_168": {
+      "base_predicate": "deliver",
+      "coverage_status": "PASS",
+      "semantic_predicate": "delivered"
+    },
+    "generated_fact_169": {
+      "base_predicate": "open",
+      "coverage_status": "PASS",
+      "semantic_predicate": "opened"
+    },
+    "generated_fact_170": {
+      "base_predicate": "select",
+      "coverage_status": "PASS",
+      "semantic_predicate": "selected"
+    },
+    "generated_fact_171": {
+      "base_predicate": "approve",
+      "coverage_status": "PASS",
+      "semantic_predicate": "approved"
+    },
+    "generated_fact_173": {
+      "base_predicate": "restore",
+      "coverage_status": "PASS",
+      "semantic_predicate": "restored"
+    },
+    "generated_fact_175": {
+      "base_predicate": "deliver",
+      "coverage_status": "PASS",
+      "semantic_predicate": "delivered"
+    },
+    "generated_fact_177": {
+      "base_predicate": "select",
+      "coverage_status": "PASS",
+      "semantic_predicate": "selected"
+    },
+    "generated_fact_178": {
+      "base_predicate": "approve",
+      "coverage_status": "PASS",
+      "semantic_predicate": "approved"
+    },
+    "generated_fact_179": {
+      "base_predicate": "launch",
+      "coverage_status": "PASS",
+      "semantic_predicate": "launched"
+    },
+    "generated_fact_180": {
+      "base_predicate": "restore",
+      "coverage_status": "PASS",
+      "semantic_predicate": "restored"
+    },
+    "generated_fact_181": {
+      "base_predicate": "publish",
+      "coverage_status": "PASS",
+      "semantic_predicate": "published"
+    },
+    "generated_fact_182": {
+      "base_predicate": "deliver",
+      "coverage_status": "PASS",
+      "semantic_predicate": "delivered"
+    },
+    "generated_fact_183": {
+      "base_predicate": "open",
+      "coverage_status": "PASS",
+      "semantic_predicate": "opened"
+    },
+    "generated_fact_184": {
+      "base_predicate": "select",
+      "coverage_status": "PASS",
+      "semantic_predicate": "selected"
+    },
+    "generated_fact_185": {
+      "base_predicate": "approve",
+      "coverage_status": "PASS",
+      "semantic_predicate": "approved"
+    },
+    "generated_fact_187": {
+      "base_predicate": "restore",
+      "coverage_status": "PASS",
+      "semantic_predicate": "restored"
+    },
+    "generated_fact_188": {
+      "base_predicate": "publish",
+      "coverage_status": "PASS",
+      "semantic_predicate": "published"
+    },
+    "generated_fact_189": {
+      "base_predicate": "deliver",
+      "coverage_status": "PASS",
+      "semantic_predicate": "delivered"
+    },
+    "generated_fact_190": {
+      "base_predicate": "open",
+      "coverage_status": "PASS",
+      "semantic_predicate": "opened"
+    },
+    "generated_fact_191": {
+      "base_predicate": "select",
+      "coverage_status": "PASS",
+      "semantic_predicate": "selected"
+    },
+    "generated_fact_192": {
+      "base_predicate": "approve",
+      "coverage_status": "PASS",
+      "semantic_predicate": "approved"
+    },
+    "generated_fact_193": {
+      "base_predicate": "launch",
+      "coverage_status": "PASS",
+      "semantic_predicate": "launched"
+    },
+    "generated_fact_194": {
+      "base_predicate": "restore",
+      "coverage_status": "PASS",
+      "semantic_predicate": "restored"
+    },
+    "generated_fact_196": {
+      "base_predicate": "deliver",
+      "coverage_status": "PASS",
+      "semantic_predicate": "delivered"
+    },
+    "generated_fact_197": {
+      "base_predicate": "open",
+      "coverage_status": "PASS",
+      "semantic_predicate": "opened"
+    },
+    "generated_fact_198": {
+      "base_predicate": "select",
+      "coverage_status": "PASS",
+      "semantic_predicate": "selected"
+    },
+    "generated_fact_199": {
+      "base_predicate": "approve",
+      "coverage_status": "PASS",
+      "semantic_predicate": "approved"
+    },
+    "generated_fact_200": {
+      "base_predicate": "launch",
+      "coverage_status": "PASS",
+      "semantic_predicate": "launched"
+    },
+    "generated_fact_201": {
+      "base_predicate": "restore",
+      "coverage_status": "PASS",
+      "semantic_predicate": "restored"
+    },
+    "generated_fact_202": {
+      "base_predicate": "publish",
+      "coverage_status": "PASS",
+      "semantic_predicate": "published"
+    },
+    "generated_fact_203": {
+      "base_predicate": "deliver",
+      "coverage_status": "PASS",
+      "semantic_predicate": "delivered"
+    },
+    "generated_fact_204": {
+      "base_predicate": "open",
+      "coverage_status": "PASS",
+      "semantic_predicate": "opened"
+    },
+    "generated_fact_205": {
+      "base_predicate": "select",
+      "coverage_status": "PASS",
+      "semantic_predicate": "selected"
+    },
+    "generated_fact_206": {
+      "base_predicate": "approve",
+      "coverage_status": "PASS",
+      "semantic_predicate": "approved"
+    },
+    "generated_fact_208": {
+      "base_predicate": "restore",
+      "coverage_status": "PASS",
+      "semantic_predicate": "restored"
+    },
+    "generated_fact_209": {
+      "base_predicate": "publish",
+      "coverage_status": "PASS",
+      "semantic_predicate": "published"
+    },
+    "generated_fact_211": {
+      "base_predicate": "open",
+      "coverage_status": "PASS",
+      "semantic_predicate": "opened"
+    },
+    "generated_fact_212": {
+      "base_predicate": "select",
+      "coverage_status": "PASS",
+      "semantic_predicate": "selected"
+    },
+    "generated_fact_213": {
+      "base_predicate": "approve",
+      "coverage_status": "PASS",
+      "semantic_predicate": "approved"
+    },
+    "generated_fact_214": {
+      "base_predicate": "launch",
+      "coverage_status": "PASS",
+      "semantic_predicate": "launched"
+    },
+    "generated_fact_215": {
+      "base_predicate": "restore",
+      "coverage_status": "PASS",
+      "semantic_predicate": "restored"
+    },
+    "generated_fact_216": {
+      "base_predicate": "publish",
+      "coverage_status": "PASS",
+      "semantic_predicate": "published"
+    },
+    "generated_fact_217": {
+      "base_predicate": "deliver",
+      "coverage_status": "PASS",
+      "semantic_predicate": "delivered"
+    },
+    "generated_fact_218": {
+      "base_predicate": "open",
+      "coverage_status": "PASS",
+      "semantic_predicate": "opened"
+    },
+    "generated_fact_219": {
+      "base_predicate": "select",
+      "coverage_status": "PASS",
+      "semantic_predicate": "selected"
+    },
+    "generated_fact_220": {
+      "base_predicate": "approve",
+      "coverage_status": "PASS",
+      "semantic_predicate": "approved"
+    },
+    "generated_fact_222": {
+      "base_predicate": "restore",
+      "coverage_status": "PASS",
+      "semantic_predicate": "restored"
+    },
+    "generated_fact_223": {
+      "base_predicate": "publish",
+      "coverage_status": "PASS",
+      "semantic_predicate": "published"
+    },
+    "generated_fact_224": {
+      "base_predicate": "deliver",
+      "coverage_status": "PASS",
+      "semantic_predicate": "delivered"
+    },
+    "generated_fact_226": {
+      "base_predicate": "select",
+      "coverage_status": "PASS",
+      "semantic_predicate": "selected"
+    },
+    "generated_fact_228": {
+      "base_predicate": "launch",
+      "coverage_status": "PASS",
+      "semantic_predicate": "launched"
+    },
+    "generated_fact_229": {
+      "base_predicate": "restore",
+      "coverage_status": "PASS",
+      "semantic_predicate": "restored"
+    },
+    "generated_fact_231": {
+      "base_predicate": "deliver",
+      "coverage_status": "PASS",
+      "semantic_predicate": "delivered"
+    },
+    "generated_fact_232": {
+      "base_predicate": "open",
+      "coverage_status": "PASS",
+      "semantic_predicate": "opened"
+    },
+    "generated_fact_233": {
+      "base_predicate": "select",
+      "coverage_status": "PASS",
+      "semantic_predicate": "selected"
+    },
+    "generated_fact_234": {
+      "base_predicate": "approve",
+      "coverage_status": "PASS",
+      "semantic_predicate": "approved"
+    },
+    "generated_fact_235": {
+      "base_predicate": "launch",
+      "coverage_status": "PASS",
+      "semantic_predicate": "launched"
+    },
+    "generated_fact_236": {
+      "base_predicate": "restore",
+      "coverage_status": "PASS",
+      "semantic_predicate": "restored"
+    },
+    "generated_fact_237": {
+      "base_predicate": "publish",
+      "coverage_status": "PASS",
+      "semantic_predicate": "published"
+    },
+    "generated_fact_239": {
+      "base_predicate": "open",
+      "coverage_status": "PASS",
+      "semantic_predicate": "opened"
+    },
+    "generated_fact_242": {
+      "base_predicate": "launch",
+      "coverage_status": "PASS",
+      "semantic_predicate": "launched"
+    },
+    "generated_fact_243": {
+      "base_predicate": "restore",
+      "coverage_status": "PASS",
+      "semantic_predicate": "restored"
+    },
+    "generated_fact_244": {
+      "base_predicate": "publish",
+      "coverage_status": "PASS",
+      "semantic_predicate": "published"
+    },
+    "generated_fact_245": {
+      "base_predicate": "deliver",
+      "coverage_status": "PASS",
+      "semantic_predicate": "delivered"
+    },
+    "generated_fact_246": {
+      "base_predicate": "open",
+      "coverage_status": "PASS",
+      "semantic_predicate": "opened"
+    },
+    "generated_fact_247": {
+      "base_predicate": "select",
+      "coverage_status": "PASS",
+      "semantic_predicate": "selected"
+    },
+    "generated_fact_248": {
+      "base_predicate": "approve",
+      "coverage_status": "PASS",
+      "semantic_predicate": "approved"
+    },
+    "generated_fact_249": {
+      "base_predicate": "launch",
+      "coverage_status": "PASS",
+      "semantic_predicate": "launched"
+    },
+    "generated_fact_250": {
+      "base_predicate": "restore",
+      "coverage_status": "PASS",
+      "semantic_predicate": "restored"
+    },
+    "generated_fact_251": {
+      "base_predicate": "publish",
+      "coverage_status": "PASS",
+      "semantic_predicate": "published"
+    },
+    "generated_fact_252": {
+      "base_predicate": "deliver",
+      "coverage_status": "PASS",
+      "semantic_predicate": "delivered"
+    },
+    "generated_fact_253": {
+      "base_predicate": "open",
+      "coverage_status": "PASS",
+      "semantic_predicate": "opened"
+    },
+    "generated_fact_254": {
+      "base_predicate": "select",
+      "coverage_status": "PASS",
+      "semantic_predicate": "selected"
+    },
+    "generated_fact_255": {
+      "base_predicate": "approve",
+      "coverage_status": "PASS",
+      "semantic_predicate": "approved"
+    },
+    "generated_fact_256": {
+      "base_predicate": "launch",
+      "coverage_status": "PASS",
+      "semantic_predicate": "launched"
+    },
+    "generated_fact_258": {
+      "base_predicate": "publish",
+      "coverage_status": "PASS",
+      "semantic_predicate": "published"
+    },
+    "generated_fact_259": {
+      "base_predicate": "deliver",
+      "coverage_status": "PASS",
+      "semantic_predicate": "delivered"
+    },
+    "generated_fact_260": {
+      "base_predicate": "open",
+      "coverage_status": "PASS",
+      "semantic_predicate": "opened"
+    },
+    "generated_fact_261": {
+      "base_predicate": "select",
+      "coverage_status": "PASS",
+      "semantic_predicate": "selected"
+    },
+    "generated_fact_263": {
+      "base_predicate": "launch",
+      "coverage_status": "PASS",
+      "semantic_predicate": "launched"
+    },
+    "generated_fact_264": {
+      "base_predicate": "restore",
+      "coverage_status": "PASS",
+      "semantic_predicate": "restored"
+    },
+    "generated_fact_266": {
+      "base_predicate": "deliver",
+      "coverage_status": "PASS",
+      "semantic_predicate": "delivered"
+    },
+    "generated_fact_267": {
+      "base_predicate": "open",
+      "coverage_status": "PASS",
+      "semantic_predicate": "opened"
+    },
+    "generated_fact_268": {
+      "base_predicate": "select",
+      "coverage_status": "PASS",
+      "semantic_predicate": "selected"
+    },
+    "generated_fact_269": {
+      "base_predicate": "approve",
+      "coverage_status": "PASS",
+      "semantic_predicate": "approved"
+    },
+    "generated_fact_270": {
+      "base_predicate": "launch",
+      "coverage_status": "PASS",
+      "semantic_predicate": "launched"
+    },
+    "generated_fact_272": {
+      "base_predicate": "publish",
+      "coverage_status": "PASS",
+      "semantic_predicate": "published"
+    },
+    "generated_fact_275": {
+      "base_predicate": "select",
+      "coverage_status": "PASS",
+      "semantic_predicate": "selected"
+    },
+    "generated_fact_276": {
+      "base_predicate": "approve",
+      "coverage_status": "PASS",
+      "semantic_predicate": "approved"
+    },
+    "generated_fact_277": {
+      "base_predicate": "launch",
+      "coverage_status": "PASS",
+      "semantic_predicate": "launched"
+    },
+    "generated_fact_278": {
+      "base_predicate": "restore",
+      "coverage_status": "PASS",
+      "semantic_predicate": "restored"
+    },
+    "generated_fact_279": {
+      "base_predicate": "publish",
+      "coverage_status": "PASS",
+      "semantic_predicate": "published"
+    },
+    "generated_fact_280": {
+      "base_predicate": "deliver",
+      "coverage_status": "PASS",
+      "semantic_predicate": "delivered"
+    },
+    "generated_fact_281": {
+      "base_predicate": "open",
+      "coverage_status": "PASS",
+      "semantic_predicate": "opened"
+    },
+    "generated_fact_282": {
+      "base_predicate": "select",
+      "coverage_status": "PASS",
+      "semantic_predicate": "selected"
+    },
+    "generated_fact_283": {
+      "base_predicate": "approve",
+      "coverage_status": "PASS",
+      "semantic_predicate": "approved"
+    },
+    "generated_fact_284": {
+      "base_predicate": "launch",
+      "coverage_status": "PASS",
+      "semantic_predicate": "launched"
+    },
+    "generated_fact_286": {
+      "base_predicate": "publish",
+      "coverage_status": "PASS",
+      "semantic_predicate": "published"
+    },
+    "generated_fact_288": {
+      "base_predicate": "open",
+      "coverage_status": "PASS",
+      "semantic_predicate": "opened"
+    },
+    "generated_fact_289": {
+      "base_predicate": "select",
+      "coverage_status": "PASS",
+      "semantic_predicate": "selected"
+    },
+    "generated_fact_290": {
+      "base_predicate": "approve",
+      "coverage_status": "PASS",
+      "semantic_predicate": "approved"
+    },
+    "generated_fact_291": {
+      "base_predicate": "launch",
+      "coverage_status": "PASS",
+      "semantic_predicate": "launched"
+    },
+    "generated_fact_292": {
+      "base_predicate": "restore",
+      "coverage_status": "PASS",
+      "semantic_predicate": "restored"
+    },
+    "generated_fact_293": {
+      "base_predicate": "publish",
+      "coverage_status": "PASS",
+      "semantic_predicate": "published"
+    },
+    "generated_fact_294": {
+      "base_predicate": "deliver",
+      "coverage_status": "PASS",
+      "semantic_predicate": "delivered"
+    },
+    "generated_fact_295": {
+      "base_predicate": "open",
+      "coverage_status": "PASS",
+      "semantic_predicate": "opened"
+    },
+    "generated_fact_296": {
+      "base_predicate": "select",
+      "coverage_status": "PASS",
+      "semantic_predicate": "selected"
+    },
+    "generated_fact_298": {
+      "base_predicate": "launch",
+      "coverage_status": "PASS",
+      "semantic_predicate": "launched"
+    },
+    "generated_fact_299": {
+      "base_predicate": "restore",
+      "coverage_status": "PASS",
+      "semantic_predicate": "restored"
+    }
+  },
+  "predicate_realization_contract_version": "P3W6F2P4B_R1_BASE_PREDICATE_REALIZATION_V1",
+  "required_base_forms": {
+    "approved": "approve",
+    "delivered": "deliver",
+    "launched": "launch",
+    "opened": "open",
+    "published": "publish",
+    "restored": "restore",
+    "selected": "select"
+  },
+  "schema_version": "P3W6F2P4B_R1_BASE_FORM_COVERAGE_V1"
+}
