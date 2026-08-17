@@ -1,0 +1,17 @@
+{
+  "authorized_member_count": 357,
+  "authorized_pair_count": 119,
+  "compatibility_fail_count": 0,
+  "compatibility_gate_status": "PASS",
+  "compatibility_pass_count": 357,
+  "compatibility_rule_version": "P3W6F2P4B_R1_STAGE185_PREDICATE_REALIZATION_COMPATIBILITY_V1",
+  "compatibility_unresolved_count": 0,
+  "failure_reasons": [],
+  "historical_authority_weakened": false,
+  "permitted_predicate_realization_delta_count": 357,
+  "raw_stage185_predicate_axis_observation_count": 238,
+  "row_count": 357,
+  "schema_version": "P3W6F2P4B_R1_STAGE185_COMPATIBILITY_SUMMARY_V1",
+  "stage185_v1_mutated": false,
+  "training_admission_released": false
+}

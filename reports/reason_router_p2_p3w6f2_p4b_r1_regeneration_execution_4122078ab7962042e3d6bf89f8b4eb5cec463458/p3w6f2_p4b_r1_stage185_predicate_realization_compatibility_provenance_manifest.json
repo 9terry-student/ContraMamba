@@ -1,0 +1,19 @@
+{
+  "base_form_coverage_path": "reports/reason_router_p2_p3w6f2_p4b_r1_regeneration_execution_4122078ab7962042e3d6bf89f8b4eb5cec463458/p3w6f2_p4b_r1_base_form_coverage.json",
+  "base_form_coverage_sha256": "5d130c529e0ebcca9fa3f7137620222488a9eb8d2db137e5a7283c345a277bb3",
+  "compatibility_rows_path": "reports/reason_router_p2_p3w6f2_p4b_r1_regeneration_execution_4122078ab7962042e3d6bf89f8b4eb5cec463458/p3w6f2_p4b_r1_stage185_predicate_realization_compatibility_rows.jsonl",
+  "compatibility_rows_sha256": "59e4367d29e3c49152049e4a1b46e8783d5b81d1ebaa931ca9fd4ae0ac967b9f",
+  "compatibility_rule_version": "P3W6F2P4B_R1_STAGE185_PREDICATE_REALIZATION_COMPATIBILITY_V1",
+  "compatibility_summary_path": "reports/reason_router_p2_p3w6f2_p4b_r1_regeneration_execution_4122078ab7962042e3d6bf89f8b4eb5cec463458/p3w6f2_p4b_r1_stage185_predicate_realization_compatibility_summary.json",
+  "compatibility_summary_sha256": "ce618d214dc4d660706d927a0d91ec5945d3a0edbffbf615eab8b9c9ff585aa8",
+  "created_at_utc": "DETERMINISTIC_REPLAY_NO_WALL_CLOCK",
+  "historical_stage185_authority": "STAGE185_V1_RAW_OBSERVATION_RETAINED_NOT_MUTATED",
+  "historical_stage185_authority_sha256": "11e6ba89b8131c76eac4504b4273867eaa99a131abe23d3238eb65ecda207bbc",
+  "regenerated_dataset_path": "reports/reason_router_p2_p3w6f2_p4b_r1_regeneration_execution_4122078ab7962042e3d6bf89f8b4eb5cec463458/controlled_v5_v3_without_time_swap_p3w6f2_r1_regenerated.jsonl",
+  "regenerated_dataset_sha256": "eb1e0614939cda1421052702223f0fda91f098564692141b085b95b18558c0d3",
+  "schema_version": "P3W6F2P4B_R1_STAGE185_COMPATIBILITY_PROVENANCE_V1",
+  "stage185_source_script": "scripts/build_stage185a_controlled_train_integrity_sidecar.py",
+  "stage185_source_script_sha256": "11e6ba89b8131c76eac4504b4273867eaa99a131abe23d3238eb65ecda207bbc",
+  "structured_source_producer": "scripts/build_controlled_v5.py::fact_templates_for_count",
+  "structured_source_producer_sha256": "9fbd94a151c4d83a5e824412d7c0837062fedd20628f4f198116b2d08b679410"
+}
