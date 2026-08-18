@@ -127,9 +127,12 @@ def test_missing_family_and_nonrectangular_topology_block():
 
 def test_pair_count_drift_blocks():
     rows = copy.deepcopy(regenerated_rows())
-    for row in rows[:12]:
-        row["pair_id"] = "merged_pair"
-    with pytest.raises(gate.GateBlocked, match="PAIR_COUNT_MISMATCH|DUPLICATE_PAIR_INTERVENTION"):
+    fresh_pair_id = "fresh_pair_count_drift_pair"
+    assert fresh_pair_id not in {row["pair_id"] for row in rows}
+    rows[0]["pair_id"] = fresh_pair_id
+    assert len(rows) == gate.ROW_COUNT
+    assert len({row["pair_id"] for row in rows}) == gate.PAIR_COUNT + 1
+    with pytest.raises(gate.GateBlocked, match="PAIR_COUNT_MISMATCH"):
         gate.validate_dataset_structure(rows, label="MUTATED")
 
 
@@ -163,6 +166,7 @@ def test_exact_238_authorized_deltas_and_delta_adversaries():
     hist = historical_rows()
     regen = copy.deepcopy(regenerated_rows())
     auth = gate._authorized_pair_ids_from_artifacts(artifact_dir())
+    hist_by_id = by_id(hist)
     result = gate.validate_identity_label_linkage_and_deltas(hist, regen, authorized_pair_ids=auth)
     assert result["changed_row_count"] == 238
     assert result["changed_pair_count"] == 119
@@ -173,13 +177,29 @@ def test_exact_238_authorized_deltas_and_delta_adversaries():
     with pytest.raises(gate.GateBlocked, match="LABEL_DRIFT"):
         gate.validate_identity_label_linkage_and_deltas(hist, f2_field, authorized_pair_ids=auth)
     non_f2 = copy.deepcopy(regen)
-    target = next(row for row in non_f2 if row["pair_id"] not in auth)
+    target = next(row for row in non_f2 if row["pair_id"] in auth and row["intervention_type"] == "entity_swap")
     target["evidence"] += " extra"
+    restored = next(
+        row
+        for row in non_f2
+        if row["pair_id"] == target["pair_id"]
+        and row["intervention_type"] in gate.AUTHORIZED_CHANGED_INTERVENTIONS
+        and row["evidence"] != hist_by_id[row["id"]]["evidence"]
+    )
+    restored["evidence"] = hist_by_id[restored["id"]]["evidence"]
     with pytest.raises(gate.GateBlocked, match="NON_F2_MUTATION"):
         gate.validate_identity_label_linkage_and_deltas(hist, non_f2, authorized_pair_ids=auth)
     polarity = copy.deepcopy(regen)
     target = next(row for row in polarity if row["pair_id"] in auth and row["intervention_type"] == "polarity_flip")
     target["evidence"] += " extra"
+    restored = next(
+        row
+        for row in polarity
+        if row["pair_id"] == target["pair_id"]
+        and row["intervention_type"] in gate.AUTHORIZED_CHANGED_INTERVENTIONS
+        and row["evidence"] != hist_by_id[row["id"]]["evidence"]
+    )
+    restored["evidence"] = hist_by_id[restored["id"]]["evidence"]
     with pytest.raises(gate.GateBlocked, match="F2_POLARITY_FLIP_MUTATION"):
         gate.validate_identity_label_linkage_and_deltas(hist, polarity, authorized_pair_ids=auth)
 
