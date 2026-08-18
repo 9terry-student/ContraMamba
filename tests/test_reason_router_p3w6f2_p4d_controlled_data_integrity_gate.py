@@ -3,12 +3,17 @@ from __future__ import annotations
 from dataclasses import replace
 import copy
 import json
+import re
 import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
 
 from scripts import validate_reason_router_p3w6f2_p4d_controlled_data_integrity_gate as gate
+
+
+FULL_SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 
 
 def repo_root() -> Path:
@@ -25,6 +30,14 @@ def historical_rows() -> list[dict]:
 
 def regenerated_rows() -> list[dict]:
     return gate.load_jsonl(artifact_dir() / gate.REGENERATED_DATASET_NAME)
+
+
+def git_sha(*args: str) -> str:
+    return subprocess.check_output(
+        ["git", "-C", str(repo_root()), *args],
+        stderr=subprocess.DEVNULL,
+        text=True,
+    ).strip()
 
 
 def by_id(rows: list[dict]) -> dict[str, dict]:
@@ -80,6 +93,10 @@ def assert_blocked(report: dict, token: str) -> None:
     assert any(token in reason for reason in report["failure_reasons"])
 
 
+def assert_full_sha(value: str) -> None:
+    assert FULL_SHA_RE.fullmatch(value) is not None
+
+
 def test_positive_valid_300x12_topology_seed174_and_deterministic_report():
     report1 = gate.validate_gate(
         repo_root(),
@@ -95,11 +112,138 @@ def test_positive_valid_300x12_topology_seed174_and_deterministic_report():
     )
     assert report1 == report2
     assert report1["decision_token"] == gate.PASS_TOKEN
+    assert_full_sha(report1["validator_commit"])
+    assert_full_sha(report1["current_head"])
+    assert report1["validator_commit"] == git_sha("log", "-1", "--format=%H", "--", gate.VALIDATOR_SOURCE_PATH)
+    assert report1["current_head"] == git_sha("rev-parse", "HEAD")
+    assert report1["validator_commit"] != "UNCOMMITTED_IMPLEMENTATION_STATIC_ONLY"
+    assert report1["phase"] == "P4-D GATE 5 CONTROLLED-DATA INTEGRITY VALIDATION - GATE 6 ONLY ON PASS"
+    assert report1["training_admission_released"] is False
     assert report1["row_count_historical"] == 3600
     assert report1["row_count_regenerated"] == 3600
     rows = regenerated_rows()
     assert len({row["pair_id"] for row in rows}) == 300
     assert {row["intervention_type"] for row in rows} == gate.ADMITTED_FAMILIES
+
+
+def test_git_provenance_helpers_resolve_actual_read_only_state():
+    assert gate.resolve_current_head(repo_root()) == git_sha("rev-parse", "HEAD")
+    assert gate.resolve_validator_source_commit(repo_root()) == git_sha("log", "-1", "--format=%H", "--", gate.VALIDATOR_SOURCE_PATH)
+    assert_full_sha(gate.resolve_current_head(repo_root()))
+    assert_full_sha(gate.resolve_validator_source_commit(repo_root()))
+
+
+@pytest.mark.parametrize(
+    ("git_output", "expected_failure"),
+    [
+        ("not-a-sha\n", "CURRENT_HEAD:MALFORMED"),
+        ("", "CURRENT_HEAD:AMBIGUOUS"),
+    ],
+)
+def test_unresolved_or_malformed_current_head_fails_closed(monkeypatch, git_output: str, expected_failure: str):
+    def fake_check_output(args, **kwargs):
+        assert args[3:5] == ["rev-parse", "HEAD"]
+        return git_output
+
+    monkeypatch.setattr(gate.subprocess, "check_output", fake_check_output)
+    report = gate.validate_gate(repo_root(), historical_dataset=gate.HISTORICAL_DATASET_PATH, p4b_artifact_dir=gate.P4B_ARTIFACT_DIR)
+    assert_blocked(report, expected_failure)
+    assert report["provenance_status"] == "BLOCKED"
+    assert report["current_head"] == gate.UNRESOLVED_GIT_PROVENANCE
+    assert report["decision_token"] != gate.PASS_TOKEN
+
+
+def test_current_head_subprocess_failure_fails_closed(monkeypatch):
+    def fake_check_output(args, **kwargs):
+        raise subprocess.CalledProcessError(128, args)
+
+    monkeypatch.setattr(gate.subprocess, "check_output", fake_check_output)
+    report = gate.validate_gate(repo_root(), historical_dataset=gate.HISTORICAL_DATASET_PATH, p4b_artifact_dir=gate.P4B_ARTIFACT_DIR)
+    assert_blocked(report, "CURRENT_HEAD:UNRESOLVED")
+    assert report["provenance_status"] == "BLOCKED"
+    assert report["decision_token"] != gate.PASS_TOKEN
+
+
+@pytest.mark.parametrize(
+    ("git_output", "expected_failure"),
+    [
+        ("not-a-sha\n", "VALIDATOR_SOURCE_COMMIT:MALFORMED"),
+        ("1" * 40 + "\n" + "2" * 40 + "\n", "VALIDATOR_SOURCE_COMMIT:AMBIGUOUS"),
+    ],
+)
+def test_unresolved_or_malformed_validator_source_commit_fails_closed(monkeypatch, git_output: str, expected_failure: str):
+    actual_head = git_sha("rev-parse", "HEAD")
+
+    def fake_check_output(args, **kwargs):
+        if args[3:5] == ["rev-parse", "HEAD"]:
+            return actual_head + "\n"
+        assert args[3:6] == ["log", "-1", "--format=%H"]
+        assert args[-2:] == ["--", gate.VALIDATOR_SOURCE_PATH]
+        return git_output
+
+    monkeypatch.setattr(gate.subprocess, "check_output", fake_check_output)
+    report = gate.validate_gate(repo_root(), historical_dataset=gate.HISTORICAL_DATASET_PATH, p4b_artifact_dir=gate.P4B_ARTIFACT_DIR)
+    assert_blocked(report, expected_failure)
+    assert report["provenance_status"] == "BLOCKED"
+    assert report["current_head"] == actual_head
+    assert report["validator_commit"] == gate.UNRESOLVED_GIT_PROVENANCE
+    assert report["decision_token"] != gate.PASS_TOKEN
+
+
+def test_empty_validator_source_commit_output_fails_closed(monkeypatch):
+    actual_head = git_sha("rev-parse", "HEAD")
+
+    def fake_check_output(args, **kwargs):
+        if args[3:5] == ["rev-parse", "HEAD"]:
+            return actual_head + "\n"
+        assert args[3:6] == ["log", "-1", "--format=%H"]
+        assert args[-2:] == ["--", gate.VALIDATOR_SOURCE_PATH]
+        return ""
+
+    monkeypatch.setattr(gate.subprocess, "check_output", fake_check_output)
+    with pytest.raises(gate.GateBlocked, match="VALIDATOR_SOURCE_COMMIT:AMBIGUOUS"):
+        gate.resolve_validator_source_commit(repo_root())
+    report = gate.validate_gate(repo_root(), historical_dataset=gate.HISTORICAL_DATASET_PATH, p4b_artifact_dir=gate.P4B_ARTIFACT_DIR)
+    assert_blocked(report, "VALIDATOR_SOURCE_COMMIT:AMBIGUOUS")
+    assert report["current_head"] == actual_head
+    assert report["validator_commit"] == gate.UNRESOLVED_GIT_PROVENANCE
+    assert report["provenance_status"] == "BLOCKED"
+    assert report["decision_token"] != gate.PASS_TOKEN
+
+
+def test_validator_source_commit_subprocess_failure_fails_closed(monkeypatch):
+    actual_head = git_sha("rev-parse", "HEAD")
+
+    def fake_check_output(args, **kwargs):
+        if args[3:5] == ["rev-parse", "HEAD"]:
+            return actual_head + "\n"
+        raise subprocess.CalledProcessError(128, args)
+
+    monkeypatch.setattr(gate.subprocess, "check_output", fake_check_output)
+    report = gate.validate_gate(repo_root(), historical_dataset=gate.HISTORICAL_DATASET_PATH, p4b_artifact_dir=gate.P4B_ARTIFACT_DIR)
+    assert_blocked(report, "VALIDATOR_SOURCE_COMMIT:UNRESOLVED")
+    assert report["provenance_status"] == "BLOCKED"
+    assert report["decision_token"] != gate.PASS_TOKEN
+
+
+def test_validator_commit_and_current_head_may_differ(monkeypatch):
+    current = "a" * 40
+    validator = "b" * 40
+
+    def fake_check_output(args, **kwargs):
+        if args[3:5] == ["rev-parse", "HEAD"]:
+            return current + "\n"
+        if args[3:6] == ["log", "-1", "--format=%H"]:
+            return validator + "\n"
+        raise AssertionError(args)
+
+    monkeypatch.setattr(gate.subprocess, "check_output", fake_check_output)
+    report = gate.validate_gate(repo_root(), historical_dataset=gate.HISTORICAL_DATASET_PATH, p4b_artifact_dir=gate.P4B_ARTIFACT_DIR)
+    assert report["decision_token"] == gate.PASS_TOKEN
+    assert report["provenance_status"] == "PASS"
+    assert report["current_head"] == current
+    assert report["validator_commit"] == validator
+    assert report["validator_commit"] != report["current_head"]
 
 
 @pytest.mark.parametrize(

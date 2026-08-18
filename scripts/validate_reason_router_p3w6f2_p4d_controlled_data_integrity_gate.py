@@ -9,6 +9,7 @@ from dataclasses import dataclass, replace
 import hashlib
 import json
 import random
+import re
 import subprocess
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -19,6 +20,10 @@ P4B_PARENT_AUTHORITY_COMMIT = "fcc3b9ccaf2bbee33ac18dcef10d50acff54aab4"
 P4B_EXECUTION_COMMIT = "4122078ab7962042e3d6bf89f8b4eb5cec463458"
 REPORT_SCHEMA_VERSION = "P3W6F2P4D_CONTROLLED_DATA_INTEGRITY_GATE_REPORT_V1"
 VALIDATOR_CONTRACT_VERSION = "P3W6F2P4D_CONTROLLED_DATA_INTEGRITY_GATE_VALIDATOR_V1"
+VALIDATOR_SOURCE_PATH = "scripts/validate_reason_router_p3w6f2_p4d_controlled_data_integrity_gate.py"
+GATE_PHASE = "P4-D GATE 5 CONTROLLED-DATA INTEGRITY VALIDATION - GATE 6 ONLY ON PASS"
+UNRESOLVED_GIT_PROVENANCE = "UNRESOLVED_GIT_PROVENANCE"
+FULL_GIT_SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 
 PASS_TOKEN = "P3W6F2P4D_CONTROLLED_DATA_INTEGRITY_GATE_PASS"
 FAIL_TOKEN = "P3W6F2P4D_CONTROLLED_DATA_INTEGRITY_GATE_FAIL"
@@ -317,15 +322,33 @@ def resolve_under_repo(repo_root: Path, path: str | Path) -> Path:
     return resolved
 
 
-def current_head(repo_root: Path) -> str:
+def _resolve_single_git_sha(repo_root: Path, args: Sequence[str], *, code: str) -> str:
     try:
-        return subprocess.check_output(
-            ["git", "-C", str(repo_root), "rev-parse", "HEAD"],
+        output = subprocess.check_output(
+            ["git", "-C", str(repo_root), *args],
             stderr=subprocess.DEVNULL,
             text=True,
-        ).strip()
-    except Exception:
-        return "UNKNOWN"
+        )
+    except Exception as exc:
+        raise GateBlocked(f"{code}:UNRESOLVED") from exc
+    lines = [line.strip() for line in output.splitlines() if line.strip()]
+    require(len(lines) == 1, f"{code}:AMBIGUOUS")
+    sha = lines[0]
+    require(FULL_GIT_SHA_RE.fullmatch(sha) is not None, f"{code}:MALFORMED")
+    return sha
+
+
+def resolve_current_head(repo_root: Path) -> str:
+    return _resolve_single_git_sha(repo_root, ["rev-parse", "HEAD"], code="CURRENT_HEAD")
+
+
+def resolve_validator_source_commit(repo_root: Path) -> str:
+    require(VALIDATOR_SOURCE_PATH == "scripts/validate_reason_router_p3w6f2_p4d_controlled_data_integrity_gate.py", "VALIDATOR_SOURCE_PATH_AMBIGUITY")
+    return _resolve_single_git_sha(
+        repo_root,
+        ["log", "-1", "--format=%H", "--", VALIDATOR_SOURCE_PATH],
+        code="VALIDATOR_SOURCE_COMMIT",
+    )
 
 
 def validate_artifact_set(artifact_dir: Path, hashes: Mapping[str, str]) -> dict[str, str]:
@@ -628,13 +651,17 @@ def validate_gate(
     failures: list[str] = []
     row_count_historical = 0
     row_count_regenerated = 0
+    validator_commit = UNRESOLVED_GIT_PROVENANCE
+    head_commit = UNRESOLVED_GIT_PROVENANCE
     try:
         require(frozen.p4d_authority_commit == P4D_SPEC_AUTHORITY_COMMIT, "P4D_AUTHORITY_COMMIT_AMBIGUITY")
+        head_commit = resolve_current_head(repo_root)
+        validator_commit = resolve_validator_source_commit(repo_root)
+        statuses["provenance_status"] = "PASS"
         validate_authority_inputs(repo_root, frozen)
         artifact_dir = resolve_under_repo(repo_root, frozen.p4b_artifact_dir)
         historical_path = resolve_under_repo(repo_root, frozen.historical_dataset_path)
         regenerated_path = artifact_dir / frozen.regenerated_dataset_name
-        statuses["provenance_status"] = "PASS"
         historical_rows = load_jsonl(historical_path)
         regenerated_rows = load_jsonl(regenerated_path)
         row_count_historical = len(historical_rows)
@@ -675,10 +702,10 @@ def validate_gate(
         "schema_version": REPORT_SCHEMA_VERSION,
         "decision_token": decision,
         "validator_contract_version": VALIDATOR_CONTRACT_VERSION,
-        "validator_commit": "UNCOMMITTED_IMPLEMENTATION_STATIC_ONLY",
+        "validator_commit": validator_commit,
         "authority_commit": P4D_SPEC_AUTHORITY_COMMIT,
-        "current_head": current_head(repo_root),
-        "phase": "P4-D IMPLEMENTATION ONLY - NO OFFICIAL GATE 5 EXECUTION",
+        "current_head": head_commit,
+        "phase": GATE_PHASE,
         "training_admission_released": False,
         "historical_dataset_path": frozen.historical_dataset_path,
         "historical_dataset_sha256": frozen.historical_dataset_sha256,
