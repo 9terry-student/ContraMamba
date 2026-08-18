@@ -74,3 +74,41 @@ Pair-dispositions SHA256: cb8ca8b46e5440867cb1d22132ed5738e030bdc818dd685ffc8a0e
 ## Boundary
 
 This primary review produces a candidate PASS token because all frozen Section G aggregate conditions are satisfied by the primary review evidence. It remains pending independent verification and does not release training admission or any Level-3 execution authority.
+
+## Independent Verification Attestation
+
+Independent verifier verdict: PASS
+
+Independent verifier token: P3W6F2P4E_LEVEL2_RESULT_REVIEW_ARTIFACTS_INDEPENDENT_VERIFICATION_PASS
+
+Artifact state independently verified:
+
+- Primary artifact freeze commit: f9f074772ac6b4e2718eddee4588b3b8b57c4634
+- Pair-dispositions SHA256: cb8ca8b46e5440867cb1d22132ed5738e030bdc818dd685ffc8a0e6cc732cdce
+
+The independent verifier inspected all 119 authorized pairs exhaustively. The review was not sampled and was not accepted from aggregate counts alone.
+
+Independent results:
+
+- PASS: 119
+- FAIL: 0
+- BLOCKED: 0
+- Primary/verifier mismatch: 0
+- Canonical remediation PASS: 119
+- Paraphrase remediation PASS: 119
+- Polarity_flip preservation PASS: 119
+- Structured semantic alignment PASS: 119
+- Unresolved semantic issues: 0
+- Unauthorized mutation: none
+- Authority/provenance ambiguity: 0
+- Stage185 prerequisite: PASS
+
+The independent verification confirmed that authority/provenance checks passed; pair schema, count, duplicate, and foreign-ID checks passed; the pair JSONL hash independently matched; and the summary/report were consistent at verification time.
+
+The current summary still has `verification_commit = null`. This remains intentionally unchanged in this attestation-materialization task. Final Gate-6 closure remains pending until this independent-verification attestation is independently checked for faithful materialization, the attestation is frozen in an immutable commit, and a subsequent controlled finalization records that attestation commit SHA as `summary.verification_commit`.
+
+This report edit does NOT itself establish final Gate-6 closure.
+
+training_admission_released=false remains preserved.
+
+This independent verification does NOT authorize Level-3, training, evaluation, Kaggle, model loading, checkpoints, dataset replacement, promotion, promotion-criteria changes, or training admission.
