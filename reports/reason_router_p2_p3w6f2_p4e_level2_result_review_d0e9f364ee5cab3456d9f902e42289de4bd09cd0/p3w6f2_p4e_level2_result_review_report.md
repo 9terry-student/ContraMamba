@@ -6,7 +6,7 @@ Candidate decision token: P3W6F2P4E_LEVEL2_RESULT_REVIEW_PASS
 
 Primary-review readiness token: P3W6F2P4E_LEVEL2_PRIMARY_REVIEW_READY_FOR_INDEPENDENT_VERIFICATION
 
-This is the primary exhaustive Gate-6 Level-2 result review output only. Final Gate-6 closure is not established until the completed result artifacts receive mandatory independent verification. verification_commit is intentionally null.
+This report began as the primary exhaustive Gate-6 Level-2 result review output. Final Gate-6 closure is established only after the completed result artifacts receive mandatory independent verification and `summary.verification_commit` records the frozen independent-attestation commit.
 
 training_admission_released=false. Gate-6 PASS, even if later independently verified, does not itself authorize Level-3, training, evaluation, Kaggle execution, model loading, checkpoint creation/use/mutation, dataset replacement, promotion, or changes to promotion criteria.
 
@@ -105,9 +105,9 @@ Independent results:
 
 The independent verification confirmed that authority/provenance checks passed; pair schema, count, duplicate, and foreign-ID checks passed; the pair JSONL hash independently matched; and the summary/report were consistent at verification time.
 
-The current summary still has `verification_commit = null`. This remains intentionally unchanged in this attestation-materialization task. Final Gate-6 closure remains pending until this independent-verification attestation is independently checked for faithful materialization, the attestation is frozen in an immutable commit, and a subsequent controlled finalization records that attestation commit SHA as `summary.verification_commit`.
+The independent-verification attestation was frozen in commit `2d63c565eac34c9cd369ccefe8846c7c282d04ed`. Final Gate-6 static closure records that attestation commit SHA as `summary.verification_commit`.
 
-This report edit does NOT itself establish final Gate-6 closure.
+This closure establishes Gate-6 Level-2 closure only.
 
 training_admission_released=false remains preserved.
 
