@@ -1,0 +1,395 @@
+{
+  "schema_version": "P3W6F2P4G_LEVEL3_ACTION_RESOLUTION_RESULT_V1",
+  "decision_token": "P3W6F2P4G_LEVEL3_ACTION_RESOLUTION_PASS",
+  "verification_status": "PENDING",
+  "resolution_state_commit": "368d3b6991389aa6b6fd80f421c73565b562e290",
+  "p4g_spec_commit": "dc62e63da045435429dc3927f8dc5b2c0d4de59c",
+  "p4f_spec_commit": "8fd76261fbad2ef78e915e3442147c971e95aa33",
+  "gate6_closure_commit": "08d233d53b9d33e055f04c833613edb313bd0cf5",
+  "gate6_decision_token": "P3W6F2P4E_LEVEL2_RESULT_REVIEW_PASS",
+  "gate6_pair_dispositions_sha256": "cb8ca8b46e5440867cb1d22132ed5738e030bdc818dd685ffc8a0e6cc732cdce",
+  "training_admission_released": false,
+  "current_action_resolution_status": "RESOLVED_BY_CURRENT_FROZEN_AUTHORITY_PENDING_INDEPENDENT_VERIFICATION",
+  "review_state": {
+    "head_commit_status": "PASS",
+    "head_commit": "368d3b6991389aa6b6fd80f421c73565b562e290",
+    "tracked_worktree_clean_status": "PASS",
+    "p4g_spec_exists_at_resolution_state": true,
+    "p4g_spec_commit_is_ancestor_of_resolution_state": true,
+    "p4h_first_frozen_at_resolution_state": true,
+    "p4h_delta_from_9bec86eea8082d8d0dd68419542dc8565374c5e9_to_resolution_state": [
+      "A\treports/reason_router_p2_p3w6f2_p4h_a0_current_lineage_rebind_authority_spec.md"
+    ],
+    "ignored_pre_existing_untracked_items": [
+      "root patch/review patch files",
+      "reports/stage180a_pass2_annotations_completed.csv"
+    ]
+  },
+  "authority_artifacts_inspected": [
+    {
+      "path": "reports/reason_router_p2_p3w6f2_p4g_level3_action_resolution_spec.md",
+      "commit": "dc62e63da045435429dc3927f8dc5b2c0d4de59c",
+      "role": "frozen P4-G action-resolution contract"
+    },
+    {
+      "path": "reports/reason_router_p2_p3w6f2_p4h_a0_current_lineage_rebind_authority_spec.md",
+      "commit": "368d3b6991389aa6b6fd80f421c73565b562e290",
+      "role": "new current-lineage candidate action authority"
+    },
+    {
+      "path": "reports/reason_router_p2_p3w6f2_p4f_level3_admission_authority_spec.md",
+      "commit": "8fd76261fbad2ef78e915e3442147c971e95aa33",
+      "role": "frozen Level-3 admission boundary"
+    },
+    {
+      "path": "reports/reason_router_p2_p3w6f2_p4e_level2_result_review_spec.md",
+      "commit": "d0e9f364ee5cab3456d9f902e42289de4bd09cd0",
+      "role": "Gate-6 Level-2 result review contract"
+    },
+    {
+      "path": "reports/reason_router_p2_p3w6f2_p4e_level2_result_review_d0e9f364ee5cab3456d9f902e42289de4bd09cd0/p3w6f2_p4e_level2_result_review_summary.json",
+      "commit": "08d233d53b9d33e055f04c833613edb313bd0cf5",
+      "role": "Gate-6 final closure evidence"
+    },
+    {
+      "path": "reports/reason_router_p2_p3w6f2_p4b_r1_regeneration_spec.md",
+      "commit": "fcc3b9ccaf2bbee33ac18dcef10d50acff54aab4",
+      "role": "P4-B R1 regenerated dataset authority"
+    },
+    {
+      "path": "reports/reason_router_p2_p3w6f2_p4d_controlled_data_integrity_gate_spec.md",
+      "commit": "1be4050dbadb0cb5ed2f6b55a2391051f5f6c07e",
+      "role": "P4-D Gate-5 controlled-data integrity boundary"
+    },
+    {
+      "path": "reports/reason_router_p2_p3_execution_spec.md",
+      "commit": "72cfdd3d551832e33799ca0399a6d6bf0c431901",
+      "role": "historical P3 A0 execution intent"
+    },
+    {
+      "path": "reports/stage184a_controlled_train_integrity_mask_policy.md",
+      "commit": "669be84ab929635bb247c2a51f49ec0edeef5bb0",
+      "role": "historical Stage184-A policy"
+    },
+    {
+      "path": "reports/stage184a_integrity_sidecar_spec_ready_closure.md",
+      "commit": "d89edf49454b02576733137f68f7f9309956487c",
+      "role": "historical Stage184-A closure"
+    },
+    {
+      "path": "reports/stage185a_integrity_sidecar_materialized_closure.md",
+      "commit": "7940a72324ae15434649580ecf59f4140578c635",
+      "role": "historical Stage185-A closure"
+    },
+    {
+      "path": "reports/stage186a_compatible_positive_margin_fixed_spec.md",
+      "commit": "7940a72324ae15434649580ecf59f4140578c635",
+      "role": "historical Stage186-A specification"
+    },
+    {
+      "path": "reports/stage186a_fixed_margin_spec_ready_closure.md",
+      "commit": "68d8150a7d8f24087edffb6a5f1aa211e467b7d6",
+      "role": "historical Stage186-A closure"
+    },
+    {
+      "path": "reports/stage187b_default_off_runtime_validation_closure.json",
+      "commit": "68d8150a7d8f24087edffb6a5f1aa211e467b7d6",
+      "role": "historical Stage187-B closure"
+    },
+    {
+      "path": "reports/stage188a_paired_internal_margin_experiment_spec.md",
+      "commit": "dc62e63da045435429dc3927f8dc5b2c0d4de59c",
+      "role": "historical Stage188-A experiment specification"
+    },
+    {
+      "path": "AGENTS.md",
+      "commit": "368d3b6991389aa6b6fd80f421c73565b562e290",
+      "role": "repository-wide research and static-audit contract"
+    }
+  ],
+  "history_search_evidence": {
+    "content_search_scope": [
+      "reports",
+      "AGENTS.md",
+      "scripts",
+      "tests"
+    ],
+    "git_history_search_scope": [
+      "reports history for P4-G/P4-H/action-resolution/admission/A0/Stage185+ terms",
+      "P4-H path history with --follow",
+      "delta from 9bec86eea8082d8d0dd68419542dc8565374c5e9 to 368d3b6991389aa6b6fd80f421c73565b562e290"
+    ],
+    "searched_terms": [
+      "P3W6F2P4G",
+      "LEVEL3_ACTION_RESOLUTION",
+      "ACTION_RESOLUTION",
+      "P3W6F2P4H",
+      "A0_CURRENT_LINEAGE",
+      "CURRENT_LINEAGE_REBIND",
+      "Level-3",
+      "earliest",
+      "admission",
+      "training_admission_released",
+      "P3_A0",
+      "A0_PHASE",
+      "STAGE185",
+      "STAGE186",
+      "STAGE187",
+      "STAGE188"
+    ],
+    "namespace_conflict_status": "PASS_NO_EXISTING_APPLICABLE_P4G_NAMESPACE_CONFLICT_FOUND",
+    "post_prior_resolution_authority_status": "ONLY_P4H_AUTHORITY_ADDED_AFTER_9bec86eea8082d8d0dd68419542dc8565374c5e9",
+    "direct_current_lineage_a0_execution_authority_status": "NOT_FOUND",
+    "additional_prerequisite_before_p4h_audit_status": "NOT_FOUND"
+  },
+  "candidate_universe_analysis": {
+    "summary": "Exhaustive static content and history discovery found the previous P4-G candidate universe plus one materially new current-lineage authority candidate: P4-H A0 current-lineage execution rebind audit. Historical Stage184/185/186/187/188 actions remain non-selectable without a current P4-B R1/Gate-6 bridge. P4-F remains the later admission consumer/prerequisite framework and is not itself the exact action identity. P4-H supplies the missing exact current-lineage bridge and explicitly orders the static rebind audit before current-lineage A0 implementation, execution, training, or evaluation.",
+    "historical_boundary": {
+      "historical_dataset_sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640",
+      "historical_sidecar_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc",
+      "current_p4b_r1_regenerated_dataset_sha256": "eb1e0614939cda1421052702223f0fda91f098564692141b085b95b18558c0d3",
+      "parameter_inheritance_status": "NO_HISTORICAL_SEED_SPLIT_SIDECAR_DATASET_EPOCH_OR_LR_PARAMETER_INHERITED_FOR_SELECTED_STATIC_AUDIT"
+    },
+    "p4h_admissibility_status": "PASS_ALL_P4G_REQUIRED_FIELDS_RESOLVED",
+    "p4h_precedence_status": "PASS_UNIQUE_EARLIEST_NON_DOMINATED_ACTION",
+    "training_boundary_status": "PASS_TRAINING_ADMISSION_REMAINS_FALSE_AND_NO_TRAINING_EVALUATION_MODEL_LOADING_OR_KAGGLE_ACTION_SELECTED"
+  },
+  "candidate_action_count": 9,
+  "candidate_actions": [
+    {
+      "candidate_name": "P3W6F2P4H_A0_CURRENT_LINEAGE_EXECUTION_REBIND_AUDIT",
+      "source_authority_path": "reports/reason_router_p2_p3w6f2_p4h_a0_current_lineage_rebind_authority_spec.md",
+      "source_authority_commit": "368d3b6991389aa6b6fd80f421c73565b562e290",
+      "source_authority_token": "P3W6F2P4H_A0_CURRENT_LINEAGE_REBIND_AUTHORITY_V1",
+      "current_lineage_applicability_status": "APPLICABLE_TO_P3_W6_F2_P4B_R1_GATE6_TRAINING_ADMISSION_FALSE",
+      "authority_support_status": "ELIGIBLE_EXACT_AUTHORITY_SUPPORT",
+      "precedence_status": "NON_DOMINATED_UNIQUE_EARLIEST_REQUIRED_BEFORE_CURRENT_LINEAGE_A0_IMPLEMENTATION_EXECUTION_TRAINING_OR_EVALUATION",
+      "blocker_rejection_reasons": [],
+      "action_type": "STATIC_READ_ONLY",
+      "training_admission_effect": "PRESERVE_FALSE"
+    },
+    {
+      "candidate_name": "P4-F Level-3 admission evaluation",
+      "source_authority_path": "reports/reason_router_p2_p3w6f2_p4f_level3_admission_authority_spec.md",
+      "source_authority_commit": "8fd76261fbad2ef78e915e3442147c971e95aa33",
+      "source_authority_token": "P3W6F2P4F_LEVEL3_ADMISSION_BLOCKED",
+      "current_lineage_applicability_status": "CURRENT_LINEAGE_CONTEXT_PRESENT_BUT_ACTION_RESOLUTION_PREREQUISITE_UNSATISFIED_UNTIL_P4G_RESULT_VERIFICATION_AND_FREEZE",
+      "authority_support_status": "NOT_ELIGIBLE_P4F_IS_PHASE_ADMISSION_CONSUMER_AND_REQUIRES_SEPARATE_EARLIEST_ACTION_RESOLUTION",
+      "precedence_status": "REJECTED_AS_SELECTED_LEVEL3_ACTION_IDENTITY",
+      "blocker_rejection_reasons": [
+        "P4-F states it is not the missing Level-3 action-resolution authority.",
+        "P4-F PASS is impossible while earliest_level3_action_status remains unresolved by consumable authority.",
+        "P4-F does not itself supply the selected action's exact purpose, inputs, permitted output, environment, or parameters."
+      ],
+      "action_type": "STATIC_READ_ONLY",
+      "training_admission_effect": "PRESERVE_FALSE"
+    },
+    {
+      "candidate_name": "Separate Level-3 training-admission decision gate for the regenerated controlled dataset",
+      "source_authority_path": "reports/reason_router_p2_p3w6f2_p4b_r1_regeneration_spec.md",
+      "source_authority_commit": "fcc3b9ccaf2bbee33ac18dcef10d50acff54aab4",
+      "source_authority_token": "P3W6F2P4B_R1_REGENERATION_SPEC_READY_FOR_INDEPENDENT_VERIFICATION",
+      "current_lineage_applicability_status": "CURRENT_LINEAGE_REQUIREMENT_PRESENT",
+      "authority_support_status": "NOT_ELIGIBLE_REQUIREMENT_FOR_NEW_AUTHORITY_NOT_EXACT_ACTION_AUTHORITY",
+      "precedence_status": "REJECTED_BY_MISSING_EXACT_ACTION_FIELDS_AND_BY_P4H_NARROWER_PREREQUISITE",
+      "blocker_rejection_reasons": [
+        "P4-B requires a separate Level-3 training-admission decision gate but does not identify the exact earliest action.",
+        "P4-B does not resolve action name, canonical token, action type, permitted outputs, prohibited actions, environment, or parameters.",
+        "P4-H identifies a narrower static prerequisite before any current-lineage A0 execution path."
+      ],
+      "action_type": "OTHER_EXPLICITLY_AUTHORIZED",
+      "training_admission_effect": "NO_FALSE_TO_TRUE_TRANSITION_AUTHORIZED"
+    },
+    {
+      "candidate_name": "Historical P3 A0 execution",
+      "source_authority_path": "reports/reason_router_p2_p3_execution_spec.md",
+      "source_authority_commit": "72cfdd3d551832e33799ca0399a6d6bf0c431901",
+      "source_authority_token": "P3_A0_PHASE_READY_FOR_EXECUTION",
+      "current_lineage_applicability_status": "NOT_APPLICABLE_HISTORICAL_DATASET_AND_SIDECAR_BOUND",
+      "authority_support_status": "NOT_ELIGIBLE_HISTORICAL_EXECUTION_INTENT_ONLY_FOR_CURRENT_LINEAGE",
+      "precedence_status": "REJECTED_BY_P4H_STATIC_REBIND_PREREQUISITE_AND_TRAINING_BOUNDARY",
+      "blocker_rejection_reasons": [
+        "Historical P3 A0 is bound to data/controlled_v5_v3_without_time_swap.jsonl with SHA256 f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640.",
+        "Historical P3 A0 is bound to Stage185 sidecar semantic SHA256 5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc.",
+        "P4-H explicitly requires a static rebind audit before any current-lineage A0 training or evaluation."
+      ],
+      "action_type": "TRAINING",
+      "training_admission_effect": "FALSE_TO_TRUE_TRANSITION_NOT_AUTHORIZED"
+    },
+    {
+      "candidate_name": "Historical Stage185 controlled-train integrity sidecar builder or rerun",
+      "source_authority_path": "reports/stage184a_integrity_sidecar_spec_ready_closure.md",
+      "source_authority_commit": "d89edf49454b02576733137f68f7f9309956487c",
+      "source_authority_token": "STAGE185_CONTROLLED_TRAIN_INTEGRITY_SIDECAR_BUILDER",
+      "current_lineage_applicability_status": "NOT_APPLICABLE_NO_CURRENT_P4B_R1_GATE6_BRIDGE",
+      "authority_support_status": "NOT_ELIGIBLE_HISTORICAL_ONLY",
+      "precedence_status": "REJECTED_FOR_CURRENT_SELECTION",
+      "blocker_rejection_reasons": [
+        "Stage184-A/Stage185-A bind to the historical controlled dataset SHA256 f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640.",
+        "P4-F states historical Stage185 sidecar authority does not automatically require a new Stage185-style execution.",
+        "P4-H states historical Stage184/185/186/187/188/189 execution lineage is not a current-lineage substitute for the rebind audit."
+      ],
+      "action_type": "DETERMINISTIC_CPU_ARTIFACT",
+      "training_admission_effect": "PRESERVE_FALSE"
+    },
+    {
+      "candidate_name": "Historical Stage186 compatible-positive margin fixed-spec audit",
+      "source_authority_path": "reports/stage185a_integrity_sidecar_materialized_closure.md",
+      "source_authority_commit": "7940a72324ae15434649580ecf59f4140578c635",
+      "source_authority_token": "STAGE186_COMPATIBLE_POSITIVE_MARGIN_FIXED_SPEC_AUDIT",
+      "current_lineage_applicability_status": "NOT_APPLICABLE_NO_CURRENT_P4B_R1_GATE6_BRIDGE",
+      "authority_support_status": "NOT_ELIGIBLE_HISTORICAL_ONLY",
+      "precedence_status": "REJECTED_FOR_CURRENT_SELECTION",
+      "blocker_rejection_reasons": [
+        "Stage186-A input identity is the historical Stage185 sidecar and historical controlled dataset.",
+        "No authority binds the historical Stage186 audit to the P3-W6-F2 P4-B R1 regenerated dataset or Gate-6 closure.",
+        "P4-H supplies the current-lineage static rebind audit as the narrower missing prerequisite."
+      ],
+      "action_type": "STATIC_READ_ONLY",
+      "training_admission_effect": "PRESERVE_FALSE"
+    },
+    {
+      "candidate_name": "Historical Stage187 compatible-positive margin default-off implementation or runtime validation",
+      "source_authority_path": "reports/stage186a_fixed_margin_spec_ready_closure.md",
+      "source_authority_commit": "68d8150a7d8f24087edffb6a5f1aa211e467b7d6",
+      "source_authority_token": "STAGE187_COMPATIBLE_POSITIVE_MARGIN_DEFAULT_OFF_IMPLEMENTATION",
+      "current_lineage_applicability_status": "NOT_APPLICABLE_NO_CURRENT_P4B_R1_GATE6_BRIDGE",
+      "authority_support_status": "NOT_ELIGIBLE_HISTORICAL_ONLY_AND_IMPLEMENTATION_ADJACENT",
+      "precedence_status": "REJECTED_FOR_CURRENT_SELECTION",
+      "blocker_rejection_reasons": [
+        "Stage187 authority depends on Stage186-A and historical Stage185 sidecar identities.",
+        "Stage187 is implementation/runtime-validation adjacent and not an exact current post-Gate-6 action for P4-B R1.",
+        "No current-lineage bridge authorizes applying Stage187 to the regenerated P4-B R1 dataset."
+      ],
+      "action_type": "OTHER_EXPLICITLY_AUTHORIZED",
+      "training_admission_effect": "PRESERVE_FALSE"
+    },
+    {
+      "candidate_name": "Historical Stage188-A paired internal margin experiment manifest/specification",
+      "source_authority_path": "reports/stage188a_paired_internal_margin_experiment_spec.md",
+      "source_authority_commit": "dc62e63da045435429dc3927f8dc5b2c0d4de59c",
+      "source_authority_token": "STAGE188A_PAIRED_INTERNAL_MARGIN_EXPERIMENT_SPEC_READY",
+      "current_lineage_applicability_status": "NOT_APPLICABLE_NO_CURRENT_P4B_R1_GATE6_BRIDGE",
+      "authority_support_status": "NOT_ELIGIBLE_HISTORICAL_ONLY_AND_DEPENDS_ON_STAGE186_STAGE187_CHAIN",
+      "precedence_status": "REJECTED_FOR_CURRENT_SELECTION",
+      "blocker_rejection_reasons": [
+        "Stage188-A authoritative inputs are historical Stage185, Stage186-A, and Stage187-B identities.",
+        "Stage188-A prepares Stage188-B paired training only after additional materialization and Kaggle validation.",
+        "No authority binds Stage188-A to the current regenerated P4-B R1 dataset or Gate-6 Level-2 closure."
+      ],
+      "action_type": "STATIC_READ_ONLY",
+      "training_admission_effect": "PRESERVE_FALSE_FOR_STAGE188A_ONLY"
+    },
+    {
+      "candidate_name": "Historical Stage188-B or later training/evaluation/experiment execution",
+      "source_authority_path": "reports/stage188a_paired_internal_margin_experiment_spec.md",
+      "source_authority_commit": "dc62e63da045435429dc3927f8dc5b2c0d4de59c",
+      "source_authority_token": "STAGE188B_PAIRED_INTERNAL_MARGIN_TRAINING",
+      "current_lineage_applicability_status": "NOT_APPLICABLE_AND_TRAINING_BOUNDARY_BLOCKED",
+      "authority_support_status": "NOT_ELIGIBLE_TRAINING_OR_EVALUATION_TRANSITION_NOT_AUTHORIZED_FOR_CURRENT_LINEAGE",
+      "precedence_status": "REJECTED_FOR_CURRENT_SELECTION",
+      "blocker_rejection_reasons": [
+        "training_admission_released is false.",
+        "P4-G supplies no permission for training, evaluation, model loading, checkpoints, or Kaggle execution.",
+        "Historical Stage188-B depends on historical dataset and sidecar identities, not the P4-B R1 regenerated dataset."
+      ],
+      "action_type": "TRAINING",
+      "training_admission_effect": "FALSE_TO_TRUE_TRANSITION_NOT_AUTHORIZED"
+    }
+  ],
+  "eligible_candidate_count": 1,
+  "dominated_candidate_count": 0,
+  "unresolved_candidate_count": 0,
+  "selected_action": "P3W6F2P4H_A0_CURRENT_LINEAGE_EXECUTION_REBIND_AUDIT",
+  "selected_action_type": "STATIC_READ_ONLY",
+  "selected_action_purpose": "Determine the exact minimal authority/provenance/loader/manifest contract required to rebind the historical P3 A0 Reason Router execution specification from its historical controlled-dataset and Stage185-sidecar identities to the current P3-W6-F2 P4-B R1 regenerated dataset and successfully closed Gate-6 lineage.",
+  "selected_action_authority_path": "reports/reason_router_p2_p3w6f2_p4h_a0_current_lineage_rebind_authority_spec.md",
+  "selected_action_authority_commit": "368d3b6991389aa6b6fd80f421c73565b562e290",
+  "selected_action_authority_token": "P3W6F2P4H_A0_CURRENT_LINEAGE_REBIND_AUTHORITY_V1",
+  "selected_action_input_identities": {
+    "audit_state_commit": "368d3b6991389aa6b6fd80f421c73565b562e290",
+    "p4h_authority_commit": "368d3b6991389aa6b6fd80f421c73565b562e290",
+    "p4g_spec_commit": "dc62e63da045435429dc3927f8dc5b2c0d4de59c",
+    "p4g_blocked_primary_result_commit": "ebeb6f77c46a23c0b6bc29aeddb5fca4cc69aabf",
+    "p4g_blocked_verification_attestation_commit": "9bec86eea8082d8d0dd68419542dc8565374c5e9",
+    "p4f_spec_commit": "8fd76261fbad2ef78e915e3442147c971e95aa33",
+    "gate6_closure_commit": "08d233d53b9d33e055f04c833613edb313bd0cf5",
+    "gate6_decision_token": "P3W6F2P4E_LEVEL2_RESULT_REVIEW_PASS",
+    "gate6_pair_dispositions_sha256": "cb8ca8b46e5440867cb1d22132ed5738e030bdc818dd685ffc8a0e6cc732cdce",
+    "p4b_r1_authority_commit": "fcc3b9ccaf2bbee33ac18dcef10d50acff54aab4",
+    "p4b_r1_artifact_directory": "reports/reason_router_p2_p3w6f2_p4b_r1_regeneration_execution_4122078ab7962042e3d6bf89f8b4eb5cec463458/",
+    "current_regenerated_dataset_sha256": "eb1e0614939cda1421052702223f0fda91f098564692141b085b95b18558c0d3",
+    "current_regenerated_dataset_semantic_sha256": "3797c174294f6d4f4efbe3afd05530b39c891f1e986dc05fbace59345d6e9c3b",
+    "p4d_authority_commit": "1be4050dbadb0cb5ed2f6b55a2391051f5f6c07e",
+    "p4d_gate5_decision_token": "P3W6F2P4D_CONTROLLED_DATA_INTEGRITY_GATE_PASS",
+    "historical_p3_spec_commit": "72cfdd3d551832e33799ca0399a6d6bf0c431901",
+    "historical_p3_a0_status": "P3_A0_PHASE_READY_FOR_EXECUTION",
+    "historical_dataset_sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640",
+    "historical_sidecar_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc"
+  },
+  "selected_action_permitted_outputs": [
+    {
+      "path": "reports/reason_router_p2_p3w6f2_p4h_a0_current_lineage_rebind_audit_368d3b6991389aa6b6fd80f421c73565b562e290.json",
+      "schema_version": "P3W6F2P4H_A0_CURRENT_LINEAGE_REBIND_AUDIT_V1",
+      "verification_status": "PENDING",
+      "audit_state_commit": "368d3b6991389aa6b6fd80f421c73565b562e290"
+    }
+  ],
+  "selected_action_prohibited_actions": [
+    "Python execution",
+    "pytest",
+    "validators",
+    "Stage185 execution",
+    "dataset regeneration",
+    "model import or model loading",
+    "Torch forward pass",
+    "checkpoint loading or mutation",
+    "training",
+    "evaluation",
+    "Kaggle",
+    "GPU use",
+    "trainer/model/test/data modification",
+    "P4-B/P4-D/P4-E/P4-F/P4-G/P4-H authority modification",
+    "training_admission_released true transition"
+  ],
+  "selected_action_environment": {
+    "environment": "LOCAL_STATIC_READ_ONLY",
+    "allowed_operations": [
+      "repository file inspection",
+      "Git history inspection",
+      "static source inspection",
+      "hash/provenance comparison",
+      "git status",
+      "git diff",
+      "git show",
+      "git log",
+      "git grep",
+      "git diff --check",
+      "creation of the single authorized audit result artifact"
+    ]
+  },
+  "selected_action_parameters": {
+    "audit_state_commit": "368d3b6991389aa6b6fd80f421c73565b562e290",
+    "training_or_split_parameters": "NONE_FOR_STATIC_AUDIT",
+    "historical_parameters_treatment": {
+      "split_seed_174": "HISTORICAL_EVIDENCE_ONLY_NOT_INHERITED_AS_SELECTED_AUDIT_PARAMETER",
+      "dev_ratio_0_2": "HISTORICAL_EVIDENCE_ONLY_NOT_INHERITED_AS_SELECTED_AUDIT_PARAMETER",
+      "a0_seeds_180_181_182": "HISTORICAL_EVIDENCE_ONLY_NOT_INHERITED_AS_SELECTED_AUDIT_PARAMETER",
+      "epochs_20": "HISTORICAL_EVIDENCE_ONLY_NOT_INHERITED_AS_SELECTED_AUDIT_PARAMETER",
+      "learning_rate_0_001": "HISTORICAL_EVIDENCE_ONLY_NOT_INHERITED_AS_SELECTED_AUDIT_PARAMETER"
+    }
+  },
+  "separate_execution_authorization_required": true,
+  "applicability_to_current_lineage_status": "PASS_EXPLICITLY_APPLIES_TO_P3_W6_F2_P4B_R1_GATE6_TRAINING_ADMISSION_FALSE",
+  "blockers": [],
+  "failure_reasons": [],
+  "training_evaluation_run": false,
+  "prohibited_execution_occurred": false,
+  "result_scope": {
+    "created_artifact_only": "reports/reason_router_p2_p3w6f2_p4g_level3_action_resolution_result_368d3b6991389aa6b6fd80f421c73565b562e290.json",
+    "result_freeze_commit_included": false,
+    "verification_attestation_created": false,
+    "future_git_sha_included": false,
+    "git_index_modified": false
+  }
+}
