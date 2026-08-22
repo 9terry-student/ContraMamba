@@ -1,0 +1,21 @@
+{
+  "schema_version": "P3W6F2P4G_LEVEL3_ACTION_RESOLUTION_VERIFICATION_ATTESTATION_V1",
+  "p4g_spec_commit": "dc62e63da045435429dc3927f8dc5b2c0d4de59c",
+  "resolution_state_commit": "368d3b6991389aa6b6fd80f421c73565b562e290",
+  "result_path": "reports/reason_router_p2_p3w6f2_p4g_level3_action_resolution_result_368d3b6991389aa6b6fd80f421c73565b562e290.json",
+  "result_freeze_commit": "4699e280afefd0b8a2e9d9eaceb3e9a4d63f7a54",
+  "primary_result_sha256": "678f09ce25aef101cea12f6c49b1182e839d988a023afdb10530d88420e1530a",
+  "primary_decision_token": "P3W6F2P4G_LEVEL3_ACTION_RESOLUTION_PASS",
+  "independent_verification_status": "PASS",
+  "independent_verification_token": "P3W6F2P4G_LEVEL3_ACTION_RESOLUTION_PRIMARY_PASS_INDEPENDENT_VERIFICATION_PASS",
+  "authority_binding_status": "PASS",
+  "candidate_universe_verification_status": "PASS",
+  "selected_action_verification_status": "PASS",
+  "provenance_verification_status": "PASS",
+  "training_admission_released": false,
+  "verification_token_authority_path": "reports/reason_router_p2_p3w6f2_p4i_p4g_verification_token_namespace_authority_spec.md",
+  "verification_token_authority_commit": "08113fdb48ff4cb40904bae66eeaf7961aa6ac8a",
+  "verification_token_authority_token": "P3W6F2P4I_P4G_VERIFICATION_TOKEN_NAMESPACE_AUTHORITY_V1",
+  "blockers": [],
+  "failure_reasons": []
+}
