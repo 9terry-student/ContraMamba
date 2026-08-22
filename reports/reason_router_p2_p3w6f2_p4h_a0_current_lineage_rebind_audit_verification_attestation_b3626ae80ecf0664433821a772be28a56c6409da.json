@@ -1,0 +1,189 @@
+{
+  "schema_version": "P3W6F2P4H_A0_CURRENT_LINEAGE_REBIND_AUDIT_VERIFICATION_ATTESTATION_V1",
+  "p4h_authority_commit": "368d3b6991389aa6b6fd80f421c73565b562e290",
+  "audit_state_commit": "368d3b6991389aa6b6fd80f421c73565b562e290",
+  "result_path": "reports/reason_router_p2_p3w6f2_p4h_a0_current_lineage_rebind_audit_368d3b6991389aa6b6fd80f421c73565b562e290.json",
+  "result_freeze_commit": "b3626ae80ecf0664433821a772be28a56c6409da",
+  "primary_result_sha256": "e328a833219cfff24748f94b852a2a6b752c0042d34df37b982bc6836ec46602",
+  "primary_decision_token": "P3W6F2P4H_A0_CURRENT_LINEAGE_REBIND_AUDIT_PASS",
+  "primary_verification_status": "PENDING",
+  "independent_verification_status": "PASS",
+  "independent_verification_token": "P3W6F2P4H_A0_CURRENT_LINEAGE_REBIND_AUDIT_PRIMARY_PASS_INDEPENDENT_VERIFICATION_PASS",
+  "nine_audit_questions_verification_status": "PASS",
+  "trainer_identity_verification_status": "PASS",
+  "dataset_binding_verification_status": "PASS",
+  "sidecar_binding_verification_status": "PASS",
+  "compatibility_artifact_verification_status": "PASS",
+  "derived_artifact_contract_verification_status": "PASS",
+  "manifest_preflight_verification_status": "PASS",
+  "parameter_authority_verification_status": "PASS",
+  "scientific_equivalence_verification_status": "PASS",
+  "required_field_provenance_verification_status": "PASS",
+  "execution_authorization_provenance_verification_status": "PASS",
+  "authority_binding_status": "PASS",
+  "provenance_verification_status": "PASS",
+  "training_admission_released": false,
+  "implementation_authorized": false,
+  "a0_execution_authorized": false,
+  "training_authorized": false,
+  "evaluation_authorized": false,
+  "kaggle_authorized": false,
+  "gpu_authorized": false,
+  "verification_contract_authority_path": "reports/reason_router_p2_p3w6f2_p4k_p4h_audit_result_independent_verification_provenance_authority_spec.md",
+  "verification_contract_authority_commit": "13e7b0d7e229aa678e791e06b2e1d7de26474414",
+  "verification_contract_authority_token": "P3W6F2P4K_P4H_AUDIT_RESULT_INDEPENDENT_VERIFICATION_PROVENANCE_AUTHORITY_V1",
+  "verification_environment": "LOCAL_STATIC_READ_ONLY",
+  "verification_scope": "STATIC_REPOSITORY_GIT_SOURCE_PROVENANCE_INSPECTION_ONLY",
+  "p4k_freeze_predates_result_freeze": true,
+  "result_freeze_delta_verification": {
+    "base_commit": "13e7b0d7e229aa678e791e06b2e1d7de26474414",
+    "result_freeze_commit": "b3626ae80ecf0664433821a772be28a56c6409da",
+    "tracked_delta_status": "PASS",
+    "only_added_tracked_file": "reports/reason_router_p2_p3w6f2_p4h_a0_current_lineage_rebind_audit_368d3b6991389aa6b6fd80f421c73565b562e290.json"
+  },
+  "primary_result_core_field_verification": {
+    "schema_version": "P3W6F2P4H_A0_CURRENT_LINEAGE_REBIND_AUDIT_V1",
+    "decision_token": "P3W6F2P4H_A0_CURRENT_LINEAGE_REBIND_AUDIT_PASS",
+    "verification_status": "PENDING",
+    "audit_state_commit": "368d3b6991389aa6b6fd80f421c73565b562e290",
+    "p4h_authority_commit": "368d3b6991389aa6b6fd80f421c73565b562e290",
+    "p4g_verification_attestation_commit": "9bec86eea8082d8d0dd68419542dc8565374c5e9",
+    "training_admission_released": false,
+    "blockers": [],
+    "failure_reasons": [],
+    "future_result_freeze_sha_predicted": false
+  },
+  "audit_snapshot_semantics": {
+    "substantive_source_snapshot": "368d3b6991389aa6b6fd80f421c73565b562e290",
+    "result_freeze_snapshot": "b3626ae80ecf0664433821a772be28a56c6409da",
+    "status": "PASS",
+    "finding": "Substantive trainer, loader, preflight, manifest, checkpoint metadata, and A0 reference-audit findings were checked against audit_state_commit, not current HEAD."
+  },
+  "nine_audit_questions": {
+    "1": "PASS: current trainer can consume P4-B R1 only after authority/provenance/loader/manifest identity rebind, not as-is.",
+    "2": "PASS: historical f552 dataset and 5bc sidecar bindings remain materially enforced.",
+    "3": "PASS: P4-B artifacts 8-10 are predicate-realization bridge evidence, not a complete current-lineage A0 integrity sidecar.",
+    "4": "PASS: a new current-lineage effective integrity sidecar or semantically equivalent deterministic artifact is required.",
+    "5": "PASS: derived artifact semantic purpose and minimum input identities are resolved.",
+    "6": "PASS: exact minimal future implementation, manifest, preflight, and A0-reference delta is resolved.",
+    "7": "PASS: historical split, dev, seed, epoch, and learning-rate values remain historical evidence only and require separate current-lineage parameter authority.",
+    "8": "PASS: frozen trainer rejects regenerated substitution as-is; malformed-F2 semantics risk exists only if future rebinding is incomplete.",
+    "9": "PASS: historical A0 scientific mechanism can remain unchanged after provenance rebind."
+  },
+  "trainer_identity_evidence": {
+    "historical_dataset_sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640",
+    "historical_sidecar_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc",
+    "verified_bindings": [
+      "_STAGE187_AUTHORITATIVE_DATA",
+      "_STAGE187_AUTHORITATIVE_SIDECAR",
+      "_STAGE187_DATASET_SHA256",
+      "_STAGE187_SIDECAR_SEMANTIC_SHA256",
+      "Stage187/191/193/195 preflights",
+      "_stage187_load_integrity_sidecar",
+      "_p2_load_reason_integrity_sidecar",
+      "_p2_checkpoint_metadata_from_args",
+      "runtime/provenance manifest",
+      "expected_main_clean_dataset",
+      "A0 reference-audit dataset/sidecar fields"
+    ]
+  },
+  "dataset_binding_evidence": {
+    "current_regenerated_dataset_sha256": "eb1e0614939cda1421052702223f0fda91f098564692141b085b95b18558c0d3",
+    "current_regenerated_semantic_sha256": "3797c174294f6d4f4efbe3afd05530b39c891f1e986dc05fbace59345d6e9c3b",
+    "current_trainer_rejects_regenerated_substitution_as_is": true,
+    "command_line_data_substitution_alone_sufficient": false,
+    "coherent_path_sha_source_identity_rebind_required": true,
+    "fail_fast_semantics_must_remain": true
+  },
+  "sidecar_binding_evidence": {
+    "historical_stage185_source_dataset_sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640",
+    "historical_stage185_sidecar_valid_for_regenerated_dataset": false,
+    "structural_row_compatibility_alone_authority_valid": false
+  },
+  "compatibility_artifacts_8_to_10": {
+    "rows_sha256": "59e4367d29e3c49152049e4a1b46e8783d5b81d1ebaa931ca9fd4ae0ac967b9f",
+    "summary_sha256": "ce618d214dc4d660706d927a0d91ec5945d3a0edbffbf615eab8b9c9ff585aa8",
+    "provenance_sha256": "09a56f1dca325e0749a0e4b0f822d68dad5d85fd90fa427e0efd6d617d41b2d6",
+    "proves": [
+      "119-pair/357-member predicate-realization compatibility",
+      "historical Stage185-v1 non-mutation",
+      "compatibility PASS in defined scope"
+    ],
+    "does_not_prove": [
+      "full 3600-row current-lineage sidecar",
+      "source_dataset_sha rebinding",
+      "full regenerated row-order binding",
+      "current split identity",
+      "every P2 sidecar field",
+      "A0 manifest/reference-audit identity bindings"
+    ]
+  },
+  "derived_artifact_contract": {
+    "resolved_artifact_class": "current-lineage effective integrity sidecar or semantically equivalent deterministic artifact bound to regenerated dataset authority",
+    "multiple_non_dominated_classes_unresolved": false,
+    "semantic_purpose_resolved": true,
+    "source_dataset_physical_and_semantic_identity_resolved": true,
+    "row_member_identity_resolved": true,
+    "row_id_join_with_defense_in_depth_identities_resolved": true,
+    "eligibility_mask_semantics_resolved": true,
+    "reason_supervision_metadata_resolved": true,
+    "provenance_hashes_resolved": true,
+    "immutable_historical_stage185_v1_relationship_resolved": true,
+    "new_current_lineage_namespace_required": true
+  },
+  "manifest_preflight_delta": {
+    "current_lineage_dataset_path_sha_binding_required": true,
+    "current_lineage_sidecar_path_semantic_sha_required": true,
+    "sidecar_loader_checks_required": true,
+    "source_dataset_sha_checks_required": true,
+    "checkpoint_metadata_required": true,
+    "runtime_provenance_manifest_required": true,
+    "expected_main_clean_dataset_required": true,
+    "a0_reference_audit_dataset_sidecar_fields_required": true,
+    "fail_fast_preserved": true,
+    "implementation_performed": false
+  },
+  "parameter_authority": {
+    "split_seed_174_current_lineage_authority": "HISTORICAL_EVIDENCE_ONLY",
+    "dev_ratio_0_2_current_lineage_authority": "HISTORICAL_EVIDENCE_ONLY",
+    "a0_seeds_180_181_182_current_lineage_authority": "HISTORICAL_EVIDENCE_ONLY",
+    "epochs_20_current_lineage_authority": "HISTORICAL_EVIDENCE_ONLY",
+    "learning_rate_0_001_current_lineage_authority": "HISTORICAL_EVIDENCE_ONLY",
+    "separate_future_parameter_authority_required": true
+  },
+  "scientific_equivalence": {
+    "mechanism_change_required": false,
+    "preserved": [
+      "Conditional First-Blocker Reason Router",
+      "Reason-Specific Supervision",
+      "Explicit Gradient Ownership",
+      "FRAME > PREDICATE > SUFFICIENCY > AUTHORIZED",
+      "secondary reasons diagnostic-only",
+      "router-only final 3-way CE",
+      "detached F/P/S and polarity CE path",
+      "EMA observer/baseline-only",
+      "A0-A3",
+      "E0"
+    ]
+  },
+  "required_historical_p4g_field": {
+    "p4g_verification_attestation_commit": "9bec86eea8082d8d0dd68419542dc8565374c5e9",
+    "meaning": "historical P4-G BLOCKED verification attestation consumed by frozen P4-H",
+    "replaced_by_current_p4g_pass_provenance": false
+  },
+  "additive_current_authorization_provenance": {
+    "current_p4g_spec_commit": "dc62e63da045435429dc3927f8dc5b2c0d4de59c",
+    "current_p4g_resolution_state": "368d3b6991389aa6b6fd80f421c73565b562e290",
+    "current_p4g_primary_result_freeze": "4699e280afefd0b8a2e9d9eaceb3e9a4d63f7a54",
+    "current_p4g_pass_attestation_freeze": "2a17772a4e44bd29a8f40fb6f8fac4ba90bb591a",
+    "current_p4g_independent_verification_token": "P3W6F2P4G_LEVEL3_ACTION_RESOLUTION_PRIMARY_PASS_INDEPENDENT_VERIFICATION_PASS",
+    "p4f_primary_result_freeze": "4b32c21a05dc851959aa12c92a6fb298915969ef",
+    "p4f_independent_attestation_commit": "ae351c83eff6a1df2d9229c6099ec2ac2956bf88",
+    "p4f_independent_verification_token": "P3W6F2P4F_LEVEL3_ADMISSION_PRIMARY_PASS_INDEPENDENT_VERIFICATION_PASS",
+    "authorized_action": "P3W6F2P4H_A0_CURRENT_LINEAGE_EXECUTION_REBIND_AUDIT",
+    "authorized_action_type": "STATIC_READ_ONLY",
+    "authorized_environment": "LOCAL_STATIC_READ_ONLY"
+  },
+  "blockers": [],
+  "failure_reasons": []
+}
