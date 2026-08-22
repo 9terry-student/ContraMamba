@@ -1,0 +1,292 @@
+{
+  "schema_version": "P3W6F2P4H_A0_CURRENT_LINEAGE_REBIND_AUDIT_V1",
+  "decision_token": "P3W6F2P4H_A0_CURRENT_LINEAGE_REBIND_AUDIT_PASS",
+  "verification_status": "PENDING",
+  "audit_state_commit": "368d3b6991389aa6b6fd80f421c73565b562e290",
+  "p4h_authority_commit": "368d3b6991389aa6b6fd80f421c73565b562e290",
+  "p4g_verification_attestation_commit": "9bec86eea8082d8d0dd68419542dc8565374c5e9",
+  "p4f_spec_commit": "8fd76261fbad2ef78e915e3442147c971e95aa33",
+  "gate6_closure_commit": "08d233d53b9d33e055f04c833613edb313bd0cf5",
+  "historical_p3_spec_commit": "72cfdd3d551832e33799ca0399a6d6bf0c431901",
+  "historical_p3_a0_status": "P3_A0_PHASE_READY_FOR_EXECUTION",
+  "historical_dataset_sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640",
+  "current_regenerated_dataset_sha256": "eb1e0614939cda1421052702223f0fda91f098564692141b085b95b18558c0d3",
+  "historical_sidecar_semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc",
+  "trainer_identity_findings": {
+    "snapshot_inspected": "368d3b6991389aa6b6fd80f421c73565b562e290",
+    "primary_trainer": "scripts/train_controlled_v6b_minimal.py",
+    "historical_dataset_constants": {
+      "_STAGE187_AUTHORITATIVE_DATA": {
+        "line": 106,
+        "value": "data/controlled_v5_v3_without_time_swap.jsonl"
+      },
+      "_STAGE187_DATASET_SHA256": {
+        "line": 111,
+        "value": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640"
+      }
+    },
+    "historical_sidecar_constants": {
+      "_STAGE187_AUTHORITATIVE_SIDECAR": {
+        "lines": "107-109",
+        "value": "reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_controlled_train_integrity_sidecar.jsonl"
+      },
+      "_STAGE187_SIDECAR_SEMANTIC_SHA256": {
+        "line": 112,
+        "value": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc"
+      }
+    },
+    "reason_router_scientific_contract": {
+      "P2_ARM_CONTRACTS_lines": "129-133",
+      "A0": {
+        "router": "explicit_product",
+        "gradient_ownership": "joint",
+        "reason_loss_weight": 0.0
+      },
+      "A1": {
+        "router": "conditional_first_blocker",
+        "gradient_ownership": "joint"
+      },
+      "A2": {
+        "router": "explicit_product",
+        "gradient_ownership": "explicit_local",
+        "reason_loss_weight": 0.0
+      },
+      "A3": {
+        "router": "conditional_first_blocker",
+        "gradient_ownership": "explicit_local"
+      },
+      "primary_reason_order": [
+        "FRAME",
+        "PREDICATE",
+        "SUFFICIENCY",
+        "AUTHORIZED"
+      ],
+      "secondary_reasons": "diagnostic_only; exported as p2_secondary_reasons_3 and not duplicated into the external class target"
+    },
+    "a0_can_preserve_scientific_mechanism": true
+  },
+  "dataset_binding_findings": {
+    "historical_binding_enforced": [
+      "scripts/train_controlled_v6b_minimal.py:106 binds _STAGE187_AUTHORITATIVE_DATA to data/controlled_v5_v3_without_time_swap.jsonl.",
+      "scripts/train_controlled_v6b_minimal.py:111 binds _STAGE187_DATASET_SHA256 to f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640.",
+      "scripts/train_controlled_v6b_minimal.py:2001-2002 and repeated Stage191/193/195 preflight paths require the authoritative path and historical SHA.",
+      "scripts/train_controlled_v6b_minimal.py:3238-3241 _p2_load_reason_integrity_sidecar rejects non-authoritative data path or dataset SHA.",
+      "scripts/train_controlled_v6b_minimal.py:16051-16052 checkpoint metadata records data_sha256 as _STAGE187_DATASET_SHA256.",
+      "scripts/train_controlled_v6b_minimal.py:24477 and 24608 manifest/provenance records authoritative_dataset_sha256 as _STAGE187_DATASET_SHA256.",
+      "scripts/train_controlled_v6b_minimal.py:24503-24514 treats data/controlled_v5_v3_without_time_swap.jsonl as expected_main_clean_dataset."
+    ],
+    "current_dataset_identity": {
+      "p4b_r1_regenerated_dataset_path": "reports/reason_router_p2_p3w6f2_p4b_r1_regeneration_execution_4122078ab7962042e3d6bf89f8b4eb5cec463458/controlled_v5_v3_without_time_swap_p3w6f2_r1_regenerated.jsonl",
+      "p4b_r1_regenerated_dataset_sha256": "eb1e0614939cda1421052702223f0fda91f098564692141b085b95b18558c0d3",
+      "p4b_r1_regenerated_semantic_sha256": "3797c174294f6d4f4efbe3afd05530b39c891f1e986dc05fbace59345d6e9c3b"
+    },
+    "required_identity_change": "Future implementation/manifest authority must replace the historical path/SHA binding with the P4-B R1 regenerated dataset path and SHA, or introduce an explicit current-lineage authoritative dataset constant namespace that resolves to those identities.",
+    "malformed_f2_semantics_risk": "If only the command-line --data value were changed, audit_state_commit trainer code would still reject the regenerated file through _STAGE187_AUTHORITATIVE_DATA/_STAGE187_DATASET_SHA256 and would not silently consume it. Historical malformed-F2 semantics could still be consumed only if a future patch left any old path/SHA/source_dataset_sha sidecar binding active; therefore all listed bindings must be changed together."
+  },
+  "sidecar_binding_findings": {
+    "historical_sidecar_enforced": [
+      "scripts/train_controlled_v6b_minimal.py:107-112 binds the authoritative sidecar path and semantic SHA.",
+      "scripts/train_controlled_v6b_minimal.py:3100-3114 requires sidecar path and expected semantic SHA and compares the expected SHA to _STAGE187_SIDECAR_SEMANTIC_SHA256.",
+      "scripts/train_controlled_v6b_minimal.py:3242-3247 _p2_load_reason_integrity_sidecar rejects non-authoritative sidecar path or semantic SHA.",
+      "scripts/train_controlled_v6b_minimal.py:3257-3258 rejects every sidecar row whose source_dataset_sha256 is not _STAGE187_DATASET_SHA256.",
+      "scripts/train_controlled_v6b_minimal.py:3268-3276 requires source row order to match sidecar row_id order exactly.",
+      "scripts/train_controlled_v6b_minimal.py:3277-3279 recomputes the semantic sidecar SHA and requires it to match the expected SHA.",
+      "scripts/train_controlled_v6b_minimal.py:18371-18450 validates Stage187 sidecar access, split identities, and train/dev row-id equality against the frozen sidecar split.",
+      "scripts/train_controlled_v6b_minimal.py:24468-24478 and 24606-24609 emit sidecar path, sidecar validation, authoritative dataset SHA, and authoritative sidecar semantic SHA into provenance."
+    ],
+    "historical_sidecar_source_identity": {
+      "path": "reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/stage185a_provenance.json",
+      "source_dataset_path": "data/controlled_v5_v3_without_time_swap.jsonl",
+      "source_dataset_sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640",
+      "semantic_sha256": "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc"
+    },
+    "historical_sidecar_valid_for_regenerated_dataset": false,
+    "reason": "The sidecar provenance and per-row source_dataset_sha256 are bound to f552..., while P4-B R1 current lineage requires eb1e.... Structural row compatibility alone is not an authority-valid source-dataset rebind.",
+    "minimum_current_lineage_sidecar_contract": {
+      "semantic_purpose": "Provide the P2/A0 metadata and supervision integrity source for the regenerated P4-B R1 dataset while preserving Stage185-v1 observations as historical evidence, not mutating them.",
+      "source_dataset_identity": "reports/.../controlled_v5_v3_without_time_swap_p3w6f2_r1_regenerated.jsonl with SHA256 eb1e0614939cda1421052702223f0fda91f098564692141b085b95b18558c0d3 and semantic SHA256 3797c174294f6d4f4efbe3afd05530b39c891f1e986dc05fbace59345d6e9c3b",
+      "row_member_identity": "exact regenerated dataset row universe and one-to-one row_id order; pair_id/canonical_row_id/split identities must be recomputed or deterministically bridged against regenerated rows.",
+      "join_key": "row_id, with defense-in-depth pair_id, split, canonical_row_id, and source order equality checks.",
+      "eligibility_mask_semantics": "eligible_for_positive_margin and P2 reason-supervision eligibility must be derived under current-lineage regenerated data and fail closed for rows whose current integrity/generator status is unresolved or defective.",
+      "reason_supervision_metadata": "Must supply P2_SIDE_CAR_REQUIRED_FIELDS, source_dataset_sha256=eb1e..., frame_compatible_label, intervention_contract_status, component integrity statuses, reason_codes, split, pair_id, row_id, canonical_row_id, and fields needed by _p2_prepare_reason_supervision.",
+      "required_provenance_hashes": [
+        "current regenerated dataset physical SHA256 eb1e...",
+        "current regenerated dataset semantic SHA256 3797...",
+        "derived current-lineage sidecar physical SHA256",
+        "derived current-lineage sidecar semantic SHA256",
+        "builder/source commit and source hash",
+        "P4-B compatibility artifacts 8-10 hashes",
+        "historical Stage185-v1 sidecar semantic SHA256 5bc... as historical input only"
+      ],
+      "relationship_to_historical_stage185_v1": "Historical Stage185-v1 remains immutable comparison evidence. The current artifact may consume its observations and P4-B compatibility evidence but must use a new current-lineage namespace/path and source_dataset_sha256=eb1e....",
+      "new_namespace_required": true
+    }
+  },
+  "compatibility_artifact_findings": {
+    "artifacts_8_to_10": {
+      "rows": {
+        "path": "reports/reason_router_p2_p3w6f2_p4b_r1_regeneration_execution_4122078ab7962042e3d6bf89f8b4eb5cec463458/p3w6f2_p4b_r1_stage185_predicate_realization_compatibility_rows.jsonl",
+        "sha256": "59e4367d29e3c49152049e4a1b46e8783d5b81d1ebaa931ca9fd4ae0ac967b9f",
+        "schema_version": "P3W6F2P4B_R1_STAGE185_COMPATIBILITY_ROW_V1"
+      },
+      "summary": {
+        "path": "reports/reason_router_p2_p3w6f2_p4b_r1_regeneration_execution_4122078ab7962042e3d6bf89f8b4eb5cec463458/p3w6f2_p4b_r1_stage185_predicate_realization_compatibility_summary.json",
+        "sha256": "ce618d214dc4d660706d927a0d91ec5945d3a0edbffbf615eab8b9c9ff585aa8",
+        "schema_version": "P3W6F2P4B_R1_STAGE185_COMPATIBILITY_SUMMARY_V1",
+        "compatibility_gate_status": "PASS",
+        "row_count": 357,
+        "authorized_pair_count": 119,
+        "authorized_member_count": 357,
+        "compatibility_fail_count": 0,
+        "compatibility_unresolved_count": 0,
+        "stage185_v1_mutated": false,
+        "historical_authority_weakened": false,
+        "training_admission_released": false
+      },
+      "provenance_manifest": {
+        "path": "reports/reason_router_p2_p3w6f2_p4b_r1_regeneration_execution_4122078ab7962042e3d6bf89f8b4eb5cec463458/p3w6f2_p4b_r1_stage185_predicate_realization_compatibility_provenance_manifest.json",
+        "sha256": "09a56f1dca325e0749a0e4b0f822d68dad5d85fd90fa427e0efd6d617d41b2d6",
+        "schema_version": "P3W6F2P4B_R1_STAGE185_COMPATIBILITY_PROVENANCE_V1",
+        "regenerated_dataset_sha256": "eb1e0614939cda1421052702223f0fda91f098564692141b085b95b18558c0d3"
+      }
+    },
+    "proves": [
+      "Predicate-realization compatibility for authorized P3-W6-F2 pairs/members.",
+      "Historical Stage185-v1 predicate-axis observations are retained and not mutated.",
+      "Structured semantic predicate is preserved under P4-B R1 for the scoped 119-pair/357-member F2 universe.",
+      "No training admission is released."
+    ],
+    "does_not_prove": [
+      "A complete current-lineage Stage185/P2 integrity sidecar for all 3600 trainer rows.",
+      "Per-row source_dataset_sha256 rebinding from f552... to eb1e... for trainer consumption.",
+      "Exact one-to-one sidecar row order against the regenerated full dataset.",
+      "Current train/dev split identity and sidecar split identity for split seed 174/dev ratio 0.2.",
+      "All P2_SIDE_CAR_REQUIRED_FIELDS under the regenerated full-dataset namespace.",
+      "A0 reference-audit data/sidecar SHA fields for current-lineage output artifacts."
+    ],
+    "bridge_sufficiency_for_a0": "INSUFFICIENT_AS_COMPLETE_BRIDGE_BUT_SUFFICIENT_INPUT_EVIDENCE_FOR_A_CURRENT_LINEAGE_DERIVED_INTEGRITY_SIDECAR_CONTRACT"
+  },
+  "manifest_preflight_findings": {
+    "preflight_bindings": [
+      "Stage187/191/193/195 activation and sidecar preflight paths require the historical dataset path/SHA and historical sidecar path/semantic SHA.",
+      "P2_METADATA_INTEGRITY_SOURCE_REQUIRED requires both --controlled-integrity-sidecar-path and --expected-integrity-sidecar-semantic-sha256 whenever the P2 contract is enabled.",
+      "_p2_load_reason_integrity_sidecar fails closed on data path, dataset SHA, sidecar path, expected semantic SHA, per-row source_dataset_sha256, row count, row order, and semantic SHA.",
+      "_p2_checkpoint_metadata_from_args emits integrity_sidecar_semantic_sha256 from args but data_sha256 from _STAGE187_DATASET_SHA256.",
+      "Resolved runtime config and provenance emit authoritative_dataset_sha256, authoritative_sidecar_semantic_sha256, sidecar_validation, expected_main_clean_dataset, and compatible_positive_margin sidecar contract.",
+      "A0 reference audit fields in the historical P3 spec require dataset_sha256_expected/observed and sidecar_semantic_sha256_expected/observed to match the current execution contract."
+    ],
+    "minimal_manifest_delta": [
+      "Introduce current-lineage dataset path/SHA fields for the P4-B R1 regenerated dataset.",
+      "Introduce current-lineage sidecar path/semantic SHA fields for the derived effective integrity sidecar.",
+      "Update checkpoint metadata/provenance/A0 reference-audit expected data and sidecar SHA fields to the current-lineage identities.",
+      "Preserve fail-fast checks; do not weaken path/SHA/source_dataset_sha/row-order/split gates."
+    ]
+  },
+  "parameter_authority_findings": {
+    "historical_values_reviewed": {
+      "split_seed": 174,
+      "dev_ratio": 0.2,
+      "a0_seeds": [
+        180,
+        181,
+        182
+      ],
+      "epochs": 20,
+      "learning_rate": 0.001
+    },
+    "current_authority_status": "HISTORICAL_EVIDENCE_ONLY_FOR_CURRENT_LINEAGE_A0",
+    "reason": "P4-H Section G states historical values are evidence only and must not be silently promoted; no inspected current P4-B/P4-D/P4-E/P4-F/P4-G/P4-H authority independently carries all A0 execution parameters forward to current-lineage execution.",
+    "required_future_parameter_authority": true,
+    "minimum_future_parameter_authority_scope": [
+      "split seed",
+      "dev ratio",
+      "A0 seed set",
+      "epochs",
+      "learning rate",
+      "architecture/backbone/device envelope if execution authority uses historical P3 command templates",
+      "run output/A0 reference-audit path schema"
+    ]
+  },
+  "required_future_delta": {
+    "status": "EXACT_MINIMAL_STATIC_CONTRACT_RESOLVED_DO_NOT_EXECUTE",
+    "implementation_delta_required": true,
+    "derived_artifact_required": true,
+    "parameter_authority_required": true,
+    "minimum_ordered_steps_before_a0_execution_authorization": [
+      "Specify and independently verify a deterministic current-lineage effective integrity sidecar or equivalent artifact contract in a new namespace bound to P4-B R1 regenerated dataset SHA256 eb1e... and semantic SHA256 3797....",
+      "Implement only the minimal loader/constant/manifest/preflight/A0-reference-audit rebind so trainer checks consume the current dataset and current sidecar identities while preserving fail-fast semantics.",
+      "Validate the rebind statically and with explicitly authorized non-training checks only if a future authority permits them.",
+      "Create a separate current-lineage A0 parameter authority carrying or replacing the historical split seed/dev ratio/seeds/epochs/LR.",
+      "Only after those artifacts and authorities are independently verified may a separate execution authority consider A0."
+    ],
+    "minimal_code_symbols_to_rebind": [
+      "_STAGE187_AUTHORITATIVE_DATA or current-lineage replacement constant",
+      "_STAGE187_DATASET_SHA256 or current-lineage replacement constant",
+      "_STAGE187_AUTHORITATIVE_SIDECAR or current-lineage replacement constant",
+      "_STAGE187_SIDECAR_SEMANTIC_SHA256 or current-lineage replacement constant",
+      "_stage187_load_integrity_sidecar",
+      "_p2_load_reason_integrity_sidecar",
+      "_p2_checkpoint_metadata_from_args",
+      "resolved runtime/provenance compatible_positive_margin fields",
+      "expected_main_clean_dataset/main_data provenance fields",
+      "A0 reference-audit expected/observed dataset and sidecar fields"
+    ],
+    "scientific_mechanism_delta_required": false,
+    "training_admission_effect": "PRESERVE_FALSE"
+  },
+  "current_lineage_a0_rebind_status": "REBIND_CONTRACT_RESOLVED_STATIC_ONLY_IMPLEMENTATION_ARTIFACT_PARAMETER_AND_EXECUTION_AUTHORITIES_STILL_REQUIRED",
+  "training_admission_released": false,
+  "blockers": [],
+  "failure_reasons": [],
+  "audit_question_answers": {
+    "1": "Yes, the P2-capable trainer can consume the P4-B R1 regenerated full dataset without changing Reason Router scientific semantics only after authority-approved identity rebinding and a current-lineage sidecar/equivalent metadata artifact; at audit_state_commit it cannot consume it because fail-fast constants reject non-historical data/sidecar identities.",
+    "2": "Historical f552.../5bc... bindings remain in _STAGE187_AUTHORITATIVE_DATA, _STAGE187_DATASET_SHA256, _STAGE187_AUTHORITATIVE_SIDECAR, _STAGE187_SIDECAR_SEMANTIC_SHA256, _stage187_load_integrity_sidecar, _p2_load_reason_integrity_sidecar, Stage191/193/195 preflight checks, checkpoint metadata, provenance/manifest fields, and historical P3 A0 reference-audit expected fields.",
+    "3": "Artifacts 8-10 are not sufficient as a complete A0 metadata/supervision bridge. They prove scoped predicate-realization compatibility and non-mutation of Stage185-v1 observations, but not full-dataset row-order/source_dataset_sha/split/sidecar semantic integrity required by the trainer.",
+    "4": "Yes. A new current-lineage effective integrity sidecar or equivalent deterministic compatibility artifact bound to the regenerated dataset is required before A0 can run.",
+    "5": "The derived artifact's purpose is to provide P2/A0 metadata and reason-supervision integrity over the regenerated full dataset, with minimum input identity of the P4-B R1 regenerated dataset SHA256 eb1e..., semantic SHA256 3797..., P4-B artifacts 8-10, and immutable historical Stage185-v1 evidence as historical input only.",
+    "6": "Minimal future delta is a current-lineage dataset/sidecar identity rebind in constants, loader checks, manifest/provenance fields, checkpoint metadata, and A0 reference-audit expected fields, plus preserving fail-fast row/order/source_dataset_sha/split/semantic SHA gates.",
+    "7": "Historical P3 A0 execution parameters are not current-lineage execution authority. A separate future parameter authority is required before A0 execution.",
+    "8": "At audit_state_commit the source paths reject regenerated substitution rather than silently consuming it. Historical malformed-F2 semantics would remain reachable only through unrebound historical dataset/sidecar path or source_dataset_sha checks in a future patch.",
+    "9": "Yes. A0 can remain scientifically identical after provenance rebinding because the required delta is identity/provenance/loader/manifest binding only and does not require changing router mode, reason order, gradient ownership, final CE ownership, secondary-reason diagnostics, EMA, A0-A3, or E0."
+  },
+  "required_field_provenance_semantics": {
+    "p4g_verification_attestation_commit_interpretation": "Frozen P4-H Section E consumes the historical P4-G BLOCKED result and verification attestation listed in Section A as audit authority inputs. Therefore the required field records the historical P4-G BLOCKED verification attestation freeze commit 9bec86eea8082d8d0dd68419542dc8565374c5e9.",
+    "later_execution_admission_provenance_treatment": "Later current P4-G/P4-F PASS provenance is recorded additively and does not reinterpret the required frozen P4-H field."
+  },
+  "current_p4g_action_resolution_provenance": {
+    "p4g_spec_commit": "dc62e63da045435429dc3927f8dc5b2c0d4de59c",
+    "resolution_state_commit": "368d3b6991389aa6b6fd80f421c73565b562e290",
+    "primary_result_freeze_commit": "4699e280afefd0b8a2e9d9eaceb3e9a4d63f7a54",
+    "primary_decision_token": "P3W6F2P4G_LEVEL3_ACTION_RESOLUTION_PASS",
+    "verification_attestation_commit": "2a17772a4e44bd29a8f40fb6f8fac4ba90bb591a",
+    "verification_attestation_sha256": "7bcf74e5c86872e4a10f6a7f18397d6f9e1e3d989a7470b772b4c2d418df579b",
+    "independent_verification_status": "PASS",
+    "independent_verification_token": "P3W6F2P4G_LEVEL3_ACTION_RESOLUTION_PRIMARY_PASS_INDEPENDENT_VERIFICATION_PASS"
+  },
+  "current_p4f_admission_provenance": {
+    "p4f_spec_commit": "8fd76261fbad2ef78e915e3442147c971e95aa33",
+    "primary_result_freeze_commit": "4b32c21a05dc851959aa12c92a6fb298915969ef",
+    "primary_result_sha256": "7283ab2e685d8c64f6e007108510b3e4bdff3a4f6e9e67c7c385bcd0245e5a2f",
+    "verification_attestation_freeze_commit": "ae351c83eff6a1df2d9229c6099ec2ac2956bf88",
+    "attestation_sha256": "7b2413726a1b41aef6fa42481ddd275ba7ac0d4ecf5adfdc498a77bc2ae9260d",
+    "primary_decision_token": "P3W6F2P4F_LEVEL3_ADMISSION_PASS",
+    "independent_verification_status": "PASS",
+    "independent_verification_token": "P3W6F2P4F_LEVEL3_ADMISSION_PRIMARY_PASS_INDEPENDENT_VERIFICATION_PASS",
+    "separate_execution_authorization_required": true,
+    "training_admission_released": false
+  },
+  "execution_workflow_authorization": {
+    "authorization_source": "current task card",
+    "authorized_action": "P3W6F2P4H_A0_CURRENT_LINEAGE_EXECUTION_REBIND_AUDIT",
+    "authorized_action_type": "STATIC_READ_ONLY",
+    "authorized_environment": "LOCAL_STATIC_READ_ONLY",
+    "authorized_output_path": "reports/reason_router_p2_p3w6f2_p4h_a0_current_lineage_rebind_audit_368d3b6991389aa6b6fd80f421c73565b562e290.json",
+    "implementation_authorized": false,
+    "a0_execution_authorized": false,
+    "training_authorized": false,
+    "evaluation_authorized": false,
+    "model_checkpoint_operations_authorized": false,
+    "kaggle_authorized": false,
+    "gpu_authorized": false
+  }
+}
