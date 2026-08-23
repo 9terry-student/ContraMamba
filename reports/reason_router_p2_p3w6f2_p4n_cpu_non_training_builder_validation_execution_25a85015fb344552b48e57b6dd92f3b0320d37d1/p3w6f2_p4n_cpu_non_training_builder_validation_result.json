@@ -1,0 +1,98 @@
+{
+  "record_type": "p3w6f2_p4n_cpu_non_training_builder_validation_result",
+  "authority": {
+    "workflow_controller_instruction": "current",
+    "frozen_p4n_authority_commit": "1a1d7191dd5d5223366960240d49ea21e12264bd",
+    "frozen_p4n_authority_path": "reports/reason_router_p2_p3w6f2_p4n_cpu_non_training_builder_validation_execution_authority_spec.md",
+    "validated_implementation_execution_commit": "25a85015fb344552b48e57b6dd92f3b0320d37d1"
+  },
+  "execution_provenance": {
+    "authority_freeze_commit": "1a1d7191dd5d5223366960240d49ea21e12264bd",
+    "execution_commit": "25a85015fb344552b48e57b6dd92f3b0320d37d1",
+    "exact_substantive_command": "python -m pytest -q tests/test_reason_router_p3w6f2_p4l_current_lineage_integrity_sidecar_builder.py",
+    "exit_code": 0,
+    "python_version": "Python 3.12.13",
+    "pytest_version": "pytest 8.4.2"
+  },
+  "pytest_result": {
+    "collected": 12,
+    "passed": 12,
+    "failed": 0,
+    "skipped": 0,
+    "unexpected_xpass": 0,
+    "substantive_pytest_output": "............                                                             [100%]\n12 passed in 0.07s\nP4N_EXIT_CODE=0"
+  },
+  "pre_execution_evidence": {
+    "PRE_TRACKED_DIRTY": "",
+    "EXPECTED": "25a85015fb344552b48e57b6dd92f3b0320d37d1",
+    "ACTUAL": "25a85015fb344552b48e57b6dd92f3b0320d37d1",
+    "POST_TRACKED_DIRTY": "",
+    "CANONICAL_P4L_OUTPUTS": [],
+    "P4N_VALIDATION_PRECONDITION": "PASS"
+  },
+  "post_execution_evidence": {
+    "EXPECTED": "25a85015fb344552b48e57b6dd92f3b0320d37d1",
+    "ACTUAL": "25a85015fb344552b48e57b6dd92f3b0320d37d1",
+    "POST_TRACKED_DIRTY": "",
+    "POST_UNSTAGED_TRACKED": "",
+    "POST_STAGED_TRACKED": "",
+    "CANONICAL_P4L_OUTPUTS": "",
+    "PYTHON_VERSION": "Python 3.12.13",
+    "PYTEST_VERSION": "pytest 8.4.2",
+    "CUDA_VISIBLE_DEVICES": "<unset>",
+    "NVIDIA_SMI": "unavailable",
+    "P4N_POST_VALIDATION_CHECK": "PASS"
+  },
+  "gpu_conclusion": {
+    "decision": "GPU OFF / no GPU exposed to the validation environment",
+    "supporting_observations": [
+      "CUDA_VISIBLE_DEVICES=<unset>",
+      "NVIDIA_SMI=unavailable"
+    ],
+    "boundary": "No stronger hardware facts are claimed than these observations support."
+  },
+  "canonical_p4l_materialization": {
+    "before_execution": "absent",
+    "after_execution": "absent"
+  },
+  "tracked_repo_state": {
+    "before_execution": "clean",
+    "after_execution": "clean"
+  },
+  "decision": "P3W6F2P4N_CPU_NON_TRAINING_BUILDER_VALIDATION_PASS",
+  "interpretation": {
+    "code_correctness": "prior independent static verification PASS",
+    "execution_success": "PASS",
+    "artifact_provenance_validity": "NOT ESTABLISHED",
+    "scientific_conclusion": "NOT ESTABLISHED"
+  },
+  "explicit_exclusions_and_provenance_note": {
+    "pre_success_invocation_mistakes": [
+      "A Bash script was pasted into a PowerShell context and failed at parse time.",
+      "The pytest shell command was pasted directly into a Python cell and failed with Python SyntaxError before pytest invocation."
+    ],
+    "invocation_mistake_treatment": "Neither executed the substantive validation and neither counts as P4-N FAIL.",
+    "invalid_run_registry_provenance": {
+      "local_command": "cm run save p3w6f2-p4n-builder-validation-25a85015",
+      "registered_local_head": "1a1d7191dd5d5223366960240d49ea21e12264bd",
+      "actual_execution_commit": "25a85015fb344552b48e57b6dd92f3b0320d37d1",
+      "treatment": "INVALID_FOR_P4N_EXECUTION_PROVENANCE",
+      "citation_boundary": "The run-registry entry and its generated Kaggle handoff MUST NOT be cited as evidence for this execution.",
+      "repair_boundary": "Do not delete or edit the external run registry; it is outside the repository. Do not attempt to repair it by fabricating or reusing another run."
+    }
+  },
+  "authority_flags": {
+    "validation_execution_authorized": true,
+    "kaggle_authorized": true,
+    "cpu_authorized": true,
+    "gpu_authorized": false,
+    "training_admission_released": false,
+    "artifact_materialization_authorized": false,
+    "trainer_rebind_authorized": false,
+    "a0_execution_authorized": false,
+    "training_authorized": false,
+    "evaluation_authorized": false
+  },
+  "materialization_authority_release": false,
+  "scientific_claim": "No scientific claim."
+}

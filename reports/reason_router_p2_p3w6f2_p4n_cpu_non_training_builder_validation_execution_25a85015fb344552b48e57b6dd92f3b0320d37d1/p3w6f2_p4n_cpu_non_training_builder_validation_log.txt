@@ -1,0 +1,126 @@
+P3-W6-F2 P4-N CPU non-training builder validation result log
+
+Authority freeze commit:
+1a1d7191dd5d5223366960240d49ea21e12264bd
+
+Execution commit:
+25a85015fb344552b48e57b6dd92f3b0320d37d1
+
+Exact substantive command:
+python -m pytest -q tests/test_reason_router_p3w6f2_p4l_current_lineage_integrity_sidecar_builder.py
+
+Substantive pytest output:
+............                                                             [100%]
+12 passed in 0.07s
+P4N_EXIT_CODE=0
+
+Exit code:
+0
+
+Collected:
+12
+
+Passed:
+12
+
+Failed:
+0
+
+Skipped:
+0
+
+Unexpected xpass:
+0
+
+Python version:
+Python 3.12.13
+
+pytest version:
+pytest 8.4.2
+
+Pre-execution evidence:
+PRE_TRACKED_DIRTY=''
+EXPECTED=25a85015fb344552b48e57b6dd92f3b0320d37d1
+ACTUAL=25a85015fb344552b48e57b6dd92f3b0320d37d1
+POST_TRACKED_DIRTY=''
+CANONICAL_P4L_OUTPUTS=[]
+P4N_VALIDATION_PRECONDITION=PASS
+
+Post-execution evidence:
+EXPECTED=25a85015fb344552b48e57b6dd92f3b0320d37d1
+ACTUAL=25a85015fb344552b48e57b6dd92f3b0320d37d1
+POST_TRACKED_DIRTY=''
+POST_UNSTAGED_TRACKED=''
+POST_STAGED_TRACKED=''
+CANONICAL_P4L_OUTPUTS=''
+PYTHON_VERSION=Python 3.12.13
+PYTEST_VERSION=pytest 8.4.2
+CUDA_VISIBLE_DEVICES=<unset>
+NVIDIA_SMI=unavailable
+P4N_POST_VALIDATION_CHECK=PASS
+
+GPU conclusion:
+GPU OFF / no GPU exposed to the validation environment, supported by:
+- CUDA_VISIBLE_DEVICES=<unset>
+- NVIDIA_SMI=unavailable
+No stronger hardware facts are claimed than these observations support.
+
+Canonical P4-L materialization:
+absent before execution
+absent after execution
+
+Tracked repo state:
+clean before execution
+clean after execution
+
+P4-N decision:
+P3W6F2P4N_CPU_NON_TRAINING_BUILDER_VALIDATION_PASS
+
+Interpretation:
+- code correctness: prior independent static verification PASS
+- execution success: PASS
+- artifact/provenance validity: NOT ESTABLISHED
+- scientific conclusion: NOT ESTABLISHED
+
+Explicit exclusions / provenance note:
+
+Before the successful substantive validation, two notebook-shell invocation
+mistakes occurred:
+1. a Bash script was pasted into a PowerShell context and failed at parse time;
+2. the pytest shell command was pasted directly into a Python cell and failed
+   with Python SyntaxError before pytest invocation.
+
+Neither executed the substantive validation and neither counts as P4-N FAIL.
+These parser/setup errors are not presented as pytest failures.
+
+After the successful pytest execution, a local command:
+
+cm run save p3w6f2-p4n-builder-validation-25a85015
+
+registered local HEAD:
+1a1d7191dd5d5223366960240d49ea21e12264bd
+
+instead of actual execution commit:
+25a85015fb344552b48e57b6dd92f3b0320d37d1
+
+Therefore that run-registry entry and its generated Kaggle handoff are
+INVALID_FOR_P4N_EXECUTION_PROVENANCE and MUST NOT be cited as evidence for this
+execution.
+
+Do not delete or edit the external run registry; it is outside the repository.
+Do not attempt to repair it by fabricating or reusing another run.
+
+Authority flags:
+validation_execution_authorized = true
+kaggle_authorized = true
+cpu_authorized = true
+gpu_authorized = false
+training_admission_released = false
+artifact_materialization_authorized = false
+trainer_rebind_authorized = false
+a0_execution_authorized = false
+training_authorized = false
+evaluation_authorized = false
+
+No scientific claim.
+No materialization authority release.
