@@ -1,0 +1,79 @@
+{
+  "schema_version": "P3W6F2P4T_P4B_SCHEMA_RECOVERY_VALIDATION_CORRECTION_VERIFICATION_ATTESTATION_V1",
+  "attestation_kind": "P4T_INDEPENDENT_STATIC_VERIFICATION_ATTESTATION_CANDIDATE",
+  "p4t_candidate_commit": "72adcc656790de43a3f592ee3ebcfa6de6f6f0a8",
+  "p4t_candidate_path": "reports/reason_router_p2_p3w6f2_p4t_p4b_schema_recovery_validation_correction_execution_authority_spec.md",
+  "p4t_candidate_sha256": "376de21887413539b5664329372aeacdfab5ed29d7f3e17c4ac0960f9a378d44",
+  "frozen_p4s_commit": "2faa789c35f7ff9258fb7b005a92890da17d04be",
+  "frozen_p4r_commit": "d80ed289273763c1c90f2fba14ca796c604c9529",
+  "frozen_p4q_commit": "79ec5fa764de30eaa04fb6de4c2a8228edf1a63a",
+  "frozen_p4l_commit": "80cb034792f03226cf6e22c196c1229ed4e6dd62",
+  "execution_implementation_identity": "2f9e6076791358922e3ebd70e89533d9cb83b458",
+  "recovered_copy_admissibility": "VALID",
+  "independent_static_verification_status": "PASS",
+  "pre_attestation_freeze_chronology": "INVALID",
+  "historical_candidate_is_valid_freeze": false,
+  "recovered_byte_identities_independently_supported_by_frozen_p4r": {
+    "sidecar_filename": "p3w6f2_p4l_current_lineage_effective_integrity_sidecar.jsonl",
+    "sidecar_physical_sha256": "2b8cffdf71d68a8abeb3b6eb3534eeb664bd012483bcebd9716c7a6645a487f1",
+    "provenance_filename": "p3w6f2_p4l_current_lineage_effective_integrity_sidecar_provenance.json",
+    "provenance_physical_sha256": "9d248df09ae8ba471966c468a1e06278ad046908cfe53da623ecc95d8da4cdf2"
+  },
+  "section_20_findings": {
+    "p4b_summary_schema_verification": "PASS",
+    "p4b_provenance_schema_verification": "PASS",
+    "builder_equivalence_verification": "PASS",
+    "surface_a_compatibility_rows": "PASS",
+    "surface_b_compatibility_summary": "PASS",
+    "surface_c_p4l_provenance": "PASS",
+    "source_semantic_hash_guard": "PASS",
+    "sidecar_semantic_hash_guard": "PASS",
+    "no_mutation_materialization_verification": "PASS",
+    "authority_boundary_verification": "PASS"
+  },
+  "scope_conclusions": {
+    "canonical_p4l_artifact_provenance_integrity_established_by_static_attestation_alone": false,
+    "p4q_status_remains": "FAIL",
+    "p4r_status_remains": "FAIL",
+    "p4s_status_remains": "FAIL",
+    "trainer_rebind_authorized": false,
+    "a0_authorized": false,
+    "training_authorized": false,
+    "evaluation_authorized": false,
+    "scientific_conclusion": "NOT_ESTABLISHED"
+  },
+  "chronology_semantics": {
+    "independent_static_verification_occurred_after_historical_candidate_commit": "72adcc656790de43a3f592ee3ebcfa6de6f6f0a8",
+    "independent_static_verification_occurred_before_this_attestation_candidate": true,
+    "historical_candidate_must_not_be_retroactively_called_p4t_freeze": true,
+    "future_attestation_freeze_commit_predicted": false,
+    "future_p4t_authority_freeze_condition": "Only after this attestation itself passes independent verification and is immutably committed may the resulting descendant commit be considered for P4T_AUTHORITY_FREEZE."
+  },
+  "canonical_path_distinction": {
+    "recovered_copies_were_byte_identical_static_evidence": true,
+    "repository_canonical_p4l_path_was_absent_during_static_verification": true,
+    "recovered_copy_admissibility_asserts_canonical_path_presence": false,
+    "future_p4t_runtime_validation_retains_exact_canonical_path_preconditions": true
+  },
+  "no_authority_widening": {
+    "p4t_runtime_validator_execution_authorized": false,
+    "artifact_copy_restoration_authorized": false,
+    "builder_execution_authorized": false,
+    "materialization_authorized": false,
+    "kaggle_authorized": false,
+    "gpu_authorized": false,
+    "trainer_rebind_authorized": false,
+    "a0_authorized": false,
+    "training_authorized": false,
+    "evaluation_authorized": false,
+    "staging_authorized": false,
+    "commit_authorized": false,
+    "push_authorized": false
+  },
+  "unrelated_untracked_state_preservation": {
+    "reports/stage180a_pass2_annotations_completed.csv": "PRESERVED_UNTOUCHED",
+    "existing_review_patch_files": "PRESERVED_UNTOUCHED"
+  },
+  "blockers": [],
+  "failure_reasons": []
+}
