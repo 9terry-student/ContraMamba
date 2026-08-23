@@ -10,12 +10,15 @@ only; current-lineage source identity is always the P4-B regenerated dataset.
 from __future__ import annotations
 
 import argparse
+import ctypes
+import errno
 import hashlib
 import json
 import os
 import random
 import shutil
 import subprocess
+import sys
 import uuid
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -82,6 +85,8 @@ HISTORICAL_STAGE185_SOURCE_SHA256 = "11e6ba89b8131c76eac4504b4273867eaa99a131abe
 SIDECAR_NAME = "p3w6f2_p4l_current_lineage_effective_integrity_sidecar.jsonl"
 PROVENANCE_NAME = "p3w6f2_p4l_current_lineage_effective_integrity_sidecar_provenance.json"
 EXPECTED_OUTPUT_NAMES = {SIDECAR_NAME, PROVENANCE_NAME}
+AT_FDCWD = -100
+RENAME_NOREPLACE = 1
 
 DATASET_FIELDS = (
     "id",
@@ -833,6 +838,70 @@ def path_exists_or_symlink(path: Path) -> bool:
     return path.exists() or path.is_symlink()
 
 
+def running_on_windows() -> bool:
+    return os.name == "nt"
+
+
+def running_on_linux() -> bool:
+    return sys.platform.startswith("linux")
+
+
+def load_libc() -> ctypes.CDLL:
+    return ctypes.CDLL(None, use_errno=True)
+
+
+def linux_renameat2_directory_noreplace(staging_dir: Path, output_dir: Path) -> None:
+    try:
+        renameat2 = load_libc().renameat2
+    except AttributeError as exc:
+        raise BuildBlocked("P4L_ATOMIC_DIRECTORY_NOREPLACE_UNSUPPORTED") from exc
+    renameat2.argtypes = [
+        ctypes.c_int,
+        ctypes.c_char_p,
+        ctypes.c_int,
+        ctypes.c_char_p,
+        ctypes.c_uint,
+    ]
+    renameat2.restype = ctypes.c_int
+    result = renameat2(
+        AT_FDCWD,
+        os.fsencode(staging_dir),
+        AT_FDCWD,
+        os.fsencode(output_dir),
+        RENAME_NOREPLACE,
+    )
+    if result == 0:
+        return
+    err = ctypes.get_errno()
+    if err == errno.EEXIST:
+        raise BuildBlocked("P4L_OUTPUT_PATH_PREEXISTING")
+    unsupported_errnos = {
+        errno.ENOSYS,
+        errno.EINVAL,
+        getattr(errno, "EOPNOTSUPP", None),
+        getattr(errno, "ENOTSUP", None),
+    }
+    unsupported_errnos.discard(None)
+    if err in unsupported_errnos:
+        raise BuildBlocked("P4L_ATOMIC_DIRECTORY_NOREPLACE_UNSUPPORTED")
+    raise BuildBlocked(f"P4L_ATOMIC_DIRECTORY_PUBLISH_FAILED:{err}:{os.strerror(err)}")
+
+
+def atomic_publish_directory_noreplace(staging_dir: Path, output_dir: Path) -> None:
+    if running_on_windows():
+        try:
+            staging_dir.rename(output_dir)
+        except FileExistsError as exc:
+            raise BuildBlocked("P4L_OUTPUT_PATH_PREEXISTING") from exc
+        except OSError as exc:
+            raise BuildBlocked(f"P4L_ATOMIC_DIRECTORY_PUBLISH_FAILED:{exc.errno}:{exc.strerror}") from exc
+        return
+    if running_on_linux():
+        linux_renameat2_directory_noreplace(staging_dir, output_dir)
+        return
+    raise BuildBlocked("P4L_ATOMIC_DIRECTORY_NOREPLACE_UNSUPPORTED")
+
+
 def finalize_payloads_atomic(output_dir: Path, payloads: Mapping[str, bytes]) -> str:
     require(set(payloads) == EXPECTED_OUTPUT_NAMES, "OUTPUT_PAYLOAD_SET_MISMATCH")
     require(not path_exists_or_symlink(output_dir), "P4L_OUTPUT_PATH_PREEXISTING")
@@ -848,11 +917,7 @@ def finalize_payloads_atomic(output_dir: Path, payloads: Mapping[str, bytes]) ->
             (staging_dir / name).write_bytes(payload)
         require(all((staging_dir / name).is_file() for name in EXPECTED_OUTPUT_NAMES), "P4L_STAGING_SET_MISMATCH")
         require(not path_exists_or_symlink(output_dir), "P4L_OUTPUT_PATH_PREEXISTING")
-        require(os.name == "nt", "P4L_ATOMIC_DIRECTORY_NOREPLACE_UNSUPPORTED")
-        try:
-            staging_dir.rename(output_dir)
-        except FileExistsError as exc:
-            raise BuildBlocked("P4L_OUTPUT_PATH_PREEXISTING") from exc
+        atomic_publish_directory_noreplace(staging_dir, output_dir)
         published = True
     except Exception:
         if staging_created and not published and staging_dir.is_dir() and not staging_dir.is_symlink():

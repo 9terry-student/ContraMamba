@@ -1,9 +1,50 @@
+import errno
 import json
+import os
 import random
+from pathlib import Path
 
 import pytest
 
 from scripts import build_reason_router_p3w6f2_p4l_current_lineage_integrity_sidecar as builder
+
+
+class FakeRenameAt2:
+    def __init__(self, *, result=0, err=0, action=None):
+        self.result = result
+        self.err = err
+        self.action = action
+        self.calls = []
+
+    def __call__(self, olddirfd, oldpath, newdirfd, newpath, flags):
+        self.calls.append((olddirfd, oldpath, newdirfd, newpath, flags))
+        if self.action is not None:
+            self.action(os.fsdecode(oldpath), os.fsdecode(newpath))
+        if self.result != 0:
+            builder.ctypes.set_errno(self.err)
+        return self.result
+
+
+class FakeLibc:
+    def __init__(self, renameat2):
+        self.renameat2 = renameat2
+
+
+def payloads():
+    return {
+        builder.SIDECAR_NAME: b'{"row_id":"attempt"}\n',
+        builder.PROVENANCE_NAME: b'{"attempt":true}\n',
+    }
+
+
+def force_linux(monkeypatch):
+    monkeypatch.setattr(builder, "running_on_windows", lambda: False)
+    monkeypatch.setattr(builder, "running_on_linux", lambda: True)
+
+
+def force_windows(monkeypatch):
+    monkeypatch.setattr(builder, "running_on_windows", lambda: True)
+    monkeypatch.setattr(builder, "running_on_linux", lambda: False)
 
 
 def row(row_id, pair_id, intervention_type="none", frame=1, predicate=1, sufficiency=1):
@@ -110,6 +151,158 @@ def test_compact_jsonl_serialization_lf_no_bom_and_final_newline():
     assert not payload.startswith(b"\xef\xbb\xbf")
 
 
+def test_linux_finalize_publishes_whole_directory_with_renameat2_noreplace(monkeypatch, tmp_path):
+    force_linux(monkeypatch)
+    output_dir = tmp_path / "canonical_output"
+
+    def publish(oldpath, newpath):
+        os.rename(oldpath, newpath)
+
+    fake_renameat2 = FakeRenameAt2(action=publish)
+    monkeypatch.setattr(builder, "load_libc", lambda: FakeLibc(fake_renameat2))
+
+    assert builder.finalize_payloads_atomic(output_dir, payloads()) == "PUBLISHED"
+
+    assert sorted(item.name for item in output_dir.iterdir()) == sorted(builder.EXPECTED_OUTPUT_NAMES)
+    assert (output_dir / builder.SIDECAR_NAME).read_bytes() == b'{"row_id":"attempt"}\n'
+    assert (output_dir / builder.PROVENANCE_NAME).read_bytes() == b'{"attempt":true}\n'
+    assert not list(tmp_path.glob(".canonical_output.p4l-staging-*"))
+    assert len(fake_renameat2.calls) == 1
+    olddirfd, oldpath, newdirfd, newpath, flags = fake_renameat2.calls[0]
+    assert olddirfd == builder.AT_FDCWD
+    assert newdirfd == builder.AT_FDCWD
+    assert flags == builder.RENAME_NOREPLACE
+    assert os.fsdecode(oldpath).startswith(str(tmp_path / ".canonical_output.p4l-staging-"))
+    assert newpath == os.fsencode(output_dir)
+
+
+def test_linux_renameat2_signature_uses_abi_constants_and_filesystem_bytes(monkeypatch, tmp_path):
+    force_linux(monkeypatch)
+    staging_dir = tmp_path / "staging"
+    output_dir = tmp_path / "canonical_output"
+    staging_dir.mkdir()
+    fake_renameat2 = FakeRenameAt2(action=lambda oldpath, newpath: os.rename(oldpath, newpath))
+    monkeypatch.setattr(builder, "load_libc", lambda: FakeLibc(fake_renameat2))
+
+    builder.atomic_publish_directory_noreplace(staging_dir, output_dir)
+
+    assert fake_renameat2.calls == [
+        (
+            builder.AT_FDCWD,
+            os.fsencode(staging_dir),
+            builder.AT_FDCWD,
+            os.fsencode(output_dir),
+            builder.RENAME_NOREPLACE,
+        )
+    ]
+
+
+def test_linux_race_collision_at_renameat2_boundary_preserves_foreign_destination(monkeypatch, tmp_path):
+    force_linux(monkeypatch)
+    output_dir = tmp_path / "canonical_output"
+
+    def create_foreign_destination(_oldpath, newpath):
+        destination = tmp_path / Path(newpath).name
+        destination.mkdir()
+        (destination / "foreign.txt").write_text("do not touch\n", encoding="utf-8")
+
+    fake_renameat2 = FakeRenameAt2(result=-1, err=errno.EEXIST, action=create_foreign_destination)
+    monkeypatch.setattr(builder, "load_libc", lambda: FakeLibc(fake_renameat2))
+
+    with pytest.raises(builder.BuildBlocked) as excinfo:
+        builder.finalize_payloads_atomic(output_dir, payloads())
+
+    assert str(excinfo.value) == "P4L_OUTPUT_PATH_PREEXISTING"
+    assert output_dir.is_dir()
+    assert sorted(item.name for item in output_dir.iterdir()) == ["foreign.txt"]
+    assert (output_dir / "foreign.txt").read_text(encoding="utf-8") == "do not touch\n"
+    assert not (output_dir / builder.SIDECAR_NAME).exists()
+    assert not (output_dir / builder.PROVENANCE_NAME).exists()
+    assert not list(tmp_path.glob(".canonical_output.p4l-staging-*"))
+
+
+def test_linux_unsupported_renameat2_symbol_fails_closed_without_fallback(monkeypatch, tmp_path):
+    force_linux(monkeypatch)
+    output_dir = tmp_path / "canonical_output"
+
+    class LibcWithoutRenameAt2:
+        pass
+
+    monkeypatch.setattr(builder, "load_libc", lambda: LibcWithoutRenameAt2())
+
+    with pytest.raises(builder.BuildBlocked) as excinfo:
+        builder.finalize_payloads_atomic(output_dir, payloads())
+
+    assert str(excinfo.value) == "P4L_ATOMIC_DIRECTORY_NOREPLACE_UNSUPPORTED"
+    assert not output_dir.exists()
+    assert not list(tmp_path.glob(".canonical_output.p4l-staging-*"))
+
+
+def test_linux_unsupported_renameat2_errno_fails_closed_without_fallback(monkeypatch, tmp_path):
+    force_linux(monkeypatch)
+    output_dir = tmp_path / "canonical_output"
+    fake_renameat2 = FakeRenameAt2(result=-1, err=errno.ENOSYS)
+    monkeypatch.setattr(builder, "load_libc", lambda: FakeLibc(fake_renameat2))
+
+    with pytest.raises(builder.BuildBlocked) as excinfo:
+        builder.finalize_payloads_atomic(output_dir, payloads())
+
+    assert str(excinfo.value) == "P4L_ATOMIC_DIRECTORY_NOREPLACE_UNSUPPORTED"
+    assert not output_dir.exists()
+    assert not list(tmp_path.glob(".canonical_output.p4l-staging-*"))
+
+
+def test_windows_publication_branch_uses_existing_directory_rename(monkeypatch, tmp_path):
+    force_windows(monkeypatch)
+    staging_dir = tmp_path / "staging"
+    output_dir = tmp_path / "canonical_output"
+    staging_dir.mkdir()
+    (staging_dir / builder.SIDECAR_NAME).write_bytes(b'{"row_id":"attempt"}\n')
+
+    builder.atomic_publish_directory_noreplace(staging_dir, output_dir)
+
+    assert output_dir.is_dir()
+    assert not staging_dir.exists()
+    assert (output_dir / builder.SIDECAR_NAME).read_bytes() == b'{"row_id":"attempt"}\n'
+
+
+def test_windows_publication_branch_preserves_fileexists_mapping(monkeypatch, tmp_path):
+    force_windows(monkeypatch)
+    staging_dir = tmp_path / "staging"
+    output_dir = tmp_path / "canonical_output"
+    staging_dir.mkdir()
+    output_dir.mkdir()
+
+    def raise_file_exists(self, target):
+        assert self == staging_dir
+        assert target == output_dir
+        raise FileExistsError("exists")
+
+    monkeypatch.setattr(builder.Path, "rename", raise_file_exists)
+
+    with pytest.raises(builder.BuildBlocked) as excinfo:
+        builder.atomic_publish_directory_noreplace(staging_dir, output_dir)
+
+    assert str(excinfo.value) == "P4L_OUTPUT_PATH_PREEXISTING"
+    assert staging_dir.is_dir()
+    assert output_dir.is_dir()
+
+
+def test_other_platforms_fail_closed_without_generic_rename(monkeypatch, tmp_path):
+    monkeypatch.setattr(builder, "running_on_windows", lambda: False)
+    monkeypatch.setattr(builder, "running_on_linux", lambda: False)
+    staging_dir = tmp_path / "staging"
+    output_dir = tmp_path / "canonical_output"
+    staging_dir.mkdir()
+
+    with pytest.raises(builder.BuildBlocked) as excinfo:
+        builder.atomic_publish_directory_noreplace(staging_dir, output_dir)
+
+    assert str(excinfo.value) == "P4L_ATOMIC_DIRECTORY_NOREPLACE_UNSUPPORTED"
+    assert staging_dir.is_dir()
+    assert not output_dir.exists()
+
+
 def test_finalize_fails_closed_when_output_dir_preexists_with_unrelated_contents(tmp_path):
     output_dir = tmp_path / "canonical_output"
     unrelated_dir = output_dir / "unrelated_dir"
@@ -121,9 +314,10 @@ def test_finalize_fails_closed_when_output_dir_preexists_with_unrelated_contents
         builder.PROVENANCE_NAME: b'{"attempt":true}\n',
     }
 
-    with pytest.raises(builder.BuildBlocked):
+    with pytest.raises(builder.BuildBlocked) as excinfo:
         builder.finalize_payloads_atomic(output_dir, payloads)
 
+    assert str(excinfo.value) == "P4L_OUTPUT_PATH_PREEXISTING"
     assert unrelated_dir.is_dir()
     assert unrelated_file.read_text(encoding="utf-8") == "do not touch\n"
     assert not (output_dir / builder.SIDECAR_NAME).exists()
@@ -139,9 +333,10 @@ def test_finalize_fails_closed_when_output_dir_preexists_empty(tmp_path):
         builder.PROVENANCE_NAME: b'{"attempt":true}\n',
     }
 
-    with pytest.raises(builder.BuildBlocked):
+    with pytest.raises(builder.BuildBlocked) as excinfo:
         builder.finalize_payloads_atomic(output_dir, payloads)
 
+    assert str(excinfo.value) == "P4L_OUTPUT_PATH_PREEXISTING"
     assert output_dir.is_dir()
     assert list(output_dir.iterdir()) == []
 
@@ -154,7 +349,27 @@ def test_finalize_fails_closed_when_output_path_preexists_as_file(tmp_path):
         builder.PROVENANCE_NAME: b'{"attempt":true}\n',
     }
 
-    with pytest.raises(builder.BuildBlocked):
+    with pytest.raises(builder.BuildBlocked) as excinfo:
         builder.finalize_payloads_atomic(output_path, payloads)
 
+    assert str(excinfo.value) == "P4L_OUTPUT_PATH_PREEXISTING"
     assert output_path.read_text(encoding="utf-8") == "existing file\n"
+
+
+def test_finalize_fails_closed_when_output_path_preexists_as_broken_symlink(tmp_path):
+    output_path = tmp_path / "canonical_output"
+    try:
+        os.symlink("missing-target", output_path, target_is_directory=True)
+    except (OSError, NotImplementedError) as exc:
+        pytest.skip(f"symlink creation unavailable: {exc}")
+    payloads = {
+        builder.SIDECAR_NAME: b'{"row_id":"attempt"}\n',
+        builder.PROVENANCE_NAME: b'{"attempt":true}\n',
+    }
+
+    with pytest.raises(builder.BuildBlocked) as excinfo:
+        builder.finalize_payloads_atomic(output_path, payloads)
+
+    assert str(excinfo.value) == "P4L_OUTPUT_PATH_PREEXISTING"
+    assert output_path.is_symlink()
+    assert not output_path.exists()
