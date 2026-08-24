@@ -1,0 +1,191 @@
+{
+  "schema": "p3w6f2_p4v_canonical_sidecar_path_provenance_schema_correction_result_v1",
+  "stage": "P3-W6-F2-P4-V canonical sidecar path provenance schema correction",
+  "decision": "P3W6F2P4V_CANONICAL_SIDECAR_PATH_PROVENANCE_SCHEMA_CORRECTION_PASS",
+  "recording_phase": "P4-V RUNTIME RESULT / P4 LINEAGE CLOSURE EVIDENCE RECORDING ONLY",
+  "recording_scope": {
+    "evidence_recording_only": true,
+    "rerun_performed": false,
+    "runtime_execution_performed_by_this_artifact": false,
+    "training_performed_by_this_artifact": false,
+    "evaluation_performed_by_this_artifact": false
+  },
+  "authority": {
+    "p4v_authority_freeze": "3e8fa6269a0728d615e03240ab4cd8f15418c178",
+    "p4w_authority_freeze": "20965bece9c72f182f112c3a608c1fa2f2dce42b",
+    "p4l_authority": "80cb034792f03226cf6e22c196c1229ed4e6dd62",
+    "execution_head": "2f9e6076791358922e3ebd70e89533d9cb83b458",
+    "precedent_result_path": "reports/reason_router_p2_p3w6f2_p4p_posix_publication_runtime_validation_execution_2f9e6076791358922e3ebd70e89533d9cb83b458/p3w6f2_p4p_posix_publication_runtime_validation_result.json"
+  },
+  "runtime_evidence": {
+    "source": "controller-observed Kaggle stdout under frozen P4-W and P4-V authorities",
+    "execution_environment": "Kaggle / Linux / CPU-only",
+    "cuda_visible_devices": "",
+    "python": "3.12.13",
+    "post_head": "2f9e6076791358922e3ebd70e89533d9cb83b458",
+    "post_tracked_state": "",
+    "post_index_state": "",
+    "p4w_decision": "P3W6F2P4W_CANONICAL_P4L_EXACT_BYTE_RESTORE_PASS",
+    "p4v_decision": "P3W6F2P4V_CANONICAL_SIDECAR_PATH_PROVENANCE_SCHEMA_CORRECTION_PASS"
+  },
+  "p4v_runtime_observation": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "authority_freeze": "3e8fa6269a0728d615e03240ab4cd8f15418c178",
+    "authority_version": "P3W6F2P4V_CANONICAL_SIDECAR_PATH_PROVENANCE_SCHEMA_CORRECTION_EXECUTION_AUTHORITY_V1",
+    "canonical_p4l_p4b_authorized_scope": {
+      "member_count": 357,
+      "pair_count": 119
+    },
+    "execution_head": "2f9e6076791358922e3ebd70e89533d9cb83b458",
+    "integrity_status_counts": {
+      "ELIGIBLE": 1769,
+      "INELIGIBLE": 1562,
+      "UNRESOLVED": 269
+    },
+    "p2_reason_supervision_eligible_counts": {
+      "false": 1831,
+      "true": 1769
+    },
+    "p4b_compatibility_row_count": 357,
+    "p4b_compatibility_unique_pair_count": 119,
+    "p4b_summary_authorized_member_count": 357,
+    "p4b_summary_authorized_pair_count": 119,
+    "p4b_summary_row_count": 357,
+    "positive_margin_counts": {
+      "false": 2876,
+      "true": 724
+    },
+    "post_head": "2f9e6076791358922e3ebd70e89533d9cb83b458",
+    "post_index_state": "",
+    "post_tracked_state": "",
+    "provenance_physical_sha256": "9d248df09ae8ba471966c468a1e06278ad046908cfe53da623ecc95d8da4cdf2",
+    "sidecar_physical_sha256": "2b8cffdf71d68a8abeb3b6eb3534eeb664bd012483bcebd9716c7a6645a487f1",
+    "sidecar_semantic_sha256": "0e652c80ccae796bc2fded883ed099e0af71084a83e4a2fd4dd3524899d81b08",
+    "source_dataset_semantic_recomputed_sha256": "3797c174294f6d4f4efbe3afd05530b39c891f1e986dc05fbace59345d6e9c3b",
+    "source_dataset_semantic_sha256": "3797c174294f6d4f4efbe3afd05530b39c891f1e986dc05fbace59345d6e9c3b",
+    "source_dataset_sha256": "eb1e0614939cda1421052702223f0fda91f098564692141b085b95b18558c0d3",
+    "sys_platform": "linux",
+    "unresolved_reason_summary": {
+      "AUTHORIZED": 481,
+      "FRAME": 900,
+      "PREDICATE": 150,
+      "SUFFICIENCY": 300
+    },
+    "unresolved_row_count": 1831,
+    "unresolved_status_summary": {
+      "INELIGIBLE": 1562,
+      "UNRESOLVED": 269
+    }
+  },
+  "p4l_identities": {
+    "sidecar_physical_sha256": "2b8cffdf71d68a8abeb3b6eb3534eeb664bd012483bcebd9716c7a6645a487f1",
+    "provenance_physical_sha256": "9d248df09ae8ba471966c468a1e06278ad046908cfe53da623ecc95d8da4cdf2",
+    "sidecar_semantic_sha256": "0e652c80ccae796bc2fded883ed099e0af71084a83e4a2fd4dd3524899d81b08",
+    "source_dataset_physical_sha256": "eb1e0614939cda1421052702223f0fda91f098564692141b085b95b18558c0d3",
+    "source_dataset_semantic_sha256": "3797c174294f6d4f4efbe3afd05530b39c891f1e986dc05fbace59345d6e9c3b",
+    "recomputed_source_dataset_semantic_sha256": "3797c174294f6d4f4efbe3afd05530b39c891f1e986dc05fbace59345d6e9c3b",
+    "row_count": 3600
+  },
+  "p4b_observations": {
+    "compatibility_rows": 357,
+    "unique_authorized_pairs": 119,
+    "authorized_member_count": 357,
+    "canonical_p4l_authorized_scope": {
+      "pair_count": 119,
+      "member_count": 357
+    }
+  },
+  "p4l_observation_counts": {
+    "integrity_status": {
+      "ELIGIBLE": 1769,
+      "INELIGIBLE": 1562,
+      "UNRESOLVED": 269
+    },
+    "p2_reason_supervision_eligible": {
+      "true": 1769,
+      "false": 1831
+    },
+    "eligible_for_positive_margin": {
+      "true": 724,
+      "false": 2876
+    },
+    "unresolved_row_count": 1831,
+    "unresolved_status_summary": {
+      "INELIGIBLE": 1562,
+      "UNRESOLVED": 269
+    },
+    "unresolved_reason_summary": {
+      "AUTHORIZED": 481,
+      "FRAME": 900,
+      "PREDICATE": 150,
+      "SUFFICIENCY": 300
+    }
+  },
+  "count_reconciliation": {
+    "row_count": {
+      "expression": "1769 + 1562 + 269 = 3600",
+      "status": "PASS"
+    },
+    "reason_supervision_eligible": {
+      "expression": "1769 + 1831 = 3600",
+      "status": "PASS"
+    },
+    "positive_margin": {
+      "expression": "724 + 2876 = 3600",
+      "status": "PASS"
+    },
+    "unresolved_status": {
+      "expression": "1562 + 269 = 1831",
+      "status": "PASS"
+    },
+    "unresolved_reason": {
+      "expression": "481 + 900 + 150 + 300 = 1831",
+      "status": "PASS"
+    },
+    "overall": "PASS"
+  },
+  "interpretation": {
+    "code_correctness": "preserved from prior verified implementation lineage; P4-V runtime alone does not re-prove implementation correctness",
+    "p4w_execution_success": "PASS",
+    "p4v_execution_success": "PASS",
+    "canonical_p4l_artifact_provenance_integrity": "ESTABLISHED",
+    "p4q_historical_overall": "FAIL",
+    "p4r_p4s_p4t_p4u_historical": "FAIL",
+    "prior_failures_retroactively_relabeled": false,
+    "trainer_rebind": "NOT AUTHORIZED",
+    "a0": "NOT AUTHORIZED",
+    "training": "NOT AUTHORIZED",
+    "evaluation": "NOT AUTHORIZED",
+    "scientific_conclusion": "NOT ESTABLISHED",
+    "next_phase": "trainer-rebind authority/specification only"
+  },
+  "authorization_boundary": {
+    "trainer_rebind_authorized": false,
+    "a0_authorized": false,
+    "training_authorized": false,
+    "evaluation_authorized": false,
+    "implementation_change_authorized": false,
+    "p4l_byte_mutation_authorized": false,
+    "historical_authority_document_change_authorized": false,
+    "readme_change_authorized": false,
+    "trainer_code_change_authorized": false,
+    "test_change_authorized": false
+  },
+  "provenance_exclusions": {
+    "kaggle_run_id_invented": false,
+    "cm_run_registry_provenance_invented": false,
+    "cm_run_registry_provenance_claimed": false,
+    "cm_run_save_claimed": false,
+    "zip_import_collector_provenance_invented": false,
+    "timestamp_invented": false,
+    "future_result_commit_sha_predicted": false
+  },
+  "validation_summary": {
+    "runtime_identity": "PASS",
+    "hash_chain": "PASS",
+    "count_reconciliation": "PASS",
+    "historical_disposition": "PASS",
+    "authority_boundary": "PASS"
+  },
+  "blockers_or_unresolved_assumptions": []
+}
