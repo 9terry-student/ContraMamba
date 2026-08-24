@@ -101,24 +101,63 @@ from scripts.stage177c_frame_pairwise import (  # noqa: E402
     build_stage177c_train_pair_index,
     compute_stage177c_frame_pairwise_loss,
 )
-# Stage187-A: fixed compatible-positive margin contract. Default-off and local to
-# this trainer; no model/head/controlled-loss API is changed.
-_STAGE187_AUTHORITATIVE_DATA = Path("data/controlled_v5_v3_without_time_swap.jsonl")
-_STAGE187_AUTHORITATIVE_SIDECAR = Path(
-    "reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/"
-    "stage185a_controlled_train_integrity_sidecar.jsonl"
+# Stage187-A/P4-X: fixed compatible-positive margin and P2 sidecar contract.
+# Default-off for positive margin; P2 reason-router arms fail closed to P4-L.
+_STAGE187_AUTHORITATIVE_DATA = Path(
+    "reports/reason_router_p2_p3w6f2_p4b_r1_regeneration_execution_"
+    "4122078ab7962042e3d6bf89f8b4eb5cec463458/"
+    "controlled_v5_v3_without_time_swap_p3w6f2_r1_regenerated.jsonl"
 )
-_STAGE187_DATASET_SHA256 = "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640"
-_STAGE187_SIDECAR_SEMANTIC_SHA256 = "5bc03caa2a29f9b9176ab4eb0201db57ebad516352797546db1a18e6ec3373fc"
+_P4X_CANONICAL_DIR = Path(
+    "reports/reason_router_p2_p3w6f2_p4l_current_lineage_integrity_sidecar_"
+    "2f9e6076791358922e3ebd70e89533d9cb83b458"
+)
+_STAGE187_AUTHORITATIVE_SIDECAR = Path(
+    _P4X_CANONICAL_DIR
+    / "p3w6f2_p4l_current_lineage_effective_integrity_sidecar.jsonl"
+)
+_P4X_CANONICAL_PROVENANCE = (
+    _P4X_CANONICAL_DIR
+    / "p3w6f2_p4l_current_lineage_effective_integrity_sidecar_provenance.json"
+)
+_STAGE187_DATASET_SHA256 = "eb1e0614939cda1421052702223f0fda91f098564692141b085b95b18558c0d3"
+_P4X_SOURCE_DATASET_SEMANTIC_SHA256 = "3797c174294f6d4f4efbe3afd05530b39c891f1e986dc05fbace59345d6e9c3b"
+_P4X_SIDECAR_PHYSICAL_SHA256 = "2b8cffdf71d68a8abeb3b6eb3534eeb664bd012483bcebd9716c7a6645a487f1"
+_P4X_PROVENANCE_PHYSICAL_SHA256 = "9d248df09ae8ba471966c468a1e06278ad046908cfe53da623ecc95d8da4cdf2"
+_STAGE187_SIDECAR_SEMANTIC_SHA256 = "0e652c80ccae796bc2fded883ed099e0af71084a83e4a2fd4dd3524899d81b08"
+_P4X_PROVENANCE_SCHEMA_VERSION = (
+    "P3W6F2P4L_CURRENT_LINEAGE_INTEGRITY_SIDECAR_PROVENANCE_V1"
+)
+_P4X_SIDECAR_SCHEMA_VERSION = (
+    "P3W6F2P4L_CURRENT_LINEAGE_EFFECTIVE_INTEGRITY_SIDECAR_V1"
+)
+_P4X_P4L_AUTHORITY_COMMIT = "80cb034792f03226cf6e22c196c1229ed4e6dd62"
+_P4X_BUILDER_SOURCE_COMMIT = "2f9e6076791358922e3ebd70e89533d9cb83b458"
 _STAGE187_FIXED_MARGIN_LOGIT = 0.0
 _STAGE187_FIXED_WEIGHT = 0.05
 _STAGE187_EXPECTED_SIDECAR_ROWS = 3600
-_STAGE187_EXPECTED_ELIGIBLE_ROWS = 605
-_STAGE187_EXPECTED_ELIGIBLE_PAIRS = 121
-_STAGE187_EXPECTED_ELIGIBLE_FAMILIES = 5
-_STAGE187_ELIGIBLE_FAMILIES = {
-    "evidence_deletion", "evidence_truncation", "none", "paraphrase", "predicate_swap"
+_STAGE187_EXPECTED_ELIGIBLE_ROWS = 724
+_P4X_EXPECTED_REASON_ELIGIBLE_ROWS = 1769
+_P4X_EXPECTED_REASON_INELIGIBLE_ROWS = 1831
+_P4X_EXPECTED_INTEGRITY_COUNTS = {
+    "ELIGIBLE": 1769,
+    "INELIGIBLE": 1562,
+    "UNRESOLVED": 269,
 }
+_P4X_EXPECTED_POSITIVE_MARGIN_INELIGIBLE_ROWS = 2876
+_P4X_SOURCE_DATASET_SEMANTIC_FIELDS = (
+    "id",
+    "pair_id",
+    "claim",
+    "evidence",
+    "final_label",
+    "frame_compatible_label",
+    "predicate_covered_label",
+    "sufficiency_label",
+    "polarity_label",
+    "primary_failure_type",
+    "intervention_type",
+)
 
 P2_REASON_ROUTER_SCHEMA_VERSION = "reason_router_p2_v1"
 P2_REASON_CLASS_ORDER = ("FRAME", "PREDICATE", "SUFFICIENCY", "AUTHORIZED")
@@ -3085,6 +3124,349 @@ def _stage187_semantic_sidecar_sha256(rows: list[dict[str, Any]]) -> str:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
+def _p4x_canonical_json_sha256(value: Any) -> str:
+    payload = json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+        allow_nan=False,
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _p4x_source_dataset_semantic_sha256(rows: list[dict[str, Any]]) -> str:
+    canonical: list[dict[str, Any]] = []
+    for index, row in enumerate(rows):
+        missing = [
+            field for field in _P4X_SOURCE_DATASET_SEMANTIC_FIELDS
+            if field not in row
+        ]
+        if missing:
+            raise ValueError(
+                f"P4X_SOURCE_SEMANTIC_FIELD_MISSING: index={index} missing={missing}"
+            )
+        for field in (
+            "frame_compatible_label",
+            "predicate_covered_label",
+            "sufficiency_label",
+        ):
+            value = row.get(field)
+            if isinstance(value, bool) or type(value) is not int or value not in (0, 1):
+                raise ValueError(
+                    f"P4X_SOURCE_EXACT_BINARY_INVALID: index={index} field={field}"
+                )
+        canonical.append({
+            field: row[field] for field in _P4X_SOURCE_DATASET_SEMANTIC_FIELDS
+        })
+    return _p4x_canonical_json_sha256(canonical)
+
+
+def _p4x_resolve_repo_path(path: Path) -> Path:
+    return path.resolve() if path.is_absolute() else (ROOT / path).resolve()
+
+
+def _p4x_reject_missing_or_symlink(path: Path, *, label: str, require_file: bool) -> None:
+    if path.is_symlink():
+        raise ValueError(f"P4X_CANONICAL_IDENTITY_FAILED: {label} is a symlink")
+    if not path.exists():
+        raise FileNotFoundError(f"P4X_CANONICAL_IDENTITY_FAILED: missing {label}: {path}")
+    if require_file and not path.is_file():
+        raise ValueError(f"P4X_CANONICAL_IDENTITY_FAILED: {label} is not a file")
+    if not require_file and not path.is_dir():
+        raise ValueError(f"P4X_CANONICAL_IDENTITY_FAILED: {label} is not a directory")
+
+
+def _p4x_reject_symlink_path_components(path: Path, *, label: str) -> None:
+    current = Path(path.anchor) if path.is_absolute() else Path()
+    for part in path.parts[len(current.parts):]:
+        current = current / part
+        if current.exists() and current.is_symlink():
+            raise ValueError(f"P4X_CANONICAL_IDENTITY_FAILED: {label} contains a symlink")
+
+
+def _p4x_read_sidecar_rows(sidecar_path: Path) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    with sidecar_path.open("r", encoding="utf-8") as handle:
+        for line_number, line in enumerate(handle, 1):
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            if not isinstance(row, dict):
+                raise ValueError(f"P4X_SIDECAR_MALFORMED: line {line_number} is not an object")
+            rows.append(row)
+    return rows
+
+
+def _p4x_read_provenance(provenance_path: Path) -> dict[str, Any]:
+    value = json.loads(provenance_path.read_text(encoding="utf-8"))
+    if not isinstance(value, dict):
+        raise ValueError("P4X_PROVENANCE_MALFORMED: provenance JSON is not an object")
+    return value
+
+
+def _p4x_validate_provenance(
+    provenance: dict[str, Any],
+    *,
+    resolved_data: Path,
+    resolved_sidecar: Path,
+    resolved_provenance: Path,
+) -> None:
+    required = {
+        "schema_version": _P4X_PROVENANCE_SCHEMA_VERSION,
+        "sidecar_schema_version": _P4X_SIDECAR_SCHEMA_VERSION,
+        "p4l_authority_commit": _P4X_P4L_AUTHORITY_COMMIT,
+        "builder_source_commit": _P4X_BUILDER_SOURCE_COMMIT,
+        "row_count": _STAGE187_EXPECTED_SIDECAR_ROWS,
+        "source_dataset_sha256": _STAGE187_DATASET_SHA256,
+        "source_dataset_semantic_sha256": _P4X_SOURCE_DATASET_SEMANTIC_SHA256,
+        "sidecar_physical_sha256": _P4X_SIDECAR_PHYSICAL_SHA256,
+        "sidecar_semantic_sha256": _STAGE187_SIDECAR_SEMANTIC_SHA256,
+    }
+    for field, expected in required.items():
+        if provenance.get(field) != expected:
+            raise ValueError(
+                f"P4X_PROVENANCE_IDENTITY_MISMATCH: field={field} "
+                f"expected={expected!r} observed={provenance.get(field)!r}"
+            )
+    for field in (
+        "training_admission_released",
+        "implementation_authorized",
+        "artifact_materialization_authorized_by_p4l",
+        "a0_execution_authorized",
+        "training_authorized",
+        "evaluation_authorized",
+        "kaggle_authorized",
+        "gpu_authorized",
+    ):
+        if not isinstance(provenance.get(field), bool):
+            raise ValueError(f"P4X_PROVENANCE_BOOLEAN_MALFORMED: field={field}")
+    for field in (
+        "training_admission_released",
+        "a0_execution_authorized",
+        "training_authorized",
+        "evaluation_authorized",
+        "kaggle_authorized",
+        "gpu_authorized",
+    ):
+        if provenance[field] is not False:
+            raise ValueError(f"P4X_PROVENANCE_AUTHORITY_OVERCLAIM: field={field}")
+    if provenance["implementation_authorized"] is not True:
+        raise ValueError("P4X_PROVENANCE_IDENTITY_MISMATCH: implementation_authorized")
+    if provenance["artifact_materialization_authorized_by_p4l"] is not False:
+        raise ValueError("P4X_PROVENANCE_AUTHORITY_OVERCLAIM: artifact_materialization_authorized_by_p4l")
+    provenance_data = _p4x_resolve_repo_path(Path(str(provenance.get("source_dataset_path", ""))))
+    provenance_sidecar = _p4x_resolve_repo_path(Path(str(provenance.get("sidecar_path", ""))))
+    provenance_file = _p4x_resolve_repo_path(Path(str(provenance.get("provenance_path", ""))))
+    if provenance_data != resolved_data:
+        raise ValueError("P4X_PROVENANCE_IDENTITY_MISMATCH: source_dataset_path")
+    if provenance_sidecar != resolved_sidecar:
+        raise ValueError("P4X_PROVENANCE_IDENTITY_MISMATCH: sidecar_path")
+    if provenance_file != resolved_provenance:
+        raise ValueError("P4X_PROVENANCE_IDENTITY_MISMATCH: provenance_path")
+
+
+def _p4x_validate_stable_join(
+    source_records: list[dict[str, Any]],
+    sidecar_rows: list[dict[str, Any]],
+) -> None:
+    if len(source_records) != _STAGE187_EXPECTED_SIDECAR_ROWS:
+        raise ValueError(
+            f"P4X_SOURCE_ROW_COUNT_MISMATCH: {len(source_records)}"
+        )
+    if len(sidecar_rows) != _STAGE187_EXPECTED_SIDECAR_ROWS:
+        raise ValueError(
+            f"P4X_SIDECAR_ROW_COUNT_MISMATCH: {len(sidecar_rows)}"
+        )
+    source_ids: list[str] = []
+    for index, row in enumerate(source_records):
+        row_id = row.get("id")
+        if type(row_id) is not str or row_id == "":
+            raise ValueError(f"P4X_SOURCE_ID_INVALID: index={index}")
+        source_ids.append(row_id)
+    sidecar_ids: list[str] = []
+    for index, row in enumerate(sidecar_rows):
+        row_id = row.get("row_id")
+        if type(row_id) is not str or row_id == "":
+            raise ValueError(f"P4X_SIDECAR_ROW_ID_INVALID: index={index}")
+        sidecar_ids.append(row_id)
+    duplicate_source = sorted({row_id for row_id in source_ids if source_ids.count(row_id) > 1})
+    if duplicate_source:
+        raise ValueError(f"P4X_DUPLICATE_SOURCE_ID: {duplicate_source[:5]}")
+    duplicate_sidecar = sorted({row_id for row_id in sidecar_ids if sidecar_ids.count(row_id) > 1})
+    if duplicate_sidecar:
+        raise ValueError(f"P4X_DUPLICATE_SIDECAR_ROW_ID: {duplicate_sidecar[:5]}")
+    if set(source_ids) != set(sidecar_ids):
+        missing = sorted(set(source_ids) - set(sidecar_ids))
+        extra = sorted(set(sidecar_ids) - set(source_ids))
+        raise ValueError(
+            f"P4X_STABLE_JOIN_KEYSET_MISMATCH: missing={missing[:5]} extra={extra[:5]}"
+        )
+    if source_ids != sidecar_ids:
+        raise ValueError("P4X_SOURCE_ORDER_DEFENSE_FAILED")
+
+
+def _p4x_validate_sidecar_rows(
+    rows: list[dict[str, Any]],
+    *,
+    resolved_data: Path,
+) -> dict[str, int]:
+    reason_eligible = {True: 0, False: 0}
+    integrity_counts = {"ELIGIBLE": 0, "INELIGIBLE": 0, "UNRESOLVED": 0}
+    positive_margin = {True: 0, False: 0}
+    for line_number, row in enumerate(rows, 1):
+        row_id = row.get("row_id", f"<line {line_number}>")
+        missing = [field for field in P2_SIDE_CAR_REQUIRED_FIELDS if field not in row]
+        if missing:
+            raise ValueError(f"P4X_SIDECAR_REQUIRED_FIELD_MISSING: row_id={row_id} missing={missing}")
+        if row.get("schema_version") != _P4X_SIDECAR_SCHEMA_VERSION:
+            raise ValueError(f"P4X_SIDECAR_SCHEMA_VERSION_MISMATCH: row_id={row_id}")
+        if row.get("source_dataset_path") != _STAGE187_AUTHORITATIVE_DATA.as_posix():
+            raise ValueError(f"P4X_SIDECAR_SOURCE_PATH_MISMATCH: row_id={row_id}")
+        if _p4x_resolve_repo_path(Path(str(row.get("source_dataset_path")))) != resolved_data:
+            raise ValueError(f"P4X_SIDECAR_SOURCE_PATH_MISMATCH: row_id={row_id}")
+        if row.get("source_dataset_sha256") != _STAGE187_DATASET_SHA256:
+            raise ValueError(f"P4X_SIDECAR_SOURCE_SHA_MISMATCH: row_id={row_id}")
+        if row.get("source_dataset_semantic_sha256") != _P4X_SOURCE_DATASET_SEMANTIC_SHA256:
+            raise ValueError(f"P4X_SIDECAR_SOURCE_SEMANTIC_SHA_MISMATCH: row_id={row_id}")
+        for field in ("frame_compatible_label",):
+            value = row.get(field)
+            if isinstance(value, bool) or type(value) is not int or value not in (0, 1):
+                raise ValueError(f"P4X_SIDECAR_EXACT_BINARY_INVALID: row_id={row_id} field={field}")
+        codes = row.get("reason_codes")
+        if (
+            not isinstance(codes, list)
+            or any(type(code) is not str for code in codes)
+            or codes != sorted(set(codes))
+        ):
+            raise ValueError(f"P4X_REASON_CODES_NOT_SORTED_UNIQUE: row_id={row_id}")
+        integrity = row.get("integrity_status")
+        if integrity not in integrity_counts:
+            raise ValueError(f"P4X_INTEGRITY_STATUS_INVALID: row_id={row_id}")
+        integrity_counts[str(integrity)] += 1
+        for field, counts in (
+            ("p2_reason_supervision_eligible", reason_eligible),
+            ("eligible_for_positive_margin", positive_margin),
+        ):
+            value = row.get(field)
+            if not isinstance(value, bool):
+                raise ValueError(f"P4X_SIDECAR_BOOLEAN_MALFORMED: row_id={row_id} field={field}")
+            counts[value] += 1
+    if reason_eligible[True] != _P4X_EXPECTED_REASON_ELIGIBLE_ROWS:
+        raise ValueError("P4X_REASON_ELIGIBLE_COUNT_MISMATCH")
+    if reason_eligible[False] != _P4X_EXPECTED_REASON_INELIGIBLE_ROWS:
+        raise ValueError("P4X_REASON_INELIGIBLE_COUNT_MISMATCH")
+    if integrity_counts != _P4X_EXPECTED_INTEGRITY_COUNTS:
+        raise ValueError("P4X_INTEGRITY_STATUS_COUNT_MISMATCH")
+    if positive_margin[True] != _STAGE187_EXPECTED_ELIGIBLE_ROWS:
+        raise ValueError("P4X_POSITIVE_MARGIN_ELIGIBLE_COUNT_MISMATCH")
+    if positive_margin[False] != _P4X_EXPECTED_POSITIVE_MARGIN_INELIGIBLE_ROWS:
+        raise ValueError("P4X_POSITIVE_MARGIN_INELIGIBLE_COUNT_MISMATCH")
+    if reason_eligible[True] + reason_eligible[False] != _STAGE187_EXPECTED_SIDECAR_ROWS:
+        raise ValueError("P4X_REASON_ELIGIBILITY_RECONCILIATION_FAILED")
+    if sum(integrity_counts.values()) != _STAGE187_EXPECTED_SIDECAR_ROWS:
+        raise ValueError("P4X_INTEGRITY_COUNT_RECONCILIATION_FAILED")
+    if positive_margin[True] + positive_margin[False] != _STAGE187_EXPECTED_SIDECAR_ROWS:
+        raise ValueError("P4X_POSITIVE_MARGIN_RECONCILIATION_FAILED")
+    return {
+        "p2_reason_supervision_eligible_true": reason_eligible[True],
+        "p2_reason_supervision_eligible_false": reason_eligible[False],
+        "integrity_status_ELIGIBLE": integrity_counts["ELIGIBLE"],
+        "integrity_status_INELIGIBLE": integrity_counts["INELIGIBLE"],
+        "integrity_status_UNRESOLVED": integrity_counts["UNRESOLVED"],
+        "eligible_for_positive_margin_true": positive_margin[True],
+        "eligible_for_positive_margin_false": positive_margin[False],
+    }
+
+
+def _p4x_validate_canonical_integrity_binding(
+    *,
+    data_path: Path,
+    source_records: list[dict[str, Any]],
+    sidecar_path: Path,
+    expected_semantic_sha256: str,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    configured_data = data_path if data_path.is_absolute() else ROOT / data_path
+    configured_sidecar = sidecar_path if sidecar_path.is_absolute() else ROOT / sidecar_path
+    configured_provenance = configured_sidecar.with_name(_P4X_CANONICAL_PROVENANCE.name)
+    for configured, label in (
+        (configured_data, "source dataset path"),
+        (configured_sidecar, "sidecar path"),
+        (configured_provenance, "provenance path"),
+    ):
+        _p4x_reject_symlink_path_components(configured, label=label)
+    resolved_data = _p4x_resolve_repo_path(data_path)
+    resolved_sidecar = _p4x_resolve_repo_path(sidecar_path)
+    authoritative_data = (ROOT / _STAGE187_AUTHORITATIVE_DATA).resolve()
+    authoritative_sidecar = (ROOT / _STAGE187_AUTHORITATIVE_SIDECAR).resolve()
+    authoritative_provenance = (ROOT / _P4X_CANONICAL_PROVENANCE).resolve()
+    resolved_provenance = resolved_sidecar.with_name(_P4X_CANONICAL_PROVENANCE.name)
+    canonical_dir = authoritative_sidecar.parent
+    if resolved_data != authoritative_data:
+        raise ValueError("P4X_CANONICAL_IDENTITY_FAILED: wrong canonical data path")
+    if resolved_sidecar != authoritative_sidecar:
+        raise ValueError("P4X_CANONICAL_IDENTITY_FAILED: wrong canonical sidecar path")
+    if resolved_provenance != authoritative_provenance:
+        raise ValueError("P4X_CANONICAL_IDENTITY_FAILED: wrong canonical provenance path")
+    _p4x_reject_missing_or_symlink(canonical_dir, label="canonical directory", require_file=False)
+    _p4x_reject_missing_or_symlink(resolved_data, label="source dataset", require_file=True)
+    _p4x_reject_missing_or_symlink(resolved_sidecar, label="sidecar", require_file=True)
+    _p4x_reject_missing_or_symlink(resolved_provenance, label="provenance", require_file=True)
+
+    observed_source_physical = _stage187_file_sha256(resolved_data)
+    if observed_source_physical != _STAGE187_DATASET_SHA256:
+        raise ValueError("P4X_SOURCE_PHYSICAL_SHA_MISMATCH")
+    observed_sidecar_physical = _stage187_file_sha256(resolved_sidecar)
+    if observed_sidecar_physical != _P4X_SIDECAR_PHYSICAL_SHA256:
+        raise ValueError("P4X_SIDECAR_PHYSICAL_SHA_MISMATCH")
+    observed_provenance_physical = _stage187_file_sha256(resolved_provenance)
+    if observed_provenance_physical != _P4X_PROVENANCE_PHYSICAL_SHA256:
+        raise ValueError("P4X_PROVENANCE_PHYSICAL_SHA_MISMATCH")
+    if expected_semantic_sha256 != _STAGE187_SIDECAR_SEMANTIC_SHA256:
+        raise ValueError("P4X_SIDECAR_SEMANTIC_SHA_MISMATCH")
+
+    rows = _p4x_read_sidecar_rows(resolved_sidecar)
+    _p4x_validate_stable_join(source_records, rows)
+    observed_source_semantic = _p4x_source_dataset_semantic_sha256(source_records)
+    if observed_source_semantic != _P4X_SOURCE_DATASET_SEMANTIC_SHA256:
+        raise ValueError("P4X_SOURCE_SEMANTIC_SHA_MISMATCH")
+    observed_sidecar_semantic = _stage187_semantic_sidecar_sha256(rows)
+    if observed_sidecar_semantic != _STAGE187_SIDECAR_SEMANTIC_SHA256:
+        raise ValueError("P4X_SIDECAR_SEMANTIC_SHA_MISMATCH")
+    provenance = _p4x_read_provenance(resolved_provenance)
+    _p4x_validate_provenance(
+        provenance,
+        resolved_data=resolved_data,
+        resolved_sidecar=resolved_sidecar,
+        resolved_provenance=resolved_provenance,
+    )
+    count_audit = _p4x_validate_sidecar_rows(rows, resolved_data=resolved_data)
+    audit = {
+        "source": "P4-L canonical current-lineage effective integrity sidecar",
+        "canonical_binding_stage": "P3-W6-F2-P4-X",
+        "canonical_directory": str(canonical_dir),
+        "source_dataset_path": str(resolved_data),
+        "source_dataset_physical_sha256": observed_source_physical,
+        "source_dataset_semantic_sha256": observed_source_semantic,
+        "sidecar_path": str(resolved_sidecar),
+        "provenance_path": str(resolved_provenance),
+        "sidecar_physical_sha256": observed_sidecar_physical,
+        "provenance_physical_sha256": observed_provenance_physical,
+        "expected_semantic_sha256": expected_semantic_sha256,
+        "observed_semantic_sha256": observed_sidecar_semantic,
+        "sidecar_schema_version": _P4X_SIDECAR_SCHEMA_VERSION,
+        "provenance_schema_version": _P4X_PROVENANCE_SCHEMA_VERSION,
+        "p4l_authority_commit": _P4X_P4L_AUTHORITY_COMMIT,
+        "builder_source_commit": _P4X_BUILDER_SOURCE_COMMIT,
+        "sidecar_rows": len(rows),
+        "row_id_join": "exact_one_to_one_id_to_row_id_with_source_order_defense",
+        "stable_join_key": {"source": "id", "sidecar": "row_id"},
+        "count_reconciliation": count_audit,
+        "fail_closed_pretraining": True,
+    }
+    return rows, audit
+
+
 def _stage187_validate_activation_args(args: argparse.Namespace) -> bool:
     weight = float(args.compatible_positive_margin_weight)
     margin = float(args.compatible_positive_margin_logit)
@@ -3126,60 +3508,12 @@ def _stage187_load_integrity_sidecar(
     sidecar_path: Path,
     expected_semantic_sha256: str,
 ) -> tuple[dict[str, bool], dict[str, str], dict[str, Any]]:
-    authoritative_data = (ROOT / _STAGE187_AUTHORITATIVE_DATA).resolve()
-    resolved_data = data_path.resolve()
-    if resolved_data != authoritative_data:
-        raise ValueError("compatible-positive margin requires the authoritative main dataset path")
-    observed_dataset_sha = _stage187_file_sha256(resolved_data)
-    if observed_dataset_sha != _STAGE187_DATASET_SHA256:
-        raise ValueError("authoritative dataset SHA-256 mismatch")
-    if expected_semantic_sha256 != _STAGE187_SIDECAR_SEMANTIC_SHA256:
-        raise ValueError("non-authoritative expected sidecar semantic SHA-256")
-    authoritative_sidecar = (ROOT / _STAGE187_AUTHORITATIVE_SIDECAR).resolve()
-    if sidecar_path.resolve() != authoritative_sidecar:
-        raise ValueError("compatible-positive margin requires the authoritative sidecar path")
-
-    rows: list[dict[str, Any]] = []
-    with sidecar_path.open("r", encoding="utf-8") as handle:
-        for line_number, line in enumerate(handle, 1):
-            if not line.strip():
-                continue
-            row = json.loads(line)
-            if not isinstance(row, dict):
-                raise ValueError(f"sidecar line {line_number} is not a JSON object")
-            rows.append(row)
-    if len(rows) != _STAGE187_EXPECTED_SIDECAR_ROWS:
-        raise ValueError(f"sidecar must contain exactly 3600 rows, found {len(rows)}")
-
-    source_ids = [row.get("id") for row in source_records]
-    if len(source_ids) != _STAGE187_EXPECTED_SIDECAR_ROWS:
-        raise ValueError(f"source dataset must contain exactly 3600 rows, found {len(source_ids)}")
-    if any(not isinstance(row_id, str) or not row_id for row_id in source_ids):
-        raise ValueError("source dataset contains an invalid row ID")
-    if len(set(source_ids)) != len(source_ids):
-        raise ValueError("source dataset contains duplicate row IDs")
-
-    sidecar_ids = [row.get("row_id") for row in rows]
-    if any(not isinstance(row_id, str) or not row_id for row_id in sidecar_ids):
-        raise ValueError("sidecar contains an invalid row_id")
-    if len(set(sidecar_ids)) != len(sidecar_ids):
-        raise ValueError("sidecar contains duplicate row_id values")
-    if set(source_ids) != set(sidecar_ids):
-        missing = sorted(set(source_ids) - set(sidecar_ids))
-        extra = sorted(set(sidecar_ids) - set(source_ids))
-        raise ValueError(
-            f"source/sidecar row-ID join mismatch: missing={missing[:5]} extra={extra[:5]}"
-        )
-    if source_ids != sidecar_ids:
-        raise ValueError("sidecar row order is not the authoritative source order")
-
-    observed_semantic_sha = _stage187_semantic_sidecar_sha256(rows)
-    if observed_semantic_sha != expected_semantic_sha256:
-        raise ValueError("sidecar semantic SHA-256 mismatch")
-    if any(
-        row.get("source_dataset_sha256") != _STAGE187_DATASET_SHA256 for row in rows
-    ):
-        raise ValueError("sidecar row dataset SHA provenance mismatch")
+    rows, audit = _p4x_validate_canonical_integrity_binding(
+        data_path=data_path,
+        source_records=source_records,
+        sidecar_path=sidecar_path,
+        expected_semantic_sha256=expected_semantic_sha256,
+    )
 
     eligibility: dict[str, bool] = {}
     split_by_id: dict[str, str] = {}
@@ -3206,46 +3540,19 @@ def _stage187_load_integrity_sidecar(
                 )
             eligible_rows.append(row)
 
-    pair_counts: dict[str, int] = {}
-    family_counts: dict[str, int] = {}
-    for row in eligible_rows:
-        pair_id = str(row.get("pair_id", ""))
-        family = str(row.get("intervention_type", ""))
-        pair_counts[pair_id] = pair_counts.get(pair_id, 0) + 1
-        family_counts[family] = family_counts.get(family, 0) + 1
     if len(eligible_rows) != _STAGE187_EXPECTED_ELIGIBLE_ROWS:
-        raise ValueError("eligible sidecar row count is not 605")
-    if len(pair_counts) != _STAGE187_EXPECTED_ELIGIBLE_PAIRS:
-        raise ValueError("eligible sidecar pair count is not 121")
-    if len(family_counts) != _STAGE187_EXPECTED_ELIGIBLE_FAMILIES:
-        raise ValueError("eligible sidecar family count is not 5")
-    if set(family_counts) != _STAGE187_ELIGIBLE_FAMILIES:
-        raise ValueError("eligible sidecar family set is not the frozen Stage185 set")
-    if set(pair_counts.values()) != {5}:
-        raise ValueError("eligible rows per pair topology is not exactly {5}")
-    if set(family_counts.values()) != {121}:
-        raise ValueError("eligible rows per family topology is not exactly {121}")
-
-    audit = {
+        raise ValueError("eligible sidecar row count is not 724")
+    audit.update({
         "enabled": True,
         "default_off": True,
-        "source_dataset_path": str(resolved_data),
-        "observed_dataset_sha256": observed_dataset_sha,
-        "sidecar_path": str(sidecar_path.resolve()),
-        "expected_sidecar_semantic_sha256": expected_semantic_sha256,
-        "observed_sidecar_semantic_sha256": observed_semantic_sha,
-        "sidecar_rows": len(rows),
         "eligible_rows": len(eligible_rows),
-        "eligible_pairs": len(pair_counts),
-        "eligible_families": len(family_counts),
-        "eligible_family_names": sorted(family_counts),
-        "eligible_rows_per_pair": sorted(set(pair_counts.values())),
-        "eligible_rows_per_family": sorted(set(family_counts.values())),
-        "row_id_join": "exact_one_to_one_source_order",
+        "observed_dataset_sha256": audit["source_dataset_physical_sha256"],
+        "expected_sidecar_semantic_sha256": expected_semantic_sha256,
+        "observed_sidecar_semantic_sha256": audit["observed_semantic_sha256"],
         "score_source": 'output["frame_logit"]',
         "normalization": "eligible_row_mean",
         "checkpoint_selection_unchanged": True,
-    }
+    })
     return eligibility, split_by_id, audit
 
 
@@ -3256,49 +3563,17 @@ def _p2_load_reason_integrity_sidecar(
     sidecar_path: Path,
     expected_semantic_sha256: str,
 ) -> tuple[dict[str, dict[str, Any]], dict[str, Any]]:
-    authoritative_data = (ROOT / _STAGE187_AUTHORITATIVE_DATA).resolve()
-    if data_path.resolve() != authoritative_data:
-        raise ValueError("P2_METADATA_SOURCE_MISMATCH: data path is not authoritative")
-    if _stage187_file_sha256(data_path.resolve()) != _STAGE187_DATASET_SHA256:
-        raise ValueError("P2_METADATA_SOURCE_MISMATCH: dataset SHA mismatch")
-    authoritative_sidecar = (ROOT / _STAGE187_AUTHORITATIVE_SIDECAR).resolve()
-    if sidecar_path.resolve() != authoritative_sidecar:
-        raise ValueError("P2_METADATA_SOURCE_MISMATCH: sidecar path is not authoritative")
-    if expected_semantic_sha256 != _STAGE187_SIDECAR_SEMANTIC_SHA256:
-        raise ValueError("P2_METADATA_SOURCE_MISMATCH: sidecar semantic SHA mismatch")
-    rows: list[dict[str, Any]] = []
-    with sidecar_path.open("r", encoding="utf-8") as handle:
-        for line_number, line in enumerate(handle, 1):
-            if not line.strip():
-                continue
-            row = json.loads(line)
-            if not isinstance(row, dict):
-                raise ValueError(f"P2 sidecar line {line_number} is not an object")
-            missing = [field for field in P2_SIDE_CAR_REQUIRED_FIELDS if field not in row]
-            if missing:
-                raise ValueError(f"P2 sidecar line {line_number} missing fields: {missing}")
-            if row.get("source_dataset_sha256") != _STAGE187_DATASET_SHA256:
-                raise ValueError(f"P2 sidecar line {line_number} source_dataset_sha256 mismatch")
-            if not isinstance(row.get("reason_codes"), list):
-                raise ValueError(f"P2 sidecar line {line_number} reason_codes must be a list")
-            rows.append(row)
-    if len(rows) != len(source_records):
-        raise ValueError("P2 sidecar/source row count mismatch")
-    source_ids = [str(row.get("id", "")) for row in source_records]
-    sidecar_ids = [str(row.get("row_id", "")) for row in rows]
-    if source_ids != sidecar_ids or len(set(sidecar_ids)) != len(sidecar_ids):
-        raise ValueError("P2 sidecar row_id order is not authoritative")
-    observed_semantic_sha = _stage187_semantic_sidecar_sha256(rows)
-    if observed_semantic_sha != expected_semantic_sha256:
-        raise ValueError("P2 sidecar semantic SHA mismatch")
+    rows, audit = _p4x_validate_canonical_integrity_binding(
+        data_path=data_path,
+        source_records=source_records,
+        sidecar_path=sidecar_path,
+        expected_semantic_sha256=expected_semantic_sha256,
+    )
     by_id = {str(row["row_id"]): row for row in rows}
-    return by_id, {
-        "source": "Stage185 authoritative controlled integrity sidecar",
-        "path": str(sidecar_path.resolve()),
+    audit.update({
+        "path": audit["sidecar_path"],
         "schema_fields": sorted(rows[0].keys()) if rows else [],
         "expected_semantic_sha256": expected_semantic_sha256,
-        "observed_semantic_sha256": observed_semantic_sha,
-        "row_id_join": "exact_one_to_one_source_order",
         "intervention_contract_pass_field": "intervention_contract_status",
         "generator_integrity_status_fields": list(P2_GENERATOR_COMPONENT_STATUS_FIELDS),
         "generator_integrity_status_normalization": {
@@ -3306,7 +3581,8 @@ def _p2_load_reason_integrity_sidecar(
             "DEFECT": "at least one authoritative component status field is non-PASS",
             "UNRESOLVED": "one or more authoritative component status fields are missing or unsupported",
         },
-    }
+    })
+    return by_id, audit
 
 
 def _p2_normalized_generator_status(sidecar: dict[str, Any]) -> str:
@@ -16049,7 +16325,18 @@ def _p2_checkpoint_metadata_from_args(args: argparse.Namespace) -> dict[str, Any
         "reason_min_train_count": getattr(args, "reason_min_train_count", None),
         "reason_min_dev_count": getattr(args, "reason_min_dev_count", None),
         "integrity_sidecar_semantic_sha256": getattr(args, "expected_integrity_sidecar_semantic_sha256", None),
+        "integrity_sidecar_source": "P4-L canonical current-lineage effective integrity sidecar",
+        "integrity_sidecar_path": _STAGE187_AUTHORITATIVE_SIDECAR.as_posix(),
+        "integrity_sidecar_physical_sha256": _P4X_SIDECAR_PHYSICAL_SHA256,
+        "integrity_sidecar_provenance_path": _P4X_CANONICAL_PROVENANCE.as_posix(),
+        "integrity_sidecar_provenance_physical_sha256": _P4X_PROVENANCE_PHYSICAL_SHA256,
+        "integrity_sidecar_provenance_schema_version": _P4X_PROVENANCE_SCHEMA_VERSION,
+        "integrity_sidecar_schema_version": _P4X_SIDECAR_SCHEMA_VERSION,
+        "p4l_authority_commit": _P4X_P4L_AUTHORITY_COMMIT,
+        "p4l_builder_source_commit": _P4X_BUILDER_SOURCE_COMMIT,
         "data_sha256": _STAGE187_DATASET_SHA256,
+        "data_semantic_sha256": _P4X_SOURCE_DATASET_SEMANTIC_SHA256,
+        "data_path": _STAGE187_AUTHORITATIVE_DATA.as_posix(),
         "split_identity": {
             "resolved_split_seed": getattr(args, "resolved_split_seed", None),
             "split_policy": getattr(args, "resolved_split_policy", None),
@@ -18027,6 +18314,14 @@ def main(argv: list[str] | None = None) -> int:
         "configured_margin_logit": float(args.compatible_positive_margin_logit),
         "sidecar_accessed": False,
         "checkpoint_selection_unchanged": True,
+        "authoritative_dataset_path": _STAGE187_AUTHORITATIVE_DATA.as_posix(),
+        "authoritative_dataset_sha256": _STAGE187_DATASET_SHA256,
+        "authoritative_dataset_semantic_sha256": _P4X_SOURCE_DATASET_SEMANTIC_SHA256,
+        "authoritative_sidecar_path": _STAGE187_AUTHORITATIVE_SIDECAR.as_posix(),
+        "authoritative_sidecar_physical_sha256": _P4X_SIDECAR_PHYSICAL_SHA256,
+        "authoritative_sidecar_semantic_sha256": _STAGE187_SIDECAR_SEMANTIC_SHA256,
+        "authoritative_provenance_path": _P4X_CANONICAL_PROVENANCE.as_posix(),
+        "authoritative_provenance_physical_sha256": _P4X_PROVENANCE_PHYSICAL_SHA256,
         "resolved_split_seed": resolved_split_seed,
         "expected_frozen_split_exact_id_gate": None,
         "actual_train_rows": None,
@@ -18363,7 +18658,20 @@ def main(argv: list[str] | None = None) -> int:
         run_stage134_slot_diagnostic_only(args=args, device=device)
         return 0
 
+    _p2_sidecar_by_id: dict[str, dict[str, Any]] = {}
+    _p2_reason_metadata_audit: dict[str, Any] = {}
     records = v5.load_jsonl(args.data)
+    if _p2_contract.get("enabled"):
+        if args.controlled_integrity_sidecar_path is None:
+            raise ValueError("P2_METADATA_INTEGRITY_SOURCE_REQUIRED: --controlled-integrity-sidecar-path")
+        if args.expected_integrity_sidecar_semantic_sha256 is None:
+            raise ValueError("P2_METADATA_INTEGRITY_SOURCE_REQUIRED: --expected-integrity-sidecar-semantic-sha256")
+        _p2_sidecar_by_id, _p2_reason_metadata_audit = _p2_load_reason_integrity_sidecar(
+            data_path=Path(args.data),
+            source_records=records,
+            sidecar_path=Path(args.controlled_integrity_sidecar_path),
+            expected_semantic_sha256=args.expected_integrity_sidecar_semantic_sha256,
+        )
     if _stage187_margin_enabled:
         _stage187_data_path = Path(args.data)
         if not _stage187_data_path.is_absolute():
@@ -19261,21 +19569,10 @@ def main(argv: list[str] | None = None) -> int:
         device=device,
     )
 
-    _p2_reason_metadata_audit: dict[str, Any] = {}
     _p2_reason_supervision_audit: dict[str, Any] = {}
     _p2_last_loss_export: dict[str, Any] = {}
     _p2_epoch_loss_history: list[dict[str, Any]] = []
     if _p2_contract.get("enabled"):
-        if args.controlled_integrity_sidecar_path is None:
-            raise ValueError("P2_METADATA_INTEGRITY_SOURCE_REQUIRED: --controlled-integrity-sidecar-path")
-        if args.expected_integrity_sidecar_semantic_sha256 is None:
-            raise ValueError("P2_METADATA_INTEGRITY_SOURCE_REQUIRED: --expected-integrity-sidecar-semantic-sha256")
-        _p2_sidecar_by_id, _p2_reason_metadata_audit = _p2_load_reason_integrity_sidecar(
-            data_path=Path(args.data),
-            source_records=records,
-            sidecar_path=Path(args.controlled_integrity_sidecar_path),
-            expected_semantic_sha256=args.expected_integrity_sidecar_semantic_sha256,
-        )
         if _p3w1_calibration_export_path is not None:
             _p2_reason_supervision_audit, _p2_reason_metadata_audit["a0_reference"] = _p3w1_prepare_train_only_reason_supervision_for_calibration(
                 train_records=train_records,
@@ -24475,7 +24772,11 @@ def main(argv: list[str] | None = None) -> int:
             "sidecar_validation": _stage187_sidecar_audit,
             "authoritative_sidecar_path": _STAGE187_AUTHORITATIVE_SIDECAR.as_posix(),
             "authoritative_dataset_sha256": _STAGE187_DATASET_SHA256,
+            "authoritative_dataset_semantic_sha256": _P4X_SOURCE_DATASET_SEMANTIC_SHA256,
             "authoritative_sidecar_semantic_sha256": _STAGE187_SIDECAR_SEMANTIC_SHA256,
+            "authoritative_sidecar_physical_sha256": _P4X_SIDECAR_PHYSICAL_SHA256,
+            "authoritative_provenance_path": _P4X_CANONICAL_PROVENANCE.as_posix(),
+            "authoritative_provenance_physical_sha256": _P4X_PROVENANCE_PHYSICAL_SHA256,
             "checkpoint_selection_unchanged": True,
         },
     }
@@ -24500,7 +24801,7 @@ def main(argv: list[str] | None = None) -> int:
         mode="main_clean_classification",
         expected=(
             Path(args.data).as_posix()
-            == "data/controlled_v5_v3_without_time_swap.jsonl"
+            == _STAGE187_AUTHORITATIVE_DATA.as_posix()
         ),
     )
     _stage174a_provenance_record = provenance_initial_record(
@@ -24511,7 +24812,7 @@ def main(argv: list[str] | None = None) -> int:
         parsed_args=_stage174a_parsed_args,
         resolved_runtime_config=_stage174a_resolved_runtime_config,
         data_provenance={
-            "expected_main_clean_dataset": "data/controlled_v5_v3_without_time_swap.jsonl",
+            "expected_main_clean_dataset": _STAGE187_AUTHORITATIVE_DATA.as_posix(),
             "main_data": _stage174a_main_data_record,
             "auxiliary_datasets": _stage174a_auxiliary_datasets,
             "auxiliary_activity": _stage174a_auxiliary_activity,
@@ -24606,7 +24907,11 @@ def main(argv: list[str] | None = None) -> int:
         "sidecar_contract": _stage187_sidecar_audit,
         "authoritative_dataset_path": _STAGE187_AUTHORITATIVE_DATA.as_posix(),
         "authoritative_dataset_sha256": _STAGE187_DATASET_SHA256,
+        "authoritative_dataset_semantic_sha256": _P4X_SOURCE_DATASET_SEMANTIC_SHA256,
         "authoritative_sidecar_semantic_sha256": _STAGE187_SIDECAR_SEMANTIC_SHA256,
+        "authoritative_sidecar_physical_sha256": _P4X_SIDECAR_PHYSICAL_SHA256,
+        "authoritative_provenance_path": _P4X_CANONICAL_PROVENANCE.as_posix(),
+        "authoritative_provenance_physical_sha256": _P4X_PROVENANCE_PHYSICAL_SHA256,
         "checkpoint_selection_unchanged": True,
         "final_ce_logits_source": 'output["logits"]',
     })
