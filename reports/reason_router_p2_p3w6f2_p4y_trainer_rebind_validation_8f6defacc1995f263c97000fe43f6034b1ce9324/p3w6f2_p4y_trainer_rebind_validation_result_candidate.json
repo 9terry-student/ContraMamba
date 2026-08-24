@@ -1,0 +1,224 @@
+{
+  "schema": "p3w6f2_p4y_trainer_rebind_validation_result_candidate_v1",
+  "record_type": "p3w6f2_p4y_trainer_rebind_validation_result_candidate",
+  "stage_id": "P3-W6-F2-P4-Y",
+  "stage": "P4-Y trainer rebind validation evidence recording",
+  "decision": "P4Y_TRAINER_REBIND_VALIDATION_EVIDENCE_CANDIDATE_CREATED",
+  "recording_phase": "TRAINER REBIND VALIDATION EVIDENCE RECORDING ONLY",
+  "authority": {
+    "controller_instruction": "current",
+    "p4x_trainer_rebind_authority_freeze": "dfe6926ff2ceb6280ed899d514854c531e3af6c1",
+    "p4x_implementation_freeze": "8f6defacc1995f263c97000fe43f6034b1ce9324",
+    "frozen_p4x_authority_spec": "reports/reason_router_p2_p3w6f2_p4x_trainer_rebind_authority_spec_candidate.md",
+    "p4_lineage_closure_evidence_freeze": "69c7d7b142171c8a3b21c0984b2b3162da04fe77",
+    "frozen_p4v_closure_result_sha256": "d36960dfcea59dd53c9e9327ada06229c4930fb6da6cd448d9738c3072f11a47",
+    "frozen_p4l_authority": "80cb034792f03226cf6e22c196c1229ed4e6dd62",
+    "p4l_implementation_anchor": "2f9e6076791358922e3ebd70e89533d9cb83b458",
+    "user_supplied_p4x_implementation_report": true,
+    "user_supplied_p4x_independent_verification_report": true,
+    "github_confirmed_implementation_commit_delta": true,
+    "agents_md": "AGENTS.md",
+    "repository_naming_and_provenance_conventions": true
+  },
+  "authority_identity": {
+    "authority_freeze": "dfe6926ff2ceb6280ed899d514854c531e3af6c1",
+    "implementation_commit": "8f6defacc1995f263c97000fe43f6034b1ce9324",
+    "predecessor": "dfe6926ff2ceb6280ed899d514854c531e3af6c1"
+  },
+  "implementation_delta": {
+    "comparison_source": "GitHub comparison as supplied by controller instruction and locally confirmed against repository history",
+    "ahead_by": 1,
+    "total_commits": 1,
+    "changed_files": [
+      "scripts/train_controlled_v6b_minimal.py",
+      "tests/test_reason_router_p4x_trainer_rebind.py"
+    ],
+    "no_other_delta_claimed": true
+  },
+  "byte_identities": {
+    "committed_staged_git_normalized_sha256": {
+      "scripts/train_controlled_v6b_minimal.py": "ee9f4536fd6fcf50b76d7bf98f0f38b826c868b4a471e03b633c7fd8267d5993",
+      "tests/test_reason_router_p4x_trainer_rebind.py": "0fd55b34fbd9b2e221db90f5fd563454d70707fae275d341150f322c6c4d3c81"
+    },
+    "eol_provenance": {
+      "windows_working_copy_production_raw_sha256": "fcd42b5bed413dc3b77be1beadc0a17225b86fcd489c30bf3a3444c1fa03738d",
+      "windows_working_copy_production_raw_sha256_path": "scripts/train_controlled_v6b_minimal.py",
+      "working_copy_representation": "mixed CRLF/LF",
+      "git_core_autocrlf": true,
+      "normalized_working_lf_bytes_equal_staged_git_blob": true,
+      "normalized_working_lf_sha256": "ee9f4536fd6fcf50b76d7bf98f0f38b826c868b4a471e03b633c7fd8267d5993",
+      "authoritative_freeze_byte_identity": "committed/staged LF blob SHA",
+      "windows_checkout_raw_sha_is_authoritative": false,
+      "source_content_mismatch": false
+    }
+  },
+  "independent_verification": {
+    "P4X_TRAINER_REBIND_INDEPENDENT_VERIFICATION": "PASS",
+    "verified_dimensions": {
+      "AUTHORIZED_DELTA": "PASS",
+      "CANONICAL_IDENTITY_BINDING": "PASS",
+      "PROVENANCE_VALIDATION": "PASS",
+      "SOURCE_SEMANTIC_ALGORITHM": "PASS",
+      "FAIL_CLOSED_ORDERING": "PASS",
+      "JOIN_KEY_CONTRACT": "PASS",
+      "SCHEMA_FIELD_VALIDATION": "PASS",
+      "SUPERVISION_ADMISSION": "PASS",
+      "COUNT_RECONCILIATION": "PASS",
+      "P2_INVARIANTS": "PASS",
+      "A1_GRADIENT_OWNERSHIP": "PASS",
+      "A3_GRADIENT_OWNERSHIP": "PASS",
+      "SECONDARY_REASON_NONLOSS": "PASS",
+      "EMA_OBSERVER_ONLY": "PASS",
+      "OPTIMIZER_MODEL_BOUNDARY": "PASS",
+      "METADATA_REBIND": "PASS",
+      "TEST_ADEQUACY": "PASS",
+      "DIFF_CHECK": "PASS",
+      "MUTATION_BOUNDARY": "PASS"
+    },
+    "finding": "No blocking findings. The implementation was scoped to the authorized trainer rebind plus the new P4-X test file; no model/head/optimizer/data/config/README or historical artifact changes were found."
+  },
+  "validation_commands_and_results": {
+    "rerun_performed_by_p4y_recording": false,
+    "py_compile": {
+      "command": "python -m py_compile scripts/train_controlled_v6b_minimal.py tests/test_reason_router_p4x_trainer_rebind.py tests/test_reason_router_p2_contract.py",
+      "files": [
+        "scripts/train_controlled_v6b_minimal.py",
+        "tests/test_reason_router_p4x_trainer_rebind.py",
+        "tests/test_reason_router_p2_contract.py"
+      ],
+      "result": "PASS"
+    },
+    "pytest": [
+      {
+        "command": "pytest tests/test_reason_router_p4x_trainer_rebind.py",
+        "result": "PASS",
+        "passed": 25,
+        "skipped": 1
+      },
+      {
+        "command": "pytest tests/test_reason_router_p2_contract.py",
+        "result": "PASS",
+        "passed": 32,
+        "skipped": 0
+      },
+      {
+        "command": "pytest tests/test_reason_router_p3w6f2_p4l_current_lineage_integrity_sidecar_builder.py",
+        "result": "PASS",
+        "passed": 20,
+        "skipped": 1
+      }
+    ],
+    "git_diff_check": {
+      "command": "git diff --check",
+      "result": "PASS"
+    },
+    "sandbox_temp_directory_permission_error_note": {
+      "encountered_during_verifier_execution": true,
+      "result_status": "DID_NOT_ESTABLISH_VALIDATION_RESULT",
+      "temporary_directories_removed": true,
+      "successful_unsandboxed_bounded_reruns_produced_reported_pass_counts": true
+    },
+    "no_invented_timestamps_logs_ci_ids_command_hashes_environment_ids_or_artifact_files": true
+  },
+  "canonical_trainer_rebind_conclusions": {
+    "code_correctness": "ESTABLISHED",
+    "actual_trainer_execution_success": "NOT_ESTABLISHED",
+    "scientific_conclusion": "NOT_ESTABLISHED",
+    "canonical_p4l_artifact_provenance_integrity": "INHERITED_FROM_P4V_CLOSURE_NOT_NEWLY_ESTABLISHED_BY_P4Y",
+    "code_correctness_conclusions": {
+      "canonical_p4l_identity_binding": "ESTABLISHED by bounded implementation tests and independent static/unit verification",
+      "provenance_validation_logic": "ESTABLISHED",
+      "source_semantic_sha_algorithm_conformity": "ESTABLISHED",
+      "fail_closed_pre_training_ordering": "ESTABLISHED",
+      "stable_source_id_to_sidecar_row_id_join_contract": "ESTABLISHED",
+      "supervision_admission_count_reconciliation": "ESTABLISHED",
+      "p2_a1_a3_gradient_ownership_preservation": "ESTABLISHED",
+      "secondary_reason_non_loss_behavior": "ESTABLISHED",
+      "ema_observer_only_behavior": "ESTABLISHED",
+      "optimizer_model_boundary_preservation": "ESTABLISHED",
+      "metadata_rebind_correctness": "ESTABLISHED"
+    }
+  },
+  "scientific_and_execution_boundary": {
+    "trainer_execution_performed": false,
+    "training_performed": false,
+    "evaluation_performed": false,
+    "kaggle_execution_performed": false,
+    "gpu_execution_performed": false,
+    "p4l_rebuild_materialization_performed": false,
+    "implementation_mutation_during_independent_verification": false,
+    "readme_mutation": false,
+    "a0_authorization": false,
+    "training_authorization": false,
+    "evaluation_authorization": false,
+    "scientific_conclusion_established": false,
+    "unit_static_validation_proves_model_quality": false,
+    "unit_static_validation_proves_causal_effectiveness": false,
+    "unit_static_validation_proves_research_hypothesis_success": false
+  },
+  "recording": {
+    "phase": "evidence_recording_only",
+    "rerun_performed": false,
+    "source_evidence": [
+      "exact implementation commit",
+      "exact committed/staged file SHA256 identities",
+      "P4-X implementation report",
+      "P4-X independent verification report",
+      "bounded validation results",
+      "GitHub-confirmed exact two-file commit delta"
+    ],
+    "provenance_exclusions": {
+      "github_actions_execution_id": false,
+      "kaggle_run_id": false,
+      "cm_run_registry_entry": false,
+      "training_log": false,
+      "evaluation_artifact": false,
+      "gpu_provenance": false,
+      "new_runtime_stdout": false
+    }
+  },
+  "workflow_disposition": {
+    "p4x_implementation_freeze": "COMPLETE",
+    "p4y_validation_evidence_candidate": "this artifact",
+    "next_workflow_milestone_after_p4y_verification_freeze": "README rewrite",
+    "research_credit_a0_authority_remains_after_readme_rewrite": true,
+    "p4y_authorizes_a0": false,
+    "p4y_authorizes_training": false,
+    "p4y_authorizes_evaluation": false
+  },
+  "result_checks": {
+    "AUTHORITY_BINDING": "PASS",
+    "IMPLEMENTATION_COMMIT_BINDING": "PASS",
+    "AUTHORIZED_DELTA": "PASS",
+    "BYTE_IDENTITY": "PASS",
+    "EOL_PROVENANCE": "PASS",
+    "VALIDATION_RESULT_RECORDING": "PASS",
+    "TEST_RESULT_RECONCILIATION": "PASS",
+    "CODE_CORRECTNESS_DISPOSITION": "PASS",
+    "EXECUTION_BOUNDARY": "PASS",
+    "SCIENTIFIC_BOUNDARY": "PASS",
+    "PROVENANCE_EXCLUSIONS": "PASS"
+  },
+  "explicit_non_actions": {
+    "do_not_rerun_tests_observed": true,
+    "trainer_executed": false,
+    "training_executed": false,
+    "evaluation_executed": false,
+    "kaggle_executed": false,
+    "implementation_modified": false,
+    "readme_modified": false,
+    "staged": false,
+    "committed": false,
+    "pushed": false
+  },
+  "files_preserved_untouched": {
+    "existing_untracked_review_patch_files": 75,
+    "reports/stage180a_pass2_annotations_completed.csv": true,
+    "implementation_files": true,
+    "tests": true,
+    "authority_spec_files": true,
+    "canonical_p4l_artifacts": true,
+    "README": true
+  },
+  "candidate_ready_token": "P4Y_TRAINER_REBIND_VALIDATION_EVIDENCE_CANDIDATE_READY"
+}
