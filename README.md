@@ -19,11 +19,18 @@ ContraMamba Reason-Preserving Authorization Router
 P2 / P3-W6-F2 lineage
 ```
 
-Current README milestone:
+P4-Z README status rewrite:
 
 ```text
-P3-W6-F2-P4-Z
-README status rewrite only
+COMPLETE / FROZEN
+freeze: 5e345d065cc2fc274d7e11906a41169064823684
+```
+
+Current documentation-planning milestone:
+
+```text
+P3-W6-F2-P4-AA
+15-week research-credit roadmap update
 ```
 
 The P4 canonical lineage recovery and validation phase is complete. Canonical P4-L artifact/provenance integrity is **ESTABLISHED** through the frozen P4-V closure lineage.
@@ -47,7 +54,128 @@ Current dispositions:
 | Bounded trainer-rebind code correctness | **ESTABLISHED** via P4-X/P4-Y |
 | Trainer execution success | **NOT_ESTABLISHED** |
 | Scientific effectiveness | **NOT_ESTABLISHED** |
-| A0 / training / evaluation | **NOT YET AUTHORIZED** at this README rewrite stage |
+| Actual reason-router research execution | **NOT_ESTABLISHED** |
+| A0 / training / evaluation / Kaggle / GPU | **NOT YET AUTHORIZED** by P4-AA |
+
+After P4-AA is independently verified and frozen, the next stage is creation, independent verification, and freeze of the P3-W7-A0 research-credit execution authority. A0 is not authorized by this README.
+
+---
+
+## 15-week research-credit roadmap
+
+Planning context:
+
+```text
+duration: 15 weeks
+context: 학부연구생 연구학점제 / research-credit project
+active topic: ContraMamba Reason-Preserving Authorization Router
+stage: P3-W6-F2-P4-AA
+```
+
+This roadmap is a planning layer, not execution authority. Exact stages and experiments may change in response to validated evidence, and every actual training, evaluation, Kaggle, or GPU operation still requires a separately frozen execution authority. README roadmap changes do not retroactively change frozen authority, and a README plan cannot authorize training, evaluation, Kaggle/GPU use, or scientific conclusions. Scientific conclusions require validated experimental evidence.
+
+Planning/authority boundary:
+
+| Layer | Role |
+|---|---|
+| Roadmap | Planning only |
+| Frozen stage authority | Controls what may be implemented or executed |
+| Runtime evidence | Establishes whether execution occurred successfully |
+| Validated imported evidence | Basis for scientific interpretation |
+| README alone | Does not authorize experiments |
+
+Conceptual namespace:
+
+```text
+Research-credit project
+└── P3
+    ├── W7 - A0 baseline establishment
+    ├── later workstream(s) - matched mechanism comparison
+    └── later workstream(s) - evidence-driven follow-up / replication
+```
+
+P3-W7 is the first research-credit experimental workstream, not the entire 15-week project namespace. P3-W8 may become a matched mechanism comparison workstream, and P3-W9 may become a follow-up or replication workstream, but those names are anticipated only: not reserved, not frozen, and subject to later authority and evidence.
+
+### Week-level plan
+
+Week boundaries are planning targets, not immutable deadlines.
+
+| Weeks | Planning target |
+|---|---|
+| 1-2 | A0 baseline authority and execution preparation: create/freeze P3-W7-A0 authority, verify exact execution commit and commands, prepare provenance-valid Kaggle execution, and begin A0 only after authority freeze. |
+| 2-3 | A0 three-seed baseline execution and provenance collection for seeds 180/181/182, one seed at a time, with collection/import and artifact/provenance validation. Failed runs may be retained when scientifically or provenance useful. These executions have not yet occurred. |
+| 3-4 | A0 baseline validation and analysis: reconcile the three seeds, validate immutable same-seed references, document baseline behavior, and avoid causal mechanism claims from A0. |
+| 4-5 | Next-arm authority resolution: resolve only evidence-supported A1/A2/A3 execution prerequisites, confirm reason-loss authority, confirm the matched comparison contract, and do not automatically authorize all arms. |
+| 5-8 | Conditional matched mechanism experiments, potentially A1/A2/A3, only if separately authorized and prerequisite gates pass. This block may be delayed, narrowed, reordered, or stopped based on evidence. |
+| 8-9 | A0-A3 comparison / E0-related validation as separately authorized: matched seed comparison, gradient-ownership interpretation, reason-router effect analysis, and E0 only under explicit applicable authority. These experiments are not guaranteed. |
+| 9-11 | Failure analysis and evidence-driven follow-up: inspect failure modes, determine whether bounded additional ablations are scientifically justified, and reject unsupported ad hoc hyperparameter search. This does not pre-authorize new experiments. |
+| 11-12 | Replication / robustness phase if warranted: replicate key results if scientifically warranted, prioritize reproducibility over breadth, and do not invent a fixed replication design now. |
+| 13 | Final provenance and evidence audit: ensure the authority -> command -> run -> artifact -> import chain is complete, reconcile missing/failed runs, and freeze validated experiment evidence. |
+| 14 | Research-credit report preparation: methods, experimental design, provenance, figures/tables, results, limitations, and failed hypotheses or negative results where relevant. |
+| 15 | Final synthesis and presentation/submission preparation: scientific interpretation, limitations, reproducibility statement, presentation/report material, and clear separation between established findings and open hypotheses. |
+
+### Adaptive roadmap rules
+
+The roadmap may change if a provenance blocker appears, an execution authority cannot be frozen, A0 fails, artifact integrity cannot be established, a scientific prerequisite remains unresolved, a proposed comparison becomes invalid, a result eliminates the need for a planned experiment, or a new bounded experiment becomes scientifically necessary.
+
+Roadmap changes must be documented, preserve frozen historical evidence, avoid rewriting prior authorities, avoid reinterpreting failed runs as successful, avoid silently moving experimental goals, and receive new authority where execution scope changes. A README commit is not required for every small operational adjustment; README should represent meaningful milestone-level changes.
+
+### Research-credit provenance policy
+
+From A0 onward, every experimental run should retain provenance connecting:
+
+```text
+run name
+-> authority freeze full SHA
+-> execution HEAD
+-> exact command / command SHA256
+-> input dataset identity
+-> sidecar/provenance identity
+-> seed / split seed / arm
+-> runtime report
+-> prediction artifacts
+-> selected checkpoint
+-> artifact SHA256
+-> collection handoff
+-> local import audit
+-> subsequent analysis
+```
+
+Raw runtime outputs are immutable evidence and must not be manually edited for presentation. Cleaned summaries and figures belong in separate analysis artifacts. Failed runs, blocked executions, provenance failures, negative results, failed hypotheses, and non-promoted candidates should be preserved when scientifically relevant. A zero exit code does not alone establish a valid result; scientific interpretation requires provenance-valid imported evidence.
+
+### Artifact organization policy
+
+Research-credit work should be separated by workstream, not placed under one permanent P3-W7 namespace. Historical P3-W6-F2/P4 artifacts remain in their existing paths and must not be moved or renamed.
+
+Examples:
+
+| Workstream | Example namespace |
+|---|---|
+| P3-W7 A0 baseline | `reports/reason_router_p2_p3w7_*` |
+| Later formally authorized workstream | `reports/reason_router_p2_p3w8_*` |
+| Later formally authorized workstream | `reports/reason_router_p2_p3w9_*` |
+
+The P3-W8/P3-W9 examples are illustrative only and do not reserve or freeze future stage names. New workstreams receive new namespaces, raw run directories remain isolated by arm and seed, and analysis/result artifacts remain separate from raw runtime outputs. This README task does not create future directories.
+
+### A0 role
+
+At current HEAD:
+
+| Surface | Status |
+|---|---|
+| A0 execution authority | **NOT YET FROZEN** |
+| A0 execution | **NOT YET PERFORMED** |
+| A0 training | **NOT YET AUTHORIZED** by P4-AA |
+| A0 clean-dev evaluation | **NOT YET AUTHORIZED** by P4-AA |
+| Kaggle/GPU | **NOT YET AUTHORIZED** by P4-AA |
+
+A0 is the `explicit_product` baseline with joint ownership, reason-specific primary CE inactive / effective reason weight 0, and the role of creating same-seed reference evidence for later comparison. A0 is not evidence that first-blocker routing works, not evidence that reason supervision works, not evidence that explicit-local ownership works, and not sufficient for a scientific conclusion.
+
+A1/A2/A3 remain future, conditional, separately authorized planned comparison arms. Their exact configuration may depend on later frozen scientific authority, and this roadmap does not release them. E0 remains an algebraic-equivalence check retained in the research design; this README does not state that E0 has run, passed, or will definitely run in a particular week during the research-credit phase.
+
+### Intended final deliverables
+
+Intended research-credit deliverables include a provenance-valid experiment record, A0 baseline evidence and any separately authorized comparisons, aggregate results, failure analysis, figures/tables, reproducibility notes, limitations, and final research-credit report/presentation material. These are intended deliverables, not claims that they already exist.
 
 ---
 
@@ -346,7 +474,7 @@ External diagnostics are treated as diagnostics only. They are not used for trai
 
 For the active reason-router line, trainer execution must validate canonical identity, provenance, and the exact source `id` to sidecar `row_id` join before training. Any mismatch must fail closed. Canonical P4-L artifacts must not be silently rebuilt or regenerated by trainer code.
 
-Basic local test commands and training commands are intentionally omitted here because P4-Z is a README rewrite stage, and A0/training/evaluation are not yet authorized.
+Basic local test commands and training commands are intentionally omitted here because P4-AA is a README planning update stage, and A0/training/evaluation are not yet authorized.
 
 ---
 
@@ -387,9 +515,16 @@ The first-blocker reason router has not been shown to improve model quality. P4-
 Current milestone:
 
 ```text
-README rewrite / P4-Z
+P3-W6-F2-P4-AA
+15-week research-credit roadmap update
 ```
 
-After this README rewrite is independently verified and frozen, the next stage is creation and freeze of the research-credit A0 execution authority for the "학부연구생 연구학점제" / research-credit experimental phase.
+P4-Z README status rewrite is complete/frozen at:
+
+```text
+5e345d065cc2fc274d7e11906a41169064823684
+```
+
+After P4-AA is independently verified and frozen, the next stage is creation, independent verification, and freeze of the P3-W7-A0 research-credit execution authority for the "학부연구생 연구학점제" / research-credit experimental phase.
 
 A0 is not yet authorized. Training, evaluation, Kaggle execution, and GPU execution are not authorized by this README.
