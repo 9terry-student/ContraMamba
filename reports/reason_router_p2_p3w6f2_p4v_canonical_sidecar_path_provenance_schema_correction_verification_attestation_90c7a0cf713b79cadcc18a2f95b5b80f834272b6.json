@@ -1,0 +1,93 @@
+{
+  "schema_version": "P3W6F2P4V_CANONICAL_SIDECAR_PATH_PROVENANCE_SCHEMA_CORRECTION_VERIFICATION_ATTESTATION_V1",
+  "attestation_kind": "P4V_FREEZE_CHRONOLOGY_RECOVERY_ATTESTATION_CANDIDATE",
+  "phase": "P4-V FREEZE CHRONOLOGY RECOVERY ATTESTATION CANDIDATE CREATION ONLY",
+  "authority_basis": [
+    "Current controller instruction",
+    "Historical P4-V candidate commit 90c7a0cf713b79cadcc18a2f95b5b80f834272b6",
+    "Historical P4-V candidate path reports/reason_router_p2_p3w6f2_p4v_canonical_sidecar_path_provenance_schema_correction_execution_authority_spec.md",
+    "P4-U execution authority freeze 8a841d3989c65c9cc575ea58b06734cf69d262b3",
+    "Frozen P4-L 80cb034792f03226cf6e22c196c1229ed4e6dd62",
+    "Exact execution HEAD 2f9e6076791358922e3ebd70e89533d9cb83b458",
+    "P4-T verification-attestation pattern in repository",
+    "AGENTS.md"
+  ],
+  "historical_p4v_candidate": {
+    "commit": "90c7a0cf713b79cadcc18a2f95b5b80f834272b6",
+    "abbrev": "90c7a0c",
+    "path": "reports/reason_router_p2_p3w6f2_p4v_canonical_sidecar_path_provenance_schema_correction_execution_authority_spec.md",
+    "historical_pre_commit_sha256": "6573dff2c01a7b1101f0af49a49222f81b9203b3251e720d5451d49c6287309f",
+    "committed_git_blob_sha256": "e7ea41dc0a9bca4921ef9c0eccee40701bc82b81dac31b631e30863d85521a0c",
+    "byte_identity": "DIFFERENT",
+    "committed_copy_static_verification": "PASS",
+    "committed_copy_admissibility": "VALID",
+    "historical_candidate_is_valid_p4v_freeze": false,
+    "explicit_freeze_disposition": "90c7a0c... is NOT a valid P4-V freeze.",
+    "retroactive_freeze_relabeling": "NOT AUTHORIZED"
+  },
+  "independent_committed_copy_verification": {
+    "P4V_COMMITTED_COPY_STATIC_VERIFICATION": "PASS",
+    "BYTE_IDENTITY": "DIFFERENT",
+    "EMBEDDED_VALIDATOR": "PASS",
+    "PROVENANCE_SCHEMA_AUDIT": "PASS",
+    "AUTHORITY_BOUNDARY": "PASS",
+    "FREEZE_CHRONOLOGY": "INVALID",
+    "COMMITTED_COPY_ADMISSIBILITY": "VALID",
+    "DESCENDANT_ATTESTATION_READINESS": "READY"
+  },
+  "freeze_chronology_recovery": {
+    "original_freeze_chronology": "INVALID",
+    "invalid_reason": "cm ship was BLOCKED: \"new blank line at EOF\"",
+    "historical_candidate_commit_must_not_be_used_as_p4v_authority_freeze": true,
+    "no_retroactive_freeze_relabeling": true,
+    "whitespace_freeze_procedure_defect_establishes_canonical_p4l_artifact_defect": false,
+    "canonical_p4l_artifact_defect_from_this_defect": "NOT ESTABLISHED"
+  },
+  "preserved_status": {
+    "P4T": "FAIL",
+    "P4U": "FAIL",
+    "canonical_p4l_integrity": "NOT ESTABLISHED until P4-V runtime PASS",
+    "trainer_rebind": "NOT AUTHORIZED",
+    "A0": "NOT AUTHORIZED",
+    "training": "NOT AUTHORIZED",
+    "evaluation": "NOT AUTHORIZED"
+  },
+  "frozen_identities": {
+    "p4u_execution_authority_freeze": "8a841d3989c65c9cc575ea58b06734cf69d262b3",
+    "frozen_p4l": "80cb034792f03226cf6e22c196c1229ed4e6dd62",
+    "exact_execution_head": "2f9e6076791358922e3ebd70e89533d9cb83b458"
+  },
+  "descendant_freeze_semantics": {
+    "future_p4v_authority_freeze_condition": "Only after this attestation candidate itself passes independent static verification, passes cm ship, and is immutably committed may the resulting descendant commit be used as P4V_AUTHORITY_FREEZE.",
+    "this_attestation_candidate_is_currently_p4v_authority_freeze": false,
+    "descendant_commit_predicted": false,
+    "required_before_descendant_freeze": [
+      "independent static verification PASS for this attestation candidate",
+      "cm ship PASS for this attestation candidate",
+      "immutable commit containing this attestation candidate"
+    ]
+  },
+  "no_authority_widening": {
+    "historical_p4v_candidate_modification_authorized": false,
+    "reset_revert_amend_clean_checkout_rewrite_authorized": false,
+    "trainer_rebind_authorized": false,
+    "a0_authorized": false,
+    "training_authorized": false,
+    "evaluation_authorized": false,
+    "python_authorized": false,
+    "pytest_authorized": false,
+    "builder_authorized": false,
+    "kaggle_authorized": false,
+    "runtime_validator_authorized": false,
+    "commit_authorized": false,
+    "push_authorized": false
+  },
+  "expected_delta": {
+    "new_untracked_attestation_json_count": 1,
+    "path": "reports/reason_router_p2_p3w6f2_p4v_canonical_sidecar_path_provenance_schema_correction_verification_attestation_90c7a0cf713b79cadcc18a2f95b5b80f834272b6.json",
+    "historical_p4v_candidate_modified": false,
+    "unrelated_untracked_files_preserved": true
+  },
+  "blockers": [],
+  "failure_reasons": []
+}
