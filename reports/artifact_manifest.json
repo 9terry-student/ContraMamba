@@ -1,0 +1,178 @@
+{
+  "schema_version": 1,
+  "generated_for": "pre_urp_repository_organization",
+  "authority_head": "346583b794ec5de9afae2b14a6af4dbdd9bbf90e",
+  "advisory_only": true,
+  "artifacts": [
+    {
+      "id": "research_credit_roadmap",
+      "path": "README.md",
+      "category": "CURRENT_AUTHORITY",
+      "tracked": true,
+      "present": true,
+      "status": "current",
+      "required_for_future_a0": false,
+      "authority_source": "README.md",
+      "notes": "P4-AA roadmap/current status context; not P3-W7-A0 execution authority."
+    },
+    {
+      "id": "agents_contract",
+      "path": "AGENTS.md",
+      "category": "CURRENT_AUTHORITY",
+      "tracked": true,
+      "present": true,
+      "status": "current",
+      "required_for_future_a0": true,
+      "authority_source": "AGENTS.md",
+      "notes": "Repository-wide research-agent operating contract."
+    },
+    {
+      "id": "current_trainer",
+      "path": "scripts/train_controlled_v6b_minimal.py",
+      "category": "IMPLEMENTATION",
+      "tracked": true,
+      "present": true,
+      "status": "current",
+      "required_for_future_a0": true,
+      "authority_source": "reports/reason_router_p2_p3w6f2_p4x_trainer_rebind_authority_spec_candidate.md",
+      "notes": "P4-X/P4-Y-bound trainer; formal A0 still requires future authority."
+    },
+    {
+      "id": "current_controlled_dataset",
+      "path": "reports/reason_router_p2_p3w6f2_p4b_r1_regeneration_execution_4122078ab7962042e3d6bf89f8b4eb5cec463458/controlled_v5_v3_without_time_swap_p3w6f2_r1_regenerated.jsonl",
+      "category": "CURRENT_CANONICAL_DATA",
+      "tracked": true,
+      "present": true,
+      "status": "current",
+      "required_for_future_a0": true,
+      "physical_sha256": "eb1e0614939cda1421052702223f0fda91f098564692141b085b95b18558c0d3",
+      "semantic_sha256": "3797c174294f6d4f4efbe3afd05530b39c891f1e986dc05fbace59345d6e9c3b",
+      "authority_source": "reports/reason_router_p2_p3w6f2_p4v_canonical_sidecar_path_provenance_schema_correction_execution_2f9e6076791358922e3ebd70e89533d9cb83b458/p3w6f2_p4v_canonical_sidecar_path_provenance_schema_correction_result.json",
+      "notes": "Current controlled source dataset identity for the P4-L/P4-X line."
+    },
+    {
+      "id": "p4l_contract_authority",
+      "path": "reports/reason_router_p2_p3w6f2_p4l_current_lineage_integrity_artifact_contract_authority_spec.md",
+      "category": "CURRENT_AUTHORITY",
+      "tracked": true,
+      "present": true,
+      "status": "current",
+      "required_for_future_a0": true,
+      "authority_source": "reports/reason_router_p2_p3w6f2_p4l_current_lineage_integrity_artifact_contract_authority_spec.md",
+      "notes": "Current-lineage sidecar/provenance contract."
+    },
+    {
+      "id": "p4v_closure_evidence",
+      "path": "reports/reason_router_p2_p3w6f2_p4v_canonical_sidecar_path_provenance_schema_correction_execution_2f9e6076791358922e3ebd70e89533d9cb83b458/p3w6f2_p4v_canonical_sidecar_path_provenance_schema_correction_result.json",
+      "category": "VALIDATED_EVIDENCE",
+      "tracked": true,
+      "present": true,
+      "status": "current",
+      "required_for_future_a0": true,
+      "authority_source": "reports/reason_router_p2_p3w6f2_p4v_canonical_sidecar_path_provenance_schema_correction_execution_2f9e6076791358922e3ebd70e89533d9cb83b458/p3w6f2_p4v_canonical_sidecar_path_provenance_schema_correction_result.json",
+      "notes": "Closure evidence for canonical P4-L identities."
+    },
+    {
+      "id": "p4w_exact_byte_restore_authority",
+      "path": "reports/reason_router_p2_p3w6f2_p4w_canonical_p4l_exact_byte_restore_execution_authority_spec.md",
+      "category": "HISTORICAL_AUTHORITY",
+      "tracked": true,
+      "present": true,
+      "status": "historical_relevant",
+      "required_for_future_a0": true,
+      "authority_source": "reports/reason_router_p2_p3w6f2_p4w_canonical_p4l_exact_byte_restore_execution_authority_spec.md",
+      "notes": "Allows exact-byte provisioning only; exact external source paths remain unresolved."
+    },
+    {
+      "id": "p4x_trainer_rebind_authority",
+      "path": "reports/reason_router_p2_p3w6f2_p4x_trainer_rebind_authority_spec_candidate.md",
+      "category": "IMPLEMENTATION_AUTHORITY",
+      "tracked": true,
+      "present": true,
+      "status": "current",
+      "required_for_future_a0": true,
+      "authority_source": "reports/reason_router_p2_p3w6f2_p4x_trainer_rebind_authority_spec_candidate.md",
+      "notes": "Bounds trainer rebind and fail-closed provenance behavior."
+    },
+    {
+      "id": "p4y_trainer_rebind_validation",
+      "path": "reports/reason_router_p2_p3w6f2_p4y_trainer_rebind_validation_8f6defacc1995f263c97000fe43f6034b1ce9324/p3w6f2_p4y_trainer_rebind_validation_result_candidate.json",
+      "category": "IMPLEMENTATION_VALIDATION",
+      "tracked": true,
+      "present": true,
+      "status": "current",
+      "required_for_future_a0": true,
+      "authority_source": "reports/reason_router_p2_p3w6f2_p4y_trainer_rebind_validation_8f6defacc1995f263c97000fe43f6034b1ce9324/p3w6f2_p4y_trainer_rebind_validation_result_candidate.json",
+      "notes": "Bounded trainer-rebind validation; not runtime A0 execution."
+    },
+    {
+      "id": "canonical_p4l_sidecar_absent",
+      "path": "reports/reason_router_p2_p3w6f2_p4l_current_lineage_integrity_sidecar_2f9e6076791358922e3ebd70e89533d9cb83b458/p3w6f2_p4l_current_lineage_effective_integrity_sidecar.jsonl",
+      "category": "FUTURE_REQUIRED_ABSENT",
+      "tracked": false,
+      "present": false,
+      "status": "current_identity_absent_locally",
+      "required_for_future_a0": true,
+      "physical_sha256": "2b8cffdf71d68a8abeb3b6eb3534eeb664bd012483bcebd9716c7a6645a487f1",
+      "semantic_sha256": "0e652c80ccae796bc2fded883ed099e0af71084a83e4a2fd4dd3524899d81b08",
+      "authority_source": "reports/reason_router_p2_p3w6f2_p4v_canonical_sidecar_path_provenance_schema_correction_execution_2f9e6076791358922e3ebd70e89533d9cb83b458/p3w6f2_p4v_canonical_sidecar_path_provenance_schema_correction_result.json",
+      "notes": "Exact external source path unresolved; exact-byte provisioning only, no reconstruction."
+    },
+    {
+      "id": "canonical_p4l_provenance_absent",
+      "path": "reports/reason_router_p2_p3w6f2_p4l_current_lineage_integrity_sidecar_2f9e6076791358922e3ebd70e89533d9cb83b458/p3w6f2_p4l_current_lineage_effective_integrity_sidecar_provenance.json",
+      "category": "FUTURE_REQUIRED_ABSENT",
+      "tracked": false,
+      "present": false,
+      "status": "current_identity_absent_locally",
+      "required_for_future_a0": true,
+      "physical_sha256": "9d248df09ae8ba471966c468a1e06278ad046908cfe53da623ecc95d8da4cdf2",
+      "authority_source": "reports/reason_router_p2_p3w6f2_p4v_canonical_sidecar_path_provenance_schema_correction_execution_2f9e6076791358922e3ebd70e89533d9cb83b458/p3w6f2_p4v_canonical_sidecar_path_provenance_schema_correction_result.json",
+      "notes": "Exact external source path unresolved; exact-byte provisioning only, no reconstruction."
+    },
+    {
+      "id": "stage180a_root_duplicate",
+      "path": "reports/stage180a_pass2_annotations_completed.csv",
+      "category": "AMBIGUOUS_SPECIAL_CASE",
+      "tracked": false,
+      "present": true,
+      "status": "duplicate_equivalent_untracked",
+      "required_for_future_a0": false,
+      "physical_sha256": "1f431e557ec3c63cf1d027a89485fbb086943966c9c0d683562ea0440e6f7f27",
+      "authority_source": "reports/reason_router_p2_p3w6f2_p4d_controlled_data_integrity_gate_spec.md",
+      "notes": "Root path is referenced by frozen P4 docs; byte-identical to tracked Stage180A pass2 _chatgpt.csv."
+    },
+    {
+      "id": "stage180a_tracked_chatgpt_copy",
+      "path": "reports/stage180_manual_annotations/stage180a_pass2_annotations_completed_chatgpt.csv",
+      "category": "HISTORICAL_EVIDENCE",
+      "tracked": true,
+      "present": true,
+      "status": "historical",
+      "required_for_future_a0": false,
+      "physical_sha256": "1f431e557ec3c63cf1d027a89485fbb086943966c9c0d683562ea0440e6f7f27",
+      "authority_source": "reports/stage180_manual_annotations/stage180a_pass2_annotations_completed_chatgpt.csv",
+      "notes": "Tracked byte-identical copy of the root-path Stage180A pass2 CSV."
+    },
+    {
+      "id": "stage185_sidecar_material",
+      "path": "reports/stage185a_controlled_train_integrity_sidecar_20260715_141914/",
+      "category": "SUPERSEDED",
+      "tracked": true,
+      "present": true,
+      "status": "historical_superseded_for_current_trainer_binding",
+      "required_for_future_a0": false,
+      "authority_source": "reports/reason_router_p2_p3w6f2_p4l_current_lineage_integrity_artifact_contract_authority_spec.md",
+      "notes": "Historical Stage185-era sidecar material; not current P4-X trainer sidecar binding."
+    }
+  ],
+  "grouped_untracked_review_material": {
+    "id": "reason_router_review_patches",
+    "path_pattern": "reason_router_*.patch",
+    "count_at_latest_audit": 75,
+    "tracked": false,
+    "status": "untracked_review_archive_material",
+    "required_for_future_a0": false,
+    "notes": "Not execution dependencies. Most are review-cache/archive candidates; root P2/revision and P3-W6-F1 fixture/contract groups require caution before cleanup."
+  }
+}
