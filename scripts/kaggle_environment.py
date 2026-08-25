@@ -236,15 +236,17 @@ def verify_imports(import_module: Callable[[str], Any] = importlib.import_module
         verification["selective_scan_fn"] = "PASS"
         checks.append(CheckResult("selective_scan_fn", "PASS", "import ok"))
     try:
-        transformers = import_module("transformers")
-        config = transformers.MambaConfig()
-        config.use_mamba_kernels = True
-        verification["transformers_mamba_fast_path"] = bool(getattr(config, "use_mamba_kernels", False))
+        modeling_mamba = import_module("transformers.models.mamba.modeling_mamba")
+        available = getattr(modeling_mamba, "is_fast_path_available")
     except Exception as exc:
         verification["transformers_mamba_fast_path"] = f"FAIL: {type(exc).__name__}: {exc}"
         checks.append(CheckResult("transformers_mamba_fast_path", "FAIL", verification["transformers_mamba_fast_path"]))
     else:
-        checks.append(CheckResult("transformers_mamba_fast_path", "PASS", "config.use_mamba_kernels=True"))
+        verification["transformers_mamba_fast_path"] = bool(available)
+        if available is True:
+            checks.append(CheckResult("transformers_mamba_fast_path", "PASS", "modeling_mamba.is_fast_path_available=True"))
+        else:
+            checks.append(CheckResult("transformers_mamba_fast_path", "FAIL", f"modeling_mamba.is_fast_path_available={available!r}"))
     return verification, checks
 
 

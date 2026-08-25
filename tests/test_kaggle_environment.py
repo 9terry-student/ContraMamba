@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+from types import SimpleNamespace
 from pathlib import Path
 
 import pytest
@@ -50,6 +51,25 @@ def passing_imports():
         ke.CheckResult("selective_scan_fn", "PASS", "import ok"),
         ke.CheckResult("transformers_mamba_fast_path", "PASS", "config.use_mamba_kernels=True"),
     ]
+
+
+def fake_mamba_importer(*, fast_path=True, missing_fast_path=False, fail_modeling_mamba=False):
+    def import_module(module_name):
+        if module_name in {"causal_conv1d", "mamba_ssm"}:
+            return SimpleNamespace()
+        if module_name == "causal_conv1d.causal_conv1d_interface":
+            return SimpleNamespace(causal_conv1d_fn=object())
+        if module_name == "mamba_ssm.ops.selective_scan_interface":
+            return SimpleNamespace(selective_scan_fn=object())
+        if module_name == "transformers.models.mamba.modeling_mamba":
+            if fail_modeling_mamba:
+                raise ImportError("synthetic modeling_mamba import failure")
+            if missing_fast_path:
+                return SimpleNamespace()
+            return SimpleNamespace(is_fast_path_available=fast_path)
+        raise AssertionError(module_name)
+
+    return import_module
 
 
 def build_with(
@@ -229,18 +249,37 @@ def test_mamba_extension_import_failure_fails_when_packages_present(tmp_path):
     assert statuses(report)["selective_scan_fn"] == "FAIL"
 
 
-def test_transformers_mamba_fast_path_failure_fails_when_packages_present(tmp_path):
+def test_transformers_mamba_fast_path_true_passes_real_availability_semantics():
+    verification, checks = ke.verify_imports(fake_mamba_importer(fast_path=True))
+
+    assert verification["transformers_mamba_fast_path"] is True
+    assert statuses(ke.EnvironmentReport({}, {}, {}, {}, {}, checks))["transformers_mamba_fast_path"] == "PASS"
+
+
+def test_transformers_mamba_fast_path_false_fails_when_packages_present(tmp_path):
     def failing_fast_path_imports():
-        verification, checks = passing_imports()
-        verification["transformers_mamba_fast_path"] = False
-        checks = [check for check in checks if check.name != "transformers_mamba_fast_path"]
-        checks.append(ke.CheckResult("transformers_mamba_fast_path", "FAIL", "use_mamba_kernels unavailable"))
-        return verification, checks
+        return ke.verify_imports(fake_mamba_importer(fast_path=False))
 
     report = build_with(tmp_path, observed_sequence=[observed_runtime()], import_verifier=failing_fast_path_imports)
 
     assert report.final_status == "FAIL"
     assert statuses(report)["transformers_mamba_fast_path"] == "FAIL"
+
+
+def test_transformers_mamba_fast_path_missing_attribute_fails():
+    verification, checks = ke.verify_imports(fake_mamba_importer(missing_fast_path=True))
+
+    check_statuses = statuses(ke.EnvironmentReport({}, {}, {}, {}, {}, checks))
+    assert verification["transformers_mamba_fast_path"].startswith("FAIL: AttributeError")
+    assert check_statuses["transformers_mamba_fast_path"] == "FAIL"
+
+
+def test_transformers_mamba_fast_path_import_failure_fails():
+    verification, checks = ke.verify_imports(fake_mamba_importer(fail_modeling_mamba=True))
+
+    check_statuses = statuses(ke.EnvironmentReport({}, {}, {}, {}, {}, checks))
+    assert verification["transformers_mamba_fast_path"].startswith("FAIL: ImportError")
+    assert check_statuses["transformers_mamba_fast_path"] == "FAIL"
 
 
 def test_cuda_smoke_not_checked_unless_requested(tmp_path):
@@ -324,11 +363,7 @@ def test_fast_path_failure_through_main_returns_exit_one(monkeypatch, tmp_path, 
     original_build_report = ke.build_report
 
     def failing_fast_path_imports():
-        verification, checks = passing_imports()
-        verification["transformers_mamba_fast_path"] = False
-        checks = [check for check in checks if check.name != "transformers_mamba_fast_path"]
-        checks.append(ke.CheckResult("transformers_mamba_fast_path", "FAIL", "use_mamba_kernels unavailable"))
-        return verification, checks
+        return ke.verify_imports(fake_mamba_importer(fast_path=False))
 
     def wrapped_build_report(**kwargs):
         assert kwargs["install"] is False
