@@ -31,6 +31,10 @@ ALLOWED_REQUIREMENT_LINES = {
     "torch-c-dlpack-ext==0.1.5",
     "z3-solver==4.15.4.0",
 }
+ALLOWED_PACKAGE_VERSIONS = {
+    line.split("==", 1)[0]: line.split("==", 1)[1]
+    for line in ALLOWED_REQUIREMENT_LINES
+}
 
 
 @dataclass
@@ -149,19 +153,63 @@ def load_restore_manifest(path: Path) -> tuple[dict[str, Any] | None, list[Check
     marker = payload.get("marker")
     boundary = payload.get("evidence_boundary")
     missing_wheels = payload.get("missing_wheels")
-    wheels = payload.get("wheels")
+    restore_packages = payload.get("restore_packages")
     checks.append(CheckResult("restore_manifest_marker", "PASS" if marker == RESTORE_MARKER else "FAIL", f"observed={marker!r}"))
     checks.append(CheckResult("restore_manifest_boundary", "PASS" if boundary == EVIDENCE_BOUNDARY else "FAIL", f"observed={boundary!r}"))
     checks.append(CheckResult("restore_manifest_missing_wheels", "PASS" if missing_wheels == [] else "FAIL", f"observed={missing_wheels!r}"))
-    checks.append(CheckResult("restore_manifest_wheels", "PASS" if isinstance(wheels, list) else "FAIL", "wheels list"))
+    checks.append(CheckResult("restore_manifest_restore_packages", "PASS" if isinstance(restore_packages, list) else "FAIL", "restore_packages list"))
     return payload, checks
 
 
-def wheel_entries(payload: dict[str, Any]) -> list[dict[str, Any]]:
-    entries = payload.get("wheels", [])
-    if not isinstance(entries, list):
-        return []
-    return [entry for entry in entries if isinstance(entry, dict)]
+def parse_requirement_line(line: str) -> tuple[str, str] | None:
+    if "==" not in line:
+        return None
+    name, version = line.split("==", 1)
+    if not name or not version:
+        return None
+    return name, version
+
+
+def package_wheel_entries(payload: dict[str, Any]) -> tuple[list[tuple[str, str, dict[str, Any]]], list[CheckResult]]:
+    checks: list[CheckResult] = []
+    flattened: list[tuple[str, str, dict[str, Any]]] = []
+    packages = payload.get("restore_packages")
+    if not isinstance(packages, list):
+        return flattened, [CheckResult("restore_packages", "FAIL", "missing or non-list")]
+    seen: dict[str, str] = {}
+    for index, package in enumerate(packages):
+        if not isinstance(package, dict):
+            checks.append(CheckResult(f"restore_package_{index}", "FAIL", "package entry is not object"))
+            continue
+        name = package.get("name")
+        version = package.get("version")
+        wheels = package.get("wheels")
+        if not isinstance(name, str) or not name:
+            checks.append(CheckResult(f"restore_package_{index}_name", "FAIL", f"observed={name!r}"))
+            continue
+        if not isinstance(version, str) or not version:
+            checks.append(CheckResult(f"{name}_version", "FAIL", f"observed={version!r}"))
+            continue
+        allowed_version = ALLOWED_PACKAGE_VERSIONS.get(name)
+        if allowed_version != version:
+            checks.append(CheckResult(f"{name}_allowed_version", "FAIL", f"expected={allowed_version!r} observed={version!r}"))
+        else:
+            checks.append(CheckResult(f"{name}_allowed_version", "PASS", version))
+        if name in seen:
+            status = "FAIL"
+            detail = f"duplicate package previous={seen[name]!r} observed={version!r}"
+            checks.append(CheckResult(f"{name}_duplicate", status, detail))
+        seen[name] = version
+        if not isinstance(wheels, list) or not wheels:
+            checks.append(CheckResult(f"{name}_wheels", "FAIL", "missing or empty wheels"))
+            continue
+        checks.append(CheckResult(f"{name}_wheels", "PASS", f"count={len(wheels)}"))
+        for wheel in wheels:
+            if not isinstance(wheel, dict):
+                checks.append(CheckResult(f"{name}_wheel", "FAIL", "wheel entry is not object"))
+                continue
+            flattened.append((name, version, wheel))
+    return flattened, checks
 
 
 def wheel_name(entry: dict[str, Any]) -> str | None:
@@ -190,6 +238,7 @@ def expected_sha(entry: dict[str, Any]) -> str | None:
 
 def validate_restore_inputs(wheelhouse: Path) -> tuple[Path | None, list[CheckResult]]:
     checks: list[CheckResult] = []
+    requirement_pairs: set[tuple[str, str]] = set()
     requirements = wheelhouse / RESTORE_REQUIREMENTS
     manifest_path = wheelhouse / RESTORE_MANIFEST
     if requirements.is_file():
@@ -200,8 +249,16 @@ def validate_restore_inputs(wheelhouse: Path) -> tuple[Path | None, list[CheckRe
             if line.strip() and not line.strip().startswith("#")
         ]
         unexpected = [line for line in requirement_lines if line not in ALLOWED_REQUIREMENT_LINES]
+        malformed = [line for line in requirement_lines if parse_requirement_line(line) is None]
+        requirement_pairs = {
+            parsed
+            for line in requirement_lines
+            if (parsed := parse_requirement_line(line)) is not None
+        }
         if unexpected:
             checks.append(CheckResult("restore_requirements_allowlist", "FAIL", f"unexpected={unexpected!r}"))
+        elif malformed:
+            checks.append(CheckResult("restore_requirements_allowlist", "FAIL", f"malformed={malformed!r}"))
         else:
             checks.append(CheckResult("restore_requirements_allowlist", "PASS", f"count={len(requirement_lines)}"))
     else:
@@ -210,7 +267,14 @@ def validate_restore_inputs(wheelhouse: Path) -> tuple[Path | None, list[CheckRe
     checks.extend(manifest_checks)
     if manifest is None:
         return None, checks
-    for index, entry in enumerate(wheel_entries(manifest)):
+    package_wheels, package_checks = package_wheel_entries(manifest)
+    checks.extend(package_checks)
+    manifest_pairs = {(name, version) for name, version, _wheel in package_wheels}
+    if requirement_pairs == manifest_pairs:
+        checks.append(CheckResult("restore_requirements_manifest_match", "PASS", f"count={len(requirement_pairs)}"))
+    else:
+        checks.append(CheckResult("restore_requirements_manifest_match", "FAIL", f"requirements={sorted(requirement_pairs)!r} manifest={sorted(manifest_pairs)!r}"))
+    for index, (_package_name, _version, entry) in enumerate(package_wheels):
         name = wheel_name(entry)
         if name is None:
             checks.append(CheckResult(f"wheel_{index}", "FAIL", "missing wheel filename"))

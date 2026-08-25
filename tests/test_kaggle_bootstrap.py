@@ -12,24 +12,41 @@ from scripts import kaggle_bootstrap as kb
 def write_wheelhouse(root: Path, *, marker=kb.RESTORE_MARKER, boundary=kb.EVIDENCE_BOUNDARY, missing_wheels=None):
     wheelhouse = root / "wheelhouse"
     wheelhouse.mkdir(parents=True)
-    wheel = wheelhouse / "transformers-4.45.0-py3-none-any.whl"
-    wheel.write_bytes(b"NON_SCIENTIFIC_PRE_URP_INFRASTRUCTURE_TEST_WHEEL")
     requirements = wheelhouse / kb.RESTORE_REQUIREMENTS
     requirements.write_text("\n".join(sorted(kb.ALLOWED_REQUIREMENT_LINES)) + "\n", encoding="utf-8")
+    restore_packages = []
+    first_wheel = None
+    for line in sorted(kb.ALLOWED_REQUIREMENT_LINES):
+        name, version = line.split("==", 1)
+        filename = f"{name.replace('_', '-')}-{version}-py3-none-any.whl"
+        wheel = wheelhouse / filename
+        wheel.write_bytes(f"NON_SCIENTIFIC_PRE_URP_INFRASTRUCTURE_TEST_WHEEL:{name}".encode("utf-8"))
+        if first_wheel is None:
+            first_wheel = wheel
+        restore_packages.append(
+            {
+                "name": name,
+                "version": version,
+                "wheels": [
+                    {
+                        "filename": wheel.name,
+                        "size": wheel.stat().st_size,
+                        "sha256": kb.file_sha256(wheel),
+                    }
+                ],
+            }
+        )
     manifest = {
         "marker": marker,
         "evidence_boundary": boundary,
+        "environment_contract": {"kind": "NON_SCIENTIFIC_PRE_URP_INFRASTRUCTURE_TEST"},
+        "restore_packages": restore_packages,
+        "inherit_from_kaggle_base": ["python", "torch", "cuda"],
+        "explicitly_not_restored": {"torch": True, "cuda": True},
         "missing_wheels": [] if missing_wheels is None else missing_wheels,
-        "wheels": [
-            {
-                "filename": wheel.name,
-                "size": wheel.stat().st_size,
-                "sha256": kb.file_sha256(wheel),
-            }
-        ],
     }
     (wheelhouse / kb.RESTORE_MANIFEST).write_text(json.dumps(manifest), encoding="utf-8")
-    return wheelhouse, requirements, wheel, manifest
+    return wheelhouse, requirements, first_wheel, manifest
 
 
 def completed(args, code, stdout="", stderr=""):
@@ -192,6 +209,85 @@ def test_malformed_restore_manifest_fails_closed(tmp_path):
     assert statuses(report)["restore_manifest"] == "FAIL"
 
 
+def test_missing_restore_packages_fails_closed(tmp_path):
+    wheelhouse, _requirements, _wheel, manifest = write_wheelhouse(tmp_path)
+    manifest.pop("restore_packages")
+    (wheelhouse / kb.RESTORE_MANIFEST).write_text(json.dumps(manifest), encoding="utf-8")
+    runner = make_runner([completed([], 2, verifier_stdout("INSTALL_REQUIRED"))], [])
+
+    report = kb.build_report(
+        cache_root=tmp_path,
+        expected_head=None,
+        cuda_smoke=False,
+        offline_model=False,
+        manifest_path=None,
+        repo_root=tmp_path,
+        runner=runner,
+    )
+
+    assert report.final_status == "FAIL"
+    assert statuses(report)["restore_manifest_restore_packages"] == "FAIL"
+
+
+def test_package_missing_wheels_fails_closed(tmp_path):
+    wheelhouse, _requirements, _wheel, manifest = write_wheelhouse(tmp_path)
+    manifest["restore_packages"][0]["wheels"] = []
+    (wheelhouse / kb.RESTORE_MANIFEST).write_text(json.dumps(manifest), encoding="utf-8")
+    runner = make_runner([completed([], 2, verifier_stdout("INSTALL_REQUIRED"))], [])
+
+    report = kb.build_report(
+        cache_root=tmp_path,
+        expected_head=None,
+        cuda_smoke=False,
+        offline_model=False,
+        manifest_path=None,
+        repo_root=tmp_path,
+        runner=runner,
+    )
+
+    assert report.final_status == "FAIL"
+    assert any(check.name.endswith("_wheels") and check.status == "FAIL" for check in report.wheel_integrity)
+
+
+def test_package_requirements_manifest_mismatch_fails_closed(tmp_path):
+    wheelhouse, requirements, _wheel, _manifest = write_wheelhouse(tmp_path)
+    requirements.write_text("transformers==4.45.0\n", encoding="utf-8")
+    runner = make_runner([completed([], 2, verifier_stdout("INSTALL_REQUIRED"))], [])
+
+    report = kb.build_report(
+        cache_root=tmp_path,
+        expected_head=None,
+        cuda_smoke=False,
+        offline_model=False,
+        manifest_path=None,
+        repo_root=tmp_path,
+        runner=runner,
+    )
+
+    assert report.final_status == "FAIL"
+    assert statuses(report)["restore_requirements_manifest_match"] == "FAIL"
+
+
+def test_duplicate_package_definition_fails_closed(tmp_path):
+    wheelhouse, _requirements, _wheel, manifest = write_wheelhouse(tmp_path)
+    manifest["restore_packages"].append(dict(manifest["restore_packages"][0]))
+    (wheelhouse / kb.RESTORE_MANIFEST).write_text(json.dumps(manifest), encoding="utf-8")
+    runner = make_runner([completed([], 2, verifier_stdout("INSTALL_REQUIRED"))], [])
+
+    report = kb.build_report(
+        cache_root=tmp_path,
+        expected_head=None,
+        cuda_smoke=False,
+        offline_model=False,
+        manifest_path=None,
+        repo_root=tmp_path,
+        runner=runner,
+    )
+
+    assert report.final_status == "FAIL"
+    assert any(check.name.endswith("_duplicate") and check.status == "FAIL" for check in report.wheel_integrity)
+
+
 @pytest.mark.parametrize(
     ("marker", "boundary", "missing_wheels", "failing_check"),
     [
@@ -239,8 +335,8 @@ def test_missing_listed_wheel_fails_closed(tmp_path):
 
 def test_wheel_sha_and_size_mismatch_fail_closed(tmp_path):
     wheelhouse, _requirements, _wheel, manifest = write_wheelhouse(tmp_path)
-    manifest["wheels"][0]["size"] += 1
-    manifest["wheels"][0]["sha256"] = "0" * 64
+    manifest["restore_packages"][0]["wheels"][0]["size"] += 1
+    manifest["restore_packages"][0]["wheels"][0]["sha256"] = "0" * 64
     (wheelhouse / kb.RESTORE_MANIFEST).write_text(json.dumps(manifest), encoding="utf-8")
     runner = make_runner([completed([], 2, verifier_stdout("INSTALL_REQUIRED"))], [])
 
