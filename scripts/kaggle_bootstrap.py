@@ -429,7 +429,7 @@ def build_report(
         if manifest_path is not None:
             atomic_write_json(manifest_path, report_to_dict(report))
         return report
-    first = run_verifier(repo_root=repo_root, expected_head=expected_head, cuda_smoke=cuda_smoke, env=env, runner=runner)
+    first = run_verifier(repo_root=repo_root, expected_head=expected_head, cuda_smoke=False, env=env, runner=runner)
     verifier = {"initial": first}
     restore_attempted = False
     restore_result = "RESTORE_SKIPPED_ALREADY_COMPATIBLE" if first["returncode"] == 0 else "NOT_ATTEMPTED"
@@ -438,6 +438,13 @@ def build_report(
 
     if first["returncode"] == 0:
         checks.append(CheckResult("environment_verifier_initial", "PASS", "already compatible"))
+        if cuda_smoke:
+            final = run_verifier(repo_root=repo_root, expected_head=expected_head, cuda_smoke=True, env=env, runner=runner)
+            verifier["final"] = final
+            if final["returncode"] == 0:
+                checks.append(CheckResult("environment_verifier_final", "PASS", "compatible with requested CUDA smoke"))
+            else:
+                checks.append(CheckResult("environment_verifier_final", "FAIL", f"exit={final['returncode']}"))
     elif first["returncode"] == 2:
         checks.append(CheckResult("environment_verifier_initial", "INSTALL_REQUIRED", "local restore required"))
         restore_attempted = True
@@ -455,12 +462,12 @@ def build_report(
             else:
                 restore_result = "RESTORE_SUCCEEDED"
                 checks.append(CheckResult("local_restore", "PASS", "local wheelhouse restore completed"))
-                second = run_verifier(repo_root=repo_root, expected_head=expected_head, cuda_smoke=cuda_smoke, env=env, runner=runner)
-                verifier["post_restore"] = second
-                if second["returncode"] == 0:
-                    checks.append(CheckResult("environment_verifier_post_restore", "PASS", "compatible"))
+                final = run_verifier(repo_root=repo_root, expected_head=expected_head, cuda_smoke=cuda_smoke, env=env, runner=runner)
+                verifier["final"] = final
+                if final["returncode"] == 0:
+                    checks.append(CheckResult("environment_verifier_final", "PASS", "compatible"))
                 else:
-                    checks.append(CheckResult("environment_verifier_post_restore", "FAIL", f"exit={second['returncode']}"))
+                    checks.append(CheckResult("environment_verifier_final", "FAIL", f"exit={final['returncode']}"))
     else:
         checks.append(CheckResult("environment_verifier_initial", "FAIL", f"exit={first['returncode']}"))
 

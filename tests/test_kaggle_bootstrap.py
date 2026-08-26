@@ -94,6 +94,33 @@ def test_already_compatible_skips_restore_and_passes(tmp_path):
     assert len(calls) == 1
 
 
+def test_already_compatible_requested_cuda_smoke_runs_final_verifier(tmp_path):
+    calls = []
+    runner = make_runner(
+        [
+            completed([], 0, verifier_stdout("PASS")),
+            completed([], 0, verifier_stdout("PASS")),
+        ],
+        calls,
+    )
+
+    report = kb.build_report(
+        cache_root=tmp_path,
+        expected_head=None,
+        cuda_smoke=True,
+        offline_model=False,
+        manifest_path=None,
+        repo_root=tmp_path,
+        runner=runner,
+    )
+
+    assert report.final_status == "PASS"
+    assert report.restore_result == "RESTORE_SKIPPED_ALREADY_COMPATIBLE"
+    assert "--cuda-smoke" not in calls[0]["args"]
+    assert "--cuda-smoke" in calls[1]["args"]
+    assert statuses(report)["environment_verifier_final"] == "PASS"
+
+
 def test_install_required_uses_local_wheelhouse_only(tmp_path):
     write_wheelhouse(tmp_path)
     calls = []
@@ -126,6 +153,36 @@ def test_install_required_uses_local_wheelhouse_only(tmp_path):
     assert "-r" in pip_args
     assert "torch" not in pip_args
     assert "cuda" not in " ".join(pip_args).lower()
+
+
+def test_fresh_install_required_cuda_smoke_restores_then_runs_final_smoke(tmp_path):
+    write_wheelhouse(tmp_path)
+    calls = []
+    runner = make_runner(
+        [
+            completed([], 2, verifier_stdout("INSTALL_REQUIRED")),
+            completed([], 0, "pip ok"),
+            completed([], 0, verifier_stdout("PASS")),
+        ],
+        calls,
+    )
+
+    report = kb.build_report(
+        cache_root=tmp_path,
+        expected_head=None,
+        cuda_smoke=True,
+        offline_model=False,
+        manifest_path=None,
+        repo_root=tmp_path,
+        runner=runner,
+    )
+
+    assert report.final_status == "PASS"
+    assert report.restore_result == "RESTORE_SUCCEEDED"
+    assert "--cuda-smoke" not in calls[0]["args"]
+    assert calls[1]["args"][:4] == [kb.sys.executable, "-m", "pip", "install"]
+    assert "--cuda-smoke" in calls[2]["args"]
+    assert statuses(report)["environment_verifier_final"] == "PASS"
 
 
 def test_missing_requirements_fails_closed(tmp_path):
@@ -416,6 +473,27 @@ def test_environment_verifier_nonzero_fail_without_restore(tmp_path):
     assert statuses(report)["environment_verifier_initial"] == "FAIL"
 
 
+def test_initial_genuine_fail_does_not_restore_or_run_final_smoke(tmp_path):
+    calls = []
+    runner = make_runner([completed([], 1, verifier_stdout("FAIL"))], calls)
+
+    report = kb.build_report(
+        cache_root=tmp_path,
+        expected_head=None,
+        cuda_smoke=True,
+        offline_model=False,
+        manifest_path=None,
+        repo_root=tmp_path,
+        runner=runner,
+    )
+
+    assert report.final_status == "FAIL"
+    assert report.restore_attempted is False
+    assert len(calls) == 1
+    assert "--cuda-smoke" not in calls[0]["args"]
+    assert "final" not in report.verifier
+
+
 def test_post_restore_verifier_nonzero_fails(tmp_path):
     write_wheelhouse(tmp_path)
     runner = make_runner(
@@ -438,7 +516,35 @@ def test_post_restore_verifier_nonzero_fails(tmp_path):
     )
 
     assert report.final_status == "FAIL"
-    assert statuses(report)["environment_verifier_post_restore"] == "FAIL"
+    assert statuses(report)["environment_verifier_final"] == "FAIL"
+
+
+def test_post_restore_requested_cuda_smoke_failure_fails(tmp_path):
+    write_wheelhouse(tmp_path)
+    calls = []
+    runner = make_runner(
+        [
+            completed([], 2, verifier_stdout("INSTALL_REQUIRED")),
+            completed([], 0, "pip ok"),
+            completed([], 1, verifier_stdout("FAIL")),
+        ],
+        calls,
+    )
+
+    report = kb.build_report(
+        cache_root=tmp_path,
+        expected_head=None,
+        cuda_smoke=True,
+        offline_model=False,
+        manifest_path=None,
+        repo_root=tmp_path,
+        runner=runner,
+    )
+
+    assert report.final_status == "FAIL"
+    assert "--cuda-smoke" not in calls[0]["args"]
+    assert "--cuda-smoke" in calls[2]["args"]
+    assert statuses(report)["environment_verifier_final"] == "FAIL"
 
 
 def test_offline_model_env_propagates_to_subprocesses(tmp_path):
@@ -471,7 +577,7 @@ def test_offline_model_env_propagates_to_subprocesses(tmp_path):
         assert env["PIP_CACHE_DIR"] == str((tmp_path / "pip").resolve())
         assert env["HF_HUB_OFFLINE"] == "1"
         assert env["TRANSFORMERS_OFFLINE"] == "1"
-    assert "--cuda-smoke" in calls[0]["args"]
+    assert "--cuda-smoke" not in calls[0]["args"]
     assert "--cuda-smoke" in calls[2]["args"]
 
 
