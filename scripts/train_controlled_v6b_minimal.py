@@ -81,6 +81,15 @@ from scripts.run_provenance import (  # noqa: E402
     utc_now_iso as provenance_utc_now_iso,
     write_json_atomic as write_provenance_json_atomic,
 )
+from scripts.trainer_resume import (  # noqa: E402
+    build_trainer_resume_config,
+    build_trainer_resume_identity,
+    add_resume_cli_arguments,
+    initialize_trainer_resume_state,
+    persist_trainer_latest_resume,
+    trainer_resume_report,
+    validate_resume_cli_arguments,
+)
 from scripts.stage174c_clean_pairwise import (  # noqa: E402
     NATIVE_SCORE_KEYS as STAGE174C_NATIVE_SCORE_KEYS,
     build_train_pair_index as build_stage174c_train_pair_index,
@@ -11299,6 +11308,7 @@ def load_stage47_selected_recovery_weights(path: Path) -> tuple[float, float]:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = v5.build_parser()
+    add_resume_cli_arguments(parser)
     parser.add_argument(
         "--frame-downstream-gradient-mode",
         choices=("joint", "frame_local_only"),
@@ -18252,6 +18262,10 @@ def main(argv: list[str] | None = None) -> int:
     raw_argv = list(sys.argv[1:] if argv is None else argv)
     _stage174a_runtime_start = time.monotonic()
     args = parser.parse_args(argv)
+    try:
+        validate_resume_cli_arguments(args)
+    except ValueError as exc:
+        parser.error(str(exc))
     _p2_contract = _p2_resolve_arm_contract(args, raw_argv, parser)
     try:
         validate_teacher_observer_cli(
@@ -20765,6 +20779,24 @@ def main(argv: list[str] | None = None) -> int:
             feature_input_fn=_vnext_model_feature_inputs,
             autocast_fn=_cuda_amp_autocast,
         )
+        _latest_resume_identity = build_trainer_resume_identity(
+            args,
+            trainer_path=Path(__file__),
+            run_name=run_name,
+        )
+        _latest_resume_config = build_trainer_resume_config(
+            args,
+            run_dir=_stage174a_run_dir,
+        )
+        _latest_resume_state = initialize_trainer_resume_state(
+            config=_latest_resume_config,
+            model=model,
+            optimizer=optimizer,
+            scheduler=None,
+            scaler=grad_scaler if amp_enabled else None,
+            expected_identity=_latest_resume_identity,
+            map_location=device,
+        )
         sampling_generator = torch.Generator().manual_seed(seed)
         best_epoch = 0
         best_score = float("-inf")
@@ -20952,7 +20984,9 @@ def main(argv: list[str] | None = None) -> int:
             if len(set(_stage175b_reference_indices)) != len(_stage175b_reference_indices):
                 raise RuntimeError("[stage175b] duplicate canonical reference row mapping")
 
-        for epoch in range(1, epochs + 1):
+        _global_optimizer_step = int(_latest_resume_state.global_optimizer_step)
+
+        for epoch in range(_latest_resume_state.next_epoch, epochs + 1):
             if teacher_observer is not None:
                 teacher_observer.on_epoch_start(epoch)
             model.train()
@@ -22074,6 +22108,8 @@ def main(argv: list[str] | None = None) -> int:
                 torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
                 optimizer.step()
                 optimizer.zero_grad()
+            if _teacher_observer_optimizer_step_successful:
+                _global_optimizer_step += 1
             if teacher_observer is not None:
                 teacher_observer.mark_optimizer_step(
                     model, successful=_teacher_observer_optimizer_step_successful
@@ -22976,6 +23012,32 @@ def main(argv: list[str] | None = None) -> int:
                     )
             if teacher_observer is not None:
                 teacher_observer.on_epoch_end(model, epoch)
+            _latest_resume_best_ledger = {
+                "select_metric": select_metric,
+                "best_epoch": int(best_epoch),
+                "best_score": float(best_score) if math.isfinite(float(best_score)) else None,
+                "best_checkpoint_selection_changed": False,
+            }
+            _latest_resume_backup = persist_trainer_latest_resume(
+                state=_latest_resume_state,
+                model=model,
+                optimizer=optimizer,
+                scheduler=None,
+                scaler=grad_scaler if amp_enabled else None,
+                completed_epoch=epoch,
+                global_optimizer_step=_global_optimizer_step,
+                identity=_latest_resume_identity,
+                data_order_state=None,
+                best_selection_ledger=_latest_resume_best_ledger,
+            )
+            if _latest_resume_backup is not None:
+                print(
+                    "[latest-resume]"
+                    f" epoch={epoch}"
+                    f" sha256={_latest_resume_backup.sha256}"
+                    f" continuation_index={_latest_resume_backup.continuation_index}"
+                    f" data_order_exactness={_latest_resume_backup.data_order_exactness}"
+                )
 
         if _stage195_parameter_swa_enabled:
             if (
@@ -24581,6 +24643,8 @@ def main(argv: list[str] | None = None) -> int:
             # Stage26-F extended: v7 logit summaries, per-gold breakdown, collapse/recall fields
             **_v7_ext_diagnostics,
         }
+        if _latest_resume_state.config.enabled:
+            report["latest_resume"] = trainer_resume_report(_latest_resume_state)
         report["_best_state"] = best_state
         if _teacher_observer_checkpoint_state_for_run is not None:
             report["_teacher_observer_checkpoint_state"] = _teacher_observer_checkpoint_state_for_run
