@@ -4,10 +4,14 @@ import argparse
 import json
 import os
 import shutil
+import sys
 import tempfile
 from dataclasses import asdict, dataclass
 from pathlib import Path, PureWindowsPath
 from typing import Any, Sequence
+
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from scripts.resume_checkpoint import (
     CHECKPOINT_KIND,

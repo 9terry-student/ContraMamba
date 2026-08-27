@@ -4,6 +4,8 @@ import json
 import os
 import shutil
 import re
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -273,6 +275,56 @@ def test_cli_status_empty_resolve_failure_and_backup_success(tmp_path, capsys):
     assert "BACKUP_STATUS: PASS" in capsys.readouterr().out
     assert store.main(["--store-root", str(tmp_path / "store"), "resolve"]) == 0
     assert "RESOLVE_STATUS: PASS" in capsys.readouterr().out
+
+
+def test_direct_script_status_backup_and_resolve_from_repo_root(tmp_path):
+    script = Path("scripts/kaggle_resume_store.py")
+    store_root = tmp_path / "direct_cli_store"
+    status = subprocess.run(
+        [sys.executable, str(script), "--store-root", str(store_root), "status"],
+        cwd=Path.cwd(),
+        check=False,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+    assert status.returncode == 0
+    assert "STORE_STATUS: EMPTY" in status.stdout
+    assert "ModuleNotFoundError" not in status.stderr
+
+    checkpoint = _checkpoint(tmp_path, "direct_cli_latest.pt")
+    backup = subprocess.run(
+        [
+            sys.executable,
+            str(script),
+            "--store-root",
+            str(store_root),
+            "backup",
+            "--checkpoint",
+            str(checkpoint),
+        ],
+        cwd=Path.cwd(),
+        check=False,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    assert backup.returncode == 0
+    assert "BACKUP_STATUS: PASS" in backup.stdout
+    assert "ModuleNotFoundError" not in backup.stderr
+
+    resolved = subprocess.run(
+        [sys.executable, str(script), "--store-root", str(store_root), "resolve"],
+        cwd=Path.cwd(),
+        check=False,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    assert resolved.returncode == 0
+    assert "RESOLVE_STATUS: PASS" in resolved.stdout
+    assert "ModuleNotFoundError" not in resolved.stderr
 
 
 def test_checkpoint_kind_must_remain_latest_resume(tmp_path, monkeypatch):
