@@ -34,8 +34,33 @@ identity, run identity, and validation evidence remains `reports/`.
 ## Reporting Boundary
 
 - P4-L closure is infrastructure/provenance evidence only.
-- Formal P3-W7-A0 authority is `NOT_CREATED` / `NOT_AUTHORIZED`.
+- Long-term research vision is recorded at
+  `docs/CONTRAMAMBA_RESEARCH_VISION.md`, frozen at
+  `bca6db6de2e1bb5d1b81188b61b2023be20eadd3`, with status
+  `LONG-TERM RESEARCH VISION / NON-AUTHORITY`; it does not authorize
+  implementation, training, evaluation, promotion, Kaggle execution, or
+  scientific claims.
+- A pre-start frozen P3-W7-A0 authority candidate exists at
+  `reports/reason_router_p3w7_a0_current_lineage_execution_authority_spec_candidate.md`.
+  It was materialized from basis
+  `bca6db6de2e1bb5d1b81188b61b2023be20eadd3`, independently verified `PASS`,
+  and frozen at `ecda9707cc054ec26428b3f0937be8829f754f1b` during Week 0
+  before the intended formal Week 1 boundary.
+- The pre-start frozen candidate is retained as immutable provenance and a
+  verified draft basis only; it must not be consumed for A0 execution.
+- Formal Week 1 consumable P3-W7-A0 execution authority is
+  `NOT_ESTABLISHED`.
+- A0 execution is `NOT_STARTED`.
 - No formal training, evaluation, A0 run, promotion, or scientific execution has
   occurred.
-- The next formal research step is independent P3-W7-A0 authority creation,
-  verification, and freeze.
+- No post-freeze local gate, per-seed preflight, Kaggle A0 execution, or trainer
+  launch occurred. Seeds `180`, `181`, and `182` have consumed `ZERO`
+  authorized trainer attempts. A1/A2/A3 remain unauthorized.
+- The next formal Week 1 session must start with `cm context`, use current
+  repository state and applicable authority ordering, treat
+  `ecda9707cc054ec26428b3f0937be8829f754f1b` as pre-start
+  provenance/verified draft basis only, and create, independently verify, and
+  freeze a new formal-start P3-W7-A0 execution authority at the then-current
+  HEAD. Only after that new authority and its required gates/preflights may A0
+  execution be considered.
+- P4-L remains `CLOSED` unless an actual new failure is observed.

@@ -1,14 +1,17 @@
 # ContraMamba Research State
 
-## Current Head
+## State Basis Head
 
-`026216aedb3fa3290dfef65bb81f164580992918`
+`ecda9707cc054ec26428b3f0937be8829f754f1b`
 
 ## Current Phase
 
 - Pre-URP infrastructure/provenance closure.
 - P4-L formal-start blocker is `CLOSED`.
-- P3-W7-A0 formal authority is `NOT_CREATED` / `NOT_AUTHORIZED`.
+- P3-W7-A0 pre-start frozen authority candidate exists as immutable
+  provenance, but formal Week 1 consumable A0 execution authority is
+  `NOT_ESTABLISHED`.
+- A0 execution is `NOT_STARTED`.
 
 ## Active Research Topic
 
@@ -25,10 +28,17 @@ ContraMamba Reason-Preserving Authorization Router.
 - Bounded P4-X/P4-Y trainer-rebind code correctness is established.
 - The research-credit reporting scaffold records Week 0 separately from the
   15 official research weeks.
+- Long-term research vision is recorded at
+  `docs/CONTRAMAMBA_RESEARCH_VISION.md`, frozen at
+  `bca6db6de2e1bb5d1b81188b61b2023be20eadd3`, with status
+  `LONG-TERM RESEARCH VISION / NON-AUTHORITY`.
+- P3-W7-A0 pre-start authority candidate was materialized from basis
+  `bca6db6de2e1bb5d1b81188b61b2023be20eadd3`, independently verified
+  `PASS`, and frozen at `ecda9707cc054ec26428b3f0937be8829f754f1b`.
 
 ## Not Established
 
-- Formal P3-W7-A0 execution authority is not created.
+- Formal Week 1 consumable P3-W7-A0 execution authority is not established.
 - A0 execution has not occurred.
 - No formal training, evaluation, or scientific execution has occurred.
 - Trainer runtime success for formal A0 is not established.
@@ -102,6 +112,34 @@ This closure is infrastructure/provenance evidence only. It is not scientific
 evidence and does not establish A0, training, evaluation, promotion, or
 reason-router effectiveness.
 
+## Week 0 Pre-Start Vision And A0 Provenance
+
+- Long-term ContraMamba research vision:
+  `docs/CONTRAMAMBA_RESEARCH_VISION.md`
+  - Freeze commit:
+    `bca6db6de2e1bb5d1b81188b61b2023be20eadd3`
+  - Status: `LONG-TERM RESEARCH VISION / NON-AUTHORITY`.
+  - It does not authorize implementation, training, evaluation, promotion,
+    Kaggle execution, or scientific claims.
+- P3-W7-A0 authority candidate:
+  `reports/reason_router_p3w7_a0_current_lineage_execution_authority_spec_candidate.md`
+  - Candidate materialization basis:
+    `bca6db6de2e1bb5d1b81188b61b2023be20eadd3`
+  - Independent verification: `PASS`.
+  - Freeze commit:
+    `ecda9707cc054ec26428b3f0937be8829f754f1b`
+  - Status: immutable pre-start provenance and verified draft basis only.
+  - This artifact was created/frozen during Week 0, before the intended
+    formal Week 1 boundary, and must not be consumed for A0 execution.
+- No post-freeze local gate was run.
+- No per-seed preflight was run.
+- No Kaggle A0 execution occurred.
+- No trainer process was launched.
+- Seeds `180`, `181`, and `182` have consumed `ZERO` authorized trainer
+  attempts.
+- No formal scientific evidence was created.
+- A1/A2/A3 remain unauthorized.
+
 ## Known Non-Blocking Infrastructure Incident
 
 - During fresh bootstrap work, `cm kaggle fresh` deleted its active current
@@ -120,14 +158,15 @@ reason-router effectiveness.
 
 ## Current Blockers
 
-- Formal A0 authority is intentionally not created and not authorized.
-- P3-W7-A0 cannot begin until an independent P3-W7-A0 authority is created,
-  independently verified, and frozen.
+- Formal Week 1 consumable A0 authority is not established.
+- P3-W7-A0 execution cannot begin until a new formal-start P3-W7-A0 execution
+  authority is created at the then-current HEAD, independently verified,
+  frozen, and followed by its required gates/preflights.
 
 ## Local Hygiene Notes
 
-- Latest validation basis used HEAD
-  `026216aedb3fa3290dfef65bb81f164580992918`.
+- Latest state basis uses HEAD
+  `ecda9707cc054ec26428b3f0937be8829f754f1b`.
 - 75 untracked review patch files remain in place.
 - `reports/stage180a_pass2_annotations_completed.csv` is untracked and
   byte-identical to the tracked
@@ -136,7 +175,15 @@ reason-router effectiveness.
 
 ## Next Formal Research Step
 
-Create, independently verify, and freeze independent P3-W7-A0 execution
-authority.
+- Start with `cm context`.
+- Use current repository state and applicable authority ordering.
+- Treat `ecda9707cc054ec26428b3f0937be8829f754f1b` as pre-start provenance
+  and verified draft basis only.
+- Create, independently verify, and freeze a new formal-start P3-W7-A0
+  execution authority at the then-current HEAD.
+- Only after that new authority and its required gates/preflights may A0
+  execution be considered.
+- Do not reopen P4-L unless an actual new failure is observed; P4-L remains
+  `CLOSED`.
 
 No speculative future scientific results are established by this document.

@@ -24,6 +24,16 @@ repository inventory and does not supersede frozen authority artifacts.
   - Status: current narrative scaffold.
   - Required for future A0: context no; execution authority no.
 
+- `docs/CONTRAMAMBA_RESEARCH_VISION.md`
+  - Category: long-term research vision.
+  - Role: non-authority research vision and long-horizon framing.
+  - Status: `LONG-TERM RESEARCH VISION / NON-AUTHORITY`.
+  - Freeze commit:
+    `bca6db6de2e1bb5d1b81188b61b2023be20eadd3`.
+  - Required for future A0: context only; execution authority no.
+  - Notes: does not authorize implementation, training, evaluation, promotion,
+    Kaggle execution, or scientific claims.
+
 - `scripts/train_controlled_v6b_minimal.py`
   - Category: current trainer.
   - Role: P4-X/P4-Y-bound trainer implementation.
@@ -127,6 +137,25 @@ repository inventory and does not supersede frozen authority artifacts.
   - Status: historical failure; pre-mutation; collected/imported; never rerun.
   - Failure: `FREEZE_NOT_LOWERCASE_40_HEX`.
   - Imported failure provenance retained.
+
+## Week 0 Pre-Start A0 Authority Candidate
+
+- `reports/reason_router_p3w7_a0_current_lineage_execution_authority_spec_candidate.md`
+  - Category: P3-W7-A0 authority candidate.
+  - Role: verified pre-start draft basis and immutable provenance only.
+  - Candidate materialization basis:
+    `bca6db6de2e1bb5d1b81188b61b2023be20eadd3`.
+  - Independent verification: `PASS`.
+  - Freeze commit:
+    `ecda9707cc054ec26428b3f0937be8829f754f1b`.
+  - Status: frozen during Week 0 before the intended formal Week 1 boundary;
+    retained as immutable provenance and verified pre-start basis.
+  - Required for future A0: no direct execution role; must not be consumed for
+    A0 execution.
+  - Notes: no post-freeze local gate, per-seed preflight, Kaggle A0 execution,
+    trainer launch, or formal scientific evidence was produced from this
+    pre-start freeze. Seeds `180`, `181`, and `182` have consumed `ZERO`
+    authorized trainer attempts. A1/A2/A3 remain unauthorized.
 
 ## Historical Authority
 
@@ -242,7 +271,15 @@ repository inventory and does not supersede frozen authority artifacts.
 ## Formal Research Boundary
 
 - P4-L closure is infrastructure/provenance evidence, not scientific evidence.
-- Formal P3-W7-A0 authority remains `NOT_CREATED` / `NOT_AUTHORIZED`.
+- A pre-start frozen P3-W7-A0 authority candidate exists, but formal Week 1
+  consumable A0 execution authority is `NOT_ESTABLISHED`.
+- A0 execution is `NOT_STARTED`.
 - No formal training, evaluation, A0, A1, A2, A3, promotion, or scientific
   execution has occurred.
-- The next formal research step is independent P3-W7-A0 authority creation.
+- The next formal Week 1 session must start with `cm context`, use current
+  repository state and applicable authority ordering, treat
+  `ecda9707cc054ec26428b3f0937be8829f754f1b` as pre-start
+  provenance/verified draft basis only, and create, independently verify, and
+  freeze a new formal-start P3-W7-A0 execution authority at the then-current
+  HEAD before A0 execution is considered.
+- P4-L remains `CLOSED` unless an actual new failure is observed.

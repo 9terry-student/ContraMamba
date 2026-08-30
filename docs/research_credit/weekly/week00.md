@@ -7,7 +7,13 @@ official research-credit weeks.
 ## Boundary
 
 - Evidence role: infrastructure/provenance closure only.
-- Formal P3-W7-A0 authority: `NOT_CREATED` / `NOT_AUTHORIZED`.
+- Long-term research vision:
+  `LONG-TERM RESEARCH VISION / NON-AUTHORITY`.
+- P3-W7-A0 pre-start frozen authority candidate: exists as immutable
+  provenance and verified draft basis only.
+- Formal Week 1 consumable P3-W7-A0 execution authority:
+  `NOT_ESTABLISHED`.
+- A0 execution: `NOT_STARTED`.
 - Formal training/evaluation/scientific execution: `NOT_STARTED`.
 - Reports remain the provenance/source-of-truth; this file is narrative.
 
@@ -68,14 +74,68 @@ official research-credit weeks.
    deleted its active current working directory and clone failed. Manual clean
    recovery succeeded before validation, and the validation attempt was not
    consumed. This record does not claim the incident is fixed.
+10. Long-term ContraMamba research vision was created and frozen:
+    - Path: `docs/CONTRAMAMBA_RESEARCH_VISION.md`
+    - Freeze commit:
+      `bca6db6de2e1bb5d1b81188b61b2023be20eadd3`
+    - Status: `LONG-TERM RESEARCH VISION / NON-AUTHORITY`
+    - It does not authorize implementation, training, evaluation, promotion,
+      Kaggle execution, or scientific claims.
+11. P3-W7-A0 authority candidate was materialized:
+    - Candidate path:
+      `reports/reason_router_p3w7_a0_current_lineage_execution_authority_spec_candidate.md`
+    - Candidate materialization basis:
+      `bca6db6de2e1bb5d1b81188b61b2023be20eadd3`
+12. Independent static verification of the A0 authority candidate returned
+    `PASS`.
+13. The A0 authority candidate was frozen at
+    `ecda9707cc054ec26428b3f0937be8829f754f1b`.
+14. Controller recognized that the A0 authority candidate freeze crossed the
+    intended Week 0 / Week 1 timing boundary. This is recorded as a transparent
+    workflow-timing correction, not as a scientific failure and not as executed
+    A0 evidence.
+15. Work explicitly stopped before local post-freeze gates, per-seed preflight,
+    Kaggle A0 execution, or any trainer launch.
 
 ## End-Of-Week-0 Status
 
 - P4-L formal-start blocker: `CLOSED`.
 - P4-L canonical bytes: present, tracked, validated.
 - P4-W: historical only; not resurrected.
-- P3-W7-A0 authority: `NOT_CREATED` / `NOT_AUTHORIZED`.
+- Long-term research vision:
+  - Path: `docs/CONTRAMAMBA_RESEARCH_VISION.md`
+  - Freeze commit:
+    `bca6db6de2e1bb5d1b81188b61b2023be20eadd3`
+  - Status: `LONG-TERM RESEARCH VISION / NON-AUTHORITY`
+- P3-W7-A0 pre-start authority candidate:
+  - Path:
+    `reports/reason_router_p3w7_a0_current_lineage_execution_authority_spec_candidate.md`
+  - Candidate materialization basis:
+    `bca6db6de2e1bb5d1b81188b61b2023be20eadd3`
+  - Independent verification: `PASS`
+  - Freeze commit:
+    `ecda9707cc054ec26428b3f0937be8829f754f1b`
+  - Status: immutable pre-start provenance and verified draft basis only; must
+    not be consumed for A0 execution.
+- Formal Week 1 consumable P3-W7-A0 execution authority:
+  `NOT_ESTABLISHED`.
+- A0 execution: `NOT_STARTED`.
+- No post-freeze local gate was run.
+- No per-seed preflight was run.
+- No Kaggle A0 execution occurred.
+- No trainer process was launched.
+- Seeds `180`, `181`, and `182` have consumed `ZERO` authorized trainer
+  attempts.
 - Science status: no formal training, evaluation, A0 run, promotion, or
   scientific execution has occurred.
-- Next formal research step: independent P3-W7-A0 authority creation,
-  verification, and freeze.
+- A1/A2/A3 remain unauthorized.
+- Next formal Week 1 session:
+  1. Start with `cm context`.
+  2. Use current repository state and applicable authority ordering.
+  3. Treat `ecda9707cc054ec26428b3f0937be8829f754f1b` as pre-start
+     provenance/verified draft basis only.
+  4. Create, independently verify, and freeze a new formal-start P3-W7-A0
+     execution authority at the then-current HEAD.
+  5. Only after that new authority and its required gates/preflights may A0
+     execution be considered.
+- P4-L remains `CLOSED` unless an actual new failure is observed.
