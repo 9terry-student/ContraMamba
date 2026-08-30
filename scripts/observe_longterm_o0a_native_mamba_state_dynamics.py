@@ -218,6 +218,16 @@ def validate_commit_sha(value: str, label: str) -> str:
     return normalized
 
 
+def validate_authority_script_sha256(script_path: Path, authority_script_sha256: str) -> tuple[str, str]:
+    expected_script_sha256 = validate_sha256(authority_script_sha256, "authority script SHA256")
+    actual_script_sha256 = sha256_file(script_path)
+    require(
+        actual_script_sha256 == expected_script_sha256,
+        f"observer script SHA256 mismatch: expected {expected_script_sha256}, observed {actual_script_sha256}",
+    )
+    return actual_script_sha256, expected_script_sha256
+
+
 def ensure_output_directory_available(output_dir: Path) -> None:
     if output_dir.exists():
         raise FileExistsError(f"output directory already exists: {output_dir}")
@@ -993,6 +1003,7 @@ def _write_report(path: Path, summary: Mapping[str, Any], manifest: Mapping[str,
         TRAJECTORY_SUMMARY_BOUNDARY,
         "",
         f"Repository HEAD: `{manifest['repository_head']}`  ",
+        f"Observer script SHA256: `{manifest['script_sha256']}`  ",
         f"Dataset SHA256: `{manifest['dataset_sha256']}`  ",
         f"Model/tokenizer: `{manifest['model_id']}` @ `{manifest['model_revision']}`",
         f"Runtime: `{manifest['device']}` / `{manifest['dtype']}`",
@@ -1043,6 +1054,15 @@ def write_artifacts(
     paired_distances: Sequence[Mapping[str, Any]],
     summary: Mapping[str, Any],
 ) -> None:
+    authority_script_sha256 = manifest.get("authority_script_sha256")
+    script_sha256 = manifest.get("script_sha256")
+    require(isinstance(authority_script_sha256, str), "manifest missing authority_script_sha256")
+    require(isinstance(script_sha256, str), "manifest missing script_sha256")
+    require(
+        script_sha256 == authority_script_sha256,
+        "manifest script_sha256 must equal authority_script_sha256",
+    )
+
     output_dir.mkdir(parents=True, exist_ok=False)
     _write_json(output_dir / "manifest.json", manifest)
     _write_jsonl(output_dir / "observations.jsonl", observations)
@@ -1077,6 +1097,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--dataset", type=Path, default=Path("data/toy_interventions_v5.jsonl"))
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--authority-repository-head", required=True)
+    parser.add_argument("--authority-script-sha256", required=True)
     parser.add_argument("--authority-dataset-sha256", required=True)
     parser.add_argument("--device", default=AUTHORIZED_DEVICE, help="O0a authority-bound value: cpu")
     parser.add_argument("--dtype", default=AUTHORIZED_DTYPE_NAME, help="O0a authority-bound value: float32")
@@ -1098,6 +1119,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     expected_head = validate_commit_sha(args.authority_repository_head, "authority repository HEAD")
     actual_head = repository_head(repository_root)
     require(actual_head == expected_head, f"repository HEAD mismatch: expected {expected_head}, observed {actual_head}")
+    actual_script_sha256, expected_script_sha256 = validate_authority_script_sha256(
+        script_path,
+        args.authority_script_sha256,
+    )
 
     require(dataset_path.is_file(), f"dataset does not exist: {dataset_path}")
     expected_dataset_sha256 = validate_sha256(args.authority_dataset_sha256, "authority dataset SHA256")
@@ -1134,7 +1159,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         "repository_head": actual_head,
         "authority_repository_head": expected_head,
         "script_path": script_path.relative_to(repository_root).as_posix(),
-        "script_sha256": sha256_file(script_path),
+        "script_sha256": actual_script_sha256,
+        "authority_script_sha256": expected_script_sha256,
         "dataset_path": _relative_dataset_path(dataset_path, repository_root),
         "dataset_sha256": actual_dataset_sha256,
         "authority_dataset_sha256": expected_dataset_sha256,

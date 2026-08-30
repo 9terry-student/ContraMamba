@@ -19,24 +19,37 @@ future O0a execution may use. Before O0a may execute, an independent verifier
 must inspect the implementation and tests, require any repairs, and establish a
 later implementation-freeze commit. A later execution authority must bind the
 exact full 40-character SHA of that implementation-freeze commit and the exact
-script SHA256 at that commit.
+runtime observer-file SHA256 for the machine/file bytes used by the authorized
+run.
 
 Candidate implementation:
 
 ```text
 scripts/observe_longterm_o0a_native_mamba_state_dynamics.py
-candidate-repair SHA256: 760841ba6b4e71732c511142ac1003fb03205b2fe7789936946514a791d9f9f6
+candidate-repair SHA256: 2937223733750f72344f18d30f3686d4ffc96cde5b397524560443a9e885489f
 ```
 
 This hash reflects the repaired candidate observer bytes at pre-execution
 repair time. It is not yet a future execution-bound hash. A later freeze
-authority must bind the exact committed script bytes and full implementation
-freeze commit after independent verification.
+authority must bind the full implementation freeze commit after independent
+verification. A later execution authority must additionally bind the exact
+runtime observer-file SHA256 supplied to `--authority-script-sha256`.
 
-The candidate script requires both `--authority-repository-head` and
-`--authority-dataset-sha256`. It checks both before loading the model. The
-repository-HEAD argument must eventually be the later freeze commit, not the
-pre-code base above.
+The candidate script requires `--authority-repository-head`,
+`--authority-script-sha256`, and `--authority-dataset-sha256`. It checks the
+output directory collision boundary, repository HEAD, observer script SHA256,
+dataset SHA256/structure, and runtime authority values before loading the model.
+The repository-HEAD argument must eventually be the later freeze commit, not the
+pre-code base above. Repository HEAD establishes frozen code lineage; the
+runtime SHA256 check additionally prevents an unstaged/local observer-file
+modification from executing under that authority. Repository HEAD alone must not
+be claimed to prove working-tree script identity.
+
+This repair intentionally does not introduce newline normalization. A later
+execution authority binds the exact runtime observer-file SHA256 on the machine
+used for the authorized run. A CRLF/LF byte change may therefore cause a
+fail-closed mismatch; that is acceptable for this first exact execution
+authority. The frozen Git commit remains the canonical source lineage.
 
 The canonical hypothesis context is:
 
@@ -323,15 +336,17 @@ report.md
 SHA256SUMS.txt
 ```
 
-The manifest records repository HEAD, authority HEAD, script path and SHA256,
-dataset path and SHA256, exact model ID, exact model revision, exact tokenizer
-ID, exact tokenizer revision, Transformers and Torch versions, CPU device,
-float32 dtype, relevant exposed Mamba config flags, prefix schedule and
-rounding/deduplication rules, serialization and tokenization settings,
-row/unique-pair/observation/distance counts, exposed layer descriptors,
-deterministic settings and equality tolerance, execution timestamp, artifact
-set, scientific claim boundary, and explicit absence of training, generation,
-Kaggle, and URP relationships.
+The manifest records repository HEAD, authority HEAD, script path, actual script
+SHA256, authority-bound script SHA256, dataset path and SHA256, exact model ID,
+exact model revision, exact tokenizer ID, exact tokenizer revision, Transformers
+and Torch versions, CPU device, float32 dtype, relevant exposed Mamba config
+flags, prefix schedule and rounding/deduplication rules, serialization and
+tokenization settings, row/unique-pair/observation/distance counts, exposed
+layer descriptors, deterministic settings and equality tolerance, execution
+timestamp, artifact set, scientific claim boundary, and explicit absence of
+training, generation, Kaggle, and URP relationships. Artifact writing must fail
+closed unless manifest `script_sha256` exactly equals
+`authority_script_sha256`.
 
 If a resolved Hugging Face commit hash is exposed at future runtime, the
 manifest may record it too. It must not rely on a private/internal field as the
@@ -343,13 +358,14 @@ revisions above are the authority binding.
 ## 10. Fail-closed conditions
 
 A future run must fail before model loading on an existing output directory,
-repository-freeze mismatch, dataset hash mismatch, invalid/missing dataset, a
-missing required family, duplicate row ID, missing/multiple `none` reference,
-pair/intervention collision, non-CPU device, non-float32 dtype, or any mutable
-model/tokenizer revision attempt. It must also fail on token-prefix violations,
-output-key collisions, changing API layer layouts, non-finite tensors or
-metrics, 0% invariant failure, prohibited optimizer/backward/generation/compile
-calls, or an incomplete artifact set.
+repository-freeze mismatch, observer script SHA256 mismatch, dataset hash
+mismatch, invalid/missing dataset, a missing required family, duplicate row ID,
+missing/multiple `none` reference, pair/intervention collision, non-CPU device,
+non-float32 dtype, or any mutable model/tokenizer revision attempt. It must also
+fail on token-prefix violations, output-key collisions, changing API layer
+layouts, non-finite tensors or metrics, 0% invariant failure, prohibited
+optimizer/backward/generation/compile calls, manifest script/authority-script
+SHA inequality, or an incomplete artifact set.
 
 ## 11. URP and execution-environment separation
 
@@ -369,11 +385,11 @@ O0a execution remains blocked until all of the following occur:
 1. independent inspection of the exact three-file implementation delta;
 2. successful authorized synthetic/unit/static validation;
 3. repair and re-verification of any identified defect;
-4. creation of an exact implementation-freeze commit without rewriting the
-   dataset bytes;
+4. creation of a new exact repair-freeze commit without rewriting the dataset
+   bytes;
 5. a later execution-authority document binding that full freeze commit, exact
-   script SHA256, exact dataset SHA256, model/tokenizer identities, and run
-   contract;
+   runtime observer-file SHA256, exact dataset SHA256, model/tokenizer
+   identities, and run contract;
 6. explicit authorization for the scientific data/model forward.
 
 Until then this document remains a PRE-EXECUTION CANDIDATE and no O0a output may

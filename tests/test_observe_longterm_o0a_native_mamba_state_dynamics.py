@@ -203,6 +203,91 @@ def test_huggingface_loading_calls_bind_immutable_revision_in_source():
     assert o0a.TOKENIZER_REVISION == o0a.MODEL_REVISION
 
 
+def test_required_authority_script_sha256_cli_argument_is_required():
+    with pytest.raises(SystemExit):
+        o0a.parse_args(
+            [
+                "--output-dir",
+                str(Path(__file__).parent / "o0a_missing_script_sha_output"),
+                "--authority-repository-head",
+                "0" * 40,
+                "--authority-dataset-sha256",
+                "1" * 64,
+            ]
+        )
+
+
+def test_valid_authority_script_sha256_is_accepted():
+    script_path = Path(o0a.__file__).resolve()
+    actual_script_sha256 = o0a.sha256_file(script_path)
+
+    observed, expected = o0a.validate_authority_script_sha256(script_path, actual_script_sha256.upper())
+
+    assert observed == actual_script_sha256
+    assert expected == actual_script_sha256
+
+
+def test_incorrect_authority_script_sha256_is_rejected():
+    script_path = Path(o0a.__file__).resolve()
+    actual_script_sha256 = o0a.sha256_file(script_path)
+    wrong_script_sha256 = ("0" if actual_script_sha256[0] != "0" else "1") + actual_script_sha256[1:]
+
+    with pytest.raises(o0a.ContractError, match="observer script SHA256 mismatch"):
+        o0a.validate_authority_script_sha256(script_path, wrong_script_sha256)
+
+
+def test_malformed_authority_script_sha256_is_rejected():
+    with pytest.raises(o0a.ContractError, match="authority script SHA256"):
+        o0a.validate_authority_script_sha256(Path(o0a.__file__).resolve(), "not-a-sha")
+
+
+def test_authority_script_sha256_mismatch_precedes_model_loading(monkeypatch):
+    called_loader = False
+
+    def fail_if_called(*args, **kwargs):
+        nonlocal called_loader
+        called_loader = True
+        raise AssertionError("model loading must not be reached")
+
+    output_dir = Path(__file__).parent / "o0a_script_sha_mismatch_output"
+    if output_dir.exists():
+        shutil.rmtree(output_dir)
+    actual_script_sha256 = o0a.sha256_file(Path(o0a.__file__).resolve())
+    wrong_script_sha256 = ("0" if actual_script_sha256[0] != "0" else "1") + actual_script_sha256[1:]
+    monkeypatch.setattr(o0a, "load_native_model_and_tokenizer", fail_if_called)
+
+    try:
+        with pytest.raises(o0a.ContractError, match="observer script SHA256 mismatch"):
+            o0a.main(
+                [
+                    "--output-dir",
+                    str(output_dir),
+                    "--authority-repository-head",
+                    o0a.repository_head(Path(o0a.__file__).resolve().parents[1]),
+                    "--authority-script-sha256",
+                    wrong_script_sha256,
+                    "--authority-dataset-sha256",
+                    "1" * 64,
+                ]
+            )
+
+        assert called_loader is False
+        assert not output_dir.exists()
+    finally:
+        if output_dir.exists():
+            shutil.rmtree(output_dir)
+
+
+def test_source_order_checks_authority_script_sha_before_model_loading():
+    source = Path(o0a.__file__).read_text(encoding="utf-8")
+    main_source = source[source.index("def main(") :]
+
+    assert main_source.index("ensure_output_directory_available(output_dir)") < main_source.index("repository_head(")
+    assert main_source.index("repository_head(") < main_source.index("validate_authority_script_sha256(")
+    assert main_source.index("validate_authority_script_sha256(") < main_source.index("sha256_file(dataset_path)")
+    assert main_source.index("validate_authority_script_sha256(") < main_source.index("load_native_model_and_tokenizer(")
+
+
 def test_claim_boundary_language_is_present_for_proxy_and_paraphrase_controls():
     assert "native pretrained Mamba hidden-state proxies" in o0a.HIDDEN_STATE_PROXY_BOUNDARY
     assert "not the selective SSM recurrent state" in o0a.HIDDEN_STATE_PROXY_BOUNDARY
@@ -302,6 +387,8 @@ def test_output_schema_and_artifact_set_are_stable():
     try:
         manifest = {
             "repository_head": "0" * 40,
+            "authority_script_sha256": "2" * 64,
+            "script_sha256": "2" * 64,
             "dataset_sha256": "1" * 64,
             "model_id": o0a.MODEL_ID,
             "model_revision": o0a.MODEL_REVISION,
@@ -331,6 +418,53 @@ def test_output_schema_and_artifact_set_are_stable():
     finally:
         if output_dir.exists():
             shutil.rmtree(output_dir)
+
+
+def test_manifest_script_sha256_fields_are_required_and_equal_before_artifact_writing():
+    base_manifest = {
+        "repository_head": "0" * 40,
+        "authority_script_sha256": "2" * 64,
+        "script_sha256": "2" * 64,
+        "dataset_sha256": "1" * 64,
+        "model_id": o0a.MODEL_ID,
+        "model_revision": o0a.MODEL_REVISION,
+        "model_name": o0a.MODEL_NAME,
+        "device": o0a.AUTHORIZED_DEVICE,
+        "dtype": o0a.AUTHORIZED_DTYPE_NAME,
+    }
+    summary = {"paired_distance_groups": []}
+
+    for removed_key in ("authority_script_sha256", "script_sha256"):
+        output_dir = Path(__file__).parent / f"o0a_manifest_missing_{removed_key}"
+        if output_dir.exists():
+            shutil.rmtree(output_dir)
+        manifest = dict(base_manifest)
+        manifest.pop(removed_key)
+        with pytest.raises(o0a.ContractError, match=removed_key):
+            o0a.write_artifacts(
+                output_dir,
+                manifest=manifest,
+                observations=[],
+                vectors=np.empty((0, 0, 0), dtype=np.float32),
+                paired_distances=[],
+                summary=summary,
+            )
+        assert not output_dir.exists()
+
+    mismatch_dir = Path(__file__).parent / "o0a_manifest_mismatch"
+    if mismatch_dir.exists():
+        shutil.rmtree(mismatch_dir)
+    mismatch_manifest = dict(base_manifest, script_sha256="3" * 64)
+    with pytest.raises(o0a.ContractError, match="must equal"):
+        o0a.write_artifacts(
+            mismatch_dir,
+            manifest=mismatch_manifest,
+            observations=[],
+            vectors=np.empty((0, 0, 0), dtype=np.float32),
+            paired_distances=[],
+            summary=summary,
+        )
+    assert not mismatch_dir.exists()
 
 
 def test_fake_native_model_exercises_observation_pairing_and_summary_pipeline():
