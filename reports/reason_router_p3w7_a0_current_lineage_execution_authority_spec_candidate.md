@@ -2,11 +2,11 @@
 
 ## Status
 
-CANDIDATE ONLY.
+CANDIDATE ONLY: formal Week 1 P3-W7-A0 execution-authority candidate.
 
 This file does not authorize training, evaluation, Kaggle execution, GPU use, artifact promotion, A1, A2, or A3 while it is merely an uncommitted or unverified candidate.
 
-It becomes the P3-W7-A0 execution authority only after:
+It becomes the formal Week 1 P3-W7-A0 execution authority only after:
 1. this exact candidate is independently verified;
 2. the verified file is frozen in an immutable Git commit;
 3. local post-freeze gates and per-seed preflight pass.
@@ -15,19 +15,42 @@ After freeze, the authority authorizes exactly the bounded A0 executions defined
 
 ## Authority creation basis
 
-Candidate materialization basis HEAD:
+Formal Week 1 candidate materialization basis HEAD:
 
-`bca6db6de2e1bb5d1b81188b61b2023be20eadd3`
+`dd40d7a9514aaaed8ee7c24c06fed80598c2b0f1`
 
-The previously independently verified V3 draft basis was:
+The immutable Week 0 pre-start candidate freeze is:
+
+`ecda9707cc054ec26428b3f0937be8829f754f1b`
+
+That Week 0 freeze is retained only as immutable pre-start provenance and as
+the independently verified technical/V3 draft basis for this formal Week 1
+candidate. It must not be consumed as the formal Week 1 A0 execution
+authority.
+
+The pre-start V3 technical lineage was:
 
 `9f12fd3a65c94006a76d6c20ccbfaeb6728c44ba`
 
-The only intervening committed delta is `docs/CONTRAMAMBA_RESEARCH_VISION.md`, a non-authority documentation file. No trainer, test, dataset, sidecar, provenance, P2 arm contract, parser surface, loss semantics, gradient-ownership semantics, or A0 execution parameter changed between the V3 verification basis and this candidate materialization basis.
+The intervening pre-start documentation basis was:
+
+`bca6db6de2e1bb5d1b81188b61b2023be20eadd3`
+
+The delta from the independently verified Week 0 pre-start freeze
+`ecda9707cc054ec26428b3f0937be8829f754f1b` to the formal Week 1
+materialization basis `dd40d7a9514aaaed8ee7c24c06fed80598c2b0f1` is limited
+to Week 0 closure documentation/state updates. No trainer, parser, dataset,
+P4-L sidecar/provenance artifact, P2 arm contract, loss semantics,
+gradient-ownership semantics, execution parameter, seed, split, model,
+hyperparameter, output contract, attempt semantics, recovery semantics, or
+A1/A2/A3 boundary changed between the verified technical basis and this formal
+Week 1 candidate materialization basis.
 
 The materialization-basis HEAD is not the future execution freeze.
 
-The future authority freeze is the commit that contains this exact file. Each authorized wrapper captures that commit dynamically with:
+The new future formal Week 1 authority freeze is the commit that contains this
+newly materialized exact file. Each authorized wrapper captures that commit
+dynamically with:
 
 `P3W7_A0_AUTHORITY_FREEZE="$(git rev-parse HEAD)"`
 
