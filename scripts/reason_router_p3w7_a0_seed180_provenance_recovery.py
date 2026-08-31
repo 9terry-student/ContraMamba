@@ -41,6 +41,14 @@ EXPECTED_DATA_PATH = "reports/reason_router_p2_p3w6f2_p4b_r1_regeneration_execut
 EXPECTED_SIDECAR_PATH = "reports/reason_router_p2_p3w6f2_p4l_current_lineage_integrity_sidecar_2f9e6076791358922e3ebd70e89533d9cb83b458/p3w6f2_p4l_current_lineage_effective_integrity_sidecar.jsonl"
 EXPECTED_DATA_PHYSICAL_SHA256 = "eb1e0614939cda1421052702223f0fda91f098564692141b085b95b18558c0d3"
 EXPECTED_DATA_SEMANTIC_SHA256 = "3797c174294f6d4f4efbe3afd05530b39c891f1e986dc05fbace59345d6e9c3b"
+REQUIRED_DATA_SEMANTIC_SHA_PATHS = (
+    "compatible_positive_margin.authoritative_dataset_semantic_sha256",
+    "compatible_positive_margin.run_activity.single.sidecar_contract.authoritative_dataset_semantic_sha256",
+    "compatible_positive_margin.sidecar_contract.authoritative_dataset_semantic_sha256",
+    "resolved_runtime_config.compatible_positive_margin.authoritative_dataset_semantic_sha256",
+    "resolved_runtime_config.compatible_positive_margin.sidecar_validation.authoritative_dataset_semantic_sha256",
+    "resolved_runtime_config.reason_router_p2_metadata_integrity_source.source_dataset_semantic_sha256",
+)
 EXPECTED_SIDECAR_PHYSICAL_SHA256 = "2b8cffdf71d68a8abeb3b6eb3534eeb664bd012483bcebd9716c7a6645a487f1"
 EXPECTED_SIDECAR_SEMANTIC_SHA256 = "0e652c80ccae796bc2fded883ed099e0af71084a83e4a2fd4dd3524899d81b08"
 EXPECTED_P4L_PROVENANCE_PHYSICAL_SHA256 = "9d248df09ae8ba471966c468a1e06278ad046908cfe53da623ecc95d8da4cdf2"
@@ -267,6 +275,11 @@ def exact_required_path(prov: dict[str, Any], path: str, expected: Any) -> None:
         exact_str(value, expected, path)
 
 
+def validate_required_dataset_semantic_sha(prov: dict[str, Any]) -> None:
+    for path in REQUIRED_DATA_SEMANTIC_SHA_PATHS:
+        exact_required_path(prov, path, EXPECTED_DATA_SEMANTIC_SHA256)
+
+
 def validate_present_identity_copies(prov: dict[str, Any]) -> None:
     expected_identities = {
         "dataset_path": (EXPECTED_DATA_PATH, ("parsed_args.data", "data_provenance.main_data.path", "resolved_runtime_config.data_path")),
@@ -274,10 +287,6 @@ def validate_present_identity_copies(prov: dict[str, Any]) -> None:
             "data_provenance.main_data.sha256",
             "compatible_positive_margin.authoritative_dataset_sha256",
             "resolved_runtime_config.compatible_positive_margin.authoritative_dataset_sha256",
-        )),
-        "dataset_semantic_sha256": (EXPECTED_DATA_SEMANTIC_SHA256, (
-            "compatible_positive_margin.authoritative_dataset_semantic_sha256",
-            "resolved_runtime_config.compatible_positive_margin.authoritative_dataset_semantic_sha256",
         )),
         "sidecar_path": (EXPECTED_SIDECAR_PATH, ("parsed_args.controlled_integrity_sidecar_path", "resolved_runtime_config.controlled_integrity_sidecar_path")),
         "sidecar_physical_sha256": (EXPECTED_SIDECAR_PHYSICAL_SHA256, (
@@ -473,7 +482,6 @@ def validate_run_provenance(prov: Any) -> None:
     )
 
     exact_str(get_path(prov, "data_provenance.main_data.sha256"), EXPECTED_DATA_PHYSICAL_SHA256, "data_provenance.main_data.sha256")
-    exact_str(get_path(prov, "data_provenance.main_data.semantic_sha256"), EXPECTED_DATA_SEMANTIC_SHA256, "data_provenance.main_data.semantic_sha256")
     exact_str(get_path(prov, "compatible_positive_margin.authoritative_dataset_sha256"), EXPECTED_DATA_PHYSICAL_SHA256, "compatible_positive_margin.authoritative_dataset_sha256")
     exact_str(get_path(prov, "compatible_positive_margin.authoritative_dataset_semantic_sha256"), EXPECTED_DATA_SEMANTIC_SHA256, "compatible_positive_margin.authoritative_dataset_semantic_sha256")
     exact_str(get_path(prov, "compatible_positive_margin.authoritative_sidecar_physical_sha256"), EXPECTED_SIDECAR_PHYSICAL_SHA256, "compatible_positive_margin.authoritative_sidecar_physical_sha256")
@@ -485,6 +493,7 @@ def validate_run_provenance(prov: Any) -> None:
     exact_str(get_path(prov, "resolved_runtime_config.compatible_positive_margin.authoritative_dataset_sha256"), EXPECTED_DATA_PHYSICAL_SHA256, "resolved_runtime_config.compatible_positive_margin.authoritative_dataset_sha256")
     exact_str(get_path(prov, "resolved_runtime_config.compatible_positive_margin.authoritative_dataset_semantic_sha256"), EXPECTED_DATA_SEMANTIC_SHA256, "resolved_runtime_config.compatible_positive_margin.authoritative_dataset_semantic_sha256")
     validate_present_identity_copies(prov)
+    validate_required_dataset_semantic_sha(prov)
 
 
 def flag_name(token: str) -> str:

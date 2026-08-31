@@ -132,7 +132,11 @@ def valid_provenance() -> dict[str, object]:
                 "authoritative_sidecar_physical_sha256": recovery.EXPECTED_SIDECAR_PHYSICAL_SHA256,
                 "authoritative_sidecar_semantic_sha256": recovery.EXPECTED_SIDECAR_SEMANTIC_SHA256,
                 "authoritative_provenance_physical_sha256": recovery.EXPECTED_P4L_PROVENANCE_PHYSICAL_SHA256,
+                "run_activity": {"single": {"sidecar_contract": {"authoritative_dataset_semantic_sha256": recovery.EXPECTED_DATA_SEMANTIC_SHA256}}},
+                "sidecar_contract": {"authoritative_dataset_semantic_sha256": recovery.EXPECTED_DATA_SEMANTIC_SHA256},
+                "sidecar_validation": {"authoritative_dataset_semantic_sha256": recovery.EXPECTED_DATA_SEMANTIC_SHA256},
             },
+            "reason_router_p2_metadata_integrity_source": {"source_dataset_semantic_sha256": recovery.EXPECTED_DATA_SEMANTIC_SHA256},
             "active_bridge_auxiliary_modes_and_row_counts": {
                 "row_counts": {"dev_rows": 720},
             },
@@ -145,7 +149,6 @@ def valid_provenance() -> dict[str, object]:
         "data_provenance": {
             "main_data": {
                 "sha256": recovery.EXPECTED_DATA_PHYSICAL_SHA256,
-                "semantic_sha256": recovery.EXPECTED_DATA_SEMANTIC_SHA256,
             },
             "auxiliary_activity": {
                 "row_counts": {"dev_rows": 720},
@@ -157,6 +160,8 @@ def valid_provenance() -> dict[str, object]:
             "authoritative_sidecar_physical_sha256": recovery.EXPECTED_SIDECAR_PHYSICAL_SHA256,
             "authoritative_sidecar_semantic_sha256": recovery.EXPECTED_SIDECAR_SEMANTIC_SHA256,
             "authoritative_provenance_physical_sha256": recovery.EXPECTED_P4L_PROVENANCE_PHYSICAL_SHA256,
+            "run_activity": {"single": {"sidecar_contract": {"authoritative_dataset_semantic_sha256": recovery.EXPECTED_DATA_SEMANTIC_SHA256}}},
+            "sidecar_contract": {"authoritative_dataset_semantic_sha256": recovery.EXPECTED_DATA_SEMANTIC_SHA256},
         },
         "finalization": {
             "completed_epochs": 20,
@@ -436,10 +441,7 @@ def test_provenance_cardinality_disagreement_blocks_collect(synthetic_env, path:
 
 @pytest.mark.parametrize(
     "path",
-    [
-        "compatible_positive_margin.authoritative_dataset_semantic_sha256",
-        "resolved_runtime_config.compatible_positive_margin.authoritative_dataset_semantic_sha256",
-    ],
+    recovery.REQUIRED_DATA_SEMANTIC_SHA_PATHS,
 )
 def test_dataset_semantic_sha_required_missing_and_null(path: str):
     missing = valid_provenance()
@@ -453,6 +455,42 @@ def test_dataset_semantic_sha_required_missing_and_null(path: str):
         cursor = cursor[part]
     cursor[parts[-1]] = None
     assert_blocked(recovery.validate_run_provenance, null_value)
+
+
+@pytest.mark.parametrize("path", recovery.REQUIRED_DATA_SEMANTIC_SHA_PATHS)
+def test_dataset_semantic_sha_required_wrong_value_blocks(path: str):
+    prov = valid_provenance()
+    set_nested(prov, path, "0" * 64)
+    assert_blocked(recovery.validate_run_provenance, prov)
+
+
+def test_dataset_semantic_sha_optional_historical_absent_and_correct_present_allowed():
+    historical = valid_provenance()
+    assert "semantic_sha256" not in historical["data_provenance"]["main_data"]
+    recovery.validate_run_provenance(historical)
+
+    present = valid_provenance()
+    present["data_provenance"]["main_data"]["semantic_sha256"] = recovery.EXPECTED_DATA_SEMANTIC_SHA256
+    recovery.validate_run_provenance(present)
+
+
+def test_dataset_semantic_sha_optional_wrong_present_blocks():
+    prov = valid_provenance()
+    prov["data_provenance"]["main_data"]["semantic_sha256"] = "0" * 64
+    assert_blocked(recovery.validate_run_provenance, prov)
+
+
+def test_dataset_semantic_sha_one_wrong_path_cannot_be_compensated():
+    prov = valid_provenance()
+    set_nested(prov, recovery.REQUIRED_DATA_SEMANTIC_SHA_PATHS[-1], "0" * 64)
+    assert_blocked(recovery.validate_run_provenance, prov)
+
+
+def test_dataset_semantic_sha_not_inferred_from_physical_path_filename_or_row_count():
+    prov = valid_provenance()
+    for path in recovery.REQUIRED_DATA_SEMANTIC_SHA_PATHS:
+        delete_nested(prov, path)
+    assert_blocked(recovery.validate_run_provenance, prov)
 
 
 def test_dataset_semantic_sha_contradictory_duplicate_rejected():
