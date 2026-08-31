@@ -26,6 +26,7 @@ SPLIT_SEED = 174
 RECOVERY_SCHEMA = "contramamba-seed180-a0-provenance-recovery-v1"
 AUDIT_SCHEMA = "contramamba-seed180-a0-provenance-recovery-audit-v1"
 RECOVERY_SCOPE = "P3-W7-A0 seed180 provenance recovery"
+EXPECTED_DEV_PREDICTION_ROWS = 720
 
 SOURCE_RUN_DIR = Path("/kaggle/working/ContraMamba/reports/reason_router_p3w7_a0_current_lineage_runs/seed180/A0")
 PACKAGE_DIR = Path("/kaggle/working/contramamba_recovery_handoffs")
@@ -178,6 +179,17 @@ def loads_json_strict(text: str) -> Any:
 
 def load_json_file_strict(path: Path) -> Any:
     return loads_json_strict(path.read_text(encoding="utf-8"))
+
+
+def read_validated_artifact_text(handle: BinaryIO, artifact: dict[str, Any]) -> str:
+    try:
+        data = handle.read()
+        try:
+            return data.decode("utf-8", errors="strict")
+        except UnicodeDecodeError as exc:
+            raise blocker(f"malformed UTF-8: {artifact['path']}") from exc
+    finally:
+        handle.seek(0)
 
 
 def deterministic_json_bytes(payload: dict[str, Any]) -> bytes:
@@ -359,6 +371,36 @@ def validate_source_artifacts(source_dir: Path) -> list[dict[str, Any]]:
     return [validate_artifact_path(source_dir / item["name"], item) for item in SOURCE_ARTIFACTS]
 
 
+def validate_clean_dev_predictions(handle: BinaryIO, artifact: dict[str, Any]) -> None:
+    payload = loads_json_strict(read_validated_artifact_text(handle, artifact))
+    require(isinstance(payload, dict), "clean_dev_predictions root must be object")
+    predictions = payload.get("predictions", _MISSING)
+    require(isinstance(predictions, list), "clean_dev_predictions.predictions must be list")
+    exact_int(len(predictions), EXPECTED_DEV_PREDICTION_ROWS, "clean_dev_predictions.predictions length")
+
+
+def validate_training_report_predictions_jsonl(handle: BinaryIO, artifact: dict[str, Any]) -> None:
+    text = read_validated_artifact_text(handle, artifact)
+    count = 0
+    for line_number, line in enumerate(text.splitlines(), start=1):
+        if line.strip() == "":
+            continue
+        try:
+            loads_json_strict(line)
+        except Blocker as exc:
+            raise blocker(f"training_report_predictions.jsonl record {line_number} invalid: {exc}") from exc
+        count += 1
+    exact_int(count, EXPECTED_DEV_PREDICTION_ROWS, "training_report_predictions.jsonl nonempty record count")
+
+
+def validate_prediction_artifact_cardinality(opened_artifacts: list[tuple[BinaryIO, dict[str, Any], os.stat_result]]) -> None:
+    by_name = {PurePosixPath(artifact["path"]).name: (handle, artifact) for handle, artifact, _metadata in opened_artifacts}
+    require("clean_dev_predictions.json" in by_name, "clean_dev_predictions.json validated handle missing")
+    require("training_report_predictions.jsonl" in by_name, "training_report_predictions.jsonl validated handle missing")
+    validate_clean_dev_predictions(*by_name["clean_dev_predictions.json"])
+    validate_training_report_predictions_jsonl(*by_name["training_report_predictions.jsonl"])
+
+
 def validate_run_provenance(prov: Any) -> None:
     require(isinstance(prov, dict), "run_provenance root must be object")
     exact_str(get_path(prov, "schema_version"), "stage174a_v1", "schema_version")
@@ -410,10 +452,25 @@ def validate_run_provenance(prov: Any) -> None:
         require(isinstance(selected_checkpoint, dict), "finalization.selected_checkpoint must be object")
         optional_exact(selected_checkpoint.get("selected_epoch"), 20, "finalization.selected_checkpoint.selected_epoch")
 
-    count = get_path(prov, "prediction_export_jsonl_audit.prediction_export_row_count", None)
-    if count is None:
-        count = get_path(prov, "finalization.prediction_export_row_count", None)
-    exact_int(count, 720, "prediction_export_row_count")
+    exact_required_path(prov, "data_provenance.auxiliary_activity.row_counts.dev_rows", EXPECTED_DEV_PREDICTION_ROWS)
+    exact_required_path(
+        prov,
+        "resolved_runtime_config.active_bridge_auxiliary_modes_and_row_counts.row_counts.dev_rows",
+        EXPECTED_DEV_PREDICTION_ROWS,
+    )
+    exact_required_path(prov, "split_seed_contract.clean_main_dev_rows", EXPECTED_DEV_PREDICTION_ROWS)
+    exact_if_present(
+        prov,
+        "prediction_export_jsonl_audit.prediction_export_row_count",
+        EXPECTED_DEV_PREDICTION_ROWS,
+        "prediction_export_jsonl_audit.prediction_export_row_count",
+    )
+    exact_if_present(
+        prov,
+        "finalization.prediction_export_row_count",
+        EXPECTED_DEV_PREDICTION_ROWS,
+        "finalization.prediction_export_row_count",
+    )
 
     exact_str(get_path(prov, "data_provenance.main_data.sha256"), EXPECTED_DATA_PHYSICAL_SHA256, "data_provenance.main_data.sha256")
     exact_str(get_path(prov, "data_provenance.main_data.semantic_sha256"), EXPECTED_DATA_SEMANTIC_SHA256, "data_provenance.main_data.semantic_sha256")
@@ -573,16 +630,18 @@ def collect(args: argparse.Namespace) -> Path:
     validate_run_provenance(prov)
     validate_trainer_command(prov)
 
-    PACKAGE_DIR.mkdir(parents=True, exist_ok=True)
-    target = PACKAGE_DIR / f"seed180_a0_{expected_commit[:12]}.zip"
-    require(not target.exists(), f"target ZIP already exists: {target}")
-    fd, temp_name = tempfile.mkstemp(prefix=f".{target.name}.", suffix=".tmp", dir=str(PACKAGE_DIR))
-    os.close(fd)
-    temp_path = Path(temp_name)
     opened_artifacts: list[tuple[BinaryIO, dict[str, Any], os.stat_result]] = []
     published = False
+    temp_path: Path | None = None
     try:
         opened_artifacts = open_validated_source_artifacts(SOURCE_RUN_DIR)
+        validate_prediction_artifact_cardinality(opened_artifacts)
+        PACKAGE_DIR.mkdir(parents=True, exist_ok=True)
+        target = PACKAGE_DIR / f"seed180_a0_{expected_commit[:12]}.zip"
+        require(not target.exists(), f"target ZIP already exists: {target}")
+        fd, temp_name = tempfile.mkstemp(prefix=f".{target.name}.", suffix=".tmp", dir=str(PACKAGE_DIR))
+        os.close(fd)
+        temp_path = Path(temp_name)
         artifacts = [artifact for _handle, artifact, _metadata in opened_artifacts]
         manifest = create_manifest(expected_commit, artifacts)
         try:
@@ -610,10 +669,11 @@ def collect(args: argparse.Namespace) -> Path:
     finally:
         for handle, _artifact, _metadata in opened_artifacts:
             handle.close()
-        try:
-            temp_path.unlink()
-        except FileNotFoundError:
-            pass
+        if temp_path is not None:
+            try:
+                temp_path.unlink()
+            except FileNotFoundError:
+                pass
     return target
 
 

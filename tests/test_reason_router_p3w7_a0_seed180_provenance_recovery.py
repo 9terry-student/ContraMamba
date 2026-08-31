@@ -133,15 +133,22 @@ def valid_provenance() -> dict[str, object]:
                 "authoritative_sidecar_semantic_sha256": recovery.EXPECTED_SIDECAR_SEMANTIC_SHA256,
                 "authoritative_provenance_physical_sha256": recovery.EXPECTED_P4L_PROVENANCE_PHYSICAL_SHA256,
             },
+            "active_bridge_auxiliary_modes_and_row_counts": {
+                "row_counts": {"dev_rows": 720},
+            },
         },
         "split_seed_contract": {
             "training_seed": 180,
             "resolved_split_seed": 174,
+            "clean_main_dev_rows": 720,
         },
         "data_provenance": {
             "main_data": {
                 "sha256": recovery.EXPECTED_DATA_PHYSICAL_SHA256,
                 "semantic_sha256": recovery.EXPECTED_DATA_SEMANTIC_SHA256,
+            },
+            "auxiliary_activity": {
+                "row_counts": {"dev_rows": 720},
             },
         },
         "compatible_positive_margin": {
@@ -151,7 +158,6 @@ def valid_provenance() -> dict[str, object]:
             "authoritative_sidecar_semantic_sha256": recovery.EXPECTED_SIDECAR_SEMANTIC_SHA256,
             "authoritative_provenance_physical_sha256": recovery.EXPECTED_P4L_PROVENANCE_PHYSICAL_SHA256,
         },
-        "prediction_export_jsonl_audit": {"prediction_export_row_count": 720},
         "finalization": {
             "completed_epochs": 20,
             "selected_epoch": 20,
@@ -173,6 +179,14 @@ def valid_provenance() -> dict[str, object]:
     }
 
 
+def clean_predictions_bytes(count: int = 720) -> bytes:
+    return json.dumps({"predictions": [{"row_id": index} for index in range(count)]}, sort_keys=True).encode("utf-8")
+
+
+def jsonl_predictions_bytes(count: int = 720) -> bytes:
+    return "".join(json.dumps({"row_id": index}) + "\n" for index in range(count)).encode("utf-8")
+
+
 @pytest.fixture()
 def synthetic_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     source = tmp_path / "source"
@@ -181,8 +195,8 @@ def synthetic_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     package_dir.mkdir()
     contents = {
         "training_report.json": b"report",
-        "clean_dev_predictions.json": b"predictions",
-        "training_report_predictions.jsonl": b"{}\n",
+        "clean_dev_predictions.json": clean_predictions_bytes(),
+        "training_report_predictions.jsonl": jsonl_predictions_bytes(),
         "selected_checkpoint.pt": b"checkpoint",
     }
     artifacts = []
@@ -216,12 +230,37 @@ def assert_blocked(fn, *args, **kwargs):
         fn(*args, **kwargs)
 
 
+def set_nested(payload: dict[str, object], path: str, value: object) -> None:
+    cursor = payload
+    parts = path.split(".")
+    for part in parts[:-1]:
+        cursor = cursor[part]
+    cursor[parts[-1]] = value
+
+
 def delete_nested(payload: dict[str, object], path: str) -> None:
     cursor = payload
     parts = path.split(".")
     for part in parts[:-1]:
         cursor = cursor[part]
     del cursor[parts[-1]]
+
+
+def rewrite_source_artifact(source: Path, name: str, data: bytes) -> None:
+    (source / name).write_bytes(data)
+    item = next(item for item in recovery.SOURCE_ARTIFACTS if item["name"] == name)
+    item["size"] = len(data)
+    item["sha256"] = sha(data)
+    recovery.ARTIFACT_BY_NAME[name] = item
+
+
+def rewrite_run_provenance(source: Path, prov: dict[str, object]) -> None:
+    rewrite_source_artifact(source, "run_provenance.json", json.dumps(prov, sort_keys=True).encode("utf-8"))
+
+
+def assert_collect_blocks_without_zip(package_dir: Path) -> None:
+    assert recovery.main(["collect", "--expected-implementation-commit", IMPL]) == 64
+    assert not list(package_dir.glob("*.zip"))
 
 
 def test_duplicate_key_rejecting_json_happy_path():
@@ -231,6 +270,7 @@ def test_duplicate_key_rejecting_json_happy_path():
 
 def test_valid_synthetic_collect_exact_six_entry_zip_and_audit_import(synthetic_env, tmp_path: Path):
     _source, package_dir, _root = synthetic_env
+    assert "prediction_export_jsonl_audit" not in valid_provenance()
     target = recovery.main(["collect", "--expected-implementation-commit", IMPL])
     assert target == 0
     zips = list(package_dir.glob("*.zip"))
@@ -290,17 +330,108 @@ def test_deterministic_artifact_validation(synthetic_env):
         ("finalization.selected_checkpoint.sha256", "bad"),
         ("finalization.completed_epochs", 19),
         ("finalization.selected_epoch", 19),
-        ("prediction_export_jsonl_audit.prediction_export_row_count", 719),
+        ("data_provenance.auxiliary_activity.row_counts.dev_rows", 719),
+        ("resolved_runtime_config.active_bridge_auxiliary_modes_and_row_counts.row_counts.dev_rows", 719),
+        ("split_seed_contract.clean_main_dev_rows", 719),
     ],
 )
 def test_run_provenance_validation_failures(path: str, value: object):
     prov = valid_provenance()
-    cursor = prov
-    parts = path.split(".")
-    for part in parts[:-1]:
-        cursor = cursor[part]
-    cursor[parts[-1]] = value
+    set_nested(prov, path, value)
     assert_blocked(recovery.validate_run_provenance, prov)
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "data_provenance.auxiliary_activity.row_counts.dev_rows",
+        "resolved_runtime_config.active_bridge_auxiliary_modes_and_row_counts.row_counts.dev_rows",
+        "split_seed_contract.clean_main_dev_rows",
+    ],
+)
+def test_required_provenance_dev_row_paths_missing(path: str):
+    prov = valid_provenance()
+    delete_nested(prov, path)
+    assert_blocked(recovery.validate_run_provenance, prov)
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "prediction_export_jsonl_audit.prediction_export_row_count",
+        "finalization.prediction_export_row_count",
+    ],
+)
+def test_legacy_prediction_export_row_count_absent_allowed_but_contradiction_blocks(path: str):
+    recovery.validate_run_provenance(valid_provenance())
+    prov = valid_provenance()
+    parts = path.split(".")
+    cursor = prov
+    for part in parts[:-1]:
+        cursor = cursor.setdefault(part, {})
+    cursor[parts[-1]] = 719
+    assert_blocked(recovery.validate_run_provenance, prov)
+
+
+@pytest.mark.parametrize("count", [719, 721])
+def test_clean_dev_predictions_wrong_cardinality_blocks_collect(synthetic_env, count: int):
+    source, package_dir, _root = synthetic_env
+    rewrite_source_artifact(source, "clean_dev_predictions.json", clean_predictions_bytes(count))
+    assert_collect_blocks_without_zip(package_dir)
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        b"{bad",
+        b'{"predictions": [], "predictions": []}',
+        b"{}",
+        b'{"predictions": {}}',
+        b"\xff",
+    ],
+)
+def test_clean_dev_predictions_malformed_duplicate_missing_non_list_or_utf8_blocks_collect(synthetic_env, data: bytes):
+    source, package_dir, _root = synthetic_env
+    rewrite_source_artifact(source, "clean_dev_predictions.json", data)
+    assert_collect_blocks_without_zip(package_dir)
+
+
+@pytest.mark.parametrize("count", [719, 721])
+def test_training_report_predictions_jsonl_wrong_cardinality_blocks_collect(synthetic_env, count: int):
+    source, package_dir, _root = synthetic_env
+    rewrite_source_artifact(source, "training_report_predictions.jsonl", jsonl_predictions_bytes(count))
+    assert_collect_blocks_without_zip(package_dir)
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        jsonl_predictions_bytes(719) + b"\n\n",
+        jsonl_predictions_bytes(719) + b"{bad\n",
+        jsonl_predictions_bytes(719) + b'{"row_id": 719, "row_id": 720}\n',
+        b"\xff",
+    ],
+)
+def test_training_report_predictions_jsonl_malformed_duplicate_or_utf8_blocks_collect(synthetic_env, data: bytes):
+    source, package_dir, _root = synthetic_env
+    rewrite_source_artifact(source, "training_report_predictions.jsonl", data)
+    assert_collect_blocks_without_zip(package_dir)
+
+
+@pytest.mark.parametrize(
+    ("path", "value"),
+    [
+        ("data_provenance.auxiliary_activity.row_counts.dev_rows", 719),
+        ("resolved_runtime_config.active_bridge_auxiliary_modes_and_row_counts.row_counts.dev_rows", 719),
+        ("split_seed_contract.clean_main_dev_rows", 719),
+    ],
+)
+def test_provenance_cardinality_disagreement_blocks_collect(synthetic_env, path: str, value: object):
+    source, package_dir, _root = synthetic_env
+    prov = valid_provenance()
+    set_nested(prov, path, value)
+    rewrite_run_provenance(source, prov)
+    assert_collect_blocks_without_zip(package_dir)
 
 
 @pytest.mark.parametrize(
