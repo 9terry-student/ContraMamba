@@ -1,0 +1,129 @@
+{
+  "A1_A3_common_weight": true,
+  "A1_A3_released": false,
+  "all_a0_checkpoints_unused": true,
+  "all_a0_logits_unused": true,
+  "all_a0_metrics_unused": true,
+  "all_a0_predictions_unused": true,
+  "all_a0_reference_predictions_unaccessed": true,
+  "all_a0_reference_predictions_unrequired": true,
+  "all_dev_counts_unused": true,
+  "all_dev_inputs_unaccessed": true,
+  "all_dev_labels_unused": true,
+  "all_dev_metrics_unused": true,
+  "all_dev_reason_supervision_absent": true,
+  "all_execution_commits_verified": true,
+  "all_local_binary_cohorts_training_ready": true,
+  "all_polarity_local_training_ready": true,
+  "all_primary_reason_min_count_gates_pass": true,
+  "all_sidecar_hashes_verified": true,
+  "all_three_seeds_present": true,
+  "all_train_reason_supervision_built": true,
+  "all_unit_gates_pass": true,
+  "all_weight_resolution_measurements_valid": true,
+  "architecture": "v6b_minimal",
+  "backbone": "mamba",
+  "balanced_sampler": false,
+  "calibration_data_scope": "TRAIN_ONLY",
+  "calibration_forward_batch_size": 8,
+  "calibration_seeds": [
+    180,
+    181,
+    182
+  ],
+  "class_weighting": "none",
+  "dataset_sha256": "eb1e0614939cda1421052702223f0fda91f098564692141b085b95b18558c0d3",
+  "decision": "P3W1_CALIBRATION_AGGREGATE_PASS_PENDING_REVIEW",
+  "device": "cuda",
+  "execution_commit": "34a5df306a00a28492b08f666bf3f7ac06c26944",
+  "expected_dev_ratio": 0.2,
+  "expected_ordered_train_row_count": 2880,
+  "expected_ordered_train_row_identity_hash": "cbce1775ddc73f2fbad024ded6a314d15e2eb1988ef107fa72a5eacbdd836784",
+  "expected_split_seed": 174,
+  "flag_source": "controlled_heuristic",
+  "freeze_encoder": true,
+  "local_binary_cohort_counts": {
+    "frame": {
+      "0": 726,
+      "1": 724
+    },
+    "polarity": {
+      "0": 119,
+      "1": 242
+    },
+    "predicate": {
+      "0": 121,
+      "1": 603
+    },
+    "sufficiency": {
+      "0": 242,
+      "1": 361
+    }
+  },
+  "local_binary_training_readiness": {
+    "frame": true,
+    "polarity": true,
+    "predicate": true,
+    "sufficiency": true
+  },
+  "local_binary_training_readiness_by_seed": {
+    "180": {
+      "frame": true,
+      "polarity": true,
+      "predicate": true,
+      "sufficiency": true
+    },
+    "181": {
+      "frame": true,
+      "polarity": true,
+      "predicate": true,
+      "sufficiency": true
+    },
+    "182": {
+      "frame": true,
+      "polarity": true,
+      "predicate": true,
+      "sufficiency": true
+    }
+  },
+  "logical_unit_scope": "COMPLETE_AUTHORITATIVE_TRAIN_SPLIT",
+  "logical_units_per_seed": 1,
+  "max_length": 128,
+  "model_name": "state-spaces/mamba-130m-hf",
+  "mu_final": 0.8703426520029703,
+  "mu_reason": 1.403228481610616,
+  "nonfinite_count": 0,
+  "normal_a1_a3_training_ready": true,
+  "ordered_train_row_count": 2880,
+  "ordered_train_row_identity_hash": "cbce1775ddc73f2fbad024ded6a314d15e2eb1988ef107fa72a5eacbdd836784",
+  "primary_reason_class_counts": {
+    "AUTHORIZED": 361,
+    "FRAME": 726,
+    "PREDICATE": 121,
+    "SUFFICIENCY": 242
+  },
+  "reason_router_epsilon": 1e-08,
+  "resolved_reason_loss_weight": 0.6202430063306562,
+  "schema_version": "reason_router_p3w1_calibration_aggregate_v1",
+  "seed_unit_artifact_sha256": {
+    "reports/reason_router_p3w7_current_lineage_reason_weight_calibration_execution_34a5df306a00a28492b08f666bf3f7ac06c26944/seed180/calibration_unit.json": "7999a7e48891ed718d65a5741bb8c830aaae902b06ca46daca6ce02a69806b61",
+    "reports/reason_router_p3w7_current_lineage_reason_weight_calibration_execution_34a5df306a00a28492b08f666bf3f7ac06c26944/seed181/calibration_unit.json": "e92799dc34a5ed20bafe977602da72862e5e534864d9484f8c1bff71f04fe098",
+    "reports/reason_router_p3w7_current_lineage_reason_weight_calibration_execution_34a5df306a00a28492b08f666bf3f7ac06c26944/seed182/calibration_unit.json": "ca649fa47edd07473d03b84c7f12c407e283e4db3a4cf2ed80aab0b294e5ff30"
+  },
+  "seed_unit_paths": [
+    "reports/reason_router_p3w7_current_lineage_reason_weight_calibration_execution_34a5df306a00a28492b08f666bf3f7ac06c26944/seed180/calibration_unit.json",
+    "reports/reason_router_p3w7_current_lineage_reason_weight_calibration_execution_34a5df306a00a28492b08f666bf3f7ac06c26944/seed181/calibration_unit.json",
+    "reports/reason_router_p3w7_current_lineage_reason_weight_calibration_execution_34a5df306a00a28492b08f666bf3f7ac06c26944/seed182/calibration_unit.json"
+  ],
+  "sidecar_semantic_sha256": "0e652c80ccae796bc2fded883ed099e0af71084a83e4a2fd4dd3524899d81b08",
+  "split_seed": 174,
+  "split_seed_verified": true,
+  "status": "PASS",
+  "total_final_count": 8640,
+  "total_final_loss_sum": 7519.760513305664,
+  "total_reason_count": 4350,
+  "total_reason_loss_sum": 6104.04389500618,
+  "train_batch_size": null,
+  "training_readiness_separate_from_weight_resolution": true,
+  "weighted_label_loss": false
+}
