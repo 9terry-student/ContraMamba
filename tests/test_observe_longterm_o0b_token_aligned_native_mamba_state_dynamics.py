@@ -254,6 +254,60 @@ def test_runtime_provenance_head_and_script_sha_fail_closed():
     with pytest.raises(o.ContractError): o.verify_runtime_provenance('a'*40,'x'*64,path,'run',actual_head='a'*40)
     with pytest.raises(o.ContractError): o.verify_runtime_provenance('a'*40,'c'*64,path,'run',actual_head='a'*40)
 
+def test_capture_runtime_versions_reads_all_four_runtime_sources(monkeypatch):
+    monkeypatch.setattr(o.sys, "version", "3.99.1 synthetic build")
+    monkeypatch.setattr(o.np, "__version__", "9.8.7")
+    monkeypatch.setitem(sys.modules, "torch", SimpleNamespace(__version__="2.7.6+cpu"))
+    monkeypatch.setitem(sys.modules, "transformers", SimpleNamespace(__version__="4.55.44"))
+    assert o.capture_runtime_versions() == {
+        "python_version":"3.99.1",
+        "numpy_version":"9.8.7",
+        "torch_version":"2.7.6+cpu",
+        "transformers_version":"4.55.44",
+    }
+
+def test_parse_args_exposes_no_runtime_version_override_flags():
+    required=["--output-dir","out","--run-name","run","--exact-command","[]","--observer-implementation-commit","a"*40,"--observer-script-sha256","b"*64]
+    assert o.parse_args(required).run_name == "run"
+    for flag in ("--python-version","--numpy-version","--torch-version","--transformers-version","--runtime-versions","--test-dependencies"):
+        with pytest.raises(SystemExit):
+            o.parse_args([*required, flag, "override"])
+
+def test_manifest_runtime_versions_accept_concrete_controlled_values():
+    _,_,layers,_=_synthetic_bundle_inputs()
+    m=_manifest(layers)
+    m.update({"python_version":"3.13.2","numpy_version":"2.2.1","torch_version":"2.6.0+cpu","transformers_version":"4.49.0"})
+    assert {k:o.build_manifest(m)[k] for k in o.RUNTIME_VERSION_KEYS} == {k:m[k] for k in o.RUNTIME_VERSION_KEYS}
+
+def test_manifest_runtime_versions_fail_closed_for_missing_none_empty_and_whitespace():
+    _,_,layers,_=_synthetic_bundle_inputs()
+    for key in o.RUNTIME_VERSION_KEYS:
+        missing=_manifest(layers); missing.pop(key)
+        with pytest.raises(o.ContractError): o.build_manifest(missing)
+        for value in (None, "", " ", "\t\n"):
+            bad=_manifest(layers); bad[key]=value
+            with pytest.raises(o.ContractError): o.build_manifest(bad)
+
+def test_manifest_runtime_versions_reject_forbidden_placeholders_exhaustively():
+    _,_,layers,_=_synthetic_bundle_inputs()
+    for key in o.RUNTIME_VERSION_KEYS:
+        for value in ("unknown", "UNKNOWN", "n/a", "N/A", "none", "None"):
+            bad=_manifest(layers); bad[key]=value
+            with pytest.raises(o.ContractError): o.build_manifest(bad)
+
+def test_manifest_runtime_versions_reject_non_string_fields():
+    _,_,layers,_=_synthetic_bundle_inputs()
+    for key in o.RUNTIME_VERSION_KEYS:
+        for value in (1, 2.0, ["3.13"], {"version":"3.13"}):
+            bad=_manifest(layers); bad[key]=value
+            with pytest.raises(o.ContractError): o.build_manifest(bad)
+
+def test_publication_manifest_validation_rejects_runtime_placeholders():
+    coords,layers,assembled,files=_valid_bundle()
+    manifest=json.loads(files["manifest.json"]); manifest["torch_version"]="unknown"
+    bad=dict(files); bad["manifest.json"]=o.canonical_json(manifest); bad["SHA256SUMS.txt"]=o.checksum_text({n:bad[n] for n in o.REQUIRED_ARTIFACTS[:-1]})
+    with pytest.raises(o.ContractError): o.publish_bundle(_MemPath("bad-runtime-version"),bad,coords,layers,_MemFS())
+
 def test_manifest_exact_command_and_run_name_provenance():
     _,_,layers,_=_synthetic_bundle_inputs(); m=_manifest(layers); assert o.build_manifest(m)['run_name']=='synthetic-run'; assert o.actual_command(['python','observer.py','--run-name','synthetic-run'])=='["python","observer.py","--run-name","synthetic-run"]'
 
@@ -353,3 +407,24 @@ def test_main_orchestration_uses_exactly_twelve_full_forwards_and_publishes_seve
     result=o.run_observer(args,{'root':ROOT,'repository_head':args.observer_implementation_commit,'tokenizer_loader':lambda:Tok(),'model_loader':lambda:model,'filesystem':fs,'runtime_versions':{'python_version':'3.13','numpy_version':'2','torch_version':'2','transformers_version':'4'}})
     assert len(model.calls)==12 and all(set(x)=={'input_ids','output_hidden_states','return_dict','use_cache'} and x['output_hidden_states'] is True and x['return_dict'] is True and x['use_cache'] is False for x in model.calls)
     assert set(fs.writes)==set(o.REQUIRED_ARTIFACTS) and fs.writes[-1]=='SHA256SUMS.txt' and set(result['files'])==set(o.REQUIRED_ARTIFACTS)
+
+def test_run_observer_without_runtime_version_injection_uses_production_capture(monkeypatch):
+    coords=json.loads((ROOT/'reports/longterm_o0b_matched_controls_v1_validation.json').read_text()); rows=o.read_jsonl(ROOT/o.DATASET_PATH); byid={r['pair_id']:r for r in rows}; token_map={}
+    for p in coords['pairs']:
+        for c in ('reference_sufficient',*o.COMPARISON_ORDER):
+            e=p['conditions'][c]; token_map[f"Claim: {byid[p['pair_id']]['claim']}\nEvidence: {byid[p['pair_id']][c]}"]=(e['full_serialized_token_ids'],e['full_offset_mapping'])
+    class Tok:
+        is_fast=True
+        def __call__(self,text,**kw): ids,offs=token_map[text]; return {'input_ids':ids,'offset_mapping':offs}
+    class Model:
+        def __call__(self,**kw):
+            ids=kw['input_ids'].detach().cpu().numpy()[0].astype(np.float32); h0=np.stack((ids+1,ids+2,ids+3),1)[None,:,:]; h1=np.stack((ids+4,ids+5,ids+6),1)[None,:,:]; return SimpleNamespace(hidden_states=[h0,h1],last_hidden_state=h1)
+    calls=[]
+    expected_versions={'python_version':'3.13.2','numpy_version':'2.2.1','torch_version':'2.6.0+cpu','transformers_version':'4.49.0'}
+    def fake_capture():
+        calls.append("capture")
+        return expected_versions
+    monkeypatch.setattr(o, "capture_runtime_versions", fake_capture)
+    fs=_MemFS(); args=SimpleNamespace(output_dir=_MemPath('capture-out'),run_name='synthetic-run',exact_command='["python","observer.py"]',observer_implementation_commit=o.subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),observer_script_sha256=o.sha256_file(Path(o.__file__)))
+    result=o.run_observer(args,{'root':ROOT,'repository_head':args.observer_implementation_commit,'tokenizer_loader':lambda:Tok(),'model_loader':lambda:Model(),'filesystem':fs})
+    assert calls == ["capture"] and {k:result["manifest"][k] for k in o.RUNTIME_VERSION_KEYS} == expected_versions

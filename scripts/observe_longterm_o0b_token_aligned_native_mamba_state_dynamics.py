@@ -35,6 +35,8 @@ PAIR_ORDER = ("o0b_pair_001", "o0b_pair_002", "o0b_pair_003")
 REFERENCE_CONDITION = "reference_sufficient"
 LAYER_KEYS = ("layer_index", "layer_role", "state_source")
 MANIFEST_KEYS = ("schema_version", "experiment_name", "scientific_design_authority_commit", "boundary_recovery_authority_commit", "input_implementation_freeze_commit", "observer_implementation_authority_commit", "observer_implementation_commit", "observer_script_sha256", "dataset_path", "dataset_sha256", "validation_artifact_path", "validation_artifact_sha256", "validation_artifact_repository_head", "model_id", "model_revision", "model_trust_remote_code", "tokenizer_id", "tokenizer_revision", "tokenizer_trust_remote_code", "tokenizer_use_fast", "add_special_tokens", "device", "dtype", "python_version", "numpy_version", "torch_version", "transformers_version", "serialization_template", "comparison_order", "anchor_order", "layer_descriptors", "pre_divergence_rtol", "pre_divergence_atol", "cosine_redundancy_atol", "exact_command", "run_name", "required_artifacts", "execution_status")
+RUNTIME_VERSION_KEYS = ("python_version", "numpy_version", "torch_version", "transformers_version")
+FORBIDDEN_RUNTIME_VERSION_PLACEHOLDERS = frozenset({"unknown", "n/a", "none"})
 
 class ContractError(RuntimeError): pass
 def require(ok: bool, msg: str) -> None:
@@ -316,8 +318,19 @@ def verify_runtime_provenance(expected_observer_implementation_commit: str, expe
     head=actual_head or subprocess.check_output(["git","rev-parse","HEAD"],cwd=Path(script_path).resolve().parents[1],text=True).strip(); actual=sha256_file(Path(script_path)); require(head==expected_observer_implementation_commit and actual==expected_observer_script_sha256, "runtime provenance")
     return {"observer_implementation_commit":head,"observer_script_sha256":actual,"run_name":run_name,"exact_command":actual_command(sys.argv if argv is None else argv)}
 
+def capture_runtime_versions() -> dict[str, str]:
+    import torch as torch_module
+    import transformers as transformers_module
+    return {"python_version":sys.version.split()[0],"numpy_version":np.__version__,"torch_version":torch_module.__version__,"transformers_version":transformers_module.__version__}
+
+def validate_runtime_versions(versions: Mapping[str, Any]) -> None:
+    for key in RUNTIME_VERSION_KEYS:
+        value=versions.get(key) if isinstance(versions, Mapping) else None
+        require(type(value) is str and value and value == value.strip() and value.strip().lower() not in FORBIDDEN_RUNTIME_VERSION_PLACEHOLDERS, f"runtime version {key}")
+
 def build_manifest(fields: Mapping[str, Any]) -> dict[str, Any]:
     m=dict(fields); require(set(m)==set(MANIFEST_KEYS), "manifest keys"); require(m["schema_version"]==SCHEMA_VERSION and m["scientific_design_authority_commit"]==SCIENTIFIC_DESIGN_AUTHORITY_COMMIT and m["boundary_recovery_authority_commit"]==BOUNDARY_RECOVERY_AUTHORITY_COMMIT and m["input_implementation_freeze_commit"]==INPUT_IMPLEMENTATION_FREEZE_COMMIT and m["observer_implementation_authority_commit"]==OBSERVER_IMPLEMENTATION_AUTHORITY_COMMIT, "manifest constants")
+    validate_runtime_versions(m)
     require(m["required_artifacts"]==list(REQUIRED_ARTIFACTS) and m["execution_status"]=="COMPLETE", "manifest status/artifacts"); require(m["model_trust_remote_code"] is False and m["tokenizer_trust_remote_code"] is False and m["tokenizer_use_fast"] is True and m["add_special_tokens"] is False and m["device"]=="cpu" and m["dtype"]=="float32", "manifest runtime constants"); require(m["pre_divergence_rtol"]==0.0 and m["pre_divergence_atol"]==1e-6 and m["cosine_redundancy_atol"]==1e-12, "manifest tolerances")
     require(m["validation_artifact_repository_head"]==BOUNDARY_RECOVERY_AUTHORITY_COMMIT and m["dataset_path"]==DATASET_PATH and m["dataset_sha256"]==DATASET_SHA256 and m["validation_artifact_path"]==VALIDATION_ARTIFACT_PATH and m["validation_artifact_sha256"]==VALIDATION_ARTIFACT_SHA256 and m["model_id"]==MODEL_ID and m["tokenizer_id"]==TOKENIZER_ID and m["comparison_order"]==list(COMPARISON_ORDER) and m["anchor_order"]==list(ANCHOR_ORDER) and m["serialization_template"]=="canonical-json-v1/deterministic-npz-v1", "manifest frozen fields")
     validate_layer_descriptors(m["layer_descriptors"])
@@ -408,7 +421,7 @@ def run_observer(args: argparse.Namespace, dependencies: Mapping[str, Any] | Non
         arrays, desc=run_native_forward(model,x["ids"]); states[(x["pair"]["pair_id"],x["condition"])] = arrays; descriptors=descriptors or desc; require(desc==descriptors, "layer layout mismatch"); forward_records.append((x["pair"]["pair_id"],x["condition"]))
     require(len(forward_records)==12 and len(set(forward_records))==12, "exactly twelve full forwards")
     assembled=assemble_observations(artifact,states,descriptors,tokens)
-    versions=d.get("runtime_versions",{"python_version":sys.version.split()[0],"numpy_version":np.__version__})
+    versions=d.get("runtime_versions") or capture_runtime_versions()
     fields={"schema_version":SCHEMA_VERSION,"experiment_name":"longterm_o0b_token_aligned_native_mamba_state_dynamics","scientific_design_authority_commit":SCIENTIFIC_DESIGN_AUTHORITY_COMMIT,"boundary_recovery_authority_commit":BOUNDARY_RECOVERY_AUTHORITY_COMMIT,"input_implementation_freeze_commit":INPUT_IMPLEMENTATION_FREEZE_COMMIT,"observer_implementation_authority_commit":OBSERVER_IMPLEMENTATION_AUTHORITY_COMMIT,**prov,"dataset_path":DATASET_PATH,"dataset_sha256":DATASET_SHA256,"validation_artifact_path":VALIDATION_ARTIFACT_PATH,"validation_artifact_sha256":VALIDATION_ARTIFACT_SHA256,"validation_artifact_repository_head":BOUNDARY_RECOVERY_AUTHORITY_COMMIT,"model_id":MODEL_ID,"model_revision":MODEL_REVISION,"model_trust_remote_code":False,"tokenizer_id":TOKENIZER_ID,"tokenizer_revision":TOKENIZER_REVISION,"tokenizer_trust_remote_code":False,"tokenizer_use_fast":True,"add_special_tokens":False,"device":"cpu","dtype":"float32","python_version":versions.get("python_version","unknown"),"numpy_version":versions.get("numpy_version",np.__version__),"torch_version":versions.get("torch_version","unknown"),"transformers_version":versions.get("transformers_version","unknown"),"serialization_template":"canonical-json-v1/deterministic-npz-v1","comparison_order":list(COMPARISON_ORDER),"anchor_order":list(ANCHOR_ORDER),"layer_descriptors":descriptors,"pre_divergence_rtol":0.0,"pre_divergence_atol":1e-6,"cosine_redundancy_atol":1e-12,"exact_command":args.exact_command,"run_name":args.run_name,"required_artifacts":list(REQUIRED_ARTIFACTS),"execution_status":"COMPLETE"}
     files=build_artifact_bundle(fields,assembled); fs=d.get("filesystem"); publish_bundle(args.output_dir,files,artifact,descriptors,fs); return {"files":files,"assembled":assembled,"forward_records":forward_records,"manifest":fields}
 
