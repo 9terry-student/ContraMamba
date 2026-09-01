@@ -249,10 +249,50 @@ def test_complete_observation_distance_summary_assembly():
 
 def test_runtime_provenance_head_and_script_sha_fail_closed():
     path=Path(o.__file__); digest=o.sha256_file(path)
-    assert o.verify_runtime_provenance('a'*40,digest,path,'run',['python','observer.py'],actual_head='a'*40)['run_name']=='run'
-    with pytest.raises(o.ContractError): o.verify_runtime_provenance('b'*40,digest,path,'run',actual_head='a'*40)
-    with pytest.raises(o.ContractError): o.verify_runtime_provenance('a'*40,'x'*64,path,'run',actual_head='a'*40)
-    with pytest.raises(o.ContractError): o.verify_runtime_provenance('a'*40,'c'*64,path,'run',actual_head='a'*40)
+    argv=["observer.py","--exact-command",'["observer.py"]']
+    assert o.verify_runtime_provenance('a'*40,digest,path,'run','["observer.py"]',argv,actual_head='a'*40)['run_name']=='run'
+    with pytest.raises(o.ContractError): o.verify_runtime_provenance('b'*40,digest,path,'run','["observer.py"]',argv,actual_head='a'*40)
+    with pytest.raises(o.ContractError): o.verify_runtime_provenance('a'*40,'x'*64,path,'run','["observer.py"]',argv,actual_head='a'*40)
+    with pytest.raises(o.ContractError): o.verify_runtime_provenance('a'*40,'c'*64,path,'run','["observer.py"]',argv,actual_head='a'*40)
+
+def test_canonical_observer_argv_exact_command_contract_matrix():
+    remaining=["C:/Mixed Case/observer.py","--output-dir","out dir","--run-name","run name","value with --exact-command substring","--observer-implementation-commit","a"*40,"--observer-script-sha256","b"*64,"tail value"]
+    payload=json.dumps(remaining,ensure_ascii=False,separators=(",",":"))
+    argv=[remaining[0],remaining[1],remaining[2],"--exact-command",payload,*remaining[3:]]
+    before=list(argv)
+    assert o.canonical_observer_argv(argv)==payload
+    assert argv==before
+    decoded=json.loads(o.canonical_observer_argv(argv))
+    assert decoded==remaining
+    assert decoded[0]=="C:/Mixed Case/observer.py"
+    assert decoded[:3]==remaining[:3] and decoded[3:]==remaining[3:]
+    assert "python" not in decoded and "-u" not in decoded
+    assert o.canonical_observer_argv(argv)=='["C:/Mixed Case/observer.py","--output-dir","out dir","--run-name","run name","value with --exact-command substring","--observer-implementation-commit","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","--observer-script-sha256","bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","tail value"]'
+
+def test_canonical_observer_argv_fails_closed_for_malformed_control_tokens():
+    for bad in (
+        ["observer.py"],
+        ["observer.py","--exact-command","[]","--exact-command","[]"],
+        ["observer.py","--exact-command"],
+        ["observer.py","--exact-command","--exact-command"],
+        "observer.py --exact-command []",
+        ["observer.py","--exact-command","[]",123],
+    ):
+        with pytest.raises(o.ContractError):
+            o.canonical_observer_argv(bad)
+
+def test_exact_command_payload_verification_uses_exact_runtime_argv(monkeypatch):
+    path=Path(o.__file__); digest=o.sha256_file(path)
+    remaining=["observer.py","--run-name","run","argument with spaces"]
+    payload=json.dumps(remaining,ensure_ascii=False,separators=(",",":"))
+    argv=[remaining[0],"--exact-command",payload,*remaining[1:]]
+    assert o.verify_runtime_provenance("a"*40,digest,path,"run",payload,argv,actual_head="a"*40)["exact_command"]==payload
+    with pytest.raises(o.ContractError):
+        o.verify_runtime_provenance("a"*40,digest,path,"run",payload[:-1]+"x",argv,actual_head="a"*40)
+    with pytest.raises(o.ContractError):
+        o.verify_runtime_provenance("a"*40,digest,path,"run",'["python","observer.py"]',argv,actual_head="a"*40)
+    monkeypatch.setattr(o.sys,"argv",argv)
+    assert o.verify_runtime_provenance("a"*40,digest,path,"run",payload,actual_head="a"*40)["exact_command"]==payload
 
 def test_capture_runtime_versions_reads_all_four_runtime_sources(monkeypatch):
     monkeypatch.setattr(o.sys, "version", "3.99.1 synthetic build")
@@ -269,7 +309,7 @@ def test_capture_runtime_versions_reads_all_four_runtime_sources(monkeypatch):
 def test_parse_args_exposes_no_runtime_version_override_flags():
     required=["--output-dir","out","--run-name","run","--exact-command","[]","--observer-implementation-commit","a"*40,"--observer-script-sha256","b"*64]
     assert o.parse_args(required).run_name == "run"
-    for flag in ("--python-version","--numpy-version","--torch-version","--transformers-version","--runtime-versions","--test-dependencies"):
+    for flag in ("--python-version","--numpy-version","--torch-version","--transformers-version","--runtime-versions","--test-dependencies","--argv","--runtime-argv","--canonical-exact-command"):
         with pytest.raises(SystemExit):
             o.parse_args([*required, flag, "override"])
 
@@ -309,7 +349,9 @@ def test_publication_manifest_validation_rejects_runtime_placeholders():
     with pytest.raises(o.ContractError): o.publish_bundle(_MemPath("bad-runtime-version"),bad,coords,layers,_MemFS())
 
 def test_manifest_exact_command_and_run_name_provenance():
-    _,_,layers,_=_synthetic_bundle_inputs(); m=_manifest(layers); assert o.build_manifest(m)['run_name']=='synthetic-run'; assert o.actual_command(['python','observer.py','--run-name','synthetic-run'])=='["python","observer.py","--run-name","synthetic-run"]'
+    _,_,layers,_=_synthetic_bundle_inputs(); m=_manifest(layers); assert o.build_manifest(m)['run_name']=='synthetic-run'
+    argv=["observer.py","--exact-command",'["observer.py","--run-name","synthetic-run"]',"--run-name","synthetic-run"]
+    assert o.actual_command(argv)=='["observer.py","--run-name","synthetic-run"]'
 
 def test_publish_validator_rejects_schema_integrity_and_nonfinite_failures():
     coords,states,layers,tokens=_synthetic_bundle_inputs(); a=o.assemble_observations(coords,states,layers,tokens); files=o.build_artifact_bundle(_manifest(layers),a); fs=_MemFS(); out=_MemPath('out'); o.publish_bundle(out,files,coords,layers,fs); assert fs.renames
@@ -403,10 +445,15 @@ def test_main_orchestration_uses_exactly_twelve_full_forwards_and_publishes_seve
         def __init__(self): self.calls=[]
         def __call__(self,**kw):
             self.calls.append(kw); ids=kw['input_ids'].detach().cpu().numpy()[0].astype(np.float32); n=len(ids); h0=np.stack((ids+1,ids+2,ids+3),1)[None,:,:]; cs=np.cumsum(ids+1).astype(np.float32); h1=np.stack((cs,cs+1,cs+2),1)[None,:,:]; return SimpleNamespace(hidden_states=[h0,h1],last_hidden_state=h1)
-    model=Model(); fs=_MemFS(); args=SimpleNamespace(output_dir=_MemPath('main-out'),run_name='synthetic-run',exact_command='["python","observer.py"]',observer_implementation_commit=o.subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),observer_script_sha256=o.sha256_file(Path(o.__file__)))
-    result=o.run_observer(args,{'root':ROOT,'repository_head':args.observer_implementation_commit,'tokenizer_loader':lambda:Tok(),'model_loader':lambda:model,'filesystem':fs,'runtime_versions':{'python_version':'3.13','numpy_version':'2','torch_version':'2','transformers_version':'4'}})
+    model=Model(); fs=_MemFS(); args=SimpleNamespace(output_dir=_MemPath('main-out'),run_name='synthetic-run',exact_command="",observer_implementation_commit=o.subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),observer_script_sha256=o.sha256_file(Path(o.__file__)))
+    remaining=["observer.py","--output-dir","main-out","--run-name","synthetic-run","--observer-implementation-commit",args.observer_implementation_commit,"--observer-script-sha256",args.observer_script_sha256]
+    canonical=json.dumps(remaining,ensure_ascii=False,separators=(",",":"))
+    runtime_argv=["observer.py","--output-dir","main-out","--exact-command",canonical,"--run-name","synthetic-run","--observer-implementation-commit",args.observer_implementation_commit,"--observer-script-sha256",args.observer_script_sha256]
+    args.exact_command=canonical
+    result=o.run_observer(args,{'root':ROOT,'repository_head':args.observer_implementation_commit,'argv':runtime_argv,'tokenizer_loader':lambda:Tok(),'model_loader':lambda:model,'filesystem':fs,'runtime_versions':{'python_version':'3.13','numpy_version':'2','torch_version':'2','transformers_version':'4'}})
     assert len(model.calls)==12 and all(set(x)=={'input_ids','output_hidden_states','return_dict','use_cache'} and x['output_hidden_states'] is True and x['return_dict'] is True and x['use_cache'] is False for x in model.calls)
     assert set(fs.writes)==set(o.REQUIRED_ARTIFACTS) and fs.writes[-1]=='SHA256SUMS.txt' and set(result['files'])==set(o.REQUIRED_ARTIFACTS)
+    assert result["manifest"]["exact_command"]==o.canonical_observer_argv(runtime_argv)==canonical
 
 def test_run_observer_without_runtime_version_injection_uses_production_capture(monkeypatch):
     coords=json.loads((ROOT/'reports/longterm_o0b_matched_controls_v1_validation.json').read_text()); rows=o.read_jsonl(ROOT/o.DATASET_PATH); byid={r['pair_id']:r for r in rows}; token_map={}
@@ -425,6 +472,10 @@ def test_run_observer_without_runtime_version_injection_uses_production_capture(
         calls.append("capture")
         return expected_versions
     monkeypatch.setattr(o, "capture_runtime_versions", fake_capture)
-    fs=_MemFS(); args=SimpleNamespace(output_dir=_MemPath('capture-out'),run_name='synthetic-run',exact_command='["python","observer.py"]',observer_implementation_commit=o.subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),observer_script_sha256=o.sha256_file(Path(o.__file__)))
-    result=o.run_observer(args,{'root':ROOT,'repository_head':args.observer_implementation_commit,'tokenizer_loader':lambda:Tok(),'model_loader':lambda:Model(),'filesystem':fs})
+    fs=_MemFS(); args=SimpleNamespace(output_dir=_MemPath('capture-out'),run_name='synthetic-run',exact_command="",observer_implementation_commit=o.subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),observer_script_sha256=o.sha256_file(Path(o.__file__)))
+    remaining=["observer.py","--output-dir","capture-out","--run-name","synthetic-run","--observer-implementation-commit",args.observer_implementation_commit,"--observer-script-sha256",args.observer_script_sha256]
+    canonical=json.dumps(remaining,ensure_ascii=False,separators=(",",":"))
+    runtime_argv=["observer.py","--output-dir","capture-out","--run-name","synthetic-run","--observer-implementation-commit",args.observer_implementation_commit,"--exact-command",canonical,"--observer-script-sha256",args.observer_script_sha256]
+    args.exact_command=canonical
+    result=o.run_observer(args,{'root':ROOT,'repository_head':args.observer_implementation_commit,'argv':runtime_argv,'tokenizer_loader':lambda:Tok(),'model_loader':lambda:Model(),'filesystem':fs})
     assert calls == ["capture"] and {k:result["manifest"][k] for k in o.RUNTIME_VERSION_KEYS} == expected_versions

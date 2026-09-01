@@ -7,6 +7,7 @@ the accompanying tests use synthetic tokenizer/model objects.
 from __future__ import annotations
 
 import argparse, hashlib, io, json, os, re, subprocess, sys, zipfile
+from collections.abc import Sequence as SequenceABC
 from collections import defaultdict
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -311,12 +312,23 @@ def validate_summary(summary: Mapping[str, Any], pair_ids: Sequence[str], layer_
 def reconstruct_summary(distances: Sequence[Mapping[str, Any]], pair_ids: Sequence[str], layer_descriptors: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     return build_summary(distances,pair_ids,layer_descriptors)
 
-def actual_command(argv: Sequence[str]) -> str: return json.dumps([str(x) for x in argv], ensure_ascii=False, separators=(",",":"))
-def verify_runtime_provenance(expected_observer_implementation_commit: str, expected_observer_script_sha256: str, script_path: Path, run_name: str, argv: Sequence[str] | None = None, actual_head: str | None = None) -> dict[str, str]:
+def canonical_observer_argv(argv: Sequence[str]) -> str:
+    require(isinstance(argv, SequenceABC) and not isinstance(argv, (str, bytes, bytearray)), "argv sequence")
+    require(all(type(x) is str for x in argv), "argv strings")
+    exact_command_indices = [i for i, x in enumerate(argv) if x == "--exact-command"]
+    require(len(exact_command_indices) == 1, "exact command occurrence")
+    index = exact_command_indices[0]
+    require(index + 1 < len(argv), "exact command payload")
+    remaining = [x for i, x in enumerate(argv) if i not in (index, index + 1)]
+    return json.dumps(remaining, ensure_ascii=False, separators=(",",":"))
+
+def actual_command(argv: Sequence[str]) -> str: return canonical_observer_argv(argv)
+def verify_runtime_provenance(expected_observer_implementation_commit: str, expected_observer_script_sha256: str, script_path: Path, run_name: str, exact_command: str, argv: Sequence[str] | None = None, actual_head: str | None = None) -> dict[str, str]:
     require(isinstance(expected_observer_implementation_commit,str) and len(expected_observer_implementation_commit)==40 and all(c in "0123456789abcdef" for c in expected_observer_implementation_commit), "observer commit")
     require(isinstance(expected_observer_script_sha256,str) and len(expected_observer_script_sha256)==64 and all(c in "0123456789abcdef" for c in expected_observer_script_sha256), "observer script SHA")
     head=actual_head or subprocess.check_output(["git","rev-parse","HEAD"],cwd=Path(script_path).resolve().parents[1],text=True).strip(); actual=sha256_file(Path(script_path)); require(head==expected_observer_implementation_commit and actual==expected_observer_script_sha256, "runtime provenance")
-    return {"observer_implementation_commit":head,"observer_script_sha256":actual,"run_name":run_name,"exact_command":actual_command(sys.argv if argv is None else argv)}
+    canonical=canonical_observer_argv(sys.argv if argv is None else argv); require(type(exact_command) is str and exact_command == canonical, "exact command provenance")
+    return {"observer_implementation_commit":head,"observer_script_sha256":actual,"run_name":run_name,"exact_command":canonical}
 
 def capture_runtime_versions() -> dict[str, str]:
     import torch as torch_module
@@ -412,7 +424,7 @@ def parse_args(argv=None):
 
 def run_observer(args: argparse.Namespace, dependencies: Mapping[str, Any] | None=None) -> dict[str, Any]:
     d=dict(dependencies or {}); root=Path(d.get("root",Path(__file__).resolve().parents[1])); data=Path(d.get("dataset_path",root/DATASET_PATH)); art=Path(d.get("artifact_path",root/VALIDATION_ARTIFACT_PATH))
-    expected_head=d.get("repository_head"); prov=verify_runtime_provenance(args.observer_implementation_commit,args.observer_script_sha256,Path(__file__),args.run_name,actual_head=expected_head)
+    expected_head=d.get("repository_head"); prov=verify_runtime_provenance(args.observer_implementation_commit,args.observer_script_sha256,Path(__file__),args.run_name,args.exact_command,argv=d.get("argv"),actual_head=expected_head)
     db=data.read_bytes(); require(sha256_bytes(db)==DATASET_SHA256, "dataset SHA256"); rows=read_jsonl(data); validate_sources(rows)
     ab=art.read_bytes(); require(sha256_bytes(ab)==VALIDATION_ARTIFACT_SHA256, "artifact SHA256"); artifact=json.loads(ab); validate_artifact(artifact, DATASET_SHA256)
     tok=(d.get("tokenizer_loader") or load_tokenizer)(); tokenized=validate_tokenized_members(rows,artifact,tok)
@@ -422,7 +434,7 @@ def run_observer(args: argparse.Namespace, dependencies: Mapping[str, Any] | Non
     require(len(forward_records)==12 and len(set(forward_records))==12, "exactly twelve full forwards")
     assembled=assemble_observations(artifact,states,descriptors,tokens)
     versions=d.get("runtime_versions") or capture_runtime_versions()
-    fields={"schema_version":SCHEMA_VERSION,"experiment_name":"longterm_o0b_token_aligned_native_mamba_state_dynamics","scientific_design_authority_commit":SCIENTIFIC_DESIGN_AUTHORITY_COMMIT,"boundary_recovery_authority_commit":BOUNDARY_RECOVERY_AUTHORITY_COMMIT,"input_implementation_freeze_commit":INPUT_IMPLEMENTATION_FREEZE_COMMIT,"observer_implementation_authority_commit":OBSERVER_IMPLEMENTATION_AUTHORITY_COMMIT,**prov,"dataset_path":DATASET_PATH,"dataset_sha256":DATASET_SHA256,"validation_artifact_path":VALIDATION_ARTIFACT_PATH,"validation_artifact_sha256":VALIDATION_ARTIFACT_SHA256,"validation_artifact_repository_head":BOUNDARY_RECOVERY_AUTHORITY_COMMIT,"model_id":MODEL_ID,"model_revision":MODEL_REVISION,"model_trust_remote_code":False,"tokenizer_id":TOKENIZER_ID,"tokenizer_revision":TOKENIZER_REVISION,"tokenizer_trust_remote_code":False,"tokenizer_use_fast":True,"add_special_tokens":False,"device":"cpu","dtype":"float32","python_version":versions.get("python_version","unknown"),"numpy_version":versions.get("numpy_version",np.__version__),"torch_version":versions.get("torch_version","unknown"),"transformers_version":versions.get("transformers_version","unknown"),"serialization_template":"canonical-json-v1/deterministic-npz-v1","comparison_order":list(COMPARISON_ORDER),"anchor_order":list(ANCHOR_ORDER),"layer_descriptors":descriptors,"pre_divergence_rtol":0.0,"pre_divergence_atol":1e-6,"cosine_redundancy_atol":1e-12,"exact_command":args.exact_command,"run_name":args.run_name,"required_artifacts":list(REQUIRED_ARTIFACTS),"execution_status":"COMPLETE"}
+    fields={"schema_version":SCHEMA_VERSION,"experiment_name":"longterm_o0b_token_aligned_native_mamba_state_dynamics","scientific_design_authority_commit":SCIENTIFIC_DESIGN_AUTHORITY_COMMIT,"boundary_recovery_authority_commit":BOUNDARY_RECOVERY_AUTHORITY_COMMIT,"input_implementation_freeze_commit":INPUT_IMPLEMENTATION_FREEZE_COMMIT,"observer_implementation_authority_commit":OBSERVER_IMPLEMENTATION_AUTHORITY_COMMIT,**prov,"dataset_path":DATASET_PATH,"dataset_sha256":DATASET_SHA256,"validation_artifact_path":VALIDATION_ARTIFACT_PATH,"validation_artifact_sha256":VALIDATION_ARTIFACT_SHA256,"validation_artifact_repository_head":BOUNDARY_RECOVERY_AUTHORITY_COMMIT,"model_id":MODEL_ID,"model_revision":MODEL_REVISION,"model_trust_remote_code":False,"tokenizer_id":TOKENIZER_ID,"tokenizer_revision":TOKENIZER_REVISION,"tokenizer_trust_remote_code":False,"tokenizer_use_fast":True,"add_special_tokens":False,"device":"cpu","dtype":"float32","python_version":versions.get("python_version","unknown"),"numpy_version":versions.get("numpy_version",np.__version__),"torch_version":versions.get("torch_version","unknown"),"transformers_version":versions.get("transformers_version","unknown"),"serialization_template":"canonical-json-v1/deterministic-npz-v1","comparison_order":list(COMPARISON_ORDER),"anchor_order":list(ANCHOR_ORDER),"layer_descriptors":descriptors,"pre_divergence_rtol":0.0,"pre_divergence_atol":1e-6,"cosine_redundancy_atol":1e-12,"run_name":args.run_name,"required_artifacts":list(REQUIRED_ARTIFACTS),"execution_status":"COMPLETE"}
     files=build_artifact_bundle(fields,assembled); fs=d.get("filesystem"); publish_bundle(args.output_dir,files,artifact,descriptors,fs); return {"files":files,"assembled":assembled,"forward_records":forward_records,"manifest":fields}
 
 def main(argv=None, _test_dependencies=None):
