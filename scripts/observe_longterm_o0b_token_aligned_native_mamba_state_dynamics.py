@@ -338,7 +338,7 @@ def capture_runtime_versions() -> dict[str, str]:
 def validate_runtime_versions(versions: Mapping[str, Any]) -> None:
     for key in RUNTIME_VERSION_KEYS:
         value=versions.get(key) if isinstance(versions, Mapping) else None
-        require(type(value) is str and value and value == value.strip() and value.strip().lower() not in FORBIDDEN_RUNTIME_VERSION_PLACEHOLDERS, f"runtime version {key}")
+        require(isinstance(value, str) and value and value == value.strip() and value.strip().lower() not in FORBIDDEN_RUNTIME_VERSION_PLACEHOLDERS, f"runtime version {key}")
 
 def build_manifest(fields: Mapping[str, Any]) -> dict[str, Any]:
     m=dict(fields); require(set(m)==set(MANIFEST_KEYS), "manifest keys"); require(m["schema_version"]==SCHEMA_VERSION and m["scientific_design_authority_commit"]==SCIENTIFIC_DESIGN_AUTHORITY_COMMIT and m["boundary_recovery_authority_commit"]==BOUNDARY_RECOVERY_AUTHORITY_COMMIT and m["input_implementation_freeze_commit"]==INPUT_IMPLEMENTATION_FREEZE_COMMIT and m["observer_implementation_authority_commit"]==OBSERVER_IMPLEMENTATION_AUTHORITY_COMMIT, "manifest constants")

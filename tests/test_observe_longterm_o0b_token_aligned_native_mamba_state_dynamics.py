@@ -319,6 +319,16 @@ def test_manifest_runtime_versions_accept_concrete_controlled_values():
     m.update({"python_version":"3.13.2","numpy_version":"2.2.1","torch_version":"2.6.0+cpu","transformers_version":"4.49.0"})
     assert {k:o.build_manifest(m)[k] for k in o.RUNTIME_VERSION_KEYS} == {k:m[k] for k in o.RUNTIME_VERSION_KEYS}
 
+def test_manifest_runtime_versions_accept_concrete_str_subclass_without_coercion():
+    class RuntimeVersion(str):
+        pass
+    _,_,layers,_=_synthetic_bundle_inputs()
+    m=_manifest(layers)
+    m["torch_version"]=RuntimeVersion("2.10.0+cpu")
+    built=o.build_manifest(m)
+    assert built["torch_version"] == "2.10.0+cpu"
+    assert type(built["torch_version"]) is RuntimeVersion
+
 def test_manifest_runtime_versions_fail_closed_for_missing_none_empty_and_whitespace():
     _,_,layers,_=_synthetic_bundle_inputs()
     for key in o.RUNTIME_VERSION_KEYS:
