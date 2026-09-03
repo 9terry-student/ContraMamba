@@ -152,6 +152,16 @@ def canonical_json_bytes(payload: dict[str, Any]) -> bytes:
     ).encode("utf-8")
 
 
+def canonical_semantic_bytes(value: Any) -> bytes:
+    return json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+        allow_nan=False,
+    ).encode("utf-8")
+
+
 def run_git(root: Path, args: list[str]) -> str:
     try:
         result = subprocess.run(
@@ -263,11 +273,11 @@ def load_prediction_rows(path: Path) -> list[dict[str, Any]]:
 
 def semantic_sidecar_sha256(path: Path) -> str:
     rows = load_jsonl_strict(path)
-    normalized = [
-        json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    canonical = [
+        {key: row[key] for key in sorted(row) if key != "created_at"}
         for row in rows
     ]
-    return hashlib.sha256(("\n".join(normalized) + "\n").encode("utf-8")).hexdigest()
+    return hashlib.sha256(canonical_semantic_bytes(canonical)).hexdigest()
 
 
 def validate_dev_identity(dataset_path: Path, prediction_path: Path) -> dict[str, Any]:

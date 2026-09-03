@@ -9,6 +9,7 @@ import os
 import re
 import shutil
 import stat
+import subprocess
 import uuid
 import zipfile
 from pathlib import Path
@@ -21,12 +22,16 @@ MODULE_PATH = (
     / "scripts"
     / "reason_router_p3w7_a0_seed180_reference_recovery_helper.py"
 )
+REPO_ROOT = MODULE_PATH.parents[1]
 spec = importlib.util.spec_from_file_location("seed180_reference_helper", MODULE_PATH)
 helper = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
 spec.loader.exec_module(helper)
 
 HEAD = "f" * 40
+EXPECTED_TRACKED_SIDECAR_PHYSICAL_SHA256 = (
+    "2b8cffdf71d68a8abeb3b6eb3534eeb664bd012483bcebd9716c7a6645a487f1"
+)
 
 
 @pytest.fixture()
@@ -52,6 +57,43 @@ def json_bytes(payload: object) -> bytes:
 
 def jsonl_bytes(rows: list[dict[str, object]]) -> bytes:
     return b"".join(json_bytes(row) + b"\n" for row in rows)
+
+
+def write_jsonl(path: Path, rows: list[dict[str, object]]) -> None:
+    path.write_bytes(jsonl_bytes(rows))
+
+
+def canonical_sidecar_semantic_sha(rows: list[dict[str, object]]) -> str:
+    canonical = [
+        {key: row[key] for key in sorted(row) if key != "created_at"}
+        for row in rows
+    ]
+    return sha(json.dumps(
+        canonical,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+        allow_nan=False,
+    ).encode("utf-8"))
+
+
+def previous_defective_jsonl_sidecar_sha(rows: list[dict[str, object]]) -> str:
+    normalized = [
+        json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        for row in rows
+    ]
+    return sha(("\n".join(normalized) + "\n").encode("utf-8"))
+
+
+def tracked_git_blob_sha(path: Path) -> str:
+    relative = path.relative_to(REPO_ROOT).as_posix()
+    result = subprocess.run(
+        ["git", "cat-file", "-p", f"HEAD:{relative}"],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+    )
+    return sha(result.stdout)
 
 
 def dataset_rows() -> list[dict[str, object]]:
@@ -206,6 +248,73 @@ def write_zip(path: Path, entries: dict[str, bytes], attrs: dict[str, int] | Non
 def assert_blocked(fn, *args, **kwargs):
     with pytest.raises(helper.Blocker, match="REFERENCE_RECOVERY_BLOCKED"):
         fn(*args, **kwargs)
+
+
+def test_real_canonical_sidecar_semantic_regression():
+    sidecar = REPO_ROOT / helper.SIDECAR_REL
+    assert helper.semantic_sidecar_sha256(sidecar) == helper.EXPECTED_SIDECAR_SEMANTIC_SHA256
+
+
+def test_tracked_physical_sidecar_differs_from_semantic_sidecar_sha():
+    sidecar = REPO_ROOT / helper.SIDECAR_REL
+    assert tracked_git_blob_sha(sidecar) == EXPECTED_TRACKED_SIDECAR_PHYSICAL_SHA256
+    assert helper.semantic_sidecar_sha256(sidecar) == helper.EXPECTED_SIDECAR_SEMANTIC_SHA256
+    assert EXPECTED_TRACKED_SIDECAR_PHYSICAL_SHA256 != helper.EXPECTED_SIDECAR_SEMANTIC_SHA256
+
+
+def test_sidecar_semantic_sha_ignores_created_at(work_tmp: Path):
+    rows_a = [
+        {"row_id": "r1", "created_at": "2026-01-01T00:00:00Z", "value": 1},
+        {"row_id": "r2", "created_at": "2026-01-01T00:00:01Z", "value": 2},
+    ]
+    rows_b = [
+        {"row_id": "r1", "created_at": "2026-09-03T00:00:00Z", "value": 1},
+        {"row_id": "r2", "created_at": "2026-09-03T00:00:01Z", "value": 2},
+    ]
+    path_a = work_tmp / "sidecar-a.jsonl"
+    path_b = work_tmp / "sidecar-b.jsonl"
+    write_jsonl(path_a, rows_a)
+    write_jsonl(path_b, rows_b)
+
+    assert helper.semantic_sidecar_sha256(path_a) == helper.semantic_sidecar_sha256(path_b)
+
+
+def test_sidecar_semantic_sha_changes_for_included_field(work_tmp: Path):
+    rows_a = [{"row_id": "r1", "created_at": "same", "value": 1}]
+    rows_b = [{"row_id": "r1", "created_at": "same", "value": 2}]
+    path_a = work_tmp / "sidecar-a.jsonl"
+    path_b = work_tmp / "sidecar-b.jsonl"
+    write_jsonl(path_a, rows_a)
+    write_jsonl(path_b, rows_b)
+
+    assert helper.semantic_sidecar_sha256(path_a) != helper.semantic_sidecar_sha256(path_b)
+
+
+def test_sidecar_semantic_sha_preserves_row_order(work_tmp: Path):
+    rows = [
+        {"row_id": "r1", "created_at": "same", "value": 1},
+        {"row_id": "r2", "created_at": "same", "value": 2},
+    ]
+    path_a = work_tmp / "sidecar-a.jsonl"
+    path_b = work_tmp / "sidecar-b.jsonl"
+    write_jsonl(path_a, rows)
+    write_jsonl(path_b, list(reversed(rows)))
+
+    assert helper.semantic_sidecar_sha256(path_a) != helper.semantic_sidecar_sha256(path_b)
+
+
+def test_sidecar_semantic_sha_uses_json_array_not_jsonl(work_tmp: Path):
+    rows = [
+        {"row_id": "r1", "created_at": "ignored-a", "value": 1},
+        {"row_id": "r2", "created_at": "ignored-b", "value": 2},
+    ]
+    path = work_tmp / "sidecar.jsonl"
+    write_jsonl(path, rows)
+
+    expected_array_sha = canonical_sidecar_semantic_sha(rows)
+    defective_jsonl_sha = previous_defective_jsonl_sidecar_sha(rows)
+    assert helper.semantic_sidecar_sha256(path) == expected_array_sha
+    assert defective_jsonl_sha != expected_array_sha
 
 
 def test_happy_path_materializes_and_audit_is_pass(synthetic):
