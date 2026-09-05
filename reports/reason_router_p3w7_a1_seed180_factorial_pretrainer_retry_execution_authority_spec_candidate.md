@@ -16,17 +16,17 @@ Authority precedence consumed:
 
 1. Current workflow-controller instruction.
 2. Mandatory worktree: `C:\p3w7-a0-n3-validated-evidence-analysis`.
-3. Mandatory starting HEAD: `77bbe71cc1cdd1fc9afb04640fdf37088e11a87c`.
+3. Mandatory starting HEAD: `98723fe27ba71a97cd0b0a1986590295faaa424c`.
 4. Branch: `p3w7-a1-a2-a3-factorial-execution-authority-n3-v2`.
-5. Current corrected recovery candidate at HEAD `77bbe71cc1cdd1fc9afb04640fdf37088e11a87c`:
-   `reports/reason_router_p3w7_a1_seed180_factorial_recovery_execution_authority_spec_candidate.md`.
+5. Current materialized candidate at HEAD `98723fe27ba71a97cd0b0a1986590295faaa424c`:
+   `reports/reason_router_p3w7_a1_seed180_factorial_pretrainer_retry_execution_authority_spec_candidate.md`.
 6. Base factorial execution authority commit:
    `230088191cdb774cf24a4aaf11a4424bc7165513`.
 7. Imported recovery2 preflight-failure audit:
    `C:\Users\Home1\.contramamba\imports\p3w7-factorial-a1-seed180-recovery2-auth28cba18_28cba185e6a0_20260905_220954`.
 8. Repository `AGENTS.md`.
 
-HEAD `77bbe71cc1cdd1fc9afb04640fdf37088e11a87c` is a corrected recovery candidate revision. It is not itself sufficient trainer execution authority merely because its commit message may say `Freeze`. The corrected recovery candidate body says `PASS_READY_FOR_INDEPENDENT_VERIFICATION` and requires a later exact freeze commit after independent verification. Therefore `77bbe71cc1cdd1fc9afb04640fdf37088e11a87c` must not be treated as seed180/A1 trainer execution authority.
+HEAD `98723fe27ba71a97cd0b0a1986590295faaa424c` is the current materialized candidate revision. It is not itself sufficient trainer execution authority merely because its commit message may say `Freeze`. The corrected candidate body says `PASS_READY_FOR_INDEPENDENT_VERIFICATION` and requires a later independent verifier result of `PASS_READY_FOR_FREEZE`, followed by a later dedicated freeze commit that is committed, pushed, and remotely verified. Therefore `98723fe27ba71a97cd0b0a1986590295faaa424c` must not be treated as seed180/A1 trainer execution authority.
 
 Future execution authority, if any, is a later independently verified, committed, pushed, remotely verified, exact frozen commit based on this candidate. Until that exact future freeze commit exists, the final executable authority identity and final outer run name remain unresolved.
 
@@ -86,7 +86,7 @@ Recovery2 stopped before `RECOVERY_PREFLIGHT_PASS`, before `TRAINER_PROCESS_LAUN
 
 ## 5. Orphan Evidence Treatment
 
-The current corrected recovery candidate at HEAD `77bbe71cc1cdd1fc9afb04640fdf37088e11a87c` explicitly establishes that the imported evidence does not independently establish:
+The current materialized candidate at HEAD `98723fe27ba71a97cd0b0a1986590295faaa424c` explicitly establishes that the imported evidence does not independently establish:
 
 - orphan SHA256;
 - orphan byte count;
@@ -115,15 +115,24 @@ A future independently verified and frozen authority may authorize creation of a
 
 - bind the new non-recycled run name;
 - bind the future exact freeze commit;
-- bind seed180/A1 and exact same-seed A0 source;
+- bind base factorial authority commit `230088191cdb774cf24a4aaf11a4424bc7165513`;
+- bind arm `A1`;
+- bind training seed `180`;
+- bind split seed `174`;
+- bind exact same-seed A0 source commit `b32d73dfa49b6b9dfabf3093802904323cf679cd`;
+- bind exact same-seed A0 source path `reports/reason_router_p3w7_a0_current_lineage_runs/seed180/A0/training_report_predictions.jsonl`;
+- bind exact same-seed A0 source SHA256 `e4fc95992dcd9dc3ea35da7527d948fdd9e419f8764aea6ef87b8b14fe6ac9ef`;
+- bind exact same-seed A0 source byte count `3934123`;
 - record the imported Attempt-1 disposition;
 - record the imported Attempt-2 disposition;
 - record the imported recovery2 preflight disposition;
 - record the original orphan-producing event as `AMBIGUOUS_POSSIBLY_CONSUMED_PRIOR_SEED180_A1_ATTEMPT`;
 - explicitly mark orphan external byte identity/content as `UNRESOLVED_NOT_EXECUTION_AUTHORITATIVE`;
+- record `same_seed_binding = true`;
+- carry the historical A0 provenance caveat: `standard_cm_wrapper_provenance = INCOMPLETE` and `provenance_disposition = RECOVERY_BRIDGE_WITH_HISTORICAL_STANDARD_CM_WRAPPER_PROVENANCE_INCOMPLETE`;
 - never copy or claim reconstructed orphan JSON as historical evidence.
 
-The future wrapper may create only a new run-specific wrapper provenance file at a new absent path. It must not reuse any prior wrapper provenance filename or run name.
+The future wrapper provenance must be new, run-specific, and at an absent path. It must not reuse any prior wrapper provenance filename or run name.
 
 ## 7. Recovery3 Naming Semantics
 
@@ -137,7 +146,20 @@ Future deterministic outer run naming rule:
 
 `recovery3` is the third outer provenance/wrapper recovery name. It is not a third trainer launch. The scientific replacement trainer-launch budget remains exactly one because no trainer launch occurred in recovery2.
 
-The final exact run name is selected only after the future freeze commit exists. The `<short-freeze-sha>` component must derive from that future exact freeze commit, not from HEAD `77bbe71cc1cdd1fc9afb04640fdf37088e11a87c`, not from registered recovery2 HEAD `28cba185e6a0b0e76364697b37cd31f4fa2fc060`, and not from base factorial authority `230088191cdb774cf24a4aaf11a4424bc7165513`.
+The final exact run name is selected only after the future new freeze commit exists. The `<short-freeze-sha>` component must derive from that future exact freeze commit, not from prior recovery candidate commit `77bbe71cc1cdd1fc9afb04640fdf37088e11a87c`, not from current materialized candidate commit `98723fe27ba71a97cd0b0a1986590295faaa424c`, not from registered recovery2 HEAD `28cba185e6a0b0e76364697b37cd31f4fa2fc060`, and not from base factorial authority `230088191cdb774cf24a4aaf11a4424bc7165513`.
+
+None of the following are valid final recovery3 authority or run identities:
+
+- `77bbe71cc1cdd1fc9afb04640fdf37088e11a87c`;
+- `98723fe27ba71a97cd0b0a1986590295faaa424c`;
+- `28cba185e6a0b0e76364697b37cd31f4fa2fc060`;
+- `230088191cdb774cf24a4aaf11a4424bc7165513`.
+
+The previously materialized external command:
+
+`C:\Users\Home1\.contramamba\commands\p3w7-factorial-a1-seed180-recovery2-auth77bbe71.command.sh`
+
+with SHA256 `86e2f562cb892a492811e290cdeaf1a0411c294a17dba61ba00aa4f06099a6ef` is audit/transport history only and must not be registered or executed as recovery3.
 
 ## 8. Scientific Contract Preservation
 
@@ -187,6 +209,19 @@ Exact seed180 A0 source remains:
 | SHA256 | `e4fc95992dcd9dc3ea35da7527d948fdd9e419f8764aea6ef87b8b14fe6ac9ef` |
 | Bytes | `3934123` |
 
+The seed180 A0 source is immutable commit-addressed evidence. Its path is not required to be present in the current HEAD working tree, and absence from the current checkout is expected and is not a static freeze blocker. Static verification must use exact Git-object semantics at commit `b32d73dfa49b6b9dfabf3093802904323cf679cd` and the path listed above. Future runtime must provision this file outside the Git worktree and fail closed on SHA256 or byte-count mismatch. Do not merge or cherry-pick A0 result commits merely to make the path visible.
+
+Historical A0 provenance caveat:
+
+| Field | Value |
+|---|---|
+| standard_cm_wrapper_provenance | `INCOMPLETE` |
+| provenance_disposition | `RECOVERY_BRIDGE_WITH_HISTORICAL_STANDARD_CM_WRAPPER_PROVENANCE_INCOMPLETE` |
+
+This provenance caveat must not be upgraded, must not be normalized to `COMPLETE`, and must not be erased. Future recovery3 wrapper provenance must carry this caveat. No A0 rerun is authorized.
+
+For static authority and freeze verification on Windows, committed Git-object identity is the authority-grade physical-byte reference when the repository checkout is known to materialize CRLF due to Git settings. A Windows working-tree CRLF materialization mismatch alone is not a freeze blocker, and the working tree must not be normalized or rewritten merely to force physical SHA256 match. For future Kaggle runtime, the actual materialized runtime filesystem bytes must match the frozen physical SHA256 values before trainer launch; mismatch is fail-closed.
+
 Preserved non-authorizations:
 
 - no A0 rerun;
@@ -212,36 +247,49 @@ The future new wrapper provenance path must be absent before creation. Do not re
 
 ## 10. Command-Byte Contract
 
-This candidate preserves the currently inspected `cm.ps1` command-byte contract:
+The current actual workflow implementation is:
+
+`C:\Users\Home1\.contramamba\cm.ps1`
+
+The current tooling supports the separate `utf8-final-lf-v1` mode. This authority does not authorize use of that mode for recovery3 and does not authorize switching byte modes later without a separate authority correction and reverification.
+
+Recovery3 command registration must use the ordinary trimmed-storage path frozen by this candidate. Canonical reviewed/stored recovery3 command bytes therefore contain:
 
 - command bytes are UTF-8;
-- internal line endings are LF;
-- command text has no leading or trailing whitespace;
-- the registered command has no final LF;
-- command SHA256 is independently precomputed over the exact intended bytes;
-- the registry `HASH` must match the independently reviewed SHA256 exactly;
-- execution blocks before `cm run` on mismatch;
-- unsupported `utf8-final-lf-v1` mode is not authorized.
+- LF for any internal line endings;
+- no leading whitespace;
+- no trailing whitespace;
+- no final LF.
 
-Any future tooling change that claims final-LF support must be independently inspected and frozen before use.
+The command SHA256 must be independently precomputed over exactly the bytes that ordinary `cm run save` stores. The registry `HASH` must equal that reviewed SHA256 exactly. Mismatch blocks before `cm run`.
 
 ## 11. Future Execution Prerequisites
 
 Future execution is forbidden unless all of the following are true:
 
-1. this candidate receives independent verifier `PASS`;
-2. a later exact freeze commit exists;
-3. the exact freeze commit is pushed;
-4. remote presence of the exact full SHA is verified;
-5. Kaggle bootstrap checks out that exact future freeze SHA;
-6. repo and index are clean;
-7. trainer semantics are unchanged;
-8. exact P4-L physical and semantic identities are verified;
-9. exact same-seed A0 source is verified;
-10. scientific output namespace is absent;
-11. new wrapper provenance path is absent;
-12. exact command registration and hash verification pass;
-13. GPU is ON only immediately for the actual trainer workload.
+1. corrected candidate independently verifies `PASS_READY_FOR_FREEZE`;
+2. corrected candidate is frozen in a new dedicated commit;
+3. new freeze commit is pushed;
+4. exact full remote freeze SHA is independently verified;
+5. runtime HEAD equals that exact future freeze commit;
+6. repo tracked worktree is clean;
+7. Git index is clean;
+8. no unrelated untracked files exist;
+9. trainer/source scientific semantics are unchanged except report-only authority lineage;
+10. exact P4-L identities are verified under the correct identity domain;
+11. exact seed180 A0 Git-object commit/path/SHA/bytes are verified;
+12. scientific output namespace is absent;
+13. new recovery3 wrapper-provenance path is absent;
+14. final exact run name is derived from the new freeze SHA under `p3w7-factorial-a1-seed180-recovery3-auth<short-freeze-sha>`;
+15. final recovery3 run name is non-recycled and noncolliding;
+16. exact new recovery3 shell command is independently reviewed after freeze;
+17. exact command SHA256 is independently precomputed;
+18. exact command is registered against the new freeze HEAD;
+19. registry `HEAD` equals the full new recovery3 freeze commit;
+20. registry `HASH` equals independently reviewed command SHA256;
+21. `cm run` is forbidden on any mismatch;
+22. GPU is ON only immediately for the actual trainer workload;
+23. no A2/A3 progression before provenance-valid recovery3 collect/import and controller review.
 
 Any mismatch blocks execution fail-closed.
 
@@ -255,8 +303,9 @@ Expected authoring state:
 
 - Worktree: `C:\p3w7-a0-n3-validated-evidence-analysis`
 - Branch: `p3w7-a1-a2-a3-factorial-execution-authority-n3-v2`
-- HEAD: `77bbe71cc1cdd1fc9afb04640fdf37088e11a87c`
+- HEAD: `98723fe27ba71a97cd0b0a1986590295faaa424c`
 - Initial tracked/index state: clean
-- Expected delta: exactly one new untracked file, this candidate
+- Candidate tracking state: already tracked in HEAD
+- Expected delta after this report-only correction: exactly one unstaged tracked modification, this candidate; no staged changes; no other tracked or untracked changes
 
 Final candidate SHA256, byte count, LF count, CR count, final-LF status, `git diff --check`, `git diff --name-status`, `git diff --cached --name-status`, `git status --short`, and untracked-file verification are intentionally reported outside this file to avoid self-referential candidate content.
