@@ -16,8 +16,8 @@ Authority precedence consumed:
 
 1. Current workflow-controller instruction.
 2. Mandatory worktree: `C:\p3w7-a0-n3-validated-evidence-analysis`.
-3. Mandatory HEAD: `230088191cdb774cf24a4aaf11a4424bc7165513`.
-4. Frozen P3-W7 A1/A2/A3 factorial execution authority:
+3. Current recovery candidate materialization commit: `28cba185e6a0b0e76364697b37cd31f4fa2fc060`.
+4. Base frozen P3-W7 A1/A2/A3 factorial execution authority:
    - commit: `230088191cdb774cf24a4aaf11a4424bc7165513`
    - path: `reports/reason_router_p3w7_a1_a2_a3_factorial_execution_authority_spec_candidate.md`
    - frozen SHA256: `3fae9f06fd997373760ecbbb0393d53ae2da4e53f2375454d2f80825b217e099`
@@ -64,26 +64,50 @@ Disposition: the observed registered attempt stopped at `run-name/provenance col
 
 ## 3. Orphan Runtime Evidence
 
-Observed external provenance path:
+Independently supported observed collision path:
 
 `/kaggle/working/contramamba_factorial_wrapper_provenance/p3w7-factorial-a1-seed180-auth2300881-v2-transport-recovery1_a0_reference_provenance.json`
 
-Identity:
+Supported registered recovery1 facts:
 
 | Field | Value |
 |---|---|
-| SHA256 | `5ae39056ef6f0561055391153a86efa0b7708e3bdf52f963bbd4f877eb4c00e1` |
-| Bytes | `1439` |
+| Run name | `p3w7-factorial-a1-seed180-auth2300881-v2-transport-recovery1` |
+| Registered HEAD | `230088191cdb774cf24a4aaf11a4424bc7165513` |
+| Registered command SHA256 | `6646e3a37f36530fcd42800073a0e2d61f2e60d800df53bd40f8836349cc96b2` |
+| Exit code | `2` |
+| Imported scientific artifact count | `0` |
 
-The JSON records `run_name = p3w7-factorial-a1-seed180-auth2300881-v2-transport-recovery1`, `seed = 180`, `arm = A1`, factorial authority commit `230088191cdb774cf24a4aaf11a4424bc7165513`, `same_seed_binding = true`, the exact seed180 A0 source commit/path/SHA/bytes, exact post-copy SHA/bytes validation, recovery of the original transport-failure run, and `scientific_execution_started = false` inside that wrapper-authored record.
+The available imported evidence establishes only that the registered recovery1 run log encountered a wrapper/provenance collision at the path above before its trainer invocation line. Therefore the observed registered Attempt 2 itself did not launch its trainer.
 
-However, the orphan file's filesystem mtime preceded the registered recovery1 start marker; repository-wide mtimes around the same period are contaminated by Kaggle clone/session materialization and therefore mtime is not creation-time proof; persistent IPython history contains the registered recovery1 pinned cell only in the later session and does not establish the source of the orphan file; no `.bash_history` exists; the seed180/A1 scientific output namespace is absent; current HEAD is exact and the worktree is clean; and trainer source may perform initialization before final scientific output artifacts are written.
+The available imported evidence does not independently establish:
+
+- the orphan file's SHA256;
+- the orphan file's byte count;
+- the orphan file's JSON fields or content;
+- the orphan file's creation time;
+- whether the orphan state originated from an earlier unregistered or replayed execution path;
+- whether a trainer process associated with the provenance-producing event launched;
+- whether a trainer process associated with the provenance-producing event did not launch.
+
+No exact orphan identity value, byte count, JSON content claim, filesystem mtime relationship, persistent IPython history conclusion, or `.bash_history` conclusion is execution-authoritative in this candidate.
+
+Ambiguity basis:
+
+1. Attempt 1 is independently established as a command-transport failure before trainer launch.
+2. The observed registered Attempt 2 is independently established as stopping at a provenance-path collision before its trainer invocation.
+3. Therefore the observed registered Attempt 2 itself did not launch its trainer.
+4. The collision demonstrates that pre-existing external state existed at the expected provenance path.
+5. The currently imported evidence does not establish the origin or lifecycle of that pre-existing state.
+6. Absence of imported scientific artifacts from the two registered failed runs does not prove that no other prior trainer process associated with the pre-existing external state ever launched.
+7. Therefore neither `TRAINER_DEFINITELY_LAUNCHED` nor `TRAINER_DEFINITELY_DID_NOT_LAUNCH` is justified for the unknown provenance-producing event.
+8. Fail closed by treating the original seed180/A1 attempt budget as ambiguously possibly consumed.
 
 Frozen attempt state:
 
 `AMBIGUOUS_POSSIBLY_CONSUMED_PRIOR_SEED180_A1_ATTEMPT`
 
-This candidate must not claim either `trainer definitely launched` or `trainer definitely did not launch` for the orphan provenance event. The ambiguity itself is the recovery trigger.
+This is provenance uncertainty, not evidence that training actually occurred. This candidate must not claim either `trainer definitely launched` or `trainer definitely did not launch` for the unknown provenance-producing event. The ambiguity itself is the recovery trigger.
 
 ## 4. Recovery Authorization
 
@@ -293,12 +317,16 @@ Candidate materialization target:
 
 `reports/reason_router_p3w7_a1_seed180_factorial_recovery_execution_authority_spec_candidate.md`
 
-Expected materialization state:
+Current materialization state:
 
 - Worktree: `C:\p3w7-a0-n3-validated-evidence-analysis`
 - Branch: `p3w7-a1-a2-a3-factorial-execution-authority-n3-v2`
-- HEAD: `230088191cdb774cf24a4aaf11a4424bc7165513`
-- Initial worktree/index: clean
-- Final intended delta: exactly one new untracked file, this candidate
+- `BASE_FACTORIAL_AUTHORITY_COMMIT`: `230088191cdb774cf24a4aaf11a4424bc7165513`
+- `CURRENT_RECOVERY_CANDIDATE_COMMIT`: `28cba185e6a0b0e76364697b37cd31f4fa2fc060`
+- The candidate is already tracked in `CURRENT_RECOVERY_CANDIDATE_COMMIT`.
+- The current recovery candidate commit is not yet a verified or frozen execution authority merely because it was committed.
+- The corrected candidate status is `PASS_READY_FOR_INDEPENDENT_VERIFICATION`.
+
+A later exact recovery freeze commit may become execution authority only after independent verification `PASS_READY_FOR_FREEZE`, commit/push, remote full-SHA verification, runtime bootstrap at that exact SHA, exact new run naming, exact new command review/registration, and all candidate post-freeze preconditions.
 
 Final candidate SHA256, byte count, line-ending facts, `git diff --check`, `git diff --name-status`, `git diff --cached --name-status`, and `git status --short` are intentionally reported outside this file to avoid self-referential candidate content.
