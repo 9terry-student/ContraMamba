@@ -1,12 +1,25 @@
-# P3-W7 A1 Seed180 Authority-Lineage Reconciliation Specification Candidate
+# P3-W7 A1 Seed180 Authority-Lineage Reconciliation Final Content
 
-Authority/version: `P3W7_A1_SEED180_AUTHORITY_LINEAGE_RECONCILIATION_SPEC_CANDIDATE_V1`
+Authority/version: `P3W7_A1_SEED180_AUTHORITY_LINEAGE_RECONCILIATION_FINAL_CONTENT_V1`
 
-Status: `PASS_READY_FOR_INDEPENDENT_VERIFICATION`
+Document status: `FINAL_AUTHORITY_LINEAGE_RECONCILIATION_CONTENT`
 
-Phase: `REPORT_ONLY_AUTHORITY_PROVENANCE_RECONCILIATION`
+Independent verification disposition: `PASS_READY_FOR_FREEZE`
 
-This candidate reconciles the current authority state after commits `15a9103a34efaf290d365d069c8c741994805330` and `270df96f9f217cc7c1aad49d2c73ae551e560e28`. It does not activate incident-correction authority, does not activate P2 root-cause authority, does not adopt P2 root-cause conclusions, and does not authorize execution.
+Authority activation condition: `ON_EXACT_COMMIT_PUSH_REMOTE_VERIFICATION`
+
+Phase: `REPORT_ONLY_BODY_LEVEL_RECONCILIATION_FINALIZATION`
+
+This final content reconciles the current authority state after commits `15a9103a34efaf290d365d069c8c741994805330`, `270df96f9f217cc7c1aad49d2c73ae551e560e28`, and `d398876d79d16fab5fccb7856b5b18c6b1ed4473`. It does not activate incident-correction authority, does not activate P2 root-cause authority, does not adopt P2 root-cause conclusions, and does not authorize execution.
+
+The current working-tree revision is not authority merely because it exists. This exact final content becomes authoritative only after:
+
+1. independent verification of this final content;
+2. a new dedicated commit;
+3. push;
+4. independent remote full-SHA verification.
+
+The future commit SHA need not be embedded into this document. The historical filename suffix `_candidate.md` does not control authority state.
 
 ## 1. Opening Repository State
 
@@ -14,13 +27,33 @@ Required and observed opening state:
 
 | Check | Required | Observed | Result |
 |---|---|---|---|
-| HEAD | `270df96f9f217cc7c1aad49d2c73ae551e560e28` | `270df96f9f217cc7c1aad49d2c73ae551e560e28` | PASS |
+| HEAD | `d398876d79d16fab5fccb7856b5b18c6b1ed4473` | `d398876d79d16fab5fccb7856b5b18c6b1ed4473` | PASS |
 | Branch | `p3w7-a1-a2-a3-factorial-execution-authority-n3-v2` | `p3w7-a1-a2-a3-factorial-execution-authority-n3-v2` | PASS |
 | `git status --short` | empty | empty | PASS |
 | `git diff --name-status` | empty | empty | PASS |
 | `git diff --cached --name-status` | empty | empty | PASS |
 
-## 2. Commit 15a9103 Disposition
+## 2. Commit d398876 Disposition
+
+Inspected committed object:
+
+`d398876d79d16fab5fccb7856b5b18c6b1ed4473:reports/reason_router_p3w7_a1_seed180_authority_lineage_reconciliation_spec_candidate.md`
+
+Commit message:
+
+`Freeze P3-W7 seed180 authority lineage reconciliation`
+
+Committed body status:
+
+`PASS_READY_FOR_INDEPENDENT_VERIFICATION`
+
+`d398876d79d16fab5fccb7856b5b18c6b1ed4473` is the remotely verified materialization commit of the independently verified reconciliation candidate.
+
+Because its committed body still says `PASS_READY_FOR_INDEPENDENT_VERIFICATION`, `d398876d79d16fab5fccb7856b5b18c6b1ed4473` itself is not activated final reconciliation authority.
+
+Its commit message does not override body-level status.
+
+## 3. Commit 15a9103 Disposition
 
 Inspected committed object:
 
@@ -38,11 +71,11 @@ The committed body remains candidate/non-activated content. It describes a narro
 
 Therefore:
 
-`15a9103a34efaf290d365d069c8c741994805330` is not final activated incident-correction authority.
+`15a9103a34efaf290d365d069c8c741994805330` is not activated final incident-correction authority.
 
 The commit message cannot override body-level status.
 
-## 3. Commit 270df96 Disposition
+## 4. Commit 270df96 Disposition
 
 Inspected committed object:
 
@@ -71,7 +104,7 @@ Current committed root-cause candidate repository object identity:
 | Git blob | `9b923f596580d92eda5db87a4d7fc2345b87c982` |
 | Git blob size | `4588` bytes |
 
-## 4. Invalid Authority Premise
+## 5. Invalid Authority Premise
 
 The `270df96f9f217cc7c1aad49d2c73ae551e560e28` root-cause candidate includes this authority premise:
 
@@ -81,11 +114,15 @@ That premise refers to `15a9103a34efaf290d365d069c8c741994805330`.
 
 Since the `15a9103a34efaf290d365d069c8c741994805330` body remained `PASS_READY_FOR_INDEPENDENT_VERIFICATION` candidate content and was not activated final incident authority, the premise is false at the authority/provenance level.
 
+Disposition:
+
+`INVALID_AT_AUTHORITY_PROVENANCE_LEVEL`
+
 Therefore the root-cause candidate's conclusions must not be adopted as active research conclusions from `270df96f9f217cc7c1aad49d2c73ae551e560e28`.
 
-## 5. Root-Cause Conclusion Disposition
+## 6. Root-Cause Conclusion Disposition
 
-This candidate does not determine whether the following conclusions are scientifically correct:
+This final content does not determine whether the following conclusions are scientifically correct:
 
 - `EXPECTED_DATA_SPLIT_CONTRACT_REJECTION`
 - `RANDOM_SPLIT_DEGENERACY`
@@ -98,7 +135,7 @@ Disposition:
 
 They may later be re-audited from source evidence after incident authority is properly activated. They must not be reused as established facts.
 
-## 6. Incident Facts Preserved
+## 7. Incident Facts Preserved
 
 The following historical provenance facts remain valid and are not reinterpreted by this reconciliation:
 
@@ -109,11 +146,11 @@ The following historical provenance facts remain valid and are not reinterpreted
 | Trainer launch | `ACTUAL_TRAINER_PROCESS_LAUNCHED = TRUE` |
 | Failure | `P2_APPLICABLE_COHORT_BINARY_CLASS_DEGENERATE: {'dev': {'polarity': {0: 0, 1: 58}}}` |
 | Classification | `UNAUTHORIZED_TRAINER_LAUNCH_PROVENANCE_INCIDENT` |
-| Scientific disposition | `NO VALID A1 SCIENTIFIC EVIDENCE` |
+| Scientific disposition | `NO_VALID_A1_SCIENTIFIC_EVIDENCE` |
 | Launch-budget disposition | `FUTURE_AUTHORIZED_REPLACEMENT_LAUNCH_BUDGET_REQUIRES_NEW_EXPLICIT_AUTHORITY` |
 | Execution state | `BLOCKED_PENDING_NEW_EXPLICIT_EXECUTION_AUTHORITY` |
 
-## 7. External Canonical Incident Content
+## 8. External Canonical Incident Content
 
 External canonical incident content is recorded as independently verified but not yet activated repository authority:
 
@@ -130,11 +167,15 @@ External canonical incident content is recorded as independently verified but no
 
 Canonical content passed independent external-content verification.
 
-It is not authority merely because it exists externally. It has not yet been frozen into a valid activated repository commit. It remains the intended exact content candidate for future incident-authority materialization after this lineage reconciliation is frozen.
+Disposition:
+
+`INDEPENDENTLY_VERIFIED_EXTERNAL_CONTENT_NOT_YET_ACTIVATED`
+
+It is not authority merely because it exists externally. It has not yet been frozen into a valid activated repository commit. It remains the intended exact content candidate for future incident-authority materialization after this lineage reconciliation is activated.
 
 This task does not apply it.
 
-## 8. Premature Root-Cause Artifact History
+## 9. Premature Root-Cause Artifact History
 
 The following are preserved only as provenance:
 
@@ -148,7 +189,11 @@ The following are preserved only as provenance:
 
 No substantive root-cause conclusions are adopted from any of these artifacts.
 
-## 9. Current Active Authority State
+## 10. Active State After This Final Content Activates
+
+Once this final reconciliation content is activated:
+
+`ACTIVE_AUTHORITY_LINEAGE_RECONCILIATION = ACTIVE`
 
 `ACTIVE_INCIDENT_CORRECTION_AUTHORITY = NONE_YET`
 
@@ -160,23 +205,27 @@ No substantive root-cause conclusions are adopted from any of these artifacts.
 
 `TRAINING_EVALUATION_KAGGLE = NOT_AUTHORIZED`
 
-## 10. Required Next Sequence
+Activating reconciliation authority does not activate incident authority or root-cause authority.
 
-The exact required next sequence is:
+## 11. Required Next Sequence
 
-1. Independently verify this authority-lineage reconciliation candidate.
-2. Freeze/push/remote-verify the reconciliation.
-3. Materialize the independently verified external incident canonical content exactly into the tracked incident document.
-4. Independently verify exact tracked bytes.
-5. Freeze/push/remote-verify final incident correction.
-6. Only then authorize a fresh read-only P2 degeneracy root-cause audit.
-7. Do not reuse `270df96` root-cause conclusions as authority; re-audit evidence.
-8. If implementation is needed afterward, use separate implementation authority.
-9. Future trainer execution requires new explicit execution authority.
+After reconciliation activation, the exact required next sequence is:
 
-No Kaggle or trainer execution is authorized before step 9.
+1. Apply exact external incident canonical bytes to the tracked incident document.
+2. Independently verify exact tracked bytes/content.
+3. Freeze/push/remote-full-SHA verify final incident correction.
+4. Only then conduct a fresh `READ-ONLY P2 DEGENERACY ROOT-CAUSE AUDIT`.
+5. Do not inherit `270df96f9f217cc7c1aad49d2c73ae551e560e28` scientific conclusions.
+6. Use separate implementation authority if needed.
+7. Future trainer execution requires new explicit execution authority.
 
-## 11. Commit-Message Rule
+No split-contract revision yet.
+
+No A2/A3.
+
+No Kaggle, training, or evaluation.
+
+## 12. Commit-Message Rule
 
 `COMMIT_MESSAGE_DOES_NOT_OVERRIDE_BODY_LEVEL_AUTHORITY_STATUS`
 
@@ -186,16 +235,18 @@ This rule applies to:
 - `48a2aa4400b2ed7fdbffdee2df574ba54b4a2927`
 - `15a9103a34efaf290d365d069c8c741994805330`
 - `270df96f9f217cc7c1aad49d2c73ae551e560e28`
+- `d398876d79d16fab5fccb7856b5b18c6b1ed4473`
 
-None of those commits became execution authority, scientific authority, incident-correction authority, or P2 root-cause authority solely because their commit subjects used `Freeze`.
+None of those commits became execution authority, scientific authority, incident-correction authority, P2 root-cause authority, or final reconciliation authority solely because their commit subjects used `Freeze`.
 
-## 12. Boundary
+The rule applies to `d398876d79d16fab5fccb7856b5b18c6b1ed4473` itself.
 
-This candidate creates no execution authority and performs no root-cause audit.
+## 13. Boundary
 
-Forbidden and not performed by this candidate:
+This final content creates no execution authority and performs no root-cause audit.
 
-- tracked-file modification
+Forbidden and not performed by this final content:
+
 - staging
 - unstaging
 - commit
@@ -204,6 +255,9 @@ Forbidden and not performed by this candidate:
 - restore
 - checkout
 - clean
+- applying incident canonical content
+- P2 root-cause audit
+- split-contract revision
 - implementation
 - data modification
 - training
