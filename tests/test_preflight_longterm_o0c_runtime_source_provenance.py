@@ -148,6 +148,43 @@ def test_valid_reconciled_distribution_import_root(tmp_path):
     assert result.distribution_root == paths["pkg"].resolve(strict=True)
 
 
+def test_distribution_root_nested_initializers_resolve_to_common_package_root(tmp_path):
+    paths = write_package(tmp_path)
+    dist = FakeDist(
+        paths["pkg"],
+        files=[
+            Path("transformers/__init__.py"),
+            Path("transformers/models/__init__.py"),
+            Path("transformers/models/mamba/__init__.py"),
+            Path("transformers/models/mamba/modeling_mamba.py"),
+            Path("transformers/cache_utils.py"),
+        ],
+    )
+    assert preflight._distribution_root(dist) == paths["pkg"].resolve(strict=True)
+
+
+def test_distribution_root_deep_nested_initializer_resolves_to_common_package_root(tmp_path):
+    paths = write_package(tmp_path)
+    datasets_init = paths["pkg"] / "data" / "datasets" / "__init__.py"
+    datasets_init.parent.mkdir(parents=True)
+    datasets_init.write_text("", encoding="utf-8")
+    dist = FakeDist(
+        paths["pkg"],
+        files=[
+            Path("transformers/__init__.py"),
+            Path("transformers/data/datasets/__init__.py"),
+            Path("transformers/cache_utils.py"),
+        ],
+    )
+    assert preflight._distribution_root(dist) == paths["pkg"].resolve(strict=True)
+
+
+def test_distribution_root_top_level_initializer_resolves_to_package_root(tmp_path):
+    paths = write_package(tmp_path)
+    dist = FakeDist(paths["pkg"], files=[Path("transformers/__init__.py")])
+    assert preflight._distribution_root(dist) == paths["pkg"].resolve(strict=True)
+
+
 def test_valid_descendant_and_prefix_trap(tmp_path):
     paths = write_package(tmp_path)
     assert preflight.is_descendant_or_equal(paths["mamba"].resolve(), paths["pkg"].resolve())

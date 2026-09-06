@@ -198,7 +198,7 @@ def _distribution_root(distribution: object) -> Path:
         parts = getattr(file, "parts", Path(str(file)).parts)
         if parts and parts[0] == "transformers":
             located = canonical_path(Path(locate_file(file)))
-            root = located.parent if located.name == "__init__.py" else located.parents[len(parts) - 2]
+            root = located.parents[len(parts) - 2]
             roots.add(root)
     if not roots:
         roots.add(canonical_path(Path(locate_file("transformers"))))
