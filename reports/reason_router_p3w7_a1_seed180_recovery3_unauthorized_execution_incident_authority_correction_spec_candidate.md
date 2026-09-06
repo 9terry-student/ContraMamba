@@ -1,267 +1,362 @@
-# P3-W7 A1 Seed180 Recovery3 Unauthorized Execution Incident Authority Correction Specification Candidate
+# P3-W7 A1 Seed180 Recovery3 Unauthorized Execution Incident Correction
 
-Authority/version: `P3W7_A1_SEED180_RECOVERY3_UNAUTHORIZED_EXECUTION_INCIDENT_AUTHORITY_CORRECTION_V1`
+Authority/version: `P3W7_A1_SEED180_RECOVERY3_UNAUTHORIZED_EXECUTION_INCIDENT_CORRECTION_FINAL_CANONICAL_CONTENT_V2`
 
-## Verdict
+Document status = `FINAL_UNAUTHORIZED_EXECUTION_INCIDENT_CORRECTION_CONTENT`
 
-Status: `PASS_READY_FOR_INDEPENDENT_VERIFICATION`.
+Independent verification disposition = `PASS_READY_FOR_FREEZE`
 
-This is a narrow report-only authority/provenance incident correction candidate. It resolves the status of the trainer launch performed under commit `98723fe27ba71a97cd0b0a1986590295faaa424c` from committed authority document bodies and imported run evidence.
+Authority activation condition = `ON_EXACT_COMMIT_PUSH_REMOTE_VERIFICATION`
 
-This candidate does not authorize trainer execution, training, evaluation, Kaggle execution, dataset regeneration, implementation, staging, commit, push, A2/A3 progression, promotion, winner selection, or mechanism claims.
+## 1. Canonical Status And Activation Boundary
 
-Current trainer-execution status after this correction:
+This corrected working-tree content is materialized for independent verification before it can become activated authority.
 
-`BLOCKED_PENDING_NEW_EXPLICIT_EXECUTION_AUTHORITY`
+This new corrected working-tree revision is not authority merely because it exists. Exact content becomes authoritative only after:
 
-## 1. Exact Initial Repo State
+1. independent verification of the corrected exact content;
+2. dedicated commit;
+3. push;
+4. independent remote full-SHA/content verification.
 
-Mandatory worktree inspected:
+Staging, local commit, filename, or commit subject alone do not activate it. No future commit SHA is embedded in this document. The historical `_candidate.md` filename does not control authority status.
 
-`C:\p3w7-a0-n3-validated-evidence-analysis`
+After activation, this document's authority scope is incident/provenance disposition and phase boundary only. It does not authorize trainer execution, training, evaluation, Kaggle execution, implementation, dataset regeneration, artifact import, A2/A3 progression, promotion, winner selection, or mechanism claims.
 
-Initial state verified before authoring:
+## 2. Materialization History
 
-| Check | Required | Observed | Result |
-|---|---:|---:|---|
-| HEAD | `48a2aa4400b2ed7fdbffdee2df574ba54b4a2927` | `48a2aa4400b2ed7fdbffdee2df574ba54b4a2927` | PASS |
-| Branch | `p3w7-a1-a2-a3-factorial-execution-authority-n3-v2` | `p3w7-a1-a2-a3-factorial-execution-authority-n3-v2` | PASS |
-| Tracked worktree diff | clean | clean | PASS |
-| Git index diff | clean | clean | PASS |
-| Untracked files before authoring | none | none | PASS |
+Opening independently verified canonical base superseded for activation by this self-containment correction:
 
-Initial status command showed only:
+`INDEPENDENTLY_VERIFIED_INCIDENT_CANONICAL_BASE_SUPERSEDED_FOR_ACTIVATION_BY_SELF_CONTAINMENT_CORRECTION`
 
-`## p3w7-a1-a2-a3-factorial-execution-authority-n3-v2...origin/p3w7-a1-a2-a3-factorial-execution-authority-n3-v2`
+Opening working-tree target SHA256:
 
-`git status --porcelain=v1 --untracked-files=all` was empty before authoring.
+`a327cab41f7cfb56427aaf433a437d94b0b68c8313e54a0647c94095e2693b03`
 
-## 2. 98723fe Authority-Body Finding
+That content remains a provenance identity and is not invalidated by this correction. It was not activated authority and is not the final exact activation identity after this correction. This task creates a new final-content identity that must itself be independently verified before freeze.
 
-Committed object read:
+Committed materialization/candidate history:
 
-`98723fe27ba71a97cd0b0a1986590295faaa424c:reports/reason_router_p3w7_a1_seed180_factorial_pretrainer_retry_execution_authority_spec_candidate.md`
+`15a9103a34efaf290d365d069c8c741994805330`
 
-The body-level status is:
+The committed body at `15a9103a34efaf290d365d069c8c741994805330` remains:
 
 `PASS_READY_FOR_INDEPENDENT_VERIFICATION`
 
-The body says the document is a narrow report-only authority correction candidate and explicitly states:
+Therefore `15a9103a34efaf290d365d069c8c741994805330` is not itself the activated final incident correction. Its commit message cannot override its body.
 
-- it does not itself authorize trainer execution;
-- no training, evaluation, Kaggle execution, code implementation, staging, commit, or push is authorized by authoring the candidate;
-- commit `98723fe27ba71a97cd0b0a1986590295faaa424c` must not be treated as seed180/A1 trainer execution authority;
-- future execution authority, if any, requires a later independently verified, committed, pushed, remotely verified, exact frozen commit based on the candidate.
+## 3. Historical Authority Compatibility
 
-Therefore the committed document body at `98723fe27ba71a97cd0b0a1986590295faaa424c` did not authorize trainer execution.
+Historical authority status:
 
-## 3. 48a2aa Authority-Body Finding
+`98723fe27ba71a97cd0b0a1986590295faaa424c = NOT_EXECUTION_AUTHORITY`
 
-Committed object read:
+`48a2aa4400b2ed7fdbffdee2df574ba54b4a2927 = NOT_EXECUTION_AUTHORITY`
 
-`48a2aa4400b2ed7fdbffdee2df574ba54b4a2927:reports/reason_router_p3w7_a1_seed180_factorial_pretrainer_retry_execution_authority_spec_candidate.md`
+`15a9103a34efaf290d365d069c8c741994805330 = NOT_ACTIVATED_FINAL_INCIDENT_CORRECTION_AUTHORITY`
 
-The body-level status remains:
+`270df96f9f217cc7c1aad49d2c73ae551e560e28 = NOT_ACTIVATED_P2_ROOT_CAUSE_AUTHORITY`
 
-`PASS_READY_FOR_INDEPENDENT_VERIFICATION`
+`1bb08179adb38637e9391491ba72cfd7e9bff3b3 = ACTIVE_AUTHORITY_LINEAGE_RECONCILIATION`
 
-The body still says:
+Rule:
 
-- it does not itself authorize trainer execution;
-- no training, evaluation, Kaggle execution, code implementation, staging, commit, or push is authorized by authoring the candidate;
-- future execution authority, if any, is a later independently verified, committed, pushed, remotely verified, exact frozen commit based on the candidate;
-- until that exact future freeze commit exists, final executable authority identity and final outer run name remain unresolved.
+`COMMIT_MESSAGE_DOES_NOT_OVERRIDE_BODY_LEVEL_AUTHORITY_STATUS`
 
-Therefore commit `48a2aa4400b2ed7fdbffdee2df574ba54b4a2927` also does not itself authorize trainer execution.
+This rule is why historical commit subjects containing "Freeze" do not by themselves activate execution, incident, root-cause, or scientific authority.
 
-## 4. Commit-Message And Body Conflict Finding
+## 4. Unauthorized Execution Facts
 
-Commit messages inspected:
+Run:
 
-| Commit | Commit message |
-|---|---|
-| `98723fe27ba71a97cd0b0a1986590295faaa424c` | `Freeze P3-W7 seed180 A1 pretrainer retry execution authority` |
-| `48a2aa4400b2ed7fdbffdee2df574ba54b4a2927` | `Freeze P3-W7 seed180 A1 recovery3 execution authority` |
+`p3w7-factorial-a1-seed180-recovery3-auth98723fe`
 
-A commit message cannot override a body-level status, body-level non-authorization clause, or body-level requirement for later independent verification and freezing. The commit message `Freeze P3-W7 seed180 A1 recovery3 execution authority` does not convert the `48a2aa4400b2ed7fdbffdee2df574ba54b4a2927` body into trainer execution authority.
+run = `p3w7-factorial-a1-seed180-recovery3-auth98723fe`
 
-The authority body controls. Both bodies remain candidate/non-authorization documents.
-
-## 5. Temporal Lineage
-
-Git metadata verifies:
-
-`48a2aa4400b2ed7fdbffdee2df574ba54b4a2927` parent is `98723fe27ba71a97cd0b0a1986590295faaa424c`.
-
-Imported recovery3 evidence verifies the run executed under:
+Executed HEAD:
 
 `98723fe27ba71a97cd0b0a1986590295faaa424c`
 
-The run started at `2026-09-05T13:35:50Z` and finished at `2026-09-05T13:36:26Z`.
+executed HEAD = `98723fe27ba71a97cd0b0a1986590295faaa424c`
 
-Commit `48a2aa4400b2ed7fdbffdee2df574ba54b4a2927` is later lineage relative to `98723fe27ba71a97cd0b0a1986590295faaa424c`; it cannot retroactively authorize an earlier launch that occurred under `98723fe27ba71a97cd0b0a1986590295faaa424c`.
+Command SHA256:
 
-## 6. Imported Recovery3 Evidence Verification
+`8f83b8e7deabdb7076cb6a0cb80bf10099f164f58e51a9df6a1946725f27fc05`
 
-Imported audit inspected:
+command SHA256 = `8f83b8e7deabdb7076cb6a0cb80bf10099f164f58e51a9df6a1946725f27fc05`
 
-`C:\Users\Home1\.contramamba\imports\p3w7-factorial-a1-seed180-recovery3-auth98723fe_98723fe27ba7_20260905_223833`
+Started:
 
-Imported files present:
+`2026-09-05T13:35:50Z`
 
-- `command.sh`
-- `import.json`
-- `manifest.json`
-- `run.log`
-- `run.meta`
+started = `2026-09-05T13:35:50Z`
 
-No scientific result files were imported.
+Finished:
 
-Verified identities:
+`2026-09-05T13:36:26Z`
 
-| Field | Observed |
-|---|---|
-| Run name | `p3w7-factorial-a1-seed180-recovery3-auth98723fe` |
-| Executed HEAD | `98723fe27ba71a97cd0b0a1986590295faaa424c` |
-| Command SHA256 | `8f83b8e7deabdb7076cb6a0cb80bf10099f164f58e51a9df6a1946725f27fc05` |
-| Exit code | `1` |
-| Started UTC | `2026-09-05T13:35:50Z` |
-| Finished UTC | `2026-09-05T13:36:26Z` |
-| ZIP SHA256 | `d0b43eb73ed5504c835c0c694bc48f18d9373614a6c58efe3139c2f5c66ee90c` |
-| Run log SHA256 | `242dd312630be5c7d320f68a7ffeec2a424ed02ea6d2f160cc0d40f0a0356d24` |
-| Run meta SHA256 | `0184e7f8462b24d2b97b21dedd90e68123562b06bcf0da14510742266375183f` |
-| Imported scientific files | `0` |
+finished = `2026-09-05T13:36:26Z`
 
-The source ZIP hash was verified directly from:
+ZIP SHA256:
 
-`C:\Users\Home1\Downloads\p3w7-factorial-a1-seed180-recovery3-auth98723fe_98723fe27ba7.zip`
+`d0b43eb73ed5504c835c0c694bc48f18d9373614a6c58efe3139c2f5c66ee90c`
 
-The log contains:
+ZIP SHA256 = `d0b43eb73ed5504c835c0c694bc48f18d9373614a6c58efe3139c2f5c66ee90c`
 
-- `P4L_SEMANTIC_BINDING_PREFLIGHT=PASS`
-- `CUDA_PREFLIGHT=PASS`
-- `RECOVERY_PREFLIGHT_PASS`
-- `TRAINER_PROCESS_LAUNCH_BEGIN`
-- actual invocation of `scripts/train_controlled_v6b_minimal.py`
-- failure: `P2_APPLICABLE_COHORT_BINARY_CLASS_DEGENERATE: {'dev': {'polarity': {0: 0, 1: 58}}}`
+run.log SHA256:
 
-The actual trainer process launched. The run exited with code `1` after the P2 applicable-cohort binary-class degeneracy exception.
+`242dd312630be5c7d320f68a7ffeec2a424ed02ea6d2f160cc0d40f0a0356d24`
 
-## 7. Incident Classification
+run.log SHA256 = `242dd312630be5c7d320f68a7ffeec2a424ed02ea6d2f160cc0d40f0a0356d24`
+
+run.meta SHA256:
+
+`0184e7f8462b24d2b97b21dedd90e68123562b06bcf0da14510742266375183f`
+
+run.meta SHA256 = `0184e7f8462b24d2b97b21dedd90e68123562b06bcf0da14510742266375183f`
+
+Exit code:
+
+`1`
+
+exit = `1`
+
+Failure:
+
+`P2_APPLICABLE_COHORT_BINARY_CLASS_DEGENERATE: {'dev': {'polarity': {0: 0, 1: 58}}}`
+
+Historical execution observations:
+
+`P4L_SEMANTIC_BINDING_PREFLIGHT=PASS`
+
+`CUDA_PREFLIGHT=PASS`
+
+`RECOVERY_PREFLIGHT_PASS`
+
+`TRAINER_PROCESS_LAUNCH_BEGIN`
+
+Actual trainer invocation:
+
+`scripts/train_controlled_v6b_minimal.py`
+
+actual trainer invocation = `scripts/train_controlled_v6b_minimal.py`
+
+Trainer launch:
+
+`ACTUAL_TRAINER_PROCESS_LAUNCHED = TRUE`
 
 Classification:
 
 `UNAUTHORIZED_TRAINER_LAUNCH_PROVENANCE_INCIDENT`
 
-Definition for this incident:
+Imported scientific files:
 
-- an actual trainer process launched;
-- the launch was not backed by valid trainer execution authority;
-- the run is not authorized scientific evidence;
-- imported logs, metadata, command bytes, ZIP identity, and run timestamps remain valid provenance evidence of the incident;
-- successful preflight checks do not cure missing execution authority;
-- later commits cannot retroactively authorize the run.
+`0`
 
-This run must not be called an authorized failed replicate.
+Scientific files:
 
-## 8. Scientific Evidence Disposition
+`0`
+
+scientific files = `0`
+
+`IMPORTED_SCIENTIFIC_FILES = 0` is separate from `ACTUAL_TRAINER_PROCESS_LAUNCHED = TRUE`. The absence of imported scientific files does not erase the provenance fact that an actual trainer process launched.
+
+The timestamps and observations above are historical execution/provenance facts only. They establish execution occurrence, not scientific validity, and no scientific meaning is inferred from them.
+
+## 5. Scientific Evidence Disposition
+
+The unauthorized run is not authorized scientific evidence. It is not an authorized failed replicate.
 
 Scientific disposition:
 
-- no scientific conclusion;
-- no A1 metric result;
-- no completed replicate;
-- no winner/factorial interpretation;
-- no A2/A3 progression;
-- no promotion;
-- no mechanism claim.
-
-`Imported scientific files = 0` remains distinct from the fact that a trainer process did launch. The absence of imported scientific files means no scientific outputs were imported as evidence; it does not erase the provenance fact of trainer-process launch.
-
-## 9. Launch-Budget Disposition
-
-The actual unauthorized launch is immutable historical provenance.
-
-The old candidate attempt-boundary language cannot be mechanically used to claim either:
-
-- `budget definitely consumed`; or
-- `budget definitely remains one`.
-
-That old budget language had not come into force as valid execution authority at the time of the launch. The narrowest defensible authority treatment is:
-
-`FUTURE_AUTHORIZED_REPLACEMENT_LAUNCH_BUDGET_REQUIRES_NEW_EXPLICIT_AUTHORITY`
+`NO_VALID_A1_SCIENTIFIC_EVIDENCE`
 
 Consequences:
 
-- any future trainer launch requires a new separately authored, independently verified, frozen execution authority;
-- that future authority must explicitly decide whether and how the unauthorized launch affects the intended scientific replicate budget;
-- no reuse of recovery3 run name;
-- no automatic retry.
+- recovery3 is not an authorized failed replicate;
+- recovery3 is not a valid scientific run;
+- recovery3 is not a completed A1 replicate;
+- recovery3 is not factorial evidence;
+- recovery3 is not promotion evidence;
+- recovery3 is not winner evidence;
+- recovery3 is not mechanism evidence;
+- recovery3 is not significance evidence;
+- no valid A1 replicate;
+- no A1 metric/result;
+- no factorial comparison basis;
+- no A2/A3 progression;
+- no promotion;
+- no winner selection;
+- no mechanism claim;
+- no significance claim;
+- no scientific interpretation.
 
-## 10. Output And Provenance Collision State
+Imported logs, metadata, command bytes, ZIP identity, and related hashes remain provenance evidence of the incident only. They are not scientific result evidence.
 
-Imported recovery3 evidence consists only of wrapper/import provenance files:
+## 6. Launch-Budget Disposition
 
-- `command.sh`
-- `import.json`
-- `manifest.json`
-- `run.log`
-- `run.meta`
+Launch-budget disposition:
 
-The import manifest reports `file_count: 0` and `files: []`. The local import record reports `manifest_files: 0`, `copied_files: 0`, and `identical_files: 0`.
+`FUTURE_AUTHORIZED_REPLACEMENT_LAUNCH_BUDGET_REQUIRES_NEW_EXPLICIT_AUTHORITY`
 
-Therefore no recovery3 scientific files were imported by this audit bundle.
+This correction does not claim `BUDGET_DEFINITELY_CONSUMED` and does not claim `BUDGET_DEFINITELY_REMAINS_ONE`.
 
-This candidate does not infer Kaggle session filesystem state beyond imported evidence. It does not authorize deleting, overwriting, moving, normalizing, or reusing any prior wrapper path or scientific output path.
+This correction does not state launch budget consumed, does not state launch budget remains one, does not authorize automatic retry, and does not authorize automatic replacement.
 
-## 11. A2/A3 Disposition
+Consequences:
 
-A2/A3 progression remains blocked.
+- no automatic retry;
+- no implicit launch permission;
+- any future trainer launch requires separately authored, independently verified, frozen execution authority;
+- that future authority must explicitly decide how the unauthorized launch affects the intended scientific replicate budget.
 
-The incident provides no A1 authorized replicate, no valid A1 scientific result, and no factorial comparison basis. A2/A3 must not proceed from this run.
+## 7. Execution Block And Run Name
 
-## 12. Root-Cause Separation
+Current trainer-execution status:
 
-The P2 degeneracy exception is a separate code/data/spec root-cause question.
+`BLOCKED_PENDING_NEW_EXPLICIT_EXECUTION_AUTHORITY`
 
-This incident correction separates:
+Run name:
 
-- authority/provenance validity;
-- execution occurrence;
-- artifact validity;
-- scientific conclusion;
-- software/data root cause.
+`p3w7-factorial-a1-seed180-recovery3-auth98723fe`
 
-This candidate does not decide the root cause of:
+run name = `p3w7-factorial-a1-seed180-recovery3-auth98723fe`
+
+Disposition:
+
+`CONSUMED_NON_REUSABLE_RUN_NAME`
+
+disposition = `CONSUMED_NON_REUSABLE_RUN_NAME`
+
+Consequences:
+
+- no run-name reuse;
+- no automatic retry;
+- no recovery4 authorization;
+- no future run name invented here.
+
+This correction does not authorize:
+
+`p3w7-factorial-a1-seed180-recovery3-auth48a2aa4`
+
+This correction does not invent recovery4 or any future run name.
+
+## 8. Root-Cause Separation
+
+This incident correction strictly separates:
+
+1. authority/provenance status;
+2. trainer process launch occurrence;
+3. artifact/scientific validity;
+4. scientific conclusion;
+5. software/data/split/root-cause analysis.
+
+This correction does not decide the root cause of:
 
 `P2_APPLICABLE_COHORT_BINARY_CLASS_DEGENERATE: {'dev': {'polarity': {0: 0, 1: 58}}}`
 
-A later read-only static audit may be authorized to inspect that root cause. This candidate itself authorizes no implementation, no dataset change, no test execution, no training, and no evaluation.
+This correction does not adopt as facts:
 
-## 13. Future Authority Sequence
+- `EXPECTED_DATA_SPLIT_CONTRACT_REJECTION`;
+- `RANDOM_SPLIT_DEGENERACY`;
+- frozen configuration/gate incompatibility;
+- pre-execution feasibility-validation omission.
 
-The necessary future sequence is:
+It does not adopt any substantive conclusion from `270df96f9f217cc7c1aad49d2c73ae551e560e28`.
 
-1. independently verify this incident-correction candidate;
-2. freeze the incident correction if verifier PASS;
-3. perform read-only root-cause audit of the P2 degeneracy;
-4. if code correction is needed, separately authorize implementation and independent verification;
-5. only after root cause/code state is resolved, create a new explicit seed180/A1 execution authority if scientifically still warranted;
-6. perform no Kaggle trainer execution before that authority is frozen and remotely verified.
+No implementation, data correction, test mutation, training, evaluation, or root-cause conclusion is authorized by this document.
 
-No training is authorized by this candidate.
+## 9. Premature Root-Cause Artifact Provenance
 
-## 14. Candidate Materialization Notes
+The following premature artifacts are recorded as non-authoritative historical provenance only.
 
-Candidate materialization target:
+First premature artifact path:
 
-`reports/reason_router_p3w7_a1_seed180_recovery3_unauthorized_execution_incident_authority_correction_spec_candidate.md`
+`C:\Users\Home1\.contramamba\quarantine\p3w7-unauthorized-phase-artifacts\reason_router_p3w7_a1_seed180_p2_degeneracy_root_cause_audit_spec_candidate__PREMATURE_UNAUTHORIZED_PHASE_ARTIFACT__5fe97825.md`
 
-Expected authored delta:
+First premature artifact SHA256:
 
-- exactly one new untracked Markdown file;
-- no tracked modification;
-- no staged files;
-- no existing-file mutation.
+`5fe9782596aa5643827e7166ef02dc9b1453944ca71dddb1808a8a69b352590c`
 
-Final candidate SHA256, byte count, LF count, CR count, final-LF status, `git diff --check`, `git status --short`, `git diff --name-status`, and `git diff --cached --name-status` are intentionally reported outside this file to avoid self-referential candidate content.
+Second/reappeared premature artifact path:
+
+`C:\Users\Home1\.contramamba\quarantine\p3w7-unauthorized-phase-artifacts\reason_router_p3w7_a1_seed180_p2_degeneracy_root_cause_audit_spec_candidate__REAPPEARED_PREMATURE_UNAUTHORIZED_PHASE_ARTIFACT__2f30584d__20260906_165837.md`
+
+Second/reappeared premature artifact SHA256:
+
+`2f30584da3ab2d2ed52950780f0a494fd476d4376f95471af8715d886b5a98f7`
+
+Index-evidence copy path:
+
+`C:\Users\Home1\.contramamba\quarantine\p3w7-unauthorized-phase-artifacts\reason_router_p3w7_a1_seed180_p2_degeneracy_root_cause_audit_spec_candidate__STAGED_INDEX_EVIDENCE__2f30584d.md`
+
+Index-evidence copy SHA256:
+
+`2f30584da3ab2d2ed52950780f0a494fd476d4376f95471af8715d886b5a98f7`
+
+Neither artifact had active P2 root-cause audit authority. Their substantive conclusions are not research evidence. The second artifact was observed staged in the index and later explicitly unstaged after raw index blob preservation. No conclusion from either artifact is adopted by this incident correction.
+
+This document intentionally does not quote or summarize their substantive root-cause conclusions.
+
+## 10. Worktree Reversion And Staging Hygiene Facts
+
+Incident finalization working-tree content was twice reverted to HEAD content.
+
+Forensic evidence identified an exact historical command capable of explaining clean-status restoration without HEAD/ref movement:
+
+`git restore --source=HEAD --worktree -- <incident-target>`
+
+The premature P2 root-cause artifact was also observed staged via an exact git-add workflow.
+
+These are repository-state/provenance hygiene facts only. They do not alter unauthorized-trainer scientific disposition.
+
+This correction does not infer an unidentified process when direct command-history evidence exists.
+
+## 11. Post-Activation State
+
+The following state applies only after this exact corrected incident content is independently verified, committed, pushed, and remote-verified:
+
+`ACTIVE_INCIDENT_CORRECTION_AUTHORITY = ACTIVE`
+
+`ACTIVE_AUTHORITY_LINEAGE_RECONCILIATION = ACTIVE`
+
+`ACTIVE_P2_ROOT_CAUSE_AUTHORITY = NONE_YET`
+
+`CURRENT_EXECUTION_STATE = BLOCKED_PENDING_NEW_EXPLICIT_EXECUTION_AUTHORITY`
+
+`A2_A3_PROGRESSION = BLOCKED`
+
+`TRAINING_EVALUATION_KAGGLE = NOT_AUTHORIZED`
+
+Incident activation does not authorize trainer retry.
+
+## 12. Next Authorized Phase
+
+Only after this incident correction is activated by exact tracked bytes, independent verification, dedicated commit, push, and remote full-SHA verification, the next research phase becomes exactly:
+
+`READ-ONLY P2 DEGENERACY ROOT-CAUSE AUDIT`
+
+That phase authorizes inspection/audit only and requires a fresh audit. It does not inherit `270df96f9f217cc7c1aad49d2c73ae551e560e28` conclusions as authority.
+
+It does not authorize:
+
+- implementation;
+- split-contract revision;
+- code change;
+- test mutation;
+- split/data/label/applicability changes;
+- trainer-guard change;
+- data change;
+- training;
+- evaluation;
+- Kaggle trainer run;
+- A2/A3;
+- new A1 execution.
+
+If later implementation is needed, it requires separate implementation authority. Future trainer execution requires separate new explicit execution authority.
+
+## 13. Self-Containment Boundary
+
+This final incident correction is limited to incident/provenance disposition and the phase boundary. It preserves the unauthorized-trainer-launch classification, preserves the scientific non-evidence disposition, leaves launch-budget handling unresolved pending new explicit execution authority, blocks all trainer execution, and does not decide software/data/spec root cause.
+
+A future controller can determine from this document alone the exact unauthorized run identity, exact executed HEAD, command/run/log/meta/ZIP provenance identities, timestamps, trainer launch observations, exact trainer script, exact failure, whether trainer launched, why no A1 scientific evidence exists, launch-budget disposition, run-name disposition, historical authority status, why root cause remains undecided, post-activation authority state, and exact next authorized phase.
