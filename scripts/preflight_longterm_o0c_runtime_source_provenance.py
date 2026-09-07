@@ -534,7 +534,7 @@ def _recurrent_proof_nodes(tree: ast.AST) -> tuple[ast.AST, ast.AST, ast.For, as
         raise PreflightBlocked(status, "recurrent_state_initialization")
 
     loop_candidates: list[tuple[ast.For, ast.AST, ast.AST]] = []
-    for stmt in slow.body:
+    for stmt in _same_lexical_scope_statements(slow.body):
         if isinstance(stmt, ast.For):
             update, readout = _loop_body_update_and_readout(stmt)
             if update is not None and readout is not None:

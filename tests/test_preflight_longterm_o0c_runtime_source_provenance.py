@@ -483,7 +483,7 @@ class MambaMixer:
     )
 
 
-def test_nested_initialization_does_not_expand_nested_recurrence_loop_discovery():
+def test_recurrent_for_nested_under_if_else_is_recognized():
     text = """\
 class MambaMixer:
     def forward(self, hidden_states):
@@ -504,11 +504,82 @@ class MambaMixer:
                 collected_hidden_states.append(ssm_state)
         return {"hidden_states": collected_hidden_states}
 """
-    assert_recurrent_blocks(
-        text,
-        "BLOCKED_RECURRENT_STATE_SEMANTICS_UNRESOLVED",
-        "recurrent_state_update",
+    assert preflight.classify_recurrent_semantics(text) == "SOURCE_SUPPORTS_O0C_CONVENTION"
+
+
+def test_direct_body_recurrent_for_remains_supported():
+    assert preflight.classify_recurrent_semantics(MAMBA_PASS) == "SOURCE_SUPPORTS_O0C_CONVENTION"
+
+
+def test_zero_qualifying_recurrent_for_fails_closed():
+    text = MAMBA_PASS.replace("ssm_state = ssm_state + token", "ssm_state = ssm_state + 1")
+    assert_recurrent_blocks(text, "BLOCKED_RECURRENT_STATE_SEMANTICS_UNRESOLVED", "recurrent_state_update")
+
+
+def test_multiple_qualifying_recurrent_fors_fail_closed():
+    text = MAMBA_PASS.replace(
+        '        return {"hidden_states": collected_hidden_states}',
+        """        for token in hidden_states:
+            ssm_state = ssm_state + token
+            collected_hidden_states.append(ssm_state)
+        return {\"hidden_states\": collected_hidden_states}""",
     )
+    assert_recurrent_blocks(text, "BLOCKED_REQUIRED_SYMBOL_AMBIGUOUS", "recurrent_state_update")
+
+
+@pytest.mark.parametrize("nested_scope", ["def nested():", "async def nested():", "class Nested:"])
+def test_recurrent_for_in_nested_lexical_scope_is_ignored(nested_scope):
+    text = """\
+class MambaMixer:
+    def forward(self, hidden_states):
+        return self.slow_forward(hidden_states)
+
+    def slow_forward(self, hidden_states):
+        ssm_state = hidden_states.new_zeros(1)
+        collected_hidden_states = []
+        {nested_scope}
+            for token in hidden_states:
+                ssm_state = ssm_state + token
+                collected_hidden_states.append(ssm_state)
+        return {{"hidden_states": collected_hidden_states}}
+""".format(nested_scope=nested_scope)
+    assert_recurrent_blocks(text, "BLOCKED_RECURRENT_STATE_SEMANTICS_UNRESOLVED", "recurrent_state_update")
+
+
+def test_nested_nonqualifying_fors_do_not_become_candidates():
+    text = MAMBA_PASS.replace(
+        "        for token in hidden_states:\n            ssm_state = ssm_state + token\n            collected_hidden_states.append(ssm_state)",
+        """        if hidden_states:
+            for token in hidden_states:
+                ssm_state = ssm_state + 1
+                collected_hidden_states.append(ssm_state)
+        else:
+            for token in hidden_states:
+                ssm_state = ssm_state + 1
+                collected_hidden_states.append(ssm_state)""",
+    )
+    assert_recurrent_blocks(text, "BLOCKED_RECURRENT_STATE_SEMANTICS_UNRESOLVED", "recurrent_state_update")
+
+
+def test_nested_recurrent_update_without_readout_preserves_blocker():
+    text = MAMBA_PASS.replace(
+        "        for token in hidden_states:\n            ssm_state = ssm_state + token\n            collected_hidden_states.append(ssm_state)",
+        """        if hidden_states:
+            for token in hidden_states:
+                ssm_state = ssm_state + token""",
+    )
+    assert_recurrent_blocks(text, "BLOCKED_RECURRENT_STATE_SEMANTICS_UNRESOLVED", "post-update readout unresolved")
+
+
+def test_nested_recurrent_for_does_not_broaden_update_dependencies():
+    text = MAMBA_PASS.replace(
+        "        for token in hidden_states:\n            ssm_state = ssm_state + token\n            collected_hidden_states.append(ssm_state)",
+        """        if hidden_states:
+            for token in hidden_states:
+                ssm_state = token
+                collected_hidden_states.append(ssm_state)""",
+    )
+    assert_recurrent_blocks(text, "BLOCKED_RECURRENT_STATE_SEMANTICS_UNRESOLVED", "recurrent_state_update")
 
 
 def test_ast_missing_and_ambiguous_symbols_block(tmp_path):
