@@ -118,34 +118,57 @@ _STAGE187_AUTHORITATIVE_DATA = Path(
     "controlled_v5_v3_without_time_swap_p3w6f2_r1_regenerated.jsonl"
 )
 _P4X_CANONICAL_DIR = Path(
-    "reports/reason_router_p2_p3w6f2_p4l_current_lineage_integrity_sidecar_"
-    "2f9e6076791358922e3ebd70e89533d9cb83b458"
+    "reports/reason_router_p3w7_p2_degeneracy_seed8192_revised_p4l_integrity_sidecar_"
+    "ff181f565cefa0a28280c084246862286daf1f2d_149adf32d9e8edbb0e7ea9294f7aeb330a71fc1b"
 )
 _STAGE187_AUTHORITATIVE_SIDECAR = Path(
     _P4X_CANONICAL_DIR
-    / "p3w6f2_p4l_current_lineage_effective_integrity_sidecar.jsonl"
+    / "p3w7_seed8192_revised_p4l_effective_integrity_sidecar.jsonl"
 )
 _P4X_CANONICAL_PROVENANCE = (
     _P4X_CANONICAL_DIR
-    / "p3w6f2_p4l_current_lineage_effective_integrity_sidecar_provenance.json"
+    / "p3w7_seed8192_revised_p4l_effective_integrity_sidecar_provenance.json"
 )
 _STAGE187_DATASET_SHA256 = "eb1e0614939cda1421052702223f0fda91f098564692141b085b95b18558c0d3"
 _P4X_SOURCE_DATASET_SEMANTIC_SHA256 = "3797c174294f6d4f4efbe3afd05530b39c891f1e986dc05fbace59345d6e9c3b"
-_P4X_SIDECAR_PHYSICAL_SHA256 = "2b8cffdf71d68a8abeb3b6eb3534eeb664bd012483bcebd9716c7a6645a487f1"
-_P4X_PROVENANCE_PHYSICAL_SHA256 = "9d248df09ae8ba471966c468a1e06278ad046908cfe53da623ecc95d8da4cdf2"
-_STAGE187_SIDECAR_SEMANTIC_SHA256 = "0e652c80ccae796bc2fded883ed099e0af71084a83e4a2fd4dd3524899d81b08"
+_P4X_SOURCE_DATASET_GIT_BLOB = "2b6829bf04a1333446aac6f7c603d9178b339f36"
+_P4X_SIDECAR_GIT_BLOB = "83d119e327acacda7cff6b4e24c6502898294e03"
+_P4X_PROVENANCE_GIT_BLOB = "6c970033fae82286452f6d635b94f441d0f3d048"
+_P4X_SIDECAR_PHYSICAL_SHA256 = "9bbbb48a3ac0b52cf420c0bcc52019ee85f7528e274b85c60fd7077d347e1f4d"
+_P4X_PROVENANCE_PHYSICAL_SHA256 = "170647d71d9c074c8bd7e87923b44d590b4159c693348cb335cd91a50ec777e8"
+_STAGE187_SIDECAR_SEMANTIC_SHA256 = "2528a05eb8ab6fa1b80abd86d4860beb36f38921f0bbc71e9a5b56b63ea832c9"
 _P4X_PROVENANCE_SCHEMA_VERSION = (
-    "P3W6F2P4L_CURRENT_LINEAGE_INTEGRITY_SIDECAR_PROVENANCE_V1"
+    "P3W7_SEED8192_REVISED_P4L_INTEGRITY_SIDECAR_PROVENANCE_V1"
 )
 _P4X_SIDECAR_SCHEMA_VERSION = (
-    "P3W6F2P4L_CURRENT_LINEAGE_EFFECTIVE_INTEGRITY_SIDECAR_V1"
+    "P3W7_SEED8192_REVISED_P4L_EFFECTIVE_INTEGRITY_SIDECAR_V1"
 )
-_P4X_P4L_AUTHORITY_COMMIT = "80cb034792f03226cf6e22c196c1229ed4e6dd62"
-_P4X_BUILDER_SOURCE_COMMIT = "2f9e6076791358922e3ebd70e89533d9cb83b458"
+_P4X_LINEAGE_MODE = "revised-seed8192"
+_P4X_P4L_AUTHORITY_COMMIT = "ff181f565cefa0a28280c084246862286daf1f2d"
+_P4X_SPLIT_AUTHORITY_COMMIT = "b4fbb5666d796161f95ae23612ce2448c25063ee"
+_P4X_BUILDER_SOURCE_COMMIT = "149adf32d9e8edbb0e7ea9294f7aeb330a71fc1b"
+_P4X_PHASE2_ACTIVATION_COMMIT = "cb6f4482b463d5f85331e2a6ddfbbd34499c930a"
+_P4X_PHASE2_EVIDENCE_FREEZE_COMMIT = "ef26310f3532368b9de6cb96a19cb26e7626716d"
+_P4X_PHASE2_EXECUTION_RECORD_BLOB = "0d07e52dd4240a84c60805a4495b18a727e289d3"
+_P4X_FROZEN_SPLIT_IDENTITIES = {
+    "pair_count": 300, "train_pair_count": 240, "dev_pair_count": 60,
+    "train_row_count": 2880, "dev_row_count": 720,
+    "pair_universe_sha256": "41f7a2cc533b9026a49d2b2587dd34894fadb908deab9f0a79133345569758f2",
+    "shuffled_pair_sha256": "ef15a6c3dc0f45ccad0f4e4e203eab9ff5dbfe8d64dde96ae14df3811bbd2d55",
+    "train_pair_sha256": "f6fffb94b6c33112bcfc8afb6da9f3aa76ae6e1327b8c38e69724fa4c2641049",
+    "dev_pair_sha256": "30951a7c637b10a5693289be40911ec5bf32de6eca3efd37a81f3fa268cd25a4",
+    "historical_seed174_dev_pair_sha256": "259bfce57e85121d6c1adccd20f3ac070108ff6310cfff546a2edd054835899d",
+    "ordered_train_row_sha256": "478013207699462a9434ce8f44991ce75b33650593b9aa942fff0f2be659c2a8",
+    "ordered_dev_row_sha256": "7870c83fe1f6e3a65311311ab05122736a007e6a92f4f04c28b2c72584ddfaa4",
+}
+_P4X_FROZEN_SPLIT_RULE = {
+    "dev_ratio": 0.2, "pair_level": True, "shuffle_seed": 8192,
+    "sorted_pair_ids": True,
+}
 _STAGE187_FIXED_MARGIN_LOGIT = 0.0
 _STAGE187_FIXED_WEIGHT = 0.05
 _STAGE187_EXPECTED_SIDECAR_ROWS = 3600
-_STAGE187_EXPECTED_ELIGIBLE_ROWS = 724
+_STAGE187_EXPECTED_ELIGIBLE_ROWS = 695
 _P4X_EXPECTED_REASON_ELIGIBLE_ROWS = 1769
 _P4X_EXPECTED_REASON_INELIGIBLE_ROWS = 1831
 _P4X_EXPECTED_INTEGRITY_COUNTS = {
@@ -153,7 +176,7 @@ _P4X_EXPECTED_INTEGRITY_COUNTS = {
     "INELIGIBLE": 1562,
     "UNRESOLVED": 269,
 }
-_P4X_EXPECTED_POSITIVE_MARGIN_INELIGIBLE_ROWS = 2876
+_P4X_EXPECTED_POSITIVE_MARGIN_INELIGIBLE_ROWS = 2905
 _P4X_SOURCE_DATASET_SEMANTIC_FIELDS = (
     "id",
     "pair_id",
@@ -3194,21 +3217,58 @@ def _p4x_reject_symlink_path_components(path: Path, *, label: str) -> None:
             raise ValueError(f"P4X_CANONICAL_IDENTITY_FAILED: {label} contains a symlink")
 
 
-def _p4x_read_sidecar_rows(sidecar_path: Path) -> list[dict[str, Any]]:
+def _p4x_authenticated_head_bytes(
+    path: Path, *, label: str, expected_blob: str, expected_sha256: str
+) -> bytes:
+    """Return the exact clean HEAD bytes for a frozen P4-X input."""
+    _p4x_reject_missing_or_symlink(path, label=label, require_file=True)
+    _p4x_reject_symlink_path_components(path, label=label)
+    try:
+        relative = path.resolve().relative_to(ROOT.resolve()).as_posix()
+    except ValueError as exc:
+        raise ValueError(f"P4X_CANONICAL_IDENTITY_FAILED: {label} is outside repository") from exc
+    for command, error in (
+        (["git", "-C", str(ROOT), "-c", "core.longpaths=true", "ls-files", "--error-unmatch", "--", relative], "UNTRACKED"),
+        (["git", "-C", str(ROOT), "-c", "core.longpaths=true", "diff", "--quiet", "--", relative], "UNSTAGED_DIRTY"),
+        (["git", "-C", str(ROOT), "-c", "core.longpaths=true", "diff", "--cached", "--quiet", "--", relative], "STAGED_DIRTY"),
+    ):
+        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if result.returncode != 0:
+            raise ValueError(f"P4X_CANONICAL_IDENTITY_FAILED: {label} {error}")
+    blob = subprocess.run(
+        ["git", "-C", str(ROOT), "-c", "core.longpaths=true", "rev-parse", f"HEAD:{relative}"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    verified_blob = blob.stdout.decode("ascii", "replace").strip()
+    if blob.returncode != 0 or verified_blob != expected_blob:
+        raise ValueError(f"P4X_CANONICAL_IDENTITY_FAILED: {label} GIT_BLOB_MISMATCH")
+    content = subprocess.run(
+        ["git", "-C", str(ROOT), "cat-file", "blob", verified_blob],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if content.returncode != 0:
+        raise ValueError(f"P4X_CANONICAL_IDENTITY_FAILED: {label} HEAD_BYTES_UNAVAILABLE")
+    if hashlib.sha256(content.stdout).hexdigest() != expected_sha256:
+        raise ValueError(f"P4X_CANONICAL_IDENTITY_FAILED: {label} GIT_LF_SHA_MISMATCH")
+    return content.stdout
+
+
+def _p4x_read_sidecar_rows(sidecar_bytes: bytes) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
-    with sidecar_path.open("r", encoding="utf-8") as handle:
-        for line_number, line in enumerate(handle, 1):
-            if not line.strip():
-                continue
-            row = json.loads(line)
-            if not isinstance(row, dict):
-                raise ValueError(f"P4X_SIDECAR_MALFORMED: line {line_number} is not an object")
-            rows.append(row)
+    for line_number, line in enumerate(sidecar_bytes.decode("utf-8").splitlines(), 1):
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        if not isinstance(row, dict):
+            raise ValueError(f"P4X_SIDECAR_MALFORMED: line {line_number} is not an object")
+        rows.append(row)
     return rows
 
 
-def _p4x_read_provenance(provenance_path: Path) -> dict[str, Any]:
-    value = json.loads(provenance_path.read_text(encoding="utf-8"))
+def _p4x_read_provenance(provenance_bytes: bytes) -> dict[str, Any]:
+    value = json.loads(provenance_bytes.decode("utf-8"))
     if not isinstance(value, dict):
         raise ValueError("P4X_PROVENANCE_MALFORMED: provenance JSON is not an object")
     return value
@@ -3224,7 +3284,9 @@ def _p4x_validate_provenance(
     required = {
         "schema_version": _P4X_PROVENANCE_SCHEMA_VERSION,
         "sidecar_schema_version": _P4X_SIDECAR_SCHEMA_VERSION,
+        "lineage_mode": _P4X_LINEAGE_MODE,
         "p4l_authority_commit": _P4X_P4L_AUTHORITY_COMMIT,
+        "split_authority_commit": _P4X_SPLIT_AUTHORITY_COMMIT,
         "builder_source_commit": _P4X_BUILDER_SOURCE_COMMIT,
         "row_count": _STAGE187_EXPECTED_SIDECAR_ROWS,
         "source_dataset_sha256": _STAGE187_DATASET_SHA256,
@@ -3238,8 +3300,13 @@ def _p4x_validate_provenance(
                 f"P4X_PROVENANCE_IDENTITY_MISMATCH: field={field} "
                 f"expected={expected!r} observed={provenance.get(field)!r}"
             )
+    if provenance.get("split_identities") != _P4X_FROZEN_SPLIT_IDENTITIES:
+        raise ValueError("P4X_PROVENANCE_IDENTITY_MISMATCH: split_identities")
+    if provenance.get("split_rule") != _P4X_FROZEN_SPLIT_RULE:
+        raise ValueError("P4X_PROVENANCE_IDENTITY_MISMATCH: split_rule")
     for field in (
         "training_admission_released",
+        "provenance_physical_sha256_self_certified",
         "implementation_authorized",
         "artifact_materialization_authorized_by_p4l",
         "a0_execution_authorized",
@@ -3252,6 +3319,7 @@ def _p4x_validate_provenance(
             raise ValueError(f"P4X_PROVENANCE_BOOLEAN_MALFORMED: field={field}")
     for field in (
         "training_admission_released",
+        "provenance_physical_sha256_self_certified",
         "a0_execution_authorized",
         "training_authorized",
         "evaluation_authorized",
@@ -3422,19 +3490,22 @@ def _p4x_validate_canonical_integrity_binding(
     _p4x_reject_missing_or_symlink(resolved_sidecar, label="sidecar", require_file=True)
     _p4x_reject_missing_or_symlink(resolved_provenance, label="provenance", require_file=True)
 
-    observed_source_physical = _stage187_file_sha256(resolved_data)
-    if observed_source_physical != _STAGE187_DATASET_SHA256:
-        raise ValueError("P4X_SOURCE_PHYSICAL_SHA_MISMATCH")
-    observed_sidecar_physical = _stage187_file_sha256(resolved_sidecar)
-    if observed_sidecar_physical != _P4X_SIDECAR_PHYSICAL_SHA256:
-        raise ValueError("P4X_SIDECAR_PHYSICAL_SHA_MISMATCH")
-    observed_provenance_physical = _stage187_file_sha256(resolved_provenance)
-    if observed_provenance_physical != _P4X_PROVENANCE_PHYSICAL_SHA256:
-        raise ValueError("P4X_PROVENANCE_PHYSICAL_SHA_MISMATCH")
+    source_bytes = _p4x_authenticated_head_bytes(
+        resolved_data, label="source dataset", expected_blob=_P4X_SOURCE_DATASET_GIT_BLOB,
+        expected_sha256=_STAGE187_DATASET_SHA256,
+    )
+    sidecar_bytes = _p4x_authenticated_head_bytes(
+        resolved_sidecar, label="sidecar", expected_blob=_P4X_SIDECAR_GIT_BLOB,
+        expected_sha256=_P4X_SIDECAR_PHYSICAL_SHA256,
+    )
+    provenance_bytes = _p4x_authenticated_head_bytes(
+        resolved_provenance, label="provenance", expected_blob=_P4X_PROVENANCE_GIT_BLOB,
+        expected_sha256=_P4X_PROVENANCE_PHYSICAL_SHA256,
+    )
     if expected_semantic_sha256 != _STAGE187_SIDECAR_SEMANTIC_SHA256:
         raise ValueError("P4X_SIDECAR_SEMANTIC_SHA_MISMATCH")
 
-    rows = _p4x_read_sidecar_rows(resolved_sidecar)
+    rows = _p4x_read_sidecar_rows(sidecar_bytes)
     _p4x_validate_stable_join(source_records, rows)
     observed_source_semantic = _p4x_source_dataset_semantic_sha256(source_records)
     if observed_source_semantic != _P4X_SOURCE_DATASET_SEMANTIC_SHA256:
@@ -3442,7 +3513,7 @@ def _p4x_validate_canonical_integrity_binding(
     observed_sidecar_semantic = _stage187_semantic_sidecar_sha256(rows)
     if observed_sidecar_semantic != _STAGE187_SIDECAR_SEMANTIC_SHA256:
         raise ValueError("P4X_SIDECAR_SEMANTIC_SHA_MISMATCH")
-    provenance = _p4x_read_provenance(resolved_provenance)
+    provenance = _p4x_read_provenance(provenance_bytes)
     _p4x_validate_provenance(
         provenance,
         resolved_data=resolved_data,
@@ -3451,16 +3522,16 @@ def _p4x_validate_canonical_integrity_binding(
     )
     count_audit = _p4x_validate_sidecar_rows(rows, resolved_data=resolved_data)
     audit = {
-        "source": "P4-L canonical current-lineage effective integrity sidecar",
-        "canonical_binding_stage": "P3-W6-F2-P4-X",
+        "source": "P4-L canonical revised-seed8192 effective integrity sidecar",
+        "canonical_binding_stage": "P3-W7-P2-P4-X",
         "canonical_directory": str(canonical_dir),
         "source_dataset_path": str(resolved_data),
-        "source_dataset_physical_sha256": observed_source_physical,
+        "source_dataset_git_lf_sha256": hashlib.sha256(source_bytes).hexdigest(),
         "source_dataset_semantic_sha256": observed_source_semantic,
         "sidecar_path": str(resolved_sidecar),
         "provenance_path": str(resolved_provenance),
-        "sidecar_physical_sha256": observed_sidecar_physical,
-        "provenance_physical_sha256": observed_provenance_physical,
+        "sidecar_physical_sha256": hashlib.sha256(sidecar_bytes).hexdigest(),
+        "provenance_physical_sha256": hashlib.sha256(provenance_bytes).hexdigest(),
         "expected_semantic_sha256": expected_semantic_sha256,
         "observed_semantic_sha256": observed_sidecar_semantic,
         "sidecar_schema_version": _P4X_SIDECAR_SCHEMA_VERSION,
@@ -3550,12 +3621,12 @@ def _stage187_load_integrity_sidecar(
             eligible_rows.append(row)
 
     if len(eligible_rows) != _STAGE187_EXPECTED_ELIGIBLE_ROWS:
-        raise ValueError("eligible sidecar row count is not 724")
+        raise ValueError("eligible sidecar row count is not 695")
     audit.update({
         "enabled": True,
         "default_off": True,
         "eligible_rows": len(eligible_rows),
-        "observed_dataset_sha256": audit["source_dataset_physical_sha256"],
+        "observed_dataset_sha256": audit["source_dataset_git_lf_sha256"],
         "expected_sidecar_semantic_sha256": expected_semantic_sha256,
         "observed_sidecar_semantic_sha256": audit["observed_semantic_sha256"],
         "score_source": 'output["frame_logit"]',
@@ -16335,7 +16406,7 @@ def _p2_checkpoint_metadata_from_args(args: argparse.Namespace) -> dict[str, Any
         "reason_min_train_count": getattr(args, "reason_min_train_count", None),
         "reason_min_dev_count": getattr(args, "reason_min_dev_count", None),
         "integrity_sidecar_semantic_sha256": getattr(args, "expected_integrity_sidecar_semantic_sha256", None),
-        "integrity_sidecar_source": "P4-L canonical current-lineage effective integrity sidecar",
+        "integrity_sidecar_source": "P4-L canonical revised-seed8192 effective integrity sidecar",
         "integrity_sidecar_path": _STAGE187_AUTHORITATIVE_SIDECAR.as_posix(),
         "integrity_sidecar_physical_sha256": _P4X_SIDECAR_PHYSICAL_SHA256,
         "integrity_sidecar_provenance_path": _P4X_CANONICAL_PROVENANCE.as_posix(),
@@ -16343,7 +16414,12 @@ def _p2_checkpoint_metadata_from_args(args: argparse.Namespace) -> dict[str, Any
         "integrity_sidecar_provenance_schema_version": _P4X_PROVENANCE_SCHEMA_VERSION,
         "integrity_sidecar_schema_version": _P4X_SIDECAR_SCHEMA_VERSION,
         "p4l_authority_commit": _P4X_P4L_AUTHORITY_COMMIT,
+        "p4l_split_authority_commit": _P4X_SPLIT_AUTHORITY_COMMIT,
         "p4l_builder_source_commit": _P4X_BUILDER_SOURCE_COMMIT,
+        "p4l_phase2_activation_commit": _P4X_PHASE2_ACTIVATION_COMMIT,
+        "p4l_phase2_evidence_freeze_commit": _P4X_PHASE2_EVIDENCE_FREEZE_COMMIT,
+        "p4l_phase2_execution_record_blob": _P4X_PHASE2_EXECUTION_RECORD_BLOB,
+        "p4l_lineage_mode": _P4X_LINEAGE_MODE,
         "data_sha256": _STAGE187_DATASET_SHA256,
         "data_semantic_sha256": _P4X_SOURCE_DATASET_SEMANTIC_SHA256,
         "data_path": _STAGE187_AUTHORITATIVE_DATA.as_posix(),
@@ -19358,7 +19434,7 @@ def main(argv: list[str] | None = None) -> int:
         if len(_stage187_mask_values) != len(train_records):
             raise ValueError("compatible-positive eligibility mask alignment failed")
         if sum(_stage187_mask_values) != _STAGE187_EXPECTED_ELIGIBLE_ROWS:
-            raise ValueError("aligned train eligibility mask does not contain exactly 605 rows")
+            raise ValueError("aligned train eligibility mask does not contain exactly 695 rows")
         _stage187_train_eligible_mask = torch.tensor(
             _stage187_mask_values, dtype=torch.bool, device=device
         )

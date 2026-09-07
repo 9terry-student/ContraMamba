@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
+import subprocess
 
 import pytest
 
@@ -111,8 +113,12 @@ def _install_p4x_fixture(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, *, mut
     provenance = {
         "schema_version": trainer._P4X_PROVENANCE_SCHEMA_VERSION,
         "sidecar_schema_version": trainer._P4X_SIDECAR_SCHEMA_VERSION,
+        "lineage_mode": trainer._P4X_LINEAGE_MODE,
         "p4l_authority_commit": trainer._P4X_P4L_AUTHORITY_COMMIT,
+        "split_authority_commit": trainer._P4X_SPLIT_AUTHORITY_COMMIT,
         "builder_source_commit": trainer._P4X_BUILDER_SOURCE_COMMIT,
+        "split_identities": trainer._P4X_FROZEN_SPLIT_IDENTITIES,
+        "split_rule": trainer._P4X_FROZEN_SPLIT_RULE,
         "row_count": trainer._STAGE187_EXPECTED_SIDECAR_ROWS,
         "source_dataset_path": data.as_posix(),
         "source_dataset_sha256": trainer._STAGE187_DATASET_SHA256,
@@ -122,6 +128,7 @@ def _install_p4x_fixture(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, *, mut
         "sidecar_semantic_sha256": trainer._STAGE187_SIDECAR_SEMANTIC_SHA256,
         "provenance_path": provenance_path.as_posix(),
         "training_admission_released": False,
+        "provenance_physical_sha256_self_certified": False,
         "implementation_authorized": True,
         "artifact_materialization_authorized_by_p4l": False,
         "a0_execution_authorized": False,
@@ -132,6 +139,9 @@ def _install_p4x_fixture(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, *, mut
     }
     provenance_path.write_text(json.dumps(provenance, sort_keys=True), encoding="utf-8")
     monkeypatch.setattr(trainer, "_P4X_PROVENANCE_PHYSICAL_SHA256", trainer._stage187_file_sha256(provenance_path))
+    def authenticated(path, **_kwargs):
+        return Path(path).read_bytes()
+    monkeypatch.setattr(trainer, "_p4x_authenticated_head_bytes", authenticated)
     return data, sidecar, provenance_path, source_rows, sidecar_rows
 
 
@@ -148,9 +158,11 @@ def test_p4x_canonical_binding_success_metadata_and_join(monkeypatch, tmp_path):
     data, sidecar, _provenance, source_rows, _sidecar_rows = _install_p4x_fixture(monkeypatch, tmp_path)
     by_id, audit = _load(data, sidecar, source_rows)
     assert list(by_id) == [row["id"] for row in source_rows]
-    assert audit["source"] == "P4-L canonical current-lineage effective integrity sidecar"
+    assert audit["source"] == "P4-L canonical revised-seed8192 effective integrity sidecar"
     assert audit["stable_join_key"] == {"source": "id", "sidecar": "row_id"}
     assert audit["count_reconciliation"]["p2_reason_supervision_eligible_true"] == 1
+    assert audit["source_dataset_git_lf_sha256"] == trainer._STAGE187_DATASET_SHA256
+    assert audit["source_dataset_semantic_sha256"] == trainer._P4X_SOURCE_DATASET_SEMANTIC_SHA256
     metadata = trainer._p2_checkpoint_metadata_from_args(
         type("Args", (), {
             "reason_router_arm": "A3",
@@ -164,22 +176,13 @@ def test_p4x_canonical_binding_success_metadata_and_join(monkeypatch, tmp_path):
 @pytest.mark.parametrize(
     ("field", "expected_error"),
     [
-        ("sidecar_physical", "P4X_SIDECAR_PHYSICAL_SHA_MISMATCH"),
-        ("provenance_physical", "P4X_PROVENANCE_PHYSICAL_SHA_MISMATCH"),
-        ("source_physical", "P4X_SOURCE_PHYSICAL_SHA_MISMATCH"),
         ("sidecar_semantic", "P4X_SIDECAR_SEMANTIC_SHA_MISMATCH"),
         ("source_semantic", "P4X_SOURCE_SEMANTIC_SHA_MISMATCH"),
     ],
 )
 def test_p4x_hash_mismatches_fail_closed(monkeypatch, tmp_path, field, expected_error):
     data, sidecar, _provenance, source_rows, _sidecar_rows = _install_p4x_fixture(monkeypatch, tmp_path)
-    if field == "sidecar_physical":
-        monkeypatch.setattr(trainer, "_P4X_SIDECAR_PHYSICAL_SHA256", "0" * 64)
-    elif field == "provenance_physical":
-        monkeypatch.setattr(trainer, "_P4X_PROVENANCE_PHYSICAL_SHA256", "0" * 64)
-    elif field == "source_physical":
-        monkeypatch.setattr(trainer, "_STAGE187_DATASET_SHA256", "0" * 64)
-    elif field == "sidecar_semantic":
+    if field == "sidecar_semantic":
         monkeypatch.setattr(trainer, "_STAGE187_SIDECAR_SEMANTIC_SHA256", "0" * 64)
     else:
         monkeypatch.setattr(trainer, "_P4X_SOURCE_DATASET_SEMANTIC_SHA256", "0" * 64)
@@ -287,4 +290,191 @@ def test_p4x_reason_loader_and_positive_margin_share_canonical_gate(monkeypatch,
     assert eligibility == {"p1__none": True, "p2__none": False, "p3__none": False}
     assert split_by_id == {"p1__none": "train", "p2__none": "train", "p3__none": "dev"}
     assert audit["eligible_rows"] == 1
+    assert audit["observed_dataset_sha256"] == audit["source_dataset_git_lf_sha256"]
+    assert "source_dataset_physical_sha256" not in audit
     assert audit["fail_closed_pretraining"] is True
+
+
+def test_revised_seed8192_frozen_bindings_and_metadata_are_immutable():
+    assert trainer._P4X_CANONICAL_DIR.as_posix().endswith(
+        "ff181f565cefa0a28280c084246862286daf1f2d_149adf32d9e8edbb0e7ea9294f7aeb330a71fc1b"
+    )
+    assert trainer._P4X_SIDECAR_GIT_BLOB == "83d119e327acacda7cff6b4e24c6502898294e03"
+    assert trainer._P4X_PROVENANCE_GIT_BLOB == "6c970033fae82286452f6d635b94f441d0f3d048"
+    assert trainer._P4X_SIDECAR_PHYSICAL_SHA256 == "9bbbb48a3ac0b52cf420c0bcc52019ee85f7528e274b85c60fd7077d347e1f4d"
+    assert trainer._P4X_PROVENANCE_PHYSICAL_SHA256 == "170647d71d9c074c8bd7e87923b44d590b4159c693348cb335cd91a50ec777e8"
+    assert trainer._P4X_LINEAGE_MODE == "revised-seed8192"
+    assert trainer._P4X_P4L_AUTHORITY_COMMIT == "ff181f565cefa0a28280c084246862286daf1f2d"
+    assert trainer._P4X_SPLIT_AUTHORITY_COMMIT == "b4fbb5666d796161f95ae23612ce2448c25063ee"
+    assert trainer._P4X_FROZEN_SPLIT_IDENTITIES["train_row_count"] == 2880
+    assert trainer._P4X_FROZEN_SPLIT_IDENTITIES["dev_row_count"] == 720
+    assert trainer._STAGE187_EXPECTED_ELIGIBLE_ROWS == 695
+    assert trainer._P4X_EXPECTED_POSITIVE_MARGIN_INELIGIBLE_ROWS == 2905
+    metadata = trainer._p2_checkpoint_metadata_from_args(type("Args", (), {"reason_router_arm": "A3"})())
+    assert metadata["p4l_phase2_activation_commit"] == "cb6f4482b463d5f85331e2a6ddfbbd34499c930a"
+    assert metadata["p4l_phase2_evidence_freeze_commit"] == "ef26310f3532368b9de6cb96a19cb26e7626716d"
+    assert metadata["p4l_phase2_execution_record_blob"] == "0d07e52dd4240a84c60805a4495b18a727e289d3"
+
+
+def test_revised_canonical_head_bytes_are_authenticated_and_consumed(monkeypatch):
+    calls: list[list[str]] = []
+    original_run = trainer.subprocess.run
+
+    def recording_run(command, *args, **kwargs):
+        calls.append(command)
+        return original_run(command, *args, **kwargs)
+
+    monkeypatch.setattr(trainer.subprocess, "run", recording_run)
+    source_bytes = trainer._p4x_authenticated_head_bytes(
+        trainer.ROOT / trainer._STAGE187_AUTHORITATIVE_DATA,
+        label="source dataset", expected_blob=trainer._P4X_SOURCE_DATASET_GIT_BLOB,
+        expected_sha256=trainer._STAGE187_DATASET_SHA256,
+    )
+    sidecar_bytes = trainer._p4x_authenticated_head_bytes(
+        trainer.ROOT / trainer._STAGE187_AUTHORITATIVE_SIDECAR,
+        label="sidecar", expected_blob=trainer._P4X_SIDECAR_GIT_BLOB,
+        expected_sha256=trainer._P4X_SIDECAR_PHYSICAL_SHA256,
+    )
+    provenance_bytes = trainer._p4x_authenticated_head_bytes(
+        trainer.ROOT / trainer._P4X_CANONICAL_PROVENANCE,
+        label="provenance", expected_blob=trainer._P4X_PROVENANCE_GIT_BLOB,
+        expected_sha256=trainer._P4X_PROVENANCE_PHYSICAL_SHA256,
+    )
+    assert trainer._p4x_read_sidecar_rows(sidecar_bytes)[0]["schema_version"] == trainer._P4X_SIDECAR_SCHEMA_VERSION
+    provenance = trainer._p4x_read_provenance(provenance_bytes)
+    assert provenance["schema_version"] == trainer._P4X_PROVENANCE_SCHEMA_VERSION
+    assert provenance["training_authorized"] is False
+    assert provenance["evaluation_authorized"] is False
+    assert provenance["gpu_authorized"] is False
+    assert hashlib.sha256(source_bytes).hexdigest() == trainer._STAGE187_DATASET_SHA256
+    assert b"\r\n" in (trainer.ROOT / trainer._STAGE187_AUTHORITATIVE_DATA).read_bytes()
+    assert source_bytes != (trainer.ROOT / trainer._STAGE187_AUTHORITATIVE_DATA).read_bytes()
+    assert hashlib.sha256(sidecar_bytes).hexdigest() == trainer._P4X_SIDECAR_PHYSICAL_SHA256
+    assert hashlib.sha256(provenance_bytes).hexdigest() == trainer._P4X_PROVENANCE_PHYSICAL_SHA256
+    assert [["cat-file", "blob", trainer._P4X_SOURCE_DATASET_GIT_BLOB],
+            ["cat-file", "blob", trainer._P4X_SIDECAR_GIT_BLOB],
+            ["cat-file", "blob", trainer._P4X_PROVENANCE_GIT_BLOB]] == [
+                command[-3:] for command in calls if "cat-file" in command
+            ]
+    assert not any("show" in command for command in calls)
+    assert all("core.longpaths=true" in command for command in calls if "cat-file" not in command)
+
+
+def _temporary_authenticated_git_repository(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> dict[str, dict]:
+    """Create tracked canonical inputs without touching the real frozen evidence."""
+    repository = tmp_path / "p4x-authentication-repository"
+    repository.mkdir()
+    artifacts = {
+        "source": (repository / "data" / "source.jsonl", b'{"id":"fixture"}\n', "source dataset"),
+        "sidecar": (repository / "canonical" / "sidecar.jsonl", b'{"row_id":"fixture"}\n', "sidecar"),
+        "provenance": (repository / "canonical" / "provenance.json", b'{"fixture":true}\n', "provenance"),
+    }
+    for path, content, _label in artifacts.values():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(content)
+
+    def git(*args: str) -> subprocess.CompletedProcess:
+        return subprocess.run(
+            ["git", "-C", str(repository), "-c", "core.longpaths=true", *args],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+
+    git("init")
+    git("add", "--all")
+    git("-c", "user.name=P4X Fixture", "-c", "user.email=p4x-fixture@example.invalid", "commit", "-m", "fixture")
+    fixture: dict[str, dict] = {}
+    for name, (path, content, label) in artifacts.items():
+        relative = path.relative_to(repository).as_posix()
+        blob = git("rev-parse", f"HEAD:{relative}").stdout.decode("ascii").strip()
+        fixture[name] = {
+            "path": path,
+            "content": content,
+            "label": label,
+            "blob": blob,
+            "sha256": hashlib.sha256(content).hexdigest(),
+            "relative": relative,
+        }
+    monkeypatch.setattr(trainer, "ROOT", repository)
+    return fixture
+
+
+def test_authenticated_head_bytes_clean_fixture_consumes_head_blobs(monkeypatch, tmp_path):
+    fixture = _temporary_authenticated_git_repository(monkeypatch, tmp_path)
+    calls: list[list[str]] = []
+    original_run = trainer.subprocess.run
+
+    def recording_run(command, *args, **kwargs):
+        calls.append(command)
+        return original_run(command, *args, **kwargs)
+
+    monkeypatch.setattr(trainer.subprocess, "run", recording_run)
+    consumed = {
+        name: trainer._p4x_authenticated_head_bytes(
+            artifact["path"],
+            label=artifact["label"],
+            expected_blob=artifact["blob"],
+            expected_sha256=artifact["sha256"],
+        )
+        for name, artifact in fixture.items()
+    }
+    assert consumed == {name: artifact["content"] for name, artifact in fixture.items()}
+    assert trainer._p4x_read_sidecar_rows(consumed["sidecar"]) == [{"row_id": "fixture"}]
+    assert trainer._p4x_read_provenance(consumed["provenance"]) == {"fixture": True}
+    assert [command[-3:] for command in calls if "cat-file" in command] == [
+        ["cat-file", "blob", fixture[name]["blob"]] for name in fixture
+    ]
+    assert not any("show" in command for command in calls)
+    assert all("core.longpaths=true" in command for command in calls if "cat-file" not in command)
+
+
+@pytest.mark.parametrize("artifact_name", ["sidecar", "provenance"])
+@pytest.mark.parametrize(("stage", "expected_error"), [
+    (False, "UNSTAGED_DIRTY"),
+    (True, "STAGED_DIRTY"),
+])
+def test_authenticated_head_bytes_rejects_real_dirty_canonical_artifacts(
+    monkeypatch, tmp_path, artifact_name, stage, expected_error
+):
+    fixture = _temporary_authenticated_git_repository(monkeypatch, tmp_path)
+    artifact = fixture[artifact_name]
+    artifact["path"].write_bytes(artifact["content"] + b"dirty\n")
+    if stage:
+        subprocess.run(
+            ["git", "-C", str(trainer.ROOT), "-c", "core.longpaths=true", "add", "--", artifact["relative"]],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+    with pytest.raises(ValueError, match=expected_error):
+        trainer._p4x_authenticated_head_bytes(
+            artifact["path"],
+            label=artifact["label"],
+            expected_blob=artifact["blob"],
+            expected_sha256=artifact["sha256"],
+        )
+
+
+@pytest.mark.parametrize("artifact_name", ["sidecar", "provenance", "source"])
+def test_authenticated_head_bytes_rejects_canonical_git_lf_sha_mismatch(
+    monkeypatch, tmp_path, artifact_name
+):
+    fixture = _temporary_authenticated_git_repository(monkeypatch, tmp_path)
+    artifact = fixture[artifact_name]
+    calls: list[list[str]] = []
+    original_run = trainer.subprocess.run
+
+    def recording_run(command, *args, **kwargs):
+        calls.append(command)
+        return original_run(command, *args, **kwargs)
+
+    monkeypatch.setattr(trainer.subprocess, "run", recording_run)
+    with pytest.raises(ValueError, match="GIT_LF_SHA_MISMATCH"):
+        trainer._p4x_authenticated_head_bytes(
+            artifact["path"],
+            label=artifact["label"],
+            expected_blob=artifact["blob"],
+            expected_sha256="0" * 64,
+        )
+    assert ["cat-file", "blob", artifact["blob"]] in [command[-3:] for command in calls if "cat-file" in command]
