@@ -2,6 +2,7 @@ import errno
 import json
 import os
 import random
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -73,6 +74,171 @@ def test_deterministic_split_is_pair_level_and_seeded():
     random.Random(174).shuffle(shuffled)
     expected_dev = set(shuffled[:2])
     assert observed == {pair_id: "dev" if pair_id in expected_dev else "train" for pair_id in pair_ids}
+
+
+def test_lineage_modes_are_explicit_and_historical_default_is_preserved():
+    historical = builder.lineage_config()
+    revised = builder.lineage_config(builder.REVISED_LINEAGE_MODE)
+    assert historical.mode == builder.HISTORICAL_LINEAGE_MODE
+    assert historical.split_seed == 174
+    assert historical.dev_ratio == 0.2
+    assert historical.sidecar_name == builder.SIDECAR_NAME
+    assert revised.split_seed == 8192
+    assert revised.dev_ratio == 0.2
+    assert revised.p4l_authority_commit == "ff181f565cefa0a28280c084246862286daf1f2d"
+    assert revised.split_authority_commit == "b4fbb5666d796161f95ae23612ce2448c25063ee"
+    assert revised.sidecar_name == "p3w7_seed8192_revised_p4l_effective_integrity_sidecar.jsonl"
+    assert revised.provenance_name == "p3w7_seed8192_revised_p4l_effective_integrity_sidecar_provenance.json"
+    with pytest.raises(builder.BuildBlocked, match="LINEAGE_MODE_UNSUPPORTED"):
+        builder.lineage_config("seed8192")
+
+
+def test_revised_output_path_is_distinct_and_binds_full_commits(tmp_path):
+    commit = "a" * 40
+    historical = builder.canonical_output_dir(tmp_path, commit)
+    revised = builder.canonical_output_dir(tmp_path, commit, builder.lineage_config(builder.REVISED_LINEAGE_MODE))
+    assert historical.name == f"reason_router_p2_p3w6f2_p4l_current_lineage_integrity_sidecar_{commit}"
+    assert revised.name == f"reason_router_p3w7_p2_degeneracy_seed8192_revised_p4l_integrity_sidecar_ff181f565cefa0a28280c084246862286daf1f2d_{commit}"
+    assert revised != historical
+
+
+def test_revised_split_identities_and_row_identities_match_authority():
+    repo_root = Path(__file__).resolve().parents[1]
+    config = builder.lineage_config(builder.REVISED_LINEAGE_MODE)
+    source = repo_root / builder.SOURCE_DATASET_PATH
+    rows = builder.validate_source_dataset(repo_root, source, config)
+    split = builder.deterministic_pair_split(rows, seed=config.split_seed, dev_ratio=config.dev_ratio)
+    builder.validate_split_identities(rows, split, config)
+    assert sum(value == "train" for value in split.values()) == 240
+    assert sum(value == "dev" for value in split.values()) == 60
+    assert sum(split[row["pair_id"]] == "train" for row in rows) == 2880
+    assert sum(split[row["pair_id"]] == "dev" for row in rows) == 720
+
+
+def test_revised_dataset_accepts_git_lf_identity_and_consumed_working_tree_semantics(monkeypatch, tmp_path):
+    repo_root = Path(__file__).resolve().parents[1]
+    relative = "frozen/source.jsonl"
+    path = tmp_path / relative
+    path.parent.mkdir(parents=True)
+    path.write_bytes((repo_root / builder.SOURCE_DATASET_PATH).read_bytes())
+    monkeypatch.setattr(builder, "SOURCE_DATASET_PATH", relative)
+    monkeypatch.setattr(builder, "tracked_git_blob_sha256", lambda root, observed: builder.SOURCE_DATASET_SHA256)
+
+    rows = builder.validate_source_dataset(tmp_path, path, builder.lineage_config(builder.REVISED_LINEAGE_MODE))
+
+    assert len(rows) == builder.EXPECTED_ROW_COUNT
+
+
+def test_revised_dataset_rejects_semantically_modified_working_tree_despite_valid_git_lf_blob(monkeypatch, tmp_path):
+    repo_root = Path(__file__).resolve().parents[1]
+    relative = "frozen/source.jsonl"
+    path = tmp_path / relative
+    path.parent.mkdir(parents=True)
+    path.write_bytes((repo_root / builder.SOURCE_DATASET_PATH).read_bytes())
+    monkeypatch.setattr(builder, "SOURCE_DATASET_PATH", relative)
+    monkeypatch.setattr(builder, "tracked_git_blob_sha256", lambda root, observed: builder.SOURCE_DATASET_SHA256)
+    lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
+    first_row = json.loads(lines[0])
+    first_row["claim"] = f"mutated {first_row['claim']}"
+    path.write_text(json.dumps(first_row) + "\n" + "".join(lines[1:]), encoding="utf-8", newline="\n")
+
+    with pytest.raises(builder.BuildBlocked, match="SOURCE_DATASET_SEMANTIC_SHA_MISMATCH"):
+        builder.validate_source_dataset(tmp_path, path, builder.lineage_config(builder.REVISED_LINEAGE_MODE))
+
+
+def git(repo_root, *args):
+    return subprocess.run(["git", *args], cwd=repo_root, check=True, capture_output=True)
+
+
+def frozen_git_repo(tmp_path, relative="frozen/input.jsonl", payload=b'{"source":"head"}\n', checkout_crlf=False):
+    git(tmp_path, "init")
+    git(tmp_path, "config", "user.email", "test@example.invalid")
+    git(tmp_path, "config", "user.name", "test")
+    if checkout_crlf:
+        git(tmp_path, "config", "core.autocrlf", "true")
+    path = tmp_path / relative
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(payload)
+    git(tmp_path, "add", relative)
+    git(tmp_path, "commit", "-m", "frozen input")
+    return path, builder.sha256_bytes(payload)
+
+
+def test_revised_canonical_reader_consumes_clean_crlf_checkout_blob_bytes(tmp_path):
+    relative = "frozen/input.jsonl"
+    path, expected = frozen_git_repo(tmp_path, relative, checkout_crlf=True)
+    path.write_bytes(b'{"source":"head"}\r\n')
+
+    assert path.read_bytes() == b'{"source":"head"}\r\n'
+    assert subprocess.run(["git", "diff", "--quiet", "--", relative], cwd=tmp_path).returncode == 0
+    canonical = builder.canonical_frozen_head_bytes(tmp_path, relative, expected)
+
+    assert canonical == b'{"source":"head"}\n'
+    assert builder.read_jsonl_bytes(canonical, relative) == [{"source": "head"}]
+
+
+@pytest.mark.parametrize(
+    ("relative", "staged", "reason"),
+    [
+        ("frozen/p4b_rows.jsonl", False, "FROZEN_INPUT_WORKTREE_DIRTY"),
+        ("frozen/p4b_rows.jsonl", True, "FROZEN_INPUT_INDEX_DIRTY"),
+        ("frozen/p4b_summary.json", False, "FROZEN_INPUT_WORKTREE_DIRTY"),
+        ("frozen/p4b_provenance.json", False, "FROZEN_INPUT_WORKTREE_DIRTY"),
+        ("frozen/stage185_source.py", False, "FROZEN_INPUT_WORKTREE_DIRTY"),
+    ],
+)
+def test_revised_canonical_reader_fails_closed_for_dirty_bridge_paths(tmp_path, relative, staged, reason):
+    path, expected = frozen_git_repo(tmp_path, relative)
+    path.write_bytes(b"modified\n")
+    if staged:
+        git(tmp_path, "add", relative)
+
+    with pytest.raises(builder.BuildBlocked, match=f"{reason}:{relative}"):
+        builder.canonical_frozen_head_bytes(tmp_path, relative, expected)
+
+
+def test_revised_canonical_reader_rejects_head_blob_hash_mismatch(tmp_path):
+    _, expected = frozen_git_repo(tmp_path)
+    with pytest.raises(builder.BuildBlocked, match="FROZEN_INPUT_GIT_BLOB_SHA256_MISMATCH"):
+        builder.canonical_frozen_head_bytes(tmp_path, "frozen/input.jsonl", "0" * 64)
+
+
+def test_real_revised_build_completes_in_memory_without_canonical_output():
+    repo_root = Path(__file__).resolve().parents[1]
+    config = builder.lineage_config(builder.REVISED_LINEAGE_MODE)
+    output_dir = builder.canonical_output_dir(repo_root, "a" * 40, config)
+    assert not output_dir.exists()
+
+    rows, provenance, sidecar_payload, provenance_payload = builder.build_sidecar_artifacts(
+        repo_root=repo_root,
+        builder_commit="a" * 40,
+        created_at="2026-09-07T00:00:00Z",
+        lineage_mode=builder.REVISED_LINEAGE_MODE,
+    )
+
+    assert len(rows) == 3600
+    assert provenance["p4l_authority_commit"] == config.p4l_authority_commit
+    assert provenance["split_authority_commit"] == config.split_authority_commit
+    assert sidecar_payload and provenance_payload
+    assert not output_dir.exists()
+
+
+def test_revised_provenance_binds_lineage_without_future_artifact_hashes(tmp_path):
+    config = builder.lineage_config(builder.REVISED_LINEAGE_MODE)
+    provenance = builder.build_provenance(
+        builder_commit="b" * 40,
+        builder_source_sha256="c" * 64,
+        output_dir=Path("reports/revised"),
+        sidecar_physical_sha256="d" * 64,
+        sidecar_semantic_sha256="e" * 64,
+        config=config,
+    )
+    assert provenance["lineage_mode"] == builder.REVISED_LINEAGE_MODE
+    assert provenance["split_rule"]["shuffle_seed"] == 8192
+    assert provenance["split_rule"]["dev_ratio"] == 0.2
+    assert provenance["provenance_physical_sha256_self_certified"] is False
+    assert provenance["builder_source_commit"] == "b" * 40
+    assert "revised_p4l_provenance_physical_sha256" not in provenance
 
 
 def test_canonical_mapping_requires_unique_same_pair_none_self_anchor():
