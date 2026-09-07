@@ -45,6 +45,35 @@ class Cache:
 """
 
 
+NESTED_IF_INITIALIZER_PASS = """\
+class MambaMixer:
+    def forward(self, hidden_states):
+        if hidden_states.device.type == "cpu":
+            return self.slow_forward(hidden_states)
+        else:
+            raise RuntimeError("non-cpu backend unresolved")
+
+    def slow_forward(self, hidden_states, cache_params=None):
+        if cache_params is not None:
+            ssm_state = cache_params.ssm_states[self.layer_idx].clone()
+        else:
+            ssm_state = torch.zeros(1)
+        conv_state = hidden_states.new_zeros(1)
+        collected_hidden_states = []
+        for token in hidden_states:
+            ssm_state = ssm_state + token
+            collected_hidden_states.append(ssm_state)
+        return {"hidden_states": collected_hidden_states}
+"""
+
+
+def assert_recurrent_blocks(text: str, status: str, note: str):
+    with pytest.raises(preflight.PreflightBlocked) as exc:
+        preflight.classify_recurrent_semantics(text)
+    assert exc.value.status == status
+    assert exc.value.note == note
+
+
 def write_package(tmp_path: Path, mamba_text: str = MAMBA_PASS, cache_text: str = CACHE_PASS) -> dict[str, Path]:
     root = tmp_path / "site-packages"
     pkg = root / "transformers"
@@ -341,6 +370,147 @@ def test_ast_symbol_binding_and_stable_span(tmp_path):
     assert locations["mixer_forward_dispatch"]["source_sha256"] == mamba.sha256
 
 
+def test_nested_if_recurrent_state_initializer_is_recognized():
+    assert preflight.classify_recurrent_semantics(NESTED_IF_INITIALIZER_PASS) == "SOURCE_SUPPORTS_O0C_CONVENTION"
+
+
+def test_nested_if_recurrent_state_initializer_symbol_location(tmp_path):
+    paths = write_package(tmp_path, mamba_text=NESTED_IF_INITIALIZER_PASS)
+    mamba = preflight.raw_source_identity(paths["mamba"], preflight.SOURCE_KEYS["mamba"])
+    cache = preflight.raw_source_identity(paths["cache"], preflight.SOURCE_KEYS["cache"])
+    locations = preflight.bind_symbol_locations(mamba, cache)
+    initializer_line = next(
+        line_number
+        for line_number, line in enumerate(NESTED_IF_INITIALIZER_PASS.splitlines(), start=1)
+        if "ssm_state = torch.zeros(1)" in line
+    )
+    assert locations["recurrent_state_initialization"]["start_line"] == initializer_line
+    assert locations["recurrent_state_initialization"]["end_line"] == initializer_line
+
+
+def test_direct_body_recurrent_state_initializer_remains_supported():
+    assert preflight.classify_recurrent_semantics(MAMBA_PASS) == "SOURCE_SUPPORTS_O0C_CONVENTION"
+
+
+def test_zero_match_recurrent_state_initializer_fails_closed():
+    text = MAMBA_PASS.replace("ssm_state = hidden_states.new_zeros(1)", "ssm_state = previous_state.clone()")
+    assert_recurrent_blocks(
+        text,
+        "BLOCKED_RECURRENT_STATE_SEMANTICS_UNRESOLVED",
+        "recurrent_state_initialization",
+    )
+
+
+def test_multiple_recurrent_state_initializers_fail_closed():
+    text = """\
+class MambaMixer:
+    def forward(self, hidden_states):
+        if hidden_states.device.type == "cpu":
+            return self.slow_forward(hidden_states)
+        else:
+            raise RuntimeError("non-cpu backend unresolved")
+
+    def slow_forward(self, hidden_states, cache_params=None):
+        if cache_params is not None:
+            ssm_state = hidden_states.new_zeros(1)
+        else:
+            ssm_state = torch.zeros(1)
+        conv_state = hidden_states.new_zeros(1)
+        collected_hidden_states = []
+        for token in hidden_states:
+            ssm_state = ssm_state + token
+            collected_hidden_states.append(ssm_state)
+        return {"hidden_states": collected_hidden_states}
+"""
+    assert_recurrent_blocks(
+        text,
+        "BLOCKED_REQUIRED_SYMBOL_AMBIGUOUS",
+        "recurrent_state_initialization",
+    )
+
+
+def test_irrelevant_zero_assignments_and_cache_clone_do_not_qualify():
+    text = """\
+class MambaMixer:
+    def forward(self, hidden_states):
+        return self.slow_forward(hidden_states)
+
+    def slow_forward(self, hidden_states, cache_params=None):
+        conv_state = torch.zeros(1)
+        temp = torch.zeros(1)
+        ssm_state = cache_params.ssm_states[self.layer_idx].clone()
+        collected_hidden_states = []
+        for token in hidden_states:
+            ssm_state = ssm_state + token
+            collected_hidden_states.append(ssm_state)
+        return {"hidden_states": collected_hidden_states}
+"""
+    assert_recurrent_blocks(
+        text,
+        "BLOCKED_RECURRENT_STATE_SEMANTICS_UNRESOLVED",
+        "recurrent_state_initialization",
+    )
+
+
+def test_nested_function_and_class_initializers_are_excluded():
+    text = """\
+class MambaMixer:
+    def forward(self, hidden_states):
+        return self.slow_forward(hidden_states)
+
+    def slow_forward(self, hidden_states):
+        def make_state():
+            ssm_state = torch.zeros(1)
+            return ssm_state
+
+        class Nested:
+            def make_state(self):
+                ssm_state = torch.zeros(1)
+                return ssm_state
+
+        ssm_state = previous_state.clone()
+        conv_state = hidden_states.new_zeros(1)
+        collected_hidden_states = []
+        for token in hidden_states:
+            ssm_state = ssm_state + token
+            collected_hidden_states.append(ssm_state)
+        return {"hidden_states": collected_hidden_states}
+"""
+    assert_recurrent_blocks(
+        text,
+        "BLOCKED_RECURRENT_STATE_SEMANTICS_UNRESOLVED",
+        "recurrent_state_initialization",
+    )
+
+
+def test_nested_initialization_does_not_expand_nested_recurrence_loop_discovery():
+    text = """\
+class MambaMixer:
+    def forward(self, hidden_states):
+        return self.slow_forward(hidden_states)
+
+    def slow_forward(self, hidden_states, cache_params=None):
+        if cache_params is not None:
+            ssm_state = cache_params.ssm_states[self.layer_idx].clone()
+        else:
+            ssm_state = torch.zeros(1)
+        conv_state = hidden_states.new_zeros(1)
+        collected_hidden_states = []
+        if cache_params is not None:
+            pass
+        else:
+            for token in hidden_states:
+                ssm_state = ssm_state + token
+                collected_hidden_states.append(ssm_state)
+        return {"hidden_states": collected_hidden_states}
+"""
+    assert_recurrent_blocks(
+        text,
+        "BLOCKED_RECURRENT_STATE_SEMANTICS_UNRESOLVED",
+        "recurrent_state_update",
+    )
+
+
 def test_ast_missing_and_ambiguous_symbols_block(tmp_path):
     paths = write_package(tmp_path, mamba_text="class MambaMixer:\n    pass\n")
     mamba = preflight.raw_source_identity(paths["mamba"], preflight.SOURCE_KEYS["mamba"])
@@ -490,7 +660,7 @@ class MambaMixer:
 """
     with pytest.raises(preflight.PreflightBlocked) as exc:
         preflight.classify_recurrent_semantics(text)
-    assert exc.value.status == "BLOCKED_RECURRENT_STATE_SEMANTICS_UNRESOLVED"
+    assert exc.value.status == "BLOCKED_REQUIRED_SYMBOL_AMBIGUOUS"
 
 
 def test_current_step_only_adversary_does_not_support():

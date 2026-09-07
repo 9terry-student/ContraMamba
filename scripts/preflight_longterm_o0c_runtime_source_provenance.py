@@ -505,6 +505,18 @@ def _loop_body_update_and_readout(loop: ast.For) -> tuple[ast.AST | None, ast.AS
     return (updates[0] if updates else None), readout
 
 
+def _same_lexical_scope_statements(statements: Sequence[ast.stmt]) -> Iterable[ast.stmt]:
+    stack = list(reversed(statements))
+    while stack:
+        node = stack.pop()
+        if isinstance(node, ast.stmt):
+            yield node
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            continue
+        children = list(ast.iter_child_nodes(node))
+        stack.extend(reversed(children))
+
+
 def _recurrent_proof_nodes(tree: ast.AST) -> tuple[ast.AST, ast.AST, ast.For, ast.AST, ast.AST]:
     slow = _find_unique_function(tree, "MambaMixer.slow_forward")
     if slow is None:
@@ -512,7 +524,7 @@ def _recurrent_proof_nodes(tree: ast.AST) -> tuple[ast.AST, ast.AST, ast.For, as
 
     init_nodes = [
         stmt
-        for stmt in slow.body
+        for stmt in _same_lexical_scope_statements(slow.body)
         if isinstance(stmt, (ast.Assign, ast.AnnAssign))
         and _assigns_name(stmt, "ssm_state")
         and _calls_attr(stmt, {"new_zeros", "zeros", "empty"})
