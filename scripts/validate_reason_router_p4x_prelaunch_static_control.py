@@ -45,6 +45,7 @@ SIDECAR_SCHEMA = "P3W7_SEED8192_REVISED_P4L_EFFECTIVE_INTEGRITY_SIDECAR_V1"
 PROVENANCE_SCHEMA = "P3W7_SEED8192_REVISED_P4L_INTEGRITY_SIDECAR_PROVENANCE_V1"
 SOURCE_FIELDS = ("id", "pair_id", "claim", "evidence", "final_label", "frame_compatible_label", "predicate_covered_label", "sufficiency_label", "polarity_label", "primary_failure_type", "intervention_type")
 SPLIT_IDENTITIES = {"pair_count": 300, "train_pair_count": 240, "dev_pair_count": 60, "train_row_count": 2880, "dev_row_count": 720, "pair_universe_sha256": "41f7a2cc533b9026a49d2b2587dd34894fadb908deab9f0a79133345569758f2", "shuffled_pair_sha256": "ef15a6c3dc0f45ccad0f4e4e203eab9ff5dbfe8d64dde96ae14df3811bbd2d55", "train_pair_sha256": "f6fffb94b6c33112bcfc8afb6da9f3aa76ae6e1327b8c38e69724fa4c2641049", "dev_pair_sha256": "30951a7c637b10a5693289be40911ec5bf32de6eca3efd37a81f3fa268cd25a4", "ordered_train_row_sha256": "478013207699462a9434ce8f44991ce75b33650593b9aa942fff0f2be659c2a8", "ordered_dev_row_sha256": "7870c83fe1f6e3a65311311ab05122736a007e6a92f4f04c28b2c72584ddfaa4"}
+PROVENANCE_SPLIT_IDENTITIES = {**SPLIT_IDENTITIES, "historical_seed174_dev_pair_sha256": "259bfce57e85121d6c1adccd20f3ac070108ff6310cfff546a2edd054835899d"}
 EXPECTED_COHORTS = {"train": {"frame": {0: 714, 1: 695}, "predicate": {0: 119, 1: 576}, "sufficiency": {0: 238, 1: 338}, "polarity": {0: 100, 1: 238}}, "dev": {"frame": {0: 186, 1: 174}, "predicate": {0: 31, 1: 143}, "sufficiency": {0: 62, 1: 81}, "polarity": {0: 19, 1: 62}}}
 EXPECTED_P4X_AGGREGATES = {"reason": {True: 1769, False: 1831}, "integrity": {"ELIGIBLE": 1769, "INELIGIBLE": 1562, "UNRESOLVED": 269}, "margin": {True: 695, False: 2905}}
 
@@ -204,7 +205,7 @@ def _validate_provenance(value: dict[str, Any]) -> None:
     required = {"schema_version": PROVENANCE_SCHEMA, "sidecar_schema_version": SIDECAR_SCHEMA, "lineage_mode": "revised-seed8192", "p4l_authority_commit": "ff181f565cefa0a28280c084246862286daf1f2d", "split_authority_commit": "b4fbb5666d796161f95ae23612ce2448c25063ee", "builder_source_commit": "149adf32d9e8edbb0e7ea9294f7aeb330a71fc1b", "source_dataset_sha256": DATASET_SHA256, "source_dataset_semantic_sha256": DATASET_SEMANTIC_SHA256, "sidecar_physical_sha256": SIDECAR_SHA256, "sidecar_semantic_sha256": SIDECAR_SEMANTIC_SHA256, "row_count": 3600}
     for field, expected in required.items():
         _require(value.get(field) == expected, f"P4X_PROVENANCE_IDENTITY_MISMATCH: {field}")
-    _require(value.get("split_identities") == SPLIT_IDENTITIES, "P4X_PROVENANCE_SPLIT_IDENTITY_MISMATCH")
+    _require(value.get("split_identities") == PROVENANCE_SPLIT_IDENTITIES, "P4X_PROVENANCE_SPLIT_IDENTITY_MISMATCH")
     flags = {"implementation_authorized": True, "artifact_materialization_authorized_by_p4l": False, "training_admission_released": False, "a0_execution_authorized": False, "training_authorized": False, "evaluation_authorized": False, "kaggle_authorized": False, "gpu_authorized": False, "provenance_physical_sha256_self_certified": False}
     for field, expected in flags.items():
         _require(type(value.get(field)) is bool and value[field] is expected, f"P4X_PROVENANCE_FLAG_MISMATCH: {field}")

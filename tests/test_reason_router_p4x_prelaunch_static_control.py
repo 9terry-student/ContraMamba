@@ -323,23 +323,55 @@ def test_recompute_split_rejects_wrong_frozen_hash_count_and_leakage(monkeypatch
         p4x.recompute_split(rows)
 
 
+def test_frozen_provenance_split_identities_are_accepted() -> None:
+    actual = json.loads((MODULE_PATH.parents[1] / p4x.PROVENANCE).read_text(encoding="utf-8"))
+    assert set(actual["split_identities"]) == set(p4x.SPLIT_IDENTITIES) | {"historical_seed174_dev_pair_sha256"}
+    assert actual["split_identities"]["historical_seed174_dev_pair_sha256"] == "259bfce57e85121d6c1adccd20f3ac070108ff6310cfff546a2edd054835899d"
+    p4x._validate_provenance(actual)
+
+
+@pytest.mark.parametrize("mutation", ["remove_current", "alter_current", "remove_historical", "alter_historical", "extra"])
+def test_provenance_split_identity_contract_rejects_mutations(mutation: str) -> None:
+    value = {"schema_version": p4x.PROVENANCE_SCHEMA, "sidecar_schema_version": p4x.SIDECAR_SCHEMA, "lineage_mode": "revised-seed8192", "p4l_authority_commit": "ff181f565cefa0a28280c084246862286daf1f2d", "split_authority_commit": "b4fbb5666d796161f95ae23612ce2448c25063ee", "builder_source_commit": "149adf32d9e8edbb0e7ea9294f7aeb330a71fc1b", "source_dataset_sha256": p4x.DATASET_SHA256, "source_dataset_semantic_sha256": p4x.DATASET_SEMANTIC_SHA256, "sidecar_physical_sha256": p4x.SIDECAR_SHA256, "sidecar_semantic_sha256": p4x.SIDECAR_SEMANTIC_SHA256, "row_count": 3600, "split_identities": dict(p4x.PROVENANCE_SPLIT_IDENTITIES), "implementation_authorized": True, "artifact_materialization_authorized_by_p4l": False, "training_admission_released": False, "a0_execution_authorized": False, "training_authorized": False, "evaluation_authorized": False, "kaggle_authorized": False, "gpu_authorized": False, "provenance_physical_sha256_self_certified": False}
+    identities = value["split_identities"]
+    assert isinstance(identities, dict)
+    current_key = next(iter(p4x.SPLIT_IDENTITIES))
+    if mutation == "remove_current":
+        del identities[current_key]
+    elif mutation == "alter_current":
+        identities[current_key] = "altered"
+    elif mutation == "remove_historical":
+        del identities["historical_seed174_dev_pair_sha256"]
+    elif mutation == "alter_historical":
+        identities["historical_seed174_dev_pair_sha256"] = "altered"
+    else:
+        identities["unknown_split_identity"] = "altered"
+    with pytest.raises(p4x.ContractError, match="P4X_PROVENANCE_SPLIT_IDENTITY_MISMATCH"):
+        p4x._validate_provenance(value)
+
+
+def test_provenance_split_identity_contract_is_distinct_from_current_split_audit() -> None:
+    assert "historical_seed174_dev_pair_sha256" not in p4x.SPLIT_IDENTITIES
+    assert p4x.PROVENANCE_SPLIT_IDENTITIES["historical_seed174_dev_pair_sha256"] == "259bfce57e85121d6c1adccd20f3ac070108ff6310cfff546a2edd054835899d"
+
+
 @pytest.mark.parametrize("field", ["schema_version", "lineage_mode", "p4l_authority_commit", "split_authority_commit", "builder_source_commit", "source_dataset_sha256", "source_dataset_semantic_sha256", "sidecar_physical_sha256", "sidecar_semantic_sha256", "implementation_authorized", "training_authorized"])
 def test_provenance_schema_lineage_authority_and_flags_are_exact(field: str) -> None:
-    value = {"schema_version": p4x.PROVENANCE_SCHEMA, "sidecar_schema_version": p4x.SIDECAR_SCHEMA, "lineage_mode": "revised-seed8192", "p4l_authority_commit": "ff181f565cefa0a28280c084246862286daf1f2d", "split_authority_commit": "b4fbb5666d796161f95ae23612ce2448c25063ee", "builder_source_commit": "149adf32d9e8edbb0e7ea9294f7aeb330a71fc1b", "source_dataset_sha256": p4x.DATASET_SHA256, "source_dataset_semantic_sha256": p4x.DATASET_SEMANTIC_SHA256, "sidecar_physical_sha256": p4x.SIDECAR_SHA256, "sidecar_semantic_sha256": p4x.SIDECAR_SEMANTIC_SHA256, "row_count": 3600, "split_identities": p4x.SPLIT_IDENTITIES, "implementation_authorized": True, "artifact_materialization_authorized_by_p4l": False, "training_admission_released": False, "a0_execution_authorized": False, "training_authorized": False, "evaluation_authorized": False, "kaggle_authorized": False, "gpu_authorized": False, "provenance_physical_sha256_self_certified": False}
+    value = {"schema_version": p4x.PROVENANCE_SCHEMA, "sidecar_schema_version": p4x.SIDECAR_SCHEMA, "lineage_mode": "revised-seed8192", "p4l_authority_commit": "ff181f565cefa0a28280c084246862286daf1f2d", "split_authority_commit": "b4fbb5666d796161f95ae23612ce2448c25063ee", "builder_source_commit": "149adf32d9e8edbb0e7ea9294f7aeb330a71fc1b", "source_dataset_sha256": p4x.DATASET_SHA256, "source_dataset_semantic_sha256": p4x.DATASET_SEMANTIC_SHA256, "sidecar_physical_sha256": p4x.SIDECAR_SHA256, "sidecar_semantic_sha256": p4x.SIDECAR_SEMANTIC_SHA256, "row_count": 3600, "split_identities": p4x.PROVENANCE_SPLIT_IDENTITIES, "implementation_authorized": True, "artifact_materialization_authorized_by_p4l": False, "training_admission_released": False, "a0_execution_authorized": False, "training_authorized": False, "evaluation_authorized": False, "kaggle_authorized": False, "gpu_authorized": False, "provenance_physical_sha256_self_certified": False}
     value[field] = False if value[field] is True else "historical-seed174"
     with pytest.raises(p4x.ContractError): p4x._validate_provenance(value)
 
 
 @pytest.mark.parametrize("flag_value", [1, 0, "true", "false", None])
 def test_provenance_flags_require_literal_booleans(flag_value: object) -> None:
-    value = {"schema_version": p4x.PROVENANCE_SCHEMA, "sidecar_schema_version": p4x.SIDECAR_SCHEMA, "lineage_mode": "revised-seed8192", "p4l_authority_commit": "ff181f565cefa0a28280c084246862286daf1f2d", "split_authority_commit": "b4fbb5666d796161f95ae23612ce2448c25063ee", "builder_source_commit": "149adf32d9e8edbb0e7ea9294f7aeb330a71fc1b", "source_dataset_sha256": p4x.DATASET_SHA256, "source_dataset_semantic_sha256": p4x.DATASET_SEMANTIC_SHA256, "sidecar_physical_sha256": p4x.SIDECAR_SHA256, "sidecar_semantic_sha256": p4x.SIDECAR_SEMANTIC_SHA256, "row_count": 3600, "split_identities": p4x.SPLIT_IDENTITIES, "implementation_authorized": True, "artifact_materialization_authorized_by_p4l": False, "training_admission_released": False, "a0_execution_authorized": False, "training_authorized": False, "evaluation_authorized": False, "kaggle_authorized": False, "gpu_authorized": False, "provenance_physical_sha256_self_certified": False}
+    value = {"schema_version": p4x.PROVENANCE_SCHEMA, "sidecar_schema_version": p4x.SIDECAR_SCHEMA, "lineage_mode": "revised-seed8192", "p4l_authority_commit": "ff181f565cefa0a28280c084246862286daf1f2d", "split_authority_commit": "b4fbb5666d796161f95ae23612ce2448c25063ee", "builder_source_commit": "149adf32d9e8edbb0e7ea9294f7aeb330a71fc1b", "source_dataset_sha256": p4x.DATASET_SHA256, "source_dataset_semantic_sha256": p4x.DATASET_SEMANTIC_SHA256, "sidecar_physical_sha256": p4x.SIDECAR_SHA256, "sidecar_semantic_sha256": p4x.SIDECAR_SEMANTIC_SHA256, "row_count": 3600, "split_identities": p4x.PROVENANCE_SPLIT_IDENTITIES, "implementation_authorized": True, "artifact_materialization_authorized_by_p4l": False, "training_admission_released": False, "a0_execution_authorized": False, "training_authorized": False, "evaluation_authorized": False, "kaggle_authorized": False, "gpu_authorized": False, "provenance_physical_sha256_self_certified": False}
     value["training_authorized"] = flag_value
     with pytest.raises(p4x.ContractError, match="P4X_PROVENANCE_FLAG_MISMATCH"):
         p4x._validate_provenance(value)
 
 
 def test_frozen_provenance_does_not_require_external_phase2_lineage_fields() -> None:
-    value = {"schema_version": p4x.PROVENANCE_SCHEMA, "sidecar_schema_version": p4x.SIDECAR_SCHEMA, "lineage_mode": "revised-seed8192", "p4l_authority_commit": "ff181f565cefa0a28280c084246862286daf1f2d", "split_authority_commit": "b4fbb5666d796161f95ae23612ce2448c25063ee", "builder_source_commit": "149adf32d9e8edbb0e7ea9294f7aeb330a71fc1b", "source_dataset_sha256": p4x.DATASET_SHA256, "source_dataset_semantic_sha256": p4x.DATASET_SEMANTIC_SHA256, "sidecar_physical_sha256": p4x.SIDECAR_SHA256, "sidecar_semantic_sha256": p4x.SIDECAR_SEMANTIC_SHA256, "row_count": 3600, "split_identities": p4x.SPLIT_IDENTITIES, "implementation_authorized": True, "artifact_materialization_authorized_by_p4l": False, "training_admission_released": False, "a0_execution_authorized": False, "training_authorized": False, "evaluation_authorized": False, "kaggle_authorized": False, "gpu_authorized": False, "provenance_physical_sha256_self_certified": False}
+    value = {"schema_version": p4x.PROVENANCE_SCHEMA, "sidecar_schema_version": p4x.SIDECAR_SCHEMA, "lineage_mode": "revised-seed8192", "p4l_authority_commit": "ff181f565cefa0a28280c084246862286daf1f2d", "split_authority_commit": "b4fbb5666d796161f95ae23612ce2448c25063ee", "builder_source_commit": "149adf32d9e8edbb0e7ea9294f7aeb330a71fc1b", "source_dataset_sha256": p4x.DATASET_SHA256, "source_dataset_semantic_sha256": p4x.DATASET_SEMANTIC_SHA256, "sidecar_physical_sha256": p4x.SIDECAR_SHA256, "sidecar_semantic_sha256": p4x.SIDECAR_SEMANTIC_SHA256, "row_count": 3600, "split_identities": p4x.PROVENANCE_SPLIT_IDENTITIES, "implementation_authorized": True, "artifact_materialization_authorized_by_p4l": False, "training_admission_released": False, "a0_execution_authorized": False, "training_authorized": False, "evaluation_authorized": False, "kaggle_authorized": False, "gpu_authorized": False, "provenance_physical_sha256_self_certified": False}
     assert "p4l_phase2_activation_commit" not in value
     assert "p4l_phase2_evidence_freeze_commit" not in value
     p4x._validate_provenance(value)
