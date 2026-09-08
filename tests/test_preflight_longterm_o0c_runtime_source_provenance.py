@@ -141,6 +141,46 @@ class MambaMixer:
 """.format(branch=branch)
 
 
+def cache_branch(body: str) -> str:
+    return "if cache_params is not None:\n" + "\n".join("    " + line for line in body.splitlines())
+
+
+def convolution_mamba_with_branches(*branches: str) -> str:
+    branch_text = "\n".join("        " + line for branch in branches for line in branch.splitlines())
+    return """\
+class MambaMixer:
+    def forward(self, hidden_states):
+        if hidden_states.device.type == "cpu":
+            return self.slow_forward(hidden_states)
+        else:
+            raise RuntimeError("non-cpu backend unresolved")
+
+    def slow_forward(self, hidden_states, cache_params: MambaCache | None = None, cache_position=None):
+{branch_text}
+        ssm_state = hidden_states.new_zeros(1)
+        collected_hidden_states = []
+        for token in hidden_states:
+            ssm_state = ssm_state + token
+            collected_hidden_states.append(ssm_state)
+        return {{"hidden_states": collected_hidden_states}}
+""".format(branch_text=branch_text)
+
+
+COMPLETE_CONVOLUTION_SPLIT = """\
+if cache_position.shape[0] == self.conv_kernel_size:
+    conv_state = hidden_states.new_zeros(1)
+    cache_params.update_conv_state(self.layer_idx, conv_state)
+else:
+    cache_params.update_conv_state(self.layer_idx, hidden_states)
+""".rstrip()
+
+
+RECURRENT_CACHE_GUARD = """\
+if cache_params is not None:
+    cache_params.ssm_states[self.layer_idx] = ssm_state
+""".rstrip()
+
+
 CONVOLUTION_CACHE_MUTATING = """\
 class MambaCache:
     def update(self, ssm_state):
@@ -251,14 +291,62 @@ def test_convolution_cache_noncache_and_nested_calls_do_not_prove(tmp_path):
 def test_convolution_cache_split_and_direct_candidate_adversaries_block(tmp_path):
     missing = convolution_mamba("    conv_state = hidden_states.new_zeros(1)", "    cache_params.update_conv_state(self.layer_idx, hidden_states)", "conv_state = hidden_states.new_zeros(1)")
     assert_convolution_blocks(tmp_path, missing, "BLOCKED_REQUIRED_SYMBOL_UNRESOLVED")
-    ambiguous = convolution_mamba(
+    one_complete = convolution_mamba(
         "    conv_state = hidden_states.new_zeros(1)\n    cache_params.update_conv_state(self.layer_idx, conv_state)",
         "    conv_state = cache_params.update_conv_state(self.layer_idx, hidden_states)",
         "if cache_position.shape[0] == self.conv_kernel_size:\n    conv_state = hidden_states.new_zeros(1)\n    cache_params.update_conv_state(self.layer_idx, conv_state)\nelse:\n    conv_state = cache_params.update_conv_state(self.layer_idx, hidden_states)\nif cache_position.shape[0] == self.conv_kernel_size:\n    conv_state = hidden_states.new_zeros(1)\nelse:\n    conv_state = hidden_states.new_zeros(1)",
     )
-    assert_convolution_blocks(tmp_path / "ambiguous", ambiguous, "BLOCKED_REQUIRED_SYMBOL_AMBIGUOUS")
+    location = convolution_locations(tmp_path / "one_complete", one_complete)["convolution_cache_initialization_update"]
+    assert location["qualname"] == "MambaMixer.slow_forward"
     multiple_direct = MAMBA_PASS.replace("conv_state = hidden_states.new_zeros(1)", "conv_state = hidden_states.new_zeros(1)\n        conv_state = hidden_states.new_zeros(1)")
     assert_convolution_blocks(tmp_path / "direct", multiple_direct, "BLOCKED_REQUIRED_SYMBOL_UNRESOLVED", CACHE_PASS)
+
+
+@pytest.mark.parametrize(
+    "branches",
+    [
+        (cache_branch(COMPLETE_CONVOLUTION_SPLIT), RECURRENT_CACHE_GUARD),
+        (RECURRENT_CACHE_GUARD, cache_branch(COMPLETE_CONVOLUTION_SPLIT)),
+    ],
+)
+def test_convolution_cache_ignores_unrelated_recurrent_cache_guards(tmp_path, branches):
+    location = convolution_locations(tmp_path, convolution_mamba_with_branches(*branches))["convolution_cache_initialization_update"]
+    assert location["qualname"] == "MambaMixer.slow_forward"
+
+
+def test_convolution_cache_multiple_complete_branch_proofs_block_ambiguous(tmp_path):
+    text = convolution_mamba_with_branches(
+        cache_branch(COMPLETE_CONVOLUTION_SPLIT),
+        cache_branch(COMPLETE_CONVOLUTION_SPLIT),
+    )
+    assert_convolution_blocks(tmp_path, text, "BLOCKED_REQUIRED_SYMBOL_AMBIGUOUS")
+
+
+@pytest.mark.parametrize(
+    "branch_body",
+    [
+        "cache_params.ssm_states[self.layer_idx] = ssm_state",
+        "if cache_position.shape[0] == self.conv_kernel_size:\n    cache_params.update_conv_state(self.layer_idx, hidden_states)\nelse:\n    cache_params.update_conv_state(self.layer_idx, hidden_states)",
+        "if cache_position.shape[0] == self.conv_kernel_size:\n    conv_state = hidden_states.new_zeros(1)\nelse:\n    cache_params.update_conv_state(self.layer_idx, hidden_states)",
+        "if cache_position.shape[0] == self.conv_kernel_size:\n    conv_state = hidden_states.new_zeros(1)\n    cache_params.update_conv_state(self.layer_idx, conv_state)\nelse:\n    conv_state = hidden_states.new_zeros(1)",
+    ],
+)
+def test_convolution_cache_incomplete_or_recurrent_branch_proofs_block_unresolved(tmp_path, branch_body):
+    assert_convolution_blocks(
+        tmp_path,
+        convolution_mamba_with_branches(cache_branch(branch_body)),
+        "BLOCKED_REQUIRED_SYMBOL_UNRESOLVED",
+    )
+
+
+def test_convolution_cache_split_outside_cache_guard_blocks_unresolved(tmp_path):
+    text = convolution_mamba_with_branches(COMPLETE_CONVOLUTION_SPLIT)
+    assert_convolution_blocks(tmp_path, text, "BLOCKED_REQUIRED_SYMBOL_UNRESOLVED")
+
+
+def test_convolution_cache_multiple_complete_splits_in_one_branch_block_ambiguous(tmp_path):
+    text = convolution_mamba_with_branches(cache_branch(COMPLETE_CONVOLUTION_SPLIT + "\n" + COMPLETE_CONVOLUTION_SPLIT))
+    assert_convolution_blocks(tmp_path, text, "BLOCKED_REQUIRED_SYMBOL_AMBIGUOUS")
 
 
 def test_convolution_cache_legacy_direct_assignment_remains_valid(tmp_path):

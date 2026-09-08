@@ -843,24 +843,20 @@ def _convolution_cache_location(slow: ast.AST, mamba_tree: ast.AST, cache_tree: 
         for node in _same_lexical_nodes(getattr(slow, "body", []))
         if isinstance(node, ast.If) and _is_cache_present_test(node.test)
     ]
-    if not cache_branches:
-        raise PreflightBlocked("BLOCKED_REQUIRED_SYMBOL_UNRESOLVED", family)
-    if len(cache_branches) != 1:
-        raise PreflightBlocked("BLOCKED_REQUIRED_SYMBOL_AMBIGUOUS", family)
-    cache_branch = cache_branches[0]
-    splits = [
-        node for node in _same_lexical_nodes(cache_branch.body) if isinstance(node, ast.If) and _is_prefill_decode_test(node.test)
+    semantic_proofs = [
+        (cache_branch, split)
+        for cache_branch in cache_branches
+        for split in _same_lexical_nodes(cache_branch.body)
+        if isinstance(split, ast.If)
+        and _is_prefill_decode_test(split.test)
+        and _conv_state_assignments(split.body)
+        and _cache_update_calls(split.body)
+        and _cache_update_calls(split.orelse)
     ]
-    if not splits:
+    if not semantic_proofs:
         raise PreflightBlocked("BLOCKED_REQUIRED_SYMBOL_UNRESOLVED", family)
-    if len(splits) != 1:
+    if len(semantic_proofs) != 1:
         raise PreflightBlocked("BLOCKED_REQUIRED_SYMBOL_AMBIGUOUS", family)
-    split = splits[0]
-    prefill_assignments = _conv_state_assignments(split.body)
-    prefill_calls = _cache_update_calls(split.body)
-    decode_calls = _cache_update_calls(split.orelse)
-    if not prefill_assignments or not prefill_calls or not decode_calls:
-        raise PreflightBlocked("BLOCKED_REQUIRED_SYMBOL_UNRESOLVED", family)
     methods = _linked_update_conv_state_methods(slow, mamba_tree, cache_tree)
     if not methods:
         raise PreflightBlocked("BLOCKED_REQUIRED_SYMBOL_UNRESOLVED", family)
