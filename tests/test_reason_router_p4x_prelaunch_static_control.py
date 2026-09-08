@@ -41,10 +41,14 @@ def identity_repo(tmp_path: Path) -> tuple[Path, str]:
     root = commit_blob_repo(tmp_path)
     git(root, "branch", "-M", p4x.EXPECTED_BRANCH)
     head = git(root, "rev-parse", "HEAD")
+    git(root, "remote", "add", "origin", ".")
+    git(root, "config", "remote.origin.fetch", "+refs/heads/*:refs/remotes/origin/*")
     remote_ref = f"refs/remotes/origin/{p4x.EXPECTED_BRANCH}"
     git(root, "update-ref", remote_ref, head)
     git(root, "config", f"branch.{p4x.EXPECTED_BRANCH}.remote", "origin")
     git(root, "config", f"branch.{p4x.EXPECTED_BRANCH}.merge", f"refs/heads/{p4x.EXPECTED_BRANCH}")
+    assert git(root, "rev-parse", "--abbrev-ref", "@{upstream}") == p4x.EXPECTED_UPSTREAM
+    assert git(root, "rev-parse", "@{upstream}") == head
     return root, head
 
 
@@ -159,8 +163,14 @@ def test_real_git_identity_failure_modes(tmp_path: Path, mutation: str, contract
         (root / "other.txt").write_text("x\n")
         with pytest.raises(p4x.ContractError, match=contract): p4x.authenticated_head_bytes(root, "other.txt", blob, sha)
     else:
-        if not hasattr(os, "symlink"): pytest.skip("symlinks unavailable")
-        (root / "target.txt").write_text("one\ntwo\n"); (root / "input.txt").unlink(); os.symlink("target.txt", root / "input.txt")
+        if not hasattr(os, "symlink"): pytest.skip("os.symlink API is unavailable for the symlink fixture")
+        (root / "target.txt").write_text("one\ntwo\n"); (root / "input.txt").unlink()
+        try:
+            os.symlink("target.txt", root / "input.txt")
+        except OSError as exc:
+            if os.name == "nt" and getattr(exc, "winerror", None) == 1314:
+                pytest.skip("Windows privilege or policy prevents symlink fixture creation (WinError 1314)")
+            raise
         with pytest.raises(p4x.ContractError, match=contract): p4x.authenticated_head_bytes(root, "input.txt", blob, sha)
 
 
@@ -185,6 +195,8 @@ def test_real_git_implementation_anchor_identity_contracts(tmp_path: Path) -> No
     git(root, "commit", "-m", "next")
     current = git(root, "rev-parse", "HEAD")
     git(root, "update-ref", f"refs/remotes/origin/{p4x.EXPECTED_BRANCH}", current)
+    assert git(root, "rev-parse", "--abbrev-ref", "@{upstream}") == p4x.EXPECTED_UPSTREAM
+    assert git(root, "rev-parse", "@{upstream}") == current
     # A later authority-like execution commit remains valid with its older implementation anchor.
     p4x._validate_repository_identity(root, head)
     git(root, "checkout", "--orphan", "non-ancestor")
@@ -195,6 +207,8 @@ def test_real_git_implementation_anchor_identity_contracts(tmp_path: Path) -> No
     git(root, "checkout", p4x.EXPECTED_BRANCH)
     alternate = git(root, "rev-parse", "HEAD")
     git(root, "update-ref", f"refs/remotes/origin/{p4x.EXPECTED_BRANCH}", alternate)
+    assert git(root, "rev-parse", "--abbrev-ref", "@{upstream}") == p4x.EXPECTED_UPSTREAM
+    assert git(root, "rev-parse", "@{upstream}") == alternate
     with pytest.raises(p4x.ContractError, match="P4X_IMPLEMENTATION_ANCHOR_NOT_ANCESTOR_OF_CURRENT_HEAD"):
         p4x._validate_repository_identity(root, head)
     git(root, "branch", "-M", "wrong-branch")
@@ -206,9 +220,9 @@ def test_wrong_configured_upstream_ref_fails_even_at_same_sha(tmp_path: Path) ->
     root, head = identity_repo(tmp_path)
     git(root, "update-ref", "refs/remotes/origin/wrong", head)
     git(root, "config", f"branch.{p4x.EXPECTED_BRANCH}.merge", "refs/heads/wrong")
-    wrong_upstream_tip = git(root, "rev-parse", "@{up}")
-    configured_symbolic_upstream = git(root, "rev-parse", "--abbrev-ref", "@{up}")
-    assert head == wrong_upstream_tip
+    wrong_upstream_tip = git(root, "rev-parse", "@{upstream}")
+    configured_symbolic_upstream = git(root, "rev-parse", "--abbrev-ref", "@{upstream}")
+    assert wrong_upstream_tip == head
     assert configured_symbolic_upstream == "origin/wrong"
     assert configured_symbolic_upstream != p4x.EXPECTED_UPSTREAM
     with pytest.raises(p4x.ContractError, match="P4X_UPSTREAM_REF_IDENTITY_MISMATCH"):
@@ -251,13 +265,20 @@ def test_ahead_behind_contract_is_explicit_and_fail_closed(monkeypatch: pytest.M
     original_git = p4x._git
 
     def simulated_git(repo: Path, *args: str, **kwargs: object) -> str | bytes:
-        if args == ("rev-list", "--left-right", "--count", "HEAD...@{up}"):
+        if args == ("rev-list", "--left-right", "--count", "HEAD...@{upstream}"):
             return "1\t0"
         return original_git(repo, *args, **kwargs)
 
     monkeypatch.setattr(p4x, "_git", simulated_git)
     with pytest.raises(p4x.ContractError, match="P4X_AHEAD_BEHIND_MISMATCH"):
         p4x._validate_repository_identity(root, head)
+
+
+def test_repository_identity_uses_canonical_upstream_selector_only() -> None:
+    tree = ast.parse(MODULE_PATH.read_text(encoding="utf-8"))
+    identity = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == "_validate_repository_identity")
+    selectors = [value for _, value in sorted((argument.lineno, argument.value) for call in ast.walk(identity) if isinstance(call, ast.Call) and isinstance(call.func, ast.Name) and call.func.id == "_git" for argument in call.args if isinstance(argument, ast.Constant) and argument.value in {"@{up}", "@{upstream}", "HEAD...@{up}", "HEAD...@{upstream}"})]
+    assert selectors == ["@{upstream}", "HEAD...@{upstream}"]
 
 
 def test_semantic_and_split_helpers_fail_closed() -> None:

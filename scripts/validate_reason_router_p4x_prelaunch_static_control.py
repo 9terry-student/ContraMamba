@@ -126,7 +126,11 @@ def _reject_symlink(root: Path, relative: str) -> Path:
 def authenticated_head_bytes(root: Path, relative: str, blob: str, sha256: str) -> bytes:
     """Authenticate clean tracked HEAD content and return Git's canonical blob bytes."""
     _reject_symlink(root, relative)
-    _require(_git(root, "ls-files", "--error-unmatch", "--", relative, text=True) == relative, f"P4X_UNTRACKED_INPUT: {relative}")
+    try:
+        tracked_path = _git(root, "ls-files", "--error-unmatch", "--", relative, text=True)
+    except ContractError:
+        raise ContractError(f"P4X_UNTRACKED_INPUT: {relative}") from None
+    _require(tracked_path == relative, f"P4X_UNTRACKED_INPUT: {relative}")
     for state, args in (("UNSTAGED_DIRTY", ("diff", "--quiet", "--", relative)), ("STAGED_DIRTY", ("diff", "--cached", "--quiet", "--", relative))):
         try:
             _git(root, *args)
@@ -305,11 +309,11 @@ def _validate_repository_identity(root: Path, expected_head: str) -> str:
     current_head = str(_git(root, "rev-parse", "HEAD", text=True)).lower()
     try:
         upstream_tip = str(_git(root, "rev-parse", f"refs/remotes/{EXPECTED_UPSTREAM}", text=True)).lower()
-        configured_upstream_tip = str(_git(root, "rev-parse", "@{up}", text=True)).lower()
+        configured_upstream_tip = str(_git(root, "rev-parse", "@{upstream}", text=True)).lower()
     except ContractError:
         raise ContractError("P4X_UPSTREAM_TIP_MISMATCH") from None
     _require(configured_upstream_tip == upstream_tip and current_head == upstream_tip, "P4X_UPSTREAM_TIP_MISMATCH")
-    _require(str(_git(root, "rev-list", "--left-right", "--count", "HEAD...@{up}", text=True)) == "0\t0", "P4X_AHEAD_BEHIND_MISMATCH")
+    _require(str(_git(root, "rev-list", "--left-right", "--count", "HEAD...@{upstream}", text=True)) == "0\t0", "P4X_AHEAD_BEHIND_MISMATCH")
     _validate_implementation_anchor(root, implementation_anchor, current_head)
     return current_head
 
