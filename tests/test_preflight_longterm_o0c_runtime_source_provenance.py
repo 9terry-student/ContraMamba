@@ -38,6 +38,34 @@ class MambaMixer:
         return {"hidden_states": collected_hidden_states}
 """
 
+MAMBA_CUDA_FAST_RETURN_PASS = """\
+selective_scan_fn = object()
+causal_conv1d_fn = object()
+
+class MambaMixer:
+    def forward(self, hidden_states):
+        is_fast_path_available = all((selective_scan_fn, causal_conv1d_fn, use_mamba_kernels))
+        if (
+            is_fast_path_available
+            and "cuda" in self.x_proj.weight.device.type
+            and not is_torchdynamo_compiling()
+        ):
+            return self.cuda_kernels_forward(hidden_states)
+        return self.slow_forward(hidden_states)
+
+    def cuda_kernels_forward(self, hidden_states):
+        return selective_scan_fn(causal_conv1d_fn(hidden_states))
+
+    def slow_forward(self, hidden_states):
+        ssm_state = hidden_states.new_zeros(1)
+        conv_state = hidden_states.new_zeros(1)
+        collected_hidden_states = []
+        for token in hidden_states:
+            ssm_state = ssm_state + token
+            collected_hidden_states.append(ssm_state)
+        return {"hidden_states": collected_hidden_states}
+"""
+
 CACHE_PASS = """\
 class Cache:
     def update(self, ssm_state):
@@ -879,6 +907,81 @@ def test_backend_optional_path_blocks_static_proof():
     text = MAMBA_PASS.replace(
         "if hidden_states.device.type == \"cpu\":",
         "if use_mamba_kernels:\n            return selective_scan_fn(hidden_states)\n        if hidden_states.device.type == \"cpu\":",
+    )
+    assert preflight.classify_backend(text) == "BACKEND_ASSOCIATIVE_OR_KERNEL_PATH_MAY_INTERVENE"
+
+
+def test_cuda_fast_return_fixture_proves_cpu_path_and_binds_selection(tmp_path):
+    assert preflight.classify_backend(MAMBA_CUDA_FAST_RETURN_PASS) == "BACKEND_CPU_SEQUENTIAL_STATICALLY_PROVEN"
+    paths = write_package(tmp_path, mamba_text=MAMBA_CUDA_FAST_RETURN_PASS)
+    mamba = preflight.raw_source_identity(paths["mamba"], preflight.SOURCE_KEYS["mamba"])
+    cache = preflight.raw_source_identity(paths["cache"], preflight.SOURCE_KEYS["cache"])
+    locations = preflight.bind_symbol_locations(mamba, cache)
+    assert locations["backend_kernel_selection"]["start_line"] == 7
+    assert locations["backend_kernel_selection"]["end_line"] == 12
+
+
+@pytest.mark.parametrize(
+    "old, new",
+    [
+        ('and "cuda" in self.x_proj.weight.device.type\n', "\n"),
+        ('and "cuda" in self.x_proj.weight.device.type\n', 'or "cuda" in self.x_proj.weight.device.type\n'),
+        ('and "cuda" in self.x_proj.weight.device.type\n', 'and not ("cuda" in self.x_proj.weight.device.type)\n'),
+        ('and "cuda" in self.x_proj.weight.device.type\n', 'and "cuda" not in self.x_proj.weight.device.type\n'),
+    ],
+)
+def test_cuda_dispatch_adversaries_do_not_prove(old, new):
+    text = MAMBA_CUDA_FAST_RETURN_PASS.replace(old, new)
+    assert preflight.classify_backend(text) != "BACKEND_CPU_SEQUENTIAL_STATICALLY_PROVEN"
+
+
+def test_cuda_dispatch_requires_direct_slow_fallthrough_and_unique_structure():
+    no_fallthrough = MAMBA_CUDA_FAST_RETURN_PASS.replace(
+        "        return self.slow_forward(hidden_states)", "        return hidden_states", 1
+    )
+    duplicate = MAMBA_CUDA_FAST_RETURN_PASS.replace(
+        "        return self.slow_forward(hidden_states)",
+        "        return self.slow_forward(hidden_states)\n        if \"cuda\" in self.x_proj.weight.device.type and ready:\n            return self.cuda_kernels_forward(hidden_states)\n        return self.slow_forward(hidden_states)",
+        1,
+    )
+    assert preflight.classify_backend(no_fallthrough) != "BACKEND_CPU_SEQUENTIAL_STATICALLY_PROVEN"
+    with pytest.raises(preflight.PreflightBlocked) as exc:
+        preflight.classify_backend(duplicate)
+    assert exc.value.status == "BLOCKED_REQUIRED_SYMBOL_AMBIGUOUS"
+
+
+def test_optional_names_outside_cpu_path_or_in_availability_do_not_block_proof():
+    text = MAMBA_CUDA_FAST_RETURN_PASS.replace(
+        "    def cuda_kernels_forward",
+        "    def __init__(self):\n        self.use_mamba_kernels = use_mamba_kernels\n\n    def warn(self):\n        return selective_scan\n\n    def cuda_kernels_forward",
+    )
+    assert preflight.classify_backend(text) == "BACKEND_CPU_SEQUENTIAL_STATICALLY_PROVEN"
+
+
+def test_cpu_reachable_optional_and_fast_calls_block_proof_fail_closed():
+    optional = MAMBA_CUDA_FAST_RETURN_PASS.replace(
+        "        is_fast_path_available", "        selective_scan_fn(hidden_states)\n        is_fast_path_available", 1
+    )
+    unresolved = MAMBA_CUDA_FAST_RETURN_PASS.replace(
+        "        is_fast_path_available", "        if unknown_condition:\n            selective_scan_fn(hidden_states)\n        is_fast_path_available", 1
+    )
+    fast = MAMBA_CUDA_FAST_RETURN_PASS.replace(
+        "        is_fast_path_available", "        self.cuda_kernels_forward(hidden_states)\n        is_fast_path_available", 1
+    )
+    fast_after_guard = MAMBA_CUDA_FAST_RETURN_PASS.replace(
+        "        return self.slow_forward(hidden_states)",
+        "        self.cuda_kernels_forward(hidden_states)\n        return self.slow_forward(hidden_states)",
+        1,
+    )
+    for text in (optional, unresolved, fast, fast_after_guard):
+        assert preflight.classify_backend(text) == "BACKEND_ASSOCIATIVE_OR_KERNEL_PATH_MAY_INTERVENE"
+
+
+def test_textual_cuda_and_cpu_path_optional_call_never_prove():
+    text = MAMBA_CUDA_FAST_RETURN_PASS.replace(
+        "        return self.slow_forward(hidden_states)",
+        '        note = "cuda"\n        return selective_scan_fn(hidden_states)',
+        1,
     )
     assert preflight.classify_backend(text) == "BACKEND_ASSOCIATIVE_OR_KERNEL_PATH_MAY_INTERVENE"
 

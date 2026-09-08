@@ -557,31 +557,123 @@ def _backend_proof_if(tree: ast.AST) -> ast.If | None:
         stmt
         for stmt in forward.body
         if isinstance(stmt, ast.If)
-        and _is_cpu_device_test(stmt.test)
-        and any(_branch_calls_slow_forward(branch_stmt) for branch_stmt in stmt.body)
-        and _all_statements_raise(stmt.orelse)
+        and (
+            (
+                _is_cpu_device_test(stmt.test)
+                and any(_branch_calls_slow_forward(branch_stmt) for branch_stmt in stmt.body)
+                and _all_statements_raise(stmt.orelse)
+            )
+            or _is_cuda_fast_return_dispatch(forward.body, stmt)
+        )
     ]
     if len(matches) > 1:
         raise PreflightBlocked("BLOCKED_REQUIRED_SYMBOL_AMBIGUOUS", "backend_kernel_selection")
     return matches[0] if matches else None
 
 
-def _has_optional_backend_path(tree: ast.AST) -> bool:
-    optional_names = {
-        "selective_scan_fn",
-        "selective_scan",
-        "mamba_inner_fn",
-        "causal_conv1d_fn",
-        "causal_conv1d_update",
-        "associative_scan",
-        "use_mamba_kernels",
-    }
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Name) and node.id in optional_names:
-            return True
-        if isinstance(node, ast.Attribute) and node.attr in optional_names:
-            return True
-    return False
+OPTIONAL_BACKEND_NAMES = {
+    "selective_scan_fn",
+    "selective_scan",
+    "mamba_inner_fn",
+    "causal_conv1d_fn",
+    "causal_conv1d_update",
+    "associative_scan",
+    "use_mamba_kernels",
+}
+
+
+def _is_cuda_device_predicate(node: ast.AST) -> bool:
+    return (
+        isinstance(node, ast.Compare)
+        and len(node.ops) == 1
+        and len(node.comparators) == 1
+        and isinstance(node.ops[0], ast.In)
+        and isinstance(node.left, ast.Constant)
+        and node.left.value == "cuda"
+        and _attribute_path(node.comparators[0])[-2:] == ("device", "type")
+    )
+
+
+def _positive_cuda_predicate_in_and(node: ast.AST) -> bool:
+    """Accept exactly one CUDA predicate in a conjunction, never under OR/not."""
+    if not isinstance(node, ast.BoolOp) or not isinstance(node.op, ast.And):
+        return False
+    predicates = 0
+    invalid = False
+
+    def visit(part: ast.AST) -> None:
+        nonlocal predicates, invalid
+        if isinstance(part, ast.BoolOp) and isinstance(part.op, ast.And):
+            for value in part.values:
+                visit(value)
+        elif _is_cuda_device_predicate(part):
+            predicates += 1
+        elif any(_is_cuda_device_predicate(child) for child in ast.walk(part)):
+            invalid = True
+
+    visit(node)
+    return predicates == 1 and not invalid
+
+
+def _is_direct_return_call(stmt: ast.stmt, path: tuple[str, ...]) -> bool:
+    return isinstance(stmt, ast.Return) and isinstance(stmt.value, ast.Call) and _call_path(stmt.value) == path
+
+
+def _is_cuda_fast_return_dispatch(statements: Sequence[ast.stmt], candidate: ast.If) -> bool:
+    try:
+        index = list(statements).index(candidate)
+    except ValueError:
+        return False
+    return (
+        _positive_cuda_predicate_in_and(candidate.test)
+        and not candidate.orelse
+        and len(candidate.body) == 1
+        and _is_direct_return_call(candidate.body[0], ("self", "cuda_kernels_forward"))
+        and index + 1 < len(statements)
+        and _is_direct_return_call(statements[index + 1], ("self", "slow_forward"))
+    )
+
+
+def _calls_in_statements(statements: Sequence[ast.stmt]) -> Iterable[ast.Call]:
+    def visit(node: ast.AST) -> Iterable[ast.Call]:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            return
+        if isinstance(node, ast.Call):
+            yield node
+        for child in ast.iter_child_nodes(node):
+            yield from visit(child)
+
+    for stmt in statements:
+        yield from visit(stmt)
+
+
+def _is_optional_or_fast_backend_call(call: ast.Call) -> bool:
+    path = _call_path(call)
+    return path[-1:] in {(name,) for name in OPTIONAL_BACKEND_NAMES} or path == ("self", "cuda_kernels_forward")
+
+
+def _has_optional_backend_path(tree: ast.AST, proof_if: ast.If | None = None) -> bool:
+    """Report executable optional/fast calls reachable from forward's CPU path."""
+    forward = _find_unique_function(tree, "MambaMixer.forward")
+    if forward is None:
+        return False
+    statements = forward.body
+    if proof_if is None:
+        return any(_is_optional_or_fast_backend_call(call) for call in _calls_in_statements(statements))
+
+    index = list(statements).index(proof_if)
+    reachable: list[ast.stmt] = list(statements[:index])
+    if _is_cuda_fast_return_dispatch(statements, proof_if):
+        # The guarded return is statically CUDA-only; its implementation is not
+        # CPU-reachable.  The direct slow return terminates the CPU fallthrough.
+        reachable.extend(proof_if.orelse)
+        reachable.append(statements[index + 1])
+    else:
+        # Preserve the legacy CPU branch proof while conservatively treating any
+        # unresolved structure around it as CPU-reachable.
+        reachable.extend(proof_if.body)
+        reachable.extend(statements[index + 1 :])
+    return any(_is_optional_or_fast_backend_call(call) for call in _calls_in_statements(reachable))
 
 
 def _location(module: str, qualname: str, source_file_key: str, source_sha256: str, node: ast.AST) -> dict[str, object]:
@@ -704,7 +796,8 @@ def classify_backend(mamba_text: str) -> str:
         tree = ast.parse(mamba_text)
     except SyntaxError as exc:
         raise PreflightBlocked("BLOCKED_SOURCE_DECODE_OR_PARSE_FAILURE", str(exc)) from exc
-    if _backend_proof_if(tree) is not None and not _has_optional_backend_path(tree):
+    proof_if = _backend_proof_if(tree)
+    if proof_if is not None and not _has_optional_backend_path(tree, proof_if):
         return "BACKEND_CPU_SEQUENTIAL_STATICALLY_PROVEN"
     if _has_optional_backend_path(tree):
         return "BACKEND_ASSOCIATIVE_OR_KERNEL_PATH_MAY_INTERVENE"
