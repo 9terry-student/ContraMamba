@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Any
 
 EXPECTED_BRANCH = "p3w7-a1-a2-a3-factorial-execution-authority-n3-v2"
+EXPECTED_UPSTREAM = f"origin/{EXPECTED_BRANCH}"
 FROZEN_TRAINER = ("scripts/train_controlled_v6b_minimal.py", "8252f5778944974e20c21acfe203e8f7bb5f3218")
 FROZEN_TEST = ("tests/test_reason_router_p4x_trainer_rebind.py", "5699ec92459aebda711fdb94470430cdf9349fce")
 DATASET = "reports/reason_router_p2_p3w6f2_p4b_r1_regeneration_execution_4122078ab7962042e3d6bf89f8b4eb5cec463458/controlled_v5_v3_without_time_swap_p3w6f2_r1_regenerated.jsonl"
@@ -69,7 +70,7 @@ def _require(condition: bool, code: str) -> None:
 
 
 def normalize_expected_head(value: str | None) -> str:
-    """Accept only an immutable, full Git object-name spelling for HEAD."""
+    """Accept only the immutable full-SHA implementation anchor spelling."""
     _require(type(value) is str and len(value) == 40, "P4X_EXPECTED_HEAD_INVALID")
     normalized = value.lower()
     _require(all(character in "0123456789abcdef" for character in normalized), "P4X_EXPECTED_HEAD_INVALID")
@@ -89,15 +90,15 @@ def _validate_exact_commit(root: Path, commit: str, parent: str, role: str) -> N
     _require(observed_parent == parent, f"P4X_PHASE2_{role}_PARENT_MISMATCH")
 
 
-def _validate_phase2_lineage(root: Path, expected_head: str) -> None:
+def _validate_phase2_lineage(root: Path, implementation_anchor: str) -> None:
     """Keep external Phase-II authorization in Git lineage, never provenance JSON."""
-    expected_head = normalize_expected_head(expected_head)
+    implementation_anchor = normalize_expected_head(implementation_anchor)
     _validate_exact_commit(root, PHASE_II_ACTIVATION_COMMIT, PHASE_II_ACTIVATION_PARENT, "ACTIVATION")
     _validate_exact_commit(root, PHASE_II_EVIDENCE_FREEZE_COMMIT, PHASE_II_EVIDENCE_FREEZE_PARENT, "FREEZE")
     try:
-        _git(root, "merge-base", "--is-ancestor", PHASE_II_EVIDENCE_FREEZE_COMMIT, expected_head)
+        _git(root, "merge-base", "--is-ancestor", PHASE_II_EVIDENCE_FREEZE_COMMIT, implementation_anchor)
     except ContractError:
-        raise ContractError("P4X_PHASE2_FREEZE_NOT_ANCESTOR_OF_EXPECTED_HEAD") from None
+        raise ContractError("P4X_PHASE2_FREEZE_NOT_ANCESTOR_OF_IMPLEMENTATION_ANCHOR") from None
 
 
 def _validate_phase2_frozen_evidence_binding(root: Path) -> None:
@@ -272,13 +273,45 @@ def _derive_cohorts(source: list[dict[str, Any]], sidecar: list[dict[str, Any]],
     return observed
 
 
-def _validate_repository_identity(root: Path, expected_head: str) -> None:
-    expected_head = normalize_expected_head(expected_head)
+def _validate_implementation_anchor(root: Path, implementation_anchor: str, current_head: str) -> None:
+    """Authenticate the immutable implementation anchor and its current-HEAD ancestry."""
+    try:
+        resolved = str(_git(root, "rev-parse", "--verify", implementation_anchor, text=True)).lower()
+    except ContractError:
+        raise ContractError("P4X_IMPLEMENTATION_ANCHOR_COMMIT_UNAVAILABLE") from None
+    _require(resolved == implementation_anchor, "P4X_IMPLEMENTATION_ANCHOR_IDENTITY_MISMATCH")
+    try:
+        object_type = str(_git(root, "cat-file", "-t", implementation_anchor, text=True))
+    except ContractError:
+        raise ContractError("P4X_IMPLEMENTATION_ANCHOR_COMMIT_UNAVAILABLE") from None
+    _require(object_type == "commit", "P4X_IMPLEMENTATION_ANCHOR_OBJECT_TYPE_MISMATCH")
+    try:
+        _git(root, "merge-base", "--is-ancestor", implementation_anchor, current_head)
+    except ContractError:
+        raise ContractError("P4X_IMPLEMENTATION_ANCHOR_NOT_ANCESTOR_OF_CURRENT_HEAD") from None
+
+
+def _validate_repository_identity(root: Path, expected_head: str) -> str:
+    """Require the exact synchronized execution branch and immutable anchor lineage."""
+    implementation_anchor = normalize_expected_head(expected_head)
     _require(not any(root.joinpath(part).is_symlink() for part in (".git",)), "P4X_REPOSITORY_SYMLINK_SUBSTITUTION")
     _require(str(_git(root, "rev-parse", "--abbrev-ref", "HEAD", text=True)) == EXPECTED_BRANCH, "P4X_BRANCH_IDENTITY_MISMATCH")
-    _require(str(_git(root, "rev-parse", "HEAD", text=True)).lower() == expected_head, "P4X_HEAD_IDENTITY_MISMATCH")
-    _require(str(_git(root, "rev-parse", "@{up}", text=True)).lower() == expected_head, "P4X_UPSTREAM_IDENTITY_MISMATCH")
+    try:
+        remote = str(_git(root, "config", "--get", f"branch.{EXPECTED_BRANCH}.remote", text=True))
+        merge = str(_git(root, "config", "--get", f"branch.{EXPECTED_BRANCH}.merge", text=True))
+    except ContractError:
+        raise ContractError("P4X_UPSTREAM_REF_IDENTITY_MISMATCH") from None
+    _require(remote == "origin" and merge == f"refs/heads/{EXPECTED_BRANCH}", "P4X_UPSTREAM_REF_IDENTITY_MISMATCH")
+    current_head = str(_git(root, "rev-parse", "HEAD", text=True)).lower()
+    try:
+        upstream_tip = str(_git(root, "rev-parse", f"refs/remotes/{EXPECTED_UPSTREAM}", text=True)).lower()
+        configured_upstream_tip = str(_git(root, "rev-parse", "@{up}", text=True)).lower()
+    except ContractError:
+        raise ContractError("P4X_UPSTREAM_TIP_MISMATCH") from None
+    _require(configured_upstream_tip == upstream_tip and current_head == upstream_tip, "P4X_UPSTREAM_TIP_MISMATCH")
     _require(str(_git(root, "rev-list", "--left-right", "--count", "HEAD...@{up}", text=True)) == "0\t0", "P4X_AHEAD_BEHIND_MISMATCH")
+    _validate_implementation_anchor(root, implementation_anchor, current_head)
+    return current_head
 
 
 def validate(root: Path, expected_head: str) -> dict[str, Any]:
@@ -307,7 +340,7 @@ def validate(root: Path, expected_head: str) -> dict[str, Any]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
-    parser.add_argument("--expected-head", required=True, metavar="FULL_40_HEX_SHA")
+    parser.add_argument("--expected-head", required=True, metavar="FULL_40_HEX_SHA", help="Immutable implementation anchor: a full 40-hex commit SHA, not the current execution HEAD.")
     args = parser.parse_args(argv)
     try:
         print(json.dumps(validate(args.repo_root, args.expected_head), sort_keys=True))

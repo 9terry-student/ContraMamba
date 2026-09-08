@@ -117,7 +117,7 @@ def test_phase2_freeze_must_ancestor_expected_head(monkeypatch: pytest.MonkeyPat
     git(root, "checkout", "-b", "non-descendant", activation)
     (root / "alternate.txt").write_text("alternate\n", encoding="utf-8")
     git(root, "add", "alternate.txt"); git(root, "commit", "-m", "alternate")
-    with pytest.raises(p4x.ContractError, match="P4X_PHASE2_FREEZE_NOT_ANCESTOR_OF_EXPECTED_HEAD"):
+    with pytest.raises(p4x.ContractError, match="P4X_PHASE2_FREEZE_NOT_ANCESTOR_OF_IMPLEMENTATION_ANCHOR"):
         p4x._validate_phase2_lineage(root, git(root, "rev-parse", "HEAD"))
 
 
@@ -177,20 +177,73 @@ def test_expected_head_accepts_only_case_normalized_full_sha_and_parser_requires
         p4x.main(["--repo-root", "."])
 
 
-def test_real_git_expected_head_upstream_and_branch_contracts(tmp_path: Path) -> None:
+def test_real_git_implementation_anchor_identity_contracts(tmp_path: Path) -> None:
     root, head = identity_repo(tmp_path)
     p4x._validate_repository_identity(root, head.upper())
-    with pytest.raises(p4x.ContractError, match="P4X_HEAD_IDENTITY_MISMATCH"):
-        p4x._validate_repository_identity(root, "0" * 40)
     (root / "next.txt").write_text("next\n", encoding="utf-8")
     git(root, "add", "next.txt")
     git(root, "commit", "-m", "next")
     current = git(root, "rev-parse", "HEAD")
-    with pytest.raises(p4x.ContractError, match="P4X_UPSTREAM_IDENTITY_MISMATCH"):
-        p4x._validate_repository_identity(root, current)
+    git(root, "update-ref", f"refs/remotes/origin/{p4x.EXPECTED_BRANCH}", current)
+    # A later authority-like execution commit remains valid with its older implementation anchor.
+    p4x._validate_repository_identity(root, head)
+    git(root, "checkout", "--orphan", "non-ancestor")
+    git(root, "rm", "-rf", ".")
+    (root / "alternate.txt").write_text("alternate\n", encoding="utf-8")
+    git(root, "add", "alternate.txt"); git(root, "commit", "-m", "alternate")
+    git(root, "branch", "-f", p4x.EXPECTED_BRANCH, "HEAD")
+    git(root, "checkout", p4x.EXPECTED_BRANCH)
+    alternate = git(root, "rev-parse", "HEAD")
+    git(root, "update-ref", f"refs/remotes/origin/{p4x.EXPECTED_BRANCH}", alternate)
+    with pytest.raises(p4x.ContractError, match="P4X_IMPLEMENTATION_ANCHOR_NOT_ANCESTOR_OF_CURRENT_HEAD"):
+        p4x._validate_repository_identity(root, head)
     git(root, "branch", "-M", "wrong-branch")
     with pytest.raises(p4x.ContractError, match="P4X_BRANCH_IDENTITY_MISMATCH"):
         p4x._validate_repository_identity(root, head)
+
+
+def test_wrong_configured_upstream_ref_fails_even_at_same_sha(tmp_path: Path) -> None:
+    root, head = identity_repo(tmp_path)
+    git(root, "update-ref", "refs/remotes/origin/wrong", head)
+    git(root, "config", f"branch.{p4x.EXPECTED_BRANCH}.merge", "refs/heads/wrong")
+    wrong_upstream_tip = git(root, "rev-parse", "@{up}")
+    configured_symbolic_upstream = git(root, "rev-parse", "--abbrev-ref", "@{up}")
+    assert head == wrong_upstream_tip
+    assert configured_symbolic_upstream == "origin/wrong"
+    assert configured_symbolic_upstream != p4x.EXPECTED_UPSTREAM
+    with pytest.raises(p4x.ContractError, match="P4X_UPSTREAM_REF_IDENTITY_MISMATCH"):
+        p4x._validate_repository_identity(root, head)
+
+
+def test_current_head_must_equal_configured_upstream_tip(tmp_path: Path) -> None:
+    root, head = identity_repo(tmp_path)
+    (root / "next.txt").write_text("next\n", encoding="utf-8")
+    git(root, "add", "next.txt"); git(root, "commit", "-m", "ahead")
+    with pytest.raises(p4x.ContractError, match="P4X_UPSTREAM_TIP_MISMATCH"):
+        p4x._validate_repository_identity(root, head)
+
+
+def test_implementation_anchor_unavailable_and_non_commit_fail(tmp_path: Path) -> None:
+    root, head = identity_repo(tmp_path)
+    with pytest.raises(p4x.ContractError, match="P4X_IMPLEMENTATION_ANCHOR_COMMIT_UNAVAILABLE"):
+        p4x._validate_repository_identity(root, "0" * 40)
+    blob = git(root, "rev-parse", "HEAD:input.txt")
+    with pytest.raises(p4x.ContractError, match="P4X_IMPLEMENTATION_ANCHOR_OBJECT_TYPE_MISMATCH"):
+        p4x._validate_repository_identity(root, blob)
+
+
+@pytest.mark.parametrize("mutation, contract", [("unstaged", "P4X_UNSTAGED_DIRTY"), ("staged", "P4X_STAGED_DIRTY"), ("untracked", "P4X_UNTRACKED_WORKTREE")])
+def test_repository_cleanliness_rejects_all_dirty_states(tmp_path: Path, mutation: str, contract: str) -> None:
+    root = commit_blob_repo(tmp_path)
+    if mutation == "unstaged":
+        (root / "input.txt").write_text("changed\n", encoding="utf-8")
+    elif mutation == "staged":
+        (root / "input.txt").write_text("changed\n", encoding="utf-8")
+        git(root, "add", "input.txt")
+    else:
+        (root / "unexpected.txt").write_text("unexpected\n", encoding="utf-8")
+    with pytest.raises(p4x.ContractError, match=contract):
+        p4x._require_clean_repository(root)
 
 
 def test_ahead_behind_contract_is_explicit_and_fail_closed(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
