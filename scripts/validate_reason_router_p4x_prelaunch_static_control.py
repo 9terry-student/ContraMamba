@@ -48,6 +48,8 @@ SPLIT_IDENTITIES = {"pair_count": 300, "train_pair_count": 240, "dev_pair_count"
 PROVENANCE_SPLIT_IDENTITIES = {**SPLIT_IDENTITIES, "historical_seed174_dev_pair_sha256": "259bfce57e85121d6c1adccd20f3ac070108ff6310cfff546a2edd054835899d"}
 EXPECTED_COHORTS = {"train": {"frame": {0: 714, 1: 695}, "predicate": {0: 119, 1: 576}, "sufficiency": {0: 238, 1: 338}, "polarity": {0: 100, 1: 238}}, "dev": {"frame": {0: 186, 1: 174}, "predicate": {0: 31, 1: 143}, "sufficiency": {0: 62, 1: 81}, "polarity": {0: 19, 1: 62}}}
 EXPECTED_P4X_AGGREGATES = {"reason": {True: 1769, False: 1831}, "integrity": {"ELIGIBLE": 1769, "INELIGIBLE": 1562, "UNRESOLVED": 269}, "margin": {True: 695, False: 2905}}
+GENERATOR_STATUS_FIELDS = ("schema_status", "dataset_source_status", "grammar_status", "canonical_status", "intervention_contract_status", "polarity_contamination_status", "time_swap_status")
+GENERATOR_STATUS_ENUM = frozenset({"PASS", "FAIL", "UNRESOLVED", "NOT_APPLICABLE"})
 
 
 class ContractError(RuntimeError):
@@ -231,6 +233,22 @@ def _validate_p4x_aggregates(sidecar: list[dict[str, Any]]) -> None:
     _require(observed["margin"] == Counter(EXPECTED_P4X_AGGREGATES["margin"]), "P4X_POSITIVE_MARGIN_COUNT_MISMATCH")
 
 
+def _classify_generator_status(side: dict[str, Any], row_id: str) -> str:
+    """Classify the frozen P4-L generator statuses, rejecting malformed rows."""
+    values: list[str] = []
+    for field in GENERATOR_STATUS_FIELDS:
+        _require(field in side, f"P4X_GENERATOR_STATUS_MALFORMED: {row_id}: {field}: MISSING")
+        value = side[field]
+        _require(type(value) is str, f"P4X_GENERATOR_STATUS_MALFORMED: {row_id}: {field}: NON_STRING")
+        _require(value in GENERATOR_STATUS_ENUM, f"P4X_GENERATOR_STATUS_MALFORMED: {row_id}: {field}: UNKNOWN")
+        values.append(value)
+    if "FAIL" in values:
+        return "GENERATOR_DEFECT"
+    if "UNRESOLVED" in values or "NOT_APPLICABLE" in values:
+        return "GENERATOR_UNRESOLVED"
+    return "GENERATOR_CLEAN"
+
+
 def _derive_cohorts(source: list[dict[str, Any]], sidecar: list[dict[str, Any]], split: str) -> dict[str, dict[int, int]]:
     by_id = {str(row.get("row_id", "")): row for row in sidecar}
     _require(len(by_id) == len(sidecar), "P4X_DUPLICATE_SIDECAR_ROW_ID")
@@ -254,8 +272,7 @@ def _derive_cohorts(source: list[dict[str, Any]], sidecar: list[dict[str, Any]],
         _require(side is not None and side.get("split") == split and side.get("pair_id") == source_row.get("pair_id"), f"P4X_SOURCE_SIDECAR_JOIN_MISMATCH: {row_id}")
         frame, predicate, sufficiency = (source_row[field] for field in ("frame_compatible_label", "predicate_covered_label", "sufficiency_label"))
         _require(side.get("frame_compatible_label") == frame, f"P4X_SIDECAR_SOURCE_BINARY_MISMATCH: {row_id}")
-        statuses = ("schema_status", "dataset_source_status", "grammar_status", "canonical_status", "intervention_contract_status", "polarity_contamination_status", "time_swap_status")
-        _require(all(side.get(field) == "PASS" for field in statuses), f"P4X_GENERATOR_STATUS_DEFECT: {row_id}")
+        generator_clean = _classify_generator_status(side, row_id) == "GENERATOR_CLEAN"
         primary = str(source_row.get("primary_failure_type", "")).strip().lower()
         _require(primary in {"none", "frame", "predicate", "sufficiency", "polarity"}, f"P4X_PRIMARY_FAILURE_MALFORMED: {row_id}")
         derived = "frame" if frame == 0 else "predicate" if predicate == 0 else "sufficiency" if sufficiency == 0 else "authorized"
@@ -265,12 +282,13 @@ def _derive_cohorts(source: list[dict[str, Any]], sidecar: list[dict[str, Any]],
         directional = label in {"REFUTE", "SUPPORT"}
         raw_polarity = source_row.get("polarity_label", "")
         polarity = ({0: "NONE", 1: "REFUTE", 2: "SUPPORT"}.get(raw_polarity, "UNKNOWN") if type(raw_polarity) is int else str(raw_polarity).strip().upper())
-        eligible = (derived == expected and (derived == "authorized" or label == "NOT_ENTITLED") and (primary not in {"none", "polarity"} or directional) and (polarity == label if directional else polarity in {"NONE", "NOT_ENTITLED"}) and not (primary == "polarity" and str(source_row.get("intervention_type", "")).strip().lower() != "polarity_flip"))
-        _require(type(side.get("p2_reason_supervision_eligible")) is bool and side["p2_reason_supervision_eligible"] is eligible, f"P4X_REASON_ELIGIBILITY_DERIVATION_MISMATCH: {row_id}")
-        if eligible: cohorts["frame"][frame] += 1
-        if eligible and frame == 1: cohorts["predicate"][predicate] += 1
-        if eligible and frame == 1 and predicate == 1: cohorts["sufficiency"][sufficiency] += 1
-        if eligible and frame == predicate == sufficiency == 1:
+        source_semantic_eligible = (derived == expected and (derived == "authorized" or label == "NOT_ENTITLED") and (primary not in {"none", "polarity"} or directional) and (polarity == label if directional else polarity in {"NONE", "NOT_ENTITLED"}) and not (primary == "polarity" and str(source_row.get("intervention_type", "")).strip().lower() != "polarity_flip"))
+        expected_reason_eligible = source_semantic_eligible and generator_clean
+        _require(type(side.get("p2_reason_supervision_eligible")) is bool and side["p2_reason_supervision_eligible"] is expected_reason_eligible, f"P4X_REASON_ELIGIBILITY_DERIVATION_MISMATCH: {row_id}")
+        if expected_reason_eligible: cohorts["frame"][frame] += 1
+        if expected_reason_eligible and frame == 1: cohorts["predicate"][predicate] += 1
+        if expected_reason_eligible and frame == 1 and predicate == 1: cohorts["sufficiency"][sufficiency] += 1
+        if expected_reason_eligible and frame == predicate == sufficiency == 1:
             if label in {"REFUTE", "SUPPORT"}: cohorts["polarity"][1 if label == "SUPPORT" else 0] += 1
     observed = {name: {0: counts[0], 1: counts[1]} for name, counts in cohorts.items()}
     for name, counts in observed.items(): _require(counts[0] > 0 and counts[1] > 0, f"P2_APPLICABLE_COHORT_BINARY_CLASS_DEGENERATE: {split}:{name}")

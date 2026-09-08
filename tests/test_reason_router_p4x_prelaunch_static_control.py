@@ -481,6 +481,85 @@ def _complete_cohort_fixture() -> tuple[list[dict[str, object]], list[dict[str, 
     return source, sidecar
 
 
+def _non_degenerate_cohort_fixture() -> tuple[list[dict[str, object]], list[dict[str, object]]]:
+    source, sidecar = _complete_cohort_fixture()
+    copied_source, copied_sidecar = [], []
+    for row in source:
+        row_id = f"{row['id']}-copy"
+        copied_source.append({**row, "id": row_id, "pair_id": row_id})
+    for row in sidecar:
+        row_id = f"{row['row_id']}-copy"
+        copied_sidecar.append({**row, "row_id": row_id, "pair_id": row_id, "canonical_row_id": row_id})
+    return source + copied_source, sidecar + copied_sidecar
+
+
+def _set_fixture_cohorts(monkeypatch: pytest.MonkeyPatch, polarity_one: int = 2) -> None:
+    monkeypatch.setitem(p4x.EXPECTED_COHORTS, "train", {"frame": {0: 2, 1: 8 if polarity_one == 2 else 7}, "predicate": {0: 2, 1: 6 if polarity_one == 2 else 5}, "sufficiency": {0: 2, 1: 4 if polarity_one == 2 else 3}, "polarity": {0: 2, 1: polarity_one}})
+
+
+@pytest.mark.parametrize("status", ["FAIL", "UNRESOLVED", "NOT_APPLICABLE"])
+def test_recognized_nonpass_generator_status_is_preserved_exclusion(monkeypatch: pytest.MonkeyPatch, status: str) -> None:
+    source, sidecar = _non_degenerate_cohort_fixture()
+    sidecar[4]["grammar_status"] = status
+    sidecar[4]["p2_reason_supervision_eligible"] = False
+    _set_fixture_cohorts(monkeypatch, polarity_one=1)
+    assert p4x._derive_cohorts(source, sidecar, "train")["polarity"] == {0: 2, 1: 1}
+
+
+def test_clean_complete_fixture_regression(monkeypatch: pytest.MonkeyPatch) -> None:
+    source, sidecar = _non_degenerate_cohort_fixture()
+    _set_fixture_cohorts(monkeypatch)
+    assert p4x._derive_cohorts(source, sidecar, "train") == p4x.EXPECTED_COHORTS["train"]
+
+
+def test_reason_eligibility_rejects_clean_false_negative() -> None:
+    source, sidecar = _complete_cohort_fixture()
+    sidecar[4]["p2_reason_supervision_eligible"] = False
+    with pytest.raises(p4x.ContractError, match="P4X_REASON_ELIGIBILITY_DERIVATION_MISMATCH"):
+        p4x._derive_cohorts(source, sidecar, "train")
+
+
+def test_reason_eligibility_rejects_nonclean_false_positive() -> None:
+    source, sidecar = _complete_cohort_fixture()
+    sidecar[4]["grammar_status"] = "FAIL"
+    with pytest.raises(p4x.ContractError, match="P4X_REASON_ELIGIBILITY_DERIVATION_MISMATCH"):
+        p4x._derive_cohorts(source, sidecar, "train")
+
+
+@pytest.mark.parametrize("mutation", ["missing", "non-string", "unknown"])
+def test_malformed_generator_status_fails_closed(mutation: str) -> None:
+    source, sidecar = _complete_cohort_fixture()
+    if mutation == "missing":
+        del sidecar[4]["grammar_status"]
+    else:
+        sidecar[4]["grammar_status"] = 1 if mutation == "non-string" else "OTHER"
+    with pytest.raises(p4x.ContractError, match="P4X_GENERATOR_STATUS_MALFORMED"):
+        p4x._derive_cohorts(source, sidecar, "train")
+
+
+def test_frozen_generator_status_population_sets_are_exact() -> None:
+    root = MODULE_PATH.parents[1]
+    sidecar = p4x._parse_jsonl(p4x.authenticated_head_bytes(root, p4x.SIDECAR, p4x.SIDECAR_BLOB, p4x.SIDECAR_SHA256), "SIDECAR")
+    reason_ineligible = {str(row["row_id"]) for row in sidecar if row["p2_reason_supervision_eligible"] is False}
+    integrity_noneligible = {str(row["row_id"]) for row in sidecar if row["integrity_status"] != "ELIGIBLE"}
+    status_nonpass = {str(row["row_id"]) for row in sidecar if p4x._classify_generator_status(row, str(row["row_id"])) != "GENERATOR_CLEAN"}
+    assert len(reason_ineligible) == len(integrity_noneligible) == len(status_nonpass) == 1831
+    assert reason_ineligible == integrity_noneligible == status_nonpass
+
+
+def test_orion_approval_polarity_flip_is_authenticated_preserved_exclusion() -> None:
+    root = MODULE_PATH.parents[1]
+    source = p4x._parse_jsonl(p4x.authenticated_head_bytes(root, p4x.DATASET, p4x.DATASET_BLOB, p4x.DATASET_SHA256), "SOURCE")
+    sidecar = p4x._parse_jsonl(p4x.authenticated_head_bytes(root, p4x.SIDECAR, p4x.SIDECAR_BLOB, p4x.SIDECAR_SHA256), "SIDECAR")
+    orion = next(row for row in sidecar if row["row_id"] == "orion_approval__polarity_flip")
+    assert orion["split"] == "train"
+    assert orion["grammar_status"] == "FAIL"
+    assert orion["p2_reason_supervision_eligible"] is False
+    assert p4x._classify_generator_status(orion, "orion_approval__polarity_flip") == "GENERATOR_DEFECT"
+    train_ids = {str(row["row_id"]) for row in sidecar if row["split"] == "train"}
+    assert p4x._derive_cohorts([row for row in source if str(row["id"]) in train_ids], [row for row in sidecar if str(row["row_id"]) in train_ids], "train") == p4x.EXPECTED_COHORTS["train"]
+
+
 def test_all_four_applicable_cohort_families_require_both_binary_sides(monkeypatch: pytest.MonkeyPatch) -> None:
     source, sidecar = _complete_cohort_fixture()
     monkeypatch.setitem(p4x.EXPECTED_COHORTS, "train", {"frame": {0: 1, 1: 4}, "predicate": {0: 1, 1: 3}, "sufficiency": {0: 1, 1: 2}, "polarity": {0: 1, 1: 1}})
