@@ -289,6 +289,37 @@ def test_semantic_and_split_helpers_fail_closed() -> None:
     with pytest.raises(p4x.ContractError, match="P4X_PAIR_UNIVERSE_INVALID"): p4x.recompute_split([])
 
 
+def test_identity_hash_uses_lf_terminated_records() -> None:
+    authoritative = hashlib.sha256(b"alpha\nbeta\n").hexdigest()
+    previous = hashlib.sha256(b"alpha\nbeta").hexdigest()
+    assert p4x._identity_hash(["alpha", "beta"]) == authoritative
+    assert previous != authoritative
+
+
+def test_authenticated_dataset_split_identities_use_pair_and_row_serializations() -> None:
+    content = p4x.authenticated_head_bytes(MODULE_PATH.parents[1], p4x.DATASET, p4x.DATASET_BLOB, p4x.DATASET_SHA256)
+    rows = p4x._parse_jsonl(content, "SOURCE")
+    train, dev, audit = p4x.recompute_split(rows)
+    assert audit == p4x.SPLIT_IDENTITIES
+    assert audit["pair_universe_sha256"] == "41f7a2cc533b9026a49d2b2587dd34894fadb908deab9f0a79133345569758f2"
+    assert audit["shuffled_pair_sha256"] == "ef15a6c3dc0f45ccad0f4e4e203eab9ff5dbfe8d64dde96ae14df3811bbd2d55"
+    assert audit["train_pair_sha256"] == "f6fffb94b6c33112bcfc8afb6da9f3aa76ae6e1327b8c38e69724fa4c2641049"
+    assert audit["dev_pair_sha256"] == "30951a7c637b10a5693289be40911ec5bf32de6eca3efd37a81f3fa268cd25a4"
+    assert audit["ordered_train_row_sha256"] == "478013207699462a9434ce8f44991ce75b33650593b9aa942fff0f2be659c2a8"
+    assert audit["ordered_dev_row_sha256"] == "7870c83fe1f6e3a65311311ab05122736a007e6a92f4f04c28b2c72584ddfaa4"
+    assert p4x._identity_hash([str(row["id"]) for row in train]) != audit["ordered_train_row_sha256"]
+    assert p4x._identity_hash([str(row["id"]) for row in dev]) != audit["ordered_dev_row_sha256"]
+
+
+def test_split_identity_mutations_remain_fail_closed() -> None:
+    rows = p4x._parse_jsonl((MODULE_PATH.parents[1] / p4x.DATASET).read_bytes(), "SOURCE")
+    pair_mutation = [{**row, "pair_id": "pair-universe-mutation" if row["pair_id"] == rows[0]["pair_id"] else row["pair_id"]} for row in rows]
+    with pytest.raises(p4x.ContractError, match="P4X_SPLIT_IDENTITY_MISMATCH"):
+        p4x.recompute_split(pair_mutation)
+    with pytest.raises(p4x.ContractError, match="P4X_SPLIT_IDENTITY_MISMATCH"):
+        p4x.recompute_split(list(reversed(rows)))
+
+
 @pytest.mark.parametrize("n, expected_dev", [(2, 1), (3, 1), (5, 1), (6, 1), (9, 2), (300, 60), (301, 60)])
 def test_frozen_split_formula_is_cardinality_dependent(n: int, expected_dev: int) -> None:
     pair_ids = [f"pair-{index:03d}" for index in range(n)]

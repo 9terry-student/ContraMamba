@@ -168,7 +168,7 @@ def _sidecar_semantic(rows: list[dict[str, Any]]) -> str:
 
 
 def _identity_hash(values: list[str]) -> str:
-    return hashlib.sha256("\n".join(values).encode("utf-8")).hexdigest()
+    return hashlib.sha256("".join(f"{value}\n" for value in values).encode("utf-8")).hexdigest()
 
 
 def split_pair_ids(pair_ids: list[str]) -> tuple[list[str], list[str], list[str]]:
@@ -194,7 +194,7 @@ def recompute_split(rows: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], l
     _require(not (set(train_pairs) & set(dev_pair_list)), "P4X_PAIR_LEAKAGE")
     dev_pairs = set(dev_pair_list)
     train, dev = ([row for row in rows if str(row["pair_id"]) not in dev_pairs], [row for row in rows if str(row["pair_id"]) in dev_pairs])
-    audit = {"pair_count": len(pairs), "train_pair_count": len({str(row["pair_id"]) for row in train}), "dev_pair_count": len({str(row["pair_id"]) for row in dev}), "train_row_count": len(train), "dev_row_count": len(dev), "pair_universe_sha256": _identity_hash(pairs), "shuffled_pair_sha256": _identity_hash(shuffled), "train_pair_sha256": _identity_hash(sorted({str(row["pair_id"]) for row in train})), "dev_pair_sha256": _identity_hash(sorted({str(row["pair_id"]) for row in dev})), "ordered_train_row_sha256": _identity_hash([str(row["id"]) for row in train]), "ordered_dev_row_sha256": _identity_hash([str(row["id"]) for row in dev])}
+    audit = {"pair_count": len(pairs), "train_pair_count": len({str(row["pair_id"]) for row in train}), "dev_pair_count": len({str(row["pair_id"]) for row in dev}), "train_row_count": len(train), "dev_row_count": len(dev), "pair_universe_sha256": _identity_hash(pairs), "shuffled_pair_sha256": _identity_hash(shuffled), "train_pair_sha256": _identity_hash(sorted({str(row["pair_id"]) for row in train})), "dev_pair_sha256": _identity_hash(sorted({str(row["pair_id"]) for row in dev})), "ordered_train_row_sha256": _identity_hash([f"{row['id']}\t{row['pair_id']}" for row in train]), "ordered_dev_row_sha256": _identity_hash([f"{row['id']}\t{row['pair_id']}" for row in dev])}
     _require(not ({str(row["pair_id"]) for row in train} & {str(row["pair_id"]) for row in dev}), "P4X_PAIR_LEAKAGE")
     _require(len(train_pairs) == 240 and len(dev_pair_list) == 60, "P4X_FROZEN_PAIR_COUNT_MISMATCH")
     _require(audit == SPLIT_IDENTITIES, "P4X_SPLIT_IDENTITY_MISMATCH")
