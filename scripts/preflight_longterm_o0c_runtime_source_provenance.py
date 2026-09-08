@@ -867,6 +867,68 @@ def _convolution_cache_location(slow: ast.AST, mamba_tree: ast.AST, cache_tree: 
     return slow
 
 
+def _is_ssm_cache_subscript(node: ast.AST) -> bool:
+    return isinstance(node, ast.Subscript) and _attribute_path(node.value) == ("cache_params", "ssm_states")
+
+
+def _is_ssm_cache_read(node: ast.AST) -> bool:
+    """Recognize the direct cached state read and its canonical clone form."""
+    if _is_ssm_cache_subscript(node):
+        return True
+    return (
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == "clone"
+        and not node.args
+        and not node.keywords
+        and _is_ssm_cache_subscript(node.func.value)
+    )
+
+
+def _is_ssm_cache_copy(node: ast.AST) -> bool:
+    """Recognize only ``cache_params.ssm_states[...].copy_(ssm_state)``."""
+    return (
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == "copy_"
+        and _is_ssm_cache_subscript(node.func.value)
+        and len(node.args) == 1
+        and not node.keywords
+        and isinstance(node.args[0], ast.Name)
+        and isinstance(node.args[0].ctx, ast.Load)
+        and node.args[0].id == "ssm_state"
+    )
+
+
+def _cache_recurrent_state_storage_location(slow: ast.AST, recurrent_loop: ast.For) -> ast.AST:
+    family = "cache_recurrent_state_storage"
+    cache_guards = [
+        node
+        for node in _same_lexical_nodes(getattr(slow, "body", []))
+        if isinstance(node, ast.If) and _is_cache_present_test(node.test)
+    ]
+    reads = [
+        node
+        for guard in cache_guards
+        for node in _same_lexical_nodes(guard.body)
+        if isinstance(node, (ast.Assign, ast.AnnAssign))
+        and _assigns_name(node, "ssm_state")
+        and _is_ssm_cache_read(node.value)
+    ]
+    if len(reads) != 1:
+        status = "BLOCKED_REQUIRED_SYMBOL_AMBIGUOUS" if len(reads) > 1 else "BLOCKED_REQUIRED_SYMBOL_UNRESOLVED"
+        raise PreflightBlocked(status, family)
+
+    writes = [
+        node
+        for guard in cache_guards
+        for node in _same_lexical_nodes(guard.body)
+        if _is_ssm_cache_copy(node) and getattr(node, "lineno", -1) > getattr(recurrent_loop, "end_lineno", -1)
+    ]
+    _, write = _exactly_one([("MambaMixer.slow_forward", node) for node in writes], family)
+    return write
+
+
 def bind_symbol_locations(mamba: SourceFacts, cache: SourceFacts) -> dict[str, dict[str, object]]:
     try:
         mamba_tree = ast.parse(mamba.text)
@@ -879,9 +941,8 @@ def bind_symbol_locations(mamba: SourceFacts, cache: SourceFacts) -> dict[str, d
     forward = _find_unique_function(mamba_tree, "MambaMixer.forward")
     if slow is None or forward is None:
         raise PreflightBlocked("BLOCKED_REQUIRED_SYMBOL_UNRESOLVED", "MambaMixer forward/slow_forward")
-    _, init_node, _, update_node, readout_node = _recurrent_proof_nodes(mamba_tree)
+    _, init_node, recurrent_loop, update_node, readout_node = _recurrent_proof_nodes(mamba_tree)
     backend_node = _backend_proof_if(mamba_tree)
-    cache_functions = _qualname_stack(cache_tree)
 
     if backend_node is None:
         raise PreflightBlocked("BLOCKED_REQUIRED_SYMBOL_UNRESOLVED", "backend_kernel_selection")
@@ -923,16 +984,9 @@ def bind_symbol_locations(mamba: SourceFacts, cache: SourceFacts) -> dict[str, d
             [("MambaMixer.forward", backend_node)],
         ),
         "cache_recurrent_state_storage": (
-            cache.module,
-            "cache",
-            [
-                (q, n)
-                for q, func in cache_functions
-                for n in getattr(func, "body", [])
-                if isinstance(n, (ast.Assign, ast.AnnAssign))
-                and any(path[-1:] == ("ssm_state",) or path[-2:] == ("self", "ssm_state") for path in _assigned_paths(n))
-                and _loads_name(n, "ssm_state")
-            ],
+            mamba.module,
+            "mamba",
+            [("MambaMixer.slow_forward", _cache_recurrent_state_storage_location(slow, recurrent_loop))],
         ),
     }
 

@@ -28,13 +28,18 @@ class MambaMixer:
         else:
             raise RuntimeError("non-cpu backend unresolved")
 
-    def slow_forward(self, hidden_states):
-        ssm_state = hidden_states.new_zeros(1)
+    def slow_forward(self, hidden_states, cache_params=None):
+        if cache_params is not None:
+            ssm_state = cache_params.ssm_states[self.layer_idx].clone()
+        else:
+            ssm_state = hidden_states.new_zeros(1)
         conv_state = hidden_states.new_zeros(1)
         collected_hidden_states = []
         for token in hidden_states:
             ssm_state = ssm_state + token
             collected_hidden_states.append(ssm_state)
+        if cache_params is not None:
+            cache_params.ssm_states[self.layer_idx].copy_(ssm_state)
         return {"hidden_states": collected_hidden_states}
 """
 
@@ -56,13 +61,18 @@ class MambaMixer:
     def cuda_kernels_forward(self, hidden_states):
         return selective_scan_fn(causal_conv1d_fn(hidden_states))
 
-    def slow_forward(self, hidden_states):
-        ssm_state = hidden_states.new_zeros(1)
+    def slow_forward(self, hidden_states, cache_params=None):
+        if cache_params is not None:
+            ssm_state = cache_params.ssm_states[self.layer_idx].clone()
+        else:
+            ssm_state = hidden_states.new_zeros(1)
         conv_state = hidden_states.new_zeros(1)
         collected_hidden_states = []
         for token in hidden_states:
             ssm_state = ssm_state + token
             collected_hidden_states.append(ssm_state)
+        if cache_params is not None:
+            cache_params.ssm_states[self.layer_idx].copy_(ssm_state)
         return {"hidden_states": collected_hidden_states}
 """
 
@@ -91,6 +101,8 @@ class MambaMixer:
         for token in hidden_states:
             ssm_state = ssm_state + token
             collected_hidden_states.append(ssm_state)
+        if cache_params is not None:
+            cache_params.ssm_states[self.layer_idx].copy_(ssm_state)
         return {"hidden_states": collected_hidden_states}
 """
 
@@ -131,12 +143,17 @@ class MambaMixer:
 
     def slow_forward(self, hidden_states, cache_params: MambaCache | None = None, cache_position=None):
         if cache_params is not None:
+            ssm_state = cache_params.ssm_states[self.layer_idx].clone()
+        else:
+            ssm_state = hidden_states.new_zeros(1)
+        if cache_params is not None:
 {branch}
-        ssm_state = hidden_states.new_zeros(1)
         collected_hidden_states = []
         for token in hidden_states:
             ssm_state = ssm_state + token
             collected_hidden_states.append(ssm_state)
+        if cache_params is not None:
+            cache_params.ssm_states[self.layer_idx].copy_(ssm_state)
         return {{"hidden_states": collected_hidden_states}}
 """.format(branch=branch)
 
@@ -157,11 +174,16 @@ class MambaMixer:
 
     def slow_forward(self, hidden_states, cache_params: MambaCache | None = None, cache_position=None):
 {branch_text}
-        ssm_state = hidden_states.new_zeros(1)
+        if cache_params is not None:
+            ssm_state = cache_params.ssm_states[self.layer_idx].clone()
+        else:
+            ssm_state = hidden_states.new_zeros(1)
         collected_hidden_states = []
         for token in hidden_states:
             ssm_state = ssm_state + token
             collected_hidden_states.append(ssm_state)
+        if cache_params is not None:
+            cache_params.ssm_states[self.layer_idx].copy_(ssm_state)
         return {{"hidden_states": collected_hidden_states}}
 """.format(branch_text=branch_text)
 
@@ -351,7 +373,7 @@ def test_convolution_cache_multiple_complete_splits_in_one_branch_block_ambiguou
 
 def test_convolution_cache_legacy_direct_assignment_remains_valid(tmp_path):
     location = convolution_locations(tmp_path, MAMBA_PASS, CACHE_PASS)["convolution_cache_initialization_update"]
-    assert location["start_line"] == 10
+    assert location["start_line"] == next(i for i, line in enumerate(MAMBA_PASS.splitlines(), 1) if "conv_state =" in line)
 
 
 class FakeDist:
@@ -632,6 +654,60 @@ def test_ast_symbol_binding_and_stable_span(tmp_path):
     assert locations["mixer_forward_dispatch"]["qualname"] == "MambaMixer.forward"
     assert locations["mixer_forward_dispatch"]["start_line"] == 2
     assert locations["mixer_forward_dispatch"]["source_sha256"] == mamba.sha256
+
+
+def assert_storage_blocks(tmp_path: Path, text: str, status: str):
+    paths = write_package(tmp_path, mamba_text=text)
+    with pytest.raises(preflight.PreflightBlocked) as exc:
+        preflight.bind_symbol_locations(
+            preflight.raw_source_identity(paths["mamba"], preflight.SOURCE_KEYS["mamba"]),
+            preflight.raw_source_identity(paths["cache"], preflight.SOURCE_KEYS["cache"]),
+        )
+    assert exc.value.status == status
+    assert exc.value.note == "cache_recurrent_state_storage"
+
+
+def test_cache_recurrent_state_storage_binds_mamba_persistent_copy_span(tmp_path):
+    paths = write_package(tmp_path)
+    mamba = preflight.raw_source_identity(paths["mamba"], preflight.SOURCE_KEYS["mamba"])
+    cache = preflight.raw_source_identity(paths["cache"], preflight.SOURCE_KEYS["cache"])
+    location = preflight.bind_symbol_locations(mamba, cache)["cache_recurrent_state_storage"]
+    mutation_line = next(i for i, line in enumerate(MAMBA_PASS.splitlines(), 1) if ".copy_(ssm_state)" in line)
+    assert location == {
+        "module": preflight.SOURCE_KEYS["mamba"],
+        "qualname": "MambaMixer.slow_forward",
+        "source_file_key": "mamba",
+        "source_sha256": mamba.sha256,
+        "start_line": mutation_line,
+        "end_line": mutation_line,
+    }
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        MAMBA_PASS.replace("        if cache_params is not None:\n            cache_params.ssm_states[self.layer_idx].copy_(ssm_state)\n", ""),
+        MAMBA_PASS.replace("cache_params.ssm_states[self.layer_idx].copy_(ssm_state)", "other_cache.ssm_states[self.layer_idx].copy_(ssm_state)"),
+        MAMBA_PASS.replace("cache_params.ssm_states[self.layer_idx].copy_(ssm_state)", "cache_params.ssm_states[self.layer_idx].copy_(other_state)"),
+        MAMBA_PASS.replace("        if cache_params is not None:\n            cache_params.ssm_states[self.layer_idx].copy_(ssm_state)\n        return", "        cache_params.ssm_states[self.layer_idx].copy_(ssm_state)\n        return"),
+        MAMBA_PASS.replace("        for token in hidden_states:", "        if cache_params is not None:\n            cache_params.ssm_states[self.layer_idx].copy_(ssm_state)\n        for token in hidden_states:").replace("        if cache_params is not None:\n            cache_params.ssm_states[self.layer_idx].copy_(ssm_state)\n        return", "        return", 1),
+        MAMBA_PASS.replace("        if cache_params is not None:\n            cache_params.ssm_states[self.layer_idx].copy_(ssm_state)\n        return", "        def nested():\n            if cache_params is not None:\n                cache_params.ssm_states[self.layer_idx].copy_(ssm_state)\n        return"),
+    ],
+)
+def test_cache_recurrent_state_storage_invalid_persistence_blocks(tmp_path, text):
+    assert_storage_blocks(tmp_path, text, "BLOCKED_REQUIRED_SYMBOL_UNRESOLVED")
+
+
+def test_cache_recurrent_state_storage_multiple_complete_writes_block_ambiguous(tmp_path):
+    text = MAMBA_PASS.replace(
+        "        return {\"hidden_states\": collected_hidden_states}",
+        "        if cache_params is not None:\n            cache_params.ssm_states[self.layer_idx].copy_(ssm_state)\n        return {\"hidden_states\": collected_hidden_states}",
+    )
+    assert_storage_blocks(tmp_path, text, "BLOCKED_REQUIRED_SYMBOL_AMBIGUOUS")
+
+
+def test_cache_utils_assignment_decoy_cannot_satisfy_storage(tmp_path):
+    assert_storage_blocks(tmp_path, MAMBA_PASS.replace("        if cache_params is not None:\n            cache_params.ssm_states[self.layer_idx].copy_(ssm_state)\n", ""), "BLOCKED_REQUIRED_SYMBOL_UNRESOLVED")
 
 
 def test_nested_if_recurrent_state_initializer_is_recognized():
