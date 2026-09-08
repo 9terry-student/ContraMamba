@@ -699,6 +699,178 @@ def _exactly_one(candidates: Sequence[tuple[str, ast.AST]], family: str) -> tupl
     return candidates[0]
 
 
+_LEXICAL_DEFINITIONS = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
+
+
+def _same_lexical_nodes(statements: Sequence[ast.stmt]) -> Iterable[ast.AST]:
+    """Yield a statement tree without admitting nested function or class scopes."""
+    def visit(node: ast.AST) -> Iterable[ast.AST]:
+        if isinstance(node, _LEXICAL_DEFINITIONS):
+            return
+        yield node
+        for child in ast.iter_child_nodes(node):
+            yield from visit(child)
+
+    for statement in statements:
+        yield from visit(statement)
+
+
+def _is_conv_state_path(path: tuple[str, ...]) -> bool:
+    return bool(path) and path[-1][:4] == "conv" and "state" in path[-1]
+
+
+def _conv_state_assignments(statements: Sequence[ast.stmt]) -> list[ast.AST]:
+    return [
+        node
+        for node in _same_lexical_nodes(statements)
+        if isinstance(node, (ast.Assign, ast.AnnAssign, ast.AugAssign))
+        and any(_is_conv_state_path(path) for path in _assigned_paths(node))
+    ]
+
+
+def _is_cache_update_call(node: ast.AST) -> bool:
+    return (
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == "update_conv_state"
+        and _attribute_path(node.func.value) == ("cache_params",)
+    )
+
+
+def _cache_update_calls(statements: Sequence[ast.stmt]) -> list[ast.Call]:
+    return [node for node in _same_lexical_nodes(statements) if _is_cache_update_call(node)]
+
+
+def _is_cache_present_test(node: ast.AST) -> bool:
+    if not isinstance(node, ast.Compare) or len(node.ops) != 1 or not isinstance(node.ops[0], ast.IsNot):
+        return False
+    if len(node.comparators) != 1:
+        return False
+    left, right = node.left, node.comparators[0]
+    return (
+        _attribute_path(left) == ("cache_params",) and isinstance(right, ast.Constant) and right.value is None
+    ) or (
+        isinstance(left, ast.Constant) and left.value is None and _attribute_path(right) == ("cache_params",)
+    )
+
+
+def _is_cache_position_length(node: ast.AST) -> bool:
+    return (
+        isinstance(node, ast.Subscript)
+        and _attribute_path(node.value) == ("cache_position", "shape")
+        and isinstance(node.slice, ast.Constant)
+        and node.slice.value == 0
+    )
+
+
+def _is_prefill_decode_test(node: ast.AST) -> bool:
+    if not isinstance(node, ast.Compare) or len(node.ops) != 1 or not isinstance(node.ops[0], ast.Eq):
+        return False
+    if len(node.comparators) != 1:
+        return False
+    left, right = node.left, node.comparators[0]
+    return (_is_cache_position_length(left) and _attribute_path(right) == ("self", "conv_kernel_size")) or (
+        _attribute_path(left) == ("self", "conv_kernel_size") and _is_cache_position_length(right)
+    )
+
+
+def _annotation_class_names(function: ast.AST) -> set[str]:
+    if not isinstance(function, (ast.FunctionDef, ast.AsyncFunctionDef)):
+        return set()
+    for argument in (*function.args.posonlyargs, *function.args.args, *function.args.kwonlyargs):
+        if argument.arg == "cache_params" and argument.annotation is not None:
+            return {node.id for node in ast.walk(argument.annotation) if isinstance(node, ast.Name)}
+    return set()
+
+
+def _persistent_conv_mutation(function: ast.AST) -> bool:
+    for node in _same_lexical_nodes(getattr(function, "body", [])):
+        if isinstance(node, (ast.Assign, ast.AnnAssign, ast.AugAssign)):
+            if any(path[:2] in {("self", "conv_state"), ("self", "conv_states")} for path in _assigned_paths(node)):
+                return True
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr.endswith("_"):
+            receiver = _attribute_path(node.func.value)
+            if receiver[:2] in {("self", "conv_state"), ("self", "conv_states")}:
+                return True
+    return False
+
+
+def _module_scope_update_conv_state_methods(tree: ast.AST) -> Iterable[tuple[str, ast.AST]]:
+    """Yield only direct update methods on classes defined at module scope."""
+    def module_scope_classes(node: ast.AST) -> Iterable[ast.ClassDef]:
+        if isinstance(node, ast.ClassDef):
+            yield node
+            return
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            return
+        for child in ast.iter_child_nodes(node):
+            yield from module_scope_classes(child)
+
+    for class_node in module_scope_classes(tree):
+        for method in class_node.body:
+            if isinstance(method, (ast.FunctionDef, ast.AsyncFunctionDef)) and method.name == "update_conv_state":
+                yield class_node.name, method
+
+
+def _linked_update_conv_state_methods(
+    slow: ast.AST, mamba_tree: ast.AST, cache_tree: ast.AST
+) -> list[ast.AST]:
+    annotation_classes = _annotation_class_names(slow)
+    methods: list[ast.AST] = []
+    for tree in (mamba_tree, cache_tree):
+        for owner, function in _module_scope_update_conv_state_methods(tree):
+            if annotation_classes and owner not in annotation_classes:
+                continue
+            methods.append(function)
+    return methods
+
+
+def _convolution_cache_location(slow: ast.AST, mamba_tree: ast.AST, cache_tree: ast.AST) -> ast.AST:
+    family = "convolution_cache_initialization_update"
+    direct = [
+        node
+        for node in getattr(slow, "body", [])
+        if isinstance(node, (ast.Assign, ast.AnnAssign))
+        and any(_is_conv_state_path(path) for path in _assigned_paths(node))
+    ]
+    recursive = _conv_state_assignments(getattr(slow, "body", []))
+    calls = _cache_update_calls(getattr(slow, "body", []))
+    if len(direct) == len(recursive) == 1 and not calls:
+        return direct[0]
+
+    cache_branches = [
+        node
+        for node in _same_lexical_nodes(getattr(slow, "body", []))
+        if isinstance(node, ast.If) and _is_cache_present_test(node.test)
+    ]
+    if not cache_branches:
+        raise PreflightBlocked("BLOCKED_REQUIRED_SYMBOL_UNRESOLVED", family)
+    if len(cache_branches) != 1:
+        raise PreflightBlocked("BLOCKED_REQUIRED_SYMBOL_AMBIGUOUS", family)
+    cache_branch = cache_branches[0]
+    splits = [
+        node for node in _same_lexical_nodes(cache_branch.body) if isinstance(node, ast.If) and _is_prefill_decode_test(node.test)
+    ]
+    if not splits:
+        raise PreflightBlocked("BLOCKED_REQUIRED_SYMBOL_UNRESOLVED", family)
+    if len(splits) != 1:
+        raise PreflightBlocked("BLOCKED_REQUIRED_SYMBOL_AMBIGUOUS", family)
+    split = splits[0]
+    prefill_assignments = _conv_state_assignments(split.body)
+    prefill_calls = _cache_update_calls(split.body)
+    decode_calls = _cache_update_calls(split.orelse)
+    if not prefill_assignments or not prefill_calls or not decode_calls:
+        raise PreflightBlocked("BLOCKED_REQUIRED_SYMBOL_UNRESOLVED", family)
+    methods = _linked_update_conv_state_methods(slow, mamba_tree, cache_tree)
+    if not methods:
+        raise PreflightBlocked("BLOCKED_REQUIRED_SYMBOL_UNRESOLVED", family)
+    if len(methods) != 1:
+        raise PreflightBlocked("BLOCKED_REQUIRED_SYMBOL_AMBIGUOUS", family)
+    if not _persistent_conv_mutation(methods[0]):
+        raise PreflightBlocked("BLOCKED_REQUIRED_SYMBOL_UNRESOLVED", family)
+    return slow
+
+
 def bind_symbol_locations(mamba: SourceFacts, cache: SourceFacts) -> dict[str, dict[str, object]]:
     try:
         mamba_tree = ast.parse(mamba.text)
@@ -742,12 +914,7 @@ def bind_symbol_locations(mamba: SourceFacts, cache: SourceFacts) -> dict[str, d
         "convolution_cache_initialization_update": (
             mamba.module,
             "mamba",
-            [
-                ("MambaMixer.slow_forward", n)
-                for n in slow.body
-                if isinstance(n, (ast.Assign, ast.AnnAssign))
-                and any(path[-1:] and path[-1][:4] == "conv" for path in _assigned_paths(n))
-            ],
+            [("MambaMixer.slow_forward", _convolution_cache_location(slow, mamba_tree, cache_tree))],
         ),
         "hidden_state_output_path": (
             mamba.module,

@@ -118,6 +118,154 @@ def write_package(tmp_path: Path, mamba_text: str = MAMBA_PASS, cache_text: str 
     return {"root": root, "pkg": pkg, "mamba": mamba_path, "cache": cache_path}
 
 
+def convolution_mamba(prefill: str, decode: str, split: str | None = None) -> str:
+    split = split or "if cache_position.shape[0] == self.conv_kernel_size:\n" + prefill + "\nelse:\n" + decode
+    branch = "\n".join("            " + line for line in split.splitlines())
+    return """\
+class MambaMixer:
+    def forward(self, hidden_states):
+        if hidden_states.device.type == "cpu":
+            return self.slow_forward(hidden_states)
+        else:
+            raise RuntimeError("non-cpu backend unresolved")
+
+    def slow_forward(self, hidden_states, cache_params: MambaCache | None = None, cache_position=None):
+        if cache_params is not None:
+{branch}
+        ssm_state = hidden_states.new_zeros(1)
+        collected_hidden_states = []
+        for token in hidden_states:
+            ssm_state = ssm_state + token
+            collected_hidden_states.append(ssm_state)
+        return {{"hidden_states": collected_hidden_states}}
+""".format(branch=branch)
+
+
+CONVOLUTION_CACHE_MUTATING = """\
+class MambaCache:
+    def update(self, ssm_state):
+        self.ssm_state = ssm_state
+
+    def update_conv_state(self, layer_idx, conv_state):
+        self.conv_states[layer_idx] = conv_state
+"""
+
+
+def convolution_locations(tmp_path: Path, mamba_text: str, cache_text: str = CONVOLUTION_CACHE_MUTATING):
+    paths = write_package(tmp_path, mamba_text=mamba_text, cache_text=cache_text)
+    return preflight.bind_symbol_locations(
+        preflight.raw_source_identity(paths["mamba"], preflight.SOURCE_KEYS["mamba"]),
+        preflight.raw_source_identity(paths["cache"], preflight.SOURCE_KEYS["cache"]),
+    )
+
+
+def assert_convolution_blocks(tmp_path: Path, mamba_text: str, status: str, cache_text: str = CONVOLUTION_CACHE_MUTATING):
+    with pytest.raises(preflight.PreflightBlocked) as exc:
+        convolution_locations(tmp_path, mamba_text, cache_text)
+    assert exc.value.status == status
+    assert exc.value.note == "convolution_cache_initialization_update"
+
+
+def test_convolution_cache_semantic_family_passes_and_anchors_slow_forward(tmp_path):
+    text = convolution_mamba(
+        "    conv_state = hidden_states.new_zeros(1)\n    cache_params.update_conv_state(self.layer_idx, conv_state)",
+        "    conv_state = cache_params.update_conv_state(self.layer_idx, hidden_states)",
+    )
+    location = convolution_locations(tmp_path, text)["convolution_cache_initialization_update"]
+    assert location["qualname"] == "MambaMixer.slow_forward"
+    assert location["source_file_key"] == "mamba"
+    assert location["start_line"] == 8
+    assert set(location) == {"module", "qualname", "source_file_key", "source_sha256", "start_line", "end_line"}
+
+
+@pytest.mark.parametrize("prefill, decode", [
+    ("    conv_state = hidden_states.new_zeros(1)", "    conv_state = cache_params.update_conv_state(self.layer_idx, hidden_states)"),
+    ("    conv_state = hidden_states.new_zeros(1)\n    cache_params.update_conv_state(self.layer_idx, conv_state)", "    conv_state = hidden_states.new_zeros(1)"),
+])
+def test_convolution_cache_missing_arm_update_blocks(tmp_path, prefill, decode):
+    assert_convolution_blocks(tmp_path, convolution_mamba(prefill, decode), "BLOCKED_REQUIRED_SYMBOL_UNRESOLVED")
+
+
+def test_convolution_cache_local_or_nonpersistent_update_blocks(tmp_path):
+    text = convolution_mamba(
+        "    conv_state = hidden_states.new_zeros(1)\n    cache_params.update_conv_state(self.layer_idx, conv_state)",
+        "    conv_state = cache_params.update_conv_state(self.layer_idx, hidden_states)",
+    )
+    local_only = CONVOLUTION_CACHE_MUTATING.replace("self.conv_states[layer_idx] = conv_state", "conv_state = conv_state.clone()")
+    assert_convolution_blocks(tmp_path, text, "BLOCKED_REQUIRED_SYMBOL_UNRESOLVED", local_only)
+
+
+def test_convolution_cache_nested_class_method_does_not_link(tmp_path):
+    text = convolution_mamba(
+        "    conv_state = hidden_states.new_zeros(1)\n    cache_params.update_conv_state(self.layer_idx, conv_state)",
+        "    conv_state = cache_params.update_conv_state(self.layer_idx, hidden_states)",
+    )
+    nested_only = """\
+def unrelated():
+    class MambaCache:
+        def update_conv_state(self, layer_idx, conv_state):
+            self.conv_states[layer_idx] = conv_state
+"""
+    assert_convolution_blocks(tmp_path, text, "BLOCKED_REQUIRED_SYMBOL_UNRESOLVED", nested_only)
+
+
+def test_convolution_cache_nested_method_mutation_does_not_prove_persistence(tmp_path):
+    text = convolution_mamba(
+        "    conv_state = hidden_states.new_zeros(1)\n    cache_params.update_conv_state(self.layer_idx, conv_state)",
+        "    conv_state = cache_params.update_conv_state(self.layer_idx, hidden_states)",
+    )
+    nested_mutation = """\
+class MambaCache:
+    def update_conv_state(self, layer_idx, conv_state):
+        def helper():
+            self.conv_states[layer_idx] = conv_state
+        class Helper:
+            def mutate(self):
+                self.conv_state = conv_state
+"""
+    assert_convolution_blocks(tmp_path, text, "BLOCKED_REQUIRED_SYMBOL_UNRESOLVED", nested_mutation)
+
+
+def test_convolution_cache_multiple_linked_methods_block_ambiguous(tmp_path):
+    text = convolution_mamba(
+        "    conv_state = hidden_states.new_zeros(1)\n    cache_params.update_conv_state(self.layer_idx, conv_state)",
+        "    conv_state = cache_params.update_conv_state(self.layer_idx, hidden_states)",
+    )
+    duplicate = CONVOLUTION_CACHE_MUTATING + "\nclass MambaCache:\n    def update_conv_state(self, layer_idx, conv_state):\n        self.conv_state = conv_state\n"
+    assert_convolution_blocks(tmp_path, text, "BLOCKED_REQUIRED_SYMBOL_AMBIGUOUS", duplicate)
+
+
+def test_convolution_cache_noncache_and_nested_calls_do_not_prove(tmp_path):
+    noncache = convolution_mamba(
+        "    conv_state = hidden_states.new_zeros(1)\n    other_cache.update_conv_state(self.layer_idx, conv_state)",
+        "    conv_state = other_cache.update_conv_state(self.layer_idx, hidden_states)",
+    )
+    assert_convolution_blocks(tmp_path, noncache, "BLOCKED_REQUIRED_SYMBOL_UNRESOLVED")
+    nested = convolution_mamba(
+        "    conv_state = hidden_states.new_zeros(1)\n    def prefill():\n        cache_params.update_conv_state(self.layer_idx, conv_state)",
+        "    def decode():\n        return cache_params.update_conv_state(self.layer_idx, hidden_states)",
+    )
+    assert_convolution_blocks(tmp_path / "nested", nested, "BLOCKED_REQUIRED_SYMBOL_UNRESOLVED")
+
+
+def test_convolution_cache_split_and_direct_candidate_adversaries_block(tmp_path):
+    missing = convolution_mamba("    conv_state = hidden_states.new_zeros(1)", "    cache_params.update_conv_state(self.layer_idx, hidden_states)", "conv_state = hidden_states.new_zeros(1)")
+    assert_convolution_blocks(tmp_path, missing, "BLOCKED_REQUIRED_SYMBOL_UNRESOLVED")
+    ambiguous = convolution_mamba(
+        "    conv_state = hidden_states.new_zeros(1)\n    cache_params.update_conv_state(self.layer_idx, conv_state)",
+        "    conv_state = cache_params.update_conv_state(self.layer_idx, hidden_states)",
+        "if cache_position.shape[0] == self.conv_kernel_size:\n    conv_state = hidden_states.new_zeros(1)\n    cache_params.update_conv_state(self.layer_idx, conv_state)\nelse:\n    conv_state = cache_params.update_conv_state(self.layer_idx, hidden_states)\nif cache_position.shape[0] == self.conv_kernel_size:\n    conv_state = hidden_states.new_zeros(1)\nelse:\n    conv_state = hidden_states.new_zeros(1)",
+    )
+    assert_convolution_blocks(tmp_path / "ambiguous", ambiguous, "BLOCKED_REQUIRED_SYMBOL_AMBIGUOUS")
+    multiple_direct = MAMBA_PASS.replace("conv_state = hidden_states.new_zeros(1)", "conv_state = hidden_states.new_zeros(1)\n        conv_state = hidden_states.new_zeros(1)")
+    assert_convolution_blocks(tmp_path / "direct", multiple_direct, "BLOCKED_REQUIRED_SYMBOL_UNRESOLVED", CACHE_PASS)
+
+
+def test_convolution_cache_legacy_direct_assignment_remains_valid(tmp_path):
+    location = convolution_locations(tmp_path, MAMBA_PASS, CACHE_PASS)["convolution_cache_initialization_update"]
+    assert location["start_line"] == 10
+
+
 class FakeDist:
     version = "5.0.0"
 
