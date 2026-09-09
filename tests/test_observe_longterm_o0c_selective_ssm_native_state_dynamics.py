@@ -292,15 +292,15 @@ def _runtime_baseline(monkeypatch):
  def forward(self,*args): return self.slow_forward(*args)
  forward.__code__=forward.__code__.replace(co_filename=str(mp)); forward.__module__=o.MAMBA_MODULE; forward.__qualname__="MambaMixer.forward"
  Mixer=type("MambaMixer",(),{"slow_forward":slow,"forward":forward})
- mamba=type("M",(),{"MambaMixer":Mixer})(); cache=type("C",(),{})(); transformers=type("T",(),{"__file__":str(root/"__init__.py")})(); torch=type("Torch",(),{"__version__":"torch"})()
- source=[""]*500; source[0]="class MambaMixer:"; source[1]=" def forward(self,hidden_states,cache_params,cache_position,attention_mask):"; source[2]="  is_fast_path_available = all((selective_state_update, selective_scan_fn, causal_conv1d_fn, causal_conv1d_update, mamba_inner_fn))"; source[3]="  if is_fast_path_available and \"cuda\" in self.x_proj.weight.device.type and not is_torchdynamo_compiling():"; source[4]="   return self.cuda_kernels_forward(hidden_states, cache_params, cache_position, attention_mask)"; source[5]="  return self.slow_forward(hidden_states, cache_params, cache_position, attention_mask)"; source[407]="deltaB_u = discrete_B * hidden_states[..., None].float()"; source[408]="ssm_state = discrete_A * ssm_state + deltaB_u"; source[409]="scan_output = torch.matmul(ssm_state.to(dtype), C[..., None].unsqueeze(-1))"; source[416]="cache_params.ssm_states[0].copy_(ssm_state)"
- data="\n".join(source).encode(); cdata=b"conv_states ssm_states"
- monkeypatch.setattr(o,"CAPTURE_LINE",line); monkeypatch.setattr(o,"MAMBA_BYTES",len(data)); monkeypatch.setattr(o,"MAMBA_SHA256",o.sha256_bytes(data)); monkeypatch.setattr(o,"CACHE_BYTES",len(cdata)); monkeypatch.setattr(o,"CACHE_SHA256",o.sha256_bytes(cdata))
- paths={id(mamba):(mp,data),id(cache):(cp,cdata)}; monkeypatch.setattr(o,"_source",lambda mod:paths[id(mod)])
- modules={o.MAMBA_MODULE:mamba,o.CACHE_MODULE:cache,"transformers":transformers,"torch":torch}
+ mamba=type("M",(),{"MambaMixer":Mixer})(); transformers=type("T",(),{"__file__":str(root/"__init__.py")})(); torch=type("Torch",(),{"__version__":"torch"})()
+ source=[""]*500; source[0]="class MambaMixer:"; source[1]=" def forward(self,hidden_states,cache_params,cache_position,attention_mask):"; source[2]="  is_fast_path_available = all((selective_state_update, selective_scan_fn, causal_conv1d_fn, causal_conv1d_update, mamba_inner_fn))"; source[3]="  if is_fast_path_available and \"cuda\" in self.x_proj.weight.device.type and not is_torchdynamo_compiling():"; source[4]="   return self.cuda_kernels_forward(hidden_states, cache_params, cache_position, attention_mask)"; source[5]="  return self.slow_forward(hidden_states, cache_params, cache_position, attention_mask)"; source[10]="class MambaCache:"; source[11]=" def __init__(self):"; source[12]="  self.conv_states = []"; source[13]="  self.ssm_states = []"; source[14]="  conv_state = torch.zeros(self.conv_kernel_size)"; source[15]="  ssm_state = torch.zeros(self.ssm_state_size)"; source[16]="  self.conv_states.append(conv_state)"; source[17]="  self.ssm_states.append(ssm_state)"; source[18]=" def update_conv_state(self, layer_idx, new_conv_state, cache_position):"; source[19]="  self.conv_states[layer_idx] = new_conv_state"; source[20]="  return self.conv_states[layer_idx]"; source[21]=" def update_ssm_state(self, layer_idx, new_ssm_state):"; source[22]="  self.ssm_states[layer_idx] = new_ssm_state"; source[23]="  return self.ssm_states[layer_idx]"; source[407]="deltaB_u = discrete_B * hidden_states[..., None].float()"; source[408]="ssm_state = discrete_A * ssm_state + deltaB_u"; source[409]="scan_output = torch.matmul(ssm_state.to(dtype), C[..., None].unsqueeze(-1))"; source[416]="cache_params.ssm_states[0].copy_(ssm_state)"
+ data="\n".join(source).encode()
+ monkeypatch.setattr(o,"CAPTURE_LINE",line); monkeypatch.setattr(o,"MAMBA_BYTES",len(data)); monkeypatch.setattr(o,"MAMBA_SHA256",o.sha256_bytes(data)); monkeypatch.setattr(o,"CACHE_BYTES",len(data)); monkeypatch.setattr(o,"CACHE_SHA256",o.sha256_bytes(data))
+ paths={id(mamba):(mp,data)}; monkeypatch.setattr(o,"_source",lambda mod:paths[id(mod)])
+ modules={o.MAMBA_MODULE:mamba,"transformers":transformers,"torch":torch}
  versions={"python":"3.12.13","numpy":"2.0.2","torch":"2.10.0+cpu","transformers":"5.0.0"}; monkeypatch.setattr(o,"_runtime_environment",lambda:(modules,versions))
  monkeypatch.setattr(o.importlib_metadata,"distribution",lambda name:type("D",(),{"locate_file":lambda self,path:root})())
- monkeypatch.setattr(o.importlib.util,"find_spec",lambda name:type("S",(),{"origin":str(mp if name==o.MAMBA_MODULE else cp)})())
+ monkeypatch.setattr(o.importlib.util,"find_spec",lambda name:type("S",(),{"origin":str(mp)})())
  return modules,versions,paths
 
 def _dispatch_source(condition='is_fast_path_available and "cuda" in self.x_proj.weight.device.type and not is_torchdynamo_compiling()',true='return self.cuda_kernels_forward(hidden_states, cache_params, cache_position, attention_mask)',fallback='return self.slow_forward(hidden_states, cache_params, cache_position, attention_mask)',prefix='',suffix=''):
@@ -320,6 +320,57 @@ def _dispatch_forward(path):
 
 def test_cpu_dispatch_validator_accepts_frozen_v5_shape_with_mamba_inner_fn():
  path=Path("synthetic_mamba.py"); o._validate_forward_dispatch(_dispatch_source(),_dispatch_forward(path),path)
+
+def _cache_source(conv_ctor="self.conv_kernel_size",ssm_ctor="self.ssm_state_size",conv_append="self.conv_states.append(conv_state)",ssm_append="self.ssm_states.append(ssm_state)",conv_store="self.conv_states[layer_idx] = new_conv_state",conv_return="return self.conv_states[layer_idx]",ssm_store="self.ssm_states[layer_idx] = new_ssm_state",ssm_return="return self.ssm_states[layer_idx]"):
+ return ("class MambaCache:\n"
+         " def __init__(self):\n"
+         "  self.conv_states = []\n"
+         "  self.ssm_states = []\n"
+         f"  conv_state = torch.zeros({conv_ctor})\n"
+         f"  ssm_state = torch.zeros({ssm_ctor})\n"
+         f"  {conv_append}\n"
+         f"  {ssm_append}\n"
+         " def update_conv_state(self, layer_idx, new_conv_state, cache_position):\n"
+         f"  {conv_store}\n"
+         f"  {conv_return}\n"
+         " def update_ssm_state(self, layer_idx, new_ssm_state):\n"
+         f"  {ssm_store}\n"
+         f"  {ssm_return}\n").encode()
+
+def test_mamba_cache_role_validator_accepts_separate_families_and_correct_provenance():
+ o._validate_mamba_cache_roles(_cache_source())
+ assert (o.CACHE_MODULE,o.CACHE_SHA256,o.CACHE_BYTES)==(o.MAMBA_MODULE,o.MAMBA_SHA256,o.MAMBA_BYTES)
+ m=manifest(); assert (m["cache_source_module"],m["cache_source_sha256"],m["cache_source_bytes"])==(o.MAMBA_MODULE,o.MAMBA_SHA256,o.MAMBA_BYTES)
+
+@pytest.mark.parametrize("data",[
+ _cache_source().replace(b"  self.conv_states = []\n",b""),
+ _cache_source().replace(b"  self.ssm_states = []\n",b""),
+ _cache_source(conv_append="self.ssm_states.append(conv_state)",ssm_append="self.conv_states.append(ssm_state)"),
+ _cache_source(conv_store="self.ssm_states[layer_idx] = new_conv_state",conv_return="return self.ssm_states[layer_idx]"),
+ _cache_source(ssm_store="self.conv_states[layer_idx] = new_ssm_state",ssm_return="return self.conv_states[layer_idx]"),
+ _cache_source(conv_ctor="self.ssm_state_size"),
+ _cache_source(ssm_ctor="self.conv_kernel_size"),
+ _cache_source().replace(b"  self.ssm_states = []",b"  self.ssm_states = self.conv_states"),
+ b"class NotMambaCache: pass\n",
+ _cache_source()+_cache_source(),
+])
+def test_mamba_cache_role_validator_rejects_ambiguous_or_crossed_families(data):
+ with pytest.raises(o.ContractError,match="cache/recurrent ambiguity"): o._validate_mamba_cache_roles(data)
+
+@pytest.mark.parametrize("data",[
+ _cache_source(conv_return="return conv_state"),
+ _cache_source(ssm_return="return ssm_state"),
+ _cache_source(conv_return="return self.ssm_states[layer_idx]"),
+ _cache_source(ssm_return="return self.conv_states[layer_idx]"),
+ _cache_source(conv_return="return self.conv_states[other_idx]"),
+ _cache_source(ssm_return="return self.ssm_states[other_idx]"),
+ _cache_source(conv_return="return self.conv_states"),
+ _cache_source(ssm_return="return self.ssm_states"),
+ _cache_source(conv_return="if flag:\n   return self.conv_states[layer_idx]\n  return self.conv_states[layer_idx]"),
+ _cache_source(conv_return="conv_state = unrelated_value\n  return conv_state"),
+])
+def test_mamba_cache_role_validator_rejects_unproven_or_ambiguous_persistent_returns(data):
+ with pytest.raises(o.ContractError,match="cache/recurrent ambiguity"): o._validate_mamba_cache_roles(data)
 
 @pytest.mark.parametrize("data",[
  _dispatch_source(condition="is_fast_path_available and not is_torchdynamo_compiling()"),
@@ -366,8 +417,8 @@ def test_runtime_gate_version_negative_matrix(monkeypatch,key):
  with pytest.raises(o.ContractError,match="runtime version"): o.runtime_gate()
 
 @pytest.mark.parametrize("mutation,message",[
- ("root_outside","shadowed import root"),("root_malformed","malformed import root"),("mamba_bytes","Mamba byte-size mismatch"),("mamba_hash","Mamba SHA256 mismatch"),("cache_bytes","cache_utils byte-size mismatch"),("cache_hash","cache_utils SHA256 mismatch"),
- ("missing_mixer","slow code identity"),("wrong_mixer","slow code identity"),("wrong_qualname","slow code identity"),("wrong_code","slow code identity"),("wrong_line","line binding"),("wrong_role","source input role"),("cache_role","cache/recurrent ambiguity"),("backend","forward identity"),("source_resolution","import/distribution-root mismatch")])
+ ("root_outside","shadowed import root"),("root_malformed","malformed import root"),("mamba_bytes","Mamba byte-size mismatch"),("mamba_hash","Mamba SHA256 mismatch"),("cache_bytes","Mamba cache byte-size mismatch"),("cache_hash","Mamba cache SHA256 mismatch"),
+ ("missing_mixer","slow code identity"),("wrong_mixer","slow code identity"),("wrong_qualname","slow code identity"),("wrong_code","slow code identity"),("wrong_line","line binding"),("wrong_role","source input role"),("backend","forward identity"),("source_resolution","import/distribution-root mismatch")])
 def test_runtime_gate_source_negative_matrix(monkeypatch,mutation,message):
  modules,versions,paths=_runtime_baseline(monkeypatch); mamba=modules[o.MAMBA_MODULE]; mp,data=paths[id(mamba)]
  if mutation=="root_outside": modules["transformers"].__file__=str(Path.cwd()/"tests"/"__init__.py")
@@ -382,9 +433,7 @@ def test_runtime_gate_source_negative_matrix(monkeypatch,mutation,message):
  elif mutation=="wrong_code": mamba.MambaMixer.slow_forward.__code__=mamba.MambaMixer.slow_forward.__code__.replace(co_filename="other.py")
  elif mutation=="wrong_line": monkeypatch.setattr(o,"CAPTURE_LINE",499)
  elif mutation=="wrong_role":
-  changed=b"\n"*len(data); paths[id(mamba)]=(mp,changed); monkeypatch.setattr(o,"MAMBA_SHA256",o.sha256_bytes(changed))
- elif mutation=="cache_role":
-  changed=b"xxxxxxxxxxxxxxxxxxxxxx"; paths[id(modules[o.CACHE_MODULE])]=(paths[id(modules[o.CACHE_MODULE])][0],changed); monkeypatch.setattr(o,"CACHE_BYTES",len(changed)); monkeypatch.setattr(o,"CACHE_SHA256",o.sha256_bytes(changed))
+  changed=b"\n"*len(data); paths[id(mamba)]=(mp,changed); monkeypatch.setattr(o,"MAMBA_SHA256",o.sha256_bytes(changed)); monkeypatch.setattr(o,"CACHE_SHA256",o.sha256_bytes(changed))
  elif mutation=="backend":
   def no_dispatch(self): return 1
   no_dispatch.__module__=o.MAMBA_MODULE; mamba.MambaMixer.forward=no_dispatch

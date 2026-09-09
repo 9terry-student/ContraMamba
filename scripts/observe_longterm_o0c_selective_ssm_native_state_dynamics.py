@@ -18,7 +18,8 @@ SCHEMA_VERSION="longterm_o0c_selective_ssm_native_state_dynamics_v1"; EXPERIMENT
 MODEL_ID=TOKENIZER_ID="state-spaces/mamba-130m-hf"; MODEL_REVISION=TOKENIZER_REVISION="5708daa364c50b880e7bd92eab456e0d34492ee9"
 DATASET_PATH="data/longterm_o0b_matched_controls_v1.jsonl"; DATASET_SHA256="75a675bee49cb26eb0935d364f0f5d090922dd01576dfc23294961b28394aec2"
 VALIDATION_ARTIFACT_PATH="reports/longterm_o0b_matched_controls_v1_validation.json"; VALIDATION_ARTIFACT_SHA256="e8344ea3df54a3393aa8fa82dba19eb2baade9af9366687bb105f4ad348979ff"
-MAMBA_MODULE="transformers.models.mamba.modeling_mamba"; CACHE_MODULE="transformers.cache_utils"; MAMBA_SHA256="4c972b30f3c2cca977824fcc6891f956cd4387b6383aa7336848fbc5f2db1d83"; MAMBA_BYTES=39500; CACHE_SHA256="6c123bbe3d23500462f0b617119a8231aa054b6d5475b295443a45f34466e6bc"; CACHE_BYTES=60432
+MAMBA_MODULE="transformers.models.mamba.modeling_mamba"; MAMBA_SHA256="4c972b30f3c2cca977824fcc6891f956cd4387b6383aa7336848fbc5f2db1d83"; MAMBA_BYTES=39500
+CACHE_MODULE=MAMBA_MODULE; CACHE_SHA256=MAMBA_SHA256; CACHE_BYTES=MAMBA_BYTES
 CAPTURE_QUALNAME="MambaMixer.slow_forward"; CAPTURE_LINE=410
 EXPECTED_VERSIONS={"python":"3.12.13","numpy":"2.0.2","torch":"2.10.0+cpu","transformers":"5.0.0"}
 PAIR_ORDER=("o0b_pair_001","o0b_pair_002","o0b_pair_003"); CONDITION_ORDER=("reference_sufficient","insufficient_matched","paraphrase_sufficient","surface_null_matched")
@@ -85,6 +86,62 @@ def _validate_source_roles(data:bytes,code:Any)->None:
     require(isinstance(cache_target,ast.Subscript) and isinstance(cache_target.value,ast.Attribute) and cache_target.value.attr=="ssm_states" and isinstance(cache_target.value.value,ast.Name) and cache_target.value.value.id=="cache_params" and len(call.args)==1 and isinstance(call.args[0],ast.Name) and call.args[0].id=="ssm_state","source recurrent cache role")
     require(CAPTURE_LINE in {n for _,_,n in code.co_lines() if n is not None},"line binding")
 
+def _validate_mamba_cache_roles(data:bytes)->None:
+    """Fail closed unless frozen ``MambaCache`` keeps conv and SSM state distinct."""
+    try: tree=ast.parse(data.decode("utf-8"))
+    except (UnicodeDecodeError,SyntaxError) as e: raise ContractError("cache role syntax") from e
+    caches=[n for n in tree.body if isinstance(n,ast.ClassDef) and n.name=="MambaCache"]
+    require(len(caches)==1,"cache/recurrent ambiguity")
+    cache=caches[0]
+    def methods(name:str)->list[ast.FunctionDef]: return [n for n in cache.body if isinstance(n,ast.FunctionDef) and n.name==name]
+    def self_attr(n:Any,name:str)->bool:
+        return isinstance(n,ast.Attribute) and n.attr==name and isinstance(n.value,ast.Name) and n.value.id=="self"
+    def names(n:Any)->set[str]: return {x.id for x in ast.walk(n) if isinstance(x,ast.Name)} | {x.attr for x in ast.walk(n) if isinstance(x,ast.Attribute)}
+    def scoped_nodes(function:ast.FunctionDef)->list[ast.AST]:
+        """Return nodes in this method, excluding nested function/lambda scopes."""
+        nodes=[]
+        def visit(node:ast.AST)->None:
+            nodes.append(node)
+            for child in ast.iter_child_nodes(node):
+                if not isinstance(child,(ast.FunctionDef,ast.AsyncFunctionDef,ast.Lambda)): visit(child)
+        for statement in function.body: visit(statement)
+        return nodes
+    def writes_family(function:ast.FunctionDef,family:str)->bool:
+        for node in scoped_nodes(function):
+            target=node.target if isinstance(node,ast.AnnAssign) else (node.targets[0] if isinstance(node,ast.Assign) and len(node.targets)==1 else None)
+            if self_attr(target,family) or (isinstance(target,ast.Subscript) and self_attr(target.value,family)): return True
+        return False
+    def returns_persistent_family(function:ast.FunctionDef,family:str)->bool:
+        returns=[node for node in scoped_nodes(function) if isinstance(node,ast.Return)]
+        if len(returns)!=1: return False
+        value=returns[0].value
+        return isinstance(value,ast.Subscript) and self_attr(value.value,family) and isinstance(value.slice,ast.Name) and value.slice.id=="layer_idx"
+    init=methods("__init__"); require(len(init)==1,"cache/recurrent ambiguity")
+    init=init[0]
+    family_assignments={"conv_states":[],"ssm_states":[]}
+    for node in ast.walk(init):
+        target=node.target if isinstance(node,ast.AnnAssign) else (node.targets[0] if isinstance(node,ast.Assign) and len(node.targets)==1 else None)
+        if self_attr(target,"conv_states") or self_attr(target,"ssm_states"):
+            family_assignments[target.attr].append(node.value)
+    require(all(len(values)==1 and isinstance(values[0],ast.List) and not values[0].elts for values in family_assignments.values()),"cache/recurrent ambiguity")
+    constructors={"conv_state":[],"ssm_state":[]}
+    for node in ast.walk(init):
+        target=node.target if isinstance(node,ast.AnnAssign) else (node.targets[0] if isinstance(node,ast.Assign) and len(node.targets)==1 else None)
+        if isinstance(target,ast.Name) and target.id in constructors: constructors[target.id].append(node.value)
+    require(all(len(values)==1 and isinstance(values[0],ast.Call) for values in constructors.values()),"cache/recurrent ambiguity")
+    conv_names,ssm_names=names(constructors["conv_state"][0]),names(constructors["ssm_state"][0])
+    require("conv_kernel_size" in conv_names and "ssm_state_size" not in conv_names and "ssm_state_size" in ssm_names and "conv_kernel_size" not in ssm_names,"cache/recurrent ambiguity")
+    appends=[]
+    for node in ast.walk(init):
+        if isinstance(node,ast.Call) and isinstance(node.func,ast.Attribute) and node.func.attr=="append" and len(node.args)==1 and not node.keywords:
+            receiver=node.func.value; argument=node.args[0]
+            if isinstance(receiver,ast.Attribute) and isinstance(receiver.value,ast.Name) and receiver.value.id=="self" and isinstance(argument,ast.Name): appends.append((receiver.attr,argument.id))
+    require(appends.count(("conv_states","conv_state"))==1 and appends.count(("ssm_states","ssm_state"))==1 and len(appends)==2,"cache/recurrent ambiguity")
+    for method_name,family,other in (("update_conv_state","conv_states","ssm_states"),("update_ssm_state","ssm_states","conv_states")):
+        method=methods(method_name); require(len(method)==1,"cache/recurrent ambiguity")
+        method=method[0]
+        require(writes_family(method,family) and returns_persistent_family(method,family) and not any(self_attr(n,other) for n in scoped_nodes(method)),"cache/recurrent ambiguity")
+
 def _validate_forward_dispatch(data:bytes,forward:Any,source_path:Path)->None:
     """Prove the frozen Mamba CPU dispatch falls through to ``slow_forward``."""
     require(inspect.isfunction(forward) and forward.__module__==MAMBA_MODULE and forward.__qualname__=="MambaMixer.forward" and forward.__code__.co_filename==str(source_path),"forward identity")
@@ -133,30 +190,29 @@ def _validate_forward_dispatch(data:bytes,forward:Any,source_path:Path)->None:
 
 def _runtime_environment()->tuple[Mapping[str,Any],Mapping[str,str]]:
     """The sole environmental lookup boundary used by the scientific gate."""
-    modules={MAMBA_MODULE:importlib.import_module(MAMBA_MODULE),CACHE_MODULE:importlib.import_module(CACHE_MODULE),"transformers":importlib.import_module("transformers"),"torch":importlib.import_module("torch")}
+    modules={MAMBA_MODULE:importlib.import_module(MAMBA_MODULE),"transformers":importlib.import_module("transformers"),"torch":importlib.import_module("torch")}
     return modules,{"python":".".join(map(str,sys.version_info[:3])),"numpy":np.__version__,"torch":modules["torch"].__version__,"transformers":modules["transformers"].__version__}
 
 def _resolve_and_validate_runtime_binding()->tuple[Any,int]:
     """Derive the sole scientific trace binding from the live validated runtime."""
     modules,versions=_runtime_environment()
     require(set(versions)==set(EXPECTED_VERSIONS) and dict(versions)==EXPECTED_VERSIONS,"runtime version")
-    mp,mb=_source(modules[MAMBA_MODULE]); cp,cb=_source(modules[CACHE_MODULE]); root_text=getattr(modules["transformers"],"__file__",None)
+    mp,mb=_source(modules[MAMBA_MODULE]); root_text=getattr(modules["transformers"],"__file__",None)
     require(isinstance(root_text,str) and Path(root_text).is_absolute(),"malformed import root")
     root=Path(root_text).resolve().parent
     require(root.is_dir(),"transformers distribution root")
-    require(mp.is_relative_to(root) and cp.is_relative_to(root),"shadowed import root")
+    require(mp.is_relative_to(root),"shadowed import root")
     try: distribution_root=Path(importlib_metadata.distribution("transformers").locate_file("transformers")).resolve()
     except importlib_metadata.PackageNotFoundError as e: raise ContractError("transformers distribution unavailable") from e
     require(distribution_root == root,"import/distribution-root mismatch")
-    for name,path in ((MAMBA_MODULE,mp),(CACHE_MODULE,cp)):
-        spec=importlib.util.find_spec(name); require(spec is None or Path(str(spec.origin)).resolve()==path,"import/distribution-root mismatch")
+    spec=importlib.util.find_spec(MAMBA_MODULE); require(spec is None or Path(str(spec.origin)).resolve()==mp,"import/distribution-root mismatch")
     require(len(mb)==MAMBA_BYTES,"Mamba byte-size mismatch"); require(sha256_bytes(mb)==MAMBA_SHA256,"Mamba SHA256 mismatch")
-    require(len(cb)==CACHE_BYTES,"cache_utils byte-size mismatch"); require(sha256_bytes(cb)==CACHE_SHA256,"cache_utils SHA256 mismatch")
+    require(len(mb)==CACHE_BYTES,"Mamba cache byte-size mismatch"); require(sha256_bytes(mb)==CACHE_SHA256,"Mamba cache SHA256 mismatch")
     mixer=getattr(modules[MAMBA_MODULE],"MambaMixer",None); slow=getattr(mixer,"slow_forward",None); forward=getattr(mixer,"forward",None)
     require(inspect.isfunction(slow) and slow.__module__==MAMBA_MODULE and slow.__qualname__==CAPTURE_QUALNAME and slow.__code__.co_filename==str(mp),"slow code identity")
     _validate_source_roles(mb,slow.__code__)
     _validate_forward_dispatch(mb,forward,mp)
-    cache_text=cb.decode("utf-8"); require("conv_states" in cache_text and "ssm_states" in cache_text and cache_text.find("conv_states") != cache_text.find("ssm_states"),"cache/recurrent ambiguity")
+    _validate_mamba_cache_roles(mb)
     return slow.__code__,CAPTURE_LINE
 
 def runtime_gate()->None:
@@ -195,23 +251,22 @@ class NativeStateObserver(_TraceCollector):
         # or source line to scientific construction.
         modules,versions=_runtime_environment()
         require(set(versions)==set(EXPECTED_VERSIONS) and dict(versions)==EXPECTED_VERSIONS,"runtime version")
-        mp,mb=_source(modules[MAMBA_MODULE]); cp,cb=_source(modules[CACHE_MODULE]); root_text=getattr(modules["transformers"],"__file__",None)
+        mp,mb=_source(modules[MAMBA_MODULE]); root_text=getattr(modules["transformers"],"__file__",None)
         require(isinstance(root_text,str) and Path(root_text).is_absolute(),"malformed import root")
         root=Path(root_text).resolve().parent
         require(root.is_dir(),"transformers distribution root")
-        require(mp.is_relative_to(root) and cp.is_relative_to(root),"shadowed import root")
+        require(mp.is_relative_to(root),"shadowed import root")
         try: distribution_root=Path(importlib_metadata.distribution("transformers").locate_file("transformers")).resolve()
         except importlib_metadata.PackageNotFoundError as e: raise ContractError("transformers distribution unavailable") from e
         require(distribution_root == root,"import/distribution-root mismatch")
-        for name,path in ((MAMBA_MODULE,mp),(CACHE_MODULE,cp)):
-            spec=importlib.util.find_spec(name); require(spec is None or Path(str(spec.origin)).resolve()==path,"import/distribution-root mismatch")
+        spec=importlib.util.find_spec(MAMBA_MODULE); require(spec is None or Path(str(spec.origin)).resolve()==mp,"import/distribution-root mismatch")
         require(len(mb)==MAMBA_BYTES,"Mamba byte-size mismatch"); require(sha256_bytes(mb)==MAMBA_SHA256,"Mamba SHA256 mismatch")
-        require(len(cb)==CACHE_BYTES,"cache_utils byte-size mismatch"); require(sha256_bytes(cb)==CACHE_SHA256,"cache_utils SHA256 mismatch")
+        require(len(mb)==CACHE_BYTES,"Mamba cache byte-size mismatch"); require(sha256_bytes(mb)==CACHE_SHA256,"Mamba cache SHA256 mismatch")
         mixer=getattr(modules[MAMBA_MODULE],"MambaMixer",None); slow=getattr(mixer,"slow_forward",None); forward=getattr(mixer,"forward",None)
         require(inspect.isfunction(slow) and slow.__module__==MAMBA_MODULE and slow.__qualname__==CAPTURE_QUALNAME and slow.__code__.co_filename==str(mp),"slow code identity")
         _validate_source_roles(mb,slow.__code__)
         _validate_forward_dispatch(mb,forward,mp)
-        cache_text=cb.decode("utf-8"); require("conv_states" in cache_text and "ssm_states" in cache_text and cache_text.find("conv_states") != cache_text.find("ssm_states"),"cache/recurrent ambiguity")
+        _validate_mamba_cache_roles(mb)
         code,line=slow.__code__,CAPTURE_LINE
         super().__init__(code,line,registered_layers,enabled)
 
