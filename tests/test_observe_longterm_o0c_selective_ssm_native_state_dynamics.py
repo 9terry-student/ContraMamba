@@ -290,10 +290,10 @@ def _runtime_baseline(monkeypatch):
   return readout
  line=slow.__code__.co_firstlineno+4; slow.__code__=slow.__code__.replace(co_filename=str(mp)); slow.__module__=o.MAMBA_MODULE; slow.__qualname__=o.CAPTURE_QUALNAME
  def forward(self,*args): return self.slow_forward(*args)
- forward.__module__=o.MAMBA_MODULE
+ forward.__code__=forward.__code__.replace(co_filename=str(mp)); forward.__module__=o.MAMBA_MODULE; forward.__qualname__="MambaMixer.forward"
  Mixer=type("MambaMixer",(),{"slow_forward":slow,"forward":forward})
  mamba=type("M",(),{"MambaMixer":Mixer})(); cache=type("C",(),{})(); transformers=type("T",(),{"__file__":str(root/"__init__.py")})(); torch=type("Torch",(),{"__version__":"torch"})()
- source=[""]*500; source[407]="deltaB_u = discrete_B * hidden_states[..., None].float()"; source[408]="ssm_state = discrete_A * ssm_state + deltaB_u"; source[409]="scan_output = torch.matmul(ssm_state.to(dtype), C[..., None].unsqueeze(-1))"; source[416]="cache_params.ssm_states[0].copy_(ssm_state)"
+ source=[""]*500; source[0]="class MambaMixer:"; source[1]=" def forward(self,hidden_states,cache_params,cache_position,attention_mask):"; source[2]="  is_fast_path_available = all((selective_state_update, selective_scan_fn, causal_conv1d_fn, causal_conv1d_update, mamba_inner_fn))"; source[3]="  if is_fast_path_available and \"cuda\" in self.x_proj.weight.device.type and not is_torchdynamo_compiling():"; source[4]="   return self.cuda_kernels_forward(hidden_states, cache_params, cache_position, attention_mask)"; source[5]="  return self.slow_forward(hidden_states, cache_params, cache_position, attention_mask)"; source[407]="deltaB_u = discrete_B * hidden_states[..., None].float()"; source[408]="ssm_state = discrete_A * ssm_state + deltaB_u"; source[409]="scan_output = torch.matmul(ssm_state.to(dtype), C[..., None].unsqueeze(-1))"; source[416]="cache_params.ssm_states[0].copy_(ssm_state)"
  data="\n".join(source).encode(); cdata=b"conv_states ssm_states"
  monkeypatch.setattr(o,"CAPTURE_LINE",line); monkeypatch.setattr(o,"MAMBA_BYTES",len(data)); monkeypatch.setattr(o,"MAMBA_SHA256",o.sha256_bytes(data)); monkeypatch.setattr(o,"CACHE_BYTES",len(cdata)); monkeypatch.setattr(o,"CACHE_SHA256",o.sha256_bytes(cdata))
  paths={id(mamba):(mp,data),id(cache):(cp,cdata)}; monkeypatch.setattr(o,"_source",lambda mod:paths[id(mod)])
@@ -303,6 +303,63 @@ def _runtime_baseline(monkeypatch):
  monkeypatch.setattr(o.importlib.util,"find_spec",lambda name:type("S",(),{"origin":str(mp if name==o.MAMBA_MODULE else cp)})())
  return modules,versions,paths
 
+def _dispatch_source(condition='is_fast_path_available and "cuda" in self.x_proj.weight.device.type and not is_torchdynamo_compiling()',true='return self.cuda_kernels_forward(hidden_states, cache_params, cache_position, attention_mask)',fallback='return self.slow_forward(hidden_states, cache_params, cache_position, attention_mask)',prefix='',suffix=''):
+ return ("class MambaMixer:\n"
+         " def forward(self,hidden_states,cache_params,cache_position,attention_mask):\n"
+         f"  {prefix}\n"
+         "  is_fast_path_available = all((selective_state_update, selective_scan_fn, causal_conv1d_fn, causal_conv1d_update, mamba_inner_fn))\n"
+         f"  if {condition}:\n"
+         f"   {true}\n"
+         f"  {fallback}\n"
+         f"  {suffix}\n").encode()
+
+def _dispatch_forward(path):
+ def forward(self,*args): return None
+ forward.__code__=forward.__code__.replace(co_filename=str(path)); forward.__module__=o.MAMBA_MODULE; forward.__qualname__="MambaMixer.forward"
+ return forward
+
+def test_cpu_dispatch_validator_accepts_frozen_v5_shape_with_mamba_inner_fn():
+ path=Path("synthetic_mamba.py"); o._validate_forward_dispatch(_dispatch_source(),_dispatch_forward(path),path)
+
+@pytest.mark.parametrize("data",[
+ _dispatch_source(condition="is_fast_path_available and not is_torchdynamo_compiling()"),
+ _dispatch_source(condition='is_fast_path_available and "cuda" in self.other.weight.device.type'),
+ _dispatch_source(true="return self.not_cuda_kernels_forward(*args)"),
+ _dispatch_source(fallback="return self.not_slow_forward(*args)"),
+ _dispatch_source(prefix="self.cuda_kernels_forward(*args)"),
+ _dispatch_source(fallback="return self.another_method(*args)"),
+ _dispatch_source(suffix="return self.slow_forward(*args)"),
+ _dispatch_source(condition='is_fast_path_available and "cpu" in self.x_proj.weight.device.type'),
+])
+def test_cpu_dispatch_validator_rejects_nonfrozen_shapes(data):
+ path=Path("synthetic_mamba.py")
+ with pytest.raises(o.ContractError,match="unsupported backend"): o._validate_forward_dispatch(data,_dispatch_forward(path),path)
+
+def test_mamba_inner_fn_presence_is_neither_rejected_nor_sufficient():
+ path=Path("synthetic_mamba.py"); good=_dispatch_source(); assert b"mamba_inner_fn" in good
+ o._validate_forward_dispatch(good,_dispatch_forward(path),path)
+ bad_shape=_dispatch_source(condition="is_fast_path_available and not is_torchdynamo_compiling()")
+ assert b"mamba_inner_fn" in bad_shape
+ with pytest.raises(o.ContractError,match="unsupported backend"): o._validate_forward_dispatch(bad_shape,_dispatch_forward(path),path)
+
+@pytest.mark.parametrize("data",[
+ _dispatch_source().replace(b'  is_fast_path_available',b'  if some_cpu_condition:\n   return self.other_backend_forward(hidden_states, cache_params, cache_position, attention_mask)\n  is_fast_path_available'),
+ _dispatch_source().replace(b'  is_fast_path_available',b'  if some_cpu_condition:\n   return self.slow_forward(hidden_states, cache_params, cache_position, attention_mask)\n  is_fast_path_available'),
+ _dispatch_source().replace(b'  return self.slow_forward',b'  else:\n   return self.other_backend_forward(hidden_states, cache_params, cache_position, attention_mask)\n  return self.slow_forward'),
+ _dispatch_source().replace(b'  is_fast_path_available',b'  return self.other_backend_forward(hidden_states, cache_params, cache_position, attention_mask)\n  is_fast_path_available'),
+ _dispatch_source(suffix='return self.other_backend_forward(hidden_states, cache_params, cache_position, attention_mask)'),
+ _dispatch_source(condition='is_fast_path_available and ("cuda" in self.x_proj.weight.device.type or bypass_condition)'),
+ _dispatch_source(condition='is_fast_path_available or "cuda" in self.x_proj.weight.device.type or not is_torchdynamo_compiling()'),
+ _dispatch_source(condition='is_fast_path_available and "cuda" in self.other.weight.device.type and not is_torchdynamo_compiling()'),
+ _dispatch_source(prefix='mamba_inner_fn(hidden_states)'),
+ _dispatch_source(prefix='selective_scan_fn(hidden_states)'),
+ _dispatch_source(prefix='selective_state_update(hidden_states)'),
+ _dispatch_source(prefix='self.other_backend_forward(hidden_states, cache_params, cache_position, attention_mask)'),
+])
+def test_cpu_dispatch_validator_rejects_all_alternate_cpu_or_backend_paths(data):
+ path=Path("synthetic_mamba.py")
+ with pytest.raises(o.ContractError,match="unsupported backend"): o._validate_forward_dispatch(data,_dispatch_forward(path),path)
+
 @pytest.mark.parametrize("key",["python","numpy","torch","transformers"])
 def test_runtime_gate_version_negative_matrix(monkeypatch,key):
  modules,versions,_=_runtime_baseline(monkeypatch); versions[key]="wrong"
@@ -310,7 +367,7 @@ def test_runtime_gate_version_negative_matrix(monkeypatch,key):
 
 @pytest.mark.parametrize("mutation,message",[
  ("root_outside","shadowed import root"),("root_malformed","malformed import root"),("mamba_bytes","Mamba byte-size mismatch"),("mamba_hash","Mamba SHA256 mismatch"),("cache_bytes","cache_utils byte-size mismatch"),("cache_hash","cache_utils SHA256 mismatch"),
- ("missing_mixer","slow code identity"),("wrong_mixer","slow code identity"),("wrong_qualname","slow code identity"),("wrong_code","slow code identity"),("wrong_line","line binding"),("wrong_role","source input role"),("cache_role","cache/recurrent ambiguity"),("backend","unsupported backend"),("source_resolution","import/distribution-root mismatch")])
+ ("missing_mixer","slow code identity"),("wrong_mixer","slow code identity"),("wrong_qualname","slow code identity"),("wrong_code","slow code identity"),("wrong_line","line binding"),("wrong_role","source input role"),("cache_role","cache/recurrent ambiguity"),("backend","forward identity"),("source_resolution","import/distribution-root mismatch")])
 def test_runtime_gate_source_negative_matrix(monkeypatch,mutation,message):
  modules,versions,paths=_runtime_baseline(monkeypatch); mamba=modules[o.MAMBA_MODULE]; mp,data=paths[id(mamba)]
  if mutation=="root_outside": modules["transformers"].__file__=str(Path.cwd()/"tests"/"__init__.py")

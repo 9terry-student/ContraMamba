@@ -85,6 +85,52 @@ def _validate_source_roles(data:bytes,code:Any)->None:
     require(isinstance(cache_target,ast.Subscript) and isinstance(cache_target.value,ast.Attribute) and cache_target.value.attr=="ssm_states" and isinstance(cache_target.value.value,ast.Name) and cache_target.value.value.id=="cache_params" and len(call.args)==1 and isinstance(call.args[0],ast.Name) and call.args[0].id=="ssm_state","source recurrent cache role")
     require(CAPTURE_LINE in {n for _,_,n in code.co_lines() if n is not None},"line binding")
 
+def _validate_forward_dispatch(data:bytes,forward:Any,source_path:Path)->None:
+    """Prove the frozen Mamba CPU dispatch falls through to ``slow_forward``."""
+    require(inspect.isfunction(forward) and forward.__module__==MAMBA_MODULE and forward.__qualname__=="MambaMixer.forward" and forward.__code__.co_filename==str(source_path),"forward identity")
+    try: tree=ast.parse(data.decode("utf-8"))
+    except (UnicodeDecodeError,SyntaxError) as e: raise ContractError("forward dispatch syntax") from e
+    mixers=[n for n in tree.body if isinstance(n,ast.ClassDef) and n.name=="MambaMixer"]
+    require(len(mixers)==1,"unsupported backend")
+    forwards=[n for n in mixers[0].body if isinstance(n,ast.FunctionDef) and n.name=="forward"]
+    require(len(forwards)==1,"unsupported backend")
+    function=forwards[0]
+    body=list(function.body)
+    if body and isinstance(body[0],ast.Expr) and isinstance(getattr(body[0],"value",None),ast.Constant) and isinstance(body[0].value.value,str): body=body[1:]
+    def path(n:Any,parts:tuple[str,...])->bool:
+        for part in reversed(parts):
+            if not isinstance(n,ast.Attribute) or n.attr!=part: return False
+            n=n.value
+        return isinstance(n,ast.Name) and n.id=="self"
+    def method_call(n:Any,name:str)->bool:
+        return isinstance(n,ast.Call) and isinstance(n.func,ast.Attribute) and n.func.attr==name and isinstance(n.func.value,ast.Name) and n.func.value.id=="self"
+    def cuda_guard(n:Any)->bool:
+        return isinstance(n,ast.Compare) and len(n.ops)==len(n.comparators)==1 and isinstance(n.ops[0],ast.In) and isinstance(n.left,ast.Constant) and n.left.value=="cuda" and path(n.comparators[0],("x_proj","weight","device","type"))
+    def expected_call(n:Any,name:str)->bool:
+        return method_call(n,name) and not n.keywords and len(n.args)==4 and all(isinstance(arg,ast.Name) and arg.id==expected for arg,expected in zip(n.args,("hidden_states","cache_params","cache_position","attention_mask")))
+    expected_kernels=("selective_state_update","selective_scan_fn","causal_conv1d_fn","causal_conv1d_update","mamba_inner_fn")
+    def availability(n:Any)->bool:
+        return isinstance(n,ast.Call) and isinstance(n.func,ast.Name) and n.func.id=="all" and not n.keywords and len(n.args)==1 and isinstance(n.args[0],(ast.Tuple,ast.List)) and [item.id if isinstance(item,ast.Name) else None for item in n.args[0].elts]==list(expected_kernels)
+    # The frozen function has no executable wrapper work beyond this exact
+    # assignment, CUDA dispatch, and unconditional CPU fallback.
+    require(len(body)==3 and isinstance(body[0],ast.Assign) and len(body[0].targets)==1 and isinstance(body[0].targets[0],ast.Name) and body[0].targets[0].id=="is_fast_path_available" and availability(body[0].value),"unsupported backend")
+    branch,fallback=body[1],body[2]
+    require(isinstance(branch,ast.If) and not branch.orelse and isinstance(branch.test,ast.BoolOp) and isinstance(branch.test.op,ast.And) and len(branch.test.values)==3,"unsupported backend")
+    guard_values=branch.test.values
+    require(isinstance(guard_values[0],ast.Name) and guard_values[0].id=="is_fast_path_available" and cuda_guard(guard_values[1]) and isinstance(guard_values[2],ast.UnaryOp) and isinstance(guard_values[2].op,ast.Not) and isinstance(guard_values[2].operand,ast.Call) and isinstance(guard_values[2].operand.func,ast.Name) and guard_values[2].operand.func.id=="is_torchdynamo_compiling" and not guard_values[2].operand.args and not guard_values[2].operand.keywords,"unsupported backend")
+    require(len(branch.body)==1 and isinstance(branch.body[0],ast.Return) and expected_call(branch.body[0].value,"cuda_kernels_forward"),"unsupported backend")
+    require(isinstance(fallback,ast.Return) and expected_call(fallback.value,"slow_forward"),"unsupported backend")
+    # Exact top-level shape above excludes nested definitions, so every return
+    # reachable in this wrapper is visible in this function-only walk.
+    returns=[n for n in ast.walk(function) if isinstance(n,ast.Return)]
+    require(len(returns)==2 and set(returns)=={branch.body[0],fallback},"unsupported backend")
+    calls=[n for n in ast.walk(function) if isinstance(n,ast.Call)]
+    cuda_calls=[n for n in calls if method_call(n,"cuda_kernels_forward")]; slow_calls=[n for n in calls if method_call(n,"slow_forward")]
+    require(len(cuda_calls)==1 and cuda_calls[0] is branch.body[0].value and len(slow_calls)==1 and slow_calls[0] is fallback.value,"unsupported backend")
+    backend_calls=[n for n in calls if isinstance(n.func,ast.Attribute) and isinstance(n.func.value,ast.Name) and n.func.value.id=="self" and n.func.attr.endswith("_forward")]
+    require(len(backend_calls)==2 and set(backend_calls)==set(cuda_calls+slow_calls),"unsupported backend")
+    require(not any(isinstance(n.func,ast.Name) and n.func.id in {"mamba_inner_fn","selective_scan_fn","selective_state_update"} for n in calls),"unsupported backend")
+
 def _runtime_environment()->tuple[Mapping[str,Any],Mapping[str,str]]:
     """The sole environmental lookup boundary used by the scientific gate."""
     modules={MAMBA_MODULE:importlib.import_module(MAMBA_MODULE),CACHE_MODULE:importlib.import_module(CACHE_MODULE),"transformers":importlib.import_module("transformers"),"torch":importlib.import_module("torch")}
@@ -109,8 +155,7 @@ def _resolve_and_validate_runtime_binding()->tuple[Any,int]:
     mixer=getattr(modules[MAMBA_MODULE],"MambaMixer",None); slow=getattr(mixer,"slow_forward",None); forward=getattr(mixer,"forward",None)
     require(inspect.isfunction(slow) and slow.__module__==MAMBA_MODULE and slow.__qualname__==CAPTURE_QUALNAME and slow.__code__.co_filename==str(mp),"slow code identity")
     _validate_source_roles(mb,slow.__code__)
-    require(inspect.isfunction(forward) and forward.__module__==MAMBA_MODULE,"forward identity")
-    dispatch="".join(inspect.getsourcelines(forward)[0]); require("slow_forward" in dispatch and "mamba_inner_fn" not in dispatch,"unsupported backend")
+    _validate_forward_dispatch(mb,forward,mp)
     cache_text=cb.decode("utf-8"); require("conv_states" in cache_text and "ssm_states" in cache_text and cache_text.find("conv_states") != cache_text.find("ssm_states"),"cache/recurrent ambiguity")
     return slow.__code__,CAPTURE_LINE
 
@@ -165,8 +210,7 @@ class NativeStateObserver(_TraceCollector):
         mixer=getattr(modules[MAMBA_MODULE],"MambaMixer",None); slow=getattr(mixer,"slow_forward",None); forward=getattr(mixer,"forward",None)
         require(inspect.isfunction(slow) and slow.__module__==MAMBA_MODULE and slow.__qualname__==CAPTURE_QUALNAME and slow.__code__.co_filename==str(mp),"slow code identity")
         _validate_source_roles(mb,slow.__code__)
-        require(inspect.isfunction(forward) and forward.__module__==MAMBA_MODULE,"forward identity")
-        dispatch="".join(inspect.getsourcelines(forward)[0]); require("slow_forward" in dispatch and "mamba_inner_fn" not in dispatch,"unsupported backend")
+        _validate_forward_dispatch(mb,forward,mp)
         cache_text=cb.decode("utf-8"); require("conv_states" in cache_text and "ssm_states" in cache_text and cache_text.find("conv_states") != cache_text.find("ssm_states"),"cache/recurrent ambiguity")
         code,line=slow.__code__,CAPTURE_LINE
         super().__init__(code,line,registered_layers,enabled)
