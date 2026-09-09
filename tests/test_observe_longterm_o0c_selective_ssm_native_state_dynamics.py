@@ -103,7 +103,52 @@ class Tensor:
     def cpu(self): return self.v.copy()
 def trajectories(n=2): return {(p,c,0):[Tensor([t+1,t+2]) for t in range(n)] for p in o.PAIR_ORDER for c in o.CONDITION_ORDER}
 def rows_vectors(n=2): return o.state_rows(trajectories(n),[{"layer_index":0,"layer_role":"mamba_mixer"}])
-def anchors(t=0): return {(p,c):{x:t for x in o.ANCHOR_ORDER} for p in o.PAIR_ORDER for c in o.CONDITION_ORDER}
+def anchors(t=0): return {(p,comparison):{x:t for x in o.ANCHOR_ORDER} for p in o.PAIR_ORDER for comparison,_ in o.COMPARISONS}
+FROZEN_COMPARISON_ANCHORS={
+ ("o0b_pair_001","comparison-A"):{"anchor_divergence":25,"anchor_post_plus_1":26,"anchor_post_plus_2":27,"anchor_post_plus_4":29,"anchor_pre_minus_1":24,"anchor_terminal":44},
+ ("o0b_pair_001","comparison-B"):{"anchor_divergence":18,"anchor_post_plus_1":19,"anchor_post_plus_2":20,"anchor_post_plus_4":22,"anchor_pre_minus_1":17,"anchor_terminal":44},
+ ("o0b_pair_001","comparison-C"):{"anchor_divergence":17,"anchor_post_plus_1":18,"anchor_post_plus_2":19,"anchor_post_plus_4":21,"anchor_pre_minus_1":16,"anchor_terminal":44},
+ ("o0b_pair_002","comparison-A"):{"anchor_divergence":24,"anchor_post_plus_1":25,"anchor_post_plus_2":26,"anchor_post_plus_4":28,"anchor_pre_minus_1":23,"anchor_terminal":35},
+ ("o0b_pair_002","comparison-B"):{"anchor_divergence":14,"anchor_post_plus_1":15,"anchor_post_plus_2":16,"anchor_post_plus_4":18,"anchor_pre_minus_1":13,"anchor_terminal":35},
+ ("o0b_pair_002","comparison-C"):{"anchor_divergence":14,"anchor_post_plus_1":15,"anchor_post_plus_2":16,"anchor_post_plus_4":18,"anchor_pre_minus_1":13,"anchor_terminal":35},
+ ("o0b_pair_003","comparison-A"):{"anchor_divergence":16,"anchor_post_plus_1":17,"anchor_post_plus_2":18,"anchor_post_plus_4":20,"anchor_pre_minus_1":15,"anchor_terminal":35},
+ ("o0b_pair_003","comparison-B"):{"anchor_divergence":21,"anchor_post_plus_1":22,"anchor_post_plus_2":23,"anchor_post_plus_4":25,"anchor_pre_minus_1":20,"anchor_terminal":35},
+ ("o0b_pair_003","comparison-C"):{"anchor_divergence":16,"anchor_post_plus_1":17,"anchor_post_plus_2":18,"anchor_post_plus_4":20,"anchor_pre_minus_1":15,"anchor_terminal":35},
+}
+
+def test_comparison_anchor_contract_rejects_old_and_malformed_shapes():
+ rows,vectors=rows_vectors(); good=anchors()
+ assert len(good)==9 and all(set(x)==set(o.ANCHOR_ORDER) for x in good.values())
+ old={(p,c):{x:0 for x in o.ANCHOR_ORDER} for p in o.PAIR_ORDER for c in o.CONDITION_ORDER}; bad(o.measurements,rows,vectors,old)
+ cases=[]
+ missing=dict(good); missing.pop(("o0b_pair_001","comparison-A")); cases.append(missing)
+ extra=dict(good); extra[("extra","comparison-A")]=dict(next(iter(good.values()))); cases.append(extra)
+ missing_anchor={k:dict(v) for k,v in good.items()}; missing_anchor[("o0b_pair_001","comparison-A")].pop("anchor_terminal"); cases.append(missing_anchor)
+ extra_anchor={k:dict(v) for k,v in good.items()}; extra_anchor[("o0b_pair_001","comparison-A")]["extra"]=0; cases.append(extra_anchor)
+ nonint={k:dict(v) for k,v in good.items()}; nonint[("o0b_pair_001","comparison-A")]["anchor_terminal"]="0"; cases.append(nonint)
+ boolean={k:dict(v) for k,v in good.items()}; boolean[("o0b_pair_001","comparison-A")]["anchor_terminal"]=True; cases.append(boolean)
+ negative={k:dict(v) for k,v in good.items()}; negative[("o0b_pair_001","comparison-A")]["anchor_terminal"]=-1; cases.append(negative)
+ for case in cases: bad(o.measurements,rows,vectors,case)
+
+def test_comparison_specific_frozen_anchor_schedules_and_ranges():
+ # Exact immutable fixture extracted from the canonical f93ed7e Git-object bytes,
+ # whose SHA256 is e8344ea3df54a3393aa8fa82dba19eb2baade9af9366687bb105f4ad348979ff.
+ rows,vectors=rows_vectors(45); frozen={k:dict(v) for k,v in FROZEN_COMPARISON_ANCHORS.items()}
+ assert [frozen[("o0b_pair_001",c)]["anchor_divergence"] for c,_ in o.COMPARISONS]==[25,18,17]
+ assert [frozen[("o0b_pair_001",c)]["anchor_pre_minus_1"] for c,_ in o.COMPARISONS]==[24,17,16]
+ records=o.measurements(rows,vectors,frozen); assert len(records)==len(o.PAIR_ORDER)*len(o.COMPARISONS)*len(o.ANCHOR_ORDER)
+ for comparison,_ in o.COMPARISONS:
+  assert {r["absolute_token_index"] for r in records if r["pair_id"]=="o0b_pair_001" and r["comparison_id"]==comparison and r["anchor_name"]=="anchor_terminal"}=={44}
+ for comparison,coordinate in (("comparison-A",1),("comparison-B",2),("comparison-C",3)):
+  isolated=anchors(); isolated[("o0b_pair_001",comparison)]["anchor_terminal"]=coordinate
+  isolated_rows,isolated_vectors=rows_vectors(4); measured=o.measurements(isolated_rows,isolated_vectors,isolated)
+  for actual,_ in o.COMPARISONS:
+   terminal=[r for r in measured if r["pair_id"]=="o0b_pair_001" and r["comparison_id"]==actual and r["anchor_name"]=="anchor_terminal"]
+   assert {r["absolute_token_index"] for r in terminal}==({coordinate} if actual==comparison else {0})
+ ref_short=trajectories(2); ref_short[("o0b_pair_001","reference_sufficient",0)]=ref_short[("o0b_pair_001","reference_sufficient",0)][:1]
+ ref_rows,ref_vectors=o.state_rows(ref_short,[{"layer_index":0,"layer_role":"mamba_mixer"}]); ref_bad=anchors(); ref_bad[("o0b_pair_001","comparison-A")]["anchor_terminal"]=1; bad(o.measurements,ref_rows,ref_vectors,ref_bad)
+ member_short=trajectories(2); member_short[("o0b_pair_001","insufficient_matched",0)]=member_short[("o0b_pair_001","insufficient_matched",0)][:1]
+ member_rows,member_vectors=o.state_rows(member_short,[{"layer_index":0,"layer_role":"mamba_mixer"}]); member_bad=anchors(); member_bad[("o0b_pair_001","comparison-A")]["anchor_terminal"]=1; bad(o.measurements,member_rows,member_vectors,member_bad)
 def manifest():
  m={k:"PASS" for k in o.MANIFEST_KEYS}; m.update({"schema_version":o.SCHEMA_VERSION,"experiment_name":o.EXPERIMENT_NAME,"scientific_design_authority_commit":o.SCIENTIFIC_DESIGN_AUTHORITY_COMMIT,"implementation_authority_commit":o.IMPLEMENTATION_AUTHORITY_COMMIT,"observer_implementation_commit":"a"*40,"observer_script_path":"scripts/observe_longterm_o0c_selective_ssm_native_state_dynamics.py","observer_script_sha256":"b"*64,"observer_script_bytes":1,"dataset_path":o.DATASET_PATH,"dataset_sha256":o.DATASET_SHA256,"validation_artifact_path":o.VALIDATION_ARTIFACT_PATH,"validation_artifact_sha256":o.VALIDATION_ARTIFACT_SHA256,"model_id":o.MODEL_ID,"model_revision":o.MODEL_REVISION,"tokenizer_id":o.TOKENIZER_ID,"tokenizer_revision":o.TOKENIZER_REVISION,"model_trust_remote_code":False,"tokenizer_trust_remote_code":False,"add_special_tokens":False,"device":"cpu","dtype":"float32","expected_python_version":"3.12.13","expected_numpy_version":"2.0.2","expected_torch_version":"2.10.0+cpu","expected_transformers_version":"5.0.0","mamba_source_module":o.MAMBA_MODULE,"mamba_source_sha256":o.MAMBA_SHA256,"mamba_source_bytes":o.MAMBA_BYTES,"cache_source_module":o.CACHE_MODULE,"cache_source_sha256":o.CACHE_SHA256,"cache_source_bytes":o.CACHE_BYTES,"capture_source_qualname":o.CAPTURE_QUALNAME,"capture_source_line":410,"capture_state_source":"native_selective_ssm_recurrent_state","capture_state_timing":"post_consumption_s_t","pair_order":list(o.PAIR_ORDER),"condition_order":list(o.CONDITION_ORDER),"comparison_order":[x[0] for x in o.COMPARISONS],"anchor_order":list(o.ANCHOR_ORDER),"layer_descriptors":[{"layer_index":0,"layer_role":"mamba_mixer"}],"serialization_template":"canonical-json-v1/deterministic-npz-v1","required_artifacts":list(o.REQUIRED_ARTIFACTS),"blocker":None,"source_resolution_classification":"PASS_RECONCILED_UNIQUE_TRANSFORMERS_SOURCE","backend_classification":"BACKEND_CPU_SEQUENTIAL_STATICALLY_PROVEN","transformers_distribution_root":str(Path.cwd()),"transformers_import_root":str(Path.cwd())}); m.update(o.observer_script_identity()); m.update(o.SUCCESS_STATUSES); return m
 

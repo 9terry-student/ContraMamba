@@ -249,18 +249,31 @@ def parse_npz(data:bytes)->np.ndarray:
     require(isinstance(a,np.ndarray) and a.dtype==np.dtype("<f4") and a.ndim==2 and a.shape[0]>0 and a.shape[1]>0 and a.flags.c_contiguous and np.isfinite(a).all(),"NPZ vectors"); return a
 def assert_pre_divergence(reference:Any,member:Any)->None: require(np.allclose(np.asarray(reference),np.asarray(member),rtol=0.0,atol=1e-6),"pre-divergence mismatch")
 
-def measurements(rows:Sequence[Mapping[str,Any]],vectors:Sequence[Any],anchors:Mapping[tuple[str,str],Mapping[str,int]])->list[dict[str,Any]]:
-    matrix=np.ascontiguousarray(np.asarray(vectors,dtype="<f4")); validate_state_rows(rows,matrix); lookup={(r["pair_id"],r["condition"],r["layer_index"],r["absolute_token_index"]):r for r in rows}; out=[]
+def _validate_comparison_anchors(comparison_anchors:Any,lookup:Mapping[tuple[str,str,int,int],Mapping[str,Any]],layers:Sequence[int])->None:
+    expected={(pair,comparison) for pair in PAIR_ORDER for comparison,_ in COMPARISONS}
+    require(isinstance(comparison_anchors,Mapping),"comparison anchors mapping")
+    require(set(comparison_anchors)==expected,"comparison anchor keys")
+    members=dict(COMPARISONS)
+    for key,anchor_map in comparison_anchors.items():
+     require(type(key) is tuple and len(key)==2,"comparison anchor key")
+     pair,comparison=key; require(pair in PAIR_ORDER and comparison in members,"comparison anchor key")
+     require(isinstance(anchor_map,Mapping) and set(anchor_map)==set(ANCHOR_ORDER),"comparison anchor map")
+     member=members[comparison]
+     for anchor,t in anchor_map.items():
+      require(anchor in ANCHOR_ORDER and type(t) is int and t>=0,"comparison anchor coordinate")
+      for layer in layers:
+       require((pair,"reference_sufficient",layer,t) in lookup and (pair,member,layer,t) in lookup,"comparison anchor coordinate range")
+
+def measurements(rows:Sequence[Mapping[str,Any]],vectors:Sequence[Any],comparison_anchors:Mapping[tuple[str,str],Mapping[str,int]])->list[dict[str,Any]]:
+    matrix=np.ascontiguousarray(np.asarray(vectors,dtype="<f4")); validate_state_rows(rows,matrix); lookup={(r["pair_id"],r["condition"],r["layer_index"],r["absolute_token_index"]):r for r in rows}; layers=sorted({r["layer_index"] for r in rows}); _validate_comparison_anchors(comparison_anchors,lookup,layers); out=[]
     for pair in PAIR_ORDER:
      for comparison,member in COMPARISONS:
-      for layer in sorted({r["layer_index"] for r in rows}):
-       dminus=anchors[(pair,member)].get("anchor_pre_minus_1"); rdminus=anchors[(pair,"reference_sufficient")].get("anchor_pre_minus_1")
-       require(type(dminus) is int and dminus==rdminus,"pre-divergence anchor")
+      anchor_map=comparison_anchors[(pair,comparison)]
+      for layer in layers:
+       dminus=anchor_map["anchor_pre_minus_1"]
        assert_pre_divergence(matrix[lookup[(pair,"reference_sufficient",layer,dminus)]["vector_index"]],matrix[lookup[(pair,member,layer,dminus)]["vector_index"]])
        for anchor in ANCHOR_ORDER:
-        t=anchors[(pair,member)].get(anchor); tr=anchors[(pair,"reference_sufficient")].get(anchor)
-        if t is None or tr is None: continue
-        require(t==tr,"anchor alignment"); rr=lookup[(pair,"reference_sufficient",layer,t)]; mr=lookup[(pair,member,layer,t)]; rv=np.asarray(vectors[rr["vector_index"]],dtype="<f4"); mv=np.asarray(vectors[mr["vector_index"]],dtype="<f4"); rp=np.zeros_like(rv) if t==0 else np.asarray(vectors[lookup[(pair,"reference_sufficient",layer,t-1)]["vector_index"]],dtype="<f4"); mp=np.zeros_like(mv) if t==0 else np.asarray(vectors[lookup[(pair,member,layer,t-1)]["vector_index"]],dtype="<f4"); rt,mt=rv-rp,mv-mp; rn,mn,rtn,mtn=map(float,(np.linalg.norm(rv),np.linalg.norm(mv),np.linalg.norm(rt),np.linalg.norm(mt))); require(all(np.isfinite(x) and x>0 for x in (rn,mn,rtn,mtn)),"nonfinite/zero metric")
+        t=anchor_map[anchor]; rr=lookup[(pair,"reference_sufficient",layer,t)]; mr=lookup[(pair,member,layer,t)]; rv=np.asarray(vectors[rr["vector_index"]],dtype="<f4"); mv=np.asarray(vectors[mr["vector_index"]],dtype="<f4"); rp=np.zeros_like(rv) if t==0 else np.asarray(vectors[lookup[(pair,"reference_sufficient",layer,t-1)]["vector_index"]],dtype="<f4"); mp=np.zeros_like(mv) if t==0 else np.asarray(vectors[lookup[(pair,member,layer,t-1)]["vector_index"]],dtype="<f4"); rt,mt=rv-rp,mv-mp; rn,mn,rtn,mtn=map(float,(np.linalg.norm(rv),np.linalg.norm(mv),np.linalg.norm(rt),np.linalg.norm(mt))); require(all(np.isfinite(x) and x>0 for x in (rn,mn,rtn,mtn)),"nonfinite/zero metric")
         out.append({"schema_version":SCHEMA_VERSION,"pair_id":pair,"comparison_id":comparison,"reference_condition":"reference_sufficient","member_condition":member,"anchor_name":anchor,"absolute_token_index":t,"layer_index":layer,"reference_vector_index":rr["vector_index"],"member_vector_index":mr["vector_index"],"reference_previous_vector_index":None if t==0 else lookup[(pair,"reference_sufficient",layer,t-1)]["vector_index"],"member_previous_vector_index":None if t==0 else lookup[(pair,member,layer,t-1)]["vector_index"],"normalized_l2_state_distance":float(np.linalg.norm(rv/rn-mv/mn)),"reference_transition_l2":rtn,"member_transition_l2":mtn,"paired_transition_delta":mtn-rtn,"transition_direction_cosine":float(np.dot(rt,mt)/(rtn*mtn)),"pre_divergence_integrity_status":"PASS"})
     validate_measurements(out,rows,vectors); return out
 def validate_measurements(records:Sequence[Mapping[str,Any]],rows:Sequence[Mapping[str,Any]],vectors:Sequence[Any])->None:
