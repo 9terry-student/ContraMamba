@@ -23,7 +23,7 @@ def _strings(ns):
 def parse_args(argv=None):
  actual=list(sys.argv if argv is None else argv); ns=parser().parse_args(actual[1:] if actual and not actual[0].startswith("--") else actual); _strings(ns); require(ns.exact_command==canonical_exact_command(actual),"exact-command mismatch"); return ns
 def load_observer():
- path=Path(__file__).with_name("observe_longterm_o0c_selective_ssm_native_state_dynamics.py"); spec=importlib.util.spec_from_file_location("o0c_observer",path); require(spec and spec.loader,"observer import"); module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module); return module
+ path=Path(__file__).with_name("observe_longterm_o0c_selective_ssm_native_state_dynamics.py"); spec=importlib.util.spec_from_file_location("o0c_observer",path); require(spec and spec.loader,"observer import"); module=importlib.util.module_from_spec(spec); sys.modules[spec.name]=module; spec.loader.exec_module(module); return module
 def git_head(): return subprocess.check_output(["git","rev-parse","HEAD"],text=True).strip()
 def git_canonical_input(path):
  rel=Path(path).as_posix()

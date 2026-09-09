@@ -1,9 +1,11 @@
-import ast, hashlib, importlib.util, json, subprocess, sys
+import ast, dataclasses, hashlib, importlib.util, json, subprocess, sys
 from contextlib import contextmanager
 from pathlib import Path
 import pytest
 P=Path(__file__).parents[1]/"scripts"/"run_longterm_o0c_selective_ssm_native_state_dynamics.py"
 spec=importlib.util.spec_from_file_location("runner",P); r=importlib.util.module_from_spec(spec); spec.loader.exec_module(r)
+# This separately registered real_observer import cannot exercise the production
+# o0c_observer first-load path, so it previously masked the missing registration.
 OP=P.with_name("observe_longterm_o0c_selective_ssm_native_state_dynamics.py")
 observer_spec=importlib.util.spec_from_file_location("real_observer",OP); real_observer=importlib.util.module_from_spec(observer_spec); sys.modules[observer_spec.name]=real_observer; observer_spec.loader.exec_module(real_observer)
 
@@ -12,6 +14,12 @@ def argv(extra=()):
  a[-1]=r.canonical_exact_command(a); return a
 def test_import_safety():
  tree=ast.parse(P.read_text(encoding="utf-8")); names={n.name for n in tree.body if isinstance(n,ast.Import) for n in n.names}; assert "torch" not in names and "transformers" not in names
+def test_production_load_observer_registers_before_dataclass_execution(monkeypatch):
+ monkeypatch.delitem(sys.modules,"o0c_observer",raising=False)
+ observer=r.load_observer()
+ assert observer.__name__=="o0c_observer"
+ assert sys.modules["o0c_observer"] is observer
+ assert dataclasses.is_dataclass(observer._SyntheticTraceBinding)
 def test_canonical_argv_preserves_program_and_strings():
  a=argv(["--run-name","A B/Case"]); a[-1]=r.canonical_exact_command(a); assert json.loads(r.canonical_exact_command(a))[0]=="runner.py"; assert r.parse_args(a).run_name=="A B/Case"
 @pytest.mark.parametrize("bad",[["x"],["x","--exact-command","a","--exact-command","b"]])
