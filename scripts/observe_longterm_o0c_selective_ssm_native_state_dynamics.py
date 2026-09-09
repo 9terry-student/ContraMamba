@@ -108,6 +108,9 @@ def _validate_mamba_cache_roles(data:bytes)->None:
         return nodes
     def writes_family(function:ast.FunctionDef,family:str)->bool:
         for node in scoped_nodes(function):
+            if isinstance(node,ast.AugAssign):
+                target=node.target
+                if isinstance(target,ast.Subscript) and self_attr(target.value,family) and isinstance(target.slice,ast.Name) and target.slice.id=="layer_idx": return True
             target=node.target if isinstance(node,ast.AnnAssign) else (node.targets[0] if isinstance(node,ast.Assign) and len(node.targets)==1 else None)
             if self_attr(target,family) or (isinstance(target,ast.Subscript) and self_attr(target.value,family)): return True
         return False

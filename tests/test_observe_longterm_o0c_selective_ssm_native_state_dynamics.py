@@ -342,6 +342,9 @@ def test_mamba_cache_role_validator_accepts_separate_families_and_correct_proven
  assert (o.CACHE_MODULE,o.CACHE_SHA256,o.CACHE_BYTES)==(o.MAMBA_MODULE,o.MAMBA_SHA256,o.MAMBA_BYTES)
  m=manifest(); assert (m["cache_source_module"],m["cache_source_sha256"],m["cache_source_bytes"])==(o.MAMBA_MODULE,o.MAMBA_SHA256,o.MAMBA_BYTES)
 
+def test_mamba_cache_role_validator_accepts_frozen_style_ssm_augassign():
+ o._validate_mamba_cache_roles(_cache_source(ssm_store="self.ssm_states[layer_idx] += new_ssm_state"))
+
 @pytest.mark.parametrize("data",[
  _cache_source().replace(b"  self.conv_states = []\n",b""),
  _cache_source().replace(b"  self.ssm_states = []\n",b""),
@@ -370,6 +373,15 @@ def test_mamba_cache_role_validator_rejects_ambiguous_or_crossed_families(data):
  _cache_source(conv_return="conv_state = unrelated_value\n  return conv_state"),
 ])
 def test_mamba_cache_role_validator_rejects_unproven_or_ambiguous_persistent_returns(data):
+ with pytest.raises(o.ContractError,match="cache/recurrent ambiguity"): o._validate_mamba_cache_roles(data)
+
+@pytest.mark.parametrize("data",[
+ _cache_source(ssm_store="self.conv_states[layer_idx] += new_ssm_state"),
+ _cache_source(ssm_store="self.ssm_states[other_idx] += new_ssm_state"),
+ _cache_source(ssm_store="self.ssm_states += new_ssm_state"),
+ _cache_source(ssm_store="ssm_state += new_ssm_state"),
+])
+def test_mamba_cache_role_validator_rejects_unproven_augassign_writes(data):
  with pytest.raises(o.ContractError,match="cache/recurrent ambiguity"): o._validate_mamba_cache_roles(data)
 
 @pytest.mark.parametrize("data",[
