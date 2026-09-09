@@ -116,6 +116,28 @@ FROZEN_COMPARISON_ANCHORS={
  ("o0b_pair_003","comparison-C"):{"anchor_divergence":16,"anchor_post_plus_1":17,"anchor_post_plus_2":18,"anchor_post_plus_4":20,"anchor_pre_minus_1":15,"anchor_terminal":35},
 }
 
+def multilayer_rows_vectors(layer_count=3):
+ """Production-shape local fixture: all pairs/conditions and frozen anchors."""
+ assert layer_count>=3
+ descriptors=[{"layer_index":layer,"layer_role":"mamba_mixer"} for layer in range(layer_count)]
+ token_counts={"o0b_pair_001":45,"o0b_pair_002":36,"o0b_pair_003":36}
+ trajectories={}
+ for pair in o.PAIR_ORDER:
+  for condition in o.CONDITION_ORDER:
+   for layer in range(layer_count):
+    # Conditions intentionally agree through every token: each comparison's
+    # pre-divergence proof is therefore exercised for each layer.
+    trajectories[(pair,condition,layer)]=[Tensor([layer+t+1,layer+t+2]) for t in range(token_counts[pair])]
+ return o.state_rows(trajectories,descriptors)
+
+def multilayer_manifest(layer_count):
+ value=manifest()
+ value["layer_descriptors"]=[{"layer_index":layer,"layer_role":"mamba_mixer"} for layer in range(layer_count)]
+ return value
+
+def expected_measurement_coordinates(layer_count):
+ return [(pair,comparison,anchor,layer) for pair in o.PAIR_ORDER for comparison,_ in o.COMPARISONS for anchor in o.ANCHOR_ORDER for layer in range(layer_count)]
+
 def test_comparison_anchor_contract_rejects_old_and_malformed_shapes():
  rows,vectors=rows_vectors(); good=anchors()
  assert len(good)==9 and all(set(x)==set(o.ANCHOR_ORDER) for x in good.values())
@@ -780,3 +802,66 @@ def test_m_summary_completeness_matrix():
   with pytest.raises(o.ContractError): o.validate_summary(summary,partial,rows) # M3-M6
  tampered={**summary,"rows":[dict(x) for x in summary["rows"]]}; tampered["rows"][0]["a_mean"]+=1; bad(o.validate_summary,tampered,records,rows) # M7
  reordered={**summary,"rows":list(reversed(summary["rows"]))}; bad(o.validate_summary,reordered,records,rows) # M8
+
+@pytest.mark.parametrize("layer_count",[3,4])
+def test_multilayer_measurement_coordinate_contract_and_historical_mask(layer_count):
+ rows,vectors=multilayer_rows_vectors(layer_count)
+ records=o.measurements(rows,vectors,FROZEN_COMPARISON_ANCHORS)
+ expected=expected_measurement_coordinates(layer_count)
+ assert len(records)==3*3*6*layer_count
+ actual=[(r["pair_id"],r["comparison_id"],r["anchor_name"],r["layer_index"]) for r in records]
+ assert actual==expected
+ o._require_measurement_coordinates(records,rows)
+ # The consumed HEAD emitted layer before anchor.  A one-layer fixture reduces
+ # both orders to the same sequence, while a production-shaped fixture exposes
+ # the mismatch that raised "complete measurement coordinates/order".
+ legacy_one=[(p,c,a,0) for p in o.PAIR_ORDER for c,_ in o.COMPARISONS for _layer in [0] for a in o.ANCHOR_ORDER]
+ canonical_one=expected_measurement_coordinates(1)
+ legacy_many=[(p,c,a,layer) for p in o.PAIR_ORDER for c,_ in o.COMPARISONS for layer in range(layer_count) for a in o.ANCHOR_ORDER]
+ assert legacy_one==canonical_one and legacy_many!=expected
+ with pytest.raises(o.ContractError,match="complete measurement coordinates/order"):
+  o._require_measurement_coordinates([],rows,legacy_many)
+
+def test_multilayer_post_forward_completion_to_external_publication(external_tmp):
+ rows,vectors=multilayer_rows_vectors(3)
+ records=o.measurements(rows,vectors,FROZEN_COMPARISON_ANCHORS)
+ o.validate_measurements(records,rows,vectors)
+ summary=o.build_summary(records,rows)
+ o.validate_summary(summary,records,rows)
+ manifest_value=o.build_manifest(multilayer_manifest(3))
+ files=o.build_bundle(manifest_value,rows,vectors,records,summary)
+ o.validate_bundle(files)
+ output=external_tmp/"completed-bundle"
+ o.publish_bundle(output,files)
+ assert {path.name for path in output.iterdir()}==set(o.REQUIRED_ARTIFACTS)
+ read_back={name:(output/name).read_bytes() for name in o.REQUIRED_ARTIFACTS}
+ assert set(read_back)==set(o.REQUIRED_ARTIFACTS) and len(read_back)==7
+ o.validate_bundle(read_back)
+ assert not output.with_name(output.name+".staging").exists()
+
+def test_multilayer_post_forward_adversarial_matrix(external_tmp):
+ rows,vectors=multilayer_rows_vectors(3)
+ records=o.measurements(rows,vectors,FROZEN_COMPARISON_ANCHORS)
+ summary=o.build_summary(records,rows)
+ files=o.build_bundle(multilayer_manifest(3),rows,vectors,records,summary)
+ # Measurements: order, membership, coordinate, vector ownership, and metrics.
+ bad(o.validate_measurements,list(reversed(records)),rows,vectors)
+ bad(o.validate_measurements,records[:-1],rows,vectors)
+ bad(o.validate_measurements,records+[dict(records[-1])],rows,vectors)
+ wrong_layer=[dict(x) for x in records]; wrong_layer[0]["layer_index"]=99; bad(o.validate_measurements,wrong_layer,rows,vectors)
+ wrong_token=[dict(x) for x in records]; wrong_token[0]["absolute_token_index"]+=1; bad(o.validate_measurements,wrong_token,rows,vectors)
+ wrong_predecessor=[dict(x) for x in records]; wrong_predecessor[0]["reference_previous_vector_index"]=wrong_predecessor[0]["reference_vector_index"]; bad(o.validate_measurements,wrong_predecessor,rows,vectors)
+ wrong_member=[dict(x) for x in records]; wrong_member[0]["member_vector_index"]=wrong_member[0]["reference_vector_index"]; bad(o.validate_measurements,wrong_member,rows,vectors)
+ wrong_reference=[dict(x) for x in records]; wrong_reference[0]["reference_vector_index"]=wrong_reference[0]["member_vector_index"]; bad(o.validate_measurements,wrong_reference,rows,vectors)
+ wrong_metric=[dict(x) for x in records]; wrong_metric[0]["paired_transition_delta"]+=0.5; bad(o.validate_measurements,wrong_metric,rows,vectors)
+ # Summary contract: missing row and scientific statistic reconstruction.
+ bad(o.validate_summary,{**summary,"rows":summary["rows"][:-1]},records,rows)
+ altered_summary={**summary,"rows":[dict(x) for x in summary["rows"]]}; altered_summary["rows"][0]["a_mean"]+=0.5; bad(o.validate_summary,altered_summary,records,rows)
+ # Bundle: provenance, exact artifact membership/order, checksums, report.
+ corrupted_manifest=dict(files); manifest_data=json.loads(corrupted_manifest["manifest.json"]); manifest_data["observer_implementation_commit"]="f"*40; corrupted_manifest["manifest.json"]=o.canonical_json(manifest_data); bad(o.validate_bundle,corrupted_manifest)
+ omitted=dict(files); omitted.pop("summary.json"); bad(o.validate_bundle,omitted)
+ reordered={name:files[name] for name in reversed(o.REQUIRED_ARTIFACTS)}; bad(o.validate_bundle,reordered)
+ corrupted_checksums=dict(files); corrupted_checksums["SHA256SUMS.txt"]=b"0"*len(files["SHA256SUMS.txt"]); bad(o.validate_bundle,corrupted_checksums)
+ corrupted_report=dict(files); corrupted_report["report.md"]+=b"tamper\n"; bad(o.validate_bundle,corrupted_report)
+ output=external_tmp/"collision"; output.mkdir()
+ with pytest.raises(o.ContractError,match="output collision"): o.publish_bundle(output,files)
