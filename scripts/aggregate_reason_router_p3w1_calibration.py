@@ -26,7 +26,7 @@ CALIBRATION_FORWARD_BATCH_SIZE = 8
 LOGICAL_UNITS_PER_SEED = 1
 LOGICAL_UNIT_SCOPE = "COMPLETE_AUTHORITATIVE_TRAIN_SPLIT"
 EXPECTED_DEV_RATIO = 0.2
-EXPECTED_SPLIT_SEED = 174
+EXPECTED_SPLIT_SEED = 8192
 PRIMARY_REASON_MIN_TRAIN_COUNT = 50
 CALIBRATION_GATE_SCOPE = "PRIMARY_REASON_CLASS_COUNTS_ONLY"
 PRIMARY_REASON_CLASSES = ("FRAME", "PREDICATE", "SUFFICIENCY", "AUTHORIZED")
@@ -163,7 +163,7 @@ def _validate_expected_identity(
     _sha256(expected_ordered_train_row_identity_hash, "expected ordered train identity hash")
     _finite_dev_ratio(expected_dev_ratio, "expected dev ratio")
     _require(type(expected_split_seed) is int, "expected split seed must be an exact integer")
-    _require(expected_split_seed == EXPECTED_SPLIT_SEED, "expected split seed must be exactly 174")
+    _require(expected_split_seed == EXPECTED_SPLIT_SEED, "expected split seed must be exactly 8192")
 
 
 

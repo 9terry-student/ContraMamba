@@ -43,7 +43,7 @@ def _args(**overrides):
         reason_router_weight_calibration_forward_batch_size=8,
         expected_integrity_sidecar_semantic_sha256=SIDE,
         seed=180,
-        resolved_split_seed=174,
+        resolved_split_seed=8192,
         dev_ratio=0.2,
         resolved_reason_router_mode="conditional_first_blocker",
         resolved_gradient_ownership_mode="explicit_local",
@@ -321,8 +321,17 @@ def test_invalid_calibration_seed_rejected() -> None:
             trainer._p3w1_validate_calibration_only_args(_args(seed=seed))
 
 
-def test_invalid_resolved_split_seed_rejected() -> None:
-    with pytest.raises(ValueError, match="split seed"):
+def test_calibration_accepts_resolved_split_seed_8192() -> None:
+    assert trainer._p3w1_validate_calibration_only_args(_args(resolved_split_seed=8192)) == Path("unit.json")
+
+
+def test_historical_resolved_split_seed_174_rejected() -> None:
+    with pytest.raises(ValueError, match="must be 8192"):
+        trainer._p3w1_validate_calibration_only_args(_args(resolved_split_seed=174))
+
+
+def test_other_non_authoritative_resolved_split_seed_rejected() -> None:
+    with pytest.raises(ValueError, match="must be 8192"):
         trainer._p3w1_validate_calibration_only_args(_args(resolved_split_seed=175))
 
 
@@ -753,7 +762,7 @@ def _unit(
         "sidecar_semantic_sha256": SIDE,
         "expected_sidecar_semantic_sha256": SIDE,
         "sidecar_semantic_sha256_verified": True,
-        "split_seed": 174,
+        "split_seed": 8192,
         "dev_ratio": 0.2,
         "execution_commit": EXEC,
         "declared_execution_commit": EXEC,
@@ -768,7 +777,7 @@ def _validate_unit(unit: dict, *, expected_ordered_train_row_count: int = 200):
         expected_execution_commit=EXEC,
         expected_dataset_sha256=DATA,
         expected_sidecar_semantic_sha256=SIDE,
-        expected_split_seed=174,
+        expected_split_seed=8192,
         expected_ordered_train_row_count=expected_ordered_train_row_count,
         expected_ordered_train_row_identity_hash=ROW_HASH,
         expected_dev_ratio=0.2,
@@ -1042,7 +1051,7 @@ def _write_units(tmp_path: Path, units: list[dict]) -> list[Path]:
 
 def _aggregate(tmp_path: Path, units: list[dict], **overrides):
     expected = dict(
-        expected_split_seed=174,
+        expected_split_seed=8192,
         expected_ordered_train_row_count=200,
         expected_ordered_train_row_identity_hash=ROW_HASH,
         expected_dev_ratio=0.2,
@@ -1124,13 +1133,13 @@ def test_wrong_expected_dev_ratio_rejected(tmp_path: Path) -> None:
         _aggregate(tmp_path, [_unit(180), _unit(181), _unit(182)], expected_dev_ratio=0.25)
 
 
-def test_expected_split_seed_173_rejected(tmp_path: Path) -> None:
-    with pytest.raises(ValueError, match="exactly 174"):
-        _aggregate(tmp_path, [_unit(180), _unit(181), _unit(182)], expected_split_seed=173)
+def test_historical_expected_split_seed_174_rejected(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="exactly 8192"):
+        _aggregate(tmp_path, [_unit(180), _unit(181), _unit(182)], expected_split_seed=174)
 
 
-def test_expected_split_seed_175_rejected(tmp_path: Path) -> None:
-    with pytest.raises(ValueError, match="exactly 174"):
+def test_other_non_authoritative_expected_split_seed_rejected(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="exactly 8192"):
         _aggregate(tmp_path, [_unit(180), _unit(181), _unit(182)], expected_split_seed=175)
 
 
@@ -1139,10 +1148,10 @@ def test_boolean_expected_split_seed_rejected(tmp_path: Path) -> None:
         _aggregate(tmp_path, [_unit(180), _unit(181), _unit(182)], expected_split_seed=True)
 
 
-def test_aggregate_records_expected_split_seed_and_verified_flag(tmp_path: Path) -> None:
+def test_aggregate_accepts_expected_split_seed_8192_and_records_verified_flag(tmp_path: Path) -> None:
     result = _aggregate(tmp_path, [_unit(180), _unit(181), _unit(182)])
-    assert result["split_seed"] == 174
-    assert result["expected_split_seed"] == 174
+    assert result["split_seed"] == 8192
+    assert result["expected_split_seed"] == 8192
     assert result["split_seed_verified"] is True
 
 

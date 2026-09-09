@@ -209,7 +209,7 @@ P3W1_CALIBRATION_UNIT_DECISION = "P3W1_CALIBRATION_UNIT_PASS"
 P3W1_FULL_SHA_RE = re.compile(r"[0-9a-fA-F]{40}")
 P3W1_SHA256_RE = re.compile(r"[0-9a-fA-F]{64}")
 P3W1_CALIBRATION_SEEDS = {180, 181, 182}
-P3W1_CALIBRATION_SPLIT_SEED = 174
+P3W1_CALIBRATION_SPLIT_SEED = 8192
 P3W1_CALIBRATION_DEV_RATIO = 0.2
 P3W1_CALIBRATION_FORWARD_BATCH_SIZE = 8
 P3W1_LOGICAL_UNITS_PER_SEED = 1
@@ -10154,7 +10154,7 @@ def _p3w1_validate_calibration_only_args(args: argparse.Namespace) -> Path | Non
     _p3w1_require(getattr(args, "resolved_use_predicate_comparator", None) is False, "resolved predicate comparator must be false")
     _p3w1_require(float(getattr(args, "ranking_weight", 0.0)) == 0.0, "ranking_weight must be 0.0")
     _p3w1_require(getattr(args, "seed", None) in P3W1_CALIBRATION_SEEDS, "seed must be one of 180, 181, 182")
-    _p3w1_require(getattr(args, "resolved_split_seed", None) == P3W1_CALIBRATION_SPLIT_SEED, "resolved split seed must be 174")
+    _p3w1_require(getattr(args, "resolved_split_seed", None) == P3W1_CALIBRATION_SPLIT_SEED, "resolved split seed must be 8192")
     _p3w1_require(
         math.isclose(
             float(getattr(args, "dev_ratio", float("nan"))),
