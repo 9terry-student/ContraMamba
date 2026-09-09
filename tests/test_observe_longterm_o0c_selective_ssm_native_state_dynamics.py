@@ -293,7 +293,7 @@ def _runtime_baseline(monkeypatch):
  forward.__module__=o.MAMBA_MODULE
  Mixer=type("MambaMixer",(),{"slow_forward":slow,"forward":forward})
  mamba=type("M",(),{"MambaMixer":Mixer})(); cache=type("C",(),{})(); transformers=type("T",(),{"__file__":str(root/"__init__.py")})(); torch=type("Torch",(),{"__version__":"torch"})()
- source=[""]*500; source[408]="ssm_state = discrete_A * ssm_state + discrete_B * hidden_states"; source[409]="scan_output = ssm_state * discrete_C"; source[416]="cache_params.ssm_states[0].copy_(ssm_state)"
+ source=[""]*500; source[407]="deltaB_u = discrete_B * hidden_states[..., None].float()"; source[408]="ssm_state = discrete_A * ssm_state + deltaB_u"; source[409]="scan_output = torch.matmul(ssm_state.to(dtype), C[..., None].unsqueeze(-1))"; source[416]="cache_params.ssm_states[0].copy_(ssm_state)"
  data="\n".join(source).encode(); cdata=b"conv_states ssm_states"
  monkeypatch.setattr(o,"CAPTURE_LINE",line); monkeypatch.setattr(o,"MAMBA_BYTES",len(data)); monkeypatch.setattr(o,"MAMBA_SHA256",o.sha256_bytes(data)); monkeypatch.setattr(o,"CACHE_BYTES",len(cdata)); monkeypatch.setattr(o,"CACHE_SHA256",o.sha256_bytes(cdata))
  paths={id(mamba):(mp,data),id(cache):(cp,cdata)}; monkeypatch.setattr(o,"_source",lambda mod:paths[id(mod)])
@@ -310,7 +310,7 @@ def test_runtime_gate_version_negative_matrix(monkeypatch,key):
 
 @pytest.mark.parametrize("mutation,message",[
  ("root_outside","shadowed import root"),("root_malformed","malformed import root"),("mamba_bytes","Mamba byte-size mismatch"),("mamba_hash","Mamba SHA256 mismatch"),("cache_bytes","cache_utils byte-size mismatch"),("cache_hash","cache_utils SHA256 mismatch"),
- ("missing_mixer","slow code identity"),("wrong_mixer","slow code identity"),("wrong_qualname","slow code identity"),("wrong_code","slow code identity"),("wrong_line","line binding"),("wrong_role","source update role"),("cache_role","cache/recurrent ambiguity"),("backend","unsupported backend"),("source_resolution","import/distribution-root mismatch")])
+ ("missing_mixer","slow code identity"),("wrong_mixer","slow code identity"),("wrong_qualname","slow code identity"),("wrong_code","slow code identity"),("wrong_line","line binding"),("wrong_role","source input role"),("cache_role","cache/recurrent ambiguity"),("backend","unsupported backend"),("source_resolution","import/distribution-root mismatch")])
 def test_runtime_gate_source_negative_matrix(monkeypatch,mutation,message):
  modules,versions,paths=_runtime_baseline(monkeypatch); mamba=modules[o.MAMBA_MODULE]; mp,data=paths[id(mamba)]
  if mutation=="root_outside": modules["transformers"].__file__=str(Path.cwd()/"tests"/"__init__.py")
@@ -528,22 +528,23 @@ def test_b_real_trace_edge_case_matrix():
   with boom.capture(): raises(layer)
  assert sys.gettrace() is prior                                                  # B5
 
-def _role_source(update="ssm_state = discrete_A * ssm_state + discrete_B * hidden_states",readout="scan_output = ssm_state * discrete_C",persist="cache_params.ssm_states[0].copy_(ssm_state)"):
- lines=[""]*418; lines[408]=update; lines[409]=readout; lines[416]=persist
+def _role_source(input_term="deltaB_u = discrete_B * hidden_states[..., None].float()",update="ssm_state = discrete_A[...] * ssm_state + deltaB_u[...]",readout="scan_output = torch.matmul(ssm_state.to(dtype), C[...].unsqueeze(-1))",persist="cache_params.ssm_states[0].copy_(ssm_state)"):
+ lines=[""]*418; lines[407]=input_term; lines[408]=update; lines[409]=readout; lines[416]=persist
  data="\n".join(lines).encode(); return data,compile(data.decode(),"synthetic_roles.py","exec")
 
-@pytest.mark.parametrize("update,readout,persist,message",[
- ("ssm_state = ssm_state","scan_output = ssm_state * discrete_C","cache_params.ssm_states[0].copy_(ssm_state)","source update role"), # C1
- ("ssm_state = 1","scan_output = ssm_state * discrete_C","cache_params.ssm_states[0].copy_(ssm_state)","source update role"), # C2
- ("ssm_state = unrelated","scan_output = ssm_state * discrete_C","cache_params.ssm_states[0].copy_(ssm_state)","source update role"), # C3
- ("ssm_state = discrete_A * ssm_state + discrete_B","scan_output = ssm_state * discrete_C","cache_params.ssm_states[0].copy_(ssm_state)","source update role"), # C4
- ("ssm_state = discrete_A * ssm_state + discrete_B * hidden_states","scan_output = ordinary_state * discrete_C","cache_params.ssm_states[0].copy_(ssm_state)","source readout role"), # C5
- ("scan_output = ssm_state * discrete_C","ssm_state = discrete_A * ssm_state + discrete_B * hidden_states","cache_params.ssm_states[0].copy_(ssm_state)","source update role"), # C6
- ("ssm_state = discrete_A * ssm_state + discrete_B * hidden_states","scan_output = ssm_state * discrete_C","cache_params.conv_states[0].copy_(ssm_state)","source recurrent cache role"), # C7
- ("ssm_state = discrete_A * ssm_state + discrete_B * hidden_states","scan_output = ssm_state * discrete_C","cache_params.ssm_states[0].copy_(other_state)","source recurrent cache role"), # C8
+@pytest.mark.parametrize("input_term,update,readout,persist,message",[
+ ("deltaB_u = hidden_states","ssm_state = discrete_A * ssm_state + deltaB_u","scan_output = ssm_state * C","cache_params.ssm_states[0].copy_(ssm_state)","source input role"), # C1
+ ("deltaB_u = discrete_B","ssm_state = discrete_A * ssm_state + deltaB_u","scan_output = ssm_state * C","cache_params.ssm_states[0].copy_(ssm_state)","source input role"), # C2
+ ("deltaB_u = discrete_B * hidden_states","ssm_state = discrete_A * ssm_state + unrelated","scan_output = ssm_state * C","cache_params.ssm_states[0].copy_(ssm_state)","source update role"), # C3
+ ("deltaB_u = discrete_B * hidden_states","ssm_state = discrete_A + deltaB_u","scan_output = ssm_state * C","cache_params.ssm_states[0].copy_(ssm_state)","source update role"), # C4
+ ("deltaB_u = discrete_B * hidden_states","ssm_state = ssm_state + deltaB_u","scan_output = ssm_state * C","cache_params.ssm_states[0].copy_(ssm_state)","source update role"), # C5
+ ("deltaB_u = discrete_B * hidden_states","ssm_state = discrete_A * ssm_state + deltaB_u","scan_output = torch.matmul(ordinary_state, C)","cache_params.ssm_states[0].copy_(ssm_state)","source readout role"), # C6
+ ("deltaB_u = discrete_B * hidden_states","ssm_state = discrete_A * ssm_state + deltaB_u","scan_output = torch.matmul(ssm_state, unrelated_C)","cache_params.ssm_states[0].copy_(ssm_state)","source readout role"), # C7
+ ("deltaB_u = discrete_B * hidden_states","ssm_state = discrete_A * ssm_state + deltaB_u","scan_output = ssm_state * C","cache_params.conv_states[0].copy_(ssm_state)","source recurrent cache role"), # C8
+ ("deltaB_u = discrete_B * hidden_states","ssm_state = discrete_A * ssm_state + deltaB_u","scan_output = ssm_state * C","cache_params.ssm_states[0].copy_(other_state)","source recurrent cache role"), # C9
 ])
-def test_c_source_role_negative_fixtures(monkeypatch,update,readout,persist,message):
- data,code=_role_source(update,readout,persist); monkeypatch.setattr(o,"CAPTURE_LINE",409)
+def test_c_source_role_negative_fixtures(monkeypatch,input_term,update,readout,persist,message):
+ data,code=_role_source(input_term,update,readout,persist); monkeypatch.setattr(o,"CAPTURE_LINE",409)
  with pytest.raises(o.ContractError,match=message): o._validate_source_roles(data,code)
 
 def test_c_source_role_valid_baseline(monkeypatch):

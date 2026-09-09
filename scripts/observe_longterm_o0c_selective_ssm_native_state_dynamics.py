@@ -52,7 +52,7 @@ def _synthetic_trace_binding(function:Any,capture_line:int,registered_role:str="
     return _SyntheticTraceBinding(function,function.__code__,capture_line)
 
 def _validate_source_roles(data:bytes,code:Any)->None:
-    """AST proof of the frozen recurrent update -> readout -> cache sequence."""
+    """AST proof of the frozen recurrence -> readout -> cache sequence."""
     try: tree=ast.parse(data.decode("utf-8"))
     except (UnicodeDecodeError,SyntaxError) as e: raise ContractError("source role syntax") from e
     nodes={getattr(n,"lineno",None):n for n in ast.walk(tree) if isinstance(n,(ast.Assign,ast.AnnAssign,ast.Expr))}
@@ -62,13 +62,18 @@ def _validate_source_roles(data:bytes,code:Any)->None:
         t=n.targets[0] if isinstance(n,ast.Assign) else n.target
         return t.id if isinstance(t,ast.Name) else (t.attr if isinstance(t,ast.Attribute) else "")
     def value(n:Any)->Any: return n.value if isinstance(n,(ast.Assign,ast.AnnAssign)) else None
-    # The frozen implementation is a discretized affine recurrent update:
-    # discrete_A * ssm_state + discrete_B * hidden_states.  Merely assigning
-    # ssm_state to itself is not a recurrence transition.
+    # The frozen implementation factors its input term before the affine
+    # recurrence: deltaB_u = discrete_B * hidden_states, then
+    # ssm_state = discrete_A * old_ssm_state + deltaB_u.  Prove both ordered
+    # AST roles, rather than accepting a matching collection of names.
+    factored=[n for n in ast.walk(tree) if isinstance(n,(ast.Assign,ast.AnnAssign)) and target(n)=="deltaB_u"]
+    require(len(factored)==1,"source input role")
+    input_term=factored[0]; input_names=names(value(input_term))
+    require(getattr(input_term,"lineno",0)<409 and isinstance(value(input_term),ast.BinOp) and isinstance(value(input_term).op,ast.Mult) and {"discrete_B","hidden_states"} <= input_names,"source input role")
     update_names=names(value(update)) if update is not None else set()
-    require(isinstance(update,(ast.Assign,ast.AnnAssign)) and target(update)=="ssm_state" and isinstance(value(update),ast.BinOp) and isinstance(value(update).op,ast.Add) and {"ssm_state","discrete_A","discrete_B","hidden_states"} <= update_names,"source update role")
+    require(isinstance(update,(ast.Assign,ast.AnnAssign)) and target(update)=="ssm_state" and isinstance(value(update),ast.BinOp) and isinstance(value(update).op,ast.Add) and {"ssm_state","discrete_A","deltaB_u"} <= update_names,"source update role")
     readout_names=names(value(readout)) if readout is not None else set()
-    require(isinstance(readout,(ast.Assign,ast.AnnAssign)) and target(readout) not in {"","ssm_state"} and {"ssm_state","discrete_C"} <= readout_names,"source readout role")
+    require(isinstance(readout,(ast.Assign,ast.AnnAssign)) and target(readout)=="scan_output" and {"ssm_state","C"} <= readout_names,"source readout role")
     # A semicolon makes two ``Expr`` nodes share one line.  The old mapping
     # silently retained one of them, accepting a convolution write followed by
     # the valid recurrent write.  The frozen persistent-role line is one,
