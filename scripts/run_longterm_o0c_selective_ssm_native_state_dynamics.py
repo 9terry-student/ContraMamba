@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse, hashlib, importlib.util, json, subprocess, sys
 from pathlib import Path
 
-OBSERVER_COMMIT="e03b38fa0681fd04d8633a7de184559bd0473133"
+OBSERVER_COMMIT="60a53b6f5d1db8d7cbecded5b94d5231adcfc520"
 DATASET=Path("data/longterm_o0b_matched_controls_v1.jsonl"); VALIDATION=Path("reports/longterm_o0b_matched_controls_v1_validation.json")
 PAIR_ORDER=("o0b_pair_001","o0b_pair_002","o0b_pair_003"); CONDITION_ORDER=("reference_sufficient","insufficient_matched","paraphrase_sufficient","surface_null_matched")
 COMPARISONS=(("comparison-A","insufficient_matched"),("comparison-B","paraphrase_sufficient"),("comparison-C","surface_null_matched"))

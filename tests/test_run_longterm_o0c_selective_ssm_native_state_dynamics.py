@@ -137,10 +137,10 @@ class _PreflightObserver:
  def observer_script_identity(self): return {"observer_script_sha256":self.identity}
  def runtime_gate(self): return self.runtime()
 
-VALIDATED_OBSERVER_SHA256="ca284e0c1af71e052b17deb27c827f5aa831befdecfae87ade4e627d223a5275"
+VALIDATED_OBSERVER_SHA256="94f1d65408980dfe70a5cd855035b5273c7d82744288bb06eaba01d519f97067"
 
 def test_observer_binding_is_exact_validated_commit():
- assert r.OBSERVER_COMMIT=="e03b38fa0681fd04d8633a7de184559bd0473133"
+ assert r.OBSERVER_COMMIT=="60a53b6f5d1db8d7cbecded5b94d5231adcfc520"
 
 def test_preflight_rejects_expected_observer_commit_mismatch():
  ns=_preload_ns(); ns.expected_observer_commit="wrong"
