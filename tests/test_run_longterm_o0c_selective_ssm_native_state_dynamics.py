@@ -129,6 +129,26 @@ class _PreflightObserver:
  def observer_script_identity(self): return {"observer_script_sha256":self.identity}
  def runtime_gate(self): return self.runtime()
 
+VALIDATED_OBSERVER_SHA256="ca284e0c1af71e052b17deb27c827f5aa831befdecfae87ade4e627d223a5275"
+
+def test_observer_binding_is_exact_validated_commit():
+ assert r.OBSERVER_COMMIT=="e03b38fa0681fd04d8633a7de184559bd0473133"
+
+def test_preflight_rejects_expected_observer_commit_mismatch():
+ ns=_preload_ns(); ns.expected_observer_commit="wrong"
+ with pytest.raises(r.ContractError,match="observer commit"):
+  r.preflight(ns,_PreflightObserver(),head=lambda:"head",file_digest=lambda _:"runner",canonical_input=_canonical_preload_input)
+
+def test_preflight_rejects_expected_observer_sha256_mismatch_against_identity():
+ ns=_preload_ns(); ns.expected_observer_sha256="wrong"
+ with pytest.raises(r.ContractError,match="observer SHA256"):
+  r.preflight(ns,_PreflightObserver(VALIDATED_OBSERVER_SHA256),head=lambda:"head",file_digest=lambda _:"runner",canonical_input=_canonical_preload_input)
+
+def test_preflight_accepts_exact_validated_observer_sha256_identity():
+ ns=_preload_ns(); ns.expected_observer_sha256=VALIDATED_OBSERVER_SHA256
+ identity,_,_=r.preflight(ns,_PreflightObserver(VALIDATED_OBSERVER_SHA256),head=lambda:"head",file_digest=lambda _:"runner",canonical_input=_canonical_preload_input)
+ assert identity["observer_script_sha256"]==VALIDATED_OBSERVER_SHA256
+
 def _preload_ns():
  output=Path.cwd()/"__o0c_test_only_published__"
  assert not output.exists()
