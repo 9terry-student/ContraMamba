@@ -2,6 +2,7 @@ import ast, dataclasses, hashlib, importlib.util, json, subprocess, sys
 from contextlib import contextmanager
 from pathlib import Path
 import pytest
+import numpy as np
 P=Path(__file__).parents[1]/"scripts"/"run_longterm_o0c_selective_ssm_native_state_dynamics.py"
 spec=importlib.util.spec_from_file_location("runner",P); r=importlib.util.module_from_spec(spec); spec.loader.exec_module(r)
 # This separately registered real_observer import cannot exercise the production
@@ -319,3 +320,76 @@ def test_fake_success_orchestrates_exactly_twelve_members_and_seven_artifacts(mo
  assert len(observer.validations)==12 and events.index("orchestration")>max(i for i,x in enumerate(events) if x=="forward")
  assert events[-7:]==["state_rows","measurements","summary","manifest","bundle","validate_bundle","publish"]
  f=observer.manifest_fields; assert tuple(real_observer.REQUIRED_ARTIFACTS)==("manifest.json","state_rows.jsonl","full_recurrent_states.npz","paired_measurements.jsonl","summary.json","report.md","SHA256SUMS.txt") and f["scientific_design_authority_commit"]==observer.SCIENTIFIC_DESIGN_AUTHORITY_COMMIT=="242ad9ed70fc995ebda560911a7d0dfd2f18f9b3" and f["observer_implementation_commit"]==r.OBSERVER_COMMIT and f["implementation_authority_commit"]==observer.IMPLEMENTATION_AUTHORITY_COMMIT and f["dataset_path"]==observer.DATASET_PATH and f["dataset_sha256"]==observer.DATASET_SHA256 and f["validation_artifact_path"]==observer.VALIDATION_ARTIFACT_PATH and f["validation_artifact_sha256"]==observer.VALIDATION_ARTIFACT_SHA256 and f["exact_command"]==ns.exact_command and f["run_name"]=="run" and [f[x] for x in ("equivalence_gate_status","capture_completeness_status","provenance_status","execution_status")]==["PASS_EXACT_EQUIVALENCE_NONINTERFERENCE","PASS_COMPLETE_NATIVE_STATE_CAPTURE","PASS_PROVENANCE_VALIDATED","PASS_EXECUTION_COMPLETE"] and f["blocker"] is None and f["required_artifacts"]==list(real_observer.REQUIRED_ARTIFACTS)
+
+def test_runner_real_manifest_and_publication_integration_normalizes_str_subclasses(monkeypatch):
+ """The runner must deliver exact built-in strings to the unmodified observer."""
+ rows,fixture=_e2e_rows_and_artifact()
+ class TorchVersionLike(str): pass
+ class RuntimeValue(str): pass
+ class Tokenizer:
+  is_fast=True
+  def __init__(self): self.calls=0
+  def __call__(self,_text,**_kw):
+   pair,condition=divmod(self.calls,4); self.calls+=1
+   return dict(fixture["pairs"][pair]["conditions"][r.CONDITION_ORDER[condition]]) | {"input_ids":fixture["pairs"][pair]["conditions"][r.CONDITION_ORDER[condition]]["full_serialized_token_ids"],"offset_mapping":fixture["pairs"][pair]["conditions"][r.CONDITION_ORDER[condition]]["full_offset_mapping"]}
+ class AutoTokenizer:
+  @classmethod
+  def from_pretrained(cls,*_a,**_kw): return Tokenizer()
+ class Param:
+  device=type("D",(),{"type":"cpu"})(); dtype="f32"; requires_grad=False
+ class MambaModel:
+  calls=0
+  def __init__(self): self.layers=ML([Block(0),Block(1)]); self.config=type("C",(),{"num_hidden_layers":2})(); self.training=False; self.parameter=Param()
+  @classmethod
+  def from_pretrained(cls,*_a,**_kw): return cls()
+  def eval(self): self.training=False; return self
+  def requires_grad_(self,value): self.parameter.requires_grad=value
+  def parameters(self): return iter((self.parameter,))
+  def buffers(self): return iter(())
+  def modules(self): return [self,*self.layers,*[x.mixer for x in self.layers]]
+  def __call__(self,**kw):
+   pair,condition=divmod(self.calls,4); type(self).calls+=1; inst=observer.active; assert inst is not None
+   divergence=(40,25,18,17)[condition]
+   inst.snapshots={(1,layer,t):np.asarray([t+1+pair/10+layer,2*(t+1)+pair/10+layer]+([condition/10,condition/20] if t>=divergence else [0,0]),dtype="<f4") for layer in range(2) for t in range(40)}
+ class Torch:
+  float32="f32"; long="i64"; __version__=TorchVersionLike("2.10.0+cpu")
+  def tensor(self,value,**_kw): return value
+  @contextmanager
+  def inference_mode(self): yield
+ torch=Torch()
+ class Instance:
+  def __init__(self): self.snapshots={}
+  @contextmanager
+  def capture(self):
+   assert observer.active is None; observer.active=self
+   try: yield
+   finally: observer.active=None
+ class Observer:
+  def __init__(self): self.active=None; self.manifest_fields=None
+  def __getattr__(self,name): return getattr(real_observer,name)
+  def runtime_gate(self): return None
+  def create_native_state_observer(self,_registration,enabled): assert enabled is True; return Instance()
+  def build_manifest(self,fields): self.manifest_fields=dict(fields); return real_observer.build_manifest(fields)
+ observer=Observer()
+ assert type(torch.__version__) is not str
+ monkeypatch.setattr(r,"read_inputs",lambda _o,_d,_v:(rows,fixture))
+ output=Path.cwd()/"__o0c_runner_manifest_integration_test_output__"; assert not output.exists() and not output.with_name(output.name+".staging").exists(); a=argv(["--output-dir",str(output)]); ns=r.parse_args(a)
+ ns.expected_runner_commit="723f655295430c434da4ecccdad79934360c9dcc"; ns.expected_runner_sha256=r.digest(P); ns.expected_observer_sha256=real_observer.observer_script_identity()["observer_script_sha256"]
+ runtime_info=tuple(RuntimeValue(value) for value in ("3.12.13","2.0.2","5.0.0",str(Path.cwd().resolve()),str(Path.cwd().resolve())))
+ try:
+  r.run(ns,observer=observer,factories=(torch,AutoTokenizer,MambaModel,Block,Mix,ML),head=lambda:"723f655295430c434da4ecccdad79934360c9dcc",file_digest=r.digest,canonical_input=r.git_canonical_input,runtime_info=runtime_info)
+  fields=observer.manifest_fields; required=("observed_python_version","observed_numpy_version","observed_torch_version","observed_transformers_version","transformers_distribution_root","transformers_import_root")
+  assert all(type(fields[key]) is str for key in required)
+  assert real_observer.build_manifest(fields)==fields
+  for key in (*required,"exact_command","run_name"):
+   for bad_value in (""," ","unknown","n/a"):
+    with pytest.raises(real_observer.ContractError,match="manifest required string"):
+     real_observer.build_manifest({**fields,key:bad_value})
+  published={name:(output/name).read_bytes() for name in real_observer.REQUIRED_ARTIFACTS}
+  assert len(published)==7 and set(published)==set(real_observer.REQUIRED_ARTIFACTS)
+  real_observer.validate_bundle(published)
+  assert not output.with_name(output.name+".staging").exists()
+ finally:
+  if output.exists():
+   for name in real_observer.REQUIRED_ARTIFACTS: (output/name).unlink()
+   output.rmdir()
