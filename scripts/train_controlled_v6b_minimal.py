@@ -203,7 +203,7 @@ P2_ARM_CONTRACTS = {
     "A2": ("explicit_product", "explicit_local"),
     "A3": ("conditional_first_blocker", "explicit_local"),
 }
-P3W1_CALIBRATION_UNIT_SCHEMA_VERSION = "reason_router_p3w1_calibration_unit_v1"
+P3W1_CALIBRATION_UNIT_SCHEMA_VERSION = "reason_router_p3w1_calibration_unit_v2"
 P3W1_CALIBRATION_UNIT_SCOPE = "COMPLETE_AUTHORITATIVE_TRAIN_SPLIT"
 P3W1_CALIBRATION_UNIT_DECISION = "P3W1_CALIBRATION_UNIT_PASS"
 P3W1_FULL_SHA_RE = re.compile(r"[0-9a-fA-F]{40}")
@@ -223,6 +223,8 @@ P3W1_CALIBRATION_REASON_ROUTER_EPSILON = 1e-8
 P3W1_CALIBRATION_CLASS_WEIGHTING = "none"
 P3W1_PRIMARY_REASON_MIN_TRAIN_COUNT = 50
 P3W1_CALIBRATION_GATE_SCOPE = "PRIMARY_REASON_CLASS_COUNTS_ONLY"
+P3W1_CALIBRATION_EXPECTED_TRAIN_ROWS = 2880
+P3W1_CALIBRATION_EXPECTED_P4X_ORDERED_TRAIN_ROW_SHA256 = "478013207699462a9434ce8f44991ce75b33650593b9aa942fff0f2be659c2a8"
 P2_REASON_TO_ID = {name: index for index, name in enumerate(P2_REASON_CLASS_ORDER)}
 P2_SIDE_CAR_REQUIRED_FIELDS = (
     "row_id",
@@ -9993,12 +9995,33 @@ def _p3w1_ordered_train_identity(records: list[dict[str, Any]]) -> dict[str, Any
     for record in records:
         row_id = _p2_row_identity(record)
         pair_id = _p2_reference_pair_id(record)
-        gold_label = _s28e_normalize_label(record.get("final_label"))
+        gold_label = _s28e_normalize_label(record["final_label"])
         digest.update(f"{row_id}\t{pair_id}\t{gold_label}\n".encode("utf-8"))
     return {
         "ordered_train_row_count": len(records),
-        "ordered_train_row_identity_hash": digest.hexdigest(),
+        "p3w1_ordered_train_row_label_sha256": digest.hexdigest(),
     }
+
+
+def _p4x_ordered_train_row_sha256(records: list[dict[str, Any]]) -> str:
+    digest = hashlib.sha256()
+    for record in records:
+        digest.update(f"{str(record['id'])}\t{str(record['pair_id'])}\n".encode("utf-8"))
+    return digest.hexdigest()
+
+
+def _p3w1_calibration_ordered_train_identities(records: list[dict[str, Any]]) -> dict[str, Any]:
+    identity = _p3w1_ordered_train_identity(records)
+    p4x_ordered_train_row_sha256 = _p4x_ordered_train_row_sha256(records)
+    _p3w1_require(
+        identity["ordered_train_row_count"] == P3W1_CALIBRATION_EXPECTED_TRAIN_ROWS,
+        "ordered train row count must be exactly 2880",
+    )
+    _p3w1_require(
+        p4x_ordered_train_row_sha256 == P3W1_CALIBRATION_EXPECTED_P4X_ORDERED_TRAIN_ROW_SHA256,
+        "computed P4-X ordered train row SHA256 does not match frozen authority",
+    )
+    return {**identity, "p4x_ordered_train_row_sha256": p4x_ordered_train_row_sha256}
 
 
 def _p3w1_validate_execution_commit(value: str | None) -> str:
@@ -10241,7 +10264,7 @@ def _p3w1_run_reason_weight_calibration_unit(
     reason_sum = reason_mean * reason_count
     _p3w1_require(math.isfinite(final_sum), "final reconstructed sum must be finite")
     _p3w1_require(math.isfinite(reason_sum), "reason reconstructed sum must be finite")
-    identity = _p3w1_ordered_train_identity(train_records)
+    identity = _p3w1_calibration_ordered_train_identities(train_records)
     expected_sidecar_semantic_sha256 = _p3w1_validate_sha256(
         getattr(args, "expected_integrity_sidecar_semantic_sha256", None),
         "expected sidecar semantic SHA",

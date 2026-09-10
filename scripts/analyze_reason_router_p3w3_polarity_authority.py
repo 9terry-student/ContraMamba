@@ -118,7 +118,7 @@ def semantic_sidecar_sha256(rows: list[dict[str, Any]]) -> str:
 
 
 def ordered_train_identity_hash(records: list[dict[str, Any]]) -> str:
-    return trainer._p3w1_ordered_train_identity(records)["ordered_train_row_identity_hash"]
+    return trainer._p3w1_ordered_train_identity(records)["p3w1_ordered_train_row_label_sha256"]
 
 
 def normalize_label(value: Any) -> str:

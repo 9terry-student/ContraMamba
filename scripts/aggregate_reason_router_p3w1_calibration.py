@@ -14,8 +14,8 @@ import re
 from pathlib import Path
 from typing import Any
 
-UNIT_SCHEMA = "reason_router_p3w1_calibration_unit_v1"
-AGGREGATE_SCHEMA = "reason_router_p3w1_calibration_aggregate_v1"
+UNIT_SCHEMA = "reason_router_p3w1_calibration_unit_v2"
+AGGREGATE_SCHEMA = "reason_router_p3w1_calibration_aggregate_v2"
 EXPECTED_SEEDS = [180, 181, 182]
 UNIT_DECISION = "P3W1_CALIBRATION_UNIT_PASS"
 AGGREGATE_DECISION = "P3W1_CALIBRATION_AGGREGATE_PASS_PENDING_REVIEW"
@@ -47,7 +47,7 @@ EXPECTED_CONFIGURATION = {
 }
 UNIT_REQUIRED_FIELDS = {
     "schema_version", "status", "seed", "unit_index", "unit_scope",
-    "ordered_train_row_count", "ordered_train_row_identity_hash",
+    "ordered_train_row_count", "p4x_ordered_train_row_sha256", "p3w1_ordered_train_row_label_sha256",
     "model_mode", "measurement_arm", "measurement_gradient_ownership",
     "reason_loss_weight_placeholder", "calibration_gate_scope",
     "primary_reason_min_train_count", "primary_reason_class_counts",
@@ -152,7 +152,8 @@ def _validate_expected_identity(
     expected_dataset_sha256: str,
     expected_sidecar_semantic_sha256: str,
     expected_ordered_train_row_count: int,
-    expected_ordered_train_row_identity_hash: str,
+    expected_p4x_ordered_train_row_sha256: str,
+    expected_p3w1_ordered_train_row_label_sha256: str,
     expected_dev_ratio: float,
     expected_split_seed: int,
 ) -> None:
@@ -160,7 +161,8 @@ def _validate_expected_identity(
     _sha256(expected_dataset_sha256, "expected dataset sha256")
     _sha256(expected_sidecar_semantic_sha256, "expected sidecar sha256")
     _positive_int(expected_ordered_train_row_count, "expected ordered train row count")
-    _sha256(expected_ordered_train_row_identity_hash, "expected ordered train identity hash")
+    _sha256(expected_p4x_ordered_train_row_sha256, "expected P4-X ordered train row SHA256")
+    _sha256(expected_p3w1_ordered_train_row_label_sha256, "expected P3-W1 ordered train row label SHA256")
     _finite_dev_ratio(expected_dev_ratio, "expected dev ratio")
     _require(type(expected_split_seed) is int, "expected split seed must be an exact integer")
     _require(expected_split_seed == EXPECTED_SPLIT_SEED, "expected split seed must be exactly 8192")
@@ -255,14 +257,15 @@ def validate_unit_artifact(
     expected_sidecar_semantic_sha256: str,
     expected_split_seed: int,
     expected_ordered_train_row_count: int,
-    expected_ordered_train_row_identity_hash: str,
+    expected_p4x_ordered_train_row_sha256: str,
+    expected_p3w1_ordered_train_row_label_sha256: str,
     expected_dev_ratio: float,
 ) -> dict[str, Any]:
     missing = sorted(UNIT_REQUIRED_FIELDS - unit.keys())
     _require(not missing, f"missing unit fields: {missing}")
     for key in (
         "schema_version", "status", "unit_scope", "logical_unit_scope", "model_mode",
-        "measurement_arm", "measurement_gradient_ownership", "ordered_train_row_identity_hash",
+        "measurement_arm", "measurement_gradient_ownership", "p4x_ordered_train_row_sha256", "p3w1_ordered_train_row_label_sha256",
         "architecture", "backbone", "model_name", "device", "flag_source", "class_weighting",
         "calibration_data_scope", "dataset_path", "dataset_sha256", "sidecar_path", "sidecar_semantic_sha256",
         "expected_sidecar_semantic_sha256", "execution_commit", "declared_execution_commit",
@@ -357,10 +360,12 @@ def validate_unit_artifact(
         "reason_loss_finite": True,
     }.items():
         _require(unit.get(key) is expected, f"{key} mismatch")
-    row_hash = _sha256(unit.get("ordered_train_row_identity_hash"), "ordered_train_row_identity_hash")
+    p4x_row_hash = _sha256(unit.get("p4x_ordered_train_row_sha256"), "p4x_ordered_train_row_sha256")
+    p3w1_row_label_hash = _sha256(unit.get("p3w1_ordered_train_row_label_sha256"), "p3w1_ordered_train_row_label_sha256")
     row_count = _positive_int(unit.get("ordered_train_row_count"), "ordered_train_row_count")
     _require(row_count == expected_ordered_train_row_count, "ordered train row count does not match expected authority")
-    _require(row_hash == expected_ordered_train_row_identity_hash, "ordered train identity hash does not match expected authority")
+    _require(p4x_row_hash == expected_p4x_ordered_train_row_sha256, "P4-X ordered train row SHA256 does not match expected authority")
+    _require(p3w1_row_label_hash == expected_p3w1_ordered_train_row_label_sha256, "P3-W1 ordered train row label SHA256 does not match expected authority")
     dev_ratio = _finite_dev_ratio(unit.get("dev_ratio"), "dev_ratio")
     _require(
         math.isclose(dev_ratio, float(expected_dev_ratio), rel_tol=0.0, abs_tol=1e-12),
@@ -384,7 +389,8 @@ def validate_unit_artifact(
     return {
         "seed": seed,
         "row_count": row_count,
-        "row_hash": row_hash,
+        "p4x_row_hash": p4x_row_hash,
+        "p3w1_row_label_hash": p3w1_row_label_hash,
         "final_count": final_count,
         "reason_count": reason_count,
         "final_sum": final_sum,
@@ -408,7 +414,8 @@ def build_aggregate(
     expected_sidecar_semantic_sha256: str,
     expected_split_seed: int,
     expected_ordered_train_row_count: int,
-    expected_ordered_train_row_identity_hash: str,
+    expected_p4x_ordered_train_row_sha256: str,
+    expected_p3w1_ordered_train_row_label_sha256: str,
     expected_dev_ratio: float,
 ) -> dict[str, Any]:
     _validate_expected_identity(
@@ -416,7 +423,8 @@ def build_aggregate(
         expected_dataset_sha256=expected_dataset_sha256,
         expected_sidecar_semantic_sha256=expected_sidecar_semantic_sha256,
         expected_ordered_train_row_count=expected_ordered_train_row_count,
-        expected_ordered_train_row_identity_hash=expected_ordered_train_row_identity_hash,
+        expected_p4x_ordered_train_row_sha256=expected_p4x_ordered_train_row_sha256,
+        expected_p3w1_ordered_train_row_label_sha256=expected_p3w1_ordered_train_row_label_sha256,
         expected_dev_ratio=expected_dev_ratio,
         expected_split_seed=expected_split_seed,
     )
@@ -430,7 +438,8 @@ def build_aggregate(
             expected_sidecar_semantic_sha256=expected_sidecar_semantic_sha256,
             expected_split_seed=expected_split_seed,
             expected_ordered_train_row_count=expected_ordered_train_row_count,
-            expected_ordered_train_row_identity_hash=expected_ordered_train_row_identity_hash,
+            expected_p4x_ordered_train_row_sha256=expected_p4x_ordered_train_row_sha256,
+            expected_p3w1_ordered_train_row_label_sha256=expected_p3w1_ordered_train_row_label_sha256,
             expected_dev_ratio=expected_dev_ratio,
         )
         for unit in units
@@ -439,10 +448,12 @@ def build_aggregate(
     _require(sorted(seeds) == EXPECTED_SEEDS, "seeds must be exactly [180, 181, 182]")
     _require(len(set(seeds)) == 3, "duplicate calibration seed")
     row_counts = {summary["row_count"] for summary in summaries}
-    row_hashes = {summary["row_hash"] for summary in summaries}
+    p4x_row_hashes = {summary["p4x_row_hash"] for summary in summaries}
+    p3w1_row_label_hashes = {summary["p3w1_row_label_hash"] for summary in summaries}
     split_seeds = {summary["split_seed"] for summary in summaries}
     _require(len(row_counts) == 1, "ordered train row count mismatch")
-    _require(len(row_hashes) == 1, "ordered train identity hash mismatch")
+    _require(len(p4x_row_hashes) == 1, "P4-X ordered train row SHA256 mismatch")
+    _require(len(p3w1_row_label_hashes) == 1, "P3-W1 ordered train row label SHA256 mismatch")
     _require(len(split_seeds) == 1, "split seed mismatch")
     common_primary_counts = summaries[0]["primary_reason_class_counts"]
     common_local_counts = summaries[0]["local_binary_cohort_counts"]
@@ -500,9 +511,11 @@ def build_aggregate(
         "split_seed_verified": True,
         **EXPECTED_CONFIGURATION,
         "ordered_train_row_count": next(iter(row_counts)),
-        "ordered_train_row_identity_hash": next(iter(row_hashes)),
+        "p4x_ordered_train_row_sha256": next(iter(p4x_row_hashes)),
+        "p3w1_ordered_train_row_label_sha256": next(iter(p3w1_row_label_hashes)),
         "expected_ordered_train_row_count": expected_ordered_train_row_count,
-        "expected_ordered_train_row_identity_hash": expected_ordered_train_row_identity_hash,
+        "expected_p4x_ordered_train_row_sha256": expected_p4x_ordered_train_row_sha256,
+        "expected_p3w1_ordered_train_row_label_sha256": expected_p3w1_ordered_train_row_label_sha256,
         "expected_dev_ratio": float(expected_dev_ratio),
         "calibration_forward_batch_size": CALIBRATION_FORWARD_BATCH_SIZE,
         "logical_units_per_seed": LOGICAL_UNITS_PER_SEED,
@@ -577,7 +590,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--expected-sidecar-semantic-sha256", required=True)
     parser.add_argument("--expected-split-seed", type=int, required=True)
     parser.add_argument("--expected-ordered-train-row-count", type=int, required=True)
-    parser.add_argument("--expected-ordered-train-row-identity-hash", required=True)
+    parser.add_argument("--expected-p4x-ordered-train-row-sha256", required=True)
+    parser.add_argument("--expected-p3w1-ordered-train-row-label-sha256", required=True)
     parser.add_argument("--expected-dev-ratio", type=float, required=True)
     return parser
 
@@ -592,7 +606,8 @@ def main(argv: list[str] | None = None) -> int:
         expected_sidecar_semantic_sha256=args.expected_sidecar_semantic_sha256,
         expected_split_seed=args.expected_split_seed,
         expected_ordered_train_row_count=args.expected_ordered_train_row_count,
-        expected_ordered_train_row_identity_hash=args.expected_ordered_train_row_identity_hash,
+        expected_p4x_ordered_train_row_sha256=args.expected_p4x_ordered_train_row_sha256,
+        expected_p3w1_ordered_train_row_label_sha256=args.expected_p3w1_ordered_train_row_label_sha256,
         expected_dev_ratio=args.expected_dev_ratio,
     )
     write_json_atomic_no_overwrite(args.output_json, aggregate)

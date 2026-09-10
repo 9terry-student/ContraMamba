@@ -14,7 +14,10 @@ from scripts import train_controlled_v6b_minimal as trainer
 EXEC = "a" * 40
 DATA = "b" * 64
 SIDE = "c" * 64
-ROW_HASH = "d" * 64
+P4X_HASH = "d" * 64
+P3W1_HASH = "e" * 64
+REAL_P4X_HASH = "478013207699462a9434ce8f44991ce75b33650593b9aa942fff0f2be659c2a8"
+REAL_P3W1_HASH = "4a66ccbdc8e13758e2fcebce50a15bf93cd7a01a7750a5ab71bfcb76f188071b"
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -647,10 +650,47 @@ def test_wrong_reason_router_epsilon_rejected() -> None:
 def test_ordered_train_hash_deterministic() -> None:
     rows = [
         {"id": "r1", "pair_id": "p1", "final_label": "SUPPORT"},
-        {"row_id": "r2", "pair_id": "p2", "final_label": "REFUTES"},
+        {"id": "r2", "pair_id": "p2", "final_label": "REFUTES"},
     ]
     assert trainer._p3w1_ordered_train_identity(rows) == trainer._p3w1_ordered_train_identity(list(rows))
-    assert trainer._p3w1_ordered_train_identity(list(reversed(rows)))["ordered_train_row_identity_hash"] != trainer._p3w1_ordered_train_identity(rows)["ordered_train_row_identity_hash"]
+    assert trainer._p4x_ordered_train_row_sha256(rows) == trainer._p4x_ordered_train_row_sha256(list(rows))
+    assert trainer._p3w1_ordered_train_identity(list(reversed(rows)))["p3w1_ordered_train_row_label_sha256"] != trainer._p3w1_ordered_train_identity(rows)["p3w1_ordered_train_row_label_sha256"]
+    assert trainer._p4x_ordered_train_row_sha256(list(reversed(rows))) != trainer._p4x_ordered_train_row_sha256(rows)
+
+
+def test_real_seed8192_dual_identities_and_split_contract_cpu_only() -> None:
+    records = trainer.v5.load_jsonl(trainer.ROOT / trainer._STAGE187_AUTHORITATIVE_DATA)
+    train_records, dev_records = trainer.v5.split_by_pair_id(records, dev_ratio=0.2, seed=8192)
+    p4x = trainer._p4x_ordered_train_row_sha256(train_records)
+    identities = trainer._p3w1_calibration_ordered_train_identities(train_records)
+    assert len(train_records) == 2880
+    assert len(dev_records) == 720
+    assert p4x == REAL_P4X_HASH
+    assert identities == {
+        "ordered_train_row_count": 2880,
+        "p4x_ordered_train_row_sha256": REAL_P4X_HASH,
+        "p3w1_ordered_train_row_label_sha256": REAL_P3W1_HASH,
+    }
+    assert p4x != identities["p3w1_ordered_train_row_label_sha256"]
+    assert trainer.P3W1_CALIBRATION_UNIT_SCHEMA_VERSION == "reason_router_p3w1_calibration_unit_v2"
+
+
+def test_dual_identity_serialization_mutations_are_independent() -> None:
+    rows = [
+        {"id": "r1", "pair_id": "p1", "final_label": "SUPPORT"},
+        {"id": "r2", "pair_id": "p2", "final_label": "REFUTE"},
+    ]
+    p4x = trainer._p4x_ordered_train_row_sha256(rows)
+    p3w1 = trainer._p3w1_ordered_train_identity(rows)["p3w1_ordered_train_row_label_sha256"]
+    label_changed = [dict(row) for row in rows]
+    label_changed[0]["final_label"] = "REFUTE"
+    assert trainer._p4x_ordered_train_row_sha256(label_changed) == p4x
+    assert trainer._p3w1_ordered_train_identity(label_changed)["p3w1_ordered_train_row_label_sha256"] != p3w1
+    for field in ("id", "pair_id"):
+        changed = [dict(row) for row in rows]
+        changed[0][field] = f"changed_{field}"
+        assert trainer._p4x_ordered_train_row_sha256(changed) != p4x
+        assert trainer._p3w1_ordered_train_identity(changed)["p3w1_ordered_train_row_label_sha256"] != p3w1
 
 
 def _local_counts_for_primary(primary_counts: dict[str, int]) -> dict[str, dict[int, int]]:
@@ -675,7 +715,8 @@ def _unit(
     *,
     final_mean: float = 2.0,
     reason_mean: float = 4.0,
-    row_hash: str = ROW_HASH,
+    p4x_hash: str = P4X_HASH,
+    p3w1_hash: str = P3W1_HASH,
     primary_counts: dict[str, int] | None = None,
 ):
     if primary_counts is None:
@@ -691,7 +732,8 @@ def _unit(
         "unit_index": 0,
         "unit_scope": "COMPLETE_AUTHORITATIVE_TRAIN_SPLIT",
         "ordered_train_row_count": row_count,
-        "ordered_train_row_identity_hash": row_hash,
+        "p4x_ordered_train_row_sha256": p4x_hash,
+        "p3w1_ordered_train_row_label_sha256": p3w1_hash,
         "model_mode": "train",
         "measurement_arm": "conditional_first_blocker",
         "measurement_gradient_ownership": "explicit_local",
@@ -779,7 +821,8 @@ def _validate_unit(unit: dict, *, expected_ordered_train_row_count: int = 200):
         expected_sidecar_semantic_sha256=SIDE,
         expected_split_seed=8192,
         expected_ordered_train_row_count=expected_ordered_train_row_count,
-        expected_ordered_train_row_identity_hash=ROW_HASH,
+        expected_p4x_ordered_train_row_sha256=P4X_HASH,
+        expected_p3w1_ordered_train_row_label_sha256=P3W1_HASH,
         expected_dev_ratio=0.2,
     )
 
@@ -1053,7 +1096,8 @@ def _aggregate(tmp_path: Path, units: list[dict], **overrides):
     expected = dict(
         expected_split_seed=8192,
         expected_ordered_train_row_count=200,
-        expected_ordered_train_row_identity_hash=ROW_HASH,
+        expected_p4x_ordered_train_row_sha256=P4X_HASH,
+        expected_p3w1_ordered_train_row_label_sha256=P3W1_HASH,
         expected_dev_ratio=0.2,
     )
     expected.update(overrides)
@@ -1077,9 +1121,32 @@ def test_duplicate_seed_rejected(tmp_path: Path) -> None:
         _aggregate(tmp_path, [_unit(180), _unit(180), _unit(182)])
 
 
-def test_mismatched_train_identity_hash_rejected(tmp_path: Path) -> None:
-    with pytest.raises(ValueError, match="identity hash"):
-        _aggregate(tmp_path, [_unit(180), _unit(181), _unit(182, row_hash="e" * 64)])
+def test_mismatched_p4x_train_identity_hash_rejected(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="P4-X"):
+        _aggregate(tmp_path, [_unit(180), _unit(181), _unit(182, p4x_hash="f" * 64)])
+
+
+def test_mismatched_p3w1_train_identity_hash_rejected(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="P3-W1"):
+        _aggregate(tmp_path, [_unit(180), _unit(181), _unit(182, p3w1_hash="f" * 64)])
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        lambda unit: unit.update(p4x_ordered_train_row_sha256=P3W1_HASH),
+        lambda unit: unit.update(p3w1_ordered_train_row_label_sha256=P4X_HASH),
+        lambda unit: unit.pop("p4x_ordered_train_row_sha256"),
+        lambda unit: unit.pop("p3w1_ordered_train_row_label_sha256"),
+        lambda unit: unit.update(schema_version="reason_router_p3w1_calibration_unit_v1"),
+        lambda unit: (unit.pop("p4x_ordered_train_row_sha256"), unit.pop("p3w1_ordered_train_row_label_sha256"), unit.update(ordered_train_row_identity_hash=P3W1_HASH)),
+    ],
+)
+def test_v2_rejects_swapped_missing_or_v1_identity_artifacts(tmp_path: Path, mutate) -> None:
+    unit = _unit(182)
+    mutate(unit)
+    with pytest.raises(ValueError):
+        _aggregate(tmp_path, [_unit(180), _unit(181), unit])
 
 
 def test_mismatched_execution_data_sidecar_split_identity_rejected() -> None:
@@ -1118,14 +1185,50 @@ def test_aggregate_resolved_weight_exact_recomputation(tmp_path: Path) -> None:
     assert result["resolved_reason_loss_weight"] == pytest.approx(result["mu_final"] / result["mu_reason"])
 
 
+def test_aggregate_accepts_and_preserves_both_identities(tmp_path: Path) -> None:
+    result = _aggregate(tmp_path, [_unit(180), _unit(181), _unit(182)])
+    assert result["schema_version"] == "reason_router_p3w1_calibration_aggregate_v2"
+    assert result["p4x_ordered_train_row_sha256"] == P4X_HASH
+    assert result["expected_p4x_ordered_train_row_sha256"] == P4X_HASH
+    assert result["p3w1_ordered_train_row_label_sha256"] == P3W1_HASH
+    assert result["expected_p3w1_ordered_train_row_label_sha256"] == P3W1_HASH
+    assert "ordered_train_row_identity_hash" not in result
+
+
+def test_aggregator_parser_uses_only_v2_identity_flags() -> None:
+    parser = agg.build_parser()
+    parsed = parser.parse_args([
+        "--unit-json", "one.json", "--output-json", "aggregate.json",
+        "--expected-execution-commit", EXEC, "--expected-dataset-sha256", DATA,
+        "--expected-sidecar-semantic-sha256", SIDE, "--expected-split-seed", "8192",
+        "--expected-ordered-train-row-count", "2880",
+        "--expected-p4x-ordered-train-row-sha256", P4X_HASH,
+        "--expected-p3w1-ordered-train-row-label-sha256", P3W1_HASH,
+        "--expected-dev-ratio", "0.2",
+    ])
+    assert parsed.expected_p4x_ordered_train_row_sha256 == P4X_HASH
+    assert parsed.expected_p3w1_ordered_train_row_label_sha256 == P3W1_HASH
+    with pytest.raises(SystemExit):
+        parser.parse_args([
+            "--unit-json", "one.json", "--output-json", "aggregate.json",
+            "--expected-execution-commit", EXEC, "--expected-dataset-sha256", DATA,
+            "--expected-sidecar-semantic-sha256", SIDE, "--expected-split-seed", "8192",
+            "--expected-ordered-train-row-count", "2880",
+            "--expected-ordered-train-row-identity-hash", P3W1_HASH,
+            "--expected-dev-ratio", "0.2",
+        ])
+
+
 def test_wrong_expected_train_row_count_rejected(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="row count"):
         _aggregate(tmp_path, [_unit(180), _unit(181), _unit(182)], expected_ordered_train_row_count=201)
 
 
-def test_wrong_expected_train_row_hash_rejected(tmp_path: Path) -> None:
-    with pytest.raises(ValueError, match="identity hash"):
-        _aggregate(tmp_path, [_unit(180), _unit(181), _unit(182)], expected_ordered_train_row_identity_hash="e" * 64)
+def test_wrong_expected_train_row_hashes_rejected_independently(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="P4-X"):
+        _aggregate(tmp_path, [_unit(180), _unit(181), _unit(182)], expected_p4x_ordered_train_row_sha256="f" * 64)
+    with pytest.raises(ValueError, match="P3-W1"):
+        _aggregate(tmp_path, [_unit(180), _unit(181), _unit(182)], expected_p3w1_ordered_train_row_label_sha256="f" * 64)
 
 
 def test_wrong_expected_dev_ratio_rejected(tmp_path: Path) -> None:
@@ -1255,9 +1358,9 @@ def test_unit_dev_ratio_mismatch_rejected(tmp_path: Path) -> None:
 
 
 def test_cross_seed_consistent_wrong_universe_rejected(tmp_path: Path) -> None:
-    wrong = "e" * 64
+    wrong = "f" * 64
     with pytest.raises(ValueError, match="expected authority"):
-        _aggregate(tmp_path, [_unit(180, row_hash=wrong), _unit(181, row_hash=wrong), _unit(182, row_hash=wrong)])
+        _aggregate(tmp_path, [_unit(180, p4x_hash=wrong), _unit(181, p4x_hash=wrong), _unit(182, p4x_hash=wrong)])
 
 def test_aggregate_overwrite_rejected_content_unchanged_and_temp_cleaned(tmp_path: Path) -> None:
     output = tmp_path / "aggregate.json"
