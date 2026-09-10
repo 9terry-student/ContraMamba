@@ -1,0 +1,156 @@
+# K1 Raw Native-State Kinematics Experiment Specification Candidate
+
+**Status:** K1 SCIENTIFIC EXPERIMENT DESIGN / STATIC SUBSTRATE AUDIT ONLY.
+
+This is the one candidate specification for a confirmatory raw, preterminal native-state kinematics study.  It authorizes no implementation, instrumentation, checkpoint load or deserialization, model execution, inference, training, evaluation, dataset regeneration, Kaggle work, staging, commit, or push.  K1 execution remains unauthorized.
+
+## 1. Authority, frozen lineage, and audit boundary
+
+Authority order for this candidate is: the current controller instruction; K0 at commit `7bd1cf824cd53c7f6cf6215346b42cabf351b70a`, `reports/longterm_k0_native_mamba_state_kinematics_hypothesis_spec_candidate.md`; the Seed8192 A0 execution/evidence lineage at `55debe94f0d19d16a334395e8561901fed6b52fa` and `dd183f59f4040405c178da193fe99c7c7f3ef57f`; and validated O0c evidence at `ff2fb076f6e66a34a632515bb8502d8b1c90ad7f`.
+
+The static audit was deliberately read-only.  The three required imported A0 roots were absent from this K worktree and from the permitted original worktree at `C:\Users\Home1\Desktop\ContraMamba\`; no artifact was copied, normalized, or regenerated.  Consequently, this candidate consumes no unauthenticated local prediction bytes.  Its fixed facts below come only from the frozen, Git-addressed A0 authority/evidence reports and frozen source contract; the listed artifact hashes are the identities that a later execution must re-authenticate against local bytes before use.
+
+| A0 member | Required root | Expected `clean_dev_predictions.json` SHA256 | Frozen report-recorded JSON artifact identities |
+| --- | --- | --- | --- |
+| seed180 replacement R1 | `reports/reason_router_p3w7_seed8192_revised_split_a0_replacement_runs/seed180/replacement_r1/A0` | `5c9722ac0f75c411b3d744a29beec0c35d2f2809331f257a5e1d5ea81e6cf75d` | `run_provenance.json` `a758538e93e6e52ca261cb593285c298344808a3626eed7d9b9664e29a6c1a3d`; `training_report.json` `2cdf0925e3a0ef1b925f6b00ac4b2095d18a113896a437ded77622f5134b2013` |
+| seed181 | `reports/reason_router_p3w7_seed8192_revised_split_a0_runs/seed181/A0` | `789d02f9092ce6b051d0ca435272c9e93a3962183dbb0a4d4dbb20cebf2ac3fe` | `run_provenance.json` `82f6a511f9b8228c91d3419cc8872f7371c0785a01aa730904d43a8f04f6a98b`; `training_report.json` `0068aec52a9afb4bd8e79d711ac666a5257186ab142c8c72da890fe64c2c45e8` |
+| seed182 | `reports/reason_router_p3w7_seed8192_revised_split_a0_runs/seed182/A0` | `029ec6ae31df2f5ca9526d1e631496f7ee272967a6f5e08684f29aa09ad490d4` | `run_provenance.json` `934acab332773b4127ffa5c68b09a8bded168ab96ac5b18c29018e3e78b77c66`; `training_report.json` `ef60c457a28be8ed91e57ef8d9be4d89150b0e93fe90a045eb12a6ea78262a22` |
+
+`training_report_predictions.jsonl` and `selected_checkpoint.pt` are required lineage artifacts but were not locally present to inspect.  A later audit may inspect a checkpoint only for presence, byte size, SHA256, and a manifest-bound identity; it must not deserialize it.
+
+## 2. Authenticated substrate facts and unresolved provenance
+
+The frozen A0 authority/evidence establishes the following common contract: `model = state-spaces/mamba-130m-hf`, `architecture = v6b_minimal`, `freeze_encoder = true`, `max_length = 128`, `split_seed = 8192`, 720 dev rows, same ordered `stable_id` population/gold labels/intervention ordering across the three seeds, A0 `explicit_product`, joint ownership, and reason-loss weight 0.  A0 is the primary K1 substrate precisely because it is the simplest completed reference: explicit product, joint ownership, no reason loss, and frozen Mamba encoder.
+
+The static frozen training-source contract records the following clean-dev prediction schema:
+
+```text
+top-level: metadata, predictions
+per prediction: id, pair_id, intervention_type, claim, evidence,
+                gold_final_label, pred_final_label, final_probs,
+                frame_prob, predicate_coverage_prob, sufficiency_prob,
+                entitlement_prob, polarity_margin
+```
+
+`final_probs` is a three-class softmax vector in the frozen final-label order; it is the available confidence source.  Define, without adding a new stored field, `confidence = max(final_probs)` and `margin = largest(final_probs) - second_largest(final_probs)`.  No raw final-logit field and no standalone confidence field is established in this schema.  The source contract also recovers deterministic input construction: tokenize `claim` and `evidence` separately with `add_special_tokens=false`; truncate claim to `floor((128 - 1)/2) = 63` tokens and evidence to 64 tokens; concatenate claim IDs, one tokenizer `eos_token_id` separator (falling back to pad ID only if EOS is absent), and evidence IDs; pad to 128; and set claim/evidence masks only over their respective spans.  This is a static source contract, not proof that a later capture exactly replays the A0 artifact bytes.
+
+The A0 authority records only the model name, not an exact Hugging Face model/tokenizer revision.  Freeze of the encoder does **not** prove byte-identical encoder parameters across seed180/181/182.  Nor do the frozen reports locally bind the selected checkpoint bytes, tokenizer revision, or pretrained-weight snapshot to a common encoder digest.  O0c records its own model/tokenizer revision `5708daa364c50b880e7bd92eab456e0d34492ee9`, CPU/float32/Transformers 5.0.0 environment, 24 Mamba-mixer layers, and post-consumption native-state capture.  Those are instrumentation precedents only; they must not be presumed identical to A0.
+
+## 3. Outcomes, unit, and seed semantics
+
+The scientific unit is one unique `stable_id` / underlying dev input, never one seed-row.  The frozen A0 N=3 evidence gives 720 units: 635 correct in all three seeds, 56 wrong in all three, and 29 with seed disagreement.  Of stable-wrong units, gold labels are SUPPORT 54, NOT_ENTITLED 2, and REFUTE 0.  All final errors lie on the SUPPORT <-> NOT_ENTITLED boundary.
+
+The three downstream seeds are repeated decision contexts on the same input substrate, not three independent native-trajectory observations.  K1 therefore distinguishes:
+
+- **representation replication:** an exact A0 encoder/input realization permits one native trajectory per `stable_id`; if multiple checkpoint realizations are needed, equality of their captured trajectories is a non-scientific integrity check only;
+- **decision-head replication:** the three final decisions define stable outcome membership and the 29 disagreement diagnostic.
+
+No result may claim an N=2160 native-state sample.  Before capture, exact deterministic equality across seeds must either be proven from exact encoder and input identity, or be checked under each provenance-valid realization.  That check is not scientific replication.
+
+The pre-registered groups are:
+
+| View | Wrong group | Correct reference | Frozen count |
+| --- | --- | --- | ---: |
+| Primary gold-matched/source-semantic | gold SUPPORT; NOT_ENTITLED in all three seeds | gold SUPPORT; SUPPORT in all three seeds | 54 wrong; 37 correct |
+| Complementary prediction-matched | gold SUPPORT; NOT_ENTITLED in all three seeds | gold NOT_ENTITLED; NOT_ENTITLED in all three seeds | 54 wrong; 509 correct |
+
+The counts follow directly from the frozen N=3 evidence: 54 of 91 gold SUPPORT units are stable-wrong, leaving 37 stable-correct SUPPORT units; 635 stable-correct units minus 89 always-correct REFUTE and those 37 SUPPORT units leaves 509 stable-correct NOT_ENTITLED units.  These memberships must later be reproduced from the three re-authenticated prediction files, written as canonical ordered `stable_id` lists, and SHA256-bound before capture/analysis.  No K1 state dynamics may be inspected while defining them.
+
+The 29 seed-disagreement units are excluded from every primary positive-evidence group and retained as a predefined limitation/falsification diagnostic.  If the same exact native trajectory/input has different correctness outcomes under different downstream A0 seeds, raw trajectory cannot deterministically explain seed-specific correctness.  This does not negate an association with stable error susceptibility; it prohibits any claim that raw recurrent trajectory uniquely determines downstream classification.
+
+## 4. Controls and matching
+
+Stable 3-of-3 outcome is the primary phenotype.  No high-confidence subset or threshold is introduced.  Confidence and margin are retrospective, state-blind matching covariates and never native-observable inputs.
+
+For each contrast independently, matching direction is WRONG -> CONTROL.  Matching is one-to-one and without replacement: each wrong `stable_id` and each control `stable_id` may appear in at most one pair.  Match exactly on `intervention_type`; only pairs satisfying all already-frozen eligibility/caliper conditions are allowed: `|confidence_wrong - confidence_correct| <= 0.05`, `|margin_wrong - margin_correct| <= 0.05`, and `|nonpadding_length_wrong - nonpadding_length_correct| <= 8`.  Here confidence and margin are the arithmetic means of the three seed-specific values derived from `final_probs`; nonpadding length is the validated replay input length.  These state-blind conditions define the feasible bipartite graph.  Per-pair cost remains the sum of each absolute difference divided by its stated caliper.
+
+Choose the final matching by this lexicographic optimization hierarchy.  First, maximize matching cardinality (the maximum matching cardinality).  Let `k*` be the maximum feasible number of one-to-one pairs.  Second, only after maximum cardinality is fixed, among all matchings having exactly `k*` pairs, minimize the already-frozen total matching cost.  Third, if multiple complete matchings have the same `k*` and the same minimum total cost, represent each matching as the list of `(wrong_stable_id, control_stable_id)` pairs sorted lexicographically by wrong `stable_id` then control `stable_id`, and choose the lexicographically smallest full pair list.  There is no random tie breaking.  Exact paired-analysis output cardinality is therefore `k*`, determined uniquely from authenticated, state-blind metadata before any K1 trajectory is inspected.
+
+The source-population bounds are: gold-matched, 54 wrong candidates versus 37 controls, therefore `k* <= 37`; prediction-matched, 54 wrong candidates versus 509 controls, therefore `k* <= 54`.  Unmatched wrong or control units are excluded from that paired confirmatory contrast and are not recycled, duplicated, replaced, or rematched using K1 state outcomes.  The matching algorithm, stable-ID ordering, and resulting pair-list SHA256 must be frozen before state capture and cannot be altered after state measurements.
+
+Matching success requires at least 30 pairs in each view, at least 80% of the smaller available group in the gold-matched view, and all observed covariate standardized mean differences (using the matched pooled SD) no greater than 0.10 for confidence, margin, and nonpadding length.  If maximum-cardinality matching fails this frozen adequacy rule, the contrast is `INCONCLUSIVE` rather than null.  Other failure, including absent authenticated `final_probs`, insufficient support, or no exact `intervention_type` overlap, is `INCONCLUSIVE/BLOCKED`, never a null.  These controls reduce but do not eliminate all semantic confounding: gold-matched evidence can remain commitment-direction-confounded, and prediction-matched evidence can remain true-class-confounded.
+
+## 5. Native state, time, and fixed trajectory summaries
+
+For layer `l`, K1 uses the O0c-bound native selective-SSM recurrent state, post-consumption after token `t` is incorporated:
+
+```text
+S_t^(l) = native selective-SSM recurrent state after token t
+V_t^(l) = S_t^(l) - S_(t-1)^(l)
+DeltaV_t^(l) = V_t^(l) - V_(t-1)^(l)
+turn_t^(l) = 1 - cosine(V_t^(l), V_(t-1)^(l))
+```
+
+It is not a generic hidden-state proxy.  Future work must capture full native trajectories under provenance-valid A0 identity and establish that capture instrumentation is noninterfering.  O0c's capture semantics are precedent, not an A0 identity proof.
+
+Let `T` be the count of actual nonpadding token positions in the validated A0 replay input, after the exact tokenizer/special-token policy has been proven.  K1's sole primary window is the whole preterminal sequence: states `S_0` through `S_(T-1)` and transitions available wholly before `S_T`.  The terminal state `S_T` is explicitly excluded from every confirmatory statistic.  Padding never forms a trajectory step.  The later implementation must document whether any BOS/EOS exists in the real input; the source contract says `add_special_tokens=false` and inserts exactly one internal EOS-or-pad separator, but its realized tokenizer identity remains unresolved.  Normalized-time profiles are secondary descriptive output only; no token-time or event-aligned window search is allowed.  Semantic alignment/evidence order is reserved for K2.
+
+For this interval, using a frozen `epsilon = 1e-12` in native floating-point units:
+
+| Family | Fixed endpoint summaries per layer and stable ID |
+| --- | --- |
+| M, movement | mean `||V_t||_F`; mean `||DeltaV_t||_F` over defined preterminal indices |
+| D, direction | mean `turn_t` after excluding an angle whenever either adjacent velocity norm is `<= epsilon`; stationary-transition rate is diagnostic only |
+| P, path | `L = sum ||V_t||_F`, controlled by the prespecified matched nonpadding length; `eta = ||S_(T-1)-S_0||_F / (L + epsilon)` |
+
+Path length's algebraic relation is reported explicitly: over the same `n_V` valid velocity steps, `L = n_V * mean_speed`.  It is therefore not interpreted as an independent sequence-length-free endpoint; length matching/control is mandatory and the P family multiplicity rule below includes it with eta.  No learned features, new state proxies, terminal features, or selected token windows are permitted.
+
+The stationary-transition exclusion rule above is retained: an individual angle is omitted whenever either adjacent velocity fails the frozen near-zero norm condition, and stationary-transition rate remains diagnostic only.  If a `stable_id`/layer has zero valid turning angles after this exclusion, its mean-turning primary summary is `UNDEFINED`, not zero.
+
+## 6. Layer-complete statistic and confirmatory inference
+
+K1 is a complete-24-layer confirmatory design: all 24 native Mamba layers are required and raw norms are never compared across layers.  For every confirmatory contrast, every retained matched pair must provide a finite valid value for every primary endpoint in every one of those 24 required layers.  If any retained matched member has an undefined, missing, unavailable, NaN, or infinite primary confirmatory endpoint in any required layer, do not delete that pair or layer, substitute zero, impute, choose another layer, rerun matching, alter epsilon, or reduce the confirmatory family.  Instead stop that contrast before inferential testing and classify it `INCONCLUSIVE_INVALID_PRIMARY_ENDPOINT`.  This is not a scientific null, and no adaptive complete-case analysis is allowed.  Exact-zero valid pair differences remain valid.
+
+For endpoint `e`, layer `l`, and matched pair `i`, define `d_i^(l,e) = endpoint_wrong_i^(l,e) - endpoint_control_i^(l,e)`.  Positive differences mean the endpoint is larger in the stable-wrong member.  For one layer and endpoint, form all finite matched-pair differences.  A difference exactly equal to zero is a zero difference, not missing; exclude exact-zero differences only from rank construction.  Rank the absolute nonzero values `|d_i|` from smallest to largest, assigning average ranks to tied absolute values.  Let `W+` be the sum of ranks for `d_i > 0`, let `W-` be the sum of ranks for `d_i < 0`, and let `R = W+ + W-`.  The paired rank-biserial effect is:
+
+```text
+r_rb = (W+ - W-) / R
+```
+
+when `R > 0`.  If every otherwise-valid matched difference is exactly zero, define `r_rb = 0` because the endpoint contains no signed paired separation.  Missing, nonfinite, or undefined endpoint values are never treated as zero differences.  `r_rb` is in `[-1, 1]`: positive means larger endpoint values in stable-wrong members, and negative means smaller endpoint values in stable-wrong members.
+
+Compute one layer-level paired rank-biserial effect for each of all 24 layers and require all 24 effects to exist.  Sort the 24 finite effects and define their median as the arithmetic mean of the 12th and 13th ordered values under 1-based indexing.  No missing-layer median is allowed.  This preserves the inferential hierarchy: matched pairs -> endpoint differences -> within-layer paired rank-biserial effect -> median across all 24 layers -> existing endpoint/family statistic -> existing global max-statistic permutation procedure.  Per-layer profiles are descriptive only and cannot select a layer.
+
+There are exactly three confirmatory families: M (`mean speed`, `mean ||DeltaV||`), D (`mean turning`), and P (`L`, `eta`).  The same frozen pair differences are the basis of both the effect statistic and the paired label-swap randomization test.  The confirmatory randomization null is an associational matched-pair null, not a randomized-treatment causal null.  For each frozen matched pair, conditional on the prespecified state-blind matching variables and eligibility rules, the null assumes that the K1 endpoint vector is exchangeable with respect to the WRONG versus CONTROL label within that pair.  Equivalently, under the sharp paired null, swapping the two labels within a frozen matched pair leaves the joint null distribution of the confirmatory K1 endpoint vector unchanged.  The matching procedure itself is completed and frozen before K1 state measurements are inspected.
+
+Within each view, use paired label-swap randomization over the fixed matched pairs.  Generate exactly 50,000 Monte Carlo permutations with NumPy `PCG64` RNG seed `20260911`.  For each permutation, draw exactly one binary swap/sign variable per matched pair; apply one joint pair-level swap across all primary endpoints and all 24 layers for that matched pair, and do not draw independent swaps separately for layers or endpoints.  Recompute every layer-level effect, its 24-layer median, each family maximum of absolute endpoint aggregates, and then the global maximum across M, D, and P.  For a family, the multiplicity-adjusted p value is:
+
+```text
+p_F = (1 + count(global_permuted_max >= observed_family_max)) / 50,001
+```
+
+The same global-max distribution thus controls endpoint multiplicity within each family and family-wise error across exactly the three families at two-sided `alpha = 0.05`, separately for each complementary view.  The statistic operates only on stable IDs/matched pairs; seeds are not rows.  Randomization matrices, pair list, group lists, and analysis-unit order must be written and SHA256-bound before state outcomes are inspected.  Because this is observational matching rather than randomized assignment, exchangeability is a prespecified inferential assumption supported by the matching design, not a proven causal property or causal guarantee.  Residual unmatched confounding can limit interpretation even when the randomization test is statistically significant.  No causal language follows from this test.  No test is performed by this candidate.
+
+## 7. Decision rule, falsification, and directional discipline
+
+For a family to receive `PRETERMINAL_NATIVE_KINEMATIC_ASSOCIATION_OBSERVED` / `CANDIDATE_PRECURSOR`, all of the following are required:
+
+1. the family has `p_F <= 0.05` in both gold-matched and prediction-matched views;
+2. at least one same named endpoint has a nonzero 24-layer-median effect with the same sign in both views and is compatible with both respective family results;
+3. both views pass the fixed matching/confidence/length support rules;
+4. all identities, terminal exclusion, instrumentation-equivalence, and analysis-order checks pass; and
+5. no layer, time position, confidence cutoff, metric, or normalization is selected from K1 outcomes.
+
+A positive in only the gold-matched view is `INCONCLUSIVE/COMMITMENT-CONFOUNDED` when compatible with final-direction confounding.  A positive only in the prediction-matched view is `INCONCLUSIVE/SEMANTIC-CLASS-CONFOUNDED`.  A clean failure of all three families under adequate authenticated support, in both views, yields the bounded conclusion `RAW_PRETERMINAL_NATIVE_KINEMATICS_NOT_SUPPORTED_FOR_THIS_FORMULATION`.  Missing confidence, unresolved encoder identity, insufficient matching support, or a failed integrity gate yields `INCONCLUSIVE/BLOCKED`, not null.  There is no post-hoc metric rescue.
+
+K1's broad test is two-sided.  H-lock and H-wander stay distinct and are not retrofitted from any significant result.  An H-lock interpretation additionally requires turning lower in wrong than correct and eta higher in wrong than correct in both views.  An H-wander interpretation additionally requires higher wrong-than-correct mean speed, mean `||DeltaV||`, turning, and path length, with lower eta, in both views.  These are directional signatures, not an invitation to name an opposite or mixed pattern after the fact; no new composite mechanism may be promoted from these data.
+
+The maximum K1 claim is associational: `PRETERMINAL_NATIVE_KINEMATIC_ASSOCIATION_OBSERVED` or `CANDIDATE_PRECURSOR`.  It must not claim an event-responsive precursor, causal mechanism, failed evidence write, established wrong attractor, hallucination detector, or generative hallucination result.  K2 is required for semantic-event timing; K3 is required for causal/mechanistic claims.
+
+## 8. Mandatory pre-execution closure gates
+
+Before any K1 implementation or execution, an authority must close all applicable gates:
+
+1. re-locate and SHA256-authenticate the five A0 artifacts per member against the frozen lineage, including `clean_dev_predictions.json`, `run_provenance.json`, `training_report.json`, `training_report_predictions.jsonl`, and checkpoint presence/size/SHA256/manifest identity without loading the checkpoint;
+2. bind the exact A0 encoder weights across realizations, or prove a single frozen pretrained-weight identity; do not infer equality from `freeze_encoder=true`;
+3. bind tokenizer ID and exact revision, model revision/pretrained-weight identity, and actual serialized/tokenized A0 inputs to the source-contract replay;
+4. prove native selective-SSM capture semantics and noninterference under that exact A0 model/environment, rather than borrowing O0c identity;
+5. reproduce and hash primary groups, confidence/margin derivations, matched pair lists, analysis-unit order, and the fixed permutation matrix;
+6. prove deterministic special-token, separator, EOS/pad, truncation, and padding treatment; and
+7. establish all required confidence inputs from authenticated output bytes and validate matching support before any state result is examined.
+
+Until then, “same model name” is insufficient, and K1 execution is not authorized.
+
+## 9. Final design disposition
+
+K1 is a bounded raw-preterminal-kinematics association test on the frozen A0 N=3 outcome substrate.  A0 is primary; A1/A2/A3 are not precursor substrates because A1 is mixed/seed-dependent and hard `explicit_local` in A2/A3 already has a large downstream failure pattern.  They may only become later external/generalization contrasts under separate authority.  O0c remains prior native-state evidence and an instrumentation precedent, not K1's correct/wrong population.  This design preserves K0 falsification discipline and does not itself authorize the next action.
