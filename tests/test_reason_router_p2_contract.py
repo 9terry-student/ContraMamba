@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import ast
 import copy
+import inspect
 from pathlib import Path
 from types import SimpleNamespace
+import types
 
 import pytest
 import torch
@@ -571,6 +574,93 @@ def test_d1_resolver_validation_and_lambda_metadata_identity() -> None:
     second = _p2_args_for_checkpoint("D1", "explicit_product", "partial")
     second.resolved_gradient_ownership_lambda = 1.0
     assert trainer._p2_checkpoint_metadata_from_args(first) != trainer._p2_checkpoint_metadata_from_args(second)
+
+
+def test_d1_report_path_uses_neutral_loss_export_when_no_p2_epoch_snapshot(monkeypatch) -> None:
+    """Execute the nested D1 report path after its A0-A3-only snapshot branch."""
+    source_tree = ast.parse(inspect.getsource(trainer.main))
+    nested = next(
+        node for node in ast.walk(source_tree)
+        if isinstance(node, ast.FunctionDef) and node.name == "run_training_v6b"
+    )
+    code = next(
+        constant for constant in trainer.main.__code__.co_consts
+        if isinstance(constant, types.CodeType) and constant.co_name == "run_training_v6b"
+    )
+    defaults = tuple(
+        eval(compile(ast.Expression(default), "<d1-report-default>", "eval"), trainer.__dict__)
+        for default in nested.args.defaults
+    )
+
+    def cell(value):
+        return (lambda: value).__closure__[0]
+
+    class Args(SimpleNamespace):
+        def __getattr__(self, _name):
+            return False
+
+    args = Args(
+        architecture="v6b_minimal",
+        reason_router_arm="D1",
+        resolved_reason_loss_weight=0.0,
+        frame_downstream_gradient_mode="joint",
+        seed=180,
+        stage196b2b6p8_enable_full_trainable_path_replay_api=False,
+    )
+    closure_values = {
+        "_combined_bridge_info": {}, "_frame_gradient_contract": {},
+        "_p2_contract": {"enabled": True}, "_p2_epoch_loss_history": [],
+        "_p2_reason_metadata_audit": {}, "_p2_reason_supervision_audit": {},
+        "_pc_frame_type_counts": {}, "_pc_pres_type_counts": {},
+        "_slot_mismatch_dev_counts": {
+            "slot_mismatch_target_positive_count": 0,
+            "slot_mismatch_target_negative_count": 0,
+            "slot_mismatch_target_ignored_count": 0,
+        },
+        "_slot_mismatch_train_counts": {
+            "slot_mismatch_target_positive_count": 0,
+            "slot_mismatch_target_negative_count": 0,
+            "slot_mismatch_target_ignored_count": 0,
+        },
+        "_stage174a_run_dir": Path("."), "_stage187_sidecar_audit": {},
+        "_stage191_arm": None, "_stage191_runtime_context": None,
+        "_stage195_parameter_swa_enabled": False, "_stage60_bridge_info": {},
+        "_stage66_bridge_info": {}, "_stage75_bridge_info": {},
+        "_stage80a_bridge_info": {}, "_trajectory_observability_enabled": False,
+        "_trajectory_observability_mode": "none", "args": args,
+        "dev_predicate_flags": None, "dev_temporal_flags": None,
+        "device": torch.device("cpu"), "resolved_split_seed": 180,
+        "train_predicate_flags": None, "train_temporal_flags": None,
+    }
+    run_training = types.FunctionType(
+        code, trainer.__dict__, closure=tuple(cell(closure_values[name]) for name in code.co_freevars)
+    )
+    run_training.__defaults__ = defaults
+    run_training.__kwdefaults__ = {
+        arg.arg: eval(compile(ast.Expression(default), "<d1-report-default>", "eval"), trainer.__dict__)
+        for arg, default in zip(nested.args.kwonlyargs, nested.args.kw_defaults)
+        if default is not None
+    }
+
+    model = torch.nn.Linear(1, 1)
+    monkeypatch.setattr(trainer.v5, "build_optimizer", lambda *unused: torch.optim.SGD(model.parameters(), lr=0.1))
+    monkeypatch.setattr(trainer, "build_teacher_observer", lambda **unused: None)
+    monkeypatch.setattr(trainer, "build_trainer_resume_identity", lambda *unused, **unused_kw: {})
+    monkeypatch.setattr(trainer, "build_trainer_resume_config", lambda *unused, **unused_kw: SimpleNamespace(enabled=False))
+    monkeypatch.setattr(
+        trainer, "initialize_trainer_resume_state",
+        lambda **unused: SimpleNamespace(next_epoch=2, global_optimizer_step=0, config=SimpleNamespace(enabled=False)),
+    )
+
+    inputs = {"input_ids": torch.zeros(1, 1, dtype=torch.long), "final_labels": torch.zeros(1, dtype=torch.long)}
+    report = run_training(
+        model, inputs, inputs, [], [], {"pair_ids": ["pair"], "intervention_types": ["none"]},
+        epochs=1, lr=0.1, head_lr=0.1, encoder_lr=0.1,
+        weighted_label_loss=False, balanced_sampler=False, use_intervention_loss=False,
+        ranking_weight=0.0, loss_config={}, seed=180, run_name="d1-report-regression",
+    )
+    assert report["reason_router_p2"]["final_epoch_loss_summary"] == {}
+    assert report["reason_router_p2"]["epoch_loss_history"] == []
 
 def test_a1_a3_primary_reason_ce_production_gradients() -> None:
     targets = torch.tensor([0, 1, 2, 3])

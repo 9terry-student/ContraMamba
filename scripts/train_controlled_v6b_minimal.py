@@ -19709,7 +19709,6 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     _p2_reason_supervision_audit: dict[str, Any] = {}
-    _p2_last_loss_export: dict[str, Any] = {}
     _p2_epoch_loss_history: list[dict[str, Any]] = []
     if _p2_contract.get("enabled"):
         if _p3w1_calibration_export_path is not None:
@@ -20835,6 +20834,7 @@ def main(argv: list[str] | None = None) -> int:
         teacher_observer_output_dir=None,
     ):
         """Modified run_training that passes flags to v6b model."""
+        _p2_last_loss_export: dict[str, Any] = {}
         if epochs < 1:
             raise ValueError("epochs must be at least 1")
         if use_preservation_constrained_selection and use_td_constrained_selection:
@@ -28542,7 +28542,6 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
 
 
 
