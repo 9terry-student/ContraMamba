@@ -204,6 +204,53 @@ P2_ARM_CONTRACTS = {
     "A3": ("conditional_first_blocker", "explicit_local"),
     "D1": ("explicit_product", "partial"),
 }
+G3_EDGE_GRADIENT_LAMBDA_KEYS = (
+    "F_TO_P", "F_TO_S", "P_TO_S", "F_TO_Q", "P_TO_Q",
+    "S_TO_Q", "F_TO_D", "P_TO_D", "S_TO_D", "Q_TO_D",
+)
+G3_ARM_IDS = tuple(f"G3-G{index}-HALF" for index in range(1, 11))
+P2_ARM_CONTRACTS.update({arm: ("explicit_product", "edge_specific") for arm in G3_ARM_IDS})
+
+
+def _resolve_edge_gradient_lambdas(raw_map: str | None, parser: argparse.ArgumentParser) -> dict[str, float]:
+    if raw_map is None:
+        parser.error("G3_EDGE_GRADIENT_LAMBDAS_REQUIRED")
+    try:
+        decoded = json.loads(raw_map, object_pairs_hook=lambda pairs: _reject_duplicate_edge_keys(pairs, parser))
+    except (TypeError, json.JSONDecodeError):
+        parser.error("G3_EDGE_GRADIENT_LAMBDAS_INVALID_JSON")
+    if not isinstance(decoded, dict):
+        parser.error("G3_EDGE_GRADIENT_LAMBDAS_MUST_BE_OBJECT")
+    expected = set(G3_EDGE_GRADIENT_LAMBDA_KEYS)
+    actual = set(decoded)
+    if actual != expected:
+        parser.error(f"G3_EDGE_GRADIENT_LAMBDAS_KEYS_INVALID: missing={sorted(expected - actual)} extra={sorted(actual - expected)}")
+    canonical: dict[str, float] = {}
+    for key in G3_EDGE_GRADIENT_LAMBDA_KEYS:
+        try:
+            value = float(decoded[key])
+        except (TypeError, ValueError):
+            parser.error("G3_EDGE_GRADIENT_LAMBDAS_VALUE_INVALID")
+        if not math.isfinite(value) or not 0.0 <= value <= 1.0:
+            parser.error("G3_EDGE_GRADIENT_LAMBDAS_VALUE_INVALID")
+        canonical[key] = value
+    return canonical
+
+
+def _reject_duplicate_edge_keys(pairs: list[tuple[str, Any]], parser: argparse.ArgumentParser) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            parser.error(f"G3_EDGE_GRADIENT_LAMBDAS_DUPLICATE_KEY: {key}")
+        result[key] = value
+    return result
+
+
+def _validate_g3_arm_edge_map(arm: str, edge_map: dict[str, float], parser: argparse.ArgumentParser) -> None:
+    expected = {key: 1.0 for key in G3_EDGE_GRADIENT_LAMBDA_KEYS}
+    expected[G3_EDGE_GRADIENT_LAMBDA_KEYS[int(arm.split("-G")[1].split("-")[0]) - 1]] = 0.5
+    if edge_map != expected:
+        parser.error("G3_ARM_EDGE_MAP_MISMATCH")
 P3W1_CALIBRATION_UNIT_SCHEMA_VERSION = "reason_router_p3w1_calibration_unit_v2"
 P3W1_CALIBRATION_UNIT_SCOPE = "COMPLETE_AUTHORITATIVE_TRAIN_SPLIT"
 P3W1_CALIBRATION_UNIT_DECISION = "P3W1_CALIBRATION_UNIT_PASS"
@@ -322,10 +369,18 @@ def _p2_resolve_arm_contract(
     parser: argparse.ArgumentParser,
 ) -> dict[str, Any]:
     arm = getattr(args, "reason_router_arm", "none")
+    edge_gradient_lambdas_was_supplied = _p2_cli_flag_present(
+        raw_argv, "--edge-gradient-lambdas"
+    )
     if arm == "none":
+        # The raw argv witness is intentional: an explicit '{}' must not be
+        # collapsed into the same state as an absent edge-map argument.
+        if edge_gradient_lambdas_was_supplied:
+            parser.error("P2_EDGE_GRADIENT_LAMBDAS_NON_G3_ARM_FORBIDDEN")
         args.resolved_reason_router_mode = None
         args.resolved_gradient_ownership_mode = None
         args.resolved_gradient_ownership_lambda = None
+        args.resolved_edge_gradient_lambdas = None
         args.resolved_reason_loss_weight = 0.0
         args.resolved_use_temporal_comparator = getattr(args, "use_temporal_comparator", False)
         args.resolved_use_predicate_comparator = getattr(args, "use_predicate_comparator", False)
@@ -336,6 +391,7 @@ def _p2_resolve_arm_contract(
     router_override = getattr(args, "reason_router_mode", "auto")
     ownership_override = getattr(args, "gradient_ownership_mode", "auto")
     ownership_lambda = getattr(args, "gradient_ownership_lambda", None)
+    edge_map_raw = getattr(args, "edge_gradient_lambdas", None)
     if router_override != "auto" and router_override != expected_router:
         parser.error(
             "P2_ARM_CONFIG_MISMATCH: "
@@ -352,10 +408,22 @@ def _p2_resolve_arm_contract(
         if not math.isfinite(float(ownership_lambda)) or not 0.0 <= float(ownership_lambda) <= 1.0:
             parser.error("P2_GRADIENT_OWNERSHIP_LAMBDA_INVALID")
         resolved_ownership_lambda = float(ownership_lambda)
+        if edge_gradient_lambdas_was_supplied or edge_map_raw is not None:
+            parser.error("P2_EDGE_GRADIENT_LAMBDAS_LEGACY_MODE_FORBIDDEN")
+        resolved_edge_map = None
+    elif expected_ownership == "edge_specific":
+        if ownership_lambda is not None:
+            parser.error("G3_GLOBAL_GRADIENT_OWNERSHIP_LAMBDA_FORBIDDEN")
+        resolved_ownership_lambda = None
+        resolved_edge_map = _resolve_edge_gradient_lambdas(edge_map_raw, parser)
+        _validate_g3_arm_edge_map(arm, resolved_edge_map, parser)
     else:
         if ownership_lambda is not None:
             parser.error("P2_GRADIENT_OWNERSHIP_LAMBDA_LEGACY_MODE_FORBIDDEN")
         resolved_ownership_lambda = None
+        if edge_gradient_lambdas_was_supplied or edge_map_raw is not None:
+            parser.error("P2_EDGE_GRADIENT_LAMBDAS_LEGACY_MODE_FORBIDDEN")
+        resolved_edge_map = None
     reason_weight_was_set = _p2_cli_flag_present(raw_argv, "--reason-loss-weight")
     raw_reason_weight = getattr(args, "reason_loss_weight", None)
     calibration_export_requested = _p3w1_calibration_export_requested(args)
@@ -505,6 +573,7 @@ def _p2_resolve_arm_contract(
     args.resolved_reason_router_mode = expected_router
     args.resolved_gradient_ownership_mode = expected_ownership
     args.resolved_gradient_ownership_lambda = resolved_ownership_lambda
+    args.resolved_edge_gradient_lambdas = resolved_edge_map
     args.resolved_reason_loss_weight = resolved_reason_weight
     return {
         "enabled": True,
@@ -513,6 +582,7 @@ def _p2_resolve_arm_contract(
         "router_mode": expected_router,
         "gradient_ownership_mode": expected_ownership,
         "gradient_ownership_lambda": resolved_ownership_lambda,
+        "edge_gradient_lambdas": resolved_edge_map,
         "reason_loss_weight": resolved_reason_weight,
         "reason_router_epsilon": float(args.reason_router_epsilon),
         "reason_class_order": list(P2_REASON_CLASS_ORDER),
@@ -11435,7 +11505,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--reason-router-arm",
-        choices=("none", "A0", "A1", "A2", "A3", "D1"),
+        choices=("none", "A0", "A1", "A2", "A3", "D1", *G3_ARM_IDS),
         default="none",
         help="P2 reason-router arm. Default none preserves the legacy workflow.",
     )
@@ -11453,7 +11523,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--gradient-ownership-mode",
-        choices=("auto", "joint", "explicit_local", "partial"),
+        choices=("auto", "joint", "explicit_local", "partial", "edge_specific"),
         default="auto",
         help="P2 ownership override. auto resolves from --reason-router-arm.",
     )
@@ -11462,6 +11532,11 @@ def build_parser() -> argparse.ArgumentParser:
         type=float,
         default=None,
         help="Required finite [0, 1] downstream-gradient multiplier for D1 partial ownership.",
+    )
+    parser.add_argument(
+        "--edge-gradient-lambdas",
+        default=None,
+        help="Required JSON object with exactly the ten frozen Gen3 edge lambda keys.",
     )
     parser.add_argument(
         "--reason-loss-weight",
@@ -16450,6 +16525,7 @@ def _p2_checkpoint_metadata_from_args(args: argparse.Namespace) -> dict[str, Any
         "reason_router_mode": getattr(args, "resolved_reason_router_mode", None),
         "gradient_ownership_mode": getattr(args, "resolved_gradient_ownership_mode", None),
         "gradient_ownership_lambda": getattr(args, "resolved_gradient_ownership_lambda", None),
+        "edge_gradient_lambdas": getattr(args, "resolved_edge_gradient_lambdas", None),
         "reason_loss_weight": getattr(args, "resolved_reason_loss_weight", 0.0),
         "reason_router_epsilon": getattr(args, "reason_router_epsilon", None),
         "reason_min_train_count": getattr(args, "reason_min_train_count", None),
@@ -19870,6 +19946,7 @@ def main(argv: list[str] | None = None) -> int:
     if _p2_contract.get("enabled"):
         model.gradient_ownership_mode = args.resolved_gradient_ownership_mode
         model.gradient_ownership_lambda = args.resolved_gradient_ownership_lambda
+        model.edge_gradient_lambdas = args.resolved_edge_gradient_lambdas
         model.return_q_diagnostics = True
     _install_framegate_gradient_ownership(
         model,
@@ -24942,6 +25019,7 @@ def main(argv: list[str] | None = None) -> int:
         **({
             "reason_router_p2_contract": _p2_contract,
             "gradient_ownership_lambda": args.resolved_gradient_ownership_lambda,
+            "edge_gradient_lambdas": args.resolved_edge_gradient_lambdas,
             "reason_router_p2_metadata_integrity_source": _p2_reason_metadata_audit,
             "reason_router_p2_supervision": _p2_reason_supervision_audit,
             "reason_router_p2_epoch_loss_history": _p2_epoch_loss_history,
@@ -28558,9 +28636,6 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
-
-
 
 
 

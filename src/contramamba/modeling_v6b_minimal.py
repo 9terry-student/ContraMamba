@@ -38,6 +38,10 @@ STAGE196B2B6P8_CLASS_ORDER = ("REFUTE", "NOT_ENTITLED", "SUPPORT")
 STAGE196B2B6P8_RNG_POLICY = (
     "MATCH_NATIVE_AND_COUNTERPART_DOWNSTREAM_RESTORE_POST_NATIVE"
 )
+EDGE_GRADIENT_LAMBDA_KEYS = (
+    "F_TO_P", "F_TO_S", "P_TO_S", "F_TO_Q", "P_TO_Q",
+    "S_TO_Q", "F_TO_D", "P_TO_D", "S_TO_D", "Q_TO_D",
+)
 
 
 def _inverse_softplus(target: float) -> float:
@@ -57,6 +61,25 @@ def _partial_grad(tensor: torch.Tensor, gradient_ownership_lambda: float) -> tor
     """Preserve the forward value while scaling only downstream gradients."""
     detached = tensor.detach()
     return detached + gradient_ownership_lambda * (tensor - detached)
+
+
+def _validate_edge_gradient_lambdas(edge_gradient_lambdas: Any) -> dict[str, float]:
+    """Return the frozen Gen3 edge map in canonical order, or fail closed."""
+    if not isinstance(edge_gradient_lambdas, dict):
+        raise ValueError("edge_gradient_lambdas is required for edge_specific mode")
+    expected = set(EDGE_GRADIENT_LAMBDA_KEYS)
+    actual = set(edge_gradient_lambdas)
+    if actual != expected:
+        missing = sorted(expected - actual)
+        extra = sorted(actual - expected)
+        raise ValueError(f"edge_gradient_lambdas must contain exactly frozen keys; missing={missing}, extra={extra}")
+    canonical: dict[str, float] = {}
+    for edge in EDGE_GRADIENT_LAMBDA_KEYS:
+        value = float(edge_gradient_lambdas[edge])
+        if not math.isfinite(value) or not 0.0 <= value <= 1.0:
+            raise ValueError("edge_gradient_lambdas values must be finite and satisfy 0 <= lambda <= 1")
+        canonical[edge] = value
+    return canonical
 
 
 class ContraMambaV6BMinimal(nn.Module):
@@ -541,6 +564,7 @@ class ContraMambaV6BMinimal(nn.Module):
         decision_mode: str | None = None,
         gradient_ownership_mode: str | None = None,
         gradient_ownership_lambda: float | None = None,
+        edge_gradient_lambdas: dict[str, float] | None = None,
         return_q_diagnostics: bool = False,
         encoder_hidden_states: torch.Tensor | None = None,
         temporal_mismatch_flags: torch.Tensor | None = None,
@@ -590,10 +614,16 @@ class ContraMambaV6BMinimal(nn.Module):
             if gradient_ownership_lambda is not None
             else getattr(self, "gradient_ownership_lambda", None)
         )
-        if ownership_mode not in {"joint", "explicit_local", "partial"}:
+        ownership_edges = (
+            edge_gradient_lambdas
+            if edge_gradient_lambdas is not None
+            else getattr(self, "edge_gradient_lambdas", None)
+        )
+        if ownership_mode not in {"joint", "explicit_local", "partial", "edge_specific"}:
             raise ValueError(f"unsupported gradient_ownership_mode: {ownership_mode}")
         explicit_local = ownership_mode == "explicit_local"
         partial = ownership_mode == "partial"
+        edge_specific = ownership_mode == "edge_specific"
         if partial:
             if ownership_lambda is None:
                 raise ValueError("gradient_ownership_lambda is required for partial mode")
@@ -602,27 +632,28 @@ class ContraMambaV6BMinimal(nn.Module):
                 raise ValueError("gradient_ownership_lambda must be finite and satisfy 0 <= lambda <= 1")
         elif ownership_lambda is not None:
             raise ValueError("gradient_ownership_lambda is only valid for partial mode")
+        if edge_specific:
+            ownership_edges = _validate_edge_gradient_lambdas(ownership_edges)
+        elif ownership_edges is not None:
+            raise ValueError("edge_gradient_lambdas is only valid for edge_specific mode")
+
+        def recipient_alias(tensor: torch.Tensor, edge: str) -> torch.Tensor:
+            if edge_specific:
+                return _partial_grad(tensor, ownership_edges[edge])
+            if explicit_local:
+                return tensor.detach()
+            if partial:
+                return _partial_grad(tensor, ownership_lambda)
+            return tensor
 
         # Slot gates (unchanged from V5 for joint ownership). In explicit-local
         # mode, each downstream consumer receives detached aliases while the
         # owner output dictionary keeps the raw tensors for local losses.
         frame = self.frame_gate(token_states, attention_mask, claim_mask, evidence_mask)
         predicate_frame_inputs = {
-            "claim_frame_state": frame["claim_frame_state"].detach(),
-            "evidence_frame_state": frame["evidence_frame_state"].detach(),
-            "frame_pair_repr": frame["frame_pair_repr"].detach(),
-            "frame_prob": frame["frame_prob"].detach(),
-        } if explicit_local else ({
-            "claim_frame_state": _partial_grad(frame["claim_frame_state"], ownership_lambda),
-            "evidence_frame_state": _partial_grad(frame["evidence_frame_state"], ownership_lambda),
-            "frame_pair_repr": _partial_grad(frame["frame_pair_repr"], ownership_lambda),
-            "frame_prob": _partial_grad(frame["frame_prob"], ownership_lambda),
-        } if partial else {
-            "claim_frame_state": frame["claim_frame_state"],
-            "evidence_frame_state": frame["evidence_frame_state"],
-            "frame_pair_repr": frame["frame_pair_repr"],
-            "frame_prob": frame["frame_prob"],
-        })
+            name: recipient_alias(frame[name], "F_TO_P")
+            for name in ("claim_frame_state", "evidence_frame_state", "frame_pair_repr", "frame_prob")
+        }
         predicate = self.predicate_coverage_head(
             token_states=token_states,
             attention_mask=attention_mask,
@@ -634,42 +665,15 @@ class ContraMambaV6BMinimal(nn.Module):
             frame_prob=predicate_frame_inputs["frame_prob"],
         )
         sufficiency = self.sufficiency_gate(
-            frame_pair_repr=(
-                frame["frame_pair_repr"].detach()
-                if explicit_local else _partial_grad(frame["frame_pair_repr"], ownership_lambda)
-                if partial else frame["frame_pair_repr"]
-            ),
-            predicate_pair_repr=(
-                predicate["predicate_pair_repr"].detach()
-                if explicit_local else _partial_grad(predicate["predicate_pair_repr"], ownership_lambda)
-                if partial else predicate["predicate_pair_repr"]
-            ),
-            frame_prob=(
-                frame["frame_prob"].detach() if explicit_local else _partial_grad(frame["frame_prob"], ownership_lambda)
-                if partial else frame["frame_prob"]
-            ),
-            predicate_coverage_prob=(
-                predicate["predicate_coverage_prob"].detach()
-                if explicit_local else _partial_grad(predicate["predicate_coverage_prob"], ownership_lambda)
-                if partial else predicate["predicate_coverage_prob"]
-            ),
+            frame_pair_repr=recipient_alias(frame["frame_pair_repr"], "F_TO_S"),
+            predicate_pair_repr=recipient_alias(predicate["predicate_pair_repr"], "P_TO_S"),
+            frame_prob=recipient_alias(frame["frame_prob"], "F_TO_S"),
+            predicate_coverage_prob=recipient_alias(predicate["predicate_coverage_prob"], "P_TO_S"),
         )
         polarity = self.polarity_energy_head(
-            frame_pair_repr=(
-                frame["frame_pair_repr"].detach()
-                if explicit_local else _partial_grad(frame["frame_pair_repr"], ownership_lambda)
-                if partial else frame["frame_pair_repr"]
-            ),
-            predicate_pair_repr=(
-                predicate["predicate_pair_repr"].detach()
-                if explicit_local else _partial_grad(predicate["predicate_pair_repr"], ownership_lambda)
-                if partial else predicate["predicate_pair_repr"]
-            ),
-            sufficiency_repr=(
-                sufficiency["sufficiency_repr"].detach()
-                if explicit_local else _partial_grad(sufficiency["sufficiency_repr"], ownership_lambda)
-                if partial else sufficiency["sufficiency_repr"]
-            ),
+            frame_pair_repr=recipient_alias(frame["frame_pair_repr"], "F_TO_Q"),
+            predicate_pair_repr=recipient_alias(predicate["predicate_pair_repr"], "P_TO_Q"),
+            sufficiency_repr=recipient_alias(sufficiency["sufficiency_repr"], "S_TO_Q"),
         )
 
         # Stage22-A / A3: shared slot concatenation for auxiliary diagnostic heads.
@@ -770,31 +774,11 @@ class ContraMambaV6BMinimal(nn.Module):
 
         # Base logits (V5 standard)
         decision = self.decision_head(
-            frame_prob=(
-                frame["frame_prob"].detach()
-                if explicit_local else _partial_grad(frame["frame_prob"], ownership_lambda)
-                if partial else frame["frame_prob"]
-            ),
-            predicate_coverage_prob=(
-                predicate["predicate_coverage_prob"].detach()
-                if explicit_local else _partial_grad(predicate["predicate_coverage_prob"], ownership_lambda)
-                if partial else predicate["predicate_coverage_prob"]
-            ),
-            sufficiency_prob=(
-                sufficiency["sufficiency_prob"].detach()
-                if explicit_local else _partial_grad(sufficiency["sufficiency_prob"], ownership_lambda)
-                if partial else sufficiency["sufficiency_prob"]
-            ),
-            positive_energy=(
-                polarity["positive_energy"].detach()
-                if explicit_local else _partial_grad(polarity["positive_energy"], ownership_lambda)
-                if partial else polarity["positive_energy"]
-            ),
-            negative_energy=(
-                polarity["negative_energy"].detach()
-                if explicit_local else _partial_grad(polarity["negative_energy"], ownership_lambda)
-                if partial else polarity["negative_energy"]
-            ),
+            frame_prob=recipient_alias(frame["frame_prob"], "F_TO_D"),
+            predicate_coverage_prob=recipient_alias(predicate["predicate_coverage_prob"], "P_TO_D"),
+            sufficiency_prob=recipient_alias(sufficiency["sufficiency_prob"], "S_TO_D"),
+            positive_energy=recipient_alias(polarity["positive_energy"], "Q_TO_D"),
+            negative_energy=recipient_alias(polarity["negative_energy"], "Q_TO_D"),
             decision_mode=decision_mode,
             return_q_diagnostics=return_q_diagnostics or bool(getattr(self, "return_q_diagnostics", False)),
         )
@@ -1064,6 +1048,7 @@ class ContraMambaV6BMinimal(nn.Module):
                 "schema_version": "reason_router_p2_gradient_ownership_config_v1",
                 "mode": ownership_mode,
                 "gradient_ownership_lambda": ownership_lambda,
+                "edge_gradient_lambdas": ownership_edges,
                 "frame_to_predicate_detached": explicit_local,
                 "frame_predicate_to_sufficiency_detached": explicit_local,
                 "frame_predicate_sufficiency_to_polarity_detached": explicit_local,

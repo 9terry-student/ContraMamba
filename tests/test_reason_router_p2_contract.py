@@ -245,11 +245,13 @@ def _forward_with_ownership(
     model: torch.nn.Module,
     mode: str,
     gradient_ownership_lambda: float | None = None,
+    edge_gradient_lambdas: dict[str, float] | None = None,
 ) -> dict[str, torch.Tensor]:
     return model(
         **_production_batch(),
         gradient_ownership_mode=mode,
         gradient_ownership_lambda=gradient_ownership_lambda,
+        edge_gradient_lambdas=edge_gradient_lambdas,
         return_q_diagnostics=True,
     )
 
@@ -436,8 +438,9 @@ def _named_grads_after_loss(
     mode: str,
     gradient_ownership_lambda: float | None,
     loss_key: str,
+    edge_gradient_lambdas: dict[str, float] | None = None,
 ) -> tuple[dict[str, torch.Tensor], dict[str, torch.Tensor]]:
-    output = _forward_with_ownership(model, mode, gradient_ownership_lambda)
+    output = _forward_with_ownership(model, mode, gradient_ownership_lambda, edge_gradient_lambdas)
     losses = {
         "B1": F.binary_cross_entropy_with_logits(output["predicate_coverage_logit"], torch.ones(4)),
         "B2": F.binary_cross_entropy_with_logits(output["sufficiency_logit"], torch.ones(4)),
@@ -540,6 +543,301 @@ def test_partial_configuration_validation_and_frame_mode_independence() -> None:
     assert contract["framegate_nonframe_output_gradient_blocked"] is False
     trainer._install_framegate_gradient_ownership(model, "joint")
     assert not hasattr(model, "_frame_gradient_ownership_hook_handles")
+
+
+def _g3_edge_map(*, half_edge: str | None = None, value: float = 1.0) -> dict[str, float]:
+    edge_map = {key: value for key in trainer.G3_EDGE_GRADIENT_LAMBDA_KEYS}
+    if half_edge is not None:
+        edge_map[half_edge] = 0.5
+    return edge_map
+
+
+def test_edge_specific_configuration_validation_and_forward_identity() -> None:
+    model = _production_model("A0")
+    valid = _g3_edge_map()
+    joint = _forward_with_ownership(copy.deepcopy(model), "joint")
+    for edge_map in (valid, _g3_edge_map(half_edge="F_TO_Q"), _g3_edge_map(value=0.5)):
+        edge = _forward_with_ownership(copy.deepcopy(model), "edge_specific", edge_gradient_lambdas=edge_map)
+        for key in ("logits", "frame_prob", "predicate_coverage_prob", "sufficiency_prob", "positive_energy", "negative_energy"):
+            assert torch.equal(edge[key], joint[key])
+    invalid_maps = (
+        {key: value for key, value in valid.items() if key != "F_TO_P"},
+        {**valid, "EXTRA": 1.0}, {**valid, "F_TO_P": float("nan")},
+        {**valid, "F_TO_P": float("inf")}, {**valid, "F_TO_P": -0.1}, {**valid, "F_TO_P": 1.1},
+    )
+    for edge_map in invalid_maps:
+        with pytest.raises(ValueError):
+            _forward_with_ownership(model, "edge_specific", edge_gradient_lambdas=edge_map)
+    for mode in ("joint", "explicit_local", "partial"):
+        with pytest.raises(ValueError):
+            _forward_with_ownership(model, mode, 0.5 if mode == "partial" else None, valid)
+    with pytest.raises(ValueError):
+        _forward_with_ownership(model, "edge_specific", 0.5, valid)
+
+
+@pytest.mark.parametrize("loss_key", ("B1", "B2", "B3", "B4"))
+def test_edge_specific_endpoint_equivalence_to_joint_and_global_half(loss_key: str) -> None:
+    base = _production_model("A0")
+    joint_grads, joint_output = _named_grads_after_loss(copy.deepcopy(base), "joint", None, loss_key)
+    one_grads, one_output = _named_grads_after_loss(copy.deepcopy(base), "edge_specific", None, loss_key, _g3_edge_map())
+    partial_grads, partial_output = _named_grads_after_loss(copy.deepcopy(base), "partial", 0.5, loss_key)
+    half_grads, half_output = _named_grads_after_loss(copy.deepcopy(base), "edge_specific", None, loss_key, _g3_edge_map(value=0.5))
+    for key in ("logits", "frame_prob", "predicate_coverage_prob", "sufficiency_prob", "positive_energy", "negative_energy"):
+        assert torch.equal(one_output[key], joint_output[key])
+        assert torch.equal(half_output[key], partial_output[key])
+    for name in joint_grads:
+        assert torch.equal(one_grads[name], joint_grads[name]), name
+        assert torch.equal(half_grads[name], partial_grads[name]), name
+
+
+class _SyntheticFrameGate(torch.nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.pair = torch.nn.Parameter(torch.tensor(2.0))
+        self.prob = torch.nn.Parameter(torch.tensor(3.0))
+        self.claim = torch.nn.Parameter(torch.tensor(5.0))
+        self.evidence = torch.nn.Parameter(torch.tensor(7.0))
+
+    def forward(self, token_states, attention_mask, claim_mask, evidence_mask):
+        batch = token_states.shape[0]
+        return {
+            "frame_logit": self.pair.expand(batch),
+            "frame_prob": self.prob.expand(batch),
+            "frame_pair_repr": self.pair.expand(batch, 1),
+            "claim_frame_state": self.claim.expand(batch, 1),
+            "evidence_frame_state": self.evidence.expand(batch, 1),
+        }
+
+
+class _SyntheticPredicateHead(torch.nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.pair = torch.nn.Parameter(torch.tensor(11.0))
+        self.prob = torch.nn.Parameter(torch.tensor(13.0))
+
+    def forward(self, *, claim_frame_state, evidence_frame_state, frame_pair_repr, frame_prob, **_):
+        # The local predicate logit is the F_TO_P recipient witness; its
+        # exported owner tensors are independent parameters so later edges do
+        # not add an unaccounted-for F_TO_P multi-hop contribution.
+        batch = frame_prob.shape[0]
+        return {
+            "predicate_coverage_logit": (
+                claim_frame_state.squeeze(-1) + evidence_frame_state.squeeze(-1)
+                + frame_pair_repr.squeeze(-1) + frame_prob
+            ),
+            "predicate_pair_repr": self.pair.expand(batch, 1),
+            "predicate_coverage_prob": self.prob.expand(batch),
+        }
+
+
+class _SyntheticSufficiencyGate(torch.nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.repr = torch.nn.Parameter(torch.tensor(17.0))
+        self.prob = torch.nn.Parameter(torch.tensor(19.0))
+
+    def forward(self, *, frame_pair_repr, predicate_pair_repr, frame_prob, predicate_coverage_prob):
+        batch = frame_prob.shape[0]
+        return {
+            "sufficiency_logit": (
+                frame_pair_repr.squeeze(-1) + predicate_pair_repr.squeeze(-1)
+                + frame_prob + predicate_coverage_prob
+            ),
+            "sufficiency_repr": self.repr.expand(batch, 1),
+            "sufficiency_prob": self.prob.expand(batch),
+        }
+
+
+class _SyntheticPolarityHead(torch.nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.positive = torch.nn.Parameter(torch.tensor(23.0))
+        self.negative = torch.nn.Parameter(torch.tensor(29.0))
+
+    def forward(self, *, frame_pair_repr, predicate_pair_repr, sufficiency_repr):
+        batch = frame_pair_repr.shape[0]
+        ingress = frame_pair_repr.squeeze(-1) + predicate_pair_repr.squeeze(-1) + sufficiency_repr.squeeze(-1)
+        return {
+            # This local output witnesses F/P/S_TO_Q.  The decision-owned
+            # energies below remain independent Q owners.
+            "polarity_local_witness": ingress,
+            "positive_energy": self.positive.expand(batch),
+            "negative_energy": self.negative.expand(batch),
+        }
+
+
+class _SyntheticDecisionHead(torch.nn.Module):
+    def forward(self, *, frame_prob, predicate_coverage_prob, sufficiency_prob,
+                positive_energy, negative_energy, **_):
+        return {
+            "logits": torch.stack(
+                [frame_prob, predicate_coverage_prob, sufficiency_prob,
+                 positive_energy + negative_energy],
+                dim=-1,
+            )
+        }
+
+
+def _edge_isolation_model() -> torch.nn.Module:
+    model = _production_model("A0")
+    model.frame_gate = _SyntheticFrameGate()
+    model.predicate_coverage_head = _SyntheticPredicateHead()
+    model.sufficiency_gate = _SyntheticSufficiencyGate()
+    model.polarity_energy_head = _SyntheticPolarityHead()
+    model.decision_head = _SyntheticDecisionHead()
+    return model
+
+
+def _edge_loss(output: dict[str, torch.Tensor], edge: str) -> torch.Tensor:
+    if edge == "F_TO_P":
+        return output["predicate_coverage_logit"].sum()
+    if edge in {"F_TO_S", "P_TO_S"}:
+        return output["sufficiency_logit"].sum()
+    if edge in {"F_TO_Q", "P_TO_Q", "S_TO_Q"}:
+        return output["polarity_local_witness"].sum()
+    if edge == "F_TO_D":
+        return output["logits"][:, 0].sum()
+    if edge == "P_TO_D":
+        return output["logits"][:, 1].sum()
+    if edge == "S_TO_D":
+        return output["logits"][:, 2].sum()
+    assert edge == "Q_TO_D"
+    return output["logits"][:, 3].sum()
+
+
+EDGE_OWNER_PARAMETER = {
+    "F_TO_P": "frame_gate.pair", "F_TO_S": "frame_gate.pair", "F_TO_Q": "frame_gate.pair",
+    "F_TO_D": "frame_gate.prob", "P_TO_S": "predicate_coverage_head.pair",
+    "P_TO_Q": "predicate_coverage_head.pair", "P_TO_D": "predicate_coverage_head.prob",
+    "S_TO_Q": "sufficiency_gate.repr", "S_TO_D": "sufficiency_gate.prob",
+    "Q_TO_D": "polarity_energy_head.positive",
+}
+EDGE_SIBLING = {
+    "F_TO_P": "F_TO_S", "F_TO_S": "F_TO_P", "F_TO_Q": "F_TO_S", "F_TO_D": "F_TO_P",
+    "P_TO_S": "P_TO_Q", "P_TO_Q": "P_TO_S", "P_TO_D": "P_TO_S",
+    "S_TO_Q": "S_TO_D", "S_TO_D": "S_TO_Q",
+}
+
+
+def _edge_owner_gradient(edge_map: dict[str, float], edge: str) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
+    model = _edge_isolation_model()
+    output = _forward_with_ownership(model, "edge_specific", edge_gradient_lambdas=edge_map)
+    _edge_loss(output, edge).backward()
+    gradients = {name: parameter.grad.detach().clone() for name, parameter in model.named_parameters()
+                 if parameter.grad is not None}
+    return gradients[EDGE_OWNER_PARAMETER[edge]], output
+
+
+@pytest.mark.parametrize("edge", trainer.G3_EDGE_GRADIENT_LAMBDA_KEYS)
+def test_edge_specific_actual_forward_single_edge_isolation(edge: str) -> None:
+    baseline_gradient, baseline_output = _edge_owner_gradient(_g3_edge_map(), edge)
+    half_map = _g3_edge_map(half_edge=edge)
+    half_gradient, half_output = _edge_owner_gradient(half_map, edge)
+    # ContraMambaV6BMinimal.forward constructs the aliases; the deterministic
+    # heads merely make the recipient contribution analytically observable.
+    assert torch.equal(half_output["logits"], baseline_output["logits"])
+    assert torch.equal(half_gradient, 0.5 * baseline_gradient)
+    if edge == "Q_TO_D":
+        # One conceptual Q_TO_D lambda governs both energy ingress tensors.
+        model = _edge_isolation_model()
+        output = _forward_with_ownership(model, "edge_specific", edge_gradient_lambdas=half_map)
+        _edge_loss(output, edge).backward()
+        assert torch.equal(model.polarity_energy_head.positive.grad, torch.tensor(2.0))
+        assert torch.equal(model.polarity_energy_head.negative.grad, torch.tensor(2.0))
+    else:
+        sibling_gradient, _ = _edge_owner_gradient(half_map, EDGE_SIBLING[edge])
+        sibling_baseline, _ = _edge_owner_gradient(_g3_edge_map(), EDGE_SIBLING[edge])
+        assert torch.equal(sibling_gradient, sibling_baseline)
+
+
+def test_edge_specific_recipient_alias_independence_and_local_loss_preservation() -> None:
+    def local_plus_downstream(edge_map: dict[str, float]) -> tuple[torch.Tensor, torch.Tensor]:
+        model = _edge_isolation_model()
+        output = _forward_with_ownership(model, "edge_specific", edge_gradient_lambdas=edge_map)
+        local_loss = output["frame_logit"].sum()
+        downstream_loss = _edge_loss(output, "F_TO_P")
+        local_loss.backward(retain_graph=True)
+        local_gradient = model.frame_gate.pair.grad.detach().clone()
+        model.zero_grad(set_to_none=True)
+        downstream_loss.backward()
+        downstream_gradient = model.frame_gate.pair.grad.detach().clone()
+        return local_gradient, downstream_gradient
+
+    local_one, downstream_one = local_plus_downstream(_g3_edge_map())
+    local_half, downstream_half = local_plus_downstream(_g3_edge_map(half_edge="F_TO_P"))
+    # Owner-local and direct-recipient components are measured separately;
+    # total owner gradients are not compared because frozen Gen3 permits
+    # multi-hop downstream paths.
+    assert torch.equal(local_half, local_one)
+    assert torch.equal(downstream_half, 0.5 * downstream_one)
+
+
+def test_g3_resolver_arm_map_and_provenance_witness() -> None:
+    class Parser:
+        def error(self, message: str) -> None:
+            raise ValueError(message)
+
+    def args(arm: str, edge_map: dict[str, float]) -> SimpleNamespace:
+        return SimpleNamespace(reason_router_arm=arm, architecture="v6b_minimal", reason_router_mode="auto",
+            gradient_ownership_mode="edge_specific", gradient_ownership_lambda=None,
+            edge_gradient_lambdas=json.dumps(edge_map), reason_loss_weight=0.0, freeze_encoder=True,
+            frame_downstream_gradient_mode="joint", reason_router_epsilon=1e-8,
+            reason_min_train_count=1, reason_min_dev_count=1, use_temporal_comparator=False,
+            use_predicate_comparator=False)
+
+    for index, arm in enumerate(trainer.G3_ARM_IDS):
+        edge_map = _g3_edge_map(half_edge=trainer.G3_EDGE_GRADIENT_LAMBDA_KEYS[index])
+        resolved = args(arm, edge_map)
+        contract = trainer._p2_resolve_arm_contract(resolved, [], Parser())
+        assert contract["gradient_ownership_mode"] == "edge_specific"
+        assert contract["edge_gradient_lambdas"] == edge_map
+        assert trainer._p2_checkpoint_metadata_from_args(resolved)["edge_gradient_lambdas"] == edge_map
+        wrong_edge = "F_TO_Q" if arm == "G3-G1-HALF" else "F_TO_P"
+        with pytest.raises(ValueError, match="G3_ARM_EDGE_MAP_MISMATCH"):
+            trainer._p2_resolve_arm_contract(args(arm, _g3_edge_map(half_edge=wrong_edge)), [], Parser())
+    malformed = args("G3-G1-HALF", _g3_edge_map(half_edge="F_TO_P"))
+    malformed.edge_gradient_lambdas = '{"F_TO_P": 0.5, "F_TO_P": 1.0}'
+    with pytest.raises(ValueError, match="DUPLICATE"):
+        trainer._p2_resolve_arm_contract(malformed, [], Parser())
+    global_lambda = args("G3-G1-HALF", _g3_edge_map(half_edge="F_TO_P"))
+    global_lambda.gradient_ownership_lambda = 0.5
+    with pytest.raises(ValueError, match="GLOBAL"):
+        trainer._p2_resolve_arm_contract(global_lambda, [], Parser())
+
+
+def test_edge_gradient_cli_argument_is_fail_closed_outside_g3() -> None:
+    class Parser:
+        def error(self, message: str) -> None:
+            raise ValueError(message)
+
+    none = SimpleNamespace(reason_router_arm="none", use_temporal_comparator=False,
+                           use_predicate_comparator=False)
+    assert trainer._p2_resolve_arm_contract(none, [], Parser())["enabled"] is False
+    for raw_map in ("{}", json.dumps(_g3_edge_map(half_edge="F_TO_P"))):
+        with pytest.raises(ValueError, match="NON_G3_ARM_FORBIDDEN"):
+            trainer._p2_resolve_arm_contract(
+                SimpleNamespace(reason_router_arm="none"),
+                ["--edge-gradient-lambdas", raw_map], Parser(),
+            )
+
+    for arm, mode, ownership_lambda in (("A0", "joint", None), ("A2", "explicit_local", None), ("D1", "partial", 0.5)):
+        legacy = SimpleNamespace(reason_router_arm=arm, architecture="v6b_minimal",
+            reason_router_mode="auto", gradient_ownership_mode=mode,
+            gradient_ownership_lambda=ownership_lambda, edge_gradient_lambdas="{}", reason_loss_weight=0.0,
+            freeze_encoder=True, frame_downstream_gradient_mode="joint", reason_router_epsilon=1e-8,
+            reason_min_train_count=1, reason_min_dev_count=1, use_temporal_comparator=False,
+            use_predicate_comparator=False)
+        with pytest.raises(ValueError, match="LEGACY_MODE_FORBIDDEN"):
+            trainer._p2_resolve_arm_contract(legacy, ["--edge-gradient-lambdas", "{}"], Parser())
+
+    malformed = SimpleNamespace(reason_router_arm="G3-G1-HALF", architecture="v6b_minimal",
+        reason_router_mode="auto", gradient_ownership_mode="edge_specific",
+        gradient_ownership_lambda=None, edge_gradient_lambdas="{not-json}", reason_loss_weight=0.0,
+        freeze_encoder=True, frame_downstream_gradient_mode="joint", reason_router_epsilon=1e-8,
+        reason_min_train_count=1, reason_min_dev_count=1, use_temporal_comparator=False,
+        use_predicate_comparator=False)
+    with pytest.raises(ValueError, match="INVALID_JSON"):
+        trainer._p2_resolve_arm_contract(malformed, ["--edge-gradient-lambdas", "{not-json}"], Parser())
 
 
 def test_d1_resolver_validation_and_lambda_metadata_identity() -> None:
