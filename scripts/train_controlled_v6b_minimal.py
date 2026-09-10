@@ -202,6 +202,7 @@ P2_ARM_CONTRACTS = {
     "A1": ("conditional_first_blocker", "joint"),
     "A2": ("explicit_product", "explicit_local"),
     "A3": ("conditional_first_blocker", "explicit_local"),
+    "D1": ("explicit_product", "partial"),
 }
 P3W1_CALIBRATION_UNIT_SCHEMA_VERSION = "reason_router_p3w1_calibration_unit_v2"
 P3W1_CALIBRATION_UNIT_SCOPE = "COMPLETE_AUTHORITATIVE_TRAIN_SPLIT"
@@ -324,6 +325,7 @@ def _p2_resolve_arm_contract(
     if arm == "none":
         args.resolved_reason_router_mode = None
         args.resolved_gradient_ownership_mode = None
+        args.resolved_gradient_ownership_lambda = None
         args.resolved_reason_loss_weight = 0.0
         args.resolved_use_temporal_comparator = getattr(args, "use_temporal_comparator", False)
         args.resolved_use_predicate_comparator = getattr(args, "use_predicate_comparator", False)
@@ -333,6 +335,7 @@ def _p2_resolve_arm_contract(
     expected_router, expected_ownership = P2_ARM_CONTRACTS[arm]
     router_override = getattr(args, "reason_router_mode", "auto")
     ownership_override = getattr(args, "gradient_ownership_mode", "auto")
+    ownership_lambda = getattr(args, "gradient_ownership_lambda", None)
     if router_override != "auto" and router_override != expected_router:
         parser.error(
             "P2_ARM_CONFIG_MISMATCH: "
@@ -343,6 +346,16 @@ def _p2_resolve_arm_contract(
             "P2_ARM_CONFIG_MISMATCH: "
             f"arm={arm} requires router={expected_router} ownership={expected_ownership}"
         )
+    if expected_ownership == "partial":
+        if ownership_lambda is None:
+            parser.error("P2_GRADIENT_OWNERSHIP_LAMBDA_REQUIRED")
+        if not math.isfinite(float(ownership_lambda)) or not 0.0 <= float(ownership_lambda) <= 1.0:
+            parser.error("P2_GRADIENT_OWNERSHIP_LAMBDA_INVALID")
+        resolved_ownership_lambda = float(ownership_lambda)
+    else:
+        if ownership_lambda is not None:
+            parser.error("P2_GRADIENT_OWNERSHIP_LAMBDA_LEGACY_MODE_FORBIDDEN")
+        resolved_ownership_lambda = None
     reason_weight_was_set = _p2_cli_flag_present(raw_argv, "--reason-loss-weight")
     raw_reason_weight = getattr(args, "reason_loss_weight", None)
     calibration_export_requested = _p3w1_calibration_export_requested(args)
@@ -491,6 +504,7 @@ def _p2_resolve_arm_contract(
 
     args.resolved_reason_router_mode = expected_router
     args.resolved_gradient_ownership_mode = expected_ownership
+    args.resolved_gradient_ownership_lambda = resolved_ownership_lambda
     args.resolved_reason_loss_weight = resolved_reason_weight
     return {
         "enabled": True,
@@ -498,6 +512,7 @@ def _p2_resolve_arm_contract(
         "arm": arm,
         "router_mode": expected_router,
         "gradient_ownership_mode": expected_ownership,
+        "gradient_ownership_lambda": resolved_ownership_lambda,
         "reason_loss_weight": resolved_reason_weight,
         "reason_router_epsilon": float(args.reason_router_epsilon),
         "reason_class_order": list(P2_REASON_CLASS_ORDER),
@@ -10543,6 +10558,10 @@ def _add_reason_router_p2_prediction_exports(
             getattr(args, "resolved_gradient_ownership_mode", None)
             if args is not None else None
         ),
+        "gradient_ownership_lambda": (
+            getattr(args, "resolved_gradient_ownership_lambda", None)
+            if args is not None else None
+        ),
         "reason_class_order": list(P2_REASON_CLASS_ORDER),
         "internal_class_order": list(P2_INTERNAL_CLASS_ORDER),
         "external_class_order": list(P2_EXTERNAL_CLASS_ORDER),
@@ -11416,7 +11435,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--reason-router-arm",
-        choices=("none", "A0", "A1", "A2", "A3"),
+        choices=("none", "A0", "A1", "A2", "A3", "D1"),
         default="none",
         help="P2 reason-router arm. Default none preserves the legacy workflow.",
     )
@@ -11434,9 +11453,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--gradient-ownership-mode",
-        choices=("auto", "joint", "explicit_local"),
+        choices=("auto", "joint", "explicit_local", "partial"),
         default="auto",
         help="P2 ownership override. auto resolves from --reason-router-arm.",
+    )
+    parser.add_argument(
+        "--gradient-ownership-lambda",
+        type=float,
+        default=None,
+        help="Required finite [0, 1] downstream-gradient multiplier for D1 partial ownership.",
     )
     parser.add_argument(
         "--reason-loss-weight",
@@ -16424,6 +16449,7 @@ def _p2_checkpoint_metadata_from_args(args: argparse.Namespace) -> dict[str, Any
         "reason_router_composer": getattr(args, "resolved_reason_router_mode", None),
         "reason_router_mode": getattr(args, "resolved_reason_router_mode", None),
         "gradient_ownership_mode": getattr(args, "resolved_gradient_ownership_mode", None),
+        "gradient_ownership_lambda": getattr(args, "resolved_gradient_ownership_lambda", None),
         "reason_loss_weight": getattr(args, "resolved_reason_loss_weight", 0.0),
         "reason_router_epsilon": getattr(args, "reason_router_epsilon", None),
         "reason_min_train_count": getattr(args, "reason_min_train_count", None),
@@ -19840,6 +19866,7 @@ def main(argv: list[str] | None = None) -> int:
     model = model.to(device)
     if _p2_contract.get("enabled"):
         model.gradient_ownership_mode = args.resolved_gradient_ownership_mode
+        model.gradient_ownership_lambda = args.resolved_gradient_ownership_lambda
         model.return_q_diagnostics = True
     _install_framegate_gradient_ownership(
         model,
@@ -24910,6 +24937,7 @@ def main(argv: list[str] | None = None) -> int:
         "prediction_export_schema": "stage28e_v1_json_plus_optional_jsonl",
         **({
             "reason_router_p2_contract": _p2_contract,
+            "gradient_ownership_lambda": args.resolved_gradient_ownership_lambda,
             "reason_router_p2_metadata_integrity_source": _p2_reason_metadata_audit,
             "reason_router_p2_supervision": _p2_reason_supervision_audit,
             "reason_router_p2_epoch_loss_history": _p2_epoch_loss_history,
@@ -28514,10 +28542,6 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
-
-
-
 
 
 

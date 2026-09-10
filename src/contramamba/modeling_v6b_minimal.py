@@ -53,6 +53,12 @@ def _inverse_softplus(target: float) -> float:
     return math.log(math.expm1(target))
 
 
+def _partial_grad(tensor: torch.Tensor, gradient_ownership_lambda: float) -> torch.Tensor:
+    """Preserve the forward value while scaling only downstream gradients."""
+    detached = tensor.detach()
+    return detached + gradient_ownership_lambda * (tensor - detached)
+
+
 class ContraMambaV6BMinimal(nn.Module):
     """Minimal v6B: v5 base + learnable temporal/predicate comparator alphas.
 
@@ -534,6 +540,7 @@ class ContraMambaV6BMinimal(nn.Module):
         return_token_states: bool = False,
         decision_mode: str | None = None,
         gradient_ownership_mode: str | None = None,
+        gradient_ownership_lambda: float | None = None,
         return_q_diagnostics: bool = False,
         encoder_hidden_states: torch.Tensor | None = None,
         temporal_mismatch_flags: torch.Tensor | None = None,
@@ -578,9 +585,23 @@ class ContraMambaV6BMinimal(nn.Module):
             or bool(getattr(self, "return_q_diagnostics", False))
         )
         ownership_mode = gradient_ownership_mode or getattr(self, "gradient_ownership_mode", "joint")
-        if ownership_mode not in {"joint", "explicit_local"}:
+        ownership_lambda = (
+            gradient_ownership_lambda
+            if gradient_ownership_lambda is not None
+            else getattr(self, "gradient_ownership_lambda", None)
+        )
+        if ownership_mode not in {"joint", "explicit_local", "partial"}:
             raise ValueError(f"unsupported gradient_ownership_mode: {ownership_mode}")
         explicit_local = ownership_mode == "explicit_local"
+        partial = ownership_mode == "partial"
+        if partial:
+            if ownership_lambda is None:
+                raise ValueError("gradient_ownership_lambda is required for partial mode")
+            ownership_lambda = float(ownership_lambda)
+            if not math.isfinite(ownership_lambda) or not 0.0 <= ownership_lambda <= 1.0:
+                raise ValueError("gradient_ownership_lambda must be finite and satisfy 0 <= lambda <= 1")
+        elif ownership_lambda is not None:
+            raise ValueError("gradient_ownership_lambda is only valid for partial mode")
 
         # Slot gates (unchanged from V5 for joint ownership). In explicit-local
         # mode, each downstream consumer receives detached aliases while the
@@ -591,12 +612,17 @@ class ContraMambaV6BMinimal(nn.Module):
             "evidence_frame_state": frame["evidence_frame_state"].detach(),
             "frame_pair_repr": frame["frame_pair_repr"].detach(),
             "frame_prob": frame["frame_prob"].detach(),
-        } if explicit_local else {
+        } if explicit_local else ({
+            "claim_frame_state": _partial_grad(frame["claim_frame_state"], ownership_lambda),
+            "evidence_frame_state": _partial_grad(frame["evidence_frame_state"], ownership_lambda),
+            "frame_pair_repr": _partial_grad(frame["frame_pair_repr"], ownership_lambda),
+            "frame_prob": _partial_grad(frame["frame_prob"], ownership_lambda),
+        } if partial else {
             "claim_frame_state": frame["claim_frame_state"],
             "evidence_frame_state": frame["evidence_frame_state"],
             "frame_pair_repr": frame["frame_pair_repr"],
             "frame_prob": frame["frame_prob"],
-        }
+        })
         predicate = self.predicate_coverage_head(
             token_states=token_states,
             attention_mask=attention_mask,
@@ -610,32 +636,39 @@ class ContraMambaV6BMinimal(nn.Module):
         sufficiency = self.sufficiency_gate(
             frame_pair_repr=(
                 frame["frame_pair_repr"].detach()
-                if explicit_local else frame["frame_pair_repr"]
+                if explicit_local else _partial_grad(frame["frame_pair_repr"], ownership_lambda)
+                if partial else frame["frame_pair_repr"]
             ),
             predicate_pair_repr=(
                 predicate["predicate_pair_repr"].detach()
-                if explicit_local else predicate["predicate_pair_repr"]
+                if explicit_local else _partial_grad(predicate["predicate_pair_repr"], ownership_lambda)
+                if partial else predicate["predicate_pair_repr"]
             ),
             frame_prob=(
-                frame["frame_prob"].detach() if explicit_local else frame["frame_prob"]
+                frame["frame_prob"].detach() if explicit_local else _partial_grad(frame["frame_prob"], ownership_lambda)
+                if partial else frame["frame_prob"]
             ),
             predicate_coverage_prob=(
                 predicate["predicate_coverage_prob"].detach()
-                if explicit_local else predicate["predicate_coverage_prob"]
+                if explicit_local else _partial_grad(predicate["predicate_coverage_prob"], ownership_lambda)
+                if partial else predicate["predicate_coverage_prob"]
             ),
         )
         polarity = self.polarity_energy_head(
             frame_pair_repr=(
                 frame["frame_pair_repr"].detach()
-                if explicit_local else frame["frame_pair_repr"]
+                if explicit_local else _partial_grad(frame["frame_pair_repr"], ownership_lambda)
+                if partial else frame["frame_pair_repr"]
             ),
             predicate_pair_repr=(
                 predicate["predicate_pair_repr"].detach()
-                if explicit_local else predicate["predicate_pair_repr"]
+                if explicit_local else _partial_grad(predicate["predicate_pair_repr"], ownership_lambda)
+                if partial else predicate["predicate_pair_repr"]
             ),
             sufficiency_repr=(
                 sufficiency["sufficiency_repr"].detach()
-                if explicit_local else sufficiency["sufficiency_repr"]
+                if explicit_local else _partial_grad(sufficiency["sufficiency_repr"], ownership_lambda)
+                if partial else sufficiency["sufficiency_repr"]
             ),
         )
 
@@ -739,23 +772,28 @@ class ContraMambaV6BMinimal(nn.Module):
         decision = self.decision_head(
             frame_prob=(
                 frame["frame_prob"].detach()
-                if explicit_local else frame["frame_prob"]
+                if explicit_local else _partial_grad(frame["frame_prob"], ownership_lambda)
+                if partial else frame["frame_prob"]
             ),
             predicate_coverage_prob=(
                 predicate["predicate_coverage_prob"].detach()
-                if explicit_local else predicate["predicate_coverage_prob"]
+                if explicit_local else _partial_grad(predicate["predicate_coverage_prob"], ownership_lambda)
+                if partial else predicate["predicate_coverage_prob"]
             ),
             sufficiency_prob=(
                 sufficiency["sufficiency_prob"].detach()
-                if explicit_local else sufficiency["sufficiency_prob"]
+                if explicit_local else _partial_grad(sufficiency["sufficiency_prob"], ownership_lambda)
+                if partial else sufficiency["sufficiency_prob"]
             ),
             positive_energy=(
                 polarity["positive_energy"].detach()
-                if explicit_local else polarity["positive_energy"]
+                if explicit_local else _partial_grad(polarity["positive_energy"], ownership_lambda)
+                if partial else polarity["positive_energy"]
             ),
             negative_energy=(
                 polarity["negative_energy"].detach()
-                if explicit_local else polarity["negative_energy"]
+                if explicit_local else _partial_grad(polarity["negative_energy"], ownership_lambda)
+                if partial else polarity["negative_energy"]
             ),
             decision_mode=decision_mode,
             return_q_diagnostics=return_q_diagnostics or bool(getattr(self, "return_q_diagnostics", False)),
@@ -1025,6 +1063,7 @@ class ContraMambaV6BMinimal(nn.Module):
             output["gradient_ownership_configuration"] = {
                 "schema_version": "reason_router_p2_gradient_ownership_config_v1",
                 "mode": ownership_mode,
+                "gradient_ownership_lambda": ownership_lambda,
                 "frame_to_predicate_detached": explicit_local,
                 "frame_predicate_to_sufficiency_detached": explicit_local,
                 "frame_predicate_sufficiency_to_polarity_detached": explicit_local,

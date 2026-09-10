@@ -236,6 +236,19 @@ def _forward_for_arm(model: torch.nn.Module, arm: str) -> dict[str, torch.Tensor
     )
 
 
+def _forward_with_ownership(
+    model: torch.nn.Module,
+    mode: str,
+    gradient_ownership_lambda: float | None = None,
+) -> dict[str, torch.Tensor]:
+    return model(
+        **_production_batch(),
+        gradient_ownership_mode=mode,
+        gradient_ownership_lambda=gradient_ownership_lambda,
+        return_q_diagnostics=True,
+    )
+
+
 def _has_grad(module: torch.nn.Module) -> bool:
     return any(param.grad is not None for param in module.parameters())
 
@@ -399,6 +412,165 @@ def test_a0_a3_actual_production_autograd_ownership_matrix() -> None:
             assert _has_grad(model.polarity_energy_head)
         _clear_grads(model)
 
+
+@pytest.mark.parametrize("gradient_ownership_lambda", (0.0, 0.5, 1.0))
+def test_partial_grad_scalar_forward_identity_and_autograd_multiplier(
+    gradient_ownership_lambda: float,
+) -> None:
+    from contramamba.modeling_v6b_minimal import _partial_grad
+
+    value = torch.tensor(3.0, requires_grad=True)
+    partial = _partial_grad(value, gradient_ownership_lambda)
+    assert partial.item() == value.item()
+    partial.backward()
+    assert value.grad.item() == gradient_ownership_lambda
+
+
+def _named_grads_after_loss(
+    model: torch.nn.Module,
+    mode: str,
+    gradient_ownership_lambda: float | None,
+    loss_key: str,
+) -> tuple[dict[str, torch.Tensor], dict[str, torch.Tensor]]:
+    output = _forward_with_ownership(model, mode, gradient_ownership_lambda)
+    losses = {
+        "B1": F.binary_cross_entropy_with_logits(output["predicate_coverage_logit"], torch.ones(4)),
+        "B2": F.binary_cross_entropy_with_logits(output["sufficiency_logit"], torch.ones(4)),
+        "B3": F.cross_entropy(
+            torch.stack([output["negative_energy"], output["positive_energy"]], dim=-1),
+            torch.tensor([0, 1, 0, 1]),
+        ),
+        "B4": F.cross_entropy(output["logits"], torch.tensor([0, 1, 2, 0])),
+    }
+    losses[loss_key].backward()
+    return (
+        {name: torch.zeros_like(param) if param.grad is None else param.grad.detach().clone()
+         for name, param in model.named_parameters() if param.requires_grad},
+        output,
+    )
+
+
+@pytest.mark.parametrize("loss_key", ("B1", "B2", "B3", "B4"))
+def test_partial_endpoints_match_legacy_outputs_and_parameter_gradients(loss_key: str) -> None:
+    base = _production_model("A0")
+    partial_zero = copy.deepcopy(base)
+    partial_one = copy.deepcopy(base)
+    explicit = copy.deepcopy(base)
+    joint = copy.deepcopy(base)
+    zero_grads, zero_output = _named_grads_after_loss(partial_zero, "partial", 0.0, loss_key)
+    explicit_grads, explicit_output = _named_grads_after_loss(explicit, "explicit_local", None, loss_key)
+    one_grads, one_output = _named_grads_after_loss(partial_one, "partial", 1.0, loss_key)
+    joint_grads, joint_output = _named_grads_after_loss(joint, "joint", None, loss_key)
+    for key in ("logits", "frame_prob", "predicate_coverage_prob", "sufficiency_prob", "positive_energy", "negative_energy"):
+        assert torch.allclose(zero_output[key], explicit_output[key], rtol=RTOL, atol=ATOL)
+        assert torch.allclose(one_output[key], joint_output[key], rtol=RTOL, atol=ATOL)
+    for name in zero_grads:
+        for actual, expected in ((zero_grads[name], explicit_grads[name]), (one_grads[name], joint_grads[name])):
+            assert torch.allclose(actual, expected, rtol=RTOL, atol=ATOL), name
+
+
+@pytest.mark.parametrize(
+    ("boundary", "owner_path"),
+    (
+        ("B1", "frame_gate.pair_projector.0.weight"),
+        ("B2", "predicate_coverage_head.pair_projector.0.weight"),
+        ("B3", "sufficiency_gate.projector.0.weight"),
+        ("B4", "polarity_energy_head.feature_projector.0.weight"),
+    ),
+)
+def test_partial_midpoint_scales_downstream_gradient_at_each_boundary(
+    boundary: str,
+    owner_path: str,
+) -> None:
+    base = _production_model("A0")
+
+    def owner_gradient(mode: str, ownership_lambda: float | None) -> torch.Tensor:
+        model = copy.deepcopy(base)
+        gradients, _ = _named_grads_after_loss(model, mode, ownership_lambda, boundary)
+        gradient = gradients[owner_path]
+        if mode == "joint":
+            assert torch.count_nonzero(gradient) > 0
+        return gradient
+
+    joint = owner_gradient("joint", None)
+    partial = owner_gradient("partial", 0.5)
+    explicit_local = owner_gradient("explicit_local", None)
+    assert torch.allclose(partial, 0.5 * joint, rtol=1e-6, atol=1e-8)
+    assert torch.allclose(explicit_local, torch.zeros_like(explicit_local), rtol=1e-6, atol=1e-8)
+
+
+def test_partial_preserves_owner_local_gradient_while_scaling_downstream_gradient() -> None:
+    base = _production_model("A0")
+    local_target = torch.ones(4)
+
+    def frame_gradient(mode: str, ownership_lambda: float | None, include_downstream: bool) -> torch.Tensor:
+        model = copy.deepcopy(base)
+        output = _forward_with_ownership(model, mode, ownership_lambda)
+        loss = F.binary_cross_entropy_with_logits(output["frame_logit"], local_target)
+        if include_downstream:
+            loss = loss + F.binary_cross_entropy_with_logits(
+                output["predicate_coverage_logit"], torch.ones(4)
+            )
+        loss.backward()
+        return model.frame_gate.pair_projector[0].weight.grad.detach().clone()
+
+    local = frame_gradient("joint", None, False)
+    joint = frame_gradient("joint", None, True)
+    partial = frame_gradient("partial", 0.5, True)
+    assert torch.allclose(partial, local + 0.5 * (joint - local), rtol=1e-6, atol=1e-8)
+    assert not torch.allclose(partial, 0.5 * joint, rtol=1e-6, atol=1e-8)
+
+
+def test_partial_configuration_validation_and_frame_mode_independence() -> None:
+    model = _production_model("A0")
+    for invalid in (-0.1, 1.1, float("nan"), float("inf")):
+        with pytest.raises(ValueError):
+            _forward_with_ownership(model, "partial", invalid)
+    with pytest.raises(ValueError, match="required"):
+        _forward_with_ownership(model, "partial")
+    with pytest.raises(ValueError, match="only valid"):
+        _forward_with_ownership(model, "joint", 0.5)
+    contract = trainer._frame_gradient_ownership_contract("joint", True, False)
+    assert contract["frame_downstream_gradient_mode"] == "joint"
+    assert contract["framegate_nonframe_output_gradient_blocked"] is False
+    trainer._install_framegate_gradient_ownership(model, "joint")
+    assert not hasattr(model, "_frame_gradient_ownership_hook_handles")
+
+
+def test_d1_resolver_validation_and_lambda_metadata_identity() -> None:
+    class Parser:
+        def error(self, message: str) -> None:
+            raise ValueError(message)
+
+    def args(mode: str, ownership_lambda: float | None) -> SimpleNamespace:
+        return SimpleNamespace(
+            reason_router_arm="D1", architecture="v6b_minimal", reason_router_mode="auto",
+            gradient_ownership_mode=mode, gradient_ownership_lambda=ownership_lambda,
+            reason_loss_weight=0.0, freeze_encoder=True, frame_downstream_gradient_mode="joint",
+            reason_router_epsilon=1e-8, reason_min_train_count=1, reason_min_dev_count=1,
+            use_temporal_comparator=False, use_predicate_comparator=False,
+        )
+
+    resolved = args("partial", 0.5)
+    contract = trainer._p2_resolve_arm_contract(resolved, ["--gradient-ownership-lambda", "0.5"], Parser())
+    assert contract["gradient_ownership_lambda"] == 0.5
+    assert resolved.resolved_gradient_ownership_lambda == 0.5
+    forbidden_frame_mode = args("partial", 0.5)
+    forbidden_frame_mode.frame_downstream_gradient_mode = "frame_local_only"
+    with pytest.raises(ValueError, match="forbids legacy frame_local_only hook"):
+        trainer._p2_resolve_arm_contract(forbidden_frame_mode, [], Parser())
+    for value in (None, -0.1, 1.1, float("nan"), float("inf")):
+        with pytest.raises(ValueError):
+            trainer._p2_resolve_arm_contract(args("partial", value), [], Parser())
+    legacy = args("joint", 0.5)
+    legacy.reason_router_arm = "A0"
+    with pytest.raises(ValueError, match="LEGACY_MODE_FORBIDDEN"):
+        trainer._p2_resolve_arm_contract(legacy, [], Parser())
+    first = _p2_args_for_checkpoint("D1", "explicit_product", "partial")
+    first.resolved_gradient_ownership_lambda = 0.5
+    second = _p2_args_for_checkpoint("D1", "explicit_product", "partial")
+    second.resolved_gradient_ownership_lambda = 1.0
+    assert trainer._p2_checkpoint_metadata_from_args(first) != trainer._p2_checkpoint_metadata_from_args(second)
 
 def test_a1_a3_primary_reason_ce_production_gradients() -> None:
     targets = torch.tensor([0, 1, 2, 3])
