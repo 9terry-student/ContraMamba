@@ -19710,6 +19710,10 @@ def main(argv: list[str] | None = None) -> int:
 
     _p2_reason_supervision_audit: dict[str, Any] = {}
     _p2_epoch_loss_history: list[dict[str, Any]] = []
+    # This is outer-main provenance state.  It deliberately starts neutral because
+    # the initial run provenance is written before any nested training run exists.
+    # After training, it is refreshed from the nested run's returned report below.
+    _p2_last_loss_export: dict[str, Any] = {}
     if _p2_contract.get("enabled"):
         if _p3w1_calibration_export_path is not None:
             _p2_reason_supervision_audit, _p2_reason_metadata_audit["a0_reference"] = _p3w1_prepare_train_only_reason_supervision_for_calibration(
@@ -25358,6 +25362,18 @@ def main(argv: list[str] | None = None) -> int:
             pc_valid_count=len(_pc_pair_records),
         )
 
+    # The nested training function owns its per-run final-loss snapshot.  Outer
+    # report/provenance assembly must consume that returned state instead of an
+    # accidental same-named local in the nested scope.  In a sweep, the final
+    # outer summary has historically described the final run, so retain that
+    # ordering while making the hand-off explicit.
+    if _p2_contract.get("enabled") and reports:
+        _p2_final_run_report = next(reversed(reports.values()))
+        _p2_final_run_router_report = _p2_final_run_report.get("reason_router_p2", {})
+        _p2_last_loss_export = dict(
+            _p2_final_run_router_report.get("final_epoch_loss_summary", {})
+        )
+
     # Capture learned alphas (v6B-specific; v7 has no comparator alphas)
     alpha_temporal = (
         float(model.alpha_temporal().detach())
@@ -28542,7 +28558,6 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
 
 
 

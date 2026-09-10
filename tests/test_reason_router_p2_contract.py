@@ -3,6 +3,8 @@ from __future__ import annotations
 import ast
 import copy
 import inspect
+import json
+import os
 from pathlib import Path
 from types import SimpleNamespace
 import types
@@ -661,6 +663,147 @@ def test_d1_report_path_uses_neutral_loss_export_when_no_p2_epoch_snapshot(monke
     )
     assert report["reason_router_p2"]["final_epoch_loss_summary"] == {}
     assert report["reason_router_p2"]["epoch_loss_history"] == []
+
+
+def test_d1_real_main_cpu_dummy_smoke_completes_report_and_provenance(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Run the real D1 main orchestration without canonical scientific artifacts."""
+    tmp_path = Path.cwd() / ".tmp_pytest_d1_completion" / str(os.getpid())
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    report_path = tmp_path / "d1_report.json"
+    predictions_path = tmp_path / "d1_predictions.json"
+
+    def lightweight_integrity_loader(
+        *, source_records: list[dict[str, object]], **_unused: object,
+    ) -> tuple[dict[str, dict[str, object]], dict[str, object]]:
+        # The production P4-X binding intentionally admits only the frozen large
+        # dataset.  This plumbing test supplies equivalent local sidecar facts for
+        # the smoke subset, while leaving main(), split, model, training, report,
+        # and provenance orchestration real.
+        train, dev = trainer.v5.split_by_pair_id(
+            source_records[:16], dev_ratio=0.2, seed=8192,
+        )
+        split_by_id = {
+            **{str(record["id"]): "train" for record in train},
+            **{str(record["id"]): "dev" for record in dev},
+        }
+        canonical_by_pair = {
+            str(record["pair_id"]): str(record["id"])
+            for record in source_records[:16]
+            if record["intervention_type"] == "none"
+        }
+        sidecar = {
+            str(record["id"]): {
+                "row_id": str(record["id"]),
+                "pair_id": str(record["pair_id"]),
+                "split": split_by_id[str(record["id"])],
+                "canonical_row_id": canonical_by_pair[str(record["pair_id"])],
+                "frame_compatible_label": int(record["frame_compatible_label"]),
+                "canonical_status": "PASS",
+                "intervention_contract_status": "PASS",
+                "schema_status": "PASS",
+                "dataset_source_status": "PASS",
+                "grammar_status": "PASS",
+                "polarity_contamination_status": "PASS",
+                "time_swap_status": "PASS",
+            }
+            for record in source_records[:16]
+        }
+        return sidecar, {
+            "source": "test-only lightweight integrity fixture",
+            "observed_semantic_sha256": "test-semantic-sha",
+        }
+
+    monkeypatch.setattr(trainer, "_p2_load_reason_integrity_sidecar", lightweight_integrity_loader)
+    assert trainer.main([
+        "--data", str(Path("data/toy_interventions_v5.jsonl")),
+        "--backbone", "dummy",
+        "--allow-dummy-backbone",
+        "--device", "cpu",
+        "--smoke",
+        "--split-seed", "8192",
+        "--reason-router-arm", "D1",
+        "--reason-router-mode", "explicit_product",
+        "--gradient-ownership-mode", "partial",
+        "--gradient-ownership-lambda", "0.5",
+        "--reason-loss-weight", "0.0",
+        "--ranking-weight", "0.0",
+        "--stage174c-clean-polarity-preservation-weight", "0.0",
+        "--controlled-integrity-sidecar-path", str(tmp_path / "sidecar.jsonl"),
+        "--expected-integrity-sidecar-semantic-sha256", "test-semantic-sha",
+        "--output-json", str(report_path),
+        "--output-predictions-json", str(predictions_path),
+    ]) == 0
+
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    predictions = json.loads(predictions_path.read_text(encoding="utf-8"))
+    router = report["configuration"]["reason_router_p2"]
+    contract = router["contract"]
+    assert predictions
+    assert report["run_provenance_json"] == str(tmp_path / "run_provenance.json")
+    provenance = json.loads((tmp_path / "run_provenance.json").read_text(encoding="utf-8"))
+    assert provenance["status"] == "completed"
+    provenance_p2 = provenance["resolved_runtime_config"]["reason_router_p2_contract"]
+    assert provenance_p2["arm"] == "D1"
+    assert provenance_p2["gradient_ownership_mode"] == "partial"
+    assert provenance_p2["gradient_ownership_lambda"] == 0.5
+    assert contract["arm"] == "D1"
+    assert contract["router_mode"] == "explicit_product"
+    assert contract["gradient_ownership_mode"] == "partial"
+    assert contract["gradient_ownership_lambda"] == 0.5
+    assert contract["reason_loss_weight"] == 0.0
+    assert router["metadata_integrity_source"]["a0_reference"] == {
+        "required": False, "joined_row_count": 0,
+    }
+    # D1 has no primary-reason CE, so the legacy A1/A3 epoch-loss collector
+    # remains intentionally empty; the key must still survive outer assembly.
+    assert router["final_epoch_loss_summary"] == {}
+
+
+def test_outer_p2_loss_handoff_is_explicit_and_legacy_arms_remain_supported() -> None:
+    """Guard the main/nested scope boundary and representative legacy arms."""
+    main_tree = ast.parse(inspect.getsource(trainer.main))
+    main_function = main_tree.body[0]
+    assignments = [
+        node for node in ast.walk(main_function)
+        if isinstance(node, ast.AnnAssign)
+        and isinstance(node.target, ast.Name)
+        and node.target.id == "_p2_last_loss_export"
+    ]
+    assert assignments, "outer main must initialize its own pre-training loss export"
+    assert any(
+        isinstance(node, ast.Assign)
+        and any(isinstance(target, ast.Name) and target.id == "_p2_final_run_report" for target in node.targets)
+        and "reports" in ast.unparse(node.value)
+        for node in ast.walk(main_function)
+    ), "outer final-loss state must be obtained from the nested training result"
+
+    class Parser:
+        def error(self, message: str) -> None:
+            raise ValueError(message)
+
+    for arm, mode, ownership in (
+        ("A0", "explicit_product", "joint"),
+        ("A1", "conditional_first_blocker", "joint"),
+        ("A2", "explicit_product", "explicit_local"),
+        ("A3", "conditional_first_blocker", "explicit_local"),
+    ):
+        args = _p2_args_for_checkpoint(arm, mode, ownership, reason_weight=0.0)
+        args.architecture = "v6b_minimal"
+        args.reason_router_mode = mode
+        args.gradient_ownership_mode = ownership
+        args.reason_loss_weight = 1.0 if arm in {"A1", "A3"} else 0.0
+        args.freeze_encoder = True
+        args.frame_downstream_gradient_mode = "joint"
+        args.use_temporal_comparator = False
+        args.use_predicate_comparator = False
+        args.reason_min_train_count = 1
+        args.reason_min_dev_count = 1
+        args.gradient_ownership_lambda = None
+        trainer._p2_resolve_arm_contract(
+            args, ["--reason-loss-weight", str(args.reason_loss_weight)], Parser()
+        )
 
 def test_a1_a3_primary_reason_ce_production_gradients() -> None:
     targets = torch.tensor([0, 1, 2, 3])
