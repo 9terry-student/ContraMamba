@@ -222,15 +222,38 @@ def test_one_seed_at_a_time_releases_before_next_loader(monkeypatch):
  for seed in k.EXPECTED_ZIP_SHA256:outputs[seed]=k.screen_one_seed(seed,{"seed":seed,"checkpoint_sha256":seed},Path("snapshot"),{"x":{"prefix_bundle":{}}},"cpu")
  assert list(outputs)==["seed180","seed181","seed182"] and events==["load-seed180","build","gc","load-seed181","build","gc","load-seed182","build","gc"]
 
-def test_git_dirty_matrix(monkeypatch):
- root=Path.cwd();base={"git":""}
+def test_git_provenance_allows_authority_commit_and_descendant(monkeypatch):
+ root=Path.cwd();base={"status":"","head":k.AUTHORITY_COMMIT,"ancestry":0};calls=[]
  def check(argv,**kw):
   if argv[1:]==["status","--porcelain=v1"]:return base["status"]
   if argv[1:]==["branch","--show-current"]:return "longterm-k-series-native-state-kinematics\n"
-  if argv[1:]==["rev-parse","HEAD"]:return k.AUTHORITY_COMMIT+"\n"
+  if argv[1:]==["rev-parse","HEAD"]:return base["head"]+"\n"
   raise AssertionError(argv)
- monkeypatch.setattr(k.subprocess,"check_output",check);monkeypatch.setattr(k.subprocess,"call",lambda *a,**kw:0)
- base["status"]="";assert k.git_provenance(root)["runtime_git_head"]==k.AUTHORITY_COMMIT
+ def call(argv,**kw):
+  calls.append(argv)
+  if argv==["git","merge-base","--is-ancestor",k.AUTHORITY_COMMIT,base["head"]]:return base["ancestry"]
+  if argv==["git","ls-files","--error-unmatch","scripts/longterm_k2_exact_prefix_phase_a.py"]:return 0
+  raise AssertionError(argv)
+ monkeypatch.setattr(k.subprocess,"check_output",check);monkeypatch.setattr(k.subprocess,"call",call)
+ assert k.git_provenance(root)["runtime_git_head"]==k.AUTHORITY_COMMIT
+ base["head"]="0123456789abcdef0123456789abcdef01234567"
+ assert k.git_provenance(root)["runtime_git_head"]==base["head"]
+ assert calls==[["git","merge-base","--is-ancestor",k.AUTHORITY_COMMIT,k.AUTHORITY_COMMIT],["git","ls-files","--error-unmatch","scripts/longterm_k2_exact_prefix_phase_a.py"],["git","merge-base","--is-ancestor",k.AUTHORITY_COMMIT,base["head"]],["git","ls-files","--error-unmatch","scripts/longterm_k2_exact_prefix_phase_a.py"]]
+
+def test_git_provenance_rejects_non_descendant_and_dirty_states(monkeypatch):
+ root=Path.cwd();base={"status":"","head":"0123456789abcdef0123456789abcdef01234567","ancestry":1}
+ def check(argv,**kw):
+  if argv[1:]==["status","--porcelain=v1"]:return base["status"]
+  if argv[1:]==["branch","--show-current"]:return "longterm-k-series-native-state-kinematics\n"
+  if argv[1:]==["rev-parse","HEAD"]:return base["head"]+"\n"
+  raise AssertionError(argv)
+ def call(argv,**kw):
+  if argv==["git","merge-base","--is-ancestor",k.AUTHORITY_COMMIT,base["head"]]:return base["ancestry"]
+  if argv==["git","ls-files","--error-unmatch","scripts/longterm_k2_exact_prefix_phase_a.py"]:return 0
+  raise AssertionError(argv)
+ monkeypatch.setattr(k.subprocess,"check_output",check);monkeypatch.setattr(k.subprocess,"call",call)
+ with pytest.raises(ValueError,match="GIT_PROVENANCE_MISMATCH"):k.git_provenance(root)
+ base["ancestry"]=0
  for status in ("?? unexpected.txt\n","M  tracked.py\n"," M tracked.py\n"):
   base["status"]=status
   with pytest.raises(ValueError):k.git_provenance(root)

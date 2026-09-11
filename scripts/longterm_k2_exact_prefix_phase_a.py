@@ -164,7 +164,7 @@ def id_lists(screening:list[dict[str,Any]])->tuple[list[dict[str,Any]],list[dict
  chosen=e if len(e)<=64 else sorted(e,key=lambda x:(sha(canonical_json(x)),x["stable_item_id"]))[:64];return e,[{"schema_version":FINAL_SCHEMA,"stable_item_id":x["stable_item_id"]} for x in chosen],"PHASE_B_ELIGIBLE"
 def git_provenance(root:Path)->dict[str,Any]:
  status=subprocess.check_output(["git","status","--porcelain=v1"],cwd=root,text=True).splitlines();branch=subprocess.check_output(["git","branch","--show-current"],cwd=root,text=True).strip();head=subprocess.check_output(["git","rev-parse","HEAD"],cwd=root,text=True).strip()
- if branch!="longterm-k-series-native-state-kinematics" or head!=AUTHORITY_COMMIT:raise ValueError("GIT_PROVENANCE_MISMATCH")
+ if branch!="longterm-k-series-native-state-kinematics" or subprocess.call(["git","merge-base","--is-ancestor",AUTHORITY_COMMIT,head],cwd=root,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)!=0:raise ValueError("GIT_PROVENANCE_MISMATCH")
  for line in status:
   if line[:2]!="??" or line[3:].replace("\\","/") not in ALLOWED_UNTRACKED:raise ValueError("GIT_DIRTY_CONTRACT_MISMATCH")
  if subprocess.call(["git","ls-files","--error-unmatch","scripts/longterm_k2_exact_prefix_phase_a.py"],cwd=root,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)!=0:raise ValueError("K2_SCRIPT_NOT_TRACKED")
