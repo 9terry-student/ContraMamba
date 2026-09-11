@@ -119,9 +119,24 @@ The N>=30 floor is a single-endpoint design-sensitivity calculation: approximate
 
 ## 6. Canonical model and native observer
 
-Native capture uses one full canonical A0 realization, seed180, only after authenticating its full checkpoint and the established common encoder digest:
+Native capture uses one full canonical A0 realization, seed180, only after authenticating its full checkpoint and the common-encoder identity for each of seed180, seed181, and seed182. The normative K2 common-encoder value fingerprint has this exact algorithm: select all checkpoint/model-state entries whose names begin exactly `mamba.`; order names lexicographically ascending; for each selected tensor compute `tensor_bytes = tensor.detach().cpu().contiguous().numpy().tobytes()` and `per_tensor_sha256 = lowercase SHA256(tensor_bytes)`; construct the mapping `{tensor_name: per_tensor_sha256, ...}`; serialize that mapping as canonical JSON encoded UTF-8 with sorted keys, compact separators, and no trailing newline; then compute `K2_COMMON_ENCODER_CANONICAL_VALUE_SHA256 = SHA256(canonical_json_bytes)`. It is required independently for each of seed180, seed181, and seed182:
 
-    67bfc8cb253fef88b2b8936d442468b9ddcbffa8b79582ba3e2432cb271a937b
+    K2_COMMON_ENCODER_CANONICAL_VALUE_SHA256 = 48a7e9ac9dfa6c8c292090ee0fcb606bd4c85d13706bfc8a3e371af77c440597
+
+The following structural fingerprint is mandatory for each of the same three seeds, and is a companion check rather than a substitute for the canonical digest:
+
+    tensor_count    = 242
+    total_numel     = 129135360
+    total_raw_bytes = 516541440
+    dtype           = float32 for all 242 tensors
+
+As an informative independent, non-normative cross-check, `RAW_CONCAT_NAME_SORTED_SHA256` is SHA256 of the concatenation of `tensor.detach().cpu().contiguous().numpy().tobytes()` for all `mamba.*` tensors in ascending tensor-name order. It reproduces as follows for each of seed180, seed181, and seed182:
+
+    RAW_CONCAT_NAME_SORTED_SHA256 = 968c12c095a6aab883db5984f4c02ad5e893a5ff140781ffbda41b97970401ae
+
+This raw-concatenation value is a secondary cross-check only. It does not replace the normative canonical map digest and is not a second execution gate when the normative digest and structural checks pass.
+
+Provenance correction: the historical literal `67bfc8cb253fef88b2b8936d442468b9ddcbffa8b79582ba3e2432cb271a937b` is SUPERSEDED for K2 encoder validation because its derivation cannot be reproduced from the authenticated A0 checkpoints or strict-loaded encoder state; historical implementation deriving that literal was not recovered. This is a provenance defect, not evidence of encoder inequality or corruption. Forensic recovery established that all 242 float32 encoder tensors are byte-identical across seed180/181/182, preserving the intended common-encoder premise.
 
 The seed180/181/182 heads remain fixed decision observers for eligibility/recovery only. They are not three native-state replicates. Every branch/item native trajectory is one fresh seed180 common-encoder forward with no cache, state, snapshot, or padding reuse.
 
