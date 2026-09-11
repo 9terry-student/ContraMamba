@@ -209,7 +209,37 @@ G3_EDGE_GRADIENT_LAMBDA_KEYS = (
     "S_TO_Q", "F_TO_D", "P_TO_D", "S_TO_D", "Q_TO_D",
 )
 G3_ARM_IDS = tuple(f"G3-G{index}-HALF" for index in range(1, 11))
-P2_ARM_CONTRACTS.update({arm: ("explicit_product", "edge_specific") for arm in G3_ARM_IDS})
+G3_PAIRWISE_ARM_IDS = (
+    "G3-G4-G5-HALF",
+    "G3-G4-G6-HALF",
+    "G3-G5-G6-HALF",
+    "G3-G7-G8-HALF",
+    "G3-G7-G9-HALF",
+    "G3-G7-G10-HALF",
+    "G3-G8-G9-HALF",
+    "G3-G8-G10-HALF",
+    "G3-G9-G10-HALF",
+    "G3-G4-G10-HALF",
+    "G3-G5-G10-HALF",
+    "G3-G6-G10-HALF",
+)
+G3_PAIRWISE_ARM_EDGE_PAIRS = {
+    "G3-G4-G5-HALF": ("F_TO_Q", "P_TO_Q"),
+    "G3-G4-G6-HALF": ("F_TO_Q", "S_TO_Q"),
+    "G3-G5-G6-HALF": ("P_TO_Q", "S_TO_Q"),
+    "G3-G7-G8-HALF": ("F_TO_D", "P_TO_D"),
+    "G3-G7-G9-HALF": ("F_TO_D", "S_TO_D"),
+    "G3-G7-G10-HALF": ("F_TO_D", "Q_TO_D"),
+    "G3-G8-G9-HALF": ("P_TO_D", "S_TO_D"),
+    "G3-G8-G10-HALF": ("P_TO_D", "Q_TO_D"),
+    "G3-G9-G10-HALF": ("S_TO_D", "Q_TO_D"),
+    "G3-G4-G10-HALF": ("F_TO_Q", "Q_TO_D"),
+    "G3-G5-G10-HALF": ("P_TO_Q", "Q_TO_D"),
+    "G3-G6-G10-HALF": ("S_TO_Q", "Q_TO_D"),
+}
+P2_ARM_CONTRACTS.update(
+    {arm: ("explicit_product", "edge_specific") for arm in (*G3_ARM_IDS, *G3_PAIRWISE_ARM_IDS)}
+)
 
 
 def _resolve_edge_gradient_lambdas(raw_map: str | None, parser: argparse.ArgumentParser) -> dict[str, float]:
@@ -248,7 +278,15 @@ def _reject_duplicate_edge_keys(pairs: list[tuple[str, Any]], parser: argparse.A
 
 def _validate_g3_arm_edge_map(arm: str, edge_map: dict[str, float], parser: argparse.ArgumentParser) -> None:
     expected = {key: 1.0 for key in G3_EDGE_GRADIENT_LAMBDA_KEYS}
-    expected[G3_EDGE_GRADIENT_LAMBDA_KEYS[int(arm.split("-G")[1].split("-")[0]) - 1]] = 0.5
+    if arm in G3_PAIRWISE_ARM_EDGE_PAIRS:
+        half_edges = G3_PAIRWISE_ARM_EDGE_PAIRS[arm]
+    elif arm in G3_ARM_IDS:
+        half_edges = (G3_EDGE_GRADIENT_LAMBDA_KEYS[int(arm.split("-G")[1].split("-")[0]) - 1],)
+    else:
+        parser.error("G3_ARM_EDGE_MAP_MISMATCH")
+        return
+    for edge in half_edges:
+        expected[edge] = 0.5
     if edge_map != expected:
         parser.error("G3_ARM_EDGE_MAP_MISMATCH")
 P3W1_CALIBRATION_UNIT_SCHEMA_VERSION = "reason_router_p3w1_calibration_unit_v2"
@@ -11505,7 +11543,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--reason-router-arm",
-        choices=("none", "A0", "A1", "A2", "A3", "D1", *G3_ARM_IDS),
+        choices=("none", "A0", "A1", "A2", "A3", "D1", *G3_ARM_IDS, *G3_PAIRWISE_ARM_IDS),
         default="none",
         help="P2 reason-router arm. Default none preserves the legacy workflow.",
     )
@@ -28636,7 +28674,6 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
 
 
 
