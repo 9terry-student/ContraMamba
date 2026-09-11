@@ -637,23 +637,38 @@ class ContraMambaV6BMinimal(nn.Module):
         elif ownership_edges is not None:
             raise ValueError("edge_gradient_lambdas is only valid for edge_specific mode")
 
-        def recipient_alias(tensor: torch.Tensor, edge: str) -> torch.Tensor:
-            if edge_specific:
-                return _partial_grad(tensor, ownership_edges[edge])
-            if explicit_local:
-                return tensor.detach()
-            if partial:
-                return _partial_grad(tensor, ownership_lambda)
-            return tensor
+        def edge_recipient_alias(tensor: torch.Tensor, edge: str) -> torch.Tensor:
+            """Create a recipient-only Gen3 alias; owners retain raw tensors."""
+            return _partial_grad(tensor, ownership_edges[edge])
 
         # Slot gates (unchanged from V5 for joint ownership). In explicit-local
         # mode, each downstream consumer receives detached aliases while the
         # owner output dictionary keeps the raw tensors for local losses.
         frame = self.frame_gate(token_states, attention_mask, claim_mask, evidence_mask)
-        predicate_frame_inputs = {
-            name: recipient_alias(frame[name], "F_TO_P")
-            for name in ("claim_frame_state", "evidence_frame_state", "frame_pair_repr", "frame_prob")
-        }
+        if edge_specific:
+            predicate_frame_inputs = {
+                "claim_frame_state": edge_recipient_alias(frame["claim_frame_state"], "F_TO_P"),
+                "evidence_frame_state": edge_recipient_alias(frame["evidence_frame_state"], "F_TO_P"),
+                "frame_pair_repr": edge_recipient_alias(frame["frame_pair_repr"], "F_TO_P"),
+                "frame_prob": edge_recipient_alias(frame["frame_prob"], "F_TO_P"),
+            }
+        else:
+            predicate_frame_inputs = {
+                "claim_frame_state": frame["claim_frame_state"].detach(),
+                "evidence_frame_state": frame["evidence_frame_state"].detach(),
+                "frame_pair_repr": frame["frame_pair_repr"].detach(),
+                "frame_prob": frame["frame_prob"].detach(),
+            } if explicit_local else ({
+                "claim_frame_state": _partial_grad(frame["claim_frame_state"], ownership_lambda),
+                "evidence_frame_state": _partial_grad(frame["evidence_frame_state"], ownership_lambda),
+                "frame_pair_repr": _partial_grad(frame["frame_pair_repr"], ownership_lambda),
+                "frame_prob": _partial_grad(frame["frame_prob"], ownership_lambda),
+            } if partial else {
+                "claim_frame_state": frame["claim_frame_state"],
+                "evidence_frame_state": frame["evidence_frame_state"],
+                "frame_pair_repr": frame["frame_pair_repr"],
+                "frame_prob": frame["frame_prob"],
+            })
         predicate = self.predicate_coverage_head(
             token_states=token_states,
             attention_mask=attention_mask,
@@ -664,17 +679,57 @@ class ContraMambaV6BMinimal(nn.Module):
             frame_pair_repr=predicate_frame_inputs["frame_pair_repr"],
             frame_prob=predicate_frame_inputs["frame_prob"],
         )
-        sufficiency = self.sufficiency_gate(
-            frame_pair_repr=recipient_alias(frame["frame_pair_repr"], "F_TO_S"),
-            predicate_pair_repr=recipient_alias(predicate["predicate_pair_repr"], "P_TO_S"),
-            frame_prob=recipient_alias(frame["frame_prob"], "F_TO_S"),
-            predicate_coverage_prob=recipient_alias(predicate["predicate_coverage_prob"], "P_TO_S"),
-        )
-        polarity = self.polarity_energy_head(
-            frame_pair_repr=recipient_alias(frame["frame_pair_repr"], "F_TO_Q"),
-            predicate_pair_repr=recipient_alias(predicate["predicate_pair_repr"], "P_TO_Q"),
-            sufficiency_repr=recipient_alias(sufficiency["sufficiency_repr"], "S_TO_Q"),
-        )
+        if edge_specific:
+            sufficiency = self.sufficiency_gate(
+                frame_pair_repr=edge_recipient_alias(frame["frame_pair_repr"], "F_TO_S"),
+                predicate_pair_repr=edge_recipient_alias(predicate["predicate_pair_repr"], "P_TO_S"),
+                frame_prob=edge_recipient_alias(frame["frame_prob"], "F_TO_S"),
+                predicate_coverage_prob=edge_recipient_alias(predicate["predicate_coverage_prob"], "P_TO_S"),
+            )
+            polarity = self.polarity_energy_head(
+                frame_pair_repr=edge_recipient_alias(frame["frame_pair_repr"], "F_TO_Q"),
+                predicate_pair_repr=edge_recipient_alias(predicate["predicate_pair_repr"], "P_TO_Q"),
+                sufficiency_repr=edge_recipient_alias(sufficiency["sufficiency_repr"], "S_TO_Q"),
+            )
+        else:
+            sufficiency = self.sufficiency_gate(
+                frame_pair_repr=(
+                    frame["frame_pair_repr"].detach()
+                    if explicit_local else _partial_grad(frame["frame_pair_repr"], ownership_lambda)
+                    if partial else frame["frame_pair_repr"]
+                ),
+                predicate_pair_repr=(
+                    predicate["predicate_pair_repr"].detach()
+                    if explicit_local else _partial_grad(predicate["predicate_pair_repr"], ownership_lambda)
+                    if partial else predicate["predicate_pair_repr"]
+                ),
+                frame_prob=(
+                    frame["frame_prob"].detach() if explicit_local else _partial_grad(frame["frame_prob"], ownership_lambda)
+                    if partial else frame["frame_prob"]
+                ),
+                predicate_coverage_prob=(
+                    predicate["predicate_coverage_prob"].detach()
+                    if explicit_local else _partial_grad(predicate["predicate_coverage_prob"], ownership_lambda)
+                    if partial else predicate["predicate_coverage_prob"]
+                ),
+            )
+            polarity = self.polarity_energy_head(
+                frame_pair_repr=(
+                    frame["frame_pair_repr"].detach()
+                    if explicit_local else _partial_grad(frame["frame_pair_repr"], ownership_lambda)
+                    if partial else frame["frame_pair_repr"]
+                ),
+                predicate_pair_repr=(
+                    predicate["predicate_pair_repr"].detach()
+                    if explicit_local else _partial_grad(predicate["predicate_pair_repr"], ownership_lambda)
+                    if partial else predicate["predicate_pair_repr"]
+                ),
+                sufficiency_repr=(
+                    sufficiency["sufficiency_repr"].detach()
+                    if explicit_local else _partial_grad(sufficiency["sufficiency_repr"], ownership_lambda)
+                    if partial else sufficiency["sufficiency_repr"]
+                ),
+            )
 
         # Stage22-A / A3: shared slot concatenation for auxiliary diagnostic heads.
         # Computed once; reused by both boundary_head and frame_violation_head.
@@ -773,15 +828,46 @@ class ContraMambaV6BMinimal(nn.Module):
             temporal_channel_prob = torch.sigmoid(temporal_channel_logit)
 
         # Base logits (V5 standard)
-        decision = self.decision_head(
-            frame_prob=recipient_alias(frame["frame_prob"], "F_TO_D"),
-            predicate_coverage_prob=recipient_alias(predicate["predicate_coverage_prob"], "P_TO_D"),
-            sufficiency_prob=recipient_alias(sufficiency["sufficiency_prob"], "S_TO_D"),
-            positive_energy=recipient_alias(polarity["positive_energy"], "Q_TO_D"),
-            negative_energy=recipient_alias(polarity["negative_energy"], "Q_TO_D"),
-            decision_mode=decision_mode,
-            return_q_diagnostics=return_q_diagnostics or bool(getattr(self, "return_q_diagnostics", False)),
-        )
+        if edge_specific:
+            decision = self.decision_head(
+                frame_prob=edge_recipient_alias(frame["frame_prob"], "F_TO_D"),
+                predicate_coverage_prob=edge_recipient_alias(predicate["predicate_coverage_prob"], "P_TO_D"),
+                sufficiency_prob=edge_recipient_alias(sufficiency["sufficiency_prob"], "S_TO_D"),
+                positive_energy=edge_recipient_alias(polarity["positive_energy"], "Q_TO_D"),
+                negative_energy=edge_recipient_alias(polarity["negative_energy"], "Q_TO_D"),
+                decision_mode=decision_mode,
+                return_q_diagnostics=return_q_diagnostics or bool(getattr(self, "return_q_diagnostics", False)),
+            )
+        else:
+            decision = self.decision_head(
+                frame_prob=(
+                    frame["frame_prob"].detach()
+                    if explicit_local else _partial_grad(frame["frame_prob"], ownership_lambda)
+                    if partial else frame["frame_prob"]
+                ),
+                predicate_coverage_prob=(
+                    predicate["predicate_coverage_prob"].detach()
+                    if explicit_local else _partial_grad(predicate["predicate_coverage_prob"], ownership_lambda)
+                    if partial else predicate["predicate_coverage_prob"]
+                ),
+                sufficiency_prob=(
+                    sufficiency["sufficiency_prob"].detach()
+                    if explicit_local else _partial_grad(sufficiency["sufficiency_prob"], ownership_lambda)
+                    if partial else sufficiency["sufficiency_prob"]
+                ),
+                positive_energy=(
+                    polarity["positive_energy"].detach()
+                    if explicit_local else _partial_grad(polarity["positive_energy"], ownership_lambda)
+                    if partial else polarity["positive_energy"]
+                ),
+                negative_energy=(
+                    polarity["negative_energy"].detach()
+                    if explicit_local else _partial_grad(polarity["negative_energy"], ownership_lambda)
+                    if partial else polarity["negative_energy"]
+                ),
+                decision_mode=decision_mode,
+                return_q_diagnostics=return_q_diagnostics or bool(getattr(self, "return_q_diagnostics", False)),
+            )
         base_logits = decision["logits"]
 
         # Apply final logit modulation
@@ -1048,7 +1134,7 @@ class ContraMambaV6BMinimal(nn.Module):
                 "schema_version": "reason_router_p2_gradient_ownership_config_v1",
                 "mode": ownership_mode,
                 "gradient_ownership_lambda": ownership_lambda,
-                "edge_gradient_lambdas": ownership_edges,
+                **({"edge_gradient_lambdas": ownership_edges} if edge_specific else {}),
                 "frame_to_predicate_detached": explicit_local,
                 "frame_predicate_to_sufficiency_detached": explicit_local,
                 "frame_predicate_sufficiency_to_polarity_detached": explicit_local,

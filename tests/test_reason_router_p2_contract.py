@@ -508,7 +508,9 @@ def test_partial_midpoint_scales_downstream_gradient_at_each_boundary(
 
 
 def test_partial_preserves_owner_local_gradient_while_scaling_downstream_gradient() -> None:
-    base = _production_model("A0")
+    with torch.random.fork_rng():
+        torch.manual_seed(0)
+        base = _production_model("A0")
     local_target = torch.ones(4)
 
     def frame_gradient(mode: str, ownership_lambda: float | None, include_downstream: bool) -> torch.Tensor:
