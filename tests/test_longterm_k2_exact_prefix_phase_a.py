@@ -53,7 +53,7 @@ def test_source_format_and_hash_contract(monkeypatch):
   calls.append((argv,kw));return canonical[0]
  monkeypatch.setattr(k.subprocess,"check_output",show)
  assert k.load_source(root,p)[0]["id"]=="t" and p.read_bytes().endswith(b"\r\n")
- assert calls==[(["git","show",f"{k.AUTHORITY_COMMIT}:{k.SOURCE_REL}"],{"cwd":root})]
+ assert calls==[(["git","show",f"{k.SOURCE_BLOB_COMMIT}:{k.SOURCE_REL}"],{"cwd":root})]
  for broken in [raw.replace(b"\n",b"\r\n"),raw[:-1],b"\n",b"not-json\n",b"\xef\xbb\xbf"+raw,raw+b"\n"+raw]:
   canonical[0]=broken;monkeypatch.setattr(k,"SOURCE_PHYSICAL",k.sha(broken))
   with pytest.raises(ValueError,match="SOURCE_PHYSICAL_JSONL_FORMAT_INVALID"):k.load_source(root,p)
@@ -74,16 +74,18 @@ def test_token_contract_full_boundary_matrix():
  assert k.token_contract(x,BranchTok(8,same=True))["failure"]=="INVALID_CONTINUATION_TOKEN_CONTRACT"
  assert k.token_contract(x,BranchTok(8,prefix_bad=True))["failure"]=="INVALID_EXACT_PREFIX"
  r=k.token_contract(x,BranchTok(8));assert r["tau"]==5 and r["prefix_bundle"]["attention_mask"]==[1]*6 and r["prefix_bundle"]["position_ids"]==list(range(6))
-def zip_bytes(manifest, members=None):
+def real_manifest(cp_sha, size=4, **extra):
+ return {"schema":k.HANDOFF_SCHEMA,"artifact_discovery":"fixed_authorized_paths_sha256","expected_commit":k.A0_COMMIT,"actual_commit":k.A0_COMMIT,"files":[{"path":"nested/A0/selected_checkpoint.pt","sha256":cp_sha,"size_bytes":size}],**extra}
+def zip_bytes(manifest, members=None, manifest_path="nested/run/manifest.json"):
  b=io.BytesIO()
  with zipfile.ZipFile(b,"w") as z:
-  z.writestr("handoff_manifest.json",json.dumps(manifest));
-  for n,v in (members or {"checkpoint.pt":b"ckpt"}).items():z.writestr(n,v)
+  z.writestr(manifest_path,json.dumps(manifest));
+  for n,v in (members or {"files/nested/A0/selected_checkpoint.pt":b"ckpt"}).items():z.writestr(n,v)
  return b.getvalue()
 def test_handoff_rejection_matrix(monkeypatch):
- cp=b"ckpt";h=k.sha(cp);m={"schema_version":"contramamba-handoff-v3","expected_commit":k.A0_COMMIT,"actual_commit":k.A0_COMMIT,"selected_checkpoint":{"path":"checkpoint.pt","sha256":h,"size_bytes":4}}
- p=scratch("h.zip");p.write_bytes(zip_bytes(m));monkeypatch.setitem(k.EXPECTED_CHECKPOINT_SHA256,"seed180",h);monkeypatch.setitem(k.EXPECTED_ZIP_SHA256,"seed180",k.file_sha(p));assert k.audit_handoff(p,"seed180")["checkpoint_member"]=="checkpoint.pt"
- variants=[({}, {"checkpoint.pt":cp}),({**m,"schema_version":"bad"},{"checkpoint.pt":cp}),({**m,"actual_commit":"bad"},{"checkpoint.pt":cp}),({"schema_version":"contramamba-handoff-v3","expected_commit":k.A0_COMMIT,"actual_commit":k.A0_COMMIT},{"checkpoint.pt":cp}),({**m,"selected_checkpoint":{**m["selected_checkpoint"],"size_bytes":3}},{"checkpoint.pt":cp}),({**m,"selected_checkpoint":{**m["selected_checkpoint"],"sha256":""}},{"checkpoint.pt":cp}),({**m,"selected_checkpoint":{**m["selected_checkpoint"],"path":"../x"}},{"checkpoint.pt":cp})]
+ cp=b"ckpt";h=k.sha(cp);m=real_manifest(h)
+ p=scratch("h.zip");p.write_bytes(zip_bytes(m));monkeypatch.setitem(k.EXPECTED_CHECKPOINT_SHA256,"seed180",h);monkeypatch.setitem(k.EXPECTED_ZIP_SHA256,"seed180",k.file_sha(p));assert k.audit_handoff(p,"seed180")["checkpoint_member"]=="files/nested/A0/selected_checkpoint.pt"
+ variants=[({}, {}),({**m,"schema":"bad"},{}),({**m,"actual_commit":"bad"},{}),({"schema":k.HANDOFF_SCHEMA,"expected_commit":k.A0_COMMIT,"actual_commit":k.A0_COMMIT},{}),(real_manifest(h,3),{}),(real_manifest(""),{}),(real_manifest(h,files=[{"path":"../x","sha256":h,"size_bytes":4}]),{})]
  for manifest,members in variants:
   p.write_bytes(zip_bytes(manifest,members));monkeypatch.setitem(k.EXPECTED_ZIP_SHA256,"seed180",k.file_sha(p))
   with pytest.raises(ValueError):k.audit_handoff(p,"seed180")
@@ -98,7 +100,7 @@ def test_checkpoint_load_weights_only_and_strict(monkeypatch):
  class M:
   def load_state_dict(self,s,strict):assert strict is True;raise RuntimeError("shape")
  with pytest.raises(RuntimeError):k.strict_load(M(),{})
-def test_encoder_digest_synthetic_and_phase_b_absence():
+def test_encoder_fingerprint_algorithm_and_phase_b_absence():
  class T:
   def __init__(self,b):self.b=b
   def detach(self):return self
@@ -106,8 +108,21 @@ def test_encoder_digest_synthetic_and_phase_b_absence():
   def contiguous(self):return self
   def numpy(self):return self
   def tobytes(self):return self.b
- a={"mamba.a":T(b"a")};assert k.encoder_digest(a)==k.encoder_digest(a);assert k.encoder_digest(a)!=k.encoder_digest({"mamba.a":T(b"b")})
+  def numel(self):return len(self.b)
+  dtype="torch.float32"
+ a={"mamba.a":T(b"a")};assert k.encoder_fingerprint(a)["canonical_digest"]==k.encoder_fingerprint(a)["canonical_digest"];assert k.encoder_fingerprint(a)["canonical_digest"]!=k.encoder_fingerprint({"mamba.a":T(b"b")})["canonical_digest"]
  source=P.read_text().lower();assert "native state" not in source and "holm" not in source and "sign test" not in source
+def test_canonical_encoder_gate_rejects_superseded_value_and_secondary_is_non_gating(monkeypatch):
+ good={"canonical_digest":k.ENCODER_CANONICAL_DIGEST,"raw_concat_digest":"0"*64,"tensor_count":k.ENCODER_TENSOR_COUNT,"total_numel":k.ENCODER_TOTAL_NUMEL,"total_raw_bytes":k.ENCODER_TOTAL_RAW_BYTES,"dtypes":["torch.float32"]}
+ monkeypatch.setattr(k,"encoder_fingerprint",lambda _:good);assert k.verify_encoder_fingerprint({})["raw_concat_digest"]=="0"*64
+ bad={**good,"canonical_digest":"67bfc8cb253fef88b2b8936d442468b9ddcbffa8b79582ba3e2432cb271a937b"};monkeypatch.setattr(k,"encoder_fingerprint",lambda _:bad)
+ with pytest.raises(ValueError,match="CANONICAL"):k.verify_encoder_fingerprint({})
+ assert "67bfc8cb253fef88b2b8936d442468b9ddcbffa8b79582ba3e2432cb271a937b" not in P.read_text()
+def test_missing_or_invalid_nested_training_args_fail_closed():
+ class Tensor:shape=(1,)
+ state={"mamba.weight":Tensor()}
+ for checkpoint in ({"model_state_dict":state},{"metadata":{},"model_state_dict":state},{"metadata":{"training_args":[]},"model_state_dict":state}):
+  with pytest.raises(ValueError,match="CHECKPOINT_SCHEMA_INVALID"):k.normalized_a0_constructor_args(checkpoint,object())
 def test_hf_resolved_revision_mismatch_and_exact_positive(monkeypatch):
  root=scratch("hf");exact=root/k.HF_REVISION;exact.mkdir(parents=True);(exact/"config.json").write_text("{}")
  hub=types.ModuleType("huggingface_hub");hub.__version__="hub-test";hub.snapshot_download=lambda **_:str(exact)
@@ -124,7 +139,7 @@ def test_hf_resolved_revision_mismatch_and_exact_positive(monkeypatch):
  snapshot,hf=k.resolve_hf_snapshot(k.HF_REVISION);assert snapshot==exact and hf["requested_hf_revision"]==k.HF_REVISION and hf["resolved_hf_revision"]==k.HF_REVISION
  wrong=root/"not-the-requested-revision";wrong.mkdir();hub.snapshot_download=lambda **_:str(wrong)
  with pytest.raises(ValueError,match="HF_RESOLVED_REVISION_MISMATCH"):k.resolve_hf_snapshot(k.HF_REVISION)
-def test_build_a0_model_enforces_frozen_encoder_digest(monkeypatch):
+def test_build_a0_model_uses_nested_metadata_and_does_not_fabricate_comparators(monkeypatch):
  events=[]
  class Tensor:shape=(1,)
  class Model:
@@ -138,12 +153,9 @@ def test_build_a0_model_enforces_frozen_encoder_digest(monkeypatch):
  transformers=types.ModuleType("transformers");transformers.MambaConfig=MambaConfig;transformers.MambaModel=MambaModel
  package=types.ModuleType("contramamba");package.__path__=[];module=types.ModuleType("contramamba.modeling_v6b_minimal");module.ContraMambaV6BMinimal=lambda **kw:events.append(("construct",kw)) or Model()
  monkeypatch.setitem(sys.modules,"transformers",transformers);monkeypatch.setitem(sys.modules,"contramamba",package);monkeypatch.setitem(sys.modules,"contramamba.modeling_v6b_minimal",module)
- checkpoint={"training_args":{},"model_state_dict":{"mamba.weight":Tensor()}}
- reported=[];monkeypatch.setattr(k,"encoder_digest",lambda state:reported.append("67bfc8cb253fef88b2b8936d442468b9ddcbffa8b79582ba3e2432cb271a937b") or reported[-1])
- assert reported==[] and k.build_a0_model(Path("snapshot"),checkpoint).__class__ is Model and reported==[k.ENCODER_DIGEST] and ("strict",True) in events and ("eval",) in events
- events.clear();monkeypatch.setattr(k,"encoder_digest",lambda state:"0"*64)
- with pytest.raises(ValueError,match="COMMON_ENCODER_DIGEST_MISMATCH"):k.build_a0_model(Path("snapshot"),checkpoint)
- assert events==[]
+ checkpoint={"metadata":{"training_args":{}},"model_state_dict":{"mamba.weight":Tensor()}}
+ assert k.build_a0_model(Path("snapshot"),checkpoint).__class__ is Model and ("strict",True) in events and ("eval",) in events
+ args=[x[1] for x in events if x[0]=="construct"][0];assert args["use_temporal_comparator"] is False and args["use_predicate_comparator"] is False
 def test_screen_unanimity_gold_and_all_attempts():
  pool,checked=k.prepare_candidate_pool(good("ok")+good("bad"),BranchTok(8)); pool[1]["construction_status"]="excluded"; checked.pop(pool[1]["stable_item_id"],None)
  outputs={seed:{pool[0]["stable_item_id"]:{"seed":seed,"predicted_final_label":"SUPPORT","checkpoint_sha256":seed,"probabilities":{},"confidence":1,"margin":1}} for seed in k.EXPECTED_ZIP_SHA256}
@@ -161,13 +173,13 @@ def test_complete_phase_a_manifest_and_runtime_package_provenance():
  pool=k.construct(good());screen=[{"stable_item_id":pool[0]["stable_item_id"],"eligible":False,"construction_status":"valid","construction_failure_label":None}]
  handoffs={seed:{"seed":seed,"zip_sha256":"zip-"+seed,"checkpoint_sha256":"checkpoint-"+seed} for seed in k.EXPECTED_ZIP_SHA256}
  hf={"resolved_hf_revision":k.HF_REVISION,"resolved_snapshot_path":"snapshot","tokenizer_class":"SyntheticTokenizer","tokenizer_is_fast":True,"tokenizer_backend_class":"SyntheticBackend","tokenizer_files":[]}
- runtime={**packages,"actual_source_path":"C:/frozen/source.jsonl","runtime_branch":"longterm-k-series-native-state-kinematics","runtime_git_head":k.AUTHORITY_COMMIT,"runtime_dirty_contract":["?? scripts/longterm_k2_exact_prefix_phase_a.py"],"allowed_untracked_policy":sorted(k.ALLOWED_UNTRACKED)}
+ runtime={**packages,"actual_source_path":"C:/frozen/source.jsonl","runtime_branch":"longterm-k-series-native-state-kinematics","runtime_git_head":k.K2_PREREG_AUTHORITY_COMMIT,"runtime_dirty_contract":["?? scripts/longterm_k2_exact_prefix_phase_a.py"],"allowed_untracked_policy":sorted(k.ALLOWED_UNTRACKED)}
  out=Path(tempfile.gettempdir())/"k2_complete_manifest_test_output";shutil.rmtree(out,ignore_errors=True);m=k.write_phase_a_outputs(out,pool,screen,handoffs,hf,runtime)
- assert m["schema_version"]==k.MANIFEST_SCHEMA and m["authority_prereg_commit"]==k.AUTHORITY_COMMIT and m["runtime_branch"]==runtime["runtime_branch"] and m["runtime_git_head"]==runtime["runtime_git_head"] and m["script_sha256"]==k.file_sha(P)
- assert m["observer_input_contract"]==k.OBSERVER_INPUT_CONTRACT and m["historical_a0_serialization_equivalence_claimed"] is False and m["source_path"]==runtime["actual_source_path"] and m["source_git_commit"]==k.AUTHORITY_COMMIT and m["source_git_path"]==k.SOURCE_REL and m["source_byte_origin"]=="FROZEN_GIT_BLOB" and m["source_physical_sha256"]==k.SOURCE_PHYSICAL and m["source_semantic_sha256"]==k.SOURCE_SEMANTIC
+ assert m["schema_version"]==k.MANIFEST_SCHEMA and m["k2_prereg_authority_commit"]==k.K2_PREREG_AUTHORITY_COMMIT and m["runtime_branch"]==runtime["runtime_branch"] and m["runtime_git_head"]==runtime["runtime_git_head"] and m["script_sha256"]==k.file_sha(P)
+ assert m["observer_input_contract"]==k.OBSERVER_INPUT_CONTRACT and m["historical_a0_serialization_equivalence_claimed"] is False and m["source_path"]==runtime["actual_source_path"] and m["source_git_commit"]==k.SOURCE_BLOB_COMMIT and m["source_git_path"]==k.SOURCE_REL and m["source_byte_origin"]=="FROZEN_GIT_BLOB" and m["source_physical_sha256"]==k.SOURCE_PHYSICAL and m["source_semantic_sha256"]==k.SOURCE_SEMANTIC
  assert m["hf_model_id"]==k.HF_MODEL and m["requested_hf_revision"]==k.HF_REVISION and m["resolved_hf_revision"]==k.HF_REVISION and m["add_special_tokens"] is False and m["trust_remote_code"] is False and m["tokenizer_class"]=="SyntheticTokenizer"
  assert set(m["handoffs"])==set(k.EXPECTED_ZIP_SHA256) and all(m["handoffs"][seed]["zip_sha256"]=="zip-"+seed and m["handoffs"][seed]["checkpoint_sha256"]=="checkpoint-"+seed for seed in k.EXPECTED_ZIP_SHA256)
- assert m["common_encoder_digest"]==k.ENCODER_DIGEST and all(m[key] for key in ("candidate_pool_sha256","screening_artifact_sha256","eligible_id_list_sha256","final_confirmatory_id_list_sha256")) and (m["N_total_attempts"],m["N_construction_valid"],m["N_duplicate_excluded"],m["N_eligible"],m["N_final"],m["phase_a_verdict"])==(1,1,0,0,0,"INCONCLUSIVE_DUE_TO_WRONG_COMMITMENT_SUPPORT_FAILURE")
+ assert m["common_encoder"]["normative_canonical_digest"]==k.ENCODER_CANONICAL_DIGEST and m["common_encoder"]["secondary_raw_concat_digest"]==k.ENCODER_RAW_CONCAT_DIGEST and all(m[key] for key in ("candidate_pool_sha256","screening_artifact_sha256","eligible_id_list_sha256","final_confirmatory_id_list_sha256")) and (m["N_total_attempts"],m["N_construction_valid"],m["N_duplicate_excluded"],m["N_eligible"],m["N_final"],m["phase_a_verdict"])==(1,1,0,0,0,"INCONCLUSIVE_DUE_TO_WRONG_COMMITMENT_SUPPORT_FAILURE")
  assert all(m[key]==runtime[key] for key in ("python_version","torch_version","transformers_version","huggingface_hub_version","tokenizers_version","runtime_dirty_contract","allowed_untracked_policy"))
 def test_cli_help_is_side_effect_free_and_frozen_options():
  output=scratch("help_output");before=set(SCRATCH_ROOT.rglob("*"));run=subprocess.run([sys.executable,str(P),"--help"],cwd=P.parents[1],capture_output=True,text=True)
@@ -198,11 +210,11 @@ def test_zip_member_safety_exact_manifest_and_all_seed_bindings(monkeypatch):
   with pytest.raises(ValueError):k._safe_member(name)
  cp=b"ckpt"; cp_sha=k.sha(cp)
  for seed in k.EXPECTED_ZIP_SHA256:
-  manifest={"schema_version":"contramamba-handoff-v3","expected_commit":k.A0_COMMIT,"actual_commit":k.A0_COMMIT,"selected_checkpoint":{"path":"checkpoint.pt","sha256":cp_sha,"size_bytes":4}}
-  p=scratch(seed+".zip");p.write_bytes(zip_bytes(manifest));monkeypatch.setitem(k.EXPECTED_ZIP_SHA256,seed,k.file_sha(p));monkeypatch.setitem(k.EXPECTED_CHECKPOINT_SHA256,seed,cp_sha);assert k.audit_handoff(p,seed)["manifest_member"]=="handoff_manifest.json"
- manifest={"schema_version":"contramamba-handoff-v3","expected_commit":k.A0_COMMIT,"actual_commit":k.A0_COMMIT,"selected_checkpoint":{"path":"checkpoint.pt","sha256":cp_sha,"size_bytes":4}}
+  manifest=real_manifest(cp_sha)
+  p=scratch(seed+".zip");p.write_bytes(zip_bytes(manifest));monkeypatch.setitem(k.EXPECTED_ZIP_SHA256,seed,k.file_sha(p));monkeypatch.setitem(k.EXPECTED_CHECKPOINT_SHA256,seed,cp_sha);assert k.audit_handoff(p,seed)["manifest_member"]=="nested/run/manifest.json"
+ manifest=real_manifest(cp_sha)
  p=scratch("wrong_manifest.zip");b=io.BytesIO()
- with zipfile.ZipFile(b,"w") as z:z.writestr("nested/handoff_manifest.json",json.dumps(manifest));z.writestr("checkpoint.pt",cp)
+ with zipfile.ZipFile(b,"w") as z:z.writestr("nested/manifest.json",json.dumps(manifest));z.writestr("files/nested/A0/selected_checkpoint.pt",cp);z.writestr("other/manifest.json",json.dumps(manifest))
  p.write_bytes(b.getvalue());monkeypatch.setitem(k.EXPECTED_ZIP_SHA256,"seed180",k.file_sha(p))
  with pytest.raises(ValueError,match="MANIFEST"):k.audit_handoff(p,"seed180")
 
@@ -219,6 +231,7 @@ def test_one_seed_at_a_time_releases_before_next_loader(monkeypatch):
  class Model: pass
  monkeypatch.setattr(k,"load_authenticated_checkpoint",lambda handoff:events.append("load-"+handoff["seed"]) or {"model_state_dict":{}})
  monkeypatch.setattr(k,"build_a0_model",lambda snapshot,checkpoint:events.append("build") or Model())
+ monkeypatch.setattr(k,"verify_encoder_fingerprint",lambda state:{"canonical_digest":"test"})
  monkeypatch.setattr(k,"forward_prefix",lambda model,inputs,seed,checkpoint,device:{"seed":seed,"predicted_final_label":"SUPPORT"})
  monkeypatch.setattr(k.gc,"collect",lambda:events.append("gc"))
  outputs={}
@@ -226,7 +239,7 @@ def test_one_seed_at_a_time_releases_before_next_loader(monkeypatch):
  assert list(outputs)==["seed180","seed181","seed182"] and events==["load-seed180","build","gc","load-seed181","build","gc","load-seed182","build","gc"]
 
 def test_git_provenance_allows_authority_commit_and_descendant(monkeypatch):
- root=Path.cwd();base={"status":"","head":k.AUTHORITY_COMMIT,"ancestry":0};calls=[]
+ root=Path.cwd();base={"status":"","head":k.K2_PREREG_AUTHORITY_COMMIT,"ancestry":0};calls=[]
  def check(argv,**kw):
   if argv[1:]==["status","--porcelain=v1"]:return base["status"]
   if argv[1:]==["branch","--show-current"]:return "longterm-k-series-native-state-kinematics\n"
@@ -234,14 +247,14 @@ def test_git_provenance_allows_authority_commit_and_descendant(monkeypatch):
   raise AssertionError(argv)
  def call(argv,**kw):
   calls.append(argv)
-  if argv==["git","merge-base","--is-ancestor",k.AUTHORITY_COMMIT,base["head"]]:return base["ancestry"]
+  if argv==["git","merge-base","--is-ancestor",k.K2_PREREG_AUTHORITY_COMMIT,base["head"]]:return base["ancestry"]
   if argv==["git","ls-files","--error-unmatch","scripts/longterm_k2_exact_prefix_phase_a.py"]:return 0
   raise AssertionError(argv)
  monkeypatch.setattr(k.subprocess,"check_output",check);monkeypatch.setattr(k.subprocess,"call",call)
- assert k.git_provenance(root)["runtime_git_head"]==k.AUTHORITY_COMMIT
+ assert k.git_provenance(root)["runtime_git_head"]==k.K2_PREREG_AUTHORITY_COMMIT
  base["head"]="0123456789abcdef0123456789abcdef01234567"
  assert k.git_provenance(root)["runtime_git_head"]==base["head"]
- assert calls==[["git","merge-base","--is-ancestor",k.AUTHORITY_COMMIT,k.AUTHORITY_COMMIT],["git","ls-files","--error-unmatch","scripts/longterm_k2_exact_prefix_phase_a.py"],["git","merge-base","--is-ancestor",k.AUTHORITY_COMMIT,base["head"]],["git","ls-files","--error-unmatch","scripts/longterm_k2_exact_prefix_phase_a.py"]]
+ assert calls==[["git","merge-base","--is-ancestor",k.K2_PREREG_AUTHORITY_COMMIT,k.K2_PREREG_AUTHORITY_COMMIT],["git","ls-files","--error-unmatch","scripts/longterm_k2_exact_prefix_phase_a.py"],["git","merge-base","--is-ancestor",k.K2_PREREG_AUTHORITY_COMMIT,base["head"]],["git","ls-files","--error-unmatch","scripts/longterm_k2_exact_prefix_phase_a.py"]]
 
 def test_git_provenance_rejects_non_descendant_and_dirty_states(monkeypatch):
  root=Path.cwd();base={"status":"","head":"0123456789abcdef0123456789abcdef01234567","ancestry":1}
@@ -251,7 +264,7 @@ def test_git_provenance_rejects_non_descendant_and_dirty_states(monkeypatch):
   if argv[1:]==["rev-parse","HEAD"]:return base["head"]+"\n"
   raise AssertionError(argv)
  def call(argv,**kw):
-  if argv==["git","merge-base","--is-ancestor",k.AUTHORITY_COMMIT,base["head"]]:return base["ancestry"]
+  if argv==["git","merge-base","--is-ancestor",k.K2_PREREG_AUTHORITY_COMMIT,base["head"]]:return base["ancestry"]
   if argv==["git","ls-files","--error-unmatch","scripts/longterm_k2_exact_prefix_phase_a.py"]:return 0
   raise AssertionError(argv)
  monkeypatch.setattr(k.subprocess,"check_output",check);monkeypatch.setattr(k.subprocess,"call",call)
