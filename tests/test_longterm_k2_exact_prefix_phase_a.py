@@ -48,19 +48,22 @@ def test_stable_identity_duplicate_and_order():
  pool,_=k.prepare_candidate_pool(good("z","same")+good("a","same"),BranchTok());assert [x["stable_item_id"] for x in pool]==sorted(x["stable_item_id"] for x in pool);assert sum(x["construction_failure_label"]=="DUPLICATE_BASE_CLAIM_EXCLUDED" for x in pool)==1
  x=k.recipe("p",good());core={key:x[key] for key in ("schema_version","pair_id","truncation_source_id","refute_source_id","control_source_id","prefix_text","correction_text","control_text")};assert x["stable_item_id"]=="k2ep-v1:"+hashlib.sha256(k.canonical_json(core)).hexdigest();assert x["base_claim_sha256"]==hashlib.sha256(b"claim").hexdigest()
 def test_source_format_and_hash_contract(monkeypatch):
- raw=(json.dumps(good()[0],separators=(",",":"))+"\n").encode();monkeypatch.setattr(k,"SOURCE_PHYSICAL",k.sha(raw));monkeypatch.setattr(k,"SOURCE_SEMANTIC",k.semantic_sha([good()[0]]));p=scratch("source");p.write_bytes(raw);assert k.load_source(p)[0]["id"]=="t"
- for broken in [raw.replace(b"\n",b"\r\n"),raw[:-1],b"\n",b"not-json\n"]:
-  p.write_bytes(broken)
-  with pytest.raises(ValueError):k.load_source(p)
- p.write_bytes(b"\xef\xbb\xbf"+raw)
- with pytest.raises(ValueError,match="SOURCE_PHYSICAL_JSONL_FORMAT_INVALID"):k.load_source(p)
- p.write_bytes(raw+b"\n"+raw)
- monkeypatch.setattr(k,"SOURCE_PHYSICAL",k.sha(raw+b"\n"+raw))
- with pytest.raises(ValueError,match="SOURCE_PHYSICAL_JSONL_FORMAT_INVALID"):k.load_source(p)
- p.write_bytes(raw);monkeypatch.setattr(k,"SOURCE_PHYSICAL","0"*64)
- with pytest.raises(ValueError,match="PHYSICAL"):k.load_source(p)
+ raw=(json.dumps(good()[0],separators=(",",":"))+"\n").encode();root=scratch("source_repo");root.mkdir();p=root/k.SOURCE_REL;p.parent.mkdir(parents=True);p.write_bytes(raw.replace(b"\n",b"\r\n"));monkeypatch.setattr(k,"SOURCE_PHYSICAL",k.sha(raw));monkeypatch.setattr(k,"SOURCE_SEMANTIC",k.semantic_sha([good()[0]]));calls=[];canonical=[raw]
+ def show(argv,**kw):
+  calls.append((argv,kw));return canonical[0]
+ monkeypatch.setattr(k.subprocess,"check_output",show)
+ assert k.load_source(root,p)[0]["id"]=="t" and p.read_bytes().endswith(b"\r\n")
+ assert calls==[(["git","show",f"{k.AUTHORITY_COMMIT}:{k.SOURCE_REL}"],{"cwd":root})]
+ for broken in [raw.replace(b"\n",b"\r\n"),raw[:-1],b"\n",b"not-json\n",b"\xef\xbb\xbf"+raw,raw+b"\n"+raw]:
+  canonical[0]=broken;monkeypatch.setattr(k,"SOURCE_PHYSICAL",k.sha(broken))
+  with pytest.raises(ValueError,match="SOURCE_PHYSICAL_JSONL_FORMAT_INVALID"):k.load_source(root,p)
+ canonical[0]=raw;monkeypatch.setattr(k,"SOURCE_PHYSICAL","0"*64)
+ with pytest.raises(ValueError,match="PHYSICAL"):k.load_source(root,p)
  monkeypatch.setattr(k,"SOURCE_PHYSICAL",k.sha(raw));monkeypatch.setattr(k,"SOURCE_SEMANTIC","1"*64)
- with pytest.raises(ValueError,match="SEMANTIC"):k.load_source(p)
+ with pytest.raises(ValueError,match="SEMANTIC"):k.load_source(root,p)
+ def fail(*_,**__):raise subprocess.CalledProcessError(128,["git","show"])
+ monkeypatch.setattr(k.subprocess,"check_output",fail)
+ with pytest.raises(ValueError,match="SOURCE_GIT_SHOW_FAILED"):k.load_source(root,p)
 def test_prefix_masks_are_literal_overlap_not_retokenized():
  prefix="Claim: claim\nEvidence: evidence\nAdditional evidence:";out=k.prefix_model_inputs(k.tokenize_prefix_bundle(OffsetTok(),prefix))
  assert out["input_ids"]==list(range(6));assert out["attention_mask"]==[1]*6;assert out["claim_mask"]==[False,True,False,False,False,False];assert out["evidence_mask"]==[False,False,False,True,False,False];assert not any(a and b for a,b in zip(out["claim_mask"],out["evidence_mask"]))
@@ -161,7 +164,7 @@ def test_complete_phase_a_manifest_and_runtime_package_provenance():
  runtime={**packages,"actual_source_path":"C:/frozen/source.jsonl","runtime_branch":"longterm-k-series-native-state-kinematics","runtime_git_head":k.AUTHORITY_COMMIT,"runtime_dirty_contract":["?? scripts/longterm_k2_exact_prefix_phase_a.py"],"allowed_untracked_policy":sorted(k.ALLOWED_UNTRACKED)}
  out=Path(tempfile.gettempdir())/"k2_complete_manifest_test_output";shutil.rmtree(out,ignore_errors=True);m=k.write_phase_a_outputs(out,pool,screen,handoffs,hf,runtime)
  assert m["schema_version"]==k.MANIFEST_SCHEMA and m["authority_prereg_commit"]==k.AUTHORITY_COMMIT and m["runtime_branch"]==runtime["runtime_branch"] and m["runtime_git_head"]==runtime["runtime_git_head"] and m["script_sha256"]==k.file_sha(P)
- assert m["observer_input_contract"]==k.OBSERVER_INPUT_CONTRACT and m["historical_a0_serialization_equivalence_claimed"] is False and m["source_path"]==runtime["actual_source_path"] and m["source_physical_sha256"]==k.SOURCE_PHYSICAL and m["source_semantic_sha256"]==k.SOURCE_SEMANTIC
+ assert m["observer_input_contract"]==k.OBSERVER_INPUT_CONTRACT and m["historical_a0_serialization_equivalence_claimed"] is False and m["source_path"]==runtime["actual_source_path"] and m["source_git_commit"]==k.AUTHORITY_COMMIT and m["source_git_path"]==k.SOURCE_REL and m["source_byte_origin"]=="FROZEN_GIT_BLOB" and m["source_physical_sha256"]==k.SOURCE_PHYSICAL and m["source_semantic_sha256"]==k.SOURCE_SEMANTIC
  assert m["hf_model_id"]==k.HF_MODEL and m["requested_hf_revision"]==k.HF_REVISION and m["resolved_hf_revision"]==k.HF_REVISION and m["add_special_tokens"] is False and m["trust_remote_code"] is False and m["tokenizer_class"]=="SyntheticTokenizer"
  assert set(m["handoffs"])==set(k.EXPECTED_ZIP_SHA256) and all(m["handoffs"][seed]["zip_sha256"]=="zip-"+seed and m["handoffs"][seed]["checkpoint_sha256"]=="checkpoint-"+seed for seed in k.EXPECTED_ZIP_SHA256)
  assert m["common_encoder_digest"]==k.ENCODER_DIGEST and all(m[key] for key in ("candidate_pool_sha256","screening_artifact_sha256","eligible_id_list_sha256","final_confirmatory_id_list_sha256")) and (m["N_total_attempts"],m["N_construction_valid"],m["N_duplicate_excluded"],m["N_eligible"],m["N_final"],m["phase_a_verdict"])==(1,1,0,0,0,"INCONCLUSIVE_DUE_TO_WRONG_COMMITMENT_SUPPORT_FAILURE")
