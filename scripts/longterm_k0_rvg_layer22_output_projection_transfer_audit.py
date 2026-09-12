@@ -21,9 +21,12 @@ with:
     output_projection_transfer
       = ||W_O delta_V22|| / ||delta_V22||
 
-Observed runtime tensors are float32.  The source-level linear identity is
-evaluated in float64 from captured operands, while comparison to observed
-runtime delta-Y22 uses a separate float32 reconstruction tolerance.
+Observed runtime tensors are float32. Branch-level Y22 = W_O V22 replay is
+validated in float32. The primary scalar transfer uses the observed runtime
+difference ratio ||delta_Y22|| / ||delta_V22||, matching the validated
+hidden-inprojection precedent. Float64 W_O delta_V22 is retained only as a
+non-blocking numerical diagnostic because branch-rounding cancellation can
+inflate relative error when ||delta_Y22|| is small.
 
 Observational/algebraic only.
 """
@@ -97,7 +100,6 @@ EXECUTION_PROTOCOL = (
 )
 
 FLOAT32_BRANCH_RECON_REL_TOL = 5e-6
-OBSERVED_LINEAR_RECON_REL_TOL = 5e-6
 
 QUESTION = (
     "Is the strong layer-22 mixer-update delta-Y22 pattern already present "
@@ -757,27 +759,45 @@ def metric_rows_for_pair(
             ).item()
         )
 
-        recon_rel = float(
+        difference_residual_l2 = float(
             torch.linalg.vector_norm(
                 projected_dv - dy
             ).item()
+        )
+
+        difference_rel_observed = float(
+            difference_residual_l2
             / max(
                 dy_l2,
                 1e-12,
             )
         )
 
-        require(
-            recon_rel
-            <= OBSERVED_LINEAR_RECON_REL_TOL,
-            (
-                "OBSERVED_FLOAT32_OUT_PROJ_RECON_FAILURE:"
-                f"{idx}:{role}:{k}:{recon_rel}"
-            ),
+        branch_scale = float(
+            torch.linalg.vector_norm(
+                ym
+            ).item()
+            + torch.linalg.vector_norm(
+                ys
+            ).item()
+        )
+
+        difference_rel_branch_scale = float(
+            difference_residual_l2
+            / max(
+                branch_scale,
+                1e-12,
+            )
+        )
+
+        algebraic_transfer = (
+            projected_l2 / dv_l2
+            if dv_l2 > 0.0
+            else 0.0
         )
 
         transfer = (
-            projected_l2 / dv_l2
+            dy_l2 / dv_l2
             if dv_l2 > 0.0
             else 0.0
         )
@@ -785,7 +805,7 @@ def metric_rows_for_pair(
         if dv_l2 > 0.0:
             require(
                 math.isclose(
-                    projected_l2,
+                    dy_l2,
                     dv_l2 * transfer,
                     rel_tol=1e-15,
                     abs_tol=1e-15,
@@ -852,8 +872,14 @@ def metric_rows_for_pair(
             "output_projection_transfer":
                 transfer,
 
-            "observed_linear_reconstruction_relative_residual":
-                recon_rel,
+            "algebraic_output_projection_transfer":
+                algebraic_transfer,
+
+            "float64_difference_projection_relative_to_observed_delta_y22":
+                difference_rel_observed,
+
+            "float64_difference_projection_relative_to_branch_scale":
+                difference_rel_branch_scale,
 
             "float32_branch_reconstruction_relative_residual":
                 max(
@@ -899,7 +925,9 @@ SUMMARY_FIELDS = (
     "delta_y22_l2",
     "projected_delta_v22_l2",
     "output_projection_transfer",
-    "observed_linear_reconstruction_relative_residual",
+    "algebraic_output_projection_transfer",
+    "float64_difference_projection_relative_to_observed_delta_y22",
+    "float64_difference_projection_relative_to_branch_scale",
     "float32_branch_reconstruction_relative_residual",
 )
 
@@ -1043,11 +1071,21 @@ def make_summary(
                 common_rows
             ),
 
-        "max_observed_linear_reconstruction_relative_residual":
+        "max_float64_difference_projection_relative_to_observed_delta_y22":
             max(
                 float(
                     row[
-                        "observed_linear_reconstruction_relative_residual"
+                        "float64_difference_projection_relative_to_observed_delta_y22"
+                    ]
+                )
+                for row in rows
+            ),
+
+        "max_float64_difference_projection_relative_to_branch_scale":
+            max(
+                float(
+                    row[
+                        "float64_difference_projection_relative_to_branch_scale"
                     ]
                 )
                 for row in rows
@@ -1441,6 +1479,15 @@ def execute(
         "out_proj_bias_present":
             False,
 
+        "primary_transfer_definition":
+            "observed ||delta_Y22|| / ||delta_V22||",
+
+        "difference_projection_validation_mode":
+            "diagnostic_only",
+
+        "float32_branch_reconstruction_rel_tol":
+            FLOAT32_BRANCH_RECON_REL_TOL,
+
         "handoff_zip_sha256":
             handoff["zip_sha256"],
 
@@ -1542,9 +1589,16 @@ def execute(
     )
 
     print(
-        "max_observed_linear_reconstruction_relative_residual =",
+        "max_float64_difference_projection_relative_to_observed_delta_y22 =",
         summary[
-            "max_observed_linear_reconstruction_relative_residual"
+            "max_float64_difference_projection_relative_to_observed_delta_y22"
+        ],
+    )
+
+    print(
+        "max_float64_difference_projection_relative_to_branch_scale =",
+        summary[
+            "max_float64_difference_projection_relative_to_branch_scale"
         ],
     )
 
@@ -1715,8 +1769,12 @@ def main():
     )
 
     print(
-        "observed_linear_reconstruction_rel_tol =",
-        OBSERVED_LINEAR_RECON_REL_TOL,
+        "primary_transfer_definition = "
+        "observed ||delta_Y22|| / ||delta_V22||"
+    )
+
+    print(
+        "difference_projection_validation_mode = diagnostic_only"
     )
 
     print(
