@@ -1,0 +1,3711 @@
+{
+  "schema": "contramamba.gen3.grouped.frozen-analysis.v1",
+  "source_identity": {
+    "manifest_commit": "792b7a7e9bdb7fa957fa3ecda6ee9c6e37ce0f96",
+    "manifest_sha256": "3ec5e37d92a347f169a6a5f8902f75b055ecb47b7d301909253b6112fdd08203",
+    "historical_exact_sources": 36,
+    "grouped_runs": 18
+  },
+  "historical_reconstruction": {
+    "d1_break_counts": {
+      "180": 37,
+      "181": 23,
+      "182": 51
+    },
+    "frozen51_counts": {
+      "180": 21,
+      "181": 7,
+      "182": 23
+    },
+    "frozen51_total_occurrences": 51,
+    "frozen51_unique_ids": 43,
+    "frozen51_recurrent_ids": [
+      "clinic_expansion__event_swap",
+      "clinic_expansion__predicate_swap",
+      "generated_fact_045__role_swap",
+      "generated_fact_181__role_swap",
+      "generated_fact_193__predicate_swap",
+      "generated_fact_258__title_name_swap"
+    ]
+  },
+  "runs": {
+    "180:U": {
+      "seed": 180,
+      "arm_short": "U",
+      "arm": "G3-GROUP-U-HALF",
+      "accuracy": 0.8986111111111111,
+      "macro_f1": 0.7965932515036975,
+      "class_f1": {
+        "NOT_ENTITLED": 0.9361702127659575,
+        "REFUTE": 0.9943502824858758,
+        "SUPPORT": 0.45925925925925926
+      },
+      "a0_break_count": 11,
+      "a0_break_ids": [
+        "forest_mapping__paraphrase",
+        "generated_fact_062__title_name_swap",
+        "generated_fact_076__entity_swap",
+        "generated_fact_076__event_swap",
+        "generated_fact_076__location_swap",
+        "generated_fact_090__entity_swap",
+        "generated_fact_118__location_swap",
+        "generated_fact_166__paraphrase",
+        "generated_fact_243__role_swap",
+        "museum_purchase__event_swap",
+        "museum_purchase__predicate_swap"
+      ],
+      "a0_wrong_repair_count": 3,
+      "a0_wrong_repair_ids": [
+        "generated_fact_034__none",
+        "generated_fact_076__none",
+        "satellite_launch__paraphrase"
+      ],
+      "frozen51_overlap_count": 1,
+      "frozen51_overlap_ids": [
+        "generated_fact_118__location_swap"
+      ],
+      "historical_d1_break_overlap_count": 6,
+      "historical_d1_break_overlap_ids": [
+        "generated_fact_062__title_name_swap",
+        "generated_fact_076__location_swap",
+        "generated_fact_118__location_swap",
+        "generated_fact_243__role_swap",
+        "museum_purchase__event_swap",
+        "museum_purchase__predicate_swap"
+      ],
+      "frozen51_geometry": [
+        {
+          "stable_id": "generated_fact_118__location_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.248024,
+              "grouped": 0.417024,
+              "delta": 0.169
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.43398,
+              "grouped": 0.576578,
+              "delta": 0.14259800000000006
+            },
+            "sufficiency_probability": {
+              "a0": 0.994741,
+              "grouped": 0.989181,
+              "delta": -0.005560000000000009
+            },
+            "q_FRAME": {
+              "a0": 0.7519757747650146,
+              "grouped": 0.5829764604568481,
+              "delta": -0.1689993143081665
+            },
+            "q_PREDICATE": {
+              "a0": 0.1403866410255432,
+              "grouped": 0.17657697200775146,
+              "delta": 0.03619033098220825
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0005660443566739559,
+              "grouped": 0.0026014239992946386,
+              "delta": 0.0020353796426206827
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.10707154124975204,
+              "grouped": 0.23784510791301727,
+              "delta": 0.13077356666326523
+            },
+            "entitlement_probability": {
+              "a0": 0.107072,
+              "grouped": 0.237845,
+              "delta": 0.130773
+            },
+            "polarity_margin": {
+              "a0": 3.463694,
+              "grouped": 3.32909,
+              "delta": -0.13460399999999995
+            },
+            "support_ne_margin_active": {
+              "a0": -0.530947,
+              "grouped": 0.054752,
+              "delta": 0.585699
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        }
+      ]
+    },
+    "180:Q": {
+      "seed": 180,
+      "arm_short": "Q",
+      "arm": "G3-GROUP-Q-HALF",
+      "accuracy": 0.9013888888888889,
+      "macro_f1": 0.8036916537951734,
+      "class_f1": {
+        "NOT_ENTITLED": 0.9370008873114463,
+        "REFUTE": 1.0,
+        "SUPPORT": 0.4740740740740741
+      },
+      "a0_break_count": 9,
+      "a0_break_ids": [
+        "generated_fact_062__title_name_swap",
+        "generated_fact_076__location_swap",
+        "generated_fact_090__entity_swap",
+        "generated_fact_174__title_name_swap",
+        "generated_fact_243__role_swap",
+        "jazz_archive__location_swap",
+        "jazz_archive__role_swap",
+        "museum_purchase__event_swap",
+        "museum_purchase__predicate_swap"
+      ],
+      "a0_wrong_repair_count": 3,
+      "a0_wrong_repair_ids": [
+        "generated_fact_076__none",
+        "museum_purchase__none",
+        "satellite_launch__paraphrase"
+      ],
+      "frozen51_overlap_count": 0,
+      "frozen51_overlap_ids": [],
+      "historical_d1_break_overlap_count": 8,
+      "historical_d1_break_overlap_ids": [
+        "generated_fact_062__title_name_swap",
+        "generated_fact_076__location_swap",
+        "generated_fact_174__title_name_swap",
+        "generated_fact_243__role_swap",
+        "jazz_archive__location_swap",
+        "jazz_archive__role_swap",
+        "museum_purchase__event_swap",
+        "museum_purchase__predicate_swap"
+      ],
+      "frozen51_geometry": []
+    },
+    "180:D": {
+      "seed": 180,
+      "arm_short": "D",
+      "arm": "G3-GROUP-D-HALF",
+      "accuracy": 0.8986111111111111,
+      "macro_f1": 0.7927344802838353,
+      "class_f1": {
+        "NOT_ENTITLED": 0.9354553492484527,
+        "REFUTE": 1.0,
+        "SUPPORT": 0.44274809160305345
+      },
+      "a0_break_count": 9,
+      "a0_break_ids": [
+        "forest_mapping__paraphrase",
+        "generated_fact_062__title_name_swap",
+        "generated_fact_076__entity_swap",
+        "generated_fact_076__location_swap",
+        "generated_fact_090__entity_swap",
+        "generated_fact_243__role_swap",
+        "jazz_archive__role_swap",
+        "museum_purchase__event_swap",
+        "museum_purchase__predicate_swap"
+      ],
+      "a0_wrong_repair_count": 1,
+      "a0_wrong_repair_ids": [
+        "generated_fact_076__none"
+      ],
+      "frozen51_overlap_count": 0,
+      "frozen51_overlap_ids": [],
+      "historical_d1_break_overlap_count": 6,
+      "historical_d1_break_overlap_ids": [
+        "generated_fact_062__title_name_swap",
+        "generated_fact_076__location_swap",
+        "generated_fact_243__role_swap",
+        "jazz_archive__role_swap",
+        "museum_purchase__event_swap",
+        "museum_purchase__predicate_swap"
+      ],
+      "frozen51_geometry": []
+    },
+    "180:UQ": {
+      "seed": 180,
+      "arm_short": "UQ",
+      "arm": "G3-GROUP-U-Q-HALF",
+      "accuracy": 0.8833333333333333,
+      "macro_f1": 0.7936371091945021,
+      "class_f1": {
+        "NOT_ENTITLED": 0.9250225835591689,
+        "REFUTE": 0.9943502824858758,
+        "SUPPORT": 0.46153846153846156
+      },
+      "a0_break_count": 26,
+      "a0_break_ids": [
+        "clinic_expansion__event_swap",
+        "generated_fact_034__entity_swap",
+        "generated_fact_034__event_swap",
+        "generated_fact_034__location_swap",
+        "generated_fact_062__title_name_swap",
+        "generated_fact_076__entity_swap",
+        "generated_fact_076__event_swap",
+        "generated_fact_076__location_swap",
+        "generated_fact_090__entity_swap",
+        "generated_fact_091__role_swap",
+        "generated_fact_096__location_swap",
+        "generated_fact_108__predicate_swap",
+        "generated_fact_118__event_swap",
+        "generated_fact_118__location_swap",
+        "generated_fact_136__location_swap",
+        "generated_fact_166__paraphrase",
+        "generated_fact_174__title_name_swap",
+        "generated_fact_181__role_swap",
+        "generated_fact_195__role_swap",
+        "generated_fact_243__role_swap",
+        "generated_fact_259__role_swap",
+        "generated_fact_286__location_swap",
+        "jazz_archive__location_swap",
+        "jazz_archive__role_swap",
+        "museum_purchase__event_swap",
+        "museum_purchase__predicate_swap"
+      ],
+      "a0_wrong_repair_count": 7,
+      "a0_wrong_repair_ids": [
+        "generated_fact_034__none",
+        "generated_fact_076__none",
+        "generated_fact_118__none",
+        "generated_fact_136__none",
+        "generated_fact_286__polarity_flip",
+        "museum_purchase__none",
+        "satellite_launch__paraphrase"
+      ],
+      "frozen51_overlap_count": 5,
+      "frozen51_overlap_ids": [
+        "clinic_expansion__event_swap",
+        "generated_fact_096__location_swap",
+        "generated_fact_118__location_swap",
+        "generated_fact_181__role_swap",
+        "generated_fact_195__role_swap"
+      ],
+      "historical_d1_break_overlap_count": 13,
+      "historical_d1_break_overlap_ids": [
+        "clinic_expansion__event_swap",
+        "generated_fact_062__title_name_swap",
+        "generated_fact_076__location_swap",
+        "generated_fact_096__location_swap",
+        "generated_fact_118__location_swap",
+        "generated_fact_174__title_name_swap",
+        "generated_fact_181__role_swap",
+        "generated_fact_195__role_swap",
+        "generated_fact_243__role_swap",
+        "jazz_archive__location_swap",
+        "jazz_archive__role_swap",
+        "museum_purchase__event_swap",
+        "museum_purchase__predicate_swap"
+      ],
+      "frozen51_geometry": [
+        {
+          "stable_id": "clinic_expansion__event_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.298912,
+              "grouped": 0.408468,
+              "delta": 0.10955599999999999
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.382149,
+              "grouped": 0.594421,
+              "delta": 0.21227199999999996
+            },
+            "sufficiency_probability": {
+              "a0": 0.993809,
+              "grouped": 0.991819,
+              "delta": -0.0019900000000000473
+            },
+            "q_FRAME": {
+              "a0": 0.7010879516601562,
+              "grouped": 0.591532289981842,
+              "delta": -0.10955566167831421
+            },
+            "q_PREDICATE": {
+              "a0": 0.18468299508094788,
+              "grouped": 0.16566576063632965,
+              "delta": -0.019017234444618225
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0007071599829941988,
+              "grouped": 0.001986270071938634,
+              "delta": 0.0012791100889444351
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.11352193355560303,
+              "grouped": 0.2408156841993332,
+              "delta": 0.12729375064373016
+            },
+            "entitlement_probability": {
+              "a0": 0.113522,
+              "grouped": 0.240816,
+              "delta": 0.12729400000000002
+            },
+            "polarity_margin": {
+              "a0": 3.371152,
+              "grouped": 3.176376,
+              "delta": -0.19477600000000006
+            },
+            "support_ne_margin_active": {
+              "a0": -0.513833,
+              "grouped": 0.019067,
+              "delta": 0.5328999999999999
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        },
+        {
+          "stable_id": "generated_fact_096__location_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.244221,
+              "grouped": 0.380936,
+              "delta": 0.136715
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.397826,
+              "grouped": 0.638314,
+              "delta": 0.24048800000000004
+            },
+            "sufficiency_probability": {
+              "a0": 0.994362,
+              "grouped": 0.990201,
+              "delta": -0.00416099999999997
+            },
+            "q_FRAME": {
+              "a0": 0.7557790875434875,
+              "grouped": 0.6190643906593323,
+              "delta": -0.13671469688415527
+            },
+            "q_PREDICATE": {
+              "a0": 0.14706356823444366,
+              "grouped": 0.13777890801429749,
+              "delta": -0.00928466022014618
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0005477617378346622,
+              "grouped": 0.0023825918324291706,
+              "delta": 0.0018348300945945084
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.09660956263542175,
+              "grouped": 0.24077410995960236,
+              "delta": 0.1441645473241806
+            },
+            "entitlement_probability": {
+              "a0": 0.09661,
+              "grouped": 0.240774,
+              "delta": 0.144164
+            },
+            "polarity_margin": {
+              "a0": 3.433523,
+              "grouped": 3.09253,
+              "delta": -0.3409930000000001
+            },
+            "support_ne_margin_active": {
+              "a0": -0.583994,
+              "grouped": 0.007422,
+              "delta": 0.591416
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        },
+        {
+          "stable_id": "generated_fact_118__location_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.248024,
+              "grouped": 0.447889,
+              "delta": 0.199865
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.43398,
+              "grouped": 0.692669,
+              "delta": 0.258689
+            },
+            "sufficiency_probability": {
+              "a0": 0.994741,
+              "grouped": 0.990015,
+              "delta": -0.004726000000000008
+            },
+            "q_FRAME": {
+              "a0": 0.7519757747650146,
+              "grouped": 0.5521113872528076,
+              "delta": -0.19986438751220703
+            },
+            "q_PREDICATE": {
+              "a0": 0.1403866410255432,
+              "grouped": 0.13764984905719757,
+              "delta": -0.002736791968345642
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0005660443566739559,
+              "grouped": 0.00309776165522635,
+              "delta": 0.002531717298552394
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.10707154124975204,
+              "grouped": 0.307140976190567,
+              "delta": 0.20006943494081497
+            },
+            "entitlement_probability": {
+              "a0": 0.107072,
+              "grouped": 0.307141,
+              "delta": 0.200069
+            },
+            "polarity_margin": {
+              "a0": 3.463694,
+              "grouped": 3.125631,
+              "delta": -0.338063
+            },
+            "support_ne_margin_active": {
+              "a0": -0.530947,
+              "grouped": 0.30656,
+              "delta": 0.837507
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        },
+        {
+          "stable_id": "generated_fact_181__role_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.226268,
+              "grouped": 0.422196,
+              "delta": 0.19592800000000002
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.409738,
+              "grouped": 0.685093,
+              "delta": 0.27535499999999996
+            },
+            "sufficiency_probability": {
+              "a0": 0.99456,
+              "grouped": 0.991962,
+              "delta": -0.002597999999999989
+            },
+            "q_FRAME": {
+              "a0": 0.7737321257591248,
+              "grouped": 0.5778042078018188,
+              "delta": -0.1959279179573059
+            },
+            "q_PREDICATE": {
+              "a0": 0.13355723023414612,
+              "grouped": 0.1329522430896759,
+              "delta": -0.0006049871444702148
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0005043179844506085,
+              "grouped": 0.002324797213077545,
+              "delta": 0.0018204792286269367
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.09220632910728455,
+              "grouped": 0.2869187593460083,
+              "delta": 0.19471243023872375
+            },
+            "entitlement_probability": {
+              "a0": 0.092206,
+              "grouped": 0.286919,
+              "delta": 0.19471299999999997
+            },
+            "polarity_margin": {
+              "a0": 3.45,
+              "grouped": 3.295213,
+              "delta": -0.15478700000000023
+            },
+            "support_ne_margin_active": {
+              "a0": -0.602158,
+              "grouped": 0.265022,
+              "delta": 0.86718
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        },
+        {
+          "stable_id": "generated_fact_195__role_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.241934,
+              "grouped": 0.378935,
+              "delta": 0.137001
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.43156,
+              "grouped": 0.657072,
+              "delta": 0.225512
+            },
+            "sufficiency_probability": {
+              "a0": 0.994184,
+              "grouped": 0.990556,
+              "delta": -0.0036279999999999646
+            },
+            "q_FRAME": {
+              "a0": 0.7580663561820984,
+              "grouped": 0.6210654377937317,
+              "delta": -0.1370009183883667
+            },
+            "q_PREDICATE": {
+              "a0": 0.13752473890781403,
+              "grouped": 0.12994708120822906,
+              "delta": -0.007577657699584961
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0006072217365726829,
+              "grouped": 0.002351318718865514,
+              "delta": 0.001744096982292831
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.1038016825914383,
+              "grouped": 0.24663616716861725,
+              "delta": 0.14283448457717896
+            },
+            "entitlement_probability": {
+              "a0": 0.103802,
+              "grouped": 0.246636,
+              "delta": 0.142834
+            },
+            "polarity_margin": {
+              "a0": 3.422918,
+              "grouped": 3.188849,
+              "delta": -0.2340690000000003
+            },
+            "support_ne_margin_active": {
+              "a0": -0.552567,
+              "grouped": 0.052281,
+              "delta": 0.604848
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        }
+      ]
+    },
+    "180:UD": {
+      "seed": 180,
+      "arm_short": "UD",
+      "arm": "G3-GROUP-U-D-HALF",
+      "accuracy": 0.8847222222222222,
+      "macro_f1": 0.7949530637671757,
+      "class_f1": {
+        "NOT_ENTITLED": 0.9259927797833934,
+        "REFUTE": 0.9943502824858758,
+        "SUPPORT": 0.4645161290322581
+      },
+      "a0_break_count": 25,
+      "a0_break_ids": [
+        "clinic_expansion__event_swap",
+        "generated_fact_034__event_swap",
+        "generated_fact_034__location_swap",
+        "generated_fact_062__title_name_swap",
+        "generated_fact_076__entity_swap",
+        "generated_fact_076__event_swap",
+        "generated_fact_076__location_swap",
+        "generated_fact_090__entity_swap",
+        "generated_fact_091__role_swap",
+        "generated_fact_118__location_swap",
+        "generated_fact_136__location_swap",
+        "generated_fact_166__paraphrase",
+        "generated_fact_174__entity_swap",
+        "generated_fact_174__title_name_swap",
+        "generated_fact_181__role_swap",
+        "generated_fact_195__role_swap",
+        "generated_fact_243__role_swap",
+        "generated_fact_259__role_swap",
+        "generated_fact_285__role_swap",
+        "generated_fact_286__location_swap",
+        "jazz_archive__location_swap",
+        "jazz_archive__predicate_swap",
+        "jazz_archive__role_swap",
+        "museum_purchase__event_swap",
+        "museum_purchase__predicate_swap"
+      ],
+      "a0_wrong_repair_count": 7,
+      "a0_wrong_repair_ids": [
+        "generated_fact_034__none",
+        "generated_fact_076__none",
+        "generated_fact_118__none",
+        "generated_fact_286__polarity_flip",
+        "jazz_archive__none",
+        "museum_purchase__none",
+        "satellite_launch__paraphrase"
+      ],
+      "frozen51_overlap_count": 4,
+      "frozen51_overlap_ids": [
+        "clinic_expansion__event_swap",
+        "generated_fact_118__location_swap",
+        "generated_fact_181__role_swap",
+        "generated_fact_195__role_swap"
+      ],
+      "historical_d1_break_overlap_count": 14,
+      "historical_d1_break_overlap_ids": [
+        "clinic_expansion__event_swap",
+        "generated_fact_062__title_name_swap",
+        "generated_fact_076__location_swap",
+        "generated_fact_118__location_swap",
+        "generated_fact_174__title_name_swap",
+        "generated_fact_181__role_swap",
+        "generated_fact_195__role_swap",
+        "generated_fact_243__role_swap",
+        "generated_fact_285__role_swap",
+        "jazz_archive__location_swap",
+        "jazz_archive__predicate_swap",
+        "jazz_archive__role_swap",
+        "museum_purchase__event_swap",
+        "museum_purchase__predicate_swap"
+      ],
+      "frozen51_geometry": [
+        {
+          "stable_id": "clinic_expansion__event_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.298912,
+              "grouped": 0.486113,
+              "delta": 0.187201
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.382149,
+              "grouped": 0.480072,
+              "delta": 0.09792299999999998
+            },
+            "sufficiency_probability": {
+              "a0": 0.993809,
+              "grouped": 0.993421,
+              "delta": -0.00038800000000005497
+            },
+            "q_FRAME": {
+              "a0": 0.7010879516601562,
+              "grouped": 0.5138871073722839,
+              "delta": -0.18720084428787231
+            },
+            "q_PREDICATE": {
+              "a0": 0.18468299508094788,
+              "grouped": 0.25274351239204407,
+              "delta": 0.06806051731109619
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0007071599829941988,
+              "grouped": 0.0015353328781202435,
+              "delta": 0.0008281728951260448
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.11352193355560303,
+              "grouped": 0.2318340539932251,
+              "delta": 0.11831212043762207
+            },
+            "entitlement_probability": {
+              "a0": 0.113522,
+              "grouped": 0.231834,
+              "delta": 0.11831200000000001
+            },
+            "polarity_margin": {
+              "a0": 3.371152,
+              "grouped": 3.408423,
+              "delta": 0.037271000000000054
+            },
+            "support_ne_margin_active": {
+              "a0": -0.513833,
+              "grouped": 0.04677,
+              "delta": 0.560603
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        },
+        {
+          "stable_id": "generated_fact_118__location_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.248024,
+              "grouped": 0.496156,
+              "delta": 0.248132
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.43398,
+              "grouped": 0.596458,
+              "delta": 0.16247800000000007
+            },
+            "sufficiency_probability": {
+              "a0": 0.994741,
+              "grouped": 0.992276,
+              "delta": -0.0024649999999999395
+            },
+            "q_FRAME": {
+              "a0": 0.7519757747650146,
+              "grouped": 0.5038437843322754,
+              "delta": -0.24813199043273926
+            },
+            "q_PREDICATE": {
+              "a0": 0.1403866410255432,
+              "grouped": 0.2002200037240982,
+              "delta": 0.05983336269855499
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0005660443566739559,
+              "grouped": 0.0022857720032334328,
+              "delta": 0.0017197276465594769
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.10707154124975204,
+              "grouped": 0.29365041851997375,
+              "delta": 0.1865788772702217
+            },
+            "entitlement_probability": {
+              "a0": 0.107072,
+              "grouped": 0.29365,
+              "delta": 0.18657800000000002
+            },
+            "polarity_margin": {
+              "a0": 3.463694,
+              "grouped": 3.46411,
+              "delta": 0.00041599999999997195
+            },
+            "support_ne_margin_active": {
+              "a0": -0.530947,
+              "grouped": 0.369103,
+              "delta": 0.90005
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        },
+        {
+          "stable_id": "generated_fact_181__role_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.226268,
+              "grouped": 0.494031,
+              "delta": 0.267763
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.409738,
+              "grouped": 0.561736,
+              "delta": 0.15199800000000002
+            },
+            "sufficiency_probability": {
+              "a0": 0.99456,
+              "grouped": 0.992759,
+              "delta": -0.0018010000000000526
+            },
+            "q_FRAME": {
+              "a0": 0.7737321257591248,
+              "grouped": 0.5059689283370972,
+              "delta": -0.2677631974220276
+            },
+            "q_PREDICATE": {
+              "a0": 0.13355723023414612,
+              "grouped": 0.2165161818265915,
+              "delta": 0.08295895159244537
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0005043179844506085,
+              "grouped": 0.0020094551146030426,
+              "delta": 0.0015051371301524341
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.09220632910728455,
+              "grouped": 0.2755054235458374,
+              "delta": 0.18329909443855286
+            },
+            "entitlement_probability": {
+              "a0": 0.092206,
+              "grouped": 0.275505,
+              "delta": 0.183299
+            },
+            "polarity_margin": {
+              "a0": 3.45,
+              "grouped": 3.46191,
+              "delta": 0.011909999999999865
+            },
+            "support_ne_margin_active": {
+              "a0": -0.602158,
+              "grouped": 0.277884,
+              "delta": 0.880042
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        },
+        {
+          "stable_id": "generated_fact_195__role_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.241934,
+              "grouped": 0.457469,
+              "delta": 0.215535
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.43156,
+              "grouped": 0.618116,
+              "delta": 0.186556
+            },
+            "sufficiency_probability": {
+              "a0": 0.994184,
+              "grouped": 0.992437,
+              "delta": -0.001746999999999943
+            },
+            "q_FRAME": {
+              "a0": 0.7580663561820984,
+              "grouped": 0.5425313711166382,
+              "delta": -0.2155349850654602
+            },
+            "q_PREDICATE": {
+              "a0": 0.13752473890781403,
+              "grouped": 0.1746998280286789,
+              "delta": 0.03717508912086487
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0006072217365726829,
+              "grouped": 0.002138494746759534,
+              "delta": 0.001531273010186851
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.1038016825914383,
+              "grouped": 0.28063029050827026,
+              "delta": 0.17682860791683197
+            },
+            "entitlement_probability": {
+              "a0": 0.103802,
+              "grouped": 0.28063,
+              "delta": 0.17682799999999999
+            },
+            "polarity_margin": {
+              "a0": 3.422918,
+              "grouped": 3.4576,
+              "delta": 0.03468199999999966
+            },
+            "support_ne_margin_active": {
+              "a0": -0.552567,
+              "grouped": 0.298475,
+              "delta": 0.8510420000000001
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        }
+      ]
+    },
+    "180:QD": {
+      "seed": 180,
+      "arm_short": "QD",
+      "arm": "G3-GROUP-Q-D-HALF",
+      "accuracy": 0.8902777777777777,
+      "macro_f1": 0.7907532909651555,
+      "class_f1": {
+        "NOT_ENTITLED": 0.9303571428571429,
+        "REFUTE": 0.9943502824858758,
+        "SUPPORT": 0.44755244755244755
+      },
+      "a0_break_count": 17,
+      "a0_break_ids": [
+        "generated_fact_062__title_name_swap",
+        "generated_fact_076__entity_swap",
+        "generated_fact_076__location_swap",
+        "generated_fact_090__entity_swap",
+        "generated_fact_118__location_swap",
+        "generated_fact_166__paraphrase",
+        "generated_fact_167__role_swap",
+        "generated_fact_174__title_name_swap",
+        "generated_fact_181__role_swap",
+        "generated_fact_243__role_swap",
+        "generated_fact_258__title_name_swap",
+        "generated_fact_285__role_swap",
+        "jazz_archive__location_swap",
+        "jazz_archive__predicate_swap",
+        "jazz_archive__role_swap",
+        "museum_purchase__event_swap",
+        "museum_purchase__predicate_swap"
+      ],
+      "a0_wrong_repair_count": 3,
+      "a0_wrong_repair_ids": [
+        "generated_fact_076__none",
+        "museum_purchase__none",
+        "satellite_launch__paraphrase"
+      ],
+      "frozen51_overlap_count": 3,
+      "frozen51_overlap_ids": [
+        "generated_fact_118__location_swap",
+        "generated_fact_181__role_swap",
+        "generated_fact_258__title_name_swap"
+      ],
+      "historical_d1_break_overlap_count": 14,
+      "historical_d1_break_overlap_ids": [
+        "generated_fact_062__title_name_swap",
+        "generated_fact_076__location_swap",
+        "generated_fact_118__location_swap",
+        "generated_fact_167__role_swap",
+        "generated_fact_174__title_name_swap",
+        "generated_fact_181__role_swap",
+        "generated_fact_243__role_swap",
+        "generated_fact_258__title_name_swap",
+        "generated_fact_285__role_swap",
+        "jazz_archive__location_swap",
+        "jazz_archive__predicate_swap",
+        "jazz_archive__role_swap",
+        "museum_purchase__event_swap",
+        "museum_purchase__predicate_swap"
+      ],
+      "frozen51_geometry": [
+        {
+          "stable_id": "generated_fact_118__location_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.248024,
+              "grouped": 0.41629,
+              "delta": 0.168266
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.43398,
+              "grouped": 0.542576,
+              "delta": 0.10859599999999997
+            },
+            "sufficiency_probability": {
+              "a0": 0.994741,
+              "grouped": 0.996313,
+              "delta": 0.0015720000000000178
+            },
+            "q_FRAME": {
+              "a0": 0.7519757747650146,
+              "grouped": 0.5837101936340332,
+              "delta": -0.16826558113098145
+            },
+            "q_PREDICATE": {
+              "a0": 0.1403866410255432,
+              "grouped": 0.1904207319021225,
+              "delta": 0.050034090876579285
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0005660443566739559,
+              "grouped": 0.000832717283628881,
+              "delta": 0.00026667292695492506
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.10707154124975204,
+              "grouped": 0.22503632307052612,
+              "delta": 0.11796478182077408
+            },
+            "entitlement_probability": {
+              "a0": 0.107072,
+              "grouped": 0.225036,
+              "delta": 0.11796400000000001
+            },
+            "polarity_margin": {
+              "a0": 3.463694,
+              "grouped": 3.413429,
+              "delta": -0.050265000000000004
+            },
+            "support_ne_margin_active": {
+              "a0": -0.530947,
+              "grouped": 0.032213,
+              "delta": 0.56316
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        },
+        {
+          "stable_id": "generated_fact_181__role_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.226268,
+              "grouped": 0.410334,
+              "delta": 0.18406599999999998
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.409738,
+              "grouped": 0.527856,
+              "delta": 0.118118
+            },
+            "sufficiency_probability": {
+              "a0": 0.99456,
+              "grouped": 0.996515,
+              "delta": 0.00195500000000004
+            },
+            "q_FRAME": {
+              "a0": 0.7737321257591248,
+              "grouped": 0.5896657705307007,
+              "delta": -0.18406635522842407
+            },
+            "q_PREDICATE": {
+              "a0": 0.13355723023414612,
+              "grouped": 0.19373705983161926,
+              "delta": 0.060179829597473145
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0005043179844506085,
+              "grouped": 0.0007548335124738514,
+              "delta": 0.00025051552802324295
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.09220632910728455,
+              "grouped": 0.2158423662185669,
+              "delta": 0.12363603711128235
+            },
+            "entitlement_probability": {
+              "a0": 0.092206,
+              "grouped": 0.215842,
+              "delta": 0.12363600000000001
+            },
+            "polarity_margin": {
+              "a0": 3.45,
+              "grouped": 3.429112,
+              "delta": -0.02088800000000024
+            },
+            "support_ne_margin_active": {
+              "a0": -0.602158,
+              "grouped": 0.000487,
+              "delta": 0.602645
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        },
+        {
+          "stable_id": "generated_fact_258__title_name_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.341391,
+              "grouped": 0.455904,
+              "delta": 0.11451299999999998
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.406427,
+              "grouped": 0.50986,
+              "delta": 0.103433
+            },
+            "sufficiency_probability": {
+              "a0": 0.993432,
+              "grouped": 0.995414,
+              "delta": 0.0019820000000000393
+            },
+            "q_FRAME": {
+              "a0": 0.6586086750030518,
+              "grouped": 0.5440961122512817,
+              "delta": -0.11451256275177002
+            },
+            "q_PREDICATE": {
+              "a0": 0.20264053344726562,
+              "grouped": 0.22345690429210663,
+              "delta": 0.020816370844841003
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0009113670676015317,
+              "grouped": 0.0010659975232556462,
+              "delta": 0.00015463045565411448
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.1378394514322281,
+              "grouped": 0.23138098418712616,
+              "delta": 0.09354153275489807
+            },
+            "entitlement_probability": {
+              "a0": 0.137839,
+              "grouped": 0.231381,
+              "delta": 0.09354200000000001
+            },
+            "polarity_margin": {
+              "a0": 3.370714,
+              "grouped": 3.303116,
+              "delta": -0.06759799999999982
+            },
+            "support_ne_margin_active": {
+              "a0": -0.39958,
+              "grouped": 0.046426,
+              "delta": 0.446006
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        }
+      ]
+    },
+    "181:U": {
+      "seed": 181,
+      "arm_short": "U",
+      "arm": "G3-GROUP-U-HALF",
+      "accuracy": 0.8902777777777777,
+      "macro_f1": 0.7923178995565054,
+      "class_f1": {
+        "NOT_ENTITLED": 0.9294012511170688,
+        "REFUTE": 1.0,
+        "SUPPORT": 0.44755244755244755
+      },
+      "a0_break_count": 12,
+      "a0_break_ids": [
+        "forest_mapping__predicate_swap",
+        "generated_fact_091__predicate_swap",
+        "generated_fact_144__predicate_swap",
+        "generated_fact_165__predicate_swap",
+        "generated_fact_179__predicate_swap",
+        "generated_fact_193__predicate_swap",
+        "generated_fact_242__predicate_swap",
+        "generated_fact_259__predicate_swap",
+        "generated_fact_286__location_swap",
+        "jazz_archive__predicate_swap",
+        "museum_purchase__event_swap",
+        "railway_restoration__title_name_swap"
+      ],
+      "a0_wrong_repair_count": 6,
+      "a0_wrong_repair_ids": [
+        "forest_mapping__paraphrase",
+        "generated_fact_062__title_name_swap",
+        "generated_fact_076__entity_swap",
+        "generated_fact_076__title_name_swap",
+        "railway_restoration__paraphrase",
+        "satellite_launch__paraphrase"
+      ],
+      "frozen51_overlap_count": 0,
+      "frozen51_overlap_ids": [],
+      "historical_d1_break_overlap_count": 12,
+      "historical_d1_break_overlap_ids": [
+        "forest_mapping__predicate_swap",
+        "generated_fact_091__predicate_swap",
+        "generated_fact_144__predicate_swap",
+        "generated_fact_165__predicate_swap",
+        "generated_fact_179__predicate_swap",
+        "generated_fact_193__predicate_swap",
+        "generated_fact_242__predicate_swap",
+        "generated_fact_259__predicate_swap",
+        "generated_fact_286__location_swap",
+        "jazz_archive__predicate_swap",
+        "museum_purchase__event_swap",
+        "railway_restoration__title_name_swap"
+      ],
+      "frozen51_geometry": []
+    },
+    "181:Q": {
+      "seed": 181,
+      "arm_short": "Q",
+      "arm": "G3-GROUP-Q-HALF",
+      "accuracy": 0.8972222222222223,
+      "macro_f1": 0.7951529666152877,
+      "class_f1": {
+        "NOT_ENTITLED": 0.935226264418811,
+        "REFUTE": 0.9943502824858758,
+        "SUPPORT": 0.45588235294117646
+      },
+      "a0_break_count": 8,
+      "a0_break_ids": [
+        "forest_mapping__predicate_swap",
+        "generated_fact_076__none",
+        "generated_fact_144__predicate_swap",
+        "generated_fact_157__none",
+        "generated_fact_165__predicate_swap",
+        "generated_fact_179__predicate_swap",
+        "generated_fact_242__predicate_swap",
+        "railway_restoration__title_name_swap"
+      ],
+      "a0_wrong_repair_count": 7,
+      "a0_wrong_repair_ids": [
+        "forest_mapping__paraphrase",
+        "generated_fact_062__title_name_swap",
+        "generated_fact_076__entity_swap",
+        "generated_fact_076__location_swap",
+        "generated_fact_076__title_name_swap",
+        "railway_restoration__paraphrase",
+        "satellite_launch__paraphrase"
+      ],
+      "frozen51_overlap_count": 0,
+      "frozen51_overlap_ids": [],
+      "historical_d1_break_overlap_count": 6,
+      "historical_d1_break_overlap_ids": [
+        "forest_mapping__predicate_swap",
+        "generated_fact_144__predicate_swap",
+        "generated_fact_165__predicate_swap",
+        "generated_fact_179__predicate_swap",
+        "generated_fact_242__predicate_swap",
+        "railway_restoration__title_name_swap"
+      ],
+      "frozen51_geometry": []
+    },
+    "181:D": {
+      "seed": 181,
+      "arm_short": "D",
+      "arm": "G3-GROUP-D-HALF",
+      "accuracy": 0.8805555555555555,
+      "macro_f1": 0.7831095123900879,
+      "class_f1": {
+        "NOT_ENTITLED": 0.9226618705035972,
+        "REFUTE": 1.0,
+        "SUPPORT": 0.4266666666666667
+      },
+      "a0_break_count": 19,
+      "a0_break_ids": [
+        "clinic_expansion__event_swap",
+        "clinic_expansion__predicate_swap",
+        "forest_mapping__predicate_swap",
+        "generated_fact_045__role_swap",
+        "generated_fact_056__predicate_swap",
+        "generated_fact_090__entity_swap",
+        "generated_fact_091__predicate_swap",
+        "generated_fact_144__predicate_swap",
+        "generated_fact_165__predicate_swap",
+        "generated_fact_174__title_name_swap",
+        "generated_fact_179__predicate_swap",
+        "generated_fact_193__predicate_swap",
+        "generated_fact_242__predicate_swap",
+        "generated_fact_259__predicate_swap",
+        "generated_fact_286__location_swap",
+        "jazz_archive__location_swap",
+        "jazz_archive__predicate_swap",
+        "museum_purchase__event_swap",
+        "railway_restoration__title_name_swap"
+      ],
+      "a0_wrong_repair_count": 6,
+      "a0_wrong_repair_ids": [
+        "forest_mapping__paraphrase",
+        "generated_fact_062__title_name_swap",
+        "generated_fact_076__entity_swap",
+        "generated_fact_076__title_name_swap",
+        "railway_restoration__paraphrase",
+        "satellite_launch__paraphrase"
+      ],
+      "frozen51_overlap_count": 2,
+      "frozen51_overlap_ids": [
+        "generated_fact_045__role_swap",
+        "jazz_archive__location_swap"
+      ],
+      "historical_d1_break_overlap_count": 17,
+      "historical_d1_break_overlap_ids": [
+        "clinic_expansion__predicate_swap",
+        "forest_mapping__predicate_swap",
+        "generated_fact_045__role_swap",
+        "generated_fact_056__predicate_swap",
+        "generated_fact_091__predicate_swap",
+        "generated_fact_144__predicate_swap",
+        "generated_fact_165__predicate_swap",
+        "generated_fact_174__title_name_swap",
+        "generated_fact_179__predicate_swap",
+        "generated_fact_193__predicate_swap",
+        "generated_fact_242__predicate_swap",
+        "generated_fact_259__predicate_swap",
+        "generated_fact_286__location_swap",
+        "jazz_archive__location_swap",
+        "jazz_archive__predicate_swap",
+        "museum_purchase__event_swap",
+        "railway_restoration__title_name_swap"
+      ],
+      "frozen51_geometry": [
+        {
+          "stable_id": "generated_fact_045__role_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.394638,
+              "grouped": 0.435739,
+              "delta": 0.041101
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.428775,
+              "grouped": 0.537216,
+              "delta": 0.10844100000000001
+            },
+            "sufficiency_probability": {
+              "a0": 0.992268,
+              "grouped": 0.994966,
+              "delta": 0.002697999999999978
+            },
+            "q_FRAME": {
+              "a0": 0.6053622961044312,
+              "grouped": 0.5642613172531128,
+              "delta": -0.04110097885131836
+            },
+            "q_PREDICATE": {
+              "a0": 0.22542700171470642,
+              "grouped": 0.20165307819843292,
+              "delta": -0.0237739235162735
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0013082921504974365,
+              "grouped": 0.0011783657828345895,
+              "delta": -0.00012992636766284704
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.1679023802280426,
+              "grouped": 0.23290720582008362,
+              "delta": 0.06500482559204102
+            },
+            "entitlement_probability": {
+              "a0": 0.167902,
+              "grouped": 0.232907,
+              "delta": 0.06500500000000001
+            },
+            "polarity_margin": {
+              "a0": 3.400406,
+              "grouped": 3.627428,
+              "delta": 0.22702200000000028
+            },
+            "support_ne_margin_active": {
+              "a0": -0.242339,
+              "grouped": 0.11789,
+              "delta": 0.360229
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        },
+        {
+          "stable_id": "jazz_archive__location_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.429641,
+              "grouped": 0.410782,
+              "delta": -0.018859000000000015
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.449758,
+              "grouped": 0.520054,
+              "delta": 0.07029600000000003
+            },
+            "sufficiency_probability": {
+              "a0": 0.99027,
+              "grouped": 0.994453,
+              "delta": 0.004183000000000048
+            },
+            "q_FRAME": {
+              "a0": 0.5703585743904114,
+              "grouped": 0.589218020439148,
+              "delta": 0.018859446048736572
+            },
+            "q_PREDICATE": {
+              "a0": 0.23640665411949158,
+              "grouped": 0.19715306162834167,
+              "delta": -0.0392535924911499
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.001880101626738906,
+              "grouped": 0.0011848948197439313,
+              "delta": -0.0006952068069949746
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.1913546770811081,
+              "grouped": 0.2124439924955368,
+              "delta": 0.02108931541442871
+            },
+            "entitlement_probability": {
+              "a0": 0.191355,
+              "grouped": 0.212444,
+              "delta": 0.021088999999999997
+            },
+            "polarity_margin": {
+              "a0": 3.434861,
+              "grouped": 3.685352,
+              "delta": 0.2504909999999998
+            },
+            "support_ne_margin_active": {
+              "a0": -0.12217,
+              "grouped": 0.035102,
+              "delta": 0.157272
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        }
+      ]
+    },
+    "181:UQ": {
+      "seed": 181,
+      "arm_short": "UQ",
+      "arm": "G3-GROUP-U-Q-HALF",
+      "accuracy": 0.8819444444444444,
+      "macro_f1": 0.7868594806500518,
+      "class_f1": {
+        "NOT_ENTITLED": 0.9234923492349235,
+        "REFUTE": 1.0,
+        "SUPPORT": 0.4370860927152318
+      },
+      "a0_break_count": 19,
+      "a0_break_ids": [
+        "clinic_expansion__predicate_swap",
+        "forest_mapping__predicate_swap",
+        "generated_fact_045__role_swap",
+        "generated_fact_056__predicate_swap",
+        "generated_fact_091__predicate_swap",
+        "generated_fact_144__predicate_swap",
+        "generated_fact_165__predicate_swap",
+        "generated_fact_174__title_name_swap",
+        "generated_fact_179__predicate_swap",
+        "generated_fact_193__predicate_swap",
+        "generated_fact_242__predicate_swap",
+        "generated_fact_259__predicate_swap",
+        "generated_fact_285__predicate_swap",
+        "generated_fact_286__location_swap",
+        "jazz_archive__location_swap",
+        "jazz_archive__predicate_swap",
+        "jazz_archive__role_swap",
+        "museum_purchase__event_swap",
+        "railway_restoration__title_name_swap"
+      ],
+      "a0_wrong_repair_count": 7,
+      "a0_wrong_repair_ids": [
+        "forest_mapping__paraphrase",
+        "generated_fact_034__none",
+        "generated_fact_062__title_name_swap",
+        "generated_fact_076__entity_swap",
+        "generated_fact_076__title_name_swap",
+        "railway_restoration__paraphrase",
+        "satellite_launch__paraphrase"
+      ],
+      "frozen51_overlap_count": 3,
+      "frozen51_overlap_ids": [
+        "generated_fact_045__role_swap",
+        "jazz_archive__location_swap",
+        "jazz_archive__role_swap"
+      ],
+      "historical_d1_break_overlap_count": 19,
+      "historical_d1_break_overlap_ids": [
+        "clinic_expansion__predicate_swap",
+        "forest_mapping__predicate_swap",
+        "generated_fact_045__role_swap",
+        "generated_fact_056__predicate_swap",
+        "generated_fact_091__predicate_swap",
+        "generated_fact_144__predicate_swap",
+        "generated_fact_165__predicate_swap",
+        "generated_fact_174__title_name_swap",
+        "generated_fact_179__predicate_swap",
+        "generated_fact_193__predicate_swap",
+        "generated_fact_242__predicate_swap",
+        "generated_fact_259__predicate_swap",
+        "generated_fact_285__predicate_swap",
+        "generated_fact_286__location_swap",
+        "jazz_archive__location_swap",
+        "jazz_archive__predicate_swap",
+        "jazz_archive__role_swap",
+        "museum_purchase__event_swap",
+        "railway_restoration__title_name_swap"
+      ],
+      "frozen51_geometry": [
+        {
+          "stable_id": "generated_fact_045__role_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.394638,
+              "grouped": 0.531331,
+              "delta": 0.136693
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.428775,
+              "grouped": 0.447183,
+              "delta": 0.01840799999999998
+            },
+            "sufficiency_probability": {
+              "a0": 0.992268,
+              "grouped": 0.994351,
+              "delta": 0.002082999999999946
+            },
+            "q_FRAME": {
+              "a0": 0.6053622961044312,
+              "grouped": 0.4686692953109741,
+              "delta": -0.13669300079345703
+            },
+            "q_PREDICATE": {
+              "a0": 0.22542700171470642,
+              "grouped": 0.29372844099998474,
+              "delta": 0.06830143928527832
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0013082921504974365,
+              "grouped": 0.0013422082411125302,
+              "delta": 3.391609061509371e-05
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.1679023802280426,
+              "grouped": 0.2362600713968277,
+              "delta": 0.0683576911687851
+            },
+            "entitlement_probability": {
+              "a0": 0.167902,
+              "grouped": 0.23626,
+              "delta": 0.068358
+            },
+            "polarity_margin": {
+              "a0": 3.400406,
+              "grouped": 3.545369,
+              "delta": 0.14496300000000018
+            },
+            "support_ne_margin_active": {
+              "a0": -0.242339,
+              "grouped": 0.100554,
+              "delta": 0.342893
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        },
+        {
+          "stable_id": "jazz_archive__location_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.429641,
+              "grouped": 0.496495,
+              "delta": 0.06685400000000002
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.449758,
+              "grouped": 0.484688,
+              "delta": 0.03493000000000002
+            },
+            "sufficiency_probability": {
+              "a0": 0.99027,
+              "grouped": 0.992826,
+              "delta": 0.0025560000000000027
+            },
+            "q_FRAME": {
+              "a0": 0.5703585743904114,
+              "grouped": 0.5035048127174377,
+              "delta": -0.06685376167297363
+            },
+            "q_PREDICATE": {
+              "a0": 0.23640665411949158,
+              "grouped": 0.25585001707077026,
+              "delta": 0.019443362951278687
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.001880101626738906,
+              "grouped": 0.0017263919580727816,
+              "delta": -0.00015370966866612434
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.1913546770811081,
+              "grouped": 0.23891876637935638,
+              "delta": 0.04756408929824829
+            },
+            "entitlement_probability": {
+              "a0": 0.191355,
+              "grouped": 0.238919,
+              "delta": 0.047563999999999995
+            },
+            "polarity_margin": {
+              "a0": 3.434861,
+              "grouped": 3.625016,
+              "delta": 0.19015499999999985
+            },
+            "support_ne_margin_active": {
+              "a0": -0.12217,
+              "grouped": 0.141301,
+              "delta": 0.263471
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        },
+        {
+          "stable_id": "jazz_archive__role_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.446186,
+              "grouped": 0.491788,
+              "delta": 0.045601999999999976
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.453161,
+              "grouped": 0.478563,
+              "delta": 0.025402000000000036
+            },
+            "sufficiency_probability": {
+              "a0": 0.986363,
+              "grouped": 0.989708,
+              "delta": 0.0033450000000000424
+            },
+            "q_FRAME": {
+              "a0": 0.5538140535354614,
+              "grouped": 0.5082120895385742,
+              "delta": -0.04560196399688721
+            },
+            "q_PREDICATE": {
+              "a0": 0.24399200081825256,
+              "grouped": 0.25643646717071533,
+              "delta": 0.012444466352462769
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.002757416805252433,
+              "grouped": 0.002422305289655924,
+              "delta": -0.000335111515596509
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.19943654537200928,
+              "grouped": 0.23292911052703857,
+              "delta": 0.0334925651550293
+            },
+            "entitlement_probability": {
+              "a0": 0.199437,
+              "grouped": 0.232929,
+              "delta": 0.033491999999999994
+            },
+            "polarity_margin": {
+              "a0": 3.343245,
+              "grouped": 3.583184,
+              "delta": 0.23993900000000012
+            },
+            "support_ne_margin_active": {
+              "a0": -0.107437,
+              "grouped": 0.097174,
+              "delta": 0.204611
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        }
+      ]
+    },
+    "181:UD": {
+      "seed": 181,
+      "arm_short": "UD",
+      "arm": "G3-GROUP-U-D-HALF",
+      "accuracy": 0.8791666666666667,
+      "macro_f1": 0.776170187443399,
+      "class_f1": {
+        "NOT_ENTITLED": 0.9237668161434978,
+        "REFUTE": 0.9886363636363636,
+        "SUPPORT": 0.4161073825503356
+      },
+      "a0_break_count": 16,
+      "a0_break_ids": [
+        "generated_fact_076__event_swap",
+        "generated_fact_091__predicate_swap",
+        "generated_fact_144__predicate_swap",
+        "generated_fact_157__paraphrase",
+        "generated_fact_165__predicate_swap",
+        "generated_fact_166__paraphrase",
+        "generated_fact_174__title_name_swap",
+        "generated_fact_181__role_swap",
+        "generated_fact_193__predicate_swap",
+        "generated_fact_242__predicate_swap",
+        "generated_fact_259__predicate_swap",
+        "generated_fact_286__location_swap",
+        "jazz_archive__location_swap",
+        "jazz_archive__predicate_swap",
+        "jazz_archive__role_swap",
+        "museum_purchase__event_swap"
+      ],
+      "a0_wrong_repair_count": 2,
+      "a0_wrong_repair_ids": [
+        "forest_mapping__paraphrase",
+        "generated_fact_034__none"
+      ],
+      "frozen51_overlap_count": 3,
+      "frozen51_overlap_ids": [
+        "generated_fact_181__role_swap",
+        "jazz_archive__location_swap",
+        "jazz_archive__role_swap"
+      ],
+      "historical_d1_break_overlap_count": 13,
+      "historical_d1_break_overlap_ids": [
+        "generated_fact_091__predicate_swap",
+        "generated_fact_144__predicate_swap",
+        "generated_fact_165__predicate_swap",
+        "generated_fact_174__title_name_swap",
+        "generated_fact_181__role_swap",
+        "generated_fact_193__predicate_swap",
+        "generated_fact_242__predicate_swap",
+        "generated_fact_259__predicate_swap",
+        "generated_fact_286__location_swap",
+        "jazz_archive__location_swap",
+        "jazz_archive__predicate_swap",
+        "jazz_archive__role_swap",
+        "museum_purchase__event_swap"
+      ],
+      "frozen51_geometry": [
+        {
+          "stable_id": "generated_fact_181__role_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.437194,
+              "grouped": 0.463685,
+              "delta": 0.026490999999999987
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.439533,
+              "grouped": 0.469521,
+              "delta": 0.029988000000000015
+            },
+            "sufficiency_probability": {
+              "a0": 0.992818,
+              "grouped": 0.992523,
+              "delta": -0.0002949999999999342
+            },
+            "q_FRAME": {
+              "a0": 0.5628056526184082,
+              "grouped": 0.5363153219223022,
+              "delta": -0.026490330696105957
+            },
+            "q_PREDICATE": {
+              "a0": 0.24503305554389954,
+              "grouped": 0.24597471952438354,
+              "delta": 0.0009416639804840088
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0013800798915326595,
+              "grouped": 0.001627839868888259,
+              "delta": 0.0002477599773555994
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.19078120589256287,
+              "grouped": 0.21608208119869232,
+              "delta": 0.025300875306129456
+            },
+            "entitlement_probability": {
+              "a0": 0.190781,
+              "grouped": 0.216082,
+              "delta": 0.02530099999999999
+            },
+            "polarity_margin": {
+              "a0": 3.530954,
+              "grouped": 3.59057,
+              "delta": 0.05961600000000011
+            },
+            "support_ne_margin_active": {
+              "a0": -0.098136,
+              "grouped": 0.038162,
+              "delta": 0.136298
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        },
+        {
+          "stable_id": "jazz_archive__location_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.429641,
+              "grouped": 0.451607,
+              "delta": 0.021965999999999986
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.449758,
+              "grouped": 0.490152,
+              "delta": 0.040393999999999985
+            },
+            "sufficiency_probability": {
+              "a0": 0.99027,
+              "grouped": 0.990526,
+              "delta": 0.000256000000000034
+            },
+            "q_FRAME": {
+              "a0": 0.5703585743904114,
+              "grouped": 0.5483932495117188,
+              "delta": -0.021965324878692627
+            },
+            "q_PREDICATE": {
+              "a0": 0.23640665411949158,
+              "grouped": 0.23025058209896088,
+              "delta": -0.006156072020530701
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.001880101626738906,
+              "grouped": 0.002097031334415078,
+              "delta": 0.00021692970767617226
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.1913546770811081,
+              "grouped": 0.2192591279745102,
+              "delta": 0.0279044508934021
+            },
+            "entitlement_probability": {
+              "a0": 0.191355,
+              "grouped": 0.219259,
+              "delta": 0.027904000000000012
+            },
+            "polarity_margin": {
+              "a0": 3.434861,
+              "grouped": 3.535922,
+              "delta": 0.10106099999999962
+            },
+            "support_ne_margin_active": {
+              "a0": -0.12217,
+              "grouped": 0.034973,
+              "delta": 0.157143
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        },
+        {
+          "stable_id": "jazz_archive__role_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.446186,
+              "grouped": 0.463106,
+              "delta": 0.01691999999999999
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.453161,
+              "grouped": 0.489979,
+              "delta": 0.03681800000000002
+            },
+            "sufficiency_probability": {
+              "a0": 0.986363,
+              "grouped": 0.98704,
+              "delta": 0.0006770000000000387
+            },
+            "q_FRAME": {
+              "a0": 0.5538140535354614,
+              "grouped": 0.5368940234184265,
+              "delta": -0.016920030117034912
+            },
+            "q_PREDICATE": {
+              "a0": 0.24399200081825256,
+              "grouped": 0.2361939251422882,
+              "delta": -0.0077980756759643555
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.002757416805252433,
+              "grouped": 0.002940838225185871,
+              "delta": 0.0001834214199334383
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.19943654537200928,
+              "grouped": 0.22397123277187347,
+              "delta": 0.024534687399864197
+            },
+            "entitlement_probability": {
+              "a0": 0.199437,
+              "grouped": 0.223971,
+              "delta": 0.024534
+            },
+            "polarity_margin": {
+              "a0": 3.343245,
+              "grouped": 3.481629,
+              "delta": 0.13838399999999984
+            },
+            "support_ne_margin_active": {
+              "a0": -0.107437,
+              "grouped": 0.041228,
+              "delta": 0.148665
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        }
+      ]
+    },
+    "181:QD": {
+      "seed": 181,
+      "arm_short": "QD",
+      "arm": "G3-GROUP-Q-D-HALF",
+      "accuracy": 0.8791666666666667,
+      "macro_f1": 0.7793134222157901,
+      "class_f1": {
+        "NOT_ENTITLED": 0.921832884097035,
+        "REFUTE": 1.0,
+        "SUPPORT": 0.4161073825503356
+      },
+      "a0_break_count": 20,
+      "a0_break_ids": [
+        "clinic_expansion__event_swap",
+        "clinic_expansion__predicate_swap",
+        "forest_mapping__predicate_swap",
+        "generated_fact_045__role_swap",
+        "generated_fact_056__predicate_swap",
+        "generated_fact_076__none",
+        "generated_fact_091__predicate_swap",
+        "generated_fact_144__predicate_swap",
+        "generated_fact_165__predicate_swap",
+        "generated_fact_179__predicate_swap",
+        "generated_fact_193__predicate_swap",
+        "generated_fact_242__predicate_swap",
+        "generated_fact_259__predicate_swap",
+        "generated_fact_285__location_swap",
+        "generated_fact_285__predicate_swap",
+        "generated_fact_286__location_swap",
+        "jazz_archive__location_swap",
+        "jazz_archive__predicate_swap",
+        "museum_purchase__event_swap",
+        "railway_restoration__title_name_swap"
+      ],
+      "a0_wrong_repair_count": 6,
+      "a0_wrong_repair_ids": [
+        "forest_mapping__paraphrase",
+        "generated_fact_062__title_name_swap",
+        "generated_fact_076__entity_swap",
+        "generated_fact_076__title_name_swap",
+        "railway_restoration__paraphrase",
+        "satellite_launch__paraphrase"
+      ],
+      "frozen51_overlap_count": 2,
+      "frozen51_overlap_ids": [
+        "generated_fact_045__role_swap",
+        "jazz_archive__location_swap"
+      ],
+      "historical_d1_break_overlap_count": 17,
+      "historical_d1_break_overlap_ids": [
+        "clinic_expansion__predicate_swap",
+        "forest_mapping__predicate_swap",
+        "generated_fact_045__role_swap",
+        "generated_fact_056__predicate_swap",
+        "generated_fact_091__predicate_swap",
+        "generated_fact_144__predicate_swap",
+        "generated_fact_165__predicate_swap",
+        "generated_fact_179__predicate_swap",
+        "generated_fact_193__predicate_swap",
+        "generated_fact_242__predicate_swap",
+        "generated_fact_259__predicate_swap",
+        "generated_fact_285__predicate_swap",
+        "generated_fact_286__location_swap",
+        "jazz_archive__location_swap",
+        "jazz_archive__predicate_swap",
+        "museum_purchase__event_swap",
+        "railway_restoration__title_name_swap"
+      ],
+      "frozen51_geometry": [
+        {
+          "stable_id": "generated_fact_045__role_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.394638,
+              "grouped": 0.44705,
+              "delta": 0.052412000000000014
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.428775,
+              "grouped": 0.540017,
+              "delta": 0.11124199999999995
+            },
+            "sufficiency_probability": {
+              "a0": 0.992268,
+              "grouped": 0.995857,
+              "delta": 0.0035889999999999533
+            },
+            "q_FRAME": {
+              "a0": 0.6053622961044312,
+              "grouped": 0.5529501438140869,
+              "delta": -0.05241215229034424
+            },
+            "q_PREDICATE": {
+              "a0": 0.22542700171470642,
+              "grouped": 0.20563532412052155,
+              "delta": -0.019791677594184875
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0013082921504974365,
+              "grouped": 0.0010002234485000372,
+              "delta": -0.00030806870199739933
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.1679023802280426,
+              "grouped": 0.2404143065214157,
+              "delta": 0.07251192629337311
+            },
+            "entitlement_probability": {
+              "a0": 0.167902,
+              "grouped": 0.240414,
+              "delta": 0.072512
+            },
+            "polarity_margin": {
+              "a0": 3.400406,
+              "grouped": 3.588219,
+              "delta": 0.18781300000000023
+            },
+            "support_ne_margin_active": {
+              "a0": -0.242339,
+              "grouped": 0.13292,
+              "delta": 0.375259
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        },
+        {
+          "stable_id": "jazz_archive__location_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.429641,
+              "grouped": 0.440462,
+              "delta": 0.010821000000000025
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.449758,
+              "grouped": 0.526479,
+              "delta": 0.07672100000000004
+            },
+            "sufficiency_probability": {
+              "a0": 0.99027,
+              "grouped": 0.995749,
+              "delta": 0.005479000000000012
+            },
+            "q_FRAME": {
+              "a0": 0.5703585743904114,
+              "grouped": 0.5595378875732422,
+              "delta": -0.01082068681716919
+            },
+            "q_PREDICATE": {
+              "a0": 0.23640665411949158,
+              "grouped": 0.2085680365562439,
+              "delta": -0.02783861756324768
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.001880101626738906,
+              "grouped": 0.0009857824770733714,
+              "delta": -0.0008943191496655345
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.1913546770811081,
+              "grouped": 0.23090828955173492,
+              "delta": 0.03955361247062683
+            },
+            "entitlement_probability": {
+              "a0": 0.191355,
+              "grouped": 0.230908,
+              "delta": 0.039553000000000005
+            },
+            "polarity_margin": {
+              "a0": 3.434861,
+              "grouped": 3.679343,
+              "delta": 0.24448199999999964
+            },
+            "support_ne_margin_active": {
+              "a0": -0.12217,
+              "grouped": 0.120687,
+              "delta": 0.242857
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        }
+      ]
+    },
+    "182:U": {
+      "seed": 182,
+      "arm_short": "U",
+      "arm": "G3-GROUP-U-HALF",
+      "accuracy": 0.8916666666666667,
+      "macro_f1": 0.7936871227364185,
+      "class_f1": {
+        "NOT_ENTITLED": 0.9303571428571429,
+        "REFUTE": 1.0,
+        "SUPPORT": 0.4507042253521127
+      },
+      "a0_break_count": 17,
+      "a0_break_ids": [
+        "clinic_expansion__event_swap",
+        "clinic_expansion__location_swap",
+        "forest_mapping__predicate_swap",
+        "generated_fact_034__none",
+        "generated_fact_045__role_swap",
+        "generated_fact_051__role_swap",
+        "generated_fact_090__title_name_swap",
+        "generated_fact_118__none",
+        "generated_fact_152__polarity_flip",
+        "generated_fact_225__role_swap",
+        "generated_fact_242__predicate_swap",
+        "generated_fact_243__role_swap",
+        "generated_fact_285__polarity_flip",
+        "generated_fact_286__polarity_flip",
+        "jazz_archive__role_swap",
+        "museum_purchase__predicate_swap",
+        "railway_restoration__title_name_swap"
+      ],
+      "a0_wrong_repair_count": 10,
+      "a0_wrong_repair_ids": [
+        "generated_fact_034__location_swap",
+        "generated_fact_118__location_swap",
+        "generated_fact_152__location_swap",
+        "generated_fact_166__location_swap",
+        "generated_fact_225__predicate_swap",
+        "generated_fact_261__predicate_swap",
+        "generated_fact_278__location_swap",
+        "generated_fact_285__location_swap",
+        "generated_fact_286__location_swap",
+        "museum_purchase__none"
+      ],
+      "frozen51_overlap_count": 2,
+      "frozen51_overlap_ids": [
+        "clinic_expansion__event_swap",
+        "generated_fact_090__title_name_swap"
+      ],
+      "historical_d1_break_overlap_count": 13,
+      "historical_d1_break_overlap_ids": [
+        "clinic_expansion__event_swap",
+        "clinic_expansion__location_swap",
+        "generated_fact_045__role_swap",
+        "generated_fact_051__role_swap",
+        "generated_fact_090__title_name_swap",
+        "generated_fact_152__polarity_flip",
+        "generated_fact_225__role_swap",
+        "generated_fact_242__predicate_swap",
+        "generated_fact_243__role_swap",
+        "generated_fact_285__polarity_flip",
+        "jazz_archive__role_swap",
+        "museum_purchase__predicate_swap",
+        "railway_restoration__title_name_swap"
+      ],
+      "frozen51_geometry": [
+        {
+          "stable_id": "clinic_expansion__event_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.283875,
+              "grouped": 0.448495,
+              "delta": 0.16462
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.314689,
+              "grouped": 0.475244,
+              "delta": 0.160555
+            },
+            "sufficiency_probability": {
+              "a0": 0.991798,
+              "grouped": 0.989615,
+              "delta": -0.002182999999999935
+            },
+            "q_FRAME": {
+              "a0": 0.7161246538162231,
+              "grouped": 0.5515050888061523,
+              "delta": -0.1646195650100708
+            },
+            "q_PREDICATE": {
+              "a0": 0.1945429891347885,
+              "grouped": 0.23535050451755524,
+              "delta": 0.040807515382766724
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0007326679769903421,
+              "grouped": 0.002213576342910528,
+              "delta": 0.001480908365920186
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.08859966695308685,
+              "grouped": 0.21093086898326874,
+              "delta": 0.12233120203018188
+            },
+            "entitlement_probability": {
+              "a0": 0.0886,
+              "grouped": 0.210931,
+              "delta": 0.12233100000000001
+            },
+            "polarity_margin": {
+              "a0": 4.225456,
+              "grouped": 3.710626,
+              "delta": -0.5148300000000003
+            },
+            "support_ne_margin_active": {
+              "a0": -0.560057,
+              "grouped": 0.04677,
+              "delta": 0.606827
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        },
+        {
+          "stable_id": "generated_fact_090__title_name_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.313647,
+              "grouped": 0.527665,
+              "delta": 0.21401800000000004
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.222953,
+              "grouped": 0.461419,
+              "delta": 0.238466
+            },
+            "sufficiency_probability": {
+              "a0": 0.991725,
+              "grouped": 0.989608,
+              "delta": -0.0021169999999999245
+            },
+            "q_FRAME": {
+              "a0": 0.6863532066345215,
+              "grouped": 0.472334623336792,
+              "delta": -0.2140185832977295
+            },
+            "q_PREDICATE": {
+              "a0": 0.24371832609176636,
+              "grouped": 0.2841903567314148,
+              "delta": 0.04047203063964844
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0005786686087958515,
+              "grouped": 0.0025302530266344547,
+              "delta": 0.0019515844178386033
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.06934978812932968,
+              "grouped": 0.2409447878599167,
+              "delta": 0.171594999730587
+            },
+            "entitlement_probability": {
+              "a0": 0.06935,
+              "grouped": 0.240945,
+              "delta": 0.171595
+            },
+            "polarity_margin": {
+              "a0": 4.205231,
+              "grouped": 3.669154,
+              "delta": -0.5360770000000006
+            },
+            "support_ne_margin_active": {
+              "a0": -0.663049,
+              "grouped": 0.180241,
+              "delta": 0.84329
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        }
+      ]
+    },
+    "182:Q": {
+      "seed": 182,
+      "arm_short": "Q",
+      "arm": "G3-GROUP-Q-HALF",
+      "accuracy": 0.8972222222222223,
+      "macro_f1": 0.7993106056698815,
+      "class_f1": {
+        "NOT_ENTITLED": 0.9341637010676157,
+        "REFUTE": 1.0,
+        "SUPPORT": 0.463768115942029
+      },
+      "a0_break_count": 15,
+      "a0_break_ids": [
+        "clinic_expansion__event_swap",
+        "clinic_expansion__location_swap",
+        "generated_fact_034__none",
+        "generated_fact_076__entity_swap",
+        "generated_fact_076__location_swap",
+        "generated_fact_091__role_swap",
+        "generated_fact_118__none",
+        "generated_fact_152__polarity_flip",
+        "generated_fact_243__role_swap",
+        "generated_fact_285__polarity_flip",
+        "generated_fact_286__polarity_flip",
+        "jazz_archive__role_swap",
+        "museum_purchase__predicate_swap",
+        "railway_restoration__paraphrase",
+        "railway_restoration__title_name_swap"
+      ],
+      "a0_wrong_repair_count": 12,
+      "a0_wrong_repair_ids": [
+        "generated_fact_034__location_swap",
+        "generated_fact_076__none",
+        "generated_fact_118__location_swap",
+        "generated_fact_152__location_swap",
+        "generated_fact_165__predicate_swap",
+        "generated_fact_166__location_swap",
+        "generated_fact_225__predicate_swap",
+        "generated_fact_261__predicate_swap",
+        "generated_fact_278__location_swap",
+        "generated_fact_285__location_swap",
+        "generated_fact_286__location_swap",
+        "museum_purchase__none"
+      ],
+      "frozen51_overlap_count": 1,
+      "frozen51_overlap_ids": [
+        "clinic_expansion__event_swap"
+      ],
+      "historical_d1_break_overlap_count": 11,
+      "historical_d1_break_overlap_ids": [
+        "clinic_expansion__event_swap",
+        "clinic_expansion__location_swap",
+        "generated_fact_076__entity_swap",
+        "generated_fact_076__location_swap",
+        "generated_fact_091__role_swap",
+        "generated_fact_152__polarity_flip",
+        "generated_fact_243__role_swap",
+        "generated_fact_285__polarity_flip",
+        "jazz_archive__role_swap",
+        "museum_purchase__predicate_swap",
+        "railway_restoration__title_name_swap"
+      ],
+      "frozen51_geometry": [
+        {
+          "stable_id": "clinic_expansion__event_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.283875,
+              "grouped": 0.572698,
+              "delta": 0.28882300000000005
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.314689,
+              "grouped": 0.433067,
+              "delta": 0.11837799999999998
+            },
+            "sufficiency_probability": {
+              "a0": 0.991798,
+              "grouped": 0.985683,
+              "delta": -0.0061149999999999816
+            },
+            "q_FRAME": {
+              "a0": 0.7161246538162231,
+              "grouped": 0.42730212211608887,
+              "delta": -0.2888225317001343
+            },
+            "q_PREDICATE": {
+              "a0": 0.1945429891347885,
+              "grouped": 0.3246811628341675,
+              "delta": 0.13013817369937897
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0007326679769903421,
+              "grouped": 0.0035509674344211817,
+              "delta": 0.0028182994574308395
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.08859966695308685,
+              "grouped": 0.24446573853492737,
+              "delta": 0.15586607158184052
+            },
+            "entitlement_probability": {
+              "a0": 0.0886,
+              "grouped": 0.244466,
+              "delta": 0.155866
+            },
+            "polarity_margin": {
+              "a0": 4.225456,
+              "grouped": 3.134903,
+              "delta": -1.0905530000000003
+            },
+            "support_ne_margin_active": {
+              "a0": -0.560057,
+              "grouped": 0.122415,
+              "delta": 0.682472
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        }
+      ]
+    },
+    "182:D": {
+      "seed": 182,
+      "arm_short": "D",
+      "arm": "G3-GROUP-D-HALF",
+      "accuracy": 0.8736111111111111,
+      "macro_f1": 0.7927604569873554,
+      "class_f1": {
+        "NOT_ENTITLED": 0.9167429094236048,
+        "REFUTE": 1.0,
+        "SUPPORT": 0.46153846153846156
+      },
+      "a0_break_count": 23,
+      "a0_break_ids": [
+        "clinic_expansion__location_swap",
+        "forest_mapping__location_swap",
+        "forest_mapping__predicate_swap",
+        "generated_fact_045__location_swap",
+        "generated_fact_045__role_swap",
+        "generated_fact_051__role_swap",
+        "generated_fact_056__predicate_swap",
+        "generated_fact_091__predicate_swap",
+        "generated_fact_091__role_swap",
+        "generated_fact_138__location_swap",
+        "generated_fact_144__predicate_swap",
+        "generated_fact_179__predicate_swap",
+        "generated_fact_225__role_swap",
+        "generated_fact_242__predicate_swap",
+        "generated_fact_243__role_swap",
+        "generated_fact_259__predicate_swap",
+        "generated_fact_259__role_swap",
+        "generated_fact_261__role_swap",
+        "generated_fact_285__predicate_swap",
+        "jazz_archive__location_swap",
+        "jazz_archive__predicate_swap",
+        "museum_purchase__predicate_swap",
+        "railway_restoration__title_name_swap"
+      ],
+      "a0_wrong_repair_count": 3,
+      "a0_wrong_repair_ids": [
+        "generated_fact_045__none",
+        "generated_fact_257__polarity_flip",
+        "museum_purchase__none"
+      ],
+      "frozen51_overlap_count": 0,
+      "frozen51_overlap_ids": [],
+      "historical_d1_break_overlap_count": 16,
+      "historical_d1_break_overlap_ids": [
+        "clinic_expansion__location_swap",
+        "generated_fact_045__role_swap",
+        "generated_fact_051__role_swap",
+        "generated_fact_056__predicate_swap",
+        "generated_fact_091__predicate_swap",
+        "generated_fact_091__role_swap",
+        "generated_fact_144__predicate_swap",
+        "generated_fact_179__predicate_swap",
+        "generated_fact_225__role_swap",
+        "generated_fact_242__predicate_swap",
+        "generated_fact_243__role_swap",
+        "generated_fact_259__role_swap",
+        "jazz_archive__location_swap",
+        "jazz_archive__predicate_swap",
+        "museum_purchase__predicate_swap",
+        "railway_restoration__title_name_swap"
+      ],
+      "frozen51_geometry": []
+    },
+    "182:UQ": {
+      "seed": 182,
+      "arm_short": "UQ",
+      "arm": "G3-GROUP-U-Q-HALF",
+      "accuracy": 0.8875,
+      "macro_f1": 0.7896212144599142,
+      "class_f1": {
+        "NOT_ENTITLED": 0.927484333034915,
+        "REFUTE": 1.0,
+        "SUPPORT": 0.4413793103448276
+      },
+      "a0_break_count": 17,
+      "a0_break_ids": [
+        "clinic_expansion__event_swap",
+        "clinic_expansion__location_swap",
+        "clinic_expansion__predicate_swap",
+        "generated_fact_034__none",
+        "generated_fact_056__predicate_swap",
+        "generated_fact_090__title_name_swap",
+        "generated_fact_118__none",
+        "generated_fact_144__predicate_swap",
+        "generated_fact_152__polarity_flip",
+        "generated_fact_179__predicate_swap",
+        "generated_fact_225__role_swap",
+        "generated_fact_242__predicate_swap",
+        "generated_fact_243__role_swap",
+        "generated_fact_285__polarity_flip",
+        "generated_fact_286__polarity_flip",
+        "museum_purchase__predicate_swap",
+        "railway_restoration__title_name_swap"
+      ],
+      "a0_wrong_repair_count": 7,
+      "a0_wrong_repair_ids": [
+        "generated_fact_034__location_swap",
+        "generated_fact_152__location_swap",
+        "generated_fact_166__location_swap",
+        "generated_fact_261__predicate_swap",
+        "generated_fact_285__location_swap",
+        "generated_fact_286__location_swap",
+        "museum_purchase__none"
+      ],
+      "frozen51_overlap_count": 3,
+      "frozen51_overlap_ids": [
+        "clinic_expansion__event_swap",
+        "clinic_expansion__predicate_swap",
+        "generated_fact_090__title_name_swap"
+      ],
+      "historical_d1_break_overlap_count": 14,
+      "historical_d1_break_overlap_ids": [
+        "clinic_expansion__event_swap",
+        "clinic_expansion__location_swap",
+        "clinic_expansion__predicate_swap",
+        "generated_fact_056__predicate_swap",
+        "generated_fact_090__title_name_swap",
+        "generated_fact_144__predicate_swap",
+        "generated_fact_152__polarity_flip",
+        "generated_fact_179__predicate_swap",
+        "generated_fact_225__role_swap",
+        "generated_fact_242__predicate_swap",
+        "generated_fact_243__role_swap",
+        "generated_fact_285__polarity_flip",
+        "museum_purchase__predicate_swap",
+        "railway_restoration__title_name_swap"
+      ],
+      "frozen51_geometry": [
+        {
+          "stable_id": "clinic_expansion__event_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.283875,
+              "grouped": 0.439974,
+              "delta": 0.156099
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.314689,
+              "grouped": 0.574409,
+              "delta": 0.25971999999999995
+            },
+            "sufficiency_probability": {
+              "a0": 0.991798,
+              "grouped": 0.992214,
+              "delta": 0.00041600000000008297
+            },
+            "q_FRAME": {
+              "a0": 0.7161246538162231,
+              "grouped": 0.5600258111953735,
+              "delta": -0.1560988426208496
+            },
+            "q_PREDICATE": {
+              "a0": 0.1945429891347885,
+              "grouped": 0.18724915385246277,
+              "delta": -0.007293835282325745
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0007326679769903421,
+              "grouped": 0.0019677712116390467,
+              "delta": 0.0012351032346487045
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.08859966695308685,
+              "grouped": 0.25075727701187134,
+              "delta": 0.16215761005878448
+            },
+            "entitlement_probability": {
+              "a0": 0.0886,
+              "grouped": 0.250757,
+              "delta": 0.162157
+            },
+            "polarity_margin": {
+              "a0": 4.225456,
+              "grouped": 3.928658,
+              "delta": -0.29679800000000034
+            },
+            "support_ne_margin_active": {
+              "a0": -0.560057,
+              "grouped": 0.278632,
+              "delta": 0.838689
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        },
+        {
+          "stable_id": "clinic_expansion__predicate_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.423068,
+              "grouped": 0.491605,
+              "delta": 0.06853700000000001
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.213299,
+              "grouped": 0.404045,
+              "delta": 0.190746
+            },
+            "sufficiency_probability": {
+              "a0": 0.989495,
+              "grouped": 0.990682,
+              "delta": 0.001186999999999938
+            },
+            "q_FRAME": {
+              "a0": 0.5769321918487549,
+              "grouped": 0.5083953142166138,
+              "delta": -0.06853687763214111
+            },
+            "q_PREDICATE": {
+              "a0": 0.33282792568206787,
+              "grouped": 0.29297444224357605,
+              "delta": -0.03985348343849182
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0009479392319917679,
+              "grouped": 0.001850917935371399,
+              "delta": 0.000902978703379631
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.08929191529750824,
+              "grouped": 0.1967792809009552,
+              "delta": 0.10748736560344696
+            },
+            "entitlement_probability": {
+              "a0": 0.089292,
+              "grouped": 0.196779,
+              "delta": 0.10748700000000001
+            },
+            "polarity_margin": {
+              "a0": 4.179676,
+              "grouped": 4.043728,
+              "delta": -0.13594799999999996
+            },
+            "support_ne_margin_active": {
+              "a0": -0.560489,
+              "grouped": 0.009033,
+              "delta": 0.569522
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        },
+        {
+          "stable_id": "generated_fact_090__title_name_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.313647,
+              "grouped": 0.437825,
+              "delta": 0.12417800000000001
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.222953,
+              "grouped": 0.516378,
+              "delta": 0.293425
+            },
+            "sufficiency_probability": {
+              "a0": 0.991725,
+              "grouped": 0.992181,
+              "delta": 0.00045600000000001195
+            },
+            "q_FRAME": {
+              "a0": 0.6863532066345215,
+              "grouped": 0.5621753931045532,
+              "delta": -0.12417781352996826
+            },
+            "q_PREDICATE": {
+              "a0": 0.24371832609176636,
+              "grouped": 0.21174165606498718,
+              "delta": -0.031976670026779175
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0005786686087958515,
+              "grouped": 0.0017677017021924257,
+              "delta": 0.0011890330933965743
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.06934978812932968,
+              "grouped": 0.22431528568267822,
+              "delta": 0.15496549755334854
+            },
+            "entitlement_probability": {
+              "a0": 0.06935,
+              "grouped": 0.224315,
+              "delta": 0.154965
+            },
+            "polarity_margin": {
+              "a0": 4.205231,
+              "grouped": 3.801664,
+              "delta": -0.40356700000000023
+            },
+            "support_ne_margin_active": {
+              "a0": -0.663049,
+              "grouped": 0.106487,
+              "delta": 0.769536
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        }
+      ]
+    },
+    "182:UD": {
+      "seed": 182,
+      "arm_short": "UD",
+      "arm": "G3-GROUP-U-D-HALF",
+      "accuracy": 0.8861111111111111,
+      "macro_f1": 0.7857367653879281,
+      "class_f1": {
+        "NOT_ENTITLED": 0.9266547406082289,
+        "REFUTE": 1.0,
+        "SUPPORT": 0.4305555555555556
+      },
+      "a0_break_count": 16,
+      "a0_break_ids": [
+        "clinic_expansion__location_swap",
+        "generated_fact_034__none",
+        "generated_fact_045__role_swap",
+        "generated_fact_056__predicate_swap",
+        "generated_fact_090__title_name_swap",
+        "generated_fact_118__none",
+        "generated_fact_152__polarity_flip",
+        "generated_fact_167__role_swap",
+        "generated_fact_179__predicate_swap",
+        "generated_fact_242__predicate_swap",
+        "generated_fact_243__role_swap",
+        "generated_fact_285__polarity_flip",
+        "generated_fact_286__polarity_flip",
+        "jazz_archive__role_swap",
+        "museum_purchase__predicate_swap",
+        "railway_restoration__title_name_swap"
+      ],
+      "a0_wrong_repair_count": 5,
+      "a0_wrong_repair_ids": [
+        "generated_fact_034__location_swap",
+        "generated_fact_152__location_swap",
+        "generated_fact_166__location_swap",
+        "generated_fact_278__location_swap",
+        "generated_fact_285__location_swap"
+      ],
+      "frozen51_overlap_count": 2,
+      "frozen51_overlap_ids": [
+        "generated_fact_090__title_name_swap",
+        "generated_fact_167__role_swap"
+      ],
+      "historical_d1_break_overlap_count": 13,
+      "historical_d1_break_overlap_ids": [
+        "clinic_expansion__location_swap",
+        "generated_fact_045__role_swap",
+        "generated_fact_056__predicate_swap",
+        "generated_fact_090__title_name_swap",
+        "generated_fact_152__polarity_flip",
+        "generated_fact_167__role_swap",
+        "generated_fact_179__predicate_swap",
+        "generated_fact_242__predicate_swap",
+        "generated_fact_243__role_swap",
+        "generated_fact_285__polarity_flip",
+        "jazz_archive__role_swap",
+        "museum_purchase__predicate_swap",
+        "railway_restoration__title_name_swap"
+      ],
+      "frozen51_geometry": [
+        {
+          "stable_id": "generated_fact_090__title_name_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.313647,
+              "grouped": 0.424204,
+              "delta": 0.11055700000000002
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.222953,
+              "grouped": 0.473321,
+              "delta": 0.250368
+            },
+            "sufficiency_probability": {
+              "a0": 0.991725,
+              "grouped": 0.991474,
+              "delta": -0.0002510000000000012
+            },
+            "q_FRAME": {
+              "a0": 0.6863532066345215,
+              "grouped": 0.5757962465286255,
+              "delta": -0.110556960105896
+            },
+            "q_PREDICATE": {
+              "a0": 0.24371832609176636,
+              "grouped": 0.22341907024383545,
+              "delta": -0.020299255847930908
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0005786686087958515,
+              "grouped": 0.0017119796248152852,
+              "delta": 0.0011333110160194337
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.06934978812932968,
+              "grouped": 0.1990727186203003,
+              "delta": 0.1297229304909706
+            },
+            "entitlement_probability": {
+              "a0": 0.06935,
+              "grouped": 0.199073,
+              "delta": 0.129723
+            },
+            "polarity_margin": {
+              "a0": 4.205231,
+              "grouped": 4.047045,
+              "delta": -0.1581860000000006
+            },
+            "support_ne_margin_active": {
+              "a0": -0.663049,
+              "grouped": 0.018745,
+              "delta": 0.681794
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        },
+        {
+          "stable_id": "generated_fact_167__role_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.253066,
+              "grouped": 0.41889,
+              "delta": 0.16582399999999997
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.328906,
+              "grouped": 0.487097,
+              "delta": 0.15819100000000003
+            },
+            "sufficiency_probability": {
+              "a0": 0.991558,
+              "grouped": 0.991302,
+              "delta": -0.000256000000000034
+            },
+            "q_FRAME": {
+              "a0": 0.7469342947006226,
+              "grouped": 0.5811101198196411,
+              "delta": -0.16582417488098145
+            },
+            "q_PREDICATE": {
+              "a0": 0.16983094811439514,
+              "grouped": 0.21484969556331635,
+              "delta": 0.045018747448921204
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0007026321836747229,
+              "grouped": 0.0017747385427355766,
+              "delta": 0.0010721063590608537
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.08253216743469238,
+              "grouped": 0.2022654116153717,
+              "delta": 0.11973324418067932
+            },
+            "entitlement_probability": {
+              "a0": 0.082532,
+              "grouped": 0.202265,
+              "delta": 0.119733
+            },
+            "polarity_margin": {
+              "a0": 4.158792,
+              "grouped": 4.034742,
+              "delta": -0.12405000000000044
+            },
+            "support_ne_margin_active": {
+              "a0": -0.597678,
+              "grouped": 0.029821,
+              "delta": 0.627499
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        }
+      ]
+    },
+    "182:QD": {
+      "seed": 182,
+      "arm_short": "QD",
+      "arm": "G3-GROUP-Q-D-HALF",
+      "accuracy": 0.8791666666666667,
+      "macro_f1": 0.7935360852076881,
+      "class_f1": {
+        "NOT_ENTITLED": 0.9209809264305178,
+        "REFUTE": 1.0,
+        "SUPPORT": 0.45962732919254656
+      },
+      "a0_break_count": 17,
+      "a0_break_ids": [
+        "clinic_expansion__location_swap",
+        "forest_mapping__location_swap",
+        "forest_mapping__predicate_swap",
+        "generated_fact_045__location_swap",
+        "generated_fact_045__role_swap",
+        "generated_fact_091__predicate_swap",
+        "generated_fact_091__role_swap",
+        "generated_fact_144__predicate_swap",
+        "generated_fact_179__predicate_swap",
+        "generated_fact_225__role_swap",
+        "generated_fact_242__predicate_swap",
+        "generated_fact_243__role_swap",
+        "generated_fact_259__predicate_swap",
+        "generated_fact_259__role_swap",
+        "generated_fact_261__role_swap",
+        "museum_purchase__predicate_swap",
+        "railway_restoration__title_name_swap"
+      ],
+      "a0_wrong_repair_count": 1,
+      "a0_wrong_repair_ids": [
+        "generated_fact_045__none"
+      ],
+      "frozen51_overlap_count": 0,
+      "frozen51_overlap_ids": [],
+      "historical_d1_break_overlap_count": 12,
+      "historical_d1_break_overlap_ids": [
+        "clinic_expansion__location_swap",
+        "generated_fact_045__role_swap",
+        "generated_fact_091__predicate_swap",
+        "generated_fact_091__role_swap",
+        "generated_fact_144__predicate_swap",
+        "generated_fact_179__predicate_swap",
+        "generated_fact_225__role_swap",
+        "generated_fact_242__predicate_swap",
+        "generated_fact_243__role_swap",
+        "generated_fact_259__role_swap",
+        "museum_purchase__predicate_swap",
+        "railway_restoration__title_name_swap"
+      ],
+      "frozen51_geometry": []
+    }
+  },
+  "arm_recurrence": {
+    "U": {
+      "occurrence_counts_by_id": {
+        "clinic_expansion__event_swap": 1,
+        "generated_fact_090__title_name_swap": 1,
+        "generated_fact_118__location_swap": 1
+      },
+      "recurrent_ids_ge2": [],
+      "all3_ids": [],
+      "recurrent_geometry_occurrences": [],
+      "recurrent_signature_counts": {
+        "occurrences": 0,
+        "q_authorized_increase": 0,
+        "entitlement_increase": 0,
+        "support_ne_margin_increase": 0,
+        "support_ne_boundary_cross_up": 0
+      }
+    },
+    "Q": {
+      "occurrence_counts_by_id": {
+        "clinic_expansion__event_swap": 1
+      },
+      "recurrent_ids_ge2": [],
+      "all3_ids": [],
+      "recurrent_geometry_occurrences": [],
+      "recurrent_signature_counts": {
+        "occurrences": 0,
+        "q_authorized_increase": 0,
+        "entitlement_increase": 0,
+        "support_ne_margin_increase": 0,
+        "support_ne_boundary_cross_up": 0
+      }
+    },
+    "D": {
+      "occurrence_counts_by_id": {
+        "generated_fact_045__role_swap": 1,
+        "jazz_archive__location_swap": 1
+      },
+      "recurrent_ids_ge2": [],
+      "all3_ids": [],
+      "recurrent_geometry_occurrences": [],
+      "recurrent_signature_counts": {
+        "occurrences": 0,
+        "q_authorized_increase": 0,
+        "entitlement_increase": 0,
+        "support_ne_margin_increase": 0,
+        "support_ne_boundary_cross_up": 0
+      }
+    },
+    "UQ": {
+      "occurrence_counts_by_id": {
+        "clinic_expansion__event_swap": 2,
+        "clinic_expansion__predicate_swap": 1,
+        "generated_fact_045__role_swap": 1,
+        "generated_fact_090__title_name_swap": 1,
+        "generated_fact_096__location_swap": 1,
+        "generated_fact_118__location_swap": 1,
+        "generated_fact_181__role_swap": 1,
+        "generated_fact_195__role_swap": 1,
+        "jazz_archive__location_swap": 1,
+        "jazz_archive__role_swap": 1
+      },
+      "recurrent_ids_ge2": [
+        "clinic_expansion__event_swap"
+      ],
+      "all3_ids": [],
+      "recurrent_geometry_occurrences": [
+        {
+          "seed": 180,
+          "stable_id": "clinic_expansion__event_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.298912,
+              "grouped": 0.408468,
+              "delta": 0.10955599999999999
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.382149,
+              "grouped": 0.594421,
+              "delta": 0.21227199999999996
+            },
+            "sufficiency_probability": {
+              "a0": 0.993809,
+              "grouped": 0.991819,
+              "delta": -0.0019900000000000473
+            },
+            "q_FRAME": {
+              "a0": 0.7010879516601562,
+              "grouped": 0.591532289981842,
+              "delta": -0.10955566167831421
+            },
+            "q_PREDICATE": {
+              "a0": 0.18468299508094788,
+              "grouped": 0.16566576063632965,
+              "delta": -0.019017234444618225
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0007071599829941988,
+              "grouped": 0.001986270071938634,
+              "delta": 0.0012791100889444351
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.11352193355560303,
+              "grouped": 0.2408156841993332,
+              "delta": 0.12729375064373016
+            },
+            "entitlement_probability": {
+              "a0": 0.113522,
+              "grouped": 0.240816,
+              "delta": 0.12729400000000002
+            },
+            "polarity_margin": {
+              "a0": 3.371152,
+              "grouped": 3.176376,
+              "delta": -0.19477600000000006
+            },
+            "support_ne_margin_active": {
+              "a0": -0.513833,
+              "grouped": 0.019067,
+              "delta": 0.5328999999999999
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        },
+        {
+          "seed": 182,
+          "stable_id": "clinic_expansion__event_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.283875,
+              "grouped": 0.439974,
+              "delta": 0.156099
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.314689,
+              "grouped": 0.574409,
+              "delta": 0.25971999999999995
+            },
+            "sufficiency_probability": {
+              "a0": 0.991798,
+              "grouped": 0.992214,
+              "delta": 0.00041600000000008297
+            },
+            "q_FRAME": {
+              "a0": 0.7161246538162231,
+              "grouped": 0.5600258111953735,
+              "delta": -0.1560988426208496
+            },
+            "q_PREDICATE": {
+              "a0": 0.1945429891347885,
+              "grouped": 0.18724915385246277,
+              "delta": -0.007293835282325745
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0007326679769903421,
+              "grouped": 0.0019677712116390467,
+              "delta": 0.0012351032346487045
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.08859966695308685,
+              "grouped": 0.25075727701187134,
+              "delta": 0.16215761005878448
+            },
+            "entitlement_probability": {
+              "a0": 0.0886,
+              "grouped": 0.250757,
+              "delta": 0.162157
+            },
+            "polarity_margin": {
+              "a0": 4.225456,
+              "grouped": 3.928658,
+              "delta": -0.29679800000000034
+            },
+            "support_ne_margin_active": {
+              "a0": -0.560057,
+              "grouped": 0.278632,
+              "delta": 0.838689
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        }
+      ],
+      "recurrent_signature_counts": {
+        "occurrences": 2,
+        "q_authorized_increase": 2,
+        "entitlement_increase": 2,
+        "support_ne_margin_increase": 2,
+        "support_ne_boundary_cross_up": 2
+      }
+    },
+    "UD": {
+      "occurrence_counts_by_id": {
+        "clinic_expansion__event_swap": 1,
+        "generated_fact_090__title_name_swap": 1,
+        "generated_fact_118__location_swap": 1,
+        "generated_fact_167__role_swap": 1,
+        "generated_fact_181__role_swap": 2,
+        "generated_fact_195__role_swap": 1,
+        "jazz_archive__location_swap": 1,
+        "jazz_archive__role_swap": 1
+      },
+      "recurrent_ids_ge2": [
+        "generated_fact_181__role_swap"
+      ],
+      "all3_ids": [],
+      "recurrent_geometry_occurrences": [
+        {
+          "seed": 180,
+          "stable_id": "generated_fact_181__role_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.226268,
+              "grouped": 0.494031,
+              "delta": 0.267763
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.409738,
+              "grouped": 0.561736,
+              "delta": 0.15199800000000002
+            },
+            "sufficiency_probability": {
+              "a0": 0.99456,
+              "grouped": 0.992759,
+              "delta": -0.0018010000000000526
+            },
+            "q_FRAME": {
+              "a0": 0.7737321257591248,
+              "grouped": 0.5059689283370972,
+              "delta": -0.2677631974220276
+            },
+            "q_PREDICATE": {
+              "a0": 0.13355723023414612,
+              "grouped": 0.2165161818265915,
+              "delta": 0.08295895159244537
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0005043179844506085,
+              "grouped": 0.0020094551146030426,
+              "delta": 0.0015051371301524341
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.09220632910728455,
+              "grouped": 0.2755054235458374,
+              "delta": 0.18329909443855286
+            },
+            "entitlement_probability": {
+              "a0": 0.092206,
+              "grouped": 0.275505,
+              "delta": 0.183299
+            },
+            "polarity_margin": {
+              "a0": 3.45,
+              "grouped": 3.46191,
+              "delta": 0.011909999999999865
+            },
+            "support_ne_margin_active": {
+              "a0": -0.602158,
+              "grouped": 0.277884,
+              "delta": 0.880042
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        },
+        {
+          "seed": 181,
+          "stable_id": "generated_fact_181__role_swap",
+          "a0_prediction": "NOT_ENTITLED",
+          "grouped_prediction": "SUPPORT",
+          "gold": "NOT_ENTITLED",
+          "geometry": {
+            "frame_probability": {
+              "a0": 0.437194,
+              "grouped": 0.463685,
+              "delta": 0.026490999999999987
+            },
+            "predicate_coverage_probability": {
+              "a0": 0.439533,
+              "grouped": 0.469521,
+              "delta": 0.029988000000000015
+            },
+            "sufficiency_probability": {
+              "a0": 0.992818,
+              "grouped": 0.992523,
+              "delta": -0.0002949999999999342
+            },
+            "q_FRAME": {
+              "a0": 0.5628056526184082,
+              "grouped": 0.5363153219223022,
+              "delta": -0.026490330696105957
+            },
+            "q_PREDICATE": {
+              "a0": 0.24503305554389954,
+              "grouped": 0.24597471952438354,
+              "delta": 0.0009416639804840088
+            },
+            "q_SUFFICIENCY": {
+              "a0": 0.0013800798915326595,
+              "grouped": 0.001627839868888259,
+              "delta": 0.0002477599773555994
+            },
+            "q_AUTHORIZED": {
+              "a0": 0.19078120589256287,
+              "grouped": 0.21608208119869232,
+              "delta": 0.025300875306129456
+            },
+            "entitlement_probability": {
+              "a0": 0.190781,
+              "grouped": 0.216082,
+              "delta": 0.02530099999999999
+            },
+            "polarity_margin": {
+              "a0": 3.530954,
+              "grouped": 3.59057,
+              "delta": 0.05961600000000011
+            },
+            "support_ne_margin_active": {
+              "a0": -0.098136,
+              "grouped": 0.038162,
+              "delta": 0.136298
+            }
+          },
+          "historical_signature": {
+            "q_authorized_increase": true,
+            "entitlement_increase": true,
+            "support_ne_margin_increase": true,
+            "support_ne_boundary_cross_up": true
+          }
+        }
+      ],
+      "recurrent_signature_counts": {
+        "occurrences": 2,
+        "q_authorized_increase": 2,
+        "entitlement_increase": 2,
+        "support_ne_margin_increase": 2,
+        "support_ne_boundary_cross_up": 2
+      }
+    },
+    "QD": {
+      "occurrence_counts_by_id": {
+        "generated_fact_045__role_swap": 1,
+        "generated_fact_118__location_swap": 1,
+        "generated_fact_181__role_swap": 1,
+        "generated_fact_258__title_name_swap": 1,
+        "jazz_archive__location_swap": 1
+      },
+      "recurrent_ids_ge2": [],
+      "all3_ids": [],
+      "recurrent_geometry_occurrences": [],
+      "recurrent_signature_counts": {
+        "occurrences": 0,
+        "q_authorized_increase": 0,
+        "entitlement_increase": 0,
+        "support_ne_margin_increase": 0,
+        "support_ne_boundary_cross_up": 0
+      }
+    }
+  },
+  "two_group_new_frozen51": {
+    "UQ": {
+      "per_seed": {
+        "180": [
+          "clinic_expansion__event_swap",
+          "generated_fact_096__location_swap",
+          "generated_fact_181__role_swap",
+          "generated_fact_195__role_swap"
+        ],
+        "181": [
+          "generated_fact_045__role_swap",
+          "jazz_archive__location_swap",
+          "jazz_archive__role_swap"
+        ],
+        "182": [
+          "clinic_expansion__predicate_swap"
+        ]
+      },
+      "per_seed_counts": {
+        "180": 4,
+        "181": 3,
+        "182": 1
+      },
+      "recurrent_ids_ge2": [],
+      "all3_ids": []
+    },
+    "UD": {
+      "per_seed": {
+        "180": [
+          "clinic_expansion__event_swap",
+          "generated_fact_181__role_swap",
+          "generated_fact_195__role_swap"
+        ],
+        "181": [
+          "generated_fact_181__role_swap",
+          "jazz_archive__role_swap"
+        ],
+        "182": [
+          "generated_fact_167__role_swap"
+        ]
+      },
+      "per_seed_counts": {
+        "180": 3,
+        "181": 2,
+        "182": 1
+      },
+      "recurrent_ids_ge2": [
+        "generated_fact_181__role_swap"
+      ],
+      "all3_ids": []
+    },
+    "QD": {
+      "per_seed": {
+        "180": [
+          "generated_fact_118__location_swap",
+          "generated_fact_181__role_swap",
+          "generated_fact_258__title_name_swap"
+        ],
+        "181": [],
+        "182": []
+      },
+      "per_seed_counts": {
+        "180": 3,
+        "181": 0,
+        "182": 0
+      },
+      "recurrent_ids_ge2": [],
+      "all3_ids": []
+    }
+  },
+  "recurrent_frozen51_matrix": {
+    "clinic_expansion__event_swap": {
+      "historical_d1_seeds": [
+        180,
+        182
+      ],
+      "grouped_break_seeds": {
+        "U": [
+          182
+        ],
+        "Q": [
+          182
+        ],
+        "D": [],
+        "UQ": [
+          180,
+          182
+        ],
+        "UD": [
+          180
+        ],
+        "QD": []
+      }
+    },
+    "clinic_expansion__predicate_swap": {
+      "historical_d1_seeds": [
+        180,
+        182
+      ],
+      "grouped_break_seeds": {
+        "U": [],
+        "Q": [],
+        "D": [],
+        "UQ": [
+          182
+        ],
+        "UD": [],
+        "QD": []
+      }
+    },
+    "generated_fact_045__role_swap": {
+      "historical_d1_seeds": [
+        180,
+        181
+      ],
+      "grouped_break_seeds": {
+        "U": [],
+        "Q": [],
+        "D": [
+          181
+        ],
+        "UQ": [
+          181
+        ],
+        "UD": [],
+        "QD": [
+          181
+        ]
+      }
+    },
+    "generated_fact_181__role_swap": {
+      "historical_d1_seeds": [
+        180,
+        181,
+        182
+      ],
+      "grouped_break_seeds": {
+        "U": [],
+        "Q": [],
+        "D": [],
+        "UQ": [
+          180
+        ],
+        "UD": [
+          180,
+          181
+        ],
+        "QD": [
+          180
+        ]
+      }
+    },
+    "generated_fact_193__predicate_swap": {
+      "historical_d1_seeds": [
+        180,
+        182
+      ],
+      "grouped_break_seeds": {
+        "U": [],
+        "Q": [],
+        "D": [],
+        "UQ": [],
+        "UD": [],
+        "QD": []
+      }
+    },
+    "generated_fact_258__title_name_swap": {
+      "historical_d1_seeds": [
+        180,
+        181,
+        182
+      ],
+      "grouped_break_seeds": {
+        "U": [],
+        "Q": [],
+        "D": [],
+        "UQ": [],
+        "UD": [],
+        "QD": [
+          180
+        ]
+      }
+    }
+  },
+  "decision_facts": {
+    "single_group_recurrent_frozen51": {
+      "U": [],
+      "Q": [],
+      "D": []
+    },
+    "two_group_recurrent_new_frozen51": {
+      "UQ": [],
+      "UD": [
+        "generated_fact_181__role_swap"
+      ],
+      "QD": []
+    },
+    "historical_recurrent_ids_recovered_by_any_proper_subset": [
+      "clinic_expansion__event_swap",
+      "generated_fact_181__role_swap"
+    ],
+    "historical_recurrent_ids_not_recovered_by_any_proper_subset": [
+      "clinic_expansion__predicate_swap",
+      "generated_fact_045__role_swap",
+      "generated_fact_193__predicate_swap",
+      "generated_fact_258__title_name_swap"
+    ],
+    "any_single_group_recurrent": false,
+    "any_two_group_new_recurrent": true
+  }
+}
