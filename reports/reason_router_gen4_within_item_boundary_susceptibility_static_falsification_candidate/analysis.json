@@ -1,0 +1,72 @@
+{
+  "GEN4_WITHIN_ITEM_BOUNDARY_SUSCEPTIBILITY": "NOT_SUPPORTED",
+  "alpha": 0.05,
+  "authority_commit": "d941fd7e9c41c9680918831619a2f74db21c25f1",
+  "checkpoint_loaded": false,
+  "frozen_primary_population_sha256": "eb5aaacf38be224461801cab5e0629e46a9d375d7efaeadb72b2dbf3c5d56f3e",
+  "gpu": false,
+  "kaggle": false,
+  "minimum_concordance": 0.7,
+  "minimum_discordant_ids": 15,
+  "minimum_nonzero_ids": 15,
+  "model_forward": false,
+  "new_inference": false,
+  "parent_validated_static_evidence": "5388460bf0ac2ed1f8489e35c6942f6044da3df0",
+  "phase": "GEN4_WITHIN_ITEM_BOUNDARY_SUSCEPTIBILITY_STATIC_FALSIFICATION",
+  "population_description": {
+    "concordant_all_flip_stable_ids": 21,
+    "concordant_all_nonflip_stable_ids": 476,
+    "multi_observation_stable_ids": 534,
+    "row_count": 1590,
+    "single_observation_stable_ids": 4,
+    "unique_stable_ids": 538
+  },
+  "primary": {
+    "exact_one_sided_sign_test_p": 0.7443121092073852,
+    "exact_p_denominator": 137438953472,
+    "exact_p_numerator": 102297477346,
+    "feasibility_gate": "PASS",
+    "k_negative": 17,
+    "k_positive": 20,
+    "median_delta_i": 0.02173464000225067,
+    "n_discordant": 37,
+    "n_nonzero": 37,
+    "n_zero_ties": 0,
+    "within_item_concordance": 0.4594594594594595
+  },
+  "primary_direction": "negative",
+  "primary_effect": "mean_flip_d_a0_minus_mean_nonflip_d_a0",
+  "primary_test": "exact_one_sided_binomial_sign_test",
+  "primary_unit": "stable_id",
+  "scientific_claim_boundary": "ITEM_CONTROLLED_PREDICTIVE_NOT_CAUSAL",
+  "secondary_magnitude": {
+    "maximum_delta_i": 0.46944989264011383,
+    "mean_delta_i": 0.021443350794347556,
+    "median_delta_i": 0.02173464000225067,
+    "minimum_delta_i": -0.5542498826980591,
+    "q1_delta_i": -0.1548384577035904,
+    "q3_delta_i": 0.20195218920707703,
+    "quantile_method": "linear interpolation on sorted values"
+  },
+  "secondary_pairwise": {
+    "180_vs_181": {
+      "flip_seed_smaller_d_a0_count": 6,
+      "median_pairwise_margin_difference": 0.04135940968990326,
+      "pairwise_concordance": 0.42857142857142855,
+      "pairwise_discordant_count": 14
+    },
+    "180_vs_182": {
+      "flip_seed_smaller_d_a0_count": 13,
+      "median_pairwise_margin_difference": -0.08836004883050919,
+      "pairwise_concordance": 0.5416666666666666,
+      "pairwise_discordant_count": 24
+    },
+    "181_vs_182": {
+      "flip_seed_smaller_d_a0_count": 11,
+      "median_pairwise_margin_difference": 0.08172363042831421,
+      "pairwise_concordance": 0.3793103448275862,
+      "pairwise_discordant_count": 29
+    }
+  },
+  "training": false
+}

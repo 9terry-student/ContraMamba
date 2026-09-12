@@ -1,0 +1,10 @@
+{
+  "artifacts": {
+    "analysis.json": "00eedae6aeb7b6bc11706be019049f2e705b45aa0738ec33f05cddcbfc772f90",
+    "report_candidate.md": "4a9fbb2b4e725242e63af6a15025472d29c217dbb9b8bfcc9b3d77e976d6ad10",
+    "within_item_effects.jsonl": "6771d863788bd2b5047605915ef4f3f57a545c17582f8672f4182f6d869f890f"
+  },
+  "authority_commit": "d941fd7e9c41c9680918831619a2f74db21c25f1",
+  "frozen_primary_population_sha256": "eb5aaacf38be224461801cab5e0629e46a9d375d7efaeadb72b2dbf3c5d56f3e",
+  "parent_validated_static_evidence": "5388460bf0ac2ed1f8489e35c6942f6044da3df0"
+}
