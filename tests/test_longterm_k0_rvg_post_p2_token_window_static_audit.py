@@ -171,6 +171,7 @@ def test_duplicate_authority_marker_rejected():
 
 def valid_future_markers(commit: str):
     out = dict(m.REQUIRED_FUTURE_MARKERS)
+    out["TOKENIZER_SNAPSHOT_MANIFEST_SHA256"] = "a" * 64
     out["POST_P2_TOKEN_WINDOW_IMPLEMENTATION_COMMIT"] = commit
     return out
 
@@ -180,6 +181,47 @@ def test_wrong_implementation_commit_marker_rejected():
     markers = valid_future_markers("b" * 40)
     with pytest.raises(m.ContractError, match="IMPLEMENTATION_COMMIT_MISMATCH"):
         m.validate_execution_markers(markers, actual)
+
+
+def test_missing_tokenizer_snapshot_manifest_marker_rejected():
+    actual = "a" * 40
+    markers = valid_future_markers(actual)
+    del markers["TOKENIZER_SNAPSHOT_MANIFEST_SHA256"]
+    with pytest.raises(m.ContractError, match="TOKENIZER_SNAPSHOT_SHA256_INVALID"):
+        m.validate_execution_markers(markers, actual)
+
+
+def test_tokenizer_snapshot_manifest_hashes_only_frozen_file_family(tmp_path):
+    (tmp_path / "config.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "tokenizer.json").write_text('{"version":"1"}', encoding="utf-8")
+    (tmp_path / "tokenizer_config.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "special_tokens_map.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "pytorch_model.bin").write_bytes(b"ignored-model-weight")
+    hashes, digest = m.tokenizer_snapshot_manifest(tmp_path)
+    assert sorted(hashes) == [
+        "config.json",
+        "special_tokens_map.json",
+        "tokenizer.json",
+        "tokenizer_config.json",
+    ]
+    assert len(digest) == 64
+    assert "pytorch_model.bin" not in hashes
+
+
+def test_tokenizer_snapshot_manifest_changes_when_authenticated_file_changes(tmp_path):
+    path = tmp_path / "tokenizer.json"
+    path.write_text('{"version":"1"}', encoding="utf-8")
+    _, digest_a = m.tokenizer_snapshot_manifest(tmp_path)
+    path.write_text('{"version":"2"}', encoding="utf-8")
+    _, digest_b = m.tokenizer_snapshot_manifest(tmp_path)
+    assert digest_a != digest_b
+
+
+def test_local_tokenizer_rejects_snapshot_mismatch_before_transformers_import(tmp_path):
+    (tmp_path / "tokenizer.json").write_text('{"version":"1"}', encoding="utf-8")
+    markers = {"TOKENIZER_SNAPSHOT_MANIFEST_SHA256": "0" * 64}
+    with pytest.raises(m.ContractError, match="TOKENIZER_SNAPSHOT_MANIFEST_SHA256_MISMATCH"):
+        m.load_local_tokenizer(tmp_path, markers)
 
 
 def test_execution_authority_missing_before_real_read(tmp_path):
@@ -192,7 +234,7 @@ def test_execution_authority_missing_before_real_read(tmp_path):
         touched["input"] = True
         raise AssertionError("must not run")
 
-    def tokenizer_loader(_snapshot):
+    def tokenizer_loader(_snapshot, _markers):
         touched["tokenizer"] = True
         raise AssertionError("must not run")
 

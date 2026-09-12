@@ -76,6 +76,14 @@ REQUIRED_FUTURE_MARKERS = {
     "TOKENIZER_TRANSFORMERS_VERSION": TRANSFORMERS_VERSION,
 }
 
+TOKENIZER_SNAPSHOT_PATTERNS = (
+    "config.json",
+    "tokenizer*",
+    "special_tokens_map.json",
+    "vocab.*",
+    "merges.txt",
+)
+
 
 class ContractError(RuntimeError):
     pass
@@ -176,6 +184,12 @@ def parse_authority_markers(text: str) -> dict[str, str]:
 def validate_execution_markers(markers: Mapping[str, str], actual_impl_commit: str) -> None:
     for key, expected in REQUIRED_FUTURE_MARKERS.items():
         require(markers.get(key) == expected, f"EXECUTION_AUTHORITY_MARKER_MISMATCH:{key}")
+    snapshot_digest = markers.get("TOKENIZER_SNAPSHOT_MANIFEST_SHA256", "")
+    require(len(snapshot_digest) == 64, "EXECUTION_AUTHORITY_TOKENIZER_SNAPSHOT_SHA256_INVALID")
+    require(
+        all(ch in "0123456789abcdef" for ch in snapshot_digest),
+        "EXECUTION_AUTHORITY_TOKENIZER_SNAPSHOT_SHA256_NONHEX",
+    )
     declared = markers.get("POST_P2_TOKEN_WINDOW_IMPLEMENTATION_COMMIT", "")
     require(len(declared) == 40, "EXECUTION_AUTHORITY_IMPLEMENTATION_COMMIT_INVALID")
     require(all(ch in "0123456789abcdef" for ch in declared), "EXECUTION_AUTHORITY_IMPLEMENTATION_COMMIT_NONHEX")
@@ -481,30 +495,61 @@ def validate_real_inputs(repo_root: Path, p2_path: Path) -> dict[str, Any]:
     }
 
 
-def load_local_tokenizer(snapshot_path: Path) -> tuple[Any, dict[str, Any]]:
-    # No network fallback: local_files_only=True and a pre-existing local path are mandatory.
+def tokenizer_snapshot_manifest(snapshot_path: Path) -> tuple[dict[str, str], str]:
+    # Match exactly the tokenizer/config file family used by the frozen P1 snapshot resolver.
+    # Symlinked Hugging Face cache files are intentionally hashed by content.
     require(snapshot_path.is_dir(), "TOKENIZER_LOCAL_SNAPSHOT_MISSING")
+    file_hashes: dict[str, str] = {}
+    for path in sorted(snapshot_path.rglob("*")):
+        if not path.is_file():
+            continue
+        rel = path.relative_to(snapshot_path)
+        if not any(rel.match(pattern) for pattern in TOKENIZER_SNAPSHOT_PATTERNS):
+            continue
+        rel_text = rel.as_posix()
+        require(rel_text not in file_hashes, "TOKENIZER_SNAPSHOT_DUPLICATE_RELATIVE_PATH")
+        file_hashes[rel_text] = file_sha256(path)
+    require(bool(file_hashes), "TOKENIZER_SNAPSHOT_EMPTY")
+    ordered = dict(sorted(file_hashes.items()))
+    return ordered, sha256_bytes(canonical_json_bytes(ordered))
+
+
+def load_local_tokenizer(
+    snapshot_path: Path,
+    markers: Mapping[str, str],
+) -> tuple[Any, dict[str, Any]]:
+    # Authenticate exact tokenizer/config bytes before importing/loading Transformers.
+    file_hashes, snapshot_digest = tokenizer_snapshot_manifest(snapshot_path)
+    expected_digest = markers.get("TOKENIZER_SNAPSHOT_MANIFEST_SHA256", "")
+    require(
+        snapshot_digest == expected_digest,
+        "TOKENIZER_SNAPSHOT_MANIFEST_SHA256_MISMATCH",
+    )
+
     try:
         from transformers import AutoTokenizer, __version__ as transformers_version
     except Exception as exc:
         raise ContractError("TRANSFORMERS_IMPORT_FAILURE") from exc
     require(transformers_version == TRANSFORMERS_VERSION, "TRANSFORMERS_VERSION_MISMATCH")
-    tokenizer = AutoTokenizer.from_pretrained(
-        str(snapshot_path),
-        local_files_only=True,
-        use_fast=True,
-    )
-    require(getattr(tokenizer, "is_fast", False), "TOKENIZER_MUST_BE_FAST")
-    files = sorted(
-        p for p in snapshot_path.rglob("*")
-        if p.is_file() and not p.is_symlink()
-    )
-    file_hashes = {
-        p.relative_to(snapshot_path).as_posix(): file_sha256(p)
-        for p in files
-    }
-    require(bool(file_hashes), "TOKENIZER_SNAPSHOT_EMPTY")
-    snapshot_digest = sha256_bytes(canonical_json_bytes(file_hashes))
+
+    # Load from a curated temporary directory containing only authenticated files.
+    # This prevents unmanifested files in a broader local cache snapshot from affecting tokenization.
+    with tempfile.TemporaryDirectory(prefix="k0-rvg-tokenizer-") as temp_name:
+        curated = Path(temp_name)
+        for rel_text, expected_sha in file_hashes.items():
+            src = snapshot_path / Path(rel_text)
+            dst = curated / Path(rel_text)
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(src, dst)
+            require(file_sha256(dst) == expected_sha, "TOKENIZER_CURATED_COPY_SHA256_MISMATCH")
+
+        tokenizer = AutoTokenizer.from_pretrained(
+            str(curated),
+            local_files_only=True,
+            use_fast=True,
+        )
+        require(getattr(tokenizer, "is_fast", False), "TOKENIZER_MUST_BE_FAST")
+
     return tokenizer, {
         "model_id": HF_MODEL,
         "revision": HF_REVISION,
@@ -595,14 +640,14 @@ def execute_real(
     *,
     authority_authenticator: Callable[[Path, str], Mapping[str, str]] = authenticate_execution_authority,
     real_input_loader: Callable[[Path, Path], Mapping[str, Any]] = validate_real_inputs,
-    tokenizer_loader: Callable[[Path], tuple[Any, Mapping[str, Any]]] = load_local_tokenizer,
+    tokenizer_loader: Callable[[Path, Mapping[str, str]], tuple[Any, Mapping[str, Any]]] = load_local_tokenizer,
 ) -> dict[str, Any]:
     # Critical invariant: authority authentication precedes every real scientific input read
     # and precedes loading the real frozen tokenizer.
     markers = authority_authenticator(repo_root, execution_authority_rel)
     require(not output_dir.exists(), "OUTPUT_ALREADY_EXISTS")
     inputs = real_input_loader(repo_root, p2_path)
-    tokenizer, tokenizer_provenance = tokenizer_loader(tokenizer_snapshot)
+    tokenizer, tokenizer_provenance = tokenizer_loader(tokenizer_snapshot, markers)
     audit = build_real_audit(inputs, tokenizer, tokenizer_provenance)
     output_path = write_output_atomic(output_dir, audit)
     return {
