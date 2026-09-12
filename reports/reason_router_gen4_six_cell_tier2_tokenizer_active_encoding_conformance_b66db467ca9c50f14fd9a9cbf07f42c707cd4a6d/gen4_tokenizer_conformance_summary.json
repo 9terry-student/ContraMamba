@@ -1,0 +1,90 @@
+{
+  "authority_commit": "b66db467ca9c50f14fd9a9cbf07f42c707cd4a6d",
+  "canonical_gen4_artifact": {
+    "bytes": 1465573,
+    "contrast_cell_counts": {
+      "C0_SHAM": 300,
+      "C1_TITLE": 300,
+      "C2_NAME": 300,
+      "C3_ROLE": 300,
+      "C4_PREDICATE": 300,
+      "C5_TITLE_NAME": 300
+    },
+    "path": "C:\\Users\\Home1\\Desktop\\ContraMamba\\reports\\reason_router_gen4_six_cell_masked_slot_substitution_materialization_fbc780ce12cbfbcf4e20a3cb9d1f099553045fc0\\gen4_six_cell_masked_slot_substitution.jsonl",
+    "row_count": 1800,
+    "sha256": "b9c54604863ed15c237fa17c7890a20f3f5ec062a7429638b39e8b468be050a7",
+    "source_pair_count": 300
+  },
+  "comparisons": {
+    "attention_mask_equal": "PASS_1800_OF_1800",
+    "claim_mask_equal": "PASS_1800_OF_1800",
+    "claim_raw_token_ids_equal": "PASS_1800_OF_1800",
+    "claim_truncated_token_ids_equal": "PASS_1800_OF_1800",
+    "effective_pad_token_id_equal": "PASS",
+    "eos_token_id_equal": "PASS",
+    "evidence_mask_equal": "PASS_1800_OF_1800",
+    "evidence_raw_token_ids_equal": "PASS_1800_OF_1800",
+    "evidence_truncated_token_ids_equal": "PASS_1800_OF_1800",
+    "family_a_all_serialized_inputs_sha256": "d3cf61e55bb04e6dbebe44be433597cce958cb15989412dcf6efc15a329c576a",
+    "family_b_all_serialized_inputs_sha256": "d3cf61e55bb04e6dbebe44be433597cce958cb15989412dcf6efc15a329c576a",
+    "family_serialized_input_sha256_equal": "PASS",
+    "global_contract_mismatches": [],
+    "input_ids_equal": "PASS_1800_OF_1800",
+    "mismatch_count": 0
+  },
+  "execution_boundary": {
+    "checkpoint_load": "NOT_PERFORMED",
+    "model_forward": "NOT_PERFORMED",
+    "model_import": "NOT_PERFORMED",
+    "model_instantiation": "NOT_PERFORMED",
+    "network_access": "NOT_PERFORMED",
+    "statistical_testing": "NOT_PERFORMED",
+    "training": "NOT_PERFORMED",
+    "transformers_import": "NOT_PERFORMED"
+  },
+  "execution_class": "CPU_ONLY_TOKENIZER_CONTENT_CONFORMANCE",
+  "family_a": {
+    "claim_truncation_count": 0,
+    "effective_pad_token_id": 0,
+    "either_span_truncation_count": 0,
+    "eos_token_id": 0,
+    "evidence_truncation_count": 0,
+    "file_sha256": {
+      "special_tokens_map.json": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8",
+      "tokenizer.json": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf",
+      "tokenizer_config.json": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+    },
+    "max_untruncated_claim_token_length": 25,
+    "max_untruncated_evidence_token_length": 26,
+    "pad_mode": "DECLARED_PAD",
+    "revision_reference": "40e5d2bd7452abb3ca8fadbafe9131ee0e2c2f37",
+    "snapshot_directory": "C:\\Users\\Home1\\.cache\\huggingface\\hub\\models--state-spaces--mamba-130m-hf\\snapshots\\40e5d2bd7452abb3ca8fadbafe9131ee0e2c2f37"
+  },
+  "family_b": {
+    "claim_truncation_count": 0,
+    "effective_pad_token_id": 0,
+    "either_span_truncation_count": 0,
+    "eos_token_id": 0,
+    "evidence_truncation_count": 0,
+    "file_sha256": {
+      "special_tokens_map.json": "10b8c8852c1e1f70b54d9aff61728408c28971c0e97a6c5a7b2debbd1d3e9c0c",
+      "tokenizer.json": "3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8",
+      "tokenizer_config.json": "fcd5669efe1150240c13ee4bd863316de4f2abd14cb1806a8cdbcbea6577bc99"
+    },
+    "max_untruncated_claim_token_length": 25,
+    "max_untruncated_evidence_token_length": 26,
+    "pad_mode": "EOS_NORMALIZATION",
+    "revision_reference": "5708daa364c50b880e7bd92eab456e0d34492ee9",
+    "snapshot_directory": "C:\\Users\\Home1\\.cache\\huggingface\\hub\\models--state-spaces--mamba-130m-hf\\snapshots\\5708daa364c50b880e7bd92eab456e0d34492ee9"
+  },
+  "gen4_active_encoding_content_equivalence": "PASS",
+  "gen4_canonical_tokenizer_content": "FAMILY_A",
+  "gen4_canonical_tokenizer_revision_reference": "40e5d2bd7452abb3ca8fadbafe9131ee0e2c2f37",
+  "historical_transformers_version": "5.0.0",
+  "historical_wrapper_runtime_equivalence": "UNRESOLVED",
+  "result": "PASS",
+  "runtime_mode": "SERIALIZED_TOKENIZER_CONTENT_FALLBACK",
+  "schema_version": "GEN4_TIER2_TOKENIZER_ACTIVE_ENCODING_CONFORMANCE_SUMMARY_V1",
+  "tokenizers_version": "0.22.2",
+  "transformers_imported": false
+}
