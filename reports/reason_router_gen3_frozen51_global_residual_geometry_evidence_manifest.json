@@ -1,0 +1,490 @@
+{
+  "authority_head_at_manifest_creation": "4594f2d58e073610e63e679c97f4f19aea1db92e",
+  "entries": [
+    {
+      "arm": "A0",
+      "bytes": 4840320,
+      "relative_path": "reports/reason_router_p3w7_seed8192_revised_split_a0_replacement_runs/seed180/replacement_r1/A0/clean_dev_predictions.json",
+      "role": "canonical_a0",
+      "row_count": 720,
+      "seed": 180,
+      "sha256": "5c9722ac0f75c411b3d744a29beec0c35d2f2809331f257a5e1d5ea81e6cf75d",
+      "source_root": "A0_AUTHORITY_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "A0",
+      "bytes": 4838584,
+      "relative_path": "reports/reason_router_p3w7_seed8192_revised_split_a0_runs/seed181/A0/clean_dev_predictions.json",
+      "role": "canonical_a0",
+      "row_count": 720,
+      "seed": 181,
+      "sha256": "789d02f9092ce6b051d0ca435272c9e93a3962183dbb0a4d4dbb20cebf2ac3fe",
+      "source_root": "A0_AUTHORITY_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "A0",
+      "bytes": 4841685,
+      "relative_path": "reports/reason_router_p3w7_seed8192_revised_split_a0_runs/seed182/A0/clean_dev_predictions.json",
+      "role": "canonical_a0",
+      "row_count": 720,
+      "seed": 182,
+      "sha256": "029ec6ae31df2f5ca9526d1e631496f7ee272967a6f5e08684f29aa09ad490d4",
+      "source_root": "A0_AUTHORITY_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "D1",
+      "bytes": 4860619,
+      "relative_path": "reports/reason_router_p3w7_seed8192_d1_partial_gradient_runs/seed180/D1/clean_dev_predictions.json",
+      "role": "d1_global_half",
+      "row_count": 720,
+      "seed": 180,
+      "sha256": "26b36b2f7a27cbf716cc59f5deb942ef8099b8c7b4680c07f2f78f131e6621d2",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "D1",
+      "bytes": 4859519,
+      "relative_path": "reports/reason_router_p3w7_seed8192_d1_partial_gradient_runs/seed181/D1/clean_dev_predictions.json",
+      "role": "d1_global_half",
+      "row_count": 720,
+      "seed": 181,
+      "sha256": "3031a64da309ac54befe4b12d31ec6bac1849f222ae3ba2dd54b083ac135126e",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "D1",
+      "bytes": 4858229,
+      "relative_path": "reports/reason_router_p3w7_seed8192_d1_partial_gradient_runs/seed182/D1/clean_dev_predictions.json",
+      "role": "d1_global_half",
+      "row_count": 720,
+      "seed": 182,
+      "sha256": "95769e4b1c9dba6d6040affd86b1ab4468b27fe0cdb649baa9243c4912b0652c",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G1-HALF",
+      "bytes": 5099134,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed180/G3-G1-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 180,
+      "sha256": "58fb5e381c458d3e2ede99a1c2ba944f880bcd4b595e8ec3b821608a39917fa7",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G2-HALF",
+      "bytes": 5098294,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed180/G3-G2-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 180,
+      "sha256": "881a075e543e7232642299fc13c9c98729c0eda178f2db99ecebe089de4e40cb",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G3-HALF",
+      "bytes": 5099531,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed180/G3-G3-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 180,
+      "sha256": "4c54537777b3146046d6ab939a4c86322c22950d03d9062206e9aa270442ee89",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G4-HALF",
+      "bytes": 5098254,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed180/G3-G4-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 180,
+      "sha256": "9839c796fcb2a1f44cea937c464221738714ee4fe3fc08ea2f43dde4c2b3c27c",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G5-HALF",
+      "bytes": 5099862,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed180/G3-G5-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 180,
+      "sha256": "4a18d535c2550ff780d1dab5c44b381b9d5bfba960be8ee52e9e4d629d9e3b69",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G6-HALF",
+      "bytes": 5098750,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed180/G3-G6-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 180,
+      "sha256": "762510b15b0077c9451e2186dbdb247962a07720742091d0fcaecdd75af25cba",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G7-HALF",
+      "bytes": 5099117,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed180/G3-G7-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 180,
+      "sha256": "88cd3714976576ba238d2c688196d3dd07719a2d200c829e0ff6c09223766dcf",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G8-HALF",
+      "bytes": 5099531,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed180/G3-G8-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 180,
+      "sha256": "438b36e01ec8e6d56dc3a0c44495101a75e80aa995e571710932aad05620151f",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G9-HALF",
+      "bytes": 5098879,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed180/G3-G9-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 180,
+      "sha256": "72b9d0bca60bf13b2681c20552f14160fb8cf6b72b98b10be6e16ec75e46c313",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G10-HALF",
+      "bytes": 5099389,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed180/G3-G10-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 180,
+      "sha256": "422cdb5cdc608645ff43ebf1c3db520b4ebfad6ef48eac90ade343025b9eaeaa",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G1-HALF",
+      "bytes": 5099798,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed181/G3-G1-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 181,
+      "sha256": "24c14f2a1180f59e88e340fe48547b8408d5d59f12138e0e29fe50b37633085b",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G2-HALF",
+      "bytes": 5099359,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed181/G3-G2-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 181,
+      "sha256": "827aa0643e7c6781628459296a5afe7597adac7180c682d5407f6186c2487013",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G3-HALF",
+      "bytes": 5099099,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed181/G3-G3-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 181,
+      "sha256": "f9ba60e8a34544097a1b91d43a6cf28d3475aa7da02a481d6e523f1fc2032a33",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G4-HALF",
+      "bytes": 5098169,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed181/G3-G4-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 181,
+      "sha256": "d0f4dcebce7cbb82e9f9c300202cbf70d694879a64cc31be6d3ef5e5e13dbcc0",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G5-HALF",
+      "bytes": 5099150,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed181/G3-G5-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 181,
+      "sha256": "81813c1ed5dfbef5fd2fbeba79bf7f981e415074c623b50774c37be75f795a09",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G6-HALF",
+      "bytes": 5098696,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed181/G3-G6-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 181,
+      "sha256": "c5eae6a1d365e417f96c3a317b6a69bec2fe979a042a20e07f6ea20c418429a3",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G7-HALF",
+      "bytes": 5098190,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed181/G3-G7-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 181,
+      "sha256": "efe33f7338f8aac5661417004227c8c0d7b39fb96009716629376224a484e7ac",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G8-HALF",
+      "bytes": 5097815,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed181/G3-G8-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 181,
+      "sha256": "304a9f7cdb8e278ad6d86c72c6f52178ed79c62b3f90ee94931836d4fc5369a0",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G9-HALF",
+      "bytes": 5099169,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed181/G3-G9-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 181,
+      "sha256": "5b9ddc581c658b257f9335e2ea9829e5e3b9dbc0f05e67ecceb95a1b86d8adad",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G10-HALF",
+      "bytes": 5100108,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed181/G3-G10-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 181,
+      "sha256": "30b68ed3b41f0aa9e6788c79281b82deb2f11036b850896646c4a41cbdfca94f",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G1-HALF",
+      "bytes": 5098605,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed182/G3-G1-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 182,
+      "sha256": "073f6975bb1cfbedfcf2dc0a28957571c32cb11d72990f96817fad27949ae62b",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G2-HALF",
+      "bytes": 5097190,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed182/G3-G2-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 182,
+      "sha256": "d31bc1942c1bd1faa3cbe852f8d9b53121a61238b20947b94378acc1d8edb231",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G3-HALF",
+      "bytes": 5097197,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed182/G3-G3-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 182,
+      "sha256": "fdc303543f9af5480011bf62531f0223e313dc69772356a60daeee7ce63d4508",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G4-HALF",
+      "bytes": 5100572,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed182/G3-G4-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 182,
+      "sha256": "a502b6f02fcfaf03fd6ddb64bd8148f9b9efe8cb03524ad669209ce2532fd237",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G5-HALF",
+      "bytes": 5099045,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed182/G3-G5-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 182,
+      "sha256": "bc6b37b53bdda2e0a94de40e90c36e162e89d98a6ac32e37f25468186f6a9487",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G6-HALF",
+      "bytes": 5097957,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed182/G3-G6-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 182,
+      "sha256": "b7af9c77c52079e2f713614c8b9e63d23f7f6dcec93d0ed99c6c124c158addf4",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G7-HALF",
+      "bytes": 5097451,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed182/G3-G7-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 182,
+      "sha256": "5e67e922b10e503d9cda2df4b273f954a3388ed90706d821c10e84e7738356c6",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G8-HALF",
+      "bytes": 5098128,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed182/G3-G8-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 182,
+      "sha256": "3d555cad0beb3c136c1199d07846730441d2265c5be479aac828302ecbab9116",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G9-HALF",
+      "bytes": 5098958,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed182/G3-G9-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 182,
+      "sha256": "3078034567a8f9918da746c560512d56bc3ba8d151e16e535c4a481a5d80408b",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G10-HALF",
+      "bytes": 5100049,
+      "relative_path": "reports/reason_router_gen3_edge_specific_runs/seed182/G3-G10-HALF/clean_dev_predictions.json",
+      "role": "single_edge",
+      "row_count": 720,
+      "seed": 182,
+      "sha256": "f55f343eb44328a841b7e8bf6dfe7f58d586bfb02362119ac35ed1a86031c797",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G7-G10-HALF",
+      "bytes": 4963431,
+      "relative_path": "reports/reason_router_gen3_pairwise_interaction_runs/seed180/G3-G7-G10-HALF/clean_dev_predictions.json",
+      "role": "reproducible_positive_pair",
+      "row_count": 720,
+      "seed": 180,
+      "sha256": "d7fc1f98e857a6280dbbe244f9e8dcceb9633c03859bee64ed7e4082a5539bcd",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G5-G10-HALF",
+      "bytes": 4964418,
+      "relative_path": "reports/reason_router_gen3_pairwise_interaction_runs/seed180/G3-G5-G10-HALF/clean_dev_predictions.json",
+      "role": "reproducible_positive_pair",
+      "row_count": 720,
+      "seed": 180,
+      "sha256": "dc079ed23240b60d5dad49ca5d4e021056b8fbdb8cb3c6be1dff32d5f80d621c",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G7-G10-HALF",
+      "bytes": 4963249,
+      "relative_path": "reports/reason_router_gen3_pairwise_interaction_runs/seed181/G3-G7-G10-HALF/clean_dev_predictions.json",
+      "role": "reproducible_positive_pair",
+      "row_count": 720,
+      "seed": 181,
+      "sha256": "fd7bc7bd30d12e415e8428f1e8464b560a27dc2b71e9b93eb948b145d463224f",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G5-G10-HALF",
+      "bytes": 4963292,
+      "relative_path": "reports/reason_router_gen3_pairwise_interaction_runs/seed181/G3-G5-G10-HALF/clean_dev_predictions.json",
+      "role": "reproducible_positive_pair",
+      "row_count": 720,
+      "seed": 181,
+      "sha256": "fd526f5cd936cb3b2c5a31a58c47e95229f7d31c415adf8a3d2f16aef3e9f33b",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G7-G10-HALF",
+      "bytes": 4963440,
+      "relative_path": "reports/reason_router_gen3_pairwise_interaction_runs/seed182/G3-G7-G10-HALF/clean_dev_predictions.json",
+      "role": "reproducible_positive_pair",
+      "row_count": 720,
+      "seed": 182,
+      "sha256": "02ce78d58b90990acdaf6368e99b233263a41f6672f4815b252e597aa93cdbd3",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    },
+    {
+      "arm": "G3-G5-G10-HALF",
+      "bytes": 4963447,
+      "relative_path": "reports/reason_router_gen3_pairwise_interaction_runs/seed182/G3-G5-G10-HALF/clean_dev_predictions.json",
+      "role": "reproducible_positive_pair",
+      "row_count": 720,
+      "seed": 182,
+      "sha256": "ae5e4960a28ac35907bc74460168cf6703c6aac391b83078e1d969558de56f9b",
+      "source_root": "GEN3_EVIDENCE_WORKTREE",
+      "unique_stable_id_count": 720
+    }
+  ],
+  "entry_count": 42,
+  "geometry_schema_contract": {
+    "equivalence_tolerance": 1e-06,
+    "final_margin_field": "support_ne_margin_active",
+    "probability_margin_substitute_used": false,
+    "verified_equivalence": "support_ne_margin_active = support_logit - ne_logit"
+  },
+  "role_counts": {
+    "canonical_a0": 3,
+    "d1_global_half": 3,
+    "reproducible_positive_pair": 6,
+    "single_edge": 30
+  },
+  "schema": "contramamba.gen3.frozen51.evidence_manifest.v1",
+  "source_roots": {
+    "A0_AUTHORITY_WORKTREE": "historical validated-evidence worktree containing the exact canonical A0 bytes",
+    "GEN3_EVIDENCE_WORKTREE": "historical imported Gen3 evidence worktree containing D1, single-edge, and pairwise prediction exports"
+  },
+  "upstream_authorities": {
+    "d1_seed182_residual_localization_commit": "a8e68bb6fb111242628dda2c290983096ca120ca",
+    "first_pass_validated_evidence_commit": "28d7fa2fcc0d286a0cd16723c302a45f214b2901",
+    "pairwise_validated_evidence_commit": "4594f2d58e073610e63e679c97f4f19aea1db92e"
+  }
+}
