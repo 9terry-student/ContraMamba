@@ -1,0 +1,970 @@
+# ContraMamba Gen4 Six-Cell Generator Implementation Specification - Candidate
+
+## 1. Status
+
+- Status: CANDIDATE
+- Phase: GEN4_SIX_CELL_GENERATOR_IMPLEMENTATION_SPECIFICATION
+- Source-structure feasibility authority: c90c1eda64560875232a3c5c1c33ef21886b2e60
+- Contrast specification authority: 0a0da5354782e542520fb5bba146ab1a599d17ef
+- Frozen generator semantic authority: 91c3dcd7abadcd6cf0d6d2f1c299f3d6fa6e28ea
+- Frozen generator source blob: baee23a9f71333125f4a8735c2c92d20cab7eb4f
+- Implementation authorized: NO
+- Canonical materialization authorized: NO
+- Dataset generation authorized: NO
+- Model feature implementation authorized: NO
+- Training authorized: NO
+- Evaluation authorized: NO
+- Model inference authorized: NO
+- Tokenizer execution authorized: NO
+- Kaggle authorized: NO
+- Automatic Commit/Push: NO
+
+This specification freezes the intended implementation contract only.
+
+It does not authorize implementation or execution.
+
+## 2. Upstream scientific state
+
+The following are already frozen:
+
+GEN4_FEATURE_IDENTIFIABILITY_STATIC_AUDIT = PASS
+
+MINIMUM_CORE_CELL_COUNT = 6
+
+MINIMUM_CORE_DESIGN_RANK = 6
+
+GEN4_SIX_CELL_SOURCE_STRUCTURE_FEASIBILITY_AUDIT = PASS
+
+PAIR_UNIVERSE_EXACT_MATCH = YES
+
+COMPLETE_SIX_CELL_SOURCE_STRUCTURE_FEASIBLE = YES
+
+SOURCE_STRUCTURE_FEASIBILITY_BLOCKER = CLEARED
+
+The remaining question at this boundary is implementation semantics.
+
+## 3. Frozen source authority
+
+The semantic source remains:
+
+91c3dcd7abadcd6cf0d6d2f1c299f3d6fa6e28ea
+
+Source file:
+
+scripts/build_controlled_v5.py
+
+Frozen Git blob:
+
+baee23a9f71333125f4a8735c2c92d20cab7eb4f
+
+The existing generator source must not be modified by the Gen4 six-cell
+implementation.
+
+Therefore:
+
+MODIFY_BUILD_CONTROLLED_V5 = FORBIDDEN
+
+The implementation must consume the frozen source structure rather than fork,
+rewrite, or reinterpret it.
+
+## 4. Expected future implementation delta
+
+If a later implementation authority is frozen, the exact expected code delta
+is:
+
+scripts/materialize_reason_router_gen4_six_cell_contrast.py
+
+tests/test_materialize_reason_router_gen4_six_cell_contrast.py
+
+No other implementation file is expected.
+
+In particular:
+
+- scripts/build_controlled_v5.py must remain unchanged;
+- model code must remain unchanged;
+- loss code must remain unchanged;
+- tokenizer code must remain unchanged;
+- existing canonical datasets must remain unchanged;
+- the existing Gen4 operator-cell sidecar must remain unchanged.
+
+## 5. Mechanism identity
+
+The exact mechanism identifier is:
+
+masked_slot_substitution_v1
+
+Therefore:
+
+MECHANISM_ID = masked_slot_substitution_v1
+
+All six cells must use this same mechanism identifier.
+
+No cell-specific mechanism identifier is permitted.
+
+The six cells differ only by the canonical axis mask.
+
+## 6. Canonical axis order
+
+The canonical semantic-axis order is:
+
+1. title
+2. name
+3. role
+4. predicate
+
+All axis masks, intended_changed_axes fields, generator_source_fields mappings,
+validation rules, and serialization must use this ordering.
+
+## 7. Exact six contrast cells
+
+Canonical cell order is:
+
+1. C0_SHAM
+2. C1_TITLE
+3. C2_NAME
+4. C3_ROLE
+5. C4_PREDICATE
+6. C5_TITLE_NAME
+
+Exact definitions follow.
+
+C0_SHAM
+
+axis_mask:
+
+[0,0,0,0]
+
+intended_changed_axes:
+
+[]
+
+generator_source_fields:
+
+{}
+
+C1_TITLE
+
+axis_mask:
+
+[1,0,0,0]
+
+intended_changed_axes:
+
+["title"]
+
+generator_source_fields:
+
+{"title":"alternate_title"}
+
+C2_NAME
+
+axis_mask:
+
+[0,1,0,0]
+
+intended_changed_axes:
+
+["name"]
+
+generator_source_fields:
+
+{"name":"alternate_name"}
+
+C3_ROLE
+
+axis_mask:
+
+[0,0,1,0]
+
+intended_changed_axes:
+
+["role"]
+
+generator_source_fields:
+
+{"role":"alternate_role"}
+
+C4_PREDICATE
+
+axis_mask:
+
+[0,0,0,1]
+
+intended_changed_axes:
+
+["predicate"]
+
+generator_source_fields:
+
+{"predicate":"alternate_predicate"}
+
+C5_TITLE_NAME
+
+axis_mask:
+
+[1,1,0,0]
+
+intended_changed_axes:
+
+["title","name"]
+
+generator_source_fields:
+
+{"title":"alternate_title","name":"alternate_name"}
+
+No other mask is part of the minimum core.
+
+## 8. Same-mechanism rendering rule
+
+For one frozen structured fact `fact`, define the base claim through the frozen
+statement renderer:
+
+claim = _statement(fact)
+
+For every contrast cell, evidence must be produced through that same renderer.
+
+Conceptually:
+
+evidence = _statement(fact, **overrides)
+
+where `overrides` contains only the active axis substitutions selected by the
+canonical mask.
+
+For C0_SHAM:
+
+overrides = {}
+
+For C1_TITLE:
+
+overrides = {
+    "title": fact["alternate_title"]
+}
+
+For C2_NAME:
+
+overrides = {
+    "name": fact["alternate_name"]
+}
+
+For C3_ROLE:
+
+overrides = {
+    "role": fact["alternate_role"]
+}
+
+For C4_PREDICATE:
+
+overrides = {
+    "predicate": fact["alternate_predicate"]
+}
+
+For C5_TITLE_NAME:
+
+overrides = {
+    "title": fact["alternate_title"],
+    "name": fact["alternate_name"]
+}
+
+Therefore:
+
+SAME_STATEMENT_RENDERER_ALL_SIX_CELLS = REQUIRED
+
+EMPTY_MASK_USES_SAME_RENDERER = REQUIRED
+
+HISTORICAL_NONE_CODE_PATH_REUSE = FORBIDDEN
+
+The sham must be generated by the same mechanism with an empty override mapping.
+
+## 9. Claim invariance
+
+Within one source pair, all six rows must contain exactly the same claim.
+
+The claim must be generated only from the unmodified base structured fact.
+
+Therefore:
+
+CLAIM_FIXED_WITHIN_PAIR = REQUIRED
+
+No contrast mask may alter the claim.
+
+## 10. Non-target structural invariance
+
+The minimum core changes only:
+
+- title;
+- name;
+- role;
+- predicate;
+
+according to the active mask.
+
+The following structured fields must not vary as a consequence of axis-mask
+selection:
+
+- object;
+- time;
+- location;
+- alternate values themselves;
+- source pair identity.
+
+No mask may select:
+
+- alternate_object;
+- alternate_time;
+- alternate_location.
+
+Therefore:
+
+NON_TARGET_FACT_FIELDS_FIXED_WITHIN_PAIR = REQUIRED
+
+## 11. Within-pair alternate-value freezing
+
+For one source pair, the structured fact is loaded once.
+
+Its four alternate values are fixed:
+
+- alternate_title;
+- alternate_name;
+- alternate_role;
+- alternate_predicate.
+
+Every cell in that pair must reference those same values.
+
+No per-cell random selection is allowed.
+
+No per-cell alternate regeneration is allowed.
+
+Therefore:
+
+WITHIN_PAIR_ALTERNATE_VALUES_FIXED = REQUIRED
+
+RANDOM_ALTERNATE_SAMPLING = FORBIDDEN
+
+## 12. Canonical source population
+
+The canonical future execution population is exactly the frozen 300-pair
+structured-fact universe established by the feasibility authority.
+
+Expected source count:
+
+300
+
+Expected contrast rows after a future authorized canonical materialization:
+
+300 * 6 = 1800
+
+Therefore:
+
+CANONICAL_SOURCE_PAIR_COUNT = 300
+
+EXPECTED_CANONICAL_CONTRAST_ROW_COUNT = 1800
+
+These counts are execution expectations only.
+
+This specification does not generate those rows.
+
+## 13. Source acquisition
+
+The future implementation may obtain structured facts only through the frozen
+generator-side structured-fact interface corresponding to:
+
+fact_templates_for_count(300)
+
+It must not construct semantic slots by parsing:
+
+- claim;
+- evidence;
+- existing controlled JSONL rows;
+- model outputs;
+- tokenizer outputs.
+
+It must not call the historical controlled-record builders for the purpose of
+constructing six-cell semantic identity.
+
+In particular, canonical six-cell generation must not require:
+
+build_controlled_records(...)
+
+or:
+
+_build_records(...)
+
+Therefore:
+
+STRUCTURED_FACT_SOURCE_ONLY = REQUIRED
+
+HISTORICAL_CONTROLLED_RECORD_REGENERATION = FORBIDDEN
+
+## 14. Frozen-source verification
+
+Before a future canonical execution is allowed to consume the generator module,
+the execution boundary must verify:
+
+generator semantic authority commit =
+91c3dcd7abadcd6cf0d6d2f1c299f3d6fa6e28ea
+
+and:
+
+scripts/build_controlled_v5.py Git blob =
+baee23a9f71333125f4a8735c2c92d20cab7eb4f
+
+The current HEAD version of that file must resolve to the same Git blob.
+
+The working-copy generator file must have no semantic delta from HEAD.
+
+If any source identity check fails:
+
+CANONICAL_MATERIALIZATION = BLOCKED
+
+Implementation tests may use synthetic structured facts and must not require a
+canonical 300-pair execution.
+
+## 15. Deterministic row identity
+
+Every future contrast row must have a deterministic row identifier.
+
+Exact format:
+
+{source_pair_id}__masked_slot_substitution_v1__{contrast_cell_id_lower}
+
+where:
+
+contrast_cell_id_lower is one of:
+
+- c0_sham
+- c1_title
+- c2_name
+- c3_role
+- c4_predicate
+- c5_title_name
+
+Example:
+
+orion_approval__masked_slot_substitution_v1__c1_title
+
+Therefore:
+
+ROW_ID_FORMAT =
+{source_pair_id}__masked_slot_substitution_v1__{contrast_cell_id_lower}
+
+No random UUID is permitted.
+
+## 16. Output schema
+
+The future contrast artifact must contain exactly these fields in this order:
+
+1. schema_version
+2. generator_authority_commit
+3. generator_source_blob
+4. contrast_specification_commit
+5. mechanism_id
+6. source_pair_id
+7. row_id
+8. contrast_cell_id
+9. axis_mask
+10. intended_changed_axes
+11. generator_source_fields
+12. claim
+13. evidence
+
+Exact schema_version:
+
+GEN4_SIX_CELL_MASKED_SLOT_SUBSTITUTION_V1
+
+Exact generator_authority_commit:
+
+91c3dcd7abadcd6cf0d6d2f1c299f3d6fa6e28ea
+
+Exact generator_source_blob:
+
+baee23a9f71333125f4a8735c2c92d20cab7eb4f
+
+Exact contrast_specification_commit:
+
+0a0da5354782e542520fb5bba146ab1a599d17ef
+
+Exact mechanism_id:
+
+masked_slot_substitution_v1
+
+No label or outcome field belongs in this structural contrast schema.
+
+## 17. Explicit label exclusion
+
+The future structural contrast artifact must not contain:
+
+- final_label;
+- frame_compatible_label;
+- predicate_covered_label;
+- sufficiency_label;
+- polarity_label;
+- primary_failure_type;
+- predictions;
+- logits;
+- probabilities;
+- evaluator outputs;
+- error-cohort labels;
+- training outcomes;
+- evaluation outcomes.
+
+Therefore:
+
+STRUCTURAL_ARTIFACT_LABEL_FIELDS = FORBIDDEN
+
+This prevents outcome semantics from defining or contaminating structural cell
+identity.
+
+A later scientific authority must separately define any outcome-bearing
+evaluation contract.
+
+## 18. Structural identity provenance
+
+The following fields define structural identity:
+
+- mechanism_id;
+- source_pair_id;
+- contrast_cell_id;
+- axis_mask;
+- intended_changed_axes;
+- generator_source_fields;
+- generator authority identity.
+
+Claim and evidence are rendered outputs.
+
+They must not be inspected to decide which contrast cell a row belongs to.
+
+Therefore:
+
+RENDERED_TEXT_DEFINES_CELL_IDENTITY = NO
+
+GENERATOR_DECLARATION_DEFINES_CELL_IDENTITY = YES
+
+## 19. Complete-block validation
+
+For every admitted source pair, exactly six rows must exist.
+
+Required contrast_cell_id set:
+
+{
+C0_SHAM,
+C1_TITLE,
+C2_NAME,
+C3_ROLE,
+C4_PREDICATE,
+C5_TITLE_NAME
+}
+
+Required mechanism_id cardinality within a pair:
+
+1
+
+Required mechanism_id value:
+
+masked_slot_substitution_v1
+
+Required row-id cardinality:
+
+6 unique row IDs per pair
+
+Required mask cardinality:
+
+6 canonical masks per pair
+
+Partial pair blocks are forbidden.
+
+Therefore:
+
+COMPLETE_SIX_CELL_PAIR_BLOCK = REQUIRED
+
+PARTIAL_PAIR_BLOCK = INVALID
+
+## 20. Duplicate handling
+
+The implementation must fail closed if:
+
+- source_pair_id is duplicated in the structured source population;
+- a generated row_id is duplicated;
+- a contrast_cell_id occurs twice within one pair;
+- more than six rows are produced for one pair;
+- fewer than six rows are produced for one pair.
+
+No duplicate may be silently dropped or overwritten.
+
+## 21. Source-field validation
+
+Each admitted structured fact must contain non-empty string values for:
+
+- pair_id;
+- title;
+- name;
+- role;
+- predicate;
+- alternate_title;
+- alternate_name;
+- alternate_role;
+- alternate_predicate.
+
+For each axis, original and alternate values must be distinct.
+
+If any required field is:
+
+- missing;
+- non-string;
+- empty;
+- equal to its required alternate counterpart;
+
+the source pair must not be partially materialized.
+
+The canonical implementation must fail closed rather than emit an incomplete
+block.
+
+## 22. Input ordering and output ordering
+
+The implementation must preserve source structured-fact order.
+
+Within every source pair, rows must appear in this exact order:
+
+1. C0_SHAM
+2. C1_TITLE
+3. C2_NAME
+4. C3_ROLE
+5. C4_PREDICATE
+6. C5_TITLE_NAME
+
+No random shuffle is allowed.
+
+No sorting based on rendered text, labels, or outcomes is allowed.
+
+Therefore:
+
+SOURCE_PAIR_ORDER_PRESERVED = REQUIRED
+
+CELL_ORDER_FIXED = REQUIRED
+
+## 23. Deterministic serialization
+
+The canonical JSONL serializer must use:
+
+- UTF-8;
+- no BOM;
+- one JSON object per line;
+- LF line endings;
+- ensure_ascii=False;
+- compact separators (",", ":");
+- insertion/schema field order;
+- sort_keys=False;
+- one trailing LF after every row.
+
+The same source and same implementation must produce byte-identical output.
+
+Therefore:
+
+DETERMINISTIC_SERIALIZATION = REQUIRED
+
+## 24. Rendering invariants
+
+For every source pair:
+
+C0_SHAM evidence must equal the base statement produced through the same
+renderer with no overrides.
+
+For a single-axis cell, only that axis value may differ at the structured
+renderer input relative to sham.
+
+For C5_TITLE_NAME, exactly title and name inputs may differ relative to sham.
+
+The renderer itself must be the same across all cells.
+
+No cell-specific template is permitted.
+
+No post-hoc string replacement is permitted.
+
+No rendered-text search is permitted.
+
+Therefore:
+
+CELL_SPECIFIC_RENDERING_TEMPLATE = FORBIDDEN
+
+POST_HOC_TEXT_REPLACEMENT = FORBIDDEN
+
+SAME_RENDERER_DIFFERENT_STRUCTURED_OVERRIDES = REQUIRED
+
+## 25. Sham semantics
+
+C0_SHAM is not the historical controlled intervention `none`.
+
+It is:
+
+mechanism_id = masked_slot_substitution_v1
+
+with:
+
+axis_mask = [0,0,0,0]
+
+and:
+
+overrides = {}
+
+This exact distinction must remain explicit in provenance.
+
+Therefore:
+
+SAME_MECHANISM_EMPTY_MASK_SHAM = REQUIRED
+
+HISTORICAL_NONE_AS_SHAM = FORBIDDEN
+
+## 26. Future implementation API requirements
+
+The future implementation should expose a pure materialization function whose
+core input is an ordered iterable of structured facts.
+
+The core function must not require:
+
+- filesystem dataset input;
+- labels;
+- rendered existing records;
+- tokenizer state;
+- model state.
+
+A thin CLI may perform frozen-source acquisition and write JSONL.
+
+This separation is required so focused synthetic tests can validate semantics
+without running the canonical 300-pair materialization.
+
+## 27. Required focused tests
+
+A future focused test module must cover at least:
+
+- exact mechanism_id;
+- exact schema_version;
+- exact six cell IDs;
+- exact six masks;
+- canonical cell ordering;
+- exact intended_changed_axes;
+- exact generator_source_fields;
+- deterministic row ID;
+- claim invariant across all six cells;
+- sham uses empty override path;
+- title-only substitution;
+- name-only substitution;
+- role-only substitution;
+- predicate-only substitution;
+- title+name joint substitution;
+- object/time/location invariance;
+- fixed alternate values within pair;
+- complete six-row block;
+- duplicate source pair rejection;
+- duplicate generated row rejection;
+- missing required field rejection;
+- empty required field rejection;
+- non-string required field rejection;
+- original/alternate equality rejection;
+- deterministic serialization;
+- forbidden label fields absent;
+- rendered text not used to infer cell identity;
+- source order preservation.
+
+Tests must be synthetic.
+
+They must not materialize the canonical 300-pair artifact.
+
+## 28. Validation boundary
+
+If later implementation authority is granted, code validation is limited to:
+
+- Python syntax compilation of the exact implementation file;
+- Python syntax compilation of the exact focused test file;
+- focused pytest for that test module.
+
+Passing validation establishes implementation correctness only.
+
+It does not establish:
+
+- canonical execution success;
+- canonical artifact provenance;
+- model behavior;
+- scientific effect;
+- predictive value;
+- causal effect;
+- mechanistic importance.
+
+## 29. Fail-closed conditions
+
+The implementation must fail closed on:
+
+- wrong generator authority identity;
+- wrong generator source blob for canonical execution;
+- duplicate source pair;
+- missing required source field;
+- invalid source-field type;
+- empty required source value;
+- original/alternate equality;
+- unknown contrast cell;
+- unknown axis mask;
+- inconsistent mask/axis mapping;
+- inconsistent generator_source_fields;
+- duplicate row ID;
+- incomplete six-cell block;
+- cell ordering violation;
+- mechanism_id drift;
+- schema_version drift;
+- serialization nondeterminism.
+
+No malformed canonical row may be silently skipped.
+
+## 30. Forbidden implementation behavior
+
+The implementation must not:
+
+- modify scripts/build_controlled_v5.py;
+- modify the historical canonical controlled dataset;
+- modify the existing Gen4 operator-cell sidecar;
+- infer semantic slots from rendered text;
+- inspect labels to choose a cell;
+- inspect model predictions;
+- execute a tokenizer;
+- execute a model;
+- train;
+- evaluate;
+- use Kaggle;
+- perform random alternate sampling;
+- create labels for the new structural rows;
+- reuse intervention_type = "none" as C0_SHAM.
+
+## 31. Expected future canonical artifact
+
+If a separate execution authority is later frozen, the expected canonical
+artifact class is:
+
+Gen4 six-cell masked-slot-substitution structural contrast JSONL.
+
+Expected rows:
+
+1800
+
+Expected source pairs:
+
+300
+
+Expected rows per pair:
+
+6
+
+This specification does not choose or authorize its final repository path.
+
+The execution authority must freeze the exact output path before generation.
+
+## 32. Scientific boundary
+
+Successful implementation would establish only that the six-cell structural
+design has been encoded correctly.
+
+Successful materialization would establish only artifact/provenance validity.
+
+Neither establishes:
+
+- Delta_title != 0;
+- Delta_name != 0;
+- Delta_role != 0;
+- Delta_predicate != 0;
+- Interaction_title_name != 0;
+- title and name differ;
+- any semantic axis predicts model behavior;
+- any semantic axis is causal;
+- any feature should be promoted.
+
+Outcome testing remains a separate scientific boundary.
+
+## 33. Current decision
+
+UPSTREAM_SOURCE_STRUCTURE_FEASIBILITY = PASS
+
+MECHANISM_ID = masked_slot_substitution_v1
+
+MINIMUM_CORE_CELL_COUNT = 6
+
+EXPECTED_CANONICAL_CONTRAST_ROW_COUNT = 1800
+
+SAME_STATEMENT_RENDERER_ALL_SIX_CELLS = REQUIRED
+
+EMPTY_MASK_USES_SAME_RENDERER = REQUIRED
+
+CLAIM_FIXED_WITHIN_PAIR = REQUIRED
+
+NON_TARGET_FACT_FIELDS_FIXED_WITHIN_PAIR = REQUIRED
+
+WITHIN_PAIR_ALTERNATE_VALUES_FIXED = REQUIRED
+
+STRUCTURED_FACT_SOURCE_ONLY = REQUIRED
+
+HISTORICAL_CONTROLLED_RECORD_REGENERATION = FORBIDDEN
+
+STRUCTURAL_ARTIFACT_LABEL_FIELDS = FORBIDDEN
+
+RENDERED_TEXT_DEFINES_CELL_IDENTITY = NO
+
+GENERATOR_DECLARATION_DEFINES_CELL_IDENTITY = YES
+
+COMPLETE_SIX_CELL_PAIR_BLOCK = REQUIRED
+
+SOURCE_PAIR_ORDER_PRESERVED = REQUIRED
+
+CELL_ORDER_FIXED = REQUIRED
+
+DETERMINISTIC_SERIALIZATION = REQUIRED
+
+SAME_MECHANISM_EMPTY_MASK_SHAM = REQUIRED
+
+HISTORICAL_NONE_AS_SHAM = FORBIDDEN
+
+MODIFY_BUILD_CONTROLLED_V5 = FORBIDDEN
+
+IMPLEMENTATION = NOT_AUTHORIZED
+
+CANONICAL_MATERIALIZATION = NOT_AUTHORIZED
+
+TRAINING_EVALUATION = NOT_AUTHORIZED
+
+## 34. Next boundary
+
+If this specification is reviewed and frozen, the next object is:
+
+GEN4_SIX_CELL_GENERATOR_IMPLEMENTATION_AUTHORITY
+
+That future authority may authorize exactly:
+
+scripts/materialize_reason_router_gen4_six_cell_contrast.py
+
+tests/test_materialize_reason_router_gen4_six_cell_contrast.py
+
+and no other code delta.
+
+Canonical six-cell materialization must remain separately unauthorized until
+the implementation is validated and frozen.
+
+## 35. Stop condition
+
+Stop after this implementation specification candidate is created and reviewed.
+
+Do not create the implementation script.
+
+Do not create the focused test module.
+
+Do not modify scripts/build_controlled_v5.py.
+
+Do not generate six-cell contrast rows.
+
+Do not create a canonical contrast artifact.
+
+Do not train.
+
+Do not evaluate.
+
+Do not run model inference.
+
+Do not execute tokenizers.
+
+Do not run Kaggle.
+
+A later frozen authority must explicitly authorize:
+GEN4_SIX_CELL_GENERATOR_IMPLEMENTATION_AUTHORITY.
