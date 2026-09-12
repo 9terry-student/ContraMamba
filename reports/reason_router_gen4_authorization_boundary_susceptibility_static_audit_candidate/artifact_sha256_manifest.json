@@ -1,0 +1,8 @@
+{
+  "artifacts": {
+    "analysis.json": "e511dd4cab87b4aad5d4fa22a683ca70c18882ba3228919852df6343c323830b",
+    "primary_population.jsonl": "eb5aaacf38be224461801cab5e0629e46a9d375d7efaeadb72b2dbf3c5d56f3e",
+    "report_candidate.md": "bca352ccc1b234f9d697b61bdd815afb16a70045f75a28236da9bffbbb68b9ec"
+  },
+  "execution_commit": "96ccb359c579515293c24f7544d128b0591343d3"
+}
