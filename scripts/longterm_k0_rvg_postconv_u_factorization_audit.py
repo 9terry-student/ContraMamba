@@ -15,15 +15,23 @@ observed boundaries.
 
 Magnitude factorization:
 
-    ||delta_U||
-      = ||delta_H||
-        * (||delta_C|| / ||delta_H||)
-        * (||delta_U|| / ||delta_C||)
+    ||delta_U_t||
+      = ||delta_H_RF_t||
+        * (||delta_C_t|| / ||delta_H_RF_t||)
+        * (||delta_U_t|| / ||delta_C_t||)
+
+where delta_H_RF_t is the concatenated four-token causal convolution
+receptive-field difference:
+
+    [delta_H_t, delta_H_(t-1), delta_H_(t-2), delta_H_(t-3)]
 
 The audit separates:
-- upstream pre-convolution delta-H magnitude,
-- depthwise-convolution norm transfer,
+- upstream pre-convolution receptive-field difference magnitude,
+- exact depthwise-convolution receptive-field norm transfer,
 - SiLU norm transfer.
+
+The current-token delta-H magnitude is retained as a diagnostic but is not
+used as the convolution-transfer denominator.
 
 All diagnostics are observational/algebraic. No intervention, training,
 tokenizer execution, logits, task heads, PCA, or learned probe.
@@ -90,13 +98,14 @@ EXECUTION_PROTOCOL = (
     "EQUAL_LENGTH_PREFIX_TRUNCATED_THROUGH_K_PLUS_6"
 )
 
+CONV_RECON_REL_TOL = 2e-5
 ACTIVATION_REL_TOL = 1e-6
 
 QUESTION = (
     "Is the corr-k2 post-convolution delta-U magnitude pattern already "
-    "present in the pre-convolution hidden-branch delta-H magnitude, or "
-    "is it reshaped across the depthwise causal convolution and SiLU "
-    "stages?"
+    "present in the four-token pre-convolution receptive-field delta-H "
+    "magnitude, or is it reshaped across the depthwise causal convolution "
+    "and SiLU stages?"
 )
 
 
@@ -416,6 +425,7 @@ def resolve_primary_mixer(
     return mixer
 
 
+
 def capture_hcu_factors(
     dt_projection: Any,
     secant: Any,
@@ -434,8 +444,38 @@ def capture_hcu_factors(
         for i in targets
     )
 
-    h_records = {}
+    h_rf_records = {}
     c_records = {}
+
+    kernel = secant.snapshot(
+        mixer.conv1d.weight,
+        "CONV_KERNEL",
+    )
+
+    require(
+        tuple(kernel.shape)
+        == (
+            INTERMEDIATE_SIZE,
+            1,
+            CONV_KERNEL_SIZE,
+        ),
+        "CONV_KERNEL_SHAPE_MISMATCH",
+    )
+
+    kernel = (
+        kernel[:, 0, :]
+        .contiguous()
+        .clone()
+    )
+
+    bias = (
+        None
+        if mixer.conv1d.bias is None
+        else secant.snapshot(
+            mixer.conv1d.bias,
+            "CONV_BIAS",
+        )
+    )
 
     hook_counts = {
         "pre": 0,
@@ -482,8 +522,36 @@ def capture_hcu_factors(
                 f"PRECONV_TARGET_OUT_OF_RANGE:{i}",
             )
 
-            h_records[i] = (
-                h_full[:, :, i]
+            lag_vectors = []
+
+            for lag in range(
+                CONV_KERNEL_SIZE
+            ):
+                pos = i - lag
+
+                if pos >= 0:
+                    vector = (
+                        h_full[0, :, pos]
+                        .contiguous()
+                        .clone()
+                    )
+                else:
+                    # Exact left zero-padding used by the causal Conv1d.
+                    vector = torch.zeros(
+                        INTERMEDIATE_SIZE,
+                        dtype=h_full.dtype,
+                        device=h_full.device,
+                    )
+
+                lag_vectors.append(
+                    vector
+                )
+
+            h_rf_records[i] = (
+                torch.stack(
+                    lag_vectors,
+                    dim=0,
+                )
                 .contiguous()
                 .clone()
             )
@@ -569,23 +637,100 @@ def capture_hcu_factors(
     )
 
     require(
-        set(h_records) == set(targets),
-        "PRECONV_TARGET_SET_MISMATCH",
+        set(h_rf_records)
+        == set(targets),
+        "PRECONV_RF_TARGET_SET_MISMATCH",
     )
 
     require(
-        set(c_records) == set(targets),
+        set(c_records)
+        == set(targets),
         "CONV_PREACT_TARGET_SET_MISMATCH",
     )
 
     require(
-        set(records) == set(targets),
+        set(records)
+        == set(targets),
         "PARENT_TARGET_SET_MISMATCH",
     )
 
     for i in targets:
-        records[i]["H"] = h_records[i]
-        records[i]["C"] = c_records[i]
+        h_rf = h_rf_records[i]
+        c = c_records[i]
+
+        require(
+            tuple(h_rf.shape)
+            == (
+                CONV_KERNEL_SIZE,
+                INTERMEDIATE_SIZE,
+            ),
+            f"PRECONV_RF_SHAPE_MISMATCH:{i}",
+        )
+
+        records[i]["H_RF"] = h_rf
+        records[i]["C"] = c
+
+        # Conv1d is cross-correlation with left padding=K-1:
+        # output[t] = sum_q w[q] * H[t-(K-1)+q].
+        # With lag=0 denoting H[t], kernel index is K-1-lag.
+        reconstructed_c = torch.zeros(
+            (1, INTERMEDIATE_SIZE),
+            dtype=h_rf.dtype,
+            device=h_rf.device,
+        )
+
+        if bias is not None:
+            reconstructed_c = (
+                reconstructed_c
+                + bias.unsqueeze(0)
+            )
+
+        for lag in range(
+            CONV_KERNEL_SIZE
+        ):
+            kernel_index = (
+                CONV_KERNEL_SIZE
+                - 1
+                - lag
+            )
+
+            reconstructed_c = (
+                reconstructed_c
+                + h_rf[lag, :].unsqueeze(0)
+                * kernel[:, kernel_index].unsqueeze(0)
+            )
+
+        conv_residual = (
+            reconstructed_c
+            - c
+        )
+
+        conv_rel = float(
+            torch.linalg.vector_norm(
+                conv_residual.to(
+                    torch.float64
+                )
+            ).item()
+            / max(
+                torch.linalg.vector_norm(
+                    c.to(torch.float64)
+                ).item(),
+                1e-12,
+            )
+        )
+
+        require(
+            conv_rel
+            <= CONV_RECON_REL_TOL,
+            (
+                "CONV_RECONSTRUCTION_FAILURE:"
+                f"{i}:{conv_rel}"
+            ),
+        )
+
+        records[i][
+            "conv_reconstruction_relative_residual"
+        ] = conv_rel
 
         require(
             "U" in records[i],
@@ -602,9 +747,7 @@ def capture_hcu_factors(
 
         with torch.inference_mode():
             reconstructed_u = (
-                mixer.act(
-                    c_records[i]
-                )
+                mixer.act(c)
                 .detach()
                 .cpu()
                 .contiguous()
@@ -642,6 +785,7 @@ def capture_hcu_factors(
     return records
 
 
+
 def metric_rows_for_pair(
     secant: Any,
     row: Mapping[str, Any],
@@ -669,8 +813,8 @@ def metric_rows_for_pair(
     for k in RELATIVE_COORDINATES:
         token = anchor + k
 
-        hm32 = matched[token]["H"]
-        hs32 = swapped[token]["H"]
+        hmrf32 = matched[token]["H_RF"]
+        hsrf32 = swapped[token]["H_RF"]
 
         cm32 = matched[token]["C"]
         cs32 = swapped[token]["C"]
@@ -678,9 +822,25 @@ def metric_rows_for_pair(
         um32 = matched[token]["U"]
         us32 = swapped[token]["U"]
 
+        require(
+            tuple(hmrf32.shape)
+            == (
+                CONV_KERNEL_SIZE,
+                INTERMEDIATE_SIZE,
+            ),
+            f"HMRF_SHAPE_MISMATCH:{idx}:{role}:{k}",
+        )
+
+        require(
+            tuple(hsrf32.shape)
+            == (
+                CONV_KERNEL_SIZE,
+                INTERMEDIATE_SIZE,
+            ),
+            f"HSRF_SHAPE_MISMATCH:{idx}:{role}:{k}",
+        )
+
         for name, tensor in (
-            ("HM", hm32),
-            ("HS", hs32),
             ("CM", cm32),
             ("CS", cs32),
             ("UM", um32),
@@ -695,10 +855,10 @@ def metric_rows_for_pair(
         if k == -1:
             require(
                 secant.torch_equal(
-                    hm32,
-                    hs32,
+                    hmrf32,
+                    hsrf32,
                 ),
-                f"K_MINUS_1_H_IDENTITY_FAILURE:{idx}:{role}",
+                f"K_MINUS_1_H_RF_IDENTITY_FAILURE:{idx}:{role}",
             )
 
             require(
@@ -717,9 +877,9 @@ def metric_rows_for_pair(
                 f"K_MINUS_1_U_IDENTITY_FAILURE:{idx}:{role}",
             )
 
-        dh = (
-            hm32.to(torch.float64)
-            - hs32.to(torch.float64)
+        dh_rf = (
+            hmrf32.to(torch.float64)
+            - hsrf32.to(torch.float64)
         )
 
         dc = (
@@ -732,9 +892,22 @@ def metric_rows_for_pair(
             - us32.to(torch.float64)
         )
 
-        dh_l2 = float(
+        lag_l2 = [
+            float(
+                torch.linalg.vector_norm(
+                    dh_rf[lag, :]
+                ).item()
+            )
+            for lag in range(
+                CONV_KERNEL_SIZE
+            )
+        ]
+
+        dh_current_l2 = lag_l2[0]
+
+        dh_rf_l2 = float(
             torch.linalg.vector_norm(
-                dh
+                dh_rf
             ).item()
         )
 
@@ -748,6 +921,19 @@ def metric_rows_for_pair(
             torch.linalg.vector_norm(
                 du
             ).item()
+        )
+
+        conv_residual = max(
+            float(
+                matched[token][
+                    "conv_reconstruction_relative_residual"
+                ]
+            ),
+            float(
+                swapped[token][
+                    "conv_reconstruction_relative_residual"
+                ]
+            ),
         )
 
         activation_residual = max(
@@ -765,8 +951,8 @@ def metric_rows_for_pair(
 
         if k == -1:
             require(
-                dh_l2 == 0.0,
-                f"K_MINUS_1_DELTA_H_NONZERO:{idx}:{role}",
+                dh_rf_l2 == 0.0,
+                f"K_MINUS_1_DELTA_H_RF_NONZERO:{idx}:{role}",
             )
 
             require(
@@ -779,14 +965,15 @@ def metric_rows_for_pair(
                 f"K_MINUS_1_DELTA_U_NONZERO:{idx}:{role}",
             )
 
-            conv_transfer = 0.0
+            conv_rf_transfer = 0.0
             act_transfer = 0.0
             total_transfer = 0.0
+            current_energy_fraction = 0.0
 
         else:
             require(
-                dh_l2 > 0.0,
-                f"ZERO_DELTA_H_AFTER_ANCHOR:{idx}:{role}:{k}",
+                dh_rf_l2 > 0.0,
+                f"ZERO_DELTA_H_RF_AFTER_ANCHOR:{idx}:{role}:{k}",
             )
 
             require(
@@ -799,9 +986,9 @@ def metric_rows_for_pair(
                 f"ZERO_DELTA_U_AFTER_ANCHOR:{idx}:{role}:{k}",
             )
 
-            conv_transfer = (
+            conv_rf_transfer = (
                 dc_l2
-                / dh_l2
+                / dh_rf_l2
             )
 
             act_transfer = (
@@ -811,13 +998,29 @@ def metric_rows_for_pair(
 
             total_transfer = (
                 du_l2
-                / dh_l2
+                / dh_rf_l2
+            )
+
+            current_energy_fraction = (
+                dh_current_l2 ** 2
+                / (dh_rf_l2 ** 2)
+            )
+
+            require(
+                -1e-12
+                <= current_energy_fraction
+                <= 1.0 + 1e-12,
+                (
+                    "CURRENT_H_ENERGY_FRACTION_OUT_OF_RANGE:"
+                    f"{idx}:{role}:{k}:"
+                    f"{current_energy_fraction}"
+                ),
             )
 
             require(
                 math.isclose(
                     total_transfer,
-                    conv_transfer
+                    conv_rf_transfer
                     * act_transfer,
                     rel_tol=1e-13,
                     abs_tol=1e-13,
@@ -856,8 +1059,26 @@ def metric_rows_for_pair(
             "in_common_ddsssss_cohort":
                 idx in cohort,
 
-            "delta_h_l2":
-                dh_l2,
+            "delta_h_current_l2":
+                dh_current_l2,
+
+            "delta_h_rf_l2":
+                dh_rf_l2,
+
+            "delta_h_lag0_l2":
+                lag_l2[0],
+
+            "delta_h_lag1_l2":
+                lag_l2[1],
+
+            "delta_h_lag2_l2":
+                lag_l2[2],
+
+            "delta_h_lag3_l2":
+                lag_l2[3],
+
+            "current_h_energy_fraction":
+                current_energy_fraction,
 
             "delta_c_l2":
                 dc_l2,
@@ -865,14 +1086,17 @@ def metric_rows_for_pair(
             "delta_u_l2":
                 du_l2,
 
-            "conv_transfer":
-                conv_transfer,
+            "conv_rf_transfer":
+                conv_rf_transfer,
 
             "activation_transfer":
                 act_transfer,
 
-            "total_postconv_transfer":
+            "total_rf_to_u_transfer":
                 total_transfer,
+
+            "conv_reconstruction_relative_residual":
+                conv_residual,
 
             "activation_reconstruction_relative_residual":
                 activation_residual,
@@ -900,12 +1124,19 @@ def metric_rows_for_pair(
 
 
 SUMMARY_FIELDS = (
-    "delta_h_l2",
+    "delta_h_current_l2",
+    "delta_h_rf_l2",
+    "delta_h_lag0_l2",
+    "delta_h_lag1_l2",
+    "delta_h_lag2_l2",
+    "delta_h_lag3_l2",
+    "current_h_energy_fraction",
     "delta_c_l2",
     "delta_u_l2",
-    "conv_transfer",
+    "conv_rf_transfer",
     "activation_transfer",
-    "total_postconv_transfer",
+    "total_rf_to_u_transfer",
+    "conv_reconstruction_relative_residual",
     "activation_reconstruction_relative_residual",
 )
 
@@ -1047,12 +1278,15 @@ def make_summary(
             EXECUTION_PROTOCOL,
 
         "stage_identity":
-            "H_preconv -> depthwise_conv -> C_preact -> SiLU -> U_postact",
+            (
+                "H_preconv_4token_receptive_field -> "
+                "depthwise_conv -> C_preact -> SiLU -> U_postact"
+            ),
 
         "magnitude_factorization":
             (
-                "||delta_U|| = ||delta_H|| * "
-                "(||delta_C||/||delta_H||) * "
+                "||delta_U|| = ||delta_H_RF|| * "
+                "(||delta_C||/||delta_H_RF||) * "
                 "(||delta_U||/||delta_C||)"
             ),
 
@@ -1062,6 +1296,16 @@ def make_summary(
         "common_330_ddsssss_trajectory":
             aggregate_trajectory(
                 common_rows
+            ),
+
+        "max_conv_reconstruction_relative_residual":
+            max(
+                float(
+                    r[
+                        "conv_reconstruction_relative_residual"
+                    ]
+                )
+                for r in post_rows
             ),
 
         "max_activation_reconstruction_relative_residual":
@@ -1382,13 +1626,19 @@ def execute(
             QUESTION,
 
         "stage_identity":
-            "H_preconv -> depthwise_conv -> C_preact -> SiLU -> U_postact",
+            (
+                "H_preconv_4token_receptive_field -> "
+                "depthwise_conv -> C_preact -> SiLU -> U_postact"
+            ),
 
         "magnitude_factorization":
             (
-                "||delta_U|| = ||delta_H|| * "
-                "conv_transfer * activation_transfer"
+                "||delta_U|| = ||delta_H_RF|| * "
+                "conv_rf_transfer * activation_transfer"
             ),
+
+        "conv_receptive_field_size":
+            CONV_KERNEL_SIZE,
 
         "execution_protocol":
             EXECUTION_PROTOCOL,
@@ -1448,6 +1698,9 @@ def execute(
             True,
 
         "scientific_preconv_hidden_read":
+            True,
+
+        "scientific_preconv_receptive_field_read":
             True,
 
         "scientific_conv_preactivation_read":
@@ -1530,6 +1783,13 @@ def execute(
     )
 
     print(
+        "max_conv_reconstruction_relative_residual =",
+        summary[
+            "max_conv_reconstruction_relative_residual"
+        ],
+    )
+
+    print(
         "max_activation_reconstruction_relative_residual =",
         summary[
             "max_activation_reconstruction_relative_residual"
@@ -1544,18 +1804,22 @@ def execute(
 
             print(
                 f"{role}_k{k}_median "
-                f"DH_L2="
-                f"{t['delta_h_l2']['median']} "
+                f"DH_CUR_L2="
+                f"{t['delta_h_current_l2']['median']} "
+                f"DH_RF_L2="
+                f"{t['delta_h_rf_l2']['median']} "
+                f"CUR_EFRAC="
+                f"{t['current_h_energy_fraction']['median']} "
                 f"DC_L2="
                 f"{t['delta_c_l2']['median']} "
                 f"DU_L2="
                 f"{t['delta_u_l2']['median']} "
-                f"CONV_TR="
-                f"{t['conv_transfer']['median']} "
+                f"CONV_RF_TR="
+                f"{t['conv_rf_transfer']['median']} "
                 f"ACT_TR="
                 f"{t['activation_transfer']['median']} "
-                f"TOTAL_TR="
-                f"{t['total_postconv_transfer']['median']}"
+                f"TOTAL_RF_U_TR="
+                f"{t['total_rf_to_u_transfer']['median']}"
             )
 
 
@@ -1672,14 +1936,14 @@ def main():
 
     print(
         "stage_identity = "
-        "H_preconv -> depthwise_conv -> "
-        "C_preact -> SiLU -> U_postact"
+        "H_preconv_4token_receptive_field -> "
+        "depthwise_conv -> C_preact -> SiLU -> U_postact"
     )
 
     print(
         "magnitude_factorization = "
-        "||delta_U|| = ||delta_H|| * "
-        "conv_transfer * activation_transfer"
+        "||delta_U|| = ||delta_H_RF|| * "
+        "conv_rf_transfer * activation_transfer"
     )
 
     print(
