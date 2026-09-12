@@ -1,0 +1,180 @@
+{
+  "a0_margin_statistics_computed": false,
+  "auc_computed": false,
+  "authority_commit": "1fec5e47bcae970b5ec6a23e3724087fd3f10029",
+  "authority_file": "reports/reason_router_gen4_authorization_boundary_susceptibility_static_audit_authority_spec_candidate.md",
+  "checkpoint_loaded": false,
+  "d1_flip_statistics_computed": false,
+  "excluded_local_d1_copies": {
+    "allowed_for_gen4_audit": false,
+    "reason": "SHA256 does not match frozen historical Gen3 provenance manifest",
+    "source_root": "GEN4_WORKTREE"
+  },
+  "gen3_source_worktree_head": "3e0e9a435068c552abf20f3a74e0c3eccca344a3",
+  "gpu": false,
+  "historical_source_manifest_commit": "792b7a7e9bdb7fa957fa3ecda6ee9c6e37ce0f96",
+  "holm_fwer_alpha": 0.05,
+  "joins": {
+    "180": {
+      "external_class_order": [
+        "REFUTE",
+        "NOT_ENTITLED",
+        "SUPPORT"
+      ],
+      "external_class_order_exact_match": true,
+      "stable_id_count": 720,
+      "stable_id_set_exact_match": true
+    },
+    "181": {
+      "external_class_order": [
+        "REFUTE",
+        "NOT_ENTITLED",
+        "SUPPORT"
+      ],
+      "external_class_order_exact_match": true,
+      "stable_id_count": 720,
+      "stable_id_set_exact_match": true
+    },
+    "182": {
+      "external_class_order": [
+        "REFUTE",
+        "NOT_ENTITLED",
+        "SUPPORT"
+      ],
+      "external_class_order_exact_match": true,
+      "stable_id_count": 720,
+      "stable_id_set_exact_match": true
+    }
+  },
+  "kaggle": false,
+  "minimum_auc_each_seed": 0.6,
+  "minimum_negative_count_each_seed": 30,
+  "minimum_positive_count_each_seed": 10,
+  "model_forward": false,
+  "parent_gen3_validated_evidence": "ab80d9fbab103c73aaa459b10c5caeaa2f69dfd4",
+  "permutation_count": 100000,
+  "permutation_rng_seed": 535584327,
+  "permutation_rng_seed_derivation": "int(first_8_hex_of_authority_commit, 16)",
+  "permutation_test_computed": false,
+  "phase": "GEN4_BOUNDARY_SUSCEPTIBILITY_READ_ONLY_STATIC_AUDIT",
+  "primary_outcome": "D1_SUPPORT_PREDICTION_AMONG_A0_CORRECT_NOT_ENTITLED",
+  "primary_predictor": "A0_NOT_ENTITLED_MINUS_SUPPORT_LOGIT_GAP",
+  "primary_seeds": [
+    180,
+    181,
+    182
+  ],
+  "scientific_outcomes_accessed": false,
+  "source_selection_rule": "A0 uses the exact SHA-matched historical A0 copies in the Gen4 analysis worktree. D1 uses the exact SHA-matched historical copies in the pre-existing g3-grouped-r evidence worktree. The nonmatching D1 files under the Gen4 worktree are explicitly excluded.",
+  "sources": [
+    {
+      "actual_sha256": "5c9722ac0f75c411b3d744a29beec0c35d2f2809331f257a5e1d5ea81e6cf75d",
+      "arm": "A0",
+      "bytes": 4840320,
+      "expected_sha256": "5c9722ac0f75c411b3d744a29beec0c35d2f2809331f257a5e1d5ea81e6cf75d",
+      "external_class_order": [
+        "REFUTE",
+        "NOT_ENTITLED",
+        "SUPPORT"
+      ],
+      "repo_relative_path": "reports/reason_router_p3w7_seed8192_revised_split_a0_replacement_runs/seed180/replacement_r1/A0/clean_dev_predictions.json",
+      "role": "canonical_a0",
+      "rows": 720,
+      "schema_validation": "PASS",
+      "seed": 180,
+      "source_root": "GEN4_WORKTREE",
+      "unique_stable_ids": 720
+    },
+    {
+      "actual_sha256": "789d02f9092ce6b051d0ca435272c9e93a3962183dbb0a4d4dbb20cebf2ac3fe",
+      "arm": "A0",
+      "bytes": 4838584,
+      "expected_sha256": "789d02f9092ce6b051d0ca435272c9e93a3962183dbb0a4d4dbb20cebf2ac3fe",
+      "external_class_order": [
+        "REFUTE",
+        "NOT_ENTITLED",
+        "SUPPORT"
+      ],
+      "repo_relative_path": "reports/reason_router_p3w7_seed8192_revised_split_a0_runs/seed181/A0/clean_dev_predictions.json",
+      "role": "canonical_a0",
+      "rows": 720,
+      "schema_validation": "PASS",
+      "seed": 181,
+      "source_root": "GEN4_WORKTREE",
+      "unique_stable_ids": 720
+    },
+    {
+      "actual_sha256": "029ec6ae31df2f5ca9526d1e631496f7ee272967a6f5e08684f29aa09ad490d4",
+      "arm": "A0",
+      "bytes": 4841685,
+      "expected_sha256": "029ec6ae31df2f5ca9526d1e631496f7ee272967a6f5e08684f29aa09ad490d4",
+      "external_class_order": [
+        "REFUTE",
+        "NOT_ENTITLED",
+        "SUPPORT"
+      ],
+      "repo_relative_path": "reports/reason_router_p3w7_seed8192_revised_split_a0_runs/seed182/A0/clean_dev_predictions.json",
+      "role": "canonical_a0",
+      "rows": 720,
+      "schema_validation": "PASS",
+      "seed": 182,
+      "source_root": "GEN4_WORKTREE",
+      "unique_stable_ids": 720
+    },
+    {
+      "actual_sha256": "26b36b2f7a27cbf716cc59f5deb942ef8099b8c7b4680c07f2f78f131e6621d2",
+      "arm": "D1",
+      "bytes": 4860619,
+      "expected_sha256": "26b36b2f7a27cbf716cc59f5deb942ef8099b8c7b4680c07f2f78f131e6621d2",
+      "external_class_order": [
+        "REFUTE",
+        "NOT_ENTITLED",
+        "SUPPORT"
+      ],
+      "repo_relative_path": "reports/reason_router_p3w7_seed8192_d1_partial_gradient_runs/seed180/D1/clean_dev_predictions.json",
+      "role": "historical_d1_global_half",
+      "rows": 720,
+      "schema_validation": "PASS",
+      "seed": 180,
+      "source_root": "G3_GROUPED_EVIDENCE_WORKTREE",
+      "unique_stable_ids": 720
+    },
+    {
+      "actual_sha256": "3031a64da309ac54befe4b12d31ec6bac1849f222ae3ba2dd54b083ac135126e",
+      "arm": "D1",
+      "bytes": 4859519,
+      "expected_sha256": "3031a64da309ac54befe4b12d31ec6bac1849f222ae3ba2dd54b083ac135126e",
+      "external_class_order": [
+        "REFUTE",
+        "NOT_ENTITLED",
+        "SUPPORT"
+      ],
+      "repo_relative_path": "reports/reason_router_p3w7_seed8192_d1_partial_gradient_runs/seed181/D1/clean_dev_predictions.json",
+      "role": "historical_d1_global_half",
+      "rows": 720,
+      "schema_validation": "PASS",
+      "seed": 181,
+      "source_root": "G3_GROUPED_EVIDENCE_WORKTREE",
+      "unique_stable_ids": 720
+    },
+    {
+      "actual_sha256": "95769e4b1c9dba6d6040affd86b1ab4468b27fe0cdb649baa9243c4912b0652c",
+      "arm": "D1",
+      "bytes": 4858229,
+      "expected_sha256": "95769e4b1c9dba6d6040affd86b1ab4468b27fe0cdb649baa9243c4912b0652c",
+      "external_class_order": [
+        "REFUTE",
+        "NOT_ENTITLED",
+        "SUPPORT"
+      ],
+      "repo_relative_path": "reports/reason_router_p3w7_seed8192_d1_partial_gradient_runs/seed182/D1/clean_dev_predictions.json",
+      "role": "historical_d1_global_half",
+      "rows": 720,
+      "schema_validation": "PASS",
+      "seed": 182,
+      "source_root": "G3_GROUPED_EVIDENCE_WORKTREE",
+      "unique_stable_ids": 720
+    }
+  ],
+  "training": false
+}
