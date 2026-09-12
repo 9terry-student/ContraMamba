@@ -1,0 +1,8 @@
+{
+  "artifacts": {
+    "tau_e_annotation_manifest_candidate.jsonl": "270f4c6fb0ef51ccf173600329650277b2ff15b6eb210d6def29a24a82543b88",
+    "tau_e_phase_a_summary_candidate.json": "1b89cd55b9550b3ec33e97dc9bd5911917ed75cfe901771ebb76cecd95518870",
+    "tau_e_semantic_rule_candidate.md": "62c247a716a83965b38ba62e9a1af4a2fe9f977111ae1445baa160022dd22259"
+  },
+  "authority_commit": "46f97ed403a47f530b139987836f85381e5ae599"
+}

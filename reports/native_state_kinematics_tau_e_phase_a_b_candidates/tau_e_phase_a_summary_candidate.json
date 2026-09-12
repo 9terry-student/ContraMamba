@@ -1,0 +1,98 @@
+{
+  "authority_commit": "46f97ed403a47f530b139987836f85381e5ae599",
+  "by_intervention": {
+    "entity_swap": {
+      "ANNOTATED": 300,
+      "POST4_ELIGIBLE": 300
+    },
+    "event_swap": {
+      "ANNOTATED": 300,
+      "POST4_ELIGIBLE": 300
+    },
+    "evidence_deletion": {
+      "UNANNOTATABLE_ABSENCE_EVENT": 300
+    },
+    "evidence_truncation": {
+      "UNANNOTATABLE_ABSENCE_EVENT": 300
+    },
+    "irrelevant_evidence": {
+      "UNANNOTATABLE_NO_LOCALIZED_STRUCTURED_EVENT": 300
+    },
+    "location_swap": {
+      "ANNOTATED": 300
+    },
+    "none": {
+      "ANNOTATED": 300,
+      "POST4_ELIGIBLE": 300
+    },
+    "paraphrase": {
+      "ANNOTATED": 300,
+      "POST4_ELIGIBLE": 288
+    },
+    "polarity_flip": {
+      "ANNOTATED": 300,
+      "POST4_ELIGIBLE": 300
+    },
+    "predicate_swap": {
+      "ANNOTATED": 300,
+      "POST4_ELIGIBLE": 300
+    },
+    "role_swap": {
+      "ANNOTATED": 300,
+      "POST4_ELIGIBLE": 300
+    },
+    "title_name_swap": {
+      "ANNOTATED": 300,
+      "POST4_ELIGIBLE": 300
+    }
+  },
+  "canonical_tokenizer_json_sha256": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf",
+  "checkpoint_loaded": false,
+  "confidence_accessed": false,
+  "correct_wrong_accessed": false,
+  "dataset_rows": 3600,
+  "dataset_sha256": "eb1e0614939cda1421052702223f0fda91f098564692141b085b95b18558c0d3",
+  "event_type_counts": {
+    "ABSENCE_EVENT": 600,
+    "ENTITY_SWAP_SLOT_END": 300,
+    "EVENT_OBJECT_SWAP_SLOT_END": 300,
+    "LOCATION_SWAP_SLOT_END": 300,
+    "PREDICATE_POLARITY_REALIZATION_END": 900,
+    "PREDICATE_SWAP_SLOT_END": 300,
+    "ROLE_SWAP_SLOT_END": 300,
+    "TITLE_NAME_SWAP_SLOT_END": 300,
+    "UNLOCALIZED_IRRELEVANT_PROPOSITION": 300
+  },
+  "exclusion_counts": {
+    "POST4_PREFIX_INELIGIBLE": 312,
+    "UNANNOTATABLE_ABSENCE_EVENT": 600,
+    "UNANNOTATABLE_NO_LOCALIZED_STRUCTURED_EVENT": 300
+  },
+  "generator_sha256": "9fbd94a151c4d83a5e824412d7c0837062fedd20628f4f198116b2d08b679410",
+  "intervention_counts": {
+    "entity_swap": 300,
+    "event_swap": 300,
+    "evidence_deletion": 300,
+    "evidence_truncation": 300,
+    "irrelevant_evidence": 300,
+    "location_swap": 300,
+    "none": 300,
+    "paraphrase": 300,
+    "polarity_flip": 300,
+    "predicate_swap": 300,
+    "role_swap": 300,
+    "title_name_swap": 300
+  },
+  "model_forward": false,
+  "native_state_accessed": false,
+  "post4_prefix_counts": {
+    "eligible": 2388,
+    "not_eligible": 1212
+  },
+  "prediction_artifact_accessed": false,
+  "tau_e_status_counts": {
+    "ANNOTATED": 2700,
+    "UNANNOTATABLE_ABSENCE_EVENT": 600,
+    "UNANNOTATABLE_NO_LOCALIZED_STRUCTURED_EVENT": 300
+  }
+}
