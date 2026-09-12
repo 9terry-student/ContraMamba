@@ -1,0 +1,116 @@
+{
+  "auc_computed_during_manifest_creation": false,
+  "auc_definition": {
+    "method": "tie_adjusted_mann_whitney_roc_auc",
+    "positive_score_direction": "higher_susceptibility_score_predicts_y_equals_1",
+    "ties": "half_credit"
+  },
+  "authority_commit": "cfe948ca20d74cbdd59baeb0a73c0a8c14fc0f74",
+  "authority_file": "reports/reason_router_gen4_leave_one_seed_out_stable_item_boundary_susceptibility_authority_spec_candidate.md",
+  "checkpoint_loaded": false,
+  "eligibility_rule": {
+    "exclusion_reason": "no other-seed frozen primary-population row for same stable_id",
+    "minimum_other_seed_rows": 1,
+    "require_other_seed_rows": true,
+    "target_unit": "(target_seed, stable_id) frozen primary-population row"
+  },
+  "frozen_primary_population": {
+    "actual_sha256": "eb5aaacf38be224461801cab5e0629e46a9d375d7efaeadb72b2dbf3c5d56f3e",
+    "expected_sha256": "eb5aaacf38be224461801cab5e0629e46a9d375d7efaeadb72b2dbf3c5d56f3e",
+    "path": "reports/reason_router_gen4_authorization_boundary_susceptibility_static_audit_candidate/primary_population.jsonl",
+    "provenance": "PASS"
+  },
+  "gpu": false,
+  "kaggle": false,
+  "loo_predictors_computed_during_manifest_creation": false,
+  "minimum_auc_each_seed": 0.7,
+  "minimum_outcome_count_gate_each_seed": {
+    "negative": 30,
+    "positive": 10
+  },
+  "model_forward": false,
+  "multiplicity": {
+    "family": [
+      "180",
+      "181",
+      "182"
+    ],
+    "fwer_alpha": 0.05,
+    "method": "Holm step-down"
+  },
+  "new_inference": false,
+  "parent_cross_sectional_evidence": "5388460bf0ac2ed1f8489e35c6942f6044da3df0",
+  "parent_within_item_falsification_evidence": "c81eba59cb11a0ed845371ea4ef37dabc05ec9ad",
+  "permutation_test": {
+    "alternative": "AUC_greater_than_0.5",
+    "label_randomization": "uniform random k-subset of eligible target rows as positives",
+    "monte_carlo_p_value": "(1 + count(permuted_auc >= observed_auc)) / (permutations + 1)",
+    "permutations_each_seed": 100000,
+    "preserve_positive_count": true,
+    "preserve_predictors": true,
+    "rng": "numpy.random.default_rng",
+    "rng_seed": 3488172234,
+    "rng_seed_derivation": "int(first_8_hex_of_authority_commit,16)",
+    "seed_stream_rule": "one RNG initialized once; target seeds processed sequentially in order 180,181,182"
+  },
+  "permutation_test_computed_during_manifest_creation": false,
+  "phase": "GEN4_LEAVE_ONE_SEED_OUT_STABLE_ITEM_BOUNDARY_SUSCEPTIBILITY_STATIC_AUDIT",
+  "primary_endpoints": [
+    "LOO_AUC_180",
+    "LOO_AUC_181",
+    "LOO_AUC_182"
+  ],
+  "primary_outcome": {
+    "field": "y_d1_support",
+    "negative_value": 0,
+    "positive_value": 1,
+    "source": "target_seed_row_only"
+  },
+  "primary_predictor": {
+    "choose_maximum_other_seed_margin": false,
+    "choose_minimum_other_seed_margin": false,
+    "formula": "mean(d_a0_ne_minus_support for same stable_id over all available seeds t != target_seed)",
+    "name": "LEAVE_ONE_SEED_OUT_MEAN_A0_NE_MINUS_SUPPORT_MARGIN",
+    "other_seed_d1_outcomes_included": false,
+    "other_seed_weighting": "equal_weight_arithmetic_mean",
+    "susceptibility_score": "negative_of_leave_one_seed_out_mean_margin",
+    "target_seed_margin_included": false
+  },
+  "scientific_outcome_rows_parsed_during_manifest_creation": false,
+  "secondary_coverage": {
+    "performed_only_after_primary_verdict": true,
+    "report_excluded_no_other_seed_count": true,
+    "report_loo_eligible_count": true,
+    "report_original_count": true,
+    "report_positive_negative_counts": true
+  },
+  "secondary_predictor_stability": {
+    "pairs": [
+      "180_vs_181",
+      "180_vs_182",
+      "181_vs_182"
+    ],
+    "pearson": "standard Pearson correlation on paired d_a0 values",
+    "performed_only_after_primary_verdict": true,
+    "spearman": "Pearson correlation of tie-adjusted average ranks"
+  },
+  "support_rule": {
+    "all_auc_ge_0_70": true,
+    "all_auc_gt_0_5": true,
+    "all_holm_adjusted_p_lt_0_05": true,
+    "all_seed_count_gates_pass": true,
+    "other_seed_outcome_leakage_allowed": false,
+    "target_margin_leakage_allowed": false
+  },
+  "target_seed_processing_order": [
+    180,
+    181,
+    182
+  ],
+  "target_seeds": [
+    180,
+    181,
+    182
+  ],
+  "training": false
+}
