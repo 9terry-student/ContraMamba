@@ -1,0 +1,10 @@
+{
+  "artifacts": {
+    "analysis.json": "c8a458f50bbc5e5176b23c221497996a1d8a65b1acc8c6c12a8d56b04e6d890d",
+    "loo_heldout_rows.jsonl": "aa6f7a1b3cc4f1bd5ec1d8455c6896a75dae08f7c8f86bd7fd5cfa2f496fe9f0",
+    "report_candidate.md": "e0a3415106aea593f0f78c0efc8d3e1f4552d84c36b3a1b285ac57523fd6fec6"
+  },
+  "authority_commit": "cfe948ca20d74cbdd59baeb0a73c0a8c14fc0f74",
+  "execution_commit": "183b4a92be08e4a94ca19b3d43ccfdf1e29b57f1",
+  "frozen_primary_population_sha256": "eb5aaacf38be224461801cab5e0629e46a9d375d7efaeadb72b2dbf3c5d56f3e"
+}
