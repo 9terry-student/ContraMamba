@@ -1,0 +1,133 @@
+{
+  "annotated_confident_decisive_count": 115,
+  "authority_head": "4757a4f9baffc1eeaab7d8c9d5e9f6ababd19031",
+  "basic_balance_overlap_gate": "FAIL",
+  "by_predicted_class": {
+    "REFUTE": {
+      "candidate_count": 88,
+      "common_event_types": [],
+      "common_intervention_types": [],
+      "common_pair_id_count": 0,
+      "confidence_overlap": {
+        "exists": false,
+        "lower": null,
+        "upper": null
+      },
+      "correct_count": 88,
+      "input_length_overlap": {
+        "exists": false,
+        "lower": null,
+        "upper": null
+      },
+      "predicted_class_only_pair_capacity": 0,
+      "representation_gate": "FAIL",
+      "tau_e_overlap": {
+        "exists": false,
+        "lower": null,
+        "upper": null
+      },
+      "wrong_count": 0
+    },
+    "SUPPORT": {
+      "candidate_count": 25,
+      "common_event_types": [],
+      "common_intervention_types": [],
+      "common_pair_id_count": 0,
+      "confidence_overlap": {
+        "exists": true,
+        "lower": 0.7391632199287415,
+        "upper": 0.7391632199287415
+      },
+      "correct_count": 24,
+      "input_length_overlap": {
+        "exists": true,
+        "lower": 42,
+        "upper": 42
+      },
+      "predicted_class_only_pair_capacity": 1,
+      "representation_gate": "FAIL",
+      "tau_e_overlap": {
+        "exists": false,
+        "lower": null,
+        "upper": null
+      },
+      "wrong_count": 1
+    }
+  },
+  "checkpoint_loaded": false,
+  "confidence_statistic": "PREDICTED_CLASS_FINAL_PROBABILITY",
+  "confidence_threshold": 0.5,
+  "confident_correct_primary_candidate_count": 112,
+  "confident_decisive_prediction_count": 115,
+  "confident_error_cohort_feasibility": "PASS",
+  "confident_wrong_primary_candidate_count": 1,
+  "decisive_prediction_count": 121,
+  "exact_event_type_capacity_detail": {
+    "REFUTE": {
+      "PREDICATE_POLARITY_REALIZATION_END": {
+        "correct": 88,
+        "pair_capacity": 0,
+        "wrong": 0
+      }
+    },
+    "SUPPORT": {
+      "PREDICATE_POLARITY_REALIZATION_END": {
+        "correct": 24,
+        "pair_capacity": 0,
+        "wrong": 0
+      },
+      "ROLE_SWAP_SLOT_END": {
+        "correct": 0,
+        "pair_capacity": 0,
+        "wrong": 1
+      }
+    }
+  },
+  "exact_event_type_total_pair_capacity": 0,
+  "exact_intervention_type_capacity_detail": {
+    "REFUTE": {
+      "none": {
+        "correct": 28,
+        "pair_capacity": 0,
+        "wrong": 0
+      },
+      "paraphrase": {
+        "correct": 29,
+        "pair_capacity": 0,
+        "wrong": 0
+      },
+      "polarity_flip": {
+        "correct": 31,
+        "pair_capacity": 0,
+        "wrong": 0
+      }
+    },
+    "SUPPORT": {
+      "paraphrase": {
+        "correct": 24,
+        "pair_capacity": 0,
+        "wrong": 0
+      },
+      "role_swap": {
+        "correct": 0,
+        "pair_capacity": 0,
+        "wrong": 1
+      }
+    }
+  },
+  "exact_intervention_type_total_pair_capacity": 0,
+  "final_matching_algorithm_frozen": false,
+  "matching_feasibility": "FAIL_OR_BLOCKED",
+  "minimum_matched_pair_count": 45,
+  "minimum_pairs_per_predicted_class": 10,
+  "model_forward": false,
+  "native_state_accessed": false,
+  "p1_p2_p3_computed": false,
+  "post4_eligible_primary_candidate_count": 113,
+  "predicted_class_only_total_pair_capacity": 1,
+  "predicted_class_representation_gate": "FAIL",
+  "prediction_sha256": "5c9722ac0f75c411b3d744a29beec0c35d2f2809331f257a5e1d5ea81e6cf75d",
+  "prospective_power_feasibility": "FAIL",
+  "tau_manifest_sha256": "270f4c6fb0ef51ccf173600329650277b2ff15b6eb210d6def29a24a82543b88",
+  "total_prediction_rows": 720
+}
