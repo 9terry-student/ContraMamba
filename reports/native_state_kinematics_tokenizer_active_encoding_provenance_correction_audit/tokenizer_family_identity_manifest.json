@@ -1,0 +1,22 @@
+{
+  "authority_commit": "daa5d479f1a040cac308358db711871b0af27020",
+  "checkpoint_loaded": false,
+  "dataset_path": "reports/reason_router_p2_p3w6f2_p4b_r1_regeneration_execution_4122078ab7962042e3d6bf89f8b4eb5cec463458/controlled_v5_v3_without_time_swap_p3w6f2_r1_regenerated.jsonl",
+  "dataset_rows": 3600,
+  "dataset_sha256": "eb1e0614939cda1421052702223f0fda91f098564692141b085b95b18558c0d3",
+  "family_a_revision_reference": "40e5d2bd7452abb3ca8fadbafe9131ee0e2c2f37",
+  "family_b_revision_reference": "5708daa364c50b880e7bd92eab456e0d34492ee9",
+  "file_sha256": {
+    "A/special_tokens_map.json": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8",
+    "A/tokenizer.json": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf",
+    "A/tokenizer_config.json": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb",
+    "B/special_tokens_map.json": "10b8c8852c1e1f70b54d9aff61728408c28971c0e97a6c5a7b2debbd1d3e9c0c",
+    "B/tokenizer.json": "3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8",
+    "B/tokenizer_config.json": "fcd5669efe1150240c13ee4bd863316de4f2abd14cb1806a8cdbcbea6577bc99"
+  },
+  "historical_exact_snapshot_recovered": false,
+  "model_loaded": false,
+  "native_state_accessed": false,
+  "network_access": false,
+  "prediction_artifact_accessed": false
+}

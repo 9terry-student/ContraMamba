@@ -1,0 +1,35 @@
+{
+  "active_component_equal": {
+    "added_tokens": true,
+    "decoder": true,
+    "model": true,
+    "normalizer": true,
+    "post_processor": true,
+    "pre_tokenizer": true
+  },
+  "added_token_diff_count": 0,
+  "authority_commit": "daa5d479f1a040cac308358db711871b0af27020",
+  "family_a_serialized_truncation": {
+    "direction": "Right",
+    "max_length": 1024,
+    "strategy": "LongestFirst",
+    "stride": 0
+  },
+  "family_b_serialized_truncation": null,
+  "inactive_difference_interpretation": {
+    "pad_token": "historical A0 maps missing pad token to EOS before controlled encoding",
+    "serialized_truncation": "historical A0 supplies explicit truncation=True and per-span max_length"
+  },
+  "merge_count_a": 50009,
+  "merge_count_b": 50009,
+  "merge_diff_count": 0,
+  "special_tokens_map_diff_keys": [
+    "pad_token"
+  ],
+  "tokenizer_config_diff_keys": [
+    "pad_token"
+  ],
+  "vocab_diff_count": 0,
+  "vocab_size_a": 50254,
+  "vocab_size_b": 50254
+}

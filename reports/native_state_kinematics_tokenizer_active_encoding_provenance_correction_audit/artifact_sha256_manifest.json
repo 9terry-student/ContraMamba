@@ -1,0 +1,10 @@
+{
+  "artifacts": {
+    "dynamic_conformance_summary.json": "511ef7a94cba5281c162477581f6040b14353c0cd5c5f3b4ba78536dbd509657",
+    "mismatch_manifest.json": "c8b5379f8a90070f7aad9f7af9b1a7026c970adecb214bdabf1e317308422385",
+    "static_active_component_comparison.json": "b312d1bc7461e8e12ea4e4e7c543d813a781f52101b6583ea8354a732f973e04",
+    "tokenizer_family_identity_manifest.json": "34fd4ea20f10a4d16edf38ac9db155c888f38a12b69a96f98f88e109511568d6",
+    "tokenizer_provenance_correction_validation_report_candidate.md": "fc55198b7a61e5114bbfb3353599c2483af145d5420e2049a1ce0036219c3930"
+  },
+  "authority_commit": "daa5d479f1a040cac308358db711871b0af27020"
+}
