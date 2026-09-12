@@ -4,6 +4,8 @@ Scientific scope:
 - frozen active token IDs only; no tokenizer invocation,
 - per-role matched-vs-swapped first token difference is the anchor,
 - common full-population window k=-1..+6,
+- each matched/swapped pair is prefix-truncated through k=+6,
+- matched/swapped effective execution lengths are therefore equal,
 - layer 23 S_prev/G/W/S_post exact SHA256 comparison,
 - no logits, no heads, no geometry, no training, no intervention.
 
@@ -541,6 +543,8 @@ def comparison_rows_for_pair(
         "swapped_length": int(plan_row["swapped_length"]),
         "divergence_anchor_token_index": anchor,
         "common_post_horizon": int(plan_row["common_post_horizon"]),
+        "effective_execution_length": anchor + POST_HORIZON + 1,
+        "execution_protocol": "EQUAL_LENGTH_PREFIX_TRUNCATED_THROUGH_K_PLUS_6",
         "first_state_hash_difference_relative_coordinate": first_state_difference,
         "first_state_hash_difference_fields": first_difference_fields,
         "state_hash_identity_through_k_plus_6": first_state_difference is None,
@@ -621,6 +625,9 @@ def make_scientific_summary(
         "comparison_row_count": len(comparison_rows),
         "primary_layer": PRIMARY_LAYER,
         "relative_coordinates": list(RELATIVE_COORDINATES),
+        "execution_protocol": "EQUAL_LENGTH_PREFIX_TRUNCATED_THROUGH_K_PLUS_6",
+        "future_suffix_executed": False,
+        "matched_swapped_effective_length_equal": True,
         "tokenizer_invoked": False,
         "logits_read": False,
         "task_heads_executed": False,
@@ -707,12 +714,34 @@ def scientific_execute(
     forward_count = 0
 
     for n, row in enumerate(plan, start=1):
+        # Equal-length causal replay through the final audited coordinate.
+        # This removes full-sequence-length / future-suffix execution-path
+        # differences while preserving every token needed for k=-1..+6.
+        cutoff = int(row["anchor"]) + POST_HORIZON + 1
+        matched_prefix = tuple(row["matched_ids"][:cutoff])
+        swapped_prefix = tuple(row["swapped_ids"][:cutoff])
+
+        require(
+            len(matched_prefix) == cutoff
+            and len(swapped_prefix) == cutoff,
+            f"PREFIX_TRUNCATION_LENGTH_FAILURE:{row['local_template_index']}:{row['role']}",
+        )
+        require(
+            len(matched_prefix) == len(swapped_prefix),
+            f"EFFECTIVE_LENGTH_MISMATCH:{row['local_template_index']}:{row['role']}",
+        )
+        require(
+            matched_prefix[: int(row["anchor"])]
+            == swapped_prefix[: int(row["anchor"])],
+            f"PREANCHOR_PREFIX_MISMATCH:{row['local_template_index']}:{row['role']}",
+        )
+
         matched_hashes = capture_branch_hashes(
             observer,
             model,
             layer_map,
             binding,
-            row["matched_ids"],
+            matched_prefix,
             row["targets"],
         )
         forward_count += 1
@@ -722,7 +751,7 @@ def scientific_execute(
             model,
             layer_map,
             binding,
-            row["swapped_ids"],
+            swapped_prefix,
             row["targets"],
         )
         forward_count += 1
@@ -788,6 +817,9 @@ def scientific_execute(
         "item_count": EXPECTED_ITEM_COUNT,
         "pair_role_count": EXPECTED_ITEM_COUNT * 2,
         "model_forward_count": forward_count,
+        "execution_protocol": "EQUAL_LENGTH_PREFIX_TRUNCATED_THROUGH_K_PLUS_6",
+        "future_suffix_executed": False,
+        "matched_swapped_effective_length_equal": True,
         "scientific_model_forward_executed": True,
         "scientific_recurrent_state_read": True,
         "tokenizer_invoked": False,
