@@ -3,9 +3,14 @@ from __future__ import annotations
 import argparse
 import json
 import subprocess
+import sys
 from collections import defaultdict
 from pathlib import Path
 from typing import Any, Callable, Iterable, Mapping, Sequence
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from scripts.build_controlled_v5 import (
     _statement as _frozen_statement_renderer,
@@ -13,7 +18,6 @@ from scripts.build_controlled_v5 import (
 )
 
 
-ROOT = Path(__file__).resolve().parents[1]
 GENERATOR_PATH = "scripts/build_controlled_v5.py"
 
 SCHEMA_VERSION = "GEN4_SIX_CELL_MASKED_SLOT_SUBSTITUTION_V1"

@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import copy
 import json
+import subprocess
+import sys
 from collections import OrderedDict
+from pathlib import Path
 
 import pytest
 
@@ -21,6 +24,14 @@ from scripts.materialize_reason_router_gen4_six_cell_contrast import (
     materialize_jsonl,
     serialize_materialized_rows,
     validate_materialized_rows,
+)
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+MATERIALIZER_PATH = (
+    REPO_ROOT
+    / "scripts"
+    / "materialize_reason_router_gen4_six_cell_contrast.py"
 )
 
 
@@ -326,3 +337,21 @@ def test_rendered_text_does_not_define_structural_identity():
 def test_unknown_cell_has_no_structural_spec():
     with pytest.raises(MaterializationError, match="unknown contrast cell"):
         cell_spec("C6_UNKNOWN")
+
+def test_direct_file_help_entrypoint_succeeds_without_materialization():
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(MATERIALIZER_PATH),
+            "--help",
+        ],
+        cwd=REPO_ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "--num-pairs" in result.stdout
+    assert "--output" in result.stdout
