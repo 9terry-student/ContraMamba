@@ -30,7 +30,8 @@ from typing import Any, Iterable, Mapping, Sequence
 # Frozen authority / scope
 # ---------------------------------------------------------------------------
 
-AUTHORITY_COMMIT = "c2b1990b649701cbf5ec71a360f03b4b7ff27465"
+AUTHORITY_COMMIT = "d8d717a09516b8562f64f7c503d4bbdcc9c34c5d"
+R2_AUTHORITY_REL = "reports/longterm_k0_rvg_p1e_r2_numerical_guard_correction_authority_spec_candidate.md"
 P0_ARCHIVE_COMMIT = "265d060e96f98f73e4a40a9c54a88c3de482a312"
 P0_IMPLEMENTATION_COMMIT = "421d79815045938ea45ddcbc37a870a14218d133"
 PARENT_PREREG_COMMIT = "cdad87acf664cd61e48406f9d4568b6ab206da24"
@@ -44,7 +45,9 @@ HISTORICAL_K1_UNTRACKED = {
     "scripts/longterm_k1_native_state_kinematics.py",
     "tests/test_longterm_k1_native_state_kinematics.py",
 }
-IMPLEMENTATION_UNTRACKED = {RUNNER_REL, TEST_REL}
+OBSERVER_REL = "scripts/longterm_k0_rvg_raw_recurrence_observer.py"
+OBSERVER_TEST_REL = "tests/test_longterm_k0_rvg_raw_recurrence_observer.py"
+R2_IMPLEMENTATION_FILES = {OBSERVER_REL, OBSERVER_TEST_REL, RUNNER_REL, TEST_REL}
 
 
 # ---------------------------------------------------------------------------
@@ -74,10 +77,6 @@ P0_MIN_AVAILABILITY = 20
 # Frozen observer / historical runtime bridge
 # ---------------------------------------------------------------------------
 
-OBSERVER_REL = "scripts/longterm_k0_rvg_raw_recurrence_observer.py"
-OBSERVER_SHA256 = "12542e32d49b368e727de782b0cb833991464503b1fab56d375f15ec58649c25"
-OBSERVER_GIT_BLOB = "f2dbdfe52661eca384897578ab272e602e36deac"
-OBSERVER_COMMIT = "fcfe161c12f4ed8ef37aff435554cc0660e477af"
 
 A0_COMMIT = "55debe94f0d19d16a334395e8561901fed6b52fa"
 A0_MODEL_REL = "src/contramamba/modeling_v6b_minimal.py"
@@ -201,13 +200,15 @@ def repo_contract(root: Path) -> dict[str, Any]:
         cwd=root,
         text=True,
     ).splitlines()
-    allowed = HISTORICAL_K1_UNTRACKED | IMPLEMENTATION_UNTRACKED
     for line in status:
         path = line[3:].replace("\\", "/") if len(line) >= 4 else ""
-        require(
-            line[:2] == "??" and path in allowed,
-            "GIT_DIRTY_CONTRACT_MISMATCH",
-        )
+        if path in HISTORICAL_K1_UNTRACKED:
+            require(line[:2] == "??", "GIT_DIRTY_CONTRACT_MISMATCH")
+            continue
+        if path in R2_IMPLEMENTATION_FILES:
+            require(line[:2] == " M", "GIT_DIRTY_CONTRACT_MISMATCH")
+            continue
+        raise ContractError("GIT_DIRTY_CONTRACT_MISMATCH")
 
     return {
         "runtime_branch": branch,
@@ -220,15 +221,12 @@ def repo_contract(root: Path) -> dict[str, Any]:
 
 def authenticate_code_dependencies(root: Path) -> dict[str, Any]:
     observer = root / OBSERVER_REL
+    observer_test = root / OBSERVER_TEST_REL
     helper = root / K2S_REL
     require(observer.is_file(), "OBSERVER_MISSING")
+    require(observer_test.is_file(), "OBSERVER_TEST_MISSING")
     require(helper.is_file(), "K2S_HELPER_MISSING")
-    require(file_sha256(observer) == OBSERVER_SHA256, "OBSERVER_SHA256_MISMATCH")
     require(file_sha256(helper) == K2S_SHA256, "K2S_SHA256_MISMATCH")
-    require(
-        _git(root, "rev-parse", f"HEAD:{OBSERVER_REL}") == OBSERVER_GIT_BLOB,
-        "OBSERVER_GIT_BLOB_MISMATCH",
-    )
     require(
         _git(root, "rev-parse", f"HEAD:{K2S_REL}") == K2S_GIT_BLOB,
         "K2S_GIT_BLOB_MISMATCH",
@@ -245,9 +243,9 @@ def authenticate_code_dependencies(root: Path) -> dict[str, Any]:
     require(current_heads_tree == A0_HEADS_TREE_SHA, "A0_HEADS_SOURCE_DRIFT")
 
     return {
-        "observer_sha256": OBSERVER_SHA256,
-        "observer_git_blob": OBSERVER_GIT_BLOB,
-        "observer_commit": OBSERVER_COMMIT,
+        "observer_sha256": file_sha256(observer),
+        "observer_test_sha256": file_sha256(observer_test),
+        "r2_correction_authority_commit": AUTHORITY_COMMIT,
         "k2s_helper_sha256": K2S_SHA256,
         "k2s_helper_git_blob": K2S_GIT_BLOB,
         "a0_commit": A0_COMMIT,
@@ -931,13 +929,15 @@ def validate_p1_implementation_commit(
         if line
     )
     require(
-        changed == sorted([RUNNER_REL, TEST_REL]),
+        changed == sorted(R2_IMPLEMENTATION_FILES),
         "P1_IMPLEMENTATION_SCOPE_MISMATCH",
     )
 
     return {
+        "observer_blob": _git(root, "rev-parse", f"{implementation_commit}:{OBSERVER_REL}"),
+        "observer_test_blob": _git(root, "rev-parse", f"{implementation_commit}:{OBSERVER_TEST_REL}"),
         "runner_blob": _git(root, "rev-parse", f"{implementation_commit}:{RUNNER_REL}"),
-        "test_blob": _git(root, "rev-parse", f"{implementation_commit}:{TEST_REL}"),
+        "runner_test_blob": _git(root, "rev-parse", f"{implementation_commit}:{TEST_REL}"),
     }
 
 
@@ -1006,17 +1006,30 @@ def authenticate_execution_authority(
     )
     require(ancestor == 0, "P1_IMPLEMENTATION_NOT_ANCESTOR")
 
-    runner_sha = file_sha256(root / RUNNER_REL)
-    test_sha = file_sha256(root / TEST_REL)
-    require(markers.get("P1_RUNNER_SHA256") == runner_sha, "EXECUTION_AUTHORITY_RUNNER_SHA_MISMATCH")
-    require(markers.get("P1_TEST_SHA256") == test_sha, "EXECUTION_AUTHORITY_TEST_SHA_MISMATCH")
+    implementation_sha_markers = {
+        "P1_OBSERVER_SHA256": file_sha256(root / OBSERVER_REL),
+        "P1_OBSERVER_TEST_SHA256": file_sha256(root / OBSERVER_TEST_REL),
+        "P1_RUNNER_SHA256": file_sha256(root / RUNNER_REL),
+        "P1_RUNNER_TEST_SHA256": file_sha256(root / TEST_REL),
+        "R2_CORRECTION_AUTHORITY_SHA256": sha256_bytes(
+            _git_bytes(root, f"{AUTHORITY_COMMIT}:{R2_AUTHORITY_REL}")
+        ),
+    }
+    for key, value in implementation_sha_markers.items():
+        require(markers.get(key) == value, f"EXECUTION_AUTHORITY_HASH_MISMATCH:{key}")
 
-    runner_blob_impl = implementation_blobs["runner_blob"]
-    test_blob_impl = implementation_blobs["test_blob"]
-    runner_blob_head = _git(root, "rev-parse", f"HEAD:{RUNNER_REL}")
-    test_blob_head = _git(root, "rev-parse", f"HEAD:{TEST_REL}")
-    require(runner_blob_impl == runner_blob_head, "P1_RUNNER_BLOB_DRIFT_AFTER_IMPLEMENTATION")
-    require(test_blob_impl == test_blob_head, "P1_TEST_BLOB_DRIFT_AFTER_IMPLEMENTATION")
+    implementation_blob_paths = {
+        "observer_blob": OBSERVER_REL,
+        "observer_test_blob": OBSERVER_TEST_REL,
+        "runner_blob": RUNNER_REL,
+        "runner_test_blob": TEST_REL,
+    }
+    for blob_key, relpath in implementation_blob_paths.items():
+        head_blob = _git(root, "rev-parse", f"HEAD:{relpath}")
+        require(
+            implementation_blobs[blob_key] == head_blob,
+            f"P1_IMPLEMENTATION_BLOB_DRIFT_AFTER_IMPLEMENTATION:{relpath}",
+        )
 
     expected_authority_hash_markers = {
         "P0_CANDIDATE_POOL_SHA256": P0_ARTIFACT_SHA256["candidate_pool.jsonl"],
@@ -1025,7 +1038,6 @@ def authenticate_execution_authority(
         "P0_TOKEN_CONTRACTS_SHA256": P0_ARTIFACT_SHA256["token_contracts.jsonl"],
         "P0_PROVISIONING_MANIFEST_SHA256": P0_ARTIFACT_SHA256["provisioning_manifest.json"],
         "P0_VALIDATION_REPORT_SHA256": P0_ARTIFACT_SHA256["validation_report_candidate.md"],
-        "OBSERVER_SHA256": OBSERVER_SHA256,
     }
     for key, value in expected_authority_hash_markers.items():
         require(markers.get(key) == value, f"EXECUTION_AUTHORITY_HASH_MISMATCH:{key}")
@@ -1062,21 +1074,75 @@ def authenticate_execution_authority(
 
 @dataclass
 class AuditAccumulator:
-    recurrence_count: int = 0
+    exact_recurrence_accepted_count: int = 0
+    diagnostic_pass_count: int = 0
+    diagnostic_exceedance_count: int = 0
     max_abs_residual: float = 0.0
     max_relative_residual: float = 0.0
     max_scaled_tolerance_residual: float = 0.0
     incoming_common_state_comparisons: int = 0
     incoming_common_state_failures: int = 0
 
+    @property
+    def recurrence_count(self) -> int:
+        return self.exact_recurrence_accepted_count
+
     def add_recurrence(self, result: Mapping[str, Any]) -> None:
-        self.recurrence_count += 1
+        require(result.get("recurrence_exact") == "PASS_EXACT", "AUDIT_RECURRENCE_NOT_EXACT")
+        status = result.get("velocity_rearrangement")
+        allclose = result.get("velocity_rearrangement_allclose")
+        require(
+            status in {"PASS_TOLERANCE", "DIAGNOSTIC_TOLERANCE_EXCEEDED"},
+            "AUDIT_UNKNOWN_REARRANGEMENT_STATUS",
+        )
+        require(type(allclose) is bool, "AUDIT_REARRANGEMENT_ALLCLOSE_NOT_BOOL")
+        require(
+            allclose == (status == "PASS_TOLERANCE"),
+            "AUDIT_REARRANGEMENT_STATUS_BOOLEAN_MISMATCH",
+        )
+        self.exact_recurrence_accepted_count += 1
+        if status == "PASS_TOLERANCE":
+            self.diagnostic_pass_count += 1
+        else:
+            self.diagnostic_exceedance_count += 1
+        require(
+            self.diagnostic_pass_count + self.diagnostic_exceedance_count
+            == self.exact_recurrence_accepted_count,
+            "AUDIT_REARRANGEMENT_COUNT_INVARIANT_FAILURE",
+        )
         self.max_abs_residual = max(self.max_abs_residual, float(result["max_abs_residual"]))
         self.max_relative_residual = max(self.max_relative_residual, float(result["max_relative_residual"]))
         self.max_scaled_tolerance_residual = max(
             self.max_scaled_tolerance_residual,
             float(result["max_scaled_tolerance_residual"]),
         )
+
+
+def build_recurrence_audit(audit: AuditAccumulator, observer: Any) -> dict[str, Any]:
+    require(
+        audit.diagnostic_pass_count + audit.diagnostic_exceedance_count
+        == audit.exact_recurrence_accepted_count,
+        "AUDIT_REARRANGEMENT_COUNT_INVARIANT_FAILURE",
+    )
+    return {
+        "schema_version": "k0-rvg-p1-recurrence-audit-v2",
+        "layer": PRIMARY_LAYER,
+        "tensor_shape": list(EXPECTED_STATE_SHAPE),
+        "dtype": EXPECTED_DTYPE,
+        "device": EXPECTED_DEVICE,
+        "hard_integrity_gate": "EXACT_NATIVE_RECURRENCE",
+        "rearrangement_blocking": False,
+        "exact_recurrence_accepted_count": audit.exact_recurrence_accepted_count,
+        "rearrangement_diagnostic_pass_count": audit.diagnostic_pass_count,
+        "rearrangement_diagnostic_exceedance_count": audit.diagnostic_exceedance_count,
+        "velocity_atol": observer.VELOCITY_ATOL,
+        "velocity_rtol": observer.VELOCITY_RTOL,
+        "max_velocity_abs_residual": audit.max_abs_residual,
+        "max_velocity_relative_frobenius_residual": audit.max_relative_residual,
+        "max_velocity_scaled_tolerance_residual": audit.max_scaled_tolerance_residual,
+        "incoming_common_state_comparison_count": audit.incoming_common_state_comparisons,
+        "incoming_common_state_comparison_failures": audit.incoming_common_state_failures,
+    }
 
 
 def validate_layer23_record(observer: Any, record: Any, audit: AuditAccumulator) -> None:
@@ -1086,7 +1152,11 @@ def validate_layer23_record(observer: Any, record: Any, audit: AuditAccumulator)
     require(record.s_prev_meta.device == EXPECTED_DEVICE, "PRIMARY_STATE_DEVICE_MISMATCH")
     result = observer.validate_recurrence_record(record)
     require(result["recurrence_exact"] == "PASS_EXACT", "PRIMARY_RECURRENCE_NOT_EXACT")
-    require(result["velocity_rearrangement"] == "PASS_TOLERANCE", "PRIMARY_VELOCITY_REARRANGEMENT_FAIL")
+    require(
+        result.get("velocity_rearrangement")
+        in {"PASS_TOLERANCE", "DIAGNOSTIC_TOLERANCE_EXCEEDED"},
+        "PRIMARY_VELOCITY_REARRANGEMENT_STATUS_UNKNOWN",
+    )
     audit.add_recurrence(result)
 
 
@@ -1173,8 +1243,8 @@ def run_pair(
 
 def validate_runtime_and_build_model(root: Path, handoff_path: Path):
     observer, k2s = import_observer_and_k2s(root)
-    require(file_sha256(root / OBSERVER_REL) == OBSERVER_SHA256, "OBSERVER_RUNTIME_SHA_MISMATCH")
     require(file_sha256(root / K2S_REL) == K2S_SHA256, "K2S_RUNTIME_SHA_MISMATCH")
+    require(observer.AUTHORITY_COMMIT == AUTHORITY_COMMIT, "OBSERVER_R2_AUTHORITY_MISMATCH")
 
     handoff = k2s.audit_handoff(handoff_path)
     checkpoint = k2s.load_authenticated_checkpoint(handoff)
@@ -1377,6 +1447,9 @@ def run_synthetic_preflight(root: Path, handoff_path: Path) -> dict[str, Any]:
             "synthetic_item_count": 2,
             "synthetic_branch_forward_count": 2 * 4 + 4,
             "layer23_recurrence_checks": audit.recurrence_count,
+            "rearrangement_diagnostic_pass_count": audit.diagnostic_pass_count,
+            "rearrangement_diagnostic_exceedance_count": audit.diagnostic_exceedance_count,
+            "rearrangement_blocking": False,
             "incoming_common_state_comparisons": audit.incoming_common_state_comparisons,
             "incoming_common_state_failures": audit.incoming_common_state_failures,
             "state_hash_rows": len(state_hash_rows),
@@ -1447,19 +1520,21 @@ def build_execution_manifest(
     result_hashes: Mapping[str, str],
 ) -> dict[str, Any]:
     return {
-        "schema_version": "k0-rvg-p1-execution-manifest-v1",
+        "schema_version": "k0-rvg-p1-execution-manifest-v2",
         "runtime_git_head": _git(root, "rev-parse", "HEAD"),
         "p1_implementation_authority_commit": AUTHORITY_COMMIT,
+        "r2_correction_authority_sha256": sha256_bytes(
+            _git_bytes(root, f"{AUTHORITY_COMMIT}:{R2_AUTHORITY_REL}")
+        ),
         "scientific_execution_authority_path": authority.path,
         "scientific_execution_authority_commit": authority.commit,
         "scientific_execution_authority_git_blob": authority.git_blob,
         "p1_implementation_commit": authority.implementation_commit,
-        "p1_runner_sha256": file_sha256(root / RUNNER_REL),
-        "p1_test_sha256": file_sha256(root / TEST_REL),
-        "validated_observer": {
-            "commit": OBSERVER_COMMIT,
-            "sha256": OBSERVER_SHA256,
-            "git_blob": OBSERVER_GIT_BLOB,
+        "corrected_implementation": {
+            "observer_sha256": file_sha256(root / OBSERVER_REL),
+            "observer_test_sha256": file_sha256(root / OBSERVER_TEST_REL),
+            "runner_sha256": file_sha256(root / RUNNER_REL),
+            "runner_test_sha256": file_sha256(root / TEST_REL),
         },
         "k2s_helper": {
             "sha256": K2S_SHA256,
@@ -1575,20 +1650,7 @@ def execute_scientific(
     block_rows = aggregate_blocks(item_rows, archive.mapping)
     endpoint = summarize_endpoints(block_rows)
 
-    recurrence_audit = {
-        "schema_version": "k0-rvg-p1-recurrence-audit-v1",
-        "layer": PRIMARY_LAYER,
-        "tensor_shape": list(EXPECTED_STATE_SHAPE),
-        "dtype": EXPECTED_DTYPE,
-        "device": EXPECTED_DEVICE,
-        "total_layer23_recurrence_records_validated": audit.recurrence_count,
-        "exact_recurrence_pass_count": audit.recurrence_count,
-        "max_velocity_abs_residual": audit.max_abs_residual,
-        "max_velocity_relative_frobenius_residual": audit.max_relative_residual,
-        "max_velocity_scaled_tolerance_residual": audit.max_scaled_tolerance_residual,
-        "incoming_common_state_comparison_count": audit.incoming_common_state_comparisons,
-        "incoming_common_state_comparison_failures": audit.incoming_common_state_failures,
-    }
+    recurrence_audit = build_recurrence_audit(audit, observer)
 
     artifacts = {
         "item_metrics.jsonl": canonical_jsonl_bytes(item_rows),

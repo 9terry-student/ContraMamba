@@ -24,7 +24,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
-AUTHORITY_COMMIT = "41dbeae22a3831300f0de2f1f44a4b49733d70a5"
+AUTHORITY_COMMIT = "d8d717a09516b8562f64f7c503d4bbdcc9c34c5d"
 PARENT_STATIC_COMMIT = "e048e83083da105ee44ef53e9e32193591c79a90"
 A0_COMMIT = "55debe94f0d19d16a334395e8561901fed6b52fa"
 A0_MODEL_REL = "src/contramamba/modeling_v6b_minimal.py"
@@ -71,7 +71,9 @@ HISTORICAL_K1_UNTRACKED = {
     "scripts/longterm_k1_native_state_kinematics.py",
     "tests/test_longterm_k1_native_state_kinematics.py",
 }
-IMPLEMENTATION_UNTRACKED = {OBSERVER_REL, TEST_REL}
+RUNNER_REL = "scripts/longterm_k0_rvg_p1_raw_vector_execution.py"
+RUNNER_TEST_REL = "tests/test_longterm_k0_rvg_p1_raw_vector_execution.py"
+R2_IMPLEMENTATION_FILES = {OBSERVER_REL, TEST_REL, RUNNER_REL, RUNNER_TEST_REL}
 
 
 class ContractError(RuntimeError):
@@ -511,7 +513,7 @@ def _validate_record_metadata(
     )
 
 
-def validate_recurrence_record(record: RecurrenceRecord) -> dict[str, float | str]:
+def validate_recurrence_record(record: RecurrenceRecord) -> dict[str, float | str | bool]:
     import torch
 
     _validate_record_metadata(record)
@@ -529,18 +531,23 @@ def validate_recurrence_record(record: RecurrenceRecord) -> dict[str, float | st
     relative_frobenius = diff_norm / max(raw_norm, 1e-12)
     tolerance_scale = VELOCITY_ATOL + VELOCITY_RTOL * rearranged.abs()
     max_scaled = float((diff / tolerance_scale).max().item()) if diff.numel() else 0.0
-    require(
+    rearrangement_allclose = bool(
         torch.allclose(
             v_raw,
             rearranged,
             atol=VELOCITY_ATOL,
             rtol=VELOCITY_RTOL,
-        ),
-        "VELOCITY_REARRANGEMENT_TOLERANCE_FAILURE",
+        )
+    )
+    rearrangement_status = (
+        "PASS_TOLERANCE"
+        if rearrangement_allclose
+        else "DIAGNOSTIC_TOLERANCE_EXCEEDED"
     )
     return {
         "recurrence_exact": "PASS_EXACT",
-        "velocity_rearrangement": "PASS_TOLERANCE",
+        "velocity_rearrangement": rearrangement_status,
+        "velocity_rearrangement_allclose": rearrangement_allclose,
         "velocity_atol": VELOCITY_ATOL,
         "velocity_rtol": VELOCITY_RTOL,
         "max_abs_residual": max_abs,
@@ -584,10 +591,15 @@ def _repo_contract(root: Path) -> dict[str, Any]:
     status = subprocess.check_output(
         ["git", "status", "--porcelain=v1"], cwd=root, text=True
     ).splitlines()
-    allowed = HISTORICAL_K1_UNTRACKED | IMPLEMENTATION_UNTRACKED
     for line in status:
         path = line[3:].replace("\\", "/") if len(line) >= 4 else ""
-        require(line[:2] == "??" and path in allowed, "GIT_DIRTY_CONTRACT_MISMATCH")
+        if path in HISTORICAL_K1_UNTRACKED:
+            require(line[:2] == "??", "GIT_DIRTY_CONTRACT_MISMATCH")
+            continue
+        if path in R2_IMPLEMENTATION_FILES:
+            require(line[:2] == " M", "GIT_DIRTY_CONTRACT_MISMATCH")
+            continue
+        raise ContractError("GIT_DIRTY_CONTRACT_MISMATCH")
 
     helper = root / K2S_REL
     require(helper.is_file(), "K2S_HELPER_MISSING")
@@ -710,14 +722,27 @@ def run_synthetic_preflight(root: Path, handoff_path: Path, hf_revision: str) ->
     max_abs = 0.0
     max_rel = 0.0
     max_scaled = 0.0
+    diagnostic_pass_count = 0
+    diagnostic_exceedance_count = 0
     for record in collector.records.values():
         result = validate_recurrence_record(record)
+        status = result["velocity_rearrangement"]
+        if status == "PASS_TOLERANCE":
+            diagnostic_pass_count += 1
+        elif status == "DIAGNOSTIC_TOLERANCE_EXCEEDED":
+            diagnostic_exceedance_count += 1
+        else:
+            raise ContractError("UNKNOWN_VELOCITY_REARRANGEMENT_STATUS")
         max_abs = max(max_abs, float(result["max_abs_residual"]))
         max_rel = max(max_rel, float(result["max_relative_residual"]))
         max_scaled = max(
             max_scaled,
             float(result["max_scaled_tolerance_residual"]),
         )
+    require(
+        diagnostic_pass_count + diagnostic_exceedance_count == len(collector.records),
+        "VELOCITY_DIAGNOSTIC_ACCOUNTING_MISMATCH",
+    )
 
     fresh = RawRecurrenceCollector(binding, layer_map, target_all)
     with fresh.capture():
@@ -808,7 +833,9 @@ def run_synthetic_preflight(root: Path, handoff_path: Path, hf_revision: str) ->
             "tensor_shape_dtype_finite": "PASS",
             "snapshot_nonaliasing": "PASS",
             "recurrence_reconstruction": "PASS_EXACT",
-            "velocity_rearrangement": "PASS_TOLERANCE",
+            "velocity_rearrangement_blocking": False,
+            "velocity_rearrangement_diagnostic_pass_count": diagnostic_pass_count,
+            "velocity_rearrangement_diagnostic_exceedance_count": diagnostic_exceedance_count,
             "velocity_atol": VELOCITY_ATOL,
             "velocity_rtol": VELOCITY_RTOL,
             "velocity_max_abs_residual": max_abs,

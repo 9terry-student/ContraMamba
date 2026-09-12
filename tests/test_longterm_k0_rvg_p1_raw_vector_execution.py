@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import importlib.util
 import json
 import math
@@ -20,7 +21,7 @@ spec.loader.exec_module(m)
 
 
 def test_authority_and_scope_constants():
-    assert m.AUTHORITY_COMMIT == "c2b1990b649701cbf5ec71a360f03b4b7ff27465"
+    assert m.AUTHORITY_COMMIT == "d8d717a09516b8562f64f7c503d4bbdcc9c34c5d"
     assert m.RUNNER_REL == "scripts/longterm_k0_rvg_p1_raw_vector_execution.py"
     assert m.TEST_REL == "tests/test_longterm_k0_rvg_p1_raw_vector_execution.py"
     assert m.PRIMARY_LAYER == 23
@@ -41,8 +42,9 @@ def test_p0_six_file_sha_binding():
 
 
 def test_observer_and_k2s_binding_constants():
-    assert m.OBSERVER_SHA256 == "12542e32d49b368e727de782b0cb833991464503b1fab56d375f15ec58649c25"
-    assert m.OBSERVER_GIT_BLOB == "f2dbdfe52661eca384897578ab272e602e36deac"
+    assert m.OBSERVER_REL == "scripts/longterm_k0_rvg_raw_recurrence_observer.py"
+    assert m.OBSERVER_TEST_REL == "tests/test_longterm_k0_rvg_raw_recurrence_observer.py"
+    assert m.R2_IMPLEMENTATION_FILES == {m.OBSERVER_REL, m.OBSERVER_TEST_REL, m.RUNNER_REL, m.TEST_REL}
     assert m.K2S_SHA256 == "f741780e7199452e64b7c4a3d70f50f3e55ebc84296f69f288aa317582de84b8"
     assert m.K2S_GIT_BLOB == "3a651fb508669bdcf72441a4869b863d6eee6c1f"
     assert m.A0_COMMIT == "55debe94f0d19d16a334395e8561901fed6b52fa"
@@ -351,16 +353,26 @@ def test_validate_p1_implementation_commit_exact_parent_and_scope(monkeypatch):
         if args == (
             "diff-tree", "--no-commit-id", "--name-only", "-r", implementation
         ):
-            return m.RUNNER_REL + "\n" + m.TEST_REL
-        if args == ("rev-parse", f"{implementation}:{m.RUNNER_REL}"):
-            return "2" * 40
-        if args == ("rev-parse", f"{implementation}:{m.TEST_REL}"):
-            return "3" * 40
+            return "\n".join(sorted(m.R2_IMPLEMENTATION_FILES))
+        blobs = {
+            m.OBSERVER_REL: "2" * 40,
+            m.OBSERVER_TEST_REL: "3" * 40,
+            m.RUNNER_REL: "4" * 40,
+            m.TEST_REL: "5" * 40,
+        }
+        for relpath, blob in blobs.items():
+            if args == ("rev-parse", f"{implementation}:{relpath}"):
+                return blob
         raise AssertionError(args)
 
     monkeypatch.setattr(m, "_git", fake_git)
     got = m.validate_p1_implementation_commit(ROOT, implementation)
-    assert got == {"runner_blob": "2" * 40, "test_blob": "3" * 40}
+    assert got == {
+        "observer_blob": "2" * 40,
+        "observer_test_blob": "3" * 40,
+        "runner_blob": "4" * 40,
+        "runner_test_blob": "5" * 40,
+    }
 
 
 def test_validate_p1_implementation_commit_rejects_wrong_parent(monkeypatch):
@@ -473,7 +485,11 @@ def test_execution_manifest_binds_authority_blob_and_a0(monkeypatch):
         {"canonical_digest": "e", "raw_concat_digest": "r"},
         {},
     )
+    assert manifest["schema_version"] == "k0-rvg-p1-execution-manifest-v2"
     assert manifest["scientific_execution_authority_git_blob"] == "d" * 40
+    assert set(manifest["corrected_implementation"]) == {
+        "observer_sha256", "observer_test_sha256", "runner_sha256", "runner_test_sha256"
+    }
     assert manifest["a0_runtime_contract"] == {
         "commit": m.A0_COMMIT,
         "model_blob_sha": m.A0_MODEL_BLOB_SHA,
@@ -591,3 +607,274 @@ def test_state_hash_deterministic():
     torch = pytest.importorskip("torch")
     x = torch.arange(8, dtype=torch.float32).reshape(1, 2, 4)
     assert m.tensor_sha256(x) == m.tensor_sha256(x.clone())
+
+
+def _load_r2_observer():
+    path = ROOT / m.OBSERVER_REL
+    spec = importlib.util.spec_from_file_location("k0_rvg_r2_observer_test", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def _layer23_cancellation_record(observer):
+    torch = pytest.importorskip("torch")
+    s_prev = torch.zeros(m.EXPECTED_STATE_SHAPE, dtype=torch.float32)
+    g = torch.ones(m.EXPECTED_STATE_SHAPE, dtype=torch.float32)
+    w = torch.zeros(m.EXPECTED_STATE_SHAPE, dtype=torch.float32)
+    s_prev[0, 0, 0] = 1540996.125
+    g[0, 0, 0] = 0.9999
+    w[0, 0, 0] = -71.9258
+    s_post = g * s_prev + w
+    meta = observer.TensorMeta(m.EXPECTED_STATE_SHAPE, m.EXPECTED_DTYPE, m.EXPECTED_DEVICE)
+    return observer.RecurrenceRecord(
+        layer_index=m.PRIMARY_LAYER,
+        token_index=0,
+        s_prev=s_prev,
+        g=g,
+        w=w,
+        s_post=s_post,
+        s_prev_meta=meta,
+        g_meta=meta,
+        w_meta=meta,
+        s_post_meta=meta,
+    )
+
+
+def test_layer23_accepts_exact_recurrence_diagnostic_exceedance_and_counts_it():
+    observer = _load_r2_observer()
+    record = _layer23_cancellation_record(observer)
+    result = observer.validate_recurrence_record(record)
+    assert result["recurrence_exact"] == "PASS_EXACT"
+    assert result["velocity_rearrangement"] == "DIAGNOSTIC_TOLERANCE_EXCEEDED"
+    assert result["velocity_rearrangement_allclose"] is False
+
+    audit = m.AuditAccumulator()
+    m.validate_layer23_record(observer, record, audit)
+    assert audit.exact_recurrence_accepted_count == 1
+    assert audit.diagnostic_pass_count == 0
+    assert audit.diagnostic_exceedance_count == 1
+    assert audit.recurrence_count == 1
+
+    report = m.build_recurrence_audit(audit, observer)
+    assert report["schema_version"] == "k0-rvg-p1-recurrence-audit-v2"
+    assert report["hard_integrity_gate"] == "EXACT_NATIVE_RECURRENCE"
+    assert report["rearrangement_blocking"] is False
+    assert report["exact_recurrence_accepted_count"] == 1
+    assert report["rearrangement_diagnostic_pass_count"] == 0
+    assert report["rearrangement_diagnostic_exceedance_count"] == 1
+    assert report["velocity_atol"] == 1e-6
+    assert report["velocity_rtol"] == 1e-5
+
+
+def test_layer23_exact_recurrence_failure_still_blocks():
+    observer = _load_r2_observer()
+    record = _layer23_cancellation_record(observer)
+    bad_post = record.s_post.clone()
+    bad_post[0, 0, 0] += 1.0
+    bad = observer.RecurrenceRecord(
+        layer_index=record.layer_index,
+        token_index=record.token_index,
+        s_prev=record.s_prev,
+        g=record.g,
+        w=record.w,
+        s_post=bad_post,
+        s_prev_meta=record.s_prev_meta,
+        g_meta=record.g_meta,
+        w_meta=record.w_meta,
+        s_post_meta=record.s_post_meta,
+    )
+    with pytest.raises(observer.ContractError, match="RECURRENCE_EXACT_RECONSTRUCTION_FAILURE"):
+        m.validate_layer23_record(observer, bad, m.AuditAccumulator())
+
+
+def test_layer23_unknown_rearrangement_status_fails_closed():
+    observer = _load_r2_observer()
+    record = _layer23_cancellation_record(observer)
+
+    class UnknownObserver:
+        @staticmethod
+        def validate_recurrence_record(_record):
+            return {
+                "recurrence_exact": "PASS_EXACT",
+                "velocity_rearrangement": "UNKNOWN",
+                "velocity_rearrangement_allclose": False,
+                "max_abs_residual": 0.0,
+                "max_relative_residual": 0.0,
+                "max_scaled_tolerance_residual": 0.0,
+            }
+
+    with pytest.raises(m.ContractError, match="PRIMARY_VELOCITY_REARRANGEMENT_STATUS_UNKNOWN"):
+        m.validate_layer23_record(UnknownObserver, record, m.AuditAccumulator())
+
+
+def test_r2_protected_scientific_estimand_ast_equivalence():
+    parent = "37d7044b7111d7b02c7a44fdf7d8782c823afa5b"
+    parent_source = m.subprocess.check_output(
+        ["git", "show", f"{parent}:{m.RUNNER_REL}"],
+        cwd=ROOT,
+        text=True,
+    )
+    current_source = SCRIPT.read_text("utf-8")
+
+    protected = {
+        "target_indices",
+        "frobenius_cosine",
+        "common_incoming_state",
+        "compute_pair_metrics",
+        "item_endpoint_metrics",
+        "aggregate_blocks",
+        "exact_two_sided_sign_test",
+        "holm_m2",
+        "endpoint_summary_one",
+        "summarize_endpoints",
+        "reconstruct_branch_texts",
+        "revalidate_token_contract",
+    }
+
+    def function_dumps(source):
+        tree = ast.parse(source)
+        found = {
+            node.name: ast.dump(node, include_attributes=False)
+            for node in tree.body
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+            and node.name in protected
+        }
+        assert set(found) == protected
+        return found
+
+    assert function_dumps(current_source) == function_dumps(parent_source)
+
+def test_r2_diagnostic_exceedance_survives_capture_branch_without_drop(monkeypatch):
+    observer = _load_r2_observer()
+    template = _layer23_cancellation_record(observer)
+
+    class FakeCollector:
+        def __init__(self, binding, layer_map, targets):
+            targets = tuple(targets)
+            self.records = {
+                (layer, token): observer.RecurrenceRecord(
+                    layer_index=layer,
+                    token_index=token,
+                    s_prev=template.s_prev,
+                    g=template.g,
+                    w=template.w,
+                    s_post=template.s_post,
+                    s_prev_meta=template.s_prev_meta,
+                    g_meta=template.g_meta,
+                    w_meta=template.w_meta,
+                    s_post_meta=template.s_post_meta,
+                )
+                for layer in range(m.EXPECTED_LAYER_COUNT)
+                for token in targets
+            }
+
+        def capture(self):
+            return self
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    class FakeK2S:
+        @staticmethod
+        def _full_model_forward(model, bundle):
+            return None
+
+    monkeypatch.setattr(observer, "RawRecurrenceCollector", FakeCollector)
+
+    audit = m.AuditAccumulator()
+    primary, hashes = m.capture_branch(
+        observer=observer,
+        k2s=FakeK2S,
+        model=object(),
+        layer_map={},
+        binding=object(),
+        bundle={},
+        t_e=1,
+        local_index=0,
+        branch_role="matched_corr",
+        audit=audit,
+    )
+
+    assert tuple(sorted(primary)) == m.target_indices(1)
+    assert len(primary) == m.TARGET_COUNT
+    assert len(hashes) == m.TARGET_COUNT
+    assert audit.exact_recurrence_accepted_count == m.TARGET_COUNT
+    assert audit.diagnostic_pass_count == 0
+    assert audit.diagnostic_exceedance_count == m.TARGET_COUNT
+
+
+def test_r2_fabricated_scientific_quantities_match_pre_correction_runner():
+    import types
+
+    parent_commit = "37d7044b7111d7b02c7a44fdf7d8782c823afa5b"
+    parent_source = m.subprocess.check_output(
+        ["git", "show", f"{parent_commit}:{m.RUNNER_REL}"],
+        cwd=ROOT,
+        text=True,
+    )
+    module_name = "k0_rvg_p1_parent_r1_compat"
+    parent = types.ModuleType(module_name)
+    parent.__file__ = f"{parent_commit}:{m.RUNNER_REL}"
+    sys.modules[module_name] = parent
+    try:
+        exec(compile(parent_source, parent.__file__, "exec"), parent.__dict__)
+
+        matched_corr, matched_ctrl = _pair_records(
+            turn_scale_corr=1.0,
+            turn_scale_ctrl=0.5,
+        )
+        swapped_corr, swapped_ctrl = _pair_records(
+            turn_scale_corr=1.5,
+            turn_scale_ctrl=0.25,
+        )
+
+        current_matched = m.compute_pair_metrics(matched_corr, matched_ctrl, 1)
+        parent_matched = parent.compute_pair_metrics(matched_corr, matched_ctrl, 1)
+        current_swapped = m.compute_pair_metrics(swapped_corr, swapped_ctrl, 1)
+        parent_swapped = parent.compute_pair_metrics(swapped_corr, swapped_ctrl, 1)
+
+        current_item = m.item_endpoint_metrics(current_matched, current_swapped)
+        parent_item = parent.item_endpoint_metrics(parent_matched, parent_swapped)
+        assert m.canonical_json_bytes(current_item) == parent.canonical_json_bytes(parent_item)
+
+        current_items = [
+            {
+                "local_template_index": i,
+                "stable_item_id": f"synthetic-r2-{i}",
+                **current_item,
+            }
+            for i in range(m.P0_ITEM_COUNT)
+        ]
+        parent_items = [
+            {
+                "local_template_index": i,
+                "stable_item_id": f"synthetic-r2-{i}",
+                **parent_item,
+            }
+            for i in range(parent.P0_ITEM_COUNT)
+        ]
+        mapping = [
+            {
+                "block_index": p,
+                "phase_class": p % 2,
+                "item_a_stable_id": f"synthetic-r2-{p}",
+                "item_b_stable_id": f"synthetic-r2-{p + m.P0_BLOCK_COUNT}",
+            }
+            for p in range(m.P0_BLOCK_COUNT)
+        ]
+
+        current_blocks = m.aggregate_blocks(current_items, mapping)
+        parent_blocks = parent.aggregate_blocks(parent_items, mapping)
+        assert m.canonical_json_bytes(current_blocks) == parent.canonical_json_bytes(parent_blocks)
+
+        current_summary = m.summarize_endpoints(current_blocks)
+        parent_summary = parent.summarize_endpoints(parent_blocks)
+        assert m.canonical_json_bytes(current_summary) == parent.canonical_json_bytes(parent_summary)
+    finally:
+        sys.modules.pop(module_name, None)

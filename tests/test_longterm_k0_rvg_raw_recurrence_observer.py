@@ -20,7 +20,7 @@ spec.loader.exec_module(m)
 
 
 def test_authority_and_scope_constants():
-    assert m.AUTHORITY_COMMIT == "41dbeae22a3831300f0de2f1f44a4b49733d70a5"
+    assert m.AUTHORITY_COMMIT == "d8d717a09516b8562f64f7c503d4bbdcc9c34c5d"
     assert m.OBSERVER_REL == "scripts/longterm_k0_rvg_raw_recurrence_observer.py"
     assert m.TEST_REL == "tests/test_longterm_k0_rvg_raw_recurrence_observer.py"
     assert m.VELOCITY_ATOL == 1e-6
@@ -148,6 +148,7 @@ def test_exact_recurrence_and_velocity_validation():
     result = m.validate_recurrence_record(_record(s_prev, g, w, s_post))
     assert result["recurrence_exact"] == "PASS_EXACT"
     assert result["velocity_rearrangement"] == "PASS_TOLERANCE"
+    assert result["velocity_rearrangement_allclose"] is True
 
 
 def test_recurrence_mismatch_fails_closed():
@@ -271,3 +272,31 @@ def test_record_hashes_are_role_complete():
     hashes = m.record_hashes(rec)
     assert set(hashes) == {"S_prev", "G", "W", "S_post"}
     assert all(len(v) == 64 for v in hashes.values())
+
+
+def test_exact_recurrence_rearrangement_exceedance_is_diagnostic_only():
+    s_prev = torch.zeros((1, 2, 2), dtype=torch.float32)
+    g = torch.ones((1, 2, 2), dtype=torch.float32)
+    w = torch.zeros((1, 2, 2), dtype=torch.float32)
+    s_prev[0, 0, 0] = 1540996.125
+    g[0, 0, 0] = 0.9999
+    w[0, 0, 0] = -71.9258
+    s_post = g * s_prev + w
+
+    result = m.validate_recurrence_record(_record(s_prev, g, w, s_post))
+
+    assert result["recurrence_exact"] == "PASS_EXACT"
+    assert result["velocity_rearrangement"] == "DIAGNOSTIC_TOLERANCE_EXCEEDED"
+    assert result["velocity_rearrangement_allclose"] is False
+    assert result["velocity_atol"] == 1e-6
+    assert result["velocity_rtol"] == 1e-5
+    assert result["max_scaled_tolerance_residual"] > 1.0
+
+
+def test_r2_scope_includes_exact_four_tracked_files():
+    assert m.R2_IMPLEMENTATION_FILES == {
+        "scripts/longterm_k0_rvg_raw_recurrence_observer.py",
+        "tests/test_longterm_k0_rvg_raw_recurrence_observer.py",
+        "scripts/longterm_k0_rvg_p1_raw_vector_execution.py",
+        "tests/test_longterm_k0_rvg_p1_raw_vector_execution.py",
+    }
