@@ -1,0 +1,11 @@
+{
+  "artifacts": {
+    "analysis.json": "8b8cbb356a80d03736327531680c9a1b8aa221aa28e1ac7475d39191de5eae8d",
+    "crossed_structure_rows.jsonl": "f0a59fdb7a67e54f11c3c40a99717e4ebe28b479e99735ff34ad38da7d86f35f",
+    "report_candidate.md": "2151879676e262f6146946c38052ca2fef05a23d8631cfbacfe324eab3b1c7a5"
+  },
+  "authority_commit": "702d5304e2b8214d6b4b497c72f163d52e8c9862",
+  "execution_commit": "905c7246fc03da072a1999e4db940262a36a6cab",
+  "execution_manifest_sha256": "12f8e0068e8c97695b67d25d587093196f56ff7fec925eaf262bc2f3a24a2834",
+  "frozen_primary_population_sha256": "eb5aaacf38be224461801cab5e0629e46a9d375d7efaeadb72b2dbf3c5d56f3e"
+}
