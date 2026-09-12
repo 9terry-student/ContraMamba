@@ -561,6 +561,27 @@ def _g3_pairwise_edge_map(*half_edges: str) -> dict[str, float]:
     return edge_map
 
 
+G3_GROUPED_EXPECTED_MAPS = {
+    "G3-GROUP-U-HALF": _g3_pairwise_edge_map("F_TO_P", "F_TO_S", "P_TO_S"),
+    "G3-GROUP-Q-HALF": _g3_pairwise_edge_map("F_TO_Q", "P_TO_Q", "S_TO_Q"),
+    "G3-GROUP-D-HALF": _g3_pairwise_edge_map("F_TO_D", "P_TO_D", "S_TO_D", "Q_TO_D"),
+    "G3-GROUP-U-Q-HALF": _g3_pairwise_edge_map("F_TO_P", "F_TO_S", "P_TO_S", "F_TO_Q", "P_TO_Q", "S_TO_Q"),
+    "G3-GROUP-U-D-HALF": _g3_pairwise_edge_map("F_TO_P", "F_TO_S", "P_TO_S", "F_TO_D", "P_TO_D", "S_TO_D", "Q_TO_D"),
+    "G3-GROUP-Q-D-HALF": _g3_pairwise_edge_map("F_TO_Q", "P_TO_Q", "S_TO_Q", "F_TO_D", "P_TO_D", "S_TO_D", "Q_TO_D"),
+}
+
+
+def _g3_grouped_args(arm: str, edge_map: dict[str, float]) -> SimpleNamespace:
+    return SimpleNamespace(
+        reason_router_arm=arm, architecture="v6b_minimal", reason_router_mode="auto",
+        gradient_ownership_mode="edge_specific", gradient_ownership_lambda=None,
+        edge_gradient_lambdas=json.dumps(edge_map), reason_loss_weight=0.0, freeze_encoder=True,
+        frame_downstream_gradient_mode="joint", reason_router_epsilon=1e-8,
+        reason_min_train_count=1, reason_min_dev_count=1, use_temporal_comparator=False,
+        use_predicate_comparator=False,
+    )
+
+
 def test_edge_specific_configuration_validation_and_forward_identity() -> None:
     model = _production_model("A0")
     valid = _g3_edge_map()
@@ -901,6 +922,112 @@ def test_g3_pairwise_edge_specific_forward_and_gradient_ownership() -> None:
         return model.frame_gate.pair.grad.detach().clone()
 
     assert torch.equal(local_gradient(pair_map), local_gradient(baseline_map))
+
+
+def test_g3_grouped_namespace_exact_maps_provenance_and_fail_closed_validation() -> None:
+    class Parser:
+        def error(self, message: str) -> None:
+            raise ValueError(message)
+
+    assert trainer.G3_GROUPED_ARM_IDS == tuple(G3_GROUPED_EXPECTED_MAPS)
+    assert tuple(trainer.G3_GROUPED_ARM_EDGE_SETS) == trainer.G3_GROUPED_ARM_IDS
+    parser = trainer.build_parser()
+    for arm, exact_map in G3_GROUPED_EXPECTED_MAPS.items():
+        assert parser.parse_args(["--reason-router-arm", arm]).reason_router_arm == arm
+        resolved = _g3_grouped_args(arm, exact_map)
+        contract = trainer._p2_resolve_arm_contract(resolved, [], Parser())
+        assert contract["router_mode"] == "explicit_product"
+        assert contract["gradient_ownership_mode"] == "edge_specific"
+        assert contract["edge_gradient_lambdas"] == exact_map
+        assert resolved.resolved_edge_gradient_lambdas == exact_map
+        assert resolved.resolved_edge_gradient_lambdas is not exact_map
+        metadata = trainer._p2_checkpoint_metadata_from_args(resolved)
+        assert metadata["reason_router_arm"] == arm
+        assert metadata["edge_gradient_lambdas"] == exact_map
+        assert tuple(metadata["edge_gradient_lambdas"]) == trainer.G3_EDGE_GRADIENT_LAMBDA_KEYS
+
+        for wrong_arm, wrong_map in G3_GROUPED_EXPECTED_MAPS.items():
+            if wrong_arm != arm:
+                with pytest.raises(ValueError, match="G3_ARM_EDGE_MAP_MISMATCH"):
+                    trainer._p2_resolve_arm_contract(_g3_grouped_args(arm, wrong_map), [], Parser())
+        for edge in trainer.G3_EDGE_GRADIENT_LAMBDA_KEYS:
+            invalid = dict(exact_map)
+            invalid[edge] = 0.6 if exact_map[edge] == 0.5 else 0.5
+            with pytest.raises(ValueError, match="G3_ARM_EDGE_MAP_MISMATCH"):
+                trainer._p2_resolve_arm_contract(_g3_grouped_args(arm, invalid), [], Parser())
+        for invalid in (
+            _g3_edge_map(half_edge="F_TO_P"),
+            _g3_pairwise_edge_map("F_TO_P", "F_TO_S"),
+            _g3_edge_map(value=0.5),
+        ):
+            with pytest.raises(ValueError, match="G3_ARM_EDGE_MAP_MISMATCH"):
+                trainer._p2_resolve_arm_contract(_g3_grouped_args(arm, invalid), [], Parser())
+
+    with pytest.raises(SystemExit):
+        parser.parse_args(["--reason-router-arm", "G3-GROUP-U-Q-D-HALF"])
+    exact = G3_GROUPED_EXPECTED_MAPS["G3-GROUP-U-HALF"]
+    for invalid in (
+        {key: value for key, value in exact.items() if key != "F_TO_P"},
+        {**exact, "EXTRA": 1.0}, {**exact, "F_TO_P": float("nan")},
+        {**exact, "F_TO_P": float("inf")}, {**exact, "F_TO_P": -0.1},
+        {**exact, "F_TO_P": 1.1},
+    ):
+        with pytest.raises(ValueError):
+            trainer._p2_resolve_arm_contract(_g3_grouped_args("G3-GROUP-U-HALF", invalid), [], Parser())
+    duplicate = _g3_grouped_args("G3-GROUP-U-HALF", exact)
+    duplicate.edge_gradient_lambdas = '{"F_TO_P": 0.5, "F_TO_P": 1.0}'
+    with pytest.raises(ValueError, match="DUPLICATE"):
+        trainer._p2_resolve_arm_contract(duplicate, [], Parser())
+    global_lambda = _g3_grouped_args("G3-GROUP-U-HALF", exact)
+    global_lambda.gradient_ownership_lambda = 0.5
+    with pytest.raises(ValueError, match="GLOBAL"):
+        trainer._p2_resolve_arm_contract(global_lambda, [], Parser())
+    legacy = _g3_grouped_args("G3-GROUP-U-HALF", exact)
+    legacy.gradient_ownership_mode = "joint"
+    with pytest.raises(ValueError, match="requires router=explicit_product ownership=edge_specific"):
+        trainer._p2_resolve_arm_contract(legacy, [], Parser())
+
+
+def test_g3_grouped_all_six_forward_invariance_and_gradient_semantics() -> None:
+    baseline_map = _g3_edge_map()
+    diagnostic_keys = (
+        "logits", "frame_prob", "predicate_coverage_prob", "sufficiency_prob",
+        "positive_energy", "negative_energy", "q_masses_4",
+    )
+    for arm, edge_map in G3_GROUPED_EXPECTED_MAPS.items():
+        baseline_model = _production_model("A0")
+        grouped_model = copy.deepcopy(baseline_model)
+        baseline_output = _forward_with_ownership(baseline_model, "edge_specific", edge_gradient_lambdas=baseline_map)
+        grouped_output = _forward_with_ownership(grouped_model, "edge_specific", edge_gradient_lambdas=edge_map)
+        for key in diagnostic_keys:
+            assert torch.equal(grouped_output[key], baseline_output[key]), (arm, key)
+        assert torch.equal(grouped_output["logits"].argmax(dim=-1), baseline_output["logits"].argmax(dim=-1)), arm
+        for edge in trainer.G3_EDGE_GRADIENT_LAMBDA_KEYS:
+            grouped_gradient, _ = _edge_owner_gradient(edge_map, edge)
+            baseline_gradient, _ = _edge_owner_gradient(baseline_map, edge)
+            expected_scale = edge_map[edge]
+            assert torch.equal(grouped_gradient, expected_scale * baseline_gradient), (arm, edge)
+            if expected_scale == 0.5:
+                assert not torch.equal(grouped_gradient, baseline_gradient), (arm, edge)
+            else:
+                assert torch.equal(grouped_gradient, baseline_gradient), (arm, edge)
+
+
+def test_g3_grouped_owner_local_gradients_preserved_for_u_q_and_d() -> None:
+    cases = (
+        ("G3-GROUP-U-HALF", "F_TO_P", "frame_logit", "frame_gate.pair"),
+        ("G3-GROUP-Q-HALF", "F_TO_Q", "frame_logit", "frame_gate.pair"),
+        ("G3-GROUP-D-HALF", "F_TO_D", "frame_prob", "frame_gate.prob"),
+    )
+    for arm, selected_edge, local_key, parameter_name in cases:
+        def local_gradient(edge_map: dict[str, float]) -> torch.Tensor:
+            model = _edge_isolation_model()
+            output = _forward_with_ownership(model, "edge_specific", edge_gradient_lambdas=edge_map)
+            output[local_key].sum().backward()
+            return dict(model.named_parameters())[parameter_name].grad.detach().clone()
+
+        assert G3_GROUPED_EXPECTED_MAPS[arm][selected_edge] == 0.5
+        assert torch.equal(local_gradient(G3_GROUPED_EXPECTED_MAPS[arm]), local_gradient(_g3_edge_map()))
 
 
 def test_edge_gradient_cli_argument_is_fail_closed_outside_g3() -> None:
