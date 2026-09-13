@@ -18,6 +18,7 @@ import importlib
 import importlib.util
 import inspect
 import sys
+import textwrap
 from contextlib import contextmanager
 from dataclasses import dataclass
 from importlib import metadata as importlib_metadata
@@ -129,6 +130,249 @@ def _assignment_value(node: Any) -> Any:
     if isinstance(node, (ast.Assign, ast.AnnAssign)):
         return node.value
     return None
+
+
+def _attribute_chain(node: Any) -> tuple[str, ...]:
+    parts: list[str] = []
+    current = node
+
+    while isinstance(current, ast.Attribute):
+        parts.append(current.attr)
+        current = current.value
+
+    if not isinstance(current, ast.Name):
+        return ()
+
+    parts.append(current.id)
+
+    return tuple(
+        reversed(parts)
+    )
+
+
+def _call_matches(
+    node: Any,
+    path: tuple[str, ...],
+) -> bool:
+    return (
+        isinstance(node, ast.Call)
+        and _attribute_chain(node.func)
+        == path
+    )
+
+
+def _has_cuda_device_guard(node: Any) -> bool:
+    for item in ast.walk(node):
+        if (
+            isinstance(item, ast.Compare)
+            and len(item.ops) == 1
+            and isinstance(item.ops[0], ast.In)
+            and len(item.comparators) == 1
+            and isinstance(item.left, ast.Constant)
+            and item.left.value == "cuda"
+            and _attribute_chain(
+                item.comparators[0]
+            )
+            == (
+                "self",
+                "x_proj",
+                "weight",
+                "device",
+                "type",
+            )
+        ):
+            return True
+
+    return False
+
+
+def _validate_forward_dispatch(
+    forward: Any,
+) -> None:
+    try:
+        dispatch = "".join(
+            inspect.getsourcelines(
+                forward
+            )[0]
+        )
+
+        tree = ast.parse(
+            textwrap.dedent(
+                dispatch
+            )
+        )
+    except (
+        OSError,
+        TypeError,
+        SyntaxError,
+    ) as exc:
+        raise ContractError(
+            "unsupported backend"
+        ) from exc
+
+    require(
+        len(tree.body) == 1
+        and isinstance(
+            tree.body[0],
+            (
+                ast.FunctionDef,
+                ast.AsyncFunctionDef,
+            ),
+        ),
+        "unsupported backend",
+    )
+
+    function = tree.body[0]
+
+    availability = [
+        node
+        for node in function.body
+        if (
+            isinstance(
+                node,
+                (
+                    ast.Assign,
+                    ast.AnnAssign,
+                ),
+            )
+            and _assignment_target(node)
+            == "is_fast_path_available"
+        )
+    ]
+
+    require(
+        len(availability) == 1,
+        "unsupported backend",
+    )
+
+    availability_value = (
+        _assignment_value(
+            availability[0]
+        )
+    )
+
+    require(
+        isinstance(
+            availability_value,
+            ast.Call,
+        )
+        and isinstance(
+            availability_value.func,
+            ast.Name,
+        )
+        and availability_value.func.id
+        == "all"
+        and "mamba_inner_fn"
+        in _node_names(
+            availability_value
+        ),
+        "unsupported backend",
+    )
+
+    fast_paths = [
+        node
+        for node in function.body
+        if (
+            isinstance(node, ast.If)
+            and "is_fast_path_available"
+            in _node_names(node.test)
+        )
+    ]
+
+    require(
+        len(fast_paths) == 1,
+        "unsupported backend",
+    )
+
+    fast_path = fast_paths[0]
+
+    require(
+        _has_cuda_device_guard(
+            fast_path.test
+        )
+        and "is_torchdynamo_compiling"
+        in _node_names(
+            fast_path.test
+        )
+        and not fast_path.orelse,
+        "unsupported backend",
+    )
+
+    cuda_path = (
+        "self",
+        "cuda_kernels_forward",
+    )
+
+    slow_path = (
+        "self",
+        "slow_forward",
+    )
+
+    fast_cuda_calls = [
+        node
+        for node in ast.walk(
+            fast_path
+        )
+        if _call_matches(
+            node,
+            cuda_path,
+        )
+    ]
+
+    all_cuda_calls = [
+        node
+        for node in ast.walk(
+            function
+        )
+        if _call_matches(
+            node,
+            cuda_path,
+        )
+    ]
+
+    require(
+        len(fast_cuda_calls) == 1
+        and len(all_cuda_calls) == 1,
+        "unsupported backend",
+    )
+
+    fallback = (
+        function.body[-1]
+        if function.body
+        else None
+    )
+
+    require(
+        isinstance(
+            fallback,
+            ast.Return,
+        )
+        and _call_matches(
+            fallback.value,
+            slow_path,
+        ),
+        "unsupported backend",
+    )
+
+    all_slow_calls = [
+        node
+        for node in ast.walk(
+            function
+        )
+        if _call_matches(
+            node,
+            slow_path,
+        )
+    ]
+
+    require(
+        len(all_slow_calls) == 1
+        and function.body.index(
+            fast_path
+        )
+        < len(function.body) - 1,
+        "unsupported backend",
+    )
 
 
 def _validate_source_roles(data: bytes, code: Any) -> None:
@@ -391,14 +635,8 @@ def _resolve_and_validate_runtime_binding() -> tuple[Any, int]:
         "forward identity",
     )
 
-    dispatch = "".join(
-        inspect.getsourcelines(forward)[0]
-    )
-
-    require(
-        "slow_forward" in dispatch
-        and "mamba_inner_fn" not in dispatch,
-        "unsupported backend",
+    _validate_forward_dispatch(
+        forward
     )
 
     cache_text = cache_bytes.decode("utf-8")

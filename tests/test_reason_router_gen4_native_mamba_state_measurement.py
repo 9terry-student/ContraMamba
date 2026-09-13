@@ -898,8 +898,11 @@ def build_runtime_baseline(
             "        _q = 17",
             "        cache_params.ssm_states[self.layer_idx].copy_(ssm_state)",
             "        return scan_output",
-            "    def forward(self):",
-            "        return self.slow_forward",
+            "    def forward(self, hidden_states=None, cache_params=None, cache_position=None, attention_mask=None):",
+            "        is_fast_path_available = all((selective_state_update, selective_scan_fn, causal_conv1d_fn, causal_conv1d_update, mamba_inner_fn))",
+            "        if is_fast_path_available and \"cuda\" in self.x_proj.weight.device.type and not is_torchdynamo_compiling():",
+            "            return self.cuda_kernels_forward(hidden_states, cache_params, cache_position, attention_mask)",
+            "        return self.slow_forward(hidden_states, cache_params, cache_position, attention_mask)",
         ]
     )
 
@@ -1128,6 +1131,131 @@ def test_runtime_gate_synthetic_baseline(
     )
 
     m.runtime_gate()
+
+
+def test_runtime_gate_accepts_frozen_style_dispatch_with_mamba_inner_fn(
+    tmp_path,
+    monkeypatch,
+):
+    _, _, mamba_path, _ = (
+        build_runtime_baseline(
+            tmp_path,
+            monkeypatch,
+        )
+    )
+
+    source = mamba_path.read_text(
+        encoding="utf-8"
+    )
+
+    assert (
+        "mamba_inner_fn"
+        in source
+    )
+    assert (
+        '"cuda" in self.x_proj.weight.device.type'
+        in source
+    )
+    assert (
+        "return self.slow_forward("
+        in source
+    )
+
+    m.runtime_gate()
+
+
+def test_runtime_gate_rejects_dispatch_without_slow_fallback(
+    tmp_path,
+    monkeypatch,
+):
+    _, _, mamba_path, _ = (
+        build_runtime_baseline(
+            tmp_path,
+            monkeypatch,
+        )
+    )
+
+    _rewrite_runtime_source(
+        mamba_path,
+        monkeypatch,
+        (
+            "        return self.slow_forward("
+            "hidden_states, cache_params, "
+            "cache_position, attention_mask)"
+        ),
+        "        return hidden_states",
+    )
+
+    with pytest.raises(
+        m.ContractError,
+        match="unsupported backend",
+    ):
+        m.runtime_gate()
+
+
+def test_runtime_gate_rejects_fast_path_without_cuda_device_guard(
+    tmp_path,
+    monkeypatch,
+):
+    _, _, mamba_path, _ = (
+        build_runtime_baseline(
+            tmp_path,
+            monkeypatch,
+        )
+    )
+
+    _rewrite_runtime_source(
+        mamba_path,
+        monkeypatch,
+        (
+            '        if is_fast_path_available and '
+            '"cuda" in self.x_proj.weight.device.type '
+            "and not is_torchdynamo_compiling():"
+        ),
+        (
+            "        if is_fast_path_available "
+            "and not is_torchdynamo_compiling():"
+        ),
+    )
+
+    with pytest.raises(
+        m.ContractError,
+        match="unsupported backend",
+    ):
+        m.runtime_gate()
+
+
+def test_runtime_gate_rejects_default_branch_fast_path(
+    tmp_path,
+    monkeypatch,
+):
+    _, _, mamba_path, _ = (
+        build_runtime_baseline(
+            tmp_path,
+            monkeypatch,
+        )
+    )
+
+    _rewrite_runtime_source(
+        mamba_path,
+        monkeypatch,
+        (
+            "        return self.slow_forward("
+            "hidden_states, cache_params, "
+            "cache_position, attention_mask)"
+        ),
+        (
+            "        return self.cuda_kernels_forward("
+            "hidden_states, cache_params, "
+            "cache_position, attention_mask)"
+        ),
+    )
+
+    with pytest.raises(
+        m.ContractError,
+        match="unsupported backend",
+    ):
+        m.runtime_gate()
 
 
 def test_frozen_transformers_v5_source_role_fixture(
