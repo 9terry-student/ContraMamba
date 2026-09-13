@@ -1,0 +1,135 @@
+# ContraMamba Gen4 Native Mamba State Bridge
+# Phase E Measurement Artifact Freeze
+# Candidate
+
+STATUS =
+CANDIDATE
+
+AUTHORITY_ID =
+GEN4_NATIVE_MAMBA_STATE_BRIDGE_PHASE_E_MEASUREMENT_ARTIFACT_FREEZE
+
+## Authority
+
+PHASE_D_EXECUTION_AUTHORITY_COMMIT =
+bff0a75a6e2815a0bb3565f1e91ca91193de73e1
+
+PHASE_D_RUNNER_IMPLEMENTATION_COMMIT =
+c7ae7fac4c64e9bd64adcae819a3da3dd46f17f7
+
+PHASE_D_RUNNER_SHA256 =
+653f96713d8bdc776cdf03733ae230784e413f960f58a9c120f00cb8c6a6d3eb
+
+PHASE_C_MEASUREMENT_SHA256 =
+7729424f03058b86b4f120dc0e6da573d6c996b0877858f2d6d38aa94dac268c
+
+## Executed run
+
+RUN_NAME =
+gen4-native-mamba-phase-d-extraction-bff0a75-v1
+
+COMMAND_SHA256 =
+0a0a68c78556dafe177675e332f7258d3e3573c49f88760feea35c72d4a6cdc2
+
+HANDOFF_ZIP_SHA256 =
+1e597f574251119be312002db67b54129f62b4dcc243547ed221b65892fd1807
+
+IMPORT_STATUS =
+PASS
+
+EXECUTION_EXIT_CODE =
+0
+
+SCIENTIFIC_FORWARD_COUNT =
+1800
+
+SUPPORT_STATE_VECTOR_COUNT =
+14717
+
+ENDPOINT_ROW_COUNT =
+3600
+
+MODEL_REPLICATION_COUNT =
+1
+
+## Frozen measurement bundle
+
+BUNDLE_PATH =
+reports/reason_router_gen4_native_mamba_state_extraction_bff0a75_v1
+
+MANIFEST_SHA256 =
+9377f4eb635d2e50f515a6baed62e4c975557203fcd8777d71b13468b88dbb83
+
+SUPPORT_STATE_ROWS_SHA256 =
+c66e0e79294b8d17572d0c1458eb6e8fb2951d042091cabed1ea476ff59aea6f
+
+SUPPORT_STATES_SHA256 =
+810fdde63504c9e64622e50ccecefa0681ff5f6ee70244257acdf63d62fedc06
+
+KINEMATIC_ENDPOINTS_SHA256 =
+7ff4d24b7895745efbf5a00e0361a4fe409ad585db17ece7151e4dedb289b07c
+
+SUPPORT_STATES_BYTES =
+1446740096
+
+SUPPORT_STATES_SHAPE =
+[14717,24576]
+
+SUPPORT_STATES_DTYPE =
+float32
+
+PRIMARY_LAYER =
+11
+
+REPRESENTATIVE_SEED =
+180
+
+REPRESENTATIVE_ARM =
+G3-GROUP-D-HALF
+
+## Storage contract
+
+GIT_TRACKED_MEASUREMENT_FILES =
+manifest.json
+SHA256SUMS.txt
+support_state_rows.jsonl
+kinematic_endpoints.jsonl
+
+LARGE_BINARY_FILE =
+support_states.npy
+
+LARGE_BINARY_GIT_TRACKING =
+FORBIDDEN
+
+LARGE_BINARY_FREEZE_METHOD =
+GITHUB_RELEASE_ASSET_WITH_EXACT_SHA256
+
+LARGE_BINARY_RELEASE_ASSET_NAME =
+support_states.npy
+
+The large native-state tensor is not a normal Git blob.
+Its scientific identity is the exact SHA256 and byte count above.
+The GitHub Release asset must reproduce those exact bytes.
+
+## Scientific boundary
+
+TRAINING =
+NO
+
+BACKWARD =
+NO
+
+STATISTICAL_TESTING =
+NO
+
+STRUCTURAL_CONTRAST_TESTING =
+NO
+
+SCIENTIFIC_CONCLUSION =
+NONE
+
+This freeze establishes a validated and reproducible Phase D measurement
+artifact identity only. It does not establish a statistical, causal, or
+mechanistic claim.
+
+NEXT_PHASE =
+PHASE_E_STATIC_MEASUREMENT_ANALYSIS_AUTHORITY_REQUIRED
