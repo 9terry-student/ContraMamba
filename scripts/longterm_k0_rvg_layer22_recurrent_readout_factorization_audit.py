@@ -293,31 +293,66 @@ def capture_readout_operands(
     prior_trace = sys.gettrace()
     collector = ReadoutOperandCollector(binding, layer_map, targets)
 
-    with collector.capture():
-        records = parent.capture_ck(
-            gate_parent,
-            output_parent,
-            residual_parent,
-            rms_parent,
-            hidden_parent,
-            four_tap,
-            postconv,
-            dt_projection,
-            secant,
-            base,
-            model,
-            binding,
-            layer_map,
-            layer22,
-            layer23,
-            norm23,
-            mixer23,
-            mixer22,
-            out_proj,
-            token_ids,
-            targets,
+    original_direct_backbone_forward = base.direct_backbone_forward
+
+    def traced_direct_backbone_forward(*args: Any, **kwargs: Any):
+        inner_trace = sys.gettrace()
+        require(
+            inner_trace is not None,
+            "INNER_TRACE_MISSING_AT_DIRECT_FORWARD",
         )
 
+        same_as_outer = (
+            getattr(inner_trace, "__self__", None) is collector
+            and
+            getattr(inner_trace, "__func__", None)
+            is getattr(collector._trace, "__func__", None)
+        )
+        require(
+            not same_as_outer,
+            "NESTED_PARENT_TRACE_NOT_INSTALLED",
+        )
+
+        def composite_trace(frame: Any, event: str, arg: Any):
+            inner_trace(frame, event, arg)
+            collector._trace(frame, event, arg)
+            return composite_trace
+
+        sys.settrace(composite_trace)
+        try:
+            return original_direct_backbone_forward(*args, **kwargs)
+        finally:
+            sys.settrace(inner_trace)
+
+    base.direct_backbone_forward = traced_direct_backbone_forward
+    try:
+        with collector.capture():
+            records = parent.capture_ck(
+                gate_parent,
+                output_parent,
+                residual_parent,
+                rms_parent,
+                hidden_parent,
+                four_tap,
+                postconv,
+                dt_projection,
+                secant,
+                base,
+                model,
+                binding,
+                layer_map,
+                layer22,
+                layer23,
+                norm23,
+                mixer23,
+                mixer22,
+                out_proj,
+                token_ids,
+                targets,
+            )
+
+    finally:
+        base.direct_backbone_forward = original_direct_backbone_forward
     require(sys.gettrace() is prior_trace, "TRACE_RESTORATION_FAILURE")
     require(collector.records is not None, "RECURRENCE_RECORDS_MISSING")
     require(set(records) == set(targets), "PARENT_TARGET_SET_MISMATCH")
