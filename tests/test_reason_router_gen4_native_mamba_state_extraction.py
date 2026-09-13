@@ -32,8 +32,13 @@ r = load_module("reason_router_gen4_native_mamba_state_extraction_test_target")
 
 def test_frozen_parent_and_dependency_constants():
     assert r.PHASE_D_RUNNER_IMPLEMENTATION_AUTHORITY == "66f56152e97445429eb5b329e0fc849e7cc81492"
+    assert r.SOURCE_ROLE_VALIDATOR_CORRECTION_AUTHORITY == "5ee0826c629978a72240bb88f732aacf6f357c4b"
+    assert r.EXECUTION_AUTHORITY_PATH == Path(
+        "reports/reason_router_gen4_native_mamba_state_bridge_"
+        "phase_d_extraction_execution_authority_correction_spec_candidate.md"
+    )
     assert r.PHASE_C_MEASUREMENT_IMPLEMENTATION_COMMIT == "e3c870e7f24e183b0046b568e1de3b71446c182d"
-    assert r.MEASUREMENT_SHA256 == "a90aea3e8a60a305ac70b34866647f8c4ff2c6d02a092d93896ac5dc8a258086"
+    assert r.MEASUREMENT_SHA256 == "e31d82af229c79b7de3d55f3419a1ae1cc9da0e1c0af5bfd84ba4cec85a36a82"
     assert r.ADAPTER_SHA256 == "83177c351f82a781586c63bd8d4ef1b40e759b5a94858dc1837d65502cbff6e5"
     assert r.R5_SHA256 == "468a758a7d20d048c75a0ca7e298b73a65f538527df55d3ecad3c7ff1760cf4d"
     assert r.HISTORICAL_MODEL_SHA256 == "8c365bfa857157d91f363358d5db3abaab425dec3e0d7c62683b4207a589b6a5"
@@ -146,8 +151,52 @@ def test_checkpoint_authentication_wrapper_precedes_loader():
     assert source.index("authenticate_checkpoint") < source.index("loader(path)")
 
 
-def test_current_canonical_dependency_identity():
-    r.validate_frozen_dependency_identities(r.git_head())
+def test_corrected_worktree_dependency_identity():
+    measurement_bytes = (
+        ROOT / r.MEASUREMENT_PATH
+    ).read_bytes().replace(
+        b"\r\n",
+        b"\n",
+    )
+
+    assert (
+        r.sha256_bytes(measurement_bytes)
+        == r.MEASUREMENT_SHA256
+    )
+
+    unchanged = {
+        r.ADAPTER_PATH:
+            r.ADAPTER_SHA256,
+        r.R5_PATH:
+            r.R5_SHA256,
+        r.HISTORICAL_MODEL_PATH:
+            r.HISTORICAL_MODEL_SHA256,
+    }
+
+    head = r.git_head()
+
+    for path, digest in unchanged.items():
+        assert (
+            r.canonical_git_sha256(
+                head,
+                path,
+            )
+            == digest
+        )
+
+
+def test_manifest_provenance_records_correction_authority():
+    source = (
+        ROOT / r.RUNNER_PATH
+    ).read_text(
+        encoding="utf-8"
+    )
+
+    assert (
+        '"source_role_validator_correction_authority": '
+        "SOURCE_ROLE_VALIDATOR_CORRECTION_AUTHORITY,"
+        in source
+    )
 
 def test_support_window_exact():
     event = {

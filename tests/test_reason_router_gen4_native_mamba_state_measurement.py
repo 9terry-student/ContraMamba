@@ -137,6 +137,7 @@ def test_authority_constants():
 
     assert m.PRIMARY_LAYER_INDEX == 11
     assert m.NATIVE_MAMBA_LAYER_COUNT == 24
+    assert m.DELTA_B_U_LINE == 397
     assert m.RECURRENT_UPDATE_LINE == 409
     assert m.CAPTURE_LINE == 410
     assert m.FINAL_CACHE_PERSISTENCE_LINE == 417
@@ -861,21 +862,33 @@ def build_runtime_baseline(
         / "cache_utils.py"
     )
 
-    lines = [""] * 405
+    lines = [""] * 393
 
     lines.extend(
         [
             "class MambaMixer:",
-            "    def slow_forward(self, ssm_state, discrete_A, discrete_B, hidden_states, discrete_C, cache_params):",
+            "    def slow_forward(self, ssm_state, discrete_A, discrete_B, hidden_states, C, cache_params, dtype=None):",
             "        _sentinel = 0",
-            "        ssm_state = discrete_A * ssm_state + discrete_B * hidden_states",
-            "        scan_output = discrete_C * ssm_state",
+            "        deltaB_u = discrete_B * hidden_states[:, :, :, None].float()",
             "        _a = 1",
             "        _b = 2",
             "        _c = 3",
             "        _d = 4",
             "        _e = 5",
             "        _f = 6",
+            "        _g = 7",
+            "        _h = 8",
+            "        _i = 9",
+            "        _j = 10",
+            "        _k = 11",
+            "        ssm_state = discrete_A[:, :, i, :] * ssm_state + deltaB_u[:, :, i, :]",
+            "        scan_output = torch.matmul(ssm_state.to(dtype), C[:, i, :].unsqueeze(-1))",
+            "        _l = 12",
+            "        _m = 13",
+            "        _n = 14",
+            "        _o = 15",
+            "        _p = 16",
+            "        _q = 17",
             "        cache_params.ssm_states[self.layer_idx].copy_(ssm_state)",
             "        return scan_output",
             "    def forward(self):",
@@ -1057,6 +1070,47 @@ def build_runtime_baseline(
     )
 
 
+def _rewrite_runtime_source(
+    mamba_path,
+    monkeypatch,
+    old: str,
+    new: str,
+):
+    text = mamba_path.read_text(
+        encoding="utf-8"
+    )
+
+    assert text.count(old) == 1
+
+    text = text.replace(
+        old,
+        new,
+        1,
+    )
+
+    mamba_path.write_text(
+        text,
+        encoding="utf-8",
+        newline="\n",
+    )
+
+    raw = mamba_path.read_bytes()
+
+    monkeypatch.setattr(
+        m,
+        "MAMBA_BYTES",
+        len(raw),
+    )
+
+    monkeypatch.setattr(
+        m,
+        "MAMBA_SHA256",
+        hashlib.sha256(
+            raw
+        ).hexdigest(),
+    )
+
+
 def test_runtime_gate_synthetic_baseline(
     tmp_path,
     monkeypatch,
@@ -1064,6 +1118,43 @@ def test_runtime_gate_synthetic_baseline(
     build_runtime_baseline(
         tmp_path,
         monkeypatch,
+    )
+
+    m.runtime_gate()
+
+
+def test_frozen_transformers_v5_source_role_fixture(
+    tmp_path,
+    monkeypatch,
+):
+    _, _, mamba_path, _ = (
+        build_runtime_baseline(
+            tmp_path,
+            monkeypatch,
+        )
+    )
+
+    lines = mamba_path.read_text(
+        encoding="utf-8"
+    ).splitlines()
+
+    assert lines[m.DELTA_B_U_LINE - 1] == (
+        "        deltaB_u = discrete_B * "
+        "hidden_states[:, :, :, None].float()"
+    )
+
+    assert lines[m.RECURRENT_UPDATE_LINE - 1] == (
+        "        ssm_state = discrete_A[:, :, i, :] * "
+        "ssm_state + deltaB_u[:, :, i, :]"
+    )
+
+    assert lines[m.CAPTURE_LINE - 1] == (
+        "        scan_output = torch.matmul("
+        "ssm_state.to(dtype), C[:, i, :].unsqueeze(-1))"
+    )
+
+    assert lines[m.FINAL_CACHE_PERSISTENCE_LINE - 1] == (
+        "        cache_params.ssm_states[self.layer_idx].copy_(ssm_state)"
     )
 
     m.runtime_gate()
@@ -1182,54 +1273,163 @@ def test_runtime_gate_wrong_code_object(
         m.runtime_gate()
 
 
-def test_runtime_gate_wrong_source_role(
+def test_runtime_gate_wrong_delta_b_u_target(
     tmp_path,
     monkeypatch,
 ):
-    _, _, mamba_path, _ = (
-        build_runtime_baseline(
-            tmp_path,
-            monkeypatch,
-        )
+    _, _, mamba_path, _ = build_runtime_baseline(
+        tmp_path,
+        monkeypatch,
     )
 
-    text = mamba_path.read_text(
-        encoding="utf-8"
+    _rewrite_runtime_source(
+        mamba_path,
+        monkeypatch,
+        "        deltaB_u = discrete_B * hidden_states[:, :, :, None].float()",
+        "        wrong_alias = discrete_B * hidden_states[:, :, :, None].float()",
     )
 
-    text = text.replace(
-        (
-            "ssm_state = discrete_A * ssm_state "
-            "+ discrete_B * hidden_states"
-        ),
-        "ssm_state = ssm_state",
+    with pytest.raises(
+        m.ContractError,
+        match="source deltaB_u role",
+    ):
+        m.runtime_gate()
+
+
+def test_runtime_gate_delta_b_u_missing_discrete_b(
+    tmp_path,
+    monkeypatch,
+):
+    _, _, mamba_path, _ = build_runtime_baseline(
+        tmp_path,
+        monkeypatch,
     )
 
-    mamba_path.write_text(
-        text,
-        encoding="utf-8",
-        newline="\n",
+    _rewrite_runtime_source(
+        mamba_path,
+        monkeypatch,
+        "        deltaB_u = discrete_B * hidden_states[:, :, :, None].float()",
+        "        deltaB_u = hidden_states[:, :, :, None].float() * hidden_states[:, :, :, None].float()",
     )
 
-    raw = mamba_path.read_bytes()
+    with pytest.raises(
+        m.ContractError,
+        match="source deltaB_u role",
+    ):
+        m.runtime_gate()
 
-    monkeypatch.setattr(
-        m,
-        "MAMBA_BYTES",
-        len(raw),
+
+def test_runtime_gate_delta_b_u_missing_hidden_states(
+    tmp_path,
+    monkeypatch,
+):
+    _, _, mamba_path, _ = build_runtime_baseline(
+        tmp_path,
+        monkeypatch,
     )
 
-    monkeypatch.setattr(
-        m,
-        "MAMBA_SHA256",
-        hashlib.sha256(
-            raw
-        ).hexdigest(),
+    _rewrite_runtime_source(
+        mamba_path,
+        monkeypatch,
+        "        deltaB_u = discrete_B * hidden_states[:, :, :, None].float()",
+        "        deltaB_u = discrete_B * discrete_B",
+    )
+
+    with pytest.raises(
+        m.ContractError,
+        match="source deltaB_u role",
+    ):
+        m.runtime_gate()
+
+
+def test_runtime_gate_update_missing_delta_b_u(
+    tmp_path,
+    monkeypatch,
+):
+    _, _, mamba_path, _ = build_runtime_baseline(
+        tmp_path,
+        monkeypatch,
+    )
+
+    _rewrite_runtime_source(
+        mamba_path,
+        monkeypatch,
+        "        ssm_state = discrete_A[:, :, i, :] * ssm_state + deltaB_u[:, :, i, :]",
+        "        ssm_state = discrete_A[:, :, i, :] * ssm_state + ssm_state",
     )
 
     with pytest.raises(
         m.ContractError,
         match="source update role",
+    ):
+        m.runtime_gate()
+
+
+def test_runtime_gate_wrong_recurrent_update_target(
+    tmp_path,
+    monkeypatch,
+):
+    _, _, mamba_path, _ = build_runtime_baseline(
+        tmp_path,
+        monkeypatch,
+    )
+
+    _rewrite_runtime_source(
+        mamba_path,
+        monkeypatch,
+        "        ssm_state = discrete_A[:, :, i, :] * ssm_state + deltaB_u[:, :, i, :]",
+        "        wrong_state = discrete_A[:, :, i, :] * ssm_state + deltaB_u[:, :, i, :]",
+    )
+
+    with pytest.raises(
+        m.ContractError,
+        match="source update role",
+    ):
+        m.runtime_gate()
+
+
+def test_runtime_gate_wrong_readout_role(
+    tmp_path,
+    monkeypatch,
+):
+    _, _, mamba_path, _ = build_runtime_baseline(
+        tmp_path,
+        monkeypatch,
+    )
+
+    _rewrite_runtime_source(
+        mamba_path,
+        monkeypatch,
+        "        scan_output = torch.matmul(ssm_state.to(dtype), C[:, i, :].unsqueeze(-1))",
+        "        scan_output = torch.matmul(deltaB_u[:, :, i, :].to(dtype), C[:, i, :].unsqueeze(-1))",
+    )
+
+    with pytest.raises(
+        m.ContractError,
+        match="source readout role",
+    ):
+        m.runtime_gate()
+
+
+def test_runtime_gate_wrong_cache_persistence_role(
+    tmp_path,
+    monkeypatch,
+):
+    _, _, mamba_path, _ = build_runtime_baseline(
+        tmp_path,
+        monkeypatch,
+    )
+
+    _rewrite_runtime_source(
+        mamba_path,
+        monkeypatch,
+        "        cache_params.ssm_states[self.layer_idx].copy_(ssm_state)",
+        "        cache_params.ssm_states[self.layer_idx].copy_(deltaB_u)",
+    )
+
+    with pytest.raises(
+        m.ContractError,
+        match="source recurrent cache role",
     ):
         m.runtime_gate()
 

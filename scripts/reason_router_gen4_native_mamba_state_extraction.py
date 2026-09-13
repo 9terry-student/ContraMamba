@@ -27,20 +27,24 @@ from scripts import reason_router_gen4_six_cell_tier2_inference_adapter as adapt
 from scripts import reason_router_gen4_six_cell_tier2_scientific_inference as r5  # noqa: E402
 
 PHASE_D_RUNNER_IMPLEMENTATION_AUTHORITY = "66f56152e97445429eb5b329e0fc849e7cc81492"
+SOURCE_ROLE_VALIDATOR_CORRECTION_AUTHORITY = "5ee0826c629978a72240bb88f732aacf6f357c4b"
 PHASE_C_MEASUREMENT_IMPLEMENTATION_COMMIT = "e3c870e7f24e183b0046b568e1de3b71446c182d"
 PHASE_C_IMPLEMENTATION_AUTHORITY = "480ff74aebf5ef942aa9f47fa78c06612a8f97a4"
 PHASE_AB_FEASIBILITY_FREEZE = "26fd55803acd05febefc8bd031f2fc23c17b0ef4"
 MECHANISTIC_BRIDGE_SPECIFICATION = "a2617aa037d1a9834003535b62ac81770a5b96aa"
 
 RUNNER_PATH = Path("scripts/reason_router_gen4_native_mamba_state_extraction.py")
-EXECUTION_AUTHORITY_PATH = Path("reports/reason_router_gen4_native_mamba_state_bridge_phase_d_extraction_execution_authority_spec_candidate.md")
+EXECUTION_AUTHORITY_PATH = Path(
+    "reports/reason_router_gen4_native_mamba_state_bridge_"
+    "phase_d_extraction_execution_authority_correction_spec_candidate.md"
+)
 EXECUTION_AUTHORITY_ID = "GEN4_NATIVE_MAMBA_STATE_BRIDGE_PHASE_D_EXTRACTION_EXECUTION_AUTHORITY"
 MEASUREMENT_PATH = Path("scripts/reason_router_gen4_native_mamba_state_measurement.py")
 ADAPTER_PATH = Path("scripts/reason_router_gen4_six_cell_tier2_inference_adapter.py")
 R5_PATH = Path("scripts/reason_router_gen4_six_cell_tier2_scientific_inference.py")
 HISTORICAL_MODEL_PATH = Path("src/contramamba/modeling_v6b_minimal_gen3_grouped_snapshot.py")
 
-MEASUREMENT_SHA256 = "a90aea3e8a60a305ac70b34866647f8c4ff2c6d02a092d93896ac5dc8a258086"
+MEASUREMENT_SHA256 = "e31d82af229c79b7de3d55f3419a1ae1cc9da0e1c0af5bfd84ba4cec85a36a82"
 ADAPTER_SHA256 = "83177c351f82a781586c63bd8d4ef1b40e759b5a94858dc1837d65502cbff6e5"
 R5_SHA256 = "468a758a7d20d048c75a0ca7e298b73a65f538527df55d3ecad3c7ff1760cf4d"
 HISTORICAL_MODEL_SHA256 = "8c365bfa857157d91f363358d5db3abaab425dec3e0d7c62683b4207a589b6a5"
@@ -808,6 +812,7 @@ def run_scientific_extraction(
             "runner_sha256": expected_runner_sha256,
             "runner_bytes": len(git_show_bytes(runner_implementation_commit, RUNNER_PATH)),
             "phase_d_runner_implementation_authority": PHASE_D_RUNNER_IMPLEMENTATION_AUTHORITY,
+            "source_role_validator_correction_authority": SOURCE_ROLE_VALIDATOR_CORRECTION_AUTHORITY,
             "phase_c_measurement_implementation_commit": PHASE_C_MEASUREMENT_IMPLEMENTATION_COMMIT,
             "phase_c_measurement_path": MEASUREMENT_PATH.as_posix(),
             "phase_c_measurement_sha256": MEASUREMENT_SHA256,

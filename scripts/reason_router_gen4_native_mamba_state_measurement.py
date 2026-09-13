@@ -55,6 +55,7 @@ CACHE_SHA256 = (
 CACHE_BYTES = 60432
 
 CAPTURE_QUALNAME = "MambaMixer.slow_forward"
+DELTA_B_U_LINE = 397
 RECURRENT_UPDATE_LINE = 409
 CAPTURE_LINE = 410
 FINAL_CACHE_PERSISTENCE_LINE = 417
@@ -131,7 +132,7 @@ def _assignment_value(node: Any) -> Any:
 
 
 def _validate_source_roles(data: bytes, code: Any) -> None:
-    """Prove update -> readout -> recurrent-cache persistence roles."""
+    """Prove frozen recurrent precompute -> update -> readout -> cache roles."""
     try:
         tree = ast.parse(data.decode("utf-8"))
     except (UnicodeDecodeError, SyntaxError) as exc:
@@ -145,17 +146,32 @@ def _validate_source_roles(data: bytes, code: Any) -> None:
             if isinstance(line, int):
                 nodes_by_line.setdefault(line, []).append(node)
 
+    delta_b_u_nodes = nodes_by_line.get(DELTA_B_U_LINE, [])
     updates = nodes_by_line.get(RECURRENT_UPDATE_LINE, [])
     readouts = nodes_by_line.get(CAPTURE_LINE, [])
     persists = nodes_by_line.get(FINAL_CACHE_PERSISTENCE_LINE, [])
 
+    require(len(delta_b_u_nodes) == 1, "source deltaB_u role")
     require(len(updates) == 1, "source update role")
     require(len(readouts) == 1, "source readout role")
     require(len(persists) == 1, "source recurrent cache role")
 
+    delta_b_u = delta_b_u_nodes[0]
     update = updates[0]
     readout = readouts[0]
     persist = persists[0]
+
+    delta_b_u_value = _assignment_value(delta_b_u)
+    delta_b_u_names = _node_names(delta_b_u_value)
+
+    require(
+        isinstance(delta_b_u, (ast.Assign, ast.AnnAssign))
+        and _assignment_target(delta_b_u) == "deltaB_u"
+        and isinstance(delta_b_u_value, ast.BinOp)
+        and isinstance(delta_b_u_value.op, ast.Mult)
+        and {"discrete_B", "hidden_states"} <= delta_b_u_names,
+        "source deltaB_u role",
+    )
 
     update_value = _assignment_value(update)
     update_names = _node_names(update_value)
@@ -165,23 +181,27 @@ def _validate_source_roles(data: bytes, code: Any) -> None:
         and _assignment_target(update) == "ssm_state"
         and isinstance(update_value, ast.BinOp)
         and isinstance(update_value.op, ast.Add)
-        and {
-            "ssm_state",
-            "discrete_A",
-            "discrete_B",
-            "hidden_states",
-        }
-        <= update_names,
+        and {"ssm_state", "discrete_A", "deltaB_u"} <= update_names,
         "source update role",
     )
 
     readout_value = _assignment_value(readout)
     readout_names = _node_names(readout_value)
+    readout_func = (
+        readout_value.func
+        if isinstance(readout_value, ast.Call)
+        else None
+    )
 
     require(
         isinstance(readout, (ast.Assign, ast.AnnAssign))
-        and _assignment_target(readout) not in {"", "ssm_state"}
-        and {"ssm_state", "discrete_C"} <= readout_names,
+        and _assignment_target(readout) == "scan_output"
+        and isinstance(readout_value, ast.Call)
+        and isinstance(readout_func, ast.Attribute)
+        and isinstance(readout_func.value, ast.Name)
+        and readout_func.value.id == "torch"
+        and readout_func.attr == "matmul"
+        and {"ssm_state", "C"} <= readout_names,
         "source readout role",
     )
 
