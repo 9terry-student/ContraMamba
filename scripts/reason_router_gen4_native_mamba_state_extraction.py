@@ -30,6 +30,7 @@ PHASE_D_RUNNER_IMPLEMENTATION_AUTHORITY = "66f56152e97445429eb5b329e0fc849e7cc81
 SOURCE_ROLE_VALIDATOR_CORRECTION_AUTHORITY = "5ee0826c629978a72240bb88f732aacf6f357c4b"
 KAGGLE_TORCH_BUILD_TAG_CORRECTION_AUTHORITY = "9608e80efced2f6029bb4265eabf8e46df8d638c"
 BACKEND_DISPATCH_VALIDATOR_CORRECTION_AUTHORITY = "94c23155b8422d23ae01c43c0b63c5f696bd52d1"
+CPU_TORCH_BUILD_TAG_REBIND_AUTHORITY = "59e33d329aa2278c630b2f2f5141090e97f63ca4"
 PHASE_C_MEASUREMENT_IMPLEMENTATION_COMMIT = "e3c870e7f24e183b0046b568e1de3b71446c182d"
 PHASE_C_IMPLEMENTATION_AUTHORITY = "480ff74aebf5ef942aa9f47fa78c06612a8f97a4"
 PHASE_AB_FEASIBILITY_FREEZE = "26fd55803acd05febefc8bd031f2fc23c17b0ef4"
@@ -38,7 +39,7 @@ MECHANISTIC_BRIDGE_SPECIFICATION = "a2617aa037d1a9834003535b62ac81770a5b96aa"
 RUNNER_PATH = Path("scripts/reason_router_gen4_native_mamba_state_extraction.py")
 EXECUTION_AUTHORITY_PATH = Path(
     "reports/reason_router_gen4_native_mamba_state_bridge_"
-    "phase_d_extraction_execution_authority_backend_dispatch_correction_spec_candidate.md"
+    "phase_d_extraction_execution_authority_cpu_runtime_rebind_spec_candidate.md"
 )
 EXECUTION_AUTHORITY_ID = "GEN4_NATIVE_MAMBA_STATE_BRIDGE_PHASE_D_EXTRACTION_EXECUTION_AUTHORITY"
 MEASUREMENT_PATH = Path("scripts/reason_router_gen4_native_mamba_state_measurement.py")
@@ -46,7 +47,7 @@ ADAPTER_PATH = Path("scripts/reason_router_gen4_six_cell_tier2_inference_adapter
 R5_PATH = Path("scripts/reason_router_gen4_six_cell_tier2_scientific_inference.py")
 HISTORICAL_MODEL_PATH = Path("src/contramamba/modeling_v6b_minimal_gen3_grouped_snapshot.py")
 
-MEASUREMENT_SHA256 = "3699cc7a61d777a2dee3c8bdde9c87933e268579d79622a9c519969584c6fdc5"
+MEASUREMENT_SHA256 = "ce9b11d53b6cc6ee07a0c68509a1ca4fbb641a20be5275f022fc61ddf83120fa"
 ADAPTER_SHA256 = "83177c351f82a781586c63bd8d4ef1b40e759b5a94858dc1837d65502cbff6e5"
 R5_SHA256 = "468a758a7d20d048c75a0ca7e298b73a65f538527df55d3ecad3c7ff1760cf4d"
 HISTORICAL_MODEL_SHA256 = "8c365bfa857157d91f363358d5db3abaab425dec3e0d7c62683b4207a589b6a5"
@@ -817,6 +818,7 @@ def run_scientific_extraction(
             "source_role_validator_correction_authority": SOURCE_ROLE_VALIDATOR_CORRECTION_AUTHORITY,
             "kaggle_torch_build_tag_correction_authority": KAGGLE_TORCH_BUILD_TAG_CORRECTION_AUTHORITY,
             "backend_dispatch_validator_correction_authority": BACKEND_DISPATCH_VALIDATOR_CORRECTION_AUTHORITY,
+            "cpu_torch_build_tag_rebind_authority": CPU_TORCH_BUILD_TAG_REBIND_AUTHORITY,
             "phase_c_measurement_implementation_commit": PHASE_C_MEASUREMENT_IMPLEMENTATION_COMMIT,
             "phase_c_measurement_path": MEASUREMENT_PATH.as_posix(),
             "phase_c_measurement_sha256": MEASUREMENT_SHA256,

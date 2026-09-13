@@ -138,7 +138,7 @@ def test_authority_constants():
     assert m.EXPECTED_VERSIONS == {
         "python": "3.12.13",
         "numpy": "2.0.2",
-        "torch": "2.10.0+cu128",
+        "torch": "2.10.0+cpu",
         "transformers": "5.0.0",
     }
 
@@ -1295,7 +1295,7 @@ def test_frozen_transformers_v5_source_role_fixture(
     m.runtime_gate()
 
 
-def test_runtime_gate_rejects_old_cpu_build_tag(
+def test_runtime_gate_rejects_prior_cu128_build_tag(
     tmp_path,
     monkeypatch,
 ):
@@ -1306,7 +1306,7 @@ def test_runtime_gate_rejects_old_cpu_build_tag(
         )
     )
 
-    versions["torch"] = "2.10.0+cpu"
+    versions["torch"] = "2.10.0+cu128"
 
     with pytest.raises(
         m.ContractError,
