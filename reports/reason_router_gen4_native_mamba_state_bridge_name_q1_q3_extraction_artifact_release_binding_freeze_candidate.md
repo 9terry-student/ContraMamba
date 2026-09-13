@@ -1,0 +1,237 @@
+# ContraMamba Gen4 Native Mamba State Bridge
+# NAME Q1/Q3 Extraction Artifact Release Binding Freeze
+# Candidate
+
+STATUS =
+CANDIDATE
+
+AUTHORITY_ID =
+GEN4_NATIVE_MAMBA_STATE_BRIDGE_NAME_Q1_Q3_EXTRACTION_ARTIFACT_RELEASE_BINDING_FREEZE
+
+PHASE =
+NAME_Q1_Q3_EXTRACTION_ARTIFACT_RELEASE_BINDING_FREEZE
+
+SCIENTIFIC_CONCLUSION =
+NONE
+
+
+## 1. Git storage freeze
+
+EXTRACTION_ARTIFACT_STORAGE_FREEZE_COMMIT =
+60b430fccec9e51e4d1f12131eabf37d03a8be66
+
+EXTRACTION_ARTIFACT_STORAGE_FREEZE_REPORT =
+reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_extraction_artifact_storage_freeze_candidate.md
+
+PROVENANCE_VALIDATION_FREEZE_COMMIT =
+e500beabf8a7e1dfc0f8260586d8f5ed8e374d5c
+
+
+## 2. Large-binary release binding
+
+RELEASE_ID =
+387957987
+
+RELEASE_TAG =
+gen4-name-q1q3-states-60b430f
+
+RELEASE_TARGET_COMMIT =
+60b430fccec9e51e4d1f12131eabf37d03a8be66
+
+TAG_REF_TYPE =
+commit
+
+TAG_REF_COMMIT =
+60b430fccec9e51e4d1f12131eabf37d03a8be66
+
+RELEASE_DRAFT =
+FALSE
+
+RELEASE_PRERELEASE =
+TRUE
+
+RELEASE_PUBLISHED_AT =
+2026-09-13T16:22:41Z
+
+RELEASE_URL =
+https://github.com/9terry-student/ContraMamba/releases/tag/gen4-name-q1q3-states-60b430f
+
+
+## 3. Release asset
+
+ASSET_ID =
+561527448
+
+ASSET_NAME =
+support_states.npy
+
+ASSET_STATE =
+uploaded
+
+ASSET_CONTENT_TYPE =
+application/octet-stream
+
+ASSET_BYTES =
+707788928
+
+ASSET_SHA256 =
+8b68e303f06da687052cd64bb3f8336e4b52d2686404a26d62d77869608cebc3
+
+ASSET_DIGEST =
+sha256:8b68e303f06da687052cd64bb3f8336e4b52d2686404a26d62d77869608cebc3
+
+ASSET_URL =
+https://github.com/9terry-student/ContraMamba/releases/download/gen4-name-q1q3-states-60b430f/support_states.npy
+
+LOCAL_SOURCE_BYTES =
+707788928
+
+LOCAL_SOURCE_SHA256 =
+8b68e303f06da687052cd64bb3f8336e4b52d2686404a26d62d77869608cebc3
+
+RELEASE_ASSET_IDENTITY_VALIDATION =
+PASS
+
+
+## 4. Measurement identity
+
+BUNDLE_PATH =
+reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1
+
+SUPPORT_STATE_VECTOR_COUNT =
+7200
+
+SUPPORT_STATES_SHAPE =
+[7200,24576]
+
+SUPPORT_STATES_DTYPE =
+float32
+
+SEMANTIC_ANCHOR =
+A_NAME
+
+LAYER_SET =
+5,17
+
+CONTRAST_CELLS =
+C0_SHAM,C2_NAME
+
+SOURCE_PAIR_COUNT =
+300
+
+MODEL_INPUT_ROW_COUNT =
+600
+
+BACKBONE_FORWARD_COUNT =
+600
+
+ENDPOINT_ROW_COUNT =
+1200
+
+REPRESENTATIVE_SEED =
+180
+
+REPRESENTATIVE_ARM =
+G3-GROUP-D-HALF
+
+REPRESENTATIVE_CHECKPOINT_SHA256 =
+1ff3fcf2ebd754ab6f9483d6a9982b9b04b9a4eb3357f9f8cdbe2b30399e7d2f
+
+
+## 5. Frozen small-artifact identities
+
+MANIFEST_SHA256 =
+b0ec36f0a85332b4c91ab4b4458bdcc569777e981d080c6b2ed28e56b121710c
+
+SHA256SUMS_SHA256 =
+ff5e293eb7fda7a7aefce66ca19a5ece1aa72ffd40b600bd1c1bbce6cd7f20ec
+
+SUPPORT_STATE_ROWS_SHA256 =
+c663960e2b2be9dc9af598fd6fe14e9698927a17b969a463b6237c8efce37140
+
+KINEMATIC_ENDPOINTS_SHA256 =
+b47e32496f73f5493e8737b040b30bc4a23dd8cd22454a85244fa812273b6605
+
+
+## 6. Storage and provenance verdict
+
+LARGE_BINARY_GIT_TRACKING =
+FORBIDDEN
+
+LARGE_BINARY_STORAGE =
+GITHUB_RELEASE_ASSET
+
+RELEASE_TARGET_VALIDATION =
+PASS
+
+TAG_REF_VALIDATION =
+PASS
+
+ASSET_BYTE_COUNT_VALIDATION =
+PASS
+
+ASSET_SHA256_VALIDATION =
+PASS
+
+ARTIFACT_PROVENANCE_VALIDITY =
+PASS
+
+STORAGE_PROVENANCE =
+CLOSED
+
+The complete NAME Q1/Q3 extraction bundle now has a durable provenance
+boundary:
+
+- four small artifacts are frozen at the storage-freeze Git commit;
+- the large support-state tensor is frozen as the exact GitHub Release asset;
+- the release tag and target commit are exact;
+- the release asset byte count and SHA256 reproduce the validated local tensor.
+
+
+## 7. Scientific boundary
+
+TRAINING =
+NO
+
+BACKWARD =
+NO
+
+STATISTICAL_TESTING =
+NOT_PERFORMED
+
+NAME_Q1_Q3_HYPOTHESIS_SUPPORT =
+NOT_EVALUATED
+
+DIRECT_CROSS_LAYER_TEST =
+NOT_PERFORMED
+
+DEPTH_SELECTIVITY =
+NOT_ESTABLISHED
+
+MEDIATION =
+NOT_ESTABLISHED
+
+CAUSALITY =
+NOT_ESTABLISHED
+
+OVERALL_ADAPTIVE_PROGRAM_FWER =
+NOT_CLAIMED
+
+SCIENTIFIC_CONCLUSION =
+NONE
+
+
+## 8. Next transition
+
+Q1_Q3_EXTRACTION_ARTIFACT_STORAGE =
+CLOSED
+
+NEXT_ACTION =
+NAME_Q1_Q3_STATISTICAL_ANALYSIS_IMPLEMENTATION_AUTHORITY_REQUIRED
+
+STATISTICAL_EXECUTION_AUTHORITY =
+NOT_YET_AUTHORIZED
+
+The frozen scientific specification already defines the six-test NAME Q1/Q3
+family. The next phase is a bounded statistical-analysis implementation
+authority and implementation validation. It is not statistical execution.
