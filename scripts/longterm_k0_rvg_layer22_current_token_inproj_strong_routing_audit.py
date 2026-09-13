@@ -20,8 +20,10 @@ For aligned corr/ctrl items:
     sum_j D_j = T_H,corr^2 - T_H,ctrl^2
 
 The downstream strong/weak H-channel partition is frozen by the preceding
-lag-0 kernel evidence. The analysis is observational/algebraic only.
-Raw per-item channel vectors are never persisted.
+lag-0 kernel evidence. Reconstruction validation preserves the frozen parent
+branch-level gate and bridges the differenced algebra through the exact
+branch-error difference identity. The analysis is observational/algebraic
+only. Raw per-item channel vectors are never persisted.
 """
 
 from __future__ import annotations
@@ -48,6 +50,16 @@ AUTHORITY_REL = (
 )
 AUTHORITY_SHA256 = "e3da4a72418c2aae3379870796e718a5fe4b1e9c0e1e6b8fce172407f3f3bad3"
 AUTHORITY_BLOB = "748ae3fc6fffa32e03461dc3ece7271ee49cbf4d"
+
+CORRECTION_AUTHORITY_FREEZE_COMMIT = "3df1cfaac5af7a5551307c33380b5dc1f33fecbd"
+CORRECTION_AUTHORITY_REL = (
+    "reports/"
+    "longterm_k0_rvg_layer22_current_token_inproj_strong_routing_"
+    "reconstruction_gate_correction_static_design_candidate.md"
+)
+CORRECTION_AUTHORITY_SHA256 = "d379656ceeb0bbfa78b56bf0408f6eb279facba1c874c408e2c9fe4fae9a4def"
+CORRECTION_AUTHORITY_BLOB = "30a1bb34b1f687a53776d2db22a509c5249806bb"
+FAILED_IMPLEMENTATION_COMMIT = "cc539ff5a3b9d692fa946c0d8e470685ea8ac6e3"
 
 PARENT_EVIDENCE_FREEZE_COMMIT = "bfa626261aba575ab7316877bc69ca6e5df38157"
 PARENT_IMPLEMENTATION_COMMIT = "4c19d02d94600e47f39c15bebd839f5a4820a473"
@@ -135,7 +147,7 @@ PARENT_SCALAR_REL_TOL = 1e-13
 PARENT_SCALAR_ABS_TOL = 1e-13
 KERNEL_RMS_REL_TOL = 1e-13
 KERNEL_RMS_ABS_TOL = 1e-13
-H_RECON_REL_TOL = 1e-6
+PARENT_BRANCH_H_RECON_REL_TOL = 1e-6
 ALGEBRAIC_ABS_TOL = 5e-12
 ENERGY_ABS_TOL = 5e-12
 PARENT_STRONG_ENERGY_ABS_TOL = 2e-6
@@ -201,6 +213,7 @@ def authenticate_repo(root: Path, runtime_mode: bool) -> dict[str, Any]:
 
     for ancestor, label in (
         (AUTHORITY_FREEZE_COMMIT, "AUTHORITY"),
+        (CORRECTION_AUTHORITY_FREEZE_COMMIT, "CORRECTION_AUTHORITY"),
         (PARENT_EVIDENCE_FREEZE_COMMIT, "PARENT_EVIDENCE"),
         (UPATH_EVIDENCE_FREEZE_COMMIT, "UPATH_EVIDENCE"),
     ):
@@ -223,7 +236,10 @@ def authenticate_repo(root: Path, runtime_mode: bool) -> dict[str, Any]:
             require(xy == "??", f"K1_STATE_CHANGED:{line}")
             continue
         if not runtime_mode and path == RUNNER_REL:
-            require(xy == "??", f"STATIC_RUNNER_STATE_UNEXPECTED:{line}")
+            require(
+                xy in {" M", "M ", "MM"},
+                f"STATIC_CORRECTION_RUNNER_STATE_UNEXPECTED:{line}",
+            )
             continue
         raise CurrentTokenInProjRoutingError(f"UNEXPECTED_WORKTREE_CHANGE:{line}")
 
@@ -259,6 +275,30 @@ def authenticate_authority(root: Path) -> None:
     current = root / AUTHORITY_REL
     require(current.is_file(), "AUTHORITY_FILE_MISSING")
     require(current.read_bytes() == frozen, "AUTHORITY_WORKTREE_DRIFT")
+
+    correction = git_bytes(
+        root,
+        f"{CORRECTION_AUTHORITY_FREEZE_COMMIT}:{CORRECTION_AUTHORITY_REL}",
+    )
+    require(
+        sha256_bytes(correction) == CORRECTION_AUTHORITY_SHA256,
+        "CORRECTION_AUTHORITY_SHA256_MISMATCH",
+    )
+    require(
+        git(
+            root,
+            "rev-parse",
+            f"{CORRECTION_AUTHORITY_FREEZE_COMMIT}:{CORRECTION_AUTHORITY_REL}",
+        )
+        == CORRECTION_AUTHORITY_BLOB,
+        "CORRECTION_AUTHORITY_BLOB_MISMATCH",
+    )
+    correction_current = root / CORRECTION_AUTHORITY_REL
+    require(correction_current.is_file(), "CORRECTION_AUTHORITY_FILE_MISSING")
+    require(
+        correction_current.read_bytes() == correction,
+        "CORRECTION_AUTHORITY_WORKTREE_DRIFT",
+    )
 
 
 def load_parent(root: Path):
@@ -690,49 +730,105 @@ def _paired_count(rows, corr_field: str, ctrl_field: str):
 
 
 def compute_role_routing(
-    x,
-    h_observed,
+    x_matched,
+    x_swapped,
+    h_matched,
+    h_swapped,
     operator: Mapping[str, Any],
     label: str,
 ):
     import torch
 
-    x = x.to(torch.float64).contiguous()
-    h_observed = h_observed.to(torch.float64).contiguous()
-    require(tuple(x.shape) == (HIDDEN_SIZE,), f"{label}_X_SHAPE_MISMATCH")
-    require(tuple(h_observed.shape) == (INTERMEDIATE_SIZE,),
-            f"{label}_H_SHAPE_MISMATCH")
-    require(bool(torch.isfinite(x).all().item()), f"{label}_X_NONFINITE")
-    require(bool(torch.isfinite(h_observed).all().item()), f"{label}_H_NONFINITE")
+    x_matched = x_matched.to(torch.float64).contiguous()
+    x_swapped = x_swapped.to(torch.float64).contiguous()
+    h_matched = h_matched.to(torch.float64).contiguous()
+    h_swapped = h_swapped.to(torch.float64).contiguous()
+
+    require(tuple(x_matched.shape) == (HIDDEN_SIZE,), f"{label}_XM_SHAPE_MISMATCH")
+    require(tuple(x_swapped.shape) == (HIDDEN_SIZE,), f"{label}_XS_SHAPE_MISMATCH")
+    require(
+        tuple(h_matched.shape) == (INTERMEDIATE_SIZE,),
+        f"{label}_HM_SHAPE_MISMATCH",
+    )
+    require(
+        tuple(h_swapped.shape) == (INTERMEDIATE_SIZE,),
+        f"{label}_HS_SHAPE_MISMATCH",
+    )
+    for value, name in (
+        (x_matched, "XM"),
+        (x_swapped, "XS"),
+        (h_matched, "HM"),
+        (h_swapped, "HS"),
+    ):
+        require(bool(torch.isfinite(value).all().item()), f"{label}_{name}_NONFINITE")
+
+    x = (x_matched - x_swapped).contiguous()
+    h_observed = (h_matched - h_swapped).contiguous()
 
     x_sq = float(torch.dot(x, x).item())
     h_obs_sq = float(torch.dot(h_observed, h_observed).item())
     require(x_sq > 0.0, f"{label}_X_ZERO")
     require(h_obs_sq > 0.0, f"{label}_H_OBS_ZERO")
 
-    h_alg = torch.mv(operator["w_hidden64"], x)
+    w = operator["w_hidden64"]
+    h_alg = torch.mv(w, x)
     h_alg_sq = float(torch.dot(h_alg, h_alg).item())
     require(h_alg_sq > 0.0, f"{label}_H_ALG_ZERO")
 
-    recon_abs = float(torch.linalg.vector_norm(h_alg - h_observed).item())
-    recon_rel = recon_abs / math.sqrt(h_obs_sq)
-    require(recon_rel <= H_RECON_REL_TOL,
-            f"{label}_H_RECON_FAILURE:{recon_rel}")
+    # Correction authority:
+    # parent capture preserves the frozen branch-level <=1e-6 gate.
+    # The cancellation-sensitive difference-relative residual is diagnostic.
+    h_matched_alg = torch.mv(w, x_matched)
+    h_swapped_alg = torch.mv(w, x_swapped)
+    err_matched = h_matched_alg - h_matched
+    err_swapped = h_swapped_alg - h_swapped
+
+    difference_error = h_alg - h_observed
+    branch_error_difference = err_matched - err_swapped
+    error_difference_identity_abs_residual = float(
+        torch.max(torch.abs(difference_error - branch_error_difference)).item()
+    )
+    require(
+        error_difference_identity_abs_residual <= ALGEBRAIC_ABS_TOL,
+        f"{label}_ERROR_DIFFERENCE_IDENTITY_FAILURE:"
+        f"{error_difference_identity_abs_residual}",
+    )
+
+    difference_reconstruction_abs_residual = float(
+        torch.linalg.vector_norm(difference_error).item()
+    )
+    difference_reconstruction_relative_residual = (
+        difference_reconstruction_abs_residual / math.sqrt(h_obs_sq)
+    )
+
+    matched_h_sq = float(torch.dot(h_matched, h_matched).item())
+    swapped_h_sq = float(torch.dot(h_swapped, h_swapped).item())
+    require(matched_h_sq > 0.0, f"{label}_HM_ZERO")
+    require(swapped_h_sq > 0.0, f"{label}_HS_ZERO")
+    matched_branch_reconstruction_relative_residual = float(
+        torch.linalg.vector_norm(err_matched).item()
+    ) / math.sqrt(matched_h_sq)
+    swapped_branch_reconstruction_relative_residual = float(
+        torch.linalg.vector_norm(err_swapped).item()
+    ) / math.sqrt(swapped_h_sq)
 
     e = (h_alg * h_alg) / x_sq
     row_r2 = operator["row_r2"]
     alignment = e / row_r2
     require(bool(torch.isfinite(alignment).all().item()), f"{label}_ALIGNMENT_NONFINITE")
 
-    # Direct cosine-square formula from fixed row geometry.
-    dots = torch.mv(operator["w_hidden64"], x)
+    dots = torch.mv(w, x)
     alignment_direct = (dots * dots) / (row_r2 * x_sq)
     factor_residual = float(torch.max(torch.abs(e - row_r2 * alignment_direct)).item())
     alignment_residual = float(torch.max(torch.abs(alignment - alignment_direct)).item())
-    require(factor_residual <= ALGEBRAIC_ABS_TOL,
-            f"{label}_ROW_GAIN_ALIGNMENT_FACTOR_FAILURE:{factor_residual}")
-    require(alignment_residual <= ALGEBRAIC_ABS_TOL,
-            f"{label}_ALIGNMENT_FORMULA_FAILURE:{alignment_residual}")
+    require(
+        factor_residual <= ALGEBRAIC_ABS_TOL,
+        f"{label}_ROW_GAIN_ALIGNMENT_FACTOR_FAILURE:{factor_residual}",
+    )
+    require(
+        alignment_residual <= ALGEBRAIC_ABS_TOL,
+        f"{label}_ALIGNMENT_FORMULA_FAILURE:{alignment_residual}",
+    )
 
     t_h_sq = float(torch.sum(e).item())
     t_s_sq = float(torch.sum(e[operator["strong_mask"]]).item())
@@ -740,8 +836,10 @@ def compute_role_routing(
     t_e_sq = float(torch.sum(e[operator["equal_mask"]]).item())
 
     total_closure = abs(t_h_sq - (t_s_sq + t_w_sq + t_e_sq))
-    require(total_closure <= ALGEBRAIC_ABS_TOL,
-            f"{label}_STRONG_WEAK_TOTAL_CLOSURE_FAILURE:{total_closure}")
+    require(
+        total_closure <= ALGEBRAIC_ABS_TOL,
+        f"{label}_STRONG_WEAK_TOTAL_CLOSURE_FAILURE:{total_closure}",
+    )
 
     t_h = math.sqrt(max(t_h_sq, 0.0))
     t_s = math.sqrt(max(t_s_sq, 0.0))
@@ -751,26 +849,41 @@ def compute_role_routing(
     p_w = t_w_sq / t_h_sq
     p_e = t_e_sq / t_h_sq
     energy_closure = abs(p_s + p_w + p_e - 1.0)
-    require(energy_closure <= ENERGY_ABS_TOL,
-            f"{label}_ENERGY_PARTITION_CLOSURE_FAILURE:{energy_closure}")
+    require(
+        energy_closure <= ENERGY_ABS_TOL,
+        f"{label}_ENERGY_PARTITION_CLOSURE_FAILURE:{energy_closure}",
+    )
 
     obs_energy = (h_observed * h_observed) / h_obs_sq
     p_s_observed = float(torch.sum(obs_energy[operator["strong_mask"]]).item())
     p_w_observed = float(torch.sum(obs_energy[operator["weak_mask"]]).item())
     p_e_observed = float(torch.sum(obs_energy[operator["equal_mask"]]).item())
     parent_energy_closure = abs(p_s_observed + p_w_observed + p_e_observed - 1.0)
-    require(parent_energy_closure <= ENERGY_ABS_TOL,
-            f"{label}_OBS_ENERGY_PARTITION_CLOSURE_FAILURE:{parent_energy_closure}")
+    require(
+        parent_energy_closure <= ENERGY_ABS_TOL,
+        f"{label}_OBS_ENERGY_PARTITION_CLOSURE_FAILURE:{parent_energy_closure}",
+    )
 
     p_s_bridge = abs(p_s - p_s_observed)
-    require(p_s_bridge <= PARENT_STRONG_ENERGY_ABS_TOL,
-            f"{label}_P_S_ALG_OBS_BRIDGE_FAILURE:{p_s_bridge}")
+    require(
+        p_s_bridge <= PARENT_STRONG_ENERGY_ABS_TOL,
+        f"{label}_P_S_ALG_OBS_BRIDGE_FAILURE:{p_s_bridge}",
+    )
 
     return {
         "x_l2": math.sqrt(x_sq),
         "h_observed_l2": math.sqrt(h_obs_sq),
         "h_algebraic_l2": math.sqrt(h_alg_sq),
-        "h_reconstruction_relative_residual": recon_rel,
+        "difference_reconstruction_absolute_residual":
+            difference_reconstruction_abs_residual,
+        "difference_reconstruction_relative_residual":
+            difference_reconstruction_relative_residual,
+        "matched_branch_reconstruction_relative_residual":
+            matched_branch_reconstruction_relative_residual,
+        "swapped_branch_reconstruction_relative_residual":
+            swapped_branch_reconstruction_relative_residual,
+        "error_difference_identity_abs_residual":
+            error_difference_identity_abs_residual,
         "row_gain_alignment_factor_abs_residual": factor_residual,
         "alignment_formula_abs_residual": alignment_residual,
         "strong_weak_total_closure_abs_residual": total_closure,
@@ -824,12 +937,28 @@ def role_record_from_capture(
     require(tuple(hs.shape) == (CONV_KERNEL_SIZE, INTERMEDIATE_SIZE),
             f"HS_RF_SHAPE_MISMATCH:{idx}:{role}")
 
-    x = (xm[TARGET_LAG, :].to(torch.float64)
-         - xs[TARGET_LAG, :].to(torch.float64)).contiguous()
-    h_observed = (hm[TARGET_LAG, :].to(torch.float64)
-                  - hs[TARGET_LAG, :].to(torch.float64)).contiguous()
+    parent_branch_reconstruction_relative_residual = max(
+        float(matched[token]["inproj_reconstruction_relative_residual"]),
+        float(swapped[token]["inproj_reconstruction_relative_residual"]),
+    )
+    require(
+        parent_branch_reconstruction_relative_residual
+        <= PARENT_BRANCH_H_RECON_REL_TOL,
+        f"PARENT_BRANCH_H_RECON_GATE_FAILURE:{idx}:{role}:"
+        f"{parent_branch_reconstruction_relative_residual}",
+    )
 
-    routing = compute_role_routing(x, h_observed, operator, f"{idx}:{role}")
+    routing = compute_role_routing(
+        xm[TARGET_LAG, :],
+        xs[TARGET_LAG, :],
+        hm[TARGET_LAG, :],
+        hs[TARGET_LAG, :],
+        operator,
+        f"{idx}:{role}",
+    )
+    routing["parent_branch_reconstruction_relative_residual"] = (
+        parent_branch_reconstruction_relative_residual
+    )
 
     upath_key = (idx, role)
     require(upath_key in upath_rows, f"UPATH_ROW_MISSING:{upath_key}")
@@ -991,9 +1120,21 @@ def pair_role_records(
         "partition_d_closure_abs_residual": closure_partition,
         "strong_enrichment_identity_abs_residual": strong_enrichment_residual,
         "weak_enrichment_identity_abs_residual": weak_enrichment_residual,
-        "h_reconstruction_relative_residual": max(
-            float(corr["h_reconstruction_relative_residual"]),
-            float(ctrl["h_reconstruction_relative_residual"]),
+        "parent_branch_reconstruction_relative_residual": max(
+            float(corr["parent_branch_reconstruction_relative_residual"]),
+            float(ctrl["parent_branch_reconstruction_relative_residual"]),
+        ),
+        "difference_reconstruction_relative_residual": max(
+            float(corr["difference_reconstruction_relative_residual"]),
+            float(ctrl["difference_reconstruction_relative_residual"]),
+        ),
+        "difference_reconstruction_absolute_residual": max(
+            float(corr["difference_reconstruction_absolute_residual"]),
+            float(ctrl["difference_reconstruction_absolute_residual"]),
+        ),
+        "error_difference_identity_abs_residual": max(
+            float(corr["error_difference_identity_abs_residual"]),
+            float(ctrl["error_difference_identity_abs_residual"]),
         ),
         "row_gain_alignment_factor_abs_residual": max(
             float(corr["row_gain_alignment_factor_abs_residual"]),
@@ -1254,8 +1395,21 @@ def make_summary(
         "paired_counts": paired_counts,
         "paired_delta_and_enrichment_summary": delta_summary,
         "channel_concentration": concentration,
-        "max_h_reconstruction_relative_residual": max(
-            float(row["h_reconstruction_relative_residual"]) for row in item_rows
+        "max_parent_branch_reconstruction_relative_residual": max(
+            float(row["parent_branch_reconstruction_relative_residual"])
+            for row in item_rows
+        ),
+        "max_difference_reconstruction_relative_residual": max(
+            float(row["difference_reconstruction_relative_residual"])
+            for row in item_rows
+        ),
+        "max_difference_reconstruction_absolute_residual": max(
+            float(row["difference_reconstruction_absolute_residual"])
+            for row in item_rows
+        ),
+        "max_error_difference_identity_abs_residual": max(
+            float(row["error_difference_identity_abs_residual"])
+            for row in item_rows
         ),
         "max_row_gain_alignment_factor_abs_residual": max(
             float(row["row_gain_alignment_factor_abs_residual"]) for row in item_rows
@@ -1505,7 +1659,18 @@ def runtime_preflight(
     print("sum_d_all =", item["sum_d_all"])
     print("sum_d_strong =", item["sum_d_strong"])
     print("sum_d_weak =", item["sum_d_weak"])
-    print("h_reconstruction_relative_residual =", item["h_reconstruction_relative_residual"])
+    print(
+        "parent_branch_reconstruction_relative_residual =",
+        item["parent_branch_reconstruction_relative_residual"],
+    )
+    print(
+        "difference_reconstruction_relative_residual_diagnostic =",
+        item["difference_reconstruction_relative_residual"],
+    )
+    print(
+        "error_difference_identity_abs_residual =",
+        item["error_difference_identity_abs_residual"],
+    )
     print("all_channel_d_closure_abs_residual =", item["all_channel_d_closure_abs_residual"])
     print("strong_channel_d_closure_abs_residual =",
           item["strong_channel_d_closure_abs_residual"])
@@ -1676,6 +1841,10 @@ def execute(
         "authority_freeze_commit": AUTHORITY_FREEZE_COMMIT,
         "authority_sha256": AUTHORITY_SHA256,
         "authority_blob": AUTHORITY_BLOB,
+        "correction_authority_freeze_commit": CORRECTION_AUTHORITY_FREEZE_COMMIT,
+        "correction_authority_sha256": CORRECTION_AUTHORITY_SHA256,
+        "correction_authority_blob": CORRECTION_AUTHORITY_BLOB,
+        "failed_implementation_commit": FAILED_IMPLEMENTATION_COMMIT,
         "parent_evidence_freeze_commit": PARENT_EVIDENCE_FREEZE_COMMIT,
         "parent_implementation_commit": PARENT_IMPLEMENTATION_COMMIT,
         "parent_runner_sha256": PARENT_RUNNER_SHA256,
@@ -1707,7 +1876,9 @@ def execute(
         "mamba_source_sha256": binding.source_sha256,
         "parent_scalar_rel_tol": PARENT_SCALAR_REL_TOL,
         "parent_scalar_abs_tol": PARENT_SCALAR_ABS_TOL,
-        "h_reconstruction_rel_tol": H_RECON_REL_TOL,
+        "parent_branch_h_reconstruction_rel_tol": PARENT_BRANCH_H_RECON_REL_TOL,
+        "difference_reconstruction_relative_residual_is_diagnostic_only": True,
+        "error_difference_identity_abs_tol": ALGEBRAIC_ABS_TOL,
         "algebraic_abs_tol": ALGEBRAIC_ABS_TOL,
         "energy_abs_tol": ENERGY_ABS_TOL,
         "parent_strong_energy_abs_tol": PARENT_STRONG_ENERGY_ABS_TOL,
@@ -1719,9 +1890,12 @@ def execute(
         "parent_current_token_metrics_match": True,
         "parent_strong_energy_mass_match": True,
         "capture_method": (
-            "frozen layer-22 U-path capture; current-token X_RF32[0,:] and "
-            "H_RF32[0,:] differences; authenticated bias-free hidden-half "
-            "in-projection W_H applied algebraically in float64"
+            "frozen layer-22 U-path capture with parent branch-level "
+            "in-projection reconstruction gate preserved; current-token "
+            "X_RF32[0,:] and H_RF32[0,:] branches are differenced in float64; "
+            "authenticated bias-free hidden-half W_H defines h_alg=W_H*delta_X; "
+            "runtime observed delta_H is bridged by the exact branch-error "
+            "difference identity"
         ),
         "raw_vectors_persisted": False,
         "raw_per_item_channel_vectors_persisted": False,
@@ -1804,8 +1978,18 @@ def execute(
             f"N_eff={x['effective_channel_count']}"
         )
 
-    print("max_h_reconstruction_relative_residual =",
-          summary["max_h_reconstruction_relative_residual"])
+    print(
+        "max_parent_branch_reconstruction_relative_residual =",
+        summary["max_parent_branch_reconstruction_relative_residual"],
+    )
+    print(
+        "max_difference_reconstruction_relative_residual_diagnostic =",
+        summary["max_difference_reconstruction_relative_residual"],
+    )
+    print(
+        "max_error_difference_identity_abs_residual =",
+        summary["max_error_difference_identity_abs_residual"],
+    )
     print("max_all_channel_d_closure_abs_residual =",
           summary["max_all_channel_d_closure_abs_residual"])
     print("max_strong_channel_d_closure_abs_residual =",
@@ -1880,6 +2064,10 @@ def main():
     print("authority_freeze_commit =", AUTHORITY_FREEZE_COMMIT)
     print("authority_sha256 =", AUTHORITY_SHA256)
     print("authority_blob =", AUTHORITY_BLOB)
+    print("correction_authority_freeze_commit =", CORRECTION_AUTHORITY_FREEZE_COMMIT)
+    print("correction_authority_sha256 =", CORRECTION_AUTHORITY_SHA256)
+    print("correction_authority_blob =", CORRECTION_AUTHORITY_BLOB)
+    print("failed_implementation_commit =", FAILED_IMPLEMENTATION_COMMIT)
     print("parent_evidence_freeze_commit =", PARENT_EVIDENCE_FREEZE_COMMIT)
     print("parent_runner_sha256 =", PARENT_RUNNER_SHA256)
     print("parent_item_sha256 =", PARENT_ITEM_SHA256)
@@ -1900,7 +2088,9 @@ def main():
     print("strong_kernel_channel_count =", EXPECTED_STRONG_COUNT)
     print("weak_kernel_channel_count =", EXPECTED_WEAK_COUNT)
     print("expected_lag0_kernel_rms =", EXPECTED_LAG0_KERNEL_RMS)
-    print("h_reconstruction_rel_tol =", H_RECON_REL_TOL)
+    print("parent_branch_h_reconstruction_rel_tol =", PARENT_BRANCH_H_RECON_REL_TOL)
+    print("difference_reconstruction_relative_residual_gate = diagnostic_only")
+    print("error_difference_identity_abs_tol =", ALGEBRAIC_ABS_TOL)
     print("algebraic_abs_tol =", ALGEBRAIC_ABS_TOL)
     print("parent_strong_energy_abs_tol =", PARENT_STRONG_ENERGY_ABS_TOL)
     print("observer_update_line =", observer_binding.update_line)
