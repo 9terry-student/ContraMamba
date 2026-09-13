@@ -323,3 +323,37 @@ def test_direct_capture_smoke_without_nested_parent_trace():
     assert outputs[3]["R20"].shape == (m.HIDDEN,)
     assert outputs[3]["Y20"].shape == (m.HIDDEN,)
     assert endpoint["S_POST32"].shape == (1, m.INTERMEDIATE, m.STATE_SIZE)
+
+def test_public_negative_provenance_flags_are_allowed_only_when_false():
+    payload = {
+        "forbidden_action_flags": {
+            "logits_read": False,
+            "raw_vectors_persisted": False,
+        }
+    }
+    encoded = m._json_bytes(payload)
+    assert b'"logits_read":false' in encoded
+    assert b'"raw_vectors_persisted":false' in encoded
+
+    with pytest.raises(m.FalsificationError, match="PUBLIC_NEGATIVE_FLAG_NOT_FALSE"):
+        m._json_bytes({"logits_read": True})
+    with pytest.raises(m.FalsificationError, match="PUBLIC_NEGATIVE_FLAG_NOT_FALSE"):
+        m._json_bytes({"raw_vectors_persisted": True})
+
+    with pytest.raises(m.FalsificationError, match="FORBIDDEN_PUBLIC_FIELD"):
+        m._json_bytes({"logits_vector": [0.1]})
+    with pytest.raises(m.FalsificationError, match="FORBIDDEN_PUBLIC_FIELD"):
+        m._json_bytes({"raw_vector_payload": [0.1]})
+
+
+def test_publish_serializes_before_creating_partial(tmp_path, monkeypatch):
+    out = tmp_path / "out"
+    rows = [{"x": 1}] * 330
+    summary = {"logits_vector": [0.1]}
+    manifest = {"schema_version": "x"}
+
+    with pytest.raises(m.FalsificationError, match="FORBIDDEN_PUBLIC_FIELD"):
+        m.publish(out, rows, summary, manifest)
+
+    assert not out.exists()
+    assert not Path(str(out) + ".partial").exists()

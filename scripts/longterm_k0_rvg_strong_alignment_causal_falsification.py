@@ -142,6 +142,14 @@ UNRELATED_UNTRACKED = {
     "validate_frozen_strong_sign_contribution_itemwise_breadth_artifacts.py",
 }
 
+# These exact provenance booleans are intentionally public only when False.
+# Their names contain otherwise-forbidden substrings, so the serializer must
+# distinguish negative execution attestations from payload-bearing fields.
+PUBLIC_NEGATIVE_BOOLEAN_FLAGS = frozenset({
+    "logits_read",
+    "raw_vectors_persisted",
+})
+
 
 class FalsificationError(RuntimeError):
     pass
@@ -1591,9 +1599,24 @@ def _reject_private_payload(obj: Any, path: str = "root") -> None:
     if isinstance(obj, Mapping):
         for key, value in obj.items():
             lower = str(key).lower()
-            for forbidden in ("raw_vector", "activation_vector", "logits", "checkpoint_bytes"):
-                require(forbidden not in lower, "FORBIDDEN_PUBLIC_FIELD:" + path + "." + str(key))
-            _reject_private_payload(value, path + "." + str(key))
+            field_path = path + "." + str(key)
+            if lower in PUBLIC_NEGATIVE_BOOLEAN_FLAGS:
+                require(
+                    value is False,
+                    "PUBLIC_NEGATIVE_FLAG_NOT_FALSE:" + field_path,
+                )
+            else:
+                for forbidden in (
+                    "raw_vector",
+                    "activation_vector",
+                    "logits",
+                    "checkpoint_bytes",
+                ):
+                    require(
+                        forbidden not in lower,
+                        "FORBIDDEN_PUBLIC_FIELD:" + field_path,
+                    )
+            _reject_private_payload(value, field_path)
     elif isinstance(obj, (list, tuple)):
         for i, value in enumerate(obj):
             _reject_private_payload(value, f"{path}[{i}]")
@@ -1628,20 +1651,26 @@ def publish(
     partial = Path(str(final) + ".partial")
     require(not final.exists() and not partial.exists(), "OUTPUT_OR_PARTIAL_EXISTS")
 
+    # Validate and serialize the complete public payload before creating any
+    # filesystem state.  A schema/privacy rejection must not leave a stale
+    # `.partial` directory that blocks the next authenticated execution.
+    metrics_bytes = _jsonl_bytes(rows)
+    summary_bytes = _json_bytes(summary)
+    m = dict(manifest)
+    m["outputs"] = {
+        ITEM_FILE: sha256_bytes(metrics_bytes),
+        SUMMARY_FILE: sha256_bytes(summary_bytes),
+    }
+    manifest_bytes = _json_bytes(m)
+
     partial.mkdir(parents=True, exist_ok=False)
     metrics = partial / ITEM_FILE
     summary_path = partial / SUMMARY_FILE
     manifest_path = partial / MANIFEST_FILE
 
-    metrics.write_bytes(_jsonl_bytes(rows))
-    summary_path.write_bytes(_json_bytes(summary))
-
-    m = dict(manifest)
-    m["outputs"] = {
-        ITEM_FILE: sha256_file(metrics),
-        SUMMARY_FILE: sha256_file(summary_path),
-    }
-    manifest_path.write_bytes(_json_bytes(m))
+    metrics.write_bytes(metrics_bytes)
+    summary_path.write_bytes(summary_bytes)
+    manifest_path.write_bytes(manifest_bytes)
 
     require(
         {p.name for p in partial.iterdir()}
