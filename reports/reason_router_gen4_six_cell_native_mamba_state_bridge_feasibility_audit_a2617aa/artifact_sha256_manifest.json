@@ -1,0 +1,28 @@
+{
+  "artifact_count": 4,
+  "artifacts": [
+    {
+      "bytes": 15192,
+      "filename": "native_backbone_identity_manifest_candidate.jsonl",
+      "sha256": "c7136d373667ad5d6e629963034cb66fb64c4d1a18d15254bece1c8344c75043"
+    },
+    {
+      "bytes": 2268260,
+      "filename": "event_anchor_prefix_manifest_candidate.jsonl",
+      "sha256": "70c84c68b36751bb7c7145b33ccb71ab91bc8ee9e6cc5f2c7a0d4e925f36581f"
+    },
+    {
+      "bytes": 22897,
+      "filename": "feasibility_summary_candidate.json",
+      "sha256": "7767023d5abd7a71c21d433f4255e325eb97ec37a82b27d7a0efd39a88e4b18d"
+    },
+    {
+      "bytes": 9080,
+      "filename": "feasibility_audit_report_candidate.md",
+      "sha256": "056b3f35d07760f9db526858b7b90d6f86b3af4c4a684c69ca5eddfde1b5b22f"
+    }
+  ],
+  "authority_commit": "7337efa05f7230a6e0c700a8ee99579c337c4243",
+  "schema_version": "gen4_native_mamba_state_bridge_feasibility_artifact_sha256_manifest_v1",
+  "self_hash_excluded": true
+}
