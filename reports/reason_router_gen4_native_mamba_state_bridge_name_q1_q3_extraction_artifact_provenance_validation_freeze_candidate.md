@@ -1,0 +1,255 @@
+# ContraMamba Gen4 Native Mamba State Bridge
+# NAME Q1/Q3 Extraction Artifact Provenance Validation Freeze
+# Candidate
+
+STATUS =
+CANDIDATE
+
+AUTHORITY_ID =
+GEN4_NATIVE_MAMBA_STATE_BRIDGE_NAME_Q1_Q3_EXTRACTION_ARTIFACT_PROVENANCE_VALIDATION_FREEZE
+
+PHASE =
+NAME_Q1_Q3_EXTRACTION_ARTIFACT_PROVENANCE_VALIDATION
+
+SCIENTIFIC_CONCLUSION =
+NONE
+
+
+## 1. Execution provenance
+
+EXECUTION_HEAD =
+ebcaad86137b53e1396eb5020d28f60b9615cf3f
+
+RUN_NAME =
+gen4-name-q1q3-scientific-extraction-retry2
+
+COMMAND_SHA256 =
+c80857a6dd3d19ccc1233a6d689b9d5971a4ccf027bb3fa4dd24322ffbd0ed34
+
+RUN_STARTED_UTC =
+2026-09-13T15:52:35Z
+
+RUN_FINISHED_UTC =
+2026-09-13T16:10:41Z
+
+RUN_EXIT_CODE =
+0
+
+RUN_LOG_SHA256 =
+81a20f4bf25eca45e5df7cf3afb4084be3c569f166fa7414d9cdd9c13d2b8194
+
+RUN_META_SHA256 =
+ed607ee94f82dfb9050f4de288ef0604875511aea5333976e9ff2d6e48121f1e
+
+HANDOFF_ZIP_SHA256 =
+24aca1271c0b441be1409e04fd3792bf73a3df8b43674ad834503af139642c3e
+
+COLLECT_FILES =
+5
+
+COLLECT_EXIT_CODE =
+0
+
+IMPORT_VALIDATED =
+5
+
+IMPORT_COPIED =
+5
+
+IMPORT_IDENTICAL =
+0
+
+IMPORT_RESULT =
+PASS
+
+
+## 2. Extraction scope
+
+BUNDLE_DIRECTORY =
+reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1
+
+SOURCE_PAIR_COUNT =
+300
+
+MODEL_INPUT_ROW_COUNT =
+600
+
+BACKBONE_FORWARD_COUNT =
+600
+
+SEMANTIC_ANCHOR =
+A_NAME
+
+CONTRAST_CELLS =
+C0_SHAM,C2_NAME
+
+LAYER_SET =
+5,17
+
+SUPPORT_STATE_ROW_COUNT =
+7200
+
+ENDPOINT_ROW_COUNT =
+1200
+
+SUPPORT_STATE_VECTOR_SIZE =
+24576
+
+SUPPORT_STATE_DTYPE =
+float32
+
+
+## 3. Exact artifact identities
+
+manifest.json: bytes=2661 sha256=b0ec36f0a85332b4c91ab4b4458bdcc569777e981d080c6b2ed28e56b121710c
+support_state_rows.jsonl: bytes=1820730 sha256=c663960e2b2be9dc9af598fd6fe14e9698927a17b969a463b6237c8efce37140
+support_states.npy: bytes=707788928 sha256=8b68e303f06da687052cd64bb3f8336e4b52d2686404a26d62d77869608cebc3
+kinematic_endpoints.jsonl: bytes=513396 sha256=b47e32496f73f5493e8737b040b30bc4a23dd8cd22454a85244fa812273b6605
+SHA256SUMS.txt: bytes=348 sha256=ff5e293eb7fda7a7aefce66ca19a5ece1aa72ffd40b600bd1c1bbce6cd7f20ec
+
+
+## 4. Artifact-set validation
+
+ARTIFACT_SET =
+PASS_EXACT_5
+
+SHA256SUMS_BINDING =
+PASS
+
+MANIFEST_PEER_HASH_BINDING =
+PASS
+
+MANIFEST_SCHEMA =
+PASS
+
+MANIFEST_LINEAGE =
+PASS
+
+MANIFEST_RUNTIME =
+PASS_CPU_FROZEN
+
+MANIFEST_REPRESENTATIVE_CHECKPOINT =
+PASS
+
+
+## 5. Support-state validation
+
+SUPPORT_ROWS =
+PASS_7200
+
+SUPPORT_SOURCE_PAIRS =
+PASS_300
+
+SUPPORT_MODEL_ROWS =
+PASS_600
+
+SUPPORT_LAYERS =
+PASS_5_17
+
+SUPPORT_CELLS =
+PASS_C0_C2
+
+SUPPORT_WINDOW =
+PASS_6_PER_ROW_LAYER
+
+STATE_TENSOR_SHAPE =
+PASS_7200x24576
+
+STATE_TENSOR_DTYPE =
+PASS_FLOAT32
+
+STATE_TENSOR_FINITE =
+PASS
+
+
+## 6. Endpoint validation
+
+ENDPOINT_ROWS =
+PASS_1200
+
+ENDPOINT_PAIR_COMPLETENESS =
+PASS_300
+
+ENDPOINT_LAYERS =
+PASS_5_17
+
+ENDPOINT_CELLS =
+PASS_C0_C2
+
+ENDPOINT_SUPPORT_REFERENCES =
+PASS
+
+ENDPOINT_RECOMPUTATION =
+PASS
+
+MAX_ABS_ERROR_POST4_SPEED =
+0
+
+MAX_ABS_ERROR_POST4_TURNING =
+0
+
+MAX_ABS_ERROR_POST4_PATH_EFFICIENCY =
+0
+
+
+## 7. Provenance verdict
+
+CODE_CORRECTNESS =
+PREVIOUSLY_FROZEN
+
+EXECUTION_SUCCESS =
+PASS
+
+ARTIFACT_PROVENANCE_VALIDITY =
+PASS
+
+TRACKED_REPOSITORY_CHANGES_DURING_VALIDATION =
+NONE
+
+This freeze establishes that the imported five-artifact Q1/Q3 extraction
+bundle is internally self-consistent and exactly bound to the frozen
+execution lineage.
+
+It does not establish any statistical or scientific hypothesis result.
+
+
+## 8. Scientific boundary
+
+STATISTICAL_TESTING =
+NOT_PERFORMED
+
+NAME_Q1_Q3_HYPOTHESIS_SUPPORT =
+NOT_EVALUATED
+
+DEPTH_SELECTIVITY =
+NOT_ESTABLISHED
+
+DIRECT_CROSS_LAYER_TEST =
+NOT_PERFORMED
+
+MEDIATION =
+NOT_ESTABLISHED
+
+CAUSALITY =
+NOT_ESTABLISHED
+
+OVERALL_ADAPTIVE_PROGRAM_FWER =
+NOT_CLAIMED
+
+
+## 9. Next transition
+
+The imported extraction artifacts remain local execution artifacts at this
+point.
+
+NEXT_ACTION =
+Q1_Q3_EXTRACTION_ARTIFACT_FREEZE_AND_TRANSPORT
+
+The large support-state tensor must not be committed directly to ordinary
+Git history.
+
+Scientific statistical execution remains unauthorized until the required
+artifact identities are frozen in a durable provenance boundary.
+
+STATISTICAL_EXECUTION_AUTHORITY =
+NOT_YET_AUTHORIZED
