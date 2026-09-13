@@ -533,10 +533,47 @@ def resolve_runtime(root: Path, ctx: Mapping[str, Any], handoff: Path):
     require(len(layer_map) == LAYER_COUNT, "OBSERVER_LAYER_MAP_COUNT_MISMATCH")
     require(INTERVENTION_LAYER in set(layer_map.values()), "LAYER22_NOT_REGISTERED")
 
+    deep_ctx = stack["stack"]["ctx"]
+    require("base" in deep_ctx, "DIRECT_FORWARD_BASE_MISSING")
+    base = deep_ctx["base"]
+    require(
+        hasattr(base, "direct_backbone_forward"),
+        "DIRECT_BACKBONE_FORWARD_MISSING",
+    )
+
+    layer20 = backbone.layers[SOURCE_BLOCK]
+    norm22 = backbone.layers[INTERVENTION_LAYER].norm
+    require(
+        runtime.get("layer20") is layer20,
+        "LAYER20_RUNTIME_IDENTITY_MISMATCH",
+    )
+    require(
+        runtime.get("norm22") is norm22,
+        "LAYER22_NORM_RUNTIME_IDENTITY_MISMATCH",
+    )
+    require(
+        runtime.get("mixer22") is mixer22,
+        "LAYER22_MIXER_RUNTIME_IDENTITY_MISMATCH",
+    )
+    require(
+        float(norm22.variance_epsilon) == 1e-5,
+        "LAYER22_RMS_EPS_MISMATCH",
+    )
+
+    parent_layer_map = runtime.get("layer_map")
+    if parent_layer_map is not None:
+        require(
+            dict(parent_layer_map) == dict(layer_map),
+            "OBSERVER_PARENT_LAYER_MAP_MISMATCH",
+        )
+
     return {
         "parent_runtime": runtime,
         "model": model,
         "backbone": backbone,
+        "base": base,
+        "layer20": layer20,
+        "norm22": norm22,
         "mixer22": mixer22,
         "strong_mask": strong_mask,
         "observer": observer,
@@ -934,6 +971,18 @@ def capture_branch(
     delta_h=None,
     matched: bool | None = None,
 ):
+    """One physical model forward with all causal-falsification observers.
+
+    Important: do not call the frozen geometry parent's `run_branch` here.
+    That branch recursively enters an authenticated parent capture chain whose
+    write-factor collector installs its own CPython trace.  Nesting a second
+    RawRecurrenceCollector outside that chain replaces the outer trace and
+    loses the layer-22 recurrence record.  Instead, reuse the same authenticated
+    `base.direct_backbone_forward` boundary used by the frozen native-state
+    parents, while reproducing the frozen R20/Y20/X22 hook observations locally.
+    """
+    import torch
+
     target_abs = int(row["anchor"]) + TARGET_K
     collector = runtime["observer"].RawRecurrenceCollector(
         runtime["observer_binding"],
@@ -941,36 +990,157 @@ def capture_branch(
         (target_abs,),
     )
 
-    hook_handle = None
+    layer20 = runtime["layer20"]
+    norm22 = runtime["norm22"]
+    holders: dict[str, Any] = {}
+    counts = {
+        "layer20_pre": 0,
+        "layer20_mixer_post": 0,
+        "norm22_pre": 0,
+        "norm22_post": 0,
+    }
+
+    def layer20_pre_hook(_module, args):
+        counts["layer20_pre"] += 1
+        require(
+            counts["layer20_pre"] == 1,
+            "DUPLICATE_LAYER20_PRE_HOOK",
+        )
+        require(len(args) >= 1, "LAYER20_PRE_ARG_COUNT_MISMATCH")
+        full = args[0].detach().cpu().contiguous().clone()
+        require(full.dtype == torch.float32, "R20_DTYPE_MISMATCH")
+        require(
+            full.ndim == 3 and full.shape[0] == 1 and full.shape[-1] == HIDDEN,
+            "R20_FULL_SHAPE_MISMATCH",
+        )
+        require(0 <= target_abs < full.shape[1], "R20_TARGET_OUT_OF_RANGE")
+        holders["R20"] = full[0, target_abs, :].contiguous().clone()
+
+    def layer20_mixer_post_hook(_module, _args, output):
+        counts["layer20_mixer_post"] += 1
+        require(
+            counts["layer20_mixer_post"] == 1,
+            "DUPLICATE_LAYER20_MIXER_POST_HOOK",
+        )
+        full = output.detach().cpu().contiguous().clone()
+        require(full.dtype == torch.float32, "Y20_DTYPE_MISMATCH")
+        require(
+            full.ndim == 3 and full.shape[0] == 1 and full.shape[-1] == HIDDEN,
+            "Y20_FULL_SHAPE_MISMATCH",
+        )
+        require(0 <= target_abs < full.shape[1], "Y20_TARGET_OUT_OF_RANGE")
+        holders["Y20"] = full[0, target_abs, :].contiguous().clone()
+
+    def norm22_pre_hook(_module, args):
+        counts["norm22_pre"] += 1
+        require(counts["norm22_pre"] == 1, "DUPLICATE_NORM22_PRE_HOOK")
+        require(len(args) == 1, "NORM22_PRE_ARG_COUNT_MISMATCH")
+        full = args[0].detach().cpu().contiguous().clone()
+        require(full.dtype == torch.float32, "R22_DTYPE_MISMATCH")
+        require(
+            full.ndim == 3 and full.shape[0] == 1 and full.shape[-1] == HIDDEN,
+            "R22_FULL_SHAPE_MISMATCH",
+        )
+        require(0 <= target_abs < full.shape[1], "R22_TARGET_OUT_OF_RANGE")
+        holders["R22"] = full[0, target_abs, :].contiguous().clone()
+
+    def norm22_post_hook(_module, _args, output):
+        counts["norm22_post"] += 1
+        require(counts["norm22_post"] == 1, "DUPLICATE_NORM22_POST_HOOK")
+        full = output.detach().cpu().contiguous().clone()
+        require(full.dtype == torch.float32, "X22_DTYPE_MISMATCH")
+        require(
+            full.ndim == 3 and full.shape[0] == 1 and full.shape[-1] == HIDDEN,
+            "X22_FULL_SHAPE_MISMATCH",
+        )
+        require(0 <= target_abs < full.shape[1], "X22_TARGET_OUT_OF_RANGE")
+        holders["X22"] = full[0, target_abs, :].contiguous().clone()
+
+    handles = [
+        layer20.register_forward_pre_hook(layer20_pre_hook),
+        layer20.mixer.register_forward_hook(layer20_mixer_post_hook),
+        norm22.register_forward_pre_hook(norm22_pre_hook),
+        norm22.register_forward_hook(norm22_post_hook),
+    ]
+
     audit: dict[str, Any] | None = None
     if delta_h is not None:
         require(matched is not None, "INTERVENTION_BRANCH_ROLE_REQUIRED")
         audit = {}
-        hook_handle = install_inproj_hook(
-            runtime["mixer22"],
-            token_index=target_abs,
-            strong_mask=runtime["strong_mask"],
-            delta_h=delta_h,
-            matched=bool(matched),
-            audit=audit,
+        handles.append(
+            install_inproj_hook(
+                runtime["mixer22"],
+                token_index=target_abs,
+                strong_mask=runtime["strong_mask"],
+                delta_h=delta_h,
+                matched=bool(matched),
+                audit=audit,
+            )
         )
 
     prior_trace = sys.gettrace()
     budget.consume(1)
     try:
         with collector.capture():
-            outputs = ctx["geometry_parent"].run_branch(
-                row,
-                ctx["geometry_immediate_parent"],
-                ctx["geometry_stack"],
-                runtime["parent_runtime"],
+            runtime["base"].direct_backbone_forward(
+                runtime["model"],
                 token_ids,
             )
     finally:
-        if hook_handle is not None:
-            hook_handle.remove()
+        for handle in reversed(handles):
+            handle.remove()
 
     require(sys.gettrace() is prior_trace, "TRACE_RESTORATION_FAILURE")
+    require(
+        counts
+        == {
+            "layer20_pre": 1,
+            "layer20_mixer_post": 1,
+            "norm22_pre": 1,
+            "norm22_post": 1,
+        },
+        "DIRECT_CAPTURE_HOOK_COUNT_FAILURE",
+    )
+    require(
+        set(holders) == {"R20", "Y20", "R22", "X22"},
+        "DIRECT_CAPTURE_MISSING",
+    )
+
+    r22 = holders["R22"]
+    variance32 = r22.pow(2).mean()
+    scale32 = torch.rsqrt(variance32 + 1e-5).detach().cpu().clone()
+    reconstructed32 = (
+        runtime["norm22"].weight.detach().cpu().contiguous()
+        * (r22 * scale32)
+    ).to(torch.float32).contiguous()
+    rms_residual = float(
+        torch.linalg.vector_norm(
+            reconstructed32.to(torch.float64)
+            - holders["X22"].to(torch.float64)
+        ).item()
+    ) / max(
+        float(
+            torch.linalg.vector_norm(
+                holders["X22"].to(torch.float64)
+            ).item()
+        ),
+        1e-12,
+    )
+    require(rms_residual <= 1e-6, "DIRECT_RMS_RECONSTRUCTION_FAILURE")
+
+    outputs = (
+        None,
+        {
+            "X32": holders["X22"],
+            "rms_scale32": scale32,
+            "rms_branch_reconstruction_relative_residual": rms_residual,
+        },
+        None,
+        {
+            "R20": holders["R20"],
+            "Y20": holders["Y20"],
+        },
+    )
     endpoint = _recurrence_record(runtime, target_abs, collector)
 
     if delta_h is not None:

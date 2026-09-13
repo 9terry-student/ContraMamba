@@ -197,3 +197,129 @@ def test_runtime_provenance_is_crlf_safe_and_blob_canonical():
     assert "test_blob_bytes = _git_bytes(root, f\"{head}:{TEST_REL}\")" in source
     assert "info[\"runner_sha256\"] = sha256_bytes(runner_blob_bytes)" in source
     assert "info[\"test_sha256\"] = sha256_bytes(test_blob_bytes)" in source
+
+def test_runtime_capture_uses_direct_backbone_forward_without_nested_trace_parent():
+    source = P.read_text(encoding="utf-8")
+    start = source.index("def capture_branch(")
+    end = source.index("\ndef endpoint_metrics", start)
+    capture = source[start:end]
+    assert 'runtime["base"].direct_backbone_forward(' in capture
+    assert 'ctx["geometry_parent"].run_branch(' not in capture
+    assert "with collector.capture():" in capture
+    assert 'runtime["layer20"]' in capture
+    assert 'runtime["norm22"]' in capture
+
+    start = source.index("def resolve_runtime(")
+    end = source.index("\ndef common_plan_pairs", start)
+    resolve = source[start:end]
+    assert 'deep_ctx = stack["stack"]["ctx"]' in resolve
+    assert 'base = deep_ctx["base"]' in resolve
+    assert '"DIRECT_BACKBONE_FORWARD_MISSING"' in resolve
+
+def test_direct_capture_smoke_without_nested_parent_trace():
+    from contextlib import contextmanager
+    from types import SimpleNamespace
+
+    class FakeCollector:
+        def __init__(self, _binding, _layer_map, targets):
+            self.target = tuple(targets)[0]
+            self.records = None
+
+        @contextmanager
+        def capture(self):
+            z = torch.zeros(1, m.INTERMEDIATE, m.STATE_SIZE, dtype=torch.float32)
+            o = torch.ones_like(z)
+            self.records = {
+                (m.INTERVENTION_LAYER, self.target): SimpleNamespace(
+                    s_prev=z.clone(),
+                    g=o,
+                    w=z.clone(),
+                    s_post=z.clone(),
+                )
+            }
+            yield self
+
+    class FakeObserver:
+        RawRecurrenceCollector = FakeCollector
+
+    class Mixer20(torch.nn.Module):
+        def forward(self, x):
+            return 0.25 * x
+
+    class Block20(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.mixer = Mixer20()
+
+        def forward(self, x):
+            return x + self.mixer(x)
+
+    class Norm22(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.weight = torch.nn.Parameter(torch.ones(m.HIDDEN))
+            self.variance_epsilon = 1e-5
+
+        def forward(self, x):
+            scale = torch.rsqrt(x.pow(2).mean(dim=-1, keepdim=True) + self.variance_epsilon)
+            return self.weight * (x * scale)
+
+    class Mixer22(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.intermediate_size = m.INTERMEDIATE
+            self.in_proj = torch.nn.Linear(m.HIDDEN, 2 * m.INTERMEDIATE, bias=False)
+
+    class Block22(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.norm = Norm22()
+            self.mixer = Mixer22()
+
+    class DummyBlock(torch.nn.Module):
+        def forward(self, x):
+            return x
+
+    layers = [DummyBlock() for _ in range(m.LAYER_COUNT)]
+    layers[m.SOURCE_BLOCK] = Block20()
+    layers[m.INTERVENTION_LAYER] = Block22()
+    model = SimpleNamespace(mamba=SimpleNamespace(layers=layers))
+
+    class Base:
+        @staticmethod
+        def direct_backbone_forward(model, token_ids):
+            length = len(token_ids)
+            x = torch.arange(
+                length * m.HIDDEN, dtype=torch.float32
+            ).reshape(1, length, m.HIDDEN) / 1000.0 + 0.5
+            x = model.mamba.layers[m.SOURCE_BLOCK](x)
+            b22 = model.mamba.layers[m.INTERVENTION_LAYER]
+            x = b22.norm(x)
+            _ = b22.mixer.in_proj(x)
+            return x
+
+    strong_mask = torch.zeros(m.INTERMEDIATE, dtype=torch.bool)
+    strong_mask[: m.STRONG_COUNT] = True
+    runtime = {
+        "observer": FakeObserver,
+        "observer_binding": object(),
+        "layer_map": {},
+        "layer20": layers[m.SOURCE_BLOCK],
+        "norm22": layers[m.INTERVENTION_LAYER].norm,
+        "mixer22": layers[m.INTERVENTION_LAYER].mixer,
+        "base": Base,
+        "model": model,
+        "strong_mask": strong_mask,
+    }
+    row = {"anchor": 2}
+    budget = m.ForwardBudget(1)
+    outputs, endpoint, audit = m.capture_branch(
+        {}, runtime, row, tuple(range(7)), budget
+    )
+
+    assert budget.count == 1
+    assert audit is None
+    assert outputs[1]["X32"].shape == (m.HIDDEN,)
+    assert outputs[3]["R20"].shape == (m.HIDDEN,)
+    assert outputs[3]["Y20"].shape == (m.HIDDEN,)
+    assert endpoint["S_POST32"].shape == (1, m.INTERMEDIATE, m.STATE_SIZE)
