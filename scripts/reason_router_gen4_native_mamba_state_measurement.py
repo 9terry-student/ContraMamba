@@ -37,7 +37,7 @@ PHASE_AB_FEASIBILITY_COMMIT = (
 EXPECTED_VERSIONS = {
     "python": "3.12.13",
     "numpy": "2.0.2",
-    "torch": "2.10.0+cpu",
+    "torch": "2.10.0+cu128",
     "transformers": "5.0.0",
 }
 

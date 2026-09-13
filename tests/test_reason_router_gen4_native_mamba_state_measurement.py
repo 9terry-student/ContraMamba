@@ -135,6 +135,13 @@ def test_authority_constants():
         == "480ff74aebf5ef942aa9f47fa78c06612a8f97a4"
     )
 
+    assert m.EXPECTED_VERSIONS == {
+        "python": "3.12.13",
+        "numpy": "2.0.2",
+        "torch": "2.10.0+cu128",
+        "transformers": "5.0.0",
+    }
+
     assert m.PRIMARY_LAYER_INDEX == 11
     assert m.NATIVE_MAMBA_LAYER_COUNT == 24
     assert m.DELTA_B_U_LINE == 397
@@ -1160,7 +1167,7 @@ def test_frozen_transformers_v5_source_role_fixture(
     m.runtime_gate()
 
 
-def test_runtime_gate_wrong_version(
+def test_runtime_gate_rejects_old_cpu_build_tag(
     tmp_path,
     monkeypatch,
 ):
@@ -1171,9 +1178,87 @@ def test_runtime_gate_wrong_version(
         )
     )
 
-    versions[
-        "transformers"
-    ] = "wrong"
+    versions["torch"] = "2.10.0+cpu"
+
+    with pytest.raises(
+        m.ContractError,
+        match="runtime version",
+    ):
+        m.runtime_gate()
+
+
+def test_runtime_gate_rejects_other_torch_build_tag(
+    tmp_path,
+    monkeypatch,
+):
+    _, versions, _, _ = (
+        build_runtime_baseline(
+            tmp_path,
+            monkeypatch,
+        )
+    )
+
+    versions["torch"] = "2.10.0+cu130"
+
+    with pytest.raises(
+        m.ContractError,
+        match="runtime version",
+    ):
+        m.runtime_gate()
+
+
+def test_runtime_gate_rejects_wrong_python_version(
+    tmp_path,
+    monkeypatch,
+):
+    _, versions, _, _ = (
+        build_runtime_baseline(
+            tmp_path,
+            monkeypatch,
+        )
+    )
+
+    versions["python"] = "3.12.12"
+
+    with pytest.raises(
+        m.ContractError,
+        match="runtime version",
+    ):
+        m.runtime_gate()
+
+
+def test_runtime_gate_rejects_wrong_numpy_version(
+    tmp_path,
+    monkeypatch,
+):
+    _, versions, _, _ = (
+        build_runtime_baseline(
+            tmp_path,
+            monkeypatch,
+        )
+    )
+
+    versions["numpy"] = "2.0.1"
+
+    with pytest.raises(
+        m.ContractError,
+        match="runtime version",
+    ):
+        m.runtime_gate()
+
+
+def test_runtime_gate_rejects_wrong_transformers_version(
+    tmp_path,
+    monkeypatch,
+):
+    _, versions, _, _ = (
+        build_runtime_baseline(
+            tmp_path,
+            monkeypatch,
+        )
+    )
+
+    versions["transformers"] = "wrong"
 
     with pytest.raises(
         m.ContractError,
