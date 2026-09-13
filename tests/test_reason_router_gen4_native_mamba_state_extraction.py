@@ -36,12 +36,13 @@ def test_frozen_parent_and_dependency_constants():
     assert r.KAGGLE_TORCH_BUILD_TAG_CORRECTION_AUTHORITY == "9608e80efced2f6029bb4265eabf8e46df8d638c"
     assert r.BACKEND_DISPATCH_VALIDATOR_CORRECTION_AUTHORITY == "94c23155b8422d23ae01c43c0b63c5f696bd52d1"
     assert r.CPU_TORCH_BUILD_TAG_REBIND_AUTHORITY == "59e33d329aa2278c630b2f2f5141090e97f63ca4"
+    assert r.CACHE_RECURRENT_VALIDATOR_CORRECTION_AUTHORITY == "c4e143e9593503bc9520c864e2a9afa32e266e29"
     assert r.EXECUTION_AUTHORITY_PATH == Path(
         "reports/reason_router_gen4_native_mamba_state_bridge_"
-        "phase_d_extraction_execution_authority_cpu_runtime_rebind_spec_candidate.md"
+        "phase_d_extraction_execution_authority_cache_recurrent_validator_correction_spec_candidate.md"
     )
     assert r.PHASE_C_MEASUREMENT_IMPLEMENTATION_COMMIT == "e3c870e7f24e183b0046b568e1de3b71446c182d"
-    assert r.MEASUREMENT_SHA256 == "ce9b11d53b6cc6ee07a0c68509a1ca4fbb641a20be5275f022fc61ddf83120fa"
+    assert r.MEASUREMENT_SHA256 == "7729424f03058b86b4f120dc0e6da573d6c996b0877858f2d6d38aa94dac268c"
     assert r.ADAPTER_SHA256 == "83177c351f82a781586c63bd8d4ef1b40e759b5a94858dc1837d65502cbff6e5"
     assert r.R5_SHA256 == "468a758a7d20d048c75a0ca7e298b73a65f538527df55d3ecad3c7ff1760cf4d"
     assert r.HISTORICAL_MODEL_SHA256 == "8c365bfa857157d91f363358d5db3abaab425dec3e0d7c62683b4207a589b6a5"
@@ -216,6 +217,12 @@ def test_manifest_provenance_records_correction_authorities():
     assert (
         '"cpu_torch_build_tag_rebind_authority": '
         "CPU_TORCH_BUILD_TAG_REBIND_AUTHORITY,"
+        in source
+    )
+
+    assert (
+        '"cache_recurrent_validator_correction_authority": '
+        "CACHE_RECURRENT_VALIDATOR_CORRECTION_AUTHORITY,"
         in source
     )
 

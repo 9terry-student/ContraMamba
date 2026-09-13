@@ -903,6 +903,14 @@ def build_runtime_baseline(
             "        if is_fast_path_available and \"cuda\" in self.x_proj.weight.device.type and not is_torchdynamo_compiling():",
             "            return self.cuda_kernels_forward(hidden_states, cache_params, cache_position, attention_mask)",
             "        return self.slow_forward(hidden_states, cache_params, cache_position, attention_mask)",
+            "class MambaCache:",
+            "    def __init__(self):",
+            "        self.conv_states = []",
+            "        self.ssm_states = []",
+            "    def update_conv_state(self):",
+            "        return self.conv_states",
+            "    def update_ssm_state(self):",
+            "        return self.ssm_states",
         ]
     )
 
@@ -918,10 +926,7 @@ def build_runtime_baseline(
     )
 
     cache_path.write_text(
-        (
-            "conv_states = []\n"
-            "ssm_states = []\n"
-        ),
+        "CACHE_SENTINEL = True\n",
         encoding="utf-8",
         newline="\n",
     )
@@ -1125,12 +1130,113 @@ def test_runtime_gate_synthetic_baseline(
     tmp_path,
     monkeypatch,
 ):
-    build_runtime_baseline(
-        tmp_path,
-        monkeypatch,
+    _, _, mamba_path, cache_path = (
+        build_runtime_baseline(
+            tmp_path,
+            monkeypatch,
+        )
     )
 
+    mamba_text = mamba_path.read_text(
+        encoding="utf-8"
+    )
+    cache_text = cache_path.read_text(
+        encoding="utf-8"
+    )
+
+    assert "conv_states" in mamba_text
+    assert "ssm_states" in mamba_text
+    assert "conv_states" not in cache_text
+    assert "ssm_states" not in cache_text
+
     m.runtime_gate()
+
+
+def test_runtime_gate_rejects_missing_recurrent_cache_role(
+    tmp_path,
+    monkeypatch,
+):
+    _, _, mamba_path, _ = (
+        build_runtime_baseline(
+            tmp_path,
+            monkeypatch,
+        )
+    )
+
+    _rewrite_runtime_source(
+        mamba_path,
+        monkeypatch,
+        "        self.ssm_states = []",
+        "        self.recurrent_states = []",
+    )
+
+    with pytest.raises(
+        m.ContractError,
+        match="cache/recurrent ambiguity",
+    ):
+        m.runtime_gate()
+
+
+def test_runtime_gate_rejects_convolution_role_as_recurrent_role(
+    tmp_path,
+    monkeypatch,
+):
+    _, _, mamba_path, _ = (
+        build_runtime_baseline(
+            tmp_path,
+            monkeypatch,
+        )
+    )
+
+    _rewrite_runtime_source(
+        mamba_path,
+        monkeypatch,
+        (
+            "    def update_ssm_state(self):\n"
+            "        return self.ssm_states"
+        ),
+        (
+            "    def update_ssm_state(self):\n"
+            "        return self.conv_states"
+        ),
+    )
+
+    with pytest.raises(
+        m.ContractError,
+        match="cache/recurrent ambiguity",
+    ):
+        m.runtime_gate()
+
+
+def test_runtime_gate_rejects_recurrent_persistence_to_conv_cache(
+    tmp_path,
+    monkeypatch,
+):
+    _, _, mamba_path, _ = (
+        build_runtime_baseline(
+            tmp_path,
+            monkeypatch,
+        )
+    )
+
+    _rewrite_runtime_source(
+        mamba_path,
+        monkeypatch,
+        (
+            "        cache_params.ssm_states"
+            "[self.layer_idx].copy_(ssm_state)"
+        ),
+        (
+            "        cache_params.conv_states"
+            "[self.layer_idx].copy_(ssm_state)"
+        ),
+    )
+
+    with pytest.raises(
+        m.ContractError,
+        match="source recurrent cache role",
+    ):
+        m.runtime_gate()
 
 
 def test_runtime_gate_accepts_frozen_style_dispatch_with_mamba_inner_fn(

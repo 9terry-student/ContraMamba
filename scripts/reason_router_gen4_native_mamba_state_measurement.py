@@ -485,6 +485,91 @@ def _validate_source_roles(data: bytes, code: Any) -> None:
     )
 
 
+def _validate_cache_recurrent_roles(data: bytes) -> None:
+    """Prove distinct frozen Mamba convolution and recurrent cache roles."""
+    try:
+        tree = ast.parse(data.decode("utf-8"))
+    except (UnicodeDecodeError, SyntaxError) as exc:
+        raise ContractError("cache/recurrent ambiguity") from exc
+
+    cache_classes = [
+        node
+        for node in tree.body
+        if (
+            isinstance(node, ast.ClassDef)
+            and node.name == "MambaCache"
+        )
+    ]
+
+    require(
+        len(cache_classes) == 1,
+        "cache/recurrent ambiguity",
+    )
+
+    cache_class = cache_classes[0]
+
+    methods = {
+        node.name: node
+        for node in cache_class.body
+        if isinstance(
+            node,
+            (
+                ast.FunctionDef,
+                ast.AsyncFunctionDef,
+            ),
+        )
+    }
+
+    require(
+        {
+            "__init__",
+            "update_conv_state",
+            "update_ssm_state",
+        }
+        <= set(methods),
+        "cache/recurrent ambiguity",
+    )
+
+    def self_attributes(node: Any) -> set[str]:
+        return {
+            item.attr
+            for item in ast.walk(node)
+            if (
+                isinstance(item, ast.Attribute)
+                and isinstance(item.value, ast.Name)
+                and item.value.id == "self"
+            )
+        }
+
+    init_attributes = self_attributes(
+        methods["__init__"]
+    )
+    conv_attributes = self_attributes(
+        methods["update_conv_state"]
+    )
+    recurrent_attributes = self_attributes(
+        methods["update_ssm_state"]
+    )
+
+    require(
+        "conv_states" in init_attributes
+        and "ssm_states" in init_attributes,
+        "cache/recurrent ambiguity",
+    )
+
+    require(
+        "conv_states" in conv_attributes
+        and "ssm_states" not in conv_attributes,
+        "cache/recurrent ambiguity",
+    )
+
+    require(
+        "ssm_states" in recurrent_attributes
+        and "conv_states" not in recurrent_attributes,
+        "cache/recurrent ambiguity",
+    )
+
+
 def _runtime_environment() -> tuple[
     Mapping[str, Any],
     Mapping[str, str],
@@ -639,14 +724,8 @@ def _resolve_and_validate_runtime_binding() -> tuple[Any, int]:
         forward
     )
 
-    cache_text = cache_bytes.decode("utf-8")
-
-    require(
-        "conv_states" in cache_text
-        and "ssm_states" in cache_text
-        and cache_text.find("conv_states")
-        != cache_text.find("ssm_states"),
-        "cache/recurrent ambiguity",
+    _validate_cache_recurrent_roles(
+        mamba_bytes
     )
 
     return slow_forward.__code__, CAPTURE_LINE
