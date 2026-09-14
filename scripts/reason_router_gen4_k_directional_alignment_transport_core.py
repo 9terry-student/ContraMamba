@@ -369,30 +369,41 @@ def magnitude_delta(
     baseline_c = cosine(x, y)
     realized_c = cosine(xm, ym)
 
+    realized_a = float(
+        torch.linalg.vector_norm(xm).item()
+    )
+    realized_b = float(
+        torch.linalg.vector_norm(ym).item()
+    )
+    a_residual = abs(
+        realized_a - float(target_a)
+    )
+    b_residual = abs(
+        realized_b - float(target_b)
+    )
+
     require(
         abs(realized_c - baseline_c) <= VECTOR_TOL,
         "MAG_COSINE_PRESERVATION",
     )
     require(
-        abs(
-            float(torch.linalg.vector_norm(xm).item())
-            - target_a
-        )
-        <= VECTOR_TOL,
+        a_residual <= VECTOR_TOL,
         "MAG_A_TARGET",
     )
     require(
-        abs(
-            float(torch.linalg.vector_norm(ym).item())
-            - target_b
-        )
-        <= VECTOR_TOL,
+        b_residual <= VECTOR_TOL,
         "MAG_B_TARGET",
     )
 
     return (xm - x) + (ym - y), {
         "target_A": float(target_a),
         "target_B": float(target_b),
+        "realized_A": realized_a,
+        "realized_B": realized_b,
+        "A_target_abs_residual":
+            a_residual,
+        "B_target_abs_residual":
+            b_residual,
         "baseline_C": baseline_c,
         "realized_C": realized_c,
     }

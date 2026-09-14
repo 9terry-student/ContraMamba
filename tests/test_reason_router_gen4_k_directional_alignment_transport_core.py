@@ -64,6 +64,26 @@ def test_magnitude_delta_hits_targets_and_preserves_cosine():
 
     assert audit["target_A"] == 3.0
     assert audit["target_B"] == 4.0
+    assert math.isclose(
+        audit["realized_A"],
+        3.0,
+        rel_tol=0,
+        abs_tol=core.VECTOR_TOL,
+    )
+    assert math.isclose(
+        audit["realized_B"],
+        4.0,
+        rel_tol=0,
+        abs_tol=core.VECTOR_TOL,
+    )
+    assert (
+        audit["A_target_abs_residual"]
+        <= core.VECTOR_TOL
+    )
+    assert (
+        audit["B_target_abs_residual"]
+        <= core.VECTOR_TOL
+    )
     assert abs(
         audit["realized_C"]
         - audit["baseline_C"]
