@@ -1,0 +1,3713 @@
+{
+  "analysis_branch": "gen4-k-transport-failure-static-decomposition",
+  "analysis_head": "2e83b58e4ace30a00d08e82c6c8d16195e8475b2",
+  "analysis_phase": "POSTHOC_STATIC_DIAGNOSTIC",
+  "analysis_scope": "NEGATIVE_TAIL_INFLUENCE_LOCALIZATION",
+  "claim_boundary": [
+    "This is descriptive/post-hoc influence localization and does not reopen the closed bridge.",
+    "No new hypothesis test, p-value, layer scan, endpoint scan, offset scan, channel scan, checkpoint scan, or intervention sweep is executed.",
+    "Tail removal is an influence diagnostic, not a revised estimator for the closed hypothesis.",
+    "Any localized regime is a candidate for a separately designed future study, not evidence of transport in the closed bridge."
+  ],
+  "cpu_reference_zip": {
+    "execution_head": "8496ece911e0d461f0abbdf1a0fa619f8a2f22ab",
+    "model_forward_count": 2400,
+    "outcome": "DIRECTIONAL_ALIGNMENT_CAUSAL_TRANSPORT_NOT_ESTABLISHED",
+    "path": "C:\\Users\\Home1\\Downloads\\g4k-diralign-full-8496ece-v1.zip",
+    "sha256": "25a9e6a862f7c1ad7c272d85cb5000ba8542cca2c8976b785021e5e4159ebcaf",
+    "source_pair_count": 300
+  },
+  "exploratory_posthoc": true,
+  "fixed_diagnostic_parameters": {
+    "bottom_tail_counts": [
+      10,
+      20,
+      30,
+      60
+    ],
+    "quartile_features": [
+      "alignment_shift_abs",
+      "baseline_delta",
+      "baseline_severity_abs",
+      "target_C",
+      "magnitude_shift_norm"
+    ],
+    "quartile_size": 75,
+    "quartile_tie_break": "source_pair_id lexical order",
+    "remove_worst_counts": [
+      1,
+      5,
+      10,
+      20,
+      30,
+      40,
+      50,
+      60,
+      75
+    ],
+    "symmetric_trim_fractions": [
+      0.05,
+      0.1,
+      0.2
+    ]
+  },
+  "model_forward_count": 0,
+  "new_causal_claim_authorized": false,
+  "new_inferential_statistics_executed": false,
+  "response_analysis": {
+    "ALIGNMENT_SPECIFICITY": {
+      "bottom30_vs_top30_geometry": {
+        "bottom_feature_summary": {
+          "alignment_shift": {
+            "mean": 0.10236158389117975,
+            "median": 0.13624756506645136
+          },
+          "alignment_shift_abs": {
+            "mean": 0.1101582597600139,
+            "median": 0.13624756506645136
+          },
+          "baseline_delta": {
+            "mean": -0.025964309600335623,
+            "median": -0.021754342224442114
+          },
+          "baseline_severity_abs": {
+            "mean": 0.039896077973807426,
+            "median": 0.021863315436613184
+          },
+          "magnitude_log_ratio_A": {
+            "mean": -0.044830520356842464,
+            "median": -0.04742232613979516
+          },
+          "magnitude_log_ratio_B": {
+            "mean": -0.03179617170796965,
+            "median": -0.03964804794362878
+          },
+          "magnitude_shift_norm": {
+            "mean": 0.07264922466280462,
+            "median": 0.06341899395315148
+          },
+          "reference_A": {
+            "mean": 1.8748447107757344,
+            "median": 1.722629318083015
+          },
+          "reference_B": {
+            "mean": 1.6294967574096269,
+            "median": 1.6699112390182693
+          },
+          "reference_C": {
+            "mean": 0.28390806587930995,
+            "median": 0.3543967043795365
+          },
+          "target_A": {
+            "mean": 1.9615698916894464,
+            "median": 1.8073171482222432
+          },
+          "target_B": {
+            "mean": 1.6828298993378679,
+            "median": 1.7378886172643022
+          },
+          "target_C": {
+            "mean": 0.1815464819881302,
+            "median": 0.21618472546556441
+          }
+        },
+        "bottom_pair_ids": [
+          "opera_premiere",
+          "generated_fact_245",
+          "generated_fact_077",
+          "generated_fact_269",
+          "generated_fact_065",
+          "generated_fact_149",
+          "generated_fact_173",
+          "generated_fact_161",
+          "generated_fact_053",
+          "generated_fact_233",
+          "generated_fact_197",
+          "generated_fact_257",
+          "generated_fact_281",
+          "generated_fact_101",
+          "generated_fact_089",
+          "generated_fact_221",
+          "generated_fact_113",
+          "generated_fact_185",
+          "generated_fact_293",
+          "generated_fact_125",
+          "generated_fact_041",
+          "generated_fact_137",
+          "generated_fact_209",
+          "volcano_observatory",
+          "theater_restoration",
+          "generated_fact_195",
+          "generated_fact_171",
+          "generated_fact_123",
+          "generated_fact_267",
+          "generated_fact_291"
+        ],
+        "count_per_tail": 30,
+        "middle_feature_summary": {
+          "alignment_shift": {
+            "mean": -0.034908909534627566,
+            "median": -0.04282645050358297
+          },
+          "alignment_shift_abs": {
+            "mean": 0.06387169051122787,
+            "median": 0.06383606843939338
+          },
+          "baseline_delta": {
+            "mean": -0.016349955103580702,
+            "median": -0.013818006025455243
+          },
+          "baseline_severity_abs": {
+            "mean": 0.037511624412281286,
+            "median": 0.03167193978725391
+          },
+          "magnitude_log_ratio_A": {
+            "mean": 0.0035554749214607513,
+            "median": -0.0037168712416886848
+          },
+          "magnitude_log_ratio_B": {
+            "mean": -0.014676865197920398,
+            "median": -0.004793843779552793
+          },
+          "magnitude_shift_norm": {
+            "mean": 0.08986283851618551,
+            "median": 0.07457075568179741
+          },
+          "reference_A": {
+            "mean": 2.49822302953189,
+            "median": 2.5631788688982735
+          },
+          "reference_B": {
+            "mean": 1.4815660169693372,
+            "median": 1.4896186161233547
+          },
+          "reference_C": {
+            "mean": 0.033191342075093576,
+            "median": 0.010708648859630202
+          },
+          "target_A": {
+            "mean": 2.4867446909463853,
+            "median": 2.5606267130361138
+          },
+          "target_B": {
+            "mean": 1.5025613898645722,
+            "median": 1.5461692989157123
+          },
+          "target_C": {
+            "mean": 0.06810025160972114,
+            "median": 0.05795987898763716
+          }
+        },
+        "standardized_feature_contrasts": {
+          "alignment_shift": {
+            "bottom_minus_population_sd_units": 1.4516021920075892,
+            "bottom_minus_top_sd_units": 0.9939460941398529
+          },
+          "alignment_shift_abs": {
+            "bottom_minus_population_sd_units": 0.9058783756603015,
+            "bottom_minus_top_sd_units": 0.9287782886441347
+          },
+          "baseline_delta": {
+            "bottom_minus_population_sd_units": -0.27654925921695206,
+            "bottom_minus_top_sd_units": -0.9877980746829353
+          },
+          "baseline_severity_abs": {
+            "bottom_minus_population_sd_units": 0.1366957918496138,
+            "bottom_minus_top_sd_units": 0.6744873380949413
+          },
+          "magnitude_log_ratio_A": {
+            "bottom_minus_population_sd_units": -0.4863120737689779,
+            "bottom_minus_top_sd_units": -0.22837004338006425
+          },
+          "magnitude_log_ratio_B": {
+            "bottom_minus_population_sd_units": -0.19322816473938198,
+            "bottom_minus_top_sd_units": 0.4938905096153665
+          },
+          "magnitude_shift_norm": {
+            "bottom_minus_population_sd_units": -0.3372787819993482,
+            "bottom_minus_top_sd_units": -0.6450319845257997
+          },
+          "reference_A": {
+            "bottom_minus_population_sd_units": -1.5170539406338441,
+            "bottom_minus_top_sd_units": -1.5086763076200143
+          },
+          "reference_B": {
+            "bottom_minus_population_sd_units": 0.6379806957475213,
+            "bottom_minus_top_sd_units": 0.7878745393476206
+          },
+          "reference_C": {
+            "bottom_minus_population_sd_units": 1.6062079657199215,
+            "bottom_minus_top_sd_units": 2.0246036414226323
+          },
+          "target_A": {
+            "bottom_minus_population_sd_units": -1.443803514165413,
+            "bottom_minus_top_sd_units": -1.5745164013457864
+          },
+          "target_B": {
+            "bottom_minus_population_sd_units": 0.7586150247044585,
+            "bottom_minus_top_sd_units": 0.6432099439928949
+          },
+          "target_C": {
+            "bottom_minus_population_sd_units": 0.8999025785339522,
+            "bottom_minus_top_sd_units": 1.6815767120092155
+          }
+        },
+        "top_feature_summary": {
+          "alignment_shift": {
+            "mean": 0.021640562925133337,
+            "median": 0.049846595538038024
+          },
+          "alignment_shift_abs": {
+            "mean": 0.06785574398088119,
+            "median": 0.05051862650673335
+          },
+          "baseline_delta": {
+            "mean": 0.01677437589503841,
+            "median": 0.021242667012098482
+          },
+          "baseline_severity_abs": {
+            "mean": 0.02131583752988297,
+            "median": 0.021464044135670074
+          },
+          "magnitude_log_ratio_A": {
+            "mean": -0.02575737046032674,
+            "median": -0.05212487094388665
+          },
+          "magnitude_log_ratio_B": {
+            "mean": -0.05967568715647827,
+            "median": -0.06269033286737796
+          },
+          "magnitude_shift_norm": {
+            "mean": 0.10521322869963477,
+            "median": 0.08176796880713502
+          },
+          "reference_A": {
+            "mean": 2.425560872046378,
+            "median": 2.321731712246197
+          },
+          "reference_B": {
+            "mean": 1.4627553088156946,
+            "median": 1.4729042812612614
+          },
+          "reference_C": {
+            "mean": -0.005375843227472439,
+            "median": 0.00830616698758473
+          },
+          "target_A": {
+            "mean": 2.4758281450940416,
+            "median": 2.446648773865749
+          },
+          "target_B": {
+            "mean": 1.5492259876567764,
+            "median": 1.569887029967227
+          },
+          "target_C": {
+            "mean": -0.027016406152605775,
+            "median": -0.03949211462488935
+          }
+        },
+        "top_pair_ids": [
+          "harbor_upgrade",
+          "generated_fact_044",
+          "generated_fact_056",
+          "generated_fact_128",
+          "generated_fact_140",
+          "generated_fact_212",
+          "generated_fact_092",
+          "generated_fact_296",
+          "generated_fact_032",
+          "generated_fact_224",
+          "generated_fact_080",
+          "generated_fact_176",
+          "generated_fact_164",
+          "generated_fact_248",
+          "glacier_study",
+          "generated_fact_188",
+          "generated_fact_260",
+          "generated_fact_116",
+          "generated_fact_200",
+          "generated_fact_284",
+          "generated_fact_104",
+          "generated_fact_272",
+          "generated_fact_152",
+          "generated_fact_236",
+          "generated_fact_068",
+          "satellite_launch",
+          "festival_selection",
+          "garden_award",
+          "bridge_opening",
+          "orion_approval"
+        ]
+      },
+      "bottom_tail_overlap": {
+        "bottom_10": {
+          "pair_ids": [
+            "opera_premiere",
+            "generated_fact_245",
+            "generated_fact_077",
+            "generated_fact_269",
+            "generated_fact_065",
+            "generated_fact_149",
+            "generated_fact_173",
+            "generated_fact_161",
+            "generated_fact_053",
+            "generated_fact_233"
+          ],
+          "quartile_enrichment": {
+            "alignment_shift_abs": {
+              "Q4_enrichment_ratio_vs_population": 4.0,
+              "counts": {
+                "Q1": 0,
+                "Q2": 0,
+                "Q3": 0,
+                "Q4": 10
+              },
+              "fractions": {
+                "Q1": 0.0,
+                "Q2": 0.0,
+                "Q3": 0.0,
+                "Q4": 1.0
+              }
+            },
+            "baseline_delta": {
+              "Q4_enrichment_ratio_vs_population": 0.4,
+              "counts": {
+                "Q1": 0,
+                "Q2": 9,
+                "Q3": 0,
+                "Q4": 1
+              },
+              "fractions": {
+                "Q1": 0.0,
+                "Q2": 0.9,
+                "Q3": 0.0,
+                "Q4": 0.1
+              }
+            },
+            "baseline_severity_abs": {
+              "Q4_enrichment_ratio_vs_population": 0.4,
+              "counts": {
+                "Q1": 0,
+                "Q2": 9,
+                "Q3": 0,
+                "Q4": 1
+              },
+              "fractions": {
+                "Q1": 0.0,
+                "Q2": 0.9,
+                "Q3": 0.0,
+                "Q4": 0.1
+              }
+            },
+            "magnitude_shift_norm": {
+              "Q4_enrichment_ratio_vs_population": 0.4,
+              "counts": {
+                "Q1": 2,
+                "Q2": 7,
+                "Q3": 0,
+                "Q4": 1
+              },
+              "fractions": {
+                "Q1": 0.2,
+                "Q2": 0.7,
+                "Q3": 0.0,
+                "Q4": 0.1
+              }
+            },
+            "target_C": {
+              "Q4_enrichment_ratio_vs_population": 3.6,
+              "counts": {
+                "Q1": 0,
+                "Q2": 1,
+                "Q3": 0,
+                "Q4": 9
+              },
+              "fractions": {
+                "Q1": 0.0,
+                "Q2": 0.1,
+                "Q3": 0.0,
+                "Q4": 0.9
+              }
+            }
+          },
+          "response_max": -0.00042646443937011114,
+          "response_mean": -0.00045156880518318896,
+          "response_min": -0.0006196319912421533,
+          "tail_count": 10,
+          "tail_fraction": 0.03333333333333333
+        },
+        "bottom_20": {
+          "pair_ids": [
+            "opera_premiere",
+            "generated_fact_245",
+            "generated_fact_077",
+            "generated_fact_269",
+            "generated_fact_065",
+            "generated_fact_149",
+            "generated_fact_173",
+            "generated_fact_161",
+            "generated_fact_053",
+            "generated_fact_233",
+            "generated_fact_197",
+            "generated_fact_257",
+            "generated_fact_281",
+            "generated_fact_101",
+            "generated_fact_089",
+            "generated_fact_221",
+            "generated_fact_113",
+            "generated_fact_185",
+            "generated_fact_293",
+            "generated_fact_125"
+          ],
+          "quartile_enrichment": {
+            "alignment_shift_abs": {
+              "Q4_enrichment_ratio_vs_population": 4.0,
+              "counts": {
+                "Q1": 0,
+                "Q2": 0,
+                "Q3": 0,
+                "Q4": 20
+              },
+              "fractions": {
+                "Q1": 0.0,
+                "Q2": 0.0,
+                "Q3": 0.0,
+                "Q4": 1.0
+              }
+            },
+            "baseline_delta": {
+              "Q4_enrichment_ratio_vs_population": 0.2,
+              "counts": {
+                "Q1": 0,
+                "Q2": 19,
+                "Q3": 0,
+                "Q4": 1
+              },
+              "fractions": {
+                "Q1": 0.0,
+                "Q2": 0.95,
+                "Q3": 0.0,
+                "Q4": 0.05
+              }
+            },
+            "baseline_severity_abs": {
+              "Q4_enrichment_ratio_vs_population": 0.2,
+              "counts": {
+                "Q1": 0,
+                "Q2": 19,
+                "Q3": 0,
+                "Q4": 1
+              },
+              "fractions": {
+                "Q1": 0.0,
+                "Q2": 0.95,
+                "Q3": 0.0,
+                "Q4": 0.05
+              }
+            },
+            "magnitude_shift_norm": {
+              "Q4_enrichment_ratio_vs_population": 0.2,
+              "counts": {
+                "Q1": 10,
+                "Q2": 9,
+                "Q3": 0,
+                "Q4": 1
+              },
+              "fractions": {
+                "Q1": 0.5,
+                "Q2": 0.45,
+                "Q3": 0.0,
+                "Q4": 0.05
+              }
+            },
+            "target_C": {
+              "Q4_enrichment_ratio_vs_population": 3.8,
+              "counts": {
+                "Q1": 0,
+                "Q2": 1,
+                "Q3": 0,
+                "Q4": 19
+              },
+              "fractions": {
+                "Q1": 0.0,
+                "Q2": 0.05,
+                "Q3": 0.0,
+                "Q4": 0.95
+              }
+            }
+          },
+          "response_max": -0.0004155934298474273,
+          "response_mean": -0.0004364561007573764,
+          "response_min": -0.0006196319912421533,
+          "tail_count": 20,
+          "tail_fraction": 0.06666666666666667
+        },
+        "bottom_30": {
+          "pair_ids": [
+            "opera_premiere",
+            "generated_fact_245",
+            "generated_fact_077",
+            "generated_fact_269",
+            "generated_fact_065",
+            "generated_fact_149",
+            "generated_fact_173",
+            "generated_fact_161",
+            "generated_fact_053",
+            "generated_fact_233",
+            "generated_fact_197",
+            "generated_fact_257",
+            "generated_fact_281",
+            "generated_fact_101",
+            "generated_fact_089",
+            "generated_fact_221",
+            "generated_fact_113",
+            "generated_fact_185",
+            "generated_fact_293",
+            "generated_fact_125",
+            "generated_fact_041",
+            "generated_fact_137",
+            "generated_fact_209",
+            "volcano_observatory",
+            "theater_restoration",
+            "generated_fact_195",
+            "generated_fact_171",
+            "generated_fact_123",
+            "generated_fact_267",
+            "generated_fact_291"
+          ],
+          "quartile_enrichment": {
+            "alignment_shift_abs": {
+              "Q4_enrichment_ratio_vs_population": 3.066666666666667,
+              "counts": {
+                "Q1": 5,
+                "Q2": 1,
+                "Q3": 1,
+                "Q4": 23
+              },
+              "fractions": {
+                "Q1": 0.16666666666666666,
+                "Q2": 0.03333333333333333,
+                "Q3": 0.03333333333333333,
+                "Q4": 0.7666666666666667
+              }
+            },
+            "baseline_delta": {
+              "Q4_enrichment_ratio_vs_population": 0.4,
+              "counts": {
+                "Q1": 5,
+                "Q2": 22,
+                "Q3": 0,
+                "Q4": 3
+              },
+              "fractions": {
+                "Q1": 0.16666666666666666,
+                "Q2": 0.7333333333333333,
+                "Q3": 0.0,
+                "Q4": 0.1
+              }
+            },
+            "baseline_severity_abs": {
+              "Q4_enrichment_ratio_vs_population": 1.0666666666666667,
+              "counts": {
+                "Q1": 0,
+                "Q2": 22,
+                "Q3": 0,
+                "Q4": 8
+              },
+              "fractions": {
+                "Q1": 0.0,
+                "Q2": 0.7333333333333333,
+                "Q3": 0.0,
+                "Q4": 0.26666666666666666
+              }
+            },
+            "magnitude_shift_norm": {
+              "Q4_enrichment_ratio_vs_population": 0.26666666666666666,
+              "counts": {
+                "Q1": 13,
+                "Q2": 14,
+                "Q3": 1,
+                "Q4": 2
+              },
+              "fractions": {
+                "Q1": 0.43333333333333335,
+                "Q2": 0.4666666666666667,
+                "Q3": 0.03333333333333333,
+                "Q4": 0.06666666666666667
+              }
+            },
+            "target_C": {
+              "Q4_enrichment_ratio_vs_population": 2.933333333333333,
+              "counts": {
+                "Q1": 0,
+                "Q2": 1,
+                "Q3": 7,
+                "Q4": 22
+              },
+              "fractions": {
+                "Q1": 0.0,
+                "Q2": 0.03333333333333333,
+                "Q3": 0.23333333333333334,
+                "Q4": 0.7333333333333333
+              }
+            }
+          },
+          "response_max": -0.0001833900903830954,
+          "response_mean": -0.0003779275516090493,
+          "response_min": -0.0006196319912421533,
+          "tail_count": 30,
+          "tail_fraction": 0.1
+        },
+        "bottom_60": {
+          "pair_ids": [
+            "opera_premiere",
+            "generated_fact_245",
+            "generated_fact_077",
+            "generated_fact_269",
+            "generated_fact_065",
+            "generated_fact_149",
+            "generated_fact_173",
+            "generated_fact_161",
+            "generated_fact_053",
+            "generated_fact_233",
+            "generated_fact_197",
+            "generated_fact_257",
+            "generated_fact_281",
+            "generated_fact_101",
+            "generated_fact_089",
+            "generated_fact_221",
+            "generated_fact_113",
+            "generated_fact_185",
+            "generated_fact_293",
+            "generated_fact_125",
+            "generated_fact_041",
+            "generated_fact_137",
+            "generated_fact_209",
+            "volcano_observatory",
+            "theater_restoration",
+            "generated_fact_195",
+            "generated_fact_171",
+            "generated_fact_123",
+            "generated_fact_267",
+            "generated_fact_291",
+            "generated_fact_243",
+            "generated_fact_147",
+            "generated_fact_219",
+            "generated_fact_099",
+            "generated_fact_255",
+            "generated_fact_075",
+            "generated_fact_051",
+            "generated_fact_279",
+            "generated_fact_087",
+            "generated_fact_231",
+            "generated_fact_111",
+            "generated_fact_207",
+            "generated_fact_135",
+            "generated_fact_183",
+            "generated_fact_063",
+            "jazz_archive",
+            "generated_fact_159",
+            "generated_fact_039",
+            "ferry_launch",
+            "generated_fact_237",
+            "generated_fact_153",
+            "generated_fact_177",
+            "generated_fact_069",
+            "generated_fact_093",
+            "generated_fact_261",
+            "generated_fact_225",
+            "generated_fact_165",
+            "generated_fact_249",
+            "generated_fact_057",
+            "generated_fact_141"
+          ],
+          "quartile_enrichment": {
+            "alignment_shift_abs": {
+              "Q4_enrichment_ratio_vs_population": 1.5333333333333334,
+              "counts": {
+                "Q1": 22,
+                "Q2": 13,
+                "Q3": 2,
+                "Q4": 23
+              },
+              "fractions": {
+                "Q1": 0.36666666666666664,
+                "Q2": 0.21666666666666667,
+                "Q3": 0.03333333333333333,
+                "Q4": 0.38333333333333336
+              }
+            },
+            "baseline_delta": {
+              "Q4_enrichment_ratio_vs_population": 0.2,
+              "counts": {
+                "Q1": 23,
+                "Q2": 24,
+                "Q3": 10,
+                "Q4": 3
+              },
+              "fractions": {
+                "Q1": 0.38333333333333336,
+                "Q2": 0.4,
+                "Q3": 0.16666666666666666,
+                "Q4": 0.05
+              }
+            },
+            "baseline_severity_abs": {
+              "Q4_enrichment_ratio_vs_population": 1.7333333333333334,
+              "counts": {
+                "Q1": 11,
+                "Q2": 23,
+                "Q3": 0,
+                "Q4": 26
+              },
+              "fractions": {
+                "Q1": 0.18333333333333332,
+                "Q2": 0.38333333333333336,
+                "Q3": 0.0,
+                "Q4": 0.43333333333333335
+              }
+            },
+            "magnitude_shift_norm": {
+              "Q4_enrichment_ratio_vs_population": 0.26666666666666666,
+              "counts": {
+                "Q1": 14,
+                "Q2": 41,
+                "Q3": 1,
+                "Q4": 4
+              },
+              "fractions": {
+                "Q1": 0.23333333333333334,
+                "Q2": 0.6833333333333333,
+                "Q3": 0.016666666666666666,
+                "Q4": 0.06666666666666667
+              }
+            },
+            "target_C": {
+              "Q4_enrichment_ratio_vs_population": 1.4666666666666666,
+              "counts": {
+                "Q1": 1,
+                "Q2": 12,
+                "Q3": 25,
+                "Q4": 22
+              },
+              "fractions": {
+                "Q1": 0.016666666666666666,
+                "Q2": 0.2,
+                "Q3": 0.4166666666666667,
+                "Q4": 0.36666666666666664
+              }
+            }
+          },
+          "response_max": -9.90212622816733e-05,
+          "response_mean": -0.000261627555215016,
+          "response_min": -0.0006196319912421533,
+          "tail_count": 60,
+          "tail_fraction": 0.2
+        }
+      },
+      "contribution_mass": {
+        "negative_absolute_mass_fraction": 0.6174660568775593,
+        "negative_sum": -0.022772350759193205,
+        "negative_to_positive_mass_ratio": 1.6141471050581304,
+        "net_sum": -0.008664373433066475,
+        "positive_absolute_mass_fraction": 0.38253394312244077,
+        "positive_sum": 0.01410797732612673
+      },
+      "mean": -2.888124477688825e-05,
+      "median": -4.632246288482911e-05,
+      "n": 300,
+      "negative_count": 172,
+      "positive_count": 128,
+      "remove_worst_curve": [
+        {
+          "mean_shift_from_full": 1.9757550049005523e-06,
+          "remaining_mean": -2.6905489771987697e-05,
+          "remaining_n": 299,
+          "removed_pair_ids": [
+            "opera_premiere"
+          ],
+          "removed_sum": -0.0006196319912421533,
+          "removed_worst_count": 1
+        },
+        {
+          "mean_shift_from_full": 7.5379738108376785e-06,
+          "remaining_mean": -2.134327096605057e-05,
+          "remaining_n": 295,
+          "removed_pair_ids": [
+            "opera_premiere",
+            "generated_fact_245",
+            "generated_fact_077",
+            "generated_fact_269",
+            "generated_fact_065"
+          ],
+          "removed_sum": -0.002368108498081556,
+          "removed_worst_count": 5
+        },
+        {
+          "mean_shift_from_full": 1.4575433117458646e-05,
+          "remaining_mean": -1.4305811659429603e-05,
+          "remaining_n": 290,
+          "removed_pair_ids": [
+            "opera_premiere",
+            "generated_fact_245",
+            "generated_fact_077",
+            "generated_fact_269",
+            "generated_fact_065",
+            "generated_fact_149",
+            "generated_fact_173",
+            "generated_fact_161",
+            "generated_fact_053",
+            "generated_fact_233"
+          ],
+          "removed_sum": -0.00451568805183189,
+          "removed_worst_count": 10
+        },
+        {
+          "mean_shift_from_full": 2.911248971289201e-05,
+          "remaining_mean": 2.3124493600376208e-07,
+          "remaining_n": 280,
+          "removed_pair_ids": [
+            "opera_premiere",
+            "generated_fact_245",
+            "generated_fact_077",
+            "generated_fact_269",
+            "generated_fact_065",
+            "generated_fact_149",
+            "generated_fact_173",
+            "generated_fact_161",
+            "generated_fact_053",
+            "generated_fact_233",
+            "generated_fact_197",
+            "generated_fact_257",
+            "generated_fact_281",
+            "generated_fact_101",
+            "generated_fact_089",
+            "generated_fact_221",
+            "generated_fact_113",
+            "generated_fact_185",
+            "generated_fact_293",
+            "generated_fact_125"
+          ],
+          "removed_sum": -0.008729122015147528,
+          "removed_worst_count": 20
+        },
+        {
+          "mean_shift_from_full": 3.878292298135123e-05,
+          "remaining_mean": 9.90167820446298e-06,
+          "remaining_n": 270,
+          "removed_pair_ids": [
+            "opera_premiere",
+            "generated_fact_245",
+            "generated_fact_077",
+            "generated_fact_269",
+            "generated_fact_065",
+            "generated_fact_149",
+            "generated_fact_173",
+            "generated_fact_161",
+            "generated_fact_053",
+            "generated_fact_233",
+            "generated_fact_197",
+            "generated_fact_257",
+            "generated_fact_281",
+            "generated_fact_101",
+            "generated_fact_089",
+            "generated_fact_221",
+            "generated_fact_113",
+            "generated_fact_185",
+            "generated_fact_293",
+            "generated_fact_125",
+            "generated_fact_041",
+            "generated_fact_137",
+            "generated_fact_209",
+            "volcano_observatory",
+            "theater_restoration",
+            "generated_fact_195",
+            "generated_fact_171",
+            "generated_fact_123",
+            "generated_fact_267",
+            "generated_fact_291"
+          ],
+          "removed_sum": -0.011337826548271479,
+          "removed_worst_count": 30
+        },
+        {
+          "mean_shift_from_full": 4.598736581467921e-05,
+          "remaining_mean": 1.7106121037790967e-05,
+          "remaining_n": 260,
+          "removed_pair_ids": [
+            "opera_premiere",
+            "generated_fact_245",
+            "generated_fact_077",
+            "generated_fact_269",
+            "generated_fact_065",
+            "generated_fact_149",
+            "generated_fact_173",
+            "generated_fact_161",
+            "generated_fact_053",
+            "generated_fact_233",
+            "generated_fact_197",
+            "generated_fact_257",
+            "generated_fact_281",
+            "generated_fact_101",
+            "generated_fact_089",
+            "generated_fact_221",
+            "generated_fact_113",
+            "generated_fact_185",
+            "generated_fact_293",
+            "generated_fact_125",
+            "generated_fact_041",
+            "generated_fact_137",
+            "generated_fact_209",
+            "volcano_observatory",
+            "theater_restoration",
+            "generated_fact_195",
+            "generated_fact_171",
+            "generated_fact_123",
+            "generated_fact_267",
+            "generated_fact_291",
+            "generated_fact_243",
+            "generated_fact_147",
+            "generated_fact_219",
+            "generated_fact_099",
+            "generated_fact_255",
+            "generated_fact_075",
+            "generated_fact_051",
+            "generated_fact_279",
+            "generated_fact_087",
+            "generated_fact_231"
+          ],
+          "removed_sum": -0.013111964902892126,
+          "removed_worst_count": 40
+        },
+        {
+          "mean_shift_from_full": 5.300034903825068e-05,
+          "remaining_mean": 2.4119104261362433e-05,
+          "remaining_n": 250,
+          "removed_pair_ids": [
+            "opera_premiere",
+            "generated_fact_245",
+            "generated_fact_077",
+            "generated_fact_269",
+            "generated_fact_065",
+            "generated_fact_149",
+            "generated_fact_173",
+            "generated_fact_161",
+            "generated_fact_053",
+            "generated_fact_233",
+            "generated_fact_197",
+            "generated_fact_257",
+            "generated_fact_281",
+            "generated_fact_101",
+            "generated_fact_089",
+            "generated_fact_221",
+            "generated_fact_113",
+            "generated_fact_185",
+            "generated_fact_293",
+            "generated_fact_125",
+            "generated_fact_041",
+            "generated_fact_137",
+            "generated_fact_209",
+            "volcano_observatory",
+            "theater_restoration",
+            "generated_fact_195",
+            "generated_fact_171",
+            "generated_fact_123",
+            "generated_fact_267",
+            "generated_fact_291",
+            "generated_fact_243",
+            "generated_fact_147",
+            "generated_fact_219",
+            "generated_fact_099",
+            "generated_fact_255",
+            "generated_fact_075",
+            "generated_fact_051",
+            "generated_fact_279",
+            "generated_fact_087",
+            "generated_fact_231",
+            "generated_fact_111",
+            "generated_fact_207",
+            "generated_fact_135",
+            "generated_fact_183",
+            "generated_fact_063",
+            "jazz_archive",
+            "generated_fact_159",
+            "generated_fact_039",
+            "ferry_launch",
+            "generated_fact_237"
+          ],
+          "removed_sum": -0.014694149498407083,
+          "removed_worst_count": 50
+        },
+        {
+          "mean_shift_from_full": 5.818657760953194e-05,
+          "remaining_mean": 2.9305332832643693e-05,
+          "remaining_n": 240,
+          "removed_pair_ids": [
+            "opera_premiere",
+            "generated_fact_245",
+            "generated_fact_077",
+            "generated_fact_269",
+            "generated_fact_065",
+            "generated_fact_149",
+            "generated_fact_173",
+            "generated_fact_161",
+            "generated_fact_053",
+            "generated_fact_233",
+            "generated_fact_197",
+            "generated_fact_257",
+            "generated_fact_281",
+            "generated_fact_101",
+            "generated_fact_089",
+            "generated_fact_221",
+            "generated_fact_113",
+            "generated_fact_185",
+            "generated_fact_293",
+            "generated_fact_125",
+            "generated_fact_041",
+            "generated_fact_137",
+            "generated_fact_209",
+            "volcano_observatory",
+            "theater_restoration",
+            "generated_fact_195",
+            "generated_fact_171",
+            "generated_fact_123",
+            "generated_fact_267",
+            "generated_fact_291",
+            "generated_fact_243",
+            "generated_fact_147",
+            "generated_fact_219",
+            "generated_fact_099",
+            "generated_fact_255",
+            "generated_fact_075",
+            "generated_fact_051",
+            "generated_fact_279",
+            "generated_fact_087",
+            "generated_fact_231",
+            "generated_fact_111",
+            "generated_fact_207",
+            "generated_fact_135",
+            "generated_fact_183",
+            "generated_fact_063",
+            "jazz_archive",
+            "generated_fact_159",
+            "generated_fact_039",
+            "ferry_launch",
+            "generated_fact_237",
+            "generated_fact_153",
+            "generated_fact_177",
+            "generated_fact_069",
+            "generated_fact_093",
+            "generated_fact_261",
+            "generated_fact_225",
+            "generated_fact_165",
+            "generated_fact_249",
+            "generated_fact_057",
+            "generated_fact_141"
+          ],
+          "removed_sum": -0.01569765331290096,
+          "removed_worst_count": 60
+        },
+        {
+          "mean_shift_from_full": 6.622030301893492e-05,
+          "remaining_mean": 3.733905824204668e-05,
+          "remaining_n": 225,
+          "removed_pair_ids": [
+            "opera_premiere",
+            "generated_fact_245",
+            "generated_fact_077",
+            "generated_fact_269",
+            "generated_fact_065",
+            "generated_fact_149",
+            "generated_fact_173",
+            "generated_fact_161",
+            "generated_fact_053",
+            "generated_fact_233",
+            "generated_fact_197",
+            "generated_fact_257",
+            "generated_fact_281",
+            "generated_fact_101",
+            "generated_fact_089",
+            "generated_fact_221",
+            "generated_fact_113",
+            "generated_fact_185",
+            "generated_fact_293",
+            "generated_fact_125",
+            "generated_fact_041",
+            "generated_fact_137",
+            "generated_fact_209",
+            "volcano_observatory",
+            "theater_restoration",
+            "generated_fact_195",
+            "generated_fact_171",
+            "generated_fact_123",
+            "generated_fact_267",
+            "generated_fact_291",
+            "generated_fact_243",
+            "generated_fact_147",
+            "generated_fact_219",
+            "generated_fact_099",
+            "generated_fact_255",
+            "generated_fact_075",
+            "generated_fact_051",
+            "generated_fact_279",
+            "generated_fact_087",
+            "generated_fact_231",
+            "generated_fact_111",
+            "generated_fact_207",
+            "generated_fact_135",
+            "generated_fact_183",
+            "generated_fact_063",
+            "jazz_archive",
+            "generated_fact_159",
+            "generated_fact_039",
+            "ferry_launch",
+            "generated_fact_237",
+            "generated_fact_153",
+            "generated_fact_177",
+            "generated_fact_069",
+            "generated_fact_093",
+            "generated_fact_261",
+            "generated_fact_225",
+            "generated_fact_165",
+            "generated_fact_249",
+            "generated_fact_057",
+            "generated_fact_141",
+            "generated_fact_081",
+            "generated_fact_297",
+            "generated_fact_213",
+            "generated_fact_129",
+            "generated_fact_105",
+            "market_renovation",
+            "generated_fact_273",
+            "generated_fact_117",
+            "generated_fact_201",
+            "generated_fact_045",
+            "generated_fact_189",
+            "generated_fact_285",
+            "generated_fact_172",
+            "generated_fact_033",
+            "generated_fact_088"
+          ],
+          "removed_sum": -0.017065661537526977,
+          "removed_worst_count": 75
+        }
+      ],
+      "symmetric_trimmed_means": [
+        {
+          "remaining_n": 270,
+          "trim_count_each_tail": 15,
+          "trim_fraction_each_tail": 0.05,
+          "trimmed_mean": -2.3005812619849e-05
+        },
+        {
+          "remaining_n": 240,
+          "trim_count_each_tail": 30,
+          "trim_fraction_each_tail": 0.1,
+          "trimmed_mean": -2.209138227497002e-05
+        },
+        {
+          "remaining_n": 180,
+          "trim_count_each_tail": 60,
+          "trim_fraction_each_tail": 0.2,
+          "trimmed_mean": -2.7234110818247533e-05
+        }
+      ]
+    },
+    "R_ALIGN": {
+      "bottom30_vs_top30_geometry": {
+        "bottom_feature_summary": {
+          "alignment_shift": {
+            "mean": 0.10282837784774874,
+            "median": 0.13624756506645136
+          },
+          "alignment_shift_abs": {
+            "mean": 0.12048977903424149,
+            "median": 0.13624756506645136
+          },
+          "baseline_delta": {
+            "mean": -0.014877221756922236,
+            "median": -0.021698188207020297
+          },
+          "baseline_severity_abs": {
+            "mean": 0.029413734023254326,
+            "median": 0.021809258671684373
+          },
+          "magnitude_log_ratio_A": {
+            "mean": -0.04295286876522319,
+            "median": -0.04686370649645259
+          },
+          "magnitude_log_ratio_B": {
+            "mean": -0.011814892955419598,
+            "median": -0.039707249141581594
+          },
+          "magnitude_shift_norm": {
+            "mean": 0.09115873664958264,
+            "median": 0.06341899395315148
+          },
+          "reference_A": {
+            "mean": 1.9279721585978833,
+            "median": 1.722629318083015
+          },
+          "reference_B": {
+            "mean": 1.6407362879062726,
+            "median": 1.6699571868400975
+          },
+          "reference_C": {
+            "mean": 0.25362470765596706,
+            "median": 0.3543967043795365
+          },
+          "target_A": {
+            "mean": 2.012975347332119,
+            "median": 1.8073171482222432
+          },
+          "target_B": {
+            "mean": 1.6673668982206442,
+            "median": 1.7378886172643022
+          },
+          "target_C": {
+            "mean": 0.1507963298082183,
+            "median": 0.21618472546556441
+          }
+        },
+        "bottom_pair_ids": [
+          "generated_fact_245",
+          "generated_fact_077",
+          "generated_fact_161",
+          "generated_fact_173",
+          "generated_fact_065",
+          "generated_fact_257",
+          "generated_fact_053",
+          "generated_fact_281",
+          "generated_fact_089",
+          "generated_fact_269",
+          "generated_fact_197",
+          "generated_fact_233",
+          "generated_fact_113",
+          "generated_fact_149",
+          "generated_fact_221",
+          "generated_fact_137",
+          "generated_fact_101",
+          "generated_fact_185",
+          "generated_fact_041",
+          "generated_fact_293",
+          "generated_fact_209",
+          "generated_fact_125",
+          "opera_premiere",
+          "vaccine_delivery",
+          "theater_restoration",
+          "volcano_observatory",
+          "library_digitization",
+          "museum_purchase",
+          "poetry_prize",
+          "bridge_opening"
+        ],
+        "count_per_tail": 30,
+        "middle_feature_summary": {
+          "alignment_shift": {
+            "mean": -0.029700756243540648,
+            "median": -0.02934794319090707
+          },
+          "alignment_shift_abs": {
+            "mean": 0.06206886147577188,
+            "median": 0.054767074558018686
+          },
+          "baseline_delta": {
+            "mean": -0.0179077006262555,
+            "median": -0.013928488825237895
+          },
+          "baseline_severity_abs": {
+            "mean": 0.038535513687780916,
+            "median": 0.03289419011100786
+          },
+          "magnitude_log_ratio_A": {
+            "mean": 0.001629182224251608,
+            "median": -0.025190015222972366
+          },
+          "magnitude_log_ratio_B": {
+            "mean": -0.018375377393341177,
+            "median": -0.013735705848337939
+          },
+          "magnitude_shift_norm": {
+            "mean": 0.08878099121475512,
+            "median": 0.0734604558101384
+          },
+          "reference_A": {
+            "mean": 2.4898268584151313,
+            "median": 2.4667401978712267
+          },
+          "reference_B": {
+            "mean": 1.4899690338195049,
+            "median": 1.4891016863811513
+          },
+          "reference_C": {
+            "mean": 0.03445915828779072,
+            "median": 0.03828479205535747
+          },
+          "target_A": {
+            "mean": 2.480955806544199,
+            "median": 2.5466955819331973
+          },
+          "target_B": {
+            "mean": 1.5163784534525115,
+            "median": 1.549039397273131
+          },
+          "target_C": {
+            "mean": 0.06415991453133138,
+            "median": 0.056700235737339455
+          }
+        },
+        "standardized_feature_contrasts": {
+          "alignment_shift": {
+            "bottom_minus_population_sd_units": 1.4573499888558847,
+            "bottom_minus_top_sd_units": 1.5184801563201267
+          },
+          "alignment_shift_abs": {
+            "bottom_minus_population_sd_units": 1.1327133667684293,
+            "bottom_minus_top_sd_units": 1.0657903255010752
+          },
+          "baseline_delta": {
+            "bottom_minus_population_sd_units": -0.02029888795203032,
+            "bottom_minus_top_sd_units": -0.7633245394120858
+          },
+          "baseline_severity_abs": {
+            "bottom_minus_population_sd_units": -0.2438271776750382,
+            "bottom_minus_top_sd_units": 0.21078969398076333
+          },
+          "magnitude_log_ratio_A": {
+            "bottom_minus_population_sd_units": -0.4638302405239577,
+            "bottom_minus_top_sd_units": -0.3679202298031036
+          },
+          "magnitude_log_ratio_B": {
+            "bottom_minus_population_sd_units": 0.16074369549937076,
+            "bottom_minus_top_sd_units": 0.6776758884204792
+          },
+          "magnitude_shift_norm": {
+            "bottom_minus_population_sd_units": 0.029360014505287472,
+            "bottom_minus_top_sd_units": -0.08318935657949243
+          },
+          "reference_A": {
+            "bottom_minus_population_sd_units": -1.3715123214653364,
+            "bottom_minus_top_sd_units": -1.4016022606508434
+          },
+          "reference_B": {
+            "bottom_minus_population_sd_units": 0.6910889060167855,
+            "bottom_minus_top_sd_units": 1.2117335417773119
+          },
+          "reference_C": {
+            "bottom_minus_population_sd_units": 1.3942646276932835,
+            "bottom_minus_top_sd_units": 1.6717012196628454
+          },
+          "target_A": {
+            "bottom_minus_population_sd_units": -1.2864142404061791,
+            "bottom_minus_top_sd_units": -1.4015295450858576
+          },
+          "target_B": {
+            "bottom_minus_population_sd_units": 0.6841714252811707,
+            "bottom_minus_top_sd_units": 1.0264791818685208
+          },
+          "target_C": {
+            "bottom_minus_population_sd_units": 0.651973811065088,
+            "bottom_minus_top_sd_units": 0.9315616276606633
+          }
+        },
+        "top_feature_summary": {
+          "alignment_shift": {
+            "mean": -0.02049145736013098,
+            "median": -0.010396030721232824
+          },
+          "alignment_shift_abs": {
+            "mean": 0.07194685699030151,
+            "median": 0.06639526243336745
+          },
+          "baseline_delta": {
+            "mean": 0.01814925223302343,
+            "median": 0.022082617058156007
+          },
+          "baseline_severity_abs": {
+            "mean": 0.023607067276439065,
+            "median": 0.022248767071122055
+          },
+          "magnitude_log_ratio_A": {
+            "mean": -0.012224680474272866,
+            "median": -0.03231126354764597
+          },
+          "magnitude_log_ratio_B": {
+            "mean": -0.05006886834566209,
+            "median": -0.0645609630925989
+          },
+          "magnitude_shift_norm": {
+            "mean": 0.09535849512429986,
+            "median": 0.08298470676292088
+          },
+          "reference_A": {
+            "mean": 2.439602793158296,
+            "median": 2.378052283566865
+          },
+          "reference_B": {
+            "mean": 1.3842916435177075,
+            "median": 1.4669220386517514
+          },
+          "reference_C": {
+            "mean": 0.014764985294293239,
+            "median": 0.007172909848263844
+          },
+          "target_A": {
+            "mean": 2.470733764668861,
+            "median": 2.452354006477951
+          },
+          "target_B": {
+            "mean": 1.4541524800704861,
+            "median": 1.5386102257937915
+          },
+          "target_C": {
+            "mean": 0.03525644265442422,
+            "median": 0.048276833613215726
+          }
+        },
+        "top_pair_ids": [
+          "generated_fact_158",
+          "generated_fact_134",
+          "generated_fact_104",
+          "generated_fact_080",
+          "generated_fact_116",
+          "generated_fact_236",
+          "generated_fact_260",
+          "generated_fact_068",
+          "generated_fact_278",
+          "generated_fact_248",
+          "generated_fact_266",
+          "generated_fact_152",
+          "generated_fact_122",
+          "generated_fact_272",
+          "generated_fact_032",
+          "generated_fact_176",
+          "generated_fact_098",
+          "generated_fact_290",
+          "generated_fact_284",
+          "generated_fact_110",
+          "generated_fact_206",
+          "generated_fact_182",
+          "generated_fact_200",
+          "generated_fact_038",
+          "garden_award",
+          "canal_reopening",
+          "satellite_launch",
+          "dam_inspection",
+          "harbor_upgrade",
+          "forest_mapping"
+        ]
+      },
+      "bottom_tail_overlap": {
+        "bottom_10": {
+          "pair_ids": [
+            "generated_fact_245",
+            "generated_fact_077",
+            "generated_fact_161",
+            "generated_fact_173",
+            "generated_fact_065",
+            "generated_fact_257",
+            "generated_fact_053",
+            "generated_fact_281",
+            "generated_fact_089",
+            "generated_fact_269"
+          ],
+          "quartile_enrichment": {
+            "alignment_shift_abs": {
+              "Q4_enrichment_ratio_vs_population": 4.0,
+              "counts": {
+                "Q1": 0,
+                "Q2": 0,
+                "Q3": 0,
+                "Q4": 10
+              },
+              "fractions": {
+                "Q1": 0.0,
+                "Q2": 0.0,
+                "Q3": 0.0,
+                "Q4": 1.0
+              }
+            },
+            "baseline_delta": {
+              "Q4_enrichment_ratio_vs_population": 0.0,
+              "counts": {
+                "Q1": 0,
+                "Q2": 10,
+                "Q3": 0,
+                "Q4": 0
+              },
+              "fractions": {
+                "Q1": 0.0,
+                "Q2": 1.0,
+                "Q3": 0.0,
+                "Q4": 0.0
+              }
+            },
+            "baseline_severity_abs": {
+              "Q4_enrichment_ratio_vs_population": 0.0,
+              "counts": {
+                "Q1": 0,
+                "Q2": 10,
+                "Q3": 0,
+                "Q4": 0
+              },
+              "fractions": {
+                "Q1": 0.0,
+                "Q2": 1.0,
+                "Q3": 0.0,
+                "Q4": 0.0
+              }
+            },
+            "magnitude_shift_norm": {
+              "Q4_enrichment_ratio_vs_population": 0.0,
+              "counts": {
+                "Q1": 2,
+                "Q2": 8,
+                "Q3": 0,
+                "Q4": 0
+              },
+              "fractions": {
+                "Q1": 0.2,
+                "Q2": 0.8,
+                "Q3": 0.0,
+                "Q4": 0.0
+              }
+            },
+            "target_C": {
+              "Q4_enrichment_ratio_vs_population": 4.0,
+              "counts": {
+                "Q1": 0,
+                "Q2": 0,
+                "Q3": 0,
+                "Q4": 10
+              },
+              "fractions": {
+                "Q1": 0.0,
+                "Q2": 0.0,
+                "Q3": 0.0,
+                "Q4": 1.0
+              }
+            }
+          },
+          "response_max": -0.0003184737892256706,
+          "response_mean": -0.00032229353424831906,
+          "response_min": -0.0003307345976950593,
+          "tail_count": 10,
+          "tail_fraction": 0.03333333333333333
+        },
+        "bottom_20": {
+          "pair_ids": [
+            "generated_fact_245",
+            "generated_fact_077",
+            "generated_fact_161",
+            "generated_fact_173",
+            "generated_fact_065",
+            "generated_fact_257",
+            "generated_fact_053",
+            "generated_fact_281",
+            "generated_fact_089",
+            "generated_fact_269",
+            "generated_fact_197",
+            "generated_fact_233",
+            "generated_fact_113",
+            "generated_fact_149",
+            "generated_fact_221",
+            "generated_fact_137",
+            "generated_fact_101",
+            "generated_fact_185",
+            "generated_fact_041",
+            "generated_fact_293"
+          ],
+          "quartile_enrichment": {
+            "alignment_shift_abs": {
+              "Q4_enrichment_ratio_vs_population": 4.0,
+              "counts": {
+                "Q1": 0,
+                "Q2": 0,
+                "Q3": 0,
+                "Q4": 20
+              },
+              "fractions": {
+                "Q1": 0.0,
+                "Q2": 0.0,
+                "Q3": 0.0,
+                "Q4": 1.0
+              }
+            },
+            "baseline_delta": {
+              "Q4_enrichment_ratio_vs_population": 0.0,
+              "counts": {
+                "Q1": 0,
+                "Q2": 20,
+                "Q3": 0,
+                "Q4": 0
+              },
+              "fractions": {
+                "Q1": 0.0,
+                "Q2": 1.0,
+                "Q3": 0.0,
+                "Q4": 0.0
+              }
+            },
+            "baseline_severity_abs": {
+              "Q4_enrichment_ratio_vs_population": 0.0,
+              "counts": {
+                "Q1": 0,
+                "Q2": 20,
+                "Q3": 0,
+                "Q4": 0
+              },
+              "fractions": {
+                "Q1": 0.0,
+                "Q2": 1.0,
+                "Q3": 0.0,
+                "Q4": 0.0
+              }
+            },
+            "magnitude_shift_norm": {
+              "Q4_enrichment_ratio_vs_population": 0.0,
+              "counts": {
+                "Q1": 11,
+                "Q2": 9,
+                "Q3": 0,
+                "Q4": 0
+              },
+              "fractions": {
+                "Q1": 0.55,
+                "Q2": 0.45,
+                "Q3": 0.0,
+                "Q4": 0.0
+              }
+            },
+            "target_C": {
+              "Q4_enrichment_ratio_vs_population": 4.0,
+              "counts": {
+                "Q1": 0,
+                "Q2": 0,
+                "Q3": 0,
+                "Q4": 20
+              },
+              "fractions": {
+                "Q1": 0.0,
+                "Q2": 0.0,
+                "Q3": 0.0,
+                "Q4": 1.0
+              }
+            }
+          },
+          "response_max": -0.0003089267499097881,
+          "response_mean": -0.0003176809446578277,
+          "response_min": -0.0003307345976950593,
+          "tail_count": 20,
+          "tail_fraction": 0.06666666666666667
+        },
+        "bottom_30": {
+          "pair_ids": [
+            "generated_fact_245",
+            "generated_fact_077",
+            "generated_fact_161",
+            "generated_fact_173",
+            "generated_fact_065",
+            "generated_fact_257",
+            "generated_fact_053",
+            "generated_fact_281",
+            "generated_fact_089",
+            "generated_fact_269",
+            "generated_fact_197",
+            "generated_fact_233",
+            "generated_fact_113",
+            "generated_fact_149",
+            "generated_fact_221",
+            "generated_fact_137",
+            "generated_fact_101",
+            "generated_fact_185",
+            "generated_fact_041",
+            "generated_fact_293",
+            "generated_fact_209",
+            "generated_fact_125",
+            "opera_premiere",
+            "vaccine_delivery",
+            "theater_restoration",
+            "volcano_observatory",
+            "library_digitization",
+            "museum_purchase",
+            "poetry_prize",
+            "bridge_opening"
+          ],
+          "quartile_enrichment": {
+            "alignment_shift_abs": {
+              "Q4_enrichment_ratio_vs_population": 3.066666666666667,
+              "counts": {
+                "Q1": 0,
+                "Q2": 2,
+                "Q3": 5,
+                "Q4": 23
+              },
+              "fractions": {
+                "Q1": 0.0,
+                "Q2": 0.06666666666666667,
+                "Q3": 0.16666666666666666,
+                "Q4": 0.7666666666666667
+              }
+            },
+            "baseline_delta": {
+              "Q4_enrichment_ratio_vs_population": 0.4,
+              "counts": {
+                "Q1": 2,
+                "Q2": 23,
+                "Q3": 2,
+                "Q4": 3
+              },
+              "fractions": {
+                "Q1": 0.06666666666666667,
+                "Q2": 0.7666666666666667,
+                "Q3": 0.06666666666666667,
+                "Q4": 0.1
+              }
+            },
+            "baseline_severity_abs": {
+              "Q4_enrichment_ratio_vs_population": 0.6666666666666666,
+              "counts": {
+                "Q1": 2,
+                "Q2": 23,
+                "Q3": 0,
+                "Q4": 5
+              },
+              "fractions": {
+                "Q1": 0.06666666666666667,
+                "Q2": 0.7666666666666667,
+                "Q3": 0.0,
+                "Q4": 0.16666666666666666
+              }
+            },
+            "magnitude_shift_norm": {
+              "Q4_enrichment_ratio_vs_population": 0.8,
+              "counts": {
+                "Q1": 13,
+                "Q2": 9,
+                "Q3": 2,
+                "Q4": 6
+              },
+              "fractions": {
+                "Q1": 0.43333333333333335,
+                "Q2": 0.3,
+                "Q3": 0.06666666666666667,
+                "Q4": 0.2
+              }
+            },
+            "target_C": {
+              "Q4_enrichment_ratio_vs_population": 2.933333333333333,
+              "counts": {
+                "Q1": 3,
+                "Q2": 2,
+                "Q3": 3,
+                "Q4": 22
+              },
+              "fractions": {
+                "Q1": 0.1,
+                "Q2": 0.06666666666666667,
+                "Q3": 0.1,
+                "Q4": 0.7333333333333333
+              }
+            }
+          },
+          "response_max": -4.390262505304943e-05,
+          "response_mean": -0.0002544330374673313,
+          "response_min": -0.0003307345976950593,
+          "tail_count": 30,
+          "tail_fraction": 0.1
+        },
+        "bottom_60": {
+          "pair_ids": [
+            "generated_fact_245",
+            "generated_fact_077",
+            "generated_fact_161",
+            "generated_fact_173",
+            "generated_fact_065",
+            "generated_fact_257",
+            "generated_fact_053",
+            "generated_fact_281",
+            "generated_fact_089",
+            "generated_fact_269",
+            "generated_fact_197",
+            "generated_fact_233",
+            "generated_fact_113",
+            "generated_fact_149",
+            "generated_fact_221",
+            "generated_fact_137",
+            "generated_fact_101",
+            "generated_fact_185",
+            "generated_fact_041",
+            "generated_fact_293",
+            "generated_fact_209",
+            "generated_fact_125",
+            "opera_premiere",
+            "vaccine_delivery",
+            "theater_restoration",
+            "volcano_observatory",
+            "library_digitization",
+            "museum_purchase",
+            "poetry_prize",
+            "bridge_opening",
+            "jazz_archive",
+            "wetland_restoration",
+            "generated_fact_172",
+            "generated_fact_148",
+            "ferry_launch",
+            "generated_fact_268",
+            "generated_fact_232",
+            "generated_fact_124",
+            "generated_fact_100",
+            "generated_fact_220",
+            "generated_fact_196",
+            "generated_fact_184",
+            "generated_fact_052",
+            "generated_fact_076",
+            "generated_fact_088",
+            "generated_fact_136",
+            "generated_fact_112",
+            "generated_fact_280",
+            "generated_fact_208",
+            "generated_fact_292",
+            "generated_fact_256",
+            "generated_fact_160",
+            "generated_fact_040",
+            "generated_fact_064",
+            "market_renovation",
+            "generated_fact_244",
+            "generated_fact_255",
+            "generated_fact_147",
+            "generated_fact_195",
+            "generated_fact_087"
+          ],
+          "quartile_enrichment": {
+            "alignment_shift_abs": {
+              "Q4_enrichment_ratio_vs_population": 3.0,
+              "counts": {
+                "Q1": 6,
+                "Q2": 3,
+                "Q3": 6,
+                "Q4": 45
+              },
+              "fractions": {
+                "Q1": 0.1,
+                "Q2": 0.05,
+                "Q3": 0.1,
+                "Q4": 0.75
+              }
+            },
+            "baseline_delta": {
+              "Q4_enrichment_ratio_vs_population": 0.2,
+              "counts": {
+                "Q1": 8,
+                "Q2": 46,
+                "Q3": 3,
+                "Q4": 3
+              },
+              "fractions": {
+                "Q1": 0.13333333333333333,
+                "Q2": 0.7666666666666667,
+                "Q3": 0.05,
+                "Q4": 0.05
+              }
+            },
+            "baseline_severity_abs": {
+              "Q4_enrichment_ratio_vs_population": 0.6666666666666666,
+              "counts": {
+                "Q1": 3,
+                "Q2": 25,
+                "Q3": 22,
+                "Q4": 10
+              },
+              "fractions": {
+                "Q1": 0.05,
+                "Q2": 0.4166666666666667,
+                "Q3": 0.36666666666666664,
+                "Q4": 0.16666666666666666
+              }
+            },
+            "magnitude_shift_norm": {
+              "Q4_enrichment_ratio_vs_population": 0.9333333333333333,
+              "counts": {
+                "Q1": 13,
+                "Q2": 14,
+                "Q3": 19,
+                "Q4": 14
+              },
+              "fractions": {
+                "Q1": 0.21666666666666667,
+                "Q2": 0.23333333333333334,
+                "Q3": 0.31666666666666665,
+                "Q4": 0.23333333333333334
+              }
+            },
+            "target_C": {
+              "Q4_enrichment_ratio_vs_population": 1.4666666666666666,
+              "counts": {
+                "Q1": 4,
+                "Q2": 25,
+                "Q3": 9,
+                "Q4": 22
+              },
+              "fractions": {
+                "Q1": 0.06666666666666667,
+                "Q2": 0.4166666666666667,
+                "Q3": 0.15,
+                "Q4": 0.36666666666666664
+              }
+            }
+          },
+          "response_max": -1.0887802124048829e-05,
+          "response_mean": -0.00013477467826087942,
+          "response_min": -0.0003307345976950593,
+          "tail_count": 60,
+          "tail_fraction": 0.2
+        }
+      },
+      "contribution_mass": {
+        "negative_absolute_mass_fraction": 0.5769336945563306,
+        "negative_sum": -0.008260962181369513,
+        "negative_to_positive_mass_ratio": 1.3636956834728315,
+        "net_sum": -0.002203186768946208,
+        "positive_absolute_mass_fraction": 0.42306630544366947,
+        "positive_sum": 0.006057775412423305
+      },
+      "mean": -7.34395589648736e-06,
+      "median": 1.849205908804885e-05,
+      "n": 300,
+      "negative_count": 80,
+      "positive_count": 220,
+      "remove_worst_curve": [
+        {
+          "mean_shift_from_full": 1.0815740528380335e-06,
+          "remaining_mean": -6.262381843649327e-06,
+          "remaining_n": 299,
+          "removed_pair_ids": [
+            "generated_fact_245"
+          ],
+          "removed_sum": -0.0003307345976950593,
+          "removed_worst_count": 1
+        },
+        {
+          "mean_shift_from_full": 5.389602833052318e-06,
+          "remaining_mean": -1.9543530634350416e-06,
+          "remaining_n": 295,
+          "removed_pair_ids": [
+            "generated_fact_245",
+            "generated_fact_077",
+            "generated_fact_161",
+            "generated_fact_173",
+            "generated_fact_065"
+          ],
+          "removed_sum": -0.0016266526152328709,
+          "removed_worst_count": 5
+        },
+        {
+          "mean_shift_from_full": 1.0860330287994198e-05,
+          "remaining_mean": 3.516374391506837e-06,
+          "remaining_n": 290,
+          "removed_pair_ids": [
+            "generated_fact_245",
+            "generated_fact_077",
+            "generated_fact_161",
+            "generated_fact_173",
+            "generated_fact_065",
+            "generated_fact_257",
+            "generated_fact_053",
+            "generated_fact_281",
+            "generated_fact_089",
+            "generated_fact_269"
+          ],
+          "removed_sum": -0.003222935342483191,
+          "removed_worst_count": 10
+        },
+        {
+          "mean_shift_from_full": 2.2166927768667167e-05,
+          "remaining_mean": 1.4822971872179806e-05,
+          "remaining_n": 280,
+          "removed_pair_ids": [
+            "generated_fact_245",
+            "generated_fact_077",
+            "generated_fact_161",
+            "generated_fact_173",
+            "generated_fact_065",
+            "generated_fact_257",
+            "generated_fact_053",
+            "generated_fact_281",
+            "generated_fact_089",
+            "generated_fact_269",
+            "generated_fact_197",
+            "generated_fact_233",
+            "generated_fact_113",
+            "generated_fact_149",
+            "generated_fact_221",
+            "generated_fact_137",
+            "generated_fact_101",
+            "generated_fact_185",
+            "generated_fact_041",
+            "generated_fact_293"
+          ],
+          "removed_sum": -0.006353618893156554,
+          "removed_worst_count": 20
+        },
+        {
+          "mean_shift_from_full": 2.7454342396760438e-05,
+          "remaining_mean": 2.0110386500273076e-05,
+          "remaining_n": 270,
+          "removed_pair_ids": [
+            "generated_fact_245",
+            "generated_fact_077",
+            "generated_fact_161",
+            "generated_fact_173",
+            "generated_fact_065",
+            "generated_fact_257",
+            "generated_fact_053",
+            "generated_fact_281",
+            "generated_fact_089",
+            "generated_fact_269",
+            "generated_fact_197",
+            "generated_fact_233",
+            "generated_fact_113",
+            "generated_fact_149",
+            "generated_fact_221",
+            "generated_fact_137",
+            "generated_fact_101",
+            "generated_fact_185",
+            "generated_fact_041",
+            "generated_fact_293",
+            "generated_fact_209",
+            "generated_fact_125",
+            "opera_premiere",
+            "vaccine_delivery",
+            "theater_restoration",
+            "volcano_observatory",
+            "library_digitization",
+            "museum_purchase",
+            "poetry_prize",
+            "bridge_opening"
+          ],
+          "removed_sum": -0.007632991124019939,
+          "removed_worst_count": 30
+        },
+        {
+          "mean_shift_from_full": 2.8940182846098394e-05,
+          "remaining_mean": 2.1596226949611035e-05,
+          "remaining_n": 260,
+          "removed_pair_ids": [
+            "generated_fact_245",
+            "generated_fact_077",
+            "generated_fact_161",
+            "generated_fact_173",
+            "generated_fact_065",
+            "generated_fact_257",
+            "generated_fact_053",
+            "generated_fact_281",
+            "generated_fact_089",
+            "generated_fact_269",
+            "generated_fact_197",
+            "generated_fact_233",
+            "generated_fact_113",
+            "generated_fact_149",
+            "generated_fact_221",
+            "generated_fact_137",
+            "generated_fact_101",
+            "generated_fact_185",
+            "generated_fact_041",
+            "generated_fact_293",
+            "generated_fact_209",
+            "generated_fact_125",
+            "opera_premiere",
+            "vaccine_delivery",
+            "theater_restoration",
+            "volcano_observatory",
+            "library_digitization",
+            "museum_purchase",
+            "poetry_prize",
+            "bridge_opening",
+            "jazz_archive",
+            "wetland_restoration",
+            "generated_fact_172",
+            "generated_fact_148",
+            "ferry_launch",
+            "generated_fact_268",
+            "generated_fact_232",
+            "generated_fact_124",
+            "generated_fact_100",
+            "generated_fact_220"
+          ],
+          "removed_sum": -0.007818205775845077,
+          "removed_worst_count": 40
+        },
+        {
+          "mean_shift_from_full": 3.0384944956471e-05,
+          "remaining_mean": 2.304098905998364e-05,
+          "remaining_n": 250,
+          "removed_pair_ids": [
+            "generated_fact_245",
+            "generated_fact_077",
+            "generated_fact_161",
+            "generated_fact_173",
+            "generated_fact_065",
+            "generated_fact_257",
+            "generated_fact_053",
+            "generated_fact_281",
+            "generated_fact_089",
+            "generated_fact_269",
+            "generated_fact_197",
+            "generated_fact_233",
+            "generated_fact_113",
+            "generated_fact_149",
+            "generated_fact_221",
+            "generated_fact_137",
+            "generated_fact_101",
+            "generated_fact_185",
+            "generated_fact_041",
+            "generated_fact_293",
+            "generated_fact_209",
+            "generated_fact_125",
+            "opera_premiere",
+            "vaccine_delivery",
+            "theater_restoration",
+            "volcano_observatory",
+            "library_digitization",
+            "museum_purchase",
+            "poetry_prize",
+            "bridge_opening",
+            "jazz_archive",
+            "wetland_restoration",
+            "generated_fact_172",
+            "generated_fact_148",
+            "ferry_launch",
+            "generated_fact_268",
+            "generated_fact_232",
+            "generated_fact_124",
+            "generated_fact_100",
+            "generated_fact_220",
+            "generated_fact_196",
+            "generated_fact_184",
+            "generated_fact_052",
+            "generated_fact_076",
+            "generated_fact_088",
+            "generated_fact_136",
+            "generated_fact_112",
+            "generated_fact_280",
+            "generated_fact_208",
+            "generated_fact_292"
+          ],
+          "removed_sum": -0.007963434033942118,
+          "removed_worst_count": 50
+        },
+        {
+          "mean_shift_from_full": 3.1857680591098016e-05,
+          "remaining_mean": 2.4513724694610654e-05,
+          "remaining_n": 240,
+          "removed_pair_ids": [
+            "generated_fact_245",
+            "generated_fact_077",
+            "generated_fact_161",
+            "generated_fact_173",
+            "generated_fact_065",
+            "generated_fact_257",
+            "generated_fact_053",
+            "generated_fact_281",
+            "generated_fact_089",
+            "generated_fact_269",
+            "generated_fact_197",
+            "generated_fact_233",
+            "generated_fact_113",
+            "generated_fact_149",
+            "generated_fact_221",
+            "generated_fact_137",
+            "generated_fact_101",
+            "generated_fact_185",
+            "generated_fact_041",
+            "generated_fact_293",
+            "generated_fact_209",
+            "generated_fact_125",
+            "opera_premiere",
+            "vaccine_delivery",
+            "theater_restoration",
+            "volcano_observatory",
+            "library_digitization",
+            "museum_purchase",
+            "poetry_prize",
+            "bridge_opening",
+            "jazz_archive",
+            "wetland_restoration",
+            "generated_fact_172",
+            "generated_fact_148",
+            "ferry_launch",
+            "generated_fact_268",
+            "generated_fact_232",
+            "generated_fact_124",
+            "generated_fact_100",
+            "generated_fact_220",
+            "generated_fact_196",
+            "generated_fact_184",
+            "generated_fact_052",
+            "generated_fact_076",
+            "generated_fact_088",
+            "generated_fact_136",
+            "generated_fact_112",
+            "generated_fact_280",
+            "generated_fact_208",
+            "generated_fact_292",
+            "generated_fact_256",
+            "generated_fact_160",
+            "generated_fact_040",
+            "generated_fact_064",
+            "market_renovation",
+            "generated_fact_244",
+            "generated_fact_255",
+            "generated_fact_147",
+            "generated_fact_195",
+            "generated_fact_087"
+          ],
+          "removed_sum": -0.008086480695652765,
+          "removed_worst_count": 60
+        },
+        {
+          "mean_shift_from_full": 3.411605094563527e-05,
+          "remaining_mean": 2.6772095049147905e-05,
+          "remaining_n": 225,
+          "removed_pair_ids": [
+            "generated_fact_245",
+            "generated_fact_077",
+            "generated_fact_161",
+            "generated_fact_173",
+            "generated_fact_065",
+            "generated_fact_257",
+            "generated_fact_053",
+            "generated_fact_281",
+            "generated_fact_089",
+            "generated_fact_269",
+            "generated_fact_197",
+            "generated_fact_233",
+            "generated_fact_113",
+            "generated_fact_149",
+            "generated_fact_221",
+            "generated_fact_137",
+            "generated_fact_101",
+            "generated_fact_185",
+            "generated_fact_041",
+            "generated_fact_293",
+            "generated_fact_209",
+            "generated_fact_125",
+            "opera_premiere",
+            "vaccine_delivery",
+            "theater_restoration",
+            "volcano_observatory",
+            "library_digitization",
+            "museum_purchase",
+            "poetry_prize",
+            "bridge_opening",
+            "jazz_archive",
+            "wetland_restoration",
+            "generated_fact_172",
+            "generated_fact_148",
+            "ferry_launch",
+            "generated_fact_268",
+            "generated_fact_232",
+            "generated_fact_124",
+            "generated_fact_100",
+            "generated_fact_220",
+            "generated_fact_196",
+            "generated_fact_184",
+            "generated_fact_052",
+            "generated_fact_076",
+            "generated_fact_088",
+            "generated_fact_136",
+            "generated_fact_112",
+            "generated_fact_280",
+            "generated_fact_208",
+            "generated_fact_292",
+            "generated_fact_256",
+            "generated_fact_160",
+            "generated_fact_040",
+            "generated_fact_064",
+            "market_renovation",
+            "generated_fact_244",
+            "generated_fact_255",
+            "generated_fact_147",
+            "generated_fact_195",
+            "generated_fact_087",
+            "generated_fact_171",
+            "generated_fact_267",
+            "generated_fact_231",
+            "generated_fact_063",
+            "school_opening",
+            "generated_fact_111",
+            "generated_fact_219",
+            "generated_fact_123",
+            "generated_fact_135",
+            "generated_fact_279",
+            "generated_fact_243",
+            "generated_fact_051",
+            "generated_fact_099",
+            "generated_fact_291",
+            "generated_fact_075"
+          ],
+          "removed_sum": -0.008226908155004486,
+          "removed_worst_count": 75
+        }
+      ],
+      "symmetric_trimmed_means": [
+        {
+          "remaining_n": 270,
+          "trim_count_each_tail": 15,
+          "trim_fraction_each_tail": 0.05,
+          "trimmed_mean": 5.419606485886332e-06
+        },
+        {
+          "remaining_n": 240,
+          "trim_count_each_tail": 30,
+          "trim_fraction_each_tail": 0.1,
+          "trimmed_mean": 1.4600836767669998e-05
+        },
+        {
+          "remaining_n": 180,
+          "trim_count_each_tail": 60,
+          "trim_fraction_each_tail": 0.2,
+          "trimmed_mean": 1.4756287502866296e-05
+        }
+      ]
+    },
+    "R_MAG": {
+      "bottom30_vs_top30_geometry": {
+        "bottom_feature_summary": {
+          "alignment_shift": {
+            "mean": 0.03186546819560736,
+            "median": 0.05012418899911816
+          },
+          "alignment_shift_abs": {
+            "mean": 0.061513636295684314,
+            "median": 0.05051862650673335
+          },
+          "baseline_delta": {
+            "mean": 0.016642282718984783,
+            "median": 0.021242667012098482
+          },
+          "baseline_severity_abs": {
+            "mean": 0.021447930705936598,
+            "median": 0.021464044135670074
+          },
+          "magnitude_log_ratio_A": {
+            "mean": -0.030697287809724926,
+            "median": -0.05212487094388665
+          },
+          "magnitude_log_ratio_B": {
+            "mean": -0.056416699614100466,
+            "median": -0.06269033286737796
+          },
+          "magnitude_shift_norm": {
+            "mean": 0.10727302170771685,
+            "median": 0.08176796880713502
+          },
+          "reference_A": {
+            "mean": 2.42594209199314,
+            "median": 2.321731712246197
+          },
+          "reference_B": {
+            "mean": 1.465076667448795,
+            "median": 1.4729042812612614
+          },
+          "reference_C": {
+            "mean": -0.004281272624455689,
+            "median": 0.00830616698758473
+          },
+          "target_A": {
+            "mean": 2.4901016639030447,
+            "median": 2.446648773865749
+          },
+          "target_B": {
+            "mean": 1.547504427768978,
+            "median": 1.569887029967227
+          },
+          "target_C": {
+            "mean": -0.03614674082006305,
+            "median": -0.03977744055593323
+          }
+        },
+        "bottom_pair_ids": [
+          "bridge_opening",
+          "orion_approval",
+          "festival_selection",
+          "museum_purchase",
+          "garden_award",
+          "generated_fact_236",
+          "generated_fact_068",
+          "generated_fact_152",
+          "generated_fact_272",
+          "generated_fact_188",
+          "generated_fact_104",
+          "glacier_study",
+          "generated_fact_284",
+          "generated_fact_116",
+          "generated_fact_260",
+          "generated_fact_164",
+          "generated_fact_248",
+          "generated_fact_200",
+          "generated_fact_296",
+          "generated_fact_224",
+          "generated_fact_176",
+          "generated_fact_212",
+          "generated_fact_080",
+          "generated_fact_092",
+          "generated_fact_140",
+          "generated_fact_032",
+          "generated_fact_128",
+          "generated_fact_044",
+          "satellite_launch",
+          "generated_fact_056"
+        ],
+        "count_per_tail": 30,
+        "middle_feature_summary": {
+          "alignment_shift": {
+            "mean": -0.022607436626330312,
+            "median": -0.03234945861203267
+          },
+          "alignment_shift_abs": {
+            "mean": 0.07517588527479338,
+            "median": 0.0745018356047498
+          },
+          "baseline_delta": {
+            "mean": -0.01049072206000579,
+            "median": -0.014126840957662978
+          },
+          "baseline_severity_abs": {
+            "mean": 0.03204752876026719,
+            "median": 0.03068087069504738
+          },
+          "magnitude_log_ratio_A": {
+            "mean": 0.004392673858853444,
+            "median": -0.0037168712416886848
+          },
+          "magnitude_log_ratio_B": {
+            "mean": -0.016397637743092393,
+            "median": -0.005884060232259012
+          },
+          "magnitude_shift_norm": {
+            "mean": 0.08874064437806028,
+            "median": 0.07399511774406162
+          },
+          "reference_A": {
+            "mean": 2.4330321136740323,
+            "median": 2.488894429127996
+          },
+          "reference_B": {
+            "mean": 1.504671843757691,
+            "median": 1.5300571517650599
+          },
+          "reference_C": {
+            "mean": 0.061194604299606624,
+            "median": 0.07417958072830735
+          },
+          "target_A": {
+            "mean": 2.4159880260374766,
+            "median": 2.5539691161043434
+          },
+          "target_B": {
+            "mean": 1.52926875742996,
+            "median": 1.5678676307153063
+          },
+          "target_C": {
+            "mean": 0.08380204092593695,
+            "median": 0.06750309689687477
+          }
+        },
+        "standardized_feature_contrasts": {
+          "alignment_shift": {
+            "bottom_minus_population_sd_units": 0.5835589238591531,
+            "bottom_minus_top_sd_units": 0.4696381803668265
+          },
+          "alignment_shift_abs": {
+            "bottom_minus_population_sd_units": -0.16214486836683287,
+            "bottom_minus_top_sd_units": 0.778257337051398
+          },
+          "baseline_delta": {
+            "bottom_minus_population_sd_units": 0.7081958112972273,
+            "bottom_minus_top_sd_units": 2.0650644822215996
+          },
+          "baseline_severity_abs": {
+            "bottom_minus_population_sd_units": -0.5329963889939556,
+            "bottom_minus_top_sd_units": -2.2517282995580548
+          },
+          "magnitude_log_ratio_A": {
+            "bottom_minus_population_sd_units": -0.31708953069677215,
+            "bottom_minus_top_sd_units": 0.1902678409911527
+          },
+          "magnitude_log_ratio_B": {
+            "bottom_minus_population_sd_units": -0.6293851380202348,
+            "bottom_minus_top_sd_units": -0.6222937383041315
+          },
+          "magnitude_shift_norm": {
+            "bottom_minus_population_sd_units": 0.3485538476256492,
+            "bottom_minus_top_sd_units": 0.5488047469744863
+          },
+          "reference_A": {
+            "bottom_minus_population_sd_units": -0.007333288318470741,
+            "bottom_minus_top_sd_units": 0.08205093857633182
+          },
+          "reference_B": {
+            "bottom_minus_population_sd_units": -0.13892512898752218,
+            "bottom_minus_top_sd_units": 0.10748663859181005
+          },
+          "reference_C": {
+            "bottom_minus_population_sd_units": -0.4107351333811403,
+            "bottom_minus_top_sd_units": -0.44139703292799626
+          },
+          "target_A": {
+            "bottom_minus_population_sd_units": 0.17441445020032845,
+            "bottom_minus_top_sd_units": -0.07117902636298878
+          },
+          "target_B": {
+            "bottom_minus_population_sd_units": 0.10711696680024053,
+            "bottom_minus_top_sd_units": 0.36883307621576245
+          },
+          "target_C": {
+            "bottom_minus_population_sd_units": -0.8552891389372431,
+            "bottom_minus_top_sd_units": -0.8160181684054256
+          }
+        },
+        "top_feature_summary": {
+          "alignment_shift": {
+            "mean": -0.006275104645672319,
+            "median": 0.0072981612119401434
+          },
+          "alignment_shift_abs": {
+            "mean": 0.026066809336686727,
+            "median": 0.008815806816950704
+          },
+          "baseline_delta": {
+            "mean": -0.07270608077288128,
+            "median": -0.10152630930346992
+          },
+          "baseline_severity_abs": {
+            "mean": 0.0834767500138666,
+            "median": 0.10165084518503706
+          },
+          "magnitude_log_ratio_A": {
+            "mean": -0.046588194506585814,
+            "median": -0.061574175189242894
+          },
+          "magnitude_log_ratio_B": {
+            "mean": -0.021288978888971508,
+            "median": -0.021751189260203682
+          },
+          "magnitude_shift_norm": {
+            "mean": 0.07956698475972436,
+            "median": 0.06643190579166644
+          },
+          "reference_A": {
+            "mean": 2.3959908176918323,
+            "median": 2.3408955378549736
+          },
+          "reference_B": {
+            "mean": 1.4423287844696964,
+            "median": 1.3978400668520279
+          },
+          "reference_C": {
+            "mean": 0.05878739748018878,
+            "median": 0.07559208949988408
+          },
+          "target_A": {
+            "mean": 2.513349692151708,
+            "median": 2.49003359544321
+          },
+          "target_B": {
+            "mean": 1.4708925187025654,
+            "median": 1.4294151140599562
+          },
+          "target_C": {
+            "mean": 0.06506250212586111,
+            "median": 0.0671599306936248
+          }
+        },
+        "top_pair_ids": [
+          "generated_fact_225",
+          "generated_fact_237",
+          "generated_fact_093",
+          "generated_fact_177",
+          "jazz_archive",
+          "generated_fact_063",
+          "generated_fact_039",
+          "generated_fact_159",
+          "generated_fact_231",
+          "generated_fact_111",
+          "generated_fact_087",
+          "generated_fact_135",
+          "generated_fact_183",
+          "generated_fact_255",
+          "generated_fact_207",
+          "generated_fact_279",
+          "generated_fact_051",
+          "generated_fact_075",
+          "generated_fact_099",
+          "generated_fact_147",
+          "generated_fact_219",
+          "dam_inspection",
+          "generated_fact_267",
+          "generated_fact_243",
+          "generated_fact_291",
+          "generated_fact_171",
+          "generated_fact_195",
+          "generated_fact_123",
+          "volcano_observatory",
+          "opera_premiere"
+        ]
+      },
+      "bottom_tail_overlap": {
+        "bottom_10": {
+          "pair_ids": [
+            "bridge_opening",
+            "orion_approval",
+            "festival_selection",
+            "museum_purchase",
+            "garden_award",
+            "generated_fact_236",
+            "generated_fact_068",
+            "generated_fact_152",
+            "generated_fact_272",
+            "generated_fact_188"
+          ],
+          "quartile_enrichment": {
+            "alignment_shift_abs": {
+              "Q4_enrichment_ratio_vs_population": 0.4,
+              "counts": {
+                "Q1": 0,
+                "Q2": 7,
+                "Q3": 2,
+                "Q4": 1
+              },
+              "fractions": {
+                "Q1": 0.0,
+                "Q2": 0.7,
+                "Q3": 0.2,
+                "Q4": 0.1
+              }
+            },
+            "baseline_delta": {
+              "Q4_enrichment_ratio_vs_population": 0.8,
+              "counts": {
+                "Q1": 1,
+                "Q2": 1,
+                "Q3": 6,
+                "Q4": 2
+              },
+              "fractions": {
+                "Q1": 0.1,
+                "Q2": 0.1,
+                "Q3": 0.6,
+                "Q4": 0.2
+              }
+            },
+            "baseline_severity_abs": {
+              "Q4_enrichment_ratio_vs_population": 0.4,
+              "counts": {
+                "Q1": 2,
+                "Q2": 7,
+                "Q3": 0,
+                "Q4": 1
+              },
+              "fractions": {
+                "Q1": 0.2,
+                "Q2": 0.7,
+                "Q3": 0.0,
+                "Q4": 0.1
+              }
+            },
+            "magnitude_shift_norm": {
+              "Q4_enrichment_ratio_vs_population": 1.6,
+              "counts": {
+                "Q1": 0,
+                "Q2": 0,
+                "Q3": 6,
+                "Q4": 4
+              },
+              "fractions": {
+                "Q1": 0.0,
+                "Q2": 0.0,
+                "Q3": 0.6,
+                "Q4": 0.4
+              }
+            },
+            "target_C": {
+              "Q4_enrichment_ratio_vs_population": 0.0,
+              "counts": {
+                "Q1": 7,
+                "Q2": 2,
+                "Q3": 1,
+                "Q4": 0
+              },
+              "fractions": {
+                "Q1": 0.7,
+                "Q2": 0.2,
+                "Q3": 0.1,
+                "Q4": 0.0
+              }
+            }
+          },
+          "response_max": -0.00021384720613093489,
+          "response_mean": -0.0002536773192265751,
+          "response_min": -0.0003555560641055333,
+          "tail_count": 10,
+          "tail_fraction": 0.03333333333333333
+        },
+        "bottom_20": {
+          "pair_ids": [
+            "bridge_opening",
+            "orion_approval",
+            "festival_selection",
+            "museum_purchase",
+            "garden_award",
+            "generated_fact_236",
+            "generated_fact_068",
+            "generated_fact_152",
+            "generated_fact_272",
+            "generated_fact_188",
+            "generated_fact_104",
+            "glacier_study",
+            "generated_fact_284",
+            "generated_fact_116",
+            "generated_fact_260",
+            "generated_fact_164",
+            "generated_fact_248",
+            "generated_fact_200",
+            "generated_fact_296",
+            "generated_fact_224"
+          ],
+          "quartile_enrichment": {
+            "alignment_shift_abs": {
+              "Q4_enrichment_ratio_vs_population": 0.2,
+              "counts": {
+                "Q1": 0,
+                "Q2": 16,
+                "Q3": 3,
+                "Q4": 1
+              },
+              "fractions": {
+                "Q1": 0.0,
+                "Q2": 0.8,
+                "Q3": 0.15,
+                "Q4": 0.05
+              }
+            },
+            "baseline_delta": {
+              "Q4_enrichment_ratio_vs_population": 0.6,
+              "counts": {
+                "Q1": 1,
+                "Q2": 1,
+                "Q3": 15,
+                "Q4": 3
+              },
+              "fractions": {
+                "Q1": 0.05,
+                "Q2": 0.05,
+                "Q3": 0.75,
+                "Q4": 0.15
+              }
+            },
+            "baseline_severity_abs": {
+              "Q4_enrichment_ratio_vs_population": 0.2,
+              "counts": {
+                "Q1": 2,
+                "Q2": 16,
+                "Q3": 1,
+                "Q4": 1
+              },
+              "fractions": {
+                "Q1": 0.1,
+                "Q2": 0.8,
+                "Q3": 0.05,
+                "Q4": 0.05
+              }
+            },
+            "magnitude_shift_norm": {
+              "Q4_enrichment_ratio_vs_population": 0.8,
+              "counts": {
+                "Q1": 0,
+                "Q2": 1,
+                "Q3": 15,
+                "Q4": 4
+              },
+              "fractions": {
+                "Q1": 0.0,
+                "Q2": 0.05,
+                "Q3": 0.75,
+                "Q4": 0.2
+              }
+            },
+            "target_C": {
+              "Q4_enrichment_ratio_vs_population": 0.0,
+              "counts": {
+                "Q1": 15,
+                "Q2": 4,
+                "Q3": 1,
+                "Q4": 0
+              },
+              "fractions": {
+                "Q1": 0.75,
+                "Q2": 0.2,
+                "Q3": 0.05,
+                "Q4": 0.0
+              }
+            }
+          },
+          "response_max": -0.00020524971734597885,
+          "response_mean": -0.00023133466446046414,
+          "response_min": -0.0003555560641055333,
+          "tail_count": 20,
+          "tail_fraction": 0.06666666666666667
+        },
+        "bottom_30": {
+          "pair_ids": [
+            "bridge_opening",
+            "orion_approval",
+            "festival_selection",
+            "museum_purchase",
+            "garden_award",
+            "generated_fact_236",
+            "generated_fact_068",
+            "generated_fact_152",
+            "generated_fact_272",
+            "generated_fact_188",
+            "generated_fact_104",
+            "glacier_study",
+            "generated_fact_284",
+            "generated_fact_116",
+            "generated_fact_260",
+            "generated_fact_164",
+            "generated_fact_248",
+            "generated_fact_200",
+            "generated_fact_296",
+            "generated_fact_224",
+            "generated_fact_176",
+            "generated_fact_212",
+            "generated_fact_080",
+            "generated_fact_092",
+            "generated_fact_140",
+            "generated_fact_032",
+            "generated_fact_128",
+            "generated_fact_044",
+            "satellite_launch",
+            "generated_fact_056"
+          ],
+          "quartile_enrichment": {
+            "alignment_shift_abs": {
+              "Q4_enrichment_ratio_vs_population": 0.13333333333333333,
+              "counts": {
+                "Q1": 0,
+                "Q2": 25,
+                "Q3": 4,
+                "Q4": 1
+              },
+              "fractions": {
+                "Q1": 0.0,
+                "Q2": 0.8333333333333334,
+                "Q3": 0.13333333333333333,
+                "Q4": 0.03333333333333333
+              }
+            },
+            "baseline_delta": {
+              "Q4_enrichment_ratio_vs_population": 0.5333333333333333,
+              "counts": {
+                "Q1": 1,
+                "Q2": 1,
+                "Q3": 24,
+                "Q4": 4
+              },
+              "fractions": {
+                "Q1": 0.03333333333333333,
+                "Q2": 0.03333333333333333,
+                "Q3": 0.8,
+                "Q4": 0.13333333333333333
+              }
+            },
+            "baseline_severity_abs": {
+              "Q4_enrichment_ratio_vs_population": 0.13333333333333333,
+              "counts": {
+                "Q1": 3,
+                "Q2": 25,
+                "Q3": 1,
+                "Q4": 1
+              },
+              "fractions": {
+                "Q1": 0.1,
+                "Q2": 0.8333333333333334,
+                "Q3": 0.03333333333333333,
+                "Q4": 0.03333333333333333
+              }
+            },
+            "magnitude_shift_norm": {
+              "Q4_enrichment_ratio_vs_population": 0.6666666666666666,
+              "counts": {
+                "Q1": 0,
+                "Q2": 1,
+                "Q3": 24,
+                "Q4": 5
+              },
+              "fractions": {
+                "Q1": 0.0,
+                "Q2": 0.03333333333333333,
+                "Q3": 0.8,
+                "Q4": 0.16666666666666666
+              }
+            },
+            "target_C": {
+              "Q4_enrichment_ratio_vs_population": 0.0,
+              "counts": {
+                "Q1": 23,
+                "Q2": 5,
+                "Q3": 2,
+                "Q4": 0
+              },
+              "fractions": {
+                "Q1": 0.7666666666666667,
+                "Q2": 0.16666666666666666,
+                "Q3": 0.06666666666666667,
+                "Q4": 0.0
+              }
+            }
+          },
+          "response_max": -0.0001966069301308493,
+          "response_mean": -0.00022133823536656382,
+          "response_min": -0.0003555560641055333,
+          "tail_count": 30,
+          "tail_fraction": 0.1
+        },
+        "bottom_60": {
+          "pair_ids": [
+            "bridge_opening",
+            "orion_approval",
+            "festival_selection",
+            "museum_purchase",
+            "garden_award",
+            "generated_fact_236",
+            "generated_fact_068",
+            "generated_fact_152",
+            "generated_fact_272",
+            "generated_fact_188",
+            "generated_fact_104",
+            "glacier_study",
+            "generated_fact_284",
+            "generated_fact_116",
+            "generated_fact_260",
+            "generated_fact_164",
+            "generated_fact_248",
+            "generated_fact_200",
+            "generated_fact_296",
+            "generated_fact_224",
+            "generated_fact_176",
+            "generated_fact_212",
+            "generated_fact_080",
+            "generated_fact_092",
+            "generated_fact_140",
+            "generated_fact_032",
+            "generated_fact_128",
+            "generated_fact_044",
+            "satellite_launch",
+            "generated_fact_056",
+            "wetland_restoration",
+            "vaccine_delivery",
+            "generated_fact_271",
+            "generated_fact_103",
+            "treaty_signature",
+            "generated_fact_175",
+            "generated_fact_091",
+            "generated_fact_223",
+            "generated_fact_295",
+            "generated_fact_127",
+            "generated_fact_055",
+            "generated_fact_151",
+            "generated_fact_259",
+            "generated_fact_139",
+            "generated_fact_187",
+            "generated_fact_067",
+            "generated_fact_235",
+            "generated_fact_043",
+            "generated_fact_211",
+            "generated_fact_079",
+            "generated_fact_031",
+            "generated_fact_247",
+            "generated_fact_199",
+            "generated_fact_163",
+            "generated_fact_115",
+            "generated_fact_283",
+            "harbor_upgrade",
+            "poetry_prize",
+            "generated_fact_289",
+            "generated_fact_097"
+          ],
+          "quartile_enrichment": {
+            "alignment_shift_abs": {
+              "Q4_enrichment_ratio_vs_population": 0.2,
+              "counts": {
+                "Q1": 25,
+                "Q2": 25,
+                "Q3": 7,
+                "Q4": 3
+              },
+              "fractions": {
+                "Q1": 0.4166666666666667,
+                "Q2": 0.4166666666666667,
+                "Q3": 0.11666666666666667,
+                "Q4": 0.05
+              }
+            },
+            "baseline_delta": {
+              "Q4_enrichment_ratio_vs_population": 0.26666666666666666,
+              "counts": {
+                "Q1": 22,
+                "Q2": 8,
+                "Q3": 26,
+                "Q4": 4
+              },
+              "fractions": {
+                "Q1": 0.36666666666666664,
+                "Q2": 0.13333333333333333,
+                "Q3": 0.43333333333333335,
+                "Q4": 0.06666666666666667
+              }
+            },
+            "baseline_severity_abs": {
+              "Q4_enrichment_ratio_vs_population": 0.3333333333333333,
+              "counts": {
+                "Q1": 7,
+                "Q2": 27,
+                "Q3": 21,
+                "Q4": 5
+              },
+              "fractions": {
+                "Q1": 0.11666666666666667,
+                "Q2": 0.45,
+                "Q3": 0.35,
+                "Q4": 0.08333333333333333
+              }
+            },
+            "magnitude_shift_norm": {
+              "Q4_enrichment_ratio_vs_population": 0.7333333333333333,
+              "counts": {
+                "Q1": 15,
+                "Q2": 10,
+                "Q3": 24,
+                "Q4": 11
+              },
+              "fractions": {
+                "Q1": 0.25,
+                "Q2": 0.16666666666666666,
+                "Q3": 0.4,
+                "Q4": 0.18333333333333332
+              }
+            },
+            "target_C": {
+              "Q4_enrichment_ratio_vs_population": 0.13333333333333333,
+              "counts": {
+                "Q1": 48,
+                "Q2": 7,
+                "Q3": 3,
+                "Q4": 2
+              },
+              "fractions": {
+                "Q1": 0.8,
+                "Q2": 0.11666666666666667,
+                "Q3": 0.05,
+                "Q4": 0.03333333333333333
+              }
+            }
+          },
+          "response_max": -2.8362712894858255e-05,
+          "response_mean": -0.00016755059256557588,
+          "response_min": -0.0003555560641055333,
+          "tail_count": 60,
+          "tail_fraction": 0.2
+        }
+      },
+      "contribution_mass": {
+        "negative_absolute_mass_fraction": 0.3842473244457642,
+        "negative_sum": -0.010724130896091477,
+        "negative_to_positive_mass_ratio": 0.6240286720636743,
+        "net_sum": 0.006461186664120266,
+        "positive_absolute_mass_fraction": 0.6157526755542357,
+        "positive_sum": 0.017185317560211744
+      },
+      "mean": 2.1537288880400887e-05,
+      "median": 6.402860587578774e-05,
+      "n": 300,
+      "negative_count": 102,
+      "positive_count": 198,
+      "remove_worst_curve": [
+        {
+          "mean_shift_from_full": 1.2611817825616532e-06,
+          "remaining_mean": 2.279847066296254e-05,
+          "remaining_n": 299,
+          "removed_pair_ids": [
+            "bridge_opening"
+          ],
+          "removed_sum": -0.0003555560641055333,
+          "removed_worst_count": 1
+        },
+        {
+          "mean_shift_from_full": 5.280069600202392e-06,
+          "remaining_mean": 2.681735848060328e-05,
+          "remaining_n": 295,
+          "removed_pair_ids": [
+            "bridge_opening",
+            "orion_approval",
+            "festival_selection",
+            "museum_purchase",
+            "garden_award"
+          ],
+          "removed_sum": -0.0014499340876577005,
+          "removed_worst_count": 5
+        },
+        {
+          "mean_shift_from_full": 9.49015890024055e-06,
+          "remaining_mean": 3.1027447780641437e-05,
+          "remaining_n": 290,
+          "removed_pair_ids": [
+            "bridge_opening",
+            "orion_approval",
+            "festival_selection",
+            "museum_purchase",
+            "garden_award",
+            "generated_fact_236",
+            "generated_fact_068",
+            "generated_fact_152",
+            "generated_fact_272",
+            "generated_fact_188"
+          ],
+          "removed_sum": -0.002536773192265751,
+          "removed_worst_count": 10
+        },
+        {
+          "mean_shift_from_full": 1.8062282381490357e-05,
+          "remaining_mean": 3.9599571261891244e-05,
+          "remaining_n": 280,
+          "removed_pair_ids": [
+            "bridge_opening",
+            "orion_approval",
+            "festival_selection",
+            "museum_purchase",
+            "garden_award",
+            "generated_fact_236",
+            "generated_fact_068",
+            "generated_fact_152",
+            "generated_fact_272",
+            "generated_fact_188",
+            "generated_fact_104",
+            "glacier_study",
+            "generated_fact_284",
+            "generated_fact_116",
+            "generated_fact_260",
+            "generated_fact_164",
+            "generated_fact_248",
+            "generated_fact_200",
+            "generated_fact_296",
+            "generated_fact_224"
+          ],
+          "removed_sum": -0.004626693289209283,
+          "removed_worst_count": 20
+        },
+        {
+          "mean_shift_from_full": 2.6986169360773858e-05,
+          "remaining_mean": 4.8523458241174745e-05,
+          "remaining_n": 270,
+          "removed_pair_ids": [
+            "bridge_opening",
+            "orion_approval",
+            "festival_selection",
+            "museum_purchase",
+            "garden_award",
+            "generated_fact_236",
+            "generated_fact_068",
+            "generated_fact_152",
+            "generated_fact_272",
+            "generated_fact_188",
+            "generated_fact_104",
+            "glacier_study",
+            "generated_fact_284",
+            "generated_fact_116",
+            "generated_fact_260",
+            "generated_fact_164",
+            "generated_fact_248",
+            "generated_fact_200",
+            "generated_fact_296",
+            "generated_fact_224",
+            "generated_fact_176",
+            "generated_fact_212",
+            "generated_fact_080",
+            "generated_fact_092",
+            "generated_fact_140",
+            "generated_fact_032",
+            "generated_fact_128",
+            "generated_fact_044",
+            "satellite_launch",
+            "generated_fact_056"
+          ],
+          "removed_sum": -0.006640147060996915,
+          "removed_worst_count": 30
+        },
+        {
+          "mean_shift_from_full": 3.403339983036476e-05,
+          "remaining_mean": 5.557068871076564e-05,
+          "remaining_n": 260,
+          "removed_pair_ids": [
+            "bridge_opening",
+            "orion_approval",
+            "festival_selection",
+            "museum_purchase",
+            "garden_award",
+            "generated_fact_236",
+            "generated_fact_068",
+            "generated_fact_152",
+            "generated_fact_272",
+            "generated_fact_188",
+            "generated_fact_104",
+            "glacier_study",
+            "generated_fact_284",
+            "generated_fact_116",
+            "generated_fact_260",
+            "generated_fact_164",
+            "generated_fact_248",
+            "generated_fact_200",
+            "generated_fact_296",
+            "generated_fact_224",
+            "generated_fact_176",
+            "generated_fact_212",
+            "generated_fact_080",
+            "generated_fact_092",
+            "generated_fact_140",
+            "generated_fact_032",
+            "generated_fact_128",
+            "generated_fact_044",
+            "satellite_launch",
+            "generated_fact_056",
+            "wetland_restoration",
+            "vaccine_delivery",
+            "generated_fact_271",
+            "generated_fact_103",
+            "treaty_signature",
+            "generated_fact_175",
+            "generated_fact_091",
+            "generated_fact_223",
+            "generated_fact_295",
+            "generated_fact_127"
+          ],
+          "removed_sum": -0.0079871924006788,
+          "removed_worst_count": 40
+        },
+        {
+          "mean_shift_from_full": 4.1142197719042887e-05,
+          "remaining_mean": 6.267948659944378e-05,
+          "remaining_n": 250,
+          "removed_pair_ids": [
+            "bridge_opening",
+            "orion_approval",
+            "festival_selection",
+            "museum_purchase",
+            "garden_award",
+            "generated_fact_236",
+            "generated_fact_068",
+            "generated_fact_152",
+            "generated_fact_272",
+            "generated_fact_188",
+            "generated_fact_104",
+            "glacier_study",
+            "generated_fact_284",
+            "generated_fact_116",
+            "generated_fact_260",
+            "generated_fact_164",
+            "generated_fact_248",
+            "generated_fact_200",
+            "generated_fact_296",
+            "generated_fact_224",
+            "generated_fact_176",
+            "generated_fact_212",
+            "generated_fact_080",
+            "generated_fact_092",
+            "generated_fact_140",
+            "generated_fact_032",
+            "generated_fact_128",
+            "generated_fact_044",
+            "satellite_launch",
+            "generated_fact_056",
+            "wetland_restoration",
+            "vaccine_delivery",
+            "generated_fact_271",
+            "generated_fact_103",
+            "treaty_signature",
+            "generated_fact_175",
+            "generated_fact_091",
+            "generated_fact_223",
+            "generated_fact_295",
+            "generated_fact_127",
+            "generated_fact_055",
+            "generated_fact_151",
+            "generated_fact_259",
+            "generated_fact_139",
+            "generated_fact_187",
+            "generated_fact_067",
+            "generated_fact_235",
+            "generated_fact_043",
+            "generated_fact_211",
+            "generated_fact_079"
+          ],
+          "removed_sum": -0.009208684985740678,
+          "removed_worst_count": 50
+        },
+        {
+          "mean_shift_from_full": 4.727197036149419e-05,
+          "remaining_mean": 6.880925924189508e-05,
+          "remaining_n": 240,
+          "removed_pair_ids": [
+            "bridge_opening",
+            "orion_approval",
+            "festival_selection",
+            "museum_purchase",
+            "garden_award",
+            "generated_fact_236",
+            "generated_fact_068",
+            "generated_fact_152",
+            "generated_fact_272",
+            "generated_fact_188",
+            "generated_fact_104",
+            "glacier_study",
+            "generated_fact_284",
+            "generated_fact_116",
+            "generated_fact_260",
+            "generated_fact_164",
+            "generated_fact_248",
+            "generated_fact_200",
+            "generated_fact_296",
+            "generated_fact_224",
+            "generated_fact_176",
+            "generated_fact_212",
+            "generated_fact_080",
+            "generated_fact_092",
+            "generated_fact_140",
+            "generated_fact_032",
+            "generated_fact_128",
+            "generated_fact_044",
+            "satellite_launch",
+            "generated_fact_056",
+            "wetland_restoration",
+            "vaccine_delivery",
+            "generated_fact_271",
+            "generated_fact_103",
+            "treaty_signature",
+            "generated_fact_175",
+            "generated_fact_091",
+            "generated_fact_223",
+            "generated_fact_295",
+            "generated_fact_127",
+            "generated_fact_055",
+            "generated_fact_151",
+            "generated_fact_259",
+            "generated_fact_139",
+            "generated_fact_187",
+            "generated_fact_067",
+            "generated_fact_235",
+            "generated_fact_043",
+            "generated_fact_211",
+            "generated_fact_079",
+            "generated_fact_031",
+            "generated_fact_247",
+            "generated_fact_199",
+            "generated_fact_163",
+            "generated_fact_115",
+            "generated_fact_283",
+            "harbor_upgrade",
+            "poetry_prize",
+            "generated_fact_289",
+            "generated_fact_097"
+          ],
+          "removed_sum": -0.010053035553934553,
+          "removed_worst_count": 60
+        },
+        {
+          "mean_shift_from_full": 5.340060026240057e-05,
+          "remaining_mean": 7.493788914280146e-05,
+          "remaining_n": 225,
+          "removed_pair_ids": [
+            "bridge_opening",
+            "orion_approval",
+            "festival_selection",
+            "museum_purchase",
+            "garden_award",
+            "generated_fact_236",
+            "generated_fact_068",
+            "generated_fact_152",
+            "generated_fact_272",
+            "generated_fact_188",
+            "generated_fact_104",
+            "glacier_study",
+            "generated_fact_284",
+            "generated_fact_116",
+            "generated_fact_260",
+            "generated_fact_164",
+            "generated_fact_248",
+            "generated_fact_200",
+            "generated_fact_296",
+            "generated_fact_224",
+            "generated_fact_176",
+            "generated_fact_212",
+            "generated_fact_080",
+            "generated_fact_092",
+            "generated_fact_140",
+            "generated_fact_032",
+            "generated_fact_128",
+            "generated_fact_044",
+            "satellite_launch",
+            "generated_fact_056",
+            "wetland_restoration",
+            "vaccine_delivery",
+            "generated_fact_271",
+            "generated_fact_103",
+            "treaty_signature",
+            "generated_fact_175",
+            "generated_fact_091",
+            "generated_fact_223",
+            "generated_fact_295",
+            "generated_fact_127",
+            "generated_fact_055",
+            "generated_fact_151",
+            "generated_fact_259",
+            "generated_fact_139",
+            "generated_fact_187",
+            "generated_fact_067",
+            "generated_fact_235",
+            "generated_fact_043",
+            "generated_fact_211",
+            "generated_fact_079",
+            "generated_fact_031",
+            "generated_fact_247",
+            "generated_fact_199",
+            "generated_fact_163",
+            "generated_fact_115",
+            "generated_fact_283",
+            "harbor_upgrade",
+            "poetry_prize",
+            "generated_fact_289",
+            "generated_fact_097",
+            "generated_fact_073",
+            "generated_fact_049",
+            "generated_fact_133",
+            "generated_fact_121",
+            "generated_fact_265",
+            "generated_fact_037",
+            "generated_fact_217",
+            "generated_fact_193",
+            "generated_fact_145",
+            "generated_fact_241",
+            "generated_fact_181",
+            "generated_fact_109",
+            "generated_fact_205",
+            "generated_fact_085",
+            "generated_fact_157"
+          ],
+          "removed_sum": -0.010399838393010064,
+          "removed_worst_count": 75
+        }
+      ],
+      "symmetric_trimmed_means": [
+        {
+          "remaining_n": 270,
+          "trim_count_each_tail": 15,
+          "trim_fraction_each_tail": 0.05,
+          "trimmed_mean": 2.662609691248068e-05
+        },
+        {
+          "remaining_n": 240,
+          "trim_count_each_tail": 30,
+          "trim_fraction_each_tail": 0.1,
+          "trimmed_mean": 3.325639693742531e-05
+        },
+        {
+          "remaining_n": 180,
+          "trim_count_each_tail": 60,
+          "trim_fraction_each_tail": 0.2,
+          "trimmed_mean": 4.423260961466977e-05
+        }
+      ]
+    }
+  },
+  "schema_version": "gen4-k-transport-failure-tail-influence-v1",
+  "specificity_negative_tail_decomposition": {
+    "bottom_10": {
+      "category_counts": {
+        "R_ALIGN_negative": 10,
+        "R_MAG_positive": 10,
+        "both_align_negative_and_mag_positive": 10
+      },
+      "mean_R_ALIGN": -0.0003059937760472753,
+      "mean_R_MAG": 0.00014557502913591368,
+      "mean_specificity": -0.00045156880518318896,
+      "n": 10,
+      "pair_ids": [
+        "opera_premiere",
+        "generated_fact_245",
+        "generated_fact_077",
+        "generated_fact_269",
+        "generated_fact_065",
+        "generated_fact_149",
+        "generated_fact_173",
+        "generated_fact_161",
+        "generated_fact_053",
+        "generated_fact_233"
+      ]
+    },
+    "bottom_20": {
+      "category_counts": {
+        "R_ALIGN_negative": 20,
+        "R_MAG_positive": 20,
+        "both_align_negative_and_mag_positive": 20
+      },
+      "mean_R_ALIGN": -0.00031010762489597774,
+      "mean_R_MAG": 0.00012634847586139863,
+      "mean_specificity": -0.0004364561007573764,
+      "n": 20,
+      "pair_ids": [
+        "opera_premiere",
+        "generated_fact_245",
+        "generated_fact_077",
+        "generated_fact_269",
+        "generated_fact_065",
+        "generated_fact_149",
+        "generated_fact_173",
+        "generated_fact_161",
+        "generated_fact_053",
+        "generated_fact_233",
+        "generated_fact_197",
+        "generated_fact_257",
+        "generated_fact_281",
+        "generated_fact_101",
+        "generated_fact_089",
+        "generated_fact_221",
+        "generated_fact_113",
+        "generated_fact_185",
+        "generated_fact_293",
+        "generated_fact_125"
+      ]
+    },
+    "bottom_30": {
+      "category_counts": {
+        "R_ALIGN_negative": 30,
+        "R_MAG_positive": 30,
+        "both_align_negative_and_mag_positive": 30
+      },
+      "mean_R_ALIGN": -0.0002453811745737019,
+      "mean_R_MAG": 0.00013254637703534743,
+      "mean_specificity": -0.0003779275516090493,
+      "n": 30,
+      "pair_ids": [
+        "opera_premiere",
+        "generated_fact_245",
+        "generated_fact_077",
+        "generated_fact_269",
+        "generated_fact_065",
+        "generated_fact_149",
+        "generated_fact_173",
+        "generated_fact_161",
+        "generated_fact_053",
+        "generated_fact_233",
+        "generated_fact_197",
+        "generated_fact_257",
+        "generated_fact_281",
+        "generated_fact_101",
+        "generated_fact_089",
+        "generated_fact_221",
+        "generated_fact_113",
+        "generated_fact_185",
+        "generated_fact_293",
+        "generated_fact_125",
+        "generated_fact_041",
+        "generated_fact_137",
+        "generated_fact_209",
+        "volcano_observatory",
+        "theater_restoration",
+        "generated_fact_195",
+        "generated_fact_171",
+        "generated_fact_123",
+        "generated_fact_267",
+        "generated_fact_291"
+      ]
+    },
+    "bottom_60": {
+      "category_counts": {
+        "R_ALIGN_negative": 49,
+        "R_MAG_positive": 60,
+        "both_align_negative_and_mag_positive": 49
+      },
+      "mean_R_ALIGN": -0.00012224921871467804,
+      "mean_R_MAG": 0.00013937833650033796,
+      "mean_specificity": -0.000261627555215016,
+      "n": 60,
+      "pair_ids": [
+        "opera_premiere",
+        "generated_fact_245",
+        "generated_fact_077",
+        "generated_fact_269",
+        "generated_fact_065",
+        "generated_fact_149",
+        "generated_fact_173",
+        "generated_fact_161",
+        "generated_fact_053",
+        "generated_fact_233",
+        "generated_fact_197",
+        "generated_fact_257",
+        "generated_fact_281",
+        "generated_fact_101",
+        "generated_fact_089",
+        "generated_fact_221",
+        "generated_fact_113",
+        "generated_fact_185",
+        "generated_fact_293",
+        "generated_fact_125",
+        "generated_fact_041",
+        "generated_fact_137",
+        "generated_fact_209",
+        "volcano_observatory",
+        "theater_restoration",
+        "generated_fact_195",
+        "generated_fact_171",
+        "generated_fact_123",
+        "generated_fact_267",
+        "generated_fact_291",
+        "generated_fact_243",
+        "generated_fact_147",
+        "generated_fact_219",
+        "generated_fact_099",
+        "generated_fact_255",
+        "generated_fact_075",
+        "generated_fact_051",
+        "generated_fact_279",
+        "generated_fact_087",
+        "generated_fact_231",
+        "generated_fact_111",
+        "generated_fact_207",
+        "generated_fact_135",
+        "generated_fact_183",
+        "generated_fact_063",
+        "jazz_archive",
+        "generated_fact_159",
+        "generated_fact_039",
+        "ferry_launch",
+        "generated_fact_237",
+        "generated_fact_153",
+        "generated_fact_177",
+        "generated_fact_069",
+        "generated_fact_093",
+        "generated_fact_261",
+        "generated_fact_225",
+        "generated_fact_165",
+        "generated_fact_249",
+        "generated_fact_057",
+        "generated_fact_141"
+      ]
+    }
+  },
+  "static_freeze_commit": "4d68f06d5bfaf9bc680e625000062e36b29c0b30",
+  "static_report_rel": "reports/reason_router_gen4_k_transport_failure_static_decomposition_v1.json",
+  "static_report_sha256": "10adb86cf8b86b14230d657a19420c02a9bc0d19bebfff9ff3374fee879fd459",
+  "tokenizer_invoked": false,
+  "training_executed": false
+}
