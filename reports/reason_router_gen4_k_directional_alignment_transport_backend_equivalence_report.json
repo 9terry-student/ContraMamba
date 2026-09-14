@@ -1,0 +1,22 @@
+{
+  "backend_invariant_negative_result": true,
+  "baseline_mean_abs_diff": 9.497736354335817e-09,
+  "cpu_model_forward_count": 2400,
+  "cpu_outcome": "DIRECTIONAL_ALIGNMENT_CAUSAL_TRANSPORT_NOT_ESTABLISHED",
+  "cpu_reference_head": "8496ece911e0d461f0abbdf1a0fa619f8a2f22ab",
+  "cpu_reference_zip_sha256": "25a9e6a862f7c1ad7c272d85cb5000ba8542cca2c8976b785021e5e4159ebcaf",
+  "cuda_bundle_sha256": "816cc586f8c6a1eed8e730937f30032befbcb6b40b59bd56b4d763a0cc2177c5",
+  "cuda_execution_head": "60f7485d37a7afb848b11b31a30242f5b89db534",
+  "cuda_model_forward_count": 2400,
+  "cuda_outcome": "DIRECTIONAL_ALIGNMENT_CAUSAL_TRANSPORT_NOT_ESTABLISHED",
+  "geometry_atol": 0.0001,
+  "geometry_rtol": 0.0001,
+  "holm_decisions_match": true,
+  "max_hypothesis_mean_abs_diff": 1.4363876632191572e-08,
+  "max_item_geometry_abs_diff": 3.166055559500336e-06,
+  "max_item_pe_abs_diff": 1.6212262369252883e-06,
+  "pe_atol": 0.0001,
+  "result": "PASS_FAST_CUDA_FULL_BACKEND_EQUIVALENCE",
+  "schema_version": "gen4-k-fast-cuda-full-equivalence-report-v1",
+  "source_pair_count": 300
+}
