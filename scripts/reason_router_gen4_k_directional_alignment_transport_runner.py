@@ -35,6 +35,14 @@ from scripts import (
     reason_router_gen4_native_mamba_state_name_q1_q3_statistical_analysis
     as frozen_stats,
 )
+from scripts import (
+    reason_router_gen4_six_cell_tier2_inference_adapter
+    as adapter,
+)
+from scripts import (
+    reason_router_gen4_six_cell_tier2_scientific_inference
+    as r5,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -410,6 +418,68 @@ def load_frozen_layer17_endpoints(
     )
 
     return result
+
+
+def load_representative_model_external(
+    *,
+    model_snapshot: Path,
+    checkpoint_path: Path,
+) -> tuple[Any, str]:
+    require(
+        checkpoint_path.is_file(),
+        "CHECKPOINT_FILE_MISSING",
+    )
+
+    observed_sha = sha256_file(
+        checkpoint_path
+    )
+
+    require(
+        observed_sha
+        == extraction.REPRESENTATIVE_CHECKPOINT_SHA256,
+        (
+            "CHECKPOINT_SHA256_MISMATCH:"
+            f"{observed_sha}"
+        ),
+    )
+
+    payload = torch.load(
+        checkpoint_path,
+        map_location="cpu",
+        weights_only=True,
+    )
+
+    backbone = r5.build_local_mamba_backbone(
+        model_snapshot
+    )
+
+    model = (
+        adapter.build_historical_model_from_backbone(
+            backbone=backbone,
+            arm=extraction.REPRESENTATIVE_ARM,
+        )
+    )
+
+    adapter.strict_load_state_dict(
+        model,
+        payload,
+    )
+
+    model.to(
+        torch.device("cpu")
+    )
+    model.eval()
+
+    require(
+        not any(
+            parameter.requires_grad
+            for parameter
+            in model.mamba.parameters()
+        ),
+        "MAMBA_UNEXPECTEDLY_TRAINABLE",
+    )
+
+    return model, observed_sha
 
 
 def build_row_index(
@@ -1192,6 +1262,14 @@ def run_pair(
             float(
                 reference_geometry["C"]
             ),
+        "alignment_realized_A":
+            float(
+                align_core["realized_A"]
+            ),
+        "alignment_realized_B":
+            float(
+                align_core["realized_B"]
+            ),
         "alignment_target_cosine":
             float(
                 align_core["target_C"]
@@ -1239,6 +1317,14 @@ def run_pair(
         "magnitude_target_B":
             float(
                 mag_core["target_B"]
+            ),
+        "magnitude_realized_A":
+            float(
+                mag_core["realized_A"]
+            ),
+        "magnitude_realized_B":
+            float(
+                mag_core["realized_B"]
             ),
         "magnitude_baseline_cosine":
             float(
@@ -1506,6 +1592,23 @@ def build_full_summary(
         for row in items
     )
 
+    alignment_pair_delta = max(
+        float(
+            row[
+                "alignment_pair_delta_max_abs_residual"
+            ]
+        )
+        for row in items
+    )
+    magnitude_pair_delta = max(
+        float(
+            row[
+                "magnitude_pair_delta_max_abs_residual"
+            ]
+        )
+        for row in items
+    )
+
     alignment_applied = max(
         float(
             row[
@@ -1596,6 +1699,10 @@ def build_full_summary(
         <= transport_runtime.MIDPOINT_TOL
         and magnitude_midpoint
         <= transport_runtime.MIDPOINT_TOL
+        and alignment_pair_delta
+        <= transport_runtime.RUNTIME_CAST_TOL
+        and magnitude_pair_delta
+        <= transport_runtime.RUNTIME_CAST_TOL
         and alignment_applied
         <= transport_runtime.RUNTIME_CAST_TOL
         and magnitude_applied
@@ -1642,6 +1749,10 @@ def build_full_summary(
             alignment_midpoint,
         "max_magnitude_midpoint_abs_residual":
             magnitude_midpoint,
+        "max_alignment_pair_delta_abs_residual":
+            alignment_pair_delta,
+        "max_magnitude_pair_delta_abs_residual":
+            magnitude_pair_delta,
         "max_alignment_applied_correction_abs_residual":
             alignment_applied,
         "max_magnitude_applied_correction_abs_residual":
@@ -1699,6 +1810,23 @@ def build_preflight_public(
         for row in items
     )
 
+    alignment_cosine_residual = max(
+        float(
+            row[
+                "alignment_cosine_abs_residual"
+            ]
+        )
+        for row in items
+    )
+    magnitude_cosine_residual = max(
+        float(
+            row[
+                "magnitude_cosine_abs_residual"
+            ]
+        )
+        for row in items
+    )
+
     alignment_a_residual = max(
         float(
             row[
@@ -1748,6 +1876,23 @@ def build_preflight_public(
         )
         for row in items
     )
+    alignment_pair_delta = max(
+        float(
+            row[
+                "alignment_pair_delta_max_abs_residual"
+            ]
+        )
+        for row in items
+    )
+    magnitude_pair_delta = max(
+        float(
+            row[
+                "magnitude_pair_delta_max_abs_residual"
+            ]
+        )
+        for row in items
+    )
+
     alignment_applied = max(
         float(
             row[
@@ -1774,6 +1919,10 @@ def build_preflight_public(
             forward_count,
         "max_baseline_reproduction_abs_residual":
             baseline_residual,
+        "max_alignment_cosine_abs_residual":
+            alignment_cosine_residual,
+        "max_magnitude_cosine_abs_residual":
+            magnitude_cosine_residual,
         "max_alignment_A_preservation_abs_residual":
             alignment_a_residual,
         "max_alignment_B_preservation_abs_residual":
@@ -1786,6 +1935,10 @@ def build_preflight_public(
             alignment_midpoint,
         "max_magnitude_midpoint_abs_residual":
             magnitude_midpoint,
+        "max_alignment_pair_delta_abs_residual":
+            alignment_pair_delta,
+        "max_magnitude_pair_delta_abs_residual":
+            magnitude_pair_delta,
         "max_alignment_applied_correction_abs_residual":
             alignment_applied,
         "max_magnitude_applied_correction_abs_residual":
@@ -1892,6 +2045,7 @@ def run_transport(
     expected_head: str,
     model_snapshot: Path,
     tokenizer_snapshot: Path,
+    checkpoint_path: Path,
 ) -> dict[str, Any]:
     require(
         mode in {"preflight", "full"},
@@ -1939,8 +2093,9 @@ def run_transport(
     )
 
     model, checkpoint_sha = (
-        extraction.load_representative_model(
-            model_snapshot
+        load_representative_model_external(
+            model_snapshot=model_snapshot,
+            checkpoint_path=checkpoint_path,
         )
     )
 
@@ -2048,6 +2203,8 @@ def run_transport(
             ),
         "checkpoint_sha256":
             checkpoint_sha,
+        "checkpoint_source_mode":
+            "external_exact_sha256",
         "frozen_endpoint_rel":
             core.FROZEN_LAYER17_ENDPOINT_REL,
         "frozen_endpoint_sha256":
@@ -2184,6 +2341,10 @@ def parse_args(
         "--tokenizer-snapshot",
         required=True,
     )
+    parser.add_argument(
+        "--checkpoint",
+        required=True,
+    )
 
     return parser.parse_args(argv)
 
@@ -2205,6 +2366,9 @@ def main(
         ),
         tokenizer_snapshot=Path(
             args.tokenizer_snapshot
+        ),
+        checkpoint_path=Path(
+            args.checkpoint
         ),
     )
 

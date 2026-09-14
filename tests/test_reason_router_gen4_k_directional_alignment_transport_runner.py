@@ -188,6 +188,10 @@ def _preflight_item(index):
             1e-14 * (index + 1),
         "baseline_minus_reproduction_abs_residual":
             2e-14 * (index + 1),
+        "alignment_cosine_abs_residual":
+            1e-13,
+        "magnitude_cosine_abs_residual":
+            2e-13,
         "alignment_A_preservation_abs_residual":
             1e-13,
         "alignment_B_preservation_abs_residual":
@@ -200,6 +204,10 @@ def _preflight_item(index):
             1e-7,
         "magnitude_midpoint_max_abs_residual":
             2e-7,
+        "alignment_pair_delta_max_abs_residual":
+            3e-7,
+        "magnitude_pair_delta_max_abs_residual":
+            4e-7,
         "alignment_applied_correction_max_abs_residual":
             3e-7,
         "magnitude_applied_correction_max_abs_residual":
@@ -268,3 +276,139 @@ def test_full_and_preflight_forward_budgets_are_frozen():
         runner.FORWARDS_PER_PAIR
         == 8
     )
+def test_preflight_public_exposes_complete_manipulation_gate():
+    result = runner.build_preflight_public(
+        [
+            _preflight_item(0),
+            _preflight_item(1),
+        ],
+        forward_count=
+            runner.PREFLIGHT_FORWARD_BUDGET,
+    )
+
+    expected = {
+        "max_baseline_reproduction_abs_residual",
+        "max_alignment_cosine_abs_residual",
+        "max_magnitude_cosine_abs_residual",
+        "max_alignment_A_preservation_abs_residual",
+        "max_alignment_B_preservation_abs_residual",
+        "max_magnitude_A_target_abs_residual",
+        "max_magnitude_B_target_abs_residual",
+        "max_alignment_midpoint_abs_residual",
+        "max_magnitude_midpoint_abs_residual",
+        "max_alignment_pair_delta_abs_residual",
+        "max_magnitude_pair_delta_abs_residual",
+        "max_alignment_applied_correction_abs_residual",
+        "max_magnitude_applied_correction_abs_residual",
+    }
+
+    assert expected <= set(result)
+
+
+def test_external_checkpoint_loader_uses_exact_path_and_sha(
+    monkeypatch,
+    tmp_path,
+):
+    checkpoint = tmp_path / "selected_checkpoint.pt"
+    checkpoint.write_bytes(b"synthetic-checkpoint")
+
+    calls = {}
+
+    monkeypatch.setattr(
+        runner,
+        "sha256_file",
+        lambda path:
+            runner.extraction.REPRESENTATIVE_CHECKPOINT_SHA256,
+    )
+
+    monkeypatch.setattr(
+        runner.torch,
+        "load",
+        lambda path, **kwargs: {
+            "model_state_dict": {
+                "synthetic": 1
+            }
+        },
+    )
+
+    class FakeMamba(runner.torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.weight = runner.torch.nn.Parameter(
+                runner.torch.ones(1),
+                requires_grad=False,
+            )
+
+    class FakeModel(runner.torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.mamba = FakeMamba()
+
+    fake_model = FakeModel()
+
+    monkeypatch.setattr(
+        runner.r5,
+        "build_local_mamba_backbone",
+        lambda model_snapshot:
+            calls.setdefault(
+                "snapshot",
+                model_snapshot,
+            )
+            or object(),
+    )
+
+    monkeypatch.setattr(
+        runner.adapter,
+        "build_historical_model_from_backbone",
+        lambda *, backbone, arm:
+            fake_model,
+    )
+
+    def fake_strict_load(model, payload):
+        calls["payload"] = payload
+        calls["model"] = model
+
+    monkeypatch.setattr(
+        runner.adapter,
+        "strict_load_state_dict",
+        fake_strict_load,
+    )
+
+    model, digest = (
+        runner.load_representative_model_external(
+            model_snapshot=tmp_path / "model",
+            checkpoint_path=checkpoint,
+        )
+    )
+
+    assert model is fake_model
+    assert (
+        digest
+        == runner.extraction.REPRESENTATIVE_CHECKPOINT_SHA256
+    )
+    assert calls["model"] is fake_model
+    assert (
+        calls["payload"]["model_state_dict"]["synthetic"]
+        == 1
+    )
+
+
+def test_cli_requires_checkpoint():
+    args = runner.parse_args(
+        [
+            "--mode",
+            "preflight",
+            "--output-dir",
+            "out",
+            "--expected-head",
+            "a" * 40,
+            "--model-snapshot",
+            "model",
+            "--tokenizer-snapshot",
+            "tok",
+            "--checkpoint",
+            "checkpoint.pt",
+        ]
+    )
+
+    assert args.checkpoint == "checkpoint.pt"
