@@ -1,0 +1,288 @@
+# ContraMamba Gen4 Native Mamba State Bridge
+# NAME Q1/Q3 Corrected Statistical Analysis Implementation Validation Freeze
+# Candidate
+
+STATUS =
+CANDIDATE
+
+AUTHORITY_ID =
+GEN4_NATIVE_MAMBA_STATE_BRIDGE_NAME_Q1_Q3_CORRECTED_STATISTICAL_ANALYSIS_IMPLEMENTATION_VALIDATION_FREEZE
+
+PHASE =
+NAME_Q1_Q3_STATISTICAL_ANALYSIS_IMPLEMENTATION_VALIDATION_FREEZE
+
+SCIENTIFIC_CONCLUSION =
+NONE
+
+
+## 1. Frozen authority lineage
+
+Q1_Q3_SECONDARY_SIX_STATISTICAL_SPECIFICATION =
+2030de52922c251caeafceb36dd5f2f57b5b39c7
+
+INITIAL_IMPLEMENTATION_AUTHORITY =
+66a35cb469a24c881830fbf69169fb6efcd6cc0c
+
+AFFECTED_INITIAL_IMPLEMENTATION =
+c83b370ce920c6878bb86f6da75da9b7689cf48b
+
+ROW_IDENTITY_CORRECTION_AUTHORITY =
+851d9a96581e9dc124a0a70e3a2c13a902357682
+
+CORRECTED_IMPLEMENTATION_COMMIT =
+cc0f64104828988faa99fec1356b84014c66317a
+
+Q1_Q3_SCIENTIFIC_SPECIFICATION =
+01801ad1617b2ebc3ffa859ba440636d4755a55c
+
+Q1_Q3_EXTRACTION_ARTIFACT_RELEASE_BINDING =
+a0ce07ad828c5ee0e6a4c36d8f9a6e972090590a
+
+
+## 2. Corrected implementation identities
+
+IMPLEMENTATION_PATH =
+scripts/reason_router_gen4_native_mamba_state_name_q1_q3_statistical_analysis.py
+
+IMPLEMENTATION_SHA256 =
+5f75c06e69cdf2655e7973505ecd0a2bbb337f381b8fb8601906a1b26e7c3761
+
+TEST_PATH =
+tests/test_reason_router_gen4_native_mamba_state_name_q1_q3_statistical_analysis.py
+
+TEST_SHA256 =
+51bff0c091d7f79d5c1b8fa43955d90096e8afaeb57d28afef2d41b7a5d95311
+
+
+## 3. Correction closed
+
+The initial implementation incorrectly required global row_id uniqueness.
+
+The frozen Q1/Q3 extraction schema preserves one model-input row_id across
+both secondary layers.
+
+The corrected implementation therefore requires uniqueness of:
+
+(row_id, layer_index)
+
+rather than:
+
+row_id
+
+alone.
+
+ROW_ID_REUSE_ACROSS_LAYER_5_AND_LAYER_17 =
+VALID
+
+DUPLICATE_IDENTICAL_ROW_LAYER_IDENTITY =
+REJECTED
+
+PAIR_LAYER_CELL_UNIQUENESS =
+PRESERVED
+
+The synthetic fixture now mirrors the frozen extraction semantics by reusing
+the same model-input row_id across layers 5 and 17 for a fixed source-pair
+cell.
+
+
+## 4. Implementation validation
+
+PY_COMPILE =
+PASS
+
+DEDICATED_SYNTHETIC_TEST_SUITE =
+PASS
+
+DEDICATED_SYNTHETIC_TEST_COUNT =
+32
+
+GIT_DIFF_CHECK =
+PASS
+
+CORRECTED_STAGED_BLOB_IDENTITY =
+PASS
+
+IMPLEMENTATION_SHA256_VALIDATED_BEFORE_COMMIT =
+YES
+
+TEST_SHA256_VALIDATED_BEFORE_COMMIT =
+YES
+
+
+## 5. Remote commit-scope verification
+
+CORRECTION_BASE_COMMIT =
+851d9a96581e9dc124a0a70e3a2c13a902357682
+
+CORRECTED_IMPLEMENTATION_COMMIT =
+cc0f64104828988faa99fec1356b84014c66317a
+
+COMMITS_BETWEEN_BASE_AND_CORRECTED_IMPLEMENTATION =
+1
+
+MODIFIED_TRACKED_FILE_COUNT =
+2
+
+MODIFIED_TRACKED_FILES =
+scripts/reason_router_gen4_native_mamba_state_name_q1_q3_statistical_analysis.py
+tests/test_reason_router_gen4_native_mamba_state_name_q1_q3_statistical_analysis.py
+
+UNRELATED_TRACKED_FILE_CHANGE =
+NONE
+
+STATISTICAL_FORMULA_CHANGE =
+NONE
+
+STUDENT_T_PROCEDURE_CHANGE =
+NONE
+
+CONFIDENCE_INTERVAL_CHANGE =
+NONE
+
+D_Z_CHANGE =
+NONE
+
+HOLM_BONFERRONI_CHANGE =
+NONE
+
+HYPOTHESIS_ORDER_CHANGE =
+NONE
+
+OUTPUT_CONTRACT_CHANGE =
+NONE
+
+The remote correction delta is bounded to row-identity validation and its
+synthetic regression coverage.
+
+
+## 6. Frozen statistical contract preserved
+
+SECONDARY_LAYER_SET =
+5,17
+
+STRUCTURAL_ESTIMAND =
+DELTA_NAME
+
+ENDPOINTS =
+POST4_SPEED
+POST4_TURNING
+POST4_PATH_EFFICIENCY
+
+SECONDARY_HYPOTHESIS_COUNT =
+6
+
+N_PER_HYPOTHESIS =
+300
+
+NUMERIC_ANALYSIS_DTYPE =
+FLOAT64
+
+STATISTICAL_TEST =
+TWO_SIDED_ONE_SAMPLE_STUDENT_T_TEST_ON_PAIR_LEVEL_CONTRASTS
+
+DF =
+299
+
+UNCERTAINTY_INTERVAL =
+TWO_SIDED_95_PERCENT_STUDENT_T_CONFIDENCE_INTERVAL
+
+EFFECT_SIZE =
+D_Z
+
+FAMILYWISE_ALPHA =
+0.05
+
+MULTIPLICITY =
+GLOBAL_HOLM_BONFERRONI_ALL_6
+
+CROSS_LAYER_DIFFERENCE_TEST =
+NOT_AUTHORIZED
+
+DEPTH_SELECTIVITY =
+NOT_ESTABLISHED_BY_THIS_FAMILY
+
+
+## 7. Canonical-execution boundary
+
+CANONICAL_INPUT_OPEN_DURING_SYNTHETIC_VALIDATION =
+NO
+
+CANONICAL_PAIR_LEVEL_CONTRASTS_COMPUTED =
+NO
+
+CANONICAL_T_STATISTICS_COMPUTED =
+NO
+
+CANONICAL_P_VALUES_COMPUTED =
+NO
+
+CANONICAL_CONFIDENCE_INTERVALS_COMPUTED =
+NO
+
+CANONICAL_D_Z_VALUES_COMPUTED =
+NO
+
+CANONICAL_HOLM_RESULTS_COMPUTED =
+NO
+
+CANONICAL_FAMILY_DECISION_COMPUTED =
+NO
+
+CANONICAL_STATISTICAL_RESULT_ARTIFACT_CREATED =
+NO
+
+STATISTICAL_EXECUTION =
+NOT_PERFORMED
+
+SCIENTIFIC_CONCLUSION =
+NONE
+
+
+## 8. Implementation verdict
+
+CODE_CORRECTNESS =
+PASS
+
+SYNTHETIC_VALIDATION =
+PASS
+
+ROW_IDENTITY_CORRECTION =
+PASS
+
+IMPLEMENTATION_PROVENANCE =
+PASS
+
+CORRECTED_IMPLEMENTATION_STATUS =
+FROZEN_READY_FOR_SEPARATE_EXECUTION_AUTHORITY
+
+The affected c83b370 implementation must not be used as the canonical
+statistical execution implementation.
+
+The corrected canonical implementation candidate is exactly:
+
+cc0f64104828988faa99fec1356b84014c66317a
+
+with implementation script SHA256:
+
+5f75c06e69cdf2655e7973505ecd0a2bbb337f381b8fb8601906a1b26e7c3761
+
+
+## 9. Next transition
+
+NEXT_ACTION =
+NAME_Q1_Q3_STATISTICAL_ANALYSIS_EXECUTION_AUTHORITY_REQUIRED
+
+STATISTICAL_EXECUTION_AUTHORITY =
+NOT_YET_AUTHORIZED
+
+KAGGLE_REQUIRED =
+NO
+
+GPU_REQUIRED =
+NO
+
+The next authority may authorize one bounded CPU canonical statistical
+execution over the already frozen endpoint artifact.
+
+It must bind the exact corrected implementation commit and implementation
+SHA256 above before execution.
