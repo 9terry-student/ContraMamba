@@ -512,6 +512,81 @@ def test_synthetic_analysis_does_not_open_canonical_input(monkeypatch):
     assert tuple(outputs) == m.OUTPUT_FILENAMES
 
 
+
+def test_run_canonical_serializes_frozen_posix_input_path(
+    monkeypatch,
+    tmp_path: Path,
+):
+    records = make_records()
+
+    # Deliberately model a host-native Windows Path representation returned
+    # by the validated input layer. The canonical artifact itself is never
+    # opened by this synthetic regression test.
+    native_like_path = Path(
+        r"Z:\host-native\q1q3\kinematic_endpoints.jsonl"
+    )
+
+    captured: dict[str, object] = {}
+
+    def fake_validate_exact_file(
+        path,
+        *,
+        expected_sha256,
+        expected_bytes,
+    ):
+        assert str(path) == m.CANONICAL_INPUT_PATH
+        assert expected_sha256 == m.CANONICAL_INPUT_SHA256
+        assert expected_bytes == m.CANONICAL_INPUT_BYTES
+        return native_like_path
+
+    def fake_load_jsonl(path):
+        assert path == native_like_path
+        return records
+
+    def fake_write_output_bytes(output_dir, outputs):
+        captured["output_dir"] = output_dir
+        captured["outputs"] = dict(outputs)
+        return {
+            name: m.sha256_bytes(data)
+            for name, data in outputs.items()
+        }
+
+    monkeypatch.setattr(m, "_validate_exact_file", fake_validate_exact_file)
+    monkeypatch.setattr(m, "load_jsonl", fake_load_jsonl)
+    monkeypatch.setattr(m, "write_output_bytes", fake_write_output_bytes)
+
+    result = m.run_canonical(
+        input_jsonl=m.CANONICAL_INPUT_PATH,
+        output_dir=tmp_path / "synthetic-result",
+        implementation_commit="b" * 40,
+        script_sha256="c" * 64,
+        execution_authority_commit="d" * 40,
+    )
+
+    outputs = captured["outputs"]
+    assert isinstance(outputs, dict)
+
+    manifest = json.loads(
+        outputs[
+            "name_q1_q3_statistical_analysis_manifest.json"
+        ].decode("utf-8")
+    )
+    report = outputs[
+        "name_q1_q3_statistical_analysis_report_candidate.md"
+    ].decode("utf-8")
+
+    assert manifest["input_path"] == m.CANONICAL_INPUT_PATH
+    assert "\\" not in manifest["input_path"]
+
+    expected_report_line = f"- Input: `{m.CANONICAL_INPUT_PATH}`"
+    assert expected_report_line in report
+    assert str(native_like_path) not in report
+
+    assert result["hypothesis_count"] == 6
+    assert result["source_pair_count"] == 300
+    assert result["statistical_testing"] is True
+
+
 def test_output_filename_order_and_fixed_columns():
     assert m.OUTPUT_FILENAMES == (
         "name_q1_q3_pair_level_contrasts.csv",

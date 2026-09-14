@@ -796,7 +796,7 @@ def run_canonical(
     outputs = build_output_bytes(
         pair_rows=pair_rows,
         secondary=secondary,
-        input_path=str(input_path),
+        input_path=CANONICAL_INPUT_PATH,
         input_sha256=CANONICAL_INPUT_SHA256,
         input_bytes=CANONICAL_INPUT_BYTES,
         input_rows=CANONICAL_INPUT_ROWS,
