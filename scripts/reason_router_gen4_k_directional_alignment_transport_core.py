@@ -293,6 +293,24 @@ def alignment_delta(
         "ALIGN_B_PRESERVATION",
     )
 
+    realized_a = float(
+        torch.linalg.vector_norm(x).item()
+    )
+    realized_b = float(
+        torch.linalg.vector_norm(y_star).item()
+    )
+    a_residual = abs(realized_a - a)
+    b_residual = abs(realized_b - b)
+
+    require(
+        a_residual <= VECTOR_TOL,
+        "ALIGN_A_PRESERVATION",
+    )
+    require(
+        b_residual <= VECTOR_TOL,
+        "ALIGN_B_PRESERVATION",
+    )
+
     realized = cosine(x, y_star)
     require(
         abs(realized - ct) <= VECTOR_TOL,
@@ -303,6 +321,12 @@ def alignment_delta(
         "baseline_A": a,
         "baseline_B": b,
         "baseline_C": c,
+        "realized_A": realized_a,
+        "realized_B": realized_b,
+        "A_preservation_abs_residual":
+            a_residual,
+        "B_preservation_abs_residual":
+            b_residual,
         "target_C": ct,
         "realized_C": realized,
     }
