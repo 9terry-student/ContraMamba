@@ -320,10 +320,14 @@ def reject_private_payload(
             field = path + "." + str(key)
             lower = str(key).lower()
 
-            if lower == "logits_read":
+            if lower in {
+                "logits_read",
+                "raw_vectors_persisted",
+            }:
                 require(
                     item is False,
-                    "LOGITS_READ_NOT_FALSE:" + field,
+                    "NEGATIVE_SAFETY_FLAG_NOT_FALSE:"
+                    + field,
                 )
             else:
                 require(
