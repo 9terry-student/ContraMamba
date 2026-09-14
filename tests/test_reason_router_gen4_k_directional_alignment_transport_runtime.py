@@ -121,7 +121,7 @@ def test_paired_intervention_preserves_midpoint_and_realizes_delta():
     )
     runtime.apply_inproj_intervention(
         minus,
-        token_index=3,
+        token_index=4,
         strong_mask=_mask(),
         delta_h=delta,
         plus_branch=False,
@@ -132,8 +132,12 @@ def test_paired_intervention_preserves_midpoint_and_realizes_delta():
         plus_audit,
         minus_audit,
         delta,
+        plus_expected_token_index=3,
+        minus_expected_token_index=4,
     )
 
+    assert result["plus_token_index"] == 3.0
+    assert result["minus_token_index"] == 4.0
     assert (
         result[
             "midpoint_max_abs_residual"

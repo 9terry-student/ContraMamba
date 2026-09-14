@@ -445,6 +445,9 @@ def paired_intervention_audit(
     plus_audit: Mapping[str, Any],
     minus_audit: Mapping[str, Any],
     delta_h: Any,
+    *,
+    plus_expected_token_index: int,
+    minus_expected_token_index: int,
 ) -> dict[str, float]:
     import torch
 
@@ -457,9 +460,21 @@ def paired_intervention_audit(
         "MINUS_AUDIT_ROLE",
     )
     require(
+        type(plus_expected_token_index) is int
+        and plus_expected_token_index >= 0
+        and type(minus_expected_token_index) is int
+        and minus_expected_token_index >= 0,
+        "EXPECTED_TOKEN_RANGE",
+    )
+    require(
         plus_audit["token_index"]
-        == minus_audit["token_index"],
-        "AUDIT_TOKEN_MISMATCH",
+        == plus_expected_token_index,
+        "PLUS_AUDIT_TOKEN_MISMATCH",
+    )
+    require(
+        minus_audit["token_index"]
+        == minus_expected_token_index,
+        "MINUS_AUDIT_TOKEN_MISMATCH",
     )
 
     bp = (
@@ -554,6 +569,10 @@ def paired_intervention_audit(
     )
 
     return {
+        "plus_token_index":
+            float(plus_expected_token_index),
+        "minus_token_index":
+            float(minus_expected_token_index),
         "midpoint_max_abs_residual":
             midpoint_residual,
         "pair_delta_max_abs_residual":
