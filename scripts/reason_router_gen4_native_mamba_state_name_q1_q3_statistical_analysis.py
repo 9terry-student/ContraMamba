@@ -266,7 +266,7 @@ def validate_endpoint_records(
         )
 
     identities: set[tuple[str, int, str]] = set()
-    row_ids: set[str] = set()
+    row_layer_ids: set[tuple[str, int]] = set()
     by_pair: dict[str, list[Mapping[str, Any]]] = defaultdict(list)
     required = {
         "source_pair_id",
@@ -295,14 +295,19 @@ def validate_endpoint_records(
             raise RuntimeError("empty source_pair_id")
         if not row_id:
             raise RuntimeError("empty row_id")
-        if row_id in row_ids:
-            raise RuntimeError(f"duplicate row_id: {row_id}")
-        row_ids.add(row_id)
 
         if anchor != "A_NAME":
             raise RuntimeError(f"unexpected semantic_anchor: {anchor}")
         if type(layer) is not int or layer not in LAYERS:
             raise RuntimeError(f"unexpected layer_index: {layer}")
+
+        row_layer_identity = (row_id, layer)
+        if row_layer_identity in row_layer_ids:
+            raise RuntimeError(
+                f"duplicate row/layer identity: {row_layer_identity}"
+            )
+        row_layer_ids.add(row_layer_identity)
+
         if cell not in {"C0_SHAM", "C2_NAME"}:
             raise RuntimeError(f"unexpected contrast_cell_id: {cell}")
 

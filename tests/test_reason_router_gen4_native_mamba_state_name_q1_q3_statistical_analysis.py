@@ -43,7 +43,7 @@ def make_pair_rows(pair_id: str, i: int) -> list[dict]:
         for cell in ("C0_SHAM", "C2_NAME"):
             row = {
                 "source_pair_id": pair_id,
-                "row_id": f"{pair_id}-L{layer}-{cell}",
+                "row_id": f"{pair_id}-{cell}",
                 "contrast_cell_id": cell,
                 "semantic_anchor": "A_NAME",
                 "anchor_token_index": 40,
@@ -93,6 +93,21 @@ def test_exact_four_row_matrix_acceptance():
     m.validate_endpoint_records(rows, expected_pair_count=2)
 
 
+def test_cross_layer_row_id_reuse_is_valid():
+    rows = make_pair_rows("pair-reuse", 7)
+
+    for cell in ("C0_SHAM", "C2_NAME"):
+        cell_rows = [
+            row for row in rows
+            if row["contrast_cell_id"] == cell
+        ]
+        assert len(cell_rows) == 2
+        assert {row["layer_index"] for row in cell_rows} == {5, 17}
+        assert len({row["row_id"] for row in cell_rows}) == 1
+
+    m.validate_endpoint_records(rows, expected_pair_count=1)
+
+
 @pytest.mark.parametrize(
     ("mutation", "message"),
     [
@@ -100,7 +115,7 @@ def test_exact_four_row_matrix_acceptance():
         ("missing_field", "required fields missing"),
         ("empty_pair", "empty source_pair_id"),
         ("empty_row", "empty row_id"),
-        ("duplicate_row", "duplicate row_id"),
+        ("duplicate_row_layer", "duplicate row/layer identity"),
         ("duplicate_identity", "duplicate pair/layer/cell"),
         ("wrong_anchor", "unexpected semantic_anchor"),
         ("extra_layer", "unexpected layer_index"),
@@ -121,7 +136,7 @@ def test_row_validation_fail_closed(mutation: str, message: str):
         rows[0]["source_pair_id"] = ""
     elif mutation == "empty_row":
         rows[0]["row_id"] = ""
-    elif mutation == "duplicate_row":
+    elif mutation == "duplicate_row_layer":
         rows[1]["row_id"] = rows[0]["row_id"]
     elif mutation == "duplicate_identity":
         rows[1]["layer_index"] = rows[0]["layer_index"]
