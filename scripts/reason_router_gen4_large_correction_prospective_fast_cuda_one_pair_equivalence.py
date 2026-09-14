@@ -170,7 +170,15 @@ def git(*args: str) -> str:
 def authenticate_repo(expected_head: str) -> None:
     branch = git("branch", "--show-current")
     head = git("rev-parse", "HEAD")
-    require(branch == EXPECTED_BRANCH, f"BRANCH_MISMATCH:{branch}")
+
+    # `cm kaggle` intentionally checks out the exact pinned commit in detached
+    # HEAD mode. Preserve named-branch execution for local validation, but also
+    # accept detached execution when (and only when) the exact expected HEAD is
+    # authenticated below. Any other named branch remains fail-closed.
+    require(
+        branch in {"", EXPECTED_BRANCH},
+        f"BRANCH_MISMATCH:{branch}",
+    )
     require(head == expected_head, f"HEAD_MISMATCH:{head}")
     require(git("status", "--porcelain") == "", "WORKTREE_NOT_CLEAN")
 

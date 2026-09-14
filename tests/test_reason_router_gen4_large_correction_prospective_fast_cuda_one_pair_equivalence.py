@@ -15,6 +15,44 @@ def test_exact_prospective_branch_and_prerequisite_freeze():
     assert eq.ELIGIBILITY_IMPLEMENTATION_COMMIT == "2de39772dd641499ee6fef26fa57d9d0396f0e21"
 
 
+
+
+def test_authenticate_repo_accepts_cm_kaggle_detached_exact_head(monkeypatch):
+    expected = "f" * 40
+
+    def fake_git(*args: str) -> str:
+        if args == ("branch", "--show-current"):
+            return ""
+        if args == ("rev-parse", "HEAD"):
+            return expected
+        if args == ("status", "--porcelain"):
+            return ""
+        raise AssertionError(args)
+
+    monkeypatch.setattr(eq, "git", fake_git)
+    monkeypatch.setattr(eq.subprocess, "call", lambda *args, **kwargs: 0)
+
+    eq.authenticate_repo(expected)
+
+
+def test_authenticate_repo_rejects_wrong_named_branch(monkeypatch):
+    expected = "f" * 40
+
+    def fake_git(*args: str) -> str:
+        if args == ("branch", "--show-current"):
+            return "main"
+        if args == ("rev-parse", "HEAD"):
+            return expected
+        if args == ("status", "--porcelain"):
+            return ""
+        raise AssertionError(args)
+
+    monkeypatch.setattr(eq, "git", fake_git)
+
+    with pytest.raises(eq.ProspectiveEquivalenceError, match="BRANCH_MISMATCH:main"):
+        eq.authenticate_repo(expected)
+
+
 def test_frozen_holdout_pair_selection_is_outcome_blind_first_pair():
     assert eq.PROSPECTIVE_PAIR_ID == "generated_fact_301"
     assert eq.SOURCE_PAIR_COUNT == 300
