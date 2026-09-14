@@ -1,0 +1,48 @@
+{
+  "alignment_shift_abs_threshold": 0.11228626366380845,
+  "alignment_shift_abs_threshold_source": "discovery cohort 1-300 frozen q75",
+  "branch": "gen4-k-large-correction-prospective-validation",
+  "claim_boundary": [
+    "This artifact materializes an outcome-blind prospective synthetic holdout cohort.",
+    "It does not establish tokenizer eligibility, geometry-regime membership, causal response, or scientific support.",
+    "No threshold may be re-estimated from validation outcomes."
+  ],
+  "claim_string_overlap_with_discovery": 0,
+  "contrast_cells": [
+    "C0_SHAM",
+    "C1_TITLE",
+    "C2_NAME",
+    "C3_ROLE",
+    "C4_PREDICATE",
+    "C5_TITLE_NAME"
+  ],
+  "discovery_freeze_commit": "41f4678d09f7c779a8edc2eec6cc08a9effd9f41",
+  "discovery_pair_index_range": [
+    0,
+    300
+  ],
+  "evaluation_executed": false,
+  "first_validation_pair_id": "generated_fact_301",
+  "generator_authority_commit": "91c3dcd7abadcd6cf0d6d2f1c299f3d6fa6e28ea",
+  "generator_source_blob": "baee23a9f71333125f4a8735c2c92d20cab7eb4f",
+  "head": "9c8ef022b76c7e25ecefb2568b13a534cc317720",
+  "last_validation_pair_id": "generated_fact_600",
+  "materializer_source_blob": "6a0f5bf58614cdff0dad5f78c7d4bd86d507cd3b",
+  "mechanism_id": "masked_slot_substitution_v1",
+  "model_forward_count": 0,
+  "pair_identity_overlap_with_discovery": 0,
+  "phase": "PROSPECTIVE_HOLDOUT_MATERIALIZATION",
+  "prospective_regime_rule": "LARGE iff alignment_shift_abs >= fixed threshold; SMALL otherwise",
+  "rows_sha256": "f4289173ba3837fad217728830b8aefb8baa7dce4f45dde7c58441021b436bdc",
+  "schema_version": "GEN4_LARGE_CORRECTION_PROSPECTIVE_COHORT_V1",
+  "scientific_outcomes_observed": false,
+  "tokenizer_invoked": false,
+  "training_executed": false,
+  "validation_pair_count": 300,
+  "validation_pair_ids_sha256": "68ae2c29fa9da23a2c1d541bba59d1597f3f2ca4959bb6986d78d7784da1c90a",
+  "validation_pair_index_range": [
+    300,
+    600
+  ],
+  "validation_row_count": 1800
+}
