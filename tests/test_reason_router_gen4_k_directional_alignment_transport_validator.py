@@ -169,8 +169,12 @@ def test_frozen_code_constants():
         == "3677dd83950789e41417c3a1ffaf70b82d7003ad"
     )
     assert (
+        validator.CORE_FREEZE
+        == "3ced19dfcf011ae7b300242723eb1f10b3a3437f"
+    )
+    assert (
         validator.CORE_BLOB
-        == "4a69339d159338c156c0c0e00fa1b830a63bb997"
+        == "d98b2dcd3436433c04bb56ecc57dec4240abe820"
     )
     assert (
         validator.RUNTIME_BLOB

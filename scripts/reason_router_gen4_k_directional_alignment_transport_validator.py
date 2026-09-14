@@ -18,6 +18,9 @@ EXPECTED_BRANCH = "gen4-k-directional-alignment-transport"
 RUNNER_FREEZE = (
     "2bfcd7b4243832f38e32abf389229d7601b180b2"
 )
+CORE_FREEZE = (
+    "3ced19dfcf011ae7b300242723eb1f10b3a3437f"
+)
 IMPLEMENTATION_PARENT = (
     "ac4f682acaeea5a00eafdedcd5ff097b61d3a3c0"
 )
@@ -42,7 +45,7 @@ RUNTIME_REL = (
 )
 
 RUNNER_BLOB = "3677dd83950789e41417c3a1ffaf70b82d7003ad"
-CORE_BLOB = "4a69339d159338c156c0c0e00fa1b830a63bb997"
+CORE_BLOB = "d98b2dcd3436433c04bb56ecc57dec4240abe820"
 RUNTIME_BLOB = "989c4a8947560dcf35e9523373d09ba085a9431a"
 
 CHECKPOINT_SHA256 = (
@@ -376,58 +379,62 @@ def validate_frozen_code_identity(
         ),
         "RUNNER_FREEZE_NOT_ANCESTOR",
     )
+    require(
+        git_is_ancestor(
+            CORE_FREEZE,
+            execution_head,
+        ),
+        "CORE_FREEZE_NOT_ANCESTOR",
+    )
 
-    expected_blobs = {
-        RUNNER_REL: RUNNER_BLOB,
-        CORE_REL: CORE_BLOB,
-        RUNTIME_REL: RUNTIME_BLOB,
+    frozen = {
+        RUNNER_REL: (
+            RUNNER_FREEZE,
+            RUNNER_BLOB,
+        ),
+        CORE_REL: (
+            CORE_FREEZE,
+            CORE_BLOB,
+        ),
+        RUNTIME_REL: (
+            RUNNER_FREEZE,
+            RUNTIME_BLOB,
+        ),
     }
 
-    for path, expected_blob in expected_blobs.items():
+    for path, (
+        freeze,
+        expected_blob,
+    ) in frozen.items():
         require(
             git_blob(
-                RUNNER_FREEZE,
+                freeze,
                 path,
             )
             == expected_blob,
             f"FROZEN_BLOB_MISMATCH:{path}",
         )
-
-    require(
-        paths_unchanged(
-            RUNNER_FREEZE,
-            execution_head,
-            (
-                RUNNER_REL,
-                CORE_REL,
-                RUNTIME_REL,
+        require(
+            paths_unchanged(
+                freeze,
+                execution_head,
+                (path,),
             ),
-        ),
-        "FROZEN_TRANSPORT_CODE_CHANGED_AFTER_FREEZE",
-    )
+            f"FROZEN_CODE_CHANGED_AFTER_FREEZE:{path}",
+        )
 
     return {
-        RUNNER_REL:
+        path:
             sha256_bytes(
                 git_bytes(
-                    RUNNER_FREEZE,
-                    RUNNER_REL,
+                    freeze,
+                    path,
                 )
-            ),
-        CORE_REL:
-            sha256_bytes(
-                git_bytes(
-                    RUNNER_FREEZE,
-                    CORE_REL,
-                )
-            ),
-        RUNTIME_REL:
-            sha256_bytes(
-                git_bytes(
-                    RUNNER_FREEZE,
-                    RUNTIME_REL,
-                )
-            ),
+            )
+        for path, (
+            freeze,
+            _,
+        ) in frozen.items()
     }
 
 
