@@ -3,6 +3,8 @@ from pathlib import Path
 
 import pytest
 
+ROOT = Path(__file__).resolve().parents[1]
+
 from scripts import (
     reason_router_gen4_k_directional_alignment_transport_validator
     as validator,
@@ -10,8 +12,10 @@ from scripts import (
 
 
 def test_validator_does_not_import_runner():
-    path = Path(
-        r"scripts\reason_router_gen4_k_directional_alignment_transport_validator.py"
+    path = (
+        ROOT
+        / "scripts"
+        / "reason_router_gen4_k_directional_alignment_transport_validator.py"
     )
     tree = ast.parse(
         path.read_text(
@@ -183,9 +187,10 @@ def test_frozen_code_constants():
 
 
 def _runner_ast():
-    path = Path(
-        "scripts/"
-        "reason_router_gen4_k_directional_alignment_transport_runner.py"
+    path = (
+        ROOT
+        / "scripts"
+        / "reason_router_gen4_k_directional_alignment_transport_runner.py"
     )
     return ast.parse(
         path.read_text(
@@ -606,3 +611,83 @@ def test_synthetic_preflight_bundle_end_to_end(
         result["scientific_conclusion"]
         == "NONE"
     )
+
+
+def test_transport_path_literals_are_platform_portable():
+    targets = (
+        ROOT
+        / "scripts"
+        / "reason_router_gen4_k_directional_alignment_transport_core.py",
+        ROOT
+        / "scripts"
+        / "reason_router_gen4_k_directional_alignment_transport_runtime.py",
+        ROOT
+        / "scripts"
+        / "reason_router_gen4_k_directional_alignment_transport_runner.py",
+        ROOT
+        / "scripts"
+        / "reason_router_gen4_k_directional_alignment_transport_validator.py",
+        ROOT
+        / "tests"
+        / "test_reason_router_gen4_k_directional_alignment_transport_core.py",
+        ROOT
+        / "tests"
+        / "test_reason_router_gen4_k_directional_alignment_transport_runtime.py",
+        ROOT
+        / "tests"
+        / "test_reason_router_gen4_k_directional_alignment_transport_runner.py",
+        ROOT
+        / "tests"
+        / "test_reason_router_gen4_k_directional_alignment_transport_validator.py",
+    )
+
+    backslash = chr(92)
+
+    for source in targets:
+        assert source.is_file(), source
+
+        tree = ast.parse(
+            source.read_text(
+                encoding="utf-8-sig"
+            )
+        )
+
+        for node in ast.walk(tree):
+            if not isinstance(
+                node,
+                ast.Call,
+            ):
+                continue
+
+            function = node.func
+
+            is_path_call = (
+                isinstance(
+                    function,
+                    ast.Name,
+                )
+                and function.id == "Path"
+            )
+
+            if not is_path_call:
+                continue
+
+            for argument in node.args:
+                if (
+                    isinstance(
+                        argument,
+                        ast.Constant,
+                    )
+                    and isinstance(
+                        argument.value,
+                        str,
+                    )
+                ):
+                    assert (
+                        backslash
+                        not in argument.value
+                    ), (
+                        f"platform-specific Path literal "
+                        f"in {source}: "
+                        f"{argument.value!r}"
+                    )
