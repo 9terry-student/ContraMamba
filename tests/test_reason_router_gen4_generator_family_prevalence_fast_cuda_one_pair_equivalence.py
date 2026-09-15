@@ -213,6 +213,37 @@ def test_runner_contains_no_intervention_or_response_execution():
     assert "capture_states=True" in baseline_source
 
 
+def test_exact_kernels_are_loaded_and_routed_before_model_construction():
+    source = inspect.getsource(eq.run_one_pair)
+
+    load_index = source.index(
+        "kernels = kernel_compat.load_exact_fast_kernels()"
+    )
+    route_index = source.index(
+        "with kernel_compat.exact_transformers_kernel_loader("
+    )
+    model_index = source.index(
+        "parent.load_representative_model_external("
+    )
+
+    assert load_index < route_index < model_index
+    assert source.count(
+        "kernels = kernel_compat.load_exact_fast_kernels()"
+    ) == 1
+    assert (
+        "kernel_compat.validate_transformers_kernel_bindings("
+        in source
+    )
+
+    for token in (
+        '"transformers_constructor_exact_kernel_router_executed":',
+        '"transformers_constructor_default_kernel_loader_called":',
+        '"transformers_constructor_causal_conv_route_count":',
+        '"transformers_constructor_mamba_route_count":',
+    ):
+        assert token in source
+
+
 def test_report_contract_persists_no_geometry_or_response_values():
     source = inspect.getsource(eq.run_one_pair)
     assert '"baseline_only": True' in source

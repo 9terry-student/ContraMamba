@@ -911,6 +911,49 @@ Implicit credentials에 의존하지 않는 방향으로 교정.
 
 ---
 
+## Failure H — exact-kernel preflight PASS but model constructor re-entered default Hub loader
+
+Observed in bounded run `r4`:
+
+```text
+EXACT_KERNEL_TRANSPORT_PREFLIGHT=PASS
+```
+
+Then XG2 failed before its first baseline forward:
+
+```text
+MambaModel(config)
+→ MambaMixer.__init__
+→ lazy_load_kernel("causal-conv1d")
+→ kernels.get_kernel(... revision=main)
+→ legacy model-repo API
+→ 401
+```
+
+The command-level preflight and the actual runner execute in separate Python
+processes, so successful preflight module bindings are not inherited.
+
+The runner also loaded exact kernels too late: after CPU and GPU model
+construction.
+
+Correct recovery:
+
+```text
+runner process loads exact authenticated kernels before model creation
++ temporarily routes Transformers lazy_load_kernel to those exact modules
++ constructs CPU and GPU models
++ restores the original loader
++ validates exact Transformers kernel globals
+```
+
+Do not solve this with an HF token, default `main`, or latest-kernel
+substitution.
+
+No XG2/XG4 scientific model forward had started in `r4`; this remains a
+runtime dependency-routing failure, not backend-equivalence evidence.
+
+---
+
 ## Failure G — exact `.so` transport succeeded but single-wrapper path check blocked
 
 Observed after the migrated transport fix:

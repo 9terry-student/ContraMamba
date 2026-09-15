@@ -790,33 +790,65 @@ def run_one_pair(
             measurement._resolve_and_validate_runtime_binding()
         )
 
-        cpu_model, cpu_checkpoint_sha = (
-            parent.load_representative_model_external(
-                model_snapshot=model_snapshot,
-                checkpoint_path=checkpoint_path,
-            )
-        )
-        require(
-            cpu_checkpoint_sha
-            == extraction.REPRESENTATIVE_CHECKPOINT_SHA256,
-            "CPU_CHECKPOINT_IDENTITY",
-        )
-        cpu_ctx = transport_runtime.validate_runtime_components(
-            cpu_model
-        )
+        kernels = kernel_compat.load_exact_fast_kernels()
 
-        gpu_model, gpu_checkpoint_sha = (
-            parent.load_representative_model_external(
-                model_snapshot=model_snapshot,
-                checkpoint_path=checkpoint_path,
+        with kernel_compat.exact_transformers_kernel_loader(
+            kernels
+        ) as constructor_kernel_calls:
+            cpu_model, cpu_checkpoint_sha = (
+                parent.load_representative_model_external(
+                    model_snapshot=model_snapshot,
+                    checkpoint_path=checkpoint_path,
+                )
             )
+            require(
+                cpu_checkpoint_sha
+                == extraction.REPRESENTATIVE_CHECKPOINT_SHA256,
+                "CPU_CHECKPOINT_IDENTITY",
+            )
+            cpu_ctx = transport_runtime.validate_runtime_components(
+                cpu_model
+            )
+
+            gpu_model, gpu_checkpoint_sha = (
+                parent.load_representative_model_external(
+                    model_snapshot=model_snapshot,
+                    checkpoint_path=checkpoint_path,
+                )
+            )
+            require(
+                gpu_checkpoint_sha == cpu_checkpoint_sha,
+                "GPU_CHECKPOINT_IDENTITY",
+            )
+            gpu_ctx = transport_runtime.validate_runtime_components(
+                gpu_model
+            )
+
+        constructor_kernel_counts = Counter(
+            constructor_kernel_calls
         )
         require(
-            gpu_checkpoint_sha == cpu_checkpoint_sha,
-            "GPU_CHECKPOINT_IDENTITY",
+            set(constructor_kernel_counts)
+            == {"causal-conv1d", "mamba-ssm"},
+            (
+                "TRANSFORMERS_CONSTRUCTOR_KERNEL_NAMES:"
+                f"{dict(constructor_kernel_counts)}"
+            ),
         )
-        gpu_ctx = transport_runtime.validate_runtime_components(
-            gpu_model
+        require(
+            constructor_kernel_counts["causal-conv1d"] > 0,
+            "TRANSFORMERS_CONSTRUCTOR_KERNEL_CALL_COUNT_ZERO",
+        )
+        require(
+            constructor_kernel_counts["causal-conv1d"]
+            == constructor_kernel_counts["mamba-ssm"],
+            (
+                "TRANSFORMERS_CONSTRUCTOR_KERNEL_CALL_COUNT_MISMATCH:"
+                f"{dict(constructor_kernel_counts)}"
+            ),
+        )
+        kernel_compat.validate_transformers_kernel_bindings(
+            kernels
         )
 
         original_capture = parent.capture_branch
@@ -844,7 +876,6 @@ def run_one_pair(
             parent.capture_branch = original_capture
         cpu_budget.assert_exact()
 
-        kernels = kernel_compat.load_exact_fast_kernels()
         gpu_model.to(torch.device("cuda:0"))
         gpu_model.eval()
         require(
@@ -946,6 +977,14 @@ def run_one_pair(
             backend.CONV_BINARY_SHA256,
         "kernel_transport_identity_status":
             kernels["transport_identity_status"],
+        "transformers_constructor_exact_kernel_router_executed":
+            True,
+        "transformers_constructor_default_kernel_loader_called":
+            False,
+        "transformers_constructor_causal_conv_route_count":
+            constructor_kernel_counts["causal-conv1d"],
+        "transformers_constructor_mamba_route_count":
+            constructor_kernel_counts["mamba-ssm"],
         "build_variant": backend.BUILD_VARIANT,
         "python_version": backend.EXPECTED_RUNTIME["python"],
         "numpy_version": backend.EXPECTED_RUNTIME["numpy"],

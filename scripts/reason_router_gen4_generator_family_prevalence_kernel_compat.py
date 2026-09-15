@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import importlib.metadata
 import os
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Callable
+from typing import Any, Callable, Iterator
 
 from scripts import reason_router_gen4_k_fast_cuda_one_pair_equivalence as backend
 
@@ -426,6 +427,120 @@ def patch_transformers_mamba(
         setattr(modeling_module, name, fn)
 
     return functions
+
+
+def _validate_exact_kernel_bundle(kernels: dict[str, Any]) -> None:
+    require(
+        kernels.get("transport_identity_status")
+        == "EXACT_FROZEN_BINARY_SHA256_MATCH",
+        "KERNEL_BUNDLE_TRANSPORT_IDENTITY",
+    )
+
+    mamba = kernels.get("mamba")
+    conv = kernels.get("conv")
+
+    require(mamba is not None, "KERNEL_BUNDLE_MAMBA_MODULE")
+    require(conv is not None, "KERNEL_BUNDLE_CONV_MODULE")
+
+    required = {
+        "selective_scan_fn": getattr(mamba, "selective_scan_fn", None),
+        "selective_state_update": getattr(
+            mamba,
+            "selective_state_update",
+            None,
+        ),
+        "mamba_inner_fn": getattr(mamba, "mamba_inner_fn", None),
+        "causal_conv1d_fn": getattr(conv, "causal_conv1d_fn", None),
+        "causal_conv1d_update": getattr(
+            conv,
+            "causal_conv1d_update",
+            None,
+        ),
+    }
+    missing = [
+        name
+        for name, value in required.items()
+        if not callable(value)
+    ]
+    require(
+        not missing,
+        "KERNEL_BUNDLE_FUNCTION_SURFACE:" + ",".join(missing),
+    )
+
+
+@contextmanager
+def exact_transformers_kernel_loader(
+    kernels: dict[str, Any],
+    *,
+    modeling_module: Any | None = None,
+) -> Iterator[list[str]]:
+    _validate_exact_kernel_bundle(kernels)
+
+    if modeling_module is None:
+        import transformers.models.mamba.modeling_mamba as modeling_module
+
+    original_loader = modeling_module.lazy_load_kernel
+    calls: list[str] = []
+
+    def exact_loader(
+        kernel_name: str,
+        *args: Any,
+        **kwargs: Any,
+    ) -> ModuleType:
+        require(
+            not args and not kwargs,
+            (
+                "TRANSFORMERS_KERNEL_LOADER_ARGUMENTS:"
+                f"{kernel_name}:args={args}:kwargs={sorted(kwargs)}"
+            ),
+        )
+        calls.append(kernel_name)
+
+        if kernel_name == "causal-conv1d":
+            return kernels["conv"]
+        if kernel_name == "mamba-ssm":
+            return kernels["mamba"]
+
+        raise KernelCompatibilityError(
+            f"TRANSFORMERS_KERNEL_NAME:{kernel_name}"
+        )
+
+    modeling_module.lazy_load_kernel = exact_loader
+    try:
+        yield calls
+    finally:
+        modeling_module.lazy_load_kernel = original_loader
+
+
+def validate_transformers_kernel_bindings(
+    kernels: dict[str, Any],
+    *,
+    modeling_module: Any | None = None,
+) -> None:
+    _validate_exact_kernel_bundle(kernels)
+
+    if modeling_module is None:
+        import transformers.models.mamba.modeling_mamba as modeling_module
+
+    exact = {
+        "mamba_ssm": kernels["mamba"],
+        "causal_conv1d": kernels["conv"],
+        "selective_scan_fn": kernels["selective_scan_fn"],
+        "selective_state_update": kernels["selective_state_update"],
+        "mamba_inner_fn": kernels["mamba_inner_fn"],
+        "causal_conv1d_fn": kernels["causal_conv1d_fn"],
+        "causal_conv1d_update": kernels["causal_conv1d_update"],
+    }
+
+    mismatched = [
+        name
+        for name, expected in exact.items()
+        if getattr(modeling_module, name, None) is not expected
+    ]
+    require(
+        not mismatched,
+        "TRANSFORMERS_KERNEL_BINDING:" + ",".join(mismatched),
+    )
 
 
 def load_exact_fast_kernels() -> dict[str, Any]:

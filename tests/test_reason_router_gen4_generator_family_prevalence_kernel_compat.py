@@ -449,6 +449,101 @@ def test_transformers_patch_surface_is_exact():
         assert getattr(target, name) is fn
 
 
+def _synthetic_exact_kernel_bundle():
+    mamba = SimpleNamespace(
+        selective_scan_fn=lambda: "scan",
+        selective_state_update=lambda: "update",
+        mamba_inner_fn=lambda: "inner",
+    )
+    conv = SimpleNamespace(
+        causal_conv1d_fn=lambda: "conv",
+        causal_conv1d_update=lambda: "conv_update",
+    )
+    return {
+        "mamba": mamba,
+        "conv": conv,
+        "selective_scan_fn": mamba.selective_scan_fn,
+        "selective_state_update": mamba.selective_state_update,
+        "mamba_inner_fn": mamba.mamba_inner_fn,
+        "causal_conv1d_fn": conv.causal_conv1d_fn,
+        "causal_conv1d_update": conv.causal_conv1d_update,
+        "transport_identity_status":
+            "EXACT_FROZEN_BINARY_SHA256_MATCH",
+    }
+
+
+def test_exact_transformers_constructor_loader_routes_without_default():
+    kernels = _synthetic_exact_kernel_bundle()
+
+    def original_loader(*args, **kwargs):
+        raise AssertionError((args, kwargs))
+
+    modeling = SimpleNamespace(
+        lazy_load_kernel=original_loader,
+    )
+
+    with compat.exact_transformers_kernel_loader(
+        kernels,
+        modeling_module=modeling,
+    ) as calls:
+        assert modeling.lazy_load_kernel("causal-conv1d") is kernels["conv"]
+        assert modeling.lazy_load_kernel("mamba-ssm") is kernels["mamba"]
+
+    assert calls == ["causal-conv1d", "mamba-ssm"]
+    assert modeling.lazy_load_kernel is original_loader
+
+
+def test_exact_transformers_constructor_loader_blocks_unknown_and_restores():
+    kernels = _synthetic_exact_kernel_bundle()
+
+    def original_loader(name):
+        return name
+
+    modeling = SimpleNamespace(
+        lazy_load_kernel=original_loader,
+    )
+
+    with pytest.raises(
+        compat.KernelCompatibilityError,
+        match="TRANSFORMERS_KERNEL_NAME:unknown-kernel",
+    ):
+        with compat.exact_transformers_kernel_loader(
+            kernels,
+            modeling_module=modeling,
+        ):
+            modeling.lazy_load_kernel("unknown-kernel")
+
+    assert modeling.lazy_load_kernel is original_loader
+
+
+def test_transformers_kernel_binding_validation_is_exact():
+    kernels = _synthetic_exact_kernel_bundle()
+    modeling = SimpleNamespace(
+        mamba_ssm=kernels["mamba"],
+        causal_conv1d=kernels["conv"],
+        selective_scan_fn=kernels["selective_scan_fn"],
+        selective_state_update=kernels["selective_state_update"],
+        mamba_inner_fn=kernels["mamba_inner_fn"],
+        causal_conv1d_fn=kernels["causal_conv1d_fn"],
+        causal_conv1d_update=kernels["causal_conv1d_update"],
+    )
+
+    compat.validate_transformers_kernel_bindings(
+        kernels,
+        modeling_module=modeling,
+    )
+
+    modeling.causal_conv1d_fn = lambda: "foreign"
+    with pytest.raises(
+        compat.KernelCompatibilityError,
+        match="TRANSFORMERS_KERNEL_BINDING:causal_conv1d_fn",
+    ):
+        compat.validate_transformers_kernel_bindings(
+            kernels,
+            modeling_module=modeling,
+        )
+
+
 def test_runner_uses_compat_loader_and_persists_transport_provenance():
     source = inspect.getsource(eq.run_one_pair)
 

@@ -439,6 +439,36 @@ Wrapper-path acceptance does not relax any of those identities.
 
 ---
 
+# 11.2 Transformers 5.0.0 constructor-time kernel routing
+
+Transformers 5.0.0 resolves Mamba kernels during every `MambaMixer`
+constructor, before any forward and regardless of whether the model is still
+on CPU.
+
+Therefore a successful exact-kernel preflight in a separate Python process is
+not enough. The actual runner process must:
+
+```text
+1. authenticate/load exact Mamba and causal-conv modules
+2. temporarily route modeling_mamba.lazy_load_kernel
+   - causal-conv1d -> authenticated conv module
+   - mamba-ssm    -> authenticated Mamba module
+3. construct both CPU and GPU model instances
+4. restore the original lazy_load_kernel callable
+5. validate the resulting modeling_mamba global module/function bindings
+6. run CPU slow and CUDA fast paths
+```
+
+Unknown kernel names or unexpected loader arguments are blockers. The exact
+constructor router never falls through to the Transformers default Hub loader.
+
+CPU execution remains slow because Transformers chooses its CUDA fast forward
+only when the mixer weights are on CUDA. This routing changes dependency
+resolution only; it does not alter weights, forward budget, geometry,
+recurrent-state reconstruction, tolerances, or scientific endpoints.
+
+---
+
 # 12. Current compatibility implementation
 
 Reference:
