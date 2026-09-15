@@ -130,6 +130,21 @@ def sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def report_json_bytes(
+    report: Mapping[str, Any],
+) -> bytes:
+    return (
+        json.dumps(
+            dict(report),
+            ensure_ascii=False,
+            sort_keys=True,
+            indent=2,
+            allow_nan=False,
+        )
+        + "\n"
+    ).encode("utf-8")
+
+
 def git(root: Path, *args: str) -> str:
     try:
         return subprocess.check_output(
@@ -1076,17 +1091,8 @@ def run_one_pair(
         exist_ok=True,
     )
 
-    output.write_text(
-        json.dumps(
-            report,
-            ensure_ascii=False,
-            sort_keys=True,
-            indent=2,
-            allow_nan=False,
-        )
-        + "`n",
-        encoding="utf-8",
-        newline="`n",
+    output.write_bytes(
+        report_json_bytes(report)
     )
 
     return report

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+import json
 from collections import Counter
 from pathlib import Path
 
@@ -272,6 +273,50 @@ def test_equivalence_report_boundary_is_not_scientific_execution():
         '"prospective_response_values_persisted":'
         in source
     )
+
+
+def test_report_json_bytes_is_utf8_lf_and_roundtrips(
+    tmp_path,
+):
+    payload = {
+        "z": "한글",
+        "a": 1,
+    }
+
+    raw = eq.report_json_bytes(
+        payload
+    )
+
+    assert raw.endswith(b"\n")
+    assert b"\r\n" not in raw
+
+    decoded = json.loads(
+        raw.decode("utf-8")
+    )
+    assert decoded == payload
+
+    output = (
+        tmp_path
+        / "report.json"
+    )
+    output.write_bytes(raw)
+
+    assert (
+        output.read_bytes()
+        == raw
+    )
+
+
+def test_runner_contains_no_powershell_backtick_newline_literal():
+    source = Path(
+        eq.__file__
+    ).read_text(
+        encoding="utf-8",
+    )
+
+    assert "`n" not in source
+    assert "write_text(" not in source
+    assert "write_bytes(" in source
 
 
 def test_no_training_or_backward_path_added():
