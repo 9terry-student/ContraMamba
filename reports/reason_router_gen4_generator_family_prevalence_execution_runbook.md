@@ -1032,32 +1032,226 @@ Failed run을 success artifact로 overwrite하지 않는다.
 
 # 24. 현재 즉시 다음 단계
 
-**현재 `b539ec1` code fix 이후 bounded XG2/XG4 CUDA equivalence는 아직 성공 재실행되지 않았다.**
+Bounded XG2/XG4 CPU-slow ↔ CUDA-fast baseline equivalence는 `r5`에서 성공했다.
 
-따라서 다음 authorized execution은:
-
-```text
-XG2 xg2_fact_001 CPU-slow vs CUDA-fast baseline-only gate
-+
-XG4 xg4_fact_001 CPU-slow vs CUDA-fast baseline-only gate
-```
-
-이다.
-
-아직 하지 말 것:
+Run identity:
 
 ```text
-1200-forward XG2 full baseline
-1200-forward XG4 full baseline
+RUN_NAME
+g4k-prev-xg2-xg4-baseline-cudaeq-e646fc9-r5
+
+EXECUTION_HEAD
+e646fc900d12b42621a6a58ee31eff255bb52bfd
+
+COMMAND_SHA256
+45738dfbed1a600d2fc52b5f714bc02cd5067bca26d3b8d9e4836c5c23d1f977
 ```
 
-bounded equivalence PASS + valid collect/import/freeze 전에는 full scientific baseline을 시작하지 않는다.
+Execution:
+
+```text
+EXIT_CODE = 0
+CONTRAMAMBA RUN PASS
+```
+
+XG2:
+
+```text
+source_pair_id = xg2_fact_001
+CPU forwards = 4
+GPU forwards = 4
+total = 8
+max_state_abs_diff = 9.93385910987854e-05
+max_geometry_abs_diff = 4.175181850918364e-06
+result = PASS_GENERATOR_FAMILY_PREVALENCE_BASELINE_FAST_CUDA_ONE_PAIR_EQUIVALENCE
+```
+
+XG4:
+
+```text
+source_pair_id = xg4_fact_001
+CPU forwards = 4
+GPU forwards = 4
+total = 8
+max_state_abs_diff = 1.5164725482463837e-05
+max_geometry_abs_diff = 5.191519691617741e-06
+result = PASS_GENERATOR_FAMILY_PREVALENCE_BASELINE_FAST_CUDA_ONE_PAIR_EQUIVALENCE
+```
+
+Both reports verified:
+
+```text
+baseline_only = true
+scientific_budget_forward_count = 0
+alignment_intervention_executed = false
+magnitude_intervention_executed = false
+response_endpoints_computed = false
+training_executed = false
+backward_executed = false
+task_heads_executed = false
+logits_read = false
+scientific_conclusion = null
+```
+
+Constructor exact-kernel routing:
+
+```text
+XG2 causal-conv / mamba routes = 48 / 48
+XG4 causal-conv / mamba routes = 48 / 48
+default Transformers constructor kernel loader = not called
+```
+
+This closes the bounded backend-equivalence gate for the authorized XG2/XG4
+baseline workload.
 
 ---
 
-# 25. New-chat exact first action
+# 25. Validated transport identity used by r5
 
-새 채팅 시작 시:
+Mamba:
+
+```text
+scientific revision
+c8ffc584c147878a6eb978ae0e8db4d116c93a8c
+
+transport revision
+a80a7604874b108585feb87096a0c86df2a1e5e3
+
+transport type
+kernel
+
+transport source
+kernel_repo_cache
+
+frozen .so SHA256
+dc4d76a6323b510e77cfb66b5aa7bb0086c8f5cba238002b9c20bc31ea706587
+```
+
+causal-conv1d:
+
+```text
+scientific revision
+f2651e776f66069cdcf842840db637583def1223
+
+transport revision
+02ab414d848bbee389d801f87b24fa536de60273
+
+transport type
+kernel
+
+transport source
+kernel_repo_cache
+
+frozen .so SHA256
+6b013d7b9a033bb9b0a2a714b26470e1aaba4af9bf1b3ec7442c2a53afb6b7b6
+```
+
+The transport commits are locators for exact frozen bytes only. They do not
+replace the historical scientific revisions.
+
+---
+
+# 26. r5 artifact identity
+
+Imported files:
+
+```text
+reports/reason_router_gen4_generator_family_prevalence_baseline_fast_cuda_one_pair_equivalence_e646fc9_r5/xg2/equivalence_report.json
+
+reports/reason_router_gen4_generator_family_prevalence_baseline_fast_cuda_one_pair_equivalence_e646fc9_r5/xg4/equivalence_report.json
+```
+
+Artifact SHA256:
+
+```text
+XG2
+1395b2ca9c20d501e21058250a972a7af5648b57d900b79d2cc04f960f5032fa
+
+XG4
+d3d18a90c44207654a39a01e6ed38bebc50b096e1b12c9bb55d70c0b4a10bf4d
+```
+
+Collector/import provenance:
+
+```text
+handoff ZIP SHA256
+0e86898ab8df1611ea059a49871f911a68e7398d4d906c6e3acae31c4c664791
+
+run log SHA256
+2cbb1dd03837eacea5582181c7e1937212478ba897c17c5562853c2542d5bfb0
+
+run meta SHA256
+f9336964f73d4d03c92a0bf8385d633bdef57b39360b25f1692a659f283a2be8
+
+VALIDATED = 2
+COPIED = 2
+IMPORT PASS
+```
+
+The two reports are provenance-valid imported artifacts.
+
+---
+
+# 27. Current four-way status
+
+```text
+1. code correctness
+PASS
+
+2. bounded execution success
+PASS
+
+3. artifact/provenance validity
+PASS
+
+4. generator-family prevalence scientific conclusion
+NOT YET EXECUTED
+```
+
+The bounded equivalence run is not a prevalence result.
+
+---
+
+# 28. Current execution authority after artifact freeze
+
+After the two imported r5 equivalence reports are committed/frozen, the next
+authorized scientific execution is:
+
+```text
+XG2 full baseline prevalence
+300 pairs × 4 baseline cells = 1200 forwards
+
+XG4 full baseline prevalence
+300 pairs × 4 baseline cells = 1200 forwards
+```
+
+No XG3 model forward.
+
+No intervention/response/training/backward.
+
+The scientific endpoints remain:
+
+```text
+n_LARGE
+n_SMALL
+p_LARGE
+VIABLE
+```
+
+with frozen threshold:
+
+```text
+T = 0.11228626366380845
+```
+
+Do not begin the full baseline execution before the imported r5 evidence is
+committed/frozen.
+
+---
+
+# 29. New-chat exact first action
+
+New chat:
 
 ```powershell
 Set-Location C:\g4k-cudaeq
@@ -1068,157 +1262,35 @@ $cm = "$HOME\.contramamba\cm.ps1"
 & $cm context
 ```
 
-출력을 붙인다.
+Then determine whether the r5 equivalence artifact freeze commit is already in
+HEAD history.
 
-ChatGPT는 다음을 확인한다.
+If yes, do **not** rerun the bounded equivalence gate. Proceed to the XG2/XG4
+full baseline-prevalence execution preparation.
 
-1. branch가 `gen4-k-xg1-cross-generator-replication`인지
-2. HEAD가 이 runbook 이후 expected current commit인지
-3. worktree clean인지
-4. `b539ec1` compatibility code가 ancestor인지
-5. newer execution artifact가 이미 생겼는지
-6. bounded equivalence가 이미 완료됐는지
-
-bounded gate가 아직이면 곧바로 그 실행 command를 만든다.
+If the reports are still only untracked/imported, freeze them first.
 
 ---
 
-# 26. Recommended next run naming
+# 30. Do not regress to earlier recovery paths
 
-이 runbook 작성 시점에 다음 성공 retry는 아직 실행되지 않았다.
-
-새 HEAD에 맞는 descriptive name 예:
+The following are closed historical infrastructure failures:
 
 ```text
-g4k-prev-xg2-xg4-baseline-cudaeq-<shortsha>-r3
+legacy model-repo revision lookup
+migrated wrapper single-path authentication
+Transformers constructor default kernel loader re-entry
 ```
 
-`r3`는 앞선 infrastructure retries와 구분하기 위한 suffix다.
+Do not rerun r1-r4.
 
-이미 registry에 같은 이름이 있으면 재사용하지 말고 다음 monotonic suffix를 사용한다.
+Do not re-provision scientific revisions as current kernel-repo revisions.
 
----
+Do not replace the exact frozen .so bytes with latest kernel binaries.
 
-# 27. Run command delivery 방식
+Do not execute XG3.
 
-ChatGPT가 긴 shell command를 `.txt`로 생성하는 방식을 권장한다.
-
-사용자:
-
-1. txt 다운로드
-2. SHA256 확인
-3. exact bytes를 clipboard
-4. `cm run save`
-5. `cm run`
-6. generated pinned cell 실행
-
-PowerShell template:
-
-```powershell
-$env:CONTRAMAMBA_REPO_ROOT = "C:\g4k-cudaeq"
-$cm = "$HOME\.contramamba\cm.ps1"
-
-$cmdFile = Join-Path $HOME "Downloads\<approved-command>.txt"
-$expectedSha = "<sha256>"
-
-$sha = (Get-FileHash -LiteralPath $cmdFile -Algorithm SHA256).Hash.ToLower()
-
-if ($sha -ne $expectedSha) {
-    throw "BLOCKED: command SHA mismatch"
-}
-
-[IO.File]::ReadAllText(
-    $cmdFile,
-    [Text.Encoding]::UTF8
-) | Set-Clipboard
-
-& $cm run save <run-name>
-& $cm run <run-name>
-```
-
----
-
-# 28. Kaggle state for next bounded run
-
-Before pinned run:
-
-- safe/fresh bootstrap as appropriate
-- exact new HEAD
-- clean `/kaggle/working/ContraMamba`
-- checkpoint available
-- model/tokenizer snapshot hashes verified
-- Internet ON if migrated kernels not cached
-- T4 GPU ON only immediately before CUDA run
-
-Execution command should provision/check:
-
-```text
-kernels==0.10.2
-```
-
-and then let the repo compatibility loader resolve exact frozen bytes.
-
----
-
-# 29. Expected bounded gate contract
-
-Per family report must show:
-
-```text
-result = PASS_GENERATOR_FAMILY_PREVALENCE_BASELINE_FAST_CUDA_ONE_PAIR_EQUIVALENCE
-
-cpu_model_forward_count = 4
-gpu_model_forward_count = 4
-total_model_forward_count = 8
-scientific_budget_forward_count = 0
-
-baseline_only = true
-alignment_intervention_executed = false
-magnitude_intervention_executed = false
-response_endpoints_computed = false
-
-training_executed = false
-backward_executed = false
-task_heads_executed = false
-logits_read = false
-
-scientific_conclusion = null
-```
-
-그리고 transport status:
-
-```text
-kernel_transport_identity_status
-= EXACT_FROZEN_BINARY_SHA256_MATCH
-```
-
----
-
-# 30. Successful bounded gate 이후
-
-성공만으로 full scientific execution을 시작하지 않는다.
-
-먼저:
-
-```powershell
-& $cm collect <run-name>
-```
-
-Kaggle collector 실행 → ZIP download.
-
-그 다음:
-
-```powershell
-& $cm import <handoff.zip>
-```
-
-`IMPORT PASS`.
-
-그 뒤 artifact hashes/provenance 검토.
-
-필요하면 result artifacts를 Git에 freeze.
-
-그 후에만 XG2/XG4 full baseline scientific execution authorization으로 이동.
+Do not start interventions/responses.
 
 ---
 
@@ -1321,24 +1393,38 @@ prevalence hypothesis confirmed
 
 ---
 
-# 35. Current code correctness status
+# 35. Current code / execution status
 
-As of `b539ec1`:
+As of execution HEAD:
 
 ```text
-STATIC_TRANSPORT_PROVENANCE_AUDIT = PASS
-51 tests = PASS
-commit/push = PASS
-worktree = clean
+e646fc900d12b42621a6a58ee31eff255bb52bfd
 ```
 
-아직 남은 것은 runtime bounded gate다.
+Code validation:
+
+```text
+STATIC_CONSTRUCTOR_KERNEL_ROUTER_AUDIT = PASS
+57 relevant regression tests = PASS
+commit/push = PASS
+```
+
+Bounded backend gate:
+
+```text
+r5 = PASS
+XG2 = PASS
+XG4 = PASS
+collect = PASS
+import = PASS
+```
+
+Imported equivalence reports are the only current untracked scientific-stage
+artifacts expected before the artifact-freeze commit.
 
 ---
 
 # 36. New-chat minimal handoff summary
-
-새 채팅에 이 부분만 보여줘도 된다.
 
 ```text
 Stage:
@@ -1347,46 +1433,76 @@ Gen4 × K Generator-Family Prevalence Transportability
 Branch:
 gen4-k-xg1-cross-generator-replication
 
-Code/provenance fix baseline:
-b539ec16cd1406457000e52648604c583ef34d5d
+Validated execution code HEAD:
+e646fc900d12b42621a6a58ee31eff255bb52bfd
 
 XG2:
-eligible, backend gate pending
+tokenizer eligible
+bounded CPU-slow ↔ CUDA-fast baseline equivalence PASS
+full 1200-forward baseline prevalence pending
 
 XG3:
 BLOCKED_TOKENIZER_ANCHOR_INELIGIBILITY
-NO MODEL FORWARD
+NO MODEL FORWARD EVER
 
 XG4:
-eligible, backend gate pending
+tokenizer eligible
+bounded CPU-slow ↔ CUDA-fast baseline equivalence PASS
+full 1200-forward baseline prevalence pending
 
-Next:
-run bounded baseline-only CPU-slow vs CUDA-fast equivalence
-for xg2_fact_001 and xg4_fact_001 through cm run provenance chain.
+Bounded gate run:
+g4k-prev-xg2-xg4-baseline-cudaeq-e646fc9-r5
+
+Command SHA256:
+45738dfbed1a600d2fc52b5f714bc02cd5067bca26d3b8d9e4836c5c23d1f977
+
+XG2 report SHA256:
+1395b2ca9c20d501e21058250a972a7af5648b57d900b79d2cc04f960f5032fa
+
+XG4 report SHA256:
+d3d18a90c44207654a39a01e6ed38bebc50b096e1b12c9bb55d70c0b4a10bf4d
+
+Handoff ZIP SHA256:
+0e86898ab8df1611ea059a49871f911a68e7398d4d906c6e3acae31c4c664791
+
+Collect:
+PASS
+
+Import:
+PASS, 2 validated / 2 copied
+
+Current next action:
+freeze the two imported equivalence reports plus this runbook update in Git.
+After that, prepare the authorized XG2/XG4 full baseline-prevalence execution.
 
 Do not:
-run full 1200-forward baseline yet.
-Do not execute XG3.
-Do not execute interventions/responses.
+rerun bounded equivalence
+execute XG3
+execute alignment/magnitude interventions
+compute response endpoints
+train/backward
+reinterpret backend equivalence as prevalence evidence
 
-Checkpoint:
+Checkpoint SHA256:
 1ff3fcf2ebd754ab6f9483d6a9982b9b04b9a4eb3357f9f8cdbe2b30399e7d2f
 
-Tokenizer rev:
+Tokenizer revision:
 40e5d2bd7452abb3ca8fadbafe9131ee0e2c2f37
 
-CUDA:
-T4 / torch 2.10.0+cu128 / CUDA 12.8 / kernels 0.10.2
+CUDA runtime:
+Tesla T4
+CUDA 12.8
+torch 2.10.0+cu128
+Transformers 5.0.0
+kernels 0.10.2
 
 Kernel scientific revisions:
-Mamba c8ffc584...
-Conv  f2651e77...
+Mamba c8ffc584c147878a6eb978ae0e8db4d116c93a8c
+causal-conv f2651e776f66069cdcf842840db637583def1223
 
-Important:
-those are legacy scientific revisions, NOT current kernel-repo transport revisions.
+Validated transport revisions used by r5:
+Mamba a80a7604874b108585feb87096a0c86df2a1e5e3
+causal-conv 02ab414d848bbee389d801f87b24fa536de60273
 
-Transport commits are whitelisted in:
-scripts/reason_router_gen4_generator_family_prevalence_kernel_compat.py
-
-Exact frozen .so SHA must match before import/model forward.
+Exact frozen binary SHA remains authoritative.
 ```
