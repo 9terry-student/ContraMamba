@@ -316,6 +316,80 @@ def test_both_historical_and_migrated_module_layouts_are_supported(
     assert resolved.transport_revision == transport
 
 
+def test_loaded_module_may_resolve_to_other_authorized_snapshot_wrapper(
+    monkeypatch,
+    tmp_path,
+):
+    spec = _spec()
+    transport = spec.transport_revisions[0]
+    snapshot = _make_snapshot(
+        tmp_path,
+        spec,
+        transport,
+        prefix="kernels",
+    )
+
+    variant = compat._variant_dir(snapshot)
+    direct_init = variant / "__init__.py"
+    direct_init.write_text("# direct synthetic\n", encoding="utf-8")
+
+    monkeypatch.setattr(compat, "_kernel_package_version", lambda: "0.10.2")
+    monkeypatch.setattr(compat, "_cache_roots", lambda: (tmp_path,))
+
+    selected = compat._select_module_init(snapshot, spec)
+    assert selected != direct_init
+
+    module = SimpleNamespace(
+        __file__=str(direct_init),
+        f1=lambda: None,
+        f2=lambda: None,
+    )
+
+    observed, resolved = compat.load_exact_module(
+        spec,
+        importer=lambda _name, _path: module,
+    )
+
+    assert observed is module
+    assert resolved.transport_revision == transport
+
+
+def test_loaded_module_outside_authorized_snapshot_wrappers_is_blocked(
+    monkeypatch,
+    tmp_path,
+):
+    spec = _spec()
+    transport = spec.transport_revisions[0]
+    _make_snapshot(
+        tmp_path,
+        spec,
+        transport,
+        prefix="kernels",
+    )
+
+    foreign = tmp_path / "foreign" / "__init__.py"
+    foreign.parent.mkdir(parents=True, exist_ok=True)
+    foreign.write_text("# foreign\n", encoding="utf-8")
+
+    monkeypatch.setattr(compat, "_kernel_package_version", lambda: "0.10.2")
+    monkeypatch.setattr(compat, "_cache_roots", lambda: (tmp_path,))
+
+    module = SimpleNamespace(
+        __file__=str(foreign),
+        f1=lambda: None,
+        f2=lambda: None,
+    )
+
+    with pytest.raises(
+        compat.KernelCompatibilityError,
+        match="TEST_MODULE_PATH",
+    ):
+        compat.load_exact_module(
+            spec,
+            importer=lambda _name, _path: module,
+        )
+
+
 def test_missing_function_surface_is_blocked(monkeypatch, tmp_path):
     spec = _spec()
     transport = spec.transport_revisions[0]

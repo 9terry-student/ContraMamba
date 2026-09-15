@@ -362,12 +362,30 @@ def load_exact_module(
         module_file is not None,
         f"{spec.label}_MODULE_FILE_MISSING",
     )
+
+    # A migrated kernel snapshot may expose both the historical package
+    # wrapper and a direct variant-level wrapper. kernels==0.10.2 imports
+    # through one exact snapshot path, but the loaded module can legitimately
+    # report either authorized wrapper as __file__. Authenticate the complete
+    # wrapper surface of the already-validated snapshot instead of forcing the
+    # preferred candidate selected before import.
+    allowed_module_paths = tuple(
+        candidate.resolve()
+        for candidate in _module_init_candidates(resolved.path, spec)
+        if candidate.is_file()
+    )
     require(
-        Path(module_file).resolve() == init_path.resolve(),
+        len(allowed_module_paths) >= 1,
+        f"{spec.label}_AUTHORIZED_MODULE_SURFACE_EMPTY",
+    )
+
+    observed_module_path = Path(module_file).resolve()
+    require(
+        observed_module_path in allowed_module_paths,
         (
             f"{spec.label}_MODULE_PATH:"
-            f"expected={init_path.resolve()}:"
-            f"observed={Path(module_file).resolve()}"
+            f"allowed={','.join(str(path) for path in allowed_module_paths)}:"
+            f"observed={observed_module_path}"
         ),
     )
 

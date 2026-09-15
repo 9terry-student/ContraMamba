@@ -911,6 +911,51 @@ Implicit credentials에 의존하지 않는 방향으로 교정.
 
 ---
 
+## Failure G — exact `.so` transport succeeded but single-wrapper path check blocked
+
+Observed after the migrated transport fix:
+
+```text
+MAMBA_MODULE_PATH:
+expected=<one authorized wrapper blob>
+observed=<another wrapper blob from the same migrated snapshot>
+```
+
+Before this failure:
+
+```text
+HEAD identity PASS
+frozen checkpoint/tokenizer/config hashes PASS
+runtime PASS
+XG2/XG4 input preflight PASS
+T4/CUDA gate PASS
+migrated kernel snapshot download succeeded
+exact frozen .so SHA validation succeeded
+```
+
+No scientific model forward had started.
+
+Root cause:
+
+the compatibility layer required `module.__file__` to equal one preferred
+wrapper candidate. Migrated kernel snapshots may expose both package-level and
+variant-level wrappers.
+
+Correct rule:
+
+```text
+module.__file__
+must resolve to one of the existing authorized wrapper candidates
+inside the exact authenticated snapshot
+```
+
+A wrapper path outside that surface remains a hard blocker.
+
+This is a transport/import-surface compatibility failure, not scientific
+backend-equivalence evidence.
+
+---
+
 ## Failure F — legacy scientific revision을 current kernel repo revision으로 잘못 해석
 
 `repo_type="kernel"`에:

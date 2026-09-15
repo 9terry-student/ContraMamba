@@ -402,6 +402,43 @@ causal-conv expected:
 
 ---
 
+# 11.1 Wrapper-path authentication after Hub migration
+
+`kernels==0.10.2` uses a path-derived unique module name and
+`importlib.util.spec_from_file_location(...)` when importing kernel wrappers.
+
+Migrated kernel snapshots can expose both:
+
+```text
+build/<variant>/<package>/__init__.py
+build/<variant>/__init__.py
+```
+
+The preferred pre-import wrapper path is not itself a frozen scientific
+identity. After import, `module.__file__` must resolve to **one of the wrapper
+files that actually exists in the exact authenticated snapshot**.
+
+Do not require `module.__file__` to equal only the single preferred wrapper
+candidate selected before import. That over-constrains migrated snapshots and
+previously caused a false `MAMBA_MODULE_PATH` blocker after the exact frozen
+`.so` had already been authenticated.
+
+Still fail closed if `module.__file__` resolves outside the authorized wrapper
+surface of the exact snapshot.
+
+The scientific identity remains:
+
+```text
+historical scientific revision
++ build variant
++ exact frozen .so SHA256
++ required callable surface
+```
+
+Wrapper-path acceptance does not relax any of those identities.
+
+---
+
 # 12. Current compatibility implementation
 
 Reference:
