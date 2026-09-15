@@ -14,6 +14,7 @@ import torch
 from scripts import reason_router_gen4_generator_family_prevalence_tokenizer_anchor_eligibility as eligibility
 from scripts import reason_router_gen4_xg1_fast_cuda_one_pair_equivalence as xg1_eq
 from scripts import reason_router_gen4_six_cell_tier2_inference_adapter as adapter
+from scripts import reason_router_gen4_generator_family_prevalence_kernel_compat as kernel_compat
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -843,7 +844,7 @@ def run_one_pair(
             parent.capture_branch = original_capture
         cpu_budget.assert_exact()
 
-        kernels = backend.load_exact_fast_kernels()
+        kernels = kernel_compat.load_exact_fast_kernels()
         gpu_model.to(torch.device("cuda:0"))
         gpu_model.eval()
         require(
