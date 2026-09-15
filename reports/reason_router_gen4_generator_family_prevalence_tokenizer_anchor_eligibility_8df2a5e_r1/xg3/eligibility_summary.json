@@ -1,0 +1,6046 @@
+{
+  "anchor_manifest_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "checkpoint_load_count": 0,
+  "complete_source_pair_count": 0,
+  "complete_source_pair_target": 300,
+  "eligible_anchor_counts": {
+    "A_IDENTITY": 0,
+    "A_NAME": 0
+  },
+  "evaluation_executed": false,
+  "family_key": "xg3",
+  "frozen_input": {
+    "row_count": 1800,
+    "rows_path": "data/reason_router_gen4_generator_family_prevalence_v1/xg3/synthetic_reason_router_six_cell.jsonl",
+    "rows_sha256": "70153d2fecfa6dcd6bb423e35ed6a7ef0da1e75153a6c64b64deecbfe06c4747",
+    "source_facts_path": "data/reason_router_gen4_generator_family_prevalence_v1/xg3/structured_source_facts.jsonl",
+    "source_facts_sha256": "ce6014efe1916fa872f97ae9893f5b373c6b8d2b4c06bf0f9f8f85d2d247d18f",
+    "source_pair_count": 300,
+    "structural_manifest_path": "data/reason_router_gen4_generator_family_prevalence_v1/xg3/structural_manifest.json",
+    "structural_manifest_sha256": "beafc6f78304ee2c14285b9df40ddc8ab1eaeac7394fdf35176d97829b2c54ce"
+  },
+  "gpu_used": false,
+  "model_forward_count": 0,
+  "phase": "GENERATOR_FAMILY_PREVALENCE_TOKENIZER_ANCHOR_ELIGIBILITY",
+  "primary_complete_pair_prefix_feasibility": "BLOCKED_TOKENIZER_ANCHOR_INELIGIBILITY",
+  "provenance": {
+    "branch": "gen4-k-xg1-cross-generator-replication",
+    "builder_blob": "4505acc99db0627733592694da290a007d281421",
+    "design_freeze_commit": "4b6f0c831ebc89f0e786e1eb526739c7c9c06413",
+    "head": "8df2a5e2cb72f8f4eed33c4996dfba594a1f9687",
+    "structural_freeze_commit": "341de2398e1c06fffa73ee323502f52972c2d58e",
+    "xg1_gate_blob": "6c98ce022ca134e385db28851fd364dc6daff423"
+  },
+  "required_anchor_counts": {
+    "A_IDENTITY": 1200,
+    "A_NAME": 600
+  },
+  "required_anchor_row_count": 1800,
+  "schema_version": "GEN4_PREVALENCE_TOKENIZER_ANCHOR_ELIGIBILITY_SUMMARY_V1",
+  "scientific_outcomes_observed": false,
+  "structural_anchor_topology_failure_count": 1200,
+  "structural_anchor_topology_failures": [
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_001",
+      "source_pair_id": "xg3_fact_001"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_001",
+      "source_pair_id": "xg3_fact_001"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_001",
+      "source_pair_id": "xg3_fact_001"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_001",
+      "source_pair_id": "xg3_fact_001"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_002",
+      "source_pair_id": "xg3_fact_002"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_002",
+      "source_pair_id": "xg3_fact_002"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_002",
+      "source_pair_id": "xg3_fact_002"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_002",
+      "source_pair_id": "xg3_fact_002"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_003",
+      "source_pair_id": "xg3_fact_003"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_003",
+      "source_pair_id": "xg3_fact_003"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_003",
+      "source_pair_id": "xg3_fact_003"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_003",
+      "source_pair_id": "xg3_fact_003"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_004",
+      "source_pair_id": "xg3_fact_004"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_004",
+      "source_pair_id": "xg3_fact_004"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_004",
+      "source_pair_id": "xg3_fact_004"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_004",
+      "source_pair_id": "xg3_fact_004"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_005",
+      "source_pair_id": "xg3_fact_005"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_005",
+      "source_pair_id": "xg3_fact_005"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_005",
+      "source_pair_id": "xg3_fact_005"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_005",
+      "source_pair_id": "xg3_fact_005"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_006",
+      "source_pair_id": "xg3_fact_006"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_006",
+      "source_pair_id": "xg3_fact_006"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_006",
+      "source_pair_id": "xg3_fact_006"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_006",
+      "source_pair_id": "xg3_fact_006"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_007",
+      "source_pair_id": "xg3_fact_007"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_007",
+      "source_pair_id": "xg3_fact_007"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_007",
+      "source_pair_id": "xg3_fact_007"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_007",
+      "source_pair_id": "xg3_fact_007"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_008",
+      "source_pair_id": "xg3_fact_008"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_008",
+      "source_pair_id": "xg3_fact_008"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_008",
+      "source_pair_id": "xg3_fact_008"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_008",
+      "source_pair_id": "xg3_fact_008"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_009",
+      "source_pair_id": "xg3_fact_009"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_009",
+      "source_pair_id": "xg3_fact_009"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_009",
+      "source_pair_id": "xg3_fact_009"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_009",
+      "source_pair_id": "xg3_fact_009"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_010",
+      "source_pair_id": "xg3_fact_010"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_010",
+      "source_pair_id": "xg3_fact_010"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_010",
+      "source_pair_id": "xg3_fact_010"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_010",
+      "source_pair_id": "xg3_fact_010"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_011",
+      "source_pair_id": "xg3_fact_011"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_011",
+      "source_pair_id": "xg3_fact_011"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_011",
+      "source_pair_id": "xg3_fact_011"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_011",
+      "source_pair_id": "xg3_fact_011"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_012",
+      "source_pair_id": "xg3_fact_012"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_012",
+      "source_pair_id": "xg3_fact_012"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_012",
+      "source_pair_id": "xg3_fact_012"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_012",
+      "source_pair_id": "xg3_fact_012"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_013",
+      "source_pair_id": "xg3_fact_013"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_013",
+      "source_pair_id": "xg3_fact_013"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_013",
+      "source_pair_id": "xg3_fact_013"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_013",
+      "source_pair_id": "xg3_fact_013"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_014",
+      "source_pair_id": "xg3_fact_014"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_014",
+      "source_pair_id": "xg3_fact_014"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_014",
+      "source_pair_id": "xg3_fact_014"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_014",
+      "source_pair_id": "xg3_fact_014"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_015",
+      "source_pair_id": "xg3_fact_015"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_015",
+      "source_pair_id": "xg3_fact_015"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_015",
+      "source_pair_id": "xg3_fact_015"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_015",
+      "source_pair_id": "xg3_fact_015"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_016",
+      "source_pair_id": "xg3_fact_016"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_016",
+      "source_pair_id": "xg3_fact_016"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_016",
+      "source_pair_id": "xg3_fact_016"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_016",
+      "source_pair_id": "xg3_fact_016"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_017",
+      "source_pair_id": "xg3_fact_017"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_017",
+      "source_pair_id": "xg3_fact_017"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_017",
+      "source_pair_id": "xg3_fact_017"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_017",
+      "source_pair_id": "xg3_fact_017"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_018",
+      "source_pair_id": "xg3_fact_018"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_018",
+      "source_pair_id": "xg3_fact_018"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_018",
+      "source_pair_id": "xg3_fact_018"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_018",
+      "source_pair_id": "xg3_fact_018"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_019",
+      "source_pair_id": "xg3_fact_019"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_019",
+      "source_pair_id": "xg3_fact_019"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_019",
+      "source_pair_id": "xg3_fact_019"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_019",
+      "source_pair_id": "xg3_fact_019"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_020",
+      "source_pair_id": "xg3_fact_020"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_020",
+      "source_pair_id": "xg3_fact_020"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_020",
+      "source_pair_id": "xg3_fact_020"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_020",
+      "source_pair_id": "xg3_fact_020"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_021",
+      "source_pair_id": "xg3_fact_021"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_021",
+      "source_pair_id": "xg3_fact_021"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_021",
+      "source_pair_id": "xg3_fact_021"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_021",
+      "source_pair_id": "xg3_fact_021"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_022",
+      "source_pair_id": "xg3_fact_022"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_022",
+      "source_pair_id": "xg3_fact_022"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_022",
+      "source_pair_id": "xg3_fact_022"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_022",
+      "source_pair_id": "xg3_fact_022"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_023",
+      "source_pair_id": "xg3_fact_023"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_023",
+      "source_pair_id": "xg3_fact_023"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_023",
+      "source_pair_id": "xg3_fact_023"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_023",
+      "source_pair_id": "xg3_fact_023"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_024",
+      "source_pair_id": "xg3_fact_024"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_024",
+      "source_pair_id": "xg3_fact_024"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_024",
+      "source_pair_id": "xg3_fact_024"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_024",
+      "source_pair_id": "xg3_fact_024"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_025",
+      "source_pair_id": "xg3_fact_025"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_025",
+      "source_pair_id": "xg3_fact_025"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_025",
+      "source_pair_id": "xg3_fact_025"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_025",
+      "source_pair_id": "xg3_fact_025"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_026",
+      "source_pair_id": "xg3_fact_026"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_026",
+      "source_pair_id": "xg3_fact_026"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_026",
+      "source_pair_id": "xg3_fact_026"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_026",
+      "source_pair_id": "xg3_fact_026"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_027",
+      "source_pair_id": "xg3_fact_027"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_027",
+      "source_pair_id": "xg3_fact_027"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_027",
+      "source_pair_id": "xg3_fact_027"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_027",
+      "source_pair_id": "xg3_fact_027"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_028",
+      "source_pair_id": "xg3_fact_028"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_028",
+      "source_pair_id": "xg3_fact_028"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_028",
+      "source_pair_id": "xg3_fact_028"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_028",
+      "source_pair_id": "xg3_fact_028"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_029",
+      "source_pair_id": "xg3_fact_029"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_029",
+      "source_pair_id": "xg3_fact_029"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_029",
+      "source_pair_id": "xg3_fact_029"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_029",
+      "source_pair_id": "xg3_fact_029"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_030",
+      "source_pair_id": "xg3_fact_030"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_030",
+      "source_pair_id": "xg3_fact_030"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_030",
+      "source_pair_id": "xg3_fact_030"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_030",
+      "source_pair_id": "xg3_fact_030"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_031",
+      "source_pair_id": "xg3_fact_031"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_031",
+      "source_pair_id": "xg3_fact_031"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_031",
+      "source_pair_id": "xg3_fact_031"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_031",
+      "source_pair_id": "xg3_fact_031"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_032",
+      "source_pair_id": "xg3_fact_032"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_032",
+      "source_pair_id": "xg3_fact_032"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_032",
+      "source_pair_id": "xg3_fact_032"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_032",
+      "source_pair_id": "xg3_fact_032"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_033",
+      "source_pair_id": "xg3_fact_033"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_033",
+      "source_pair_id": "xg3_fact_033"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_033",
+      "source_pair_id": "xg3_fact_033"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_033",
+      "source_pair_id": "xg3_fact_033"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_034",
+      "source_pair_id": "xg3_fact_034"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_034",
+      "source_pair_id": "xg3_fact_034"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_034",
+      "source_pair_id": "xg3_fact_034"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_034",
+      "source_pair_id": "xg3_fact_034"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_035",
+      "source_pair_id": "xg3_fact_035"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_035",
+      "source_pair_id": "xg3_fact_035"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_035",
+      "source_pair_id": "xg3_fact_035"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_035",
+      "source_pair_id": "xg3_fact_035"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_036",
+      "source_pair_id": "xg3_fact_036"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_036",
+      "source_pair_id": "xg3_fact_036"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_036",
+      "source_pair_id": "xg3_fact_036"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_036",
+      "source_pair_id": "xg3_fact_036"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_037",
+      "source_pair_id": "xg3_fact_037"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_037",
+      "source_pair_id": "xg3_fact_037"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_037",
+      "source_pair_id": "xg3_fact_037"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_037",
+      "source_pair_id": "xg3_fact_037"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_038",
+      "source_pair_id": "xg3_fact_038"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_038",
+      "source_pair_id": "xg3_fact_038"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_038",
+      "source_pair_id": "xg3_fact_038"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_038",
+      "source_pair_id": "xg3_fact_038"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_039",
+      "source_pair_id": "xg3_fact_039"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_039",
+      "source_pair_id": "xg3_fact_039"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_039",
+      "source_pair_id": "xg3_fact_039"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_039",
+      "source_pair_id": "xg3_fact_039"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_040",
+      "source_pair_id": "xg3_fact_040"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_040",
+      "source_pair_id": "xg3_fact_040"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_040",
+      "source_pair_id": "xg3_fact_040"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_040",
+      "source_pair_id": "xg3_fact_040"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_041",
+      "source_pair_id": "xg3_fact_041"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_041",
+      "source_pair_id": "xg3_fact_041"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_041",
+      "source_pair_id": "xg3_fact_041"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_041",
+      "source_pair_id": "xg3_fact_041"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_042",
+      "source_pair_id": "xg3_fact_042"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_042",
+      "source_pair_id": "xg3_fact_042"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_042",
+      "source_pair_id": "xg3_fact_042"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_042",
+      "source_pair_id": "xg3_fact_042"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_043",
+      "source_pair_id": "xg3_fact_043"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_043",
+      "source_pair_id": "xg3_fact_043"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_043",
+      "source_pair_id": "xg3_fact_043"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_043",
+      "source_pair_id": "xg3_fact_043"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_044",
+      "source_pair_id": "xg3_fact_044"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_044",
+      "source_pair_id": "xg3_fact_044"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_044",
+      "source_pair_id": "xg3_fact_044"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_044",
+      "source_pair_id": "xg3_fact_044"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_045",
+      "source_pair_id": "xg3_fact_045"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_045",
+      "source_pair_id": "xg3_fact_045"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_045",
+      "source_pair_id": "xg3_fact_045"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_045",
+      "source_pair_id": "xg3_fact_045"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_046",
+      "source_pair_id": "xg3_fact_046"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_046",
+      "source_pair_id": "xg3_fact_046"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_046",
+      "source_pair_id": "xg3_fact_046"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_046",
+      "source_pair_id": "xg3_fact_046"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_047",
+      "source_pair_id": "xg3_fact_047"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_047",
+      "source_pair_id": "xg3_fact_047"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_047",
+      "source_pair_id": "xg3_fact_047"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_047",
+      "source_pair_id": "xg3_fact_047"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_048",
+      "source_pair_id": "xg3_fact_048"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_048",
+      "source_pair_id": "xg3_fact_048"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_048",
+      "source_pair_id": "xg3_fact_048"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_048",
+      "source_pair_id": "xg3_fact_048"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_049",
+      "source_pair_id": "xg3_fact_049"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_049",
+      "source_pair_id": "xg3_fact_049"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_049",
+      "source_pair_id": "xg3_fact_049"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_049",
+      "source_pair_id": "xg3_fact_049"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_050",
+      "source_pair_id": "xg3_fact_050"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_050",
+      "source_pair_id": "xg3_fact_050"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_050",
+      "source_pair_id": "xg3_fact_050"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_050",
+      "source_pair_id": "xg3_fact_050"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_051",
+      "source_pair_id": "xg3_fact_051"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_051",
+      "source_pair_id": "xg3_fact_051"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_051",
+      "source_pair_id": "xg3_fact_051"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_051",
+      "source_pair_id": "xg3_fact_051"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_052",
+      "source_pair_id": "xg3_fact_052"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_052",
+      "source_pair_id": "xg3_fact_052"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_052",
+      "source_pair_id": "xg3_fact_052"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_052",
+      "source_pair_id": "xg3_fact_052"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_053",
+      "source_pair_id": "xg3_fact_053"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_053",
+      "source_pair_id": "xg3_fact_053"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_053",
+      "source_pair_id": "xg3_fact_053"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_053",
+      "source_pair_id": "xg3_fact_053"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_054",
+      "source_pair_id": "xg3_fact_054"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_054",
+      "source_pair_id": "xg3_fact_054"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_054",
+      "source_pair_id": "xg3_fact_054"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_054",
+      "source_pair_id": "xg3_fact_054"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_055",
+      "source_pair_id": "xg3_fact_055"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_055",
+      "source_pair_id": "xg3_fact_055"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_055",
+      "source_pair_id": "xg3_fact_055"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_055",
+      "source_pair_id": "xg3_fact_055"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_056",
+      "source_pair_id": "xg3_fact_056"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_056",
+      "source_pair_id": "xg3_fact_056"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_056",
+      "source_pair_id": "xg3_fact_056"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_056",
+      "source_pair_id": "xg3_fact_056"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_057",
+      "source_pair_id": "xg3_fact_057"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_057",
+      "source_pair_id": "xg3_fact_057"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_057",
+      "source_pair_id": "xg3_fact_057"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_057",
+      "source_pair_id": "xg3_fact_057"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_058",
+      "source_pair_id": "xg3_fact_058"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_058",
+      "source_pair_id": "xg3_fact_058"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_058",
+      "source_pair_id": "xg3_fact_058"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_058",
+      "source_pair_id": "xg3_fact_058"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_059",
+      "source_pair_id": "xg3_fact_059"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_059",
+      "source_pair_id": "xg3_fact_059"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_059",
+      "source_pair_id": "xg3_fact_059"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_059",
+      "source_pair_id": "xg3_fact_059"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_060",
+      "source_pair_id": "xg3_fact_060"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_060",
+      "source_pair_id": "xg3_fact_060"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_060",
+      "source_pair_id": "xg3_fact_060"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_060",
+      "source_pair_id": "xg3_fact_060"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_061",
+      "source_pair_id": "xg3_fact_061"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_061",
+      "source_pair_id": "xg3_fact_061"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_061",
+      "source_pair_id": "xg3_fact_061"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_061",
+      "source_pair_id": "xg3_fact_061"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_062",
+      "source_pair_id": "xg3_fact_062"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_062",
+      "source_pair_id": "xg3_fact_062"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_062",
+      "source_pair_id": "xg3_fact_062"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_062",
+      "source_pair_id": "xg3_fact_062"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_063",
+      "source_pair_id": "xg3_fact_063"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_063",
+      "source_pair_id": "xg3_fact_063"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_063",
+      "source_pair_id": "xg3_fact_063"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_063",
+      "source_pair_id": "xg3_fact_063"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_064",
+      "source_pair_id": "xg3_fact_064"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_064",
+      "source_pair_id": "xg3_fact_064"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_064",
+      "source_pair_id": "xg3_fact_064"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_064",
+      "source_pair_id": "xg3_fact_064"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_065",
+      "source_pair_id": "xg3_fact_065"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_065",
+      "source_pair_id": "xg3_fact_065"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_065",
+      "source_pair_id": "xg3_fact_065"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_065",
+      "source_pair_id": "xg3_fact_065"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_066",
+      "source_pair_id": "xg3_fact_066"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_066",
+      "source_pair_id": "xg3_fact_066"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_066",
+      "source_pair_id": "xg3_fact_066"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_066",
+      "source_pair_id": "xg3_fact_066"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_067",
+      "source_pair_id": "xg3_fact_067"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_067",
+      "source_pair_id": "xg3_fact_067"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_067",
+      "source_pair_id": "xg3_fact_067"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_067",
+      "source_pair_id": "xg3_fact_067"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_068",
+      "source_pair_id": "xg3_fact_068"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_068",
+      "source_pair_id": "xg3_fact_068"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_068",
+      "source_pair_id": "xg3_fact_068"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_068",
+      "source_pair_id": "xg3_fact_068"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_069",
+      "source_pair_id": "xg3_fact_069"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_069",
+      "source_pair_id": "xg3_fact_069"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_069",
+      "source_pair_id": "xg3_fact_069"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_069",
+      "source_pair_id": "xg3_fact_069"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_070",
+      "source_pair_id": "xg3_fact_070"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_070",
+      "source_pair_id": "xg3_fact_070"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_070",
+      "source_pair_id": "xg3_fact_070"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_070",
+      "source_pair_id": "xg3_fact_070"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_071",
+      "source_pair_id": "xg3_fact_071"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_071",
+      "source_pair_id": "xg3_fact_071"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_071",
+      "source_pair_id": "xg3_fact_071"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_071",
+      "source_pair_id": "xg3_fact_071"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_072",
+      "source_pair_id": "xg3_fact_072"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_072",
+      "source_pair_id": "xg3_fact_072"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_072",
+      "source_pair_id": "xg3_fact_072"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_072",
+      "source_pair_id": "xg3_fact_072"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_073",
+      "source_pair_id": "xg3_fact_073"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_073",
+      "source_pair_id": "xg3_fact_073"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_073",
+      "source_pair_id": "xg3_fact_073"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_073",
+      "source_pair_id": "xg3_fact_073"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_074",
+      "source_pair_id": "xg3_fact_074"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_074",
+      "source_pair_id": "xg3_fact_074"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_074",
+      "source_pair_id": "xg3_fact_074"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_074",
+      "source_pair_id": "xg3_fact_074"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_075",
+      "source_pair_id": "xg3_fact_075"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_075",
+      "source_pair_id": "xg3_fact_075"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_075",
+      "source_pair_id": "xg3_fact_075"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_075",
+      "source_pair_id": "xg3_fact_075"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_076",
+      "source_pair_id": "xg3_fact_076"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_076",
+      "source_pair_id": "xg3_fact_076"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_076",
+      "source_pair_id": "xg3_fact_076"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_076",
+      "source_pair_id": "xg3_fact_076"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_077",
+      "source_pair_id": "xg3_fact_077"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_077",
+      "source_pair_id": "xg3_fact_077"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_077",
+      "source_pair_id": "xg3_fact_077"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_077",
+      "source_pair_id": "xg3_fact_077"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_078",
+      "source_pair_id": "xg3_fact_078"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_078",
+      "source_pair_id": "xg3_fact_078"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_078",
+      "source_pair_id": "xg3_fact_078"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_078",
+      "source_pair_id": "xg3_fact_078"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_079",
+      "source_pair_id": "xg3_fact_079"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_079",
+      "source_pair_id": "xg3_fact_079"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_079",
+      "source_pair_id": "xg3_fact_079"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_079",
+      "source_pair_id": "xg3_fact_079"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_080",
+      "source_pair_id": "xg3_fact_080"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_080",
+      "source_pair_id": "xg3_fact_080"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_080",
+      "source_pair_id": "xg3_fact_080"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_080",
+      "source_pair_id": "xg3_fact_080"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_081",
+      "source_pair_id": "xg3_fact_081"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_081",
+      "source_pair_id": "xg3_fact_081"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_081",
+      "source_pair_id": "xg3_fact_081"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_081",
+      "source_pair_id": "xg3_fact_081"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_082",
+      "source_pair_id": "xg3_fact_082"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_082",
+      "source_pair_id": "xg3_fact_082"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_082",
+      "source_pair_id": "xg3_fact_082"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_082",
+      "source_pair_id": "xg3_fact_082"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_083",
+      "source_pair_id": "xg3_fact_083"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_083",
+      "source_pair_id": "xg3_fact_083"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_083",
+      "source_pair_id": "xg3_fact_083"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_083",
+      "source_pair_id": "xg3_fact_083"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_084",
+      "source_pair_id": "xg3_fact_084"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_084",
+      "source_pair_id": "xg3_fact_084"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_084",
+      "source_pair_id": "xg3_fact_084"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_084",
+      "source_pair_id": "xg3_fact_084"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_085",
+      "source_pair_id": "xg3_fact_085"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_085",
+      "source_pair_id": "xg3_fact_085"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_085",
+      "source_pair_id": "xg3_fact_085"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_085",
+      "source_pair_id": "xg3_fact_085"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_086",
+      "source_pair_id": "xg3_fact_086"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_086",
+      "source_pair_id": "xg3_fact_086"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_086",
+      "source_pair_id": "xg3_fact_086"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_086",
+      "source_pair_id": "xg3_fact_086"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_087",
+      "source_pair_id": "xg3_fact_087"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_087",
+      "source_pair_id": "xg3_fact_087"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_087",
+      "source_pair_id": "xg3_fact_087"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_087",
+      "source_pair_id": "xg3_fact_087"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_088",
+      "source_pair_id": "xg3_fact_088"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_088",
+      "source_pair_id": "xg3_fact_088"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_088",
+      "source_pair_id": "xg3_fact_088"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_088",
+      "source_pair_id": "xg3_fact_088"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_089",
+      "source_pair_id": "xg3_fact_089"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_089",
+      "source_pair_id": "xg3_fact_089"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_089",
+      "source_pair_id": "xg3_fact_089"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_089",
+      "source_pair_id": "xg3_fact_089"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_090",
+      "source_pair_id": "xg3_fact_090"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_090",
+      "source_pair_id": "xg3_fact_090"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_090",
+      "source_pair_id": "xg3_fact_090"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_090",
+      "source_pair_id": "xg3_fact_090"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_091",
+      "source_pair_id": "xg3_fact_091"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_091",
+      "source_pair_id": "xg3_fact_091"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_091",
+      "source_pair_id": "xg3_fact_091"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_091",
+      "source_pair_id": "xg3_fact_091"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_092",
+      "source_pair_id": "xg3_fact_092"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_092",
+      "source_pair_id": "xg3_fact_092"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_092",
+      "source_pair_id": "xg3_fact_092"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_092",
+      "source_pair_id": "xg3_fact_092"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_093",
+      "source_pair_id": "xg3_fact_093"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_093",
+      "source_pair_id": "xg3_fact_093"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_093",
+      "source_pair_id": "xg3_fact_093"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_093",
+      "source_pair_id": "xg3_fact_093"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_094",
+      "source_pair_id": "xg3_fact_094"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_094",
+      "source_pair_id": "xg3_fact_094"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_094",
+      "source_pair_id": "xg3_fact_094"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_094",
+      "source_pair_id": "xg3_fact_094"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_095",
+      "source_pair_id": "xg3_fact_095"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_095",
+      "source_pair_id": "xg3_fact_095"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_095",
+      "source_pair_id": "xg3_fact_095"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_095",
+      "source_pair_id": "xg3_fact_095"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_096",
+      "source_pair_id": "xg3_fact_096"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_096",
+      "source_pair_id": "xg3_fact_096"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_096",
+      "source_pair_id": "xg3_fact_096"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_096",
+      "source_pair_id": "xg3_fact_096"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_097",
+      "source_pair_id": "xg3_fact_097"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_097",
+      "source_pair_id": "xg3_fact_097"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_097",
+      "source_pair_id": "xg3_fact_097"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_097",
+      "source_pair_id": "xg3_fact_097"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_098",
+      "source_pair_id": "xg3_fact_098"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_098",
+      "source_pair_id": "xg3_fact_098"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_098",
+      "source_pair_id": "xg3_fact_098"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_098",
+      "source_pair_id": "xg3_fact_098"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_099",
+      "source_pair_id": "xg3_fact_099"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_099",
+      "source_pair_id": "xg3_fact_099"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_099",
+      "source_pair_id": "xg3_fact_099"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_099",
+      "source_pair_id": "xg3_fact_099"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_100",
+      "source_pair_id": "xg3_fact_100"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_100",
+      "source_pair_id": "xg3_fact_100"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_100",
+      "source_pair_id": "xg3_fact_100"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_100",
+      "source_pair_id": "xg3_fact_100"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_101",
+      "source_pair_id": "xg3_fact_101"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_101",
+      "source_pair_id": "xg3_fact_101"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_101",
+      "source_pair_id": "xg3_fact_101"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_101",
+      "source_pair_id": "xg3_fact_101"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_102",
+      "source_pair_id": "xg3_fact_102"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_102",
+      "source_pair_id": "xg3_fact_102"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_102",
+      "source_pair_id": "xg3_fact_102"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_102",
+      "source_pair_id": "xg3_fact_102"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_103",
+      "source_pair_id": "xg3_fact_103"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_103",
+      "source_pair_id": "xg3_fact_103"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_103",
+      "source_pair_id": "xg3_fact_103"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_103",
+      "source_pair_id": "xg3_fact_103"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_104",
+      "source_pair_id": "xg3_fact_104"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_104",
+      "source_pair_id": "xg3_fact_104"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_104",
+      "source_pair_id": "xg3_fact_104"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_104",
+      "source_pair_id": "xg3_fact_104"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_105",
+      "source_pair_id": "xg3_fact_105"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_105",
+      "source_pair_id": "xg3_fact_105"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_105",
+      "source_pair_id": "xg3_fact_105"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_105",
+      "source_pair_id": "xg3_fact_105"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_106",
+      "source_pair_id": "xg3_fact_106"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_106",
+      "source_pair_id": "xg3_fact_106"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_106",
+      "source_pair_id": "xg3_fact_106"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_106",
+      "source_pair_id": "xg3_fact_106"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_107",
+      "source_pair_id": "xg3_fact_107"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_107",
+      "source_pair_id": "xg3_fact_107"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_107",
+      "source_pair_id": "xg3_fact_107"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_107",
+      "source_pair_id": "xg3_fact_107"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_108",
+      "source_pair_id": "xg3_fact_108"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_108",
+      "source_pair_id": "xg3_fact_108"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_108",
+      "source_pair_id": "xg3_fact_108"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_108",
+      "source_pair_id": "xg3_fact_108"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_109",
+      "source_pair_id": "xg3_fact_109"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_109",
+      "source_pair_id": "xg3_fact_109"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_109",
+      "source_pair_id": "xg3_fact_109"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_109",
+      "source_pair_id": "xg3_fact_109"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_110",
+      "source_pair_id": "xg3_fact_110"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_110",
+      "source_pair_id": "xg3_fact_110"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_110",
+      "source_pair_id": "xg3_fact_110"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_110",
+      "source_pair_id": "xg3_fact_110"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_111",
+      "source_pair_id": "xg3_fact_111"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_111",
+      "source_pair_id": "xg3_fact_111"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_111",
+      "source_pair_id": "xg3_fact_111"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_111",
+      "source_pair_id": "xg3_fact_111"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_112",
+      "source_pair_id": "xg3_fact_112"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_112",
+      "source_pair_id": "xg3_fact_112"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_112",
+      "source_pair_id": "xg3_fact_112"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_112",
+      "source_pair_id": "xg3_fact_112"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_113",
+      "source_pair_id": "xg3_fact_113"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_113",
+      "source_pair_id": "xg3_fact_113"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_113",
+      "source_pair_id": "xg3_fact_113"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_113",
+      "source_pair_id": "xg3_fact_113"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_114",
+      "source_pair_id": "xg3_fact_114"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_114",
+      "source_pair_id": "xg3_fact_114"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_114",
+      "source_pair_id": "xg3_fact_114"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_114",
+      "source_pair_id": "xg3_fact_114"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_115",
+      "source_pair_id": "xg3_fact_115"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_115",
+      "source_pair_id": "xg3_fact_115"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_115",
+      "source_pair_id": "xg3_fact_115"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_115",
+      "source_pair_id": "xg3_fact_115"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_116",
+      "source_pair_id": "xg3_fact_116"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_116",
+      "source_pair_id": "xg3_fact_116"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_116",
+      "source_pair_id": "xg3_fact_116"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_116",
+      "source_pair_id": "xg3_fact_116"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_117",
+      "source_pair_id": "xg3_fact_117"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_117",
+      "source_pair_id": "xg3_fact_117"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_117",
+      "source_pair_id": "xg3_fact_117"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_117",
+      "source_pair_id": "xg3_fact_117"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_118",
+      "source_pair_id": "xg3_fact_118"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_118",
+      "source_pair_id": "xg3_fact_118"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_118",
+      "source_pair_id": "xg3_fact_118"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_118",
+      "source_pair_id": "xg3_fact_118"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_119",
+      "source_pair_id": "xg3_fact_119"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_119",
+      "source_pair_id": "xg3_fact_119"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_119",
+      "source_pair_id": "xg3_fact_119"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_119",
+      "source_pair_id": "xg3_fact_119"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_120",
+      "source_pair_id": "xg3_fact_120"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_120",
+      "source_pair_id": "xg3_fact_120"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_120",
+      "source_pair_id": "xg3_fact_120"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_120",
+      "source_pair_id": "xg3_fact_120"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_121",
+      "source_pair_id": "xg3_fact_121"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_121",
+      "source_pair_id": "xg3_fact_121"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_121",
+      "source_pair_id": "xg3_fact_121"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_121",
+      "source_pair_id": "xg3_fact_121"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_122",
+      "source_pair_id": "xg3_fact_122"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_122",
+      "source_pair_id": "xg3_fact_122"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_122",
+      "source_pair_id": "xg3_fact_122"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_122",
+      "source_pair_id": "xg3_fact_122"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_123",
+      "source_pair_id": "xg3_fact_123"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_123",
+      "source_pair_id": "xg3_fact_123"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_123",
+      "source_pair_id": "xg3_fact_123"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_123",
+      "source_pair_id": "xg3_fact_123"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_124",
+      "source_pair_id": "xg3_fact_124"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_124",
+      "source_pair_id": "xg3_fact_124"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_124",
+      "source_pair_id": "xg3_fact_124"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_124",
+      "source_pair_id": "xg3_fact_124"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_125",
+      "source_pair_id": "xg3_fact_125"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_125",
+      "source_pair_id": "xg3_fact_125"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_125",
+      "source_pair_id": "xg3_fact_125"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_125",
+      "source_pair_id": "xg3_fact_125"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_126",
+      "source_pair_id": "xg3_fact_126"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_126",
+      "source_pair_id": "xg3_fact_126"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_126",
+      "source_pair_id": "xg3_fact_126"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_126",
+      "source_pair_id": "xg3_fact_126"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_127",
+      "source_pair_id": "xg3_fact_127"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_127",
+      "source_pair_id": "xg3_fact_127"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_127",
+      "source_pair_id": "xg3_fact_127"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_127",
+      "source_pair_id": "xg3_fact_127"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_128",
+      "source_pair_id": "xg3_fact_128"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_128",
+      "source_pair_id": "xg3_fact_128"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_128",
+      "source_pair_id": "xg3_fact_128"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_128",
+      "source_pair_id": "xg3_fact_128"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_129",
+      "source_pair_id": "xg3_fact_129"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_129",
+      "source_pair_id": "xg3_fact_129"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_129",
+      "source_pair_id": "xg3_fact_129"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_129",
+      "source_pair_id": "xg3_fact_129"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_130",
+      "source_pair_id": "xg3_fact_130"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_130",
+      "source_pair_id": "xg3_fact_130"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_130",
+      "source_pair_id": "xg3_fact_130"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_130",
+      "source_pair_id": "xg3_fact_130"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_131",
+      "source_pair_id": "xg3_fact_131"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_131",
+      "source_pair_id": "xg3_fact_131"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_131",
+      "source_pair_id": "xg3_fact_131"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_131",
+      "source_pair_id": "xg3_fact_131"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_132",
+      "source_pair_id": "xg3_fact_132"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_132",
+      "source_pair_id": "xg3_fact_132"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_132",
+      "source_pair_id": "xg3_fact_132"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_132",
+      "source_pair_id": "xg3_fact_132"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_133",
+      "source_pair_id": "xg3_fact_133"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_133",
+      "source_pair_id": "xg3_fact_133"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_133",
+      "source_pair_id": "xg3_fact_133"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_133",
+      "source_pair_id": "xg3_fact_133"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_134",
+      "source_pair_id": "xg3_fact_134"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_134",
+      "source_pair_id": "xg3_fact_134"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_134",
+      "source_pair_id": "xg3_fact_134"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_134",
+      "source_pair_id": "xg3_fact_134"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_135",
+      "source_pair_id": "xg3_fact_135"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_135",
+      "source_pair_id": "xg3_fact_135"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_135",
+      "source_pair_id": "xg3_fact_135"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_135",
+      "source_pair_id": "xg3_fact_135"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_136",
+      "source_pair_id": "xg3_fact_136"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_136",
+      "source_pair_id": "xg3_fact_136"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_136",
+      "source_pair_id": "xg3_fact_136"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_136",
+      "source_pair_id": "xg3_fact_136"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_137",
+      "source_pair_id": "xg3_fact_137"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_137",
+      "source_pair_id": "xg3_fact_137"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_137",
+      "source_pair_id": "xg3_fact_137"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_137",
+      "source_pair_id": "xg3_fact_137"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_138",
+      "source_pair_id": "xg3_fact_138"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_138",
+      "source_pair_id": "xg3_fact_138"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_138",
+      "source_pair_id": "xg3_fact_138"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_138",
+      "source_pair_id": "xg3_fact_138"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_139",
+      "source_pair_id": "xg3_fact_139"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_139",
+      "source_pair_id": "xg3_fact_139"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_139",
+      "source_pair_id": "xg3_fact_139"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_139",
+      "source_pair_id": "xg3_fact_139"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_140",
+      "source_pair_id": "xg3_fact_140"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_140",
+      "source_pair_id": "xg3_fact_140"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_140",
+      "source_pair_id": "xg3_fact_140"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_140",
+      "source_pair_id": "xg3_fact_140"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_141",
+      "source_pair_id": "xg3_fact_141"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_141",
+      "source_pair_id": "xg3_fact_141"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_141",
+      "source_pair_id": "xg3_fact_141"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_141",
+      "source_pair_id": "xg3_fact_141"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_142",
+      "source_pair_id": "xg3_fact_142"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_142",
+      "source_pair_id": "xg3_fact_142"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_142",
+      "source_pair_id": "xg3_fact_142"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_142",
+      "source_pair_id": "xg3_fact_142"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_143",
+      "source_pair_id": "xg3_fact_143"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_143",
+      "source_pair_id": "xg3_fact_143"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_143",
+      "source_pair_id": "xg3_fact_143"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_143",
+      "source_pair_id": "xg3_fact_143"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_144",
+      "source_pair_id": "xg3_fact_144"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_144",
+      "source_pair_id": "xg3_fact_144"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_144",
+      "source_pair_id": "xg3_fact_144"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_144",
+      "source_pair_id": "xg3_fact_144"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_145",
+      "source_pair_id": "xg3_fact_145"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_145",
+      "source_pair_id": "xg3_fact_145"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_145",
+      "source_pair_id": "xg3_fact_145"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_145",
+      "source_pair_id": "xg3_fact_145"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_146",
+      "source_pair_id": "xg3_fact_146"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_146",
+      "source_pair_id": "xg3_fact_146"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_146",
+      "source_pair_id": "xg3_fact_146"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_146",
+      "source_pair_id": "xg3_fact_146"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_147",
+      "source_pair_id": "xg3_fact_147"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_147",
+      "source_pair_id": "xg3_fact_147"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_147",
+      "source_pair_id": "xg3_fact_147"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_147",
+      "source_pair_id": "xg3_fact_147"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_148",
+      "source_pair_id": "xg3_fact_148"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_148",
+      "source_pair_id": "xg3_fact_148"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_148",
+      "source_pair_id": "xg3_fact_148"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_148",
+      "source_pair_id": "xg3_fact_148"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_149",
+      "source_pair_id": "xg3_fact_149"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_149",
+      "source_pair_id": "xg3_fact_149"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_149",
+      "source_pair_id": "xg3_fact_149"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_149",
+      "source_pair_id": "xg3_fact_149"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_150",
+      "source_pair_id": "xg3_fact_150"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_150",
+      "source_pair_id": "xg3_fact_150"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_150",
+      "source_pair_id": "xg3_fact_150"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_150",
+      "source_pair_id": "xg3_fact_150"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_151",
+      "source_pair_id": "xg3_fact_151"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_151",
+      "source_pair_id": "xg3_fact_151"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_151",
+      "source_pair_id": "xg3_fact_151"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_151",
+      "source_pair_id": "xg3_fact_151"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_152",
+      "source_pair_id": "xg3_fact_152"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_152",
+      "source_pair_id": "xg3_fact_152"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_152",
+      "source_pair_id": "xg3_fact_152"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_152",
+      "source_pair_id": "xg3_fact_152"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_153",
+      "source_pair_id": "xg3_fact_153"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_153",
+      "source_pair_id": "xg3_fact_153"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_153",
+      "source_pair_id": "xg3_fact_153"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_153",
+      "source_pair_id": "xg3_fact_153"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_154",
+      "source_pair_id": "xg3_fact_154"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_154",
+      "source_pair_id": "xg3_fact_154"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_154",
+      "source_pair_id": "xg3_fact_154"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_154",
+      "source_pair_id": "xg3_fact_154"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_155",
+      "source_pair_id": "xg3_fact_155"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_155",
+      "source_pair_id": "xg3_fact_155"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_155",
+      "source_pair_id": "xg3_fact_155"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_155",
+      "source_pair_id": "xg3_fact_155"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_156",
+      "source_pair_id": "xg3_fact_156"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_156",
+      "source_pair_id": "xg3_fact_156"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_156",
+      "source_pair_id": "xg3_fact_156"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_156",
+      "source_pair_id": "xg3_fact_156"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_157",
+      "source_pair_id": "xg3_fact_157"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_157",
+      "source_pair_id": "xg3_fact_157"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_157",
+      "source_pair_id": "xg3_fact_157"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_157",
+      "source_pair_id": "xg3_fact_157"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_158",
+      "source_pair_id": "xg3_fact_158"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_158",
+      "source_pair_id": "xg3_fact_158"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_158",
+      "source_pair_id": "xg3_fact_158"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_158",
+      "source_pair_id": "xg3_fact_158"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_159",
+      "source_pair_id": "xg3_fact_159"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_159",
+      "source_pair_id": "xg3_fact_159"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_159",
+      "source_pair_id": "xg3_fact_159"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_159",
+      "source_pair_id": "xg3_fact_159"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_160",
+      "source_pair_id": "xg3_fact_160"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_160",
+      "source_pair_id": "xg3_fact_160"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_160",
+      "source_pair_id": "xg3_fact_160"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_160",
+      "source_pair_id": "xg3_fact_160"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_161",
+      "source_pair_id": "xg3_fact_161"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_161",
+      "source_pair_id": "xg3_fact_161"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_161",
+      "source_pair_id": "xg3_fact_161"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_161",
+      "source_pair_id": "xg3_fact_161"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_162",
+      "source_pair_id": "xg3_fact_162"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_162",
+      "source_pair_id": "xg3_fact_162"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_162",
+      "source_pair_id": "xg3_fact_162"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_162",
+      "source_pair_id": "xg3_fact_162"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_163",
+      "source_pair_id": "xg3_fact_163"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_163",
+      "source_pair_id": "xg3_fact_163"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_163",
+      "source_pair_id": "xg3_fact_163"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_163",
+      "source_pair_id": "xg3_fact_163"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_164",
+      "source_pair_id": "xg3_fact_164"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_164",
+      "source_pair_id": "xg3_fact_164"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_164",
+      "source_pair_id": "xg3_fact_164"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_164",
+      "source_pair_id": "xg3_fact_164"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_165",
+      "source_pair_id": "xg3_fact_165"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_165",
+      "source_pair_id": "xg3_fact_165"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_165",
+      "source_pair_id": "xg3_fact_165"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_165",
+      "source_pair_id": "xg3_fact_165"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_166",
+      "source_pair_id": "xg3_fact_166"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_166",
+      "source_pair_id": "xg3_fact_166"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_166",
+      "source_pair_id": "xg3_fact_166"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_166",
+      "source_pair_id": "xg3_fact_166"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_167",
+      "source_pair_id": "xg3_fact_167"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_167",
+      "source_pair_id": "xg3_fact_167"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_167",
+      "source_pair_id": "xg3_fact_167"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_167",
+      "source_pair_id": "xg3_fact_167"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_168",
+      "source_pair_id": "xg3_fact_168"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_168",
+      "source_pair_id": "xg3_fact_168"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_168",
+      "source_pair_id": "xg3_fact_168"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_168",
+      "source_pair_id": "xg3_fact_168"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_169",
+      "source_pair_id": "xg3_fact_169"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_169",
+      "source_pair_id": "xg3_fact_169"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_169",
+      "source_pair_id": "xg3_fact_169"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_169",
+      "source_pair_id": "xg3_fact_169"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_170",
+      "source_pair_id": "xg3_fact_170"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_170",
+      "source_pair_id": "xg3_fact_170"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_170",
+      "source_pair_id": "xg3_fact_170"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_170",
+      "source_pair_id": "xg3_fact_170"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_171",
+      "source_pair_id": "xg3_fact_171"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_171",
+      "source_pair_id": "xg3_fact_171"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_171",
+      "source_pair_id": "xg3_fact_171"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_171",
+      "source_pair_id": "xg3_fact_171"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_172",
+      "source_pair_id": "xg3_fact_172"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_172",
+      "source_pair_id": "xg3_fact_172"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_172",
+      "source_pair_id": "xg3_fact_172"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_172",
+      "source_pair_id": "xg3_fact_172"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_173",
+      "source_pair_id": "xg3_fact_173"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_173",
+      "source_pair_id": "xg3_fact_173"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_173",
+      "source_pair_id": "xg3_fact_173"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_173",
+      "source_pair_id": "xg3_fact_173"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_174",
+      "source_pair_id": "xg3_fact_174"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_174",
+      "source_pair_id": "xg3_fact_174"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_174",
+      "source_pair_id": "xg3_fact_174"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_174",
+      "source_pair_id": "xg3_fact_174"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_175",
+      "source_pair_id": "xg3_fact_175"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_175",
+      "source_pair_id": "xg3_fact_175"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_175",
+      "source_pair_id": "xg3_fact_175"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_175",
+      "source_pair_id": "xg3_fact_175"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_176",
+      "source_pair_id": "xg3_fact_176"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_176",
+      "source_pair_id": "xg3_fact_176"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_176",
+      "source_pair_id": "xg3_fact_176"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_176",
+      "source_pair_id": "xg3_fact_176"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_177",
+      "source_pair_id": "xg3_fact_177"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_177",
+      "source_pair_id": "xg3_fact_177"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_177",
+      "source_pair_id": "xg3_fact_177"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_177",
+      "source_pair_id": "xg3_fact_177"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_178",
+      "source_pair_id": "xg3_fact_178"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_178",
+      "source_pair_id": "xg3_fact_178"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_178",
+      "source_pair_id": "xg3_fact_178"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_178",
+      "source_pair_id": "xg3_fact_178"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_179",
+      "source_pair_id": "xg3_fact_179"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_179",
+      "source_pair_id": "xg3_fact_179"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_179",
+      "source_pair_id": "xg3_fact_179"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_179",
+      "source_pair_id": "xg3_fact_179"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_180",
+      "source_pair_id": "xg3_fact_180"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_180",
+      "source_pair_id": "xg3_fact_180"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_180",
+      "source_pair_id": "xg3_fact_180"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_180",
+      "source_pair_id": "xg3_fact_180"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_181",
+      "source_pair_id": "xg3_fact_181"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_181",
+      "source_pair_id": "xg3_fact_181"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_181",
+      "source_pair_id": "xg3_fact_181"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_181",
+      "source_pair_id": "xg3_fact_181"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_182",
+      "source_pair_id": "xg3_fact_182"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_182",
+      "source_pair_id": "xg3_fact_182"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_182",
+      "source_pair_id": "xg3_fact_182"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_182",
+      "source_pair_id": "xg3_fact_182"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_183",
+      "source_pair_id": "xg3_fact_183"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_183",
+      "source_pair_id": "xg3_fact_183"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_183",
+      "source_pair_id": "xg3_fact_183"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_183",
+      "source_pair_id": "xg3_fact_183"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_184",
+      "source_pair_id": "xg3_fact_184"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_184",
+      "source_pair_id": "xg3_fact_184"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_184",
+      "source_pair_id": "xg3_fact_184"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_184",
+      "source_pair_id": "xg3_fact_184"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_185",
+      "source_pair_id": "xg3_fact_185"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_185",
+      "source_pair_id": "xg3_fact_185"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_185",
+      "source_pair_id": "xg3_fact_185"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_185",
+      "source_pair_id": "xg3_fact_185"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_186",
+      "source_pair_id": "xg3_fact_186"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_186",
+      "source_pair_id": "xg3_fact_186"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_186",
+      "source_pair_id": "xg3_fact_186"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_186",
+      "source_pair_id": "xg3_fact_186"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_187",
+      "source_pair_id": "xg3_fact_187"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_187",
+      "source_pair_id": "xg3_fact_187"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_187",
+      "source_pair_id": "xg3_fact_187"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_187",
+      "source_pair_id": "xg3_fact_187"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_188",
+      "source_pair_id": "xg3_fact_188"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_188",
+      "source_pair_id": "xg3_fact_188"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_188",
+      "source_pair_id": "xg3_fact_188"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_188",
+      "source_pair_id": "xg3_fact_188"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_189",
+      "source_pair_id": "xg3_fact_189"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_189",
+      "source_pair_id": "xg3_fact_189"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_189",
+      "source_pair_id": "xg3_fact_189"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_189",
+      "source_pair_id": "xg3_fact_189"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_190",
+      "source_pair_id": "xg3_fact_190"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_190",
+      "source_pair_id": "xg3_fact_190"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_190",
+      "source_pair_id": "xg3_fact_190"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_190",
+      "source_pair_id": "xg3_fact_190"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_191",
+      "source_pair_id": "xg3_fact_191"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_191",
+      "source_pair_id": "xg3_fact_191"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_191",
+      "source_pair_id": "xg3_fact_191"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_191",
+      "source_pair_id": "xg3_fact_191"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_192",
+      "source_pair_id": "xg3_fact_192"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_192",
+      "source_pair_id": "xg3_fact_192"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_192",
+      "source_pair_id": "xg3_fact_192"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_192",
+      "source_pair_id": "xg3_fact_192"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_193",
+      "source_pair_id": "xg3_fact_193"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_193",
+      "source_pair_id": "xg3_fact_193"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_193",
+      "source_pair_id": "xg3_fact_193"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_193",
+      "source_pair_id": "xg3_fact_193"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_194",
+      "source_pair_id": "xg3_fact_194"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_194",
+      "source_pair_id": "xg3_fact_194"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_194",
+      "source_pair_id": "xg3_fact_194"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_194",
+      "source_pair_id": "xg3_fact_194"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_195",
+      "source_pair_id": "xg3_fact_195"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_195",
+      "source_pair_id": "xg3_fact_195"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_195",
+      "source_pair_id": "xg3_fact_195"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_195",
+      "source_pair_id": "xg3_fact_195"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_196",
+      "source_pair_id": "xg3_fact_196"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_196",
+      "source_pair_id": "xg3_fact_196"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_196",
+      "source_pair_id": "xg3_fact_196"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_196",
+      "source_pair_id": "xg3_fact_196"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_197",
+      "source_pair_id": "xg3_fact_197"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_197",
+      "source_pair_id": "xg3_fact_197"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_197",
+      "source_pair_id": "xg3_fact_197"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_197",
+      "source_pair_id": "xg3_fact_197"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_198",
+      "source_pair_id": "xg3_fact_198"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_198",
+      "source_pair_id": "xg3_fact_198"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_198",
+      "source_pair_id": "xg3_fact_198"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_198",
+      "source_pair_id": "xg3_fact_198"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_199",
+      "source_pair_id": "xg3_fact_199"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_199",
+      "source_pair_id": "xg3_fact_199"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_199",
+      "source_pair_id": "xg3_fact_199"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_199",
+      "source_pair_id": "xg3_fact_199"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_200",
+      "source_pair_id": "xg3_fact_200"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_200",
+      "source_pair_id": "xg3_fact_200"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_200",
+      "source_pair_id": "xg3_fact_200"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_200",
+      "source_pair_id": "xg3_fact_200"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_201",
+      "source_pair_id": "xg3_fact_201"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_201",
+      "source_pair_id": "xg3_fact_201"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_201",
+      "source_pair_id": "xg3_fact_201"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_201",
+      "source_pair_id": "xg3_fact_201"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_202",
+      "source_pair_id": "xg3_fact_202"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_202",
+      "source_pair_id": "xg3_fact_202"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_202",
+      "source_pair_id": "xg3_fact_202"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_202",
+      "source_pair_id": "xg3_fact_202"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_203",
+      "source_pair_id": "xg3_fact_203"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_203",
+      "source_pair_id": "xg3_fact_203"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_203",
+      "source_pair_id": "xg3_fact_203"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_203",
+      "source_pair_id": "xg3_fact_203"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_204",
+      "source_pair_id": "xg3_fact_204"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_204",
+      "source_pair_id": "xg3_fact_204"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_204",
+      "source_pair_id": "xg3_fact_204"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_204",
+      "source_pair_id": "xg3_fact_204"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_205",
+      "source_pair_id": "xg3_fact_205"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_205",
+      "source_pair_id": "xg3_fact_205"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_205",
+      "source_pair_id": "xg3_fact_205"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_205",
+      "source_pair_id": "xg3_fact_205"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_206",
+      "source_pair_id": "xg3_fact_206"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_206",
+      "source_pair_id": "xg3_fact_206"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_206",
+      "source_pair_id": "xg3_fact_206"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_206",
+      "source_pair_id": "xg3_fact_206"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_207",
+      "source_pair_id": "xg3_fact_207"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_207",
+      "source_pair_id": "xg3_fact_207"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_207",
+      "source_pair_id": "xg3_fact_207"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_207",
+      "source_pair_id": "xg3_fact_207"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_208",
+      "source_pair_id": "xg3_fact_208"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_208",
+      "source_pair_id": "xg3_fact_208"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_208",
+      "source_pair_id": "xg3_fact_208"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_208",
+      "source_pair_id": "xg3_fact_208"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_209",
+      "source_pair_id": "xg3_fact_209"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_209",
+      "source_pair_id": "xg3_fact_209"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_209",
+      "source_pair_id": "xg3_fact_209"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_209",
+      "source_pair_id": "xg3_fact_209"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_210",
+      "source_pair_id": "xg3_fact_210"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_210",
+      "source_pair_id": "xg3_fact_210"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_210",
+      "source_pair_id": "xg3_fact_210"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_210",
+      "source_pair_id": "xg3_fact_210"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_211",
+      "source_pair_id": "xg3_fact_211"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_211",
+      "source_pair_id": "xg3_fact_211"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_211",
+      "source_pair_id": "xg3_fact_211"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_211",
+      "source_pair_id": "xg3_fact_211"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_212",
+      "source_pair_id": "xg3_fact_212"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_212",
+      "source_pair_id": "xg3_fact_212"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_212",
+      "source_pair_id": "xg3_fact_212"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_212",
+      "source_pair_id": "xg3_fact_212"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_213",
+      "source_pair_id": "xg3_fact_213"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_213",
+      "source_pair_id": "xg3_fact_213"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_213",
+      "source_pair_id": "xg3_fact_213"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_213",
+      "source_pair_id": "xg3_fact_213"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_214",
+      "source_pair_id": "xg3_fact_214"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_214",
+      "source_pair_id": "xg3_fact_214"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_214",
+      "source_pair_id": "xg3_fact_214"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_214",
+      "source_pair_id": "xg3_fact_214"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_215",
+      "source_pair_id": "xg3_fact_215"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_215",
+      "source_pair_id": "xg3_fact_215"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_215",
+      "source_pair_id": "xg3_fact_215"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_215",
+      "source_pair_id": "xg3_fact_215"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_216",
+      "source_pair_id": "xg3_fact_216"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_216",
+      "source_pair_id": "xg3_fact_216"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_216",
+      "source_pair_id": "xg3_fact_216"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_216",
+      "source_pair_id": "xg3_fact_216"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_217",
+      "source_pair_id": "xg3_fact_217"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_217",
+      "source_pair_id": "xg3_fact_217"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_217",
+      "source_pair_id": "xg3_fact_217"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_217",
+      "source_pair_id": "xg3_fact_217"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_218",
+      "source_pair_id": "xg3_fact_218"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_218",
+      "source_pair_id": "xg3_fact_218"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_218",
+      "source_pair_id": "xg3_fact_218"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_218",
+      "source_pair_id": "xg3_fact_218"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_219",
+      "source_pair_id": "xg3_fact_219"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_219",
+      "source_pair_id": "xg3_fact_219"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_219",
+      "source_pair_id": "xg3_fact_219"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_219",
+      "source_pair_id": "xg3_fact_219"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_220",
+      "source_pair_id": "xg3_fact_220"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_220",
+      "source_pair_id": "xg3_fact_220"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_220",
+      "source_pair_id": "xg3_fact_220"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_220",
+      "source_pair_id": "xg3_fact_220"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_221",
+      "source_pair_id": "xg3_fact_221"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_221",
+      "source_pair_id": "xg3_fact_221"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_221",
+      "source_pair_id": "xg3_fact_221"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_221",
+      "source_pair_id": "xg3_fact_221"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_222",
+      "source_pair_id": "xg3_fact_222"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_222",
+      "source_pair_id": "xg3_fact_222"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_222",
+      "source_pair_id": "xg3_fact_222"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_222",
+      "source_pair_id": "xg3_fact_222"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_223",
+      "source_pair_id": "xg3_fact_223"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_223",
+      "source_pair_id": "xg3_fact_223"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_223",
+      "source_pair_id": "xg3_fact_223"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_223",
+      "source_pair_id": "xg3_fact_223"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_224",
+      "source_pair_id": "xg3_fact_224"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_224",
+      "source_pair_id": "xg3_fact_224"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_224",
+      "source_pair_id": "xg3_fact_224"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_224",
+      "source_pair_id": "xg3_fact_224"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_225",
+      "source_pair_id": "xg3_fact_225"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_225",
+      "source_pair_id": "xg3_fact_225"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_225",
+      "source_pair_id": "xg3_fact_225"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_225",
+      "source_pair_id": "xg3_fact_225"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_226",
+      "source_pair_id": "xg3_fact_226"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_226",
+      "source_pair_id": "xg3_fact_226"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_226",
+      "source_pair_id": "xg3_fact_226"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_226",
+      "source_pair_id": "xg3_fact_226"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_227",
+      "source_pair_id": "xg3_fact_227"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_227",
+      "source_pair_id": "xg3_fact_227"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_227",
+      "source_pair_id": "xg3_fact_227"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_227",
+      "source_pair_id": "xg3_fact_227"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_228",
+      "source_pair_id": "xg3_fact_228"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_228",
+      "source_pair_id": "xg3_fact_228"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_228",
+      "source_pair_id": "xg3_fact_228"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_228",
+      "source_pair_id": "xg3_fact_228"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_229",
+      "source_pair_id": "xg3_fact_229"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_229",
+      "source_pair_id": "xg3_fact_229"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_229",
+      "source_pair_id": "xg3_fact_229"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_229",
+      "source_pair_id": "xg3_fact_229"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_230",
+      "source_pair_id": "xg3_fact_230"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_230",
+      "source_pair_id": "xg3_fact_230"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_230",
+      "source_pair_id": "xg3_fact_230"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_230",
+      "source_pair_id": "xg3_fact_230"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_231",
+      "source_pair_id": "xg3_fact_231"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_231",
+      "source_pair_id": "xg3_fact_231"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_231",
+      "source_pair_id": "xg3_fact_231"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_231",
+      "source_pair_id": "xg3_fact_231"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_232",
+      "source_pair_id": "xg3_fact_232"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_232",
+      "source_pair_id": "xg3_fact_232"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_232",
+      "source_pair_id": "xg3_fact_232"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_232",
+      "source_pair_id": "xg3_fact_232"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_233",
+      "source_pair_id": "xg3_fact_233"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_233",
+      "source_pair_id": "xg3_fact_233"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_233",
+      "source_pair_id": "xg3_fact_233"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_233",
+      "source_pair_id": "xg3_fact_233"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_234",
+      "source_pair_id": "xg3_fact_234"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_234",
+      "source_pair_id": "xg3_fact_234"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_234",
+      "source_pair_id": "xg3_fact_234"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_234",
+      "source_pair_id": "xg3_fact_234"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_235",
+      "source_pair_id": "xg3_fact_235"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_235",
+      "source_pair_id": "xg3_fact_235"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_235",
+      "source_pair_id": "xg3_fact_235"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_235",
+      "source_pair_id": "xg3_fact_235"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_236",
+      "source_pair_id": "xg3_fact_236"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_236",
+      "source_pair_id": "xg3_fact_236"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_236",
+      "source_pair_id": "xg3_fact_236"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_236",
+      "source_pair_id": "xg3_fact_236"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_237",
+      "source_pair_id": "xg3_fact_237"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_237",
+      "source_pair_id": "xg3_fact_237"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_237",
+      "source_pair_id": "xg3_fact_237"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_237",
+      "source_pair_id": "xg3_fact_237"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_238",
+      "source_pair_id": "xg3_fact_238"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_238",
+      "source_pair_id": "xg3_fact_238"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_238",
+      "source_pair_id": "xg3_fact_238"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_238",
+      "source_pair_id": "xg3_fact_238"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_239",
+      "source_pair_id": "xg3_fact_239"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_239",
+      "source_pair_id": "xg3_fact_239"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_239",
+      "source_pair_id": "xg3_fact_239"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_239",
+      "source_pair_id": "xg3_fact_239"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_240",
+      "source_pair_id": "xg3_fact_240"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_240",
+      "source_pair_id": "xg3_fact_240"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_240",
+      "source_pair_id": "xg3_fact_240"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_240",
+      "source_pair_id": "xg3_fact_240"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_241",
+      "source_pair_id": "xg3_fact_241"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_241",
+      "source_pair_id": "xg3_fact_241"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_241",
+      "source_pair_id": "xg3_fact_241"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_241",
+      "source_pair_id": "xg3_fact_241"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_242",
+      "source_pair_id": "xg3_fact_242"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_242",
+      "source_pair_id": "xg3_fact_242"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_242",
+      "source_pair_id": "xg3_fact_242"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_242",
+      "source_pair_id": "xg3_fact_242"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_243",
+      "source_pair_id": "xg3_fact_243"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_243",
+      "source_pair_id": "xg3_fact_243"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_243",
+      "source_pair_id": "xg3_fact_243"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_243",
+      "source_pair_id": "xg3_fact_243"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_244",
+      "source_pair_id": "xg3_fact_244"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_244",
+      "source_pair_id": "xg3_fact_244"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_244",
+      "source_pair_id": "xg3_fact_244"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_244",
+      "source_pair_id": "xg3_fact_244"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_245",
+      "source_pair_id": "xg3_fact_245"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_245",
+      "source_pair_id": "xg3_fact_245"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_245",
+      "source_pair_id": "xg3_fact_245"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_245",
+      "source_pair_id": "xg3_fact_245"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_246",
+      "source_pair_id": "xg3_fact_246"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_246",
+      "source_pair_id": "xg3_fact_246"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_246",
+      "source_pair_id": "xg3_fact_246"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_246",
+      "source_pair_id": "xg3_fact_246"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_247",
+      "source_pair_id": "xg3_fact_247"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_247",
+      "source_pair_id": "xg3_fact_247"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_247",
+      "source_pair_id": "xg3_fact_247"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_247",
+      "source_pair_id": "xg3_fact_247"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_248",
+      "source_pair_id": "xg3_fact_248"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_248",
+      "source_pair_id": "xg3_fact_248"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_248",
+      "source_pair_id": "xg3_fact_248"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_248",
+      "source_pair_id": "xg3_fact_248"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_249",
+      "source_pair_id": "xg3_fact_249"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_249",
+      "source_pair_id": "xg3_fact_249"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_249",
+      "source_pair_id": "xg3_fact_249"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_249",
+      "source_pair_id": "xg3_fact_249"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_250",
+      "source_pair_id": "xg3_fact_250"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_250",
+      "source_pair_id": "xg3_fact_250"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_250",
+      "source_pair_id": "xg3_fact_250"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_250",
+      "source_pair_id": "xg3_fact_250"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_251",
+      "source_pair_id": "xg3_fact_251"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_251",
+      "source_pair_id": "xg3_fact_251"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_251",
+      "source_pair_id": "xg3_fact_251"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_251",
+      "source_pair_id": "xg3_fact_251"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_252",
+      "source_pair_id": "xg3_fact_252"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_252",
+      "source_pair_id": "xg3_fact_252"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_252",
+      "source_pair_id": "xg3_fact_252"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_252",
+      "source_pair_id": "xg3_fact_252"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_253",
+      "source_pair_id": "xg3_fact_253"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_253",
+      "source_pair_id": "xg3_fact_253"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_253",
+      "source_pair_id": "xg3_fact_253"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_253",
+      "source_pair_id": "xg3_fact_253"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_254",
+      "source_pair_id": "xg3_fact_254"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_254",
+      "source_pair_id": "xg3_fact_254"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_254",
+      "source_pair_id": "xg3_fact_254"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_254",
+      "source_pair_id": "xg3_fact_254"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_255",
+      "source_pair_id": "xg3_fact_255"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_255",
+      "source_pair_id": "xg3_fact_255"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_255",
+      "source_pair_id": "xg3_fact_255"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_255",
+      "source_pair_id": "xg3_fact_255"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_256",
+      "source_pair_id": "xg3_fact_256"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_256",
+      "source_pair_id": "xg3_fact_256"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_256",
+      "source_pair_id": "xg3_fact_256"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_256",
+      "source_pair_id": "xg3_fact_256"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_257",
+      "source_pair_id": "xg3_fact_257"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_257",
+      "source_pair_id": "xg3_fact_257"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_257",
+      "source_pair_id": "xg3_fact_257"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_257",
+      "source_pair_id": "xg3_fact_257"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_258",
+      "source_pair_id": "xg3_fact_258"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_258",
+      "source_pair_id": "xg3_fact_258"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_258",
+      "source_pair_id": "xg3_fact_258"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_258",
+      "source_pair_id": "xg3_fact_258"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_259",
+      "source_pair_id": "xg3_fact_259"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_259",
+      "source_pair_id": "xg3_fact_259"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_259",
+      "source_pair_id": "xg3_fact_259"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_259",
+      "source_pair_id": "xg3_fact_259"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_260",
+      "source_pair_id": "xg3_fact_260"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_260",
+      "source_pair_id": "xg3_fact_260"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_260",
+      "source_pair_id": "xg3_fact_260"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_260",
+      "source_pair_id": "xg3_fact_260"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_261",
+      "source_pair_id": "xg3_fact_261"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_261",
+      "source_pair_id": "xg3_fact_261"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_261",
+      "source_pair_id": "xg3_fact_261"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_261",
+      "source_pair_id": "xg3_fact_261"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_262",
+      "source_pair_id": "xg3_fact_262"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_262",
+      "source_pair_id": "xg3_fact_262"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_262",
+      "source_pair_id": "xg3_fact_262"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_262",
+      "source_pair_id": "xg3_fact_262"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_263",
+      "source_pair_id": "xg3_fact_263"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_263",
+      "source_pair_id": "xg3_fact_263"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_263",
+      "source_pair_id": "xg3_fact_263"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_263",
+      "source_pair_id": "xg3_fact_263"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_264",
+      "source_pair_id": "xg3_fact_264"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_264",
+      "source_pair_id": "xg3_fact_264"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_264",
+      "source_pair_id": "xg3_fact_264"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_264",
+      "source_pair_id": "xg3_fact_264"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_265",
+      "source_pair_id": "xg3_fact_265"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_265",
+      "source_pair_id": "xg3_fact_265"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_265",
+      "source_pair_id": "xg3_fact_265"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_265",
+      "source_pair_id": "xg3_fact_265"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_266",
+      "source_pair_id": "xg3_fact_266"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_266",
+      "source_pair_id": "xg3_fact_266"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_266",
+      "source_pair_id": "xg3_fact_266"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_266",
+      "source_pair_id": "xg3_fact_266"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_267",
+      "source_pair_id": "xg3_fact_267"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_267",
+      "source_pair_id": "xg3_fact_267"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_267",
+      "source_pair_id": "xg3_fact_267"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_267",
+      "source_pair_id": "xg3_fact_267"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_268",
+      "source_pair_id": "xg3_fact_268"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_268",
+      "source_pair_id": "xg3_fact_268"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_268",
+      "source_pair_id": "xg3_fact_268"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_268",
+      "source_pair_id": "xg3_fact_268"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_269",
+      "source_pair_id": "xg3_fact_269"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_269",
+      "source_pair_id": "xg3_fact_269"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_269",
+      "source_pair_id": "xg3_fact_269"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_269",
+      "source_pair_id": "xg3_fact_269"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_270",
+      "source_pair_id": "xg3_fact_270"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_270",
+      "source_pair_id": "xg3_fact_270"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_270",
+      "source_pair_id": "xg3_fact_270"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_270",
+      "source_pair_id": "xg3_fact_270"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_271",
+      "source_pair_id": "xg3_fact_271"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_271",
+      "source_pair_id": "xg3_fact_271"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_271",
+      "source_pair_id": "xg3_fact_271"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_271",
+      "source_pair_id": "xg3_fact_271"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_272",
+      "source_pair_id": "xg3_fact_272"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_272",
+      "source_pair_id": "xg3_fact_272"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_272",
+      "source_pair_id": "xg3_fact_272"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_272",
+      "source_pair_id": "xg3_fact_272"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_273",
+      "source_pair_id": "xg3_fact_273"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_273",
+      "source_pair_id": "xg3_fact_273"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_273",
+      "source_pair_id": "xg3_fact_273"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_273",
+      "source_pair_id": "xg3_fact_273"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_274",
+      "source_pair_id": "xg3_fact_274"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_274",
+      "source_pair_id": "xg3_fact_274"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_274",
+      "source_pair_id": "xg3_fact_274"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_274",
+      "source_pair_id": "xg3_fact_274"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_275",
+      "source_pair_id": "xg3_fact_275"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_275",
+      "source_pair_id": "xg3_fact_275"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_275",
+      "source_pair_id": "xg3_fact_275"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_275",
+      "source_pair_id": "xg3_fact_275"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_276",
+      "source_pair_id": "xg3_fact_276"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_276",
+      "source_pair_id": "xg3_fact_276"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_276",
+      "source_pair_id": "xg3_fact_276"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_276",
+      "source_pair_id": "xg3_fact_276"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_277",
+      "source_pair_id": "xg3_fact_277"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_277",
+      "source_pair_id": "xg3_fact_277"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_277",
+      "source_pair_id": "xg3_fact_277"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_277",
+      "source_pair_id": "xg3_fact_277"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_278",
+      "source_pair_id": "xg3_fact_278"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_278",
+      "source_pair_id": "xg3_fact_278"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_278",
+      "source_pair_id": "xg3_fact_278"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_278",
+      "source_pair_id": "xg3_fact_278"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_279",
+      "source_pair_id": "xg3_fact_279"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_279",
+      "source_pair_id": "xg3_fact_279"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_279",
+      "source_pair_id": "xg3_fact_279"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_279",
+      "source_pair_id": "xg3_fact_279"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_280",
+      "source_pair_id": "xg3_fact_280"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_280",
+      "source_pair_id": "xg3_fact_280"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_280",
+      "source_pair_id": "xg3_fact_280"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_280",
+      "source_pair_id": "xg3_fact_280"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_281",
+      "source_pair_id": "xg3_fact_281"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_281",
+      "source_pair_id": "xg3_fact_281"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_281",
+      "source_pair_id": "xg3_fact_281"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_281",
+      "source_pair_id": "xg3_fact_281"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_282",
+      "source_pair_id": "xg3_fact_282"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_282",
+      "source_pair_id": "xg3_fact_282"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_282",
+      "source_pair_id": "xg3_fact_282"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_282",
+      "source_pair_id": "xg3_fact_282"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_283",
+      "source_pair_id": "xg3_fact_283"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_283",
+      "source_pair_id": "xg3_fact_283"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_283",
+      "source_pair_id": "xg3_fact_283"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_283",
+      "source_pair_id": "xg3_fact_283"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_284",
+      "source_pair_id": "xg3_fact_284"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_284",
+      "source_pair_id": "xg3_fact_284"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_284",
+      "source_pair_id": "xg3_fact_284"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_284",
+      "source_pair_id": "xg3_fact_284"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_285",
+      "source_pair_id": "xg3_fact_285"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_285",
+      "source_pair_id": "xg3_fact_285"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_285",
+      "source_pair_id": "xg3_fact_285"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_285",
+      "source_pair_id": "xg3_fact_285"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_286",
+      "source_pair_id": "xg3_fact_286"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_286",
+      "source_pair_id": "xg3_fact_286"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_286",
+      "source_pair_id": "xg3_fact_286"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_286",
+      "source_pair_id": "xg3_fact_286"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_287",
+      "source_pair_id": "xg3_fact_287"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_287",
+      "source_pair_id": "xg3_fact_287"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_287",
+      "source_pair_id": "xg3_fact_287"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_287",
+      "source_pair_id": "xg3_fact_287"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_288",
+      "source_pair_id": "xg3_fact_288"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_288",
+      "source_pair_id": "xg3_fact_288"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_288",
+      "source_pair_id": "xg3_fact_288"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_288",
+      "source_pair_id": "xg3_fact_288"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_289",
+      "source_pair_id": "xg3_fact_289"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_289",
+      "source_pair_id": "xg3_fact_289"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_289",
+      "source_pair_id": "xg3_fact_289"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_289",
+      "source_pair_id": "xg3_fact_289"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_290",
+      "source_pair_id": "xg3_fact_290"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_290",
+      "source_pair_id": "xg3_fact_290"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_290",
+      "source_pair_id": "xg3_fact_290"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_290",
+      "source_pair_id": "xg3_fact_290"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_291",
+      "source_pair_id": "xg3_fact_291"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_291",
+      "source_pair_id": "xg3_fact_291"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_291",
+      "source_pair_id": "xg3_fact_291"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_291",
+      "source_pair_id": "xg3_fact_291"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_292",
+      "source_pair_id": "xg3_fact_292"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_292",
+      "source_pair_id": "xg3_fact_292"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_292",
+      "source_pair_id": "xg3_fact_292"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_292",
+      "source_pair_id": "xg3_fact_292"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_293",
+      "source_pair_id": "xg3_fact_293"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_293",
+      "source_pair_id": "xg3_fact_293"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_293",
+      "source_pair_id": "xg3_fact_293"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_293",
+      "source_pair_id": "xg3_fact_293"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_294",
+      "source_pair_id": "xg3_fact_294"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_294",
+      "source_pair_id": "xg3_fact_294"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_294",
+      "source_pair_id": "xg3_fact_294"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_294",
+      "source_pair_id": "xg3_fact_294"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_295",
+      "source_pair_id": "xg3_fact_295"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_295",
+      "source_pair_id": "xg3_fact_295"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_295",
+      "source_pair_id": "xg3_fact_295"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_295",
+      "source_pair_id": "xg3_fact_295"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_296",
+      "source_pair_id": "xg3_fact_296"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_296",
+      "source_pair_id": "xg3_fact_296"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_296",
+      "source_pair_id": "xg3_fact_296"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_296",
+      "source_pair_id": "xg3_fact_296"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_297",
+      "source_pair_id": "xg3_fact_297"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_297",
+      "source_pair_id": "xg3_fact_297"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_297",
+      "source_pair_id": "xg3_fact_297"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_297",
+      "source_pair_id": "xg3_fact_297"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_298",
+      "source_pair_id": "xg3_fact_298"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_298",
+      "source_pair_id": "xg3_fact_298"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_298",
+      "source_pair_id": "xg3_fact_298"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_298",
+      "source_pair_id": "xg3_fact_298"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_299",
+      "source_pair_id": "xg3_fact_299"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_299",
+      "source_pair_id": "xg3_fact_299"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_299",
+      "source_pair_id": "xg3_fact_299"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_299",
+      "source_pair_id": "xg3_fact_299"
+    },
+    {
+      "contrast_cell_id": "C0_SHAM",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_300",
+      "source_pair_id": "xg3_fact_300"
+    },
+    {
+      "contrast_cell_id": "C1_TITLE",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_300",
+      "source_pair_id": "xg3_fact_300"
+    },
+    {
+      "contrast_cell_id": "C2_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_300",
+      "source_pair_id": "xg3_fact_300"
+    },
+    {
+      "contrast_cell_id": "C5_TITLE_NAME",
+      "error": "NONCONTIGUOUS_IDENTITY_ANCHOR:xg3:xg3_fact_300",
+      "source_pair_id": "xg3_fact_300"
+    }
+  ],
+  "tokenizer_executed": false,
+  "training_executed": false
+}

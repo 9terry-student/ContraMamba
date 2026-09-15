@@ -1,0 +1,72 @@
+{
+  "anchor_manifest_sha256": "c1177819713bb850cb6cfa93fb76ff06b9feddbec9cac622fc015f969844135a",
+  "checkpoint_load_count": 0,
+  "complete_source_pair_count": 300,
+  "complete_source_pair_target": 300,
+  "coordinate_contract": {
+    "active_serialization": "claim[:63]+EOS(0)+evidence[:64]",
+    "anchor_mapping": "frozen_contiguous_title_name_span_final_overlapping_evidence_token",
+    "post4_rule": "a+4 <= terminal_index-1",
+    "shortened_post_window_allowed": false
+  },
+  "eligible_anchor_counts": {
+    "A_IDENTITY": 1200,
+    "A_NAME": 600
+  },
+  "evaluation_executed": false,
+  "exclusion_counts": {},
+  "family_key": "xg2",
+  "frozen_input": {
+    "row_count": 1800,
+    "rows_path": "data/reason_router_gen4_generator_family_prevalence_v1/xg2/synthetic_reason_router_six_cell.jsonl",
+    "rows_sha256": "c96ce74bb89dbd374386c27f3a7daa10b5c6630c22711074e0b9a44d59ab5cfa",
+    "source_facts_path": "data/reason_router_gen4_generator_family_prevalence_v1/xg2/structured_source_facts.jsonl",
+    "source_facts_sha256": "0d24fe924a9e30ba7341b515e6cd2bf1164eff441462451317ca5ec3beb33c5e",
+    "source_pair_count": 300,
+    "structural_manifest_path": "data/reason_router_gen4_generator_family_prevalence_v1/xg2/structural_manifest.json",
+    "structural_manifest_sha256": "29afcee82a4f0251870b6a6ef8c8b626bc65acfc1a21b98b4c019a7b20de5704"
+  },
+  "gpu_used": false,
+  "model_forward_count": 0,
+  "phase": "GENERATOR_FAMILY_PREVALENCE_TOKENIZER_ANCHOR_ELIGIBILITY",
+  "primary_complete_pair_prefix_feasibility": "PASS_300_OF_300",
+  "provenance": {
+    "branch": "gen4-k-xg1-cross-generator-replication",
+    "builder_blob": "4505acc99db0627733592694da290a007d281421",
+    "design_freeze_commit": "4b6f0c831ebc89f0e786e1eb526739c7c9c06413",
+    "head": "8df2a5e2cb72f8f4eed33c4996dfba594a1f9687",
+    "structural_freeze_commit": "341de2398e1c06fffa73ee323502f52972c2d58e",
+    "xg1_gate_blob": "6c98ce022ca134e385db28851fd364dc6daff423"
+  },
+  "required_anchor_counts": {
+    "A_IDENTITY": 1200,
+    "A_NAME": 600
+  },
+  "required_anchor_row_count": 1800,
+  "schema_version": "GEN4_PREVALENCE_TOKENIZER_ANCHOR_ELIGIBILITY_SUMMARY_V1",
+  "scientific_outcomes_observed": false,
+  "structural_anchor_topology_failure_count": 0,
+  "structural_anchor_topology_failures": [],
+  "target_identity_name_mismatch_count": 0,
+  "target_identity_name_mismatches": [],
+  "tokenizer": {
+    "active_encoding_validation_commit": "17f1ddfc8286796f27c4a61716a21e14126bb836",
+    "add_special_tokens": false,
+    "analysis_reference": "40e5d2bd7452abb3ca8fadbafe9131ee0e2c2f37",
+    "claim_budget": 63,
+    "claimed_historical_snapshot": false,
+    "effective_pad_token_id": 0,
+    "eos_token_id": 0,
+    "evidence_budget": 64,
+    "file_sha256": {
+      "special_tokens_map.json": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8",
+      "tokenizer.json": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf",
+      "tokenizer_config.json": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+    },
+    "max_length": 128,
+    "serialization": "claim[:63]+EOS(0)+evidence[:64]",
+    "tokenizers_version": "0.22.2"
+  },
+  "tokenizer_executed": true,
+  "training_executed": false
+}
