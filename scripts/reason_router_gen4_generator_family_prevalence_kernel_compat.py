@@ -5,13 +5,35 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Callable, Sequence
+from typing import Any, Callable
 
 from scripts import reason_router_gen4_k_fast_cuda_one_pair_equivalence as backend
 
 
 KERNELS_VERSION = backend.KERNELS_VERSION
 BUILD_VARIANT = backend.BUILD_VARIANT
+TRANSPORT_REPO_TYPE = "kernel"
+
+# Historical scientific identity, frozen by the validated backend.
+MAMBA_SCIENTIFIC_REVISION = backend.MAMBA_REV
+CONV_SCIENTIFIC_REVISION = backend.CONV_REV
+
+# The historical Hub repositories were model repos. They are no longer
+# reachable, but the exact frozen LFS payloads remain present in the migrated
+# kernel-repo histories. These immutable commits are transport locators only.
+# Scientific identity remains the historical revision + build variant +
+# exact loaded .so SHA256.
+MAMBA_TRANSPORT_REVISIONS = (
+    "170306cb84f6fac356ed839fd6e2dc53ab68080e",
+    "a8ca9c4af8613ebcd16eb22873e4896ee488c840",
+    "a80a7604874b108585feb87096a0c86df2a1e5e3",
+    "90a845d5a0d552dc6b7f1653adf68bcf271f5437",
+)
+CONV_TRANSPORT_REVISIONS = (
+    "2999c83c99b9ac5fa87b861af3ec6bac28b1c300",
+    "02ab414d848bbee389d801f87b24fa536de60273",
+    "3552fa17c03203cb43a3a76efb4de5a6e31554b5",
+)
 
 
 class KernelCompatibilityError(RuntimeError):
@@ -27,16 +49,31 @@ def require(ok: bool, message: str) -> None:
 class KernelSpec:
     label: str
     repo_id: str
-    revision: str
+    scientific_revision: str
+    transport_revisions: tuple[str, ...]
     package_name: str
     binary_sha256: str
     required_functions: tuple[str, ...]
+
+    @property
+    def revision(self) -> str:
+        # Compatibility alias: this remains the frozen scientific revision.
+        return self.scientific_revision
+
+
+@dataclass(frozen=True)
+class ResolvedKernelSnapshot:
+    path: Path
+    transport_revision: str
+    transport_repo_type: str
+    source: str
 
 
 MAMBA_SPEC = KernelSpec(
     label="MAMBA",
     repo_id="kernels-community/mamba-ssm",
-    revision=backend.MAMBA_REV,
+    scientific_revision=MAMBA_SCIENTIFIC_REVISION,
+    transport_revisions=MAMBA_TRANSPORT_REVISIONS,
     package_name="mamba_ssm",
     binary_sha256=backend.MAMBA_BINARY_SHA256,
     required_functions=(
@@ -49,7 +86,8 @@ MAMBA_SPEC = KernelSpec(
 CONV_SPEC = KernelSpec(
     label="CONV",
     repo_id="kernels-community/causal-conv1d",
-    revision=backend.CONV_REV,
+    scientific_revision=CONV_SCIENTIFIC_REVISION,
+    transport_revisions=CONV_TRANSPORT_REVISIONS,
     package_name="causal_conv1d",
     binary_sha256=backend.CONV_BINARY_SHA256,
     required_functions=(
@@ -100,10 +138,15 @@ def _variant_dir(snapshot: Path) -> Path:
     return snapshot / "build" / BUILD_VARIANT
 
 
-def _module_init_candidates(snapshot: Path, spec: KernelSpec) -> tuple[Path, ...]:
+def _module_init_candidates(
+    snapshot: Path,
+    spec: KernelSpec,
+) -> tuple[Path, ...]:
     variant = _variant_dir(snapshot)
-    # kernels==0.10.2 used build/<variant>/<package>/__init__.py.
-    # Current Hub kernels commonly use build/<variant>/__init__.py.
+    # Historical kernels==0.10.2 layout:
+    #   build/<variant>/<package>/__init__.py
+    # Migrated kernel repos may also expose:
+    #   build/<variant>/__init__.py
     return (
         variant / spec.package_name / "__init__.py",
         variant / "__init__.py",
@@ -120,77 +163,7 @@ def _select_module_init(snapshot: Path, spec: KernelSpec) -> Path:
         len(present) >= 1,
         f"{spec.label}_EXACT_BUILD_MODULE_MISSING:{_variant_dir(snapshot)}",
     )
-    # Prefer the historical v0.10.2 package layout when both are present.
     return present[0]
-
-
-def _snapshot_has_exact_build(snapshot: Path, spec: KernelSpec) -> bool:
-    if not snapshot.is_dir():
-        return False
-    if snapshot.name != spec.revision:
-        return False
-    return any(path.is_file() for path in _module_init_candidates(snapshot, spec))
-
-
-def _local_snapshot_candidates(spec: KernelSpec) -> tuple[Path, ...]:
-    candidates: list[Path] = []
-    for root in _cache_roots():
-        for prefix in ("kernels", "models"):
-            candidates.append(
-                root
-                / _repo_cache_component(spec.repo_id, prefix)
-                / "snapshots"
-                / spec.revision
-            )
-    return tuple(candidates)
-
-
-def _hub_snapshot_download(**kwargs: Any) -> str:
-    from huggingface_hub import snapshot_download
-
-    return str(snapshot_download(**kwargs))
-
-
-def resolve_exact_snapshot(spec: KernelSpec) -> Path:
-    require(
-        _kernel_package_version() == KERNELS_VERSION,
-        f"KERNELS_VERSION:{_kernel_package_version()}",
-    )
-
-    for candidate in _local_snapshot_candidates(spec):
-        if _snapshot_has_exact_build(candidate, spec):
-            return candidate
-
-    allow_patterns = [f"build/{BUILD_VARIANT}/*"]
-
-    try:
-        downloaded = Path(
-            _hub_snapshot_download(
-                repo_id=spec.repo_id,
-                repo_type="kernel",
-                revision=spec.revision,
-                token=False,
-                allow_patterns=allow_patterns,
-                local_files_only=False,
-            )
-        )
-    except Exception as exc:
-        raise KernelCompatibilityError(
-            f"KERNEL_SNAPSHOT_UNAVAILABLE:{spec.label}:{spec.revision}:{type(exc).__name__}"
-        ) from exc
-
-    require(
-        downloaded.name == spec.revision,
-        (
-            f"{spec.label}_REVISION_RESOLUTION:"
-            f"expected={spec.revision}:observed={downloaded.name}"
-        ),
-    )
-    require(
-        _snapshot_has_exact_build(downloaded, spec),
-        f"{spec.label}_EXACT_BUILD_MISSING:{downloaded}",
-    )
-    return downloaded
 
 
 def _binary_path(snapshot: Path, spec: KernelSpec) -> Path:
@@ -217,6 +190,153 @@ def _binary_path(snapshot: Path, spec: KernelSpec) -> Path:
     return binaries[0]
 
 
+def _validate_snapshot(snapshot: Path, spec: KernelSpec) -> None:
+    require(snapshot.is_dir(), f"{spec.label}_SNAPSHOT_NOT_DIRECTORY:{snapshot}")
+    _select_module_init(snapshot, spec)
+    _binary_path(snapshot, spec)
+
+
+def _legacy_local_candidates(
+    spec: KernelSpec,
+) -> tuple[ResolvedKernelSnapshot, ...]:
+    out: list[ResolvedKernelSnapshot] = []
+    for root in _cache_roots():
+        out.append(
+            ResolvedKernelSnapshot(
+                path=(
+                    root
+                    / _repo_cache_component(spec.repo_id, "models")
+                    / "snapshots"
+                    / spec.scientific_revision
+                ),
+                transport_revision=spec.scientific_revision,
+                transport_repo_type="legacy-model-local",
+                source="legacy_model_cache",
+            )
+        )
+    return tuple(out)
+
+
+def _transport_local_candidates(
+    spec: KernelSpec,
+) -> tuple[ResolvedKernelSnapshot, ...]:
+    out: list[ResolvedKernelSnapshot] = []
+    for root in _cache_roots():
+        for revision in spec.transport_revisions:
+            out.append(
+                ResolvedKernelSnapshot(
+                    path=(
+                        root
+                        / _repo_cache_component(spec.repo_id, "kernels")
+                        / "snapshots"
+                        / revision
+                    ),
+                    transport_revision=revision,
+                    transport_repo_type=TRANSPORT_REPO_TYPE,
+                    source="kernel_repo_cache",
+                )
+            )
+    return tuple(out)
+
+
+def _hub_snapshot_download(**kwargs: Any) -> str:
+    from huggingface_hub import snapshot_download
+
+    return str(snapshot_download(**kwargs))
+
+
+def _accept_local_candidate(
+    candidate: ResolvedKernelSnapshot,
+    spec: KernelSpec,
+) -> ResolvedKernelSnapshot | None:
+    if not candidate.path.is_dir():
+        return None
+
+    try:
+        _validate_snapshot(candidate.path, spec)
+    except KernelCompatibilityError:
+        return None
+
+    return candidate
+
+
+def resolve_exact_snapshot(spec: KernelSpec) -> ResolvedKernelSnapshot:
+    require(
+        _kernel_package_version() == KERNELS_VERSION,
+        f"KERNELS_VERSION:{_kernel_package_version()}",
+    )
+
+    # If the exact historical model-repo snapshot is still cached locally,
+    # use it first. This is the closest possible reproduction of the original
+    # validated backend and requires no reinterpretation of the old revision.
+    for candidate in _legacy_local_candidates(spec):
+        accepted = _accept_local_candidate(candidate, spec)
+        if accepted is not None:
+            return accepted
+
+    # Next accept only migrated kernel-repo snapshots whose build bytes match
+    # the already-frozen .so SHA256.
+    for candidate in _transport_local_candidates(spec):
+        accepted = _accept_local_candidate(candidate, spec)
+        if accepted is not None:
+            return accepted
+
+    allow_patterns = [
+        f"build/{BUILD_VARIANT}/*",
+        f"build/{BUILD_VARIANT}/**",
+    ]
+    failures: list[str] = []
+
+    # Never query mutable main and never reinterpret the historical scientific
+    # revision as a kernel-repo revision. Only immutable transport commits that
+    # were independently shown to contain the exact frozen LFS payload are
+    # eligible.
+    for revision in spec.transport_revisions:
+        try:
+            downloaded = Path(
+                _hub_snapshot_download(
+                    repo_id=spec.repo_id,
+                    repo_type=TRANSPORT_REPO_TYPE,
+                    revision=revision,
+                    token=False,
+                    allow_patterns=allow_patterns,
+                    local_files_only=False,
+                )
+            )
+        except Exception as exc:
+            failures.append(
+                f"{revision}:DOWNLOAD:{type(exc).__name__}"
+            )
+            continue
+
+        if downloaded.name != revision:
+            failures.append(
+                f"{revision}:RESOLVED_AS:{downloaded.name}"
+            )
+            continue
+
+        try:
+            _validate_snapshot(downloaded, spec)
+        except KernelCompatibilityError as exc:
+            failures.append(f"{revision}:VALIDATION:{exc}")
+            continue
+
+        return ResolvedKernelSnapshot(
+            path=downloaded,
+            transport_revision=revision,
+            transport_repo_type=TRANSPORT_REPO_TYPE,
+            source="kernel_repo_download",
+        )
+
+    raise KernelCompatibilityError(
+        (
+            f"KERNEL_TRANSPORT_UNAVAILABLE:{spec.label}:"
+            f"scientific_revision={spec.scientific_revision}:"
+            f"failures={'|'.join(failures)}"
+        )
+    )
+
+
 def _import_from_path(module_name: str, file_path: Path) -> ModuleType:
     from kernels.utils import import_from_path
 
@@ -227,12 +347,12 @@ def load_exact_module(
     spec: KernelSpec,
     *,
     importer: Callable[[str, Path], ModuleType] | None = None,
-) -> ModuleType:
-    snapshot = resolve_exact_snapshot(spec)
-    init_path = _select_module_init(snapshot, spec)
+) -> tuple[ModuleType, ResolvedKernelSnapshot]:
+    resolved = resolve_exact_snapshot(spec)
+    init_path = _select_module_init(resolved.path, spec)
 
-    # Authenticate the exact compiled binary before importing any kernel code.
-    _binary_path(snapshot, spec)
+    # Re-authenticate the exact compiled binary immediately before import.
+    _binary_path(resolved.path, spec)
 
     loader = _import_from_path if importer is None else importer
     module = loader(spec.package_name, init_path)
@@ -246,7 +366,8 @@ def load_exact_module(
         Path(module_file).resolve() == init_path.resolve(),
         (
             f"{spec.label}_MODULE_PATH:"
-            f"expected={init_path.resolve()}:observed={Path(module_file).resolve()}"
+            f"expected={init_path.resolve()}:"
+            f"observed={Path(module_file).resolve()}"
         ),
     )
 
@@ -259,7 +380,7 @@ def load_exact_module(
         not missing,
         f"{spec.label}_FUNCTION_SURFACE:{','.join(missing)}",
     )
-    return module
+    return module, resolved
 
 
 def patch_transformers_mamba(
@@ -290,11 +411,26 @@ def patch_transformers_mamba(
 
 
 def load_exact_fast_kernels() -> dict[str, Any]:
-    mamba = load_exact_module(MAMBA_SPEC)
-    conv = load_exact_module(CONV_SPEC)
+    mamba, mamba_resolved = load_exact_module(MAMBA_SPEC)
+    conv, conv_resolved = load_exact_module(CONV_SPEC)
     functions = patch_transformers_mamba(mamba, conv)
+
     return {
         "mamba": mamba,
         "conv": conv,
         **functions,
+        "mamba_transport_revision":
+            mamba_resolved.transport_revision,
+        "mamba_transport_repo_type":
+            mamba_resolved.transport_repo_type,
+        "mamba_transport_source":
+            mamba_resolved.source,
+        "causal_conv_transport_revision":
+            conv_resolved.transport_revision,
+        "causal_conv_transport_repo_type":
+            conv_resolved.transport_repo_type,
+        "causal_conv_transport_source":
+            conv_resolved.source,
+        "transport_identity_status":
+            "EXACT_FROZEN_BINARY_SHA256_MATCH",
     }

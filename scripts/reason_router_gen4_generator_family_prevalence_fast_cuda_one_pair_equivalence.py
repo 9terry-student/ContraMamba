@@ -928,10 +928,24 @@ def run_one_pair(
         "representative_checkpoint_sha256": cpu_checkpoint_sha,
         "kernels_version": backend.KERNELS_VERSION,
         "mamba_revision": backend.MAMBA_REV,
+        "mamba_transport_revision":
+            kernels["mamba_transport_revision"],
+        "mamba_transport_repo_type":
+            kernels["mamba_transport_repo_type"],
+        "mamba_transport_source":
+            kernels["mamba_transport_source"],
         "mamba_binary_sha256": backend.MAMBA_BINARY_SHA256,
         "causal_conv_revision": backend.CONV_REV,
+        "causal_conv_transport_revision":
+            kernels["causal_conv_transport_revision"],
+        "causal_conv_transport_repo_type":
+            kernels["causal_conv_transport_repo_type"],
+        "causal_conv_transport_source":
+            kernels["causal_conv_transport_source"],
         "causal_conv_binary_sha256":
             backend.CONV_BINARY_SHA256,
+        "kernel_transport_identity_status":
+            kernels["transport_identity_status"],
         "build_variant": backend.BUILD_VARIANT,
         "python_version": backend.EXPECTED_RUNTIME["python"],
         "numpy_version": backend.EXPECTED_RUNTIME["numpy"],
