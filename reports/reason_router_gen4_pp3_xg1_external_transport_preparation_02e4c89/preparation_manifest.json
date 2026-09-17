@@ -1,0 +1,64 @@
+{
+  "branch": "gen4-k-xg2-basis-holdout",
+  "frozen_phase1": {
+    "xg2_alignment_delta_h_sha256": "b2cfaeaa02eaf013f2837339296c6f3252e9c26bac414d161ced4afcba6b819c",
+    "xg4_alignment_delta_h_sha256": "792487f6ef7d1cd122f0fe6fb34594ea92747a3f52fc232382a5ed154264ec6f"
+  },
+  "pp3": {
+    "ambient_dim": 395,
+    "c3": 0.16115855024319592,
+    "canonical_sign_rule": "maximum-absolute ambient coordinate must be positive",
+    "minus_file": "pp3_minus.f64le",
+    "minus_norm": 0.9999999999999998,
+    "minus_sha256": "ea2c997de7dbaea4edad8b1f30cdac31b4a0c76db0f0df2983900f28a2529ce7",
+    "minus_sign_pivot_index": 23,
+    "minus_sign_pivot_value": 0.175507272864768,
+    "negative_eigenvalue": -0.9869285291668849,
+    "plus_file": "pp3_plus.f64le",
+    "plus_minus_dot": -1.1449174941446927e-16,
+    "plus_norm": 0.9999999999999993,
+    "plus_sha256": "66ad0cd0f931b0aff88bfc8afc4e9ffa9e355d32f054d376acebb97b469a3cff",
+    "plus_sign_pivot_index": 267,
+    "plus_sign_pivot_value": 0.19941553037419882,
+    "positive_eigenvalue": 0.9869285291668849,
+    "s3": 0.9869285291668851,
+    "scientific_principal_pair_number": 3,
+    "serialization": "raw little-endian IEEE754 float64, 395 scalars",
+    "theta_deg": 80.72585099222678,
+    "zero_based_principal_pair_index": 2
+  },
+  "prior_basis_runner": {
+    "git_blob": "03f3bf1482913bce30bfdb665ab223a67e6e4159",
+    "path": "scripts/reason_router_gen4_family_subspace_sensitivity_fast_cuda.py"
+  },
+  "result": "PASS_PP3_XG1_OUTCOME_BLIND_PREPARATION",
+  "schema_version": "GEN4_PP3_XG1_EXTERNAL_TRANSPORT_PREPARATION_V1",
+  "scientific_execution": {
+    "backward_executed": false,
+    "baseline_model_forward_count": 0,
+    "checkpoint_load_count": 0,
+    "cuda_executed": false,
+    "model_forward_count": 0,
+    "primary_inference_executed": false,
+    "scientific_outcomes_observed": false,
+    "training_executed": false
+  },
+  "scope_freeze_commit": "02e4c897d65f8f6e90b855054793594866545bf2",
+  "scope_git_blob": "7f5d297f3f02225d7935c372db9c36caa6ad60ab",
+  "scope_path": "reports/reason_router_gen4_pp3_xg1_external_transport_scope.md",
+  "xg1": {
+    "anchor_manifest_git_blob": "fee202a73a2338288a7377ecad313ac54c4ee8fb",
+    "anchor_manifest_sha256": "ebce31f5f93f33da8eb238cdc4d66510ea7ade03bdbedac88ec8d6b82f9e739e",
+    "eligibility_result": "PASS_300_OF_300",
+    "eligibility_summary_git_blob": "f31ec132ca42458300f97292dcf31110e09ef856",
+    "eligibility_summary_sha256": "833d32e9bdeca2ba28e5b192b2211487242cb1e3b898bb8dae384ba678a1b407",
+    "eligible_anchor_row_count": 1800,
+    "generator_family": "xg1_independent_structured_records_v1",
+    "pair_id_first": "xg1_fact_001",
+    "pair_id_last": "xg1_fact_300",
+    "rows_sha256": "6ea0484517e0ae7479ad7f3b0a74af4d75f7f7353d29586c597f2a9fee1e649f",
+    "source_facts_sha256": "fccd6821eeb97194d5b898aca4911eaba71e893df7fe27c910aa37255a5695e0",
+    "source_pair_count": 300,
+    "structural_manifest_sha256": "f7c881dd1a4a400e600eea4b03b46e05a48bf0da07d29905462fc3543d8af822"
+  }
+}
