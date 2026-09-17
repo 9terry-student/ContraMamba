@@ -1,0 +1,82 @@
+{
+  "anchor_manifest_sha256": "4f7eb6b8660212a9db64b679370262fe4ec9b57cff0ab99121b039c0db141e04",
+  "checkpoint_load_count": 0,
+  "claim_boundary": [
+    "This artifact establishes fresh XG1 301..600 tokenizer/event-anchor prefix eligibility only.",
+    "The tokenizer and coordinate contract are inherited unchanged from the completed XG1 001..300 eligibility gate.",
+    "No model forward, checkpoint load, native-state extraction, susceptibility endpoint computation, or scientific inference is performed.",
+    "Eligibility PASS does not itself authorize scientific model execution."
+  ],
+  "claim_truncation_row_count": 0,
+  "complete_source_pair_count": 300,
+  "complete_source_pair_target": 300,
+  "coordinate_contract": {
+    "active_serialization": "claim[:63]+EOS(0)+evidence[:64]",
+    "anchor_mapping": "xg1_generator_declared_span_final_overlapping_evidence_token_mapped_independently_per_cell",
+    "post4_rule": "a+4 <= terminal_index-1",
+    "shortened_post_window_allowed": false
+  },
+  "eligible_anchor_counts": {
+    "A_IDENTITY": 1200,
+    "A_NAME": 600
+  },
+  "evaluation_executed": false,
+  "evidence_truncation_row_count": 0,
+  "exclusion_counts": {},
+  "frozen_input": {
+    "pair_id_first": "xg1_fact_301",
+    "pair_id_last": "xg1_fact_600",
+    "row_count": 1800,
+    "rows_path": "data/reason_router_gen4_xg1_fresh_specificity_v1/synthetic_reason_router_six_cell.jsonl",
+    "rows_sha256": "3f28d8a75008d383855313a08168fef1a2b9b37257103636a7f2edb65ce76ad6",
+    "source_facts_path": "data/reason_router_gen4_xg1_fresh_specificity_v1/structured_source_facts.jsonl",
+    "source_facts_sha256": "aa5b8e3cfcbf19e71335ecdbea659326925f8bea33312c2354de670fa7a15cf7",
+    "source_pair_count": 300,
+    "structural_manifest_path": "data/reason_router_gen4_xg1_fresh_specificity_v1/structural_manifest.json",
+    "structural_manifest_sha256": "92ae0137641691c2a9d0254e87739e3e89d90556dc0579a2877433b86ff97dfb"
+  },
+  "gpu_used": false,
+  "model_forward_count": 0,
+  "phase": "XG1_FRESH_SPECIFICITY_TOKENIZER_ANCHOR_ELIGIBILITY",
+  "primary_complete_pair_prefix_feasibility": "PASS_300_OF_300",
+  "provenance": {
+    "branch": "gen4-k-xg2-basis-holdout",
+    "design_freeze_commit": "0bc49ab95cbb2c8735b4bc79422d660fa64e3e01",
+    "fresh_builder_blob": "e4eff4bb909165ede5a792069cbc58f8b02ed002",
+    "head": "ddb1404800af6dbd89982bbbcdd8262d203577f6",
+    "legacy_gate_blob": "6c98ce022ca134e385db28851fd364dc6daff423",
+    "structural_freeze_commit": "ddb1404800af6dbd89982bbbcdd8262d203577f6"
+  },
+  "required_anchor_counts": {
+    "A_IDENTITY": 1200,
+    "A_NAME": 600
+  },
+  "required_anchor_row_count": 1800,
+  "schema_version": "GEN4_XG1_FRESH_SPECIFICITY_TOKENIZER_ANCHOR_ELIGIBILITY_SUMMARY_V1",
+  "scientific_outcomes_observed": false,
+  "target_identity_name_cells": [
+    "C0_SHAM",
+    "C2_NAME"
+  ],
+  "target_identity_name_mismatch_count": 0,
+  "target_identity_name_mismatches": [],
+  "tokenizer": {
+    "active_encoding_validation_commit": "17f1ddfc8286796f27c4a61716a21e14126bb836",
+    "add_special_tokens": false,
+    "analysis_reference": "40e5d2bd7452abb3ca8fadbafe9131ee0e2c2f37",
+    "claim_budget": 63,
+    "claimed_historical_snapshot": false,
+    "effective_pad_token_id": 0,
+    "eos_token_id": 0,
+    "evidence_budget": 64,
+    "file_sha256": {
+      "special_tokens_map.json": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8",
+      "tokenizer.json": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf",
+      "tokenizer_config.json": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+    },
+    "max_length": 128,
+    "serialization": "claim[:63]+EOS(0)+evidence[:64]",
+    "tokenizers_version": "0.22.2"
+  },
+  "training_executed": false
+}
