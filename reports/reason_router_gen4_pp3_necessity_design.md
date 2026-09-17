@@ -2,14 +2,18 @@
 
 ## Status
 
-`DESIGN_ONLY_NO_IMPLEMENTATION_NO_EXECUTION`
+`DESIGN_ONLY_NO_IMPLEMENTATION_NO_SCIENTIFIC_MODEL_EXECUTION`
 
 This document prospectively defines the next causal question after the completed
 PP3 specificity branch.
 
-No model execution, tokenizer execution, checkpoint loading, training, backward
-pass, task-head evaluation, logits read, or scientific inference is authorized
-by this document.
+No scientific model execution, checkpoint loading, training, backward pass,
+task-head evaluation, logits read, or scientific inference is authorized by
+this document.
+
+Tokenizer execution is authorized only for the static tokenizer/anchor
+eligibility gate explicitly listed in `Next authorized phase`. That gate must
+perform zero model forwards, zero checkpoint loads, and zero GPU execution.
 
 ## Prior evidence boundary
 
