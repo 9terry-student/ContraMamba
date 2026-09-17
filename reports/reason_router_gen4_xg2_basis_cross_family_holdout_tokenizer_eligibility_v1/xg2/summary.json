@@ -1,0 +1,86 @@
+{
+  "anchor_manifest_sha256": "7c511ed89013067fbc9af87f74336c749ebe7a3bdca7592960ac1e46a8922ef0",
+  "checkpoint_load_count": 0,
+  "claim_boundary": [
+    "This artifact establishes fresh XG2/XG4 tokenizer/event-anchor prefix eligibility only.",
+    "The canonical tokenizer is the frozen active-encoding analysis reference.",
+    "No model forward, checkpoint load, CUDA execution, intervention response, baseline geometry, R_ALIGN, or inferential test is performed.",
+    "Eligibility PASS does not itself authorize scientific model execution."
+  ],
+  "complete_source_pair_count": 300,
+  "complete_source_pair_target": 300,
+  "coordinate_contract": {
+    "active_serialization": "claim[:63]+EOS(0)+evidence[:64]",
+    "anchor_mapping": "frozen_contiguous_title_name_span_final_overlapping_evidence_token",
+    "post4_rule": "a+4 <= terminal_index-1",
+    "shortened_post_window_allowed": false
+  },
+  "eligible_anchor_counts": {
+    "A_IDENTITY": 1200,
+    "A_NAME": 600
+  },
+  "evaluation_executed": false,
+  "exclusion_counts": {},
+  "family_key": "xg2",
+  "frozen_input": {
+    "pair_id_first": "xg2_fact_601",
+    "pair_id_last": "xg2_fact_900",
+    "row_count": 1800,
+    "rows_path": "data/reason_router_gen4_xg2_basis_cross_family_holdout_v1/xg2/synthetic_reason_router_six_cell.jsonl",
+    "rows_sha256": "399fc00f7cd20ae9d46305224dfbc74cd1064e1d0276df42bf5d1db5b389e558",
+    "source_facts_path": "data/reason_router_gen4_xg2_basis_cross_family_holdout_v1/xg2/structured_source_facts.jsonl",
+    "source_facts_sha256": "aaf0ad1f049feee7ee2f1893d86ce6410a9f3ded0ef8fb30fb7df570993d2ef2",
+    "source_pair_count": 300,
+    "structural_manifest_path": "data/reason_router_gen4_xg2_basis_cross_family_holdout_v1/xg2/structural_manifest.json",
+    "structural_manifest_sha256": "4e0451caebabbf5df86a522c8fa9ec74b539de77316ad738024c0a20253f4365"
+  },
+  "gpu_used": false,
+  "model_forward_count": 0,
+  "phase": "XG2_BASIS_CROSS_FAMILY_HOLDOUT_TOKENIZER_ANCHOR_ELIGIBILITY",
+  "primary_complete_pair_prefix_feasibility": "PASS_300_OF_300",
+  "provenance": {
+    "branch": "gen4-k-xg2-basis-holdout",
+    "fresh_builder_sha256": "441b7c4701a36740c0a7a97c2eac3b1007db012e99d50bf10b2f5323dccdd223",
+    "head": "c5679b8a22f103956a46cbc665354b4f9cd7063a",
+    "inherited_gate_blob": "29a97f343f372718ca56436c505893136cb505b6",
+    "scope_blob": "94baa8cda2c2b2ea5400609f89588ae212507553",
+    "scope_freeze_commit": "c5679b8a22f103956a46cbc665354b4f9cd7063a",
+    "structural_freeze_commit": "c5679b8a22f103956a46cbc665354b4f9cd7063a",
+    "xg1_gate_blob": "6c98ce022ca134e385db28851fd364dc6daff423"
+  },
+  "required_anchor_counts": {
+    "A_IDENTITY": 1200,
+    "A_NAME": 600
+  },
+  "required_anchor_row_count": 1800,
+  "schema_version": "GEN4_XG2_BASIS_CROSS_FAMILY_HOLDOUT_TOKENIZER_ANCHOR_ELIGIBILITY_SUMMARY_V1",
+  "scientific_outcomes_observed": false,
+  "structural_anchor_topology_failure_count": 0,
+  "structural_anchor_topology_failures": [],
+  "target_identity_name_cells": [
+    "C0_SHAM",
+    "C2_NAME"
+  ],
+  "target_identity_name_mismatch_count": 0,
+  "target_identity_name_mismatches": [],
+  "tokenizer": {
+    "active_encoding_validation_commit": "17f1ddfc8286796f27c4a61716a21e14126bb836",
+    "add_special_tokens": false,
+    "analysis_reference": "40e5d2bd7452abb3ca8fadbafe9131ee0e2c2f37",
+    "claim_budget": 63,
+    "claimed_historical_snapshot": false,
+    "effective_pad_token_id": 0,
+    "eos_token_id": 0,
+    "evidence_budget": 64,
+    "file_sha256": {
+      "special_tokens_map.json": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8",
+      "tokenizer.json": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf",
+      "tokenizer_config.json": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+    },
+    "max_length": 128,
+    "serialization": "claim[:63]+EOS(0)+evidence[:64]",
+    "tokenizers_version": "0.22.2"
+  },
+  "tokenizer_executed": true,
+  "training_executed": false
+}
