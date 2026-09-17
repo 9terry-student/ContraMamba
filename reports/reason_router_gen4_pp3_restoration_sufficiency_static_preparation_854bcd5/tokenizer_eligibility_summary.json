@@ -1,0 +1,49 @@
+{
+  "active_serialization": "claim[:63]+EOS(0)+evidence[:64]",
+  "anchor_manifest_sha256": "dc4f2cd4ca2806249467407c7c980411d8fa02051418f9a8b625c1b1c4756253",
+  "anchor_row_count": 1800,
+  "authority_commit": "854bcd5585512155776c34e46846817c54b75cf6",
+  "checkpoint_load_count": 0,
+  "complete_source_pair_count": 300,
+  "eligible_anchor_counts": {
+    "A_IDENTITY": 1200,
+    "A_NAME": 600
+  },
+  "evaluation_executed": false,
+  "exclusion_counts": {},
+  "gpu_used": false,
+  "model_forward_count": 0,
+  "pair_id_first": "xg1_fact_901",
+  "pair_id_last": "xg1_fact_1200",
+  "post4_rule": "a+4 <= terminal_index-1",
+  "result": "PASS_300_OF_300",
+  "schema_version": "GEN4_PP3_RESTORATION_SUFFICIENCY_XG1_TOKENIZER_ELIGIBILITY_SUMMARY_V1",
+  "scientific_outcomes_observed": false,
+  "source_pair_count": 300,
+  "target_identity_name_mismatch_count": 0,
+  "tokenizer": {
+    "active_encoding_validation_commit": "17f1ddfc8286796f27c4a61716a21e14126bb836",
+    "add_special_tokens": false,
+    "analysis_reference": "40e5d2bd7452abb3ca8fadbafe9131ee0e2c2f37",
+    "claim_budget": 63,
+    "claimed_historical_snapshot": false,
+    "effective_pad_token_id": 0,
+    "eos_token_id": 0,
+    "evidence_budget": 64,
+    "file_sha256": {
+      "special_tokens_map.json": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8",
+      "tokenizer.json": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf",
+      "tokenizer_config.json": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+    },
+    "max_length": 128,
+    "serialization": "claim[:63]+EOS(0)+evidence[:64]",
+    "tokenizers_version": "0.22.2"
+  },
+  "tokenizer_hashes": {
+    "special_tokens_map.json": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8",
+    "tokenizer.json": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf",
+    "tokenizer_config.json": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+  },
+  "tokenizer_revision": "40e5d2bd7452abb3ca8fadbafe9131ee0e2c2f37",
+  "training_executed": false
+}
