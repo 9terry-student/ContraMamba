@@ -1,0 +1,31 @@
+{
+  "backward_executed": false,
+  "execution_head": "d8e71addfea4354a947393abd4b9e76ab769f3f3",
+  "output_file_sha256": {
+    "geometry_summary.json": "112d03aa23e105cebcd7893a7c9f8e9d21a135a832a9da7d4caa236fe3c36378",
+    "p1_minus.f64le": "f6b2ca4ebfdd4db306cbcfa8cf93cf725679482c8b3b4c87c81b9cce45c3a833",
+    "p1_plus.f64le": "20624cda88e2c94bb736331e00aa3023d900afd331aec3700ee6d712f59ff77f",
+    "p2_minus.f64le": "e127053936fb609a59c7c12663799efe1ed254ce8df5bc5660b2584528f1d26c",
+    "p2_plus.f64le": "37c7536e0bb9dd01f85f549679b27736b7d75845569ca10e19f832bff8403120",
+    "p3_minus.f64le": "4a48563f5e419916a32f4b3a4106bea1056abafd898ef12496ea5bd079bbd0fb",
+    "p3_plus.f64le": "5d404f8f402639ab101413a0237fa458246a155855507600256fa3dd250adb7f",
+    "p4_minus.f64le": "d9ff5b1dc9fc2977f7b776564411960967b386c522664562efd51884d99b85a4",
+    "p4_plus.f64le": "d73f63b52d7c198717cd6828c1e41a952803008e5b528880d1f17b61ccea4510",
+    "p5_minus.f64le": "7af4a78366e9258d2833bced5a5c824990d7c062a970d3c44b3adc386db3a0dc",
+    "p5_plus.f64le": "1be1bb5eaee1cdf583c0c4a249ac6dd624e1dd0194bd81c08d34e50cce7a8ed3",
+    "projector_contrast.f64le": "7d9b633147318ffd7df6784e22c762b163354490f003eecfbe969608a3c7a2ab",
+    "strong_indices.json": "b10fc1eae07e184a5ed7975a9296133945d6446ff7f568a18acdf2091a338712",
+    "xg2_alignment_delta_h.pt": "5c68a9e3fe30473b4e0b2bb941c4c930236ee2fa4715a7ff693a92ed23c5a96b",
+    "xg2_basis.f64le": "3cd8287a3d6986c071a6cd8ddb59ba9d36ca8ca02a0e2a42ec0ec04eea70391d",
+    "xg2_geometry_items.jsonl": "13bd27fe6c606988b49c5a46f108555427f8f6a222ca2559ec62656e8766cc30",
+    "xg4_alignment_delta_h.pt": "66b2d3634517e647e3027ffb92bd289c61b117507eaed34f54b715ba444d753c",
+    "xg4_basis.f64le": "46a2c5dac0d58d6f1c7811650af59c7a30a9f6cfe546d1468e78677f1fca703f",
+    "xg4_geometry_items.jsonl": "6964bb201304a379169f1512ea874c7ee65562fb4b099ec04d92a2d36778249f"
+  },
+  "response_observed": false,
+  "result": "PASS_MAMBA370M_GEOMETRY_PREPARATION",
+  "schema_version": "gen4-mamba370m-geometry-preparation-manifest-v1",
+  "scientific_model_forward_count": 2400,
+  "training_executed": false,
+  "xg1_accessed": false
+}
