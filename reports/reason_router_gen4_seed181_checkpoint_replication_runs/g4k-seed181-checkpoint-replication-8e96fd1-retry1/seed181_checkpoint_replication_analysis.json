@@ -1,0 +1,55 @@
+{
+  "D_SUF_one_sided_p": 9.010901911776754e-58,
+  "D_SUF_t": 20.105176219299196,
+  "N": 300,
+  "causal_replication_supported": true,
+  "causal_result_label": "SEED181_HOMOLOG_RESTORATION_REPLICATION_SUPPORTED",
+  "checkpoint_sha256": "afc55ef0bf6a250dadc16dfa85ae2350505dd1289e781e109519c6bc8009422f",
+  "control_plane_index": 5,
+  "df": 299,
+  "finite_epsilon_mae": 3.164292668625018e-09,
+  "finite_epsilon_mean_Q_native": 1.8577153849600195e-07,
+  "finite_epsilon_mean_Q_principal": 1.8607038369640398e-07,
+  "finite_epsilon_mean_residual": -2.988452004020009e-10,
+  "finite_epsilon_normalized_rmse_over_rms_Q_native": 0.0392067058468371,
+  "finite_epsilon_pearson": 0.9972791521198436,
+  "finite_epsilon_rmse": 8.592936258069666e-09,
+  "finite_epsilon_sign_agreement": 1.0,
+  "homolog_overlap": 1.9999999999999951,
+  "homolog_plane_index": 3,
+  "mean_D_SUF": 4.078872356598754e-08,
+  "mean_Q_control": 1.4498281493001444e-07,
+  "mean_Q_neutralized": 1.0507711352505441e-07,
+  "mean_Q_restored": 1.8577153849600195e-07,
+  "mean_S_control": 3.9905701404959994e-08,
+  "mean_S_homolog": 8.069442497094753e-08,
+  "positive_causal_replication_gates": {
+    "mean_D_SUF_gt_0": true,
+    "mean_Q_restored_gt_0": true,
+    "mean_S_homolog_gt_0": true,
+    "one_sided_p_lt_0_05": true
+  },
+  "positive_eigenvalues": [
+    0.8706181418918281,
+    0.9475502211237629,
+    0.9869285291668852,
+    0.9984895267338247,
+    0.9998679284285451
+  ],
+  "principal_angles_deg": [
+    60.530551209544804,
+    71.36084571534418,
+    80.72585099222681,
+    86.85044763941809,
+    89.06879117554145
+  ],
+  "principal_reconstruction_inference": "DESCRIPTIVE_ONLY_NO_BINARY_THRESHOLD",
+  "schema_version": "gen4-seed181-checkpoint-replication-analysis-v1",
+  "seed180_pp3_overlap_by_seed181_plane": [
+    1.0801441853300552e-30,
+    1.695403841287025e-30,
+    1.9999999999999951,
+    2.619986948095786e-31,
+    6.100585878968926e-31
+  ]
+}
