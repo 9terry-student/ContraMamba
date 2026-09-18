@@ -1,4 +1,4 @@
-# Gen4 PP3 Local Causal Mechanism + PP3-Excluded Residual Transport, Aggregate Necessity, and Individual-Plane Necessity Synthesis
+# Gen4 PP3 Local Causal Mechanism + PP3-Excluded Residual Transport, Aggregate Necessity, Individual-Plane Necessity, and Individual-Plane Restoration Sufficiency Synthesis
 
 ## Status
 
@@ -11,6 +11,8 @@ Residual extension statuses:
 `PP3_EXCLUDED_RESIDUAL_AGGREGATE_NECESSITY_OVER_QUARTER_TURN_MATCHED_CONTROL_SUPPORTED_ON_FRESH_XG1_HOLDOUT`
 
 `PP3_EXCLUDED_INDIVIDUAL_RESIDUAL_PLANE_NECESSITY_LOCALIZATION_SUPPORTED_ON_FRESH_XG1_HOLDOUT`
+
+`PP3_EXCLUDED_INDIVIDUAL_RESIDUAL_PLANE_RESTORATION_SUFFICIENCY_LOCALIZATION_SUPPORTED_ON_FRESH_XG1_HOLDOUT`
 
 This document synthesizes already validated evidence only.
 
@@ -31,6 +33,7 @@ The completed evidence chain is:
 → `PP3-excluded residual-template transport`
 → `PP3-excluded aggregate residual necessity`
 → `PP3-excluded individual residual-plane necessity localization`
+→ `PP3-excluded individual residual-plane restoration sufficiency localization`
 
 ### 1. Cross-family susceptibility
 
@@ -439,6 +442,92 @@ restoration sufficiency, or causal status for the XG2-like residual-template
 orientation itself.
 
 
+### 10. Prospective PP3-excluded individual residual-plane restoration sufficiency localization
+
+An eighth non-overlapping XG1 population prospectively tested the restoration
+counterpart of the previously established individual residual-plane necessity
+results.
+
+Population:
+
+`xg1_fact_2101..xg1_fact_2400`
+
+Validated result commit:
+
+`13751337136dccc52c9e43ed2e31f263e4d1359a`
+
+Accepted execution HEAD:
+
+`09be091bce8a4ba10ef5010c16840826ab4d8aa2`
+
+Accepted run:
+
+`g4k-residual-individual-plane-restoration-sufficiency-xg1-2101-2400-09be091-retry1`
+
+All four residual planes were pre-registered simultaneously:
+
+`{P1, P2, P4, P5}`
+
+For each plane `Pk`, with native component `c_k` and its frozen equal-norm
+orthogonal within-plane quarter-turn component `r_k`, the experiment started
+from the exact plane-neutralized background:
+
+`B_k = h - c_k`
+
+and compared exact native restoration:
+
+`R_k = B_k + c_k = h`
+
+against the matched quarter-turn replacement:
+
+`C_k = B_k + r_k`
+
+The primary per-plane contrast was:
+
+`D_SUF,k = (Q_R,k - Q_B,k) - (Q_C,k - Q_B,k) = Q0 - Q_C,k`
+
+Exactly four one-sided Student t-tests were executed, one for each of P1, P2,
+P4, and P5, followed by Holm step-down familywise correction at
+`alpha = 0.05`.
+
+Shared native endpoint:
+
+`mean(Q0) = 1.864160988613634e-07 > 0`
+
+Observed confirmatory results:
+
+- P1: mean S = `2.7757228598649021e-08`; mean D_SUF = `3.9504129863766069e-08`; t(299) = `19.655259022137678`; one-sided p = `4.2852749015640899e-56`; Holm rejection = `PASS`
+- P2: mean S = `2.7205076762973886e-08`; mean D_SUF = `1.79862238667082e-08`; t(299) = `15.720488359624252`; one-sided p = `2.6290903850154124e-41`; Holm rejection = `PASS`
+- P4: mean S = `1.8355788782109717e-09`; mean D_SUF = `2.8137968308118452e-09`; t(299) = `3.8220252765181728`; one-sided p = `8.0520282867827463e-05`; Holm rejection = `PASS`
+- P5: mean S = `1.3806133820259049e-08`; mean D_SUF = `1.5480764491017802e-08`; t(299) = `12.985677378940377`; one-sided p = `3.5028143739779681e-31`; Holm rejection = `PASS`
+
+For every plane, all frozen positive gates passed:
+
+1. shared `mean(Q0) > 0`;
+2. `mean(S_k) > 0`;
+3. `mean(D_SUF,k) > 0`;
+4. Holm rejection.
+
+Frozen supported set:
+
+`{P1, P2, P4, P5}`
+
+The supported set is intentionally unordered.
+
+Frozen conclusion:
+
+`PP3_EXCLUDED_INDIVIDUAL_RESIDUAL_PLANE_RESTORATION_SUFFICIENCY_LOCALIZATION_SUPPORTED_ON_FRESH_XG1_HOLDOUT`
+
+Thus each of P1, P2, P4, and P5 is both individually locally necessary under
+its previously frozen matched-control necessity intervention and individually
+locally restoration-sufficient under its prospectively frozen matched
+quarter-turn replacement test.
+
+This does not establish plane ranking, additive decomposition, independence,
+absence of interactions, aggregate residual restoration sufficiency, or causal
+status for the XG2-like residual-template orientation itself.
+
+
 ## Combined mechanism conclusion
 
 Across the first four prospectively separated XG1 populations, PP3 satisfies
@@ -466,13 +555,18 @@ The seventh prospective XG1 population localizes that residual causal evidence:
 each of P1, P2, P4, and P5 individually passes its own prospectively frozen
 matched-control local-necessity criterion under Holm familywise correction.
 
+The eighth prospective XG1 population adds the complementary restoration result:
+each of P1, P2, P4, and P5 individually passes its own prospectively frozen
+matched-replacement restoration-sufficiency criterion under the same four-plane
+Holm familywise structure.
+
 Together these results support PP3 as a **transportable, geometry-specific,
 locally necessary, and locally restoration-sufficient contributor** to the
 frozen layer-17 / target-token native-Mamba susceptibility mechanism, while
-also establishing both an **aggregate local necessity contribution** for the
-complete PP3-excluded residual subspace and **individually localized local
-necessity contributions** for P1, P2, P4, and P5 under their respective
-matched-control interventions.
+also establishing an **aggregate local necessity contribution** for the complete
+PP3-excluded residual subspace and **both individually localized local necessity
+and individual local restoration-sufficiency contributions** for P1, P2, P4,
+and P5 under their respective prospectively frozen matched interventions.
 
 Necessity and restoration sufficiency are complementary but not equivalent.
 
@@ -513,17 +607,22 @@ The fresh `1801..2100` result further localizes the residual causal mechanism:
 each of P1, P2, P4, and P5 is individually locally necessary under its own
 frozen within-plane matched-control intervention.
 
+The fresh `2101..2400` result establishes the complementary individual
+restoration statement: each of P1, P2, P4, and P5 is individually locally
+restoration-sufficient relative to its own frozen equal-norm orthogonal
+within-plane quarter-turn replacement from the same neutralized background.
+
 The combined picture is therefore:
 
-`shared PP3 causal core + structured XG2-like PP3-excluded residual geometry + aggregate residual local necessity + individually localized local necessity across P1/P2/P4/P5`
+`shared PP3 causal core + structured XG2-like PP3-excluded residual geometry + aggregate residual local necessity + individually localized local necessity and local restoration sufficiency across P1/P2/P4/P5`
 
 The XG2-like orientation remains a geometric transport statement. Causal
-evidence now applies to the complete frozen residual subspace `R` at the
-aggregate level and to P1, P2, P4, and P5 individually under their respective
-necessity interventions. It does not establish causal ownership by the
-XG2-like template direction, individual residual-plane restoration
-sufficiency, plane ranking, additive decomposition, or absence of
-cross-plane interactions.
+evidence applies to the complete frozen residual subspace `R` at the aggregate
+necessity level and to P1, P2, P4, and P5 individually under both their
+necessity and restoration interventions. It does not establish causal ownership
+by the XG2-like template direction, aggregate residual restoration sufficiency,
+plane ranking, additive decomposition, independence, or absence of cross-plane
+interactions.
 
 ## What is now established
 
@@ -545,22 +644,26 @@ semantics, generator families, and evaluated populations, the evidence supports:
 - individually detectable local necessity of P1, P2, P4, and P5 relative to
   each plane's prospectively frozen equal-norm orthogonal within-plane
   quarter-turn matched control on a seventh fresh XG1 population, with the
-  supported set treated as unordered under Holm familywise correction.
+  supported set treated as unordered under Holm familywise correction;
+- individually detectable local restoration sufficiency of P1, P2, P4, and P5
+  relative to each plane's prospectively frozen equal-norm orthogonal
+  within-plane quarter-turn replacement on an eighth fresh XG1 population,
+  again with the supported set treated as unordered under Holm familywise
+  correction.
 
 The PP3 necessity/restoration claims, aggregate residual necessity claim, and
-individual residual-plane necessity claims are causal local-intervention
-results. The PP3-excluded residual-template result remains a distinct
-prospective geometric transport result. Individual residual planes are promoted
-only to the bounded local-necessity status directly established by their frozen
-tests; no individual sufficiency, ranking, additive decomposition, independence,
-or interaction conclusion follows.
+individual residual-plane necessity/restoration claims are causal
+local-intervention results. The PP3-excluded residual-template result remains a
+distinct prospective geometric transport result. Individual residual planes are
+promoted only to the bounded local necessity and local restoration-sufficiency
+statuses directly established by their frozen tests; no ranking, additive
+decomposition, independence, or interaction conclusion follows.
 
 ## What is not established
 
 The completed evidence does not establish:
 
 - PP3 as the sole internal mechanism;
-- individual restoration sufficiency of P1, P2, P4, or P5;
 - dominance or ranking among P1, P2, P4, and P5;
 - additive decomposition of aggregate residual necessity into individual-plane
   effects;
@@ -586,7 +689,7 @@ The completed evidence does not establish:
 The PP3 transport/specificity/necessity/restoration-sufficiency sequence is
 complete for its bounded local-mechanism question.
 
-The prospective PP3-excluded residual extension is now complete through three
+The prospective PP3-excluded residual extension is now complete through four
 distinct claims:
 
 1. the aggregate secondary residual orientation transports as XG2-like on
@@ -595,13 +698,20 @@ distinct claims:
    relative to the frozen within-R quarter-turn matched control;
 3. each of P1, P2, P4, and P5 has individually detectable local necessity
    relative to its own frozen within-plane quarter-turn matched control, with
-   all four planes treated as one prospectively registered unordered family.
+   all four planes treated as one prospectively registered unordered family;
+4. each of P1, P2, P4, and P5 has individually detectable local restoration
+   sufficiency relative to its own frozen equal-norm orthogonal within-plane
+   quarter-turn replacement, again as one prospectively registered unordered
+   four-plane family.
 
 No additional replication, rescue control, subgroup mining, alternative tail,
 plane ranking, or p-value is required for these completed claims.
 
-The next genuinely new causal question is prospective individual residual-plane
-restoration sufficiency. That experiment should again pre-register all four
-planes simultaneously on a fresh non-overlapping holdout and must not use the
-current effect sizes or p-values for plane selection, ranking, control tuning,
-sample-size allocation, or hypothesis modification.
+The next genuinely new causal question is **aggregate residual restoration
+sufficiency**: starting from the complete PP3-excluded residual-neutralized
+background, does restoring the exact native residual component in
+`R = P1 ⊕ P2 ⊕ P4 ⊕ P5` recover the frozen susceptibility endpoint more strongly
+than a prospectively frozen equal-norm orthogonal within-R quarter-turn
+replacement? This should use the next fresh non-overlapping XG1 holdout and must
+not infer aggregate restoration from the already positive individual-plane
+results, because cross-plane interactions remain unresolved.
