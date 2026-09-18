@@ -261,25 +261,40 @@ def _accept_local_candidate(
     return candidate
 
 
-def resolve_exact_snapshot(spec: KernelSpec) -> ResolvedKernelSnapshot:
+def resolve_exact_snapshot(
+    spec: KernelSpec,
+    *,
+    rejected_paths: frozenset[Path] = frozenset(),
+) -> ResolvedKernelSnapshot:
     require(
         _kernel_package_version() == KERNELS_VERSION,
         f"KERNELS_VERSION:{_kernel_package_version()}",
     )
+
+    rejected = {
+        path.resolve()
+        for path in rejected_paths
+    }
 
     # If the exact historical model-repo snapshot is still cached locally,
     # use it first. This is the closest possible reproduction of the original
     # validated backend and requires no reinterpretation of the old revision.
     for candidate in _legacy_local_candidates(spec):
         accepted = _accept_local_candidate(candidate, spec)
-        if accepted is not None:
+        if (
+            accepted is not None
+            and accepted.path.resolve() not in rejected
+        ):
             return accepted
 
     # Next accept only migrated kernel-repo snapshots whose build bytes match
     # the already-frozen .so SHA256.
     for candidate in _transport_local_candidates(spec):
         accepted = _accept_local_candidate(candidate, spec)
-        if accepted is not None:
+        if (
+            accepted is not None
+            and accepted.path.resolve() not in rejected
+        ):
             return accepted
 
     allow_patterns = [
@@ -322,12 +337,18 @@ def resolve_exact_snapshot(spec: KernelSpec) -> ResolvedKernelSnapshot:
             failures.append(f"{revision}:VALIDATION:{exc}")
             continue
 
-        return ResolvedKernelSnapshot(
+        resolved = ResolvedKernelSnapshot(
             path=downloaded,
             transport_revision=revision,
             transport_repo_type=TRANSPORT_REPO_TYPE,
             source="kernel_repo_download",
         )
+        if resolved.path.resolve() in rejected:
+            failures.append(
+                f"{revision}:REJECTED_MODULE_SURFACE"
+            )
+            continue
+        return resolved
 
     raise KernelCompatibilityError(
         (
@@ -349,57 +370,97 @@ def load_exact_module(
     *,
     importer: Callable[[str, Path], ModuleType] | None = None,
 ) -> tuple[ModuleType, ResolvedKernelSnapshot]:
-    resolved = resolve_exact_snapshot(spec)
-    init_path = _select_module_init(resolved.path, spec)
-
-    # Re-authenticate the exact compiled binary immediately before import.
-    _binary_path(resolved.path, spec)
-
     loader = _import_from_path if importer is None else importer
-    module = loader(spec.package_name, init_path)
+    rejected_paths: set[Path] = set()
+    surface_failures: list[str] = []
 
-    module_file = getattr(module, "__file__", None)
-    require(
-        module_file is not None,
-        f"{spec.label}_MODULE_FILE_MISSING",
-    )
+    while True:
+        try:
+            resolved = resolve_exact_snapshot(
+                spec,
+                rejected_paths=frozenset(rejected_paths),
+            )
+        except KernelCompatibilityError as exc:
+            if not surface_failures:
+                raise
+            raise KernelCompatibilityError(
+                (
+                    f"KERNEL_MODULE_UNAVAILABLE:{spec.label}:"
+                    f"scientific_revision={spec.scientific_revision}:"
+                    f"failures={'|'.join(surface_failures)}:"
+                    f"resolution={exc}"
+                )
+            ) from exc
 
-    # A migrated kernel snapshot may expose both the historical package
-    # wrapper and a direct variant-level wrapper. kernels==0.10.2 imports
-    # through one exact snapshot path, but the loaded module can legitimately
-    # report either authorized wrapper as __file__. Authenticate the complete
-    # wrapper surface of the already-validated snapshot instead of forcing the
-    # preferred candidate selected before import.
-    allowed_module_paths = tuple(
-        candidate.resolve()
-        for candidate in _module_init_candidates(resolved.path, spec)
-        if candidate.is_file()
-    )
-    require(
-        len(allowed_module_paths) >= 1,
-        f"{spec.label}_AUTHORIZED_MODULE_SURFACE_EMPTY",
-    )
+        init_path = _select_module_init(resolved.path, spec)
 
-    observed_module_path = Path(module_file).resolve()
-    require(
-        observed_module_path in allowed_module_paths,
-        (
-            f"{spec.label}_MODULE_PATH:"
-            f"allowed={','.join(str(path) for path in allowed_module_paths)}:"
-            f"observed={observed_module_path}"
-        ),
-    )
+        # Re-authenticate the exact compiled binary immediately before import.
+        _binary_path(resolved.path, spec)
 
-    missing = [
-        name
-        for name in spec.required_functions
-        if not callable(getattr(module, name, None))
-    ]
-    require(
-        not missing,
-        f"{spec.label}_FUNCTION_SURFACE:{','.join(missing)}",
-    )
-    return module, resolved
+        # Preserve the historical canonical import name for the first attempt.
+        # A fallback candidate gets a revision-qualified name so a rejected
+        # wrapper cannot contaminate the next immutable candidate via module
+        # caching. The loaded binary/function identity remains the frozen one.
+        module_name = (
+            spec.package_name
+            if not surface_failures
+            else (
+                f"{spec.package_name}_"
+                f"{resolved.transport_revision[:12]}"
+            )
+        )
+        module = loader(module_name, init_path)
+
+        try:
+            module_file = getattr(module, "__file__", None)
+            require(
+                module_file is not None,
+                f"{spec.label}_MODULE_FILE_MISSING",
+            )
+
+            allowed_module_paths = tuple(
+                candidate.resolve()
+                for candidate in _module_init_candidates(
+                    resolved.path,
+                    spec,
+                )
+                if candidate.is_file()
+            )
+            require(
+                len(allowed_module_paths) >= 1,
+                f"{spec.label}_AUTHORIZED_MODULE_SURFACE_EMPTY",
+            )
+
+            observed_module_path = Path(module_file).resolve()
+            require(
+                observed_module_path in allowed_module_paths,
+                (
+                    f"{spec.label}_MODULE_PATH:"
+                    f"allowed={','.join(str(path) for path in allowed_module_paths)}:"
+                    f"observed={observed_module_path}"
+                ),
+            )
+
+            missing = [
+                name
+                for name in spec.required_functions
+                if not callable(getattr(module, name, None))
+            ]
+            require(
+                not missing,
+                (
+                    f"{spec.label}_FUNCTION_SURFACE:"
+                    f"{','.join(missing)}"
+                ),
+            )
+        except KernelCompatibilityError as exc:
+            rejected_paths.add(resolved.path.resolve())
+            surface_failures.append(
+                f"{resolved.transport_revision}:{exc}"
+            )
+            continue
+
+        return module, resolved
 
 
 def patch_transformers_mamba(

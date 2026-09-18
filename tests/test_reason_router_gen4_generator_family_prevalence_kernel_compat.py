@@ -246,6 +246,80 @@ def test_remote_transport_falls_back_only_across_whitelisted_exact_commits(
     assert [call["revision"] for call in calls] == [first, second]
 
 
+def test_module_surface_failure_falls_back_to_next_whitelisted_candidate(
+    monkeypatch,
+    tmp_path,
+):
+    spec = _spec()
+    first, second = spec.transport_revisions
+
+    first_snapshot = _make_snapshot(
+        tmp_path,
+        spec,
+        first,
+        prefix="kernels",
+    )
+    second_snapshot = _make_snapshot(
+        tmp_path,
+        spec,
+        second,
+        prefix="kernels",
+    )
+
+    monkeypatch.setattr(
+        compat,
+        "_kernel_package_version",
+        lambda: "0.10.2",
+    )
+    monkeypatch.setattr(
+        compat,
+        "_cache_roots",
+        lambda: (tmp_path,),
+    )
+    monkeypatch.setattr(
+        compat,
+        "_hub_snapshot_download",
+        lambda **kwargs: (_ for _ in ()).throw(
+            AssertionError(kwargs)
+        ),
+    )
+
+    calls = []
+
+    def importer(module_name, init_path):
+        calls.append((module_name, Path(init_path)))
+
+        if first in Path(init_path).parts:
+            return SimpleNamespace(
+                __file__=str(init_path),
+                f1=lambda: None,
+                f2=None,
+            )
+
+        assert second in Path(init_path).parts
+        return SimpleNamespace(
+            __file__=str(init_path),
+            f1=lambda: None,
+            f2=lambda: None,
+        )
+
+    observed, resolved = compat.load_exact_module(
+        spec,
+        importer=importer,
+    )
+
+    assert callable(observed.f1)
+    assert callable(observed.f2)
+    assert resolved.path == second_snapshot
+    assert resolved.transport_revision == second
+    assert [path for _name, path in calls] == [
+        compat._select_module_init(first_snapshot, spec),
+        compat._select_module_init(second_snapshot, spec),
+    ]
+    assert calls[0][0] == spec.package_name
+    assert calls[1][0] == f"{spec.package_name}_{second[:12]}"
+
+
 def test_wrong_binary_is_rejected_before_import(monkeypatch, tmp_path):
     spec = _spec(expected_binary=b"expected")
     transport = spec.transport_revisions[0]
@@ -400,24 +474,42 @@ def test_missing_function_surface_is_blocked(monkeypatch, tmp_path):
         prefix="kernels",
     )
 
-    monkeypatch.setattr(compat, "_kernel_package_version", lambda: "0.10.2")
-    monkeypatch.setattr(compat, "_cache_roots", lambda: (tmp_path,))
+    monkeypatch.setattr(
+        compat,
+        "_kernel_package_version",
+        lambda: "0.10.2",
+    )
+    monkeypatch.setattr(
+        compat,
+        "_cache_roots",
+        lambda: (tmp_path,),
+    )
+    monkeypatch.setattr(
+        compat,
+        "_hub_snapshot_download",
+        lambda **kwargs: (_ for _ in ()).throw(
+            RuntimeError("offline")
+        ),
+    )
 
     init_path = compat._select_module_init(snapshot, spec)
-    module = SimpleNamespace(
-        __file__=str(init_path),
-        f1=lambda: None,
-        f2=None,
-    )
+
+    def importer(_name, path):
+        return SimpleNamespace(
+            __file__=str(path),
+            f1=lambda: None,
+            f2=None,
+        )
 
     with pytest.raises(
         compat.KernelCompatibilityError,
-        match="TEST_FUNCTION_SURFACE:f2",
+        match="KERNEL_MODULE_UNAVAILABLE:TEST",
     ):
         compat.load_exact_module(
             spec,
-            importer=lambda _name, _path: module,
+            importer=importer,
         )
+
 
 
 def test_transformers_patch_surface_is_exact():
