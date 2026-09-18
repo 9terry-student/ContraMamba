@@ -396,6 +396,25 @@ def test_endpoint_identity():
     assert result["D_RES_NEC"] == result["QC"] - result["QR"]
 
 
+def test_endpoint_canonicalizes_cancellation_sensitive_identity():
+    q0 = 1.0
+    qr = 0.1
+    qc = 0.2
+
+    cancellation_path = (q0 - qr) - (q0 - qc)
+    canonical = qc - qr
+
+    # Regression guard: these are mathematically identical but not
+    # bitwise-identical IEEE-754 evaluations for this input.
+    assert cancellation_path != canonical
+
+    result = r.endpoint(q0, qr, qc)
+    assert result["A_R"] == q0 - qr
+    assert result["A_C"] == q0 - qc
+    assert result["D_RES_NEC"] == canonical
+    r.validate_endpoint(result)
+
+
 def test_canonical_two_shard_merge():
     all_items = [item(i) for i in range(r.N)]
     checkpoint = (

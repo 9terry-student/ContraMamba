@@ -1102,8 +1102,7 @@ def endpoint(
 ) -> dict[str, float]:
     a_r = q0 - qr
     a_c = q0 - qc
-    d = a_r - a_c
-    require(d == qc - qr, "D_RES_NEC_INTERNAL")
+    d = qc - qr
     return {
         "Q0": q0,
         "QR": qr,
