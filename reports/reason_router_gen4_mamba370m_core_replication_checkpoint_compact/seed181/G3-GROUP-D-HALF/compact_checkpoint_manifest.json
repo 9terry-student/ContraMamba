@@ -1,0 +1,64 @@
+{
+  "compact_checkpoint": {
+    "bytes": 1915197,
+    "path": "reports/reason_router_gen4_mamba370m_core_replication_checkpoint_compact/seed181/G3-GROUP-D-HALF/selected_downstream_checkpoint.pt",
+    "sha256": "9d8e3db22af4636938679aac6a8a97dd45344937d434fab29eac2ddc41a52a72"
+  },
+  "downstream": {
+    "state_canonical_sha256": "eb16ae88a3fe42dd44ca102cdc122d09fe69eb8cc3d3f5ff761f285ab2af1730",
+    "state_key_count": 36,
+    "tensor_bytes": 1879836
+  },
+  "pretrained_backbone": {
+    "file_identities": {
+      "config.json": {
+        "bytes": 917,
+        "sha256": "c15aad03ce0cc27f7f550ff05bb9a0354f3c0770b3b9ef382c5f730aa8e23e62"
+      },
+      "generation_config.json": {
+        "bytes": 137,
+        "sha256": "ffc3c43cdd9c33c738da20597bdef859cd44e4cc77ff3966b6d59269a1cae8e7"
+      },
+      "model.safetensors": {
+        "bytes": 1486118288,
+        "sha256": "8e2386de4c63e64a371cb9bc451421b04a33390103ba5e596ead4ac4c668a2b1"
+      },
+      "special_tokens_map.json": {
+        "bytes": 473,
+        "sha256": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8"
+      },
+      "tokenizer.json": {
+        "bytes": 2113837,
+        "sha256": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf"
+      },
+      "tokenizer_config.json": {
+        "bytes": 4793,
+        "sha256": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+      }
+    },
+    "repo": "state-spaces/mamba-370m-hf",
+    "revision": "589179554943157be31701edd8b4558889276674",
+    "state_canonical_sha256": "2f1bb0820efd7376103541cd6de7b2893456083359708ac78f3fd30f8d1d56ac",
+    "state_key_count": 482
+  },
+  "reconstruction_verification": {
+    "key_set_exact": true,
+    "scientific_forward_executed": false,
+    "tensor_equal_all_518_keys": true,
+    "training_executed": false
+  },
+  "schema_version": "contramamba_mamba370m_compact_checkpoint_manifest_v1",
+  "source_full_checkpoint": {
+    "bytes": 1488135079,
+    "full_state_canonical_sha256": "cd368ea41cbfc6560ff2d9eb89fc53b333cde72d4db5c99ae7ea8e5f62c1db83",
+    "sha256": "b664a776b78b54cb8ec8e6553bc8a2059eef53d25165e2e82ab556146f85bf29",
+    "state_key_count": 518
+  },
+  "training_identity": {
+    "arm": "G3-GROUP-D-HALF",
+    "execution_commit": "3e0e9a435068c552abf20f3a74e0c3eccca344a3",
+    "selected_epoch": 19,
+    "split_seed": 8192,
+    "training_seed": 181
+  }
+}
