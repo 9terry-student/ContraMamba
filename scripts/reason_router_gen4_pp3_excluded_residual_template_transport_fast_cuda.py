@@ -1115,6 +1115,294 @@ def read_shard_payload(temp_dir: Path, shard_id: int) -> dict[str, Any]:
     return value
 
 
+
+def runtime_gate_for_device(runtime: Any, gpu_id: int) -> None:
+    backend = runtime.backend
+    import transformers
+
+    observed = {
+        "python": backend.platform.python_version(),
+        "numpy": backend.np.__version__,
+        "torch": torch.__version__,
+        "transformers": transformers.__version__,
+    }
+    require(
+        observed == backend.EXPECTED_RUNTIME,
+        f"RUNTIME_MISMATCH:{observed}",
+    )
+    require(
+        runtime.kernel_compat._kernel_package_version()
+        == backend.KERNELS_VERSION,
+        "KERNELS_VERSION",
+    )
+    require(torch.cuda.is_available(), "CUDA_UNAVAILABLE")
+    require(torch.cuda.device_count() >= GPU_COUNT, "CUDA_DEVICE_COUNT")
+    require(torch.version.cuda == backend.EXPECTED_CUDA_RUNTIME, "CUDA_RUNTIME")
+    require(0 <= gpu_id < torch.cuda.device_count(), "GPU_ID_RANGE")
+    torch.cuda.set_device(gpu_id)
+    require(
+        torch.cuda.get_device_name(gpu_id) == backend.EXPECTED_DEVICE_NAME,
+        f"CUDA_DEVICE_NAME:{gpu_id}",
+    )
+    require(
+        tuple(torch.cuda.get_device_capability(gpu_id))
+        == backend.EXPECTED_CAPABILITY,
+        f"CUDA_CAPABILITY:{gpu_id}",
+    )
+
+    torch.set_float32_matmul_precision("highest")
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+
+
+def make_fast_capture_for_device(
+    runtime: Any,
+    kernels: Mapping[str, Any],
+    device: torch.device,
+):
+    import transformers.models.mamba.modeling_mamba as mm
+
+    backend = runtime.backend
+    core = runtime.core
+    parent = runtime.parent
+    extraction = runtime.extraction
+    transport_runtime = runtime.transport_runtime
+    kernel_scan = kernels["selective_scan_fn"]
+    kernel_update = kernels["selective_state_update"]
+
+    def capture_branch(
+        model: Any,
+        runtime_ctx: Mapping[str, Any],
+        *,
+        trace_code: Any,
+        trace_line: int,
+        input_ids: torch.Tensor,
+        anchor: int,
+        budget: Any,
+        capture_states: bool,
+        delta_h: Any | None = None,
+        plus_branch: bool | None = None,
+    ) -> dict[str, Any]:
+        del trace_code, trace_line
+
+        target_abs = int(anchor) + core.TARGET_OFFSET
+        require(
+            tuple(input_ids.shape)
+            == (1, extraction.MAX_MODEL_SEQUENCE_LENGTH),
+            "INPUT_SHAPE",
+        )
+        input_ids = input_ids.detach().to(device).contiguous()
+
+        layer15 = runtime_ctx["layer15"]
+        norm17 = runtime_ctx["norm17"]
+        mixer17 = runtime_ctx["mixer17"]
+
+        holders: dict[str, Any] = {}
+        counts = {"r15": 0, "y15": 0, "r17": 0, "x17": 0}
+
+        def take(full: Any, label: str) -> torch.Tensor:
+            value = parent._finite_tensor(full, label)
+            require(
+                0 <= target_abs < value.shape[1],
+                f"{label}_TARGET_RANGE",
+            )
+            return value[0, target_abs, :].contiguous().clone()
+
+        def layer15_pre(_module, args):
+            counts["r15"] += 1
+            require(
+                counts["r15"] == 1 and len(args) >= 1,
+                "R15_HOOK",
+            )
+            holders["R"] = take(args[0], "R15_FULL")
+
+        def layer15_post(_module, _args, output):
+            counts["y15"] += 1
+            require(counts["y15"] == 1, "Y15_HOOK")
+            holders["Y"] = take(output, "Y15_FULL")
+
+        def norm17_pre(_module, args):
+            counts["r17"] += 1
+            require(
+                counts["r17"] == 1 and len(args) == 1,
+                "R17_HOOK",
+            )
+            holders["R17"] = take(args[0], "R17_FULL")
+
+        def norm17_post(_module, _args, output):
+            counts["x17"] += 1
+            require(counts["x17"] == 1, "X17_HOOK")
+            holders["X"] = take(output, "X17_FULL")
+
+        handles = [
+            layer15.register_forward_pre_hook(layer15_pre),
+            layer15.mixer.register_forward_hook(layer15_post),
+            norm17.register_forward_pre_hook(norm17_pre),
+            norm17.register_forward_hook(norm17_post),
+        ]
+
+        intervention_audit = None
+        if delta_h is not None:
+            require(
+                plus_branch is not None,
+                "INTERVENTION_BRANCH_REQUIRED",
+            )
+            intervention_audit = {}
+            handles.append(
+                transport_runtime.install_inproj_hook(
+                    mixer17,
+                    token_index=target_abs,
+                    strong_mask=runtime_ctx["strong_mask"],
+                    delta_h=delta_h,
+                    plus_branch=bool(plus_branch),
+                    audit=intervention_audit,
+                )
+            )
+
+        active = {"value": False}
+        captured: list[tuple[torch.Tensor, ...]] = []
+
+        def scan_wrapper(*args, **kwargs):
+            if active["value"]:
+                require(len(captured) == 0, "LAYER17_SCAN_DUPLICATE")
+                require(len(args) >= 8, "SCAN_ARG_COUNT")
+                captured.append(
+                    tuple(v.detach().clone() for v in args[:8])
+                )
+            return kernel_scan(*args, **kwargs)
+
+        original_scan = mm.selective_scan_fn
+        original_cuda = mixer17.cuda_kernels_forward
+
+        def cuda_wrapper(
+            _self,
+            hidden_states,
+            cache_params=None,
+            cache_position=None,
+            attention_mask=None,
+        ):
+            require(not active["value"], "LAYER17_ACTIVE_REENTRY")
+            active["value"] = True
+            try:
+                return original_cuda(
+                    hidden_states,
+                    cache_params,
+                    cache_position,
+                    attention_mask,
+                )
+            finally:
+                active["value"] = False
+
+        mm.selective_scan_fn = scan_wrapper
+        mixer17.cuda_kernels_forward = backend.types.MethodType(
+            cuda_wrapper,
+            mixer17,
+        )
+
+        budget.consume()
+        try:
+            model.mamba.eval()
+            with torch.inference_mode():
+                _ = model.mamba(input_ids=input_ids)
+            torch.cuda.synchronize(device)
+        finally:
+            for handle in reversed(handles):
+                handle.remove()
+            mm.selective_scan_fn = original_scan
+            if "cuda_kernels_forward" in mixer17.__dict__:
+                del mixer17.__dict__["cuda_kernels_forward"]
+
+        require(
+            counts == {"r15": 1, "y15": 1, "r17": 1, "x17": 1},
+            "HOOK_COUNT_FAILURE",
+        )
+        require(
+            set(holders) == {"R", "Y", "R17", "X"},
+            "HOOK_CAPTURE_MISSING",
+        )
+        require(len(captured) == 1, "LAYER17_SCAN_CAPTURE_COUNT")
+
+        r17 = holders["R17"].to(torch.float64)
+        eps = float(norm17.variance_epsilon)
+        scale = float(torch.rsqrt(r17.pow(2).mean() + eps).item())
+        require(math.isfinite(scale) and scale > 0.0, "RMS_SCALE")
+
+        states = None
+        if capture_states:
+            (
+                u,
+                delta,
+                a_matrix,
+                b_scan,
+                c_scan,
+                d_vector,
+                gate,
+                delta_bias,
+            ) = captured[0]
+
+            prefix_end = int(anchor) + 1
+            require(prefix_end + 4 <= u.shape[-1], "FAST_POST4_RANGE")
+
+            _, state = kernel_scan(
+                u[..., :prefix_end].contiguous(),
+                delta[..., :prefix_end].contiguous(),
+                a_matrix,
+                b_scan[..., :prefix_end].contiguous(),
+                c_scan[..., :prefix_end].contiguous(),
+                d_vector,
+                gate[..., :prefix_end].contiguous(),
+                delta_bias,
+                delta_softplus=True,
+                return_last_state=True,
+            )
+            window = [backend._flatten_state(state)]
+
+            for token in range(prefix_end, prefix_end + 4):
+                _ = kernel_update(
+                    state,
+                    u[..., token],
+                    delta[..., token],
+                    a_matrix,
+                    b_scan[..., token],
+                    c_scan[..., token],
+                    d_vector,
+                    gate[..., token],
+                    delta_bias,
+                    dt_softplus=True,
+                )
+                window.append(backend._flatten_state(state))
+
+            filler = window[0]
+            token_count = int(input_ids.shape[1])
+            states = [filler.copy() for _ in range(token_count)]
+            for offset, vector in enumerate(window):
+                states[int(anchor) + offset] = vector
+
+        if delta_h is not None:
+            require(
+                intervention_audit is not None and bool(intervention_audit),
+                "INTERVENTION_HOOK_NOT_OBSERVED",
+            )
+            require(
+                intervention_audit["token_index"] == target_abs,
+                "INTERVENTION_TOKEN_AUDIT",
+            )
+
+        return {
+            "geometry_branch": {
+                "R": holders["R"],
+                "Y": holders["Y"],
+                "X": holders["X"],
+                "rms_scale": scale,
+            },
+            "states": states,
+            "intervention_audit": intervention_audit,
+            "anchor": int(anchor),
+            "target_abs": target_abs,
+        }
+
+    return capture_branch
+
 def worker_run(
     *,
     shard: Mapping[str, Any],
@@ -1141,7 +1429,7 @@ def worker_run(
         geometry = build_principal_geometry(bases)
 
         runtime = holdout.phase1.base.prevalence_eq
-        runtime.backend.runtime_gate()
+        runtime_gate_for_device(runtime, gpu_id)
 
         with runtime.backend.parent_runtime_rebind():
             rows, encoded, event_rows = load_inputs(tokenizer_snapshot)
@@ -1189,7 +1477,9 @@ def worker_run(
             model.to(device)
             model.eval()
 
-            fast_capture = runtime.backend._make_fast_capture(kernels)
+            fast_capture = make_fast_capture_for_device(
+                runtime, kernels, device
+            )
             original_capture = parent.capture_branch
             budget = parent.ForwardBudget(int(shard["forward_budget"]))
             items: list[dict[str, Any]] = []

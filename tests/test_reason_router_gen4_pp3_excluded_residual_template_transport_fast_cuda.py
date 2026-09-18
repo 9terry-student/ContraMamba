@@ -389,3 +389,21 @@ def test_runner_contains_no_statistical_inference():
     assert '"primary_inference_executed":false' in compact
     assert '"multiplicity_correction_executed":false' in compact
     assert '"scientific_conclusion":none' in compact
+
+
+
+def test_runner_two_gpu_runtime_and_fast_capture_are_device_generic():
+    source = Path(r.__file__).read_text(encoding="utf-8")
+    compact = "".join(source.split())
+
+    assert "runtime.backend.runtime_gate()" not in source
+    assert "runtime.backend._make_fast_capture(kernels)" not in source
+    assert '.to("cuda:0")' not in source
+    assert "torch.cuda.set_device(0)" not in source
+
+    assert "runtime_gate_for_device(runtime,gpu_id)" in compact
+    assert "make_fast_capture_for_device(runtime,kernels,device)" in compact
+    assert "input_ids=input_ids.detach().to(device).contiguous()" in compact
+    assert "torch.cuda.synchronize(device)" in compact
+    assert "torch.cuda.get_device_name(gpu_id)" in compact
+    assert "torch.cuda.get_device_capability(gpu_id)" in compact
