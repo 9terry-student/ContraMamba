@@ -1,8 +1,12 @@
-# Gen4 PP3 Transport + Specificity + Necessity + Restoration Sufficiency Mechanism Synthesis
+# Gen4 PP3 Local Causal Mechanism + PP3-Excluded Residual Transport Synthesis
 
 ## Status
 
 `PP3_TRANSPORT_SPECIFICITY_LOCAL_NECESSITY_AND_RESTORATION_SUFFICIENCY_SUPPORTED`
+
+Residual extension status:
+
+`PP3_EXCLUDED_XG2_LIKE_RESIDUAL_TEMPLATE_TRANSPORT_SUPPORTED_ON_FRESH_XG1_HOLDOUT`
 
 This document synthesizes already validated evidence only.
 
@@ -20,6 +24,7 @@ The completed evidence chain is:
 → `geometry-control specificity`
 → `matched-control local necessity`
 → `matched-replacement local restoration sufficiency`
+→ `PP3-excluded residual-template transport`
 
 ### 1. Cross-family susceptibility
 
@@ -233,10 +238,77 @@ Thus, on a PP3-neutralized local state background, restoring the exact native
 PP3 component recovered the broad susceptibility contrast more strongly than an
 equal-coefficient, equal-addition-norm PP5 replacement.
 
+
+### 7. Prospective PP3-excluded residual-template transport
+
+A fifth non-overlapping XG1 population tested a genuinely new question about
+the distributed response remaining after PP3 was excluded.
+
+Population:
+
+`xg1_fact_1201..xg1_fact_1500`
+
+Prospective design commit:
+
+`d3cc008fad221862e6fe9718b67b6ba0c87d0368`
+
+Validated result commit:
+
+`a32ae557b7b0e1797cb632e23ce023c78938b018`
+
+The residual coordinate order was frozen as:
+
+`[P1, P2, P4, P5]`
+
+For each item, the PP3-excluded residual vector was compared against unit
+templates constructed only from the already frozen XG2 and XG4 `601..900`
+residual mean-net vectors.
+
+Primary endpoint:
+
+`D_TEMPLATE = C_XG2 - C_XG4`
+
+where `C_XG2` and `C_XG4` are cosine alignments of the item-level residual
+vector with the frozen XG2 and XG4 residual templates.
+
+Observed:
+
+- N: `300`
+- mean C_XG2: `0.86608386493388712`
+- SD C_XG2: `0.11622169218083186`
+- mean C_XG4: `0.28077128559825382`
+- SD C_XG4: `0.2604699022409554`
+- mean D_TEMPLATE: `0.5853125793356333`
+- SD D_TEMPLATE: `0.3453234709049785`
+- fraction D_TEMPLATE > 0: `0.81333333333333335`
+- t(299): `29.357724311692319`
+- one-sided p: `2.2607093023100906e-90`
+- confirmatory p-value count: `1`
+- additional p-values: `0`
+
+All frozen positive-label gates passed:
+
+1. `mean(C_XG2) > 0`
+2. `mean(D_TEMPLATE) > 0`
+3. one-sided `p < 0.05`
+
+Frozen conclusion:
+
+`PP3_EXCLUDED_XG2_LIKE_RESIDUAL_TEMPLATE_TRANSPORT_SUPPORTED_ON_FRESH_XG1_HOLDOUT`
+
+Thus the PP3-excluded residual response is not merely an unstable leftover on
+fresh XG1 examples. Its orientation prospectively transported in an XG2-like
+direction relative to the frozen XG4 residual template.
+
+This is a geometric transport result, not a causal result for P1/P2/P4/P5.
+It does not establish necessity, sufficiency, or causal ownership of any
+secondary residual plane, and no individual residual plane is promoted.
+
+
 ## Combined mechanism conclusion
 
-Across four prospectively separated XG1 populations, PP3 now satisfies four
-distinct evidential roles:
+Across the first four prospectively separated XG1 populations, PP3 satisfies
+four distinct causal-mechanism evidential roles:
 
 1. its localized contrast transports outside the discovery generator families;
 2. its effect is stronger than the prospectively frozen max-separation PP5
@@ -245,6 +317,11 @@ distinct evidential roles:
    susceptibility contrast more than the matched PP5 control;
 4. restoring that native component from a PP3-neutralized background recovers
    the contrast more strongly than the matched PP5 replacement.
+
+The fifth prospective XG1 population addresses the residual mechanism rather
+than re-testing PP3. It shows that after PP3 exclusion, the remaining
+four-plane residual orientation transports as XG2-like relative to the frozen
+XG4 residual template.
 
 Together these results support PP3 as a **transportable, geometry-specific,
 locally necessary, and locally restoration-sufficient contributor** to the
@@ -277,6 +354,18 @@ The evidence is therefore most consistent with a distributed local mechanism in
 which PP3 is a reproducible and causally important component, not the complete
 mechanism.
 
+The fresh `1201..1500` confirmatory result further resolves the previously
+unspecified remainder: once PP3 is excluded, the aggregate residual orientation
+is prospectively XG2-like rather than XG4-like under the frozen template test.
+
+The combined picture is therefore:
+
+`shared PP3 causal core + structured XG2-like secondary residual geometry on XG1`
+
+The second term is geometric and transportable under the tested protocol, but
+it is not yet causally localized. No individual secondary plane should be
+interpreted as necessary, sufficient, or promoted.
+
 ## What is now established
 
 Within the frozen model, checkpoint, layer, target token, intervention
@@ -288,16 +377,24 @@ semantics, generator families, and evaluated populations, the evidence supports:
 - PP3 specificity beyond a response-independent max-separation PP5 control;
 - stronger attenuation after PP3 removal than after the matched PP5 control;
 - stronger recovery after native PP3 restoration than after the matched PP5
-  replacement.
+  replacement;
+- prospective XG2-like transport of the PP3-excluded aggregate residual
+  orientation on a fifth fresh XG1 population.
 
-These causal claims were evaluated on non-overlapping prospective XG1
-populations.
+The PP3 necessity/restoration claims are causal local-intervention results.
+The PP3-excluded residual-template result is a distinct prospective geometric
+transport result and does not promote the secondary residual planes to causal
+status.
 
 ## What is not established
 
 The completed evidence does not establish:
 
 - PP3 as the sole internal mechanism;
+- causal necessity or sufficiency of P1, P2, P4, or P5 from the residual
+  template result;
+- identification of a single secondary residual plane as the XG2-like
+  mechanism;
 - PP3 alone as sufficient in an otherwise empty state;
 - complete elimination of susceptibility after PP3 removal;
 - global behavioral necessity or sufficiency;
@@ -312,11 +409,16 @@ The completed evidence does not establish:
 ## Branch conclusion
 
 The PP3 transport/specificity/necessity/restoration-sufficiency sequence is
-complete for its current bounded local-mechanism question.
+complete for its bounded local-mechanism question.
+
+The first prospective PP3-excluded residual-template transport question is also
+complete and supports an XG2-like aggregate secondary residual orientation on
+fresh XG1 examples.
 
 No additional replication, rescue control, subgroup mining, alternative tail,
-or p-value is required to establish this exact claim.
+or p-value is required for either completed claim.
 
-Any subsequent scientific experiment should address a genuinely new question
-about the remaining distributed mechanism rather than re-test PP3 under minor
-variants.
+A subsequent scientific experiment should therefore address a genuinely new
+question: causal localization of the structured secondary residual mechanism,
+without outcome-guided selection of P1/P2/P4/P5 and without re-testing PP3 under
+minor variants.
