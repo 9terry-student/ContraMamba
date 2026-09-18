@@ -149,6 +149,55 @@ def test_interaction_algebra():
         )
 
 
+def test_interaction_algebra_accepts_float_roundoff():
+    q0 = -2.0313360211095804e-07
+    q3 = -2.8861277617966834e-07
+    q5 = -2.591794889855885e-07
+    q35 = -2.283140354174052e-07
+
+    q = {
+        "p1_neutralized": q0,
+        "p2_neutralized": q0,
+        "p3_neutralized": q3,
+        "p4_neutralized": q0,
+        "p5_neutralized": q5,
+        "p3_p1_joint_neutralized": q3,
+        "p3_p2_joint_neutralized": q3,
+        "p3_p4_joint_neutralized": q3,
+        "p3_p5_joint_neutralized": q35,
+    }
+
+    out = m.endpoints_from_q(q0, q)
+    row = out["pp3_pair_interactions"]["P5"]
+
+    # This case intentionally exercises non-exact binary floating arithmetic.
+    assert (
+        row["interaction_effect"]
+        != -row["Q_interaction_residual"]
+    )
+
+    algebra_ulp = max(
+        math.ulp(value)
+        for value in (
+            q0,
+            q35,
+            row["joint_effect"],
+            row["additive_effect_prediction"],
+            row["interaction_effect"],
+            row["Q_additive_prediction"],
+            row["Q_interaction_residual"],
+        )
+    )
+
+    assert (
+        abs(
+            row["interaction_effect"]
+            + row["Q_interaction_residual"]
+        )
+        <= m.FLOAT_IDENTITY_ULPS * algebra_ulp
+    )
+
+
 def test_stage2_baseline_identity_constants():
     assert m.STAGE2_RESULT_COMMIT == (
         "fb6498e52d0410c64d458896b555f4cbdbf5e407"

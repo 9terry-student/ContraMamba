@@ -48,6 +48,7 @@ DIM = 395
 K = 5
 EPS = 0.025
 TOL = 1.0e-12
+FLOAT_IDENTITY_ULPS = 8
 
 PLANE_ORDER = ("P1", "P2", "P3", "P4", "P5")
 RESIDUAL_PLANES = ("P1", "P2", "P4", "P5")
@@ -699,9 +700,22 @@ def endpoints_from_q(
         q_additive_prediction = float(q0) - additive_effect
         q_interaction_residual = q_joint - q_additive_prediction
 
+        algebra_ulp = max(
+            math.ulp(value)
+            for value in (
+                float(q0),
+                q_joint,
+                joint_effect,
+                additive_effect,
+                interaction_effect,
+                q_additive_prediction,
+                q_interaction_residual,
+            )
+        )
         require(
-            interaction_effect == -q_interaction_residual,
-            f"INTERACTION_SIGN:{partner}",
+            abs(interaction_effect + q_interaction_residual)
+            <= FLOAT_IDENTITY_ULPS * algebra_ulp,
+            f"INTERACTION_ALGEBRA:{partner}",
         )
 
         pair_effects[partner] = {
