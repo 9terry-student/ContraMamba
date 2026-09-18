@@ -1,12 +1,14 @@
-# Gen4 PP3 Local Causal Mechanism + PP3-Excluded Residual Transport Synthesis
+# Gen4 PP3 Local Causal Mechanism + PP3-Excluded Residual Transport and Aggregate Necessity Synthesis
 
 ## Status
 
 `PP3_TRANSPORT_SPECIFICITY_LOCAL_NECESSITY_AND_RESTORATION_SUFFICIENCY_SUPPORTED`
 
-Residual extension status:
+Residual extension statuses:
 
 `PP3_EXCLUDED_XG2_LIKE_RESIDUAL_TEMPLATE_TRANSPORT_SUPPORTED_ON_FRESH_XG1_HOLDOUT`
+
+`PP3_EXCLUDED_RESIDUAL_AGGREGATE_NECESSITY_OVER_QUARTER_TURN_MATCHED_CONTROL_SUPPORTED_ON_FRESH_XG1_HOLDOUT`
 
 This document synthesizes already validated evidence only.
 
@@ -25,6 +27,7 @@ The completed evidence chain is:
 → `matched-control local necessity`
 → `matched-replacement local restoration sufficiency`
 → `PP3-excluded residual-template transport`
+→ `PP3-excluded aggregate residual necessity`
 
 ### 1. Cross-family susceptibility
 
@@ -304,6 +307,70 @@ This is a geometric transport result, not a causal result for P1/P2/P4/P5.
 It does not establish necessity, sufficiency, or causal ownership of any
 secondary residual plane, and no individual residual plane is promoted.
 
+### 8. Prospective PP3-excluded aggregate residual necessity
+
+A sixth non-overlapping XG1 population tested whether the complete frozen
+PP3-excluded residual subspace makes an aggregate local causal contribution
+beyond a pre-specified matched perturbation in the same residual subspace.
+
+Population:
+
+`xg1_fact_1501..xg1_fact_1800`
+
+Validated result commit:
+
+`5b0d4f5975dc9ecd06bbfa5efa5f0f5691d2874b`
+
+Accepted run:
+
+`g4k-residual-aggregate-necessity-xg1-1501-1800-5c75b97-retry2`
+
+The tested residual subspace was frozen as:
+
+`R = P1 ⊕ P2 ⊕ P4 ⊕ P5`
+
+The treatment neutralized the complete branch-local native residual component
+in `R`.
+
+The matched control independently quarter-turned each native coefficient pair
+by 90 degrees, producing an equal-norm orthogonal correction in the same
+residual subspace without response-guided weighting or plane selection.
+
+Primary endpoint:
+
+`D_RES_NEC = (Q0 - QR) - (Q0 - QC) = QC - QR`
+
+Observed:
+
+- N: `300`
+- mean Q0: `1.8699048379014811e-07`
+- mean A_R: `6.6142907048184626e-08`
+- mean D_RES_NEC: `4.9220194461529442e-08`
+- SD D_RES_NEC: `3.6836066499708061e-08`
+- t(299): `23.143588788576249`
+- one-sided p: `6.4276188677606773e-69`
+- confirmatory p-value count: `1`
+- additional p-values: `0`
+
+All prospectively frozen positive gates passed:
+
+1. `mean(Q0) > 0`
+2. `mean(A_R) > 0`
+3. `mean(D_RES_NEC) > 0`
+4. one-sided `p < 0.05`
+
+Frozen conclusion:
+
+`PP3_EXCLUDED_RESIDUAL_AGGREGATE_NECESSITY_OVER_QUARTER_TURN_MATCHED_CONTROL_SUPPORTED_ON_FRESH_XG1_HOLDOUT`
+
+Thus the complete PP3-excluded residual subspace has an aggregate local causal
+necessity contribution to the frozen susceptibility endpoint relative to the
+pre-specified equal-norm orthogonal quarter-turn matched control.
+
+This does not establish individual necessity of P1, P2, P4, or P5, aggregate
+residual sufficiency, or causal necessity of the previously observed XG2-like
+residual-template orientation itself.
+
 
 ## Combined mechanism conclusion
 
@@ -323,9 +390,16 @@ than re-testing PP3. It shows that after PP3 exclusion, the remaining
 four-plane residual orientation transports as XG2-like relative to the frozen
 XG4 residual template.
 
+The sixth prospective XG1 population adds a distinct causal result: neutralizing
+the complete PP3-excluded residual subspace produces stronger attenuation than
+the pre-specified equal-norm orthogonal quarter-turn perturbation in that same
+subspace.
+
 Together these results support PP3 as a **transportable, geometry-specific,
 locally necessary, and locally restoration-sufficient contributor** to the
-frozen layer-17 / target-token native-Mamba susceptibility mechanism.
+frozen layer-17 / target-token native-Mamba susceptibility mechanism, while
+also establishing an **aggregate local necessity contribution** for the
+complete PP3-excluded residual subspace.
 
 Necessity and restoration sufficiency are complementary but not equivalent.
 
@@ -358,13 +432,18 @@ The fresh `1201..1500` confirmatory result further resolves the previously
 unspecified remainder: once PP3 is excluded, the aggregate residual orientation
 is prospectively XG2-like rather than XG4-like under the frozen template test.
 
+The fresh `1501..1800` result adds that the complete PP3-excluded residual
+subspace is aggregate-locally necessary relative to the frozen within-R
+quarter-turn matched control.
+
 The combined picture is therefore:
 
-`shared PP3 causal core + structured XG2-like secondary residual geometry on XG1`
+`shared PP3 causal core + structured XG2-like secondary residual geometry with aggregate local necessity on XG1`
 
-The second term is geometric and transportable under the tested protocol, but
-it is not yet causally localized. No individual secondary plane should be
-interpreted as necessary, sufficient, or promoted.
+The XG2-like orientation remains a geometric transport statement. The causal
+result applies to the complete frozen residual subspace `R`, not to the XG2-like
+template direction and not to any individual secondary plane. No P1/P2/P4/P5
+plane should be interpreted as individually necessary, sufficient, or promoted.
 
 ## What is now established
 
@@ -379,22 +458,27 @@ semantics, generator families, and evaluated populations, the evidence supports:
 - stronger recovery after native PP3 restoration than after the matched PP5
   replacement;
 - prospective XG2-like transport of the PP3-excluded aggregate residual
-  orientation on a fifth fresh XG1 population.
+  orientation on a fifth fresh XG1 population;
+- aggregate local necessity of the complete PP3-excluded residual subspace
+  relative to the frozen within-R quarter-turn matched control on a sixth fresh
+  XG1 population.
 
-The PP3 necessity/restoration claims are causal local-intervention results.
-The PP3-excluded residual-template result is a distinct prospective geometric
-transport result and does not promote the secondary residual planes to causal
-status.
+The PP3 necessity/restoration claims and the aggregate residual necessity claim
+are causal local-intervention results. The PP3-excluded residual-template
+result is a distinct prospective geometric transport result. None of these
+results promotes an individual secondary residual plane to causal status.
 
 ## What is not established
 
 The completed evidence does not establish:
 
 - PP3 as the sole internal mechanism;
-- causal necessity or sufficiency of P1, P2, P4, or P5 from the residual
-  template result;
+- individual causal necessity or sufficiency of P1, P2, P4, or P5;
+- causal necessity or sufficiency of the XG2-like residual-template orientation
+  itself;
 - identification of a single secondary residual plane as the XG2-like
   mechanism;
+- aggregate sufficiency of the PP3-excluded residual subspace;
 - PP3 alone as sufficient in an otherwise empty state;
 - complete elimination of susceptibility after PP3 removal;
 - global behavioral necessity or sufficiency;
@@ -411,14 +495,18 @@ The completed evidence does not establish:
 The PP3 transport/specificity/necessity/restoration-sufficiency sequence is
 complete for its bounded local-mechanism question.
 
-The first prospective PP3-excluded residual-template transport question is also
-complete and supports an XG2-like aggregate secondary residual orientation on
-fresh XG1 examples.
+The prospective PP3-excluded residual extension is also complete through two
+distinct claims:
+
+1. the aggregate secondary residual orientation transports as XG2-like on
+   fresh XG1 examples;
+2. the complete PP3-excluded residual subspace has aggregate local necessity
+   relative to the frozen within-R quarter-turn matched control.
 
 No additional replication, rescue control, subgroup mining, alternative tail,
-or p-value is required for either completed claim.
+or p-value is required for these completed claims.
 
 A subsequent scientific experiment should therefore address a genuinely new
-question: causal localization of the structured secondary residual mechanism,
-without outcome-guided selection of P1/P2/P4/P5 and without re-testing PP3 under
-minor variants.
+question. If causal localization within the structured secondary residual is
+pursued, it must avoid outcome-guided selection of P1/P2/P4/P5 and must not
+reinterpret the XG2-like template orientation as already causal.
