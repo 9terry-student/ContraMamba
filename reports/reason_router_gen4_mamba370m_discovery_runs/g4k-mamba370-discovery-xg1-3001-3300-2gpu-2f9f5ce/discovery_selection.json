@@ -1,0 +1,95 @@
+{
+  "confirmation_accessed": false,
+  "confirmation_response_accessed": false,
+  "control_definition": "c*=argmax_{k!=k*} lambda_plus_k from frozen geometry only",
+  "control_selection_uses_response": false,
+  "discovery_population": {
+    "pair_first": "xg1_fact_3001",
+    "pair_last": "xg1_fact_3300",
+    "rows_sha256": "831452947cdf8136376a20ebeca873f260449bcebcd0f6b83c4361dae3a90697",
+    "source_pair_count": 300,
+    "source_sha256": "246b5c262c6d018a1e6047ae61ed2f7b3041154d234ea2817dbf5f7da120bc80",
+    "structural_manifest_sha256": "28e5e5aaf8c17a803d8db9c45b5747c90c7fec883a59bd189a875e60fc0d475f"
+  },
+  "epsilon": 0.025,
+  "execution_head": "2f9f5ce7691ccd13875352d93b93897dd203dcdb",
+  "geometry_freeze_commit": "9803aab542d08a257511cf409bf292428b11e0f8",
+  "geometry_summary_sha256": "112d03aa23e105cebcd7893a7c9f8e9d21a135a832a9da7d4caa236fe3c36378",
+  "inferential_test_performed": false,
+  "lambda_plus_by_plane": {
+    "P1": 0.9671797709152048,
+    "P2": 0.9778061079324725,
+    "P3": 0.9878905329506094,
+    "P4": 0.9967172566248975,
+    "P5": 0.9998649685284454
+  },
+  "per_plane_descriptive_effects": {
+    "P1": {
+      "ci95_normal_high": 7.54711682828078e-09,
+      "ci95_normal_low": 3.809819871363389e-09,
+      "fraction_positive": 0.6433333333333333,
+      "max": 3.791678661153592e-08,
+      "mean": 5.678468349822084e-09,
+      "min": -3.026732484969279e-08,
+      "n": 300,
+      "sd": 1.6513235235595596e-08
+    },
+    "P2": {
+      "ci95_normal_high": -1.2757564377540515e-08,
+      "ci95_normal_low": -1.6669904208744545e-08,
+      "fraction_positive": 0.07333333333333333,
+      "max": 2.3700185521386065e-08,
+      "mean": -1.471373429314253e-08,
+      "min": -6.41524054080948e-08,
+      "n": 300,
+      "sd": 1.7286661643165367e-08
+    },
+    "P3": {
+      "ci95_normal_high": 4.116430217498077e-08,
+      "ci95_normal_low": 3.3324920006471395e-08,
+      "fraction_positive": 0.8766666666666667,
+      "max": 1.132236839768927e-07,
+      "mean": 3.724461109072608e-08,
+      "min": -1.837723789830027e-08,
+      "n": 300,
+      "sd": 3.463828626481559e-08
+    },
+    "P4": {
+      "ci95_normal_high": 3.1766404899916627e-08,
+      "ci95_normal_low": 2.5633534748557946e-08,
+      "fraction_positive": 0.9366666666666666,
+      "max": 8.981680204448293e-08,
+      "mean": 2.8699969824237285e-08,
+      "min": -2.5166785337390737e-08,
+      "n": 300,
+      "sd": 2.7098068108101697e-08
+    },
+    "P5": {
+      "ci95_normal_high": -5.8085729326593456e-08,
+      "ci95_normal_low": -6.792248664863153e-08,
+      "fraction_positive": 0.06,
+      "max": 6.287500817079608e-09,
+      "mean": -6.30041079876125e-08,
+      "min": -1.4946557775266927e-07,
+      "n": 300,
+      "sd": 4.3463682304834475e-08
+    }
+  },
+  "plane_order": [
+    "P1",
+    "P2",
+    "P3",
+    "P4",
+    "P5"
+  ],
+  "positivity_gate_applied": false,
+  "rescue_performed": false,
+  "response_blind_control_plane": "P5",
+  "restored_semantics": "branch-local plane neutralize-plus-exact-restore round trip; net native state",
+  "result": "PASS_MAMBA370M_DISCOVERY_SELECTION_FREEZE",
+  "schema_version": "gen4-mamba370m-discovery-selection-v1",
+  "scientific_conclusion_established": false,
+  "selected_dominant_candidate": "P3",
+  "selection_definition": "k*=argmax_k mean_i(Q_restored,k,i-Q_neutralized,k,i)",
+  "selection_unique": true
+}
