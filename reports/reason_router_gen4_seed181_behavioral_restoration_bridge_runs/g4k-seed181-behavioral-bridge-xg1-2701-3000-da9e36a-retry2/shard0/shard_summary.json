@@ -1,0 +1,64 @@
+{
+  "arm": "G3-GROUP-D-HALF",
+  "backward_executed": false,
+  "checkpoint_sha256": "afc55ef0bf6a250dadc16dfa85ae2350505dd1289e781e109519c6bc8009422f",
+  "condition_order": [
+    "native",
+    "pp3_neutralized",
+    "pp3_restored",
+    "pp5_replacement"
+  ],
+  "control_plane_index": 5,
+  "cuda_visible_devices": "0",
+  "design_commit": "9ea1617f4485fa0b6093df0c70aa88a42260c710",
+  "execution_head": "da9e36a45730516d1eb8c5de64fe7e3b5c1cc582",
+  "geometry_json_sha256": "e6e9db909eb7d2c6bbdb493a4efeca8c18e4d474cf99a943be0f3f7b9dee1012",
+  "geometry_pt_sha256": "de3ae6a450c2ba0a85b4f53919e3765e6e7dfb6dba3676535554c437b1647a1c",
+  "homolog_plane_index": 3,
+  "label_contract": {
+    "C0_SHAM": "SUPPORT",
+    "C2_NAME": "NOT_ENTITLED"
+  },
+  "logical_device": "cuda:0",
+  "logical_device_name": "Tesla T4",
+  "model_contract": "historical_v6b_minimal_strict_checkpoint_load",
+  "model_name": "state-spaces/mamba-130m-hf",
+  "physical_device": 0,
+  "physical_gpu_inventory_count": 2,
+  "population_first": "xg1_fact_2701",
+  "population_last": "xg1_fact_2850",
+  "primary_inference_executed": false,
+  "result": "PASS_RAW_BEHAVIORAL_SHARD",
+  "schema_version": "gen4-seed181-behavioral-restoration-shard-summary-v1",
+  "scientific_conclusion": null,
+  "scientific_full_model_forward_count_this_run": 1200,
+  "seed": 181,
+  "selection_uses_response": false,
+  "shard_index": 0,
+  "source_pair_count": 150,
+  "structural_rows_sha256": "3cbdd208ea110c5576b24f5f2ee43e0d4892e35bc78275b7bda434f2deb20afa",
+  "structural_source_sha256": "01b4989ee1d2b9273a2a6d2f044753dcc64de9300be5e1d8b5765c760e6d9fd4",
+  "target_cells": [
+    "C0_SHAM",
+    "C2_NAME"
+  ],
+  "tokenizer": {
+    "active_encoding_validation_commit": "17f1ddfc8286796f27c4a61716a21e14126bb836",
+    "add_special_tokens": false,
+    "analysis_reference": "40e5d2bd7452abb3ca8fadbafe9131ee0e2c2f37",
+    "claim_budget": 63,
+    "claimed_historical_snapshot": false,
+    "effective_pad_token_id": 0,
+    "eos_token_id": 0,
+    "evidence_budget": 64,
+    "file_sha256": {
+      "special_tokens_map.json": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8",
+      "tokenizer.json": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf",
+      "tokenizer_config.json": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+    },
+    "max_length": 128,
+    "serialization": "claim[:63]+EOS(0)+evidence[:64]",
+    "tokenizers_version": "0.22.2"
+  },
+  "training_executed": false
+}

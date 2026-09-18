@@ -1,0 +1,43 @@
+{
+  "D_BEH_one_sided_p": 2.454643852170648e-17,
+  "D_BEH_t": 8.915727385717114,
+  "N": 300,
+  "behavioral_bridge_supported": true,
+  "behavioral_result_label": "SEED181_BEHAVIORAL_RESTORATION_BRIDGE_SUPPORTED",
+  "checkpoint_sha256": "afc55ef0bf6a250dadc16dfa85ae2350505dd1289e781e109519c6bc8009422f",
+  "control_plane_index": 5,
+  "design_commit": "9ea1617f4485fa0b6093df0c70aa88a42260c710",
+  "df": 299,
+  "execution_head": "da9e36a45730516d1eb8c5de64fe7e3b5c1cc582",
+  "homolog_plane_index": 3,
+  "mean_D_BEH": 0.008332191656033197,
+  "population": "xg1_fact_2701..xg1_fact_3000",
+  "primary_endpoint": "D_BEH=M_restored-M_control",
+  "primary_gates": {
+    "mean_D_BEH_gt_0": true,
+    "one_sided_p_lt_0_05": true
+  },
+  "schema_version": "gen4-seed181-behavioral-restoration-analysis-v1",
+  "scientific_full_model_forward_count": 2400,
+  "secondary_descriptive": {
+    "accuracy_by_condition": {
+      "native": 0.4216666666666667,
+      "pp3_neutralized": 0.4216666666666667,
+      "pp3_restored": 0.4216666666666667,
+      "pp5_replacement": 0.42333333333333334
+    },
+    "internal_recurrent_trajectory_Q_association": null,
+    "internal_recurrent_trajectory_Q_note": "Not measured on xg1_fact_2701..3000; no extra rescue endpoint is introduced.",
+    "mean_D_BEH_C0_SHAM": 0.0005769468347231547,
+    "mean_D_BEH_C2_NAME": 0.01608743647734324,
+    "mean_native_minus_neutralized_pair_margin": 0.00729742464919885,
+    "prediction_flip_rate_vs_native": {
+      "pp3_neutralized": 0.0,
+      "pp3_restored": 0.0,
+      "pp5_replacement": 0.0033333333333333335
+    },
+    "q_authorized_effect_vs_margin_effect_pearson": -0.6970286600826764,
+    "q_authorized_note": "This is the model's q_authorized diagnostic from the same full forward; it is not the earlier recurrent-trajectory Q endpoint."
+  },
+  "seed180_behavioral_rescue_executed": false
+}
