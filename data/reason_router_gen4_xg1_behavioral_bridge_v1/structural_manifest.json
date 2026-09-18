@@ -1,0 +1,31 @@
+{
+  "behavioral_label_contract": {
+    "C0_SHAM": "SUPPORT",
+    "C2_NAME": "NOT_ENTITLED",
+    "labels_embedded_in_structural_rows": false
+  },
+  "checkpoint_loaded": false,
+  "claim_overlap_with_001_2700": 0,
+  "continuation_byte_identity_with_2401_2700": true,
+  "cuda_executed": false,
+  "design_commit": "9ea1617f4485fa0b6093df0c70aa88a42260c710",
+  "deterministic_generator_semantics": true,
+  "endpoint_values_present": false,
+  "evidence_overlap_with_001_2700": 0,
+  "generator_family": "xg1_independent_structured_records_v1",
+  "labels_present": false,
+  "model_executed": false,
+  "pair_id_first": "xg1_fact_2701",
+  "pair_id_last": "xg1_fact_3000",
+  "pair_id_overlap_with_001_2700": 0,
+  "prior_pair_range": "xg1_fact_001..xg1_fact_2700",
+  "response_fields_present": false,
+  "result": "PASS_SEED181_BEHAVIORAL_BRIDGE_XG1_2701_3000_STRUCTURAL",
+  "row_count": 1800,
+  "row_file_sha256": "3cbdd208ea110c5576b24f5f2ee43e0d4892e35bc78275b7bda434f2deb20afa",
+  "rows_per_pair": 6,
+  "schema_version": "GEN4_SEED181_BEHAVIORAL_BRIDGE_XG1_STRUCTURAL_V1",
+  "source_file_sha256": "01b4989ee1d2b9273a2a6d2f044753dcc64de9300be5e1d8b5765c760e6d9fd4",
+  "source_pair_count": 300,
+  "tokenizer_executed": false
+}
