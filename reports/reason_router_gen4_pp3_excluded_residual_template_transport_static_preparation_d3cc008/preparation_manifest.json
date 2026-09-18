@@ -1,0 +1,89 @@
+{
+  "checkpoint_load_count": 0,
+  "design": {
+    "branch": "gen4-k-xg2-basis-holdout",
+    "design_blob": "8b99238182027191fa9d5f3014774ce7b2e9a342",
+    "design_commit": "d3cc008fad221862e6fe9718b67b6ba0c87d0368",
+    "design_path": "reports/reason_router_gen4_pp3_excluded_residual_template_transport_design.md",
+    "head": "d3cc008fad221862e6fe9718b67b6ba0c87d0368",
+    "template_commit": "82957bdb57cd83367293753c3b0596722810f7d3",
+    "template_path": "reports/reason_router_gen4_pp3_excluded_residual_static_analysis_7a6c30f.json",
+    "template_sha256": "712be029cbb52b30a41e9322c58978392f0c61bb76eefa15ffb8340c91899dc6"
+  },
+  "future_execution_contract": {
+    "directions_per_pair": 10,
+    "execution_authorized": false,
+    "forwards_per_direction": 4,
+    "pair_count": 300,
+    "planned_gpu_count": 2,
+    "planned_pair_shards": [
+      {
+        "gpu": 0,
+        "pair_count": 150,
+        "pair_first": "xg1_fact_1201",
+        "pair_last": "xg1_fact_1350",
+        "scientific_model_forward_budget": 6000
+      },
+      {
+        "gpu": 1,
+        "pair_count": 150,
+        "pair_first": "xg1_fact_1351",
+        "pair_last": "xg1_fact_1500",
+        "scientific_model_forward_budget": 6000
+      }
+    ],
+    "scientific_model_forward_budget": 12000
+  },
+  "gpu_used": false,
+  "population": {
+    "claim_evidence_row_overlap_with_001_1200": 0,
+    "claim_overlap_with_001_1200": 0,
+    "data_dir": "data/reason_router_gen4_xg1_residual_template_transport_v1",
+    "evidence_overlap_with_001_1200": 0,
+    "pair_id_first": "xg1_fact_1201",
+    "pair_id_last": "xg1_fact_1500",
+    "pair_id_overlap_with_001_1200": 0,
+    "row_count": 1800,
+    "rows_sha256": "f60cc028e8276279499290976f18ba503fc7a35a4232c1d768b822075d87ec5e",
+    "source_pair_count": 300,
+    "source_sha256": "9b93eff2399b7f90fb3d63f28f834fb986efcac9d347038c4b265519062d71a6",
+    "structural_manifest_sha256": "29a94032474bc92e277247fd5d05f404901b647e1ffab961115c198b7f3b5f61"
+  },
+  "primary_inference_executed": false,
+  "result": "PASS_PP3_EXCLUDED_RESIDUAL_TEMPLATE_TRANSPORT_STATIC_PREPARATION",
+  "schema_version": "GEN4_PP3_EXCLUDED_RESIDUAL_TEMPLATE_TRANSPORT_STATIC_PREPARATION_V1",
+  "scientific_model_forward_count": 0,
+  "scientific_outcomes_observed": false,
+  "templates": {
+    "residual_plane_order": [
+      "P1",
+      "P2",
+      "P4",
+      "P5"
+    ],
+    "result": "PASS_FROZEN_RESIDUAL_TEMPLATES",
+    "source_commit": "82957bdb57cd83367293753c3b0596722810f7d3",
+    "source_sha256": "712be029cbb52b30a41e9322c58978392f0c61bb76eefa15ffb8340c91899dc6",
+    "template_cosine": 0.2035409975407082,
+    "xg1_outcome_used_for_template_construction": false,
+    "xg2_unit_template": [
+      0.4007549782451175,
+      0.5213470856800944,
+      -0.022043162722820656,
+      0.7530649126348957
+    ],
+    "xg4_unit_template": [
+      0.14700867790791192,
+      -0.17145767505443896,
+      0.9138296650882098,
+      0.337499714799086
+    ]
+  },
+  "tokenizer_eligibility": {
+    "anchor_manifest_sha256": "74f6a16fe9bdf6da43eda1e4ab8bd8893c2eec86d5ead57394726a0d911eda60",
+    "anchor_row_count": 1800,
+    "result": "PASS_300_OF_300",
+    "source_pair_count": 300,
+    "tokenizer_revision": "40e5d2bd7452abb3ca8fadbafe9131ee0e2c2f37"
+  }
+}

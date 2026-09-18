@@ -1,0 +1,45 @@
+{
+  "checkpoint_load_count": 0,
+  "gpu_used": false,
+  "residual_plane_order": [
+    "P1",
+    "P2",
+    "P4",
+    "P5"
+  ],
+  "result": "PASS_FROZEN_RESIDUAL_TEMPLATES",
+  "schema_version": "GEN4_PP3_EXCLUDED_RESIDUAL_TEMPLATE_STATIC_V1",
+  "scientific_inference_executed": false,
+  "scientific_model_forward_count": 0,
+  "source_commit": "82957bdb57cd83367293753c3b0596722810f7d3",
+  "source_path": "reports/reason_router_gen4_pp3_excluded_residual_static_analysis_7a6c30f.json",
+  "source_sha256": "712be029cbb52b30a41e9322c58978392f0c61bb76eefa15ffb8340c91899dc6",
+  "template_cosine": 0.2035409975407082,
+  "xg1_outcome_used_for_template_construction": false,
+  "xg2_residual_mean_net_vector": [
+    1.5920587453157877e-08,
+    2.0711288247409458e-08,
+    -8.756974184315863e-10,
+    2.9916623498998595e-08
+  ],
+  "xg2_template_norm": 3.972648704920197e-08,
+  "xg2_unit_template": [
+    0.4007549782451175,
+    0.5213470856800944,
+    -0.022043162722820656,
+    0.7530649126348957
+  ],
+  "xg4_residual_mean_net_vector": [
+    1.8670022911077672e-08,
+    -2.177503237973276e-08,
+    1.1605587525048473e-07,
+    4.28622819921435e-08
+  ],
+  "xg4_template_norm": 1.2699946137038802e-07,
+  "xg4_unit_template": [
+    0.14700867790791192,
+    -0.17145767505443896,
+    0.9138296650882098,
+    0.337499714799086
+  ]
+}
