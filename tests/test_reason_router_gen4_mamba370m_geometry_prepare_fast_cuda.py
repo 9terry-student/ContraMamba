@@ -28,6 +28,56 @@ def test_prospective_layer_mapping_and_forward_budget():
     assert subject.TOTAL_FORWARD_BUDGET == 2400
 
 
+def test_checkout_identity_accepts_named_branch_or_detached_exact_head():
+    head = "a" * 40
+
+    subject.validate_checkout_identity(
+        branch=subject.EXPECTED_BRANCH,
+        head=head,
+        status="",
+        expected_head=head,
+    )
+    subject.validate_checkout_identity(
+        branch="",
+        head=head,
+        status="",
+        expected_head=head,
+    )
+
+    with pytest.raises(
+        subject.GeometryPreparationError,
+        match="BRANCH_MISMATCH",
+    ):
+        subject.validate_checkout_identity(
+            branch="unexpected-branch",
+            head=head,
+            status="",
+            expected_head=head,
+        )
+
+    with pytest.raises(
+        subject.GeometryPreparationError,
+        match="HEAD_MISMATCH",
+    ):
+        subject.validate_checkout_identity(
+            branch="",
+            head="b" * 40,
+            status="",
+            expected_head=head,
+        )
+
+    with pytest.raises(
+        subject.GeometryPreparationError,
+        match="WORKTREE_NOT_CLEAN",
+    ):
+        subject.validate_checkout_identity(
+            branch="",
+            head=head,
+            status="?? unexpected.txt",
+            expected_head=head,
+        )
+
+
 def test_strong_partition_is_fail_closed_and_deterministic():
     weight = torch.zeros(
         subject.INTERMEDIATE_SIZE,

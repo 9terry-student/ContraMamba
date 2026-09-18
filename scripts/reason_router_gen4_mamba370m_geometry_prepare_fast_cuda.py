@@ -228,18 +228,30 @@ def git(*args: str) -> str:
         ) from exc
 
 
+def validate_checkout_identity(
+    *,
+    branch: str,
+    head: str,
+    status: str,
+    expected_head: str,
+) -> None:
+    # Local development may be on the named branch, while the Kaggle
+    # bootstrap intentionally checks out the exact execution commit detached.
+    # Exact commit identity and a clean worktree are the scientific contract.
+    require(
+        branch in ("", EXPECTED_BRANCH),
+        f"BRANCH_MISMATCH:{branch}",
+    )
+    require(head == expected_head, "HEAD_MISMATCH")
+    require(status == "", "WORKTREE_NOT_CLEAN")
+
+
 def authenticate_repo(expected_head: str) -> None:
-    require(
-        git("branch", "--show-current") == EXPECTED_BRANCH,
-        "BRANCH_MISMATCH",
-    )
-    require(
-        git("rev-parse", "HEAD") == expected_head,
-        "HEAD_MISMATCH",
-    )
-    require(
-        git("status", "--porcelain") == "",
-        "WORKTREE_NOT_CLEAN",
+    validate_checkout_identity(
+        branch=git("branch", "--show-current"),
+        head=git("rev-parse", "HEAD"),
+        status=git("status", "--porcelain"),
+        expected_head=expected_head,
     )
 
 
