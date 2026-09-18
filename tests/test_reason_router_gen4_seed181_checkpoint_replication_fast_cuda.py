@@ -88,3 +88,82 @@ def test_seed181_binding_restores_historical_identity() -> None:
         extraction.REPRESENTATIVE_CHECKPOINT_SHA256,
     )
     assert after == before
+
+
+def test_authenticate_repo_accepts_detached_exact_commit(monkeypatch) -> None:
+    expected_head = "0123456789abcdef0123456789abcdef01234567"
+
+    values = {
+        ("branch", "--show-current"): "",
+        ("rev-parse", "HEAD"): expected_head,
+        ("status", "--porcelain"): "",
+    }
+
+    def fake_git(*args: str) -> str:
+        return values[args]
+
+    monkeypatch.setattr(mod, "git", fake_git)
+    monkeypatch.setattr(
+        mod.subprocess,
+        "call",
+        lambda *args, **kwargs: 0,
+    )
+
+    mod.authenticate_repo(expected_head)
+
+
+def test_replication_restoration_endpoint_accepts_float_roundoff() -> None:
+    q_b = 2.205616652956685e-07
+    q_r3 = -1.536534738677208e-07
+    q_r5 = -1.0487738235156595e-07
+
+    expanded = (q_r3 - q_b) - (q_r5 - q_b)
+    direct = q_r3 - q_r5
+
+    # This realistic-scale example is mathematically identical but
+    # intentionally not bit-exact under IEEE-754 evaluation order.
+    assert expanded != direct
+
+    row = mod.replication_restoration_endpoint(
+        q_b,
+        q_r3,
+        q_r5,
+    )
+
+    assert row["S3"] == q_r3 - q_b
+    assert row["S5"] == q_r5 - q_b
+    assert row["D_SUF"] == expanded
+
+    algebra_ulp = max(
+        math.ulp(value)
+        for value in (
+            q_b,
+            q_r3,
+            q_r5,
+            row["S3"],
+            row["S5"],
+            row["D_SUF"],
+            direct,
+        )
+    )
+
+    assert (
+        abs(row["D_SUF"] - direct)
+        <= mod.FLOAT_IDENTITY_ULPS * algebra_ulp
+    )
+
+    historical = mod.restoration.endpoint
+
+    with mod.replication_restoration_endpoint_binding():
+        assert (
+            mod.restoration.endpoint
+            is mod.replication_restoration_endpoint
+        )
+        rebound = mod.restoration.endpoint(
+            q_b,
+            q_r3,
+            q_r5,
+        )
+        assert rebound["D_SUF"] == expanded
+
+    assert mod.restoration.endpoint is historical

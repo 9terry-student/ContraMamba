@@ -35,6 +35,7 @@ K = 5
 EPS = 0.025
 TOL = 1.0e-12
 EIG_TOL = 1.0e-10
+FLOAT_IDENTITY_ULPS = 8
 
 XG1_DATA_ROOT = restoration.DATA_ROOT
 XG1_STATIC_ROOT = restoration.STATIC_ROOT
@@ -110,7 +111,8 @@ def jsonl_bytes(rows: Sequence[Mapping[str, Any]]) -> bytes:
 
 
 def authenticate_repo(expected_head: str) -> None:
-    require(git("branch", "--show-current") == EXPECTED_BRANCH, "BRANCH")
+    branch = git("branch", "--show-current")
+    require(branch in {"", EXPECTED_BRANCH}, f"BRANCH:{branch}")
     require(git("rev-parse", "HEAD") == expected_head, "HEAD")
     require(git("status", "--porcelain") == "", "WORKTREE_NOT_CLEAN")
     require(
@@ -162,6 +164,75 @@ def seed181_binding():
             extraction.REPRESENTATIVE_ARM,
             extraction.REPRESENTATIVE_CHECKPOINT_SHA256,
         ) = old
+
+
+
+def replication_restoration_endpoint(
+    q_b: float,
+    q_r3: float,
+    q_r5: float,
+) -> dict[str, float]:
+    q_b = float(q_b)
+    q_r3 = float(q_r3)
+    q_r5 = float(q_r5)
+
+    s3 = q_r3 - q_b
+    s5 = q_r5 - q_b
+    d_suf = s3 - s5
+    direct = q_r3 - q_r5
+
+    algebra_ulp = max(
+        math.ulp(value)
+        for value in (
+            q_b,
+            q_r3,
+            q_r5,
+            s3,
+            s5,
+            d_suf,
+            direct,
+        )
+    )
+    require(
+        abs(d_suf - direct)
+        <= FLOAT_IDENTITY_ULPS * algebra_ulp,
+        "D_SUF_ALGEBRA",
+    )
+
+    return {
+        "Q_B": q_b,
+        "Q_R3": q_r3,
+        "Q_R5": q_r5,
+        "S3": s3,
+        "S5": s5,
+        "D_SUF": d_suf,
+    }
+
+
+@contextlib.contextmanager
+def replication_restoration_endpoint_binding():
+    historical_endpoint = restoration.endpoint
+    restoration.endpoint = replication_restoration_endpoint
+    try:
+        yield
+    finally:
+        restoration.endpoint = historical_endpoint
+
+
+def run_replication_restoration_pair(
+    seed: Mapping[str, Any],
+    *,
+    bases: Mapping[str, torch.Tensor],
+    planes: Mapping[str, torch.Tensor],
+    **kwargs: Any,
+) -> dict[str, Any]:
+    with replication_restoration_endpoint_binding():
+        return restoration.run_pair(
+            seed,
+            bases=bases,
+            planes=planes,
+            **kwargs,
+        )
 
 
 def geometry_extract_family(
@@ -545,7 +616,12 @@ def run_causal_core(
                     "events": events,
                     "budget": budget,
                 }
-                rest_item = restoration.run_pair(seed, bases=bases, planes=aliases, **common)
+                rest_item = run_replication_restoration_pair(
+                    seed,
+                    bases=bases,
+                    planes=aliases,
+                    **common,
+                )
                 principal = principal_probe_pair(seed, geometry=geometry, kwargs=common)
                 q_native = float(rest_item["Q_R3"])
                 q_principal = float(principal["Q_principal"])
