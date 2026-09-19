@@ -1,0 +1,130 @@
+{
+  "additional_primary_p_values_executed": false,
+  "backward_executed": false,
+  "cross_scale_behavioral_bridge_supported": false,
+  "cross_scale_descriptive": {
+    "mean_D_BEH_14b_minus_370m": -0.0031335710113247236,
+    "p_value_added_for_scale_difference": false,
+    "paired_D_BEH_pearson": 0.22558165365339689
+  },
+  "execution_head": "2b41f28577a59e46e2748a40db2037f1c8ab7ffa",
+  "population": "xg1_fact_4801..xg1_fact_5100",
+  "primary_family": {
+    "alternative": "greater",
+    "family_alpha": 0.05,
+    "historical_behavioral_p_values_in_family": 0,
+    "multiplicity": "holm",
+    "primary_p_value_count": 2,
+    "scale_order": [
+      "mamba370m",
+      "mamba14b"
+    ],
+    "test": "one_sample_student_t"
+  },
+  "result": "PASS_MAMBA370M14B_BEHAVIORAL_BRIDGE_ANALYSIS",
+  "scale_results": {
+    "mamba14b": {
+      "N": 300,
+      "behavioral_bridge_supported_holm": false,
+      "checkpoint_sha256": "915c9de38d9dc7ee9da26ba4328e74549864c6bd29723f3b7a4b4e0050efce0a",
+      "execution_head": "2b41f28577a59e46e2748a40db2037f1c8ab7ffa",
+      "population": "xg1_fact_4801..xg1_fact_5100",
+      "primary_endpoint": "D_BEH=M_dominant_restored-M_dominant_control",
+      "primary_test": {
+        "alpha_family": 0.05,
+        "alternative": "greater",
+        "cohen_dz": -0.3939645569641676,
+        "df": 299,
+        "fraction_positive": 0.37,
+        "mean": -0.002012885312239329,
+        "n": 300,
+        "p_holm": 0.9999999999753244,
+        "p_raw": 0.9999999999753244,
+        "sd": 0.005109305587665866,
+        "t_statistic": -6.823666290433015,
+        "test": "one_sample_student_t"
+      },
+      "response_blind_control_plane": "P4",
+      "scale": "mamba14b",
+      "scientific_full_model_forward_count": 2400,
+      "secondary_descriptive": {
+        "accuracy_by_condition": {
+          "dominant_control": 0.355,
+          "dominant_neutralized": 0.355,
+          "dominant_restored": 0.3566666666666667,
+          "native": 0.3566666666666667
+        },
+        "mean_D_BEH_by_cell": {
+          "C0_SHAM": -0.00296822190284729,
+          "C2_NAME": -0.001057548721631368
+        },
+        "mean_native_minus_neutralized_pair_margin": -0.00032495816548665365,
+        "prediction_flip_rate_vs_native": {
+          "dominant_control": 0.0016666666666666668,
+          "dominant_neutralized": 0.0016666666666666668,
+          "dominant_restored": 0.0
+        },
+        "q_authorized_effect_vs_margin_effect_pearson": -0.8277974979546328,
+        "q_authorized_note": "This is the model q_authorized diagnostic from the same full forward, not the recurrent-trajectory Q endpoint."
+      },
+      "selected_dominant_candidate": "P5"
+    },
+    "mamba370m": {
+      "N": 300,
+      "behavioral_bridge_supported_holm": true,
+      "checkpoint_sha256": "9d8e3db22af4636938679aac6a8a97dd45344937d434fab29eac2ddc41a52a72",
+      "execution_head": "2b41f28577a59e46e2748a40db2037f1c8ab7ffa",
+      "population": "xg1_fact_4801..xg1_fact_5100",
+      "primary_endpoint": "D_BEH=M_dominant_restored-M_dominant_control",
+      "primary_test": {
+        "alpha_family": 0.05,
+        "alternative": "greater",
+        "cohen_dz": 0.3361539278293768,
+        "df": 299,
+        "fraction_positive": 0.58,
+        "mean": 0.0011206856990853946,
+        "n": 300,
+        "p_holm": 1.4957180487214262e-08,
+        "p_raw": 7.478590243607131e-09,
+        "sd": 0.0033338468073894592,
+        "t_statistic": 5.822356821643221,
+        "test": "one_sample_student_t"
+      },
+      "response_blind_control_plane": "P5",
+      "scale": "mamba370m",
+      "scientific_full_model_forward_count": 2400,
+      "secondary_descriptive": {
+        "accuracy_by_condition": {
+          "dominant_control": 0.47833333333333333,
+          "dominant_neutralized": 0.48,
+          "dominant_restored": 0.48,
+          "native": 0.48
+        },
+        "mean_D_BEH_by_cell": {
+          "C0_SHAM": -0.002684186299641927,
+          "C2_NAME": 0.004925557697812716
+        },
+        "mean_native_minus_neutralized_pair_margin": 0.0002482416232426961,
+        "prediction_flip_rate_vs_native": {
+          "dominant_control": 0.0016666666666666668,
+          "dominant_neutralized": 0.0,
+          "dominant_restored": 0.0
+        },
+        "q_authorized_effect_vs_margin_effect_pearson": -0.4238635997866586,
+        "q_authorized_note": "This is the model q_authorized diagnostic from the same full forward, not the recurrent-trajectory Q endpoint."
+      },
+      "selected_dominant_candidate": "P3"
+    }
+  },
+  "scale_specific_rescue_cohort_used": false,
+  "schema_version": "gen4-mamba370m14b-behavioral-bridge-analysis-v1",
+  "scientific_conclusion": "SCALE_SPECIFIC_BEHAVIORAL_BRIDGE_ONLY",
+  "scientific_full_model_forward_count_total": 4800,
+  "selection_reopened": false,
+  "shared_population_across_scales": true,
+  "support_by_scale": {
+    "mamba14b": false,
+    "mamba370m": true
+  },
+  "training_executed": false
+}
