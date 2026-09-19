@@ -1,0 +1,440 @@
+{
+  "evaluation_executed": false,
+  "execution_head": "97b460a543b843563d89e2d53344fb1493bd4397",
+  "gpu_count": 2,
+  "hard_gates": {
+    "exact_snapshot_same_on_both_workers": true,
+    "expected_config": true,
+    "fast_kernel_bindings": true,
+    "frozen_backbone": true,
+    "synthetic_forward_backward_batch1": true,
+    "two_t4_workers": true
+  },
+  "maximum_max_passing_batch_size": 32,
+  "minimum_max_passing_batch_size": 32,
+  "model_repo": "state-spaces/mamba-1.4b-hf",
+  "p_value_count": 0,
+  "probe_batch_sizes": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32
+  ],
+  "requested_revision": "main",
+  "resolved_revision": "6e46eae61c27280517feef46f536d16b91076f08",
+  "result": "PASS_MAMBA14B_RUNTIME_FEASIBILITY_RAW_OBSERVATION",
+  "schema_version": "gen4-mamba14b-runtime-feasibility-v1",
+  "scientific_conclusion_established": false,
+  "scientific_data_accessed": false,
+  "scientific_model_forward_count": 0,
+  "selection_performed": false,
+  "sequence_length": 128,
+  "snapshot": {
+    "config": {
+      "conv_kernel": 4,
+      "hidden_size": 2048,
+      "intermediate_size": 4096,
+      "num_hidden_layers": 48,
+      "state_size": 16,
+      "vocab_size": 50280
+    },
+    "files": {
+      "config.json": {
+        "bytes": 879,
+        "sha256": "275174e4771bb65f70cb1ea03389c9711510438d7944885e8f02f525bec03a9d"
+      },
+      "generation_config.json": {
+        "bytes": 137,
+        "sha256": "248fa733db101c19a8e3c2f311a180fdd7c769323ec2873edf7060cec9f5ee32"
+      },
+      "model-00001-of-00002.safetensors": {
+        "bytes": 4960287720,
+        "sha256": "3a0351b2c6a044c5f19f0f8992362e57c0d6f71b0e0702d46f43f3d8a7120c84"
+      },
+      "model-00002-of-00002.safetensors": {
+        "bytes": 528479144,
+        "sha256": "6cd1ac80d0acd00e6b6afebad9690115c5d932009ba644a6c8af1e0aed8414de"
+      },
+      "model.safetensors.index.json": {
+        "bytes": 38175,
+        "sha256": "a4739638258ef26762ff808249c3888fdb8bd4a15404a0db4811feb5cf2444b5"
+      },
+      "tokenizer.json": {
+        "bytes": 2113738,
+        "sha256": "3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8"
+      },
+      "tokenizer_config.json": {
+        "bytes": 4793,
+        "sha256": "3ba257483d22a5a84aab5465aa427e59bdaeb55f09fb14349e2d571ff67e8020"
+      }
+    },
+    "repo": "state-spaces/mamba-1.4b-hf",
+    "requested_revision": "main",
+    "resolved_revision": "6e46eae61c27280517feef46f536d16b91076f08",
+    "total_snapshot_bytes": 5490924586
+  },
+  "trainable_parameter_numel": 732103,
+  "training_executed": false,
+  "workers": [
+    {
+      "arm": "G3-GROUP-D-HALF",
+      "backbone_parameter_bytes": 5488713728,
+      "backbone_parameter_numel": 1372178432,
+      "backbone_trainable_numel": 0,
+      "baseline_cuda_allocated_bytes": 5491646976,
+      "baseline_cuda_reserved_bytes": 5519704064,
+      "batch_measurements": [
+        {
+          "allocated_before_bytes": 5491646976,
+          "batch_size": 1,
+          "error": null,
+          "fast_path_calls_at_probe_layer": 1,
+          "optimizer_step_executed": false,
+          "peak_allocated_bytes": 5520978432,
+          "peak_reserved_bytes": 5544869888,
+          "reserved_before_bytes": 5519704064,
+          "scientific_data_accessed": false,
+          "sequence_length": 128,
+          "status": "PASS",
+          "synthetic_backward_executed": true,
+          "synthetic_forward_executed": true
+        },
+        {
+          "allocated_before_bytes": 5509734912,
+          "batch_size": 2,
+          "error": null,
+          "fast_path_calls_at_probe_layer": 1,
+          "optimizer_step_executed": false,
+          "peak_allocated_bytes": 5551094272,
+          "peak_reserved_bytes": 5586812928,
+          "reserved_before_bytes": 5540675584,
+          "scientific_data_accessed": false,
+          "sequence_length": 128,
+          "status": "PASS",
+          "synthetic_backward_executed": true,
+          "synthetic_forward_executed": true
+        },
+        {
+          "allocated_before_bytes": 5509734912,
+          "batch_size": 4,
+          "error": null,
+          "fast_path_calls_at_probe_layer": 1,
+          "optimizer_step_executed": false,
+          "peak_allocated_bytes": 5592189440,
+          "peak_reserved_bytes": 5620367360,
+          "reserved_before_bytes": 5540675584,
+          "scientific_data_accessed": false,
+          "sequence_length": 128,
+          "status": "PASS",
+          "synthetic_backward_executed": true,
+          "synthetic_forward_executed": true
+        },
+        {
+          "allocated_before_bytes": 5509734912,
+          "batch_size": 8,
+          "error": null,
+          "fast_path_calls_at_probe_layer": 1,
+          "optimizer_step_executed": false,
+          "peak_allocated_bytes": 5674380800,
+          "peak_reserved_bytes": 5718933504,
+          "reserved_before_bytes": 5540675584,
+          "scientific_data_accessed": false,
+          "sequence_length": 128,
+          "status": "PASS",
+          "synthetic_backward_executed": true,
+          "synthetic_forward_executed": true
+        },
+        {
+          "allocated_before_bytes": 5509734912,
+          "batch_size": 16,
+          "error": null,
+          "fast_path_calls_at_probe_layer": 1,
+          "optimizer_step_executed": false,
+          "peak_allocated_bytes": 5839025664,
+          "peak_reserved_bytes": 5901385728,
+          "reserved_before_bytes": 5540675584,
+          "scientific_data_accessed": false,
+          "sequence_length": 128,
+          "status": "PASS",
+          "synthetic_backward_executed": true,
+          "synthetic_forward_executed": true
+        },
+        {
+          "allocated_before_bytes": 5509734912,
+          "batch_size": 32,
+          "error": null,
+          "fast_path_calls_at_probe_layer": 1,
+          "optimizer_step_executed": false,
+          "peak_allocated_bytes": 6167528960,
+          "peak_reserved_bytes": 6249512960,
+          "reserved_before_bytes": 5540675584,
+          "scientific_data_accessed": false,
+          "sequence_length": 128,
+          "status": "PASS",
+          "synthetic_backward_executed": true,
+          "synthetic_forward_executed": true
+        }
+      ],
+      "device_capability": [
+        7,
+        5
+      ],
+      "device_name": "Tesla T4",
+      "evaluation_executed": false,
+      "frozen_parameter_numel": 1372178432,
+      "kernel_bindings_validated": true,
+      "kernel_constructor_counts": {
+        "causal-conv1d": 48,
+        "mamba-ssm": 48
+      },
+      "logical_device": 0,
+      "max_passing_batch_size": 32,
+      "optimizer_step_executed": false,
+      "physical_device": 0,
+      "probe_layer": 35,
+      "runtime": {
+        "cuda_runtime": "12.8",
+        "kernels": "0.10.2",
+        "numpy": "2.0.2",
+        "python": "3.12.13",
+        "torch": "2.10.0+cu128",
+        "transformers": "5.0.0"
+      },
+      "schema_version": "gen4-mamba14b-runtime-feasibility-worker-v1",
+      "scientific_data_accessed": false,
+      "scientific_model_forward_count": 0,
+      "sequence_length": 128,
+      "snapshot": {
+        "config": {
+          "conv_kernel": 4,
+          "hidden_size": 2048,
+          "intermediate_size": 4096,
+          "num_hidden_layers": 48,
+          "state_size": 16,
+          "vocab_size": 50280
+        },
+        "files": {
+          "config.json": {
+            "bytes": 879,
+            "sha256": "275174e4771bb65f70cb1ea03389c9711510438d7944885e8f02f525bec03a9d"
+          },
+          "generation_config.json": {
+            "bytes": 137,
+            "sha256": "248fa733db101c19a8e3c2f311a180fdd7c769323ec2873edf7060cec9f5ee32"
+          },
+          "model-00001-of-00002.safetensors": {
+            "bytes": 4960287720,
+            "sha256": "3a0351b2c6a044c5f19f0f8992362e57c0d6f71b0e0702d46f43f3d8a7120c84"
+          },
+          "model-00002-of-00002.safetensors": {
+            "bytes": 528479144,
+            "sha256": "6cd1ac80d0acd00e6b6afebad9690115c5d932009ba644a6c8af1e0aed8414de"
+          },
+          "model.safetensors.index.json": {
+            "bytes": 38175,
+            "sha256": "a4739638258ef26762ff808249c3888fdb8bd4a15404a0db4811feb5cf2444b5"
+          },
+          "tokenizer.json": {
+            "bytes": 2113738,
+            "sha256": "3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8"
+          },
+          "tokenizer_config.json": {
+            "bytes": 4793,
+            "sha256": "3ba257483d22a5a84aab5465aa427e59bdaeb55f09fb14349e2d571ff67e8020"
+          }
+        },
+        "repo": "state-spaces/mamba-1.4b-hf",
+        "requested_revision": "main",
+        "resolved_revision": "6e46eae61c27280517feef46f536d16b91076f08",
+        "total_snapshot_bytes": 5490924586
+      },
+      "synthetic_runtime_forward_backward_only": true,
+      "total_parameter_numel": 1372910535,
+      "trainable_parameter_bytes": 2928412,
+      "trainable_parameter_numel": 732103,
+      "training_executed": false,
+      "worker_id": 0
+    },
+    {
+      "arm": "G3-GROUP-D-HALF",
+      "backbone_parameter_bytes": 5488713728,
+      "backbone_parameter_numel": 1372178432,
+      "backbone_trainable_numel": 0,
+      "baseline_cuda_allocated_bytes": 5491646976,
+      "baseline_cuda_reserved_bytes": 5519704064,
+      "batch_measurements": [
+        {
+          "allocated_before_bytes": 5491646976,
+          "batch_size": 1,
+          "error": null,
+          "fast_path_calls_at_probe_layer": 1,
+          "optimizer_step_executed": false,
+          "peak_allocated_bytes": 5520978432,
+          "peak_reserved_bytes": 5544869888,
+          "reserved_before_bytes": 5519704064,
+          "scientific_data_accessed": false,
+          "sequence_length": 128,
+          "status": "PASS",
+          "synthetic_backward_executed": true,
+          "synthetic_forward_executed": true
+        },
+        {
+          "allocated_before_bytes": 5509734912,
+          "batch_size": 2,
+          "error": null,
+          "fast_path_calls_at_probe_layer": 1,
+          "optimizer_step_executed": false,
+          "peak_allocated_bytes": 5551094272,
+          "peak_reserved_bytes": 5586812928,
+          "reserved_before_bytes": 5540675584,
+          "scientific_data_accessed": false,
+          "sequence_length": 128,
+          "status": "PASS",
+          "synthetic_backward_executed": true,
+          "synthetic_forward_executed": true
+        },
+        {
+          "allocated_before_bytes": 5509734912,
+          "batch_size": 4,
+          "error": null,
+          "fast_path_calls_at_probe_layer": 1,
+          "optimizer_step_executed": false,
+          "peak_allocated_bytes": 5592189440,
+          "peak_reserved_bytes": 5620367360,
+          "reserved_before_bytes": 5540675584,
+          "scientific_data_accessed": false,
+          "sequence_length": 128,
+          "status": "PASS",
+          "synthetic_backward_executed": true,
+          "synthetic_forward_executed": true
+        },
+        {
+          "allocated_before_bytes": 5509734912,
+          "batch_size": 8,
+          "error": null,
+          "fast_path_calls_at_probe_layer": 1,
+          "optimizer_step_executed": false,
+          "peak_allocated_bytes": 5674380800,
+          "peak_reserved_bytes": 5718933504,
+          "reserved_before_bytes": 5540675584,
+          "scientific_data_accessed": false,
+          "sequence_length": 128,
+          "status": "PASS",
+          "synthetic_backward_executed": true,
+          "synthetic_forward_executed": true
+        },
+        {
+          "allocated_before_bytes": 5509734912,
+          "batch_size": 16,
+          "error": null,
+          "fast_path_calls_at_probe_layer": 1,
+          "optimizer_step_executed": false,
+          "peak_allocated_bytes": 5839025664,
+          "peak_reserved_bytes": 5901385728,
+          "reserved_before_bytes": 5540675584,
+          "scientific_data_accessed": false,
+          "sequence_length": 128,
+          "status": "PASS",
+          "synthetic_backward_executed": true,
+          "synthetic_forward_executed": true
+        },
+        {
+          "allocated_before_bytes": 5509734912,
+          "batch_size": 32,
+          "error": null,
+          "fast_path_calls_at_probe_layer": 1,
+          "optimizer_step_executed": false,
+          "peak_allocated_bytes": 6167528960,
+          "peak_reserved_bytes": 6249512960,
+          "reserved_before_bytes": 5540675584,
+          "scientific_data_accessed": false,
+          "sequence_length": 128,
+          "status": "PASS",
+          "synthetic_backward_executed": true,
+          "synthetic_forward_executed": true
+        }
+      ],
+      "device_capability": [
+        7,
+        5
+      ],
+      "device_name": "Tesla T4",
+      "evaluation_executed": false,
+      "frozen_parameter_numel": 1372178432,
+      "kernel_bindings_validated": true,
+      "kernel_constructor_counts": {
+        "causal-conv1d": 48,
+        "mamba-ssm": 48
+      },
+      "logical_device": 0,
+      "max_passing_batch_size": 32,
+      "optimizer_step_executed": false,
+      "physical_device": 1,
+      "probe_layer": 35,
+      "runtime": {
+        "cuda_runtime": "12.8",
+        "kernels": "0.10.2",
+        "numpy": "2.0.2",
+        "python": "3.12.13",
+        "torch": "2.10.0+cu128",
+        "transformers": "5.0.0"
+      },
+      "schema_version": "gen4-mamba14b-runtime-feasibility-worker-v1",
+      "scientific_data_accessed": false,
+      "scientific_model_forward_count": 0,
+      "sequence_length": 128,
+      "snapshot": {
+        "config": {
+          "conv_kernel": 4,
+          "hidden_size": 2048,
+          "intermediate_size": 4096,
+          "num_hidden_layers": 48,
+          "state_size": 16,
+          "vocab_size": 50280
+        },
+        "files": {
+          "config.json": {
+            "bytes": 879,
+            "sha256": "275174e4771bb65f70cb1ea03389c9711510438d7944885e8f02f525bec03a9d"
+          },
+          "generation_config.json": {
+            "bytes": 137,
+            "sha256": "248fa733db101c19a8e3c2f311a180fdd7c769323ec2873edf7060cec9f5ee32"
+          },
+          "model-00001-of-00002.safetensors": {
+            "bytes": 4960287720,
+            "sha256": "3a0351b2c6a044c5f19f0f8992362e57c0d6f71b0e0702d46f43f3d8a7120c84"
+          },
+          "model-00002-of-00002.safetensors": {
+            "bytes": 528479144,
+            "sha256": "6cd1ac80d0acd00e6b6afebad9690115c5d932009ba644a6c8af1e0aed8414de"
+          },
+          "model.safetensors.index.json": {
+            "bytes": 38175,
+            "sha256": "a4739638258ef26762ff808249c3888fdb8bd4a15404a0db4811feb5cf2444b5"
+          },
+          "tokenizer.json": {
+            "bytes": 2113738,
+            "sha256": "3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8"
+          },
+          "tokenizer_config.json": {
+            "bytes": 4793,
+            "sha256": "3ba257483d22a5a84aab5465aa427e59bdaeb55f09fb14349e2d571ff67e8020"
+          }
+        },
+        "repo": "state-spaces/mamba-1.4b-hf",
+        "requested_revision": "main",
+        "resolved_revision": "6e46eae61c27280517feef46f536d16b91076f08",
+        "total_snapshot_bytes": 5490924586
+      },
+      "synthetic_runtime_forward_backward_only": true,
+      "total_parameter_numel": 1372910535,
+      "trainable_parameter_bytes": 2928412,
+      "trainable_parameter_numel": 732103,
+      "training_executed": false,
+      "worker_id": 1
+    }
+  ]
+}
