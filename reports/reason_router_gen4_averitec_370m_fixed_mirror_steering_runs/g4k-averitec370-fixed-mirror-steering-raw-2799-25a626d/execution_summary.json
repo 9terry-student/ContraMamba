@@ -1,0 +1,167 @@
+{
+  "anchor_name": "A_CLAIM_EVIDENCE_BOUNDARY",
+  "backward_executed": false,
+  "cohort_sha256": "ce271c1b57b33e12399bc180f06d417ceef6e4e92ad9e5383e2d8187829a2810",
+  "conditions": [
+    "native",
+    "p3_mirror_steer",
+    "p5_matched_control"
+  ],
+  "design_artifact_git_blob": "0d35f9aebb37e6203bea40304d3a55ab2361b684",
+  "execution_head": "25a626dd52592c42318c80e14aa13c18b74fded9",
+  "experiment": "CAUSAL_ATLAS_GUIDED_STEERING",
+  "fresh_cohort_count": 2799,
+  "full_model_forward_budget": 8397,
+  "intervention_layer": 35,
+  "layer_search_performed": false,
+  "magnitude_search_performed": false,
+  "model_scale": "mamba370m",
+  "p_value_count_added": 0,
+  "primary_inference_executed": false,
+  "raw_row_count": 8397,
+  "rescue_performed": false,
+  "response_based_selection_performed": false,
+  "response_blind_control_plane": "P5",
+  "result": "PASS_AVERITEC_370M_FIXED_MIRROR_STEERING_RAW",
+  "schema_version": "gen4-averitec-370m-fixed-mirror-steering-raw-summary-v1",
+  "scientific_conclusion": null,
+  "selected_plane": "P3",
+  "shards": [
+    {
+      "checkpoint_sha256": "9d8e3db22af4636938679aac6a8a97dd45344937d434fab29eac2ddc41a52a72",
+      "discovery_freeze_commit": "22e0b01a2eaf5ff9dec34c3e19b51e288db9267c",
+      "discovery_selection_sha256": "0a66905f7b2cb2456a90401b598b0958fc1572f096246f3fcb8dd7078fb54b20",
+      "geometry_freeze_commit": "9803aab542d08a257511cf409bf292428b11e0f8",
+      "hf_repo": "state-spaces/mamba-370m-hf",
+      "hf_revision": "589179554943157be31701edd8b4558889276674",
+      "model_provenance": {
+        "compact_checkpoint_sha256": "9d8e3db22af4636938679aac6a8a97dd45344937d434fab29eac2ddc41a52a72",
+        "downstream_state_canonical_sha256": "eb16ae88a3fe42dd44ca102cdc122d09fe69eb8cc3d3f5ff761f285ab2af1730",
+        "full_state_canonical_sha256": "cd368ea41cbfc6560ff2d9eb89fc53b333cde72d4db5c99ae7ea8e5f62c1db83",
+        "kernel_constructor_calls": {
+          "causal-conv1d": 48,
+          "mamba-ssm": 48
+        },
+        "mamba_state_canonical_sha256": "2f1bb0820efd7376103541cd6de7b2893456083359708ac78f3fd30f8d1d56ac",
+        "snapshot": {
+          "config.json": {
+            "bytes": 917,
+            "sha256": "c15aad03ce0cc27f7f550ff05bb9a0354f3c0770b3b9ef382c5f730aa8e23e62"
+          },
+          "generation_config.json": {
+            "bytes": 137,
+            "sha256": "ffc3c43cdd9c33c738da20597bdef859cd44e4cc77ff3966b6d59269a1cae8e7"
+          },
+          "model.safetensors": {
+            "bytes": 1486118288,
+            "sha256": "8e2386de4c63e64a371cb9bc451421b04a33390103ba5e596ead4ac4c668a2b1"
+          },
+          "special_tokens_map.json": {
+            "bytes": 473,
+            "sha256": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8"
+          },
+          "tokenizer.json": {
+            "bytes": 2113837,
+            "sha256": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf"
+          },
+          "tokenizer_config.json": {
+            "bytes": 4793,
+            "sha256": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+          }
+        },
+        "source_full_checkpoint_sha256": "b664a776b78b54cb8ec8e6553bc8a2059eef53d25165e2e82ab556146f85bf29"
+      },
+      "raw_row_count": 4200,
+      "shard": {
+        "end": 1400,
+        "example_count": 1400,
+        "forward_budget": 4200,
+        "physical_device": 0,
+        "shard_id": 0,
+        "start": 0
+      },
+      "tokenizer": {
+        "file_sha256": {
+          "special_tokens_map.json": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8",
+          "tokenizer.json": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf",
+          "tokenizer_config.json": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+        },
+        "repo": "state-spaces/mamba-370m-hf",
+        "revision": "589179554943157be31701edd8b4558889276674",
+        "tokenizers_version": "0.22.2",
+        "vocab_size": 50277
+      }
+    },
+    {
+      "checkpoint_sha256": "9d8e3db22af4636938679aac6a8a97dd45344937d434fab29eac2ddc41a52a72",
+      "discovery_freeze_commit": "22e0b01a2eaf5ff9dec34c3e19b51e288db9267c",
+      "discovery_selection_sha256": "0a66905f7b2cb2456a90401b598b0958fc1572f096246f3fcb8dd7078fb54b20",
+      "geometry_freeze_commit": "9803aab542d08a257511cf409bf292428b11e0f8",
+      "hf_repo": "state-spaces/mamba-370m-hf",
+      "hf_revision": "589179554943157be31701edd8b4558889276674",
+      "model_provenance": {
+        "compact_checkpoint_sha256": "9d8e3db22af4636938679aac6a8a97dd45344937d434fab29eac2ddc41a52a72",
+        "downstream_state_canonical_sha256": "eb16ae88a3fe42dd44ca102cdc122d09fe69eb8cc3d3f5ff761f285ab2af1730",
+        "full_state_canonical_sha256": "cd368ea41cbfc6560ff2d9eb89fc53b333cde72d4db5c99ae7ea8e5f62c1db83",
+        "kernel_constructor_calls": {
+          "causal-conv1d": 48,
+          "mamba-ssm": 48
+        },
+        "mamba_state_canonical_sha256": "2f1bb0820efd7376103541cd6de7b2893456083359708ac78f3fd30f8d1d56ac",
+        "snapshot": {
+          "config.json": {
+            "bytes": 917,
+            "sha256": "c15aad03ce0cc27f7f550ff05bb9a0354f3c0770b3b9ef382c5f730aa8e23e62"
+          },
+          "generation_config.json": {
+            "bytes": 137,
+            "sha256": "ffc3c43cdd9c33c738da20597bdef859cd44e4cc77ff3966b6d59269a1cae8e7"
+          },
+          "model.safetensors": {
+            "bytes": 1486118288,
+            "sha256": "8e2386de4c63e64a371cb9bc451421b04a33390103ba5e596ead4ac4c668a2b1"
+          },
+          "special_tokens_map.json": {
+            "bytes": 473,
+            "sha256": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8"
+          },
+          "tokenizer.json": {
+            "bytes": 2113837,
+            "sha256": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf"
+          },
+          "tokenizer_config.json": {
+            "bytes": 4793,
+            "sha256": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+          }
+        },
+        "source_full_checkpoint_sha256": "b664a776b78b54cb8ec8e6553bc8a2059eef53d25165e2e82ab556146f85bf29"
+      },
+      "raw_row_count": 4197,
+      "shard": {
+        "end": 2799,
+        "example_count": 1399,
+        "forward_budget": 4197,
+        "physical_device": 1,
+        "shard_id": 1,
+        "start": 1400
+      },
+      "tokenizer": {
+        "file_sha256": {
+          "special_tokens_map.json": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8",
+          "tokenizer.json": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf",
+          "tokenizer_config.json": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+        },
+        "repo": "state-spaces/mamba-370m-hf",
+        "revision": "589179554943157be31701edd8b4558889276674",
+        "tokenizers_version": "0.22.2",
+        "vocab_size": 50277
+      }
+    }
+  ],
+  "sign_search_performed": false,
+  "source_eligibility_correction_git_blob": "3a55da349d7c9780f8e51de76e3fd9abd67531aa",
+  "target_offset": 2,
+  "token_gate_manifest_sha256": "7fef7f8c9544f46fbdeb1184bee313259bd52154181c346c4ae6d367d08da738",
+  "token_search_performed": false,
+  "training_executed": false
+}
