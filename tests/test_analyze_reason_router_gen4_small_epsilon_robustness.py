@@ -34,6 +34,24 @@ def test_frozen_inputs_validate_without_analysis() -> None:
     assert loaded["raw_summary"]["p_value_count_added"] == 0
     assert loaded["raw_summary"]["scientific_conclusion"] is None
 
+    reference_probe = loaded["reference_items"][0][
+        "principal_direction_probes"
+    ][0]
+    assert "central_difference_numerator" not in reference_probe
+    assert m.probe_numerator(
+        reference_probe,
+        epsilon=m.REFERENCE_EPSILON,
+    ) == float(reference_probe["F_plus"]) - float(reference_probe["F_minus"])
+
+    new_probe = loaded["raw_items"][0]["epsilon_observations"][0][
+        "principal_direction_probes"
+    ][0]
+    assert "central_difference_numerator" in new_probe
+    assert m.probe_numerator(
+        new_probe,
+        epsilon=m.NEW_EPSILONS[0],
+    ) == float(new_probe["central_difference_numerator"])
+
 
 def test_linear_quantile() -> None:
     xs = [0.0, 10.0, 20.0, 30.0, 40.0]
@@ -49,12 +67,26 @@ def test_pearson_and_cosine() -> None:
     assert math.isclose(m.cosine([1, 0], [0, 1]), 0.0)
 
 
-def _probe(key: str, j: float) -> dict:
-    return {
+def _probe(
+    key: str,
+    j: float,
+    *,
+    epsilon: float,
+    store_numerator: bool,
+) -> dict:
+    numerator = 2.0 * float(epsilon) * float(j)
+    f_plus = numerator
+    f_minus = 0.0
+    realized_j = (f_plus - f_minus) / (2.0 * float(epsilon))
+    probe = {
         "direction_key": key,
-        "J": j,
-        "central_difference_numerator": j / 10.0,
+        "F_plus": f_plus,
+        "F_minus": f_minus,
+        "J": realized_j,
     }
+    if store_numerator:
+        probe["central_difference_numerator"] = numerator
+    return probe
 
 
 def _observation(
@@ -83,7 +115,12 @@ def _observation(
         "absolute_relative_reconstruction_residual_to_Q0":
             abs(residual / q0) if q0 != 0 else None,
         "principal_direction_probes": [
-            _probe(key, float(i + 1))
+            _probe(
+                key,
+                float(i + 1),
+                epsilon=eps,
+                store_numerator=(eps != m.REFERENCE_EPSILON),
+            )
             for i, key in enumerate(m.DIRECTION_ORDER)
         ],
     }
@@ -150,6 +187,35 @@ def test_degeneracy_summary() -> None:
     assert out["exact_zero_count"] == 1
     assert out["min"] == 0.0
     assert out["max"] == 2.0
+
+
+def test_historical_reference_probe_reconstructs_numerator() -> None:
+    epsilon = 0.025
+    f_plus = 3.5
+    f_minus = 1.5
+    probe = {
+        "direction_key": "P1_plus",
+        "F_plus": f_plus,
+        "F_minus": f_minus,
+        "J": (f_plus - f_minus) / (2.0 * epsilon),
+    }
+    assert "central_difference_numerator" not in probe
+    assert m.probe_numerator(probe, epsilon=epsilon) == 2.0
+
+
+def test_new_probe_stored_numerator_is_checked() -> None:
+    epsilon = 0.0125
+    f_plus = 2.25
+    f_minus = 1.75
+    numerator = f_plus - f_minus
+    probe = {
+        "direction_key": "P1_plus",
+        "F_plus": f_plus,
+        "F_minus": f_minus,
+        "central_difference_numerator": numerator,
+        "J": numerator / (2.0 * epsilon),
+    }
+    assert m.probe_numerator(probe, epsilon=epsilon) == numerator
 
 
 def test_no_inference_threshold_or_epsilon_selection() -> None:

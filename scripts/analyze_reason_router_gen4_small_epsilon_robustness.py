@@ -570,12 +570,35 @@ def spectral_profile(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     }
 
 
+def probe_numerator(
+    probe: Mapping[str, Any],
+    *,
+    epsilon: float,
+) -> float:
+    f_plus = float(probe["F_plus"])
+    f_minus = float(probe["F_minus"])
+    numerator = f_plus - f_minus
+
+    if "central_difference_numerator" in probe:
+        require(
+            float(probe["central_difference_numerator"]) == numerator,
+            "PROBE_NUMERATOR_STORED_MISMATCH",
+        )
+
+    require(
+        float(probe["J"]) == numerator / (2.0 * float(epsilon)),
+        "PROBE_J_NUMERATOR_MISMATCH",
+    )
+    return numerator
+
+
 def j_vectors(
     rows: Sequence[Mapping[str, Any]],
 ) -> tuple[list[float], list[float]]:
     j_values: list[float] = []
     numerators: list[float] = []
     for row in rows:
+        epsilon = float(row["epsilon"])
         probes = row["principal_direction_probes"]
         require(
             tuple(probe["direction_key"] for probe in probes)
@@ -584,7 +607,9 @@ def j_vectors(
         )
         for probe in probes:
             j_values.append(float(probe["J"]))
-            numerators.append(float(probe["central_difference_numerator"]))
+            numerators.append(
+                probe_numerator(probe, epsilon=epsilon)
+            )
     require(len(j_values) == N * len(DIRECTION_ORDER), "J_COUNT")
     return j_values, numerators
 
