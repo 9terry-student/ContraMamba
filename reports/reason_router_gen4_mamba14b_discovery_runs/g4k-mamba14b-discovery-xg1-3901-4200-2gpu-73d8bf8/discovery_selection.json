@@ -1,0 +1,96 @@
+{
+  "confirmation_accessed": false,
+  "confirmation_response_accessed": false,
+  "control_definition": "c*=argmax_{k!=k*} lambda_plus_k from frozen geometry only",
+  "control_selection_uses_response": false,
+  "discovery_holdout_freeze_commit": "e988cf3e20990a9397b8238df0a1edaf03674522",
+  "discovery_population": {
+    "pair_first": "xg1_fact_3901",
+    "pair_last": "xg1_fact_4200",
+    "rows_sha256": "b3d62037eb2bdfe880d8517adc971123db90733eb0806e6985cbc33343d4eddb",
+    "source_pair_count": 300,
+    "source_sha256": "7bdfce4701295ac316f183c2bdab2856180269c7a0b0e892655f9d2f217aecdd",
+    "structural_manifest_sha256": "6ab69496e13de33bc657f83396cbc96b06f067753c2c0b865b58aba10000ec27"
+  },
+  "epsilon": 0.025,
+  "execution_head": "73d8bf8daca90791e06f1cc39be4c7353c754fc6",
+  "geometry_freeze_commit": "f97b597fb4da08a8d360ed07e48c6727e15ae0be",
+  "geometry_summary_sha256": "8a248c3f9747015a90b4a35d6082d216be9b4c4f2a0f784b5a40c6ae572909d4",
+  "inferential_test_performed": false,
+  "lambda_plus_by_plane": {
+    "P1": 0.8890412240357709,
+    "P2": 0.9779875748459493,
+    "P3": 0.9938177403811372,
+    "P4": 0.999560709817956,
+    "P5": 0.999841883307528
+  },
+  "per_plane_descriptive_effects": {
+    "P1": {
+      "ci95_normal_high": -1.8396888375891863e-09,
+      "ci95_normal_low": -3.0848399746656704e-09,
+      "fraction_positive": 0.37333333333333335,
+      "max": 3.796766318385241e-09,
+      "mean": -2.4622644061274284e-09,
+      "min": -1.969787447530882e-08,
+      "n": 300,
+      "sd": 5.501696511527117e-09
+    },
+    "P2": {
+      "ci95_normal_high": -2.3718716195062547e-08,
+      "ci95_normal_low": -2.706075417578795e-08,
+      "fraction_positive": 0.0,
+      "max": -1.531069009520744e-09,
+      "mean": -2.538973518542525e-08,
+      "min": -5.510275695071537e-08,
+      "n": 300,
+      "sd": 1.4766784651635957e-08
+    },
+    "P3": {
+      "ci95_normal_high": 2.534699447802207e-09,
+      "ci95_normal_low": 9.123565959027575e-10,
+      "fraction_positive": 0.64,
+      "max": 1.092954050825838e-08,
+      "mean": 1.7235280218524822e-09,
+      "min": -1.8649153344447347e-08,
+      "n": 300,
+      "sd": 7.1683169560868286e-09
+    },
+    "P4": {
+      "ci95_normal_high": -4.365465999419789e-09,
+      "ci95_normal_low": -5.568664044807596e-09,
+      "fraction_positive": 0.20333333333333334,
+      "max": 1.7368170564665007e-09,
+      "mean": -4.967065022113693e-09,
+      "min": -1.8491548917148276e-08,
+      "n": 300,
+      "sd": 5.316326903518482e-09
+    },
+    "P5": {
+      "ci95_normal_high": 1.11530742505012e-08,
+      "ci95_normal_low": 9.273734666284036e-09,
+      "fraction_positive": 0.8733333333333333,
+      "max": 2.67425615641034e-08,
+      "mean": 1.0213404458392618e-08,
+      "min": -2.4055629440721663e-09,
+      "n": 300,
+      "sd": 8.303856236070147e-09
+    }
+  },
+  "plane_order": [
+    "P1",
+    "P2",
+    "P3",
+    "P4",
+    "P5"
+  ],
+  "positivity_gate_applied": false,
+  "rescue_performed": false,
+  "response_blind_control_plane": "P4",
+  "restored_semantics": "branch-local plane neutralize-plus-exact-restore round trip; net native state",
+  "result": "PASS_MAMBA14B_DISCOVERY_SELECTION_FREEZE",
+  "schema_version": "gen4-mamba14b-discovery-selection-v1",
+  "scientific_conclusion_established": false,
+  "selected_dominant_candidate": "P5",
+  "selection_definition": "k*=argmax_k mean_i(Q_restored,k,i-Q_neutralized,k,i)",
+  "selection_unique": true
+}
