@@ -23,12 +23,19 @@ from scripts import (
 
 
 EXPECTED_BRANCH = "gen4-mamba370m-core-replication"
-REQUIRED_ANCESTOR = "69256339cde93d77db44851782327a18bbdf965a"
+REQUIRED_ANCESTOR = "ead82711af027589af8ede257519391a6283dcf7"
 
 DESIGN_ARTIFACT = Path(
     "reports/reason_router_gen4_causal_atlas_guided_steering_design.md"
 )
 DESIGN_ARTIFACT_GIT_BLOB = "0d35f9aebb37e6203bea40304d3a55ab2361b684"
+
+SOURCE_ELIGIBILITY_CORRECTION = Path(
+    "reports/reason_router_gen4_causal_atlas_guided_steering_source_eligibility_correction.md"
+)
+SOURCE_ELIGIBILITY_CORRECTION_GIT_BLOB = (
+    "3a55da349d7c9780f8e51de76e3fd9abd67531aa"
+)
 
 BASE_GATE = Path(
     "scripts/build_reason_router_gen4_averitec_gold_evidence_130m370m_token_gate.py"
@@ -65,20 +72,21 @@ EXPECTED_COMPATIBLE_BEFORE_FRESHNESS = 2873
 
 EXPECTED_EXCLUSION_COUNTS = {
     "incompatible_label": 195,
+    "empty_normalized_claim": 1,
     "dev_claim_overlap": 6,
     "dev_url_overlap": 1,
     "later_within_train_duplicate_claim": 66,
 }
-EXPECTED_FINAL_COUNT = 2800
+EXPECTED_FINAL_COUNT = 2799
 EXPECTED_FINAL_LABEL_COUNTS = {
     "Refuted": 1727,
-    "Supported": 806,
+    "Supported": 805,
     "Not Enough Evidence": 267,
 }
 
 COHORT_SCHEMA = "GEN4_AVERITEC_TRAIN_FRESH_STEERING_COHORT_V1"
 MANIFEST_SCHEMA = "GEN4_AVERITEC_TRAIN_FRESH_STEERING_TOKEN_GATE_V1"
-PASS_RESULT = "PASS_2800_OF_2800"
+PASS_RESULT = "PASS_2799_OF_2799"
 BLOCK_RESULT = "BLOCKED_STEERING_FRESH_TOKEN_GATE"
 
 OUTPUT_DIR = Path(
@@ -180,6 +188,8 @@ def authenticate_repo(expected_head: str) -> None:
 
     pinned = {
         DESIGN_ARTIFACT.as_posix(): DESIGN_ARTIFACT_GIT_BLOB,
+        SOURCE_ELIGIBILITY_CORRECTION.as_posix():
+            SOURCE_ELIGIBILITY_CORRECTION_GIT_BLOB,
         BASE_GATE.as_posix(): BASE_GATE_GIT_BLOB,
     }
     for path, expected_blob in pinned.items():
@@ -218,8 +228,11 @@ def _validate_example_structure(
     label_prefix: str,
 ) -> None:
     claim = row.get("claim")
+    # Source validation represents the exact pinned dataset structure.
+    # A source row may contain an empty claim string; prospective
+    # eligibility filtering below decides whether it enters the cohort.
     require(
-        isinstance(claim, str) and bool(claim.strip()),
+        isinstance(claim, str),
         f"{label_prefix}_CLAIM:{index}",
     )
 
@@ -316,9 +329,7 @@ def parse_dev(raw: bytes) -> list[dict[str, Any]]:
 
 def normalize_claim(text: str) -> str:
     require(isinstance(text, str), "NORMALIZE_CLAIM_TYPE")
-    normalized = " ".join(text.strip().split()).lower()
-    require(bool(normalized), "NORMALIZE_CLAIM_EMPTY")
-    return normalized
+    return " ".join(text.strip().split()).lower()
 
 
 def exact_nonempty_url(row: Mapping[str, Any]) -> str | None:
@@ -367,6 +378,10 @@ def derive_fresh_examples(
         compatible_before_freshness += 1
 
         claim_key = normalize_claim(str(row["claim"]))
+        if not claim_key:
+            exclusions["empty_normalized_claim"] += 1
+            continue
+
         if claim_key in dev_claims:
             exclusions["dev_claim_overlap"] += 1
             continue
@@ -423,6 +438,7 @@ def derive_fresh_examples(
         ),
         "deduplication_order": [
             "exclude_conflicting_evidence_cherrypicking",
+            "exclude_empty_normalized_claim",
             "exclude_exact_normalized_claim_match_to_dev",
             "exclude_exact_nonempty_original_claim_url_match_to_dev",
             "retain_lowest_zero_based_train_index_per_remaining_normalized_claim",
@@ -588,6 +604,12 @@ def build_manifest(
             "artifact": DESIGN_ARTIFACT.as_posix(),
             "artifact_git_blob": DESIGN_ARTIFACT_GIT_BLOB,
         },
+        "source_eligibility_correction": {
+            "artifact": SOURCE_ELIGIBILITY_CORRECTION.as_posix(),
+            "artifact_git_blob":
+                SOURCE_ELIGIBILITY_CORRECTION_GIT_BLOB,
+            "required_ancestor": REQUIRED_ANCESTOR,
+        },
         "upstream": {
             "repository": UPSTREAM_REPO,
             "commit": UPSTREAM_COMMIT,
@@ -661,7 +683,7 @@ def build_manifest(
                 "p5_matched_control",
             ],
             "expected_row_count": EXPECTED_FINAL_COUNT,
-            "expected_full_model_forward_count": 8400,
+            "expected_full_model_forward_count": 8397,
             "scientific_execution_authorized_by_this_artifact": False,
         },
         "model_checkpoint_loaded": False,
@@ -790,7 +812,7 @@ def parse_args(
     parser = argparse.ArgumentParser(
         description=(
             "Materialize the pinned fresh deduplicated AVeriTeC train-derived "
-            "2800-row steering cohort and execute the response-blind tokenizer gate. "
+            "2799-row steering cohort and execute the response-blind tokenizer gate. "
             "No checkpoint load, model forward, CUDA, or inference."
         )
     )
@@ -821,6 +843,7 @@ def main(
     print("SOURCE_TRAIN_ROWS=3068")
     print("COMPATIBLE_BEFORE_FRESHNESS=2873")
     print("EXCLUDED_INCOMPATIBLE=195")
+    print("EXCLUDED_EMPTY_NORMALIZED_CLAIM=1")
     print("EXCLUDED_DEV_CLAIM_OVERLAP=6")
     print("EXCLUDED_DEV_URL_OVERLAP=1")
     print("EXCLUDED_WITHIN_TRAIN_DUPLICATE=66")
