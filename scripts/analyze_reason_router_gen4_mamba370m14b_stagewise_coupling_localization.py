@@ -137,7 +137,11 @@ def validate_scale(run_dir: Path, scale: str) -> list[dict[str, Any]]:
         require(set(row["conditions"]) == set(CONDITIONS), f"ROW_CONDITIONS:{key}")
         for condition in CONDITIONS:
             value = row["conditions"][condition]
-            require(tuple(value["stage_lens"]) == STAGES, f"LENS_STAGES:{key}:{condition}")
+            require(
+                len(value["stage_lens"]) == len(STAGES)
+                and set(value["stage_lens"]) == set(STAGES),
+                f"LENS_STAGES:{key}:{condition}",
+            )
             require(
                 int(row["scientific_full_model_forward_count"]) == 3,
                 f"ROW_FWD:{key}",

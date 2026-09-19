@@ -1,0 +1,99 @@
+{
+  "downstream_replay_count_added_by_recovery": 0,
+  "failure_boundary": "descriptive analyzer validation after both raw scale executions passed",
+  "failure_defect": "analyzer required JSON object iteration order for stage_lens to equal semantic stage_order despite sort_keys=True serialization",
+  "model_forward_count_added_by_recovery": 0,
+  "p_value_count_added_by_recovery": 0,
+  "raw_files": [
+    {
+      "byte_identical": true,
+      "name": "stagewise_localization_rows.jsonl",
+      "scale": "mamba370m",
+      "sha256": "0e65799ecff71dc79fe36c639d1fe8d3168ef8c8aac16ffb6fc3385933f17879",
+      "shard_id": 0
+    },
+    {
+      "byte_identical": true,
+      "name": "shard_summary.json",
+      "scale": "mamba370m",
+      "sha256": "73161b8bde8366d8090fd6648cbf86bab633b0d723767e9bd6f7718f52c83634",
+      "shard_id": 0
+    },
+    {
+      "byte_identical": true,
+      "name": "SHA256SUMS.txt",
+      "scale": "mamba370m",
+      "sha256": "61aeb70cd22f1c4d0203d9c55cb881a12e532d03e257bb628fbcf62b4c71406e",
+      "shard_id": 0
+    },
+    {
+      "byte_identical": true,
+      "name": "stagewise_localization_rows.jsonl",
+      "scale": "mamba370m",
+      "sha256": "7997bb95ef8a7a73bb33ddc5570d30758e7ffb84c97f8e8b5264ec2f65f61208",
+      "shard_id": 1
+    },
+    {
+      "byte_identical": true,
+      "name": "shard_summary.json",
+      "scale": "mamba370m",
+      "sha256": "daa0e35b53d8188db3ca5903c0f193d84b3bd42819bc9244fd1770cfa1fb2bee",
+      "shard_id": 1
+    },
+    {
+      "byte_identical": true,
+      "name": "SHA256SUMS.txt",
+      "scale": "mamba370m",
+      "sha256": "0e70d31998393cfe41ff82748a7b3972182e5c43e67d236d184623bcb179781b",
+      "shard_id": 1
+    },
+    {
+      "byte_identical": true,
+      "name": "stagewise_localization_rows.jsonl",
+      "scale": "mamba14b",
+      "sha256": "b8191ae3be230e04c8b3d33dd1cf9c034ced81a9cff3eba8f0170be321f553fa",
+      "shard_id": 0
+    },
+    {
+      "byte_identical": true,
+      "name": "shard_summary.json",
+      "scale": "mamba14b",
+      "sha256": "69ef46e4b0dad84f06bac00739db1e72987c9ba03dcad70ddce40c1d774fe194",
+      "shard_id": 0
+    },
+    {
+      "byte_identical": true,
+      "name": "SHA256SUMS.txt",
+      "scale": "mamba14b",
+      "sha256": "ffa826d4f9587f790fabffe711c6e9e96ebd0bc891aa15998bde11c0831e275f",
+      "shard_id": 0
+    },
+    {
+      "byte_identical": true,
+      "name": "stagewise_localization_rows.jsonl",
+      "scale": "mamba14b",
+      "sha256": "f9efcdf76d39a03eaa1b6c9b5754ae4cdd2d44686e7f6cb4393bbafff5329100",
+      "shard_id": 1
+    },
+    {
+      "byte_identical": true,
+      "name": "shard_summary.json",
+      "scale": "mamba14b",
+      "sha256": "ae041a1f8326f6daedf0150d9258cf4f3e919c8921166be6cd5af648dd591b16",
+      "shard_id": 1
+    },
+    {
+      "byte_identical": true,
+      "name": "SHA256SUMS.txt",
+      "scale": "mamba14b",
+      "sha256": "e11d933e0428bfe5635efa38ee25d39c4f88c58c7648d50577d41af82a060579",
+      "shard_id": 1
+    }
+  ],
+  "recovery_changes_scientific_protocol": false,
+  "rescue_performed": false,
+  "schema_version": "gen4-stagewise-localization-analysis-recovery-v1",
+  "selection_reopened": false,
+  "source_execution_head": "4e88537383861d60fbd7cc0400afd17fa1e302b6",
+  "source_failed_run": "g4k-stagewise-coupling-localization-370m14b-xg1-4801-5100-2gpu-4e88537"
+}

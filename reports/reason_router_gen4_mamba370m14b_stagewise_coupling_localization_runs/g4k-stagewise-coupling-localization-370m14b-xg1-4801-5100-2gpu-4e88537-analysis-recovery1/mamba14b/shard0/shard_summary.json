@@ -1,0 +1,116 @@
+{
+  "backward_executed": false,
+  "checkpoint_sha256": "915c9de38d9dc7ee9da26ba4328e74549864c6bd29723f3b7a4b4e0050efce0a",
+  "condition_order": [
+    "native",
+    "dominant_neutralized",
+    "dominant_control"
+  ],
+  "cuda_visible_devices": "0",
+  "downstream_only_replay_count_this_run": 1800,
+  "execution_head": "4e88537383861d60fbd7cc0400afd17fa1e302b6",
+  "frozen_behavioral_reproduction_verified": true,
+  "hf_repo": "state-spaces/mamba-1.4b-hf",
+  "hf_revision": "6e46eae61c27280517feef46f536d16b91076f08",
+  "label_contract": {
+    "C0_SHAM": "SUPPORT",
+    "C2_NAME": "NOT_ENTITLED"
+  },
+  "logical_device": "cuda:0",
+  "logical_device_name": "Tesla T4",
+  "max_final_norm_lens_abs_error": 0.0,
+  "max_frozen_behavioral_reproduction_abs_error": 0.0,
+  "max_pre_target_hidden_abs_error": 0.0,
+  "model_provenance": {
+    "compact_checkpoint_sha256": "915c9de38d9dc7ee9da26ba4328e74549864c6bd29723f3b7a4b4e0050efce0a",
+    "downstream_state_canonical_sha256": "b84b6af218f3d73e10a20e98f3a4118cf2e58d37e25c829a54b81c49eb9fd8ea",
+    "full_state_canonical_sha256": "61b7d444be97b94d18eed698b580b9e44e081060cbec2fa324733839ab431f0d",
+    "kernel_constructor_calls": {
+      "causal-conv1d": 48,
+      "mamba-ssm": 48
+    },
+    "pretrained_backbone_state_stream_sha256": "f6239d5b5b2a35409d38f2fc4267f52fb1524438d7ae2b1f4f6c43ec07f7224a",
+    "snapshot": {
+      "config.json": {
+        "bytes": 879,
+        "sha256": "275174e4771bb65f70cb1ea03389c9711510438d7944885e8f02f525bec03a9d"
+      },
+      "generation_config.json": {
+        "bytes": 137,
+        "sha256": "248fa733db101c19a8e3c2f311a180fdd7c769323ec2873edf7060cec9f5ee32"
+      },
+      "model-00001-of-00002.safetensors": {
+        "bytes": 4960287720,
+        "sha256": "3a0351b2c6a044c5f19f0f8992362e57c0d6f71b0e0702d46f43f3d8a7120c84"
+      },
+      "model-00002-of-00002.safetensors": {
+        "bytes": 528479144,
+        "sha256": "6cd1ac80d0acd00e6b6afebad9690115c5d932009ba644a6c8af1e0aed8414de"
+      },
+      "model.safetensors.index.json": {
+        "bytes": 38175,
+        "sha256": "a4739638258ef26762ff808249c3888fdb8bd4a15404a0db4811feb5cf2444b5"
+      },
+      "tokenizer.json": {
+        "bytes": 2113738,
+        "sha256": "3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8"
+      },
+      "tokenizer_config.json": {
+        "bytes": 4793,
+        "sha256": "3ba257483d22a5a84aab5465aa427e59bdaeb55f09fb14349e2d571ff67e8020"
+      }
+    },
+    "source_full_checkpoint_sha256": "2383cb212f7e87be1ac8920c7875602a73a1c6031212df17342457acb8b87555"
+  },
+  "p_value_count_added": 0,
+  "physical_device": 0,
+  "population_first": "xg1_fact_4801",
+  "population_last": "xg1_fact_4950",
+  "primary_inference_executed": false,
+  "rescue_performed": false,
+  "response_blind_control_plane": "P4",
+  "result": "PASS_STAGEWISE_COUPLING_LOCALIZATION_RAW",
+  "scale": "mamba14b",
+  "schema_version": "gen4-mamba370m14b-stagewise-coupling-localization-summary-v1",
+  "scientific_conclusion": null,
+  "scientific_full_model_forward_count_this_run": 900,
+  "selected_dominant_candidate": "P5",
+  "selection_reopened": false,
+  "selection_uses_response": false,
+  "shard_index": 0,
+  "source_pair_count": 150,
+  "stage_order": [
+    "pre_block_35",
+    "post_block_35",
+    "post_block_36",
+    "post_block_37",
+    "post_block_38",
+    "post_block_39",
+    "post_block_40",
+    "post_block_41",
+    "post_block_42",
+    "post_block_43",
+    "post_block_44",
+    "post_block_45",
+    "post_block_46",
+    "post_block_47",
+    "post_final_norm"
+  ],
+  "structural_rows_sha256": "79aa613b35029f51730b8ebeeba8f076b363748bb0a1ab16de04a1711b1fc86d",
+  "structural_source_sha256": "4c86c7d0c077c1d31f8848bbc639eb89b92003b2044237027f73aa26674877e9",
+  "target_cells": [
+    "C0_SHAM",
+    "C2_NAME"
+  ],
+  "tokenizer": {
+    "file_sha256": {
+      "tokenizer.json": "3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8",
+      "tokenizer_config.json": "3ba257483d22a5a84aab5465aa427e59bdaeb55f09fb14349e2d571ff67e8020"
+    },
+    "repo": "state-spaces/mamba-1.4b-hf",
+    "revision": "6e46eae61c27280517feef46f536d16b91076f08",
+    "tokenizers_version": "0.22.2",
+    "vocab_size": 50277
+  },
+  "training_executed": false
+}

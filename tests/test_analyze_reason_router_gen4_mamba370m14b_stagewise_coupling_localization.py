@@ -80,6 +80,13 @@ def test_cross_scale_persistent_opposition() -> None:
     assert got["first_persistent_C2_D_opposition"] == runner.STAGE_ORDER[4]
 
 
+def test_stage_lens_validation_is_order_independent() -> None:
+    source = inspect.getsource(analysis.validate_scale)
+    assert 'set(value["stage_lens"]) == set(STAGES)' in source
+    assert 'len(value["stage_lens"]) == len(STAGES)' in source
+    assert 'tuple(value["stage_lens"]) == STAGES' not in source
+
+
 def test_analyzer_adds_no_inferential_p_value() -> None:
     source = inspect.getsource(analysis).lower()
     assert "scipy" not in source
