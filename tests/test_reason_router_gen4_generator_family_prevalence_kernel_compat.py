@@ -2,9 +2,8 @@ from __future__ import annotations
 
 import hashlib
 import inspect
-import sys
 from pathlib import Path
-from types import ModuleType, SimpleNamespace
+from types import SimpleNamespace
 
 import pytest
 
@@ -513,7 +512,7 @@ def test_missing_function_surface_is_blocked(monkeypatch, tmp_path):
 
 
 
-def test_exact_causal_conv_cuda_extension_resolves_loaded_frozen_binary(
+def test_exact_causal_conv_cuda_compat_uses_wrapper_cpp_functions(
     monkeypatch,
     tmp_path,
 ):
@@ -527,7 +526,6 @@ def test_exact_causal_conv_cuda_extension_resolves_loaded_frozen_binary(
         binary=b"frozen-conv",
         direct_layout=True,
     )
-
     monkeypatch.setattr(compat, "CONV_SPEC", spec)
 
     resolved = compat.ResolvedKernelSnapshot(
@@ -537,23 +535,36 @@ def test_exact_causal_conv_cuda_extension_resolves_loaded_frozen_binary(
         source="synthetic",
     )
 
-    binary_path = compat._binary_path(snapshot, spec)
-    extension = ModuleType("synthetic_exact_causal_conv_cuda")
-    extension.__file__ = str(binary_path)
+    fwd = lambda *args: ("fwd", args)
+    bwd = lambda *args: ("bwd", args)
+    update = lambda *args: ("update", args)
 
-    monkeypatch.setitem(
-        sys.modules,
-        "synthetic_exact_causal_conv_cuda",
-        extension,
+    fn_namespace = {
+        "causal_conv1d_fwd_function": fwd,
+        "causal_conv1d_bwd_function": bwd,
+    }
+    update_namespace = {
+        "causal_conv1d_update_function": update,
+    }
+    exec("def causal_conv1d_fn():\n    pass\n", fn_namespace)
+    exec("def causal_conv1d_update():\n    pass\n", update_namespace)
+
+    conv = SimpleNamespace(
+        causal_conv1d_fn=fn_namespace["causal_conv1d_fn"],
+        causal_conv1d_update=update_namespace["causal_conv1d_update"],
     )
 
-    observed = compat.resolve_exact_causal_conv_cuda_extension(
+    observed = compat.build_exact_causal_conv_cuda_compat(
+        conv,
         resolved,
     )
-    assert observed is extension
+
+    assert observed.causal_conv1d_fwd is fwd
+    assert observed.causal_conv1d_bwd is bwd
+    assert observed.causal_conv1d_update is update
 
 
-def test_mamba_internal_causal_conv_binding_uses_exact_loaded_extension(
+def test_mamba_internal_causal_conv_binding_uses_exact_compat_surface(
     monkeypatch,
 ):
     namespace = {}
@@ -565,26 +576,32 @@ def test_mamba_internal_causal_conv_binding_uses_exact_loaded_extension(
     mamba = SimpleNamespace(
         mamba_inner_fn=namespace["mamba_inner_fn"],
     )
-    exact_extension = ModuleType("exact_extension")
+    conv = SimpleNamespace()
+    exact_compat = SimpleNamespace(
+        causal_conv1d_fwd=lambda: None,
+        causal_conv1d_bwd=lambda: None,
+        causal_conv1d_update=lambda: None,
+    )
 
     monkeypatch.setattr(
         compat,
-        "resolve_exact_causal_conv_cuda_extension",
-        lambda resolved: exact_extension,
+        "build_exact_causal_conv_cuda_compat",
+        lambda observed_conv, resolved: exact_compat,
     )
 
     resolved = SimpleNamespace(path=Path("synthetic"))
     observed = compat.patch_mamba_internal_causal_conv_binding(
         mamba,
+        conv,
         resolved,
     )
 
-    assert observed is exact_extension
+    assert observed is exact_compat
     assert (
         mamba.mamba_inner_fn.__globals__["causal_conv1d_cuda"]
-        is exact_extension
+        is exact_compat
     )
-    assert mamba.mamba_inner_fn() is exact_extension
+    assert mamba.mamba_inner_fn() is exact_compat
 
 
 def test_transformers_patch_surface_is_exact():

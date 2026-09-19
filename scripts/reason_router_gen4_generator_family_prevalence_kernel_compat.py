@@ -6,7 +6,7 @@ import sys
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from types import ModuleType
+from types import ModuleType, SimpleNamespace
 from typing import Any, Callable, Iterator
 
 from scripts import reason_router_gen4_k_fast_cuda_one_pair_equivalence as backend
@@ -464,53 +464,63 @@ def load_exact_module(
         return module, resolved
 
 
-def resolve_exact_causal_conv_cuda_extension(
+def build_exact_causal_conv_cuda_compat(
+    conv: ModuleType,
     resolved: ResolvedKernelSnapshot,
-) -> ModuleType:
-    binary_path = _binary_path(
+) -> SimpleNamespace:
+    # Re-authenticate the exact frozen binary before constructing the
+    # legacy module-like surface expected by mamba-ssm internals.
+    _binary_path(
         resolved.path,
         CONV_SPEC,
-    ).resolve()
-
-    matches: list[ModuleType] = []
-    seen: set[int] = set()
-
-    for module in tuple(sys.modules.values()):
-        if not isinstance(module, ModuleType):
-            continue
-
-        module_file = getattr(module, "__file__", None)
-        if module_file is None:
-            continue
-
-        try:
-            observed_path = Path(module_file).resolve()
-        except (OSError, RuntimeError):
-            continue
-
-        if observed_path != binary_path:
-            continue
-
-        identity = id(module)
-        if identity not in seen:
-            seen.add(identity)
-            matches.append(module)
-
-    require(
-        len(matches) == 1,
-        (
-            "CONV_CUDA_EXTENSION_MODULE_COUNT:"
-            f"expected=1:observed={len(matches)}:"
-            f"binary={binary_path}"
-        ),
     )
-    return matches[0]
+
+    conv_fn = getattr(conv, "causal_conv1d_fn", None)
+    conv_update = getattr(conv, "causal_conv1d_update", None)
+    require(callable(conv_fn), "CONV_FN_MISSING")
+    require(callable(conv_update), "CONV_UPDATE_MISSING")
+
+    fn_globals = getattr(conv_fn, "__globals__", None)
+    update_globals = getattr(conv_update, "__globals__", None)
+    require(
+        isinstance(fn_globals, dict),
+        "CONV_FN_GLOBALS_MISSING",
+    )
+    require(
+        isinstance(update_globals, dict),
+        "CONV_UPDATE_GLOBALS_MISSING",
+    )
+
+    fwd = fn_globals.get("causal_conv1d_fwd_function")
+    bwd = fn_globals.get("causal_conv1d_bwd_function")
+    update = update_globals.get("causal_conv1d_update_function")
+
+    missing = [
+        name
+        for name, value in (
+            ("causal_conv1d_fwd", fwd),
+            ("causal_conv1d_bwd", bwd),
+            ("causal_conv1d_update", update),
+        )
+        if not callable(value)
+    ]
+    require(
+        not missing,
+        "CONV_LEGACY_CPP_SURFACE:" + ",".join(missing),
+    )
+
+    return SimpleNamespace(
+        causal_conv1d_fwd=fwd,
+        causal_conv1d_bwd=bwd,
+        causal_conv1d_update=update,
+    )
 
 
 def patch_mamba_internal_causal_conv_binding(
     mamba: ModuleType,
+    conv: ModuleType,
     resolved_conv: ResolvedKernelSnapshot,
-) -> ModuleType:
+) -> SimpleNamespace:
     inner_fn = getattr(mamba, "mamba_inner_fn", None)
     require(callable(inner_fn), "MAMBA_INNER_FN_MISSING")
 
@@ -520,7 +530,8 @@ def patch_mamba_internal_causal_conv_binding(
         "MAMBA_INNER_GLOBALS_MISSING",
     )
 
-    conv_cuda = resolve_exact_causal_conv_cuda_extension(
+    conv_cuda = build_exact_causal_conv_cuda_compat(
+        conv,
         resolved_conv,
     )
     inner_globals["causal_conv1d_cuda"] = conv_cuda
@@ -678,6 +689,7 @@ def load_exact_fast_kernels() -> dict[str, Any]:
     conv, conv_resolved = load_exact_module(CONV_SPEC)
     conv_cuda = patch_mamba_internal_causal_conv_binding(
         mamba,
+        conv,
         conv_resolved,
     )
     functions = patch_transformers_mamba(mamba, conv)
