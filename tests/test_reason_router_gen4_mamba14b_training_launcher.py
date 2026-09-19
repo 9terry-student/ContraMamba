@@ -143,3 +143,32 @@ def test_snapshot_identity_is_exactly_pinned() -> None:
     }
     assert launcher.TRAIN_ROW_COUNT == 2880
     assert launcher.DEV_ROW_COUNT == 720
+
+def test_dual_gpu_cache_partition_uses_both_devices_evenly() -> None:
+    train = launcher.dual_gpu_cache_slices(
+        launcher.TRAIN_ROW_COUNT,
+        launcher.DUAL_GPU_CACHE_BATCH_SIZE,
+    )
+    dev = launcher.dual_gpu_cache_slices(
+        launcher.DEV_ROW_COUNT,
+        launcher.DUAL_GPU_CACHE_BATCH_SIZE,
+    )
+
+    left_rows = sum(item[0].stop - item[0].start for item in [*train, *dev])
+    right_rows = sum(item[1].stop - item[1].start for item in [*train, *dev])
+
+    assert launcher.DUAL_GPU_CACHE_DEVICE_IDS == (0, 1)
+    assert launcher.DUAL_GPU_CACHE_BATCH_SIZE == 64
+    assert left_rows == 1800
+    assert right_rows == 1800
+    assert left_rows + right_rows == (
+        launcher.TRAIN_ROW_COUNT + launcher.DEV_ROW_COUNT
+    )
+
+
+def test_dual_gpu_cache_runtime_contract_is_not_gradient_data_parallel() -> None:
+    assert launcher.GRADIENT_ACCUMULATION_STEPS == 1
+    assert launcher.FORWARD_MICROBATCH_SIZE == 32
+    assert launcher.DUAL_GPU_CACHE_DEVICE_IDS == (0, 1)
+    assert launcher.TRAIN_ROW_COUNT == 2880
+    assert launcher.DEV_ROW_COUNT == 720

@@ -7,6 +7,7 @@ import json
 import os
 import platform
 import subprocess
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, Iterable, Iterator
 
@@ -89,6 +90,8 @@ EVAL_MICROBATCH_SIZE = 32
 GRADIENT_ACCUMULATION_STEPS = 1
 TRAIN_ROW_COUNT = 2880
 DEV_ROW_COUNT = 720
+DUAL_GPU_CACHE_BATCH_SIZE = 64
+DUAL_GPU_CACHE_DEVICE_IDS = (0, 1)
 
 EXPECTED_RUNTIME = {
     "python": "3.12.13",
@@ -163,8 +166,186 @@ def validate_runtime() -> dict[str, Any]:
         "gpu_names_first_two": names,
         "gpu_capabilities_first_two": [list(v) for v in capabilities],
         "training_device": "cuda:0",
+        "dual_gpu_frozen_encoder_cache": True,
+        "dual_gpu_cache_device_ids": list(DUAL_GPU_CACHE_DEVICE_IDS),
+        "dual_gpu_cache_batch_size": DUAL_GPU_CACHE_BATCH_SIZE,
+        "second_gpu_role": "frozen_mamba_encoder_cache_forward",
         "second_gpu_used_for_gradient_aggregation": False,
     }
+
+
+def dual_gpu_cache_slices(
+    n_rows: int,
+    batch_size: int = DUAL_GPU_CACHE_BATCH_SIZE,
+) -> list[tuple[slice, slice]]:
+    require(n_rows >= 0, f"CACHE_N_ROWS:{n_rows}")
+    require(batch_size >= 2, f"CACHE_BATCH_SIZE:{batch_size}")
+    result: list[tuple[slice, slice]] = []
+    for start in range(0, n_rows, batch_size):
+        end = min(n_rows, start + batch_size)
+        mid = start + (end - start + 1) // 2
+        result.append((slice(start, mid), slice(mid, end)))
+    return result
+
+
+def install_dual_gpu_frozen_encoder_cache(
+    *,
+    trainer: Any,
+    snapshot: Path,
+) -> tuple[dict[str, Any], Any]:
+    from transformers import MambaConfig, MambaModel
+
+    stats: dict[str, Any] = {
+        "enabled": True,
+        "device_ids": list(DUAL_GPU_CACHE_DEVICE_IDS),
+        "global_cache_batch_size": DUAL_GPU_CACHE_BATCH_SIZE,
+        "datasets_cached": 0,
+        "gpu0_rows": 0,
+        "gpu1_rows": 0,
+        "gpu0_forward_calls": 0,
+        "gpu1_forward_calls": 0,
+        "cross_gpu_equivalence_checked": False,
+        "cross_gpu_equivalence_exact": False,
+        "secondary_model_loaded_from_exact_snapshot": False,
+        "secondary_model_released_after_cache": False,
+    }
+    secondary_holder: dict[str, Any] = {"model": None}
+
+    def load_secondary() -> Any:
+        secondary = secondary_holder["model"]
+        if secondary is not None:
+            return secondary
+        config = MambaConfig.from_pretrained(
+            str(snapshot),
+            local_files_only=True,
+        )
+        config.use_mamba_kernels = True
+        with torch.cuda.device(1):
+            secondary = MambaModel.from_pretrained(
+                str(snapshot),
+                config=config,
+                local_files_only=True,
+            ).to(torch.device("cuda:1"))
+        for parameter in secondary.parameters():
+            parameter.requires_grad_(False)
+        secondary.eval()
+        secondary_holder["model"] = secondary
+        stats["secondary_model_loaded_from_exact_snapshot"] = True
+        return secondary
+
+    def verify_cross_gpu_exact(
+        primary: Any,
+        secondary: Any,
+        probe_ids: torch.Tensor,
+    ) -> None:
+        if stats["cross_gpu_equivalence_checked"]:
+            return
+        n = min(4, int(probe_ids.shape[0]))
+        require(n > 0, "CACHE_EQUIVALENCE_EMPTY_PROBE")
+        ids0 = probe_ids[:n].to(torch.device("cuda:0"))
+        ids1 = probe_ids[:n].to(torch.device("cuda:1"))
+        primary.eval()
+        secondary.eval()
+        with torch.no_grad():
+            out0 = primary(input_ids=ids0).last_hidden_state.detach().cpu()
+            out1 = secondary(input_ids=ids1).last_hidden_state.detach().cpu()
+        stats["cross_gpu_equivalence_checked"] = True
+        stats["cross_gpu_equivalence_exact"] = bool(torch.equal(out0, out1))
+        require(
+            stats["cross_gpu_equivalence_exact"],
+            "DUAL_GPU_CACHE_CROSS_GPU_TENSOR_MISMATCH",
+        )
+
+    def run_primary(primary: Any, ids: torch.Tensor) -> torch.Tensor:
+        with torch.cuda.device(0), torch.no_grad():
+            result = primary(
+                input_ids=ids.to(torch.device("cuda:0"), non_blocking=True)
+            ).last_hidden_state
+            torch.cuda.synchronize(0)
+            return result
+
+    def run_secondary(secondary: Any, ids: torch.Tensor) -> torch.Tensor:
+        with torch.cuda.device(1), torch.no_grad():
+            result = secondary(
+                input_ids=ids.to(torch.device("cuda:1"), non_blocking=True)
+            ).last_hidden_state
+            result0 = result.to(torch.device("cuda:0"), non_blocking=True)
+            torch.cuda.synchronize(1)
+            return result0
+
+    def dual_gpu_cache(
+        model: Any,
+        inputs: dict[str, torch.Tensor],
+        batch_size: int = 8,
+    ) -> None:
+        del batch_size
+        require(
+            not any(parameter.requires_grad for parameter in model.mamba.parameters()),
+            "DUAL_GPU_CACHE_REQUIRES_FROZEN_ENCODER",
+        )
+        require(torch.cuda.device_count() >= 2, "DUAL_GPU_CACHE_REQUIRES_TWO_GPUS")
+
+        primary = model.mamba
+        primary.eval()
+        secondary = load_secondary()
+        verify_cross_gpu_exact(primary, secondary, inputs["input_ids"])
+
+        chunks: list[torch.Tensor] = []
+        plans = dual_gpu_cache_slices(
+            int(inputs["input_ids"].shape[0]),
+            DUAL_GPU_CACHE_BATCH_SIZE,
+        )
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            for left, right in plans:
+                ids_left = inputs["input_ids"][left]
+                ids_right = inputs["input_ids"][right]
+
+                future0 = (
+                    pool.submit(run_primary, primary, ids_left)
+                    if int(ids_left.shape[0]) > 0
+                    else None
+                )
+                future1 = (
+                    pool.submit(run_secondary, secondary, ids_right)
+                    if int(ids_right.shape[0]) > 0
+                    else None
+                )
+
+                out0 = future0.result() if future0 is not None else None
+                out1 = future1.result() if future1 is not None else None
+
+                if out0 is not None:
+                    chunks.append(out0)
+                    stats["gpu0_rows"] += int(ids_left.shape[0])
+                    stats["gpu0_forward_calls"] += 1
+                if out1 is not None:
+                    chunks.append(out1)
+                    stats["gpu1_rows"] += int(ids_right.shape[0])
+                    stats["gpu1_forward_calls"] += 1
+
+        require(chunks, "DUAL_GPU_CACHE_NO_CHUNKS")
+        inputs["encoder_hidden_states"] = torch.cat(chunks, dim=0)
+        require(
+            int(inputs["encoder_hidden_states"].shape[0])
+            == int(inputs["input_ids"].shape[0]),
+            "DUAL_GPU_CACHE_ROW_COUNT_MISMATCH",
+        )
+        stats["datasets_cached"] += 1
+
+        if stats["datasets_cached"] == 2:
+            secondary_holder["model"] = None
+            del secondary
+            torch.cuda.synchronize(1)
+            torch.cuda.empty_cache()
+            stats["secondary_model_released_after_cache"] = True
+
+    original = trainer.v5.cache_frozen_encoder_states
+    trainer.v5.cache_frozen_encoder_states = dual_gpu_cache
+    return stats, original
+
+
+def restore_encoder_cache_function(*, trainer: Any, original: Any) -> None:
+    trainer.v5.cache_frozen_encoder_states = original
 
 
 def resolve_exact_snapshot() -> Path:
@@ -489,6 +670,13 @@ def main() -> None:
             "logical_full_batch_rows": TRAIN_ROW_COUNT,
             "optimizer_steps_per_epoch": 1,
             "selection_metric": "final_macro_f1",
+            "dual_gpu_frozen_encoder_cache": True,
+            "dual_gpu_cache_batch_size": DUAL_GPU_CACHE_BATCH_SIZE,
+            "dual_gpu_cache_device_ids": list(DUAL_GPU_CACHE_DEVICE_IDS),
+            "dual_gpu_cache_expected_total_rows": TRAIN_ROW_COUNT + DEV_ROW_COUNT,
+            "dual_gpu_cache_expected_rows_per_gpu": (
+                (TRAIN_ROW_COUNT + DEV_ROW_COUNT) // 2
+            ),
         },
         "trainer_argv": argv,
         "scientific_scope": "training_and_internal_clean_dev_checkpoint_selection_only",
@@ -500,9 +688,42 @@ def main() -> None:
         newline="\n",
     )
 
-    with kernel_compat.exact_transformers_kernel_loader(kernels):
-        rc = trainer.main(argv)
+    cache_stats, original_cache_function = install_dual_gpu_frozen_encoder_cache(
+        trainer=trainer,
+        snapshot=snapshot,
+    )
+    try:
+        with kernel_compat.exact_transformers_kernel_loader(kernels):
+            rc = trainer.main(argv)
+    finally:
+        restore_encoder_cache_function(
+            trainer=trainer,
+            original=original_cache_function,
+        )
     require(rc in (0, None), f"TRAINER_RETURN_CODE:{rc}")
+    require(cache_stats["datasets_cached"] == 2, f"CACHE_DATASETS:{cache_stats}")
+    require(cache_stats["cross_gpu_equivalence_exact"] is True, f"CACHE_EQUIVALENCE:{cache_stats}")
+    require(
+        cache_stats["gpu0_rows"] + cache_stats["gpu1_rows"]
+        == TRAIN_ROW_COUNT + DEV_ROW_COUNT,
+        f"CACHE_TOTAL_ROWS:{cache_stats}",
+    )
+    require(
+        cache_stats["gpu0_rows"] == cache_stats["gpu1_rows"]
+        == (TRAIN_ROW_COUNT + DEV_ROW_COUNT) // 2,
+        f"CACHE_GPU_ROW_BALANCE:{cache_stats}",
+    )
+    require(cache_stats["gpu0_forward_calls"] > 0, f"CACHE_GPU0_UNUSED:{cache_stats}")
+    require(cache_stats["gpu1_forward_calls"] > 0, f"CACHE_GPU1_UNUSED:{cache_stats}")
+    require(
+        cache_stats["secondary_model_released_after_cache"] is True,
+        f"CACHE_SECONDARY_NOT_RELEASED:{cache_stats}",
+    )
+    (run_dir / "dual_gpu_encoder_cache_stats.json").write_text(
+        json.dumps(cache_stats, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
 
     training_summary = validate_training_outputs(run_dir)
 
@@ -520,6 +741,12 @@ def main() -> None:
     print("TRAINING_SEED=" + str(TRAINING_SEED))
     print("SPLIT_SEED=" + str(SPLIT_SEED))
     print("BEST_EPOCH=" + str(training_summary["best_epoch"]))
+    print("DUAL_GPU_ENCODER_CACHE=PASS")
+    print("GPU0_CACHE_ROWS=" + str(cache_stats["gpu0_rows"]))
+    print("GPU1_CACHE_ROWS=" + str(cache_stats["gpu1_rows"]))
+    print("GPU0_CACHE_FORWARD_CALLS=" + str(cache_stats["gpu0_forward_calls"]))
+    print("GPU1_CACHE_FORWARD_CALLS=" + str(cache_stats["gpu1_forward_calls"]))
+    print("CROSS_GPU_CACHE_EQUIVALENCE_EXACT=" + str(cache_stats["cross_gpu_equivalence_exact"]))
     print("COMPACT_CHECKPOINT_SHA256=" + compact_manifest["compact_checkpoint"]["sha256"])
     print("FULL_CHECKPOINT_PRESENT=" + str((run_dir / "selected_checkpoint.pt").exists()))
     print("EXTERNAL_EVALUATION_EXECUTED=False")
