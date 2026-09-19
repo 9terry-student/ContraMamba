@@ -172,3 +172,53 @@ def test_dual_gpu_cache_runtime_contract_is_not_gradient_data_parallel() -> None
     assert launcher.DUAL_GPU_CACHE_DEVICE_IDS == (0, 1)
     assert launcher.TRAIN_ROW_COUNT == 2880
     assert launcher.DEV_ROW_COUNT == 720
+
+
+def test_authenticate_repo_allows_detached_exact_head(monkeypatch) -> None:
+    expected_head = "a" * 40
+
+    def fake_check_output(argv, *, cwd, text):
+        assert cwd == launcher.ROOT
+        assert text is True
+        if argv == ["git", "branch", "--show-current"]:
+            return "\n"
+        if argv == ["git", "rev-parse", "HEAD"]:
+            return expected_head + "\n"
+        if argv == ["git", "status", "--porcelain"]:
+            return ""
+        raise AssertionError(argv)
+
+    monkeypatch.setattr(
+        launcher.subprocess,
+        "check_output",
+        fake_check_output,
+    )
+
+    launcher.authenticate_repo(expected_head)
+
+
+def test_authenticate_repo_rejects_wrong_named_branch(monkeypatch) -> None:
+    expected_head = "b" * 40
+
+    def fake_check_output(argv, *, cwd, text):
+        assert cwd == launcher.ROOT
+        assert text is True
+        if argv == ["git", "branch", "--show-current"]:
+            return "main\n"
+        if argv == ["git", "rev-parse", "HEAD"]:
+            return expected_head + "\n"
+        if argv == ["git", "status", "--porcelain"]:
+            return ""
+        raise AssertionError(argv)
+
+    monkeypatch.setattr(
+        launcher.subprocess,
+        "check_output",
+        fake_check_output,
+    )
+
+    with pytest.raises(
+        launcher.TrainingLauncherError,
+        match="BRANCH:main",
+    ):
+        launcher.authenticate_repo(expected_head)

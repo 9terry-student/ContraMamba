@@ -137,8 +137,11 @@ def authenticate_repo(expected_head: str) -> None:
         text=True,
     ).strip()
 
-    require(branch == EXPECTED_BRANCH, f"BRANCH:{branch}")
     require(head == expected_head, f"HEAD:{head}")
+    require(
+        branch in {"", EXPECTED_BRANCH},
+        f"BRANCH:{branch}",
+    )
     require(not dirty, "DIRTY_WORKTREE")
 
 
