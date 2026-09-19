@@ -1,0 +1,167 @@
+{
+  "anchor_contract": {
+    "anchor_definition": "EOS separator after consumed claim tokens",
+    "anchor_name": "A_CLAIM_EVIDENCE_BOUNDARY",
+    "target_definition": "second consumed evidence token",
+    "target_offset": 2
+  },
+  "backward_executed": false,
+  "cohort_file_sha256": "ce271c1b57b33e12399bc180f06d417ceef6e4e92ad9e5383e2d8187829a2810",
+  "compatible_labels": [
+    "Refuted",
+    "Not Enough Evidence",
+    "Supported"
+  ],
+  "cuda_executed": false,
+  "design": {
+    "artifact": "reports/reason_router_gen4_causal_atlas_guided_steering_design.md",
+    "artifact_git_blob": "0d35f9aebb37e6203bea40304d3a55ab2361b684"
+  },
+  "evidence_reordering_executed": false,
+  "excluded_label": "Conflicting Evidence/Cherrypicking",
+  "fresh_cohort_count": 2799,
+  "fresh_cohort_label_counts": {
+    "Not Enough Evidence": 267,
+    "Refuted": 1727,
+    "Supported": 805
+  },
+  "freshness": {
+    "compatible_before_freshness": 2873,
+    "deduplication_order": [
+      "exclude_conflicting_evidence_cherrypicking",
+      "exclude_empty_normalized_claim",
+      "exclude_exact_normalized_claim_match_to_dev",
+      "exclude_exact_nonempty_original_claim_url_match_to_dev",
+      "retain_lowest_zero_based_train_index_per_remaining_normalized_claim"
+    ],
+    "exclusion_counts": {
+      "dev_claim_overlap": 6,
+      "dev_url_overlap": 1,
+      "empty_normalized_claim": 1,
+      "incompatible_label": 195,
+      "later_within_train_duplicate_claim": 66
+    },
+    "final_count": 2799,
+    "final_label_counts": {
+      "Not Enough Evidence": 267,
+      "Refuted": 1727,
+      "Supported": 805
+    },
+    "normalization": "strip; collapse each maximal whitespace run to one ASCII space; Unicode lowercase"
+  },
+  "gold_evidence_serialization": "source-order repeated blocks: Question: <question>\\nAnswer: <answer>, joined by \\n\\n",
+  "justification_used_as_model_input": false,
+  "model_checkpoint_loaded": false,
+  "model_forward_count": 0,
+  "p_value_count_added": 0,
+  "phase": "EXPERIMENT_3_CAUSAL_ATLAS_GUIDED_STEERING_FRESH_TOKEN_GATE",
+  "planned_steering_execution": {
+    "conditions": [
+      "native",
+      "p3_mirror_steer",
+      "p5_matched_control"
+    ],
+    "expected_full_model_forward_count": 8397,
+    "expected_row_count": 2799,
+    "model_scale": "mamba370m",
+    "scientific_execution_authorized_by_this_artifact": false
+  },
+  "question_generation_executed": false,
+  "response_fields_present": false,
+  "result": "PASS_2799_OF_2799",
+  "retrieval_executed": false,
+  "schema_version": "GEN4_AVERITEC_TRAIN_FRESH_STEERING_TOKEN_GATE_V1",
+  "scientific_inference_executed": false,
+  "source_eligibility_correction": {
+    "artifact": "reports/reason_router_gen4_causal_atlas_guided_steering_source_eligibility_correction.md",
+    "artifact_git_blob": "3a55da349d7c9780f8e51de76e3fd9abd67531aa",
+    "required_ancestor": "ead82711af027589af8ede257519391a6283dcf7"
+  },
+  "source_train_count": 3068,
+  "source_train_label_counts": {
+    "Conflicting Evidence/Cherrypicking": 195,
+    "Not Enough Evidence": 282,
+    "Refuted": 1742,
+    "Supported": 849
+  },
+  "token_gate": {
+    "fail_count": 0,
+    "failure_counts": {},
+    "pass_count": 2799,
+    "target_count": 2799
+  },
+  "tokenizer": {
+    "active_serialization": "claim[:63]+EOS(0)+evidence[:64]",
+    "claim_budget": 63,
+    "eos_token_id": 0,
+    "evidence_budget": 64,
+    "file_sha256": {
+      "special_tokens_map.json": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8",
+      "tokenizer.json": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf",
+      "tokenizer_config.json": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+    },
+    "max_length": 128,
+    "repo": "state-spaces/mamba-370m-hf",
+    "revision": "589179554943157be31701edd8b4558889276674",
+    "tokenizers_version": "0.22.2"
+  },
+  "training_executed": false,
+  "truncation": {
+    "anchor_index": {
+      "max": 63,
+      "mean": 22.494105037513396,
+      "median": 20,
+      "min": 5
+    },
+    "claim_consumed_tokens": {
+      "max": 63,
+      "mean": 22.494105037513396,
+      "median": 20,
+      "min": 5
+    },
+    "claim_raw_tokens": {
+      "max": 96,
+      "mean": 22.60843158270811,
+      "median": 20,
+      "min": 5
+    },
+    "claim_truncated_count": 30,
+    "evidence_consumed_tokens": {
+      "max": 64,
+      "mean": 57.94140764558771,
+      "median": 64,
+      "min": 11
+    },
+    "evidence_raw_tokens": {
+      "max": 1575,
+      "mean": 149.6477313326188,
+      "median": 107,
+      "min": 11
+    },
+    "evidence_truncated_count": 2050,
+    "target_index": {
+      "max": 65,
+      "mean": 24.494105037513396,
+      "median": 22,
+      "min": 7
+    }
+  },
+  "upstream": {
+    "commit": "7c62d1ec8df3fb560d6efe2b85fa191135636f81",
+    "dev": {
+      "byte_count": 1785475,
+      "git_blob_sha1": "40974243267f395dc583d805d10f043812419249",
+      "path": "data/dev.json",
+      "sha256": "499793726b4a5406780928a3d9dedc48d6dd53de778f22437d129cacdb08e300"
+    },
+    "license": "CC BY-NC 4.0",
+    "paper_citation": "Michael Sejr Schlichtkrull, Zhijiang Guo, Andreas Vlachos. AVeriTeC: A Dataset for Real-world Claim Verification with Evidence from the Web. NeurIPS 2023 Datasets and Benchmarks Track.",
+    "repository": "MichSchli/AVeriTeC",
+    "train": {
+      "byte_count": 10184813,
+      "git_blob_sha1": "0f190e115cf2ee23416e8a539c8d6ac043d7cc83",
+      "path": "data/train.json",
+      "sha256": "ae5eda7c42ddf1695ef185a7ba1bc716928f5adf57103e4f78aae5f9afe00f9c"
+    }
+  }
+}

@@ -1,0 +1,2 @@
+ce271c1b57b33e12399bc180f06d417ceef6e4e92ad9e5383e2d8187829a2810  fresh_compatible_cohort.jsonl
+7fef7f8c9544f46fbdeb1184bee313259bd52154181c346c4ae6d367d08da738  token_gate_manifest.json
