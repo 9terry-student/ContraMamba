@@ -1,0 +1,145 @@
+{
+  "backward_executed": false,
+  "decomposition_items_sha256": "89c9fa60efbb90a4c6fd993d5f71dbb7e10ee1c1f5a52932172566acd75b97e9",
+  "decomposition_summary_sha256": "4d9d9be6735356ee80b151db6f43bcbdb768e8c283a3e6fe41c3ae4588ff3c6d",
+  "execution_head": "02a25e4a279962e033fbd10ae526e50346064d31",
+  "formal_inference_performed": false,
+  "output_file_sha256": {
+    "native_coefficient_census_items.jsonl": "d2bcffbfb37237dfda55f2987982c0fa4bd57bc8aa0a7917beff4f25c92eca16",
+    "native_coefficient_census_summary.json": "8251d3186ded56669fdf6adf758c8de3f0ac4428c5a1b2e0d309cba8662607d5"
+  },
+  "p_value_count": 0,
+  "pair_first": "xg1_fact_3601",
+  "pair_last": "xg1_fact_3900",
+  "required_evidence_freeze_commit": "b92ed1aded48de898cfac9cc85da373cc675b484",
+  "rescue_of_failed_cross_backbone_claim": false,
+  "residual_planes": [
+    "P1",
+    "P2",
+    "P4",
+    "P5"
+  ],
+  "result": "PASS_MAMBA370M_NATIVE_COEFFICIENT_CENSUS_RAW_OBSERVATION",
+  "schema_version": "gen4-mamba370m-native-coefficient-census-manifest-v1",
+  "scientific_conclusion_established": false,
+  "scientific_model_forward_count": 600,
+  "scientific_question": "Is the dominant negative P5/P2 residual effect in Mamba-370M explained by native coefficient mass, or by stronger/opposite effect coupling per unit plane coefficient energy?",
+  "selection_performed": false,
+  "source_pair_count": 300,
+  "training_executed": false,
+  "worker_count": 2,
+  "workers": [
+    {
+      "cuda_visible_devices": "0",
+      "decomposition_items_sha256": "89c9fa60efbb90a4c6fd993d5f71dbb7e10ee1c1f5a52932172566acd75b97e9",
+      "decomposition_summary_sha256": "4d9d9be6735356ee80b151db6f43bcbdb768e8c283a3e6fe41c3ae4588ff3c6d",
+      "device_name": "Tesla T4",
+      "formal_inference_performed": false,
+      "items_sha256": "cd02a0f4913e122d47599e461f51f181e1a7888a944e8b29b671a6b9ce07422c",
+      "logical_device": 0,
+      "model_provenance": {
+        "compact_checkpoint_sha256": "9d8e3db22af4636938679aac6a8a97dd45344937d434fab29eac2ddc41a52a72",
+        "downstream_state_canonical_sha256": "eb16ae88a3fe42dd44ca102cdc122d09fe69eb8cc3d3f5ff761f285ab2af1730",
+        "full_state_canonical_sha256": "cd368ea41cbfc6560ff2d9eb89fc53b333cde72d4db5c99ae7ea8e5f62c1db83",
+        "kernel_constructor_calls": {
+          "causal-conv1d": 48,
+          "mamba-ssm": 48
+        },
+        "mamba_state_canonical_sha256": "2f1bb0820efd7376103541cd6de7b2893456083359708ac78f3fd30f8d1d56ac",
+        "snapshot": {
+          "config.json": {
+            "bytes": 917,
+            "sha256": "c15aad03ce0cc27f7f550ff05bb9a0354f3c0770b3b9ef382c5f730aa8e23e62"
+          },
+          "generation_config.json": {
+            "bytes": 137,
+            "sha256": "ffc3c43cdd9c33c738da20597bdef859cd44e4cc77ff3966b6d59269a1cae8e7"
+          },
+          "model.safetensors": {
+            "bytes": 1486118288,
+            "sha256": "8e2386de4c63e64a371cb9bc451421b04a33390103ba5e596ead4ac4c668a2b1"
+          },
+          "special_tokens_map.json": {
+            "bytes": 473,
+            "sha256": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8"
+          },
+          "tokenizer.json": {
+            "bytes": 2113837,
+            "sha256": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf"
+          },
+          "tokenizer_config.json": {
+            "bytes": 4793,
+            "sha256": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+          }
+        },
+        "source_full_checkpoint_sha256": "b664a776b78b54cb8ec8e6553bc8a2059eef53d25165e2e82ab556146f85bf29"
+      },
+      "p_value_count": 0,
+      "pair_count": 150,
+      "pair_first": "xg1_fact_3601",
+      "pair_last": "xg1_fact_3750",
+      "physical_device": 0,
+      "rescue_performed": false,
+      "schema_version": "gen4-mamba370m-native-coefficient-census-worker-v1",
+      "scientific_model_forward_count": 300,
+      "selection_performed": false,
+      "shard_id": 0
+    },
+    {
+      "cuda_visible_devices": "1",
+      "decomposition_items_sha256": "89c9fa60efbb90a4c6fd993d5f71dbb7e10ee1c1f5a52932172566acd75b97e9",
+      "decomposition_summary_sha256": "4d9d9be6735356ee80b151db6f43bcbdb768e8c283a3e6fe41c3ae4588ff3c6d",
+      "device_name": "Tesla T4",
+      "formal_inference_performed": false,
+      "items_sha256": "edca559eb9e1c706b1bf60c001217b83790cf3c884331b57ff2d149901056f03",
+      "logical_device": 0,
+      "model_provenance": {
+        "compact_checkpoint_sha256": "9d8e3db22af4636938679aac6a8a97dd45344937d434fab29eac2ddc41a52a72",
+        "downstream_state_canonical_sha256": "eb16ae88a3fe42dd44ca102cdc122d09fe69eb8cc3d3f5ff761f285ab2af1730",
+        "full_state_canonical_sha256": "cd368ea41cbfc6560ff2d9eb89fc53b333cde72d4db5c99ae7ea8e5f62c1db83",
+        "kernel_constructor_calls": {
+          "causal-conv1d": 48,
+          "mamba-ssm": 48
+        },
+        "mamba_state_canonical_sha256": "2f1bb0820efd7376103541cd6de7b2893456083359708ac78f3fd30f8d1d56ac",
+        "snapshot": {
+          "config.json": {
+            "bytes": 917,
+            "sha256": "c15aad03ce0cc27f7f550ff05bb9a0354f3c0770b3b9ef382c5f730aa8e23e62"
+          },
+          "generation_config.json": {
+            "bytes": 137,
+            "sha256": "ffc3c43cdd9c33c738da20597bdef859cd44e4cc77ff3966b6d59269a1cae8e7"
+          },
+          "model.safetensors": {
+            "bytes": 1486118288,
+            "sha256": "8e2386de4c63e64a371cb9bc451421b04a33390103ba5e596ead4ac4c668a2b1"
+          },
+          "special_tokens_map.json": {
+            "bytes": 473,
+            "sha256": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8"
+          },
+          "tokenizer.json": {
+            "bytes": 2113837,
+            "sha256": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf"
+          },
+          "tokenizer_config.json": {
+            "bytes": 4793,
+            "sha256": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+          }
+        },
+        "source_full_checkpoint_sha256": "b664a776b78b54cb8ec8e6553bc8a2059eef53d25165e2e82ab556146f85bf29"
+      },
+      "p_value_count": 0,
+      "pair_count": 150,
+      "pair_first": "xg1_fact_3751",
+      "pair_last": "xg1_fact_3900",
+      "physical_device": 1,
+      "rescue_performed": false,
+      "schema_version": "gen4-mamba370m-native-coefficient-census-worker-v1",
+      "scientific_model_forward_count": 300,
+      "selection_performed": false,
+      "shard_id": 1
+    }
+  ]
+}

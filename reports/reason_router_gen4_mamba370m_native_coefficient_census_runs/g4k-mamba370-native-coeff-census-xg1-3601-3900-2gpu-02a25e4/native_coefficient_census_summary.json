@@ -1,0 +1,113 @@
+{
+  "formal_inference_performed": false,
+  "largest_energy_and_largest_abs_effect_same_plane": {
+    "count": 224,
+    "fraction": 0.7466666666666667
+  },
+  "p_value_count": 0,
+  "pair_id_first": "xg1_fact_3601",
+  "pair_id_last": "xg1_fact_3900",
+  "plane_summary": {
+    "P1": {
+      "coefficient_energy": {
+        "max": 12.724847540136487,
+        "mean": 4.754747591401516,
+        "median": 5.489413967770343,
+        "min": 0.15574615770647923,
+        "n": 300,
+        "q25": 1.4499419067302872,
+        "q75": 6.483838871981504,
+        "sd": 3.542094030025577
+      },
+      "corr_energy_abs_effect": 0.5418264974171119,
+      "corr_energy_effect": 0.27416831929823776,
+      "energy_share_of_residual_mean_total": 0.06398415677148447,
+      "frozen_effect_mean": 5.757457855574916e-09,
+      "largest_abs_effect_count": 1,
+      "largest_abs_effect_fraction": 0.0033333333333333335,
+      "largest_energy_count": 0,
+      "largest_energy_fraction": 0.0,
+      "mean_coefficient_l2": 2.004703657804414,
+      "mean_effect_over_mean_energy": 1.2108861185369127e-09
+    },
+    "P2": {
+      "coefficient_energy": {
+        "max": 29.918581209934157,
+        "mean": 10.961272063076528,
+        "median": 5.026269756770015,
+        "min": 0.3483014670213273,
+        "n": 300,
+        "q25": 2.3594215727954975,
+        "q75": 21.996967149688206,
+        "sd": 10.403264513745846
+      },
+      "corr_energy_abs_effect": 0.39040773476448454,
+      "corr_energy_effect": -0.18938345987173155,
+      "energy_share_of_residual_mean_total": 0.1475047279832685,
+      "frozen_effect_mean": -1.4613450843693005e-08,
+      "largest_abs_effect_count": 37,
+      "largest_abs_effect_fraction": 0.12333333333333334,
+      "largest_energy_count": 0,
+      "largest_energy_fraction": 0.0,
+      "mean_coefficient_l2": 2.8570161865486505,
+      "mean_effect_over_mean_energy": -1.3331893195972194e-09
+    },
+    "P4": {
+      "coefficient_energy": {
+        "max": 23.510699335893158,
+        "mean": 6.966084176387261,
+        "median": 4.949504023890157,
+        "min": 0.10847196279078362,
+        "n": 300,
+        "q25": 2.833657745959103,
+        "q75": 9.32540875924899,
+        "sd": 6.1516407666622435
+      },
+      "corr_energy_abs_effect": 0.7439922106434301,
+      "corr_energy_effect": 0.6979133217186632,
+      "energy_share_of_residual_mean_total": 0.09374188922906401,
+      "frozen_effect_mean": 2.8695081507774797e-08,
+      "largest_abs_effect_count": 38,
+      "largest_abs_effect_fraction": 0.12666666666666668,
+      "largest_energy_count": 0,
+      "largest_energy_fraction": 0.0,
+      "mean_coefficient_l2": 2.371705226413932,
+      "mean_effect_over_mean_energy": 4.119255636479632e-09
+    },
+    "P5": {
+      "coefficient_energy": {
+        "max": 88.53344827413417,
+        "mean": 51.629223086871654,
+        "median": 46.073411370935595,
+        "min": 30.06895660727046,
+        "n": 300,
+        "q25": 39.92650266904026,
+        "q75": 58.85808869642978,
+        "sd": 17.241000902422318
+      },
+      "corr_energy_abs_effect": 0.25414174200767076,
+      "corr_energy_effect": -0.2650260753257535,
+      "energy_share_of_residual_mean_total": 0.694769226016183,
+      "frozen_effect_mean": -6.287583022028684e-08,
+      "largest_abs_effect_count": 224,
+      "largest_abs_effect_fraction": 0.7466666666666667,
+      "largest_energy_count": 300,
+      "largest_energy_fraction": 1.0,
+      "mean_coefficient_l2": 7.093436947998781,
+      "mean_effect_over_mean_energy": -1.2178341346429246e-09
+    }
+  },
+  "rescue_performed": false,
+  "residual_planes": [
+    "P1",
+    "P2",
+    "P4",
+    "P5"
+  ],
+  "result": "PASS_MAMBA370M_NATIVE_COEFFICIENT_CENSUS_RAW_OBSERVATION",
+  "schema_version": "gen4-mamba370m-native-coefficient-census-summary-v1",
+  "scientific_conclusion_established": false,
+  "selection_performed": false,
+  "source_pair_count": 300,
+  "total_mean_residual_coefficient_energy": 74.31132691773696
+}
