@@ -293,3 +293,113 @@ def test_exact_gen3_grouped_trainer_uses_cache_hook() -> None:
     assert callable(
         trainer.v5.cache_frozen_encoder_states
     )
+
+
+def test_tensor_state_hash_accepts_scalar_tensor() -> None:
+    scalar = torch.tensor(3.5, dtype=torch.float32)
+    same = torch.tensor(3.5, dtype=torch.float32)
+    other = torch.tensor(4.5, dtype=torch.float32)
+
+    one = launcher.tensor_state_sha256([("scalar", scalar)])
+    two = launcher.tensor_state_sha256([("scalar", same)])
+    three = launcher.tensor_state_sha256([("scalar", other)])
+
+    assert one == two
+    assert one != three
+
+
+def test_compaction_maps_hf_backbone_namespace_to_trainer_namespace(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    full = tmp_path / "selected_checkpoint.pt"
+    compact = tmp_path / "selected_downstream_checkpoint.pt"
+    manifest = tmp_path / "compact_checkpoint_manifest.json"
+
+    backbone = torch.tensor([1.0, 2.0])
+    downstream = torch.tensor([[3.0, 4.0]])
+
+    torch.save(
+        {
+            "schema_version": "stage176a0_selected_checkpoint_v1",
+            "model_state_dict": {
+                "mamba.weight": backbone.clone(),
+                "head.weight": downstream.clone(),
+            },
+            "metadata": {"selected_epoch": 20},
+        },
+        full,
+    )
+
+    monkeypatch.setattr(
+        launcher,
+        "iter_pinned_backbone_tensors",
+        lambda snapshot: iter(
+            [("backbone.weight", backbone.clone())]
+        ),
+    )
+
+    observed = launcher.compact_selected_checkpoint(
+        full_checkpoint=full,
+        snapshot=tmp_path,
+        compact_checkpoint=compact,
+        manifest_path=manifest,
+        expected_head="c" * 40,
+    )
+
+    assert not full.exists()
+    assert compact.is_file()
+    assert observed["pretrained_backbone"]["state_key_count"] == 1
+    assert (
+        observed["reconstruction_verification"]
+        ["tensor_equal_all_backbone_keys"]
+        is True
+    )
+
+
+def test_validate_training_outputs_accepts_historical_single_run_schema(
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "run"
+    run_dir.mkdir()
+
+    report = {
+        "best_epoch": 20,
+        "best_dev_metrics": {
+            "final_macro_f1": 0.8137084393485566,
+        },
+        "runs": {
+            "single": {
+                "select_metric": "final_macro_f1",
+                "reason_router_p2": {
+                    "contract": {
+                        "arm": launcher.ARM,
+                        "router_mode": "explicit_product",
+                        "gradient_ownership_mode": "edge_specific",
+                    }
+                },
+            }
+        },
+    }
+
+    (run_dir / "training_report.json").write_text(
+        json.dumps(report),
+        encoding="utf-8",
+    )
+    (run_dir / "clean_dev_predictions.json").write_text(
+        "[]",
+        encoding="utf-8",
+    )
+    (run_dir / "run_provenance.json").write_text(
+        "{}",
+        encoding="utf-8",
+    )
+    (run_dir / "selected_checkpoint.pt").write_bytes(b"stub")
+
+    summary = launcher.validate_training_outputs(run_dir)
+
+    assert summary["best_epoch"] == 20
+    assert (
+        summary["best_dev_metrics"]["final_macro_f1"]
+        == 0.8137084393485566
+    )

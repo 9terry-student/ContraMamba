@@ -571,7 +571,7 @@ def _update_tensor_state_digest(
     ).encode("utf-8")
     digest.update(len(header).to_bytes(8, "little"))
     digest.update(header)
-    raw = value.view(torch.uint8).numpy().tobytes()
+    raw = value.reshape(-1).view(torch.uint8).numpy().tobytes()
     digest.update(len(raw).to_bytes(8, "little"))
     digest.update(raw)
 
@@ -626,7 +626,7 @@ def compact_selected_checkpoint(
     pretrained_stream_digest = hashlib.sha256()
 
     for key, reference in iter_pinned_backbone_tensors(snapshot):
-        full_key = f"mamba.{key}"
+        full_key = "mamba." + key.removeprefix("backbone.")
         require(full_key in full_state, f"FULL_BACKBONE_KEY_MISSING:{full_key}")
         observed = full_state[full_key]
         require(torch.is_tensor(observed), f"FULL_BACKBONE_NOT_TENSOR:{full_key}")
@@ -742,14 +742,54 @@ def validate_training_outputs(run_dir: Path) -> dict[str, Any]:
         require(path.is_file(), f"TRAINING_OUTPUT_MISSING:{path.name}")
 
     report = json.loads(report_path.read_text(encoding="utf-8"))
-    require(report.get("best_epoch") is not None, "BEST_EPOCH_MISSING")
-    require(report.get("select_metric") == "final_macro_f1", "SELECT_METRIC")
-    p2 = report.get("reason_router_p2") or {}
+    runs = report.get("runs") or {}
+    require(isinstance(runs, dict), f"RUNS_SCHEMA:{type(runs).__name__}")
+    single = runs.get("single") or {}
+    require(
+        isinstance(single, dict),
+        f"SINGLE_RUN_SCHEMA:{type(single).__name__}",
+    )
+
+    best_epoch = report.get("best_epoch")
+    if best_epoch is None:
+        best_epoch = single.get("best_epoch")
+    require(best_epoch is not None, "BEST_EPOCH_MISSING")
+
+    select_metric = report.get("select_metric")
+    if select_metric is None:
+        select_metric = single.get("select_metric")
+    require(
+        select_metric == "final_macro_f1",
+        f"SELECT_METRIC:{select_metric}",
+    )
+
+    p2 = (
+        report.get("reason_router_p2")
+        or single.get("reason_router_p2")
+        or {}
+    )
+    require(
+        isinstance(p2, dict),
+        f"REASON_ROUTER_P2_SCHEMA:{type(p2).__name__}",
+    )
     contract = p2.get("contract") or {}
-    require(contract.get("arm") == ARM or contract.get("reason_router_arm") == ARM, f"ARM_CONTRACT:{contract}")
+    require(
+        isinstance(contract, dict),
+        f"ARM_CONTRACT_SCHEMA:{type(contract).__name__}",
+    )
+    require(
+        contract.get("arm") == ARM
+        or contract.get("reason_router_arm") == ARM,
+        f"ARM_CONTRACT:{contract}",
+    )
+
+    best_dev_metrics = report.get("best_dev_metrics")
+    if best_dev_metrics is None:
+        best_dev_metrics = single.get("best_dev_metrics")
+
     return {
-        "best_epoch": int(report["best_epoch"]),
-        "best_dev_metrics": report.get("best_dev_metrics"),
+        "best_epoch": int(best_epoch),
+        "best_dev_metrics": best_dev_metrics,
     }
 
 
