@@ -222,3 +222,74 @@ def test_authenticate_repo_rejects_wrong_named_branch(monkeypatch) -> None:
         match="BRANCH:main",
     ):
         launcher.authenticate_repo(expected_head)
+
+
+def test_exact_gen3_grouped_snapshot_binding(
+    tmp_path: Path,
+) -> None:
+    trainer = launcher.load_exact_gen3_grouped_trainer()
+
+    from contramamba import (
+        modeling_v6b_minimal_gen3_grouped_snapshot
+        as model_snapshot,
+    )
+
+    assert (
+        launcher.git_blob_identity(
+            launcher.GEN3_GROUPED_TRAINER_SNAPSHOT
+        )
+        == launcher.GEN3_GROUPED_TRAINER_GIT_BLOB
+    )
+    assert (
+        launcher.git_blob_identity(
+            launcher.GEN3_GROUPED_MODEL_SNAPSHOT
+        )
+        == launcher.GEN3_GROUPED_MODEL_GIT_BLOB
+    )
+
+    assert (
+        trainer.ContraMambaV6BMinimal
+        is model_snapshot.ContraMambaV6BMinimal
+    )
+
+    assert trainer.P2_ARM_CONTRACTS[launcher.ARM] == (
+        "explicit_product",
+        "edge_specific",
+    )
+    assert tuple(
+        trainer.G3_GROUPED_ARM_EDGE_SETS[launcher.ARM]
+    ) == (
+        "F_TO_D",
+        "P_TO_D",
+        "S_TO_D",
+        "Q_TO_D",
+    )
+
+    argv = launcher.trainer_argv(
+        Path("/exact/snapshot"),
+        tmp_path / "run",
+    )
+    parser = trainer.build_parser()
+    args = parser.parse_args(argv)
+
+    contract = trainer._p2_resolve_arm_contract(
+        args,
+        argv,
+        parser,
+    )
+
+    assert contract["arm"] == launcher.ARM
+    assert contract["router_mode"] == "explicit_product"
+    assert contract["gradient_ownership_mode"] == "edge_specific"
+    assert (
+        contract["edge_gradient_lambdas"]
+        == launcher.EDGE_LAMBDAS
+    )
+
+
+def test_exact_gen3_grouped_trainer_uses_cache_hook() -> None:
+    trainer = launcher.load_exact_gen3_grouped_trainer()
+
+    assert callable(
+        trainer.v5.cache_frozen_encoder_states
+    )

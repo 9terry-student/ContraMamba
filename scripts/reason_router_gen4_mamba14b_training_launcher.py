@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib
 import importlib.metadata
 import json
 import os
 import platform
 import subprocess
+import sys
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, Iterable, Iterator
@@ -19,6 +21,33 @@ ROOT = Path(__file__).resolve().parents[1]
 MODEL_REPO = "state-spaces/mamba-1.4b-hf"
 MODEL_REVISION = "6e46eae61c27280517feef46f536d16b91076f08"
 EXPECTED_BRANCH = "gen4-mamba370m-core-replication"
+
+GEN3_GROUPED_SOURCE_COMMIT = (
+    "3e0e9a435068c552abf20f3a74e0c3eccca344a3"
+)
+GEN3_GROUPED_TRAINER_GIT_BLOB = (
+    "ae902c06bcef92a20c012b9c35ef0ee8c8478b9f"
+)
+GEN3_GROUPED_MODEL_GIT_BLOB = (
+    "e29d361d99579b0a86a626ebcdebd59ba465881c"
+)
+GEN3_GROUPED_TRAINER_SNAPSHOT = (
+    ROOT
+    / "scripts"
+    / "train_controlled_v6b_minimal_gen3_grouped_snapshot.py"
+)
+GEN3_GROUPED_MODEL_SNAPSHOT = (
+    ROOT
+    / "src"
+    / "contramamba"
+    / "modeling_v6b_minimal_gen3_grouped_snapshot.py"
+)
+GEN3_GROUPED_MODEL_MODULE = (
+    "contramamba.modeling_v6b_minimal_gen3_grouped_snapshot"
+)
+GEN3_GROUPED_TRAINER_MODULE = (
+    "scripts.train_controlled_v6b_minimal_gen3_grouped_snapshot"
+)
 
 SNAPSHOT_FILES = {
     "config.json": {
@@ -351,6 +380,107 @@ def restore_encoder_cache_function(*, trainer: Any, original: Any) -> None:
     trainer.v5.cache_frozen_encoder_states = original
 
 
+
+def git_blob_identity(path: Path) -> str:
+    require(path.is_file(), f"GIT_BLOB_FILE_MISSING:{path}")
+    return subprocess.check_output(
+        ["git", "hash-object", str(path)],
+        cwd=ROOT,
+        text=True,
+    ).strip()
+
+
+def load_exact_gen3_grouped_trainer() -> Any:
+    require(
+        git_blob_identity(GEN3_GROUPED_TRAINER_SNAPSHOT)
+        == GEN3_GROUPED_TRAINER_GIT_BLOB,
+        "GEN3_GROUPED_TRAINER_BLOB_MISMATCH",
+    )
+    require(
+        git_blob_identity(GEN3_GROUPED_MODEL_SNAPSHOT)
+        == GEN3_GROUPED_MODEL_GIT_BLOB,
+        "GEN3_GROUPED_MODEL_BLOB_MISMATCH",
+    )
+
+    model_snapshot = importlib.import_module(
+        GEN3_GROUPED_MODEL_MODULE
+    )
+    package = importlib.import_module("contramamba")
+
+    canonical_name = "contramamba.modeling_v6b_minimal"
+    sentinel = object()
+
+    previous_module = sys.modules.get(canonical_name, sentinel)
+    previous_attribute = getattr(
+        package,
+        "modeling_v6b_minimal",
+        sentinel,
+    )
+
+    # Force a fresh import of the historical trainer under the exact
+    # historical model binding.
+    sys.modules.pop(GEN3_GROUPED_TRAINER_MODULE, None)
+    sys.modules[canonical_name] = model_snapshot
+    setattr(
+        package,
+        "modeling_v6b_minimal",
+        model_snapshot,
+    )
+
+    try:
+        trainer = importlib.import_module(
+            GEN3_GROUPED_TRAINER_MODULE
+        )
+    finally:
+        if previous_module is sentinel:
+            sys.modules.pop(canonical_name, None)
+        else:
+            sys.modules[canonical_name] = previous_module
+
+        if previous_attribute is sentinel:
+            try:
+                delattr(package, "modeling_v6b_minimal")
+            except AttributeError:
+                pass
+        else:
+            setattr(
+                package,
+                "modeling_v6b_minimal",
+                previous_attribute,
+            )
+
+    require(
+        getattr(trainer, "ContraMambaV6BMinimal", None)
+        is model_snapshot.ContraMambaV6BMinimal,
+        "GEN3_GROUPED_MODEL_CLASS_BINDING_MISMATCH",
+    )
+    require(
+        ARM in getattr(trainer, "G3_GROUPED_ARM_IDS", ()),
+        "GEN3_GROUPED_ARM_MISSING",
+    )
+    require(
+        trainer.P2_ARM_CONTRACTS.get(ARM)
+        == ("explicit_product", "edge_specific"),
+        "GEN3_GROUPED_ARM_CONTRACT_MISMATCH",
+    )
+    require(
+        tuple(
+            trainer.G3_GROUPED_ARM_EDGE_SETS.get(
+                ARM,
+                (),
+            )
+        )
+        == (
+            "F_TO_D",
+            "P_TO_D",
+            "S_TO_D",
+            "Q_TO_D",
+        ),
+        "GEN3_GROUPED_D_EDGE_SET_MISMATCH",
+    )
+
+    return trainer
+
 def resolve_exact_snapshot() -> Path:
     from huggingface_hub import snapshot_download
 
@@ -642,7 +772,7 @@ def main() -> None:
     snapshot = resolve_exact_snapshot()
 
     from scripts import reason_router_gen4_generator_family_prevalence_kernel_compat as kernel_compat
-    from scripts import train_controlled_v6b_minimal as trainer
+    trainer = load_exact_gen3_grouped_trainer()
 
     kernels = kernel_compat.load_exact_fast_kernels()
     require(
@@ -659,6 +789,25 @@ def main() -> None:
         "model_repo": MODEL_REPO,
         "model_revision": MODEL_REVISION,
         "snapshot_files": SNAPSHOT_FILES,
+        "gen3_grouped_training_source": {
+            "historical_execution_commit": GEN3_GROUPED_SOURCE_COMMIT,
+            "trainer_snapshot_path": (
+                GEN3_GROUPED_TRAINER_SNAPSHOT
+                .relative_to(ROOT)
+                .as_posix()
+            ),
+            "trainer_git_blob": GEN3_GROUPED_TRAINER_GIT_BLOB,
+            "model_snapshot_path": (
+                GEN3_GROUPED_MODEL_SNAPSHOT
+                .relative_to(ROOT)
+                .as_posix()
+            ),
+            "model_git_blob": GEN3_GROUPED_MODEL_GIT_BLOB,
+            "arm": ARM,
+            "router_mode": "explicit_product",
+            "gradient_ownership_mode": "edge_specific",
+            "edge_gradient_lambdas": EDGE_LAMBDAS,
+        },
         "runtime": runtime,
         "training_contract": {
             "arm": ARM,
