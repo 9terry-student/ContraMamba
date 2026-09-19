@@ -1,0 +1,50 @@
+{
+  "adjacent_triplet": [
+    34,
+    35,
+    36
+  ],
+  "backward_executed": false,
+  "canonical_triplet": [
+    33,
+    34,
+    35
+  ],
+  "control_selection_performed": true,
+  "control_selection_uses_response": false,
+  "design_freeze_commit": "3ee2d7600de649a711752b8293687047c3c5ec4e",
+  "execution_head": "4de24510cf94e326472b387104b458f52b1220ea",
+  "fixed_causal_candidate": "P5",
+  "output_file_sha256": {
+    "geometry_summary.json": "168aca69230b82eda29be2800b79b634362ac937335406f79f3e08a60d9f427e",
+    "p1_minus.f64le": "3f88af6e8676030fa6b759794f6e15d49ab532185fde3bccde099fdefac2f575",
+    "p1_plus.f64le": "76244c511d07bccd4f699fa6f19df1a4a2608c21e06a6e08837be6e2f45b3202",
+    "p2_minus.f64le": "103c71e8c004b26cd2442409ebdd9840af84769674aa52680c4817fbc9ebe495",
+    "p2_plus.f64le": "26563322fb6fe956e847cfdd4a8e728ae3f537125a13d18447b7ff6553d86554",
+    "p3_minus.f64le": "a8992923d6ab45ab8bac12a5c6dd54d07e957bdb576b8bbdf76026f2d5db8381",
+    "p3_plus.f64le": "09a4d3682c5b5e71d91a14224bee1086fe17fb5bca65a27d9f5d72092d5af977",
+    "p4_minus.f64le": "852d99b788bfd419a3ce0b231fe16f9d6922e4c31afccb85938cfca224425517",
+    "p4_plus.f64le": "91adc80883712c8f49cd1d46b6bf64261cb33677c6eec678589390126028f4cd",
+    "p5_minus.f64le": "3e8d8404d00db39335965a317dc8bc5398d82726c1ce3b44dc71e4015e27c19c",
+    "p5_plus.f64le": "8a031a9d2ee8fb9a2cb2b8ab50f040ec2d3583318235710873822c56067909d9",
+    "projector_contrast.f64le": "55df5c8c3409fdd23f93423186cb9746043e95be8325493cd760c9c3b8a9179c",
+    "strong_indices.json": "6ad291052854024473b01b54b6e5060743508ede4805593a6fe800affacca164",
+    "xg2_alignment_delta_h.pt": "e7d005e616124627c5a0aa6b0f6574731357ac67b442bd398297b8ecc3f88220",
+    "xg2_basis.f64le": "2532783354c6c0c4737381199e4230c0bcec121594bb09faa63695eded0f365c",
+    "xg2_geometry_items.jsonl": "4d4cbfa88e5950a29740956429afa97d65f30047c2b03aea2bd07ca3ae5225ff",
+    "xg4_alignment_delta_h.pt": "869fa4e7c6ea49c49f05a0f7107f076b625c084ca9997af3df1afc08d4a2b500",
+    "xg4_basis.f64le": "113fcea3bd5ad4ff799f2beebb985a3eca8dbba10f2d4a61348ee1046a88aaa5",
+    "xg4_geometry_items.jsonl": "5840db5c38183a697395649814f2bb858def0e6f07a7b4fd12eb3136474a8403"
+  },
+  "plane_selection_performed": false,
+  "rescue_performed": false,
+  "response_blind_control_plane": "P4",
+  "response_observed": false,
+  "result": "PASS_MAMBA14B_ADJACENT_GEOMETRY_PREPARATION",
+  "schema_version": "gen4-mamba14b-adjacent-geometry-preparation-manifest-v1",
+  "scientific_model_forward_count": 2400,
+  "statistical_testing_performed": false,
+  "training_executed": false,
+  "xg1_accessed": false,
+  "xg1_model_forward_count": 0
+}
