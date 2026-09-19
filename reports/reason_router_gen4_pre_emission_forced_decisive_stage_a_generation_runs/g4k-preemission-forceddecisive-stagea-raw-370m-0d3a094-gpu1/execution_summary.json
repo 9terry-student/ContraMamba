@@ -1,0 +1,3573 @@
+{
+  "backbone_canonical_sha256": "2f1bb0820efd7376103541cd6de7b2893456083359708ac78f3fd30f8d1d56ac",
+  "backward_executed": false,
+  "base_generator_dependency": {
+    "git_blob": "aa6725bdc1cbfa43547e89293f3b7911a4cdd6ed",
+    "path": "scripts/reason_router_gen4_pre_emission_stage_a_generation_fast_cuda.py",
+    "purpose": "reuse_frozen_model_loading_partition_and_full_sequence_late_readout"
+  },
+  "branch_decision_count": 462,
+  "cohort": {
+    "cohort_sha256": "726ead51008b56e84a91989349d534ea160dd4f1b987bed21ef1cad8e6e3016c",
+    "count": 462,
+    "token_gate_manifest_sha256": "658381dc2b0c2e57413aaf48f137eaa66112fc3b56ca8f45f232cfdb69d0490b"
+  },
+  "confirmatory_forced_decisive_group_counts": {
+    "supported": 62,
+    "unsupported": 169
+  },
+  "design": {
+    "artifact": "reports/reason_router_gen4_pre_emission_forced_decisive_stage_a_design.md",
+    "artifact_git_blob": "b4f9c3ebf2e43a556fbfeb43c5146b4a04f4c620"
+  },
+  "emitted_commitment_counts": {
+    "REFUTE": 5,
+    "SUPPORT": 457
+  },
+  "execution_head": "0d3a094cd6f1a97ce70a19d01d234cf7795c6b1f",
+  "forced_decisive_estimability_evaluation_deferred_until_raw_artifact_frozen": true,
+  "forced_decisive_grammar": {
+    "class_order": [
+      "REFUTE",
+      "SUPPORT"
+    ],
+    "decisive_t_star_zero_based": {
+      "REFUTE": 8,
+      "SUPPORT": 8
+    },
+    "grammar_sha256": "62c9c53871f68fcc0f57d38c96b75d2391ee6ddc473a4325a522f91c9249bd00",
+    "longest_common_prefix_length": 8,
+    "longest_common_prefix_token_ids": [
+      15545,
+      327,
+      253,
+      1941,
+      13,
+      253,
+      11844,
+      310
+    ],
+    "minimum_precommit_generated_tokens": 4,
+    "not_entitled_available": false,
+    "schema_version": "gen4-pre-emission-forced-decisive-grammar-v1",
+    "surfaces": {
+      "REFUTE": "Based on the evidence, the verdict is REFUTE.",
+      "SUPPORT": "Based on the evidence, the verdict is SUPPORT."
+    },
+    "token_ids": {
+      "REFUTE": [
+        15545,
+        327,
+        253,
+        1941,
+        13,
+        253,
+        11844,
+        310,
+        5689,
+        39,
+        23638,
+        15
+      ],
+      "SUPPORT": [
+        15545,
+        327,
+        253,
+        1941,
+        13,
+        253,
+        11844,
+        310,
+        9242,
+        27425,
+        15
+      ]
+    },
+    "unique_commitment_token_index_zero_based": {
+      "REFUTE": 8,
+      "SUPPORT": 8
+    }
+  },
+  "forced_decisive_group_counts": {
+    "supported": 123,
+    "unsupported": 339
+  },
+  "frozen_sites": {
+    "control_plane": "P5",
+    "early_block": 35,
+    "early_plane": "P3",
+    "late_block": 47
+  },
+  "generate_api_call_count": 0,
+  "generation_protocol": {
+    "beam_search": false,
+    "branch_decision_token_index_zero_based": 8,
+    "common_prefix_length": 8,
+    "decoder": "manual_full_prefix_forced_decisive_two_class_finite_grammar_greedy",
+    "generate_api_used": false,
+    "logit_bias": null,
+    "max_generated_tokens": 16,
+    "not_entitled_available": false,
+    "observation_generated_prefix_lengths": [
+      5,
+      6,
+      7,
+      8
+    ],
+    "observation_offsets": [
+      -4,
+      -3,
+      -2,
+      -1
+    ],
+    "repetition_penalty": null,
+    "sampling": false,
+    "temperature": null,
+    "top_k": null,
+    "top_p": null,
+    "use_cache": false
+  },
+  "generation_response_inspected_by_selection_logic": false,
+  "hf_repo": "state-spaces/mamba-370m-hf",
+  "hf_revision": "589179554943157be31701edd8b4558889276674",
+  "late_readout": {
+    "diagnostic_margin": "logit_SUPPORT_minus_logit_REFUTE",
+    "diagnostic_only": true,
+    "full_sequence_norm_replay": true,
+    "p3_projected_at_block47": false,
+    "readout": "full_sequence_post_block_47_to_frozen_terminal_norm_then_last_token_tied_lm_head",
+    "reproduction_atol": 1e-05,
+    "source": "post_block_47"
+  },
+  "layer_scan_executed": false,
+  "lm_head_weight_sha256": "a473cbd256224b82e4ce004797629aee049c99db483bb5dd05fe7dcc67bdddeb",
+  "outcome_category_counts": {
+    "supported_forced_decisive": 123,
+    "unsupported_forced_decisive": 339
+  },
+  "p_value_count_added": 0,
+  "partition": {
+    "algorithm": "within_gold_label_sort_by_sha256_salt_nul_label_nul_example_id_then_fixed_calibration_prefix",
+    "calibration_counts_by_gold_label": {
+      "NOT_ENTITLED": 17,
+      "REFUTE": 153,
+      "SUPPORT": 61
+    },
+    "partition_counts": {
+      "calibration": 231,
+      "confirmatory": 231
+    },
+    "partition_label_counts": {
+      "calibration": {
+        "NOT_ENTITLED": 17,
+        "REFUTE": 153,
+        "SUPPORT": 61
+      },
+      "confirmatory": {
+        "NOT_ENTITLED": 18,
+        "REFUTE": 152,
+        "SUPPORT": 61
+      }
+    },
+    "partition_sha256": "871fb5c1e2c62f247c284ceae409ef9ec19acc75f63ffc832829c2664db46311",
+    "rank_rows": [
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_403",
+        "partition": "calibration",
+        "rank_sha256": "00efd261421713df0203a1b75e02f3a8ba3de6747897022b381499f41c86cb6f",
+        "rank_within_label_zero_based": 0
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_154",
+        "partition": "calibration",
+        "rank_sha256": "02a361df995ab23995ec6343f91043373633fef8d18c4f61ef5b37811ed28e04",
+        "rank_within_label_zero_based": 1
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_020",
+        "partition": "calibration",
+        "rank_sha256": "02cfb56b8a56fd5b290401222e6b47fa18ef4fefd6c7e4b934afbc488edec4a6",
+        "rank_within_label_zero_based": 2
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_250",
+        "partition": "calibration",
+        "rank_sha256": "02d40da7cc5435b9330d2358e27c64b03bc8452431f2d5d3759b1eeb693ab9fa",
+        "rank_within_label_zero_based": 3
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_232",
+        "partition": "calibration",
+        "rank_sha256": "032a87f222ddde972229d0de94469cb45d60c9ab12fbdbf380eb6611ba4a3048",
+        "rank_within_label_zero_based": 4
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_271",
+        "partition": "calibration",
+        "rank_sha256": "054590909d01cf45242270a0b00b2b2e21c96dbb89f014d6083cd818f951511f",
+        "rank_within_label_zero_based": 5
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_493",
+        "partition": "calibration",
+        "rank_sha256": "0624a183aa1f75dd4589ecd5cd67d14e95937ff4830d201da4b065d9485f360c",
+        "rank_within_label_zero_based": 6
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_322",
+        "partition": "calibration",
+        "rank_sha256": "064404b5464d706f5cf67ba0b2a73ec1b983e804968f5fd004bfe53f1d6defb7",
+        "rank_within_label_zero_based": 7
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_280",
+        "partition": "calibration",
+        "rank_sha256": "06452ae6994205211f5f4c649022a49810ba98b532dea3783d34bb73fea4a793",
+        "rank_within_label_zero_based": 8
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_185",
+        "partition": "calibration",
+        "rank_sha256": "06689985607e4f4b991fdb3606153ae2e68929460987ca047ad3ec62e6c16295",
+        "rank_within_label_zero_based": 9
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_079",
+        "partition": "calibration",
+        "rank_sha256": "0670f5cb8ae14d3a730b7237394d7be1f5222329e19ff7eac251ee4a6f18a745",
+        "rank_within_label_zero_based": 10
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_261",
+        "partition": "calibration",
+        "rank_sha256": "06fec2aa59def513e671dc754ff207b466decde378d6a32f0d4cd19d454743fd",
+        "rank_within_label_zero_based": 11
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_249",
+        "partition": "calibration",
+        "rank_sha256": "07f406a7bd97431d0cc84563350132d0de87d53d32932e75a182c6e7782167a0",
+        "rank_within_label_zero_based": 12
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_385",
+        "partition": "calibration",
+        "rank_sha256": "0866ddc62ba25822fcbb03622063aeb847579f76df1ec046fdcd614f88fd2000",
+        "rank_within_label_zero_based": 13
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_157",
+        "partition": "calibration",
+        "rank_sha256": "094abd2e87bceda5a20bc0af739bdd84533b4019e13dfc1510fb66af646d3521",
+        "rank_within_label_zero_based": 14
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_191",
+        "partition": "calibration",
+        "rank_sha256": "0a74c14daa78fc6d9502e14e58de6795f3764e0b3d6220fb133f0c4d01bf6f64",
+        "rank_within_label_zero_based": 15
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_243",
+        "partition": "calibration",
+        "rank_sha256": "0b07869d88eeccdfc5f5505654c5f9d98d292529bd2740453bc9b26e86781d9c",
+        "rank_within_label_zero_based": 16
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_407",
+        "partition": "calibration",
+        "rank_sha256": "0b1e5046a5d38c2f57f51c92fab18afb226407d44949bb9683452917afa28c05",
+        "rank_within_label_zero_based": 17
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_371",
+        "partition": "calibration",
+        "rank_sha256": "0bc8b95ecf81cb0c262797d09236698057fad2c6c5355309a59baf82761045e9",
+        "rank_within_label_zero_based": 18
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_274",
+        "partition": "calibration",
+        "rank_sha256": "0c08ae8f8ee9c0506b1a9c6492560f352878487863ba61d0e58de5450d1ee180",
+        "rank_within_label_zero_based": 19
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_331",
+        "partition": "calibration",
+        "rank_sha256": "0e6a2f58a28a5aaefe85d7d8d9149898ea9bf09515ab0e78f9c177b0056a20fb",
+        "rank_within_label_zero_based": 20
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_438",
+        "partition": "calibration",
+        "rank_sha256": "0f40d690a130447a9e225b4103c27688ed3bfa4f7ab1e36cccffc97f825acb3f",
+        "rank_within_label_zero_based": 21
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_365",
+        "partition": "calibration",
+        "rank_sha256": "1000766a89b4be8d4c34b368b616f53f84596c54b05543792a40f8a84c5ae436",
+        "rank_within_label_zero_based": 22
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_321",
+        "partition": "calibration",
+        "rank_sha256": "10881a34d41afad2ce8b9e992652095f9caf6d33f62cc56d88f2964747fbed26",
+        "rank_within_label_zero_based": 23
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_277",
+        "partition": "calibration",
+        "rank_sha256": "114b0b6ad81dd4cb4e969a26e66a3b55023afbcaa92e8e5886875743e6462de0",
+        "rank_within_label_zero_based": 24
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_254",
+        "partition": "calibration",
+        "rank_sha256": "124e7bc52b4c09d5766dda34b46fdd8b7b18b38a4b82e7591dfd91865cebab59",
+        "rank_within_label_zero_based": 25
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_052",
+        "partition": "calibration",
+        "rank_sha256": "12c955f99731c8fdd35a89af87eee23eda751a37fd5eae61c0a813b77f359b4c",
+        "rank_within_label_zero_based": 26
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_122",
+        "partition": "calibration",
+        "rank_sha256": "1354fc5f531085eb8d5f5e516b6a06d8aa463329fffb22e933d05ab44c85e887",
+        "rank_within_label_zero_based": 27
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_492",
+        "partition": "calibration",
+        "rank_sha256": "1389e15f2f72345d8cf079afadf29a4042f3879416b62718992d15bbccd36d7d",
+        "rank_within_label_zero_based": 28
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_117",
+        "partition": "calibration",
+        "rank_sha256": "13ea419c09bea4d945fc79e62c58bddf167484081eb9604b1883c9e1bcee40ad",
+        "rank_within_label_zero_based": 29
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_317",
+        "partition": "calibration",
+        "rank_sha256": "14b9bc182f3a3fd425e08927afb49f73bfb576004f3fbb91818a7af3e8286f46",
+        "rank_within_label_zero_based": 30
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_472",
+        "partition": "calibration",
+        "rank_sha256": "15cf43fea00904214fb2feb5fc000638397ecf207109abd67d3211e6b17c5f00",
+        "rank_within_label_zero_based": 31
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_134",
+        "partition": "calibration",
+        "rank_sha256": "17a7a3ea37ac0a5e533467772f603d0840a3c9ae9e5331a0747e06482fbb7050",
+        "rank_within_label_zero_based": 32
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_022",
+        "partition": "calibration",
+        "rank_sha256": "17d26b2e36d32dffff01a7f1fb73ca8bf97bd9159fe81e723d55f1f3826b8969",
+        "rank_within_label_zero_based": 33
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_120",
+        "partition": "calibration",
+        "rank_sha256": "18b72367c8dcad32959addd3dd2ddc7aa0a5b581dd4e636d8ee388fa373b0f83",
+        "rank_within_label_zero_based": 34
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_046",
+        "partition": "calibration",
+        "rank_sha256": "194aecbb0bb41e65bbc568719d74b35ac7eecd0cb043b173a8087fde02fe1f50",
+        "rank_within_label_zero_based": 35
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_172",
+        "partition": "calibration",
+        "rank_sha256": "195d7cf51e73f7604b1e2fd62e015d94f097ec128f7ff7ec3a3e01eddd1e7c12",
+        "rank_within_label_zero_based": 36
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_278",
+        "partition": "calibration",
+        "rank_sha256": "1986af7c73c0b20ce53c32f042495d2f51eba3d58258d0321b2861ad56df5dfd",
+        "rank_within_label_zero_based": 37
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_405",
+        "partition": "calibration",
+        "rank_sha256": "1c0cd494263774ce94e984a34605a184230934432b2e37ad48dcc239c577ea70",
+        "rank_within_label_zero_based": 38
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_048",
+        "partition": "calibration",
+        "rank_sha256": "1c76d6f123da85566f17f07be8fadf30531f7dbed9768493f986a1a16afb8ac1",
+        "rank_within_label_zero_based": 39
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_131",
+        "partition": "calibration",
+        "rank_sha256": "1d54158f1c28fafcf8e0d3813c577cf9b800187426f634fd5dd9adfe591d59f7",
+        "rank_within_label_zero_based": 40
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_112",
+        "partition": "calibration",
+        "rank_sha256": "1df704ce10b2fea62d10c34c3d11dc2dd2f37c2da909ebe2e7a6e9174fef5763",
+        "rank_within_label_zero_based": 41
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_035",
+        "partition": "calibration",
+        "rank_sha256": "1e909ab1b78606a5a6440c544f3e6c92288a75feb8061e59b93545ea135b2b20",
+        "rank_within_label_zero_based": 42
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_196",
+        "partition": "calibration",
+        "rank_sha256": "1fc6d3865234f69a9f312413df7651beca95aee13a3d9791e37d3e5f51ec9a0e",
+        "rank_within_label_zero_based": 43
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_090",
+        "partition": "calibration",
+        "rank_sha256": "215393954e14c75a9d3b665478c705869fbfb816e3653e207e6fcf8adde81ce7",
+        "rank_within_label_zero_based": 44
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_336",
+        "partition": "calibration",
+        "rank_sha256": "21f4079fc5dc60a0b6546f984d87faf39d138eb74962a00774e02cc626521570",
+        "rank_within_label_zero_based": 45
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_384",
+        "partition": "calibration",
+        "rank_sha256": "2314e1ee061696a2cc3f3f09cc03d824c29c5e361d81100fdea803a6e2cf7c7c",
+        "rank_within_label_zero_based": 46
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_065",
+        "partition": "calibration",
+        "rank_sha256": "233b16eec53f3abb85904fca6a2026393cbe51881ebb0505a2d60e9c260bea97",
+        "rank_within_label_zero_based": 47
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_343",
+        "partition": "calibration",
+        "rank_sha256": "23c2ba9ed88f6fcbf00e72a9e1fbc5b9b5f45ce30cff8975867ac5c742cba056",
+        "rank_within_label_zero_based": 48
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_130",
+        "partition": "calibration",
+        "rank_sha256": "253876dcb66bde29ecaa5da468ec2ea263dd238259af6ca8df599a41696a16ca",
+        "rank_within_label_zero_based": 49
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_431",
+        "partition": "calibration",
+        "rank_sha256": "253db7b8864ef9606f4f8fac0492f707b14a5018e73803f2c296623aaa895b3e",
+        "rank_within_label_zero_based": 50
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_069",
+        "partition": "calibration",
+        "rank_sha256": "25e48ccafa32bbf1138f862afe46d9b76d890a6c167c451d07a1fa8369425639",
+        "rank_within_label_zero_based": 51
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_495",
+        "partition": "calibration",
+        "rank_sha256": "26bf3a48721566a6a4d1432d8425b2a171839633280ca533d709748d68877052",
+        "rank_within_label_zero_based": 52
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_106",
+        "partition": "calibration",
+        "rank_sha256": "276b989ed62a964fae5ca2d88830b2abc35d8828502cbed2a917cb04fcc50bec",
+        "rank_within_label_zero_based": 53
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_072",
+        "partition": "calibration",
+        "rank_sha256": "282ac409ffdd637ee01e156c1d16d8ba36f99552c2b42256a449cbd34fc6a8b3",
+        "rank_within_label_zero_based": 54
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_452",
+        "partition": "calibration",
+        "rank_sha256": "287f0043bead6616657862f68dcdd85769819787f38b369491b0bcfe97fcc27a",
+        "rank_within_label_zero_based": 55
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_003",
+        "partition": "calibration",
+        "rank_sha256": "29785e79b0031f735d27de7f04feaff9f88d8e5c83944c90da861da4d235b2e1",
+        "rank_within_label_zero_based": 56
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_373",
+        "partition": "calibration",
+        "rank_sha256": "29aac891ba99e78bfb7fdd01a9dfb09551483f89a854dadf5dc99cfb516ae9f7",
+        "rank_within_label_zero_based": 57
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_279",
+        "partition": "calibration",
+        "rank_sha256": "2d6d6d45c135c92d6259a4753505047c1b86f8befc6a560ab62a2118819b0c38",
+        "rank_within_label_zero_based": 58
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_071",
+        "partition": "calibration",
+        "rank_sha256": "2da2c1eeee7b0abca5ca49f639137943ce80b515dc46ed8564529718f2d767ac",
+        "rank_within_label_zero_based": 59
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_302",
+        "partition": "calibration",
+        "rank_sha256": "2e70e70bcbcf480c651c7eb6289fc3a8fa558e824364245ae02f7e0585f93f1c",
+        "rank_within_label_zero_based": 60
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_107",
+        "partition": "calibration",
+        "rank_sha256": "315e8569cc048260d523f64f3cf1c99a4f463168a0d92a58c3fa79b52d3061ce",
+        "rank_within_label_zero_based": 61
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_383",
+        "partition": "calibration",
+        "rank_sha256": "316d38cbff7e71092bfb29ba343847b9d7f866910cf05034f3e1b290e076b13e",
+        "rank_within_label_zero_based": 62
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_119",
+        "partition": "calibration",
+        "rank_sha256": "3194c0c6221d79a26923b05b1330398f103c31540f4733d4b3b2d46b1184a954",
+        "rank_within_label_zero_based": 63
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_390",
+        "partition": "calibration",
+        "rank_sha256": "31b48adf70ff6affe4df001a86716da6841bf030779c10c64a2720613cb0a8e5",
+        "rank_within_label_zero_based": 64
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_441",
+        "partition": "calibration",
+        "rank_sha256": "32512f08b6fedf6e1f4f9e80ed66021413042fbe7d978d555ea5c4dc31c3716d",
+        "rank_within_label_zero_based": 65
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_023",
+        "partition": "calibration",
+        "rank_sha256": "329a4aae51d8033216388135052bcca23c747c6fd8e2f8405f095bfaee6a6251",
+        "rank_within_label_zero_based": 66
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_356",
+        "partition": "calibration",
+        "rank_sha256": "33966d06b664977f48f983a41b24bf1dc7dbd02e33439aacf1a515923c7d3f70",
+        "rank_within_label_zero_based": 67
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_166",
+        "partition": "calibration",
+        "rank_sha256": "33d62f2914294d1f55e613002c5f846ea0c2dac257bf81d45340b5ad476eff80",
+        "rank_within_label_zero_based": 68
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_355",
+        "partition": "calibration",
+        "rank_sha256": "34e10b89f61ed24d9c451c8359f9c1b40d2521223f0892a784df65e1d0579645",
+        "rank_within_label_zero_based": 69
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_085",
+        "partition": "calibration",
+        "rank_sha256": "354f3d7aa378032813e8eac85ec4452e01c66f5d68f6dada22f224516647e924",
+        "rank_within_label_zero_based": 70
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_099",
+        "partition": "calibration",
+        "rank_sha256": "357b701c0cd59c0bf21e2eb45512de5db40aa298886d3ed8bc677d7909d20207",
+        "rank_within_label_zero_based": 71
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_012",
+        "partition": "calibration",
+        "rank_sha256": "36cd6fa425a95eacbba557233d889f7816e13950dae78436ed899af466077533",
+        "rank_within_label_zero_based": 72
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_264",
+        "partition": "calibration",
+        "rank_sha256": "370d842ba14af5b6a055c8f4961f07332c591c2c136b1444c1eb82fff6d3f944",
+        "rank_within_label_zero_based": 73
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_334",
+        "partition": "calibration",
+        "rank_sha256": "37cbccb0921b9b6487cb6027f8e40c43888b6b2155782d91ec9ad4f36daf2496",
+        "rank_within_label_zero_based": 74
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_248",
+        "partition": "calibration",
+        "rank_sha256": "3c7723762f9815b67b1ea61d5c48f1c94ee9c000b50ea276475b4d6c1f18a80c",
+        "rank_within_label_zero_based": 75
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_070",
+        "partition": "calibration",
+        "rank_sha256": "3fb1c0a7aba5e3bd8a8e3d9b457cdb3a92e7dbf000b80d626d25de15e81fe1fe",
+        "rank_within_label_zero_based": 76
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_124",
+        "partition": "calibration",
+        "rank_sha256": "409318d9d2921f421aa2128ee2ab7b43ef5de74a143129d5b239955144904545",
+        "rank_within_label_zero_based": 77
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_484",
+        "partition": "calibration",
+        "rank_sha256": "42137a3da54841277f8b6edff9ff98300a67d9e5aa14da2143cc2af09c4d7745",
+        "rank_within_label_zero_based": 78
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_381",
+        "partition": "calibration",
+        "rank_sha256": "447afbe6287660b76e613bbce15f9317e8b473529ca39c673ef3a39cdaf18933",
+        "rank_within_label_zero_based": 79
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_318",
+        "partition": "calibration",
+        "rank_sha256": "44c4bae71e80642e27be2d30cfc4d14fdb84a0f499f31db431d21949de8b9d71",
+        "rank_within_label_zero_based": 80
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_061",
+        "partition": "calibration",
+        "rank_sha256": "453ed401e36fe1b14a200926165fc66ecfe57ac6018a6b1e9e9f878332690eab",
+        "rank_within_label_zero_based": 81
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_471",
+        "partition": "calibration",
+        "rank_sha256": "45a0ef80f73c132e717196e9eae06d3f887b1944ce224f36f50cd265b4cf5b4e",
+        "rank_within_label_zero_based": 82
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_412",
+        "partition": "calibration",
+        "rank_sha256": "45d9d0ba7be04a0356708fbd761a9ecb39c34bb35a04a2b6889dfc61a9b93517",
+        "rank_within_label_zero_based": 83
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_266",
+        "partition": "calibration",
+        "rank_sha256": "472a46f0718fef5ac140ccae9209a3185e7d0f04c1e80aebbe657829e41c05af",
+        "rank_within_label_zero_based": 84
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_475",
+        "partition": "calibration",
+        "rank_sha256": "48783623ec6f980a2bac7d2045b0694ee25641f886c373614fd94082bacd71d6",
+        "rank_within_label_zero_based": 85
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_349",
+        "partition": "calibration",
+        "rank_sha256": "491e7ff07569f95dbbfcaef3c6145f404490295d230dfa7b8ebfe7b7dd458b29",
+        "rank_within_label_zero_based": 86
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_344",
+        "partition": "calibration",
+        "rank_sha256": "499a16daba4612b3ac34d35d79098c5a60503d3c7c5b14936ecfe39940a894e4",
+        "rank_within_label_zero_based": 87
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_080",
+        "partition": "calibration",
+        "rank_sha256": "4ac26285f546e2bbfa6aa0e0d238478b1b87c77f0dbf8d629e46d3a42b4ac16a",
+        "rank_within_label_zero_based": 88
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_313",
+        "partition": "calibration",
+        "rank_sha256": "4b4931e95269419525009b431726e63b94692685ab52ba7d8e89b0ec78292cae",
+        "rank_within_label_zero_based": 89
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_180",
+        "partition": "calibration",
+        "rank_sha256": "4bebb099b54dc1fa551f82dc582de6a4088a8151c031f29a85907641e39715f5",
+        "rank_within_label_zero_based": 90
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_004",
+        "partition": "calibration",
+        "rank_sha256": "4c24af65a740da3bfea6e34cf9149c4c44d58cb3c8b61863194a4e1536f9a01a",
+        "rank_within_label_zero_based": 91
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_176",
+        "partition": "calibration",
+        "rank_sha256": "4cd078efeddd5929a93477a3056d939ee9763ae4a3cfe66a5aca6c909d27c51c",
+        "rank_within_label_zero_based": 92
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_179",
+        "partition": "calibration",
+        "rank_sha256": "4d5ba0e6a97adbd337d55d7975bdecd0b8762f0d06dca710042f9cfd58302477",
+        "rank_within_label_zero_based": 93
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_418",
+        "partition": "calibration",
+        "rank_sha256": "4d6ad27948a6c386a24d8b2292b932b7cf804bdc603697e847db98337902c720",
+        "rank_within_label_zero_based": 94
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_258",
+        "partition": "calibration",
+        "rank_sha256": "4d705fb49efd2cda2df4f7ec0391a68434fdca04be646442569d0e1f58dc8455",
+        "rank_within_label_zero_based": 95
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_270",
+        "partition": "calibration",
+        "rank_sha256": "4d9b0159404108dadae7099137e38ed247fd02ce92e650ea3bf7241e00af2f94",
+        "rank_within_label_zero_based": 96
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_049",
+        "partition": "calibration",
+        "rank_sha256": "4dd3d6d0cd0486fd537baaf0e9e88a272144edc7d07d008820f0e5522631d610",
+        "rank_within_label_zero_based": 97
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_268",
+        "partition": "calibration",
+        "rank_sha256": "4e28303e6038e46c00dc4244cf9ba565b1c7b3b28dd6465290e1fc9f22f06c75",
+        "rank_within_label_zero_based": 98
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_300",
+        "partition": "calibration",
+        "rank_sha256": "4e4bf68cc5d7276408fb8631588895a0291843156513786b76f9d7f5ee0c7016",
+        "rank_within_label_zero_based": 99
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_284",
+        "partition": "calibration",
+        "rank_sha256": "4f5938fc98632018d38c5a9f191cfbcc6219b7067900222b50f114eb22f5548e",
+        "rank_within_label_zero_based": 100
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_227",
+        "partition": "calibration",
+        "rank_sha256": "4fe884af0e709ed0dbd6d3140d9f5f5c65116ff4048ebdee3c15fdc6cc54de3a",
+        "rank_within_label_zero_based": 101
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_062",
+        "partition": "calibration",
+        "rank_sha256": "51a606eda1d9b97683e039a99a9b6d7c96642af1b9fa560dda8c6d61f32315a5",
+        "rank_within_label_zero_based": 102
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_273",
+        "partition": "calibration",
+        "rank_sha256": "51e347398492fdf667ee6bf7129f8bd307edca56eb002b5d74ba00d20fccdf48",
+        "rank_within_label_zero_based": 103
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_245",
+        "partition": "calibration",
+        "rank_sha256": "52e8c00e1f1a1540947f2a28ae451fc5fccf12dd40932603bd3a75f6e8c41c6f",
+        "rank_within_label_zero_based": 104
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_078",
+        "partition": "calibration",
+        "rank_sha256": "5337c87174e01ba4b1213b714067463d40a484d9d756f85b70032bb12a2190f6",
+        "rank_within_label_zero_based": 105
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_312",
+        "partition": "calibration",
+        "rank_sha256": "55130187171eca8b60e197fb6707dd1c184e3ee79b0f83627c49ea47604ad523",
+        "rank_within_label_zero_based": 106
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_491",
+        "partition": "calibration",
+        "rank_sha256": "5586dd0b807c68f41c34ee1cc0561483cf730d653568044dc3959b000e3e7330",
+        "rank_within_label_zero_based": 107
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_177",
+        "partition": "calibration",
+        "rank_sha256": "55a75dd9ea92add38758d3b0f1ac9d67b2054d89a4582893782ab60dddbbb738",
+        "rank_within_label_zero_based": 108
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_440",
+        "partition": "calibration",
+        "rank_sha256": "5643a1d608c586c6aabc652a3209a1cc4682499b98a7937b0a6a6782df20ff7e",
+        "rank_within_label_zero_based": 109
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_244",
+        "partition": "calibration",
+        "rank_sha256": "56d2dd6ffd8803db6abd1cf537ce4320ae28d4c1045384ddfcc7d978653b46ea",
+        "rank_within_label_zero_based": 110
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_433",
+        "partition": "calibration",
+        "rank_sha256": "56fb2722055fdc6d05a2d75a5e9078c99501483205ea38b0bd78b3f88d464779",
+        "rank_within_label_zero_based": 111
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_316",
+        "partition": "calibration",
+        "rank_sha256": "58ddf0a087959c38911f2b327fdc620657854b49912931ee1cd7626718a58e23",
+        "rank_within_label_zero_based": 112
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_096",
+        "partition": "calibration",
+        "rank_sha256": "59709fd6eef7301fc7c1629ee366e8328d0778a80fa3101339e262a9abe7948a",
+        "rank_within_label_zero_based": 113
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_298",
+        "partition": "calibration",
+        "rank_sha256": "5a69179d0d67c07494fbb76b353f1d605c94442ef8e43b15271170904ecfad22",
+        "rank_within_label_zero_based": 114
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_041",
+        "partition": "calibration",
+        "rank_sha256": "5bf39da8cdc4b1dfd8176c7e477e31fde9c4853c8d447f6c402df6bdfb3844e1",
+        "rank_within_label_zero_based": 115
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_340",
+        "partition": "calibration",
+        "rank_sha256": "5d4d2caba345656142b43b5d1998d3ac96ae3856cac6db31dafc2f530ca6b99a",
+        "rank_within_label_zero_based": 116
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_432",
+        "partition": "calibration",
+        "rank_sha256": "5d605948b65cc7977b99618086ced5efb1a5ca305ae8f16285f99fbb71678b97",
+        "rank_within_label_zero_based": 117
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_456",
+        "partition": "calibration",
+        "rank_sha256": "5fcab27ff0fd2b24390bc113b154dc8282661530f45655f43b7f61f576d9c975",
+        "rank_within_label_zero_based": 118
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_476",
+        "partition": "calibration",
+        "rank_sha256": "60c9bd0a334ab229da947df0acfb0cc167d108072063b6d9f6313a14ddd60308",
+        "rank_within_label_zero_based": 119
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_256",
+        "partition": "calibration",
+        "rank_sha256": "61b8fd52a57ad82462ffc737e8c0145b0103e97cf60d212a8e2efb64b1e53d29",
+        "rank_within_label_zero_based": 120
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_439",
+        "partition": "calibration",
+        "rank_sha256": "62dfe5eca3d851d650be5af5f22609a0531c64d9140b3b9900078885f33db41c",
+        "rank_within_label_zero_based": 121
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_151",
+        "partition": "calibration",
+        "rank_sha256": "63d6fb6be124c358d775b559cef2d6b33d1e4f77d5cf455869a710b4881c24bb",
+        "rank_within_label_zero_based": 122
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_420",
+        "partition": "calibration",
+        "rank_sha256": "63dae093b9cea70a2d6f3b1d90f145e12a9f7a4677a5ec1cc28b4b694fb5f5de",
+        "rank_within_label_zero_based": 123
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_074",
+        "partition": "calibration",
+        "rank_sha256": "6409bca086cbd82a58bd4aacac0f6b75183baa19c763bf666ba67b73b8e8e52b",
+        "rank_within_label_zero_based": 124
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_304",
+        "partition": "calibration",
+        "rank_sha256": "64ae0a6af7595d82a8d1f8269849a1106e8c0d91ec0b66efb60395a7550ae56b",
+        "rank_within_label_zero_based": 125
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_039",
+        "partition": "calibration",
+        "rank_sha256": "6571e291f6e5b1b96ec2388c28b21361b7832ef2951d73944dd7362ac336e2ad",
+        "rank_within_label_zero_based": 126
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_129",
+        "partition": "calibration",
+        "rank_sha256": "6580ce10a01cc84292f75de144fb58367cd652bdb02dda860402896b8a90d729",
+        "rank_within_label_zero_based": 127
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_055",
+        "partition": "calibration",
+        "rank_sha256": "66484a296b35c5ec66b19a1eb79449897146b1bc6b53fe88cdd5118c6abaf3d6",
+        "rank_within_label_zero_based": 128
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_045",
+        "partition": "calibration",
+        "rank_sha256": "66ca8807b5b9b955cdc492999fcc8a7e82b7db059ca196e80ae72756bd8ac867",
+        "rank_within_label_zero_based": 129
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_297",
+        "partition": "calibration",
+        "rank_sha256": "673167e4f9325d704a69645e436bf9b741e64c74468f12005e32958e85f13edb",
+        "rank_within_label_zero_based": 130
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_097",
+        "partition": "calibration",
+        "rank_sha256": "6b0d66e0696c1585bf589e3bdf2122e6ef6917984931a46e793c043051498fd6",
+        "rank_within_label_zero_based": 131
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_436",
+        "partition": "calibration",
+        "rank_sha256": "6b95a258286cd1201a40f5d8ca4b5f2a405f60cfcf54a7d581b7dee78f5a2229",
+        "rank_within_label_zero_based": 132
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_399",
+        "partition": "calibration",
+        "rank_sha256": "6d15b08e1bf41ffea46d4033a9e9da53ca706c43ff447abdb0ec8734d07434a8",
+        "rank_within_label_zero_based": 133
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_001",
+        "partition": "calibration",
+        "rank_sha256": "6e196d144078c8a081e2d860ee942ace40a9a36a5c22a4eab3f550ab571b9443",
+        "rank_within_label_zero_based": 134
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_238",
+        "partition": "calibration",
+        "rank_sha256": "6e694f6f3f398a76704aa1b7a522c4a6a898b866c85bca7cda163a98bd8d7c88",
+        "rank_within_label_zero_based": 135
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_118",
+        "partition": "calibration",
+        "rank_sha256": "6ed3b222217eb207225fa38320f5ae9161faa8c2cd46df605d34747a73ac82f8",
+        "rank_within_label_zero_based": 136
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_246",
+        "partition": "calibration",
+        "rank_sha256": "6fd8dadb9c00ad9100851f62ca53a18638ad99bb82543f48ea4462b872587bce",
+        "rank_within_label_zero_based": 137
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_460",
+        "partition": "calibration",
+        "rank_sha256": "709e7aadf2d38c054fc904c0b193ff45f5f63c35162b5b25bd9f81eb4217e9d7",
+        "rank_within_label_zero_based": 138
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_283",
+        "partition": "calibration",
+        "rank_sha256": "724d03742850e9e5a9e308abab69acf050fd374ae24ef8ace9b6c15aea492803",
+        "rank_within_label_zero_based": 139
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_372",
+        "partition": "calibration",
+        "rank_sha256": "728b8ce141e5fd78931fd25e5dcde0247ed0949b638ca892ea8af2f52838a4bf",
+        "rank_within_label_zero_based": 140
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_190",
+        "partition": "calibration",
+        "rank_sha256": "728fe3d16f644716d42722523c0fc440554b8414c722e984e0f006b9447fd8a9",
+        "rank_within_label_zero_based": 141
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_260",
+        "partition": "calibration",
+        "rank_sha256": "73a31c8a35f56e921c3d9361c39d380298ea06c2135866d1580af3fc5187fccb",
+        "rank_within_label_zero_based": 142
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_348",
+        "partition": "calibration",
+        "rank_sha256": "73b3a1bbcabe494eda20184fb4ab9e5c4e2e5661d2d396aa56817c382b5d3a83",
+        "rank_within_label_zero_based": 143
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_294",
+        "partition": "calibration",
+        "rank_sha256": "73cbfd02d8f9da82cf74eaee495bf18fa3d14ed1619750287082b071d906042f",
+        "rank_within_label_zero_based": 144
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_382",
+        "partition": "calibration",
+        "rank_sha256": "74a547f81986e3e5e47c762688fd3aee9eb1bddc443d2ca3aea4c7859bf62025",
+        "rank_within_label_zero_based": 145
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_422",
+        "partition": "calibration",
+        "rank_sha256": "74ad0582c621855337e36242868e0e2424e83cec8d219d1b3025a07616b0af48",
+        "rank_within_label_zero_based": 146
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_016",
+        "partition": "calibration",
+        "rank_sha256": "752edff793b9fae1f11b7b5001845ce671899f7c747cbaeb9ec4ab835edecf8a",
+        "rank_within_label_zero_based": 147
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_415",
+        "partition": "calibration",
+        "rank_sha256": "75983601d65bdc9bdada8e9e2693199f0cd686b395b237687369c2ba1f62d899",
+        "rank_within_label_zero_based": 148
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_088",
+        "partition": "calibration",
+        "rank_sha256": "763337ae3cd489e5422eac45760c2165293df41a16751238199b903011084f18",
+        "rank_within_label_zero_based": 149
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_252",
+        "partition": "calibration",
+        "rank_sha256": "76859eb68e17fdabc458d50ac74d22e3e024b1171ee06db100d8e6a4d3c56cda",
+        "rank_within_label_zero_based": 150
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_291",
+        "partition": "calibration",
+        "rank_sha256": "77312dd7c1f90574d5e946049e5c8bcb16ee1710c21c77485e14aecf4fdefd93",
+        "rank_within_label_zero_based": 151
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_275",
+        "partition": "calibration",
+        "rank_sha256": "773171fcba1efbedf2dd0a081cf3d3c43452d689fc5415ff6e6e137be365c701",
+        "rank_within_label_zero_based": 152
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_165",
+        "partition": "confirmatory",
+        "rank_sha256": "78bf623ef5df4e84d4e3873224fe500763d593e4aa692a641e4fee2f87faea28",
+        "rank_within_label_zero_based": 153
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_416",
+        "partition": "confirmatory",
+        "rank_sha256": "798013c4a5476bc373bca773463f31b9af7b8c7c63eb342ddb885ede3b2e26e6",
+        "rank_within_label_zero_based": 154
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_187",
+        "partition": "confirmatory",
+        "rank_sha256": "7bf4ba0a329d6fe3cfee911da0b690c57a1817bbbb4d1444d2ba6236dd37aa91",
+        "rank_within_label_zero_based": 155
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_030",
+        "partition": "confirmatory",
+        "rank_sha256": "7c0058ec7ab7e2ee80a454a3ae30e2557eb104537602eaac72b39b3d919ba223",
+        "rank_within_label_zero_based": 156
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_351",
+        "partition": "confirmatory",
+        "rank_sha256": "7d1d8c329966f241563928325f30c24e73e19d2f3afd9050273c067e9414a95b",
+        "rank_within_label_zero_based": 157
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_114",
+        "partition": "confirmatory",
+        "rank_sha256": "7d8bc88e32f05d52402c217d5672848a17be2e8806edee3f0c97aa2f02930ad9",
+        "rank_within_label_zero_based": 158
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_359",
+        "partition": "confirmatory",
+        "rank_sha256": "7e1561b5245f909f7c2a393df6b781497df71d257bb19f7d0fac3ac21820ba56",
+        "rank_within_label_zero_based": 159
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_024",
+        "partition": "confirmatory",
+        "rank_sha256": "7e280c0d986dca28adf6c793b20170f038340770812bc28705833bb80c98ba1c",
+        "rank_within_label_zero_based": 160
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_486",
+        "partition": "confirmatory",
+        "rank_sha256": "7e4d48f3545c202c974ce934cd4f04201629b4881cc66aea9484c695dd38be87",
+        "rank_within_label_zero_based": 161
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_425",
+        "partition": "confirmatory",
+        "rank_sha256": "7e8ddc63116f3b2052a57cece478ba644924b7c1e0caa019ecb698982f0a76fb",
+        "rank_within_label_zero_based": 162
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_455",
+        "partition": "confirmatory",
+        "rank_sha256": "7f29e09ea743c3d12c19b74f952fd1752434a3a93e890ea1c61d073f3489b466",
+        "rank_within_label_zero_based": 163
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_464",
+        "partition": "confirmatory",
+        "rank_sha256": "7f8920b53bc3068c52168a843069d6701bad5bbcf1b19be39ba493555897aa4f",
+        "rank_within_label_zero_based": 164
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_139",
+        "partition": "confirmatory",
+        "rank_sha256": "812a22cdc880e016fdcbe3da36b90a826f1f5c48bcdf5161af6c03b3f1739ee1",
+        "rank_within_label_zero_based": 165
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_368",
+        "partition": "confirmatory",
+        "rank_sha256": "81ddd8420495a3daf0110d25fd38d9740ab33ebda8ff4f453bfc75839f63b5c9",
+        "rank_within_label_zero_based": 166
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_105",
+        "partition": "confirmatory",
+        "rank_sha256": "83e9b96576d30e98836b516d1db27f9eb9904fb41c3b1e4f82f9af27ffb0f309",
+        "rank_within_label_zero_based": 167
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_167",
+        "partition": "confirmatory",
+        "rank_sha256": "849147d9f690d7c22930b5ca356eadad616656c0ead3d6031772497f26cb6415",
+        "rank_within_label_zero_based": 168
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_481",
+        "partition": "confirmatory",
+        "rank_sha256": "8564f9689226d86a1f71b0ff0b6be0a5f74bd44c6a90a94f6860a886da2b0891",
+        "rank_within_label_zero_based": 169
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_424",
+        "partition": "confirmatory",
+        "rank_sha256": "8717d5ca7472560d31a496e4b69a83787e6da83f9372956a810e785e3f0b14a6",
+        "rank_within_label_zero_based": 170
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_437",
+        "partition": "confirmatory",
+        "rank_sha256": "874450ec5ff8aefd8064658acc9aac3532224017aed7318dfc507c6f8c68800b",
+        "rank_within_label_zero_based": 171
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_188",
+        "partition": "confirmatory",
+        "rank_sha256": "88bd23f150a3fa0fdde42a02ed1523e1032abeeb44c1b62cd011393176005ff5",
+        "rank_within_label_zero_based": 172
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_426",
+        "partition": "confirmatory",
+        "rank_sha256": "8b3f1ff6ddaff01cf00c76812e396e7742b38152ce566035a88550268654449d",
+        "rank_within_label_zero_based": 173
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_345",
+        "partition": "confirmatory",
+        "rank_sha256": "8b7003029dd874777060e82b7d9c0d64a96658be4ac15344a3e3240f5617269a",
+        "rank_within_label_zero_based": 174
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_466",
+        "partition": "confirmatory",
+        "rank_sha256": "8e831a8fcf92125431f4be7bdb5bcf615135ea54dfac38b7afa6eef5d1c87274",
+        "rank_within_label_zero_based": 175
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_141",
+        "partition": "confirmatory",
+        "rank_sha256": "909ea185001ee386a6e4788796e13899cf7e2817f1ee526a09b89fbc847d8a59",
+        "rank_within_label_zero_based": 176
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_137",
+        "partition": "confirmatory",
+        "rank_sha256": "91179b7b991f6c25ea5ab2655d076bcbb75511ea6bdbf0a8818adf930c043ada",
+        "rank_within_label_zero_based": 177
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_411",
+        "partition": "confirmatory",
+        "rank_sha256": "941323db0527d41c2c88dd07c6276c1415c2ff8dd887ad5971eae70628b66c63",
+        "rank_within_label_zero_based": 178
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_162",
+        "partition": "confirmatory",
+        "rank_sha256": "94a97c3459ef71d0219b532ac9d2f903beff89f66c3bd3cdebc4fe8f41188d0a",
+        "rank_within_label_zero_based": 179
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_230",
+        "partition": "confirmatory",
+        "rank_sha256": "9539a70cdbbb683e4ab2b5ddcf8bf5841c27846c4e37495de9284a166a3fbb64",
+        "rank_within_label_zero_based": 180
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_272",
+        "partition": "confirmatory",
+        "rank_sha256": "96901aa7675b45d03e5234126d8cf5c6899c55b169c074dc3b83a5b83329c4dd",
+        "rank_within_label_zero_based": 181
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_377",
+        "partition": "confirmatory",
+        "rank_sha256": "9730afd9f673434b4cb6ab94791f2a477e3f1ce194b8c4353bb600f18ffa0500",
+        "rank_within_label_zero_based": 182
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_276",
+        "partition": "confirmatory",
+        "rank_sha256": "98ae231285a686d3780767067a4bfb17e743df123800e0dc395584c255d23117",
+        "rank_within_label_zero_based": 183
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_164",
+        "partition": "confirmatory",
+        "rank_sha256": "98e0a2cbe3740a085e40f4d785f5a8801e5b311699fb10d1ccdf1cd3924a23a8",
+        "rank_within_label_zero_based": 184
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_473",
+        "partition": "confirmatory",
+        "rank_sha256": "9a3a55fa6a3522681089b03ad907b115b22c5b98a400a93f6fd657e2ef0ee7f2",
+        "rank_within_label_zero_based": 185
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_401",
+        "partition": "confirmatory",
+        "rank_sha256": "9aa47443ea9bdce8e3e92a9fce7c8e5446513c72698ace83dbbcda5ebed9137a",
+        "rank_within_label_zero_based": 186
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_329",
+        "partition": "confirmatory",
+        "rank_sha256": "9abf61e52b97554d6748c60dd332bc415e3b616f37c78e44de1c40cb3ad2810e",
+        "rank_within_label_zero_based": 187
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_444",
+        "partition": "confirmatory",
+        "rank_sha256": "9aedbfc831e9e9fbb7c43edb154e759a77f9d9b691de517791dd26cfe10df62c",
+        "rank_within_label_zero_based": 188
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_067",
+        "partition": "confirmatory",
+        "rank_sha256": "9ba0584155c713c2762897425f172694b2f669ad9d7843264a96c813bb3b962e",
+        "rank_within_label_zero_based": 189
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_064",
+        "partition": "confirmatory",
+        "rank_sha256": "9deee31f96ea3d40d0707cc819aa13fffdd1f060b90594f6643fdec4da61c5d8",
+        "rank_within_label_zero_based": 190
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_108",
+        "partition": "confirmatory",
+        "rank_sha256": "9fb85e6b9b7018ac5d0472c3c52ed6aea1474d9cae81a16070f3b8a0b280b638",
+        "rank_within_label_zero_based": 191
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_189",
+        "partition": "confirmatory",
+        "rank_sha256": "9fd57bb2bee1433ceef016334d34f76cfc427948b2e6ea9faac817092ec59687",
+        "rank_within_label_zero_based": 192
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_265",
+        "partition": "confirmatory",
+        "rank_sha256": "a027acff45a8a11698de1ecb1645736ff760ba8525f4fe95b465b773705ade31",
+        "rank_within_label_zero_based": 193
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_028",
+        "partition": "confirmatory",
+        "rank_sha256": "a0892d1f5ce862d9bbd1c2c0a4128ce64c2266ed1f5cfa510334c3f844de88d7",
+        "rank_within_label_zero_based": 194
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_132",
+        "partition": "confirmatory",
+        "rank_sha256": "a22b363eeea4549661d2d4a1aeaab3a43833d027b4e7bd4fc921ed0771fae641",
+        "rank_within_label_zero_based": 195
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_111",
+        "partition": "confirmatory",
+        "rank_sha256": "a313ed99b6d64e66fb446590fd18fc1f25971a194a7ae5e35213bcca83bc742f",
+        "rank_within_label_zero_based": 196
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_168",
+        "partition": "confirmatory",
+        "rank_sha256": "a375ee2b753fc8d2ff1b815cb840ee1653b672c9789dae79c3b5c37043c50075",
+        "rank_within_label_zero_based": 197
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_014",
+        "partition": "confirmatory",
+        "rank_sha256": "a3d63537742fab625727df233e77393095536df8e2c7d7afdbcebf5662161088",
+        "rank_within_label_zero_based": 198
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_395",
+        "partition": "confirmatory",
+        "rank_sha256": "a4a48c86a241c2d16662054f556a3582343428588d6b0ee6acbe8188d7094657",
+        "rank_within_label_zero_based": 199
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_378",
+        "partition": "confirmatory",
+        "rank_sha256": "a4c3739a8de3619a31573f22537cdeac3e15d19e7c12e946ab7819a615a23ed8",
+        "rank_within_label_zero_based": 200
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_287",
+        "partition": "confirmatory",
+        "rank_sha256": "a4e65b0bbe4742d15950aeae0194fa97ad28aacc33f3dc6645c2a354261e14ca",
+        "rank_within_label_zero_based": 201
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_421",
+        "partition": "confirmatory",
+        "rank_sha256": "a551273375982ea5c72fb18ad8be358af272182b15350a3efaf995059a2f7233",
+        "rank_within_label_zero_based": 202
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_234",
+        "partition": "confirmatory",
+        "rank_sha256": "a66bf37de51c14516c3e05e045f72c40a7d53a1923a1b8788b4ddeb0f6f7cb78",
+        "rank_within_label_zero_based": 203
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_338",
+        "partition": "confirmatory",
+        "rank_sha256": "a902488d061b74fd9c3878c159c62987a040f52447c464cd18c19c41a5e1d3b4",
+        "rank_within_label_zero_based": 204
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_086",
+        "partition": "confirmatory",
+        "rank_sha256": "aa56a20aa96efa18535d18b263154e4c36096fbcd0d295a0c915e4a039694e09",
+        "rank_within_label_zero_based": 205
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_494",
+        "partition": "confirmatory",
+        "rank_sha256": "aabf913c5cc8f20ee583b541ca8d19afb2006e279792c2d14e6fbe11d841cb2d",
+        "rank_within_label_zero_based": 206
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_174",
+        "partition": "confirmatory",
+        "rank_sha256": "ac2fef8b4818ec77b5a34ffbeae74208cd971eea993e621a917680ceae928857",
+        "rank_within_label_zero_based": 207
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_005",
+        "partition": "confirmatory",
+        "rank_sha256": "ad5d4766436f9f0efb2e3c5a0b8c52806d470d9b013fe2bc81fbf9ecbce82bcc",
+        "rank_within_label_zero_based": 208
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_443",
+        "partition": "confirmatory",
+        "rank_sha256": "af9ac80c7da721d444c9fe28c462cad6da562b8cf3718abe1d258055f9be0719",
+        "rank_within_label_zero_based": 209
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_341",
+        "partition": "confirmatory",
+        "rank_sha256": "afa452290f7a19f47eea11513f6277ba34a8fd66dfc698b18951a0e0e58c8822",
+        "rank_within_label_zero_based": 210
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_127",
+        "partition": "confirmatory",
+        "rank_sha256": "afdcdee48f909991ade69f6bec9bd645917dc6a4ab360ceabb0d0114eeb322a6",
+        "rank_within_label_zero_based": 211
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_487",
+        "partition": "confirmatory",
+        "rank_sha256": "afe9a702b9484add0026549f3cf2f685a7dacb2b84247e0091634d851d33a046",
+        "rank_within_label_zero_based": 212
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_364",
+        "partition": "confirmatory",
+        "rank_sha256": "b1539cb1b5fc881280ef50f4e33f21ad63aa37d7c6be26036f7627b1178b873e",
+        "rank_within_label_zero_based": 213
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_027",
+        "partition": "confirmatory",
+        "rank_sha256": "b2bc4f54a76e857032a652065c5d989a45cffe72c7bb4ff4b890006fa4c63db3",
+        "rank_within_label_zero_based": 214
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_040",
+        "partition": "confirmatory",
+        "rank_sha256": "b2f1a07993fb927881f87db89f0bfbd12eb66b6cfee668a77f3070959c2d4d16",
+        "rank_within_label_zero_based": 215
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_247",
+        "partition": "confirmatory",
+        "rank_sha256": "b656049df0b1000f4413fab2a03480da72131a20af1b9ad359333ed9b80e0588",
+        "rank_within_label_zero_based": 216
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_169",
+        "partition": "confirmatory",
+        "rank_sha256": "bb0e829dc842a7357e782c67b4376c76bb9d33c76c4be59532980f8d1e1a32c2",
+        "rank_within_label_zero_based": 217
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_159",
+        "partition": "confirmatory",
+        "rank_sha256": "bc40f70de8feb69618e5067174485b57b09aae55bd7d6c68dfc533167887f90e",
+        "rank_within_label_zero_based": 218
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_044",
+        "partition": "confirmatory",
+        "rank_sha256": "bc55e4c5af5823717dfc660943a5f6132af3ce1c6649aae161e1222e38158a09",
+        "rank_within_label_zero_based": 219
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_379",
+        "partition": "confirmatory",
+        "rank_sha256": "bd734e7575c53826a5c0cdae2d58026b082fc26560396ba1a8392c98b2cf1180",
+        "rank_within_label_zero_based": 220
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_109",
+        "partition": "confirmatory",
+        "rank_sha256": "be64438e8667fe9d531a7ff9558e9248fb4bbae0f6c236d2e2b90371ea1cb9c4",
+        "rank_within_label_zero_based": 221
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_000",
+        "partition": "confirmatory",
+        "rank_sha256": "bf8977f3064466541391db9d5d94f74174d289956b6584e3a2758a2f8fe63ed5",
+        "rank_within_label_zero_based": 222
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_242",
+        "partition": "confirmatory",
+        "rank_sha256": "bf8ebc1384b9198637d70965e2b99418cb2b3ba463447c0b000e61a9b927adda",
+        "rank_within_label_zero_based": 223
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_021",
+        "partition": "confirmatory",
+        "rank_sha256": "bfba7bbdc05d800567765a18609e8520968d78787a0a42c915d2da5e14ed4d4f",
+        "rank_within_label_zero_based": 224
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_171",
+        "partition": "confirmatory",
+        "rank_sha256": "c06a3b8b863b25be9edf9e8a200092542846019f77492a49452f948f56c99f48",
+        "rank_within_label_zero_based": 225
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_465",
+        "partition": "confirmatory",
+        "rank_sha256": "c0a23bdf552c3cff567359a1bde2472debadec0c584935b87e2638436edafd1f",
+        "rank_within_label_zero_based": 226
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_240",
+        "partition": "confirmatory",
+        "rank_sha256": "c240416b6c34bdc0a41f710ef0979af7178f6455dd79711d0b237876587df871",
+        "rank_within_label_zero_based": 227
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_150",
+        "partition": "confirmatory",
+        "rank_sha256": "c3cb6a252890ebb62fc080545beb776d84de7c5ffce8acbffd1e1b9995dd1b45",
+        "rank_within_label_zero_based": 228
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_363",
+        "partition": "confirmatory",
+        "rank_sha256": "c3cc049864abe700d69ec3ece7d1c061c97156161cf72d10145ffd7823639799",
+        "rank_within_label_zero_based": 229
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_446",
+        "partition": "confirmatory",
+        "rank_sha256": "c4df9d1503b7dbf1c0cff73c52ff2149d57a71bee18c887cb17d72fd7be00440",
+        "rank_within_label_zero_based": 230
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_474",
+        "partition": "confirmatory",
+        "rank_sha256": "c5a6d0ba77db89c28a17ede29893f3fee98c5aae23dd41347e415bd654aa88bf",
+        "rank_within_label_zero_based": 231
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_488",
+        "partition": "confirmatory",
+        "rank_sha256": "c6bb92a27861f71b4bb8f40579e2fe4e8174372a818ff15bc22298c058c514ac",
+        "rank_within_label_zero_based": 232
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_367",
+        "partition": "confirmatory",
+        "rank_sha256": "ca1a474a69c9040487581c0c72e6b594c6af119a204bedeb7bc7bf2f45c66feb",
+        "rank_within_label_zero_based": 233
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_236",
+        "partition": "confirmatory",
+        "rank_sha256": "ca470d59a2f5a551c54f1c941e3e1498e18259ab3eaab9c8f957ba2f92fb4ba2",
+        "rank_within_label_zero_based": 234
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_263",
+        "partition": "confirmatory",
+        "rank_sha256": "ca6358b1ebc4040a5e41333d9082d3dbcdc14ca9f834a290a5a9b02c4bb79f27",
+        "rank_within_label_zero_based": 235
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_051",
+        "partition": "confirmatory",
+        "rank_sha256": "cb5363ff471e6c038bc52dc0831066c5ce2dfc7bb55694aa3fb927908831fa43",
+        "rank_within_label_zero_based": 236
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_094",
+        "partition": "confirmatory",
+        "rank_sha256": "cbbba03589c33e5ca10a3d73499b7152dce91f41afbc3315837ce88fc31101d6",
+        "rank_within_label_zero_based": 237
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_253",
+        "partition": "confirmatory",
+        "rank_sha256": "cbca3a551eb643ca920b452e081812d7c6a2102da00aa7c09be9ad6c2e8ddd3a",
+        "rank_within_label_zero_based": 238
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_478",
+        "partition": "confirmatory",
+        "rank_sha256": "ccc4d5d1f481b39397335f23388d5d5a82d7277a93df26620dccf30799436eb6",
+        "rank_within_label_zero_based": 239
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_095",
+        "partition": "confirmatory",
+        "rank_sha256": "cd133c5296854a983c8c7cb7899c1ea8d0c129773785b6bbe4ba3dbb732f13ae",
+        "rank_within_label_zero_based": 240
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_442",
+        "partition": "confirmatory",
+        "rank_sha256": "cd21ddda658dadc3d78813e15a19f0b2ce00367c108edb8dffb99bc1ab0b169b",
+        "rank_within_label_zero_based": 241
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_102",
+        "partition": "confirmatory",
+        "rank_sha256": "cd99f7949be0608cc496818e551ce93762d824902bdc1992c2c366a3814e4a47",
+        "rank_within_label_zero_based": 242
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_239",
+        "partition": "confirmatory",
+        "rank_sha256": "ce82114827df35cddafac4e069d072c23abeaaea9520a9aa6fa7d96d22861911",
+        "rank_within_label_zero_based": 243
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_419",
+        "partition": "confirmatory",
+        "rank_sha256": "cf5f9e7681f28cc65062f81f59891d646d0f081b721e62bef5a9ec2aeb662da9",
+        "rank_within_label_zero_based": 244
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_285",
+        "partition": "confirmatory",
+        "rank_sha256": "d04a30832c66c5621798739976348fc7c2e6908a8c16f83522d1d65dad5e29f6",
+        "rank_within_label_zero_based": 245
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_008",
+        "partition": "confirmatory",
+        "rank_sha256": "d0a6f150f6e713bded72f83ceebcd4cb3a773c7d8b7e3aa503ef3116e4b0caed",
+        "rank_within_label_zero_based": 246
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_295",
+        "partition": "confirmatory",
+        "rank_sha256": "d10efc9235154952e7aad1980c01fd9d2cd469ba205b4e4532f03897bfb4d081",
+        "rank_within_label_zero_based": 247
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_089",
+        "partition": "confirmatory",
+        "rank_sha256": "d119018f58aed3c8c869ace5e024b10ac89ccab872fa6c775d131bb4f0c9f338",
+        "rank_within_label_zero_based": 248
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_002",
+        "partition": "confirmatory",
+        "rank_sha256": "d1ca5eb31eaf23c5eb43866f9116ea32921b1f5198dc7e8d4f5505361865eb11",
+        "rank_within_label_zero_based": 249
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_017",
+        "partition": "confirmatory",
+        "rank_sha256": "d271f9b697f76429cc82ed712ee82fd259890121768b210ad1b1e72e0971dc2b",
+        "rank_within_label_zero_based": 250
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_434",
+        "partition": "confirmatory",
+        "rank_sha256": "d32d8b578ecb352dc027e7fbbc319bd8204ad377fe2eb094309c5ad03d5e3e62",
+        "rank_within_label_zero_based": 251
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_091",
+        "partition": "confirmatory",
+        "rank_sha256": "d34efdbe651f0331c8c648782cffc94f4dff5fcbd258cf171b5964b8058cfd8b",
+        "rank_within_label_zero_based": 252
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_178",
+        "partition": "confirmatory",
+        "rank_sha256": "d41769313296ee0680ba7940d6c3ee34b5cfc6b50c0f01432d803830743366aa",
+        "rank_within_label_zero_based": 253
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_315",
+        "partition": "confirmatory",
+        "rank_sha256": "d6b285b932668f68aac3336075b0c9ca1ba6522d2f47bcf128ef215ade819a0f",
+        "rank_within_label_zero_based": 254
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_326",
+        "partition": "confirmatory",
+        "rank_sha256": "d6b40ae6139f5bba333910581edbf68effa385367ceb40f025c280732bcf6d32",
+        "rank_within_label_zero_based": 255
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_477",
+        "partition": "confirmatory",
+        "rank_sha256": "d6e1aa8bc8fc3c6b19d318e1e22637f1c229f5d67e3abea03046acb099bf25e0",
+        "rank_within_label_zero_based": 256
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_451",
+        "partition": "confirmatory",
+        "rank_sha256": "d78d8809ec381af7c764cd4de9c7b9d1d9356558de710cac56fea409944c3044",
+        "rank_within_label_zero_based": 257
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_339",
+        "partition": "confirmatory",
+        "rank_sha256": "d7c1072a179be64a53d91614b71c53700e288eefefa63d6533f67f52bbd34186",
+        "rank_within_label_zero_based": 258
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_410",
+        "partition": "confirmatory",
+        "rank_sha256": "d807926947e7b9efa7866ac391682128023eeb3aac4fd2804883cc597d6711c7",
+        "rank_within_label_zero_based": 259
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_083",
+        "partition": "confirmatory",
+        "rank_sha256": "d841470b8f63b0f37dc562b039b895da65a508054bf973fb029d511bbcb3210a",
+        "rank_within_label_zero_based": 260
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_193",
+        "partition": "confirmatory",
+        "rank_sha256": "d919b7052fb5078a2bb0cdd069b139e879a0713b512939331465b12372aebcdc",
+        "rank_within_label_zero_based": 261
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_038",
+        "partition": "confirmatory",
+        "rank_sha256": "dbf71c5759ac900ef150da29e3c95299634edcb65481a98e07b54b851be18f8e",
+        "rank_within_label_zero_based": 262
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_296",
+        "partition": "confirmatory",
+        "rank_sha256": "dd97a1d2c3d9918d4ab3ae7392a7a5eca9baadd7f123bae4c59dfc7242cb5b17",
+        "rank_within_label_zero_based": 263
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_160",
+        "partition": "confirmatory",
+        "rank_sha256": "debffe9ddf80581f7acdadb44c833dd36500ee7bd42666e8f9e23a2bf53c6493",
+        "rank_within_label_zero_based": 264
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_409",
+        "partition": "confirmatory",
+        "rank_sha256": "e01d54a22fdcdb982ac9686a7987cfde73d42427d28979d2f8ff030f6759050a",
+        "rank_within_label_zero_based": 265
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_333",
+        "partition": "confirmatory",
+        "rank_sha256": "e177181ab1a5b4fea89172366d402ee2d16fe158b0419eadb747a1bc955f3e79",
+        "rank_within_label_zero_based": 266
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_121",
+        "partition": "confirmatory",
+        "rank_sha256": "e279430b1bb6251f196d7e00dba6beeb1aa238cf1963af687499643ebf61dffd",
+        "rank_within_label_zero_based": 267
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_251",
+        "partition": "confirmatory",
+        "rank_sha256": "e376ce61755a530d7830760c62b6386f3fe4988fbf9da025d26c569bba3a3c37",
+        "rank_within_label_zero_based": 268
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_393",
+        "partition": "confirmatory",
+        "rank_sha256": "e39c86329806a5a0c1be2738b9bd59677d939ff6cd26c32318db3f2d2b6c1323",
+        "rank_within_label_zero_based": 269
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_037",
+        "partition": "confirmatory",
+        "rank_sha256": "e57cf0fe3650b59912d8904d927d7ad7cab0f47a09f7c7dcaab987958a628177",
+        "rank_within_label_zero_based": 270
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_128",
+        "partition": "confirmatory",
+        "rank_sha256": "e59e9eb1737559987539e8d3d710fe3e7ec0be8fcddec243ca48976255aa5e5f",
+        "rank_within_label_zero_based": 271
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_311",
+        "partition": "confirmatory",
+        "rank_sha256": "e6142b76647873c62756ae8d7de496a7a793eb7be5e06db765cdeaa676449203",
+        "rank_within_label_zero_based": 272
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_396",
+        "partition": "confirmatory",
+        "rank_sha256": "e62875bba73cd73d3dd617dfd5b8a547c29874fcd901c5ca4a8390bb1ea923d7",
+        "rank_within_label_zero_based": 273
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_116",
+        "partition": "confirmatory",
+        "rank_sha256": "e67b7bd81edd630227e4e24c8ad96d7ea9975d8362ef856ef9cd60be163cb36a",
+        "rank_within_label_zero_based": 274
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_447",
+        "partition": "confirmatory",
+        "rank_sha256": "e6d3907412d07ebaa2efba32a1f20fb58563d775271d7a36c299f97eb5f83841",
+        "rank_within_label_zero_based": 275
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_400",
+        "partition": "confirmatory",
+        "rank_sha256": "e721ce3cd69f55e5c272f3d9ddb2bdca82b66aa13da1e215a8112478f73c2d48",
+        "rank_within_label_zero_based": 276
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_056",
+        "partition": "confirmatory",
+        "rank_sha256": "e92c3398f18c6eeade1615b1522e74dbee8bb991b1f791dae3a0aaa1299c193f",
+        "rank_within_label_zero_based": 277
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_335",
+        "partition": "confirmatory",
+        "rank_sha256": "ea368d195dc01accbb3c7306e727ef29032b62c1e18ebfdc77f3f2ac0102f616",
+        "rank_within_label_zero_based": 278
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_380",
+        "partition": "confirmatory",
+        "rank_sha256": "ea9f08b01ccf0270c8d5ca385040f3ba085f8e740f003cc4dd733fb4f5159435",
+        "rank_within_label_zero_based": 279
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_325",
+        "partition": "confirmatory",
+        "rank_sha256": "ebc135b8476675aec18815ff6fac35091a299d2d2ba81e5e6dcc9b416d9a43c5",
+        "rank_within_label_zero_based": 280
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_149",
+        "partition": "confirmatory",
+        "rank_sha256": "ecaefea2f706d791410159fb26849446e9c93c48c9c7ada607c3d32cd61b082a",
+        "rank_within_label_zero_based": 281
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_467",
+        "partition": "confirmatory",
+        "rank_sha256": "edb668a7b57298a2c18f816f51c7922fbe3be7b885f09ac765466339fa3e488d",
+        "rank_within_label_zero_based": 282
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_200",
+        "partition": "confirmatory",
+        "rank_sha256": "efd441dd5add6ea567c333658c3f452dd92f765a967b6c07f71e0c64074ef263",
+        "rank_within_label_zero_based": 283
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_462",
+        "partition": "confirmatory",
+        "rank_sha256": "f00fb1e237ffdcc730f5667300d042d5b0661a2566a4f4775811e758d0bf9eda",
+        "rank_within_label_zero_based": 284
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_470",
+        "partition": "confirmatory",
+        "rank_sha256": "f04ea2a7d4dfef5783001c9a68fd94df7b6f77ce74ad918bdedad4cbd24d5a19",
+        "rank_within_label_zero_based": 285
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_307",
+        "partition": "confirmatory",
+        "rank_sha256": "f12f167281fddcc6f9b78fcd17359fc6255ec11c2f5360ec52adf6b6eb6af4b7",
+        "rank_within_label_zero_based": 286
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_408",
+        "partition": "confirmatory",
+        "rank_sha256": "f2302ce53e1c65a353f847af082503a02a743457d86e11555d6d1c4a85d7effe",
+        "rank_within_label_zero_based": 287
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_414",
+        "partition": "confirmatory",
+        "rank_sha256": "f31a6e33e893f05b86835d0fed01d6c5738f85d4bd903dab8c776e5d51aaa881",
+        "rank_within_label_zero_based": 288
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_445",
+        "partition": "confirmatory",
+        "rank_sha256": "f3652cdda85ec71f5a55e946ea7c3d7d04c0cf3640aec1128785d797e74ae5ff",
+        "rank_within_label_zero_based": 289
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_292",
+        "partition": "confirmatory",
+        "rank_sha256": "f376a1ba1864bdc0ae003dfcc8d04983bd526bc1a971bb961c524a41e46a17e2",
+        "rank_within_label_zero_based": 290
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_397",
+        "partition": "confirmatory",
+        "rank_sha256": "f533e0eab1149e3d5fc21fadb6a9bae573cd71c24f87208ed5aafec20cd3454b",
+        "rank_within_label_zero_based": 291
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_388",
+        "partition": "confirmatory",
+        "rank_sha256": "f6ccfce1a01526e73a154591cf0ef3df2d72aebf9cecb486e254479a9a7007af",
+        "rank_within_label_zero_based": 292
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_054",
+        "partition": "confirmatory",
+        "rank_sha256": "f810c25a4cc58c836767facca0a2de35b1585c5baa3380ad572d9c069d8422bf",
+        "rank_within_label_zero_based": 293
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_417",
+        "partition": "confirmatory",
+        "rank_sha256": "f86d5d58de2251124933b6bac9a4bfc56520d400bc8d1803474a83f1f3236a71",
+        "rank_within_label_zero_based": 294
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_499",
+        "partition": "confirmatory",
+        "rank_sha256": "f937a75cdbea3e151e1bcca1185f818fb811778b4266a4676bc4e03d550b1604",
+        "rank_within_label_zero_based": 295
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_386",
+        "partition": "confirmatory",
+        "rank_sha256": "fb22e2ae5c5dfdcf89e78cb43f9ba1484fc6d02a42e250181ef8e7c38c44b906",
+        "rank_within_label_zero_based": 296
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_019",
+        "partition": "confirmatory",
+        "rank_sha256": "fc04b1a0b8d7f769e5af7d84eea1bd2f5bf609922a03176f82b62882988c7fb2",
+        "rank_within_label_zero_based": 297
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_362",
+        "partition": "confirmatory",
+        "rank_sha256": "fc621cd368700179e97b465a97324d547cdc398b58b5497c5cde14cf1b4e13bd",
+        "rank_within_label_zero_based": 298
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_173",
+        "partition": "confirmatory",
+        "rank_sha256": "fe55e4e7c7fab64caa5ae80f3aa1445273558425c694efbe0043f3aaea80fc4b",
+        "rank_within_label_zero_based": 299
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_084",
+        "partition": "confirmatory",
+        "rank_sha256": "fe59ae8281876e58f441b339d3957212bff23efdc782dfe57a576b5a9df310e5",
+        "rank_within_label_zero_based": 300
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_029",
+        "partition": "confirmatory",
+        "rank_sha256": "fe946152d185fc40fdc4b4a1d4a20fe3e7f7e72894d81ee3a0b9b9e7b20eaa5c",
+        "rank_within_label_zero_based": 301
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_226",
+        "partition": "confirmatory",
+        "rank_sha256": "ff5b9c56f22aefa7034ffd2eca9e2706c6404173d1628299ae33a2f12ca115c5",
+        "rank_within_label_zero_based": 302
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_358",
+        "partition": "confirmatory",
+        "rank_sha256": "ff72385f44e355896991c0955309b8ee0f2c4a704b4fd7a245dd41a78b4dc54e",
+        "rank_within_label_zero_based": 303
+      },
+      {
+        "correct_label": "REFUTE",
+        "example_id": "averitec_dev_332",
+        "partition": "confirmatory",
+        "rank_sha256": "fff9340db7e1e25d58a2bcb8215ade4cf594bbe3159f9876c27ac04caf99e4fa",
+        "rank_within_label_zero_based": 304
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_223",
+        "partition": "calibration",
+        "rank_sha256": "026b11f9df5806de9c3681e9aa6347d1dde45c35f637a369b693013a430e9f8b",
+        "rank_within_label_zero_based": 0
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_026",
+        "partition": "calibration",
+        "rank_sha256": "03042440e5d1295723b818260d731119f74a61f23933f04cbb1df1df01e0c7bd",
+        "rank_within_label_zero_based": 1
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_210",
+        "partition": "calibration",
+        "rank_sha256": "08489ff75f528faa50379674b4aa4880ca5a67397cc62cf7943803e5414ed009",
+        "rank_within_label_zero_based": 2
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_498",
+        "partition": "calibration",
+        "rank_sha256": "0cb2045edeff027e5d20ce93ba8a7d49ac08083d4ceb2e84998ca873cc3e5ae4",
+        "rank_within_label_zero_based": 3
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_237",
+        "partition": "calibration",
+        "rank_sha256": "1c541886972f7f43f6ccbf8ccd28f4097fb953e01a4fc3738ad822492311bd09",
+        "rank_within_label_zero_based": 4
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_282",
+        "partition": "calibration",
+        "rank_sha256": "1d7b1f2a7fe9c1b23003eef615fd2bbe1ad2bd38ba930658a08e8b8d714942a7",
+        "rank_within_label_zero_based": 5
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_068",
+        "partition": "calibration",
+        "rank_sha256": "2544d9e2e962e86fa68d6794c78e8151b7edb6493023ce06bdeac75a5b100354",
+        "rank_within_label_zero_based": 6
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_186",
+        "partition": "calibration",
+        "rank_sha256": "28a809dda9a63115e7070633401f5d827f4b6001760f00590c4e3efd289a2f42",
+        "rank_within_label_zero_based": 7
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_142",
+        "partition": "calibration",
+        "rank_sha256": "2f5bf72eb9c78208efc96af3fb8e0994a323cbbb7dbf6d9f3539a9ce52551d18",
+        "rank_within_label_zero_based": 8
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_208",
+        "partition": "calibration",
+        "rank_sha256": "3954c20abe7868659771f98304c6261b7165ebe2e7a180b11e9d4c9497e6e4db",
+        "rank_within_label_zero_based": 9
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_206",
+        "partition": "calibration",
+        "rank_sha256": "3cbc93d0a19668dffb32ada979e404a1752cbc53ae58648ad9f7963c0e1508a4",
+        "rank_within_label_zero_based": 10
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_328",
+        "partition": "calibration",
+        "rank_sha256": "3e8061468597edf3a4417a3260c71ba2c3eecc63e93e77e38ea0f683ec19eb42",
+        "rank_within_label_zero_based": 11
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_394",
+        "partition": "calibration",
+        "rank_sha256": "44c37015aa343f7e90eb6ef25e618b5c9b00d6553025e73a4524a7557a814738",
+        "rank_within_label_zero_based": 12
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_015",
+        "partition": "calibration",
+        "rank_sha256": "4cb26e9cfdb76a0bdec93ed1f0e9d3f8e3327565e909369ff9e2967bdaeef5d8",
+        "rank_within_label_zero_based": 13
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_209",
+        "partition": "calibration",
+        "rank_sha256": "4cbf5dff91bb6a23e6c15d5b77fbd104886a94740ad4bd96b938b046cfa1a402",
+        "rank_within_label_zero_based": 14
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_220",
+        "partition": "calibration",
+        "rank_sha256": "5c132f9e92065d4ceb1a7f511f01a7dc866002460efc871eb9ce03f538a80821",
+        "rank_within_label_zero_based": 15
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_483",
+        "partition": "calibration",
+        "rank_sha256": "67bd248726c083d26f2e08de9b601b3265a28ed4d5008783d0fe88d909358f4c",
+        "rank_within_label_zero_based": 16
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_354",
+        "partition": "confirmatory",
+        "rank_sha256": "6a8d69c9aa6678c92709158106f54cd7e13eee4d04d2f7cf535e9057d1a8c20d",
+        "rank_within_label_zero_based": 17
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_192",
+        "partition": "confirmatory",
+        "rank_sha256": "7e135efd79052319ff259a4d6038a229af67b08ce71256fb5fe39eb9692fd017",
+        "rank_within_label_zero_based": 18
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_076",
+        "partition": "confirmatory",
+        "rank_sha256": "8697b5ff623c64251c4483c6b5eb9d212071491d59c7fc964970e6170fd6fbf6",
+        "rank_within_label_zero_based": 19
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_241",
+        "partition": "confirmatory",
+        "rank_sha256": "890c44cbc2df011abbfda932040b9f00161bbc87c045fb9922cfafd3dcfc48a3",
+        "rank_within_label_zero_based": 20
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_233",
+        "partition": "confirmatory",
+        "rank_sha256": "8f7888d84863a92568a9cb55da760179c618eac19ff94c9f99cc1af6e602413b",
+        "rank_within_label_zero_based": 21
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_225",
+        "partition": "confirmatory",
+        "rank_sha256": "950c3f4d17fed641033bffd14f3b288277683332add60ebfc4ca377da186462c",
+        "rank_within_label_zero_based": 22
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_435",
+        "partition": "confirmatory",
+        "rank_sha256": "9be5455db5363a53416ff2788d79cee6c47ad8ca3af2184d4fb82238d805839f",
+        "rank_within_label_zero_based": 23
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_413",
+        "partition": "confirmatory",
+        "rank_sha256": "9da9166d81a054cb6d71023f3ba76aadadff168e4301dd62ee35953a4ec2920b",
+        "rank_within_label_zero_based": 24
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_153",
+        "partition": "confirmatory",
+        "rank_sha256": "b6eab057ff8c4eaac729b559702dbcabb6950ab1338ff481c88b28dec537d598",
+        "rank_within_label_zero_based": 25
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_428",
+        "partition": "confirmatory",
+        "rank_sha256": "bde544e222aa9bd2b99753f0633a0a72903fb515db14396cd5764b4bd36fcf05",
+        "rank_within_label_zero_based": 26
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_458",
+        "partition": "confirmatory",
+        "rank_sha256": "cfaa08bfe0f5cf3a70c532fc69105f6c50d6a60888bb3c00e92aecece6b4e58f",
+        "rank_within_label_zero_based": 27
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_082",
+        "partition": "confirmatory",
+        "rank_sha256": "d1c72d4ee96befba71478c306b6874246955a7d4ec7b1fbe24656d6491a7b3fe",
+        "rank_within_label_zero_based": 28
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_375",
+        "partition": "confirmatory",
+        "rank_sha256": "d4403f7490641bb7e47bb6d8668d888d14b8bcc997f0f0f7e8907f21f29f6a3c",
+        "rank_within_label_zero_based": 29
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_135",
+        "partition": "confirmatory",
+        "rank_sha256": "de7bed477185e2db1efc9cbbd5de1bbcfcfd0a09d419f606d6b0bd6cb8eba6af",
+        "rank_within_label_zero_based": 30
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_059",
+        "partition": "confirmatory",
+        "rank_sha256": "e4a2f4d3d009e2b069a3ef5bfe333efb05a305ffba560ccc8de323e54e9d92c8",
+        "rank_within_label_zero_based": 31
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_229",
+        "partition": "confirmatory",
+        "rank_sha256": "e4d73fdaf6047976e98a74d49a5fbbe2bb529fdfe4865e6de7037c11db96261b",
+        "rank_within_label_zero_based": 32
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_183",
+        "partition": "confirmatory",
+        "rank_sha256": "f5d3b3a5b66ee0682476e3d2020d52ccaeaeba857acb0e69a5ee9eeee8af27ee",
+        "rank_within_label_zero_based": 33
+      },
+      {
+        "correct_label": "NOT_ENTITLED",
+        "example_id": "averitec_dev_009",
+        "partition": "confirmatory",
+        "rank_sha256": "f7b1a318530d19d000c255b8e291b5de01cb46aeb9c48818dfd2194f9768722e",
+        "rank_within_label_zero_based": 34
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_429",
+        "partition": "calibration",
+        "rank_sha256": "00c92d118ccc08a81e3e99d5c1c14dc62eac66a5bc7e77cb1aa793ad08e5ac1e",
+        "rank_within_label_zero_based": 0
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_201",
+        "partition": "calibration",
+        "rank_sha256": "06b86245ecf106cd8c88f858db6519bacb701a847af601589a0d1c17ff38ec3f",
+        "rank_within_label_zero_based": 1
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_077",
+        "partition": "calibration",
+        "rank_sha256": "072fc89ccf51261c4ba88e99ebd111babd358d7c995fb83b11712f39d45c00d5",
+        "rank_within_label_zero_based": 2
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_369",
+        "partition": "calibration",
+        "rank_sha256": "08f9b0d663d01bdd0d2c38363fee6b6a0723d4cb6d145fd4a4fbc0431b7d865a",
+        "rank_within_label_zero_based": 3
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_013",
+        "partition": "calibration",
+        "rank_sha256": "09eb8aecca00364bb5b891977056232f550210dfd675ea525e3e5d0a72626ef7",
+        "rank_within_label_zero_based": 4
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_485",
+        "partition": "calibration",
+        "rank_sha256": "0c31f4387ff08e26b3b565b507e67535589b74b5921de4e6afa7f9b569b7f538",
+        "rank_within_label_zero_based": 5
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_155",
+        "partition": "calibration",
+        "rank_sha256": "14808cc4d5375996bec9ad840397e971988c971669e1d77562bf6e52152135e2",
+        "rank_within_label_zero_based": 6
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_133",
+        "partition": "calibration",
+        "rank_sha256": "165e265bad2648d836b1dedf6c7583c8c3b92a2243ebcee3f8c58bcd0cda2d6f",
+        "rank_within_label_zero_based": 7
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_392",
+        "partition": "calibration",
+        "rank_sha256": "1af613dc7ead9e1cfefa1f3fd7fe42124bfa10dc2d5f136359ce5a9dc4849e2d",
+        "rank_within_label_zero_based": 8
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_075",
+        "partition": "calibration",
+        "rank_sha256": "1d00969cc8969555a25de51b6cd385e015aecd408eff09d52ae0531cf2a79c2c",
+        "rank_within_label_zero_based": 9
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_469",
+        "partition": "calibration",
+        "rank_sha256": "1d540c679f65f16294126006536b42a635321dc8066343fd437d1c7f7f1a524a",
+        "rank_within_label_zero_based": 10
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_197",
+        "partition": "calibration",
+        "rank_sha256": "1f4a0ab4e7e43b3deff16ce0cc2b3c1ee136dce8e8f31d969212834217a445d5",
+        "rank_within_label_zero_based": 11
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_215",
+        "partition": "calibration",
+        "rank_sha256": "1ff507ef6c76b2f93a69540a08fe1e0f5c7ccf76dff59fe5bb59bc9ba338befd",
+        "rank_within_label_zero_based": 12
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_346",
+        "partition": "calibration",
+        "rank_sha256": "2198a4dc34bad8f6e99fe6db6e4dba890aca6043c80aefeb1098eb898463bf5f",
+        "rank_within_label_zero_based": 13
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_110",
+        "partition": "calibration",
+        "rank_sha256": "23a27e45bfb2a0d52d395978096f0ee040d4bf096d91800939de361f9b835a19",
+        "rank_within_label_zero_based": 14
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_216",
+        "partition": "calibration",
+        "rank_sha256": "25c7d8d4e762304ab67cc3867eaf18b66072553f3239fbca9429618c6234e24f",
+        "rank_within_label_zero_based": 15
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_430",
+        "partition": "calibration",
+        "rank_sha256": "27fc9c01e304539cb5b7fb4c5c4b1e1c260b871d7b5e1f029c0fba3c23d6acdf",
+        "rank_within_label_zero_based": 16
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_032",
+        "partition": "calibration",
+        "rank_sha256": "2829b6f0de6edf3629a45b2393bb2b0a106add98564a9cfd9abd90944c7baf14",
+        "rank_within_label_zero_based": 17
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_042",
+        "partition": "calibration",
+        "rank_sha256": "29214f630d4fc7a8eee0f5b889b870bb43344c6d45ae68d344f7c60100b50aaf",
+        "rank_within_label_zero_based": 18
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_161",
+        "partition": "calibration",
+        "rank_sha256": "2c00b79304b14e1aa4b840f56f1cfc7b1c7073208305bcdfd702cc62a97d3e48",
+        "rank_within_label_zero_based": 19
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_147",
+        "partition": "calibration",
+        "rank_sha256": "2cc9c095f3226c6bdb1c19c86c698cde8cf6f84fd8b1b8207a89dd0696f951b8",
+        "rank_within_label_zero_based": 20
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_327",
+        "partition": "calibration",
+        "rank_sha256": "2dc87c15e1fdd7c9969ac7ce36202e5c9c6c49be396c17bc6c39d894b54ae40c",
+        "rank_within_label_zero_based": 21
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_163",
+        "partition": "calibration",
+        "rank_sha256": "2ee35d0947fb2afb54afc2bde189a3321fe5a08e1063ee4efcb295220d78bca7",
+        "rank_within_label_zero_based": 22
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_063",
+        "partition": "calibration",
+        "rank_sha256": "310972d53fdafcdd4ae83d09cfe5ee5473d210d6c992489f2c84a8a3fa0bf7a1",
+        "rank_within_label_zero_based": 23
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_449",
+        "partition": "calibration",
+        "rank_sha256": "31a7ade40b91df43e8dbbe0ca7d743f1b69c16033a9fbc6e88fc80cafa593d73",
+        "rank_within_label_zero_based": 24
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_461",
+        "partition": "calibration",
+        "rank_sha256": "32f2e80fde3965547150b9d2daf4f96c2274cb35caa84d6f80f03eb79975ebd9",
+        "rank_within_label_zero_based": 25
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_007",
+        "partition": "calibration",
+        "rank_sha256": "348280a159c036d953706433e90ccd959cad3acea4debce5aff5c2d6a7529201",
+        "rank_within_label_zero_based": 26
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_031",
+        "partition": "calibration",
+        "rank_sha256": "380d274fe4f01d92a66012bd06974230cf121254052dbaf3964bb45172a5720d",
+        "rank_within_label_zero_based": 27
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_181",
+        "partition": "calibration",
+        "rank_sha256": "3b30e16ae3d26f94573145484e1ce8a4e556ff8656d9020e938a4189b339ea0c",
+        "rank_within_label_zero_based": 28
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_066",
+        "partition": "calibration",
+        "rank_sha256": "3dac7365974f33fb5ebf640a354aa4c360f50bd2f7bd75854c0a407dcb55355e",
+        "rank_within_label_zero_based": 29
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_211",
+        "partition": "calibration",
+        "rank_sha256": "3dbff71bfb08d1914a3cd9e64889025948742576aa07cf8a91a0773bdf45e900",
+        "rank_within_label_zero_based": 30
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_138",
+        "partition": "calibration",
+        "rank_sha256": "402a2a26f53551fe21a4a50016c4170087cacabadde1cf620ba21158d1af5257",
+        "rank_within_label_zero_based": 31
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_219",
+        "partition": "calibration",
+        "rank_sha256": "40b4a7ef91fa1456c7abb9711ef1e7a46deb7fee4668fd4099cfda56d861afed",
+        "rank_within_label_zero_based": 32
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_152",
+        "partition": "calibration",
+        "rank_sha256": "40f3002cf7ab8486f814092cb8f3741d28ef8952ea621990e6effe59ca5e54e7",
+        "rank_within_label_zero_based": 33
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_387",
+        "partition": "calibration",
+        "rank_sha256": "43265e6d03f6b996c4634e10c07c1867ad3bc39a13ce3bfbbf0ade9ecf403cf3",
+        "rank_within_label_zero_based": 34
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_286",
+        "partition": "calibration",
+        "rank_sha256": "44982fd8408f8e38acc755499cad19ab10d8304598791c01824880b3078f6901",
+        "rank_within_label_zero_based": 35
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_194",
+        "partition": "calibration",
+        "rank_sha256": "48719a9dcd639798e93956ae84c73ffa32b438a4e3efa3bb80d92b971ff9c236",
+        "rank_within_label_zero_based": 36
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_310",
+        "partition": "calibration",
+        "rank_sha256": "4ee9a49d9cff1ed464947b96c046914fa422bb9b07b47c70f20152573a5a7201",
+        "rank_within_label_zero_based": 37
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_198",
+        "partition": "calibration",
+        "rank_sha256": "526b1ef2a628185363ea28453f243eeb56bba75a267936f54e697a2dd1435f8d",
+        "rank_within_label_zero_based": 38
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_309",
+        "partition": "calibration",
+        "rank_sha256": "578b77a83cbe4a68bffc7b2e36f861fe78f9768c4374db4b844066895d10a2d5",
+        "rank_within_label_zero_based": 39
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_289",
+        "partition": "calibration",
+        "rank_sha256": "5bc7c396bef4b7f072e37ec9a09f71b41e9177d01d0fecd0f3e0c4639105b3d6",
+        "rank_within_label_zero_based": 40
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_053",
+        "partition": "calibration",
+        "rank_sha256": "5cf3accac90aaf5d5802bc83c9ded8eb0001ec7c9a9de7fd8b7e73a580df04c9",
+        "rank_within_label_zero_based": 41
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_290",
+        "partition": "calibration",
+        "rank_sha256": "5d22d7feb2cceaadf9e0e2bc9f48d606239ced18ca33f472105ebc7774c35945",
+        "rank_within_label_zero_based": 42
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_113",
+        "partition": "calibration",
+        "rank_sha256": "5d9f8e7cd58fbe2f7fd4382882595f157f04142c8c2c27c0e25df70278ef12e2",
+        "rank_within_label_zero_based": 43
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_224",
+        "partition": "calibration",
+        "rank_sha256": "5e7b0ef245a132c5683caeca0d62b42bb8bd0ddbd76902df45d3fd50900b4e38",
+        "rank_within_label_zero_based": 44
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_330",
+        "partition": "calibration",
+        "rank_sha256": "6222aad768339f2cf91f7b45891d8095b36cfdf5f910fa4b1e05bf45ea7878d6",
+        "rank_within_label_zero_based": 45
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_391",
+        "partition": "calibration",
+        "rank_sha256": "65aef6fd4a3be57eb2917a96beafc7ecb8702105cb30c078f0ea16670a0febb4",
+        "rank_within_label_zero_based": 46
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_092",
+        "partition": "calibration",
+        "rank_sha256": "67d4e55a5ae03ee6cf08cc0b17e15d43ebaa392edaf917e2035cfe24fe0e2ad7",
+        "rank_within_label_zero_based": 47
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_342",
+        "partition": "calibration",
+        "rank_sha256": "69a72e4f9cd8608d8ac77c751d4ab7e288a2ed4c8dbbc813d28ca4005f10d4c6",
+        "rank_within_label_zero_based": 48
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_213",
+        "partition": "calibration",
+        "rank_sha256": "6aac38fd314cc3745e003d81482c4b5e1d0f8f50c10d346e91dad42cc1eb80e2",
+        "rank_within_label_zero_based": 49
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_104",
+        "partition": "calibration",
+        "rank_sha256": "6b61c597473a3aeb0d71b2cb8598ad984cb8e3b2bbbff1a6b7ae3c9b38cfe2e6",
+        "rank_within_label_zero_based": 50
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_347",
+        "partition": "calibration",
+        "rank_sha256": "6d17ba3fc7ab900d32faa8209f730510bb556af5f8949756986cad189dd07481",
+        "rank_within_label_zero_based": 51
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_195",
+        "partition": "calibration",
+        "rank_sha256": "748f23d31c2d37632017a4e3ce4750ee53aa5c1f111ba8466b4d2fb7886f96b4",
+        "rank_within_label_zero_based": 52
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_098",
+        "partition": "calibration",
+        "rank_sha256": "766b89258db9a94b1bc9575aed9c98f10882821faeb3a5b2f6d67ef2482e3b9b",
+        "rank_within_label_zero_based": 53
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_281",
+        "partition": "calibration",
+        "rank_sha256": "79d8055ffaebeb5df7d38b35c1407be950f35d9bd9a83c7060b3bcc5d33fe923",
+        "rank_within_label_zero_based": 54
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_025",
+        "partition": "calibration",
+        "rank_sha256": "7a8141fba2bef0ad74a6fe0e35a89dc06a011a2a78122bd24658ab0c9830eea2",
+        "rank_within_label_zero_based": 55
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_214",
+        "partition": "calibration",
+        "rank_sha256": "7d096c88eb32cecfb4d049de4b4fc3b71bedb8320c40b4f1762f5f67bc84948b",
+        "rank_within_label_zero_based": 56
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_228",
+        "partition": "calibration",
+        "rank_sha256": "7dc514dea9e9bd63206539a0c2f6adff728917da2d4c30c8fa2d9cdcbf9d7110",
+        "rank_within_label_zero_based": 57
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_006",
+        "partition": "calibration",
+        "rank_sha256": "7e75344034d0db8b5b85c56204ee65cb85882843ef45a386323e34e4fa7a2a77",
+        "rank_within_label_zero_based": 58
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_203",
+        "partition": "calibration",
+        "rank_sha256": "7faadc44af31190a4c64cbe2029eb453032e0a06fd8fe48eb23e1d1f577a23a8",
+        "rank_within_label_zero_based": 59
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_158",
+        "partition": "calibration",
+        "rank_sha256": "82376433e1c4a0d790f1e29aea8306e3f5f68ab09cfdd74f274f9387685d0b93",
+        "rank_within_label_zero_based": 60
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_337",
+        "partition": "confirmatory",
+        "rank_sha256": "827cae165a8a3a94c5956be43fcee2664d6579044728ff7fb04536d9b7e6cddf",
+        "rank_within_label_zero_based": 61
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_205",
+        "partition": "confirmatory",
+        "rank_sha256": "84aa764e53edc96f4e8f18a85ee23326efe7bd316dda91872e88b6fa1d297b26",
+        "rank_within_label_zero_based": 62
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_136",
+        "partition": "confirmatory",
+        "rank_sha256": "84b35f5860d70377f703ad79f9f9d4bd6b32dc128dd573099e3407cea8193e2b",
+        "rank_within_label_zero_based": 63
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_199",
+        "partition": "confirmatory",
+        "rank_sha256": "85d2358d289c6bbf7336f3d69b427bcfdd82d4fe8ccd3b6e68573ff012b0b557",
+        "rank_within_label_zero_based": 64
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_255",
+        "partition": "confirmatory",
+        "rank_sha256": "86c278aeab979268b2d2a84589a17a8013328b1d073b229c2485a1938e7db7dc",
+        "rank_within_label_zero_based": 65
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_257",
+        "partition": "confirmatory",
+        "rank_sha256": "8bfd0b04fe90860369ebd3c606d21b801e743f4f43f58a347df976ad4ee5a4cf",
+        "rank_within_label_zero_based": 66
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_301",
+        "partition": "confirmatory",
+        "rank_sha256": "8d6cb36cd79f9de041dff5789ffd8da2c234374a51a0437ce5ab8d5def3d3635",
+        "rank_within_label_zero_based": 67
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_450",
+        "partition": "confirmatory",
+        "rank_sha256": "9234dcf0ca24cfd27bf83a4b85e7091f95892bd1dc21217fc58c3c5fded2a6e8",
+        "rank_within_label_zero_based": 68
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_212",
+        "partition": "confirmatory",
+        "rank_sha256": "9282789722c5e3f26814a31abc8d599966ed1792dc7c220cbece709b8a9af393",
+        "rank_within_label_zero_based": 69
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_231",
+        "partition": "confirmatory",
+        "rank_sha256": "9287fd20e4528dc8406b2e3a4adb1008bbdc6ed0107ee1c281ef5b058281dde6",
+        "rank_within_label_zero_based": 70
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_126",
+        "partition": "confirmatory",
+        "rank_sha256": "933b38dcf5c51601a06662da234a4f49bede15b9bc1573f62dff5ef06afd7c43",
+        "rank_within_label_zero_based": 71
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_267",
+        "partition": "confirmatory",
+        "rank_sha256": "99ea7d368d71e3fe48c5d741f5363288fffbcab049edc99a7f5c693a54b7a0a3",
+        "rank_within_label_zero_based": 72
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_293",
+        "partition": "confirmatory",
+        "rank_sha256": "9a7d974c9ff4b59db63674b5f17e2e4a70eeb3f6355b6665768759ccc6e055da",
+        "rank_within_label_zero_based": 73
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_125",
+        "partition": "confirmatory",
+        "rank_sha256": "9b118b3ba2f1731e6a933b14025db902c71556196f74450a77185277cb3bb6cc",
+        "rank_within_label_zero_based": 74
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_182",
+        "partition": "confirmatory",
+        "rank_sha256": "a18fd5191f2db6d94038b12b88677362b4d6623873f5370a6d64de82fa23f754",
+        "rank_within_label_zero_based": 75
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_235",
+        "partition": "confirmatory",
+        "rank_sha256": "a63e07069e86c4f8cac42d6ed217d839c1e52456f4c7855faae23d72b7bf5539",
+        "rank_within_label_zero_based": 76
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_357",
+        "partition": "confirmatory",
+        "rank_sha256": "a83e9614f753751d8ba420051e2cfafb4baec588f520a4cc6adf9f287c9e95e6",
+        "rank_within_label_zero_based": 77
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_468",
+        "partition": "confirmatory",
+        "rank_sha256": "a8802fa66d7494cda532683c1829c24647874c2622d0f97e4d0341782a5371ca",
+        "rank_within_label_zero_based": 78
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_036",
+        "partition": "confirmatory",
+        "rank_sha256": "a8f7ee72e95ea593f1cb3a6ddf3e6dab41f3dfb4bb7cb79478a9fc095b72ef9f",
+        "rank_within_label_zero_based": 79
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_308",
+        "partition": "confirmatory",
+        "rank_sha256": "a9d2c7a329fe1a8f06d4b9fca18a7e2b97cd92db148b6fdc67d0042ae5927897",
+        "rank_within_label_zero_based": 80
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_123",
+        "partition": "confirmatory",
+        "rank_sha256": "adc68906e1c28a6e51d6aae72b4508b933e177cd13fd4ac156f799627d0ab972",
+        "rank_within_label_zero_based": 81
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_319",
+        "partition": "confirmatory",
+        "rank_sha256": "afa783e9362075702a9ecab30e8c9b0c1d9b5c96a7846d4a8036735e4bb3d346",
+        "rank_within_label_zero_based": 82
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_361",
+        "partition": "confirmatory",
+        "rank_sha256": "b1691790c036c0b3468560a8f5d13e5a81f73999311a1242f2d07809d6e388bb",
+        "rank_within_label_zero_based": 83
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_497",
+        "partition": "confirmatory",
+        "rank_sha256": "b2066a7e8c5ecc58c473d9e16d21399c49004c9446d7f5ebca9fda1c95af749f",
+        "rank_within_label_zero_based": 84
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_145",
+        "partition": "confirmatory",
+        "rank_sha256": "b42103e7941e5617c1ce6e45e673a0e1daebea38ea260b92e770ac8f182f9924",
+        "rank_within_label_zero_based": 85
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_376",
+        "partition": "confirmatory",
+        "rank_sha256": "b57a9e31937eccf0dab8751b26ae2ae782f79d0894a6b9cff30ba3ece8e63cb1",
+        "rank_within_label_zero_based": 86
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_175",
+        "partition": "confirmatory",
+        "rank_sha256": "b93ab6db438f1ca03dcc8a99fb2907fc2c472b7df4ebe874ec7b8e46814ea1ba",
+        "rank_within_label_zero_based": 87
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_204",
+        "partition": "confirmatory",
+        "rank_sha256": "c07b75f1269543b3b03e2bfc55f3b7f53dcf9b9fdb2da9e5be5f962d72242672",
+        "rank_within_label_zero_based": 88
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_398",
+        "partition": "confirmatory",
+        "rank_sha256": "c0f0b53f881384f7ef6ab626cfea6bc95521e405002fa879614a95d9dcd09c15",
+        "rank_within_label_zero_based": 89
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_402",
+        "partition": "confirmatory",
+        "rank_sha256": "c10c7da878a1390f19bc718a21fca2e13b01a708aada25257ac3262d9dc43644",
+        "rank_within_label_zero_based": 90
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_207",
+        "partition": "confirmatory",
+        "rank_sha256": "c32489818dadd0be9925ce9fb1431e8806c074777c79c4ab4a6ed015cde84a09",
+        "rank_within_label_zero_based": 91
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_453",
+        "partition": "confirmatory",
+        "rank_sha256": "c58fb432304b027a1146e6fb5f83925514a5ca56f38fc1445e3f3bd46d13296a",
+        "rank_within_label_zero_based": 92
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_463",
+        "partition": "confirmatory",
+        "rank_sha256": "c8cfd46d94ca9378aa0559237488231a035c824b6de18063c51981347b78c15c",
+        "rank_within_label_zero_based": 93
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_170",
+        "partition": "confirmatory",
+        "rank_sha256": "c9187d59118a61d2c4a690eaf6d16e7f1c73464ba8ad42b2d50e8381429197d3",
+        "rank_within_label_zero_based": 94
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_202",
+        "partition": "confirmatory",
+        "rank_sha256": "cff5a5e0ede229d6a4524577a42f432db42907207b06eff67cb9bffcc5b9a615",
+        "rank_within_label_zero_based": 95
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_093",
+        "partition": "confirmatory",
+        "rank_sha256": "d2f574e1d02ba0d687aa426d708323a1922c8af39fedc57161ed4d18112d0c4b",
+        "rank_within_label_zero_based": 96
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_374",
+        "partition": "confirmatory",
+        "rank_sha256": "d4d344da4902d93137c35ff3eb041e6bd8fc8d9089a7b134e52cf739209959cf",
+        "rank_within_label_zero_based": 97
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_146",
+        "partition": "confirmatory",
+        "rank_sha256": "d4f6db48095268e2fd73a56473e1f6a552cba5dee2abce9876cc8aade13b8fd2",
+        "rank_within_label_zero_based": 98
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_489",
+        "partition": "confirmatory",
+        "rank_sha256": "d51da74fb075f5c33f17273166bd9f006eb95448a4dccc8e57b8e9a4d0f5045d",
+        "rank_within_label_zero_based": 99
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_217",
+        "partition": "confirmatory",
+        "rank_sha256": "dc2108158eee19e520880d731f930770c0fdbfb5a253ec7b9a46533e73c9bd77",
+        "rank_within_label_zero_based": 100
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_352",
+        "partition": "confirmatory",
+        "rank_sha256": "dcd07f0de2265eb9d28f1d3df18b7dda1018cfd5cf0f723b56706fd8781f1457",
+        "rank_within_label_zero_based": 101
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_144",
+        "partition": "confirmatory",
+        "rank_sha256": "dd4fed89c4356f8bade685ec8c5100821e936fb10971f16163adc056b20ab658",
+        "rank_within_label_zero_based": 102
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_184",
+        "partition": "confirmatory",
+        "rank_sha256": "e115a743a6f5d4d5faae31a5ec8d647c93dd685008df72ab246a4721897f5f5c",
+        "rank_within_label_zero_based": 103
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_305",
+        "partition": "confirmatory",
+        "rank_sha256": "e126c3d7ddf9dbb433ebdd8a9a703b21bec0692c2ad08da5b7a0beee555117a2",
+        "rank_within_label_zero_based": 104
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_299",
+        "partition": "confirmatory",
+        "rank_sha256": "e177c94b1def62935773ef0906a8e7bde66b771887137412b1743cc15cf7649e",
+        "rank_within_label_zero_based": 105
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_262",
+        "partition": "confirmatory",
+        "rank_sha256": "e336cb0987ff82b7c8b6a449ea42977502093034a819d1ac6cf25b915fa2a475",
+        "rank_within_label_zero_based": 106
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_103",
+        "partition": "confirmatory",
+        "rank_sha256": "e3def63531cecaa7d4c7310b79d51731fb89c8be242d69fd2c9195bba37187ab",
+        "rank_within_label_zero_based": 107
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_221",
+        "partition": "confirmatory",
+        "rank_sha256": "e53455c92ca477439f4b08559efb40333498576c848530ad51970c0cc13eece0",
+        "rank_within_label_zero_based": 108
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_323",
+        "partition": "confirmatory",
+        "rank_sha256": "e5e1e1ec48277f6d8a4a3812fa983484824d817454d844c48223d5ba979b8a39",
+        "rank_within_label_zero_based": 109
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_087",
+        "partition": "confirmatory",
+        "rank_sha256": "e885ad59e7c971a984aa3fc30b557aac813e9e62b324b3491921a296bd030bf5",
+        "rank_within_label_zero_based": 110
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_459",
+        "partition": "confirmatory",
+        "rank_sha256": "eb2c536434b9b3a3ab781df963fae1eacbde593d835eb734c90b131ea728cd99",
+        "rank_within_label_zero_based": 111
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_320",
+        "partition": "confirmatory",
+        "rank_sha256": "ee2d5a1342368da7b78134f98aa84e744c73bc0a196ad346ac3bf02451d6b436",
+        "rank_within_label_zero_based": 112
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_034",
+        "partition": "confirmatory",
+        "rank_sha256": "ee9df08ac648882b713af115b8f0138439d20bd95dc9432f8b77fbea62d2fb7c",
+        "rank_within_label_zero_based": 113
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_156",
+        "partition": "confirmatory",
+        "rank_sha256": "ef486de0fc6753ba0fbd8fffdd2a194fa2948933a352fbeb0ab01ff26f1f08b3",
+        "rank_within_label_zero_based": 114
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_490",
+        "partition": "confirmatory",
+        "rank_sha256": "f081f8cc15ad50570c171460aee49dd104b452c0969bff50a45ff65d2feea7a5",
+        "rank_within_label_zero_based": 115
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_057",
+        "partition": "confirmatory",
+        "rank_sha256": "f3bfb9c0749862359c13993fdb88a293c3696461a88044927f16d2f54bfe2e9d",
+        "rank_within_label_zero_based": 116
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_314",
+        "partition": "confirmatory",
+        "rank_sha256": "f50240051ada0c34172b81838c6559aa9051d90e765a2966e70f5c5233d518dd",
+        "rank_within_label_zero_based": 117
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_406",
+        "partition": "confirmatory",
+        "rank_sha256": "f8a1d1d5ef2897da7fe0ec27040bf74095a2af1422489840e3a4740905e55e05",
+        "rank_within_label_zero_based": 118
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_222",
+        "partition": "confirmatory",
+        "rank_sha256": "f8fffb8db6f3036f0a664701178757b8ed2119607a63251e3964f993c1572d81",
+        "rank_within_label_zero_based": 119
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_218",
+        "partition": "confirmatory",
+        "rank_sha256": "fce713bd1508d43d426fca02af4bbfb93699cac3db0eb97e421fb05941f96dbb",
+        "rank_within_label_zero_based": 120
+      },
+      {
+        "correct_label": "SUPPORT",
+        "example_id": "averitec_dev_140",
+        "partition": "confirmatory",
+        "rank_sha256": "fde84bc55ab3034d0c41c8aec711af3150674c67c1b543237bca11188d44c44a",
+        "rank_within_label_zero_based": 121
+      }
+    ],
+    "salt": "gen4-pre-emission-stage-a-partition-v1",
+    "schema_version": "gen4-pre-emission-stage-a-partition-v1"
+  },
+  "partition_counts": {
+    "calibration": 231,
+    "confirmatory": 231
+  },
+  "planned_stage_a_inference_not_executed": {
+    "alpha": 0.05,
+    "estimability_rule": "both_confirmatory_forced_decisive_groups_must_have_positive_count_before_any_p_value",
+    "multiplicity": "holm",
+    "planned_p_value_count": 4,
+    "primary_comparison": "unsupported_forced_decisive_vs_supported_forced_decisive",
+    "primary_partition": "confirmatory",
+    "primary_signal": "p3_component_l2",
+    "relative_offsets": [
+      -4,
+      -3,
+      -2,
+      -1
+    ],
+    "support_rule": "at_least_one_holm_adjusted_p_below_alpha_at_a_preregistered_pre_emission_offset",
+    "test": "two_sided_welch_t"
+  },
+  "primary_inference_executed": false,
+  "prior_closed_stage_a": {
+    "closure_commit": "130aa76cf3bb0816505a45a18df8334445e6f0ce",
+    "continued_as_same_experiment": false,
+    "raw_freeze_commit": "a58b1ebef0957a8437e0255fb4069d2fe9cf8449",
+    "reopened": false
+  },
+  "required_ancestor": "e04179dc8cd1454caf8bd71d36114dc0b1da7b5d",
+  "rescue_performed": false,
+  "result": "PASS_PRE_EMISSION_FORCED_DECISIVE_STAGE_A_RAW_GENERATION",
+  "row_file_sha256": "5cc15d2626b350108c2c532ab8502d87aacb0d5253f82905ab83dc438aff5fcd",
+  "schema_version": "gen4-pre-emission-forced-decisive-stage-a-generation-summary-v1",
+  "scientific_conclusion": null,
+  "scientific_generation_executed": true,
+  "scientific_model_forward_count_this_run": 5087,
+  "selection_reopened": false,
+  "shards": [
+    {
+      "model_identity": {
+        "any_parameter_requires_grad": false,
+        "backbone_canonical_sha256": "2f1bb0820efd7376103541cd6de7b2893456083359708ac78f3fd30f8d1d56ac",
+        "backbone_state_key_count": 482,
+        "expected_backbone_canonical_sha256": "2f1bb0820efd7376103541cd6de7b2893456083359708ac78f3fd30f8d1d56ac",
+        "input_embedding_weight_sha256": "a473cbd256224b82e4ce004797629aee049c99db483bb5dd05fe7dcc67bdddeb",
+        "kernel_constructor_calls": {
+          "causal-conv1d": 48,
+          "mamba-ssm": 48
+        },
+        "legacy_tied_lm_head_compat": {
+          "mode": "RESTORE_TRANSFORMERS_V439_DEFAULT_TIED_EMBEDDINGS",
+          "restored_tie_word_embeddings": true,
+          "snapshot_explicit_tie_word_embeddings": false,
+          "snapshot_transformers_version": "4.39.0.dev0"
+        },
+        "lm_head_shape": [
+          50280,
+          1024
+        ],
+        "lm_head_tied_to_input_embeddings": true,
+        "lm_head_weight_sha256": "a473cbd256224b82e4ce004797629aee049c99db483bb5dd05fe7dcc67bdddeb",
+        "loading_info": {
+          "error_msgs": [],
+          "mismatched_keys": [],
+          "missing_keys": [],
+          "unexpected_keys": []
+        },
+        "model_training": false,
+        "tie_word_embeddings": true
+      },
+      "row_count": 231,
+      "shard": {
+        "end": 231,
+        "physical_device": 0,
+        "shard_id": 0,
+        "start": 0
+      },
+      "tokenizer": {
+        "file_sha256": {
+          "special_tokens_map.json": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8",
+          "tokenizer.json": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf",
+          "tokenizer_config.json": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+        },
+        "repo": "state-spaces/mamba-370m-hf",
+        "revision": "589179554943157be31701edd8b4558889276674",
+        "tokenizers_version": "0.22.2",
+        "vocab_size": 50277
+      }
+    },
+    {
+      "model_identity": {
+        "any_parameter_requires_grad": false,
+        "backbone_canonical_sha256": "2f1bb0820efd7376103541cd6de7b2893456083359708ac78f3fd30f8d1d56ac",
+        "backbone_state_key_count": 482,
+        "expected_backbone_canonical_sha256": "2f1bb0820efd7376103541cd6de7b2893456083359708ac78f3fd30f8d1d56ac",
+        "input_embedding_weight_sha256": "a473cbd256224b82e4ce004797629aee049c99db483bb5dd05fe7dcc67bdddeb",
+        "kernel_constructor_calls": {
+          "causal-conv1d": 48,
+          "mamba-ssm": 48
+        },
+        "legacy_tied_lm_head_compat": {
+          "mode": "RESTORE_TRANSFORMERS_V439_DEFAULT_TIED_EMBEDDINGS",
+          "restored_tie_word_embeddings": true,
+          "snapshot_explicit_tie_word_embeddings": false,
+          "snapshot_transformers_version": "4.39.0.dev0"
+        },
+        "lm_head_shape": [
+          50280,
+          1024
+        ],
+        "lm_head_tied_to_input_embeddings": true,
+        "lm_head_weight_sha256": "a473cbd256224b82e4ce004797629aee049c99db483bb5dd05fe7dcc67bdddeb",
+        "loading_info": {
+          "error_msgs": [],
+          "mismatched_keys": [],
+          "missing_keys": [],
+          "unexpected_keys": []
+        },
+        "model_training": false,
+        "tie_word_embeddings": true
+      },
+      "row_count": 231,
+      "shard": {
+        "end": 462,
+        "physical_device": 1,
+        "shard_id": 1,
+        "start": 231
+      },
+      "tokenizer": {
+        "file_sha256": {
+          "special_tokens_map.json": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8",
+          "tokenizer.json": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf",
+          "tokenizer_config.json": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+        },
+        "repo": "state-spaces/mamba-370m-hf",
+        "revision": "589179554943157be31701edd8b4558889276674",
+        "tokenizers_version": "0.22.2",
+        "vocab_size": 50277
+      }
+    }
+  ],
+  "source_identity_gate": {
+    "artifact": "reports/reason_router_gen4_pre_emission_identity_grammar_gate_runs/g4k-preemission-causallm-grammar-gate-370m-5fb9f9c-cpu3/identity_grammar_gate.json",
+    "artifact_git_blob": "c95e6095290d5502b6c4b9dad4bf38570c24d8eb",
+    "manifest_sha256": "a7529f96702444ccb1a963b87fa8ffacd37eaf4eef4a26144e47cf94abd61312",
+    "three_class_grammar_sha256": "ddf5e25a3fcf9d4ddf943438a8a184c2d4a8a7c2c7beb778aa0806e0b8e3906e"
+  },
+  "stage_b_executed": false,
+  "stage_c_executed": false,
+  "tokenizer": {
+    "file_sha256": {
+      "special_tokens_map.json": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8",
+      "tokenizer.json": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf",
+      "tokenizer_config.json": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+    },
+    "repo": "state-spaces/mamba-370m-hf",
+    "revision": "589179554943157be31701edd8b4558889276674",
+    "tokenizers_version": "0.22.2",
+    "vocab_size": 50277
+  },
+  "training_executed": false
+}
