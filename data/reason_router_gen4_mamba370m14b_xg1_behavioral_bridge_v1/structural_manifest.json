@@ -1,0 +1,61 @@
+{
+  "behavioral_label_contract": {
+    "C0_SHAM": {
+      "label": "SUPPORT",
+      "label_id": 2
+    },
+    "C2_NAME": {
+      "label": "NOT_ENTITLED",
+      "label_id": 1
+    }
+  },
+  "behavioral_target_cells": [
+    "C0_SHAM",
+    "C2_NAME"
+  ],
+  "checkpoint_loaded": false,
+  "claim_overlap_with_prior": 0,
+  "conditions_planned": [
+    "native",
+    "dominant_neutralized",
+    "dominant_restored",
+    "dominant_control"
+  ],
+  "cuda_executed": false,
+  "deterministic_generator_semantics": true,
+  "endpoint_values_present": false,
+  "evidence_overlap_with_prior": 0,
+  "generator_family": "xg1_independent_structured_records_v1",
+  "labels_embedded_in_structural_rows": false,
+  "model_executed": false,
+  "pair_id_first": "xg1_fact_4801",
+  "pair_id_last": "xg1_fact_5100",
+  "pair_id_overlap_with_prior": 0,
+  "primary_family_planned": {
+    "alternative": "greater",
+    "endpoint": "D_BEH=M_dominant_restored-M_dominant_control",
+    "family_alpha": 0.05,
+    "multiplicity": "holm",
+    "n_per_scale": 300,
+    "primary_p_value_count": 2,
+    "test": "one_sample_student_t"
+  },
+  "prior_pair_range": "xg1_fact_001..xg1_fact_4800",
+  "response_fields_present": false,
+  "result": "PASS_MAMBA370M14B_BEHAVIORAL_BRIDGE_XG1_4801_5100_STRUCTURAL",
+  "role": "cross_scale_behavioral_bridge",
+  "row_count": 1800,
+  "row_file_sha256": "79aa613b35029f51730b8ebeeba8f076b363748bb0a1ab16de04a1711b1fc86d",
+  "rows_per_pair": 6,
+  "scale_order": [
+    "mamba370m",
+    "mamba14b"
+  ],
+  "scale_specific_rescue_cohort_allowed": false,
+  "schema_version": "GEN4_MAMBA370M14B_BEHAVIORAL_BRIDGE_XG1_STRUCTURAL_V1",
+  "selection_allowed": false,
+  "shared_population_across_scales": true,
+  "source_file_sha256": "4c86c7d0c077c1d31f8848bbc639eb89b92003b2044237027f73aa26674877e9",
+  "source_pair_count": 300,
+  "tokenizer_executed": false
+}
