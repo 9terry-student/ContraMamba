@@ -808,6 +808,44 @@ def load_generation_model(
     return model, device, runtime, frozen, identity
 
 
+def late_readout_from_post_block_47(
+    post_block_47: torch.Tensor,
+    *,
+    final_norm: Any,
+    lm_head: Any,
+) -> torch.Tensor:
+    require(
+        torch.is_tensor(post_block_47)
+        and post_block_47.ndim == 3
+        and post_block_47.shape[0] == 1
+        and post_block_47.shape[1] >= 1
+        and post_block_47.shape[2] == geom.HIDDEN_SIZE,
+        f"LATE_POST47_SHAPE:{tuple(post_block_47.shape)}",
+    )
+
+    with torch.inference_mode():
+        normed = final_norm(post_block_47)
+        require(
+            torch.is_tensor(normed)
+            and tuple(normed.shape) == tuple(post_block_47.shape),
+            f"LATE_NORM_SHAPE:{tuple(normed.shape)}",
+        )
+        logits = lm_head(
+            normed[:, -1:, :].to(lm_head.weight.dtype)
+        ).float()[0, -1]
+
+    require(
+        torch.is_tensor(logits)
+        and logits.ndim == 1,
+        f"LATE_LOGITS_SHAPE:{tuple(logits.shape)}",
+    )
+    require(
+        bool(torch.isfinite(logits).all().item()),
+        "LATE_LOGITS_NONFINITE",
+    )
+    return logits
+
+
 def forward_next_token(
     *,
     model: Any,
@@ -840,10 +878,7 @@ def forward_next_token(
 
         def late_hook(_module, _args, output):
             value = _hook_tensor(output, "POST_BLOCK_47")
-            capture["post_block_47"] = (
-                value[:, -1:, :]
-                .detach().clone()
-            )
+            capture["post_block_47"] = value.detach().clone()
             return None
 
         handles.append(runtime["early_in_proj"].register_forward_hook(early_hook))
@@ -875,11 +910,11 @@ def forward_next_token(
 
     require(set(capture) == {"early", "post_block_47"}, "OBSERVATION_CAPTURE_KEYS")
     post47 = capture["post_block_47"]
-    with torch.inference_mode():
-        normed = runtime["final_norm"](post47)
-        manual_logits = runtime["lm_head"](
-            normed.to(runtime["lm_head"].weight.dtype)
-        ).float()[0, -1]
+    manual_logits = late_readout_from_post_block_47(
+        post47,
+        final_norm=runtime["final_norm"],
+        lm_head=runtime["lm_head"],
+    )
 
     require(manual_logits.shape == next_logits.shape, "LATE_LOGIT_SHAPE")
     max_error = float(
@@ -1378,8 +1413,9 @@ def write_output(
         },
         "late_readout": {
             "source": "post_block_47",
-            "readout": "frozen_terminal_norm_plus_tied_lm_head",
+            "readout": "full_sequence_post_block_47_to_frozen_terminal_norm_then_last_token_tied_lm_head",
             "p3_projected_at_block47": False,
+            "full_sequence_norm_replay": True,
             "reproduction_atol": LATE_READOUT_REPRO_ATOL,
             "branch_start_logits_recorded_at_all_offsets": True,
             "current_next_token_commitment_margin_offset": -1,

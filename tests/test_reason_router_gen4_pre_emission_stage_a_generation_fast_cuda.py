@@ -272,6 +272,56 @@ def test_early_measurement_uses_only_strong_hidden_half_last_token(monkeypatch):
     assert torch.equal(calls[0][0], expected)
 
 
+
+class RecordingNorm(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.seen_shape = None
+
+    def forward(self, x):
+        self.seen_shape = tuple(x.shape)
+        # Make the result explicitly depend on sequence length. If the
+        # implementation incorrectly slices to one token before norm replay,
+        # this test changes numerically and fails.
+        return x + float(x.shape[1])
+
+
+class TinyLMHead(torch.nn.Module):
+    def __init__(self, hidden_size):
+        super().__init__()
+        self.weight = torch.nn.Parameter(
+            torch.eye(hidden_size, dtype=torch.float32),
+            requires_grad=False,
+        )
+
+    def forward(self, x):
+        return torch.nn.functional.linear(x, self.weight)
+
+
+def test_late_readout_replays_norm_on_full_sequence_then_selects_last_token():
+    hidden = subject.geom.HIDDEN_SIZE
+    post47 = torch.zeros((1, 5, hidden), dtype=torch.float32)
+    post47[0, -1, 0] = 7.0
+
+    norm = RecordingNorm()
+    lm_head = TinyLMHead(hidden)
+
+    logits = subject.late_readout_from_post_block_47(
+        post47,
+        final_norm=norm,
+        lm_head=lm_head,
+    )
+
+    assert norm.seen_shape == (1, 5, hidden)
+    assert tuple(logits.shape) == (hidden,)
+    assert logits[0].item() == 12.0
+    assert logits[1].item() == 5.0
+
+
+def test_late_replay_tolerance_is_not_relaxed():
+    assert subject.LATE_READOUT_REPRO_ATOL == 1.0e-5
+
+
 def test_raw_row_validation_adds_no_inference():
     base_obs = [
         {"relative_offset": x}
@@ -308,6 +358,8 @@ def test_production_source_forbids_generate_training_and_statistics():
     assert "mannwhitney" not in source
     assert "primary_inference_executed" in source
     assert "p_value_count_added" in source
+    assert "full_sequence_norm_replay" in source
+    assert 'value[:, -1:, :]' not in source
 
 
 def test_direct_script_entrypoint_help():
