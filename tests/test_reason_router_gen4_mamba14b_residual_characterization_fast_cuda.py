@@ -151,3 +151,8 @@ def test_identities_and_state_width():
     flat = subject.flatten_state(state)
     assert flat.shape == (65536,)
     assert math.isfinite(float(flat.sum()))
+
+def test_script_has_exactly_one_main_entrypoint():
+    source = Path(subject.__file__).read_text(encoding="utf-8")
+    assert source.count('if __name__ == "__main__":') == 1
+    assert source.count("    main()") == 1
