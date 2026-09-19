@@ -1,0 +1,158 @@
+{
+  "analysis_execution": {
+    "additional_p_value_count": 0,
+    "backward_executed": false,
+    "cuda_executed": false,
+    "layer_search_performed": false,
+    "magnitude_search_performed": false,
+    "model_forward_count": 0,
+    "rescue_performed": false,
+    "response_based_selection_performed": false,
+    "sign_search_performed": false,
+    "token_search_performed": false,
+    "training_executed": false
+  },
+  "analysis_head": "328ae538353fa5c39f500d1c40dd27d6d7956fee",
+  "claim_boundary": {
+    "does_not_establish": [
+      "general benchmark superiority",
+      "four-class AVeriTeC performance",
+      "retrieval competence",
+      "free-form hallucination prevention",
+      "a pre-emission precursor",
+      "cross-scale steering",
+      "universal P3 rank identity",
+      "optimal steering magnitude"
+    ],
+    "negative_interpretation": "The specific fixed mirror extrapolation did not establish useful steering under the preregistered utility/harm rule.",
+    "positive_claim": "On a fresh deduplicated AVeriTeC train-derived three-class gold-evidence cohort, the frozen Mamba-370M P3 causal atlas supported a pre-specified mirror intervention that produced more corrections than damages under the preregistered preservation gate."
+  },
+  "descriptive_diagnostics": {
+    "accuracy": {
+      "native": 0.11825652018578063,
+      "p3_mirror_steer": 0.11825652018578063,
+      "p5_matched_control": 0.11825652018578063
+    },
+    "correct_class_margin": {
+      "mean_native_minus_matched_control": 4.031383967802844e-05,
+      "mean_steer_minus_native_all": 3.804646130231427e-05,
+      "mean_steer_minus_native_preservation_native_correct": 0.0001499218342332632,
+      "mean_steer_minus_native_target_native_incorrect": 2.3042106180699965e-05,
+      "preferred_Msteer_gt_Mnative_gt_Mcontrol_count": 1394,
+      "preferred_Msteer_gt_Mnative_gt_Mcontrol_fraction": 0.49803501250446586,
+      "steer_margin_exceeds_native_count": 1442,
+      "steer_margin_exceeds_native_fraction": 0.5151839942836728
+    },
+    "correction": {
+      "count": 0,
+      "native_error_denominator": 2468,
+      "rate_on_native_errors": 0.0
+    },
+    "damage": {
+      "count": 0,
+      "native_correct_denominator": 331,
+      "rate_on_native_correct": 0.0
+    },
+    "mapped_label_specific": {
+      "NOT_ENTITLED": {
+        "correction_count": 0,
+        "damage_count": 0
+      },
+      "REFUTE": {
+        "correction_count": 0,
+        "damage_count": 0
+      },
+      "SUPPORT": {
+        "correction_count": 0,
+        "damage_count": 0
+      }
+    },
+    "net_accuracy_change": 0.0,
+    "net_correct_count_change": 0,
+    "prediction_transition_table": {
+      "native_to_p3_mirror_steer": {
+        "NOT_ENTITLED": {
+          "NOT_ENTITLED": 2636,
+          "REFUTE": 0,
+          "SUPPORT": 0
+        },
+        "REFUTE": {
+          "NOT_ENTITLED": 0,
+          "REFUTE": 74,
+          "SUPPORT": 0
+        },
+        "SUPPORT": {
+          "NOT_ENTITLED": 0,
+          "REFUTE": 0,
+          "SUPPORT": 89
+        }
+      },
+      "native_to_p5_matched_control": {
+        "NOT_ENTITLED": {
+          "NOT_ENTITLED": 2636,
+          "REFUTE": 0,
+          "SUPPORT": 0
+        },
+        "REFUTE": {
+          "NOT_ENTITLED": 0,
+          "REFUTE": 74,
+          "SUPPORT": 0
+        },
+        "SUPPORT": {
+          "NOT_ENTITLED": 0,
+          "REFUTE": 0,
+          "SUPPORT": 89
+        }
+      }
+    }
+  },
+  "input_provenance": {
+    "design_artifact_git_blob": "0d35f9aebb37e6203bea40304d3a55ab2361b684",
+    "raw_rows_file": "reports/reason_router_gen4_averitec_370m_fixed_mirror_steering_runs/g4k-averitec370-fixed-mirror-steering-raw-2799-25a626d/steering_raw_rows.jsonl",
+    "raw_rows_git_blob": "52e07a7c93f96eb6d10f7b87e38a0aee7fb6ac2d",
+    "raw_rows_sha256": "912fb91bdfc5e778e4d2f99cb9a8f7a5bdb8a4a1389b39de1d47947eb9058d0c",
+    "raw_run_name": "g4k-averitec370-fixed-mirror-steering-raw-2799-25a626d",
+    "raw_summary_file": "reports/reason_router_gen4_averitec_370m_fixed_mirror_steering_runs/g4k-averitec370-fixed-mirror-steering-raw-2799-25a626d/execution_summary.json",
+    "raw_summary_git_blob": "b35b4ed1aa5b53e896abd45fb8f22cb273c6660f",
+    "raw_summary_sha256": "ad9497956b8db7b9d3930e13437d7d6daf5c33e3b800999e0d3ee2787cca4f7e",
+    "raw_sums_file": "reports/reason_router_gen4_averitec_370m_fixed_mirror_steering_runs/g4k-averitec370-fixed-mirror-steering-raw-2799-25a626d/SHA256SUMS.txt",
+    "raw_sums_git_blob": "6c5d1825378f0207c0bd560e968b9c9360cb093d",
+    "raw_sums_sha256": "372d243e5bb6acc1f0e4ad1309fb446f474e813acbdedb9466fbd56940614465",
+    "source_eligibility_correction_git_blob": "3a55da349d7c9780f8e51de76e3fd9abd67531aa"
+  },
+  "population": {
+    "N": 2799,
+    "native_correct_count": 331,
+    "native_incorrect_count": 2468
+  },
+  "preservation_gate": {
+    "damage_count": 0,
+    "damage_rate_on_native_correct": 0.0,
+    "native_correct_denominator": 331,
+    "pass": true,
+    "threshold": 0.05
+  },
+  "primary_endpoint": {
+    "C_corrections": 0,
+    "C_greater_than_D_gate_pass": false,
+    "D_damages": 0,
+    "alpha": 0.05,
+    "definition": "one-sided exact McNemar/binomial on native-vs-mirror-steer correctness discordances",
+    "discordant_count": 0,
+    "estimable": false,
+    "p_value_count_added": 0,
+    "significance_gate_pass": false,
+    "test": null
+  },
+  "raw_execution_head": "25a626dd52592c42318c80e14aa13c18b74fded9",
+  "raw_freeze_commit": "f6209a5721a16519148880e8a7f0a7734d34c787",
+  "result": "AVERITEC_370M_FIXED_MIRROR_P3_STEERING_NOT_ESTABLISHED",
+  "schema_version": "gen4-averitec-370m-fixed-mirror-steering-analysis-v1",
+  "success_rule": {
+    "C_greater_than_D": false,
+    "all_four_pass": false,
+    "damage_rate_at_most_threshold": true,
+    "discordant_positive": false,
+    "primary_p_below_alpha": false
+  }
+}
