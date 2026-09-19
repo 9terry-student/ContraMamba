@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import inspect
+import subprocess
+import sys
 from types import SimpleNamespace
+from pathlib import Path
 
 import pytest
 import torch
@@ -310,3 +313,24 @@ def test_manifest_semantics_are_non_scientific_and_zero_forward(monkeypatch):
     assert manifest["evaluation_executed"] is False
     assert manifest["p_value_count_added"] == 0
     assert manifest["generation_response_inspected"] is False
+
+
+def test_direct_script_entrypoint_can_import_repo_package():
+    repo_root = Path(subject.__file__).resolve().parents[1]
+    script = (
+        repo_root
+        / "scripts"
+        / "reason_router_gen4_pre_emission_causal_lm_identity_grammar_gate.py"
+    )
+    completed = subprocess.run(
+        [sys.executable, str(script), "--help"],
+        cwd=repo_root,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert "--snapshot" in completed.stdout
+    assert "--output" in completed.stdout
+    assert "--check-causal-lm" in completed.stdout

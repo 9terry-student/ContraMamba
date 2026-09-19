@@ -4,8 +4,15 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import sys
 from pathlib import Path
 from typing import Any, Mapping, Sequence
+
+ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / "src"
+for _path in (ROOT, SRC):
+    if str(_path) not in sys.path:
+        sys.path.insert(0, str(_path))
 
 from scripts import (
     reason_router_gen4_mamba370m_geometry_prepare_fast_cuda as geom,
