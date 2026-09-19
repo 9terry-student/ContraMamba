@@ -109,6 +109,55 @@ def test_exact_nonempty_url_does_not_strip_or_normalize():
     ) == " https://x "
 
 
+def test_train_source_allows_empty_question_string_without_row_exclusion():
+    row = example(
+        "Not Enough Evidence",
+        "fresh claim with pinned empty question",
+        url="https://example.test/438",
+    )
+    row["questions"][0]["question"] = ""
+
+    # Source validation must preserve the pinned train row rather than
+    # invent a post-design exclusion.
+    subject._validate_example_structure(
+        row,
+        index=438,
+        label_prefix="TRAIN",
+    )
+
+    gated = subject.gate_train_row(
+        tokenizer=FakeTokenizer(),
+        source_index=438,
+        example=row,
+    )
+
+    assert gated["averitec_train_index"] == 438
+    assert gated["source_label"] == "Not Enough Evidence"
+    assert gated["correct_label"] == "NOT_ENTITLED"
+    assert gated["token_gate_pass"] is True
+    assert gated["token_gate_reasons"] == []
+    assert gated["evidence"].startswith(
+        "Question: \nAnswer: "
+    )
+
+    # The correction relaxes only emptiness, not field type.
+    bad = example(
+        "Not Enough Evidence",
+        "bad non-string question",
+    )
+    bad["questions"][0]["question"] = None
+
+    with pytest.raises(
+        subject.SteeringCohortError,
+        match="TRAIN_QUESTION_TEXT:438:0",
+    ):
+        subject._validate_example_structure(
+            bad,
+            index=438,
+            label_prefix="TRAIN",
+        )
+
+
 def test_git_blob_sha1_contract():
     raw = b"hello\n"
     expected = hashlib.sha1(

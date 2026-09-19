@@ -246,8 +246,13 @@ def _validate_example_structure(
             f"{label_prefix}_QUESTION_OBJECT:{index}:{qi}",
         )
         question = question_obj.get("question")
+        # The pinned AVeriTeC train source contains exactly one fresh
+        # compatible row (train index 438) with an empty question string
+        # and otherwise valid QA structure. The frozen serializer
+        # deterministically preserves that source value as
+        # "Question: \nAnswer: ...". Do not exclude the row here.
         require(
-            isinstance(question, str) and bool(question.strip()),
+            isinstance(question, str),
             f"{label_prefix}_QUESTION_TEXT:{index}:{qi}",
         )
         answers = question_obj.get("answers")
