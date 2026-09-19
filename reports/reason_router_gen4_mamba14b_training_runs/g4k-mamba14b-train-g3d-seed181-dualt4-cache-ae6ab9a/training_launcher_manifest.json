@@ -1,0 +1,196 @@
+{
+  "expected_head": "ae6ab9a1393b68e4959d6a1d70e9647f8e78f21d",
+  "external_evaluation_executed": false,
+  "gen3_grouped_training_source": {
+    "arm": "G3-GROUP-D-HALF",
+    "edge_gradient_lambdas": {
+      "F_TO_D": 0.5,
+      "F_TO_P": 1.0,
+      "F_TO_Q": 1.0,
+      "F_TO_S": 1.0,
+      "P_TO_D": 0.5,
+      "P_TO_Q": 1.0,
+      "P_TO_S": 1.0,
+      "Q_TO_D": 0.5,
+      "S_TO_D": 0.5,
+      "S_TO_Q": 1.0
+    },
+    "gradient_ownership_mode": "edge_specific",
+    "historical_execution_commit": "3e0e9a435068c552abf20f3a74e0c3eccca344a3",
+    "model_git_blob": "e29d361d99579b0a86a626ebcdebd59ba465881c",
+    "model_snapshot_path": "src/contramamba/modeling_v6b_minimal_gen3_grouped_snapshot.py",
+    "router_mode": "explicit_product",
+    "trainer_git_blob": "ae902c06bcef92a20c012b9c35ef0ee8c8478b9f",
+    "trainer_snapshot_path": "scripts/train_controlled_v6b_minimal_gen3_grouped_snapshot.py"
+  },
+  "model_repo": "state-spaces/mamba-1.4b-hf",
+  "model_revision": "6e46eae61c27280517feef46f536d16b91076f08",
+  "run_name": "g4k-mamba14b-train-g3d-seed181-dualt4-cache-ae6ab9a",
+  "runtime": {
+    "cuda_runtime": "12.8",
+    "dual_gpu_cache_batch_size": 64,
+    "dual_gpu_cache_device_ids": [
+      0,
+      1
+    ],
+    "dual_gpu_frozen_encoder_cache": true,
+    "gpu_capabilities_first_two": [
+      [
+        7,
+        5
+      ],
+      [
+        7,
+        5
+      ]
+    ],
+    "gpu_count_visible": 2,
+    "gpu_names_first_two": [
+      "Tesla T4",
+      "Tesla T4"
+    ],
+    "kernels": "0.10.2",
+    "numpy": "2.0.2",
+    "python": "3.12.13",
+    "second_gpu_role": "frozen_mamba_encoder_cache_forward",
+    "second_gpu_used_for_gradient_aggregation": false,
+    "torch": "2.10.0+cu128",
+    "training_device": "cuda:0",
+    "transformers": "5.0.0"
+  },
+  "schema_version": "contramamba_mamba14b_training_launcher_v1",
+  "scientific_scope": "training_and_internal_clean_dev_checkpoint_selection_only",
+  "snapshot_files": {
+    "config.json": {
+      "bytes": 879,
+      "sha256": "275174e4771bb65f70cb1ea03389c9711510438d7944885e8f02f525bec03a9d"
+    },
+    "generation_config.json": {
+      "bytes": 137,
+      "sha256": "248fa733db101c19a8e3c2f311a180fdd7c769323ec2873edf7060cec9f5ee32"
+    },
+    "model-00001-of-00002.safetensors": {
+      "bytes": 4960287720,
+      "sha256": "3a0351b2c6a044c5f19f0f8992362e57c0d6f71b0e0702d46f43f3d8a7120c84"
+    },
+    "model-00002-of-00002.safetensors": {
+      "bytes": 528479144,
+      "sha256": "6cd1ac80d0acd00e6b6afebad9690115c5d932009ba644a6c8af1e0aed8414de"
+    },
+    "model.safetensors.index.json": {
+      "bytes": 38175,
+      "sha256": "a4739638258ef26762ff808249c3888fdb8bd4a15404a0db4811feb5cf2444b5"
+    },
+    "tokenizer.json": {
+      "bytes": 2113738,
+      "sha256": "3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8"
+    },
+    "tokenizer_config.json": {
+      "bytes": 4793,
+      "sha256": "3ba257483d22a5a84aab5465aa427e59bdaeb55f09fb14349e2d571ff67e8020"
+    }
+  },
+  "trainer_argv": [
+    "--data",
+    "reports/reason_router_p2_p3w6f2_p4b_r1_regeneration_execution_4122078ab7962042e3d6bf89f8b4eb5cec463458/controlled_v5_v3_without_time_swap_p3w6f2_r1_regenerated.jsonl",
+    "--architecture",
+    "v6b_minimal",
+    "--backbone",
+    "mamba",
+    "--model-name",
+    "/root/.cache/huggingface/hub/models--state-spaces--mamba-1.4b-hf/snapshots/6e46eae61c27280517feef46f536d16b91076f08",
+    "--freeze-encoder",
+    "true",
+    "--frame-downstream-gradient-mode",
+    "joint",
+    "--epochs",
+    "20",
+    "--max-length",
+    "128",
+    "--dev-ratio",
+    "0.2",
+    "--seed",
+    "181",
+    "--split-seed",
+    "8192",
+    "--device",
+    "cuda",
+    "--flag-source",
+    "controlled_heuristic",
+    "--select-metric",
+    "final_macro_f1",
+    "--ranking-weight",
+    "0.0",
+    "--class-weighting",
+    "none",
+    "--stage174c-clean-pairwise-mode",
+    "off",
+    "--stage174c-clean-pairwise-weight",
+    "0.0",
+    "--stage174c-clean-polarity-preservation-weight",
+    "0.0",
+    "--stage175b-support-anchor-mode",
+    "off",
+    "--stage175b-support-anchor-weight",
+    "0.0",
+    "--stage177c-frame-pairwise-mode",
+    "off",
+    "--stage177c-frame-pairwise-weight",
+    "0.0",
+    "--compatible-positive-margin-logit",
+    "0.0",
+    "--compatible-positive-margin-weight",
+    "0.0",
+    "--lr",
+    "0.001",
+    "--controlled-integrity-sidecar-path",
+    "reports/reason_router_p3w7_p2_degeneracy_seed8192_revised_p4l_integrity_sidecar_ff181f565cefa0a28280c084246862286daf1f2d_149adf32d9e8edbb0e7ea9294f7aeb330a71fc1b/p3w7_seed8192_revised_p4l_effective_integrity_sidecar.jsonl",
+    "--expected-integrity-sidecar-semantic-sha256",
+    "2528a05eb8ab6fa1b80abd86d4860beb36f38921f0bbc71e9a5b56b63ea832c9",
+    "--save-selected-checkpoint",
+    "--selected-checkpoint-filename",
+    "selected_checkpoint.pt",
+    "--reason-router-arm",
+    "G3-GROUP-D-HALF",
+    "--reason-router-mode",
+    "explicit_product",
+    "--gradient-ownership-mode",
+    "edge_specific",
+    "--edge-gradient-lambdas",
+    "{\"F_TO_P\":1.0,\"F_TO_S\":1.0,\"P_TO_S\":1.0,\"F_TO_Q\":1.0,\"P_TO_Q\":1.0,\"S_TO_Q\":1.0,\"F_TO_D\":0.5,\"P_TO_D\":0.5,\"S_TO_D\":0.5,\"Q_TO_D\":0.5}",
+    "--reason-loss-weight",
+    "0.0",
+    "--train-batch-size",
+    "32",
+    "--eval-batch-size",
+    "32",
+    "--gradient-accumulation-steps",
+    "1",
+    "--output-json",
+    "/kaggle/working/ContraMamba/reports/reason_router_gen4_mamba14b_training_runs/g4k-mamba14b-train-g3d-seed181-dualt4-cache-ae6ab9a/training_report.json",
+    "--output-predictions-json",
+    "/kaggle/working/ContraMamba/reports/reason_router_gen4_mamba14b_training_runs/g4k-mamba14b-train-g3d-seed181-dualt4-cache-ae6ab9a/clean_dev_predictions.json"
+  ],
+  "training_contract": {
+    "arm": "G3-GROUP-D-HALF",
+    "class_weighting": "none",
+    "dual_gpu_cache_batch_size": 64,
+    "dual_gpu_cache_device_ids": [
+      0,
+      1
+    ],
+    "dual_gpu_cache_expected_rows_per_gpu": 1800,
+    "dual_gpu_cache_expected_total_rows": 3600,
+    "dual_gpu_frozen_encoder_cache": true,
+    "epochs": 20,
+    "eval_microbatch_size": 32,
+    "forward_microbatch_size": 32,
+    "gradient_accumulation_steps": 1,
+    "learning_rate": 0.001,
+    "logical_full_batch_rows": 2880,
+    "optimizer_steps_per_epoch": 1,
+    "selection_metric": "final_macro_f1",
+    "split_seed": 8192,
+    "training_seed": 181
+  }
+}
