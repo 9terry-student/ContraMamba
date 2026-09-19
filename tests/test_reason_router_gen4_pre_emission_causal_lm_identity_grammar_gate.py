@@ -158,6 +158,8 @@ def test_config_contract_requires_causal_lm_architecture():
         "vocab_size": 50280,
         "eos_token_id": 0,
         "pad_token_id": 0,
+        "transformers_version":
+            subject.LEGACY_CONFIG_TRANSFORMERS_VERSION,
     }
     out = subject.validate_config_dict(config)
     assert out["architectures"] == ["MambaForCausalLM"]
@@ -171,6 +173,57 @@ def test_config_contract_requires_causal_lm_architecture():
     ):
         subject.validate_config_dict(bad)
 
+
+
+def test_legacy_v439_tied_lm_head_compat_is_exact_and_fail_closed():
+    config = SimpleNamespace()
+    source = {
+        "transformers_version":
+            subject.LEGACY_CONFIG_TRANSFORMERS_VERSION,
+    }
+    out = subject.apply_legacy_tied_lm_head_compat(
+        config,
+        snapshot_config=source,
+    )
+    assert config.tie_word_embeddings is True
+    assert out == {
+        "mode": subject.LEGACY_TIE_COMPAT_MODE,
+        "snapshot_transformers_version":
+            subject.LEGACY_CONFIG_TRANSFORMERS_VERSION,
+        "snapshot_explicit_tie_word_embeddings": False,
+        "restored_tie_word_embeddings": True,
+    }
+
+    with pytest.raises(
+        subject.PrecursorGateError,
+        match="LEGACY_TIE_COMPAT_EXPLICIT_SNAPSHOT_SETTING",
+    ):
+        subject.apply_legacy_tied_lm_head_compat(
+            SimpleNamespace(),
+            snapshot_config={
+                "transformers_version":
+                    subject.LEGACY_CONFIG_TRANSFORMERS_VERSION,
+                "tie_word_embeddings": False,
+            },
+        )
+
+    with pytest.raises(
+        subject.PrecursorGateError,
+        match="LEGACY_TIE_COMPAT_SOURCE_VERSION",
+    ):
+        subject.apply_legacy_tied_lm_head_compat(
+            SimpleNamespace(),
+            snapshot_config={"transformers_version": "5.0.0"},
+        )
+
+    with pytest.raises(
+        subject.PrecursorGateError,
+        match="LEGACY_TIE_COMPAT_RUNTIME_ALREADY_SPECIFIED",
+    ):
+        subject.apply_legacy_tied_lm_head_compat(
+            SimpleNamespace(tie_word_embeddings=False),
+            snapshot_config=source,
+        )
 
 def test_loading_info_is_fail_closed():
     clean = {
@@ -192,6 +245,9 @@ def test_loading_info_is_fail_closed():
 
 
 class FakeBackbone:
+    def __init__(self, shared_weight):
+        self.embeddings = SimpleNamespace(weight=shared_weight)
+
     def state_dict(self):
         return {
             f"k{i}": torch.tensor([float(i)], dtype=torch.float32)
@@ -200,10 +256,20 @@ class FakeBackbone:
 
 
 class FakeModel:
-    def __init__(self):
-        self.backbone = FakeBackbone()
-        self.lm_head = SimpleNamespace(
-            weight=torch.empty(
+    def __init__(self, *, tied=True):
+        shared_weight = torch.empty(
+            (
+                subject.EXPECTED_VOCAB_SIZE,
+                subject.EXPECTED_HIDDEN_SIZE,
+            ),
+            dtype=torch.float32,
+            device="meta",
+        )
+        self.backbone = FakeBackbone(shared_weight)
+        lm_weight = (
+            shared_weight
+            if tied
+            else torch.empty(
                 (
                     subject.EXPECTED_VOCAB_SIZE,
                     subject.EXPECTED_HIDDEN_SIZE,
@@ -212,6 +278,8 @@ class FakeModel:
                 device="meta",
             )
         )
+        self.lm_head = SimpleNamespace(weight=lm_weight)
+        self.config = SimpleNamespace(tie_word_embeddings=True)
         self.training = False
         self._parameters = [
             torch.nn.Parameter(
@@ -222,7 +290,6 @@ class FakeModel:
 
     def parameters(self):
         return iter(self._parameters)
-
 
 def test_loaded_causal_lm_requires_exact_backbone_hash(monkeypatch):
     monkeypatch.setattr(
@@ -250,7 +317,23 @@ def test_loaded_causal_lm_requires_exact_backbone_hash(monkeypatch):
         == subject.EXPECTED_BACKBONE_CANONICAL_SHA256
     )
     assert out["lm_head_shape"] == [50280, 1024]
+    assert out["lm_head_tied_to_input_embeddings"] is True
+    assert out["tie_word_embeddings"] is True
     assert out["any_parameter_requires_grad"] is False
+
+    with pytest.raises(
+        subject.PrecursorGateError,
+        match="LM_HEAD_NOT_TIED_TO_INPUT_EMBEDDINGS",
+    ):
+        subject.validate_loaded_causal_lm(
+            FakeModel(tied=False),
+            loading_info={
+                "missing_keys": [],
+                "unexpected_keys": [],
+                "mismatched_keys": [],
+                "error_msgs": [],
+            },
+        )
 
     monkeypatch.setattr(
         subject.geom,

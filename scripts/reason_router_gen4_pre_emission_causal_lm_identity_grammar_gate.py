@@ -31,6 +31,8 @@ EXPECTED_LAYER_COUNT = geom.LAYER_COUNT
 EXPECTED_STATE_SIZE = geom.STATE_SIZE
 EXPECTED_INTERMEDIATE_SIZE = geom.INTERMEDIATE_SIZE
 EXPECTED_VOCAB_SIZE = 50280
+LEGACY_CONFIG_TRANSFORMERS_VERSION = "4.39.0.dev0"
+LEGACY_TIE_COMPAT_MODE = "RESTORE_TRANSFORMERS_V439_DEFAULT_TIED_EMBEDDINGS"
 
 SELECTED_PLANE = "P3"
 CONTROL_PLANE = "P5"
@@ -332,9 +334,64 @@ def validate_snapshot_and_config(snapshot: Path) -> dict[str, Any]:
     config = json.loads(
         (snapshot / "config.json").read_text(encoding="utf-8-sig")
     )
+    validated = validate_config_dict(config)
+    require(
+        config.get("transformers_version")
+        == LEGACY_CONFIG_TRANSFORMERS_VERSION,
+        (
+            "CONFIG_TRANSFORMERS_VERSION:"
+            f"{config.get('transformers_version')}"
+        ),
+    )
+    require(
+        "tie_word_embeddings" not in config,
+        "CONFIG_TIE_WORD_EMBEDDINGS_EXPLICIT",
+    )
+    validated["transformers_version"] = (
+        LEGACY_CONFIG_TRANSFORMERS_VERSION
+    )
+    validated["tie_word_embeddings_present_in_snapshot"] = False
     return {
         "snapshot_files": snapshot_identity,
-        "config": validate_config_dict(config),
+        "config": validated,
+    }
+
+
+def apply_legacy_tied_lm_head_compat(
+    config: Any,
+    *,
+    snapshot_config: Mapping[str, Any],
+) -> dict[str, Any]:
+    require(
+        snapshot_config.get("transformers_version")
+        == LEGACY_CONFIG_TRANSFORMERS_VERSION,
+        "LEGACY_TIE_COMPAT_SOURCE_VERSION",
+    )
+    require(
+        "tie_word_embeddings" not in snapshot_config,
+        "LEGACY_TIE_COMPAT_EXPLICIT_SNAPSHOT_SETTING",
+    )
+    require(
+        not hasattr(config, "tie_word_embeddings"),
+        "LEGACY_TIE_COMPAT_RUNTIME_ALREADY_SPECIFIED",
+    )
+
+    # The frozen snapshot was authored for Transformers 4.39-dev, where
+    # PreTrainedConfig defaulted tie_word_embeddings=True. Transformers 5.0
+    # no longer materializes that default for this old config, which would
+    # leave lm_head randomly initialized. Restore only that historical default.
+    config.tie_word_embeddings = True
+
+    require(
+        getattr(config, "tie_word_embeddings", None) is True,
+        "LEGACY_TIE_COMPAT_NOT_APPLIED",
+    )
+    return {
+        "mode": LEGACY_TIE_COMPAT_MODE,
+        "snapshot_transformers_version":
+            LEGACY_CONFIG_TRANSFORMERS_VERSION,
+        "snapshot_explicit_tie_word_embeddings": False,
+        "restored_tie_word_embeddings": True,
     }
 
 
@@ -399,6 +456,29 @@ def validate_loaded_causal_lm(
         f"LM_HEAD_SHAPE:{tuple(weight.shape)}",
     )
 
+    embeddings = getattr(backbone, "embeddings", None)
+    require(embeddings is not None, "BACKBONE_EMBEDDINGS_MISSING")
+    embedding_weight = getattr(embeddings, "weight", None)
+    require(
+        torch.is_tensor(embedding_weight),
+        "BACKBONE_EMBEDDING_WEIGHT_MISSING",
+    )
+    require(
+        weight is embedding_weight,
+        "LM_HEAD_NOT_TIED_TO_INPUT_EMBEDDINGS",
+    )
+    require(
+        getattr(model.config, "tie_word_embeddings", None) is True,
+        "MODEL_CONFIG_TIE_WORD_EMBEDDINGS",
+    )
+
+    lm_head_sha = tensor_sha256(weight)
+    embedding_sha = tensor_sha256(embedding_weight)
+    require(
+        lm_head_sha == embedding_sha,
+        "TIED_LM_HEAD_EMBEDDING_SHA256_MISMATCH",
+    )
+
     require(model.training is False, "CAUSAL_LM_NOT_EVAL")
     require(
         not any(parameter.requires_grad for parameter in model.parameters()),
@@ -412,7 +492,10 @@ def validate_loaded_causal_lm(
         "expected_backbone_canonical_sha256":
             EXPECTED_BACKBONE_CANONICAL_SHA256,
         "lm_head_shape": list(weight.shape),
-        "lm_head_weight_sha256": tensor_sha256(weight),
+        "lm_head_weight_sha256": lm_head_sha,
+        "input_embedding_weight_sha256": embedding_sha,
+        "lm_head_tied_to_input_embeddings": True,
+        "tie_word_embeddings": True,
         "model_training": bool(model.training),
         "any_parameter_requires_grad": False,
     }
@@ -439,6 +522,13 @@ def load_causal_lm_identity(
     config = config_factory.from_pretrained(
         snapshot,
         local_files_only=True,
+    )
+    snapshot_config = json.loads(
+        (snapshot / "config.json").read_text(encoding="utf-8-sig")
+    )
+    tie_compat = apply_legacy_tied_lm_head_compat(
+        config,
+        snapshot_config=snapshot_config,
     )
 
     # This stage performs no model forward. Disable the optional fast-kernel
@@ -471,6 +561,7 @@ def load_causal_lm_identity(
     )
     identity["identity_load_device"] = "cpu"
     identity["use_mamba_kernels_for_identity_load"] = False
+    identity["legacy_tied_lm_head_compat"] = tie_compat
     identity["model_forward_count"] = 0
     identity["generation_call_count"] = 0
     return model, identity
