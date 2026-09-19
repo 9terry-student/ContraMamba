@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import hashlib
 import inspect
+import sys
 from pathlib import Path
-from types import SimpleNamespace
+from types import ModuleType, SimpleNamespace
 
 import pytest
 
@@ -510,6 +511,80 @@ def test_missing_function_surface_is_blocked(monkeypatch, tmp_path):
             importer=importer,
         )
 
+
+
+def test_exact_causal_conv_cuda_extension_resolves_loaded_frozen_binary(
+    monkeypatch,
+    tmp_path,
+):
+    spec = _spec(expected_binary=b"frozen-conv")
+    transport = spec.transport_revisions[0]
+    snapshot = _make_snapshot(
+        tmp_path,
+        spec,
+        transport,
+        prefix="kernels",
+        binary=b"frozen-conv",
+        direct_layout=True,
+    )
+
+    monkeypatch.setattr(compat, "CONV_SPEC", spec)
+
+    resolved = compat.ResolvedKernelSnapshot(
+        path=snapshot,
+        transport_revision=transport,
+        transport_repo_type="kernel",
+        source="synthetic",
+    )
+
+    binary_path = compat._binary_path(snapshot, spec)
+    extension = ModuleType("synthetic_exact_causal_conv_cuda")
+    extension.__file__ = str(binary_path)
+
+    monkeypatch.setitem(
+        sys.modules,
+        "synthetic_exact_causal_conv_cuda",
+        extension,
+    )
+
+    observed = compat.resolve_exact_causal_conv_cuda_extension(
+        resolved,
+    )
+    assert observed is extension
+
+
+def test_mamba_internal_causal_conv_binding_uses_exact_loaded_extension(
+    monkeypatch,
+):
+    namespace = {}
+    exec(
+        "def mamba_inner_fn():\n"
+        "    return causal_conv1d_cuda\n",
+        namespace,
+    )
+    mamba = SimpleNamespace(
+        mamba_inner_fn=namespace["mamba_inner_fn"],
+    )
+    exact_extension = ModuleType("exact_extension")
+
+    monkeypatch.setattr(
+        compat,
+        "resolve_exact_causal_conv_cuda_extension",
+        lambda resolved: exact_extension,
+    )
+
+    resolved = SimpleNamespace(path=Path("synthetic"))
+    observed = compat.patch_mamba_internal_causal_conv_binding(
+        mamba,
+        resolved,
+    )
+
+    assert observed is exact_extension
+    assert (
+        mamba.mamba_inner_fn.__globals__["causal_conv1d_cuda"]
+        is exact_extension
+    )
+    assert mamba.mamba_inner_fn() is exact_extension
 
 
 def test_transformers_patch_surface_is_exact():

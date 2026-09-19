@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.metadata
 import os
+import sys
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
@@ -463,6 +464,74 @@ def load_exact_module(
         return module, resolved
 
 
+def resolve_exact_causal_conv_cuda_extension(
+    resolved: ResolvedKernelSnapshot,
+) -> ModuleType:
+    binary_path = _binary_path(
+        resolved.path,
+        CONV_SPEC,
+    ).resolve()
+
+    matches: list[ModuleType] = []
+    seen: set[int] = set()
+
+    for module in tuple(sys.modules.values()):
+        if not isinstance(module, ModuleType):
+            continue
+
+        module_file = getattr(module, "__file__", None)
+        if module_file is None:
+            continue
+
+        try:
+            observed_path = Path(module_file).resolve()
+        except (OSError, RuntimeError):
+            continue
+
+        if observed_path != binary_path:
+            continue
+
+        identity = id(module)
+        if identity not in seen:
+            seen.add(identity)
+            matches.append(module)
+
+    require(
+        len(matches) == 1,
+        (
+            "CONV_CUDA_EXTENSION_MODULE_COUNT:"
+            f"expected=1:observed={len(matches)}:"
+            f"binary={binary_path}"
+        ),
+    )
+    return matches[0]
+
+
+def patch_mamba_internal_causal_conv_binding(
+    mamba: ModuleType,
+    resolved_conv: ResolvedKernelSnapshot,
+) -> ModuleType:
+    inner_fn = getattr(mamba, "mamba_inner_fn", None)
+    require(callable(inner_fn), "MAMBA_INNER_FN_MISSING")
+
+    inner_globals = getattr(inner_fn, "__globals__", None)
+    require(
+        isinstance(inner_globals, dict),
+        "MAMBA_INNER_GLOBALS_MISSING",
+    )
+
+    conv_cuda = resolve_exact_causal_conv_cuda_extension(
+        resolved_conv,
+    )
+    inner_globals["causal_conv1d_cuda"] = conv_cuda
+
+    require(
+        inner_globals.get("causal_conv1d_cuda") is conv_cuda,
+        "MAMBA_CAUSAL_CONV_CUDA_BINDING",
+    )
+    return conv_cuda
+
+
 def patch_transformers_mamba(
     mamba: ModuleType,
     conv: ModuleType,
@@ -607,11 +676,16 @@ def validate_transformers_kernel_bindings(
 def load_exact_fast_kernels() -> dict[str, Any]:
     mamba, mamba_resolved = load_exact_module(MAMBA_SPEC)
     conv, conv_resolved = load_exact_module(CONV_SPEC)
+    conv_cuda = patch_mamba_internal_causal_conv_binding(
+        mamba,
+        conv_resolved,
+    )
     functions = patch_transformers_mamba(mamba, conv)
 
     return {
         "mamba": mamba,
         "conv": conv,
+        "causal_conv1d_cuda": conv_cuda,
         **functions,
         "mamba_transport_revision":
             mamba_resolved.transport_revision,
