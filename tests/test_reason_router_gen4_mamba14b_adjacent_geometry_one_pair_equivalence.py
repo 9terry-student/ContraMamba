@@ -106,3 +106,42 @@ def test_report_does_not_authorize_full_run() -> None:
         '"full_adjacent_geometry_execution_authorized_by_this_artifact": False'
         in source
     )
+
+def test_authenticate_repo_accepts_detached_exact_clean(monkeypatch) -> None:
+    expected = "a" * 40
+
+    def fake_git(*args: str) -> str:
+        if args == ("branch", "--show-current"):
+            return ""
+        if args == ("rev-parse", "HEAD"):
+            return expected
+        if args == ("status", "--porcelain"):
+            return ""
+        raise AssertionError(args)
+
+    monkeypatch.setattr(m, "git", fake_git)
+    monkeypatch.setattr(m, "git_rc", lambda *args: 0)
+
+    m.authenticate_repo(expected)
+
+
+def test_authenticate_repo_rejects_unexpected_named_branch(monkeypatch) -> None:
+    expected = "b" * 40
+
+    def fake_git(*args: str) -> str:
+        if args == ("branch", "--show-current"):
+            return "wrong-branch"
+        if args == ("rev-parse", "HEAD"):
+            return expected
+        if args == ("status", "--porcelain"):
+            return ""
+        raise AssertionError(args)
+
+    monkeypatch.setattr(m, "git", fake_git)
+    monkeypatch.setattr(m, "git_rc", lambda *args: 0)
+
+    with pytest.raises(
+        m.AdjacentGeometryEquivalenceError,
+        match="BRANCH_MISMATCH:wrong-branch",
+    ):
+        m.authenticate_repo(expected)

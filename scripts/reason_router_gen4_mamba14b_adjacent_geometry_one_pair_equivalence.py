@@ -91,9 +91,10 @@ def authenticate_repo(expected_head: str) -> None:
     adjacent._configure_canonical_module()
     adjacent.validate_protocol_constants()
 
+    branch = git("branch", "--show-current")
     require(
-        git("branch", "--show-current") == EXPECTED_BRANCH,
-        "BRANCH_MISMATCH",
+        branch in ("", EXPECTED_BRANCH),
+        f"BRANCH_MISMATCH:{branch}",
     )
     require(git("rev-parse", "HEAD") == expected_head, "HEAD_MISMATCH")
     require(git("status", "--porcelain") == "", "WORKTREE_NOT_CLEAN")
