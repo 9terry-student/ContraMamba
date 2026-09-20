@@ -1,0 +1,213 @@
+{
+  "cohort": {
+    "correct_label_counts": {
+      "REFUTE": 400,
+      "SUPPORT": 400
+    },
+    "count": 800,
+    "fresh_response_free_at_selection": true,
+    "git_blob": "842e66434af5e142f9b8b0abff1a57b986884e4f",
+    "path": "data/reason_router_gen4_precursor_v2_dcs_stage_a_cohort_v1/precursor_v2_stage_a_cohort.jsonl",
+    "sha256": "d12bb49dfeeebe7cf6eaeeabb5125717f979f85df5782141f0efea8346cab4a9",
+    "source_label_counts": {
+      "Refuted": 400,
+      "Supported": 400
+    }
+  },
+  "dependencies": {
+    "base_generator_git_blob": "aa6725bdc1cbfa43547e89293f3b7911a4cdd6ed",
+    "cohort_runner_git_blob": "835d8faba49b70ded8540924233015d06b6c2b68",
+    "equivalence_script_git_blob": "92ede8e49fa5a329a5d292db714c7c854138e369",
+    "forced_runner_git_blob": "99fb5a7b43d35d667d3dda646adea0e37392e647",
+    "identity_gate_git_blob": "fa5fd6972715247c1d23f60dabbef74717609dcb"
+  },
+  "design": {
+    "git_blob": "4f2e04de11f668e2a592971ad7952eb1863bd538",
+    "path": "reports/reason_router_gen4_precursor_v4_analytic_vjp_susceptibility_design_candidate.md"
+  },
+  "emitted_commitment_counts": {
+    "REFUTE": 29,
+    "SUPPORT": 771
+  },
+  "endpoint": "Z_i=mean(D_t over t*-4,t*-3,t*-2,t*-1)",
+  "epsilon": null,
+  "equivalence_prerequisite": {
+    "comparison_result": "PASS",
+    "execution_head": "3f591ff629660e2cf9dafc7951f5f2c1b65aa454",
+    "report_git_blob": "eaa509568dd0d035db29417dc091878909b62da4",
+    "report_path": "reports/reason_router_gen4_precursor_v4_analytic_vjp_equivalence_runs/g4k-precursorv4-analytic-vjp-eq-historical-3f591ff-gpu1/precursor_v4_analytic_vjp_one_row_equivalence_report.json",
+    "report_sha256": "9604d8a3d4eb13fd8fd25d5829e546da928dbc7e00fe89dfaa8ab427b2fa1f32",
+    "result": "PASS_PRECURSOR_V4_ANALYTIC_VJP_CPU_CUDA_EQUIVALENCE"
+  },
+  "estimator": "analytic_local_vjp",
+  "execution_head": "71b3417df5fed57353a8af93e8465b39143cae3e",
+  "experiment": "PRECURSOR_V4_ANALYTIC_LOCAL_DIFFERENTIAL_SUSCEPTIBILITY_STAGE_A",
+  "forced_grammar_sha256": "62c9c53871f68fcc0f57d38c96b75d2391ee6ddc473a4325a522f91c9249bd00",
+  "forward_accounting": {
+    "cohort_count": 800,
+    "full_model_forwards_per_row_by_emitted_label": {
+      "REFUTE": 12,
+      "SUPPORT": 11
+    },
+    "local_vjps_per_row": 4,
+    "max_full_model_forwards_per_row": 12,
+    "min_full_model_forwards_per_row": 11,
+    "observation_vjp_forward_reuses_decoding_forward": true,
+    "scientific_forward_budget_max": 9600,
+    "scientific_forward_budget_min": 8800,
+    "scientific_forward_budget_realized": 8829,
+    "scientific_local_vjp_budget": 3200
+  },
+  "generation_api_used": false,
+  "hf_repo": "state-spaces/mamba-370m-hf",
+  "hf_revision": "589179554943157be31701edd8b4558889276674",
+  "intervention_block": 35,
+  "local_vjp_backward_executed": true,
+  "model_scale": "mamba370m",
+  "observation_generated_prefix_lengths": [
+    5,
+    6,
+    7,
+    8
+  ],
+  "observation_offsets": [
+    -4,
+    -3,
+    -2,
+    -1
+  ],
+  "p_value_count_added": 0,
+  "parameter_gradient_created": false,
+  "parameter_update_executed": false,
+  "primary_test_executed": false,
+  "readout_block": 47,
+  "required_ancestor": "b9e7ef119fcb99cb92b2a18cd524f22c9c203d78",
+  "response_blind_control_plane": "P5",
+  "result": "PASS_PRECURSOR_V4_ANALYTIC_STAGE_A_RAW",
+  "row_file": "precursor_v4_analytic_stage_a_raw_rows.jsonl",
+  "row_file_sha256": "ee323cdf154b50914c1c02dc1ea34594993d375b7700045f6213b2c6f7d9e726",
+  "schema_version": "gen4-precursor-v4-analytic-stage-a-raw-summary-v1",
+  "scientific_conclusion": null,
+  "scientific_full_model_forward_count_this_run": 8829,
+  "scientific_inference_executed": false,
+  "scientific_local_vjp_count_this_run": 3200,
+  "scientific_measurement_executed": true,
+  "selected_plane": "P3",
+  "shards": [
+    {
+      "model_identity": {
+        "any_parameter_requires_grad": false,
+        "backbone_canonical_sha256": "2f1bb0820efd7376103541cd6de7b2893456083359708ac78f3fd30f8d1d56ac",
+        "backbone_state_key_count": 482,
+        "expected_backbone_canonical_sha256": "2f1bb0820efd7376103541cd6de7b2893456083359708ac78f3fd30f8d1d56ac",
+        "input_embedding_weight_sha256": "a473cbd256224b82e4ce004797629aee049c99db483bb5dd05fe7dcc67bdddeb",
+        "kernel_constructor_calls": {
+          "causal-conv1d": 48,
+          "mamba-ssm": 48
+        },
+        "legacy_tied_lm_head_compat": {
+          "mode": "RESTORE_TRANSFORMERS_V439_DEFAULT_TIED_EMBEDDINGS",
+          "restored_tie_word_embeddings": true,
+          "snapshot_explicit_tie_word_embeddings": false,
+          "snapshot_transformers_version": "4.39.0.dev0"
+        },
+        "lm_head_shape": [
+          50280,
+          1024
+        ],
+        "lm_head_tied_to_input_embeddings": true,
+        "lm_head_weight_sha256": "a473cbd256224b82e4ce004797629aee049c99db483bb5dd05fe7dcc67bdddeb",
+        "loading_info": {
+          "error_msgs": [],
+          "mismatched_keys": [],
+          "missing_keys": [],
+          "unexpected_keys": []
+        },
+        "model_training": false,
+        "tie_word_embeddings": true
+      },
+      "row_count": 400,
+      "shard": {
+        "end": 400,
+        "example_count": 400,
+        "forward_budget_max": 4800,
+        "forward_budget_min": 4400,
+        "local_vjp_budget": 1600,
+        "physical_device": 0,
+        "shard_id": 0,
+        "start": 0
+      },
+      "tokenizer": {
+        "file_sha256": {
+          "special_tokens_map.json": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8",
+          "tokenizer.json": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf",
+          "tokenizer_config.json": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+        },
+        "repo": "state-spaces/mamba-370m-hf",
+        "revision": "589179554943157be31701edd8b4558889276674",
+        "tokenizers_version": "0.22.2",
+        "vocab_size": 50277
+      }
+    },
+    {
+      "model_identity": {
+        "any_parameter_requires_grad": false,
+        "backbone_canonical_sha256": "2f1bb0820efd7376103541cd6de7b2893456083359708ac78f3fd30f8d1d56ac",
+        "backbone_state_key_count": 482,
+        "expected_backbone_canonical_sha256": "2f1bb0820efd7376103541cd6de7b2893456083359708ac78f3fd30f8d1d56ac",
+        "input_embedding_weight_sha256": "a473cbd256224b82e4ce004797629aee049c99db483bb5dd05fe7dcc67bdddeb",
+        "kernel_constructor_calls": {
+          "causal-conv1d": 48,
+          "mamba-ssm": 48
+        },
+        "legacy_tied_lm_head_compat": {
+          "mode": "RESTORE_TRANSFORMERS_V439_DEFAULT_TIED_EMBEDDINGS",
+          "restored_tie_word_embeddings": true,
+          "snapshot_explicit_tie_word_embeddings": false,
+          "snapshot_transformers_version": "4.39.0.dev0"
+        },
+        "lm_head_shape": [
+          50280,
+          1024
+        ],
+        "lm_head_tied_to_input_embeddings": true,
+        "lm_head_weight_sha256": "a473cbd256224b82e4ce004797629aee049c99db483bb5dd05fe7dcc67bdddeb",
+        "loading_info": {
+          "error_msgs": [],
+          "mismatched_keys": [],
+          "missing_keys": [],
+          "unexpected_keys": []
+        },
+        "model_training": false,
+        "tie_word_embeddings": true
+      },
+      "row_count": 400,
+      "shard": {
+        "end": 800,
+        "example_count": 400,
+        "forward_budget_max": 4800,
+        "forward_budget_min": 4400,
+        "local_vjp_budget": 1600,
+        "physical_device": 1,
+        "shard_id": 1,
+        "start": 400
+      },
+      "tokenizer": {
+        "file_sha256": {
+          "special_tokens_map.json": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8",
+          "tokenizer.json": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf",
+          "tokenizer_config.json": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+        },
+        "repo": "state-spaces/mamba-370m-hf",
+        "revision": "589179554943157be31701edd8b4558889276674",
+        "tokenizers_version": "0.22.2",
+        "vocab_size": 50277
+      }
+    }
+  ],
+  "supported_unsupported_group_counts": {
+    "supported": 393,
+    "unsupported": 407
+  },
+  "training_executed": false
+}
