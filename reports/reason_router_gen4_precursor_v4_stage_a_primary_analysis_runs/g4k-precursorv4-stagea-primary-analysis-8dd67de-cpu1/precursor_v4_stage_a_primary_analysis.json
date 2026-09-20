@@ -1,0 +1,62 @@
+{
+  "analysis_boundary": {
+    "alternative_aggregation_performed": false,
+    "layer_plane_offset_or_subgroup_selection_performed": false,
+    "local_vjp_count": 0,
+    "model_forward_count": 0,
+    "new_model_response_generated": false,
+    "parameter_update_executed": false,
+    "training_executed": false
+  },
+  "design": {
+    "git_blob": "4f2e04de11f668e2a592971ad7952eb1863bd538",
+    "path": "reports/reason_router_gen4_precursor_v4_analytic_vjp_susceptibility_design_candidate.md"
+  },
+  "estimable": true,
+  "execution_head": "8dd67de0f59c9b0147bd0e65b4725330fb9084db",
+  "group_counts": {
+    "supported": 393,
+    "unsupported": 407
+  },
+  "minimum_group_n": 30,
+  "p_value_count_added": 1,
+  "primary_test": {
+    "alpha": 0.05,
+    "alternative": "two_sided",
+    "degrees_of_freedom": 794.820829620912,
+    "endpoint": "z_i",
+    "equal_variance_assumed": false,
+    "first_mean": -0.0006109970488464772,
+    "first_n": 407,
+    "first_sample_sd": 0.0028377280144276477,
+    "group_order": [
+      "unsupported",
+      "supported"
+    ],
+    "mean_difference_first_minus_second": 0.00020074340424729262,
+    "name": "two_sided_welch_independent_samples_t",
+    "p_value_two_sided": 0.29444632184455377,
+    "second_mean": -0.0008117404530937698,
+    "second_n": 393,
+    "second_sample_sd": 0.0025716481716852547,
+    "significant": false,
+    "standard_error": 0.00019134635836258034,
+    "t_statistic": 1.0491101370578786
+  },
+  "primary_test_executed": true,
+  "raw_stage_a_input": {
+    "raw_execution_head": "71b3417df5fed57353a8af93e8465b39143cae3e",
+    "raw_result": "PASS_PRECURSOR_V4_ANALYTIC_STAGE_A_RAW",
+    "root": "reports/reason_router_gen4_precursor_v4_analytic_stage_a_runs/g4k-precursorv4-analytic-stagea-n800-71b3417-gpu2",
+    "rows_git_blob": "3c890ed8496fb495dc7804731615889b8bb69f55",
+    "rows_sha256": "ee323cdf154b50914c1c02dc1ea34594993d375b7700045f6213b2c6f7d9e726",
+    "summary_git_blob": "063c51d7d926dc51c4cfb9b5f05ddba8525215ac",
+    "summary_sha256": "eb159f8cb736aeef8cbbb15cd7af406665460266f33e5011a100c4eb7e3b270d",
+    "sums_git_blob": "1455295d65830fbcc69911c41bd79774ca23be3e"
+  },
+  "required_ancestor": "2adc5442c8a642e17b6156f075e2d766e0e8a756",
+  "result": "PASS_PRECURSOR_V4_STAGE_A_PRIMARY_ANALYSIS",
+  "schema_version": "gen4-precursor-v4-stage-a-primary-analysis-v1",
+  "scientific_conclusion": "LOCAL_DIFFERENTIAL_SUSCEPTIBILITY_TEMPORAL_PRECEDENCE_NOT_SUPPORTED",
+  "scientific_inference_executed": true
+}
