@@ -1,0 +1,92 @@
+{
+  "backward_executed": false,
+  "cohort": {
+    "all_token_gate_pass": true,
+    "cohort_file_sha256": "d12bb49dfeeebe7cf6eaeeabb5125717f979f85df5782141f0efea8346cab4a9",
+    "correct_label_counts": {
+      "REFUTE": 400,
+      "SUPPORT": 400
+    },
+    "count": 800,
+    "fresh_for_precursor_v2_generation_response": true,
+    "source_label_counts": {
+      "Refuted": 400,
+      "Supported": 400
+    }
+  },
+  "cuda_executed": false,
+  "design": {
+    "git_blob": "d24011d698de1a53436a6bb997b2bb400881a718",
+    "path": "reports/reason_router_gen4_precursor_v2_dynamic_causal_susceptibility_stage_a_design.md",
+    "sha256": "fa820362e3ad7da014ef22c838b30189fb12ec775296dee5b1ff68c5b3461946"
+  },
+  "equivalence_executed": false,
+  "execution_head": "aed9e7fb42f4aa6a48ef99e1d90c9c2e5d35c312",
+  "freshness": {
+    "global_unseen_claimed": false,
+    "old_dev_precursor_overlap_claim": "zero by inheritance from frozen source cohort full-dev normalized-claim and exact-nonempty-URL exclusion contract",
+    "source_dev_claim_overlap_excluded_count": 6,
+    "source_dev_url_overlap_excluded_count": 1,
+    "train_source_previously_used_by_experiment3": true
+  },
+  "model_checkpoint_loaded": false,
+  "model_forward_count": 0,
+  "p_value_count_added": 0,
+  "phase": "PRECURSOR_V2_DCS_STAGE_A_RESPONSE_FREE_COHORT_FREEZE",
+  "response_fields_present": false,
+  "result": "PASS_PRECURSOR_V2_DCS_STAGE_A_RESPONSE_FREE_COHORT",
+  "runner_implemented": false,
+  "schema_version": "GEN4_PRECURSOR_V2_DCS_STAGE_A_COHORT_MANIFEST_V1",
+  "scientific_execution_authorized": false,
+  "scientific_inference_executed": false,
+  "selection": {
+    "eligible_source_labels": [
+      "Refuted",
+      "Supported"
+    ],
+    "excluded_source_label": "Not Enough Evidence",
+    "experiment3_response_accessed": false,
+    "namespace": "CONTRAMAMBA_PRECURSOR_V2_DCS_STAGE_A_V1",
+    "old_precursor_response_accessed": false,
+    "output_order": "ascending averitec_train_index then example_id",
+    "quota_per_source_label": {
+      "Refuted": 400,
+      "Supported": 400
+    },
+    "rank_definition": "SHA256(\"CONTRAMAMBA_PRECURSOR_V2_DCS_STAGE_A_V1|\" + example_id)",
+    "response_fields_used": false,
+    "tie_break": "ascending example_id after ascending rank_key"
+  },
+  "source": {
+    "cohort_git_blob": "f6c8edcfa37c10feb7dfa66ecd36648bd1cc2bf1",
+    "cohort_path": "data/reason_router_gen4_averitec_train_fresh_steering_boundary_v1/fresh_compatible_cohort.jsonl",
+    "cohort_sha256": "ce271c1b57b33e12399bc180f06d417ceef6e4e92ad9e5383e2d8187829a2810",
+    "manifest_git_blob": "c31b20880eac0db2c3330a977fa7a5f66a788ddd",
+    "manifest_path": "data/reason_router_gen4_averitec_train_fresh_steering_boundary_v1/token_gate_manifest.json",
+    "manifest_sha256": "7fef7f8c9544f46fbdeb1184bee313259bd52154181c346c4ae6d367d08da738",
+    "source_count": 2799,
+    "source_label_counts": {
+      "Not Enough Evidence": 267,
+      "Refuted": 1727,
+      "Supported": 805
+    },
+    "sums_git_blob": "6a480e21178de09a7e24415413626a6576479693",
+    "sums_path": "data/reason_router_gen4_averitec_train_fresh_steering_boundary_v1/SHA256SUMS.txt"
+  },
+  "tokenizer": {
+    "active_serialization": "claim[:63]+EOS(0)+evidence[:64]",
+    "claim_budget": 63,
+    "eos_token_id": 0,
+    "evidence_budget": 64,
+    "file_sha256": {
+      "special_tokens_map.json": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8",
+      "tokenizer.json": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf",
+      "tokenizer_config.json": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+    },
+    "max_length": 128,
+    "repo": "state-spaces/mamba-370m-hf",
+    "revision": "589179554943157be31701edd8b4558889276674",
+    "tokenizers_version": "0.22.2"
+  },
+  "training_executed": false
+}
