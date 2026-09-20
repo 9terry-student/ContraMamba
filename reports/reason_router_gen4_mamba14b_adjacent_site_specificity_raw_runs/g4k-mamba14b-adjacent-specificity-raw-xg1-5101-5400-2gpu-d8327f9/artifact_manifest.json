@@ -1,0 +1,34 @@
+{
+  "adjacent_control": "P4",
+  "adjacent_model_forward_count": 24000,
+  "adjacent_triplet": [
+    34,
+    35,
+    36
+  ],
+  "canonical_control": "P4",
+  "canonical_model_forward_count": 24000,
+  "canonical_triplet": [
+    33,
+    34,
+    35
+  ],
+  "execution_head": "d8327f90b2377e5ad648af5a4c38b09e4260286b",
+  "inferential_test_performed": false,
+  "output_file_sha256": {
+    "paired_specificity_items.jsonl": "49b8087a7928f104a88fca3e2966264f1dbd21a68ccce947e08197fb239686a3",
+    "raw_response_summary.json": "70f4170bb2e1e4847da90026ec5cad7cbc973a847af6d66d306cb701074dccd9"
+  },
+  "pair_count": 300,
+  "primary_p_value_computed": false,
+  "rescue_performed": false,
+  "response_based_control_selection": false,
+  "result": "PASS_MAMBA14B_ONE_SHOT_ADJACENT_SITE_SPECIFICITY_RAW_RESPONSE",
+  "schema_version": "gen4-mamba14b-one-shot-adjacent-site-specificity-raw-manifest-v1",
+  "scientific_conclusion": null,
+  "scientific_model_forward_count": 48000,
+  "second_adjacent_site_executed": false,
+  "selected_causal_candidate": "P5",
+  "selection_reopened": false,
+  "xg1_response_observed": true
+}

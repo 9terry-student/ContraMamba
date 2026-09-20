@@ -1,0 +1,203 @@
+{
+  "adjacent_geometry_freeze_commit": "d434dfdc38f222419708ed67db87e4e28fb05a4d",
+  "adjacent_response_blind_control_plane": "P4",
+  "adjacent_strong_dim": 1205,
+  "adjacent_triplet": [
+    34,
+    35,
+    36
+  ],
+  "anchor_name": "A_IDENTITY",
+  "canonical_geometry_freeze_commit": "f97b597fb4da08a8d360ed07e48c6727e15ae0be",
+  "canonical_response_blind_control_plane": "P4",
+  "canonical_strong_dim": 829,
+  "canonical_triplet": [
+    33,
+    34,
+    35
+  ],
+  "control_selection_uses_xg1_response": false,
+  "design_freeze_commit": "3ee2d7600de649a711752b8293687047c3c5ec4e",
+  "endpoint_definitions": {
+    "D_ADJ": "Q_restored,adjacent(P5)-Q_control,adjacent(P4)",
+    "D_CAN": "Q_restored,canonical(P5)-Q_control,canonical(P4)",
+    "S": "D_CAN-D_ADJ"
+  },
+  "epsilon": 0.025,
+  "epsilon_sweep_executed": false,
+  "equivalence_freeze_commit": "4de24510cf94e326472b387104b458f52b1220ea",
+  "execution_head": "d8327f90b2377e5ad648af5a4c38b09e4260286b",
+  "forward_accounting": {
+    "adjacent_model_forward_count": 24000,
+    "canonical_model_forward_count": 24000,
+    "per_pair_per_site": 80,
+    "scientific_model_forward_count": 48000
+  },
+  "inference": {
+    "performed": false,
+    "planned_alpha": 0.05,
+    "planned_primary_p_value_count": 1,
+    "planned_test": "one-sample Student t-test on S, one-sided greater",
+    "primary_p_value_computed": false,
+    "primary_test_reserved_for_static_analyzer": true
+  },
+  "layer_sweep_executed": false,
+  "pair_count": 300,
+  "pair_first": "xg1_fact_5101",
+  "pair_last": "xg1_fact_5400",
+  "phase": "one_shot_adjacent_site_specificity_raw_response",
+  "raw_descriptive_only": {
+    "fraction_D_ADJ_positive": 0.006666666666666667,
+    "fraction_D_CAN_positive": 0.7766666666666666,
+    "fraction_S_positive": 0.81,
+    "mean_D_ADJ": -1.551069575441687e-09,
+    "mean_D_CAN": 9.102783197942576e-09,
+    "mean_S": 1.0653852773384263e-08
+  },
+  "rescue_performed": false,
+  "result": "PASS_MAMBA14B_ONE_SHOT_ADJACENT_SITE_SPECIFICITY_RAW_RESPONSE",
+  "schema_version": "gen4-mamba14b-one-shot-adjacent-site-specificity-raw-summary-v1",
+  "scientific_conclusion": null,
+  "second_adjacent_site_executed": false,
+  "selected_causal_candidate": "P5",
+  "selection_reopened": false,
+  "site_workers": {
+    "adjacent": {
+      "cuda_visible_devices": "1",
+      "device_name": "Tesla T4",
+      "geometry_freeze_commit": "d434dfdc38f222419708ed67db87e4e28fb05a4d",
+      "geometry_summary_sha256": "168aca69230b82eda29be2800b79b634362ac937335406f79f3e08a60d9f427e",
+      "inferential_test_performed": false,
+      "items_sha256": "37b56bf64f7b6d49b9c8f761e05bae919ac1235ac218de86996fa15999d91276",
+      "logical_device": 0,
+      "model_provenance": {
+        "compact_checkpoint_sha256": "915c9de38d9dc7ee9da26ba4328e74549864c6bd29723f3b7a4b4e0050efce0a",
+        "downstream_state_canonical_sha256": "b84b6af218f3d73e10a20e98f3a4118cf2e58d37e25c829a54b81c49eb9fd8ea",
+        "full_state_canonical_sha256": "61b7d444be97b94d18eed698b580b9e44e081060cbec2fa324733839ab431f0d",
+        "kernel_constructor_calls": {
+          "causal-conv1d": 48,
+          "mamba-ssm": 48
+        },
+        "pretrained_backbone_state_stream_sha256": "f6239d5b5b2a35409d38f2fc4267f52fb1524438d7ae2b1f4f6c43ec07f7224a",
+        "snapshot": {
+          "config.json": {
+            "bytes": 879,
+            "sha256": "275174e4771bb65f70cb1ea03389c9711510438d7944885e8f02f525bec03a9d"
+          },
+          "generation_config.json": {
+            "bytes": 137,
+            "sha256": "248fa733db101c19a8e3c2f311a180fdd7c769323ec2873edf7060cec9f5ee32"
+          },
+          "model-00001-of-00002.safetensors": {
+            "bytes": 4960287720,
+            "sha256": "3a0351b2c6a044c5f19f0f8992362e57c0d6f71b0e0702d46f43f3d8a7120c84"
+          },
+          "model-00002-of-00002.safetensors": {
+            "bytes": 528479144,
+            "sha256": "6cd1ac80d0acd00e6b6afebad9690115c5d932009ba644a6c8af1e0aed8414de"
+          },
+          "model.safetensors.index.json": {
+            "bytes": 38175,
+            "sha256": "a4739638258ef26762ff808249c3888fdb8bd4a15404a0db4811feb5cf2444b5"
+          },
+          "tokenizer.json": {
+            "bytes": 2113738,
+            "sha256": "3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8"
+          },
+          "tokenizer_config.json": {
+            "bytes": 4793,
+            "sha256": "3ba257483d22a5a84aab5465aa427e59bdaeb55f09fb14349e2d571ff67e8020"
+          }
+        },
+        "source_full_checkpoint_sha256": "2383cb212f7e87be1ac8920c7875602a73a1c6031212df17342457acb8b87555"
+      },
+      "pair_count": 300,
+      "pair_first": "xg1_fact_5101",
+      "pair_last": "xg1_fact_5400",
+      "physical_device": 1,
+      "response_based_control_selection": false,
+      "response_blind_control_plane": "P4",
+      "schema_version": "gen4-mamba14b-specificity-site-response-worker-v1",
+      "scientific_model_forward_count": 24000,
+      "selected_causal_candidate": "P5",
+      "site": "adjacent",
+      "strong_dim": 1205,
+      "strong_index_sha256": "3c1d39df9b9b7a9acd3200b9b8cb31576bd6cc81fcd4518781f2cbbee3533141",
+      "triplet": [
+        34,
+        35,
+        36
+      ]
+    },
+    "canonical": {
+      "cuda_visible_devices": "0",
+      "device_name": "Tesla T4",
+      "geometry_freeze_commit": "f97b597fb4da08a8d360ed07e48c6727e15ae0be",
+      "geometry_summary_sha256": "8a248c3f9747015a90b4a35d6082d216be9b4c4f2a0f784b5a40c6ae572909d4",
+      "inferential_test_performed": false,
+      "items_sha256": "4ba0df0ee1cb4dba560bda2cce88c8c5170b4b858758ef308c9bc9e543a3156e",
+      "logical_device": 0,
+      "model_provenance": {
+        "compact_checkpoint_sha256": "915c9de38d9dc7ee9da26ba4328e74549864c6bd29723f3b7a4b4e0050efce0a",
+        "downstream_state_canonical_sha256": "b84b6af218f3d73e10a20e98f3a4118cf2e58d37e25c829a54b81c49eb9fd8ea",
+        "full_state_canonical_sha256": "61b7d444be97b94d18eed698b580b9e44e081060cbec2fa324733839ab431f0d",
+        "kernel_constructor_calls": {
+          "causal-conv1d": 48,
+          "mamba-ssm": 48
+        },
+        "pretrained_backbone_state_stream_sha256": "f6239d5b5b2a35409d38f2fc4267f52fb1524438d7ae2b1f4f6c43ec07f7224a",
+        "snapshot": {
+          "config.json": {
+            "bytes": 879,
+            "sha256": "275174e4771bb65f70cb1ea03389c9711510438d7944885e8f02f525bec03a9d"
+          },
+          "generation_config.json": {
+            "bytes": 137,
+            "sha256": "248fa733db101c19a8e3c2f311a180fdd7c769323ec2873edf7060cec9f5ee32"
+          },
+          "model-00001-of-00002.safetensors": {
+            "bytes": 4960287720,
+            "sha256": "3a0351b2c6a044c5f19f0f8992362e57c0d6f71b0e0702d46f43f3d8a7120c84"
+          },
+          "model-00002-of-00002.safetensors": {
+            "bytes": 528479144,
+            "sha256": "6cd1ac80d0acd00e6b6afebad9690115c5d932009ba644a6c8af1e0aed8414de"
+          },
+          "model.safetensors.index.json": {
+            "bytes": 38175,
+            "sha256": "a4739638258ef26762ff808249c3888fdb8bd4a15404a0db4811feb5cf2444b5"
+          },
+          "tokenizer.json": {
+            "bytes": 2113738,
+            "sha256": "3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8"
+          },
+          "tokenizer_config.json": {
+            "bytes": 4793,
+            "sha256": "3ba257483d22a5a84aab5465aa427e59bdaeb55f09fb14349e2d571ff67e8020"
+          }
+        },
+        "source_full_checkpoint_sha256": "2383cb212f7e87be1ac8920c7875602a73a1c6031212df17342457acb8b87555"
+      },
+      "pair_count": 300,
+      "pair_first": "xg1_fact_5101",
+      "pair_last": "xg1_fact_5400",
+      "physical_device": 0,
+      "response_based_control_selection": false,
+      "response_blind_control_plane": "P4",
+      "schema_version": "gen4-mamba14b-specificity-site-response-worker-v1",
+      "scientific_model_forward_count": 24000,
+      "selected_causal_candidate": "P5",
+      "site": "canonical",
+      "strong_dim": 829,
+      "strong_index_sha256": "ceaebe6046c747e09a169e8b5c0e59d68c9d82185dc5a9017373f497cc0a96c7",
+      "triplet": [
+        33,
+        34,
+        35
+      ]
+    }
+  },
+  "static_preparation_commit": "b6c1c7bdb65f1edaeed78044d0b699578552ac5f",
+  "target_offset": 2,
+  "token_sweep_executed": false
+}
