@@ -116,9 +116,19 @@ PREFIX_LENGTH_TO_OFFSET = dict(
 )
 
 FORCED_CLASS_ORDER = ("REFUTE", "SUPPORT")
-FULL_MODEL_FORWARDS_PER_ROW = 12
+FULL_MODEL_FORWARDS_BY_EMITTED_LABEL = {
+    label: len(forced.FORCED_TOKEN_IDS[label])
+    for label in FORCED_CLASS_ORDER
+}
+MIN_FULL_MODEL_FORWARDS_PER_ROW = min(
+    FULL_MODEL_FORWARDS_BY_EMITTED_LABEL.values()
+)
+MAX_FULL_MODEL_FORWARDS_PER_ROW = max(
+    FULL_MODEL_FORWARDS_BY_EMITTED_LABEL.values()
+)
 LOCAL_VJPS_PER_ROW = 4
-SCIENTIFIC_FORWARD_BUDGET = N * FULL_MODEL_FORWARDS_PER_ROW
+SCIENTIFIC_FORWARD_BUDGET_MIN = N * MIN_FULL_MODEL_FORWARDS_PER_ROW
+SCIENTIFIC_FORWARD_BUDGET_MAX = N * MAX_FULL_MODEL_FORWARDS_PER_ROW
 SCIENTIFIC_LOCAL_VJP_BUDGET = N * LOCAL_VJPS_PER_ROW
 
 SHARDS = (
@@ -128,7 +138,8 @@ SHARDS = (
         "start": 0,
         "end": 400,
         "example_count": 400,
-        "forward_budget": 4800,
+        "forward_budget_min": 4400,
+        "forward_budget_max": 4800,
         "local_vjp_budget": 1600,
     },
     {
@@ -137,7 +148,8 @@ SHARDS = (
         "start": 400,
         "end": 800,
         "example_count": 400,
-        "forward_budget": 4800,
+        "forward_budget_min": 4400,
+        "forward_budget_max": 4800,
         "local_vjp_budget": 1600,
     },
 )
@@ -349,11 +361,27 @@ def validate_protocol() -> None:
         "OBSERVATION_PREFIX_LENGTHS",
     )
     require(
-        FULL_MODEL_FORWARDS_PER_ROW == 12,
-        "FULL_MODEL_FORWARDS_PER_ROW",
+        FULL_MODEL_FORWARDS_BY_EMITTED_LABEL
+        == {"REFUTE": 12, "SUPPORT": 11},
+        "FULL_MODEL_FORWARDS_BY_EMITTED_LABEL",
+    )
+    require(
+        MIN_FULL_MODEL_FORWARDS_PER_ROW == 11,
+        "MIN_FULL_MODEL_FORWARDS_PER_ROW",
+    )
+    require(
+        MAX_FULL_MODEL_FORWARDS_PER_ROW == 12,
+        "MAX_FULL_MODEL_FORWARDS_PER_ROW",
     )
     require(LOCAL_VJPS_PER_ROW == 4, "LOCAL_VJPS_PER_ROW")
-    require(SCIENTIFIC_FORWARD_BUDGET == 9600, "FORWARD_BUDGET")
+    require(
+        SCIENTIFIC_FORWARD_BUDGET_MIN == 8800,
+        "FORWARD_BUDGET_MIN",
+    )
+    require(
+        SCIENTIFIC_FORWARD_BUDGET_MAX == 9600,
+        "FORWARD_BUDGET_MAX",
+    )
     require(
         SCIENTIFIC_LOCAL_VJP_BUDGET == 3200,
         "VJP_BUDGET",
@@ -389,7 +417,8 @@ def validate_protocol() -> None:
     )
 
     covered: list[int] = []
-    total_forward_budget = 0
+    total_forward_budget_min = 0
+    total_forward_budget_max = 0
     total_vjp_budget = 0
     for expected_id, shard in enumerate(SHARDS):
         require(int(shard["shard_id"]) == expected_id, "SHARD_ID")
@@ -399,9 +428,14 @@ def validate_protocol() -> None:
         count = int(shard["example_count"])
         require(end - start == count, f"SHARD_COUNT:{expected_id}")
         require(
-            int(shard["forward_budget"])
-            == count * FULL_MODEL_FORWARDS_PER_ROW,
-            f"SHARD_FORWARD_BUDGET:{expected_id}",
+            int(shard["forward_budget_min"])
+            == count * MIN_FULL_MODEL_FORWARDS_PER_ROW,
+            f"SHARD_FORWARD_BUDGET_MIN:{expected_id}",
+        )
+        require(
+            int(shard["forward_budget_max"])
+            == count * MAX_FULL_MODEL_FORWARDS_PER_ROW,
+            f"SHARD_FORWARD_BUDGET_MAX:{expected_id}",
         )
         require(
             int(shard["local_vjp_budget"])
@@ -409,13 +443,18 @@ def validate_protocol() -> None:
             f"SHARD_VJP_BUDGET:{expected_id}",
         )
         covered.extend(range(start, end))
-        total_forward_budget += int(shard["forward_budget"])
+        total_forward_budget_min += int(shard["forward_budget_min"])
+        total_forward_budget_max += int(shard["forward_budget_max"])
         total_vjp_budget += int(shard["local_vjp_budget"])
 
     require(covered == list(range(N)), "SHARD_COVERAGE")
     require(
-        total_forward_budget == SCIENTIFIC_FORWARD_BUDGET,
-        "SHARD_FORWARD_SUM",
+        total_forward_budget_min == SCIENTIFIC_FORWARD_BUDGET_MIN,
+        "SHARD_FORWARD_MIN_SUM",
+    )
+    require(
+        total_forward_budget_max == SCIENTIFIC_FORWARD_BUDGET_MAX,
+        "SHARD_FORWARD_MAX_SUM",
     )
     require(
         total_vjp_budget == SCIENTIFIC_LOCAL_VJP_BUDGET,
@@ -708,9 +747,14 @@ def run_one(
         generated == [int(x) for x in token_ids[emitted]],
         "EMITTED_TOKEN_SEQUENCE",
     )
+    expected_forward_count = FULL_MODEL_FORWARDS_BY_EMITTED_LABEL[emitted]
     require(
-        full_model_forward_count == FULL_MODEL_FORWARDS_PER_ROW,
-        f"FULL_MODEL_FORWARD_COUNT:{full_model_forward_count}",
+        full_model_forward_count == expected_forward_count,
+        (
+            "FULL_MODEL_FORWARD_COUNT:"
+            f"{emitted}:{full_model_forward_count}:"
+            f"{expected_forward_count}"
+        ),
     )
     require(
         local_vjp_count == LOCAL_VJPS_PER_ROW,
@@ -852,13 +896,25 @@ def shard_worker(
             len(rows) == int(shard["example_count"]),
             "SHARD_ROW_COUNT",
         )
+        realized_forward_count = sum(
+            int(row["scientific_full_model_forward_count"])
+            for row in rows
+        )
+        expected_realized_forward_count = sum(
+            FULL_MODEL_FORWARDS_BY_EMITTED_LABEL[
+                str(row["emitted_commitment_label"])
+            ]
+            for row in rows
+        )
         require(
-            sum(
-                int(row["scientific_full_model_forward_count"])
-                for row in rows
-            )
-            == int(shard["forward_budget"]),
+            realized_forward_count == expected_realized_forward_count,
             "SHARD_FORWARD_COUNT",
+        )
+        require(
+            int(shard["forward_budget_min"])
+            <= realized_forward_count
+            <= int(shard["forward_budget_max"]),
+            "SHARD_FORWARD_RANGE",
         )
         require(
             sum(
@@ -1044,10 +1100,16 @@ def validate_raw_rows(
                 "RAW_DERIVED_FINITE",
             )
         require(math.isfinite(float(row["z_i"])), "RAW_Z_FINITE")
+        emitted = str(row["emitted_commitment_label"])
+        expected_forward_count = FULL_MODEL_FORWARDS_BY_EMITTED_LABEL[emitted]
         require(
             int(row["scientific_full_model_forward_count"])
-            == FULL_MODEL_FORWARDS_PER_ROW,
+            == expected_forward_count,
             "RAW_FORWARD_COUNT",
+        )
+        require(
+            int(row["generated_token_count"]) == expected_forward_count,
+            "RAW_GENERATED_TOKEN_COUNT",
         )
         require(
             int(row["scientific_local_vjp_count"])
@@ -1086,9 +1148,21 @@ def validate_raw_rows(
         int(row["scientific_local_vjp_count"])
         for row in rows
     )
+    expected_total_forwards = sum(
+        FULL_MODEL_FORWARDS_BY_EMITTED_LABEL[
+            str(row["emitted_commitment_label"])
+        ]
+        for row in rows
+    )
     require(
-        total_forwards == SCIENTIFIC_FORWARD_BUDGET,
-        f"RAW_FORWARD_BUDGET:{total_forwards}",
+        total_forwards == expected_total_forwards,
+        f"RAW_FORWARD_ACCOUNTING:{total_forwards}:{expected_total_forwards}",
+    )
+    require(
+        SCIENTIFIC_FORWARD_BUDGET_MIN
+        <= total_forwards
+        <= SCIENTIFIC_FORWARD_BUDGET_MAX,
+        f"RAW_FORWARD_RANGE:{total_forwards}",
     )
     require(
         total_vjps == SCIENTIFIC_LOCAL_VJP_BUDGET,
@@ -1146,10 +1220,22 @@ def write_output(
         "endpoint":
             "Z_i=mean(D_t over t*-4,t*-3,t*-2,t*-1)",
         "forward_accounting": {
-            "full_model_forwards_per_row": FULL_MODEL_FORWARDS_PER_ROW,
+            "full_model_forwards_per_row_by_emitted_label":
+                dict(FULL_MODEL_FORWARDS_BY_EMITTED_LABEL),
+            "min_full_model_forwards_per_row":
+                MIN_FULL_MODEL_FORWARDS_PER_ROW,
+            "max_full_model_forwards_per_row":
+                MAX_FULL_MODEL_FORWARDS_PER_ROW,
             "local_vjps_per_row": LOCAL_VJPS_PER_ROW,
             "cohort_count": N,
-            "scientific_forward_budget": SCIENTIFIC_FORWARD_BUDGET,
+            "scientific_forward_budget_min":
+                SCIENTIFIC_FORWARD_BUDGET_MIN,
+            "scientific_forward_budget_max":
+                SCIENTIFIC_FORWARD_BUDGET_MAX,
+            "scientific_forward_budget_realized":
+                raw_summary[
+                    "scientific_full_model_forward_count_this_run"
+                ],
             "scientific_local_vjp_budget":
                 SCIENTIFIC_LOCAL_VJP_BUDGET,
             "observation_vjp_forward_reuses_decoding_forward": True,

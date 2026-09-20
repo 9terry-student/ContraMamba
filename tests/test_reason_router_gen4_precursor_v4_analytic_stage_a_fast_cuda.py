@@ -15,14 +15,31 @@ def test_protocol_and_accounting() -> None:
     assert v4.N == 800
     assert v4.OBSERVATION_OFFSETS == (-4, -3, -2, -1)
     assert v4.OBSERVATION_PREFIX_LENGTHS == (5, 6, 7, 8)
-    assert v4.FULL_MODEL_FORWARDS_PER_ROW == 12
+    assert v4.FULL_MODEL_FORWARDS_BY_EMITTED_LABEL == {
+        "REFUTE": 12,
+        "SUPPORT": 11,
+    }
+    assert v4.MIN_FULL_MODEL_FORWARDS_PER_ROW == 11
+    assert v4.MAX_FULL_MODEL_FORWARDS_PER_ROW == 12
     assert v4.LOCAL_VJPS_PER_ROW == 4
-    assert v4.SCIENTIFIC_FORWARD_BUDGET == 9600
+    assert v4.SCIENTIFIC_FORWARD_BUDGET_MIN == 8800
+    assert v4.SCIENTIFIC_FORWARD_BUDGET_MAX == 9600
     assert v4.SCIENTIFIC_LOCAL_VJP_BUDGET == 3200
-    assert v4.SHARDS[0]["forward_budget"] == 4800
-    assert v4.SHARDS[1]["forward_budget"] == 4800
+    assert v4.SHARDS[0]["forward_budget_min"] == 4400
+    assert v4.SHARDS[0]["forward_budget_max"] == 4800
+    assert v4.SHARDS[1]["forward_budget_min"] == 4400
+    assert v4.SHARDS[1]["forward_budget_max"] == 4800
     assert v4.SHARDS[0]["local_vjp_budget"] == 1600
     assert v4.SHARDS[1]["local_vjp_budget"] == 1600
+
+
+def test_forward_accounting_is_derived_from_frozen_grammar() -> None:
+    assert len(v4.forced.FORCED_TOKEN_IDS["REFUTE"]) == 12
+    assert len(v4.forced.FORCED_TOKEN_IDS["SUPPORT"]) == 11
+    assert v4.FULL_MODEL_FORWARDS_BY_EMITTED_LABEL == {
+        label: len(v4.forced.FORCED_TOKEN_IDS[label])
+        for label in v4.FORCED_CLASS_ORDER
+    }
 
 
 def test_equivalence_freeze_is_exact_pass() -> None:
@@ -95,7 +112,9 @@ def test_observation_forward_is_reused_for_decoding() -> None:
         '"observation_vjp_forward_reuses_decoding_forward": True'
         in source
     )
-    assert "FULL_MODEL_FORWARDS_PER_ROW = 12" in source
+    assert "FULL_MODEL_FORWARDS_BY_EMITTED_LABEL" in source
+    assert "MIN_FULL_MODEL_FORWARDS_PER_ROW" in source
+    assert "MAX_FULL_MODEL_FORWARDS_PER_ROW" in source
     assert "LOCAL_VJPS_PER_ROW = 4" in source
 
 
