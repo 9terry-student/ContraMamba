@@ -1,0 +1,202 @@
+{
+  "boundary": {
+    "control_reselection_executed": false,
+    "epsilon_sweep_executed": false,
+    "historical_D_ADJ_accessed_during_execution": false,
+    "historical_D_CAN_accessed_during_execution": false,
+    "inferential_test_performed": false,
+    "layer_sweep_executed": false,
+    "new_cohort_selected": false,
+    "p_value_count_added": 0,
+    "parameter_update_executed": false,
+    "row_subset_selection_executed": false,
+    "token_sweep_executed": false,
+    "training_executed": false
+  },
+  "claim_boundary": "Raw transported-basis adjacent response only. No primary inference is executed here. Historical Experiment-5 D_ADJ and D_CAN are not read during GPU execution.",
+  "execution_head": "5aae21629a2a3f38f650c4ab094ece13f57cccee",
+  "forward_accounting": {
+    "response_model_forward_count": 24000,
+    "scientific_full_model_forward_count": 24300,
+    "transport_boundary_full_model_forward_count": 300,
+    "transport_local_perturbed_forward_count": 1200
+  },
+  "historical_artifacts_pinned_but_not_read_during_execution": {
+    "items_git_blob": "64da91ba82a17982feab0e7c8bd3bfba87bade00",
+    "items_path": "reports/reason_router_gen4_mamba14b_adjacent_site_specificity_raw_runs/g4k-mamba14b-adjacent-specificity-raw-xg1-5101-5400-2gpu-d8327f9/paired_specificity_items.jsonl",
+    "summary_git_blob": "f1f1e764c3cd5c412d13be67555004b10795b649",
+    "summary_path": "reports/reason_router_gen4_mamba14b_adjacent_site_specificity_raw_runs/g4k-mamba14b-adjacent-specificity-raw-xg1-5101-5400-2gpu-d8327f9/raw_response_summary.json"
+  },
+  "phase": "study_a_optional_transported_basis_adjacent_response_raw",
+  "planned_static_analysis": {
+    "D_CAN_role": "descriptive_only",
+    "alpha": 0.05,
+    "alternative": "E[G] > 0",
+    "historical_reference": "same-pair frozen Experiment-5 D_ADJ on XG1 5101..5400",
+    "primary_endpoint": "G=D_TRANSPORT-D_ADJ",
+    "primary_p_value_count": 1,
+    "primary_test": "paired_one_sample_student_t_greater",
+    "reserved_for_cpu_after_raw_freeze": true,
+    "sign_gate": "mean(D_TRANSPORT)>0"
+  },
+  "population": {
+    "cohort": "same frozen Experiment-5 XG1 5101..5400",
+    "pair_count": 300,
+    "pair_first": "xg1_fact_5101",
+    "pair_last": "xg1_fact_5400"
+  },
+  "response": {
+    "control_extension_interpretation": "Frozen adjacent P4 is projected into the orthogonal complement of each row-conditioned transported P5 and symmetrically orthonormalized. This is response-blind and reduces to the historical P4 operator when selected and control planes are already orthogonal.",
+    "control_extension_rule": "orthogonal_residualization_of_frozen_adjacent_P4_against_row_conditioned_transported_P5",
+    "descriptive_D_TRANSPORT": {
+      "max": 2.9094800113846263e-10,
+      "mean": -5.506820826102743e-10,
+      "median": -4.77375826602833e-10,
+      "min": -1.6858966598142501e-09,
+      "positive_fraction": 0.09666666666666666,
+      "q25": -8.666685722235127e-10,
+      "q75": -1.9043579296470204e-10,
+      "sd_population": 4.5333106340498734e-10
+    },
+    "endpoint": "D_TRANSPORT=Q_restored(transported_P5)-Q_control(orthogonalized_frozen_adjacent_P4)",
+    "probe_bases": "frozen adjacent XG2/XG4 K=5 bases",
+    "response_blind_control_plane": "P4",
+    "site": "adjacent",
+    "triplet": [
+      34,
+      35,
+      36
+    ]
+  },
+  "result": "PASS_MAMBA14B_TRANSPORTED_P5_ADJACENT_RESPONSE_RAW",
+  "schema_version": "gen4-mamba14b-transported-p5-adjacent-response-raw-summary-v2",
+  "transported_plane": {
+    "adjacent_strong_dimension": 1205,
+    "ambient_dimension": 4096,
+    "anchor_name": "A_IDENTITY",
+    "epsilon": 0.025,
+    "restriction_rule": "orth(J_q U35) in ambient coordinates; restrict to frozen adjacent strong indices; require rank 2; orthonormalize restricted plane",
+    "same_pair_plane_applied_to_both_target_branches": true,
+    "source_block": 35,
+    "source_plane": "P5",
+    "source_row_cell": "C2_NAME",
+    "target_block": 36,
+    "target_offset": 2
+  },
+  "workers": [
+    {
+      "cuda_visible_devices": "0",
+      "device_name": "Tesla T4",
+      "inferential_test_performed": false,
+      "items_sha256": "994d2978f79f21b5b0c9857079706bde553517e041152892f7136dc70de68b2f",
+      "logical_device": 0,
+      "model_provenance": {
+        "compact_checkpoint_sha256": "915c9de38d9dc7ee9da26ba4328e74549864c6bd29723f3b7a4b4e0050efce0a",
+        "downstream_state_canonical_sha256": "b84b6af218f3d73e10a20e98f3a4118cf2e58d37e25c829a54b81c49eb9fd8ea",
+        "full_state_canonical_sha256": "61b7d444be97b94d18eed698b580b9e44e081060cbec2fa324733839ab431f0d",
+        "kernel_constructor_calls": {
+          "causal-conv1d": 48,
+          "mamba-ssm": 48
+        },
+        "pretrained_backbone_state_stream_sha256": "f6239d5b5b2a35409d38f2fc4267f52fb1524438d7ae2b1f4f6c43ec07f7224a",
+        "snapshot": {
+          "config.json": {
+            "bytes": 879,
+            "sha256": "275174e4771bb65f70cb1ea03389c9711510438d7944885e8f02f525bec03a9d"
+          },
+          "generation_config.json": {
+            "bytes": 137,
+            "sha256": "248fa733db101c19a8e3c2f311a180fdd7c769323ec2873edf7060cec9f5ee32"
+          },
+          "model-00001-of-00002.safetensors": {
+            "bytes": 4960287720,
+            "sha256": "3a0351b2c6a044c5f19f0f8992362e57c0d6f71b0e0702d46f43f3d8a7120c84"
+          },
+          "model-00002-of-00002.safetensors": {
+            "bytes": 528479144,
+            "sha256": "6cd1ac80d0acd00e6b6afebad9690115c5d932009ba644a6c8af1e0aed8414de"
+          },
+          "model.safetensors.index.json": {
+            "bytes": 38175,
+            "sha256": "a4739638258ef26762ff808249c3888fdb8bd4a15404a0db4811feb5cf2444b5"
+          },
+          "tokenizer.json": {
+            "bytes": 2113738,
+            "sha256": "3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8"
+          },
+          "tokenizer_config.json": {
+            "bytes": 4793,
+            "sha256": "3ba257483d22a5a84aab5465aa427e59bdaeb55f09fb14349e2d571ff67e8020"
+          }
+        },
+        "source_full_checkpoint_sha256": "2383cb212f7e87be1ac8920c7875602a73a1c6031212df17342457acb8b87555"
+      },
+      "pair_count": 150,
+      "pair_first": "xg1_fact_5101",
+      "pair_last": "xg1_fact_5250",
+      "physical_device": 0,
+      "response_model_forward_count": 12000,
+      "schema_version": "gen4-mamba14b-transported-p5-adjacent-response-worker-v1",
+      "shard_id": 0,
+      "transport_boundary_full_model_forward_count": 150,
+      "transport_local_perturbed_forward_count": 600
+    },
+    {
+      "cuda_visible_devices": "1",
+      "device_name": "Tesla T4",
+      "inferential_test_performed": false,
+      "items_sha256": "bf13363994516f699829d1081e7f21b09a7605b285594c249b98c5194a25f9a6",
+      "logical_device": 0,
+      "model_provenance": {
+        "compact_checkpoint_sha256": "915c9de38d9dc7ee9da26ba4328e74549864c6bd29723f3b7a4b4e0050efce0a",
+        "downstream_state_canonical_sha256": "b84b6af218f3d73e10a20e98f3a4118cf2e58d37e25c829a54b81c49eb9fd8ea",
+        "full_state_canonical_sha256": "61b7d444be97b94d18eed698b580b9e44e081060cbec2fa324733839ab431f0d",
+        "kernel_constructor_calls": {
+          "causal-conv1d": 48,
+          "mamba-ssm": 48
+        },
+        "pretrained_backbone_state_stream_sha256": "f6239d5b5b2a35409d38f2fc4267f52fb1524438d7ae2b1f4f6c43ec07f7224a",
+        "snapshot": {
+          "config.json": {
+            "bytes": 879,
+            "sha256": "275174e4771bb65f70cb1ea03389c9711510438d7944885e8f02f525bec03a9d"
+          },
+          "generation_config.json": {
+            "bytes": 137,
+            "sha256": "248fa733db101c19a8e3c2f311a180fdd7c769323ec2873edf7060cec9f5ee32"
+          },
+          "model-00001-of-00002.safetensors": {
+            "bytes": 4960287720,
+            "sha256": "3a0351b2c6a044c5f19f0f8992362e57c0d6f71b0e0702d46f43f3d8a7120c84"
+          },
+          "model-00002-of-00002.safetensors": {
+            "bytes": 528479144,
+            "sha256": "6cd1ac80d0acd00e6b6afebad9690115c5d932009ba644a6c8af1e0aed8414de"
+          },
+          "model.safetensors.index.json": {
+            "bytes": 38175,
+            "sha256": "a4739638258ef26762ff808249c3888fdb8bd4a15404a0db4811feb5cf2444b5"
+          },
+          "tokenizer.json": {
+            "bytes": 2113738,
+            "sha256": "3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8"
+          },
+          "tokenizer_config.json": {
+            "bytes": 4793,
+            "sha256": "3ba257483d22a5a84aab5465aa427e59bdaeb55f09fb14349e2d571ff67e8020"
+          }
+        },
+        "source_full_checkpoint_sha256": "2383cb212f7e87be1ac8920c7875602a73a1c6031212df17342457acb8b87555"
+      },
+      "pair_count": 150,
+      "pair_first": "xg1_fact_5251",
+      "pair_last": "xg1_fact_5400",
+      "physical_device": 1,
+      "response_model_forward_count": 12000,
+      "schema_version": "gen4-mamba14b-transported-p5-adjacent-response-worker-v1",
+      "shard_id": 1,
+      "transport_boundary_full_model_forward_count": 150,
+      "transport_local_perturbed_forward_count": 600
+    }
+  ]
+}

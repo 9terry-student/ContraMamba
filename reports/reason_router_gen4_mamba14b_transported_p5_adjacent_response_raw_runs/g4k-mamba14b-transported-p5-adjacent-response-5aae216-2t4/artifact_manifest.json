@@ -1,0 +1,21 @@
+{
+  "execution_head": "5aae21629a2a3f38f650c4ab094ece13f57cccee",
+  "historical_items_git_blob": "64da91ba82a17982feab0e7c8bd3bfba87bade00",
+  "historical_summary_git_blob": "f1f1e764c3cd5c412d13be67555004b10795b649",
+  "inferential_test_performed": false,
+  "output_file_sha256": {
+    "raw_response_summary.json": "b8bb5198cdb5ce2b707be43ee78502c7d27a31374a17b37368e82b434106050f",
+    "transported_adjacent_response_items.jsonl": "f928e574bd1e1ef9f35b3e473d2c237930692377218d5b7e0e6fa1141b8c656e"
+  },
+  "planned_alpha": 0.05,
+  "planned_primary_endpoint": "G=D_TRANSPORT-D_ADJ",
+  "planned_primary_p_value_count": 1,
+  "planned_primary_test": "paired_one_sample_student_t_greater",
+  "required_program_ancestor": "fa4a68054176412ec1e30be4d14dd7202314435f",
+  "rescue_performed": false,
+  "result": "PASS_MAMBA14B_TRANSPORTED_P5_ADJACENT_RESPONSE_RAW",
+  "schema_version": "gen4-mamba14b-transported-p5-adjacent-response-raw-manifest-v2",
+  "scientific_full_model_forward_count": 24300,
+  "transport_local_perturbed_forward_count": 1200,
+  "transport_summary_git_blob": "14fbb34cb2fff430009af7e3c4bfcdac707387dd"
+}
