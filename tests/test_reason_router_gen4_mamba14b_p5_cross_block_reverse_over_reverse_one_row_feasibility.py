@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import inspect
+import subprocess
+import sys
+from pathlib import Path
 
 import torch
 
@@ -8,6 +11,25 @@ from scripts import (
     reason_router_gen4_mamba14b_p5_cross_block_reverse_over_reverse_one_row_feasibility
     as gate,
 )
+
+
+def test_standalone_script_help_imports_from_repo_root() -> None:
+    repo_root = Path(gate.__file__).resolve().parents[1]
+    script_path = (
+        repo_root
+        / "scripts"
+        / "reason_router_gen4_mamba14b_p5_cross_block_reverse_over_reverse_one_row_feasibility.py"
+    )
+    completed = subprocess.run(
+        [sys.executable, str(script_path), "--help"],
+        cwd=repo_root,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert "reverse-over-reverse exact-autodiff Jv feasibility gate" in completed.stdout
 
 
 def test_protocol_is_exact_bounded_fallback_gate() -> None:

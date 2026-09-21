@@ -4,9 +4,9 @@
 
 `TECHNICAL_EXECUTION_AUTHORITY`
 
-Parent implementation HEAD:
+Correction parent HEAD:
 
-`4e40337cc8c4a1803aaf752e3c9173705215db44`
+`715ef08e75f1ff41634059c20c6a044115d9b968`
 
 Authorized implementation:
 
@@ -14,7 +14,7 @@ Authorized implementation:
 
 Authorized implementation git blob:
 
-`47525ce1d6bf7706ba0ea3ecd0d00ba3cb89e634`
+`20f6ba4fcd2aad677d0e20e0c73f9f62d05ceb8b`
 
 Validated test:
 
@@ -22,7 +22,7 @@ Validated test:
 
 Validated test git blob:
 
-`13705ca9d9b7ecab3a2ff6ca7f5f7e515bb134a5`
+`e709f37ba05edfcebafa673607772e5f21390b9b`
 
 Prospective program:
 
@@ -39,6 +39,45 @@ Direct forward-JVP technical closure:
 Closure git blob:
 
 `eba094c517b38d8730eb9b8362f9fa6f69b295b5`
+
+## Standalone invocation correction
+
+The first authorized run identity
+
+`g4k-mamba14b-p5-crossblock-ror-gate-715ef08-2t4`
+
+failed before the technical estimator was reached because the new runner did not add
+the repository root to `sys.path` before importing the `scripts` package when invoked
+as:
+
+`python scripts/reason_router_gen4_mamba14b_p5_cross_block_reverse_over_reverse_one_row_feasibility.py ...`
+
+The observed failure was:
+
+`ModuleNotFoundError: No module named 'scripts'`
+
+This is an implementation/bootstrap defect only.
+
+The correction changes exactly:
+
+- add `import sys`;
+- insert `ROOT` into `sys.path` before `from scripts import ...`;
+- add a subprocess regression test that executes the runner with `--help` from the
+  repository root, matching the standalone invocation mode used by Kaggle.
+
+It does not change:
+
+- the frozen row;
+- the model/checkpoint;
+- the exact kernel path;
+- the reverse-over-reverse estimator;
+- source/target sites;
+- P5 directions;
+- output metrics;
+- PASS/FAIL scientific interpretation.
+
+The failed run is not collected/imported and its run identity is retired.
+
 
 ## Authorized question
 

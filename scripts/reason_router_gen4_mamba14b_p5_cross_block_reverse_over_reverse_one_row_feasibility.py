@@ -4,12 +4,15 @@ from __future__ import annotations
 import argparse
 import math
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
 import torch
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from scripts import (
     reason_router_gen4_mamba14b_p5_cross_block_jvp_one_row_feasibility
