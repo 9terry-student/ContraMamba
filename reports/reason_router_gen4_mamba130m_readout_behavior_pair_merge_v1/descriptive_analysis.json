@@ -1,0 +1,61 @@
+{
+  "descriptive": {
+    "D_BEH": {
+      "max": 0.07469091564416885,
+      "mean": 0.008332191656033197,
+      "median": 0.004947952926158905,
+      "min": -0.02496105432510376,
+      "q25": -0.0018113218247890472,
+      "q75": 0.01672319695353508,
+      "sd_population": 0.016159877506617827
+    },
+    "Delta_L": {
+      "max": 0.019247481027104857,
+      "mean": 0.0011203660365321265,
+      "median": 0.00026329389872246066,
+      "min": -0.011805185836611012,
+      "q25": -0.0021958507353393216,
+      "q75": 0.005018975352313876,
+      "sd_population": 0.006198859781720184
+    },
+    "pearson_Delta_L_vs_D_BEH": 0.617548086733788,
+    "residual_D_BEH_minus_Delta_L": {
+      "max": 0.07334359296500559,
+      "mean": 0.007211825619501071,
+      "median": 0.003779849903384902,
+      "min": -0.013516391916583633,
+      "q25": 0.00047741543162332445,
+      "q75": 0.010626524002240303,
+      "sd_population": 0.013260635106775475
+    },
+    "sign_agreement": {
+      "categories": {
+        "both_negative": 89,
+        "both_positive": 158,
+        "both_zero": 0,
+        "delta_negative_beh_positive": 50,
+        "delta_negative_beh_zero": 0,
+        "delta_positive_beh_negative": 3,
+        "delta_positive_beh_zero": 0,
+        "delta_zero_beh_negative": 0,
+        "delta_zero_beh_positive": 0
+      },
+      "count": 247,
+      "fraction": 0.8233333333333334
+    },
+    "spearman_Delta_L_vs_D_BEH": 0.8324696941077123
+  },
+  "execution_type": "cpu_static_analysis",
+  "inference_performed": false,
+  "interpretation_threshold_applied": false,
+  "population": "xg1_fact_2701..xg1_fact_3000",
+  "primary_p_value_count": 0,
+  "rescue_performed": false,
+  "result": "PASS_GEN4_MAMBA130M_READOUT_BEHAVIOR_PAIR_LEVEL_DESCRIPTIVE_MERGE",
+  "row_filter_performed": false,
+  "scale": "mamba130m",
+  "schema_version": "gen4-mamba130m-readout-behavior-pair-level-descriptive-merge-v1",
+  "scientific_conclusion": null,
+  "secondary_p_value_count": 0,
+  "source_pair_count": 300
+}
