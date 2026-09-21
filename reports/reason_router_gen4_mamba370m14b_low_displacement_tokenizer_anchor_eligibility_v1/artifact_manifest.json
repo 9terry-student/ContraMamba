@@ -1,0 +1,22 @@
+{
+  "checkpoint_load_count": 0,
+  "gpu_used": false,
+  "inference_performed": false,
+  "model_forward_count": 0,
+  "plan_freeze_commit": "7bee947899be6c7808217dc68d09f6d2ad2c5978",
+  "rescue_performed": false,
+  "result": "PASS_MAMBA370M14B_LOW_DISPLACEMENT_TOKENIZER_ANCHOR_ELIGIBILITY",
+  "row_filtering_performed": false,
+  "scales": [
+    "mamba370m",
+    "mamba14b"
+  ],
+  "schema_version": "GEN4_MAMBA370M14B_LOW_DISPLACEMENT_TOKENIZER_ANCHOR_ELIGIBILITY_ARTIFACT_V1",
+  "scientific_outcomes_observed": false,
+  "source_pair_count": 300,
+  "structural_freeze_commit": "37e8176edceb9da9a976df4520904e31e1134ff5",
+  "structural_row_sha256": "1d0f21ba44b4a282f42edb7e56626bb7d522ce09e25e1611bf1424ead4da2b28",
+  "structural_source_sha256": "eddd6a264130e6451c72aeab010758dac43de82d9521898dfd1489c86717d11a",
+  "target_row_count_per_scale": 600,
+  "training_executed": false
+}

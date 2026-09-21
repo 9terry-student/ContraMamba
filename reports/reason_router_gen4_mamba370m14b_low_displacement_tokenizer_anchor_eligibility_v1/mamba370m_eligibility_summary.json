@@ -1,0 +1,42 @@
+{
+  "checkpoint_load_count": 0,
+  "eligible_identity_count": 600,
+  "eligible_name_count": 600,
+  "exclusion_counts": {},
+  "gpu_used": false,
+  "hf_repo": "state-spaces/mamba-370m-hf",
+  "hf_revision": "589179554943157be31701edd8b4558889276674",
+  "identity_name_mismatch_count": 0,
+  "identity_name_mismatches": [],
+  "inference_performed": false,
+  "model_forward_count": 0,
+  "post4_rule": "a+4 <= terminal_index-1",
+  "required_anchor_count_per_name": 600,
+  "required_anchor_names": [
+    "A_IDENTITY",
+    "A_NAME"
+  ],
+  "rescue_performed": false,
+  "result": "PASS_600_OF_600",
+  "row_filtering_performed": false,
+  "scale": "mamba370m",
+  "schema_version": "GEN4_MAMBA370M14B_LOW_DISPLACEMENT_TOKENIZER_ANCHOR_ELIGIBILITY_SUMMARY_V1",
+  "scientific_outcomes_observed": false,
+  "shortened_post_window_allowed": false,
+  "source_pair_count": 300,
+  "structural_row_sha256": "1d0f21ba44b4a282f42edb7e56626bb7d522ce09e25e1611bf1424ead4da2b28",
+  "structural_source_sha256": "eddd6a264130e6451c72aeab010758dac43de82d9521898dfd1489c86717d11a",
+  "target_cells": [
+    "C0_SHAM",
+    "C2_NAME"
+  ],
+  "target_row_count": 600,
+  "tokenizer_file_sha256": {
+    "special_tokens_map.json": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8",
+    "tokenizer.json": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf",
+    "tokenizer_config.json": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+  },
+  "tokenizers_version": "0.22.2",
+  "training_executed": false,
+  "vocab_size": 50277
+}
