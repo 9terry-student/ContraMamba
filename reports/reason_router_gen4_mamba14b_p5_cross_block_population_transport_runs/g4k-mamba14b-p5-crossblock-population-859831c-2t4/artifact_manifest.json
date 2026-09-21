@@ -1,0 +1,51 @@
+{
+  "accounting": {
+    "finite_difference_direction_count": 1200,
+    "p_value_count_added": 0,
+    "scientific_full_model_forward_count": 600,
+    "scientific_local_map_perturbed_forward_count": 2400,
+    "xg1_response_forward_count": 0
+  },
+  "boundary": {
+    "adjacent_p5_geometry_accessed": true,
+    "interpretation_threshold_applied": false,
+    "p_value_count_added": 0,
+    "parameter_update_executed": false,
+    "population_transport_executed": true,
+    "preserved_reoriented_collapse_label_emitted": false,
+    "principal_angles_computed": true,
+    "procrustes_alignment_computed": true,
+    "projector_overlap_computed": true,
+    "statistical_testing_performed": false,
+    "training_executed": false,
+    "xg1_experiment5_response_accessed": false
+  },
+  "execution_head": "859831c71128c67512c3d2c72fa0a07f1a3bcd7c",
+  "output_file_sha256": {
+    "transport_items.jsonl": "c49be2ed57d01e6944d07ffc70bb3e28c199b60bf67f14060e7f65dd3f16eb8c",
+    "transport_summary.json": "e41bee50c3ee2dbf8dcd369eb6ded937cf91e2411f133bee3457989ce2780633"
+  },
+  "plane_artifacts": {
+    "adjacent_p5": {
+      "minus_path": "reports/reason_router_gen4_mamba14b_adjacent_geometry_preparation_runs/g4k-mamba14b-adjacent-geometry-plus1-xg2xg4-2gpu-4de2451/p5_minus.f64le",
+      "plus_path": "reports/reason_router_gen4_mamba14b_adjacent_geometry_preparation_runs/g4k-mamba14b-adjacent-geometry-plus1-xg2xg4-2gpu-4de2451/p5_plus.f64le",
+      "strong_indices_path": "reports/reason_router_gen4_mamba14b_adjacent_geometry_preparation_runs/g4k-mamba14b-adjacent-geometry-plus1-xg2xg4-2gpu-4de2451/strong_indices.json"
+    },
+    "canonical_p5": {
+      "minus_path": "reports/reason_router_gen4_mamba14b_geometry_preparation_runs/g4k-mamba14b-geometry-xg2xg4-2gpu-c758d5e-retry1/p5_minus.f64le",
+      "plus_path": "reports/reason_router_gen4_mamba14b_geometry_preparation_runs/g4k-mamba14b-geometry-xg2xg4-2gpu-c758d5e-retry1/p5_plus.f64le",
+      "strong_indices_path": "reports/reason_router_gen4_mamba14b_geometry_preparation_runs/g4k-mamba14b-geometry-xg2xg4-2gpu-c758d5e-retry1/strong_indices.json"
+    }
+  },
+  "reference_fd_evidence": {
+    "epsilon": 0.025,
+    "report_git_blob": "11ecd4b0122f5d9db126e3ab3dd6fef5f048b8ad",
+    "report_path": "reports/reason_router_gen4_mamba14b_p5_cross_block_reference_fd_one_row_runs/g4k-mamba14b-p5-crossblock-ref-fd-gate-4ca4ffd-2t4/reference_fd_equivalence_report.json",
+    "result": "PASS_MAMBA14B_P5_CROSS_BLOCK_ONE_ROW_REFERENCE_FD_EQUIVALENCE",
+    "sums_git_blob": "6bd895c372542ee1f584f4170ef1192106ba639f",
+    "sums_path": "reports/reason_router_gen4_mamba14b_p5_cross_block_reference_fd_one_row_runs/g4k-mamba14b-p5-crossblock-ref-fd-gate-4ca4ffd-2t4/SHA256SUMS.txt"
+  },
+  "required_program_ancestor": "fa4a68054176412ec1e30be4d14dd7202314435f",
+  "result": "PASS_MAMBA14B_P5_CROSS_BLOCK_POPULATION_TRANSPORT_MEASUREMENT",
+  "schema_version": "gen4-mamba14b-p5-cross-block-population-transport-manifest-v1"
+}
