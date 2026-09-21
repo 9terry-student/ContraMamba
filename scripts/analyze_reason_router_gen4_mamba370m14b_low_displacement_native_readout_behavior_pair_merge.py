@@ -6,10 +6,15 @@ import hashlib
 import json
 import math
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 import numpy as np
+
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 from scripts import (
     analyze_reason_router_gen4_mamba370m14b_readout_behavior_pair_merge
@@ -17,7 +22,7 @@ from scripts import (
 )
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = _REPO_ROOT
 N = 300
 SCALES = ("mamba370m", "mamba14b")
 CELLS = ("C0_SHAM", "C2_NAME")

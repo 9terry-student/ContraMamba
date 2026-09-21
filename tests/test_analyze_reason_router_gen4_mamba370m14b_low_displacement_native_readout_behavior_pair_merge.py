@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import subprocess
+import sys
+from pathlib import Path
+
 import pytest
 
 from scripts import (
@@ -117,3 +121,23 @@ def test_duplicate_readout_tuple_blocks() -> None:
 
     with pytest.raises(subject.LowDispPairMergeError, match="READOUT_DUPLICATE"):
         subject.pair_readout_from_rows(rows)
+
+def test_direct_cli_import_surface_works_from_repo_root() -> None:
+    root = Path(__file__).resolve().parents[1]
+    script = (
+        root
+        / "scripts"
+        / "analyze_reason_router_gen4_mamba370m14b_"
+          "low_displacement_native_readout_behavior_pair_merge.py"
+    )
+    completed = subprocess.run(
+        [sys.executable, str(script), "--help"],
+        cwd=root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert "--readout-raw-dir" in completed.stdout
+    assert "--behavior-analysis-dir" in completed.stdout
+    assert "--output-dir" in completed.stdout
