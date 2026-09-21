@@ -1,0 +1,121 @@
+{
+  "behavioral_alpha": 0.25,
+  "descriptive_metric_family": [
+    "pearson_Delta_L_vs_D_BEH",
+    "spearman_Delta_L_vs_D_BEH",
+    "sign_agreement",
+    "residual_D_BEH_minus_Delta_L"
+  ],
+  "execution_type": "cpu_static_analysis",
+  "inference_performed": false,
+  "interpretation_threshold_applied": false,
+  "metric_family_source": "scripts/analyze_reason_router_gen4_mamba370m14b_readout_behavior_pair_merge.py",
+  "pair_readout_definition": "mean(Delta_L_row over C0_SHAM,C2_NAME), matching prior Mamba-370M/1.4B Study-B pair-level readout aggregation",
+  "population": "xg1_fact_5401..xg1_fact_5700",
+  "primary_p_value_count_added": 0,
+  "rescue_performed": false,
+  "result": "PASS_GEN4_LOWDISP_NATIVE_READOUT_BEHAVIOR_PAIR_LEVEL_DESCRIPTIVE_MERGE",
+  "row_filter_performed": false,
+  "scale_results": {
+    "mamba14b": {
+      "D_BEH": {
+        "max": 0.0013479888439178467,
+        "mean": -0.0005969063440958659,
+        "median": -0.00022101402282714844,
+        "min": -0.0052044689655303955,
+        "q25": -0.0010718032717704773,
+        "q75": 0.00018409639596939087,
+        "sd_population": 0.0012941059608191305
+      },
+      "Delta_L": {
+        "max": 0.002692990412386894,
+        "mean": -0.0012395407233365355,
+        "median": -0.0004929926004499413,
+        "min": -0.010439920110673682,
+        "q25": -0.002249967997871882,
+        "q75": 0.00036254847777498876,
+        "sd_population": 0.0025836858553846113
+      },
+      "pearson_Delta_L_vs_D_BEH": 0.9997547798314171,
+      "residual_D_BEH_minus_Delta_L": {
+        "max": 0.005235451145143287,
+        "mean": 0.0006426343792406697,
+        "median": 0.00026716886146698805,
+        "min": -0.0013464121618658982,
+        "q25": -0.00018939325941218053,
+        "q75": 0.0011715437937286554,
+        "sd_population": 0.0012902155334529163
+      },
+      "sign_agreement": {
+        "categories": {
+          "both_negative": 199,
+          "both_positive": 100,
+          "both_zero": 0,
+          "delta_negative_beh_positive": 1,
+          "delta_negative_beh_zero": 0,
+          "delta_positive_beh_negative": 0,
+          "delta_positive_beh_zero": 0,
+          "delta_zero_beh_negative": 0,
+          "delta_zero_beh_positive": 0
+        },
+        "count": 299,
+        "fraction": 0.9966666666666667
+      },
+      "spearman_Delta_L_vs_D_BEH": 0.9993768819653551
+    },
+    "mamba370m": {
+      "D_BEH": {
+        "max": 0.002946525812149048,
+        "mean": 0.000247988464931647,
+        "median": 5.447119474411011e-05,
+        "min": -0.0012801587581634521,
+        "q25": -0.00025739148259162903,
+        "q75": 0.00044677406549453735,
+        "sd_population": 0.0008051224808235795
+      },
+      "Delta_L": {
+        "max": 0.005812834109734038,
+        "mean": 0.0004839822767151303,
+        "median": 0.00011031807379453516,
+        "min": -0.0026186286837027828,
+        "q25": -0.0004910126470834171,
+        "q75": 0.0008814498031374255,
+        "sd_population": 0.0015980056183798829
+      },
+      "pearson_Delta_L_vs_D_BEH": 0.9996813118085749,
+      "residual_D_BEH_minus_Delta_L": {
+        "max": 0.0013384699255393306,
+        "mean": -0.00023599381178348325,
+        "median": -5.469203905790186e-05,
+        "min": -0.00286630829758499,
+        "q25": -0.0004420804228886285,
+        "q75": 0.00025477823532700625,
+        "sd_population": 0.0007934000958277652
+      },
+      "sign_agreement": {
+        "categories": {
+          "both_negative": 126,
+          "both_positive": 172,
+          "both_zero": 0,
+          "delta_negative_beh_positive": 2,
+          "delta_negative_beh_zero": 0,
+          "delta_positive_beh_negative": 0,
+          "delta_positive_beh_zero": 0,
+          "delta_zero_beh_negative": 0,
+          "delta_zero_beh_positive": 0
+        },
+        "count": 298,
+        "fraction": 0.9933333333333333
+      },
+      "spearman_Delta_L_vs_D_BEH": 0.9993409926044786
+    }
+  },
+  "scales": [
+    "mamba370m",
+    "mamba14b"
+  ],
+  "schema_version": "gen4-lowdisp-native-readout-behavior-pair-level-descriptive-merge-v1",
+  "scientific_conclusion": null,
+  "secondary_p_value_count_added": 0,
+  "source_pair_count": 300
+}

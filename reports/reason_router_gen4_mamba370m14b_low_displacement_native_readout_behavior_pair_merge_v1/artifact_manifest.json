@@ -1,0 +1,31 @@
+{
+  "analysis_head": "64ee60a650b6215e3a3bc8f685eb4aad83cef135",
+  "backward_executed": false,
+  "behavioral_alpha": 0.25,
+  "execution_type": "cpu_static_analysis",
+  "forward_executed": false,
+  "frozen_input_read_mode": "git_blob_at_HEAD",
+  "inference_performed": false,
+  "input_sha256": {
+    "behavior_manifest": "1097b4733b9961832e34b7d9155c3205ec5073843a4d131f1e72c7ffc75356c5",
+    "behavior_pair_level_contrasts": "712cce9c854f6d5a3b350c04bf11e0e06b19557c0a9e244dd3a93e195972c79d",
+    "behavior_primary_analysis": "ede3a33b201429b4b409d73b54213e85ba0da1a012aff8257b8c64490929e8fe",
+    "readout_items": "0e69d42c09e445514cab799bc3646ef10500f35598cc1a10ce81502c2e2bb9cc",
+    "readout_manifest": "0e59b3c5a1af8a419849f70e4d02cfcc4020f8d548c85d50d6f75842c24ea4cd",
+    "readout_summary": "c30211f92adbe55888126ff77076fd5e0cf2492e0857d2c2806b427f995720d0"
+  },
+  "interpretation_threshold_applied": false,
+  "metric_family_source": "scripts/analyze_reason_router_gen4_mamba370m14b_readout_behavior_pair_merge.py",
+  "population": "xg1_fact_5401..xg1_fact_5700",
+  "primary_p_value_count_added": 0,
+  "raw_execution_head": "5e6ff0617dc9d5e6db2b4f88e6afa6c9a5d9ea1b",
+  "raw_freeze_commit": "e8f8877cb9a2e63e25c8f437edb627e820538f22",
+  "rescue_performed": false,
+  "result": "PASS_GEN4_LOWDISP_NATIVE_READOUT_BEHAVIOR_PAIR_LEVEL_DESCRIPTIVE_MERGE",
+  "row_filter_performed": false,
+  "schema_version": "gen4-lowdisp-native-readout-behavior-pair-level-descriptive-merge-v1",
+  "scientific_conclusion": null,
+  "secondary_p_value_count_added": 0,
+  "source_pair_count": 300,
+  "training_executed": false
+}
