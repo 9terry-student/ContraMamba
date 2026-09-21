@@ -1,0 +1,17 @@
+{
+  "behavioral_merge_computed": false,
+  "behavioral_response_accessed": false,
+  "execution_head": "5e6ff0617dc9d5e6db2b4f88e6afa6c9a5d9ea1b",
+  "item_sha256": "0e69d42c09e445514cab799bc3646ef10500f35598cc1a10ce81502c2e2bb9cc",
+  "p_value_count_executed": 0,
+  "predicted_behavior_computed": false,
+  "required_base_commit": "1f9c42cd502bcf204c05baa2c6cbbc7e9274bd7c",
+  "result": "PASS_GEN4_LOWDISP_NATIVE_FUNCTIONAL_FAITHFULNESS_READOUT_RAW",
+  "row_count": 1200,
+  "schema_version": "gen4-lowdisp-native-functional-faithfulness-readout-manifest-v1",
+  "scientific_conclusion": null,
+  "structural_row_sha256": "1d0f21ba44b4a282f42edb7e56626bb7d522ce09e25e1611bf1424ead4da2b28",
+  "structural_source_sha256": "eddd6a264130e6451c72aeab010758dac43de82d9521898dfd1489c86717d11a",
+  "summary_sha256": "c30211f92adbe55888126ff77076fd5e0cf2492e0857d2c2806b427f995720d0",
+  "token_gate_cross_scale_sha256": "6657df0844a4fc8f41488b6fe119322ffa99583c83c7fdb4de683e9f7bb20b00"
+}
