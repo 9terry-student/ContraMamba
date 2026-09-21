@@ -1,0 +1,35 @@
+{
+  "backward_count": 0,
+  "compatible_item_count": 462,
+  "condition_order": [
+    "native",
+    "dominant_neutralized",
+    "dominant_control"
+  ],
+  "execution_head": "b6587da0a1e05874edcc674e78c5439756522f6c",
+  "historical_130m370m_averitec_family_reopened": false,
+  "historical_averitec_item_results_accessed": false,
+  "input_sha256": {
+    "compatible_cohort.jsonl": "86da8d1435e5722bef5f35db204d097600f152361b147e84d0bb3bbe714c4f00",
+    "token_gate_manifest.json": "88e9f668ac430c7d59796e4b35da790375f6af92349eca3ab021e3935af2e604"
+  },
+  "output_sha256": {
+    "external_transfer_rows.jsonl": "e2ef452a6dd3bb076924db5e4892741948e4a3c8c5ff11913a2c848cbc72980a",
+    "raw_external_transfer_summary.json": "7bc2d0260dd664b2f0953ac224be44bd23de4b58998b42eada95ce35d21a761e"
+  },
+  "p_value_count_executed": 0,
+  "parameter_update_executed": false,
+  "primary_inference_executed": false,
+  "prospective_plan_sha256": "11cae5cce793f3f27a3d8ec449f3dde1deab6aa162e37c97d6deaf9e04d6c845",
+  "required_gate_freeze_commit": "c260488e91c610eaaea1d7a194a46003c96660c5",
+  "rescue_performed": false,
+  "result": "PASS_GEN4_MAMBA14B_AVERITEC_NEGATIVE_SIGN_RAW",
+  "row_count": 1386,
+  "scale": "mamba14b",
+  "schema_version": "gen4-averitec-mamba14b-negative-sign-raw-manifest-v1",
+  "scientific_conclusion": null,
+  "scientific_full_model_forward_count": 1386,
+  "selection_reopened": false,
+  "shard_count": 2,
+  "training_executed": false
+}
