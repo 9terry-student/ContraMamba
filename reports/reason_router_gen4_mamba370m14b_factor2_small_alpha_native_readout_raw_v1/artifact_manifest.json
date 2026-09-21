@@ -1,0 +1,17 @@
+{
+  "behavioral_merge_computed": false,
+  "behavioral_response_accessed": false,
+  "execution_head": "30cadcee8dda4a878a1587f48e33a37cb6a41ad3",
+  "item_sha256": "cb4e4115d7f21cc66e63153f49942eb4e3e1f6d410c1475c24666cc4f76a9fd8",
+  "p_value_count_executed": 0,
+  "predicted_behavior_computed": false,
+  "required_base_commit": "9b0dfe91780de00347ce3827102f08210d6b558e",
+  "result": "PASS_GEN4_FACTOR2_SMALL_ALPHA_NATIVE_READOUT_RAW",
+  "row_count": 1200,
+  "schema_version": "gen4-factor2-small-alpha-native-readout-manifest-v1",
+  "scientific_conclusion": null,
+  "structural_row_sha256": "08da7b3b1d9d92f189b6481abd0b889aeac908519eeae804b8574328ce497f51",
+  "structural_source_sha256": "05026973b2ec61847c85d6aab800eada130aad9e9c7edb14a4d8d88f41544c4e",
+  "summary_sha256": "63d5eeec7f8353380d166bb25c994726e3f2cf4280568793c773a1182af1b3f7",
+  "token_gate_cross_scale_sha256": "81790aa7fe8c6dc35022485cb70c9300ea28cfe299f2d8822673e947abed2d9d"
+}
