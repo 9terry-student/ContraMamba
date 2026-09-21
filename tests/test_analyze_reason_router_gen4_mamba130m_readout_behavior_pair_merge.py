@@ -87,3 +87,57 @@ def test_output_contract_has_zero_inference() -> None:
     assert subject.N == 300
     assert subject.EXPECTED_PAIRS[0] == "xg1_fact_2701"
     assert subject.EXPECTED_PAIRS[-1] == "xg1_fact_3000"
+
+def test_git_blob_checksum_mode_survives_crlf_worktree(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    root = tmp_path / "historical"
+    root.mkdir()
+
+    row_blob = b'{"x":1}\n{"x":2}\n'
+    summary_blob = b'{"result":"ok"}\n'
+    expected = {
+        subject.BEHAVIOR_ROW_FILE:
+            hashlib.sha256(row_blob).hexdigest(),
+        subject.BEHAVIOR_SUMMARY_FILE:
+            hashlib.sha256(summary_blob).hexdigest(),
+    }
+    sums_blob = "".join(
+        f"{digest}  {name}\n"
+        for name, digest in expected.items()
+    ).encode("utf-8")
+
+    # Simulate Windows checkout conversion: local bytes differ from frozen bytes.
+    (root / subject.BEHAVIOR_ROW_FILE).write_bytes(
+        row_blob.replace(b"\n", b"\r\n")
+    )
+    (root / subject.BEHAVIOR_SUMMARY_FILE).write_bytes(
+        summary_blob.replace(b"\n", b"\r\n")
+    )
+    (root / subject.SUMS_FILE).write_bytes(
+        sums_blob.replace(b"\n", b"\r\n")
+    )
+
+    blob_map = {
+        (root / subject.BEHAVIOR_ROW_FILE).resolve(): row_blob,
+        (root / subject.BEHAVIOR_SUMMARY_FILE).resolve(): summary_blob,
+        (root / subject.SUMS_FILE).resolve(): sums_blob,
+    }
+
+    monkeypatch.setattr(
+        subject,
+        "git_blob_bytes",
+        lambda path: blob_map[path.resolve()],
+    )
+
+    subject.validate_exact_sums(
+        root,
+        expected=expected,
+        git_blob=True,
+    )
+    rows = subject.jsonl_rows(
+        root / subject.BEHAVIOR_ROW_FILE,
+        git_blob=True,
+    )
+    assert rows == [{"x": 1}, {"x": 2}]

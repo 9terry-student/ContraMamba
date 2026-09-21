@@ -93,6 +93,33 @@ def sha256_file(path: Path) -> str:
     return h.hexdigest()
 
 
+def sha256_bytes(raw: bytes) -> str:
+    return hashlib.sha256(raw).hexdigest()
+
+
+def git_blob_bytes(path: Path) -> bytes:
+    try:
+        rel = path.resolve().relative_to(ROOT.resolve()).as_posix()
+    except ValueError as exc:
+        raise PairMergeError(f"GIT_BLOB_OUTSIDE_ROOT:{path}") from exc
+    try:
+        return subprocess.check_output(
+            ["git", "show", f"HEAD:{rel}"],
+            cwd=ROOT,
+            stderr=subprocess.STDOUT,
+        )
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise PairMergeError(f"GIT_BLOB_READ:{rel}") from exc
+
+
+def source_bytes(path: Path, *, git_blob: bool) -> bytes:
+    return git_blob_bytes(path) if git_blob else path.read_bytes()
+
+
+def source_text(path: Path, *, git_blob: bool) -> str:
+    return source_bytes(path, git_blob=git_blob).decode("utf-8")
+
+
 def canonical_json_bytes(value: Mapping[str, Any]) -> bytes:
     return (
         json.dumps(
@@ -119,9 +146,16 @@ def pretty_json_bytes(value: Mapping[str, Any]) -> bytes:
     ).encode("utf-8")
 
 
-def jsonl_rows(path: Path) -> list[dict[str, Any]]:
+def jsonl_rows(
+    path: Path,
+    *,
+    git_blob: bool = False,
+) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
-    for line_no, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+    for line_no, line in enumerate(
+        source_text(path, git_blob=git_blob).splitlines(),
+        1,
+    ):
         if not line.strip():
             continue
         value = json.loads(line)
@@ -160,11 +194,12 @@ def validate_exact_sums(
     root: Path,
     *,
     expected: Mapping[str, str],
+    git_blob: bool = False,
 ) -> None:
     sums_path = root / SUMS_FILE
     require(sums_path.is_file(), f"SUMS_MISSING:{root}")
     observed: dict[str, str] = {}
-    for line in sums_path.read_text(encoding="utf-8").splitlines():
+    for line in source_text(sums_path, git_blob=git_blob).splitlines():
         if not line.strip():
             continue
         digest, name = line.split("  ", 1)
@@ -174,7 +209,12 @@ def validate_exact_sums(
     for name, digest in observed.items():
         target = root / name
         require(target.is_file(), f"SUM_TARGET_MISSING:{root}:{name}")
-        require(sha256_file(target) == digest, f"SUM_MISMATCH:{root}:{name}")
+        actual = (
+            sha256_bytes(source_bytes(target, git_blob=True))
+            if git_blob
+            else sha256_file(target)
+        )
+        require(actual == digest, f"SUM_MISMATCH:{root}:{name}")
 
 
 def read_readout_pairs(readout_dir: Path) -> list[dict[str, Any]]:
@@ -249,9 +289,13 @@ def read_behavior_shard(
     validate_exact_sums(
         shard_dir,
         expected=EXPECTED_BEHAVIOR_SHA256[shard_id],
+        git_blob=True,
     )
     summary = json.loads(
-        (shard_dir / BEHAVIOR_SUMMARY_FILE).read_text(encoding="utf-8")
+        source_text(
+            shard_dir / BEHAVIOR_SUMMARY_FILE,
+            git_blob=True,
+        )
     )
     expected_pairs = shard_expected_pairs(shard_id)
 
@@ -272,7 +316,10 @@ def read_behavior_shard(
     require(summary["primary_inference_executed"] is False, f"SUMMARY_INFERENCE:{shard_id}")
     require(summary["scientific_conclusion"] is None, f"SUMMARY_CONCLUSION:{shard_id}")
 
-    rows = jsonl_rows(shard_dir / BEHAVIOR_ROW_FILE)
+    rows = jsonl_rows(
+        shard_dir / BEHAVIOR_ROW_FILE,
+        git_blob=True,
+    )
     expected_tuples = {
         (pair, cell, condition)
         for pair in expected_pairs
