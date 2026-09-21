@@ -35,6 +35,13 @@ def test_protocol_freezes_followup_before_response() -> None:
     assert transported.PLANNED_PRIMARY_P_VALUE_COUNT == 1
     assert transported.PLANNED_SIGN_GATE == "mean(D_TRANSPORT)>0"
     assert transported.D_CAN_ROLE == "descriptive_only"
+    assert (
+        transported.CONTROL_EXTENSION_RULE
+        == (
+            "orthogonal_residualization_of_frozen_adjacent_P4_against_"
+            "row_conditioned_transported_P5"
+        )
+    )
 
 
 def test_forward_budget_is_one_adjacent_response_plus_transport() -> None:
@@ -105,27 +112,120 @@ def test_strong_projection_rank_loss_is_blocking() -> None:
         transported.ADJACENT_STRONG_DIM = old_strong
 
 
-def test_pair_planes_replaces_only_selected_p5() -> None:
-    frozen = {
-        "P4": {
-            "plus": torch.tensor([1.0, 0.0]),
-            "minus": torch.tensor([0.0, 1.0]),
-        },
-        "P5": {
-            "plus": torch.tensor([0.5, 0.5]),
-            "minus": torch.tensor([0.5, -0.5]),
-        },
-    }
-    new = {
-        "plus": torch.tensor([0.0, 1.0]),
-        "minus": torch.tensor([1.0, 0.0]),
-    }
-    out = transported.pair_planes(frozen, new)
+def test_pair_planes_residualizes_nonorthogonal_p4_without_reselection() -> None:
+    old_strong = transported.ADJACENT_STRONG_DIM
+    try:
+        transported.ADJACENT_STRONG_DIM = 4
+        root2 = math.sqrt(2.0)
+        frozen = {
+            "P4": {
+                "plus": torch.tensor(
+                    [1.0 / root2, 0.0, 1.0 / root2, 0.0],
+                    dtype=torch.float64,
+                ),
+                "minus": torch.tensor(
+                    [0.0, 1.0 / root2, 0.0, 1.0 / root2],
+                    dtype=torch.float64,
+                ),
+            },
+            "P5": {
+                "plus": torch.tensor([0.0, 0.0, 1.0, 0.0], dtype=torch.float64),
+                "minus": torch.tensor([0.0, 0.0, 0.0, 1.0], dtype=torch.float64),
+            },
+        }
+        selected = {
+            "plus": torch.tensor([1.0, 0.0, 0.0, 0.0], dtype=torch.float64),
+            "minus": torch.tensor([0.0, 1.0, 0.0, 0.0], dtype=torch.float64),
+        }
 
-    assert torch.equal(out["P4"]["plus"], frozen["P4"]["plus"])
-    assert torch.equal(out["P4"]["minus"], frozen["P4"]["minus"])
-    assert torch.equal(out["P5"]["plus"], new["plus"])
-    assert torch.equal(out["P5"]["minus"], new["minus"])
+        out, diag = transported.pair_planes(frozen, selected)
+        selected_matrix = torch.stack(
+            [out["P5"]["plus"], out["P5"]["minus"]],
+            dim=1,
+        )
+        control_matrix = torch.stack(
+            [out["P4"]["plus"], out["P4"]["minus"]],
+            dim=1,
+        )
+
+        assert torch.equal(out["P5"]["plus"], selected["plus"])
+        assert torch.equal(out["P5"]["minus"], selected["minus"])
+        assert torch.allclose(
+            control_matrix.T @ control_matrix,
+            torch.eye(2, dtype=torch.float64),
+            atol=1e-12,
+            rtol=0.0,
+        )
+        assert torch.allclose(
+            selected_matrix.T @ control_matrix,
+            torch.zeros((2, 2), dtype=torch.float64),
+            atol=1e-12,
+            rtol=0.0,
+        )
+        assert diag["control_source_plane"] == "P4"
+        assert diag["control_residual_rank"] == 2
+        assert diag["selected_control_cross_max_abs_before"] > 0.0
+        assert diag["selected_control_cross_max_abs_after"] <= 1e-12
+    finally:
+        transported.ADJACENT_STRONG_DIM = old_strong
+
+
+def test_pair_planes_is_identity_for_already_orthogonal_p4() -> None:
+    old_strong = transported.ADJACENT_STRONG_DIM
+    try:
+        transported.ADJACENT_STRONG_DIM = 4
+        selected = {
+            "plus": torch.tensor([1.0, 0.0, 0.0, 0.0], dtype=torch.float64),
+            "minus": torch.tensor([0.0, 1.0, 0.0, 0.0], dtype=torch.float64),
+        }
+        frozen = {
+            "P4": {
+                "plus": torch.tensor([0.0, 0.0, 1.0, 0.0], dtype=torch.float64),
+                "minus": torch.tensor([0.0, 0.0, 0.0, 1.0], dtype=torch.float64),
+            },
+            "P5": selected,
+        }
+
+        out, diag = transported.pair_planes(frozen, selected)
+        assert torch.allclose(
+            out["P4"]["plus"],
+            frozen["P4"]["plus"],
+            atol=1e-12,
+            rtol=0.0,
+        )
+        assert torch.allclose(
+            out["P4"]["minus"],
+            frozen["P4"]["minus"],
+            atol=1e-12,
+            rtol=0.0,
+        )
+        assert diag["selected_control_cross_max_abs_before"] <= 1e-12
+        assert diag["selected_control_cross_max_abs_after"] <= 1e-12
+    finally:
+        transported.ADJACENT_STRONG_DIM = old_strong
+
+
+def test_pair_planes_blocks_if_p4_loses_rank_after_selected_residualization() -> None:
+    old_strong = transported.ADJACENT_STRONG_DIM
+    try:
+        transported.ADJACENT_STRONG_DIM = 4
+        selected = {
+            "plus": torch.tensor([1.0, 0.0, 0.0, 0.0], dtype=torch.float64),
+            "minus": torch.tensor([0.0, 1.0, 0.0, 0.0], dtype=torch.float64),
+        }
+        frozen = {
+            "P4": selected,
+            "P5": selected,
+        }
+
+        try:
+            transported.pair_planes(frozen, selected)
+        except transported.TransportedResponseError as exc:
+            assert "CONTROL_RESIDUAL_RANK" in str(exc)
+        else:
+            raise AssertionError("expected control residual rank-loss block")
+    finally:
+        transported.ADJACENT_STRONG_DIM = old_strong
 
 
 def test_transport_plane_uses_validated_fixed_fd() -> None:
@@ -152,7 +252,7 @@ def test_raw_execution_does_not_read_historical_response_values() -> None:
 
 def test_same_pair_plane_is_passed_once_to_both_response_branches() -> None:
     source = inspect.getsource(transported.worker_run)
-    assert "planes = pair_planes" in source
+    assert "planes, control_diag = pair_planes" in source
     assert "planes=planes" in source
     assert "core.run_pair" in source
     assert "transported_plane" in source

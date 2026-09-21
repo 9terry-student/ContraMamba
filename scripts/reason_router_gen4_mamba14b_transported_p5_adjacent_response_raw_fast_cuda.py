@@ -147,13 +147,17 @@ PLANNED_HISTORICAL_REFERENCE = (
     "same-pair frozen Experiment-5 D_ADJ on XG1 5101..5400"
 )
 D_CAN_ROLE = "descriptive_only"
+CONTROL_EXTENSION_RULE = (
+    "orthogonal_residualization_of_frozen_adjacent_P4_against_"
+    "row_conditioned_transported_P5"
+)
 
 RESULT_PASS = (
     "PASS_MAMBA14B_TRANSPORTED_P5_ADJACENT_RESPONSE_RAW"
 )
-ITEM_SCHEMA = "gen4-mamba14b-transported-p5-adjacent-response-raw-item-v1"
-SUMMARY_SCHEMA = "gen4-mamba14b-transported-p5-adjacent-response-raw-summary-v1"
-MANIFEST_SCHEMA = "gen4-mamba14b-transported-p5-adjacent-response-raw-manifest-v1"
+ITEM_SCHEMA = "gen4-mamba14b-transported-p5-adjacent-response-raw-item-v2"
+SUMMARY_SCHEMA = "gen4-mamba14b-transported-p5-adjacent-response-raw-summary-v2"
+MANIFEST_SCHEMA = "gen4-mamba14b-transported-p5-adjacent-response-raw-manifest-v2"
 
 ITEM_FILE = "transported_adjacent_response_items.jsonl"
 SUMMARY_FILE = "raw_response_summary.json"
@@ -315,6 +319,14 @@ def validate_protocol() -> None:
     require(PLANNED_PRIMARY_P_VALUE_COUNT == 1, "P_VALUE_COUNT")
     require(PLANNED_SIGN_GATE == "mean(D_TRANSPORT)>0", "SIGN_GATE")
     require(D_CAN_ROLE == "descriptive_only", "D_CAN_ROLE")
+    require(
+        CONTROL_EXTENSION_RULE
+        == (
+            "orthogonal_residualization_of_frozen_adjacent_P4_against_"
+            "row_conditioned_transported_P5"
+        ),
+        "CONTROL_EXTENSION_RULE",
+    )
 
 
 def _rank_two(matrix: torch.Tensor) -> tuple[int, float, torch.Tensor]:
@@ -503,12 +515,119 @@ def build_pair_transported_plane(
     }
 
 
+def _validated_plane_matrix(
+    plane: Mapping[str, torch.Tensor],
+    *,
+    label: str,
+) -> torch.Tensor:
+    require(set(plane) == {"plus", "minus"}, f"{label}_PLANE_KEYS")
+    matrix = torch.stack(
+        [
+            plane["plus"].detach().cpu().to(torch.float64).contiguous(),
+            plane["minus"].detach().cpu().to(torch.float64).contiguous(),
+        ],
+        dim=1,
+    )
+    require(
+        tuple(matrix.shape) == (ADJACENT_STRONG_DIM, 2),
+        f"{label}_PLANE_SHAPE:{tuple(matrix.shape)}",
+    )
+    require(bool(torch.isfinite(matrix).all().item()), f"{label}_PLANE_NONFINITE")
+    gram_residual = float(
+        torch.max(
+            torch.abs(
+                matrix.T @ matrix
+                - torch.eye(2, dtype=torch.float64)
+            )
+        ).item()
+    )
+    require(gram_residual <= 1e-10, f"{label}_PLANE_GRAM:{gram_residual}")
+    return matrix
+
+
+def residualize_control_against_selected(
+    selected_plane: Mapping[str, torch.Tensor],
+    frozen_control_plane: Mapping[str, torch.Tensor],
+) -> tuple[dict[str, torch.Tensor], dict[str, Any]]:
+    selected = _validated_plane_matrix(selected_plane, label="SELECTED")
+    control = _validated_plane_matrix(frozen_control_plane, label="CONTROL")
+
+    cross_before = (selected.T @ control).contiguous()
+    residual = (
+        control
+        - selected @ cross_before
+    ).contiguous()
+
+    residual_rank, residual_tol, residual_s = _rank_two(residual)
+    require(
+        residual_rank == 2,
+        f"CONTROL_RESIDUAL_RANK:{residual_rank}",
+    )
+
+    # Polar orthonormalization gives the closest orthonormal basis to the
+    # residualized frozen P4 columns, preserving the fixed P4 source while
+    # extending the historical operator to a nonorthogonal transported P5.
+    u, _s, vh = torch.linalg.svd(
+        residual,
+        full_matrices=False,
+    )
+    control_q = (u @ vh).contiguous()
+
+    gram_after = float(
+        torch.max(
+            torch.abs(
+                control_q.T @ control_q
+                - torch.eye(2, dtype=torch.float64)
+            )
+        ).item()
+    )
+    cross_after = (selected.T @ control_q).contiguous()
+    cross_after_max = float(torch.max(torch.abs(cross_after)).item())
+
+    require(gram_after <= 1e-10, f"CONTROL_Q_GRAM:{gram_after}")
+    require(
+        cross_after_max <= 1e-10,
+        f"CONTROL_SELECTED_ORTHOGONALITY:{cross_after_max}",
+    )
+
+    return {
+        "plus": control_q[:, 0].contiguous(),
+        "minus": control_q[:, 1].contiguous(),
+    }, {
+        "control_source_plane": ADJACENT_CONTROL_PLANE,
+        "control_extension_rule": CONTROL_EXTENSION_RULE,
+        "selected_control_cross_gram_before": [
+            [float(value) for value in row]
+            for row in cross_before.tolist()
+        ],
+        "selected_control_cross_max_abs_before":
+            float(torch.max(torch.abs(cross_before)).item()),
+        "control_residual_rank": residual_rank,
+        "control_residual_rank_tolerance": residual_tol,
+        "control_residual_singular_values": [
+            float(value) for value in residual_s.tolist()
+        ],
+        "control_residual_condition_number":
+            float(residual_s[0].item() / residual_s[1].item()),
+        "control_orthonormal_gram_max_abs_residual": gram_after,
+        "selected_control_cross_max_abs_after": cross_after_max,
+    }
+
+
 def pair_planes(
     frozen_planes: Mapping[str, Mapping[str, torch.Tensor]],
     transported_plane: Mapping[str, torch.Tensor],
-) -> dict[str, dict[str, torch.Tensor]]:
+) -> tuple[dict[str, dict[str, torch.Tensor]], dict[str, Any]]:
     require("P5" in frozen_planes and "P4" in frozen_planes, "FROZEN_PLANES")
     require(set(transported_plane) == {"plus", "minus"}, "TRANSPORTED_PLANE_KEYS")
+    selected = {
+        "plus": transported_plane["plus"],
+        "minus": transported_plane["minus"],
+    }
+    control, control_diag = residualize_control_against_selected(
+        selected,
+        frozen_planes["P4"],
+    )
     out = {
         plane: {
             "plus": values["plus"],
@@ -516,11 +635,9 @@ def pair_planes(
         }
         for plane, values in frozen_planes.items()
     }
-    out["P5"] = {
-        "plus": transported_plane["plus"],
-        "minus": transported_plane["minus"],
-    }
-    return out
+    out["P5"] = selected
+    out["P4"] = control
+    return out, control_diag
 
 
 def _worker_paths(temp_dir: Path, shard_id: int) -> dict[str, Path]:
@@ -612,10 +729,14 @@ def worker_run(
                 strong_indices=strong_indices,
                 source_p5=source_p5,
             )
-            planes = pair_planes(
+            planes, control_diag = pair_planes(
                 frozen["planes"],
                 transported_plane,
             )
+            transport_diag = {
+                **transport_diag,
+                "control_orthogonalization": control_diag,
+            }
 
             raw = core.run_pair(
                 pair_index=pair_index,
@@ -646,6 +767,7 @@ def worker_run(
                     "target_offset": TARGET_OFFSET,
                 },
                 "response_blind_control_plane": ADJACENT_CONTROL_PLANE,
+                "control_extension_rule": CONTROL_EXTENSION_RULE,
                 "epsilon": EPSILON,
                 "conditions": raw["conditions"],
                 "Q_restored": float(raw["Q_restored"]),
@@ -862,8 +984,19 @@ def run_raw(
             "site": "adjacent",
             "triplet": [34, 35, 36],
             "response_blind_control_plane": ADJACENT_CONTROL_PLANE,
+            "control_extension_rule": CONTROL_EXTENSION_RULE,
+            "control_extension_interpretation": (
+                "Frozen adjacent P4 is projected into the orthogonal complement "
+                "of each row-conditioned transported P5 and symmetrically "
+                "orthonormalized. This is response-blind and reduces to the "
+                "historical P4 operator when selected and control planes are "
+                "already orthogonal."
+            ),
             "probe_bases": "frozen adjacent XG2/XG4 K=5 bases",
-            "endpoint": "D_TRANSPORT=Q_restored(transported_P5)-Q_control(adjacent_P4)",
+            "endpoint": (
+                "D_TRANSPORT=Q_restored(transported_P5)-"
+                "Q_control(orthogonalized_frozen_adjacent_P4)"
+            ),
             "descriptive_D_TRANSPORT": _descriptive(d_transport),
         },
         "planned_static_analysis": {
