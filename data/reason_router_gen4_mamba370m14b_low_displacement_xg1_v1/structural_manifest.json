@@ -1,0 +1,60 @@
+{
+  "alpha_sweep_allowed": false,
+  "anchor_name": "A_IDENTITY",
+  "behavioral_alphas": [
+    0.5,
+    0.25
+  ],
+  "checkpoint_loaded": false,
+  "claim_overlap_with_prior": 0,
+  "cohort_replacement_allowed": false,
+  "control_planes_frozen": {
+    "mamba14b": "P4",
+    "mamba370m": "P5"
+  },
+  "cuda_executed": false,
+  "deterministic_generator_semantics": true,
+  "endpoint_values_present": false,
+  "evidence_overlap_with_prior": 0,
+  "generator_family": "xg1_independent_structured_records_v1",
+  "intervention_layer": 35,
+  "labels_embedded_in_structural_rows": false,
+  "layer_sweep_allowed": false,
+  "model_executed": false,
+  "pair_id_first": "xg1_fact_5401",
+  "pair_id_last": "xg1_fact_5700",
+  "pair_id_overlap_with_prior": 0,
+  "plan_freeze_commit": "2111520366002d2f3ef412218d757968a7623887",
+  "primary_alpha": 0.25,
+  "prior_pair_range": "xg1_fact_001..xg1_fact_5400",
+  "response_based_control_selection_allowed": false,
+  "response_fields_present": false,
+  "result": "PASS_MAMBA370M14B_LOW_DISPLACEMENT_XG1_5401_5700_STRUCTURAL",
+  "role": "low_displacement_behavioral_robustness",
+  "row_count": 1800,
+  "row_file_sha256": "1d0f21ba44b4a282f42edb7e56626bb7d522ce09e25e1611bf1424ead4da2b28",
+  "row_filtering_allowed": false,
+  "rows_per_pair": 6,
+  "scale_order": [
+    "mamba370m",
+    "mamba14b"
+  ],
+  "scale_specific_alpha_allowed": false,
+  "schema_version": "GEN4_MAMBA370M14B_LOW_DISPLACEMENT_XG1_STRUCTURAL_V1",
+  "selected_planes_frozen": {
+    "mamba14b": "P5",
+    "mamba370m": "P3"
+  },
+  "selection_allowed": false,
+  "source_block": 33,
+  "source_file_sha256": "eddd6a264130e6451c72aeab010758dac43de82d9521898dfd1489c86717d11a",
+  "source_pair_count": 300,
+  "target_cells": [
+    "C0_SHAM",
+    "C2_NAME"
+  ],
+  "target_offset": 2,
+  "target_residual_layer": 34,
+  "token_sweep_allowed": false,
+  "tokenizer_executed": false
+}
