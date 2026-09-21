@@ -1,0 +1,306 @@
+{
+  "adaptive_epsilon_selection_performed": false,
+  "behavioral_calibration_result_accessed": false,
+  "cells": [
+    "C0_SHAM",
+    "C2_NAME"
+  ],
+  "dynamic_max_wrong_margin_secondary_only": true,
+  "epsilons": [
+    0.03125,
+    0.015625,
+    0.0078125
+  ],
+  "even_order_curvature_recorded": true,
+  "execution_head": "e4cf57efb53abb1e85aaa36f0321f1becb935aeb",
+  "forwards_per_row": 7,
+  "frozen_autograd_readout_reused": true,
+  "inferential_test_performed": false,
+  "local_backward_count": 0,
+  "p_value_count_executed": 0,
+  "parameter_update_executed": false,
+  "population": "xg1_fact_5701..xg1_fact_6000",
+  "primary_numeric_target": "fixed-native-active-wrong central difference vs frozen Delta_L",
+  "readout_item_sha256": "cb4e4115d7f21cc66e63153f49942eb4e3e1f6d410c1475c24666cc4f76a9fd8",
+  "required_ancestor": "57644369580c6f560e8eeb1ddbfc09d714a4c789",
+  "rescue_performed": false,
+  "result": "PASS_GEN4_FACTOR2_GRADIENT_CONSISTENCY_RAW",
+  "row_count": 128,
+  "row_filtering_performed": false,
+  "scales": [
+    "mamba370m",
+    "mamba14b"
+  ],
+  "schema_version": "gen4-factor2-gradient-consistency-summary-v1",
+  "scientific_conclusion": null,
+  "scientific_full_model_forward_count": 896,
+  "signed_perturbations": true,
+  "static_factor2_result_accessed": false,
+  "subset_pair_count": 32,
+  "subset_pairs": [
+    "xg1_fact_5716",
+    "xg1_fact_5719",
+    "xg1_fact_5724",
+    "xg1_fact_5726",
+    "xg1_fact_5739",
+    "xg1_fact_5741",
+    "xg1_fact_5758",
+    "xg1_fact_5777",
+    "xg1_fact_5795",
+    "xg1_fact_5796",
+    "xg1_fact_5802",
+    "xg1_fact_5812",
+    "xg1_fact_5822",
+    "xg1_fact_5835",
+    "xg1_fact_5838",
+    "xg1_fact_5841",
+    "xg1_fact_5869",
+    "xg1_fact_5870",
+    "xg1_fact_5874",
+    "xg1_fact_5891",
+    "xg1_fact_5909",
+    "xg1_fact_5921",
+    "xg1_fact_5940",
+    "xg1_fact_5951",
+    "xg1_fact_5952",
+    "xg1_fact_5961",
+    "xg1_fact_5966",
+    "xg1_fact_5973",
+    "xg1_fact_5979",
+    "xg1_fact_5982",
+    "xg1_fact_5988",
+    "xg1_fact_5990"
+  ],
+  "subset_selection_method": "lowest SHA256(salt:pair_id), then numeric-order serialization",
+  "subset_selection_salt": "factor2-gradient-consistency-v1",
+  "training_executed": false,
+  "workers": {
+    "mamba14b": {
+      "behavioral_calibration_result_accessed": false,
+      "checkpoint_sha256": "915c9de38d9dc7ee9da26ba4328e74549864c6bd29723f3b7a4b4e0050efce0a",
+      "control_plane": "P4",
+      "epsilons": [
+        0.03125,
+        0.015625,
+        0.0078125
+      ],
+      "execution_head": "e4cf57efb53abb1e85aaa36f0321f1becb935aeb",
+      "inferential_test_performed": false,
+      "local_backward_count": 0,
+      "model_provenance": {
+        "compact_checkpoint_sha256": "915c9de38d9dc7ee9da26ba4328e74549864c6bd29723f3b7a4b4e0050efce0a",
+        "downstream_state_canonical_sha256": "b84b6af218f3d73e10a20e98f3a4118cf2e58d37e25c829a54b81c49eb9fd8ea",
+        "full_state_canonical_sha256": "61b7d444be97b94d18eed698b580b9e44e081060cbec2fa324733839ab431f0d",
+        "kernel_constructor_calls": {
+          "causal-conv1d": 48,
+          "mamba-ssm": 48
+        },
+        "pretrained_backbone_state_stream_sha256": "f6239d5b5b2a35409d38f2fc4267f52fb1524438d7ae2b1f4f6c43ec07f7224a",
+        "snapshot": {
+          "config.json": {
+            "bytes": 879,
+            "sha256": "275174e4771bb65f70cb1ea03389c9711510438d7944885e8f02f525bec03a9d"
+          },
+          "generation_config.json": {
+            "bytes": 137,
+            "sha256": "248fa733db101c19a8e3c2f311a180fdd7c769323ec2873edf7060cec9f5ee32"
+          },
+          "model-00001-of-00002.safetensors": {
+            "bytes": 4960287720,
+            "sha256": "3a0351b2c6a044c5f19f0f8992362e57c0d6f71b0e0702d46f43f3d8a7120c84"
+          },
+          "model-00002-of-00002.safetensors": {
+            "bytes": 528479144,
+            "sha256": "6cd1ac80d0acd00e6b6afebad9690115c5d932009ba644a6c8af1e0aed8414de"
+          },
+          "model.safetensors.index.json": {
+            "bytes": 38175,
+            "sha256": "a4739638258ef26762ff808249c3888fdb8bd4a15404a0db4811feb5cf2444b5"
+          },
+          "tokenizer.json": {
+            "bytes": 2113738,
+            "sha256": "3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8"
+          },
+          "tokenizer_config.json": {
+            "bytes": 4793,
+            "sha256": "3ba257483d22a5a84aab5465aa427e59bdaeb55f09fb14349e2d571ff67e8020"
+          }
+        },
+        "source_full_checkpoint_sha256": "2383cb212f7e87be1ac8920c7875602a73a1c6031212df17342457acb8b87555"
+      },
+      "p_value_count_executed": 0,
+      "parameter_update_executed": false,
+      "physical_device": 1,
+      "readout_item_sha256": "cb4e4115d7f21cc66e63153f49942eb4e3e1f6d410c1475c24666cc4f76a9fd8",
+      "row_count": 64,
+      "scale": "mamba14b",
+      "scientific_conclusion": null,
+      "scientific_full_model_forward_count": 448,
+      "selected_plane": "P5",
+      "static_factor2_result_accessed": false,
+      "subset_pair_count": 32,
+      "subset_pairs": [
+        "xg1_fact_5716",
+        "xg1_fact_5719",
+        "xg1_fact_5724",
+        "xg1_fact_5726",
+        "xg1_fact_5739",
+        "xg1_fact_5741",
+        "xg1_fact_5758",
+        "xg1_fact_5777",
+        "xg1_fact_5795",
+        "xg1_fact_5796",
+        "xg1_fact_5802",
+        "xg1_fact_5812",
+        "xg1_fact_5822",
+        "xg1_fact_5835",
+        "xg1_fact_5838",
+        "xg1_fact_5841",
+        "xg1_fact_5869",
+        "xg1_fact_5870",
+        "xg1_fact_5874",
+        "xg1_fact_5891",
+        "xg1_fact_5909",
+        "xg1_fact_5921",
+        "xg1_fact_5940",
+        "xg1_fact_5951",
+        "xg1_fact_5952",
+        "xg1_fact_5961",
+        "xg1_fact_5966",
+        "xg1_fact_5973",
+        "xg1_fact_5979",
+        "xg1_fact_5982",
+        "xg1_fact_5988",
+        "xg1_fact_5990"
+      ],
+      "subset_selection_salt": "factor2-gradient-consistency-v1",
+      "target_cells": [
+        "C0_SHAM",
+        "C2_NAME"
+      ],
+      "tokenizer": {
+        "file_sha256": {
+          "tokenizer.json": "3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8",
+          "tokenizer_config.json": "3ba257483d22a5a84aab5465aa427e59bdaeb55f09fb14349e2d571ff67e8020"
+        },
+        "repo": "state-spaces/mamba-1.4b-hf",
+        "revision": "6e46eae61c27280517feef46f536d16b91076f08",
+        "tokenizers_version": "0.22.2",
+        "vocab_size": 50277
+      },
+      "training_executed": false
+    },
+    "mamba370m": {
+      "behavioral_calibration_result_accessed": false,
+      "checkpoint_sha256": "9d8e3db22af4636938679aac6a8a97dd45344937d434fab29eac2ddc41a52a72",
+      "control_plane": "P5",
+      "epsilons": [
+        0.03125,
+        0.015625,
+        0.0078125
+      ],
+      "execution_head": "e4cf57efb53abb1e85aaa36f0321f1becb935aeb",
+      "inferential_test_performed": false,
+      "local_backward_count": 0,
+      "model_provenance": {
+        "compact_checkpoint_sha256": "9d8e3db22af4636938679aac6a8a97dd45344937d434fab29eac2ddc41a52a72",
+        "downstream_state_canonical_sha256": "eb16ae88a3fe42dd44ca102cdc122d09fe69eb8cc3d3f5ff761f285ab2af1730",
+        "full_state_canonical_sha256": "cd368ea41cbfc6560ff2d9eb89fc53b333cde72d4db5c99ae7ea8e5f62c1db83",
+        "kernel_constructor_calls": {
+          "causal-conv1d": 48,
+          "mamba-ssm": 48
+        },
+        "mamba_state_canonical_sha256": "2f1bb0820efd7376103541cd6de7b2893456083359708ac78f3fd30f8d1d56ac",
+        "snapshot": {
+          "config.json": {
+            "bytes": 917,
+            "sha256": "c15aad03ce0cc27f7f550ff05bb9a0354f3c0770b3b9ef382c5f730aa8e23e62"
+          },
+          "generation_config.json": {
+            "bytes": 137,
+            "sha256": "ffc3c43cdd9c33c738da20597bdef859cd44e4cc77ff3966b6d59269a1cae8e7"
+          },
+          "model.safetensors": {
+            "bytes": 1486118288,
+            "sha256": "8e2386de4c63e64a371cb9bc451421b04a33390103ba5e596ead4ac4c668a2b1"
+          },
+          "special_tokens_map.json": {
+            "bytes": 473,
+            "sha256": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8"
+          },
+          "tokenizer.json": {
+            "bytes": 2113837,
+            "sha256": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf"
+          },
+          "tokenizer_config.json": {
+            "bytes": 4793,
+            "sha256": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+          }
+        },
+        "source_full_checkpoint_sha256": "b664a776b78b54cb8ec8e6553bc8a2059eef53d25165e2e82ab556146f85bf29"
+      },
+      "p_value_count_executed": 0,
+      "parameter_update_executed": false,
+      "physical_device": 0,
+      "readout_item_sha256": "cb4e4115d7f21cc66e63153f49942eb4e3e1f6d410c1475c24666cc4f76a9fd8",
+      "row_count": 64,
+      "scale": "mamba370m",
+      "scientific_conclusion": null,
+      "scientific_full_model_forward_count": 448,
+      "selected_plane": "P3",
+      "static_factor2_result_accessed": false,
+      "subset_pair_count": 32,
+      "subset_pairs": [
+        "xg1_fact_5716",
+        "xg1_fact_5719",
+        "xg1_fact_5724",
+        "xg1_fact_5726",
+        "xg1_fact_5739",
+        "xg1_fact_5741",
+        "xg1_fact_5758",
+        "xg1_fact_5777",
+        "xg1_fact_5795",
+        "xg1_fact_5796",
+        "xg1_fact_5802",
+        "xg1_fact_5812",
+        "xg1_fact_5822",
+        "xg1_fact_5835",
+        "xg1_fact_5838",
+        "xg1_fact_5841",
+        "xg1_fact_5869",
+        "xg1_fact_5870",
+        "xg1_fact_5874",
+        "xg1_fact_5891",
+        "xg1_fact_5909",
+        "xg1_fact_5921",
+        "xg1_fact_5940",
+        "xg1_fact_5951",
+        "xg1_fact_5952",
+        "xg1_fact_5961",
+        "xg1_fact_5966",
+        "xg1_fact_5973",
+        "xg1_fact_5979",
+        "xg1_fact_5982",
+        "xg1_fact_5988",
+        "xg1_fact_5990"
+      ],
+      "subset_selection_salt": "factor2-gradient-consistency-v1",
+      "target_cells": [
+        "C0_SHAM",
+        "C2_NAME"
+      ],
+      "tokenizer": {
+        "file_sha256": {
+          "special_tokens_map.json": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8",
+          "tokenizer.json": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf",
+          "tokenizer_config.json": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+        },
+        "repo": "state-spaces/mamba-370m-hf",
+        "revision": "589179554943157be31701edd8b4558889276674",
+        "tokenizers_version": "0.22.2",
+        "vocab_size": 50277
+      },
+      "training_executed": false
+    }
+  }
+}

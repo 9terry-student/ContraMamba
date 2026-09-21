@@ -1,0 +1,25 @@
+{
+  "adaptive_epsilon_selection_performed": false,
+  "behavioral_calibration_result_accessed": false,
+  "epsilons": [
+    0.03125,
+    0.015625,
+    0.0078125
+  ],
+  "execution_head": "e4cf57efb53abb1e85aaa36f0321f1becb935aeb",
+  "local_backward_count": 0,
+  "p_value_count_executed": 0,
+  "readout_item_sha256": "cb4e4115d7f21cc66e63153f49942eb4e3e1f6d410c1475c24666cc4f76a9fd8",
+  "required_ancestor": "57644369580c6f560e8eeb1ddbfc09d714a4c789",
+  "rescue_performed": false,
+  "result": "PASS_GEN4_FACTOR2_GRADIENT_CONSISTENCY_RAW",
+  "row_count": 128,
+  "row_filtering_performed": false,
+  "row_sha256": "01ab357cf561d53bcb02afacc5d6be27d694d94d222b7522f89579c77afcb1c7",
+  "schema_version": "gen4-factor2-gradient-consistency-manifest-v1",
+  "scientific_conclusion": null,
+  "scientific_full_model_forward_count": 896,
+  "static_factor2_result_accessed": false,
+  "subset_pair_count": 32,
+  "summary_sha256": "3774e09358c7d33b5a8430a3eb1bbf81629c893490583acb917623986a09beed"
+}
