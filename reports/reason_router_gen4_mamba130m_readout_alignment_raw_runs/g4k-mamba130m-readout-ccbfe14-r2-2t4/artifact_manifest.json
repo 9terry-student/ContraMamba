@@ -1,0 +1,18 @@
+{
+  "behavioral_bridge_D_BEH_accessed": false,
+  "cross_scale_readout_result_accessed": false,
+  "execution_head": "ccbfe14389655e3a900882505a10df0fb645217b",
+  "intervention_condition_forward_count": 0,
+  "item_sha256": "27c428fbcc3f9e89cc4dad566666e4d5307727637cf8bf1dd0c347744da18c85",
+  "local_backward_count": 600,
+  "parameter_update_executed": false,
+  "plan_sha256": "a8a2cb2af1ed35b82f404a713c15ebf176cd645f653c6eacf73722b6e34058b3",
+  "primary_p_value_count_executed": 0,
+  "result": "PASS_GEN4_MAMBA130M_READOUT_ALIGNMENT_RAW",
+  "row_count": 600,
+  "schema_version": "gen4-mamba130m-readout-alignment-raw-manifest-v1",
+  "scientific_conclusion": null,
+  "scientific_full_model_forward_count": 600,
+  "summary_sha256": "e37b69b3d0d5212da56a0587a76f3817ec1c3e9b8cee56cf92b8caf605ccecf0",
+  "training_executed": false
+}
