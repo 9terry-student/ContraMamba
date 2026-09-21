@@ -1,0 +1,171 @@
+{
+  "accounting": {
+    "baseline_full_model_forward_count": 1,
+    "fast_local_baseline_forward_count": 1,
+    "fast_local_fd_direction_count": 2,
+    "fast_local_perturbed_forward_count": 4,
+    "p_value_count_added": 0,
+    "reference_exact_jvp_count": 2,
+    "scientific_inference_count": 0,
+    "scientific_model_forward_count": 0
+  },
+  "boundary": {
+    "adjacent_p5_accessed": false,
+    "experiment5_xg1_response_accessed": false,
+    "parameter_gradient_created": false,
+    "parameter_update_executed": false,
+    "population_transport_executed": false,
+    "principal_angles_computed": false,
+    "procrustes_alignment_computed": false,
+    "projector_overlap_computed": false,
+    "scientific_conclusion": null,
+    "statistical_testing_performed": false,
+    "training_executed": false
+  },
+  "direction_comparisons": {
+    "minus": {
+      "cosine_similarity": 0.9999672976556346,
+      "fast_fd_l2": 0.2019738152474465,
+      "max_abs_error": 0.00014213076792657375,
+      "norm_ratio_fast_fd_over_reference": 1.0002338952457834,
+      "pass": true,
+      "reference_l2": 0.2019265855790823,
+      "relative_l2_error": 0.008091643440164876
+    },
+    "plus": {
+      "cosine_similarity": 0.9999787808261135,
+      "fast_fd_l2": 0.2460175011581903,
+      "max_abs_error": 0.00033888104371726513,
+      "norm_ratio_fast_fd_over_reference": 0.9999444872120388,
+      "pass": true,
+      "reference_l2": 0.24603115903375358,
+      "relative_l2_error": 0.006514527885599648
+    }
+  },
+  "equivalence_thresholds": {
+    "direction_cosine_min": 0.9998,
+    "direction_norm_ratio_max": 1.02,
+    "direction_norm_ratio_min": 0.98,
+    "direction_relative_l2_max": 0.02,
+    "primal_atol": 0.0001,
+    "primal_rtol": 0.0001,
+    "threshold_tuning_after_result": false
+  },
+  "execution_head": "4ca4ffd1a1be11427e3ae476cee267ac9437506e",
+  "fast_estimator": {
+    "backend": "authenticated_exact_fast_cuda",
+    "epsilon": 0.025,
+    "epsilon_selection": "prospectively_frozen_from_mamba14b_experiment5_intervention_scale",
+    "epsilon_sweep_performed": false,
+    "estimator": "symmetric_central_difference"
+  },
+  "fast_fd_span_rank_diagnostic": {
+    "rank": 2,
+    "rank_tolerance": 2.4001636437907283e-13,
+    "singular_values": [
+      0.2639007834913119,
+      0.17797305805767769
+    ]
+  },
+  "gate_row": {
+    "anchor": 67,
+    "anchor_name": "A_IDENTITY",
+    "contrast_cell_id": "C2_NAME",
+    "family": "xg2",
+    "row_index": 2,
+    "source_pair_id": "xg2_fact_301",
+    "target_abs": 69,
+    "target_offset": 2,
+    "tokenizer_provenance": {
+      "file_sha256": {
+        "tokenizer.json": "3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8",
+        "tokenizer_config.json": "3ba257483d22a5a84aab5465aa427e59bdaeb55f09fb14349e2d571ff67e8020"
+      },
+      "repo": "state-spaces/mamba-1.4b-hf",
+      "revision": "6e46eae61c27280517feef46f536d16b91076f08",
+      "tokenizers_version": "0.22.2",
+      "vocab_size": 50277
+    }
+  },
+  "model_provenance": {
+    "compact_checkpoint_sha256": "915c9de38d9dc7ee9da26ba4328e74549864c6bd29723f3b7a4b4e0050efce0a",
+    "downstream_state_canonical_sha256": "b84b6af218f3d73e10a20e98f3a4118cf2e58d37e25c829a54b81c49eb9fd8ea",
+    "full_state_canonical_sha256": "61b7d444be97b94d18eed698b580b9e44e081060cbec2fa324733839ab431f0d",
+    "kernel_constructor_calls": {
+      "causal-conv1d": 48,
+      "mamba-ssm": 48
+    },
+    "pretrained_backbone_state_stream_sha256": "f6239d5b5b2a35409d38f2fc4267f52fb1524438d7ae2b1f4f6c43ec07f7224a",
+    "snapshot": {
+      "config.json": {
+        "bytes": 879,
+        "sha256": "275174e4771bb65f70cb1ea03389c9711510438d7944885e8f02f525bec03a9d"
+      },
+      "generation_config.json": {
+        "bytes": 137,
+        "sha256": "248fa733db101c19a8e3c2f311a180fdd7c769323ec2873edf7060cec9f5ee32"
+      },
+      "model-00001-of-00002.safetensors": {
+        "bytes": 4960287720,
+        "sha256": "3a0351b2c6a044c5f19f0f8992362e57c0d6f71b0e0702d46f43f3d8a7120c84"
+      },
+      "model-00002-of-00002.safetensors": {
+        "bytes": 528479144,
+        "sha256": "6cd1ac80d0acd00e6b6afebad9690115c5d932009ba644a6c8af1e0aed8414de"
+      },
+      "model.safetensors.index.json": {
+        "bytes": 38175,
+        "sha256": "a4739638258ef26762ff808249c3888fdb8bd4a15404a0db4811feb5cf2444b5"
+      },
+      "tokenizer.json": {
+        "bytes": 2113738,
+        "sha256": "3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8"
+      },
+      "tokenizer_config.json": {
+        "bytes": 4793,
+        "sha256": "3ba257483d22a5a84aab5465aa427e59bdaeb55f09fb14349e2d571ff67e8020"
+      }
+    },
+    "source_full_checkpoint_sha256": "2383cb212f7e87be1ac8920c7875602a73a1c6031212df17342457acb8b87555"
+  },
+  "primal_comparison": {
+    "allclose_limit_at_reference_max": 0.0018122491836547853,
+    "max_abs_error": 2.384185791015625e-06,
+    "pass": true,
+    "reference_max_abs": 17.12249183654785
+  },
+  "reference": {
+    "backend": "transformers_v5.0.0_unfused_slow_forward_semantics",
+    "commit": "08810b1e278938278c50153ee1edfd7a20a759da",
+    "exact_autodiff": "torch.func.jvp",
+    "repo": "huggingface/transformers",
+    "source_git_blob": "ae80aa74f651f15a82bfc41ece60ba51ed5bb206",
+    "source_path": "src/transformers/models/mamba/modeling_mamba.py",
+    "tag": "v5.0.0"
+  },
+  "reference_span_rank_diagnostic": {
+    "rank": 2,
+    "rank_tolerance": 2.3998255836387506e-13,
+    "singular_values": [
+      0.2638636133845132,
+      0.17799345693251403
+    ]
+  },
+  "required_program_ancestor": "fa4a68054176412ec1e30be4d14dd7202314435f",
+  "result": "PASS_MAMBA14B_P5_CROSS_BLOCK_ONE_ROW_REFERENCE_FD_EQUIVALENCE",
+  "schema_version": "gen4-mamba14b-p5-cross-block-one-row-reference-fd-equivalence-v1",
+  "transport_definition": {
+    "ambient_dimension": 4096,
+    "basis_order": [
+      "plus",
+      "minus"
+    ],
+    "gate_half_fixed": true,
+    "non_target_tokens_fixed_at_source_boundary": true,
+    "source_block": 35,
+    "source_plane": "P5",
+    "source_tensor": "block35_mixer_in_proj_output_content_half",
+    "target_block": 36,
+    "target_tensor": "block36_mixer_in_proj_output_content_half"
+  }
+}
