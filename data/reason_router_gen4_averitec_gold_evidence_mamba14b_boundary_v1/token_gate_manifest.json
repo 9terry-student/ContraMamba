@@ -1,0 +1,139 @@
+{
+  "anchor_contract": {
+    "anchor_definition": "EOS separator after consumed claim tokens",
+    "anchor_name": "A_CLAIM_EVIDENCE_BOUNDARY",
+    "semantic_identity_with_xg1_A_IDENTITY_claimed": false,
+    "target_definition": "second consumed evidence token",
+    "target_offset": 2
+  },
+  "backward_executed": false,
+  "cohort_file_sha256": "86da8d1435e5722bef5f35db204d097600f152361b147e84d0bb3bbe714c4f00",
+  "compatible_count": 462,
+  "compatible_label_counts": {
+    "Not Enough Evidence": 35,
+    "Refuted": 305,
+    "Supported": 122
+  },
+  "compatible_labels": [
+    "Refuted",
+    "Not Enough Evidence",
+    "Supported"
+  ],
+  "cuda_executed": false,
+  "evidence_reordering_executed": false,
+  "excluded_label": "Conflicting Evidence/Cherrypicking",
+  "execution_authorized_by_this_artifact": false,
+  "frozen_causal_object": {
+    "backbone": "state-spaces/mamba-1.4b-hf",
+    "checkpoint_sha256": "915c9de38d9dc7ee9da26ba4328e74549864c6bd29723f3b7a4b4e0050efce0a",
+    "control_plane": "P4",
+    "intervention_layer": 35,
+    "scale": "mamba14b",
+    "selected_plane": "P5",
+    "target_offset": 2
+  },
+  "gold_evidence_serialization": "source-order repeated blocks: Question: <question>\\nAnswer: <answer>, joined by \\n\\n",
+  "justification_used_as_model_input": false,
+  "model_checkpoint_loaded": false,
+  "model_forward_count": 0,
+  "p_value_count_added": 0,
+  "phase": "MAMBA14B_AVERITEC_NEGATIVE_SIGN_RESPONSE_BLIND_TOKEN_GATE",
+  "primary_external_transfer_extension": {
+    "alternative": "less",
+    "family_alpha": 0.05,
+    "historical_130m370m_averitec_family_reopened": false,
+    "historical_p_values_in_new_family": 0,
+    "multiplicity": "none",
+    "primary_endpoint": "D_EXT_14B=M_native-M_control",
+    "primary_p_value_count_planned": 1,
+    "scale": "mamba14b"
+  },
+  "prospective_plan": {
+    "path": "reports/reason_router_gen4_averitec_mamba14b_negative_sign_transfer_prospective_plan.md",
+    "sha256": "11cae5cce793f3f27a3d8ec449f3dde1deab6aa162e37c97d6deaf9e04d6c845"
+  },
+  "question_generation_executed": false,
+  "response_fields_present": false,
+  "result": "PASS_462_OF_462",
+  "retrieval_executed": false,
+  "schema_version": "GEN4_AVERITEC_GOLD_EVIDENCE_MAMBA14B_BOUNDARY_TOKEN_GATE_V1",
+  "scientific_inference_executed": false,
+  "source_example_count": 500,
+  "source_label_counts": {
+    "Conflicting Evidence/Cherrypicking": 38,
+    "Not Enough Evidence": 35,
+    "Refuted": 305,
+    "Supported": 122
+  },
+  "token_gate": {
+    "fail_count": 0,
+    "failure_counts": {},
+    "pass_count": 462,
+    "target_count": 462
+  },
+  "tokenizer": {
+    "active_serialization": "claim[:63]+EOS(0)+evidence[:64]",
+    "claim_budget": 63,
+    "eos_token_id": 0,
+    "evidence_budget": 64,
+    "file_sha256": {
+      "tokenizer.json": "3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8",
+      "tokenizer_config.json": "3ba257483d22a5a84aab5465aa427e59bdaeb55f09fb14349e2d571ff67e8020"
+    },
+    "max_length": 128,
+    "repo": "state-spaces/mamba-1.4b-hf",
+    "revision": "6e46eae61c27280517feef46f536d16b91076f08",
+    "tokenizers_version": "0.22.2"
+  },
+  "training_executed": false,
+  "truncation": {
+    "anchor_index": {
+      "max": 63,
+      "mean": 22.6017316017316,
+      "median": 21.0,
+      "min": 6
+    },
+    "claim_consumed_tokens": {
+      "max": 63,
+      "mean": 22.6017316017316,
+      "median": 21.0,
+      "min": 6
+    },
+    "claim_raw_tokens": {
+      "max": 74,
+      "mean": 22.63203463203463,
+      "median": 21.0,
+      "min": 6
+    },
+    "claim_truncated_count": 2,
+    "evidence_consumed_tokens": {
+      "max": 64,
+      "mean": 57.426406926406926,
+      "median": 64.0,
+      "min": 14
+    },
+    "evidence_raw_tokens": {
+      "max": 2821,
+      "mean": 163.08441558441558,
+      "median": 107.0,
+      "min": 14
+    },
+    "evidence_truncated_count": 339,
+    "target_index": {
+      "max": 65,
+      "mean": 24.6017316017316,
+      "median": 23.0,
+      "min": 8
+    }
+  },
+  "upstream": {
+    "byte_count": 1785475,
+    "commit": "7c62d1ec8df3fb560d6efe2b85fa191135636f81",
+    "git_blob_sha1": "40974243267f395dc583d805d10f043812419249",
+    "license": "CC BY-NC 4.0",
+    "paper_citation": "Michael Sejr Schlichtkrull, Zhijiang Guo, Andreas Vlachos. AVeriTeC: A Dataset for Real-world Claim Verification with Evidence from the Web. NeurIPS 2023 Datasets and Benchmarks Track.",
+    "path": "data/dev.json",
+    "repository": "MichSchli/AVeriTeC",
+    "sha256": "499793726b4a5406780928a3d9dedc48d6dd53de778f22437d129cacdb08e300"
+  }
+}
