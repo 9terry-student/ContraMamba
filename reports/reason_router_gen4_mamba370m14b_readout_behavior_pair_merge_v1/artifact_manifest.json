@@ -1,0 +1,27 @@
+{
+  "backward_executed": false,
+  "execution_type": "cpu_static_analysis",
+  "forward_executed": false,
+  "inference_performed": false,
+  "input_sha256": {
+    "mamba14b_shard0_behavioral_rows": "e0a0b3aa76f96f4d3eaf57b3b04824d8340d94edede02bcf5508b0216fc255ad",
+    "mamba14b_shard1_behavioral_rows": "d908db155f871895ab6d97cf31ec7df447154363deef2c12ebe11465b0a4d844",
+    "mamba370m_shard0_behavioral_rows": "1a3ccb78ca39e3de5ff5c3b1defe50f846c952ab58e772941a1062402d7b7f3e",
+    "mamba370m_shard1_behavioral_rows": "d79ee39524a6d1e796d53d33441a9d92dabddf31bb289d2aaf8504fc35e36e3f",
+    "readout_pair_values": "f566f704b11d6b9574ac381f8584c44f3be191183ddb0e65eb3cb2e315f62779"
+  },
+  "plan_freeze_commit": "c24ce5f23c1c4035078fa74aa5d8dcdb7c4682d6",
+  "primary_p_value_count": 0,
+  "rescue_performed": false,
+  "result": "PASS_GEN4_READOUT_BEHAVIOR_PAIR_LEVEL_DESCRIPTIVE_MERGE",
+  "row_filter_performed": false,
+  "scales": [
+    "mamba370m",
+    "mamba14b"
+  ],
+  "schema_version": "gen4-readout-behavior-pair-level-descriptive-merge-v1",
+  "scientific_conclusion": null,
+  "secondary_p_value_count": 0,
+  "source_pair_count": 300,
+  "training_executed": false
+}

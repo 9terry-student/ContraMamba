@@ -1,0 +1,112 @@
+{
+  "execution_type": "cpu_static_analysis",
+  "inference_performed": false,
+  "interpretation_threshold_applied": false,
+  "population": "xg1_fact_4801..xg1_fact_5100",
+  "primary_p_value_count": 0,
+  "rescue_performed": false,
+  "result": "PASS_GEN4_READOUT_BEHAVIOR_PAIR_LEVEL_DESCRIPTIVE_MERGE",
+  "row_filter_performed": false,
+  "scale_results": {
+    "mamba14b": {
+      "D_BEH": {
+        "max": 0.005536407232284546,
+        "mean": -0.002012885312239329,
+        "median": -0.0006142258644104004,
+        "min": -0.024992048740386963,
+        "q25": -0.0036578066647052765,
+        "q75": 0.0009473636746406555,
+        "sd_population": 0.005100782970243536
+      },
+      "Delta_L": {
+        "max": 0.002815309138368234,
+        "mean": -0.0011954475058862238,
+        "median": -0.0004565545477301683,
+        "min": -0.012622477281337433,
+        "q25": -0.0022409890267693607,
+        "q75": 0.0004384775219740963,
+        "sd_population": 0.0025511208265548637
+      },
+      "pearson_Delta_L_vs_D_BEH": 0.995553440337973,
+      "residual_D_BEH_minus_Delta_L": {
+        "max": 0.0027210980939163117,
+        "mean": -0.0008174378063531051,
+        "median": -0.0001196889091617826,
+        "min": -0.01236957145904953,
+        "q25": -0.0014854554584410066,
+        "q75": 0.000714436197938747,
+        "sd_population": 0.0025722559480601047
+      },
+      "sign_agreement": {
+        "categories": {
+          "both_negative": 189,
+          "both_positive": 106,
+          "both_zero": 0,
+          "delta_negative_beh_positive": 5,
+          "delta_negative_beh_zero": 0,
+          "delta_positive_beh_negative": 0,
+          "delta_positive_beh_zero": 0,
+          "delta_zero_beh_negative": 0,
+          "delta_zero_beh_positive": 0
+        },
+        "count": 295,
+        "fraction": 0.9833333333333333
+      },
+      "spearman_Delta_L_vs_D_BEH": 0.9902910032333692
+    },
+    "mamba370m": {
+      "D_BEH": {
+        "max": 0.011905118823051453,
+        "mean": 0.0011206856990853946,
+        "median": 0.0002846755087375641,
+        "min": -0.004637241363525391,
+        "q25": -0.0010240375995635986,
+        "q75": 0.0018695741891860962,
+        "sd_population": 0.003328285757967669
+      },
+      "Delta_L": {
+        "max": 0.005693937906959835,
+        "mean": 0.0005089563518854174,
+        "median": 0.00011899476035213567,
+        "min": -0.0025008454091293326,
+        "q25": -0.0004907473600776571,
+        "q75": 0.0008715258559723116,
+        "sd_population": 0.0016124807266156126
+      },
+      "pearson_Delta_L_vs_D_BEH": 0.9982297751731563,
+      "residual_D_BEH_minus_Delta_L": {
+        "max": 0.006229417516063391,
+        "mean": 0.0006117293471999773,
+        "median": 0.00016447016852283637,
+        "min": -0.0025897876485274714,
+        "q25": -0.0004392072724475668,
+        "q75": 0.001012999054365516,
+        "sd_population": 0.0017213331400136624
+      },
+      "sign_agreement": {
+        "categories": {
+          "both_negative": 124,
+          "both_positive": 171,
+          "both_zero": 0,
+          "delta_negative_beh_positive": 3,
+          "delta_negative_beh_zero": 0,
+          "delta_positive_beh_negative": 2,
+          "delta_positive_beh_zero": 0,
+          "delta_zero_beh_negative": 0,
+          "delta_zero_beh_positive": 0
+        },
+        "count": 295,
+        "fraction": 0.9833333333333333
+      },
+      "spearman_Delta_L_vs_D_BEH": 0.9960541783797597
+    }
+  },
+  "scales": [
+    "mamba370m",
+    "mamba14b"
+  ],
+  "schema_version": "gen4-readout-behavior-pair-level-descriptive-merge-v1",
+  "scientific_conclusion": null,
+  "secondary_p_value_count": 0,
+  "source_pair_count": 300
+}
