@@ -218,4 +218,3 @@ def test_cli_requires_explicit_execution_head() -> None:
     assert parser.expected_head == (
         "0123456789abcdef0123456789abcdef01234567"
     )
-
