@@ -1,0 +1,19 @@
+{
+  "additional_backward_count": 0,
+  "additional_model_forward_count": 0,
+  "analysis_sha256": "6ae8866d4c39cd1ffceb490c77ba9f8f207a14bce26059d96dcf845fa1946184",
+  "behavioral_merge_performed": false,
+  "pair_count": 300,
+  "pair_values_sha256": "8012e07d2a53b90d9d271ca4e4aa93af26f78c2fdfeaf0d149e38ff602c232b4",
+  "primary_p_value_count": 1,
+  "raw_freeze_commit": "32eb3baf678a44946f4ecd102f917832929624a7",
+  "raw_item_sha256": "27c428fbcc3f9e89cc4dad566666e4d5307727637cf8bf1dd0c347744da18c85",
+  "rescue_performed": false,
+  "result": "PASS_GEN4_MAMBA130M_READOUT_ALIGNMENT_STATIC_ANALYSIS",
+  "row_filter_performed": false,
+  "schema_version": "gen4-mamba130m-readout-alignment-analysis-manifest-v1",
+  "scientific_conclusion": "MAMBA130M_READOUT_ALIGNMENT_POSITIVE_SUPPORTED",
+  "three_scale_synthesis_performed": false,
+  "total_p_value_count": 1,
+  "training_executed": false
+}
