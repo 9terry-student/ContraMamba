@@ -1,0 +1,12 @@
+{
+  "B_design_sha256": "4a3f1db427eddbf8c19aa94ffc2bd21c344b80a2a87f8407aa16a0f540708288",
+  "C_design_sha256": "dfb21320b3ac024c9be705353146f0ef63117ca48c62c7b202532575aa284047",
+  "execution_head": "4ab7d555f97267188da6777d4c869e08da6b0931",
+  "item_sha256": "08a5ce10349260171c253199b4f3fbf02642edfda004b2bb4afff9e0ce072efa",
+  "primary_p_value_count_executed": 0,
+  "result": "PASS_GEN4_CROSS_SCALE_READOUT_ALIGNMENT_RAW_WITH_MANIFOLD_CAPTURE",
+  "row_count": 1200,
+  "schema_version": "gen4-cross-scale-readout-alignment-raw-manifest-v1",
+  "scientific_conclusion": null,
+  "summary_sha256": "ad1f1c6a1387e1db91d1a88436ec464297b14aff4dab6bbd9b925e70ed3cc6f2"
+}

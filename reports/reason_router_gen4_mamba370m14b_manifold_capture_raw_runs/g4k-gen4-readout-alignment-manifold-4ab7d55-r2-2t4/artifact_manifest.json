@@ -1,0 +1,24 @@
+{
+  "C_design_sha256": "dfb21320b3ac024c9be705353146f0ef63117ca48c62c7b202532575aa284047",
+  "additional_backward_count": 0,
+  "additional_model_forward_count": 0,
+  "cells": [
+    "C0_SHAM",
+    "C2_NAME"
+  ],
+  "execution_head": "4ab7d555f97267188da6777d4c869e08da6b0931",
+  "index_file_sha256": "bab88b40d88e2e472fe364019e8ba37d5bae44bf14164a1f32d7ad41002786ca",
+  "manifold_metric_computed": false,
+  "population": "xg1_fact_4801..xg1_fact_5100",
+  "result": "PASS_GEN4_INTERVENTION_MANIFOLD_RAW_CAPTURE",
+  "row_count": 1200,
+  "scales": [
+    "mamba370m",
+    "mamba14b"
+  ],
+  "schema_version": "gen4-intervention-manifold-capture-manifest-v1",
+  "scientific_conclusion": null,
+  "state_file_sha256": "0888dce4318a2e4e5c717f1998492e1a6c331441c73a12c9084bdf70048a3d1b",
+  "study_a_response_accessed": false,
+  "study_b_result_accessed": false
+}
