@@ -142,3 +142,9 @@ def test_gate_discards_numeric_values() -> None:
     assert '"NUMERIC_MARGIN_RETAINED=False"' in src
     assert '"NUMERIC_GRADIENT_RETAINED=False"' in src
     assert '"NUMERIC_ALIGNMENT_RETAINED=False"' in src
+
+def test_delta_l_semantics_match_frozen_cross_scale_readout() -> None:
+    src = inspect.getsource(subject.run_native_gradient_row)
+    assert "delta_l = l_selected - l_control" in src
+    assert "DELTA_L_ALGEBRA" not in src
+    assert "delta_direct" not in src

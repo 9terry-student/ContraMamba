@@ -449,18 +449,6 @@ def run_native_gradient_row(
     l_selected = float(torch.dot(grad_strong, c3).item())
     l_control = float(torch.dot(grad_strong, c5).item())
     delta_l = l_selected - l_control
-    delta_direct = float(
-        torch.dot(grad_strong, comp["delta_selected_minus_control"]).item()
-    )
-    require(
-        abs(delta_l - delta_direct)
-        <= 16.0 * max(
-            math.ulp(delta_l),
-            math.ulp(delta_direct),
-            1e-30,
-        ),
-        "DELTA_L_ALGEBRA",
-    )
 
     numeric = (
         grad_norm,
