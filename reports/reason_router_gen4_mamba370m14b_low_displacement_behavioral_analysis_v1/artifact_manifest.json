@@ -1,0 +1,19 @@
+{
+  "additional_backward_count": 0,
+  "additional_model_forward_count": 0,
+  "alpha_0_5_p_value_count": 0,
+  "cross_scale_p_value_count": 0,
+  "pair_count": 300,
+  "pair_level_contrasts_sha256": "712cce9c854f6d5a3b350c04bf11e0e06b19557c0a9e244dd3a93e195972c79d",
+  "primary_analysis_sha256": "ede3a33b201429b4b409d73b54213e85ba0da1a012aff8257b8c64490929e8fe",
+  "primary_p_value_count": 2,
+  "raw_freeze_commit": "320b340d4b580beb2919daa0024cbf3c04ed65c1",
+  "raw_item_sha256": "1d14bb251575021e79e0f72c33cd7141fad27a08750060a22fdd5d90a1012866",
+  "rescue_performed": false,
+  "result": "PASS_GEN4_LOW_DISPLACEMENT_BEHAVIORAL_STATIC_ANALYSIS",
+  "row_filtering_performed": false,
+  "schema_version": "gen4-mamba370m14b-low-displacement-behavioral-analysis-manifest-v1",
+  "scientific_conclusion": "LOW_DISPLACEMENT_SCALE_SIGN_PATTERN_PRESERVED_AT_ALPHA_0_25",
+  "total_p_value_count": 2,
+  "training_executed": false
+}

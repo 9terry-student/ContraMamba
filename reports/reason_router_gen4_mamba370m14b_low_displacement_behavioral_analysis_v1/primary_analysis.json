@@ -1,0 +1,130 @@
+{
+  "alpha1_behavioral_endpoint_analyzed": false,
+  "alpha_0_5_p_value_count": 0,
+  "alpha_0_5_secondary_descriptive": {
+    "mamba14b": {
+      "fraction_negative": 0.66,
+      "fraction_positive": 0.34,
+      "max": 0.0026908069849014282,
+      "mean": -0.0011441580454508464,
+      "median": -0.00039631128311157227,
+      "min": -0.010372966527938843,
+      "q25": -0.00208296999335289,
+      "q75": 0.0003827288746833801,
+      "sd_population": 0.002584852195434917
+    },
+    "mamba370m": {
+      "fraction_negative": 0.42,
+      "fraction_positive": 0.58,
+      "max": 0.005941838026046753,
+      "mean": 0.0005106900756557783,
+      "median": 0.00011174380779266357,
+      "min": -0.002506628632545471,
+      "q25": -0.0005236119031906128,
+      "q75": 0.0009037116542458534,
+      "sd_population": 0.0016212432512362595
+    }
+  },
+  "backward_count_this_analysis": 0,
+  "cells": [
+    "C0_SHAM",
+    "C2_NAME"
+  ],
+  "cross_scale_descriptive": {
+    "alpha_0_25": {
+      "R_mean_370m_minus_14b": 0.0008448948090275128,
+      "p_value_added": false,
+      "paired_R_q": {
+        "fraction_negative": 0.2866666666666667,
+        "fraction_positive": 0.7133333333333334,
+        "max": 0.004108518362045288,
+        "mean": 0.0008448948090275128,
+        "median": 0.0006236732006072998,
+        "min": -0.0020944923162460327,
+        "q25": -8.194707334041595e-05,
+        "q75": 0.0013582892715930939,
+        "sd_population": 0.0013885597139346305
+      }
+    },
+    "alpha_0_5": {
+      "R_mean_370m_minus_14b": 0.0016548481211066247,
+      "p_value_added": false,
+      "paired_R_q": {
+        "fraction_negative": 0.29333333333333333,
+        "fraction_positive": 0.7066666666666667,
+        "max": 0.008151650428771973,
+        "mean": 0.0016548481211066245,
+        "median": 0.0012289732694625854,
+        "min": -0.004138723015785217,
+        "q25": -0.00016774609684944153,
+        "q75": 0.0026727765798568726,
+        "sd_population": 0.0027644141572116887
+      }
+    }
+  },
+  "cross_scale_p_value_count": 0,
+  "model_forward_count_this_analysis": 0,
+  "pair_count": 300,
+  "population": "xg1_fact_5401..xg1_fact_5700",
+  "primary_by_scale": {
+    "mamba14b": {
+      "alternative": "less",
+      "cohen_dz": -0.46048058490561605,
+      "df": 299,
+      "fraction_negative": 0.6633333333333333,
+      "fraction_positive": 0.33666666666666667,
+      "holm_alpha_pass": true,
+      "mandatory_sign_gate_pass": true,
+      "mean": -0.0005969063440958659,
+      "n": 300,
+      "p_holm": 3.2453713162735685e-14,
+      "p_raw": 1.6226856581367842e-14,
+      "primary_supported": true,
+      "sd_sample": 0.0012962682112172281,
+      "t_statistic": -7.975757689555612
+    },
+    "mamba370m": {
+      "alternative": "greater",
+      "cohen_dz": 0.3074995565476045,
+      "df": 299,
+      "fraction_negative": 0.42,
+      "fraction_positive": 0.58,
+      "holm_alpha_pass": true,
+      "mandatory_sign_gate_pass": true,
+      "mean": 0.000247988464931647,
+      "n": 300,
+      "p_holm": 9.883711813681118e-08,
+      "p_raw": 9.883711813681118e-08,
+      "primary_supported": true,
+      "sd_sample": 0.0008064677156477638,
+      "t_statistic": 5.326048552453501
+    }
+  },
+  "primary_family": {
+    "family_alpha": 0.05,
+    "historical_p_values_in_family": 0,
+    "mamba14b_alternative": "less",
+    "mamba370m_alternative": "greater",
+    "multiplicity": "holm",
+    "primary_alpha": 0.25,
+    "primary_p_value_count": 2,
+    "test": "one_sample_student_t"
+  },
+  "raw_execution_head": "537e89b4266ffef1b788832b5e00de411e5ff785",
+  "raw_freeze_commit": "320b340d4b580beb2919daa0024cbf3c04ed65c1",
+  "rescue_performed": false,
+  "result": "PASS_GEN4_LOW_DISPLACEMENT_BEHAVIORAL_STATIC_ANALYSIS",
+  "row_filtering_performed": false,
+  "scales": [
+    "mamba370m",
+    "mamba14b"
+  ],
+  "schema_version": "gen4-mamba370m14b-low-displacement-behavioral-static-analysis-v1",
+  "scientific_conclusion": "LOW_DISPLACEMENT_SCALE_SIGN_PATTERN_PRESERVED_AT_ALPHA_0_25",
+  "support_by_scale": {
+    "mamba14b": true,
+    "mamba370m": true
+  },
+  "total_p_value_count": 2,
+  "training_executed": false
+}

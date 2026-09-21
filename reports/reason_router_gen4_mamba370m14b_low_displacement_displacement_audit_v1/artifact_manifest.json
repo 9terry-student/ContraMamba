@@ -1,0 +1,19 @@
+{
+  "additional_backward_count": 0,
+  "additional_model_forward_count": 0,
+  "alphas": [
+    1.0,
+    0.5,
+    0.25
+  ],
+  "audit_sha256": "4d70186a9a48e5a9ea9c82328d61422315c70233b26b4a4729a7bd4196dc25fb",
+  "binary_manifold_classification_performed": false,
+  "inference_performed": false,
+  "primary_p_value_count": 0,
+  "r_rel_scaling_identity_pass": true,
+  "raw_freeze_commit": "320b340d4b580beb2919daa0024cbf3c04ed65c1",
+  "raw_state_sha256": "163bd4d90f5b5e649301eb3ee4d24d871e9452910b3bcfd82b74316374462580",
+  "result": "PASS_GEN4_LOW_DISPLACEMENT_STATIC_DISPLACEMENT_AUDIT",
+  "schema_version": "gen4-mamba370m14b-low-displacement-displacement-audit-manifest-v1",
+  "training_executed": false
+}
