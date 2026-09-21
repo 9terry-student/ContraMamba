@@ -1,0 +1,65 @@
+{
+  "anchor_name": "A_IDENTITY",
+  "behavioral_alphas": [
+    0.25,
+    0.125,
+    0.0625,
+    0.03125
+  ],
+  "checkpoint_loaded": false,
+  "claim_overlap_with_prior": 0,
+  "cohort_replacement_allowed": false,
+  "control_planes_frozen": {
+    "mamba14b": "P4",
+    "mamba370m": "P5"
+  },
+  "cuda_executed": false,
+  "deterministic_generator_semantics": true,
+  "endpoint_values_present": false,
+  "evidence_overlap_with_prior": 0,
+  "generator_family": "xg1_independent_structured_records_v1",
+  "intervention_layer": 35,
+  "labels_embedded_in_structural_rows": false,
+  "layer_sweep_allowed": false,
+  "model_executed": false,
+  "negative_alpha_arm_allowed": false,
+  "outcome_conditioned_grid_extension_allowed": false,
+  "pair_id_first": "xg1_fact_5701",
+  "pair_id_last": "xg1_fact_6000",
+  "pair_id_overlap_with_prior": 0,
+  "primary_curve": "K(alpha)",
+  "prior_pair_range": "xg1_fact_001..xg1_fact_5700",
+  "prospective_freeze_commit": "8614dd5a4ed77cb56cc6a485f4ab379434a284fa",
+  "prospective_report_blob": "90ec869dde6cad2131411ef74beef3328c42c4e7",
+  "prospective_report_path": "reports/reason_router_gen4_factor2_calibration_static_audit_report.md",
+  "response_based_control_selection_allowed": false,
+  "response_fields_present": false,
+  "result": "PASS_GEN4_FACTOR2_SMALL_ALPHA_XG1_5701_6000_STRUCTURAL",
+  "role": "factor2_small_alpha_transition",
+  "row_count": 1800,
+  "row_file_sha256": "08da7b3b1d9d92f189b6481abd0b889aeac908519eeae804b8574328ce497f51",
+  "row_filtering_allowed": false,
+  "rows_per_pair": 6,
+  "scale_order": [
+    "mamba370m",
+    "mamba14b"
+  ],
+  "scale_specific_alpha_allowed": false,
+  "schema_version": "GEN4_FACTOR2_SMALL_ALPHA_XG1_STRUCTURAL_V1",
+  "selected_planes_frozen": {
+    "mamba14b": "P5",
+    "mamba370m": "P3"
+  },
+  "selection_allowed": false,
+  "source_block": 33,
+  "source_file_sha256": "05026973b2ec61847c85d6aab800eada130aad9e9c7edb14a4d8d88f41544c4e",
+  "source_pair_count": 300,
+  "target_cells": [
+    "C0_SHAM",
+    "C2_NAME"
+  ],
+  "target_offset": 2,
+  "target_residual_layer": 34,
+  "token_sweep_allowed": false,
+  "tokenizer_executed": false
+}
