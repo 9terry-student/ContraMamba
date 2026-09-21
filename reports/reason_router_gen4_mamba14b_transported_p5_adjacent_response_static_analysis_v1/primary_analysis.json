@@ -1,0 +1,86 @@
+{
+  "boundary": {
+    "D_CAN_inferential_role": "none_descriptive_only",
+    "gpu_execution_required": false,
+    "historical_summary_execution_head": "d8327f90b2377e5ad648af5a4c38b09e4260286b",
+    "primary_p_value_count": 1,
+    "raw_execution_head": "5aae21629a2a3f38f650c4ab094ece13f57cccee",
+    "raw_summary_claim_boundary_preserved": true,
+    "rescue_performed": false,
+    "row_filter_performed": false,
+    "training_executed": false
+  },
+  "descriptive_only": {
+    "D_TRANSPORT": {
+      "max": 2.9094800113846263e-10,
+      "mean": -5.506820826102743e-10,
+      "median": -4.77375826602833e-10,
+      "min": -1.6858966598142501e-09,
+      "positive_fraction": 0.09666666666666666,
+      "q25": -8.666685722235127e-10,
+      "q75": -1.9043579296470204e-10,
+      "sd_population": 4.5333106340498734e-10
+    },
+    "G": {
+      "max": 2.8843398661318644e-09,
+      "mean": 1.0003874928314124e-09,
+      "median": 9.146512362034193e-10,
+      "min": -1.2792227424224202e-09,
+      "positive_fraction": 0.8666666666666667,
+      "q25": 4.068777527734829e-10,
+      "q75": 1.7483176876906423e-09,
+      "sd_population": 9.30781793862521e-10
+    },
+    "historical_D_ADJ": {
+      "max": 3.853152645903032e-11,
+      "mean": -1.551069575441687e-09,
+      "median": -1.4265189508941473e-09,
+      "min": -3.267654116073167e-09,
+      "positive_fraction": 0.006666666666666667,
+      "q25": -2.379925782912629e-09,
+      "q75": -7.28907747614998e-10,
+      "sd_population": 9.279900708122721e-10
+    },
+    "historical_D_CAN": {
+      "max": 2.561316768394017e-08,
+      "mean": 9.102783197942576e-09,
+      "median": 6.57736727723861e-09,
+      "min": -4.53811690158062e-09,
+      "positive_fraction": 0.7766666666666666,
+      "q25": 5.992732060401939e-10,
+      "q75": 1.8602627101705646e-08,
+      "sd_population": 9.914460349607474e-09
+    }
+  },
+  "execution_head": "1f1cb3ef1cb53f67b62a7b1acb572b8df793ec69",
+  "interpretation": "The transported-P5 response is significantly shifted upward relative to the same-pair frozen historical adjacent-P5 response, but its mean remains negative; therefore positive adjacent-response restoration is not established.",
+  "mandatory_sign_gate": {
+    "definition": "mean(D_TRANSPORT)>0",
+    "mean_D_TRANSPORT": -5.506820826102743e-10,
+    "pass": false
+  },
+  "population": {
+    "pair_count": 300,
+    "pair_first": "xg1_fact_5101",
+    "pair_last": "xg1_fact_5400"
+  },
+  "primary": {
+    "alpha": 0.05,
+    "alternative": "greater",
+    "contrast_gate_mean_G_positive": true,
+    "df": 299,
+    "endpoint": "G=D_TRANSPORT-D_ADJ",
+    "fraction_G_positive": 0.8666666666666667,
+    "mean_G": 1.0003874928314124e-09,
+    "n": 300,
+    "p_value": 4.383428886482017e-52,
+    "p_value_count": 1,
+    "primary_contrast_pass": true,
+    "sd_G_sample": 9.323369859142195e-10,
+    "t_statistic": 18.58471766130142,
+    "test": "one_sample_student_t_on_paired_difference_G"
+  },
+  "raw_freeze_commit": "1f1cb3e",
+  "result": "PASS_MAMBA14B_TRANSPORTED_P5_ADJACENT_RESPONSE_STATIC_ANALYSIS",
+  "scientific_conclusion": "TRANSPORTED_P5_RELATIVE_SHIFT_SUPPORTED_POSITIVE_RESTORATION_NOT_ESTABLISHED"
+}

@@ -1,0 +1,14 @@
+{
+  "analysis_file_sha256": "9e6f2086870b776bb663a0d1570e62e9849375d00a994a2a2ec3ef24d6bb4fef",
+  "historical_items_git_blob": "64da91ba82a17982feab0e7c8bd3bfba87bade00",
+  "pair_file_sha256": "e0e77ef6a61f2e9bda7be0c799ad870586dcaadc6421f39c9b45655b118c54e5",
+  "primary_endpoint": "G=D_TRANSPORT-D_ADJ",
+  "primary_p_value_count": 1,
+  "primary_test": "paired_one_sample_student_t_greater",
+  "raw_items_git_blob": "041de6a0667c685ebd558707993fd47ccf35642a",
+  "rescue_performed": false,
+  "result": "PASS_MAMBA14B_TRANSPORTED_P5_ADJACENT_RESPONSE_STATIC_ANALYSIS",
+  "scientific_conclusion": "TRANSPORTED_P5_RELATIVE_SHIFT_SUPPORTED_POSITIVE_RESTORATION_NOT_ESTABLISHED",
+  "sign_gate": "mean(D_TRANSPORT)>0",
+  "training_executed": false
+}
