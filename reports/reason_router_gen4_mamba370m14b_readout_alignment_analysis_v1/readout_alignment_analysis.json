@@ -1,0 +1,46 @@
+{
+  "descriptive": {
+    "mamba14b_Delta_L": {
+      "max": 0.002815309138368234,
+      "mean": -0.0011954475058862238,
+      "median": -0.0004565545477301683,
+      "min": -0.012622477281337433,
+      "positive_fraction": 0.35333333333333333,
+      "q25": -0.0022409890267693607,
+      "q75": 0.0004384775219740963,
+      "sd_population": 0.0025511208265548637
+    },
+    "mamba370m_Delta_L": {
+      "max": 0.005693937906959835,
+      "mean": 0.0005089563518854174,
+      "median": 0.00011899476035213567,
+      "min": -0.0025008454091293326,
+      "positive_fraction": 0.5766666666666667,
+      "q25": -0.0004907473600776571,
+      "q75": 0.0008715258559723116,
+      "sd_population": 0.0016124807266156126
+    },
+    "pairwise_cross_scale_pearson": 0.19712978479478185
+  },
+  "primary_endpoint": "R=Delta_L_370M-Delta_L_1.4B",
+  "primary_test": {
+    "alpha": 0.05,
+    "alternative": "greater",
+    "df": 299,
+    "mean_R": 0.001704403857771641,
+    "n": 300,
+    "p_value": 2.2238330789610916e-23,
+    "p_value_count": 1,
+    "sd_R": 0.0027407135373192773,
+    "t_statistic": 10.771333954019786,
+    "test": "paired_one_sample_student_t"
+  },
+  "result": "READOUT_ALIGNMENT_SCALE_SIGN_REVERSAL_SUPPORTED",
+  "sign_gates": {
+    "gate_1.4B_negative": true,
+    "gate_370M_positive": true,
+    "mean_Delta_L_1.4B": -0.0011954475058862238,
+    "mean_Delta_L_370M": 0.0005089563518854174
+  },
+  "sign_reversal_supported": true
+}
