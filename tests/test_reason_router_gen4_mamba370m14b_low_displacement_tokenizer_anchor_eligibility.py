@@ -309,3 +309,62 @@ def test_source_contains_no_scientific_execution_calls() -> None:
     )
     for token in forbidden:
         assert token not in source
+
+
+def _repository_auth_git_stub(branch: str, expected_head: str):
+    def fake_git(*args: str) -> str:
+        if args == ("branch", "--show-current"):
+            return branch
+        if args == ("rev-parse", "HEAD"):
+            return expected_head
+        if args == ("status", "--porcelain"):
+            return ""
+        if args == ("rev-parse", f"HEAD:{m.PLAN_PATH}"):
+            return m.PLAN_BLOB
+        raise AssertionError(f"unexpected git call: {args!r}")
+
+    return fake_git
+
+
+def test_authenticate_repo_allows_kaggle_detached_head(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    expected_head = "test-detached-head"
+    monkeypatch.setattr(
+        m,
+        "git",
+        _repository_auth_git_stub("", expected_head),
+    )
+    monkeypatch.setattr(m, "git_rc", lambda *args: 0)
+
+    m.authenticate_repo(expected_head)
+
+
+def test_authenticate_repo_allows_expected_named_branch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    expected_head = "test-named-head"
+    monkeypatch.setattr(
+        m,
+        "git",
+        _repository_auth_git_stub(m.EXPECTED_BRANCH, expected_head),
+    )
+    monkeypatch.setattr(m, "git_rc", lambda *args: 0)
+
+    m.authenticate_repo(expected_head)
+
+
+def test_authenticate_repo_rejects_other_branch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        m,
+        "git",
+        lambda *args: "unexpected-branch",
+    )
+
+    with pytest.raises(
+        m.LowDisplacementEligibilityError,
+        match=r"BRANCH_MISMATCH:unexpected-branch",
+    ):
+        m.authenticate_repo("test-head")

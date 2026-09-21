@@ -212,9 +212,10 @@ def read_jsonl(path: Path) -> list[dict[str, Any]]:
 
 
 def authenticate_repo(expected_head: str) -> None:
+    branch = git("branch", "--show-current")
     require(
-        git("branch", "--show-current") == EXPECTED_BRANCH,
-        "BRANCH_MISMATCH",
+        branch in ("", EXPECTED_BRANCH),
+        f"BRANCH_MISMATCH:{branch}",
     )
     require(
         git("rev-parse", "HEAD") == expected_head,
