@@ -1,0 +1,29 @@
+{
+  "additional_backward_count": 0,
+  "additional_model_forward_count": 0,
+  "alpha1_behavioral_forward_executed": false,
+  "alpha1_geometric_reference_permitted_static_only": true,
+  "behavioral_alphas": [
+    0.5,
+    0.25
+  ],
+  "cells": [
+    "C0_SHAM",
+    "C2_NAME"
+  ],
+  "execution_head": "537e89b4266ffef1b788832b5e00de411e5ff785",
+  "index_file_sha256": "32710d1eb46e79cf21d6570f48bc21ac0711827bde9f0efb56b100f7dbb2995f",
+  "manifold_metric_computed": false,
+  "p_value_count_executed": 0,
+  "population": "xg1_fact_5401..xg1_fact_5700",
+  "required_ancestor": "aa3b06fb95c8b2409ecf076dc252388ec13ea3c6",
+  "result": "PASS_GEN4_LOW_DISPLACEMENT_STATE_CAPTURE_RAW",
+  "scales": [
+    "mamba370m",
+    "mamba14b"
+  ],
+  "schema_version": "gen4-mamba370m14b-low-displacement-state-manifest-v1",
+  "scientific_conclusion": null,
+  "state_file_sha256": "163bd4d90f5b5e649301eb3ee4d24d871e9452910b3bcfd82b74316374462580",
+  "state_row_count": 1200
+}
