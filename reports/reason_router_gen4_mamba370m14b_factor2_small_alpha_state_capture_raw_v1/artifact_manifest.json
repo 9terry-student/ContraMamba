@@ -1,0 +1,33 @@
+{
+  "adaptive_rerun_executed": false,
+  "additional_backward_count": 0,
+  "additional_model_forward_count": 0,
+  "alpha1_behavioral_forward_executed": false,
+  "alpha1_geometric_reference_permitted_static_only": true,
+  "behavioral_alphas": [
+    0.25,
+    0.125,
+    0.0625,
+    0.03125
+  ],
+  "cells": [
+    "C0_SHAM",
+    "C2_NAME"
+  ],
+  "execution_head": "f8d8b8a658c2494240feeac415b964d8fe95fafc",
+  "index_file_sha256": "89927a67d16b68999eebdcc39cf034f722e268d607e007556d05b2277f3f4727",
+  "manifold_metric_computed": false,
+  "negative_alpha_arm_executed": false,
+  "p_value_count_executed": 0,
+  "population": "xg1_fact_5701..xg1_fact_6000",
+  "required_ancestor": "069b48dee6cb39909623defd862965b3f940e9d9",
+  "result": "PASS_GEN4_FACTOR2_SMALL_ALPHA_STATE_CAPTURE_RAW",
+  "scales": [
+    "mamba370m",
+    "mamba14b"
+  ],
+  "schema_version": "gen4-factor2-small-alpha-state-manifest-v1",
+  "scientific_conclusion": null,
+  "state_file_sha256": "0ee272ce9ba0f2eaecc183236f2e796c33c0dfe422158032727a733b31f38d02",
+  "state_row_count": 1200
+}

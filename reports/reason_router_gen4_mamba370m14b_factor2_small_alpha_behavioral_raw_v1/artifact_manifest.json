@@ -1,0 +1,14 @@
+{
+  "adaptive_rerun_executed": false,
+  "behavior_row_count": 6000,
+  "execution_head": "f8d8b8a658c2494240feeac415b964d8fe95fafc",
+  "item_sha256": "4be32c827d751b9b2f2f4a8211d594086635b87e6700c89bd581692e07558529",
+  "negative_alpha_arm_executed": false,
+  "primary_p_value_count_executed": 0,
+  "required_ancestor": "069b48dee6cb39909623defd862965b3f940e9d9",
+  "result": "PASS_GEN4_FACTOR2_SMALL_ALPHA_BEHAVIORAL_RAW",
+  "schema_version": "gen4-factor2-small-alpha-behavior-manifest-v1",
+  "scientific_conclusion": null,
+  "scientific_full_model_forward_count": 6000,
+  "summary_sha256": "a595acec31ca6ff74bd0fb8fdfe4c1aa6733dd42eebb019bb0421854c124ad95"
+}
