@@ -1,0 +1,19 @@
+{
+  "all_scales_pass": true,
+  "checkpoint_load_count": 0,
+  "gpu_used": false,
+  "inference_performed": false,
+  "model_forward_count": 0,
+  "rescue_performed": false,
+  "result": "PASS_GEN4_FACTOR2_SMALL_ALPHA_TOKENIZER_ANCHOR_ELIGIBILITY",
+  "row_filtering_performed": false,
+  "scale_results": {
+    "mamba14b": "PASS_600_OF_600",
+    "mamba370m": "PASS_600_OF_600"
+  },
+  "schema_version": "GEN4_MAMBA370M14B_FACTOR2_SMALL_ALPHA_TOKENIZER_ANCHOR_ELIGIBILITY_CROSS_SCALE_V1",
+  "scientific_outcomes_observed": false,
+  "source_pair_count": 300,
+  "target_row_count_per_scale": 600,
+  "training_executed": false
+}
