@@ -1,0 +1,75 @@
+{
+  "N": 462,
+  "alpha": 0.05,
+  "alpha_gate": false,
+  "anchor_name": "A_CLAIM_EVIDENCE_BOUNDARY",
+  "backward_count": 0,
+  "checkpoint_sha256": "915c9de38d9dc7ee9da26ba4328e74549864c6bd29723f3b7a4b4e0050efce0a",
+  "descriptive": {
+    "accuracy_by_condition": {
+      "dominant_control": 0.12987012987012986,
+      "dominant_neutralized": 0.12987012987012986,
+      "native": 0.12987012987012986
+    },
+    "mean_D_EXT_14B_by_source_label": {
+      "Not Enough Evidence": 5.7267564365507234e-05,
+      "Refuted": 4.571420127443863e-05,
+      "Supported": -0.00042802124940848085
+    },
+    "mean_native_minus_neutralized": -5.713749732859032e-05,
+    "prediction_flip_rate_vs_native": {
+      "dominant_control": 0.0,
+      "dominant_neutralized": 0.0
+    },
+    "source_label_counts": {
+      "Not Enough Evidence": 35,
+      "Refuted": 305,
+      "Supported": 122
+    }
+  },
+  "df": 461,
+  "execution_type": "cpu_static_analysis",
+  "historical_130m370m_averitec_family_reopened": false,
+  "historical_p_values_in_new_family": 0,
+  "intervention_layer": 35,
+  "model_forward_count": 0,
+  "multiplicity": "none",
+  "negative_mean_sign_gate": true,
+  "population": "AVeriTeC official dev compatible 3-label gold-evidence cohort",
+  "primary": {
+    "cohen_dz": -0.06686547612930485,
+    "df": 461,
+    "fraction_negative": 0.538961038961039,
+    "fraction_positive": 0.461038961038961,
+    "fraction_zero": 0.0,
+    "max": 0.004899024963378906,
+    "mean": -7.850951577129465e-05,
+    "median": -3.9207407098729163e-07,
+    "min": -0.017334342002868652,
+    "n": 462,
+    "p_one_sided_less": 0.0756670802614973,
+    "q25": -2.7534086257219315e-05,
+    "q75": 3.441836452111602e-05,
+    "sd_sample": 0.0011741412806135186,
+    "t_statistic": -1.4372189314350718
+  },
+  "primary_endpoint": "D_EXT_14B=M_native-M_control",
+  "primary_p_value_count": 1,
+  "primary_supported": false,
+  "primary_test": "one-sided one-sample Student t-test, alternative=less",
+  "prospective_plan_sha256": "11cae5cce793f3f27a3d8ec449f3dde1deab6aa162e37c97d6deaf9e04d6c845",
+  "raw_execution_head": "b6587da0a1e05874edcc674e78c5439756522f6c",
+  "raw_freeze_commit": "59c24ae696700dd722b8e1ca628fe495cfa65738",
+  "rescue_performed": false,
+  "response_blind_control_plane": "P4",
+  "result": "PASS_GEN4_MAMBA14B_AVERITEC_NEGATIVE_SIGN_STATIC_ANALYSIS",
+  "row_filter_performed": false,
+  "scale": "mamba14b",
+  "schema_version": "gen4-averitec-mamba14b-negative-sign-static-analysis-v1",
+  "scientific_conclusion": "MAMBA14B_AVERITEC_NEGATIVE_SIGN_TRANSFER_NOT_ESTABLISHED",
+  "secondary_p_value_count": 0,
+  "selected_dominant_candidate": "P5",
+  "selection_reopened": false,
+  "target_offset": 2,
+  "training_executed": false
+}

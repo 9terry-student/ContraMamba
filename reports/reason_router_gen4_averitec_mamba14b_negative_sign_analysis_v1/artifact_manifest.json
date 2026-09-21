@@ -1,0 +1,37 @@
+{
+  "N": 462,
+  "backward_count": 0,
+  "execution_type": "cpu_static_analysis",
+  "historical_130m370m_averitec_family_reopened": false,
+  "historical_p_values_in_new_family": 0,
+  "input_git_blobs": {
+    "reports/reason_router_gen4_averitec_mamba14b_negative_sign_raw_runs/g4k-averitec14b-negtransfer-b6587da-r2-2t4/SHA256SUMS.txt": "a7f4b085f24e80a2c765e5c6f52d667e11a985a6",
+    "reports/reason_router_gen4_averitec_mamba14b_negative_sign_raw_runs/g4k-averitec14b-negtransfer-b6587da-r2-2t4/artifact_manifest.json": "969076247ef3daf339f6c98d1e5915b7950fa86f",
+    "reports/reason_router_gen4_averitec_mamba14b_negative_sign_raw_runs/g4k-averitec14b-negtransfer-b6587da-r2-2t4/external_transfer_rows.jsonl": "87c03efb0a5f74cf7f89a069bf5edfb166caaac0",
+    "reports/reason_router_gen4_averitec_mamba14b_negative_sign_raw_runs/g4k-averitec14b-negtransfer-b6587da-r2-2t4/raw_external_transfer_summary.json": "151881cbd88cadc9beafe64a6a785af61cbdd7dc"
+  },
+  "input_sha256": {
+    "artifact_manifest.json": "cf8d626b3b7908b9fca615319d03bada4e796df2beb50cf9961db410665c93f6",
+    "external_transfer_rows.jsonl": "e2ef452a6dd3bb076924db5e4892741948e4a3c8c5ff11913a2c848cbc72980a",
+    "raw_external_transfer_summary.json": "7bc2d0260dd664b2f0953ac224be44bd23de4b58998b42eada95ce35d21a761e"
+  },
+  "model_forward_count": 0,
+  "multiplicity": "none",
+  "output_sha256": {
+    "external_transfer_analysis.json": "e9847177d78858ef400bc196f4b811e3e9ad401ae777a4315aea1bf9dd215d1e",
+    "external_transfer_items.jsonl": "f4071283f8edfe532c7f80091e46f8b3f34657c0a99b26097542a1d1e9a7affd"
+  },
+  "primary_endpoint": "D_EXT_14B=M_native-M_control",
+  "primary_p_value_count": 1,
+  "primary_test_alternative": "less",
+  "prospective_plan_sha256": "11cae5cce793f3f27a3d8ec449f3dde1deab6aa162e37c97d6deaf9e04d6c845",
+  "raw_freeze_commit": "59c24ae696700dd722b8e1ca628fe495cfa65738",
+  "rescue_performed": false,
+  "result": "PASS_GEN4_MAMBA14B_AVERITEC_NEGATIVE_SIGN_STATIC_ANALYSIS",
+  "row_filter_performed": false,
+  "schema_version": "gen4-averitec-mamba14b-negative-sign-static-manifest-v1",
+  "scientific_conclusion": "MAMBA14B_AVERITEC_NEGATIVE_SIGN_TRANSFER_NOT_ESTABLISHED",
+  "secondary_p_value_count": 0,
+  "selection_reopened": false,
+  "training_executed": false
+}
