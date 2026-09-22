@@ -1,0 +1,335 @@
+\section{Extended Methods}
+\label{app:methods}
+
+\subsection{Geometry construction and susceptibility endpoint}
+\label{app:geometry}
+
+Within each checkpoint, the analysis uses the frozen target-token intervention
+coordinate and the predeclared within-layer strong-channel mask. The mask is
+constructed independently at each checkpoint using the same frozen rule rather
+than transferring channel identities across scales. For each of XG2 and XG4,
+frozen direction rows are normalized to unit norm. Their float64 CPU uncentered
+second moment is eigendecomposed and the five largest-eigenvalue eigenvectors
+define the corresponding top-five local subspace. The frozen
+projector-contrast construction pairs the two subspaces into five
+checkpoint-local principal planes; sign canonicalization and orthonormality
+rules are deterministic. No XG1 response is used to reconstruct, rotate, or
+select these bases.
+
+For a unit probe direction \(w\), the directional susceptibility is
+\[
+J_i(w)=\frac{F_i(+\epsilon;w)-F_i(-\epsilon;w)}{2\epsilon},
+\qquad \epsilon=0.025.
+\]
+For the 130M projector-contrast analysis, plane \(k\), with frozen
+projector-separation weight \(s_k\), contributes
+\[
+C_k(i)=\frac{s_k}{5}\left[J_i(\mathrm{PP}_{k+})^2-J_i(\mathrm{PP}_{k-})^2\right].
+\]
+The broader five-dimensional endpoint used for necessity and restoration is
+\[
+E_{\mathrm{XG2}}(i,c)=\frac{1}{5}\sum_j J_i(v_{\mathrm{XG2},j};c)^2,
+\quad
+E_{\mathrm{XG4}}(i,c)=\frac{1}{5}\sum_j J_i(v_{\mathrm{XG4},j};c)^2,
+\]
+\[
+Q_i(c)=E_{\mathrm{XG2}}(i,c)-E_{\mathrm{XG4}}(i,c).
+\]
+At 370M and 1.4B, the same structural procedure is applied independently;
+plane vectors, selected rank, response-blind control rank, strong-channel
+indices, residual sign pattern, and coefficient-mass allocation are not
+transferred between checkpoints.
+
+\subsection{Prospective 130M validation}
+\label{app:130m}
+
+Static localization identified PP3 as the dominant shared positive
+projector-contrast candidate before prospective XG1 validation. External
+transport was evaluated on a fresh 300-pair XG1 population. Specificity used a
+second disjoint 300-pair population and the response-blind hard geometric
+control
+\[
+\mathrm{PP5}=\arg\max_k \sin(\theta_k),
+\]
+selected from frozen projector separation without XG1 responses. PP5 is not a
+random baseline.
+
+Necessity used a third fresh 300-pair population. Let \(h\) be the native
+strong-coordinate target state and \(u_{3+},u_{3-}\) the orthonormal PP3 modes,
+with native coefficients \(a=\langle h,u_{3+}\rangle\) and
+\(b=\langle h,u_{3-}\rangle\). PP3 neutralization is
+\[
+T_3(h)=h-a u_{3+}-b u_{3-}.
+\]
+The matched PP5 control transfers the same coefficients into PP5,
+\[
+T_5(h)=h-a u_{5+}-b u_{5-}.
+\]
+Because both planes use orthonormal bases and the same coefficient pair, the
+correction magnitudes are matched. The primary necessity contrast is evaluated
+with the broader \(Q\) endpoint rather than a PP3-specific response measure.
+It establishes local necessity relative to the matched control, not global or
+downstream behavioral necessity.
+
+Restoration used a fourth disjoint 300-pair XG1 population. From the
+PP3-neutralized background
+\[
+B=h-(a u_{3+}+b u_{3-}),
+\]
+selected restoration returns the exact removed component,
+\[
+R_3=B+a u_{3+}+b u_{3-}=h,
+\]
+while the matched replacement is
+\[
+R_5=B+a u_{5+}+b u_{5-}.
+\]
+The additions have equal Euclidean norm. This is a local matched
+restoration/replacement test, not sufficiency in an empty state or sufficiency
+for downstream task behavior. Finite-\(\epsilon\) robustness at 0.025, 0.0125,
+and 0.00625 is descriptive and is not extrapolated to an
+\(\epsilon\rightarrow0\) theorem.
+
+\subsection{Cross-checkpoint recurrence and residual characterization}
+\label{app:recurrence}
+
+For each larger checkpoint, discovery defines a scale-local candidate using
+\[
+G_{s,k}(i)=Q_{\mathrm{restored}}(s,k,i)-Q_{\mathrm{neutralized}}(s,k,i)
+\]
+and freezes the unique mean maximizer before confirmation. A response-blind
+control is chosen from the remaining frozen geometry without using the
+confirmation outcome. The confirmation endpoint is
+\[
+D_{\mathrm{CORE},s}(i)=Q_{\mathrm{restored}}(s,k_s^*,i)-Q_{\mathrm{control}}(s,c_s^*,i).
+\]
+This protocol tests recurrence of a dominant causal \emph{role}; it does not
+require the selected plane rank to match across checkpoints.
+
+All non-selected planes form the residual mechanism for descriptive
+characterization. Signed residual effects, coefficient-mass allocation,
+dominant residual rank, and generator-family coupling are reported without a
+post-hoc cross-checkpoint residual significance test. At 370M, the residual
+coefficient-mass shares are approximately P1 0.064, P2 0.148, P4 0.094, and P5
+0.695; the signed effects include a large negative P5 and positive P4 term. At
+1.4B, the residual mass is concentrated primarily on P2 (about 0.574) and P3
+(about 0.318), with negative P2/P4 and a smaller positive P3 contribution.
+Within-checkpoint aggregate residuals closely track the signed sum of residual
+planes (correlations 0.963 and 0.995 at 370M and 1.4B). These values motivate
+the descriptive ``residual-plastic'' label but do not define a scaling law.
+
+\subsection{Adjacent-site specificity and cross-block transport}
+\label{app:transport}
+
+The Mamba-1.4B canonical source/target/intervention mapping is
+\((33,34,35)\). The adjacent site is fixed by shifting the triplet exactly one
+block downstream to \((34,35,36)\), preserving relative offsets. The choice is
+architecture/instrumentation based and is not reopened after response
+observation. Only this one adjacent site is used; the experiment does not
+identify a global layer optimum.
+
+The adjacent geometry is reconstructed independently from the same
+response-free XG2/XG4 structural cohorts. The same-numbered adjacent P5 is a
+rank-aligned site-local plane, not a semantic identity claim. The adjacent
+response-blind control is selected by the frozen geometry-only rule and is P4.
+
+For geometric transport, the canonical P5 rank-two subspace is propagated
+through the intervening block with the frozen local Jacobian-vector transport
+procedure. On 600 response-free rows the transported subspace remains rank two.
+Principal angles and projector overlap quantify its relation to the independently
+reconstructed adjacent P5 subspace. No response threshold or inferential
+classification is produced by this geometry runner.
+
+The response experiment reuses the fixed 300-pair adjacent population. The
+primary paired endpoint is
+\[
+G=D_{\mathrm{TRANSPORT}}-D_{\mathrm{ADJ}},
+\]
+with exactly one one-sided Student t test. The separate sign gate
+\(\mathrm{mean}(D_{\mathrm{TRANSPORT}})>0\) is mandatory. The observed relative
+shift is positive and strongly supported, while the transported mean remains
+negative; therefore positive adjacent-response restoration is not established.
+Ratios between canonical, adjacent, and transported means are not interpreted
+as mediation or explained percentages.
+
+\subsection{Downstream readout, gradient ownership, and behavior}
+\label{app:readout}
+
+The matched readout population is \(\mathrm{xg1\_fact\_4801..5100}\),
+\(N=300\) source pairs, with the frozen C0\_SHAM and C2\_NAME cells averaged
+within pair. For correct class \(y\), native downstream task margin is
+\[
+m=z_y-\max_{c\neq y}z_c.
+\]
+The upstream graph is cut at the frozen intervention tensor, treated as a local
+differentiation leaf; downstream computation remains intact and parameters
+receive no gradients. If \(C_{\mathrm{sel}}\) and \(C_{\mathrm{ctrl}}\) denote
+the frozen selected and coefficient-matched control components, the row-level
+readout is
+\[
+\Delta L_{\mathrm{row}}=g^\top(C_{\mathrm{sel}}-C_{\mathrm{ctrl}}),
+\]
+then averaged within pair. The primary paired endpoint is
+\[
+R_q=\Delta L_{370\mathrm{M},q}-\Delta L_{1.4\mathrm{B},q}.
+\]
+
+The historical model uses edge-specific gradient ownership. For the frozen
+\texttt{G3-GROUP-D-HALF} arm, all relevant routes into the final decision pass
+through a D edge with ownership factor 0.5. The forward value is unchanged but
+the autograd sensitivity is halved. Consequently
+\[
+\Delta L_{\mathrm{owned}}=0.5\,\Delta L_{\mathrm{forward}},\qquad
+\Delta L_{\mathrm{forward}}=2\,\Delta L_{\mathrm{owned}}.
+\]
+This source-defined factor explains the earlier approximately two-fold
+finite-forward calibration and is not a Mamba numerical anomaly. Because it is
+a common positive factor, it does not alter signs, rankings, t statistics, or
+p-values.
+
+Direct behavioral coupling uses the same selected-versus-control component
+construction. For stagewise localization, downstream margins are recorded
+under native, dominant-neutralized, and dominant-control conditions after the
+frozen intervention. At each stage \(k\),
+\[
+A_{\mathrm{sel}}(k)=M_{\mathrm{native}}(k)-M_{\mathrm{neutralized}}(k),
+\]
+\[
+B_{\mathrm{ctrl}}(k)=M_{\mathrm{control}}(k)-M_{\mathrm{neutralized}}(k),
+\]
+\[
+D(k)=M_{\mathrm{native}}(k)-M_{\mathrm{control}}(k)
+=A_{\mathrm{sel}}(k)-B_{\mathrm{ctrl}}(k).
+\]
+Stagewise quantities are descriptive and do not acquire additional p-values or
+a unique-mediator interpretation.
+
+\subsection{AVeriTeC transfer and steering boundary}
+\label{app:averitec}
+
+External transfer uses the official AVeriTeC development source with annotated
+gold evidence. The compatible three-class cohort excludes the
+\texttt{Conflicting Evidence/Cherrypicking} class and contains 462 examples,
+with the frozen mapping Refuted\(\rightarrow\)REFUTE, Not Enough
+Evidence\(\rightarrow\)NOT\_ENTITLED, and Supported\(\rightarrow\)SUPPORT.
+No evidence retrieval, question generation, or justification-field input is
+used. Claim text and gold evidence are serialized deterministically under the
+model-specific frozen tokenizer/anchor contract; no favorable subset is
+selected after tokenization or response observation.
+
+For each example, the causal comparison uses native, dominant-neutralized, and
+coefficient-matched dominant-control conditions and measures the correct-class
+margin. The completed 130M/370M tests form their frozen two-test external
+transfer family. The later 1.4B negative-sign experiment is a separate
+prospective extension and does not reopen that family. At 1.4B the point
+estimate is negative, but the one-sided less-than test has \(p=0.0757\), so
+negative external transfer is not established.
+
+Prediction-level control is tested separately at 370M with one preregistered
+fixed-mirror steering rule on 2,799 examples. There are 331 natively correct
+and 2,468 natively incorrect examples, with zero wrong-to-correct transitions
+and zero correct-to-wrong transitions. Because there are no discordant pairs,
+the pre-specified exact utility test is not estimable. This result bounds that
+fixed steering rule only and does not establish general unsteerability.
+
+\subsection{Statistical scope and provenance}
+\label{app:statistics}
+
+Prospective causal contrasts use the test direction and endpoint frozen before
+response inspection. Positive mean contrasts are generally evaluated with
+one-sided Student t tests on the predeclared item or paired-difference endpoint.
+Multiplicity correction is applied only where a prospective family explicitly
+defines multiple primary tests, including the frozen two-test Holm families.
+Residual decompositions, finite-\(\epsilon\) profiles, geometric transport
+summaries, and stagewise localization remain descriptive and are not assigned
+post-hoc p-values. Failed gates are not rescued by changing population, plane,
+layer, token, epsilon, control, or test direction.
+
+Every scientific stage freezes cohort, model/checkpoint, tokenizer/anchor,
+geometry/intervention object, endpoint, and artifact identity before downstream
+interpretation. Raw execution artifacts are separated from static inferential
+analyses and manuscript synthesis. The manuscript figures and table are
+generated from frozen artifacts; manuscript construction performs no model
+execution or new statistical testing.
+
+\section{Additional Result Details}
+\label{app:results}
+
+\subsection{130M validation statistics}
+
+The external PP3 transport mean is \(7.1203\times10^{-8}\) with SD
+\(6.4998\times10^{-8}\). In the fresh specificity study, PP3 mean is
+\(7.1235\times10^{-8}\) and PP5 mean is \(4.8194\times10^{-8}\), yielding
+\(D_{\mathrm{SPEC}}=2.3041\times10^{-8}\). The matched necessity contrast is
+\(4.7414\times10^{-8}\) with SD \(3.4242\times10^{-8}\); the matched
+restoration contrast is \(4.0789\times10^{-8}\) with SD
+\(3.5139\times10^{-8}\). These studies use four non-overlapping fresh
+populations and do not adaptively reuse outcomes for later selection.
+
+\subsection{Cross-checkpoint readout and behavioral context}
+
+For the primary matched readout comparison, ownership-weighted means are
+\(+0.0005089564\) at 370M and \(-0.0011954475\) at 1.4B, with paired mean
+difference \(+0.0017044039\) and paired SD \(0.0027407135\). The common
+forward-equivalent factor of two yields means \(+0.0010179\) and
+\(-0.0023909\) without changing inference. The separately frozen 130M
+ownership-weighted contextual readout is \(+0.0011203660\), with
+forward-equivalent \(+0.0022407321\); it is not included in the matched
+370M--1.4B test.
+
+On direct behavior, 370M has mean \(D_{\mathrm{BEH}}=+0.001120686\), while
+1.4B has mean \(-0.002012885\). The pre-specified positive-bridge family
+therefore supports the 370M bridge but not the same positive claim at 1.4B.
+The stagewise analysis first shows persistent C2 opposition at
+\texttt{post\_block\_35}; aggregate pair-level opposition becomes persistent at
+\texttt{post\_block\_47}. These stages are descriptive localization, not an
+inferential mediator decomposition.
+
+\section{Expanded Limitations}
+\label{app:limitations}
+
+\paragraph{Checkpoint and seed scope.}
+The study analyzes three fixed pretrained checkpoints and does not estimate
+variation over independently trained model seeds. The matched 370M--1.4B test
+therefore supports an item-level fixed-checkpoint contrast, not a model-population
+scaling law or phase transition.
+
+\paragraph{Architecture scope.}
+All primary evidence is within the tested Mamba family. The results do not
+establish architecture-independent universality or imply that the same
+role/geometry/readout separation must occur in Transformers or other SSMs.
+
+\paragraph{Procedure-defined geometry.}
+Principal planes are checkpoint-local objects induced by the frozen XG2/XG4
+reconstruction, strong-channel rule, target coordinate, and finite-difference
+measurement. Recurring function does not imply same-numbered-plane identity.
+
+\paragraph{Residual reorganization.}
+Cross-checkpoint residual changes are descriptive. No omnibus or pairwise
+cross-scale residual significance test was added after observing the profiles.
+
+\paragraph{Transport completeness.}
+The 1.4B transport test supports a relative causal shift but fails the positive
+restoration gate. It therefore does not identify a complete mediator and does
+not justify an explained-percentage interpretation.
+
+\paragraph{Site specificity.}
+The site-specificity experiment compares the canonical site with one
+prospectively fixed adjacent \(+1\) site. It does not establish uniqueness over
+all layers or a global intervention optimum.
+
+\paragraph{Finite perturbation.}
+The susceptibility program uses primary \(\epsilon=0.025\) and smaller finite
+values only for descriptive robustness. Stability over these values does not
+prove an exact infinitesimal limit.
+
+\paragraph{External validity.}
+AVeriTeC uses the compatible three-class gold-evidence subset and removes
+retrieval from the causal question. It is not an end-to-end benchmark or
+retrieval evaluation. The 1.4B negative point estimate does not pass its
+pre-specified alpha gate.
+
+\paragraph{Steering scope.}
+The steering null concerns one preregistered fixed-mirror transform at 370M. It
+does not evaluate adaptive, optimization-based, or alternative-magnitude
+control and therefore does not establish general unsteerability.

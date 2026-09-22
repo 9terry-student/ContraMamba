@@ -1,0 +1,484 @@
+\documentclass{article}
+
+\usepackage{iclr2027_conference,times}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+
+\title{Causal Role Recurrence with Geometric Reorganization and Readout Reversal in Mamba}
+\author{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Mechanistic analyses often ask whether an internal causal computation recurs
+across model checkpoints, but recurrence does not specify what else is
+preserved. We separate three properties---causal-role recurrence, geometric
+realization, and downstream functional alignment---in frozen pretrained Mamba
+checkpoints at 130M, 370M, and 1.4B parameters. A scale-local dominant causal
+role recurs across the tested checkpoints, while its checkpoint-local
+geometric realization reorganizes. At Mamba-1.4B, transporting the canonical
+subspace across an adjacent block shifts the intervention response toward the
+canonical effect but does not restore its positive response, showing that the
+reorientation is functionally relevant but incomplete. Downstream alignment
+also changes. In a prospectively matched comparison over 300 source pairs, the
+independently frozen selected-versus-control displacement has positive mean
+task-readout alignment at Mamba-370M and negative mean alignment at Mamba-1.4B,
+supporting an orientation reversal despite recurrence of the internal causal
+role. Direct intervention establishes a positive downstream behavioral bridge
+at 370M while the same pre-specified positive bridge is not established at
+1.4B. Together, these results show that, across the tested Mamba checkpoints,
+recurrence of a causal role does not guarantee either a fixed geometric
+realization or stable downstream functional alignment. Mechanistic
+correspondences and intervention directions should therefore be revalidated
+after checkpoint or scale changes rather than transferred from role recurrence
+alone.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:introduction}
+
+Mechanistic analysis often asks whether an internal computation identified in
+one model also appears in another. A stricter question is what must remain
+invariant when a causal role reappears. Recurrence could preserve the role
+while changing the coordinates that realize it, the downstream task alignment
+of the corresponding intervention, both, or neither. These possibilities are
+usually conflated when mechanisms are transferred across checkpoints or model
+scales.
+
+Mamba offers a useful test bed. Selective state-space models replace attention
+with input-dependent state-space dynamics \citep{gu2023mamba}, and prior work
+has already established causal localization and editing
+\citep{sharma2024locating}, token/layer information-flow interventions
+\citep{endy2025knockout}, architecture-specific attribution
+\citep{jafari2024mambalrp}, cross-architecture mechanistic similarity
+\citep{wang2025universality,arora2025mechanistic}, and activation-subspace
+interventions \citep{mohan2026subspace}. Causal localization can also be
+non-unique and intervention-surface dependent \citep{jiang2026circuit}, while
+mechanistic scaling has been studied in associative recall
+\citep{koren2026recall}. We therefore do not ask whether Mamba contains
+interpretable causal structure. We ask whether recurrence of a validated causal
+role requires preservation of its geometry or downstream orientation.
+
+We test these implications in frozen pretrained Mamba-130M, 370M, and 1.4B
+checkpoints. Geometry is reconstructed independently within each checkpoint;
+principal-plane rank is checkpoint-local and never treated as a semantic
+identifier shared across models. The recurring object is functional: a
+scale-local component that plays the dominant causal role relative to a frozen
+response-blind control.
+
+Our first result is \textbf{causal-role recurrence without fixed geometric
+realization}. The starting 130M component is prospectively validated by
+external-generator transport, response-blind specificity, matched-control
+necessity and restoration, and finite-perturbation robustness. Applying the
+same procedure at larger checkpoints again identifies a dominant causal role,
+but the selected rank and surrounding residual organization change. We call
+this bounded pattern \textbf{core-stable / residual-plastic}. At 1.4B,
+cross-block transport additionally shows that the geometric reorientation is
+functionally relevant while failing to restore the canonical positive effect.
+
+Our second result is \textbf{downstream readout reversal despite causal-role
+recurrence}. On a prospectively matched population of 300 source pairs, the
+selected-versus-control displacement has positive mean local task-readout
+alignment at 370M and negative mean alignment at 1.4B
+(\(t(299)=10.77\), one-sided \(p=2.22\times10^{-23}\)). A separate 130M
+population supplies a positive contextual point, but we do not fit a scaling
+law or infer a parameter-count threshold. Supporting behavioral and AVeriTeC
+experiments delimit the downstream and external scope, while a fixed-mirror
+steering test separates mechanistic validity from control utility.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.88\linewidth]{../../reports/reason_router_gen4_main_figures_v1/figure1.png}
+\caption{Central question. Checkpoint-local causal-role recurrence is tested
+separately from geometric invariance and downstream readout invariance.}
+\label{fig:overview}
+\end{figure}
+
+\section{Related Work}
+\label{sec:related-work}
+
+Prior work has established detailed mechanistic analysis in Mamba through
+causal tracing and editing \citep{sharma2024locating}, knockout-style
+information-flow analysis \citep{endy2025knockout}, and Mamba-specific
+relevance propagation \citep{jafari2024mambalrp}. Cross-model work compares
+features and circuits across Transformers and Mambas
+\citep{wang2025universality,arora2025mechanistic}; activation-subspace methods
+also provide explicit SSM intervention objects \citep{mohan2026subspace}.
+Non-unique causal localization in Mamba-2 further shows that representational
+similarity and causal function need not coincide \citep{jiang2026circuit}, and
+recent work studies mechanistic scaling in Mamba associative recall
+\citep{koren2026recall}. Our contribution is narrower: conditioning on
+recurrence of a causally validated role, we test two stronger implications---
+fixed geometric realization and stable downstream task alignment. We make no
+first-ever interpretability claim, universality claim, or model-size scaling
+claim.
+
+\section{Methods}
+\label{sec:methods}
+
+\paragraph{Checkpoint-local geometry and prospective populations.}
+We analyze frozen pretrained Mamba checkpoints at 130M, 370M, and 1.4B
+parameters. For each checkpoint, XG2/XG4 response-free rows define independent
+local geometry and the structurally independent XG1 generator supplies
+prospective response populations. Plane vectors, selected/control ranks, and
+strong-channel identities are never transferred across checkpoints. The
+primary finite-difference scale is \(\epsilon=0.025\). For a unit direction
+\(w\), local susceptibility is
+\(J_i(w)=[F_i(+\epsilon;w)-F_i(-\epsilon;w)]/(2\epsilon)\); the frozen XG2--XG4
+contrast defines the checkpoint-local response endpoint \(Q\). No basis is
+refit using XG1 responses. Where formal inference is performed, the unit is the
+predeclared item or matched source-pair population for that study;
+response-free geometry rows and stagewise summaries remain descriptive.
+Cross-checkpoint tests use matched source pairs only where explicitly
+specified. Exact construction details and cohort identities are in
+Appendix~\ref{app:methods}.
+
+\paragraph{130M validation and cross-checkpoint recurrence.}
+At 130M, PP3 was frozen before prospective validation. Four disjoint XG1
+populations test external transport, specificity against response-blind PP5
+(the maximum projector-separation plane), matched-control necessity, and local
+restoration against an equal-coefficient PP5 replacement. Smaller
+\(\epsilon\) values are descriptive robustness checks. At larger checkpoints,
+independent discovery chooses the scale-local dominant component and a
+response-blind control before disjoint confirmation. The confirmation endpoint
+is the restored selected component minus the matched control. Residual planes
+are characterized descriptively; no cross-checkpoint residual p-value is
+introduced.
+
+\paragraph{Adjacent-site transport.}
+At 1.4B, the canonical source/target/intervention triplet is \((33,34,35)\) and
+one architecture-predeclared adjacent \(+1\) triplet is \((34,35,36)\). The
+canonical P5 subspace is transported through the intervening block and compared
+with the independently reconstructed adjacent P5 plane on response-free rows.
+Functional relevance is tested on a frozen \(N=300\) XG1 population with
+\(G=D_{\mathrm{TRANSPORT}}-D_{\mathrm{ADJ}}\). A separate mandatory gate
+requires \(\mathrm{mean}(D_{\mathrm{TRANSPORT}})>0\); relative shift and
+positive restoration are therefore distinct.
+
+\paragraph{Downstream readout and behavior.}
+The primary cross-checkpoint readout compares 370M and 1.4B on the same
+\(N=300\) source pairs. For task margin
+\(m=z_y-\max_{c\neq y}z_c\), a local gradient is taken at the unmodified
+intervention state while the downstream computation remains intact. The frozen
+selected and coefficient-matched response-blind control components define
+\(\Delta L=g^\top(C_{\mathrm{sel}}-C_{\mathrm{ctrl}})\), averaged within
+source pair. The matched endpoint is
+\(R_q=\Delta L_{370\mathrm{M},q}-\Delta L_{1.4\mathrm{B},q}\). The historical
+\texttt{G3-GROUP-D-HALF} graph applies an intentional one-half D-edge gradient
+ownership factor while preserving the forward value, so
+\(\Delta L_{\mathrm{forward}}=2\Delta L_{\mathrm{owned}}\). This positive
+rescaling changes derivative units but not signs, rankings, t statistics, or
+p-values. Direct behavior uses the same selected-versus-control displacement;
+stagewise summaries are descriptive.
+
+\paragraph{External transfer, steering, and statistics.}
+AVeriTeC transfer uses the official development source restricted to the 462
+compatible three-class examples and annotated gold evidence; no retrieval or
+question generation is executed. Causal margin transfer is distinct from a
+separate 370M fixed-mirror steering utility test. Prospective contrasts use
+predeclared one-sided Student t tests and only predeclared multiplicity
+families receive correction. Failed gates are not rescued by redefining
+population, plane, layer, token, tail, or endpoint. The three checkpoints are
+fixed models, not a random sample of independently trained seeds.
+
+\section{Results}
+\label{sec:results}
+
+\subsection{A causal recurrent-state role survives prospective validation}
+\label{sec:r31}
+
+In Mamba-130M, static localization identified PP3 as the dominant shared
+positive contrast component, while substantial response remained in other
+planes. On a fresh XG1 population (\(N=300\)), PP3 transported with mean
+\(7.12\times10^{-8}\) (\(t(299)=18.97\), \(p=1.52\times10^{-53}\)). On a
+second holdout, PP3 exceeded response-blind max-separation PP5 by
+\(D_{\mathrm{SPEC}}=2.30\times10^{-8}\)
+(\(t(299)=7.66\), \(p=1.34\times10^{-13}\)). Matched-control necessity and
+restoration were also positive:
+\(D_{\mathrm{NEC}}=4.74\times10^{-8}\)
+(\(t(299)=23.98\), \(p=6.22\times10^{-72}\)) and
+\(D_{\mathrm{SUF}}=4.08\times10^{-8}\)
+(\(t(299)=20.11\), \(p=9.01\times10^{-58}\)). Here ``restoration-sufficient''
+means restoration of the local susceptibility contrast relative to matched
+PP5, not global or downstream behavioral sufficiency. PP3 remained uniquely
+dominant at \(\epsilon=0.025,0.0125,0.00625\) with normalized profile cosine
+similarity above 0.99994 (descriptive only). Figure~\ref{fig:validation}
+summarizes this prospective validation chain.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.96\linewidth]{../../reports/reason_router_gen4_main_figures_v1/figure2.png}
+\caption{Prospective 130M validation: external transport, response-blind PP5
+specificity, matched-control necessity/restoration, and finite-\(\epsilon\)
+robustness.}
+\label{fig:validation}
+\end{figure}
+
+\subsection{The causal role recurs while residual geometry reorganizes}
+\label{sec:r32}
+
+At 370M, independent reconstruction selected P3 against P5; fresh confirmation
+gave mean \(D_{\mathrm{DOM}}=3.97\times10^{-8}\),
+\(t(299)=26.06\), Holm-adjusted \(p=6.39\times10^{-79}\), with 94\% positive
+pairs. At 1.4B, independent reconstruction instead selected P5 against P4;
+confirmation gave mean \(D_{\mathrm{CORE}}=9.28\times10^{-9}\),
+\(t(299)=16.25\), \(p=2.62\times10^{-43}\), with 0.783 positive-pair fraction.
+Thus the invariant is not plane rank but the \emph{scale-local dominant causal
+role} under the same reconstruction and matched-control protocol.
+
+The surrounding residual mechanism reorganizes (Figure~\ref{fig:recurrence}).
+At 370M residual mass concentrates on local P5 (\(\approx0.695\)), whereas at
+1.4B it concentrates on P2 (\(\approx0.574\)) and P3
+(\(\approx0.318\)); signed residual contributions and generator-family
+coupling change as well. Residual signed sums closely track aggregate residuals
+within each larger checkpoint (\(r=0.963\) and \(r=0.995\)), but these
+cross-checkpoint residual comparisons are descriptive. We therefore summarize
+the tested pattern as \textbf{core-stable / residual-plastic}, not a fixed-rank
+identity or scaling law.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{../../reports/reason_router_gen4_main_figures_v1/figure3.png}
+\caption{A scale-local dominant causal role recurs while the checkpoint-local
+residual realization reorganizes. Residual cross-checkpoint comparisons are
+descriptive.}
+\label{fig:recurrence}
+\end{figure}
+
+\subsection{Cross-block transport is functionally relevant but incomplete}
+\label{sec:r33}
+
+At 1.4B, the canonical \((33,34,35)\) site has positive P5-versus-P4 mean
+\(D_{\mathrm{CAN}}=9.10\times10^{-9}\), while the single prospectively fixed
+adjacent \((34,35,36)\) site has negative
+\(D_{\mathrm{ADJ}}=-1.55\times10^{-9}\). Their paired difference is
+\(1.07\times10^{-8}\) (\(t(299)=18.46\),
+\(p=1.34\times10^{-51}\)); this establishes specificity only relative to that
+one adjacent site.
+
+Across 600 response-free XG2/XG4 rows, the transported rank-two canonical P5
+subspace is strongly reoriented relative to the independently reconstructed
+adjacent P5 plane (principal angles \(86.45^\circ\) and \(89.22^\circ\); mean
+projector overlap 0.00231). On the frozen \(N=300\) response population,
+transport raises the adjacent response by
+\(G=1.00\times10^{-9}\) (\(t(299)=18.58\),
+\(p=4.38\times10^{-52}\)), yet the transported mean remains negative
+(\(D_{\mathrm{TRANSPORT}}=-5.51\times10^{-10}\)). Thus the relative-shift test
+passes while the mandatory positive-restoration gate fails
+(Figure~\ref{fig:transport}). The geometric reorientation is therefore
+functionally relevant under the frozen transport test and contributes causally
+to the local functional difference without fully accounting for it; no
+mediated/explained percentage is assigned.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.96\linewidth]{../../reports/reason_router_gen4_main_figures_v1/figure4.png}
+\caption{1.4B site specificity and cross-block transport. Transport shifts the
+adjacent response toward the canonical direction but does not restore a
+positive mean effect.}
+\label{fig:transport}
+\end{figure}
+
+\subsection{Downstream readout reverses in the matched 370M--1.4B comparison}
+\label{sec:r34}
+
+We next asked whether recurrence of the internal role preserves downstream
+task alignment. On the same 300 source pairs, the frozen selected/control
+geometry is P3/P5 at 370M and P5/P4 at 1.4B. Mean ownership-weighted local
+readout is positive at 370M
+(\(+5.09\times10^{-4}\)) and negative at 1.4B
+(\(-1.20\times10^{-3}\)). The prospectively defined matched difference is
+\(1.70\times10^{-3}\) (SD \(2.74\times10^{-3}\)), with
+\(t(299)=10.77\) and one-sided \(p=2.22\times10^{-23}\); both sign gates pass.
+Under the deterministic ownership correction, the forward-equivalent means are
+\(+1.02\times10^{-3}\) and \(-2.39\times10^{-3}\), respectively, without
+changing inference.
+
+A separately frozen 130M population has positive mean readout, but it is a
+contextual point rather than part of the matched inferential sample. We do not
+fit a three-point scaling regression or infer across independently trained
+model seeds. Within the tested fixed checkpoints, causal-role recurrence does
+not guarantee stable downstream readout orientation
+(Figure~\ref{fig:readout}).
+
+\subsection{Behavioral and external consequences are checkpoint- and endpoint-specific}
+\label{sec:r35}
+
+Direct intervention on the same matched population gives a positive 370M
+behavioral bridge, mean \(D_{\mathrm{BEH}}=+1.12\times10^{-3}\)
+(\(t(299)=5.82\), Holm-adjusted \(p=1.50\times10^{-8}\)), but the 1.4B mean is
+negative (\(-2.01\times10^{-3}\)); because the pre-specified family tests for a
+positive bridge, the 1.4B positive-bridge criterion is not established. A
+stagewise descriptive analysis shows the first persistent entitlement-sensitive
+opposition at \texttt{post\_block\_35} and pair-level opposition only at
+\texttt{post\_block\_47}; it does not identify a unique mediator.
+
+AVeriTeC provides an external boundary (Table~\ref{tab:external-transfer}). On
+462 compatible gold-evidence examples, positive causal margin transfer is
+supported at 130M and 370M. The 1.4B point estimate is negative but its
+one-sided \(p=0.0757\), so negative transfer is not established. A separate
+370M fixed-mirror steering test over 2,799 examples produces zero corrections
+and zero damages; useful steering is therefore not established under that
+fixed rule. Mechanistic validity, external causal transfer, and prediction-level
+control utility are distinct endpoints.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{../../reports/reason_router_gen4_main_figures_v1/figure5.png}
+\caption{Downstream alignment across the tested checkpoints. The primary
+inferential comparison is the matched 370M--1.4B readout endpoint; the
+three-checkpoint display is contextual, not a fitted scaling trend.}
+\label{fig:readout}
+\end{figure}
+
+\begin{table}[t]
+\caption{External transfer and control boundary. Gold-evidence margin transfer
+is distinct from retrieval performance or general steerability.}
+\label{tab:external-transfer}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
+\renewcommand{\arraystretch}{1.08}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.19\linewidth}>{\raggedright\arraybackslash}p{0.09\linewidth}>{\raggedright\arraybackslash}p{0.06\linewidth}>{\raggedright\arraybackslash}p{0.18\linewidth}>{\raggedright\arraybackslash}p{0.19\linewidth}>{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{Evidence} & \textbf{Ckpt.} & \textbf{N} & \textbf{Outcome} & \textbf{Effect / utility} & \textbf{Conclusion} \\
+\midrule
+AVeriTeC gold evidence & 130M & 462 & \(D_{\mathrm{EXT}}=+2.31\times10^{-4}\) & \(d_z=+0.120\), Holm \(p=0.0104\) & Positive transfer supported \\
+AVeriTeC gold evidence & 370M & 462 & \(D_{\mathrm{EXT}}=+4.56\times10^{-5}\) & \(d_z=+0.106\), Holm \(p=0.0114\) & Positive transfer supported \\
+AVeriTeC gold evidence & 1.4B & 462 & \(D_{\mathrm{EXT}}=-7.85\times10^{-5}\) & \(d_z=-0.067\), \(p=0.0757\) & Negative transfer not established \\
+Fixed-mirror steering & 370M & 2799 & corrections \(=0\), damages \(=0\) & net accuracy change \(=0\) & Useful steering not established \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Discussion and Limitations}
+\label{sec:discussion}
+
+\paragraph{Mechanistic recurrence is not coordinate invariance.}
+The experiments separate three properties that can otherwise be conflated:
+recurrence of a causal role, preservation of its geometric realization, and
+preservation of downstream task alignment. The first property is functional.
+At each tested checkpoint, an independently reconstructed component occupies
+the dominant causal role relative to a frozen response-blind control. The
+coordinate-level realization is less stable: the selected rank changes from P3
+at 370M to P5 at 1.4B, while residual mass, signed effects, and generator-family
+coupling reorganize. The \textbf{core-stable / residual-plastic} summary is
+therefore deliberately role-level. It does not posit a shared latent axis or a
+same-numbered plane identity across checkpoints.
+
+The cross-block transport experiment sharpens this distinction. The canonical
+1.4B P5 geometry becomes nearly orthogonal to the independently reconstructed
+adjacent P5 plane, and transporting the canonical subspace produces a large
+paired upward shift relative to the native adjacent response. This shows that
+the geometric reorientation is functionally relevant under the frozen
+transport test. Yet the transported mean remains negative and fails the
+positive-restoration gate. Geometry therefore explains part of the local
+functional change without exhausting it. We intentionally leave the remaining
+discrepancy unresolved rather than converting ratios of canonical, adjacent,
+and transported means into a post-hoc mediation percentage.
+
+\paragraph{Downstream alignment is a second independent property.}
+The matched 370M--1.4B readout result supplies a different separation. Even
+when a dominant internal role recurs, its selected-versus-control displacement
+can couple to the downstream correct-class margin with opposite mean local
+orientation. The factor-of-two ownership correction changes derivative units,
+not this interpretation: it is a deterministic positive rescaling induced by
+the frozen surrogate-gradient graph. The substantive observation is the sign
+reversal on the same 300 source pairs. Direct behavioral intervention is
+consistent with the same bounded picture: positive downstream coupling is
+established at 370M, whereas the prospectively specified positive bridge is not
+established at 1.4B. The stagewise analysis localizes where this divergence
+becomes readable but does not identify a unique mediator.
+
+Together these results suggest a layered notion of mechanistic recurrence.
+One can recover an analogous causal role while the local coordinates realizing
+that role and the downstream orientation through which it affects a task have
+changed. In that setting, ``the mechanism recurs'' is not enough to justify
+copying an intervention vector, assuming a stable readout sign, or interpreting
+a same-ranked subspace as semantically identical.
+
+\paragraph{Implications for mechanistic transfer and control.}
+The operational consequence is revalidation rather than a claim of general
+non-transferability. If a mechanism is transferred to another checkpoint or
+scale, at least two questions should be reopened: whether the local geometry
+still realizes the same role, and whether perturbing that geometry still
+moves the downstream task objective in the intended direction. The present
+study shows that those questions can have different answers even when the
+role-level causal test succeeds.
+
+The external experiments provide a related boundary. Positive causal margin
+transfer on AVeriTeC gold-evidence inputs at 130M and 370M shows that the
+synthetic causal object is not confined to the XG1 generator. However, this
+margin-level transfer does not imply useful control. The fixed-mirror steering
+rule at 370M changes no argmax predictions despite the validated internal
+mechanism and external margin effect. Conversely, the null steering result does
+not invalidate the mechanism: it only shows that one fixed transformation did
+not convert that mechanism into prediction-level utility. Mechanistic validity,
+external causal transfer, and controllability are therefore separate empirical
+questions.
+
+\paragraph{Limitations.}
+The scope is intentionally bounded. We study three fixed pretrained Mamba
+checkpoints, not a population of independently trained seeds, so the
+matched-item inference does not define a model-population scaling law, phase
+transition, or parameter threshold. All primary evidence is within the tested
+Mamba family and does not establish architecture-independent universality.
+The geometry is procedure-defined and checkpoint-local; residual
+cross-checkpoint comparisons remain descriptive rather than inferential.
+Cross-block transport is incomplete, and the site-specificity experiment uses
+one prospectively fixed adjacent site rather than a layer sweep. The
+susceptibility analysis operates at finite \(\epsilon\), with smaller values
+used only for descriptive robustness. AVeriTeC uses the compatible three-class
+gold-evidence subset without retrieval, and the 1.4B negative point estimate
+does not pass its pre-specified alpha gate. Finally, steering evaluates one
+preregistered fixed-mirror rule and cannot support a general claim of
+unsteerability. Expanded methodological and scope details appear in
+Appendix~\ref{app:methods}--\ref{app:limitations}.
+
+\phantomsection
+\label{main-text-end}
+\clearpage
+
+\subsection*{AI use statement}
+\label{sec:ai-use}
+
+Generative AI tools, including OpenAI ChatGPT and Codex, were used substantially
+for research workflow orchestration, repository and code inspection and
+generation, verification support, figure-rendering implementation,
+literature-search organization, and manuscript drafting and editing.
+Scientific execution was performed through the authors' controlled research
+workflow. Experimental authority, scientific decisions, interpretation, and
+final claims were reviewed and accepted by the human authors. AI systems are
+not authors. The human authors take responsibility for the final content of
+this work, including text, claims, code, and artifacts produced with the aid of
+generative AI.
+
+\subsection*{Reproducibility statement}
+\label{sec:reproducibility}
+
+This work uses frozen prospective designs, exact cohort and provenance records,
+committed static-analysis artifacts, and deterministic manuscript figure
+rendering. Code and artifact materials are intended for anonymous supplementary
+release. The Methods and Appendix describe the prospective analysis structure,
+frozen interventions, inferential scope, and provenance controls used to
+support reproduction without revealing author identity.
+
+\clearpage
+\phantomsection
+\label{sec:references-start}
+\bibliography{references}
+\bibliographystyle{iclr2027_conference}
+
+\clearpage
+\appendix
+\input{appendix}
+
+\end{document}
