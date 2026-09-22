@@ -1,0 +1,32 @@
+{
+  "cache_storage_device": "cpu",
+  "cross_gpu_equivalence_checked": true,
+  "cross_gpu_equivalence_exact": true,
+  "datasets_cached": 2,
+  "device_ids": [
+    0,
+    1
+  ],
+  "downstream_only_best_state_restore_calls": 1,
+  "downstream_only_load_state_dict_restore_installed": true,
+  "downstream_only_state_dict_view_installed": true,
+  "downstream_state_key_count": 36,
+  "enabled": true,
+  "frozen_backbone_state_key_count": 642,
+  "global_cache_batch_size": 64,
+  "gpu0_allocated_bytes_after_primary_offload": 35009024,
+  "gpu0_forward_calls": 57,
+  "gpu0_reserved_bytes_after_primary_offload": 117440512,
+  "gpu0_rows": 1800,
+  "gpu1_forward_calls": 57,
+  "gpu1_rows": 1800,
+  "host_cache_to_gpu_forward_rows": 129600,
+  "host_cache_to_gpu_forward_transfers": 4060,
+  "host_staged_cache": true,
+  "host_staged_rows": 3600,
+  "primary_model_device_after_cache": "cpu",
+  "primary_model_offloaded_after_cache": true,
+  "primary_model_retained_on_cuda0": false,
+  "secondary_model_loaded_from_exact_snapshot": true,
+  "secondary_model_released_after_cache": true
+}

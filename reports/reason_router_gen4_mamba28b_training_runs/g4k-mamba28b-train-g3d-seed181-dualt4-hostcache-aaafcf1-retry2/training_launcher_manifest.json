@@ -1,0 +1,205 @@
+{
+  "expected_head": "aaafcf16a8efa204e90517e8e0b7e864196a2bd4",
+  "external_evaluation_executed": false,
+  "gen3_grouped_training_source": {
+    "arm": "G3-GROUP-D-HALF",
+    "edge_gradient_lambdas": {
+      "F_TO_D": 0.5,
+      "F_TO_P": 1.0,
+      "F_TO_Q": 1.0,
+      "F_TO_S": 1.0,
+      "P_TO_D": 0.5,
+      "P_TO_Q": 1.0,
+      "P_TO_S": 1.0,
+      "Q_TO_D": 0.5,
+      "S_TO_D": 0.5,
+      "S_TO_Q": 1.0
+    },
+    "gradient_ownership_mode": "edge_specific",
+    "historical_execution_commit": "3e0e9a435068c552abf20f3a74e0c3eccca344a3",
+    "model_git_blob": "e29d361d99579b0a86a626ebcdebd59ba465881c",
+    "model_snapshot_path": "src/contramamba/modeling_v6b_minimal_gen3_grouped_snapshot.py",
+    "router_mode": "explicit_product",
+    "trainer_git_blob": "ae902c06bcef92a20c012b9c35ef0ee8c8478b9f",
+    "trainer_snapshot_path": "scripts/train_controlled_v6b_minimal_gen3_grouped_snapshot.py"
+  },
+  "model_repo": "state-spaces/mamba-2.8b-hf",
+  "model_revision": "96c48e0292b63f5346b6d30061af2551f7101e26",
+  "run_name": "g4k-mamba28b-train-g3d-seed181-dualt4-hostcache-aaafcf1-retry2",
+  "runtime": {
+    "cuda_runtime": "12.8",
+    "dual_gpu_cache_batch_size": 64,
+    "dual_gpu_cache_device_ids": [
+      0,
+      1
+    ],
+    "dual_gpu_frozen_encoder_cache": true,
+    "gpu_capabilities_first_two": [
+      [
+        7,
+        5
+      ],
+      [
+        7,
+        5
+      ]
+    ],
+    "gpu_count_visible": 2,
+    "gpu_names_first_two": [
+      "Tesla T4",
+      "Tesla T4"
+    ],
+    "kernels": "0.10.2",
+    "numpy": "2.0.2",
+    "python": "3.12.13",
+    "second_gpu_role": "frozen_mamba_encoder_cache_forward",
+    "second_gpu_used_for_gradient_aggregation": false,
+    "torch": "2.10.0+cu128",
+    "training_device": "cuda:0",
+    "transformers": "5.0.0"
+  },
+  "schema_version": "contramamba_mamba28b_training_launcher_v2",
+  "scientific_scope": "training_and_internal_clean_dev_checkpoint_selection_only",
+  "snapshot_files": {
+    "config.json": {
+      "bytes": 843,
+      "sha256": "ec7f74c5f322716a5a3470632ff03572182e7a5027cdcb452520818c5276c356"
+    },
+    "generation_config.json": {
+      "bytes": 137,
+      "sha256": "248fa733db101c19a8e3c2f311a180fdd7c769323ec2873edf7060cec9f5ee32"
+    },
+    "model-00001-of-00003.safetensors": {
+      "bytes": 4969727736,
+      "sha256": "8d0022682157b0684b40659c4cba75394c59494cdb4cb79b4890070e81dd7756"
+    },
+    "model-00002-of-00003.safetensors": {
+      "bytes": 4949332368,
+      "sha256": "c51a5400ee9560f5611b5c64011b554f5b37c3437061cd0fa20d387ff1ae9986"
+    },
+    "model-00003-of-00003.safetensors": {
+      "bytes": 1154393144,
+      "sha256": "2691db90d7e98237e1e834a30d6630e89150576f50514c6e929b8d1db4cc1a43"
+    },
+    "model.safetensors.index.json": {
+      "bytes": 50864,
+      "sha256": "95f3794b7eece8798b37eba26ea7d7105f034b062ff2ebd545a3e91a9314deed"
+    },
+    "tokenizer.json": {
+      "bytes": 2113738,
+      "sha256": "3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8"
+    },
+    "tokenizer_config.json": {
+      "bytes": 4793,
+      "sha256": "027cbbe0813aefd46e0037bf828acf22b9b591ce845153ddbf409e99770a3a79"
+    }
+  },
+  "trainer_argv": [
+    "--data",
+    "reports/reason_router_p2_p3w6f2_p4b_r1_regeneration_execution_4122078ab7962042e3d6bf89f8b4eb5cec463458/controlled_v5_v3_without_time_swap_p3w6f2_r1_regenerated.jsonl",
+    "--architecture",
+    "v6b_minimal",
+    "--backbone",
+    "mamba",
+    "--model-name",
+    "/kaggle/working/contramamba_models_fresh/mamba-2.8b-hf/96c48e0292b63f5346b6d30061af2551f7101e26",
+    "--freeze-encoder",
+    "true",
+    "--frame-downstream-gradient-mode",
+    "joint",
+    "--epochs",
+    "20",
+    "--max-length",
+    "128",
+    "--dev-ratio",
+    "0.2",
+    "--seed",
+    "181",
+    "--split-seed",
+    "8192",
+    "--device",
+    "cuda",
+    "--flag-source",
+    "controlled_heuristic",
+    "--select-metric",
+    "final_macro_f1",
+    "--ranking-weight",
+    "0.0",
+    "--class-weighting",
+    "none",
+    "--stage174c-clean-pairwise-mode",
+    "off",
+    "--stage174c-clean-pairwise-weight",
+    "0.0",
+    "--stage174c-clean-polarity-preservation-weight",
+    "0.0",
+    "--stage175b-support-anchor-mode",
+    "off",
+    "--stage175b-support-anchor-weight",
+    "0.0",
+    "--stage177c-frame-pairwise-mode",
+    "off",
+    "--stage177c-frame-pairwise-weight",
+    "0.0",
+    "--compatible-positive-margin-logit",
+    "0.0",
+    "--compatible-positive-margin-weight",
+    "0.0",
+    "--lr",
+    "0.001",
+    "--controlled-integrity-sidecar-path",
+    "reports/reason_router_p3w7_p2_degeneracy_seed8192_revised_p4l_integrity_sidecar_ff181f565cefa0a28280c084246862286daf1f2d_149adf32d9e8edbb0e7ea9294f7aeb330a71fc1b/p3w7_seed8192_revised_p4l_effective_integrity_sidecar.jsonl",
+    "--expected-integrity-sidecar-semantic-sha256",
+    "2528a05eb8ab6fa1b80abd86d4860beb36f38921f0bbc71e9a5b56b63ea832c9",
+    "--save-selected-checkpoint",
+    "--selected-checkpoint-filename",
+    "selected_checkpoint.pt",
+    "--reason-router-arm",
+    "G3-GROUP-D-HALF",
+    "--reason-router-mode",
+    "explicit_product",
+    "--gradient-ownership-mode",
+    "edge_specific",
+    "--edge-gradient-lambdas",
+    "{\"F_TO_P\":1.0,\"F_TO_S\":1.0,\"P_TO_S\":1.0,\"F_TO_Q\":1.0,\"P_TO_Q\":1.0,\"S_TO_Q\":1.0,\"F_TO_D\":0.5,\"P_TO_D\":0.5,\"S_TO_D\":0.5,\"Q_TO_D\":0.5}",
+    "--reason-loss-weight",
+    "0.0",
+    "--train-batch-size",
+    "32",
+    "--eval-batch-size",
+    "32",
+    "--gradient-accumulation-steps",
+    "1",
+    "--output-json",
+    "/kaggle/working/ContraMamba/reports/reason_router_gen4_mamba28b_training_runs/g4k-mamba28b-train-g3d-seed181-dualt4-hostcache-aaafcf1-retry2/training_report.json",
+    "--output-predictions-json",
+    "/kaggle/working/ContraMamba/reports/reason_router_gen4_mamba28b_training_runs/g4k-mamba28b-train-g3d-seed181-dualt4-hostcache-aaafcf1-retry2/clean_dev_predictions.json"
+  ],
+  "training_contract": {
+    "arm": "G3-GROUP-D-HALF",
+    "class_weighting": "none",
+    "downstream_only_best_state_restore": "exact_downstream_keyset_strict_false_frozen_backbone_preserved",
+    "dual_gpu_cache_batch_size": 64,
+    "dual_gpu_cache_device_ids": [
+      0,
+      1
+    ],
+    "dual_gpu_cache_expected_rows_per_gpu": 1800,
+    "dual_gpu_cache_expected_total_rows": 3600,
+    "dual_gpu_frozen_encoder_cache": true,
+    "encoder_cache_forward_transfer": "per_forward_microbatch_to_cuda0",
+    "encoder_cache_storage": "cpu_host_staged",
+    "epochs": 20,
+    "eval_microbatch_size": 32,
+    "forward_microbatch_size": 32,
+    "gradient_accumulation_steps": 1,
+    "learning_rate": 0.001,
+    "logical_full_batch_rows": 2880,
+    "optimizer_steps_per_epoch": 1,
+    "primary_frozen_encoder_after_cache": "cpu_offloaded",
+    "selected_checkpoint_state_representation": "downstream_only_frozen_backbone_omitted",
+    "selection_metric": "final_macro_f1",
+    "split_seed": 8192,
+    "training_seed": 181
+  }
+}
