@@ -1,0 +1,12 @@
+{
+  "analysis_head": "0d4b4a06059609f4c1538df923fc9e7ffab0f5e9",
+  "analysis_sha256": "01f07024ead5a079c8ee4df03154d72d103feea74f2047fb881a5adbab003340",
+  "p_value_count_added": 0,
+  "raw_freeze_commit": "0d4b4a06059609f4c1538df923fc9e7ffab0f5e9",
+  "raw_row_sha256": "3ad1d48f48c7d81f289c52cbfb65262cc0b54313dc11fd4580a545acfc70d9bd",
+  "raw_summary_sha256": "8f84dc2517cb40af233ff0e7fc93c06ea7a89ea859d00817ae6e39440c7637d8",
+  "result": "PASS_GEN4_FACTOR2_REFERENCE_BACKEND_STATIC_ANALYSIS",
+  "row_analysis_sha256": "1407aba3e29fe8c31e8e0670e4f9b0c637b7860c99c92095333d531dbd3b2d99",
+  "schema_version": "gen4-factor2-reference-backend-static-analysis-v1",
+  "scientific_conclusion": null
+}
