@@ -1,0 +1,134 @@
+{
+  "additional_p_values_executed": false,
+  "alpha": 0.05,
+  "alternative": "greater",
+  "backward_executed": false,
+  "confirmation_holdout_freeze_commit": "6c0989a45382db31c9052b89b088e999b3e7cf59",
+  "confirmation_pair_count": 300,
+  "confirmation_pair_first": "xg1_fact_7201",
+  "confirmation_pair_last": "xg1_fact_7500",
+  "core_supported": true,
+  "discovery_freeze_commit": "e6ba3c466d3063ff69112ca8f57f0d569ee63d06",
+  "discovery_selection_sha256": "854324f4799d9011bcde734fb8b4959f2ff1aa765a9f82572aa9ede1ea3c188e",
+  "execution_head": "d3117c14593e0a34ac16b7ac9051d769e7462f65",
+  "geometry_freeze_commit": "ba4c73aa9a5e63108f3582e053678b6344990d2c",
+  "output_file_sha256": {
+    "confirmation_inference.json": "5b628b6a5db56e5df377a7c418375d0d54c9542a771976d1725b0247574684cf",
+    "confirmation_items.jsonl": "d7cd3a11471d98f639606362a576ed924fb160b4ab388ab1a703d7706cd537fb"
+  },
+  "primary_p_value_count": 1,
+  "readout_response_accessed": false,
+  "rescue_performed": false,
+  "response_blind_control_plane": "P5",
+  "result": "PASS_MAMBA790M_CORE_CONFIRMATION",
+  "schema_version": "gen4-mamba790m-core-confirmation-manifest-v1",
+  "scientific_conclusion": "MAMBA790M_CORE_CONFIRMATION_SUPPORTED",
+  "scientific_model_forward_count": 24000,
+  "selected_dominant_candidate": "P2",
+  "selection_reopened": false,
+  "test": "one_sample_student_t",
+  "training_executed": false,
+  "worker_count": 2,
+  "workers": [
+    {
+      "cuda_visible_devices": "0",
+      "device_name": "Tesla T4",
+      "discovery_selection_sha256": "854324f4799d9011bcde734fb8b4959f2ff1aa765a9f82572aa9ede1ea3c188e",
+      "geometry_summary_sha256": "7ac0c2d904d851c13727956df8f75c8be57b71af7a962f372585879a4470b8cb",
+      "items_sha256": "1dcbae9f962b867570dcb254928176f79c78eca617cce753585c70d2654c519d",
+      "logical_device": 0,
+      "model_provenance": {
+        "compact_checkpoint_sha256": "af5582df61ed2dc2f7c77c0154c10e40b7aa6646a2141a6b3b30c52a45fc9072",
+        "downstream_state_canonical_sha256": "f446224dc6912d0b92d7e965cf3decbffdff337aaa68523d871d77d27de2e398",
+        "full_state_canonical_sha256": "1904e06e9645ab1406d8b7934f93666219911a5e1586aac6a6878efd7ba8e8a6",
+        "kernel_constructor_calls": {
+          "causal-conv1d": 48,
+          "mamba-ssm": 48
+        },
+        "pretrained_backbone_state_stream_sha256": "c7720da316a49b7dc4ff56b5f56e4bba4d089f2bad53aeb3cebee9a345c3f5c0",
+        "snapshot": {
+          "config.json": {
+            "bytes": 878,
+            "sha256": "f55bce4f993e4eeba025d57977eb48c4815416a352742c74e412e2c1e8136ea1"
+          },
+          "generation_config.json": {
+            "bytes": 137,
+            "sha256": "248fa733db101c19a8e3c2f311a180fdd7c769323ec2873edf7060cec9f5ee32"
+          },
+          "model.safetensors": {
+            "bytes": 3172869936,
+            "sha256": "3fbcf74674d28034e728b911315e4749cc4fc34ebfab36099f46d92bb657a617"
+          },
+          "tokenizer.json": {
+            "bytes": 2113738,
+            "sha256": "3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8"
+          },
+          "tokenizer_config.json": {
+            "bytes": 4793,
+            "sha256": "3ba257483d22a5a84aab5465aa427e59bdaeb55f09fb14349e2d571ff67e8020"
+          }
+        },
+        "source_full_checkpoint_sha256": "b0bd62d0581c572fcca2789042522d09ebd75c6516c6a0396e2de131d91c77e8"
+      },
+      "pair_count": 150,
+      "pair_first": "xg1_fact_7201",
+      "pair_last": "xg1_fact_7350",
+      "physical_device": 0,
+      "response_blind_control_plane": "P5",
+      "schema_version": "gen4-mamba790m-core-confirmation-worker-v1",
+      "scientific_model_forward_count": 12000,
+      "selected_dominant_candidate": "P2",
+      "shard_id": 0
+    },
+    {
+      "cuda_visible_devices": "1",
+      "device_name": "Tesla T4",
+      "discovery_selection_sha256": "854324f4799d9011bcde734fb8b4959f2ff1aa765a9f82572aa9ede1ea3c188e",
+      "geometry_summary_sha256": "7ac0c2d904d851c13727956df8f75c8be57b71af7a962f372585879a4470b8cb",
+      "items_sha256": "82c8b36906265046b2938230a742053568b4d3e16c5f43f867b83d2ef666c548",
+      "logical_device": 0,
+      "model_provenance": {
+        "compact_checkpoint_sha256": "af5582df61ed2dc2f7c77c0154c10e40b7aa6646a2141a6b3b30c52a45fc9072",
+        "downstream_state_canonical_sha256": "f446224dc6912d0b92d7e965cf3decbffdff337aaa68523d871d77d27de2e398",
+        "full_state_canonical_sha256": "1904e06e9645ab1406d8b7934f93666219911a5e1586aac6a6878efd7ba8e8a6",
+        "kernel_constructor_calls": {
+          "causal-conv1d": 48,
+          "mamba-ssm": 48
+        },
+        "pretrained_backbone_state_stream_sha256": "c7720da316a49b7dc4ff56b5f56e4bba4d089f2bad53aeb3cebee9a345c3f5c0",
+        "snapshot": {
+          "config.json": {
+            "bytes": 878,
+            "sha256": "f55bce4f993e4eeba025d57977eb48c4815416a352742c74e412e2c1e8136ea1"
+          },
+          "generation_config.json": {
+            "bytes": 137,
+            "sha256": "248fa733db101c19a8e3c2f311a180fdd7c769323ec2873edf7060cec9f5ee32"
+          },
+          "model.safetensors": {
+            "bytes": 3172869936,
+            "sha256": "3fbcf74674d28034e728b911315e4749cc4fc34ebfab36099f46d92bb657a617"
+          },
+          "tokenizer.json": {
+            "bytes": 2113738,
+            "sha256": "3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8"
+          },
+          "tokenizer_config.json": {
+            "bytes": 4793,
+            "sha256": "3ba257483d22a5a84aab5465aa427e59bdaeb55f09fb14349e2d571ff67e8020"
+          }
+        },
+        "source_full_checkpoint_sha256": "b0bd62d0581c572fcca2789042522d09ebd75c6516c6a0396e2de131d91c77e8"
+      },
+      "pair_count": 150,
+      "pair_first": "xg1_fact_7351",
+      "pair_last": "xg1_fact_7500",
+      "physical_device": 1,
+      "response_blind_control_plane": "P5",
+      "schema_version": "gen4-mamba790m-core-confirmation-worker-v1",
+      "scientific_model_forward_count": 12000,
+      "selected_dominant_candidate": "P2",
+      "shard_id": 1
+    }
+  ]
+}
