@@ -2286,7 +2286,7 @@ def parse_args(
     parser = argparse.ArgumentParser(
         description=(
             "Mamba-2.8B prospective fresh Delta_L readout on "
-            "xg1_fact_6601..7800. Measures exactly 600 native "
+            "xg1_fact_6601..6900. Measures exactly 600 native "
             "forward/local-leaf-backward rows for frozen P3/P5. "
             "No intervention-condition forward and no statistical "
             "inference are executed."
