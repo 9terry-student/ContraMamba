@@ -864,3 +864,77 @@ def test_mamba28b_primary_frozen_encoder_is_offloaded_after_cache() -> None:
     assert launcher.SPLIT_SEED == 8192
     assert launcher.EPOCHS == 20
     assert launcher.LEARNING_RATE == 0.001
+
+
+
+def test_mamba28b_downstream_only_best_state_restore_is_exact_keyset_gated() -> None:
+    import pytest
+    import torch
+
+    class TinyModel(torch.nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.mamba = torch.nn.Linear(3, 3)
+            self.head = torch.nn.Linear(3, 2)
+
+    model = TinyModel()
+
+    (
+        original_state_dict,
+        downstream_keys,
+        backbone_keys,
+    ) = launcher._install_downstream_only_state_dict_view(
+        model
+    )
+
+    stats = {
+        "downstream_only_best_state_restore_calls": 0,
+    }
+
+    original_load_state_dict = (
+        launcher._install_downstream_only_load_state_dict_restore(
+            model,
+            downstream_keys=downstream_keys,
+            stats=stats,
+        )
+    )
+
+    frozen_before = {
+        key: value.detach().clone()
+        for key, value in original_state_dict().items()
+        if key.startswith("mamba.")
+    }
+
+    downstream_state = {
+        key: value.detach().clone()
+        for key, value in model.state_dict().items()
+    }
+
+    result = model.load_state_dict(downstream_state)
+
+    assert stats["downstream_only_best_state_restore_calls"] == 1
+    assert set(result.missing_keys) == set(backbone_keys)
+    assert result.unexpected_keys == []
+
+    frozen_after = {
+        key: value.detach().clone()
+        for key, value in original_state_dict().items()
+        if key.startswith("mamba.")
+    }
+
+    assert frozen_before.keys() == frozen_after.keys()
+    for key in frozen_before:
+        assert torch.equal(
+            frozen_before[key],
+            frozen_after[key],
+        )
+
+    # A non-exact partial keyset must retain ordinary strict=True failure.
+    bad_state = dict(downstream_state)
+    bad_state.pop(next(iter(bad_state)))
+
+    with pytest.raises(RuntimeError):
+        model.load_state_dict(bad_state)
+
+    model.state_dict = original_state_dict
+    model.load_state_dict = original_load_state_dict

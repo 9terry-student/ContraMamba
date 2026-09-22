@@ -269,6 +269,59 @@ def _install_downstream_only_state_dict_view(
     return original, downstream_keys, backbone_keys
 
 
+def _install_downstream_only_load_state_dict_restore(
+    model: Any,
+    *,
+    downstream_keys: tuple[str, ...],
+    stats: dict[str, Any],
+) -> Any:
+    original = model.load_state_dict
+    expected = frozenset(downstream_keys)
+
+    require(bool(expected), "DOWNSTREAM_RESTORE_EXPECTED_KEYS_EMPTY")
+    require(
+        not any(key.startswith("mamba.") for key in expected),
+        "DOWNSTREAM_RESTORE_EXPECTED_BACKBONE_LEAK",
+    )
+
+    def downstream_compatible_load_state_dict(
+        state_dict: Any,
+        strict: bool = True,
+        assign: bool = False,
+    ) -> Any:
+        incoming = frozenset(state_dict.keys())
+
+        if incoming == expected:
+            require(
+                not any(
+                    key.startswith("mamba.")
+                    for key in incoming
+                ),
+                "DOWNSTREAM_RESTORE_BACKBONE_LEAK",
+            )
+            stats["downstream_only_best_state_restore_calls"] += 1
+
+            # The frozen Mamba backbone is intentionally omitted from the
+            # captured best state.  For the exact downstream keyset only,
+            # preserve the already-loaded pinned backbone and restore the
+            # trainable/downstream state non-strictly.
+            return original(
+                state_dict,
+                strict=False,
+                assign=assign,
+            )
+
+        # Any other keyset retains ordinary PyTorch strict semantics.
+        return original(
+            state_dict,
+            strict=strict,
+            assign=assign,
+        )
+
+    model.load_state_dict = downstream_compatible_load_state_dict
+    return original
+
+
 def install_dual_gpu_frozen_encoder_cache(
     *,
     trainer: Any,
@@ -300,6 +353,8 @@ def install_dual_gpu_frozen_encoder_cache(
         "gpu0_allocated_bytes_after_primary_offload": None,
         "gpu0_reserved_bytes_after_primary_offload": None,
         "downstream_only_state_dict_view_installed": False,
+        "downstream_only_load_state_dict_restore_installed": False,
+        "downstream_only_best_state_restore_calls": 0,
         "downstream_state_key_count": 0,
         "frozen_backbone_state_key_count": 0,
     }
@@ -314,6 +369,7 @@ def install_dual_gpu_frozen_encoder_cache(
         "original_feature_inputs": original_feature_inputs,
         "model": None,
         "original_state_dict": None,
+        "original_load_state_dict": None,
         "downstream_state_keys": None,
         "frozen_backbone_state_keys": None,
     }
@@ -615,12 +671,26 @@ def install_dual_gpu_frozen_encoder_cache(
                 backbone_keys,
             ) = _install_downstream_only_state_dict_view(model)
 
+            original_load_state_dict = (
+                _install_downstream_only_load_state_dict_restore(
+                    model,
+                    downstream_keys=downstream_keys,
+                    stats=stats,
+                )
+            )
+
             patch_state["model"] = model
             patch_state["original_state_dict"] = original_state_dict
+            patch_state["original_load_state_dict"] = (
+                original_load_state_dict
+            )
             patch_state["downstream_state_keys"] = downstream_keys
             patch_state["frozen_backbone_state_keys"] = backbone_keys
 
             stats["downstream_only_state_dict_view_installed"] = True
+            stats[
+                "downstream_only_load_state_dict_restore_installed"
+            ] = True
             stats["downstream_state_key_count"] = len(
                 downstream_keys
             )
@@ -648,9 +718,15 @@ def restore_encoder_cache_function(
 
     model = patch_state.get("model")
     original_state_dict = patch_state.get("original_state_dict")
+    original_load_state_dict = patch_state.get(
+        "original_load_state_dict"
+    )
 
     if model is not None and original_state_dict is not None:
         model.state_dict = original_state_dict
+
+    if model is not None and original_load_state_dict is not None:
+        model.load_state_dict = original_load_state_dict
 
 
 def git_blob_identity(path: Path) -> str:
@@ -1436,6 +1512,10 @@ def main() -> None:
             "selected_checkpoint_state_representation": (
                 "downstream_only_frozen_backbone_omitted"
             ),
+            "downstream_only_best_state_restore": (
+                "exact_downstream_keyset_strict_false_"
+                "frozen_backbone_preserved"
+            ),
             "dual_gpu_cache_expected_total_rows": TRAIN_ROW_COUNT + DEV_ROW_COUNT,
             "dual_gpu_cache_expected_rows_per_gpu": (
                 (TRAIN_ROW_COUNT + DEV_ROW_COUNT) // 2
@@ -1508,6 +1588,16 @@ def main() -> None:
         f"DOWNSTREAM_STATE_VIEW_NOT_INSTALLED:{cache_stats}",
     )
     require(
+        cache_stats[
+            "downstream_only_load_state_dict_restore_installed"
+        ] is True,
+        f"DOWNSTREAM_LOAD_STATE_RESTORE_NOT_INSTALLED:{cache_stats}",
+    )
+    require(
+        cache_stats["downstream_only_best_state_restore_calls"] > 0,
+        f"DOWNSTREAM_BEST_STATE_RESTORE_UNUSED:{cache_stats}",
+    )
+    require(
         cache_stats["host_cache_to_gpu_forward_transfers"] > 0,
         f"HOST_CACHE_FORWARD_TRANSFER_UNUSED:{cache_stats}",
     )
@@ -1554,6 +1644,10 @@ def main() -> None:
         + str(cache_stats["gpu0_reserved_bytes_after_primary_offload"])
     )
     print("SELECTED_CHECKPOINT_STATE=DOWNSTREAM_ONLY")
+    print(
+        "DOWNSTREAM_ONLY_BEST_STATE_RESTORE_CALLS="
+        + str(cache_stats["downstream_only_best_state_restore_calls"])
+    )
     print("GPU0_CACHE_ROWS=" + str(cache_stats["gpu0_rows"]))
     print("GPU1_CACHE_ROWS=" + str(cache_stats["gpu1_rows"]))
     print("GPU0_CACHE_FORWARD_CALLS=" + str(cache_stats["gpu0_forward_calls"]))
