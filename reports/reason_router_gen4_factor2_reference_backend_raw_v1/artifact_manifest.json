@@ -1,0 +1,16 @@
+{
+  "epsilon": 0.03125,
+  "execution_head": "430108ef6e70c6547fee71a62b9058449216702d",
+  "forward_count": 96,
+  "local_backward_count": 32,
+  "p_value_count_executed": 0,
+  "reference_backend_forced_on_all_48_mixers": true,
+  "required_ancestor": "9dbace6a97225668a626abc0632d0a7c1c6cff69",
+  "result": "PASS_GEN4_FACTOR2_REFERENCE_BACKEND_RAW",
+  "row_count": 16,
+  "row_sha256": "3ad1d48f48c7d81f289c52cbfb65262cc0b54313dc11fd4580a545acfc70d9bd",
+  "schema_version": "gen4-factor2-reference-backend-manifest-v1",
+  "scientific_conclusion": null,
+  "subset_pair_count": 4,
+  "summary_sha256": "8f84dc2517cb40af233ff0e7fc93c06ea7a89ea859d00817ae6e39440c7637d8"
+}

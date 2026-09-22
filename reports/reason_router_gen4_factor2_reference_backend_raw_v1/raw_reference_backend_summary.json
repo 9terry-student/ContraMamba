@@ -1,0 +1,178 @@
+{
+  "adaptive_backend_selection_performed": false,
+  "adaptive_epsilon_selection_performed": false,
+  "cells": [
+    "C0_SHAM",
+    "C2_NAME"
+  ],
+  "epsilon": 0.03125,
+  "execution_head": "430108ef6e70c6547fee71a62b9058449216702d",
+  "fast_backend": "Transformers-5.0.0 cuda_kernels_forward",
+  "forward_count": 96,
+  "frozen_readout_item_sha256": "cb4e4115d7f21cc66e63153f49942eb4e3e1f6d410c1475c24666cc4f76a9fd8",
+  "inferential_test_performed": false,
+  "local_backward_count": 32,
+  "p_value_count_executed": 0,
+  "parameter_update_executed": false,
+  "population": "xg1_fact_5701..xg1_fact_6000",
+  "reference_backend": "Transformers-5.0.0 MambaMixer.slow_forward",
+  "reference_backend_forced_on_all_48_mixers": true,
+  "required_ancestor": "9dbace6a97225668a626abc0632d0a7c1c6cff69",
+  "result": "PASS_GEN4_FACTOR2_REFERENCE_BACKEND_RAW",
+  "row_count": 16,
+  "same_fast_derived_direction_used_for_both_backends": true,
+  "scales": [
+    "mamba370m",
+    "mamba14b"
+  ],
+  "schema_version": "gen4-factor2-reference-backend-summary-v1",
+  "scientific_conclusion": null,
+  "subset_pair_count": 4,
+  "subset_pairs": [
+    "xg1_fact_5726",
+    "xg1_fact_5879",
+    "xg1_fact_5940",
+    "xg1_fact_5975"
+  ],
+  "subset_selection_method": "lowest SHA256(salt:pair_id), then numeric-order serialization",
+  "subset_selection_salt": "factor2-reference-backend-v1",
+  "training_executed": false,
+  "workers": {
+    "mamba14b": {
+      "cells": [
+        "C0_SHAM",
+        "C2_NAME"
+      ],
+      "checkpoint_sha256": "915c9de38d9dc7ee9da26ba4328e74549864c6bd29723f3b7a4b4e0050efce0a",
+      "epsilon": 0.03125,
+      "execution_head": "430108ef6e70c6547fee71a62b9058449216702d",
+      "fast_backend": "Transformers-5.0.0 cuda_kernels_forward",
+      "forward_count": 48,
+      "local_backward_count": 16,
+      "model_provenance": {
+        "compact_checkpoint_sha256": "915c9de38d9dc7ee9da26ba4328e74549864c6bd29723f3b7a4b4e0050efce0a",
+        "downstream_state_canonical_sha256": "b84b6af218f3d73e10a20e98f3a4118cf2e58d37e25c829a54b81c49eb9fd8ea",
+        "full_state_canonical_sha256": "61b7d444be97b94d18eed698b580b9e44e081060cbec2fa324733839ab431f0d",
+        "kernel_constructor_calls": {
+          "causal-conv1d": 48,
+          "mamba-ssm": 48
+        },
+        "pretrained_backbone_state_stream_sha256": "f6239d5b5b2a35409d38f2fc4267f52fb1524438d7ae2b1f4f6c43ec07f7224a",
+        "snapshot": {
+          "config.json": {
+            "bytes": 879,
+            "sha256": "275174e4771bb65f70cb1ea03389c9711510438d7944885e8f02f525bec03a9d"
+          },
+          "generation_config.json": {
+            "bytes": 137,
+            "sha256": "248fa733db101c19a8e3c2f311a180fdd7c769323ec2873edf7060cec9f5ee32"
+          },
+          "model-00001-of-00002.safetensors": {
+            "bytes": 4960287720,
+            "sha256": "3a0351b2c6a044c5f19f0f8992362e57c0d6f71b0e0702d46f43f3d8a7120c84"
+          },
+          "model-00002-of-00002.safetensors": {
+            "bytes": 528479144,
+            "sha256": "6cd1ac80d0acd00e6b6afebad9690115c5d932009ba644a6c8af1e0aed8414de"
+          },
+          "model.safetensors.index.json": {
+            "bytes": 38175,
+            "sha256": "a4739638258ef26762ff808249c3888fdb8bd4a15404a0db4811feb5cf2444b5"
+          },
+          "tokenizer.json": {
+            "bytes": 2113738,
+            "sha256": "3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8"
+          },
+          "tokenizer_config.json": {
+            "bytes": 4793,
+            "sha256": "3ba257483d22a5a84aab5465aa427e59bdaeb55f09fb14349e2d571ff67e8020"
+          }
+        },
+        "source_full_checkpoint_sha256": "2383cb212f7e87be1ac8920c7875602a73a1c6031212df17342457acb8b87555"
+      },
+      "p_value_count_executed": 0,
+      "parameter_update_executed": false,
+      "readout_item_sha256": "cb4e4115d7f21cc66e63153f49942eb4e3e1f6d410c1475c24666cc4f76a9fd8",
+      "reference_backend": "Transformers-5.0.0 MambaMixer.slow_forward",
+      "reference_backend_forced_on_all_48_mixers": true,
+      "row_count": 8,
+      "scale": "mamba14b",
+      "scientific_conclusion": null,
+      "subset_pair_count": 4,
+      "subset_pairs": [
+        "xg1_fact_5726",
+        "xg1_fact_5879",
+        "xg1_fact_5940",
+        "xg1_fact_5975"
+      ],
+      "subset_selection_salt": "factor2-reference-backend-v1",
+      "training_executed": false
+    },
+    "mamba370m": {
+      "cells": [
+        "C0_SHAM",
+        "C2_NAME"
+      ],
+      "checkpoint_sha256": "9d8e3db22af4636938679aac6a8a97dd45344937d434fab29eac2ddc41a52a72",
+      "epsilon": 0.03125,
+      "execution_head": "430108ef6e70c6547fee71a62b9058449216702d",
+      "fast_backend": "Transformers-5.0.0 cuda_kernels_forward",
+      "forward_count": 48,
+      "local_backward_count": 16,
+      "model_provenance": {
+        "compact_checkpoint_sha256": "9d8e3db22af4636938679aac6a8a97dd45344937d434fab29eac2ddc41a52a72",
+        "downstream_state_canonical_sha256": "eb16ae88a3fe42dd44ca102cdc122d09fe69eb8cc3d3f5ff761f285ab2af1730",
+        "full_state_canonical_sha256": "cd368ea41cbfc6560ff2d9eb89fc53b333cde72d4db5c99ae7ea8e5f62c1db83",
+        "kernel_constructor_calls": {
+          "causal-conv1d": 48,
+          "mamba-ssm": 48
+        },
+        "mamba_state_canonical_sha256": "2f1bb0820efd7376103541cd6de7b2893456083359708ac78f3fd30f8d1d56ac",
+        "snapshot": {
+          "config.json": {
+            "bytes": 917,
+            "sha256": "c15aad03ce0cc27f7f550ff05bb9a0354f3c0770b3b9ef382c5f730aa8e23e62"
+          },
+          "generation_config.json": {
+            "bytes": 137,
+            "sha256": "ffc3c43cdd9c33c738da20597bdef859cd44e4cc77ff3966b6d59269a1cae8e7"
+          },
+          "model.safetensors": {
+            "bytes": 1486118288,
+            "sha256": "8e2386de4c63e64a371cb9bc451421b04a33390103ba5e596ead4ac4c668a2b1"
+          },
+          "special_tokens_map.json": {
+            "bytes": 473,
+            "sha256": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8"
+          },
+          "tokenizer.json": {
+            "bytes": 2113837,
+            "sha256": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf"
+          },
+          "tokenizer_config.json": {
+            "bytes": 4793,
+            "sha256": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+          }
+        },
+        "source_full_checkpoint_sha256": "b664a776b78b54cb8ec8e6553bc8a2059eef53d25165e2e82ab556146f85bf29"
+      },
+      "p_value_count_executed": 0,
+      "parameter_update_executed": false,
+      "readout_item_sha256": "cb4e4115d7f21cc66e63153f49942eb4e3e1f6d410c1475c24666cc4f76a9fd8",
+      "reference_backend": "Transformers-5.0.0 MambaMixer.slow_forward",
+      "reference_backend_forced_on_all_48_mixers": true,
+      "row_count": 8,
+      "scale": "mamba370m",
+      "scientific_conclusion": null,
+      "subset_pair_count": 4,
+      "subset_pairs": [
+        "xg1_fact_5726",
+        "xg1_fact_5879",
+        "xg1_fact_5940",
+        "xg1_fact_5975"
+      ],
+      "subset_selection_salt": "factor2-reference-backend-v1",
+      "training_executed": false
+    }
+  }
+}
