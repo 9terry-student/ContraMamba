@@ -345,4 +345,3 @@ def test_no_stale_backbone_identity_in_28b_geometry_source():
     assert "source_selected_checkpoint" in source
     assert "SOURCE_FULL_CHECKPOINT_SHA256" not in source
     assert "FULL_STATE_CANONICAL_SHA256" not in source
-
