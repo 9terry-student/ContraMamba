@@ -660,3 +660,173 @@ def test_mamba28b_compaction_has_no_single_file_weight_assumption():
     assert 'SNAPSHOT_FILES["model.safetensors"]' not in source
     assert "model.safetensors.index.json" in source
     assert "SAFETENSORS_SHARD_SET" in source
+
+
+
+def test_mamba28b_host_staging_tensor_is_exact_and_cpu() -> None:
+    source = torch.tensor(
+        [[1.0, 2.0], [3.0, 4.0]],
+        dtype=torch.float32,
+        requires_grad=True,
+    )
+
+    staged = launcher._host_stage_encoder_cache_tensor(source)
+
+    assert staged.device.type == "cpu"
+    assert staged.requires_grad is False
+    assert torch.equal(staged, source.detach().cpu())
+
+
+def test_mamba28b_downstream_only_state_dict_view_omits_frozen_backbone() -> None:
+    class TinyModel(torch.nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.mamba = torch.nn.Linear(2, 2)
+            self.head = torch.nn.Linear(2, 1)
+
+    model = TinyModel()
+
+    original, downstream_keys, backbone_keys = (
+        launcher._install_downstream_only_state_dict_view(model)
+    )
+
+    selected = model.state_dict()
+
+    assert backbone_keys
+    assert downstream_keys
+    assert all(key.startswith("mamba.") for key in backbone_keys)
+    assert all(not key.startswith("mamba.") for key in downstream_keys)
+    assert set(selected) == set(downstream_keys)
+
+    model.state_dict = original
+
+    restored = model.state_dict()
+
+    assert set(backbone_keys).issubset(restored)
+    assert set(downstream_keys).issubset(restored)
+
+
+def test_compaction_accepts_downstream_only_selected_checkpoint(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "selected_checkpoint.pt"
+    compact = tmp_path / "selected_downstream_checkpoint.pt"
+    manifest = tmp_path / "compact_checkpoint_manifest.json"
+
+    downstream = torch.tensor(
+        [[3.0, 4.0]],
+        dtype=torch.float32,
+    )
+    backbone = torch.tensor(
+        [1.0, 2.0],
+        dtype=torch.float32,
+    )
+
+    torch.save(
+        {
+            "schema_version": "stage176a0_selected_checkpoint_v1",
+            "model_state_dict": {
+                "head.weight": downstream.clone(),
+            },
+            "metadata": {
+                "selected_epoch": 20,
+            },
+        },
+        source,
+    )
+
+    monkeypatch.setattr(
+        launcher,
+        "iter_pinned_backbone_tensors",
+        lambda snapshot: iter(
+            [
+                (
+                    "backbone.weight",
+                    backbone.clone(),
+                )
+            ]
+        ),
+    )
+
+    observed = launcher.compact_selected_checkpoint(
+        full_checkpoint=source,
+        snapshot=tmp_path,
+        compact_checkpoint=compact,
+        manifest_path=manifest,
+        expected_head="d" * 40,
+        expected_downstream_keys={"head.weight"},
+    )
+
+    assert not source.exists()
+    assert compact.is_file()
+    assert manifest.is_file()
+
+    payload = torch.load(
+        compact,
+        map_location="cpu",
+        weights_only=False,
+    )
+
+    assert (
+        payload["schema_version"]
+        == "contramamba_mamba28b_compact_checkpoint_v2"
+    )
+    assert set(payload["downstream_state_dict"]) == {
+        "head.weight"
+    }
+    assert torch.equal(
+        payload["downstream_state_dict"]["head.weight"],
+        downstream,
+    )
+
+    assert (
+        observed["source_selected_checkpoint"]
+        ["contains_pretrained_backbone"]
+        is False
+    )
+    assert (
+        observed["pretrained_backbone"]
+        ["omitted_from_selected_checkpoint"]
+        is True
+    )
+    assert (
+        observed["reconstruction_verification"]
+        ["backbone_identity_verified_from_exact_pinned_snapshot"]
+        is True
+    )
+    assert (
+        observed["reconstruction_verification"]
+        ["frozen_backbone_omitted_from_selected_checkpoint"]
+        is True
+    )
+    assert (
+        observed[
+            "source_selected_checkpoint_removed_after_verified_compaction"
+        ]
+        is True
+    )
+
+
+def test_mamba28b_runtime_memory_correction_keeps_scientific_batches() -> None:
+    source = Path(launcher.__file__).read_text(
+        encoding="utf-8"
+    )
+
+    assert launcher.DUAL_GPU_CACHE_BATCH_SIZE == 64
+    assert launcher.FORWARD_MICROBATCH_SIZE == 32
+    assert launcher.EVAL_MICROBATCH_SIZE == 32
+
+    assert (
+        "trainer._vnext_model_feature_inputs = "
+        "feature_inputs_with_host_cache"
+        in source
+    )
+    assert (
+        "model.state_dict = downstream_only_state_dict"
+        in source
+    )
+    assert (
+        'result0 = result.to(torch.device("cuda:0")'
+        not in source
+    )

@@ -224,11 +224,56 @@ def dual_gpu_cache_slices(
     return result
 
 
+def _host_stage_encoder_cache_tensor(value: torch.Tensor) -> torch.Tensor:
+    require(torch.is_tensor(value), "CACHE_HOST_STAGE_NOT_TENSOR")
+    staged = value.detach().to(torch.device("cpu"))
+    require(
+        staged.device.type == "cpu",
+        f"CACHE_HOST_STAGE_DEVICE:{staged.device}",
+    )
+    return staged
+
+
+def _install_downstream_only_state_dict_view(
+    model: Any,
+) -> tuple[Any, tuple[str, ...], tuple[str, ...]]:
+    original = model.state_dict
+    initial = original()
+
+    backbone_keys = tuple(
+        key for key in initial
+        if key.startswith("mamba.")
+    )
+    downstream_keys = tuple(
+        key for key in initial
+        if not key.startswith("mamba.")
+    )
+
+    require(bool(backbone_keys), "STATE_DICT_BACKBONE_KEYS_EMPTY")
+    require(bool(downstream_keys), "STATE_DICT_DOWNSTREAM_KEYS_EMPTY")
+
+    def downstream_only_state_dict(*args: Any, **kwargs: Any) -> Any:
+        state = original(*args, **kwargs)
+        for key in tuple(state):
+            if key.startswith("mamba."):
+                del state[key]
+        require(bool(state), "DOWNSTREAM_STATE_DICT_EMPTY")
+        require(
+            not any(key.startswith("mamba.") for key in state),
+            "DOWNSTREAM_STATE_DICT_BACKBONE_LEAK",
+        )
+        return state
+
+    model.state_dict = downstream_only_state_dict
+
+    return original, downstream_keys, backbone_keys
+
+
 def install_dual_gpu_frozen_encoder_cache(
     *,
     trainer: Any,
     snapshot: Path,
-) -> tuple[dict[str, Any], Any]:
+) -> tuple[dict[str, Any], dict[str, Any]]:
     from transformers import MambaConfig, MambaModel
 
     stats: dict[str, Any] = {
@@ -244,29 +289,91 @@ def install_dual_gpu_frozen_encoder_cache(
         "cross_gpu_equivalence_exact": False,
         "secondary_model_loaded_from_exact_snapshot": False,
         "secondary_model_released_after_cache": False,
+        "cache_storage_device": "cpu",
+        "host_staged_cache": True,
+        "host_staged_rows": 0,
+        "host_cache_to_gpu_forward_transfers": 0,
+        "host_cache_to_gpu_forward_rows": 0,
+        "primary_model_retained_on_cuda0": True,
+        "downstream_only_state_dict_view_installed": False,
+        "downstream_state_key_count": 0,
+        "frozen_backbone_state_key_count": 0,
     }
+
     secondary_holder: dict[str, Any] = {"model": None}
+
+    original_cache_function = trainer.v5.cache_frozen_encoder_states
+    original_feature_inputs = trainer._vnext_model_feature_inputs
+
+    patch_state: dict[str, Any] = {
+        "original_cache_function": original_cache_function,
+        "original_feature_inputs": original_feature_inputs,
+        "model": None,
+        "original_state_dict": None,
+        "downstream_state_keys": None,
+        "frozen_backbone_state_keys": None,
+    }
+
+    def feature_inputs_with_host_cache(
+        inputs: dict[str, torch.Tensor],
+    ) -> dict[str, torch.Tensor]:
+        result = original_feature_inputs(inputs)
+
+        hidden = result.get("encoder_hidden_states")
+        if (
+            torch.is_tensor(hidden)
+            and hidden.device.type == "cpu"
+        ):
+            input_ids = result.get("input_ids")
+            require(
+                torch.is_tensor(input_ids),
+                "HOST_CACHE_INPUT_IDS_MISSING",
+            )
+            target = input_ids.device
+            require(
+                target.type == "cuda",
+                f"HOST_CACHE_FORWARD_DEVICE:{target}",
+            )
+
+            result["encoder_hidden_states"] = hidden.to(
+                target,
+                non_blocking=False,
+            )
+
+            stats["host_cache_to_gpu_forward_transfers"] += 1
+            stats["host_cache_to_gpu_forward_rows"] += int(
+                hidden.shape[0]
+            )
+
+        return result
+
+    trainer._vnext_model_feature_inputs = feature_inputs_with_host_cache
 
     def load_secondary() -> Any:
         secondary = secondary_holder["model"]
         if secondary is not None:
             return secondary
+
         config = MambaConfig.from_pretrained(
             str(snapshot),
             local_files_only=True,
         )
         config.use_mamba_kernels = True
+
         with torch.cuda.device(1):
             secondary = MambaModel.from_pretrained(
                 str(snapshot),
                 config=config,
                 local_files_only=True,
             ).to(torch.device("cuda:1"))
+
         for parameter in secondary.parameters():
             parameter.requires_grad_(False)
+
         secondary.eval()
         secondary_holder["model"] = secondary
         stats["secondary_model_loaded_from_exact_snapshot"] = True
+
         return secondary
 
     def verify_cross_gpu_exact(
@@ -276,38 +383,73 @@ def install_dual_gpu_frozen_encoder_cache(
     ) -> None:
         if stats["cross_gpu_equivalence_checked"]:
             return
+
         n = min(4, int(probe_ids.shape[0]))
         require(n > 0, "CACHE_EQUIVALENCE_EMPTY_PROBE")
+
         ids0 = probe_ids[:n].to(torch.device("cuda:0"))
         ids1 = probe_ids[:n].to(torch.device("cuda:1"))
+
         primary.eval()
         secondary.eval()
+
         with torch.no_grad():
-            out0 = primary(input_ids=ids0).last_hidden_state.detach().cpu()
-            out1 = secondary(input_ids=ids1).last_hidden_state.detach().cpu()
+            out0 = (
+                primary(input_ids=ids0)
+                .last_hidden_state
+                .detach()
+                .cpu()
+            )
+            out1 = (
+                secondary(input_ids=ids1)
+                .last_hidden_state
+                .detach()
+                .cpu()
+            )
+
         stats["cross_gpu_equivalence_checked"] = True
-        stats["cross_gpu_equivalence_exact"] = bool(torch.equal(out0, out1))
+        stats["cross_gpu_equivalence_exact"] = bool(
+            torch.equal(out0, out1)
+        )
+
         require(
             stats["cross_gpu_equivalence_exact"],
             "DUAL_GPU_CACHE_CROSS_GPU_TENSOR_MISMATCH",
         )
 
-    def run_primary(primary: Any, ids: torch.Tensor) -> torch.Tensor:
+    def run_primary(
+        primary: Any,
+        ids: torch.Tensor,
+    ) -> torch.Tensor:
         with torch.cuda.device(0), torch.no_grad():
             result = primary(
-                input_ids=ids.to(torch.device("cuda:0"), non_blocking=True)
+                input_ids=ids.to(
+                    torch.device("cuda:0"),
+                    non_blocking=True,
+                )
             ).last_hidden_state
-            torch.cuda.synchronize(0)
-            return result
 
-    def run_secondary(secondary: Any, ids: torch.Tensor) -> torch.Tensor:
+            staged = _host_stage_encoder_cache_tensor(result)
+            torch.cuda.synchronize(0)
+
+            return staged
+
+    def run_secondary(
+        secondary: Any,
+        ids: torch.Tensor,
+    ) -> torch.Tensor:
         with torch.cuda.device(1), torch.no_grad():
             result = secondary(
-                input_ids=ids.to(torch.device("cuda:1"), non_blocking=True)
+                input_ids=ids.to(
+                    torch.device("cuda:1"),
+                    non_blocking=True,
+                )
             ).last_hidden_state
-            result0 = result.to(torch.device("cuda:0"), non_blocking=True)
+
+            staged = _host_stage_encoder_cache_tensor(result)
             torch.cuda.synchronize(1)
-            return result0
+
+            return staged
 
     def dual_gpu_cache(
         model: Any,
@@ -315,74 +457,164 @@ def install_dual_gpu_frozen_encoder_cache(
         batch_size: int = 8,
     ) -> None:
         del batch_size
+
         require(
-            not any(parameter.requires_grad for parameter in model.mamba.parameters()),
+            not any(
+                parameter.requires_grad
+                for parameter in model.mamba.parameters()
+            ),
             "DUAL_GPU_CACHE_REQUIRES_FROZEN_ENCODER",
         )
-        require(torch.cuda.device_count() >= 2, "DUAL_GPU_CACHE_REQUIRES_TWO_GPUS")
+        require(
+            torch.cuda.device_count() >= 2,
+            "DUAL_GPU_CACHE_REQUIRES_TWO_GPUS",
+        )
 
         primary = model.mamba
         primary.eval()
+
         secondary = load_secondary()
-        verify_cross_gpu_exact(primary, secondary, inputs["input_ids"])
+
+        verify_cross_gpu_exact(
+            primary,
+            secondary,
+            inputs["input_ids"],
+        )
 
         chunks: list[torch.Tensor] = []
+
         plans = dual_gpu_cache_slices(
             int(inputs["input_ids"].shape[0]),
             DUAL_GPU_CACHE_BATCH_SIZE,
         )
+
         with ThreadPoolExecutor(max_workers=2) as pool:
             for left, right in plans:
                 ids_left = inputs["input_ids"][left]
                 ids_right = inputs["input_ids"][right]
 
                 future0 = (
-                    pool.submit(run_primary, primary, ids_left)
+                    pool.submit(
+                        run_primary,
+                        primary,
+                        ids_left,
+                    )
                     if int(ids_left.shape[0]) > 0
                     else None
                 )
+
                 future1 = (
-                    pool.submit(run_secondary, secondary, ids_right)
+                    pool.submit(
+                        run_secondary,
+                        secondary,
+                        ids_right,
+                    )
                     if int(ids_right.shape[0]) > 0
                     else None
                 )
 
-                out0 = future0.result() if future0 is not None else None
-                out1 = future1.result() if future1 is not None else None
+                out0 = (
+                    future0.result()
+                    if future0 is not None
+                    else None
+                )
+                out1 = (
+                    future1.result()
+                    if future1 is not None
+                    else None
+                )
 
                 if out0 is not None:
+                    require(
+                        out0.device.type == "cpu",
+                        "GPU0_CACHE_NOT_HOST_STAGED",
+                    )
                     chunks.append(out0)
-                    stats["gpu0_rows"] += int(ids_left.shape[0])
+                    rows = int(ids_left.shape[0])
+                    stats["gpu0_rows"] += rows
                     stats["gpu0_forward_calls"] += 1
+                    stats["host_staged_rows"] += rows
+
                 if out1 is not None:
+                    require(
+                        out1.device.type == "cpu",
+                        "GPU1_CACHE_NOT_HOST_STAGED",
+                    )
                     chunks.append(out1)
-                    stats["gpu1_rows"] += int(ids_right.shape[0])
+                    rows = int(ids_right.shape[0])
+                    stats["gpu1_rows"] += rows
                     stats["gpu1_forward_calls"] += 1
+                    stats["host_staged_rows"] += rows
 
         require(chunks, "DUAL_GPU_CACHE_NO_CHUNKS")
-        inputs["encoder_hidden_states"] = torch.cat(chunks, dim=0)
+
+        cached = torch.cat(chunks, dim=0)
+
         require(
-            int(inputs["encoder_hidden_states"].shape[0])
+            cached.device.type == "cpu",
+            f"CACHE_CONCAT_DEVICE:{cached.device}",
+        )
+        require(
+            int(cached.shape[0])
             == int(inputs["input_ids"].shape[0]),
             "DUAL_GPU_CACHE_ROW_COUNT_MISMATCH",
         )
+
+        inputs["encoder_hidden_states"] = cached
+
         stats["datasets_cached"] += 1
 
         if stats["datasets_cached"] == 2:
             secondary_holder["model"] = None
             del secondary
+
             torch.cuda.synchronize(1)
             torch.cuda.empty_cache()
+
             stats["secondary_model_released_after_cache"] = True
 
-    original = trainer.v5.cache_frozen_encoder_states
+            (
+                original_state_dict,
+                downstream_keys,
+                backbone_keys,
+            ) = _install_downstream_only_state_dict_view(model)
+
+            patch_state["model"] = model
+            patch_state["original_state_dict"] = original_state_dict
+            patch_state["downstream_state_keys"] = downstream_keys
+            patch_state["frozen_backbone_state_keys"] = backbone_keys
+
+            stats["downstream_only_state_dict_view_installed"] = True
+            stats["downstream_state_key_count"] = len(
+                downstream_keys
+            )
+            stats["frozen_backbone_state_key_count"] = len(
+                backbone_keys
+            )
+
     trainer.v5.cache_frozen_encoder_states = dual_gpu_cache
-    return stats, original
+
+    return stats, patch_state
 
 
-def restore_encoder_cache_function(*, trainer: Any, original: Any) -> None:
-    trainer.v5.cache_frozen_encoder_states = original
+def restore_encoder_cache_function(
+    *,
+    trainer: Any,
+    patch_state: dict[str, Any],
+) -> None:
+    trainer.v5.cache_frozen_encoder_states = (
+        patch_state["original_cache_function"]
+    )
 
+    trainer._vnext_model_feature_inputs = (
+        patch_state["original_feature_inputs"]
+    )
+
+    model = patch_state.get("model")
+    original_state_dict = patch_state.get("original_state_dict")
+
+    if model is not None and original_state_dict is not None:
+        model.state_dict = original_state_dict
 
 
 def git_blob_identity(path: Path) -> str:
@@ -716,50 +948,144 @@ def compact_selected_checkpoint(
     compact_checkpoint: Path,
     manifest_path: Path,
     expected_head: str,
+    expected_downstream_keys: set[str] | None = None,
 ) -> dict[str, Any]:
-    require(full_checkpoint.is_file(), f"FULL_CHECKPOINT_MISSING:{full_checkpoint}")
-    full_sha = sha256_file(full_checkpoint)
-    full_bytes = full_checkpoint.stat().st_size
+    require(
+        full_checkpoint.is_file(),
+        f"FULL_CHECKPOINT_MISSING:{full_checkpoint}",
+    )
 
-    payload = torch.load(full_checkpoint, map_location="cpu", weights_only=False)
-    require(isinstance(payload, dict), "FULL_CHECKPOINT_PAYLOAD")
-    require(payload.get("schema_version") == "stage176a0_selected_checkpoint_v1", "FULL_CHECKPOINT_SCHEMA")
-    full_state = payload.get("model_state_dict")
+    source_sha = sha256_file(full_checkpoint)
+    source_bytes = full_checkpoint.stat().st_size
+
+    payload = torch.load(
+        full_checkpoint,
+        map_location="cpu",
+        weights_only=False,
+    )
+
+    require(
+        isinstance(payload, dict),
+        "FULL_CHECKPOINT_PAYLOAD",
+    )
+    require(
+        payload.get("schema_version")
+        == "stage176a0_selected_checkpoint_v1",
+        "FULL_CHECKPOINT_SCHEMA",
+    )
+
+    selected_state = payload.get("model_state_dict")
     metadata = payload.get("metadata")
-    require(isinstance(full_state, dict) and full_state, "FULL_STATE_DICT")
-    require(isinstance(metadata, dict), "FULL_METADATA")
-    require(metadata.get("selected_epoch") is not None, "SELECTED_EPOCH_MISSING")
 
-    full_backbone_keys = {key for key in full_state if key.startswith("mamba.")}
-    observed_backbone_keys: set[str] = set()
+    require(
+        isinstance(selected_state, dict)
+        and bool(selected_state),
+        "FULL_STATE_DICT",
+    )
+    require(
+        isinstance(metadata, dict),
+        "FULL_METADATA",
+    )
+    require(
+        metadata.get("selected_epoch") is not None,
+        "SELECTED_EPOCH_MISSING",
+    )
+
+    source_backbone_keys = {
+        key
+        for key in selected_state
+        if key.startswith("mamba.")
+    }
+
+    reference_backbone_keys: set[str] = set()
     pretrained_stream_digest = hashlib.sha256()
 
     for key, reference in iter_pinned_backbone_tensors(snapshot):
         full_key = "mamba." + key.removeprefix("backbone.")
-        require(full_key in full_state, f"FULL_BACKBONE_KEY_MISSING:{full_key}")
-        observed = full_state[full_key]
-        require(torch.is_tensor(observed), f"FULL_BACKBONE_NOT_TENSOR:{full_key}")
-        require(torch.equal(observed.detach().cpu(), reference.detach().cpu()), f"BACKBONE_TENSOR_MISMATCH:{full_key}")
-        observed_backbone_keys.add(full_key)
-        _update_tensor_state_digest(pretrained_stream_digest, key, reference)
+        reference_backbone_keys.add(full_key)
 
-    require(full_backbone_keys == observed_backbone_keys, "BACKBONE_KEY_SET_MISMATCH")
+        _update_tensor_state_digest(
+            pretrained_stream_digest,
+            key,
+            reference,
+        )
+
+        if source_backbone_keys:
+            require(
+                full_key in selected_state,
+                f"FULL_BACKBONE_KEY_MISSING:{full_key}",
+            )
+
+            observed = selected_state[full_key]
+
+            require(
+                torch.is_tensor(observed),
+                f"FULL_BACKBONE_NOT_TENSOR:{full_key}",
+            )
+            require(
+                torch.equal(
+                    observed.detach().cpu(),
+                    reference.detach().cpu(),
+                ),
+                f"BACKBONE_TENSOR_MISMATCH:{full_key}",
+            )
+
+    if source_backbone_keys:
+        require(
+            source_backbone_keys == reference_backbone_keys,
+            "BACKBONE_KEY_SET_MISMATCH",
+        )
+        source_mode = "full_selected_state"
+    else:
+        source_mode = (
+            "downstream_only_selected_state_"
+            "with_exact_pinned_backbone_omitted"
+        )
 
     downstream = {
         key: value.detach().cpu().clone()
-        for key, value in full_state.items()
+        for key, value in selected_state.items()
         if not key.startswith("mamba.")
     }
-    require(downstream, "DOWNSTREAM_STATE_EMPTY")
 
-    full_state_hash = tensor_state_sha256(
-        (key, value) for key, value in full_state.items() if torch.is_tensor(value)
+    require(
+        bool(downstream),
+        "DOWNSTREAM_STATE_EMPTY",
     )
-    downstream_hash = tensor_state_sha256(downstream.items())
-    pretrained_stream_hash = pretrained_stream_digest.hexdigest()
+
+    if expected_downstream_keys is not None:
+        require(
+            set(downstream) == set(expected_downstream_keys),
+            (
+                "DOWNSTREAM_KEY_SET_MISMATCH:"
+                f"expected={len(expected_downstream_keys)}:"
+                f"observed={len(downstream)}"
+            ),
+        )
+
+    if not source_backbone_keys:
+        require(
+            set(selected_state) == set(downstream),
+            "DOWNSTREAM_ONLY_SOURCE_HAS_BACKBONE",
+        )
+
+    selected_state_hash = tensor_state_sha256(
+        (key, value)
+        for key, value in selected_state.items()
+        if torch.is_tensor(value)
+    )
+
+    downstream_hash = tensor_state_sha256(
+        downstream.items()
+    )
+
+    pretrained_stream_hash = (
+        pretrained_stream_digest.hexdigest()
+    )
 
     compact_payload = {
-        "schema_version": "contramamba_mamba28b_compact_checkpoint_v1",
+        "schema_version":
+            "contramamba_mamba28b_compact_checkpoint_v2",
         "downstream_state_dict": downstream,
         "metadata": metadata,
         "pretrained_backbone": {
@@ -767,77 +1093,171 @@ def compact_selected_checkpoint(
             "revision": MODEL_REVISION,
             "file_identities": SNAPSHOT_FILES,
             "state_stream_sha256": pretrained_stream_hash,
-            "state_stream_order": "safetensors_filename_then_tensor_key",
-            "state_key_count": len(observed_backbone_keys),
+            "state_stream_order":
+                "safetensors_filename_then_tensor_key",
+            "state_key_count": len(reference_backbone_keys),
+            "omitted_from_selected_checkpoint":
+                not bool(source_backbone_keys),
         },
-        "source_full_checkpoint": {
-            "bytes": full_bytes,
-            "sha256": full_sha,
-            "full_state_canonical_sha256": full_state_hash,
-            "state_key_count": len(full_state),
+        "source_selected_checkpoint": {
+            "bytes": source_bytes,
+            "sha256": source_sha,
+            "selected_state_canonical_sha256":
+                selected_state_hash,
+            "state_key_count": len(selected_state),
+            "contains_pretrained_backbone":
+                bool(source_backbone_keys),
+            "representation": source_mode,
         },
         "downstream": {
             "state_canonical_sha256": downstream_hash,
             "state_key_count": len(downstream),
             "tensor_bytes": sum(
-                int(value.numel() * value.element_size()) for value in downstream.values()
+                int(
+                    value.numel()
+                    * value.element_size()
+                )
+                for value in downstream.values()
             ),
         },
         "training_identity": {
             "arm": ARM,
             "execution_commit": expected_head,
-            "selected_epoch": int(metadata["selected_epoch"]),
+            "selected_epoch":
+                int(metadata["selected_epoch"]),
             "split_seed": SPLIT_SEED,
             "training_seed": TRAINING_SEED,
-            "forward_microbatch_size": FORWARD_MICROBATCH_SIZE,
-            "logical_full_batch_rows": TRAIN_ROW_COUNT,
+            "forward_microbatch_size":
+                FORWARD_MICROBATCH_SIZE,
+            "logical_full_batch_rows":
+                TRAIN_ROW_COUNT,
             "optimizer_steps_per_epoch": 1,
         },
         "reconstruction_verification": {
             "key_set_exact": True,
-            "tensor_equal_all_backbone_keys": True,
-            "downstream_extracted_exactly_from_full_checkpoint": True,
+            "tensor_equal_all_backbone_keys": (
+                True if source_backbone_keys else None
+            ),
+            "backbone_identity_verified_from_exact_pinned_snapshot":
+                True,
+            "frozen_backbone_omitted_from_selected_checkpoint":
+                not bool(source_backbone_keys),
+            "downstream_selected_state_preserved_exactly":
+                True,
             "scientific_forward_executed": False,
             "training_executed_during_compaction": False,
         },
     }
 
-    compact_checkpoint.parent.mkdir(parents=True, exist_ok=True)
-    temp = compact_checkpoint.with_suffix(compact_checkpoint.suffix + ".tmp")
-    torch.save(compact_payload, temp)
-    os.replace(temp, compact_checkpoint)
+    if source_backbone_keys:
+        compact_payload["source_full_checkpoint"] = {
+            "bytes": source_bytes,
+            "sha256": source_sha,
+            "full_state_canonical_sha256":
+                selected_state_hash,
+            "state_key_count": len(selected_state),
+        }
 
-    reloaded = torch.load(compact_checkpoint, map_location="cpu", weights_only=False)
-    require(reloaded.get("schema_version") == compact_payload["schema_version"], "COMPACT_RELOAD_SCHEMA")
-    reloaded_downstream = reloaded.get("downstream_state_dict")
-    require(isinstance(reloaded_downstream, dict), "COMPACT_RELOAD_DOWNSTREAM")
-    require(set(reloaded_downstream) == set(downstream), "COMPACT_RELOAD_KEY_SET")
+    compact_checkpoint.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    temp = compact_checkpoint.with_suffix(
+        compact_checkpoint.suffix + ".tmp"
+    )
+
+    torch.save(
+        compact_payload,
+        temp,
+    )
+    os.replace(
+        temp,
+        compact_checkpoint,
+    )
+
+    reloaded = torch.load(
+        compact_checkpoint,
+        map_location="cpu",
+        weights_only=False,
+    )
+
+    require(
+        reloaded.get("schema_version")
+        == compact_payload["schema_version"],
+        "COMPACT_RELOAD_SCHEMA",
+    )
+
+    reloaded_downstream = reloaded.get(
+        "downstream_state_dict"
+    )
+
+    require(
+        isinstance(reloaded_downstream, dict),
+        "COMPACT_RELOAD_DOWNSTREAM",
+    )
+    require(
+        set(reloaded_downstream) == set(downstream),
+        "COMPACT_RELOAD_KEY_SET",
+    )
+
     for key in downstream:
-        require(torch.equal(reloaded_downstream[key], downstream[key]), f"COMPACT_RELOAD_TENSOR:{key}")
+        require(
+            torch.equal(
+                reloaded_downstream[key],
+                downstream[key],
+            ),
+            f"COMPACT_RELOAD_TENSOR:{key}",
+        )
 
-    compact_sha = sha256_file(compact_checkpoint)
+    compact_sha = sha256_file(
+        compact_checkpoint
+    )
+
     manifest = {
-        "schema_version": "contramamba_mamba28b_compact_checkpoint_manifest_v1",
-        **{key: value for key, value in compact_payload.items() if key != "downstream_state_dict"},
+        "schema_version":
+            "contramamba_mamba28b_compact_checkpoint_manifest_v2",
+        **{
+            key: value
+            for key, value in compact_payload.items()
+            if key != "downstream_state_dict"
+        },
         "compact_checkpoint": {
             "path": (
-                compact_checkpoint.relative_to(ROOT).as_posix()
+                compact_checkpoint
+                .relative_to(ROOT)
+                .as_posix()
                 if compact_checkpoint.is_relative_to(ROOT)
                 else compact_checkpoint.as_posix()
             ),
-            "bytes": compact_checkpoint.stat().st_size,
+            "bytes":
+                compact_checkpoint.stat().st_size,
             "sha256": compact_sha,
         },
-        "full_checkpoint_removed_after_verified_compaction": True,
+        "source_selected_checkpoint_removed_after_verified_compaction":
+            True,
+        "full_checkpoint_removed_after_verified_compaction":
+            bool(source_backbone_keys),
     }
+
     manifest_path.write_text(
-        json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+        json.dumps(
+            manifest,
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
         encoding="utf-8",
         newline="\n",
     )
 
     full_checkpoint.unlink()
-    require(not full_checkpoint.exists(), "FULL_CHECKPOINT_DELETE_FAILED")
+
+    require(
+        not full_checkpoint.exists(),
+        "SOURCE_SELECTED_CHECKPOINT_DELETE_FAILED",
+    )
+
     return manifest
 
 
@@ -932,7 +1352,7 @@ def main() -> None:
     argv = trainer_argv(snapshot, run_dir)
 
     launcher_manifest = {
-        "schema_version": "contramamba_mamba28b_training_launcher_v1",
+        "schema_version": "contramamba_mamba28b_training_launcher_v2",
         "expected_head": args.expected_head,
         "run_name": args.run_name,
         "model_repo": MODEL_REPO,
@@ -974,6 +1394,11 @@ def main() -> None:
             "dual_gpu_frozen_encoder_cache": True,
             "dual_gpu_cache_batch_size": DUAL_GPU_CACHE_BATCH_SIZE,
             "dual_gpu_cache_device_ids": list(DUAL_GPU_CACHE_DEVICE_IDS),
+            "encoder_cache_storage": "cpu_host_staged",
+            "encoder_cache_forward_transfer": "per_forward_microbatch_to_cuda0",
+            "selected_checkpoint_state_representation": (
+                "downstream_only_frozen_backbone_omitted"
+            ),
             "dual_gpu_cache_expected_total_rows": TRAIN_ROW_COUNT + DEV_ROW_COUNT,
             "dual_gpu_cache_expected_rows_per_gpu": (
                 (TRAIN_ROW_COUNT + DEV_ROW_COUNT) // 2
@@ -989,7 +1414,7 @@ def main() -> None:
         newline="\n",
     )
 
-    cache_stats, original_cache_function = install_dual_gpu_frozen_encoder_cache(
+    cache_stats, runtime_patch_state = install_dual_gpu_frozen_encoder_cache(
         trainer=trainer,
         snapshot=snapshot,
     )
@@ -999,7 +1424,7 @@ def main() -> None:
     finally:
         restore_encoder_cache_function(
             trainer=trainer,
-            original=original_cache_function,
+            patch_state=runtime_patch_state,
         )
     require(rc in (0, None), f"TRAINER_RETURN_CODE:{rc}")
     require(cache_stats["datasets_cached"] == 2, f"CACHE_DATASETS:{cache_stats}")
@@ -1020,6 +1445,23 @@ def main() -> None:
         cache_stats["secondary_model_released_after_cache"] is True,
         f"CACHE_SECONDARY_NOT_RELEASED:{cache_stats}",
     )
+    require(
+        cache_stats["host_staged_cache"] is True,
+        f"CACHE_NOT_HOST_STAGED:{cache_stats}",
+    )
+    require(
+        cache_stats["host_staged_rows"]
+        == TRAIN_ROW_COUNT + DEV_ROW_COUNT,
+        f"CACHE_HOST_STAGED_ROWS:{cache_stats}",
+    )
+    require(
+        cache_stats["downstream_only_state_dict_view_installed"] is True,
+        f"DOWNSTREAM_STATE_VIEW_NOT_INSTALLED:{cache_stats}",
+    )
+    require(
+        cache_stats["host_cache_to_gpu_forward_transfers"] > 0,
+        f"HOST_CACHE_FORWARD_TRANSFER_UNUSED:{cache_stats}",
+    )
     (run_dir / "dual_gpu_encoder_cache_stats.json").write_text(
         json.dumps(cache_stats, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
@@ -1028,12 +1470,21 @@ def main() -> None:
 
     training_summary = validate_training_outputs(run_dir)
 
+    downstream_state_keys = set(
+        runtime_patch_state.get("downstream_state_keys") or ()
+    )
+    require(
+        bool(downstream_state_keys),
+        "DOWNSTREAM_STATE_KEYS_MISSING",
+    )
+
     compact_manifest = compact_selected_checkpoint(
         full_checkpoint=run_dir / "selected_checkpoint.pt",
         snapshot=snapshot,
         compact_checkpoint=run_dir / "selected_downstream_checkpoint.pt",
         manifest_path=run_dir / "compact_checkpoint_manifest.json",
         expected_head=args.expected_head,
+        expected_downstream_keys=downstream_state_keys,
     )
 
     print("RESULT=PASS_MAMBA28B_TRAINING_AND_COMPACTION")
@@ -1043,6 +1494,8 @@ def main() -> None:
     print("SPLIT_SEED=" + str(SPLIT_SEED))
     print("BEST_EPOCH=" + str(training_summary["best_epoch"]))
     print("DUAL_GPU_ENCODER_CACHE=PASS")
+    print("ENCODER_CACHE_STORAGE=CPU_HOST_STAGED")
+    print("SELECTED_CHECKPOINT_STATE=DOWNSTREAM_ONLY")
     print("GPU0_CACHE_ROWS=" + str(cache_stats["gpu0_rows"]))
     print("GPU1_CACHE_ROWS=" + str(cache_stats["gpu1_rows"]))
     print("GPU0_CACHE_FORWARD_CALLS=" + str(cache_stats["gpu0_forward_calls"]))
