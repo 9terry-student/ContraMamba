@@ -1,0 +1,96 @@
+{
+  "confirmation_accessed": false,
+  "confirmation_response_accessed": false,
+  "control_definition": "c*=argmax_{k!=k*} lambda_plus_k from frozen geometry only",
+  "control_selection_uses_response": false,
+  "discovery_holdout_freeze_commit": "6c0989a45382db31c9052b89b088e999b3e7cf59",
+  "discovery_population": {
+    "pair_first": "xg1_fact_6901",
+    "pair_last": "xg1_fact_7200",
+    "rows_sha256": "1bc6acb464d6e66da8ba5a065eff1060a19cc28397b962ad15c36329acf4e46a",
+    "source_pair_count": 300,
+    "source_sha256": "a276845b66116d168b0c6065ea56cf07b229aa550071376d3bca46950b967cce",
+    "structural_manifest_sha256": "a37e3e25bc6f3d8853c49f849f774ec6ee61ed9c37dcbcf7c8ff4f2ae513d1f4"
+  },
+  "epsilon": 0.025,
+  "execution_head": "e951584e5d9e016d648ddf08c6b56b02b1d7ebb0",
+  "geometry_freeze_commit": "ba4c73aa9a5e63108f3582e053678b6344990d2c",
+  "geometry_summary_sha256": "7ac0c2d904d851c13727956df8f75c8be57b71af7a962f372585879a4470b8cb",
+  "inferential_test_performed": false,
+  "lambda_plus_by_plane": {
+    "P1": 0.8929611457472746,
+    "P2": 0.9661968257027739,
+    "P3": 0.9886096436448485,
+    "P4": 0.9914984692804061,
+    "P5": 0.9977346617630234
+  },
+  "per_plane_descriptive_effects": {
+    "P1": {
+      "ci95_normal_high": 7.76489588307323e-09,
+      "ci95_normal_low": 4.6785372695348584e-09,
+      "fraction_positive": 0.6233333333333333,
+      "max": 4.8839317123922975e-08,
+      "mean": 6.221716576304044e-09,
+      "min": -1.108948272022452e-08,
+      "n": 300,
+      "sd": 1.3637066145475245e-08
+    },
+    "P2": {
+      "ci95_normal_high": 3.325064052036542e-08,
+      "ci95_normal_low": 2.7288452975311817e-08,
+      "fraction_positive": 0.9966666666666667,
+      "max": 9.35182798240402e-08,
+      "mean": 3.026954674783862e-08,
+      "min": -6.964984894480244e-10,
+      "n": 300,
+      "sd": 2.634390753134491e-08
+    },
+    "P3": {
+      "ci95_normal_high": 1.6712994096295202e-08,
+      "ci95_normal_low": 1.4352278592787286e-08,
+      "fraction_positive": 0.99,
+      "max": 4.032963075359388e-08,
+      "mean": 1.5532636344541243e-08,
+      "min": -2.0527995829668102e-10,
+      "n": 300,
+      "sd": 1.0430814271151158e-08
+    },
+    "P4": {
+      "ci95_normal_high": 1.7111214756472144e-08,
+      "ci95_normal_low": 1.224548726457073e-08,
+      "fraction_positive": 0.75,
+      "max": 7.327036386487605e-08,
+      "mean": 1.4678351010521438e-08,
+      "min": -2.1846592800642726e-08,
+      "n": 300,
+      "sd": 2.1499202121831463e-08
+    },
+    "P5": {
+      "ci95_normal_high": 5.3234177859794085e-09,
+      "ci95_normal_low": 3.4874580856554686e-09,
+      "fraction_positive": 0.69,
+      "max": 1.9157428218472146e-08,
+      "mean": 4.4054379358174385e-09,
+      "min": -1.2749154036678121e-08,
+      "n": 300,
+      "sd": 8.112182351045905e-09
+    }
+  },
+  "plane_order": [
+    "P1",
+    "P2",
+    "P3",
+    "P4",
+    "P5"
+  ],
+  "positivity_gate_applied": false,
+  "rescue_performed": false,
+  "response_blind_control_plane": "P5",
+  "restored_semantics": "branch-local plane neutralize-plus-exact-restore round trip; net native state",
+  "result": "PASS_MAMBA790M_DISCOVERY_SELECTION_FREEZE",
+  "schema_version": "gen4-mamba790m-discovery-selection-v1",
+  "scientific_conclusion_established": false,
+  "selected_dominant_candidate": "P2",
+  "selection_definition": "k*=argmax_k mean_i(Q_restored,k,i-Q_neutralized,k,i)",
+  "selection_unique": true
+}
