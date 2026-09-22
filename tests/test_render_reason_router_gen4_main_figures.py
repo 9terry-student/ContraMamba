@@ -9,6 +9,7 @@ from pathlib import Path
 import subprocess
 import sys
 
+import numpy as np
 import pytest
 
 from scripts import render_reason_router_gen4_main_figures as subject
@@ -196,6 +197,76 @@ def test_no_scientific_execution_or_new_inferential_code():
                            ("ttest", "bootstrap", "polyfit", "linregress", "random", "backward", "cuda", "eval(", "exec("))
     # Frozen inferential fields are checked/copied; no new test routine exists.
     assert not any(isinstance(n, ast.FunctionDef) and "inference" in n.name for n in ast.walk(tree))
+
+
+@pytest.fixture(scope="module")
+def plot_objects(sources):
+    import matplotlib
+    matplotlib.use("Agg", force=True)
+    from matplotlib import pyplot as plt
+
+    data = subject.prepare(sources)
+    figures = subject.build_figures(plt, data)
+    yield figures, data
+    for figure in figures:
+        plt.close(figure)
+
+
+@pytest.mark.parametrize("figure,axis,rows_key,field,unit,analysis_key,primary_key,mean_key", [
+    (3, 2, "transport", "G", 1e-9, "transport_analysis", "primary", "mean_G"),
+    (4, 1, "readout", "R", 1e-3, "readout_analysis", "primary_test", "mean_R"),
+])
+def test_histograms_show_all_stored_primary_values(
+    plot_objects, figure, axis, rows_key, field, unit, analysis_key, primary_key, mean_key,
+):
+    figures, data = plot_objects
+    ax = figures[figure].axes[axis]
+    values = [row[field] / unit for row in data[rows_key]]
+    counts, edges = np.histogram(values, bins=20)
+    assert sum(patch.get_height() for patch in ax.patches) == 300
+    np.testing.assert_array_equal([patch.get_height() for patch in ax.patches], counts)
+    np.testing.assert_allclose([patch.get_x() for patch in ax.patches], edges[:-1])
+    np.testing.assert_allclose([patch.get_width() for patch in ax.patches], np.diff(edges))
+    # One horizontal baseline and two vertical references; no item trajectories.
+    assert len(ax.lines) == 3
+    np.testing.assert_array_equal(ax.lines[1].get_xdata(), [0, 0])
+    assert ax.lines[1].get_linestyle() == "--"
+    primary = data[analysis_key][primary_key]
+    np.testing.assert_array_equal(ax.lines[2].get_xdata(), [primary[mean_key] / unit] * 2)
+    assert ax.lines[2].get_color() == subject.ORANGE
+    assert ax.get_ylabel() == "Count"
+    assert ax.get_xlabel().startswith(f"{field} = ")
+    annotation = "\n".join(text.get_text() for text in ax.texts)
+    assert "N=300" in annotation
+    assert f"{primary[mean_key]:+.2e}" in annotation
+    assert f"{primary['p_value']:.2e}" in annotation
+    if field == "G":
+        assert "Mean D_ADJ=-1.55e-09" in annotation
+        assert "Mean D_TRANSPORT=-5.51e-10" in annotation
+        assert "Positive restoration not established." in annotation
+    else:
+        assert f"SD(R)={primary['sd_R']:.2e}" in annotation
+        assert f"t(299)={primary['t_statistic']:.2f}" in annotation
+
+
+def test_item_ticks_and_stage_labels_preserve_observations(plot_objects):
+    figures, data = plot_objects
+    item_ax = figures[1].axes[0]
+    np.testing.assert_array_equal(item_ax.collections[0].get_offsets()[:, 0], np.arange(1, 301))
+    np.testing.assert_array_equal(item_ax.collections[0].get_offsets()[:, 1],
+                                  [row["C_PP3"] / 1e-8 for row in data["xg1"]])
+    assert item_ax.get_xticks()[0] == 1 and item_ax.get_xticks()[-1] == 300
+    assert 0 not in item_ax.get_xticks()
+    stage_ax = figures[4].axes[3]
+    assert [text.get_text() for text in stage_ax.get_xticklabels()] == ["pre35", "35", "39", "43", "47", "norm"]
+    for line, values in zip(stage_ax.lines[1:], data["stage_means"]):
+        np.testing.assert_array_equal(line.get_ydata(), np.asarray(values) / 1e-3)
+    figures[4].canvas.draw()
+    bounds = [text.get_window_extent() for text in stage_ax.get_xticklabels()]
+    assert all(left.x1 < right.x0 for left, right in zip(bounds, bounds[1:]))
+    annotation = "\n".join(text.get_text() for text in stage_ax.texts)
+    assert "Persistent C2 opposition: post_block_35" in annotation
+    assert "Persistent pair opposition: post_block_47" in annotation
 
 
 def test_renderer_smoke_expected_names_source_integrity_and_determinism(sources, tmp_path):

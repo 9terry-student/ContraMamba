@@ -388,6 +388,7 @@ def build_figures(plt, d):
     a, b, c, e, f, legend = axes.flat
     panel(a, "A  External-generator transport", "Stored C_PP3 (x 1e-8)")
     a.scatter(np.arange(1, 301), [r["C_PP3"] / 1e-8 for r in d["xg1"]], s=7, color=BLUE, alpha=0.55)
+    a.set_xticks([1, 50, 100, 150, 200, 250, 300])
     a.set_xlabel("Frozen XG1 item (1-300)")
     note(a, "Stored item-level observations; N=300")
     spec = d["specificity"]
@@ -447,20 +448,22 @@ def build_figures(plt, d):
     b.set_ylim(0, 120)
     b.set_yticks([0, 30, 60, 90])
     note(b, f"Rank two: 600/600 XG2/XG4 rows\nMean projector overlap={d['overlap']:.5f}")
-    panel(c, "C  Transported functional response", "Stored paired response (x 1e-9)")
-    keys = ["D_CAN_descriptive_only", "D_ADJ", "D_TRANSPORT"]
-    for row in d["transport"]:
-        c.plot(range(3), [row[k] / 1e-9 for k in keys], color=GRAY, alpha=0.07, lw=0.5)
+    panel(c, "C  Primary transport endpoint G", "Count")
+    counts, _, _ = c.hist([row["G"] / 1e-9 for row in d["transport"]],
+                          bins=20, color=GRAY, edgecolor="white", linewidth=0.5)
     analysis = d["transport_analysis"]
-    means = [at(analysis, "descriptive_only", k, "mean") / 1e-9
-             for k in ("historical_D_CAN", "historical_D_ADJ", "D_TRANSPORT")]
-    c.plot(range(3), means, "o-", color=ORANGE, lw=2)
-    c.set_xticks(range(3), ["D_CAN*", "D_ADJ", "D_TRANSPORT"], fontsize=8)
     primary = analysis["primary"]
-    note(c, f"Mean G={primary['mean_G']:.2e}\nFrozen one-sided p={primary['p_value']:.2e}")
-    c.set_ylim(top=35)
+    c.axvline(0, color=GRAY, ls="--", lw=1.2)
+    c.axvline(primary["mean_G"] / 1e-9, color=ORANGE, lw=2)
+    c.set_xlabel("G = D_TRANSPORT - D_ADJ (x 1e-9)")
+    note(c, f"N={primary['n']}; frozen mean G={primary['mean_G']:+.2e}\n"
+            f"Frozen one-sided p={primary['p_value']:.2e}\n"
+            f"Mean D_ADJ={analysis['descriptive_only']['historical_D_ADJ']['mean']:.2e}\n"
+            f"Mean D_TRANSPORT={analysis['descriptive_only']['D_TRANSPORT']['mean']:.2e}\n"
+            "Positive restoration not established.\nDashed: zero; orange: frozen mean")
+    c.set_ylim(0, max(counts) * 1.85)
     fig.suptitle("Figure 4 | Cross-block geometric reorientation", fontsize=16, x=0.06, ha="left")
-    fig.text(0.06, 0.07, "Transport shifts the adjacent response toward canonical, but positive restoration is not established.\n*Canonical response in C is descriptive only. A tests one fixed adjacent site; no global layer-optimum claim.", fontsize=11, linespacing=1.5)
+    fig.text(0.06, 0.07, "Transport shifts the adjacent response toward canonical, but positive restoration is not established.\nA tests one fixed adjacent site; no global layer-optimum claim. C shows the frozen paired transport endpoint.", fontsize=11, linespacing=1.5)
     fig.subplots_adjust(left=0.07, right=0.98, top=0.84, bottom=0.24, wspace=0.34)
     figs.append(fig)
 
@@ -469,21 +472,24 @@ def build_figures(plt, d):
     panel(a, "A  Three-checkpoint context", "Mean Delta_L_owned (x 1e-3)")
     summaries(a, ["130M*", "370M", "1.4B"], d["context_means"], [GRAY, BLUE, ORANGE], 1e-3)
     note(a, "*Separate frozen population; no fitted scale trend")
-    panel(b, "B  Matched readout reversal | primary", "Delta_L_owned (x 1e-3)")
-    for row in d["readout"]:
-        b.plot([0, 1], [row["Delta_L_370M"] / 1e-3, row["Delta_L_1.4B"] / 1e-3], color=GRAY, alpha=0.12, lw=0.5)
-    b.plot([0, 1], np.asarray(d["context_means"][1:]) / 1e-3, "o-", color=ORANGE, lw=2)
-    b.set_xticks([0, 1], ["370M (P3 / P5)", "1.4B (P5 / P4)"])
+    panel(b, "B  Primary matched readout endpoint R", "Count")
+    counts, _, _ = b.hist([row["R"] / 1e-3 for row in d["readout"]],
+                          bins=20, color=GRAY, edgecolor="white", linewidth=0.5)
     p = d["readout_analysis"]["primary_test"]
-    b.set_ylim(top=13)
-    note(b, f"N={p['n']}; mean R={p['mean_R']:+.2e}; SD={p['sd_R']:.2e}\nFrozen t({p['df']})={p['t_statistic']:.2f}; one-sided p={p['p_value']:.2e}")
+    b.axvline(0, color=GRAY, ls="--", lw=1.2)
+    b.axvline(p["mean_R"] / 1e-3, color=ORANGE, lw=2)
+    b.set_xlabel("R = Delta_L_370M - Delta_L_1.4B (x 1e-3)")
+    b.set_ylim(0, max(counts) * 1.45)
+    note(b, f"N={p['n']}; frozen mean R={p['mean_R']:+.2e}; SD(R)={p['sd_R']:.2e}\n"
+            f"Frozen t({p['df']})={p['t_statistic']:.2f}; one-sided p={p['p_value']:.2e}\n"
+            "Dashed: zero; orange: frozen mean")
     panel(c, "C  Direct behavioral bridge", "Frozen mean D_BEH (x 1e-3)")
     summaries(c, ["370M", "1.4B"], [number(p["mean"]) for p in d["bridge"]], [BLUE, ORANGE], 1e-3)
     note(c, f"Positive-bridge Holm p: {number(d['bridge'][0]['p_holm']):.2e}, {number(d['bridge'][1]['p_holm']):.2f}\nScale-specific behavioral bridge only")
     panel(e, "D  Stagewise localization | descriptive", "Frozen pair-average D (x 1e-3)")
     for vals, label, color in zip(d["stage_means"], ("370M", "1.4B"), (BLUE, ORANGE)):
         e.plot(range(len(vals)), np.asarray(vals) / 1e-3, "o-", ms=3, label=label, color=color)
-    e.set_xticks([0, 1, 5, 9, 13, 14], ["pre 35", "post 35", "39", "43", "47", "final\nnorm"])
+    e.set_xticks([0, 1, 5, 9, 13, 14], ["pre35", "35", "39", "43", "47", "norm"])
     e.legend(loc="lower left", frameon=False, fontsize=9)
     e.set_ylim(-2.8, 3.0)
     note(e, "Persistent C2 opposition: post_block_35\nPersistent pair opposition: post_block_47")
