@@ -1,0 +1,31 @@
+{
+  "backward_executed": false,
+  "execution_head": "7744d94bc8d13d774e58b2fc263017eafe6b512e",
+  "output_file_sha256": {
+    "geometry_summary.json": "6d60009fd3bea86442997d5c9585991b90696b9e97ccc9d4ac511d9cc4843d3c",
+    "p1_minus.f64le": "019c1bbf566079008d830454d082c614d08c0979f20f710443b0b5506789cec3",
+    "p1_plus.f64le": "a1a0de78a2f68c48bd9c6388b1654221436fa203fa096eef59f4311766222689",
+    "p2_minus.f64le": "8785d40b531fec48ae6b55d3f612b3bab3701409792321c60ece9a0c39aca68d",
+    "p2_plus.f64le": "63a06c4a6c067549092bed55a22182de03702b14d264e2c038867afbd6db3c20",
+    "p3_minus.f64le": "458ba21a2046e518a03e3e82ee91e43157ff4449a886ebda78efcde23ec75092",
+    "p3_plus.f64le": "92d232e34c56843ce9f54f66a764b2be28f424f13e91a3dd10abd230ce057239",
+    "p4_minus.f64le": "67ae3bcb89d4983b3c3456a2a8e5b7fef29fa3750e65e7cedf150445c2efbed3",
+    "p4_plus.f64le": "957269f29c61992f37708b7a92f84f62c864cb45103d684615a2e92040442e54",
+    "p5_minus.f64le": "7a6940e58bf4592f0b22832c3cddbf3d1c136376f604dc635cd81fbfbb9a34b2",
+    "p5_plus.f64le": "634d8f60b223867f291cd86f3be77a646f25488a6bff192cd77dd0a7e20fd72f",
+    "projector_contrast.f64le": "48d615b1e8fb935ce098763658e076626f8eeef54c2895e0ebb432bcaa2491d8",
+    "strong_indices.json": "cb8a2fb157ffe22b33021cb8b884665d3c7469b3dbc3e82f91ef10a856cbdbfa",
+    "xg2_alignment_delta_h.pt": "54cd6b6048ab9ea2f735720ddf10d52147f15b5ca6a8ad7d970fef3e9bd17d9c",
+    "xg2_basis.f64le": "9fbef631420de05fe54e0aa663a21d5def11b951d502a1c23537057f544dc209",
+    "xg2_geometry_items.jsonl": "6f1595154cbcafe0e8003d9bb25a22e99cc6e1d78a2f97a779b06ada4409e797",
+    "xg4_alignment_delta_h.pt": "ed7b74f64cfd3b3a1f84f579e86648a1ba708cf887edffa004226ea1b6a77092",
+    "xg4_basis.f64le": "c9ffafa4416a4ccef5f3e14652b0379e8cf7b1c4b4e16d91f72e7aba952478fe",
+    "xg4_geometry_items.jsonl": "96749bb7dab59fe3ef248c5d87ec5dc39a05df2429c8886a7103fe61df086a3f"
+  },
+  "response_observed": false,
+  "result": "PASS_MAMBA28B_GEOMETRY_PREPARATION",
+  "schema_version": "gen4-mamba28b-geometry-preparation-manifest-v1",
+  "scientific_model_forward_count": 2400,
+  "training_executed": false,
+  "xg1_accessed": false
+}
