@@ -494,3 +494,169 @@ def test_mamba28b_external_evaluation_remains_disabled():
     source = Path(launcher.__file__).read_text(encoding="utf-8")
 
     assert 'print("EXTERNAL_EVALUATION_EXECUTED=False")' in source
+
+
+def test_sharded_backbone_iterator_uses_index_and_exact_shards(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    from safetensors.torch import save_file
+
+    shard_names = (
+        "model-00001-of-00003.safetensors",
+        "model-00002-of-00003.safetensors",
+        "model-00003-of-00003.safetensors",
+    )
+
+    tensors = {
+        "backbone.layers.0.weight": torch.tensor(
+            [1.0, 2.0],
+            dtype=torch.float32,
+        ),
+        "backbone.layers.1.weight": torch.tensor(
+            [3.0],
+            dtype=torch.float32,
+        ),
+        "backbone.norm_f.weight": torch.tensor(
+            [4.0, 5.0],
+            dtype=torch.float32,
+        ),
+    }
+
+    mapping = {
+        "backbone.layers.0.weight": shard_names[0],
+        "backbone.layers.1.weight": shard_names[1],
+        "backbone.norm_f.weight": shard_names[2],
+    }
+
+    for key, shard_name in mapping.items():
+        save_file(
+            {key: tensors[key]},
+            tmp_path / shard_name,
+        )
+
+    index_path = tmp_path / "model.safetensors.index.json"
+    index_path.write_text(
+        json.dumps(
+            {
+                "metadata": {},
+                "weight_map": mapping,
+            },
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+    frozen_files = {
+        "model.safetensors.index.json": {
+            "bytes": index_path.stat().st_size,
+            "sha256": launcher.sha256_file(index_path),
+        },
+    }
+
+    for shard_name in shard_names:
+        path = tmp_path / shard_name
+        frozen_files[shard_name] = {
+            "bytes": path.stat().st_size,
+            "sha256": launcher.sha256_file(path),
+        }
+
+    monkeypatch.setattr(
+        launcher,
+        "SNAPSHOT_FILES",
+        frozen_files,
+    )
+
+    observed = list(
+        launcher.iter_pinned_backbone_tensors(tmp_path)
+    )
+
+    assert [key for key, _ in observed] == [
+        "backbone.layers.0.weight",
+        "backbone.layers.1.weight",
+        "backbone.norm_f.weight",
+    ]
+
+    for key, value in observed:
+        assert torch.equal(value, tensors[key])
+
+
+def test_sharded_backbone_iterator_rejects_index_shard_mismatch(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    from safetensors.torch import save_file
+
+    shard = tmp_path / "model-00001-of-00003.safetensors"
+
+    save_file(
+        {
+            "backbone.layers.0.weight":
+                torch.tensor([1.0], dtype=torch.float32),
+        },
+        shard,
+    )
+
+    index_path = tmp_path / "model.safetensors.index.json"
+    index_path.write_text(
+        json.dumps(
+            {
+                "weight_map": {
+                    "backbone.layers.0.weight":
+                        "model-00001-of-00003.safetensors",
+                },
+            },
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+    # Frozen contract says there should be three shards,
+    # while the synthetic index references only one.
+    monkeypatch.setattr(
+        launcher,
+        "SNAPSHOT_FILES",
+        {
+            "model.safetensors.index.json": {
+                "bytes": index_path.stat().st_size,
+                "sha256": launcher.sha256_file(index_path),
+            },
+            "model-00001-of-00003.safetensors": {
+                "bytes": shard.stat().st_size,
+                "sha256": launcher.sha256_file(shard),
+            },
+            "model-00002-of-00003.safetensors": {
+                "bytes": 1,
+                "sha256": "0" * 64,
+            },
+            "model-00003-of-00003.safetensors": {
+                "bytes": 1,
+                "sha256": "1" * 64,
+            },
+        },
+    )
+
+    with pytest.raises(
+        launcher.TrainingLauncherError,
+        match="SAFETENSORS_SHARD_SET",
+    ):
+        list(
+            launcher.iter_pinned_backbone_tensors(
+                tmp_path
+            )
+        )
+
+
+def test_mamba28b_compaction_has_no_single_file_weight_assumption():
+    source = Path(launcher.__file__).read_text(
+        encoding="utf-8"
+    )
+
+    assert 'snapshot / "model.safetensors"' not in source
+    assert 'SNAPSHOT_FILES["model.safetensors"]' not in source
+    assert "model.safetensors.index.json" in source
+    assert "SAFETENSORS_SHARD_SET" in source

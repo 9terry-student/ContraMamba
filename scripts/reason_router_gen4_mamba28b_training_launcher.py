@@ -592,31 +592,121 @@ def iter_pinned_backbone_tensors(
 ) -> Iterator[tuple[str, torch.Tensor]]:
     from safetensors import safe_open
 
-    model_path = snapshot / "model.safetensors"
+    index_name = "model.safetensors.index.json"
+    index_path = snapshot / index_name
+
     require(
-        model_path.is_file(),
-        "SAFETENSORS_MODEL_FILE_MISSING",
-    )
-    require(
-        model_path.stat().st_size
-        == int(SNAPSHOT_FILES["model.safetensors"]["bytes"]),
-        "SAFETENSORS_MODEL_BYTES",
-    )
-    require(
-        sha256_file(model_path)
-        == SNAPSHOT_FILES["model.safetensors"]["sha256"],
-        "SAFETENSORS_MODEL_SHA256",
+        index_path.is_file(),
+        "SAFETENSORS_INDEX_MISSING",
     )
 
-    with safe_open(
-        model_path,
-        framework="pt",
-        device="cpu",
-    ) as handle:
-        keys = sorted(handle.keys())
-        require(bool(keys), "SAFETENSORS_EMPTY")
-        for key in keys:
-            yield key, handle.get_tensor(key)
+    expected_index = SNAPSHOT_FILES[index_name]
+
+    require(
+        index_path.stat().st_size
+        == int(expected_index["bytes"]),
+        "SAFETENSORS_INDEX_BYTES",
+    )
+    require(
+        sha256_file(index_path)
+        == expected_index["sha256"],
+        "SAFETENSORS_INDEX_SHA256",
+    )
+
+    index_payload = json.loads(
+        index_path.read_text(encoding="utf-8")
+    )
+    require(
+        isinstance(index_payload, dict),
+        "SAFETENSORS_INDEX_PAYLOAD",
+    )
+
+    weight_map = index_payload.get("weight_map")
+    require(
+        isinstance(weight_map, dict) and bool(weight_map),
+        "SAFETENSORS_INDEX_WEIGHT_MAP",
+    )
+    require(
+        all(
+            isinstance(key, str)
+            and bool(key)
+            and isinstance(shard, str)
+            and bool(shard)
+            for key, shard in weight_map.items()
+        ),
+        "SAFETENSORS_INDEX_WEIGHT_MAP_TYPES",
+    )
+
+    shard_names = sorted(set(weight_map.values()))
+    expected_shards = sorted(
+        name
+        for name in SNAPSHOT_FILES
+        if name.startswith("model-")
+        and name.endswith(".safetensors")
+    )
+
+    require(
+        shard_names == expected_shards,
+        f"SAFETENSORS_SHARD_SET:{shard_names}",
+    )
+
+    observed_keys: set[str] = set()
+
+    # Canonical pretrained stream order is deliberately:
+    # safetensors filename, then tensor key.
+    for shard_name in shard_names:
+        shard_path = snapshot / shard_name
+        expected = SNAPSHOT_FILES[shard_name]
+
+        require(
+            shard_path.is_file(),
+            f"SAFETENSORS_SHARD_MISSING:{shard_name}",
+        )
+        require(
+            shard_path.stat().st_size
+            == int(expected["bytes"]),
+            f"SAFETENSORS_SHARD_BYTES:{shard_name}",
+        )
+        require(
+            sha256_file(shard_path)
+            == expected["sha256"],
+            f"SAFETENSORS_SHARD_SHA256:{shard_name}",
+        )
+
+        expected_keys = sorted(
+            key
+            for key, mapped_shard in weight_map.items()
+            if mapped_shard == shard_name
+        )
+        require(
+            bool(expected_keys),
+            f"SAFETENSORS_SHARD_INDEX_EMPTY:{shard_name}",
+        )
+
+        with safe_open(
+            shard_path,
+            framework="pt",
+            device="cpu",
+        ) as handle:
+            actual_keys = sorted(handle.keys())
+
+            require(
+                actual_keys == expected_keys,
+                f"SAFETENSORS_SHARD_KEY_SET:{shard_name}",
+            )
+
+            for key in actual_keys:
+                require(
+                    key not in observed_keys,
+                    f"SAFETENSORS_DUPLICATE_KEY:{key}",
+                )
+                observed_keys.add(key)
+                yield key, handle.get_tensor(key)
+
+    require(
+        observed_keys == set(weight_map),
+        "SAFETENSORS_INDEX_COVERAGE",
+    )
 
 
 def compact_selected_checkpoint(
