@@ -1,0 +1,207 @@
+{
+  "schema_version": "gen4-main-figure-plot-data-manifest-v1",
+  "status": "STATIC_MANUSCRIPT_PLOT_DATA_BINDING",
+  "evidence_head": "a7dd64b2bcf22c72bf91964038d8d01f13f58429",
+  "scientific_execution": "CLOSED",
+  "new_model_execution": false,
+  "new_statistical_tests": false,
+  "new_p_values": false,
+  "global_rules": [
+    "No response-guided reselection.",
+    "No new inferential endpoint.",
+    "No fitted model-size scaling curve.",
+    "No cross-seed generalization.",
+    "No cross-checkpoint residual significance test.",
+    "No mediated/explained percentage for cross-block transport.",
+    "Summary-only sources may not be expanded into synthetic item-level distributions.",
+    "Pair/item-level plots may use only frozen stored rows."
+  ],
+  "figures": [
+    {
+      "figure": "Figure 1",
+      "title": "Central question and causal reconstruction",
+      "statistical_role": "conceptual_schematic",
+      "panels": [
+        {
+          "panel": "A-C",
+          "data_level": "conceptual_only",
+          "sources": [
+            "reports/reason_router_gen4_introduction_central_question_freeze.md",
+            "reports/reason_router_gen4_figure_table_spine_v1.md"
+          ],
+          "allowed": [
+            "causal reconstruction schematic",
+            "checkpoint-local dominant-rank labels",
+            "implication-chain schematic"
+          ]
+        }
+      ]
+    },
+    {
+      "figure": "Figure 2",
+      "title": "Prospective validation of the 130M causal component",
+      "statistical_role": "mixed_confirmatory_and_descriptive",
+      "panels": [
+        {
+          "panel": "A",
+          "endpoint": "PP3 external-generator transport",
+          "data_level": "item_level_plus_summary",
+          "sources": [
+            "reports/reason_router_gen4_pp3_xg1_external_transport_8e33d96/pp3_xg1_external_transport_items.jsonl",
+            "reports/reason_router_gen4_pp3_xg1_external_transport_8e33d96/pp3_xg1_external_transport_summary.json"
+          ]
+        },
+        {
+          "panel": "B",
+          "endpoint": "PP3 versus response-blind max-separation PP5",
+          "data_level": "validated_summary",
+          "sources": [
+            "reports/reason_router_gen4_pp3_specificity_mechanism_synthesis.md"
+          ],
+          "restriction": "Do not relabel PP5 as a random-direction baseline."
+        },
+        {
+          "panel": "C",
+          "endpoint": "PP3 necessity",
+          "data_level": "validated_summary",
+          "sources": [
+            "reports/reason_router_gen4_pp3_necessity_validated_result_dc85079.md"
+          ]
+        },
+        {
+          "panel": "D",
+          "endpoint": "PP3 restoration sufficiency",
+          "data_level": "validated_summary",
+          "sources": [
+            "reports/reason_router_gen4_pp3_restoration_sufficiency_validated_result_53b6cce.md"
+          ],
+          "restriction": "Use restoration-sufficiency relative to matched PP5 replacement."
+        },
+        {
+          "panel": "E",
+          "endpoint": "finite-epsilon robustness",
+          "data_level": "frozen_static_analysis",
+          "sources": [
+            "reports/reason_router_gen4_small_epsilon_robustness_analysis_199fd28/small_epsilon_robustness_analysis.json"
+          ],
+          "restriction": "No epsilon-to-zero extrapolation."
+        }
+      ]
+    },
+    {
+      "figure": "Figure 3",
+      "title": "CORE-STABLE / RESIDUAL-PLASTIC",
+      "statistical_role": "confirmatory_core_plus_descriptive_residual",
+      "panels": [
+        {
+          "panel": "A-D",
+          "data_level": "frozen_cross_scale_synthesis",
+          "sources": [
+            "reports/reason_router_gen4_core_stable_residual_plastic_cross_scale_synthesis.md"
+          ],
+          "allowed": [
+            "370M and 1.4B confirmatory core summaries",
+            "checkpoint-local residual coefficient-mass profiles",
+            "checkpoint-local signed residual profiles",
+            "CORE-STABLE / RESIDUAL-PLASTIC synthesis"
+          ],
+          "restriction": "Residual cross-checkpoint comparison remains descriptive."
+        }
+      ]
+    },
+    {
+      "figure": "Figure 4",
+      "title": "Cross-block geometric reorientation",
+      "statistical_role": "prospective_specificity_plus_transport",
+      "panels": [
+        {
+          "panel": "A",
+          "endpoint": "canonical versus fixed adjacent site",
+          "data_level": "validated_summary",
+          "sources": [
+            "reports/reason_router_gen4_mamba14b_adjacent_site_specificity_analysis_runs/g4k-mamba14b-adjacent-site-specificity-analysis-xg1-5101-5400-5d651f6/adjacent_site_specificity_analysis.md"
+          ],
+          "restriction": "No global layer-optimum claim."
+        },
+        {
+          "panel": "B",
+          "endpoint": "response-free cross-block geometry transport",
+          "data_level": "row_level_summary",
+          "sources": [
+            "reports/reason_router_gen4_mamba14b_p5_cross_block_population_transport_runs/g4k-mamba14b-p5-crossblock-population-859831c-2t4/transport_summary.json"
+          ]
+        },
+        {
+          "panel": "C",
+          "endpoint": "transported functional response",
+          "data_level": "pair_level_plus_primary_analysis",
+          "sources": [
+            "reports/reason_router_gen4_mamba14b_transported_p5_adjacent_response_static_analysis_v1/pair_level_contrasts.jsonl",
+            "reports/reason_router_gen4_mamba14b_transported_p5_adjacent_response_static_analysis_v1/primary_analysis.json"
+          ],
+          "restriction": "Relative shift supported; positive restoration not established. No explained percentage."
+        }
+      ]
+    },
+    {
+      "figure": "Figure 5",
+      "title": "Downstream readout reversal despite causal-role recurrence",
+      "statistical_role": "primary_cross_checkpoint_inference",
+      "panels": [
+        {
+          "panel": "A",
+          "endpoint": "three-checkpoint contextual readout",
+          "data_level": "frozen_summary",
+          "sources": [
+            "reports/reason_router_gen4_three_scale_readout_owned_forward_correction.md"
+          ],
+          "restriction": "130M is contextual and uses a separate frozen population. No fitted scale trend."
+        },
+        {
+          "panel": "B",
+          "endpoint": "matched 370M versus 1.4B readout reversal",
+          "data_level": "pair_level_plus_primary_analysis",
+          "sources": [
+            "reports/reason_router_gen4_mamba370m14b_readout_alignment_analysis_v1/readout_alignment_pair_values.jsonl",
+            "reports/reason_router_gen4_mamba370m14b_readout_alignment_analysis_v1/readout_alignment_analysis.json"
+          ],
+          "restriction": "Inference is over 300 matched items for two fixed checkpoints, not model seeds."
+        },
+        {
+          "panel": "C",
+          "endpoint": "direct behavioral bridge",
+          "data_level": "frozen_primary_analysis",
+          "sources": [
+            "reports/reason_router_gen4_mamba370m14b_behavioral_bridge_runs/g4k-mamba370m14b-behavioral-bridge-xg1-4801-5100-2gpu-2b41f28-retry1/behavioral_bridge_analysis.json"
+          ],
+          "restriction": "Use SCALE_SPECIFIC_BEHAVIORAL_BRIDGE_ONLY."
+        },
+        {
+          "panel": "D",
+          "endpoint": "stagewise downstream localization",
+          "data_level": "item_stage_level_analysis",
+          "sources": [
+            "reports/reason_router_gen4_mamba370m14b_stagewise_coupling_localization_runs/g4k-stagewise-coupling-localization-370m14b-xg1-4801-5100-2gpu-4e88537-analysis-recovery1/stagewise_coupling_localization_analysis.json",
+            "reports/reason_router_gen4_stagewise_behavioral_coupling_localization_result.md"
+          ],
+          "restriction": "Descriptive localization only; no unique-mediator claim."
+        }
+      ]
+    }
+  ],
+  "main_table_1": {
+    "title": "External transfer and control boundary",
+    "sources": [
+      "reports/reason_router_gen4_averitec_external_transfer_runs/g4k-averitec-external-transfer-130m370m-dev462-c5b470f-postcheck-recovery2/external_transfer_analysis.json",
+      "reports/reason_router_gen4_averitec_mamba14b_negative_sign_analysis_v1/external_transfer_analysis.json",
+      "reports/reason_router_gen4_averitec_370m_fixed_mirror_steering_analysis_328ae53/steering_analysis.json"
+    ],
+    "restriction": [
+      "Gold-evidence AVeriTeC only.",
+      "No retrieval claim.",
+      "No benchmark-superiority claim.",
+      "1.4B negative external transfer not established.",
+      "Fixed-mirror steering utility not established."
+    ]
+  }
+}
