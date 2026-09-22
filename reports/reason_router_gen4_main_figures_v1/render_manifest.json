@@ -1,0 +1,287 @@
+{
+  "evidence_head": "a7dd64b2bcf22c72bf91964038d8d01f13f58429",
+  "figure_sources": [
+    {
+      "figure": "Figure 1",
+      "panels": [
+        {
+          "allowed": [
+            "causal reconstruction schematic",
+            "checkpoint-local dominant-rank labels",
+            "implication-chain schematic"
+          ],
+          "data_level": "conceptual_only",
+          "panel": "A-C",
+          "sources": [
+            "reports/reason_router_gen4_introduction_central_question_freeze.md",
+            "reports/reason_router_gen4_figure_table_spine_v1.md"
+          ]
+        }
+      ],
+      "statistical_role": "conceptual_schematic",
+      "title": "Central question and causal reconstruction"
+    },
+    {
+      "figure": "Figure 2",
+      "panels": [
+        {
+          "data_level": "item_level_plus_summary",
+          "endpoint": "PP3 external-generator transport",
+          "panel": "A",
+          "sources": [
+            "reports/reason_router_gen4_pp3_xg1_external_transport_8e33d96/pp3_xg1_external_transport_items.jsonl",
+            "reports/reason_router_gen4_pp3_xg1_external_transport_8e33d96/pp3_xg1_external_transport_summary.json"
+          ]
+        },
+        {
+          "data_level": "validated_summary",
+          "endpoint": "PP3 versus response-blind max-separation PP5",
+          "panel": "B",
+          "restriction": "Do not relabel PP5 as a random-direction baseline.",
+          "sources": [
+            "reports/reason_router_gen4_pp3_specificity_mechanism_synthesis.md"
+          ]
+        },
+        {
+          "data_level": "validated_summary",
+          "endpoint": "PP3 necessity",
+          "panel": "C",
+          "sources": [
+            "reports/reason_router_gen4_pp3_necessity_validated_result_dc85079.md"
+          ]
+        },
+        {
+          "data_level": "validated_summary",
+          "endpoint": "PP3 restoration sufficiency",
+          "panel": "D",
+          "restriction": "Use restoration-sufficiency relative to matched PP5 replacement.",
+          "sources": [
+            "reports/reason_router_gen4_pp3_restoration_sufficiency_validated_result_53b6cce.md"
+          ]
+        },
+        {
+          "data_level": "frozen_static_analysis",
+          "endpoint": "finite-epsilon robustness",
+          "panel": "E",
+          "restriction": "No epsilon-to-zero extrapolation.",
+          "sources": [
+            "reports/reason_router_gen4_small_epsilon_robustness_analysis_199fd28/small_epsilon_robustness_analysis.json"
+          ]
+        }
+      ],
+      "statistical_role": "mixed_confirmatory_and_descriptive",
+      "title": "Prospective validation of the 130M causal component"
+    },
+    {
+      "figure": "Figure 3",
+      "panels": [
+        {
+          "allowed": [
+            "370M and 1.4B confirmatory core summaries",
+            "checkpoint-local residual coefficient-mass profiles",
+            "checkpoint-local signed residual profiles",
+            "CORE-STABLE / RESIDUAL-PLASTIC synthesis"
+          ],
+          "data_level": "frozen_cross_scale_synthesis",
+          "panel": "A-D",
+          "restriction": "Residual cross-checkpoint comparison remains descriptive.",
+          "sources": [
+            "reports/reason_router_gen4_core_stable_residual_plastic_cross_scale_synthesis.md"
+          ]
+        }
+      ],
+      "statistical_role": "confirmatory_core_plus_descriptive_residual",
+      "title": "CORE-STABLE / RESIDUAL-PLASTIC"
+    },
+    {
+      "figure": "Figure 4",
+      "panels": [
+        {
+          "data_level": "validated_summary",
+          "endpoint": "canonical versus fixed adjacent site",
+          "panel": "A",
+          "restriction": "No global layer-optimum claim.",
+          "sources": [
+            "reports/reason_router_gen4_mamba14b_adjacent_site_specificity_analysis_runs/g4k-mamba14b-adjacent-site-specificity-analysis-xg1-5101-5400-5d651f6/adjacent_site_specificity_analysis.md"
+          ]
+        },
+        {
+          "data_level": "row_level_summary",
+          "endpoint": "response-free cross-block geometry transport",
+          "panel": "B",
+          "sources": [
+            "reports/reason_router_gen4_mamba14b_p5_cross_block_population_transport_runs/g4k-mamba14b-p5-crossblock-population-859831c-2t4/transport_summary.json"
+          ]
+        },
+        {
+          "data_level": "pair_level_plus_primary_analysis",
+          "endpoint": "transported functional response",
+          "panel": "C",
+          "restriction": "Relative shift supported; positive restoration not established. No explained percentage.",
+          "sources": [
+            "reports/reason_router_gen4_mamba14b_transported_p5_adjacent_response_static_analysis_v1/pair_level_contrasts.jsonl",
+            "reports/reason_router_gen4_mamba14b_transported_p5_adjacent_response_static_analysis_v1/primary_analysis.json"
+          ]
+        }
+      ],
+      "statistical_role": "prospective_specificity_plus_transport",
+      "title": "Cross-block geometric reorientation"
+    },
+    {
+      "figure": "Figure 5",
+      "panels": [
+        {
+          "data_level": "frozen_summary",
+          "endpoint": "three-checkpoint contextual readout",
+          "panel": "A",
+          "restriction": "130M is contextual and uses a separate frozen population. No fitted scale trend.",
+          "sources": [
+            "reports/reason_router_gen4_three_scale_readout_owned_forward_correction.md"
+          ]
+        },
+        {
+          "data_level": "pair_level_plus_primary_analysis",
+          "endpoint": "matched 370M versus 1.4B readout reversal",
+          "panel": "B",
+          "restriction": "Inference is over 300 matched items for two fixed checkpoints, not model seeds.",
+          "sources": [
+            "reports/reason_router_gen4_mamba370m14b_readout_alignment_analysis_v1/readout_alignment_pair_values.jsonl",
+            "reports/reason_router_gen4_mamba370m14b_readout_alignment_analysis_v1/readout_alignment_analysis.json"
+          ]
+        },
+        {
+          "data_level": "frozen_primary_analysis",
+          "endpoint": "direct behavioral bridge",
+          "panel": "C",
+          "restriction": "Use SCALE_SPECIFIC_BEHAVIORAL_BRIDGE_ONLY.",
+          "sources": [
+            "reports/reason_router_gen4_mamba370m14b_behavioral_bridge_runs/g4k-mamba370m14b-behavioral-bridge-xg1-4801-5100-2gpu-2b41f28-retry1/behavioral_bridge_analysis.json"
+          ]
+        },
+        {
+          "data_level": "item_stage_level_analysis",
+          "endpoint": "stagewise downstream localization",
+          "panel": "D",
+          "restriction": "Descriptive localization only; no unique-mediator claim.",
+          "sources": [
+            "reports/reason_router_gen4_mamba370m14b_stagewise_coupling_localization_runs/g4k-stagewise-coupling-localization-370m14b-xg1-4801-5100-2gpu-4e88537-analysis-recovery1/stagewise_coupling_localization_analysis.json",
+            "reports/reason_router_gen4_stagewise_behavioral_coupling_localization_result.md"
+          ]
+        }
+      ],
+      "statistical_role": "primary_cross_checkpoint_inference",
+      "title": "Downstream readout reversal despite causal-role recurrence"
+    }
+  ],
+  "implementation_authority_head": "4ffe98c174f9ee1b48454c9bbfaecc8449eb37f4",
+  "manifest_canonical_sha256": "11ab58bfe1ff92e606b3af1ab85a2810153e8af74980cf0ba35cbd7b90fd7c1a",
+  "manifest_sha256": "b2296b37085f964928669bc728234adaa052cf98371b6078b06e65466005a6e2",
+  "new_model_execution": false,
+  "new_p_values": false,
+  "new_statistical_tests": false,
+  "output_sha256": {
+    "figure1.pdf": "dcca74faa35d699af2d51395294d73f0b2e3beb9ec8438fde298aea05781dd03",
+    "figure1.png": "22479a90da9d4d8c4fa1ceea3e503f09f5a9b373b85e2652e8417204eaac555a",
+    "figure2.pdf": "e2839de9baa4fe75b5df3e0cb5bc19c85a65f63a50993c3991d18e0307754c4d",
+    "figure2.png": "19fa01f4e1b063336a3eb6ef5232b9b42b96ff7dae148d89d68548850b6959bf",
+    "figure3.pdf": "eb94341656ce09ce4a03ac2a9ebe79139409a44de05658700effd4f39328c387",
+    "figure3.png": "cbc8daea927aec02d80a68496aa9037ad8fb444289db9bc898751797560b9db3",
+    "figure4.pdf": "8425c21c14331072dae8e19a696cba80f41f0c7b511321e32d9bc42d29617711",
+    "figure4.png": "d2823be79c1871b010c6b8b059b2e060987a2f0db2d4c812efb0c8a6c12e9680",
+    "figure5.pdf": "b8ac672447a4a0b58e4726188789a31ea6dad8c3442e6e50aa6c477c739fe3ba",
+    "figure5.png": "79c2a8e2e54d71e3699f9a8b137edd90e0196782d925154ab9b2261a21f441f9",
+    "main_table_1.csv": "6a449e82912eae681a5364302d8d919cbe81602bc83e80a6e9cb284fcf2e8171"
+  },
+  "outputs": [
+    "figure1.pdf",
+    "figure1.png",
+    "figure2.pdf",
+    "figure2.png",
+    "figure3.pdf",
+    "figure3.png",
+    "figure4.pdf",
+    "figure4.png",
+    "figure5.pdf",
+    "figure5.png",
+    "main_table_1.csv",
+    "render_manifest.json"
+  ],
+  "presentation": "Stored rows or frozen summaries only; no synthetic samples; no new inference.",
+  "readout_frozen_primary_test": {
+    "alpha": 0.05,
+    "alternative": "greater",
+    "df": 299,
+    "mean_R": 0.001704403857771641,
+    "n": 300,
+    "p_value": 2.2238330789610916e-23,
+    "p_value_count": 1,
+    "sd_R": 0.0027407135373192773,
+    "t_statistic": 10.771333954019786,
+    "test": "paired_one_sample_student_t"
+  },
+  "renderer_sha256": "7a5460b4eda869b3a66386d68e557fbbaf58191d8f6eb1a72f490d10e310d95f",
+  "runtime": {
+    "matplotlib": "3.11.2",
+    "numpy": "2.5.3",
+    "python": "3.13.2"
+  },
+  "schema_version": "gen4-main-figure-render-manifest-v1",
+  "scientific_execution": "CLOSED",
+  "source_artifacts_byte_identical": true,
+  "source_note": "Steering uses result and observed counts, not its stale claim_boundary.positive_claim template.",
+  "source_sha256": {
+    "reports/reason_router_gen4_averitec_370m_fixed_mirror_steering_analysis_328ae53/steering_analysis.json": "5389343a3bd4c797f079075fff3c68fa132cae396f87bb257069495adefefb51",
+    "reports/reason_router_gen4_averitec_external_transfer_runs/g4k-averitec-external-transfer-130m370m-dev462-c5b470f-postcheck-recovery2/external_transfer_analysis.json": "0c8e5fff026fbc243f7344d9e2af57cd00a6597ce7c468f0fd8b604dbe7d2a7f",
+    "reports/reason_router_gen4_averitec_mamba14b_negative_sign_analysis_v1/external_transfer_analysis.json": "e9847177d78858ef400bc196f4b811e3e9ad401ae777a4315aea1bf9dd215d1e",
+    "reports/reason_router_gen4_core_stable_residual_plastic_cross_scale_synthesis.md": "979805fb799d0ea6da18280a32a4d5aeaf5b0aacba97b61e39241c76f41f7064",
+    "reports/reason_router_gen4_figure_table_spine_v1.md": "8aac190c758b2d668dcfd99d861e788d426b74d26459c72bbf6083f6ad894225",
+    "reports/reason_router_gen4_introduction_central_question_freeze.md": "939840c1f0b8693717b75d343c75d5d5c3d18ca9658b543727ef5d2780e21006",
+    "reports/reason_router_gen4_mamba14b_adjacent_site_specificity_analysis_runs/g4k-mamba14b-adjacent-site-specificity-analysis-xg1-5101-5400-5d651f6/adjacent_site_specificity_analysis.md": "57903a83e17dbb9da34d1fcc22a921d18955ab5f39ca2c06d34dce71b3499a72",
+    "reports/reason_router_gen4_mamba14b_p5_cross_block_population_transport_runs/g4k-mamba14b-p5-crossblock-population-859831c-2t4/transport_summary.json": "e41bee50c3ee2dbf8dcd369eb6ded937cf91e2411f133bee3457989ce2780633",
+    "reports/reason_router_gen4_mamba14b_transported_p5_adjacent_response_static_analysis_v1/pair_level_contrasts.jsonl": "e0e77ef6a61f2e9bda7be0c799ad870586dcaadc6421f39c9b45655b118c54e5",
+    "reports/reason_router_gen4_mamba14b_transported_p5_adjacent_response_static_analysis_v1/primary_analysis.json": "9e6f2086870b776bb663a0d1570e62e9849375d00a994a2a2ec3ef24d6bb4fef",
+    "reports/reason_router_gen4_mamba370m14b_behavioral_bridge_runs/g4k-mamba370m14b-behavioral-bridge-xg1-4801-5100-2gpu-2b41f28-retry1/behavioral_bridge_analysis.json": "17b75ec0c7d9b03be002b661145f380a2581842c015138647bd23d2e27ce3618",
+    "reports/reason_router_gen4_mamba370m14b_readout_alignment_analysis_v1/readout_alignment_analysis.json": "c5568b73e85d4e2f9b1ce52cc923533ca80435ea96d1e7484b248c907e99265b",
+    "reports/reason_router_gen4_mamba370m14b_readout_alignment_analysis_v1/readout_alignment_pair_values.jsonl": "f566f704b11d6b9574ac381f8584c44f3be191183ddb0e65eb3cb2e315f62779",
+    "reports/reason_router_gen4_mamba370m14b_stagewise_coupling_localization_runs/g4k-stagewise-coupling-localization-370m14b-xg1-4801-5100-2gpu-4e88537-analysis-recovery1/stagewise_coupling_localization_analysis.json": "6c45d230f6b55044631c87498fe6ed67b9527c7141d3f019d4a6b1bab6cc01ee",
+    "reports/reason_router_gen4_pp3_necessity_validated_result_dc85079.md": "35c47802d1d2eaf10d2a03c0a6070d445efe2d93ead4e31d87ba5b927fe47ad4",
+    "reports/reason_router_gen4_pp3_restoration_sufficiency_validated_result_53b6cce.md": "afcc1ef1b3bf711dbd57ff45659281441e721e28ea2ea887b9ff967803056ee6",
+    "reports/reason_router_gen4_pp3_specificity_mechanism_synthesis.md": "cba17fd125920411ad7134e236f1cc8779a112e02876c49e0dcf084bed7527fa",
+    "reports/reason_router_gen4_pp3_xg1_external_transport_8e33d96/pp3_xg1_external_transport_items.jsonl": "60d03dd05a38fd3f605027090445e4dd96257b6a255093d12ae06f9ec1e18475",
+    "reports/reason_router_gen4_pp3_xg1_external_transport_8e33d96/pp3_xg1_external_transport_summary.json": "027c1ca0e910cb0e679a3f6f024192df1bdf698d7fd7525b92ca43b4fe4a097c",
+    "reports/reason_router_gen4_small_epsilon_robustness_analysis_199fd28/small_epsilon_robustness_analysis.json": "2b1493c718da43c2cbd000e916f724a9dd66e6877a06c60c1e910ebee8b646e1",
+    "reports/reason_router_gen4_stagewise_behavioral_coupling_localization_result.md": "8afab803c4b01eacf08e443c8f2bb8f48297ba86f616a2c5d958fbf25e96509d",
+    "reports/reason_router_gen4_three_scale_readout_owned_forward_correction.md": "69c2ef33650b59cf9450968e3400cecd724d080f7850a3baf430cf5f1b77f7a0"
+  },
+  "table_sources": {
+    "restriction": [
+      "Gold-evidence AVeriTeC only.",
+      "No retrieval claim.",
+      "No benchmark-superiority claim.",
+      "1.4B negative external transfer not established.",
+      "Fixed-mirror steering utility not established."
+    ],
+    "sources": [
+      "reports/reason_router_gen4_averitec_external_transfer_runs/g4k-averitec-external-transfer-130m370m-dev462-c5b470f-postcheck-recovery2/external_transfer_analysis.json",
+      "reports/reason_router_gen4_averitec_mamba14b_negative_sign_analysis_v1/external_transfer_analysis.json",
+      "reports/reason_router_gen4_averitec_370m_fixed_mirror_steering_analysis_328ae53/steering_analysis.json"
+    ],
+    "title": "External transfer and control boundary"
+  },
+  "transport_frozen_primary": {
+    "alpha": 0.05,
+    "alternative": "greater",
+    "contrast_gate_mean_G_positive": true,
+    "df": 299,
+    "endpoint": "G=D_TRANSPORT-D_ADJ",
+    "fraction_G_positive": 0.8666666666666667,
+    "mean_G": 1.0003874928314124e-09,
+    "n": 300,
+    "p_value": 4.383428886482017e-52,
+    "p_value_count": 1,
+    "primary_contrast_pass": true,
+    "sd_G_sample": 9.323369859142195e-10,
+    "t_statistic": 18.58471766130142,
+    "test": "one_sample_student_t_on_paired_difference_G"
+  }
+}
