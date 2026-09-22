@@ -1,0 +1,17 @@
+{
+  "cross_gpu_equivalence_checked": true,
+  "cross_gpu_equivalence_exact": true,
+  "datasets_cached": 2,
+  "device_ids": [
+    0,
+    1
+  ],
+  "enabled": true,
+  "global_cache_batch_size": 64,
+  "gpu0_forward_calls": 57,
+  "gpu0_rows": 1800,
+  "gpu1_forward_calls": 57,
+  "gpu1_rows": 1800,
+  "secondary_model_loaded_from_exact_snapshot": true,
+  "secondary_model_released_after_cache": true
+}
