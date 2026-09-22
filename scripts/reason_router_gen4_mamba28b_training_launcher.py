@@ -295,6 +295,10 @@ def install_dual_gpu_frozen_encoder_cache(
         "host_cache_to_gpu_forward_transfers": 0,
         "host_cache_to_gpu_forward_rows": 0,
         "primary_model_retained_on_cuda0": True,
+        "primary_model_offloaded_after_cache": False,
+        "primary_model_device_after_cache": "cuda:0",
+        "gpu0_allocated_bytes_after_primary_offload": None,
+        "gpu0_reserved_bytes_after_primary_offload": None,
         "downstream_only_state_dict_view_installed": False,
         "downstream_state_key_count": 0,
         "frozen_backbone_state_key_count": 0,
@@ -572,6 +576,38 @@ def install_dual_gpu_frozen_encoder_cache(
             torch.cuda.empty_cache()
 
             stats["secondary_model_released_after_cache"] = True
+
+            # The full frozen primary Mamba backbone is no longer used after
+            # train/dev encoder_hidden_states have been cached.  Keeping the
+            # 2.8B backbone on cuda:0 would consume ~10.3 GiB while the
+            # downstream trainer accumulates microbatch autograd graphs.
+            #
+            # Moving it to CPU preserves the exact module/state identity for
+            # provenance while freeing cuda:0 for the scientific downstream
+            # path. ContraMambaV6BMinimal.forward bypasses self.mamba whenever
+            # encoder_hidden_states is supplied.
+            primary.to(torch.device("cpu"))
+
+            require(
+                not any(
+                    parameter.device.type == "cuda"
+                    for parameter in primary.parameters()
+                ),
+                "PRIMARY_ENCODER_CUDA_PARAMETER_AFTER_OFFLOAD",
+            )
+
+            torch.cuda.synchronize(0)
+            torch.cuda.empty_cache()
+
+            stats["primary_model_retained_on_cuda0"] = False
+            stats["primary_model_offloaded_after_cache"] = True
+            stats["primary_model_device_after_cache"] = "cpu"
+            stats["gpu0_allocated_bytes_after_primary_offload"] = int(
+                torch.cuda.memory_allocated(0)
+            )
+            stats["gpu0_reserved_bytes_after_primary_offload"] = int(
+                torch.cuda.memory_reserved(0)
+            )
 
             (
                 original_state_dict,
@@ -1396,6 +1432,7 @@ def main() -> None:
             "dual_gpu_cache_device_ids": list(DUAL_GPU_CACHE_DEVICE_IDS),
             "encoder_cache_storage": "cpu_host_staged",
             "encoder_cache_forward_transfer": "per_forward_microbatch_to_cuda0",
+            "primary_frozen_encoder_after_cache": "cpu_offloaded",
             "selected_checkpoint_state_representation": (
                 "downstream_only_frozen_backbone_omitted"
             ),
@@ -1444,6 +1481,18 @@ def main() -> None:
     require(
         cache_stats["secondary_model_released_after_cache"] is True,
         f"CACHE_SECONDARY_NOT_RELEASED:{cache_stats}",
+    )
+    require(
+        cache_stats["primary_model_offloaded_after_cache"] is True,
+        f"PRIMARY_ENCODER_NOT_OFFLOADED:{cache_stats}",
+    )
+    require(
+        cache_stats["primary_model_retained_on_cuda0"] is False,
+        f"PRIMARY_ENCODER_STILL_ON_CUDA0:{cache_stats}",
+    )
+    require(
+        cache_stats["primary_model_device_after_cache"] == "cpu",
+        f"PRIMARY_ENCODER_DEVICE:{cache_stats}",
     )
     require(
         cache_stats["host_staged_cache"] is True,
@@ -1495,6 +1544,15 @@ def main() -> None:
     print("BEST_EPOCH=" + str(training_summary["best_epoch"]))
     print("DUAL_GPU_ENCODER_CACHE=PASS")
     print("ENCODER_CACHE_STORAGE=CPU_HOST_STAGED")
+    print("PRIMARY_FROZEN_ENCODER_AFTER_CACHE=CPU_OFFLOADED")
+    print(
+        "GPU0_ALLOCATED_AFTER_PRIMARY_OFFLOAD_BYTES="
+        + str(cache_stats["gpu0_allocated_bytes_after_primary_offload"])
+    )
+    print(
+        "GPU0_RESERVED_AFTER_PRIMARY_OFFLOAD_BYTES="
+        + str(cache_stats["gpu0_reserved_bytes_after_primary_offload"])
+    )
     print("SELECTED_CHECKPOINT_STATE=DOWNSTREAM_ONLY")
     print("GPU0_CACHE_ROWS=" + str(cache_stats["gpu0_rows"]))
     print("GPU1_CACHE_ROWS=" + str(cache_stats["gpu1_rows"]))

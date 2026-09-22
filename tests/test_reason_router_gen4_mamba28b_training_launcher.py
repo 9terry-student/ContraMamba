@@ -830,3 +830,37 @@ def test_mamba28b_runtime_memory_correction_keeps_scientific_batches() -> None:
         'result0 = result.to(torch.device("cuda:0")'
         not in source
     )
+
+
+
+def test_mamba28b_primary_frozen_encoder_is_offloaded_after_cache() -> None:
+    source = Path(launcher.__file__).read_text(
+        encoding="utf-8"
+    )
+
+    assert 'primary.to(torch.device("cpu"))' in source
+    assert (
+        '"primary_model_offloaded_after_cache": False'
+        in source
+    )
+    assert (
+        'stats["primary_model_offloaded_after_cache"] = True'
+        in source
+    )
+    assert (
+        'stats["primary_model_device_after_cache"] = "cpu"'
+        in source
+    )
+    assert (
+        '"primary_frozen_encoder_after_cache": "cpu_offloaded"'
+        in source
+    )
+
+    # Scientific execution contract remains frozen.
+    assert launcher.DUAL_GPU_CACHE_BATCH_SIZE == 64
+    assert launcher.FORWARD_MICROBATCH_SIZE == 32
+    assert launcher.EVAL_MICROBATCH_SIZE == 32
+    assert launcher.TRAINING_SEED == 181
+    assert launcher.SPLIT_SEED == 8192
+    assert launcher.EPOCHS == 20
+    assert launcher.LEARNING_RATE == 0.001
