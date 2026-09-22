@@ -1,0 +1,96 @@
+{
+  "confirmation_accessed": false,
+  "confirmation_response_accessed": false,
+  "control_definition": "c*=argmax_{k!=k*} lambda_plus_k from frozen geometry only",
+  "control_selection_uses_response": false,
+  "discovery_holdout_freeze_commit": "6c0989a45382db31c9052b89b088e999b3e7cf59",
+  "discovery_population": {
+    "pair_first": "xg1_fact_6001",
+    "pair_last": "xg1_fact_6300",
+    "rows_sha256": "b6a07a6877f5e179baca44964ae7d27ea6f4a0836999c1cf72af3c66de612e3e",
+    "source_pair_count": 300,
+    "source_sha256": "c4a22871c79b158bffc69629307defa56d61cf2851ad3e7bdb7c260a0584a754",
+    "structural_manifest_sha256": "f91c1a47bfedc06de9037e60b9e4caf77b5ab9f6a4ba0b3db470cf925671e61d"
+  },
+  "epsilon": 0.025,
+  "execution_head": "ceb43c7cb247bc77b9993411813e2882ab31fbac",
+  "geometry_freeze_commit": "06082ee152866ba77ebb1d6a342a4387ded140e3",
+  "geometry_summary_sha256": "6d60009fd3bea86442997d5c9585991b90696b9e97ccc9d4ac511d9cc4843d3c",
+  "inferential_test_performed": false,
+  "lambda_plus_by_plane": {
+    "P1": 0.8932258269422545,
+    "P2": 0.9356179770934073,
+    "P3": 0.9758525363591493,
+    "P4": 0.9809917047197855,
+    "P5": 0.9867662566527958
+  },
+  "per_plane_descriptive_effects": {
+    "P1": {
+      "ci95_normal_high": 4.948221449090458e-09,
+      "ci95_normal_low": 3.7148105692968338e-09,
+      "fraction_positive": 0.7133333333333334,
+      "max": 1.547868064732834e-08,
+      "mean": 4.331516009193646e-09,
+      "min": -4.850844770496524e-09,
+      "n": 300,
+      "sd": 5.449822220435678e-09
+    },
+    "P2": {
+      "ci95_normal_high": 6.065122242863046e-09,
+      "ci95_normal_low": 3.660711946583529e-09,
+      "fraction_positive": 0.6133333333333333,
+      "max": 3.445748485765597e-08,
+      "mean": 4.862917094723288e-09,
+      "min": -8.20487512470875e-09,
+      "n": 300,
+      "sd": 1.0623879580096588e-08
+    },
+    "P3": {
+      "ci95_normal_high": 4.340233771931473e-08,
+      "ci95_normal_low": 3.735448610227313e-08,
+      "fraction_positive": 1.0,
+      "max": 1.22561915242802e-07,
+      "mean": 4.037841191079393e-08,
+      "min": 4.4558519588250695e-09,
+      "n": 300,
+      "sd": 2.672241397284097e-08
+    },
+    "P4": {
+      "ci95_normal_high": -3.3934510222106974e-09,
+      "ci95_normal_low": -5.800795092251825e-09,
+      "fraction_positive": 0.26,
+      "max": 2.819729236289517e-08,
+      "mean": -4.597123057231261e-09,
+      "min": -2.0569161605378926e-08,
+      "n": 300,
+      "sd": 1.0636842450537967e-08
+    },
+    "P5": {
+      "ci95_normal_high": 2.840677841619388e-09,
+      "ci95_normal_low": -4.7914607819361995e-09,
+      "fraction_positive": 0.4533333333333333,
+      "max": 1.0158994670050152e-07,
+      "mean": -9.753914701584055e-10,
+      "min": -6.898047284998609e-08,
+      "n": 300,
+      "sd": 3.372258129185479e-08
+    }
+  },
+  "plane_order": [
+    "P1",
+    "P2",
+    "P3",
+    "P4",
+    "P5"
+  ],
+  "positivity_gate_applied": false,
+  "rescue_performed": false,
+  "response_blind_control_plane": "P5",
+  "restored_semantics": "branch-local plane neutralize-plus-exact-restore round trip; net native state",
+  "result": "PASS_MAMBA28B_DISCOVERY_SELECTION_FREEZE",
+  "schema_version": "gen4-mamba28b-discovery-selection-v1",
+  "scientific_conclusion_established": false,
+  "selected_dominant_candidate": "P3",
+  "selection_definition": "k*=argmax_k mean_i(Q_restored,k,i-Q_neutralized,k,i)",
+  "selection_unique": true
+}

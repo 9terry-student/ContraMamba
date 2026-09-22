@@ -1,0 +1,154 @@
+{
+  "backward_executed": false,
+  "confirmation_accessed": false,
+  "discovery_holdout_freeze_commit": "6c0989a45382db31c9052b89b088e999b3e7cf59",
+  "execution_head": "ceb43c7cb247bc77b9993411813e2882ab31fbac",
+  "geometry_freeze_commit": "06082ee152866ba77ebb1d6a342a4387ded140e3",
+  "inferential_test_performed": false,
+  "output_file_sha256": {
+    "discovery_items.jsonl": "6a4837ef99a4d6f103ce52078b453121a6f476c74a405c8cee0db6efb61d4c10",
+    "discovery_selection.json": "a07709ce72bb13f56dda4aeed05ecf7601e4849a788cfad3e7d5c60335e3049e"
+  },
+  "positive_gate_applied": false,
+  "rescue_performed": false,
+  "response_blind_control_plane": "P5",
+  "result": "PASS_MAMBA28B_DISCOVERY_SELECTION_FREEZE",
+  "schema_version": "gen4-mamba28b-discovery-manifest-v1",
+  "scientific_model_forward_count": 72000,
+  "selected_dominant_candidate": "P3",
+  "selection_unique": true,
+  "training_executed": false,
+  "worker_count": 2,
+  "workers": [
+    {
+      "confirmation_accessed": false,
+      "cuda_visible_devices": "0",
+      "device_name": "Tesla T4",
+      "geometry_summary_sha256": "6d60009fd3bea86442997d5c9585991b90696b9e97ccc9d4ac511d9cc4843d3c",
+      "items_sha256": "24ca7aaa71aedbf2ed13ce4b7601a1b0b3dd0191729c4127cd19c26bf994e315",
+      "logical_device": 0,
+      "model_provenance": {
+        "backbone_loaded_from_exact_pinned_snapshot": true,
+        "backbone_state_key_count": 642,
+        "compact_checkpoint_sha256": "c253235b8555f9d259a33061a1055e6f5da60d5616e24c1760f2487c386cce33",
+        "downstream_loaded_exactly": true,
+        "downstream_state_canonical_sha256": "d4fa0cb88af9a01fe13ca05829b5b87e73ac52b7bf761dc3971f813d98650782",
+        "downstream_state_key_count": 36,
+        "full_state_key_count": 678,
+        "kernel_constructor_calls": {
+          "causal-conv1d": 64,
+          "mamba-ssm": 64
+        },
+        "pretrained_backbone_state_stream_sha256": "d79e785f2c03bcf3a3bd94d3947156519926687f4bb431b996af7d0083c1204f",
+        "snapshot": {
+          "config.json": {
+            "bytes": 843,
+            "sha256": "ec7f74c5f322716a5a3470632ff03572182e7a5027cdcb452520818c5276c356"
+          },
+          "generation_config.json": {
+            "bytes": 137,
+            "sha256": "248fa733db101c19a8e3c2f311a180fdd7c769323ec2873edf7060cec9f5ee32"
+          },
+          "model-00001-of-00003.safetensors": {
+            "bytes": 4969727736,
+            "sha256": "8d0022682157b0684b40659c4cba75394c59494cdb4cb79b4890070e81dd7756"
+          },
+          "model-00002-of-00003.safetensors": {
+            "bytes": 4949332368,
+            "sha256": "c51a5400ee9560f5611b5c64011b554f5b37c3437061cd0fa20d387ff1ae9986"
+          },
+          "model-00003-of-00003.safetensors": {
+            "bytes": 1154393144,
+            "sha256": "2691db90d7e98237e1e834a30d6630e89150576f50514c6e929b8d1db4cc1a43"
+          },
+          "model.safetensors.index.json": {
+            "bytes": 50864,
+            "sha256": "95f3794b7eece8798b37eba26ea7d7105f034b062ff2ebd545a3e91a9314deed"
+          },
+          "tokenizer.json": {
+            "bytes": 2113738,
+            "sha256": "3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8"
+          },
+          "tokenizer_config.json": {
+            "bytes": 4793,
+            "sha256": "027cbbe0813aefd46e0037bf828acf22b9b591ce845153ddbf409e99770a3a79"
+          }
+        },
+        "source_selected_checkpoint_sha256": "5f470a799522f2bc17a3f52293028f20688f8ee56d90943b9c7d20a76f4faf52"
+      },
+      "pair_count": 150,
+      "pair_first": "xg1_fact_6001",
+      "pair_last": "xg1_fact_6150",
+      "physical_device": 0,
+      "schema_version": "gen4-mamba28b-discovery-worker-v1",
+      "scientific_model_forward_count": 36000,
+      "shard_id": 0,
+      "strong_index_sha256": "ea1b35e632f9b4bf3a16f781a86278d250c0ce2e734b2996ef8dc75233a26f50"
+    },
+    {
+      "confirmation_accessed": false,
+      "cuda_visible_devices": "1",
+      "device_name": "Tesla T4",
+      "geometry_summary_sha256": "6d60009fd3bea86442997d5c9585991b90696b9e97ccc9d4ac511d9cc4843d3c",
+      "items_sha256": "d9efdd7af9d9c96c198622999a33764d5c21a2bd5746b4d8b1e3861c59d789d5",
+      "logical_device": 0,
+      "model_provenance": {
+        "backbone_loaded_from_exact_pinned_snapshot": true,
+        "backbone_state_key_count": 642,
+        "compact_checkpoint_sha256": "c253235b8555f9d259a33061a1055e6f5da60d5616e24c1760f2487c386cce33",
+        "downstream_loaded_exactly": true,
+        "downstream_state_canonical_sha256": "d4fa0cb88af9a01fe13ca05829b5b87e73ac52b7bf761dc3971f813d98650782",
+        "downstream_state_key_count": 36,
+        "full_state_key_count": 678,
+        "kernel_constructor_calls": {
+          "causal-conv1d": 64,
+          "mamba-ssm": 64
+        },
+        "pretrained_backbone_state_stream_sha256": "d79e785f2c03bcf3a3bd94d3947156519926687f4bb431b996af7d0083c1204f",
+        "snapshot": {
+          "config.json": {
+            "bytes": 843,
+            "sha256": "ec7f74c5f322716a5a3470632ff03572182e7a5027cdcb452520818c5276c356"
+          },
+          "generation_config.json": {
+            "bytes": 137,
+            "sha256": "248fa733db101c19a8e3c2f311a180fdd7c769323ec2873edf7060cec9f5ee32"
+          },
+          "model-00001-of-00003.safetensors": {
+            "bytes": 4969727736,
+            "sha256": "8d0022682157b0684b40659c4cba75394c59494cdb4cb79b4890070e81dd7756"
+          },
+          "model-00002-of-00003.safetensors": {
+            "bytes": 4949332368,
+            "sha256": "c51a5400ee9560f5611b5c64011b554f5b37c3437061cd0fa20d387ff1ae9986"
+          },
+          "model-00003-of-00003.safetensors": {
+            "bytes": 1154393144,
+            "sha256": "2691db90d7e98237e1e834a30d6630e89150576f50514c6e929b8d1db4cc1a43"
+          },
+          "model.safetensors.index.json": {
+            "bytes": 50864,
+            "sha256": "95f3794b7eece8798b37eba26ea7d7105f034b062ff2ebd545a3e91a9314deed"
+          },
+          "tokenizer.json": {
+            "bytes": 2113738,
+            "sha256": "3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8"
+          },
+          "tokenizer_config.json": {
+            "bytes": 4793,
+            "sha256": "027cbbe0813aefd46e0037bf828acf22b9b591ce845153ddbf409e99770a3a79"
+          }
+        },
+        "source_selected_checkpoint_sha256": "5f470a799522f2bc17a3f52293028f20688f8ee56d90943b9c7d20a76f4faf52"
+      },
+      "pair_count": 150,
+      "pair_first": "xg1_fact_6151",
+      "pair_last": "xg1_fact_6300",
+      "physical_device": 1,
+      "schema_version": "gen4-mamba28b-discovery-worker-v1",
+      "scientific_model_forward_count": 36000,
+      "shard_id": 1,
+      "strong_index_sha256": "ea1b35e632f9b4bf3a16f781a86278d250c0ce2e734b2996ef8dc75233a26f50"
+    }
+  ]
+}
