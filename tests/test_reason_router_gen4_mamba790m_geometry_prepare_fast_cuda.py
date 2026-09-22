@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import math
 
 import pytest
@@ -310,3 +311,15 @@ def test_geometry_stage_has_no_xg1_response_gate():
     assert subject.TARGET_MINUS_CELL == "C0_SHAM"
     assert subject.REFERENCE_PLUS_CELL == "C5_TITLE_NAME"
     assert subject.REFERENCE_MINUS_CELL == "C1_TITLE"
+
+
+def test_no_stale_14b_identity_in_790m_geometry_source():
+    source = inspect.getsource(subject)
+
+    assert "1.4B" not in source
+    assert "1.4b" not in source
+    assert "mamba14b" not in source.lower()
+    assert (
+        "Independent Mamba-790M geometry reconstruction only; "
+        in source
+    )

@@ -1782,7 +1782,7 @@ def write_output_bundle(
         "execution_head": expected_head,
         "phase": "cross_backbone_geometry_preparation",
         "claim_boundary": (
-            "Independent 1.4B geometry reconstruction only; "
+            "Independent Mamba-790M geometry reconstruction only; "
             "no XG1 discovery/confirmation response observed."
         ),
         "layer_mapping": {
