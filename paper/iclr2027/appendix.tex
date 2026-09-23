@@ -1,9 +1,8 @@
 \section{Reproducibility details}
 \label{app:repro}
 
-This appendix transcribes the frozen experimental records. Figure source
-classes are mapped in Appendix~\ref{app:provenance}. No new model execution
-or statistical tests are involved.
+This appendix records the frozen experimental results and static robustness analyses. Figure source
+classes are mapped in Appendix~\ref{app:provenance}. No additional model execution is involved; Appendix A.7 reports CPU-only resampling analyses of already frozen artifacts.
 
 \subsection{Model identities, sites, and populations}
 \label{app:identity}
@@ -337,6 +336,44 @@ The 1.4B sign differs from its primary task-matched P5/P4 result.
 This contrast sensitivity does not reselect the primary comparison.
 Opposed aggregate signs are not a rowwise inversion.
 
+\subsection{Pair-resampling robustness of objectives and geometry}
+\label{app:robustness}
+
+The frozen CPU-only \texttt{source\_pair\_id} bootstrap uses $B=10{,}000$
+replicates and percentile 95\% intervals. Zero lies within the intervals
+for 370M pretrained LM ($-0.00197532$; $[-0.00655147,0.00253593]$)
+and 2.8B task ($-0.00014835$; $[-0.00048602,0.00018915]$). These point
+signs lack individual pair-resampling stability; the five-scale vectors
+remain descriptive, without a new prospective inferential family.
+
+Geometry shares bootstrap multiplicities across five scales within each
+family; XG2 and XG4 are separate. All 20 off-diagonal CKA entries retain
+their qualitative intermediate range. In $1{,}000$ balanced 150/150
+split halves, Pearson, Spearman, mean absolute difference (MAD), and root
+mean square error (RMSE) compare ten off-diagonal CKA values. Frozen
+medians in Table~\ref{tab:robustness} show stable overall structure on
+the controlled pairs, with weaker fine-grained ordering for XG4.
+
+\begin{table}[h]
+\centering\small
+\caption{Frozen median correlations and differences between the ten
+off-diagonal CKA values across 1,000 balanced split halves.}
+\label{tab:robustness}
+\begin{tabular}{lrrrr}
+\toprule
+Family & Pearson & Spearman & MAD & RMSE \\
+\midrule
+XG2 & .875577 & .878788 & .057331 & .068640 \\
+XG4 & .652928 & .672727 & .056955 & .068166 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+These summaries describe sampling robustness on frozen cohorts, not a
+noise ceiling, model uncertainty, or independent replication. Analysis,
+CSVs, and protocol are pinned to
+\nolinkurl{8423ef9d1325c007ecd31849a668131197e2214d}.
+
 \subsection{AVeriTeC external-transfer inference}
 \label{app:external}
 
@@ -386,17 +423,14 @@ flips. The three scales are not pooled into a new inferential family.
 \subsection{Figure provenance and source mapping}
 \label{app:provenance}
 
-Figure~\ref{fig:deep} draws the historical 130M causal synthesis,
-specificity inference, seed-181 behavioral bridge, and frozen pair-level
-readout--behavior merge, while presenting the four causal stages without
-requiring their endpoint notation in the figure itself.
-Figure~\ref{fig:scale} combines the frozen five-scale causal support
-identities with the separately frozen coordinate-free XG2/XG4 geometry
-snapshot imported from scientific result commit
-\texttt{593199d8e849572fc77b1b0bc7475d3d19468d12}.
-The historical kernel mean-square and leading-plane measurements remain
-supporting appendix evidence rather than Figure~\ref{fig:scale} panels.
-Figure~\ref{fig:objective} draws the five-scale task-objective readout
-synthesis, original four-scale vanilla-LM analysis, and later 130M
-completeness analysis. Figure~\ref{fig:overview} summarizes these same
-frozen evidence classes.
+Figure~\ref{fig:deep} uses frozen 130M causal, specificity, seed-181
+behavioral, and pair-merge records. Figure~\ref{fig:scale} combines
+five-scale causal support and the coordinate-free XG2/XG4 snapshot
+(scientific result commit
+\nolinkurl{593199d8e849572fc77b1b0bc7475d3d19468d12}); historical
+scalar geometry stays in Appendix~\ref{app:geometry}.
+Figure~\ref{fig:objective} combines task readouts, four-scale LM control,
+later 130M completeness, and percentile 95\% pair intervals from
+\texttt{objective\_bootstrap.csv} (commit
+\nolinkurl{8423ef9d1325c007ecd31849a668131197e2214d}).
+Figure~\ref{fig:overview} summarizes the design.

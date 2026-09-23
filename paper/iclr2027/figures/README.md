@@ -2,6 +2,7 @@
 
 Base scientific authority: `3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69`.
 Coordinate-free geometry paper snapshot: `2e65dd887ba4159d4024d85b8996306cfadec023`.
+Objective pair-resampling source: `reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv` @ `8423ef9d1325c007ecd31849a668131197e2214d`.
 
 Run from repository root:
 
@@ -19,7 +20,7 @@ The builder reads only pinned Git blobs. No model, tokenizer, training, evaluati
 - Fig. 3: scale-local causal recurrence plus frozen coordinate-insensitive XG2/XG4 centered-linear CKA matrices.
 - Fig. 3 no longer uses kernel mean-square or leading-plane eigenvalue as the main evidence for non-invariance; those scalar native-geometry measurements remain supporting evidence in the appendix.
 - Cosine-RSM Pearson matrices are a frozen secondary coordinate-insensitive check and are reported in Appendix A.2.
-- Fig. 4: objective-conditioned readouts; prospective chronology is kept in the appendix rather than repeated in the visual narrative.
+- Fig. 4: objective-conditioned point means and frozen percentile 95% pair-resampling intervals; prospective chronology is kept in the appendix.
 
 ## Frozen coordinate-free geometry
 
@@ -125,3 +126,4 @@ The builder reads only pinned Git blobs. No model, tokenizer, training, evaluati
 - `reports/reason_router_gen4_mamba1_vanilla_lm_functional_control_analysis_v1/functional_control_analysis.md` @ `3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69`
 - `reports/reason_router_gen4_mamba130m_vanilla_lm_completeness_analysis_v1/mamba130m_completeness_analysis.json` @ `3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69`
 - `reports/reason_router_gen4_mamba1_vanilla_lm_functional_control_analysis_v1/functional_control_analysis.json` @ `3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69`
+- `reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv` @ `8423ef9d1325c007ecd31849a668131197e2214d`

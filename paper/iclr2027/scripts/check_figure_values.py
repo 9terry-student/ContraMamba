@@ -22,6 +22,7 @@ def main():
     assert manifest["scientific_authorities"] == {
         "base_evidence": b.BASE_SCIENCE_HEAD,
         "coordinate_free_geometry_snapshot": b.PAPER_EVIDENCE_HEAD,
+        "pair_resampling_robustness": b.ROBUSTNESS_HEAD,
     }
     assert manifest["sources"] == sources.sources
     assert manifest["extracted_values"] == sources.values
@@ -55,6 +56,9 @@ def main():
 
     cf_meta = manifest["sources"][b.CF_RESULT]
     assert cf_meta["authority_commit"] == b.PAPER_EVIDENCE_HEAD
+    objective_meta = manifest["sources"][b.OBJECTIVE_BOOTSTRAP]
+    assert objective_meta["authority_commit"] == b.ROBUSTNESS_HEAD
+    assert "fig4" in objective_meta["figures"]
 
     # Fail-closed negative controls.
     mutations = [

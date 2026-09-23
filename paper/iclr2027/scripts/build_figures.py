@@ -5,7 +5,9 @@ All source bytes are read from pinned Git commits, never an untracked run.
 """
 from __future__ import annotations
 
+import csv
 import hashlib
+import io
 import json
 import math
 import re
@@ -17,6 +19,8 @@ ROOT = Path(__file__).resolve().parents[3]
 OUT = ROOT / "paper/iclr2027/figures"
 BASE_SCIENCE_HEAD = "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
 PAPER_EVIDENCE_HEAD = "2e65dd887ba4159d4024d85b8996306cfadec023"
+ROBUSTNESS_HEAD = "8423ef9d1325c007ecd31849a668131197e2214d"
+OBJECTIVE_BOOTSTRAP = "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv"
 CF_ROOT = "paper/iclr2027/frozen_sources/coordinate_free_geometry_v1"
 CF_RESULT = CF_ROOT + "/coordinate_free_geometry_result.json"
 CF_PROVENANCE = CF_ROOT + "/provenance_manifest.json"
@@ -122,7 +126,7 @@ def load_data():
                        "fig4": [DELTA_SYNTH, LM_MD]}.items():
         for path in paths:
             s.read(path, fig)
-    d = {"scale_order": SCALES, "planes": {}, "core": {}, "geometry": {}, "objectives": {}, "coordinate_free_geometry": {}}
+    d = {"scale_order": SCALES, "planes": {}, "core": {}, "geometry": {}, "objectives": {}, "objective_intervals": {}, "coordinate_free_geometry": {}}
     d["chain"] = [
         s.mean_md("transport.mean", 3, "C_PP3", "fig2"),
         s.field("specificity.mean", SPEC, "descriptive/D_SPEC/mean", "fig2"),
@@ -253,6 +257,33 @@ def load_data():
             for column, key in [(2, "mu_k2"), (4, "lambda1")]:
                 if not math.isclose(float(rows_md[0][column]), d["geometry"][scale][key], rel_tol=1e-12):
                     raise ValueError("Native geometry artifact does not match synthesis")
+    bootstrap_rows = list(csv.DictReader(io.StringIO(
+        s.read_at(ROBUSTNESS_HEAD, OBJECTIVE_BOOTSTRAP, "fig4")
+    )))
+    if [(row["scale"], row["objective"]) for row in bootstrap_rows] != [
+        (scale, objective) for scale in SCALES for objective in ("task", "lm")
+    ]:
+        raise ValueError("Frozen objective-bootstrap row order mismatch")
+    for row_number, row in enumerate(bootstrap_rows, start=2):
+        scale, key = row["scale"], "contra" if row["objective"] == "task" else "vanilla"
+        if int(row["N_pairs"]) != 300:
+            raise ValueError(f"Frozen objective-bootstrap pair count mismatch: {scale} {key}")
+        fields = {
+            field: s.record(
+                f"{scale}.{key}.bootstrap.{field}", float(row[field]),
+                OBJECTIVE_BOOTSTRAP, f"CSV row {row_number}; {field}", "fig4",
+            )
+            for field in ("point_mean", "ci_low", "ci_high")
+        }
+        if fields["point_mean"] != d["objectives"][scale][key]:
+            raise ValueError(f"Frozen objective mean mismatch: {scale} {key}")
+        if not fields["ci_low"] <= fields["point_mean"] <= fields["ci_high"]:
+            raise ValueError(f"Frozen objective interval misses point mean: {scale} {key}")
+        contains_zero = fields["ci_low"] <= 0 <= fields["ci_high"]
+        if row["ci_contains_zero"] != str(contains_zero):
+            raise ValueError(f"Frozen objective zero-crossing mismatch: {scale} {key}")
+        d["objective_intervals"].setdefault(scale, {})[key] = fields
+
     # Frozen coordinate-free geometry is imported into the paper tree as
     # exact committed Git blobs from the separately frozen science result.
     cf_snapshot = json.loads(
@@ -453,7 +484,7 @@ class Figure:
         self.c.showPage(); self.c.save()
 
 
-def chart(f, x, y, w, h, values, labels, low, high, ticks, fmt, color=BLUE, bars=False, historical_index=None):
+def chart(f, x, y, w, h, values, labels, low, high, ticks, fmt, color=BLUE, bars=False, historical_index=None, intervals=None):
     """Categorical raw-value chart, no fitted/connecting lines or normalization."""
     def yp(v): return y+h-(v-low)/(high-low)*h
     for tick in ticks:
@@ -473,6 +504,18 @@ def chart(f, x, y, w, h, values, labels, low, high, ticks, fmt, color=BLUE, bars
             f.open_dot(xx, yy, color)
         else:
             f.dot(xx,yy,color,square=color==ORANGE)
+    # Draw the zero reference and frozen percentile intervals above the bars.
+    f.line(x,yp(0),x+w,yp(0),INK,.9)
+    if intervals is not None:
+        if len(intervals) != len(values):
+            raise ValueError("Interval count does not match plotted means")
+        for i,(ci_low,ci_high) in enumerate(intervals):
+            if ci_low < low or ci_high > high:
+                raise ValueError("Frozen interval exceeds chart range")
+            xx = x+w*(i+.5)/len(values)
+            f.line(xx,yp(ci_low),xx,yp(ci_high),INK,1.15)
+            for endpoint in (ci_low,ci_high):
+                f.line(xx-5,yp(endpoint),xx+5,yp(endpoint),INK,1.15)
     return yp
 
 def _blend_hex(a, b, t):
@@ -522,7 +565,7 @@ def figure1(d):
     f.text(15,94,"Native susceptibility mechanism",8.5,color=GRAY)
     f.text(489,94,"Task-functional bridge",8.5,color=GRAY,align="right")
     f.line(15,106,489,106,color="#DAE0E5")
-    f.panel("B","Five-scale extension: causal role recurs; geometry reorganizes",125)
+    f.panel("B","Five scales: causal role recurs; geometry is only partially conserved",125)
     for i,scale in enumerate(SCALES):
         x=15+i*97
         f.rect(x,138,86,46)
@@ -627,20 +670,13 @@ def figure2(d):
     f.save()
 
 def figure3(d):
-    f = Figure(STEMS[2], 390)
+    f = Figure(STEMS[2], 378)
     f.panel("A", "The causal role recurs across all five Mamba-1 scales", 18)
-    f.text(
-        15,
-        36,
-        "Selected/control ranks are local identities; equal rank numbers do not imply semantic homology.",
-        8.2,
-        color=GRAY,
-    )
 
     xs = [170, 246, 322, 398, 474]
-    f.rect(15, 47, 474, 24)
+    f.rect(15, 35, 474, 24)
     for x, scale in zip(xs, SCALES):
-        f.text(x, 64, scale, 9.5, True, align="center")
+        f.text(x, 52, scale, 9.5, True, align="center")
 
     rows = [
         ("Selected / control", [" / ".join(d["planes"][s]) for s in SCALES]),
@@ -650,7 +686,7 @@ def figure3(d):
         ),
     ]
     for i, (label, vals) in enumerate(rows):
-        yy = 91 + i * 22
+        yy = 79 + i * 22
         f.text(20, yy, label, 8.5, True)
         for x, val in zip(xs, vals):
             f.text(x, yy, val, 8.2, align="center")
@@ -658,25 +694,25 @@ def figure3(d):
 
     f.text(
         15,
-        141,
+        129,
         "Common scale-local contrast: selected restoration minus coefficient-matched control.",
         8.2,
     )
     f.text(
         15,
-        153,
+        141,
         "Historical endpoint labels and inferential-family details are retained in Appendix A.4.",
         8,
         color=GRAY,
     )
 
-    f.panel("B", "XG2 centered linear CKA", 180)
-    f.panel("C", "XG4 centered linear CKA", 180, x=260)
+    f.panel("B", "XG2 centered linear CKA", 168)
+    f.panel("C", "XG4 centered linear CKA", 168, x=260)
 
     heatmap(
         f,
         57,
-        207,
+        195,
         176,
         145,
         d["coordinate_free_geometry"]["xg2"]["cka_matrix"],
@@ -685,7 +721,7 @@ def figure3(d):
     heatmap(
         f,
         302,
-        207,
+        195,
         176,
         145,
         d["coordinate_free_geometry"]["xg4"]["cka_matrix"],
@@ -694,13 +730,13 @@ def figure3(d):
 
     f.text(
         15,
-        374,
+        362,
         "Same 300 response-blind pairs per family. CKA = 1 denotes identical centered sample geometry;",
         7.8,
     )
     f.text(
         15,
-        386,
+        374,
         "off-diagonal values show partial, not invariant, cross-scale geometry. Cosine-RSM: Appendix A.2.",
         7.8,
         color=GRAY,
@@ -713,16 +749,20 @@ def figure4(d):
     f.panel("B","Vanilla next-token LM objective",19,x=260)
     f.text(51,37,"Mean Delta L (forward-equivalent)",8)
     f.text(303,37,"Mean TASK_MATCHED readout",8)
-    chart(f,51,53,183,126,[d["objectives"][s]["contra"] for s in SCALES],SCALES,
-          -.003,.005,[-.002,0,.002,.004],lambda v:f"{v:.3f}",bars=True)
-    chart(f,303,53,183,126,[d["objectives"][s]["vanilla"] for s in SCALES],SCALES,
-          -.065,.025,[-.06,-.04,-.02,0,.02],lambda v:f"{v:.2f}",color=ORANGE,bars=True)
+    chart(f,51,53,183,126,[d["objective_intervals"][s]["contra"]["point_mean"] for s in SCALES],SCALES,
+          -.003,.0062,[-.002,0,.002,.004,.006],lambda v:f"{v:.3f}",bars=True,
+          intervals=[(d["objective_intervals"][s]["contra"]["ci_low"],
+                      d["objective_intervals"][s]["contra"]["ci_high"]) for s in SCALES])
+    chart(f,303,53,183,126,[d["objective_intervals"][s]["vanilla"]["point_mean"] for s in SCALES],SCALES,
+          -.075,.025,[-.06,-.04,-.02,0,.02],lambda v:f"{v:.2f}",color=ORANGE,bars=True,
+          intervals=[(d["objective_intervals"][s]["vanilla"]["ci_low"],
+                      d["objective_intervals"][s]["vanilla"]["ci_high"]) for s in SCALES])
     for start,key in [(51,"contra"),(303,"vanilla")]:
         for i,s in enumerate(SCALES):
             value=d["objectives"][s][key]
             f.text(start+183*(i+.5)/5,208,"+" if value>0 else "-",12,True,align="center")
-    f.text(15,225,"Separate y-scales preserve raw units. Bars are frozen means; signs are shown explicitly.",8,color=GRAY)
-    f.panel("C","Opposite aggregate signs do not imply rowwise inversion",247)
+    f.text(15,225,"Separate y-scales; bars and signs are point means, whiskers are percentile 95% pair intervals.",8,color=GRAY)
+    f.panel("C","Pair-level associations remain mixed",247)
     xs=[165,238,311,384,457]
     f.rect(15,259,474,23)
     for x,s in zip(xs,SCALES):f.text(x,275,s,9,True,align="center")
@@ -748,6 +788,7 @@ def write_readme(s, d):
         "",
         f"Base scientific authority: `{BASE_SCIENCE_HEAD}`.",
         f"Coordinate-free geometry paper snapshot: `{PAPER_EVIDENCE_HEAD}`.",
+        f"Objective pair-resampling source: `{OBJECTIVE_BOOTSTRAP}` @ `{ROBUSTNESS_HEAD}`.",
         "",
         "Run from repository root:",
         "",
@@ -765,7 +806,7 @@ def write_readme(s, d):
         "- Fig. 3: scale-local causal recurrence plus frozen coordinate-insensitive XG2/XG4 centered-linear CKA matrices.",
         "- Fig. 3 no longer uses kernel mean-square or leading-plane eigenvalue as the main evidence for non-invariance; those scalar native-geometry measurements remain supporting evidence in the appendix.",
         "- Cosine-RSM Pearson matrices are a frozen secondary coordinate-insensitive check and are reported in Appendix A.2.",
-        "- Fig. 4: objective-conditioned readouts; prospective chronology is kept in the appendix rather than repeated in the visual narrative.",
+        "- Fig. 4: objective-conditioned point means and frozen percentile 95% pair-resampling intervals; prospective chronology is kept in the appendix.",
         "",
         "## Frozen coordinate-free geometry",
         "",
@@ -877,6 +918,7 @@ def main():
         "scientific_authorities": {
             "base_evidence": BASE_SCIENCE_HEAD,
             "coordinate_free_geometry_snapshot": PAPER_EVIDENCE_HEAD,
+            "pair_resampling_robustness": ROBUSTNESS_HEAD,
         },
         "scale_order": SCALES,
         "sources": s.sources,
@@ -896,6 +938,7 @@ def main():
         "model_execution": False,
         "notes": [
             "Figure 3 uses the frozen coordinate-free geometry result; no CKA or RSM value is recomputed by the paper builder.",
+            "Figure 4 point means and percentile interval endpoints come from the frozen objective_bootstrap.csv at the pair-resampling robustness commit; no bootstrap is executed by the paper builder.",
             "Historical mu_k2/lambda1 measurements remain supporting appendix evidence rather than the main non-invariance visualization.",
             "D_SUF, D_DOM, and D_CORE retain their historical inferential families in the appendix.",
             d["chronology"],
@@ -912,6 +955,7 @@ def main():
     print("PASS: built 4 vector PDFs + 4 PNGs (400 dpi)")
     print("PASS: pinned base evidence + pinned coordinate-free paper snapshot")
     print("PASS: Figure 3 uses frozen XG2/XG4 centered-linear CKA matrices")
+    print("PASS: Figure 4 uses frozen objective means and pair-resampling intervals")
     print("PASS: no model execution and no new scientific statistics")
 
 if __name__ == "__main__":

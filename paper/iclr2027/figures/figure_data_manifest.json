@@ -3,7 +3,8 @@
   "scientific_head": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
   "scientific_authorities": {
     "base_evidence": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
-    "coordinate_free_geometry_snapshot": "2e65dd887ba4159d4024d85b8996306cfadec023"
+    "coordinate_free_geometry_snapshot": "2e65dd887ba4159d4024d85b8996306cfadec023",
+    "pair_resampling_robustness": "8423ef9d1325c007ecd31849a668131197e2214d"
   },
   "scale_order": [
     "130M",
@@ -188,6 +189,14 @@
       "frozen_bytes_sha256": "6d60009fd3bea86442997d5c9585991b90696b9e97ccc9d4ac511d9cc4843d3c",
       "figures": [
         "supporting"
+      ]
+    },
+    "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv": {
+      "authority_commit": "8423ef9d1325c007ecd31849a668131197e2214d",
+      "git_blob": "956f01c764871c8d27ab34dab04195dba773432e",
+      "frozen_bytes_sha256": "833d3f670afe4aae5a481226c49d6fc11bf710c7e521178d3d83911da0e42cd8",
+      "figures": [
+        "fig4"
       ]
     },
     "paper/iclr2027/frozen_sources/coordinate_free_geometry_v1/snapshot_manifest.json": {
@@ -4185,6 +4194,216 @@
       "figure": "supporting",
       "transformation": "none; display rounding only"
     },
+    "130M.contra.bootstrap.point_mean": {
+      "value": 0.002240732073064253,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 2; point_mean",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "130M.contra.bootstrap.ci_low": {
+      "value": 0.0008329985734834713,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 2; ci_low",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "130M.contra.bootstrap.ci_high": {
+      "value": 0.0036227012178765565,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 2; ci_high",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "130M.vanilla.bootstrap.point_mean": {
+      "value": -0.05641684638644803,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 3; point_mean",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "130M.vanilla.bootstrap.ci_low": {
+      "value": -0.06882598712118973,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 3; ci_low",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "130M.vanilla.bootstrap.ci_high": {
+      "value": -0.044195008774200614,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 3; ci_high",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "370M.contra.bootstrap.point_mean": {
+      "value": 0.0010179127037708347,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 4; point_mean",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "370M.contra.bootstrap.ci_low": {
+      "value": 0.0006649774361610281,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 4; ci_low",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "370M.contra.bootstrap.ci_high": {
+      "value": 0.0013934151744453822,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 4; ci_high",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "370M.vanilla.bootstrap.point_mean": {
+      "value": -0.0019753191100731616,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 5; point_mean",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "370M.vanilla.bootstrap.ci_low": {
+      "value": -0.006551474274649998,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 5; ci_low",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "370M.vanilla.bootstrap.ci_high": {
+      "value": 0.0025359292834950076,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 5; ci_high",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "790M.contra.bootstrap.point_mean": {
+      "value": 0.004553422899712989,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 6; point_mean",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "790M.contra.bootstrap.ci_low": {
+      "value": 0.0034547763497614985,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 6; ci_low",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "790M.contra.bootstrap.ci_high": {
+      "value": 0.005736269935225796,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 6; ci_high",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "790M.vanilla.bootstrap.point_mean": {
+      "value": -0.01596436428883387,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 7; point_mean",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "790M.vanilla.bootstrap.ci_low": {
+      "value": -0.022894954365233113,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 7; ci_low",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "790M.vanilla.bootstrap.ci_high": {
+      "value": -0.009158140244690478,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 7; ci_high",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "1.4B.contra.bootstrap.point_mean": {
+      "value": -0.0023908950117724477,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 8; point_mean",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "1.4B.contra.bootstrap.ci_low": {
+      "value": -0.002984584833534631,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 8; ci_low",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "1.4B.contra.bootstrap.ci_high": {
+      "value": -0.0018318702745548127,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 8; ci_high",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "1.4B.vanilla.bootstrap.point_mean": {
+      "value": 0.007833182803823639,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 9; point_mean",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "1.4B.vanilla.bootstrap.ci_low": {
+      "value": 0.004651858539541116,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 9; ci_low",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "1.4B.vanilla.bootstrap.ci_high": {
+      "value": 0.011012203391822614,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 9; ci_high",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "2.8B.contra.bootstrap.point_mean": {
+      "value": -0.0001483499070046979,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 10; point_mean",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "2.8B.contra.bootstrap.ci_low": {
+      "value": -0.0004860163949396766,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 10; ci_low",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "2.8B.contra.bootstrap.ci_high": {
+      "value": 0.00018914839266922622,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 10; ci_high",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "2.8B.vanilla.bootstrap.point_mean": {
+      "value": 0.016448402252375247,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 11; point_mean",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "2.8B.vanilla.bootstrap.ci_low": {
+      "value": 0.010704810914055278,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 11; ci_low",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
+    "2.8B.vanilla.bootstrap.ci_high": {
+      "value": 0.02223104096952608,
+      "source": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+      "locator": "CSV row 11; ci_high",
+      "figure": "fig4",
+      "transformation": "none; display rounding only"
+    },
     "xg2.cka_matrix": {
       "value": [
         [
@@ -4458,6 +4677,68 @@
         "pearson": 0.13304896234651936,
         "spearman": 0.09660996233291481,
         "pair_sign_agreement_fraction": 0.5733333333333334
+      }
+    },
+    "objective_intervals": {
+      "130M": {
+        "contra": {
+          "point_mean": 0.002240732073064253,
+          "ci_low": 0.0008329985734834713,
+          "ci_high": 0.0036227012178765565
+        },
+        "vanilla": {
+          "point_mean": -0.05641684638644803,
+          "ci_low": -0.06882598712118973,
+          "ci_high": -0.044195008774200614
+        }
+      },
+      "370M": {
+        "contra": {
+          "point_mean": 0.0010179127037708347,
+          "ci_low": 0.0006649774361610281,
+          "ci_high": 0.0013934151744453822
+        },
+        "vanilla": {
+          "point_mean": -0.0019753191100731616,
+          "ci_low": -0.006551474274649998,
+          "ci_high": 0.0025359292834950076
+        }
+      },
+      "790M": {
+        "contra": {
+          "point_mean": 0.004553422899712989,
+          "ci_low": 0.0034547763497614985,
+          "ci_high": 0.005736269935225796
+        },
+        "vanilla": {
+          "point_mean": -0.01596436428883387,
+          "ci_low": -0.022894954365233113,
+          "ci_high": -0.009158140244690478
+        }
+      },
+      "1.4B": {
+        "contra": {
+          "point_mean": -0.0023908950117724477,
+          "ci_low": -0.002984584833534631,
+          "ci_high": -0.0018318702745548127
+        },
+        "vanilla": {
+          "point_mean": 0.007833182803823639,
+          "ci_low": 0.004651858539541116,
+          "ci_high": 0.011012203391822614
+        }
+      },
+      "2.8B": {
+        "contra": {
+          "point_mean": -0.0001483499070046979,
+          "ci_low": -0.0004860163949396766,
+          "ci_high": 0.00018914839266922622
+        },
+        "vanilla": {
+          "point_mean": 0.016448402252375247,
+          "ci_low": 0.010704810914055278,
+          "ci_high": 0.02223104096952608
+        }
       }
     },
     "coordinate_free_geometry": {
@@ -6162,19 +6443,20 @@
     "png_dpi": 400
   },
   "outputs": {
-    "fig1_study_overview.pdf": "57822b65223b2b0ba3b2067dcf5e86ed8cda5430445475d43e9b7ad896a5f252",
-    "fig1_study_overview.png": "a6db5d8e4d76539835490604a92da4406a128f940548a3c7f5ce0ab7800e392d",
+    "fig1_study_overview.pdf": "d3e88e41a4dd3b5ec0da73eec7532bf7d7e4b202fbb4074e18365fbc3e215c3f",
+    "fig1_study_overview.png": "a8871bf5664b3ac5c9cbb4f9b2760351e3bb6b4a04f98c6a5039a92465e4fcfc",
     "fig2_130m_causal_foundation.pdf": "d14b7041b0f8b44ff3591c0001c006ee77bec46b1257e642bedbce03478a0859",
     "fig2_130m_causal_foundation.png": "c1ea0dff0a402fe4a3e7c9d4e5dac90137409e89be5ffffbea9c5d162ec0f9c6",
-    "fig3_five_scale_recurrence_reorganization.pdf": "f62ce8455f61f6fb9f36438e129438e94181fdcd3ae04ded08cd53b91040f3f9",
-    "fig3_five_scale_recurrence_reorganization.png": "80ec094f6bf96d80957e81f95e1734ce40783f362ab852a578db85ff1342fcc3",
-    "fig4_objective_conditioned_functionalization.pdf": "8ca4156cd0f97feb8f9ebfd437e694d25dd8b4e1656bce6df72a0ce49f1fc43a",
-    "fig4_objective_conditioned_functionalization.png": "f2f907aba426e54a6e0fcc350659db9d46f940307cbbe3fdf98d56b43b4409a1"
+    "fig3_five_scale_recurrence_reorganization.pdf": "61a314c1edc58a4acda6a4407ddc8de561d8ead601d3f0f0a020d0fb8ce5477d",
+    "fig3_five_scale_recurrence_reorganization.png": "49727ec818b226ca83af7a371ea6a39c631f50fabc167a015acb94c76ae83b34",
+    "fig4_objective_conditioned_functionalization.pdf": "96372da7dc888552cf3551c45c7c7652948216e84678abf5d5ee0a80c8dbb793",
+    "fig4_objective_conditioned_functionalization.png": "76f45351604d09eaf6f120d7a9e317eb73edcd7fe04245955cbfaeceb8a87b4d"
   },
   "new_statistics": false,
   "model_execution": false,
   "notes": [
     "Figure 3 uses the frozen coordinate-free geometry result; no CKA or RSM value is recomputed by the paper builder.",
+    "Figure 4 point means and percentile interval endpoints come from the frozen objective_bootstrap.csv at the pair-resampling robustness commit; no bootstrap is executed by the paper builder.",
     "Historical mu_k2/lambda1 measurements remain supporting appendix evidence rather than the main non-invariance visualization.",
     "D_SUF, D_DOM, and D_CORE retain their historical inferential families in the appendix.",
     "130M is post-primary completeness; 370M-2.8B remain the original prospective four-scale control."
