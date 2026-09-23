@@ -1,0 +1,367 @@
+\section{Reproducibility details}
+\label{app:repro}
+
+This appendix transcribes the frozen experimental records. Figure source
+classes are mapped in Appendix~\ref{app:provenance}. No new model execution
+or statistical tests are involved.
+
+\subsection{Model identities, sites, and populations}
+\label{app:identity}
+
+The five pretrained backbones are from the \texttt{state-spaces/} Hugging
+Face repositories shown in Table~\ref{tab:identity}. Full revisions in
+scale order are \nolinkurl{40e5d2bd7452abb3ca8fadbafe9131ee0e2c2f37},
+\nolinkurl{589179554943157be31701edd8b4558889276674},
+\nolinkurl{9822dd4b76af2bd9099b6ce2f19efd8329189a7e},
+\nolinkurl{6e46eae61c27280517feef46f536d16b91076f08}, and
+\nolinkurl{96c48e0292b63f5346b6d30061af2551f7101e26}.
+The broader study covered five scales before the pretrained-LM control.
+Its initial prospective plan instantiated 370M--2.8B; the already-studied
+130M cell was later frozen and completed as a separate extension. The
+five-scale LM vector is descriptive, not one prospective inferential family.
+
+\begin{table}[h]
+\centering\small
+\caption{Frozen backbone identities and functional-readout cohorts. Each
+cohort has 300 pairs with two cells per pair. The layer is the mixer
+intervention layer.}
+\label{tab:identity}
+\begin{tabular}{lllll}
+\toprule
+Scale & Repository suffix & Revision prefix & Layer & XG1 pairs \\
+\midrule
+130M & mamba-130m-hf & 40e5d2bd7452 & 17 & 2701--3000 \\
+370M & mamba-370m-hf & 589179554943 & 35 & 4801--5100 \\
+790M & mamba-790m-hf & 9822dd4b76af & 35 & 7501--7800 \\
+1.4B & mamba-1.4b-hf & 6e46eae61c27 & 35 & 4801--5100 \\
+2.8B & mamba-2.8b-hf & 96c48e0292b6 & 47 & 6601--6900 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The larger-scale source-block, target-residual, and intervention-layer
+triplets are $(33,34,35)$ for 370M--1.4B and $(45,46,47)$ for 2.8B.
+At 130M the intervention is at layer 17. The frozen target position is
+the absolute event anchor plus offset 2, with \texttt{A\_IDENTITY} at
+130M. The pretrained-LM measurement reuses each task-readout row, its
+tokenization, and its target index; both token positions $t$ and $t+1$
+must be active. The frozen protocol fails closed rather than dropping
+a token-invalid row. At the mixer \texttt{in\_proj}, the native content
+branch is replaced by an equal-valued differentiable leaf while the gate
+branch is preserved.
+
+The structured downstream task model is a separately trained three-way
+evidence-entitlement model used for the local correct-class margin. The
+130M downstream model is the seed-181, selected-epoch-19 checkpoint.
+Each larger scale uses its corresponding frozen downstream checkpoint.
+The frozen 130M, 790M, 1.4B, and 2.8B training reports identify the
+frozen Mamba encoder, seed 181,
+pair-group split seed 8192, 2,880 expected clean training rows,
+clean-development checkpoint selection, and no external data used for
+training. Their selected epochs are 19, 20, 20, and 20 respectively.
+The 370M checkpoint is identified separately by its compact checkpoint
+manifest; these training-report details are not inferred for it.
+Under the frozen branch-ownership convention the owned local derivative is
+one half of the forward-equivalent derivative:
+$\Delta L_{\rm forward}=2\Delta L_{\rm owned}$.
+This conversion preserves sign, rank, and correlation. The pretrained-LM
+control loads the pinned causal LM directly, without a downstream task
+checkpoint, router, or task head.
+
+\subsection{Native geometry and intervention}
+\label{app:geometry}
+
+XG2/XG4 response-free directions define independent principal planes
+within each model's native strong-channel mask. For the plotted kernel
+quantity, let $k_j=\texttt{conv\_weight}[j,0,\mathrm{lag0}]$,
+$\mu_{k^2}=\operatorname{mean}_j k_j^2$, and
+$\mathrm{strong}=\{j:k_j^2>\mu_{k^2}\}$.
+Geometry preparation uses Mamba-side forward activations without XG1
+response access, downstream task logits or gradients, or backward passes.
+The inputs belong to the research families, so this does not characterize
+all natural language. The historical 130M strong-channel rule is the same:
+$\mu_{k^2}=0.027899337798707836$ and 395 of 1536 channels are strong.
+Its response-blind projector-contrast reconstruction gives leading positive
+eigenvalue $\lambda_1=0.8706181418918275$. These two frozen quantities
+are plotted with open markers in Figure~\ref{fig:scale}. The 130M
+reconstruction predates the homogeneous 370M--2.8B geometry bridge;
+the five plotted points are not one matched execution. No derived 130M
+spectral-share or entropy summary is added.
+
+For a unit direction $w$, local susceptibility is
+\begin{equation}
+J_i(w)=\frac{F_i(+\epsilon;w)-F_i(-\epsilon;w)}{2\epsilon},
+\qquad \epsilon=0.025.
+\label{eq:susc}
+\end{equation}
+At 130M, the projector-contrast contribution of plane $k$ is
+$C_k(i)=s_k[J_i(\mathrm{P}_{k+})^2-J_i(\mathrm{P}_{k-})^2]/5$.
+The broader XG2-versus-XG4 endpoint is
+$Q_i(c)=E_{\mathrm{XG2}}(i,c)-E_{\mathrm{XG4}}(i,c)$,
+where each $E$ is the mean squared susceptibility over its five frozen
+directions under condition $c$. XG1 outcomes do not refit the basis.
+
+\subsection{Prospective 130M causal chain}
+\label{app:causal}
+
+Static XG2/XG4 localization selected P3 before XG1 response inspection.
+P5 was frozen independently as the maximum-projector-separation geometric
+control. Four disjoint 300-pair XG1 holdouts tested the distinct endpoints
+in Table~\ref{tab:causal}. Every directional hypothesis was frozen before
+its population was opened.
+
+\begin{table}[h]
+\centering\small
+\caption{Frozen 130M paired-item tests. Endpoint magnitudes are not
+interchangeable effect sizes.}
+\label{tab:causal}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lllll}
+\toprule
+Test & XG1 pair range & Mean & $t(299)$ & One-sided $p$ \\
+\midrule
+Transport $C_{\rm P3}$ & 001--300 & $7.12028\times10^{-8}$ & 18.974 & $1.52\times10^{-53}$ \\
+Specificity $C_{\rm P3}-C_{\rm P5}$ & 301--600 & $2.30407\times10^{-8}$ & 7.656 & $1.34\times10^{-13}$ \\
+Necessity $Q_{\rm P5}-Q_{\rm P3}$ & 601--900 & $4.74144\times10^{-8}$ & 23.984 & $6.22\times10^{-72}$ \\
+Restoration $Q_{R_3}-Q_{R_5}$ & 901--1200 & $4.07887\times10^{-8}$ & 20.105 & $9.01\times10^{-58}$ \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+For restoration, from native state $h$ and P3 component $c_3$,
+$B=h-c_3$, $R_3=B+c_3=h$, and $R_5=B+c_5$.
+The P5 replacement uses the same P3-derived coefficients, so additions
+are norm matched. The result is local restoration relative to the control,
+not global behavioral sufficiency. Later P3-excluded residual-template
+transport and residual necessity/restoration studies are documented in the
+frozen causal synthesis and did not redefine P3.
+The historical restoration-sufficiency endpoint reduces exactly to the
+common selected-restored versus matched-control contrast:
+\begin{equation}
+\begin{aligned}
+D_{\rm SUF}
+&=(Q_{R_3}-Q_B)-(Q_{R_5}-Q_B)\\
+&=Q_{R_3}-Q_{R_5}\\
+&=Q_{\rm selected\ restored}-Q_{\rm matched\ control}.
+\end{aligned}
+\label{eq:common-causal}
+\end{equation}
+On the separate seed-181 behavioral/readout cohort
+\texttt{xg1\_fact\_2701..3000}, the mean task-margin restoration
+effect is $0.008332191656033197$. Descriptive pair-level
+readout--behavior association is Pearson $0.617548086733788$,
+Spearman $0.8324696941077123$, and sign agreement $0.8233333333333334$.
+
+\subsection{Cross-scale causal confirmation and native geometry}
+\label{app:scale}
+
+Selected/control ranks in ascending scale order are P3/P5, P3/P5, P2/P5,
+P5/P4, and P3/P5. The historical 130M $D_{\rm SUF}$ and 370M
+$D_{\rm DOM}$ endpoints preceded the later standardized
+$D_{\rm CORE}=Q_{\rm restored}-Q_{\rm control}$ confirmations.
+By Eq.~\ref{eq:common-causal}, all five share the mathematical contrast
+$Q_{\rm selected\ restored}-Q_{\rm matched\ control}$ and the same
+$Q=E_{\rm XG2}-E_{\rm XG4}$ semantics; selected-state coefficients are
+transferred to the orthonormal control plane, matching component norms.
+The five experiments share a common scale-local causal contrast while
+retaining distinct historical confirmation protocols.
+Table~\ref{tab:scale} reports their own frozen values. Heterogeneous raw
+magnitudes do not form a scaling series.
+
+\begin{table}[h]
+\centering\small
+\caption{Scale-local causal-role tests. Each row has a positive frozen
+endpoint, but the historical 370M joint residual criterion remains failed.}
+\label{tab:scale}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lllllll}
+\toprule
+Scale & Pair & Endpoint & XG1 pairs & Mean & $t(299)$ & One-sided $p$ \\
+\midrule
+130M & P3/P5 & $D_{\rm SUF}$ & 901--1200 & $4.07887\times10^{-8}$ & 20.105 & $9.01\times10^{-58}$ \\
+370M & P3/P5 & $D_{\rm DOM}$ & 3301--3600 & $3.97429\times10^{-8}$ & 26.056 & $3.19\times10^{-79}$ \\
+790M & P2/P5 & $D_{\rm CORE}$ & 7201--7500 & $7.19308\times10^{-8}$ & 29.567 & $4.65\times10^{-91}$ \\
+1.4B & P5/P4 & $D_{\rm CORE}$ & 4201--4500 & $9.28285\times10^{-9}$ & 16.253 & $2.62\times10^{-43}$ \\
+2.8B & P3/P5 & $D_{\rm CORE}$ & 6301--6600 & $4.11599\times10^{-8}$ & 24.956 & $2.22\times10^{-75}$ \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+The 370M raw dominant-component $p$ was
+$3.19293\times10^{-79}$ and its historical Holm-adjusted value was
+$6.38586\times10^{-79}$. Its separate positive aggregate-residual
+hypothesis failed, so the pre-registered joint qualitative-recurrence
+criterion remained not established. Later core confirmations do not
+retroactively rescue it. The 1.4B discovery and confirmation populations
+were XG1 3901--4200 and 4201--4500, with residual characterization on
+4501--4800.
+
+The later matched response-blind series, ordered 370M, 790M, 1.4B, 2.8B, has
+$\mu_{k^2}=(0.0246235,0.0238427,0.0148388,0.00985711)$,
+leading spectral concentration
+$\lambda_1=(0.967180,0.892961,0.889041,0.893226)$,
+and strong-channel fractions
+$(0.317383,0.317383,0.202393,0.195898)$.
+The historically reconstructed 130M values for these two plotted
+quantities are given in Appendix~\ref{app:geometry}. Their mathematical
+definitions match, but their provenance precedes the later bridge.
+There is no fitted scale law or same-numbered-plane homology.
+
+\subsection{Full task-readout decomposition}
+\label{app:decomp}
+
+The selected and control components have equal norm to numerical
+precision; the maximum relative mismatch across frozen rows is about
+$10^{-15}$. Put $u_i=\|g_i\|$, $n_i=\|c_i\|$, and
+$h_i=\cos(g_i,c_{{\rm sel},i})-\cos(g_i,c_{{\rm ctrl},i})$.
+Then $\Delta L_i=u_i n_i h_i$ exactly, and
+\begin{align}
+\mathbb{E}[unh]={}&\mu_u\mu_n\mu_h+
+\mu_u\operatorname{Cov}(n,h)+
+\mu_n\operatorname{Cov}(u,h)\nonumber\\
+&+\mu_h\operatorname{Cov}(u,n)+
+\mathbb{E}[(u-\mu_u)(n-\mu_n)(h-\mu_h)].
+\label{eq:decomp}
+\end{align}
+Table~\ref{tab:decomp} transcribes the frozen owned-unit components.
+Forward-equivalent readouts are twice these values.
+
+\begin{table}[h]
+\centering\scriptsize
+\caption{Frozen mean angular gap $\mu_h$, mean-product base $B$, and
+norm--gap covariance contribution $N$, in owned readout units.}
+\label{tab:decomp}
+\begin{tabular}{lrrr}
+\toprule
+Scale & $\mu_h$ & $B$ & $N$ \\
+\midrule
+130M & .008881965010493697 & .001278782557357266 & .000133190457109135 \\
+370M & -.000802156327488121 & -.000094095358107031 & .000042452455047036 \\
+790M & .007793196921091330 & .001040616136353141 & -.000068706620106335 \\
+1.4B & -.009643894952004040 & -.000877367363000991 & -.000176563578561815 \\
+2.8B & .004473173637057720 & .000329550929066379 & -.000171543926043767 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering\scriptsize
+\caption{Remaining exact terms: gradient--gap covariance $G$,
+gradient--norm covariance $U$, centered three-way term $T$, and owned
+mean readout. Together with Table~\ref{tab:decomp}, these give the full
+decomposition of Eq.~\ref{eq:decomp}.}
+\begin{tabular}{lrrrr}
+\toprule
+Scale & $G$ & $U$ & $T$ & $\overline{\Delta L}$ \\
+\midrule
+130M & -.000519576976183540 & -.000012825062806655 & .000240795061055922 & .001120366036532126 \\
+370M & .000402747883547661 & -.000001430912906175 & .000159282284303926 & .000508956351885417 \\
+790M & .001426961516464109 & -.000040009026410042 & -.000082150556444377 & .002276711449856494 \\
+1.4B & -.000101775327135446 & -.000010052654126476 & -.000029688583061496 & -.001195447505886224 \\
+2.8B & -.000162660052525846 & -.000009378023827281 & -.000060143880171834 & -.000074174953502349 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+At 370M favorable dependence outweighs a negative mean alignment gap.
+At 1.4B negative alignment dominates. At 2.8B adverse dependence
+overcomes a positive mean gap; 55.3\% of pairs remain positive.
+This is an algebraic decomposition, without fitted parameters or new tests.
+
+\subsection{Pretrained-LM control and sensitivity}
+\label{app:vanilla}
+
+At frozen target $t$, with observed next token $y=x_{t+1}$, the control
+uses $J_{\rm LM}=\log p_\theta(y\mid x_{\leq t})$ and
+$g_{\rm LM}=\nabla_h J_{\rm LM}$ at the equal-valued local leaf.
+Table~\ref{tab:vanilla} records the frozen objective comparison. Means
+have distinct units; pair-level associations are descriptive.
+
+\begin{table}[h]
+\centering\small
+\caption{Task-matched frozen contrasts under the downstream task and pretrained
+next-token objectives. The pre-existing 130M scale was completed under a
+separately frozen LM-control extension and joins the four original rows
+descriptively.}
+\label{tab:vanilla}
+\begin{tabular}{lrrrrr}
+\toprule
+Scale & Task forward & LM mean & Pearson & Spearman & Sign agree \\
+\midrule
+130M & .00224073 & -.05641685 & .3208 & .2044 & .5567 \\
+370M & .00101791 & -.00197532 & -.4593 & .0346 & .6033 \\
+790M & .00455342 & -.01596436 & .1862 & -.0379 & .4433 \\
+1.4B & -.00239090 & .00783318 & -.3664 & -.1827 & .4567 \\
+2.8B & -.00014835 & .01644840 & .1330 & .0966 & .5733 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The common-P3/P5 sensitivity means are $-0.00197532$ (370M),
+$-0.00443947$ (790M), $-0.00990855$ (1.4B), and
+$+0.01644840$ (2.8B).
+The 1.4B sign differs from its primary task-matched P5/P4 result.
+This contrast sensitivity does not reselect the primary comparison.
+Opposed aggregate signs are not a rowwise inversion.
+
+\subsection{AVeriTeC external-transfer inference}
+\label{app:external}
+
+The authenticated official AVeriTeC development source is
+\texttt{MichSchli/AVeriTeC}, commit
+\nolinkurl{7c62d1ec8df3fb560d6efe2b85fa191135636f81},
+path \texttt{data/dev.json}, Git blob
+\nolinkurl{40974243267f395dc583d805d10f043812419249}.
+Of 500 development examples, the fixed compatible cohort comprises
+305 Refuted, 122 Supported, and 35 Not Enough Evidence examples
+($N=462$). The 38 Conflicting Evidence/Cherrypicking examples are
+excluded by the pre-specified three-label compatibility rule.
+Gold question--answer blocks retain source order. There is no retrieval
+or question generation in this experiment.
+The 130M/370M family uses the frozen active serialization
+\texttt{claim[:63] + EOS(0) + evidence[:64]},
+response-blind claim--evidence-boundary anchor, and target offset 2.
+Its shared \texttt{tokenizer.json},
+\texttt{tokenizer\_config.json}, and
+\texttt{special\_tokens\_map.json} SHA256 identities are, respectively,
+\nolinkurl{b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf},
+\nolinkurl{9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb},
+and \nolinkurl{57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8}.
+The active-encoding gate used tokenizers version 0.22.2 and required
+all 462 rows to pass.
+The 1.4B external-transfer extension uses its own pinned tokenizer
+snapshot at revision
+\nolinkurl{6e46eae61c27280517feef46f536d16b91076f08};
+\texttt{tokenizer.json} SHA256 is
+\nolinkurl{3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8},
+and \texttt{tokenizer\_config.json} SHA256 is
+\nolinkurl{3ba257483d22a5a84aab5465aa427e59bdaeb55f09fb14349e2d571ff67e8020}.
+It is not byte-identical to the tokenizer used for the completed
+130M/370M external family. The response-blind anchor is the claim--evidence
+boundary, with intervention target at consumed claim length plus 2.
+
+Correct-class-margin selected-versus-control means at 130M and 370M
+were $0.00023104869$ and $0.000045550022$, with Cohen's
+$d_z=0.11964887$ and $0.10631035$, and Holm-adjusted positive-family
+$p=0.010430705$ and $0.0113815$. The separately frozen 1.4B
+negative test had mean $-0.000078509516$, $d_z=-0.0668655$,
+$t(461)=-1.43722$, and one-sided $p=0.0756671$, failing
+the $\alpha=.05$ gate. Its native, neutralized, and control conditions
+all had accuracy $0.12987013$, with zero intervention-induced argmax
+flips. The three scales are not pooled into a new inferential family.
+
+\subsection{Figure provenance and source mapping}
+\label{app:provenance}
+
+Figure~\ref{fig:deep} draws the historical 130M causal synthesis,
+specificity inference, seed-181 behavioral bridge, and frozen pair-level
+readout--behavior merge. Figure~\ref{fig:scale} draws the historical
+130M/370M conclusions, later 790M/1.4B/2.8B confirmation inference,
+the historical 130M kernel mean-square and leading-plane eigenvalue,
+and the later response-blind four-scale native-geometry bridge.
+Figure~\ref{fig:objective} draws the five-scale task-objective readout
+synthesis, original four-scale vanilla-LM analysis, and later 130M
+completeness analysis. Figure~\ref{fig:overview} summarizes these
+same frozen evidence classes. The 130M geometry point has earlier
+response-blind provenance than the later matched bridge; the 130M
+vanilla-LM result is a post-primary completeness extension.
