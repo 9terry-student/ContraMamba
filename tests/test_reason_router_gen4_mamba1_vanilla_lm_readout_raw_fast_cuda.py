@@ -302,23 +302,38 @@ def test_lm_head_must_be_storage_tied() -> None:
     assert '"LM_HEAD_NOT_STORAGE_TIED"' in source
     assert '"lm_head_storage_tied_to_embeddings"' in source
 
-def test_lm_head_tie_reconstruction_is_config_gated() -> None:
+def test_lm_head_tie_reconstruction_matches_historical_mamba() -> None:
     source = inspect.getsource(subject)
 
+    assert (
+        subject.ORIGINAL_MAMBA_LM_REFERENCE_COMMIT
+        == "009bec5ee37f586844a3fc89c040a9c1a9d8badf"
+    )
+    assert (
+        subject.ORIGINAL_MAMBA_LM_REFERENCE_PATH
+        == "mamba_ssm/models/mixer_seq_simple.py"
+    )
+    assert (
+        subject.ORIGINAL_MAMBA_LM_HEAD_CONTRACT
+        == "lm_head.weight=backbone.embedding.weight"
+    )
+
     required = (
-        "tie_word_embeddings",
-        "LM_TIE_WORD_EMBEDDINGS_DISABLED",
-        "get_expanded_tied_weights_keys(",
-        '"lm_head.weight"',
-        '"backbone.embeddings.weight"',
-        "LM_TIE_MAPPING:",
-        "model.tie_weights()",
+        "HF_TIE_METADATA_UNEXPECTED",
+        "HF_RUNTIME_TIE_STATE_UNEXPECTED",
+        "CHECKPOINT_EMBEDDING_WEIGHT_MISSING",
+        "CHECKPOINT_LM_HEAD_WEIGHT_UNEXPECTED",
+        "model.lm_head.weight = (",
+        "model.backbone.embeddings.weight",
         "LM_HEAD_PARAMETER_NOT_IDENTICAL",
-        "LM_HEAD_TIE_DRIFT_AFTER_FREEZE",
-        '"lm_head_tie_reconstruction"',
-        '"explicit_transformers_model_tie_weights"',
-        '"lm_head_tie_source"',
+        "LM_HEAD_ALIAS_DRIFT_AFTER_FREEZE",
+        '"historical_state_spaces_mamba_direct_parameter_alias"',
+        '"checkpoint_lm_head_weight_present"',
+        '"lm_head_tie_reference_commit"',
     )
 
     for token in required:
         assert token in source
+
+    assert "model.tie_weights()" not in source
+    assert "LM_TIE_WORD_EMBEDDINGS_DISABLED" not in source

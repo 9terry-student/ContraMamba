@@ -27,6 +27,16 @@ PLAN_FREEZE_COMMIT = (
     "1fe9a198a15c9cea0e5451d918cd949bc21bf7e0"
 )
 
+ORIGINAL_MAMBA_LM_REFERENCE_COMMIT = (
+    "009bec5ee37f586844a3fc89c040a9c1a9d8badf"
+)
+ORIGINAL_MAMBA_LM_REFERENCE_PATH = (
+    "mamba_ssm/models/mixer_seq_simple.py"
+)
+ORIGINAL_MAMBA_LM_HEAD_CONTRACT = (
+    "lm_head.weight=backbone.embedding.weight"
+)
+
 SCALES = (
     "mamba370m",
     "mamba790m",
@@ -890,45 +900,74 @@ def load_vanilla_model(
         "LM_HEAD_SHAPE",
     )
 
-    tie_word_embeddings = bool(
+    raw_hf_config = json.loads(
+        (
+            snapshot
+            / "config.json"
+        ).read_text(
+            encoding="utf-8"
+        )
+    )
+
+    require(
+        "tie_word_embeddings"
+        not in raw_hf_config,
+        "HF_TIE_METADATA_UNEXPECTED",
+    )
+
+    hf_runtime_tie_word_embeddings = bool(
         getattr(
             model.config,
             "tie_word_embeddings",
             False,
         )
     )
-    require(
-        tie_word_embeddings,
-        "LM_TIE_WORD_EMBEDDINGS_DISABLED",
-    )
-
-    expanded_ties = (
-        model
-        .get_expanded_tied_weights_keys(
-            all_submodels=False
-        )
-    )
-
-    expected_ties = {
-        "lm_head.weight":
-            "backbone.embeddings.weight",
-    }
 
     require(
-        expanded_ties
-        == expected_ties,
-        (
-            "LM_TIE_MAPPING:"
-            + repr(expanded_ties)
+        not hf_runtime_tie_word_embeddings,
+        "HF_RUNTIME_TIE_STATE_UNEXPECTED",
+    )
+
+    from safetensors import safe_open
+
+    with safe_open(
+        str(
+            snapshot
+            / "model.safetensors"
         ),
+        framework="pt",
+    ) as checkpoint:
+        checkpoint_keys = frozenset(
+            checkpoint.keys()
+        )
+
+    require(
+        "backbone.embeddings.weight"
+        in checkpoint_keys,
+        "CHECKPOINT_EMBEDDING_WEIGHT_MISSING",
+    )
+    require(
+        "lm_head.weight"
+        not in checkpoint_keys,
+        "CHECKPOINT_LM_HEAD_WEIGHT_UNEXPECTED",
     )
 
-    pre_tie_storage_tied = bool(
+    pre_alias_storage_tied = bool(
         output_weight.data_ptr()
         == input_weight.data_ptr()
     )
 
-    model.tie_weights()
+    # Historical state-spaces Mamba LM contract at
+    # ORIGINAL_MAMBA_LM_REFERENCE_COMMIT:
+    # self.lm_head.weight = self.backbone.embedding.weight
+    #
+    # The HF checkpoint preserves the embedding tensor but its converted
+    # config omits the original tying metadata. Reconstruct the original
+    # pretrained LM readout by direct parameter alias, without training,
+    # copying, or retaining the randomly initialized HF lm_head tensor.
+    model.lm_head.weight = (
+        model.backbone.embeddings.weight
+    )
 
     embeddings = model.backbone.embeddings
     lm_head = model.lm_head
@@ -939,7 +978,7 @@ def load_vanilla_model(
     require(
         tuple(output_weight.shape)
         == tuple(input_weight.shape),
-        "LM_HEAD_SHAPE_AFTER_TIE",
+        "LM_HEAD_SHAPE_AFTER_ALIAS",
     )
     require(
         output_weight.data_ptr()
@@ -953,6 +992,11 @@ def load_vanilla_model(
 
     freeze_parameters(model)
 
+    require(
+        model.lm_head.weight
+        is model.backbone.embeddings.weight,
+        "LM_HEAD_ALIAS_DRIFT_AFTER_FREEZE",
+    )
     require(
         model.lm_head.weight.data_ptr()
         == model.backbone.embeddings.weight.data_ptr(),
@@ -1063,14 +1107,24 @@ def load_vanilla_model(
                 kernels[
                     "causal_conv_transport_revision"
                 ],
-            "lm_head_pre_tie_storage_tied":
-                pre_tie_storage_tied,
-            "lm_head_tie_word_embeddings_config":
-                tie_word_embeddings,
-            "lm_head_tie_mapping":
-                dict(expanded_ties),
+            "hf_config_tie_word_embeddings_present":
+                False,
+            "hf_runtime_tie_word_embeddings":
+                hf_runtime_tie_word_embeddings,
+            "checkpoint_embedding_weight_present":
+                True,
+            "checkpoint_lm_head_weight_present":
+                False,
+            "lm_head_pre_alias_storage_tied":
+                pre_alias_storage_tied,
             "lm_head_tie_reconstruction":
-                "explicit_transformers_model_tie_weights",
+                "historical_state_spaces_mamba_direct_parameter_alias",
+            "lm_head_tie_reference_commit":
+                ORIGINAL_MAMBA_LM_REFERENCE_COMMIT,
+            "lm_head_tie_reference_path":
+                ORIGINAL_MAMBA_LM_REFERENCE_PATH,
+            "lm_head_tie_reference_contract":
+                ORIGINAL_MAMBA_LM_HEAD_CONTRACT,
             "lm_head_tie_source":
                 "backbone.embeddings.weight",
             "lm_head_storage_tied_to_embeddings":
