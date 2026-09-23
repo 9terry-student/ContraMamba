@@ -15,6 +15,7 @@ from scripts import (
 
 def test_protocol_constants() -> None:
     assert subject.SCALES == (
+        "mamba130m",
         "mamba370m",
         "mamba790m",
         "mamba14b",
@@ -33,6 +34,8 @@ def test_protocol_constants() -> None:
 
 def test_scale_registry() -> None:
     expected = {
+        "mamba130m":
+            ("P3", "P5", 395, 17),
         "mamba370m":
             ("P3", "P5", 650, 35),
         "mamba790m":
@@ -181,6 +184,10 @@ def test_plan_freeze_identity() -> None:
     assert (
         subject.PLAN_FREEZE_COMMIT
         == "1fe9a198a15c9cea0e5451d918cd949bc21bf7e0"
+    )
+    assert (
+        subject.MAMBA130_EXTENSION_PLAN_FREEZE_COMMIT
+        == "e567338f1dcd99d61ed7465ec39d441566f71fa3"
     )
 
 
@@ -357,3 +364,68 @@ def test_checkpoint_head_gate_supports_safetensor_shards() -> None:
         assert token in source
 
     assert 'snapshot / "model.safetensors"' not in source
+
+def test_mamba130_adapter_contract() -> None:
+    from scripts import (
+        reason_router_gen4_mamba130m_vanilla_lm_adapter
+        as adapter,
+    )
+
+    assert adapter.HF_REPO == "state-spaces/mamba-130m-hf"
+    assert (
+        adapter.HF_REVISION
+        == "40e5d2bd7452abb3ca8fadbafe9131ee0e2c2f37"
+    )
+    assert adapter.SELECTED_PLANE == "P3"
+    assert adapter.CONTROL_PLANE == "P5"
+    assert adapter.INTERVENTION_LAYER == 17
+    assert adapter.TARGET_OFFSET == 2
+    assert adapter.DIM == 395
+    assert adapter.HIDDEN_SIZE == 768
+    assert adapter.INTERMEDIATE_SIZE == 1536
+    assert adapter.LAYER_COUNT == 24
+    assert len(adapter.PAIR_IDS) == 300
+    assert adapter.PAIR_IDS[0] == "xg1_fact_2701"
+    assert adapter.PAIR_IDS[-1] == "xg1_fact_3000"
+    assert (
+        adapter.MODEL_SAFETENSORS_SHA256
+        == "1a5ed29c492ef4d485df3b7c2c8109771696589855b2162ad1ba618b6067cbea"
+    )
+    assert (
+        adapter.EXPECTED_STRONG_INDEX_SHA256
+        == "6950bb6c6cc777375f5e4ce18f22fd3272d7b80c5aff0726c25a6ec77d5813ce"
+    )
+
+
+def test_mamba130_adapter_does_not_load_downstream_model() -> None:
+    from scripts import (
+        reason_router_gen4_mamba130m_vanilla_lm_adapter
+        as adapter,
+    )
+
+    source = inspect.getsource(adapter)
+
+    forbidden = (
+        "load_representative_model_external(",
+        "authenticate_checkpoint(",
+        "selected_downstream_checkpoint.pt",
+        "ContraMambaV6BMinimal",
+        "historical_forward(",
+    )
+
+    for token in forbidden:
+        assert token not in source
+
+    assert "validate_frozen_layer17_partition(" in source
+    assert "load_seed181_planes()" in source
+
+
+def test_mamba130_uses_same_generic_vanilla_path() -> None:
+    source = inspect.getsource(subject)
+
+    assert '"mamba130m"' in source
+    assert "AutoModelForCausalLM" in source
+    assert "torch.log_softmax" in source
+    assert "torch.autograd.grad(" in source
+    assert "contrast_readout(" in source
+    assert "MAMBA130_STRONG_INDEX_IDENTITY" in source

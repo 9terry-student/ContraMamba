@@ -27,6 +27,10 @@ PLAN_FREEZE_COMMIT = (
     "1fe9a198a15c9cea0e5451d918cd949bc21bf7e0"
 )
 
+MAMBA130_EXTENSION_PLAN_FREEZE_COMMIT = (
+    "e567338f1dcd99d61ed7465ec39d441566f71fa3"
+)
+
 ORIGINAL_MAMBA_LM_REFERENCE_COMMIT = (
     "009bec5ee37f586844a3fc89c040a9c1a9d8badf"
 )
@@ -38,6 +42,7 @@ ORIGINAL_MAMBA_LM_HEAD_CONTRACT = (
 )
 
 SCALES = (
+    "mamba130m",
     "mamba370m",
     "mamba790m",
     "mamba14b",
@@ -171,12 +176,55 @@ def authenticate_repo(expected_head: str) -> None:
         "PLAN_FREEZE_NOT_ANCESTOR",
     )
 
+    extension_rc = subprocess.call(
+        [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            MAMBA130_EXTENSION_PLAN_FREEZE_COMMIT,
+            head,
+        ],
+        cwd=ROOT,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    require(
+        extension_rc == 0,
+        "MAMBA130_EXTENSION_PLAN_NOT_ANCESTOR",
+    )
+
 
 def scale_spec(scale: str) -> dict[str, Any]:
     require(
         scale in SCALES,
         f"SCALE:{scale}",
     )
+
+    if scale == "mamba130m":
+        from scripts import (
+            reason_router_gen4_mamba130m_vanilla_lm_adapter
+            as adapter
+        )
+
+        return {
+            "scale": scale,
+            "geom": adapter,
+            "confirmation": adapter,
+            "bridge": None,
+            "readout": adapter,
+            "selected_plane":
+                adapter.SELECTED_PLANE,
+            "control_plane":
+                adapter.CONTROL_PLANE,
+            "pair_ids":
+                tuple(adapter.PAIR_IDS),
+            "dim":
+                int(adapter.DIM),
+            "hf_repo":
+                adapter.HF_REPO,
+            "hf_revision":
+                adapter.HF_REVISION,
+        }
 
     if scale in (
         "mamba370m",
@@ -245,6 +293,14 @@ def scale_spec(scale: str) -> dict[str, Any]:
 
 def validate_protocol() -> None:
     expected = {
+        "mamba130m": {
+            "selected": "P3",
+            "control": "P5",
+            "first": "xg1_fact_2701",
+            "last": "xg1_fact_3000",
+            "layer": 17,
+            "dim": 395,
+        },
         "mamba370m": {
             "selected": "P3",
             "control": "P5",
@@ -1103,21 +1159,47 @@ def load_vanilla_model(
         .bool()
         .contiguous()
     )
-    frozen_mask = (
-        frozen["strong_mask"]
-        .detach()
-        .cpu()
-        .bool()
-        .contiguous()
-    )
 
-    require(
-        torch.equal(
-            runtime_mask,
-            frozen_mask,
-        ),
-        "VANILLA_STRONG_MASK_DRIFT",
-    )
+    if (
+        "strong_mask"
+        in frozen
+    ):
+        frozen_mask = (
+            frozen["strong_mask"]
+            .detach()
+            .cpu()
+            .bool()
+            .contiguous()
+        )
+
+        require(
+            torch.equal(
+                runtime_mask,
+                frozen_mask,
+            ),
+            "VANILLA_STRONG_MASK_DRIFT",
+        )
+    else:
+        require(
+            spec["scale"]
+            == "mamba130m",
+            "FROZEN_STRONG_MASK_MISSING",
+        )
+        require(
+            runtime_partition.get(
+                "strong_index_sha256"
+            )
+            == (
+                "6950bb6c6cc777375f5e4ce18f22fd3272d7b80c5aff0726c25a6ec77d5813ce"
+            ),
+            "MAMBA130_STRONG_INDEX_IDENTITY",
+        )
+        frozen_mask = (
+            runtime_mask
+            .clone()
+            .contiguous()
+        )
+
     require(
         int(
             frozen_mask.sum().item()
@@ -1857,6 +1939,12 @@ def write_bundle(
             expected_head,
         "plan_freeze_commit":
             PLAN_FREEZE_COMMIT,
+        "mamba130_extension_plan_freeze_commit":
+            (
+                MAMBA130_EXTENSION_PLAN_FREEZE_COMMIT
+                if scale == "mamba130m"
+                else None
+            ),
         "scale":
             scale,
         "hf_repo":
