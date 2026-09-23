@@ -281,3 +281,23 @@ def test_direct_script_entrypoint_can_import_repo_modules() -> None:
     assert "No module named 'scripts'" not in completed.stdout
     assert "ModuleNotFoundError" not in completed.stdout
     assert "HEAD:" in completed.stdout
+
+def test_exact_frozen_kernel_binding_is_mandatory() -> None:
+    source = inspect.getsource(subject)
+
+    assert "load_exact_fast_kernels()" in source
+    assert "exact_transformers_kernel_loader(" in source
+    assert "validate_transformers_kernel_bindings(" in source
+    assert '"KERNEL_CONSTRUCTOR:"' in source
+    assert '"kernel_transport_identity_status"' in source
+
+
+def test_lm_head_must_be_storage_tied() -> None:
+    source = inspect.getsource(subject)
+
+    assert "lm_head.weight" in source
+    assert "embeddings.weight" in source
+    assert "output_weight.data_ptr()" in source
+    assert "input_weight.data_ptr()" in source
+    assert '"LM_HEAD_NOT_STORAGE_TIED"' in source
+    assert '"lm_head_storage_tied_to_embeddings"' in source

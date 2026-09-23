@@ -774,12 +774,26 @@ def load_vanilla_model(
     from transformers import (
         AutoModelForCausalLM,
     )
+    from scripts import (
+        reason_router_gen4_generator_family_prevalence_kernel_compat
+        as kernel_compat
+    )
 
     device = torch.device(
         f"cuda:{gpu_id}"
     )
 
-    try:
+    kernels = (
+        kernel_compat
+        .load_exact_fast_kernels()
+    )
+
+    with (
+        kernel_compat
+        .exact_transformers_kernel_loader(
+            kernels
+        )
+    ) as kernel_calls:
         model = (
             AutoModelForCausalLM
             .from_pretrained(
@@ -788,15 +802,42 @@ def load_vanilla_model(
                 dtype=torch.float32,
             )
         )
-    except TypeError:
-        model = (
-            AutoModelForCausalLM
-            .from_pretrained(
-                str(snapshot),
-                local_files_only=True,
-                torch_dtype=torch.float32,
+
+    kernel_call_counts = {
+        "causal-conv1d":
+            kernel_calls.count(
+                "causal-conv1d"
+            ),
+        "mamba-ssm":
+            kernel_calls.count(
+                "mamba-ssm"
+            ),
+    }
+
+    require(
+        kernel_call_counts[
+            "causal-conv1d"
+        ] > 0
+        and kernel_call_counts[
+            "mamba-ssm"
+        ] > 0
+        and kernel_call_counts[
+            "causal-conv1d"
+        ]
+        == kernel_call_counts[
+            "mamba-ssm"
+        ],
+        (
+            "KERNEL_CONSTRUCTOR:"
+            + repr(
+                kernel_call_counts
             )
-        )
+        ),
+    )
+
+    kernel_compat.validate_transformers_kernel_bindings(
+        kernels
+    )
 
     model.eval()
     model.to(device)
@@ -819,6 +860,44 @@ def load_vanilla_model(
     require(
         backbone is not None,
         "LM_BACKBONE_MISSING",
+    )
+
+    embeddings = getattr(
+        backbone,
+        "embeddings",
+        None,
+    )
+    lm_head = getattr(
+        model,
+        "lm_head",
+        None,
+    )
+
+    require(
+        embeddings is not None,
+        "LM_EMBEDDINGS_MISSING",
+    )
+    require(
+        lm_head is not None,
+        "LM_HEAD_MISSING",
+    )
+
+    input_weight = (
+        embeddings.weight
+    )
+    output_weight = (
+        lm_head.weight
+    )
+
+    require(
+        tuple(output_weight.shape)
+        == tuple(input_weight.shape),
+        "LM_HEAD_SHAPE",
+    )
+    require(
+        output_weight.data_ptr()
+        == input_weight.data_ptr(),
+        "LM_HEAD_NOT_STORAGE_TIED",
     )
 
     layers = getattr(
@@ -911,6 +990,22 @@ def load_vanilla_model(
                 spec["hf_repo"],
             "hf_revision":
                 spec["hf_revision"],
+            "kernel_constructor_calls":
+                kernel_call_counts,
+            "kernel_transport_identity_status":
+                kernels[
+                    "transport_identity_status"
+                ],
+            "mamba_transport_revision":
+                kernels[
+                    "mamba_transport_revision"
+                ],
+            "causal_conv_transport_revision":
+                kernels[
+                    "causal_conv_transport_revision"
+                ],
+            "lm_head_storage_tied_to_embeddings":
+                True,
             "contra_downstream_loaded":
                 False,
             "additional_head_trained":
