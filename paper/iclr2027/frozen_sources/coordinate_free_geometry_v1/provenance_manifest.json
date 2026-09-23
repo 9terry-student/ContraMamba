@@ -1,0 +1,188 @@
+{
+  "N": 300,
+  "artifacts": [
+    {
+      "family": "xg2",
+      "historical_provenance": true,
+      "items_path": "reports/reason_router_gen4_seed181_checkpoint_replication_runs/g4k-seed181-checkpoint-replication-8e96fd1-retry1/seed181_xg2_geometry_items.jsonl",
+      "items_sha256": "79018820e1c91fd72aeaa95e827cd81aa226d03ceda6a80be3af903391400eaa",
+      "scale": "130M",
+      "source_pair_count": 300,
+      "source_pair_first": "xg2_fact_301",
+      "source_pair_last": "xg2_fact_600",
+      "tensor_dtype_loaded": "torch.float64",
+      "tensor_path": "reports/reason_router_gen4_seed181_checkpoint_replication_runs/g4k-seed181-checkpoint-replication-8e96fd1-retry1/seed181_xg2_alignment_delta_h.pt",
+      "tensor_sha256": "058e576c16b75d7e0944508f5a0ef41e7eb9a6dfbe1995703892cd535bcd7902",
+      "tensor_shape": [
+        300,
+        395
+      ]
+    },
+    {
+      "family": "xg4",
+      "historical_provenance": true,
+      "items_path": "reports/reason_router_gen4_seed181_checkpoint_replication_runs/g4k-seed181-checkpoint-replication-8e96fd1-retry1/seed181_xg4_geometry_items.jsonl",
+      "items_sha256": "381fdcf6054cb6642b291d51bf7a2abdec0c5e482f39a18364275f6ae7ec4fd9",
+      "scale": "130M",
+      "source_pair_count": 300,
+      "source_pair_first": "xg4_fact_301",
+      "source_pair_last": "xg4_fact_600",
+      "tensor_dtype_loaded": "torch.float64",
+      "tensor_path": "reports/reason_router_gen4_seed181_checkpoint_replication_runs/g4k-seed181-checkpoint-replication-8e96fd1-retry1/seed181_xg4_alignment_delta_h.pt",
+      "tensor_sha256": "90b55f36f1c70a758d5c79b16a0420770c778e240617ed8709de2080999102c6",
+      "tensor_shape": [
+        300,
+        395
+      ]
+    },
+    {
+      "family": "xg2",
+      "historical_provenance": false,
+      "items_path": "reports/reason_router_gen4_mamba370m_geometry_preparation_runs/g4k-mamba370-geometry-xg2xg4-2gpu-d8e71ad-retry2/xg2_geometry_items.jsonl",
+      "items_sha256": "13bd27fe6c606988b49c5a46f108555427f8f6a222ca2559ec62656e8766cc30",
+      "scale": "370M",
+      "source_pair_count": 300,
+      "source_pair_first": "xg2_fact_301",
+      "source_pair_last": "xg2_fact_600",
+      "tensor_dtype_loaded": "torch.float64",
+      "tensor_path": "reports/reason_router_gen4_mamba370m_geometry_preparation_runs/g4k-mamba370-geometry-xg2xg4-2gpu-d8e71ad-retry2/xg2_alignment_delta_h.pt",
+      "tensor_sha256": "5c68a9e3fe30473b4e0b2bb941c4c930236ee2fa4715a7ff693a92ed23c5a96b",
+      "tensor_shape": [
+        300,
+        650
+      ]
+    },
+    {
+      "family": "xg4",
+      "historical_provenance": false,
+      "items_path": "reports/reason_router_gen4_mamba370m_geometry_preparation_runs/g4k-mamba370-geometry-xg2xg4-2gpu-d8e71ad-retry2/xg4_geometry_items.jsonl",
+      "items_sha256": "6964bb201304a379169f1512ea874c7ee65562fb4b099ec04d92a2d36778249f",
+      "scale": "370M",
+      "source_pair_count": 300,
+      "source_pair_first": "xg4_fact_301",
+      "source_pair_last": "xg4_fact_600",
+      "tensor_dtype_loaded": "torch.float64",
+      "tensor_path": "reports/reason_router_gen4_mamba370m_geometry_preparation_runs/g4k-mamba370-geometry-xg2xg4-2gpu-d8e71ad-retry2/xg4_alignment_delta_h.pt",
+      "tensor_sha256": "66b2d3634517e647e3027ffb92bd289c61b117507eaed34f54b715ba444d753c",
+      "tensor_shape": [
+        300,
+        650
+      ]
+    },
+    {
+      "family": "xg2",
+      "historical_provenance": false,
+      "items_path": "reports/reason_router_gen4_mamba790m_geometry_preparation_runs/g4k-mamba790m-geometry-xg2xg4-2gpu-774983b-retry2/xg2_geometry_items.jsonl",
+      "items_sha256": "eff15318010b51828d5dd240a08ed759f115474ef25dc60a1bfc5f5caf349f08",
+      "scale": "790M",
+      "source_pair_count": 300,
+      "source_pair_first": "xg2_fact_301",
+      "source_pair_last": "xg2_fact_600",
+      "tensor_dtype_loaded": "torch.float64",
+      "tensor_path": "reports/reason_router_gen4_mamba790m_geometry_preparation_runs/g4k-mamba790m-geometry-xg2xg4-2gpu-774983b-retry2/xg2_alignment_delta_h.pt",
+      "tensor_sha256": "0d96495388e5bd0595f129328c82e151700e01e20758e2fda68f1bf5366eadc0",
+      "tensor_shape": [
+        300,
+        975
+      ]
+    },
+    {
+      "family": "xg4",
+      "historical_provenance": false,
+      "items_path": "reports/reason_router_gen4_mamba790m_geometry_preparation_runs/g4k-mamba790m-geometry-xg2xg4-2gpu-774983b-retry2/xg4_geometry_items.jsonl",
+      "items_sha256": "e91210d113aa404068815c52f3a8279557528a747baf28355b33f1b441982834",
+      "scale": "790M",
+      "source_pair_count": 300,
+      "source_pair_first": "xg4_fact_301",
+      "source_pair_last": "xg4_fact_600",
+      "tensor_dtype_loaded": "torch.float64",
+      "tensor_path": "reports/reason_router_gen4_mamba790m_geometry_preparation_runs/g4k-mamba790m-geometry-xg2xg4-2gpu-774983b-retry2/xg4_alignment_delta_h.pt",
+      "tensor_sha256": "1b71d7893f25cc7ab7d0ea39d8b644dcbb6a6bcaa0908183c28b44c17fbd2448",
+      "tensor_shape": [
+        300,
+        975
+      ]
+    },
+    {
+      "family": "xg2",
+      "historical_provenance": false,
+      "items_path": "reports/reason_router_gen4_mamba14b_geometry_preparation_runs/g4k-mamba14b-geometry-xg2xg4-2gpu-c758d5e-retry1/xg2_geometry_items.jsonl",
+      "items_sha256": "0ba3e37fd19f99688ea4d334b51301755a7a95473b90bc87a98180bd40dbb57c",
+      "scale": "1.4B",
+      "source_pair_count": 300,
+      "source_pair_first": "xg2_fact_301",
+      "source_pair_last": "xg2_fact_600",
+      "tensor_dtype_loaded": "torch.float64",
+      "tensor_path": "reports/reason_router_gen4_mamba14b_geometry_preparation_runs/g4k-mamba14b-geometry-xg2xg4-2gpu-c758d5e-retry1/xg2_alignment_delta_h.pt",
+      "tensor_sha256": "936c0d456859781e2bcd6f4481bdd483db9d567c5a274c8ce86f201b18cf1bd7",
+      "tensor_shape": [
+        300,
+        829
+      ]
+    },
+    {
+      "family": "xg4",
+      "historical_provenance": false,
+      "items_path": "reports/reason_router_gen4_mamba14b_geometry_preparation_runs/g4k-mamba14b-geometry-xg2xg4-2gpu-c758d5e-retry1/xg4_geometry_items.jsonl",
+      "items_sha256": "b09e9ddf05a3b18bc3ba8ea8e090e6504cd56953d4e5d38d41cde1544c6e36f8",
+      "scale": "1.4B",
+      "source_pair_count": 300,
+      "source_pair_first": "xg4_fact_301",
+      "source_pair_last": "xg4_fact_600",
+      "tensor_dtype_loaded": "torch.float64",
+      "tensor_path": "reports/reason_router_gen4_mamba14b_geometry_preparation_runs/g4k-mamba14b-geometry-xg2xg4-2gpu-c758d5e-retry1/xg4_alignment_delta_h.pt",
+      "tensor_sha256": "d38cb80221560da8d0fc0d6f66ec906e2b38c42c3ef48f94854f551a1e4956a8",
+      "tensor_shape": [
+        300,
+        829
+      ]
+    },
+    {
+      "family": "xg2",
+      "historical_provenance": false,
+      "items_path": "reports/reason_router_gen4_mamba28b_geometry_preparation_runs/g4k-mamba28b-geometry-xg2xg4-2gpu-7744d94/xg2_geometry_items.jsonl",
+      "items_sha256": "6f1595154cbcafe0e8003d9bb25a22e99cc6e1d78a2f97a779b06ada4409e797",
+      "scale": "2.8B",
+      "source_pair_count": 300,
+      "source_pair_first": "xg2_fact_301",
+      "source_pair_last": "xg2_fact_600",
+      "tensor_dtype_loaded": "torch.float64",
+      "tensor_path": "reports/reason_router_gen4_mamba28b_geometry_preparation_runs/g4k-mamba28b-geometry-xg2xg4-2gpu-7744d94/xg2_alignment_delta_h.pt",
+      "tensor_sha256": "54cd6b6048ab9ea2f735720ddf10d52147f15b5ca6a8ad7d970fef3e9bd17d9c",
+      "tensor_shape": [
+        300,
+        1003
+      ]
+    },
+    {
+      "family": "xg4",
+      "historical_provenance": false,
+      "items_path": "reports/reason_router_gen4_mamba28b_geometry_preparation_runs/g4k-mamba28b-geometry-xg2xg4-2gpu-7744d94/xg4_geometry_items.jsonl",
+      "items_sha256": "96749bb7dab59fe3ef248c5d87ec5dc39a05df2429c8886a7103fe61df086a3f",
+      "scale": "2.8B",
+      "source_pair_count": 300,
+      "source_pair_first": "xg4_fact_301",
+      "source_pair_last": "xg4_fact_600",
+      "tensor_dtype_loaded": "torch.float64",
+      "tensor_path": "reports/reason_router_gen4_mamba28b_geometry_preparation_runs/g4k-mamba28b-geometry-xg2xg4-2gpu-7744d94/xg4_alignment_delta_h.pt",
+      "tensor_sha256": "ed7b74f64cfd3b3a1f84f579e86648a1ba708cf887edffa004226ea1b6a77092",
+      "tensor_shape": [
+        300,
+        1003
+      ]
+    }
+  ],
+  "execution_head": "9f077f16daccbec8038c396f65a5f381d9d5c6c8",
+  "families": [
+    "xg2",
+    "xg4"
+  ],
+  "scale_order": [
+    "130M",
+    "370M",
+    "790M",
+    "1.4B",
+    "2.8B"
+  ],
+  "schema_version": "gen4-mamba1-five-scale-coordinate-free-geometry-provenance-v1"
+}

@@ -1,0 +1,43 @@
+{
+  "N": 300,
+  "analysis_execution_head": "9f077f16daccbec8038c396f65a5f381d9d5c6c8",
+  "families": [
+    "xg2",
+    "xg4"
+  ],
+  "new_scientific_execution": false,
+  "new_statistics": false,
+  "scale_order": [
+    "130M",
+    "370M",
+    "790M",
+    "1.4B",
+    "2.8B"
+  ],
+  "schema_version": "iclr2027-coordinate-free-geometry-snapshot-v1",
+  "scientific_result_commit": "593199d8e849572fc77b1b0bc7475d3d19468d12",
+  "source_kind": "exact_committed_git_blobs",
+  "sources": {
+    "coordinate_free_geometry_result.json": {
+      "byte_count": 8286,
+      "committed_bytes_sha256": "a3fa6af9bb300ffb8a26e3448e14d3c0347f65c51ddbe91d398b3b7d719411fa",
+      "git_blob_sha1": "95eae68296f96189d164cbafd570835d369c3acb",
+      "source_commit": "593199d8e849572fc77b1b0bc7475d3d19468d12",
+      "source_path": "reports/reason_router_gen4_mamba1_five_scale_coordinate_free_geometry_static_analysis_v1/coordinate_free_geometry_result.json"
+    },
+    "pairwise_coordinate_free_geometry.csv": {
+      "byte_count": 1094,
+      "committed_bytes_sha256": "72217834186101768e62676867686892f05cbc34ec1953498f9f4ce22ee7a049",
+      "git_blob_sha1": "e128675455cb5923aa24d759eb17be714071ed81",
+      "source_commit": "593199d8e849572fc77b1b0bc7475d3d19468d12",
+      "source_path": "reports/reason_router_gen4_mamba1_five_scale_coordinate_free_geometry_static_analysis_v1/pairwise_coordinate_free_geometry.csv"
+    },
+    "provenance_manifest.json": {
+      "byte_count": 8504,
+      "committed_bytes_sha256": "201420b7e8c8905740cb00dc43d6cd3cc05626cc2ff777cd0f317cac51566dd7",
+      "git_blob_sha1": "869ff69522e572758f699184659901a2e44ced78",
+      "source_commit": "593199d8e849572fc77b1b0bc7475d3d19468d12",
+      "source_path": "reports/reason_router_gen4_mamba1_five_scale_coordinate_free_geometry_static_analysis_v1/provenance_manifest.json"
+    }
+  }
+}
