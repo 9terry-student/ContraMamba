@@ -1,0 +1,198 @@
+{
+  "additional_head_trained": false,
+  "cohort_replacement_performed": false,
+  "contra_downstream_loaded": false,
+  "contra_logits_accessed": false,
+  "execution_head": "c3baf3da2815ef349077d22ce88364a216fde090",
+  "formal_inference_performed": false,
+  "g3_ownership_used": false,
+  "hf_repo": "state-spaces/mamba-2.8b-hf",
+  "hf_revision": "96c48e0292b63f5346b6d30061af2551f7101e26",
+  "intervention_condition_forward_count": 0,
+  "item_count": 600,
+  "item_file": "vanilla_lm_readout_items.jsonl",
+  "item_sha256": "ddfe134a5cd7c491ee4b53e8a01b56e2f6a82332d573886b87f8109fcc4492e5",
+  "local_backward_count": 600,
+  "mean_delta_l_computed": false,
+  "model_class": "MambaForCausalLM",
+  "model_forward_count": 600,
+  "p_value_count": 0,
+  "pair_aggregation_performed": false,
+  "pair_count": 300,
+  "parameter_grad_count": 0,
+  "plan_freeze_commit": "1fe9a198a15c9cea0e5451d918cd949bc21bf7e0",
+  "rescue_performed": false,
+  "result": "PASS_MAMBA1_VANILLA_LM_FUNCTIONAL_READOUT_RAW",
+  "row_filter_performed": false,
+  "scale": "mamba28b",
+  "schema_version": "gen4-mamba1-vanilla-lm-functional-readout-manifest-v1",
+  "selection_reopened": false,
+  "sign_vector_computed": false,
+  "summary_file": "raw_vanilla_lm_readout_summary.json",
+  "summary_sha256": "7a4fe12ad07eb3f1b931ebb7c381771b4af361b3bcdd9b3865872c545d196ff3",
+  "training_step_count": 0,
+  "worker_meta": [
+    {
+      "gpu_id": 0,
+      "intervention_condition_forward_count": 0,
+      "item_count": 300,
+      "items_sha256": "23dd58ef01d25faf9eeab14536bf485248031ad86da2fef298ccbf6699c6a100",
+      "local_backward_count": 300,
+      "model_forward_count": 300,
+      "model_provenance": {
+        "additional_head_trained": false,
+        "causal_conv_transport_revision": "02ab414d848bbee389d801f87b24fa536de60273",
+        "checkpoint_embedding_weight_present": true,
+        "checkpoint_lm_head_weight_present": false,
+        "checkpoint_weight_file_count": 3,
+        "checkpoint_weight_files": [
+          "model-00001-of-00003.safetensors",
+          "model-00002-of-00003.safetensors",
+          "model-00003-of-00003.safetensors"
+        ],
+        "contra_downstream_loaded": false,
+        "hf_config_tie_word_embeddings_present": false,
+        "hf_repo": "state-spaces/mamba-2.8b-hf",
+        "hf_revision": "96c48e0292b63f5346b6d30061af2551f7101e26",
+        "hf_runtime_tie_word_embeddings": false,
+        "kernel_constructor_calls": {
+          "causal-conv1d": 64,
+          "mamba-ssm": 64
+        },
+        "kernel_transport_identity_status": "EXACT_FROZEN_BINARY_SHA256_MATCH",
+        "lm_head_pre_alias_storage_tied": false,
+        "lm_head_storage_tied_to_embeddings": true,
+        "lm_head_tie_reconstruction": "historical_state_spaces_mamba_direct_parameter_alias",
+        "lm_head_tie_reference_commit": "009bec5ee37f586844a3fc89c040a9c1a9d8badf",
+        "lm_head_tie_reference_contract": "lm_head.weight=backbone.embedding.weight",
+        "lm_head_tie_reference_path": "mamba_ssm/models/mixer_seq_simple.py",
+        "lm_head_tie_source": "backbone.embeddings.weight",
+        "mamba_transport_revision": "a80a7604874b108585feb87096a0c86df2a1e5e3",
+        "model_class": "MambaForCausalLM",
+        "snapshot_identity": {
+          "config.json": {
+            "bytes": 843,
+            "sha256": "ec7f74c5f322716a5a3470632ff03572182e7a5027cdcb452520818c5276c356"
+          },
+          "generation_config.json": {
+            "bytes": 137,
+            "sha256": "248fa733db101c19a8e3c2f311a180fdd7c769323ec2873edf7060cec9f5ee32"
+          },
+          "model-00001-of-00003.safetensors": {
+            "bytes": 4969727736,
+            "sha256": "8d0022682157b0684b40659c4cba75394c59494cdb4cb79b4890070e81dd7756"
+          },
+          "model-00002-of-00003.safetensors": {
+            "bytes": 4949332368,
+            "sha256": "c51a5400ee9560f5611b5c64011b554f5b37c3437061cd0fa20d387ff1ae9986"
+          },
+          "model-00003-of-00003.safetensors": {
+            "bytes": 1154393144,
+            "sha256": "2691db90d7e98237e1e834a30d6630e89150576f50514c6e929b8d1db4cc1a43"
+          },
+          "model.safetensors.index.json": {
+            "bytes": 50864,
+            "sha256": "95f3794b7eece8798b37eba26ea7d7105f034b062ff2ebd545a3e91a9314deed"
+          },
+          "tokenizer.json": {
+            "bytes": 2113738,
+            "sha256": "3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8"
+          },
+          "tokenizer_config.json": {
+            "bytes": 4793,
+            "sha256": "027cbbe0813aefd46e0037bf828acf22b9b591ce845153ddbf409e99770a3a79"
+          }
+        }
+      },
+      "p_value_count": 0,
+      "pair_count": 150,
+      "pair_first": "xg1_fact_6601",
+      "pair_last": "xg1_fact_6750",
+      "parameter_grad_count": 0,
+      "scale": "mamba28b",
+      "schema_version": "gen4-mamba1-vanilla-lm-worker-v1",
+      "training_step_count": 0
+    },
+    {
+      "gpu_id": 1,
+      "intervention_condition_forward_count": 0,
+      "item_count": 300,
+      "items_sha256": "a2798fd69b4e77a75070802c9cc0bb59bb3ddf4cd11864d1fcdbeda9a4f329d0",
+      "local_backward_count": 300,
+      "model_forward_count": 300,
+      "model_provenance": {
+        "additional_head_trained": false,
+        "causal_conv_transport_revision": "02ab414d848bbee389d801f87b24fa536de60273",
+        "checkpoint_embedding_weight_present": true,
+        "checkpoint_lm_head_weight_present": false,
+        "checkpoint_weight_file_count": 3,
+        "checkpoint_weight_files": [
+          "model-00001-of-00003.safetensors",
+          "model-00002-of-00003.safetensors",
+          "model-00003-of-00003.safetensors"
+        ],
+        "contra_downstream_loaded": false,
+        "hf_config_tie_word_embeddings_present": false,
+        "hf_repo": "state-spaces/mamba-2.8b-hf",
+        "hf_revision": "96c48e0292b63f5346b6d30061af2551f7101e26",
+        "hf_runtime_tie_word_embeddings": false,
+        "kernel_constructor_calls": {
+          "causal-conv1d": 64,
+          "mamba-ssm": 64
+        },
+        "kernel_transport_identity_status": "EXACT_FROZEN_BINARY_SHA256_MATCH",
+        "lm_head_pre_alias_storage_tied": false,
+        "lm_head_storage_tied_to_embeddings": true,
+        "lm_head_tie_reconstruction": "historical_state_spaces_mamba_direct_parameter_alias",
+        "lm_head_tie_reference_commit": "009bec5ee37f586844a3fc89c040a9c1a9d8badf",
+        "lm_head_tie_reference_contract": "lm_head.weight=backbone.embedding.weight",
+        "lm_head_tie_reference_path": "mamba_ssm/models/mixer_seq_simple.py",
+        "lm_head_tie_source": "backbone.embeddings.weight",
+        "mamba_transport_revision": "a80a7604874b108585feb87096a0c86df2a1e5e3",
+        "model_class": "MambaForCausalLM",
+        "snapshot_identity": {
+          "config.json": {
+            "bytes": 843,
+            "sha256": "ec7f74c5f322716a5a3470632ff03572182e7a5027cdcb452520818c5276c356"
+          },
+          "generation_config.json": {
+            "bytes": 137,
+            "sha256": "248fa733db101c19a8e3c2f311a180fdd7c769323ec2873edf7060cec9f5ee32"
+          },
+          "model-00001-of-00003.safetensors": {
+            "bytes": 4969727736,
+            "sha256": "8d0022682157b0684b40659c4cba75394c59494cdb4cb79b4890070e81dd7756"
+          },
+          "model-00002-of-00003.safetensors": {
+            "bytes": 4949332368,
+            "sha256": "c51a5400ee9560f5611b5c64011b554f5b37c3437061cd0fa20d387ff1ae9986"
+          },
+          "model-00003-of-00003.safetensors": {
+            "bytes": 1154393144,
+            "sha256": "2691db90d7e98237e1e834a30d6630e89150576f50514c6e929b8d1db4cc1a43"
+          },
+          "model.safetensors.index.json": {
+            "bytes": 50864,
+            "sha256": "95f3794b7eece8798b37eba26ea7d7105f034b062ff2ebd545a3e91a9314deed"
+          },
+          "tokenizer.json": {
+            "bytes": 2113738,
+            "sha256": "3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8"
+          },
+          "tokenizer_config.json": {
+            "bytes": 4793,
+            "sha256": "027cbbe0813aefd46e0037bf828acf22b9b591ce845153ddbf409e99770a3a79"
+          }
+        }
+      },
+      "p_value_count": 0,
+      "pair_count": 150,
+      "pair_first": "xg1_fact_6751",
+      "pair_last": "xg1_fact_6900",
+      "parameter_grad_count": 0,
+      "scale": "mamba28b",
+      "schema_version": "gen4-mamba1-vanilla-lm-worker-v1",
+      "training_step_count": 0
+    }
+  ]
+}
