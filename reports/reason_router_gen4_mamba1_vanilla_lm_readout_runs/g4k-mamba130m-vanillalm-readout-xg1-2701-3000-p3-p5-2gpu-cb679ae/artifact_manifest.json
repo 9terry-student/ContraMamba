@@ -1,0 +1,171 @@
+{
+  "additional_head_trained": false,
+  "cohort_replacement_performed": false,
+  "contra_downstream_loaded": false,
+  "contra_logits_accessed": false,
+  "execution_head": "cb679aea7b9970923a5c8a0704b66c6a69cd8be8",
+  "formal_inference_performed": false,
+  "g3_ownership_used": false,
+  "hf_repo": "state-spaces/mamba-130m-hf",
+  "hf_revision": "40e5d2bd7452abb3ca8fadbafe9131ee0e2c2f37",
+  "intervention_condition_forward_count": 0,
+  "item_count": 600,
+  "item_file": "vanilla_lm_readout_items.jsonl",
+  "item_sha256": "24b85d216c9867781e355212e0e25bc3d5b8bc13945d8efda93c89ff8f9f148d",
+  "local_backward_count": 600,
+  "mamba130_extension_plan_freeze_commit": "e567338f1dcd99d61ed7465ec39d441566f71fa3",
+  "mean_delta_l_computed": false,
+  "model_class": "MambaForCausalLM",
+  "model_forward_count": 600,
+  "p_value_count": 0,
+  "pair_aggregation_performed": false,
+  "pair_count": 300,
+  "parameter_grad_count": 0,
+  "plan_freeze_commit": "1fe9a198a15c9cea0e5451d918cd949bc21bf7e0",
+  "rescue_performed": false,
+  "result": "PASS_MAMBA1_VANILLA_LM_FUNCTIONAL_READOUT_RAW",
+  "row_filter_performed": false,
+  "scale": "mamba130m",
+  "schema_version": "gen4-mamba1-vanilla-lm-functional-readout-manifest-v1",
+  "selection_reopened": false,
+  "sign_vector_computed": false,
+  "summary_file": "raw_vanilla_lm_readout_summary.json",
+  "summary_sha256": "f65bd972cede66f7a1d5da3c23ca6ac807354263c9cbdc527116e7de57e509f7",
+  "training_step_count": 0,
+  "worker_meta": [
+    {
+      "gpu_id": 0,
+      "intervention_condition_forward_count": 0,
+      "item_count": 300,
+      "items_sha256": "213dc01c54f28872535141e9e8b5890b3f4beb525d1f303de2ffc82ff35dff79",
+      "local_backward_count": 300,
+      "model_forward_count": 300,
+      "model_provenance": {
+        "additional_head_trained": false,
+        "causal_conv_transport_revision": "02ab414d848bbee389d801f87b24fa536de60273",
+        "checkpoint_embedding_weight_present": true,
+        "checkpoint_lm_head_weight_present": false,
+        "checkpoint_weight_file_count": 1,
+        "checkpoint_weight_files": [
+          "model.safetensors"
+        ],
+        "contra_downstream_loaded": false,
+        "hf_config_tie_word_embeddings_present": false,
+        "hf_repo": "state-spaces/mamba-130m-hf",
+        "hf_revision": "40e5d2bd7452abb3ca8fadbafe9131ee0e2c2f37",
+        "hf_runtime_tie_word_embeddings": false,
+        "kernel_constructor_calls": {
+          "causal-conv1d": 24,
+          "mamba-ssm": 24
+        },
+        "kernel_transport_identity_status": "EXACT_FROZEN_BINARY_SHA256_MATCH",
+        "lm_head_pre_alias_storage_tied": false,
+        "lm_head_storage_tied_to_embeddings": true,
+        "lm_head_tie_reconstruction": "historical_state_spaces_mamba_direct_parameter_alias",
+        "lm_head_tie_reference_commit": "009bec5ee37f586844a3fc89c040a9c1a9d8badf",
+        "lm_head_tie_reference_contract": "lm_head.weight=backbone.embedding.weight",
+        "lm_head_tie_reference_path": "mamba_ssm/models/mixer_seq_simple.py",
+        "lm_head_tie_source": "backbone.embeddings.weight",
+        "mamba_transport_revision": "a80a7604874b108585feb87096a0c86df2a1e5e3",
+        "model_class": "MambaForCausalLM",
+        "snapshot_identity": {
+          "config.json": {
+            "bytes": 895,
+            "sha256": "784825b6b6cdde47a1602278db0e66d6764169af4a8e662404701bc636a2686a"
+          },
+          "model.safetensors": {
+            "bytes": 516567560,
+            "sha256": "1a5ed29c492ef4d485df3b7c2c8109771696589855b2162ad1ba618b6067cbea"
+          },
+          "special_tokens_map.json": {
+            "bytes": 473,
+            "sha256": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8"
+          },
+          "tokenizer.json": {
+            "bytes": 2113837,
+            "sha256": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf"
+          },
+          "tokenizer_config.json": {
+            "bytes": 4793,
+            "sha256": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+          }
+        }
+      },
+      "p_value_count": 0,
+      "pair_count": 150,
+      "pair_first": "xg1_fact_2701",
+      "pair_last": "xg1_fact_2850",
+      "parameter_grad_count": 0,
+      "scale": "mamba130m",
+      "schema_version": "gen4-mamba1-vanilla-lm-worker-v1",
+      "training_step_count": 0
+    },
+    {
+      "gpu_id": 1,
+      "intervention_condition_forward_count": 0,
+      "item_count": 300,
+      "items_sha256": "a94e233346c56f86a3413b14afc33e456cb234ea34fb1bfb51ea723c23a19b2b",
+      "local_backward_count": 300,
+      "model_forward_count": 300,
+      "model_provenance": {
+        "additional_head_trained": false,
+        "causal_conv_transport_revision": "02ab414d848bbee389d801f87b24fa536de60273",
+        "checkpoint_embedding_weight_present": true,
+        "checkpoint_lm_head_weight_present": false,
+        "checkpoint_weight_file_count": 1,
+        "checkpoint_weight_files": [
+          "model.safetensors"
+        ],
+        "contra_downstream_loaded": false,
+        "hf_config_tie_word_embeddings_present": false,
+        "hf_repo": "state-spaces/mamba-130m-hf",
+        "hf_revision": "40e5d2bd7452abb3ca8fadbafe9131ee0e2c2f37",
+        "hf_runtime_tie_word_embeddings": false,
+        "kernel_constructor_calls": {
+          "causal-conv1d": 24,
+          "mamba-ssm": 24
+        },
+        "kernel_transport_identity_status": "EXACT_FROZEN_BINARY_SHA256_MATCH",
+        "lm_head_pre_alias_storage_tied": false,
+        "lm_head_storage_tied_to_embeddings": true,
+        "lm_head_tie_reconstruction": "historical_state_spaces_mamba_direct_parameter_alias",
+        "lm_head_tie_reference_commit": "009bec5ee37f586844a3fc89c040a9c1a9d8badf",
+        "lm_head_tie_reference_contract": "lm_head.weight=backbone.embedding.weight",
+        "lm_head_tie_reference_path": "mamba_ssm/models/mixer_seq_simple.py",
+        "lm_head_tie_source": "backbone.embeddings.weight",
+        "mamba_transport_revision": "a80a7604874b108585feb87096a0c86df2a1e5e3",
+        "model_class": "MambaForCausalLM",
+        "snapshot_identity": {
+          "config.json": {
+            "bytes": 895,
+            "sha256": "784825b6b6cdde47a1602278db0e66d6764169af4a8e662404701bc636a2686a"
+          },
+          "model.safetensors": {
+            "bytes": 516567560,
+            "sha256": "1a5ed29c492ef4d485df3b7c2c8109771696589855b2162ad1ba618b6067cbea"
+          },
+          "special_tokens_map.json": {
+            "bytes": 473,
+            "sha256": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8"
+          },
+          "tokenizer.json": {
+            "bytes": 2113837,
+            "sha256": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf"
+          },
+          "tokenizer_config.json": {
+            "bytes": 4793,
+            "sha256": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+          }
+        }
+      },
+      "p_value_count": 0,
+      "pair_count": 150,
+      "pair_first": "xg1_fact_2851",
+      "pair_last": "xg1_fact_3000",
+      "parameter_grad_count": 0,
+      "scale": "mamba130m",
+      "schema_version": "gen4-mamba1-vanilla-lm-worker-v1",
+      "training_step_count": 0
+    }
+  ]
+}
