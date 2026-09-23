@@ -301,3 +301,24 @@ def test_lm_head_must_be_storage_tied() -> None:
     assert "input_weight.data_ptr()" in source
     assert '"LM_HEAD_NOT_STORAGE_TIED"' in source
     assert '"lm_head_storage_tied_to_embeddings"' in source
+
+def test_lm_head_tie_reconstruction_is_config_gated() -> None:
+    source = inspect.getsource(subject)
+
+    required = (
+        "tie_word_embeddings",
+        "LM_TIE_WORD_EMBEDDINGS_DISABLED",
+        "get_expanded_tied_weights_keys(",
+        '"lm_head.weight"',
+        '"backbone.embeddings.weight"',
+        "LM_TIE_MAPPING:",
+        "model.tie_weights()",
+        "LM_HEAD_PARAMETER_NOT_IDENTICAL",
+        "LM_HEAD_TIE_DRIFT_AFTER_FREEZE",
+        '"lm_head_tie_reconstruction"',
+        '"explicit_transformers_model_tie_weights"',
+        '"lm_head_tie_source"',
+    )
+
+    for token in required:
+        assert token in source

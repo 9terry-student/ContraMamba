@@ -841,7 +841,6 @@ def load_vanilla_model(
 
     model.eval()
     model.to(device)
-    freeze_parameters(model)
 
     require(
         model.__class__.__name__
@@ -882,22 +881,82 @@ def load_vanilla_model(
         "LM_HEAD_MISSING",
     )
 
-    input_weight = (
-        embeddings.weight
-    )
-    output_weight = (
-        lm_head.weight
-    )
+    input_weight = embeddings.weight
+    output_weight = lm_head.weight
 
     require(
         tuple(output_weight.shape)
         == tuple(input_weight.shape),
         "LM_HEAD_SHAPE",
     )
+
+    tie_word_embeddings = bool(
+        getattr(
+            model.config,
+            "tie_word_embeddings",
+            False,
+        )
+    )
+    require(
+        tie_word_embeddings,
+        "LM_TIE_WORD_EMBEDDINGS_DISABLED",
+    )
+
+    expanded_ties = (
+        model
+        .get_expanded_tied_weights_keys(
+            all_submodels=False
+        )
+    )
+
+    expected_ties = {
+        "lm_head.weight":
+            "backbone.embeddings.weight",
+    }
+
+    require(
+        expanded_ties
+        == expected_ties,
+        (
+            "LM_TIE_MAPPING:"
+            + repr(expanded_ties)
+        ),
+    )
+
+    pre_tie_storage_tied = bool(
+        output_weight.data_ptr()
+        == input_weight.data_ptr()
+    )
+
+    model.tie_weights()
+
+    embeddings = model.backbone.embeddings
+    lm_head = model.lm_head
+
+    input_weight = embeddings.weight
+    output_weight = lm_head.weight
+
+    require(
+        tuple(output_weight.shape)
+        == tuple(input_weight.shape),
+        "LM_HEAD_SHAPE_AFTER_TIE",
+    )
     require(
         output_weight.data_ptr()
         == input_weight.data_ptr(),
         "LM_HEAD_NOT_STORAGE_TIED",
+    )
+    require(
+        output_weight is input_weight,
+        "LM_HEAD_PARAMETER_NOT_IDENTICAL",
+    )
+
+    freeze_parameters(model)
+
+    require(
+        model.lm_head.weight.data_ptr()
+        == model.backbone.embeddings.weight.data_ptr(),
+        "LM_HEAD_TIE_DRIFT_AFTER_FREEZE",
     )
 
     layers = getattr(
@@ -1004,6 +1063,16 @@ def load_vanilla_model(
                 kernels[
                     "causal_conv_transport_revision"
                 ],
+            "lm_head_pre_tie_storage_tied":
+                pre_tie_storage_tied,
+            "lm_head_tie_word_embeddings_config":
+                tie_word_embeddings,
+            "lm_head_tie_mapping":
+                dict(expanded_ties),
+            "lm_head_tie_reconstruction":
+                "explicit_transformers_model_tie_weights",
+            "lm_head_tie_source":
+                "backbone.embeddings.weight",
             "lm_head_storage_tied_to_embeddings":
                 True,
             "contra_downstream_loaded":
