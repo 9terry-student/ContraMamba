@@ -1,0 +1,18 @@
+{
+  "extension_plan_freeze": "e567338f1dcd99d61ed7465ec39d441566f71fa3",
+  "inferential_test_performed": false,
+  "output_files": [
+    "mamba130m_completeness_analysis.json",
+    "mamba130m_completeness_pair_values.jsonl",
+    "mamba130m_completeness_analysis.md"
+  ],
+  "p_value_count": 0,
+  "pair_output_rows": 300,
+  "prior_four_scale_analysis_freeze": "88a6d6c469d44071a070b494485efe56db4faa58",
+  "raw_freeze_head": "9bbea9cb03327d4dca86cdb148eec44a4dd27b34",
+  "rescue_performed": false,
+  "result": "PASS_MAMBA130M_VANILLA_LM_COMPLETENESS_STATIC_ANALYSIS",
+  "row_filter_performed": false,
+  "selection_reopened": false,
+  "status": "POST_PRIMARY_DESCRIPTIVE_COMPLETENESS"
+}

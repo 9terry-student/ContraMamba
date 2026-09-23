@@ -1,0 +1,155 @@
+{
+  "extension_diagnostics": {
+    "M130_CONTRAMAMBA_SIGN": "+",
+    "M130_SIGN_CONCORDANCE": false,
+    "M130_TASK_MATCHED_SIGN_LM": "-"
+  },
+  "extension_plan_freeze": "e567338f1dcd99d61ed7465ec39d441566f71fa3",
+  "five_scale_descriptive_completeness": {
+    "aggregate_sign_opposite_at_all_five_sampled_scales": true,
+    "contramamba_forward_equivalent_sign_vector": [
+      "+",
+      "+",
+      "+",
+      "-",
+      "-"
+    ],
+    "prospective_status": "130M is post-primary completeness; 370M-2.8B remain the original prospective four-scale control.",
+    "scale_order": [
+      "130M",
+      "370M",
+      "790M",
+      "1.4B",
+      "2.8B"
+    ],
+    "vanilla_lm_task_matched_sign_vector": [
+      "-",
+      "-",
+      "-",
+      "+",
+      "+"
+    ]
+  },
+  "inferential_test_performed": false,
+  "interpretation": {
+    "anti_inversion_boundary": "The 130M pair-level association is positive rather than a uniform negative mapping, so the five-scale aggregate sign opposition does not establish a simple rowwise inversion law.",
+    "five_scale": "Combining the immutable original four-scale control with this extension yields descriptive sign vectors vanilla=-,-,-,+,+ versus ContraMamba=+,+,+,-,-.",
+    "no_new_p_value": true,
+    "no_plane_homology_claim": true,
+    "no_scaling_law": true,
+    "no_threshold_claim": true,
+    "primary": "The post-primary 130M completeness extension is negative under the vanilla-LM TASK_MATCHED P3-P5 readout while the frozen ContraMamba 130M forward-equivalent comparator is positive."
+  },
+  "mamba130m": {
+    "by_cell": {
+      "C0_SHAM": {
+        "fraction_negative": 0.6233333333333333,
+        "fraction_positive": 0.37666666666666665,
+        "fraction_zero": 0.0,
+        "max": 0.2050714234006848,
+        "mean": -0.037406762206373935,
+        "median": -0.07254824456665183,
+        "min": -0.22632287993375633,
+        "n": 300,
+        "q25": -0.13914709695561123,
+        "q75": 0.09752972897041998,
+        "sd_sample": 0.1272157903241266
+      },
+      "C2_NAME": {
+        "fraction_negative": 0.75,
+        "fraction_positive": 0.25,
+        "fraction_zero": 0.0,
+        "max": 0.18430490922079726,
+        "mean": -0.07542693056652214,
+        "median": -0.08287291769486652,
+        "min": -0.30022391124653547,
+        "n": 300,
+        "q25": -0.12747817723097274,
+        "q75": -0.0015909926904020995,
+        "sd_sample": 0.11660596299894838
+      }
+    },
+    "common_planes": [
+      "P3",
+      "P5"
+    ],
+    "contra_comparison": {
+      "contra_forward_equivalent": {
+        "fraction_negative": 0.4633333333333333,
+        "fraction_positive": 0.5366666666666666,
+        "fraction_zero": 0.0,
+        "max": 0.038494962054209714,
+        "mean": 0.002240732073064253,
+        "median": 0.0005265877974449213,
+        "min": -0.023610371673222025,
+        "n": 300,
+        "q25": -0.004391701470678643,
+        "q75": 0.010037950704627752,
+        "sd_sample": 0.012418434230456186
+      },
+      "contra_owned": {
+        "fraction_negative": 0.4633333333333333,
+        "fraction_positive": 0.5366666666666666,
+        "fraction_zero": 0.0,
+        "max": 0.019247481027104857,
+        "mean": 0.0011203660365321265,
+        "median": 0.00026329389872246066,
+        "min": -0.011805185836611012,
+        "n": 300,
+        "q25": -0.0021958507353393216,
+        "q75": 0.005018975352313876,
+        "sd_sample": 0.006209217115228093
+      },
+      "pair_sign_agreement_fraction": 0.5566666666666666,
+      "pearson": 0.3207983196366968,
+      "spearman": 0.20438093756597295
+    },
+    "row_diagnostics": {
+      "NORM_GAP": 0.008213139463385147,
+      "corr_component_norm_cosine_gap": 0.44866029302632676,
+      "gradient_strong_l2": {
+        "fraction_negative": 0.0,
+        "fraction_positive": 1.0,
+        "fraction_zero": 0.0,
+        "max": 0.33089525414309423,
+        "mean": 0.21006031211409917,
+        "median": 0.19939054562335295,
+        "min": 0.12618153372202517,
+        "n": 600,
+        "q25": 0.17657528310961632,
+        "q75": 0.2338325308433485,
+        "sd_sample": 0.051105071783902715
+      },
+      "max_abs_delta_identity_error": 5.551115123125783e-17,
+      "mean_component_norm": 10.158577303588267,
+      "mean_cosine_gap": -0.02781837116411553,
+      "mean_gradient_strong_l2": 0.21006031211409917,
+      "row_n": 600
+    },
+    "task_matched_pair": {
+      "fraction_negative": 0.6266666666666667,
+      "fraction_positive": 0.37333333333333335,
+      "fraction_zero": 0.0,
+      "max": 0.17617276802464044,
+      "mean": -0.05641684638644803,
+      "median": -0.07709188148892987,
+      "min": -0.23103276514642518,
+      "n": 300,
+      "q25": -0.14826140532780852,
+      "q75": 0.009393236628497609,
+      "sd_sample": 0.11056440198910764
+    },
+    "task_matched_planes": [
+      "P3",
+      "P5"
+    ]
+  },
+  "p_value_count": 0,
+  "prior_four_scale_analysis_freeze": "88a6d6c469d44071a070b494485efe56db4faa58",
+  "raw_freeze_head": "9bbea9cb03327d4dca86cdb148eec44a4dd27b34",
+  "rescue_performed": false,
+  "result": "PASS_MAMBA130M_VANILLA_LM_COMPLETENESS_STATIC_ANALYSIS",
+  "row_filter_performed": false,
+  "selection_reopened": false,
+  "status": "POST_PRIMARY_DESCRIPTIVE_COMPLETENESS"
+}
