@@ -161,18 +161,41 @@ def git(*args: str) -> str:
         raise AnalysisError("GIT_FAILURE:" + " ".join(args)) from exc
 
 
+def git_blob_bytes(path: Path) -> bytes:
+    try:
+        relative = path.resolve().relative_to(ROOT.resolve()).as_posix()
+    except ValueError as exc:
+        raise AnalysisError(f"GIT_BLOB_PATH_OUTSIDE_REPO:{path}") from exc
+
+    try:
+        return subprocess.check_output(
+            ["git", "show", f"HEAD:{relative}"],
+            cwd=ROOT,
+            stderr=subprocess.STDOUT,
+        )
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise AnalysisError(f"GIT_BLOB_READ_FAILURE:{relative}") from exc
+
+
+def sha256_bytes(raw: bytes) -> str:
+    return hashlib.sha256(raw).hexdigest()
+
+
 def read_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
-def read_jsonl(path: Path) -> list[dict[str, Any]]:
+def read_jsonl_bytes(
+    raw: bytes,
+    label: Path,
+) -> list[dict[str, Any]]:
     rows = []
-    with path.open("r", encoding="utf-8-sig") as handle:
-        for line in handle:
-            if line.strip():
-                value = json.loads(line)
-                require(isinstance(value, dict), f"JSONL_NON_OBJECT:{path}")
-                rows.append(value)
+    text = raw.decode("utf-8-sig")
+    for line in text.splitlines():
+        if line.strip():
+            value = json.loads(line)
+            require(isinstance(value, dict), f"JSONL_NON_OBJECT:{label}")
+            rows.append(value)
     return rows
 
 
@@ -250,7 +273,12 @@ def verify_and_load(
     require(items_path.is_file(), f"MISSING_ITEMS:{scale}:{family}")
 
     tensor_sha = sha256_file(tensor_path)
-    items_sha = sha256_file(items_path)
+
+    # Text artifacts may be checked out with platform-specific newline
+    # conversion on Windows. Verify and consume the exact committed blob
+    # bytes so the frozen SHA256 identifies the bytes actually analyzed.
+    items_raw = git_blob_bytes(items_path)
+    items_sha = sha256_bytes(items_raw)
 
     require(
         tensor_sha == fam["tensor_sha256"],
@@ -283,7 +311,7 @@ def verify_and_load(
         f"ZERO_ROW_NORM:{scale}:{family}",
     )
 
-    items = read_jsonl(items_path)
+    items = read_jsonl_bytes(items_raw, items_path)
     require(len(items) == N, f"ITEM_COUNT:{scale}:{family}:{len(items)}")
 
     pair_ids = [str(row["source_pair_id"]) for row in items]
