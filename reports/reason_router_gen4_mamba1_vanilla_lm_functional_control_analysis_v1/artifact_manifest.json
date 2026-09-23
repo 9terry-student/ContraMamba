@@ -1,0 +1,23 @@
+{
+  "inferential_test_performed": false,
+  "output_files": [
+    "functional_control_analysis.json",
+    "functional_control_pair_values.jsonl",
+    "functional_control_analysis.md"
+  ],
+  "p_value_count": 0,
+  "pair_count_per_scale": 300,
+  "pair_output_rows": 1200,
+  "plan_freeze_commit": "1fe9a198a15c9cea0e5451d918cd949bc21bf7e0",
+  "raw_freeze_head": "f78c56418902dc208adaef6c9a188378f9a7fa45",
+  "rescue_performed": false,
+  "result": "PASS_MAMBA1_VANILLA_LM_FUNCTIONAL_CONTROL_STATIC_ANALYSIS",
+  "row_filter_performed": false,
+  "scale_order": [
+    "370M",
+    "790M",
+    "1.4B",
+    "2.8B"
+  ],
+  "selection_reopened": false
+}
