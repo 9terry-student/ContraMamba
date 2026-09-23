@@ -7,6 +7,7 @@ import json
 import math
 import multiprocessing as mp
 import subprocess
+import sys
 import tempfile
 import traceback
 from pathlib import Path
@@ -15,7 +16,11 @@ from typing import Any, Mapping, Sequence
 import torch
 
 
-ROOT = Path(__file__).resolve().parents[1]
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
+ROOT = _REPO_ROOT
 EXPECTED_BRANCH = "gen4-mamba1-five-scale-ladder-extension"
 
 PLAN_FREEZE_COMMIT = (

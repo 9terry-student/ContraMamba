@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import inspect
+import subprocess
+import sys
+from pathlib import Path
 
 import torch
 
@@ -245,3 +248,36 @@ def test_no_parameter_backward_call() -> None:
 
     assert ".backward(" not in source
     assert "torch.autograd.grad(" in source
+
+def test_direct_script_entrypoint_can_import_repo_modules() -> None:
+    root = Path(__file__).resolve().parents[1]
+    script = (
+        root
+        / "scripts"
+        / "reason_router_gen4_mamba1_vanilla_lm_readout_raw_fast_cuda.py"
+    )
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(script),
+            "--scale",
+            "mamba370m",
+            "--expected-head",
+            "0" * 40,
+            "--model-snapshot",
+            str(root),
+            "--output-dir",
+            str(root / "_never_created_vanilla_lm_test_output"),
+        ],
+        cwd=root,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        check=False,
+    )
+
+    assert completed.returncode != 0
+    assert "No module named 'scripts'" not in completed.stdout
+    assert "ModuleNotFoundError" not in completed.stdout
+    assert "HEAD:" in completed.stdout
