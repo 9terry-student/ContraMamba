@@ -71,22 +71,56 @@ checkpoint, router, or task head.
 \subsection{Native geometry and intervention}
 \label{app:geometry}
 
-XG2/XG4 response-free directions define independent principal planes
-within each model's native strong-channel mask. For the plotted kernel
-quantity, let $k_j=\texttt{conv\_weight}[j,0,\mathrm{lag0}]$,
-$\mu_{k^2}=\operatorname{mean}_j k_j^2$, and
+XG2/XG4 response-free directions define independent native geometry within each model's strong-channel mask. Geometry preparation uses Mamba-side activations without XG1 response access, downstream task logits or gradients, or backward passes. The inputs belong to the controlled research families and therefore do not characterize all natural language.
+
+The historical scalar geometry measurements remain useful supporting evidence. For
+$k_j=\texttt{conv\_weight}[j,0,\mathrm{lag0}]$,
+$\mu_{k^2}=\operatorname{mean}_j k_j^2$ and
 $\mathrm{strong}=\{j:k_j^2>\mu_{k^2}\}$.
-Geometry preparation uses Mamba-side forward activations without XG1
-response access, downstream task logits or gradients, or backward passes.
-The inputs belong to the research families, so this does not characterize
-all natural language. The historical 130M strong-channel rule is the same:
-$\mu_{k^2}=0.027899337798707836$ and 395 of 1536 channels are strong.
-Its response-blind projector-contrast reconstruction gives leading positive
-eigenvalue $\lambda_1=0.8706181418918275$. These two frozen quantities
-are plotted with open markers in Figure~\ref{fig:scale}. The 130M
-reconstruction predates the homogeneous 370M--2.8B geometry bridge;
-the five plotted points are not one matched execution. No derived 130M
-spectral-share or entropy summary is added.
+At 130M, $\mu_{k^2}=0.027899337798707836$, 395 of 1536 channels are strong, and the response-blind projector reconstruction has leading positive eigenvalue
+$\lambda_1=0.8706181418918275$. The later matched 370M--2.8B scalar series is reported in Appendix~\ref{app:scale}. These measurements are no longer the main evidence for cross-scale geometric non-invariance.
+
+The primary coordinate-insensitive comparison uses the already frozen
+\texttt{alignment\_delta\_h} matrices. For each scale $s$ and family, let
+$D_s\in\mathbb{R}^{300\times d_s}$ contain the 300 ordered pair vectors and row-normalize it to $U_s$. Define
+\[
+K_s=U_sU_s^\top,\qquad
+H=I-\frac{1}{300}\mathbf{1}\mathbf{1}^\top,
+\qquad
+\widetilde K_s=HK_sH.
+\]
+For scales $s,t$, centered linear CKA is
+\[
+\mathrm{CKA}(s,t)
+=
+\frac{\langle \widetilde K_s,\widetilde K_t\rangle_F}
+{\|\widetilde K_s\|_F\,\|\widetilde K_t\|_F}.
+\]
+XG2 and XG4 are analyzed independently. Every scale uses the same ordered source-pair IDs 301--600 within its family. The 130M matrices have historical provenance; 370M--2.8B come from the later homogeneous geometry-preparation series. No model forward, tokenizer, training, evaluation, backward pass, permutation test, threshold, or scaling-law fit is involved in this static comparison.
+
+\begin{table}[h]
+\centering\scriptsize
+\caption{Frozen coordinate-insensitive pairwise geometry. CKA is the primary centered-linear comparison. RSM is the secondary Pearson correlation between strict upper triangles of the row-normalized cosine Gram matrices. Values are descriptive.}
+\label{tab:cka}
+\begin{tabular}{lrrrr}
+\toprule
+Scale pair & XG2 CKA & XG4 CKA & XG2 RSM & XG4 RSM \\
+\midrule
+130M--370M & .742546 & .542295 & .716312 & .509857 \\
+130M--790M & .435747 & .451862 & .398941 & .431574 \\
+130M--1.4B & .342510 & .481304 & .295730 & .452640 \\
+130M--2.8B & .555414 & .544277 & .522254 & .511619 \\
+370M--790M & .564059 & .558569 & .541258 & .533989 \\
+370M--1.4B & .504483 & .436834 & .474489 & .403381 \\
+370M--2.8B & .649344 & .590983 & .634246 & .545762 \\
+790M--1.4B & .663678 & .444332 & .640851 & .412623 \\
+790M--2.8B & .639963 & .392717 & .620152 & .337620 \\
+1.4B--2.8B & .532185 & .455698 & .504037 & .382808 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Linear CKA is insensitive to orthogonal feature rotations and isotropic scaling, but not to arbitrary invertible transformations. The result therefore establishes non-invariance of this response-blind alignment geometry under the stated comparison, not global non-equivalence of complete hidden-state representations.
 
 For a unit direction $w$, local susceptibility is
 \begin{equation}
@@ -98,8 +132,7 @@ At 130M, the projector-contrast contribution of plane $k$ is
 $C_k(i)=s_k[J_i(\mathrm{P}_{k+})^2-J_i(\mathrm{P}_{k-})^2]/5$.
 The broader XG2-versus-XG4 endpoint is
 $Q_i(c)=E_{\mathrm{XG2}}(i,c)-E_{\mathrm{XG4}}(i,c)$,
-where each $E$ is the mean squared susceptibility over its five frozen
-directions under condition $c$. XG1 outcomes do not refit the basis.
+where each $E$ is the mean squared susceptibility over its five frozen directions under condition $c$. XG1 outcomes do not refit the basis.
 
 \subsection{Prospective 130M causal chain}
 \label{app:causal}
@@ -355,13 +388,15 @@ flips. The three scales are not pooled into a new inferential family.
 
 Figure~\ref{fig:deep} draws the historical 130M causal synthesis,
 specificity inference, seed-181 behavioral bridge, and frozen pair-level
-readout--behavior merge. Figure~\ref{fig:scale} draws the historical
-130M/370M conclusions, later 790M/1.4B/2.8B confirmation inference,
-the historical 130M kernel mean-square and leading-plane eigenvalue,
-and the later response-blind four-scale native-geometry bridge.
+readout--behavior merge, while presenting the four causal stages without
+requiring their endpoint notation in the figure itself.
+Figure~\ref{fig:scale} combines the frozen five-scale causal support
+identities with the separately frozen coordinate-free XG2/XG4 geometry
+snapshot imported from scientific result commit
+\texttt{593199d8e849572fc77b1b0bc7475d3d19468d12}.
+The historical kernel mean-square and leading-plane measurements remain
+supporting appendix evidence rather than Figure~\ref{fig:scale} panels.
 Figure~\ref{fig:objective} draws the five-scale task-objective readout
 synthesis, original four-scale vanilla-LM analysis, and later 130M
-completeness analysis. Figure~\ref{fig:overview} summarizes these
-same frozen evidence classes. The 130M geometry point has earlier
-response-blind provenance than the later matched bridge; the 130M
-vanilla-LM result is a post-primary completeness extension.
+completeness analysis. Figure~\ref{fig:overview} summarizes these same
+frozen evidence classes.

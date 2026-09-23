@@ -1,7 +1,7 @@
 """Render frozen Mamba-1 evidence; no models, estimators, or statistical tests.
 
-Run from the repository root. Requires reportlab and Poppler's pdftoppm.
-All source bytes are read from the pinned Git commit, never an untracked run.
+Run from the repository root. Requires reportlab and PyMuPDF.
+All source bytes are read from pinned Git commits, never an untracked run.
 """
 from __future__ import annotations
 
@@ -15,7 +15,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 OUT = ROOT / "paper/iclr2027/figures"
-HEAD = "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+BASE_SCIENCE_HEAD = "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+PAPER_EVIDENCE_HEAD = "2e65dd887ba4159d4024d85b8996306cfadec023"
+CF_ROOT = "paper/iclr2027/frozen_sources/coordinate_free_geometry_v1"
+CF_RESULT = CF_ROOT + "/coordinate_free_geometry_result.json"
+CF_PROVENANCE = CF_ROOT + "/provenance_manifest.json"
+CF_SNAPSHOT = CF_ROOT + "/snapshot_manifest.json"
 SCALES = ["130M", "370M", "790M", "1.4B", "2.8B"]
 PREFIX = "reports/reason_router_gen4_"
 SYNTH = PREFIX + "pp3_transport_specificity_necessity_restoration_sufficiency_mechanism_synthesis.md"
@@ -52,29 +57,40 @@ def git(*args):
 
 class Sources:
     def __init__(self):
-        if git("rev-parse", "HEAD").decode().strip() != HEAD:
-            raise RuntimeError("Scientific endpoint HEAD mismatch")
         self.sources, self.values, self.cache = {}, {}, {}
 
-    def read(self, path, figure):
-        if path not in self.cache:
-            raw = git("show", f"{HEAD}:{path}")  # missing/untracked sources fail closed
-            local = (ROOT / path).read_bytes()
-            if local.replace(b"\r\n", b"\n") != raw.replace(b"\r\n", b"\n"):
-                raise RuntimeError(f"Worktree source differs from frozen artifact: {path}")
-            self.cache[path] = raw.decode("utf-8")
-            self.sources[path] = {"git_blob": git("rev-parse", f"{HEAD}:{path}").decode().strip(),
-                                  "frozen_bytes_sha256": hashlib.sha256(raw).hexdigest(),
-                                  "figures": []}
+    def read_at(self, authority, path, figure):
+        cache_key = (authority, path)
+        if cache_key not in self.cache:
+            raw = git("show", f"{authority}:{path}")
+            self.cache[cache_key] = raw.decode("utf-8")
+            if path in self.sources:
+                if self.sources[path]["authority_commit"] != authority:
+                    raise RuntimeError(f"Source reused under different authority: {path}")
+            else:
+                self.sources[path] = {
+                    "authority_commit": authority,
+                    "git_blob": git("rev-parse", f"{authority}:{path}").decode().strip(),
+                    "frozen_bytes_sha256": hashlib.sha256(raw).hexdigest(),
+                    "figures": [],
+                }
         if figure not in self.sources[path]["figures"]:
             self.sources[path]["figures"].append(figure)
-        return self.cache[path]
+        return self.cache[cache_key]
+
+    def read(self, path, figure):
+        return self.read_at(BASE_SCIENCE_HEAD, path, figure)
 
     def record(self, key, value, path, locator, figure):
         if key in self.values:
             raise ValueError(f"Duplicate data key: {key}")
-        self.values[key] = {"value": value, "source": path, "locator": locator, "figure": figure,
-                            "transformation": "none; display rounding only"}
+        self.values[key] = {
+            "value": value,
+            "source": path,
+            "locator": locator,
+            "figure": figure,
+            "transformation": "none; display rounding only",
+        }
         return value
 
     def field(self, key, path, pointer, figure):
@@ -89,20 +105,24 @@ class Sources:
         matches = re.findall(r"^- mean " + re.escape(endpoint) + r": `([^`]+)`", block, re.M)
         if len(matches) != 1:
             raise ValueError(f"Missing/ambiguous frozen Markdown mean: {key}")
-        value = self.record(key, float(matches[0]), SYNTH,
-                            f"section {section}; exact bullet 'mean {endpoint}'", figure)
+        value = self.record(
+            key,
+            float(matches[0]),
+            SYNTH,
+            f"section {section}; exact bullet 'mean {endpoint}'",
+            figure,
+        )
         self.values[key]["source_decimal_lexeme"] = matches[0]
         return value
-
 
 def load_data():
     s = Sources()
     for fig, paths in {"fig1": [SYNTH, CORE_SYNTH, DELTA_SYNTH, LM_MD, EXT],
-                       "fig2": [SYNTH], "fig3": [SYNTH, CORE_SYNTH, GEO_SYNTH],
+                       "fig2": [SYNTH], "fig3": [SYNTH, CORE_SYNTH],
                        "fig4": [DELTA_SYNTH, LM_MD]}.items():
         for path in paths:
             s.read(path, fig)
-    d = {"scale_order": SCALES, "planes": {}, "core": {}, "geometry": {}, "objectives": {}}
+    d = {"scale_order": SCALES, "planes": {}, "core": {}, "geometry": {}, "objectives": {}, "coordinate_free_geometry": {}}
     d["chain"] = [
         s.mean_md("transport.mean", 3, "C_PP3", "fig2"),
         s.field("specificity.mean", SPEC, "descriptive/D_SPEC/mean", "fig2"),
@@ -114,6 +134,34 @@ def load_data():
         s.values[key].get("source_decimal_lexeme", repr(s.values[key]["value"]))
         for key in ["transport.mean", "specificity.mean", "necessity.mean", "sufficiency.mean"]
     ]
+    chain_expected = [
+        "PP3_PROJECTOR_CONTRAST_TRANSPORT_SUPPORTED_ON_XG1_EXTERNAL_GENERATOR",
+        "PP3_SPECIFICITY_OVER_MAX_SEPARATION_PP5_SUPPORTED_ON_FRESH_XG1_HOLDOUT",
+        "PP3_NECESSITY_OVER_MATCHED_PP5_CONTROL_SUPPORTED_ON_FRESH_XG1_HOLDOUT",
+        "PP3_RESTORATION_SUFFICIENCY_OVER_MATCHED_PP5_REPLACEMENT_SUPPORTED_ON_FRESH_XG1_HOLDOUT",
+    ]
+    d["chain_supported"] = []
+    for section, expected in zip([3, 4, 5, 6], chain_expected):
+        block = s.read(SYNTH, "fig2").split(
+            f"### {section}. "
+        )[1].split("\n### ")[0]
+        conclusions = re.findall(
+            r"Frozen conclusion:\s*`([^`]+)`",
+            block,
+        )
+        if len(conclusions) != 1:
+            raise ValueError(
+                f"Missing/ambiguous frozen conclusion in section {section}"
+            )
+        d["chain_supported"].append(
+            s.record(
+                f"chain.{section}.supported",
+                conclusions[0] == expected,
+                SYNTH,
+                f"section {section}; Frozen conclusion",
+                "fig2",
+            )
+        )
     restoration_section = s.read(SYNTH, "fig3").split("### 6. ")[1].split("\n### ")[0]
     conclusions = re.findall(r"Frozen conclusion:\s*`([^`]+)`", restoration_section)
     if len(conclusions) != 1:
@@ -122,19 +170,19 @@ def load_data():
                                  "section 6; Frozen conclusion", "fig3")
     d["causal_supported"] = {"130M": historical_status ==
         "PP3_RESTORATION_SUFFICIENCY_OVER_MATCHED_PP5_REPLACEMENT_SUPPORTED_ON_FRESH_XG1_HOLDOUT"}
-    kernel_source = s.read(GEO_130_KERNEL, "fig3")
+    kernel_source = s.read(GEO_130_KERNEL, "supporting")
     kernel_matches = re.findall(r"^EXPECTED_LAYER17_MU_K2 = ([0-9.]+)$", kernel_source, re.M)
     if len(kernel_matches) != 1:
         raise ValueError("Missing/ambiguous frozen 130M kernel mean")
     d["geometry"]["130M"] = {
         "mu_k2": s.record("130M.mu_k2", float(kernel_matches[0]), GEO_130_KERNEL,
-                          "EXPECTED_LAYER17_MU_K2", "fig3"),
+                          "EXPECTED_LAYER17_MU_K2", "supporting"),
         "lambda1": s.field("130M.lambda1", GEO_130_PLANES,
-                           "geometry/positive_eigenvalues/0", "fig3"),
+                           "geometry/positive_eigenvalues/0", "supporting"),
     }
     for flag in ["backward_executed", "scientific_model_forward_count", "task_heads_executed"]:
         if s.field("130M.geometry." + flag, GEO_130_PLANES,
-                   "boundaries/" + flag, "fig3") not in (False, 0):
+                   "boundaries/" + flag, "supporting") not in (False, 0):
             raise ValueError("Historical 130M static geometry boundary mismatch")
     # N is extracted separately for each prospective cohort, not inferred from rows.
     d["chain_n"] = []
@@ -190,14 +238,14 @@ def load_data():
                     raise ValueError("Selected/control identity mismatch")
             p = GEO[scale]
             for flag in ["backward_executed", "causal_response_observed", "plane_selection_performed", "training_executed"]:
-                if s.field(scale + ".geometry." + flag, p, flag, "fig3") is not False:
+                if s.field(scale + ".geometry." + flag, p, flag, "supporting") is not False:
                     raise ValueError("Response-blind geometry contract mismatch")
             d["geometry"][scale] = {
-                "mu_k2": s.field(scale + ".mu_k2", p, "strong_mask/mu_k2", "fig3"),
-                "lambda1": s.field(scale + ".lambda1", p, "lambda_plus_by_plane/0", "fig3"),
+                "mu_k2": s.field(scale + ".mu_k2", p, "strong_mask/mu_k2", "supporting"),
+                "lambda1": s.field(scale + ".lambda1", p, "lambda_plus_by_plane/0", "supporting"),
             }
             # Bind exact raw artifacts to the rows of the frozen native bridge.
-            native_section = s.read(GEO_SYNTH, "fig3").split("## 2. Frozen native Mamba-side scale values")[1].split("## 3.")[0]
+            native_section = s.read(GEO_SYNTH, "supporting").split("## 2. Frozen native Mamba-side scale values")[1].split("## 3.")[0]
             rows_md = [line.split("|") for line in native_section.splitlines()
                        if line.startswith("| " + scale + " |")]
             if len(rows_md) != 1:
@@ -205,6 +253,72 @@ def load_data():
             for column, key in [(2, "mu_k2"), (4, "lambda1")]:
                 if not math.isclose(float(rows_md[0][column]), d["geometry"][scale][key], rel_tol=1e-12):
                     raise ValueError("Native geometry artifact does not match synthesis")
+    # Frozen coordinate-free geometry is imported into the paper tree as
+    # exact committed Git blobs from the separately frozen science result.
+    cf_snapshot = json.loads(
+        s.read_at(PAPER_EVIDENCE_HEAD, CF_SNAPSHOT, "supporting")
+    )
+    cf_result = json.loads(
+        s.read_at(PAPER_EVIDENCE_HEAD, CF_RESULT, "fig3")
+    )
+    cf_prov = json.loads(
+        s.read_at(PAPER_EVIDENCE_HEAD, CF_PROVENANCE, "supporting")
+    )
+
+    if cf_snapshot["scientific_result_commit"] != (
+        "593199d8e849572fc77b1b0bc7475d3d19468d12"
+    ):
+        raise ValueError("Coordinate-free science commit mismatch")
+    if cf_snapshot["analysis_execution_head"] != cf_result["execution_head"]:
+        raise ValueError("Coordinate-free execution-head mismatch")
+    for filename, source_path in [
+        ("coordinate_free_geometry_result.json", CF_RESULT),
+        ("provenance_manifest.json", CF_PROVENANCE),
+    ]:
+        expected_sha = cf_snapshot["sources"][filename]["committed_bytes_sha256"]
+        actual_sha = s.sources[source_path]["frozen_bytes_sha256"]
+        if actual_sha != expected_sha:
+            raise ValueError(
+                f"Coordinate-free snapshot SHA mismatch: {filename}"
+            )
+    if cf_result["scale_order"] != SCALES or cf_prov["scale_order"] != SCALES:
+        raise ValueError("Coordinate-free scale order mismatch")
+    if cf_prov["N"] != 300 or len(cf_prov["artifacts"]) != 10:
+        raise ValueError("Coordinate-free provenance population mismatch")
+    if any(row["source_pair_count"] != 300 for row in cf_prov["artifacts"]):
+        raise ValueError("Coordinate-free source-pair count mismatch")
+    if cf_result["scientific_model_forward_count"] != 0:
+        raise ValueError("Coordinate-free result unexpectedly used model forward")
+    for key in [
+        "training_executed",
+        "evaluation_executed",
+        "tokenizer_executed",
+        "backward_executed",
+    ]:
+        if cf_result[key] is not False:
+            raise ValueError(f"Coordinate-free execution boundary violated: {key}")
+
+    for family in ["xg2", "xg4"]:
+        block = cf_result["families"][family]
+        if block["scale_order"] != SCALES or len(block["pairs"]) != 10:
+            raise ValueError(f"Coordinate-free family contract mismatch: {family}")
+        d["coordinate_free_geometry"][family] = {
+            "cka_matrix": s.record(
+                f"{family}.cka_matrix",
+                block["cka_matrix"],
+                CF_RESULT,
+                f"/families/{family}/cka_matrix",
+                "fig3",
+            ),
+            "rsm_matrix": s.record(
+                f"{family}.rsm_matrix",
+                block["cosine_rsm_pearson_matrix"],
+                CF_RESULT,
+                f"/families/{family}/cosine_rsm_pearson_matrix",
+                "fig3",
+            ),
+        }
+
     d["chronology"] = s.field("chronology", EXT, "five_scale_descriptive_completeness/prospective_status", "fig4")
     validate_values(d)
     return s, d
@@ -213,25 +327,68 @@ def load_data():
 def validate_values(d):
     if d["scale_order"] != SCALES:
         raise ValueError("Scale order mismatch")
-    if list(d["causal_supported"]) != SCALES or any(v is not True for v in d["causal_supported"].values()):
+    if list(d["causal_supported"]) != SCALES or any(
+        v is not True for v in d["causal_supported"].values()
+    ):
         raise ValueError("Frozen causal support status mismatch")
-    if list(d["planes"].values()) != [["P3", "P5"], ["P3", "P5"], ["P2", "P5"], ["P5", "P4"], ["P3", "P5"]]:
+    if d["chain_supported"] != [True, True, True, True]:
+        raise ValueError("Frozen 130M causal-chain support mismatch")
+    if list(d["planes"].values()) != [
+        ["P3", "P5"],
+        ["P3", "P5"],
+        ["P2", "P5"],
+        ["P5", "P4"],
+        ["P3", "P5"],
+    ]:
         raise ValueError("Plane map mismatch")
-    for objective, expected in [("contra", [1, 1, 1, -1, -1]), ("vanilla", [-1, -1, -1, 1, 1])]:
-        actual = [1 if d["objectives"][x][objective] > 0 else -1 if d["objectives"][x][objective] < 0 else 0 for x in SCALES]
+
+    for objective, expected in [
+        ("contra", [1, 1, 1, -1, -1]),
+        ("vanilla", [-1, -1, -1, 1, 1]),
+    ]:
+        actual = [
+            1 if d["objectives"][x][objective] > 0
+            else -1 if d["objectives"][x][objective] < 0
+            else 0
+            for x in SCALES
+        ]
         if actual != expected:
             raise ValueError("Objective sign vector mismatch")
-    if len(d["pairs"]) != d["behavior_n"] or len({r["source_pair_id"] for r in d["pairs"]}) != len(d["pairs"]):
+
+    if (
+        len(d["pairs"]) != d["behavior_n"]
+        or len({r["source_pair_id"] for r in d["pairs"]}) != len(d["pairs"])
+    ):
         raise ValueError("Incomplete or duplicate pair rows")
     expected_ids = [f"xg1_fact_{i}" for i in range(2701, 3001)]
     if [r["source_pair_id"] for r in d["pairs"]] != expected_ids:
         raise ValueError("Pair population/order mismatch; filtering forbidden")
+
     if "130M" in d["core"] or list(d["geometry"]) != SCALES:
         raise ValueError("Historical 130M geometry and causal status must remain distinct")
-    if d["geometry"]["130M"] != {"mu_k2": 0.027899337798707836,
-                                   "lambda1": 0.8706181418918275}:
+    if d["geometry"]["130M"] != {
+        "mu_k2": 0.027899337798707836,
+        "lambda1": 0.8706181418918275,
+    }:
         raise ValueError("Frozen historical 130M geometry mismatch")
 
+    for family in ["xg2", "xg4"]:
+        block = d["coordinate_free_geometry"][family]
+        for name, low in [("cka_matrix", 0.0), ("rsm_matrix", -1.0)]:
+            matrix = block[name]
+            if len(matrix) != 5 or any(len(row) != 5 for row in matrix):
+                raise ValueError(f"{family} {name} shape mismatch")
+            for i in range(5):
+                if abs(matrix[i][i] - 1.0) > 1e-10:
+                    raise ValueError(f"{family} {name} diagonal mismatch")
+                for j in range(5):
+                    value = matrix[i][j]
+                    if not math.isfinite(value):
+                        raise ValueError(f"{family} {name} nonfinite")
+                    if value < low - 1e-10 or value > 1.0 + 1e-10:
+                        raise ValueError(f"{family} {name} range violation")
+                    if abs(value - matrix[j][i]) > 1e-12:
+                        raise ValueError(f"{family} {name} asymmetry")
 
 # Compact vector drawing primitives. Page size is the intended two-column width.
 INK, BLUE, ORANGE, PALE, GRAY = "#202832", "#0072B2", "#B65A00", "#EEF3F6", "#66727C"
@@ -318,6 +475,39 @@ def chart(f, x, y, w, h, values, labels, low, high, ticks, fmt, color=BLUE, bars
             f.dot(xx,yy,color,square=color==ORANGE)
     return yp
 
+def _blend_hex(a, b, t):
+    a = a.lstrip("#")
+    b = b.lstrip("#")
+    av = tuple(int(a[i:i+2], 16) for i in (0, 2, 4))
+    bv = tuple(int(b[i:i+2], 16) for i in (0, 2, 4))
+    out = tuple(round(x + (y - x) * t) for x, y in zip(av, bv))
+    return "#" + "".join(f"{v:02X}" for v in out)
+
+
+def heatmap(f, x, y, w, h, matrix, labels):
+    rows = len(labels)
+    cw = w / rows
+    ch = h / rows
+    for j, label in enumerate(labels):
+        f.text(x + (j + .5) * cw, y - 7, label, 7.2, True, align="center")
+    for i, label in enumerate(labels):
+        f.text(x - 7, y + (i + .5) * ch + 2, label, 7.2, True, align="right")
+        for j in range(rows):
+            value = float(matrix[i][j])
+            t = max(0.0, min(1.0, value))
+            fill = _blend_hex("#F5F8FA", BLUE, t)
+            f.rect(x + j * cw, y + i * ch, cw - .8, ch - .8, fill=fill)
+            text_color = "#FFFFFF" if t >= .58 else INK
+            f.text(
+                x + (j + .5) * cw,
+                y + (i + .5) * ch + 2.5,
+                f"{value:.2f}",
+                6.8,
+                True,
+                color=text_color,
+                align="center",
+            )
+
 
 def figure1(d):
     f=Figure(STEMS[0],326)
@@ -356,75 +546,166 @@ def figure1(d):
 
 
 def figure2(d):
-    f=Figure(STEMS[1],376)
-    f.panel("A","Prospective PP3 evidence chain",18)
-    f.text(15,34,"Distinct estimands and XG1 holdouts; means are not magnitude-comparable.",8.5,color=GRAY)
-    labels=[("Transport",), ("Specificity",), ("Necessity",), ("Restoration", "sufficiency")]
-    for i,(label,endpoint,mean,n) in enumerate(zip(labels,["C_PP3", "D_SPEC", "D_NEC", "D_SUF"],
-                                                 d["chain_display_means"],d["chain_n"])):
-        x=15+122*i
-        f.rect(x,48,108,112)
-        for j,line in enumerate(label): f.text(x+54,67+j*12,line,9.5,True,align="center")
-        f.text(x+54,98,endpoint,10,align="center")
-        f.text(x+54,122,mean,8.1,align="center")
-        f.text(x+54,146,f"N = {n}",9,align="center")
-        if i<3:f.arrow(x+110,104,x+120,104)
-    f.panel("B","Behavioral restoration",194)
-    f.text(15,214,"Restored PP3 minus PP5 replacement",8.5)
-    f.text(15,235,"Mean D_BEH",9)
-    f.text(15,255,f"{d['behavior']:+.8f}",15,True,BLUE)
-    f.text(15,275,"Task-margin contrast; seed 181",8.5)
-    f.text(15,291,f"N = {d['behavior_n']} paired items",8.5)
-    f.text(15,308,"Behavioral consequence is measured",8,color=GRAY)
-    f.text(15,320,"by margin, not accuracy improvement.",8,color=GRAY)
-    f.panel("C","Readout / behavior coupling",194,x=231)
-    x,y,w,h=275,230,205,94
-    xmin,xmax=-.014,.022; ymin,ymax=-.03,.08
-    xp=lambda v:x+(v-xmin)/(xmax-xmin)*w
-    yp=lambda v:y+h-(v-ymin)/(ymax-ymin)*h
-    for v in [-.01,0,.01,.02]:
-        f.text(xp(v),y+h+12,f"{v:g}",7.5,align="center")
-    for v in [0,.04,.08]:
-        f.text(x-5,yp(v)+2,f"{v:g}",7.5,align="right")
-    f.line(x,yp(0),x+w,yp(0),width=.6); f.line(xp(0),y,xp(0),y+h,width=.6)
-    for r in d["pairs"]: f.dot(xp(r["Delta_L"]),yp(r["D_BEH"]),radius=1.15)
-    f.text(x+w,y-5,"D_BEH",8,align="right")
-    f.text(x+w/2,y+h+26,"Delta L (owned readout)",8.5,align="center")
-    f.text(245,211,f"Pearson {d['metrics']['Pearson']:.5f}   Spearman {d['metrics']['Spearman']:.5f}",8.5)
-    f.text(245,223,f"Sign agreement {d['metrics']['Sign agreement']:.5f}",8.5)
-    f.text(15,366,"All points retained. Association values are frozen descriptive results; no fit or new test.",8,color=GRAY)
-    f.save()
+    f = Figure(STEMS[1], 360)
+    f.panel("A", "Prospective evidence chain at 130M", 18)
+    f.text(
+        15,
+        34,
+        "Four independent holdouts test distinct causal requirements; exact statistics are in Appendix A.3.",
+        8.3,
+        color=GRAY,
+    )
+    labels = [
+        ("Transport",),
+        ("Specificity",),
+        ("Necessity",),
+        ("Restoration", "sufficiency"),
+    ]
+    for i, (label, n, supported) in enumerate(
+        zip(labels, d["chain_n"], d["chain_supported"])
+    ):
+        x = 15 + 122 * i
+        f.rect(x, 49, 108, 87)
+        for j, line in enumerate(label):
+            f.text(x + 54, 70 + j * 12, line, 9.5, True, align="center")
+        f.text(
+            x + 54,
+            105,
+            "Supported" if supported else "Not supported",
+            9.2,
+            True,
+            BLUE,
+            align="center",
+        )
+        f.text(x + 54, 124, f"N = {n}", 8.5, align="center")
+        if i < 3:
+            f.arrow(x + 110, 92, x + 120, 92)
 
+    f.panel("B", "Behavioral restoration", 171)
+    f.text(15, 192, "Restored selected component minus matched control", 8.5)
+    f.text(15, 216, "Mean task-margin shift", 9)
+    f.text(15, 238, f"{d['behavior']:+.5f}", 15, True, BLUE)
+    f.text(15, 260, f"N = {d['behavior_n']} paired items", 8.5)
+    f.text(15, 280, "Continuous margin consequence; not an accuracy-improvement claim.", 8, color=GRAY)
+
+    f.panel("C", "Local readout tracks behavioral effect", 171, x=231)
+    x, y, w, h = 275, 208, 205, 94
+    xmin, xmax = -.014, .022
+    ymin, ymax = -.03, .08
+    xp = lambda v: x + (v - xmin) / (xmax - xmin) * w
+    yp = lambda v: y + h - (v - ymin) / (ymax - ymin) * h
+    for v in [-.01, 0, .01, .02]:
+        f.text(xp(v), y + h + 12, f"{v:g}", 7.5, align="center")
+    for v in [0, .04, .08]:
+        f.text(x - 5, yp(v) + 2, f"{v:g}", 7.5, align="right")
+    f.line(x, yp(0), x + w, yp(0), width=.6)
+    f.line(xp(0), y, xp(0), y + h, width=.6)
+    for row in d["pairs"]:
+        f.dot(xp(row["Delta_L"]), yp(row["D_BEH"]), radius=1.15)
+    f.text(x + w, y - 5, "Behavioral margin shift", 7.7, align="right")
+    f.text(x + w / 2, y + h + 26, "Local task readout", 8.5, align="center")
+    f.text(
+        245,
+        190,
+        f"Pearson {d['metrics']['Pearson']:.3f}   "
+        f"Spearman {d['metrics']['Spearman']:.3f}",
+        8.5,
+    )
+    f.text(
+        245,
+        202,
+        f"Sign agreement {d['metrics']['Sign agreement']:.3f}",
+        8.5,
+    )
+    f.text(
+        15,
+        349,
+        "All 300 pairs retained; associations are frozen descriptive results.",
+        8,
+        color=GRAY,
+    )
+    f.save()
 
 def figure3(d):
-    f=Figure(STEMS[2],376)
-    f.panel("A","Scale-local causal roles across all five Mamba-1 scales",19)
-    f.text(15,37,"Selected / control ranks are local identities, not semantic homologues.",8.5,color=GRAY)
-    xs=[160,234,308,382,456]
-    f.rect(15,47,474,27)
-    for x,scale in zip(xs,SCALES):f.text(x,65,scale,10,True,align="center")
-    f.text(15,88,"Common contrast: Q(selected restored) - Q(coefficient-matched control)",8.4,True)
-    rows=[("Selected / control",[" / ".join(d["planes"][s]) for s in SCALES]),
-          ("Historical label",["D_SUF", "D_DOM", "D_CORE", "D_CORE", "D_CORE"]),
-          ("Result",["Supported" if d["causal_supported"][s] else "Not supported" for s in SCALES])]
-    for i,(label,vals) in enumerate(rows):
-        yy=108+i*20;f.text(20,yy,label,8.5,True)
-        for x,val in zip(xs,vals): f.text(x,yy,val,8.3,align="center")
-        f.line(15,yy+7,489,yy+7,color="#DAE0E5")
-    f.text(15,165,"130M restoration sufficiency; 370M two-test Holm family (residual criterion failed).",8)
-    f.text(15,177,"790M-2.8B: later core confirmations. Distinct protocols; no magnitude scaling.",8)
-    f.panel("B","Native kernel reorganization",198)
-    f.panel("C","Native geometry reorganization",198,x=260)
-    f.text(51,215,"Kernel mean squared weight (mu_k2)",8)
-    f.text(301,215,"Leading plane lambda1",8)
-    chart(f,51,230,183,97,[d["geometry"][s]["mu_k2"] for s in SCALES],SCALES,
-          0,.03,[0,.01,.02,.03],lambda v:f"{v:.2f}",historical_index=0)
-    chart(f,301,230,183,97,[d["geometry"][s]["lambda1"] for s in SCALES],SCALES,
-          .85,1,[.85,.90,.95,1],lambda v:f"{v:.2f}",color=ORANGE,historical_index=0)
-    f.text(15,360,"Open markers: historical response-blind 130M; filled markers: later matched 370M-2.8B bridge.",8)
-    f.text(15,372,"Categorical scale positions; raw values, no scaling fit. Geometry axis begins at 0.85.",8,color=GRAY)
-    f.save()
+    f = Figure(STEMS[2], 390)
+    f.panel("A", "The causal role recurs across all five Mamba-1 scales", 18)
+    f.text(
+        15,
+        36,
+        "Selected/control ranks are local identities; equal rank numbers do not imply semantic homology.",
+        8.2,
+        color=GRAY,
+    )
 
+    xs = [170, 246, 322, 398, 474]
+    f.rect(15, 47, 474, 24)
+    for x, scale in zip(xs, SCALES):
+        f.text(x, 64, scale, 9.5, True, align="center")
+
+    rows = [
+        ("Selected / control", [" / ".join(d["planes"][s]) for s in SCALES]),
+        (
+            "Causal role",
+            ["Supported" if d["causal_supported"][s] else "Not supported" for s in SCALES],
+        ),
+    ]
+    for i, (label, vals) in enumerate(rows):
+        yy = 91 + i * 22
+        f.text(20, yy, label, 8.5, True)
+        for x, val in zip(xs, vals):
+            f.text(x, yy, val, 8.2, align="center")
+        f.line(15, yy + 7, 489, yy + 7, color="#DAE0E5")
+
+    f.text(
+        15,
+        141,
+        "Common scale-local contrast: selected restoration minus coefficient-matched control.",
+        8.2,
+    )
+    f.text(
+        15,
+        153,
+        "Historical endpoint labels and inferential-family details are retained in Appendix A.4.",
+        8,
+        color=GRAY,
+    )
+
+    f.panel("B", "XG2 centered linear CKA", 180)
+    f.panel("C", "XG4 centered linear CKA", 180, x=260)
+
+    heatmap(
+        f,
+        57,
+        207,
+        176,
+        145,
+        d["coordinate_free_geometry"]["xg2"]["cka_matrix"],
+        SCALES,
+    )
+    heatmap(
+        f,
+        302,
+        207,
+        176,
+        145,
+        d["coordinate_free_geometry"]["xg4"]["cka_matrix"],
+        SCALES,
+    )
+
+    f.text(
+        15,
+        374,
+        "Same 300 response-blind pairs per family. CKA = 1 denotes identical centered sample geometry;",
+        7.8,
+    )
+    f.text(
+        15,
+        386,
+        "off-diagonal values show partial, not invariant, cross-scale geometry. Cosine-RSM: Appendix A.2.",
+        7.8,
+        color=GRAY,
+    )
+    f.save()
 
 def figure4(d):
     f=Figure(STEMS[3],398)
@@ -451,82 +732,187 @@ def figure4(d):
             v=d["objectives"][s][key]
             f.text(x,yy,f"{v:+.4f}" if key!="pair_sign_agreement_fraction" else f"{v:.4f}",9,align="center")
         f.line(15,yy+6,489,yy+6,color="#DAE0E5")
-    f.text(15,364,"130M vanilla LM: later frozen completeness extension (post-primary).",8.5,True)
-    f.text(15,379,"370M-2.8B: original prospective four-scale control. All five shown descriptively.",8.5)
-    plane_labels = ", ".join("/".join(d["planes"][scale]) for scale in SCALES)
-    f.text(15,392,f"Selected/control: {plane_labels}. No new inferential testing.",8,color=GRAY)
+    f.text(
+        15,
+        375,
+        "All five scales are shown descriptively; the 130M LM cell is the later completeness extension (Appendix A.6).",
+        8.2,
+        color=GRAY,
+    )
     f.save()
 
 
 def write_readme(s, d):
-    lines=["# Frozen Mamba-1 main-paper figures", "", f"Scientific authority: `{HEAD}`.", "",
-           "Run from repository root (Python with reportlab; Poppler pdftoppm on PATH):", "",
-           "```powershell", "python paper/iclr2027/scripts/build_figures.py",
-           "python -B paper/iclr2027/scripts/check_figure_values.py --rebuild", "git diff --check", "```", "",
-           "The optional --rebuild check regenerates the artifacts and requires identical bytes for all eight outputs, the manifest, and this README.",
-           "Use a Python environment with reportlab, pypdf, and Pillow installed.",
-           "PDFs are 7 inches wide, entirely vector, using embedded Arial fonts. PNGs are rendered from the PDFs at 400 dpi.",
-           "The builder reads exact Git blobs at the pinned endpoint and rejects worktree source drift (CRLF conversion permitted).",
-           "It fails on missing paths/fields, identity mismatches, changed signs, or missing renderer. No run globbing or fallback.",
-           "PDF timestamps/IDs are deterministic. Reproducible byte hashes require the same ReportLab/Poppler versions.", "",
-           "## Scientific boundaries and source decisions", "",
-           "- Fig. 1 is a conceptual overview of the supplied narrative; arrows between scales denote study order, not parameter-count causation.",
-           "- Fig. 1 specifies a task-margin consequence and a shared frozen substrate within each scale, not one literal substrate across model sizes.",
-           "- Fig. 2 reads historical transport, necessity, and sufficiency means directly from uniquely anchored Markdown bullets: the raw JSON summaries contain no aggregate means. Specificity uses the frozen inference JSON. No means or correlations are recomputed.",
-           "- Fig. 2 Panel A uses equal-size, equal-color evidence cards with full frozen decimal means and cohort sizes. Distinct estimands/holdouts are not encoded as comparable magnitudes. Panels B/C are unchanged.",
-           "- Fig. 2 uses all 300 pair-level rows in frozen order; Delta L remains the owned readout used for the frozen correlation. Behavioral restoration is a task-margin endpoint, not an accuracy gain.",
-           "- Fig. 3 uses historical D_SUF at 130M, D_DOM at 370M, and D_CORE at 790M/1.4B/2.8B; these are labeled separately. The failed historical 370M joint residual criterion is preserved.",
-           "- Fig. 3 Panel A states the common selected-restored minus coefficient-matched-control contrast and retains historical D_SUF/D_DOM/D_CORE labels and separate confirmation protocols. Frozen support statuses are source-bound; no statistical decision is recomputed. Raw means remain in this provenance inventory only.",
-           "- Fig. 3 Panels B/C add the frozen historical 130M mu_k2 and lambda1 with open markers. The later homogeneous response-blind bridge covers 370M-2.8B only. No 130M spectral summary scalar or D_CORE value is reconstructed.",
-           "- Fig. 4 uses exact machine-readable comparator means, checked against the five-scale Delta-L synthesis (rounding tolerance 1e-12). Task and vanilla retain separate raw y-scales and zero lines.",
-           "- 130M vanilla LM is a later post-primary completeness extension. Original prospective control: 370M, 790M, 1.4B, 2.8B.",
-           "- No smoothing, fitted curve, normalization, new statistic, p-value, model loading, tokenizer, training, evaluation, forward or backward pass is used.",
-           "- Every numerical data value, including scatter coordinates and pair identities, has a source locator in figure_data_manifest.json. Axis ticks, display sizes, and rounding are presentation choices.",
-           "- Figures use embedded Arial/ASCII text; rendered output was visually inspected.", "",
-           "## Exact extracted values", "", "### Figure 2", "",
-           "| Endpoint | Frozen mean |", "|---|---:|"]
-    for name,v in zip(["C_PP3", "D_SPEC", "D_NEC", "D_SUF"],d["chain"]): lines.append(f"| {name} | {v!r} |")
-    lines += [f"| D_BEH | {d['behavior']!r} |", ""]
-    for k,v in d["metrics"].items():lines.append(f"- {k}: `{v!r}`")
-    lines += ["", "### Figure 3", "", "| Scale | Selected/control | Causal mean | mu_k2 | lambda1 |", "|---|---|---:|---:|---:|"]
-    for scale in SCALES:
-        geo=d["geometry"].get(scale,{})
-        lines.append(f"| {scale} | {'/'.join(d['planes'][scale])} | {d['chain'][3] if scale=='130M' else d['core'][scale]!r} | {geo.get('mu_k2','n/a')} | {geo.get('lambda1','n/a')} |")
-    lines += ["", "### Figure 4", "", "| Scale | Task forward-equivalent | Vanilla TASK_MATCHED | Pearson | Spearman | Sign agreement |", "|---|---:|---:|---:|---:|---:|"]
-    for scale,o in d["objectives"].items():
-        lines.append("| " + scale + " | " + " | ".join(repr(o[k]) for k in ["contra","vanilla","pearson","spearman","pair_sign_agreement_fraction"]) + " |")
-    lines += ["", "## Exact source paths by figure", ""]
-    for fig in ["fig1","fig2","fig3","fig4"]:
-        lines += ["### " + fig, ""]
-        lines += [f"- `{p}`" for p,meta in s.sources.items() if fig in meta["figures"]]
-        lines.append("")
-    (OUT / "README.md").write_text("\n".join(lines)+"\n",encoding="utf-8")
+    lines = [
+        "# Frozen Mamba-1 main-paper figures",
+        "",
+        f"Base scientific authority: `{BASE_SCIENCE_HEAD}`.",
+        f"Coordinate-free geometry paper snapshot: `{PAPER_EVIDENCE_HEAD}`.",
+        "",
+        "Run from repository root:",
+        "",
+        "```powershell",
+        "python paper/iclr2027/scripts/build_figures.py",
+        "python -B paper/iclr2027/scripts/check_figure_values.py --rebuild",
+        "```",
+        "",
+        "The builder reads only pinned Git blobs. No model, tokenizer, training, evaluation, forward/backward pass, or new statistical test is run.",
+        "",
+        "## Main-figure design",
+        "",
+        "- Fig. 1: conceptual separation of causal role, native geometry, and objective-conditioned use.",
+        "- Fig. 2: reader-facing 130M causal chain; endpoint notation and exact inferential statistics remain in Appendix A.3.",
+        "- Fig. 3: scale-local causal recurrence plus frozen coordinate-insensitive XG2/XG4 centered-linear CKA matrices.",
+        "- Fig. 3 no longer uses kernel mean-square or leading-plane eigenvalue as the main evidence for non-invariance; those scalar native-geometry measurements remain supporting evidence in the appendix.",
+        "- Cosine-RSM Pearson matrices are a frozen secondary coordinate-insensitive check and are reported in Appendix A.2.",
+        "- Fig. 4: objective-conditioned readouts; prospective chronology is kept in the appendix rather than repeated in the visual narrative.",
+        "",
+        "## Frozen coordinate-free geometry",
+        "",
+    ]
 
+    for family in ["xg2", "xg4"]:
+        lines += [f"### {family.upper()} centered linear CKA", ""]
+        lines.append("| | " + " | ".join(SCALES) + " |")
+        lines.append("|---|" + "|".join(["---:" for _ in SCALES]) + "|")
+        for scale, row in zip(
+            SCALES,
+            d["coordinate_free_geometry"][family]["cka_matrix"],
+        ):
+            lines.append(
+                "| " + scale + " | "
+                + " | ".join(f"{float(v):.6f}" for v in row)
+                + " |"
+            )
+        lines.append("")
+
+    lines += [
+        "### Secondary cosine-RSM Pearson",
+        "",
+        "| Family | Scale pair | Pearson |",
+        "|---|---|---:|",
+    ]
+    for family in ["xg2", "xg4"]:
+        matrix = d["coordinate_free_geometry"][family]["rsm_matrix"]
+        for i in range(len(SCALES)):
+            for j in range(i + 1, len(SCALES)):
+                lines.append(
+                    f"| {family.upper()} | {SCALES[i]}--{SCALES[j]} | "
+                    f"{matrix[i][j]:.6f} |"
+                )
+
+    lines += [
+        "",
+        "## Supporting historical scalar geometry",
+        "",
+        "| Scale | mu_k2 | lambda1 |",
+        "|---|---:|---:|",
+    ]
+    for scale in SCALES:
+        geo = d["geometry"][scale]
+        lines.append(
+            f"| {scale} | {geo['mu_k2']!r} | {geo['lambda1']!r} |"
+        )
+
+    lines += [
+        "",
+        "## Figure 4 objective means",
+        "",
+        "| Scale | Task forward-equivalent | Vanilla next-token |",
+        "|---|---:|---:|",
+    ]
+    for scale, row in d["objectives"].items():
+        lines.append(
+            f"| {scale} | {row['contra']!r} | {row['vanilla']!r} |"
+        )
+
+    lines += ["", "## Exact source paths by figure", ""]
+    for fig in ["fig1", "fig2", "fig3", "fig4"]:
+        lines += [f"### {fig}", ""]
+        lines += [
+            f"- `{path}` @ `{meta['authority_commit']}`"
+            for path, meta in s.sources.items()
+            if fig in meta["figures"]
+        ]
+        lines.append("")
+
+    (OUT / "README.md").write_text(
+        "\n".join(lines).rstrip("\n") + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
 
 def main():
-    renderer = shutil.which("pdftoppm")
-    if not renderer:
-        raise RuntimeError("pdftoppm is required; no silent PNG fallback")
-    s,d=load_data()
-    OUT.mkdir(parents=True,exist_ok=True)
-    for function in [figure1,figure2,figure3,figure4]: function(d)
-    for stem in STEMS:
-        subprocess.run([renderer,"-singlefile","-r","400","-png",str(OUT/(stem+".pdf")),str(OUT/stem)],check=True)
-    import reportlab
-    manifest={"schema_version":1,"scientific_head":HEAD,"scale_order":SCALES,
-              "sources":s.sources,"extracted_values":s.values,"plot_data":d,
-              "tools":{"reportlab":reportlab.Version,"pdftoppm":subprocess.run([renderer,"-v"],capture_output=True,text=True,check=True).stderr.splitlines()[0]},
-              "outputs":{stem+ext:hashlib.sha256((OUT/(stem+ext)).read_bytes()).hexdigest() for stem in STEMS for ext in [".pdf",".png"]},
-              "new_statistics":False,"model_execution":False,
-              "notes":["Historical 130M kernel mean and leading-plane eigenvalue use the same mathematical quantities but precede the homogeneous four-scale bridge.",
-                       "D_SUF, D_DOM, and D_CORE share a causal contrast but retain distinct protocol labels and inferential families.",d["chronology"]]}
-    (OUT/"figure_data_manifest.json").write_text(json.dumps(manifest,indent=2,allow_nan=False)+"\n",encoding="utf-8")
-    write_readme(s,d)
-    print("PASS: built 4 vector PDFs + 4 PNGs (400 dpi)")
-    print("PASS: source binding, all five scales, plane identities, task +,+,+,-,-; vanilla -,-,-,+,+")
-    print("Frozen behavior metrics:",json.dumps(d["metrics"]))
-    print(f"Manifest: {len(s.sources)} pinned source files; {len(s.values)} located values/rows")
+    import pymupdf
 
+    s, d = load_data()
+    OUT.mkdir(parents=True, exist_ok=True)
+
+    for function in [figure1, figure2, figure3, figure4]:
+        function(d)
+
+    render_scale = 400.0 / 72.0
+    render_matrix = pymupdf.Matrix(render_scale, render_scale)
+
+    for stem in STEMS:
+        pdf_path = OUT / (stem + ".pdf")
+        png_path = OUT / (stem + ".png")
+
+        with pymupdf.open(pdf_path) as doc:
+            if len(doc) != 1:
+                raise RuntimeError(
+                    f"Expected one-page figure PDF: {pdf_path}"
+                )
+            pix = doc[0].get_pixmap(
+                matrix=render_matrix,
+                alpha=False,
+            )
+            pix.save(png_path)
+
+    import reportlab
+
+    manifest = {
+        "schema_version": 2,
+        "scientific_head": BASE_SCIENCE_HEAD,
+        "scientific_authorities": {
+            "base_evidence": BASE_SCIENCE_HEAD,
+            "coordinate_free_geometry_snapshot": PAPER_EVIDENCE_HEAD,
+        },
+        "scale_order": SCALES,
+        "sources": s.sources,
+        "extracted_values": s.values,
+        "plot_data": d,
+        "tools": {
+            "reportlab": reportlab.Version,
+            "pymupdf": pymupdf.__version__,
+            "png_dpi": 400,
+        },
+        "outputs": {
+            stem + ext: hashlib.sha256((OUT / (stem + ext)).read_bytes()).hexdigest()
+            for stem in STEMS
+            for ext in [".pdf", ".png"]
+        },
+        "new_statistics": False,
+        "model_execution": False,
+        "notes": [
+            "Figure 3 uses the frozen coordinate-free geometry result; no CKA or RSM value is recomputed by the paper builder.",
+            "Historical mu_k2/lambda1 measurements remain supporting appendix evidence rather than the main non-invariance visualization.",
+            "D_SUF, D_DOM, and D_CORE retain their historical inferential families in the appendix.",
+            d["chronology"],
+        ],
+    }
+
+    (OUT / "figure_data_manifest.json").write_text(
+        json.dumps(manifest, indent=2, allow_nan=False) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+    write_readme(s, d)
+
+    print("PASS: built 4 vector PDFs + 4 PNGs (400 dpi)")
+    print("PASS: pinned base evidence + pinned coordinate-free paper snapshot")
+    print("PASS: Figure 3 uses frozen XG2/XG4 centered-linear CKA matrices")
+    print("PASS: no model execution and no new scientific statistics")
 
 if __name__ == "__main__":
     main()

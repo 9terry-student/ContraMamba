@@ -1,6 +1,10 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "scientific_head": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
+  "scientific_authorities": {
+    "base_evidence": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
+    "coordinate_free_geometry_snapshot": "2e65dd887ba4159d4024d85b8996306cfadec023"
+  },
   "scale_order": [
     "130M",
     "370M",
@@ -10,6 +14,7 @@
   ],
   "sources": {
     "reports/reason_router_gen4_pp3_transport_specificity_necessity_restoration_sufficiency_mechanism_synthesis.md": {
+      "authority_commit": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
       "git_blob": "4306f30dce03ddcfa54d828b9813eff14b4c58e5",
       "frozen_bytes_sha256": "8ff5f4ecd35ce79d9620772cce1b906388c6c3a0c75ab1d4299ba135a7914c73",
       "figures": [
@@ -19,6 +24,7 @@
       ]
     },
     "reports/reason_router_gen4_core_stable_residual_plastic_cross_scale_synthesis.md": {
+      "authority_commit": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
       "git_blob": "30912b1821f56782c30944682da45315dd4571f7",
       "frozen_bytes_sha256": "979805fb799d0ea6da18280a32a4d5aeaf5b0aacba97b61e39241c76f41f7064",
       "figures": [
@@ -27,6 +33,7 @@
       ]
     },
     "reports/reason_router_gen4_mamba1_five_scale_delta_l_descriptive_synthesis.md": {
+      "authority_commit": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
       "git_blob": "214faff0db4c3822efbc9a9d98a47a487cac7cbd",
       "frozen_bytes_sha256": "3ba1b5fff2362e1faf4b702043aef0c135feb559d0819506417debcaee149090",
       "figures": [
@@ -35,6 +42,7 @@
       ]
     },
     "reports/reason_router_gen4_mamba1_vanilla_lm_functional_control_analysis_v1/functional_control_analysis.md": {
+      "authority_commit": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
       "git_blob": "9c09d05add1c380f5158be1c49e2cc718f8fd34e",
       "frozen_bytes_sha256": "4536539479e35dd99b6c6d66b37071ed78943c798e97375d672a153d1186df9b",
       "figures": [
@@ -43,6 +51,7 @@
       ]
     },
     "reports/reason_router_gen4_mamba130m_vanilla_lm_completeness_analysis_v1/mamba130m_completeness_analysis.json": {
+      "authority_commit": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
       "git_blob": "d7bee5c0607926d2969c28739407812bb040cd0c",
       "frozen_bytes_sha256": "ccd19bd7d9b34f53c705de8cfab661f657a0d4bc932fd333c8aacfef2300d45f",
       "figures": [
@@ -51,14 +60,8 @@
         "fig3"
       ]
     },
-    "reports/reason_router_gen4_mamba1_native_geometry_functional_coupling_static_bridge.md": {
-      "git_blob": "df5641957aea2f02ae7fa02732e762ca618f1a31",
-      "frozen_bytes_sha256": "9af28d48100e4ff10ad9dcf99c0fb7836043394b096ed543ce6a45055ef32921",
-      "figures": [
-        "fig3"
-      ]
-    },
     "reports/reason_router_gen4_pp3_pp5_fresh_xg1_specificity_primary_inference_report_candidate.json": {
+      "authority_commit": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
       "git_blob": "ec4fcfc98af5472941d5652b6b6c15b5764babd8",
       "frozen_bytes_sha256": "45b091333bef5a1d9ea269d7f4f51ac607885312afefef8f2dbb5e2103fac00e",
       "figures": [
@@ -66,20 +69,23 @@
       ]
     },
     "scripts/reason_router_gen4_k_directional_alignment_transport_core.py": {
+      "authority_commit": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
       "git_blob": "d98b2dcd3436433c04bb56ecc57dec4240abe820",
       "frozen_bytes_sha256": "3aa1671571a6b650ab01e896d93eaa4741104d6d0285a0d23f8203f6429614fa",
       "figures": [
-        "fig3"
+        "supporting"
       ]
     },
     "reports/reason_router_gen4_pp3_excluded_residual_static_analysis_7a6c30f.json": {
+      "authority_commit": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
       "git_blob": "a3190f3090252a589adb8eb15d189fa6d6fd62de",
       "frozen_bytes_sha256": "712be029cbb52b30a41e9322c58978392f0c61bb76eefa15ffb8340c91899dc6",
       "figures": [
-        "fig3"
+        "supporting"
       ]
     },
     "reports/reason_router_gen4_seed181_behavioral_restoration_bridge_analysis_retry2.json": {
+      "authority_commit": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
       "git_blob": "53abf0c0c208f712a59c4d39fb76020383f97e66",
       "frozen_bytes_sha256": "2aea1a998cfb4c43584ba59d0c933702612eea01e992c68d2e25cedd5f6d2b7e",
       "figures": [
@@ -87,6 +93,7 @@
       ]
     },
     "reports/reason_router_gen4_mamba130m_readout_behavior_pair_merge_v1/descriptive_analysis.json": {
+      "authority_commit": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
       "git_blob": "832580eea4f72b4cc2c02616c75606bddf8acf03",
       "frozen_bytes_sha256": "70141962967b935e538a3873b6399d44988affdd7ef6f7920d038597fd372b2b",
       "figures": [
@@ -94,6 +101,7 @@
       ]
     },
     "reports/reason_router_gen4_mamba130m_readout_behavior_pair_merge_v1/pair_level_merge.jsonl": {
+      "authority_commit": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
       "git_blob": "147687012d947847e06c06e64bdf337af4c5022d",
       "frozen_bytes_sha256": "de6b0ccebb3536130052d298ff1af3e0143bc8bd71e7c2e021032e252a72dbf5",
       "figures": [
@@ -101,6 +109,7 @@
       ]
     },
     "reports/reason_router_gen4_mamba1_vanilla_lm_functional_control_analysis_v1/functional_control_analysis.json": {
+      "authority_commit": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
       "git_blob": "3731ce086d22611d6df14f7474b0ff3236402fea",
       "frozen_bytes_sha256": "d612cceb1390a3cdf77684c897f43d9ef5de045e067c44b6be10a61468157170",
       "figures": [
@@ -110,6 +119,7 @@
       ]
     },
     "reports/reason_router_gen4_mamba370m_confirmation_runs/g4k-mamba370-confirmation-xg1-3301-3600-2gpu-ac69e80/confirmation_inference.json": {
+      "authority_commit": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
       "git_blob": "09185bfba0cb254c4bf9021086ba53020c723a6a",
       "frozen_bytes_sha256": "80e51ec5486875feaae933dac51bc20869d180f75a4b002b3aadeb9213e9f1ff",
       "figures": [
@@ -117,13 +127,23 @@
       ]
     },
     "reports/reason_router_gen4_mamba370m_geometry_preparation_runs/g4k-mamba370-geometry-xg2xg4-2gpu-d8e71ad-retry2/geometry_summary.json": {
+      "authority_commit": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
       "git_blob": "378c814277760e65e7867e56d594eb5de1265e7f",
       "frozen_bytes_sha256": "112d03aa23e105cebcd7893a7c9f8e9d21a135a832a9da7d4caa236fe3c36378",
       "figures": [
-        "fig3"
+        "supporting"
+      ]
+    },
+    "reports/reason_router_gen4_mamba1_native_geometry_functional_coupling_static_bridge.md": {
+      "authority_commit": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
+      "git_blob": "df5641957aea2f02ae7fa02732e762ca618f1a31",
+      "frozen_bytes_sha256": "9af28d48100e4ff10ad9dcf99c0fb7836043394b096ed543ce6a45055ef32921",
+      "figures": [
+        "supporting"
       ]
     },
     "reports/reason_router_gen4_mamba790m_confirmation_runs/g4k-mamba790m-confirmation-xg1-7201-7500-p2-p5-2gpu-d3117c1-fresh/confirmation_inference.json": {
+      "authority_commit": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
       "git_blob": "27e7a92503716d31156ae3a62491b3ee83c64f9e",
       "frozen_bytes_sha256": "5b628b6a5db56e5df377a7c418375d0d54c9542a771976d1725b0247574684cf",
       "figures": [
@@ -131,13 +151,15 @@
       ]
     },
     "reports/reason_router_gen4_mamba790m_geometry_preparation_runs/g4k-mamba790m-geometry-xg2xg4-2gpu-774983b-retry2/geometry_summary.json": {
+      "authority_commit": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
       "git_blob": "78029a6608617931aaf6499d33998db514c9f18c",
       "frozen_bytes_sha256": "7ac0c2d904d851c13727956df8f75c8be57b71af7a962f372585879a4470b8cb",
       "figures": [
-        "fig3"
+        "supporting"
       ]
     },
     "reports/reason_router_gen4_mamba14b_confirmation_runs/g4k-mamba14b-confirmation-xg1-4201-4500-2gpu-15304c1/confirmation_inference.json": {
+      "authority_commit": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
       "git_blob": "f514353a863c7f2acc47e92e2c6eb8a1c027cb27",
       "frozen_bytes_sha256": "7450765b5ead7462624b624e00c29dbdef4cbb0e8db0c82abd65d17272e49a15",
       "figures": [
@@ -145,13 +167,15 @@
       ]
     },
     "reports/reason_router_gen4_mamba14b_geometry_preparation_runs/g4k-mamba14b-geometry-xg2xg4-2gpu-c758d5e-retry1/geometry_summary.json": {
+      "authority_commit": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
       "git_blob": "bad410a376d0154ced8ba0aa5b2c5397e0397ba8",
       "frozen_bytes_sha256": "8a248c3f9747015a90b4a35d6082d216be9b4c4f2a0f784b5a40c6ae572909d4",
       "figures": [
-        "fig3"
+        "supporting"
       ]
     },
     "reports/reason_router_gen4_mamba28b_confirmation_runs/g4k-mamba28b-confirmation-xg1-6301-6600-p3-p5-2gpu-50a63a3/confirmation_inference.json": {
+      "authority_commit": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
       "git_blob": "79466d11c86dc5518dcc98f92e778e54c829ef01",
       "frozen_bytes_sha256": "92a45c4aa44e306835ab3e4d0a7de3de4c6b729fa7de4789f29d113f71d1e470",
       "figures": [
@@ -159,10 +183,35 @@
       ]
     },
     "reports/reason_router_gen4_mamba28b_geometry_preparation_runs/g4k-mamba28b-geometry-xg2xg4-2gpu-7744d94/geometry_summary.json": {
+      "authority_commit": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
       "git_blob": "150b6930325710fd10b8d554385f0112fbadce97",
       "frozen_bytes_sha256": "6d60009fd3bea86442997d5c9585991b90696b9e97ccc9d4ac511d9cc4843d3c",
       "figures": [
+        "supporting"
+      ]
+    },
+    "paper/iclr2027/frozen_sources/coordinate_free_geometry_v1/snapshot_manifest.json": {
+      "authority_commit": "2e65dd887ba4159d4024d85b8996306cfadec023",
+      "git_blob": "636336f5b616599b4a55166ace037e785763e517",
+      "frozen_bytes_sha256": "b3f9c0a1aec10da77b03be1e4d2d1178592c0b133444a2fef5c006871b789b44",
+      "figures": [
+        "supporting"
+      ]
+    },
+    "paper/iclr2027/frozen_sources/coordinate_free_geometry_v1/coordinate_free_geometry_result.json": {
+      "authority_commit": "2e65dd887ba4159d4024d85b8996306cfadec023",
+      "git_blob": "95eae68296f96189d164cbafd570835d369c3acb",
+      "frozen_bytes_sha256": "a3fa6af9bb300ffb8a26e3448e14d3c0347f65c51ddbe91d398b3b7d719411fa",
+      "figures": [
         "fig3"
+      ]
+    },
+    "paper/iclr2027/frozen_sources/coordinate_free_geometry_v1/provenance_manifest.json": {
+      "authority_commit": "2e65dd887ba4159d4024d85b8996306cfadec023",
+      "git_blob": "869ff69522e572758f699184659901a2e44ced78",
+      "frozen_bytes_sha256": "201420b7e8c8905740cb00dc43d6cd3cc05626cc2ff777cd0f317cac51566dd7",
+      "figures": [
+        "supporting"
       ]
     }
   },
@@ -198,6 +247,34 @@
       "transformation": "none; display rounding only",
       "source_decimal_lexeme": "4.078872356598753e-08"
     },
+    "chain.3.supported": {
+      "value": true,
+      "source": "reports/reason_router_gen4_pp3_transport_specificity_necessity_restoration_sufficiency_mechanism_synthesis.md",
+      "locator": "section 3; Frozen conclusion",
+      "figure": "fig2",
+      "transformation": "none; display rounding only"
+    },
+    "chain.4.supported": {
+      "value": true,
+      "source": "reports/reason_router_gen4_pp3_transport_specificity_necessity_restoration_sufficiency_mechanism_synthesis.md",
+      "locator": "section 4; Frozen conclusion",
+      "figure": "fig2",
+      "transformation": "none; display rounding only"
+    },
+    "chain.5.supported": {
+      "value": true,
+      "source": "reports/reason_router_gen4_pp3_transport_specificity_necessity_restoration_sufficiency_mechanism_synthesis.md",
+      "locator": "section 5; Frozen conclusion",
+      "figure": "fig2",
+      "transformation": "none; display rounding only"
+    },
+    "chain.6.supported": {
+      "value": true,
+      "source": "reports/reason_router_gen4_pp3_transport_specificity_necessity_restoration_sufficiency_mechanism_synthesis.md",
+      "locator": "section 6; Frozen conclusion",
+      "figure": "fig2",
+      "transformation": "none; display rounding only"
+    },
     "130M.causal_result": {
       "value": "PP3_RESTORATION_SUFFICIENCY_OVER_MATCHED_PP5_REPLACEMENT_SUPPORTED_ON_FRESH_XG1_HOLDOUT",
       "source": "reports/reason_router_gen4_pp3_transport_specificity_necessity_restoration_sufficiency_mechanism_synthesis.md",
@@ -209,35 +286,35 @@
       "value": 0.027899337798707836,
       "source": "scripts/reason_router_gen4_k_directional_alignment_transport_core.py",
       "locator": "EXPECTED_LAYER17_MU_K2",
-      "figure": "fig3",
+      "figure": "supporting",
       "transformation": "none; display rounding only"
     },
     "130M.lambda1": {
       "value": 0.8706181418918275,
       "source": "reports/reason_router_gen4_pp3_excluded_residual_static_analysis_7a6c30f.json",
       "locator": "/geometry/positive_eigenvalues/0",
-      "figure": "fig3",
+      "figure": "supporting",
       "transformation": "none; display rounding only"
     },
     "130M.geometry.backward_executed": {
       "value": false,
       "source": "reports/reason_router_gen4_pp3_excluded_residual_static_analysis_7a6c30f.json",
       "locator": "/boundaries/backward_executed",
-      "figure": "fig3",
+      "figure": "supporting",
       "transformation": "none; display rounding only"
     },
     "130M.geometry.scientific_model_forward_count": {
       "value": 0,
       "source": "reports/reason_router_gen4_pp3_excluded_residual_static_analysis_7a6c30f.json",
       "locator": "/boundaries/scientific_model_forward_count",
-      "figure": "fig3",
+      "figure": "supporting",
       "transformation": "none; display rounding only"
     },
     "130M.geometry.task_heads_executed": {
       "value": false,
       "source": "reports/reason_router_gen4_pp3_excluded_residual_static_analysis_7a6c30f.json",
       "locator": "/boundaries/task_heads_executed",
-      "figure": "fig3",
+      "figure": "supporting",
       "transformation": "none; display rounding only"
     },
     "chain.3.n": {
@@ -3725,42 +3802,42 @@
       "value": false,
       "source": "reports/reason_router_gen4_mamba370m_geometry_preparation_runs/g4k-mamba370-geometry-xg2xg4-2gpu-d8e71ad-retry2/geometry_summary.json",
       "locator": "/backward_executed",
-      "figure": "fig3",
+      "figure": "supporting",
       "transformation": "none; display rounding only"
     },
     "370M.geometry.causal_response_observed": {
       "value": false,
       "source": "reports/reason_router_gen4_mamba370m_geometry_preparation_runs/g4k-mamba370-geometry-xg2xg4-2gpu-d8e71ad-retry2/geometry_summary.json",
       "locator": "/causal_response_observed",
-      "figure": "fig3",
+      "figure": "supporting",
       "transformation": "none; display rounding only"
     },
     "370M.geometry.plane_selection_performed": {
       "value": false,
       "source": "reports/reason_router_gen4_mamba370m_geometry_preparation_runs/g4k-mamba370-geometry-xg2xg4-2gpu-d8e71ad-retry2/geometry_summary.json",
       "locator": "/plane_selection_performed",
-      "figure": "fig3",
+      "figure": "supporting",
       "transformation": "none; display rounding only"
     },
     "370M.geometry.training_executed": {
       "value": false,
       "source": "reports/reason_router_gen4_mamba370m_geometry_preparation_runs/g4k-mamba370-geometry-xg2xg4-2gpu-d8e71ad-retry2/geometry_summary.json",
       "locator": "/training_executed",
-      "figure": "fig3",
+      "figure": "supporting",
       "transformation": "none; display rounding only"
     },
     "370M.mu_k2": {
       "value": 0.024623525099917637,
       "source": "reports/reason_router_gen4_mamba370m_geometry_preparation_runs/g4k-mamba370-geometry-xg2xg4-2gpu-d8e71ad-retry2/geometry_summary.json",
       "locator": "/strong_mask/mu_k2",
-      "figure": "fig3",
+      "figure": "supporting",
       "transformation": "none; display rounding only"
     },
     "370M.lambda1": {
       "value": 0.9671797709152048,
       "source": "reports/reason_router_gen4_mamba370m_geometry_preparation_runs/g4k-mamba370-geometry-xg2xg4-2gpu-d8e71ad-retry2/geometry_summary.json",
       "locator": "/lambda_plus_by_plane/0",
-      "figure": "fig3",
+      "figure": "supporting",
       "transformation": "none; display rounding only"
     },
     "790M.planes": {
@@ -3840,42 +3917,42 @@
       "value": false,
       "source": "reports/reason_router_gen4_mamba790m_geometry_preparation_runs/g4k-mamba790m-geometry-xg2xg4-2gpu-774983b-retry2/geometry_summary.json",
       "locator": "/backward_executed",
-      "figure": "fig3",
+      "figure": "supporting",
       "transformation": "none; display rounding only"
     },
     "790M.geometry.causal_response_observed": {
       "value": false,
       "source": "reports/reason_router_gen4_mamba790m_geometry_preparation_runs/g4k-mamba790m-geometry-xg2xg4-2gpu-774983b-retry2/geometry_summary.json",
       "locator": "/causal_response_observed",
-      "figure": "fig3",
+      "figure": "supporting",
       "transformation": "none; display rounding only"
     },
     "790M.geometry.plane_selection_performed": {
       "value": false,
       "source": "reports/reason_router_gen4_mamba790m_geometry_preparation_runs/g4k-mamba790m-geometry-xg2xg4-2gpu-774983b-retry2/geometry_summary.json",
       "locator": "/plane_selection_performed",
-      "figure": "fig3",
+      "figure": "supporting",
       "transformation": "none; display rounding only"
     },
     "790M.geometry.training_executed": {
       "value": false,
       "source": "reports/reason_router_gen4_mamba790m_geometry_preparation_runs/g4k-mamba790m-geometry-xg2xg4-2gpu-774983b-retry2/geometry_summary.json",
       "locator": "/training_executed",
-      "figure": "fig3",
+      "figure": "supporting",
       "transformation": "none; display rounding only"
     },
     "790M.mu_k2": {
       "value": 0.02384271108497352,
       "source": "reports/reason_router_gen4_mamba790m_geometry_preparation_runs/g4k-mamba790m-geometry-xg2xg4-2gpu-774983b-retry2/geometry_summary.json",
       "locator": "/strong_mask/mu_k2",
-      "figure": "fig3",
+      "figure": "supporting",
       "transformation": "none; display rounding only"
     },
     "790M.lambda1": {
       "value": 0.8929611457472746,
       "source": "reports/reason_router_gen4_mamba790m_geometry_preparation_runs/g4k-mamba790m-geometry-xg2xg4-2gpu-774983b-retry2/geometry_summary.json",
       "locator": "/lambda_plus_by_plane/0",
-      "figure": "fig3",
+      "figure": "supporting",
       "transformation": "none; display rounding only"
     },
     "1.4B.planes": {
@@ -3955,42 +4032,42 @@
       "value": false,
       "source": "reports/reason_router_gen4_mamba14b_geometry_preparation_runs/g4k-mamba14b-geometry-xg2xg4-2gpu-c758d5e-retry1/geometry_summary.json",
       "locator": "/backward_executed",
-      "figure": "fig3",
+      "figure": "supporting",
       "transformation": "none; display rounding only"
     },
     "1.4B.geometry.causal_response_observed": {
       "value": false,
       "source": "reports/reason_router_gen4_mamba14b_geometry_preparation_runs/g4k-mamba14b-geometry-xg2xg4-2gpu-c758d5e-retry1/geometry_summary.json",
       "locator": "/causal_response_observed",
-      "figure": "fig3",
+      "figure": "supporting",
       "transformation": "none; display rounding only"
     },
     "1.4B.geometry.plane_selection_performed": {
       "value": false,
       "source": "reports/reason_router_gen4_mamba14b_geometry_preparation_runs/g4k-mamba14b-geometry-xg2xg4-2gpu-c758d5e-retry1/geometry_summary.json",
       "locator": "/plane_selection_performed",
-      "figure": "fig3",
+      "figure": "supporting",
       "transformation": "none; display rounding only"
     },
     "1.4B.geometry.training_executed": {
       "value": false,
       "source": "reports/reason_router_gen4_mamba14b_geometry_preparation_runs/g4k-mamba14b-geometry-xg2xg4-2gpu-c758d5e-retry1/geometry_summary.json",
       "locator": "/training_executed",
-      "figure": "fig3",
+      "figure": "supporting",
       "transformation": "none; display rounding only"
     },
     "1.4B.mu_k2": {
       "value": 0.014838786182259655,
       "source": "reports/reason_router_gen4_mamba14b_geometry_preparation_runs/g4k-mamba14b-geometry-xg2xg4-2gpu-c758d5e-retry1/geometry_summary.json",
       "locator": "/strong_mask/mu_k2",
-      "figure": "fig3",
+      "figure": "supporting",
       "transformation": "none; display rounding only"
     },
     "1.4B.lambda1": {
       "value": 0.8890412240357709,
       "source": "reports/reason_router_gen4_mamba14b_geometry_preparation_runs/g4k-mamba14b-geometry-xg2xg4-2gpu-c758d5e-retry1/geometry_summary.json",
       "locator": "/lambda_plus_by_plane/0",
-      "figure": "fig3",
+      "figure": "supporting",
       "transformation": "none; display rounding only"
     },
     "2.8B.planes": {
@@ -4070,41 +4147,213 @@
       "value": false,
       "source": "reports/reason_router_gen4_mamba28b_geometry_preparation_runs/g4k-mamba28b-geometry-xg2xg4-2gpu-7744d94/geometry_summary.json",
       "locator": "/backward_executed",
-      "figure": "fig3",
+      "figure": "supporting",
       "transformation": "none; display rounding only"
     },
     "2.8B.geometry.causal_response_observed": {
       "value": false,
       "source": "reports/reason_router_gen4_mamba28b_geometry_preparation_runs/g4k-mamba28b-geometry-xg2xg4-2gpu-7744d94/geometry_summary.json",
       "locator": "/causal_response_observed",
-      "figure": "fig3",
+      "figure": "supporting",
       "transformation": "none; display rounding only"
     },
     "2.8B.geometry.plane_selection_performed": {
       "value": false,
       "source": "reports/reason_router_gen4_mamba28b_geometry_preparation_runs/g4k-mamba28b-geometry-xg2xg4-2gpu-7744d94/geometry_summary.json",
       "locator": "/plane_selection_performed",
-      "figure": "fig3",
+      "figure": "supporting",
       "transformation": "none; display rounding only"
     },
     "2.8B.geometry.training_executed": {
       "value": false,
       "source": "reports/reason_router_gen4_mamba28b_geometry_preparation_runs/g4k-mamba28b-geometry-xg2xg4-2gpu-7744d94/geometry_summary.json",
       "locator": "/training_executed",
-      "figure": "fig3",
+      "figure": "supporting",
       "transformation": "none; display rounding only"
     },
     "2.8B.mu_k2": {
       "value": 0.00985710670421181,
       "source": "reports/reason_router_gen4_mamba28b_geometry_preparation_runs/g4k-mamba28b-geometry-xg2xg4-2gpu-7744d94/geometry_summary.json",
       "locator": "/strong_mask/mu_k2",
-      "figure": "fig3",
+      "figure": "supporting",
       "transformation": "none; display rounding only"
     },
     "2.8B.lambda1": {
       "value": 0.8932258269422545,
       "source": "reports/reason_router_gen4_mamba28b_geometry_preparation_runs/g4k-mamba28b-geometry-xg2xg4-2gpu-7744d94/geometry_summary.json",
       "locator": "/lambda_plus_by_plane/0",
+      "figure": "supporting",
+      "transformation": "none; display rounding only"
+    },
+    "xg2.cka_matrix": {
+      "value": [
+        [
+          1.000000000000001,
+          0.7425463019538905,
+          0.43574706253096784,
+          0.34251030803115157,
+          0.5554137480414237
+        ],
+        [
+          0.7425463019538905,
+          1.0,
+          0.5640593526403643,
+          0.5044833435816207,
+          0.6493439028634386
+        ],
+        [
+          0.43574706253096784,
+          0.5640593526403643,
+          0.9999999999999986,
+          0.6636777615923835,
+          0.6399627405682541
+        ],
+        [
+          0.34251030803115157,
+          0.5044833435816207,
+          0.6636777615923835,
+          0.9999999999999989,
+          0.5321850816907481
+        ],
+        [
+          0.5554137480414237,
+          0.6493439028634386,
+          0.6399627405682541,
+          0.5321850816907481,
+          0.9999999999999986
+        ]
+      ],
+      "source": "paper/iclr2027/frozen_sources/coordinate_free_geometry_v1/coordinate_free_geometry_result.json",
+      "locator": "/families/xg2/cka_matrix",
+      "figure": "fig3",
+      "transformation": "none; display rounding only"
+    },
+    "xg2.rsm_matrix": {
+      "value": [
+        [
+          1.000000000000004,
+          0.7163120803936378,
+          0.3989411880186479,
+          0.2957302277107003,
+          0.5222535451176982
+        ],
+        [
+          0.7163120803936378,
+          1.0000000000000038,
+          0.5412582440163308,
+          0.47448941157779684,
+          0.6342463696809015
+        ],
+        [
+          0.3989411880186479,
+          0.5412582440163308,
+          0.9999999999999989,
+          0.6408513202518832,
+          0.6201524221841686
+        ],
+        [
+          0.2957302277107003,
+          0.47448941157779684,
+          0.6408513202518832,
+          0.9999999999999997,
+          0.5040365146688671
+        ],
+        [
+          0.5222535451176982,
+          0.6342463696809015,
+          0.6201524221841686,
+          0.5040365146688671,
+          0.9999999999999991
+        ]
+      ],
+      "source": "paper/iclr2027/frozen_sources/coordinate_free_geometry_v1/coordinate_free_geometry_result.json",
+      "locator": "/families/xg2/cosine_rsm_pearson_matrix",
+      "figure": "fig3",
+      "transformation": "none; display rounding only"
+    },
+    "xg4.cka_matrix": {
+      "value": [
+        [
+          0.9999999999999996,
+          0.542295089937388,
+          0.4518615266759832,
+          0.48130360209504075,
+          0.5442772105064825
+        ],
+        [
+          0.542295089937388,
+          0.9999999999999984,
+          0.5585686113167371,
+          0.43683400621806734,
+          0.5909832224488579
+        ],
+        [
+          0.4518615266759832,
+          0.5585686113167371,
+          0.9999999999999993,
+          0.4443316663542622,
+          0.39271700005130383
+        ],
+        [
+          0.48130360209504075,
+          0.43683400621806734,
+          0.4443316663542622,
+          0.9999999999999997,
+          0.4556978076631216
+        ],
+        [
+          0.5442772105064825,
+          0.5909832224488579,
+          0.39271700005130383,
+          0.4556978076631216,
+          0.9999999999999992
+        ]
+      ],
+      "source": "paper/iclr2027/frozen_sources/coordinate_free_geometry_v1/coordinate_free_geometry_result.json",
+      "locator": "/families/xg4/cka_matrix",
+      "figure": "fig3",
+      "transformation": "none; display rounding only"
+    },
+    "xg4.rsm_matrix": {
+      "value": [
+        [
+          0.9999999999999987,
+          0.5098566163186026,
+          0.43157399757363696,
+          0.4526401451091742,
+          0.5116185854005079
+        ],
+        [
+          0.5098566163186026,
+          0.9999999999999972,
+          0.5339894231680443,
+          0.40338070854183694,
+          0.5457619361308703
+        ],
+        [
+          0.43157399757363696,
+          0.5339894231680443,
+          0.9999999999999996,
+          0.4126230807686745,
+          0.33761976482584505
+        ],
+        [
+          0.4526401451091742,
+          0.40338070854183694,
+          0.4126230807686745,
+          1.0000000000000029,
+          0.3828076623693903
+        ],
+        [
+          0.5116185854005079,
+          0.5457619361308703,
+          0.33761976482584505,
+          0.3828076623693903,
+          1.0000000000000049
+        ]
+      ],
+      "source": "paper/iclr2027/frozen_sources/coordinate_free_geometry_v1/coordinate_free_geometry_result.json",
+      "locator": "/families/xg4/cosine_rsm_pearson_matrix",
       "figure": "fig3",
       "transformation": "none; display rounding only"
     },
@@ -4211,6 +4460,160 @@
         "pair_sign_agreement_fraction": 0.5733333333333334
       }
     },
+    "coordinate_free_geometry": {
+      "xg2": {
+        "cka_matrix": [
+          [
+            1.000000000000001,
+            0.7425463019538905,
+            0.43574706253096784,
+            0.34251030803115157,
+            0.5554137480414237
+          ],
+          [
+            0.7425463019538905,
+            1.0,
+            0.5640593526403643,
+            0.5044833435816207,
+            0.6493439028634386
+          ],
+          [
+            0.43574706253096784,
+            0.5640593526403643,
+            0.9999999999999986,
+            0.6636777615923835,
+            0.6399627405682541
+          ],
+          [
+            0.34251030803115157,
+            0.5044833435816207,
+            0.6636777615923835,
+            0.9999999999999989,
+            0.5321850816907481
+          ],
+          [
+            0.5554137480414237,
+            0.6493439028634386,
+            0.6399627405682541,
+            0.5321850816907481,
+            0.9999999999999986
+          ]
+        ],
+        "rsm_matrix": [
+          [
+            1.000000000000004,
+            0.7163120803936378,
+            0.3989411880186479,
+            0.2957302277107003,
+            0.5222535451176982
+          ],
+          [
+            0.7163120803936378,
+            1.0000000000000038,
+            0.5412582440163308,
+            0.47448941157779684,
+            0.6342463696809015
+          ],
+          [
+            0.3989411880186479,
+            0.5412582440163308,
+            0.9999999999999989,
+            0.6408513202518832,
+            0.6201524221841686
+          ],
+          [
+            0.2957302277107003,
+            0.47448941157779684,
+            0.6408513202518832,
+            0.9999999999999997,
+            0.5040365146688671
+          ],
+          [
+            0.5222535451176982,
+            0.6342463696809015,
+            0.6201524221841686,
+            0.5040365146688671,
+            0.9999999999999991
+          ]
+        ]
+      },
+      "xg4": {
+        "cka_matrix": [
+          [
+            0.9999999999999996,
+            0.542295089937388,
+            0.4518615266759832,
+            0.48130360209504075,
+            0.5442772105064825
+          ],
+          [
+            0.542295089937388,
+            0.9999999999999984,
+            0.5585686113167371,
+            0.43683400621806734,
+            0.5909832224488579
+          ],
+          [
+            0.4518615266759832,
+            0.5585686113167371,
+            0.9999999999999993,
+            0.4443316663542622,
+            0.39271700005130383
+          ],
+          [
+            0.48130360209504075,
+            0.43683400621806734,
+            0.4443316663542622,
+            0.9999999999999997,
+            0.4556978076631216
+          ],
+          [
+            0.5442772105064825,
+            0.5909832224488579,
+            0.39271700005130383,
+            0.4556978076631216,
+            0.9999999999999992
+          ]
+        ],
+        "rsm_matrix": [
+          [
+            0.9999999999999987,
+            0.5098566163186026,
+            0.43157399757363696,
+            0.4526401451091742,
+            0.5116185854005079
+          ],
+          [
+            0.5098566163186026,
+            0.9999999999999972,
+            0.5339894231680443,
+            0.40338070854183694,
+            0.5457619361308703
+          ],
+          [
+            0.43157399757363696,
+            0.5339894231680443,
+            0.9999999999999996,
+            0.4126230807686745,
+            0.33761976482584505
+          ],
+          [
+            0.4526401451091742,
+            0.40338070854183694,
+            0.4126230807686745,
+            1.0000000000000029,
+            0.3828076623693903
+          ],
+          [
+            0.5116185854005079,
+            0.5457619361308703,
+            0.33761976482584505,
+            0.3828076623693903,
+            1.0000000000000049
+          ]
+        ]
+      }
+    },
     "chain": [
       7.120276192878565e-08,
       2.3040673691981465e-08,
@@ -4222,6 +4625,12 @@
       "2.3040673691981465e-08",
       "4.7414371121837106e-08",
       "4.078872356598753e-08"
+    ],
+    "chain_supported": [
+      true,
+      true,
+      true,
+      true
     ],
     "causal_supported": {
       "130M": true,
@@ -5748,24 +6157,26 @@
     "chronology": "130M is post-primary completeness; 370M-2.8B remain the original prospective four-scale control."
   },
   "tools": {
-    "reportlab": "4.4.9",
-    "pdftoppm": "pdftoppm version 26.07.0"
+    "reportlab": "5.0.1",
+    "pymupdf": "1.28.2",
+    "png_dpi": 400
   },
   "outputs": {
     "fig1_study_overview.pdf": "57822b65223b2b0ba3b2067dcf5e86ed8cda5430445475d43e9b7ad896a5f252",
-    "fig1_study_overview.png": "ccf308f49976c99ade7895a85fe896ecf0955e7b28fe65391b1990a1309445ca",
-    "fig2_130m_causal_foundation.pdf": "f33acfea854331f8d9d8c41b904156d2859a7f74bfa6a23ef9f58e76c2ef41f2",
-    "fig2_130m_causal_foundation.png": "8569e41d8063a8ff915d2fbb8b30eb531eacd24f65d013e6c79794e07e2229fc",
-    "fig3_five_scale_recurrence_reorganization.pdf": "4593ccaf5752047141732dca64af30d6cbafa369ab8ee7d05e6d958b18dc47f8",
-    "fig3_five_scale_recurrence_reorganization.png": "8eda4f370ca20449f6198a38a5c7d51519bf11b797b6dcc60a718f75ac4e5d99",
-    "fig4_objective_conditioned_functionalization.pdf": "c7eefb192b23569526be75a50d5e97d4df0e636cf85fb8098b0f3bee7e70a2cb",
-    "fig4_objective_conditioned_functionalization.png": "a7090f56847962b887782e7fde65ce1bb900e3368c11a48404a860ae456cda94"
+    "fig1_study_overview.png": "a6db5d8e4d76539835490604a92da4406a128f940548a3c7f5ce0ab7800e392d",
+    "fig2_130m_causal_foundation.pdf": "d14b7041b0f8b44ff3591c0001c006ee77bec46b1257e642bedbce03478a0859",
+    "fig2_130m_causal_foundation.png": "c1ea0dff0a402fe4a3e7c9d4e5dac90137409e89be5ffffbea9c5d162ec0f9c6",
+    "fig3_five_scale_recurrence_reorganization.pdf": "f62ce8455f61f6fb9f36438e129438e94181fdcd3ae04ded08cd53b91040f3f9",
+    "fig3_five_scale_recurrence_reorganization.png": "80ec094f6bf96d80957e81f95e1734ce40783f362ab852a578db85ff1342fcc3",
+    "fig4_objective_conditioned_functionalization.pdf": "8ca4156cd0f97feb8f9ebfd437e694d25dd8b4e1656bce6df72a0ce49f1fc43a",
+    "fig4_objective_conditioned_functionalization.png": "f2f907aba426e54a6e0fcc350659db9d46f940307cbbe3fdf98d56b43b4409a1"
   },
   "new_statistics": false,
   "model_execution": false,
   "notes": [
-    "Historical 130M kernel mean and leading-plane eigenvalue use the same mathematical quantities but precede the homogeneous four-scale bridge.",
-    "D_SUF, D_DOM, and D_CORE share a causal contrast but retain distinct protocol labels and inferential families.",
+    "Figure 3 uses the frozen coordinate-free geometry result; no CKA or RSM value is recomputed by the paper builder.",
+    "Historical mu_k2/lambda1 measurements remain supporting appendix evidence rather than the main non-invariance visualization.",
+    "D_SUF, D_DOM, and D_CORE retain their historical inferential families in the appendix.",
     "130M is post-primary completeness; 370M-2.8B remain the original prospective four-scale control."
   ]
 }
