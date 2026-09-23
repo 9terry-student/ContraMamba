@@ -1,0 +1,212 @@
+{
+  "backward_executed": false,
+  "consumed_artifacts": [
+    {
+      "family": "xg2",
+      "git_blob_sha1": "78bee4e9070c686d97a48983397d8a5db628feec",
+      "historical_provenance": true,
+      "kind": "geometry_tensor",
+      "path": "reports/reason_router_gen4_seed181_checkpoint_replication_runs/g4k-seed181-checkpoint-replication-8e96fd1-retry1/seed181_xg2_alignment_delta_h.pt",
+      "scale": "130M",
+      "sha256": "058e576c16b75d7e0944508f5a0ef41e7eb9a6dfbe1995703892cd535bcd7902",
+      "shape": [
+        300,
+        395
+      ]
+    },
+    {
+      "family": "xg2",
+      "git_blob_sha1": "65de4ee84143b9e0d0432f654adc93a891d8985f",
+      "historical_provenance": false,
+      "kind": "geometry_tensor",
+      "path": "reports/reason_router_gen4_mamba370m_geometry_preparation_runs/g4k-mamba370-geometry-xg2xg4-2gpu-d8e71ad-retry2/xg2_alignment_delta_h.pt",
+      "scale": "370M",
+      "sha256": "5c68a9e3fe30473b4e0b2bb941c4c930236ee2fa4715a7ff693a92ed23c5a96b",
+      "shape": [
+        300,
+        650
+      ]
+    },
+    {
+      "family": "xg2",
+      "git_blob_sha1": "447f5fa5ca446fbbf498a77e34089d7b750d057a",
+      "historical_provenance": false,
+      "kind": "geometry_tensor",
+      "path": "reports/reason_router_gen4_mamba790m_geometry_preparation_runs/g4k-mamba790m-geometry-xg2xg4-2gpu-774983b-retry2/xg2_alignment_delta_h.pt",
+      "scale": "790M",
+      "sha256": "0d96495388e5bd0595f129328c82e151700e01e20758e2fda68f1bf5366eadc0",
+      "shape": [
+        300,
+        975
+      ]
+    },
+    {
+      "family": "xg2",
+      "git_blob_sha1": "4e25aad47cd1700a1260be69a575c5cee827fe5a",
+      "historical_provenance": false,
+      "kind": "geometry_tensor",
+      "path": "reports/reason_router_gen4_mamba14b_geometry_preparation_runs/g4k-mamba14b-geometry-xg2xg4-2gpu-c758d5e-retry1/xg2_alignment_delta_h.pt",
+      "scale": "1.4B",
+      "sha256": "936c0d456859781e2bcd6f4481bdd483db9d567c5a274c8ce86f201b18cf1bd7",
+      "shape": [
+        300,
+        829
+      ]
+    },
+    {
+      "family": "xg2",
+      "git_blob_sha1": "f0356ad6e5e5d453273f93b03d627f97652cd421",
+      "historical_provenance": false,
+      "kind": "geometry_tensor",
+      "path": "reports/reason_router_gen4_mamba28b_geometry_preparation_runs/g4k-mamba28b-geometry-xg2xg4-2gpu-7744d94/xg2_alignment_delta_h.pt",
+      "scale": "2.8B",
+      "sha256": "54cd6b6048ab9ea2f735720ddf10d52147f15b5ca6a8ad7d970fef3e9bd17d9c",
+      "shape": [
+        300,
+        1003
+      ]
+    },
+    {
+      "family": "xg4",
+      "git_blob_sha1": "b59332ea64be5a40ec1117d9b450f308505a355b",
+      "historical_provenance": true,
+      "kind": "geometry_tensor",
+      "path": "reports/reason_router_gen4_seed181_checkpoint_replication_runs/g4k-seed181-checkpoint-replication-8e96fd1-retry1/seed181_xg4_alignment_delta_h.pt",
+      "scale": "130M",
+      "sha256": "90b55f36f1c70a758d5c79b16a0420770c778e240617ed8709de2080999102c6",
+      "shape": [
+        300,
+        395
+      ]
+    },
+    {
+      "family": "xg4",
+      "git_blob_sha1": "56fd8e7b86c7e086bcbc59a7a80c69cfdef76f7b",
+      "historical_provenance": false,
+      "kind": "geometry_tensor",
+      "path": "reports/reason_router_gen4_mamba370m_geometry_preparation_runs/g4k-mamba370-geometry-xg2xg4-2gpu-d8e71ad-retry2/xg4_alignment_delta_h.pt",
+      "scale": "370M",
+      "sha256": "66b2d3634517e647e3027ffb92bd289c61b117507eaed34f54b715ba444d753c",
+      "shape": [
+        300,
+        650
+      ]
+    },
+    {
+      "family": "xg4",
+      "git_blob_sha1": "4f2fad4ae656d61d3598fd71acae2301d5d5bcd9",
+      "historical_provenance": false,
+      "kind": "geometry_tensor",
+      "path": "reports/reason_router_gen4_mamba790m_geometry_preparation_runs/g4k-mamba790m-geometry-xg2xg4-2gpu-774983b-retry2/xg4_alignment_delta_h.pt",
+      "scale": "790M",
+      "sha256": "1b71d7893f25cc7ab7d0ea39d8b644dcbb6a6bcaa0908183c28b44c17fbd2448",
+      "shape": [
+        300,
+        975
+      ]
+    },
+    {
+      "family": "xg4",
+      "git_blob_sha1": "997a7332b1ecc52820265bc28ca5ebf28974d382",
+      "historical_provenance": false,
+      "kind": "geometry_tensor",
+      "path": "reports/reason_router_gen4_mamba14b_geometry_preparation_runs/g4k-mamba14b-geometry-xg2xg4-2gpu-c758d5e-retry1/xg4_alignment_delta_h.pt",
+      "scale": "1.4B",
+      "sha256": "d38cb80221560da8d0fc0d6f66ec906e2b38c42c3ef48f94854f551a1e4956a8",
+      "shape": [
+        300,
+        829
+      ]
+    },
+    {
+      "family": "xg4",
+      "git_blob_sha1": "590b4971358bf09615a2258966b4057374ae8688",
+      "historical_provenance": false,
+      "kind": "geometry_tensor",
+      "path": "reports/reason_router_gen4_mamba28b_geometry_preparation_runs/g4k-mamba28b-geometry-xg2xg4-2gpu-7744d94/xg4_alignment_delta_h.pt",
+      "scale": "2.8B",
+      "sha256": "ed7b74f64cfd3b3a1f84f579e86648a1ba708cf887edffa004226ea1b6a77092",
+      "shape": [
+        300,
+        1003
+      ]
+    },
+    {
+      "git_blob_sha1": "d7359da84f053ff95f30ed93048243cf4b47f023",
+      "kind": "task_pair_values",
+      "path": "reports/reason_router_gen4_mamba130m_readout_alignment_analysis_v1/readout_alignment_pair_values.jsonl",
+      "sha256": "8012e07d2a53b90d9d271ca4e4aa93af26f78c2fdfeaf0d149e38ff602c232b4"
+    },
+    {
+      "git_blob_sha1": "136c4731eaae575d47a2f4325eb42e7c54446691",
+      "kind": "task_pair_values",
+      "path": "reports/reason_router_gen4_mamba370m14b_readout_alignment_analysis_v1/readout_alignment_pair_values.jsonl",
+      "sha256": "f566f704b11d6b9574ac381f8584c44f3be191183ddb0e65eb3cb2e315f62779"
+    },
+    {
+      "git_blob_sha1": "e1d3928fb74d3c9e307b4b1ac65ec69dd4ef6cde",
+      "kind": "task_pair_values",
+      "path": "reports/reason_router_gen4_mamba790m_readout_alignment_analysis_v1/readout_alignment_pair_values.jsonl",
+      "sha256": "8c9b2b5d2d523dafce0fed837a983f1cdf1f21194b2f0c0da8f99e3a0b31d99d"
+    },
+    {
+      "git_blob_sha1": "a0f3b065be673dbdd8d49fe3bd5f3cd84e60a594",
+      "kind": "task_pair_values",
+      "path": "reports/reason_router_gen4_mamba28b_readout_alignment_analysis_v1/readout_alignment_pair_values.jsonl",
+      "sha256": "1aeb28e34ae0f9ee3816b4c85dd8dc07ee7924515451b8b7e77a802c118e00eb"
+    },
+    {
+      "git_blob_sha1": "19c37381caff58ba35d0128130fa18b0d0212b84",
+      "kind": "lm_item_values",
+      "path": "reports/reason_router_gen4_mamba1_vanilla_lm_readout_runs/g4k-mamba130m-vanillalm-readout-xg1-2701-3000-p3-p5-2gpu-cb679ae/vanilla_lm_readout_items.jsonl",
+      "scale": "130M",
+      "sha256": "24b85d216c9867781e355212e0e25bc3d5b8bc13945d8efda93c89ff8f9f148d"
+    },
+    {
+      "git_blob_sha1": "f48de3dbfcdfc055c306ad0937f54c0215b9f221",
+      "kind": "lm_item_values",
+      "path": "reports/reason_router_gen4_mamba1_vanilla_lm_readout_runs/g4k-mamba370m-vanillalm-readout-xg1-4801-5100-p3-p5-2gpu-9c56906-retry7/vanilla_lm_readout_items.jsonl",
+      "scale": "370M",
+      "sha256": "2fa06ef313eb5bee180e44ce34febdd166169b555e7f9829c500767dbd5c7faf"
+    },
+    {
+      "git_blob_sha1": "49a7d11e69c8ae192e0b962aa98450be68e40d4c",
+      "kind": "lm_item_values",
+      "path": "reports/reason_router_gen4_mamba1_vanilla_lm_readout_runs/g4k-mamba790m-vanillalm-readout-xg1-7501-7800-p2-p5-2gpu-e5f49b4/vanilla_lm_readout_items.jsonl",
+      "scale": "790M",
+      "sha256": "84bbfc817d7600904280cd0c14a2e521263be691fc66f04f8419bb2865ccbd19"
+    },
+    {
+      "git_blob_sha1": "b39e9e4c9937a5210418b159a27c0bb9bbb3af0e",
+      "kind": "lm_item_values",
+      "path": "reports/reason_router_gen4_mamba1_vanilla_lm_readout_runs/g4k-mamba14b-vanillalm-readout-xg1-4801-5100-p5-p4-2gpu-e7ee5fa/vanilla_lm_readout_items.jsonl",
+      "scale": "1.4B",
+      "sha256": "95f73ee3b33325788eb1f2bff11d612a1a93e03ed459d287a4664a53eeb8d5fe"
+    },
+    {
+      "git_blob_sha1": "e43ce5b8728e2c9e6bc377c5a8d3d6a354aaac29",
+      "kind": "lm_item_values",
+      "path": "reports/reason_router_gen4_mamba1_vanilla_lm_readout_runs/g4k-mamba28b-vanillalm-readout-xg1-6601-6900-p3-p5-2gpu-c3baf3d/vanilla_lm_readout_items.jsonl",
+      "scale": "2.8B",
+      "sha256": "ddfe134a5cd7c491ee4b53e8a01b56e2f6a82332d573886b87f8109fcc4492e5"
+    }
+  ],
+  "current_head_at_execution": "ef1806bef9e4a7f55e1f7e77f7a0f08592fb4abe",
+  "evaluation_executed": false,
+  "geometry_metadata": {
+    "geometry_provenance_git_blob_sha1": "869ff69522e572758f699184659901a2e44ced78",
+    "geometry_provenance_path": "paper/iclr2027/frozen_sources/coordinate_free_geometry_v1/provenance_manifest.json",
+    "geometry_provenance_sha256": "201420b7e8c8905740cb00dc43d6cd3cc05626cc2ff777cd0f317cac51566dd7",
+    "geometry_result_git_blob_sha1": "95eae68296f96189d164cbafd570835d369c3acb",
+    "geometry_result_path": "paper/iclr2027/frozen_sources/coordinate_free_geometry_v1/coordinate_free_geometry_result.json",
+    "geometry_result_sha256": "a3fa6af9bb300ffb8a26e3448e14d3c0347f65c51ddbe91d398b3b7d719411fa"
+  },
+  "gpu_required": false,
+  "protocol_path": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_protocol_v1.json",
+  "protocol_sha256": "5c88c01ba6774b9cf8256f52ca7c2cd35ffb5fce89fc3c552da19147b2674fea",
+  "schema_version": "iclr2027-pair-resampling-robustness-provenance-v1",
+  "scientific_model_forward_count": 0,
+  "source_head": "ef1806bef9e4a7f55e1f7e77f7a0f08592fb4abe",
+  "tokenizer_executed": false,
+  "training_executed": false
+}

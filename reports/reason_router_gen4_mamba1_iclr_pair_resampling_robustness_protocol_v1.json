@@ -1,0 +1,32 @@
+{
+  "schema_version": "iclr2027-pair-resampling-robustness-protocol-v1",
+  "source_head": "ef1806bef9e4a7f55e1f7e77f7a0f08592fb4abe",
+  "bootstrap_replicates": 10000,
+  "bootstrap_ci_quantiles": [
+    0.025,
+    0.975
+  ],
+  "bootstrap_seed": 20260924,
+  "split_half_repeats": 1000,
+  "split_half_size": 150,
+  "split_half_seed": 20260925,
+  "geometry_families": [
+    "xg2",
+    "xg4"
+  ],
+  "geometry_primary_metric": "row-normalized-centered-linear-cka",
+  "geometry_resampling_unit": "source_pair_id",
+  "geometry_joint_scale_resampling": true,
+  "split_half_metrics": [
+    "pearson",
+    "spearman",
+    "mad",
+    "rmse"
+  ],
+  "objective_resampling_unit": "source_pair_id",
+  "task_quantity": "Delta_L_forward_equivalent",
+  "lm_quantity": "TASK_MATCHED pair mean over C0_SHAM and C2_NAME",
+  "interval_method": "percentile",
+  "permutation_control": false,
+  "interpretation": "pair-resampling stability / sampling robustness; not a noise ceiling or independent-population replication"
+}
