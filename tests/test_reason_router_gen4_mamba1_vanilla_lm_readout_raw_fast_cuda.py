@@ -337,3 +337,23 @@ def test_lm_head_tie_reconstruction_matches_historical_mamba() -> None:
 
     assert "model.tie_weights()" not in source
     assert "LM_TIE_WORD_EMBEDDINGS_DISABLED" not in source
+
+def test_checkpoint_head_gate_supports_safetensor_shards() -> None:
+    source = inspect.getsource(subject)
+
+    required = (
+        'if name.endswith(".safetensors")',
+        "CHECKPOINT_WEIGHT_FILES_MISSING",
+        "CHECKPOINT_WEIGHT_FILE_MISSING:",
+        "CHECKPOINT_DUPLICATE_KEYS:",
+        "checkpoint_key_set.update(",
+        '"checkpoint_weight_files"',
+        '"checkpoint_weight_file_count"',
+        "CHECKPOINT_EMBEDDING_WEIGHT_MISSING",
+        "CHECKPOINT_LM_HEAD_WEIGHT_UNEXPECTED",
+    )
+
+    for token in required:
+        assert token in source
+
+    assert 'snapshot / "model.safetensors"' not in source

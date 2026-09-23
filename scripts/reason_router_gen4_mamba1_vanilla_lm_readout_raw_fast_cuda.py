@@ -930,16 +930,67 @@ def load_vanilla_model(
 
     from safetensors import safe_open
 
-    with safe_open(
-        str(
+    checkpoint_weight_files = tuple(
+        name
+        for name in spec["geom"].HF_FILES
+        if name.endswith(".safetensors")
+    )
+
+    require(
+        len(checkpoint_weight_files) >= 1,
+        "CHECKPOINT_WEIGHT_FILES_MISSING",
+    )
+
+    checkpoint_key_set: set[str] = set()
+
+    for weight_name in checkpoint_weight_files:
+        weight_path = (
             snapshot
-            / "model.safetensors"
-        ),
-        framework="pt",
-    ) as checkpoint:
-        checkpoint_keys = frozenset(
-            checkpoint.keys()
+            / weight_name
         )
+
+        require(
+            weight_path.is_file(),
+            (
+                "CHECKPOINT_WEIGHT_FILE_MISSING:"
+                + weight_name
+            ),
+        )
+
+        with safe_open(
+            str(weight_path),
+            framework="pt",
+        ) as checkpoint:
+            shard_keys = set(
+                checkpoint.keys()
+            )
+
+        overlap = (
+            checkpoint_key_set
+            .intersection(
+                shard_keys
+            )
+        )
+
+        require(
+            not overlap,
+            (
+                "CHECKPOINT_DUPLICATE_KEYS:"
+                + repr(
+                    sorted(
+                        overlap
+                    )
+                )
+            ),
+        )
+
+        checkpoint_key_set.update(
+            shard_keys
+        )
+
+    checkpoint_keys = frozenset(
+        checkpoint_key_set
+    )
 
     require(
         "backbone.embeddings.weight"
@@ -1111,6 +1162,10 @@ def load_vanilla_model(
                 False,
             "hf_runtime_tie_word_embeddings":
                 hf_runtime_tie_word_embeddings,
+            "checkpoint_weight_files":
+                list(checkpoint_weight_files),
+            "checkpoint_weight_file_count":
+                len(checkpoint_weight_files),
             "checkpoint_embedding_weight_present":
                 True,
             "checkpoint_lm_head_weight_present":
