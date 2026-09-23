@@ -1,0 +1,247 @@
+from __future__ import annotations
+
+import inspect
+
+import torch
+
+from scripts import (
+    reason_router_gen4_mamba1_vanilla_lm_readout_raw_fast_cuda
+    as subject,
+)
+
+
+def test_protocol_constants() -> None:
+    assert subject.SCALES == (
+        "mamba370m",
+        "mamba790m",
+        "mamba14b",
+        "mamba28b",
+    )
+    assert subject.TARGET_CELLS == (
+        "C0_SHAM",
+        "C2_NAME",
+    )
+    assert subject.COMMON_SELECTED_PLANE == "P3"
+    assert subject.COMMON_CONTROL_PLANE == "P5"
+    assert subject.ITEMS_PER_SCALE == 600
+    assert subject.FORWARDS_PER_SCALE == 600
+    assert subject.BACKWARDS_PER_SCALE == 600
+
+
+def test_scale_registry() -> None:
+    expected = {
+        "mamba370m":
+            ("P3", "P5", 650, 35),
+        "mamba790m":
+            ("P2", "P5", 975, 35),
+        "mamba14b":
+            ("P5", "P4", 829, 35),
+        "mamba28b":
+            ("P3", "P5", 1003, 47),
+    }
+
+    for scale, values in expected.items():
+        spec = subject.scale_spec(scale)
+        assert (
+            spec["selected_plane"],
+            spec["control_plane"],
+            spec["dim"],
+            spec["geom"].INTERVENTION_LAYER,
+        ) == values
+        assert len(spec["pair_ids"]) == 300
+
+
+def test_cosine() -> None:
+    assert subject.cosine(
+        2.0,
+        2.0,
+        1.0,
+    ) == 1.0
+
+    assert subject.cosine(
+        -2.0,
+        2.0,
+        1.0,
+    ) == -1.0
+
+    assert subject.cosine(
+        0.0,
+        0.0,
+        1.0,
+    ) is None
+
+
+def test_matched_components() -> None:
+    planes = {}
+
+    for index in range(5):
+        plus = torch.zeros(
+            10,
+            dtype=torch.float64,
+        )
+        minus = torch.zeros(
+            10,
+            dtype=torch.float64,
+        )
+
+        plus[2 * index] = 1.0
+        minus[2 * index + 1] = 1.0
+
+        planes[
+            f"P{index + 1}"
+        ] = {
+            "plus": plus,
+            "minus": minus,
+        }
+
+    native = torch.zeros(
+        10,
+        dtype=torch.float64,
+    )
+    native[0] = 3.0
+    native[1] = -4.0
+
+    result = subject.matched_components(
+        native,
+        selected_plane="P1",
+        control_plane="P2",
+        planes=planes,
+        dim=10,
+        tol=1e-12,
+    )
+
+    assert result["a"] == 3.0
+    assert result["b"] == -4.0
+    assert result["component_norm"] == 5.0
+    assert (
+        result[
+            "norm_mismatch"
+        ]
+        == 0.0
+    )
+
+
+def test_contrast_identity() -> None:
+    planes = {}
+
+    for index in range(5):
+        plus = torch.zeros(
+            10,
+            dtype=torch.float64,
+        )
+        minus = torch.zeros(
+            10,
+            dtype=torch.float64,
+        )
+        plus[2 * index] = 1.0
+        minus[2 * index + 1] = 1.0
+
+        planes[
+            f"P{index + 1}"
+        ] = {
+            "plus": plus,
+            "minus": minus,
+        }
+
+    native = torch.zeros(
+        10,
+        dtype=torch.float64,
+    )
+    native[0] = 2.0
+    native[1] = 1.0
+
+    grad = torch.zeros(
+        10,
+        dtype=torch.float64,
+    )
+    grad[0] = 1.0
+    grad[2] = -0.5
+
+    result = subject.contrast_readout(
+        grad,
+        native,
+        selected_plane="P1",
+        control_plane="P2",
+        planes=planes,
+        dim=10,
+        tol=1e-12,
+    )
+
+    assert (
+        result["Delta_L_LM"]
+        == result["L_selected_LM"]
+        - result["L_control_LM"]
+    )
+
+
+def test_plan_freeze_identity() -> None:
+    assert (
+        subject.PLAN_FREEZE_COMMIT
+        == "1fe9a198a15c9cea0e5451d918cd949bc21bf7e0"
+    )
+
+
+def test_raw_runner_is_descriptive_only() -> None:
+    source = inspect.getsource(
+        subject
+    ).lower()
+
+    assert "scipy" not in source
+    assert "ttest" not in source
+    assert "p_value_count=0" in source
+    assert (
+        "pair_aggregation_performed=false"
+        in source
+    )
+    assert (
+        "mean_delta_l_computed=false"
+        in source
+    )
+    assert (
+        "sign_vector_computed=false"
+        in source
+    )
+
+
+def test_no_contramamba_functional_path() -> None:
+    source = inspect.getsource(
+        subject
+    )
+
+    forbidden = (
+        "ContraMambaV6BMinimal",
+        "historical_forward(",
+        "_active_margin(",
+        "LABEL_ID_BY_CELL",
+        "D_EDGE_OWNERSHIP_LAMBDA",
+        "selected_downstream_checkpoint",
+        "COMPACT_CHECKPOINT_REL",
+    )
+
+    for token in forbidden:
+        assert token not in source
+
+
+def test_vanilla_lm_path_is_explicit() -> None:
+    source = inspect.getsource(
+        subject
+    )
+
+    assert "AutoModelForCausalLM" in source
+    assert '"MambaForCausalLM"' in source
+    assert "torch.log_softmax" in source
+    assert "next_token_id" in source
+    assert "use_cache=False" in source
+    assert (
+        '"contra_downstream_loaded":\n'
+        '            False'
+    ) in source
+
+
+def test_no_parameter_backward_call() -> None:
+    source = inspect.getsource(
+        subject
+    )
+
+    assert ".backward(" not in source
+    assert "torch.autograd.grad(" in source
