@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "scientific_head": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
   "scientific_authorities": {
     "base_evidence": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
@@ -6437,28 +6437,155 @@
     ],
     "chronology": "130M is post-primary completeness; 370M-2.8B remain the original prospective four-scale control."
   },
-  "tools": {
-    "reportlab": "5.0.1",
-    "pymupdf": "1.28.2",
-    "png_dpi": 400
+  "render_contract": {
+    "renderer": "physical-size matplotlib vector renderer",
+    "verified_candidate_renderer_version": "Matplotlib 3.11.2",
+    "promotion_mode": "byte-identical static promotion after independent validation",
+    "source_width_inches": 7.2,
+    "minimum_source_font_pt": 11.4,
+    "required_minimum_effective_font_pt": 8.5,
+    "shared_cka_normalization": [
+      0.3,
+      1.0
+    ],
+    "svg_editable_text": true,
+    "pdf_raster_image_count": 0
+  },
+  "render_audits": {
+    "fig1_study_overview": {
+      "source_canvas_inches": [
+        7.2,
+        4.833333333333333
+      ],
+      "export_inches": [
+        7.260000000000001,
+        4.8933333333333335
+      ],
+      "minimum_source_font_pt": 11.399999999999991,
+      "minimum_effective_font_pt": 8.63636363636363,
+      "source_panel_letter_pt": 13,
+      "source_panel_title_pt": 12.5,
+      "text_bbox_intersections": 0,
+      "table_rule_intersections": 0,
+      "minimum_table_rule_clearance_source_pt": null,
+      "crop_padding_inches": 0.03,
+      "pdf_raster_image_count": 0
+    },
+    "fig2_130m_causal_foundation": {
+      "source_canvas_inches": [
+        7.2,
+        5.166666666666667
+      ],
+      "export_inches": [
+        7.260000000000001,
+        5.226666666666667
+      ],
+      "minimum_source_font_pt": 11.399999999999991,
+      "minimum_effective_font_pt": 8.63636363636363,
+      "source_panel_letter_pt": 13,
+      "source_panel_title_pt": 12.5,
+      "text_bbox_intersections": 0,
+      "table_rule_intersections": 0,
+      "minimum_table_rule_clearance_source_pt": null,
+      "crop_padding_inches": 0.03,
+      "pdf_raster_image_count": 0
+    },
+    "fig3_five_scale_recurrence_reorganization": {
+      "source_canvas_inches": [
+        7.2,
+        4.638888888888889
+      ],
+      "export_inches": [
+        7.260000000000001,
+        4.698888888888889
+      ],
+      "minimum_source_font_pt": 11.399999999999991,
+      "minimum_effective_font_pt": 8.63636363636363,
+      "source_panel_letter_pt": 13,
+      "source_panel_title_pt": 12.5,
+      "text_bbox_intersections": 0,
+      "table_rule_intersections": 0,
+      "minimum_table_rule_clearance_source_pt": null,
+      "crop_padding_inches": 0.03,
+      "pdf_raster_image_count": 0
+    },
+    "fig4_objective_conditioned_functionalization": {
+      "source_canvas_inches": [
+        7.2,
+        5.944444444444445
+      ],
+      "export_inches": [
+        7.260000000000001,
+        6.004444444444444
+      ],
+      "minimum_source_font_pt": 11.399999999999991,
+      "minimum_effective_font_pt": 8.63636363636363,
+      "source_panel_letter_pt": 13,
+      "source_panel_title_pt": 12.5,
+      "text_bbox_intersections": 0,
+      "table_rule_intersections": 0,
+      "minimum_table_rule_clearance_source_pt": 5.5,
+      "crop_padding_inches": 0.03,
+      "pdf_raster_image_count": 0
+    }
+  },
+  "validation": {
+    "status": "PASS",
+    "scatter_mark_count": 300,
+    "scatter_coordinates_exact": 300,
+    "figure3_rank_cells_exact": 5,
+    "figure3_printed_cka_cells_exact": 50,
+    "figure3_full_precision_cka_cells_exact": 50,
+    "shared_normalization": [
+      0.3,
+      1.0
+    ],
+    "monotonic_colormap_samples": 4097,
+    "monotonic_colormap": "PASS",
+    "figure4_means_exact": 10,
+    "figure4_ci_endpoints_exact": 20,
+    "figure4_association_cells_exact": 15,
+    "figure4_zero_crossing_cells": [
+      [
+        "2.8B",
+        "contra"
+      ],
+      [
+        "370M",
+        "vanilla"
+      ]
+    ],
+    "figure4_table_rule_intersections": 0,
+    "scientific_analysis_executed": false,
+    "model_tokenizer_training_evaluation_gpu_execution": false,
+    "production_figures_unchanged": true
   },
   "outputs": {
-    "fig1_study_overview.pdf": "d3e88e41a4dd3b5ec0da73eec7532bf7d7e4b202fbb4074e18365fbc3e215c3f",
-    "fig1_study_overview.png": "a8871bf5664b3ac5c9cbb4f9b2760351e3bb6b4a04f98c6a5039a92465e4fcfc",
-    "fig2_130m_causal_foundation.pdf": "d14b7041b0f8b44ff3591c0001c006ee77bec46b1257e642bedbce03478a0859",
-    "fig2_130m_causal_foundation.png": "c1ea0dff0a402fe4a3e7c9d4e5dac90137409e89be5ffffbea9c5d162ec0f9c6",
-    "fig3_five_scale_recurrence_reorganization.pdf": "61a314c1edc58a4acda6a4407ddc8de561d8ead601d3f0f0a020d0fb8ce5477d",
-    "fig3_five_scale_recurrence_reorganization.png": "49727ec818b226ca83af7a371ea6a39c631f50fabc167a015acb94c76ae83b34",
-    "fig4_objective_conditioned_functionalization.pdf": "96372da7dc888552cf3551c45c7c7652948216e84678abf5d5ee0a80c8dbb793",
-    "fig4_objective_conditioned_functionalization.png": "76f45351604d09eaf6f120d7a9e317eb73edcd7fe04245955cbfaeceb8a87b4d"
+    "fig1_study_overview.svg": "747c9912b075f6fa1090b3d7c7b8823243a42b79717f61a2d10d39cc8b022288",
+    "fig1_study_overview.pdf": "5df77372f12a9887fe05fb8b784817891eb38cdd6a5eef5f6d78d1c00c284ef6",
+    "fig1_study_overview.png": "ba4c0eba0ee683603f2eb70fea4c9467cbea268a48ba4bbdb3f088e84591da54",
+    "fig2_130m_causal_foundation.svg": "5f8ab61e04078544660d9caf829734c3b4139f85b58a55ebaf965dbd7208ba76",
+    "fig2_130m_causal_foundation.pdf": "ffb0b0a3aacc855361e731ee623f97ee87e3805832cfbb56d53196f201c5dad8",
+    "fig2_130m_causal_foundation.png": "1890f9ebcd0bc32fac788a7172be509a80d708e138317c378270883e8ba3ccf6",
+    "fig3_five_scale_recurrence_reorganization.svg": "97591a7ece13124c7c7f941412fc30d038bc212756e4757cebdb4869283484c2",
+    "fig3_five_scale_recurrence_reorganization.pdf": "30bd0087de7a9b8e22a05cb1ad95f14a693d3aac3560c60ae5b590f8cc7f973f",
+    "fig3_five_scale_recurrence_reorganization.png": "bb2da530565325eb33dbc602cc990b9447f97854d69c7a52bd6d07fb5bddbf20",
+    "fig4_objective_conditioned_functionalization.svg": "246f5efc2c2a3f0b4595cfeee4e84cfe8ffa79621607ee21da6234d9d0b44c6f",
+    "fig4_objective_conditioned_functionalization.pdf": "dacec234448123ecf8b81e149fef2d49dfc368ab115797cd1672ac23e1dab4c5",
+    "fig4_objective_conditioned_functionalization.png": "8617dabd13e8b1aa5cc17db96bc6779b870669298a09fe81ae7ee67c8a1e59c1"
   },
   "new_statistics": false,
   "model_execution": false,
+  "tokenizer_execution": false,
+  "training_execution": false,
+  "evaluation_execution": false,
+  "gpu_required": false,
   "notes": [
-    "Figure 3 uses the frozen coordinate-free geometry result; no CKA or RSM value is recomputed by the paper builder.",
-    "Figure 4 point means and percentile interval endpoints come from the frozen objective_bootstrap.csv at the pair-resampling robustness commit; no bootstrap is executed by the paper builder.",
-    "Historical mu_k2/lambda1 measurements remain supporting appendix evidence rather than the main non-invariance visualization.",
-    "D_SUF, D_DOM, and D_CORE retain their historical inferential families in the appendix.",
+    "Production SVG/PDF/PNG bytes are byte-identical to the independently validated final candidate after filename mapping.",
+    "Immediate promotion did not re-render under the incompatible Python 3.13 / CPython-3.12 NumPy ABI combination.",
+    "Figure 2 contains exactly 300 frozen scatter pairs.",
+    "Figure 3 uses exact frozen coordinate-free CKA values under shared monotonic normalization.",
+    "Figure 4 uses frozen means and pair-resampling interval endpoints; no bootstrap is executed during promotion.",
     "130M is post-primary completeness; 370M-2.8B remain the original prospective four-scale control."
   ]
 }

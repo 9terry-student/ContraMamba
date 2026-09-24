@@ -1,0 +1,280 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:ns2="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" width="522.72pt" height="352.32pt" viewBox="0 0 522.72 352.32" version="1.1">
+ <metadata>
+  <rdf:RDF>
+   <ns2:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <ns2:Agent>
+      <dc:title>Deterministic scientific figure renderer</dc:title>
+     </ns2:Agent>
+    </dc:creator>
+   </ns2:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 352.32  L 522.72 352.32  L 522.72 0  L 0 0  z " style="fill: #ffffff" />
+  </g>
+  <g id="axes_1">
+   <g id="line2d_1">
+    <path d="M 6.16 46.16  L 424.16 46.16  " clip-path="url(#pababe95980)" style="fill: none; stroke: #d5dce2; stroke-width: 0.5" />
+   </g>
+   <g id="line2d_2">
+    <path d="M 438.16 46.16  L 516.16 46.16  " clip-path="url(#pababe95980)" style="fill: none; stroke: #0072b2; stroke-width: 0.5" />
+   </g>
+   <g id="line2d_3">
+    <path d="M 44.16 88.16  L 516.16 88.16  " clip-path="url(#pababe95980)" style="fill: none; stroke: #0072b2; stroke-width: 0.7" />
+   </g>
+   <g id="line2d_4">
+    <path d="M 513.16 86.16  L 516.16 88.16  " clip-path="url(#pababe95980)" style="fill: none; stroke: #0072b2; stroke-width: 0.7" />
+   </g>
+   <g id="line2d_5">
+    <path d="M 513.16 90.16  L 516.16 88.16  " clip-path="url(#pababe95980)" style="fill: none; stroke: #0072b2; stroke-width: 0.7" />
+   </g>
+   <g id="line2d_6">
+    <path d="M 6.16 105.16  L 516.16 105.16  " clip-path="url(#pababe95980)" style="fill: none; stroke: #d5dce2; stroke-width: 0.5" />
+   </g>
+   <g id="line2d_7">
+    <path d="M 6.16 220.16  L 516.16 220.16  " clip-path="url(#pababe95980)" style="fill: none; stroke: #d5dce2; stroke-width: 0.5" />
+   </g>
+   <g id="line2d_8">
+    <path d="M 119.16 280.16  L 143.16 280.16  " clip-path="url(#pababe95980)" style="fill: none; stroke: #667381; stroke-width: 0.7" />
+   </g>
+   <g id="line2d_9">
+    <path d="M 143.16 255.16  L 143.16 299.16  " clip-path="url(#pababe95980)" style="fill: none; stroke: #667381; stroke-width: 0.7" />
+   </g>
+   <g id="line2d_10">
+    <path d="M 143.16 255.16  L 160.16 255.16  " clip-path="url(#pababe95980)" style="fill: none; stroke: #0072b2; stroke-width: 0.7" />
+   </g>
+   <g id="line2d_11">
+    <path d="M 157.16 253.16  L 160.16 255.16  " clip-path="url(#pababe95980)" style="fill: none; stroke: #0072b2; stroke-width: 0.7" />
+   </g>
+   <g id="line2d_12">
+    <path d="M 157.16 257.16  L 160.16 255.16  " clip-path="url(#pababe95980)" style="fill: none; stroke: #0072b2; stroke-width: 0.7" />
+   </g>
+   <g id="line2d_13">
+    <path d="M 165.16 248.16  L 165.16 283.16  " clip-path="url(#pababe95980)" style="fill: none; stroke: #0072b2" />
+   </g>
+   <g id="line2d_14">
+    <path d="M 143.16 298.16  L 160.16 298.16  " clip-path="url(#pababe95980)" style="fill: none; stroke: #d55e00; stroke-width: 0.7" />
+   </g>
+   <g id="line2d_15">
+    <path d="M 157.16 296.16  L 160.16 298.16  " clip-path="url(#pababe95980)" style="fill: none; stroke: #d55e00; stroke-width: 0.7" />
+   </g>
+   <g id="line2d_16">
+    <path d="M 157.16 300.16  L 160.16 298.16  " clip-path="url(#pababe95980)" style="fill: none; stroke: #d55e00; stroke-width: 0.7" />
+   </g>
+   <g id="line2d_17">
+    <path d="M 165.16 291.16  L 165.16 326.16  " clip-path="url(#pababe95980)" style="fill: none; stroke: #d55e00" />
+   </g>
+   <g id="line2d_18">
+    <path d="M 6.16 333.16  L 516.16 333.16  " clip-path="url(#pababe95980)" style="fill: none; stroke: #d5dce2; stroke-width: 0.5" />
+   </g>
+   <g id="patch_2">
+    <path d="M 44.16 86.61  C 44.571065 86.61 44.965349 86.773318 45.256016 87.063984  C 45.546682 87.354651 45.71 87.748935 45.71 88.16  C 45.71 88.571065 45.546682 88.965349 45.256016 89.256016  C 44.965349 89.546682 44.571065 89.71 44.16 89.71  C 43.748935 89.71 43.354651 89.546682 43.063984 89.256016  C 42.773318 88.965349 42.61 88.571065 42.61 88.16  C 42.61 87.748935 42.773318 87.354651 43.063984 87.063984  C 43.354651 86.773318 43.748935 86.61 44.16 86.61  z " clip-path="url(#pababe95980)" style="fill: #ffffff; stroke: #0072b2; stroke-width: 0.8; stroke-linejoin: miter" />
+   </g>
+   <g id="patch_3">
+    <path d="M 130.16 86.61  C 130.571065 86.61 130.965349 86.773318 131.256016 87.063984  C 131.546682 87.354651 131.71 87.748935 131.71 88.16  C 131.71 88.571065 131.546682 88.965349 131.256016 89.256016  C 130.965349 89.546682 130.571065 89.71 130.16 89.71  C 129.748935 89.71 129.354651 89.546682 129.063984 89.256016  C 128.773318 88.965349 128.61 88.571065 128.61 88.16  C 128.61 87.748935 128.773318 87.354651 129.063984 87.063984  C 129.354651 86.773318 129.748935 86.61 130.16 86.61  z " clip-path="url(#pababe95980)" style="fill: #ffffff; stroke: #0072b2; stroke-width: 0.8; stroke-linejoin: miter" />
+   </g>
+   <g id="patch_4">
+    <path d="M 216.16 86.61  C 216.571065 86.61 216.965349 86.773318 217.256016 87.063984  C 217.546682 87.354651 217.71 87.748935 217.71 88.16  C 217.71 88.571065 217.546682 88.965349 217.256016 89.256016  C 216.965349 89.546682 216.571065 89.71 216.16 89.71  C 215.748935 89.71 215.354651 89.546682 215.063984 89.256016  C 214.773318 88.965349 214.61 88.571065 214.61 88.16  C 214.61 87.748935 214.773318 87.354651 215.063984 87.063984  C 215.354651 86.773318 215.748935 86.61 216.16 86.61  z " clip-path="url(#pababe95980)" style="fill: #ffffff; stroke: #0072b2; stroke-width: 0.8; stroke-linejoin: miter" />
+   </g>
+   <g id="patch_5">
+    <path d="M 302.16 86.61  C 302.571065 86.61 302.965349 86.773318 303.256016 87.063984  C 303.546682 87.354651 303.71 87.748935 303.71 88.16  C 303.71 88.571065 303.546682 88.965349 303.256016 89.256016  C 302.965349 89.546682 302.571065 89.71 302.16 89.71  C 301.748935 89.71 301.354651 89.546682 301.063984 89.256016  C 300.773318 88.965349 300.61 88.571065 300.61 88.16  C 300.61 87.748935 300.773318 87.354651 301.063984 87.063984  C 301.354651 86.773318 301.748935 86.61 302.16 86.61  z " clip-path="url(#pababe95980)" style="fill: #ffffff; stroke: #0072b2; stroke-width: 0.8; stroke-linejoin: miter" />
+   </g>
+   <g id="patch_6">
+    <path d="M 388.16 86.61  C 388.571065 86.61 388.965349 86.773318 389.256016 87.063984  C 389.546682 87.354651 389.71 87.748935 389.71 88.16  C 389.71 88.571065 389.546682 88.965349 389.256016 89.256016  C 388.965349 89.546682 388.571065 89.71 388.16 89.71  C 387.748935 89.71 387.354651 89.546682 387.063984 89.256016  C 386.773318 88.965349 386.61 88.571065 386.61 88.16  C 386.61 87.748935 386.773318 87.354651 387.063984 87.063984  C 387.354651 86.773318 387.748935 86.61 388.16 86.61  z " clip-path="url(#pababe95980)" style="fill: #ffffff; stroke: #0072b2; stroke-width: 0.8; stroke-linejoin: miter" />
+   </g>
+   <g id="patch_7">
+    <path d="M 474.16 86.61  C 474.571065 86.61 474.965349 86.773318 475.256016 87.063984  C 475.546682 87.354651 475.71 87.748935 475.71 88.16  C 475.71 88.571065 475.546682 88.965349 475.256016 89.256016  C 474.965349 89.546682 474.571065 89.71 474.16 89.71  C 473.748935 89.71 473.354651 89.546682 473.063984 89.256016  C 472.773318 88.965349 472.61 88.571065 472.61 88.16  C 472.61 87.748935 472.773318 87.354651 473.063984 87.063984  C 473.354651 86.773318 473.748935 86.61 474.16 86.61  z " clip-path="url(#pababe95980)" style="fill: #ffffff; stroke: #0072b2; stroke-width: 0.8; stroke-linejoin: miter" />
+   </g>
+   <g id="patch_8">
+    <path d="M 19.16 180.41  C 19.438463 180.41 19.705559 180.520635 19.902462 180.717538  C 20.099365 180.914441 20.21 181.181537 20.21 181.46  C 20.21 181.738463 20.099365 182.005559 19.902462 182.202462  C 19.705559 182.399365 19.438463 182.51 19.16 182.51  C 18.881537 182.51 18.614441 182.399365 18.417538 182.202462  C 18.220635 182.005559 18.11 181.738463 18.11 181.46  C 18.11 181.181537 18.220635 180.914441 18.417538 180.717538  C 18.614441 180.520635 18.881537 180.41 19.16 180.41  z " clip-path="url(#pababe95980)" style="fill: #0072b2" />
+   </g>
+   <g id="patch_9">
+    <path d="M 125.16 180.41  C 125.438463 180.41 125.705559 180.520635 125.902462 180.717538  C 126.099365 180.914441 126.21 181.181537 126.21 181.46  C 126.21 181.738463 126.099365 182.005559 125.902462 182.202462  C 125.705559 182.399365 125.438463 182.51 125.16 182.51  C 124.881537 182.51 124.614441 182.399365 124.417538 182.202462  C 124.220635 182.005559 124.11 181.738463 124.11 181.46  C 124.11 181.181537 124.220635 180.914441 124.417538 180.717538  C 124.614441 180.520635 124.881537 180.41 125.16 180.41  z " clip-path="url(#pababe95980)" style="fill: #0072b2" />
+   </g>
+   <g id="patch_10">
+    <path d="M 231.16 180.41  C 231.438463 180.41 231.705559 180.520635 231.902462 180.717538  C 232.099365 180.914441 232.21 181.181537 232.21 181.46  C 232.21 181.738463 232.099365 182.005559 231.902462 182.202462  C 231.705559 182.399365 231.438463 182.51 231.16 182.51  C 230.881537 182.51 230.614441 182.399365 230.417538 182.202462  C 230.220635 182.005559 230.11 181.738463 230.11 181.46  C 230.11 181.181537 230.220635 180.914441 230.417538 180.717538  C 230.614441 180.520635 230.881537 180.41 231.16 180.41  z " clip-path="url(#pababe95980)" style="fill: #0072b2" />
+   </g>
+   <g id="patch_11">
+    <path d="M 337.16 180.41  C 337.438463 180.41 337.705559 180.520635 337.902462 180.717538  C 338.099365 180.914441 338.21 181.181537 338.21 181.46  C 338.21 181.738463 338.099365 182.005559 337.902462 182.202462  C 337.705559 182.399365 337.438463 182.51 337.16 182.51  C 336.881537 182.51 336.614441 182.399365 336.417538 182.202462  C 336.220635 182.005559 336.11 181.738463 336.11 181.46  C 336.11 181.181537 336.220635 180.914441 336.417538 180.717538  C 336.614441 180.520635 336.881537 180.41 337.16 180.41  z " clip-path="url(#pababe95980)" style="fill: #0072b2" />
+   </g>
+   <g id="patch_12">
+    <path d="M 443.16 180.41  C 443.438463 180.41 443.705559 180.520635 443.902462 180.717538  C 444.099365 180.914441 444.21 181.181537 444.21 181.46  C 444.21 181.738463 444.099365 182.005559 443.902462 182.202462  C 443.705559 182.399365 443.438463 182.51 443.16 182.51  C 442.881537 182.51 442.614441 182.399365 442.417538 182.202462  C 442.220635 182.005559 442.11 181.738463 442.11 181.46  C 442.11 181.181537 442.220635 180.914441 442.417538 180.717538  C 442.614441 180.520635 442.881537 180.41 443.16 180.41  z " clip-path="url(#pababe95980)" style="fill: #0072b2" />
+   </g>
+   <g id="panel-A">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Arial'; text-anchor: start; fill: #0072b2" x="6.16" y="17.16" transform="rotate(-0 6.16 17.16)">A</text>
+   </g>
+   <g id="title-A">
+    <text style="font-weight: 700; font-size: 12.5px; font-family: 'Arial'; text-anchor: start; fill: #1f2937" x="24.16" y="17.16" transform="rotate(-0 24.16 17.16)">Deep causal establishment at Mamba-130M</text>
+   </g>
+   <g id="text_1">
+    <text style="font-size: 11.4px; font-family: 'Arial'; text-anchor: middle; fill: #667381" x="210.16" y="39.16" transform="rotate(-0 210.16 39.16)">Native susceptibility mechanism</text>
+   </g>
+   <g id="text_2">
+    <text style="font-size: 11.4px; font-family: 'Arial'; text-anchor: end; fill: #0072b2" x="516.16" y="39.16" transform="rotate(-0 516.16 39.16)">Task-functional bridge</text>
+   </g>
+   <g id="text_3">
+    <text style="font-weight: 700; font-size: 11.4px; font-family: 'Arial'; text-anchor: middle; fill: #1f2937" x="44.16" y="64.16" transform="rotate(-0 44.16 64.16)">Controlled</text>
+   </g>
+   <g id="text_4">
+    <text style="font-size: 11.4px; font-family: 'Arial'; text-anchor: middle; fill: #1f2937" x="44.16" y="78.16" transform="rotate(-0 44.16 78.16)">contrasts</text>
+   </g>
+   <g id="text_5">
+    <text style="font-weight: 700; font-size: 11.4px; font-family: 'Arial'; text-anchor: middle; fill: #1f2937" x="130.16" y="64.16" transform="rotate(-0 130.16 64.16)">Native-state</text>
+   </g>
+   <g id="text_6">
+    <text style="font-size: 11.4px; font-family: 'Arial'; text-anchor: middle; fill: #1f2937" x="130.16" y="78.16" transform="rotate(-0 130.16 78.16)">localization</text>
+   </g>
+   <g id="text_7">
+    <text style="font-weight: 700; font-size: 11.4px; font-family: 'Arial'; text-anchor: middle; fill: #1f2937" x="216.16" y="64.16" transform="rotate(-0 216.16 64.16)">Geometry</text>
+   </g>
+   <g id="text_8">
+    <text style="font-size: 11.4px; font-family: 'Arial'; text-anchor: middle; fill: #1f2937" x="216.16" y="78.16" transform="rotate(-0 216.16 78.16)">specificity</text>
+   </g>
+   <g id="text_9">
+    <text style="font-weight: 700; font-size: 11.4px; font-family: 'Arial'; text-anchor: middle; fill: #1f2937" x="302.16" y="64.16" transform="rotate(-0 302.16 64.16)">Matched</text>
+   </g>
+   <g id="text_10">
+    <text style="font-size: 11.4px; font-family: 'Arial'; text-anchor: middle; fill: #1f2937" x="302.16" y="78.16" transform="rotate(-0 302.16 78.16)">necessity</text>
+   </g>
+   <g id="text_11">
+    <text style="font-weight: 700; font-size: 11.4px; font-family: 'Arial'; text-anchor: middle; fill: #1f2937" x="388.16" y="64.16" transform="rotate(-0 388.16 64.16)">Restoration</text>
+   </g>
+   <g id="text_12">
+    <text style="font-size: 11.4px; font-family: 'Arial'; text-anchor: middle; fill: #1f2937" x="388.16" y="78.16" transform="rotate(-0 388.16 78.16)">sufficiency</text>
+   </g>
+   <g id="text_13">
+    <text style="font-weight: 700; font-size: 11.4px; font-family: 'Arial'; text-anchor: middle; fill: #1f2937" x="474.16" y="64.16" transform="rotate(-0 474.16 64.16)">Task-margin</text>
+   </g>
+   <g id="text_14">
+    <text style="font-size: 11.4px; font-family: 'Arial'; text-anchor: middle; fill: #1f2937" x="474.16" y="78.16" transform="rotate(-0 474.16 78.16)">consequence</text>
+   </g>
+   <g id="panel-B">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Arial'; text-anchor: start; fill: #0072b2" x="6.16" y="124.16" transform="rotate(-0 6.16 124.16)">B</text>
+   </g>
+   <g id="title-B">
+    <text style="font-weight: 700; font-size: 12.5px; font-family: 'Arial'; text-anchor: start; fill: #1f2937" x="24.16" y="124.16" transform="rotate(-0 24.16 124.16)">Five scales: causal role recurs; geometry is only partially conserved</text>
+   </g>
+   <g id="text_15">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Arial'; text-anchor: middle; fill: #1f2937" x="48.16" y="150.16" transform="rotate(-0 48.16 150.16)">130M</text>
+   </g>
+   <g id="ranks-0">
+    <text style="font-size: 11.4px; font-family: 'Arial'; text-anchor: middle; fill: #667381" x="48.16" y="167.16" transform="rotate(-0 48.16 167.16)">P3 / P5</text>
+   </g>
+   <g id="text_16">
+    <text style="font-weight: 700; font-size: 11.4px; font-family: 'Arial'; text-anchor: start; fill: #0072b2" x="24.16" y="185.16" transform="rotate(-0 24.16 185.16)">Supported</text>
+   </g>
+   <g id="text_17">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Arial'; text-anchor: middle; fill: #1f2937" x="154.16" y="150.16" transform="rotate(-0 154.16 150.16)">370M</text>
+   </g>
+   <g id="ranks-1">
+    <text style="font-size: 11.4px; font-family: 'Arial'; text-anchor: middle; fill: #667381" x="154.16" y="167.16" transform="rotate(-0 154.16 167.16)">P3 / P5</text>
+   </g>
+   <g id="text_18">
+    <text style="font-weight: 700; font-size: 11.4px; font-family: 'Arial'; text-anchor: start; fill: #0072b2" x="130.16" y="185.16" transform="rotate(-0 130.16 185.16)">Supported</text>
+   </g>
+   <g id="text_19">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Arial'; text-anchor: middle; fill: #1f2937" x="260.16" y="150.16" transform="rotate(-0 260.16 150.16)">790M</text>
+   </g>
+   <g id="ranks-2">
+    <text style="font-size: 11.4px; font-family: 'Arial'; text-anchor: middle; fill: #667381" x="260.16" y="167.16" transform="rotate(-0 260.16 167.16)">P2 / P5</text>
+   </g>
+   <g id="text_20">
+    <text style="font-weight: 700; font-size: 11.4px; font-family: 'Arial'; text-anchor: start; fill: #0072b2" x="236.16" y="185.16" transform="rotate(-0 236.16 185.16)">Supported</text>
+   </g>
+   <g id="text_21">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Arial'; text-anchor: middle; fill: #1f2937" x="366.16" y="150.16" transform="rotate(-0 366.16 150.16)">1.4B</text>
+   </g>
+   <g id="ranks-3">
+    <text style="font-size: 11.4px; font-family: 'Arial'; text-anchor: middle; fill: #667381" x="366.16" y="167.16" transform="rotate(-0 366.16 167.16)">P5 / P4</text>
+   </g>
+   <g id="text_22">
+    <text style="font-weight: 700; font-size: 11.4px; font-family: 'Arial'; text-anchor: start; fill: #0072b2" x="342.16" y="185.16" transform="rotate(-0 342.16 185.16)">Supported</text>
+   </g>
+   <g id="text_23">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Arial'; text-anchor: middle; fill: #1f2937" x="472.16" y="150.16" transform="rotate(-0 472.16 150.16)">2.8B</text>
+   </g>
+   <g id="ranks-4">
+    <text style="font-size: 11.4px; font-family: 'Arial'; text-anchor: middle; fill: #667381" x="472.16" y="167.16" transform="rotate(-0 472.16 167.16)">P3 / P5</text>
+   </g>
+   <g id="text_24">
+    <text style="font-weight: 700; font-size: 11.4px; font-family: 'Arial'; text-anchor: start; fill: #0072b2" x="448.16" y="185.16" transform="rotate(-0 448.16 185.16)">Supported</text>
+   </g>
+   <g id="text_25">
+    <text style="font-size: 11.4px; font-family: 'Arial'; text-anchor: start; fill: #667381" x="6.16" y="206.16" transform="rotate(-0 6.16 206.16)">Selected / control are scale-local ranks; equal rank numbers do not imply semantic homology.</text>
+   </g>
+   <g id="panel-C">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Arial'; text-anchor: start; fill: #0072b2" x="6.16" y="239.16" transform="rotate(-0 6.16 239.16)">C</text>
+   </g>
+   <g id="title-C">
+    <text style="font-weight: 700; font-size: 12.5px; font-family: 'Arial'; text-anchor: start; fill: #1f2937" x="24.16" y="239.16" transform="rotate(-0 24.16 239.16)">Objective-conditioned functional readout</text>
+   </g>
+   <g id="text_26">
+    <text style="font-size: 11.4px; font-family: 'Arial'; text-anchor: start; fill: #667381" x="6.16" y="265.16" transform="rotate(-0 6.16 265.16)">Within each scale</text>
+   </g>
+   <g id="text_27">
+    <text style="font-weight: 700; font-size: 11.4px; font-family: 'Arial'; text-anchor: start; fill: #1f2937" x="6.16" y="281.16" transform="rotate(-0 6.16 281.16)">same frozen native</text>
+   </g>
+   <g id="text_28">
+    <text style="font-weight: 700; font-size: 11.4px; font-family: 'Arial'; text-anchor: start; fill: #1f2937" x="6.16" y="296.16" transform="rotate(-0 6.16 296.16)">Mamba substrate</text>
+   </g>
+   <g id="text_29">
+    <text style="font-weight: 700; font-size: 11.4px; font-family: 'Arial'; text-anchor: start; fill: #0072b2" x="173.16" y="260.16" transform="rotate(-0 173.16 260.16)">Structured downstream task objective</text>
+   </g>
+   <g id="text_30">
+    <text style="font-size: 11.4px; font-family: 'Arial'; text-anchor: start; fill: #667381" x="173.16" y="280.16" transform="rotate(-0 173.16 280.16)">Point-estimate signs:</text>
+   </g>
+   <g id="contra-sign-0">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Arial'; text-anchor: middle; fill: #0072b2" x="331.16" y="281.16" transform="rotate(-0 331.16 281.16)">+</text>
+   </g>
+   <g id="contra-sign-1">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Arial'; text-anchor: middle; fill: #0072b2" x="373.16" y="281.16" transform="rotate(-0 373.16 281.16)">+</text>
+   </g>
+   <g id="contra-sign-2">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Arial'; text-anchor: middle; fill: #0072b2" x="415.16" y="281.16" transform="rotate(-0 415.16 281.16)">+</text>
+   </g>
+   <g id="contra-sign-3">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Arial'; text-anchor: middle; fill: #0072b2" x="457.16" y="281.16" transform="rotate(-0 457.16 281.16)">−</text>
+   </g>
+   <g id="contra-sign-4">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Arial'; text-anchor: middle; fill: #0072b2" x="499.16" y="281.16" transform="rotate(-0 499.16 281.16)">−</text>
+   </g>
+   <g id="text_31">
+    <text style="font-weight: 700; font-size: 11.4px; font-family: 'Arial'; text-anchor: start; fill: #d55e00" x="173.16" y="303.16" transform="rotate(-0 173.16 303.16)">Vanilla Mamba pretrained next-token LM objective</text>
+   </g>
+   <g id="text_32">
+    <text style="font-size: 11.4px; font-family: 'Arial'; text-anchor: start; fill: #667381" x="173.16" y="323.16" transform="rotate(-0 173.16 323.16)">Point-estimate signs:</text>
+   </g>
+   <g id="vanilla-sign-0">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Arial'; text-anchor: middle; fill: #d55e00" x="331.16" y="324.16" transform="rotate(-0 331.16 324.16)">−</text>
+   </g>
+   <g id="vanilla-sign-1">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Arial'; text-anchor: middle; fill: #d55e00" x="373.16" y="324.16" transform="rotate(-0 373.16 324.16)">−</text>
+   </g>
+   <g id="vanilla-sign-2">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Arial'; text-anchor: middle; fill: #d55e00" x="415.16" y="324.16" transform="rotate(-0 415.16 324.16)">−</text>
+   </g>
+   <g id="vanilla-sign-3">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Arial'; text-anchor: middle; fill: #d55e00" x="457.16" y="324.16" transform="rotate(-0 457.16 324.16)">+</text>
+   </g>
+   <g id="vanilla-sign-4">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Arial'; text-anchor: middle; fill: #d55e00" x="499.16" y="324.16" transform="rotate(-0 499.16 324.16)">+</text>
+   </g>
+   <g id="text_33">
+    <text style="font-weight: 700; font-size: 11.4px; font-family: 'Arial'; text-anchor: middle; fill: #1f2937" x="261.36" y="346.16" transform="rotate(-0 261.36 346.16)">Causal role | Native geometry | Objective-conditioned readout</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="pababe95980">
+   <rect x="2.16" y="2.16" width="518.4" height="348" />
+  </clipPath>
+ </defs>
+<metadata id="frozen-scientific-values">{"stages":["Controlled contrasts","Native-state localization","Geometry specificity","Matched necessity","Restoration sufficiency","Task-margin consequence"],"scales":["130M","370M","790M","1.4B","2.8B"],"planes":{"130M":["P3","P5"],"370M":["P3","P5"],"790M":["P2","P5"],"1.4B":["P5","P4"],"2.8B":["P3","P5"]},"supported":{"130M":true,"370M":true,"790M":true,"1.4B":true,"2.8B":true},"signs":{"contra":[1,1,1,-1,-1],"vanilla":[-1,-1,-1,1,1]}}</metadata></svg>

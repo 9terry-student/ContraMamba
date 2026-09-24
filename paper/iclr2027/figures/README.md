@@ -127,3 +127,9 @@ The builder reads only pinned Git blobs. No model, tokenizer, training, evaluati
 - `reports/reason_router_gen4_mamba130m_vanilla_lm_completeness_analysis_v1/mamba130m_completeness_analysis.json` @ `3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69`
 - `reports/reason_router_gen4_mamba1_vanilla_lm_functional_control_analysis_v1/functional_control_analysis.json` @ `3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69`
 - `reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv` @ `8423ef9d1325c007ecd31849a668131197e2214d`
+
+## Final publication renderer
+
+Figures 1--4 use the independently validated final vector redesign. Scientific values remain sourced by `figure_data_source.py`; production SVG/PDF/PNG bytes are byte-identical to the validated candidate after filename mapping.
+
+The validated render used Matplotlib 3.11.2. The immediate promotion intentionally did not re-render under Python 3.13 because the existing isolated NumPy wheel was built for CPython 3.12. This ABI issue does not alter the promoted figure bytes or frozen scientific data.
