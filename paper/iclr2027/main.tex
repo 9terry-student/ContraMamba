@@ -19,7 +19,7 @@ Mechanistic comparisons across model scales can conflate three questions: whethe
 
 At 130M, prospective transport, response-independent specificity, matched necessity, and restoration establish a recurrent-state mechanism on disjoint populations. At larger scales, a frozen discover-then-confirm protocol selects one of five local planes on a discovery cohort, fixes a response-blind geometric control, and evaluates the pair on a disjoint confirmation cohort. The selected-restored versus matched-control contrast is positive under each scale's frozen confirmation, while a distinct historical 370M residual criterion remains failed.
 
-Coordinate-insensitive comparison of matched response-blind XG2/XG4 populations yields heterogeneous, intermediate cross-scale similarity (centered linear CKA: XG2 $0.34$--$0.74$; XG4 $0.39$--$0.59$), with the same qualitative pattern under cosine-RSM. For the primary frozen native contrasts, downstream task and pretrained next-token objectives give opposed five-scale point-estimate sign vectors. Pair-resampling intervals exclude zero in 8 of 10 scale-by-objective cells, and a 1.4B sensitivity contrast changes the pretrained-LM sign, showing that the aggregate orientation is contrast-conditioned.
+Coordinate-insensitive comparison of matched response-blind XG2/XG4 populations yields heterogeneous, intermediate cross-scale similarity (centered linear CKA: XG2 $0.34$--$0.74$; XG4 $0.39$--$0.59$), with the same qualitative pattern under cosine-RSM. Across scales, the frozen task contrasts reorganize functionally: no single geometric scalar explains the aggregate sign pattern. Holding each scale's contrast fixed, the pretrained next-token objective gives the opposed five-scale point-estimate vector. Pair-resampling intervals exclude zero in 8 of 10 scale-by-objective cells, and a 1.4B sensitivity contrast flips the pretrained-LM sign, so the objective comparison remains contrast-conditioned.
 
 Thus a scale-local interventional role can recur without shared plane identity or exact geometric invariance, while functional readout depends on both objective and the frozen native contrast. We frame this as a controlled Mamba-1 case study rather than a universal scaling law.
 
@@ -39,7 +39,7 @@ These findings motivate three contributions:
 \begin{enumerate}
 \item \textbf{Operational causal-role recurrence.} Independently reconstructed scale-local components survive a common selected-restored versus matched-control criterion on fresh confirmations; the recurring object is procedural and interventional, not a fixed plane.
 \item \textbf{Geometric variation with partial conservation.} Response-blind CKA and cosine-RSM show stable, heterogeneous intermediate cross-scale similarity rather than exact invariance.
-\item \textbf{Contrast-conditioned objective readout.} Fixed primary native contrasts exhibit different point-estimate aggregate orientations under downstream and pretrained objectives, with uncertainty concentrated in the smallest-magnitude cells and explicit sensitivity to contrast choice.
+\item \textbf{Scale-dependent functional reorganization.} Scale-local frozen contrasts couple differently to the downstream task, with no single geometric scalar explaining the aggregate pattern; holding each contrast fixed, changing objective yields an opposed point-estimate orientation that remains contrast-sensitive.
 \end{enumerate}
 
 Behavioral and external-transfer experiments bound how far these mechanistic findings extend beyond the local state.
