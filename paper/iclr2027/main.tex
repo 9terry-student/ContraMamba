@@ -195,7 +195,7 @@ giving layer 35 for the 48-layer 370M/790M/1.4B models and layer 47 for the 64-l
 Each scale supplies frozen 300-row XG2/XG4 \texttt{alignment\_delta\_h} matrices. Row-normalized vectors give sample Grams $K_s=U_sU_s^\top$; normalized Frobenius products of centered Grams give linear CKA, while Pearson correlation of the strict upper cosine-Gram triangles gives secondary cosine-RSM. These frozen static values are transcribed without figure-builder recomputation; provenance and scalar measurements are in Appendix~\ref{app:geometry}.
 
 \paragraph{Plane selection and causal confirmation.}
-At 130M, P3 was selected from response-blind XG2/XG4 geometry before XG1 response inspection, and P5 was frozen independently as the maximum-projector-separation geometric control. For the later dominant-component protocol, all five reconstructed planes are evaluated on a dedicated discovery population and the selected rank is frozen as
+At 130M, P3 was selected from response-blind XG2/XG4 geometry before XG1 response inspection, and P5 was frozen independently as the maximum-projector-separation geometric control. Here the positive projector-contrast eigenvalue is $\lambda_k^{+}=\sin\theta_k$; P5 is its global maximizer, and because the selected P3 is not that maximizer, P5 is also the maximizer over $k\neq3$. Thus the 130M and later controls use the same response-blind geometric quantity, although the 130M control was frozen independently before fresh XG1 response inspection whereas the later rule is written conditional on the discovered $k_s^*$. For the later dominant-component protocol, all five reconstructed planes are evaluated on a dedicated discovery population and the selected rank is frozen as
 $k_s^*=\operatorname{unique\,argmax}_k\,\overline{[Q_{\mathrm{restored}}(k)-Q_{\mathrm{neutralized}}(k)]}$.
 No positivity gate or inferential $p$-value is used in discovery. The control is selected separately from frozen geometry among non-selected planes,
 $c_s^*=\arg\max_{k\neq k_s^*}\lambda_{s,k}^{+}$.
@@ -228,9 +228,9 @@ Within these bounds, the study provides an empirical separation among three noti
 
 \label{paper:main-end}
 \section*{Reproducibility statement}
-Frozen revisions, populations, sites, statistics, and figure sources are specified in the appendix.
+Frozen backbone revisions, cohort identities, intervention sites, endpoint definitions, statistics, and figure-source mappings are specified in the appendix. The supplementary archive provides the frozen XG2/XG4 geometry tensors, pair-level objective values, robustness-analysis outputs, protocol and manifest files, environment requirements, and a verification script for reproducing the reported robustness summaries.
 \section*{AI use statement}
-Generative AI tools assisted related-work discovery, experimental planning, code development and debugging, artifact verification, figure preparation, and manuscript drafting and editing. The authors reviewed all AI-assisted outputs and take responsibility for the final methods, results, citations, and claims.
+Generative AI tools assisted related-work discovery, experimental planning, code development and debugging, artifact verification, interpretation of results, figure preparation, and manuscript drafting and editing. The authors reviewed all AI-assisted outputs and take responsibility for the final methods, results, citations, and claims.
 \label{paper:references-start}
 \bibliographystyle{iclr2027_conference}
 \bibliography{references}
