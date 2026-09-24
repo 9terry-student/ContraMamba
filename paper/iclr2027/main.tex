@@ -31,7 +31,7 @@ When mechanistic structure is compared across model sizes, ``the same mechanism'
 
 We study five pretrained Mamba-1 models: 130M, 370M, 790M, 1.4B, and 2.8B. We first establish one recurrent-state mechanism deeply at 130M using prospective transport, response-independent geometric specificity, matched necessity, and restoration. Larger scales then use a frozen discover-then-confirm protocol rather than reusing the 130M plane identity.
 
-The first cross-scale result is a separation. A scale-local causal role survives its own frozen matched-control confirmation at every tested size even though the selected principal-plane rank changes. In contrast, response-blind alignment geometry shows heterogeneous, intermediate cross-scale conservation: centered linear CKA spans $0.34$--$0.74$ for XG2 and $0.39$--$0.59$ for XG4, with secondary cosine-RSM giving the same qualitative picture. We therefore test and reject \emph{exact CKA-level invariance}, not the stronger claim that cross-scale similarity is absent or unexpectedly low under a calibrated null.
+The first cross-scale result is a separation. A scale-local causal role survives its own frozen matched-control confirmation at every tested size even though the selected principal-plane rank changes. In contrast, response-blind alignment geometry shows heterogeneous, intermediate cross-scale conservation: centered linear CKA spans $0.34$--$0.74$ for XG2 and $0.39$--$0.59$ for XG4, with secondary cosine-RSM giving the same qualitative picture. We therefore find that \emph{exact CKA-level invariance does not hold on these frozen cohorts}, without claiming that cross-scale similarity is absent or unexpectedly low under a calibrated null.
 
 The second result concerns functional use. For each scale's primary frozen native contrast, the downstream task and pretrained next-token objectives yield opposed five-scale point-estimate sign vectors. Eight of ten scale-by-objective cells are individually sign-stable under pair resampling; the two smallest-magnitude cells are not. A sensitivity contrast at 1.4B also changes the pretrained-LM sign, so the objective result is explicitly contrast-conditioned rather than a universal scale-level orientation.
 
@@ -91,7 +91,7 @@ $\Delta L$ & Local downstream task-margin readout. \\
 \end{minipage}
 \par\medskip
 
-All three controlled families use the same six-cell title/name/role/predicate slot-substitution design over synthetic structured records. XG1 is an independently generated record family reserved for causal-response and behavioral holdouts. XG2 and XG4 are disjoint response-blind generator families with different controlled record templates and lexicons (bulletin-style versus register-style) used to reconstruct native geometry. Thus $Q=E_{\rm XG2}-E_{\rm XG4}$ denotes relative squared local susceptibility to these two controlled generator families; it is not claimed to encode a natural semantic dichotomy.
+All three controlled families use the same six-cell title/name/role/predicate slot-substitution design over synthetic structured records. XG1 is an independently generated record family reserved for causal-response and behavioral holdouts. XG2 and XG4 are disjoint response-blind generator families with different controlled record templates and lexicons (bulletin-style versus register-style) used to reconstruct native geometry. Thus $Q=E_{\rm XG2}-E_{\rm XG4}$ denotes relative squared local susceptibility to these two controlled generator families; it is not claimed to encode a natural semantic dichotomy. The XG2/XG4 contrast is intentionally controlled rather than semantically natural: it provides a response-independent comparison axis on which recurrent-state susceptibility can be localized and prospectively tested. Its scientific role is as a reproducible mechanistic probe, not as a claim that the two generator families instantiate a latent semantic variable.
 
 
 \subsection{Deep causal establishment at Mamba-130M}
@@ -230,7 +230,7 @@ Within these bounds, the study provides an empirical separation among three noti
 \section*{Reproducibility statement}
 Frozen revisions, populations, sites, statistics, and figure sources are specified in the appendix.
 \section*{AI use statement}
-Generative AI tools assisted literature discovery, experimental planning and methodology design, code development and debugging, artifact verification, result interpretation, figure preparation, and manuscript drafting and editing. The authors reviewed all AI-assisted outputs and take responsibility for the final methods, results, citations, and claims.
+Generative AI tools assisted related-work discovery, experimental planning, code development and debugging, artifact verification, figure preparation, and manuscript drafting and editing. The authors reviewed all AI-assisted outputs and take responsibility for the final methods, results, citations, and claims.
 \label{paper:references-start}
 \bibliographystyle{iclr2027_conference}
 \bibliography{references}
