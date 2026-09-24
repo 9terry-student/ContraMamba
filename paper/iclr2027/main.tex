@@ -8,37 +8,38 @@
 \usepackage{url}
 \usepackage{xurl}
 \graphicspath{{figures/}}
-\title{Causal Roles Recur Without Geometric Invariance: Mechanisms Across Mamba-1 Scales and Objectives}
+\title{Causal-Role Recurrence, Geometric Variation, and Objective-Conditioned Readout Across Mamba-1 Scales}
 \author{}
 \begin{document}
 \maketitle
 
 \begin{abstract}
 
-Mechanistic comparisons across model scales often ask whether the same feature or circuit reappears. We separate three questions: whether an internal component plays the same \textbf{causal role}, whether that role has the same \textbf{geometric realization}, and whether a particular objective assigns it the same \textbf{functional meaning}. We study these questions in pretrained Mamba-1 models from 130M to 2.8B parameters.
+Mechanistic comparisons across model scales can conflate three questions: whether independently reconstructed components play an operationally matched \textbf{causal role}, whether their native \textbf{geometry} is preserved, and how an \textbf{objective} reads them. We separate these questions in pretrained Mamba-1 models from 130M to 2.8B parameters.
 
-At 130M, prospective transport, response-independent specificity, matched necessity, and restoration establish a recurrent-state mechanism on independent populations. A common scale-local selected-restored versus coefficient-matched-control effect then recurs at all five sizes. Yet coordinate-insensitive comparison of the corresponding response-blind alignment geometry on matched XG2/XG4 populations shows only partial cross-scale conservation: every off-diagonal centered linear CKA entry is below one, and frozen cosine-RSM comparisons give the same qualitative picture.
+At 130M, prospective transport, response-independent specificity, matched necessity, and restoration establish a recurrent-state mechanism on disjoint populations. At larger scales, a frozen discover-then-confirm protocol selects one of five local planes on a discovery cohort, fixes a response-blind geometric control, and evaluates the pair on a disjoint confirmation cohort. The selected-restored versus matched-control contrast is positive under each scale's frozen confirmation, while a distinct historical 370M residual criterion remains failed.
 
-The downstream structured task objective has point-estimate aggregate signs $+,+,+,-,-$, whereas the pretrained next-token objective has $-,-,-,+,+$ across the complete descriptive set. Pair-resampling uncertainty is concentrated in the smallest-magnitude cells.
+Coordinate-insensitive comparison of matched response-blind XG2/XG4 populations yields heterogeneous, intermediate cross-scale similarity (centered linear CKA: XG2 $0.34$--$0.74$; XG4 $0.39$--$0.59$), with the same qualitative pattern under cosine-RSM. For the primary frozen native contrasts, downstream task and pretrained next-token objectives give opposed five-scale point-estimate sign vectors. Pair-resampling intervals exclude zero in 8 of 10 scale-by-objective cells, and a 1.4B sensitivity contrast changes the pretrained-LM sign, showing that the aggregate orientation is contrast-conditioned.
 
-Together, the results show that \textbf{causal-role recurrence does not imply geometric invariance, and neither implies objective-independent functional meaning}. Mechanistic comparisons across scale should distinguish what a representation causally does, how that function is realized, and how an objective uses it.
+Thus a scale-local interventional role can recur without shared plane identity or exact geometric invariance, while functional readout depends on both objective and the frozen native contrast. We frame this as a controlled Mamba-1 case study rather than a universal scaling law.
 
 \end{abstract}
 \section{Introduction}
 \label{sec:intro}
 
-When a feature or circuit appears across model sizes, ``the same mechanism'' can mean different things. We distinguish \textbf{causal role} (what changes under a matched intervention), \textbf{geometric realization} (how that role is represented in native state space), and \textbf{objective-conditioned functional meaning} (how a particular objective reads the state). These properties need not recur together.
+When mechanistic structure is compared across model sizes, ``the same mechanism'' can refer to different objects. We distinguish \textbf{causal role} (what changes under a matched intervention), \textbf{geometric realization} (how that role is represented in native state space), and \textbf{objective-conditioned functional meaning} (how a particular objective reads the state). Throughout, \emph{recurrence} means recurrence of an operationally matched causal role: independently reconstructed scale-local components satisfy the same selected-restored versus matched-control intervention contrast on fresh confirmation data. It does not mean shared coordinates, principal-plane identity, or semantic homology across models.
 
-We study five pretrained Mamba-1 models: 130M, 370M, 790M, 1.4B, and 2.8B. We first establish one recurrent-state mechanism deeply at 130M using prospective transport, response-independent geometric specificity, matched necessity, and restoration. This provides the causal foundation for asking what recurs at larger scales.
+We study five pretrained Mamba-1 models: 130M, 370M, 790M, 1.4B, and 2.8B. We first establish one recurrent-state mechanism deeply at 130M using prospective transport, response-independent geometric specificity, matched necessity, and restoration. Larger scales then use a frozen discover-then-confirm protocol rather than reusing the 130M plane identity.
 
-The first cross-scale result is a separation. A comparable scale-local causal role is supported at every size even though the selected principal-plane identity changes. More importantly, the response-blind alignment geometry itself is not invariant under a coordinate-insensitive comparison: centered linear CKA on the same XG2/XG4 source-pair populations shows partial rather than exact cross-scale preservation. The secondary cosine-RSM comparison agrees. Thus the recurrence claim is about an interventional role, not a fixed direction, plane number, or globally preserved sample geometry.
+The first cross-scale result is a separation. A scale-local causal role survives its own frozen matched-control confirmation at every tested size even though the selected principal-plane rank changes. In contrast, response-blind alignment geometry shows heterogeneous, intermediate cross-scale conservation: centered linear CKA spans $0.34$--$0.74$ for XG2 and $0.39$--$0.59$ for XG4, with secondary cosine-RSM giving the same qualitative picture. We therefore test and reject \emph{exact CKA-level invariance}, not the stronger claim that cross-scale similarity is absent or unexpectedly low under a calibrated null.
 
-The second result concerns functional use. Under a separately trained structured downstream objective, the selected-versus-control readout has point-estimate aggregate signs $+,+,+,-,-$ across scale. When we keep each native contrast fixed and replace the readout objective with the pretrained next-token language-model objective, the point-estimate aggregate signs become $-,-,-,+,+$.
+The second result concerns functional use. For each scale's primary frozen native contrast, the downstream task and pretrained next-token objectives yield opposed five-scale point-estimate sign vectors. Eight of ten scale-by-objective cells are individually sign-stable under pair resampling; the two smallest-magnitude cells are not. A sensitivity contrast at 1.4B also changes the pretrained-LM sign, so the objective result is explicitly contrast-conditioned rather than a universal scale-level orientation.
 
-These findings motivate two contributions:
+These findings motivate three contributions:
 \begin{enumerate}
-\item \textbf{Causal-role recurrence without geometric invariance.} A scale-local recurrent-state role recurs across all five Mamba-1 sizes, while coordinate-insensitive response-blind alignment geometry is only partially conserved across scales.
-\item \textbf{Objective-conditioned functionalization.} The same scale-specific native substrate can receive systematically different aggregate functional orientations under downstream and pretrained objectives.
+\item \textbf{Operational causal-role recurrence.} Independently reconstructed scale-local components survive a common selected-restored versus matched-control criterion on fresh confirmations; the recurring object is procedural and interventional, not a fixed plane.
+\item \textbf{Geometric variation with partial conservation.} Response-blind CKA and cosine-RSM show stable, heterogeneous intermediate cross-scale similarity rather than exact invariance.
+\item \textbf{Contrast-conditioned objective readout.} Fixed primary native contrasts exhibit different point-estimate aggregate orientations under downstream and pretrained objectives, with uncertainty concentrated in the smallest-magnitude cells and explicit sensitivity to contrast choice.
 \end{enumerate}
 
 Behavioral and external-transfer experiments bound how far these mechanistic findings extend beyond the local state.
@@ -46,7 +47,7 @@ Behavioral and external-transfer experiments bound how far these mechanistic fin
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{fig1_study_overview.pdf}
-\caption{Study design. Native geometry and a selected causal component are reconstructed independently within each scale. The same scale-local contrast is read under downstream and pretrained objectives. Arrows indicate study order, not a continuous scaling law or shared plane identity.}
+\caption{Study design. Native geometry is reconstructed independently within each scale. At 130M, plane selection is response-blind; at later scales a dedicated discovery cohort selects one of five planes before an untouched matched-control confirmation. The frozen primary contrast is then read under downstream and pretrained objectives. Arrows indicate study order, not shared plane identity or a continuous scaling law.}
 \label{fig:overview}
 \end{figure}
 \section{Related Work}
@@ -60,9 +61,9 @@ Our question is complementary. Rather than asking whether Mamba contains an inte
 
 \paragraph{Representation similarity and cross-model recurrence.}
 
-Representational-similarity methods such as centered kernel alignment provide coordinate-insensitive tools for comparing neural representations \citep{kornblith2019cka}. The Platonic Representation Hypothesis further argues that representations may become increasingly aligned across models and modalities as capability grows \citep{huh2024platonic}. At the same time, recent work shows that representational-similarity conclusions can depend strongly on objectives and evaluation datasets \citep{ciernik2025objective}, and formal work on linear representations emphasizes that geometric interpretation itself depends on the structure used to compare representational spaces \citep{park2024linear}.
+Representational-similarity methods such as centered kernel alignment provide coordinate-insensitive tools for comparing neural representations \citep{kornblith2019cka}. The Platonic Representation Hypothesis further argues that representations may become increasingly aligned across models and modalities as capability grows \citep{huh2024platonic}. At the same time, recent work shows that representational-similarity conclusions can depend strongly on objectives and evaluation datasets \citep{ciernik2025objective}, and formal work on linear representations emphasizes that geometric interpretation itself depends on the structure used to compare representational spaces \citep{park2024linear}. Sun and Toneva formalize \emph{interpretive equivalence} across neural networks and derive conditions relating representations, circuits, and algorithmic interpretations \citep{sun2026equivalent}.
 
-These results motivate a stricter notion of recurrence for mechanistic analysis. We do not require two models to share a direction, a principal-plane rank, or a globally aligned coordinate system. Instead, we ask whether independently reconstructed components satisfy comparable \textbf{interventional roles}.
+Our empirical question is narrower and complementary. We do not require two models to share a direction, a principal-plane rank, a globally aligned coordinate system, or an interpretation in the formal equivalence sense. We ask whether independently reconstructed components can satisfy the same \textbf{operational interventional role}, and then test whether response-blind geometry and objective-conditioned readout recur with it.
 
 \paragraph{Causal interventions and functional interpretation.}
 
@@ -90,6 +91,9 @@ $\Delta L$ & Local downstream task-margin readout. \\
 \end{minipage}
 \par\medskip
 
+All three controlled families use the same six-cell title/name/role/predicate slot-substitution design over synthetic structured records. XG1 is an independently generated record family reserved for causal-response and behavioral holdouts. XG2 and XG4 are disjoint response-blind generator families with different controlled record templates and lexicons (bulletin-style versus register-style) used to reconstruct native geometry. Thus $Q=E_{\rm XG2}-E_{\rm XG4}$ denotes relative squared local susceptibility to these two controlled generator families; it is not claimed to encode a natural semantic dichotomy.
+
+
 \subsection{Deep causal establishment at Mamba-130M}
 \label{sec:deep}
 
@@ -99,9 +103,9 @@ Starting from controlled semantic contrasts, we localized a dominant native-stat
 
 The localized PP3 effect first transported to an independent 300-pair population. A second holdout then compared PP3 against PP5, selected independently from response values as a geometric control, and showed that PP3 retained the stronger effect. Subsequent matched interventions established both necessity and restoration sufficiency: neutralizing PP3 attenuated the endpoint more strongly than the control intervention, while restoring the exact PP3 component recovered the endpoint more strongly than an equal-norm PP5 replacement. All four pre-specified tests supported their respective hypotheses. Exact test statistics are reported in Appendix~\ref{app:repro}.
 
-The same mechanism also reached the downstream task computation. Restoring PP3 instead of the matched PP5 replacement increased the downstream task margin by $0.00833$ on average over 300 paired items (Fig.~\ref{fig:deep}B). This was a continuous margin effect rather than an accuracy gain; discrete prediction changes were negligible. Across source pairs, the local task-functional readout tracked the behavioral restoration effect with Pearson $r=0.618$, Spearman $\rho=0.832$, and 82.3\% sign agreement (Fig.~\ref{fig:deep}C). These associations are descriptive and were not used to select the mechanism.
+The 130M intervention also reached the downstream task computation. Restoring PP3 instead of the matched PP5 replacement increased the downstream task margin by $0.00833$ on average over 300 paired items (Fig.~\ref{fig:deep}B). This was a small continuous margin effect rather than an accuracy gain; discrete prediction changes were negligible. The $10^{-8}$-scale $Q$ means reported for the local causal tests are in the internal endpoint's native units and should not be read as downstream behavioral-effect magnitudes; their very small $p$-values reflect consistency relative to paired variation. Across source pairs, the local task-functional readout tracked the behavioral restoration effect with Pearson $r=0.618$, Spearman $\rho=0.832$, and 82.3\% sign agreement (Fig.~\ref{fig:deep}C). These associations are descriptive and were not used to select the mechanism.
 
-The object carried into the scale study is therefore not ``PP3'' as a fixed semantic plane. It is the recurrence, under a fixed scientific procedure, of a scale-local recurrent-state component with a matched causal role.
+The object carried into the scale study is therefore not ``PP3'' as a fixed semantic plane. It is an operationally matched, scale-local recurrent-state causal role under a frozen scientific procedure.
 
 \begin{figure}[t]
 \centering
@@ -109,25 +113,23 @@ The object carried into the scale study is therefore not ``PP3'' as a fixed sema
 \caption{Deep 130M causal foundation. (A) Independent holdouts support transport, response-blind specificity, matched necessity, and restoration; their distinct endpoints are not comparable as raw magnitudes. (B) Restoration reaches a continuous task margin, without an accuracy claim. (C) Local readout and behavioral effects covary descriptively.}
 \label{fig:deep}
 \end{figure}
-\subsection{A scale-local causal role recurs while native geometry is only partially conserved}
+\subsection{Operational causal-role recurrence with partial geometric conservation}
 \label{sec:recurrence}
 
-We next ask two questions: \emph{does the causal role recur at larger scales, and does the geometry that realizes it remain invariant?} The answers differ.
+We next ask two questions: \emph{does an operationally matched causal role survive at larger scales, and how much of the response-blind geometry is conserved?}
 
-The selected/control pairs are P3/P5 at 130M, P3/P5 at 370M, P2/P5 at 790M, P5/P4 at 1.4B, and P3/P5 at 2.8B (Fig.~\ref{fig:scale}A). These are scale-local identities rather than claims of same-numbered-plane homology. At every scale, the selected component is supported relative to its coefficient-matched control under the common contrast
-$Q_{\mathrm{selected\ restored}}-Q_{\mathrm{matched\ control}}$.
-The historical endpoint labels and inferential families differ; their exact chronology, including the separate failed 370M residual criterion, is retained in Appendix~\ref{app:scale} rather than used as the narrative spine here.
+The selected/control pairs are P3/P5 at 130M, P3/P5 at 370M, P2/P5 at 790M, P5/P4 at 1.4B, and P3/P5 at 2.8B (Fig.~\ref{fig:scale}A). These are scale-local identities, not same-numbered-plane homologies. At 130M, P3 was localized from response-blind XG2/XG4 geometry before XG1 outcomes. At later scales, all five reconstructed planes were evaluated only on a dedicated discovery cohort; the unique mean-response argmax was frozen, a non-selected control was chosen from frozen geometry alone, and the pair was then evaluated on a disjoint confirmation cohort. The discovery winner is therefore a selection rule rather than confirmatory evidence, and the primary claim is matched-control confirmation rather than omnibus superiority over every other plane.
 
-We then test geometric invariance directly. For each scale and each response-blind family (XG2 and XG4), the frozen geometry preparation provides 300 \texttt{alignment\_delta\_h} vectors on the same ordered source-pair population. We row-normalize these vectors, form their sample Gram matrix, center it, and compare scales with linear centered kernel alignment (CKA). An exact orthogonal rotation of feature coordinates would preserve this sample geometry and yield CKA equal to one.
+Under the common algebraic contrast $Q_{\mathrm{selected\ restored}}-Q_{\mathrm{matched\ control}}$, each scale's frozen confirmation is positive. At 370M, however, a distinct historical positive aggregate-residual criterion failed; later core confirmations do not retroactively alter that failed criterion (Appendix~\ref{app:scale}). Raw $Q$ magnitudes are endpoint-specific internal units and are not treated as a scaling series.
 
-Both five-scale CKA matrices have off-diagonal entries below one (Fig.~\ref{fig:scale}B--C), with scale-pair heterogeneity rather than a monotonic size trend. Frozen cosine-RSM agrees (Appendix~\ref{app:geometry}); geometry is \textbf{partially conserved but not invariant}. Joint source-pair resampling preserves the qualitative intermediate CKA structure, while repeated split halves show stronger fine-grained ordering stability for XG2 than XG4 (Appendix~\ref{app:robustness}).
+For each scale and response-blind family (XG2 and XG4), the frozen geometry preparation provides 300 \texttt{alignment\_delta\_h} vectors on the same ordered source-pair population. Row-normalized vectors define sample Gram matrices, which we compare across scales using centered linear CKA; cosine-RSM is secondary. The off-diagonal CKA values are heterogeneous and intermediate rather than near either identity or zero: XG2 spans $0.34$--$0.74$ and XG4 $0.39$--$0.59$. Joint source-pair resampling preserves this qualitative structure, while split halves show stronger fine-grained ordering stability for XG2 than XG4 (Appendix~\ref{app:robustness}).
 
-This conclusion is deliberately local. The analysis concerns the response-blind alignment geometry that generates the native principal-geometry object used in this study. Linear CKA is insensitive to orthogonal feature rotations and isotropic scaling, but it does not establish non-equivalence under arbitrary invertible transformations, nor does it characterize the full hidden-state representation.
+These values establish lack of \emph{exact} invariance under the stated CKA comparison while retaining nonzero cross-scale conservation. We do not estimate a within-model noise ceiling or a cross-model null distribution, and therefore do not claim that the observed similarities are unexpectedly low relative to such a baseline. The analysis also does not establish non-equivalence under arbitrary invertible transformations or characterize the complete hidden-state representation.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{fig3_five_scale_recurrence_reorganization.pdf}
-\caption{Causal-role recurrence with only partial geometric conservation. (A) The selected/control identity is reconstructed independently within each scale, but the common scale-local causal contrast is supported at all five sizes. (B--C) Centered linear CKA compares the frozen response-blind XG2 and XG4 alignment geometry on the same 300 source pairs per family. Off-diagonal values below one show that recurrence of causal role does not require invariant sample geometry. Historical protocol details and secondary cosine-RSM values are reported in the appendix.}
+\caption{Operational causal-role recurrence with partial geometric conservation. (A) Frozen selected/control pairs differ by scale and are confirmed on held-out populations; rank labels are local, not semantic homologies. (B--C) Centered linear CKA on matched response-blind XG2/XG4 populations shows heterogeneous intermediate cross-scale similarity, with secondary cosine-RSM and resampling checks reported in the appendix.}
 \label{fig:scale}
 \end{figure}
 
@@ -153,19 +155,19 @@ where $g_i$ is the gradient of the downstream task margin with respect to the fr
 
 The exact decomposition in Appendix~\ref{app:decomp} separates gradient magnitude, component magnitude, angular alignment, and their dependence terms. It shows that no single geometric scalar explains the aggregate signs: at 370M dependence terms overcome a slightly negative mean alignment gap; at 1.4B negative task-gradient alignment dominates; and at 2.8B adverse dependence outweighs a positive mean gap. The same recurring native causal role can therefore couple differently to the downstream objective across scale.
 
-\subsection{Functional orientation is objective-conditioned}
+\subsection{Functional readout is objective- and contrast-conditioned}
 \label{sec:objective}
 
 The task-objective pattern could still reflect a functional organization already present under Mamba's pretrained objective. We test that alternative by keeping each scale's source population, target site, selected component, and matched control fixed while replacing the downstream task margin with the pretrained next-token log-probability objective.
 
-Across the complete descriptive five-scale set, point-estimate aggregate signs are $+,+,+,-,-$ for the task objective and $-,-,-,+,+$ for the pretrained next-token objective (Fig.~\ref{fig:objective}). Pair-resampling intervals cross zero for the 370M pretrained-LM and 2.8B task readouts, so these cells lack individual sign stability under this analysis (Appendix~\ref{app:robustness}). The prospective LM-control family covered the four larger scales; the later 130M completeness extension is not retroactively pooled into it (Appendix~\ref{app:vanilla}).
+For the primary task-matched native contrasts, point-estimate aggregate signs are $+,+,+,-,-$ under the task objective and $-,-,-,+,+$ under the pretrained next-token objective (Fig.~\ref{fig:objective}). Pair-resampling intervals exclude zero in 8 of 10 scale-by-objective cells; the 370M pretrained-LM and 2.8B task readouts cross zero and therefore lack individual sign stability under this analysis (Appendix~\ref{app:robustness}). The prospective LM-control family covered the four larger scales; the later 130M completeness extension is not retroactively pooled into it (Appendix~\ref{app:vanilla}).
 
-The opposed point-estimate aggregate signs do not imply rowwise inversion. Pair-level Pearson and Spearman associations vary in sign across scales, and pairwise sign agreement remains near the middle of its range. At 130M, for example, the pair-level correlation is positive despite opposed point means. We therefore interpret the result as \textbf{objective-conditioned functionalization}: the same scale-specific recurrent substrate can be organized differently by different objectives.
+The opposed point-estimate means do not imply rowwise inversion: pair-level Pearson and Spearman associations vary in sign, and sign agreement remains near the middle of its range. More importantly, the aggregate result is \emph{contrast-conditioned}. In the common-P3/P5 sensitivity comparison, the 1.4B pretrained-LM mean is negative whereas its primary task-matched P5/P4 pretrained-LM mean is positive (Appendix~\ref{app:vanilla}). We therefore interpret the evidence as objective dependence of each frozen native contrast, not as a universal scale-level orientation or a contrast-invariant sign reversal.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{fig4_objective_conditioned_functionalization.pdf}
-\caption{Objective-conditioned readouts of fixed scale-local contrasts. Bars are frozen point means; whiskers are percentile 95\% pair-resampling intervals. Point-estimate aggregate orientations differ across objectives at all five scales, but the two smallest-magnitude cells lack individual sign stability. Pair-level associations exclude simple rowwise inversion. This five-scale display is descriptive; chronology is in Appendix~\ref{app:vanilla}.}
+\caption{Objective-conditioned readouts of the primary frozen scale-local contrasts. Bars are frozen point means; whiskers are percentile 95\% pair-resampling intervals. Eight of ten scale-by-objective cells are individually sign-stable; pair-level associations exclude simple rowwise inversion. The aggregate comparison is contrast-conditioned, with sensitivity reported in Appendix~\ref{app:vanilla}.}
 \label{fig:objective}
 \end{figure}
 
@@ -180,18 +182,24 @@ We additionally evaluate external transfer on the official AVeriTeC development 
 
 At 1.4B, the point estimate changes sign to $-7.85\times10^{-5}$, but the pre-specified one-sided negative test does not pass the alpha gate ($p=0.0757$). We therefore do not claim an established external sign reversal. The 1.4B intervention also changes no argmax predictions among the 462 examples, and all intervention conditions retain the same accuracy.
 
-The external evidence therefore supports a bounded conclusion. The native-state intervention can propagate to continuous task and natural-language decision margins, but the available evidence does not establish uniform behavioral improvement, scale-invariant external transfer, or benchmark-level correction.
+Because the frozen downstream model was not trained on AVeriTeC and this is not a benchmark-performance study, we use the experiment only as an out-of-distribution natural-language margin probe. The external evidence therefore supports a bounded conclusion: the native-state intervention can propagate to continuous task and natural-language decision margins, but the available evidence does not establish uniform behavioral improvement, scale-invariant external transfer, or benchmark-level correction.
 
 \section{Methods}
 \label{sec:methods}
 
-\paragraph{Design and native geometry.}
-We analyze fixed pretrained Mamba-1 backbones from 130M to 2.8B. Principal planes and selected/control components are reconstructed within each scale, so plane numbers have only local identity. Geometry and control selection use native activations without downstream task responses, logits, or gradients from the held-out intervention population.
+\paragraph{Design, sites, and native geometry.}
+We analyze fixed pretrained Mamba-1 backbones from 130M to 2.8B. Principal-plane ranks are model-local. The 130M causal study froze intervention layer 17 of 24. Larger-scale target sites were not re-localized from XG1 outcomes: the intervention layer is mapped by relative depth,
+$\ell_s=\mathrm{round}[(17/(24-1))(L_s-1)]$,
+giving layer 35 for the 48-layer 370M/790M/1.4B models and layer 47 for the 64-layer 2.8B model, while preserving source/target-residual offsets $(-2,-1)$. Geometry preparation uses native Mamba activations without XG1 outcomes, downstream task logits or gradients, or backward passes.
 
 Each scale supplies frozen 300-row XG2/XG4 \texttt{alignment\_delta\_h} matrices. Row-normalized vectors give sample Grams $K_s=U_sU_s^\top$; normalized Frobenius products of centered Grams give linear CKA, while Pearson correlation of the strict upper cosine-Gram triangles gives secondary cosine-RSM. These frozen static values are transcribed without figure-builder recomputation; provenance and scalar measurements are in Appendix~\ref{app:geometry}.
 
-\paragraph{Causal establishment and recurrence.}
-The 130M component was established on disjoint 300-pair XG1 holdouts through transport, response-independent specificity, matched necessity, and restoration. Later scales use independent geometry and fresh confirmations. All five retain their original inferential families under the common scale-local contrast $Q_{\mathrm{selected\ restored}}-Q_{\mathrm{matched\ control}}$; Appendix~\ref{app:causal}--\ref{app:scale} gives endpoints, populations, and the 370M residual caveat. No cross-scale inferential family or magnitude scaling is asserted.
+\paragraph{Plane selection and causal confirmation.}
+At 130M, P3 was selected from response-blind XG2/XG4 geometry before XG1 response inspection, and P5 was frozen independently as the maximum-projector-separation geometric control. For the later dominant-component protocol, all five reconstructed planes are evaluated on a dedicated discovery population and the selected rank is frozen as
+$k_s^*=\operatorname{unique\,argmax}_k\,\overline{[Q_{\mathrm{restored}}(k)-Q_{\mathrm{neutralized}}(k)]}$.
+No positivity gate or inferential $p$-value is used in discovery. The control is selected separately from frozen geometry among non-selected planes,
+$c_s^*=\arg\max_{k\neq k_s^*}\lambda_{s,k}^{+}$.
+The selected/control pair is then frozen before a disjoint confirmation population is opened, where the pre-specified selected-restored versus matched-control endpoint is tested once. Confirmation responses cannot reselect the plane, control, tail, layer, offset, or epsilon. This design prevents same-sample argmax confirmation, while making no omnibus claim that the selected plane is superior to every alternative plane. Historical endpoints and the failed 370M residual criterion are retained rather than harmonized away (Appendix~\ref{app:causal}--\ref{app:scale}).
 
 \paragraph{Task-functional readout.}
 The separately trained structured downstream model supplies a correct-class task margin. At each frozen native state, its local gradient defines
@@ -208,18 +216,22 @@ At 130M, restoration and control are compared on a continuous task margin. Exter
 \section{Discussion}
 \label{sec:discussion}
 
-The matched scale-local causal role recurs at all five Mamba-1 sizes, while response-blind alignment geometry is only partially conserved under centered linear CKA; secondary cosine-RSM agrees. The recurrent object is thus a model-local interventional role, not a universal direction, plane number, or invariant sample geometry.
+The strongest conclusion is procedural: across five Mamba-1 checkpoints, a scale-local component selected under a frozen protocol survives a pre-specified matched-control confirmation, despite changing principal-plane rank. This is recurrence of an operational interventional role, not evidence that the models contain one coordinate-identical or semantically homologous ``same mechanism.'' The 370M aggregate-residual criterion remains a genuine historical failure and is not rescued by later confirmations.
 
-The task readout changes point-estimate aggregate sign across scales. Under the pretrained next-token objective, the same native contrasts have a different point-estimate aggregate orientation at all five sizes, while pair-resampling intervals cross zero for the two smallest-magnitude cells. Mixed pair-level associations rule out simple rowwise inversion. We call this objective-conditioned functionalization.
+Response-blind alignment geometry is neither identical nor absent across scales. Centered linear CKA and cosine-RSM show heterogeneous intermediate conservation, and source-pair resampling preserves that structure. Because we do not estimate a noise ceiling or cross-model null, the geometric claim is limited to lack of exact invariance under the stated comparison; it does not quantify how surprising the observed CKA range should be for independently reconstructed models of different sizes.
 
-The intervention also propagates beyond the local readout: restoration at 130M reaches a continuous task margin, and positive external margin transfer is supported at 130M and 370M. The 1.4B external point estimate is negative but misses its prospective inferential gate. These experiments therefore bound, rather than broaden, the mechanistic claim.
+Functional readout is likewise conditional. The primary frozen contrasts have opposed task-versus-pretrained point-estimate sign vectors, with pair-resampling support in 8 of 10 scale-by-objective cells, but the 1.4B pretrained-LM sign changes under the common-P3/P5 sensitivity contrast. We therefore use \emph{objective-conditioned functionalization} only to mean that a fixed native contrast can be read differently by different objectives; we do not claim a contrast-invariant or universal scale-level orientation.
 
-Five fixed checkpoints do not establish a continuous scaling law, and the coordinate-free result concerns frozen response-blind alignment geometry rather than arbitrary-linear equivalence of complete hidden states. The 130M geometry predates the homogeneous larger-scale bridge; its pretrained-LM cell is a later completeness extension, and external transfer covers three sizes. Within these bounds, \textbf{causal-role recurrence does not imply geometric invariance, and neither implies objective-independent functional meaning}.
+The intervention reaches a continuous task margin at 130M and small external AVeriTeC margins at 130M/370M, while the 1.4B external negative point estimate misses its prospective gate. These scope tests do not establish benchmark improvement. More broadly, five checkpoints from one Mamba-1 family and one controlled mechanism constitute a carefully staged case study, not an architecture-general scaling law. Comparison with Mamba-2 or Transformer families remains future work.
 
+Within these bounds, the study provides an empirical separation among three notions that are often conflated in cross-model mechanistic comparison: recurrence of an operational causal role, conservation of response-blind geometry, and objective-conditioned use of a frozen native contrast.
+
+\label{paper:main-end}
 \section*{Reproducibility statement}
 Frozen revisions, populations, sites, statistics, and figure sources are specified in the appendix.
 \section*{AI use statement}
 Generative AI tools assisted experimental planning, code development and debugging, artifact verification, figure preparation, and manuscript drafting and editing. The authors reviewed all AI-assisted outputs and take responsibility for the final methods, results, citations, and claims.
+\label{paper:references-start}
 \bibliographystyle{iclr2027_conference}
 \bibliography{references}
 \clearpage
