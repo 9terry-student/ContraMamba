@@ -43,6 +43,7 @@ explicitly merged; README synchronization alone does not imply branch-content me
 | Fixed-mirror steering utility | **NOT ESTABLISHED** |
 | Gen5 development scale | **MAMBA-130M** |
 | Gen5 Phase 0 | **FROZEN AT `25a4206`** |
+| Gen5 Phase 1 state-update ownership causal design | **FROZEN ON CURRENT GEN5 COMMIT** |
 | Gen5 implementation / training / evaluation | **NOT AUTHORIZED** |
 
 The older pre-D A-series material remains below as historical context; it no longer defines the repository's current research frontier.
@@ -577,9 +578,18 @@ Frozen Phase 0 artifact:
 
 The initial Gen5 development model is Mamba-130M.
 
+Phase 1 selects `STATE_UPDATE_AUTHORITY` as the first Gen5 ownership dimension
+and freezes write protection as the minimal ownership semantic. It explicitly
+forbids direct promotion of PP3 or the K-series alignment direction into a
+permanent owner identity.
+
 The active next milestone is:
 
-`GEN5_PHASE1_MINIMAL_OWNERSHIP_CAUSAL_DESIGN`
+`GEN5_PHASE1B_NATIVE_UPDATE_ROLE_BRIDGE_SPECIFICATION`
+
+Phase 1B must prospectively define the bridge from the validated layer-17
+causal-role program to a native layer-22 write/post-state realization before any
+trainable Gen5 ownership implementation is authorized.
 
 Phase 1 must choose exactly one minimal ownership dimension for the first identifiable causal test:
 
