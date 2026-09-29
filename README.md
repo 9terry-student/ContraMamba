@@ -12,54 +12,46 @@ ContraMamba therefore separates final judgment from intermediate epistemic signa
 
 ## Current status
 
-This README is a milestone snapshot of the research state **through the last pre-D-series integrated failure analysis**:
+This README has been reconciled to the current research frontier through the five-scale paper lineage and the independent K-series evidence lineage.
+
+Current evidence parents:
 
 ```text
-PRE-D SNAPSHOT CUTOFF
-5347c9e179e8365b591fe62884f8291b30e7f7ff
-Freeze Seed8192 integrated factorial failure analysis
+FIVE_SCALE_PAPER_PARENT
+b4d20e3fe61ec97af35a699b4bd454a5bd0eecb7
+
+K_SERIES_PARENT
+5f5f4d6a80085ad8baf43445475d1c3049535c22
 ```
 
-D-series implementation, execution, or scientific results are intentionally outside this snapshot. The next design direction is recorded only as a pre-D research conclusion; this README does not authorize that work.
+Current development branch: `gen5-causal-role-state-ownership`.
 
-Current active research line:
-
-```text
-ContraMamba Reason-Preserving Authorization Router
-P3-W7 / Seed8192 A0-A3 factorial lineage
-```
-
-Current state:
+Repository-index note: this README describes the current research frontier. The
+corresponding code and evidence remain on their named research branches unless
+explicitly merged; README synchronization alone does not imply branch-content merge.
 
 | Surface | Status |
 |---|---|
-| Canonical P4-L artifact/provenance lineage | **CLOSED / ESTABLISHED** |
-| Seed8192 A0 N=3 baseline | **EXECUTED + VALIDATED** |
-| Seed8192 reason-loss calibration | **RESOLVED** |
-| Seed8192 A1/A2/A3 factorial, seeds 180/181/182 | **EXECUTED + IMPORTED + VALIDATED** |
-| Factorial scientific interpretation | **FROZEN** |
-| Integrated matched-row failure localization | **FROZEN** |
-| Current tested `explicit_local` ownership | **DESCRIPTIVELY HARMFUL** |
-| Conditional-first-blocker router-only effect | **MIXED / SEED-DEPENDENT** |
-| Stable beneficial factorial interaction | **NOT SUPPORTED** |
-| Next pre-D design direction | **D1 continuous/partial gradient ownership** |
-| D-series execution/results in this README | **NOT INCLUDED** |
+| Gen4 standalone native-Mamba / NAME mechanistic branch | **CLOSED / FROZEN** |
+| K-series broad precursor line | **NOT SUPPORTED / PARKED** |
+| K0-RVG directional-alignment causal contribution | **SUPPORTED IN BOUNDED 130M SETTING** |
+| Gen4 × K convergence program | **COMPLETED EVIDENCE PARENT** |
+| Five-scale causal-role recurrence program | **COMPLETED EVIDENCE PARENT / PAPER LINEAGE** |
+| Fixed plane identity as cross-scale invariant | **NOT SUPPORTED** |
+| Exact cross-scale geometric invariance | **NOT ESTABLISHED** |
+| Universal scale-independent behavioral relevance | **NOT ESTABLISHED** |
+| Fixed-mirror steering utility | **NOT ESTABLISHED** |
+| Gen5 development scale | **MAMBA-130M** |
+| Gen5 Phase 0 | **FROZEN AT `25a4206`** |
+| Gen5 implementation / training / evaluation | **NOT AUTHORIZED** |
 
-Key repository identities:
+The older pre-D A-series material remains below as historical context; it no longer defines the repository's current research frontier.
 
-| Milestone | Commit |
-|---|---|
-| A0 N=3 validated-evidence analysis | `dd183f59f4040405c178da193fe99c7c7f3ef57f` |
-| A1/A2/A3 factorial execution commit | `3a76c6cd3f6bd8b011317f37938677822ce9191d` |
-| Factorial validated-evidence analysis | `6dcef9520af2cb88691628a77b72f3fdd7042cd8` |
-| Factorial scientific interpretation | `0894a921bf7ed69151722e3ce2691eb49bf4f40f` |
-| Integrated factorial failure localization | `5347c9e179e8365b591fe62884f8291b30e7f7ff` |
-| Long-term O0b scientific interpretation | `f1dc559d546d20611d66b27684bbfa0f02afa696` |
-| Validated O0c native-state results | `ff2fb076f6e66a34a632515bb8502d8b1c90ad7f` |
-| Long-term research vision | `bca6db6de2e1bb5d1b81188b61b2023be20eadd3` |
-| Long-term hypothesis map | `56bf9e7dca92d1d7e61ab153038a68aeb21c4017` |
+The active forward question is:
 
-These are repository authority/provenance/evidence identities, not model checkpoint identities.
+> Can recurrent-state ownership grounded in an already interventionally validated causal role preserve that role better than a matched ownership-null construction?
+
+The first Gen5 success criterion is causal-role integrity, not task-score improvement.
 
 ---
 
@@ -98,7 +90,7 @@ They are long-term research context, not execution authority.
 
 ---
 
-## Current controlled generation
+## Historical controlled-generation snapshot (A0-A3)
 
 The completed A0-A3 experiment deliberately held the Mamba encoder frozen. It therefore tested downstream semantic decision structure and a binary gradient-ownership intervention while the base representation was held fixed.
 
@@ -324,7 +316,7 @@ The strongest bounded interpretation is that the current binary hard isolation c
 
 ---
 
-## Long-term O-series context
+## Historical O-series context
 
 The O-series asks whether epistemic-risk or insufficiency-sensitive signals already exist in native Mamba dynamics before constructing stronger architectural ownership.
 
@@ -383,36 +375,54 @@ O0b suggests that useful information can exist in shared hidden representations,
 
 ## Long-term architecture trajectory
 
-The durable Research Vision already separates the current binary experiment from later generations.
+The original Research Vision used prospective Generation 1-6 labels written before the later Gen4, K-series, convergence, and five-scale evidence existed. Those labels remain historical planning context but no longer define forward generation numbering.
+
+Current evidence-aware lineage:
 
 ```text
 Generation 1
-binary gradient ownership
-joint <-> explicit_local
+  -> Generation 2
+  -> Generation 3
+  -> Generation 4 standalone
+       reason-router / native-Mamba mechanistic program
+       through Phase F and NAME branch closure
 
-Generation 2
-continuous / partial gradient ownership
-
-Generation 3
-edge-specific ownership
-
-Generation 4
-adaptive ownership, only if justified
-
+K-series standalone
+       native-state dynamics
+       K0-RVG localization
+       directional-alignment causal falsification
+             |
+             +----> Gen4 × K convergence program
+                       transport / specificity
+                       necessity / restoration
+                       structured residual causality
+                              |
+                              v
+                    Cross-scale / five-scale
+                    publication program
+                              |
+                              v
 Generation 5
-structured reason calibration, only if justified
-
-Generation 6
-structured state-space backbone / semantic-state ownership
+       Causal-Role-Grounded State Ownership
 ```
 
-The Hypothesis Map also pre-registers `Over-Isolation` as a failure mode:
+K-series, Gen4 × K convergence, and the cross-scale/five-scale paper are scientific programs, not extra architecture-generation numbers.
 
-> semantic locality improves but capability collapses.
+The old prospective labels `Generation 5 = structured reason calibration` and `Generation 6 = structured state-space backbone` are not reserved forward identities. Structured reason calibration remains an optional module; state-space ownership remains central but must inherit the mechanistic evidence accumulated after that roadmap was written.
 
-The current A2/A3 result is consistent with an over-isolation-like pattern, but full `Over-Isolation` classification still requires care because semantic locality itself is not uniformly established as improved.
+The initial Gen5 development scale is Mamba-130M because it has the deepest overlapping causal evidence. This does not make 130M coordinates universal.
 
-The current result therefore narrows the next question rather than ending the long-term program.
+The Gen5 invariant candidate is `operational causal role`, not principal-plane number, fixed direction, fixed channel identity, or universal coordinates.
+
+Gen5 must preserve:
+
+`causal role != geometric realization != objective-conditioned functional readout != behavioral utility`
+
+and:
+
+`mechanistic validity != steering utility`
+
+The first Gen5 question is causal-role preservation under a minimal ownership intervention. Cross-scale generality, behavioral improvement, semantic-state identity, and confident-error prediction remain separate later questions.
 
 ---
 
@@ -543,7 +553,7 @@ README text is documentation only. It does not authorize implementation, trainin
 
 ---
 
-## Current research claim
+## Historical pre-D research claim
 
 The strongest pre-D claim is deliberately bounded:
 
@@ -557,11 +567,29 @@ The broader long-term question remains open:
 
 ---
 
-## Next milestone after this snapshot
+## Next milestone
 
-The evidence-supported next design question is **D1 continuous/partial gradient ownership**.
+Phase 0 is frozen at commit `25a4206`.
 
-This README intentionally stops before D-series implementation/execution status. Any D-series design, implementation, training, evaluation, Kaggle run, checkpoint use, or scientific conclusion requires its own applicable authority and provenance.
+Frozen Phase 0 artifact:
+
+`reports/reason_router_gen5_causal_role_grounded_state_ownership_phase0_scientific_spec_candidate.md`
+
+The initial Gen5 development model is Mamba-130M.
+
+The active next milestone is:
+
+`GEN5_PHASE1_MINIMAL_OWNERSHIP_CAUSAL_DESIGN`
+
+Phase 1 must choose exactly one minimal ownership dimension for the first identifiable causal test:
+
+1. state-update authority;
+2. information-flow authority;
+3. gradient ownership.
+
+No Gen5 architecture implementation, training, evaluation, Kaggle execution, owner-count search, layer search, plane search, or channel search is authorized by the current README or Phase 0 candidate.
+
+Historical pre-D conclusions remain valid within their original scope.
 
 The operating rule remains:
 
