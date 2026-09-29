@@ -1,0 +1,1 @@
+78c3457f4d90e75ecfa1a5dd0fed60a23c52223b697d54b4200270edc5338d56  static_preparation_summary.json

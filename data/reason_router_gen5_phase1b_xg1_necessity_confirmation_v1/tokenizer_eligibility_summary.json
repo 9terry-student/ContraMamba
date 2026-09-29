@@ -1,0 +1,36 @@
+{
+  "anchor_manifest_sha256": "5ed5dc57b95df7121b301db2414c886655771dc77a53e0c6cbaad210d4683f88",
+  "checkpoint_loaded": false,
+  "cuda_executed": false,
+  "eligible_anchor_counts": {
+    "A_IDENTITY": 1200,
+    "A_NAME": 600
+  },
+  "eligible_anchor_row_count": 1800,
+  "exclusion_counts": {},
+  "identity_name_coordinate_mismatch_count": 0,
+  "model_executed": false,
+  "required_anchor_row_count": 1800,
+  "result": "PASS_GEN5_PHASE1B_TOKENIZER_ANCHOR_ELIGIBILITY",
+  "role": "necessity_confirmation",
+  "schema_version": "GEN5_PHASE1B_TOKENIZER_ELIGIBILITY_SUMMARY_V1",
+  "source_pair_count": 300,
+  "tokenizer": {
+    "active_encoding_validation_commit": "17f1ddfc8286796f27c4a61716a21e14126bb836",
+    "add_special_tokens": false,
+    "analysis_reference": "40e5d2bd7452abb3ca8fadbafe9131ee0e2c2f37",
+    "claim_budget": 63,
+    "claimed_historical_snapshot": false,
+    "effective_pad_token_id": 0,
+    "eos_token_id": 0,
+    "evidence_budget": 64,
+    "file_sha256": {
+      "special_tokens_map.json": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8",
+      "tokenizer.json": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf",
+      "tokenizer_config.json": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+    },
+    "max_length": 128,
+    "serialization": "claim[:63]+EOS(0)+evidence[:64]",
+    "tokenizers_version": "0.22.2"
+  }
+}
