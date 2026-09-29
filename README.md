@@ -26,6 +26,10 @@ K_SERIES_PARENT
 
 Current development branch: `gen5-causal-role-state-ownership`.
 
+Repository-index note: this README describes the current research frontier. The
+corresponding code and evidence remain on their named research branches unless
+explicitly merged; README synchronization alone does not imply branch-content merge.
+
 | Surface | Status |
 |---|---|
 | Gen4 standalone native-Mamba / NAME mechanistic branch | **CLOSED / FROZEN** |
@@ -38,7 +42,7 @@ Current development branch: `gen5-causal-role-state-ownership`.
 | Universal scale-independent behavioral relevance | **NOT ESTABLISHED** |
 | Fixed-mirror steering utility | **NOT ESTABLISHED** |
 | Gen5 development scale | **MAMBA-130M** |
-| Gen5 Phase 0 | **STATIC SCIENTIFIC SPECIFICATION CANDIDATE** |
+| Gen5 Phase 0 | **FROZEN AT `25a4206`** |
 | Gen5 implementation / training / evaluation | **NOT AUTHORIZED** |
 
 The older pre-D A-series material remains below as historical context; it no longer defines the repository's current research frontier.
@@ -565,17 +569,15 @@ The broader long-term question remains open:
 
 ## Next milestone
 
-The active next milestone is:
+Phase 0 is frozen at commit `25a4206`.
 
-`GEN5_PHASE0 — Evidence inheritance + scientific specification`
-
-Current candidate artifact:
+Frozen Phase 0 artifact:
 
 `reports/reason_router_gen5_causal_role_grounded_state_ownership_phase0_scientific_spec_candidate.md`
 
 The initial Gen5 development model is Mamba-130M.
 
-After a reviewed Phase 0 freeze, the next scientific phase is:
+The active next milestone is:
 
 `GEN5_PHASE1_MINIMAL_OWNERSHIP_CAUSAL_DESIGN`
 
