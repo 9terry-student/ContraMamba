@@ -151,33 +151,48 @@ regenerated.
 
 ---
 
-## 4. Frozen Kaggle training-artifact provisioning package
+## 4. Frozen training-artifact tree identity
 
-PACKAGE_FILENAME =
-`gen5-phase2-training-artifacts-acdf2ee-r1.zip`
-
-PACKAGE_FILE_COUNT =
+TRAINING_ARTIFACT_TREE_FILE_COUNT =
 `35`
 
-PACKAGE_BYTES =
-`1941306`
+TRAINING_ARTIFACT_TREE_CANONICALIZATION =
+`POSIX_RELATIVE_PATH_UTF8_LEXICOGRAPHIC_ASCENDING`
 
-PACKAGE_SHA256 =
-`558d759439969bc932a9a8f90067b6d50d1b90b9c1c2929e5c5e98a5926dea3c`
+TRAINING_ARTIFACT_TREE_CANONICAL_ROW =
+`relative_path<TAB>byte_size<TAB>sha256<LF>`
+
+TRAINING_ARTIFACT_TREE_CANONICAL_BYTES =
+`3589`
+
+TRAINING_ARTIFACT_TREE_SHA256 =
+`1d82a999b2c5f52cc77c4890de04ed8047eaa38b781626b1e3b0e62eef5f53f2`
 
 INTERNAL_ROOT =
 `gen5-phase2-dualt4-matrix-acdf2ee-r1`
 
-This ZIP is a deterministic transport container over the already validated local
-import. It is not new scientific evidence.
+The scientific input identity is the exact 35-file artifact tree, not a ZIP
+container representation.
+
+The previously recorded deterministic transport ZIP SHA256 is superseded as an
+execution gate because byte-identical artifact trees produced different ZIP
+container SHA256 values across Windows and Linux despite identical per-file
+SHA256 and byte sizes.
+
+This correction changes no training artifact, checkpoint, scientific endpoint,
+cohort, correction tensor, or analysis rule.
 
 Before scientific execution:
 
-1. the ZIP must be located in Kaggle input storage;
-2. its exact SHA256 must be authenticated before extraction;
-3. extraction must preserve the exact internal root;
-4. the runner must independently validate the complete training-artifact tree;
-5. any package/hash/artifact mismatch blocks execution.
+1. exactly 35 files must be present under the frozen internal root;
+2. the canonical tree identity above must equal the frozen tree SHA256;
+3. the runner must independently validate the complete training-artifact tree,
+   including the known historical matrix_provenance checksum-finalization defect;
+4. all nine correction checkpoints and their tensor/provenance chains must pass;
+5. any tree/hash/artifact mismatch blocks execution.
+
+An existing authenticated Kaggle copy of this exact 35-file tree may be used
+directly. Repacking or re-extraction is not required.
 
 No alternative training checkpoint bundle may be substituted.
 
@@ -513,7 +528,9 @@ The exact shell command, concrete Kaggle paths, output directory, and run name w
 be generated only after the authority commit is known and `cm kaggle` has
 authenticated that exact commit.
 
-The command must authenticate the provisioning ZIP SHA256 before extraction.
+The command must authenticate the frozen 35-file stable tree identity before
+scientific invocation. An already preserved byte-identical Kaggle tree may be
+used directly without repacking.
 
 ---
 
@@ -563,7 +580,7 @@ Stop rather than bypass if any of the following occurs:
 - dirty worktree;
 - implementation drift;
 - execution-authority mismatch;
-- provisioning ZIP hash mismatch;
+- frozen training-artifact stable tree hash mismatch;
 - training-artifact mismatch;
 - fresh XG1 identity/count/order mismatch;
 - tokenizer identity mismatch;
