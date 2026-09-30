@@ -8,8 +8,8 @@ This runner has three explicit modes:
 1. ``--static-preflight-only``:
    historical-tokenizer/data/split identity only; no model/checkpoint/CUDA.
 2. ``--cuda-preflight-only``:
-   qualified CUDA runtime + exact full-train forward graph feasibility only;
-   no backward and no optimizer step.
+   bounded monolithic-vs-streamed equivalence plus exact streamed full-train
+   forward/backward feasibility; no optimizer step.
 3. ``--run-matrix``:
    the frozen 3-arm x 3-seed, 20-step training matrix.
 
@@ -36,6 +36,7 @@ from pathlib import Path
 from typing import Any, Iterator, Mapping, Sequence
 
 import torch
+from torch.utils.checkpoint import checkpoint as torch_checkpoint
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -67,6 +68,15 @@ ACCELERATED_IMPLEMENTATION_COMMIT = (
 IMPLEMENTATION_AUTHORITY_COMMIT = (
     "e2f8975d8271c0e95c92b9389dfc4717a221f7df"
 )
+RECOVERY_AMENDMENT_COMMIT = (
+    "360670cc657dbb7d2ee3ee894d9109846631a838"
+)
+RECOVERY_AMENDMENT_PATH = (
+    "reports/"
+    "reason_router_gen5_phase2_full_batch_feasibility_recovery_"
+    "amendment_spec_candidate.md"
+)
+RECOVERY_AMENDMENT_BLOB = "f52603e014e46a4a62a42571121605a1f6574879"
 
 AUTHORITY_PATH = (
     "reports/"
@@ -101,6 +111,9 @@ FROZEN_BLOBS = {
 RUNNER_REL = "scripts/train_reason_router_gen5_phase2_state_update_ownership.py"
 TEST_REL = "tests/test_reason_router_gen5_phase2_state_update_ownership.py"
 AUTHORIZED_OPENING_PATHS = frozenset({RUNNER_REL, TEST_REL})
+AUTHORIZED_POST_AUTHORITY_PATHS = AUTHORIZED_OPENING_PATHS | frozenset({
+    RECOVERY_AMENDMENT_PATH,
+})
 
 MODEL_NAME = "state-spaces/mamba-130m-hf"
 MODEL_REVISION = "40e5d2bd7452abb3ca8fadbafe9131ee0e2c2f37"
@@ -251,6 +264,11 @@ LEARNING_RATE = 0.001
 WEIGHT_DECAY = 0.0001
 GRADIENT_CLIP_NORM = 5.0
 MAX_LENGTH = 128
+BACKBONE_STREAM_ROWS = 240
+EQUIVALENCE_ROWS = 480
+EQUIVALENCE_LOGITS_ATOL = 1e-5
+EQUIVALENCE_CE_ATOL = 1e-6
+EQUIVALENCE_GRAD_ATOL = 1e-5
 
 R22_SHA256 = (
     "a69232900e8b5a91ec5248e36facee4d421eabd502829e6abf3d2719fdb02214"
@@ -294,6 +312,11 @@ FROZEN_TRAINING_CONTRACT = {
     "logical_batch": "EXACT_FULL_2880_ROW_TRAIN_SPLIT",
     "microbatching": False,
     "gradient_accumulation": False,
+    "feasibility_recovery_amendment_commit": RECOVERY_AMENDMENT_COMMIT,
+    "backbone_streaming": True,
+    "backbone_stream_rows": BACKBONE_STREAM_ROWS,
+    "downstream_full_batch_once": True,
+    "loss_backward_calls_per_epoch": 1,
 }
 
 FORBIDDEN_FRESH_ASSAY_FRAGMENTS = (
@@ -484,6 +507,15 @@ def authenticate_repo(
         ) == 0,
         "ACCELERATED_IMPLEMENTATION_NOT_ANCESTOR",
     )
+    require(
+        git_rc(
+            "merge-base",
+            "--is-ancestor",
+            RECOVERY_AMENDMENT_COMMIT,
+            expected_head,
+        ) == 0,
+        "RECOVERY_AMENDMENT_NOT_ANCESTOR",
+    )
 
     status = _status_paths()
     if allow_opening_worktree:
@@ -501,8 +533,17 @@ def authenticate_repo(
             f"FROZEN_BLOB_DRIFT:{path}:{observed}",
         )
 
-    # Once runner-opening is committed, the only authority-descendant tracked
-    # delta is the exact two-file opening scope.
+    observed_amendment_blob = git(
+        "rev-parse",
+        f"HEAD:{RECOVERY_AMENDMENT_PATH}",
+    )
+    require(
+        observed_amendment_blob == RECOVERY_AMENDMENT_BLOB,
+        f"RECOVERY_AMENDMENT_BLOB_DRIFT:{observed_amendment_blob}",
+    )
+
+    # The feasibility amendment plus the exact two-file implementation scope
+    # are the only authorized descendants of the parent training authority.
     if expected_head != TRAINING_EXECUTION_AUTHORITY_COMMIT:
         changed = {
             line.strip().replace("\\", "/")
@@ -514,7 +555,7 @@ def authenticate_repo(
             if line.strip()
         }
         require(
-            changed <= AUTHORIZED_OPENING_PATHS,
+            changed <= AUTHORIZED_POST_AUTHORITY_PATHS,
             f"POST_AUTHORITY_SCOPE_DRIFT:{sorted(changed)}",
         )
 
@@ -928,6 +969,330 @@ def _historical_forward(
     )
 
 
+
+def _capture_rng_state() -> dict[str, Any]:
+    return {
+        "cpu": torch.get_rng_state().clone(),
+        "cuda": tuple(
+            state.clone()
+            for state in torch.cuda.get_rng_state_all()
+        ) if torch.cuda.is_available() else (),
+    }
+
+
+def _restore_rng_state(state: Mapping[str, Any]) -> None:
+    torch.set_rng_state(state["cpu"])
+    if torch.cuda.is_available():
+        torch.cuda.set_rng_state_all(list(state["cuda"]))
+
+
+def _require_rng_state_equal(
+    before: Mapping[str, Any],
+    after: Mapping[str, Any],
+    label: str,
+) -> None:
+    require(
+        torch.equal(before["cpu"], after["cpu"]),
+        f"{label}_CPU_RNG_CHANGED",
+    )
+    before_cuda = tuple(before["cuda"])
+    after_cuda = tuple(after["cuda"])
+    require(
+        len(before_cuda) == len(after_cuda),
+        f"{label}_CUDA_RNG_DEVICE_COUNT",
+    )
+    require(
+        all(
+            torch.equal(left, right)
+            for left, right in zip(before_cuda, after_cuda)
+        ),
+        f"{label}_CUDA_RNG_CHANGED",
+    )
+
+
+def _historical_forward_from_hidden(
+    model: torch.nn.Module,
+    features: Mapping[str, torch.Tensor],
+    hidden_states: torch.Tensor,
+) -> Mapping[str, Any]:
+    from scripts import (
+        reason_router_gen4_six_cell_tier2_inference_adapter
+        as adapter,
+    )
+
+    edge_map = adapter.expected_edge_gradient_lambdas(PARENT_ARM)
+    return model(
+        input_ids=None,
+        attention_mask=features["attention_mask"],
+        claim_mask=features["claim_mask"],
+        evidence_mask=features["evidence_mask"],
+        decision_mode=adapter.DECISION_MODE,
+        gradient_ownership_mode=adapter.GRADIENT_OWNERSHIP_MODE,
+        edge_gradient_lambdas=edge_map,
+        return_q_diagnostics=True,
+        encoder_hidden_states=hidden_states,
+    )
+
+
+def _streamed_backbone_hidden(
+    model: torch.nn.Module,
+    features: Mapping[str, torch.Tensor],
+    *,
+    stream_rows: int = BACKBONE_STREAM_ROWS,
+) -> tuple[torch.Tensor, int]:
+    require(stream_rows > 0, "BACKBONE_STREAM_ROWS_POSITIVE")
+    input_ids = features["input_ids"]
+    attention_mask = features["attention_mask"]
+    require(input_ids.ndim == 2, "STREAM_INPUT_IDS_RANK")
+    require(
+        tuple(attention_mask.shape) == tuple(input_ids.shape),
+        "STREAM_ATTENTION_SHAPE",
+    )
+
+    row_count = int(input_ids.shape[0])
+    require(row_count > 0, "STREAM_ROW_COUNT")
+    rng_before = _capture_rng_state()
+    chunks: list[torch.Tensor] = []
+
+    def chunk_forward(
+        chunk_input_ids: torch.Tensor,
+        chunk_attention_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        with phase2_active_mask(model, chunk_attention_mask):
+            result = model.mamba(input_ids=chunk_input_ids)
+        return result.last_hidden_state
+
+    for start in range(0, row_count, stream_rows):
+        stop = min(start + stream_rows, row_count)
+        chunk_hidden = torch_checkpoint(
+            chunk_forward,
+            input_ids[start:stop],
+            attention_mask[start:stop],
+            use_reentrant=False,
+            preserve_rng_state=True,
+        )
+        chunks.append(chunk_hidden)
+
+    rng_after = _capture_rng_state()
+    _require_rng_state_equal(
+        rng_before,
+        rng_after,
+        "BACKBONE_STREAM",
+    )
+
+    hidden_states = torch.cat(chunks, dim=0)
+    require(
+        int(hidden_states.shape[0]) == row_count,
+        "STREAM_HIDDEN_ROW_COUNT",
+    )
+    return hidden_states, len(chunks)
+
+
+def _streamed_historical_forward(
+    model: torch.nn.Module,
+    features: Mapping[str, torch.Tensor],
+    *,
+    stream_rows: int = BACKBONE_STREAM_ROWS,
+) -> tuple[Mapping[str, Any], int]:
+    hidden_states, chunk_count = _streamed_backbone_hidden(
+        model,
+        features,
+        stream_rows=stream_rows,
+    )
+    output = _historical_forward_from_hidden(
+        model,
+        features,
+        hidden_states,
+    )
+    return output, chunk_count
+
+
+def _slice_features(
+    features: Mapping[str, torch.Tensor],
+    rows: int,
+) -> dict[str, torch.Tensor]:
+    require(rows > 0, "SLICE_ROWS_POSITIVE")
+    require(rows <= int(features["input_ids"].shape[0]), "SLICE_ROWS_RANGE")
+    return {
+        key: value[:rows]
+        for key, value in features.items()
+    }
+
+
+def _require_no_parent_or_basis_grads(
+    model: torch.nn.Module,
+    wrapper: Any,
+    label: str,
+) -> None:
+    parent_grads = [
+        name
+        for name, parameter in model.named_parameters()
+        if ".correction." not in name and parameter.grad is not None
+    ]
+    require(not parent_grads, f"{label}_PARENT_GRADIENT:{parent_grads[:5]}")
+    require(wrapper.correction.R22.grad is None, f"{label}_R22_GRADIENT")
+    require(wrapper.correction.C22.grad is None, f"{label}_C22_GRADIENT")
+
+
+def _bounded_streaming_equivalence(
+    *,
+    model: torch.nn.Module,
+    wrapper: Any,
+    features: Mapping[str, torch.Tensor],
+    labels: torch.Tensor,
+    parent_before: str,
+) -> dict[str, Any]:
+    require(
+        EQUIVALENCE_ROWS % BACKBONE_STREAM_ROWS == 0,
+        "EQUIVALENCE_CHUNK_DIVISIBILITY",
+    )
+    subset = _slice_features(features, EQUIVALENCE_ROWS)
+    subset_labels = labels[:EQUIVALENCE_ROWS]
+    a_before = tensor_sha256(wrapper.correction.A_theta.weight)
+    b_before = tensor_sha256(wrapper.correction.B_theta.weight)
+
+    torch.manual_seed(5201)
+    torch.cuda.manual_seed_all(5201)
+    initial_rng = _capture_rng_state()
+    model.zero_grad(set_to_none=True)
+
+    with count_layer22_fast_calls(wrapper.native_mixer) as mono_counter:
+        with phase2_active_mask(model, subset["attention_mask"]):
+            mono_output = _historical_forward(model, subset)
+        mono_logits = mono_output["logits"]
+        require(
+            tuple(mono_logits.shape) == (EQUIVALENCE_ROWS, 3),
+            "EQUIVALENCE_MONOLITHIC_LOGITS_SHAPE",
+        )
+        mono_loss = phase2_final_three_way_ce(mono_logits, subset_labels)
+        del mono_output
+        mono_loss.backward()
+        mono_fast_calls = int(mono_counter["calls"])
+
+    require(
+        mono_fast_calls == 1,
+        f"EQUIVALENCE_MONOLITHIC_FAST_CALLS:{mono_fast_calls}",
+    )
+    _require_no_parent_or_basis_grads(
+        model,
+        wrapper,
+        "EQUIVALENCE_MONOLITHIC",
+    )
+    mono_logits_cpu = mono_logits.detach().cpu()
+    mono_loss_value = float(mono_loss.detach().cpu().item())
+    mono_a_grad = wrapper.correction.A_theta.weight.grad.detach().cpu().clone()
+    mono_b_grad = wrapper.correction.B_theta.weight.grad.detach().cpu().clone()
+    del mono_logits, mono_loss
+    model.zero_grad(set_to_none=True)
+    torch.cuda.empty_cache()
+
+    _restore_rng_state(initial_rng)
+    with count_layer22_fast_calls(wrapper.native_mixer) as stream_counter:
+        streamed_output, chunk_count = _streamed_historical_forward(
+            model,
+            subset,
+            stream_rows=BACKBONE_STREAM_ROWS,
+        )
+        stream_forward_fast_calls = int(stream_counter["calls"])
+        streamed_logits = streamed_output["logits"]
+        require(
+            tuple(streamed_logits.shape) == (EQUIVALENCE_ROWS, 3),
+            "EQUIVALENCE_STREAMED_LOGITS_SHAPE",
+        )
+        streamed_loss = phase2_final_three_way_ce(
+            streamed_logits,
+            subset_labels,
+        )
+        del streamed_output
+        streamed_loss.backward()
+        stream_total_fast_calls = int(stream_counter["calls"])
+
+    require(
+        chunk_count == EQUIVALENCE_ROWS // BACKBONE_STREAM_ROWS,
+        f"EQUIVALENCE_CHUNK_COUNT:{chunk_count}",
+    )
+    require(
+        stream_forward_fast_calls == chunk_count,
+        f"EQUIVALENCE_STREAM_FORWARD_FAST_CALLS:{stream_forward_fast_calls}",
+    )
+    require(
+        stream_total_fast_calls >= stream_forward_fast_calls,
+        f"EQUIVALENCE_STREAM_TOTAL_FAST_CALLS:{stream_total_fast_calls}",
+    )
+    _require_no_parent_or_basis_grads(
+        model,
+        wrapper,
+        "EQUIVALENCE_STREAMED",
+    )
+
+    streamed_logits_cpu = streamed_logits.detach().cpu()
+    streamed_loss_value = float(streamed_loss.detach().cpu().item())
+    streamed_a_grad = wrapper.correction.A_theta.weight.grad.detach().cpu().clone()
+    streamed_b_grad = wrapper.correction.B_theta.weight.grad.detach().cpu().clone()
+
+    logits_residual = float(
+        torch.max(
+            torch.abs(mono_logits_cpu - streamed_logits_cpu)
+        ).item()
+    )
+    ce_residual = abs(mono_loss_value - streamed_loss_value)
+    a_grad_residual = float(
+        torch.max(torch.abs(mono_a_grad - streamed_a_grad)).item()
+    )
+    b_grad_residual = float(
+        torch.max(torch.abs(mono_b_grad - streamed_b_grad)).item()
+    )
+
+    require(
+        logits_residual <= EQUIVALENCE_LOGITS_ATOL,
+        f"EQUIVALENCE_LOGITS_RESIDUAL:{logits_residual}",
+    )
+    require(
+        ce_residual <= EQUIVALENCE_CE_ATOL,
+        f"EQUIVALENCE_CE_RESIDUAL:{ce_residual}",
+    )
+    require(
+        a_grad_residual <= EQUIVALENCE_GRAD_ATOL,
+        f"EQUIVALENCE_A_GRAD_RESIDUAL:{a_grad_residual}",
+    )
+    require(
+        b_grad_residual <= EQUIVALENCE_GRAD_ATOL,
+        f"EQUIVALENCE_B_GRAD_RESIDUAL:{b_grad_residual}",
+    )
+    require(
+        parent_parameter_fingerprint(model) == parent_before,
+        "EQUIVALENCE_PARENT_PARAMETER_MUTATION",
+    )
+    require(
+        tensor_sha256(wrapper.correction.A_theta.weight) == a_before,
+        "EQUIVALENCE_A_PARAMETER_MUTATION",
+    )
+    require(
+        tensor_sha256(wrapper.correction.B_theta.weight) == b_before,
+        "EQUIVALENCE_B_PARAMETER_MUTATION",
+    )
+
+    del streamed_logits, streamed_loss
+    model.zero_grad(set_to_none=True)
+    torch.cuda.empty_cache()
+    return {
+        "rows": EQUIVALENCE_ROWS,
+        "stream_rows": BACKBONE_STREAM_ROWS,
+        "chunk_count": chunk_count,
+        "monolithic_fast_path_calls": mono_fast_calls,
+        "stream_forward_fast_path_calls": stream_forward_fast_calls,
+        "stream_total_fast_path_calls": stream_total_fast_calls,
+        "logits_max_abs_residual": logits_residual,
+        "ce_abs_residual": ce_residual,
+        "A_gradient_max_abs_residual": a_grad_residual,
+        "B_gradient_max_abs_residual": b_grad_residual,
+        "logits_tolerance": EQUIVALENCE_LOGITS_ATOL,
+        "ce_tolerance": EQUIVALENCE_CE_ATOL,
+        "gradient_tolerance": EQUIVALENCE_GRAD_ATOL,
+        "pass": True,
+    }
+
+
 def _prepare_cuda_model(
     *,
     arm: str,
@@ -1004,47 +1369,117 @@ def run_cuda_preflight(
         r22=r22,
         c22=c22,
     )
-
     features, labels = _feature_batch_to_device(
         encoded["train_bundle"],
         device,
     )
 
-    # Make the forward graph match training mode, but do not backward or step.
     model.train()
     model.mamba.config.use_cache = False
+    torch.cuda.empty_cache()
+
+    equivalence = _bounded_streaming_equivalence(
+        model=model,
+        wrapper=wrapper,
+        features=features,
+        labels=labels,
+        parent_before=parent_before,
+    )
+
+    model.zero_grad(set_to_none=True)
     torch.manual_seed(5201)
     torch.cuda.manual_seed_all(5201)
     torch.cuda.empty_cache()
     torch.cuda.reset_peak_memory_stats(device)
 
+    a_before = tensor_sha256(wrapper.correction.A_theta.weight)
+    b_before = tensor_sha256(wrapper.correction.B_theta.weight)
     output = None
+    logits = None
     loss = None
-    fast_calls = 0
+    chunk_count = 0
+    forward_fast_calls = 0
+    total_fast_calls = 0
+    backward_started = False
+    backward_completed = False
+
     try:
         with count_layer22_fast_calls(wrapper.native_mixer) as fast_counter:
-            with phase2_active_mask(model, features["attention_mask"]):
-                output = _historical_forward(model, features)
+            output, chunk_count = _streamed_historical_forward(
+                model,
+                features,
+                stream_rows=BACKBONE_STREAM_ROWS,
+            )
+            forward_fast_calls = int(fast_counter["calls"])
+            require(
+                chunk_count == TRAIN_ROWS // BACKBONE_STREAM_ROWS,
+                f"PREFLIGHT_STREAM_CHUNK_COUNT:{chunk_count}",
+            )
+            require(
+                forward_fast_calls == chunk_count,
+                f"PREFLIGHT_STREAM_FORWARD_FAST_CALLS:{forward_fast_calls}",
+            )
+
             logits = output["logits"]
-            require(tuple(logits.shape) == (TRAIN_ROWS, 3), "PREFLIGHT_LOGITS_SHAPE")
-            require(bool(torch.isfinite(logits).all().item()), "PREFLIGHT_LOGITS_NONFINITE")
+            require(
+                tuple(logits.shape) == (TRAIN_ROWS, 3),
+                "PREFLIGHT_LOGITS_SHAPE",
+            )
+            require(
+                bool(torch.isfinite(logits).all().item()),
+                "PREFLIGHT_LOGITS_NONFINITE",
+            )
+            del output
+            output = None
+
             loss = phase2_final_three_way_ce(logits, labels)
-            require(bool(torch.isfinite(loss).item()), "PREFLIGHT_LOSS_NONFINITE")
-            fast_calls = int(fast_counter["calls"])
-        require(fast_calls == 1, f"LAYER22_FAST_PATH_CALLS:{fast_calls}")
+            require(
+                bool(torch.isfinite(loss).item()),
+                "PREFLIGHT_LOSS_NONFINITE",
+            )
+            backward_started = True
+            loss.backward()
+            backward_completed = True
+            total_fast_calls = int(fast_counter["calls"])
+
+        require(
+            total_fast_calls >= forward_fast_calls,
+            f"PREFLIGHT_STREAM_TOTAL_FAST_CALLS:{total_fast_calls}",
+        )
+        a_grad = wrapper.correction.A_theta.weight.grad
+        b_grad = wrapper.correction.B_theta.weight.grad
+        require(a_grad is not None, "PREFLIGHT_A_GRAD_MISSING")
+        require(b_grad is not None, "PREFLIGHT_B_GRAD_MISSING")
+        require(
+            bool(torch.isfinite(a_grad).all().item()),
+            "PREFLIGHT_A_GRAD_NONFINITE",
+        )
+        require(
+            bool(torch.isfinite(b_grad).all().item()),
+            "PREFLIGHT_B_GRAD_NONFINITE",
+        )
+        _require_no_parent_or_basis_grads(model, wrapper, "PREFLIGHT")
         peak_allocated = int(torch.cuda.max_memory_allocated(device))
         peak_reserved = int(torch.cuda.max_memory_reserved(device))
     except torch.cuda.OutOfMemoryError as exc:
         torch.cuda.empty_cache()
         report = {
-            "schema_version": "GEN5_PHASE2_CUDA_PREFLIGHT_V1",
-            "result": "GEN5_PHASE2_FULL_BATCH_EXECUTION_FEASIBILITY_BLOCKED",
+            "schema_version": "GEN5_PHASE2_STREAMED_CUDA_PREFLIGHT_V1",
+            "result": (
+                "GEN5_PHASE2_STREAMED_FULL_BATCH_EXECUTION_FEASIBILITY_BLOCKED"
+            ),
             "execution_head": args.expected_head,
             "authority_commit": TRAINING_EXECUTION_AUTHORITY_COMMIT,
+            "feasibility_recovery_amendment_commit": RECOVERY_AMENDMENT_COMMIT,
             "runtime": runtime,
             "full_batch_rows": TRAIN_ROWS,
             "sequence_length": MAX_LENGTH,
-            "backward_executed": False,
+            "backbone_stream_rows": BACKBONE_STREAM_ROWS,
+            "backbone_stream_chunk_count": chunk_count,
+            "bounded_equivalence": equivalence,
+            "backward_started": backward_started,
+            "backward_completed": backward_completed,
+            "backward_executed": backward_completed,
             "optimizer_step_executed": False,
             "training_executed": False,
             "fresh_xg1_loaded": False,
@@ -1052,40 +1487,52 @@ def run_cuda_preflight(
             "oom_type": type(exc).__name__,
         }
         _write_preflight_report(Path(args.preflight_output), report)
-        print("RESULT=GEN5_PHASE2_FULL_BATCH_EXECUTION_FEASIBILITY_BLOCKED")
+        print(
+            "RESULT="
+            "GEN5_PHASE2_STREAMED_FULL_BATCH_EXECUTION_FEASIBILITY_BLOCKED"
+        )
         print("TRAINING_EXECUTED=False")
         raise Phase2TrainingError(
-            "GEN5_PHASE2_FULL_BATCH_EXECUTION_FEASIBILITY_BLOCKED"
+            "GEN5_PHASE2_STREAMED_FULL_BATCH_EXECUTION_FEASIBILITY_BLOCKED"
         ) from exc
-    finally:
-        del output, loss
 
+    require(backward_completed, "PREFLIGHT_BACKWARD_NOT_COMPLETED")
     require(
         parent_parameter_fingerprint(model) == parent_before,
         "PREFLIGHT_PARENT_PARAMETER_MUTATION",
     )
     require(
-        wrapper.correction.R22.grad is None
-        and wrapper.correction.C22.grad is None,
-        "PREFLIGHT_BASIS_GRAD",
+        tensor_sha256(wrapper.correction.A_theta.weight) == a_before,
+        "PREFLIGHT_A_PARAMETER_MUTATION",
     )
     require(
+        tensor_sha256(wrapper.correction.B_theta.weight) == b_before,
+        "PREFLIGHT_B_PARAMETER_MUTATION",
+    )
+
+    model.zero_grad(set_to_none=True)
+    require(
         all(parameter.grad is None for parameter in model.parameters()),
-        "PREFLIGHT_GRADIENT_PRESENT",
+        "PREFLIGHT_GRADIENT_CLEAR_FAILURE",
     )
 
     report = {
-        "schema_version": "GEN5_PHASE2_CUDA_PREFLIGHT_V1",
-        "result": "PASS_GEN5_PHASE2_FULL_BATCH_CUDA_PREFLIGHT",
+        "schema_version": "GEN5_PHASE2_STREAMED_CUDA_PREFLIGHT_V1",
+        "result": "PASS_GEN5_PHASE2_STREAMED_FULL_BATCH_CUDA_PREFLIGHT",
         "execution_head": args.expected_head,
         "authority_commit": TRAINING_EXECUTION_AUTHORITY_COMMIT,
+        "feasibility_recovery_amendment_commit": RECOVERY_AMENDMENT_COMMIT,
         "runtime": runtime,
         "checkpoint_sha256": PARENT_CHECKPOINT_SHA256,
         "r22_sha256": R22_SHA256,
         "c22_sha256": C22_SHA256,
         "basis_geometry": basis_geometry,
         "constructor_kernel_calls": constructor_counts,
-        "layer22_fast_path_calls": fast_calls,
+        "bounded_equivalence": equivalence,
+        "backbone_stream_rows": BACKBONE_STREAM_ROWS,
+        "backbone_stream_chunk_count": chunk_count,
+        "stream_forward_fast_path_calls": forward_fast_calls,
+        "stream_total_fast_path_calls": total_fast_calls,
         "full_batch_rows": TRAIN_ROWS,
         "sequence_length": MAX_LENGTH,
         "peak_memory_allocated_bytes": peak_allocated,
@@ -1095,7 +1542,9 @@ def run_cuda_preflight(
         "train_encoding_sha256": encoded["train_encoding_sha256"],
         "dev_encoding_sha256": encoded["dev_encoding_sha256"],
         "cross_arm_initialization": init_manifest,
-        "backward_executed": False,
+        "backward_started": True,
+        "backward_completed": True,
+        "backward_executed": True,
         "optimizer_step_executed": False,
         "training_executed": False,
         "fresh_xg1_loaded": False,
@@ -1105,14 +1554,31 @@ def run_cuda_preflight(
     }
     _write_preflight_report(Path(args.preflight_output), report)
 
-    del model, wrapper, features, labels
+    del output, logits, loss, model, wrapper, features, labels
     torch.cuda.empty_cache()
 
-    print("RESULT=PASS_GEN5_PHASE2_FULL_BATCH_CUDA_PREFLIGHT")
+    print("RESULT=PASS_GEN5_PHASE2_STREAMED_FULL_BATCH_CUDA_PREFLIGHT")
+    print(
+        "EQUIVALENCE_LOGITS_MAX_ABS="
+        f"{equivalence['logits_max_abs_residual']:.9g}"
+    )
+    print(
+        "EQUIVALENCE_CE_ABS="
+        f"{equivalence['ce_abs_residual']:.9g}"
+    )
+    print(
+        "EQUIVALENCE_A_GRAD_MAX_ABS="
+        f"{equivalence['A_gradient_max_abs_residual']:.9g}"
+    )
+    print(
+        "EQUIVALENCE_B_GRAD_MAX_ABS="
+        f"{equivalence['B_gradient_max_abs_residual']:.9g}"
+    )
+    print(f"BACKBONE_STREAM_ROWS={BACKBONE_STREAM_ROWS}")
+    print(f"BACKBONE_STREAM_CHUNKS={chunk_count}")
     print(f"PEAK_MEMORY_ALLOCATED_BYTES={peak_allocated}")
     print(f"PEAK_MEMORY_RESERVED_BYTES={peak_reserved}")
-    print("LAYER22_FAST_PATH_CALLS=1")
-    print("BACKWARD_EXECUTED=False")
+    print("BACKWARD_EXECUTED=True")
     print("OPTIMIZER_STEP_EXECUTED=False")
     print("TRAINING_EXECUTED=False")
     print("FRESH_XG1_LOADED=False")
@@ -1142,6 +1608,7 @@ def _correction_checkpoint_payload(
         "schema_version": "GEN5_PHASE2_FINAL_CORRECTION_V1",
         "execution_commit": args.expected_head,
         "authority_commit": TRAINING_EXECUTION_AUTHORITY_COMMIT,
+        "feasibility_recovery_amendment_commit": RECOVERY_AMENDMENT_COMMIT,
         "parent_checkpoint_sha256": PARENT_CHECKPOINT_SHA256,
         "r22_sha256": R22_SHA256,
         "c22_sha256": C22_SHA256,
@@ -1211,6 +1678,7 @@ def run_training_cell(
         "schema_version": "GEN5_PHASE2_TRAINING_RUN_PROVENANCE_V1",
         "execution_commit": args.expected_head,
         "authority_commit": TRAINING_EXECUTION_AUTHORITY_COMMIT,
+        "feasibility_recovery_amendment_commit": RECOVERY_AMENDMENT_COMMIT,
         "accelerated_implementation_commit": ACCELERATED_IMPLEMENTATION_COMMIT,
         "parent_checkpoint_sha256": PARENT_CHECKPOINT_SHA256,
         "native_backbone_signature_sha256": NATIVE_BACKBONE_SIGNATURE_SHA256,
@@ -1242,6 +1710,10 @@ def run_training_cell(
         "logical_batch": "EXACT_FULL_2880_ROW_TRAIN_SPLIT",
         "microbatching": False,
         "gradient_accumulation": False,
+        "backbone_streaming": True,
+        "backbone_stream_rows": BACKBONE_STREAM_ROWS,
+        "downstream_full_batch_once": True,
+        "loss_backward_calls_per_epoch": 1,
         "task_evaluation_executed": False,
         "fresh_xg1_loaded": False,
         "scientific_p_value_count": 0,
@@ -1268,12 +1740,20 @@ def run_training_cell(
     for epoch_index in range(EPOCHS):
         optimizer.zero_grad(set_to_none=True)
 
-        with phase2_active_mask(model, features["attention_mask"]):
-            output = _historical_forward(model, features)
+        output, stream_chunk_count = _streamed_historical_forward(
+            model,
+            features,
+            stream_rows=BACKBONE_STREAM_ROWS,
+        )
+        require(
+            stream_chunk_count == TRAIN_ROWS // BACKBONE_STREAM_ROWS,
+            f"TRAIN_STREAM_CHUNK_COUNT:{stream_chunk_count}",
+        )
 
         logits = output["logits"]
         require(tuple(logits.shape) == (TRAIN_ROWS, 3), "TRAIN_LOGITS_SHAPE")
         require(bool(torch.isfinite(logits).all().item()), "TRAIN_LOGITS_NONFINITE")
+        del output
 
         loss = phase2_final_three_way_ce(logits, labels)
         require(bool(torch.isfinite(loss).item()), f"LOSS_NONFINITE:{epoch_index + 1}")
@@ -1318,7 +1798,7 @@ def run_training_cell(
         a_grad_norms.append(float(torch.linalg.vector_norm(a_grad).detach().cpu().item()))
         b_grad_norms.append(float(torch.linalg.vector_norm(b_grad).detach().cpu().item()))
 
-        del output, logits, loss
+        del logits, loss
         torch.cuda.synchronize()
 
     require(len(losses) == EPOCHS, "LOSS_HISTORY_COUNT")
@@ -1345,6 +1825,7 @@ def run_training_cell(
         "result": "PASS_GEN5_PHASE2_TRAINING_CELL",
         "execution_commit": args.expected_head,
         "authority_commit": TRAINING_EXECUTION_AUTHORITY_COMMIT,
+        "feasibility_recovery_amendment_commit": RECOVERY_AMENDMENT_COMMIT,
         "parent_checkpoint_sha256": PARENT_CHECKPOINT_SHA256,
         "r22_sha256": R22_SHA256,
         "c22_sha256": C22_SHA256,
@@ -1370,6 +1851,10 @@ def run_training_cell(
         "gradient_clip_norm": GRADIENT_CLIP_NORM,
         "checkpoint_selection": "FINAL_FIXED_STEP_ONLY",
         "objective": "FINAL_3WAY_CROSS_ENTROPY_ONLY",
+        "backbone_streaming": True,
+        "backbone_stream_rows": BACKBONE_STREAM_ROWS,
+        "downstream_full_batch_once": True,
+        "loss_backward_calls_per_epoch": 1,
         "trainable_tensor_names": audit["trainable_names"],
         "trainable_tensor_count": audit["trainable_tensor_count"],
         "trainable_numel": audit["trainable_numel"],
@@ -1409,6 +1894,95 @@ def run_training_cell(
     return report
 
 
+def validate_streamed_preflight_report(
+    path: Path,
+    *,
+    args: argparse.Namespace,
+    static: Mapping[str, Any],
+    encoded: Mapping[str, Any],
+) -> dict[str, Any]:
+    require(path.is_file(), f"STREAMED_PREFLIGHT_REPORT_MISSING:{path}")
+    report = json.loads(path.read_text(encoding="utf-8"))
+    require(
+        report.get("schema_version") == "GEN5_PHASE2_STREAMED_CUDA_PREFLIGHT_V1",
+        "STREAMED_PREFLIGHT_SCHEMA",
+    )
+    require(
+        report.get("result") == "PASS_GEN5_PHASE2_STREAMED_FULL_BATCH_CUDA_PREFLIGHT",
+        "STREAMED_PREFLIGHT_RESULT",
+    )
+    require(
+        report.get("execution_head") == args.expected_head,
+        "STREAMED_PREFLIGHT_HEAD",
+    )
+    require(
+        report.get("authority_commit") == TRAINING_EXECUTION_AUTHORITY_COMMIT,
+        "STREAMED_PREFLIGHT_AUTHORITY",
+    )
+    require(
+        report.get("feasibility_recovery_amendment_commit")
+        == RECOVERY_AMENDMENT_COMMIT,
+        "STREAMED_PREFLIGHT_AMENDMENT",
+    )
+    require(
+        report.get("checkpoint_sha256") == PARENT_CHECKPOINT_SHA256,
+        "STREAMED_PREFLIGHT_CHECKPOINT",
+    )
+    require(report.get("r22_sha256") == R22_SHA256, "STREAMED_PREFLIGHT_R22")
+    require(report.get("c22_sha256") == C22_SHA256, "STREAMED_PREFLIGHT_C22")
+    require(report.get("full_batch_rows") == TRAIN_ROWS, "STREAMED_PREFLIGHT_ROWS")
+    require(
+        report.get("backbone_stream_rows") == BACKBONE_STREAM_ROWS,
+        "STREAMED_PREFLIGHT_STREAM_ROWS",
+    )
+    require(
+        report.get("backward_completed") is True,
+        "STREAMED_PREFLIGHT_BACKWARD",
+    )
+    require(
+        report.get("backward_executed") is True,
+        "STREAMED_PREFLIGHT_BACKWARD_EXECUTED",
+    )
+    require(
+        report.get("optimizer_step_executed") is False,
+        "STREAMED_PREFLIGHT_OPTIMIZER_STEP",
+    )
+    require(
+        report.get("training_executed") is False,
+        "STREAMED_PREFLIGHT_TRAINING",
+    )
+    require(
+        report.get("fresh_xg1_loaded") is False,
+        "STREAMED_PREFLIGHT_FRESH_XG1",
+    )
+    require(
+        report.get("scientific_p_value_count") == 0,
+        "STREAMED_PREFLIGHT_P_VALUE_COUNT",
+    )
+    require(
+        report.get("train_order_sha256_v2") == static["train_order_sha256_v2"],
+        "STREAMED_PREFLIGHT_TRAIN_ORDER",
+    )
+    require(
+        report.get("dev_order_sha256_v2") == static["dev_order_sha256_v2"],
+        "STREAMED_PREFLIGHT_DEV_ORDER",
+    )
+    require(
+        report.get("train_encoding_sha256") == encoded["train_encoding_sha256"],
+        "STREAMED_PREFLIGHT_TRAIN_ENCODING",
+    )
+    require(
+        report.get("dev_encoding_sha256") == encoded["dev_encoding_sha256"],
+        "STREAMED_PREFLIGHT_DEV_ENCODING",
+    )
+    bounded = report.get("bounded_equivalence")
+    require(
+        isinstance(bounded, dict) and bounded.get("pass") is True,
+        "STREAMED_PREFLIGHT_EQUIVALENCE",
+    )
+    return report
+
+
 def run_matrix(
     *,
     args: argparse.Namespace,
@@ -1417,6 +1991,12 @@ def run_matrix(
     static: Mapping[str, Any],
     encoded: Mapping[str, Any],
 ) -> dict[str, Any]:
+    streamed_preflight = validate_streamed_preflight_report(
+        Path(args.streamed_preflight_report),
+        args=args,
+        static=static,
+        encoded=encoded,
+    )
     output_root = Path(args.output_root)
     require(not output_root.exists(), f"OUTPUT_ROOT_COLLISION:{output_root}")
     output_root.mkdir(parents=True)
@@ -1432,6 +2012,9 @@ def run_matrix(
         "schema_version": "GEN5_PHASE2_TRAINING_MATRIX_PROVENANCE_V1",
         "execution_commit": args.expected_head,
         "authority_commit": TRAINING_EXECUTION_AUTHORITY_COMMIT,
+        "feasibility_recovery_amendment_commit": RECOVERY_AMENDMENT_COMMIT,
+        "streamed_preflight_report_sha256": sha256_file(args.streamed_preflight_report),
+        "streamed_preflight_result": streamed_preflight["result"],
         "runtime": runtime,
         "matrix": [
             {"seed": seed, "arm": arm}
@@ -1482,6 +2065,8 @@ def run_matrix(
         "result": "PASS_GEN5_PHASE2_TRAINING_MATRIX",
         "execution_commit": args.expected_head,
         "authority_commit": TRAINING_EXECUTION_AUTHORITY_COMMIT,
+        "feasibility_recovery_amendment_commit": RECOVERY_AMENDMENT_COMMIT,
+        "streamed_preflight_report_sha256": sha256_file(args.streamed_preflight_report),
         "cell_count": len(reports),
         "cells": [
             {
@@ -1570,6 +2155,7 @@ def static_preflight(
         "result": "PASS_GEN5_PHASE2_STATIC_EXECUTION_PREFLIGHT",
         "head": args.expected_head,
         "authority_commit": TRAINING_EXECUTION_AUTHORITY_COMMIT,
+        "feasibility_recovery_amendment_commit": RECOVERY_AMENDMENT_COMMIT,
         "historical_tokenizer_runtime": runtime,
         "dataset_git_lf_sha256": static["dataset_git_lf_sha256"],
         "dataset_semantic_sha256": static["dataset_semantic_sha256"],
@@ -1597,7 +2183,7 @@ def static_preflight(
         "training_executed": False,
         "fresh_xg1_loaded": False,
         "scientific_p_value_count": 0,
-        "next_stage": "COMMIT_RUNNER_OPENING_THEN_CUDA_PREFLIGHT",
+        "next_stage": "COMMIT_FEASIBILITY_RECOVERY_IMPLEMENTATION_THEN_STREAMED_CUDA_PREFLIGHT",
     }
     print(json.dumps(report, sort_keys=True))
     print("RESULT=PASS_GEN5_PHASE2_STATIC_EXECUTION_PREFLIGHT")
@@ -1628,6 +2214,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--model-snapshot", type=Path)
     parser.add_argument("--checkpoint", type=Path)
     parser.add_argument("--preflight-output", type=Path)
+    parser.add_argument("--streamed-preflight-report", type=Path)
     parser.add_argument("--output-root", type=Path)
     parser.add_argument("--expected-train-order-sha256-v2")
     parser.add_argument("--expected-dev-order-sha256-v2")
@@ -1653,11 +2240,16 @@ def validate_mode_args(args: argparse.Namespace) -> None:
     validate_no_fresh_assay_path(args.model_snapshot)
     validate_no_fresh_assay_path(args.checkpoint)
     validate_no_fresh_assay_path(args.preflight_output)
+    validate_no_fresh_assay_path(args.streamed_preflight_report)
     validate_no_fresh_assay_path(args.output_root)
 
     if args.static_preflight_only:
         require(args.checkpoint is None, "STATIC_PREFLIGHT_CHECKPOINT_FORBIDDEN")
         require(args.preflight_output is None, "STATIC_PREFLIGHT_OUTPUT_FILE_FORBIDDEN")
+        require(
+            args.streamed_preflight_report is None,
+            "STATIC_STREAMED_PREFLIGHT_REPORT_FORBIDDEN",
+        )
         require(args.output_root is None, "STATIC_PREFLIGHT_OUTPUT_ROOT_FORBIDDEN")
         return
 
@@ -1674,11 +2266,19 @@ def validate_mode_args(args: argparse.Namespace) -> None:
 
     if args.cuda_preflight_only:
         require(args.preflight_output is not None, "PREFLIGHT_OUTPUT_REQUIRED")
+        require(
+            args.streamed_preflight_report is None,
+            "CUDA_STREAMED_PREFLIGHT_REPORT_FORBIDDEN",
+        )
         require(args.output_root is None, "CUDA_PREFLIGHT_OUTPUT_ROOT_FORBIDDEN")
 
     if args.run_matrix:
         require(args.output_root is not None, "OUTPUT_ROOT_REQUIRED")
         require(args.preflight_output is None, "RUN_MATRIX_PREFLIGHT_OUTPUT_FORBIDDEN")
+        require(
+            args.streamed_preflight_report is not None,
+            "RUN_MATRIX_STREAMED_PREFLIGHT_REPORT_REQUIRED",
+        )
 
 
 def prepare_execution_inputs(

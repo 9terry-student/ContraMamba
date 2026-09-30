@@ -524,6 +524,13 @@ def test_training_authority_is_bound():
     assert train.ACCELERATED_IMPLEMENTATION_COMMIT == (
         "a69a0dd47853e3ec68f7c5aa21bb8d692c89a86a"
     )
+    assert train.RECOVERY_AMENDMENT_COMMIT == (
+        "360670cc657dbb7d2ee3ee894d9109846631a838"
+    )
+    assert train.RECOVERY_AMENDMENT_BLOB == (
+        "f52603e014e46a4a62a42571121605a1f6574879"
+    )
+    assert train.RECOVERY_AMENDMENT_PATH in train.AUTHORIZED_POST_AUTHORITY_PATHS
 
 
 def test_training_matrix_is_exact():
@@ -557,6 +564,11 @@ def test_frozen_training_contract_exact():
     assert c["objective"] == "FINAL_3WAY_CROSS_ENTROPY_ONLY"
     assert c["microbatching"] is False
     assert c["gradient_accumulation"] is False
+    assert c["feasibility_recovery_amendment_commit"] == train.RECOVERY_AMENDMENT_COMMIT
+    assert c["backbone_streaming"] is True
+    assert c["backbone_stream_rows"] == 240
+    assert c["downstream_full_batch_once"] is True
+    assert c["loss_backward_calls_per_epoch"] == 1
 
 
 def test_git_lf_sha256_normalizes_crlf(tmp_path: Path):
@@ -675,6 +687,7 @@ def _base_args(**updates):
         model_snapshot=None,
         checkpoint=None,
         preflight_output=None,
+        streamed_preflight_report=None,
         output_root=None,
         expected_train_order_sha256_v2=None,
         expected_dev_order_sha256_v2=None,
@@ -728,6 +741,7 @@ def test_matrix_mode_requires_output_root_and_no_preflight_output():
         train.validate_mode_args(args)
 
     args.output_root = Path("out")
+    args.streamed_preflight_report = Path("streamed_preflight.json")
     train.validate_mode_args(args)
     args.preflight_output = Path("preflight.json")
     with pytest.raises(Exception):
@@ -825,3 +839,257 @@ def test_phase2_sidecar_semantic_hash_changes_on_non_timestamp_field(tmp_path):
     second.write_text(json.dumps(row_b, sort_keys=True) + "\n", encoding="utf-8")
 
     assert training.semantic_sidecar_sha256(first) != training.semantic_sidecar_sha256(second)
+
+
+class _StreamingToyMamba(nn.Module):
+    def __init__(self):
+        super().__init__()
+        layers = [RegisteredBlock(nn.Identity()) for _ in range(23)]
+        native = TinyMixer()
+        for parameter in native.parameters():
+            parameter.requires_grad_(False)
+        correction = make_correction("G5-M1", 5201)
+        with torch.no_grad():
+            correction.B_theta.weight.normal_(0.0, 0.02)
+        layers[22] = RegisteredBlock(
+            Phase2Layer22MixerWrapper(
+                native_mixer=native,
+                correction=correction,
+                strict_frozen_dimensions=False,
+            )
+        )
+        self.layers = nn.ModuleList(layers)
+        self.config = type("Config", (), {"use_cache": False})()
+
+    def forward(self, input_ids):
+        hidden = F.one_hot(
+            torch.remainder(input_ids, 4),
+            num_classes=4,
+        ).to(torch.float32)
+        hidden = self.layers[22].mixer(hidden)
+        return type("Output", (), {"last_hidden_state": hidden})()
+
+
+class _StreamingToyModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.mamba = _StreamingToyMamba()
+        self.dropout = nn.Dropout(p=0.25)
+        self.head = nn.Linear(4, 3, bias=False)
+        for parameter in self.head.parameters():
+            parameter.requires_grad_(False)
+        self.downstream_calls = 0
+
+    def forward(
+        self,
+        input_ids,
+        attention_mask,
+        claim_mask,
+        evidence_mask,
+        encoder_hidden_states=None,
+        **kwargs,
+    ):
+        del attention_mask, claim_mask, evidence_mask, kwargs
+        if encoder_hidden_states is None:
+            hidden = self.mamba(input_ids=input_ids).last_hidden_state
+        else:
+            hidden = encoder_hidden_states
+        self.downstream_calls += 1
+        pooled = hidden.mean(dim=1)
+        return {"logits": self.head(self.dropout(pooled))}
+
+
+def test_streamed_backbone_preserves_objective_and_gradients_cpu():
+    torch.manual_seed(73)
+    model = _StreamingToyModel()
+    model.train()
+    wrapper = model.mamba.layers[22].mixer
+    features = {
+        "input_ids": torch.tensor(
+            [
+                [0, 1, 2, 3, 0],
+                [1, 2, 3, 0, 1],
+                [2, 3, 0, 1, 2],
+                [3, 0, 1, 2, 3],
+            ],
+            dtype=torch.long,
+        ),
+        "attention_mask": torch.ones(4, 5, dtype=torch.bool),
+        "claim_mask": torch.ones(4, 5, dtype=torch.bool),
+        "evidence_mask": torch.ones(4, 5, dtype=torch.bool),
+    }
+    labels = torch.tensor([0, 1, 2, 0], dtype=torch.long)
+
+    torch.manual_seed(991)
+    initial_rng = train._capture_rng_state()
+    model.zero_grad(set_to_none=True)
+    with phase2_active_mask(model, features["attention_mask"]):
+        monolithic = train._historical_forward(model, features)
+    mono_logits = monolithic["logits"]
+    mono_loss = phase2_final_three_way_ce(mono_logits, labels)
+    mono_loss.backward()
+    mono_a = wrapper.correction.A_theta.weight.grad.detach().clone()
+    mono_b = wrapper.correction.B_theta.weight.grad.detach().clone()
+    mono_logits = mono_logits.detach().clone()
+    mono_loss_value = mono_loss.detach().clone()
+
+    model.zero_grad(set_to_none=True)
+    train._restore_rng_state(initial_rng)
+    streamed, chunk_count = train._streamed_historical_forward(
+        model,
+        features,
+        stream_rows=2,
+    )
+    stream_logits = streamed["logits"]
+    stream_loss = phase2_final_three_way_ce(stream_logits, labels)
+    stream_loss.backward()
+
+    assert chunk_count == 2
+    assert model.downstream_calls == 2
+    assert torch.allclose(
+        mono_logits,
+        stream_logits.detach(),
+        atol=1e-6,
+        rtol=1e-6,
+    )
+    assert torch.allclose(
+        mono_loss_value,
+        stream_loss.detach(),
+        atol=1e-7,
+        rtol=1e-7,
+    )
+    assert torch.allclose(
+        mono_a,
+        wrapper.correction.A_theta.weight.grad,
+        atol=1e-6,
+        rtol=1e-5,
+    )
+    assert torch.allclose(
+        mono_b,
+        wrapper.correction.B_theta.weight.grad,
+        atol=1e-6,
+        rtol=1e-5,
+    )
+    assert all(
+        parameter.grad is None
+        for name, parameter in model.named_parameters()
+        if ".correction." not in name
+    )
+
+
+
+def test_streamed_backbone_alone_preserves_rng_cpu():
+    torch.manual_seed(101)
+    model = _StreamingToyModel()
+    model.train()
+    features = {
+        "input_ids": torch.tensor(
+            [
+                [0, 1, 2, 3],
+                [1, 2, 3, 0],
+                [2, 3, 0, 1],
+                [3, 0, 1, 2],
+            ],
+            dtype=torch.long,
+        ),
+        "attention_mask": torch.ones(4, 4, dtype=torch.bool),
+        "claim_mask": torch.ones(4, 4, dtype=torch.bool),
+        "evidence_mask": torch.ones(4, 4, dtype=torch.bool),
+    }
+
+    before = train._capture_rng_state()
+    hidden, chunk_count = train._streamed_backbone_hidden(
+        model,
+        features,
+        stream_rows=2,
+    )
+    after = train._capture_rng_state()
+
+    assert chunk_count == 2
+    assert hidden.shape == (4, 4, 4)
+    assert torch.equal(before["cpu"], after["cpu"])
+    assert before["cuda"] == after["cuda"]
+    assert model.downstream_calls == 0
+
+def test_streamed_backbone_helper_has_no_per_chunk_downstream_call():
+    import inspect
+
+    source = inspect.getsource(train._streamed_backbone_hidden)
+    assert "_historical_forward" not in source
+    source = inspect.getsource(train._streamed_historical_forward)
+    assert source.count("_historical_forward_from_hidden") == 1
+
+
+def test_training_cell_is_one_streamed_loss_backward_per_epoch():
+    import inspect
+
+    source = inspect.getsource(train.run_training_cell)
+    assert "_streamed_historical_forward" in source
+    assert "with phase2_active_mask(model, features" not in source
+    assert source.count("loss.backward()") == 1
+    assert source.count("optimizer.step()") == 1
+
+
+def test_streamed_preflight_report_gate(tmp_path: Path):
+    static = {
+        "train_order_sha256_v2": "a" * 64,
+        "dev_order_sha256_v2": "b" * 64,
+    }
+    encoded = {
+        "train_encoding_sha256": "c" * 64,
+        "dev_encoding_sha256": "d" * 64,
+    }
+    args = argparse.Namespace(expected_head="head123")
+    report = {
+        "schema_version": "GEN5_PHASE2_STREAMED_CUDA_PREFLIGHT_V1",
+        "result": "PASS_GEN5_PHASE2_STREAMED_FULL_BATCH_CUDA_PREFLIGHT",
+        "execution_head": "head123",
+        "authority_commit": train.TRAINING_EXECUTION_AUTHORITY_COMMIT,
+        "feasibility_recovery_amendment_commit": train.RECOVERY_AMENDMENT_COMMIT,
+        "checkpoint_sha256": train.PARENT_CHECKPOINT_SHA256,
+        "r22_sha256": train.R22_SHA256,
+        "c22_sha256": train.C22_SHA256,
+        "full_batch_rows": train.TRAIN_ROWS,
+        "backbone_stream_rows": train.BACKBONE_STREAM_ROWS,
+        "backward_completed": True,
+        "backward_executed": True,
+        "optimizer_step_executed": False,
+        "training_executed": False,
+        "fresh_xg1_loaded": False,
+        "scientific_p_value_count": 0,
+        "train_order_sha256_v2": static["train_order_sha256_v2"],
+        "dev_order_sha256_v2": static["dev_order_sha256_v2"],
+        "train_encoding_sha256": encoded["train_encoding_sha256"],
+        "dev_encoding_sha256": encoded["dev_encoding_sha256"],
+        "bounded_equivalence": {"pass": True},
+    }
+    path = tmp_path / "preflight.json"
+    path.write_text(json.dumps(report), encoding="utf-8")
+
+    observed = train.validate_streamed_preflight_report(
+        path,
+        args=args,
+        static=static,
+        encoded=encoded,
+    )
+    assert observed["result"] == report["result"]
+
+    report["optimizer_step_executed"] = True
+    path.write_text(json.dumps(report), encoding="utf-8")
+    with pytest.raises(Exception):
+        train.validate_streamed_preflight_report(
+            path,
+            args=args,
+            static=static,
+            encoded=encoded,
+        )
+
+
+def test_cuda_preflight_has_backward_but_no_optimizer_step():
+    import inspect
+
+    source = inspect.getsource(train.run_cuda_preflight)
+    assert "_bounded_streaming_equivalence" in source
+    assert "_streamed_historical_forward" in source
+    assert source.count("loss.backward()") == 1
+    assert "optimizer.step()" not in source
