@@ -347,6 +347,7 @@ def _args(**updates):
         shard_id=None,
         expected_head=assay.IMPLEMENTATION_AUTHORITY_COMMIT,
         implementation_freeze_commit=None,
+        execution_authority_commit=None,
         model_snapshot=None,
         tokenizer_snapshot=None,
         checkpoint=None,
@@ -357,6 +358,26 @@ def _args(**updates):
     )
     values.update(updates)
     return argparse.Namespace(**values)
+
+
+def test_status_paths_preserves_first_porcelain_leading_status_column(monkeypatch):
+    raw = (
+        " M scripts/reason_router_gen5_phase2_fresh_ownership_assay.py\n"
+        " M tests/test_reason_router_gen5_phase2_fresh_ownership_assay.py\n"
+    )
+
+    def fake_check_output(command, **kwargs):
+        assert command == ["git", "status", "--porcelain=v1"]
+        assert kwargs["cwd"] == assay.ROOT
+        assert kwargs["text"] is True
+        return raw
+
+    monkeypatch.setattr(assay.subprocess, "check_output", fake_check_output)
+
+    assert assay._status_paths() == {
+        "scripts/reason_router_gen5_phase2_fresh_ownership_assay.py",
+        "tests/test_reason_router_gen5_phase2_fresh_ownership_assay.py",
+    }
 
 
 def test_static_mode_forbids_scientific_runtime_inputs():
@@ -377,8 +398,48 @@ def test_scientific_mode_requires_future_execution_binding():
         assay.validate_mode_args(args)
 
     args.implementation_freeze_commit = "impl"
+    with pytest.raises(assay.OwnershipAssayError, match="EXECUTION_AUTHORITY_REQUIRED"):
+        assay.validate_mode_args(args)
+
+    args.execution_authority_commit = "authority"
     with pytest.raises(assay.OwnershipAssayError, match="MODEL_SNAPSHOT_REQUIRED"):
         assay.validate_mode_args(args)
+
+
+def test_execution_authority_text_binds_implementation_without_self_reference():
+    implementation = "a" * 40
+    text = (
+        "SCIENTIFIC_EXECUTION_ALLOWED_AFTER_FREEZE = "
+        "`YES_EXACTLY_ONE_CONFIRMATORY_OWNERSHIP_RUN`\n"
+        f"IMPLEMENTATION_FREEZE_COMMIT = `{implementation}`\n"
+    )
+
+    # An execution-authority document cannot contain the SHA of the commit
+    # that contains itself. Validation therefore binds the frozen
+    # implementation here, while commit ancestry/blob identity binds the
+    # authority at runtime.
+    assay._validate_execution_authority_text(
+        text,
+        implementation_freeze_commit=implementation,
+    )
+
+    with pytest.raises(
+        assay.OwnershipAssayError,
+        match="EXECUTION_AUTHORITY_IMPLEMENTATION_BINDING",
+    ):
+        assay._validate_execution_authority_text(
+            text,
+            implementation_freeze_commit="b" * 40,
+        )
+
+    with pytest.raises(
+        assay.OwnershipAssayError,
+        match="EXECUTION_AUTHORITY_NOT_OPEN",
+    ):
+        assay._validate_execution_authority_text(
+            f"IMPLEMENTATION_FREEZE_COMMIT = `{implementation}`\n",
+            implementation_freeze_commit=implementation,
+        )
 
 
 def test_parser_modes_are_mutually_exclusive():

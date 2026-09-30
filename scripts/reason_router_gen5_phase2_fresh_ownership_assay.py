@@ -253,12 +253,25 @@ def cell_key(seed: int, arm: str) -> str:
 
 
 def _status_paths() -> set[str]:
-    raw = git("status", "--porcelain=v1")
+    # Do not route porcelain output through git(): its `.strip()` removes
+    # the leading status-column space from the first row, corrupting that
+    # first pathname (e.g. "scripts/..." -> "cripts/...").
+    try:
+        raw = subprocess.check_output(
+            ["git", "status", "--porcelain=v1"],
+            cwd=ROOT,
+            text=True,
+            stderr=subprocess.STDOUT,
+        )
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise OwnershipAssayError("GIT_STATUS_FAILURE") from exc
+
     out: set[str] = set()
     for line in raw.splitlines():
         if not line:
             continue
         require(len(line) >= 4, f"STATUS_ROW:{line}")
+        require(line[2] == " ", f"STATUS_SEPARATOR:{line}")
         out.add(line[3:].replace("\\", "/"))
     return out
 
@@ -303,19 +316,11 @@ def authenticate_repo(
         require(observed == expected_blob, f"FROZEN_SOURCE_BLOB_DRIFT:{path}:{observed}")
 
 
-def validate_execution_authority(
+def _validate_execution_authority_text(
+    text: str,
     *,
-    expected_head: str,
     implementation_freeze_commit: str,
 ) -> None:
-    path = ROOT / EXECUTION_AUTHORITY_PATH
-    require(path.is_file(), "SCIENTIFIC_EXECUTION_AUTHORITY_MISSING")
-    require(expected_head == git("rev-parse", "HEAD"), "EXECUTION_AUTHORITY_HEAD")
-    require(
-        git_rc("merge-base", "--is-ancestor", implementation_freeze_commit, expected_head) == 0,
-        "IMPLEMENTATION_FREEZE_NOT_ANCESTOR",
-    )
-    text = path.read_text(encoding="utf-8-sig")
     require(
         "SCIENTIFIC_EXECUTION_ALLOWED_AFTER_FREEZE" in text
         and "YES_EXACTLY_ONE_CONFIRMATORY_OWNERSHIP_RUN" in text,
@@ -325,9 +330,76 @@ def validate_execution_authority(
         f"`{implementation_freeze_commit}`" in text,
         "EXECUTION_AUTHORITY_IMPLEMENTATION_BINDING",
     )
+
+
+def validate_execution_authority(
+    *,
+    expected_head: str,
+    implementation_freeze_commit: str,
+    execution_authority_commit: str,
+) -> None:
+    path = ROOT / EXECUTION_AUTHORITY_PATH
+    require(path.is_file(), "SCIENTIFIC_EXECUTION_AUTHORITY_MISSING")
     require(
-        f"`{expected_head}`" in text,
-        "EXECUTION_AUTHORITY_HEAD_BINDING",
+        expected_head == git("rev-parse", "HEAD"),
+        "EXECUTION_AUTHORITY_HEAD",
+    )
+    require(
+        git_rc(
+            "merge-base",
+            "--is-ancestor",
+            implementation_freeze_commit,
+            execution_authority_commit,
+        ) == 0,
+        "IMPLEMENTATION_FREEZE_NOT_ANCESTOR_OF_EXECUTION_AUTHORITY",
+    )
+    require(
+        git_rc(
+            "merge-base",
+            "--is-ancestor",
+            execution_authority_commit,
+            expected_head,
+        ) == 0,
+        "EXECUTION_AUTHORITY_NOT_ANCESTOR_OF_HEAD",
+    )
+
+    # The scientific implementation must remain byte-identical from its
+    # freeze commit through the execution head. The execution-authority
+    # commit may therefore add only authority/provenance material.
+    for rel in sorted(AUTHORIZED_IMPLEMENTATION_PATHS):
+        require(
+            git_rc(
+                "diff",
+                "--quiet",
+                implementation_freeze_commit,
+                expected_head,
+                "--",
+                rel,
+            ) == 0,
+            f"IMPLEMENTATION_DRIFT_AFTER_FREEZE:{rel}",
+        )
+
+    authority_rel = EXECUTION_AUTHORITY_PATH
+    frozen_blob = git(
+        "rev-parse",
+        f"{execution_authority_commit}:{authority_rel}",
+    )
+    current_blob = git(
+        "rev-parse",
+        f"HEAD:{authority_rel}",
+    )
+    require(
+        frozen_blob == current_blob,
+        "EXECUTION_AUTHORITY_BLOB_DRIFT",
+    )
+
+    text = git(
+        "show",
+        f"{execution_authority_commit}:{authority_rel}",
+    )
+    _validate_execution_authority_text(
+        text,
+        implementation_freeze_commit=implementation_freeze_commit,
     )
 
 
@@ -1500,6 +1572,7 @@ def run_worker(args: argparse.Namespace) -> None:
     validate_execution_authority(
         expected_head=args.expected_head,
         implementation_freeze_commit=args.implementation_freeze_commit,
+        execution_authority_commit=args.execution_authority_commit,
     )
     validate_static_inputs()
     artifact_index = validate_training_artifacts(args.training_artifact_root)
@@ -1599,6 +1672,7 @@ def run_worker(args: argparse.Namespace) -> None:
         "result": "PASS_GEN5_PHASE2_FRESH_OWNERSHIP_WORKER",
         "execution_head": args.expected_head,
         "implementation_freeze_commit": args.implementation_freeze_commit,
+        "execution_authority_commit": args.execution_authority_commit,
         "shard_id": int(args.shard_id),
         "pair_first": items[0]["source_pair_id"],
         "pair_last": items[-1]["source_pair_id"],
@@ -1635,6 +1709,7 @@ def run_coordinator(args: argparse.Namespace) -> None:
     validate_execution_authority(
         expected_head=args.expected_head,
         implementation_freeze_commit=args.implementation_freeze_commit,
+        execution_authority_commit=args.execution_authority_commit,
     )
     validate_static_inputs()
     validate_training_artifacts(args.training_artifact_root)
@@ -1664,6 +1739,8 @@ def run_coordinator(args: argparse.Namespace) -> None:
                 args.expected_head,
                 "--implementation-freeze-commit",
                 args.implementation_freeze_commit,
+                "--execution-authority-commit",
+                args.execution_authority_commit,
                 "--model-snapshot",
                 str(args.model_snapshot),
                 "--tokenizer-snapshot",
@@ -1717,6 +1794,7 @@ def run_coordinator(args: argparse.Namespace) -> None:
             "result": RESULT_PASS,
             "execution_head": args.expected_head,
             "implementation_freeze_commit": args.implementation_freeze_commit,
+            "execution_authority_commit": args.execution_authority_commit,
             "implementation_authority_commit": IMPLEMENTATION_AUTHORITY_COMMIT,
             "phase2_design_commit": PHASE2_DESIGN_COMMIT,
             "training_execution_commit": TRAINING_EXECUTION_COMMIT,
@@ -1788,6 +1866,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--shard-id", type=int)
     parser.add_argument("--expected-head", required=True)
     parser.add_argument("--implementation-freeze-commit")
+    parser.add_argument("--execution-authority-commit")
     parser.add_argument("--model-snapshot", type=Path)
     parser.add_argument("--tokenizer-snapshot", type=Path)
     parser.add_argument("--checkpoint", type=Path)
@@ -1802,6 +1881,7 @@ def validate_mode_args(args: argparse.Namespace) -> None:
     if args.static_verify_only:
         require(args.shard_id is None, "STATIC_SHARD_ID_FORBIDDEN")
         require(args.implementation_freeze_commit is None, "STATIC_IMPLEMENTATION_FREEZE_FORBIDDEN")
+        require(args.execution_authority_commit is None, "STATIC_EXECUTION_AUTHORITY_FORBIDDEN")
         require(args.model_snapshot is None, "STATIC_MODEL_SNAPSHOT_FORBIDDEN")
         require(args.tokenizer_snapshot is None, "STATIC_TOKENIZER_SNAPSHOT_FORBIDDEN")
         require(args.checkpoint is None, "STATIC_CHECKPOINT_FORBIDDEN")
@@ -1810,6 +1890,7 @@ def validate_mode_args(args: argparse.Namespace) -> None:
         return
 
     require(args.implementation_freeze_commit is not None, "IMPLEMENTATION_FREEZE_REQUIRED")
+    require(args.execution_authority_commit is not None, "EXECUTION_AUTHORITY_REQUIRED")
     require(args.model_snapshot is not None, "MODEL_SNAPSHOT_REQUIRED")
     require(args.tokenizer_snapshot is not None, "TOKENIZER_SNAPSHOT_REQUIRED")
     require(args.checkpoint is not None, "CHECKPOINT_REQUIRED")
