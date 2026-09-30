@@ -549,6 +549,35 @@ def test_training_matrix_is_exact():
     )
 
 
+def test_dual_gpu_worker_partition_is_exact_and_seed_grouped():
+    assert train.MATRIX_GPU_COUNT == 2
+    assert len(train.MATRIX_WORKER_CELLS) == 2
+
+    flattened = [
+        cell
+        for worker_cells in train.MATRIX_WORKER_CELLS
+        for cell in worker_cells
+    ]
+    assert len(flattened) == len(train.TRAINING_MATRIX)
+    assert len(set(flattened)) == len(train.TRAINING_MATRIX)
+    assert set(flattened) == set(train.TRAINING_MATRIX)
+
+    for seed in train.TRAINING_SEEDS:
+        owners = [
+            worker_index
+            for worker_index, worker_cells
+            in enumerate(train.MATRIX_WORKER_CELLS)
+            if any(cell_seed == seed for cell_seed, _ in worker_cells)
+        ]
+        assert len(owners) == 1
+        arms = {
+            arm
+            for cell_seed, arm in train.MATRIX_WORKER_CELLS[owners[0]]
+            if cell_seed == seed
+        }
+        assert arms == set(train.TRAINING_ARMS)
+
+
 def test_frozen_training_contract_exact():
     c = train.FROZEN_TRAINING_CONTRACT
     assert c["train_rows"] == 2880
@@ -569,6 +598,9 @@ def test_frozen_training_contract_exact():
     assert c["backbone_stream_rows"] == 240
     assert c["downstream_full_batch_once"] is True
     assert c["loss_backward_calls_per_epoch"] == 1
+    assert c["matrix_gpu_count"] == 2
+    assert c["matrix_parallelism"] == "TWO_T4_INDEPENDENT_SEED_GROUP_WORKERS"
+    assert c["matrix_worker_seeds"] == [[5201, 5203], [5202]]
 
 
 def test_git_lf_sha256_normalizes_crlf(tmp_path: Path):
@@ -682,6 +714,7 @@ def _base_args(**updates):
         static_preflight_only=True,
         cuda_preflight_only=False,
         run_matrix=False,
+        run_matrix_worker=False,
         expected_head="abc",
         execution_authority_commit=train.TRAINING_EXECUTION_AUTHORITY_COMMIT,
         model_snapshot=None,
@@ -689,6 +722,7 @@ def _base_args(**updates):
         preflight_output=None,
         streamed_preflight_report=None,
         output_root=None,
+        matrix_worker_index=None,
         expected_train_order_sha256_v2=None,
         expected_dev_order_sha256_v2=None,
         expected_train_encoding_sha256=None,
@@ -746,6 +780,54 @@ def test_matrix_mode_requires_output_root_and_no_preflight_output():
     args.preflight_output = Path("preflight.json")
     with pytest.raises(Exception):
         train.validate_mode_args(args)
+
+
+def test_matrix_worker_mode_requires_index_and_pinned_inputs():
+    args = _base_args(
+        static_preflight_only=False,
+        run_matrix_worker=True,
+        allow_opening_worktree=False,
+        checkpoint=Path("parent.pt"),
+        streamed_preflight_report=Path("streamed_preflight.json"),
+        output_root=Path("out"),
+        expected_train_order_sha256_v2="a" * 64,
+        expected_dev_order_sha256_v2="b" * 64,
+        expected_train_encoding_sha256="c" * 64,
+        expected_dev_encoding_sha256="d" * 64,
+    )
+    with pytest.raises(Exception):
+        train.validate_mode_args(args)
+
+    args.matrix_worker_index = 1
+    train.validate_mode_args(args)
+
+    args.matrix_worker_index = 2
+    with pytest.raises(Exception):
+        train.validate_mode_args(args)
+
+
+def test_matrix_worker_command_pins_same_inputs():
+    args = _base_args(
+        static_preflight_only=False,
+        run_matrix=True,
+        allow_opening_worktree=False,
+        checkpoint=Path("/tmp/parent.pt"),
+        streamed_preflight_report=Path("/tmp/preflight.json"),
+        output_root=Path("outputs/matrix"),
+        expected_train_order_sha256_v2="a" * 64,
+        expected_dev_order_sha256_v2="b" * 64,
+        expected_train_encoding_sha256="c" * 64,
+        expected_dev_encoding_sha256="d" * 64,
+    )
+    command = train._matrix_worker_command(args, 1)
+    assert "--run-matrix-worker" in command
+    assert command[command.index("--matrix-worker-index") + 1] == "1"
+    assert command[command.index("--expected-head") + 1] == "abc"
+    assert command[command.index("--checkpoint") + 1] == str(Path("/tmp/parent.pt"))
+    assert (
+        command[command.index("--streamed-preflight-report") + 1]
+        == str(Path("/tmp/preflight.json"))
+    )
 
 
 def test_cross_arm_initialization_manifest_exact():

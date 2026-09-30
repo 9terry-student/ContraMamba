@@ -258,6 +258,23 @@ TRAINING_MATRIX = tuple(
     for arm in TRAINING_ARMS
 )
 
+# Matrix orchestration only. Each matched seed keeps all three arms on the
+# same physical T4 so cross-arm comparisons do not cross devices. Scientific
+# cell semantics remain entirely inside run_training_cell().
+MATRIX_GPU_COUNT = 2
+MATRIX_WORKER_SEEDS = (
+    (5201, 5203),
+    (5202,),
+)
+MATRIX_WORKER_CELLS = tuple(
+    tuple(
+        (seed, arm)
+        for seed in worker_seeds
+        for arm in TRAINING_ARMS
+    )
+    for worker_seeds in MATRIX_WORKER_SEEDS
+)
+
 EPOCHS = 20
 TOTAL_OPTIMIZER_STEPS = 20
 LEARNING_RATE = 0.001
@@ -317,6 +334,9 @@ FROZEN_TRAINING_CONTRACT = {
     "backbone_stream_rows": BACKBONE_STREAM_ROWS,
     "downstream_full_batch_once": True,
     "loss_backward_calls_per_epoch": 1,
+    "matrix_gpu_count": MATRIX_GPU_COUNT,
+    "matrix_parallelism": "TWO_T4_INDEPENDENT_SEED_GROUP_WORKERS",
+    "matrix_worker_seeds": [list(seeds) for seeds in MATRIX_WORKER_SEEDS],
 }
 
 FORBIDDEN_FRESH_ASSAY_FRAGMENTS = (
@@ -1983,6 +2003,206 @@ def validate_streamed_preflight_report(
     return report
 
 
+def matrix_worker_cells(worker_index: int) -> tuple[tuple[int, str], ...]:
+    require(
+        0 <= worker_index < MATRIX_GPU_COUNT,
+        f"MATRIX_WORKER_INDEX:{worker_index}",
+    )
+    return MATRIX_WORKER_CELLS[worker_index]
+
+
+def _validate_dual_t4_inventory() -> dict[str, Any]:
+    try:
+        raw = subprocess.check_output(
+            [
+                "nvidia-smi",
+                "--query-gpu=index,name,uuid",
+                "--format=csv,noheader,nounits",
+            ],
+            text=True,
+            stderr=subprocess.STDOUT,
+        ).strip()
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise Phase2TrainingError("MATRIX_GPU_INVENTORY_FAILURE") from exc
+
+    gpus: list[dict[str, str]] = []
+    for line in raw.splitlines():
+        parts = [part.strip() for part in line.split(",", 2)]
+        require(len(parts) == 3, f"MATRIX_GPU_INVENTORY_ROW:{line}")
+        index, name, uuid = parts
+        gpus.append({"index": index, "name": name, "uuid": uuid})
+
+    require(
+        len(gpus) == MATRIX_GPU_COUNT,
+        f"MATRIX_GPU_COUNT:{len(gpus)}",
+    )
+    require(
+        [gpu["index"] for gpu in gpus] == ["0", "1"],
+        f"MATRIX_GPU_INDICES:{[gpu['index'] for gpu in gpus]}",
+    )
+    require(
+        all(
+            gpu["name"] == CUDA_RUNTIME_EXPECTED["device_name"]
+            for gpu in gpus
+        ),
+        f"MATRIX_GPU_NAMES:{[gpu['name'] for gpu in gpus]}",
+    )
+    return {
+        "gpu_count": MATRIX_GPU_COUNT,
+        "gpus": gpus,
+    }
+
+
+def _matrix_worker_command(
+    args: argparse.Namespace,
+    worker_index: int,
+) -> list[str]:
+    matrix_worker_cells(worker_index)
+    command = [
+        sys.executable,
+        str(Path(__file__).resolve()),
+        "--run-matrix-worker",
+        "--matrix-worker-index",
+        str(worker_index),
+        "--expected-head",
+        str(args.expected_head),
+        "--execution-authority-commit",
+        str(args.execution_authority_commit),
+        "--checkpoint",
+        str(args.checkpoint),
+        "--streamed-preflight-report",
+        str(args.streamed_preflight_report),
+        "--output-root",
+        str(args.output_root),
+        "--expected-train-order-sha256-v2",
+        str(args.expected_train_order_sha256_v2),
+        "--expected-dev-order-sha256-v2",
+        str(args.expected_dev_order_sha256_v2),
+        "--expected-train-encoding-sha256",
+        str(args.expected_train_encoding_sha256),
+        "--expected-dev-encoding-sha256",
+        str(args.expected_dev_encoding_sha256),
+    ]
+    if args.model_snapshot is not None:
+        command.extend(["--model-snapshot", str(args.model_snapshot)])
+    return command
+
+
+def run_matrix_worker(
+    *,
+    args: argparse.Namespace,
+    snapshot: Path,
+    checkpoint: Path,
+    static: Mapping[str, Any],
+    encoded: Mapping[str, Any],
+) -> dict[str, Any]:
+    worker_index = int(args.matrix_worker_index)
+    assigned_cells = matrix_worker_cells(worker_index)
+    validate_streamed_preflight_report(
+        Path(args.streamed_preflight_report),
+        args=args,
+        static=static,
+        encoded=encoded,
+    )
+
+    runtime, kernel_compat, backend = validate_cuda_runtime()
+    del backend
+    require(
+        torch.cuda.device_count() == 1,
+        f"MATRIX_WORKER_VISIBLE_GPU_COUNT:{torch.cuda.device_count()}",
+    )
+    kernels = kernel_compat.load_exact_fast_kernels()
+    r22, c22, _ = load_frozen_owner_bases(ROOT)
+
+    reports: list[dict[str, Any]] = []
+    for seed, arm in assigned_cells:
+        reports.append(
+            run_training_cell(
+                args=args,
+                seed=seed,
+                arm=arm,
+                snapshot=snapshot,
+                checkpoint=checkpoint,
+                static=static,
+                encoded=encoded,
+                runtime=runtime,
+                kernel_compat=kernel_compat,
+                kernels=kernels,
+                r22=r22,
+                c22=c22,
+            )
+        )
+
+    require(
+        len(reports) == len(assigned_cells),
+        f"MATRIX_WORKER_CELL_COUNT:{worker_index}",
+    )
+    require(
+        all(
+            row.get("result") == "PASS_GEN5_PHASE2_TRAINING_CELL"
+            for row in reports
+        ),
+        f"MATRIX_WORKER_CELL_FAILURE:{worker_index}",
+    )
+
+    output_root = Path(args.output_root)
+    worker_manifest_path = output_root / f"worker{worker_index}_manifest.json"
+    require(
+        not worker_manifest_path.exists(),
+        f"MATRIX_WORKER_MANIFEST_COLLISION:{worker_manifest_path}",
+    )
+    manifest = {
+        "schema_version": "GEN5_PHASE2_MATRIX_WORKER_MANIFEST_V1",
+        "result": "PASS_GEN5_PHASE2_MATRIX_WORKER",
+        "execution_commit": args.expected_head,
+        "authority_commit": TRAINING_EXECUTION_AUTHORITY_COMMIT,
+        "feasibility_recovery_amendment_commit": RECOVERY_AMENDMENT_COMMIT,
+        "worker_index": worker_index,
+        "physical_gpu_index": worker_index,
+        "visible_cuda_device_count": torch.cuda.device_count(),
+        "runtime": dict(runtime),
+        "assigned_seeds": list(MATRIX_WORKER_SEEDS[worker_index]),
+        "assigned_cells": [
+            {"seed": seed, "arm": arm}
+            for seed, arm in assigned_cells
+        ],
+        "cell_count": len(reports),
+        "cells": [
+            {
+                "seed": int(row["seed"]),
+                "arm": str(row["arm"]),
+                "training_report_sha256": sha256_file(
+                    output_root
+                    / f"seed{row['seed']}"
+                    / str(row["arm"])
+                    / "training_report.json"
+                ),
+                "run_provenance_sha256": sha256_file(
+                    output_root
+                    / f"seed{row['seed']}"
+                    / str(row["arm"])
+                    / "run_provenance.json"
+                ),
+                "final_correction_sha256":
+                    str(row["final_correction_file_sha256"]),
+            }
+            for row in reports
+        ],
+        "task_evaluation_executed": False,
+        "fresh_xg1_loaded": False,
+        "scientific_p_value_count": 0,
+        "scientific_conclusion": None,
+    }
+    worker_manifest_path.write_bytes(
+        canonical_json_bytes(manifest) + b"\n"
+    )
+    print(
+        f"MATRIX_WORKER_PASS index={worker_index} "
+        f"cells={len(reports)} visible_gpu_count={torch.cuda.device_count()}"
+    )
+    return manifest
+
+
 def run_matrix(
     *,
     args: argparse.Namespace,
@@ -2001,21 +2221,46 @@ def run_matrix(
     require(not output_root.exists(), f"OUTPUT_ROOT_COLLISION:{output_root}")
     output_root.mkdir(parents=True)
 
-    runtime, kernel_compat, backend = validate_cuda_runtime()
-    del backend
-    kernels = kernel_compat.load_exact_fast_kernels()
+    gpu_inventory = _validate_dual_t4_inventory()
 
     r22, c22, basis_geometry = load_frozen_owner_bases(ROOT)
     init_manifest = correction_initialization_manifest(r22, c22)
+
+    preflight_source = Path(args.streamed_preflight_report)
+    preflight_copy = output_root / "validated_streamed_preflight_report.json"
+    preflight_copy.write_bytes(preflight_source.read_bytes())
+    preflight_sha = sha256_file(preflight_source)
+    require(
+        sha256_file(preflight_copy) == preflight_sha,
+        "STREAMED_PREFLIGHT_COPY_SHA256",
+    )
+
+    worker_assignments = [
+        {
+            "worker_index": worker_index,
+            "physical_gpu_index": worker_index,
+            "seeds": list(MATRIX_WORKER_SEEDS[worker_index]),
+            "cells": [
+                {"seed": seed, "arm": arm}
+                for seed, arm in matrix_worker_cells(worker_index)
+            ],
+        }
+        for worker_index in range(MATRIX_GPU_COUNT)
+    ]
 
     top_provenance = {
         "schema_version": "GEN5_PHASE2_TRAINING_MATRIX_PROVENANCE_V1",
         "execution_commit": args.expected_head,
         "authority_commit": TRAINING_EXECUTION_AUTHORITY_COMMIT,
         "feasibility_recovery_amendment_commit": RECOVERY_AMENDMENT_COMMIT,
-        "streamed_preflight_report_sha256": sha256_file(args.streamed_preflight_report),
+        "streamed_preflight_report_sha256": preflight_sha,
         "streamed_preflight_result": streamed_preflight["result"],
-        "runtime": runtime,
+        "runtime": {
+            "matrix_parallelism": "TWO_T4_INDEPENDENT_SEED_GROUP_WORKERS",
+            "gpu_inventory": gpu_inventory,
+        },
+        "matrix_gpu_count": MATRIX_GPU_COUNT,
+        "matrix_worker_assignments": worker_assignments,
         "matrix": [
             {"seed": seed, "arm": arm}
             for seed, arm in TRAINING_MATRIX
@@ -2035,28 +2280,82 @@ def run_matrix(
         canonical_json_bytes(top_provenance) + b"\n"
     )
 
+    processes: list[subprocess.Popen[str]] = []
+    handles: list[Any] = []
+    worker_logs: list[Path] = []
+    exit_codes: list[int] = []
+    try:
+        for worker_index in range(MATRIX_GPU_COUNT):
+            worker_log = output_root / f"worker{worker_index}.log"
+            handle = worker_log.open(
+                "w",
+                encoding="utf-8",
+                newline="\n",
+            )
+            env = os.environ.copy()
+            env["CUDA_VISIBLE_DEVICES"] = str(worker_index)
+            process = subprocess.Popen(
+                _matrix_worker_command(args, worker_index),
+                cwd=ROOT,
+                env=env,
+                stdout=handle,
+                stderr=subprocess.STDOUT,
+                text=True,
+            )
+            handles.append(handle)
+            worker_logs.append(worker_log)
+            processes.append(process)
+
+        exit_codes = [process.wait() for process in processes]
+    finally:
+        for handle in handles:
+            handle.close()
+
+    require(
+        len(exit_codes) == MATRIX_GPU_COUNT,
+        "MATRIX_WORKER_EXIT_CODE_COUNT",
+    )
+    for worker_index, exit_code in enumerate(exit_codes):
+        require(
+            exit_code == 0,
+            f"MATRIX_WORKER_FAILURE:{worker_index}:{exit_code}:"
+            f"{worker_logs[worker_index]}",
+        )
+
+    for worker_index in range(MATRIX_GPU_COUNT):
+        worker_manifest_path = output_root / f"worker{worker_index}_manifest.json"
+        require(
+            worker_manifest_path.is_file(),
+            f"MATRIX_WORKER_MANIFEST_MISSING:{worker_index}",
+        )
+        worker_manifest = json.loads(
+            worker_manifest_path.read_text(encoding="utf-8")
+        )
+        require(
+            worker_manifest.get("result") == "PASS_GEN5_PHASE2_MATRIX_WORKER",
+            f"MATRIX_WORKER_MANIFEST_RESULT:{worker_index}",
+        )
+
     reports: list[dict[str, Any]] = []
     for seed, arm in TRAINING_MATRIX:
-        reports.append(
-            run_training_cell(
-                args=args,
-                seed=seed,
-                arm=arm,
-                snapshot=snapshot,
-                checkpoint=checkpoint,
-                static=static,
-                encoded=encoded,
-                runtime=runtime,
-                kernel_compat=kernel_compat,
-                kernels=kernels,
-                r22=r22,
-                c22=c22,
-            )
+        report_path = (
+            output_root
+            / f"seed{seed}"
+            / arm
+            / "training_report.json"
         )
+        require(
+            report_path.is_file(),
+            f"TRAINING_REPORT_MISSING:{seed}:{arm}",
+        )
+        reports.append(json.loads(report_path.read_text(encoding="utf-8")))
 
     require(len(reports) == 9, "TRAINING_MATRIX_CELL_COUNT")
     require(
-        all(row.get("result") == "PASS_GEN5_PHASE2_TRAINING_CELL" for row in reports),
+        all(
+            row.get("result") == "PASS_GEN5_PHASE2_TRAINING_CELL"
+            for row in reports
+        ),
         "TRAINING_MATRIX_CELL_FAILURE",
     )
 
@@ -2066,7 +2365,17 @@ def run_matrix(
         "execution_commit": args.expected_head,
         "authority_commit": TRAINING_EXECUTION_AUTHORITY_COMMIT,
         "feasibility_recovery_amendment_commit": RECOVERY_AMENDMENT_COMMIT,
-        "streamed_preflight_report_sha256": sha256_file(args.streamed_preflight_report),
+        "streamed_preflight_report_sha256": preflight_sha,
+        "validated_streamed_preflight_copy_sha256":
+            sha256_file(preflight_copy),
+        "matrix_gpu_count": MATRIX_GPU_COUNT,
+        "matrix_parallelism": "TWO_T4_INDEPENDENT_SEED_GROUP_WORKERS",
+        "worker_manifest_sha256": {
+            str(worker_index): sha256_file(
+                output_root / f"worker{worker_index}_manifest.json"
+            )
+            for worker_index in range(MATRIX_GPU_COUNT)
+        },
         "cell_count": len(reports),
         "cells": [
             {
@@ -2094,7 +2403,8 @@ def run_matrix(
         "fresh_xg1_loaded": False,
         "scientific_p_value_count": 0,
         "scientific_conclusion": None,
-        "next_stage": "COLLECT_IMPORT_THEN_GEN5_PHASE2_FRESH_OWNERSHIP_ASSAY_EXECUTION",
+        "next_stage":
+            "COLLECT_IMPORT_THEN_GEN5_PHASE2_FRESH_OWNERSHIP_ASSAY_EXECUTION",
     }
     (output_root / "matrix_manifest.json").write_bytes(
         canonical_json_bytes(manifest) + b"\n"
@@ -2104,7 +2414,8 @@ def run_matrix(
     for path in sorted(output_root.rglob("*")):
         if path.is_file() and path.name != "SHA256SUMS.txt":
             checksums.append(
-                f"{sha256_file(path)}  {path.relative_to(output_root).as_posix()}"
+                f"{sha256_file(path)}  "
+                f"{path.relative_to(output_root).as_posix()}"
             )
     (output_root / "SHA256SUMS.txt").write_text(
         "\n".join(checksums) + "\n",
@@ -2116,11 +2427,16 @@ def run_matrix(
     top_provenance["matrix_manifest_sha256"] = sha256_file(
         output_root / "matrix_manifest.json"
     )
+    top_provenance["worker_manifest_sha256"] = manifest[
+        "worker_manifest_sha256"
+    ]
     (output_root / "matrix_provenance.json").write_bytes(
         canonical_json_bytes(top_provenance) + b"\n"
     )
 
     print("RESULT=PASS_GEN5_PHASE2_TRAINING_MATRIX")
+    print("MATRIX_GPU_COUNT=2")
+    print("MATRIX_PARALLELISM=TWO_T4_INDEPENDENT_SEED_GROUP_WORKERS")
     print("TRAINING_CELL_COUNT=9")
     print("OPTIMIZER_STEPS_PER_CELL=20")
     print("TOTAL_OPTIMIZER_STEPS=180")
@@ -2205,6 +2521,11 @@ def build_parser() -> argparse.ArgumentParser:
     modes.add_argument("--static-preflight-only", action="store_true")
     modes.add_argument("--cuda-preflight-only", action="store_true")
     modes.add_argument("--run-matrix", action="store_true")
+    modes.add_argument(
+        "--run-matrix-worker",
+        action="store_true",
+        help=argparse.SUPPRESS,
+    )
 
     parser.add_argument("--expected-head", required=True)
     parser.add_argument(
@@ -2216,6 +2537,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--preflight-output", type=Path)
     parser.add_argument("--streamed-preflight-report", type=Path)
     parser.add_argument("--output-root", type=Path)
+    parser.add_argument(
+        "--matrix-worker-index",
+        type=int,
+        help=argparse.SUPPRESS,
+    )
     parser.add_argument("--expected-train-order-sha256-v2")
     parser.add_argument("--expected-dev-order-sha256-v2")
     parser.add_argument("--expected-train-encoding-sha256")
@@ -2245,12 +2571,19 @@ def validate_mode_args(args: argparse.Namespace) -> None:
 
     if args.static_preflight_only:
         require(args.checkpoint is None, "STATIC_PREFLIGHT_CHECKPOINT_FORBIDDEN")
-        require(args.preflight_output is None, "STATIC_PREFLIGHT_OUTPUT_FILE_FORBIDDEN")
+        require(
+            args.preflight_output is None,
+            "STATIC_PREFLIGHT_OUTPUT_FILE_FORBIDDEN",
+        )
         require(
             args.streamed_preflight_report is None,
             "STATIC_STREAMED_PREFLIGHT_REPORT_FORBIDDEN",
         )
         require(args.output_root is None, "STATIC_PREFLIGHT_OUTPUT_ROOT_FORBIDDEN")
+        require(
+            args.matrix_worker_index is None,
+            "STATIC_MATRIX_WORKER_INDEX_FORBIDDEN",
+        )
         return
 
     require(not args.allow_opening_worktree, "EXECUTION_DIRTY_WORKTREE_FORBIDDEN")
@@ -2271,14 +2604,35 @@ def validate_mode_args(args: argparse.Namespace) -> None:
             "CUDA_STREAMED_PREFLIGHT_REPORT_FORBIDDEN",
         )
         require(args.output_root is None, "CUDA_PREFLIGHT_OUTPUT_ROOT_FORBIDDEN")
+        require(
+            args.matrix_worker_index is None,
+            "CUDA_MATRIX_WORKER_INDEX_FORBIDDEN",
+        )
+        return
+
+    require(args.output_root is not None, "OUTPUT_ROOT_REQUIRED")
+    require(args.preflight_output is None, "MATRIX_PREFLIGHT_OUTPUT_FORBIDDEN")
+    require(
+        args.streamed_preflight_report is not None,
+        "MATRIX_STREAMED_PREFLIGHT_REPORT_REQUIRED",
+    )
 
     if args.run_matrix:
-        require(args.output_root is not None, "OUTPUT_ROOT_REQUIRED")
-        require(args.preflight_output is None, "RUN_MATRIX_PREFLIGHT_OUTPUT_FORBIDDEN")
         require(
-            args.streamed_preflight_report is not None,
-            "RUN_MATRIX_STREAMED_PREFLIGHT_REPORT_REQUIRED",
+            args.matrix_worker_index is None,
+            "MATRIX_PARENT_WORKER_INDEX_FORBIDDEN",
         )
+        return
+
+    if args.run_matrix_worker:
+        require(
+            args.matrix_worker_index is not None,
+            "MATRIX_WORKER_INDEX_REQUIRED",
+        )
+        matrix_worker_cells(int(args.matrix_worker_index))
+        return
+
+    raise Phase2TrainingError("UNREACHABLE_EXECUTION_MODE")
 
 
 def prepare_execution_inputs(
@@ -2325,6 +2679,16 @@ def main(argv: Sequence[str] | None = None) -> None:
 
     if args.run_matrix:
         run_matrix(
+            args=args,
+            snapshot=snapshot,
+            checkpoint=checkpoint,
+            static=static,
+            encoded=encoded,
+        )
+        return
+
+    if args.run_matrix_worker:
+        run_matrix_worker(
             args=args,
             snapshot=snapshot,
             checkpoint=checkpoint,
