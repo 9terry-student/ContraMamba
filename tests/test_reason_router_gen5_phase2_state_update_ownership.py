@@ -413,6 +413,110 @@ def test_streaming_backend_removes_sequence_state_stack():
 # Training-runner opening tests
 # ---------------------------------------------------------------------------
 
+
+def test_cuda_runtime_defers_transformers_module_binding_validation(monkeypatch):
+    from scripts import (
+        reason_router_gen4_generator_family_prevalence_kernel_compat
+        as kernel_compat,
+    )
+    from scripts import (
+        reason_router_gen4_k_fast_cuda_one_pair_equivalence
+        as backend,
+    )
+
+    monkeypatch.setattr(backend, "runtime_gate", lambda: None)
+    monkeypatch.setattr(
+        train,
+        "runtime_versions",
+        lambda: {
+            "python": "3.12.13",
+            "torch": "2.10.0+cu128",
+            "transformers": "5.0.0",
+            "cuda_runtime": "12.8",
+            "gpu0_name": "Tesla T4",
+            "gpu0_capability": (7, 5),
+            "default_dtype": "torch.float32",
+            "autocast_enabled": False,
+        },
+    )
+
+    def fail_if_called(_kernels):
+        pytest.fail(
+            "Transformers kernel module bindings were validated "
+            "before Mamba construction"
+        )
+
+    monkeypatch.setattr(
+        kernel_compat,
+        "validate_transformers_kernel_bindings",
+        fail_if_called,
+    )
+
+    runtime, observed_compat, observed_backend = train.validate_cuda_runtime()
+
+    assert runtime["transformers"] == "5.0.0"
+    assert observed_compat is kernel_compat
+    assert observed_backend is backend
+
+
+def test_kaggle_preflight_binding_failure_is_preconstruction_state():
+    from types import SimpleNamespace
+    from scripts import (
+        reason_router_gen4_generator_family_prevalence_kernel_compat
+        as kernel_compat,
+    )
+
+    mamba = SimpleNamespace(
+        selective_scan_fn=lambda: None,
+        selective_state_update=lambda: None,
+        mamba_inner_fn=lambda: None,
+    )
+    conv = SimpleNamespace(
+        causal_conv1d_fn=lambda: None,
+        causal_conv1d_update=lambda: None,
+    )
+    modeling = SimpleNamespace()
+
+    functions = kernel_compat.patch_transformers_mamba(
+        mamba,
+        conv,
+        modeling_module=modeling,
+    )
+    kernels = {
+        "mamba": mamba,
+        "conv": conv,
+        **functions,
+        "transport_identity_status": "EXACT_FROZEN_BINARY_SHA256_MATCH",
+    }
+
+    with pytest.raises(kernel_compat.KernelCompatibilityError) as exc_info:
+        kernel_compat.validate_transformers_kernel_bindings(
+            kernels,
+            modeling_module=modeling,
+        )
+
+    assert str(exc_info.value) == (
+        "TRANSFORMERS_KERNEL_BINDING:mamba_ssm,causal_conv1d"
+    )
+
+    # This is what Transformers 5.0.0 MambaMixer construction performs
+    # through the exact lazy_load_kernel interception.
+    modeling.causal_conv1d = conv
+    modeling.mamba_ssm = mamba
+
+    kernel_compat.validate_transformers_kernel_bindings(
+        kernels,
+        modeling_module=modeling,
+    )
+
+
+def test_training_matrix_defers_binding_validation_to_parent_construction():
+    import inspect
+
+    source = inspect.getsource(train.run_matrix)
+    assert "validate_transformers_kernel_bindings" not in source
+
+
 def test_training_authority_is_bound():
     assert train.TRAINING_EXECUTION_AUTHORITY_COMMIT == (
         "5ab3174cc24731f867e512c9381b9abcc3263915"

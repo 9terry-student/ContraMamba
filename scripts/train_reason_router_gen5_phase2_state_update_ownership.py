@@ -749,8 +749,10 @@ def validate_cuda_runtime() -> tuple[dict[str, Any], Any, Any]:
     require(runtime["default_dtype"] == CUDA_RUNTIME_EXPECTED["default_dtype"], "CUDA_DTYPE")
     require(runtime["autocast_enabled"] is CUDA_RUNTIME_EXPECTED["autocast"], "CUDA_AUTOCAST")
 
-    kernels = kernel_compat.load_exact_fast_kernels()
-    kernel_compat.validate_transformers_kernel_bindings(kernels)
+    # Transformers 5.0.0 installs the module-level causal_conv1d and
+    # mamba_ssm bindings during MambaMixer construction via lazy_load_kernel.
+    # Their exact identity is therefore validated after backbone construction
+    # in _load_parent_model(), under exact_transformers_kernel_loader().
     return runtime, kernel_compat, backend
 
 
@@ -1422,7 +1424,6 @@ def run_matrix(
     runtime, kernel_compat, backend = validate_cuda_runtime()
     del backend
     kernels = kernel_compat.load_exact_fast_kernels()
-    kernel_compat.validate_transformers_kernel_bindings(kernels)
 
     r22, c22, basis_geometry = load_frozen_owner_bases(ROOT)
     init_manifest = correction_initialization_manifest(r22, c22)
