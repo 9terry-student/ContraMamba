@@ -19,6 +19,7 @@ from typing import Any, Iterable, Iterator, Mapping
 import torch
 from torch import nn
 from torch.nn import functional as F
+from torch.utils.checkpoint import checkpoint
 
 
 PHASE2_IMPLEMENTATION_AUTHORITY_COMMIT = (
@@ -468,6 +469,199 @@ def reference_correction_mixer_contribution(
     return contribution, diagnostics
 
 
+def projected_correction_weight(
+    correction: StateWriteCorrection,
+    b_weight: torch.Tensor | None = None,
+) -> torch.Tensor:
+    """Project the rank-2 output matrix before expanding it across batch/tokens.
+
+    Because the hard owner/control projector is linear,
+
+        (I - P) (B z) == ((I - P) B) z.
+
+    Projecting the two columns of B is exactly equivalent to projecting every
+    24576-wide per-token correction vector, while avoiding a full
+    [batch, seq, 24576] pre/post-projection materialization.
+    """
+    weight = correction.B_theta.weight if b_weight is None else b_weight
+    require(
+        tuple(weight.shape)
+        == (correction.shape.state_width, correction.shape.rank),
+        "B_WEIGHT_SHAPE",
+    )
+    if correction.arm == "G5-C0":
+        return weight
+
+    basis = correction.C22 if correction.arm == "G5-C1" else correction.R22
+    basis_live = basis.to(device=weight.device, dtype=weight.dtype)
+    return weight - basis_live @ (basis_live.T @ weight)
+
+
+def streaming_state_bytes(
+    batch_size: int,
+    *,
+    dtype_bytes: int = 4,
+    shape: CorrectionShape = FROZEN_SHAPE,
+) -> int:
+    require(batch_size > 0, "BATCH_SIZE_POSITIVE")
+    require(dtype_bytes > 0, "DTYPE_BYTES_POSITIVE")
+    return int(batch_size * shape.state_width * dtype_bytes)
+
+
+def reference_state_stack_bytes(
+    batch_size: int,
+    sequence_length: int,
+    *,
+    dtype_bytes: int = 4,
+    shape: CorrectionShape = FROZEN_SHAPE,
+) -> int:
+    require(sequence_length > 0, "SEQUENCE_LENGTH_POSITIVE")
+    return streaming_state_bytes(
+        batch_size, dtype_bytes=dtype_bytes, shape=shape
+    ) * sequence_length
+
+
+def _streaming_correction_impl(
+    native_mixer: nn.Module,
+    correction: StateWriteCorrection,
+    mixer_input: torch.Tensor,
+    a_weight: torch.Tensor,
+    b_weight: torch.Tensor,
+    attention_mask: torch.Tensor,
+) -> torch.Tensor:
+    """Memory-bounded correction contribution.
+
+    This implementation never materializes [batch, seq, 24576] correction
+    writes or states. It keeps one recurrent correction state
+    [batch, 1536, 16] and one token write at a time.
+    """
+    shape = correction.shape
+    require(mixer_input.ndim == 3, "MIXER_INPUT_RANK")
+    batch, seq_len, hidden = mixer_input.shape
+    require(hidden == shape.hidden_size, "MIXER_INPUT_WIDTH")
+    require(tuple(attention_mask.shape) == (batch, seq_len), "ATTENTION_MASK_SHAPE")
+
+    # Frozen coefficient path, matching Transformers 5.0.0 slow semantics.
+    projected = native_mixer.in_proj(mixer_input).transpose(1, 2)
+    hidden_states, gate = projected.chunk(2, dim=1)
+    active = attention_mask.to(hidden_states.dtype)
+    hidden_states = hidden_states * active.unsqueeze(1)
+
+    conv_hidden = native_mixer.act(
+        native_mixer.conv1d(hidden_states)[..., :seq_len]
+    )
+    conv_hidden = conv_hidden * active.unsqueeze(1)
+
+    ssm_parameters = native_mixer.x_proj(conv_hidden.transpose(1, 2))
+    time_step, _native_b, c_readout = torch.split(
+        ssm_parameters,
+        [
+            int(native_mixer.time_step_rank),
+            int(native_mixer.ssm_state_size),
+            int(native_mixer.ssm_state_size),
+        ],
+        dim=-1,
+    )
+    discrete_time_step = F.softplus(
+        F.linear(
+            time_step,
+            native_mixer.dt_proj.weight,
+            native_mixer.dt_proj.bias,
+        )
+    ).transpose(1, 2)
+    a_continuous = -torch.exp(native_mixer.A_log.float())
+
+    latent = F.linear(mixer_input, a_weight, bias=None)
+    b_effective = projected_correction_weight(correction, b_weight)
+
+    state = torch.zeros(
+        (batch, shape.intermediate_size, shape.state_size),
+        device=mixer_input.device,
+        dtype=latent.dtype,
+    )
+    outputs: list[torch.Tensor] = []
+
+    for token_index in range(seq_len):
+        discrete_a_t = torch.exp(
+            a_continuous[None, :, :]
+            * discrete_time_step[:, :, token_index, None].float()
+        ).to(dtype=latent.dtype)
+
+        write_t = F.linear(
+            latent[:, token_index, :],
+            b_effective,
+            bias=None,
+        ).reshape(batch, shape.intermediate_size, shape.state_size)
+        write_t = write_t * attention_mask[:, token_index].to(
+            write_t.dtype
+        )[:, None, None]
+
+        state = discrete_a_t * state + write_t
+
+        read_t = torch.sum(
+            state.to(c_readout.dtype)
+            * c_readout[:, token_index, None, :],
+            dim=-1,
+        )
+        scan_t = read_t * native_mixer.act(gate[:, :, token_index])
+        outputs.append(
+            F.linear(
+                scan_t,
+                native_mixer.out_proj.weight,
+                bias=None,
+            )
+        )
+
+    return torch.stack(outputs, dim=1)
+
+
+def accelerated_correction_mixer_contribution(
+    native_mixer: nn.Module,
+    mixer_input: torch.Tensor,
+    correction: StateWriteCorrection,
+    *,
+    attention_mask: torch.Tensor,
+    checkpoint_recompute: bool = True,
+) -> torch.Tensor:
+    """Checkpointed streaming backend for future full-batch training.
+
+    A_theta/B_theta are explicit checkpoint inputs so gradient ownership stays
+    visible even though mixer_input and all historical parent parameters are
+    frozen.
+    """
+    require(attention_mask is not None, "PHASE2_ACTIVE_MASK_REQUIRED")
+    args = (
+        mixer_input,
+        correction.A_theta.weight,
+        correction.B_theta.weight,
+        attention_mask,
+    )
+
+    def run(
+        input_tensor: torch.Tensor,
+        a_weight: torch.Tensor,
+        b_weight: torch.Tensor,
+        mask: torch.Tensor,
+    ) -> torch.Tensor:
+        return _streaming_correction_impl(
+            native_mixer,
+            correction,
+            input_tensor,
+            a_weight,
+            b_weight,
+            mask,
+        )
+
+    if checkpoint_recompute and torch.is_grad_enabled():
+        return checkpoint(
+            run,
+            *args,
+            use_reentrant=False,
+            preserve_rng_state=True,
+        )
+    return run(*args)
+
+
 class Phase2Layer22MixerWrapper(nn.Module):
     """Owns the exact frozen native mixer plus a separate correction branch."""
 
@@ -538,11 +732,12 @@ class Phase2Layer22MixerWrapper(nn.Module):
             cache_position=cache_position,
             attention_mask=attention_mask,
         )
-        correction_output = reference_correction_mixer_contribution(
+        correction_output = accelerated_correction_mixer_contribution(
             self.native_mixer,
             hidden_states,
             self.correction,
             attention_mask=effective_mask,
+            checkpoint_recompute=True,
         )
         return native_output + correction_output
 

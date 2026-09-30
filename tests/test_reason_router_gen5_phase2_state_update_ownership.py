@@ -9,6 +9,7 @@ from torch.nn import functional as F
 
 from contramamba.gen5_phase2_state_update_ownership import (
     ARMS,
+    accelerated_correction_mixer_contribution,
     CorrectionShape,
     Phase2Layer22MixerWrapper,
     StateWriteCorrection,
@@ -17,6 +18,9 @@ from contramamba.gen5_phase2_state_update_ownership import (
     parent_parameter_fingerprint,
     phase2_active_mask,
     phase2_final_three_way_ce,
+    reference_correction_mixer_contribution,
+    reference_state_stack_bytes,
+    streaming_state_bytes,
     reference_correction_recurrence,
     remove_phase2_layer22_wrapper,
     validate_arm,
@@ -324,3 +328,86 @@ def test_bases_are_buffers_not_parameters():
     assert "C22" not in parameter_names
     assert "R22" in buffer_names
     assert "C22" in buffer_names
+
+
+def _copy_nonzero_correction(source, target):
+    with torch.no_grad():
+        target.A_theta.weight.copy_(source.A_theta.weight)
+        target.B_theta.weight.copy_(source.B_theta.weight)
+
+
+def test_accelerated_matches_reference_forward_and_gradients():
+    torch.manual_seed(17)
+    mixer = TinyMixer()
+    for parameter in mixer.parameters():
+        parameter.requires_grad_(False)
+
+    r, c = orthogonal_bases(TEST_SHAPE.state_width)
+    ref_corr = StateWriteCorrection(
+        arm="G5-M1",
+        r22=r,
+        c22=c,
+        seed=5201,
+        shape=TEST_SHAPE,
+        strict_frozen_dimensions=False,
+    )
+    acc_corr = StateWriteCorrection(
+        arm="G5-M1",
+        r22=r,
+        c22=c,
+        seed=5201,
+        shape=TEST_SHAPE,
+        strict_frozen_dimensions=False,
+    )
+    with torch.no_grad():
+        ref_corr.B_theta.weight.normal_(0.0, 0.02)
+    _copy_nonzero_correction(ref_corr, acc_corr)
+
+    x = torch.randn(2, 5, 4)
+    mask = torch.tensor(
+        [[1, 1, 1, 0, 0], [1, 1, 1, 1, 0]],
+        dtype=torch.bool,
+    )
+
+    ref = reference_correction_mixer_contribution(
+        mixer,
+        x,
+        ref_corr,
+        attention_mask=mask,
+    )
+    acc = accelerated_correction_mixer_contribution(
+        mixer,
+        x,
+        acc_corr,
+        attention_mask=mask,
+        checkpoint_recompute=True,
+    )
+    assert torch.allclose(ref, acc, atol=1e-6, rtol=1e-6)
+
+    ref_loss = ref.square().sum()
+    acc_loss = acc.square().sum()
+    ref_loss.backward()
+    acc_loss.backward()
+
+    assert torch.allclose(
+        ref_corr.A_theta.weight.grad,
+        acc_corr.A_theta.weight.grad,
+        atol=1e-6,
+        rtol=1e-5,
+    )
+    assert torch.allclose(
+        ref_corr.B_theta.weight.grad,
+        acc_corr.B_theta.weight.grad,
+        atol=1e-6,
+        rtol=1e-5,
+    )
+
+
+def test_streaming_backend_removes_sequence_state_stack():
+    batch = 2880
+    seq = 128
+    reference = reference_state_stack_bytes(batch, seq, dtype_bytes=4)
+    streaming = streaming_state_bytes(batch, dtype_bytes=4)
+    assert reference == 36_238_786_560
+    assert streaming == 283_115_520
+    assert reference == streaming * seq

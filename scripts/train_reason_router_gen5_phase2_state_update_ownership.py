@@ -34,6 +34,8 @@ FROZEN_TRAINING_CONTRACT = {
     "training_seeds": [5201, 5202, 5203],
     "checkpoint_selection": "FINAL_FIXED_STEP_ONLY",
     "objective": "FINAL_3WAY_CROSS_ENTROPY_ONLY",
+    "correction_backend": "CHECKPOINTED_STREAMING_REFERENCE_EQUIVALENT",
+    "reference_full_state_stack_for_training": False,
 }
 
 

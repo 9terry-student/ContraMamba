@@ -9,9 +9,13 @@ import torch
 
 from contramamba.gen5_phase2_state_update_ownership import (
     CorrectionShape,
+    accelerated_correction_mixer_contribution,
     StateWriteCorrection,
     explicit_total_recurrence,
     phase2_final_three_way_ce,
+    reference_correction_mixer_contribution,
+    reference_state_stack_bytes,
+    streaming_state_bytes,
 )
 
 
@@ -21,6 +25,28 @@ TEST_SHAPE = CorrectionShape(
     state_size=2,
     rank=2,
 )
+
+
+class _TinyMixer(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.hidden_size = 4
+        self.intermediate_size = 3
+        self.ssm_state_size = 2
+        self.time_step_rank = 2
+        self.layer_idx = 22
+        self.in_proj = torch.nn.Linear(4, 6, bias=False)
+        self.conv1d = torch.nn.Conv1d(
+            3, 3, kernel_size=2, padding=1, groups=3, bias=True
+        )
+        self.x_proj = torch.nn.Linear(3, 6, bias=False)
+        self.dt_proj = torch.nn.Linear(2, 3, bias=True)
+        self.A_log = torch.nn.Parameter(torch.zeros(3, 2), requires_grad=False)
+        self.D = torch.nn.Parameter(torch.ones(3), requires_grad=False)
+        self.out_proj = torch.nn.Linear(3, 4, bias=True)
+        self.act = torch.nn.functional.silu
+        for parameter in self.parameters():
+            parameter.requires_grad_(False)
 
 
 def require(ok: bool, message: str) -> None:
@@ -133,6 +159,69 @@ def main() -> None:
     ref = torch.nn.functional.cross_entropy(logits, labels)
     require(torch.equal(ce, ref), "CE_OBJECTIVE_DRIFT")
 
+    # Gate: accelerated backend equals the explicit reference, including A/B gradients.
+    mixer = _TinyMixer()
+    ref_corr = StateWriteCorrection(
+        arm="G5-M1",
+        r22=r22,
+        c22=c22,
+        seed=5201,
+        shape=TEST_SHAPE,
+        strict_frozen_dimensions=False,
+    )
+    acc_corr = StateWriteCorrection(
+        arm="G5-M1",
+        r22=r22,
+        c22=c22,
+        seed=5201,
+        shape=TEST_SHAPE,
+        strict_frozen_dimensions=False,
+    )
+    with torch.no_grad():
+        ref_corr.B_theta.weight.normal_(0.0, 0.02)
+        acc_corr.A_theta.weight.copy_(ref_corr.A_theta.weight)
+        acc_corr.B_theta.weight.copy_(ref_corr.B_theta.weight)
+
+    ref_out = reference_correction_mixer_contribution(
+        mixer, x, ref_corr, attention_mask=mask
+    )
+    acc_out = accelerated_correction_mixer_contribution(
+        mixer, x, acc_corr, attention_mask=mask, checkpoint_recompute=True
+    )
+    accelerated_forward_residual = float(
+        torch.max(torch.abs(ref_out - acc_out)).item()
+    )
+    require(
+        accelerated_forward_residual <= 1e-6,
+        f"ACCELERATED_FORWARD_RESIDUAL:{accelerated_forward_residual}",
+    )
+
+    ref_out.square().sum().backward()
+    acc_out.square().sum().backward()
+    a_grad_residual = float(
+        torch.max(
+            torch.abs(
+                ref_corr.A_theta.weight.grad
+                - acc_corr.A_theta.weight.grad
+            )
+        ).item()
+    )
+    b_grad_residual = float(
+        torch.max(
+            torch.abs(
+                ref_corr.B_theta.weight.grad
+                - acc_corr.B_theta.weight.grad
+            )
+        ).item()
+    )
+    require(a_grad_residual <= 1e-6, f"ACCELERATED_A_GRAD:{a_grad_residual}")
+    require(b_grad_residual <= 1e-6, f"ACCELERATED_B_GRAD:{b_grad_residual}")
+
+    full_reference_bytes = reference_state_stack_bytes(2880, 128, dtype_bytes=4)
+    streaming_bytes = streaming_state_bytes(2880, dtype_bytes=4)
+    require(full_reference_bytes == 36_238_786_560, "REFERENCE_MEMORY_ACCOUNTING")
+    require(streaming_bytes == 283_115_520, "STREAMING_MEMORY_ACCOUNTING")
+
     report = {
         "result": "PASS_GEN5_PHASE2_WRITE22_BOUNDED_IMPLEMENTATION_VERIFICATION",
         "code_correctness": "PASS",
@@ -147,6 +236,12 @@ def main() -> None:
         "basis_gradients_absent": True,
         "recurrence_superposition_max_abs_residual": max_residual,
         "objective": "FINAL_3WAY_CROSS_ENTROPY_ONLY",
+        "accelerated_reference_forward_max_abs_residual": accelerated_forward_residual,
+        "accelerated_reference_A_grad_max_abs_residual": a_grad_residual,
+        "accelerated_reference_B_grad_max_abs_residual": b_grad_residual,
+        "reference_full_batch_state_stack_bytes": full_reference_bytes,
+        "streaming_full_batch_state_bytes": streaming_bytes,
+        "accelerated_backend": "PASS",
         "next_stage": "INDEPENDENT_FORWARD_BACKWARD_IMPLEMENTATION_REVIEW",
     }
     print(json.dumps(report, sort_keys=True))
