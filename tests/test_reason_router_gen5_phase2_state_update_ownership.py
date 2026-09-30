@@ -844,6 +844,60 @@ def test_cross_arm_initialization_manifest_exact():
         assert set(row["arms"]) == set(train.TRAINING_ARMS)
 
 
+def test_runtime_basis_identity_uses_loaded_tensor_hash_domain():
+    r22, c22 = orthogonal_bases(TEST_SHAPE.state_width)
+    correction = StateWriteCorrection(
+        arm="G5-M1",
+        r22=r22,
+        c22=c22,
+        seed=5201,
+        shape=TEST_SHAPE,
+        strict_frozen_dimensions=False,
+    )
+    wrapper = type("Wrapper", (), {"correction": correction})()
+
+    r_hash, c_hash = train._validate_runtime_basis_tensor_identity(
+        wrapper,
+        r22=r22,
+        c22=c22,
+    )
+
+    assert r_hash == train.tensor_sha256(r22)
+    assert c_hash == train.tensor_sha256(c22)
+
+    # Source-file SHA constants are a different hash domain from runtime
+    # tensor bytes; a valid runtime tensor must not be compared to them.
+    assert r_hash != train.R22_SHA256
+    assert c_hash != train.C22_SHA256
+
+    with torch.no_grad():
+        correction.R22[0, 0] += 0.125
+
+    with pytest.raises(
+        train.Phase2TrainingError,
+        match="R22_RUNTIME_TENSOR_SHA256",
+    ):
+        train._validate_runtime_basis_tensor_identity(
+            wrapper,
+            r22=r22,
+            c22=c22,
+        )
+
+    with torch.no_grad():
+        correction.R22.copy_(r22)
+        correction.C22[2, 0] += 0.125
+
+    with pytest.raises(
+        train.Phase2TrainingError,
+        match="C22_RUNTIME_TENSOR_SHA256",
+    ):
+        train._validate_runtime_basis_tensor_identity(
+            wrapper,
+            r22=r22,
+            c22=c22,
+        )
+
+
 def test_checkpoint_payload_contains_only_correction_state():
     correction = make_correction("G5-M1", 5201)
     wrapper = type("Wrapper", (), {"correction": correction})()

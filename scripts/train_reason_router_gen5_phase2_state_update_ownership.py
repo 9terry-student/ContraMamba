@@ -449,6 +449,35 @@ def tensor_sha256(value: torch.Tensor) -> str:
     return sha256_bytes(tensor.numpy().tobytes())
 
 
+def _validate_runtime_basis_tensor_identity(
+    wrapper: Any,
+    *,
+    r22: torch.Tensor,
+    c22: torch.Tensor,
+) -> tuple[str, str]:
+    """Verify wrapper basis buffers against the already-authenticated tensors.
+
+    R22_SHA256/C22_SHA256 identify the frozen .f64le files.  The loaded
+    tensors have a different byte layout after reshape/transpose/contiguous,
+    so runtime tensor immutability must compare tensor bytes to tensor bytes,
+    not tensor bytes to the source-file hashes.
+    """
+    expected_r = tensor_sha256(r22)
+    expected_c = tensor_sha256(c22)
+    observed_r = tensor_sha256(wrapper.correction.R22)
+    observed_c = tensor_sha256(wrapper.correction.C22)
+
+    require(
+        observed_r == expected_r,
+        "R22_RUNTIME_TENSOR_SHA256",
+    )
+    require(
+        observed_c == expected_c,
+        "C22_RUNTIME_TENSOR_SHA256",
+    )
+    return observed_r, observed_c
+
+
 def encoded_bundle_sha256(bundle: Mapping[str, Any]) -> str:
     h = hashlib.sha256()
     for list_key in ("pair_ids", "intervention_types"):
@@ -1681,10 +1710,11 @@ def run_training_cell(
         device,
     )
 
-    basis_r_before = tensor_sha256(wrapper.correction.R22)
-    basis_c_before = tensor_sha256(wrapper.correction.C22)
-    require(basis_r_before == R22_SHA256, "R22_RUNTIME_SHA256")
-    require(basis_c_before == C22_SHA256, "C22_RUNTIME_SHA256")
+    basis_r_before, basis_c_before = _validate_runtime_basis_tensor_identity(
+        wrapper,
+        r22=r22,
+        c22=c22,
+    )
 
     optimizer_parameters = correction_optimizer_parameters(model)
     require(len(optimizer_parameters) == 2, "OPTIMIZER_PARAMETER_COUNT")
