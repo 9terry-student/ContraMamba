@@ -830,6 +830,66 @@ def test_matrix_worker_command_pins_same_inputs():
     )
 
 
+def test_matrix_finalization_hashes_final_provenance_bytes(tmp_path):
+    output_root = tmp_path
+    manifest = {
+        "worker_manifest_sha256": {
+            "0": "a" * 64,
+            "1": "b" * 64,
+        }
+    }
+    top_provenance = {
+        "schema_version": "TEST",
+        "status": "RUNNING",
+    }
+
+    (output_root / "matrix_manifest.json").write_bytes(
+        train.canonical_json_bytes(manifest) + b"\n"
+    )
+    (output_root / "matrix_provenance.json").write_bytes(
+        train.canonical_json_bytes(top_provenance) + b"\n"
+    )
+    (output_root / "artifact.bin").write_bytes(b"scientific-artifact")
+
+    train._finalize_matrix_provenance_and_checksums(
+        output_root=output_root,
+        top_provenance=top_provenance,
+        manifest=manifest,
+    )
+
+    finalized = json.loads(
+        (output_root / "matrix_provenance.json").read_text(encoding="utf-8")
+    )
+    assert finalized["status"] == "PASS"
+    assert finalized["matrix_manifest_sha256"] == train.sha256_file(
+        output_root / "matrix_manifest.json"
+    )
+    assert finalized["worker_manifest_sha256"] == manifest[
+        "worker_manifest_sha256"
+    ]
+
+    listed = {}
+    for line in (output_root / "SHA256SUMS.txt").read_text(
+        encoding="utf-8"
+    ).splitlines():
+        digest, rel = line.split("  ", 1)
+        listed[rel] = digest
+
+    assert "SHA256SUMS.txt" not in listed
+    assert listed["matrix_provenance.json"] == train.sha256_file(
+        output_root / "matrix_provenance.json"
+    )
+    assert listed["matrix_manifest.json"] == train.sha256_file(
+        output_root / "matrix_manifest.json"
+    )
+    assert listed["artifact.bin"] == train.sha256_file(
+        output_root / "artifact.bin"
+    )
+
+    for rel, digest in listed.items():
+        assert digest == train.sha256_file(output_root / rel)
+
+
 def test_cross_arm_initialization_manifest_exact():
     r22 = torch.zeros(24576, 2, dtype=torch.float64)
     c22 = torch.zeros(24576, 2, dtype=torch.float64)

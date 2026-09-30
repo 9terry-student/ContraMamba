@@ -2041,6 +2041,38 @@ def matrix_worker_cells(worker_index: int) -> tuple[tuple[int, str], ...]:
     return MATRIX_WORKER_CELLS[worker_index]
 
 
+def _finalize_matrix_provenance_and_checksums(
+    *,
+    output_root: Path,
+    top_provenance: dict[str, Any],
+    manifest: Mapping[str, Any],
+) -> None:
+    """Finalize provenance bytes before hashing the output tree."""
+    top_provenance["status"] = "PASS"
+    top_provenance["matrix_manifest_sha256"] = sha256_file(
+        output_root / "matrix_manifest.json"
+    )
+    top_provenance["worker_manifest_sha256"] = dict(
+        manifest["worker_manifest_sha256"]
+    )
+    (output_root / "matrix_provenance.json").write_bytes(
+        canonical_json_bytes(top_provenance) + b"\n"
+    )
+
+    checksums: list[str] = []
+    for path in sorted(output_root.rglob("*")):
+        if path.is_file() and path.name != "SHA256SUMS.txt":
+            checksums.append(
+                f"{sha256_file(path)}  "
+                f"{path.relative_to(output_root).as_posix()}"
+            )
+    (output_root / "SHA256SUMS.txt").write_text(
+        "\n".join(checksums) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+
 def _validate_dual_t4_inventory() -> dict[str, Any]:
     try:
         raw = subprocess.check_output(
@@ -2440,28 +2472,10 @@ def run_matrix(
         canonical_json_bytes(manifest) + b"\n"
     )
 
-    checksums: list[str] = []
-    for path in sorted(output_root.rglob("*")):
-        if path.is_file() and path.name != "SHA256SUMS.txt":
-            checksums.append(
-                f"{sha256_file(path)}  "
-                f"{path.relative_to(output_root).as_posix()}"
-            )
-    (output_root / "SHA256SUMS.txt").write_text(
-        "\n".join(checksums) + "\n",
-        encoding="utf-8",
-        newline="\n",
-    )
-
-    top_provenance["status"] = "PASS"
-    top_provenance["matrix_manifest_sha256"] = sha256_file(
-        output_root / "matrix_manifest.json"
-    )
-    top_provenance["worker_manifest_sha256"] = manifest[
-        "worker_manifest_sha256"
-    ]
-    (output_root / "matrix_provenance.json").write_bytes(
-        canonical_json_bytes(top_provenance) + b"\n"
+    _finalize_matrix_provenance_and_checksums(
+        output_root=output_root,
+        top_provenance=top_provenance,
+        manifest=manifest,
     )
 
     print("RESULT=PASS_GEN5_PHASE2_TRAINING_MATRIX")
