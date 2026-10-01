@@ -201,3 +201,42 @@ def test_parser_modes_are_mutually_exclusive():
             "--expected-head",
             "abc",
         ])
+
+
+def test_checkout_identity_accepts_expected_branch_and_detached_exact_head():
+    head = "a" * 40
+
+    assert train.validate_checkout_identity(
+        train.EXPECTED_BRANCH,
+        head,
+        head,
+    ) == "attached_expected_branch"
+
+    assert train.validate_checkout_identity(
+        "",
+        head,
+        head,
+    ) == "detached_exact_head"
+
+
+def test_checkout_identity_rejects_other_named_branch():
+    head = "a" * 40
+
+    with pytest.raises(Exception, match="BRANCH:wrong-branch"):
+        train.validate_checkout_identity(
+            "wrong-branch",
+            head,
+            head,
+        )
+
+
+def test_checkout_identity_rejects_wrong_head_even_when_detached():
+    expected = "a" * 40
+    observed = "b" * 40
+
+    with pytest.raises(Exception, match="HEAD:"):
+        train.validate_checkout_identity(
+            "",
+            observed,
+            expected,
+        )

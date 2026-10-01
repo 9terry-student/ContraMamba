@@ -186,11 +186,31 @@ def _status_paths() -> set[str]:
     return result
 
 
+def validate_checkout_identity(
+    branch: str,
+    head: str,
+    expected_head: str,
+) -> str:
+    """Accept the local research branch or Kaggle's detached exact HEAD."""
+    require(head == expected_head, f"HEAD:{head}")
+
+    if branch == EXPECTED_BRANCH:
+        return "attached_expected_branch"
+
+    if branch == "":
+        return "detached_exact_head"
+
+    raise Phase3ARunnerError(f"BRANCH:{branch}")
+
+
 def authenticate_repo(expected_head: str, *, allow_opening_worktree: bool = False) -> dict[str, Any]:
     branch = git("branch", "--show-current")
     head = git("rev-parse", "HEAD")
-    require(branch == EXPECTED_BRANCH, f"BRANCH:{branch}")
-    require(head == expected_head, f"HEAD:{head}")
+    checkout_mode = validate_checkout_identity(
+        branch,
+        head,
+        expected_head,
+    )
 
     for ancestor, label in (
         (STATIC_FREEZE_COMMIT, "STATIC_FREEZE"),
@@ -218,6 +238,7 @@ def authenticate_repo(expected_head: str, *, allow_opening_worktree: bool = Fals
 
     return {
         "branch": branch,
+        "checkout_mode": checkout_mode,
         "head": head,
         "static_freeze_commit": STATIC_FREEZE_COMMIT,
         "implementation_authority_commit": IMPLEMENTATION_AUTHORITY_COMMIT,
