@@ -82,7 +82,7 @@ Source SHA256:
 
 Frozen Q SHA256:
 
-`0f0b6ab7fed4038b11519efa326d24ac503ac8dceb1591bdfc819ce2eb722f94`
+`1cfc7e1b55b68b0b71404f75c4920788331c9fcccb14ed25b40a316973721705`
 
 ### seed6202
 
@@ -92,7 +92,7 @@ Source SHA256:
 
 Frozen Q SHA256:
 
-`75a4df4450049a96d4906979a8b307f1b26216c5df93736546be613e11a7bd56`
+`44b81288f73f605bc12fbab90a51cdb87f421f5cbd6fec7b648dd6621d77ff57`
 
 ### seed6203
 
@@ -102,10 +102,32 @@ Source SHA256:
 
 Frozen Q SHA256:
 
-`2a995a6f96c2fd7e253de0c6e0eec0efffbe14223c44e38e1461ac7480940b3f`
+`28dd4b583b8019688ca656cc063924e75bd4b2fee9c35fa6680b5570d0953330`
 
 The implementation-authenticated deterministic float64 thin-QR and
 positive-diagonal sign convention is authoritative.
+
+Because exact CPU QR bytes were observed to depend on multithreaded
+linear-algebra execution state, every static verification, CUDA preflight,
+single-cell runtime, and matrix runtime for this execution must inherit:
+
+`OMP_NUM_THREADS=1`
+
+`MKL_NUM_THREADS=1`
+
+`OPENBLAS_NUM_THREADS=1`
+
+`NUMEXPR_NUM_THREADS=1`
+
+Under that exact single-thread CPU linear-algebra contract, three fresh
+Kaggle processes produced byte-identical seed-specific Q hashes:
+
+- seed6201: `1cfc7e1b55b68b0b71404f75c4920788331c9fcccb14ed25b40a316973721705`
+- seed6202: `44b81288f73f605bc12fbab90a51cdb87f421f5cbd6fec7b648dd6621d77ff57`
+- seed6203: `28dd4b583b8019688ca656cc063924e75bd4b2fee9c35fa6680b5570d0953330`
+
+The earlier local-development Q hashes and multithreaded Kaggle Q hashes are
+not execution identities and must not be used.
 
 No alternative basis derivation is allowed.
 
