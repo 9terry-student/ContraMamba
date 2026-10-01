@@ -1,0 +1,37 @@
+{
+  "execution_head": "976e832112fee33ff9f4469e2df0c94e9f222a77",
+  "files": {
+    "PC.json": {
+      "byte_identical": true,
+      "original_path": "/kaggle/working/gen5-phase3a-cuda-preflight-976e832-retry3/PC.json",
+      "recovery_copy_sha256": "900dae5ccfc16c2ea93c24c3e17a8340cdf019937aa469997bd435617faaf055",
+      "source_sha256": "900dae5ccfc16c2ea93c24c3e17a8340cdf019937aa469997bd435617faaf055"
+    },
+    "PC.log": {
+      "byte_identical": true,
+      "original_path": "/kaggle/working/gen5-phase3a-cuda-preflight-976e832-retry3/PC.log",
+      "recovery_copy_sha256": "27bc7fdc384215e783ecfa9dd0b32b40bfc3402fc8fbb8faa45a655bcb77d415",
+      "source_sha256": "27bc7fdc384215e783ecfa9dd0b32b40bfc3402fc8fbb8faa45a655bcb77d415"
+    },
+    "PR.json": {
+      "byte_identical": true,
+      "original_path": "/kaggle/working/gen5-phase3a-cuda-preflight-976e832-retry3/PR.json",
+      "recovery_copy_sha256": "d42a82b6cb372478da2f27340d1d1f07e937972f3993cb8f3dd58886f6f2b948",
+      "source_sha256": "d42a82b6cb372478da2f27340d1d1f07e937972f3993cb8f3dd58886f6f2b948"
+    },
+    "PR.log": {
+      "byte_identical": true,
+      "original_path": "/kaggle/working/gen5-phase3a-cuda-preflight-976e832-retry3/PR.log",
+      "recovery_copy_sha256": "8e33a10dcffe1405f6a4eb3fdde24c5268ba4034ca99db5b13be5fe39e093eb0",
+      "source_sha256": "8e33a10dcffe1405f6a4eb3fdde24c5268ba4034ca99db5b13be5fe39e093eb0"
+    }
+  },
+  "original_collector_file_count": 0,
+  "recovery_method": "byte-identical copy of original run artifacts into a repository-relative staging path for standard cm collect",
+  "recovery_only": true,
+  "recovery_reason": "cm collector scans only repository descendants while the successful preflight wrote artifacts under /kaggle/working",
+  "registered_command_sha256": "7f9bedd854db78afea91bb67c2fdb7e1eec7295b3b4690a862b3db44853d561b",
+  "run_name": "gen5-phase3a-cuda-preflight-976e832-retry3",
+  "schema": "gen5-phase3a-preflight-collector-recovery-v1",
+  "scientific_execution_repeated": false
+}
