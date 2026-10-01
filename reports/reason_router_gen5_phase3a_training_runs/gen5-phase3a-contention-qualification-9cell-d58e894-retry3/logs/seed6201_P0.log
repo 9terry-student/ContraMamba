@@ -1,0 +1,2 @@
+Fetching 4 files:   0%|          | 0/4 [00:00<?, ?it/s]Fetching 4 files: 100%|██████████| 4/4 [00:00<00:00, 59283.45it/s]
+CELL_PASS seed=6201 pressure=P0 step0_loss=1.26252425 last_preupdate_loss=0.846785188 post_step20_loss=0.843914211 F_R=0.000238260654 F_C=0.000810364417
