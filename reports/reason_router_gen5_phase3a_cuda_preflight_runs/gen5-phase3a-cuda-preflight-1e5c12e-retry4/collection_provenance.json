@@ -1,0 +1,33 @@
+{
+  "copy_purpose": "Expose authenticated successful preflight artifacts to the standard repository-root cm collector.",
+  "execution_head": "1e5c12e9abb5b2ec8305879dedcaa2a267a2f640",
+  "files": {
+    "PC.json": {
+      "byte_identical": true,
+      "collector_copy_sha256": "1ff2b2595350c99703250951dcf07c5b2a0b34b8f6641656c25049bfc1cd3ec6",
+      "source_path": "/kaggle/working/gen5-phase3a-cuda-preflight-1e5c12e-retry4/PC.json",
+      "source_sha256": "1ff2b2595350c99703250951dcf07c5b2a0b34b8f6641656c25049bfc1cd3ec6"
+    },
+    "PC.log": {
+      "byte_identical": true,
+      "collector_copy_sha256": "2448cc95f9509ab6510168c8247d4d8f92945518e67058a50b4fa87a4cbf8bf9",
+      "source_path": "/kaggle/working/gen5-phase3a-cuda-preflight-1e5c12e-retry4/PC.log",
+      "source_sha256": "2448cc95f9509ab6510168c8247d4d8f92945518e67058a50b4fa87a4cbf8bf9"
+    },
+    "PR.json": {
+      "byte_identical": true,
+      "collector_copy_sha256": "67c2c065d4f434fea56008175307eb4fd23ef12dbec57a92f68e393bba406d35",
+      "source_path": "/kaggle/working/gen5-phase3a-cuda-preflight-1e5c12e-retry4/PR.json",
+      "source_sha256": "67c2c065d4f434fea56008175307eb4fd23ef12dbec57a92f68e393bba406d35"
+    },
+    "PR.log": {
+      "byte_identical": true,
+      "collector_copy_sha256": "75bd4fc5cb3dfde9f052a84d7f3e5c26378fdfd8bdd7fdffe40b7f7f1a7a15f4",
+      "source_path": "/kaggle/working/gen5-phase3a-cuda-preflight-1e5c12e-retry4/PR.log",
+      "source_sha256": "75bd4fc5cb3dfde9f052a84d7f3e5c26378fdfd8bdd7fdffe40b7f7f1a7a15f4"
+    }
+  },
+  "run_name": "gen5-phase3a-cuda-preflight-1e5c12e-retry4",
+  "schema": "gen5-phase3a-preflight-collection-provenance-v1",
+  "scientific_execution_repeated": false
+}
