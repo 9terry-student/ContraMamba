@@ -1,0 +1,176 @@
+{
+  "backward_executed": false,
+  "causal_role_outcome_computed": false,
+  "checkpoint_load_count": 0,
+  "contention_computed": false,
+  "contention_training": {
+    "bundle": {
+      "checksums_sha256": "8ff78e3cc2934c2ad5c263b76fd852f7d99acf406ef73706ec49981586c8e1ff",
+      "directory": "data/reason_router_gen5_phase3_xg1_contention_training_v1",
+      "files": {
+        "pair_split_manifest.json": {
+          "bytes": 13184,
+          "sha256": "87d769304f2547dc81d8698ffa256476390791e3978c8a38c86e8d01232e0c5f"
+        },
+        "phase3_seven_cell_labeled_training.jsonl": {
+          "bytes": 3191316,
+          "sha256": "9850f13872739bb8099a554242df8ea177420ae754057662b2ec324cb71b8cc1"
+        },
+        "stressor_target_manifest.jsonl": {
+          "bytes": 913800,
+          "sha256": "b3df794f0b2282c9373a7a71c2c4426e7ffe84766a6eeec48328debd1b0177b2"
+        },
+        "structural_manifest.json": {
+          "bytes": 1095,
+          "sha256": "ddf7afb168efb3c4521ea3b126951341fc413ce1d333d99f0d86314f2489efad"
+        },
+        "structured_source_facts.jsonl": {
+          "bytes": 275158,
+          "sha256": "9eed66a4d53025ff4eed5852431306271640f426388b2aed16bc32766cc37dfe"
+        },
+        "synthetic_reason_router_six_cell.jsonl": {
+          "bytes": 2715872,
+          "sha256": "c666bd9f954370fc9bfe1010a787edf94c95224534f86d80df9a0d71ddbdd4c6"
+        },
+        "tokenizer_anchor_manifest.jsonl": {
+          "bytes": 2573850,
+          "sha256": "b5e00315226c7a164f3908d68c7fe41a741ef19fba74f23932bdcf0548793043"
+        },
+        "tokenizer_eligibility_summary.json": {
+          "bytes": 1905,
+          "sha256": "dc0dc474be348b3fd096bfc4063f7a20243dd5546e1ffe14c146098ee03c09f9"
+        }
+      }
+    },
+    "dev_pair_count": 120,
+    "dev_row_count": 840,
+    "label_counts": {
+      "NOT_ENTITLED": 3000,
+      "REFUTE": 600,
+      "SUPPORT": 600
+    },
+    "labeled_training_row_count": 4200,
+    "non_stressor_cells": [
+      "C3_ROLE",
+      "C4_PREDICATE",
+      "C6_EXPLICIT_DENIAL"
+    ],
+    "outcome_blind_base_row_count": 3600,
+    "pair_range": "xg1_fact_9001..xg1_fact_9600",
+    "rows_per_pair": 7,
+    "source_pair_count": 600,
+    "split_seed": 16384,
+    "stressor_domain_cells": [
+      "C0_SHAM",
+      "C1_TITLE",
+      "C2_NAME",
+      "C5_TITLE_NAME"
+    ],
+    "stressor_target_count": 2400,
+    "train_pair_count": 480,
+    "train_row_count": 3360
+  },
+  "cuda_executed": false,
+  "execution_head": "c77f4adb98a949391b44e498488778e722d65eee",
+  "label_mapping": {
+    "NOT_ENTITLED": 1,
+    "REFUTE": 0,
+    "SUPPORT": 2
+  },
+  "model_instantiated": false,
+  "next_stage": "FREEZE_PHASE3_STATIC_PREPARATION_THEN_DEFINE_TRAINING_STRESSOR_IMPLEMENTATION_AUTHORITY",
+  "overlap": {
+    "assay_claim_overlap_with_prior_and_train": 0,
+    "assay_evidence_overlap_with_prior_and_train": 0,
+    "assay_pair_overlap_with_prior_and_train": 0,
+    "final_pair_coverage": "xg1_fact_001..xg1_fact_9900",
+    "prior_pair_coverage": "xg1_fact_001..xg1_fact_9000",
+    "train_claim_overlap_with_prior": 0,
+    "train_evidence_overlap_with_prior": 0,
+    "train_pair_overlap_with_prior": 0
+  },
+  "ownership_interaction_assay": {
+    "bundle": {
+      "checksums_sha256": "c77154aa8aaff0818ccb3825b43f7f6f39fd924b78099c9c54c086203f92a8aa",
+      "directory": "data/reason_router_gen5_phase3_xg1_ownership_interaction_assay_v1",
+      "files": {
+        "structural_manifest.json": {
+          "bytes": 1098,
+          "sha256": "d52918fc6c6090e2cccca6ffaeabb63dae9cd7cf0389430c568d16e881aa9920"
+        },
+        "structured_source_facts.jsonl": {
+          "bytes": 137580,
+          "sha256": "c96cc4d084766ae1a2ea12f9fdcf6ec82d3146db759eabe9c02a28443bdcfb01"
+        },
+        "synthetic_reason_router_six_cell.jsonl": {
+          "bytes": 1357953,
+          "sha256": "2e8ca5241b24f7844346cb15e414a476db3b51bd1ecbb9154211e23252e2775c"
+        },
+        "tokenizer_anchor_manifest.jsonl": {
+          "bytes": 1292335,
+          "sha256": "82e6a18736701f17d3fda3e8c79c9abe5e947782bc7a33c99bd734c76a900c32"
+        },
+        "tokenizer_eligibility_summary.json": {
+          "bytes": 1423,
+          "sha256": "31c29d3bad8df823bb8543b20d12fcef9ecf64d640a142ea70b8049d6f695b37"
+        }
+      }
+    },
+    "labels_present": false,
+    "pair_range": "xg1_fact_9601..xg1_fact_9900",
+    "row_count": 1800,
+    "rows_per_pair": 6,
+    "source_pair_count": 300
+  },
+  "p_value_count": 0,
+  "prior_lineage": [
+    {
+      "byte_regeneration": true,
+      "label": "phase1b_restoration",
+      "pair_range": "xg1_fact_8401..xg1_fact_8700",
+      "rows_sha256": "8d601c44a25f7733d3613e2ce361fe1add467ae84bd7db7ce41c511802590de2",
+      "source_sha256": "a2681a1fe7a76ffa7ba42c08bbe9809bc8e751d282e4909fb84ee65c49bb0245"
+    },
+    {
+      "byte_regeneration": true,
+      "label": "phase2_ownership_assay",
+      "pair_range": "xg1_fact_8701..xg1_fact_9000",
+      "rows_sha256": "529027ba79d3bd9fc4e300fbf317f0d84668152ed4fa0593c55af601e7934976",
+      "source_sha256": "f316d7e2a187e90451ff0743829d6c615c063969b66ca51f91e15158bcc1ee06"
+    }
+  ],
+  "repository": {
+    "branch": "gen5-causal-role-state-ownership",
+    "frozen_dependency_blobs": {
+      "scripts/build_reason_router_gen4_mamba1_five_scale_ladder_holdouts.py": "4ff5ee70f463cae94d5188999b350efecbe212bb",
+      "scripts/reason_router_gen4_xg1_tokenizer_anchor_eligibility.py": "6c98ce022ca134e385db28851fd364dc6daff423"
+    },
+    "head": "c77f4adb98a949391b44e498488778e722d65eee",
+    "label_amendment_commit": "14d2bd7db70fc6000b480221a17fa8475dfefbe5",
+    "phase3_design_commit": "ae52dbf98cce21226036ae38121edcdfa6f79d7b",
+    "stressor_domain_amendment_commit": "67e97cae7f6fd20072a9422d0ac40bc6f781ed13"
+  },
+  "result": "PASS_GEN5_PHASE3_STATIC_PREPARATION",
+  "schema_version": "GEN5_PHASE3_STATIC_PREPARATION_SUMMARY_V1",
+  "scientific_model_forward_count": 0,
+  "task_evaluation_executed": false,
+  "tokenizer": {
+    "active_encoding_validation_commit": "17f1ddfc8286796f27c4a61716a21e14126bb836",
+    "add_special_tokens": false,
+    "analysis_reference": "40e5d2bd7452abb3ca8fadbafe9131ee0e2c2f37",
+    "claim_budget": 63,
+    "claimed_historical_snapshot": false,
+    "effective_pad_token_id": 0,
+    "eos_token_id": 0,
+    "evidence_budget": 64,
+    "file_sha256": {
+      "special_tokens_map.json": "57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b03484e6ff4723ae8",
+      "tokenizer.json": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf",
+      "tokenizer_config.json": "9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84dc6b46acb"
+    },
+    "max_length": 128,
+    "serialization": "claim[:63]+EOS(0)+evidence[:64]",
+    "tokenizers_version": "0.22.2"
+  },
+  "training_executed": false
+}
