@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import inspect
 from pathlib import Path
 
 import pytest
@@ -240,3 +241,41 @@ def test_checkout_identity_rejects_wrong_head_even_when_detached():
             observed,
             expected,
         )
+
+
+def test_phase3a_loss_gate_uses_post_step20_matched_rng_loss():
+    assert train.phase3a_loss_decreased_from_step0(1.0, 0.9)
+    assert not train.phase3a_loss_decreased_from_step0(1.0, 1.0)
+    assert not train.phase3a_loss_decreased_from_step0(1.0, 1.1)
+
+    with pytest.raises(Exception, match="STEP0_LOSS_NONFINITE"):
+        train.phase3a_loss_decreased_from_step0(float("nan"), 0.9)
+
+    with pytest.raises(Exception, match="POST_STEP20_LOSS_NONFINITE"):
+        train.phase3a_loss_decreased_from_step0(1.0, float("nan"))
+
+    source = inspect.getsource(train.run_cell)
+    assert '"post_step20_matched_rng_loss": post_step20_loss' in source
+    assert '"loss_gate_rng_policy": "MATCH_STEP0_TRAIN_MODE_RNG"' in source
+    assert "phase3a_loss_decreased_from_step0(" in source
+    assert "bool(losses[-1] < losses[0])" not in source
+
+
+def test_post_authority_scope_is_bounded():
+    assert train.post_authority_path_allowed(
+        "scripts/train_reason_router_gen5_phase3a_contention.py"
+    )
+    assert train.post_authority_path_allowed(
+        "reports/reason_router_gen5_phase3a_cuda_preflight_runs/"
+        "gen5-phase3a-cuda-preflight-976e832-retry3/PR.json"
+    )
+    assert train.post_authority_path_allowed(
+        train.PHASE3A_TRAINING_EXECUTION_AUTHORITY_PATH
+    )
+
+    assert not train.post_authority_path_allowed(
+        "reports/unrelated_scientific_result.json"
+    )
+    assert not train.post_authority_path_allowed(
+        "scripts/unrelated_training_change.py"
+    )

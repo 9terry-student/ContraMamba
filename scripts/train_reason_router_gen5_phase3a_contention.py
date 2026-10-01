@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import subprocess
 import sys
 from collections import Counter
@@ -83,6 +84,25 @@ AUTHORIZED_IMPLEMENTATION_PATHS = frozenset({
     "tests/test_train_reason_router_gen5_phase3a_contention.py",
 })
 
+PHASE3A_PREFLIGHT_EVIDENCE_PREFIX = (
+    "reports/reason_router_gen5_phase3a_cuda_preflight_runs/"
+)
+
+PHASE3A_TRAINING_EXECUTION_AUTHORITY_PATH = (
+    "reports/reason_router_gen5_phase3a_training_execution_"
+    "authority_spec_candidate.md"
+)
+
+
+def post_authority_path_allowed(path: str) -> bool:
+    normalized = path.replace("\\", "/")
+    return (
+        normalized in AUTHORIZED_IMPLEMENTATION_PATHS
+        or normalized == PHASE3A_TRAINING_EXECUTION_AUTHORITY_PATH
+        or normalized.startswith(PHASE3A_PREFLIGHT_EVIDENCE_PREFIX)
+    )
+
+
 TRAIN_ROOT = Path("data/reason_router_gen5_phase3_xg1_contention_training_v1")
 ASSAY_ROOT = Path("data/reason_router_gen5_phase3_xg1_ownership_interaction_assay_v1")
 STATIC_REPORT_ROOT = Path("reports/reason_router_gen5_phase3_static_preparation_c77f4ad_v1")
@@ -144,6 +164,18 @@ class Phase3ARunnerError(RuntimeError):
 def require(ok: bool, message: str) -> None:
     if not ok:
         raise Phase3ARunnerError(message)
+
+
+def phase3a_loss_decreased_from_step0(
+    step0_loss: float,
+    post_step20_matched_rng_loss: float,
+) -> bool:
+    require(math.isfinite(step0_loss), "STEP0_LOSS_NONFINITE")
+    require(
+        math.isfinite(post_step20_matched_rng_loss),
+        "POST_STEP20_LOSS_NONFINITE",
+    )
+    return post_step20_matched_rng_loss < step0_loss
 
 
 def git(*args: str) -> str:
@@ -234,7 +266,14 @@ def authenticate_repo(expected_head: str, *, allow_opening_worktree: bool = Fals
             for line in git("diff", "--name-only", f"{IMPLEMENTATION_AUTHORITY_COMMIT}..{head}").splitlines()
             if line.strip()
         }
-        require(changed <= AUTHORIZED_IMPLEMENTATION_PATHS, f"POST_AUTHORITY_SCOPE:{sorted(changed)}")
+        unauthorized = {
+            path for path in changed
+            if not post_authority_path_allowed(path)
+        }
+        require(
+            not unauthorized,
+            f"POST_AUTHORITY_SCOPE:{sorted(unauthorized)}",
+        )
 
     return {
         "branch": branch,
@@ -874,6 +913,12 @@ def run_cell(args: argparse.Namespace) -> dict[str, Any]:
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed_all(args.seed)
 
+    # Frozen-parent downstream heads contain dropout.  The Phase3A
+    # qualification compares the final correction against step 0 under the
+    # exact same train-mode RNG state so stochastic head noise cannot decide
+    # the loss-decrease gate.
+    step0_rng_state = p2train._capture_rng_state()
+
     losses = []
     grad_norms = []
 
@@ -922,6 +967,69 @@ def run_cell(args: argparse.Namespace) -> dict[str, Any]:
     require(len(losses) == TOTAL_OPTIMIZER_STEPS, "LOSS_COUNT")
     require(parent_parameter_fingerprint(model) == parent_before, "PARENT_MUTATION")
 
+    # The last element of `losses` was measured before optimizer step 20.
+    # Qualification instead needs the objective under the final parameters.
+    # Replay only the forward objective with the exact RNG state used for
+    # step 0.  No backward and no optimizer step are performed.
+    post_training_rng_state = p2train._capture_rng_state()
+    optimizer.zero_grad(set_to_none=True)
+    p2train._restore_rng_state(step0_rng_state)
+
+    post_output, post_chunks = _streamed_forward(
+        model,
+        features,
+        active,
+        targets,
+        pressure=args.pressure,
+        strong_mask=strong_mask,
+        planes=planes,
+    )
+    require(
+        post_chunks == TRAIN_ROWS // BACKBONE_STREAM_ROWS,
+        f"POST_STEP20_CHUNKS:{post_chunks}",
+    )
+
+    post_logits = post_output["logits"]
+    require(
+        tuple(post_logits.shape) == (TRAIN_ROWS, 3),
+        "POST_STEP20_LOGIT_SHAPE",
+    )
+    require(
+        bool(torch.isfinite(post_logits).all().item()),
+        "POST_STEP20_LOGIT_NONFINITE",
+    )
+
+    post_step20_loss_tensor = phase2_final_three_way_ce(
+        post_logits,
+        labels,
+    )
+    require(
+        bool(torch.isfinite(post_step20_loss_tensor).item()),
+        "POST_STEP20_LOSS_NONFINITE",
+    )
+    post_step20_loss = float(
+        post_step20_loss_tensor.detach().cpu().item()
+    )
+
+    del (
+        post_output,
+        post_logits,
+        post_step20_loss_tensor,
+    )
+
+    p2train._restore_rng_state(post_training_rng_state)
+    p2train._require_rng_state_equal(
+        post_training_rng_state,
+        p2train._capture_rng_state(),
+        "POST_STEP20_DIAGNOSTIC_RESTORE",
+    )
+
+    require(
+        parent_parameter_fingerprint(model) == parent_before,
+        "PARENT_MUTATION_AFTER_POST_STEP20_DIAGNOSTIC",
+    )
+    torch.cuda.synchronize()
+
     r22, c22, _ = load_frozen_owner_bases(ROOT)
     geometry = contention_fractions(
         wrapper.correction.A_theta.weight,
@@ -941,7 +1049,7 @@ def run_cell(args: argparse.Namespace) -> dict[str, Any]:
 
     audit = correction_parameter_audit(model)
     report = {
-        "schema_version": "GEN5_PHASE3A_TRAINING_REPORT_V1",
+        "schema_version": "GEN5_PHASE3A_TRAINING_REPORT_V2",
         "result": "PASS_GEN5_PHASE3A_TRAINING_CELL",
         "execution_commit": args.expected_head,
         "implementation_authority_commit": IMPLEMENTATION_AUTHORITY_COMMIT,
@@ -960,7 +1068,14 @@ def run_cell(args: argparse.Namespace) -> dict[str, Any]:
         "training_losses": losses,
         "step0_loss": losses[0],
         "last_preupdate_loss": losses[-1],
-        "loss_decreased_from_step0": bool(losses[-1] < losses[0]),
+        "post_step20_matched_rng_loss": post_step20_loss,
+        "loss_gate_rng_policy": "MATCH_STEP0_TRAIN_MODE_RNG",
+        "loss_decreased_from_step0": phase3a_loss_decreased_from_step0(
+            losses[0],
+            post_step20_loss,
+        ),
+        "post_step20_diagnostic_backward_executed": False,
+        "post_step20_diagnostic_optimizer_step_executed": False,
         "gradient_norms_before_clip": grad_norms,
         "optimizer_steps": TOTAL_OPTIMIZER_STEPS,
         "optimizer": "torch.optim.AdamW",
@@ -996,6 +1111,10 @@ def run_cell(args: argparse.Namespace) -> dict[str, Any]:
         "training_report_sha256": sha256_file(cell_dir / "training_report.json"),
         "final_correction_file_sha256": sha256_file(checkpoint_out),
         "training_executed": True,
+        "post_step20_matched_rng_loss": post_step20_loss,
+        "loss_gate_rng_policy": "MATCH_STEP0_TRAIN_MODE_RNG",
+        "post_step20_diagnostic_backward_executed": False,
+        "post_step20_diagnostic_optimizer_step_executed": False,
         "task_evaluation_executed": False,
         "confirmatory_assay_loaded": False,
         "scientific_p_value_count": 0,
@@ -1004,7 +1123,9 @@ def run_cell(args: argparse.Namespace) -> dict[str, Any]:
 
     print(
         f"CELL_PASS seed={args.seed} pressure={args.pressure} "
-        f"step0_loss={losses[0]:.9g} last_loss={losses[-1]:.9g} "
+        f"step0_loss={losses[0]:.9g} "
+        f"last_preupdate_loss={losses[-1]:.9g} "
+        f"post_step20_loss={post_step20_loss:.9g} "
         f"F_R={geometry['F_R']:.9g} F_C={geometry['F_C']:.9g}"
     )
     return report
