@@ -1,0 +1,1195 @@
+{
+  "basis_geometry": {
+    "c22_orthonormality_max_abs": 1.7763568394002505e-15,
+    "r22_c22_cross_max_abs": 1.4069115609940258e-15,
+    "r22_orthonormality_max_abs": 3.885780586188048e-15
+  },
+  "cells": [
+    {
+      "A_singular_values": [
+        0.8657385150636397,
+        0.5853387329371739
+      ],
+      "BA_operator": {
+        "effective_rank": 2,
+        "frobenius_norm_sq": 7.037060298586503,
+        "nonzero_singular_values": [
+          2.5445134195972585,
+          0.7500078373430304
+        ]
+      },
+      "B_singular_values": [
+        2.9391785434223046,
+        1.281299264235051
+      ],
+      "B_vs_C22": {
+        "affinity": 0.0004668721533968899,
+        "affinity_over_null_expectation": 5.736925020940983,
+        "principal_angles_deg": [
+          88.2489526428543,
+          89.99054580825164
+        ],
+        "principal_cosines": [
+          0.030556784509475472,
+          0.0001650067733748971
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "B_vs_R22": {
+        "affinity": 0.00027189457270728915,
+        "affinity_over_null_expectation": 3.3410405094271693,
+        "principal_angles_deg": [
+          88.66869569226506,
+          89.8855348997983
+        ],
+        "principal_cosines": [
+          0.023233552770603856,
+          0.001997791548221249
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "F_C": 0.0008103644172924503,
+      "F_R": 0.0002382606537496234,
+      "post_step20_matched_rng_loss": 0.8439142107963562,
+      "pressure": "P0",
+      "seed": 6201
+    },
+    {
+      "A_singular_values": [
+        0.8658907765526751,
+        0.5851170643883479
+      ],
+      "BA_operator": {
+        "effective_rank": 2,
+        "frobenius_norm_sq": 7.041846506971551,
+        "nonzero_singular_values": [
+          2.545414964070701,
+          0.7501394321434527
+        ]
+      },
+      "B_singular_values": [
+        2.9397116538840984,
+        1.2820057603498667
+      ],
+      "B_vs_C22": {
+        "affinity": 0.0004656187934892714,
+        "affinity_over_null_expectation": 5.721523734396167,
+        "principal_angles_deg": [
+          88.25129458852147,
+          89.99282775795697
+        ],
+        "principal_cosines": [
+          0.03051592890830784,
+          0.0001251792380739339
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "B_vs_R22": {
+        "affinity": 0.00026924608814335953,
+        "affinity_over_null_expectation": 3.308495931105602,
+        "principal_angles_deg": [
+          88.67504163735724,
+          89.88791167202314
+        ],
+        "principal_cosines": [
+          0.023122824889724163,
+          0.0019563091284027145
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "F_C": 0.0008091647005862217,
+      "F_R": 0.00023592660252971185,
+      "post_step20_matched_rng_loss": 0.8439738750457764,
+      "pressure": "PR",
+      "seed": 6201
+    },
+    {
+      "A_singular_values": [
+        0.8659241208857222,
+        0.5852467550506486
+      ],
+      "BA_operator": {
+        "effective_rank": 2,
+        "frobenius_norm_sq": 7.046660457460034,
+        "nonzero_singular_values": [
+          2.5463176315742997,
+          0.7502845970655957
+        ]
+      },
+      "B_singular_values": [
+        2.940633853138467,
+        1.2819727789703899
+      ],
+      "B_vs_C22": {
+        "affinity": 0.00045440050950234893,
+        "affinity_over_null_expectation": 5.583673460764864,
+        "principal_angles_deg": [
+          88.27248994929477,
+          89.99443420924977
+        ],
+        "principal_cosines": [
+          0.030146170280123008,
+          9.714137391564795e-05
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "B_vs_R22": {
+        "affinity": 0.00028447766163216187,
+        "affinity_over_null_expectation": 3.4956615061360052,
+        "principal_angles_deg": [
+          88.63737203100531,
+          89.89339224668304
+        ],
+        "principal_cosines": [
+          0.02378010272012469,
+          0.0018606552299236015
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "F_C": 0.0007862405193348137,
+      "F_R": 0.00024792909899578437,
+      "post_step20_matched_rng_loss": 0.8440350294113159,
+      "pressure": "PC",
+      "seed": 6201
+    },
+    {
+      "A_singular_values": [
+        0.8211092539522228,
+        0.5921862413138901
+      ],
+      "BA_operator": {
+        "effective_rank": 2,
+        "frobenius_norm_sq": 7.078792420089764,
+        "nonzero_singular_values": [
+          2.58903629153825,
+          0.6129302580127929
+        ]
+      },
+      "B_singular_values": [
+        3.1549086835969056,
+        1.0344348571691084
+      ],
+      "B_vs_C22": {
+        "affinity": 0.0005617836787627956,
+        "affinity_over_null_expectation": 6.903197844637233,
+        "principal_angles_deg": [
+          88.31859999894698,
+          89.07143387945908
+        ],
+        "principal_cosines": [
+          0.029341754188270404,
+          0.016205826689209887
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "B_vs_R22": {
+        "affinity": 0.0003330185656049786,
+        "affinity_over_null_expectation": 4.092132134153978,
+        "principal_angles_deg": [
+          88.52356188135022,
+          89.91583430211287
+        ],
+        "principal_cosines": [
+          0.0257658546175904,
+          0.0014689680170625456
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "F_C": 0.0007863350629294575,
+      "F_R": 0.0001393466721239927,
+      "post_step20_matched_rng_loss": 0.839759111404419,
+      "pressure": "P0",
+      "seed": 6202
+    },
+    {
+      "A_singular_values": [
+        0.821350664360384,
+        0.5921585504491571
+      ],
+      "BA_operator": {
+        "effective_rank": 2,
+        "frobenius_norm_sq": 7.087817779206789,
+        "nonzero_singular_values": [
+          2.5908611338812073,
+          0.6125817203855939
+        ]
+      },
+      "B_singular_values": [
+        3.156176910402751,
+        1.0339039952541136
+      ],
+      "B_vs_C22": {
+        "affinity": 0.0005619953523873705,
+        "affinity_over_null_expectation": 6.905798890136009,
+        "principal_angles_deg": [
+          88.31403821834874,
+          89.0789842249486
+        ],
+        "principal_cosines": [
+          0.02942133790585844,
+          0.016074065465962194
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "B_vs_R22": {
+        "affinity": 0.00032536709439809743,
+        "affinity_over_null_expectation": 3.998110855963821,
+        "principal_angles_deg": [
+          88.54029034317041,
+          89.92290909919468
+        ],
+        "principal_cosines": [
+          0.025473983717402653,
+          0.0013454896364146856
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "F_C": 0.0007907451808824067,
+      "F_R": 0.00013761376782440917,
+      "post_step20_matched_rng_loss": 0.8397899866104126,
+      "pressure": "PR",
+      "seed": 6202
+    },
+    {
+      "A_singular_values": [
+        0.8215283565795745,
+        0.5922517081102346
+      ],
+      "BA_operator": {
+        "effective_rank": 2,
+        "frobenius_norm_sq": 7.095001206322631,
+        "nonzero_singular_values": [
+          2.5919137783347543,
+          0.6139903680035128
+        ]
+      },
+      "B_singular_values": [
+        3.1567732935066313,
+        1.0361194690328583
+      ],
+      "B_vs_C22": {
+        "affinity": 0.0005573427109854622,
+        "affinity_over_null_expectation": 6.84862723258936,
+        "principal_angles_deg": [
+          88.3313360405359,
+          89.06419981152742
+        ],
+        "principal_cosines": [
+          0.029119563313635424,
+          0.016332068282801853
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "B_vs_R22": {
+        "affinity": 0.0003625989606323002,
+        "affinity_over_null_expectation": 4.455616028249706,
+        "principal_angles_deg": [
+          88.45887945592641,
+          89.92123117504475
+        ],
+        "principal_cosines": [
+          0.026894384454947077,
+          0.0013747749103404094
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "F_C": 0.0007705147833507834,
+      "F_R": 0.00014631138115233833,
+      "post_step20_matched_rng_loss": 0.8398560881614685,
+      "pressure": "PC",
+      "seed": 6202
+    },
+    {
+      "A_singular_values": [
+        0.8427795915802282,
+        0.5871222707829535
+      ],
+      "BA_operator": {
+        "effective_rank": 2,
+        "frobenius_norm_sq": 6.8112845509783515,
+        "nonzero_singular_values": [
+          2.4680921301538765,
+          0.8484136892170306
+        ]
+      },
+      "B_singular_values": [
+        2.9285651666907,
+        1.445012411374165
+      ],
+      "B_vs_C22": {
+        "affinity": 0.0003821720244618804,
+        "affinity_over_null_expectation": 4.696129836587587,
+        "principal_angles_deg": [
+          88.49644042227438,
+          89.5009736665144
+        ],
+        "principal_cosines": [
+          0.02623905331945995,
+          0.008709542457689646
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "B_vs_R22": {
+        "affinity": 0.0001734039284210572,
+        "affinity_over_null_expectation": 2.1307874724379507,
+        "principal_angles_deg": [
+          88.95121220242324,
+          89.80335262733401
+        ],
+        "principal_cosines": [
+          0.01830377802109574,
+          0.003432137380200111
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "F_C": 0.0005750541978100029,
+      "F_R": 0.00023961367801937766,
+      "post_step20_matched_rng_loss": 0.8429601788520813,
+      "pressure": "P0",
+      "seed": 6203
+    },
+    {
+      "A_singular_values": [
+        0.8432055921184565,
+        0.5872379086189227
+      ],
+      "BA_operator": {
+        "effective_rank": 2,
+        "frobenius_norm_sq": 6.819507462096163,
+        "nonzero_singular_values": [
+          2.469474408985781,
+          0.8492370725895624
+        ]
+      },
+      "B_singular_values": [
+        2.9287279265271886,
+        1.4461284985279432
+      ],
+      "B_vs_C22": {
+        "affinity": 0.00038179029705429237,
+        "affinity_over_null_expectation": 4.691439170203145,
+        "principal_angles_deg": [
+          88.49455225440474,
+          89.50924374646719
+        ],
+        "principal_cosines": [
+          0.026271996704935883,
+          0.008565207717529262
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "B_vs_R22": {
+        "affinity": 0.0001733061003149951,
+        "affinity_over_null_expectation": 2.12958536067066,
+        "principal_angles_deg": [
+          88.9515994918472,
+          89.8029215218355
+        ],
+        "principal_cosines": [
+          0.018297019677473804,
+          0.003439661546159245
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "F_C": 0.000577980776818967,
+      "F_R": 0.00023838288516485356,
+      "post_step20_matched_rng_loss": 0.8430060148239136,
+      "pressure": "PR",
+      "seed": 6203
+    },
+    {
+      "A_singular_values": [
+        0.8432706648135609,
+        0.5870188690116827
+      ],
+      "BA_operator": {
+        "effective_rank": 2,
+        "frobenius_norm_sq": 6.828363302721611,
+        "nonzero_singular_values": [
+          2.471236293656281,
+          0.8493258995447972
+        ]
+      },
+      "B_singular_values": [
+        2.9305845245988573,
+        1.4468227714056698
+      ],
+      "B_vs_C22": {
+        "affinity": 0.0003740735972716685,
+        "affinity_over_null_expectation": 4.596616363274262,
+        "principal_angles_deg": [
+          88.5123448423994,
+          89.5066362479589
+        ],
+        "principal_cosines": [
+          0.025961563388559733,
+          0.008610715473474424
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "B_vs_R22": {
+        "affinity": 0.00017831571225558244,
+        "affinity_over_null_expectation": 2.191143472196597,
+        "principal_angles_deg": [
+          88.93564721307997,
+          89.80497307796622
+        ],
+        "principal_cosines": [
+          0.018575392143672313,
+          0.0034038553465095766
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "F_C": 0.0005633547768563305,
+      "F_R": 0.00024441715090972474,
+      "post_step20_matched_rng_loss": 0.8430725336074829,
+      "pressure": "PC",
+      "seed": 6203
+    }
+  ],
+  "mode": "READ_ONLY_CPU_NO_FORWARD_NO_BACKWARD_NO_TRAINING",
+  "null_reference": {
+    "A_expected_random_affinity": 0.0026041666666666665,
+    "B_expected_random_affinity": 8.138020833333333e-05,
+    "interpretation": "DESCRIPTIVE_REFERENCE_ONLY_NO_P_VALUE"
+  },
+  "repository_head": "ae61d962443cb374086420c62b33dd86441b4d8f",
+  "schema_version": "GEN5_OPTIMIZATION_PATH_BYPASS_STAGE_A_STATIC_GEOMETRY_AUDIT_V2",
+  "source_execution_commit": "d58e89477fe43d0e5fa6aaaa7cec31d8c78cda4e",
+  "summary": {
+    "within_pressure_across_seed": {
+      "mean_A_affinity": 0.1442479041531371,
+      "mean_BA_signed_cosine": 0.4510457788826586,
+      "mean_B_affinity": 0.47797477201701416
+    },
+    "within_seed_across_pressure": {
+      "mean_A_affinity": 0.9999642374840724,
+      "mean_BA_signed_cosine": 0.9997925663338935,
+      "mean_B_affinity": 0.999281353911041
+    }
+  },
+  "within_pressure_across_seed": [
+    {
+      "A_read_subspace": {
+        "affinity": 0.146703394440272,
+        "affinity_over_null_expectation": 56.33410346506445,
+        "principal_angles_deg": [
+          57.25368670383843,
+          88.36714073495354
+        ],
+        "principal_cosines": [
+          0.5409203534914777,
+          0.028494912865260524
+        ],
+        "random_rank2_null_affinity_expectation": 0.0026041666666666665
+      },
+      "BA_operator": {
+        "absolute_frobenius_cosine": 0.4586174591553206,
+        "signed_frobenius_cosine": 0.4586174591553206
+      },
+      "B_write_subspace": {
+        "affinity": 0.4255801479874064,
+        "affinity_over_null_expectation": 5229.52885846925,
+        "principal_angles_deg": [
+          22.885159092595934,
+          87.19659940703241
+        ],
+        "principal_cosines": [
+          0.9212861665976531,
+          0.048909050395752066
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "cell_a": [
+        6201,
+        "P0"
+      ],
+      "cell_b": [
+        6202,
+        "P0"
+      ]
+    },
+    {
+      "A_read_subspace": {
+        "affinity": 0.13808567854027973,
+        "affinity_over_null_expectation": 53.02490055946742,
+        "principal_angles_deg": [
+          58.29675515267153,
+          89.97074625394457
+        ],
+        "principal_cosines": [
+          0.5255198344445065,
+          0.00051057416502629
+        ],
+        "random_rank2_null_affinity_expectation": 0.0026041666666666665
+      },
+      "BA_operator": {
+        "absolute_frobenius_cosine": 0.4307045297051352,
+        "signed_frobenius_cosine": 0.4307045297051352
+      },
+      "B_write_subspace": {
+        "affinity": 0.5111084636471417,
+        "affinity_over_null_expectation": 6280.500801296077,
+        "principal_angles_deg": [
+          25.07351869702229,
+          63.30574115742342
+        ],
+        "principal_cosines": [
+          0.9057647612857557,
+          0.449229478671248
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "cell_a": [
+        6201,
+        "P0"
+      ],
+      "cell_b": [
+        6203,
+        "P0"
+      ]
+    },
+    {
+      "A_read_subspace": {
+        "affinity": 0.14750928751056586,
+        "affinity_over_null_expectation": 56.64356640405729,
+        "principal_angles_deg": [
+          57.14820793826935,
+          88.43357717027646
+        ],
+        "principal_cosines": [
+          0.5424678123210898,
+          0.027335830272787538
+        ],
+        "random_rank2_null_affinity_expectation": 0.0026041666666666665
+      },
+      "BA_operator": {
+        "absolute_frobenius_cosine": 0.46314009597756683,
+        "signed_frobenius_cosine": 0.46314009597756683
+      },
+      "B_write_subspace": {
+        "affinity": 0.4977351008057561,
+        "affinity_over_null_expectation": 6116.168918701132,
+        "principal_angles_deg": [
+          20.727295594258624,
+          69.66783815593462
+        ],
+        "principal_cosines": [
+          0.9352755299788862,
+          0.3474620621510005
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "cell_a": [
+        6202,
+        "P0"
+      ],
+      "cell_b": [
+        6203,
+        "P0"
+      ]
+    },
+    {
+      "A_read_subspace": {
+        "affinity": 0.1468534573568139,
+        "affinity_over_null_expectation": 56.39172762501654,
+        "principal_angles_deg": [
+          57.23472609979933,
+          88.36817783237927
+        ],
+        "principal_cosines": [
+          0.5411986561955544,
+          0.02847681944589171
+        ],
+        "random_rank2_null_affinity_expectation": 0.0026041666666666665
+      },
+      "BA_operator": {
+        "absolute_frobenius_cosine": 0.4589062204176511,
+        "signed_frobenius_cosine": 0.4589062204176511
+      },
+      "B_write_subspace": {
+        "affinity": 0.42567576440396115,
+        "affinity_over_null_expectation": 5230.703792995875,
+        "principal_angles_deg": [
+          22.88824470530544,
+          87.06490443032165
+        ],
+        "principal_cosines": [
+          0.9212652221917961,
+          0.0512046793547524
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "cell_a": [
+        6201,
+        "PR"
+      ],
+      "cell_b": [
+        6202,
+        "PR"
+      ]
+    },
+    {
+      "A_read_subspace": {
+        "affinity": 0.1382308738520915,
+        "affinity_over_null_expectation": 53.080655559203144,
+        "principal_angles_deg": [
+          58.27816658158221,
+          89.95965959099321
+        ],
+        "principal_cosines": [
+          0.5257958272804508,
+          0.00070407290059942
+        ],
+        "random_rank2_null_affinity_expectation": 0.0026041666666666665
+      },
+      "BA_operator": {
+        "absolute_frobenius_cosine": 0.4309086946750966,
+        "signed_frobenius_cosine": 0.4309086946750966
+      },
+      "B_write_subspace": {
+        "affinity": 0.5104612298687043,
+        "affinity_over_null_expectation": 6272.547592626639,
+        "principal_angles_deg": [
+          25.073538297335123,
+          63.39823130221393
+        ],
+        "principal_cosines": [
+          0.9057646163145192,
+          0.44778668980890945
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "cell_a": [
+        6201,
+        "PR"
+      ],
+      "cell_b": [
+        6203,
+        "PR"
+      ]
+    },
+    {
+      "A_read_subspace": {
+        "affinity": 0.14775454960923196,
+        "affinity_over_null_expectation": 56.73774704994507,
+        "principal_angles_deg": [
+          57.11700300153188,
+          88.43986788596457
+        ],
+        "principal_cosines": [
+          0.5429252618232934,
+          0.027226077436388635
+        ],
+        "random_rank2_null_affinity_expectation": 0.0026041666666666665
+      },
+      "BA_operator": {
+        "absolute_frobenius_cosine": 0.4635217397907993,
+        "signed_frobenius_cosine": 0.4635217397907993
+      },
+      "B_write_subspace": {
+        "affinity": 0.4977463617092128,
+        "affinity_over_null_expectation": 6116.307292682807,
+        "principal_angles_deg": [
+          20.739291100671966,
+          69.65367210446115
+        ],
+        "principal_cosines": [
+          0.935201412313983,
+          0.3476938909793457
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "cell_a": [
+        6202,
+        "PR"
+      ],
+      "cell_b": [
+        6203,
+        "PR"
+      ]
+    },
+    {
+      "A_read_subspace": {
+        "affinity": 0.14695708003517335,
+        "affinity_over_null_expectation": 56.43151873350657,
+        "principal_angles_deg": [
+          57.22008913324463,
+          88.39384152090594
+        ],
+        "principal_cosines": [
+          0.5414134562518772,
+          0.028029082392104512
+        ],
+        "random_rank2_null_affinity_expectation": 0.0026041666666666665
+      },
+      "BA_operator": {
+        "absolute_frobenius_cosine": 0.45905074583914085,
+        "signed_frobenius_cosine": 0.45905074583914085
+      },
+      "B_write_subspace": {
+        "affinity": 0.42568863212880664,
+        "affinity_over_null_expectation": 5230.861911598777,
+        "principal_angles_deg": [
+          22.884198292096734,
+          87.07887082668647
+        ],
+        "principal_cosines": [
+          0.9212926877376002,
+          0.050961238003427264
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "cell_a": [
+        6201,
+        "PC"
+      ],
+      "cell_b": [
+        6202,
+        "PC"
+      ]
+    },
+    {
+      "A_read_subspace": {
+        "affinity": 0.13831040110971413,
+        "affinity_over_null_expectation": 53.11119402613023,
+        "principal_angles_deg": [
+          58.26804987465673,
+          89.92762983879746
+        ],
+        "principal_cosines": [
+          0.5259460113022503,
+          0.0012630972573225512
+        ],
+        "random_rank2_null_affinity_expectation": 0.0026041666666666665
+      },
+      "BA_operator": {
+        "absolute_frobenius_cosine": 0.4310304746333466,
+        "signed_frobenius_cosine": 0.4310304746333466
+      },
+      "B_write_subspace": {
+        "affinity": 0.5103682619519122,
+        "affinity_over_null_expectation": 6271.405202865098,
+        "principal_angles_deg": [
+          25.076970917542848,
+          63.40824550971254
+        ],
+        "principal_cosines": [
+          0.9057392257382376,
+          0.44763040431021023
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "cell_a": [
+        6201,
+        "PC"
+      ],
+      "cell_b": [
+        6203,
+        "PC"
+      ]
+    },
+    {
+      "A_read_subspace": {
+        "affinity": 0.1478264149240913,
+        "affinity_over_null_expectation": 56.76534333085106,
+        "principal_angles_deg": [
+          57.10965328157547,
+          88.41195857100124
+        ],
+        "principal_cosines": [
+          0.5430329817882918,
+          0.02771300305450977
+        ],
+        "random_rank2_null_affinity_expectation": 0.0026041666666666665
+      },
+      "BA_operator": {
+        "absolute_frobenius_cosine": 0.4635320497498703,
+        "signed_frobenius_cosine": 0.4635320497498703
+      },
+      "B_write_subspace": {
+        "affinity": 0.49740898565022595,
+        "affinity_over_null_expectation": 6112.1616156699765,
+        "principal_angles_deg": [
+          20.750881479930552,
+          69.70123623748442
+        ],
+        "principal_cosines": [
+          0.9351297589044175,
+          0.3469154152121492
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "cell_a": [
+        6202,
+        "PC"
+      ],
+      "cell_b": [
+        6203,
+        "PC"
+      ]
+    }
+  ],
+  "within_seed_across_pressure": [
+    {
+      "A_read_subspace": {
+        "affinity": 0.9999540019351072,
+        "affinity_over_null_expectation": 383.9823367430812,
+        "principal_angles_deg": [
+          0.24511732216000706,
+          0.4918630774558103
+        ],
+        "principal_cosines": [
+          0.9999908489256477,
+          0.9999631522887116
+        ],
+        "random_rank2_null_affinity_expectation": 0.0026041666666666665
+      },
+      "BA_operator": {
+        "absolute_frobenius_cosine": 0.9998624006139113,
+        "signed_frobenius_cosine": 0.9998624006139113
+      },
+      "B_write_subspace": {
+        "affinity": 0.9995477597337614,
+        "affinity_over_null_expectation": 12282.44287160846,
+        "principal_angles_deg": [
+          0.7920918393550379,
+          1.5304973076999073
+        ],
+        "principal_cosines": [
+          0.9999044415931662,
+          0.999643249939588
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "cell_a": [
+        6201,
+        "P0"
+      ],
+      "cell_b": [
+        6201,
+        "PR"
+      ]
+    },
+    {
+      "A_read_subspace": {
+        "affinity": 0.999967066418846,
+        "affinity_over_null_expectation": 383.9873535048369,
+        "principal_angles_deg": [
+          0.31621470946044655,
+          0.34093955971745754
+        ],
+        "principal_cosines": [
+          0.9999847704253598,
+          0.9999822957207956
+        ],
+        "random_rank2_null_affinity_expectation": 0.0026041666666666665
+      },
+      "BA_operator": {
+        "absolute_frobenius_cosine": 0.9997337412942947,
+        "signed_frobenius_cosine": 0.9997337412942947
+      },
+      "B_write_subspace": {
+        "affinity": 0.9992275471403642,
+        "affinity_over_null_expectation": 12278.508099260796,
+        "principal_angles_deg": [
+          1.1754165421139935,
+          1.921353592275562
+        ],
+        "principal_cosines": [
+          0.999789577049996,
+          0.9994377899113673
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "cell_a": [
+        6201,
+        "P0"
+      ],
+      "cell_b": [
+        6201,
+        "PC"
+      ]
+    },
+    {
+      "A_read_subspace": {
+        "affinity": 0.9999657530621255,
+        "affinity_over_null_expectation": 383.9868491758562,
+        "principal_angles_deg": [
+          0.24230298253423382,
+          0.40760832642262745
+        ],
+        "principal_cosines": [
+          0.9999910578569697,
+          0.9999746948449993
+        ],
+        "random_rank2_null_affinity_expectation": 0.0026041666666666665
+      },
+      "BA_operator": {
+        "absolute_frobenius_cosine": 0.9996998132336211,
+        "signed_frobenius_cosine": 0.9996998132336211
+      },
+      "B_write_subspace": {
+        "affinity": 0.9990465296742953,
+        "affinity_over_null_expectation": 12276.283756637742,
+        "principal_angles_deg": [
+          1.2164295899586253,
+          2.1869980957583257
+        ],
+        "principal_cosines": [
+          0.9997746371229311,
+          0.9992716018752369
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "cell_a": [
+        6201,
+        "PR"
+      ],
+      "cell_b": [
+        6201,
+        "PC"
+      ]
+    },
+    {
+      "A_read_subspace": {
+        "affinity": 0.9999876915413873,
+        "affinity_over_null_expectation": 383.99527355189275,
+        "principal_angles_deg": [
+          0.11347022024182253,
+          0.26064835850259366
+        ],
+        "principal_cosines": [
+          0.9999980389512355,
+          0.999989652534694
+        ],
+        "random_rank2_null_affinity_expectation": 0.0026041666666666665
+      },
+      "BA_operator": {
+        "absolute_frobenius_cosine": 0.9999081081774436,
+        "signed_frobenius_cosine": 0.9999081081774436
+      },
+      "B_write_subspace": {
+        "affinity": 0.9995440483484977,
+        "affinity_over_null_expectation": 12282.397266106342,
+        "principal_angles_deg": [
+          0.6406512125014473,
+          1.6074398656468978
+        ],
+        "principal_cosines": [
+          0.9999374879819098,
+          0.9996064809841038
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "cell_a": [
+        6202,
+        "P0"
+      ],
+      "cell_b": [
+        6202,
+        "PR"
+      ]
+    },
+    {
+      "A_read_subspace": {
+        "affinity": 0.9999610149682588,
+        "affinity_over_null_expectation": 383.98502974781144,
+        "principal_angles_deg": [
+          0.2745889899790514,
+          0.42492986937533805
+        ],
+        "principal_cosines": [
+          0.9999885160802884,
+          0.9999724984438625
+        ],
+        "random_rank2_null_affinity_expectation": 0.0026041666666666665
+      },
+      "BA_operator": {
+        "absolute_frobenius_cosine": 0.9997566503765128,
+        "signed_frobenius_cosine": 0.9997566503765128
+      },
+      "B_write_subspace": {
+        "affinity": 0.9989868769326636,
+        "affinity_over_null_expectation": 12275.550743748572,
+        "principal_angles_deg": [
+          1.0473822377681319,
+          2.3575458246049847
+        ],
+        "principal_cosines": [
+          0.9998329205431935,
+          0.999153584221863
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "cell_a": [
+        6202,
+        "P0"
+      ],
+      "cell_b": [
+        6202,
+        "PC"
+      ]
+    },
+    {
+      "A_read_subspace": {
+        "affinity": 0.9999674458973264,
+        "affinity_over_null_expectation": 383.98749922457336,
+        "principal_angles_deg": [
+          0.20894790358907955,
+          0.4124094256432604
+        ],
+        "principal_cosines": [
+          0.9999933503269196,
+          0.9999740952127688
+        ],
+        "random_rank2_null_affinity_expectation": 0.0026041666666666665
+      },
+      "BA_operator": {
+        "absolute_frobenius_cosine": 0.9997400536485649,
+        "signed_frobenius_cosine": 0.9997400536485649
+      },
+      "B_write_subspace": {
+        "affinity": 0.9988112445638921,
+        "affinity_over_null_expectation": 12273.392573201107,
+        "principal_angles_deg": [
+          1.1216871944223052,
+          2.559539633251602
+        ],
+        "principal_cosines": [
+          0.9998083740184739,
+          0.9990023545369249
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "cell_a": [
+        6202,
+        "PR"
+      ],
+      "cell_b": [
+        6202,
+        "PC"
+      ]
+    },
+    {
+      "A_read_subspace": {
+        "affinity": 0.9999874362374361,
+        "affinity_over_null_expectation": 383.9951755151755,
+        "principal_angles_deg": [
+          0.15925411267911954,
+          0.23901322836295472
+        ],
+        "principal_cosines": [
+          0.9999961371684204,
+          0.9999912990237014
+        ],
+        "random_rank2_null_affinity_expectation": 0.0026041666666666665
+      },
+      "BA_operator": {
+        "absolute_frobenius_cosine": 0.9999038023643486,
+        "signed_frobenius_cosine": 0.9999038023643486
+      },
+      "B_write_subspace": {
+        "affinity": 0.9996939408272535,
+        "affinity_over_null_expectation": 12284.239144885292,
+        "principal_angles_deg": [
+          0.6899845282875369,
+          1.2384058983381634
+        ],
+        "principal_cosines": [
+          0.9999274899514224,
+          0.9997664209673952
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "cell_a": [
+        6203,
+        "P0"
+      ],
+      "cell_b": [
+        6203,
+        "PR"
+      ]
+    },
+    {
+      "A_read_subspace": {
+        "affinity": 0.9999450063219557,
+        "affinity_over_null_expectation": 383.978882427631,
+        "principal_angles_deg": [
+          0.25307775850935554,
+          0.5450029485499767
+        ],
+        "principal_cosines": [
+          0.999990244894019,
+          0.999954760357043
+        ],
+        "random_rank2_null_affinity_expectation": 0.0026041666666666665
+      },
+      "BA_operator": {
+        "absolute_frobenius_cosine": 0.9997742649224131,
+        "signed_frobenius_cosine": 0.9997742649224131
+      },
+      "B_write_subspace": {
+        "affinity": 0.9993967352517662,
+        "affinity_over_null_expectation": 12280.587082773704,
+        "principal_angles_deg": [
+          1.0494575697558315,
+          1.6912703348499614
+        ],
+        "principal_cosines": [
+          0.9998322577876999,
+          0.999564368507943
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "cell_a": [
+        6203,
+        "P0"
+      ],
+      "cell_b": [
+        6203,
+        "PC"
+      ]
+    },
+    {
+      "A_read_subspace": {
+        "affinity": 0.9999427209742089,
+        "affinity_over_null_expectation": 383.97800485409624,
+        "principal_angles_deg": [
+          0.30468708017157625,
+          0.5322092668257008
+        ],
+        "principal_cosines": [
+          0.9999858605735223,
+          0.9999568593701679
+        ],
+        "random_rank2_null_affinity_expectation": 0.0026041666666666665
+      },
+      "BA_operator": {
+        "absolute_frobenius_cosine": 0.9997542623739314,
+        "signed_frobenius_cosine": 0.9997542623739314
+      },
+      "B_write_subspace": {
+        "affinity": 0.9992775027268749,
+        "affinity_over_null_expectation": 12279.12195350784,
+        "principal_angles_deg": [
+          1.0752529465669431,
+          1.8944423346860149
+        ],
+        "principal_cosines": [
+          0.9998239105747161,
+          0.9994534272775455
+        ],
+        "random_rank2_null_affinity_expectation": 8.138020833333333e-05
+      },
+      "cell_a": [
+        6203,
+        "PR"
+      ],
+      "cell_b": [
+        6203,
+        "PC"
+      ]
+    }
+  ]
+}
