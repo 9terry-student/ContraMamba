@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 """Gen5 A-init × training-RNG causal intervention runner.
 
-Implementation authority:
+Original implementation authority:
     d0c86e8725e5df9def6acad323f3cce155b9daea
+Runtime-hash recovery implementation authority:
+    3f5d267508d3efaf123b93563f1563c20db62fe1
 
 This implementation separates the seed that initializes A_theta from the seed
 used for the remaining stochastic training path.
 
-Under the implementation authority, only --static-verify-only is authorized.
-CUDA preflight / cell / matrix modes require a later implementation freeze and
-a separate execution authority.
+The recovery removes cross-PyTorch fixed raw-byte A-init hashes from the
+scientific identity contract. Runtime A authentication is exact same-process
+reconstruction. CUDA preflight / cell / matrix modes require a corrected
+implementation freeze and a new recovery execution authority.
 """
 
 from __future__ import annotations
@@ -58,6 +61,12 @@ IMPLEMENTATION_AUTHORITY_COMMIT = (
 MECHANISM_FREEZE_COMMIT = (
     "155c1898f9f2d6dd0765fc93cc156190d8a08708"
 )
+FAILED_EXECUTION_AUTHORITY_COMMIT = (
+    "54a0bffa075ac7c2f25147ff53fb971412b99749"
+)
+RECOVERY_IMPLEMENTATION_AUTHORITY_COMMIT = (
+    "3f5d267508d3efaf123b93563f1563c20db62fe1"
+)
 
 AUTHORITY_PATH = (
     "reports/reason_router_gen5_ainit_rng_causal_intervention_"
@@ -67,8 +76,16 @@ MECHANISM_REPORT_PATH = (
     "reports/reason_router_gen5_cross_seed_initialization_anchoring_"
     "mechanism_report_candidate.md"
 )
-EXECUTION_AUTHORITY_PATH = (
+FAILED_EXECUTION_AUTHORITY_PATH = (
     "reports/reason_router_gen5_ainit_rng_causal_intervention_"
+    "execution_authority_spec_candidate.md"
+)
+RECOVERY_IMPLEMENTATION_AUTHORITY_PATH = (
+    "reports/reason_router_gen5_ainit_rng_runtime_hash_recovery_"
+    "implementation_authority_spec_candidate.md"
+)
+EXECUTION_AUTHORITY_PATH = (
+    "reports/reason_router_gen5_ainit_rng_runtime_hash_recovery_"
     "execution_authority_spec_candidate.md"
 )
 
@@ -87,6 +104,10 @@ RUN_PREFIX = (
 FROZEN_BLOBS = {
     AUTHORITY_PATH: "4bb4c837c760ca17659e40f9154e722697ef087c",
     MECHANISM_REPORT_PATH: "cd0e0c9a4d64a98e5b50108d1c8f17fc58f4bd95",
+    FAILED_EXECUTION_AUTHORITY_PATH:
+        "7ae466b4b1cba3520e5bf9b180eb45959560d6a4",
+    RECOVERY_IMPLEMENTATION_AUTHORITY_PATH:
+        "d87721afbbb6c6a396c04a167d29234abfe3f640",
     "scripts/train_reason_router_gen5_phase3a_contention.py":
         "45e333128c4fa31f4f502c5fdcf324243c1084fd",
     "src/contramamba/gen5_phase2_state_update_ownership.py":
@@ -115,11 +136,6 @@ MATRIX_WORKER_CELLS = (
 )
 GPU_TOPOLOGY = "TWO_INDEPENDENT_SINGLE_GPU_WORKERS_NO_DDP"
 
-A_INIT_SHA256 = {
-    6201: "6a76f8e0690b8f9c3dab6bebe4ccffab5d61270870fafd2b0cb14a85eba206c0",
-    6202: "7be31582805fdd6b04b67b827e320386808973346f28225bcc9bebadf32e4cab",
-    6203: "05cc558563b68ff706a45bb7a3603bd5b1077b3dc603a2074ed2f6bc63665dca",
-}
 
 DIAGONAL_SOURCES = {
     6201: (
@@ -210,6 +226,8 @@ def _post_authority_path_allowed(path: str) -> bool:
     normalized = path.replace("\\", "/")
     return (
         normalized in IMPLEMENTATION_PATHS
+        or normalized == FAILED_EXECUTION_AUTHORITY_PATH
+        or normalized == RECOVERY_IMPLEMENTATION_AUTHORITY_PATH
         or normalized == EXECUTION_AUTHORITY_PATH
         or normalized.startswith(PREFLIGHT_PREFIX)
         or normalized.startswith(RUN_PREFIX)
@@ -230,6 +248,10 @@ def authenticate_repo(
     for ancestor, label in (
         (MECHANISM_FREEZE_COMMIT, "MECHANISM_FREEZE"),
         (IMPLEMENTATION_AUTHORITY_COMMIT, "IMPLEMENTATION_AUTHORITY"),
+        (
+            RECOVERY_IMPLEMENTATION_AUTHORITY_COMMIT,
+            "RECOVERY_IMPLEMENTATION_AUTHORITY",
+        ),
     ):
         require(
             git_rc("merge-base", "--is-ancestor", ancestor, head) == 0,
@@ -293,6 +315,9 @@ def authenticate_repo(
         "branch": branch,
         "head": head,
         "implementation_authority_commit": IMPLEMENTATION_AUTHORITY_COMMIT,
+        "recovery_implementation_authority_commit":
+            RECOVERY_IMPLEMENTATION_AUTHORITY_COMMIT,
+        "failed_execution_authority_commit": FAILED_EXECUTION_AUTHORITY_COMMIT,
         "mechanism_freeze_commit": MECHANISM_FREEZE_COMMIT,
         "implementation_freeze_commit": implementation_freeze_commit,
     }
@@ -337,6 +362,32 @@ def reconstruct_a_init(a_init_seed: int) -> torch.Tensor:
         generator=generator,
     )
     return value.contiguous()
+
+
+def authenticate_live_a_init(
+    live_weight: torch.Tensor,
+    a_init_seed: int,
+) -> dict[str, Any]:
+    expected = reconstruct_a_init(a_init_seed)
+    live = live_weight.detach().cpu().contiguous()
+    expected_live = expected.to(dtype=live.dtype).contiguous()
+
+    require(
+        tuple(live.shape) == tuple(expected_live.shape) == (2, 768),
+        f"A_INIT_SHAPE:{a_init_seed}:{tuple(live.shape)}",
+    )
+    require(
+        torch.equal(live, expected_live),
+        f"A_INIT_IDENTITY:{a_init_seed}:{tensor_sha256(live)}",
+    )
+
+    return {
+        "a_init_sha256": tensor_sha256(live),
+        "a_init_torch_version": str(torch.__version__),
+        "a_init_authentication":
+            "SAME_PROCESS_EXACT_TENSOR_IDENTITY_AFTER_LIVE_DTYPE_NORMALIZATION",
+        "cross_version_fixed_hash_authority": False,
+    }
 
 
 def zero_b_init() -> torch.Tensor:
@@ -460,6 +511,10 @@ def _validate_execution_authority(args: argparse.Namespace) -> None:
         "EXECUTION_AUTHORITY_COMMIT_REQUIRED",
     )
     require(
+        args.execution_authority_commit != FAILED_EXECUTION_AUTHORITY_COMMIT,
+        "FAILED_EXECUTION_AUTHORITY_REUSE_FORBIDDEN",
+    )
+    require(
         git_rc(
             "merge-base",
             "--is-ancestor",
@@ -481,6 +536,16 @@ def _validate_execution_authority(args: argparse.Namespace) -> None:
     required_tokens = (
         "SCIENTIFIC_EXECUTION_ALLOWED=YES_GEN5_AINIT_RNG_CAUSAL_SIX_OFFDIAGONAL_MATRIX",
         f"IMPLEMENTATION_FREEZE_COMMIT={args.implementation_freeze_commit}",
+        (
+            "RECOVERY_IMPLEMENTATION_AUTHORITY_COMMIT="
+            f"{RECOVERY_IMPLEMENTATION_AUTHORITY_COMMIT}"
+        ),
+        (
+            "FAILED_EXECUTION_AUTHORITY_COMMIT="
+            f"{FAILED_EXECUTION_AUTHORITY_COMMIT}"
+        ),
+        "RUNTIME_A_INIT_AUTHENTICATION=SAME_PROCESS_EXACT_TENSOR_IDENTITY",
+        "CROSS_VERSION_A_INIT_HASH_AUTHORITY=NO",
         "CUDA_PREFLIGHT_ALLOWED=YES_OPTIONAL_OFFDIAGONAL",
         "TRAINING_ALLOWED=YES_EXACT_GEN5_AINIT_RNG_SIX_OFFDIAGONAL",
         "EVALUATION_ALLOWED=YES_FROZEN_PHASE3A_DEV",
@@ -504,20 +569,36 @@ def run_static_verify(args: argparse.Namespace) -> dict[str, Any]:
 
     init_rows: dict[str, Any] = {}
     hashes = []
+    tensors = []
     for seed in FACTOR_SEEDS:
-        value = reconstruct_a_init(seed)
-        observed_hash = tensor_sha256(value)
+        first = reconstruct_a_init(seed)
+        second = reconstruct_a_init(seed)
         require(
-            observed_hash == A_INIT_SHA256[seed],
-            f"A_INIT_SHA:{seed}:{observed_hash}",
+            torch.equal(first, second),
+            f"A_INIT_SAME_PROCESS_NONDETERMINISTIC:{seed}",
         )
+        require(tuple(first.shape) == (2, 768), f"A_INIT_SHAPE:{seed}")
+        require(first.dtype == torch.float32, f"A_INIT_DTYPE:{seed}")
+        observed_hash = tensor_sha256(first)
         hashes.append(observed_hash)
+        tensors.append(first)
         init_rows[str(seed)] = {
-            "a_init_sha256": observed_hash,
-            "shape": list(value.shape),
-            "dtype": str(value.dtype),
+            "a_init_sha256_local_observed": observed_hash,
+            "a_init_sha256_role":
+                "NON_AUTHORITATIVE_RUNTIME_DIAGNOSTIC",
+            "torch_version": str(torch.__version__),
+            "shape": list(first.shape),
+            "dtype": str(first.dtype),
         }
     require(len(set(hashes)) == 3, "A_INIT_HASHES_NOT_DISTINCT")
+    require(
+        all(
+            not torch.equal(tensors[i], tensors[j])
+            for i in range(len(tensors))
+            for j in range(i + 1, len(tensors))
+        ),
+        "A_INIT_TENSORS_NOT_DISTINCT",
+    )
     require(
         int(torch.count_nonzero(zero_b_init()).item()) == 0,
         "B_INIT_NONZERO",
@@ -554,6 +635,10 @@ def run_static_verify(args: argparse.Namespace) -> dict[str, Any]:
         "gpu_count_for_future_execution": MATRIX_GPU_COUNT,
         "gpu_topology_for_future_execution": GPU_TOPOLOGY,
         "a_initializations": init_rows,
+        "a_init_authentication_contract":
+            "SAME_PROCESS_EXACT_TENSOR_IDENTITY",
+        "cross_version_fixed_a_init_hash_authority": False,
+        "static_torch_version": str(torch.__version__),
         "diagonal_sources": diagonal,
         "train_rows": TRAIN_ROWS,
         "dev_rows": DEV_ROWS,
@@ -594,7 +679,15 @@ def run_static_verify(args: argparse.Namespace) -> dict[str, Any]:
         + ",".join(cell_name(*cell) for cell in MATRIX_WORKER_CELLS[1])
     )
     for seed in FACTOR_SEEDS:
-        print(f"A_INIT_SEED={seed} A_INIT_SHA256={A_INIT_SHA256[seed]}")
+        print(
+            f"A_INIT_SEED={seed} "
+            f"LOCAL_A_INIT_SHA256="
+            f"{init_rows[str(seed)]['a_init_sha256_local_observed']} "
+            "HASH_ROLE=NON_AUTHORITATIVE_RUNTIME_DIAGNOSTIC"
+        )
+    print("A_INIT_AUTHENTICATION=SAME_PROCESS_EXACT_TENSOR_IDENTITY")
+    print("CROSS_VERSION_FIXED_A_INIT_HASH_AUTHORITY=False")
+    print(f"STATIC_TORCH_VERSION={torch.__version__}")
     print("B_INIT_EXACT_ZERO=True")
     print("TRAINABLE_NUMEL_PER_CELL=50688")
     print("OPTIMIZER=torch.optim.AdamW")
@@ -663,16 +756,11 @@ def _prepare_runtime_model(
         "PARENT_INSTALL_MUTATION",
     )
 
-    expected_a = reconstruct_a_init(a_init_seed)
-    observed_a_sha = tensor_sha256(wrapper.correction.A_theta.weight)
-    require(
-        observed_a_sha == tensor_sha256(expected_a),
-        f"A_INIT_IDENTITY:{a_init_seed}:{observed_a_sha}",
+    a_init_meta = authenticate_live_a_init(
+        wrapper.correction.A_theta.weight,
+        a_init_seed,
     )
-    require(
-        observed_a_sha == A_INIT_SHA256[a_init_seed],
-        f"A_INIT_FROZEN_HASH:{a_init_seed}:{observed_a_sha}",
-    )
+    observed_a_sha = a_init_meta["a_init_sha256"]
     require(
         int(torch.count_nonzero(wrapper.correction.B_theta.weight).item()) == 0,
         "B_NOT_ZERO_INITIALIZED",
@@ -692,6 +780,10 @@ def _prepare_runtime_model(
         "a_init_seed": a_init_seed,
         "training_rng_seed": training_rng_seed,
         "a_init_sha256": observed_a_sha,
+        "a_init_torch_version": a_init_meta["a_init_torch_version"],
+        "a_init_authentication": a_init_meta["a_init_authentication"],
+        "cross_version_fixed_hash_authority":
+            a_init_meta["cross_version_fixed_hash_authority"],
         "partition": {
             "mu_k2": partition["mu_k2"],
             "strong_count": int(partition["strong"].numel()),
@@ -734,6 +826,9 @@ def _checkpoint_payload(
         "implementation_freeze_commit": args.implementation_freeze_commit,
         "execution_authority_commit": args.execution_authority_commit,
         "implementation_authority_commit": IMPLEMENTATION_AUTHORITY_COMMIT,
+        "recovery_implementation_authority_commit":
+            RECOVERY_IMPLEMENTATION_AUTHORITY_COMMIT,
+        "failed_execution_authority_commit": FAILED_EXECUTION_AUTHORITY_COMMIT,
         "mechanism_freeze_commit": MECHANISM_FREEZE_COMMIT,
         "parent_checkpoint_sha256": PARENT_CHECKPOINT_SHA256,
         "a_init_seed": args.a_init_seed,
@@ -742,6 +837,10 @@ def _checkpoint_payload(
         "arm": ARM,
         "pressure": PRESSURE,
         "a_init_sha256": runtime_meta["a_init_sha256"],
+        "a_init_torch_version": runtime_meta["a_init_torch_version"],
+        "a_init_authentication": runtime_meta["a_init_authentication"],
+        "cross_version_fixed_hash_authority":
+            runtime_meta["cross_version_fixed_hash_authority"],
         "state_dict": {
             "A_theta.weight": a,
             "B_theta.weight": b,
@@ -824,6 +923,10 @@ def run_cuda_preflight(args: argparse.Namespace) -> dict[str, Any]:
         "cell_name": cell_name(args.a_init_seed, args.training_rng_seed),
         "pressure": PRESSURE,
         "a_init_sha256": runtime_meta["a_init_sha256"],
+        "a_init_torch_version": runtime_meta["a_init_torch_version"],
+        "a_init_authentication": runtime_meta["a_init_authentication"],
+        "cross_version_fixed_hash_authority":
+            runtime_meta["cross_version_fixed_hash_authority"],
         "train_order_sha256": p3a.row_order_sha256(static["train_rows"]),
         "train_encoding_sha256": encoded["train_encoding_sha256"],
         "loss": float(loss.detach().cpu().item()),
@@ -844,6 +947,9 @@ def run_cuda_preflight(args: argparse.Namespace) -> dict[str, Any]:
     print(f"A_INIT_SEED={args.a_init_seed}")
     print(f"TRAINING_RNG_SEED={args.training_rng_seed}")
     print(f"A_INIT_SHA256={runtime_meta['a_init_sha256']}")
+    print(f"A_INIT_TORCH_VERSION={runtime_meta['a_init_torch_version']}")
+    print(f"A_INIT_AUTHENTICATION={runtime_meta['a_init_authentication']}")
+    print("CROSS_VERSION_FIXED_A_INIT_HASH_AUTHORITY=False")
     print("BACKWARD_EXECUTED=True")
     print("OPTIMIZER_CONSTRUCTED=False")
     print("OPTIMIZER_STEP_COUNT=0")
@@ -1081,12 +1187,19 @@ def run_cell(args: argparse.Namespace) -> dict[str, Any]:
         "implementation_freeze_commit": args.implementation_freeze_commit,
         "execution_authority_commit": args.execution_authority_commit,
         "implementation_authority_commit": IMPLEMENTATION_AUTHORITY_COMMIT,
+        "recovery_implementation_authority_commit":
+            RECOVERY_IMPLEMENTATION_AUTHORITY_COMMIT,
+        "failed_execution_authority_commit": FAILED_EXECUTION_AUTHORITY_COMMIT,
         "mechanism_freeze_commit": MECHANISM_FREEZE_COMMIT,
         "parent_checkpoint_sha256": PARENT_CHECKPOINT_SHA256,
         "a_init_seed": args.a_init_seed,
         "training_rng_seed": args.training_rng_seed,
         "cell_name": cell,
         "a_init_sha256": runtime_meta["a_init_sha256"],
+        "a_init_torch_version": runtime_meta["a_init_torch_version"],
+        "a_init_authentication": runtime_meta["a_init_authentication"],
+        "cross_version_fixed_hash_authority":
+            runtime_meta["cross_version_fixed_hash_authority"],
         "arm": ARM,
         "pressure": PRESSURE,
         "train_rows": TRAIN_ROWS,
@@ -1150,6 +1263,10 @@ def run_cell(args: argparse.Namespace) -> dict[str, Any]:
         "training_rng_seed": args.training_rng_seed,
         "cell_name": cell,
         "a_init_sha256": runtime_meta["a_init_sha256"],
+        "a_init_torch_version": runtime_meta["a_init_torch_version"],
+        "a_init_authentication": runtime_meta["a_init_authentication"],
+        "cross_version_fixed_hash_authority":
+            runtime_meta["cross_version_fixed_hash_authority"],
         "pressure": PRESSURE,
         "arm": ARM,
         "training_report_sha256": sha256_file(

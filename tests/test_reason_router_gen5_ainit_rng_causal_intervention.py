@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import inspect
 
 import pytest
 import torch
@@ -15,7 +16,7 @@ def _args(**overrides):
         "cuda_preflight_only": False,
         "run_cell": False,
         "run_matrix": False,
-        "expected_head": mod.IMPLEMENTATION_AUTHORITY_COMMIT,
+        "expected_head": mod.RECOVERY_IMPLEMENTATION_AUTHORITY_COMMIT,
         "allow_opening_worktree": False,
         "implementation_freeze_commit": None,
         "execution_authority_commit": None,
@@ -71,32 +72,69 @@ def test_exact_two_gpu_worker_assignment_and_balance():
 
 
 @pytest.mark.parametrize("seed", mod.FACTOR_SEEDS)
-def test_deterministic_a_initialization_hash(seed):
+def test_deterministic_a_initialization_is_same_process_exact(seed):
     first = mod.reconstruct_a_init(seed)
     second = mod.reconstruct_a_init(seed)
     assert torch.equal(first, second)
-    assert mod.tensor_sha256(first) == mod.A_INIT_SHA256[seed]
+    assert tuple(first.shape) == (2, 768)
+    assert first.dtype == torch.float32
+    assert mod.tensor_sha256(first) == mod.tensor_sha256(second)
 
 
 def test_all_three_a_initializations_are_distinct():
-    hashes = {
-        mod.tensor_sha256(mod.reconstruct_a_init(seed))
+    values = {
+        seed: mod.reconstruct_a_init(seed)
         for seed in mod.FACTOR_SEEDS
     }
+    hashes = {
+        mod.tensor_sha256(value)
+        for value in values.values()
+    }
     assert len(hashes) == 3
+    assert all(
+        not torch.equal(values[left], values[right])
+        for i, left in enumerate(mod.FACTOR_SEEDS)
+        for right in mod.FACTOR_SEEDS[i + 1:]
+    )
+
+
+def test_cross_version_fixed_a_init_hash_table_is_removed():
+    assert not hasattr(mod, "A_INIT_SHA256")
+
+
+@pytest.mark.parametrize("seed", mod.FACTOR_SEEDS)
+def test_live_a_authentication_uses_same_process_exact_reconstruction(seed):
+    live = mod.reconstruct_a_init(seed).clone()
+    meta = mod.authenticate_live_a_init(live, seed)
+    assert meta["a_init_sha256"] == mod.tensor_sha256(live)
+    assert meta["a_init_torch_version"] == str(torch.__version__)
+    assert (
+        meta["a_init_authentication"]
+        == "SAME_PROCESS_EXACT_TENSOR_IDENTITY_AFTER_LIVE_DTYPE_NORMALIZATION"
+    )
+    assert meta["cross_version_fixed_hash_authority"] is False
+
+    bad = live.clone()
+    bad[0, 0] = torch.nextafter(
+        bad[0, 0],
+        torch.tensor(float("inf"), dtype=bad.dtype),
+    )
+    with pytest.raises(
+        mod.AInitRNGCausalInterventionError,
+        match="A_INIT_IDENTITY",
+    ):
+        mod.authenticate_live_a_init(bad, seed)
 
 
 @pytest.mark.parametrize("a_init_seed", mod.FACTOR_SEEDS)
-def test_training_rng_seed_does_not_change_reconstructed_a(a_init_seed):
+def test_training_rng_seed_does_not_enter_a_reconstruction(a_init_seed):
+    assert list(inspect.signature(mod.reconstruct_a_init).parameters) == [
+        "a_init_seed"
+    ]
     reference = mod.reconstruct_a_init(a_init_seed)
-    for training_rng_seed in mod.FACTOR_SEEDS:
-        # A construction has no training_rng_seed input by design.
+    for _training_rng_seed in mod.FACTOR_SEEDS:
         candidate = mod.reconstruct_a_init(a_init_seed)
         assert torch.equal(reference, candidate)
-        assert (
-            mod.tensor_sha256(candidate)
-            == mod.A_INIT_SHA256[a_init_seed]
-        )
 
 
 def test_changing_a_seed_changes_a_while_b_is_exact_zero():
@@ -163,6 +201,33 @@ def test_diagonal_cells_are_rejected(seed):
         match="NOT_AUTHORIZED_OFFDIAGONAL",
     ):
         mod.validate_offdiagonal_cell(seed, seed)
+
+
+def test_recovery_authority_paths_and_failed_execution_identity_are_frozen():
+    assert (
+        mod.RECOVERY_IMPLEMENTATION_AUTHORITY_COMMIT
+        == "3f5d267508d3efaf123b93563f1563c20db62fe1"
+    )
+    assert (
+        mod.FAILED_EXECUTION_AUTHORITY_COMMIT
+        == "54a0bffa075ac7c2f25147ff53fb971412b99749"
+    )
+    assert mod.EXECUTION_AUTHORITY_PATH.endswith(
+        "reason_router_gen5_ainit_rng_runtime_hash_recovery_"
+        "execution_authority_spec_candidate.md"
+    )
+
+
+def test_failed_execution_authority_reuse_is_forbidden():
+    args = _args(
+        implementation_freeze_commit="future-freeze",
+        execution_authority_commit=mod.FAILED_EXECUTION_AUTHORITY_COMMIT,
+    )
+    with pytest.raises(
+        mod.AInitRNGCausalInterventionError,
+        match="FAILED_EXECUTION_AUTHORITY_REUSE_FORBIDDEN",
+    ):
+        mod._validate_execution_authority(args)
 
 
 def test_static_mode_forbids_runtime_authority_arguments():
