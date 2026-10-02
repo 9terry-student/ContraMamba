@@ -640,3 +640,104 @@ heterogeneity.
 
 Neither a high nor low result establishes a general claim outside this frozen
 optimization contract.
+
+## Preflight failure recovery amendment
+
+FAILED_PREFLIGHT_ATTEMPT_EXECUTION_HEAD=18da83e07885766bb5b47a4e9f348782997d2753
+
+FAILED_PREFLIGHT_SEED=6201
+
+FAILED_PREFLIGHT_ARM=E-BFREE-AFIX-MONLY
+
+FAILED_PREFLIGHT_CAUSE=OUTPUT_PARENT_DIRECTORY_NOT_CREATED_BY_INVOCATION
+
+FAILED_PREFLIGHT_ARTIFACT_WRITTEN=NO
+
+FAILED_PREFLIGHT_OPTIMIZER_CONSTRUCTED=NO
+
+FAILED_PREFLIGHT_OPTIMIZER_STEP_COUNT=0
+
+FAILED_PREFLIGHT_TRAINING_EXECUTED=NO
+
+FAILED_PREFLIGHT_TASK_EVALUATION_EXECUTED=NO
+
+RECOVERY_PREFLIGHT_RETRY_ALLOWED=YES_EXACTLY_ONE
+
+RECOVERY_IMPLEMENTATION_CHANGE_ALLOWED=NO
+
+RECOVERY_SCIENTIFIC_MATRIX_ALLOWED_BEFORE_RETRY_PASS=NO
+
+The first authorized CUDA preflight attempt at execution head
+`18da83e07885766bb5b47a4e9f348782997d2753` reached the runner's final
+preflight report-write boundary and then failed because the invocation did not
+create the parent directory for the requested `preflight.json` path.
+
+The observed failure was:
+
+`FileNotFoundError` while `_canonical_write(...)` attempted to open the
+requested preflight artifact path.
+
+This is classified as an invocation/orchestration failure, not a scientific
+implementation change request.
+
+The frozen implementation at:
+
+`b1ab97600d47e0f86ca3a427befffb777a10829c`
+
+must remain byte-identical.
+
+The failed attempt produced no valid preflight artifact and therefore cannot
+be treated as a PASS, collected, imported, or used as scientific evidence.
+
+Because the failure occurred after bounded preflight forward/backward plumbing
+had been attempted, this amendment prospectively authorizes exactly one
+recovery retry and no more.
+
+### Exact recovery delta
+
+The only allowed invocation change is:
+
+1. create the exact preflight parent directory before invoking the unchanged
+   frozen runner;
+2. invoke the same seed6201 AFIX-MONLY CUDA preflight contract;
+3. validate the resulting preflight artifact;
+4. delete the preflight directory after PASS;
+5. require a clean worktree before proceeding.
+
+No implementation file may be edited.
+
+No optimizer may be constructed.
+
+No optimizer step may execute.
+
+No training may execute.
+
+No task evaluation may execute.
+
+No confirmatory population may be loaded.
+
+The recovery retry must preserve all original runtime, package, model,
+tokenizer, checkpoint, source, Q, data, and single-thread linear-algebra
+identities.
+
+### Recovery stop conditions
+
+Stop and do not retry again if the recovery preflight:
+
+- fails for any reason;
+- exposes an implementation defect;
+- observes any A gradient;
+- observes a non-finite M gradient;
+- changes A SHA256;
+- constructs an optimizer;
+- executes an optimizer step;
+- executes training;
+- executes task evaluation;
+- accesses confirmatory data;
+- leaves unauthorized repository changes.
+
+Only a successful recovery preflight may unlock the already-authorized
+three-cell AFIX-MONLY matrix.
+
+The recovery preflight remains runtime validation only and must not be
+collected/imported.
