@@ -19,6 +19,9 @@ def _args(**overrides):
         "replay_auth_recovery_worker": False,
         "run_replay_matrix": False,
         "run_replay_worker": False,
+        "phase_b_cuda_preflight_only": False,
+        "run_phase_b": False,
+        "phase_b_worker": False,
         "expected_head": mod.AUTHORITY_COMMIT,
         "allow_opening_worktree": False,
         "implementation_freeze_commit": None,
@@ -28,6 +31,8 @@ def _args(**overrides):
         "output_root": None,
         "scratch_root": None,
         "worker_id": None,
+        "phase_b_step": None,
+        "phase_b_compute_geometry": False,
     }
     values.update(overrides)
     return argparse.Namespace(**values)
@@ -368,3 +373,171 @@ def test_authority_identity_and_collection_policy_are_frozen():
     assert "PREFLIGHT_COLLECTION=FORBIDDEN" in authority_text
     assert "FAILED_RUN_COLLECTION=FORBIDDEN" in authority_text
     assert "SUCCESSFUL_SCIENTIFIC_RUN_COLLECTION=REQUIRED" in authority_text
+
+def test_phase_b_raw_control_identity_is_exactly_frozen():
+    observed = [
+        (
+            row["index"],
+            row["seed"],
+            row["sha256_label"],
+        )
+        for row in (
+            mod.phase_b_control_identity(index)
+            for index in range(mod.PHASE_B_CONTROL_COUNT)
+        )
+    ]
+    assert tuple(observed) == mod.PHASE_B_RAW_CONTROL_IDENTITY
+
+
+def test_phase_b_signed_permutation_preserves_token_norms_exactly():
+    residual = torch.arange(
+        2 * 3 * 16,
+        dtype=torch.float32,
+    ).reshape(2, 3, 16)
+    controlled = mod.phase_b_apply_signed_permutation(
+        residual,
+        control_index=0,
+    )
+    assert torch.equal(
+        torch.sum(controlled * controlled, dim=-1),
+        torch.sum(residual * residual, dim=-1),
+    )
+
+
+def test_phase_b_worker_sharding_matches_frozen_source_index_parity():
+    assert mod._phase_b_worker_source_cells(0) == (
+        (6201, 6201),
+        (6201, 6203),
+        (6202, 6202),
+        (6203, 6201),
+        (6203, 6203),
+    )
+    assert mod._phase_b_worker_source_cells(1) == (
+        (6201, 6202),
+        (6202, 6201),
+        (6202, 6203),
+        (6203, 6202),
+    )
+    assert len(mod._phase_b_worker_orientations(0)) == 10
+    assert len(mod._phase_b_worker_orientations(1)) == 8
+
+
+def test_phase_b_two_row_projection_exact_span_case():
+    g0 = torch.tensor([[1.0, 0.0]], dtype=torch.float32)
+    g1 = torch.tensor([[0.0, 1.0]], dtype=torch.float32)
+    residual = torch.tensor([[3.0, 4.0]], dtype=torch.float32)
+    visible, energy, gain = mod._phase_b_two_row_projection(
+        grad_refute=g0,
+        grad_support=g1,
+        residual=residual,
+    )
+    assert torch.allclose(visible, residual)
+    assert energy == pytest.approx(1.0, rel=0.0, abs=1e-12)
+    assert gain == pytest.approx(1.0, rel=0.0, abs=1e-12)
+
+
+def test_phase_b_gate_uses_only_frozen_thresholds():
+    value = {
+        "full_replay_max_abs": 0.0,
+        "task_row_energy_enrichment": 5.0,
+        "finite_intervention": {
+            "centered_logits": {
+                "R_visible": 0.60,
+                "R_complement": 0.05,
+                "R_interaction": 0.05,
+            },
+            "two_margins": {
+                "R_visible": 1.40,
+                "R_complement": 0.05,
+                "R_interaction": 0.05,
+            },
+        },
+    }
+    assert mod._phase_b_gate(value)["pass"] is True
+    value["task_row_energy_enrichment"] = 4.999
+    assert mod._phase_b_gate(value)["pass"] is False
+
+
+def test_phase_b_geometric_birth_is_first_strictly_positive_postupdate():
+    def row(t, d):
+        return {
+            "t": t,
+            "grouped": {
+                "same_training_rng_different_a": {
+                    "mean_squared_distance": d
+                }
+            },
+        }
+    geometry = [row(0, 0.0), row(1, 0.0), row(2, 1e-12)]
+    assert mod.phase_b_geometric_birth_step(geometry) == 2
+
+
+def test_phase_b_endpoint_tolerances_are_preregistered_and_not_gate_thresholds():
+    assert mod.PHASE_B_ENDPOINT_TOLERANCE == {
+        "normalized_residual_atol": 5.0e-4,
+        "task_row_energy_atol": 5.0e-5,
+        "control_task_row_energy_atol": 5.0e-6,
+        "enrichment_atol": 5.0e-1,
+        "effect_ratio_atol": 5.0e-3,
+    }
+    assert mod.PHASE_B_PROJECTOR_PINV_RTOL == 1.0e-12
+    assert mod.PHASE_B_FULL_REPLAY_ATOL == 5.0e-5
+
+
+def test_phase_b_interpretation_cases_are_bounded():
+    assert mod._phase_b_interpretation(
+        geometric_birth=1,
+        functional_birth=1,
+    ) == "IMMEDIATE_FIRST_UPDATE_BIRTH"
+    assert mod._phase_b_interpretation(
+        geometric_birth=1,
+        functional_birth=3,
+    ) == "GEOMETRY_FIRST_FUNCTION_LATER"
+    assert mod._phase_b_interpretation(
+        geometric_birth=2,
+        functional_birth=3,
+    ) == "DELAYED_GEOMETRIC_BIRTH"
+
+
+def test_phase_b_parser_modes_are_present():
+    parser = mod.build_parser()
+    option_strings = {
+        option
+        for action in parser._actions
+        for option in action.option_strings
+    }
+    assert "--phase-b-cuda-preflight-only" in option_strings
+    assert "--run-phase-b" in option_strings
+    assert "--phase-b-worker" in option_strings
+    assert "--phase-b-step" in option_strings
+    assert "--phase-b-compute-geometry" in option_strings
+
+
+def test_phase_b_does_not_use_backward_or_optimizer_in_phase_b_functions():
+    for fn in (
+        mod.run_phase_b_cuda_preflight,
+        mod.run_phase_b_worker,
+        mod.run_phase_b_analysis,
+    ):
+        source = inspect.getsource(fn)
+        assert ".backward(" not in source
+        assert "torch.optim" not in source
+
+def test_phase_b_git_show_text_forces_utf8_decode():
+    source = inspect.getsource(mod._phase_b_git_show_text)
+    assert "encoding=\"utf-8\"" in source
+    assert "errors=\"strict\"" in source
+    assert "subprocess.check_output" in source
+
+
+
+def test_phase_b_static_contract_uses_exact_sha_wrapped_control_token():
+    source = inspect.getsource(mod.validate_phase_b_static_contract)
+    assert '`SHA256(\\"GEN5_INTERNAL_PRECURSOR_V1|raw_write|<control_index>\\")`' in source
+
+
+def test_phase_b_internal_correction_is_authenticated_by_exact_blob():
+    assert mod.INTERNAL_PRECURSOR_CORRECTION_BLOB == "f4a45513712c9a6380b309f0a8171fbeb499a925"
+    source = inspect.getsource(mod.validate_phase_b_static_contract)
+    assert "PHASE_B_PRECURSOR_CORRECTION_BLOB" in source
+    assert "PHASE_B_PRECURSOR_CORRECTION_TOKEN" not in source

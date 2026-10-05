@@ -944,6 +944,7 @@ def run_static_verify(args: argparse.Namespace) -> None:
         allow_implementation_worktree=args.allow_opening_worktree,
     )
     validate_frozen_contract()
+    validate_phase_b_static_contract()
 
     loaded = {}
     for a, r in FULL_FACTORIAL_CELLS:
@@ -978,6 +979,7 @@ def run_static_verify(args: argparse.Namespace) -> None:
     print("OPTIMIZER_STEPS_PER_CELL=20")
     print("TOTAL_REPLAY_OPTIMIZER_STEPS=180")
     print("PHASE_A_IMPLEMENTED=True")
+    print("PHASE_B_IMPLEMENTED=True")
     print("PHASE_B_EXECUTED=False")
     print("CUDA_EXECUTED=False")
     print("TRAINING_EXECUTED=False")
@@ -1818,6 +1820,1740 @@ def run_replay_matrix(args: argparse.Namespace) -> None:
     print(f"PROVENANCE={provenance_path}")
 
 
+# ---------------------------------------------------------------------------
+# Phase B: raw-write geometric / functional birth analysis
+# ---------------------------------------------------------------------------
+
+PHASE_A_EVIDENCE_FREEZE_COMMIT = "0288a7a77f0b05b7f1fc22dcc878b3cfbf90b29b"
+PHASE_A_RUN_NAME = "gen5-ainit-temporal-birth-phase-a-numerical-auth-d940e19-r1"
+PHASE_A_RUN_ROOT = (
+    "reports/reason_router_gen5_ainit_temporal_birth_replay_runs/"
+    + PHASE_A_RUN_NAME
+)
+PHASE_A_SUMMARY_PATH = PHASE_A_RUN_ROOT + "/temporal_birth_replay_summary.json"
+PHASE_A_TRAJECTORY_PATH = PHASE_A_RUN_ROOT + "/temporal_birth_trajectory.pt"
+PHASE_A_SUMMARY_SHA256 = (
+    "37cab4866c729ad03262df562762ac8b6b91e4e24e2498223483848871ad1df6"
+)
+PHASE_A_TRAJECTORY_SHA256 = (
+    "0f7cd4248faa92223597e0816597b59e426f08829dadd366f9603f56a8de809e"
+)
+PHASE_A_EVIDENCE_REPORT_PATH = (
+    "reports/reason_router_gen5_ainit_representation_freedom_"
+    "temporal_birth_phase_a_evidence_report_candidate.md"
+)
+
+INTERNAL_PRECURSOR_CORRECTION_COMMIT = (
+    "e2c563188e9534e898c6ea944c5a05f4056b2fe3"
+)
+INTERNAL_PRECURSOR_CORRECTION_PATH = (
+    "reports/reason_router_gen5_ainit_internal_task_visible_"
+    "precursor_localization_authority_correction_spec_candidate.md"
+)
+INTERNAL_PRECURSOR_CORRECTION_BLOB = (
+    "f4a45513712c9a6380b309f0a8171fbeb499a925"
+)
+INTERNAL_PRECURSOR_METRICS_PATH = (
+    "reports/reason_router_gen5_ainit_internal_precursor_localization_runs/"
+    "gen5-ainit-internal-precursor-e2c5631-r1/"
+    "internal_stage_task_visible_metrics.pt"
+)
+INTERNAL_PRECURSOR_METRICS_SHA256 = (
+    "d00aedc95873ab47716d96773fdb81ee9a3b81c80479b06de38959829e9afa9d"
+)
+
+PHASE_B_RUN_PREFIX = (
+    "reports/reason_router_gen5_ainit_temporal_birth_analysis_runs/"
+)
+
+PHASE_B_CONTROL_DOMAIN = "GEN5_INTERNAL_PRECURSOR_V1"
+PHASE_B_CONTROL_COUNT = 8
+PHASE_B_PROJECTOR_PINV_RTOL = 1.0e-12
+PHASE_B_FUNCTIONAL_BATCH_ROWS = 4
+PHASE_B_VALID_TOKEN_COUNT = 60094
+
+PHASE_B_RAW_CONTROL_IDENTITY = (
+    (0, 8634153414855414169, "f7d2acc8fcaed199515df9f60642ea4988e7a22a09ad0535af68e63bd358345f"),
+    (1, 8942982651256360266, "fc1bdb56e09dcd4adfed107559bf413e0e8aaffdbcbde5f29dc62a3409d89636"),
+    (2, 4733603261589309886, "41b1231632a949be7503e9428982bb1ddd24ec221e97a7a8cb39f193a6f1c6c3"),
+    (3, 3074483775818615235, "2aaac2b46d5ec9c3733c958079c5fc45d260621a9dd605556c012fd08feb4370"),
+    (4, 794199281934087957, "0b05900a008d37156649852ec9d1f9d4e1e86c9d331e30121a99dcc99ffb38ae"),
+    (5, 7416946985525545978, "e6ee49fc96278bfa42ac1ebac49d1ea4979c70c155ddb0df5c9c6628790f849b"),
+    (6, 259315910244880612, "039946724ac0d0e4b75e12b03f50dae3238ac960102b215ff06e66c0d14f61f5"),
+    (7, 883752037080260340, "0c43b7cb9fb25ef4971d053137c50d6ea15c304c9e3d4997bbb4b96fedb05584"),
+)
+
+PHASE_B_ENDPOINT_TARGET = {
+    "normalized_residual": 0.45922708704045434,
+    "task_row_energy": 0.00032369586357429783,
+    "control_task_row_energy": 0.00002631725566293209,
+    "enrichment": 12.299757532477983,
+    "centered_logits": {
+        "R_visible": 0.8948354137604684,
+        "R_complement": 0.00438080799597352,
+        "R_interaction": 0.008403463389073969,
+    },
+    "two_margins": {
+        "R_visible": 0.8949580000020421,
+        "R_complement": 0.004406601900046891,
+        "R_interaction": 0.008439518433847864,
+    },
+}
+PHASE_B_ENDPOINT_TOLERANCE = {
+    "normalized_residual_atol": 5.0e-4,
+    "task_row_energy_atol": 5.0e-5,
+    "control_task_row_energy_atol": 5.0e-6,
+    "enrichment_atol": 5.0e-1,
+    "effect_ratio_atol": 5.0e-3,
+}
+PHASE_B_FULL_REPLAY_ATOL = 5.0e-5
+PHASE_B_JOINT_FORWARD_ATOL = 1.0e-6
+
+
+def phase_b_control_identity(control_index: int) -> dict[str, Any]:
+    require(
+        0 <= control_index < PHASE_B_CONTROL_COUNT,
+        f"PHASE_B_CONTROL_INDEX:{control_index}",
+    )
+    label = f"{PHASE_B_CONTROL_DOMAIN}|raw_write|{control_index}"
+    digest = hashlib.sha256(label.encode("utf-8")).hexdigest()
+    seed = int(digest[:16], 16) & ((1 << 63) - 1)
+    expected_index, expected_seed, expected_digest = (
+        PHASE_B_RAW_CONTROL_IDENTITY[control_index]
+    )
+    require(expected_index == control_index, "PHASE_B_CONTROL_INDEX_FREEZE")
+    require(seed == expected_seed, f"PHASE_B_CONTROL_SEED:{control_index}")
+    require(digest == expected_digest, f"PHASE_B_CONTROL_DIGEST:{control_index}")
+    return {
+        "index": control_index,
+        "seed": seed,
+        "sha256_label": digest,
+    }
+
+
+def phase_b_signed_permutation(
+    *,
+    feature_width: int,
+    control_index: int,
+    device: torch.device,
+    dtype: torch.dtype,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    require(feature_width > 0, "PHASE_B_CONTROL_FEATURE_WIDTH")
+    identity = phase_b_control_identity(control_index)
+    generator = torch.Generator(device="cpu")
+    generator.manual_seed(int(identity["seed"]))
+    permutation = torch.randperm(
+        feature_width,
+        generator=generator,
+        device="cpu",
+    )
+    sign_bits = torch.randint(
+        0,
+        2,
+        (feature_width,),
+        generator=generator,
+        dtype=torch.int64,
+        device="cpu",
+    )
+    signs = sign_bits.mul(2).sub(1).to(dtype=dtype)
+    return (
+        permutation.to(device=device),
+        signs.to(device=device),
+    )
+
+
+def phase_b_apply_signed_permutation(
+    residual: torch.Tensor,
+    *,
+    control_index: int,
+) -> torch.Tensor:
+    require(residual.ndim == 3, "PHASE_B_CONTROL_RESIDUAL_RANK")
+    permutation, signs = phase_b_signed_permutation(
+        feature_width=int(residual.shape[-1]),
+        control_index=control_index,
+        device=residual.device,
+        dtype=residual.dtype,
+    )
+    return residual.index_select(-1, permutation) * signs.view(1, 1, -1)
+
+
+def _phase_b_load_phase_a_artifacts() -> tuple[dict[str, Any], dict[str, Any]]:
+    summary_path = ROOT / PHASE_A_SUMMARY_PATH
+    trajectory_path = ROOT / PHASE_A_TRAJECTORY_PATH
+    report_path = ROOT / PHASE_A_EVIDENCE_REPORT_PATH
+    require(summary_path.is_file(), "PHASE_A_SUMMARY_MISSING")
+    require(trajectory_path.is_file(), "PHASE_A_TRAJECTORY_MISSING")
+    require(report_path.is_file(), "PHASE_A_EVIDENCE_REPORT_MISSING")
+    require(
+        sha256_file(summary_path) == PHASE_A_SUMMARY_SHA256,
+        "PHASE_A_SUMMARY_SHA",
+    )
+    require(
+        sha256_file(trajectory_path) == PHASE_A_TRAJECTORY_SHA256,
+        "PHASE_A_TRAJECTORY_SHA",
+    )
+
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    require(
+        summary.get("result")
+        == "PASS_GEN5_AINIT_TEMPORAL_BIRTH_PHASE_A_NUMERICAL_REPLAY_AUTHENTICATION",
+        "PHASE_A_RESULT",
+    )
+    require(summary.get("cell_count") == 9, "PHASE_A_CELL_COUNT")
+    require(
+        summary.get("optimizer_step_count") == 180,
+        "PHASE_A_OPTIMIZER_STEPS",
+    )
+    require(
+        summary.get("all_replays_numerically_authenticated") is True,
+        "PHASE_A_REPLAY_AUTH",
+    )
+    require(summary.get("phase_b_executed") is False, "PHASE_A_PHASE_B_FLAG")
+    require(
+        summary.get("confirmatory_9601_9900_loaded") is False,
+        "PHASE_A_CONFIRMATORY_FLAG",
+    )
+
+    trajectory = torch.load(
+        trajectory_path,
+        map_location="cpu",
+        weights_only=True,
+    )
+    require(
+        trajectory.get("schema_version")
+        == "GEN5_AINIT_TEMPORAL_BIRTH_PHASE_A_TRAJECTORY_V2",
+        "PHASE_A_TRAJECTORY_SCHEMA",
+    )
+    require(
+        tuple(trajectory.get("factor_seeds", ())) == FACTOR_SEEDS,
+        "PHASE_A_FACTOR_SEEDS",
+    )
+    require(
+        list(trajectory.get("time_axis", ()))
+        == list(range(TOTAL_OPTIMIZER_STEPS + 1)),
+        "PHASE_A_TIME_AXIS",
+    )
+    require(
+        set(trajectory.get("cells", {}))
+        == {cell_name(a, r) for a, r in FULL_FACTORIAL_CELLS},
+        "PHASE_A_TRAJECTORY_CELL_SET",
+    )
+    return summary, trajectory
+
+
+def _phase_b_git_show_text(ref: str) -> str:
+    try:
+        return subprocess.check_output(
+            ["git", "show", ref],
+            cwd=ROOT,
+            text=True,
+            encoding="utf-8",
+            errors="strict",
+            stderr=subprocess.STDOUT,
+        ).strip()
+    except (OSError, subprocess.CalledProcessError, UnicodeError) as exc:
+        raise TemporalBirthError(f"PHASE_B_GIT_SHOW_FAILURE:{ref}") from exc
+
+
+def validate_phase_b_static_contract() -> None:
+    require(
+        git_rc(
+            "merge-base",
+            "--is-ancestor",
+            PHASE_A_EVIDENCE_FREEZE_COMMIT,
+            git("rev-parse", "HEAD"),
+        )
+        == 0,
+        "PHASE_A_EVIDENCE_FREEZE_NOT_ANCESTOR",
+    )
+    authority_text = _phase_b_git_show_text(
+        f"{AUTHORITY_COMMIT}:{AUTHORITY_PATH}"
+    )
+    required_authority_tokens = (
+        "Analyze only:",
+        "`raw_write = B_theta A_theta x`",
+        "t=0` raw-write residual must be exactly zero",
+        "Use the recovered true-forward `joint` analysis-gradient semantics",
+        "`SHA256(\"GEN5_INTERNAL_PRECURSOR_V1|raw_write|<control_index>\")`",
+        "`0.60 <= R_visible <= 1.40`",
+        "`R_complement <= 0.05`",
+        "`R_interaction <= 0.05`",
+        "`E_task_actual / E_task_control_mean >= 5`",
+        "Starting at the already computed geometric-birth step",
+        "stop at the first passing step",
+        "Successful Phase B scientific run:",
+        "`COLLECT_AND_IMPORT_REQUIRED`",
+    )
+    for token in required_authority_tokens:
+        require(token in authority_text, f"PHASE_B_AUTHORITY_TOKEN:{token}")
+
+    correction_blob = git(
+        "rev-parse",
+        f"{INTERNAL_PRECURSOR_CORRECTION_COMMIT}:"
+        f"{INTERNAL_PRECURSOR_CORRECTION_PATH}",
+    )
+    require(
+        correction_blob == INTERNAL_PRECURSOR_CORRECTION_BLOB,
+        f"PHASE_B_PRECURSOR_CORRECTION_BLOB:{correction_blob}",
+    )
+
+    metrics_path = ROOT / INTERNAL_PRECURSOR_METRICS_PATH
+    require(metrics_path.is_file(), "INTERNAL_PRECURSOR_METRICS_MISSING")
+    require(
+        sha256_file(metrics_path) == INTERNAL_PRECURSOR_METRICS_SHA256,
+        "INTERNAL_PRECURSOR_METRICS_SHA",
+    )
+    for control_index in range(PHASE_B_CONTROL_COUNT):
+        phase_b_control_identity(control_index)
+
+    _phase_b_load_phase_a_artifacts()
+
+
+def _phase_b_snapshot(
+    trajectory: Mapping[str, Any],
+    cell: tuple[int, int],
+    t: int,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    require(0 <= t <= TOTAL_OPTIMIZER_STEPS, f"PHASE_B_T:{t}")
+    cell_payload = trajectory["cells"][cell_name(*cell)]
+    snapshot = cell_payload["snapshots"][t]
+    require(int(snapshot["t"]) == t, f"PHASE_B_SNAPSHOT_T:{cell_name(*cell)}:{t}")
+    a = snapshot["A_theta.weight"].detach().cpu().contiguous()
+    b = snapshot["B_theta.weight"].detach().cpu().contiguous()
+    require(tuple(a.shape) == (2, 768), "PHASE_B_A_SHAPE")
+    require(tuple(b.shape) == (24576, 2), "PHASE_B_B_SHAPE")
+    return a, b
+
+
+def _phase_b_data_gram(
+    trajectory: Mapping[str, Any],
+    covariance: torch.Tensor,
+    t: int,
+) -> tuple[list[tuple[int, int]], torch.Tensor]:
+    require(
+        covariance.dtype == torch.float64
+        and tuple(covariance.shape) == (768, 768),
+        "PHASE_B_COVARIANCE",
+    )
+    cells = list(FULL_FACTORIAL_CELLS)
+    gram = torch.empty((9, 9), dtype=torch.float64)
+    states = {
+        cell: tuple(x.to(torch.float64) for x in _phase_b_snapshot(trajectory, cell, t))
+        for cell in cells
+    }
+    for i, left in enumerate(cells):
+        a_left, b_left = states[left]
+        for j in range(i, len(cells)):
+            right = cells[j]
+            a_right, b_right = states[right]
+            b_cross = b_left.T @ b_right
+            a_cross = a_left @ covariance @ a_right.T
+            value = torch.sum(b_cross * a_cross)
+            gram[i, j] = value
+            gram[j, i] = value
+    return cells, gram
+
+
+def phase_b_geometry_trajectory(
+    trajectory: Mapping[str, Any],
+    covariance: torch.Tensor,
+) -> list[dict[str, Any]]:
+    rows = []
+    for t in range(TOTAL_OPTIMIZER_STEPS + 1):
+        cells, gram = _phase_b_data_gram(trajectory, covariance, t)
+        rows.append(
+            {
+                "t": t,
+                "grouped": grouped_pair_stats_from_gram(cells, gram),
+                "factorial": factorial_energy_from_gram(cells, gram),
+            }
+        )
+    t0 = rows[0]
+    require(
+        t0["grouped"]["same_training_rng_different_a"]["mean_squared_distance"]
+        == 0.0,
+        "PHASE_B_T0_PRIMARY_NOT_ZERO",
+    )
+    require(
+        t0["grouped"]["same_a_different_training_rng"]["mean_squared_distance"]
+        == 0.0,
+        "PHASE_B_T0_CONTROL_NOT_ZERO",
+    )
+    require(
+        t0["factorial"]["SS_TOTAL"] == 0.0,
+        "PHASE_B_T0_FACTORIAL_NOT_ZERO",
+    )
+    return rows
+
+
+def phase_b_geometric_birth_step(
+    geometry: Sequence[Mapping[str, Any]],
+) -> int:
+    for row in geometry:
+        t = int(row["t"])
+        if t == 0:
+            continue
+        distance = float(
+            row["grouped"]["same_training_rng_different_a"][
+                "mean_squared_distance"
+            ]
+        )
+        if distance > 0.0:
+            return t
+    raise TemporalBirthError("NO_RAW_WRITE_GEOMETRIC_BIRTH_LOCALIZED")
+
+
+def _phase_b_joint_forward_from_hidden(
+    model: torch.nn.Module,
+    features: Mapping[str, torch.Tensor],
+    hidden_states: torch.Tensor,
+) -> Mapping[str, Any]:
+    from scripts import (
+        reason_router_gen4_six_cell_tier2_inference_adapter as adapter,
+    )
+
+    return model(
+        input_ids=None,
+        attention_mask=features["attention_mask"],
+        claim_mask=features["claim_mask"],
+        evidence_mask=features["evidence_mask"],
+        decision_mode=adapter.DECISION_MODE,
+        gradient_ownership_mode="joint",
+        return_q_diagnostics=True,
+        encoder_hidden_states=hidden_states,
+    )
+
+
+def _phase_b_prepare_common_context(
+    *,
+    model: torch.nn.Module,
+    wrapper: Any,
+    features: Mapping[str, torch.Tensor],
+    stressor_active: torch.Tensor,
+    target_indices: torch.Tensor,
+    strong_mask: torch.Tensor,
+    planes: Mapping[str, torch.Tensor],
+) -> dict[str, torch.Tensor]:
+    input_ids = features["input_ids"]
+    attention_mask = features["attention_mask"]
+    require(input_ids.ndim == 2, "PHASE_B_INPUT_RANK")
+    require(
+        tuple(attention_mask.shape) == tuple(input_ids.shape),
+        "PHASE_B_ATTENTION_SHAPE",
+    )
+
+    with torch.no_grad():
+        hidden = model.mamba.embeddings(input_ids)
+        mixer17 = model.mamba.layers[17].mixer
+        with p3a.batch_stressor_hook(
+            mixer17.in_proj,
+            pressure=PRESSURE,
+            strong_mask=strong_mask,
+            active_rows=stressor_active,
+            target_indices=target_indices,
+            planes=planes,
+        ):
+            for layer_index in range(22):
+                hidden = model.mamba.layers[layer_index](
+                    hidden,
+                    cache_params=None,
+                    cache_position=None,
+                    attention_mask=None,
+                )
+
+        residual22 = hidden
+        block22 = model.mamba.layers[22]
+        mixer_input = block22.norm(
+            hidden.to(dtype=block22.norm.weight.dtype)
+        )
+        native_mixer = wrapper.native_mixer
+        native22 = native_mixer(
+            mixer_input,
+            cache_params=None,
+            cache_position=None,
+            attention_mask=None,
+        )
+
+        projected = native_mixer.in_proj(mixer_input).transpose(1, 2)
+        hidden_states, gate = projected.chunk(2, dim=1)
+        active = attention_mask.to(hidden_states.dtype)
+        hidden_states = hidden_states * active.unsqueeze(1)
+        conv_hidden = native_mixer.act(
+            native_mixer.conv1d(hidden_states)[..., : input_ids.shape[1]]
+        )
+        conv_hidden = conv_hidden * active.unsqueeze(1)
+        ssm_parameters = native_mixer.x_proj(
+            conv_hidden.transpose(1, 2)
+        )
+        time_step, _native_b, c_readout = torch.split(
+            ssm_parameters,
+            [
+                int(native_mixer.time_step_rank),
+                int(native_mixer.ssm_state_size),
+                int(native_mixer.ssm_state_size),
+            ],
+            dim=-1,
+        )
+        discrete_time_step = torch.nn.functional.softplus(
+            torch.nn.functional.linear(
+                time_step,
+                native_mixer.dt_proj.weight,
+                native_mixer.dt_proj.bias,
+            )
+        ).transpose(1, 2)
+        a_continuous = -torch.exp(native_mixer.A_log.float())
+
+    return {
+        "residual22": residual22.detach(),
+        "mixer_input": mixer_input.detach(),
+        "native22": native22.detach(),
+        "gate": gate.detach(),
+        "c_readout": c_readout.detach(),
+        "discrete_time_step": discrete_time_step.detach(),
+        "a_continuous": a_continuous.detach(),
+        "attention_mask": attention_mask.detach(),
+    }
+
+
+def _phase_b_raw_write(
+    mixer_input: torch.Tensor,
+    attention_mask: torch.Tensor,
+    a_weight: torch.Tensor,
+    b_weight: torch.Tensor,
+) -> torch.Tensor:
+    a_live = a_weight.to(
+        device=mixer_input.device,
+        dtype=mixer_input.dtype,
+    )
+    b_live = b_weight.to(
+        device=mixer_input.device,
+        dtype=mixer_input.dtype,
+    )
+    latent = torch.nn.functional.linear(
+        mixer_input,
+        a_live,
+        bias=None,
+    )
+    raw = torch.nn.functional.linear(
+        latent,
+        b_live,
+        bias=None,
+    )
+    return raw * attention_mask.to(raw.dtype).unsqueeze(-1)
+
+
+def _phase_b_resume_from_raw_write(
+    *,
+    model: torch.nn.Module,
+    wrapper: Any,
+    features: Mapping[str, torch.Tensor],
+    context: Mapping[str, torch.Tensor],
+    raw_write: torch.Tensor,
+) -> torch.Tensor:
+    native_mixer = wrapper.native_mixer
+    shape = wrapper.correction.shape
+    batch, seq_len, width = raw_write.shape
+    require(width == shape.state_width, "PHASE_B_RAW_WIDTH")
+
+    state = torch.zeros(
+        (batch, shape.intermediate_size, shape.state_size),
+        device=raw_write.device,
+        dtype=raw_write.dtype,
+    )
+    outputs: list[torch.Tensor] = []
+    for token_index in range(seq_len):
+        discrete_a_t = torch.exp(
+            context["a_continuous"][None, :, :]
+            * context["discrete_time_step"][
+                :, :, token_index, None
+            ].float()
+        ).to(dtype=raw_write.dtype)
+        write_t = raw_write[:, token_index, :].reshape(
+            batch,
+            shape.intermediate_size,
+            shape.state_size,
+        )
+        state = discrete_a_t * state + write_t
+        read_t = torch.sum(
+            state.to(context["c_readout"].dtype)
+            * context["c_readout"][:, token_index, None, :],
+            dim=-1,
+        )
+        scan_t = read_t * native_mixer.act(
+            context["gate"][:, :, token_index]
+        )
+        outputs.append(
+            torch.nn.functional.linear(
+                scan_t,
+                native_mixer.out_proj.weight,
+                bias=None,
+            )
+        )
+    correction22 = torch.stack(outputs, dim=1)
+    hidden22 = (
+        context["residual22"]
+        + context["native22"]
+        + correction22
+    )
+    hidden23 = model.mamba.layers[23](
+        hidden22,
+        cache_params=None,
+        cache_position=None,
+        attention_mask=None,
+    )
+    final_hidden = model.mamba.norm_f(hidden23)
+    output = _phase_b_joint_forward_from_hidden(
+        model,
+        features,
+        final_hidden,
+    )
+    logits = output["logits"]
+    require(
+        tuple(logits.shape) == (batch, 3),
+        "PHASE_B_LOGIT_SHAPE",
+    )
+    return logits
+
+
+def _phase_b_margin_vector(logits: torch.Tensor) -> torch.Tensor:
+    require(logits.ndim == 2 and logits.shape[1] == 3, "PHASE_B_MARGIN_LOGITS")
+    return torch.stack(
+        (
+            logits[:, 0] - logits[:, 1],
+            logits[:, 2] - logits[:, 1],
+        ),
+        dim=-1,
+    )
+
+
+def _phase_b_centered_logits(logits: torch.Tensor) -> torch.Tensor:
+    return logits - logits.mean(dim=-1, keepdim=True)
+
+
+def _phase_b_two_row_projection(
+    *,
+    grad_refute: torch.Tensor,
+    grad_support: torch.Tensor,
+    residual: torch.Tensor,
+) -> tuple[torch.Tensor, float, float]:
+    require(
+        grad_refute.shape == grad_support.shape == residual.shape,
+        "PHASE_B_PROJECTOR_SHAPE",
+    )
+    g0 = grad_refute.reshape(-1).to(torch.float64)
+    g1 = grad_support.reshape(-1).to(torch.float64)
+    d = residual.reshape(-1).to(torch.float64)
+
+    gram = torch.stack(
+        (
+            torch.stack((torch.dot(g0, g0), torch.dot(g0, g1))),
+            torch.stack((torch.dot(g1, g0), torch.dot(g1, g1))),
+        )
+    )
+    pinv = torch.linalg.pinv(
+        gram,
+        rtol=PHASE_B_PROJECTOR_PINV_RTOL,
+        atol=0.0,
+        hermitian=True,
+    )
+    jd = torch.stack((torch.dot(g0, d), torch.dot(g1, d)))
+    alpha = pinv @ jd
+    visible64 = alpha[0] * g0 + alpha[1] * g1
+    denom = float(torch.dot(d, d).item())
+    numer = float(torch.dot(visible64, visible64).item())
+    energy = 0.0 if denom == 0.0 else numer / denom
+    gain = 0.0 if denom == 0.0 else float(
+        torch.linalg.vector_norm(jd).item() / math.sqrt(denom)
+    )
+    return (
+        visible64.reshape_as(residual).to(dtype=residual.dtype),
+        energy,
+        gain,
+    )
+
+
+def _phase_b_control_energy_and_gain(
+    *,
+    grad_refute: torch.Tensor,
+    grad_support: torch.Tensor,
+    residual: torch.Tensor,
+) -> tuple[float, float]:
+    g0 = grad_refute.reshape(-1).to(torch.float64)
+    g1 = grad_support.reshape(-1).to(torch.float64)
+    d = residual.reshape(-1).to(torch.float64)
+    gram = torch.stack(
+        (
+            torch.stack((torch.dot(g0, g0), torch.dot(g0, g1))),
+            torch.stack((torch.dot(g1, g0), torch.dot(g1, g1))),
+        )
+    )
+    pinv = torch.linalg.pinv(
+        gram,
+        rtol=PHASE_B_PROJECTOR_PINV_RTOL,
+        atol=0.0,
+        hermitian=True,
+    )
+    jd = torch.stack((torch.dot(g0, d), torch.dot(g1, d)))
+    denom = float(torch.dot(d, d).item())
+    if denom == 0.0:
+        return 0.0, 0.0
+    projected_energy = float((jd @ pinv @ jd).item()) / denom
+    gain = float(torch.linalg.vector_norm(jd).item() / math.sqrt(denom))
+    return projected_energy, gain
+
+
+def _phase_b_effect_sums(
+    source_logits: torch.Tensor,
+    full_logits: torch.Tensor,
+    visible_logits: torch.Tensor,
+    complement_logits: torch.Tensor,
+) -> dict[str, dict[str, float]]:
+    result: dict[str, dict[str, float]] = {}
+    transforms = {
+        "centered_logits": _phase_b_centered_logits,
+        "two_margins": _phase_b_margin_vector,
+    }
+    for label, transform in transforms.items():
+        source = transform(source_logits).to(torch.float64)
+        full = transform(full_logits).to(torch.float64) - source
+        visible = transform(visible_logits).to(torch.float64) - source
+        complement = transform(complement_logits).to(torch.float64) - source
+        interaction = full - visible - complement
+        result[label] = {
+            "E_full": float(torch.sum(full * full).item()),
+            "E_visible": float(torch.sum(visible * visible).item()),
+            "E_complement": float(torch.sum(complement * complement).item()),
+            "E_interaction": float(torch.sum(interaction * interaction).item()),
+        }
+    return result
+
+
+def _phase_b_empty_orientation(source: str, target: str) -> dict[str, Any]:
+    return {
+        "source": source,
+        "target": target,
+        "count": 0,
+        "residual_diff_sq": 0.0,
+        "residual_source_sq": 0.0,
+        "residual_target_sq": 0.0,
+        "actual_task_row_energy_sum": 0.0,
+        "actual_directional_gain_sum": 0.0,
+        "control_task_row_energy_sums": [0.0] * PHASE_B_CONTROL_COUNT,
+        "control_directional_gain_sums": [0.0] * PHASE_B_CONTROL_COUNT,
+        "full_replay_max_abs": 0.0,
+        "finite": {
+            "centered_logits": {
+                "E_full": 0.0,
+                "E_visible": 0.0,
+                "E_complement": 0.0,
+                "E_interaction": 0.0,
+            },
+            "two_margins": {
+                "E_full": 0.0,
+                "E_visible": 0.0,
+                "E_complement": 0.0,
+                "E_interaction": 0.0,
+            },
+        },
+        "visible_prediction_disagreement_vs_source": 0,
+        "complement_prediction_disagreement_vs_source": 0,
+    }
+
+
+def _phase_b_worker_source_cells(worker_id: int) -> tuple[tuple[int, int], ...]:
+    require(worker_id in (0, 1), "PHASE_B_WORKER_ID")
+    ordered = tuple(FULL_FACTORIAL_CELLS)
+    return tuple(
+        cell
+        for index, cell in enumerate(ordered)
+        if index % 2 == worker_id
+    )
+
+
+def _phase_b_worker_orientations(
+    worker_id: int,
+) -> tuple[tuple[tuple[int, int], tuple[int, int]], ...]:
+    rows = []
+    for source in _phase_b_worker_source_cells(worker_id):
+        a, r = source
+        for target_a in FACTOR_SEEDS:
+            if target_a != a:
+                rows.append((source, (target_a, r)))
+    return tuple(rows)
+
+
+def _phase_b_batch_features(
+    features: Mapping[str, torch.Tensor],
+    start: int,
+    stop: int,
+) -> dict[str, torch.Tensor]:
+    return {key: value[start:stop] for key, value in features.items()}
+
+
+def _phase_b_accumulate_orientation_batch(
+    *,
+    model: torch.nn.Module,
+    wrapper: Any,
+    features: Mapping[str, torch.Tensor],
+    context: Mapping[str, torch.Tensor],
+    raw_source: torch.Tensor,
+    raw_target: torch.Tensor,
+    accumulator: dict[str, Any],
+) -> None:
+    residual = raw_target - raw_source
+    accumulator["residual_diff_sq"] += float(
+        torch.sum(residual.to(torch.float64) ** 2).item()
+    )
+    accumulator["residual_source_sq"] += float(
+        torch.sum(raw_source.to(torch.float64) ** 2).item()
+    )
+    accumulator["residual_target_sq"] += float(
+        torch.sum(raw_target.to(torch.float64) ** 2).item()
+    )
+
+    raw_leaf = raw_source.detach().clone().requires_grad_(True)
+    source_logits = _phase_b_resume_from_raw_write(
+        model=model,
+        wrapper=wrapper,
+        features=features,
+        context=context,
+        raw_write=raw_leaf,
+    )
+    margins = _phase_b_margin_vector(source_logits)
+    grad_refute = torch.autograd.grad(
+        margins[:, 0].sum(),
+        raw_leaf,
+        retain_graph=True,
+        create_graph=False,
+    )[0]
+    grad_support = torch.autograd.grad(
+        margins[:, 1].sum(),
+        raw_leaf,
+        retain_graph=False,
+        create_graph=False,
+    )[0]
+
+    visible_rows = []
+    for row_index in range(int(residual.shape[0])):
+        visible, energy, gain = _phase_b_two_row_projection(
+            grad_refute=grad_refute[row_index],
+            grad_support=grad_support[row_index],
+            residual=residual[row_index],
+        )
+        visible_rows.append(visible)
+        accumulator["actual_task_row_energy_sum"] += energy
+        accumulator["actual_directional_gain_sum"] += gain
+
+        for control_index in range(PHASE_B_CONTROL_COUNT):
+            controlled = phase_b_apply_signed_permutation(
+                residual[row_index : row_index + 1],
+                control_index=control_index,
+            )[0]
+            control_energy, control_gain = _phase_b_control_energy_and_gain(
+                grad_refute=grad_refute[row_index],
+                grad_support=grad_support[row_index],
+                residual=controlled,
+            )
+            accumulator["control_task_row_energy_sums"][
+                control_index
+            ] += control_energy
+            accumulator["control_directional_gain_sums"][
+                control_index
+            ] += control_gain
+
+    visible = torch.stack(visible_rows, dim=0)
+    complement = residual - visible
+
+    with torch.no_grad():
+        target_logits = _phase_b_resume_from_raw_write(
+            model=model,
+            wrapper=wrapper,
+            features=features,
+            context=context,
+            raw_write=raw_target,
+        )
+        full_logits = _phase_b_resume_from_raw_write(
+            model=model,
+            wrapper=wrapper,
+            features=features,
+            context=context,
+            raw_write=raw_source + residual,
+        )
+        visible_logits = _phase_b_resume_from_raw_write(
+            model=model,
+            wrapper=wrapper,
+            features=features,
+            context=context,
+            raw_write=raw_source + visible,
+        )
+        complement_logits = _phase_b_resume_from_raw_write(
+            model=model,
+            wrapper=wrapper,
+            features=features,
+            context=context,
+            raw_write=raw_source + complement,
+        )
+
+    replay_error = float(
+        torch.max(torch.abs(full_logits - target_logits)).item()
+    )
+    accumulator["full_replay_max_abs"] = max(
+        accumulator["full_replay_max_abs"],
+        replay_error,
+    )
+
+    effects = _phase_b_effect_sums(
+        source_logits.detach(),
+        full_logits,
+        visible_logits,
+        complement_logits,
+    )
+    for coordinate in ("centered_logits", "two_margins"):
+        for key in (
+            "E_full",
+            "E_visible",
+            "E_complement",
+            "E_interaction",
+        ):
+            accumulator["finite"][coordinate][key] += effects[coordinate][key]
+
+    source_pred = torch.argmax(source_logits.detach(), dim=-1)
+    visible_pred = torch.argmax(visible_logits, dim=-1)
+    complement_pred = torch.argmax(complement_logits, dim=-1)
+    accumulator["visible_prediction_disagreement_vs_source"] += int(
+        torch.count_nonzero(source_pred != visible_pred).item()
+    )
+    accumulator["complement_prediction_disagreement_vs_source"] += int(
+        torch.count_nonzero(source_pred != complement_pred).item()
+    )
+    accumulator["count"] += int(residual.shape[0])
+
+
+def _phase_b_finalize_orientation(value: Mapping[str, Any]) -> dict[str, Any]:
+    count = int(value["count"])
+    require(count == DEV_ROWS, f"PHASE_B_ORIENTATION_COUNT:{count}")
+    denom_sq = 0.5 * (
+        float(value["residual_source_sq"])
+        + float(value["residual_target_sq"])
+    )
+    normalized = (
+        None
+        if denom_sq <= 0.0
+        else math.sqrt(float(value["residual_diff_sq"]) / denom_sq)
+    )
+    return {
+        **dict(value),
+        "normalized_residual": normalized,
+        "actual_task_row_energy_mean": (
+            float(value["actual_task_row_energy_sum"]) / count
+        ),
+        "actual_directional_gain_mean": (
+            float(value["actual_directional_gain_sum"]) / count
+        ),
+        "control_task_row_energy_means": [
+            float(v) / count
+            for v in value["control_task_row_energy_sums"]
+        ],
+        "control_directional_gain_means": [
+            float(v) / count
+            for v in value["control_directional_gain_sums"]
+        ],
+    }
+
+
+def _phase_b_merge_functional_workers(
+    workers: Sequence[Mapping[str, Any]],
+    *,
+    t: int,
+) -> dict[str, Any]:
+    orientations = []
+    for worker in workers:
+        require(int(worker["t"]) == t, "PHASE_B_WORKER_T_MISMATCH")
+        orientations.extend(worker["orientations"])
+    require(len(orientations) == 18, "PHASE_B_ORIENTATION_COUNT_TOTAL")
+    names = {(row["source"], row["target"]) for row in orientations}
+    require(len(names) == 18, "PHASE_B_ORIENTATION_DUPLICATE")
+
+    count = sum(int(row["count"]) for row in orientations)
+    require(count == 18 * DEV_ROWS, "PHASE_B_EXAMPLE_ORIENTATION_COUNT")
+    normalized = [
+        float(row["normalized_residual"])
+        for row in orientations
+        if row["normalized_residual"] is not None
+    ]
+    require(len(normalized) == 18, "PHASE_B_NORMALIZED_COUNT")
+
+    actual_energy = sum(
+        float(row["actual_task_row_energy_sum"])
+        for row in orientations
+    ) / count
+    actual_gain = sum(
+        float(row["actual_directional_gain_sum"])
+        for row in orientations
+    ) / count
+
+    control_energy_means = []
+    control_gain_means = []
+    for control_index in range(PHASE_B_CONTROL_COUNT):
+        control_energy_means.append(
+            sum(
+                float(row["control_task_row_energy_sums"][control_index])
+                for row in orientations
+            )
+            / count
+        )
+        control_gain_means.append(
+            sum(
+                float(row["control_directional_gain_sums"][control_index])
+                for row in orientations
+            )
+            / count
+        )
+    control_energy_mean = sum(control_energy_means) / PHASE_B_CONTROL_COUNT
+    control_gain_mean = sum(control_gain_means) / PHASE_B_CONTROL_COUNT
+    enrichment = (
+        math.inf
+        if control_energy_mean == 0.0 and actual_energy > 0.0
+        else (
+            0.0
+            if control_energy_mean == 0.0
+            else actual_energy / control_energy_mean
+        )
+    )
+
+    finite: dict[str, Any] = {}
+    for coordinate in ("centered_logits", "two_margins"):
+        sums = {
+            key: sum(
+                float(row["finite"][coordinate][key])
+                for row in orientations
+            )
+            for key in (
+                "E_full",
+                "E_visible",
+                "E_complement",
+                "E_interaction",
+            )
+        }
+        e_full = sums["E_full"]
+        finite[coordinate] = {
+            **sums,
+            "R_visible": None if e_full == 0.0 else sums["E_visible"] / e_full,
+            "R_complement": None if e_full == 0.0 else sums["E_complement"] / e_full,
+            "R_interaction": None if e_full == 0.0 else sums["E_interaction"] / e_full,
+        }
+
+    return {
+        "t": t,
+        "orientation_count": 18,
+        "example_orientation_count": count,
+        "normalized_residual_mean": sum(normalized) / len(normalized),
+        "actual_task_row_energy_mean": actual_energy,
+        "control_task_row_energy_means": control_energy_means,
+        "control_task_row_energy_mean": control_energy_mean,
+        "task_row_energy_enrichment": enrichment,
+        "actual_directional_gain_mean": actual_gain,
+        "control_directional_gain_means": control_gain_means,
+        "control_directional_gain_mean": control_gain_mean,
+        "full_replay_max_abs": max(
+            float(row["full_replay_max_abs"])
+            for row in orientations
+        ),
+        "finite_intervention": finite,
+        "visible_prediction_disagreement_vs_source": sum(
+            int(row["visible_prediction_disagreement_vs_source"])
+            for row in orientations
+        ),
+        "complement_prediction_disagreement_vs_source": sum(
+            int(row["complement_prediction_disagreement_vs_source"])
+            for row in orientations
+        ),
+        "orientations": orientations,
+    }
+
+
+def _phase_b_gate(value: Mapping[str, Any]) -> dict[str, Any]:
+    centered = value["finite_intervention"]["centered_logits"]
+    margins = value["finite_intervention"]["two_margins"]
+
+    def coordinate_pass(row: Mapping[str, Any]) -> bool:
+        return (
+            row["R_visible"] is not None
+            and 0.60 <= float(row["R_visible"]) <= 1.40
+            and row["R_complement"] is not None
+            and float(row["R_complement"]) <= 0.05
+            and row["R_interaction"] is not None
+            and float(row["R_interaction"]) <= 0.05
+        )
+
+    centered_pass = coordinate_pass(centered)
+    margins_pass = coordinate_pass(margins)
+    enrichment_pass = (
+        float(value["task_row_energy_enrichment"]) >= 5.0
+    )
+    replay_pass = float(value["full_replay_max_abs"]) <= PHASE_B_FULL_REPLAY_ATOL
+    return {
+        "centered_logits_pass": centered_pass,
+        "two_margins_pass": margins_pass,
+        "enrichment_pass": enrichment_pass,
+        "full_replay_pass": replay_pass,
+        "pass": (
+            centered_pass
+            and margins_pass
+            and enrichment_pass
+            and replay_pass
+        ),
+    }
+
+
+def _phase_b_endpoint_authentication(
+    value: Mapping[str, Any],
+) -> dict[str, Any]:
+    require(int(value["t"]) == 20, "PHASE_B_ENDPOINT_T")
+    checks = {}
+
+    def check(name: str, observed: float, target: float, atol: float) -> None:
+        checks[name] = {
+            "observed": observed,
+            "target": target,
+            "atol": atol,
+            "abs_error": abs(observed - target),
+            "pass": abs(observed - target) <= atol,
+        }
+
+    check(
+        "normalized_residual",
+        float(value["normalized_residual_mean"]),
+        PHASE_B_ENDPOINT_TARGET["normalized_residual"],
+        PHASE_B_ENDPOINT_TOLERANCE["normalized_residual_atol"],
+    )
+    check(
+        "task_row_energy",
+        float(value["actual_task_row_energy_mean"]),
+        PHASE_B_ENDPOINT_TARGET["task_row_energy"],
+        PHASE_B_ENDPOINT_TOLERANCE["task_row_energy_atol"],
+    )
+    check(
+        "control_task_row_energy",
+        float(value["control_task_row_energy_mean"]),
+        PHASE_B_ENDPOINT_TARGET["control_task_row_energy"],
+        PHASE_B_ENDPOINT_TOLERANCE["control_task_row_energy_atol"],
+    )
+    check(
+        "enrichment",
+        float(value["task_row_energy_enrichment"]),
+        PHASE_B_ENDPOINT_TARGET["enrichment"],
+        PHASE_B_ENDPOINT_TOLERANCE["enrichment_atol"],
+    )
+    for coordinate in ("centered_logits", "two_margins"):
+        observed_row = value["finite_intervention"][coordinate]
+        target_row = PHASE_B_ENDPOINT_TARGET[coordinate]
+        for metric in ("R_visible", "R_complement", "R_interaction"):
+            check(
+                f"{coordinate}.{metric}",
+                float(observed_row[metric]),
+                float(target_row[metric]),
+                PHASE_B_ENDPOINT_TOLERANCE["effect_ratio_atol"],
+            )
+    checks["full_replay"] = {
+        "observed": float(value["full_replay_max_abs"]),
+        "target_max": PHASE_B_FULL_REPLAY_ATOL,
+        "pass": float(value["full_replay_max_abs"]) <= PHASE_B_FULL_REPLAY_ATOL,
+    }
+    passed = all(bool(row["pass"]) for row in checks.values())
+    return {"pass": passed, "checks": checks}
+
+
+def _phase_b_interpretation(
+    *,
+    geometric_birth: int,
+    functional_birth: int | None,
+) -> str:
+    if geometric_birth == 1 and functional_birth == 1:
+        return "IMMEDIATE_FIRST_UPDATE_BIRTH"
+    if geometric_birth == 1 and functional_birth is not None:
+        return "GEOMETRY_FIRST_FUNCTION_LATER"
+    if geometric_birth > 1:
+        return "DELAYED_GEOMETRIC_BIRTH"
+    return "NO_FUNCTIONAL_FREEDOM_BIRTH_LOCALIZED"
+
+
+def _phase_b_prepare_worker_runtime(
+    args: argparse.Namespace,
+) -> tuple[
+    dict[str, Any],
+    dict[str, Any],
+    dict[str, Any],
+    torch.nn.Module,
+    Any,
+    torch.Tensor,
+    dict[str, torch.Tensor],
+]:
+    summary, trajectory = _phase_b_load_phase_a_artifacts()
+    static, encoded, snapshot, checkpoint_path = _prepare_runtime(args)
+    del static
+    model, wrapper, _runtime_meta, strong_mask, planes = base._prepare_runtime_model(
+        snapshot=snapshot,
+        checkpoint_path=checkpoint_path,
+        a_init_seed=6201,
+        training_rng_seed=6201,
+    )
+    model.eval()
+    model.mamba.config.use_cache = False
+    for parameter in model.parameters():
+        parameter.requires_grad_(False)
+        parameter.grad = None
+    return (
+        summary,
+        trajectory,
+        encoded,
+        model,
+        wrapper,
+        strong_mask,
+        planes,
+    )
+
+
+def run_phase_b_worker(args: argparse.Namespace) -> None:
+    authenticate_repo(
+        args.expected_head,
+        allow_implementation_worktree=False,
+    )
+    validate_runtime_authority(
+        expected_head=args.expected_head,
+        implementation_freeze_commit=args.implementation_freeze_commit,
+    )
+    validate_phase_b_static_contract()
+    require(torch.cuda.is_available(), "PHASE_B_WORKER_CUDA")
+    require(torch.cuda.device_count() == 1, "PHASE_B_WORKER_VISIBLE_GPU_COUNT")
+    require(args.worker_id in (0, 1), "PHASE_B_WORKER_ID")
+    require(args.phase_b_step is not None, "PHASE_B_WORKER_STEP")
+    require(args.scratch_root is not None, "PHASE_B_WORKER_SCRATCH")
+
+    (
+        _phase_a_summary,
+        trajectory,
+        encoded,
+        model,
+        wrapper,
+        strong_mask,
+        planes,
+    ) = _phase_b_prepare_worker_runtime(args)
+
+    device = torch.device("cuda:0")
+    features, _labels, active, targets = p3a._feature_batch_to_device(
+        encoded["dev_bundle"],
+        device,
+    )
+    orientations = _phase_b_worker_orientations(args.worker_id)
+    accumulators = {
+        (cell_name(*source), cell_name(*target)): _phase_b_empty_orientation(
+            cell_name(*source),
+            cell_name(*target),
+        )
+        for source, target in orientations
+    }
+    covariance = torch.zeros((768, 768), dtype=torch.float64)
+    valid_token_count = 0
+
+    t = int(args.phase_b_step)
+    snapshot_weights = {
+        cell: _phase_b_snapshot(trajectory, cell, t)
+        for cell in FULL_FACTORIAL_CELLS
+    }
+
+    for start in range(0, DEV_ROWS, PHASE_B_FUNCTIONAL_BATCH_ROWS):
+        stop = min(start + PHASE_B_FUNCTIONAL_BATCH_ROWS, DEV_ROWS)
+        batch_features = _phase_b_batch_features(features, start, stop)
+        batch_active = active[start:stop]
+        batch_targets = targets[start:stop]
+        context = _phase_b_prepare_common_context(
+            model=model,
+            wrapper=wrapper,
+            features=batch_features,
+            stressor_active=batch_active,
+            target_indices=batch_targets,
+            strong_mask=strong_mask,
+            planes=planes,
+        )
+
+        if args.phase_b_compute_geometry:
+            valid = batch_features["attention_mask"].bool()
+            x = context["mixer_input"][valid].detach().cpu().to(torch.float64)
+            covariance += x.T @ x
+            valid_token_count += int(x.shape[0])
+
+        raw_by_cell = {
+            cell: _phase_b_raw_write(
+                context["mixer_input"],
+                batch_features["attention_mask"],
+                snapshot_weights[cell][0],
+                snapshot_weights[cell][1],
+            ).detach()
+            for cell in FULL_FACTORIAL_CELLS
+        }
+
+        for source, target in orientations:
+            accumulator = accumulators[
+                (cell_name(*source), cell_name(*target))
+            ]
+            _phase_b_accumulate_orientation_batch(
+                model=model,
+                wrapper=wrapper,
+                features=batch_features,
+                context=context,
+                raw_source=raw_by_cell[source],
+                raw_target=raw_by_cell[target],
+                accumulator=accumulator,
+            )
+
+    finalized = [
+        _phase_b_finalize_orientation(value)
+        for value in accumulators.values()
+    ]
+    result: dict[str, Any] = {
+        "schema_version": "GEN5_AINIT_TEMPORAL_BIRTH_PHASE_B_WORKER_V1",
+        "worker_id": args.worker_id,
+        "t": t,
+        "source_cells": [
+            cell_name(*cell)
+            for cell in _phase_b_worker_source_cells(args.worker_id)
+        ],
+        "orientations": finalized,
+        "backward_executed": False,
+        "parameter_gradients_accumulated": any(
+            parameter.grad is not None
+            for parameter in model.parameters()
+        ),
+        "optimizer_constructed": False,
+        "training_executed": False,
+        "confirmatory_9601_9900_loaded": False,
+    }
+    require(
+        result["parameter_gradients_accumulated"] is False,
+        "PHASE_B_PARAMETER_GRADIENT_ACCUMULATED",
+    )
+
+    if args.phase_b_compute_geometry:
+        require(
+            valid_token_count == PHASE_B_VALID_TOKEN_COUNT,
+            f"PHASE_B_VALID_TOKEN_COUNT:{valid_token_count}",
+        )
+        result["valid_token_count"] = valid_token_count
+        result["geometry"] = phase_b_geometry_trajectory(
+            trajectory,
+            covariance,
+        )
+
+    worker_root = Path(args.scratch_root) / f"worker{args.worker_id}"
+    worker_root.mkdir(parents=True, exist_ok=False)
+    (worker_root / "worker_result.json").write_bytes(
+        canonical_json_bytes(result)
+    )
+    print(
+        "GEN5_AINIT_TEMPORAL_BIRTH_PHASE_B_WORKER_PASS "
+        f"worker={args.worker_id} t={t} "
+        f"orientations={len(finalized)}"
+    )
+
+
+def _phase_b_spawn_workers(
+    args: argparse.Namespace,
+    *,
+    t: int,
+    scratch_root: Path,
+    compute_geometry: bool,
+    log_prefix: str,
+) -> tuple[list[dict[str, Any]], list[Path]]:
+    processes = []
+    logs: list[Path] = []
+    script = Path(__file__).resolve()
+    worker_scratch = scratch_root / f"{log_prefix}_scratch"
+    worker_scratch.mkdir(parents=True, exist_ok=False)
+    for worker_id in (0, 1):
+        log_path = scratch_root / f"{log_prefix}_worker{worker_id}.log"
+        logs.append(log_path)
+        command = [
+            sys.executable,
+            str(script),
+            "--phase-b-worker",
+            "--expected-head",
+            args.expected_head,
+            "--implementation-freeze-commit",
+            args.implementation_freeze_commit,
+            "--model-snapshot",
+            str(args.model_snapshot),
+            "--tokenizer-snapshot",
+            str(args.tokenizer_snapshot),
+            "--checkpoint",
+            str(args.checkpoint),
+            "--scratch-root",
+            str(worker_scratch),
+            "--worker-id",
+            str(worker_id),
+            "--phase-b-step",
+            str(t),
+        ]
+        if compute_geometry and worker_id == 0:
+            command.append("--phase-b-compute-geometry")
+        env = dict(os.environ)
+        env["CUDA_VISIBLE_DEVICES"] = str(worker_id)
+        handle = log_path.open("w", encoding="utf-8")
+        process = subprocess.Popen(
+            command,
+            cwd=ROOT,
+            env=env,
+            stdout=handle,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
+        processes.append((process, handle))
+
+    return_codes = []
+    for process, handle in processes:
+        return_codes.append(process.wait())
+        handle.close()
+    if any(code != 0 for code in return_codes):
+        for worker_id, log_path in enumerate(logs):
+            print(f"=== PHASE B WORKER {worker_id} LOG ===")
+            print(log_path.read_text(encoding="utf-8", errors="replace"))
+        raise TemporalBirthError(
+            f"PHASE_B_WORKER_FAILURE:t={t}:codes={return_codes}"
+        )
+
+    workers = []
+    for worker_id in (0, 1):
+        result_path = worker_scratch / f"worker{worker_id}" / "worker_result.json"
+        require(result_path.is_file(), "PHASE_B_WORKER_RESULT_MISSING")
+        workers.append(
+            json.loads(result_path.read_text(encoding="utf-8"))
+        )
+    return workers, logs
+
+
+def run_phase_b_cuda_preflight(args: argparse.Namespace) -> None:
+    authenticate_repo(
+        args.expected_head,
+        allow_implementation_worktree=False,
+    )
+    validate_runtime_authority(
+        expected_head=args.expected_head,
+        implementation_freeze_commit=args.implementation_freeze_commit,
+    )
+    validate_phase_b_static_contract()
+    _validate_two_t4s()
+
+    (
+        _summary,
+        trajectory,
+        encoded,
+        model,
+        wrapper,
+        strong_mask,
+        planes,
+    ) = _phase_b_prepare_worker_runtime(args)
+    device = torch.device("cuda:0")
+    features, _labels, active, targets = p3a._feature_batch_to_device(
+        encoded["dev_bundle"],
+        device,
+    )
+    batch_features = _phase_b_batch_features(features, 0, 1)
+    context = _phase_b_prepare_common_context(
+        model=model,
+        wrapper=wrapper,
+        features=batch_features,
+        stressor_active=active[:1],
+        target_indices=targets[:1],
+        strong_mask=strong_mask,
+        planes=planes,
+    )
+
+    source = (6201, 6201)
+    target = (6202, 6201)
+    a0, b0 = _phase_b_snapshot(trajectory, source, 0)
+    raw0 = _phase_b_raw_write(
+        context["mixer_input"],
+        batch_features["attention_mask"],
+        a0,
+        b0,
+    )
+    require(
+        int(torch.count_nonzero(raw0).item()) == 0,
+        "PHASE_B_PREFLIGHT_T0_RAW_NONZERO",
+    )
+
+    a_s, b_s = _phase_b_snapshot(trajectory, source, 20)
+    a_t, b_t = _phase_b_snapshot(trajectory, target, 20)
+    raw_source = _phase_b_raw_write(
+        context["mixer_input"],
+        batch_features["attention_mask"],
+        a_s,
+        b_s,
+    ).detach()
+    raw_target = _phase_b_raw_write(
+        context["mixer_input"],
+        batch_features["attention_mask"],
+        a_t,
+        b_t,
+    ).detach()
+    leaf = raw_source.clone().requires_grad_(True)
+    logits = _phase_b_resume_from_raw_write(
+        model=model,
+        wrapper=wrapper,
+        features=batch_features,
+        context=context,
+        raw_write=leaf,
+    )
+    margins = _phase_b_margin_vector(logits)
+    g0 = torch.autograd.grad(
+        margins[:, 0].sum(),
+        leaf,
+        retain_graph=True,
+    )[0]
+    g1 = torch.autograd.grad(
+        margins[:, 1].sum(),
+        leaf,
+    )[0]
+    require(bool(torch.isfinite(g0).all()), "PHASE_B_PREFLIGHT_G0_NONFINITE")
+    require(bool(torch.isfinite(g1).all()), "PHASE_B_PREFLIGHT_G1_NONFINITE")
+
+    with torch.no_grad():
+        target_logits = _phase_b_resume_from_raw_write(
+            model=model,
+            wrapper=wrapper,
+            features=batch_features,
+            context=context,
+            raw_write=raw_target,
+        )
+        full_logits = _phase_b_resume_from_raw_write(
+            model=model,
+            wrapper=wrapper,
+            features=batch_features,
+            context=context,
+            raw_write=raw_source + (raw_target - raw_source),
+        )
+    full_error = float(
+        torch.max(torch.abs(full_logits - target_logits)).item()
+    )
+    require(
+        full_error <= PHASE_B_FULL_REPLAY_ATOL,
+        f"PHASE_B_PREFLIGHT_FULL_REPLAY:{full_error}",
+    )
+    require(
+        not any(parameter.grad is not None for parameter in model.parameters()),
+        "PHASE_B_PREFLIGHT_PARAMETER_GRAD",
+    )
+
+    print("GEN5_AINIT_TEMPORAL_BIRTH_PHASE_B_CUDA_PREFLIGHT_PASS")
+    print("T0_RAW_WRITE_EXACT_ZERO=True")
+    print("JOINT_AUTOGRAD_ROWS_FINITE=True")
+    print(f"FULL_REPLAY_MAX_ABS={full_error:.17g}")
+    print("BACKWARD_EXECUTED=False")
+    print("PARAMETER_GRADIENTS_ACCUMULATED=False")
+    print("OPTIMIZER_CONSTRUCTED=False")
+    print("TRAINING_EXECUTED=False")
+    print("PREFLIGHT_COLLECTION=FORBIDDEN")
+    print("CONFIRMATORY_9601_9900_LOADED=False")
+
+
+def run_phase_b_analysis(args: argparse.Namespace) -> None:
+    authenticate_repo(
+        args.expected_head,
+        allow_implementation_worktree=False,
+    )
+    validate_runtime_authority(
+        expected_head=args.expected_head,
+        implementation_freeze_commit=args.implementation_freeze_commit,
+    )
+    validate_phase_b_static_contract()
+    gpu_meta = _validate_two_t4s()
+    require(args.output_root is not None, "PHASE_B_OUTPUT_REQUIRED")
+    output_root = Path(args.output_root)
+    require(not output_root.exists(), f"PHASE_B_OUTPUT_COLLISION:{output_root}")
+
+    phase_a_summary, _trajectory = _phase_b_load_phase_a_artifacts()
+    scratch_root = Path(
+        tempfile.mkdtemp(
+            prefix="gen5_temporal_birth_phase_b_",
+            dir="/kaggle/working",
+        )
+    )
+
+    all_logs: list[Path] = []
+    endpoint_workers, endpoint_logs = _phase_b_spawn_workers(
+        args,
+        t=20,
+        scratch_root=scratch_root,
+        compute_geometry=True,
+        log_prefix="endpoint_t20",
+    )
+    all_logs.extend(endpoint_logs)
+    endpoint = _phase_b_merge_functional_workers(
+        endpoint_workers,
+        t=20,
+    )
+    endpoint_auth = _phase_b_endpoint_authentication(endpoint)
+    require(
+        endpoint_auth["pass"] is True,
+        "PHASE_B_STEP20_AUTHENTICATION_FAILED",
+    )
+
+    geometry = endpoint_workers[0].get("geometry")
+    require(isinstance(geometry, list) and len(geometry) == 21, "PHASE_B_GEOMETRY")
+    geometric_birth = phase_b_geometric_birth_step(geometry)
+
+    functional_scan: list[dict[str, Any]] = []
+    functional_birth: int | None = None
+    endpoint_gate = _phase_b_gate(endpoint)
+    for t in range(geometric_birth, TOTAL_OPTIMIZER_STEPS + 1):
+        if t == 20:
+            value = endpoint
+            gate = endpoint_gate
+        else:
+            workers, logs = _phase_b_spawn_workers(
+                args,
+                t=t,
+                scratch_root=scratch_root,
+                compute_geometry=False,
+                log_prefix=f"scan_t{t:02d}",
+            )
+            all_logs.extend(logs)
+            value = _phase_b_merge_functional_workers(workers, t=t)
+            gate = _phase_b_gate(value)
+        functional_scan.append(
+            {
+                "t": t,
+                "metrics": value,
+                "gate": gate,
+            }
+        )
+        if gate["pass"]:
+            functional_birth = t
+            break
+
+    interpretation = _phase_b_interpretation(
+        geometric_birth=geometric_birth,
+        functional_birth=functional_birth,
+    )
+
+    output_root.mkdir(parents=True, exist_ok=False)
+    log_root = output_root / "worker_logs"
+    log_root.mkdir()
+    for index, log_path in enumerate(all_logs):
+        shutil.copy2(log_path, log_root / f"{index:03d}_{log_path.name}")
+
+    metrics_path = output_root / "temporal_birth_metrics.pt"
+    torch.save(
+        {
+            "schema_version": "GEN5_AINIT_TEMPORAL_BIRTH_PHASE_B_METRICS_V1",
+            "execution_head": args.expected_head,
+            "implementation_freeze_commit": args.implementation_freeze_commit,
+            "phase_a_trajectory_sha256": PHASE_A_TRAJECTORY_SHA256,
+            "geometry": geometry,
+            "endpoint": endpoint,
+            "endpoint_authentication": endpoint_auth,
+            "functional_scan": functional_scan,
+            "control_identity": [
+                phase_b_control_identity(index)
+                for index in range(PHASE_B_CONTROL_COUNT)
+            ],
+        },
+        metrics_path,
+    )
+
+    summary = {
+        "schema_version": "GEN5_AINIT_TEMPORAL_BIRTH_PHASE_B_SUMMARY_V1",
+        "result": interpretation,
+        "execution_head": args.expected_head,
+        "implementation_freeze_commit": args.implementation_freeze_commit,
+        "phase_a_evidence_freeze_commit": PHASE_A_EVIDENCE_FREEZE_COMMIT,
+        "phase_a_summary_sha256": PHASE_A_SUMMARY_SHA256,
+        "phase_a_trajectory_sha256": PHASE_A_TRAJECTORY_SHA256,
+        "pressure": PRESSURE,
+        "arm": ARM,
+        "dev_rows": DEV_ROWS,
+        "valid_token_count": endpoint_workers[0]["valid_token_count"],
+        "geometric_birth_step": geometric_birth,
+        "functional_freedom_birth_step": functional_birth,
+        "endpoint_authentication": endpoint_auth,
+        "endpoint_gate": endpoint_gate,
+        "functional_steps_evaluated": [
+            int(row["t"]) for row in functional_scan
+        ],
+        "fixed_gate": {
+            "R_visible": [0.60, 1.40],
+            "R_complement_max": 0.05,
+            "R_interaction_max": 0.05,
+            "task_row_energy_enrichment_min": 5.0,
+        },
+        "projector_pinv_rtol": PHASE_B_PROJECTOR_PINV_RTOL,
+        "functional_batch_rows": PHASE_B_FUNCTIONAL_BATCH_ROWS,
+        "control_family": [
+            phase_b_control_identity(index)
+            for index in range(PHASE_B_CONTROL_COUNT)
+        ],
+        "gpu_topology": GPU_TOPOLOGY,
+        "gpu_runtime": gpu_meta,
+        "training_executed": False,
+        "backward_executed": False,
+        "optimizer_constructed": False,
+        "parameter_gradients_accumulated": False,
+        "task_evaluation_executed": False,
+        "confirmatory_9601_9900_loaded": False,
+        "scientific_p_value_count": 0,
+    }
+    summary_path = output_root / "temporal_birth_analysis_summary.json"
+    summary_path.write_bytes(canonical_json_bytes(summary))
+
+    provenance = {
+        "schema_version": "GEN5_AINIT_TEMPORAL_BIRTH_PHASE_B_PROVENANCE_V1",
+        "status": "PASS",
+        "authority_commit": AUTHORITY_COMMIT,
+        "authority_blob": git("rev-parse", f"HEAD:{AUTHORITY_PATH}"),
+        "execution_head": args.expected_head,
+        "implementation_freeze_commit": args.implementation_freeze_commit,
+        "phase_a_evidence_freeze_commit": PHASE_A_EVIDENCE_FREEZE_COMMIT,
+        "phase_a_summary_sha256": PHASE_A_SUMMARY_SHA256,
+        "phase_a_trajectory_sha256": PHASE_A_TRAJECTORY_SHA256,
+        "internal_precursor_metrics_sha256": INTERNAL_PRECURSOR_METRICS_SHA256,
+        "parent_checkpoint_sha256": PARENT_CHECKPOINT_SHA256,
+        "frozen_snapshot_revision": FROZEN_SNAPSHOT_REVISION,
+        "dev_encoding_sha256": phase_a_summary["dev_encoding_sha256"],
+        "gpu_topology": GPU_TOPOLOGY,
+        "summary_sha256": sha256_file(summary_path),
+        "metrics_sha256": sha256_file(metrics_path),
+        "training_executed": False,
+        "backward_executed": False,
+        "optimizer_constructed": False,
+        "parameter_gradients_accumulated": False,
+        "confirmatory_9601_9900_loaded": False,
+        "failed_run_collection_allowed": False,
+        "preflight_collection_allowed": False,
+    }
+    provenance_path = output_root / "run_provenance.json"
+    provenance_path.write_bytes(canonical_json_bytes(provenance))
+
+    print("GEN5_AINIT_TEMPORAL_BIRTH_PHASE_B_PASS")
+    print(f"RESULT={interpretation}")
+    print(f"GEOMETRIC_BIRTH_STEP={geometric_birth}")
+    print(
+        "FUNCTIONAL_FREEDOM_BIRTH_STEP="
+        + (
+            "NONE"
+            if functional_birth is None
+            else str(functional_birth)
+        )
+    )
+    print("STEP20_AUTHENTICATION_PASS=True")
+    print("BACKWARD_EXECUTED=False")
+    print("PARAMETER_GRADIENTS_ACCUMULATED=False")
+    print("OPTIMIZER_CONSTRUCTED=False")
+    print("TRAINING_EXECUTED=False")
+    print("CONFIRMATORY_9601_9900_LOADED=False")
+    print(f"SUMMARY={summary_path}")
+    print(f"METRICS={metrics_path}")
+    print(f"PROVENANCE={provenance_path}")
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     modes = parser.add_mutually_exclusive_group(required=True)
@@ -1827,6 +3563,9 @@ def build_parser() -> argparse.ArgumentParser:
     modes.add_argument("--replay-auth-recovery-worker", action="store_true")
     modes.add_argument("--run-replay-matrix", action="store_true")
     modes.add_argument("--run-replay-worker", action="store_true")
+    modes.add_argument("--phase-b-cuda-preflight-only", action="store_true")
+    modes.add_argument("--run-phase-b", action="store_true")
+    modes.add_argument("--phase-b-worker", action="store_true")
 
     parser.add_argument("--expected-head", required=True)
     parser.add_argument("--allow-opening-worktree", action="store_true")
@@ -1837,6 +3576,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output-root", type=Path)
     parser.add_argument("--scratch-root", type=Path)
     parser.add_argument("--worker-id", type=int)
+    parser.add_argument("--phase-b-step", type=int)
+    parser.add_argument("--phase-b-compute-geometry", action="store_true")
     return parser
 
 
@@ -1849,10 +3590,12 @@ def validate_args(args: argparse.Namespace) -> None:
         "output_root",
         "scratch_root",
         "worker_id",
+        "phase_b_step",
     )
     if args.static_verify_only:
         for field in runtime_fields:
             require(getattr(args, field) is None, f"STATIC_RUNTIME_ARG:{field}")
+        require(not args.phase_b_compute_geometry, "STATIC_PHASE_B_GEOMETRY_FORBIDDEN")
         return
 
     require(not args.allow_opening_worktree, "RUNTIME_OPENING_WORKTREE_FORBIDDEN")
@@ -1866,6 +3609,27 @@ def validate_args(args: argparse.Namespace) -> None:
         require(args.output_root is None, "PREFLIGHT_OUTPUT_FORBIDDEN")
         require(args.scratch_root is None, "PREFLIGHT_SCRATCH_FORBIDDEN")
         require(args.worker_id is None, "PREFLIGHT_WORKER_FORBIDDEN")
+        require(args.phase_b_step is None, "PREFLIGHT_PHASE_B_STEP_FORBIDDEN")
+        require(not args.phase_b_compute_geometry, "PREFLIGHT_PHASE_B_GEOMETRY_FORBIDDEN")
+    elif args.phase_b_cuda_preflight_only:
+        require(args.output_root is None, "PHASE_B_PREFLIGHT_OUTPUT_FORBIDDEN")
+        require(args.scratch_root is None, "PHASE_B_PREFLIGHT_SCRATCH_FORBIDDEN")
+        require(args.worker_id is None, "PHASE_B_PREFLIGHT_WORKER_FORBIDDEN")
+        require(args.phase_b_step is None, "PHASE_B_PREFLIGHT_STEP_FORBIDDEN")
+        require(not args.phase_b_compute_geometry, "PHASE_B_PREFLIGHT_GEOMETRY_FORBIDDEN")
+    elif args.run_phase_b:
+        require(args.output_root is not None, "PHASE_B_OUTPUT_REQUIRED")
+        require(args.scratch_root is None, "PHASE_B_MAIN_SCRATCH_FORBIDDEN")
+        require(args.worker_id is None, "PHASE_B_MAIN_WORKER_FORBIDDEN")
+        require(args.phase_b_step is None, "PHASE_B_MAIN_STEP_FORBIDDEN")
+        require(not args.phase_b_compute_geometry, "PHASE_B_MAIN_GEOMETRY_FORBIDDEN")
+    elif args.phase_b_worker:
+        require(args.output_root is None, "PHASE_B_WORKER_OUTPUT_FORBIDDEN")
+        require(args.scratch_root is not None, "PHASE_B_WORKER_SCRATCH_REQUIRED")
+        require(args.worker_id in (0, 1), "PHASE_B_WORKER_ID_REQUIRED")
+        require(args.phase_b_step is not None and 0 <= args.phase_b_step <= TOTAL_OPTIMIZER_STEPS, "PHASE_B_WORKER_STEP_REQUIRED")
+        if args.phase_b_compute_geometry:
+            require(args.worker_id == 0, "PHASE_B_GEOMETRY_WORKER0_ONLY")
     elif args.replay_auth_recovery_only:
         require(args.output_root is None, "RECOVERY_OUTPUT_FORBIDDEN")
         require(args.scratch_root is None, "RECOVERY_SCRATCH_FORBIDDEN")
@@ -1897,6 +3661,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         run_replay_auth_recovery_worker(args)
     elif args.run_replay_matrix:
         run_replay_matrix(args)
+    elif args.phase_b_cuda_preflight_only:
+        run_phase_b_cuda_preflight(args)
+    elif args.run_phase_b:
+        run_phase_b_analysis(args)
+    elif args.phase_b_worker:
+        run_phase_b_worker(args)
     else:
         run_replay_worker(args)
     return 0
