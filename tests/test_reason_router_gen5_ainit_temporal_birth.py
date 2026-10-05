@@ -541,3 +541,50 @@ def test_phase_b_internal_correction_is_authenticated_by_exact_blob():
     source = inspect.getsource(mod.validate_phase_b_static_contract)
     assert "PHASE_B_PRECURSOR_CORRECTION_BLOB" in source
     assert "PHASE_B_PRECURSOR_CORRECTION_TOKEN" not in source
+
+def test_phase_b_joint_analysis_runtime_neutralizes_and_restores_historical_edge_state():
+    class Dummy:
+        pass
+
+    model = Dummy()
+    original_edges = {"F_TO_P": 0.25, "F_TO_S": 0.5}
+    model.gradient_ownership_mode = "edge_specific"
+    model.gradient_ownership_lambda = None
+    model.edge_gradient_lambdas = original_edges
+    model.return_q_diagnostics = True
+
+    with mod._phase_b_joint_analysis_runtime(model):
+        assert model.gradient_ownership_mode == "joint"
+        assert model.gradient_ownership_lambda is None
+        assert model.edge_gradient_lambdas is None
+        assert model.return_q_diagnostics is True
+
+    assert model.gradient_ownership_mode == "edge_specific"
+    assert model.gradient_ownership_lambda is None
+    assert model.edge_gradient_lambdas is original_edges
+    assert model.return_q_diagnostics is True
+
+
+def test_phase_b_joint_analysis_runtime_restores_absent_attributes():
+    class Dummy:
+        pass
+
+    model = Dummy()
+    with mod._phase_b_joint_analysis_runtime(model):
+        assert model.gradient_ownership_mode == "joint"
+        assert model.gradient_ownership_lambda is None
+        assert model.edge_gradient_lambdas is None
+        assert model.return_q_diagnostics is True
+
+    assert not hasattr(model, "gradient_ownership_mode")
+    assert not hasattr(model, "gradient_ownership_lambda")
+    assert not hasattr(model, "edge_gradient_lambdas")
+    assert not hasattr(model, "return_q_diagnostics")
+
+
+def test_phase_b_joint_forward_explicitly_neutralizes_edge_specific_arguments():
+    source = inspect.getsource(mod._phase_b_joint_forward_from_hidden)
+    assert 'gradient_ownership_mode="joint"' in source
+    assert "gradient_ownership_lambda=None" in source
+    assert "edge_gradient_lambdas=None" in source
+    assert "with _phase_b_joint_analysis_runtime(model):" in source

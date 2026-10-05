@@ -14,6 +14,7 @@ and final-checkpoint replay authentication.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import hashlib
 import json
 import math
@@ -23,7 +24,7 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any, Iterator, Mapping, Sequence
 
 import torch
 
@@ -2203,6 +2204,35 @@ def phase_b_geometric_birth_step(
     raise TemporalBirthError("NO_RAW_WRITE_GEOMETRIC_BIRTH_LOCALIZED")
 
 
+@contextlib.contextmanager
+def _phase_b_joint_analysis_runtime(
+    model: torch.nn.Module,
+) -> Iterator[None]:
+    names = (
+        "gradient_ownership_mode",
+        "gradient_ownership_lambda",
+        "edge_gradient_lambdas",
+        "return_q_diagnostics",
+    )
+    prior = {
+        name: (hasattr(model, name), getattr(model, name, None))
+        for name in names
+    }
+    model.gradient_ownership_mode = "joint"
+    model.gradient_ownership_lambda = None
+    model.edge_gradient_lambdas = None
+    model.return_q_diagnostics = True
+    try:
+        yield
+    finally:
+        for name in names:
+            existed, value = prior[name]
+            if existed:
+                setattr(model, name, value)
+            elif hasattr(model, name):
+                delattr(model, name)
+
+
 def _phase_b_joint_forward_from_hidden(
     model: torch.nn.Module,
     features: Mapping[str, torch.Tensor],
@@ -2212,16 +2242,19 @@ def _phase_b_joint_forward_from_hidden(
         reason_router_gen4_six_cell_tier2_inference_adapter as adapter,
     )
 
-    return model(
-        input_ids=None,
-        attention_mask=features["attention_mask"],
-        claim_mask=features["claim_mask"],
-        evidence_mask=features["evidence_mask"],
-        decision_mode=adapter.DECISION_MODE,
-        gradient_ownership_mode="joint",
-        return_q_diagnostics=True,
-        encoder_hidden_states=hidden_states,
-    )
+    with _phase_b_joint_analysis_runtime(model):
+        return model(
+            input_ids=None,
+            attention_mask=features["attention_mask"],
+            claim_mask=features["claim_mask"],
+            evidence_mask=features["evidence_mask"],
+            decision_mode=adapter.DECISION_MODE,
+            gradient_ownership_mode="joint",
+            gradient_ownership_lambda=None,
+            edge_gradient_lambdas=None,
+            return_q_diagnostics=True,
+            encoder_hidden_states=hidden_states,
+        )
 
 
 def _phase_b_prepare_common_context(
