@@ -213,13 +213,110 @@ def test_replay_auth_recovery_cells_cover_two_historical_lineages():
     assert mod.REPLAY_AUTH_RECOVERY_CELLS == {0: (6201, 6201), 1: (6201, 6202)}
 
 
-@pytest.mark.parametrize("cell", [(6201, 6201), (6201, 6202)])
-def test_replay_auth_recovery_historical_trace_is_frozen(cell):
+@pytest.mark.parametrize("cell", mod.FULL_FACTORIAL_CELLS)
+def test_historical_training_trace_is_frozen_for_full_3x3(cell):
     trace = mod.load_historical_training_trace(*cell)
     assert len(trace["training_losses"]) == mod.TOTAL_OPTIMIZER_STEPS
     assert len(trace["gradient_norms_before_clip"]) == mod.TOTAL_OPTIMIZER_STEPS
-    assert trace["file_sha256"] == mod.RECOVERY_TRAINING_REPORT_SHA256[cell]
+    assert trace["file_sha256"] == mod.HISTORICAL_TRAINING_REPORT_SHA256[cell]
 
+
+
+def test_replay_authentication_correction_constants_are_preregistered():
+    assert (
+        mod.REPLAY_AUTHENTICATION_CORRECTION_COMMIT
+        == "341e2e59668ea9b575007ddf591424b831170577"
+    )
+    assert mod.EPS32 == float(torch.finfo(torch.float32).eps)
+    assert mod.SCALAR_TRACE_EPS_MULTIPLIER == 32.0
+    assert mod.PARAMETER_MAX_ABS_BOUND == 1.0e-5
+    assert mod.PARAMETER_RELATIVE_L2_BOUND == 1.0e-4
+    assert mod.OPERATOR_RELATIVE_FROBENIUS_BOUND == 1.0e-4
+
+
+def test_scalar_trace_authentication_accepts_observed_recovery_drift():
+    diag = mod.scalar_trace_diagnostics(
+        observed=1.25958251953125,
+        historical=1.2595824003219604,
+    )
+    assert diag["absolute_error"] == pytest.approx(
+        1.1920928955078125e-07,
+        rel=0.0,
+        abs=1e-15,
+    )
+    assert diag["pass"] is True
+
+
+def test_scalar_trace_authentication_rejects_out_of_bound_difference():
+    historical = 1.0
+    observed = historical + 2.0 * mod.scalar_trace_tolerance(historical)
+    diag = mod.scalar_trace_diagnostics(
+        observed=observed,
+        historical=historical,
+    )
+    assert diag["pass"] is False
+
+
+def test_tensor_replay_diagnostics_keep_sha_as_diagnostic():
+    reference = torch.ones((2, 3), dtype=torch.float32)
+    replay = reference.clone()
+    replay[0, 0] += 1.0e-6
+    diag = mod.tensor_replay_diagnostics(replay, reference)
+    assert diag["torch_equal"] is False
+    assert diag["replay_sha256"] != diag["historical_sha256"]
+    assert diag["pass"] is True
+
+
+def test_tensor_replay_diagnostics_reject_out_of_bound_max_abs():
+    reference = torch.ones((2, 3), dtype=torch.float32)
+    replay = reference.clone()
+    replay[0, 0] += 2.0e-5
+    diag = mod.tensor_replay_diagnostics(replay, reference)
+    assert diag["pass"] is False
+    assert diag["max_abs_pass"] is False
+
+
+def test_operator_replay_diagnostics_match_explicit_residual():
+    a_ref = torch.tensor([[1.0, 2.0], [3.0, 4.0]], dtype=torch.float32)
+    b_ref = torch.tensor([[1.0, 0.0], [0.0, 1.0]], dtype=torch.float32)
+    a_rep = a_ref.clone()
+    b_rep = b_ref.clone()
+    b_rep[0, 0] += 1.0e-6
+    diag = mod.operator_replay_diagnostics(
+        replay_a=a_rep,
+        replay_b=b_rep,
+        historical_a=a_ref,
+        historical_b=b_ref,
+    )
+    w_ref = b_ref.to(torch.float64) @ a_ref.to(torch.float64)
+    w_rep = b_rep.to(torch.float64) @ a_rep.to(torch.float64)
+    expected = float(
+        torch.linalg.vector_norm(w_rep - w_ref).item()
+        / torch.linalg.vector_norm(w_ref).item()
+    )
+    assert diag["relative_frobenius_residual"] == pytest.approx(
+        expected, rel=1e-12, abs=1e-12
+    )
+
+
+def test_full_worker_authenticates_historical_trace_for_every_cell():
+    source = inspect.getsource(mod.run_replay_worker)
+    assert (
+        "historical_trace = load_historical_training_trace(a_seed, r_seed)"
+        in source
+    )
+    assert "historical_trace=historical_trace" in source
+
+
+def test_exact_endpoint_identity_is_diagnostic_not_gate():
+    source = inspect.getsource(mod._run_replay_cell)
+    assert "FINAL_A_REPLAY_MISMATCH" not in source
+    assert "FINAL_B_REPLAY_MISMATCH" not in source
+    assert "FINAL_A_SHA_MISMATCH" not in source
+    assert "FINAL_B_SHA_MISMATCH" not in source
+    assert "TEMPORAL_REPLAY_SCALAR_AUTHENTICATION_FAILED" in source
+    assert "TEMPORAL_REPLAY_PARAMETER_AUTHENTICATION_FAILED" in source
+    assert "TEMPORAL_REPLAY_OPERATOR_AUTHENTICATION_FAILED" in source
 
 def test_replay_instrumentation_occurs_after_historical_sync():
     source = inspect.getsource(mod._run_replay_cell)
@@ -260,6 +357,10 @@ def test_runtime_requires_exact_implementation_freeze_argument():
 
 def test_authority_identity_and_collection_policy_are_frozen():
     assert mod.AUTHORITY_COMMIT == "20ae761dbff10ad70853b10910cbe12e51e0666a"
+    assert (
+        mod.REPLAY_AUTHENTICATION_CORRECTION_COMMIT
+        == "341e2e59668ea9b575007ddf591424b831170577"
+    )
     assert mod.GPU_TOPOLOGY == "TWO_INDEPENDENT_SINGLE_GPU_WORKERS_NO_DDP"
     authority_text = (
         mod.ROOT / mod.AUTHORITY_PATH

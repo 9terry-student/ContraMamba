@@ -44,10 +44,17 @@ from scripts import train_reason_router_gen5_phase3a_contention as p3a  # noqa: 
 
 EXPECTED_BRANCH = "gen5-causal-role-state-ownership"
 AUTHORITY_COMMIT = "20ae761dbff10ad70853b10910cbe12e51e0666a"
+REPLAY_AUTHENTICATION_CORRECTION_COMMIT = (
+    "341e2e59668ea9b575007ddf591424b831170577"
+)
 SOURCE_EVIDENCE_FREEZE_COMMIT = "d53c33b5a64e02b4f439a1f6b283b07990296bf8"
 AUTHORITY_PATH = (
     "reports/reason_router_gen5_ainit_representation_freedom_"
     "temporal_birth_audit_authority_spec_candidate.md"
+)
+REPLAY_AUTHENTICATION_CORRECTION_PATH = (
+    "reports/reason_router_gen5_ainit_representation_freedom_"
+    "temporal_birth_replay_authentication_correction_spec_candidate.md"
 )
 
 AUTHORIZED_IMPLEMENTATION_PATHS = frozenset({
@@ -84,10 +91,23 @@ REPLAY_AUTH_RECOVERY_CELLS = {
     0: (6201, 6201),
     1: (6201, 6202),
 }
-RECOVERY_TRAINING_REPORT_SHA256 = {
+HISTORICAL_TRAINING_REPORT_SHA256 = {
     (6201, 6201): "aaedd2a51439e96ee7c2c3a1681a66d35ef31ffca85de22a944de3fb16dda7cf",
     (6201, 6202): "1c39f125b8d297ac9004c827ba48bba5f77dc45f393499a9c5e9d3dd5f590744",
+    (6201, 6203): "63a0a30d16ed17da04aea130145053ba529da9d7b9d08fe0c94c5d31fce62d36",
+    (6202, 6201): "117418bc673caf82468909f816077dd28c8c7a205a134f97d0a168b7d38e653f",
+    (6202, 6202): "7c4159c54d003454849d9f1a74de8dc1b75f649173d0f77ec1e889133c4bd98e",
+    (6202, 6203): "a4dc7fc1f271b32e3118d70bd4c0aa4236fda791467ed797a67e01f98cd7ab40",
+    (6203, 6201): "5a73154cbfe9ac999757d3032c927e37ebb20220fa45f36ef736cad12faf3f76",
+    (6203, 6202): "5c9412f0ece129fbf0dda9827ed59553209807999d704842c61329528cc80e0b",
+    (6203, 6203): "74deb7ddeff8fdecbd1895ce43c4506934df720eeb618458337ea9acbd1c07b5",
 }
+
+EPS32 = float(torch.finfo(torch.float32).eps)
+SCALAR_TRACE_EPS_MULTIPLIER = 32.0
+PARAMETER_MAX_ABS_BOUND = 1.0e-5
+PARAMETER_RELATIVE_L2_BOUND = 1.0e-4
+OPERATOR_RELATIVE_FROBENIUS_BOUND = 1.0e-4
 
 PRESSURE = "P0"
 ARM = "G5-C0"
@@ -319,9 +339,29 @@ def authenticate_repo(
         "SOURCE_EVIDENCE_NOT_ANCESTOR",
     )
 
+    require(
+        git_rc(
+            "merge-base", "--is-ancestor",
+            REPLAY_AUTHENTICATION_CORRECTION_COMMIT, expected_head,
+        ) == 0,
+        "REPLAY_AUTHENTICATION_CORRECTION_NOT_ANCESTOR",
+    )
+
     authority_blob = git("rev-parse", f"{AUTHORITY_COMMIT}:{AUTHORITY_PATH}")
     live_authority_blob = git("rev-parse", f"HEAD:{AUTHORITY_PATH}")
     require(authority_blob == live_authority_blob, "AUTHORITY_BLOB_DRIFT")
+    correction_blob = git(
+        "rev-parse",
+        f"{REPLAY_AUTHENTICATION_CORRECTION_COMMIT}:"
+        f"{REPLAY_AUTHENTICATION_CORRECTION_PATH}",
+    )
+    live_correction_blob = git(
+        "rev-parse", f"HEAD:{REPLAY_AUTHENTICATION_CORRECTION_PATH}"
+    )
+    require(
+        correction_blob == live_correction_blob,
+        "REPLAY_AUTHENTICATION_CORRECTION_BLOB_DRIFT",
+    )
 
     observed = status_paths()
     if allow_implementation_worktree:
@@ -343,6 +383,11 @@ def validate_runtime_authority(
         "IMPLEMENTATION_FREEZE_MUST_EQUAL_EXECUTION_HEAD",
     )
     text = git("show", f"{AUTHORITY_COMMIT}:{AUTHORITY_PATH}")
+    correction_text = git(
+        "show",
+        f"{REPLAY_AUTHENTICATION_CORRECTION_COMMIT}:"
+        f"{REPLAY_AUTHENTICATION_CORRECTION_PATH}",
+    )
     required_tokens = (
         "COMBINED_IMPLEMENTATION_AND_EXECUTION_AUTHORITY=YES_CONDITIONAL",
         "SCIENTIFIC_EXECUTION_ALLOWED=YES_ONLY_AFTER_IMPLEMENTATION_VALIDATION_AND_FREEZE",
@@ -364,6 +409,22 @@ def validate_runtime_authority(
     )
     for token in required_tokens:
         require(token in text, f"AUTHORITY_TOKEN:{token}")
+
+    correction_tokens = (
+        "AUTHORITY_CORRECTION=YES",
+        "32 * EPS32 * max(1, abs(historical))",
+        "max_abs <= 1.0e-5",
+        "relative_l2 <= 1.0e-4",
+        "operator_relative_frobenius_residual <= 1.0e-4",
+        "GEN5_AINIT_TEMPORAL_BIRTH_PHASE_A_NUMERICAL_REPLAY_AUTHENTICATION_PASS",
+        "failed numerical replay: `DO_NOT_COLLECT`",
+        "successful corrected Phase A replay: `COLLECT_AND_IMPORT_REQUIRED`",
+    )
+    for token in correction_tokens:
+        require(
+            token in correction_text,
+            f"REPLAY_AUTHENTICATION_CORRECTION_TOKEN:{token}",
+        )
 
 
 def load_frozen_final_checkpoint(
@@ -427,27 +488,135 @@ def load_historical_training_trace(
     training_rng_seed: int,
 ) -> dict[str, Any]:
     cell = (a_init_seed, training_rng_seed)
-    require(cell in REPLAY_AUTH_RECOVERY_CELLS.values(), f"RECOVERY_CELL_NOT_AUTHORIZED:{cell_name(*cell)}")
+    validate_full_factorial_cell(*cell)
     frozen_relative = Path(FROZEN_FINAL_SOURCES[cell][0])
     report_relative = frozen_relative.with_name("training_report.json")
     report_path = ROOT / report_relative
-    require(report_path.is_file(), f"RECOVERY_REPORT_MISSING:{report_relative}")
+    require(
+        report_path.is_file(),
+        (
+            "TEMPORAL_REPLAY_EXACT_INVARIANT_FAILED:"
+            f"HISTORICAL_REPORT_MISSING:{report_relative}"
+        ),
+    )
     observed_sha = sha256_file(report_path)
-    expected_sha = RECOVERY_TRAINING_REPORT_SHA256[cell]
+    expected_sha = HISTORICAL_TRAINING_REPORT_SHA256[cell]
     require(
         observed_sha == expected_sha,
-        f"RECOVERY_REPORT_SHA:{cell_name(*cell)}:expected={expected_sha}:observed={observed_sha}",
+        (
+            "TEMPORAL_REPLAY_EXACT_INVARIANT_FAILED:HISTORICAL_REPORT_SHA:"
+            f"{cell_name(*cell)}:expected={expected_sha}:observed={observed_sha}"
+        ),
     )
     report = json.loads(report_path.read_text(encoding="utf-8"))
     losses = report.get("training_losses")
     grad_norms = report.get("gradient_norms_before_clip")
-    require(isinstance(losses, list) and len(losses) == TOTAL_OPTIMIZER_STEPS, f"RECOVERY_LOSS_TRACE:{cell_name(*cell)}")
-    require(isinstance(grad_norms, list) and len(grad_norms) == TOTAL_OPTIMIZER_STEPS, f"RECOVERY_GRAD_TRACE:{cell_name(*cell)}")
+    require(
+        isinstance(losses, list) and len(losses) == TOTAL_OPTIMIZER_STEPS,
+        (
+            "TEMPORAL_REPLAY_EXACT_INVARIANT_FAILED:HISTORICAL_LOSS_TRACE:"
+            f"{cell_name(*cell)}"
+        ),
+    )
+    require(
+        isinstance(grad_norms, list)
+        and len(grad_norms) == TOTAL_OPTIMIZER_STEPS,
+        (
+            "TEMPORAL_REPLAY_EXACT_INVARIANT_FAILED:HISTORICAL_GRAD_TRACE:"
+            f"{cell_name(*cell)}"
+        ),
+    )
     return {
         "relative_path": str(report_relative).replace("\\", "/"),
         "file_sha256": observed_sha,
         "training_losses": [float(v) for v in losses],
         "gradient_norms_before_clip": [float(v) for v in grad_norms],
+    }
+
+
+def scalar_trace_tolerance(reference: float) -> float:
+    return (
+        SCALAR_TRACE_EPS_MULTIPLIER
+        * EPS32
+        * max(1.0, abs(float(reference)))
+    )
+
+
+def scalar_trace_diagnostics(
+    *,
+    observed: float,
+    historical: float,
+) -> dict[str, Any]:
+    absolute_error = abs(float(observed) - float(historical))
+    tolerance = scalar_trace_tolerance(historical)
+    return {
+        "observed": float(observed),
+        "historical": float(historical),
+        "absolute_error": absolute_error,
+        "tolerance": tolerance,
+        "pass": absolute_error <= tolerance,
+    }
+
+
+def tensor_replay_diagnostics(
+    replay: torch.Tensor,
+    historical: torch.Tensor,
+) -> dict[str, Any]:
+    replay_cpu = replay.detach().cpu().contiguous()
+    historical_cpu = historical.detach().cpu().contiguous()
+    require(
+        replay_cpu.shape == historical_cpu.shape,
+        "TEMPORAL_REPLAY_EXACT_INVARIANT_FAILED:PARAMETER_SHAPE",
+    )
+    delta = replay_cpu.to(torch.float64) - historical_cpu.to(torch.float64)
+    max_abs = float(delta.abs().max().item())
+    l2 = float(torch.linalg.vector_norm(delta).item())
+    historical_l2 = float(
+        torch.linalg.vector_norm(historical_cpu.to(torch.float64)).item()
+    )
+    relative_l2 = l2 / max(historical_l2, EPS32)
+    max_abs_pass = max_abs <= PARAMETER_MAX_ABS_BOUND
+    relative_l2_pass = relative_l2 <= PARAMETER_RELATIVE_L2_BOUND
+    return {
+        "torch_equal": torch.equal(replay_cpu, historical_cpu),
+        "replay_sha256": tensor_sha256(replay_cpu),
+        "historical_sha256": tensor_sha256(historical_cpu),
+        "max_abs": max_abs,
+        "l2": l2,
+        "historical_l2": historical_l2,
+        "relative_l2": relative_l2,
+        "max_abs_bound": PARAMETER_MAX_ABS_BOUND,
+        "relative_l2_bound": PARAMETER_RELATIVE_L2_BOUND,
+        "max_abs_pass": max_abs_pass,
+        "relative_l2_pass": relative_l2_pass,
+        "pass": max_abs_pass and relative_l2_pass,
+    }
+
+
+def operator_replay_diagnostics(
+    *,
+    replay_a: torch.Tensor,
+    replay_b: torch.Tensor,
+    historical_a: torch.Tensor,
+    historical_b: torch.Tensor,
+) -> dict[str, Any]:
+    distance = math.sqrt(max(
+        0.0,
+        operator_distance_sq(
+            replay_a, replay_b, historical_a, historical_b
+        ),
+    ))
+    historical_norm = math.sqrt(max(
+        0.0,
+        operator_norm_sq(historical_a, historical_b),
+    ))
+    relative = distance / max(historical_norm, EPS32)
+    return {
+        "frobenius_distance": distance,
+        "historical_frobenius_norm": historical_norm,
+        "relative_frobenius_residual": relative,
+        "relative_frobenius_bound": OPERATOR_RELATIVE_FROBENIUS_BOUND,
+        "pass": relative <= OPERATOR_RELATIVE_FROBENIUS_BOUND,
     }
 
 
@@ -790,6 +959,17 @@ def run_static_verify(args: argparse.Namespace) -> None:
     print("GEN5_AINIT_TEMPORAL_BIRTH_PHASE_A_STATIC_VERIFY_PASS")
     print(f"HEAD={args.expected_head}")
     print(f"AUTHORITY_COMMIT={AUTHORITY_COMMIT}")
+    print(
+        "REPLAY_AUTHENTICATION_CORRECTION_COMMIT="
+        f"{REPLAY_AUTHENTICATION_CORRECTION_COMMIT}"
+    )
+    print(f"SCALAR_TRACE_EPS_MULTIPLIER={SCALAR_TRACE_EPS_MULTIPLIER:.17g}")
+    print(f"PARAMETER_MAX_ABS_BOUND={PARAMETER_MAX_ABS_BOUND:.17g}")
+    print(f"PARAMETER_RELATIVE_L2_BOUND={PARAMETER_RELATIVE_L2_BOUND:.17g}")
+    print(
+        "OPERATOR_RELATIVE_FROBENIUS_BOUND="
+        f"{OPERATOR_RELATIVE_FROBENIUS_BOUND:.17g}"
+    )
     print("CELLS=9")
     print("GPU_WORKERS=2")
     print(f"GPU_TOPOLOGY={GPU_TOPOLOGY}")
@@ -967,8 +1147,18 @@ def _run_replay_cell(
     snapshot_public.append(public0)
     snapshots.append(private0)
     require(
+        torch.equal(private0["A_theta.weight"], a_init),
+        (
+            "TEMPORAL_REPLAY_EXACT_INVARIANT_FAILED:A0_RECONSTRUCTION:"
+            f"{cell_name(a_init_seed, training_rng_seed)}"
+        ),
+    )
+    require(
         int(torch.count_nonzero(private0["B_theta.weight"]).item()) == 0,
-        f"B0_NONZERO:{cell_name(a_init_seed, training_rng_seed)}",
+        (
+            "TEMPORAL_REPLAY_EXACT_INVARIANT_FAILED:B0_NONZERO:"
+            f"{cell_name(a_init_seed, training_rng_seed)}"
+        ),
     )
 
     losses: list[float] = []
@@ -1041,11 +1231,20 @@ def _run_replay_cell(
             step0_grad_b = b_grad_cpu.clone()
             require(
                 int(torch.count_nonzero(step0_grad_a).item()) == 0,
-                f"STEP0_A_GRAD_NONZERO:{cell_name(a_init_seed, training_rng_seed)}",
+                (
+                    "TEMPORAL_REPLAY_EXACT_INVARIANT_FAILED:"
+                    "STEP0_A_GRAD_NONZERO:"
+                    f"{cell_name(a_init_seed, training_rng_seed)}"
+                ),
             )
             require(
-                float(torch.linalg.vector_norm(step0_grad_b).item()) > 0.0,
-                f"STEP0_B_GRAD_ZERO:{cell_name(a_init_seed, training_rng_seed)}",
+                bool(torch.isfinite(step0_grad_b).all())
+                and float(torch.linalg.vector_norm(step0_grad_b).item()) > 0.0,
+                (
+                    "TEMPORAL_REPLAY_EXACT_INVARIANT_FAILED:"
+                    "STEP0_B_GRAD_INVALID:"
+                    f"{cell_name(a_init_seed, training_rng_seed)}"
+                ),
             )
 
         losses.append(loss_value)
@@ -1062,13 +1261,32 @@ def _run_replay_cell(
 
         if historical_trace is not None:
             expected_loss = float(historical_trace["training_losses"][step])
-            expected_grad = float(historical_trace["gradient_norms_before_clip"][step])
-            if loss_value != expected_loss or total_preclip != expected_grad:
+            expected_grad = float(
+                historical_trace["gradient_norms_before_clip"][step]
+            )
+            loss_auth = scalar_trace_diagnostics(
+                observed=loss_value, historical=expected_loss
+            )
+            grad_auth = scalar_trace_diagnostics(
+                observed=total_preclip, historical=expected_grad
+            )
+            gradient_metrics[-1][
+                "historical_loss_authentication"
+            ] = loss_auth
+            gradient_metrics[-1][
+                "historical_total_grad_authentication"
+            ] = grad_auth
+            if not loss_auth["pass"] or not grad_auth["pass"]:
                 raise TemporalBirthError(
-                    "REPLAY_AUTH_RECOVERY_TRACE_DIVERGENCE:"
-                    f"{cell_name(a_init_seed, training_rng_seed)}:step={step}:"
-                    f"loss_expected={expected_loss:.17g}:loss_observed={loss_value:.17g}:"
-                    f"grad_expected={expected_grad:.17g}:grad_observed={total_preclip:.17g}"
+                    (
+                        "TEMPORAL_REPLAY_SCALAR_AUTHENTICATION_FAILED:"
+                        f"{cell_name(a_init_seed, training_rng_seed)}:"
+                        f"step={step}:"
+                        f"loss_error={loss_auth['absolute_error']:.17g}:"
+                        f"loss_tolerance={loss_auth['tolerance']:.17g}:"
+                        f"grad_error={grad_auth['absolute_error']:.17g}:"
+                        f"grad_tolerance={grad_auth['tolerance']:.17g}"
+                    )
                 )
 
     require(len(snapshots) == 21, "SNAPSHOT_COUNT")
@@ -1080,31 +1298,45 @@ def _run_replay_cell(
     final_b = snapshots[-1]["B_theta.weight"]
     frozen_a = frozen["A_theta.weight"]
     frozen_b = frozen["B_theta.weight"]
-    a_equal = torch.equal(final_a, frozen_a)
-    b_equal = torch.equal(final_b, frozen_b)
-    a_sha_equal = tensor_sha256(final_a) == frozen["A_theta_sha256"]
-    b_sha_equal = tensor_sha256(final_b) == frozen["B_theta_sha256"]
 
-    if historical_trace is not None and not (a_equal and b_equal and a_sha_equal and b_sha_equal):
-        a_delta = final_a.to(torch.float64) - frozen_a.to(torch.float64)
-        b_delta = final_b.to(torch.float64) - frozen_b.to(torch.float64)
+    a_auth = tensor_replay_diagnostics(final_a, frozen_a)
+    b_auth = tensor_replay_diagnostics(final_b, frozen_b)
+    if not a_auth["pass"] or not b_auth["pass"]:
         raise TemporalBirthError(
-            "TEMPORAL_REPLAY_AUTHENTICATION_FAILED:REPLAY_AUTH_RECOVERY_ENDPOINT_MISMATCH:"
-            f"{cell_name(a_init_seed, training_rng_seed)}:"
-            f"A_equal={a_equal}:B_equal={b_equal}:A_sha_equal={a_sha_equal}:B_sha_equal={b_sha_equal}:"
-            f"A_max_abs={float(a_delta.abs().max().item()):.17g}:"
-            f"B_max_abs={float(b_delta.abs().max().item()):.17g}:"
-            f"A_l2={float(torch.linalg.vector_norm(a_delta).item()):.17g}:"
-            f"B_l2={float(torch.linalg.vector_norm(b_delta).item()):.17g}"
+            (
+                "TEMPORAL_REPLAY_PARAMETER_AUTHENTICATION_FAILED:"
+                f"{cell_name(a_init_seed, training_rng_seed)}:"
+                f"A_max_abs={a_auth['max_abs']:.17g}:"
+                f"A_relative_l2={a_auth['relative_l2']:.17g}:"
+                f"B_max_abs={b_auth['max_abs']:.17g}:"
+                f"B_relative_l2={b_auth['relative_l2']:.17g}"
+            )
         )
 
-    require(a_equal, f"FINAL_A_REPLAY_MISMATCH:{cell_name(a_init_seed, training_rng_seed)}")
-    require(b_equal, f"FINAL_B_REPLAY_MISMATCH:{cell_name(a_init_seed, training_rng_seed)}")
-    require(a_sha_equal, f"FINAL_A_SHA_MISMATCH:{cell_name(a_init_seed, training_rng_seed)}")
-    require(b_sha_equal, f"FINAL_B_SHA_MISMATCH:{cell_name(a_init_seed, training_rng_seed)}")
+    operator_auth = operator_replay_diagnostics(
+        replay_a=final_a,
+        replay_b=final_b,
+        historical_a=frozen_a,
+        historical_b=frozen_b,
+    )
+    if not operator_auth["pass"]:
+        raise TemporalBirthError(
+            (
+                "TEMPORAL_REPLAY_OPERATOR_AUTHENTICATION_FAILED:"
+                f"{cell_name(a_init_seed, training_rng_seed)}:"
+                "relative_frobenius_residual="
+                f"{operator_auth['relative_frobenius_residual']:.17g}:"
+                "bound="
+                f"{operator_auth['relative_frobenius_bound']:.17g}"
+            )
+        )
+
     require(
         parent_parameter_fingerprint(model) == parent_before,
-        f"PARENT_MUTATION:{cell_name(a_init_seed, training_rng_seed)}",
+        (
+            "TEMPORAL_REPLAY_EXACT_INVARIANT_FAILED:PARENT_MUTATION:"
+            f"{cell_name(a_init_seed, training_rng_seed)}"
+        ),
     )
 
     result = {
@@ -1125,11 +1357,22 @@ def _run_replay_cell(
             "A_theta_sha256": frozen["A_theta_sha256"],
             "B_theta_sha256": frozen["B_theta_sha256"],
         },
+        "historical_training_trace": {
+            "relative_path": (
+                historical_trace["relative_path"]
+                if historical_trace is not None else None
+            ),
+            "file_sha256": (
+                historical_trace["file_sha256"]
+                if historical_trace is not None else None
+            ),
+            "all_scalar_steps_authenticated": historical_trace is not None,
+        },
         "final_replay_authentication": {
-            "A_torch_equal": True,
-            "B_torch_equal": True,
-            "A_sha256_equal": True,
-            "B_sha256_equal": True,
+            "A": a_auth,
+            "B": b_auth,
+            "operator": operator_auth,
+            "numerically_authenticated": True,
         },
         "parent_signature_before": parent_before,
         "parent_signature_after": parent_parameter_fingerprint(model),
@@ -1211,10 +1454,9 @@ def run_replay_auth_recovery(args: argparse.Namespace) -> None:
     print("CELLS=A6201-R6201,A6201-R6202")
     print("GPU_WORKERS=2")
     print(f"GPU_TOPOLOGY={GPU_TOPOLOGY}")
-    print("HISTORICAL_LOSS_TRACE_EXACT=True")
-    print("HISTORICAL_TOTAL_GRAD_TRACE_EXACT=True")
-    print("FINAL_A_B_TORCH_EQUAL=True")
-    print("FINAL_A_B_SHA256_EQUAL=True")
+    print("HISTORICAL_SCALAR_TRACE_NUMERICALLY_AUTHENTICATED=True")
+    print("FINAL_A_B_NUMERICALLY_AUTHENTICATED=True")
+    print("FINAL_OPERATOR_NUMERICALLY_AUTHENTICATED=True")
     print("RECOVERY_COLLECTION=FORBIDDEN")
     print("SCIENTIFIC_INTERPRETATION=FORBIDDEN")
 
@@ -1237,6 +1479,7 @@ def run_replay_worker(args: argparse.Namespace) -> None:
     cells: dict[str, Any] = {}
     public_cells: list[dict[str, Any]] = []
     for a_seed, r_seed in GPU_QUEUES[args.worker_id]:
+        historical_trace = load_historical_training_trace(a_seed, r_seed)
         cell = _run_replay_cell(
             args=args,
             a_init_seed=a_seed,
@@ -1244,6 +1487,7 @@ def run_replay_worker(args: argparse.Namespace) -> None:
             encoded=encoded,
             snapshot=snapshot,
             checkpoint_path=checkpoint_path,
+            historical_trace=historical_trace,
         )
         name = cell["cell_name"]
         cells[name] = {
@@ -1265,6 +1509,7 @@ def run_replay_worker(args: argparse.Namespace) -> None:
             "step0_grad_A_sha256": cell["step0_grad_A_sha256"],
             "step0_grad_B_sha256": cell["step0_grad_B_sha256"],
             "frozen_final_checkpoint": cell["frozen_final_checkpoint"],
+            "historical_training_trace": cell["historical_training_trace"],
             "final_replay_authentication": cell["final_replay_authentication"],
             "parent_signature_before": cell["parent_signature_before"],
             "parent_signature_after": cell["parent_signature_after"],
@@ -1434,8 +1679,11 @@ def run_replay_matrix(args: argparse.Namespace) -> None:
     trajectory_path = output_root / "temporal_birth_trajectory.pt"
     torch.save(
         {
-            "schema_version": "GEN5_AINIT_TEMPORAL_BIRTH_PHASE_A_TRAJECTORY_V1",
+            "schema_version": "GEN5_AINIT_TEMPORAL_BIRTH_PHASE_A_TRAJECTORY_V2",
             "authority_commit": AUTHORITY_COMMIT,
+            "replay_authentication_correction_commit": (
+                REPLAY_AUTHENTICATION_CORRECTION_COMMIT
+            ),
             "execution_head": args.expected_head,
             "implementation_freeze_commit": args.implementation_freeze_commit,
             "factor_seeds": FACTOR_SEEDS,
@@ -1447,9 +1695,15 @@ def run_replay_matrix(args: argparse.Namespace) -> None:
     )
 
     summary = {
-        "schema_version": "GEN5_AINIT_TEMPORAL_BIRTH_PHASE_A_REPLAY_SUMMARY_V1",
-        "result": "PASS_GEN5_AINIT_TEMPORAL_BIRTH_PHASE_A_REPLAY",
+        "schema_version": "GEN5_AINIT_TEMPORAL_BIRTH_PHASE_A_REPLAY_SUMMARY_V2",
+        "result": (
+            "PASS_GEN5_AINIT_TEMPORAL_BIRTH_PHASE_A_"
+            "NUMERICAL_REPLAY_AUTHENTICATION"
+        ),
         "authority_commit": AUTHORITY_COMMIT,
+        "replay_authentication_correction_commit": (
+            REPLAY_AUTHENTICATION_CORRECTION_COMMIT
+        ),
         "source_evidence_freeze_commit": SOURCE_EVIDENCE_FREEZE_COMMIT,
         "execution_head": args.expected_head,
         "implementation_freeze_commit": args.implementation_freeze_commit,
@@ -1486,7 +1740,18 @@ def run_replay_matrix(args: argparse.Namespace) -> None:
         "cells": public_cells,
         "operator_factor_trajectory": factor_trajectory,
         "step0_grad_B_factor_metrics": grad_b_factor,
-        "all_final_checkpoint_replays_exact": True,
+        "historical_scalar_trace_gate": {
+            "eps32": EPS32,
+            "eps_multiplier": SCALAR_TRACE_EPS_MULTIPLIER,
+        },
+        "parameter_replay_gate": {
+            "max_abs_bound": PARAMETER_MAX_ABS_BOUND,
+            "relative_l2_bound": PARAMETER_RELATIVE_L2_BOUND,
+        },
+        "operator_replay_gate": {
+            "relative_frobenius_bound": OPERATOR_RELATIVE_FROBENIUS_BOUND,
+        },
+        "all_replays_numerically_authenticated": True,
         "phase_b_executed": False,
         "training_executed": True,
         "backward_executed": True,
@@ -1500,10 +1765,16 @@ def run_replay_matrix(args: argparse.Namespace) -> None:
     summary_path.write_bytes(canonical_json_bytes(summary))
 
     provenance = {
-        "schema_version": "GEN5_AINIT_TEMPORAL_BIRTH_PHASE_A_PROVENANCE_V1",
+        "schema_version": "GEN5_AINIT_TEMPORAL_BIRTH_PHASE_A_PROVENANCE_V2",
         "status": "PASS",
         "authority_commit": AUTHORITY_COMMIT,
         "authority_blob": git("rev-parse", f"HEAD:{AUTHORITY_PATH}"),
+        "replay_authentication_correction_commit": (
+            REPLAY_AUTHENTICATION_CORRECTION_COMMIT
+        ),
+        "replay_authentication_correction_blob": git(
+            "rev-parse", f"HEAD:{REPLAY_AUTHENTICATION_CORRECTION_PATH}"
+        ),
         "execution_head": args.expected_head,
         "frozen_snapshot_revision": FROZEN_SNAPSHOT_REVISION,
         "parent_checkpoint_sha256": PARENT_CHECKPOINT_SHA256,
@@ -1528,13 +1799,18 @@ def run_replay_matrix(args: argparse.Namespace) -> None:
 
     shutil.rmtree(scratch_root)
 
-    print("GEN5_AINIT_TEMPORAL_BIRTH_PHASE_A_REPLAY_PASS")
+    print(
+        "GEN5_AINIT_TEMPORAL_BIRTH_PHASE_A_"
+        "NUMERICAL_REPLAY_AUTHENTICATION_PASS"
+    )
     print("CELLS=9")
     print("GPU_WORKERS=2")
     print(f"GPU_TOPOLOGY={GPU_TOPOLOGY}")
     print("OPTIMIZER_STEPS_PER_CELL=20")
     print("TOTAL_REPLAY_OPTIMIZER_STEPS=180")
-    print("ALL_FINAL_CHECKPOINT_REPLAYS_EXACT=True")
+    print("ALL_HISTORICAL_SCALAR_TRACES_AUTHENTICATED=True")
+    print("ALL_FINAL_PARAMETERS_NUMERICALLY_AUTHENTICATED=True")
+    print("ALL_FINAL_OPERATORS_NUMERICALLY_AUTHENTICATED=True")
     print("TASK_EVALUATION_EXECUTED=False")
     print("CONFIRMATORY_9601_9900_LOADED=False")
     print(f"SUMMARY={summary_path}")
