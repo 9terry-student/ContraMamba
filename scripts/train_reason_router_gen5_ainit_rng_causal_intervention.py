@@ -398,7 +398,7 @@ def cell_name(a_init_seed: int, training_rng_seed: int) -> str:
     return f"A{a_init_seed}-R{training_rng_seed}"
 
 
-def validate_offdiagonal_cell(
+def validate_factor_cell(
     a_init_seed: int,
     training_rng_seed: int,
 ) -> None:
@@ -407,6 +407,13 @@ def validate_offdiagonal_cell(
         training_rng_seed in FACTOR_SEEDS,
         f"TRAINING_RNG_SEED:{training_rng_seed}",
     )
+
+
+def validate_offdiagonal_cell(
+    a_init_seed: int,
+    training_rng_seed: int,
+) -> None:
+    validate_factor_cell(a_init_seed, training_rng_seed)
     require(
         (a_init_seed, training_rng_seed) in OFFDIAGONAL_CELLS,
         f"NOT_AUTHORIZED_OFFDIAGONAL:{a_init_seed}:{training_rng_seed}",
@@ -725,7 +732,10 @@ def _prepare_runtime_model(
         train_reason_router_gen5_phase2_state_update_ownership as p2train,
     )
 
-    validate_offdiagonal_cell(a_init_seed, training_rng_seed)
+    # Low-level runtime preparation permits the full frozen 3x3 factor grid.
+    # Historical public modes still call validate_offdiagonal_cell() before
+    # reaching this helper, so their six-offdiagonal contract is unchanged.
+    validate_factor_cell(a_init_seed, training_rng_seed)
     runtime, kernel_compat, _backend = p2train.validate_cuda_runtime()
     kernels = kernel_compat.load_exact_fast_kernels()
     r22, c22, _basis_geometry = load_frozen_owner_bases(ROOT)
