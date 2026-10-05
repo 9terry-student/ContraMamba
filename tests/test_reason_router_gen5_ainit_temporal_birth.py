@@ -588,3 +588,50 @@ def test_phase_b_joint_forward_explicitly_neutralizes_edge_specific_arguments():
     assert "gradient_ownership_lambda=None" in source
     assert "edge_gradient_lambdas=None" in source
     assert "with _phase_b_joint_analysis_runtime(model):" in source
+
+def test_phase_b_projector_uses_frozen_float64_cpu_backend():
+    assert mod.PHASE_B_PROJECTOR_BACKEND == "float64_cpu"
+    helper = inspect.getsource(mod._phase_b_float64_cpu_flatten)
+    projector = inspect.getsource(mod._phase_b_two_row_projection)
+    control = inspect.getsource(mod._phase_b_control_energy_and_gain)
+    assert '.to(device="cpu", dtype=torch.float64)' in helper
+    assert "_phase_b_float64_cpu_flatten(grad_refute)" in projector
+    assert "_phase_b_float64_cpu_flatten(grad_support)" in projector
+    assert "_phase_b_float64_cpu_flatten(residual)" in projector
+    assert "_phase_b_float64_cpu_flatten(grad_refute)" in control
+    assert "_phase_b_float64_cpu_flatten(grad_support)" in control
+    assert "_phase_b_float64_cpu_flatten(residual)" in control
+
+
+def test_phase_b_float64_cpu_projection_preserves_output_surface():
+    grad_refute = torch.tensor([[1.0, 0.0], [0.0, 0.0]], dtype=torch.float32)
+    grad_support = torch.tensor([[0.0, 1.0], [0.0, 0.0]], dtype=torch.float32)
+    residual = torch.tensor([[3.0, 4.0], [5.0, 6.0]], dtype=torch.float32)
+
+    visible, energy, gain = mod._phase_b_two_row_projection(
+        grad_refute=grad_refute,
+        grad_support=grad_support,
+        residual=residual,
+    )
+    control_energy, control_gain = mod._phase_b_control_energy_and_gain(
+        grad_refute=grad_refute,
+        grad_support=grad_support,
+        residual=residual,
+    )
+
+    assert visible.device == residual.device
+    assert visible.dtype == residual.dtype
+    assert torch.allclose(
+        visible,
+        torch.tensor([[3.0, 4.0], [0.0, 0.0]], dtype=torch.float32),
+    )
+    assert energy == pytest.approx(25.0 / 86.0)
+    assert gain == pytest.approx(5.0 / math.sqrt(86.0))
+    assert control_energy == pytest.approx(energy)
+    assert control_gain == pytest.approx(gain)
+
+
+def test_phase_b_summary_and_provenance_bind_projector_backend():
+    source = inspect.getsource(mod.run_phase_b_analysis)
+    assert '"projector_backend": PHASE_B_PROJECTOR_BACKEND' in source
+    assert '"projector_pinv_rtol": PHASE_B_PROJECTOR_PINV_RTOL' in source

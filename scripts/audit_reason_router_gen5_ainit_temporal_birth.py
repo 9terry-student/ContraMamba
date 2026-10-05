@@ -1870,6 +1870,7 @@ PHASE_B_RUN_PREFIX = (
 PHASE_B_CONTROL_DOMAIN = "GEN5_INTERNAL_PRECURSOR_V1"
 PHASE_B_CONTROL_COUNT = 8
 PHASE_B_PROJECTOR_PINV_RTOL = 1.0e-12
+PHASE_B_PROJECTOR_BACKEND = "float64_cpu"
 PHASE_B_FUNCTIONAL_BATCH_ROWS = 4
 PHASE_B_VALID_TOKEN_COUNT = 60094
 
@@ -2463,6 +2464,15 @@ def _phase_b_centered_logits(logits: torch.Tensor) -> torch.Tensor:
     return logits - logits.mean(dim=-1, keepdim=True)
 
 
+def _phase_b_float64_cpu_flatten(tensor: torch.Tensor) -> torch.Tensor:
+    return (
+        tensor.detach()
+        .to(device="cpu", dtype=torch.float64)
+        .reshape(-1)
+        .contiguous()
+    )
+
+
 def _phase_b_two_row_projection(
     *,
     grad_refute: torch.Tensor,
@@ -2473,9 +2483,9 @@ def _phase_b_two_row_projection(
         grad_refute.shape == grad_support.shape == residual.shape,
         "PHASE_B_PROJECTOR_SHAPE",
     )
-    g0 = grad_refute.reshape(-1).to(torch.float64)
-    g1 = grad_support.reshape(-1).to(torch.float64)
-    d = residual.reshape(-1).to(torch.float64)
+    g0 = _phase_b_float64_cpu_flatten(grad_refute)
+    g1 = _phase_b_float64_cpu_flatten(grad_support)
+    d = _phase_b_float64_cpu_flatten(residual)
 
     gram = torch.stack(
         (
@@ -2498,11 +2508,11 @@ def _phase_b_two_row_projection(
     gain = 0.0 if denom == 0.0 else float(
         torch.linalg.vector_norm(jd).item() / math.sqrt(denom)
     )
-    return (
-        visible64.reshape_as(residual).to(dtype=residual.dtype),
-        energy,
-        gain,
+    visible = visible64.reshape(tuple(residual.shape)).to(
+        device=residual.device,
+        dtype=residual.dtype,
     )
+    return visible, energy, gain
 
 
 def _phase_b_control_energy_and_gain(
@@ -2511,9 +2521,9 @@ def _phase_b_control_energy_and_gain(
     grad_support: torch.Tensor,
     residual: torch.Tensor,
 ) -> tuple[float, float]:
-    g0 = grad_refute.reshape(-1).to(torch.float64)
-    g1 = grad_support.reshape(-1).to(torch.float64)
-    d = residual.reshape(-1).to(torch.float64)
+    g0 = _phase_b_float64_cpu_flatten(grad_refute)
+    g1 = _phase_b_float64_cpu_flatten(grad_support)
+    d = _phase_b_float64_cpu_flatten(residual)
     gram = torch.stack(
         (
             torch.stack((torch.dot(g0, g0), torch.dot(g0, g1))),
@@ -3520,6 +3530,7 @@ def run_phase_b_analysis(args: argparse.Namespace) -> None:
             "task_row_energy_enrichment_min": 5.0,
         },
         "projector_pinv_rtol": PHASE_B_PROJECTOR_PINV_RTOL,
+        "projector_backend": PHASE_B_PROJECTOR_BACKEND,
         "functional_batch_rows": PHASE_B_FUNCTIONAL_BATCH_ROWS,
         "control_family": [
             phase_b_control_identity(index)
@@ -3549,6 +3560,8 @@ def run_phase_b_analysis(args: argparse.Namespace) -> None:
         "phase_a_summary_sha256": PHASE_A_SUMMARY_SHA256,
         "phase_a_trajectory_sha256": PHASE_A_TRAJECTORY_SHA256,
         "internal_precursor_metrics_sha256": INTERNAL_PRECURSOR_METRICS_SHA256,
+        "projector_backend": PHASE_B_PROJECTOR_BACKEND,
+        "projector_pinv_rtol": PHASE_B_PROJECTOR_PINV_RTOL,
         "parent_checkpoint_sha256": PARENT_CHECKPOINT_SHA256,
         "frozen_snapshot_revision": FROZEN_SNAPSHOT_REVISION,
         "dev_encoding_sha256": phase_a_summary["dev_encoding_sha256"],
