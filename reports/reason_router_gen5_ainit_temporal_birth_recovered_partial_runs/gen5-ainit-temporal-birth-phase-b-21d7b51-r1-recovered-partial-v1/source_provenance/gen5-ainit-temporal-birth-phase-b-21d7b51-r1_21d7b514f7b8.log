@@ -1,0 +1,47 @@
+RUN_NAME=gen5-ainit-temporal-birth-phase-b-21d7b51-r1
+EXPECTED_COMMIT=21d7b514f7b88617cff3b679fb97ecaf6c5411ec
+ACTUAL_COMMIT=21d7b514f7b88617cff3b679fb97ecaf6c5411ec
+COMMAND_SHA256=09a7c9e206ba423c7876383ec8b987b9482c1ccc6a2c1ac126ac00087daffced
+STARTED_UTC=2026-10-05T12:32:15Z
+COMMAND_FILE=/kaggle/working/contramamba_run_logs/gen5-ainit-temporal-birth-phase-b-21d7b51-r1_21d7b514f7b8.command.sh
+META_FILE=/kaggle/working/contramamba_run_logs/gen5-ainit-temporal-birth-phase-b-21d7b51-r1_21d7b514f7b8.meta
+START_MARKER=/kaggle/working/contramamba_run_logs/gen5-ainit-temporal-birth-phase-b-21d7b51-r1_21d7b514f7b8.start.marker
++ set -euo pipefail
++ cd /kaggle/working/ContraMamba
++ EXPECTED_HEAD=21d7b514f7b88617cff3b679fb97ecaf6c5411ec
++ SNAPSHOT=/root/.cache/huggingface/hub/models--state-spaces--mamba-130m-hf/snapshots/40e5d2bd7452abb3ca8fadbafe9131ee0e2c2f37
++ CHECKPOINT=/kaggle/working/gen5_phase2_seed180_G3_GROUP_D_HALF_selected_checkpoint.pt
++ EXPECTED_CHECKPOINT_SHA256=1ff3fcf2ebd754ab6f9483d6a9982b9b04b9a4eb3357f9f8cdbe2b30399e7d2f
++ OUTPUT_ROOT=reports/reason_router_gen5_ainit_temporal_birth_analysis_runs/gen5-ainit-temporal-birth-phase-b-21d7b51-r1
+++ git rev-parse HEAD
++ test 21d7b514f7b88617cff3b679fb97ecaf6c5411ec = 21d7b514f7b88617cff3b679fb97ecaf6c5411ec
+++ git status --porcelain
++ test -z ''
++ test -d /root/.cache/huggingface/hub/models--state-spaces--mamba-130m-hf/snapshots/40e5d2bd7452abb3ca8fadbafe9131ee0e2c2f37
++ test -f /kaggle/working/gen5_phase2_seed180_G3_GROUP_D_HALF_selected_checkpoint.pt
++ test '!' -e reports/reason_router_gen5_ainit_temporal_birth_analysis_runs/gen5-ainit-temporal-birth-phase-b-21d7b51-r1
+++ sha256sum /kaggle/working/gen5_phase2_seed180_G3_GROUP_D_HALF_selected_checkpoint.pt
+++ awk '{print $1}'
++ ACTUAL_CHECKPOINT_SHA256=1ff3fcf2ebd754ab6f9483d6a9982b9b04b9a4eb3357f9f8cdbe2b30399e7d2f
++ test 1ff3fcf2ebd754ab6f9483d6a9982b9b04b9a4eb3357f9f8cdbe2b30399e7d2f = 1ff3fcf2ebd754ab6f9483d6a9982b9b04b9a4eb3357f9f8cdbe2b30399e7d2f
++ PYTHONPATH=/kaggle/working/ContraMamba:/kaggle/working/ContraMamba/src
++ python -
+PHASE_B_SCIENCE_ENV_AUTH_PASS
+GPU_TOPOLOGY=2x_TESLA_T4
+PHASE_B_PROJECTOR_BACKEND=float64_cpu
++ PYTHONPATH=/kaggle/working/ContraMamba:/kaggle/working/ContraMamba/src
++ python scripts/audit_reason_router_gen5_ainit_temporal_birth.py --run-phase-b --expected-head 21d7b514f7b88617cff3b679fb97ecaf6c5411ec --implementation-freeze-commit 21d7b514f7b88617cff3b679fb97ecaf6c5411ec --model-snapshot /root/.cache/huggingface/hub/models--state-spaces--mamba-130m-hf/snapshots/40e5d2bd7452abb3ca8fadbafe9131ee0e2c2f37 --tokenizer-snapshot /root/.cache/huggingface/hub/models--state-spaces--mamba-130m-hf/snapshots/40e5d2bd7452abb3ca8fadbafe9131ee0e2c2f37 --checkpoint /kaggle/working/gen5_phase2_seed180_G3_GROUP_D_HALF_selected_checkpoint.pt --output-root reports/reason_router_gen5_ainit_temporal_birth_analysis_runs/gen5-ainit-temporal-birth-phase-b-21d7b51-r1
+Traceback (most recent call last):
+  File "/kaggle/working/ContraMamba/scripts/audit_reason_router_gen5_ainit_temporal_birth.py", line 3722, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/kaggle/working/ContraMamba/scripts/audit_reason_router_gen5_ainit_temporal_birth.py", line 3713, in main
+    run_phase_b_analysis(args)
+  File "/kaggle/working/ContraMamba/scripts/audit_reason_router_gen5_ainit_temporal_birth.py", line 3439, in run_phase_b_analysis
+    require(
+  File "/kaggle/working/ContraMamba/scripts/audit_reason_router_gen5_ainit_temporal_birth.py", line 196, in require
+    raise TemporalBirthError(message)
+TemporalBirthError: PHASE_B_STEP20_AUTHENTICATION_FAILED
+
+FINISHED_UTC=2026-10-05T13:47:33Z
+EXIT_CODE=1
