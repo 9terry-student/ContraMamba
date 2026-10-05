@@ -80,6 +80,15 @@ GPU_QUEUES = {
 }
 GPU_TOPOLOGY = "TWO_INDEPENDENT_SINGLE_GPU_WORKERS_NO_DDP"
 
+REPLAY_AUTH_RECOVERY_CELLS = {
+    0: (6201, 6201),
+    1: (6201, 6202),
+}
+RECOVERY_TRAINING_REPORT_SHA256 = {
+    (6201, 6201): "aaedd2a51439e96ee7c2c3a1681a66d35ef31ffca85de22a944de3fb16dda7cf",
+    (6201, 6202): "1c39f125b8d297ac9004c827ba48bba5f77dc45f393499a9c5e9d3dd5f590744",
+}
+
 PRESSURE = "P0"
 ARM = "G5-C0"
 TRAIN_ROWS = 3360
@@ -410,6 +419,35 @@ def load_frozen_final_checkpoint(
         "B_theta.weight": b,
         "A_theta_sha256": tensor_sha256(a),
         "B_theta_sha256": tensor_sha256(b),
+    }
+
+
+def load_historical_training_trace(
+    a_init_seed: int,
+    training_rng_seed: int,
+) -> dict[str, Any]:
+    cell = (a_init_seed, training_rng_seed)
+    require(cell in REPLAY_AUTH_RECOVERY_CELLS.values(), f"RECOVERY_CELL_NOT_AUTHORIZED:{cell_name(*cell)}")
+    frozen_relative = Path(FROZEN_FINAL_SOURCES[cell][0])
+    report_relative = frozen_relative.with_name("training_report.json")
+    report_path = ROOT / report_relative
+    require(report_path.is_file(), f"RECOVERY_REPORT_MISSING:{report_relative}")
+    observed_sha = sha256_file(report_path)
+    expected_sha = RECOVERY_TRAINING_REPORT_SHA256[cell]
+    require(
+        observed_sha == expected_sha,
+        f"RECOVERY_REPORT_SHA:{cell_name(*cell)}:expected={expected_sha}:observed={observed_sha}",
+    )
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    losses = report.get("training_losses")
+    grad_norms = report.get("gradient_norms_before_clip")
+    require(isinstance(losses, list) and len(losses) == TOTAL_OPTIMIZER_STEPS, f"RECOVERY_LOSS_TRACE:{cell_name(*cell)}")
+    require(isinstance(grad_norms, list) and len(grad_norms) == TOTAL_OPTIMIZER_STEPS, f"RECOVERY_GRAD_TRACE:{cell_name(*cell)}")
+    return {
+        "relative_path": str(report_relative).replace("\\", "/"),
+        "file_sha256": observed_sha,
+        "training_losses": [float(v) for v in losses],
+        "gradient_norms_before_clip": [float(v) for v in grad_norms],
     }
 
 
@@ -893,6 +931,7 @@ def _run_replay_cell(
     encoded: Mapping[str, Any],
     snapshot: Path,
     checkpoint_path: Path,
+    historical_trace: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     validate_full_factorial_cell(a_init_seed, training_rng_seed)
     frozen = load_frozen_final_checkpoint(a_init_seed, training_rng_seed)
@@ -938,6 +977,7 @@ def _run_replay_cell(
     step0_grad_b: torch.Tensor | None = None
 
     for step in range(TOTAL_OPTIMIZER_STEPS):
+        # Preserve the historical CUDA sequence through the explicit sync.
         optimizer.zero_grad(set_to_none=True)
         output, chunks = p3a._streamed_forward(
             model,
@@ -972,12 +1012,33 @@ def _run_replay_cell(
         ]
         require(not parent_grads, f"PARENT_GRADIENT:{parent_grads[:5]}")
 
-        a_grad_norm = float(torch.linalg.vector_norm(a_grad).detach().cpu().item())
-        b_grad_norm = float(torch.linalg.vector_norm(b_grad).detach().cpu().item())
+        clipped = torch.nn.utils.clip_grad_norm_(optimizer_parameters, GRADIENT_CLIP_NORM)
+        require(bool(torch.isfinite(clipped).item()), "GRAD_NORM_NONFINITE")
+        optimizer.step()
+        require(
+            bool(torch.isfinite(wrapper.correction.A_theta.weight).all())
+            and bool(torch.isfinite(wrapper.correction.B_theta.weight).all()),
+            "CORRECTION_PARAMETER_NONFINITE",
+        )
+
+        # Match historical scalar transfers and sync before instrumentation.
+        loss_value = float(loss.detach().cpu().item())
+        total_preclip = float(clipped.detach().cpu().item())
+        del output, logits, loss
+        torch.cuda.synchronize()
+
+        require(
+            total_preclip < GRADIENT_CLIP_NORM,
+            f"ACTIVE_CLIP_PREVENTS_POSTSYNC_GRAD_CAPTURE:{cell_name(a_init_seed, training_rng_seed)}:{step}:{total_preclip:.17g}",
+        )
+        a_grad_cpu = a_grad.detach().cpu().contiguous().clone()
+        b_grad_cpu = b_grad.detach().cpu().contiguous().clone()
+        a_grad_norm = float(torch.linalg.vector_norm(a_grad_cpu).item())
+        b_grad_norm = float(torch.linalg.vector_norm(b_grad_cpu).item())
 
         if step == 0:
-            step0_grad_a = a_grad.detach().cpu().contiguous().clone()
-            step0_grad_b = b_grad.detach().cpu().contiguous().clone()
+            step0_grad_a = a_grad_cpu.clone()
+            step0_grad_b = b_grad_cpu.clone()
             require(
                 int(torch.count_nonzero(step0_grad_a).item()) == 0,
                 f"STEP0_A_GRAD_NONZERO:{cell_name(a_init_seed, training_rng_seed)}",
@@ -987,37 +1048,28 @@ def _run_replay_cell(
                 f"STEP0_B_GRAD_ZERO:{cell_name(a_init_seed, training_rng_seed)}",
             )
 
-        clipped = torch.nn.utils.clip_grad_norm_(
-            optimizer_parameters,
-            GRADIENT_CLIP_NORM,
-        )
-        require(bool(torch.isfinite(clipped).item()), "GRAD_NORM_NONFINITE")
-
-        losses.append(float(loss.detach().cpu().item()))
+        losses.append(loss_value)
         gradient_metrics.append({
             "step_preupdate": step,
             "grad_A_norm_preclip": a_grad_norm,
             "grad_B_norm_preclip": b_grad_norm,
-            "total_grad_norm_preclip": float(clipped.detach().cpu().item()),
+            "total_grad_norm_preclip": total_preclip,
         })
 
-        optimizer.step()
-        require(
-            bool(torch.isfinite(wrapper.correction.A_theta.weight).all())
-            and bool(torch.isfinite(wrapper.correction.B_theta.weight).all()),
-            "CORRECTION_PARAMETER_NONFINITE",
-        )
-
-        public, private = snapshot_state(
-            wrapper=wrapper,
-            a_init=a_init,
-            t=step + 1,
-        )
+        public, private = snapshot_state(wrapper=wrapper, a_init=a_init, t=step + 1)
         snapshot_public.append(public)
         snapshots.append(private)
 
-        del output, logits, loss
-        torch.cuda.synchronize()
+        if historical_trace is not None:
+            expected_loss = float(historical_trace["training_losses"][step])
+            expected_grad = float(historical_trace["gradient_norms_before_clip"][step])
+            if loss_value != expected_loss or total_preclip != expected_grad:
+                raise TemporalBirthError(
+                    "REPLAY_AUTH_RECOVERY_TRACE_DIVERGENCE:"
+                    f"{cell_name(a_init_seed, training_rng_seed)}:step={step}:"
+                    f"loss_expected={expected_loss:.17g}:loss_observed={loss_value:.17g}:"
+                    f"grad_expected={expected_grad:.17g}:grad_observed={total_preclip:.17g}"
+                )
 
     require(len(snapshots) == 21, "SNAPSHOT_COUNT")
     require(len(losses) == 20, "LOSS_COUNT")
@@ -1028,23 +1080,28 @@ def _run_replay_cell(
     final_b = snapshots[-1]["B_theta.weight"]
     frozen_a = frozen["A_theta.weight"]
     frozen_b = frozen["B_theta.weight"]
+    a_equal = torch.equal(final_a, frozen_a)
+    b_equal = torch.equal(final_b, frozen_b)
+    a_sha_equal = tensor_sha256(final_a) == frozen["A_theta_sha256"]
+    b_sha_equal = tensor_sha256(final_b) == frozen["B_theta_sha256"]
 
-    require(
-        torch.equal(final_a, frozen_a),
-        f"FINAL_A_REPLAY_MISMATCH:{cell_name(a_init_seed, training_rng_seed)}",
-    )
-    require(
-        torch.equal(final_b, frozen_b),
-        f"FINAL_B_REPLAY_MISMATCH:{cell_name(a_init_seed, training_rng_seed)}",
-    )
-    require(
-        tensor_sha256(final_a) == frozen["A_theta_sha256"],
-        f"FINAL_A_SHA_MISMATCH:{cell_name(a_init_seed, training_rng_seed)}",
-    )
-    require(
-        tensor_sha256(final_b) == frozen["B_theta_sha256"],
-        f"FINAL_B_SHA_MISMATCH:{cell_name(a_init_seed, training_rng_seed)}",
-    )
+    if historical_trace is not None and not (a_equal and b_equal and a_sha_equal and b_sha_equal):
+        a_delta = final_a.to(torch.float64) - frozen_a.to(torch.float64)
+        b_delta = final_b.to(torch.float64) - frozen_b.to(torch.float64)
+        raise TemporalBirthError(
+            "TEMPORAL_REPLAY_AUTHENTICATION_FAILED:REPLAY_AUTH_RECOVERY_ENDPOINT_MISMATCH:"
+            f"{cell_name(a_init_seed, training_rng_seed)}:"
+            f"A_equal={a_equal}:B_equal={b_equal}:A_sha_equal={a_sha_equal}:B_sha_equal={b_sha_equal}:"
+            f"A_max_abs={float(a_delta.abs().max().item()):.17g}:"
+            f"B_max_abs={float(b_delta.abs().max().item()):.17g}:"
+            f"A_l2={float(torch.linalg.vector_norm(a_delta).item()):.17g}:"
+            f"B_l2={float(torch.linalg.vector_norm(b_delta).item()):.17g}"
+        )
+
+    require(a_equal, f"FINAL_A_REPLAY_MISMATCH:{cell_name(a_init_seed, training_rng_seed)}")
+    require(b_equal, f"FINAL_B_REPLAY_MISMATCH:{cell_name(a_init_seed, training_rng_seed)}")
+    require(a_sha_equal, f"FINAL_A_SHA_MISMATCH:{cell_name(a_init_seed, training_rng_seed)}")
+    require(b_sha_equal, f"FINAL_B_SHA_MISMATCH:{cell_name(a_init_seed, training_rng_seed)}")
     require(
         parent_parameter_fingerprint(model) == parent_before,
         f"PARENT_MUTATION:{cell_name(a_init_seed, training_rng_seed)}",
@@ -1082,6 +1139,84 @@ def _run_replay_cell(
     del model, wrapper
     torch.cuda.empty_cache()
     return result
+
+
+
+def run_replay_auth_recovery_worker(args: argparse.Namespace) -> None:
+    authenticate_repo(args.expected_head, allow_implementation_worktree=False)
+    validate_runtime_authority(expected_head=args.expected_head, implementation_freeze_commit=args.implementation_freeze_commit)
+    validate_frozen_contract()
+    require(args.worker_id in (0, 1), f"RECOVERY_WORKER_ID:{args.worker_id}")
+    a_seed, r_seed = REPLAY_AUTH_RECOVERY_CELLS[args.worker_id]
+    trace = load_historical_training_trace(a_seed, r_seed)
+    _static, encoded, snapshot, checkpoint_path = _prepare_runtime(args)
+    _run_replay_cell(
+        args=args,
+        a_init_seed=a_seed,
+        training_rng_seed=r_seed,
+        encoded=encoded,
+        snapshot=snapshot,
+        checkpoint_path=checkpoint_path,
+        historical_trace=trace,
+    )
+    print(
+        "GEN5_AINIT_TEMPORAL_BIRTH_REPLAY_AUTH_RECOVERY_WORKER_PASS "
+        f"worker={args.worker_id} cell={cell_name(a_seed, r_seed)}"
+    )
+
+
+def run_replay_auth_recovery(args: argparse.Namespace) -> None:
+    authenticate_repo(args.expected_head, allow_implementation_worktree=False)
+    validate_runtime_authority(expected_head=args.expected_head, implementation_freeze_commit=args.implementation_freeze_commit)
+    validate_frozen_contract()
+    _validate_two_t4s()
+    scratch_root = Path(tempfile.mkdtemp(prefix="contramamba_gen5_replay_auth_recovery_"))
+    logs = [scratch_root / f"worker{worker_id}.log" for worker_id in (0, 1)]
+    common = [
+        sys.executable, str(Path(__file__).resolve()),
+        "--replay-auth-recovery-worker",
+        "--expected-head", args.expected_head,
+        "--implementation-freeze-commit", args.implementation_freeze_commit,
+        "--checkpoint", str(args.checkpoint),
+    ]
+    if args.model_snapshot is not None:
+        common += ["--model-snapshot", str(args.model_snapshot)]
+    if args.tokenizer_snapshot is not None:
+        common += ["--tokenizer-snapshot", str(args.tokenizer_snapshot)]
+    processes, handles = [], []
+    try:
+        for worker_id in (0, 1):
+            env = dict(os.environ)
+            env["CUDA_VISIBLE_DEVICES"] = str(worker_id)
+            handle = logs[worker_id].open("w", encoding="utf-8")
+            handles.append(handle)
+            processes.append(subprocess.Popen(
+                common + ["--worker-id", str(worker_id)],
+                cwd=ROOT, env=env, stdout=handle, stderr=subprocess.STDOUT, text=True,
+            ))
+        return_codes = [process.wait() for process in processes]
+    finally:
+        for handle in handles:
+            handle.close()
+    try:
+        for worker_id, log_path in enumerate(logs):
+            print(f"=== REPLAY AUTH RECOVERY WORKER {worker_id} LOG ===")
+            if log_path.exists():
+                print(log_path.read_text(encoding="utf-8"), end="")
+        if any(code != 0 for code in return_codes):
+            raise TemporalBirthError(f"REPLAY_AUTH_RECOVERY_FAILED:{return_codes}")
+    finally:
+        shutil.rmtree(scratch_root, ignore_errors=True)
+    print("GEN5_AINIT_TEMPORAL_BIRTH_REPLAY_AUTH_RECOVERY_PASS")
+    print("CELLS=A6201-R6201,A6201-R6202")
+    print("GPU_WORKERS=2")
+    print(f"GPU_TOPOLOGY={GPU_TOPOLOGY}")
+    print("HISTORICAL_LOSS_TRACE_EXACT=True")
+    print("HISTORICAL_TOTAL_GRAD_TRACE_EXACT=True")
+    print("FINAL_A_B_TORCH_EQUAL=True")
+    print("FINAL_A_B_SHA256_EQUAL=True")
+    print("RECOVERY_COLLECTION=FORBIDDEN")
+    print("SCIENTIFIC_INTERPRETATION=FORBIDDEN")
 
 
 def run_replay_worker(args: argparse.Namespace) -> None:
@@ -1412,6 +1547,8 @@ def build_parser() -> argparse.ArgumentParser:
     modes = parser.add_mutually_exclusive_group(required=True)
     modes.add_argument("--static-verify-only", action="store_true")
     modes.add_argument("--cuda-preflight-only", action="store_true")
+    modes.add_argument("--replay-auth-recovery-only", action="store_true")
+    modes.add_argument("--replay-auth-recovery-worker", action="store_true")
     modes.add_argument("--run-replay-matrix", action="store_true")
     modes.add_argument("--run-replay-worker", action="store_true")
 
@@ -1453,6 +1590,14 @@ def validate_args(args: argparse.Namespace) -> None:
         require(args.output_root is None, "PREFLIGHT_OUTPUT_FORBIDDEN")
         require(args.scratch_root is None, "PREFLIGHT_SCRATCH_FORBIDDEN")
         require(args.worker_id is None, "PREFLIGHT_WORKER_FORBIDDEN")
+    elif args.replay_auth_recovery_only:
+        require(args.output_root is None, "RECOVERY_OUTPUT_FORBIDDEN")
+        require(args.scratch_root is None, "RECOVERY_SCRATCH_FORBIDDEN")
+        require(args.worker_id is None, "RECOVERY_WORKER_FORBIDDEN")
+    elif args.replay_auth_recovery_worker:
+        require(args.output_root is None, "RECOVERY_WORKER_OUTPUT_FORBIDDEN")
+        require(args.scratch_root is None, "RECOVERY_WORKER_SCRATCH_FORBIDDEN")
+        require(args.worker_id in (0, 1), "RECOVERY_WORKER_ID_REQUIRED")
     elif args.run_replay_matrix:
         require(args.output_root is not None, "MATRIX_OUTPUT_REQUIRED")
         require(args.scratch_root is None, "MATRIX_SCRATCH_FORBIDDEN")
@@ -1470,6 +1615,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         run_static_verify(args)
     elif args.cuda_preflight_only:
         run_cuda_preflight(args)
+    elif args.replay_auth_recovery_only:
+        run_replay_auth_recovery(args)
+    elif args.replay_auth_recovery_worker:
+        run_replay_auth_recovery_worker(args)
     elif args.run_replay_matrix:
         run_replay_matrix(args)
     else:

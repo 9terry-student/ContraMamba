@@ -15,6 +15,8 @@ def _args(**overrides):
     values = {
         "static_verify_only": False,
         "cuda_preflight_only": False,
+        "replay_auth_recovery_only": False,
+        "replay_auth_recovery_worker": False,
         "run_replay_matrix": False,
         "run_replay_worker": False,
         "expected_head": mod.AUTHORITY_COMMIT,
@@ -205,6 +207,37 @@ def test_zero_grid_has_no_normalized_pair_residual_or_factor_fraction():
     assert grouped["A_over_R_pair_distance_ratio"] is None
     assert factorial["normalized_fractions"] is None
 
+
+
+def test_replay_auth_recovery_cells_cover_two_historical_lineages():
+    assert mod.REPLAY_AUTH_RECOVERY_CELLS == {0: (6201, 6201), 1: (6201, 6202)}
+
+
+@pytest.mark.parametrize("cell", [(6201, 6201), (6201, 6202)])
+def test_replay_auth_recovery_historical_trace_is_frozen(cell):
+    trace = mod.load_historical_training_trace(*cell)
+    assert len(trace["training_losses"]) == mod.TOTAL_OPTIMIZER_STEPS
+    assert len(trace["gradient_norms_before_clip"]) == mod.TOTAL_OPTIMIZER_STEPS
+    assert trace["file_sha256"] == mod.RECOVERY_TRAINING_REPORT_SHA256[cell]
+
+
+def test_replay_instrumentation_occurs_after_historical_sync():
+    source = inspect.getsource(mod._run_replay_cell)
+    assert source.index("optimizer.step()") < source.index("torch.cuda.synchronize()") < source.index("a_grad_cpu =") < source.index("public, private = snapshot_state(")
+    assert "torch.linalg.vector_norm(a_grad).detach().cpu()" not in source
+    assert "torch.linalg.vector_norm(b_grad).detach().cpu()" not in source
+
+
+def test_replay_auth_recovery_mode_forbids_outputs():
+    args = _args(replay_auth_recovery_only=True, implementation_freeze_commit="freeze", checkpoint="parent.pt", output_root="forbidden")
+    with pytest.raises(mod.TemporalBirthError, match="RECOVERY_OUTPUT_FORBIDDEN"):
+        mod.validate_args(args)
+
+
+def test_replay_auth_recovery_worker_requires_fixed_id():
+    args = _args(replay_auth_recovery_worker=True, implementation_freeze_commit="freeze", checkpoint="parent.pt", worker_id=3)
+    with pytest.raises(mod.TemporalBirthError, match="RECOVERY_WORKER_ID_REQUIRED"):
+        mod.validate_args(args)
 
 def test_static_mode_forbids_runtime_fields():
     args = _args(
