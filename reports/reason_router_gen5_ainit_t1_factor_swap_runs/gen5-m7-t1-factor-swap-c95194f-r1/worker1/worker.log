@@ -1,0 +1,35 @@
+Traceback (most recent call last):
+  File "/kaggle/working/ContraMamba/scripts/audit_reason_router_gen5_ainit_t1_factor_swap.py", line 1595, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/kaggle/working/ContraMamba/scripts/audit_reason_router_gen5_ainit_t1_factor_swap.py", line 1586, in main
+    run_worker(args)
+  File "/kaggle/working/ContraMamba/scripts/audit_reason_router_gen5_ainit_t1_factor_swap.py", line 924, in run_worker
+    ) = _runtime_bundle(args)
+        ^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/ContraMamba/scripts/audit_reason_router_gen5_ainit_t1_factor_swap.py", line 482, in _runtime_bundle
+    ) = tb._phase_b_prepare_worker_runtime(args)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/ContraMamba/scripts/audit_reason_router_gen5_ainit_temporal_birth.py", line 3111, in _phase_b_prepare_worker_runtime
+    static, encoded, snapshot, checkpoint_path = _prepare_runtime(args)
+                                                 ^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/ContraMamba/scripts/audit_reason_router_gen5_ainit_temporal_birth.py", line 998, in _prepare_runtime
+    static, encoded, snapshot, checkpoint_path = base._prepare_runtime_inputs(args)
+                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/ContraMamba/scripts/train_reason_router_gen5_ainit_rng_causal_intervention.py", line 818, in _prepare_runtime_inputs
+    encoded = p3a.load_runtime_encoding(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/ContraMamba/scripts/train_reason_router_gen5_phase3a_contention.py", line 541, in load_runtime_encoding
+    train = _encode_rows_with_active_tokenizer(static["train_rows"], tokenizer, static["target_map"])
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/ContraMamba/scripts/train_reason_router_gen5_phase3a_contention.py", line 461, in _encode_rows_with_active_tokenizer
+    for x in tokenizer.encode(str(row["claim"]), add_special_tokens=False).ids
+                              ^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+GEN5_M7_FACTOR_SWAP_WORKER_PASS worker=1 rows=420..839 chunks=14 cross_states=18
+WORKER_RESULT_SHA256=cf39092bde5432fce2010391892153747eeb9f0ed0fb054d74f90ecda99a4698
+TRAINING_EXECUTED=False
+BACKWARD_EXECUTED=False
+OPTIMIZER_CONSTRUCTED=False
+OPTIMIZER_STEP_EXECUTED=False
+PARAMETER_GRADIENTS_ACCUMULATED=False
