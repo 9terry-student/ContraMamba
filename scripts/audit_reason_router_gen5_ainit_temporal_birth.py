@@ -1909,7 +1909,80 @@ PHASE_B_ENDPOINT_TOLERANCE = {
     "effect_ratio_atol": 5.0e-3,
 }
 PHASE_B_FULL_REPLAY_ATOL = 5.0e-5
+
 PHASE_B_JOINT_FORWARD_ATOL = 1.0e-6
+
+# ---------------------------------------------------------------------------
+# Temporal mechanism scan extension (authority adad44c)
+# ---------------------------------------------------------------------------
+
+TEMPORAL_MECHANISM_AUTHORITY_COMMIT = (
+    "adad44c6fb304500c700b9ea59d727cefd71c2d9"
+)
+TEMPORAL_MECHANISM_AUTHORITY_PATH = (
+    "reports/reason_router_gen5_ainit_temporal_mechanism_"
+    "scan_authority_spec_candidate.md"
+)
+TEMPORAL_MECHANISM_SOURCE_FREEZE_COMMIT = (
+    "07cf87b90fc94bd090692e414995eb9923d8b9ab"
+)
+TEMPORAL_MECHANISM_SHARED_VULNERABILITY_PATH = (
+    "reports/reason_router_gen5_ainit_"
+    "shared_vulnerability_discrete_static_23c4f5c_v1.json"
+)
+TEMPORAL_MECHANISM_BEHAVIORAL_SUMMARY_PATH = (
+    "reports/reason_router_gen5_ainit_behavioral_onset_runs/"
+    "gen5-ainit-behavioral-onset-1633d67-r1/"
+    "behavioral_onset_summary.json"
+)
+TEMPORAL_MECHANISM_BEHAVIORAL_EXECUTION_HEAD = (
+    "1633d67146a7f049c6ecf28b333f53fdf79ad00e"
+)
+TEMPORAL_MECHANISM_IMPLEMENTATION_PATHS = frozenset({
+    "scripts/audit_reason_router_gen5_ainit_temporal_birth.py",
+    "tests/test_reason_router_gen5_ainit_temporal_birth.py",
+})
+TEMPORAL_MECHANISM_CRITICAL_TIMES = (1, 2, 4, 10, 11, 16, 17, 20)
+TEMPORAL_MECHANISM_TASK_VISIBLE_TIMES = (1, 17, 20)
+TEMPORAL_MECHANISM_T1_STATES = (
+    "T0",
+    "A_DECAY_ONLY",
+    "B_UPDATE_ONLY",
+    "FULL_T1",
+)
+TEMPORAL_MECHANISM_INTERNAL_STAGES = (
+    "raw_write",
+    "recurrent_state",
+    "c_readout_pre_gate",
+    "gated_scan",
+    "layer22_out_proj",
+)
+TEMPORAL_MECHANISM_RUN_PREFIX = (
+    "reports/reason_router_gen5_ainit_temporal_mechanism_runs/"
+)
+
+TEMPORAL_MECHANISM_BEHAVIORAL_CELL_METRICS_PATH = (
+    "reports/reason_router_gen5_ainit_behavioral_onset_runs/"
+    "gen5-ainit-behavioral-onset-1633d67-r1/"
+    "behavioral_onset_cell_metrics.json"
+)
+TEMPORAL_MECHANISM_BEHAVIORAL_CELL_METRICS_SHA256 = (
+    "16af7ee362a77b6b6a2ebd7401e4b3f534cb777c2102a2839a1a3c4682bdc984"
+)
+TEMPORAL_MECHANISM_INTERNAL_PRECURSOR_FREEZE_COMMIT = (
+    "d53c33b5a64e02b4f439a1f6b283b07990296bf8"
+)
+TEMPORAL_MECHANISM_INTERNAL_PRECURSOR_SUMMARY_PATH = (
+    "reports/reason_router_gen5_ainit_internal_precursor_localization_runs/"
+    "gen5-ainit-internal-precursor-e2c5631-r1/"
+    "ainit_internal_precursor_localization_summary.json"
+)
+TEMPORAL_MECHANISM_BATCH_ROWS = 4
+TEMPORAL_MECHANISM_GEOMETRY_RESIDUAL_ATOL = 5.0e-4
+TEMPORAL_MECHANISM_TASK_ENERGY_ATOL = 5.0e-5
+TEMPORAL_MECHANISM_CONTROL_ENERGY_ATOL = 5.0e-6
+TEMPORAL_MECHANISM_EFFECT_RATIO_ATOL = 5.0e-3
+TEMPORAL_MECHANISM_LOGIT_AUTH_ATOL = 5.0e-5
 
 
 def phase_b_control_identity(control_index: int) -> dict[str, Any]:
@@ -3600,6 +3673,2373 @@ def run_phase_b_analysis(args: argparse.Namespace) -> None:
     print(f"METRICS={metrics_path}")
     print(f"PROVENANCE={provenance_path}")
 
+
+def _temporal_mechanism_git_show_text(
+    commit: str,
+    relative_path: str,
+) -> str:
+    try:
+        return subprocess.check_output(
+            ["git", "show", f"{commit}:{relative_path}"],
+            cwd=ROOT,
+            encoding="utf-8",
+            errors="strict",
+            stderr=subprocess.STDOUT,
+        )
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise TemporalBirthError(
+            "TEMPORAL_MECHANISM_GIT_SHOW:"
+            f"{commit}:{relative_path}"
+        ) from exc
+
+
+def authenticate_temporal_mechanism_repo(
+    expected_head: str,
+    *,
+    allow_implementation_worktree: bool,
+) -> None:
+    branch = git("branch", "--show-current")
+    head = git("rev-parse", "HEAD")
+    require(
+        branch in {"", EXPECTED_BRANCH},
+        f"TEMPORAL_MECHANISM_BRANCH:{branch}",
+    )
+    require(
+        head == expected_head,
+        f"TEMPORAL_MECHANISM_HEAD:{head}",
+    )
+    require(
+        git_rc(
+            "merge-base",
+            "--is-ancestor",
+            TEMPORAL_MECHANISM_AUTHORITY_COMMIT,
+            expected_head,
+        ) == 0,
+        "TEMPORAL_MECHANISM_AUTHORITY_NOT_ANCESTOR",
+    )
+    require(
+        git_rc(
+            "merge-base",
+            "--is-ancestor",
+            TEMPORAL_MECHANISM_SOURCE_FREEZE_COMMIT,
+            expected_head,
+        ) == 0,
+        "TEMPORAL_MECHANISM_SOURCE_FREEZE_NOT_ANCESTOR",
+    )
+
+    authority_blob = git(
+        "rev-parse",
+        f"{TEMPORAL_MECHANISM_AUTHORITY_COMMIT}:"
+        f"{TEMPORAL_MECHANISM_AUTHORITY_PATH}",
+    )
+    live_authority_blob = git(
+        "rev-parse",
+        f"HEAD:{TEMPORAL_MECHANISM_AUTHORITY_PATH}",
+    )
+    require(
+        authority_blob == live_authority_blob,
+        "TEMPORAL_MECHANISM_AUTHORITY_BLOB_DRIFT",
+    )
+
+    observed = status_paths()
+    if allow_implementation_worktree:
+        require(
+            observed <= TEMPORAL_MECHANISM_IMPLEMENTATION_PATHS,
+            "TEMPORAL_MECHANISM_IMPLEMENTATION_SCOPE:"
+            f"{sorted(observed)}",
+        )
+    else:
+        require(
+            not observed,
+            "TEMPORAL_MECHANISM_WORKTREE_NOT_CLEAN:"
+            f"{sorted(observed)}",
+        )
+
+
+def validate_temporal_mechanism_authority(
+    *,
+    expected_head: str,
+    implementation_freeze_commit: str | None,
+    static_only: bool,
+) -> None:
+    if not static_only:
+        require(
+            implementation_freeze_commit == expected_head,
+            "TEMPORAL_MECHANISM_IMPLEMENTATION_FREEZE_MUST_EQUAL_HEAD",
+        )
+
+    text = _temporal_mechanism_git_show_text(
+        TEMPORAL_MECHANISM_AUTHORITY_COMMIT,
+        TEMPORAL_MECHANISM_AUTHORITY_PATH,
+    )
+    required = (
+        "COMBINED_IMPLEMENTATION_AND_EXECUTION_AUTHORITY=YES_CONDITIONAL",
+        "SCIENTIFIC_EXECUTION_ALLOWED=YES_ONLY_AFTER_IMPLEMENTATION_VALIDATION_COMMIT_AND_PUSH",
+        "TRAINING_ALLOWED=NO",
+        "OPTIMIZER_CONSTRUCTION_ALLOWED=NO",
+        "OPTIMIZER_STEP_ALLOWED=NO",
+        "PARAMETER_UPDATE_ALLOWED=NO",
+        "BACKWARD_ALLOWED=NO",
+        "ANALYSIS_AUTOGRAD_ALLOWED=YES_DETACHED_INTERNAL_STAGE_LEAVES_ONLY",
+        "PARAMETER_GRADIENTS_ALLOWED=NO",
+        "CHECKPOINT_MUTATION_ALLOWED=NO",
+        "CONFIRMATORY_9601_9900_ALLOWED=NO",
+        "NEW_SEEDS_ALLOWED=NO",
+        "CRITICAL_TIMES = {1,2,4,10,11,16,17,20}",
+        "TASK_VISIBLE_TIMES = {1,17,20}",
+        "scripts/audit_reason_router_gen5_ainit_temporal_birth.py",
+        "tests/test_reason_router_gen5_ainit_temporal_birth.py",
+    )
+    for token in required:
+        require(
+            token in text,
+            f"TEMPORAL_MECHANISM_AUTHORITY_TOKEN:{token}",
+        )
+
+
+def load_temporal_mechanism_frozen_contract() -> dict[str, Any]:
+    phase_a_summary, trajectory = _phase_b_load_phase_a_artifacts()
+
+    vulnerable_path = ROOT / TEMPORAL_MECHANISM_SHARED_VULNERABILITY_PATH
+    behavior_path = ROOT / TEMPORAL_MECHANISM_BEHAVIORAL_SUMMARY_PATH
+    require(
+        vulnerable_path.is_file(),
+        "TEMPORAL_MECHANISM_VULNERABILITY_SOURCE_MISSING",
+    )
+    require(
+        behavior_path.is_file(),
+        "TEMPORAL_MECHANISM_BEHAVIOR_SOURCE_MISSING",
+    )
+
+    frozen_blob = git(
+        "rev-parse",
+        f"{TEMPORAL_MECHANISM_SOURCE_FREEZE_COMMIT}:"
+        f"{TEMPORAL_MECHANISM_SHARED_VULNERABILITY_PATH}",
+    )
+    live_blob = git(
+        "rev-parse",
+        f"HEAD:{TEMPORAL_MECHANISM_SHARED_VULNERABILITY_PATH}",
+    )
+    require(
+        frozen_blob == live_blob,
+        "TEMPORAL_MECHANISM_VULNERABILITY_BLOB_DRIFT",
+    )
+
+    vulnerable = json.loads(
+        vulnerable_path.read_text(encoding="utf-8")
+    )
+    require(
+        vulnerable.get("schema_version")
+        == "GEN5_AINIT_SHARED_VULNERABILITY_DISCRETE_STATIC_V1",
+        "TEMPORAL_MECHANISM_VULNERABILITY_SCHEMA",
+    )
+    require(
+        vulnerable.get("status")
+        == "PASS_SHARED_VULNERABILITY_DISCRETE_STATIC",
+        "TEMPORAL_MECHANISM_VULNERABILITY_STATUS",
+    )
+    shared = vulnerable.get("shared_row_set") or {}
+    rows = tuple(int(v) for v in shared.get("row_indices", ()))
+    require(
+        int(shared.get("row_count", -1)) == 120,
+        "TEMPORAL_MECHANISM_VULNERABILITY_ROW_COUNT",
+    )
+    require(
+        len(rows) == 120 and len(set(rows)) == 120,
+        "TEMPORAL_MECHANISM_VULNERABILITY_ROW_IDENTITY",
+    )
+    require(
+        min(rows) >= 0 and max(rows) < DEV_ROWS,
+        "TEMPORAL_MECHANISM_VULNERABILITY_ROW_RANGE",
+    )
+
+    behavior = json.loads(behavior_path.read_text(encoding="utf-8"))
+    require(
+        behavior.get("status") == "PASS_BEHAVIORAL_ONSET_SCAN",
+        "TEMPORAL_MECHANISM_BEHAVIOR_STATUS",
+    )
+    require(
+        behavior.get("execution_head")
+        == TEMPORAL_MECHANISM_BEHAVIORAL_EXECUTION_HEAD,
+        "TEMPORAL_MECHANISM_BEHAVIOR_EXECUTION_HEAD",
+    )
+    require(
+        int(behavior.get("global_first_new_decisive_wrong_since_t0_step"))
+        == 4,
+        "TEMPORAL_MECHANISM_FIRST_DECISIVE_WRONG_STEP",
+    )
+    require(
+        int(behavior.get("global_first_prediction_change_vs_t0_step"))
+        == 1,
+        "TEMPORAL_MECHANISM_FIRST_PREDICTION_CHANGE_STEP",
+    )
+
+    aggregate = behavior.get("aggregate_trajectory") or []
+    require(
+        [int(row["t"]) for row in aggregate]
+        == list(range(TOTAL_OPTIMIZER_STEPS + 1)),
+        "TEMPORAL_MECHANISM_BEHAVIOR_TIME_AXIS",
+    )
+    require(
+        int(aggregate[1]["same_rng_different_a_disagreement_sum"]) == 72,
+        "TEMPORAL_MECHANISM_T1_A_DISAGREEMENT",
+    )
+    require(
+        int(aggregate[1]["same_a_different_rng_disagreement_sum"]) == 0,
+        "TEMPORAL_MECHANISM_T1_R_DISAGREEMENT",
+    )
+    for t in range(17, 21):
+        require(
+            int(aggregate[t]["same_rng_different_a_disagreement_sum"]) == 0,
+            f"TEMPORAL_MECHANISM_RECONVERGENCE_A:{t}",
+        )
+        require(
+            int(aggregate[t]["same_a_different_rng_disagreement_sum"]) == 0,
+            f"TEMPORAL_MECHANISM_RECONVERGENCE_R:{t}",
+        )
+
+    require(
+        TEMPORAL_MECHANISM_CRITICAL_TIMES
+        == (1, 2, 4, 10, 11, 16, 17, 20),
+        "TEMPORAL_MECHANISM_CRITICAL_TIME_FREEZE",
+    )
+    require(
+        TEMPORAL_MECHANISM_TASK_VISIBLE_TIMES == (1, 17, 20),
+        "TEMPORAL_MECHANISM_TASK_VISIBLE_TIME_FREEZE",
+    )
+
+    return {
+        "phase_a_summary": phase_a_summary,
+        "trajectory": trajectory,
+        "vulnerable_rows": rows,
+        "vulnerability": vulnerable,
+        "behavioral_summary": behavior,
+    }
+
+
+def temporal_mechanism_t1_parameter_states(
+    trajectory: Mapping[str, Any],
+    cell: tuple[int, int],
+) -> dict[str, tuple[torch.Tensor, torch.Tensor]]:
+    a0, b0 = _phase_b_snapshot(trajectory, cell, 0)
+    a1, b1 = _phase_b_snapshot(trajectory, cell, 1)
+
+    require(
+        int(torch.count_nonzero(b0).item()) == 0,
+        f"TEMPORAL_MECHANISM_B0_NONZERO:{cell_name(*cell)}",
+    )
+    return {
+        "T0": (a0, b0),
+        "A_DECAY_ONLY": (a1, b0),
+        "B_UPDATE_ONLY": (a0, b1),
+        "FULL_T1": (a1, b1),
+    }
+
+
+def temporal_mechanism_centered_logits(
+    logits: torch.Tensor,
+) -> torch.Tensor:
+    require(
+        logits.ndim == 2 and logits.shape[-1] == 3,
+        "TEMPORAL_MECHANISM_CENTERED_LOGITS_SHAPE",
+    )
+    return logits - logits.mean(dim=-1, keepdim=True)
+
+
+def temporal_mechanism_margin_vector(
+    logits: torch.Tensor,
+) -> torch.Tensor:
+    return _phase_b_margin_vector(logits)
+
+
+def run_temporal_mechanism_static_verify(
+    args: argparse.Namespace,
+) -> None:
+    authenticate_temporal_mechanism_repo(
+        args.expected_head,
+        allow_implementation_worktree=args.allow_opening_worktree,
+    )
+    validate_temporal_mechanism_authority(
+        expected_head=args.expected_head,
+        implementation_freeze_commit=None,
+        static_only=True,
+    )
+    frozen = load_temporal_mechanism_frozen_contract()
+    trajectory = frozen["trajectory"]
+
+    for cell in FULL_FACTORIAL_CELLS:
+        states = temporal_mechanism_t1_parameter_states(
+            trajectory,
+            cell,
+        )
+        require(
+            tuple(states) == TEMPORAL_MECHANISM_T1_STATES,
+            f"TEMPORAL_MECHANISM_T1_STATE_ORDER:{cell_name(*cell)}",
+        )
+        require(
+            torch.equal(
+                states["T0"][1],
+                states["A_DECAY_ONLY"][1],
+            ),
+            f"TEMPORAL_MECHANISM_A_DECAY_B0_IDENTITY:{cell_name(*cell)}",
+        )
+        require(
+            torch.equal(
+                states["B_UPDATE_ONLY"][1],
+                states["FULL_T1"][1],
+            ),
+            f"TEMPORAL_MECHANISM_B1_IDENTITY:{cell_name(*cell)}",
+        )
+
+    print("GEN5_AINIT_TEMPORAL_MECHANISM_STATIC_VERIFY_PASS")
+    print(f"HEAD={args.expected_head}")
+    print("CELLS=9")
+    print("TIME_AXIS=0..20")
+    print("VULNERABLE_ROWS=120")
+    print(
+        "CRITICAL_TIMES="
+        + ",".join(str(v) for v in TEMPORAL_MECHANISM_CRITICAL_TIMES)
+    )
+    print(
+        "TASK_VISIBLE_TIMES="
+        + ",".join(str(v) for v in TEMPORAL_MECHANISM_TASK_VISIBLE_TIMES)
+    )
+    print("T1_MICRO_STATES=T0,A_DECAY_ONLY,B_UPDATE_ONLY,FULL_T1")
+    print("MODEL_FORWARD_COUNT=0")
+    print("CUDA_EXECUTED=False")
+    print("TRAINING_EXECUTED=False")
+    print("BACKWARD_EXECUTED=False")
+    print("OPTIMIZER_CONSTRUCTED=False")
+    print("FILES_WRITTEN=0")
+
+
+
+def load_temporal_mechanism_runtime_sources() -> dict[str, Any]:
+    frozen = load_temporal_mechanism_frozen_contract()
+
+    cell_metrics_path = ROOT / TEMPORAL_MECHANISM_BEHAVIORAL_CELL_METRICS_PATH
+    require(cell_metrics_path.is_file(), "TEMPORAL_MECHANISM_CELL_METRICS_MISSING")
+    require(
+        sha256_file(cell_metrics_path)
+        == TEMPORAL_MECHANISM_BEHAVIORAL_CELL_METRICS_SHA256,
+        "TEMPORAL_MECHANISM_CELL_METRICS_SHA",
+    )
+    cell_metrics = json.loads(cell_metrics_path.read_text(encoding="utf-8"))
+    require(
+        cell_metrics.get("schema_version")
+        == "GEN5_AINIT_BEHAVIORAL_ONSET_CELL_METRICS_V1",
+        "TEMPORAL_MECHANISM_CELL_METRICS_SCHEMA",
+    )
+    require(
+        cell_metrics.get("execution_head")
+        == TEMPORAL_MECHANISM_BEHAVIORAL_EXECUTION_HEAD,
+        "TEMPORAL_MECHANISM_CELL_METRICS_HEAD",
+    )
+
+    precursor_path = ROOT / TEMPORAL_MECHANISM_INTERNAL_PRECURSOR_SUMMARY_PATH
+    require(
+        precursor_path.is_file(),
+        "TEMPORAL_MECHANISM_PRECURSOR_SUMMARY_MISSING",
+    )
+    frozen_precursor_blob = git(
+        "rev-parse",
+        f"{TEMPORAL_MECHANISM_INTERNAL_PRECURSOR_FREEZE_COMMIT}:"
+        f"{TEMPORAL_MECHANISM_INTERNAL_PRECURSOR_SUMMARY_PATH}",
+    )
+    live_precursor_blob = git(
+        "rev-parse",
+        f"HEAD:{TEMPORAL_MECHANISM_INTERNAL_PRECURSOR_SUMMARY_PATH}",
+    )
+    require(
+        frozen_precursor_blob == live_precursor_blob,
+        "TEMPORAL_MECHANISM_PRECURSOR_SUMMARY_BLOB_DRIFT",
+    )
+    precursor = json.loads(precursor_path.read_text(encoding="utf-8"))
+    require(
+        precursor.get("schema_version")
+        == "GEN5_AINIT_INTERNAL_PRECURSOR_LOCALIZATION_SUMMARY_V1",
+        "TEMPORAL_MECHANISM_PRECURSOR_SCHEMA",
+    )
+    require(
+        precursor.get("result") == "RAW_WRITE_PRECURSOR",
+        "TEMPORAL_MECHANISM_PRECURSOR_RESULT",
+    )
+    require(
+        tuple(precursor.get("stage_order", ()))
+        == TEMPORAL_MECHANISM_INTERNAL_STAGES,
+        "TEMPORAL_MECHANISM_PRECURSOR_STAGE_ORDER",
+    )
+    require(
+        int(precursor.get("dev_rows", -1)) == DEV_ROWS,
+        "TEMPORAL_MECHANISM_PRECURSOR_DEV_ROWS",
+    )
+    require(
+        int(precursor.get("valid_token_count", -1)) == PHASE_B_VALID_TOKEN_COUNT,
+        "TEMPORAL_MECHANISM_PRECURSOR_VALID_TOKEN_COUNT",
+    )
+
+    frozen["cell_metrics"] = cell_metrics
+    frozen["internal_precursor_summary"] = precursor
+    return frozen
+
+
+def temporal_mechanism_stage_control_identity(
+    stage: str,
+    control_index: int,
+) -> dict[str, Any]:
+    require(
+        stage in TEMPORAL_MECHANISM_INTERNAL_STAGES,
+        f"TEMPORAL_MECHANISM_CONTROL_STAGE:{stage}",
+    )
+    require(
+        0 <= control_index < PHASE_B_CONTROL_COUNT,
+        f"TEMPORAL_MECHANISM_CONTROL_INDEX:{control_index}",
+    )
+    label = f"{PHASE_B_CONTROL_DOMAIN}|{stage}|{control_index}"
+    digest = hashlib.sha256(label.encode("utf-8")).hexdigest()
+    seed = int(digest[:16], 16) & ((1 << 63) - 1)
+    return {
+        "index": control_index,
+        "seed": seed,
+        "sha256_label": digest,
+    }
+
+
+def validate_temporal_mechanism_control_identity(
+    precursor_summary: Mapping[str, Any],
+) -> None:
+    frozen = precursor_summary.get("control_identity") or {}
+    for stage in TEMPORAL_MECHANISM_INTERNAL_STAGES:
+        expected_rows = frozen.get(stage) or []
+        require(
+            len(expected_rows) == PHASE_B_CONTROL_COUNT,
+            f"TEMPORAL_MECHANISM_CONTROL_COUNT:{stage}",
+        )
+        for index in range(PHASE_B_CONTROL_COUNT):
+            observed = temporal_mechanism_stage_control_identity(stage, index)
+            expected = expected_rows[index]
+            require(
+                int(expected["index"]) == observed["index"],
+                f"TEMPORAL_MECHANISM_CONTROL_FROZEN_INDEX:{stage}:{index}",
+            )
+            require(
+                int(expected["seed"]) == observed["seed"],
+                f"TEMPORAL_MECHANISM_CONTROL_FROZEN_SEED:{stage}:{index}",
+            )
+            require(
+                str(expected["sha256_label"]) == observed["sha256_label"],
+                f"TEMPORAL_MECHANISM_CONTROL_FROZEN_SHA:{stage}:{index}",
+            )
+
+
+def temporal_mechanism_apply_stage_control(
+    residual: torch.Tensor,
+    *,
+    stage: str,
+    control_index: int,
+) -> torch.Tensor:
+    require(
+        residual.ndim == 3,
+        "TEMPORAL_MECHANISM_CONTROL_RESIDUAL_RANK",
+    )
+    identity = temporal_mechanism_stage_control_identity(stage, control_index)
+    generator = torch.Generator(device="cpu")
+    generator.manual_seed(int(identity["seed"]))
+    width = int(residual.shape[-1])
+    permutation = torch.randperm(
+        width,
+        generator=generator,
+        device="cpu",
+    ).to(device=residual.device)
+    bits = torch.randint(
+        0,
+        2,
+        (width,),
+        generator=generator,
+        dtype=torch.int64,
+        device="cpu",
+    )
+    signs = bits.mul(2).sub(1).to(
+        device=residual.device,
+        dtype=residual.dtype,
+    )
+    return residual.index_select(-1, permutation) * signs.view(1, 1, -1)
+
+
+def temporal_mechanism_stage_chain(
+    *,
+    wrapper: Any,
+    context: Mapping[str, torch.Tensor],
+    raw_write: torch.Tensor,
+) -> dict[str, torch.Tensor]:
+    native_mixer = wrapper.native_mixer
+    shape = wrapper.correction.shape
+    batch, seq_len, width = raw_write.shape
+    require(width == shape.state_width, "TEMPORAL_MECHANISM_RAW_WIDTH")
+
+    state = torch.zeros(
+        (batch, shape.intermediate_size, shape.state_size),
+        device=raw_write.device,
+        dtype=raw_write.dtype,
+    )
+    state_rows: list[torch.Tensor] = []
+    read_rows: list[torch.Tensor] = []
+
+    for token_index in range(seq_len):
+        discrete_a_t = torch.exp(
+            context["a_continuous"][None, :, :]
+            * context["discrete_time_step"][:, :, token_index, None].float()
+        ).to(dtype=raw_write.dtype)
+        write_t = raw_write[:, token_index, :].reshape(
+            batch,
+            shape.intermediate_size,
+            shape.state_size,
+        )
+        state = discrete_a_t * state + write_t
+        read_t = torch.sum(
+            state.to(context["c_readout"].dtype)
+            * context["c_readout"][:, token_index, None, :],
+            dim=-1,
+        )
+        state_rows.append(state)
+        read_rows.append(read_t)
+
+    recurrent_state = torch.stack(
+        state_rows,
+        dim=1,
+    ).reshape(batch, seq_len, shape.state_width)
+    c_readout_pre_gate = torch.stack(read_rows, dim=1)
+    gate_activation = native_mixer.act(context["gate"]).transpose(1, 2)
+    gated_scan = c_readout_pre_gate * gate_activation
+    layer22_out_proj = torch.nn.functional.linear(
+        gated_scan,
+        native_mixer.out_proj.weight,
+        bias=None,
+    )
+
+    return {
+        "raw_write": raw_write,
+        "recurrent_state": recurrent_state,
+        "c_readout_pre_gate": c_readout_pre_gate,
+        "gated_scan": gated_scan,
+        "layer22_out_proj": layer22_out_proj,
+    }
+
+
+def temporal_mechanism_resume_from_stage(
+    *,
+    model: torch.nn.Module,
+    wrapper: Any,
+    features: Mapping[str, torch.Tensor],
+    context: Mapping[str, torch.Tensor],
+    stage: str,
+    stage_value: torch.Tensor,
+) -> torch.Tensor:
+    require(
+        stage in TEMPORAL_MECHANISM_INTERNAL_STAGES,
+        f"TEMPORAL_MECHANISM_RESUME_STAGE:{stage}",
+    )
+    native_mixer = wrapper.native_mixer
+    shape = wrapper.correction.shape
+    batch, seq_len = stage_value.shape[:2]
+
+    if stage == "raw_write":
+        return _phase_b_resume_from_raw_write(
+            model=model,
+            wrapper=wrapper,
+            features=features,
+            context=context,
+            raw_write=stage_value,
+        )
+
+    if stage == "recurrent_state":
+        state = stage_value.reshape(
+            batch,
+            seq_len,
+            shape.intermediate_size,
+            shape.state_size,
+        )
+        read = torch.sum(
+            state.to(context["c_readout"].dtype)
+            * context["c_readout"][:, :, None, :],
+            dim=-1,
+        )
+        scan = read * native_mixer.act(context["gate"]).transpose(1, 2)
+        correction22 = torch.nn.functional.linear(
+            scan,
+            native_mixer.out_proj.weight,
+            bias=None,
+        )
+    elif stage == "c_readout_pre_gate":
+        scan = stage_value * native_mixer.act(context["gate"]).transpose(1, 2)
+        correction22 = torch.nn.functional.linear(
+            scan,
+            native_mixer.out_proj.weight,
+            bias=None,
+        )
+    elif stage == "gated_scan":
+        correction22 = torch.nn.functional.linear(
+            stage_value,
+            native_mixer.out_proj.weight,
+            bias=None,
+        )
+    else:
+        correction22 = stage_value
+
+    require(
+        tuple(correction22.shape) == tuple(context["native22"].shape),
+        "TEMPORAL_MECHANISM_CORRECTION22_SHAPE",
+    )
+    hidden22 = context["residual22"] + context["native22"] + correction22
+    hidden23 = model.mamba.layers[23](
+        hidden22,
+        cache_params=None,
+        cache_position=None,
+        attention_mask=None,
+    )
+    final_hidden = model.mamba.norm_f(hidden23)
+    output = _phase_b_joint_forward_from_hidden(
+        model,
+        features,
+        final_hidden,
+    )
+    logits = output["logits"]
+    require(
+        tuple(logits.shape) == (batch, 3),
+        "TEMPORAL_MECHANISM_RESUME_LOGIT_SHAPE",
+    )
+    return logits
+
+
+def temporal_mechanism_geometry_pairs() -> tuple[
+    tuple[str, tuple[int, int], tuple[int, int]], ...
+]:
+    rows: list[tuple[str, tuple[int, int], tuple[int, int]]] = []
+    for r in FACTOR_SEEDS:
+        for left_index, left_a in enumerate(FACTOR_SEEDS):
+            for right_a in FACTOR_SEEDS[left_index + 1 :]:
+                rows.append(("A", (left_a, r), (right_a, r)))
+    for a in FACTOR_SEEDS:
+        for left_index, left_r in enumerate(FACTOR_SEEDS):
+            for right_r in FACTOR_SEEDS[left_index + 1 :]:
+                rows.append(("R", (a, left_r), (a, right_r)))
+    require(len(rows) == 18, "TEMPORAL_MECHANISM_GEOMETRY_PAIR_COUNT")
+    require(
+        sum(1 for row in rows if row[0] == "A") == 9,
+        "TEMPORAL_MECHANISM_GEOMETRY_A_PAIR_COUNT",
+    )
+    require(
+        sum(1 for row in rows if row[0] == "R") == 9,
+        "TEMPORAL_MECHANISM_GEOMETRY_R_PAIR_COUNT",
+    )
+    return tuple(rows)
+
+
+def temporal_mechanism_worker_geometry_pairs(
+    worker_id: int,
+) -> tuple[tuple[str, tuple[int, int], tuple[int, int]], ...]:
+    require(
+        worker_id in (0, 1),
+        "TEMPORAL_MECHANISM_GEOMETRY_WORKER_ID",
+    )
+    rows = temporal_mechanism_geometry_pairs()
+    return tuple(
+        row
+        for index, row in enumerate(rows)
+        if index % 2 == worker_id
+    )
+
+
+def _temporal_mechanism_empty_geometry(
+    *,
+    t: int,
+    group: str,
+    source: tuple[int, int],
+    target: tuple[int, int],
+    stage: str,
+) -> dict[str, Any]:
+    return {
+        "t": int(t),
+        "group": group,
+        "source": cell_name(*source),
+        "target": cell_name(*target),
+        "stage": stage,
+        "source_sq": 0.0,
+        "target_sq": 0.0,
+        "cross": 0.0,
+        "diff_sq": 0.0,
+        "valid_token_count": 0,
+    }
+
+
+def _temporal_mechanism_accumulate_geometry(
+    accumulator: dict[str, Any],
+    *,
+    source: torch.Tensor,
+    target: torch.Tensor,
+    attention_mask: torch.Tensor,
+) -> None:
+    require(
+        source.ndim == 3 and target.ndim == 3,
+        "TEMPORAL_MECHANISM_GEOMETRY_STAGE_RANK",
+    )
+    require(
+        tuple(source.shape) == tuple(target.shape),
+        "TEMPORAL_MECHANISM_GEOMETRY_STAGE_SHAPE",
+    )
+    valid = attention_mask.bool()
+    left = source[valid].detach().to(torch.float64)
+    right = target[valid].detach().to(torch.float64)
+    diff = right - left
+    accumulator["source_sq"] += float(torch.sum(left * left).item())
+    accumulator["target_sq"] += float(torch.sum(right * right).item())
+    accumulator["cross"] += float(torch.sum(left * right).item())
+    accumulator["diff_sq"] += float(torch.sum(diff * diff).item())
+    accumulator["valid_token_count"] += int(torch.count_nonzero(valid).item())
+
+
+def _temporal_mechanism_finalize_geometry(
+    accumulator: Mapping[str, Any],
+) -> dict[str, Any]:
+    source_sq = float(accumulator["source_sq"])
+    target_sq = float(accumulator["target_sq"])
+    cross = float(accumulator["cross"])
+    diff_sq = float(accumulator["diff_sq"])
+    denom = 0.5 * (source_sq + target_sq)
+    cosine_denom = math.sqrt(max(0.0, source_sq * target_sq))
+    return {
+        **dict(accumulator),
+        "normalized_residual": (
+            None if denom <= 0.0 else math.sqrt(diff_sq / denom)
+        ),
+        "cosine": (
+            None if cosine_denom <= 0.0 else cross / cosine_denom
+        ),
+    }
+
+
+def temporal_mechanism_prediction_factor_disagreement(
+    predictions: torch.Tensor,
+) -> dict[str, int]:
+    require(
+        tuple(predictions.shape) == (9, DEV_ROWS),
+        "TEMPORAL_MECHANISM_PREDICTION_GRID_SHAPE",
+    )
+    index = {
+        cell: row
+        for row, cell in enumerate(FULL_FACTORIAL_CELLS)
+    }
+    a_sum = 0
+    r_sum = 0
+    for group, source, target in temporal_mechanism_geometry_pairs():
+        count = int(
+            torch.count_nonzero(
+                predictions[index[source]] != predictions[index[target]]
+            ).item()
+        )
+        if group == "A":
+            a_sum += count
+        else:
+            r_sum += count
+    return {
+        "same_training_rng_different_a_disagreement_sum": a_sum,
+        "same_a_different_training_rng_disagreement_sum": r_sum,
+    }
+
+
+def _temporal_mechanism_accumulate_stage_orientation(
+    *,
+    model: torch.nn.Module,
+    wrapper: Any,
+    features: Mapping[str, torch.Tensor],
+    context: Mapping[str, torch.Tensor],
+    stage: str,
+    source_stage: torch.Tensor,
+    target_stage: torch.Tensor,
+    accumulator: dict[str, Any],
+) -> None:
+    residual = target_stage - source_stage
+    accumulator["residual_diff_sq"] += float(
+        torch.sum(residual.to(torch.float64) ** 2).item()
+    )
+    accumulator["residual_source_sq"] += float(
+        torch.sum(source_stage.to(torch.float64) ** 2).item()
+    )
+    accumulator["residual_target_sq"] += float(
+        torch.sum(target_stage.to(torch.float64) ** 2).item()
+    )
+
+    leaf = source_stage.detach().clone().requires_grad_(True)
+    source_logits = temporal_mechanism_resume_from_stage(
+        model=model,
+        wrapper=wrapper,
+        features=features,
+        context=context,
+        stage=stage,
+        stage_value=leaf,
+    )
+    margins = temporal_mechanism_margin_vector(source_logits)
+    grad_refute = torch.autograd.grad(
+        margins[:, 0].sum(),
+        leaf,
+        retain_graph=True,
+        create_graph=False,
+    )[0]
+    grad_support = torch.autograd.grad(
+        margins[:, 1].sum(),
+        leaf,
+        retain_graph=False,
+        create_graph=False,
+    )[0]
+
+    visible_rows = []
+    for row_index in range(int(residual.shape[0])):
+        visible, energy, gain = _phase_b_two_row_projection(
+            grad_refute=grad_refute[row_index],
+            grad_support=grad_support[row_index],
+            residual=residual[row_index],
+        )
+        visible_rows.append(visible)
+        accumulator["actual_task_row_energy_sum"] += energy
+        accumulator["actual_directional_gain_sum"] += gain
+
+        for control_index in range(PHASE_B_CONTROL_COUNT):
+            controlled = temporal_mechanism_apply_stage_control(
+                residual[row_index : row_index + 1],
+                stage=stage,
+                control_index=control_index,
+            )[0]
+            control_energy, control_gain = _phase_b_control_energy_and_gain(
+                grad_refute=grad_refute[row_index],
+                grad_support=grad_support[row_index],
+                residual=controlled,
+            )
+            accumulator["control_task_row_energy_sums"][
+                control_index
+            ] += control_energy
+            accumulator["control_directional_gain_sums"][
+                control_index
+            ] += control_gain
+
+    visible = torch.stack(visible_rows, dim=0)
+    complement = residual - visible
+
+    with torch.no_grad():
+        target_logits = temporal_mechanism_resume_from_stage(
+            model=model,
+            wrapper=wrapper,
+            features=features,
+            context=context,
+            stage=stage,
+            stage_value=target_stage,
+        )
+        full_logits = temporal_mechanism_resume_from_stage(
+            model=model,
+            wrapper=wrapper,
+            features=features,
+            context=context,
+            stage=stage,
+            stage_value=source_stage + residual,
+        )
+        visible_logits = temporal_mechanism_resume_from_stage(
+            model=model,
+            wrapper=wrapper,
+            features=features,
+            context=context,
+            stage=stage,
+            stage_value=source_stage + visible,
+        )
+        complement_logits = temporal_mechanism_resume_from_stage(
+            model=model,
+            wrapper=wrapper,
+            features=features,
+            context=context,
+            stage=stage,
+            stage_value=source_stage + complement,
+        )
+
+    replay_error = float(
+        torch.max(torch.abs(full_logits - target_logits)).item()
+    )
+    accumulator["full_replay_max_abs"] = max(
+        accumulator["full_replay_max_abs"],
+        replay_error,
+    )
+
+    effects = _phase_b_effect_sums(
+        source_logits.detach(),
+        full_logits,
+        visible_logits,
+        complement_logits,
+    )
+    for coordinate in ("centered_logits", "two_margins"):
+        for key in (
+            "E_full",
+            "E_visible",
+            "E_complement",
+            "E_interaction",
+        ):
+            accumulator["finite"][coordinate][key] += effects[coordinate][key]
+
+    source_pred = torch.argmax(source_logits.detach(), dim=-1)
+    visible_pred = torch.argmax(visible_logits, dim=-1)
+    complement_pred = torch.argmax(complement_logits, dim=-1)
+    accumulator["visible_prediction_disagreement_vs_source"] += int(
+        torch.count_nonzero(source_pred != visible_pred).item()
+    )
+    accumulator["complement_prediction_disagreement_vs_source"] += int(
+        torch.count_nonzero(source_pred != complement_pred).item()
+    )
+    accumulator["count"] += int(residual.shape[0])
+
+
+def _temporal_mechanism_prepare_worker(
+    args: argparse.Namespace,
+) -> tuple[
+    dict[str, Any],
+    dict[str, Any],
+    torch.nn.Module,
+    Any,
+    torch.Tensor,
+    dict[str, torch.Tensor],
+    dict[str, torch.Tensor],
+    torch.Tensor,
+    torch.Tensor,
+    torch.Tensor,
+]:
+    frozen = load_temporal_mechanism_runtime_sources()
+    validate_temporal_mechanism_control_identity(
+        frozen["internal_precursor_summary"]
+    )
+
+    (
+        _summary,
+        _trajectory,
+        encoded,
+        model,
+        wrapper,
+        strong_mask,
+        planes,
+    ) = _phase_b_prepare_worker_runtime(args)
+
+    device = torch.device("cuda:0")
+    features, labels, active, targets = p3a._feature_batch_to_device(
+        encoded["dev_bundle"],
+        device,
+    )
+    return (
+        frozen,
+        encoded,
+        model,
+        wrapper,
+        strong_mask,
+        planes,
+        features,
+        labels,
+        active,
+        targets,
+    )
+
+
+def run_temporal_mechanism_cuda_preflight(
+    args: argparse.Namespace,
+) -> None:
+    authenticate_temporal_mechanism_repo(
+        args.expected_head,
+        allow_implementation_worktree=False,
+    )
+    validate_temporal_mechanism_authority(
+        expected_head=args.expected_head,
+        implementation_freeze_commit=args.implementation_freeze_commit,
+        static_only=False,
+    )
+    _validate_two_t4s()
+
+    (
+        frozen,
+        _encoded,
+        model,
+        wrapper,
+        strong_mask,
+        planes,
+        features,
+        _labels,
+        active,
+        targets,
+    ) = _temporal_mechanism_prepare_worker(args)
+
+    batch_features = _phase_b_batch_features(features, 0, 1)
+    context = _phase_b_prepare_common_context(
+        model=model,
+        wrapper=wrapper,
+        features=batch_features,
+        stressor_active=active[:1],
+        target_indices=targets[:1],
+        strong_mask=strong_mask,
+        planes=planes,
+    )
+
+    trajectory = frozen["trajectory"]
+    states = temporal_mechanism_t1_parameter_states(
+        trajectory,
+        (6201, 6201),
+    )
+    micro_logits = {}
+    for name, (a_weight, b_weight) in states.items():
+        with torch.no_grad():
+            raw = _phase_b_raw_write(
+                context["mixer_input"],
+                batch_features["attention_mask"],
+                a_weight,
+                b_weight,
+            )
+            micro_logits[name] = _phase_b_resume_from_raw_write(
+                model=model,
+                wrapper=wrapper,
+                features=batch_features,
+                context=context,
+                raw_write=raw,
+            )
+
+    a_decay_error = float(
+        torch.max(
+            torch.abs(
+                micro_logits["T0"]
+                - micro_logits["A_DECAY_ONLY"]
+            )
+        ).item()
+    )
+    require(
+        a_decay_error == 0.0,
+        f"TEMPORAL_MECHANISM_PREFLIGHT_A_DECAY:{a_decay_error}",
+    )
+
+    source = (6201, 6201)
+    target = (6202, 6201)
+    source_a, source_b = _phase_b_snapshot(trajectory, source, 20)
+    target_a, target_b = _phase_b_snapshot(trajectory, target, 20)
+    with torch.no_grad():
+        raw_source = _phase_b_raw_write(
+            context["mixer_input"],
+            batch_features["attention_mask"],
+            source_a,
+            source_b,
+        )
+        raw_target = _phase_b_raw_write(
+            context["mixer_input"],
+            batch_features["attention_mask"],
+            target_a,
+            target_b,
+        )
+        source_chain = temporal_mechanism_stage_chain(
+            wrapper=wrapper,
+            context=context,
+            raw_write=raw_source,
+        )
+        target_chain = temporal_mechanism_stage_chain(
+            wrapper=wrapper,
+            context=context,
+            raw_write=raw_target,
+        )
+
+    max_replay_error = 0.0
+    for stage in TEMPORAL_MECHANISM_INTERNAL_STAGES:
+        leaf = source_chain[stage].detach().clone().requires_grad_(True)
+        logits = temporal_mechanism_resume_from_stage(
+            model=model,
+            wrapper=wrapper,
+            features=batch_features,
+            context=context,
+            stage=stage,
+            stage_value=leaf,
+        )
+        margins = temporal_mechanism_margin_vector(logits)
+        g0 = torch.autograd.grad(
+            margins[:, 0].sum(),
+            leaf,
+            retain_graph=True,
+        )[0]
+        g1 = torch.autograd.grad(
+            margins[:, 1].sum(),
+            leaf,
+        )[0]
+        require(
+            bool(torch.isfinite(g0).all()),
+            f"TEMPORAL_MECHANISM_PREFLIGHT_G0:{stage}",
+        )
+        require(
+            bool(torch.isfinite(g1).all()),
+            f"TEMPORAL_MECHANISM_PREFLIGHT_G1:{stage}",
+        )
+        with torch.no_grad():
+            target_logits = temporal_mechanism_resume_from_stage(
+                model=model,
+                wrapper=wrapper,
+                features=batch_features,
+                context=context,
+                stage=stage,
+                stage_value=target_chain[stage],
+            )
+            full_logits = temporal_mechanism_resume_from_stage(
+                model=model,
+                wrapper=wrapper,
+                features=batch_features,
+                context=context,
+                stage=stage,
+                stage_value=(
+                    source_chain[stage]
+                    + target_chain[stage]
+                    - source_chain[stage]
+                ),
+            )
+        error = float(
+            torch.max(torch.abs(full_logits - target_logits)).item()
+        )
+        max_replay_error = max(max_replay_error, error)
+        require(
+            error <= TEMPORAL_MECHANISM_LOGIT_AUTH_ATOL,
+            f"TEMPORAL_MECHANISM_PREFLIGHT_REPLAY:{stage}:{error}",
+        )
+
+    require(
+        not any(parameter.grad is not None for parameter in model.parameters()),
+        "TEMPORAL_MECHANISM_PREFLIGHT_PARAMETER_GRAD",
+    )
+
+    print("GEN5_AINIT_TEMPORAL_MECHANISM_CUDA_PREFLIGHT_PASS")
+    print(f"A_DECAY_ONLY_T0_LOGIT_MAX_ABS={a_decay_error:.17g}")
+    print(
+        "MAX_STAGE_FULL_REPLAY_LOGIT_MAX_ABS="
+        f"{max_replay_error:.17g}"
+    )
+    print("STAGES=5")
+    print("MODEL_FORWARD_AUTHENTICATION=PASS")
+    print("BACKWARD_EXECUTED=False")
+    print("PARAMETER_GRADIENTS_ACCUMULATED=False")
+    print("OPTIMIZER_CONSTRUCTED=False")
+    print("TRAINING_EXECUTED=False")
+    print("PREFLIGHT_COLLECTION=FORBIDDEN")
+    print("CONFIRMATORY_9601_9900_LOADED=False")
+
+
+def run_temporal_mechanism_worker(
+    args: argparse.Namespace,
+) -> None:
+    authenticate_temporal_mechanism_repo(
+        args.expected_head,
+        allow_implementation_worktree=False,
+    )
+    validate_temporal_mechanism_authority(
+        expected_head=args.expected_head,
+        implementation_freeze_commit=args.implementation_freeze_commit,
+        static_only=False,
+    )
+    require(torch.cuda.is_available(), "TEMPORAL_MECHANISM_WORKER_CUDA")
+    require(
+        torch.cuda.device_count() == 1,
+        "TEMPORAL_MECHANISM_WORKER_VISIBLE_GPU_COUNT",
+    )
+    require(
+        args.worker_id in (0, 1),
+        "TEMPORAL_MECHANISM_WORKER_ID",
+    )
+    require(
+        args.scratch_root is not None,
+        "TEMPORAL_MECHANISM_WORKER_SCRATCH",
+    )
+
+    (
+        frozen,
+        _encoded,
+        model,
+        wrapper,
+        strong_mask,
+        planes,
+        features,
+        labels,
+        active,
+        targets,
+    ) = _temporal_mechanism_prepare_worker(args)
+
+    trajectory = frozen["trajectory"]
+    local_cells = _phase_b_worker_source_cells(int(args.worker_id))
+    task_orientations = _phase_b_worker_orientations(int(args.worker_id))
+    geometry_pairs = temporal_mechanism_worker_geometry_pairs(int(args.worker_id))
+
+    weights = {
+        cell: {
+            t: _phase_b_snapshot(trajectory, cell, t)
+            for t in range(TOTAL_OPTIMIZER_STEPS + 1)
+        }
+        for cell in FULL_FACTORIAL_CELLS
+    }
+
+    behavior_logits = {
+        cell_name(*cell): torch.empty(
+            (TOTAL_OPTIMIZER_STEPS + 1, DEV_ROWS, 3),
+            dtype=torch.float32,
+        )
+        for cell in local_cells
+    }
+    t1_micro_logits = {
+        cell_name(*cell): torch.empty(
+            (len(TEMPORAL_MECHANISM_T1_STATES), DEV_ROWS, 3),
+            dtype=torch.float32,
+        )
+        for cell in local_cells
+    }
+
+    geometry_accumulators: dict[
+        tuple[int, str, str, str, str],
+        dict[str, Any],
+    ] = {}
+    for t in TEMPORAL_MECHANISM_CRITICAL_TIMES:
+        for group, source, target in geometry_pairs:
+            for stage in TEMPORAL_MECHANISM_INTERNAL_STAGES:
+                key = (
+                    t,
+                    group,
+                    cell_name(*source),
+                    cell_name(*target),
+                    stage,
+                )
+                geometry_accumulators[key] = _temporal_mechanism_empty_geometry(
+                    t=t,
+                    group=group,
+                    source=source,
+                    target=target,
+                    stage=stage,
+                )
+
+    task_accumulators: dict[
+        tuple[int, str, str, str],
+        dict[str, Any],
+    ] = {}
+    for t in TEMPORAL_MECHANISM_TASK_VISIBLE_TIMES:
+        for source, target in task_orientations:
+            for stage in TEMPORAL_MECHANISM_INTERNAL_STAGES:
+                key = (
+                    t,
+                    stage,
+                    cell_name(*source),
+                    cell_name(*target),
+                )
+                task_accumulators[key] = _phase_b_empty_orientation(
+                    cell_name(*source),
+                    cell_name(*target),
+                )
+
+    for start in range(0, DEV_ROWS, TEMPORAL_MECHANISM_BATCH_ROWS):
+        stop = min(start + TEMPORAL_MECHANISM_BATCH_ROWS, DEV_ROWS)
+        batch_features = _phase_b_batch_features(features, start, stop)
+        context = _phase_b_prepare_common_context(
+            model=model,
+            wrapper=wrapper,
+            features=batch_features,
+            stressor_active=active[start:stop],
+            target_indices=targets[start:stop],
+            strong_mask=strong_mask,
+            planes=planes,
+        )
+
+        for cell in local_cells:
+            name = cell_name(*cell)
+            for t in range(TOTAL_OPTIMIZER_STEPS + 1):
+                a_weight, b_weight = weights[cell][t]
+                with torch.no_grad():
+                    raw = _phase_b_raw_write(
+                        context["mixer_input"],
+                        batch_features["attention_mask"],
+                        a_weight,
+                        b_weight,
+                    )
+                    logits = _phase_b_resume_from_raw_write(
+                        model=model,
+                        wrapper=wrapper,
+                        features=batch_features,
+                        context=context,
+                        raw_write=raw,
+                    )
+                behavior_logits[name][t, start:stop] = logits.detach().cpu()
+
+            micro_states = temporal_mechanism_t1_parameter_states(
+                trajectory,
+                cell,
+            )
+            for state_index, state_name in enumerate(
+                TEMPORAL_MECHANISM_T1_STATES
+            ):
+                if state_name == "T0":
+                    logits_cpu = behavior_logits[name][0, start:stop]
+                elif state_name == "FULL_T1":
+                    logits_cpu = behavior_logits[name][1, start:stop]
+                else:
+                    a_weight, b_weight = micro_states[state_name]
+                    with torch.no_grad():
+                        raw = _phase_b_raw_write(
+                            context["mixer_input"],
+                            batch_features["attention_mask"],
+                            a_weight,
+                            b_weight,
+                        )
+                        live_logits = _phase_b_resume_from_raw_write(
+                            model=model,
+                            wrapper=wrapper,
+                            features=batch_features,
+                            context=context,
+                            raw_write=raw,
+                        )
+                    logits_cpu = live_logits.detach().cpu()
+                t1_micro_logits[name][state_index, start:stop] = logits_cpu
+
+        for t in TEMPORAL_MECHANISM_CRITICAL_TIMES:
+            stage_by_cell: dict[
+                tuple[int, int],
+                dict[str, torch.Tensor],
+            ] = {}
+            with torch.no_grad():
+                for cell in FULL_FACTORIAL_CELLS:
+                    a_weight, b_weight = weights[cell][t]
+                    raw = _phase_b_raw_write(
+                        context["mixer_input"],
+                        batch_features["attention_mask"],
+                        a_weight,
+                        b_weight,
+                    )
+                    stage_by_cell[cell] = temporal_mechanism_stage_chain(
+                        wrapper=wrapper,
+                        context=context,
+                        raw_write=raw,
+                    )
+
+            for group, source, target in geometry_pairs:
+                for stage in TEMPORAL_MECHANISM_INTERNAL_STAGES:
+                    key = (
+                        t,
+                        group,
+                        cell_name(*source),
+                        cell_name(*target),
+                        stage,
+                    )
+                    _temporal_mechanism_accumulate_geometry(
+                        geometry_accumulators[key],
+                        source=stage_by_cell[source][stage],
+                        target=stage_by_cell[target][stage],
+                        attention_mask=batch_features["attention_mask"],
+                    )
+
+            if t in TEMPORAL_MECHANISM_TASK_VISIBLE_TIMES:
+                for source, target in task_orientations:
+                    for stage in TEMPORAL_MECHANISM_INTERNAL_STAGES:
+                        key = (
+                            t,
+                            stage,
+                            cell_name(*source),
+                            cell_name(*target),
+                        )
+                        _temporal_mechanism_accumulate_stage_orientation(
+                            model=model,
+                            wrapper=wrapper,
+                            features=batch_features,
+                            context=context,
+                            stage=stage,
+                            source_stage=stage_by_cell[source][stage],
+                            target_stage=stage_by_cell[target][stage],
+                            accumulator=task_accumulators[key],
+                        )
+
+            del stage_by_cell
+
+    finalized_geometry = [
+        _temporal_mechanism_finalize_geometry(value)
+        for value in geometry_accumulators.values()
+    ]
+
+    task_visible: dict[str, dict[str, list[dict[str, Any]]]] = {}
+    for t in TEMPORAL_MECHANISM_TASK_VISIBLE_TIMES:
+        task_visible[str(t)] = {}
+        for stage in TEMPORAL_MECHANISM_INTERNAL_STAGES:
+            rows = []
+            for source, target in task_orientations:
+                key = (
+                    t,
+                    stage,
+                    cell_name(*source),
+                    cell_name(*target),
+                )
+                rows.append(_phase_b_finalize_orientation(task_accumulators[key]))
+            task_visible[str(t)][stage] = rows
+
+    parameter_gradients = any(
+        parameter.grad is not None
+        for parameter in model.parameters()
+    )
+    require(
+        parameter_gradients is False,
+        "TEMPORAL_MECHANISM_PARAMETER_GRADIENT_ACCUMULATED",
+    )
+
+    result = {
+        "schema_version": "GEN5_AINIT_TEMPORAL_MECHANISM_WORKER_V1",
+        "worker_id": int(args.worker_id),
+        "cells": [cell_name(*cell) for cell in local_cells],
+        "behavior_logits": behavior_logits,
+        "t1_micro_logits": t1_micro_logits,
+        "labels": labels.detach().cpu(),
+        "geometry": finalized_geometry,
+        "task_visible": task_visible,
+        "training_executed": False,
+        "backward_executed": False,
+        "optimizer_constructed": False,
+        "parameter_gradients_accumulated": False,
+        "confirmatory_9601_9900_loaded": False,
+    }
+
+    worker_root = Path(args.scratch_root) / f"worker{args.worker_id}"
+    worker_root.mkdir(parents=True, exist_ok=False)
+    torch.save(result, worker_root / "worker_result.pt")
+    print(
+        "GEN5_AINIT_TEMPORAL_MECHANISM_WORKER_PASS "
+        f"worker={args.worker_id} "
+        f"cells={len(local_cells)} "
+        f"geometry_pairs={len(geometry_pairs)} "
+        f"task_orientations={len(task_orientations)}"
+    )
+
+
+def _temporal_mechanism_spawn_workers(
+    args: argparse.Namespace,
+    *,
+    scratch_root: Path,
+) -> tuple[list[dict[str, Any]], list[Path]]:
+    processes = []
+    logs: list[Path] = []
+    script = Path(__file__).resolve()
+    worker_scratch = scratch_root / "worker_scratch"
+    worker_scratch.mkdir(parents=True, exist_ok=False)
+
+    for worker_id in (0, 1):
+        log_path = scratch_root / f"worker{worker_id}.log"
+        logs.append(log_path)
+        command = [
+            sys.executable,
+            str(script),
+            "--temporal-mechanism-worker",
+            "--expected-head",
+            args.expected_head,
+            "--implementation-freeze-commit",
+            args.implementation_freeze_commit,
+            "--model-snapshot",
+            str(args.model_snapshot),
+            "--tokenizer-snapshot",
+            str(args.tokenizer_snapshot),
+            "--checkpoint",
+            str(args.checkpoint),
+            "--scratch-root",
+            str(worker_scratch),
+            "--worker-id",
+            str(worker_id),
+        ]
+        env = dict(os.environ)
+        env["CUDA_VISIBLE_DEVICES"] = str(worker_id)
+        handle = log_path.open("w", encoding="utf-8")
+        process = subprocess.Popen(
+            command,
+            cwd=ROOT,
+            env=env,
+            stdout=handle,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
+        processes.append((process, handle))
+
+    return_codes = []
+    for process, handle in processes:
+        return_codes.append(process.wait())
+        handle.close()
+
+    if any(code != 0 for code in return_codes):
+        for worker_id, log_path in enumerate(logs):
+            print(f"=== TEMPORAL MECHANISM WORKER {worker_id} LOG ===")
+            print(log_path.read_text(encoding="utf-8", errors="replace"))
+        raise TemporalBirthError(
+            f"TEMPORAL_MECHANISM_WORKER_FAILURE:{return_codes}"
+        )
+
+    workers = []
+    for worker_id in (0, 1):
+        result_path = (
+            worker_scratch
+            / f"worker{worker_id}"
+            / "worker_result.pt"
+        )
+        require(
+            result_path.is_file(),
+            "TEMPORAL_MECHANISM_WORKER_RESULT_MISSING",
+        )
+        workers.append(
+            torch.load(
+                result_path,
+                map_location="cpu",
+                weights_only=True,
+            )
+        )
+    return workers, logs
+
+
+def _temporal_mechanism_merge_behavior(
+    workers: Sequence[Mapping[str, Any]],
+    frozen_cell_metrics: Mapping[str, Any],
+) -> tuple[
+    torch.Tensor,
+    torch.Tensor,
+    torch.Tensor,
+    dict[str, Any],
+]:
+    by_cell: dict[str, torch.Tensor] = {}
+    micro_by_cell: dict[str, torch.Tensor] = {}
+    labels = None
+
+    for worker in workers:
+        worker_labels = worker["labels"]
+        if labels is None:
+            labels = worker_labels
+        else:
+            require(
+                torch.equal(labels, worker_labels),
+                "TEMPORAL_MECHANISM_WORKER_LABEL_MISMATCH",
+            )
+        for name, value in worker["behavior_logits"].items():
+            require(
+                name not in by_cell,
+                f"TEMPORAL_MECHANISM_DUPLICATE_CELL:{name}",
+            )
+            by_cell[name] = value
+        for name, value in worker["t1_micro_logits"].items():
+            require(
+                name not in micro_by_cell,
+                f"TEMPORAL_MECHANISM_DUPLICATE_MICRO_CELL:{name}",
+            )
+            micro_by_cell[name] = value
+
+    ordered_names = [cell_name(*cell) for cell in FULL_FACTORIAL_CELLS]
+    require(
+        set(by_cell) == set(ordered_names),
+        "TEMPORAL_MECHANISM_BEHAVIOR_CELL_SET",
+    )
+    require(
+        set(micro_by_cell) == set(ordered_names),
+        "TEMPORAL_MECHANISM_MICRO_CELL_SET",
+    )
+    require(
+        labels is not None and tuple(labels.shape) == (DEV_ROWS,),
+        "TEMPORAL_MECHANISM_LABEL_SHAPE",
+    )
+
+    logits = torch.stack([by_cell[name] for name in ordered_names], dim=1)
+    micro = torch.stack([micro_by_cell[name] for name in ordered_names], dim=1)
+    require(
+        tuple(logits.shape)
+        == (TOTAL_OPTIMIZER_STEPS + 1, 9, DEV_ROWS, 3),
+        "TEMPORAL_MECHANISM_LOGIT_TENSOR_SHAPE",
+    )
+    require(
+        tuple(micro.shape)
+        == (len(TEMPORAL_MECHANISM_T1_STATES), 9, DEV_ROWS, 3),
+        "TEMPORAL_MECHANISM_MICRO_TENSOR_SHAPE",
+    )
+
+    predictions = torch.argmax(logits, dim=-1)
+    frozen_cells = frozen_cell_metrics["cells"]
+    mismatch_count = 0
+    for cell_index, name in enumerate(ordered_names):
+        steps = frozen_cells[name]["steps"]
+        require(
+            len(steps) == TOTAL_OPTIMIZER_STEPS + 1,
+            f"TEMPORAL_MECHANISM_FROZEN_STEP_COUNT:{name}",
+        )
+        for t in range(TOTAL_OPTIMIZER_STEPS + 1):
+            expected = torch.tensor(
+                steps[t]["predictions"],
+                dtype=predictions.dtype,
+            )
+            mismatch_count += int(
+                torch.count_nonzero(
+                    predictions[t, cell_index] != expected
+                ).item()
+            )
+    require(
+        mismatch_count == 0,
+        f"TEMPORAL_MECHANISM_FROZEN_PREDICTION_MISMATCH:{mismatch_count}",
+    )
+
+    t0_micro = micro[TEMPORAL_MECHANISM_T1_STATES.index("T0")]
+    a_decay = micro[
+        TEMPORAL_MECHANISM_T1_STATES.index("A_DECAY_ONLY")
+    ]
+    b_update = micro[
+        TEMPORAL_MECHANISM_T1_STATES.index("B_UPDATE_ONLY")
+    ]
+    full_t1 = micro[
+        TEMPORAL_MECHANISM_T1_STATES.index("FULL_T1")
+    ]
+    a_decay_max_abs = float(
+        torch.max(torch.abs(t0_micro - a_decay)).item()
+    )
+    require(
+        a_decay_max_abs == 0.0,
+        f"TEMPORAL_MECHANISM_A_DECAY_NOT_T0:{a_decay_max_abs}",
+    )
+    full_t1_error = float(
+        torch.max(torch.abs(full_t1 - logits[1])).item()
+    )
+    require(
+        full_t1_error == 0.0,
+        f"TEMPORAL_MECHANISM_FULL_T1_INTERNAL_MISMATCH:{full_t1_error}",
+    )
+
+    micro_summary = {}
+    full_pred = torch.argmax(full_t1, dim=-1)
+    for state_index, state_name in enumerate(
+        TEMPORAL_MECHANISM_T1_STATES
+    ):
+        pred = torch.argmax(micro[state_index], dim=-1)
+        micro_summary[state_name] = {
+            **temporal_mechanism_prediction_factor_disagreement(pred),
+            "prediction_disagreement_vs_full_t1": int(
+                torch.count_nonzero(pred != full_pred).item()
+            ),
+            "logit_max_abs_vs_full_t1": float(
+                torch.max(
+                    torch.abs(micro[state_index] - full_t1)
+                ).item()
+            ),
+        }
+
+    return logits, micro, labels, {
+        "frozen_prediction_mismatch_count": mismatch_count,
+        "A_DECAY_ONLY_T0_logit_max_abs": a_decay_max_abs,
+        "FULL_T1_internal_logit_max_abs": full_t1_error,
+        "states": micro_summary,
+        "B_UPDATE_ONLY_FULL_T1_logit_max_abs": float(
+            torch.max(torch.abs(b_update - full_t1)).item()
+        ),
+    }
+
+
+def _temporal_mechanism_merge_geometry(
+    workers: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    rows = []
+    for worker in workers:
+        rows.extend(worker["geometry"])
+
+    expected_count = (
+        len(TEMPORAL_MECHANISM_CRITICAL_TIMES)
+        * len(temporal_mechanism_geometry_pairs())
+        * len(TEMPORAL_MECHANISM_INTERNAL_STAGES)
+    )
+    require(
+        len(rows) == expected_count,
+        f"TEMPORAL_MECHANISM_GEOMETRY_ROW_COUNT:{len(rows)}",
+    )
+
+    seen = {
+        (
+            int(row["t"]),
+            row["group"],
+            row["source"],
+            row["target"],
+            row["stage"],
+        )
+        for row in rows
+    }
+    require(
+        len(seen) == expected_count,
+        "TEMPORAL_MECHANISM_GEOMETRY_DUPLICATE",
+    )
+    for row in rows:
+        require(
+            int(row["valid_token_count"]) == PHASE_B_VALID_TOKEN_COUNT,
+            "TEMPORAL_MECHANISM_GEOMETRY_VALID_TOKEN_COUNT",
+        )
+
+    pair_index = {
+        (
+            int(row["t"]),
+            row["group"],
+            row["source"],
+            row["target"],
+            row["stage"],
+        ): row
+        for row in rows
+    }
+
+    grouped = {}
+    for t in TEMPORAL_MECHANISM_CRITICAL_TIMES:
+        grouped[str(t)] = {}
+        for stage_index, stage in enumerate(
+            TEMPORAL_MECHANISM_INTERNAL_STAGES
+        ):
+            stage_group = {}
+            for group in ("A", "R"):
+                stage_rows = [
+                    row
+                    for row in rows
+                    if int(row["t"]) == t
+                    and row["group"] == group
+                    and row["stage"] == stage
+                ]
+                require(
+                    len(stage_rows) == 9,
+                    f"TEMPORAL_MECHANISM_GEOMETRY_GROUP_COUNT:{t}:{stage}:{group}",
+                )
+                residuals = [
+                    float(row["normalized_residual"])
+                    for row in stage_rows
+                    if row["normalized_residual"] is not None
+                ]
+                cosines = [
+                    float(row["cosine"])
+                    for row in stage_rows
+                    if row["cosine"] is not None
+                ]
+                require(
+                    len(residuals) == 9,
+                    f"TEMPORAL_MECHANISM_GEOMETRY_RESIDUAL_COUNT:{t}:{stage}:{group}",
+                )
+                raw_survival = []
+                step_survival = []
+                for row in stage_rows:
+                    key_base = (
+                        t,
+                        group,
+                        row["source"],
+                        row["target"],
+                    )
+                    current = float(row["normalized_residual"])
+                    raw_value = float(
+                        pair_index[key_base + ("raw_write",)][
+                            "normalized_residual"
+                        ]
+                    )
+                    if raw_value > 0.0:
+                        raw_survival.append(current / raw_value)
+                    if stage_index > 0:
+                        previous_stage = TEMPORAL_MECHANISM_INTERNAL_STAGES[
+                            stage_index - 1
+                        ]
+                        previous = float(
+                            pair_index[key_base + (previous_stage,)][
+                                "normalized_residual"
+                            ]
+                        )
+                        if previous > 0.0:
+                            step_survival.append(current / previous)
+
+                stage_group[group] = {
+                    "mean_normalized_residual": (
+                        sum(residuals) / len(residuals)
+                    ),
+                    "normalized_residual_range": [
+                        min(residuals),
+                        max(residuals),
+                    ],
+                    "mean_cosine": (
+                        None
+                        if not cosines
+                        else sum(cosines) / len(cosines)
+                    ),
+                    "mean_survival_from_raw_write": (
+                        None
+                        if not raw_survival
+                        else sum(raw_survival) / len(raw_survival)
+                    ),
+                    "mean_step_survival": (
+                        None
+                        if not step_survival
+                        else sum(step_survival) / len(step_survival)
+                    ),
+                }
+            grouped[str(t)][stage] = stage_group
+
+    return {
+        "pair_rows": rows,
+        "grouped": grouped,
+    }
+
+
+def _temporal_mechanism_merge_task_visible(
+    workers: Sequence[Mapping[str, Any]],
+    precursor_summary: Mapping[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    merged: dict[str, Any] = {}
+    endpoint_auth: dict[str, Any] = {
+        "stages": {},
+        "pass": True,
+    }
+    frozen_group = precursor_summary["grouped"][
+        "same_training_rng_different_a_init"
+    ]
+
+    for t in TEMPORAL_MECHANISM_TASK_VISIBLE_TIMES:
+        merged[str(t)] = {}
+        for stage in TEMPORAL_MECHANISM_INTERNAL_STAGES:
+            pseudo_workers = [
+                {
+                    "t": t,
+                    "orientations": worker["task_visible"][str(t)][stage],
+                }
+                for worker in workers
+            ]
+            value = _phase_b_merge_functional_workers(
+                pseudo_workers,
+                t=t,
+            )
+            gate = _phase_b_gate(value)
+            merged[str(t)][stage] = {
+                "metrics": value,
+                "gate": gate,
+            }
+
+            if t == 20:
+                target = frozen_group[stage]
+                checks = {
+                    "normalized_residual": (
+                        abs(
+                            float(value["normalized_residual_mean"])
+                            - float(target["normalized_residual_mean"])
+                        )
+                        <= TEMPORAL_MECHANISM_GEOMETRY_RESIDUAL_ATOL
+                    ),
+                    "task_row_energy": (
+                        abs(
+                            float(value["actual_task_row_energy_mean"])
+                            - float(target["actual_task_row_energy_mean"])
+                        )
+                        <= TEMPORAL_MECHANISM_TASK_ENERGY_ATOL
+                    ),
+                    "control_task_row_energy": (
+                        abs(
+                            float(value["control_task_row_energy_mean"])
+                            - float(target["control_task_row_energy_mean"])
+                        )
+                        <= TEMPORAL_MECHANISM_CONTROL_ENERGY_ATOL
+                    ),
+                }
+                target_finite = target["finite_intervention"]
+                for coordinate in (
+                    "centered_logits",
+                    "two_margins",
+                ):
+                    observed_coordinate = value[
+                        "finite_intervention"
+                    ][coordinate]
+                    target_coordinate = target_finite[coordinate]
+                    for ratio_key in (
+                        "R_visible",
+                        "R_complement",
+                        "R_interaction",
+                    ):
+                        checks[f"{coordinate}_{ratio_key}"] = (
+                            abs(
+                                float(observed_coordinate[ratio_key])
+                                - float(target_coordinate[ratio_key])
+                            )
+                            <= TEMPORAL_MECHANISM_EFFECT_RATIO_ATOL
+                        )
+                stage_pass = all(checks.values())
+                endpoint_auth["stages"][stage] = {
+                    "pass": stage_pass,
+                    "checks": checks,
+                }
+                endpoint_auth["pass"] = endpoint_auth["pass"] and stage_pass
+
+    require(
+        endpoint_auth["pass"] is True,
+        "TEMPORAL_MECHANISM_T20_PRECURSOR_AUTHENTICATION_FAILED",
+    )
+    return merged, endpoint_auth
+
+
+def _temporal_mechanism_task_coordinate_metrics(
+    values: torch.Tensor,
+) -> dict[str, Any]:
+    require(
+        values.ndim == 3
+        and tuple(values.shape[:2]) == (9, DEV_ROWS),
+        "TEMPORAL_MECHANISM_TASK_COORDINATE_SHAPE",
+    )
+    rows = []
+    cell_index = {
+        cell: index
+        for index, cell in enumerate(FULL_FACTORIAL_CELLS)
+    }
+    for group, source, target in temporal_mechanism_geometry_pairs():
+        left = values[cell_index[source]].to(torch.float64)
+        right = values[cell_index[target]].to(torch.float64)
+        diff = right - left
+        source_sq = float(torch.sum(left * left).item())
+        target_sq = float(torch.sum(right * right).item())
+        cross = float(torch.sum(left * right).item())
+        diff_sq = float(torch.sum(diff * diff).item())
+        denom = 0.5 * (source_sq + target_sq)
+        cosine_denom = math.sqrt(max(0.0, source_sq * target_sq))
+        rows.append(
+            {
+                "group": group,
+                "source": cell_name(*source),
+                "target": cell_name(*target),
+                "normalized_residual": (
+                    None if denom <= 0.0 else math.sqrt(diff_sq / denom)
+                ),
+                "cosine": (
+                    None if cosine_denom <= 0.0 else cross / cosine_denom
+                ),
+            }
+        )
+
+    grouped = {}
+    for group in ("A", "R"):
+        subset = [
+            row
+            for row in rows
+            if row["group"] == group
+        ]
+        residuals = [
+            float(row["normalized_residual"])
+            for row in subset
+            if row["normalized_residual"] is not None
+        ]
+        cosines = [
+            float(row["cosine"])
+            for row in subset
+            if row["cosine"] is not None
+        ]
+        grouped[group] = {
+            "mean_normalized_residual": (
+                None
+                if not residuals
+                else sum(residuals) / len(residuals)
+            ),
+            "normalized_residual_range": (
+                None
+                if not residuals
+                else [min(residuals), max(residuals)]
+            ),
+            "mean_cosine": (
+                None
+                if not cosines
+                else sum(cosines) / len(cosines)
+            ),
+        }
+    return {
+        "pairs": rows,
+        "grouped": grouped,
+    }
+
+
+def run_temporal_mechanism_analysis(
+    args: argparse.Namespace,
+) -> None:
+    authenticate_temporal_mechanism_repo(
+        args.expected_head,
+        allow_implementation_worktree=False,
+    )
+    validate_temporal_mechanism_authority(
+        expected_head=args.expected_head,
+        implementation_freeze_commit=args.implementation_freeze_commit,
+        static_only=False,
+    )
+    gpu_meta = _validate_two_t4s()
+
+    require(
+        args.output_root is not None,
+        "TEMPORAL_MECHANISM_OUTPUT_REQUIRED",
+    )
+    output_root = Path(args.output_root)
+    require(
+        not output_root.exists(),
+        f"TEMPORAL_MECHANISM_OUTPUT_COLLISION:{output_root}",
+    )
+
+    frozen = load_temporal_mechanism_runtime_sources()
+    validate_temporal_mechanism_control_identity(
+        frozen["internal_precursor_summary"]
+    )
+
+    scratch_root = Path(
+        tempfile.mkdtemp(
+            prefix="gen5_temporal_mechanism_",
+            dir="/kaggle/working",
+        )
+    )
+    workers, logs = _temporal_mechanism_spawn_workers(
+        args,
+        scratch_root=scratch_root,
+    )
+
+    for worker in workers:
+        require(
+            worker.get("schema_version")
+            == "GEN5_AINIT_TEMPORAL_MECHANISM_WORKER_V1",
+            "TEMPORAL_MECHANISM_WORKER_SCHEMA",
+        )
+        require(
+            worker.get("training_executed") is False,
+            "TEMPORAL_MECHANISM_WORKER_TRAINING",
+        )
+        require(
+            worker.get("backward_executed") is False,
+            "TEMPORAL_MECHANISM_WORKER_BACKWARD",
+        )
+        require(
+            worker.get("optimizer_constructed") is False,
+            "TEMPORAL_MECHANISM_WORKER_OPTIMIZER",
+        )
+        require(
+            worker.get("parameter_gradients_accumulated") is False,
+            "TEMPORAL_MECHANISM_WORKER_PARAMETER_GRAD",
+        )
+        require(
+            worker.get("confirmatory_9601_9900_loaded") is False,
+            "TEMPORAL_MECHANISM_WORKER_CONFIRMATORY",
+        )
+
+    logits, micro, labels, micro_summary = (
+        _temporal_mechanism_merge_behavior(
+            workers,
+            frozen["cell_metrics"],
+        )
+    )
+    centered = temporal_mechanism_centered_logits(
+        logits.reshape(-1, 3)
+    ).reshape_as(logits)
+    margins = temporal_mechanism_margin_vector(
+        logits.reshape(-1, 3)
+    ).reshape(
+        TOTAL_OPTIMIZER_STEPS + 1,
+        9,
+        DEV_ROWS,
+        2,
+    )
+    predictions = torch.argmax(logits, dim=-1)
+
+    t1_disagreement = temporal_mechanism_prediction_factor_disagreement(
+        predictions[1]
+    )
+    require(
+        t1_disagreement[
+            "same_training_rng_different_a_disagreement_sum"
+        ] == 72,
+        "TEMPORAL_MECHANISM_T1_A_DISAGREEMENT_RUNTIME",
+    )
+    require(
+        t1_disagreement[
+            "same_a_different_training_rng_disagreement_sum"
+        ] == 0,
+        "TEMPORAL_MECHANISM_T1_R_DISAGREEMENT_RUNTIME",
+    )
+
+    reconvergence = {}
+    for t in (16, 17, 20):
+        reconvergence[str(t)] = (
+            temporal_mechanism_prediction_factor_disagreement(
+                predictions[t]
+            )
+        )
+    for t in range(17, 21):
+        value = temporal_mechanism_prediction_factor_disagreement(
+            predictions[t]
+        )
+        require(
+            value[
+                "same_training_rng_different_a_disagreement_sum"
+            ] == 0,
+            f"TEMPORAL_MECHANISM_RUNTIME_RECONVERGENCE_A:{t}",
+        )
+        require(
+            value[
+                "same_a_different_training_rng_disagreement_sum"
+            ] == 0,
+            f"TEMPORAL_MECHANISM_RUNTIME_RECONVERGENCE_R:{t}",
+        )
+
+    geometry = _temporal_mechanism_merge_geometry(workers)
+    task_visible, endpoint_auth = (
+        _temporal_mechanism_merge_task_visible(
+            workers,
+            frozen["internal_precursor_summary"],
+        )
+    )
+
+    precursor_by_time = {}
+    for t in TEMPORAL_MECHANISM_TASK_VISIBLE_TIMES:
+        passing = [
+            stage
+            for stage in TEMPORAL_MECHANISM_INTERNAL_STAGES
+            if task_visible[str(t)][stage]["gate"]["pass"]
+        ]
+        precursor_by_time[str(t)] = (
+            None if not passing else passing[0]
+        )
+
+    task_coordinates = {}
+    vulnerable_rows = torch.tensor(
+        frozen["vulnerable_rows"],
+        dtype=torch.long,
+    )
+    for t in (1, 16, 17, 20):
+        task_coordinates[str(t)] = {
+            "centered_logits": (
+                _temporal_mechanism_task_coordinate_metrics(
+                    centered[t]
+                )
+            ),
+            "two_margins": (
+                _temporal_mechanism_task_coordinate_metrics(
+                    margins[t]
+                )
+            ),
+            "vulnerable_120_margin_pairwise_mean_l2": {},
+        }
+        for group in ("A", "R"):
+            distances = []
+            cell_index = {
+                cell: index
+                for index, cell in enumerate(FULL_FACTORIAL_CELLS)
+            }
+            for pair_group, source, target in (
+                temporal_mechanism_geometry_pairs()
+            ):
+                if pair_group != group:
+                    continue
+                left = margins[
+                    t,
+                    cell_index[source],
+                ].index_select(
+                    0,
+                    vulnerable_rows,
+                ).to(torch.float64)
+                right = margins[
+                    t,
+                    cell_index[target],
+                ].index_select(
+                    0,
+                    vulnerable_rows,
+                ).to(torch.float64)
+                per_row = torch.linalg.vector_norm(
+                    right - left,
+                    dim=-1,
+                )
+                distances.extend(
+                    float(value)
+                    for value in per_row.tolist()
+                )
+            task_coordinates[str(t)][
+                "vulnerable_120_margin_pairwise_mean_l2"
+            ][group] = (
+                sum(distances) / len(distances)
+            )
+
+    output_root.mkdir(parents=True, exist_ok=False)
+    log_root = output_root / "worker_logs"
+    log_root.mkdir()
+    for index, log_path in enumerate(logs):
+        shutil.copy2(
+            log_path,
+            log_root / f"{index:02d}_{log_path.name}",
+        )
+
+    behavior_path = output_root / "temporal_behavioral_coordinates.pt"
+    torch.save(
+        {
+            "schema_version": (
+                "GEN5_AINIT_TEMPORAL_MECHANISM_BEHAVIORAL_COORDINATES_V1"
+            ),
+            "execution_head": args.expected_head,
+            "implementation_freeze_commit": (
+                args.implementation_freeze_commit
+            ),
+            "cell_order": [
+                cell_name(*cell)
+                for cell in FULL_FACTORIAL_CELLS
+            ],
+            "time_axis": list(range(TOTAL_OPTIMIZER_STEPS + 1)),
+            "labels": labels,
+            "logits": logits,
+            "centered_logits": centered,
+            "two_margins": margins,
+            "predictions": predictions,
+            "t1_micro_state_order": list(
+                TEMPORAL_MECHANISM_T1_STATES
+            ),
+            "t1_micro_logits": micro,
+            "vulnerable_rows": vulnerable_rows,
+        },
+        behavior_path,
+    )
+
+    internal_path = output_root / "temporal_internal_stage_metrics.pt"
+    torch.save(
+        {
+            "schema_version": (
+                "GEN5_AINIT_TEMPORAL_MECHANISM_INTERNAL_STAGE_METRICS_V1"
+            ),
+            "execution_head": args.expected_head,
+            "implementation_freeze_commit": (
+                args.implementation_freeze_commit
+            ),
+            "critical_times": list(
+                TEMPORAL_MECHANISM_CRITICAL_TIMES
+            ),
+            "task_visible_times": list(
+                TEMPORAL_MECHANISM_TASK_VISIBLE_TIMES
+            ),
+            "stage_order": list(
+                TEMPORAL_MECHANISM_INTERNAL_STAGES
+            ),
+            "geometry": geometry,
+            "task_visible": task_visible,
+            "t20_endpoint_authentication": endpoint_auth,
+            "stage_control_identity": {
+                stage: [
+                    temporal_mechanism_stage_control_identity(
+                        stage,
+                        index,
+                    )
+                    for index in range(PHASE_B_CONTROL_COUNT)
+                ]
+                for stage in TEMPORAL_MECHANISM_INTERNAL_STAGES
+            },
+        },
+        internal_path,
+    )
+
+    summary = {
+        "schema_version": (
+            "GEN5_AINIT_TEMPORAL_MECHANISM_SUMMARY_V1"
+        ),
+        "result": "PASS_GEN5_AINIT_TEMPORAL_MECHANISM_SCAN",
+        "execution_head": args.expected_head,
+        "implementation_freeze_commit": (
+            args.implementation_freeze_commit
+        ),
+        "authority_commit": TEMPORAL_MECHANISM_AUTHORITY_COMMIT,
+        "source_evidence_freeze_commit": (
+            TEMPORAL_MECHANISM_SOURCE_FREEZE_COMMIT
+        ),
+        "phase_a_trajectory_sha256": PHASE_A_TRAJECTORY_SHA256,
+        "behavioral_cell_metrics_sha256": (
+            TEMPORAL_MECHANISM_BEHAVIORAL_CELL_METRICS_SHA256
+        ),
+        "factor_seeds": list(FACTOR_SEEDS),
+        "cell_count": 9,
+        "dev_rows": DEV_ROWS,
+        "time_axis": list(range(TOTAL_OPTIMIZER_STEPS + 1)),
+        "critical_times": list(
+            TEMPORAL_MECHANISM_CRITICAL_TIMES
+        ),
+        "task_visible_times": list(
+            TEMPORAL_MECHANISM_TASK_VISIBLE_TIMES
+        ),
+        "internal_stage_order": list(
+            TEMPORAL_MECHANISM_INTERNAL_STAGES
+        ),
+        "t1_micro_decomposition": micro_summary,
+        "t1_behavioral_disagreement": t1_disagreement,
+        "task_visible_precursor_by_time": precursor_by_time,
+        "t20_endpoint_authentication": endpoint_auth,
+        "task_coordinate_reconvergence": task_coordinates,
+        "prediction_reconvergence": reconvergence,
+        "frozen_prediction_authentication_pass": True,
+        "gpu_topology": GPU_TOPOLOGY,
+        "gpu_runtime": gpu_meta,
+        "batch_rows": TEMPORAL_MECHANISM_BATCH_ROWS,
+        "training_executed": False,
+        "backward_executed": False,
+        "optimizer_constructed": False,
+        "optimizer_step_executed": False,
+        "parameter_gradients_accumulated": False,
+        "confirmatory_9601_9900_loaded": False,
+        "scientific_p_value_count": 0,
+    }
+    summary_path = output_root / "temporal_mechanism_summary.json"
+    summary_path.write_bytes(canonical_json_bytes(summary))
+
+    provenance = {
+        "schema_version": (
+            "GEN5_AINIT_TEMPORAL_MECHANISM_PROVENANCE_V1"
+        ),
+        "status": "PASS",
+        "authority_commit": TEMPORAL_MECHANISM_AUTHORITY_COMMIT,
+        "authority_blob": git(
+            "rev-parse",
+            f"HEAD:{TEMPORAL_MECHANISM_AUTHORITY_PATH}",
+        ),
+        "execution_head": args.expected_head,
+        "implementation_freeze_commit": (
+            args.implementation_freeze_commit
+        ),
+        "phase_a_trajectory_sha256": PHASE_A_TRAJECTORY_SHA256,
+        "parent_checkpoint_sha256": PARENT_CHECKPOINT_SHA256,
+        "frozen_snapshot_revision": FROZEN_SNAPSHOT_REVISION,
+        "behavioral_coordinates_sha256": sha256_file(behavior_path),
+        "internal_stage_metrics_sha256": sha256_file(internal_path),
+        "summary_sha256": sha256_file(summary_path),
+        "gpu_topology": GPU_TOPOLOGY,
+        "training_executed": False,
+        "backward_executed": False,
+        "optimizer_constructed": False,
+        "optimizer_step_executed": False,
+        "parameter_gradients_accumulated": False,
+        "confirmatory_9601_9900_loaded": False,
+        "failed_run_collection_allowed": False,
+        "preflight_collection_allowed": False,
+    }
+    provenance_path = output_root / "run_provenance.json"
+    provenance_path.write_bytes(canonical_json_bytes(provenance))
+
+    shutil.rmtree(scratch_root)
+
+    b_update = micro_summary["states"]["B_UPDATE_ONLY"]
+    print("GEN5_AINIT_TEMPORAL_MECHANISM_SCAN_PASS")
+    print(f"HEAD={args.expected_head}")
+    print("FROZEN_PREDICTION_AUTHENTICATION_PASS=True")
+    print(
+        "B_UPDATE_ONLY_PREDICTION_DISAGREEMENT_VS_FULL_T1="
+        f"{b_update['prediction_disagreement_vs_full_t1']}"
+    )
+    print(
+        "B_UPDATE_ONLY_LOGIT_MAX_ABS_VS_FULL_T1="
+        f"{b_update['logit_max_abs_vs_full_t1']:.17g}"
+    )
+    print(
+        "T1_EARLIEST_TASK_VISIBLE_STAGE="
+        f"{precursor_by_time['1']}"
+    )
+    print(
+        "T17_EARLIEST_TASK_VISIBLE_STAGE="
+        f"{precursor_by_time['17']}"
+    )
+    print(
+        "T20_EARLIEST_TASK_VISIBLE_STAGE="
+        f"{precursor_by_time['20']}"
+    )
+    print("T20_ENDPOINT_AUTHENTICATION_PASS=True")
+    print("PERMANENT_PREDICTION_RECONVERGENCE_T17_T20=True")
+    print("TRAINING_EXECUTED=False")
+    print("BACKWARD_EXECUTED=False")
+    print("OPTIMIZER_CONSTRUCTED=False")
+    print("OPTIMIZER_STEP_EXECUTED=False")
+    print("PARAMETER_GRADIENTS_ACCUMULATED=False")
+    print("CONFIRMATORY_9601_9900_LOADED=False")
+    print(f"SUMMARY={summary_path}")
+    print(f"BEHAVIORAL_COORDINATES={behavior_path}")
+    print(f"INTERNAL_STAGE_METRICS={internal_path}")
+    print(f"PROVENANCE={provenance_path}")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     modes = parser.add_mutually_exclusive_group(required=True)
@@ -3612,6 +6052,10 @@ def build_parser() -> argparse.ArgumentParser:
     modes.add_argument("--phase-b-cuda-preflight-only", action="store_true")
     modes.add_argument("--run-phase-b", action="store_true")
     modes.add_argument("--phase-b-worker", action="store_true")
+    modes.add_argument("--temporal-mechanism-static-verify-only", action="store_true")
+    modes.add_argument("--temporal-mechanism-cuda-preflight-only", action="store_true")
+    modes.add_argument("--run-temporal-mechanism", action="store_true")
+    modes.add_argument("--temporal-mechanism-worker", action="store_true")
 
     parser.add_argument("--expected-head", required=True)
     parser.add_argument("--allow-opening-worktree", action="store_true")
@@ -3638,6 +6082,18 @@ def validate_args(args: argparse.Namespace) -> None:
         "worker_id",
         "phase_b_step",
     )
+    if args.temporal_mechanism_static_verify_only:
+        for field in runtime_fields:
+            require(
+                getattr(args, field) is None,
+                f"TEMPORAL_MECHANISM_STATIC_RUNTIME_ARG:{field}",
+            )
+        require(
+            not args.phase_b_compute_geometry,
+            "TEMPORAL_MECHANISM_STATIC_PHASE_B_GEOMETRY_FORBIDDEN",
+        )
+        return
+
     if args.static_verify_only:
         for field in runtime_fields:
             require(getattr(args, field) is None, f"STATIC_RUNTIME_ARG:{field}")
@@ -3651,7 +6107,70 @@ def validate_args(args: argparse.Namespace) -> None:
     )
     require(args.checkpoint is not None, "CHECKPOINT_REQUIRED")
 
-    if args.cuda_preflight_only:
+    if args.temporal_mechanism_cuda_preflight_only:
+        require(
+            args.output_root is None,
+            "TEMPORAL_MECHANISM_PREFLIGHT_OUTPUT_FORBIDDEN",
+        )
+        require(
+            args.scratch_root is None,
+            "TEMPORAL_MECHANISM_PREFLIGHT_SCRATCH_FORBIDDEN",
+        )
+        require(
+            args.worker_id is None,
+            "TEMPORAL_MECHANISM_PREFLIGHT_WORKER_FORBIDDEN",
+        )
+        require(
+            args.phase_b_step is None,
+            "TEMPORAL_MECHANISM_PREFLIGHT_PHASE_B_STEP_FORBIDDEN",
+        )
+        require(
+            not args.phase_b_compute_geometry,
+            "TEMPORAL_MECHANISM_PREFLIGHT_PHASE_B_GEOMETRY_FORBIDDEN",
+        )
+    elif args.run_temporal_mechanism:
+        require(
+            args.output_root is not None,
+            "TEMPORAL_MECHANISM_OUTPUT_REQUIRED",
+        )
+        require(
+            args.scratch_root is None,
+            "TEMPORAL_MECHANISM_MAIN_SCRATCH_FORBIDDEN",
+        )
+        require(
+            args.worker_id is None,
+            "TEMPORAL_MECHANISM_MAIN_WORKER_FORBIDDEN",
+        )
+        require(
+            args.phase_b_step is None,
+            "TEMPORAL_MECHANISM_MAIN_PHASE_B_STEP_FORBIDDEN",
+        )
+        require(
+            not args.phase_b_compute_geometry,
+            "TEMPORAL_MECHANISM_MAIN_PHASE_B_GEOMETRY_FORBIDDEN",
+        )
+    elif args.temporal_mechanism_worker:
+        require(
+            args.output_root is None,
+            "TEMPORAL_MECHANISM_WORKER_OUTPUT_FORBIDDEN",
+        )
+        require(
+            args.scratch_root is not None,
+            "TEMPORAL_MECHANISM_WORKER_SCRATCH_REQUIRED",
+        )
+        require(
+            args.worker_id in (0, 1),
+            "TEMPORAL_MECHANISM_WORKER_ID_REQUIRED",
+        )
+        require(
+            args.phase_b_step is None,
+            "TEMPORAL_MECHANISM_WORKER_PHASE_B_STEP_FORBIDDEN",
+        )
+        require(
+            not args.phase_b_compute_geometry,
+            "TEMPORAL_MECHANISM_WORKER_PHASE_B_GEOMETRY_FORBIDDEN",
+        )
+    elif args.cuda_preflight_only:
         require(args.output_root is None, "PREFLIGHT_OUTPUT_FORBIDDEN")
         require(args.scratch_root is None, "PREFLIGHT_SCRATCH_FORBIDDEN")
         require(args.worker_id is None, "PREFLIGHT_WORKER_FORBIDDEN")
@@ -3697,7 +6216,15 @@ def validate_args(args: argparse.Namespace) -> None:
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     validate_args(args)
-    if args.static_verify_only:
+    if args.temporal_mechanism_static_verify_only:
+        run_temporal_mechanism_static_verify(args)
+    elif args.temporal_mechanism_cuda_preflight_only:
+        run_temporal_mechanism_cuda_preflight(args)
+    elif args.run_temporal_mechanism:
+        run_temporal_mechanism_analysis(args)
+    elif args.temporal_mechanism_worker:
+        run_temporal_mechanism_worker(args)
+    elif args.static_verify_only:
         run_static_verify(args)
     elif args.cuda_preflight_only:
         run_cuda_preflight(args)

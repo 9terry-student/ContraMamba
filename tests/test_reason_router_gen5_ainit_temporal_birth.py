@@ -22,6 +22,10 @@ def _args(**overrides):
         "phase_b_cuda_preflight_only": False,
         "run_phase_b": False,
         "phase_b_worker": False,
+        "temporal_mechanism_static_verify_only": False,
+        "temporal_mechanism_cuda_preflight_only": False,
+        "run_temporal_mechanism": False,
+        "temporal_mechanism_worker": False,
         "expected_head": mod.AUTHORITY_COMMIT,
         "allow_opening_worktree": False,
         "implementation_freeze_commit": None,
@@ -635,3 +639,310 @@ def test_phase_b_summary_and_provenance_bind_projector_backend():
     source = inspect.getsource(mod.run_phase_b_analysis)
     assert '"projector_backend": PHASE_B_PROJECTOR_BACKEND' in source
     assert '"projector_pinv_rtol": PHASE_B_PROJECTOR_PINV_RTOL' in source
+
+
+
+# ---------------------------------------------------------------------------
+# Temporal mechanism scan implementation pass 1
+# ---------------------------------------------------------------------------
+
+def test_temporal_mechanism_authority_identity_and_fixed_times():
+    assert (
+        mod.TEMPORAL_MECHANISM_AUTHORITY_COMMIT
+        == "adad44c6fb304500c700b9ea59d727cefd71c2d9"
+    )
+    assert mod.TEMPORAL_MECHANISM_CRITICAL_TIMES == (
+        1, 2, 4, 10, 11, 16, 17, 20
+    )
+    assert mod.TEMPORAL_MECHANISM_TASK_VISIBLE_TIMES == (1, 17, 20)
+    assert mod.TEMPORAL_MECHANISM_T1_STATES == (
+        "T0",
+        "A_DECAY_ONLY",
+        "B_UPDATE_ONLY",
+        "FULL_T1",
+    )
+    assert mod.TEMPORAL_MECHANISM_INTERNAL_STAGES == (
+        "raw_write",
+        "recurrent_state",
+        "c_readout_pre_gate",
+        "gated_scan",
+        "layer22_out_proj",
+    )
+
+
+def test_temporal_mechanism_authority_is_no_training_contract():
+    text = (
+        mod.ROOT / mod.TEMPORAL_MECHANISM_AUTHORITY_PATH
+    ).read_text(encoding="utf-8")
+    for token in (
+        "TRAINING_ALLOWED=NO",
+        "OPTIMIZER_CONSTRUCTION_ALLOWED=NO",
+        "OPTIMIZER_STEP_ALLOWED=NO",
+        "PARAMETER_UPDATE_ALLOWED=NO",
+        "BACKWARD_ALLOWED=NO",
+        "PARAMETER_GRADIENTS_ALLOWED=NO",
+        "CONFIRMATORY_9601_9900_ALLOWED=NO",
+    ):
+        assert token in text
+
+
+def test_temporal_mechanism_static_parser_mode_is_present():
+    parser = mod.build_parser()
+    options = {
+        option
+        for action in parser._actions
+        for option in action.option_strings
+    }
+    assert "--temporal-mechanism-static-verify-only" in options
+
+
+def test_temporal_mechanism_static_mode_forbids_runtime_fields():
+    args = _args(
+        temporal_mechanism_static_verify_only=True,
+        implementation_freeze_commit="forbidden",
+    )
+    with pytest.raises(
+        mod.TemporalBirthError,
+        match="TEMPORAL_MECHANISM_STATIC_RUNTIME_ARG",
+    ):
+        mod.validate_args(args)
+
+
+def test_temporal_mechanism_centered_logits_are_row_centered():
+    logits = torch.tensor(
+        [[1.0, 2.0, 6.0], [3.0, -1.0, 4.0]],
+        dtype=torch.float32,
+    )
+    centered = mod.temporal_mechanism_centered_logits(logits)
+    assert torch.allclose(
+        centered.mean(dim=-1),
+        torch.zeros(2),
+        atol=1e-7,
+        rtol=0.0,
+    )
+
+
+def test_temporal_mechanism_margin_order_matches_authority():
+    logits = torch.tensor([[7.0, 2.0, -1.0]], dtype=torch.float32)
+    margins = mod.temporal_mechanism_margin_vector(logits)
+    assert margins.tolist() == [[5.0, -3.0]]
+
+
+def test_temporal_mechanism_static_verify_has_no_runtime_science_calls():
+    source = inspect.getsource(mod.run_temporal_mechanism_static_verify)
+    assert "torch.autograd.grad" not in source
+    assert ".backward(" not in source
+    assert "torch.optim" not in source
+    assert "_prepare_runtime(" not in source
+
+
+def test_temporal_mechanism_implementation_scope_is_exactly_two_files():
+    assert mod.TEMPORAL_MECHANISM_IMPLEMENTATION_PATHS == frozenset({
+        "scripts/audit_reason_router_gen5_ainit_temporal_birth.py",
+        "tests/test_reason_router_gen5_ainit_temporal_birth.py",
+    })
+
+
+
+# ---------------------------------------------------------------------------
+# Temporal mechanism scan implementation pass 2
+# ---------------------------------------------------------------------------
+
+def test_temporal_mechanism_runtime_parser_modes_are_present():
+    parser = mod.build_parser()
+    options = {
+        option
+        for action in parser._actions
+        for option in action.option_strings
+    }
+    assert "--temporal-mechanism-cuda-preflight-only" in options
+    assert "--run-temporal-mechanism" in options
+    assert "--temporal-mechanism-worker" in options
+
+
+def test_temporal_mechanism_geometry_pairs_are_exact_factor_controls():
+    rows = mod.temporal_mechanism_geometry_pairs()
+    assert len(rows) == 18
+    assert sum(group == "A" for group, _, _ in rows) == 9
+    assert sum(group == "R" for group, _, _ in rows) == 9
+    assert len(mod.temporal_mechanism_worker_geometry_pairs(0)) == 9
+    assert len(mod.temporal_mechanism_worker_geometry_pairs(1)) == 9
+    assert (
+        set(mod.temporal_mechanism_worker_geometry_pairs(0))
+        | set(mod.temporal_mechanism_worker_geometry_pairs(1))
+    ) == set(rows)
+    assert not (
+        set(mod.temporal_mechanism_worker_geometry_pairs(0))
+        & set(mod.temporal_mechanism_worker_geometry_pairs(1))
+    )
+
+
+def test_temporal_mechanism_raw_control_matches_frozen_phase_b_identity():
+    for index in range(mod.PHASE_B_CONTROL_COUNT):
+        assert (
+            mod.temporal_mechanism_stage_control_identity(
+                "raw_write",
+                index,
+            )
+            == mod.phase_b_control_identity(index)
+        )
+
+
+def test_temporal_mechanism_stage_control_is_deterministic_and_stage_specific():
+    raw = mod.temporal_mechanism_stage_control_identity(
+        "raw_write", 0
+    )
+    state = mod.temporal_mechanism_stage_control_identity(
+        "recurrent_state", 0
+    )
+    assert raw == mod.temporal_mechanism_stage_control_identity(
+        "raw_write", 0
+    )
+    assert raw["sha256_label"] != state["sha256_label"]
+    assert raw["seed"] != state["seed"]
+
+
+def test_temporal_mechanism_stage_control_preserves_token_norms():
+    residual = torch.arange(
+        2 * 3 * 16,
+        dtype=torch.float32,
+    ).reshape(2, 3, 16)
+    controlled = mod.temporal_mechanism_apply_stage_control(
+        residual,
+        stage="gated_scan",
+        control_index=3,
+    )
+    assert torch.equal(
+        torch.sum(controlled * controlled, dim=-1),
+        torch.sum(residual * residual, dim=-1),
+    )
+
+
+def test_temporal_mechanism_prediction_factor_disagreement_pure_a():
+    predictions = torch.empty(
+        (9, mod.DEV_ROWS),
+        dtype=torch.long,
+    )
+    for index, (a_seed, _r_seed) in enumerate(
+        mod.FULL_FACTORIAL_CELLS
+    ):
+        predictions[index].fill_(
+            mod.FACTOR_SEEDS.index(a_seed)
+        )
+    result = mod.temporal_mechanism_prediction_factor_disagreement(
+        predictions
+    )
+    assert (
+        result[
+            "same_training_rng_different_a_disagreement_sum"
+        ]
+        == 9 * mod.DEV_ROWS
+    )
+    assert (
+        result[
+            "same_a_different_training_rng_disagreement_sum"
+        ]
+        == 0
+    )
+
+
+def test_temporal_mechanism_runtime_modes_enforce_output_boundaries():
+    with pytest.raises(
+        mod.TemporalBirthError,
+        match="TEMPORAL_MECHANISM_PREFLIGHT_OUTPUT_FORBIDDEN",
+    ):
+        mod.validate_args(
+            _args(
+                temporal_mechanism_cuda_preflight_only=True,
+                implementation_freeze_commit="freeze",
+                checkpoint="parent.pt",
+                output_root="forbidden",
+            )
+        )
+
+    with pytest.raises(
+        mod.TemporalBirthError,
+        match="TEMPORAL_MECHANISM_OUTPUT_REQUIRED",
+    ):
+        mod.validate_args(
+            _args(
+                run_temporal_mechanism=True,
+                implementation_freeze_commit="freeze",
+                checkpoint="parent.pt",
+            )
+        )
+
+    with pytest.raises(
+        mod.TemporalBirthError,
+        match="TEMPORAL_MECHANISM_WORKER_SCRATCH_REQUIRED",
+    ):
+        mod.validate_args(
+            _args(
+                temporal_mechanism_worker=True,
+                implementation_freeze_commit="freeze",
+                checkpoint="parent.pt",
+                worker_id=0,
+            )
+        )
+
+
+def test_temporal_mechanism_scientific_runtime_has_no_training_backward_optimizer():
+    for fn in (
+        mod.run_temporal_mechanism_cuda_preflight,
+        mod.run_temporal_mechanism_worker,
+        mod.run_temporal_mechanism_analysis,
+    ):
+        source = inspect.getsource(fn)
+        assert ".backward(" not in source
+        assert "torch.optim" not in source
+        assert "optimizer.step(" not in source
+
+
+def test_temporal_mechanism_stage_order_is_used_without_posthoc_extension():
+    worker_source = inspect.getsource(
+        mod.run_temporal_mechanism_worker
+    )
+    assert (
+        "for t in TEMPORAL_MECHANISM_CRITICAL_TIMES"
+        in worker_source
+    )
+    assert (
+        "for t in TEMPORAL_MECHANISM_TASK_VISIBLE_TIMES"
+        in worker_source
+    )
+    assert (
+        "for stage in TEMPORAL_MECHANISM_INTERNAL_STAGES"
+        in worker_source
+    )
+
+
+def test_temporal_mechanism_output_contract_is_exact():
+    source = inspect.getsource(
+        mod.run_temporal_mechanism_analysis
+    )
+    assert "temporal_mechanism_summary.json" in source
+    assert "temporal_behavioral_coordinates.pt" in source
+    assert "temporal_internal_stage_metrics.pt" in source
+    assert "run_provenance.json" in source
+    assert (
+        "GEN5_AINIT_TEMPORAL_MECHANISM_SCAN_PASS"
+        in source
+    )
+
+
+def test_temporal_mechanism_endpoint_authentication_uses_frozen_precursor():
+    source = inspect.getsource(
+        mod._temporal_mechanism_merge_task_visible
+    )
+    assert (
+        'precursor_summary["grouped"]['
+        in source
+    )
+    assert (
+        '"same_training_rng_different_a_init"'
+        in source
+    )
+    assert (
+        "TEMPORAL_MECHANISM_T20_PRECURSOR_AUTHENTICATION_FAILED"
+        in source
+    )
