@@ -1,0 +1,240 @@
+{
+  "schema_version": "GEN5_AINIT_FIRST_UPDATE_ORIGIN_STATIC_V1",
+  "status": "PASS_FIRST_UPDATE_ORIGIN_STATIC_DECOMPOSITION",
+  "analysis_head": "76dbf99883cd6dd99d50270b2ddbc1540d8c4c5e",
+  "analysis_branch": "gen5-causal-role-state-ownership",
+  "source_code_blobs": {
+    "scripts/audit_reason_router_gen5_ainit_temporal_birth.py": "39b9704d8acf92f7b32f81ebba397b3bcbb4c66f",
+    "src/contramamba/gen5_phase2_state_update_ownership.py": "a5c18f5b5d597d9830c3c44a9299af8233677f37"
+  },
+  "frozen_inputs": {
+    "phase_a_trajectory": {
+      "relative_path": "reports/reason_router_gen5_ainit_temporal_birth_replay_runs/gen5-ainit-temporal-birth-phase-a-numerical-auth-d940e19-r1/temporal_birth_trajectory.pt",
+      "sha256": "0f7cd4248faa92223597e0816597b59e426f08829dadd366f9603f56a8de809e",
+      "execution_head": "d940e19d497f85315155e52818c4a78a1c1c38e0"
+    },
+    "phase_a_summary": {
+      "relative_path": "reports/reason_router_gen5_ainit_temporal_birth_replay_runs/gen5-ainit-temporal-birth-phase-a-numerical-auth-d940e19-r1/temporal_birth_replay_summary.json",
+      "sha256": "37cab4866c729ad03262df562762ac8b6b91e4e24e2498223483848871ad1df6"
+    },
+    "behavioral_summary": {
+      "relative_path": "reports/reason_router_gen5_ainit_behavioral_onset_runs/gen5-ainit-behavioral-onset-1633d67-r1/behavioral_onset_summary.json",
+      "source_execution_head": "1633d67146a7f049c6ecf28b333f53fdf79ad00e"
+    },
+    "behavioral_static_freeze": {
+      "relative_path": "reports/reason_router_gen5_ainit_behavioral_onset_static_freeze_1633d67_v1.json",
+      "sha256": "5ac47e7b00376306030ba06db126786eb64279d71fe6eff044ddb5623d1157f5",
+      "source_zip_sha256": "dffbdf75b1d9d485cee30309a443553aea6995d5f109e7c4720c8c994bf62afd"
+    }
+  },
+  "optimizer_contract": {
+    "optimizer": "torch.optim.AdamW",
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "gradient_clip_norm": 5.0,
+    "adamw_default_eps_used_in_exact_first_step_reconstruction": 1e-08,
+    "max_total_grad_norm_preclip": 0.3924875259399414,
+    "all_step0_clip_inactive": true
+  },
+  "exact_first_update_structure": {
+    "all_B0_exact_zero": true,
+    "all_grad_A0_exact_zero": true,
+    "max_same_A_different_R_A0_distance_sq": 0.0,
+    "max_same_A_different_R_A1_distance_sq": 0.0,
+    "A1_formula": "A1 = A0 * (1 - lr * weight_decay)",
+    "B1_formula": "B1 = -lr * grad_B0 / (abs(grad_B0) + eps)",
+    "max_A1_formula_max_abs_residual": 0.0,
+    "max_B1_formula_max_abs_residual": 4.656612873077393e-10,
+    "max_W1_formula_relative_frobenius_residual": 1.7024441400390503e-07
+  },
+  "factor_path": {
+    "grad_B0": {
+      "same_training_rng_different_a_mean_squared_distance": 0.08410197473441486,
+      "same_a_different_training_rng_mean_squared_distance": 1.8356137597881401e-06,
+      "A_over_R_pair_distance_ratio": 45816.8142867493
+    },
+    "B1": {
+      "same_training_rng_different_a_mean_squared_distance": 0.09119138318143422,
+      "same_a_different_training_rng_mean_squared_distance": 0.0007577459234666703,
+      "A_over_R_pair_distance_ratio": 120.34559389542568
+    },
+    "A1": {
+      "same_training_rng_different_a_mean_squared_distance": 1.3139017319405513,
+      "same_a_different_training_rng_mean_squared_distance": 0.0,
+      "A_over_R_pair_distance_ratio": null
+    },
+    "W1_observed": {
+      "same_training_rng_different_a_mean_squared_distance": 0.03201217973478823,
+      "same_a_different_training_rng_mean_squared_distance": 0.00025299180616308176,
+      "A_over_R_pair_distance_ratio": 126.53445271722663
+    },
+    "W1_reconstructed": {
+      "same_training_rng_different_a_mean_squared_distance": 0.032012188125640634,
+      "same_a_different_training_rng_mean_squared_distance": 0.0002529918676174172,
+      "A_over_R_pair_distance_ratio": 126.53445514719287
+    }
+  },
+  "behavioral_transition": {
+    "t0_A_disagreement_sum": 0,
+    "t0_R_disagreement_sum": 0,
+    "t1_A_disagreement_sum": 72,
+    "t1_R_disagreement_sum": 0
+  },
+  "per_cell": [
+    {
+      "cell": "A6201-R6201",
+      "a_init_seed": 6201,
+      "training_rng_seed": 6201,
+      "total_grad_norm_preclip": 0.045427411794662476,
+      "clip_inactive": true,
+      "grad_A0_exact_zero": true,
+      "B0_exact_zero": true,
+      "grad_A0_norm_preclip": 0.0,
+      "grad_B0_norm_preclip": 0.045427266508340836,
+      "A1_decay_only_formula_max_abs_residual": 0.0,
+      "A1_decay_only_formula_relative_l2_residual": 0.0,
+      "B1_first_adamw_formula_max_abs_residual": 4.656612873077393e-10,
+      "B1_first_adamw_formula_relative_l2_residual": 1.505853574977887e-07,
+      "W1_formula_relative_frobenius_residual": 1.5119374130861546e-07
+    },
+    {
+      "cell": "A6201-R6202",
+      "a_init_seed": 6201,
+      "training_rng_seed": 6202,
+      "total_grad_norm_preclip": 0.045672040432691574,
+      "clip_inactive": true,
+      "grad_A0_exact_zero": true,
+      "B0_exact_zero": true,
+      "grad_A0_norm_preclip": 0.0,
+      "grad_B0_norm_preclip": 0.045671895146369934,
+      "A1_decay_only_formula_max_abs_residual": 0.0,
+      "A1_decay_only_formula_relative_l2_residual": 0.0,
+      "B1_first_adamw_formula_max_abs_residual": 3.4924596548080444e-10,
+      "B1_first_adamw_formula_relative_l2_residual": 1.4980097203377714e-07,
+      "W1_formula_relative_frobenius_residual": 1.45475020230816e-07
+    },
+    {
+      "cell": "A6201-R6203",
+      "a_init_seed": 6201,
+      "training_rng_seed": 6203,
+      "total_grad_norm_preclip": 0.04504174739122391,
+      "clip_inactive": true,
+      "grad_A0_exact_zero": true,
+      "B0_exact_zero": true,
+      "grad_A0_norm_preclip": 0.0,
+      "grad_B0_norm_preclip": 0.045041609555482864,
+      "A1_decay_only_formula_max_abs_residual": 0.0,
+      "A1_decay_only_formula_relative_l2_residual": 0.0,
+      "B1_first_adamw_formula_max_abs_residual": 3.4924596548080444e-10,
+      "B1_first_adamw_formula_relative_l2_residual": 1.5007123449941028e-07,
+      "W1_formula_relative_frobenius_residual": 1.268344262694536e-07
+    },
+    {
+      "cell": "A6202-R6201",
+      "a_init_seed": 6202,
+      "training_rng_seed": 6201,
+      "total_grad_norm_preclip": 0.3924875259399414,
+      "clip_inactive": true,
+      "grad_A0_exact_zero": true,
+      "B0_exact_zero": true,
+      "grad_A0_norm_preclip": 0.0,
+      "grad_B0_norm_preclip": 0.392486035823822,
+      "A1_decay_only_formula_max_abs_residual": 0.0,
+      "A1_decay_only_formula_relative_l2_residual": 0.0,
+      "B1_first_adamw_formula_max_abs_residual": 3.4924596548080444e-10,
+      "B1_first_adamw_formula_relative_l2_residual": 1.5020043240398325e-07,
+      "W1_formula_relative_frobenius_residual": 1.5604794306739582e-07
+    },
+    {
+      "cell": "A6202-R6202",
+      "a_init_seed": 6202,
+      "training_rng_seed": 6202,
+      "total_grad_norm_preclip": 0.3922358751296997,
+      "clip_inactive": true,
+      "grad_A0_exact_zero": true,
+      "B0_exact_zero": true,
+      "grad_A0_norm_preclip": 0.0,
+      "grad_B0_norm_preclip": 0.39223435521125793,
+      "A1_decay_only_formula_max_abs_residual": 0.0,
+      "A1_decay_only_formula_relative_l2_residual": 0.0,
+      "B1_first_adamw_formula_max_abs_residual": 4.656612873077393e-10,
+      "B1_first_adamw_formula_relative_l2_residual": 1.5047854658273178e-07,
+      "W1_formula_relative_frobenius_residual": 1.546548942038807e-07
+    },
+    {
+      "cell": "A6202-R6203",
+      "a_init_seed": 6202,
+      "training_rng_seed": 6203,
+      "total_grad_norm_preclip": 0.3921729028224945,
+      "clip_inactive": true,
+      "grad_A0_exact_zero": true,
+      "B0_exact_zero": true,
+      "grad_A0_norm_preclip": 0.0,
+      "grad_B0_norm_preclip": 0.3921714425086975,
+      "A1_decay_only_formula_max_abs_residual": 0.0,
+      "A1_decay_only_formula_relative_l2_residual": 0.0,
+      "B1_first_adamw_formula_max_abs_residual": 3.4924596548080444e-10,
+      "B1_first_adamw_formula_relative_l2_residual": 1.5053184306354468e-07,
+      "W1_formula_relative_frobenius_residual": 1.4269840560323697e-07
+    },
+    {
+      "cell": "A6203-R6201",
+      "a_init_seed": 6203,
+      "training_rng_seed": 6201,
+      "total_grad_norm_preclip": 0.053029365837574005,
+      "clip_inactive": true,
+      "grad_A0_exact_zero": true,
+      "B0_exact_zero": true,
+      "grad_A0_norm_preclip": 0.0,
+      "grad_B0_norm_preclip": 0.05302920937538147,
+      "A1_decay_only_formula_max_abs_residual": 0.0,
+      "A1_decay_only_formula_relative_l2_residual": 0.0,
+      "B1_first_adamw_formula_max_abs_residual": 3.4924596548080444e-10,
+      "B1_first_adamw_formula_relative_l2_residual": 1.50860712773265e-07,
+      "W1_formula_relative_frobenius_residual": 1.5703869127716522e-07
+    },
+    {
+      "cell": "A6203-R6202",
+      "a_init_seed": 6203,
+      "training_rng_seed": 6202,
+      "total_grad_norm_preclip": 0.05285824090242386,
+      "clip_inactive": true,
+      "grad_A0_exact_zero": true,
+      "B0_exact_zero": true,
+      "grad_A0_norm_preclip": 0.0,
+      "grad_B0_norm_preclip": 0.052858103066682816,
+      "A1_decay_only_formula_max_abs_residual": 0.0,
+      "A1_decay_only_formula_relative_l2_residual": 0.0,
+      "B1_first_adamw_formula_max_abs_residual": 4.656612873077393e-10,
+      "B1_first_adamw_formula_relative_l2_residual": 1.5076480005994063e-07,
+      "W1_formula_relative_frobenius_residual": 1.5424528194582396e-07
+    },
+    {
+      "cell": "A6203-R6203",
+      "a_init_seed": 6203,
+      "training_rng_seed": 6203,
+      "total_grad_norm_preclip": 0.052566222846508026,
+      "clip_inactive": true,
+      "grad_A0_exact_zero": true,
+      "B0_exact_zero": true,
+      "grad_A0_norm_preclip": 0.0,
+      "grad_B0_norm_preclip": 0.052566077560186386,
+      "A1_decay_only_formula_max_abs_residual": 0.0,
+      "A1_decay_only_formula_relative_l2_residual": 0.0,
+      "B1_first_adamw_formula_max_abs_residual": 3.4924596548080444e-10,
+      "B1_first_adamw_formula_relative_l2_residual": 1.5012888086552584e-07,
+      "W1_formula_relative_frobenius_residual": 1.7024441400390503e-07
+    }
+  ],
+  "scientific_interpretation": {
+    "supported": "The first optimizer update is the deterministic origin of the observed t=1 Gen5 operator birth under the frozen replay. A0 is training-RNG invariant for fixed A; grad_A0 is exactly zero; B0 is exactly zero; clipping is inactive; A1 is decay-only; and B1 is reconstructed from grad_B0 by the first AdamW update. A-init dominance is extremely strong in grad_B0, remains strong after AdamW coordinate normalization in B1/W1, and t=1 behavior diverges on the A axis while remaining identical on the R axis.",
+    "boundary": "This is a static deterministic decomposition of the executed optimizer path, not a finite factor-swap intervention. It does not by itself establish the later t4-t12 vulnerable-row mechanism or the t17 reconvergence mechanism."
+  },
+  "execution_flags": {
+    "training_executed": false,
+    "backward_executed": false,
+    "optimizer_step_executed": false,
+    "gpu_executed": false,
+    "confirmatory_9601_9900_loaded": false
+  }
+}
