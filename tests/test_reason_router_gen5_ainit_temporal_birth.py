@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import inspect
+import json
 import math
 
 import pytest
@@ -945,4 +946,67 @@ def test_temporal_mechanism_endpoint_authentication_uses_frozen_precursor():
     assert (
         "TEMPORAL_MECHANISM_T20_PRECURSOR_AUTHENTICATION_FAILED"
         in source
+    )
+
+def test_temporal_mechanism_frozen_t1_factor_aggregate_is_144_0():
+    payload = json.loads(
+        (
+            mod.ROOT / mod.TEMPORAL_MECHANISM_BEHAVIORAL_CELL_METRICS_PATH
+        ).read_text(encoding="utf-8")
+    )
+    predictions = torch.empty(
+        (9, mod.DEV_ROWS),
+        dtype=torch.long,
+    )
+    for cell_index, cell in enumerate(mod.FULL_FACTORIAL_CELLS):
+        name = mod.cell_name(*cell)
+        predictions[cell_index] = torch.tensor(
+            payload["cells"][name]["steps"][1]["predictions"],
+            dtype=torch.long,
+        )
+    result = mod.temporal_mechanism_prediction_factor_disagreement(
+        predictions
+    )
+    assert mod.TEMPORAL_MECHANISM_T1_A_DISAGREEMENT_EXPECTED == 144
+    assert mod.TEMPORAL_MECHANISM_T1_R_DISAGREEMENT_EXPECTED == 0
+    assert (
+        result["same_training_rng_different_a_disagreement_sum"]
+        == mod.TEMPORAL_MECHANISM_T1_A_DISAGREEMENT_EXPECTED
+    )
+    assert (
+        result["same_a_different_training_rng_disagreement_sum"]
+        == mod.TEMPORAL_MECHANISM_T1_R_DISAGREEMENT_EXPECTED
+    )
+
+
+def test_temporal_mechanism_valid_stage_tensor_masks_padding():
+    value = torch.arange(
+        2 * 3 * 4,
+        dtype=torch.float32,
+    ).reshape(2, 3, 4)
+    attention_mask = torch.tensor(
+        [[1, 1, 0], [1, 0, 0]],
+        dtype=torch.long,
+    )
+    masked = mod._temporal_mechanism_valid_stage_tensor(
+        value,
+        attention_mask,
+    )
+    valid = attention_mask.bool()
+    assert torch.equal(masked[valid], value[valid])
+    assert torch.count_nonzero(masked[~valid]).item() == 0
+
+
+def test_temporal_mechanism_task_visible_accumulator_uses_valid_token_mask():
+    source = inspect.getsource(
+        mod._temporal_mechanism_accumulate_stage_orientation
+    )
+    assert "attention_mask" in source
+    assert "_temporal_mechanism_valid_stage_tensor" in source
+    worker_source = inspect.getsource(
+        mod.run_temporal_mechanism_worker
+    )
+    assert (
+        'attention_mask=batch_features["attention_mask"]'
+        in worker_source
     )

@@ -1,0 +1,164 @@
+{
+  "A_DECAY_ONLY_T0_logit_max_abs": 0.0,
+  "B_UPDATE_ONLY_FULL_T1_logit_max_abs": 1.430511474609375e-06,
+  "FULL_T1_internal_logit_max_abs": 0.0,
+  "backward_executed": false,
+  "confirmatory_9601_9900_loaded": false,
+  "execution_head": "d9b790b62f8db9f875cfa13d7ba155ac75137a2b",
+  "frozen_prediction_mismatch_count": 0,
+  "optimizer_constructed": false,
+  "parameter_gradients_accumulated": false,
+  "schema_version": "GEN5_AINIT_TEMPORAL_MECHANISM_FAILED_RUN_RECOVERY_DIAGNOSTIC_V1",
+  "source_scratch": "/kaggle/working/gen5_temporal_mechanism_nzfs7hxv",
+  "t1_disagreement_runtime": {
+    "same_a_different_training_rng_disagreement_sum": 0,
+    "same_training_rng_different_a_disagreement_sum": 144
+  },
+  "t1_pair_rows": [
+    {
+      "count": 24,
+      "group": "A",
+      "source": "A6201-R6201",
+      "target": "A6202-R6201"
+    },
+    {
+      "count": 0,
+      "group": "A",
+      "source": "A6201-R6201",
+      "target": "A6203-R6201"
+    },
+    {
+      "count": 24,
+      "group": "A",
+      "source": "A6202-R6201",
+      "target": "A6203-R6201"
+    },
+    {
+      "count": 24,
+      "group": "A",
+      "source": "A6201-R6202",
+      "target": "A6202-R6202"
+    },
+    {
+      "count": 0,
+      "group": "A",
+      "source": "A6201-R6202",
+      "target": "A6203-R6202"
+    },
+    {
+      "count": 24,
+      "group": "A",
+      "source": "A6202-R6202",
+      "target": "A6203-R6202"
+    },
+    {
+      "count": 24,
+      "group": "A",
+      "source": "A6201-R6203",
+      "target": "A6202-R6203"
+    },
+    {
+      "count": 0,
+      "group": "A",
+      "source": "A6201-R6203",
+      "target": "A6203-R6203"
+    },
+    {
+      "count": 24,
+      "group": "A",
+      "source": "A6202-R6203",
+      "target": "A6203-R6203"
+    },
+    {
+      "count": 0,
+      "group": "R",
+      "source": "A6201-R6201",
+      "target": "A6201-R6202"
+    },
+    {
+      "count": 0,
+      "group": "R",
+      "source": "A6201-R6201",
+      "target": "A6201-R6203"
+    },
+    {
+      "count": 0,
+      "group": "R",
+      "source": "A6201-R6202",
+      "target": "A6201-R6203"
+    },
+    {
+      "count": 0,
+      "group": "R",
+      "source": "A6202-R6201",
+      "target": "A6202-R6202"
+    },
+    {
+      "count": 0,
+      "group": "R",
+      "source": "A6202-R6201",
+      "target": "A6202-R6203"
+    },
+    {
+      "count": 0,
+      "group": "R",
+      "source": "A6202-R6202",
+      "target": "A6202-R6203"
+    },
+    {
+      "count": 0,
+      "group": "R",
+      "source": "A6203-R6201",
+      "target": "A6203-R6202"
+    },
+    {
+      "count": 0,
+      "group": "R",
+      "source": "A6203-R6201",
+      "target": "A6203-R6203"
+    },
+    {
+      "count": 0,
+      "group": "R",
+      "source": "A6203-R6202",
+      "target": "A6203-R6203"
+    }
+  ],
+  "training_executed": false,
+  "worker0_cells": [
+    "A6201-R6201",
+    "A6201-R6203",
+    "A6202-R6202",
+    "A6203-R6201",
+    "A6203-R6203"
+  ],
+  "worker1_cells": [
+    "A6201-R6202",
+    "A6202-R6201",
+    "A6202-R6203",
+    "A6203-R6202"
+  ],
+  "worker_files": {
+    "/kaggle/working/gen5_temporal_mechanism_nzfs7hxv/worker0.log": {
+      "bytes": 97,
+      "dst": "/kaggle/working/contramamba_gen5_recovery/gen5-ainit-temporal-mechanism-d9b790b-r1__failed_after_workers/worker0.log",
+      "sha256": "48a58fbb3480c0b386f14f7fb2f5415406a69c97758f21d4e48c85574adc5d34"
+    },
+    "/kaggle/working/gen5_temporal_mechanism_nzfs7hxv/worker1.log": {
+      "bytes": 96,
+      "dst": "/kaggle/working/contramamba_gen5_recovery/gen5-ainit-temporal-mechanism-d9b790b-r1__failed_after_workers/worker1.log",
+      "sha256": "66ed90400816baddc481650967a3c4152ea26dc7e3efce18a1646e9800417386"
+    },
+    "/kaggle/working/gen5_temporal_mechanism_nzfs7hxv/worker_scratch/worker0/worker_result.pt": {
+      "bytes": 1424872,
+      "dst": "/kaggle/working/contramamba_gen5_recovery/gen5-ainit-temporal-mechanism-d9b790b-r1__failed_after_workers/worker0/worker_result.pt",
+      "sha256": "3f49147ff5d8a1bff7b6e5d3d607e9342ea1f328f00abba41d3d300f92eff3e9"
+    },
+    "/kaggle/working/gen5_temporal_mechanism_nzfs7hxv/worker_scratch/worker1/worker_result.pt": {
+      "bytes": 1151587,
+      "dst": "/kaggle/working/contramamba_gen5_recovery/gen5-ainit-temporal-mechanism-d9b790b-r1__failed_after_workers/worker1/worker_result.pt",
+      "sha256": "f8ac8f0dcb20e1da1b1e93696137f9a329ff469fd3d32c2f77e8f61a12910e91"
+    }
+  },
+  "worker_flags_authenticated": true
+}

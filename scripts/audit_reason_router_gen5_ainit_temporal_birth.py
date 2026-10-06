@@ -1978,6 +1978,8 @@ TEMPORAL_MECHANISM_INTERNAL_PRECURSOR_SUMMARY_PATH = (
     "ainit_internal_precursor_localization_summary.json"
 )
 TEMPORAL_MECHANISM_BATCH_ROWS = 4
+TEMPORAL_MECHANISM_T1_A_DISAGREEMENT_EXPECTED = 144
+TEMPORAL_MECHANISM_T1_R_DISAGREEMENT_EXPECTED = 0
 TEMPORAL_MECHANISM_GEOMETRY_RESIDUAL_ATOL = 5.0e-4
 TEMPORAL_MECHANISM_TASK_ENERGY_ATOL = 5.0e-5
 TEMPORAL_MECHANISM_CONTROL_ENERGY_ATOL = 5.0e-6
@@ -4447,6 +4449,23 @@ def temporal_mechanism_prediction_factor_disagreement(
     }
 
 
+def _temporal_mechanism_valid_stage_tensor(
+    value: torch.Tensor,
+    attention_mask: torch.Tensor,
+) -> torch.Tensor:
+    require(
+        value.ndim == 3,
+        "TEMPORAL_MECHANISM_VALID_STAGE_RANK",
+    )
+    require(
+        attention_mask.ndim == 2
+        and tuple(attention_mask.shape) == tuple(value.shape[:2]),
+        "TEMPORAL_MECHANISM_VALID_STAGE_MASK_SHAPE",
+    )
+    valid = attention_mask.bool().unsqueeze(-1)
+    return torch.where(valid, value, torch.zeros_like(value))
+
+
 def _temporal_mechanism_accumulate_stage_orientation(
     *,
     model: torch.nn.Module,
@@ -4456,17 +4475,31 @@ def _temporal_mechanism_accumulate_stage_orientation(
     stage: str,
     source_stage: torch.Tensor,
     target_stage: torch.Tensor,
+    attention_mask: torch.Tensor,
     accumulator: dict[str, Any],
 ) -> None:
-    residual = target_stage - source_stage
+    require(
+        tuple(source_stage.shape) == tuple(target_stage.shape),
+        "TEMPORAL_MECHANISM_TASK_VISIBLE_STAGE_SHAPE",
+    )
+    source_valid = _temporal_mechanism_valid_stage_tensor(
+        source_stage,
+        attention_mask,
+    )
+    target_valid = _temporal_mechanism_valid_stage_tensor(
+        target_stage,
+        attention_mask,
+    )
+    residual_valid = target_valid - source_valid
+
     accumulator["residual_diff_sq"] += float(
-        torch.sum(residual.to(torch.float64) ** 2).item()
+        torch.sum(residual_valid.to(torch.float64) ** 2).item()
     )
     accumulator["residual_source_sq"] += float(
-        torch.sum(source_stage.to(torch.float64) ** 2).item()
+        torch.sum(source_valid.to(torch.float64) ** 2).item()
     )
     accumulator["residual_target_sq"] += float(
-        torch.sum(target_stage.to(torch.float64) ** 2).item()
+        torch.sum(target_valid.to(torch.float64) ** 2).item()
     )
 
     leaf = source_stage.detach().clone().requires_grad_(True)
@@ -4492,12 +4525,21 @@ def _temporal_mechanism_accumulate_stage_orientation(
         create_graph=False,
     )[0]
 
+    grad_refute_valid = _temporal_mechanism_valid_stage_tensor(
+        grad_refute,
+        attention_mask,
+    )
+    grad_support_valid = _temporal_mechanism_valid_stage_tensor(
+        grad_support,
+        attention_mask,
+    )
+
     visible_rows = []
-    for row_index in range(int(residual.shape[0])):
+    for row_index in range(int(residual_valid.shape[0])):
         visible, energy, gain = _phase_b_two_row_projection(
-            grad_refute=grad_refute[row_index],
-            grad_support=grad_support[row_index],
-            residual=residual[row_index],
+            grad_refute=grad_refute_valid[row_index],
+            grad_support=grad_support_valid[row_index],
+            residual=residual_valid[row_index],
         )
         visible_rows.append(visible)
         accumulator["actual_task_row_energy_sum"] += energy
@@ -4505,13 +4547,13 @@ def _temporal_mechanism_accumulate_stage_orientation(
 
         for control_index in range(PHASE_B_CONTROL_COUNT):
             controlled = temporal_mechanism_apply_stage_control(
-                residual[row_index : row_index + 1],
+                residual_valid[row_index : row_index + 1],
                 stage=stage,
                 control_index=control_index,
             )[0]
             control_energy, control_gain = _phase_b_control_energy_and_gain(
-                grad_refute=grad_refute[row_index],
-                grad_support=grad_support[row_index],
+                grad_refute=grad_refute_valid[row_index],
+                grad_support=grad_support_valid[row_index],
                 residual=controlled,
             )
             accumulator["control_task_row_energy_sums"][
@@ -4522,7 +4564,7 @@ def _temporal_mechanism_accumulate_stage_orientation(
             ] += control_gain
 
     visible = torch.stack(visible_rows, dim=0)
-    complement = residual - visible
+    complement = residual_valid - visible
 
     with torch.no_grad():
         target_logits = temporal_mechanism_resume_from_stage(
@@ -4539,7 +4581,7 @@ def _temporal_mechanism_accumulate_stage_orientation(
             features=features,
             context=context,
             stage=stage,
-            stage_value=source_stage + residual,
+            stage_value=source_stage + residual_valid,
         )
         visible_logits = temporal_mechanism_resume_from_stage(
             model=model,
@@ -4590,7 +4632,7 @@ def _temporal_mechanism_accumulate_stage_orientation(
     accumulator["complement_prediction_disagreement_vs_source"] += int(
         torch.count_nonzero(source_pred != complement_pred).item()
     )
-    accumulator["count"] += int(residual.shape[0])
+    accumulator["count"] += int(residual_valid.shape[0])
 
 
 def _temporal_mechanism_prepare_worker(
@@ -5045,6 +5087,7 @@ def run_temporal_mechanism_worker(
                             stage=stage,
                             source_stage=stage_by_cell[source][stage],
                             target_stage=stage_by_cell[target][stage],
+                            attention_mask=batch_features["attention_mask"],
                             accumulator=task_accumulators[key],
                         )
 
@@ -5731,13 +5774,13 @@ def run_temporal_mechanism_analysis(
     require(
         t1_disagreement[
             "same_training_rng_different_a_disagreement_sum"
-        ] == 72,
+        ] == TEMPORAL_MECHANISM_T1_A_DISAGREEMENT_EXPECTED,
         "TEMPORAL_MECHANISM_T1_A_DISAGREEMENT_RUNTIME",
     )
     require(
         t1_disagreement[
             "same_a_different_training_rng_disagreement_sum"
-        ] == 0,
+        ] == TEMPORAL_MECHANISM_T1_R_DISAGREEMENT_EXPECTED,
         "TEMPORAL_MECHANISM_T1_R_DISAGREEMENT_RUNTIME",
     )
 
