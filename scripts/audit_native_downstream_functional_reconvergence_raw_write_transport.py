@@ -862,6 +862,37 @@ def _repeat_feature_batch(
     return output
 
 
+def _stream_write_trajectories(
+    *,
+    raw_source: torch.Tensor,
+    raw_targets: Sequence[torch.Tensor],
+    visible: torch.Tensor,
+    complement: torch.Tensor,
+    token_index: int,
+) -> torch.Tensor:
+    target_count = len(raw_targets)
+    require(1 <= target_count <= TARGETS_PER_TRANSPORT, "STREAM_TARGET_COUNT")
+    require(visible.shape[0] == target_count, "STREAM_VISIBLE_COUNT")
+    require(complement.shape[0] == target_count, "STREAM_COMPLEMENT_COUNT")
+
+    source_t = raw_source[:, token_index, :].unsqueeze(0)
+    target_t = torch.stack(
+        [target[:, token_index, :] for target in raw_targets],
+        dim=0,
+    )
+
+    # visible/complement are residual components relative to raw_source.
+    # The transported counterfactual raw writes must therefore be
+    # source + component, matching the frozen legacy intervention semantics.
+    visible_t = source_t + visible[:, :, token_index, :]
+    complement_t = source_t + complement[:, :, token_index, :]
+
+    return torch.cat(
+        (source_t, target_t, visible_t, complement_t),
+        dim=0,
+    )
+
+
 def _stream_transport_group(
     *,
     model: torch.nn.Module,
@@ -915,17 +946,12 @@ def _stream_transport_group(
 
     with torch.no_grad():
         for token_index in range(seq_len):
-            write = torch.cat(
-                (
-                    raw_source[:, token_index, :].unsqueeze(0),
-                    torch.stack(
-                        [target[:, token_index, :] for target in raw_targets],
-                        dim=0,
-                    ),
-                    visible[:, :, token_index, :],
-                    complement[:, :, token_index, :],
-                ),
-                dim=0,
+            write = _stream_write_trajectories(
+                raw_source=raw_source,
+                raw_targets=raw_targets,
+                visible=visible,
+                complement=complement,
+                token_index=token_index,
             )
 
             discrete_a_t = torch.exp(

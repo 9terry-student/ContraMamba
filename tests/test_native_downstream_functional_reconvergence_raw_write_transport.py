@@ -267,6 +267,49 @@ def test_runtime_requires_exact_head_binding():
     mod.validate_args(args)
 
 
+def test_stream_write_trajectories_adds_source_to_projected_components():
+    torch.manual_seed(11)
+    batch, seq_len, width = 2, 3, 4
+    source = torch.randn(batch, seq_len, width)
+    targets = [
+        source + 0.1 * torch.randn(batch, seq_len, width),
+        source + 0.1 * torch.randn(batch, seq_len, width),
+    ]
+    visible = torch.randn(2, batch, seq_len, width)
+    complement = torch.randn(2, batch, seq_len, width)
+
+    token_index = 1
+    packed = mod._stream_write_trajectories(
+        raw_source=source,
+        raw_targets=targets,
+        visible=visible,
+        complement=complement,
+        token_index=token_index,
+    )
+
+    assert packed.shape == (7, batch, width)
+    assert torch.equal(packed[0], source[:, token_index, :])
+    assert torch.equal(packed[1], targets[0][:, token_index, :])
+    assert torch.equal(packed[2], targets[1][:, token_index, :])
+
+    assert torch.equal(
+        packed[3],
+        source[:, token_index, :] + visible[0, :, token_index, :],
+    )
+    assert torch.equal(
+        packed[4],
+        source[:, token_index, :] + visible[1, :, token_index, :],
+    )
+    assert torch.equal(
+        packed[5],
+        source[:, token_index, :] + complement[0, :, token_index, :],
+    )
+    assert torch.equal(
+        packed[6],
+        source[:, token_index, :] + complement[1, :, token_index, :],
+    )
+
+
 def test_stream_stage_energy_matches_reference_stage_sum():
     source = torch.randn(2, 3, 5)
     full = source + torch.randn(2, 3, 5)
