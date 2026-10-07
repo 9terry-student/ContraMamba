@@ -80,20 +80,9 @@ STAGE_ORDER = (
     "layer22_out_proj",
 )
 
-GPU_SOURCE_CELLS = {
-    0: (
-        (6201, 6201),
-        (6201, 6203),
-        (6202, 6202),
-        (6203, 6201),
-        (6203, 6203),
-    ),
-    1: (
-        (6201, 6202),
-        (6202, 6201),
-        (6202, 6203),
-        (6203, 6202),
-    ),
+WORKER_ROW_RANGES = {
+    0: (0, 416),
+    1: (416, 840),
 }
 
 CHECKPOINT_SHA256 = {
@@ -120,11 +109,12 @@ DEV_ENCODING_SHA256 = (
 DEV_ROWS = 840
 VALID_TOKEN_COUNT = 60094
 BATCH_ROWS = 32
+TARGETS_PER_TRANSPORT = 2
 ENERGY_EPSILON = 1.0e-30
 
 PROJECTOR_PINV_RTOL = 1.0e-12
 PROJECTOR_PINV_ATOL = 0.0
-PROJECTOR_BACKEND = "float64_cpu"
+PROJECTOR_BACKEND = "gpu_f32_product_f64_reduce_cpu_2x2_pinv"
 
 JOINT_EDGE_FORWARD_ATOL = 5.0e-6
 SOURCE_TARGET_REPLAY_ATOL = 5.0e-5
@@ -261,18 +251,16 @@ def all_orientations() -> tuple[tuple[str, tuple[int, int], tuple[int, int]], ..
     return tuple(rows)
 
 
+def worker_row_range(worker_id: int) -> tuple[int, int]:
+    require(worker_id in (0, 1), f"WORKER_ID:{worker_id}")
+    return WORKER_ROW_RANGES[worker_id]
+
+
 def worker_orientations(
     worker_id: int,
 ) -> tuple[tuple[str, tuple[int, int], tuple[int, int]], ...]:
     require(worker_id in (0, 1), f"WORKER_ID:{worker_id}")
-    allowed = set(GPU_SOURCE_CELLS[worker_id])
-    rows = tuple(
-        row for row in all_orientations()
-        if row[1] in allowed
-    )
-    expected = 20 if worker_id == 0 else 16
-    require(len(rows) == expected, f"WORKER_ORIENTATION_COUNT:{worker_id}:{len(rows)}")
-    return rows
+    return all_orientations()
 
 
 def _assert_blob(path: str, expected_blob: str) -> None:
@@ -329,34 +317,17 @@ def validate_static_contract() -> None:
     require(STAGE_ORDER == legacy.TEMPORAL_MECHANISM_INTERNAL_STAGES, "STAGE_ORDER")
     require(DEV_ROWS == legacy.DEV_ROWS == p3a.DEV_ROWS, "DEV_ROWS")
     require(VALID_TOKEN_COUNT == legacy.PHASE_B_VALID_TOKEN_COUNT, "VALID_TOKENS")
-    require(
-        PROJECTOR_PINV_RTOL == legacy.PHASE_B_PROJECTOR_PINV_RTOL,
-        "PROJECTOR_RTOL",
-    )
-    require(PROJECTOR_BACKEND == legacy.PHASE_B_PROJECTOR_BACKEND, "PROJECTOR_BACKEND")
-
-    source_cells = tuple(GPU_SOURCE_CELLS[0]) + tuple(GPU_SOURCE_CELLS[1])
-    require(len(source_cells) == 9, "SOURCE_CELL_COUNT")
-    require(len(set(source_cells)) == 9, "SOURCE_CELL_DUPLICATE")
-    require(set(source_cells) == set(FULL_FACTORIAL_CELLS), "SOURCE_CELL_COVERAGE")
-
+    require(PROJECTOR_PINV_RTOL == legacy.PHASE_B_PROJECTOR_PINV_RTOL, "PROJECTOR_RTOL")
+    require(PROJECTOR_BACKEND == "gpu_f32_product_f64_reduce_cpu_2x2_pinv", "PROJECTOR_BACKEND")
     for cell in FULL_FACTORIAL_CELLS:
         path, frozen_sha, _schema = legacy.FROZEN_FINAL_SOURCES[cell]
         del path
         require(frozen_sha == CHECKPOINT_SHA256[cell], f"CHECKPOINT_SHA_BINDING:{cell_name(cell)}")
-
-    orientations = all_orientations()
-    require(len(worker_orientations(0)) == 20, "GPU0_ORIENTATION_COUNT")
-    require(len(worker_orientations(1)) == 16, "GPU1_ORIENTATION_COUNT")
-    require(
-        set(worker_orientations(0)).isdisjoint(set(worker_orientations(1))),
-        "WORKER_ORIENTATION_OVERLAP",
-    )
-    require(
-        set(worker_orientations(0)) | set(worker_orientations(1))
-        == set(orientations),
-        "WORKER_ORIENTATION_COVERAGE",
-    )
+    a0,b0=worker_row_range(0); a1,b1=worker_row_range(1)
+    require((a0,b0,a1,b1)==(0,416,416,DEV_ROWS),"WORKER_ROW_RANGES")
+    expected=set(all_orientations())
+    require(set(worker_orientations(0))==expected,"WORKER0_ORIENTATION_COVERAGE")
+    require(set(worker_orientations(1))==expected,"WORKER1_ORIENTATION_COVERAGE")
 
 
 def _runtime_inputs(
@@ -495,41 +466,167 @@ def _empty_orientation(
     }
 
 
-def _project_visible_rows(
+def _prepare_projector_pinv(
     *,
     grad_refute: torch.Tensor,
     grad_support: torch.Tensor,
-    residual: torch.Tensor,
     attention_mask: torch.Tensor,
-    accumulator: dict[str, Any],
-) -> torch.Tensor:
-    grad_refute = _valid_stage(grad_refute, attention_mask)
-    grad_support = _valid_stage(grad_support, attention_mask)
-    residual = _valid_stage(residual, attention_mask)
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    require(
+        grad_refute.shape == grad_support.shape,
+        "PROJECTOR_GRAD_SHAPE",
+    )
+    require(
+        attention_mask.ndim == 2
+        and tuple(attention_mask.shape) == tuple(grad_refute.shape[:2]),
+        "PROJECTOR_MASK_SHAPE",
+    )
 
-    visible_rows = []
-    for row in range(residual.shape[0]):
-        visible, energy, _gain = legacy._phase_b_two_row_projection(
-            grad_refute=grad_refute[row],
-            grad_support=grad_support[row],
-            residual=residual[row],
+    valid = attention_mask.to(
+        device=grad_refute.device,
+        dtype=grad_refute.dtype,
+    ).unsqueeze(-1)
+
+    # Detached analysis gradients: mask in place to avoid duplicate state-width
+    # tensors on GPU.
+    grad_refute.mul_(valid)
+    grad_support.mul_(valid)
+
+    reduce_dims = tuple(range(1, grad_refute.ndim))
+    g00 = torch.sum(
+        grad_refute * grad_refute,
+        dim=reduce_dims,
+        dtype=torch.float64,
+    )
+    g01 = torch.sum(
+        grad_refute * grad_support,
+        dim=reduce_dims,
+        dtype=torch.float64,
+    )
+    g11 = torch.sum(
+        grad_support * grad_support,
+        dim=reduce_dims,
+        dtype=torch.float64,
+    )
+
+    gram_cpu = torch.stack(
+        (
+            torch.stack((g00, g01), dim=-1),
+            torch.stack((g01, g11), dim=-1),
+        ),
+        dim=-2,
+    ).to(device="cpu")
+
+    pinv_cpu = torch.linalg.pinv(
+        gram_cpu,
+        rtol=PROJECTOR_PINV_RTOL,
+        atol=PROJECTOR_PINV_ATOL,
+        hermitian=True,
+    )
+    return grad_refute, grad_support, pinv_cpu
+
+
+def _project_visible_group(
+    *,
+    grad_refute: torch.Tensor,
+    grad_support: torch.Tensor,
+    pinv_cpu: torch.Tensor,
+    attention_mask: torch.Tensor,
+    raw_source: torch.Tensor,
+    raw_targets: Sequence[torch.Tensor],
+    accumulators: Sequence[dict[str, Any]],
+) -> tuple[torch.Tensor, torch.Tensor]:
+    require(len(raw_targets) == len(accumulators), "PROJECTOR_GROUP_LENGTH")
+    require(1 <= len(raw_targets) <= TARGETS_PER_TRANSPORT, "PROJECTOR_GROUP_SIZE")
+
+    residuals = torch.stack(
+        [target - raw_source for target in raw_targets],
+        dim=0,
+    )
+    valid = attention_mask.to(
+        device=residuals.device,
+        dtype=residuals.dtype,
+    ).unsqueeze(0).unsqueeze(-1)
+    residuals.mul_(valid)
+
+    jd0 = torch.sum(
+        residuals * grad_refute.unsqueeze(0),
+        dim=(2, 3),
+        dtype=torch.float64,
+    )
+    jd1 = torch.sum(
+        residuals * grad_support.unsqueeze(0),
+        dim=(2, 3),
+        dtype=torch.float64,
+    )
+    denom = torch.sum(
+        residuals * residuals,
+        dim=(2, 3),
+        dtype=torch.float64,
+    )
+
+    jd_cpu = torch.stack((jd0, jd1), dim=-1).to(device="cpu")
+    denom_cpu = denom.to(device="cpu")
+    alpha_cpu = torch.einsum("bij,kbj->kbi", pinv_cpu, jd_cpu)
+
+    # For the orthogonal row-space projection, ||J^T alpha||^2 = alpha^T Jd.
+    # This keeps the exact 2x2 CPU solve while avoiding any second pseudoinverse.
+    numer_cpu = torch.sum(alpha_cpu * jd_cpu, dim=-1)
+
+    alpha = alpha_cpu.to(
+        device=raw_source.device,
+        dtype=raw_source.dtype,
+    )
+    visible = (
+        alpha[..., 0, None, None] * grad_refute.unsqueeze(0)
+        + alpha[..., 1, None, None] * grad_support.unsqueeze(0)
+    )
+
+    # Preserve the masked FULL residual for exact reconstruction and
+    # raw-write energy accounting.
+    complement = residuals - visible
+
+    for index, accumulator in enumerate(accumulators):
+        denom_row = denom_cpu[index]
+        numer_row = numer_cpu[index]
+        ratio_row = torch.where(
+            denom_row > 0.0,
+            numer_row / denom_row,
+            torch.zeros_like(denom_row),
         )
-        visible = _valid_stage(
-            visible.unsqueeze(0),
-            attention_mask[row : row + 1],
-        )[0]
-        visible_rows.append(visible)
+        accumulator["task_row_energy_sum"] += float(ratio_row.sum().item())
+        accumulator["task_row_energy_numer_sum"] += float(numer_row.sum().item())
+        accumulator["task_row_energy_denom_sum"] += float(denom_row.sum().item())
 
-        residual64 = residual[row].to(device="cpu", dtype=torch.float64).reshape(-1)
-        visible64 = visible.to(device="cpu", dtype=torch.float64).reshape(-1)
-        denom = float(torch.dot(residual64, residual64).item())
-        numer = float(torch.dot(visible64, visible64).item())
-        accumulator["task_row_energy_sum"] += float(energy)
-        accumulator["task_row_energy_numer_sum"] += numer
-        accumulator["task_row_energy_denom_sum"] += denom
+        full = residuals[index]
+        interaction = visible[index] + complement[index] - full
 
-    return torch.stack(visible_rows, dim=0)
+        raw_metrics = {
+            "D_full": float(torch.sum(full * full, dtype=torch.float64).item()),
+            "D_visible": float(
+                torch.sum(visible[index] * visible[index], dtype=torch.float64).item()
+            ),
+            "D_complement": float(
+                torch.sum(
+                    complement[index] * complement[index],
+                    dtype=torch.float64,
+                ).item()
+            ),
+            "I_abs": float(
+                torch.sum(interaction * interaction, dtype=torch.float64).item()
+            ),
+        }
+        for key, value in raw_metrics.items():
+            accumulator["stage"]["raw_write"][key] += value
 
+        recon_error = float(torch.max(torch.abs(interaction)).item())
+        accumulator["raw_reconstruction_max_abs"] = max(
+            float(accumulator["raw_reconstruction_max_abs"]),
+            recon_error,
+        )
+        require(recon_error <= RAW_RECON_ATOL, f"RAW_RECON:{recon_error}")
+
+    return visible, complement
 
 def _accumulate_finite(
     accumulator: dict[str, Any],
@@ -706,33 +803,289 @@ def _stage_final_logits(
     )
 
 
-def _offload_stage_map(
-    stages: Mapping[str, torch.Tensor],
+def _trajectory_stage_energy(
+    value: torch.Tensor,
+    *,
+    target_count: int,
+    valid_token: torch.Tensor,
+) -> torch.Tensor:
+    require(value.ndim == 3, "STREAM_STAGE_RANK")
+    expected = 1 + 3 * target_count
+    require(value.shape[0] == expected, "STREAM_STAGE_TRAJECTORY_COUNT")
+
+    source = value[0].unsqueeze(0)
+    full = value[1 : 1 + target_count]
+    visible = value[1 + target_count : 1 + 2 * target_count]
+    complement = value[1 + 2 * target_count : 1 + 3 * target_count]
+
+    d_full = full - source
+    d_visible = visible - source
+    d_complement = complement - source
+    interaction = d_visible + d_complement - d_full
+
+    diffs = torch.stack(
+        (d_full, d_visible, d_complement, interaction),
+        dim=0,
+    )
+    valid = valid_token.to(
+        device=value.device,
+        dtype=value.dtype,
+    ).reshape(1, 1, value.shape[1], 1)
+    diffs = diffs * valid
+
+    return torch.sum(
+        diffs * diffs,
+        dim=(2, 3),
+        dtype=torch.float64,
+    )
+
+
+def _repeat_feature_batch(
+    features: Mapping[str, torch.Tensor],
+    copies: int,
 ) -> dict[str, torch.Tensor]:
-    """Detach completed stage tensors and move them off CUDA immediately."""
-    return {
-        name: value.detach().to(device="cpu")
-        for name, value in stages.items()
+    batch = next(iter(features.values())).shape[0]
+    output: dict[str, torch.Tensor] = {}
+    for key, value in features.items():
+        if (
+            isinstance(value, torch.Tensor)
+            and value.ndim >= 1
+            and value.shape[0] == batch
+        ):
+            output[key] = (
+                value.unsqueeze(0)
+                .expand(copies, *value.shape)
+                .reshape(copies * batch, *value.shape[1:])
+            )
+        else:
+            output[key] = value
+    return output
+
+
+def _stream_transport_group(
+    *,
+    model: torch.nn.Module,
+    wrapper: Any,
+    features: Mapping[str, torch.Tensor],
+    context: Mapping[str, torch.Tensor],
+    attention_mask: torch.Tensor,
+    raw_source: torch.Tensor,
+    raw_targets: Sequence[torch.Tensor],
+    visible: torch.Tensor,
+    complement: torch.Tensor,
+) -> tuple[
+    torch.Tensor,
+    torch.Tensor,
+    torch.Tensor,
+    torch.Tensor,
+    list[dict[str, dict[str, float]]],
+]:
+    target_count = len(raw_targets)
+    require(1 <= target_count <= TARGETS_PER_TRANSPORT, "STREAM_TARGET_COUNT")
+    require(visible.shape[0] == target_count, "STREAM_VISIBLE_COUNT")
+    require(complement.shape[0] == target_count, "STREAM_COMPLEMENT_COUNT")
+
+    native_mixer = wrapper.native_mixer
+    shape = wrapper.correction.shape
+    batch, seq_len, width = raw_source.shape
+    trajectory_count = 1 + 3 * target_count
+    require(width == shape.state_width, "STREAM_RAW_WIDTH")
+
+    state = torch.zeros(
+        (
+            trajectory_count,
+            batch,
+            shape.intermediate_size,
+            shape.state_size,
+        ),
+        device=raw_source.device,
+        dtype=raw_source.dtype,
+    )
+
+    stage_energy = {
+        stage: torch.zeros(
+            (4, target_count),
+            device=raw_source.device,
+            dtype=torch.float64,
+        )
+        for stage in STAGE_ORDER[1:]
     }
+    out_rows: list[torch.Tensor] = []
+    gate_all = native_mixer.act(context["gate"])
+
+    with torch.no_grad():
+        for token_index in range(seq_len):
+            write = torch.cat(
+                (
+                    raw_source[:, token_index, :].unsqueeze(0),
+                    torch.stack(
+                        [target[:, token_index, :] for target in raw_targets],
+                        dim=0,
+                    ),
+                    visible[:, :, token_index, :],
+                    complement[:, :, token_index, :],
+                ),
+                dim=0,
+            )
+
+            discrete_a_t = torch.exp(
+                context["a_continuous"][None, :, :]
+                * context["discrete_time_step"][
+                    :, :, token_index, None
+                ].float()
+            ).to(dtype=raw_source.dtype)
+
+            state = (
+                discrete_a_t.unsqueeze(0) * state
+                + write.reshape(
+                    trajectory_count,
+                    batch,
+                    shape.intermediate_size,
+                    shape.state_size,
+                )
+            )
+
+            valid_token = attention_mask[:, token_index]
+
+            recurrent = state.reshape(
+                trajectory_count,
+                batch,
+                shape.state_width,
+            )
+            stage_energy["recurrent_state"] += _trajectory_stage_energy(
+                recurrent,
+                target_count=target_count,
+                valid_token=valid_token,
+            )
+
+            read = torch.sum(
+                state.to(context["c_readout"].dtype)
+                * context["c_readout"][
+                    :, token_index, None, :
+                ].unsqueeze(0),
+                dim=-1,
+            )
+            stage_energy["c_readout_pre_gate"] += _trajectory_stage_energy(
+                read,
+                target_count=target_count,
+                valid_token=valid_token,
+            )
+
+            gated = read * gate_all[:, :, token_index].unsqueeze(0)
+            stage_energy["gated_scan"] += _trajectory_stage_energy(
+                gated,
+                target_count=target_count,
+                valid_token=valid_token,
+            )
+
+            out = torch.nn.functional.linear(
+                gated,
+                native_mixer.out_proj.weight,
+                bias=None,
+            )
+            stage_energy["layer22_out_proj"] += _trajectory_stage_energy(
+                out,
+                target_count=target_count,
+                valid_token=valid_token,
+            )
+            out_rows.append(out)
+
+        correction22 = torch.stack(out_rows, dim=2)
+        base22 = context["residual22"] + context["native22"]
+        hidden22 = (
+            base22.unsqueeze(0) + correction22
+        ).reshape(
+            trajectory_count * batch,
+            seq_len,
+            correction22.shape[-1],
+        )
+
+        hidden23 = model.mamba.layers[23](
+            hidden22,
+            cache_params=None,
+            cache_position=None,
+            attention_mask=None,
+        )
+        final_hidden = model.mamba.norm_f(hidden23)
+        expanded_features = _repeat_feature_batch(features, trajectory_count)
+        output = legacy._phase_b_joint_forward_from_hidden(
+            model,
+            expanded_features,
+            final_hidden,
+        )
+        logits = output["logits"].reshape(
+            trajectory_count,
+            batch,
+            3,
+        )
+
+    rows: list[dict[str, dict[str, float]]] = []
+    cpu_energy = {
+        stage: tensor.detach().to(device="cpu")
+        for stage, tensor in stage_energy.items()
+    }
+    for target_index in range(target_count):
+        row: dict[str, dict[str, float]] = {}
+        for stage in STAGE_ORDER[1:]:
+            values = cpu_energy[stage][:, target_index]
+            row[stage] = {
+                "D_full": float(values[0].item()),
+                "D_visible": float(values[1].item()),
+                "D_complement": float(values[2].item()),
+                "I_abs": float(values[3].item()),
+            }
+        rows.append(row)
+
+    source_logits = logits[0]
+    full_logits = logits[1 : 1 + target_count]
+    visible_logits = logits[
+        1 + target_count : 1 + 2 * target_count
+    ]
+    complement_logits = logits[
+        1 + 2 * target_count : 1 + 3 * target_count
+    ]
+    return (
+        source_logits,
+        full_logits,
+        visible_logits,
+        complement_logits,
+        rows,
+    )
 
 
 def _expected_counts() -> dict[str, Any]:
-    batches = math.ceil(DEV_ROWS / BATCH_ROWS)
-    result = {"batch_rows": BATCH_ROWS, "batches_per_worker": batches, "workers": {}}
+    result = {
+        "batch_rows": BATCH_ROWS,
+        "targets_per_transport": TARGETS_PER_TRANSPORT,
+        "sharding_mode": "DISJOINT_EXAMPLE_RANGES_SUFFICIENT_STAT_REDUCTION",
+        "workers": {},
+    }
+    groups_per_source = math.ceil(4 / TARGETS_PER_TRANSPORT)
     for worker_id in (0, 1):
-        orientations = len(worker_orientations(worker_id))
-        source_cells = len(GPU_SOURCE_CELLS[worker_id])
+        row_start, row_stop = worker_row_range(worker_id)
+        row_count = row_stop - row_start
+        batches = math.ceil(row_count / BATCH_ROWS)
+        fused_calls = 9 * groups_per_source * batches
         result["workers"][str(worker_id)] = {
-            "source_cells": source_cells,
-            "orientations": orientations,
+            "row_start": row_start,
+            "row_stop": row_stop,
+            "row_count": row_count,
+            "batches": batches,
+            "source_cells": 9,
+            "orientations": 36,
             "common_context_batches": batches,
-            "actual_stage_chains": 9 * batches,
-            "source_gradient_forwards": source_cells * batches,
-            "actual_cell_final_head_forwards": 9 * batches,
-            "hybrid_stage_chains": 2 * orientations * batches,
-            "hybrid_final_head_forwards": 2 * orientations * batches,
+            "raw_write_cell_evaluations": 9 * batches,
+            "source_gradient_forwards": 9 * batches,
+            "fused_transport_calls": fused_calls,
+            "fused_transport_trajectories": fused_calls * (1 + 3 * TARGETS_PER_TRANSPORT),
+            "batched_final_head_calls": fused_calls,
+            "legacy_full_stage_tensor_offloads": 0,
         }
     result["total_orientations"] = 36
+    result["total_rows"] = DEV_ROWS
+    result["total_common_context_batches"] = sum(x["common_context_batches"] for x in result["workers"].values())
+    result["total_source_gradient_forwards"] = sum(x["source_gradient_forwards"] for x in result["workers"].values())
+    result["total_fused_transport_calls"] = sum(x["fused_transport_calls"] for x in result["workers"].values())
     return result
 
 
@@ -747,8 +1100,11 @@ def run_static_contract_check(args: argparse.Namespace) -> None:
     print("PRIMARY_ORIENTATIONS=18")
     print("CONTROL_ORIENTATIONS=18")
     print("TOTAL_ORIENTATIONS=36")
-    print("WORKER0_ORIENTATIONS=20")
-    print("WORKER1_ORIENTATIONS=16")
+    print("SHARDING_MODE=DISJOINT_EXAMPLE_RANGES_SUFFICIENT_STAT_REDUCTION")
+    print("WORKER0_ROWS=0:416")
+    print("WORKER1_ROWS=416:840")
+    print("WORKER0_ORIENTATIONS=36")
+    print("WORKER1_ORIENTATIONS=36")
     print(f"PROJECTOR_BACKEND={PROJECTOR_BACKEND}")
     print(f"PROJECTOR_PINV_RTOL={PROJECTOR_PINV_RTOL:.17g}")
     print("MODEL_FORWARD_COUNT=0")
@@ -778,6 +1134,9 @@ def run_preflight(args: argparse.Namespace) -> None:
     counts = _expected_counts()
     print("GEN5_NATIVE_RECONVERGENCE_CUDA_PREFLIGHT_PASS")
     print("GPU_TOPOLOGY=TWO_INDEPENDENT_SINGLE_GPU_WORKERS_NO_DDP")
+    print("EXECUTION_ENGINE=FUSED_STREAMING_TRANSPORT_V2")
+    print("SHARDING_MODE=DISJOINT_EXAMPLE_RANGES_SUFFICIENT_STAT_REDUCTION")
+    print(f"TARGETS_PER_TRANSPORT={TARGETS_PER_TRANSPORT}")
     print("TRAINING_EXECUTED=False")
     print("PARAMETER_GRADIENTS_ACCUMULATED=False")
     print("CONFIRMATORY_9601_9900_LOADED=False")
@@ -807,247 +1166,131 @@ def run_worker(args: argparse.Namespace) -> None:
     require(args.scratch_root is not None, "SCRATCH_ROOT_REQUIRED")
     require(torch.cuda.is_available(), "CUDA_REQUIRED")
     require(torch.cuda.device_count() == 1, "WORKER_VISIBLE_GPU_COUNT_MUST_BE_ONE")
-
-    scratch_root = Path(args.scratch_root)
-    worker_root = scratch_root / f"worker{args.worker_id}"
+    worker_id=int(args.worker_id)
+    scratch_root=Path(args.scratch_root)
+    worker_root=scratch_root/f"worker{worker_id}"
     require(not worker_root.exists(), f"WORKER_OUTPUT_COLLISION:{worker_root}")
-
-    (
-        _encoded,
-        model,
-        wrapper,
-        strong_mask,
-        planes,
-        features,
-        active,
-        targets,
-    ) = _prepare_worker_runtime(args)
-
-    weights = _cell_weights()
-    local_sources = tuple(GPU_SOURCE_CELLS[int(args.worker_id)])
-    orientations = worker_orientations(int(args.worker_id))
-    accumulators = {
-        (group, source, target): _empty_orientation(group, source, target)
-        for group, source, target in orientations
-    }
-
-    cell_replay_max = {cell_name(cell): 0.0 for cell in local_sources}
-    valid_token_seen = 0
-
-    for start in range(0, DEV_ROWS, BATCH_ROWS):
-        stop = min(start + BATCH_ROWS, DEV_ROWS)
-        batch_features = legacy._phase_b_batch_features(features, start, stop)
-        batch_mask = batch_features["attention_mask"]
-        batch_mask_cpu = batch_mask.detach().to(device="cpu")
+    (_encoded,model,wrapper,strong_mask,planes,features,active,targets)=_prepare_worker_runtime(args)
+    weights=_cell_weights()
+    local_sources=tuple(FULL_FACTORIAL_CELLS)
+    orientations=all_orientations()
+    accumulators={(g,src,tgt):_empty_orientation(g,src,tgt) for g,src,tgt in orientations}
+    by_source={src:tuple(row for row in orientations if row[1]==src) for src in local_sources}
+    for src,rows in by_source.items(): require(len(rows)==4,f"SOURCE_ORIENTATION_COUNT:{cell_name(src)}")
+    row_start,row_stop=worker_row_range(worker_id)
+    row_count=row_stop-row_start
+    total_batches=math.ceil(row_count/BATCH_ROWS)
+    cell_replay_max={cell_name(cell):0.0 for cell in local_sources}
+    valid_token_seen=0
+    for batch_index,start in enumerate(range(row_start,row_stop,BATCH_ROWS),start=1):
+        stop=min(start+BATCH_ROWS,row_stop)
+        batch_features=legacy._phase_b_batch_features(features,start,stop)
+        batch_mask=batch_features["attention_mask"]
         valid_token_seen += int(torch.count_nonzero(batch_mask).item())
-
-        context = legacy._phase_b_prepare_common_context(
-            model=model,
-            wrapper=wrapper,
-            features=batch_features,
-            stressor_active=active[start:stop],
-            target_indices=targets[start:stop],
-            strong_mask=strong_mask,
-            planes=planes,
+        context=legacy._phase_b_prepare_common_context(
+            model=model,wrapper=wrapper,features=batch_features,
+            stressor_active=active[start:stop],target_indices=targets[start:stop],
+            strong_mask=strong_mask,planes=planes,
         )
-
-        raw_by_cell: dict[tuple[int, int], torch.Tensor] = {}
-        actual_stages: dict[tuple[int, int], dict[str, torch.Tensor]] = {}
-        actual_logits: dict[tuple[int, int], torch.Tensor] = {}
-
+        raw_by_cell={}
         with torch.no_grad():
             for cell in FULL_FACTORIAL_CELLS:
-                a_weight, b_weight = weights[cell]
-                raw = legacy._phase_b_raw_write(
-                    context["mixer_input"],
-                    batch_mask,
-                    a_weight,
-                    b_weight,
-                ).detach()
-                raw_by_cell[cell] = raw
-                stages = legacy.temporal_mechanism_stage_chain(
-                    wrapper=wrapper,
-                    context=context,
-                    raw_write=raw,
-                )
-                actual_logits[cell] = _stage_final_logits(
-                    model=model,
-                    wrapper=wrapper,
-                    features=batch_features,
-                    context=context,
-                    stages=stages,
-                ).detach()
-                actual_stages[cell] = _offload_stage_map(stages)
-                del stages
-
-        source_gradients: dict[
-            tuple[int, int],
-            tuple[torch.Tensor, torch.Tensor, torch.Tensor],
-        ] = {}
+                a_weight,b_weight=weights[cell]
+                raw_by_cell[cell]=legacy._phase_b_raw_write(context["mixer_input"],batch_mask,a_weight,b_weight).detach()
         for source in local_sources:
-            source_logits, g_refute, g_support = _source_gradient_bundle(
-                model=model,
-                wrapper=wrapper,
-                features=batch_features,
-                context=context,
-                raw_source=raw_by_cell[source],
+            source_rows=by_source[source]
+            raw_source=raw_by_cell[source]
+            source_logits_grad,g_refute,g_support=_source_gradient_bundle(
+                model=model,wrapper=wrapper,features=batch_features,context=context,raw_source=raw_source,
             )
-            replay_error = float(
-                torch.max(torch.abs(source_logits - actual_logits[source])).item()
+            g_refute,g_support,pinv_cpu=_prepare_projector_pinv(
+                grad_refute=g_refute,grad_support=g_support,attention_mask=batch_mask,
             )
-            cell_replay_max[cell_name(source)] = max(
-                cell_replay_max[cell_name(source)],
-                replay_error,
-            )
-            require(
-                replay_error <= SOURCE_TARGET_REPLAY_ATOL,
-                f"SOURCE_REPLAY_AUTH:{cell_name(source)}:{replay_error}",
-            )
-            source_gradients[source] = (source_logits, g_refute, g_support)
-
-        for group, source, target in orientations:
-            acc = accumulators[(group, source, target)]
-            source_logits, g_refute, g_support = source_gradients[source]
-            raw_source = raw_by_cell[source]
-            raw_target = raw_by_cell[target]
-            residual = _valid_stage(raw_target - raw_source, batch_mask)
-
-            visible = _project_visible_rows(
-                grad_refute=g_refute,
-                grad_support=g_support,
-                residual=residual,
-                attention_mask=batch_mask,
-                accumulator=acc,
-            )
-            complement = residual - visible
-            recon_error = float(
-                torch.max(torch.abs((visible + complement) - residual)).item()
-            )
-            acc["raw_reconstruction_max_abs"] = max(
-                float(acc["raw_reconstruction_max_abs"]),
-                recon_error,
-            )
-            require(recon_error <= RAW_RECON_ATOL, f"RAW_RECON:{recon_error}")
-
-            with torch.no_grad():
-                visible_stages_gpu = legacy.temporal_mechanism_stage_chain(
-                    wrapper=wrapper,
-                    context=context,
-                    raw_write=raw_source + visible,
+            for group_start in range(0,len(source_rows),TARGETS_PER_TRANSPORT):
+                group_rows=source_rows[group_start:group_start+TARGETS_PER_TRANSPORT]
+                group_accs=[accumulators[row] for row in group_rows]
+                raw_targets=[raw_by_cell[row[2]] for row in group_rows]
+                visible,complement=_project_visible_group(
+                    grad_refute=g_refute,grad_support=g_support,pinv_cpu=pinv_cpu,
+                    attention_mask=batch_mask,raw_source=raw_source,raw_targets=raw_targets,accumulators=group_accs,
                 )
-                visible_logits = _stage_final_logits(
-                    model=model,
-                    wrapper=wrapper,
-                    features=batch_features,
-                    context=context,
-                    stages=visible_stages_gpu,
+                source_logits,full_logits,visible_logits,complement_logits,stage_rows=_stream_transport_group(
+                    model=model,wrapper=wrapper,features=batch_features,context=context,attention_mask=batch_mask,
+                    raw_source=raw_source,raw_targets=raw_targets,visible=visible,complement=complement,
                 )
-                visible_stages = _offload_stage_map(visible_stages_gpu)
-                del visible_stages_gpu
-
-                complement_stages_gpu = legacy.temporal_mechanism_stage_chain(
-                    wrapper=wrapper,
-                    context=context,
-                    raw_write=raw_source + complement,
-                )
-                complement_logits = _stage_final_logits(
-                    model=model,
-                    wrapper=wrapper,
-                    features=batch_features,
-                    context=context,
-                    stages=complement_stages_gpu,
-                )
-                complement_stages = _offload_stage_map(complement_stages_gpu)
-                del complement_stages_gpu
-
-            for stage in STAGE_ORDER:
-                sums = _stage_energy_sums(
-                    source=actual_stages[source][stage],
-                    full=actual_stages[target][stage],
-                    visible=visible_stages[stage],
-                    complement=complement_stages[stage],
-                    attention_mask=batch_mask_cpu,
-                )
-                for key, value in sums.items():
-                    acc["stage"][stage][key] += value
-
-            _accumulate_finite(
-                acc,
-                source_logits=source_logits,
-                full_logits=actual_logits[target],
-                visible_logits=visible_logits,
-                complement_logits=complement_logits,
-            )
-            acc["example_count"] += int(stop - start)
-
-            del visible_stages, complement_stages, visible_logits, complement_logits
-
-        del raw_by_cell, actual_stages, actual_logits, source_gradients
-
-    require(valid_token_seen == VALID_TOKEN_COUNT, f"VALID_TOKEN_COUNT:{valid_token_seen}")
-    require(
-        not any(parameter.grad is not None for parameter in model.parameters()),
-        "PARAMETER_GRADIENT_ACCUMULATED_FINAL",
-    )
-
-    finalized = [
-        _finalize_orientation(accumulators[row])
-        for row in orientations
-    ]
-    result = {
-        "schema_version": WORKER_SCHEMA,
-        "execution_head": args.expected_head,
-        "implementation_freeze_commit": args.implementation_freeze_commit,
-        "worker_id": int(args.worker_id),
-        "source_cells": [cell_name(cell) for cell in local_sources],
-        "orientation_count": len(finalized),
-        "orientations": finalized,
-        "cell_source_replay_max_abs": cell_replay_max,
-        "valid_token_count": valid_token_seen,
-        "downstream_map_shared_across_grid": True,
-        "downstream_map_reason": (
-            "frozen parent/native coefficient path is common; cell-specific "
-            "checkpoint payload contributes only A_theta/B_theta raw-write weights"
-        ),
-        "training_executed": False,
-        "optimizer_constructed": False,
-        "backward_method_called": False,
-        "parameter_gradients_accumulated": False,
-        "checkpoint_mutation": False,
-        "confirmatory_9601_9900_loaded": False,
-        "vitaminc_loaded": False,
+                replay_error=float(torch.max(torch.abs(source_logits-source_logits_grad)).item())
+                source_name=cell_name(source)
+                cell_replay_max[source_name]=max(cell_replay_max[source_name],replay_error)
+                require(replay_error<=SOURCE_TARGET_REPLAY_ATOL,f"SOURCE_REPLAY_AUTH:{source_name}:{replay_error}")
+                for index,row in enumerate(group_rows):
+                    acc=accumulators[row]
+                    for stage in STAGE_ORDER[1:]:
+                        for key,value in stage_rows[index][stage].items(): acc["stage"][stage][key]+=value
+                    _accumulate_finite(acc,source_logits=source_logits_grad,full_logits=full_logits[index],visible_logits=visible_logits[index],complement_logits=complement_logits[index])
+                    acc["example_count"] += int(stop-start)
+                del visible,complement,source_logits,full_logits,visible_logits,complement_logits,stage_rows
+            del source_logits_grad,g_refute,g_support,pinv_cpu
+        del raw_by_cell
+        print("GEN5_TRANSPORT_PROGRESS " f"worker={worker_id} batch={batch_index}/{total_batches} " f"shard_rows={stop-row_start}/{row_count}",flush=True)
+    for acc in accumulators.values(): require(int(acc["example_count"])==row_count,"WORKER_ORIENTATION_EXAMPLE_COUNT")
+    require(not any(p.grad is not None for p in model.parameters()),"PARAMETER_GRADIENT_ACCUMULATED_FINAL")
+    result={
+        "schema_version":WORKER_SCHEMA,"execution_head":args.expected_head,
+        "implementation_freeze_commit":args.implementation_freeze_commit,"worker_id":worker_id,
+        "sharding_mode":"DISJOINT_EXAMPLE_RANGES_SUFFICIENT_STAT_REDUCTION",
+        "row_start":row_start,"row_stop":row_stop,"row_count":row_count,
+        "source_cells":[cell_name(cell) for cell in local_sources],"orientation_count":36,
+        "orientation_accumulators":list(accumulators.values()),"cell_source_replay_max_abs":cell_replay_max,
+        "valid_token_count":valid_token_seen,"downstream_map_shared_across_grid":True,
+        "downstream_map_reason":"frozen parent/native coefficient path is common; cell-specific checkpoint payload contributes only A_theta/B_theta raw-write weights",
+        "execution_engine":"FUSED_STREAMING_TRANSPORT_V2","targets_per_transport":TARGETS_PER_TRANSPORT,
+        "full_stage_tensor_cpu_offload":False,"training_executed":False,"optimizer_constructed":False,
+        "backward_method_called":False,"parameter_gradients_accumulated":False,"checkpoint_mutation":False,
+        "confirmatory_9601_9900_loaded":False,"vitaminc_loaded":False,
     }
-
-    payload_path = _worker_payload_path(scratch_root, int(args.worker_id))
-    _atomic_write(payload_path, canonical_json_bytes(result))
-    digest = sha256_file(payload_path)
-    _atomic_write(
-        payload_path.with_suffix(".sha256"),
-        (digest + "\n").encode("utf-8"),
-    )
-    print(
-        "GEN5_NATIVE_RECONVERGENCE_WORKER_PASS "
-        f"worker={args.worker_id} orientations={len(finalized)} sha256={digest}"
-    )
-
+    payload_path=_worker_payload_path(scratch_root,worker_id)
+    _atomic_write(payload_path,canonical_json_bytes(result))
+    digest=sha256_file(payload_path)
+    _atomic_write(payload_path.with_suffix(".sha256"),(digest+"\\n").encode("utf-8"))
+    print(f"GEN5_NATIVE_RECONVERGENCE_WORKER_PASS worker={worker_id} rows={row_start}:{row_stop} orientations=36 sha256={digest}")
 
 def _read_worker(scratch_root: Path, worker_id: int) -> dict[str, Any]:
-    path = _worker_payload_path(scratch_root, worker_id)
-    sidecar = path.with_suffix(".sha256")
-    require(path.is_file(), f"WORKER_RESULT_MISSING:{worker_id}")
-    require(sidecar.is_file(), f"WORKER_SHA_MISSING:{worker_id}")
-    expected = sidecar.read_text(encoding="utf-8").strip()
-    observed = sha256_file(path)
-    require(expected == observed, f"WORKER_SHA_MISMATCH:{worker_id}")
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    require(payload.get("schema_version") == WORKER_SCHEMA, "WORKER_SCHEMA")
-    require(int(payload.get("worker_id", -1)) == worker_id, "WORKER_IDENTITY")
-    require(payload.get("execution_head") == payload.get("implementation_freeze_commit"), "WORKER_HEAD_BINDING")
-    require(payload.get("training_executed") is False, "WORKER_TRAINING")
-    require(payload.get("parameter_gradients_accumulated") is False, "WORKER_PARAM_GRAD")
-    require(payload.get("confirmatory_9601_9900_loaded") is False, "WORKER_CONFIRMATORY")
-    require(payload.get("vitaminc_loaded") is False, "WORKER_VITAMINC")
+    path=_worker_payload_path(scratch_root,worker_id); sidecar=path.with_suffix(".sha256")
+    require(path.is_file(),f"WORKER_RESULT_MISSING:{worker_id}"); require(sidecar.is_file(),f"WORKER_SHA_MISSING:{worker_id}")
+    require(sidecar.read_text(encoding="utf-8").strip()==sha256_file(path),f"WORKER_SHA_MISMATCH:{worker_id}")
+    payload=json.loads(path.read_text(encoding="utf-8"))
+    require(payload.get("schema_version")==WORKER_SCHEMA,"WORKER_SCHEMA"); require(int(payload.get("worker_id",-1))==worker_id,"WORKER_IDENTITY")
+    require(payload.get("execution_head")==payload.get("implementation_freeze_commit"),"WORKER_HEAD_BINDING")
+    require(payload.get("sharding_mode")=="DISJOINT_EXAMPLE_RANGES_SUFFICIENT_STAT_REDUCTION","WORKER_SHARDING_MODE")
+    a,b=worker_row_range(worker_id); require((int(payload["row_start"]),int(payload["row_stop"]))==(a,b),"WORKER_ROW_RANGE")
+    require(int(payload["row_count"])==b-a,"WORKER_ROW_COUNT")
+    rows=payload.get("orientation_accumulators"); require(isinstance(rows,list) and len(rows)==36,"WORKER_ACCUMULATORS_COUNT")
+    ids={(str(x["group"]),str(x["source"]),str(x["target"])) for x in rows}; expected={(g,cell_name(src),cell_name(tgt)) for g,src,tgt in all_orientations()}
+    require(len(ids)==36,"WORKER_ORIENTATION_DUPLICATE"); require(ids==expected,"WORKER_ORIENTATION_COVERAGE")
+    require(all(int(x["example_count"])==b-a for x in rows),"WORKER_ORIENTATION_EXAMPLE_COUNT")
+    require(payload.get("training_executed") is False,"WORKER_TRAINING"); require(payload.get("parameter_gradients_accumulated") is False,"WORKER_PARAM_GRAD")
+    require(payload.get("confirmatory_9601_9900_loaded") is False,"WORKER_CONFIRMATORY"); require(payload.get("vitaminc_loaded") is False,"WORKER_VITAMINC")
     return payload
+
+
+def _merge_worker_accumulators(workers: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    triples={(g,cell_name(src),cell_name(tgt)):(g,src,tgt) for g,src,tgt in all_orientations()}
+    merged={k:_empty_orientation(*v) for k,v in triples.items()}; worker_ids=set()
+    for worker in workers:
+        wid=int(worker["worker_id"]); require(wid not in worker_ids,"MERGED_WORKER_DUPLICATE"); worker_ids.add(wid)
+        for part in worker["orientation_accumulators"]:
+            key=(str(part["group"]),str(part["source"]),str(part["target"])); require(key in merged,"MERGED_ORIENTATION_COVERAGE"); dst=merged[key]
+            dst["example_count"]+=int(part["example_count"])
+            for k in ("task_row_energy_sum","task_row_energy_numer_sum","task_row_energy_denom_sum"): dst[k]+=float(part[k])
+            dst["raw_reconstruction_max_abs"]=max(float(dst["raw_reconstruction_max_abs"]),float(part["raw_reconstruction_max_abs"]))
+            for stage in STAGE_ORDER:
+                for k in ("D_full","D_visible","D_complement","I_abs"): dst["stage"][stage][k]+=float(part["stage"][stage][k])
+            for coord in ("centered_logits","two_margins"):
+                for k in ("E_full","E_visible","E_complement","E_interaction"): dst["finite"][coord][k]+=float(part["finite"][coord][k])
+            for k in ("visible_prediction_disagreement_vs_source","complement_prediction_disagreement_vs_source"): dst[k]+=int(part[k])
+    require(worker_ids=={0,1},"MERGED_WORKER_COVERAGE"); require(len(merged)==36,"MERGED_ORIENTATION_COUNT"); require(len(set(merged))==36,"MERGED_ORIENTATION_DUPLICATE")
+    require(set(merged)==set(triples),"MERGED_ORIENTATION_COVERAGE"); require(all(int(x["example_count"])==DEV_ROWS for x in merged.values()),"MERGED_ORIENTATION_EXAMPLE_COUNT")
+    return [_finalize_orientation(merged[(g,cell_name(src),cell_name(tgt))]) for g,src,tgt in all_orientations()]
 
 
 def _median(values: Sequence[float]) -> float:
@@ -1315,27 +1558,15 @@ def run_merge_only(args: argparse.Namespace) -> None:
             "MIXED_WORKER_HEAD",
         )
 
-    rows = []
-    for worker in workers:
-        rows.extend(worker["orientations"])
-    require(len(rows) == 36, f"MERGED_ORIENTATION_COUNT:{len(rows)}")
-    identities = {(row["group"], row["source"], row["target"]) for row in rows}
-    require(len(identities) == 36, "MERGED_ORIENTATION_DUPLICATE")
-
-    expected = {
-        (group, cell_name(source), cell_name(target))
-        for group, source, target in all_orientations()
-    }
-    require(identities == expected, "MERGED_ORIENTATION_COVERAGE")
-
-    replay_cells = {}
-    for worker in workers:
-        replay_cells.update(worker["cell_source_replay_max_abs"])
-    require(len(replay_cells) == 9, "CELL_REPLAY_COVERAGE")
-    require(
-        max(float(value) for value in replay_cells.values()) <= SOURCE_TARGET_REPLAY_ATOL,
-        "CELL_REPLAY_AUTH_FAIL",
-    )
+    rows = _merge_worker_accumulators(workers)
+    require(len(rows)==36,f"MERGED_ORIENTATION_COUNT:{len(rows)}")
+    identities={(row["group"],row["source"],row["target"]) for row in rows}
+    require(len(identities)==36,"MERGED_ORIENTATION_DUPLICATE")
+    expected={(g,cell_name(src),cell_name(tgt)) for g,src,tgt in all_orientations()}
+    require(identities==expected,"MERGED_ORIENTATION_COVERAGE")
+    require(sum(int(w["valid_token_count"]) for w in workers)==VALID_TOKEN_COUNT,"MERGED_VALID_TOKEN_COUNT")
+    replay_cells={cell_name(cell):max(float(w["cell_source_replay_max_abs"][cell_name(cell)]) for w in workers) for cell in FULL_FACTORIAL_CELLS}
+    require(max(replay_cells.values())<=SOURCE_TARGET_REPLAY_ATOL,"CELL_REPLAY_AUTH_FAIL")
 
     authentication = _authentication_from_rows(rows)
     require(authentication["pass"], "FROZEN_AUTHENTICATION_FAIL")
@@ -1383,6 +1614,8 @@ def run_merge_only(args: argparse.Namespace) -> None:
         "population": "FROZEN_PHASE3A_P0_DEV",
         "dev_rows": DEV_ROWS,
         "valid_token_count": VALID_TOKEN_COUNT,
+        "sharding_mode": "DISJOINT_EXAMPLE_RANGES_SUFFICIENT_STAT_REDUCTION",
+        "worker_row_ranges": {str(i): list(worker_row_range(i)) for i in (0, 1)},
         "primary_orientations": 18,
         "control_orientations": 18,
         "stage_order": list(STAGE_ORDER),
@@ -1408,8 +1641,13 @@ def run_merge_only(args: argparse.Namespace) -> None:
         "execution_head": args.expected_head,
         "workers": {
             str(worker["worker_id"]): {
+                "sharding_mode": worker["sharding_mode"],
+                "row_start": worker["row_start"],
+                "row_stop": worker["row_stop"],
+                "row_count": worker["row_count"],
                 "source_cells": worker["source_cells"],
                 "orientation_count": worker["orientation_count"],
+                "valid_token_count": worker["valid_token_count"],
                 "worker_result_sha256": sha256_file(
                     _worker_payload_path(scratch_root, int(worker["worker_id"]))
                 ),
@@ -1453,6 +1691,8 @@ def run_merge_only(args: argparse.Namespace) -> None:
             "hermitian": True,
         },
         "energy_epsilon": ENERGY_EPSILON,
+        "sharding_mode": "DISJOINT_EXAMPLE_RANGES_SUFFICIENT_STAT_REDUCTION",
+        "worker_row_ranges": {str(i): list(worker_row_range(i)) for i in (0, 1)},
         "dev_order_sha256": DEV_ORDER_SHA256,
         "dev_encoding_sha256": DEV_ENCODING_SHA256,
         "parent_checkpoint_sha256": PARENT_CHECKPOINT_SHA256,
