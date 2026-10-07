@@ -265,6 +265,9 @@ def test_runtime_requires_exact_head_binding():
 
 def test_expected_execution_counts_bind_worker_partition():
     counts = mod._expected_counts()
+    assert mod.BATCH_ROWS == 32
+    assert counts["batch_rows"] == 32
+    assert counts["batches_per_worker"] == 27
     assert counts["total_orientations"] == 36
     assert counts["workers"]["0"]["orientations"] == 20
     assert counts["workers"]["1"]["orientations"] == 16
