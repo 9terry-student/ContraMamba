@@ -426,6 +426,116 @@ def test_static_contract_locks_authority():
     )
 
 
+def test_static_contract_locks_exact_kernel_runtime():
+    contract = (
+        q1.static_contract()
+    )
+
+    assert (
+        contract[
+            "kernel_runtime_contract"
+        ]
+        ==
+        {
+            "kernels_version":
+                "0.10.2",
+
+            "build_variant":
+                "torch210-cxx11-cu128-x86_64-linux",
+
+            "transport_identity_status":
+                "EXACT_FROZEN_BINARY_SHA256_MATCH",
+
+            "mamba_binary_sha256":
+                "dc4d76a6323b510e77cfb66b5aa7bb0086c8f5cba238002b9c20bc31ea706587",
+
+            "causal_conv_binary_sha256":
+                "6b013d7b9a033bb9b0a2a714b26470e1aaba4af9bf1b3ec7442c2a53afb6b7b6",
+        }
+    )
+
+
+def test_kernel_constructor_counts_require_exact_layer_binding():
+    observed = (
+        q1.validate_kernel_constructor_calls(
+            [
+                "causal-conv1d",
+                "mamba-ssm",
+            ]
+            * 24,
+            24,
+        )
+    )
+
+    assert observed == {
+        "causal-conv1d":
+            24,
+
+        "mamba-ssm":
+            24,
+    }
+
+
+@pytest.mark.parametrize(
+    "calls",
+    [
+        ["causal-conv1d"] * 24,
+        ["mamba-ssm"] * 24,
+        (
+            ["causal-conv1d"] * 23
+            + ["mamba-ssm"] * 24
+        ),
+        (
+            ["causal-conv1d"] * 24
+            + ["mamba-ssm"] * 24
+            + ["unexpected-kernel"]
+        ),
+    ],
+)
+def test_kernel_constructor_counts_fail_closed(
+    calls,
+):
+    with pytest.raises(
+        q1.CensusError,
+        match="KERNEL_CONSTRUCTOR_COUNTS",
+    ):
+        q1.validate_kernel_constructor_calls(
+            calls,
+            24,
+        )
+
+
+def test_source_binds_exact_kernel_runtime_and_provenance():
+    text = SCRIPT.read_text(
+        encoding="utf-8"
+    )
+
+    assert (
+        "load_exact_fast_kernels"
+        in text
+    )
+
+    assert (
+        "exact_transformers_kernel_loader"
+        in text
+    )
+
+    assert (
+        "validate_transformers_kernel_bindings"
+        in text
+    )
+
+    assert (
+        '"kernel_runtime":'
+        in text
+    )
+
+    assert (
+        "NATIVE_Q1_VITAMINC_MAMBA_PREDICTION_CENSUS_PROVENANCE_V2"
+        in text
+    )
+
+
 def test_source_has_no_training_or_native_state_request_paths():
     text = SCRIPT.read_text(
         encoding="utf-8"

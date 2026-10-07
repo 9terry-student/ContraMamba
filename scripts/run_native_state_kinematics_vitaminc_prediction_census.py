@@ -28,6 +28,24 @@ TOKENIZER_JSON_SHA256 = (
     "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf"
 )
 
+KERNELS_VERSION = "0.10.2"
+
+KERNEL_BUILD_VARIANT = (
+    "torch210-cxx11-cu128-x86_64-linux"
+)
+
+MAMBA_KERNEL_BINARY_SHA256 = (
+    "dc4d76a6323b510e77cfb66b5aa7bb0086c8f5cba238002b9c20bc31ea706587"
+)
+
+CAUSAL_CONV_KERNEL_BINARY_SHA256 = (
+    "6b013d7b9a033bb9b0a2a714b26470e1aaba4af9bf1b3ec7442c2a53afb6b7b6"
+)
+
+KERNEL_TRANSPORT_IDENTITY_STATUS = (
+    "EXACT_FROZEN_BINARY_SHA256_MATCH"
+)
+
 MODEL_NAME = "state-spaces/mamba-130m-hf"
 ARCHITECTURE = "v6b_minimal"
 BACKBONE = "mamba"
@@ -945,6 +963,291 @@ def build_model_from_local_config(
     return model
 
 
+def validate_kernel_constructor_calls(
+    calls: Sequence[str],
+    layer_count: int,
+) -> dict[str, int]:
+    require(
+        layer_count > 0,
+        "KERNEL_LAYER_COUNT_NONPOSITIVE",
+    )
+
+    observed = dict(
+        sorted(
+            Counter(
+                calls
+            ).items()
+        )
+    )
+
+    expected = {
+        "causal-conv1d":
+            layer_count,
+
+        "mamba-ssm":
+            layer_count,
+    }
+
+    require(
+        observed == expected,
+        (
+            "KERNEL_CONSTRUCTOR_COUNTS:"
+            + json.dumps(
+                observed,
+                sort_keys=True,
+            )
+        ),
+    )
+
+    return observed
+
+
+def exact_kernel_binary_identity(
+    module: Any,
+    *,
+    label: str,
+    expected_sha256: str,
+) -> dict[str, Any]:
+    module_file_raw = getattr(
+        module,
+        "__file__",
+        None,
+    )
+
+    require(
+        module_file_raw
+        is not None,
+        f"{label}_MODULE_FILE_MISSING",
+    )
+
+    module_file = Path(
+        module_file_raw
+    )
+
+    variant_roots = [
+        parent
+        for parent
+        in module_file.parents
+        if parent.name
+        == KERNEL_BUILD_VARIANT
+    ]
+
+    require(
+        len(
+            variant_roots
+        )
+        == 1,
+        (
+            f"{label}_BUILD_VARIANT_PATH:"
+            f"{module_file}"
+        ),
+    )
+
+    variant_root = (
+        variant_roots[0]
+    )
+
+    exact_binaries = [
+        candidate
+        for candidate
+        in sorted(
+            variant_root.rglob(
+                "*.so"
+            )
+        )
+        if sha256_file(
+            candidate
+        )
+        == expected_sha256
+    ]
+
+    require(
+        len(
+            exact_binaries
+        )
+        == 1,
+        (
+            f"{label}_EXACT_BINARY_COUNT:"
+            f"{len(exact_binaries)}"
+        ),
+    )
+
+    binary = (
+        exact_binaries[0]
+    )
+
+    return {
+        "module_file":
+            str(
+                module_file
+            ),
+
+        "binary_path":
+            str(
+                binary
+            ),
+
+        "binary_bytes":
+            int(
+                binary.stat().st_size
+            ),
+
+        "binary_sha256":
+            expected_sha256,
+    }
+
+
+def load_exact_kernel_runtime():
+    import importlib.metadata
+
+    from scripts import (
+        reason_router_gen4_generator_family_prevalence_kernel_compat
+        as kernel_compat
+    )
+
+    installed_version = (
+        importlib.metadata.version(
+            "kernels"
+        )
+    )
+
+    require(
+        installed_version
+        == KERNELS_VERSION,
+        (
+            "KERNELS_VERSION:"
+            f"expected={KERNELS_VERSION}:"
+            f"observed={installed_version}"
+        ),
+    )
+
+    require(
+        kernel_compat.KERNELS_VERSION
+        == KERNELS_VERSION,
+        "KERNEL_COMPAT_VERSION_DRIFT",
+    )
+
+    require(
+        kernel_compat.BUILD_VARIANT
+        == KERNEL_BUILD_VARIANT,
+        "KERNEL_BUILD_VARIANT_DRIFT",
+    )
+
+    require(
+        kernel_compat.MAMBA_SPEC.binary_sha256
+        == MAMBA_KERNEL_BINARY_SHA256,
+        "MAMBA_KERNEL_SHA_CONSTANT_DRIFT",
+    )
+
+    require(
+        kernel_compat.CONV_SPEC.binary_sha256
+        == CAUSAL_CONV_KERNEL_BINARY_SHA256,
+        "CAUSAL_CONV_KERNEL_SHA_CONSTANT_DRIFT",
+    )
+
+    kernels = (
+        kernel_compat.load_exact_fast_kernels()
+    )
+
+    require(
+        kernels[
+            "transport_identity_status"
+        ]
+        == KERNEL_TRANSPORT_IDENTITY_STATUS,
+        "KERNEL_TRANSPORT_IDENTITY",
+    )
+
+    mamba_identity = (
+        exact_kernel_binary_identity(
+            kernels[
+                "mamba"
+            ],
+            label="MAMBA",
+            expected_sha256=(
+                MAMBA_KERNEL_BINARY_SHA256
+            ),
+        )
+    )
+
+    conv_identity = (
+        exact_kernel_binary_identity(
+            kernels[
+                "conv"
+            ],
+            label="CAUSAL_CONV",
+            expected_sha256=(
+                CAUSAL_CONV_KERNEL_BINARY_SHA256
+            ),
+        )
+    )
+
+    runtime_identity = {
+        "kernel_package_name":
+            "kernels",
+
+        "kernel_package_version":
+            installed_version,
+
+        "build_variant":
+            KERNEL_BUILD_VARIANT,
+
+        "transport_identity_status":
+            kernels[
+                "transport_identity_status"
+            ],
+
+        "mamba_ssm": {
+            "scientific_revision":
+                kernel_compat.MAMBA_SPEC.scientific_revision,
+
+            "transport_revision":
+                kernels[
+                    "mamba_transport_revision"
+                ],
+
+            "transport_repo_type":
+                kernels[
+                    "mamba_transport_repo_type"
+                ],
+
+            "transport_source":
+                kernels[
+                    "mamba_transport_source"
+                ],
+
+            **mamba_identity,
+        },
+
+        "causal_conv1d": {
+            "scientific_revision":
+                kernel_compat.CONV_SPEC.scientific_revision,
+
+            "transport_revision":
+                kernels[
+                    "causal_conv_transport_revision"
+                ],
+
+            "transport_repo_type":
+                kernels[
+                    "causal_conv_transport_repo_type"
+                ],
+
+            "transport_source":
+                kernels[
+                    "causal_conv_transport_source"
+                ],
+
+            **conv_identity,
+        },
+    }
+
+    return (
+        kernel_compat,
+        kernels,
+        runtime_identity,
+    )
+
+
 def make_prediction_row(
     source: dict[str, str],
     encoded: dict[str, Any],
@@ -1644,12 +1947,41 @@ def run(
         )
     )
 
-    model = (
-        build_model_from_local_config(
-            args.tokenizer_snapshot,
-            args.device,
+    (
+        kernel_compat,
+        kernels,
+        kernel_runtime,
+    ) = load_exact_kernel_runtime()
+
+    with (
+        kernel_compat
+        .exact_transformers_kernel_loader(
+            kernels
         )
+    ) as kernel_constructor_calls:
+        model = (
+            build_model_from_local_config(
+                args.tokenizer_snapshot,
+                args.device,
+            )
+        )
+
+    kernel_runtime[
+        "constructor_counts"
+    ] = validate_kernel_constructor_calls(
+        kernel_constructor_calls,
+        len(
+            model.mamba.layers
+        ),
     )
+
+    kernel_compat.validate_transformers_kernel_bindings(
+        kernels
+    )
+
+    kernel_runtime[
+        "transformers_kernel_bindings_validated"
+    ] = True
 
     incompatible = (
         model.load_state_dict(
@@ -1968,7 +2300,7 @@ def run(
 
     provenance = {
         "schema_version":
-            "NATIVE_Q1_VITAMINC_MAMBA_PREDICTION_CENSUS_PROVENANCE_V1",
+            "NATIVE_Q1_VITAMINC_MAMBA_PREDICTION_CENSUS_PROVENANCE_V2",
 
         "authority_commit":
             AUTHORITY_COMMIT,
@@ -2011,6 +2343,24 @@ def run(
 
         "transformers_version":
             transformers.__version__,
+
+        "torch_cuda_version":
+            torch.version.cuda,
+
+        "cuda_device_name":
+            torch.cuda.get_device_name(
+                torch.cuda.current_device()
+            ),
+
+        "cuda_device_capability":
+            list(
+                torch.cuda.get_device_capability(
+                    torch.cuda.current_device()
+                )
+            ),
+
+        "kernel_runtime":
+            kernel_runtime,
 
         "device":
             str(
@@ -2167,6 +2517,23 @@ def static_contract() -> dict[str, Any]:
 
         "external_predicate_flags":
             "ALL_ZERO",
+
+        "kernel_runtime_contract": {
+            "kernels_version":
+                KERNELS_VERSION,
+
+            "build_variant":
+                KERNEL_BUILD_VARIANT,
+
+            "transport_identity_status":
+                KERNEL_TRANSPORT_IDENTITY_STATUS,
+
+            "mamba_binary_sha256":
+                MAMBA_KERNEL_BINARY_SHA256,
+
+            "causal_conv_binary_sha256":
+                CAUSAL_CONV_KERNEL_BINARY_SHA256,
+        },
 
         "auxiliary_gold_labels_forwarded":
             False,
