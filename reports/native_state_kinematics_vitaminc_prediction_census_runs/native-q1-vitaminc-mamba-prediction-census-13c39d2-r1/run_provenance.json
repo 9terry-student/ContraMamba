@@ -1,0 +1,62 @@
+{
+  "authority_commit": "7b12527289924c9979fe19231bb8e7e756c0234e",
+  "auxiliary_gold_labels_forwarded": false,
+  "checkpoint_path": "/kaggle/input/datasets/terryterry9/vitaminc/checkpoint/selected_checkpoint.pt",
+  "checkpoint_sha256": "4f7ad019bddb988a534c477b58b36bdabe2775d6c9748331e8311653c07c864c",
+  "cuda_available": true,
+  "cuda_device_capability": [
+    7,
+    5
+  ],
+  "cuda_device_name": "Tesla T4",
+  "dataset_path": "/kaggle/input/datasets/terryterry9/vitaminc/dataset/vitaminc_validation_first5000_raw.csv",
+  "dataset_sha256": "452a24ec32302b4db6100c0f5897533d726f3d4408662b26bc3089b0b46d3191",
+  "device": "cuda:0",
+  "execution_head": "13c39d2df6434fde52c87b1c76460bea8a8ec791",
+  "gradient_computation_enabled": false,
+  "hidden_state_exported": false,
+  "kernel_runtime": {
+    "build_variant": "torch210-cxx11-cu128-x86_64-linux",
+    "causal_conv1d": {
+      "binary_bytes": 107169840,
+      "binary_path": "/root/.cache/huggingface/hub/kernels--kernels-community--causal-conv1d/snapshots/02ab414d848bbee389d801f87b24fa536de60273/build/torch210-cxx11-cu128-x86_64-linux/_causal_conv1d_cuda_63d1a23.abi3.so",
+      "binary_sha256": "6b013d7b9a033bb9b0a2a714b26470e1aaba4af9bf1b3ec7442c2a53afb6b7b6",
+      "module_file": "/root/.cache/huggingface/hub/kernels--kernels-community--causal-conv1d/snapshots/02ab414d848bbee389d801f87b24fa536de60273/build/torch210-cxx11-cu128-x86_64-linux/__init__.py",
+      "scientific_revision": "f2651e776f66069cdcf842840db637583def1223",
+      "transport_repo_type": "kernel",
+      "transport_revision": "02ab414d848bbee389d801f87b24fa536de60273",
+      "transport_source": "kernel_repo_cache"
+    },
+    "constructor_counts": {
+      "causal-conv1d": 24,
+      "mamba-ssm": 24
+    },
+    "kernel_package_name": "kernels",
+    "kernel_package_version": "0.10.2",
+    "mamba_ssm": {
+      "binary_bytes": 610662256,
+      "binary_path": "/root/.cache/huggingface/hub/kernels--kernels-community--mamba-ssm/snapshots/a80a7604874b108585feb87096a0c86df2a1e5e3/build/torch210-cxx11-cu128-x86_64-linux/_mamba_ssm_cuda_785446d.abi3.so",
+      "binary_sha256": "dc4d76a6323b510e77cfb66b5aa7bb0086c8f5cba238002b9c20bc31ea706587",
+      "module_file": "/root/.cache/huggingface/hub/kernels--kernels-community--mamba-ssm/snapshots/a80a7604874b108585feb87096a0c86df2a1e5e3/build/torch210-cxx11-cu128-x86_64-linux/__init__.py",
+      "scientific_revision": "c8ffc584c147878a6eb978ae0e8db4d116c93a8c",
+      "transport_repo_type": "kernel",
+      "transport_revision": "a80a7604874b108585feb87096a0c86df2a1e5e3",
+      "transport_source": "kernel_repo_cache"
+    },
+    "transformers_kernel_bindings_validated": true,
+    "transport_identity_status": "EXACT_FROZEN_BINARY_SHA256_MATCH"
+  },
+  "native_state_accessed": false,
+  "optimizer_created": false,
+  "prediction_census_summary_sha256": "515723a66f8391e1ee60c262590407ec886106ec250f97348a0f5e033cfd4f6b",
+  "prediction_rows_sha256": "4d47a3f04b831dec175c37d2255f1b7f013db608be95b544ab4c215ab2222a79",
+  "python_version": "3.12.13 (main, Aug  7 2026, 02:25:39) [Clang 22.1.3 ]",
+  "schema_version": "NATIVE_Q1_VITAMINC_MAMBA_PREDICTION_CENSUS_PROVENANCE_V2",
+  "tokenizer_json_sha256": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf",
+  "tokenizer_revision": "40e5d2bd7452abb3ca8fadbafe9131ee0e2c2f37",
+  "tokenizer_snapshot": "/kaggle/input/datasets/terryterry9/vitaminc/tokenizer",
+  "torch_cuda_version": "12.8",
+  "torch_version": "2.10.0+cu128",
+  "training_executed": false,
+  "transformers_version": "5.0.0"
+}
