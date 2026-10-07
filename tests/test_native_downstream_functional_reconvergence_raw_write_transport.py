@@ -445,3 +445,21 @@ def test_expected_execution_counts_bind_example_shards():
     assert (w0["fused_transport_calls"],w1["fused_transport_calls"])==(234,252)
     assert c["total_common_context_batches"]==27; assert c["total_source_gradient_forwards"]==243; assert c["total_fused_transport_calls"]==486
     assert w0["legacy_full_stage_tensor_offloads"]==w1["legacy_full_stage_tensor_offloads"]==0
+
+def test_worker_sha_sidecar_is_real_newline_not_literal_backslash_n():
+    digest = "a" * 64
+    payload = mod._worker_sha_sidecar_bytes(digest)
+    assert payload == (digest + "\n").encode("utf-8")
+    assert payload.endswith(b"\n")
+    assert not payload.endswith(b"\\n")
+
+
+def test_historical_projector_scalar_is_context_only_not_auth_gate():
+    source = inspect.getsource(mod._authentication_from_rows)
+    assert '"gate_required": False' in source
+    assert '"HISTORICAL_OUTCOME_CONTEXT_ONLY"' in source
+    assert 'and projector_check["pass"]' not in source
+    assert (
+        "CURRENT_SEMANTIC_AUTH_WITH_HISTORICAL_PROJECTOR_CONTEXT_NON_GATING"
+        in source
+    )
