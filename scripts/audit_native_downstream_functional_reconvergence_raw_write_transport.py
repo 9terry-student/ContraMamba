@@ -706,6 +706,16 @@ def _stage_final_logits(
     )
 
 
+def _offload_stage_map(
+    stages: Mapping[str, torch.Tensor],
+) -> dict[str, torch.Tensor]:
+    """Detach completed stage tensors and move them off CUDA immediately."""
+    return {
+        name: value.detach().to(device="cpu")
+        for name, value in stages.items()
+    }
+
+
 def _expected_counts() -> dict[str, Any]:
     batches = math.ceil(DEV_ROWS / BATCH_ROWS)
     result = {"batch_rows": BATCH_ROWS, "batches_per_worker": batches, "workers": {}}
@@ -828,6 +838,7 @@ def run_worker(args: argparse.Namespace) -> None:
         stop = min(start + BATCH_ROWS, DEV_ROWS)
         batch_features = legacy._phase_b_batch_features(features, start, stop)
         batch_mask = batch_features["attention_mask"]
+        batch_mask_cpu = batch_mask.detach().to(device="cpu")
         valid_token_seen += int(torch.count_nonzero(batch_mask).item())
 
         context = legacy._phase_b_prepare_common_context(
@@ -859,7 +870,6 @@ def run_worker(args: argparse.Namespace) -> None:
                     context=context,
                     raw_write=raw,
                 )
-                actual_stages[cell] = {k: v.detach() for k, v in stages.items()}
                 actual_logits[cell] = _stage_final_logits(
                     model=model,
                     wrapper=wrapper,
@@ -867,6 +877,8 @@ def run_worker(args: argparse.Namespace) -> None:
                     context=context,
                     stages=stages,
                 ).detach()
+                actual_stages[cell] = _offload_stage_map(stages)
+                del stages
 
         source_gradients: dict[
             tuple[int, int],
@@ -918,31 +930,35 @@ def run_worker(args: argparse.Namespace) -> None:
             require(recon_error <= RAW_RECON_ATOL, f"RAW_RECON:{recon_error}")
 
             with torch.no_grad():
-                visible_stages = legacy.temporal_mechanism_stage_chain(
+                visible_stages_gpu = legacy.temporal_mechanism_stage_chain(
                     wrapper=wrapper,
                     context=context,
                     raw_write=raw_source + visible,
                 )
-                complement_stages = legacy.temporal_mechanism_stage_chain(
-                    wrapper=wrapper,
-                    context=context,
-                    raw_write=raw_source + complement,
-                )
-
                 visible_logits = _stage_final_logits(
                     model=model,
                     wrapper=wrapper,
                     features=batch_features,
                     context=context,
-                    stages=visible_stages,
+                    stages=visible_stages_gpu,
+                )
+                visible_stages = _offload_stage_map(visible_stages_gpu)
+                del visible_stages_gpu
+
+                complement_stages_gpu = legacy.temporal_mechanism_stage_chain(
+                    wrapper=wrapper,
+                    context=context,
+                    raw_write=raw_source + complement,
                 )
                 complement_logits = _stage_final_logits(
                     model=model,
                     wrapper=wrapper,
                     features=batch_features,
                     context=context,
-                    stages=complement_stages,
+                    stages=complement_stages_gpu,
                 )
+                complement_stages = _offload_stage_map(complement_stages_gpu)
+                del complement_stages_gpu
 
             for stage in STAGE_ORDER:
                 sums = _stage_energy_sums(
@@ -950,7 +966,7 @@ def run_worker(args: argparse.Namespace) -> None:
                     full=actual_stages[target][stage],
                     visible=visible_stages[stage],
                     complement=complement_stages[stage],
-                    attention_mask=batch_mask,
+                    attention_mask=batch_mask_cpu,
                 )
                 for key, value in sums.items():
                     acc["stage"][stage][key] += value

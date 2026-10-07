@@ -263,6 +263,45 @@ def test_runtime_requires_exact_head_binding():
     mod.validate_args(args)
 
 
+def test_stage_offload_helper_preserves_values_and_detaches():
+    source = torch.randn(2, 3, 4, requires_grad=True)
+    stages = {
+        "raw_write": source,
+        "recurrent_state": source + 1.0,
+    }
+
+    observed = mod._offload_stage_map(stages)
+
+    assert set(observed) == set(stages)
+
+    for name, value in observed.items():
+        assert value.device.type == "cpu"
+        assert value.requires_grad is False
+        assert torch.equal(value, stages[name].detach().cpu())
+
+
+def test_run_worker_serializes_large_stage_chains_off_cuda():
+    source = inspect.getsource(mod.run_worker)
+
+    assert "batch_mask_cpu = batch_mask.detach().to(device=\"cpu\")" in source
+    assert "actual_stages[cell] = _offload_stage_map(stages)" in source
+
+    assert (
+        "visible_stages = _offload_stage_map(visible_stages_gpu)"
+        in source
+    )
+    assert (
+        "complement_stages = _offload_stage_map(complement_stages_gpu)"
+        in source
+    )
+
+    assert source.index("del visible_stages_gpu") < source.index(
+        "complement_stages_gpu = legacy.temporal_mechanism_stage_chain"
+    )
+
+    assert "attention_mask=batch_mask_cpu" in source
+
+
 def test_expected_execution_counts_bind_worker_partition():
     counts = mod._expected_counts()
     assert mod.BATCH_ROWS == 32
