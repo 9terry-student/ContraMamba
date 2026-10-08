@@ -179,6 +179,69 @@ def test_lag_fft_ignores_noncausal_padding_tail_in_scaling():
     )
 
 
+def test_lag_fft_dyadic_active_prefix_large_span_matches_bruteforce():
+    torch.manual_seed(7)
+    k_count, batch, seq_len, intermediate, state_size = 2, 2, 8, 2, 2
+    width = intermediate * state_size
+    component = torch.randn(k_count, batch, seq_len, width) * 0.2
+    mask = torch.tensor(
+        [[1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 0, 0, 0]],
+        dtype=torch.long,
+    )
+    component[:, 1, 5:] = 0.0
+
+    log_a = torch.full(
+        (batch, seq_len, intermediate, state_size),
+        -0.1,
+        dtype=torch.float32,
+    )
+    log_a[:, 2] = -1000.0
+    log_a[:, 5] = -1000.0
+    shape = SimpleNamespace(
+        intermediate_size=intermediate,
+        state_size=state_size,
+        state_width=width,
+    )
+
+    observed_lag, observed_span = mod._lag_self_energy_fft(
+        component=component,
+        log_a=log_a,
+        attention_mask=mask,
+        shape=shape,
+    )
+
+    manual_raw, _manual_e, manual_s, manual_lag = _manual_component(
+        component.reshape(
+            k_count,
+            batch,
+            seq_len,
+            intermediate,
+            state_size,
+        ),
+        log_a,
+        mask,
+    )
+
+    assert observed_span > math.log(torch.finfo(torch.float64).max)
+    assert torch.isfinite(observed_lag).all()
+    for k in range(k_count):
+        assert observed_lag[k, 0].item() == pytest.approx(
+            manual_raw[k],
+            rel=2e-6,
+            abs=2e-6,
+        )
+        assert observed_lag[k].tolist() == pytest.approx(
+            manual_lag[k],
+            rel=2e-5,
+            abs=2e-6,
+        )
+        assert sum(observed_lag[k].tolist()) == pytest.approx(
+            manual_s[k],
+            rel=2e-5,
+            abs=2e-6,
+        )
+
+
 def test_log_selective_retention_splits_exactly_into_kernel_and_interference():
     acc = mod._empty_orientation(
         "PRIMARY_A",

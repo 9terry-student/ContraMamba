@@ -301,6 +301,180 @@ def _discrete_log_a(
     ).permute(0, 2, 1, 3).contiguous()
 
 
+def _lag_strict_energy_dyadic_fft(
+    *,
+    w_chunk: torch.Tensor,
+    p_chunk: torch.Tensor,
+    target_mask: torch.Tensor,
+    seq_len: int,
+) -> torch.Tensor:
+    """Strict-causal lag energy via overflow-safe batched GPU FFT rectangles.
+
+    The strict triangle tau < t is partitioned dyadically. Each ordered pair
+    belongs to exactly one cross-half rectangle, so pair accounting is not
+    duplicated. Because every source precedes every target in a rectangle,
+    the native stable recurrence gives p_target <= p_source. A per-rectangle
+    shift therefore keeps both exponential factors <= 1 without changing
+    their product.
+    """
+    require(w_chunk.ndim == 4, "DYADIC_W_RANK")
+    k_count, batch, observed_seq_len, width = w_chunk.shape
+    require(observed_seq_len == seq_len, "DYADIC_SEQ_LEN")
+    require(
+        tuple(p_chunk.shape) == (batch, seq_len, width),
+        "DYADIC_P_SHAPE",
+    )
+    require(
+        tuple(target_mask.shape) == (batch, seq_len),
+        "DYADIC_MASK_SHAPE",
+    )
+    require(seq_len > 0, "DYADIC_EMPTY_SEQUENCE")
+
+    padded_len = 1 << ((seq_len - 1).bit_length())
+    if padded_len > seq_len:
+        pad_count = padded_len - seq_len
+        w_pad = torch.cat(
+            (
+                w_chunk,
+                torch.zeros(
+                    (k_count, batch, pad_count, width),
+                    device=w_chunk.device,
+                    dtype=w_chunk.dtype,
+                ),
+            ),
+            dim=2,
+        )
+        p_pad = torch.cat(
+            (
+                p_chunk,
+                p_chunk[:, -1:, :].expand(batch, pad_count, width),
+            ),
+            dim=1,
+        )
+        mask_pad = torch.cat(
+            (
+                target_mask,
+                torch.zeros(
+                    (batch, pad_count),
+                    device=target_mask.device,
+                    dtype=torch.bool,
+                ),
+            ),
+            dim=1,
+        )
+    else:
+        w_pad = w_chunk
+        p_pad = p_chunk
+        mask_pad = target_mask
+
+    strict_lag = torch.zeros(
+        (k_count, seq_len),
+        device=w_chunk.device,
+        dtype=torch.float64,
+    )
+
+    block_len = 2
+    while block_len <= padded_len:
+        half = block_len // 2
+        block_count = padded_len // block_len
+
+        p_blocks = p_pad.reshape(
+            batch,
+            block_count,
+            block_len,
+            width,
+        )
+        w_blocks = w_pad.reshape(
+            k_count,
+            batch,
+            block_count,
+            block_len,
+            width,
+        )
+        mask_blocks = mask_pad.reshape(
+            batch,
+            block_count,
+            block_len,
+        )
+
+        left_p = p_blocks[:, :, :half, :]
+        right_p = p_blocks[:, :, half:, :]
+
+        shift = torch.amin(left_p, dim=2)
+        left_exponent = -left_p + shift[:, :, None, :]
+        right_exponent = right_p - shift[:, :, None, :]
+
+        require(
+            bool(torch.all(left_exponent <= 0.0).item()),
+            "DYADIC_LEFT_SCALE_SIGN",
+        )
+        require(
+            bool(torch.all(right_exponent <= 0.0).item()),
+            "DYADIC_RIGHT_SCALE_SIGN",
+        )
+
+        x_scale = torch.exp(left_exponent).to(dtype=w_chunk.dtype)
+        y_scale = torch.exp(right_exponent).to(dtype=w_chunk.dtype)
+        require(
+            bool(torch.all(torch.isfinite(x_scale)).item()),
+            "DYADIC_X_SCALE_NONFINITE",
+        )
+        require(
+            bool(torch.all(torch.isfinite(y_scale)).item()),
+            "DYADIC_Y_SCALE_NONFINITE",
+        )
+
+        source = (
+            w_blocks[:, :, :, :half, :].square()
+            * x_scale.unsqueeze(0)
+        )
+        target = torch.where(
+            mask_blocks[:, :, half:, None],
+            y_scale,
+            torch.zeros_like(y_scale),
+        )
+
+        n_fft = 1 << ((2 * half - 1).bit_length())
+        source_fft = torch.fft.rfft(
+            source,
+            n=n_fft,
+            dim=3,
+        )
+        target_fft = torch.fft.rfft(
+            target,
+            n=n_fft,
+            dim=2,
+        ).unsqueeze(0)
+        correlation = torch.fft.irfft(
+            torch.conj(source_fft) * target_fft,
+            n=n_fft,
+            dim=3,
+        )
+        correlation_sum = torch.sum(
+            correlation,
+            dim=(1, 2, 4),
+            dtype=torch.float64,
+        )
+
+        negative_stop = min(half, seq_len)
+        if negative_stop > 1:
+            strict_lag[:, 1:negative_stop] += correlation_sum[
+                :,
+                n_fft + 1 - half : n_fft + negative_stop - half,
+            ]
+
+        positive_stop = min(block_len, seq_len)
+        if half < positive_stop:
+            strict_lag[:, half:positive_stop] += correlation_sum[
+                :,
+                : positive_stop - half,
+            ]
+
+        block_len *= 2
+
+    return strict_lag
+
+
 def _lag_self_energy_fft(
     *,
     component: torch.Tensor,
@@ -320,13 +494,17 @@ def _lag_self_energy_fft(
         tuple(attention_mask.shape) == (batch, seq_len),
         "LAG_MASK_SHAPE",
     )
+    require(
+        bool(torch.all(torch.isfinite(log_a)).item()),
+        "LAG_LOG_A_NONFINITE",
+    )
+    require(
+        bool(torch.all(log_a <= 0.0).item()),
+        "LAG_LOG_A_POSITIVE",
+    )
 
     w = component.reshape(k_count, batch, seq_len, width)
-    prefix = torch.cumsum(
-        log_a.reshape(batch, seq_len, width),
-        dim=1,
-    )
-    p2 = 2.0 * prefix
+    log_a_flat = log_a.reshape(batch, seq_len, width)
     target_mask = attention_mask.to(device=component.device, dtype=torch.bool)
     source_active = (
         torch.flip(
@@ -353,7 +531,10 @@ def _lag_self_energy_fft(
 
     for start in range(0, width, FFT_CHUNK_WIDTH):
         stop = min(start + FFT_CHUNK_WIDTH, width)
-        p = p2[:, :, start:stop]
+        p = 2.0 * torch.cumsum(
+            log_a_flat[:, :, start:stop].to(dtype=torch.float64),
+            dim=1,
+        )
         active = source_active[:, :, None]
         p_max = torch.amax(
             torch.where(active, p, torch.full_like(p, -torch.inf)),
@@ -372,49 +553,71 @@ def _lag_self_energy_fft(
         max_half_span = max(max_half_span, chunk_max)
 
         calc_dtype = torch.float64 if chunk_max > 60.0 else torch.float32
-        p_calc = p.to(dtype=calc_dtype)
-        center = 0.5 * (
-            p_max.to(dtype=calc_dtype)
-            + p_min.to(dtype=calc_dtype)
-        )
-        p_safe = torch.where(
-            active,
-            p_calc,
-            center[:, None, :],
-        )
+        centered_exp_limit = math.log(torch.finfo(calc_dtype).max)
+        w_native = w[:, :, :, start:stop]
 
-        x_scale = torch.exp(-p_safe + center[:, None, :])
-        y_scale = torch.exp(p_safe - center[:, None, :])
-        require(
-            bool(torch.all(torch.isfinite(x_scale)).item()),
-            f"LAG_X_SCALE_NONFINITE:{chunk_max}",
-        )
-        require(
-            bool(torch.all(torch.isfinite(y_scale)).item()),
-            f"LAG_Y_SCALE_NONFINITE:{chunk_max}",
-        )
-        y = torch.where(
-            target_mask[:, :, None],
-            y_scale,
-            torch.zeros_like(y_scale),
-        )
+        if chunk_max <= centered_exp_limit:
+            w_chunk = w_native.to(dtype=calc_dtype)
+            p_calc = p.to(dtype=calc_dtype)
+            center = 0.5 * (
+                p_max.to(dtype=calc_dtype)
+                + p_min.to(dtype=calc_dtype)
+            )
+            p_safe = torch.where(
+                active,
+                p_calc,
+                center[:, None, :],
+            )
 
-        w_chunk = w[:, :, :, start:stop].to(dtype=calc_dtype)
-        w_chunk = torch.where(
-            source_active[None, :, :, None],
-            w_chunk,
-            torch.zeros_like(w_chunk),
-        )
-        x = w_chunk.square() * x_scale.unsqueeze(0)
+            x_scale = torch.exp(-p_safe + center[:, None, :])
+            y_scale = torch.exp(p_safe - center[:, None, :])
+            require(
+                bool(torch.all(torch.isfinite(x_scale)).item()),
+                f"LAG_X_SCALE_NONFINITE:{chunk_max}",
+            )
+            require(
+                bool(torch.all(torch.isfinite(y_scale)).item()),
+                f"LAG_Y_SCALE_NONFINITE:{chunk_max}",
+            )
+            y = torch.where(
+                target_mask[:, :, None],
+                y_scale,
+                torch.zeros_like(y_scale),
+            )
 
-        x_fft = torch.fft.rfft(x, n=n_fft, dim=2)
-        y_fft = torch.fft.rfft(y, n=n_fft, dim=1).unsqueeze(0)
-        corr = torch.fft.irfft(
-            torch.conj(x_fft) * y_fft,
-            n=n_fft,
-            dim=2,
-        )[:, :, :seq_len, :]
-        lag += torch.sum(corr, dim=(1, 3), dtype=torch.float64)
+            w_active = torch.where(
+                source_active[None, :, :, None],
+                w_chunk,
+                torch.zeros_like(w_chunk),
+            )
+            x = w_active.square() * x_scale.unsqueeze(0)
+
+            x_fft = torch.fft.rfft(x, n=n_fft, dim=2)
+            y_fft = torch.fft.rfft(y, n=n_fft, dim=1).unsqueeze(0)
+            corr = torch.fft.irfft(
+                torch.conj(x_fft) * y_fft,
+                n=n_fft,
+                dim=2,
+            )[:, :, :seq_len, :]
+            lag += torch.sum(
+                corr,
+                dim=(1, 3),
+                dtype=torch.float64,
+            )
+            continue
+
+        lag[:, 0] += torch.sum(
+            w_native.to(dtype=torch.float64).square()
+            * target_mask[None, :, :, None],
+            dim=(1, 2, 3),
+            dtype=torch.float64,
+        )
+        lag += _lag_strict_energy_dyadic_fft(
+            w_chunk=w_native.to(dtype=torch.float32),
+            p_chunk=p,
+            target_mask=target_mask,
+            seq_len=seq_len,
+        )
 
     lag.clamp_(min=0.0)
     return lag, max_half_span
