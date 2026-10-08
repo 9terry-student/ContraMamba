@@ -950,6 +950,9 @@ def _finalize_orientation(
         "source": str(accumulator["source"]),
         "target": str(accumulator["target"]),
         "example_count": int(accumulator["example_count"]),
+        "raw_reconstruction_max_abs": float(
+            accumulator["raw_reconstruction_max_abs"]
+        ),
         **values,
         "C_visible": c_visible,
         "C_complement": c_complement,

@@ -485,3 +485,40 @@ def test_worker_sha_sidecar_uses_real_newline():
     payload = mod._worker_sha_sidecar_bytes(digest)
     assert payload == (digest + "\n").encode("utf-8")
     assert not payload.endswith(b"\\n")
+
+def test_finalize_orientation_preserves_raw_reconstruction_max_abs():
+    accumulator = {
+        "group": "PRIMARY_A",
+        "source": "synthetic_source",
+        "target": "synthetic_target",
+        "example_count": mod.DEV_ROWS,
+        "raw_reconstruction_max_abs": 1.25e-7,
+        "R_visible": 10.0,
+        "R_complement": 20.0,
+        "S_visible": 4.0,
+        "S_complement": 5.0,
+        "E_visible": 6.0,
+        "E_complement": 10.0,
+        "pair_gap_C_visible": [2.0],
+        "pair_gap_C_complement": [5.0],
+        "pair_gap_C_reconstruction_abs_max": 0.0,
+        "pair_gap_Q_reconstruction_abs_max": 0.0,
+        "pair_gap_fft_half_log_span_max": 0.5,
+    }
+    reference = {
+        "R_visible": 10.0,
+        "R_complement": 20.0,
+        "S_visible": 4.0,
+        "S_complement": 5.0,
+        "E_visible": 6.0,
+        "E_complement": 10.0,
+        "C_visible": 2.0,
+        "C_complement": 5.0,
+        "Q_visible": 1.5,
+        "Q_complement": 2.0,
+        "L_interference": math.log(2.0 / 1.5),
+    }
+
+    row = mod._finalize_orientation(accumulator, reference)
+
+    assert row["raw_reconstruction_max_abs"] == pytest.approx(1.25e-7, abs=0.0)
