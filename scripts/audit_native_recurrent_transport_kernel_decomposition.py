@@ -327,7 +327,21 @@ def _lag_self_energy_fft(
         dim=1,
     )
     p2 = 2.0 * prefix
-    mask = attention_mask.to(device=component.device, dtype=component.dtype)
+    target_mask = attention_mask.to(device=component.device, dtype=torch.bool)
+    source_active = (
+        torch.flip(
+            torch.cumsum(
+                torch.flip(target_mask.to(dtype=torch.int64), dims=(1,)),
+                dim=1,
+            ),
+            dims=(1,),
+        )
+        > 0
+    )
+    require(
+        bool(torch.all(torch.any(source_active, dim=1)).item()),
+        "LAG_EMPTY_VALID_SEQUENCE",
+    )
     n_fft = 1 << ((2 * seq_len - 1).bit_length())
 
     lag = torch.zeros(
@@ -340,8 +354,19 @@ def _lag_self_energy_fft(
     for start in range(0, width, FFT_CHUNK_WIDTH):
         stop = min(start + FFT_CHUNK_WIDTH, width)
         p = p2[:, :, start:stop]
-        p_max = torch.amax(p, dim=1)
-        p_min = torch.amin(p, dim=1)
+        active = source_active[:, :, None]
+        p_max = torch.amax(
+            torch.where(active, p, torch.full_like(p, -torch.inf)),
+            dim=1,
+        )
+        p_min = torch.amin(
+            torch.where(active, p, torch.full_like(p, torch.inf)),
+            dim=1,
+        )
+        require(
+            bool(torch.all(torch.isfinite(p_max) & torch.isfinite(p_min)).item()),
+            "LAG_ACTIVE_PREFIX_NONFINITE",
+        )
         half_span = 0.5 * (p_max - p_min)
         chunk_max = float(torch.amax(half_span).item())
         max_half_span = max(max_half_span, chunk_max)
@@ -349,15 +374,37 @@ def _lag_self_energy_fft(
         calc_dtype = torch.float64 if chunk_max > 60.0 else torch.float32
         p_calc = p.to(dtype=calc_dtype)
         center = 0.5 * (
-            torch.amax(p_calc, dim=1)
-            + torch.amin(p_calc, dim=1)
+            p_max.to(dtype=calc_dtype)
+            + p_min.to(dtype=calc_dtype)
+        )
+        p_safe = torch.where(
+            active,
+            p_calc,
+            center[:, None, :],
         )
 
-        x_scale = torch.exp(-p_calc + center[:, None, :])
-        y = torch.exp(p_calc - center[:, None, :])
-        y = y * mask[:, :, None].to(dtype=calc_dtype)
+        x_scale = torch.exp(-p_safe + center[:, None, :])
+        y_scale = torch.exp(p_safe - center[:, None, :])
+        require(
+            bool(torch.all(torch.isfinite(x_scale)).item()),
+            f"LAG_X_SCALE_NONFINITE:{chunk_max}",
+        )
+        require(
+            bool(torch.all(torch.isfinite(y_scale)).item()),
+            f"LAG_Y_SCALE_NONFINITE:{chunk_max}",
+        )
+        y = torch.where(
+            target_mask[:, :, None],
+            y_scale,
+            torch.zeros_like(y_scale),
+        )
 
         w_chunk = w[:, :, :, start:stop].to(dtype=calc_dtype)
+        w_chunk = torch.where(
+            source_active[None, :, :, None],
+            w_chunk,
+            torch.zeros_like(w_chunk),
+        )
         x = w_chunk.square() * x_scale.unsqueeze(0)
 
         x_fft = torch.fft.rfft(x, n=n_fft, dim=2)

@@ -124,6 +124,61 @@ def test_exact_recurrence_self_and_lag_decomposition_matches_bruteforce():
         )
 
 
+def test_lag_fft_ignores_noncausal_padding_tail_in_scaling():
+    shape = SimpleNamespace(
+        intermediate_size=1,
+        state_size=1,
+    )
+    component = torch.tensor(
+        [[[[1.0], [2.0], [3.0], [4.0], [9.0], [10.0], [11.0], [12.0]]]],
+        dtype=torch.float32,
+    )
+    attention_mask = torch.tensor(
+        [[1, 1, 1, 1, 0, 0, 0, 0]],
+        dtype=torch.long,
+    )
+    log_a = torch.tensor(
+        [[
+            [[-0.05]],
+            [[-0.05]],
+            [[-0.05]],
+            [[-0.05]],
+            [[-500.0]],
+            [[-500.0]],
+            [[-500.0]],
+            [[-500.0]],
+        ]],
+        dtype=torch.float32,
+    )
+
+    observed, observed_span = mod._lag_self_energy_fft(
+        component=component,
+        log_a=log_a,
+        attention_mask=attention_mask,
+        shape=shape,
+    )
+    reference, reference_span = mod._lag_self_energy_fft(
+        component=component[:, :, :4],
+        log_a=log_a[:, :4],
+        attention_mask=attention_mask[:, :4],
+        shape=shape,
+    )
+
+    assert torch.isfinite(observed).all()
+    assert observed_span == pytest.approx(reference_span, rel=0.0, abs=1e-7)
+    assert observed[0, :4].tolist() == pytest.approx(
+        reference[0].tolist(),
+        rel=2e-6,
+        abs=2e-6,
+    )
+    assert observed[0, 0].item() == pytest.approx(30.0, rel=2e-6, abs=2e-6)
+    assert observed[0, 4:].tolist() == pytest.approx(
+        [0.0, 0.0, 0.0, 0.0],
+        rel=0.0,
+        abs=5e-6,
+    )
+
+
 def test_log_selective_retention_splits_exactly_into_kernel_and_interference():
     acc = mod._empty_orientation(
         "PRIMARY_A",
