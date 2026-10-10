@@ -747,14 +747,17 @@ def _spectral_pair_matrix(
     class_count, k_count, _batch, _freq, _width = source_fft.shape
     require(class_count == len(FINE_CLASSES), "SPECTRAL_CLASS_COUNT")
 
-    # Linear reduction in frequency space avoids materializing 25 full
-    # time-domain correlation tensors. The small aggregate spectrum is promoted
-    # to complex128 before inverse FFT.
+    # Avoid materializing 25 time-domain correlation tensors. Promote FFT
+    # coefficients before the batch/channel contraction: casting the reduced
+    # spectrum afterward cannot recover complex64 summation roundoff.
+    source_high = torch.conj(source_fft).to(dtype=torch.complex128)
+    target_high = target_fft.to(dtype=torch.complex128)
     spectrum = torch.einsum(
         "akbfw,ckbfw->ackf",
-        torch.conj(source_fft),
-        target_fft,
-    ).to(torch.complex128)
+        source_high,
+        target_high,
+    )
+    del source_high, target_high
     correlation = torch.fft.irfft(
         spectrum,
         n=1 << ((2 * seq_len - 1).bit_length()),

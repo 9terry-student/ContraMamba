@@ -396,6 +396,111 @@ def test_large_span_fallback_reconstructs_all_three_parent_regions():
     )
 
 
+def test_fine_spectral_matrix_uses_complex128_accumulation_before_reduction():
+    # Same precomputed complex64 FFT coefficients on all comparisons; the
+    # recurrence, classes, pair geometry, and normalization are unchanged.
+    k_count, batch, seq_len, width = 2, 8, 32, 64
+    generator = torch.Generator(device="cpu").manual_seed(1903)
+    raw = 0.1 * torch.randn(
+        k_count, batch, seq_len, width,
+        generator=generator,
+        dtype=torch.float32,
+    )
+    class_ids = {
+        "CLAIM": torch.randint(0, 5, (batch, seq_len), generator=generator),
+        "EVIDENCE": torch.randint(0, 5, (batch, seq_len), generator=generator),
+    }
+    class_stacks = {
+        side: torch.stack([
+            torch.where(
+                (class_ids[side] == index)[None, :, :, None],
+                raw,
+                torch.zeros_like(raw),
+            )
+            for index in range(len(audit.FINE_CLASSES))
+        ])
+        for side in ("CLAIM", "EVIDENCE")
+    }
+    x_scale = torch.exp(
+        torch.linspace(-0.4, 0.4, seq_len, dtype=torch.float32)
+    )[None, :, None].expand(batch, seq_len, width)
+    y_scale = 1.0 / x_scale
+    survival = torch.ones(batch, seq_len, width, dtype=torch.float32)
+    n_fft = 1 << ((2 * seq_len - 1).bit_length())
+    ffts = {
+        side: audit._fast_class_ffts(
+            class_stack=class_stacks[side],
+            x_scale=x_scale,
+            y_scale=y_scale,
+            survival_chunk=survival,
+            n_fft=n_fft,
+        )
+        for side in ("CLAIM", "EVIDENCE")
+    }
+
+    for parent in audit.PARENT_PAIR_NAMES:
+        left, right = parent.split("->")
+        source_fft = ffts[left][0]
+        target_fft = ffts[right][1]
+        observed = audit._spectral_pair_matrix(
+            source_fft, target_fft, seq_len=seq_len,
+        )
+        assert observed.dtype == torch.float64
+        assert observed.shape == (
+            len(audit.FINE_CLASSES), len(audit.FINE_CLASSES),
+            k_count, seq_len - 1,
+        )
+
+        reference_spectrum = torch.einsum(
+            "akbfw,ckbfw->ackf",
+            torch.conj(source_fft).to(torch.complex128),
+            target_fft.to(torch.complex128),
+        )
+        expected = 2.0 * torch.fft.irfft(
+            reference_spectrum, n=n_fft, dim=-1,
+        )[..., 1:seq_len]
+        torch.testing.assert_close(observed, expected, rtol=0.0, atol=1e-12)
+
+        old_spectrum = torch.einsum(
+            "akbfw,ckbfw->ackf", torch.conj(source_fft), target_fft,
+        ).to(torch.complex128)
+        old = 2.0 * torch.fft.irfft(
+            old_spectrum, n=n_fft, dim=-1,
+        )[..., 1:seq_len]
+
+        # Independent float64 time-domain pair-sum for nine targeted cells
+        # across the three parent regions. Assert an actual precision benefit.
+        for source_index, target_index in ((0, 0), (3, 2), (4, 4)):
+            source = (
+                class_stacks[left][source_index] * x_scale.unsqueeze(0)
+            ).to(torch.float64)
+            target = (
+                class_stacks[right][target_index]
+                * survival.unsqueeze(0) * y_scale.unsqueeze(0)
+            ).to(torch.float64)
+            direct = torch.stack([
+                2.0 * torch.sum(
+                    source[:, :, :seq_len - gap, :]
+                    * target[:, :, gap:, :],
+                    dim=(1, 2, 3),
+                    dtype=torch.float64,
+                )
+                for gap in range(1, seq_len)
+            ], dim=1)
+            improved_error = float(
+                (observed[source_index, target_index] - direct)
+                .abs().max().item()
+            )
+            original_error = float(
+                (old[source_index, target_index] - direct)
+                .abs().max().item()
+            )
+            assert improved_error < original_error, (
+                parent, source_index, target_index,
+                improved_error, original_error,
+            )
+
+
 def test_window_sums_are_frozen_coarse_windows():
     vector = list(range(1, audit.p3a.MAX_LENGTH))
     observed = audit.coarse._window_sums(vector)
