@@ -1,0 +1,40 @@
+{
+  "execution_head": "9135810af6c607cc61a7c6b4197e4cebf2eaa059",
+  "import_method": "VERIFIED_DIRECT_COLLECT_NOT_CM_IMPORT",
+  "imported_utc": "2026-10-12T02:47:25.594039+00:00",
+  "independent_science_validation": "PENDING",
+  "local_commit_or_push_performed": false,
+  "official_handoff_v4": false,
+  "original_file_sha256": {
+    "artifacts/worker0.log": "c1ecab292a1d4d442ec8e91dfdc6754be0c62581b2b7ae00a48f51858c72c4c0",
+    "artifacts/worker0/worker_result.json": "c87412e111b70da6c4d4ede92235ccd3fa15b727d13852c5e9c6fabb70a2d1d4",
+    "artifacts/worker0/worker_result.sha256": "46349d2a8c8ddf3b44f02ba4016e1b9d38865e5533b0b18b9ca40a8631b172d8",
+    "artifacts/worker1.log": "c75c8a9272871b37724c6e0c9d459310e41ab4cb3778e34ed868963f5398b079",
+    "artifacts/worker1/worker_result.json": "64a9c8300fdfc8cd260e4661557cab8b5772424f6af692c9e4848b4b0286864d",
+    "artifacts/worker1/worker_result.sha256": "073bc9e801c788c8f4586c83c3b0c37eeaa5aca8b165a7e0604f882c9bc1b062",
+    "baseline/gen5-v10-0dd2ba6-r1-r2-preserved.zip": "9b5c2478840cc153acc301499feccdc6417154905e0f9bb641807c247c64f1fe",
+    "collect_manifest.json": "65f52ecd183d644788abe0b9c9e8b57b9e96977181a2164ac863456c5698a5a5"
+  },
+  "original_zip_filename": "gen5-v10-full-hybrid-9135810-r1-collect.zip",
+  "original_zip_sha256": "e9aa78842f0fa1822fa8c2a826bbbabe60b636ecd8bfea911c2f8983e9ae6038",
+  "run_name": "gen5-v10-full-hybrid-9135810-r1",
+  "run_registered_with_cm": false,
+  "schema_version": "GEN5_V10_DIRECT_COLLECT_LOCAL_IMPORT_AUDIT_V1",
+  "source_collection_schema": "GEN5_V10_FULL_HYBRID_COLLECT_V1",
+  "worker_summary": {
+    "0": {
+      "groups": 234,
+      "reducer_seconds": 3420.293654555001,
+      "result_sha256": "c87412e111b70da6c4d4ede92235ccd3fa15b727d13852c5e9c6fabb70a2d1d4",
+      "rows": 416,
+      "valid_tokens": 29765
+    },
+    "1": {
+      "groups": 252,
+      "reducer_seconds": 4185.073472874998,
+      "result_sha256": "64a9c8300fdfc8cd260e4661557cab8b5772424f6af692c9e4848b4b0286864d",
+      "rows": 424,
+      "valid_tokens": 30329
+    }
+  }
+}

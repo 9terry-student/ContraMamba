@@ -1,0 +1,47 @@
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=18/252 batch_rows=32 group_sec=14.574
+GEN5_RECURRENT_GENERATOR_ANCHOR_PROGRESS worker=1 batch=1/14 shard_rows=32/424
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=36/252 batch_rows=32 group_sec=14.555
+GEN5_RECURRENT_GENERATOR_ANCHOR_PROGRESS worker=1 batch=2/14 shard_rows=64/424
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=54/252 batch_rows=32 group_sec=14.547
+GEN5_RECURRENT_GENERATOR_ANCHOR_PROGRESS worker=1 batch=3/14 shard_rows=96/424
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=72/252 batch_rows=32 group_sec=14.607
+GEN5_RECURRENT_GENERATOR_ANCHOR_PROGRESS worker=1 batch=4/14 shard_rows=128/424
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=90/252 batch_rows=32 group_sec=14.587
+GEN5_RECURRENT_GENERATOR_ANCHOR_PROGRESS worker=1 batch=5/14 shard_rows=160/424
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=108/252 batch_rows=32 group_sec=14.578
+GEN5_RECURRENT_GENERATOR_ANCHOR_PROGRESS worker=1 batch=6/14 shard_rows=192/424
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=126/252 batch_rows=32 group_sec=14.579
+GEN5_RECURRENT_GENERATOR_ANCHOR_PROGRESS worker=1 batch=7/14 shard_rows=224/424
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=144/252 batch_rows=32 group_sec=14.606
+GEN5_RECURRENT_GENERATOR_ANCHOR_PROGRESS worker=1 batch=8/14 shard_rows=256/424
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=162/252 batch_rows=32 group_sec=14.578
+GEN5_RECURRENT_GENERATOR_ANCHOR_PROGRESS worker=1 batch=9/14 shard_rows=288/424
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=180/252 batch_rows=32 group_sec=14.583
+GEN5_RECURRENT_GENERATOR_ANCHOR_PROGRESS worker=1 batch=10/14 shard_rows=320/424
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=198/252 batch_rows=32 group_sec=14.581
+GEN5_RECURRENT_GENERATOR_ANCHOR_PROGRESS worker=1 batch=11/14 shard_rows=352/424
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=216/252 batch_rows=32 group_sec=14.555
+GEN5_RECURRENT_GENERATOR_ANCHOR_PROGRESS worker=1 batch=12/14 shard_rows=384/424
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=234/252 batch_rows=32 group_sec=14.570
+GEN5_RECURRENT_GENERATOR_ANCHOR_PROGRESS worker=1 batch=13/14 shard_rows=416/424
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=235/252 batch_rows=8 group_sec=43.135
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=236/252 batch_rows=8 group_sec=43.025
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=237/252 batch_rows=8 group_sec=43.019
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=238/252 batch_rows=8 group_sec=43.028
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=239/252 batch_rows=8 group_sec=43.025
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=240/252 batch_rows=8 group_sec=42.995
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=241/252 batch_rows=8 group_sec=42.998
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=242/252 batch_rows=8 group_sec=43.000
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=243/252 batch_rows=8 group_sec=42.990
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=244/252 batch_rows=8 group_sec=43.065
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=245/252 batch_rows=8 group_sec=43.146
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=246/252 batch_rows=8 group_sec=43.195
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=247/252 batch_rows=8 group_sec=43.062
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=248/252 batch_rows=8 group_sec=43.034
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=249/252 batch_rows=8 group_sec=43.004
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=250/252 batch_rows=8 group_sec=43.025
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=251/252 batch_rows=8 group_sec=43.071
+GEN5_V10_FULL_GROUP_PROGRESS worker=1 groups=252/252 batch_rows=8 group_sec=43.026
+GEN5_RECURRENT_GENERATOR_ANCHOR_PROGRESS worker=1 batch=14/14 shard_rows=424/424
+GEN5_NATIVE_RECURRENT_GENERATOR_ANCHOR_WORKER_PASS worker=1 rows=416:840 orientations=36 sha256=64a9c8300fdfc8cd260e4661557cab8b5772424f6af692c9e4848b4b0286864d
+GEN5_V10_FULL_WORKER_CANDIDATE_COMPLETED_NOT_SCIENCE_PASS worker=1 groups=252 elapsed_sec=4502.693
