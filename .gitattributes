@@ -1,1 +1,4 @@
 scripts/train_controlled_v6b_minimal_gen3_grouped_snapshot.py -diff
+/reports/gen5_v10_two_locus_imports/** -text whitespace=cr-at-eol
+/reports/gen5_v10_two_locus_imports/*/analysis/*.md whitespace=-blank-at-eol,cr-at-eol
+/reports/gen5_v10_two_locus_bounded_evidence_analysis_report_candidate.md -text whitespace=-blank-at-eol,cr-at-eol

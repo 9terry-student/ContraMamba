@@ -1,0 +1,428 @@
+{
+  "E0_IMPORTED_ARTIFACT_AND_SOURCE_CLAIM_CHECKS": "PASS",
+  "E1_IN_PROCESS_FROZEN_GUARDS_AND_CAPTURE_CHECKS": "PASS_CLAIM_AND_RECORDED_VALUES",
+  "LEGACY_FULL_RECORD": "FAIL",
+  "POPULATION_SCOPE": "NOT_EVALUATED",
+  "SCIENTIFIC_LIMITATIONS": [
+    "No independent on-disk attestation of original live tensor bytes vs upstream model; provenance remains bounded.",
+    "Original projector guard outcomes are in-process success reports; raw tensors not exported for external replay.",
+    "V3 strict record schema does not export every possible population/frozen sidecar field.",
+    "Near-zero denominator context is only a candidate explanation for E3 divergence.",
+    "No full 840-row FFT population equivalence inference is licensed."
+  ],
+  "V10_E0_PROVENANCE": "NOT_EVALUATED",
+  "V10_E1_FROZEN_GUARDS": "NOT_EVALUATED",
+  "V10_E2_BOUNDED_NUMERIC": "PASS_PROVISIONAL",
+  "V10_E2_PAYLOAD": "NOT_EVALUATED",
+  "V10_E3_BOUNDED_RAW": "DIVERGENCE",
+  "V10_E3_DIAGNOSTICS": "NOT_EVALUATED",
+  "V10_PAYLOAD_EQUIVALENCE": "NOT_EVALUATED",
+  "coverage": {
+    "input_captures_per_locus": 3,
+    "live_input_tensors_per_locus": 17,
+    "normalized_H_by_gap": 76200,
+    "normalized_H_windows": 3000,
+    "raw_numeric_comparisons": 82408,
+    "records_per_engine": 8,
+    "samples": 2
+  },
+  "execution_head": "7f74a84ed19e49727e3adf69c016af9e4339fb86",
+  "imported_sidecar_and_summary_identity": "PASS",
+  "run_name": "gen5-v10-two-locus-7f74a84-r1",
+  "schema_version": "GEN5_V10_TWO_LOCUS_IMPORTED_BOUNDED_STATIC_AUDIT_V1",
+  "scope": "EXACTLY_TWO_B32_K4_PAIRED_GPU_LOCUS_RECORDS_NOT_POPULATION",
+  "workers": {
+    "gpu0": {
+      "bounded_call_counts": {
+        "anchor_partition": 1,
+        "batch_features": 1,
+        "context": 1,
+        "fine_masks": 1,
+        "frozen_full_reducer": 1,
+        "orientation_accumulator": 2,
+        "project_group": 1,
+        "projector_pinv": 1,
+        "raw_write": 9,
+        "source_gradient": 1
+      },
+      "captured_input": {
+        "captures": 3,
+        "geometry": "K4_B32_S128_W24576",
+        "matching_tensor_digests": 51,
+        "tensors": 17
+      },
+      "dispatch": {
+        "batch_rows": 32,
+        "fast_chunks": 0,
+        "frozen_tail_calls": 0,
+        "gemm_chunks": 96,
+        "max_half_span": 3107336.375252962,
+        "mode": "CHUNKWISE_HYBRID",
+        "total_chunks": 96
+      },
+      "input_lineage_claims": {
+        "checkpoint_sha256": "1ff3fcf2ebd754ab6f9483d6a9982b9b04b9a4eb3357f9f8cdbe2b30399e7d2f",
+        "dev_encoding_sha256": "e3162804bfd184907ee1b22b3f4b4cf3ecee1069fe55661a1a4dbaeecb2cca51",
+        "dev_order_sha256": "b42f64ec4961907fb59eb5fdf9e2e1714649b7952e551c4e9abf7e99c1456e25"
+      },
+      "locus": "gpu0",
+      "memory": {
+        "min_driver_free_GiB": 2.069,
+        "observed_samples": 20,
+        "peak_allocated_GiB": 9.931
+      },
+      "normalized_H_comparison": {
+        "H_by_gap": 38100,
+        "H_windows": 1500,
+        "failures": 0,
+        "first_failures": []
+      },
+      "raw_record_comparison": {
+        "diagnostic_failures": 4,
+        "first_failures": [
+          {
+            "abs_error": 40.35847453168356,
+            "frozen_value": 41.35847453168356,
+            "kind": "DIAGNOSTIC",
+            "path": "records[0].fine_parent_reconstruction_rel_max",
+            "rel_error": 0.9758211585092693,
+            "v10_value": 1.0
+          },
+          {
+            "abs_error": 102.90377393913158,
+            "frozen_value": 103.90377393913158,
+            "kind": "DIAGNOSTIC",
+            "path": "records[1].fine_parent_reconstruction_rel_max",
+            "rel_error": 0.9903757105051274,
+            "v10_value": 1.0
+          },
+          {
+            "abs_error": 1.8281099616324443,
+            "frozen_value": 2.8281099616324443,
+            "kind": "DIAGNOSTIC",
+            "path": "records[2].fine_parent_reconstruction_rel_max",
+            "rel_error": 0.6464069595714097,
+            "v10_value": 1.0
+          },
+          {
+            "abs_error": 21.964410385551865,
+            "frozen_value": 22.964410385551865,
+            "kind": "DIAGNOSTIC",
+            "path": "records[3].fine_parent_reconstruction_rel_max",
+            "rel_error": 0.9564543577121773,
+            "v10_value": 1.0
+          }
+        ],
+        "integers": 0,
+        "legacy_failures": 4,
+        "payload_failures": 0,
+        "raw_numeric": 41204
+      },
+      "reconstruction_rel_max_divergences": [
+        {
+          "frozen_rel_max": 41.35847453168356,
+          "frozen_worst": {
+            "abs_residual": 3.83515481537947e-11,
+            "gap": 66,
+            "near_zero_coarse_1e-12": true,
+            "normalized_coarse": -9.272960037347284e-13,
+            "normalized_sum_fine": 3.7424252150059976e-11,
+            "parent": "EVIDENCE->EVIDENCE",
+            "relative_residual": 41.358474531683555
+          },
+          "k": 0,
+          "v10_rel_max": 1.0,
+          "v10_worst": {
+            "abs_residual": 1.8536427403695333e-10,
+            "gap": 39,
+            "near_zero_coarse_1e-12": false,
+            "normalized_coarse": 1.8536427403695333e-10,
+            "normalized_sum_fine": 0.0,
+            "parent": "CLAIM->CLAIM",
+            "relative_residual": 1.0
+          }
+        },
+        {
+          "frozen_rel_max": 103.90377393913158,
+          "frozen_worst": {
+            "abs_residual": 3.496512912514444e-12,
+            "gap": 103,
+            "near_zero_coarse_1e-12": true,
+            "normalized_coarse": -3.3651452492599104e-14,
+            "normalized_sum_fine": -3.5301643650070427e-12,
+            "parent": "CLAIM->EVIDENCE",
+            "relative_residual": 103.9037739391316
+          },
+          "k": 1,
+          "v10_rel_max": 1.0,
+          "v10_worst": {
+            "abs_residual": 5.634208124268707e-11,
+            "gap": 39,
+            "near_zero_coarse_1e-12": false,
+            "normalized_coarse": 5.634208124268707e-11,
+            "normalized_sum_fine": 0.0,
+            "parent": "CLAIM->CLAIM",
+            "relative_residual": 1.0
+          }
+        },
+        {
+          "frozen_rel_max": 2.8281099616324443,
+          "frozen_worst": {
+            "abs_residual": 5.513264177040143e-12,
+            "gap": 47,
+            "near_zero_coarse_1e-12": false,
+            "normalized_coarse": -1.9494518430456537e-12,
+            "normalized_sum_fine": 3.563812333994489e-12,
+            "parent": "EVIDENCE->EVIDENCE",
+            "relative_residual": 2.8281099616324448
+          },
+          "k": 2,
+          "v10_rel_max": 1.0,
+          "v10_worst": {
+            "abs_residual": 1.3504839849708634e-10,
+            "gap": 39,
+            "near_zero_coarse_1e-12": false,
+            "normalized_coarse": -1.3504839849708634e-10,
+            "normalized_sum_fine": 0.0,
+            "parent": "CLAIM->CLAIM",
+            "relative_residual": 1.0
+          }
+        },
+        {
+          "frozen_rel_max": 22.964410385551865,
+          "frozen_worst": {
+            "abs_residual": 1.9294000941118077e-11,
+            "gap": 47,
+            "near_zero_coarse_1e-12": true,
+            "normalized_coarse": 8.401696632828393e-13,
+            "normalized_sum_fine": 2.0134170604400917e-11,
+            "parent": "EVIDENCE->EVIDENCE",
+            "relative_residual": 22.9644103855519
+          },
+          "k": 3,
+          "v10_rel_max": 1.0,
+          "v10_worst": {
+            "abs_residual": 3.102097062361546e-10,
+            "gap": 39,
+            "near_zero_coarse_1e-12": false,
+            "normalized_coarse": -3.102097062361546e-10,
+            "normalized_sum_fine": 0.0,
+            "parent": "CLAIM->CLAIM",
+            "relative_residual": 1.0
+          }
+        }
+      ],
+      "selector": {
+        "group_labels": [
+          "PRIMARY_A",
+          "CONTROL_R"
+        ],
+        "rows": [
+          0,
+          32
+        ],
+        "source": "6202_6203",
+        "targets": [
+          "6201_6203",
+          "6202_6201"
+        ]
+      }
+    },
+    "gpu1": {
+      "bounded_call_counts": {
+        "anchor_partition": 1,
+        "batch_features": 1,
+        "context": 1,
+        "fine_masks": 1,
+        "frozen_full_reducer": 1,
+        "orientation_accumulator": 2,
+        "project_group": 1,
+        "projector_pinv": 1,
+        "raw_write": 9,
+        "source_gradient": 1
+      },
+      "captured_input": {
+        "captures": 3,
+        "geometry": "K4_B32_S128_W24576",
+        "matching_tensor_digests": 51,
+        "tensors": 17
+      },
+      "dispatch": {
+        "batch_rows": 32,
+        "fast_chunks": 0,
+        "frozen_tail_calls": 0,
+        "gemm_chunks": 96,
+        "max_half_span": 3090069.6900601387,
+        "mode": "CHUNKWISE_HYBRID",
+        "total_chunks": 96
+      },
+      "input_lineage_claims": {
+        "checkpoint_sha256": "1ff3fcf2ebd754ab6f9483d6a9982b9b04b9a4eb3357f9f8cdbe2b30399e7d2f",
+        "dev_encoding_sha256": "e3162804bfd184907ee1b22b3f4b4cf3ecee1069fe55661a1a4dbaeecb2cca51",
+        "dev_order_sha256": "b42f64ec4961907fb59eb5fdf9e2e1714649b7952e551c4e9abf7e99c1456e25"
+      },
+      "locus": "gpu1",
+      "memory": {
+        "min_driver_free_GiB": 2.069,
+        "observed_samples": 20,
+        "peak_allocated_GiB": 9.931
+      },
+      "normalized_H_comparison": {
+        "H_by_gap": 38100,
+        "H_windows": 1500,
+        "failures": 0,
+        "first_failures": []
+      },
+      "raw_record_comparison": {
+        "diagnostic_failures": 4,
+        "first_failures": [
+          {
+            "abs_error": 94.80810006319638,
+            "frozen_value": 95.80810006319638,
+            "kind": "DIAGNOSTIC",
+            "path": "records[0].fine_parent_reconstruction_rel_max",
+            "rel_error": 0.9895624691509342,
+            "v10_value": 1.0
+          },
+          {
+            "abs_error": 98.34299056444904,
+            "frozen_value": 99.34299056444904,
+            "kind": "DIAGNOSTIC",
+            "path": "records[1].fine_parent_reconstruction_rel_max",
+            "rel_error": 0.989933864540234,
+            "v10_value": 1.0
+          },
+          {
+            "abs_error": 5.3058707320561895,
+            "frozen_value": 6.3058707320561895,
+            "kind": "DIAGNOSTIC",
+            "path": "records[2].fine_parent_reconstruction_rel_max",
+            "rel_error": 0.8414176182019633,
+            "v10_value": 1.0
+          },
+          {
+            "abs_error": 3.1035935663941263,
+            "frozen_value": 4.103593566394126,
+            "kind": "DIAGNOSTIC",
+            "path": "records[3].fine_parent_reconstruction_rel_max",
+            "rel_error": 0.7563111492840381,
+            "v10_value": 1.0
+          }
+        ],
+        "integers": 0,
+        "legacy_failures": 4,
+        "payload_failures": 0,
+        "raw_numeric": 41204
+      },
+      "reconstruction_rel_max_divergences": [
+        {
+          "frozen_rel_max": 95.80810006319638,
+          "frozen_worst": {
+            "abs_residual": 4.6469738656704336e-11,
+            "gap": 82,
+            "near_zero_coarse_1e-12": true,
+            "normalized_coarse": 4.850293307773795e-13,
+            "normalized_sum_fine": 4.6954767987481716e-11,
+            "parent": "EVIDENCE->EVIDENCE",
+            "relative_residual": 95.80810006319635
+          },
+          "k": 0,
+          "v10_rel_max": 1.0,
+          "v10_worst": {
+            "abs_residual": 8.036420689788109e-11,
+            "gap": 35,
+            "near_zero_coarse_1e-12": false,
+            "normalized_coarse": 8.036420689788109e-11,
+            "normalized_sum_fine": 0.0,
+            "parent": "CLAIM->CLAIM",
+            "relative_residual": 1.0
+          }
+        },
+        {
+          "frozen_rel_max": 99.34299056444904,
+          "frozen_worst": {
+            "abs_residual": 9.073374904565747e-11,
+            "gap": 82,
+            "near_zero_coarse_1e-12": true,
+            "normalized_coarse": 9.133382086660023e-13,
+            "normalized_sum_fine": 9.164708725432347e-11,
+            "parent": "EVIDENCE->EVIDENCE",
+            "relative_residual": 99.34299056444905
+          },
+          "k": 1,
+          "v10_rel_max": 1.0,
+          "v10_worst": {
+            "abs_residual": 7.743604403445796e-11,
+            "gap": 35,
+            "near_zero_coarse_1e-12": false,
+            "normalized_coarse": 7.743604403445796e-11,
+            "normalized_sum_fine": 0.0,
+            "parent": "CLAIM->CLAIM",
+            "relative_residual": 1.0
+          }
+        },
+        {
+          "frozen_rel_max": 6.3058707320561895,
+          "frozen_worst": {
+            "abs_residual": 2.1789914299082904e-12,
+            "gap": 47,
+            "near_zero_coarse_1e-12": true,
+            "normalized_coarse": -3.4554965087236674e-13,
+            "normalized_sum_fine": 1.8334417790359238e-12,
+            "parent": "EVIDENCE->EVIDENCE",
+            "relative_residual": 6.305870732056185
+          },
+          "k": 2,
+          "v10_rel_max": 1.0,
+          "v10_worst": {
+            "abs_residual": 7.950530119395023e-11,
+            "gap": 35,
+            "near_zero_coarse_1e-12": false,
+            "normalized_coarse": -7.950530119395023e-11,
+            "normalized_sum_fine": 0.0,
+            "parent": "CLAIM->CLAIM",
+            "relative_residual": 1.0
+          }
+        },
+        {
+          "frozen_rel_max": 4.103593566394126,
+          "frozen_worst": {
+            "abs_residual": 2.346412978119916e-12,
+            "gap": 125,
+            "near_zero_coarse_1e-12": true,
+            "normalized_coarse": 5.717946819430598e-13,
+            "normalized_sum_fine": -1.774618296176856e-12,
+            "parent": "EVIDENCE->EVIDENCE",
+            "relative_residual": 4.103593566394126
+          },
+          "k": 3,
+          "v10_rel_max": 1.0,
+          "v10_worst": {
+            "abs_residual": 8.104566847721996e-11,
+            "gap": 35,
+            "near_zero_coarse_1e-12": false,
+            "normalized_coarse": -8.104566847721996e-11,
+            "normalized_sum_fine": 0.0,
+            "parent": "CLAIM->CLAIM",
+            "relative_residual": 1.0
+          }
+        }
+      ],
+      "selector": {
+        "group_labels": [
+          "PRIMARY_A",
+          "PRIMARY_A"
+        ],
+        "rows": [
+          416,
+          448
+        ],
+        "source": "6203_6202",
+        "targets": [
+          "6201_6202",
+          "6202_6202"
+        ]
+      }
+    }
+  }
+}
