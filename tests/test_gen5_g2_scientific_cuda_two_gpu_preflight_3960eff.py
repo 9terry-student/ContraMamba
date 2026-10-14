@@ -87,3 +87,18 @@ def test_unchanged_numeric_tolerances():
     assert g2.NUMERIC_CE_ATOL==1e-6
     assert g2.DEV_ROWS_SHA=='b42f64ec4961907fb59eb5fdf9e2e1714649b7952e551c4e9abf7e99c1456e25'
     assert g2.DEV_ENCODING_SHA=='e3162804bfd184907ee1b22b3f4b4cf3ecee1069fe55661a1a4dbaeecb2cca51'
+
+
+def test_worker_schema_runtime_symbol_binding():
+    tree = ast.parse(MODULE.read_text(encoding="utf-8"))
+    loads = [
+        node.id
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Name)
+        and isinstance(node.ctx, ast.Load)
+    ]
+    assert loads.count("SCHEMA_WORKER") == 2
+    assert "SCHEMA" not in loads
+    assert g2.SCHEMA_WORKER == (
+        "GEN5_G2_TWO_GPU_NUMERICAL_PREFLIGHT_WORKER_V1"
+    )

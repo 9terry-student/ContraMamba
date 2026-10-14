@@ -265,7 +265,7 @@ def _run_one_worker(args:argparse.Namespace)->None:
     free,total=torch.cuda.mem_get_info(0)
     need(peak<0.90*total,'GPU_MEMORY_HEADROOM')
     record={
-        'schema':SCHEMA,'status':'PASS_NUMERICAL_AND_TIMING_PREFLIGHT',
+        'schema':SCHEMA_WORKER,'status':'PASS_NUMERICAL_AND_TIMING_PREFLIGHT',
         'head':args.expected_head,'worker':wid,'mapped_physical_gpu':wid,
         'visible_gpu':'cuda:0','device_name':torch.cuda.get_device_name(0),
         'row_range':[start,stop],'frozen_population_rows':840,
@@ -333,7 +333,7 @@ def run_preflight(args:argparse.Namespace)->None:
         for wid,_p in children:
             path=args.output_dir/f'worker{wid}_preflight.json'
             rec=json.loads(path.read_text(encoding='utf-8'))
-            need(rec['schema']==SCHEMA and rec['status']=='PASS_NUMERICAL_AND_TIMING_PREFLIGHT','WORKER_REPORT')
+            need(rec['schema']==SCHEMA_WORKER and rec['status']=='PASS_NUMERICAL_AND_TIMING_PREFLIGHT','WORKER_REPORT')
             need(rec['worker']==wid and rec['head']==args.expected_head,'WORKER_PROVENANCE')
             need(tuple(rec['row_range'])==shard_batches(wid)[0],'PREFLIGHT_ROW_RANGE')
             need(rec['measured_backbone_forward_count']==EXPECTED_BACKBONE_FORWARDS_PER_BATCH,'WORKER_FORWARD_COUNT')
