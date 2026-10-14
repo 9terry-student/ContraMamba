@@ -1,0 +1,15 @@
+G2_FULL_WORKER_SETUP_PASS worker=0 setup_sec=14.301
+G2_FULL_BATCH_PASS worker=0 batch=1/13 rows=0:32 batch_sec=119.239 forwards=22
+G2_FULL_BATCH_PASS worker=0 batch=2/13 rows=32:64 batch_sec=119.441 forwards=44
+G2_FULL_BATCH_PASS worker=0 batch=3/13 rows=64:96 batch_sec=118.861 forwards=66
+G2_FULL_BATCH_PASS worker=0 batch=4/13 rows=96:128 batch_sec=118.056 forwards=88
+G2_FULL_BATCH_PASS worker=0 batch=5/13 rows=128:160 batch_sec=118.662 forwards=110
+G2_FULL_BATCH_PASS worker=0 batch=6/13 rows=160:192 batch_sec=118.162 forwards=132
+G2_FULL_BATCH_PASS worker=0 batch=7/13 rows=192:224 batch_sec=118.215 forwards=154
+G2_FULL_BATCH_PASS worker=0 batch=8/13 rows=224:256 batch_sec=117.866 forwards=176
+G2_FULL_BATCH_PASS worker=0 batch=9/13 rows=256:288 batch_sec=117.579 forwards=198
+G2_FULL_BATCH_PASS worker=0 batch=10/13 rows=288:320 batch_sec=117.731 forwards=220
+G2_FULL_BATCH_PASS worker=0 batch=11/13 rows=320:352 batch_sec=117.571 forwards=242
+G2_FULL_BATCH_PASS worker=0 batch=12/13 rows=352:384 batch_sec=117.267 forwards=264
+G2_FULL_BATCH_PASS worker=0 batch=13/13 rows=384:416 batch_sec=117.191 forwards=286
+G2_FULL_WORKER_PASS worker=0 rows=0:416 forwards=286 runtime_sec=1535.846 peak_vram_gib=0.753 result_sha256=d0432108dfba731bc0eaf78854faa043842b5d9cebfa6183c867b6d39fd330de
