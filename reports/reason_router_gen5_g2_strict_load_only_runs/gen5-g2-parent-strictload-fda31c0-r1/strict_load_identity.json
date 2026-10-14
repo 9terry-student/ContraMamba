@@ -1,0 +1,45 @@
+{
+  "correction_installed": false,
+  "gpu_for_strict_load": true,
+  "kernel_constructor_calls": {
+    "causal-conv1d": 24,
+    "mamba-ssm": 24
+  },
+  "kernel_transport_status": "EXACT_FROZEN_BINARY_SHA256_MATCH",
+  "layer_count": 24,
+  "limitations": [
+    "Strict state loading is not a pretrained numerical forward-equivalence test",
+    "No layer22 intervention or correction has been installed",
+    "No task-functional or causal-core claim can be inferred"
+  ],
+  "model": "state-spaces/mamba-130m-hf",
+  "model_forward": false,
+  "model_revision": "40e5d2bd7452abb3ca8fadbafe9131ee0e2c2f37",
+  "network": false,
+  "parent_buffer_signature": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "parent_checkpoint_sha256": "1ff3fcf2ebd754ab6f9483d6a9982b9b04b9a4eb3357f9f8cdbe2b30399e7d2f",
+  "parent_parameter_signature": "b0b62100691686acf2597159add2a9e252a757f63f61ef52115136d9cf33a3c9",
+  "repo_head": "fda31c03751d9195851fd2f5a66e08c518703ed7",
+  "runtime": {
+    "autocast_enabled": false,
+    "cuda_available": true,
+    "cuda_device_count": 1,
+    "cuda_runtime": "12.8",
+    "default_dtype": "torch.float32",
+    "gpu0_capability": [
+      7,
+      5
+    ],
+    "gpu0_name": "Tesla T4",
+    "python": "3.12.13",
+    "tokenizers": "0.22.2",
+    "torch": "2.10.0+cu128",
+    "transformers": "5.0.0"
+  },
+  "schema": "GEN5_G2_HISTORICAL_PARENT_STRICT_LOAD_ONLY_V1",
+  "state_schema_sha256": "c09ca5426a95ac9b0538e75cf287d27f346683b78c8fefe65b4e16e7c88367e3",
+  "state_tensor_count": 278,
+  "status": "PASS_REAL_PARENT_STRICT_LOAD_NO_FORWARD",
+  "task_evaluation": false,
+  "training": false
+}
