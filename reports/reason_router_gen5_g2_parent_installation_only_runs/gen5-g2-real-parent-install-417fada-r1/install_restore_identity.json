@@ -1,0 +1,62 @@
+{
+  "g2_bridge_arm": "FULL",
+  "g2_bridge_heldout_seed": 6201,
+  "install_success": true,
+  "kernel_constructor_calls": {
+    "causal-conv1d": 24,
+    "mamba-ssm": 24
+  },
+  "kernel_transport_status": "EXACT_FROZEN_BINARY_SHA256_MATCH",
+  "limitations": [
+    "One 6201/FULL installation and restoration only, not all arm/seed conditions",
+    "No pretrained numerical forward or task-equivalence evidence",
+    "No correction functional preservation or causal mechanism evidence"
+  ],
+  "model_forward": false,
+  "network": false,
+  "parent_buffer_signature": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "parent_checkpoint_sha256": "1ff3fcf2ebd754ab6f9483d6a9982b9b04b9a4eb3357f9f8cdbe2b30399e7d2f",
+  "parent_parameter_signature": "b0b62100691686acf2597159add2a9e252a757f63f61ef52115136d9cf33a3c9",
+  "parent_state_schema_sha256": "c09ca5426a95ac9b0538e75cf287d27f346683b78c8fefe65b4e16e7c88367e3",
+  "repo_head": "417fadaaadae33fe90ccedf7108002c64c0ae41c",
+  "restoration_success": true,
+  "runtime": {
+    "autocast_enabled": false,
+    "cuda_available": true,
+    "cuda_device_count": 1,
+    "cuda_runtime": "12.8",
+    "default_dtype": "torch.float32",
+    "gpu0_capability": [
+      7,
+      5
+    ],
+    "gpu0_name": "Tesla T4",
+    "python": "3.12.13",
+    "tokenizers": "0.22.2",
+    "torch": "2.10.0+cu128",
+    "transformers": "5.0.0"
+  },
+  "schema": "GEN5_G2_REAL_PARENT_INSTALL_RESTORE_ONLY_V1",
+  "source_checkpoints_sha256": {
+    "6201": "157ca1c945c7f70b03638ef7e06750a4f4105e5504904272529ecd82bfba5ddf",
+    "6202": "1aa16196aa5aa338c30ac71dd20c7a6fb36a62eafdbe52bcf5696cfc3b87c214",
+    "6203": "c536464dd8541423d18a2bfbfee40211f068885baa37730315dbf7cf0a784770"
+  },
+  "source_factor_sha256": {
+    "6201": {
+      "A_theta.weight": "23796c2fbdaeee6e76d58bf613b85fdf52d25a47c86d98bc9376422478e79469",
+      "B_theta.weight": "16d51fc2a579a61def0620542ea1a9c78ef13c2dcf35645b87a01626c83403ff"
+    },
+    "6202": {
+      "A_theta.weight": "46472cf48fd5973fc2635c99ebc3d0b77798141c359ae5798b1ec9019e1f24f9",
+      "B_theta.weight": "7a9165f0db7baacdbeccc930ae3d50c5910948931366385007d88bd27f3ffab4"
+    },
+    "6203": {
+      "A_theta.weight": "5f47d66270a2ee2900741395e54dd274d4cb12e8359cbc223ea9fa1be07911c8",
+      "B_theta.weight": "f5d4b05bb91dcee119d7e9b1308ff60ca8a914f882854b503973977cc114b862"
+    }
+  },
+  "status": "PASS_PRETRAINED_PARENT_INSTALL_RESTORE_NO_FORWARD",
+  "task_evaluation": false,
+  "training": false
+}
